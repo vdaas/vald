@@ -45,11 +45,3 @@ issues:
     - path: main\.go
       linters:
         - gochecknoglobals
-
-linters-settings:
-  gocritic:
-    enabled-checks:
-      - ruleguard
-    settings:
-      ruleguard:
-        rules: './hack/gorules/rules.go'

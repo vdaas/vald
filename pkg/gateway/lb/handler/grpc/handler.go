@@ -72,84 +72,44 @@ func (s *server) Exists(ctx context.Context, meta *payload.Object_ID) (id *paylo
 			span.End()
 		}
 	}()
-	ich := make(chan *payload.Object_ID, 1)
-	ech := make(chan error, 1)
-	s.eg.Go(func() error {
-		defer close(ich)
-		defer close(ech)
-		var cancel context.CancelFunc
-		ctx, cancel = context.WithCancel(ctx)
-		var once sync.Once
-		ech <- s.gateway.BroadCast(ctx, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error {
-			sctx, sspan := trace.StartSpan(ctx, apiName+".Exists/"+target)
-			defer func() {
-				if sspan != nil {
-					sspan.End()
-				}
-			}()
-			oid, err := vc.Exists(sctx, &payload.Object_ID{
-				Id: meta.GetId(),
-			}, copts...)
-			if err != nil {
-				switch {
-				case errors.Is(err, context.Canceled),
-					errors.Is(err, errors.ErrRPCCallFailed(target, context.Canceled)):
-					if sspan != nil {
-						sspan.SetStatus(trace.StatusCodeCancelled(
-							errdetails.ValdGRPCResourceTypePrefix +
-								"/vald.v1.Exists.BroadCast/" +
-								target + " canceled: " + err.Error()))
-					}
-					return nil
-				case errors.Is(err, context.DeadlineExceeded),
-					errors.Is(err, errors.ErrRPCCallFailed(target, context.DeadlineExceeded)):
-					if sspan != nil {
-						sspan.SetStatus(trace.StatusCodeDeadlineExceeded(
-							errdetails.ValdGRPCResourceTypePrefix +
-								"/vald.v1.Exists.BroadCast/" +
-								target + " deadline_exceeded: " + err.Error()))
-					}
-					return nil
-				}
-				var (
-					st  *status.Status
-					msg string
-				)
-				st, msg, err = status.ParseError(err, codes.NotFound, fmt.Sprintf("error Exists API meta %s's uuid not found", meta.GetId()),
-					&errdetails.RequestInfo{
-						RequestId:   meta.GetId(),
-						ServingData: errdetails.Serialize(meta),
-					},
-					&errdetails.ResourceInfo{
-						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.Exists",
-						ResourceName: fmt.Sprintf("%s: %s(%s) to %s", apiName, s.name, s.ip, target),
-						Owner:        errdetails.ValdResourceOwner,
-						Description:  err.Error(),
-					})
-				if sspan != nil {
-					sspan.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
-				}
-				if err != nil && st.Code() != codes.NotFound {
-					return err
-				}
-				return nil
+	var cancel context.CancelFunc
+	ctx, cancel = context.WithCancel(ctx)
+	var once sync.Once
+	err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error {
+		sctx, sspan := trace.StartSpan(ctx, apiName+".Exists/"+target)
+		defer func() {
+			if sspan != nil {
+				sspan.End()
 			}
-			if oid != nil && oid.GetId() != "" {
-				once.Do(func() {
-					ich <- oid
-					cancel()
+		}()
+		oid, err := vc.Exists(sctx, &payload.Object_ID{
+			Id: meta.GetId(),
+		}, copts...)
+		if err != nil {
+			st, msg, _ := status.ParseError(err, codes.NotFound, fmt.Sprintf("error Exists API meta %s's uuid not found", meta.GetId()),
+				&errdetails.RequestInfo{
+					RequestId:   meta.GetId(),
+					ServingData: errdetails.Serialize(meta),
+				},
+				&errdetails.ResourceInfo{
+					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.Exists",
+					ResourceName: fmt.Sprintf("%s: %s(%s) to %s", apiName, s.name, s.ip, target),
+					Owner:        errdetails.ValdResourceOwner,
+					Description:  err.Error(),
 				})
+			if sspan != nil {
+				sspan.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
 			}
 			return nil
-		})
+		}
+		if oid != nil && oid.GetId() != "" {
+			once.Do(func() {
+				id = oid
+				cancel()
+			})
+		}
 		return nil
 	})
-	select {
-	case <-ctx.Done():
-		err = ctx.Err()
-	case id = <-ich:
-	case err = <-ech:
-	}
 	if err != nil || id == nil || id.GetId() == "" {
 		if err == nil {
 			err = errors.ErrObjectIDNotFound(meta.GetId())
@@ -384,24 +344,16 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 			}()
 			r, err := f(sctx, vc, copts...)
 			switch {
-			case errors.Is(err, context.Canceled),
-				errors.Is(err, errors.ErrRPCCallFailed(target, context.Canceled)):
+			case errors.Is(err, context.Canceled):
 				if sspan != nil {
-					sspan.SetStatus(trace.StatusCodeCancelled(
-						errdetails.ValdGRPCResourceTypePrefix +
-							"/vald.v1.search.BroadCast/" +
-							target + " canceled: " + err.Error()))
+					sspan.SetStatus(trace.StatusCodeCancelled(err.Error()))
 				}
-			case errors.Is(err, context.DeadlineExceeded),
-				errors.Is(err, errors.ErrRPCCallFailed(target, context.DeadlineExceeded)):
+			case errors.Is(err, context.DeadlineExceeded):
 				if sspan != nil {
-					sspan.SetStatus(trace.StatusCodeDeadlineExceeded(
-						errdetails.ValdGRPCResourceTypePrefix +
-							"/vald.v1.search.BroadCast/" +
-							target + " deadline_exceeded: " + err.Error()))
+					sspan.SetStatus(trace.StatusCodeDeadlineExceeded(err.Error()))
 				}
 			case err != nil:
-				st, msg, err := status.ParseError(err, codes.Internal, "failed to parse Search gRPC error response",
+				st, msg, _ := status.ParseError(err, codes.Internal, "failed to parse Search gRPC error response",
 					&errdetails.ResourceInfo{
 						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.Search",
 						ResourceName: fmt.Sprintf("%s: %s(%s) to %s", apiName, s.name, s.ip, target),
@@ -411,7 +363,6 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 				if sspan != nil {
 					sspan.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
 				}
-				return err
 			case r == nil || len(r.GetResults()) == 0:
 				err = errors.ErrEmptySearchResult
 				err = status.WrapWithNotFound("failed to process search request", err,
@@ -649,7 +600,7 @@ func (s *server) MultiSearch(ctx context.Context, reqs *payload.Search_MultiRequ
 	}()
 
 	res = &payload.Search_Responses{
-		Responses: make([]*payload.Search_Response, len(reqs.GetRequests())),
+		Responses: make([]*payload.Search_Response, len(reqs.Requests)),
 	}
 	var wg sync.WaitGroup
 	var mu sync.Mutex
@@ -740,7 +691,7 @@ func (s *server) MultiSearchByID(ctx context.Context, reqs *payload.Search_Multi
 	}()
 
 	res = &payload.Search_Responses{
-		Responses: make([]*payload.Search_Response, len(reqs.GetRequests())),
+		Responses: make([]*payload.Search_Response, len(reqs.Requests)),
 	}
 	var wg sync.WaitGroup
 	var mu sync.Mutex
@@ -859,7 +810,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 			return nil, err
 		}
 		if req.GetConfig() != nil {
-			req.GetConfig().SkipStrictExistCheck = true
+			req.Config.SkipStrictExistCheck = true
 		} else {
 			req.Config = &payload.Insert_Config{SkipStrictExistCheck: true}
 		}
@@ -877,7 +828,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 				Timestamp: now,
 			}
 		} else {
-			req.GetConfig().Timestamp = now
+			req.Config.Timestamp = now
 		}
 	}
 	emu := new(sync.Mutex)
@@ -891,23 +842,12 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 		}()
 		loc, err := vc.Insert(ctx, req, copts...)
 		if err != nil {
-			switch {
-			case errors.Is(err, context.Canceled),
-				errors.Is(err, errors.ErrRPCCallFailed(target, context.Canceled)):
+			if errors.Is(err, errors.ErrRPCCallFailed(target, context.Canceled)) {
 				if span != nil {
 					span.SetStatus(trace.StatusCodeCancelled(
 						errdetails.ValdGRPCResourceTypePrefix +
 							"/vald.v1.Insert.DoMulti/" +
 							target + " canceled: " + err.Error()))
-				}
-				return nil
-			case errors.Is(err, context.DeadlineExceeded),
-				errors.Is(err, errors.ErrRPCCallFailed(target, context.DeadlineExceeded)):
-				if span != nil {
-					span.SetStatus(trace.StatusCodeDeadlineExceeded(
-						errdetails.ValdGRPCResourceTypePrefix +
-							"/vald.v1.Insert.DoMulti/" +
-							target + " deadline_exceeded: " + err.Error()))
 				}
 				return nil
 			}
@@ -926,7 +866,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 			if span != nil {
 				span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
 			}
-			if err != nil && st.Code() != codes.AlreadyExists {
+			if err != nil {
 				emu.Lock()
 				if errs == nil {
 					errs = err
@@ -934,7 +874,6 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 					errs = errors.Wrap(errs, err.Error())
 				}
 				emu.Unlock()
-				return err
 			}
 			return nil
 		}
@@ -1079,18 +1018,18 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 				return nil, err
 			}
 			if req.GetConfig() != nil {
-				reqs.GetRequests()[i].GetConfig().SkipStrictExistCheck = true
+				reqs.Requests[i].Config.SkipStrictExistCheck = true
 			} else {
-				reqs.GetRequests()[i].Config = &payload.Insert_Config{SkipStrictExistCheck: true}
+				reqs.Requests[i].Config = &payload.Insert_Config{SkipStrictExistCheck: true}
 			}
 		}
-		if reqs.GetRequests()[i].GetConfig().GetTimestamp() == 0 {
-			if reqs.GetRequests()[i].GetConfig() == nil {
-				reqs.GetRequests()[i].Config = &payload.Insert_Config{
+		if reqs.Requests[i].GetConfig().GetTimestamp() == 0 {
+			if reqs.Requests[i].GetConfig() == nil {
+				reqs.Requests[i].Config = &payload.Insert_Config{
 					Timestamp: now,
 				}
 			} else {
-				reqs.GetRequests()[i].GetConfig().Timestamp = now
+				reqs.Requests[i].Config.Timestamp = now
 			}
 		}
 		ids = append(ids, uuid)
@@ -1112,23 +1051,12 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 		}()
 		loc, err := vc.MultiInsert(ctx, reqs, copts...)
 		if err != nil {
-			switch {
-			case errors.Is(err, context.Canceled),
-				errors.Is(err, errors.ErrRPCCallFailed(target, context.Canceled)):
+			if errors.Is(err, errors.ErrRPCCallFailed(target, context.Canceled)) {
 				if span != nil {
 					span.SetStatus(trace.StatusCodeCancelled(
 						errdetails.ValdGRPCResourceTypePrefix +
 							"/vald.v1.MultiInsert.DoMulti/" +
 							target + " canceled: " + err.Error()))
-				}
-				return nil
-			case errors.Is(err, context.DeadlineExceeded),
-				errors.Is(err, errors.ErrRPCCallFailed(target, context.DeadlineExceeded)):
-				if span != nil {
-					span.SetStatus(trace.StatusCodeDeadlineExceeded(
-						errdetails.ValdGRPCResourceTypePrefix +
-							"/vald.v1.MultiInsert.DoMulti/" +
-							target + " deadline_exceeded: " + err.Error()))
 				}
 				return nil
 			}
@@ -1157,10 +1085,10 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 				}
 				emu.Unlock()
 			}
-			return err
+			return nil
 		}
 		mu.Lock()
-		locs.Locations = append(locs.GetLocations(), loc.Locations...)
+		locs.Locations = append(locs.Locations, loc.Locations...)
 		mu.Unlock()
 		return nil
 	})
@@ -1273,7 +1201,7 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (res *
 			return nil, err
 		}
 		if req.GetConfig() != nil {
-			req.GetConfig().SkipStrictExistCheck = true
+			req.Config.SkipStrictExistCheck = true
 		} else {
 			req.Config = &payload.Update_Config{SkipStrictExistCheck: true}
 		}
@@ -1403,13 +1331,13 @@ func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequ
 	ireqs := make([]*payload.Insert_Request, 0, len(vecs))
 	rreqs := make([]*payload.Remove_Request, 0, len(vecs))
 	now := time.Now().UnixNano()
-	for _, req := range vecs {
-		vl := len(req.GetVector().GetVector())
+	for _, vec := range vecs {
+		vl := len(vec.GetVector().GetVector())
 		if vl < algorithm.MinimumVectorDimensionSize {
 			err = errors.ErrInvalidDimensionSize(vl, 0)
 			err = status.WrapWithInvalidArgument("MultiUpdate API invalid vector argument", err,
 				&errdetails.RequestInfo{
-					RequestId:   req.GetVector().GetId(),
+					RequestId:   vec.GetVector().GetId(),
 					ServingData: errdetails.Serialize(reqs),
 				},
 				&errdetails.BadRequest{
@@ -1425,25 +1353,23 @@ func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequ
 			}
 			return nil, err
 		}
-		uuid := req.GetVector().GetId()
-		if !req.GetConfig().GetSkipStrictExistCheck() {
-			vec, err := s.GetObject(ctx, &payload.Object_VectorRequest{
-				Id: &payload.Object_ID{
-					Id: uuid,
-				},
+		uuid := vec.GetVector().GetId()
+		if !vec.GetConfig().GetSkipStrictExistCheck() {
+			id, err := s.Exists(ctx, &payload.Object_ID{
+				Id: uuid,
 			})
-			if err != nil || vec == nil || len(vec.GetId()) == 0 {
+			if err != nil || id == nil || len(id.GetId()) == 0 {
 				if err == nil {
 					err = errors.ErrObjectIDNotFound(uuid)
 				}
 				st, msg, err := status.ParseError(err, codes.NotFound,
-					fmt.Sprintf("error MultiUpdate API ID = %v not fount", uuid),
+					fmt.Sprintf("error MultiInsert API ID = %v not found", uuid),
 					&errdetails.RequestInfo{
 						RequestId:   uuid,
 						ServingData: errdetails.Serialize(reqs),
 					},
 					&errdetails.ResourceInfo{
-						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.MultiUpdate.GetObject",
+						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.Exists",
 						ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
 						Owner:        errdetails.ValdResourceOwner,
 						Description:  err.Error(),
@@ -1453,38 +1379,34 @@ func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequ
 				}
 				return nil, err
 			}
-			if f32stos(vec.GetVector()) == f32stos(req.GetVector().GetVector()) {
-				log.Warn(errors.ErrSameVectorAlreadyExists(uuid, vec.GetVector(), req.GetVector().GetVector()))
-				continue
-			}
-			if req.GetConfig() != nil {
-				req.Config.SkipStrictExistCheck = true
+			if vec.GetConfig() != nil {
+				vec.Config.SkipStrictExistCheck = true
 			} else {
-				req.Config = &payload.Update_Config{SkipStrictExistCheck: true}
+				vec.Config = &payload.Update_Config{SkipStrictExistCheck: true}
 			}
 		}
 		var n int64
-		if req.GetConfig().GetTimestamp() != 0 {
-			n = req.GetConfig().GetTimestamp()
+		if vec.GetConfig().GetTimestamp() != 0 {
+			n = vec.GetConfig().GetTimestamp()
 		} else {
 			n = now
 		}
-		ids = append(ids, req.GetVector().GetId())
-		rreqs = append(rreqs, &payload.Remove_Request{
-			Id: &payload.Object_ID{
-				Id: req.GetVector().GetId(),
-			},
-			Config: &payload.Remove_Config{
+		ids = append(ids, vec.GetVector().GetId())
+		ireqs = append(ireqs, &payload.Insert_Request{
+			Vector: vec.GetVector(),
+			Config: &payload.Insert_Config{
 				SkipStrictExistCheck: true,
+				Filters:              vec.GetConfig().GetFilters(),
 				Timestamp:            n,
 			},
 		})
 		n++
-		ireqs = append(ireqs, &payload.Insert_Request{
-			Vector: req.GetVector(),
-			Config: &payload.Insert_Config{
+		rreqs = append(rreqs, &payload.Remove_Request{
+			Id: &payload.Object_ID{
+				Id: vec.GetVector().GetId(),
+			},
+			Config: &payload.Remove_Config{
 				SkipStrictExistCheck: true,
-				Filters:              req.GetConfig().GetFilters(),
 				Timestamp:            n,
 			},
 		})
@@ -1566,51 +1488,19 @@ func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *
 		}
 		return nil, err
 	}
-	var shouldInsert bool
-	if !req.GetConfig().GetSkipStrictExistCheck() {
-		vec, err := s.GetObject(ctx, &payload.Object_VectorRequest{
-			Id: &payload.Object_ID{
-				Id: uuid,
-			},
-		})
-		if err != nil || vec == nil || len(vec.GetId()) == 0 {
-			shouldInsert = true
-		} else if f32stos(vec.GetVector()) == f32stos(req.GetVector().GetVector()) {
-			if err == nil {
-				err = errors.ErrSameVectorAlreadyExists(uuid, vec.GetVector(), req.GetVector().GetVector())
-			}
-			st, msg, err := status.ParseError(err, codes.AlreadyExists,
-				fmt.Sprintf("error Update for Upsert API ID = %v's same vector data already exists", uuid),
-				&errdetails.RequestInfo{
-					RequestId:   uuid,
-					ServingData: errdetails.Serialize(req),
-				},
-				&errdetails.ResourceInfo{
-					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.GetObject",
-					ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
-					Owner:        errdetails.ValdResourceOwner,
-					Description:  err.Error(),
-				}, info.Get())
-			if span != nil {
-				span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
-			}
-			return nil, err
-		}
-	} else {
-		id, err := s.Exists(ctx, &payload.Object_ID{
-			Id: uuid,
-		})
-		shouldInsert = err != nil || id == nil || len(id.GetId()) == 0
-	}
+	filters := req.GetConfig().GetFilters()
+	id, err := s.Exists(ctx, &payload.Object_ID{
+		Id: uuid,
+	})
 
 	var operation string
-	if shouldInsert {
+	if err != nil || id == nil || len(id.GetId()) == 0 {
 		operation = "Insert"
 		loc, err = s.Insert(ctx, &payload.Insert_Request{
 			Vector: vec,
 			Config: &payload.Insert_Config{
 				SkipStrictExistCheck: true,
-				Filters:              req.GetConfig().GetFilters(),
+				Filters:              filters,
 				Timestamp:            req.GetConfig().GetTimestamp(),
 			},
 		})
@@ -1620,7 +1510,7 @@ func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *
 			Vector: vec,
 			Config: &payload.Update_Config{
 				SkipStrictExistCheck: true,
-				Filters:              req.GetConfig().GetFilters(),
+				Filters:              filters,
 				Timestamp:            req.GetConfig().GetTimestamp(),
 			},
 		})
@@ -1733,31 +1623,15 @@ func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequ
 		_, err = s.Exists(ctx, &payload.Object_ID{
 			Id: uuid,
 		})
-		var shouldInsert bool
-		if !req.GetConfig().GetSkipStrictExistCheck() {
-			vec, err := s.GetObject(ctx, &payload.Object_VectorRequest{
-				Id: &payload.Object_ID{
-					Id: uuid,
-				},
-			})
-			if err != nil || vec == nil || len(vec.GetId()) == 0 {
-				shouldInsert = true
-			} else if f32stos(vec.GetVector()) == f32stos(req.GetVector().GetVector()) {
-				continue
-			}
-		} else {
-			id, err := s.Exists(ctx, &payload.Object_ID{
-				Id: uuid,
-			})
-			shouldInsert = err != nil || id == nil || len(id.GetId()) == 0
-		}
-		if shouldInsert {
+		filters := req.GetConfig().GetFilters()
+		ts := req.GetConfig().GetTimestamp()
+		if err != nil {
 			insertReqs = append(insertReqs, &payload.Insert_Request{
 				Vector: vec,
 				Config: &payload.Insert_Config{
 					SkipStrictExistCheck: true,
-					Filters:              req.GetConfig().GetFilters(),
-					Timestamp:            req.GetConfig().GetTimestamp(),
+					Filters:              filters,
+					Timestamp:            ts,
 				},
 			})
 		} else {
@@ -1765,8 +1639,8 @@ func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequ
 				Vector: vec,
 				Config: &payload.Update_Config{
 					SkipStrictExistCheck: true,
-					Filters:              req.GetConfig().GetFilters(),
-					Timestamp:            req.GetConfig().GetTimestamp(),
+					Filters:              filters,
+					Timestamp:            ts,
 				},
 			})
 		}
@@ -1901,7 +1775,7 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (locs 
 			return nil, err
 		}
 		if req.GetConfig() != nil {
-			req.GetConfig().SkipStrictExistCheck = true
+			req.Config.SkipStrictExistCheck = true
 		} else {
 			req.Config = &payload.Remove_Config{SkipStrictExistCheck: true}
 		}
@@ -1913,7 +1787,7 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (locs 
 				Timestamp: now,
 			}
 		} else {
-			req.GetConfig().Timestamp = now
+			req.Config.Timestamp = now
 		}
 	}
 	var mu sync.Mutex
@@ -1929,7 +1803,7 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (locs 
 		}()
 		loc, err := vc.Remove(ctx, req, copts...)
 		if err != nil {
-			st, msg, err := status.ParseError(err, codes.Internal,
+			st, msg, _ := status.ParseError(err, codes.Internal,
 				"failed to parse Remove gRPC error response",
 				&errdetails.RequestInfo{
 					RequestId:   id.GetId(),
@@ -1944,10 +1818,10 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (locs 
 			if span != nil {
 				span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
 			}
-			return err
+			return nil
 		}
 		mu.Lock()
-		locs.Ips = append(locs.GetIps(), loc.GetIps()...)
+		locs.Ips = append(locs.Ips, loc.GetIps()...)
 		locs.Name = loc.GetName()
 		mu.Unlock()
 		return nil
@@ -2055,20 +1929,20 @@ func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequ
 				}
 				return nil, err
 			}
-			if reqs.GetRequests()[i].GetConfig() != nil {
-				reqs.GetRequests()[i].GetConfig().SkipStrictExistCheck = true
+			if reqs.Requests[i].GetConfig() != nil {
+				reqs.Requests[i].Config.SkipStrictExistCheck = true
 			} else {
-				reqs.GetRequests()[i].Config = &payload.Remove_Config{SkipStrictExistCheck: true}
+				reqs.Requests[i].Config = &payload.Remove_Config{SkipStrictExistCheck: true}
 			}
 
 		}
 		if req.GetConfig().GetTimestamp() == 0 {
 			if req.GetConfig() == nil {
-				reqs.GetRequests()[i].Config = &payload.Remove_Config{
+				reqs.Requests[i].Config = &payload.Remove_Config{
 					Timestamp: now,
 				}
 			} else {
-				reqs.GetRequests()[i].GetConfig().Timestamp = now
+				reqs.Requests[i].Config.Timestamp = now
 			}
 		}
 	}
@@ -2085,50 +1959,14 @@ func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequ
 		}()
 		loc, err := vc.MultiRemove(ctx, reqs, copts...)
 		if err != nil {
-			switch {
-			case errors.Is(err, context.Canceled),
-				errors.Is(err, errors.ErrRPCCallFailed(target, context.Canceled)):
-				if span != nil {
-					span.SetStatus(trace.StatusCodeCancelled(
-						errdetails.ValdGRPCResourceTypePrefix +
-							"/vald.v1.MultiRemove.BroadCast/" +
-							target + " canceled: " + err.Error()))
-				}
-				return nil
-			case errors.Is(err, context.DeadlineExceeded),
-				errors.Is(err, errors.ErrRPCCallFailed(target, context.DeadlineExceeded)):
-				if span != nil {
-					span.SetStatus(trace.StatusCodeDeadlineExceeded(
-						errdetails.ValdGRPCResourceTypePrefix +
-							"/vald.v1.MultiRemove.BroadCast/" +
-							target + " deadline_exceeded: " + err.Error()))
-				}
-				return nil
-			}
-			st, msg, err := status.ParseError(err, codes.Internal,
-				"failed to parse MultiRemove gRPC error response",
-				&errdetails.RequestInfo{
-					RequestId:   strings.Join(ids, ","),
-					ServingData: errdetails.Serialize(reqs),
-				},
-				&errdetails.ResourceInfo{
-					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.MultiRemove",
-					ResourceName: fmt.Sprintf("%s: %s(%s) to %s", apiName, s.name, s.ip, target),
-					Owner:        errdetails.ValdResourceOwner,
-					Description:  err.Error(),
-				})
+			log.Error(err)
 			if span != nil {
-				span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
-			}
-
-			if err != nil && st.Code() != codes.NotFound {
-				log.Error(err)
-				return err
+				span.SetStatus(trace.StatusCodeInternal(err.Error()))
 			}
 			return nil
 		}
 		mu.Lock()
-		locs.Locations = append(locs.GetLocations(), loc.GetLocations()...)
+		locs.Locations = append(locs.Locations, loc.Locations...)
 		mu.Unlock()
 		return nil
 	})
@@ -2160,80 +1998,44 @@ func (s *server) GetObject(ctx context.Context, req *payload.Object_VectorReques
 			span.End()
 		}
 	}()
-	vch := make(chan *payload.Object_Vector, 1)
-	ech := make(chan error, 1)
-	s.eg.Go(func() error {
-		defer close(vch)
-		defer close(ech)
-		var cancel context.CancelFunc
-		ctx, cancel = context.WithCancel(ctx)
-		var once sync.Once
-		ech <- s.gateway.BroadCast(ctx, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error {
-			sctx, sspan := trace.StartSpan(ctx, apiName+".GetObject/"+target)
-			defer func() {
-				if span != nil {
-					sspan.End()
-				}
-			}()
-			ovec, err := vc.GetObject(sctx, req, copts...)
-			if err != nil {
-				switch {
-				case errors.Is(err, context.Canceled),
-					errors.Is(err, errors.ErrRPCCallFailed(target, context.Canceled)):
-					if sspan != nil {
-						sspan.SetStatus(trace.StatusCodeCancelled(
-							errdetails.ValdGRPCResourceTypePrefix +
-								"/vald.v1.GetObject.BroadCast/" +
-								target + " canceled: " + err.Error()))
-					}
-					return nil
-				case errors.Is(err, context.DeadlineExceeded),
-					errors.Is(err, errors.ErrRPCCallFailed(target, context.DeadlineExceeded)):
-					if sspan != nil {
-						sspan.SetStatus(trace.StatusCodeDeadlineExceeded(
-							errdetails.ValdGRPCResourceTypePrefix +
-								"/vald.v1.GetObject.BroadCast/" +
-								target + " deadline_exceeded: " + err.Error()))
-					}
-					return nil
-				}
-				uuid := req.GetId().GetId()
-				st, msg, err := status.ParseError(err, codes.NotFound,
-					fmt.Sprintf("GetObject API ID = %s not found", uuid),
-					&errdetails.RequestInfo{
-						RequestId:   uuid,
-						ServingData: errdetails.Serialize(req),
-					},
-					&errdetails.ResourceInfo{
-						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.GetObject",
-						ResourceName: fmt.Sprintf("%s: %s(%s) to %s", apiName, s.name, s.ip, target),
-						Owner:        errdetails.ValdResourceOwner,
-						Description:  err.Error(),
-					}, info.Get())
-				if span != nil {
-					span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
-				}
-				if err != nil && st.Code() != codes.NotFound {
-					return err
-				}
-				return nil
+	var cancel context.CancelFunc
+	ctx, cancel = context.WithCancel(ctx)
+	var once sync.Once
+	err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error {
+		sctx, sspan := trace.StartSpan(ctx, apiName+".GetObject/"+target)
+		defer func() {
+			if span != nil {
+				sspan.End()
 			}
-			if ovec != nil && ovec.GetId() != "" && ovec.GetVector() != nil {
-				once.Do(func() {
-					vch <- ovec
-					cancel()
-				})
+		}()
+		ovec, err := vc.GetObject(sctx, req, copts...)
+		if err != nil {
+			uuid := req.GetId().GetId()
+			st, msg, _ := status.ParseError(err, codes.NotFound,
+				fmt.Sprintf("GetObject API ID = %s not found", uuid),
+				&errdetails.RequestInfo{
+					RequestId:   uuid,
+					ServingData: errdetails.Serialize(req),
+				},
+				&errdetails.ResourceInfo{
+					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.GetObject",
+					ResourceName: fmt.Sprintf("%s: %s(%s) to %s", apiName, s.name, s.ip, target),
+					Owner:        errdetails.ValdResourceOwner,
+					Description:  err.Error(),
+				}, info.Get())
+			if span != nil {
+				span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
 			}
 			return nil
-		})
+		}
+		if ovec != nil && ovec.GetId() != "" && ovec.GetVector() != nil {
+			once.Do(func() {
+				vec = ovec
+				cancel()
+			})
+		}
 		return nil
 	})
-	select {
-	case <-ctx.Done():
-		err = ctx.Err()
-	case vec = <-vch:
-	case err = <-ech:
-	}
 	if err != nil || vec == nil || vec.GetId() == "" || vec.GetVector() == nil {
 		err = errors.ErrObjectNotFound(err, req.GetId().GetId())
 		st, msg, err := status.ParseError(err, codes.NotFound,

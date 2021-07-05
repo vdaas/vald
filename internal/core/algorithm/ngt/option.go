@@ -30,7 +30,6 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 )
 
-// Option represents the functional option for NGT.
 type Option func(*ngt) error
 
 var (
@@ -52,7 +51,6 @@ var (
 	}
 )
 
-// WithInMemoryMode represents the option to set to start in memory mode or not for NGT.
 func WithInMemoryMode(flg bool) Option {
 	return func(n *ngt) error {
 		n.inMemory = flg
@@ -60,39 +58,31 @@ func WithInMemoryMode(flg bool) Option {
 	}
 }
 
-// WithIndexPath represents the option to set the index path for NGT.
 func WithIndexPath(path string) Option {
 	return func(n *ngt) error {
 		if len(path) == 0 {
-			return errors.NewErrIgnoredOption("indexPath")
+			return nil
 		}
 		n.idxPath = path
 		return nil
 	}
 }
 
-// WithBulkInsertChunkSize represents the option to set the bulk insert chunk size for NGT.
 func WithBulkInsertChunkSize(size int) Option {
 	return func(n *ngt) error {
-		if size < 0 {
-			return errors.NewErrInvalidOption("BulkInsertChunkSize", size)
-		}
 		n.bulkInsertChunkSize = size
 		return nil
 	}
 }
 
-// WithDimension represents the option to set the dimension for NGT.
 func WithDimension(size int) Option {
 	return func(n *ngt) error {
 		if size > ngtVectorDimensionSizeLimit || size < minimumDimensionSize {
-			err := errors.ErrInvalidDimensionSize(size, ngtVectorDimensionSizeLimit)
-			return errors.NewErrCriticalOption("dimension", size, err)
+			return errors.ErrInvalidDimensionSize(size, ngtVectorDimensionSizeLimit)
 		}
 
 		if C.ngt_set_property_dimension(n.prop, C.int32_t(size), n.ebuf) == ErrorCode {
-			err := errors.ErrFailedToSetDimension(n.newGoError(n.ebuf))
-			return errors.NewErrCriticalOption("dimension", size, err)
+			return errors.ErrFailedToSetDimension(n.newGoError(n.ebuf))
 		}
 
 		n.dimension = C.int32_t(size)
@@ -101,7 +91,6 @@ func WithDimension(size int) Option {
 	}
 }
 
-// WithDistanceTypeByString represents the option to set the distance type for NGT.
 func WithDistanceTypeByString(dt string) Option {
 	var d distanceType
 	switch strings.NewReplacer("-", "", "_", "", " ", "").Replace(strings.ToLower(dt)) {
@@ -115,9 +104,9 @@ func WithDistanceTypeByString(dt string) Option {
 		d = Hamming
 	case "cosine", "cos":
 		d = Cosine
-	case "normalizedangle", "normalizedang", "nang", "nangle":
+	case "normalizedangle", "normalized angle", "normalized ang", "nang", "nangle":
 		d = NormalizedAngle
-	case "normalizedcosine", "normalizedcos", "ncos", "ncosine":
+	case "normalizedcosine", "normalized cosine", "normalized cos", "ncos", "ncosine":
 		d = NormalizedCosine
 	case "jaccard", "jac":
 		d = Jaccard
@@ -125,59 +114,48 @@ func WithDistanceTypeByString(dt string) Option {
 	return WithDistanceType(d)
 }
 
-// WithDistanceType represents the option to set the distance type for NGT.
 func WithDistanceType(t distanceType) Option {
 	return func(n *ngt) error {
 		switch t {
 		case L1:
 			if C.ngt_set_property_distance_type_l1(n.prop, n.ebuf) == ErrorCode {
-				err := errors.ErrFailedToSetDistanceType(n.newGoError(n.ebuf), "L1")
-				return errors.NewErrCriticalOption("distanceType", t, err)
+				return errors.ErrFailedToSetDistanceType(n.newGoError(n.ebuf), "L1")
 			}
 		case L2:
 			if C.ngt_set_property_distance_type_l2(n.prop, n.ebuf) == ErrorCode {
-				err := errors.ErrFailedToSetDistanceType(n.newGoError(n.ebuf), "L2")
-				return errors.NewErrCriticalOption("distanceType", t, err)
+				return errors.ErrFailedToSetDistanceType(n.newGoError(n.ebuf), "L2")
 			}
 		case Angle:
 			if C.ngt_set_property_distance_type_angle(n.prop, n.ebuf) == ErrorCode {
-				err := errors.ErrFailedToSetDistanceType(n.newGoError(n.ebuf), "Angle")
-				return errors.NewErrCriticalOption("distanceType", t, err)
+				return errors.ErrFailedToSetDistanceType(n.newGoError(n.ebuf), "Angle")
 			}
 		case Hamming:
 			if C.ngt_set_property_distance_type_hamming(n.prop, n.ebuf) == ErrorCode {
-				err := errors.ErrFailedToSetDistanceType(n.newGoError(n.ebuf), "Hamming")
-				return errors.NewErrCriticalOption("distanceType", t, err)
+				return errors.ErrFailedToSetDistanceType(n.newGoError(n.ebuf), "Hamming")
 			}
 		case Cosine:
 			if C.ngt_set_property_distance_type_cosine(n.prop, n.ebuf) == ErrorCode {
-				err := errors.ErrFailedToSetDistanceType(n.newGoError(n.ebuf), "Cosine")
-				return errors.NewErrCriticalOption("distanceType", t, err)
+				return errors.ErrFailedToSetDistanceType(n.newGoError(n.ebuf), "Cosine")
 			}
 		case NormalizedAngle:
 			if C.ngt_set_property_distance_type_normalized_angle(n.prop, n.ebuf) == ErrorCode {
-				err := errors.ErrFailedToSetDistanceType(n.newGoError(n.ebuf), "NormalizedAngle")
-				return errors.NewErrCriticalOption("distanceType", t, err)
+				return errors.ErrFailedToSetDistanceType(n.newGoError(n.ebuf), "NormalizedAngle")
 			}
 		case NormalizedCosine:
 			if C.ngt_set_property_distance_type_normalized_cosine(n.prop, n.ebuf) == ErrorCode {
-				err := errors.ErrFailedToSetDistanceType(n.newGoError(n.ebuf), "NormalizedCosine")
-				return errors.NewErrCriticalOption("distanceType", t, err)
+				return errors.ErrFailedToSetDistanceType(n.newGoError(n.ebuf), "NormalizedCosine")
 			}
 		case Jaccard:
 			if C.ngt_set_property_distance_type_jaccard(n.prop, n.ebuf) == ErrorCode {
-				err := errors.ErrFailedToSetDistanceType(n.newGoError(n.ebuf), "Jaccard")
-				return errors.NewErrCriticalOption("distanceType", t, err)
+				return errors.ErrFailedToSetDistanceType(n.newGoError(n.ebuf), "Jaccard")
 			}
 		default:
-			err := errors.ErrUnsupportedDistanceType
-			return errors.NewErrCriticalOption("distanceType", t, err)
+			return errors.ErrUnsupportedDistanceType
 		}
 		return nil
 	}
 }
 
-// WithObjectTypeByString represents the option to set the object type by string for NGT.
 func WithObjectTypeByString(ot string) Option {
 	var o objectType
 	switch strings.NewReplacer("-", "", "_", "", " ", "", "double", "float").Replace(strings.ToLower(ot)) {
@@ -189,80 +167,66 @@ func WithObjectTypeByString(ot string) Option {
 	return WithObjectType(o)
 }
 
-// WithObjectType represents the option to set the object type for NGT.
 func WithObjectType(t objectType) Option {
 	return func(n *ngt) error {
 		switch t {
 		case Uint8:
 			if C.ngt_set_property_object_type_integer(n.prop, n.ebuf) == ErrorCode {
-				err := errors.ErrFailedToSetObjectType(n.newGoError(n.ebuf), "Uint8")
-				return errors.NewErrCriticalOption("objectType", t, err)
+				return errors.ErrFailedToSetObjectType(n.newGoError(n.ebuf), "Uint8")
 			}
 		case Float:
 			if C.ngt_set_property_object_type_float(n.prop, n.ebuf) == ErrorCode {
-				err := errors.ErrFailedToSetObjectType(n.newGoError(n.ebuf), "Float")
-				return errors.NewErrCriticalOption("objectType", t, err)
+				return errors.ErrFailedToSetObjectType(n.newGoError(n.ebuf), "Float")
 			}
 		default:
-			err := errors.ErrUnsupportedObjectType
-			return errors.NewErrCriticalOption("objectType", t, err)
+			return errors.ErrUnsupportedObjectType
 		}
 		n.objectType = t
 		return nil
 	}
 }
 
-// WithCreationEdgeSize represents the option to set the creation edge size for NGT.
 func WithCreationEdgeSize(size int) Option {
 	return func(n *ngt) error {
 		if C.ngt_set_property_edge_size_for_creation(n.prop, C.int16_t(size), n.ebuf) == ErrorCode {
-			err := errors.ErrFailedToSetCreationEdgeSize(n.newGoError(n.ebuf))
-			return errors.NewErrCriticalOption("creationEdgeSize", size, err)
+			return errors.ErrFailedToSetCreationEdgeSize(n.newGoError(n.ebuf))
 		}
 		return nil
 	}
 }
 
-// WithSearchEdgeSize represents the option to set the search edge size for NGT.
 func WithSearchEdgeSize(size int) Option {
 	return func(n *ngt) error {
 		if C.ngt_set_property_edge_size_for_search(n.prop, C.int16_t(size), n.ebuf) == ErrorCode {
-			err := errors.ErrFailedToSetSearchEdgeSize(n.newGoError(n.ebuf))
-			return errors.NewErrCriticalOption("searchEdgeSize", size, err)
+			return errors.ErrFailedToSetSearchEdgeSize(n.newGoError(n.ebuf))
 		}
 		return nil
 	}
 }
 
-// WithDefaultPoolSize represents the option to set the default pool size for NGT.
 func WithDefaultPoolSize(poolSize uint32) Option {
 	return func(n *ngt) error {
-		if poolSize == 0 {
-			return errors.NewErrInvalidOption("defaultPoolSize", poolSize)
+		if poolSize != 0 {
+			n.poolSize = poolSize
 		}
-		n.poolSize = poolSize
 		return nil
 	}
 }
 
-// WithDefaultRadius represents the option to set the default radius for NGT.
 func WithDefaultRadius(radius float32) Option {
 	return func(n *ngt) error {
-		if radius == 0 {
-			return errors.NewErrInvalidOption("defaultRadius", radius)
+		if radius != 0 {
+			n.radius = radius
 		}
-		n.radius = radius
 		return nil
 	}
 }
 
-// WithDefaultEpsilon represents the option to set the default epsilon for NGT.
 func WithDefaultEpsilon(epsilon float32) Option {
 	return func(n *ngt) error {
-		if epsilon == 0 {
-			return errors.NewErrInvalidOption("defaultEpsilon", epsilon)
+		if epsilon != 0 {
+			n.epsilon = epsilon
 		}
-		n.epsilon = epsilon
 		return nil
 	}
 }

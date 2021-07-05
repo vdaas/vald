@@ -222,18 +222,8 @@ func (n *ngt) loadOptions(opts ...Option) (err error) {
 	for _, opt := range append(defaultOptions, opts...) {
 		err = opt(n)
 		if err != nil {
-			werr := errors.ErrOptionFailed(err, reflect.ValueOf(opt))
-			e := new(errors.ErrCriticalOption)
-			if errors.As(err, &e) {
-				log.Error(werr)
-				return werr
-			}
-			ue := new(errors.ErrIgnoredOption)
-			if errors.As(err, &ue) {
-				log.Debug(werr)
-			} else {
-				log.Warn(werr)
-			}
+			err = errors.ErrOptionFailed(err, reflect.ValueOf(opt))
+			return err
 		}
 	}
 	return nil

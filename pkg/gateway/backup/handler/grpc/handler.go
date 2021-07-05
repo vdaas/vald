@@ -407,7 +407,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (loc *
 			return nil, err
 		}
 		if req.GetConfig() != nil {
-			req.GetConfig().SkipStrictExistCheck = true
+			req.Config.SkipStrictExistCheck = true
 		} else {
 			req.Config = &payload.Insert_Config{SkipStrictExistCheck: true}
 		}
@@ -585,9 +585,9 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 				return nil, err
 			}
 			if req.GetConfig() != nil {
-				reqs.GetRequests()[i].GetConfig().SkipStrictExistCheck = true
+				reqs.Requests[i].Config.SkipStrictExistCheck = true
 			} else {
-				reqs.GetRequests()[i].Config = &payload.Insert_Config{SkipStrictExistCheck: true}
+				reqs.Requests[i].Config = &payload.Insert_Config{SkipStrictExistCheck: true}
 			}
 		}
 		ids = append(ids, uuid)
@@ -619,10 +619,10 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 	for i, req := range reqs.GetRequests() {
 		vec := req.GetVector()
 		uuid := vec.GetId()
-		mvecs.Vectors = append(mvecs.GetVectors(), &payload.Backup_Vector{
+		mvecs.Vectors = append(mvecs.Vectors, &payload.Backup_Vector{
 			Uuid:   uuid,
 			Vector: vec.GetVector(),
-			Ips:    res.GetLocations()[i].GetIps(),
+			Ips:    res.Locations[i].GetIps(),
 		})
 	}
 	err = s.backup.RegisterMultiple(ctx, mvecs)
@@ -643,7 +643,7 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 			Requests: make([]*payload.Remove_Request, 0, len(reqs.GetRequests())),
 		}
 		for _, req := range reqs.GetRequests() {
-			rmr.Requests = append(rmr.GetRequests(), &payload.Remove_Request{
+			rmr.Requests = append(rmr.Requests, &payload.Remove_Request{
 				Id: &payload.Object_ID{
 					Id: req.GetVector().GetId(),
 				},
@@ -726,7 +726,7 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (res *
 			return nil, err
 		}
 		if req.GetConfig() != nil {
-			req.GetConfig().SkipStrictExistCheck = true
+			req.Config.SkipStrictExistCheck = true
 		} else {
 			req.Config = &payload.Update_Config{SkipStrictExistCheck: true}
 		}
@@ -897,7 +897,7 @@ func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequ
 				return nil, err
 			}
 			if vec.GetConfig() != nil {
-				vec.GetConfig().SkipStrictExistCheck = true
+				vec.Config.SkipStrictExistCheck = true
 			} else {
 				vec.Config = &payload.Update_Config{SkipStrictExistCheck: true}
 			}
@@ -1254,7 +1254,7 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (loc *
 			return nil, err
 		}
 		if req.GetConfig() != nil {
-			req.GetConfig().SkipStrictExistCheck = true
+			req.Config.SkipStrictExistCheck = true
 		} else {
 			req.Config = &payload.Remove_Config{SkipStrictExistCheck: true}
 		}
@@ -1385,10 +1385,10 @@ func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequ
 				}
 				return nil, err
 			}
-			if reqs.GetRequests()[i].GetConfig() != nil {
-				reqs.GetRequests()[i].GetConfig().SkipStrictExistCheck = true
+			if reqs.Requests[i].GetConfig() != nil {
+				reqs.Requests[i].Config.SkipStrictExistCheck = true
 			} else {
-				reqs.GetRequests()[i].Config = &payload.Remove_Config{SkipStrictExistCheck: true}
+				reqs.Requests[i].Config = &payload.Remove_Config{SkipStrictExistCheck: true}
 			}
 		}
 	}

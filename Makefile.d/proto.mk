@@ -55,11 +55,9 @@ proto/deps: \
 	$(GOPATH)/bin/protoc-gen-validate \
 	$(GOPATH)/bin/prototool \
 	$(GOPATH)/bin/swagger \
-	$(GOPATH)/src/google.golang.org/protobuf \
 	$(GOPATH)/src/google.golang.org/genproto \
 	$(GOPATH)/src/github.com/protocolbuffers/protobuf \
 	$(GOPATH)/src/github.com/googleapis/googleapis \
-	$(GOPATH)/src/github.com/golang/protobuf \
 	$(GOPATH)/src/github.com/gogo/googleapis \
 	$(GOPATH)/src/github.com/gogo/protobuf \
 	$(GOPATH)/src/github.com/envoyproxy/protoc-gen-validate
@@ -75,12 +73,6 @@ $(GOPATH)/src/github.com/googleapis/googleapis:
 		--depth 1 \
 		https://github.com/googleapis/googleapis \
 		$(GOPATH)/src/github.com/googleapis/googleapis
-
-$(GOPATH)/src/github.com/golang/protobuf:
-	git clone \
-		--depth 1 \
-		https://github.com/golang/protobuf \
-		$(GOPATH)/src/github.com/golang/protobuf
 
 $(GOPATH)/src/github.com/gogo/googleapis:
 	git clone \
@@ -99,12 +91,6 @@ $(GOPATH)/src/github.com/envoyproxy/protoc-gen-validate:
 		--depth 1 \
 		https://github.com/envoyproxy/protoc-gen-validate \
 		$(GOPATH)/src/github.com/envoyproxy/protoc-gen-validate
-
-$(GOPATH)/src/google.golang.org/protobuf:
-	git clone \
-		--depth 1 \
-		https://go.googlesource.com/protobuf \
-		$(GOPATH)/src/google.golang.org/protobuf
 
 $(GOPATH)/src/google.golang.org/genproto:
 	$(call go-get, google.golang.org/genproto/...)
