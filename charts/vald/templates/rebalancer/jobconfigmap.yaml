@@ -38,7 +38,6 @@ data:
     spec:
       failedJobsHistoryLimit: 2
       successfulJobsHistoryLimit: 2
-      backoffLimit: 0
       template:
         spec:
           containers:
