@@ -43,10 +43,6 @@ import (
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/pkg/rebalancer/storage/controller/config"
 	"github.com/vdaas/vald/pkg/rebalancer/storage/controller/model"
-
-	// TODO: fix to alias.
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 const (
@@ -427,11 +423,7 @@ func (r *rebalancer) deleteDeviationJob(ctx context.Context) error {
 		return nil
 	}
 
-	propagationPolicy := metav1.DeletePropagationBackground
-
-	if err := c.Delete(ctx, job, &client.DeleteOptions{
-		PropagationPolicy: &propagationPolicy,
-	}); err != nil {
+	if err := c.Delete(ctx, job); err != nil {
 		return errors.ErrK8sFailedToDeleteJob(err)
 	}
 	r.currentDeviationJobName.Store("")

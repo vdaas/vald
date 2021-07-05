@@ -44,8 +44,6 @@ type reconciler struct {
 	onReconcile func(podList map[string][]Pod)
 }
 
-type PodList = corev1.PodList
-
 type Pod struct {
 	Name       string
 	NodeName   string
