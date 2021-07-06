@@ -70,7 +70,8 @@ k8s/manifest/helm-operator/update: \
 
 .PHONY: k8s/vald/deploy
 ## deploy vald sample cluster to k8s
-k8s/vald/deploy:
+k8s/vald/deploy: \
+	k8s/metrics/metrics-server/deploy
 	helm template \
 	    --values charts/vald/values/dev.yaml \
 	    --set defaults.image.tag=$(VERSION) \
@@ -85,7 +86,8 @@ k8s/vald/deploy:
 
 .PHONY: k8s/vald/delete
 ## delete vald sample cluster from k8s
-k8s/vald/delete:
+k8s/vald/delete: \
+	k8s/metrics/metrics-server/delete
 	helm template \
 	    --values charts/vald/values/dev.yaml \
 	    --set defaults.image.tag=$(VERSION) \
@@ -100,7 +102,8 @@ k8s/vald/delete:
 .PHONY: k8s/vald/deploy/scylla
 ## deploy vald sample cluster with scylla to k8s
 k8s/vald/deploy/scylla: \
-	k8s/external/scylla/deploy
+	k8s/external/scylla/deploy \
+	k8s/metrics/metrics-server/deploy
 	helm template \
 	    --values charts/vald/values/scylla.yaml \
 	    --set defaults.image.tag=$(VERSION) \
@@ -122,7 +125,8 @@ k8s/vald/deploy/scylla: \
 .PHONY: k8s/vald/delete/scylla
 ## delete vald sample cluster with scylla to k8s
 k8s/vald/delete/scylla: \
-	k8s/external/scylla/delete
+	k8s/external/scylla/delete \
+	k8s/metrics/metrics-server/delete
 	helm template \
 	    --values charts/vald/values/scylla.yaml \
 	    --set defaults.image.tag=$(VERSION) \
