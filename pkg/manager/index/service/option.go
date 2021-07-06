@@ -18,6 +18,8 @@
 package service
 
 import (
+	"time"
+
 	"github.com/vdaas/vald/internal/client/v1/client/discoverer"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/timeutil"
@@ -30,8 +32,6 @@ var defaultOptions = []Option{
 	WithIndexingConcurrency(1),
 	WithIndexingDuration("1m"),
 	WithIndexingDurationLimit("30m"),
-	WithSaveIndexDurationLimit("3h"),
-	WithSaveIndexWaitDuration("10m"),
 	WithMinUncommitted(100),
 	WithCreationPoolSize(10000),
 }
@@ -52,7 +52,7 @@ func WithIndexingDuration(dur string) Option {
 		}
 		d, err := timeutil.Parse(dur)
 		if err != nil {
-			return err
+			d = time.Minute
 		}
 		idx.indexDuration = d
 		return nil
@@ -66,37 +66,9 @@ func WithIndexingDurationLimit(dur string) Option {
 		}
 		d, err := timeutil.Parse(dur)
 		if err != nil {
-			return err
+			d = time.Minute * 30
 		}
 		idx.indexDurationLimit = d
-		return nil
-	}
-}
-
-func WithSaveIndexDurationLimit(dur string) Option {
-	return func(idx *index) error {
-		if dur == "" {
-			return nil
-		}
-		d, err := timeutil.Parse(dur)
-		if err != nil {
-			return err
-		}
-		idx.saveIndexDurationLimit = d
-		return nil
-	}
-}
-
-func WithSaveIndexWaitDuration(dur string) Option {
-	return func(idx *index) error {
-		if dur == "" {
-			return nil
-		}
-		d, err := timeutil.Parse(dur)
-		if err != nil {
-			return err
-		}
-		idx.saveIndexWaitDuration = d
 		return nil
 	}
 }

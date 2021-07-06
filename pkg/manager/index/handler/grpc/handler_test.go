@@ -30,6 +30,7 @@ import (
 )
 
 func TestNew(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		opts []Option
 	}
@@ -102,6 +103,7 @@ func TestNew(t *testing.T) {
 }
 
 func Test_server_IndexInfo(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 		in1 *payload.Empty

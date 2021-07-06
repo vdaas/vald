@@ -25,6 +25,7 @@ import (
 )
 
 func TestWithHandler(t *testing.T) {
+	t.Parallel()
 	// Change interface type to the type of object you are testing
 	type T = interface{}
 	type args struct {
@@ -141,6 +142,7 @@ func TestWithHandler(t *testing.T) {
 }
 
 func TestWithTimeout(t *testing.T) {
+	t.Parallel()
 	// Change interface type to the type of object you are testing
 	type T = interface{}
 	type args struct {
