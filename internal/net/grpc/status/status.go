@@ -117,34 +117,6 @@ func newStatus(code codes.Code, msg string, err error, details ...interface{}) (
 		log.Warn("failed to set error details:", err)
 	}
 
-	err = st.Err()
-	if err != nil {
-		switch st.Code() {
-		case codes.Internal,
-			codes.DataLoss:
-			log.Error(err.Error())
-		case codes.Unavailable,
-			codes.ResourceExhausted:
-			log.Warn(err.Error())
-		case codes.FailedPrecondition,
-			codes.InvalidArgument,
-			codes.OutOfRange,
-			codes.Unauthenticated,
-			codes.PermissionDenied,
-			codes.Unknown:
-			log.Debug(err.Error())
-		case codes.Aborted,
-			codes.Canceled,
-			codes.DeadlineExceeded,
-			codes.AlreadyExists,
-			codes.NotFound,
-			codes.OK,
-			codes.Unimplemented:
-		default:
-			log.Warn(err.Error())
-		}
-	}
-
 	return st
 }
 
@@ -236,43 +208,35 @@ func ParseError(err error, defaultCode codes.Code, defaultMsg string, details ..
 			defaultMsg = "failed to parse grpc status from error"
 		}
 		st = newStatus(defaultCode, defaultMsg, err, details...)
-		rerr = errors.Wrap(st.Err(), err.Error())
-		if st == nil || st.Message() == "" {
-			msg = rerr.Error()
-		} else {
-			msg = st.Message()
+		err = errors.Wrap(st.Err(), err.Error())
+		msg = err.Error()
+	} else {
+		pms := make([]proto.Message, 0, len(details))
+		for _, detail := range details {
+			pm, ok := detail.(proto.Message)
+			if ok {
+				pms = append(pms, pm)
+			}
 		}
-		return st, msg, errors.Wrap(st.Err(), err.Error())
-	}
-
-	pms := make([]proto.Message, 0, len(details))
-	for _, detail := range details {
-		pm, ok := detail.(proto.Message)
-		if ok {
-			pms = append(pms, pm)
+		sst, err := st.WithDetails(pms...)
+		if err == nil {
+			st = sst
 		}
-	}
-	sst, err := st.WithDetails(pms...)
-	if err == nil {
-		st = sst
 		err = st.Err()
-	} else {
-		log.Error(err)
-	}
-	err = st.Err()
-	if err == nil {
-		msg = st.Message()
-	} else {
-		msg = st.Err().Error()
-		rerr = err
-		switch st.Code() {
-		case codes.Internal:
-			log.Error(rerr.Error())
-		case codes.Unavailable,
-			codes.ResourceExhausted:
-			log.Warn(rerr.Error())
+		if err == nil {
+			msg = st.Message()
+		} else {
+			msg = st.Err().Error()
 		}
 	}
+	if err != nil {
+		if st.Code() == codes.Internal {
+			log.Error(err)
+		} else {
+			log.Warn(err)
+		}
+	}
+	rerr = err
 	return st, msg, rerr
 }
 
