@@ -26,7 +26,11 @@ type mockSession struct {
 	CloseFunc func() error
 }
 
-func (m *mockSession) Run(feeds map[tf.Output]*tf.Tensor, fetches []tf.Output, operations []*Operation) ([]*tf.Tensor, error) {
+func (m *mockSession) Run(
+	feeds map[tf.Output]*tf.Tensor,
+	fetches []tf.Output,
+	operations []*Operation,
+) ([]*tf.Tensor, error) {
 	return m.RunFunc(feeds, fetches, operations)
 }
 

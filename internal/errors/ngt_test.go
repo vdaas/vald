@@ -206,7 +206,9 @@ func TestErrInvalidDimensionSize(t *testing.T) {
 				limit:   5,
 			},
 			want: want{
-				want: New("dimension size 10 is invalid, the supporting dimension size must be between 2 ~ 5"),
+				want: New(
+					"dimension size 10 is invalid, the supporting dimension size must be between 2 ~ 5",
+				),
 			},
 		},
 		{
@@ -216,7 +218,9 @@ func TestErrInvalidDimensionSize(t *testing.T) {
 				limit:   5,
 			},
 			want: want{
-				want: New("dimension size 0 is invalid, the supporting dimension size must be between 2 ~ 5"),
+				want: New(
+					"dimension size 0 is invalid, the supporting dimension size must be between 2 ~ 5",
+				),
 			},
 		},
 		{
@@ -226,7 +230,9 @@ func TestErrInvalidDimensionSize(t *testing.T) {
 				limit:   0,
 			},
 			want: want{
-				want: New("dimension size 10 is invalid, the supporting dimension size must be bigger than 2"),
+				want: New(
+					"dimension size 10 is invalid, the supporting dimension size must be bigger than 2",
+				),
 			},
 		},
 		{
@@ -236,7 +242,9 @@ func TestErrInvalidDimensionSize(t *testing.T) {
 				limit:   0,
 			},
 			want: want{
-				want: New("dimension size 0 is invalid, the supporting dimension size must be bigger than 2"),
+				want: New(
+					"dimension size 0 is invalid, the supporting dimension size must be bigger than 2",
+				),
 			},
 		},
 		{
@@ -246,7 +254,11 @@ func TestErrInvalidDimensionSize(t *testing.T) {
 				limit:   int(math.MinInt64),
 			},
 			want: want{
-				want: Errorf("dimension size %d is invalid, the supporting dimension size must be between 2 ~ %d", int(math.MinInt64), int(math.MinInt64)),
+				want: Errorf(
+					"dimension size %d is invalid, the supporting dimension size must be between 2 ~ %d",
+					int(math.MinInt64),
+					int(math.MinInt64),
+				),
 			},
 		},
 		{
@@ -256,7 +268,11 @@ func TestErrInvalidDimensionSize(t *testing.T) {
 				limit:   int(math.MaxInt64),
 			},
 			want: want{
-				want: Errorf("dimension size %d is invalid, the supporting dimension size must be between 2 ~ %d", int(math.MaxInt64), int(math.MaxInt64)),
+				want: Errorf(
+					"dimension size %d is invalid, the supporting dimension size must be between 2 ~ %d",
+					int(math.MaxInt64),
+					int(math.MaxInt64),
+				),
 			},
 		},
 	}
@@ -332,7 +348,11 @@ func TestErrDimensionLimitExceed(t *testing.T) {
 				limit:   int(math.MinInt64),
 			},
 			want: want{
-				want: Errorf("supported dimension limit exceed:\trequired = %d,\tlimit = %d", int(math.MinInt64), int(math.MinInt64)),
+				want: Errorf(
+					"supported dimension limit exceed:\trequired = %d,\tlimit = %d",
+					int(math.MinInt64),
+					int(math.MinInt64),
+				),
 			},
 		},
 		{
@@ -342,7 +362,11 @@ func TestErrDimensionLimitExceed(t *testing.T) {
 				limit:   int(math.MaxInt64),
 			},
 			want: want{
-				want: Errorf("supported dimension limit exceed:\trequired = %d,\tlimit = %d", int(math.MaxInt64), int(math.MaxInt64)),
+				want: Errorf(
+					"supported dimension limit exceed:\trequired = %d,\tlimit = %d",
+					int(math.MaxInt64),
+					int(math.MaxInt64),
+				),
 			},
 		},
 	}
@@ -1378,7 +1402,10 @@ func TestErrRemoveRequestedBeforeIndexing(t *testing.T) {
 				oid: uint(math.MaxUint64),
 			},
 			want: want{
-				want: Errorf("object id %d is not indexed we cannot remove it", uint(math.MaxUint64)),
+				want: Errorf(
+					"object id %d is not indexed we cannot remove it",
+					uint(math.MaxUint64),
+				),
 			},
 		},
 	}

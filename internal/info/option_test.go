@@ -131,9 +131,11 @@ func TestWithRuntimeCaller(t *testing.T) {
 			comparator.Comparer(func(x, y sync.Once) bool {
 				return reflect.DeepEqual(x, y)
 			}),
-			comparator.Comparer(func(x, y func(skip int) (pc uintptr, file string, line int, ok bool)) bool {
-				return reflect.ValueOf(x).Pointer() == reflect.ValueOf(y).Pointer()
-			}),
+			comparator.Comparer(
+				func(x, y func(skip int) (pc uintptr, file string, line int, ok bool)) bool {
+					return reflect.ValueOf(x).Pointer() == reflect.ValueOf(y).Pointer()
+				},
+			),
 			comparator.Comparer(func(x, y func(pc uintptr) *runtime.Func) bool {
 				return reflect.ValueOf(x).Pointer() == reflect.ValueOf(y).Pointer()
 			}),
@@ -225,9 +227,11 @@ func TestWithRuntimeFuncForPC(t *testing.T) {
 			comparator.Comparer(func(x, y sync.Once) bool {
 				return reflect.DeepEqual(x, y)
 			}),
-			comparator.Comparer(func(x, y func(skip int) (pc uintptr, file string, line int, ok bool)) bool {
-				return reflect.ValueOf(x).Pointer() == reflect.ValueOf(y).Pointer()
-			}),
+			comparator.Comparer(
+				func(x, y func(skip int) (pc uintptr, file string, line int, ok bool)) bool {
+					return reflect.ValueOf(x).Pointer() == reflect.ValueOf(y).Pointer()
+				},
+			),
 			comparator.Comparer(func(x, y func(pc uintptr) *runtime.Func) bool {
 				return reflect.ValueOf(x).Pointer() == reflect.ValueOf(y).Pointer()
 			}),

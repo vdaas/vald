@@ -181,7 +181,10 @@ func (r *registerer) dispatch(ctx context.Context, vec *payload.Backup_Vector) e
 
 func (r *registerer) registerProcessFunc(vec *payload.Backup_Vector) worker.JobFunc {
 	return func(ctx context.Context) (err error) {
-		ctx, span := trace.StartSpan(ctx, "vald/manager-compressor/service/Registerer.Register.DispatchedJob")
+		ctx, span := trace.StartSpan(
+			ctx,
+			"vald/manager-compressor/service/Registerer.Register.DispatchedJob",
+		)
 		defer func() {
 			r.vecsMu.Lock()
 			delete(r.vecs, vec.GetUuid())

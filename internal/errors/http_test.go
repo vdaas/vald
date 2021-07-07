@@ -205,7 +205,10 @@ func TestErrHandlerTimeout(t *testing.T) {
 				dur: math.MinInt64,
 			},
 			want: want{
-				want: Errorf("handler timeout %s: database error", time.Duration(math.MinInt64).String()),
+				want: Errorf(
+					"handler timeout %s: database error",
+					time.Duration(math.MinInt64).String(),
+				),
 			},
 		},
 		{
@@ -215,7 +218,10 @@ func TestErrHandlerTimeout(t *testing.T) {
 				dur: math.MinInt64 + 1,
 			},
 			want: want{
-				want: Errorf("handler timeout %s: database error", time.Duration(math.MinInt64+1).String()),
+				want: Errorf(
+					"handler timeout %s: database error",
+					time.Duration(math.MinInt64+1).String(),
+				),
 			},
 		},
 		{

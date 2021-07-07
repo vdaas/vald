@@ -692,7 +692,9 @@ func TestErrCassandraFailedToCreateSession(t *testing.T) {
 				cqlVersion: "3.0.0",
 			},
 			want: want{
-				want: New("error cassandra client failed to create session to hosts: [vald-cassandra-01.dev.com vald-cassandra-02.dev.com]\tport: 9042\tcql_version: 3.0.0 : database error"),
+				want: New(
+					"error cassandra client failed to create session to hosts: [vald-cassandra-01.dev.com vald-cassandra-02.dev.com]\tport: 9042\tcql_version: 3.0.0 : database error",
+				),
 			},
 		},
 		{
@@ -706,7 +708,9 @@ func TestErrCassandraFailedToCreateSession(t *testing.T) {
 				cqlVersion: "3.0.0",
 			},
 			want: want{
-				want: New("error cassandra client failed to create session to hosts: [vald-cassandra-01.dev.com vald-cassandra-02.dev.com]\tport: 9042\tcql_version: 3.0.0 "),
+				want: New(
+					"error cassandra client failed to create session to hosts: [vald-cassandra-01.dev.com vald-cassandra-02.dev.com]\tport: 9042\tcql_version: 3.0.0 ",
+				),
 			},
 		},
 		{
@@ -720,7 +724,9 @@ func TestErrCassandraFailedToCreateSession(t *testing.T) {
 				cqlVersion: "3.0.0",
 			},
 			want: want{
-				want: New("error cassandra client failed to create session to hosts: [vald-cassandra-01.dev.com vald-cassandra-02.dev.com]\tport: 0\tcql_version: 3.0.0 : database error"),
+				want: New(
+					"error cassandra client failed to create session to hosts: [vald-cassandra-01.dev.com vald-cassandra-02.dev.com]\tport: 0\tcql_version: 3.0.0 : database error",
+				),
 			},
 		},
 		{
@@ -731,7 +737,9 @@ func TestErrCassandraFailedToCreateSession(t *testing.T) {
 				cqlVersion: "3.0.0",
 			},
 			want: want{
-				want: New("error cassandra client failed to create session to hosts: []\tport: 9042\tcql_version: 3.0.0 : database error"),
+				want: New(
+					"error cassandra client failed to create session to hosts: []\tport: 9042\tcql_version: 3.0.0 : database error",
+				),
 			},
 		},
 		{
@@ -745,14 +753,18 @@ func TestErrCassandraFailedToCreateSession(t *testing.T) {
 				port: 9042,
 			},
 			want: want{
-				want: New("error cassandra client failed to create session to hosts: [vald-cassandra-01.dev.com vald-cassandra-02.dev.com]\tport: 9042\tcql_version:  : database error"),
+				want: New(
+					"error cassandra client failed to create session to hosts: [vald-cassandra-01.dev.com vald-cassandra-02.dev.com]\tport: 9042\tcql_version:  : database error",
+				),
 			},
 		},
 		{
 			name: "returns wrapped cassandra failed to create session error when all of input are nil or empty",
 			args: args{},
 			want: want{
-				want: New("error cassandra client failed to create session to hosts: []\tport: 0\tcql_version:  "),
+				want: New(
+					"error cassandra client failed to create session to hosts: []\tport: 0\tcql_version:  ",
+				),
 			},
 		},
 	}
@@ -769,7 +781,12 @@ func TestErrCassandraFailedToCreateSession(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 
-			got := ErrCassandraFailedToCreateSession(test.args.err, test.args.hosts, test.args.port, test.args.cqlVersion)
+			got := ErrCassandraFailedToCreateSession(
+				test.args.err,
+				test.args.hosts,
+				test.args.port,
+				test.args.cqlVersion,
+			)
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}

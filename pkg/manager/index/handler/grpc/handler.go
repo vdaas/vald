@@ -39,7 +39,10 @@ func New(opts ...Option) index.IndexServer {
 	return s
 }
 
-func (s *server) IndexInfo(ctx context.Context, _ *payload.Empty) (res *payload.Info_Index_Count, err error) {
+func (s *server) IndexInfo(
+	ctx context.Context,
+	_ *payload.Empty,
+) (res *payload.Info_Index_Count, err error) {
 	ctx, span := trace.StartSpan(ctx, "vald/manager-index.IndexInfo")
 	defer func() {
 		if span != nil {

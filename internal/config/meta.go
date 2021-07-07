@@ -23,11 +23,11 @@ import (
 
 // Meta represents the configurations for vald meta.
 type Meta struct {
-	Host                      string      `json:"host" yaml:"host"`
-	Port                      uint16      `json:"port" yaml:"port"`
-	Client                    *GRPCClient `json:"client" yaml:"client"`
-	EnableCache               bool        `json:"enable_cache" yaml:"enable_cache"`
-	CacheExpiration           string      `json:"cache_expiration" yaml:"cache_expiration"`
+	Host                      string      `json:"host"                         yaml:"host"`
+	Port                      uint16      `json:"port"                         yaml:"port"`
+	Client                    *GRPCClient `json:"client"                       yaml:"client"`
+	EnableCache               bool        `json:"enable_cache"                 yaml:"enable_cache"`
+	CacheExpiration           string      `json:"cache_expiration"             yaml:"cache_expiration"`
 	ExpiredCacheCheckDuration string      `json:"expired_cache_check_duration" yaml:"expired_cache_check_duration"`
 }
 

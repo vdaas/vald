@@ -107,7 +107,15 @@ func Test_loadLargeData(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 
-			got := loadLargeData(test.args.trainFileName, test.args.queryFileName, test.args.groundTruthFileName, test.args.distanceFileName, test.args.name, test.args.distanceType, test.args.objectType)
+			got := loadLargeData(
+				test.args.trainFileName,
+				test.args.queryFileName,
+				test.args.groundTruthFileName,
+				test.args.distanceFileName,
+				test.args.name,
+				test.args.distanceType,
+				test.args.objectType,
+			)
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}

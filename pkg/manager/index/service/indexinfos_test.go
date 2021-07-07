@@ -477,7 +477,11 @@ func Test_entryIndexInfos_unexpungeLocked(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotWasExpunged bool) error {
 		if !reflect.DeepEqual(gotWasExpunged, w.wantWasExpunged) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotWasExpunged, w.wantWasExpunged)
+			return errors.Errorf(
+				"got: \"%#v\",\n\t\t\t\twant: \"%#v\"",
+				gotWasExpunged,
+				w.wantWasExpunged,
+			)
 		}
 		return nil
 	}
@@ -724,7 +728,11 @@ func Test_entryIndexInfos_delete(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotHadValue bool) error {
 		if !reflect.DeepEqual(gotHadValue, w.wantHadValue) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotHadValue, w.wantHadValue)
+			return errors.Errorf(
+				"got: \"%#v\",\n\t\t\t\twant: \"%#v\"",
+				gotHadValue,
+				w.wantHadValue,
+			)
 		}
 		return nil
 	}
@@ -1055,7 +1063,11 @@ func Test_entryIndexInfos_tryExpungeLocked(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotIsExpunged bool) error {
 		if !reflect.DeepEqual(gotIsExpunged, w.wantIsExpunged) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotIsExpunged, w.wantIsExpunged)
+			return errors.Errorf(
+				"got: \"%#v\",\n\t\t\t\twant: \"%#v\"",
+				gotIsExpunged,
+				w.wantIsExpunged,
+			)
 		}
 		return nil
 	}

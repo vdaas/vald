@@ -46,7 +46,8 @@ func newStatus(code codes.Code, msg string, err error, details ...interface{}) (
 	messages := make([]proto.Message, 0, 4)
 	debugFunc := func(v *info.Detail) *errdetails.DebugInfo {
 		debug := &errdetails.DebugInfo{
-			Detail: fmt.Sprintf("Version: %s,Name: %s, GitCommit: %s, BuildTime: %s, NGT_Version: %s ,Go_Version: %s, GOARCH: %s, GOOS: %s, CGO_Enabled: %s, BuildCPUInfo: [%s]",
+			Detail: fmt.Sprintf(
+				"Version: %s,Name: %s, GitCommit: %s, BuildTime: %s, NGT_Version: %s ,Go_Version: %s, GOARCH: %s, GOOS: %s, CGO_Enabled: %s, BuildCPUInfo: [%s]",
 				v.Version,
 				v.ServerName,
 				v.GitCommit,
@@ -63,7 +64,10 @@ func newStatus(code codes.Code, msg string, err error, details ...interface{}) (
 			debug.StackEntries = make([]string, 0, len(v.StackTrace))
 		}
 		for i, stack := range v.StackTrace {
-			debug.StackEntries = append(debug.GetStackEntries(), fmt.Sprintf("id: %d stack_trace: %s", i, stack.String()))
+			debug.StackEntries = append(
+				debug.GetStackEntries(),
+				fmt.Sprintf("id: %d stack_trace: %s", i, stack.String()),
+			)
 		}
 		return debug
 	}
@@ -220,7 +224,12 @@ func Errorf(code codes.Code, format string, args ...interface{}) error {
 	return status.Errorf(code, format, args...)
 }
 
-func ParseError(err error, defaultCode codes.Code, defaultMsg string, details ...interface{}) (st *Status, msg string, rerr error) {
+func ParseError(
+	err error,
+	defaultCode codes.Code,
+	defaultMsg string,
+	details ...interface{},
+) (st *Status, msg string, rerr error) {
 	if err == nil {
 		st = newStatus(codes.OK, "", nil, details...)
 		msg = st.Message()

@@ -47,7 +47,11 @@ func init() {
 	targets = strings.Split(strings.TrimSpace(dataset), ",")
 }
 
-func initCore(ctx context.Context, b *testing.B, dataset assets.Dataset) (algorithm.Bit64, algorithm.Closer, error) {
+func initCore(
+	ctx context.Context,
+	b *testing.B,
+	dataset assets.Dataset,
+) (algorithm.Bit64, algorithm.Closer, error) {
 	ngt, err := gongt.New(
 		gongt.WithDimension(dataset.Dimension()),
 		gongt.WithObjectType(dataset.ObjectType()),

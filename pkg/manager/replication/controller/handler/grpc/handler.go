@@ -38,6 +38,9 @@ func New(opts ...Option) controller.ReplicationControllerServer {
 	return s
 }
 
-func (s *server) ReplicationInfo(ctx context.Context, _ *payload.Empty) (res *payload.Replication_Agents, err error) {
+func (s *server) ReplicationInfo(
+	ctx context.Context,
+	_ *payload.Empty,
+) (res *payload.Replication_Agents, err error) {
 	return nil, nil
 }

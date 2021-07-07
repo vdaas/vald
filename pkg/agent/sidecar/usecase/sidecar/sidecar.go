@@ -75,17 +75,29 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 
 	client, err := client.New(
 		client.WithDialContext(dialer.DialContext),
-		client.WithTLSHandshakeTimeout(cfg.AgentSidecar.Client.Transport.RoundTripper.TLSHandshakeTimeout),
+		client.WithTLSHandshakeTimeout(
+			cfg.AgentSidecar.Client.Transport.RoundTripper.TLSHandshakeTimeout,
+		),
 		client.WithMaxIdleConns(cfg.AgentSidecar.Client.Transport.RoundTripper.MaxIdleConns),
-		client.WithMaxIdleConnsPerHost(cfg.AgentSidecar.Client.Transport.RoundTripper.MaxIdleConnsPerHost),
+		client.WithMaxIdleConnsPerHost(
+			cfg.AgentSidecar.Client.Transport.RoundTripper.MaxIdleConnsPerHost,
+		),
 		client.WithMaxConnsPerHost(cfg.AgentSidecar.Client.Transport.RoundTripper.MaxConnsPerHost),
 		client.WithIdleConnTimeout(cfg.AgentSidecar.Client.Transport.RoundTripper.IdleConnTimeout),
-		client.WithResponseHeaderTimeout(cfg.AgentSidecar.Client.Transport.RoundTripper.ResponseHeaderTimeout),
-		client.WithExpectContinueTimeout(cfg.AgentSidecar.Client.Transport.RoundTripper.ExpectContinueTimeout),
-		client.WithMaxResponseHeaderBytes(cfg.AgentSidecar.Client.Transport.RoundTripper.MaxResponseHeaderSize),
+		client.WithResponseHeaderTimeout(
+			cfg.AgentSidecar.Client.Transport.RoundTripper.ResponseHeaderTimeout,
+		),
+		client.WithExpectContinueTimeout(
+			cfg.AgentSidecar.Client.Transport.RoundTripper.ExpectContinueTimeout,
+		),
+		client.WithMaxResponseHeaderBytes(
+			cfg.AgentSidecar.Client.Transport.RoundTripper.MaxResponseHeaderSize,
+		),
 		client.WithWriteBufferSize(cfg.AgentSidecar.Client.Transport.RoundTripper.WriteBufferSize),
 		client.WithReadBufferSize(cfg.AgentSidecar.Client.Transport.RoundTripper.ReadBufferSize),
-		client.WithForceAttemptHTTP2(cfg.AgentSidecar.Client.Transport.RoundTripper.ForceAttemptHTTP2),
+		client.WithForceAttemptHTTP2(
+			cfg.AgentSidecar.Client.Transport.RoundTripper.ForceAttemptHTTP2,
+		),
 		client.WithBackoffOpts(cfg.AgentSidecar.Client.Transport.Backoff.Opts()...),
 	)
 	if err != nil {
@@ -110,11 +122,19 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 			session.WithUseARNRegion(cfg.AgentSidecar.BlobStorage.S3.UseARNRegion),
 			session.WithUseDualStack(cfg.AgentSidecar.BlobStorage.S3.UseDualStack),
 			session.WithEnableSSL(cfg.AgentSidecar.BlobStorage.S3.EnableSSL),
-			session.WithEnableParamValidation(cfg.AgentSidecar.BlobStorage.S3.EnableParamValidation),
+			session.WithEnableParamValidation(
+				cfg.AgentSidecar.BlobStorage.S3.EnableParamValidation,
+			),
 			session.WithEnable100Continue(cfg.AgentSidecar.BlobStorage.S3.Enable100Continue),
-			session.WithEnableContentMD5Validation(cfg.AgentSidecar.BlobStorage.S3.EnableContentMD5Validation),
-			session.WithEnableEndpointDiscovery(cfg.AgentSidecar.BlobStorage.S3.EnableEndpointDiscovery),
-			session.WithEnableEndpointHostPrefix(cfg.AgentSidecar.BlobStorage.S3.EnableEndpointHostPrefix),
+			session.WithEnableContentMD5Validation(
+				cfg.AgentSidecar.BlobStorage.S3.EnableContentMD5Validation,
+			),
+			session.WithEnableEndpointDiscovery(
+				cfg.AgentSidecar.BlobStorage.S3.EnableEndpointDiscovery,
+			),
+			session.WithEnableEndpointHostPrefix(
+				cfg.AgentSidecar.BlobStorage.S3.EnableEndpointHostPrefix,
+			),
 			session.WithHTTPClient(client),
 		),
 		storage.WithS3Opts(
@@ -124,18 +144,34 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 			s3.WithReaderBackoffOpts(cfg.AgentSidecar.RestoreBackoff.Opts()...),
 		),
 		storage.WithCloudStorageURLOpenerOpts(
-			urlopener.WithCredentialsFile(cfg.AgentSidecar.BlobStorage.CloudStorage.Client.CredentialsFilePath),
-			urlopener.WithCredentialsJSON(cfg.AgentSidecar.BlobStorage.CloudStorage.Client.CredentialsJSON),
+			urlopener.WithCredentialsFile(
+				cfg.AgentSidecar.BlobStorage.CloudStorage.Client.CredentialsFilePath,
+			),
+			urlopener.WithCredentialsJSON(
+				cfg.AgentSidecar.BlobStorage.CloudStorage.Client.CredentialsJSON,
+			),
 			urlopener.WithHTTPClient(client),
 		),
 		storage.WithCloudStorageOpts(
 			cloudstorage.WithURL(cfg.AgentSidecar.BlobStorage.CloudStorage.URL),
-			cloudstorage.WithWriteBufferSize(cfg.AgentSidecar.BlobStorage.CloudStorage.WriteBufferSize),
-			cloudstorage.WithWriteCacheControl(cfg.AgentSidecar.BlobStorage.CloudStorage.WriteCacheControl),
-			cloudstorage.WithWriteContentDisposition(cfg.AgentSidecar.BlobStorage.CloudStorage.WriteContentDisposition),
-			cloudstorage.WithWriteContentEncoding(cfg.AgentSidecar.BlobStorage.CloudStorage.WriteContentEncoding),
-			cloudstorage.WithWriteContentLanguage(cfg.AgentSidecar.BlobStorage.CloudStorage.WriteContentLanguage),
-			cloudstorage.WithWriteContentType(cfg.AgentSidecar.BlobStorage.CloudStorage.WriteContentType),
+			cloudstorage.WithWriteBufferSize(
+				cfg.AgentSidecar.BlobStorage.CloudStorage.WriteBufferSize,
+			),
+			cloudstorage.WithWriteCacheControl(
+				cfg.AgentSidecar.BlobStorage.CloudStorage.WriteCacheControl,
+			),
+			cloudstorage.WithWriteContentDisposition(
+				cfg.AgentSidecar.BlobStorage.CloudStorage.WriteContentDisposition,
+			),
+			cloudstorage.WithWriteContentEncoding(
+				cfg.AgentSidecar.BlobStorage.CloudStorage.WriteContentEncoding,
+			),
+			cloudstorage.WithWriteContentLanguage(
+				cfg.AgentSidecar.BlobStorage.CloudStorage.WriteContentLanguage,
+			),
+			cloudstorage.WithWriteContentType(
+				cfg.AgentSidecar.BlobStorage.CloudStorage.WriteContentType,
+			),
 		),
 		storage.WithCompressAlgorithm(cfg.AgentSidecar.Compress.CompressAlgorithm),
 		storage.WithCompressionLevel(cfg.AgentSidecar.Compress.CompressionLevel),

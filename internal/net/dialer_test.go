@@ -685,8 +685,11 @@ func Test_dialer_StartDialerCache(t *testing.T) {
 					dnsCacheExpiration: time.Millisecond * 100,
 				},
 				beforeFunc: func(d *dialer) {
-					d.cache, _ = cache.New(cache.WithExpireDuration("300ms"), cache.WithExpireCheckDuration("100ms"),
-						cache.WithExpiredHook(d.cacheExpireHook))
+					d.cache, _ = cache.New(
+						cache.WithExpireDuration("300ms"),
+						cache.WithExpireCheckDuration("100ms"),
+						cache.WithExpiredHook(d.cacheExpireHook),
+					)
 					d.cache.Set(addr, &dialerCache{ips: ips})
 
 					d.der = &net.Dialer{
@@ -743,8 +746,11 @@ func Test_dialer_StartDialerCache(t *testing.T) {
 					dnsCacheExpiration: time.Millisecond * 100,
 				},
 				beforeFunc: func(d *dialer) {
-					d.cache, _ = cache.New(cache.WithExpireDuration("300ms"), cache.WithExpireCheckDuration("100ms"),
-						cache.WithExpiredHook(d.cacheExpireHook))
+					d.cache, _ = cache.New(
+						cache.WithExpireDuration("300ms"),
+						cache.WithExpireCheckDuration("100ms"),
+						cache.WithExpiredHook(d.cacheExpireHook),
+					)
 					d.cache.Set(addr, &dialerCache{ips: ips})
 
 					d.der = &net.Dialer{
@@ -1014,11 +1020,15 @@ func Test_dialer_cachedDialer(t *testing.T) {
 			},
 		},
 		func() test {
-			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				w.WriteHeader(200)
-			}))
+			srv := httptest.NewServer(
+				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					w.WriteHeader(200)
+				}),
+			)
 
-			host, port, _ := SplitHostPort(strings.TrimPrefix(strings.TrimPrefix(srv.URL, "https://"), "http://"))
+			host, port, _ := SplitHostPort(
+				strings.TrimPrefix(strings.TrimPrefix(srv.URL, "https://"), "http://"),
+			)
 
 			addr := "invalid_ip"
 
@@ -1065,10 +1075,14 @@ func Test_dialer_cachedDialer(t *testing.T) {
 			}
 		}(),
 		func() test {
-			srv := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				w.WriteHeader(200)
-			}))
-			host, port, _ := SplitHostPort(strings.TrimPrefix(strings.TrimPrefix(srv.URL, "https://"), "http://"))
+			srv := httptest.NewTLSServer(
+				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					w.WriteHeader(200)
+				}),
+			)
+			host, port, _ := SplitHostPort(
+				strings.TrimPrefix(strings.TrimPrefix(srv.URL, "https://"), "http://"),
+			)
 
 			addr := host + ":" + strconv.FormatUint(uint64(port), 10)
 			// set the hostname 'invalid_ip' to the host name of the cache with the test server ip address
@@ -1215,7 +1229,9 @@ func Test_dialer_cachedDialer(t *testing.T) {
 					w.WriteHeader(200)
 				})
 				srvs = append(srvs, httptest.NewServer(hf))
-				h, p, _ := SplitHostPort(strings.TrimPrefix(strings.TrimPrefix(srvs[i].URL, "https://"), "http://"))
+				h, p, _ := SplitHostPort(
+					strings.TrimPrefix(strings.TrimPrefix(srvs[i].URL, "https://"), "http://"),
+				)
 				hosts = append(hosts, h)
 				ports = append(ports, fmt.Sprint(p))
 			}
@@ -1267,7 +1283,11 @@ func Test_dialer_cachedDialer(t *testing.T) {
 						// check the connection made is the same excepted
 						_, p, _ := net.SplitHostPort(gotConn.RemoteAddr().String())
 						if fmt.Sprint(p) != port {
-							return errors.Errorf("unexcepted port number, except: %v, got: %v", port, p)
+							return errors.Errorf(
+								"unexcepted port number, except: %v, got: %v",
+								port,
+								p,
+							)
 						}
 
 						// read the output from the server and check if it is equals to the count
@@ -1275,7 +1295,11 @@ func Test_dialer_cachedDialer(t *testing.T) {
 						buf, _ := ioutil.ReadAll(gotConn)
 						content := strings.Split(string(buf), "\n")[5] // skip HTTP header
 						if content != srvContent {
-							return errors.Errorf("excepted output from server, got: %v, want: %v", content, fmt.Sprint(cnt))
+							return errors.Errorf(
+								"excepted output from server, got: %v, want: %v",
+								content,
+								fmt.Sprint(cnt),
+							)
 						}
 
 						return nil
@@ -1288,7 +1312,11 @@ func Test_dialer_cachedDialer(t *testing.T) {
 
 					// check all the connection
 					for i := 1; i < srvNums; i++ {
-						c, e := d.cachedDialer(context.Background(), TCP.String(), net.JoinHostPort(addr, ports[i]))
+						c, e := d.cachedDialer(
+							context.Background(),
+							TCP.String(),
+							net.JoinHostPort(addr, ports[i]),
+						)
 						srvContent := fmt.Sprint(i)
 						if err := check(c, e, i+1, ports[i], srvContent); err != nil {
 							return err
@@ -1298,7 +1326,11 @@ func Test_dialer_cachedDialer(t *testing.T) {
 					// check all the connections again and it should start with index 0,
 					// and the count should not be reset
 					for i := 0; i < srvNums; i++ {
-						c, e := d.cachedDialer(context.Background(), TCP.String(), net.JoinHostPort(addr, ports[i]))
+						c, e := d.cachedDialer(
+							context.Background(),
+							TCP.String(),
+							net.JoinHostPort(addr, ports[i]),
+						)
 						cnt := srvNums + i + 1
 						srvContent := fmt.Sprint(i)
 						if err := check(c, e, cnt, ports[i], srvContent); err != nil {
@@ -1316,9 +1348,11 @@ func Test_dialer_cachedDialer(t *testing.T) {
 			}
 		}(),
 		func() test {
-			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				w.WriteHeader(200)
-			}))
+			srv := httptest.NewServer(
+				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					w.WriteHeader(200)
+				}),
+			)
 			host, port, _ := net.SplitHostPort(srv.URL[len("http://"):])
 
 			addr := "invalid_ip"

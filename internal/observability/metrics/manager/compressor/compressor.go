@@ -77,7 +77,9 @@ func (c *compressorMetrics) Measurement(ctx context.Context) ([]metrics.Measurem
 	}, nil
 }
 
-func (c *compressorMetrics) MeasurementWithTags(ctx context.Context) ([]metrics.MeasurementWithTags, error) {
+func (c *compressorMetrics) MeasurementWithTags(
+	ctx context.Context,
+) ([]metrics.MeasurementWithTags, error) {
 	return []metrics.MeasurementWithTags{}, nil
 }
 

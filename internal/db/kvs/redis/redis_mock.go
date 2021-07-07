@@ -68,7 +68,10 @@ func (d *dummyHook) AfterProcess(ctx context.Context, cmd Cmder) error {
 	return nil
 }
 
-func (d *dummyHook) BeforeProcessPipeline(ctx context.Context, cmds []Cmder) (context.Context, error) {
+func (d *dummyHook) BeforeProcessPipeline(
+	ctx context.Context,
+	cmds []Cmder,
+) (context.Context, error) {
 	return ctx, nil
 }
 

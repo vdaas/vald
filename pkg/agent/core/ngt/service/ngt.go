@@ -199,17 +199,23 @@ func (n *ngt) initNGT(opts ...core.Option) (err error) {
 	if err != nil {
 		log.Warnf("cannot read metadata from %s: %s", metadata.AgentMetadataFileName, err)
 	}
-	if os.IsNotExist(err) || agentMetadata == nil || agentMetadata.NGT == nil || agentMetadata.NGT.IndexCount == 0 {
+	if os.IsNotExist(err) || agentMetadata == nil || agentMetadata.NGT == nil ||
+		agentMetadata.NGT.IndexCount == 0 {
 		log.Warnf("cannot read metadata from %s: %v", metadata.AgentMetadataFileName, err)
 
-		if fi, err := os.Stat(filepath.Join(n.path, kvsFileName)); os.IsNotExist(err) || fi.Size() == 0 {
+		if fi, err := os.Stat(filepath.Join(n.path, kvsFileName)); os.IsNotExist(err) ||
+			fi.Size() == 0 {
 			log.Warn("kvsdb file is not exist")
 			n.core, err = core.New(opts...)
 			return err
 		}
 
 		if os.IsPermission(err) {
-			log.Errorf("no permission for kvsdb file,\tpath: %s,\terr: %v", filepath.Join(n.path, kvsFileName), err)
+			log.Errorf(
+				"no permission for kvsdb file,\tpath: %s,\terr: %v",
+				filepath.Join(n.path, kvsFileName),
+				err,
+			)
 			return err
 		}
 	}
@@ -266,7 +272,10 @@ func (n *ngt) initNGT(opts ...core.Option) (err error) {
 		return err
 	case <-ctx.Done():
 		if ctx.Err() == context.DeadlineExceeded {
-			log.Errorf("cannot load index backup data within the timeout %s. the process is going to be killed.", timeout)
+			log.Errorf(
+				"cannot load index backup data within the timeout %s. the process is going to be killed.",
+				timeout,
+			)
 
 			err := metadata.Store(
 				filepath.Join(n.path, metadata.AgentMetadataFileName),
@@ -392,7 +401,11 @@ func (n *ngt) Start(ctx context.Context) <-chan error {
 	return ech
 }
 
-func (n *ngt) Search(vec []float32, size uint32, epsilon, radius float32) ([]model.Distance, error) {
+func (n *ngt) Search(
+	vec []float32,
+	size uint32,
+	epsilon, radius float32,
+) ([]model.Distance, error) {
 	if n.IsIndexing() {
 		return nil, errors.ErrCreateIndexingIsInProgress
 	}
@@ -421,7 +434,11 @@ func (n *ngt) Search(vec []float32, size uint32, epsilon, radius float32) ([]mod
 	return ds, nil
 }
 
-func (n *ngt) SearchByID(uuid string, size uint32, epsilon, radius float32) (dst []model.Distance, err error) {
+func (n *ngt) SearchByID(
+	uuid string,
+	size uint32,
+	epsilon, radius float32,
+) (dst []model.Distance, err error) {
 	if n.IsIndexing() {
 		return nil, errors.ErrCreateIndexingIsInProgress
 	}
@@ -587,7 +604,10 @@ func (n *ngt) deleteMultiple(uuids []string, now int64) (err error) {
 func (n *ngt) GetObject(uuid string) (vec []float32, err error) {
 	vec, ok := n.vq.GetVector(uuid)
 	if !ok {
-		log.Debugf("GetObject\tuuid: %s's data not found in vqueue, trying to read from indexed kvsdb data", uuid)
+		log.Debugf(
+			"GetObject\tuuid: %s's data not found in vqueue, trying to read from indexed kvsdb data",
+			uuid,
+		)
 		oid, ok := n.kvs.Get(uuid)
 		if !ok {
 			log.Debugf("GetObject\tuuid: %s's data not found in kvsdb and vqueue", uuid)

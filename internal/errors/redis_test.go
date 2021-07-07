@@ -56,7 +56,11 @@ func TestErrRedisInvalidKVVKPrefic(t *testing.T) {
 					vk: str,
 				},
 				want: want{
-					want: Errorf("kv index and vk prefix must be defferent.\t(kv: %s,\tvk: %s)", str, str),
+					want: Errorf(
+						"kv index and vk prefix must be defferent.\t(kv: %s,\tvk: %s)",
+						str,
+						str,
+					),
 				},
 			}
 		}(),
@@ -67,7 +71,11 @@ func TestErrRedisInvalidKVVKPrefic(t *testing.T) {
 					kv: str,
 				},
 				want: want{
-					want: Errorf("kv index and vk prefix must be defferent.\t(kv: %s,\tvk: %s)", str, ""),
+					want: Errorf(
+						"kv index and vk prefix must be defferent.\t(kv: %s,\tvk: %s)",
+						str,
+						"",
+					),
 				},
 			}
 		}(),
@@ -78,7 +86,11 @@ func TestErrRedisInvalidKVVKPrefic(t *testing.T) {
 					vk: str,
 				},
 				want: want{
-					want: Errorf("kv index and vk prefix must be defferent.\t(kv: %s,\tvk: %s)", "", str),
+					want: Errorf(
+						"kv index and vk prefix must be defferent.\t(kv: %s,\tvk: %s)",
+						"",
+						str,
+					),
 				},
 			}
 		}(),
@@ -87,7 +99,11 @@ func TestErrRedisInvalidKVVKPrefic(t *testing.T) {
 				name:   "return an ErrRedisInvalidKVVKPrefix error when kv and vk are empty",
 				fields: fields{},
 				want: want{
-					want: Errorf("kv index and vk prefix must be defferent.\t(kv: %s,\tvk: %s)", "", ""),
+					want: Errorf(
+						"kv index and vk prefix must be defferent.\t(kv: %s,\tvk: %s)",
+						"",
+						"",
+					),
 				},
 			}
 		}(),
@@ -572,7 +588,11 @@ func TestErrInvalidConfigVersion(t *testing.T) {
 					con: con,
 				},
 				want: want{
-					want: Errorf("invalid config version %s not satisfies version constraints %s", cur, con),
+					want: Errorf(
+						"invalid config version %s not satisfies version constraints %s",
+						cur,
+						con,
+					),
 				},
 			}
 		}(),
@@ -583,7 +603,10 @@ func TestErrInvalidConfigVersion(t *testing.T) {
 					con: con,
 				},
 				want: want{
-					want: Errorf("invalid config version  not satisfies version constraints %s", con),
+					want: Errorf(
+						"invalid config version  not satisfies version constraints %s",
+						con,
+					),
 				},
 			}
 		}(),
@@ -594,7 +617,10 @@ func TestErrInvalidConfigVersion(t *testing.T) {
 					cur: cur,
 				},
 				want: want{
-					want: Errorf("invalid config version %s not satisfies version constraints ", cur),
+					want: Errorf(
+						"invalid config version %s not satisfies version constraints ",
+						cur,
+					),
 				},
 			}
 		}(),

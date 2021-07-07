@@ -35,19 +35,34 @@ var (
 	// ErrInvalidDimensionSize represents a function to generate an error that the dimension size is invalid.
 	ErrInvalidDimensionSize = func(current, limit int) error {
 		if limit == 0 {
-			return Errorf("dimension size %d is invalid, the supporting dimension size must be bigger than 2", current)
+			return Errorf(
+				"dimension size %d is invalid, the supporting dimension size must be bigger than 2",
+				current,
+			)
 		}
-		return Errorf("dimension size %d is invalid, the supporting dimension size must be between 2 ~ %d", current, limit)
+		return Errorf(
+			"dimension size %d is invalid, the supporting dimension size must be between 2 ~ %d",
+			current,
+			limit,
+		)
 	}
 
 	// ErrDimensionLimitExceed represents a function to generate an error that the supported dimension limit exceeded.
 	ErrDimensionLimitExceed = func(current, limit int) error {
-		return Errorf("supported dimension limit exceed:\trequired = %d,\tlimit = %d", current, limit)
+		return Errorf(
+			"supported dimension limit exceed:\trequired = %d,\tlimit = %d",
+			current,
+			limit,
+		)
 	}
 
 	// ErrIncompatibleDimensionSize represents a function to generate an error that the incompatible dimension size detected.
 	ErrIncompatibleDimensionSize = func(current, expected int) error {
-		return Errorf("incompatible dimension size detected\trequested: %d,\tconfigured: %d", current, expected)
+		return Errorf(
+			"incompatible dimension size detected\trequested: %d,\tconfigured: %d",
+			current,
+			expected,
+		)
 	}
 
 	// ErrUnsupportedObjectType represents an error that the object type is unsupported.

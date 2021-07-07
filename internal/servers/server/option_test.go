@@ -243,7 +243,10 @@ func TestWithPreStartFunc(t *testing.T) {
 					got := new(server)
 					opt(got)
 
-					if reflect.ValueOf(got.preStartFunc).Pointer() != reflect.ValueOf(fn).Pointer() {
+					if reflect.ValueOf(got.preStartFunc).
+						Pointer() !=
+						reflect.ValueOf(fn).
+							Pointer() {
 						return errors.New("invalid param was set")
 					}
 					return nil

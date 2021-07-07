@@ -35,18 +35,18 @@ const (
 )
 
 type AccessLogEntity struct {
-	GRPC      *AccessLogGRPCEntity `json:"grpc,omitempty" yaml:"grpc"`
+	GRPC      *AccessLogGRPCEntity `json:"grpc,omitempty"      yaml:"grpc"`
 	StartTime int64                `json:"startTime,omitempty" yaml:"startTime"`
-	EndTime   int64                `json:"endTime,omitempty" yaml:"endTime"`
-	Latency   int64                `json:"latency,omitempty" yaml:"latency"`
-	TraceID   string               `json:"traceID,omitempty" yaml:"traceID"`
-	Error     error                `json:"error,omitempty" yaml:"error"`
+	EndTime   int64                `json:"endTime,omitempty"   yaml:"endTime"`
+	Latency   int64                `json:"latency,omitempty"   yaml:"latency"`
+	TraceID   string               `json:"traceID,omitempty"   yaml:"traceID"`
+	Error     error                `json:"error,omitempty"     yaml:"error"`
 }
 
 type AccessLogGRPCEntity struct {
-	Kind    string `json:"kind,omitempty" yaml:"kind"`
+	Kind    string `json:"kind,omitempty"    yaml:"kind"`
 	Service string `json:"service,omitempty" yaml:"service"`
-	Method  string `json:"method,omitempty" yaml:"method"`
+	Method  string `json:"method,omitempty"  yaml:"method"`
 }
 
 func AccessLogInterceptor() grpc.UnaryServerInterceptor {

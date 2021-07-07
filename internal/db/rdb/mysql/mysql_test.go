@@ -539,7 +539,10 @@ func Test_mySQLClient_Ping(t *testing.T) {
 					},
 				},
 				want: want{
-					err: errors.Wrap(errors.Wrap(errors.ErrMySQLConnectionPingFailed, err.Error()), context.DeadlineExceeded.Error()),
+					err: errors.Wrap(
+						errors.Wrap(errors.ErrMySQLConnectionPingFailed, err.Error()),
+						context.DeadlineExceeded.Error(),
+					),
 				},
 				afterFunc: func(args) {
 					cancel()

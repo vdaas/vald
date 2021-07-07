@@ -67,7 +67,10 @@ func New(opts ...Option) Backoff {
 }
 
 // Do tries to backoff using the input function and returns the response and error.
-func (b *backoff) Do(ctx context.Context, f func(ctx context.Context) (val interface{}, retryable bool, err error)) (res interface{}, err error) {
+func (b *backoff) Do(
+	ctx context.Context,
+	f func(ctx context.Context) (val interface{}, retryable bool, err error),
+) (res interface{}, err error) {
 	res, ret, err := f(ctx)
 	if err == nil || !ret {
 		return

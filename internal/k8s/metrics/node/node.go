@@ -59,7 +59,10 @@ func New(opts ...Option) NodeWatcher {
 	return r
 }
 
-func (r *reconciler) Reconcile(ctx context.Context, req reconcile.Request) (res reconcile.Result, err error) {
+func (r *reconciler) Reconcile(
+	ctx context.Context,
+	req reconcile.Request,
+) (res reconcile.Result, err error) {
 	m := &metrics.NodeMetricsList{}
 
 	err = r.mgr.GetClient().List(ctx, m)

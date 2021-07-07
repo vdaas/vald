@@ -47,7 +47,10 @@ func New(opts ...Option) Server {
 	return s
 }
 
-func (s *server) GetVector(ctx context.Context, req *payload.Backup_GetVector_Request) (res *payload.Backup_Vector, err error) {
+func (s *server) GetVector(
+	ctx context.Context,
+	req *payload.Backup_GetVector_Request,
+) (res *payload.Backup_Vector, err error) {
 	ctx, span := trace.StartSpan(ctx, "vald/manager-compressor.GetVector")
 	defer func() {
 		if span != nil {
@@ -60,7 +63,11 @@ func (s *server) GetVector(ctx context.Context, req *payload.Backup_GetVector_Re
 		if span != nil {
 			span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 		}
-		return nil, status.WrapWithNotFound(fmt.Sprintf("GetVector API uuid %s's object not found", uuid), err, info.Get())
+		return nil, status.WrapWithNotFound(
+			fmt.Sprintf("GetVector API uuid %s's object not found", uuid),
+			err,
+			info.Get(),
+		)
 	}
 
 	vector, err := s.compressor.Decompress(ctx, r.GetVector())
@@ -69,7 +76,11 @@ func (s *server) GetVector(ctx context.Context, req *payload.Backup_GetVector_Re
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
-		return nil, status.WrapWithInternal(fmt.Sprintf("GetVector API uuid %s's object failed to decompress %#v", uuid, r), err, info.Get())
+		return nil, status.WrapWithInternal(
+			fmt.Sprintf("GetVector API uuid %s's object failed to decompress %#v", uuid, r),
+			err,
+			info.Get(),
+		)
 	}
 
 	return &payload.Backup_Vector{
@@ -79,7 +90,10 @@ func (s *server) GetVector(ctx context.Context, req *payload.Backup_GetVector_Re
 	}, nil
 }
 
-func (s *server) Locations(ctx context.Context, req *payload.Backup_Locations_Request) (res *payload.Info_IPs, err error) {
+func (s *server) Locations(
+	ctx context.Context,
+	req *payload.Backup_Locations_Request,
+) (res *payload.Info_IPs, err error) {
 	ctx, span := trace.StartSpan(ctx, "vald/manager-compressor.Locations")
 	defer func() {
 		if span != nil {
@@ -92,7 +106,11 @@ func (s *server) Locations(ctx context.Context, req *payload.Backup_Locations_Re
 		if span != nil {
 			span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 		}
-		return nil, status.WrapWithNotFound(fmt.Sprintf("Locations API uuid %s's location not found", uuid), err, info.Get())
+		return nil, status.WrapWithNotFound(
+			fmt.Sprintf("Locations API uuid %s's location not found", uuid),
+			err,
+			info.Get(),
+		)
 	}
 
 	return &payload.Info_IPs{
@@ -100,7 +118,10 @@ func (s *server) Locations(ctx context.Context, req *payload.Backup_Locations_Re
 	}, nil
 }
 
-func (s *server) Register(ctx context.Context, vec *payload.Backup_Vector) (res *payload.Empty, err error) {
+func (s *server) Register(
+	ctx context.Context,
+	vec *payload.Backup_Vector,
+) (res *payload.Empty, err error) {
 	ctx, span := trace.StartSpan(ctx, "vald/manager-compressor.Register")
 	defer func() {
 		if span != nil {
@@ -121,7 +142,10 @@ func (s *server) Register(ctx context.Context, vec *payload.Backup_Vector) (res 
 	return new(payload.Empty), nil
 }
 
-func (s *server) RegisterMulti(ctx context.Context, vecs *payload.Backup_Vectors) (res *payload.Empty, err error) {
+func (s *server) RegisterMulti(
+	ctx context.Context,
+	vecs *payload.Backup_Vectors,
+) (res *payload.Empty, err error) {
 	ctx, span := trace.StartSpan(ctx, "vald/manager-compressor.RegisterMulti")
 	defer func() {
 		if span != nil {
@@ -135,13 +159,20 @@ func (s *server) RegisterMulti(ctx context.Context, vecs *payload.Backup_Vectors
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
-		return nil, status.WrapWithInternal("RegisterMulti API could not processed", err, info.Get())
+		return nil, status.WrapWithInternal(
+			"RegisterMulti API could not processed",
+			err,
+			info.Get(),
+		)
 	}
 
 	return new(payload.Empty), nil
 }
 
-func (s *server) Remove(ctx context.Context, req *payload.Backup_Remove_Request) (res *payload.Empty, err error) {
+func (s *server) Remove(
+	ctx context.Context,
+	req *payload.Backup_Remove_Request,
+) (res *payload.Empty, err error) {
 	ctx, span := trace.StartSpan(ctx, "vald/manager-compressor.Remove")
 	defer func() {
 		if span != nil {
@@ -155,13 +186,20 @@ func (s *server) Remove(ctx context.Context, req *payload.Backup_Remove_Request)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
-		return nil, status.WrapWithInternal(fmt.Sprintf("Remove API uuid %s could not remove", uuid), err, info.Get())
+		return nil, status.WrapWithInternal(
+			fmt.Sprintf("Remove API uuid %s could not remove", uuid),
+			err,
+			info.Get(),
+		)
 	}
 
 	return new(payload.Empty), nil
 }
 
-func (s *server) RemoveMulti(ctx context.Context, req *payload.Backup_Remove_RequestMulti) (res *payload.Empty, err error) {
+func (s *server) RemoveMulti(
+	ctx context.Context,
+	req *payload.Backup_Remove_RequestMulti,
+) (res *payload.Empty, err error) {
 	ctx, span := trace.StartSpan(ctx, "vald/manager-compressor.RemoveMulti")
 	defer func() {
 		if span != nil {
@@ -175,13 +213,20 @@ func (s *server) RemoveMulti(ctx context.Context, req *payload.Backup_Remove_Req
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
-		return nil, status.WrapWithInternal(fmt.Sprintf("Remove API uuids %#v could not remove", uuids), err, info.Get())
+		return nil, status.WrapWithInternal(
+			fmt.Sprintf("Remove API uuids %#v could not remove", uuids),
+			err,
+			info.Get(),
+		)
 	}
 
 	return new(payload.Empty), nil
 }
 
-func (s *server) RegisterIPs(ctx context.Context, req *payload.Backup_IP_Register_Request) (res *payload.Empty, err error) {
+func (s *server) RegisterIPs(
+	ctx context.Context,
+	req *payload.Backup_IP_Register_Request,
+) (res *payload.Empty, err error) {
 	ctx, span := trace.StartSpan(ctx, "vald/manager-compressor.RegisterIPs")
 	defer func() {
 		if span != nil {
@@ -196,13 +241,20 @@ func (s *server) RegisterIPs(ctx context.Context, req *payload.Backup_IP_Registe
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
-		return nil, status.WrapWithInternal(fmt.Sprintf("RegisterIPs API uuid %s ips %#v could not register", uuid, ips), err, info.Get())
+		return nil, status.WrapWithInternal(
+			fmt.Sprintf("RegisterIPs API uuid %s ips %#v could not register", uuid, ips),
+			err,
+			info.Get(),
+		)
 	}
 
 	return new(payload.Empty), nil
 }
 
-func (s *server) RemoveIPs(ctx context.Context, req *payload.Backup_IP_Remove_Request) (res *payload.Empty, err error) {
+func (s *server) RemoveIPs(
+	ctx context.Context,
+	req *payload.Backup_IP_Remove_Request,
+) (res *payload.Empty, err error) {
 	ctx, span := trace.StartSpan(ctx, "vald/manager-compressor.RemoveIPs")
 	defer func() {
 		if span != nil {
@@ -216,7 +268,11 @@ func (s *server) RemoveIPs(ctx context.Context, req *payload.Backup_IP_Remove_Re
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
-		return nil, status.WrapWithInternal(fmt.Sprintf("RemoveIPs API ips %#v could not remove", ips), err, info.Get())
+		return nil, status.WrapWithInternal(
+			fmt.Sprintf("RemoveIPs API ips %#v could not remove", ips),
+			err,
+			info.Get(),
+		)
 	}
 
 	return new(payload.Empty), nil

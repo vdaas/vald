@@ -50,7 +50,11 @@ func New(ctx context.Context, opts ...Option) (Client, error) {
 	return c, nil
 }
 
-func (c *ngtdClient) Exists(ctx context.Context, in *payload.Object_ID, opts ...grpc.CallOption) (oid *payload.Object_ID, err error) {
+func (c *ngtdClient) Exists(
+	ctx context.Context,
+	in *payload.Object_ID,
+	opts ...grpc.CallOption,
+) (oid *payload.Object_ID, err error) {
 	id, err := c.GetObject(ctx, &payload.Object_VectorRequest{
 		Id: in,
 	}, opts...)
@@ -62,7 +66,11 @@ func (c *ngtdClient) Exists(ctx context.Context, in *payload.Object_ID, opts ...
 	}, nil
 }
 
-func (c *ngtdClient) Search(ctx context.Context, in *payload.Search_Request, opts ...grpc.CallOption) (*payload.Search_Response, error) {
+func (c *ngtdClient) Search(
+	ctx context.Context,
+	in *payload.Search_Request,
+	opts ...grpc.CallOption,
+) (*payload.Search_Response, error) {
 	vec := make([]float64, 0, len(in.GetVector()))
 	for _, v := range in.GetVector() {
 		vec = append(vec, float64(v))
@@ -88,7 +96,11 @@ func (c *ngtdClient) Search(ctx context.Context, in *payload.Search_Request, opt
 	return sr, nil
 }
 
-func (c *ngtdClient) SearchByID(ctx context.Context, in *payload.Search_IDRequest, opts ...grpc.CallOption) (*payload.Search_Response, error) {
+func (c *ngtdClient) SearchByID(
+	ctx context.Context,
+	in *payload.Search_IDRequest,
+	opts ...grpc.CallOption,
+) (*payload.Search_Response, error) {
 	var res model.SearchResponse
 	err := json.Request(ctx, http.MethodPost, c.addr+"/search", model.SearchRequest{
 		ID:      in.GetId(),
@@ -110,15 +122,25 @@ func (c *ngtdClient) SearchByID(ctx context.Context, in *payload.Search_IDReques
 	return sr, nil
 }
 
-func (c *ngtdClient) StreamSearch(ctx context.Context, opts ...grpc.CallOption) (res vald.Search_StreamSearchClient, err error) {
+func (c *ngtdClient) StreamSearch(
+	ctx context.Context,
+	opts ...grpc.CallOption,
+) (res vald.Search_StreamSearchClient, err error) {
 	return nil, errors.ErrUnsupportedClientMethod
 }
 
-func (c *ngtdClient) StreamSearchByID(ctx context.Context, opts ...grpc.CallOption) (res vald.Search_StreamSearchByIDClient, err error) {
+func (c *ngtdClient) StreamSearchByID(
+	ctx context.Context,
+	opts ...grpc.CallOption,
+) (res vald.Search_StreamSearchByIDClient, err error) {
 	return nil, errors.ErrUnsupportedClientMethod
 }
 
-func (c *ngtdClient) MultiSearch(ctx context.Context, in *payload.Search_MultiRequest, opts ...grpc.CallOption) (res *payload.Search_Responses, err error) {
+func (c *ngtdClient) MultiSearch(
+	ctx context.Context,
+	in *payload.Search_MultiRequest,
+	opts ...grpc.CallOption,
+) (res *payload.Search_Responses, err error) {
 	res = &payload.Search_Responses{
 		Responses: make([]*payload.Search_Response, 0, len(in.GetRequests())),
 	}
@@ -131,7 +153,11 @@ func (c *ngtdClient) MultiSearch(ctx context.Context, in *payload.Search_MultiRe
 	return res, nil
 }
 
-func (c *ngtdClient) MultiSearchByID(ctx context.Context, in *payload.Search_MultiIDRequest, opts ...grpc.CallOption) (res *payload.Search_Responses, err error) {
+func (c *ngtdClient) MultiSearchByID(
+	ctx context.Context,
+	in *payload.Search_MultiIDRequest,
+	opts ...grpc.CallOption,
+) (res *payload.Search_Responses, err error) {
 	res = &payload.Search_Responses{
 		Responses: make([]*payload.Search_Response, 0, len(in.GetRequests())),
 	}
@@ -144,7 +170,11 @@ func (c *ngtdClient) MultiSearchByID(ctx context.Context, in *payload.Search_Mul
 	return res, nil
 }
 
-func (c *ngtdClient) Insert(ctx context.Context, in *payload.Insert_Request, opts ...grpc.CallOption) (*payload.Object_Location, error) {
+func (c *ngtdClient) Insert(
+	ctx context.Context,
+	in *payload.Insert_Request,
+	opts ...grpc.CallOption,
+) (*payload.Object_Location, error) {
 	vec := make([]float64, 0, len(in.GetVector().GetVector()))
 	for _, v := range in.GetVector().GetVector() {
 		vec = append(vec, float64(v))
@@ -160,11 +190,18 @@ func (c *ngtdClient) Insert(ctx context.Context, in *payload.Insert_Request, opt
 	return nil, nil
 }
 
-func (c *ngtdClient) StreamInsert(ctx context.Context, opts ...grpc.CallOption) (res vald.Insert_StreamInsertClient, err error) {
+func (c *ngtdClient) StreamInsert(
+	ctx context.Context,
+	opts ...grpc.CallOption,
+) (res vald.Insert_StreamInsertClient, err error) {
 	return nil, errors.ErrUnsupportedClientMethod
 }
 
-func (c *ngtdClient) MultiInsert(ctx context.Context, in *payload.Insert_MultiRequest, opts ...grpc.CallOption) (res *payload.Object_Locations, err error) {
+func (c *ngtdClient) MultiInsert(
+	ctx context.Context,
+	in *payload.Insert_MultiRequest,
+	opts ...grpc.CallOption,
+) (res *payload.Object_Locations, err error) {
 	req := &model.MultiInsertRequest{
 		InsertRequests: make([]model.InsertRequest, 0, len(in.GetRequests())),
 	}
@@ -182,7 +219,11 @@ func (c *ngtdClient) MultiInsert(ctx context.Context, in *payload.Insert_MultiRe
 	return nil, json.Request(ctx, http.MethodPost, c.addr+"/multiinsert", req, &r)
 }
 
-func (c *ngtdClient) Update(ctx context.Context, in *payload.Update_Request, opts ...grpc.CallOption) (res *payload.Object_Location, err error) {
+func (c *ngtdClient) Update(
+	ctx context.Context,
+	in *payload.Update_Request,
+	opts ...grpc.CallOption,
+) (res *payload.Object_Location, err error) {
 	_, err = c.Remove(ctx, &payload.Remove_Request{
 		Id: &payload.Object_ID{
 			Id: in.GetVector().GetId(),
@@ -200,11 +241,18 @@ func (c *ngtdClient) Update(ctx context.Context, in *payload.Update_Request, opt
 	return nil, nil
 }
 
-func (c *ngtdClient) StreamUpdate(ctx context.Context, opts ...grpc.CallOption) (res vald.Update_StreamUpdateClient, err error) {
+func (c *ngtdClient) StreamUpdate(
+	ctx context.Context,
+	opts ...grpc.CallOption,
+) (res vald.Update_StreamUpdateClient, err error) {
 	return nil, errors.ErrUnsupportedClientMethod
 }
 
-func (c *ngtdClient) MultiUpdate(ctx context.Context, in *payload.Update_MultiRequest, opts ...grpc.CallOption) (res *payload.Object_Locations, err error) {
+func (c *ngtdClient) MultiUpdate(
+	ctx context.Context,
+	in *payload.Update_MultiRequest,
+	opts ...grpc.CallOption,
+) (res *payload.Object_Locations, err error) {
 	for _, req := range in.GetRequests() {
 		_, err := c.Update(ctx, req)
 		if err != nil {
@@ -214,7 +262,11 @@ func (c *ngtdClient) MultiUpdate(ctx context.Context, in *payload.Update_MultiRe
 	return nil, nil
 }
 
-func (c *ngtdClient) Upsert(ctx context.Context, in *payload.Upsert_Request, opts ...grpc.CallOption) (res *payload.Object_Location, err error) {
+func (c *ngtdClient) Upsert(
+	ctx context.Context,
+	in *payload.Upsert_Request,
+	opts ...grpc.CallOption,
+) (res *payload.Object_Location, err error) {
 	id, err := c.Exists(ctx, &payload.Object_ID{
 		Id: in.GetVector().GetId(),
 	}, opts...)
@@ -228,11 +280,18 @@ func (c *ngtdClient) Upsert(ctx context.Context, in *payload.Upsert_Request, opt
 	}, opts...)
 }
 
-func (c *ngtdClient) StreamUpsert(ctx context.Context, opts ...grpc.CallOption) (res vald.Upsert_StreamUpsertClient, err error) {
+func (c *ngtdClient) StreamUpsert(
+	ctx context.Context,
+	opts ...grpc.CallOption,
+) (res vald.Upsert_StreamUpsertClient, err error) {
 	return nil, errors.ErrUnsupportedClientMethod
 }
 
-func (c *ngtdClient) MultiUpsert(ctx context.Context, in *payload.Upsert_MultiRequest, opts ...grpc.CallOption) (res *payload.Object_Locations, err error) {
+func (c *ngtdClient) MultiUpsert(
+	ctx context.Context,
+	in *payload.Upsert_MultiRequest,
+	opts ...grpc.CallOption,
+) (res *payload.Object_Locations, err error) {
 	for _, req := range in.GetRequests() {
 		_, err := c.Upsert(ctx, req)
 		if err != nil {
@@ -242,7 +301,11 @@ func (c *ngtdClient) MultiUpsert(ctx context.Context, in *payload.Upsert_MultiRe
 	return nil, nil
 }
 
-func (c *ngtdClient) Remove(ctx context.Context, in *payload.Remove_Request, opts ...grpc.CallOption) (*payload.Object_Location, error) {
+func (c *ngtdClient) Remove(
+	ctx context.Context,
+	in *payload.Remove_Request,
+	opts ...grpc.CallOption,
+) (*payload.Object_Location, error) {
 	var res model.RemoveResponse
 	err := json.Request(ctx, http.MethodGet, c.addr+"/remove/"+in.GetId().GetId(), nil, &res)
 	if err != nil {
@@ -251,11 +314,18 @@ func (c *ngtdClient) Remove(ctx context.Context, in *payload.Remove_Request, opt
 	return nil, nil
 }
 
-func (c *ngtdClient) StreamRemove(ctx context.Context, opts ...grpc.CallOption) (res vald.Remove_StreamRemoveClient, err error) {
+func (c *ngtdClient) StreamRemove(
+	ctx context.Context,
+	opts ...grpc.CallOption,
+) (res vald.Remove_StreamRemoveClient, err error) {
 	return nil, errors.ErrUnsupportedClientMethod
 }
 
-func (c *ngtdClient) MultiRemove(ctx context.Context, in *payload.Remove_MultiRequest, opts ...grpc.CallOption) (res *payload.Object_Locations, err error) {
+func (c *ngtdClient) MultiRemove(
+	ctx context.Context,
+	in *payload.Remove_MultiRequest,
+	opts ...grpc.CallOption,
+) (res *payload.Object_Locations, err error) {
 	req := &model.MultiRemoveRequest{
 		IDs: make([]string, 0, len(in.GetRequests())),
 	}
@@ -266,7 +336,11 @@ func (c *ngtdClient) MultiRemove(ctx context.Context, in *payload.Remove_MultiRe
 	return nil, json.Request(ctx, http.MethodPost, c.addr+"/multiremove", req, &r)
 }
 
-func (c *ngtdClient) GetObject(ctx context.Context, in *payload.Object_VectorRequest, opts ...grpc.CallOption) (*payload.Object_Vector, error) {
+func (c *ngtdClient) GetObject(
+	ctx context.Context,
+	in *payload.Object_VectorRequest,
+	opts ...grpc.CallOption,
+) (*payload.Object_Vector, error) {
 	var res model.GetObjectsResponse
 	err := json.Request(ctx, http.MethodPost, c.addr+"/getobjects", model.GetObjectsRequest{
 		IDs: []string{in.GetId().GetId()},
@@ -280,7 +354,10 @@ func (c *ngtdClient) GetObject(ctx context.Context, in *payload.Object_VectorReq
 	}, nil
 }
 
-func (c *ngtdClient) StreamGetObject(ctx context.Context, opts ...grpc.CallOption) (res vald.Object_StreamGetObjectClient, err error) {
+func (c *ngtdClient) StreamGetObject(
+	ctx context.Context,
+	opts ...grpc.CallOption,
+) (res vald.Object_StreamGetObjectClient, err error) {
 	return nil, errors.ErrUnsupportedClientMethod
 }
 
@@ -289,7 +366,13 @@ func (c *ngtdClient) CreateIndex(
 	in *client.ControlCreateIndexRequest,
 	opts ...grpc.CallOption,
 ) (*client.Empty, error) {
-	err := json.Request(ctx, http.MethodGet, fmt.Sprintf("%s/index/create/%d", c.addr, in.GetPoolSize()), nil, nil)
+	err := json.Request(
+		ctx,
+		http.MethodGet,
+		fmt.Sprintf("%s/index/create/%d", c.addr, in.GetPoolSize()),
+		nil,
+		nil,
+	)
 	if err != nil {
 		return nil, err
 	}

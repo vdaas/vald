@@ -73,7 +73,9 @@ func TestNew(t *testing.T) {
 				},
 				want: want{
 					want: nil,
-					err:  errors.New("invalid key name: only ASCII characters accepted; max length must be 255 characters"),
+					err: errors.New(
+						"invalid key name: only ASCII characters accepted; max length must be 255 characters",
+					),
 				},
 				checkFunc: defaultCheckFunc,
 			}
@@ -97,7 +99,11 @@ func TestNew(t *testing.T) {
 				want: want{},
 				checkFunc: func(w want, got metrics.Metric, err error) error {
 					if !errors.Is(err, w.err) {
-						return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+						return errors.Errorf(
+							"got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"",
+							err,
+							w.err,
+						)
 					}
 					if got == nil {
 						return errors.New("got is nil")
@@ -169,7 +175,9 @@ func Test_labelKVs(t *testing.T) {
 				},
 				want: want{
 					want: nil,
-					err:  errors.New("invalid key name: only ASCII characters accepted; max length must be 255 characters"),
+					err: errors.New(
+						"invalid key name: only ASCII characters accepted; max length must be 255 characters",
+					),
 				},
 				checkFunc: defaultCheckFunc,
 			}
@@ -497,7 +505,10 @@ func Test_info_View(t *testing.T) {
 						return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 					}
 
-					if !reflect.DeepEqual(got[0].Aggregation.Type.String(), w.want[0].Aggregation.Type.String()) {
+					if !reflect.DeepEqual(
+						got[0].Aggregation.Type.String(),
+						w.want[0].Aggregation.Type.String(),
+					) {
 						return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 					}
 

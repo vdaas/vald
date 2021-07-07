@@ -40,7 +40,12 @@ func NewInsert(opts ...InsertOption) e2e.Strategy {
 	return i
 }
 
-func (isrt *insert) Run(ctx context.Context, b *testing.B, c client.Client, dataset assets.Dataset) {
+func (isrt *insert) Run(
+	ctx context.Context,
+	b *testing.B,
+	c client.Client,
+	dataset assets.Dataset,
+) {
 	if isrt.parallel {
 		isrt.runParallel(ctx, b, c, dataset)
 		return
@@ -48,7 +53,12 @@ func (isrt *insert) Run(ctx context.Context, b *testing.B, c client.Client, data
 	isrt.run(ctx, b, c, dataset)
 }
 
-func (isrt *insert) run(ctx context.Context, b *testing.B, c client.Client, dataset assets.Dataset) {
+func (isrt *insert) run(
+	ctx context.Context,
+	b *testing.B,
+	c client.Client,
+	dataset assets.Dataset,
+) {
 	cnt := 0
 	b.Run("Insert", func(bb *testing.B) {
 		bb.StopTimer()
@@ -67,7 +77,12 @@ func (isrt *insert) run(ctx context.Context, b *testing.B, c client.Client, data
 	})
 }
 
-func (isrt *insert) runParallel(ctx context.Context, b *testing.B, c client.Client, dataset assets.Dataset) {
+func (isrt *insert) runParallel(
+	ctx context.Context,
+	b *testing.B,
+	c client.Client,
+	dataset assets.Dataset,
+) {
 	var cnt int64
 	b.Run("ParallelInsert", func(bb *testing.B) {
 		bb.StopTimer()
@@ -89,7 +104,13 @@ func (isrt *insert) runParallel(ctx context.Context, b *testing.B, c client.Clie
 	})
 }
 
-func (isrt *insert) do(ctx context.Context, b *testing.B, c client.Client, id string, vector []float32) {
+func (isrt *insert) do(
+	ctx context.Context,
+	b *testing.B,
+	c client.Client,
+	id string,
+	vector []float32,
+) {
 	if _, err := c.Insert(ctx, &client.InsertRequest{
 		Vector: &client.ObjectVector{
 			Id:     id,

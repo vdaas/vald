@@ -1762,7 +1762,11 @@ func TestParseError(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 
-			gotSt, gotMsg, err := ParseError(test.args.err, test.args.defaultCode, test.args.defaultMsg, test.args.details...)
+			gotSt, gotMsg, err := ParseError(
+				test.args.err,
+				test.args.defaultCode,
+				test.args.defaultMsg,
+				test.args.details...)
 			if err := test.checkFunc(test.want, gotSt, gotMsg, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}

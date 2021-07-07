@@ -113,7 +113,9 @@ func (cm *cassandraMetrics) Measurement(ctx context.Context) ([]metrics.Measurem
 	return []metrics.Measurement{}, nil
 }
 
-func (cm *cassandraMetrics) MeasurementWithTags(ctx context.Context) ([]metrics.MeasurementWithTags, error) {
+func (cm *cassandraMetrics) MeasurementWithTags(
+	ctx context.Context,
+) ([]metrics.MeasurementWithTags, error) {
 	cm.mu.Lock()
 	defer func() {
 		cm.ms = make([]metrics.MeasurementWithTags, 0)

@@ -42,35 +42,35 @@ const (
 var aliases map[string]Schema
 
 type Schema struct {
-	Type        string             `json:"type" yaml:"type"`
+	Type        string             `json:"type"                  yaml:"type"`
 	Description string             `json:"description,omitempty" yaml:"description,omitempty"`
-	Properties  map[string]*Schema `json:"properties,omitempty" yaml:"properties,omitempty"`
+	Properties  map[string]*Schema `json:"properties,omitempty"  yaml:"properties,omitempty"`
 
 	// for object type
-	Required          []string          `json:"required,omitempty" yaml:"required,omitempty"`
-	MaxProperties     *uint64           `json:"maxProperties,omitempty" yaml:"maxProperties,omitempty"`
-	MinProperties     *uint64           `json:"minProperties,omitempty" yaml:"minProperties,omitempty"`
+	Required          []string          `json:"required,omitempty"          yaml:"required,omitempty"`
+	MaxProperties     *uint64           `json:"maxProperties,omitempty"     yaml:"maxProperties,omitempty"`
+	MinProperties     *uint64           `json:"minProperties,omitempty"     yaml:"minProperties,omitempty"`
 	DependentRequired map[string]string `json:"dependentRequired,omitempty" yaml:"dependentRequired,omitempty"`
 
 	// for string type
-	Enum      []string `json:"enum,omitempty" yaml:"enum,omitempty"`
-	Pattern   string   `json:"pattern,omitempty" yaml:"pattern,omitempty"`
+	Enum      []string `json:"enum,omitempty"      yaml:"enum,omitempty"`
+	Pattern   string   `json:"pattern,omitempty"   yaml:"pattern,omitempty"`
 	MaxLength *uint64  `json:"maxLength,omitempty" yaml:"maxLength,omitempty"`
 	MinLength *uint64  `json:"minLength,omitempty" yaml:"minLength,omitempty"`
 
 	// for array type
-	Items       *Schema `json:"items,omitempty" yaml:"items,omitempty"`
-	MaxItems    *uint64 `json:"maxItems,omitempty" yaml:"maxItems,omitempty"`
-	MinItems    *uint64 `json:"minItems,omitempty" yaml:"minItems,omitempty"`
+	Items       *Schema `json:"items,omitempty"       yaml:"items,omitempty"`
+	MaxItems    *uint64 `json:"maxItems,omitempty"    yaml:"maxItems,omitempty"`
+	MinItems    *uint64 `json:"minItems,omitempty"    yaml:"minItems,omitempty"`
 	UniqueItems bool    `json:"uniqueItems,omitempty" yaml:"uniqueItems,omitempty"`
 	MaxContains *uint64 `json:"maxContains,omitempty" yaml:"maxContains,omitempty"`
 	MinContains *uint64 `json:"minContains,omitempty" yaml:"minContains,omitempty"`
 
 	// for numeric types
-	MultipleOf       *int64 `json:"multipleOf,omitempty" yaml:"multipleOf,omitempty"`
-	Maximum          *int64 `json:"maximum,omitempty" yaml:"maximum,omitempty"`
+	MultipleOf       *int64 `json:"multipleOf,omitempty"       yaml:"multipleOf,omitempty"`
+	Maximum          *int64 `json:"maximum,omitempty"          yaml:"maximum,omitempty"`
 	ExclusiveMaximum bool   `json:"exclusiveMaximum,omitempty" yaml:"exclusiveMaximum,omitempty"`
-	Minimum          *int64 `json:"minimum,omitempty" yaml:"minimum,omitempty"`
+	Minimum          *int64 `json:"minimum,omitempty"          yaml:"minimum,omitempty"`
 	ExclusiveMinimum bool   `json:"exclusiveMinimum,omitempty" yaml:"exclusiveMinimum,omitempty"`
 
 	// for Kubernetes unknown object type
@@ -78,10 +78,10 @@ type Schema struct {
 }
 
 type VSchema struct {
-	Name   string `json:"name" yaml:"name"`
-	Type   string `json:"type" yaml:"type"`
+	Name   string `json:"name"   yaml:"name"`
+	Type   string `json:"type"   yaml:"type"`
 	Anchor string `json:"anchor" yaml:"anchor"`
-	Alias  string `json:"alias" yaml:"alias"`
+	Alias  string `json:"alias"  yaml:"alias"`
 	Schema
 }
 
@@ -226,7 +226,8 @@ func genNode(ls []VSchema) (*Schema, error) {
 	case arrayType:
 		schema = l.Schema
 		schema.Type = l.Type
-		if schema.Items != nil && schema.Items.Type == objectType && schema.Items.Properties == nil {
+		if schema.Items != nil && schema.Items.Type == objectType &&
+			schema.Items.Properties == nil {
 			schema.Items.KubernetesPreserveUnknownFields = true
 		}
 	default:

@@ -57,7 +57,11 @@ func New(ctx context.Context, opts ...Option) (Client, error) {
 	return c, nil
 }
 
-func (c *ngtdClient) Exists(ctx context.Context, in *payload.Object_ID, opts ...grpc.CallOption) (oid *payload.Object_ID, err error) {
+func (c *ngtdClient) Exists(
+	ctx context.Context,
+	in *payload.Object_ID,
+	opts ...grpc.CallOption,
+) (oid *payload.Object_ID, err error) {
 	_, err = c.c.Do(ctx, c.addr, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption) (interface{}, error) {
@@ -81,11 +85,16 @@ func (c *ngtdClient) Exists(ctx context.Context, in *payload.Object_ID, opts ...
 	return oid, nil
 }
 
-func (c *ngtdClient) Search(ctx context.Context, in *payload.Search_Request, opts ...grpc.CallOption) (*payload.Search_Response, error) {
+func (c *ngtdClient) Search(
+	ctx context.Context,
+	in *payload.Search_Request,
+	opts ...grpc.CallOption,
+) (*payload.Search_Response, error) {
 	res, err := c.c.Do(ctx, c.addr, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption) (interface{}, error) {
-		r, err := proto.NewNGTDClient(conn).Search(ctx, searchRequestToNgtdSearchRequest(in), copts...)
+		r, err := proto.NewNGTDClient(conn).
+			Search(ctx, searchRequestToNgtdSearchRequest(in), copts...)
 		if err != nil {
 			return nil, err
 		}
@@ -100,11 +109,16 @@ func (c *ngtdClient) Search(ctx context.Context, in *payload.Search_Request, opt
 	return ngtdSearchResponseToSearchResponse(res.(*proto.SearchResponse)), nil
 }
 
-func (c *ngtdClient) SearchByID(ctx context.Context, in *payload.Search_IDRequest, opts ...grpc.CallOption) (*payload.Search_Response, error) {
+func (c *ngtdClient) SearchByID(
+	ctx context.Context,
+	in *payload.Search_IDRequest,
+	opts ...grpc.CallOption,
+) (*payload.Search_Response, error) {
 	res, err := c.c.Do(ctx, c.addr, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption) (interface{}, error) {
-		r, err := proto.NewNGTDClient(conn).SearchByID(ctx, searchIDRequestToNgtdSearchRequest(in), copts...)
+		r, err := proto.NewNGTDClient(conn).
+			SearchByID(ctx, searchIDRequestToNgtdSearchRequest(in), copts...)
 		if err != nil {
 			return nil, err
 		}
@@ -119,7 +133,10 @@ func (c *ngtdClient) SearchByID(ctx context.Context, in *payload.Search_IDReques
 	return ngtdSearchResponseToSearchResponse(res.(*proto.SearchResponse)), nil
 }
 
-func (c *ngtdClient) StreamSearch(ctx context.Context, opts ...grpc.CallOption) (res vald.Search_StreamSearchClient, err error) {
+func (c *ngtdClient) StreamSearch(
+	ctx context.Context,
+	opts ...grpc.CallOption,
+) (res vald.Search_StreamSearchClient, err error) {
 	_, err = c.c.Do(ctx, c.addr, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption) (interface{}, error) {
@@ -136,7 +153,10 @@ func (c *ngtdClient) StreamSearch(ctx context.Context, opts ...grpc.CallOption) 
 	return res, nil
 }
 
-func (c *ngtdClient) StreamSearchByID(ctx context.Context, opts ...grpc.CallOption) (res vald.Search_StreamSearchByIDClient, err error) {
+func (c *ngtdClient) StreamSearchByID(
+	ctx context.Context,
+	opts ...grpc.CallOption,
+) (res vald.Search_StreamSearchByIDClient, err error) {
 	_, err = c.c.Do(ctx, c.addr, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption) (interface{}, error) {
@@ -153,7 +173,11 @@ func (c *ngtdClient) StreamSearchByID(ctx context.Context, opts ...grpc.CallOpti
 	return res, nil
 }
 
-func (c *ngtdClient) MultiSearch(ctx context.Context, in *payload.Search_MultiRequest, opts ...grpc.CallOption) (res *payload.Search_Responses, err error) {
+func (c *ngtdClient) MultiSearch(
+	ctx context.Context,
+	in *payload.Search_MultiRequest,
+	opts ...grpc.CallOption,
+) (res *payload.Search_Responses, err error) {
 	_, err = c.c.Do(ctx, c.addr, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption) (interface{}, error) {
@@ -175,7 +199,11 @@ func (c *ngtdClient) MultiSearch(ctx context.Context, in *payload.Search_MultiRe
 	return res, nil
 }
 
-func (c *ngtdClient) MultiSearchByID(ctx context.Context, in *payload.Search_MultiIDRequest, opts ...grpc.CallOption) (res *payload.Search_Responses, err error) {
+func (c *ngtdClient) MultiSearchByID(
+	ctx context.Context,
+	in *payload.Search_MultiIDRequest,
+	opts ...grpc.CallOption,
+) (res *payload.Search_Responses, err error) {
 	_, err = c.c.Do(ctx, c.addr, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption) (interface{}, error) {
@@ -197,7 +225,11 @@ func (c *ngtdClient) MultiSearchByID(ctx context.Context, in *payload.Search_Mul
 	return res, nil
 }
 
-func (c *ngtdClient) Insert(ctx context.Context, in *payload.Insert_Request, opts ...grpc.CallOption) (res *payload.Object_Location, err error) {
+func (c *ngtdClient) Insert(
+	ctx context.Context,
+	in *payload.Insert_Request,
+	opts ...grpc.CallOption,
+) (res *payload.Object_Location, err error) {
 	_, err = c.c.Do(ctx, c.addr, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption) (interface{}, error) {
@@ -219,7 +251,10 @@ func (c *ngtdClient) Insert(ctx context.Context, in *payload.Insert_Request, opt
 	return res, nil
 }
 
-func (c *ngtdClient) StreamInsert(ctx context.Context, opts ...grpc.CallOption) (res vald.Insert_StreamInsertClient, err error) {
+func (c *ngtdClient) StreamInsert(
+	ctx context.Context,
+	opts ...grpc.CallOption,
+) (res vald.Insert_StreamInsertClient, err error) {
 	_, err = c.c.Do(ctx, c.addr, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption) (interface{}, error) {
@@ -236,7 +271,11 @@ func (c *ngtdClient) StreamInsert(ctx context.Context, opts ...grpc.CallOption) 
 	return res, nil
 }
 
-func (c *ngtdClient) MultiInsert(ctx context.Context, in *payload.Insert_MultiRequest, opts ...grpc.CallOption) (res *payload.Object_Locations, err error) {
+func (c *ngtdClient) MultiInsert(
+	ctx context.Context,
+	in *payload.Insert_MultiRequest,
+	opts ...grpc.CallOption,
+) (res *payload.Object_Locations, err error) {
 	_, err = c.c.Do(ctx, c.addr, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption) (interface{}, error) {
@@ -258,7 +297,11 @@ func (c *ngtdClient) MultiInsert(ctx context.Context, in *payload.Insert_MultiRe
 	return res, nil
 }
 
-func (c *ngtdClient) Update(ctx context.Context, in *payload.Update_Request, opts ...grpc.CallOption) (res *payload.Object_Location, err error) {
+func (c *ngtdClient) Update(
+	ctx context.Context,
+	in *payload.Update_Request,
+	opts ...grpc.CallOption,
+) (res *payload.Object_Location, err error) {
 	_, err = c.Remove(ctx, &payload.Remove_Request{
 		Id: &payload.Object_ID{
 			Id: in.GetVector().GetId(),
@@ -276,7 +319,10 @@ func (c *ngtdClient) Update(ctx context.Context, in *payload.Update_Request, opt
 	return nil, nil
 }
 
-func (c *ngtdClient) StreamUpdate(ctx context.Context, opts ...grpc.CallOption) (res vald.Update_StreamUpdateClient, err error) {
+func (c *ngtdClient) StreamUpdate(
+	ctx context.Context,
+	opts ...grpc.CallOption,
+) (res vald.Update_StreamUpdateClient, err error) {
 	_, err = c.c.Do(ctx, c.addr, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption) (interface{}, error) {
@@ -297,7 +343,11 @@ func (c *ngtdClient) StreamUpdate(ctx context.Context, opts ...grpc.CallOption) 
 	return res, nil
 }
 
-func (c *ngtdClient) MultiUpdate(ctx context.Context, in *payload.Update_MultiRequest, opts ...grpc.CallOption) (res *payload.Object_Locations, err error) {
+func (c *ngtdClient) MultiUpdate(
+	ctx context.Context,
+	in *payload.Update_MultiRequest,
+	opts ...grpc.CallOption,
+) (res *payload.Object_Locations, err error) {
 	_, err = c.c.Do(ctx, c.addr, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption) (interface{}, error) {
@@ -319,7 +369,11 @@ func (c *ngtdClient) MultiUpdate(ctx context.Context, in *payload.Update_MultiRe
 	return res, nil
 }
 
-func (c *ngtdClient) Upsert(ctx context.Context, in *payload.Upsert_Request, opts ...grpc.CallOption) (res *payload.Object_Location, err error) {
+func (c *ngtdClient) Upsert(
+	ctx context.Context,
+	in *payload.Upsert_Request,
+	opts ...grpc.CallOption,
+) (res *payload.Object_Location, err error) {
 	id, err := c.Exists(ctx, &payload.Object_ID{
 		Id: in.GetVector().GetId(),
 	}, opts...)
@@ -333,7 +387,10 @@ func (c *ngtdClient) Upsert(ctx context.Context, in *payload.Upsert_Request, opt
 	}, opts...)
 }
 
-func (c *ngtdClient) StreamUpsert(ctx context.Context, opts ...grpc.CallOption) (res vald.Upsert_StreamUpsertClient, err error) {
+func (c *ngtdClient) StreamUpsert(
+	ctx context.Context,
+	opts ...grpc.CallOption,
+) (res vald.Upsert_StreamUpsertClient, err error) {
 	_, err = c.c.Do(ctx, c.addr, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption) (interface{}, error) {
@@ -350,7 +407,11 @@ func (c *ngtdClient) StreamUpsert(ctx context.Context, opts ...grpc.CallOption) 
 	return res, nil
 }
 
-func (c *ngtdClient) MultiUpsert(ctx context.Context, in *payload.Upsert_MultiRequest, opts ...grpc.CallOption) (res *payload.Object_Locations, err error) {
+func (c *ngtdClient) MultiUpsert(
+	ctx context.Context,
+	in *payload.Upsert_MultiRequest,
+	opts ...grpc.CallOption,
+) (res *payload.Object_Locations, err error) {
 	_, err = c.c.Do(ctx, c.addr, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption) (interface{}, error) {
@@ -372,7 +433,11 @@ func (c *ngtdClient) MultiUpsert(ctx context.Context, in *payload.Upsert_MultiRe
 	return res, nil
 }
 
-func (c *ngtdClient) Remove(ctx context.Context, in *payload.Remove_Request, opts ...grpc.CallOption) (res *payload.Object_Location, err error) {
+func (c *ngtdClient) Remove(
+	ctx context.Context,
+	in *payload.Remove_Request,
+	opts ...grpc.CallOption,
+) (res *payload.Object_Location, err error) {
 	_, err = c.c.Do(ctx, c.addr, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption) (interface{}, error) {
@@ -394,7 +459,10 @@ func (c *ngtdClient) Remove(ctx context.Context, in *payload.Remove_Request, opt
 	return res, nil
 }
 
-func (c *ngtdClient) StreamRemove(ctx context.Context, opts ...grpc.CallOption) (res vald.Remove_StreamRemoveClient, err error) {
+func (c *ngtdClient) StreamRemove(
+	ctx context.Context,
+	opts ...grpc.CallOption,
+) (res vald.Remove_StreamRemoveClient, err error) {
 	_, err = c.c.Do(ctx, c.addr, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption) (interface{}, error) {
@@ -411,7 +479,11 @@ func (c *ngtdClient) StreamRemove(ctx context.Context, opts ...grpc.CallOption) 
 	return res, nil
 }
 
-func (c *ngtdClient) MultiRemove(ctx context.Context, in *payload.Remove_MultiRequest, opts ...grpc.CallOption) (res *payload.Object_Locations, err error) {
+func (c *ngtdClient) MultiRemove(
+	ctx context.Context,
+	in *payload.Remove_MultiRequest,
+	opts ...grpc.CallOption,
+) (res *payload.Object_Locations, err error) {
 	_, err = c.c.Do(ctx, c.addr, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption) (interface{}, error) {
@@ -435,7 +507,11 @@ func (c *ngtdClient) MultiRemove(ctx context.Context, in *payload.Remove_MultiRe
 	return res, nil
 }
 
-func (c *ngtdClient) GetObject(ctx context.Context, in *payload.Object_VectorRequest, opts ...grpc.CallOption) (*payload.Object_Vector, error) {
+func (c *ngtdClient) GetObject(
+	ctx context.Context,
+	in *payload.Object_VectorRequest,
+	opts ...grpc.CallOption,
+) (*payload.Object_Vector, error) {
 	res, err := c.c.Do(ctx, c.addr, func(
 		ctx context.Context,
 		conn *grpc.ClientConn,
@@ -468,7 +544,10 @@ func (c *ngtdClient) GetObject(ctx context.Context, in *payload.Object_VectorReq
 	}, nil
 }
 
-func (c *ngtdClient) StreamGetObject(ctx context.Context, opts ...grpc.CallOption) (res vald.Object_StreamGetObjectClient, err error) {
+func (c *ngtdClient) StreamGetObject(
+	ctx context.Context,
+	opts ...grpc.CallOption,
+) (res vald.Object_StreamGetObjectClient, err error) {
 	_, err = c.c.Do(ctx, c.addr, func(
 		ctx context.Context,
 		conn *grpc.ClientConn,
@@ -491,7 +570,9 @@ func (c *ngtdClient) CreateIndex(
 	in *client.ControlCreateIndexRequest,
 	opts ...grpc.CallOption,
 ) (*client.Empty, error) {
-	_, err := c.c.Do(ctx, c.addr,
+	_, err := c.c.Do(
+		ctx,
+		c.addr,
 		func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
 			return proto.NewNGTDClient(conn).CreateIndex(ctx, &proto.CreateIndexRequest{
 				PoolSize: in.GetPoolSize(),
@@ -506,7 +587,9 @@ func (c *ngtdClient) SaveIndex(
 	req *client.Empty,
 	opts ...grpc.CallOption,
 ) (*client.Empty, error) {
-	_, err := c.c.Do(ctx, c.addr,
+	_, err := c.c.Do(
+		ctx,
+		c.addr,
 		func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
 			return proto.NewNGTDClient(conn).SaveIndex(ctx, new(proto.Empty), copts...)
 		},

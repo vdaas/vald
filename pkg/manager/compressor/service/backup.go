@@ -57,7 +57,10 @@ func (b *backup) Start(ctx context.Context) (<-chan error, error) {
 	return b.client.StartConnectionMonitor(ctx)
 }
 
-func (b *backup) GetObject(ctx context.Context, uuid string) (vec *payload.Backup_Compressed_Vector, err error) {
+func (b *backup) GetObject(
+	ctx context.Context,
+	uuid string,
+) (vec *payload.Backup_Compressed_Vector, err error) {
 	_, err = b.client.RoundRobin(ctx, func(ctx context.Context,
 		conn *grpc.ClientConn, copts ...grpc.CallOption) (i interface{}, err error) {
 		vec, err = gback.NewBackupClient(conn).GetVector(ctx, &payload.Backup_GetVector_Request{
@@ -98,7 +101,10 @@ func (b *backup) Register(ctx context.Context, vec *payload.Backup_Compressed_Ve
 	return
 }
 
-func (b *backup) RegisterMultiple(ctx context.Context, vecs *payload.Backup_Compressed_Vectors) (err error) {
+func (b *backup) RegisterMultiple(
+	ctx context.Context,
+	vecs *payload.Backup_Compressed_Vectors,
+) (err error) {
 	_, err = b.client.RoundRobin(ctx, func(ctx context.Context,
 		conn *grpc.ClientConn, copts ...grpc.CallOption) (i interface{}, err error) {
 		_, err = gback.NewBackupClient(conn).RegisterMulti(ctx, vecs, copts...)

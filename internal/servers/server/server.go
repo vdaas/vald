@@ -252,14 +252,17 @@ func (s *server) ListenAndServe(ctx context.Context, ech chan<- error) (err erro
 		}
 
 		l, err := s.lc.Listen(ctx, func() string {
-			if s.network == 0 || s.network == net.Unknown || strings.EqualFold(s.network.String(), net.Unknown.String()) {
+			if s.network == 0 || s.network == net.Unknown ||
+				strings.EqualFold(s.network.String(), net.Unknown.String()) {
 				return net.TCP.String()
 			}
 			return s.network.String()
 		}(), func() string {
 			if s.network == net.UNIX {
 				if len(s.socketPath) == 0 {
-					s.socketPath = os.TempDir() + "/" + s.name + "." + strconv.Itoa(os.Getpid()) + ".sock"
+					s.socketPath = os.TempDir() + "/" + s.name + "." + strconv.Itoa(
+						os.Getpid(),
+					) + ".sock"
 				}
 				return s.socketPath
 			}
@@ -290,7 +293,13 @@ func (s *server) ListenAndServe(ctx context.Context, ech chan<- error) (err erro
 					s.running = true
 					s.mu.Unlock()
 				}
-				log.Infof("%s server %s starting on %s://%s", s.mode.String(), s.name, l.Addr().Network(), l.Addr().String())
+				log.Infof(
+					"%s server %s starting on %s://%s",
+					s.mode.String(),
+					s.name,
+					l.Addr().Network(),
+					l.Addr().String(),
+				)
 
 				switch s.mode {
 				case REST, GQL:

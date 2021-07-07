@@ -27,7 +27,10 @@ import (
 	"github.com/vdaas/vald/pkg/tools/cli/loadtest/assets"
 )
 
-func insertRequestProvider(dataset assets.Dataset, batchSize int) (f func() interface{}, size int, err error) {
+func insertRequestProvider(
+	dataset assets.Dataset,
+	batchSize int,
+) (f func() interface{}, size int, err error) {
 	switch {
 	case batchSize == 1:
 		f, size = objectVectorProvider(dataset)
@@ -94,7 +97,8 @@ func (l *loader) newInsert() (f loadFunc, err error) {
 		}
 	case l.batchSize >= 2:
 		f = func(ctx context.Context, conn *grpc.ClientConn, i interface{}, copts ...grpc.CallOption) (interface{}, error) {
-			return vald.NewInsertClient(conn).MultiInsert(ctx, i.(*payload.Insert_MultiRequest), copts...)
+			return vald.NewInsertClient(conn).
+				MultiInsert(ctx, i.(*payload.Insert_MultiRequest), copts...)
 		}
 	default:
 		err = errors.New("batch size must be natural number.")

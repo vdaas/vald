@@ -64,13 +64,15 @@ func BenchmarkAgentNGT_gRPC_Sequential(b *testing.B) {
 		bench := e2e.New(
 			b,
 			e2e.WithName(name),
-			e2e.WithServerStarter(func(ctx context.Context, tb testing.TB, d assets.Dataset) func() {
-				return ngt.New(
-					ngt.WithDimension(d.Dimension()),
-					ngt.WithDistanceType(d.DistanceType()),
-					ngt.WithObjectType(d.ObjectType()),
-				).Run(ctx, tb)
-			}),
+			e2e.WithServerStarter(
+				func(ctx context.Context, tb testing.TB, d assets.Dataset) func() {
+					return ngt.New(
+						ngt.WithDimension(d.Dimension()),
+						ngt.WithDistanceType(d.DistanceType()),
+						ngt.WithObjectType(d.ObjectType()),
+					).Run(ctx, tb)
+				},
+			),
 			e2e.WithClient(client),
 			e2e.WithStrategy(
 				strategy.NewInsert(),
@@ -100,13 +102,15 @@ func BenchmarkAgentNGT_gRPC_Stream(b *testing.B) {
 		bench := e2e.New(
 			b,
 			e2e.WithName(name),
-			e2e.WithServerStarter(func(ctx context.Context, tb testing.TB, d assets.Dataset) func() {
-				return ngt.New(
-					ngt.WithDimension(d.Dimension()),
-					ngt.WithDistanceType(d.DistanceType()),
-					ngt.WithObjectType(d.ObjectType()),
-				).Run(ctx, tb)
-			}),
+			e2e.WithServerStarter(
+				func(ctx context.Context, tb testing.TB, d assets.Dataset) func() {
+					return ngt.New(
+						ngt.WithDimension(d.Dimension()),
+						ngt.WithDistanceType(d.DistanceType()),
+						ngt.WithObjectType(d.ObjectType()),
+					).Run(ctx, tb)
+				},
+			),
 			e2e.WithClient(client),
 			e2e.WithStrategy(
 				strategy.NewStreamInsert(),

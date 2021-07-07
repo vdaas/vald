@@ -182,10 +182,18 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 				return ctx.Err()
 			case <-dt.C:
 				var (
-					podsByNode      = make(map[string]map[string]map[string][]*payload.Info_Pod) // map[node][namespace][name][]pod
-					podsByNamespace = make(map[string]map[string][]*payload.Info_Pod)            // map[namespace][name][]pod
-					podsByName      = make(map[string][]*payload.Info_Pod)                       // map[name][]pod
-					nodeByName      = make(map[string]*payload.Info_Node)                        // map[name]node
+					podsByNode = make(
+						map[string]map[string]map[string][]*payload.Info_Pod,
+					) // map[node][namespace][name][]pod
+					podsByNamespace = make(
+						map[string]map[string][]*payload.Info_Pod,
+					) // map[namespace][name][]pod
+					podsByName = make(
+						map[string][]*payload.Info_Pod,
+					) // map[name][]pod
+					nodeByName = make(
+						map[string]*payload.Info_Node,
+					) // map[name]node
 				)
 
 				d.nodes.Range(func(nodeName string, n *node.Node) bool {
@@ -253,30 +261,53 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 								}
 								_, ok = podsByNode[p.NodeName]
 								if !ok {
-									podsByNode[p.NodeName] = make(map[string]map[string][]*payload.Info_Pod, len(nodeByName))
+									podsByNode[p.NodeName] = make(
+										map[string]map[string][]*payload.Info_Pod,
+										len(nodeByName),
+									)
 								}
 								_, ok = podsByNode[p.NodeName][p.Namespace]
 								if !ok {
-									podsByNode[p.NodeName][p.Namespace] = make(map[string][]*payload.Info_Pod, len(pods))
+									podsByNode[p.NodeName][p.Namespace] = make(
+										map[string][]*payload.Info_Pod,
+										len(pods),
+									)
 								}
 								_, ok = podsByNamespace[p.Namespace]
 								if !ok {
-									podsByNamespace[p.Namespace] = make(map[string][]*payload.Info_Pod, len(pods))
+									podsByNamespace[p.Namespace] = make(
+										map[string][]*payload.Info_Pod,
+										len(pods),
+									)
 								}
 								_, ok = podsByNode[p.NodeName][p.Namespace][appName]
 								if !ok {
-									podsByNode[p.NodeName][p.Namespace][appName] = make([]*payload.Info_Pod, 0, len(pods))
+									podsByNode[p.NodeName][p.Namespace][appName] = make(
+										[]*payload.Info_Pod,
+										0,
+										len(pods),
+									)
 								}
 								_, ok = podsByNamespace[p.Namespace][appName]
 								if !ok {
-									podsByNamespace[p.Namespace][appName] = make([]*payload.Info_Pod, 0, len(pods))
+									podsByNamespace[p.Namespace][appName] = make(
+										[]*payload.Info_Pod,
+										0,
+										len(pods),
+									)
 								}
 								_, ok = podsByName[appName]
 								if !ok {
 									podsByName[appName] = make([]*payload.Info_Pod, 0, len(pods))
 								}
-								podsByNode[p.NodeName][p.Namespace][appName] = append(podsByNode[p.NodeName][p.Namespace][appName], pi)
-								podsByNamespace[p.Namespace][appName] = append(podsByNamespace[p.Namespace][appName], pi)
+								podsByNode[p.NodeName][p.Namespace][appName] = append(
+									podsByNode[p.NodeName][p.Namespace][appName],
+									pi,
+								)
+								podsByNamespace[p.Namespace][appName] = append(
+									podsByNamespace[p.Namespace][appName],
+									pi,
+								)
 								podsByName[appName] = append(podsByName[appName], pi)
 							}
 						}
@@ -306,11 +337,17 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 									nodeByName[nodeName].Pods = new(payload.Info_Pods)
 								}
 								if nn.GetPods().GetPods() == nil {
-									nodeByName[nodeName].GetPods().Pods = make([]*payload.Info_Pod, 0, len(p))
+									nodeByName[nodeName].GetPods().Pods = make(
+										[]*payload.Info_Pod,
+										0,
+										len(p),
+									)
 								}
 								nn, ok = nodeByName[nodeName]
 								if ok && nn.GetPods() != nil && nn.GetPods().GetPods() != nil {
-									nodeByName[nodeName].GetPods().Pods = append(nodeByName[nodeName].GetPods().GetPods(), p...)
+									nodeByName[nodeName].GetPods().Pods = append(
+										nodeByName[nodeName].GetPods().GetPods(),
+										p...)
 								}
 							}
 						}
@@ -426,7 +463,9 @@ func (d *discoverer) GetPods(req *payload.Discoverer_Request) (pods *payload.Inf
 	return pods, nil
 }
 
-func (d *discoverer) GetNodes(req *payload.Discoverer_Request) (nodes *payload.Info_Nodes, err error) {
+func (d *discoverer) GetNodes(
+	req *payload.Discoverer_Request,
+) (nodes *payload.Info_Nodes, err error) {
 	nodes = new(payload.Info_Nodes)
 	nbn, ok := d.nodeByName.Load().(map[string]*payload.Info_Node)
 	if !ok {

@@ -194,7 +194,11 @@ func TestMarshalIndent(t *testing.T) {
 				}
 
 				if got, want := data, []byte("{\"name\":\"vald\"}"); !reflect.DeepEqual(got, want) {
-					return errors.Errorf("data not equals. want: %v, got: %v", string(want), string(got))
+					return errors.Errorf(
+						"data not equals. want: %v, got: %v",
+						string(want),
+						string(got),
+					)
 				}
 
 				return nil

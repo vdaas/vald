@@ -159,9 +159,10 @@ func (idx *index) Start(ctx context.Context) (<-chan error, error) {
 				return
 			case addr := <-idx.saveIndexTargetAddrCh:
 				idx.schMap.Delete(addr)
-				_, err = idx.client.GetClient().Do(ctx, addr, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (_ interface{}, err error) {
-					return agent.NewAgentClient(conn).SaveIndex(ctx, &payload.Empty{}, copts...)
-				})
+				_, err = idx.client.GetClient().
+					Do(ctx, addr, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (_ interface{}, err error) {
+						return agent.NewAgentClient(conn).SaveIndex(ctx, &payload.Empty{}, copts...)
+					})
 				if err != nil {
 					log.Warnf("an error occurred while calling SaveIndex of %s: %s", addr, err)
 					select {
@@ -178,7 +179,10 @@ func (idx *index) Start(ctx context.Context) (<-chan error, error) {
 	return ech, nil
 }
 
-func (idx *index) execute(ctx context.Context, enableLowIndexSkip, immediateSaving bool) (err error) {
+func (idx *index) execute(
+	ctx context.Context,
+	enableLowIndexSkip, immediateSaving bool,
+) (err error) {
 	ctx, span := trace.StartSpan(ctx, "vald/manager-index/service/Indexer.execute")
 	defer func() {
 		if span != nil {
@@ -202,7 +206,8 @@ func (idx *index) execute(ctx context.Context, enableLowIndexSkip, immediateSavi
 			default:
 			}
 			info, ok := idx.indexInfos.Load(addr)
-			if ok && (info.GetUncommitted() == 0 || (enableLowIndexSkip && info.GetUncommitted() < idx.minUncommitted)) {
+			if ok &&
+				(info.GetUncommitted() == 0 || (enableLowIndexSkip && info.GetUncommitted() < idx.minUncommitted)) {
 				return nil
 			}
 			ac := agent.NewAgentClient(conn)

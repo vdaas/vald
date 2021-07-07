@@ -170,7 +170,10 @@ func TestMeta_Bind(t *testing.T) {
 						Port: port,
 						Client: &GRPCClient{
 							Addrs: []string{
-								"vald-meta.vald.svc.cluster.local" + ":" + strconv.FormatUint(uint64(port), 10),
+								"vald-meta.vald.svc.cluster.local" + ":" + strconv.FormatUint(
+									uint64(port),
+									10,
+								),
 							},
 							DialOption: &DialOption{
 								Insecure: true,

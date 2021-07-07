@@ -233,7 +233,10 @@ func TestWithConfigLoader(t *testing.T) {
 	}
 
 	defaultCheckFunc := func(w want, obj *T) error {
-		if reflect.ValueOf(w.obj.loadConfig).Pointer() != reflect.ValueOf(obj.loadConfig).Pointer() {
+		if reflect.ValueOf(w.obj.loadConfig).
+			Pointer() !=
+			reflect.ValueOf(obj.loadConfig).
+				Pointer() {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
 		}
 		return nil
@@ -306,7 +309,10 @@ func TestWithDaemonInitializer(t *testing.T) {
 	}
 
 	defaultCheckFunc := func(w want, obj *T) error {
-		if reflect.ValueOf(w.obj.loadConfig).Pointer() != reflect.ValueOf(obj.loadConfig).Pointer() {
+		if reflect.ValueOf(w.obj.loadConfig).
+			Pointer() !=
+			reflect.ValueOf(obj.loadConfig).
+				Pointer() {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
 		}
 		return nil

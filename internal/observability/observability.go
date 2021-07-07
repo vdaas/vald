@@ -129,7 +129,9 @@ func NewWithConfig(cfg *config.Observability, metrics ...metrics.Metric) (Observ
 			stackdriver.WithLocation(cfg.Stackdriver.Exporter.Location),
 			stackdriver.WithBundleDelayThreshold(cfg.Stackdriver.Exporter.BundleDelayThreshold),
 			stackdriver.WithBundleCountThreshold(cfg.Stackdriver.Exporter.BundleCountThreshold),
-			stackdriver.WithTraceSpansBufferMaxBytes(cfg.Stackdriver.Exporter.TraceSpansBufferMaxBytes),
+			stackdriver.WithTraceSpansBufferMaxBytes(
+				cfg.Stackdriver.Exporter.TraceSpansBufferMaxBytes,
+			),
 			stackdriver.WithMetricPrefix(cfg.Stackdriver.Exporter.MetricPrefix),
 			stackdriver.WithSkipCMD(cfg.Stackdriver.Exporter.SkipCMD),
 			stackdriver.WithTimeout(cfg.Stackdriver.Exporter.Timeout),

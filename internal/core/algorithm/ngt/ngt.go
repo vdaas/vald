@@ -407,7 +407,10 @@ func (n *ngt) BulkInsert(vecs [][]float32) ([]uint, []error) {
 	for i, vec := range vecs {
 		id, err := n.Insert(vec)
 		if err != nil {
-			errs = append(errs, errors.Wrapf(err, "bulkinsert error detected index number: %d,\tid: %d", i, id))
+			errs = append(
+				errs,
+				errors.Wrapf(err, "bulkinsert error detected index number: %d,\tid: %d", i, id),
+			)
 		}
 		ids = append(ids, id)
 	}
@@ -513,7 +516,13 @@ func (n *ngt) BulkRemove(ids ...uint) (errs error) {
 	for i, id := range ids {
 		err := n.Remove(id)
 		if err != nil {
-			errs = errors.Wrapf(errs, "bulkremove error detected index number: %d,\tid: %d\terr: %v", i, id, err)
+			errs = errors.Wrapf(
+				errs,
+				"bulkremove error detected index number: %d,\tid: %d\terr: %v",
+				i,
+				id,
+				err,
+			)
 		}
 	}
 	return errs

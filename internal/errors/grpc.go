@@ -26,7 +26,12 @@ var (
 
 	// ErrInvalidGRPCPort represents a function to generate an error that the gRPC port is invalid.
 	ErrInvalidGRPCPort = func(addr, host string, port uint16) error {
-		return Errorf("invalid gRPC client connection port to addr: %s,\thost: %s\t port: %d", addr, host, port)
+		return Errorf(
+			"invalid gRPC client connection port to addr: %s,\thost: %s\t port: %d",
+			addr,
+			host,
+			port,
+		)
 	}
 
 	// ErrInvalidGRPCClientConn represents a function to generate an error that the vald internal gRPC connection is invalid.

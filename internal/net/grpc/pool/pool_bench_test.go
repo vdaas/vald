@@ -85,7 +85,8 @@ func ListenAndServe(b *testing.B, addr string) func() {
 
 func do(b *testing.B, conn *ClientConn) {
 	b.Helper()
-	_, err := discoverer.NewDiscovererClient(conn).Nodes(context.Background(), new(payload.Discoverer_Request))
+	_, err := discoverer.NewDiscovererClient(conn).
+		Nodes(context.Background(), new(payload.Discoverer_Request))
 	if err != nil {
 		b.Error(err)
 	}

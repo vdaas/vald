@@ -138,7 +138,8 @@ func TestLogger_Debugf(t *testing.T) {
 					t.Helper()
 					return fields{
 						DebugfFunc: func(format string, vals ...interface{}) {
-							if !reflect.DeepEqual(vals, wantVals) || !reflect.DeepEqual(format, wantFormat) {
+							if !reflect.DeepEqual(vals, wantVals) ||
+								!reflect.DeepEqual(format, wantFormat) {
 								t.Errorf("got = %v, want = %v", vals, wantVals)
 							}
 							cnt++
@@ -295,7 +296,8 @@ func TestLogger_Infof(t *testing.T) {
 					t.Helper()
 					return fields{
 						InfofFunc: func(format string, vals ...interface{}) {
-							if !reflect.DeepEqual(vals, wantVals) || !reflect.DeepEqual(format, wantFormat) {
+							if !reflect.DeepEqual(vals, wantVals) ||
+								!reflect.DeepEqual(format, wantFormat) {
 								t.Errorf("got = %v, want = %v", vals, wantVals)
 							}
 							cnt++
@@ -452,7 +454,8 @@ func TestLogger_Warnf(t *testing.T) {
 					t.Helper()
 					return fields{
 						WarnfFunc: func(format string, vals ...interface{}) {
-							if !reflect.DeepEqual(vals, wantVals) || !reflect.DeepEqual(format, wantFormat) {
+							if !reflect.DeepEqual(vals, wantVals) ||
+								!reflect.DeepEqual(format, wantFormat) {
 								t.Errorf("got = %v, want = %v", vals, wantVals)
 							}
 							cnt++
@@ -609,7 +612,8 @@ func TestLogger_Errorf(t *testing.T) {
 					t.Helper()
 					return fields{
 						ErrorfFunc: func(format string, vals ...interface{}) {
-							if !reflect.DeepEqual(vals, wantVals) || !reflect.DeepEqual(format, wantFormat) {
+							if !reflect.DeepEqual(vals, wantVals) ||
+								!reflect.DeepEqual(format, wantFormat) {
 								t.Errorf("got = %v, want = %v", vals, wantVals)
 							}
 							cnt++
@@ -766,7 +770,8 @@ func TestLogger_Fatalf(t *testing.T) {
 					t.Helper()
 					return fields{
 						FatalfFunc: func(format string, vals ...interface{}) {
-							if !reflect.DeepEqual(vals, wantVals) || !reflect.DeepEqual(format, wantFormat) {
+							if !reflect.DeepEqual(vals, wantVals) ||
+								!reflect.DeepEqual(format, wantFormat) {
 								t.Errorf("got = %v, want = %v", vals, wantVals)
 							}
 							cnt++

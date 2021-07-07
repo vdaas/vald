@@ -1934,7 +1934,11 @@ func Test_client_deleteMulti(t *testing.T) {
 				prefixDelimiter: test.fields.prefixDelimiter,
 			}
 
-			gotVals, err := c.deleteMulti(test.args.ctx, test.args.pfx, test.args.pfxInv, test.args.keys...)
+			gotVals, err := c.deleteMulti(
+				test.args.ctx,
+				test.args.pfx,
+				test.args.pfxInv,
+				test.args.keys...)
 			if err := test.checkFunc(test.want, gotVals, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}

@@ -99,11 +99,18 @@ func TestNew(t *testing.T) {
 				},
 				want: want{
 					wantRc: nil,
-					err:    errors.ErrOptionFailed(dummyErr, reflect.ValueOf(dummyWithFunc(dummyErr))),
+					err: errors.ErrOptionFailed(
+						dummyErr,
+						reflect.ValueOf(dummyWithFunc(dummyErr)),
+					),
 				},
 				checkFunc: func(w want, gotRc Connector, err error) error {
 					if !errors.Is(err, w.err) {
-						return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+						return errors.Errorf(
+							"got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"",
+							err,
+							w.err,
+						)
 					}
 
 					return nil
@@ -212,7 +219,10 @@ func Test_redisClient_ping(t *testing.T) {
 				},
 				want: want{
 					wantR: nil,
-					err:   errors.Wrap(errors.Wrap(err, errors.ErrRedisConnectionPingFailed.Error()), context.DeadlineExceeded.Error()),
+					err: errors.Wrap(
+						errors.Wrap(err, errors.ErrRedisConnectionPingFailed.Error()),
+						context.DeadlineExceeded.Error(),
+					),
 				},
 			}
 		}(),
@@ -546,7 +556,11 @@ func Test_redisClient_newClient(t *testing.T) {
 				},
 				checkFunc: func(w want, gotc *redis.Client, err error) error {
 					if !errors.Is(err, w.err) {
-						return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+						return errors.Errorf(
+							"got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"",
+							err,
+							w.err,
+						)
 					}
 					if gotc == nil {
 						return errors.New("got is nil")
@@ -564,9 +578,14 @@ func Test_redisClient_newClient(t *testing.T) {
 						cmp.Comparer(func(want, got *tls.Config) bool {
 							return reflect.ValueOf(want).Pointer() == reflect.ValueOf(got).Pointer()
 						}),
-						cmp.Comparer(func(want, got func(ctx context.Context, network, addr string) (net.Conn, error)) bool {
-							return reflect.ValueOf(want).Pointer() == reflect.ValueOf(got).Pointer()
-						}),
+						cmp.Comparer(
+							func(want, got func(ctx context.Context, network, addr string) (net.Conn, error)) bool {
+								return reflect.ValueOf(want).
+									Pointer() ==
+									reflect.ValueOf(got).
+										Pointer()
+							},
+						),
 						cmp.Comparer(func(want, got func(*redis.Conn) error) bool {
 							return reflect.ValueOf(want).Pointer() == reflect.ValueOf(got).Pointer()
 						}),
@@ -778,7 +797,11 @@ func Test_redisClient_newClusterClient(t *testing.T) {
 				},
 				checkFunc: func(w want, gotc *redis.ClusterClient, err error) error {
 					if !errors.Is(err, w.err) {
-						return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+						return errors.Errorf(
+							"got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"",
+							err,
+							w.err,
+						)
 					}
 					if gotc == nil {
 						return errors.New("got is nil")
@@ -799,15 +822,25 @@ func Test_redisClient_newClusterClient(t *testing.T) {
 						cmp.Comparer(func(want, got func(*redis.Client)) bool {
 							return reflect.ValueOf(want).Pointer() == reflect.ValueOf(got).Pointer()
 						}),
-						cmp.Comparer(func(want, got func(context.Context) ([]redis.ClusterSlot, error)) bool {
-							return reflect.ValueOf(want).Pointer() == reflect.ValueOf(got).Pointer()
-						}),
+						cmp.Comparer(
+							func(want, got func(context.Context) ([]redis.ClusterSlot, error)) bool {
+								return reflect.ValueOf(want).
+									Pointer() ==
+									reflect.ValueOf(got).
+										Pointer()
+							},
+						),
 						cmp.Comparer(func(want, got func() ([]redis.ClusterSlot, error)) bool {
 							return reflect.ValueOf(want).Pointer() == reflect.ValueOf(got).Pointer()
 						}),
-						cmp.Comparer(func(want, got func(ctx context.Context, network, addr string) (net.Conn, error)) bool {
-							return reflect.ValueOf(want).Pointer() == reflect.ValueOf(got).Pointer()
-						}),
+						cmp.Comparer(
+							func(want, got func(ctx context.Context, network, addr string) (net.Conn, error)) bool {
+								return reflect.ValueOf(want).
+									Pointer() ==
+									reflect.ValueOf(got).
+										Pointer()
+							},
+						),
 						cmp.Comparer(func(want, got func(context.Context, *redis.Conn) error) bool {
 							return reflect.ValueOf(want).Pointer() == reflect.ValueOf(got).Pointer()
 						}),
@@ -981,7 +1014,10 @@ func Test_redisClient_Connect(t *testing.T) {
 					dialer:               dialer,
 				},
 				want: want{
-					err: errors.Wrap(errors.Wrap(nil, errors.ErrRedisConnectionPingFailed.Error()), context.DeadlineExceeded.Error()),
+					err: errors.Wrap(
+						errors.Wrap(nil, errors.ErrRedisConnectionPingFailed.Error()),
+						context.DeadlineExceeded.Error(),
+					),
 				},
 				checkFunc: defaultCheckFunc,
 			}

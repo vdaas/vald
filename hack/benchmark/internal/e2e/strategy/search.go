@@ -69,7 +69,12 @@ func (s *search) run(ctx context.Context, b *testing.B, c client.Client, dataset
 	})
 }
 
-func (s *search) runParallel(ctx context.Context, b *testing.B, c client.Client, dataset assets.Dataset) {
+func (s *search) runParallel(
+	ctx context.Context,
+	b *testing.B,
+	c client.Client,
+	dataset assets.Dataset,
+) {
 	var cnt int64
 	b.Run("ParallelSearch", func(bb *testing.B) {
 		bb.StopTimer()

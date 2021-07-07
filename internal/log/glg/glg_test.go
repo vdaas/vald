@@ -419,7 +419,11 @@ func TestInfo(t *testing.T) {
 				},
 				checkFunc: func() error {
 					if gotVals != wantVals {
-						return errors.Errorf("vals not equals. want: %v, but got: %v", wantVals, gotVals)
+						return errors.Errorf(
+							"vals not equals. want: %v, but got: %v",
+							wantVals,
+							gotVals,
+						)
 					}
 					return nil
 				},
@@ -487,11 +491,19 @@ func TestInfof(t *testing.T) {
 				},
 				checkFunc: func() error {
 					if gotFormat != wantFormat {
-						return errors.Errorf("format not equals. want: %v, but got: %v", wantFormat, gotFormat)
+						return errors.Errorf(
+							"format not equals. want: %v, but got: %v",
+							wantFormat,
+							gotFormat,
+						)
 					}
 
 					if gotVals != wantVals {
-						return errors.Errorf("vals not equals. want: %v, but got: %v", wantVals, gotVals)
+						return errors.Errorf(
+							"vals not equals. want: %v, but got: %v",
+							wantVals,
+							gotVals,
+						)
 					}
 					return nil
 				},
@@ -552,7 +564,11 @@ func TestDebug(t *testing.T) {
 				},
 				checkFunc: func() error {
 					if gotVals != wantVals {
-						return errors.Errorf("vals not equals. want: %v, but got: %v", wantVals, gotVals)
+						return errors.Errorf(
+							"vals not equals. want: %v, but got: %v",
+							wantVals,
+							gotVals,
+						)
 					}
 					return nil
 				},
@@ -620,11 +636,19 @@ func TestDebugf(t *testing.T) {
 				},
 				checkFunc: func() error {
 					if gotFormat != wantFormat {
-						return errors.Errorf("format not equals. want: %v, but got: %v", wantFormat, gotFormat)
+						return errors.Errorf(
+							"format not equals. want: %v, but got: %v",
+							wantFormat,
+							gotFormat,
+						)
 					}
 
 					if gotVals != wantVals {
-						return errors.Errorf("vals not equals. want: %v, but got: %v", wantVals, gotVals)
+						return errors.Errorf(
+							"vals not equals. want: %v, but got: %v",
+							wantVals,
+							gotVals,
+						)
 					}
 					return nil
 				},
@@ -685,7 +709,11 @@ func TestWarn(t *testing.T) {
 				},
 				checkFunc: func() error {
 					if gotVals != wantVals {
-						return errors.Errorf("vals not equals. want: %v, but got: %v", wantVals, gotVals)
+						return errors.Errorf(
+							"vals not equals. want: %v, but got: %v",
+							wantVals,
+							gotVals,
+						)
 					}
 					return nil
 				},
@@ -753,11 +781,19 @@ func TestWarnf(t *testing.T) {
 				},
 				checkFunc: func() error {
 					if gotFormat != wantFormat {
-						return errors.Errorf("format not equals. want: %v, but got: %v", wantFormat, gotFormat)
+						return errors.Errorf(
+							"format not equals. want: %v, but got: %v",
+							wantFormat,
+							gotFormat,
+						)
 					}
 
 					if gotVals != wantVals {
-						return errors.Errorf("vals not equals. want: %v, but got: %v", wantVals, gotVals)
+						return errors.Errorf(
+							"vals not equals. want: %v, but got: %v",
+							wantVals,
+							gotVals,
+						)
 					}
 					return nil
 				},
@@ -818,7 +854,11 @@ func TestError(t *testing.T) {
 				},
 				checkFunc: func() error {
 					if gotVals != wantVals {
-						return errors.Errorf("vals not equals. want: %v, but got: %v", wantVals, gotVals)
+						return errors.Errorf(
+							"vals not equals. want: %v, but got: %v",
+							wantVals,
+							gotVals,
+						)
 					}
 					return nil
 				},
@@ -886,11 +926,19 @@ func TestErrorf(t *testing.T) {
 				},
 				checkFunc: func() error {
 					if gotFormat != wantFormat {
-						return errors.Errorf("format not equals. want: %v, but got: %v", wantFormat, gotFormat)
+						return errors.Errorf(
+							"format not equals. want: %v, but got: %v",
+							wantFormat,
+							gotFormat,
+						)
 					}
 
 					if gotVals != wantVals {
-						return errors.Errorf("vals not equals. want: %v, but got: %v", wantVals, gotVals)
+						return errors.Errorf(
+							"vals not equals. want: %v, but got: %v",
+							wantVals,
+							gotVals,
+						)
 					}
 					return nil
 				},

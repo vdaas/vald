@@ -90,7 +90,9 @@ func TestDo(t *testing.T) {
 				}
 			},
 			want: want{
-				err: errors.ErrArgumentParseFailed(stderrs.New("flag provided but not defined: -team")),
+				err: errors.ErrArgumentParseFailed(
+					stderrs.New("flag provided but not defined: -team"),
+				),
 			},
 		},
 
@@ -361,7 +363,12 @@ func TestRun(t *testing.T) {
 						}
 
 						for _, det := range details {
-							err = errors.Wrapf(err, "error:\t%s\tcount:\t%d", det.err.Error(), det.cnt)
+							err = errors.Wrapf(
+								err,
+								"error:\t%s\tcount:\t%d",
+								det.err.Error(),
+								det.cnt,
+							)
 						}
 
 						return errors.ErrDaemonStopFailed(err)
@@ -424,7 +431,12 @@ func TestRun(t *testing.T) {
 						}
 
 						for _, detail := range details {
-							err = errors.Wrapf(err, "error:\t%s\tcount:\t%d", detail.err.Error(), detail.cnt)
+							err = errors.Wrapf(
+								err,
+								"error:\t%s\tcount:\t%d",
+								detail.err.Error(),
+								detail.cnt,
+							)
 						}
 
 						return errors.ErrDaemonStopFailed(err)

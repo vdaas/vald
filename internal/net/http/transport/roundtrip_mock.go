@@ -33,7 +33,10 @@ type backoffMock struct {
 	CloseFunc func()
 }
 
-func (bm *backoffMock) Do(ctx context.Context, fn func(context.Context) (interface{}, bool, error)) (interface{}, error) {
+func (bm *backoffMock) Do(
+	ctx context.Context,
+	fn func(context.Context) (interface{}, bool, error),
+) (interface{}, error) {
 	return bm.DoFunc(ctx, fn)
 }
 

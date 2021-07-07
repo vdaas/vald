@@ -170,11 +170,15 @@ func Test_group_Do(t *testing.T) {
 							defer wg.Done()
 							condWaitFn()
 
-							g.Do(context.Background(), strconv.Itoa(i), func() (interface{}, error) {
-								time.Sleep(time.Nanosecond * 100)
-								atomic.AddUint32(&cnt, 1)
-								return "vdaas/vald", nil
-							})
+							g.Do(
+								context.Background(),
+								strconv.Itoa(i),
+								func() (interface{}, error) {
+									time.Sleep(time.Nanosecond * 100)
+									atomic.AddUint32(&cnt, 1)
+									return "vdaas/vald", nil
+								},
+							)
 						}(i)
 					}
 

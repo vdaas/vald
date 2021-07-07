@@ -371,7 +371,13 @@ func TestErrRuntimeError(t *testing.T) {
 					r:   defaultRuntimeErr,
 				},
 				want: want{
-					want: Wrap(defaultErr, Errorf("system panicked caused by runtime error: %v", defaultRuntimeErr).Error()),
+					want: Wrap(
+						defaultErr,
+						Errorf(
+							"system panicked caused by runtime error: %v",
+							defaultRuntimeErr,
+						).Error(),
+					),
 				},
 			}
 		}(),
@@ -382,7 +388,10 @@ func TestErrRuntimeError(t *testing.T) {
 					err: defaultErr,
 				},
 				want: want{
-					want: Wrap(defaultErr, Errorf("system panicked caused by runtime error: %v", nil).Error()),
+					want: Wrap(
+						defaultErr,
+						Errorf("system panicked caused by runtime error: %v", nil).Error(),
+					),
 				},
 			}
 		}(),
@@ -393,7 +402,13 @@ func TestErrRuntimeError(t *testing.T) {
 					r: defaultRuntimeErr,
 				},
 				want: want{
-					want: Wrap(nil, Errorf("system panicked caused by runtime error: %v", defaultRuntimeErr).Error()),
+					want: Wrap(
+						nil,
+						Errorf(
+							"system panicked caused by runtime error: %v",
+							defaultRuntimeErr,
+						).Error(),
+					),
 				},
 			}
 		}(),
@@ -402,7 +417,10 @@ func TestErrRuntimeError(t *testing.T) {
 				name: "return an error when err is nil and msg is nil",
 				args: args{},
 				want: want{
-					want: Wrap(nil, Errorf("system panicked caused by runtime error: %v", nil).Error()),
+					want: Wrap(
+						nil,
+						Errorf("system panicked caused by runtime error: %v", nil).Error(),
+					),
 				},
 			}
 		}(),

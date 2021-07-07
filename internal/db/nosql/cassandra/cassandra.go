@@ -235,7 +235,11 @@ func New(opts ...Option) (Cassandra, error) {
 				switch {
 				case c.poolConfig.enableShuffleReplicas &&
 					c.poolConfig.enableNonLocalReplicasFallback:
-					return gocql.TokenAwareHostPolicy(hsp, gocql.ShuffleReplicas(), gocql.NonLocalReplicasFallback())
+					return gocql.TokenAwareHostPolicy(
+						hsp,
+						gocql.ShuffleReplicas(),
+						gocql.NonLocalReplicasFallback(),
+					)
 				case c.poolConfig.enableShuffleReplicas:
 					return gocql.TokenAwareHostPolicy(hsp, gocql.ShuffleReplicas())
 				case c.poolConfig.enableNonLocalReplicasFallback:

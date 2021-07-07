@@ -26,55 +26,55 @@ import (
 
 // GRPCClient represents the configurations for gRPC client.
 type GRPCClient struct {
-	Addrs               []string        `json:"addrs" yaml:"addrs"`
+	Addrs               []string        `json:"addrs"                 yaml:"addrs"`
 	HealthCheckDuration string          `json:"health_check_duration" yaml:"health_check_duration"`
-	ConnectionPool      *ConnectionPool `json:"connection_pool" yaml:"connection_pool"`
-	Backoff             *Backoff        `json:"backoff" yaml:"backoff"`
-	CallOption          *CallOption     `json:"call_option" yaml:"call_option"`
-	DialOption          *DialOption     `json:"dial_option" yaml:"dial_option"`
-	TLS                 *TLS            `json:"tls" yaml:"tls"`
+	ConnectionPool      *ConnectionPool `json:"connection_pool"       yaml:"connection_pool"`
+	Backoff             *Backoff        `json:"backoff"               yaml:"backoff"`
+	CallOption          *CallOption     `json:"call_option"           yaml:"call_option"`
+	DialOption          *DialOption     `json:"dial_option"           yaml:"dial_option"`
+	TLS                 *TLS            `json:"tls"                   yaml:"tls"`
 }
 
 // CallOption represents the configurations for call option.
 type CallOption struct {
-	WaitForReady          bool `json:"wait_for_ready" yaml:"wait_for_ready"`
+	WaitForReady          bool `json:"wait_for_ready"            yaml:"wait_for_ready"`
 	MaxRetryRPCBufferSize int  `json:"max_retry_rpc_buffer_size" yaml:"max_retry_rpc_buffer_size"`
-	MaxRecvMsgSize        int  `json:"max_recv_msg_size" yaml:"max_recv_msg_size"`
-	MaxSendMsgSize        int  `json:"max_send_msg_size" yaml:"max_send_msg_size"`
+	MaxRecvMsgSize        int  `json:"max_recv_msg_size"         yaml:"max_recv_msg_size"`
+	MaxSendMsgSize        int  `json:"max_send_msg_size"         yaml:"max_send_msg_size"`
 }
 
 // DialOption represents the configurations for dial option.
 type DialOption struct {
-	WriteBufferSize             int                  `json:"write_buffer_size" yaml:"write_buffer_size"`
-	ReadBufferSize              int                  `json:"read_buffer_size" yaml:"read_buffer_size"`
-	InitialWindowSize           int                  `json:"initial_window_size" yaml:"initial_window_size"`
+	WriteBufferSize             int                  `json:"write_buffer_size"              yaml:"write_buffer_size"`
+	ReadBufferSize              int                  `json:"read_buffer_size"               yaml:"read_buffer_size"`
+	InitialWindowSize           int                  `json:"initial_window_size"            yaml:"initial_window_size"`
 	InitialConnectionWindowSize int                  `json:"initial_connection_window_size" yaml:"initial_connection_window_size"`
-	MaxMsgSize                  int                  `json:"max_msg_size" yaml:"max_msg_size"`
-	BackoffMaxDelay             string               `json:"backoff_max_delay" yaml:"backoff_max_delay"`
-	BackoffBaseDelay            string               `json:"backoff_base_delay" yaml:"backoff_base_delay"`
-	BackoffJitter               float64              `json:"backoff_jitter" yaml:"backoff_jitter"`
-	BackoffMultiplier           float64              `json:"backoff_multiplier" yaml:"backoff_multiplier"`
-	MinimumConnectionTimeout    string               `json:"min_connection_timeout" yaml:"min_connection_timeout"`
-	EnableBackoff               bool                 `json:"enable_backoff" yaml:"enable_backoff"`
-	Insecure                    bool                 `json:"insecure" yaml:"insecure"`
-	Timeout                     string               `json:"timeout" yaml:"timeout"`
-	Net                         *Net                 `json:"net" yaml:"net"`
-	KeepAlive                   *GRPCClientKeepalive `json:"keep_alive" yaml:"keep_alive"`
+	MaxMsgSize                  int                  `json:"max_msg_size"                   yaml:"max_msg_size"`
+	BackoffMaxDelay             string               `json:"backoff_max_delay"              yaml:"backoff_max_delay"`
+	BackoffBaseDelay            string               `json:"backoff_base_delay"             yaml:"backoff_base_delay"`
+	BackoffJitter               float64              `json:"backoff_jitter"                 yaml:"backoff_jitter"`
+	BackoffMultiplier           float64              `json:"backoff_multiplier"             yaml:"backoff_multiplier"`
+	MinimumConnectionTimeout    string               `json:"min_connection_timeout"         yaml:"min_connection_timeout"`
+	EnableBackoff               bool                 `json:"enable_backoff"                 yaml:"enable_backoff"`
+	Insecure                    bool                 `json:"insecure"                       yaml:"insecure"`
+	Timeout                     string               `json:"timeout"                        yaml:"timeout"`
+	Net                         *Net                 `json:"net"                            yaml:"net"`
+	KeepAlive                   *GRPCClientKeepalive `json:"keep_alive"                     yaml:"keep_alive"`
 }
 
 // ConnectionPool represents the configurations for connection pool.
 type ConnectionPool struct {
-	ResolveDNS           bool   `json:"enable_dns_resolver" yaml:"enable_dns_resolver"`
-	EnableRebalance      bool   `json:"enable_rebalance" yaml:"enable_rebalance"`
-	RebalanceDuration    string `json:"rebalance_duration" yaml:"rebalance_duration"`
-	Size                 int    `json:"size" yaml:"size"`
+	ResolveDNS           bool   `json:"enable_dns_resolver"     yaml:"enable_dns_resolver"`
+	EnableRebalance      bool   `json:"enable_rebalance"        yaml:"enable_rebalance"`
+	RebalanceDuration    string `json:"rebalance_duration"      yaml:"rebalance_duration"`
+	Size                 int    `json:"size"                    yaml:"size"`
 	OldConnCloseDuration string `json:"old_conn_close_duration" yaml:"old_conn_close_duration"`
 }
 
 // GRPCClientKeepalive represents the configurations for gRPC keep-alive.
 type GRPCClientKeepalive struct {
-	Time                string `json:"time" yaml:"time"`
-	Timeout             string `json:"timeout" yaml:"timeout"`
+	Time                string `json:"time"                  yaml:"time"`
+	Timeout             string `json:"timeout"               yaml:"timeout"`
 	PermitWithoutStream bool   `json:"permit_without_stream" yaml:"permit_without_stream"`
 }
 
@@ -94,7 +94,9 @@ func (g *GRPCClient) Bind() *GRPCClient {
 
 	if g.ConnectionPool != nil {
 		g.ConnectionPool.RebalanceDuration = GetActualValue(g.ConnectionPool.RebalanceDuration)
-		g.ConnectionPool.OldConnCloseDuration = GetActualValue(g.ConnectionPool.OldConnCloseDuration)
+		g.ConnectionPool.OldConnCloseDuration = GetActualValue(
+			g.ConnectionPool.OldConnCloseDuration,
+		)
 	} else {
 		g.ConnectionPool = new(ConnectionPool)
 	}

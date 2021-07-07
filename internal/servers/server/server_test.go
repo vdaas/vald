@@ -165,7 +165,11 @@ func TestNew(t *testing.T) {
 					}
 
 					if !errors.Is(gotErr, wantErr) {
-						return errors.Errorf("err is not equals. want: %v, got: %v", wantErr, gotErr)
+						return errors.Errorf(
+							"err is not equals. want: %v, got: %v",
+							wantErr,
+							gotErr,
+						)
 					}
 
 					return nil
@@ -184,7 +188,11 @@ func TestNew(t *testing.T) {
 					}
 
 					if !errors.Is(gotErr, wantErr) {
-						return errors.Errorf("err is not equals. want: %v, got: %v", wantErr, gotErr)
+						return errors.Errorf(
+							"err is not equals. want: %v, got: %v",
+							wantErr,
+							gotErr,
+						)
 					}
 
 					return nil
@@ -211,7 +219,11 @@ func TestNew(t *testing.T) {
 					}
 
 					if !errors.Is(gotErr, wantErr) {
-						return errors.Errorf("err is not equals. want: %v, got: %v", wantErr, gotErr)
+						return errors.Errorf(
+							"err is not equals. want: %v, got: %v",
+							wantErr,
+							gotErr,
+						)
 					}
 
 					return nil
@@ -232,7 +244,11 @@ func TestNew(t *testing.T) {
 					}
 
 					if !errors.Is(gotErr, wantErr) {
-						return errors.Errorf("err is not equals. want: %v, got: %v", wantErr, gotErr)
+						return errors.Errorf(
+							"err is not equals. want: %v, got: %v",
+							wantErr,
+							gotErr,
+						)
 					}
 
 					return nil
@@ -266,7 +282,11 @@ func TestNew(t *testing.T) {
 					}
 
 					if !errors.Is(gotErr, wantErr) {
-						return errors.Errorf("err is not equals. want: %v, got: %v", wantErr, gotErr)
+						return errors.Errorf(
+							"err is not equals. want: %v, got: %v",
+							wantErr,
+							gotErr,
+						)
 					}
 
 					return nil
@@ -287,7 +307,11 @@ func TestNew(t *testing.T) {
 					}
 
 					if !errors.Is(gotErr, wantErr) {
-						return errors.Errorf("err is not equals. want: %v, got: %v", wantErr, gotErr)
+						return errors.Errorf(
+							"err is not equals. want: %v, got: %v",
+							wantErr,
+							gotErr,
+						)
 					}
 
 					return nil

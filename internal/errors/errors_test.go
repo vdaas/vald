@@ -416,7 +416,11 @@ func TestErrInvalidTypeConversion(t *testing.T) {
 		func() test {
 			i := []string{"slice string"}
 			tgt := 10
-			wantErr := fmt.Errorf("invalid type conversion %v to %v", reflect.TypeOf(i), reflect.TypeOf(tgt))
+			wantErr := fmt.Errorf(
+				"invalid type conversion %v to %v",
+				reflect.TypeOf(i),
+				reflect.TypeOf(tgt),
+			)
 			return test{
 				name: "return an ErrBackoffTimeout error when i is []string and tgt is int.",
 				args: args{
@@ -431,7 +435,11 @@ func TestErrInvalidTypeConversion(t *testing.T) {
 		func() test {
 			i := &[]string{"ptr of slice string"}
 			tgt := "string"
-			wantErr := fmt.Errorf("invalid type conversion %v to %v", reflect.TypeOf(i), reflect.TypeOf(tgt))
+			wantErr := fmt.Errorf(
+				"invalid type conversion %v to %v",
+				reflect.TypeOf(i),
+				reflect.TypeOf(tgt),
+			)
 			return test{
 				name: "return an ErrBackoffTimeout error when i is &[]string and tgt is string.",
 				args: args{
@@ -446,7 +454,11 @@ func TestErrInvalidTypeConversion(t *testing.T) {
 		func() test {
 			i := map[string]int{"replicas": 0}
 			tgt := []float64{math.MaxFloat64}
-			wantErr := fmt.Errorf("invalid type conversion %v to %v", reflect.TypeOf(i), reflect.TypeOf(tgt))
+			wantErr := fmt.Errorf(
+				"invalid type conversion %v to %v",
+				reflect.TypeOf(i),
+				reflect.TypeOf(tgt),
+			)
 			return test{
 				name: "return an ErrBackoffTimeout error when i is map[string]int and []float64.",
 				args: args{
@@ -459,7 +471,11 @@ func TestErrInvalidTypeConversion(t *testing.T) {
 			}
 		}(),
 		func() test {
-			wantErr := fmt.Errorf("invalid type conversion %v to %v", reflect.TypeOf(nil), reflect.TypeOf(nil))
+			wantErr := fmt.Errorf(
+				"invalid type conversion %v to %v",
+				reflect.TypeOf(nil),
+				reflect.TypeOf(nil),
+			)
 			return test{
 				name: "return an ErrInvalidTypeConversion error when i and tgt are <nil>.",
 				args: args{},

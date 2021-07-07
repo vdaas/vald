@@ -130,7 +130,11 @@ func (c *client) Target(ctx context.Context, targets ...string) (ingress.FilterC
 	}, nil
 }
 
-func (c *client) GenVector(ctx context.Context, in *payload.Object_Blob, opts ...grpc.CallOption) (res *payload.Object_Vector, err error) {
+func (c *client) GenVector(
+	ctx context.Context,
+	in *payload.Object_Blob,
+	opts ...grpc.CallOption,
+) (res *payload.Object_Vector, err error) {
 	ctx, span := trace.StartSpan(ctx, apiName+"/Client.GenVector")
 	defer func() {
 		if span != nil {
@@ -149,7 +153,11 @@ func (c *client) GenVector(ctx context.Context, in *payload.Object_Blob, opts ..
 	return res, nil
 }
 
-func (c *client) FilterVector(ctx context.Context, in *payload.Object_Vector, opts ...grpc.CallOption) (res *payload.Object_Vector, err error) {
+func (c *client) FilterVector(
+	ctx context.Context,
+	in *payload.Object_Vector,
+	opts ...grpc.CallOption,
+) (res *payload.Object_Vector, err error) {
 	ctx, span := trace.StartSpan(ctx, apiName+"/Client.FilterVector")
 	defer func() {
 		if span != nil {
@@ -168,7 +176,11 @@ func (c *client) FilterVector(ctx context.Context, in *payload.Object_Vector, op
 	return res, nil
 }
 
-func (s *specificAddrClient) GenVector(ctx context.Context, in *payload.Object_Blob, opts ...grpc.CallOption) (res *payload.Object_Vector, err error) {
+func (s *specificAddrClient) GenVector(
+	ctx context.Context,
+	in *payload.Object_Blob,
+	opts ...grpc.CallOption,
+) (res *payload.Object_Vector, err error) {
 	ctx, span := trace.StartSpan(ctx, apiName+"/Client.GenVector/"+s.addr)
 	defer func() {
 		if span != nil {
@@ -187,7 +199,11 @@ func (s *specificAddrClient) GenVector(ctx context.Context, in *payload.Object_B
 	return res, nil
 }
 
-func (s *specificAddrClient) FilterVector(ctx context.Context, in *payload.Object_Vector, opts ...grpc.CallOption) (res *payload.Object_Vector, err error) {
+func (s *specificAddrClient) FilterVector(
+	ctx context.Context,
+	in *payload.Object_Vector,
+	opts ...grpc.CallOption,
+) (res *payload.Object_Vector, err error) {
 	ctx, span := trace.StartSpan(ctx, apiName+"/Client.FilterVector/"+s.addr)
 	defer func() {
 		if span != nil {
@@ -206,7 +222,11 @@ func (s *specificAddrClient) FilterVector(ctx context.Context, in *payload.Objec
 	return res, nil
 }
 
-func (m *multipleAddrsClient) GenVector(ctx context.Context, in *payload.Object_Blob, opts ...grpc.CallOption) (res *payload.Object_Vector, err error) {
+func (m *multipleAddrsClient) GenVector(
+	ctx context.Context,
+	in *payload.Object_Blob,
+	opts ...grpc.CallOption,
+) (res *payload.Object_Vector, err error) {
 	ctx, span := trace.StartSpan(ctx, apiName+"/Client.GetVector/["+strings.Join(m.addrs, ",")+"]")
 	defer func() {
 		if span != nil {
@@ -225,8 +245,15 @@ func (m *multipleAddrsClient) GenVector(ctx context.Context, in *payload.Object_
 	return res, nil
 }
 
-func (m *multipleAddrsClient) FilterVector(ctx context.Context, in *payload.Object_Vector, opts ...grpc.CallOption) (res *payload.Object_Vector, err error) {
-	ctx, span := trace.StartSpan(ctx, apiName+"/Client.FilterVector/["+strings.Join(m.addrs, ",")+"]")
+func (m *multipleAddrsClient) FilterVector(
+	ctx context.Context,
+	in *payload.Object_Vector,
+	opts ...grpc.CallOption,
+) (res *payload.Object_Vector, err error) {
+	ctx, span := trace.StartSpan(
+		ctx,
+		apiName+"/Client.FilterVector/["+strings.Join(m.addrs, ",")+"]",
+	)
 	defer func() {
 		if span != nil {
 			span.End()

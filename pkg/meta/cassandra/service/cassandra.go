@@ -193,7 +193,11 @@ func (c *client) SetMultiple(kvs map[string]string) (err error) {
 	vki := cassandra.Insert(c.vkTable).Columns(uuidColumn, metaColumn)
 
 	bt := cassandra.Batch()
-	entities := make([]interface{}, 0, len(kvs)*4) // nolint:gomnd // 4 means pairs of key-val and key-val
+	entities := make(
+		[]interface{},
+		0,
+		len(kvs)*4,
+	) // nolint:gomnd // 4 means pairs of key-val and key-val
 	for key, val := range kvs {
 		bt = bt.Add(kvi).Add(vki)
 		entities = append(entities, key, val, key, val)

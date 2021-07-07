@@ -47,7 +47,10 @@ func New(opts ...Option) Server {
 	return s
 }
 
-func (s *server) GetVector(ctx context.Context, req *payload.Backup_GetVector_Request) (res *payload.Backup_Compressed_Vector, err error) {
+func (s *server) GetVector(
+	ctx context.Context,
+	req *payload.Backup_GetVector_Request,
+) (res *payload.Backup_Compressed_Vector, err error) {
 	ctx, span := trace.StartSpan(ctx, "vald/manager-backup-mysql.GetVector")
 	defer func() {
 		if span != nil {
@@ -61,19 +64,30 @@ func (s *server) GetVector(ctx context.Context, req *payload.Backup_GetVector_Re
 			if span != nil {
 				span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 			}
-			return nil, status.WrapWithNotFound(fmt.Sprintf("GetVector API mysql uuid %s's object not found", uuid), err, info.Get())
+			return nil, status.WrapWithNotFound(
+				fmt.Sprintf("GetVector API mysql uuid %s's object not found", uuid),
+				err,
+				info.Get(),
+			)
 		}
 		log.Errorf("[GetVector]\tunknown error\t%+v", err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeUnknown(err.Error()))
 		}
-		return nil, status.WrapWithUnknown(fmt.Sprintf("GetVector API mysql uuid %s's unknown error occurred", uuid), err, info.Get())
+		return nil, status.WrapWithUnknown(
+			fmt.Sprintf("GetVector API mysql uuid %s's unknown error occurred", uuid),
+			err,
+			info.Get(),
+		)
 	}
 
 	return toBackupVector(vector)
 }
 
-func (s *server) Locations(ctx context.Context, req *payload.Backup_Locations_Request) (res *payload.Info_IPs, err error) {
+func (s *server) Locations(
+	ctx context.Context,
+	req *payload.Backup_Locations_Request,
+) (res *payload.Info_IPs, err error) {
 	ctx, span := trace.StartSpan(ctx, "vald/manager-backup-mysql.Locations")
 	defer func() {
 		if span != nil {
@@ -86,7 +100,11 @@ func (s *server) Locations(ctx context.Context, req *payload.Backup_Locations_Re
 		if span != nil {
 			span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 		}
-		return nil, status.WrapWithNotFound(fmt.Sprintf("Locations API uuid %s's location not found", uuid), err, info.Get())
+		return nil, status.WrapWithNotFound(
+			fmt.Sprintf("Locations API uuid %s's location not found", uuid),
+			err,
+			info.Get(),
+		)
 	}
 
 	return &payload.Info_IPs{
@@ -94,7 +112,10 @@ func (s *server) Locations(ctx context.Context, req *payload.Backup_Locations_Re
 	}, nil
 }
 
-func (s *server) Register(ctx context.Context, vector *payload.Backup_Compressed_Vector) (res *payload.Empty, err error) {
+func (s *server) Register(
+	ctx context.Context,
+	vector *payload.Backup_Compressed_Vector,
+) (res *payload.Empty, err error) {
 	ctx, span := trace.StartSpan(ctx, "vald/manager-backup-mysql.Register")
 	defer func() {
 		if span != nil {
@@ -108,7 +129,11 @@ func (s *server) Register(ctx context.Context, vector *payload.Backup_Compressed
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
-		return nil, status.WrapWithInternal(fmt.Sprintf("Register API uuid %s's could not convert vector to backup format", uuid), err, info.Get())
+		return nil, status.WrapWithInternal(
+			fmt.Sprintf("Register API uuid %s's could not convert vector to backup format", uuid),
+			err,
+			info.Get(),
+		)
 	}
 
 	err = s.mysql.SetVector(ctx, m)
@@ -117,13 +142,20 @@ func (s *server) Register(ctx context.Context, vector *payload.Backup_Compressed
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
-		return nil, status.WrapWithInternal(fmt.Sprintf("Register API uuid %s's failed to backup vector", uuid), err, info.Get())
+		return nil, status.WrapWithInternal(
+			fmt.Sprintf("Register API uuid %s's failed to backup vector", uuid),
+			err,
+			info.Get(),
+		)
 	}
 
 	return new(payload.Empty), nil
 }
 
-func (s *server) RegisterMulti(ctx context.Context, vectors *payload.Backup_Compressed_Vectors) (res *payload.Empty, err error) {
+func (s *server) RegisterMulti(
+	ctx context.Context,
+	vectors *payload.Backup_Compressed_Vectors,
+) (res *payload.Empty, err error) {
 	ctx, span := trace.StartSpan(ctx, "vald/manager-backup-mysql.RegisterMulti")
 	defer func() {
 		if span != nil {
@@ -139,7 +171,14 @@ func (s *server) RegisterMulti(ctx context.Context, vectors *payload.Backup_Comp
 			if span != nil {
 				span.SetStatus(trace.StatusCodeInternal(err.Error()))
 			}
-			return nil, status.WrapWithInternal(fmt.Sprintf("RegisterMulti API uuids %s's could not convert vector to backup format", vector.GetUuid()), err, info.Get())
+			return nil, status.WrapWithInternal(
+				fmt.Sprintf(
+					"RegisterMulti API uuids %s's could not convert vector to backup format",
+					vector.GetUuid(),
+				),
+				err,
+				info.Get(),
+			)
 		}
 		ms = append(ms, m)
 	}
@@ -150,13 +189,20 @@ func (s *server) RegisterMulti(ctx context.Context, vectors *payload.Backup_Comp
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
-		return nil, status.WrapWithInternal(fmt.Sprintf("RegisterMulti API failed to backup vectors %#v", ms), err, info.Get())
+		return nil, status.WrapWithInternal(
+			fmt.Sprintf("RegisterMulti API failed to backup vectors %#v", ms),
+			err,
+			info.Get(),
+		)
 	}
 
 	return new(payload.Empty), nil
 }
 
-func (s *server) Remove(ctx context.Context, req *payload.Backup_Remove_Request) (res *payload.Empty, err error) {
+func (s *server) Remove(
+	ctx context.Context,
+	req *payload.Backup_Remove_Request,
+) (res *payload.Empty, err error) {
 	ctx, span := trace.StartSpan(ctx, "vald/manager-backup-mysql.Remove")
 	defer func() {
 		if span != nil {
@@ -170,13 +216,20 @@ func (s *server) Remove(ctx context.Context, req *payload.Backup_Remove_Request)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
-		return nil, status.WrapWithInternal(fmt.Sprintf("Remove API uuid %s's could not DeleteVector", uuid), err, info.Get())
+		return nil, status.WrapWithInternal(
+			fmt.Sprintf("Remove API uuid %s's could not DeleteVector", uuid),
+			err,
+			info.Get(),
+		)
 	}
 
 	return new(payload.Empty), nil
 }
 
-func (s *server) RemoveMulti(ctx context.Context, req *payload.Backup_Remove_RequestMulti) (res *payload.Empty, err error) {
+func (s *server) RemoveMulti(
+	ctx context.Context,
+	req *payload.Backup_Remove_RequestMulti,
+) (res *payload.Empty, err error) {
 	ctx, span := trace.StartSpan(ctx, "vald/manager-backup-mysql.RemoveMulti")
 	defer func() {
 		if span != nil {
@@ -190,13 +243,20 @@ func (s *server) RemoveMulti(ctx context.Context, req *payload.Backup_Remove_Req
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
-		return nil, status.WrapWithInternal(fmt.Sprintf("RemoveMulti API uuids %#v could not DeleteVectors", uuids), err, info.Get())
+		return nil, status.WrapWithInternal(
+			fmt.Sprintf("RemoveMulti API uuids %#v could not DeleteVectors", uuids),
+			err,
+			info.Get(),
+		)
 	}
 
 	return new(payload.Empty), nil
 }
 
-func (s *server) RegisterIPs(ctx context.Context, req *payload.Backup_IP_Register_Request) (res *payload.Empty, err error) {
+func (s *server) RegisterIPs(
+	ctx context.Context,
+	req *payload.Backup_IP_Register_Request,
+) (res *payload.Empty, err error) {
 	ctx, span := trace.StartSpan(ctx, "vald/manager-backup-mysql.RegisterIPs")
 	defer func() {
 		if span != nil {
@@ -210,13 +270,20 @@ func (s *server) RegisterIPs(ctx context.Context, req *payload.Backup_IP_Registe
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
-		return nil, status.WrapWithInternal(fmt.Sprintf("RegisterIPs API uuid %s's could not SetIPs", uuid), err, info.Get())
+		return nil, status.WrapWithInternal(
+			fmt.Sprintf("RegisterIPs API uuid %s's could not SetIPs", uuid),
+			err,
+			info.Get(),
+		)
 	}
 
 	return new(payload.Empty), nil
 }
 
-func (s *server) RemoveIPs(ctx context.Context, req *payload.Backup_IP_Remove_Request) (res *payload.Empty, err error) {
+func (s *server) RemoveIPs(
+	ctx context.Context,
+	req *payload.Backup_IP_Remove_Request,
+) (res *payload.Empty, err error) {
 	ctx, span := trace.StartSpan(ctx, "vald/manager-backup-mysql.RemoveIPs")
 	defer func() {
 		if span != nil {
@@ -230,7 +297,11 @@ func (s *server) RemoveIPs(ctx context.Context, req *payload.Backup_IP_Remove_Re
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
-		return nil, status.WrapWithInternal(fmt.Sprintf("RemoveIPs API uuid %s's could not RemoveIPs", ips), err, info.Get())
+		return nil, status.WrapWithInternal(
+			fmt.Sprintf("RemoveIPs API uuid %s's could not RemoveIPs", ips),
+			err,
+			info.Get(),
+		)
 	}
 
 	return new(payload.Empty), nil

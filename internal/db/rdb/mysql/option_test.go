@@ -1090,7 +1090,10 @@ func TestWithDialerFunc(t *testing.T) {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
-		if reflect.ValueOf(w.obj.dialerFunc).Pointer() != reflect.ValueOf(obj.dialerFunc).Pointer() {
+		if reflect.ValueOf(w.obj.dialerFunc).
+			Pointer() !=
+			reflect.ValueOf(obj.dialerFunc).
+				Pointer() {
 			return errors.Errorf("got dialerFunc = %p, want %p", obj.dialerFunc, w.obj.dialerFunc)
 		}
 		return nil

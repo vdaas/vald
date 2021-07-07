@@ -484,7 +484,11 @@ func Test_writer_upload(t *testing.T) {
 							}
 
 							if !reflect.DeepEqual(u.PartSize, int64(100)) {
-								t.Errorf("PartSize is invalid. want: %v, but got: %v", 100, u.PartSize)
+								t.Errorf(
+									"PartSize is invalid. want: %v, but got: %v",
+									100,
+									u.PartSize,
+								)
 							}
 
 							return &MockUploadClient{
@@ -522,7 +526,11 @@ func Test_writer_upload(t *testing.T) {
 							}
 
 							if !reflect.DeepEqual(u.PartSize, int64(100)) {
-								t.Errorf("PartSize is invalid. want: %v, but got: %v", 100, u.PartSize)
+								t.Errorf(
+									"PartSize is invalid. want: %v, but got: %v",
+									100,
+									u.PartSize,
+								)
 							}
 
 							return &MockUploadClient{

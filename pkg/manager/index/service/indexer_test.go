@@ -391,7 +391,11 @@ func Test_index_execute(t *testing.T) {
 				uncommittedUUIDsCount:  test.fields.uncommittedUUIDsCount,
 			}
 
-			err := idx.execute(test.args.ctx, test.args.enableLowIndexSkip, test.args.immediateSaving)
+			err := idx.execute(
+				test.args.ctx,
+				test.args.enableLowIndexSkip,
+				test.args.immediateSaving,
+			)
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}

@@ -163,7 +163,10 @@ type streamUpdate struct {
 	rc proto.NGTD_StreamRemoveClient
 }
 
-func NewStreamUpdateClient(ic proto.NGTD_StreamInsertClient, rc proto.NGTD_StreamRemoveClient) StreamUpdate {
+func NewStreamUpdateClient(
+	ic proto.NGTD_StreamInsertClient,
+	rc proto.NGTD_StreamRemoveClient,
+) StreamUpdate {
 	return &streamUpdate{
 		ClientStream: ic,
 		ic:           ic,

@@ -133,9 +133,11 @@ func TestNew(t *testing.T) {
 			name: "returns (nil, error) when loadFunc function returns error",
 			args: args{
 				opts: []Option{
-					withLoadFunc(func(exportDir string, tags []string, options *SessionOptions) (*tf.SavedModel, error) {
-						return nil, errors.New("load error")
-					}),
+					withLoadFunc(
+						func(exportDir string, tags []string, options *SessionOptions) (*tf.SavedModel, error) {
+							return nil, errors.New("load error")
+						},
+					),
 				},
 			},
 			want: want{

@@ -246,7 +246,11 @@ func TestErrInputLength(t *testing.T) {
 				fLength: int(math.MaxInt64),
 			},
 			want: want{
-				want: Errorf("inputs length %d does not match feeds length %d", 10, int(math.MaxInt64)),
+				want: Errorf(
+					"inputs length %d does not match feeds length %d",
+					10,
+					int(math.MaxInt64),
+				),
 			},
 		},
 		{
@@ -256,7 +260,11 @@ func TestErrInputLength(t *testing.T) {
 				fLength: int(math.MinInt64),
 			},
 			want: want{
-				want: Errorf("inputs length %d does not match feeds length %d", 10, int(math.MinInt64)),
+				want: Errorf(
+					"inputs length %d does not match feeds length %d",
+					10,
+					int(math.MinInt64),
+				),
 			},
 		},
 		{

@@ -65,7 +65,10 @@ func (c *client) Stop(ctx context.Context) error {
 	return c.client.Close(ctx)
 }
 
-func (c *client) GetVector(ctx context.Context, uuid string) (vec *payload.Backup_Vector, err error) {
+func (c *client) GetVector(
+	ctx context.Context,
+	uuid string,
+) (vec *payload.Backup_Vector, err error) {
 	ctx, span := trace.StartSpan(ctx, "vald/internal/client/v1/client/compressor/Client.GetVector")
 	defer func() {
 		if span != nil {
@@ -74,9 +77,10 @@ func (c *client) GetVector(ctx context.Context, uuid string) (vec *payload.Backu
 	}()
 	_, err = c.client.RoundRobin(ctx, func(ctx context.Context,
 		conn *grpc.ClientConn, copts ...grpc.CallOption) (i interface{}, err error) {
-		vec, err = compressor.NewBackupClient(conn).GetVector(ctx, &payload.Backup_GetVector_Request{
-			Uuid: uuid,
-		}, copts...)
+		vec, err = compressor.NewBackupClient(conn).
+			GetVector(ctx, &payload.Backup_GetVector_Request{
+				Uuid: uuid,
+			}, copts...)
 		if err != nil {
 			return nil, err
 		}
@@ -86,7 +90,10 @@ func (c *client) GetVector(ctx context.Context, uuid string) (vec *payload.Backu
 }
 
 func (c *client) GetLocation(ctx context.Context, uuid string) (ipList []string, err error) {
-	ctx, span := trace.StartSpan(ctx, "vald/internal/client/v1/client/compressor/Client.GetLocation")
+	ctx, span := trace.StartSpan(
+		ctx,
+		"vald/internal/client/v1/client/compressor/Client.GetLocation",
+	)
 	defer func() {
 		if span != nil {
 			span.End()
@@ -94,9 +101,10 @@ func (c *client) GetLocation(ctx context.Context, uuid string) (ipList []string,
 	}()
 	_, err = c.client.RoundRobin(ctx, func(ctx context.Context,
 		conn *grpc.ClientConn, copts ...grpc.CallOption) (i interface{}, err error) {
-		ips, err := compressor.NewBackupClient(conn).Locations(ctx, &payload.Backup_Locations_Request{
-			Uuid: uuid,
-		}, copts...)
+		ips, err := compressor.NewBackupClient(conn).
+			Locations(ctx, &payload.Backup_Locations_Request{
+				Uuid: uuid,
+			}, copts...)
 		if err != nil {
 			return nil, err
 		}
@@ -125,7 +133,10 @@ func (c *client) Register(ctx context.Context, vec *payload.Backup_Vector) (err 
 }
 
 func (c *client) RegisterMultiple(ctx context.Context, vecs *payload.Backup_Vectors) (err error) {
-	ctx, span := trace.StartSpan(ctx, "vald/internal/client/v1/client/compressor/Client.RegisterMultiple")
+	ctx, span := trace.StartSpan(
+		ctx,
+		"vald/internal/client/v1/client/compressor/Client.RegisterMultiple",
+	)
 	defer func() {
 		if span != nil {
 			span.End()
@@ -163,7 +174,10 @@ func (c *client) Remove(ctx context.Context, uuid string) (err error) {
 }
 
 func (c *client) RemoveMultiple(ctx context.Context, uuids ...string) (err error) {
-	ctx, span := trace.StartSpan(ctx, "vald/internal/client/v1/client/compressor/Client.RemoveMultiple")
+	ctx, span := trace.StartSpan(
+		ctx,
+		"vald/internal/client/v1/client/compressor/Client.RemoveMultiple",
+	)
 	defer func() {
 		if span != nil {
 			span.End()
@@ -183,7 +197,10 @@ func (c *client) RemoveMultiple(ctx context.Context, uuids ...string) (err error
 }
 
 func (c *client) RegisterIPs(ctx context.Context, ips []string) (err error) {
-	ctx, span := trace.StartSpan(ctx, "vald/internal/client/v1/client/compressor/Client.RegisterIPs")
+	ctx, span := trace.StartSpan(
+		ctx,
+		"vald/internal/client/v1/client/compressor/Client.RegisterIPs",
+	)
 	defer func() {
 		if span != nil {
 			span.End()

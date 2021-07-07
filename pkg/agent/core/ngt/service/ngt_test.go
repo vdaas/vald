@@ -1012,7 +1012,12 @@ func Test_ngt_SearchByID(t *testing.T) {
 				dcd:               test.fields.dcd,
 			}
 
-			gotDst, err := n.SearchByID(test.args.uuid, test.args.size, test.args.epsilon, test.args.radius)
+			gotDst, err := n.SearchByID(
+				test.args.uuid,
+				test.args.size,
+				test.args.epsilon,
+				test.args.radius,
+			)
 			if err := test.checkFunc(test.want, gotDst, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}

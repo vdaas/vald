@@ -55,7 +55,9 @@ func (s *server) GetMeta(ctx context.Context, key *payload.Meta_Key) (*payload.M
 	val, err := s.redis.Get(ctx, key.GetKey())
 	if err != nil {
 		if errors.IsErrRedisNotFound(err) {
-			err = status.WrapWithNotFound(fmt.Sprintf("GetMeta API: not found: key %s", key.GetKey()), err,
+			err = status.WrapWithNotFound(
+				fmt.Sprintf("GetMeta API: not found: key %s", key.GetKey()),
+				err,
 				&errdetails.RequestInfo{
 					ServingData: errdetails.Serialize(key),
 				},
@@ -63,14 +65,18 @@ func (s *server) GetMeta(ctx context.Context, key *payload.Meta_Key) (*payload.M
 					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/meta/Meta.GetMeta",
 					Owner:        errdetails.ValdResourceOwner,
 					Description:  err.Error(),
-				}, info.Get())
+				},
+				info.Get(),
+			)
 			if span != nil {
 				span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 			}
 			return nil, err
 		}
 		log.Errorf("[GetMeta]\tunknown error\t%+v", err)
-		err = status.WrapWithUnknown(fmt.Sprintf("GetMeta API: unknown error occurred: key %s", key.GetKey()), err,
+		err = status.WrapWithUnknown(
+			fmt.Sprintf("GetMeta API: unknown error occurred: key %s", key.GetKey()),
+			err,
 			&errdetails.RequestInfo{
 				ServingData: errdetails.Serialize(key),
 			},
@@ -78,7 +84,9 @@ func (s *server) GetMeta(ctx context.Context, key *payload.Meta_Key) (*payload.M
 				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/meta/Meta.GetMeta",
 				Owner:        errdetails.ValdResourceOwner,
 				Description:  err.Error(),
-			}, info.Get())
+			},
+			info.Get(),
+		)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeUnknown(err.Error()))
 		}
@@ -89,7 +97,10 @@ func (s *server) GetMeta(ctx context.Context, key *payload.Meta_Key) (*payload.M
 	}, nil
 }
 
-func (s *server) GetMetas(ctx context.Context, keys *payload.Meta_Keys) (mv *payload.Meta_Vals, err error) {
+func (s *server) GetMetas(
+	ctx context.Context,
+	keys *payload.Meta_Keys,
+) (mv *payload.Meta_Vals, err error) {
 	ctx, span := trace.StartSpan(ctx, "vald/meta-redis.GetMetas")
 	defer func() {
 		if span != nil {
@@ -100,7 +111,9 @@ func (s *server) GetMetas(ctx context.Context, keys *payload.Meta_Keys) (mv *pay
 	mv.Vals, err = s.redis.GetMultiple(ctx, keys.GetKeys()...)
 	if err != nil {
 		if errors.IsErrRedisNotFound(err) {
-			err = status.WrapWithNotFound(fmt.Sprintf("GetMetas API: not found: keys %#v", keys.GetKeys()), err,
+			err = status.WrapWithNotFound(
+				fmt.Sprintf("GetMetas API: not found: keys %#v", keys.GetKeys()),
+				err,
 				&errdetails.RequestInfo{
 					ServingData: errdetails.Serialize(keys),
 				},
@@ -108,14 +121,18 @@ func (s *server) GetMetas(ctx context.Context, keys *payload.Meta_Keys) (mv *pay
 					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/meta/Meta.GetMetas",
 					Owner:        errdetails.ValdResourceOwner,
 					Description:  err.Error(),
-				}, info.Get())
+				},
+				info.Get(),
+			)
 			if span != nil {
 				span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 			}
 			return mv, err
 		}
 		log.Errorf("[GetMetas]\tunknown error\t%+v", err)
-		err = status.WrapWithUnknown(fmt.Sprintf("GetMetas API: unknown error occurred: keys %#v", keys.GetKeys()), err,
+		err = status.WrapWithUnknown(
+			fmt.Sprintf("GetMetas API: unknown error occurred: keys %#v", keys.GetKeys()),
+			err,
 			&errdetails.RequestInfo{
 				ServingData: errdetails.Serialize(keys),
 			},
@@ -123,7 +140,9 @@ func (s *server) GetMetas(ctx context.Context, keys *payload.Meta_Keys) (mv *pay
 				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/meta/Meta.GetMetas",
 				Owner:        errdetails.ValdResourceOwner,
 				Description:  err.Error(),
-			}, info.Get())
+			},
+			info.Get(),
+		)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeUnknown(err.Error()))
 		}
@@ -132,7 +151,10 @@ func (s *server) GetMetas(ctx context.Context, keys *payload.Meta_Keys) (mv *pay
 	return mv, nil
 }
 
-func (s *server) GetMetaInverse(ctx context.Context, val *payload.Meta_Val) (*payload.Meta_Key, error) {
+func (s *server) GetMetaInverse(
+	ctx context.Context,
+	val *payload.Meta_Val,
+) (*payload.Meta_Key, error) {
 	ctx, span := trace.StartSpan(ctx, "vald/meta-redis.GetMetaInverse")
 	defer func() {
 		if span != nil {
@@ -142,7 +164,9 @@ func (s *server) GetMetaInverse(ctx context.Context, val *payload.Meta_Val) (*pa
 	key, err := s.redis.GetInverse(ctx, val.GetVal())
 	if err != nil {
 		if errors.IsErrRedisNotFound(err) {
-			err = status.WrapWithNotFound(fmt.Sprintf("GetMetaInverse API: not found: val %s", val.GetVal()), err,
+			err = status.WrapWithNotFound(
+				fmt.Sprintf("GetMetaInverse API: not found: val %s", val.GetVal()),
+				err,
 				&errdetails.RequestInfo{
 					ServingData: errdetails.Serialize(val),
 				},
@@ -150,14 +174,18 @@ func (s *server) GetMetaInverse(ctx context.Context, val *payload.Meta_Val) (*pa
 					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/meta/Meta.GetMetaInverse",
 					Owner:        errdetails.ValdResourceOwner,
 					Description:  err.Error(),
-				}, info.Get())
+				},
+				info.Get(),
+			)
 			if span != nil {
 				span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 			}
 			return nil, err
 		}
 		log.Errorf("[GetMetaInverse]\tunknown error\t%+v", err)
-		err = status.WrapWithUnknown(fmt.Sprintf("GetMetaInverse API: unknown error occurred: val %s", val.GetVal()), err,
+		err = status.WrapWithUnknown(
+			fmt.Sprintf("GetMetaInverse API: unknown error occurred: val %s", val.GetVal()),
+			err,
 			&errdetails.RequestInfo{
 				ServingData: errdetails.Serialize(val),
 			},
@@ -165,7 +193,9 @@ func (s *server) GetMetaInverse(ctx context.Context, val *payload.Meta_Val) (*pa
 				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/meta/Meta.GetMetaInverse",
 				Owner:        errdetails.ValdResourceOwner,
 				Description:  err.Error(),
-			}, info.Get())
+			},
+			info.Get(),
+		)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeUnknown(err.Error()))
 		}
@@ -176,7 +206,10 @@ func (s *server) GetMetaInverse(ctx context.Context, val *payload.Meta_Val) (*pa
 	}, nil
 }
 
-func (s *server) GetMetasInverse(ctx context.Context, vals *payload.Meta_Vals) (mk *payload.Meta_Keys, err error) {
+func (s *server) GetMetasInverse(
+	ctx context.Context,
+	vals *payload.Meta_Vals,
+) (mk *payload.Meta_Keys, err error) {
 	ctx, span := trace.StartSpan(ctx, "vald/meta-redis.GetMetasInverse")
 	defer func() {
 		if span != nil {
@@ -187,7 +220,9 @@ func (s *server) GetMetasInverse(ctx context.Context, vals *payload.Meta_Vals) (
 	mk.Keys, err = s.redis.GetInverseMultiple(ctx, vals.GetVals()...)
 	if err != nil {
 		if errors.IsErrRedisNotFound(err) {
-			err = status.WrapWithNotFound(fmt.Sprintf("GetMetasInverse API: not found: vals %#v", vals.GetVals()), err,
+			err = status.WrapWithNotFound(
+				fmt.Sprintf("GetMetasInverse API: not found: vals %#v", vals.GetVals()),
+				err,
 				&errdetails.RequestInfo{
 					ServingData: errdetails.Serialize(vals),
 				},
@@ -195,14 +230,18 @@ func (s *server) GetMetasInverse(ctx context.Context, vals *payload.Meta_Vals) (
 					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/meta/Meta.GetMetasInverse",
 					Owner:        errdetails.ValdResourceOwner,
 					Description:  err.Error(),
-				}, info.Get())
+				},
+				info.Get(),
+			)
 			if span != nil {
 				span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 			}
 			return mk, err
 		}
 		log.Errorf("[GetMetasInverse]\tunknown error\t%+v", err)
-		err = status.WrapWithUnknown(fmt.Sprintf("GetMetasInverse API: unknown error occurred: vals %#v", vals.GetVals()), err,
+		err = status.WrapWithUnknown(
+			fmt.Sprintf("GetMetasInverse API: unknown error occurred: vals %#v", vals.GetVals()),
+			err,
 			&errdetails.RequestInfo{
 				ServingData: errdetails.Serialize(vals),
 			},
@@ -210,7 +249,9 @@ func (s *server) GetMetasInverse(ctx context.Context, vals *payload.Meta_Vals) (
 				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/meta/Meta.GetMetasInverse",
 				Owner:        errdetails.ValdResourceOwner,
 				Description:  err.Error(),
-			}, info.Get())
+			},
+			info.Get(),
+		)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeUnknown(err.Error()))
 		}
@@ -219,7 +260,10 @@ func (s *server) GetMetasInverse(ctx context.Context, vals *payload.Meta_Vals) (
 	return mk, nil
 }
 
-func (s *server) SetMeta(ctx context.Context, kv *payload.Meta_KeyVal) (_ *payload.Empty, err error) {
+func (s *server) SetMeta(
+	ctx context.Context,
+	kv *payload.Meta_KeyVal,
+) (_ *payload.Empty, err error) {
 	ctx, span := trace.StartSpan(ctx, "vald/meta-redis.SetMeta")
 	defer func() {
 		if span != nil {
@@ -229,7 +273,9 @@ func (s *server) SetMeta(ctx context.Context, kv *payload.Meta_KeyVal) (_ *paylo
 	err = s.redis.Set(ctx, kv.GetKey(), kv.GetVal())
 	if err != nil {
 		log.Errorf("[SetMeta]\tinternal error\t%+v", err)
-		err = status.WrapWithInternal(fmt.Sprintf("SetMeta API: failed to store: key %s val %s", kv.GetKey(), kv.GetVal()), err,
+		err = status.WrapWithInternal(
+			fmt.Sprintf("SetMeta API: failed to store: key %s val %s", kv.GetKey(), kv.GetVal()),
+			err,
 			&errdetails.RequestInfo{
 				ServingData: errdetails.Serialize(kv),
 			},
@@ -237,7 +283,9 @@ func (s *server) SetMeta(ctx context.Context, kv *payload.Meta_KeyVal) (_ *paylo
 				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/meta/Meta.SetMeta",
 				Owner:        errdetails.ValdResourceOwner,
 				Description:  err.Error(),
-			}, info.Get())
+			},
+			info.Get(),
+		)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
@@ -246,7 +294,10 @@ func (s *server) SetMeta(ctx context.Context, kv *payload.Meta_KeyVal) (_ *paylo
 	return new(payload.Empty), nil
 }
 
-func (s *server) SetMetas(ctx context.Context, kvs *payload.Meta_KeyVals) (_ *payload.Empty, err error) {
+func (s *server) SetMetas(
+	ctx context.Context,
+	kvs *payload.Meta_KeyVals,
+) (_ *payload.Empty, err error) {
 	ctx, span := trace.StartSpan(ctx, "vald/meta-redis.SetMetas")
 	defer func() {
 		if span != nil {
@@ -287,7 +338,9 @@ func (s *server) DeleteMeta(ctx context.Context, key *payload.Meta_Key) (*payloa
 	val, err := s.redis.Delete(ctx, key.GetKey())
 	if err != nil {
 		if errors.IsErrRedisNotFound(err) {
-			err = status.WrapWithNotFound(fmt.Sprintf("DeleteMeta API: not found: key %s", key.GetKey()), err,
+			err = status.WrapWithNotFound(
+				fmt.Sprintf("DeleteMeta API: not found: key %s", key.GetKey()),
+				err,
 				&errdetails.RequestInfo{
 					ServingData: errdetails.Serialize(key),
 				},
@@ -295,14 +348,18 @@ func (s *server) DeleteMeta(ctx context.Context, key *payload.Meta_Key) (*payloa
 					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/meta/Meta.DeleteMeta",
 					Owner:        errdetails.ValdResourceOwner,
 					Description:  err.Error(),
-				}, info.Get())
+				},
+				info.Get(),
+			)
 			if span != nil {
 				span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 			}
 			return nil, err
 		}
 		log.Errorf("[DeleteMeta]\tunknown error\t%+v", err)
-		err = status.WrapWithUnknown(fmt.Sprintf("DeleteMeta API: unknown error occurred: key %s", key.GetKey()), err,
+		err = status.WrapWithUnknown(
+			fmt.Sprintf("DeleteMeta API: unknown error occurred: key %s", key.GetKey()),
+			err,
 			&errdetails.RequestInfo{
 				ServingData: errdetails.Serialize(key),
 			},
@@ -310,7 +367,9 @@ func (s *server) DeleteMeta(ctx context.Context, key *payload.Meta_Key) (*payloa
 				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/meta/Meta.DeleteMeta",
 				Owner:        errdetails.ValdResourceOwner,
 				Description:  err.Error(),
-			}, info.Get())
+			},
+			info.Get(),
+		)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeUnknown(err.Error()))
 		}
@@ -321,7 +380,10 @@ func (s *server) DeleteMeta(ctx context.Context, key *payload.Meta_Key) (*payloa
 	}, nil
 }
 
-func (s *server) DeleteMetas(ctx context.Context, keys *payload.Meta_Keys) (mv *payload.Meta_Vals, err error) {
+func (s *server) DeleteMetas(
+	ctx context.Context,
+	keys *payload.Meta_Keys,
+) (mv *payload.Meta_Vals, err error) {
 	ctx, span := trace.StartSpan(ctx, "vald/meta-redis.DeleteMetas")
 	defer func() {
 		if span != nil {
@@ -332,7 +394,9 @@ func (s *server) DeleteMetas(ctx context.Context, keys *payload.Meta_Keys) (mv *
 	mv.Vals, err = s.redis.DeleteMultiple(ctx, keys.GetKeys()...)
 	if err != nil {
 		if errors.IsErrRedisNotFound(err) {
-			err = status.WrapWithNotFound(fmt.Sprintf("DeleteMetas API: not found: keys %#v", keys.GetKeys()), err,
+			err = status.WrapWithNotFound(
+				fmt.Sprintf("DeleteMetas API: not found: keys %#v", keys.GetKeys()),
+				err,
 				&errdetails.RequestInfo{
 					ServingData: errdetails.Serialize(keys),
 				},
@@ -340,14 +404,18 @@ func (s *server) DeleteMetas(ctx context.Context, keys *payload.Meta_Keys) (mv *
 					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/meta/Meta.DeleteMetas",
 					Owner:        errdetails.ValdResourceOwner,
 					Description:  err.Error(),
-				}, info.Get())
+				},
+				info.Get(),
+			)
 			if span != nil {
 				span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 			}
 			return mv, err
 		}
 		log.Errorf("[DeleteMetas]\tunknown error\t%+v", err)
-		err = status.WrapWithUnknown(fmt.Sprintf("DeleteMetas API: unknown error occurred: keys %#v", keys.GetKeys()), err,
+		err = status.WrapWithUnknown(
+			fmt.Sprintf("DeleteMetas API: unknown error occurred: keys %#v", keys.GetKeys()),
+			err,
 			&errdetails.RequestInfo{
 				ServingData: errdetails.Serialize(keys),
 			},
@@ -355,7 +423,9 @@ func (s *server) DeleteMetas(ctx context.Context, keys *payload.Meta_Keys) (mv *
 				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/meta/Meta.DeleteMetas",
 				Owner:        errdetails.ValdResourceOwner,
 				Description:  err.Error(),
-			}, info.Get())
+			},
+			info.Get(),
+		)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeUnknown(err.Error()))
 		}
@@ -364,7 +434,10 @@ func (s *server) DeleteMetas(ctx context.Context, keys *payload.Meta_Keys) (mv *
 	return mv, nil
 }
 
-func (s *server) DeleteMetaInverse(ctx context.Context, val *payload.Meta_Val) (*payload.Meta_Key, error) {
+func (s *server) DeleteMetaInverse(
+	ctx context.Context,
+	val *payload.Meta_Val,
+) (*payload.Meta_Key, error) {
 	ctx, span := trace.StartSpan(ctx, "vald/meta-redis.DeleteMetaInverse")
 	defer func() {
 		if span != nil {
@@ -374,7 +447,9 @@ func (s *server) DeleteMetaInverse(ctx context.Context, val *payload.Meta_Val) (
 	key, err := s.redis.DeleteInverse(ctx, val.GetVal())
 	if err != nil {
 		if errors.IsErrRedisNotFound(err) {
-			err = status.WrapWithNotFound(fmt.Sprintf("DeleteMetaInverse API: not found: val %s", val.GetVal()), err,
+			err = status.WrapWithNotFound(
+				fmt.Sprintf("DeleteMetaInverse API: not found: val %s", val.GetVal()),
+				err,
 				&errdetails.RequestInfo{
 					ServingData: errdetails.Serialize(val),
 				},
@@ -382,14 +457,18 @@ func (s *server) DeleteMetaInverse(ctx context.Context, val *payload.Meta_Val) (
 					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/meta/Meta.DeleteMetaInverse",
 					Owner:        errdetails.ValdResourceOwner,
 					Description:  err.Error(),
-				}, info.Get())
+				},
+				info.Get(),
+			)
 			if span != nil {
 				span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 			}
 			return nil, err
 		}
 		log.Errorf("[DeleteMetaInverse]\tunknown error\t%+v", err)
-		err = status.WrapWithUnknown(fmt.Sprintf("DeleteMetaInverse API: unknown error occurred: val %s", val.GetVal()), err,
+		err = status.WrapWithUnknown(
+			fmt.Sprintf("DeleteMetaInverse API: unknown error occurred: val %s", val.GetVal()),
+			err,
 			&errdetails.RequestInfo{
 				ServingData: errdetails.Serialize(val),
 			},
@@ -397,7 +476,9 @@ func (s *server) DeleteMetaInverse(ctx context.Context, val *payload.Meta_Val) (
 				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/meta/Meta.DeleteMetaInverse",
 				Owner:        errdetails.ValdResourceOwner,
 				Description:  err.Error(),
-			}, info.Get())
+			},
+			info.Get(),
+		)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeUnknown(err.Error()))
 		}
@@ -408,7 +489,10 @@ func (s *server) DeleteMetaInverse(ctx context.Context, val *payload.Meta_Val) (
 	}, nil
 }
 
-func (s *server) DeleteMetasInverse(ctx context.Context, vals *payload.Meta_Vals) (mk *payload.Meta_Keys, err error) {
+func (s *server) DeleteMetasInverse(
+	ctx context.Context,
+	vals *payload.Meta_Vals,
+) (mk *payload.Meta_Keys, err error) {
 	ctx, span := trace.StartSpan(ctx, "vald/meta-redis.DeleteMetasInverse")
 	defer func() {
 		if span != nil {
@@ -419,7 +503,9 @@ func (s *server) DeleteMetasInverse(ctx context.Context, vals *payload.Meta_Vals
 	mk.Keys, err = s.redis.DeleteInverseMultiple(ctx, vals.GetVals()...)
 	if err != nil {
 		if errors.IsErrRedisNotFound(err) {
-			err = status.WrapWithNotFound(fmt.Sprintf("DeleteMetasInverse API: not found: vals %#v", vals.GetVals()), err,
+			err = status.WrapWithNotFound(
+				fmt.Sprintf("DeleteMetasInverse API: not found: vals %#v", vals.GetVals()),
+				err,
 				&errdetails.RequestInfo{
 					ServingData: errdetails.Serialize(vals),
 				},
@@ -427,14 +513,18 @@ func (s *server) DeleteMetasInverse(ctx context.Context, vals *payload.Meta_Vals
 					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/meta/Meta.DeleteMetasInverse",
 					Owner:        errdetails.ValdResourceOwner,
 					Description:  err.Error(),
-				}, info.Get())
+				},
+				info.Get(),
+			)
 			if span != nil {
 				span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 			}
 			return mk, err
 		}
 		log.Errorf("[DeleteMetasInverse]\tunknown error\t%+v", err)
-		err = status.WrapWithUnknown(fmt.Sprintf("DeleteMetasInverse API: unknown error occurred: vals %#v", vals.GetVals()), err,
+		err = status.WrapWithUnknown(
+			fmt.Sprintf("DeleteMetasInverse API: unknown error occurred: vals %#v", vals.GetVals()),
+			err,
 			&errdetails.RequestInfo{
 				ServingData: errdetails.Serialize(vals),
 			},
@@ -442,7 +532,9 @@ func (s *server) DeleteMetasInverse(ctx context.Context, vals *payload.Meta_Vals
 				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/meta/Meta.DeleteMetasInverse",
 				Owner:        errdetails.ValdResourceOwner,
 				Description:  err.Error(),
-			}, info.Get())
+			},
+			info.Get(),
+		)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeUnknown(err.Error()))
 		}

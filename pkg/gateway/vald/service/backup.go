@@ -55,12 +55,16 @@ func (b *backup) Start(ctx context.Context) (<-chan error, error) {
 	return b.client.StartConnectionMonitor(ctx)
 }
 
-func (b *backup) GetObject(ctx context.Context, uuid string) (vec *payload.Backup_Vector, err error) {
+func (b *backup) GetObject(
+	ctx context.Context,
+	uuid string,
+) (vec *payload.Backup_Vector, err error) {
 	_, err = b.client.RoundRobin(ctx, func(ctx context.Context,
 		conn *grpc.ClientConn, copts ...grpc.CallOption) (i interface{}, err error) {
-		vec, err = compressor.NewBackupClient(conn).GetVector(ctx, &payload.Backup_GetVector_Request{
-			Uuid: uuid,
-		}, copts...)
+		vec, err = compressor.NewBackupClient(conn).
+			GetVector(ctx, &payload.Backup_GetVector_Request{
+				Uuid: uuid,
+			}, copts...)
 		if err != nil {
 			return nil, err
 		}
@@ -72,9 +76,10 @@ func (b *backup) GetObject(ctx context.Context, uuid string) (vec *payload.Backu
 func (b *backup) GetLocation(ctx context.Context, uuid string) (ipList []string, err error) {
 	_, err = b.client.RoundRobin(ctx, func(ctx context.Context,
 		conn *grpc.ClientConn, copts ...grpc.CallOption) (i interface{}, err error) {
-		ips, err := compressor.NewBackupClient(conn).Locations(ctx, &payload.Backup_Locations_Request{
-			Uuid: uuid,
-		}, copts...)
+		ips, err := compressor.NewBackupClient(conn).
+			Locations(ctx, &payload.Backup_Locations_Request{
+				Uuid: uuid,
+			}, copts...)
 		if err != nil {
 			return nil, err
 		}

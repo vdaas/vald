@@ -97,7 +97,9 @@ func (n *ngtMetrics) Measurement(ctx context.Context) ([]metrics.Measurement, er
 
 	return []metrics.Measurement{
 		n.indexCount.M(int64(n.ngt.Len())),
-		n.uncommittedIndexCount.M(int64(n.ngt.InsertVQueueBufferLen() + n.ngt.DeleteVQueueBufferLen())),
+		n.uncommittedIndexCount.M(
+			int64(n.ngt.InsertVQueueBufferLen() + n.ngt.DeleteVQueueBufferLen()),
+		),
 		n.insertVQueueCount.M(int64(n.ngt.InsertVQueueBufferLen())),
 		n.deleteVQueueCount.M(int64(n.ngt.DeleteVQueueBufferLen())),
 		n.insertVQueueChannelBufferCount.M(int64(n.ngt.InsertVQueueChannelLen())),
@@ -109,7 +111,9 @@ func (n *ngtMetrics) Measurement(ctx context.Context) ([]metrics.Measurement, er
 	}, nil
 }
 
-func (n *ngtMetrics) MeasurementWithTags(ctx context.Context) ([]metrics.MeasurementWithTags, error) {
+func (n *ngtMetrics) MeasurementWithTags(
+	ctx context.Context,
+) ([]metrics.MeasurementWithTags, error) {
 	return []metrics.MeasurementWithTags{}, nil
 }
 

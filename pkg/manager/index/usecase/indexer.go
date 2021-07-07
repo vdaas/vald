@@ -97,13 +97,15 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		discoverer.WithDiscoverDuration(cfg.Indexer.Discoverer.Duration),
 		discoverer.WithOptions(aopts...),
 		discoverer.WithNodeName(cfg.Indexer.NodeName),
-		discoverer.WithOnDiscoverFunc(func(ctx context.Context, c discoverer.Client, addrs []string) error {
-			last := len(addrs) - 1
-			for i := 0; i < len(addrs)/2; i++ {
-				addrs[i], addrs[last-i] = addrs[last-i], addrs[i]
-			}
-			return nil
-		}),
+		discoverer.WithOnDiscoverFunc(
+			func(ctx context.Context, c discoverer.Client, addrs []string) error {
+				last := len(addrs) - 1
+				for i := 0; i < len(addrs)/2; i++ {
+					addrs[i], addrs[last-i] = addrs[last-i], addrs[i]
+				}
+				return nil
+			},
+		),
 	)
 	if err != nil {
 		return nil, err

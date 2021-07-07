@@ -39,7 +39,11 @@ func NewStreamInsert(opts ...StreamInsertOption) e2e.Strategy {
 	return s
 }
 
-func (sisrt *streamInsert) dataProvider(total *uint32, b *testing.B, dataset assets.Dataset) func() *client.InsertRequest {
+func (sisrt *streamInsert) dataProvider(
+	total *uint32,
+	b *testing.B,
+	dataset assets.Dataset,
+) func() *client.InsertRequest {
 	var cnt uint32
 
 	b.StopTimer()
@@ -67,7 +71,12 @@ func (sisrt *streamInsert) dataProvider(total *uint32, b *testing.B, dataset ass
 	}
 }
 
-func (sisrt *streamInsert) Run(ctx context.Context, b *testing.B, c client.Client, dataset assets.Dataset) {
+func (sisrt *streamInsert) Run(
+	ctx context.Context,
+	b *testing.B,
+	c client.Client,
+	dataset assets.Dataset,
+) {
 	var total uint32
 	b.Run("StreamInsert", func(bb *testing.B) {
 		srv, err := c.StreamInsert(ctx)

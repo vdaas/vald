@@ -1,3 +1,4 @@
+//go:build e2e
 // +build e2e
 
 //
@@ -69,26 +70,58 @@ func init() {
 
 	flag.IntVar(&insertNum, "insert-num", 10000, "number of id-vector pairs used for insert")
 	flag.IntVar(&searchNum, "search-num", 10000, "number of id-vector pairs used for search")
-	flag.IntVar(&searchByIDNum, "search-by-id-num", 100, "number of id-vector pairs used for search-by-id")
-	flag.IntVar(&getObjectNum, "get-object-num", 100, "number of id-vector pairs used for get-object")
+	flag.IntVar(
+		&searchByIDNum,
+		"search-by-id-num",
+		100,
+		"number of id-vector pairs used for search-by-id",
+	)
+	flag.IntVar(
+		&getObjectNum,
+		"get-object-num",
+		100,
+		"number of id-vector pairs used for get-object",
+	)
 	flag.IntVar(&updateNum, "update-num", 10000, "number of id-vector pairs used for update")
 	flag.IntVar(&removeNum, "remove-num", 10000, "number of id-vector pairs used for remove")
 
 	flag.IntVar(&insertFrom, "insert-from", 0, "first index of id-vector pairs used for insert")
 	flag.IntVar(&searchFrom, "search-from", 0, "first index of id-vector pairs used for search")
-	flag.IntVar(&searchByIDFrom, "search-by-id-from", 0, "first index of id-vector pairs used for search-by-id")
-	flag.IntVar(&getObjectFrom, "get-object-from", 0, "first index of id-vector pairs used for get-object")
+	flag.IntVar(
+		&searchByIDFrom,
+		"search-by-id-from",
+		0,
+		"first index of id-vector pairs used for search-by-id",
+	)
+	flag.IntVar(
+		&getObjectFrom,
+		"get-object-from",
+		0,
+		"first index of id-vector pairs used for get-object",
+	)
 	flag.IntVar(&updateFrom, "update-from", 0, "first index of id-vector pairs used for update")
 	flag.IntVar(&removeFrom, "remove-from", 0, "first index of id-vector pairs used for remove")
 
 	datasetName := flag.String("dataset", "fashion-mnist-784-euclidean.hdf5", "dataset")
-	waitAfterInsert := flag.String("wait-after-insert", "3m", "wait duration after inserting vectors")
+	waitAfterInsert := flag.String(
+		"wait-after-insert",
+		"3m",
+		"wait duration after inserting vectors",
+	)
 
 	pf := flag.Bool("portforward", false, "enable port forwarding")
-	pfPodName := flag.String("portforward-pod-name", "vald-gateway-0", "pod name (only for port forward)")
+	pfPodName := flag.String(
+		"portforward-pod-name",
+		"vald-gateway-0",
+		"pod name (only for port forward)",
+	)
 	pfPodPort := flag.Int("portforward-pod-port", port, "pod gRPC port (only for port forward)")
 
-	kubeConfig := flag.String("kubeconfig", filepath.Join(os.Getenv("HOME"), ".kube", "config"), "kubeconfig path")
+	kubeConfig := flag.String(
+		"kubeconfig",
+		filepath.Join(os.Getenv("HOME"), ".kube", "config"),
+		"kubeconfig path",
+	)
 	flag.StringVar(&namespace, "namespace", "default", "namespace")
 
 	flag.Parse()

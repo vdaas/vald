@@ -343,7 +343,10 @@ func (o *observer) onWrite(ctx context.Context, name string) error {
 }
 
 func (o *observer) onCreate(ctx context.Context, name string) error {
-	ctx, span := trace.StartSpan(ctx, "vald/agent-sidecar/service/observer/StorageObserver.onCreate")
+	ctx, span := trace.StartSpan(
+		ctx,
+		"vald/agent-sidecar/service/observer/StorageObserver.onCreate",
+	)
 	defer func() {
 		if span != nil {
 			span.End()

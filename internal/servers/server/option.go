@@ -82,7 +82,8 @@ func WithNetwork(network string) Option {
 	return func(s *server) {
 		if network != "" {
 			nt := net.NetworkTypeFromString(network)
-			if nt == 0 || nt == net.Unknown || strings.EqualFold(nt.String(), net.Unknown.String()) {
+			if nt == 0 || nt == net.Unknown ||
+				strings.EqualFold(nt.String(), net.Unknown.String()) {
 				nt = net.TCP
 			}
 			s.network = nt

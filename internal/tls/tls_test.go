@@ -75,8 +75,10 @@ func TestNew(t *testing.T) {
 					cfg := new(tls.Config)
 
 					cfg.Certificates = make([]tls.Certificate, 1)
-					cfg.Certificates[0], _ = tls.LoadX509KeyPair(testdata.GetTestdataPath("tls/dummyServer.crt"),
-						testdata.GetTestdataPath("tls/dummyServer.key"))
+					cfg.Certificates[0], _ = tls.LoadX509KeyPair(
+						testdata.GetTestdataPath("tls/dummyServer.crt"),
+						testdata.GetTestdataPath("tls/dummyServer.key"),
+					)
 
 					pool, _ := NewX509CertPool(testdata.GetTestdataPath("tls/dummyCa.pem"))
 					cfg.ClientCAs = pool
@@ -105,11 +107,17 @@ func TestNew(t *testing.T) {
 					return errors.New("subjects are empty")
 				}
 
-				if got, want := c.ClientCAs.Subjects()[sl-1], w.want.ClientCAs.Subjects()[sl-1]; !reflect.DeepEqual(got, want) {
+				if got, want := c.ClientCAs.Subjects()[sl-1], w.want.ClientCAs.Subjects()[sl-1]; !reflect.DeepEqual(
+					got,
+					want,
+				) {
 					return errors.Errorf("ClientCAs.Subjects want: %v, got: %v", want, got)
 				}
 
-				if got, want := c.ClientCAs.Subjects()[sl-1], w.want.ClientCAs.Subjects()[sl-1]; !reflect.DeepEqual(got, want) {
+				if got, want := c.ClientCAs.Subjects()[sl-1], w.want.ClientCAs.Subjects()[sl-1]; !reflect.DeepEqual(
+					got,
+					want,
+				) {
 					return errors.Errorf("ClientCAs.Subjects want: %v, got: %v", want, got)
 				}
 
@@ -359,7 +367,10 @@ func TestNewX509CertPool(t *testing.T) {
 					return errors.New("cert files are empty")
 				}
 				l := len(cp.Subjects()) - 1
-				if got, want := cp.Subjects()[l], w.want.Subjects()[0]; !reflect.DeepEqual(got, want) {
+				if got, want := cp.Subjects()[l], w.want.Subjects()[0]; !reflect.DeepEqual(
+					got,
+					want,
+				) {
 					return errors.Errorf("not equals. want: %v, got: %v", want, got)
 				}
 

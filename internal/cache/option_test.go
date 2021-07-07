@@ -44,7 +44,10 @@ func TestWithExpiredHook(t *testing.T) {
 		afterFunc  func(args)
 	}
 	defaultCheckFunc := func(w want, got *cache) error {
-		if reflect.ValueOf(w.want.expiredHook).Pointer() != reflect.ValueOf(got.expiredHook).Pointer() {
+		if reflect.ValueOf(w.want.expiredHook).
+			Pointer() !=
+			reflect.ValueOf(got.expiredHook).
+				Pointer() {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil

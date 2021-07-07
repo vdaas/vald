@@ -40,7 +40,11 @@ func NewStreamSearch(opts ...StreamSearchOption) e2e.Strategy {
 	return s
 }
 
-func (s *streamSearch) dataProvider(total *uint32, b *testing.B, dataset assets.Dataset) func() *client.SearchRequest {
+func (s *streamSearch) dataProvider(
+	total *uint32,
+	b *testing.B,
+	dataset assets.Dataset,
+) func() *client.SearchRequest {
 	var cnt uint32
 
 	b.StopTimer()
@@ -66,7 +70,12 @@ func (s *streamSearch) dataProvider(total *uint32, b *testing.B, dataset assets.
 	}
 }
 
-func (s *streamSearch) Run(ctx context.Context, b *testing.B, c client.Client, dataset assets.Dataset) {
+func (s *streamSearch) Run(
+	ctx context.Context,
+	b *testing.B,
+	c client.Client,
+	dataset assets.Dataset,
+) {
 	var total uint32
 	b.Run("StreamSearch", func(bb *testing.B) {
 		srv, err := c.StreamSearch(ctx)

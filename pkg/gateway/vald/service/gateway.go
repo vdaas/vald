@@ -60,8 +60,10 @@ func (g *gateway) Start(ctx context.Context) (<-chan error, error) {
 	return g.client.Start(ctx)
 }
 
-func (g *gateway) BroadCast(ctx context.Context,
-	f func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error) (err error) {
+func (g *gateway) BroadCast(
+	ctx context.Context,
+	f func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error,
+) (err error) {
 	return g.client.GetClient().RangeConcurrent(ctx, -1, func(ctx context.Context,
 		addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) (err error) {
 		select {
@@ -78,8 +80,10 @@ func (g *gateway) BroadCast(ctx context.Context,
 	})
 }
 
-func (g *gateway) Do(ctx context.Context,
-	f func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error) (err error) {
+func (g *gateway) Do(
+	ctx context.Context,
+	f func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error,
+) (err error) {
 	addr := g.client.GetAddrs(ctx)[0]
 	_, err = g.client.GetClient().Do(ctx, addr, func(ctx context.Context,
 		conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
@@ -88,8 +92,11 @@ func (g *gateway) Do(ctx context.Context,
 	return err
 }
 
-func (g *gateway) DoMulti(ctx context.Context, num int,
-	f func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error) (err error) {
+func (g *gateway) DoMulti(
+	ctx context.Context,
+	num int,
+	f func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error,
+) (err error) {
 	var cur uint32 = 0
 	limit := uint32(num)
 	addrs := g.client.GetAddrs(ctx)

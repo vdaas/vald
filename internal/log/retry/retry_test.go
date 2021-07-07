@@ -182,11 +182,19 @@ func Test_retry_Out(t *testing.T) {
 				},
 				checkFunc: func() error {
 					if !errors.Is(gotErrorFnErr, err) {
-						return errors.Errorf("errorFn argument: got: %v, want: %v", gotErrorFnErr, err)
+						return errors.Errorf(
+							"errorFn argument: got: %v, want: %v",
+							gotErrorFnErr,
+							err,
+						)
 					}
 
 					if !errors.Is(gotWarnFnErr, err) {
-						return errors.Errorf("warnFn argument: got: %v, want: %v", gotWarnFnErr, err)
+						return errors.Errorf(
+							"warnFn argument: got: %v, want: %v",
+							gotWarnFnErr,
+							err,
+						)
 					}
 
 					return nil
@@ -329,11 +337,19 @@ func Test_retry_Outf(t *testing.T) {
 				},
 				checkFunc: func() error {
 					if !errors.Is(gotErrorFnErr, err) {
-						return errors.Errorf("errorFn argument: got: %v, want: %v", gotErrorFnErr, err)
+						return errors.Errorf(
+							"errorFn argument: got: %v, want: %v",
+							gotErrorFnErr,
+							err,
+						)
 					}
 
 					if !errors.Is(gotWarnFnErr, err) {
-						return errors.Errorf("warnFn argument: got: %v, want: %v", gotWarnFnErr, err)
+						return errors.Errorf(
+							"warnFn argument: got: %v, want: %v",
+							gotWarnFnErr,
+							err,
+						)
 					}
 
 					return nil

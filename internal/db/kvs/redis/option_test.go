@@ -143,7 +143,10 @@ func TestWithDialerFunc(t *testing.T) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 
-		if reflect.ValueOf(w.obj.dialerFunc).Pointer() != reflect.ValueOf(obj.dialerFunc).Pointer() {
+		if reflect.ValueOf(w.obj.dialerFunc).
+			Pointer() !=
+			reflect.ValueOf(obj.dialerFunc).
+				Pointer() {
 			return errors.Errorf("got dialer = %p, want %p", obj.dialerFunc, w.obj.dialerFunc)
 		}
 
@@ -400,7 +403,10 @@ func TestWithClusterSlots(t *testing.T) {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
-		if reflect.ValueOf(w.obj.clusterSlots).Pointer() != reflect.ValueOf(obj.clusterSlots).Pointer() {
+		if reflect.ValueOf(w.obj.clusterSlots).
+			Pointer() !=
+			reflect.ValueOf(obj.clusterSlots).
+				Pointer() {
 			return errors.Errorf("got dialer = %p, want %p", obj.dialer, w.obj.dialer)
 		}
 		return nil

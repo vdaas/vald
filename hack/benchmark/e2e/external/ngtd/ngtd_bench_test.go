@@ -54,11 +54,13 @@ func BenchmarkNGTD_REST_Sequential(b *testing.B) {
 		bench := e2e.New(
 			b,
 			e2e.WithName(name),
-			e2e.WithServerStarter(func(ctx context.Context, tb testing.TB, d assets.Dataset) func() {
-				return ngtd.New(
-					ngtd.WithDimension(d.Dimension()),
-				).Run(ctx, tb)
-			}),
+			e2e.WithServerStarter(
+				func(ctx context.Context, tb testing.TB, d assets.Dataset) func() {
+					return ngtd.New(
+						ngtd.WithDimension(d.Dimension()),
+					).Run(ctx, tb)
+				},
+			),
 			e2e.WithClient(client),
 			e2e.WithStrategy(
 				strategy.NewInsert(),
@@ -83,12 +85,14 @@ func BenchmarkNGTD_gRPC_Sequential(b *testing.B) {
 		bench := e2e.New(
 			b,
 			e2e.WithName(name),
-			e2e.WithServerStarter(func(ctx context.Context, tb testing.TB, d assets.Dataset) func() {
-				return ngtd.New(
-					ngtd.WithDimension(d.Dimension()),
-					ngtd.WithServerType(ngtd.ServerType(ngtd.GRPC)),
-				).Run(ctx, tb)
-			}),
+			e2e.WithServerStarter(
+				func(ctx context.Context, tb testing.TB, d assets.Dataset) func() {
+					return ngtd.New(
+						ngtd.WithDimension(d.Dimension()),
+						ngtd.WithServerType(ngtd.ServerType(ngtd.GRPC)),
+					).Run(ctx, tb)
+				},
+			),
 			e2e.WithClient(client),
 			e2e.WithStrategy(
 				strategy.NewInsert(),
@@ -113,12 +117,14 @@ func BenchmarkNGTD_gRPC_Stream(b *testing.B) {
 		bench := e2e.New(
 			b,
 			e2e.WithName(name),
-			e2e.WithServerStarter(func(ctx context.Context, tb testing.TB, d assets.Dataset) func() {
-				return ngtd.New(
-					ngtd.WithDimension(d.Dimension()),
-					ngtd.WithServerType(ngtd.ServerType(ngtd.GRPC)),
-				).Run(ctx, tb)
-			}),
+			e2e.WithServerStarter(
+				func(ctx context.Context, tb testing.TB, d assets.Dataset) func() {
+					return ngtd.New(
+						ngtd.WithDimension(d.Dimension()),
+						ngtd.WithServerType(ngtd.ServerType(ngtd.GRPC)),
+					).Run(ctx, tb)
+				},
+			),
 			e2e.WithClient(client),
 			e2e.WithStrategy(
 				strategy.NewStreamInsert(),

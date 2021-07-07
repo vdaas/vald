@@ -134,7 +134,12 @@ func (l *loader) Do(ctx context.Context) <-chan error {
 		return float64(count) / t2.Sub(t1).Seconds()
 	}
 	progress := func() {
-		log.Infof("progress %d requests, %f[vps], error: %d", pgCnt, vps(int(pgCnt)*l.batchSize, start, time.Now()), errCnt)
+		log.Infof(
+			"progress %d requests, %f[vps], error: %d",
+			pgCnt,
+			vps(int(pgCnt)*l.batchSize, start, time.Now()),
+			errCnt,
+		)
 	}
 
 	f := func(i interface{}, err error) {
@@ -178,14 +183,23 @@ func (l *loader) Do(ctx context.Context) <-chan error {
 			finalize(ctx, err)
 			return p.Signal(syscall.SIGKILL) // TODO: #403
 		}
-		log.Infof("result:%d\t%d\t%f", l.concurrency, l.batchSize, vps(int(pgCnt)*l.batchSize, start, end))
+		log.Infof(
+			"result:%d\t%d\t%f",
+			l.concurrency,
+			l.batchSize,
+			vps(int(pgCnt)*l.batchSize, start, end),
+		)
 
 		return p.Signal(syscall.SIGTERM) // TODO: #403
 	}))
 	return ech
 }
 
-func (l *loader) do(ctx context.Context, f func(interface{}, error), notify func(context.Context, error)) (err error) {
+func (l *loader) do(
+	ctx context.Context,
+	f func(interface{}, error),
+	notify func(context.Context, error),
+) (err error) {
 	eg, egctx := errgroup.New(ctx)
 
 	switch l.operation {
@@ -208,13 +222,22 @@ func (l *loader) do(ctx context.Context, f func(interface{}, error), notify func
 					err = nil
 				}
 			}()
-			_, err = l.client.Do(egctx, l.addr, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
-				st, err := l.loaderFunc(ctx, conn, nil, copts...)
-				if err != nil {
-					return nil, err
-				}
-				return nil, grpc.BidirectionalStreamClient(st.(grpc.ClientStream), l.dataProvider, newData, f)
-			})
+			_, err = l.client.Do(
+				egctx,
+				l.addr,
+				func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
+					st, err := l.loaderFunc(ctx, conn, nil, copts...)
+					if err != nil {
+						return nil, err
+					}
+					return nil, grpc.BidirectionalStreamClient(
+						st.(grpc.ClientStream),
+						l.dataProvider,
+						newData,
+						f,
+					)
+				},
+			)
 			return err
 		}))
 		err = eg.Wait()
@@ -232,11 +255,15 @@ func (l *loader) do(ctx context.Context, f func(interface{}, error), notify func
 					notify(egctx, err)
 					err = nil
 				}()
-				_, err = l.client.Do(egctx, l.addr, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
-					res, err := l.loaderFunc(egctx, conn, r)
-					f(res, err)
-					return res, err
-				})
+				_, err = l.client.Do(
+					egctx,
+					l.addr,
+					func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
+						res, err := l.loaderFunc(egctx, conn, r)
+						f(res, err)
+						return res, err
+					},
+				)
 
 				return err
 			}))

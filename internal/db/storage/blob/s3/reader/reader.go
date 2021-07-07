@@ -129,7 +129,11 @@ func (r *reader) Open(ctx context.Context, key string) (err error) {
 	return nil
 }
 
-func (r *reader) getObjectWithBackoff(ctx context.Context, key string, offset, length int64) (res io.Reader, err error) {
+func (r *reader) getObjectWithBackoff(
+	ctx context.Context,
+	key string,
+	offset, length int64,
+) (res io.Reader, err error) {
 	if !r.backoffEnabled || r.bo == nil {
 		return r.getObject(ctx, key, offset, length)
 	}
@@ -143,7 +147,11 @@ func (r *reader) getObjectWithBackoff(ctx context.Context, key string, offset, l
 	return res, nil
 }
 
-func (r *reader) getObject(ctx context.Context, key string, offset, length int64) (io.Reader, error) {
+func (r *reader) getObject(
+	ctx context.Context,
+	key string,
+	offset, length int64,
+) (io.Reader, error) {
 	log.Debugf("reading %d-%d bytes...", offset, offset+length-1)
 	resp, err := r.service.GetObjectWithContext(
 		ctx,

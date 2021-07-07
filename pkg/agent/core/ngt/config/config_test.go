@@ -411,7 +411,11 @@ func TestNewConfig(t *testing.T) {
 						return nil
 					}
 					if !errors.Is(err, w.err) {
-						return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+						return errors.Errorf(
+							"got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"",
+							err,
+							w.err,
+						)
 					}
 					return nil
 				},

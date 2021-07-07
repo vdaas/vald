@@ -40,7 +40,9 @@ func (g *goroutines) Measurement(ctx context.Context) ([]metrics.Measurement, er
 	}, nil
 }
 
-func (g *goroutines) MeasurementWithTags(ctx context.Context) ([]metrics.MeasurementWithTags, error) {
+func (g *goroutines) MeasurementWithTags(
+	ctx context.Context,
+) ([]metrics.MeasurementWithTags, error) {
 	return []metrics.MeasurementWithTags{}, nil
 }
 

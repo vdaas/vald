@@ -39,7 +39,12 @@ func NewCreateIndex(opts ...CreateIndexOption) e2e.Strategy {
 	return ci
 }
 
-func (ci *createIndex) Run(ctx context.Context, b *testing.B, c client.Client, dataset assets.Dataset) {
+func (ci *createIndex) Run(
+	ctx context.Context,
+	b *testing.B,
+	c client.Client,
+	dataset assets.Dataset,
+) {
 	b.Run("CreateIndex", func(bb *testing.B) {
 		for i := 0; i < bb.N; i++ {
 			ci.do(ctx, b)

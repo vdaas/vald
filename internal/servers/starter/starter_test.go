@@ -172,7 +172,11 @@ func TestSetupAPIs(t *testing.T) {
 					}
 
 					if len(opts) != 3 {
-						return errors.Errorf("length of options is wrong. want: %v got: %v", 3, len(opts))
+						return errors.Errorf(
+							"length of options is wrong. want: %v got: %v",
+							3,
+							len(opts),
+						)
 					}
 
 					return nil
@@ -321,7 +325,11 @@ func TestSetupHealthCheck(t *testing.T) {
 				}
 
 				if len(opts) != 1 {
-					return errors.Errorf("length of options is wrong. want: %v got: %v", 1, len(opts))
+					return errors.Errorf(
+						"length of options is wrong. want: %v got: %v",
+						1,
+						len(opts),
+					)
 				}
 
 				return nil
@@ -351,7 +359,11 @@ func TestSetupHealthCheck(t *testing.T) {
 				}
 
 				if len(opts) != 0 {
-					return errors.Errorf("length of options is wrong. want: %v got: %v", 0, len(opts))
+					return errors.Errorf(
+						"length of options is wrong. want: %v got: %v",
+						0,
+						len(opts),
+					)
 				}
 
 				return nil
@@ -415,7 +427,11 @@ func TestSetupMetrics(t *testing.T) {
 				}
 
 				if len(opts) != 1 {
-					return errors.Errorf("length of options is wrong. want: %v got: %v", 1, len(opts))
+					return errors.Errorf(
+						"length of options is wrong. want: %v got: %v",
+						1,
+						len(opts),
+					)
 				}
 				return nil
 			},
@@ -444,7 +460,11 @@ func TestSetupMetrics(t *testing.T) {
 				}
 
 				if len(opts) != 0 {
-					return errors.Errorf("length of options is wrong. want: %v got: %v", 0, len(opts))
+					return errors.Errorf(
+						"length of options is wrong. want: %v got: %v",
+						0,
+						len(opts),
+					)
 				}
 				return nil
 			},

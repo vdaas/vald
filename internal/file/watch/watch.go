@@ -144,7 +144,10 @@ func (w *watch) Start(ctx context.Context) (<-chan error, error) {
 						log.Debugf("File %s renamed. Trigger onRename hook.", event.Name)
 						err = w.onRename(ctx, event.Name)
 					case event.Op&fsnotify.Chmod == fsnotify.Chmod && w.onChmod != nil:
-						log.Debugf("Permission of file %s changed. Trigger onChmod hook.", event.Name)
+						log.Debugf(
+							"Permission of file %s changed. Trigger onChmod hook.",
+							event.Name,
+						)
 						err = w.onChmod(ctx, event.Name)
 					}
 				}

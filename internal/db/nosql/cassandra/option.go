@@ -333,7 +333,11 @@ func WithReconnectionPolicyInitialInterval(initialInterval string) Option {
 		}
 		d, err := timeutil.Parse(initialInterval)
 		if err != nil {
-			return errors.NewErrCriticalOption("reconnectionPolicyInitialInterval", initialInterval, err)
+			return errors.NewErrCriticalOption(
+				"reconnectionPolicyInitialInterval",
+				initialInterval,
+				err,
+			)
 		}
 		c.reconnectionPolicy.initialInterval = d
 		return nil
@@ -510,7 +514,11 @@ func WithMaxWaitSchemaAgreement(maxWaitSchemaAgreement string) Option {
 		}
 		d, err := timeutil.Parse(maxWaitSchemaAgreement)
 		if err != nil {
-			return errors.NewErrCriticalOption("maxWaitSchemaAgreement", maxWaitSchemaAgreement, err)
+			return errors.NewErrCriticalOption(
+				"maxWaitSchemaAgreement",
+				maxWaitSchemaAgreement,
+				err,
+			)
 		}
 		c.maxWaitSchemaAgreement = d
 		return nil

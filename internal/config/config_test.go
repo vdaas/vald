@@ -825,7 +825,9 @@ func TestRead(t *testing.T) {
 				},
 				want: want{
 					want: cfg,
-					err:  errors.New("yaml: unmarshal errors:\n  line 1: cannot unmarshal !!str `timezone` into config.GlobalConfig"),
+					err: errors.New(
+						"yaml: unmarshal errors:\n  line 1: cannot unmarshal !!str `timezone` into config.GlobalConfig",
+					),
 				},
 			}
 		}(),
@@ -864,7 +866,9 @@ func TestRead(t *testing.T) {
 				},
 				want: want{
 					want: cfg,
-					err:  errors.New("readObjectStart: expect { or n, but found t, error found in #1 byte of ...|timezone\n:|..., bigger context ...|timezone\n:|..."),
+					err: errors.New(
+						"readObjectStart: expect { or n, but found t, error found in #1 byte of ...|timezone\n:|..., bigger context ...|timezone\n:|...",
+					),
 				},
 			}
 		}(),

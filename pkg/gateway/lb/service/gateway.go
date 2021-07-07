@@ -60,8 +60,10 @@ func (g *gateway) Start(ctx context.Context) (<-chan error, error) {
 	return g.client.Start(ctx)
 }
 
-func (g *gateway) BroadCast(ctx context.Context,
-	f func(ctx context.Context, target string, ac vald.Client, copts ...grpc.CallOption) error) (err error) {
+func (g *gateway) BroadCast(
+	ctx context.Context,
+	f func(ctx context.Context, target string, ac vald.Client, copts ...grpc.CallOption) error,
+) (err error) {
 	fctx, span := trace.StartSpan(ctx, "vald/gateway-lb/service/Gateway.BroadCast")
 	defer func() {
 		if span != nil {
@@ -83,8 +85,11 @@ func (g *gateway) BroadCast(ctx context.Context,
 	})
 }
 
-func (g *gateway) DoMulti(ctx context.Context, num int,
-	f func(ctx context.Context, target string, ac vald.Client, copts ...grpc.CallOption) error) (err error) {
+func (g *gateway) DoMulti(
+	ctx context.Context,
+	num int,
+	f func(ctx context.Context, target string, ac vald.Client, copts ...grpc.CallOption) error,
+) (err error) {
 	sctx, span := trace.StartSpan(ctx, "vald/gateway-lb/service/Gateway.DoMulti")
 	defer func() {
 		if span != nil {

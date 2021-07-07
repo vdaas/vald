@@ -93,7 +93,12 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 
 	var obs observability.Observability
 	if cfg.Observability != nil && cfg.Observability.Enabled {
-		info, err := infometrics.New("agent/core/ngt/info", "agent_core_ngt_info", "Agent NGT info", *cfg.NGT)
+		info, err := infometrics.New(
+			"agent/core/ngt/info",
+			"agent_core_ngt_info",
+			"Agent NGT info",
+			*cfg.NGT,
+		)
 		if err != nil {
 			return nil, err
 		}

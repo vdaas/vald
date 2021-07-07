@@ -32,7 +32,11 @@ type (
 
 // UploadClient represents an interface to upload to s3.
 type UploadClient interface {
-	UploadWithContext(ctx aws.Context, input *UploadInput, opts ...func(*Uploader)) (*UploadOutput, error)
+	UploadWithContext(
+		ctx aws.Context,
+		input *UploadInput,
+		opts ...func(*Uploader),
+	) (*UploadOutput, error)
 }
 
 // S3Manager represents an interface to create object of s3manager package.

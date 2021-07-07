@@ -87,7 +87,9 @@ func (sm *sidecarMetrics) Measurement(ctx context.Context) ([]metrics.Measuremen
 	return []metrics.Measurement{}, nil
 }
 
-func (sm *sidecarMetrics) MeasurementWithTags(ctx context.Context) ([]metrics.MeasurementWithTags, error) {
+func (sm *sidecarMetrics) MeasurementWithTags(
+	ctx context.Context,
+) ([]metrics.MeasurementWithTags, error) {
 	sm.mu.Lock()
 	defer func() {
 		sm.ms = make([]metrics.MeasurementWithTags, 0)
@@ -129,7 +131,10 @@ func (sm *sidecarMetrics) View() []*metrics.View {
 	}
 }
 
-func (sm *sidecarMetrics) BeforeProcess(ctx context.Context, info *observer.BackupInfo) (context.Context, error) {
+func (sm *sidecarMetrics) BeforeProcess(
+	ctx context.Context,
+	info *observer.BackupInfo,
+) (context.Context, error) {
 	return ctx, nil
 }
 

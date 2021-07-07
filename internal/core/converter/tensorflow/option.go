@@ -105,7 +105,9 @@ func WithTags(tags ...string) Option {
 	}
 }
 
-func withLoadFunc(loadFunc func(exportDir string, tags []string, options *SessionOptions) (*tf.SavedModel, error)) Option {
+func withLoadFunc(
+	loadFunc func(exportDir string, tags []string, options *SessionOptions) (*tf.SavedModel, error),
+) Option {
 	return func(t *tensorflow) {
 		if loadFunc != nil {
 			t.loadFunc = loadFunc

@@ -315,10 +315,18 @@ func TestLoad(t *testing.T) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotTest, w.wantTest)
 		}
 		if !reflect.DeepEqual(gotDistances, w.wantDistances) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotDistances, w.wantDistances)
+			return errors.Errorf(
+				"got: \"%#v\",\n\t\t\t\twant: \"%#v\"",
+				gotDistances,
+				w.wantDistances,
+			)
 		}
 		if !reflect.DeepEqual(gotNeighbors, w.wantNeighbors) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotNeighbors, w.wantNeighbors)
+			return errors.Errorf(
+				"got: \"%#v\",\n\t\t\t\twant: \"%#v\"",
+				gotNeighbors,
+				w.wantNeighbors,
+			)
 		}
 		if !reflect.DeepEqual(gotDim, w.wantDim) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotDim, w.wantDim)

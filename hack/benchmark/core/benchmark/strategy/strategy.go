@@ -78,7 +78,11 @@ func (s *strategy) Init(ctx context.Context, b *testing.B, dataset assets.Datase
 	return nil
 }
 
-func (s *strategy) PreProp(ctx context.Context, b *testing.B, dataset assets.Dataset) ([]uint, error) {
+func (s *strategy) PreProp(
+	ctx context.Context,
+	b *testing.B,
+	dataset assets.Dataset,
+) ([]uint, error) {
 	b.Helper()
 
 	switch s.mode {
@@ -120,7 +124,13 @@ func (s *strategy) Close() {
 	s.closer.Close()
 }
 
-func (s *strategy) float32(ctx context.Context, b *testing.B, dataset assets.Dataset, ids []uint, cnt *uint64) {
+func (s *strategy) float32(
+	ctx context.Context,
+	b *testing.B,
+	dataset assets.Dataset,
+	ids []uint,
+	cnt *uint64,
+) {
 	b.Helper()
 
 	b.StopTimer()
@@ -151,7 +161,13 @@ func (s *strategy) float32(ctx context.Context, b *testing.B, dataset assets.Dat
 	b.StopTimer()
 }
 
-func (s *strategy) float64(ctx context.Context, b *testing.B, dataset assets.Dataset, ids []uint, cnt *uint64) {
+func (s *strategy) float64(
+	ctx context.Context,
+	b *testing.B,
+	dataset assets.Dataset,
+	ids []uint,
+	cnt *uint64,
+) {
 	b.Helper()
 
 	b.StopTimer()

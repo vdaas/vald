@@ -51,9 +51,13 @@ func (f *filter) Start(ctx context.Context) (<-chan error, error) {
 	return f.client.StartConnectionMonitor(ctx)
 }
 
-func (f *filter) FilterSearch(ctx context.Context, res *payload.Search_Response) (*payload.Search_Response, error) {
+func (f *filter) FilterSearch(
+	ctx context.Context,
+	res *payload.Search_Response,
+) (*payload.Search_Response, error) {
 	var rerr error
-	err := f.client.Range(ctx,
+	err := f.client.Range(
+		ctx,
 		func(ctx context.Context, addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
 			r, err := egress.NewEgressFilterClient(conn).Filter(ctx, res, copts...)
 			if err != nil {
@@ -62,7 +66,8 @@ func (f *filter) FilterSearch(ctx context.Context, res *payload.Search_Response)
 				res = r
 			}
 			return nil
-		})
+		},
+	)
 	if err != nil {
 		log.Error(err)
 	}

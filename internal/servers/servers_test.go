@@ -174,12 +174,21 @@ func TestListenAndServe(t *testing.T) {
 					}
 
 					if len(werrs) != len(gerrs) {
-						return errors.Errorf("errors count is not equals: want: %v, got: %v", len(werrs), len(gerrs))
+						return errors.Errorf(
+							"errors count is not equals: want: %v, got: %v",
+							len(werrs),
+							len(gerrs),
+						)
 					}
 
 					for i := range werrs {
 						if gerrs[i].Error() != werrs[i].Error() {
-							return errors.Errorf("errors[%d] is not equals: want: %v, got: %v", i, werrs[i], gerrs[i])
+							return errors.Errorf(
+								"errors[%d] is not equals: want: %v, got: %v",
+								i,
+								werrs[i],
+								gerrs[i],
+							)
 						}
 					}
 					return nil

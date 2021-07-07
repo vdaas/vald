@@ -1,3 +1,4 @@
+//go:build e2e
 // +build e2e
 
 //
@@ -68,10 +69,18 @@ func init() {
 	datasetName := flag.String("dataset", "fashion-mnist-784-euclidean.hdf5", "dataset")
 
 	flag.BoolVar(&pfEnabled, "portforward", false, "enable port forwarding")
-	pfPodName := flag.String("portforward-pod-name", "vald-gateway-0", "pod name (only for port forward)")
+	pfPodName := flag.String(
+		"portforward-pod-name",
+		"vald-gateway-0",
+		"pod name (only for port forward)",
+	)
 	flag.IntVar(&pfPodPort, "portforward-pod-port", port, "pod gRPC port (only for port forward)")
 
-	kubeConfig := flag.String("kubeconfig", filepath.Join(os.Getenv("HOME"), ".kube", "config"), "kubeconfig path")
+	kubeConfig := flag.String(
+		"kubeconfig",
+		filepath.Join(os.Getenv("HOME"), ".kube", "config"),
+		"kubeconfig path",
+	)
 	flag.StringVar(&namespace, "namespace", "default", "namespace")
 
 	flag.Parse()
@@ -207,7 +216,11 @@ func TestE2EForSidecar(t *testing.T) {
 	}
 
 	if insertNum != int(res.GetStored()) {
-		t.Errorf("Stored index count is invalid, expected: %d, stored: %d", insertNum, res.GetStored())
+		t.Errorf(
+			"Stored index count is invalid, expected: %d, stored: %d",
+			insertNum,
+			res.GetStored(),
+		)
 	}
 
 	err = op.Search(t, ctx, operation.Dataset{

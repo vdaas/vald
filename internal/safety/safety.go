@@ -56,7 +56,12 @@ func recoverFunc(fn func() error, withPanic bool) func() error {
 					err = errors.ErrPanicRecovered(err, x)
 				}
 				if err != nil {
-					log.Errorf("recovered error: %v\ninfo:\n%s\nstacktrace:\n%s", err, info.Get().String(), stack)
+					log.Errorf(
+						"recovered error: %v\ninfo:\n%s\nstacktrace:\n%s",
+						err,
+						info.Get().String(),
+						stack,
+					)
 				}
 			}
 		}()

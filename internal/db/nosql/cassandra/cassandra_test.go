@@ -491,7 +491,10 @@ func TestNew(t *testing.T) {
 						ReconnectionPolicy: &gocql.ExponentialReconnectionPolicy{},
 						PoolConfig: gocql.PoolConfig{
 							HostSelectionPolicy: func() gocql.HostSelectionPolicy {
-								return gocql.TokenAwareHostPolicy(gocql.RoundRobinHostPolicy(), gocql.ShuffleReplicas())
+								return gocql.TokenAwareHostPolicy(
+									gocql.RoundRobinHostPolicy(),
+									gocql.ShuffleReplicas(),
+								)
 							}(),
 						},
 
@@ -570,7 +573,10 @@ func TestNew(t *testing.T) {
 						ReconnectionPolicy: &gocql.ExponentialReconnectionPolicy{},
 						PoolConfig: gocql.PoolConfig{
 							HostSelectionPolicy: func() gocql.HostSelectionPolicy {
-								return gocql.TokenAwareHostPolicy(gocql.RoundRobinHostPolicy(), gocql.NonLocalReplicasFallback())
+								return gocql.TokenAwareHostPolicy(
+									gocql.RoundRobinHostPolicy(),
+									gocql.NonLocalReplicasFallback(),
+								)
 							}(),
 						},
 
@@ -650,7 +656,11 @@ func TestNew(t *testing.T) {
 						ReconnectionPolicy: &gocql.ExponentialReconnectionPolicy{},
 						PoolConfig: gocql.PoolConfig{
 							HostSelectionPolicy: func() gocql.HostSelectionPolicy {
-								return gocql.TokenAwareHostPolicy(gocql.RoundRobinHostPolicy(), gocql.ShuffleReplicas(), gocql.NonLocalReplicasFallback())
+								return gocql.TokenAwareHostPolicy(
+									gocql.RoundRobinHostPolicy(),
+									gocql.ShuffleReplicas(),
+									gocql.NonLocalReplicasFallback(),
+								)
 							}(),
 						},
 
@@ -1281,7 +1291,12 @@ func Test_client_Open(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt, append(goleakIgnoreOptions, goleak.IgnoreTopFunction("github.com/gocql/gocql.(*eventDebouncer).flusher"))...)
+			defer goleak.VerifyNone(
+				tt,
+				append(
+					goleakIgnoreOptions,
+					goleak.IgnoreTopFunction("github.com/gocql/gocql.(*eventDebouncer).flusher"),
+				)...)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1722,7 +1737,11 @@ func TestSelect(t *testing.T) {
 			}
 		}(),
 		func() test {
-			stmt, names := qb.Select("t").Columns("col", "col1").Where(Eq("cmp")).Where(Eq("cmp1")).ToCql()
+			stmt, names := qb.Select("t").
+				Columns("col", "col1").
+				Where(Eq("cmp")).
+				Where(Eq("cmp1")).
+				ToCql()
 			return test{
 				name: "selete return qb.select with cols and cmps",
 				args: args{

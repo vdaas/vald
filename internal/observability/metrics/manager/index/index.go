@@ -62,7 +62,9 @@ func (i *indexerMetrics) Measurement(ctx context.Context) ([]metrics.Measurement
 	}, nil
 }
 
-func (i *indexerMetrics) MeasurementWithTags(ctx context.Context) ([]metrics.MeasurementWithTags, error) {
+func (i *indexerMetrics) MeasurementWithTags(
+	ctx context.Context,
+) ([]metrics.MeasurementWithTags, error) {
 	return []metrics.MeasurementWithTags{}, nil
 }
 

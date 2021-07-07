@@ -34,7 +34,9 @@ type largeDataset struct {
 	distances   x1b.FloatVectors
 }
 
-func loadLargeData(trainFileName, queryFileName, groundTruthFileName, distanceFileName, name, distanceType, objectType string) func() (Dataset, error) {
+func loadLargeData(
+	trainFileName, queryFileName, groundTruthFileName, distanceFileName, name, distanceType, objectType string,
+) func() (Dataset, error) {
 	return func() (Dataset, error) {
 		dir, err := findDir(largeDatasetPath)
 		if err != nil {

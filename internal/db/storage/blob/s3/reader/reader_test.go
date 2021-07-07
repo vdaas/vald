@@ -809,7 +809,12 @@ func Test_reader_getObjectWithBackoff(t *testing.T) {
 				ctxio:          test.fields.ctxio,
 			}
 
-			got, err := r.getObjectWithBackoff(test.args.ctx, test.args.key, test.args.offset, test.args.length)
+			got, err := r.getObjectWithBackoff(
+				test.args.ctx,
+				test.args.key,
+				test.args.offset,
+				test.args.length,
+			)
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -1103,7 +1108,12 @@ func Test_reader_getObject(t *testing.T) {
 				ctxio:          test.fields.ctxio,
 			}
 
-			got, err := r.getObject(test.args.ctx, test.args.key, test.args.offset, test.args.length)
+			got, err := r.getObject(
+				test.args.ctx,
+				test.args.key,
+				test.args.offset,
+				test.args.length,
+			)
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}

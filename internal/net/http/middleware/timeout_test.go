@@ -99,7 +99,11 @@ func TestWrap(t *testing.T) {
 					}
 
 					if code != http.StatusOK {
-						return errors.Errorf("code is not equals. want: %v, got: %v", http.StatusOK, code)
+						return errors.Errorf(
+							"code is not equals. want: %v, got: %v",
+							http.StatusOK,
+							code,
+						)
 					}
 
 					if cnt != 1 {
@@ -136,7 +140,11 @@ func TestWrap(t *testing.T) {
 					}
 
 					if code != http.StatusInternalServerError {
-						return errors.Errorf("code is not equals. want: %v, got: %v", http.StatusInternalServerError, code)
+						return errors.Errorf(
+							"code is not equals. want: %v, got: %v",
+							http.StatusInternalServerError,
+							code,
+						)
 					}
 
 					if cnt != 1 {
@@ -170,7 +178,11 @@ func TestWrap(t *testing.T) {
 					}
 
 					if code != http.StatusRequestTimeout {
-						return errors.Errorf("code is not equals. want: %v, got: %v", http.StatusRequestTimeout, code)
+						return errors.Errorf(
+							"code is not equals. want: %v, got: %v",
+							http.StatusRequestTimeout,
+							code,
+						)
 					}
 
 					if !strings.Contains(err.Error(), "handler timeout") {

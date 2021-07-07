@@ -39,7 +39,11 @@ func NewStreamRemove(opts ...StreamRemoveOption) e2e.Strategy {
 	return sr
 }
 
-func (sr *streamRemove) dataProvider(total *uint32, b *testing.B, dataset assets.Dataset) func() *client.RemoveRequest {
+func (sr *streamRemove) dataProvider(
+	total *uint32,
+	b *testing.B,
+	dataset assets.Dataset,
+) func() *client.RemoveRequest {
 	var cnt uint32
 
 	b.StopTimer()
@@ -63,7 +67,12 @@ func (sr *streamRemove) dataProvider(total *uint32, b *testing.B, dataset assets
 	}
 }
 
-func (sr *streamRemove) Run(ctx context.Context, b *testing.B, c client.Client, dataset assets.Dataset) {
+func (sr *streamRemove) Run(
+	ctx context.Context,
+	b *testing.B,
+	c client.Client,
+	dataset assets.Dataset,
+) {
 	var total uint32
 	b.Run("StreamRemove", func(bb *testing.B) {
 		srv, err := c.StreamRemove(ctx)

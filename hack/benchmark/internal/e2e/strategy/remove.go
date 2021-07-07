@@ -63,7 +63,12 @@ func (r *remove) run(ctx context.Context, b *testing.B, c client.Client, dataset
 	})
 }
 
-func (r *remove) runParallel(ctx context.Context, b *testing.B, c client.Client, dataset assets.Dataset) {
+func (r *remove) runParallel(
+	ctx context.Context,
+	b *testing.B,
+	c client.Client,
+	dataset assets.Dataset,
+) {
 	var cnt int64
 	b.Run("ParallelRemove", func(bb *testing.B) {
 		bb.StartTimer()

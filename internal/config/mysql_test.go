@@ -291,7 +291,11 @@ func TestMySQL_Opts(t *testing.T) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(len(got), len(w.want)) {
-			return errors.Errorf("length got: \"%#v\",\n\t\t\t\tlength want: \"%#v\"", len(got), len(w.want))
+			return errors.Errorf(
+				"length got: \"%#v\",\n\t\t\t\tlength want: \"%#v\"",
+				len(got),
+				len(w.want),
+			)
 		}
 		return nil
 	}

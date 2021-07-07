@@ -211,7 +211,10 @@ func (e *entryNodeMetricsMap) storeLocked(i *mnode.Node) {
 // LoadOrStore returns the existing value for the key if present.
 // Otherwise, it stores and returns the given value.
 // The loaded result is true if the value was loaded, false if stored.
-func (m *nodeMetricsMap) LoadOrStore(key string, value mnode.Node) (actual mnode.Node, loaded bool) {
+func (m *nodeMetricsMap) LoadOrStore(
+	key string,
+	value mnode.Node,
+) (actual mnode.Node, loaded bool) {
 	// Avoid locking if it's a clean hit.
 	read, _ := m.read.Load().(readOnlyNodeMetricsMap)
 	if e, ok := read.m[key]; ok {

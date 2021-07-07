@@ -60,9 +60,11 @@ var (
 		comparator.Comparer(func(x, y func(*http.Request) (*url.URL, error)) bool {
 			return reflect.ValueOf(x).Pointer() == reflect.ValueOf(y).Pointer()
 		}),
-		comparator.Comparer(func(x, y func(ctx context.Context, network, addr string) (net.Conn, error)) bool {
-			return reflect.ValueOf(x).Pointer() == reflect.ValueOf(y).Pointer()
-		}),
+		comparator.Comparer(
+			func(x, y func(ctx context.Context, network, addr string) (net.Conn, error)) bool {
+				return reflect.ValueOf(x).Pointer() == reflect.ValueOf(y).Pointer()
+			},
+		),
 		comparator.Comparer(func(x, y sync.Mutex) bool {
 			return reflect.DeepEqual(x, y)
 		}),

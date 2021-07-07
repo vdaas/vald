@@ -100,7 +100,9 @@ func (rm *redisMetrics) Measurement(ctx context.Context) ([]metrics.Measurement,
 	return []metrics.Measurement{}, nil
 }
 
-func (rm *redisMetrics) MeasurementWithTags(ctx context.Context) ([]metrics.MeasurementWithTags, error) {
+func (rm *redisMetrics) MeasurementWithTags(
+	ctx context.Context,
+) ([]metrics.MeasurementWithTags, error) {
 	rm.mu.Lock()
 	defer func() {
 		rm.ms = make([]metrics.MeasurementWithTags, 0)
@@ -151,7 +153,10 @@ func (rm *redisMetrics) View() []*metrics.View {
 	}
 }
 
-func (rm *redisMetrics) BeforeProcess(ctx context.Context, cmd redis.Cmder) (context.Context, error) {
+func (rm *redisMetrics) BeforeProcess(
+	ctx context.Context,
+	cmd redis.Cmder,
+) (context.Context, error) {
 	ctx, span := trace.StartSpan(ctx, "vald/internal/db/kvs/redis")
 	if span != nil {
 		span.AddAttributes(
@@ -197,7 +202,10 @@ func (rm *redisMetrics) AfterProcess(ctx context.Context, cmd redis.Cmder) error
 	return nil
 }
 
-func (rm *redisMetrics) BeforeProcessPipeline(ctx context.Context, cmds []redis.Cmder) (context.Context, error) {
+func (rm *redisMetrics) BeforeProcessPipeline(
+	ctx context.Context,
+	cmds []redis.Cmder,
+) (context.Context, error) {
 	cmdStrs := make([]string, 0, len(cmds))
 	for _, cmd := range cmds {
 		cmdStrs = append(cmdStrs, cmd.Name())

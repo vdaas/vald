@@ -41,7 +41,11 @@ type TF interface {
 }
 
 type session interface {
-	Run(feeds map[tf.Output]*tf.Tensor, fetches []tf.Output, operations []*Operation) ([]*tf.Tensor, error)
+	Run(
+		feeds map[tf.Output]*tf.Tensor,
+		fetches []tf.Output,
+		operations []*Operation,
+	) ([]*tf.Tensor, error)
 	Closer
 }
 

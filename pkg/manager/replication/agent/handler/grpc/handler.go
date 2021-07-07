@@ -44,7 +44,10 @@ func New(opts ...Option) Server {
 	return s
 }
 
-func (s *server) Recover(ctx context.Context, req *payload.Replication_Recovery) (_ *payload.Empty, err error) {
+func (s *server) Recover(
+	ctx context.Context,
+	req *payload.Replication_Recovery,
+) (_ *payload.Empty, err error) {
 	ctx, span := trace.StartSpan(ctx, "vald/manager-replication-agent.Recover")
 	defer func() {
 		if span != nil {
@@ -56,12 +59,19 @@ func (s *server) Recover(ctx context.Context, req *payload.Replication_Recovery)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
-		return nil, status.WrapWithInternal(fmt.Sprintf("RemoveIPs API uuid %s's could not RemoveIPs", ""), err, info.Get())
+		return nil, status.WrapWithInternal(
+			fmt.Sprintf("RemoveIPs API uuid %s's could not RemoveIPs", ""),
+			err,
+			info.Get(),
+		)
 	}
 	return new(payload.Empty), nil
 }
 
-func (s *server) Rebalance(ctx context.Context, req *payload.Replication_Rebalance) (*payload.Empty, error) {
+func (s *server) Rebalance(
+	ctx context.Context,
+	req *payload.Replication_Rebalance,
+) (*payload.Empty, error) {
 	ctx, span := trace.StartSpan(ctx, "vald/manager-replication-agent.Rebalance")
 	defer func() {
 		if span != nil {
@@ -71,7 +81,10 @@ func (s *server) Rebalance(ctx context.Context, req *payload.Replication_Rebalan
 	return new(payload.Empty), nil
 }
 
-func (s *server) AgentInfo(ctx context.Context, req *payload.Empty) (*payload.Replication_Agents, error) {
+func (s *server) AgentInfo(
+	ctx context.Context,
+	req *payload.Empty,
+) (*payload.Replication_Agents, error) {
 	// TODO implement this later
 	ctx, span := trace.StartSpan(ctx, "vald/manager-replication-agent.AgentInfo")
 	defer func() {

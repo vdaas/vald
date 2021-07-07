@@ -115,7 +115,12 @@ func (ctrl *control) GetControl() func(network, addr string, c syscall.RawConn) 
 					}
 				}
 				if TCP_FASTOPEN_CONNECT != 0 {
-					ierr = SetsockoptInt(f, IPPROTO_TCP, TCP_FASTOPEN_CONNECT, boolint(ctrl.tcpFastOpen))
+					ierr = SetsockoptInt(
+						f,
+						IPPROTO_TCP,
+						TCP_FASTOPEN_CONNECT,
+						boolint(ctrl.tcpFastOpen),
+					)
 					if ierr != nil {
 						err = errors.Wrap(err, ierr.Error())
 					}
@@ -139,7 +144,12 @@ func (ctrl *control) GetControl() func(network, addr string, c syscall.RawConn) 
 					}
 				}
 				if TCP_DEFER_ACCEPT != 0 {
-					ierr = SetsockoptInt(f, IPPROTO_TCP, TCP_DEFER_ACCEPT, boolint(ctrl.tcpDeferAccept))
+					ierr = SetsockoptInt(
+						f,
+						IPPROTO_TCP,
+						TCP_DEFER_ACCEPT,
+						boolint(ctrl.tcpDeferAccept),
+					)
 					if ierr != nil {
 						err = errors.Wrap(err, ierr.Error())
 					}

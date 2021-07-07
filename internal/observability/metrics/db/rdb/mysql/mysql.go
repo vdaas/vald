@@ -75,7 +75,9 @@ func (mm *mysqlMetrics) Measurement(ctx context.Context) ([]metrics.Measurement,
 	return mm.ms, nil
 }
 
-func (mm *mysqlMetrics) MeasurementWithTags(ctx context.Context) ([]metrics.MeasurementWithTags, error) {
+func (mm *mysqlMetrics) MeasurementWithTags(
+	ctx context.Context,
+) ([]metrics.MeasurementWithTags, error) {
 	return []metrics.MeasurementWithTags{}, nil
 }
 

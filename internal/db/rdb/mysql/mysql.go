@@ -99,9 +99,12 @@ func (m *mySQLClient) Open(ctx context.Context) (err error) {
 
 	var addParam string
 	if m.dialerFunc != nil {
-		mysql.RegisterDialContext(m.network, func(ctx context.Context, addr string) (net.Conn, error) {
-			return m.dialerFunc(ctx, m.network, addr)
-		})
+		mysql.RegisterDialContext(
+			m.network,
+			func(ctx context.Context, addr string) (net.Conn, error) {
+				return m.dialerFunc(ctx, m.network, addr)
+			},
+		)
 	}
 
 	if m.tlsConfig != nil {
@@ -210,7 +213,11 @@ func (m *mySQLClient) GetVector(ctx context.Context, uuid string) (Vector, error
 	}
 
 	var data *data
-	_, err := m.session.Select(asterisk).From(vectorTableName).Where(m.dbr.Eq(uuidColumnName, uuid)).Limit(1).LoadContext(ctx, &data)
+	_, err := m.session.Select(asterisk).
+		From(vectorTableName).
+		Where(m.dbr.Eq(uuidColumnName, uuid)).
+		Limit(1).
+		LoadContext(ctx, &data)
 	if err != nil {
 		return nil, err
 	}
@@ -219,7 +226,10 @@ func (m *mySQLClient) GetVector(ctx context.Context, uuid string) (Vector, error
 	}
 
 	var podIPs []podIP
-	_, err = m.session.Select(asterisk).From(podIPTableName).Where(m.dbr.Eq(idColumnName, data.ID)).LoadContext(ctx, &podIPs)
+	_, err = m.session.Select(asterisk).
+		From(podIPTableName).
+		Where(m.dbr.Eq(idColumnName, data.ID)).
+		LoadContext(ctx, &podIPs)
 	if err != nil {
 		return nil, err
 	}
@@ -243,7 +253,11 @@ func (m *mySQLClient) GetIPs(ctx context.Context, uuid string) ([]string, error)
 	}
 
 	var id int64
-	_, err := m.session.Select(idColumnName).From(vectorTableName).Where(m.dbr.Eq(uuidColumnName, uuid)).Limit(1).LoadContext(ctx, &id)
+	_, err := m.session.Select(idColumnName).
+		From(vectorTableName).
+		Where(m.dbr.Eq(uuidColumnName, uuid)).
+		Limit(1).
+		LoadContext(ctx, &id)
 	if err != nil {
 		return nil, err
 	}
@@ -252,7 +266,10 @@ func (m *mySQLClient) GetIPs(ctx context.Context, uuid string) ([]string, error)
 	}
 
 	var podIPs []podIP
-	_, err = m.session.Select(asterisk).From(podIPTableName).Where(m.dbr.Eq(idColumnName, id)).LoadContext(ctx, &podIPs)
+	_, err = m.session.Select(asterisk).
+		From(podIPTableName).
+		Where(m.dbr.Eq(idColumnName, id)).
+		LoadContext(ctx, &podIPs)
 	if err != nil {
 		return nil, err
 	}
@@ -299,13 +316,18 @@ func (m *mySQLClient) SetVector(ctx context.Context, vec Vector) error {
 	_, err = tx.InsertBySql("INSERT INTO "+vectorTableName+"(uuid, vector) VALUES (?, ?) ON DUPLICATE KEY UPDATE vector = ?",
 		vec.GetUUID(),
 		vec.GetVector(),
-		vec.GetVector()).ExecContext(ctx)
+		vec.GetVector()).
+		ExecContext(ctx)
 	if err != nil {
 		return err
 	}
 
 	var id int64
-	_, err = tx.Select(idColumnName).From(vectorTableName).Where(m.dbr.Eq(uuidColumnName, vec.GetUUID())).Limit(1).LoadContext(ctx, &id)
+	_, err = tx.Select(idColumnName).
+		From(vectorTableName).
+		Where(m.dbr.Eq(uuidColumnName, vec.GetUUID())).
+		Limit(1).
+		LoadContext(ctx, &id)
 	if err != nil {
 		return err
 	}
@@ -357,7 +379,8 @@ func (m *mySQLClient) SetVectors(ctx context.Context, vecs ...Vector) error {
 		_, err = tx.InsertBySql("INSERT INTO "+vectorTableName+"(uuid, vector) VALUES (?, ?) ON DUPLICATE KEY UPDATE vector = ?",
 			vec.GetUUID(),
 			vec.GetVector(),
-			vec.GetVector()).ExecContext(ctx)
+			vec.GetVector()).
+			ExecContext(ctx)
 		if err != nil {
 			return err
 		}
@@ -365,7 +388,11 @@ func (m *mySQLClient) SetVectors(ctx context.Context, vecs ...Vector) error {
 
 	for _, vec := range vecs {
 		var id int64
-		_, err = tx.Select(idColumnName).From(vectorTableName).Where(m.dbr.Eq(uuidColumnName, vec.GetUUID())).Limit(1).LoadContext(ctx, &id)
+		_, err = tx.Select(idColumnName).
+			From(vectorTableName).
+			Where(m.dbr.Eq(uuidColumnName, vec.GetUUID())).
+			Limit(1).
+			LoadContext(ctx, &id)
 		if err != nil {
 			return err
 		}
@@ -412,7 +439,11 @@ func (m *mySQLClient) deleteVector(ctx context.Context, val string) error {
 	defer tx.RollbackUnlessCommitted()
 
 	var id int64
-	_, err = tx.Select(idColumnName).From(vectorTableName).Where(m.dbr.Eq(uuidColumnName, val)).Limit(1).LoadContext(ctx, &id)
+	_, err = tx.Select(idColumnName).
+		From(vectorTableName).
+		Where(m.dbr.Eq(uuidColumnName, val)).
+		Limit(1).
+		LoadContext(ctx, &id)
 	if err != nil {
 		return err
 	}
@@ -468,7 +499,11 @@ func (m *mySQLClient) SetIPs(ctx context.Context, uuid string, ips ...string) er
 	defer tx.RollbackUnlessCommitted()
 
 	var id int64
-	_, err = tx.Select(idColumnName).From(vectorTableName).Where(m.dbr.Eq(uuidColumnName, uuid)).Limit(1).LoadContext(ctx, &id)
+	_, err = tx.Select(idColumnName).
+		From(vectorTableName).
+		Where(m.dbr.Eq(uuidColumnName, uuid)).
+		Limit(1).
+		LoadContext(ctx, &id)
 	if err != nil {
 		return err
 	}
@@ -517,6 +552,14 @@ func (m *mySQLClient) RemoveIPs(ctx context.Context, ips ...string) error {
 func (m *mySQLClient) errorLog(err error) {
 	log.Errorf(
 		"err: %v, { host: %s, port: %d, user: %s, name: %s, db: %s, charset: %s, socketPath: %s, network: %s} ",
-		err, m.host, m.port, m.user, m.name, m.db, m.charset, m.socketPath, m.network,
+		err,
+		m.host,
+		m.port,
+		m.user,
+		m.name,
+		m.db,
+		m.charset,
+		m.socketPath,
+		m.network,
 	)
 }

@@ -182,7 +182,11 @@ func TestDialContext(t *testing.T) {
 				},
 				checkFunc: func(w want, gotConn Conn, err error) error {
 					if !errors.Is(err, w.err) {
-						return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+						return errors.Errorf(
+							"got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"",
+							err,
+							w.err,
+						)
 					}
 
 					// read the output from the server and check if it is equals to the count
@@ -190,7 +194,11 @@ func TestDialContext(t *testing.T) {
 					buf, _ := ioutil.ReadAll(gotConn)
 					content := strings.Split(string(buf), "\n")[5] // skip HTTP header
 					if content != srvContent {
-						return errors.Errorf("invalid content, got: %v, want: %v", content, srvContent)
+						return errors.Errorf(
+							"invalid content, got: %v, want: %v",
+							content,
+							srvContent,
+						)
 					}
 
 					return nil
@@ -245,7 +253,8 @@ func TestParse(t *testing.T) {
 		afterFunc  func(args)
 	}
 	defaultCheckFunc := func(w want, gotHost string, gotPort uint16, gotIsLocal, gotIsV4, gotIsV6 bool, err error) error {
-		if (w.err == nil && err != nil) || (w.err != nil && err == nil) || (err != nil && err.Error() != w.err.Error()) {
+		if (w.err == nil && err != nil) || (w.err != nil && err == nil) ||
+			(err != nil && err.Error() != w.err.Error()) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(gotHost, w.wantHost) {
@@ -255,7 +264,11 @@ func TestParse(t *testing.T) {
 			return errors.Errorf("port got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotPort, w.wantPort)
 		}
 		if !reflect.DeepEqual(gotIsLocal, w.isLocal) {
-			return errors.Errorf("isLocal got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotIsLocal, w.isLocal)
+			return errors.Errorf(
+				"isLocal got: \"%#v\",\n\t\t\t\twant: \"%#v\"",
+				gotIsLocal,
+				w.isLocal,
+			)
 		}
 		if !reflect.DeepEqual(gotIsV4, w.isV4) {
 			return errors.Errorf("isV4 got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotIsV4, w.isV4)
@@ -410,7 +423,8 @@ func TestSplitHostPort(t *testing.T) {
 		afterFunc  func(args)
 	}
 	defaultCheckFunc := func(w want, gotHost string, gotPort uint16, err error) error {
-		if (w.err == nil && err != nil) || (w.err != nil && err == nil) || (err != nil && err.Error() != w.err.Error()) {
+		if (w.err == nil && err != nil) || (w.err != nil && err == nil) ||
+			(err != nil && err.Error() != w.err.Error()) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(gotHost, w.wantHost) {
@@ -713,7 +727,12 @@ func TestScanPorts(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 
-			gotPorts, err := ScanPorts(test.args.ctx, test.args.start, test.args.end, test.args.host)
+			gotPorts, err := ScanPorts(
+				test.args.ctx,
+				test.args.start,
+				test.args.end,
+				test.args.host,
+			)
 			if err := test.checkFunc(test.want, gotPorts, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}

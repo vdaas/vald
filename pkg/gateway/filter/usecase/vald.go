@@ -264,7 +264,10 @@ func (r *run) Stop(ctx context.Context) error {
 func (r *run) PostStop(ctx context.Context) (err error) {
 	defer func() {
 		if err != nil {
-			err = errors.Wrap(r.ingress.Stop(ctx), errors.Wrap(r.egress.Stop(ctx), err.Error()).Error())
+			err = errors.Wrap(
+				r.ingress.Stop(ctx),
+				errors.Wrap(r.egress.Stop(ctx), err.Error()).Error(),
+			)
 			return
 		}
 		err = r.ingress.Stop(ctx)

@@ -44,7 +44,11 @@ type tracer struct {
 	samplingRate float64
 }
 
-func StartSpan(ctx context.Context, name string, opts ...trace.StartOption) (context.Context, *Span) {
+func StartSpan(
+	ctx context.Context,
+	name string,
+	opts ...trace.StartOption,
+) (context.Context, *Span) {
 	if !enabled {
 		return ctx, nil
 	}

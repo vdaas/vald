@@ -104,7 +104,10 @@ func (c *compressor) Start(ctx context.Context) (<-chan error, error) {
 	return c.worker.Start(ctx)
 }
 
-func (c *compressor) dispatchCompress(ctx context.Context, vectors ...[]float32) (results [][]byte, errs error) {
+func (c *compressor) dispatchCompress(
+	ctx context.Context,
+	vectors ...[]float32,
+) (results [][]byte, errs error) {
 	ctx, span := trace.StartSpan(ctx, "vald/manager-compressor/service/Compressor.dispatchCompress")
 	defer func() {
 		if span != nil {
@@ -167,8 +170,14 @@ func (c *compressor) dispatchCompress(ctx context.Context, vectors ...[]float32)
 	return results, errs
 }
 
-func (c *compressor) dispatchDecompress(ctx context.Context, bytess ...[]byte) (results [][]float32, errs error) {
-	ctx, span := trace.StartSpan(ctx, "vald/manager-compressor/service/Compressor.dispatchDecompress")
+func (c *compressor) dispatchDecompress(
+	ctx context.Context,
+	bytess ...[]byte,
+) (results [][]float32, errs error) {
+	ctx, span := trace.StartSpan(
+		ctx,
+		"vald/manager-compressor/service/Compressor.dispatchDecompress",
+	)
 	defer func() {
 		if span != nil {
 			span.End()

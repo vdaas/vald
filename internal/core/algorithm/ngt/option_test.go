@@ -339,7 +339,9 @@ func TestWithDimension(t *testing.T) {
 			},
 			want: want{
 				obj: &T{},
-				err: errors.New("invalid critical option, name: dimension, val: 0: dimension size 0 is invalid, the supporting dimension size must be between 2 ~ 65536"),
+				err: errors.New(
+					"invalid critical option, name: dimension, val: 0: dimension size 0 is invalid, the supporting dimension size must be between 2 ~ 65536",
+				),
 			},
 		},
 		{
@@ -367,7 +369,9 @@ func TestWithDimension(t *testing.T) {
 			},
 			want: want{
 				obj: &T{},
-				err: errors.New("invalid critical option, name: dimension, val: 1: dimension size 1 is invalid, the supporting dimension size must be between 2 ~ 65536"),
+				err: errors.New(
+					"invalid critical option, name: dimension, val: 1: dimension size 1 is invalid, the supporting dimension size must be between 2 ~ 65536",
+				),
 			},
 		},
 		{
@@ -377,7 +381,9 @@ func TestWithDimension(t *testing.T) {
 			},
 			want: want{
 				obj: &T{},
-				err: errors.New("invalid critical option, name: dimension, val: -100: dimension size -100 is invalid, the supporting dimension size must be between 2 ~ 65536"),
+				err: errors.New(
+					"invalid critical option, name: dimension, val: -100: dimension size -100 is invalid, the supporting dimension size must be between 2 ~ 65536",
+				),
 			},
 		},
 		{
@@ -387,7 +393,9 @@ func TestWithDimension(t *testing.T) {
 			},
 			want: want{
 				obj: &T{},
-				err: errors.New("invalid critical option, name: dimension, val: 65537: dimension size 65537 is invalid, the supporting dimension size must be between 2 ~ 65536"),
+				err: errors.New(
+					"invalid critical option, name: dimension, val: 65537: dimension size 65537 is invalid, the supporting dimension size must be between 2 ~ 65536",
+				),
 			},
 		},
 		{
@@ -397,7 +405,9 @@ func TestWithDimension(t *testing.T) {
 			},
 			want: want{
 				obj: &T{},
-				err: errors.New("invalid critical option, name: dimension, val: 2147483647: dimension size 2147483647 is invalid, the supporting dimension size must be between 2 ~ 65536"),
+				err: errors.New(
+					"invalid critical option, name: dimension, val: 2147483647: dimension size 2147483647 is invalid, the supporting dimension size must be between 2 ~ 65536",
+				),
 			},
 		},
 		{
@@ -407,7 +417,9 @@ func TestWithDimension(t *testing.T) {
 			},
 			want: want{
 				obj: &T{},
-				err: errors.New("invalid critical option, name: dimension, val: -2147483648: dimension size -2147483648 is invalid, the supporting dimension size must be between 2 ~ 65536"),
+				err: errors.New(
+					"invalid critical option, name: dimension, val: -2147483648: dimension size -2147483648 is invalid, the supporting dimension size must be between 2 ~ 65536",
+				),
 			},
 		},
 	}
@@ -939,7 +951,9 @@ func TestWithObjectTypeByString(t *testing.T) {
 			},
 			want: want{
 				obj: &T{},
-				err: errors.New("invalid critical option, name: objectType, val: 0: unsupported ObjectType"),
+				err: errors.New(
+					"invalid critical option, name: objectType, val: 0: unsupported ObjectType",
+				),
 			},
 		},
 		{
@@ -949,7 +963,9 @@ func TestWithObjectTypeByString(t *testing.T) {
 			},
 			want: want{
 				obj: &T{},
-				err: errors.New("invalid critical option, name: objectType, val: 0: unsupported ObjectType"),
+				err: errors.New(
+					"invalid critical option, name: objectType, val: 0: unsupported ObjectType",
+				),
 			},
 		},
 	}
@@ -1037,7 +1053,9 @@ func TestWithObjectType(t *testing.T) {
 			},
 			want: want{
 				obj: &T{},
-				err: errors.New("invalid critical option, name: objectType, val: -1: unsupported ObjectType"),
+				err: errors.New(
+					"invalid critical option, name: objectType, val: -1: unsupported ObjectType",
+				),
 			},
 		},
 	}

@@ -97,7 +97,12 @@ func Test_loadSmallData(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 
-			got := loadSmallData(test.args.fileName, test.args.datasetName, test.args.distanceType, test.args.objectType)
+			got := loadSmallData(
+				test.args.fileName,
+				test.args.datasetName,
+				test.args.distanceType,
+				test.args.objectType,
+			)
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}

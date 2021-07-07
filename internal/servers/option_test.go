@@ -48,7 +48,11 @@ func TestWithServer(t *testing.T) {
 					opt(got)
 
 					if len(got.servers) != 1 {
-						return errors.Errorf("servers count is wrong. want: %v, got: %v", 1, len(got.servers))
+						return errors.Errorf(
+							"servers count is wrong. want: %v, got: %v",
+							1,
+							len(got.servers),
+						)
 					}
 
 					gsrv, ok := got.servers["srv"]
@@ -57,7 +61,11 @@ func TestWithServer(t *testing.T) {
 					}
 
 					if !reflect.DeepEqual(gsrv, srv) {
-						return errors.Errorf("servers['srv'] is not equals. want: %v, got: %b", srv, gsrv)
+						return errors.Errorf(
+							"servers['srv'] is not equals. want: %v, got: %b",
+							srv,
+							gsrv,
+						)
 					}
 
 					return nil

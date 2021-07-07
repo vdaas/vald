@@ -78,7 +78,13 @@ var (
 )
 
 func (e *ErrorDetails) String() string {
-	return fmt.Sprintf("code: %d,\tmessage: %s,\terror: %v,details: %v", e.Code, e.Message, e.Error, e.Details)
+	return fmt.Sprintf(
+		"code: %d,\tmessage: %s,\terror: %v,details: %v",
+		e.Code,
+		e.Message,
+		e.Error,
+		e.Details,
+	)
 }
 
 func DecodeErrorDetails(objs ...interface{}) (es []*ErrorDetails) {

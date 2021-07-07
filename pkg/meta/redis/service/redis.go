@@ -114,7 +114,11 @@ func (c *client) get(ctx context.Context, prefix, key string) (val string, err e
 	return res.Val(), nil
 }
 
-func (c *client) getMulti(ctx context.Context, prefix string, keys ...string) (vals []string, err error) {
+func (c *client) getMulti(
+	ctx context.Context,
+	prefix string,
+	keys ...string,
+) (vals []string, err error) {
 	pipe := c.db.TxPipeline()
 	ress := make(map[string]*redis.StringCmd, len(keys))
 	for _, k := range keys {
@@ -256,7 +260,11 @@ func (c *client) delete(ctx context.Context, pfx, pfxInv, key string) (val strin
 	return val, nil
 }
 
-func (c *client) deleteMulti(ctx context.Context, pfx, pfxInv string, keys ...string) (vals []string, err error) {
+func (c *client) deleteMulti(
+	ctx context.Context,
+	pfx, pfxInv string,
+	keys ...string,
+) (vals []string, err error) {
 	vals, err = c.getMulti(ctx, pfx, keys...)
 	if err != nil {
 		return nil, err

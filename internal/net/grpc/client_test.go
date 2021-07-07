@@ -896,7 +896,12 @@ func Test_gRPCClient_OrderedRangeConcurrent(t *testing.T) {
 				crl:                 test.fields.crl,
 			}
 
-			err := g.OrderedRangeConcurrent(test.args.ctx, test.args.orders, test.args.concurrency, test.args.f)
+			err := g.OrderedRangeConcurrent(
+				test.args.ctx,
+				test.args.orders,
+				test.args.concurrency,
+				test.args.f,
+			)
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -1391,7 +1396,13 @@ func Test_gRPCClient_do(t *testing.T) {
 				crl:                 test.fields.crl,
 			}
 
-			gotData, err := g.do(test.args.ctx, test.args.p, test.args.addr, test.args.enableBackoff, test.args.f)
+			gotData, err := g.do(
+				test.args.ctx,
+				test.args.p,
+				test.args.addr,
+				test.args.enableBackoff,
+				test.args.f,
+			)
 			if err := test.checkFunc(test.want, gotData, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}

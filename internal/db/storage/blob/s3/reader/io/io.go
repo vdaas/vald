@@ -40,6 +40,9 @@ func (*ctxio) NewReaderWithContext(ctx context.Context, r io.Reader) (io.Reader,
 }
 
 // NewReadCloserWithContext calls io.NewReadCloserWithContext.
-func (*ctxio) NewReadCloserWithContext(ctx context.Context, r io.ReadCloser) (io.ReadCloser, error) {
+func (*ctxio) NewReadCloserWithContext(
+	ctx context.Context,
+	r io.ReadCloser,
+) (io.ReadCloser, error) {
 	return io.NewReadCloserWithContext(ctx, r)
 }

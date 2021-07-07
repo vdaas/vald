@@ -174,7 +174,11 @@ func (p *pool) Connect(ctx context.Context) (c Conn, err error) {
 					t.Stop()
 					err = pc.conn.Close()
 					if err != nil {
-						log.Debugf("failed to close pool connection addr = %s\terror = %v", pc.addr, err)
+						log.Debugf(
+							"failed to close pool connection addr = %s\terror = %v",
+							pc.addr,
+							err,
+						)
 					}
 				}
 			}
@@ -230,7 +234,11 @@ func (p *pool) connect(ctx context.Context) (c Conn, err error) {
 					t.Stop()
 					err = pc.conn.Close()
 					if err != nil {
-						log.Debugf("failed to close pool connection addr = %s\terror = %v", pc.addr, err)
+						log.Debugf(
+							"failed to close pool connection addr = %s\terror = %v",
+							pc.addr,
+							err,
+						)
 					}
 				}
 			}
@@ -343,7 +351,10 @@ func (p *pool) get(retry uint64) (*ClientConn, bool) {
 	if retry <= 0 || retry > math.MaxUint64-p.Len() || p.Len() <= 0 {
 		log.Warnf("failed to find grpc pool connection for %s", p.addr)
 		if p.isIP {
-			log.Debugf("failure connection is IP connection trying to disconnect grpc connection for %s", p.addr)
+			log.Debugf(
+				"failure connection is IP connection trying to disconnect grpc connection for %s",
+				p.addr,
+			)
 			if err := p.Disconnect(); err != nil {
 				log.Debugf("failed to disconnect grpc IP connection for %s,\terr: %v", p.addr, err)
 			}
@@ -483,12 +494,24 @@ func isHealthy(conn *ClientConn) bool {
 	case connectivity.Ready:
 		return true
 	case connectivity.Idle, connectivity.Connecting:
-		log.Debugf("grpc target %s's connection status will be Ready soon:\tstatus: %s", conn.Target(), state.String())
+		log.Debugf(
+			"grpc target %s's connection status will be Ready soon:\tstatus: %s",
+			conn.Target(),
+			state.String(),
+		)
 		return true
 	case connectivity.Shutdown, connectivity.TransientFailure:
-		log.Errorf("grpc target %s's connection status is unhealthy:\tstatus: %s", conn.Target(), state.String())
+		log.Errorf(
+			"grpc target %s's connection status is unhealthy:\tstatus: %s",
+			conn.Target(),
+			state.String(),
+		)
 		return false
 	}
-	log.Errorf("grpc target %s's connection status is unknown:\tstatus: %s", conn.Target(), state.String())
+	log.Errorf(
+		"grpc target %s's connection status is unknown:\tstatus: %s",
+		conn.Target(),
+		state.String(),
+	)
 	return false
 }

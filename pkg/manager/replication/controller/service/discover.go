@@ -169,7 +169,8 @@ func (r *replicator) SendRecoveryRequest(ctx context.Context) (err error) {
 				_, cerr := r.client.Do(ctx, rpod.(pod.Pod).IP, func(ctx context.Context,
 					conn *grpc.ClientConn,
 					copts ...grpc.CallOption) (interface{}, error) {
-					return agent.NewReplicationClient(conn).Recover(ctx, &payload.Replication_Recovery{}, copts...)
+					return agent.NewReplicationClient(conn).
+						Recover(ctx, &payload.Replication_Recovery{}, copts...)
 				})
 				if cerr != nil {
 					r.rpods.Store(name, rpod)

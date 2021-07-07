@@ -36,7 +36,11 @@ var (
 
 	// ErrRequiredElementNotFoundByUUID represents a function to generate an error that the required element is not found.
 	ErrRequiredElementNotFoundByUUID = func(uuid string) error {
-		return Wrapf(NewErrMySQLNotFoundIdentity(), "error required element not found, uuid: %s", uuid)
+		return Wrapf(
+			NewErrMySQLNotFoundIdentity(),
+			"error required element not found, uuid: %s",
+			uuid,
+		)
 	}
 
 	// NewErrMySQLInvalidArgumentIdentity represents a function to generate an error that the argument is invalid.
@@ -48,7 +52,11 @@ var (
 
 	// ErrRequiredMemberNotFilled represents a function to generate an error that the required member is not filled.
 	ErrRequiredMemberNotFilled = func(member string) error {
-		return Wrapf(NewErrMySQLInvalidArgumentIdentity(), "error required member not filled (member: %s)", member)
+		return Wrapf(
+			NewErrMySQLInvalidArgumentIdentity(),
+			"error required member not filled (member: %s)",
+			member,
+		)
 	}
 
 	// ErrMySQLSessionNil represents a function to generate an error that the MySQL session is nil.

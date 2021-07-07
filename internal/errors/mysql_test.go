@@ -252,7 +252,9 @@ func TestErrRequiredElementNotFoundByUUID(t *testing.T) {
 			},
 			want: want{
 				want: &ErrMySQLNotFoundIdentity{
-					err: New("error required element not found, uuid: ef45b56c-1d90-12a7-c143-2567vaef218d: error mysql element not found"),
+					err: New(
+						"error required element not found, uuid: ef45b56c-1d90-12a7-c143-2567vaef218d: error mysql element not found",
+					),
 				},
 			},
 		},
@@ -263,7 +265,9 @@ func TestErrRequiredElementNotFoundByUUID(t *testing.T) {
 			},
 			want: want{
 				want: &ErrMySQLNotFoundIdentity{
-					err: New("error required element not found, uuid: : error mysql element not found"),
+					err: New(
+						"error required element not found, uuid: : error mysql element not found",
+					),
 				},
 			},
 		},
@@ -372,7 +376,9 @@ func TestErrRequiredMemberNotFilled(t *testing.T) {
 			},
 			want: want{
 				want: &ErrMySQLNotFoundIdentity{
-					err: New("error required member not filled (member: vector): error mysql invalid argument"),
+					err: New(
+						"error required member not filled (member: vector): error mysql invalid argument",
+					),
 				},
 			},
 		},
@@ -383,7 +389,9 @@ func TestErrRequiredMemberNotFilled(t *testing.T) {
 			},
 			want: want{
 				want: &ErrMySQLNotFoundIdentity{
-					err: New("error required member not filled (member: ): error mysql invalid argument"),
+					err: New(
+						"error required member not filled (member: ): error mysql invalid argument",
+					),
 				},
 			},
 		},

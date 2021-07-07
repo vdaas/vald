@@ -48,7 +48,11 @@ func TestHandlerToRestFunc(t *testing.T) {
 					}
 
 					if code != http.StatusOK {
-						return errors.Errorf("status code is wrong. want: %v, got: %v", http.StatusOK, code)
+						return errors.Errorf(
+							"status code is wrong. want: %v, got: %v",
+							http.StatusOK,
+							code,
+						)
 					}
 
 					if cnt != 1 {

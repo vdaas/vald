@@ -71,7 +71,10 @@ func New(opts ...Option) (ds DiscovererServer, err error) {
 func (s *server) Start(ctx context.Context) {
 }
 
-func (s *server) Pods(ctx context.Context, req *payload.Discoverer_Request) (*payload.Info_Pods, error) {
+func (s *server) Pods(
+	ctx context.Context,
+	req *payload.Discoverer_Request,
+) (*payload.Info_Pods, error) {
 	ctx, span := trace.StartSpan(ctx, apiName+".Pods")
 	defer func() {
 		if span != nil {
@@ -83,7 +86,14 @@ func (s *server) Pods(ctx context.Context, req *payload.Discoverer_Request) (*pa
 		return s.dsc.GetPods(req)
 	})
 	if err != nil {
-		err = status.WrapWithInternal(fmt.Sprintf("Pods API request (name: %s, namespace: %s, node: %s) failed", req.GetName(), req.GetNamespace(), req.GetNode()), err,
+		err = status.WrapWithInternal(
+			fmt.Sprintf(
+				"Pods API request (name: %s, namespace: %s, node: %s) failed",
+				req.GetName(),
+				req.GetNamespace(),
+				req.GetNode(),
+			),
+			err,
 			&errdetails.RequestInfo{
 				RequestId:   key,
 				ServingData: errdetails.Serialize(req),
@@ -92,7 +102,8 @@ func (s *server) Pods(ctx context.Context, req *payload.Discoverer_Request) (*pa
 				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/discoverer.v1.Pods",
 				ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
 			},
-			info.Get())
+			info.Get(),
+		)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
@@ -100,7 +111,14 @@ func (s *server) Pods(ctx context.Context, req *payload.Discoverer_Request) (*pa
 		return nil, err
 	}
 	if res == nil {
-		err = status.WrapWithNotFound(fmt.Sprintf("Pods API request (name: %s, namespace: %s, node: %s) pods not found", req.GetName(), req.GetNamespace(), req.GetNode()), err,
+		err = status.WrapWithNotFound(
+			fmt.Sprintf(
+				"Pods API request (name: %s, namespace: %s, node: %s) pods not found",
+				req.GetName(),
+				req.GetNamespace(),
+				req.GetNode(),
+			),
+			err,
 			&errdetails.RequestInfo{
 				RequestId:   key,
 				ServingData: errdetails.Serialize(req),
@@ -109,7 +127,8 @@ func (s *server) Pods(ctx context.Context, req *payload.Discoverer_Request) (*pa
 				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/discoverer.v1.Pods",
 				ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
 			},
-			info.Get())
+			info.Get(),
+		)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 		}
@@ -118,7 +137,14 @@ func (s *server) Pods(ctx context.Context, req *payload.Discoverer_Request) (*pa
 	}
 	cp := proto.Clone(res.(*payload.Info_Pods))
 	if cp == nil {
-		err = status.WrapWithNotFound(fmt.Sprintf("Pods API request (name: %s, namespace: %s, node: %s) pods not found, cloned response is nil", req.GetName(), req.GetNamespace(), req.GetNode()), err,
+		err = status.WrapWithNotFound(
+			fmt.Sprintf(
+				"Pods API request (name: %s, namespace: %s, node: %s) pods not found, cloned response is nil",
+				req.GetName(),
+				req.GetNamespace(),
+				req.GetNode(),
+			),
+			err,
 			&errdetails.RequestInfo{
 				RequestId:   key,
 				ServingData: errdetails.Serialize(req),
@@ -127,7 +153,8 @@ func (s *server) Pods(ctx context.Context, req *payload.Discoverer_Request) (*pa
 				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/discoverer.v1.Pods",
 				ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
 			},
-			info.Get())
+			info.Get(),
+		)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 		}
@@ -136,7 +163,14 @@ func (s *server) Pods(ctx context.Context, req *payload.Discoverer_Request) (*pa
 	}
 	in, ok := cp.(*payload.Info_Pods)
 	if in == nil || !ok {
-		err = status.WrapWithNotFound(fmt.Sprintf("Pods API request (name: %s, namespace: %s, node: %s) pods not found, cloned response is nil", req.GetName(), req.GetNamespace(), req.GetNode()), err,
+		err = status.WrapWithNotFound(
+			fmt.Sprintf(
+				"Pods API request (name: %s, namespace: %s, node: %s) pods not found, cloned response is nil",
+				req.GetName(),
+				req.GetNamespace(),
+				req.GetNode(),
+			),
+			err,
 			&errdetails.RequestInfo{
 				RequestId:   key,
 				ServingData: errdetails.Serialize(req),
@@ -145,7 +179,8 @@ func (s *server) Pods(ctx context.Context, req *payload.Discoverer_Request) (*pa
 				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/discoverer.v1.Pods",
 				ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
 			},
-			info.Get())
+			info.Get(),
+		)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 		}
@@ -155,7 +190,10 @@ func (s *server) Pods(ctx context.Context, req *payload.Discoverer_Request) (*pa
 	return in, nil
 }
 
-func (s *server) Nodes(ctx context.Context, req *payload.Discoverer_Request) (*payload.Info_Nodes, error) {
+func (s *server) Nodes(
+	ctx context.Context,
+	req *payload.Discoverer_Request,
+) (*payload.Info_Nodes, error) {
 	ctx, span := trace.StartSpan(ctx, apiName+".Nodes")
 	defer func() {
 		if span != nil {
@@ -168,7 +206,14 @@ func (s *server) Nodes(ctx context.Context, req *payload.Discoverer_Request) (*p
 		return s.dsc.GetNodes(req)
 	})
 	if err != nil {
-		err = status.WrapWithInternal(fmt.Sprintf("Nodes API request (name: %s, namespace: %s, node: %s) failed", req.GetName(), req.GetNamespace(), req.GetNode()), err,
+		err = status.WrapWithInternal(
+			fmt.Sprintf(
+				"Nodes API request (name: %s, namespace: %s, node: %s) failed",
+				req.GetName(),
+				req.GetNamespace(),
+				req.GetNode(),
+			),
+			err,
 			&errdetails.RequestInfo{
 				RequestId:   key,
 				ServingData: errdetails.Serialize(req),
@@ -177,7 +222,8 @@ func (s *server) Nodes(ctx context.Context, req *payload.Discoverer_Request) (*p
 				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/discoverer.v1.Nodes",
 				ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
 			},
-			info.Get())
+			info.Get(),
+		)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
 		}
@@ -185,7 +231,14 @@ func (s *server) Nodes(ctx context.Context, req *payload.Discoverer_Request) (*p
 		return nil, err
 	}
 	if res == nil {
-		err = status.WrapWithNotFound(fmt.Sprintf("Nodes API request (name: %s, namespace: %s, node: %s) nodes not found", req.GetName(), req.GetNamespace(), req.GetNode()), err,
+		err = status.WrapWithNotFound(
+			fmt.Sprintf(
+				"Nodes API request (name: %s, namespace: %s, node: %s) nodes not found",
+				req.GetName(),
+				req.GetNamespace(),
+				req.GetNode(),
+			),
+			err,
 			&errdetails.RequestInfo{
 				RequestId:   key,
 				ServingData: errdetails.Serialize(req),
@@ -194,7 +247,8 @@ func (s *server) Nodes(ctx context.Context, req *payload.Discoverer_Request) (*p
 				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/discoverer.v1.Nodes",
 				ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
 			},
-			info.Get())
+			info.Get(),
+		)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 		}
@@ -203,7 +257,14 @@ func (s *server) Nodes(ctx context.Context, req *payload.Discoverer_Request) (*p
 	}
 	cp := proto.Clone(res.(*payload.Info_Nodes))
 	if cp == nil {
-		err = status.WrapWithNotFound(fmt.Sprintf("Nodes API request (name: %s, namespace: %s, node: %s) nodes not found, cloned response is nil", req.GetName(), req.GetNamespace(), req.GetNode()), err,
+		err = status.WrapWithNotFound(
+			fmt.Sprintf(
+				"Nodes API request (name: %s, namespace: %s, node: %s) nodes not found, cloned response is nil",
+				req.GetName(),
+				req.GetNamespace(),
+				req.GetNode(),
+			),
+			err,
 			&errdetails.RequestInfo{
 				RequestId:   key,
 				ServingData: errdetails.Serialize(req),
@@ -212,7 +273,8 @@ func (s *server) Nodes(ctx context.Context, req *payload.Discoverer_Request) (*p
 				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/discoverer.v1.Nodes",
 				ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
 			},
-			info.Get())
+			info.Get(),
+		)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 		}
@@ -221,7 +283,14 @@ func (s *server) Nodes(ctx context.Context, req *payload.Discoverer_Request) (*p
 	}
 	in, ok := cp.(*payload.Info_Nodes)
 	if in == nil || !ok {
-		err = status.WrapWithNotFound(fmt.Sprintf("Nodes API request (name: %s, namespace: %s, node: %s) nodes not found, cloned response is nil", req.GetName(), req.GetNamespace(), req.GetNode()), err,
+		err = status.WrapWithNotFound(
+			fmt.Sprintf(
+				"Nodes API request (name: %s, namespace: %s, node: %s) nodes not found, cloned response is nil",
+				req.GetName(),
+				req.GetNamespace(),
+				req.GetNode(),
+			),
+			err,
 			&errdetails.RequestInfo{
 				RequestId:   key,
 				ServingData: errdetails.Serialize(req),
@@ -230,7 +299,8 @@ func (s *server) Nodes(ctx context.Context, req *payload.Discoverer_Request) (*p
 				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/discoverer.v1.Nodes",
 				ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
 			},
-			info.Get())
+			info.Get(),
+		)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 		}

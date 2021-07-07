@@ -73,7 +73,11 @@ func TestEncodeResponse(t *testing.T) {
 					}
 
 					if got, want := w.Header().Get(rest.ContentType), "application/json"; got != want {
-						return errors.Errorf("content-type not equals. want: %v, got: %v", want, got)
+						return errors.Errorf(
+							"content-type not equals. want: %v, got: %v",
+							want,
+							got,
+						)
 					}
 
 					if got, want := w.Code, 200; got != want {
@@ -232,7 +236,11 @@ func TestHandler(t *testing.T) {
 					}
 
 					if code != http.StatusOK {
-						return errors.Errorf("code not equals. want: %v, got: %v", http.StatusOK, code)
+						return errors.Errorf(
+							"code not equals. want: %v, got: %v",
+							http.StatusOK,
+							code,
+						)
 					}
 
 					if got, want := data, map[string]string{
@@ -262,7 +270,11 @@ func TestHandler(t *testing.T) {
 					}
 
 					if code != http.StatusBadRequest {
-						return errors.Errorf("code not equals. want: %v, got: %v", http.StatusBadRequest, code)
+						return errors.Errorf(
+							"code not equals. want: %v, got: %v",
+							http.StatusBadRequest,
+							code,
+						)
 					}
 
 					return nil
@@ -292,7 +304,11 @@ func TestHandler(t *testing.T) {
 					}
 
 					if code != http.StatusInternalServerError {
-						return errors.Errorf("code not equals. want: %v, got: %v", http.StatusInternalServerError, code)
+						return errors.Errorf(
+							"code not equals. want: %v, got: %v",
+							http.StatusInternalServerError,
+							code,
+						)
 					}
 
 					if got, want := data, map[string]string{
@@ -323,7 +339,11 @@ func TestHandler(t *testing.T) {
 				},
 				checkFunc: func(code int, err error, data map[string]string) error {
 					if code != http.StatusServiceUnavailable {
-						return errors.Errorf("code not equals. want: %v, got: %v", http.StatusServiceUnavailable, code)
+						return errors.Errorf(
+							"code not equals. want: %v, got: %v",
+							http.StatusServiceUnavailable,
+							code,
+						)
 					}
 
 					if got, want := data, map[string]string{
@@ -391,11 +411,20 @@ func TestErrorHandler(t *testing.T) {
 
 					if got, want := w.Header()[rest.ContentType],
 						[]string{rest.ProblemJSON, rest.CharsetUTF8}; !reflect.DeepEqual(got, want) {
-						return errors.Errorf("resp %v header not equals. want: %v, got: %v", rest.ContentType, want, got)
+						return errors.Errorf(
+							"resp %v header not equals. want: %v, got: %v",
+							rest.ContentType,
+							want,
+							got,
+						)
 					}
 
 					if got, want := w.Code, http.StatusInternalServerError; got != want {
-						return errors.Errorf("reso code not equals. want: %v, got: %v", http.StatusInternalServerError, got)
+						return errors.Errorf(
+							"reso code not equals. want: %v, got: %v",
+							http.StatusInternalServerError,
+							got,
+						)
 					}
 					return nil
 				},
@@ -618,7 +647,11 @@ func TestEncodeRequest(t *testing.T) {
 					}
 
 					if len(req.Header) != 1 {
-						return errors.Errorf("header length is wrong. want: %v, but got: %d", 1, len(req.Header))
+						return errors.Errorf(
+							"header length is wrong. want: %v, but got: %d",
+							1,
+							len(req.Header),
+						)
 					}
 
 					gotHeaders, ok := req.Header[rest.ContentType]
@@ -627,15 +660,28 @@ func TestEncodeRequest(t *testing.T) {
 					}
 
 					if len(gotHeaders) != 1 {
-						return errors.Errorf("header value length is wrong. key:%s want: %d, but got: %d", rest.ContentType, 1, len(gotHeaders))
+						return errors.Errorf(
+							"header value length is wrong. key:%s want: %d, but got: %d",
+							rest.ContentType,
+							1,
+							len(gotHeaders),
+						)
 					}
 
 					if want, got := "application/json", gotHeaders[0]; want != got {
-						return errors.Errorf("header value is wrong. want: %s, but got: %s", want, got)
+						return errors.Errorf(
+							"header value is wrong. want: %s, but got: %s",
+							want,
+							got,
+						)
 					}
 
 					if want, got := int64(2), req.ContentLength; want != got {
-						return errors.Errorf("content length is wrong. want: %v, but got: %d", want, got)
+						return errors.Errorf(
+							"content length is wrong. want: %v, but got: %d",
+							want,
+							got,
+						)
 					}
 
 					if req.Body == nil {
@@ -748,9 +794,11 @@ func TestRequest(t *testing.T) {
 			}
 		}(),
 		func() test {
-			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-				_, _ = w.Write([]byte("\"1\""))
-			}))
+			srv := httptest.NewServer(
+				http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+					_, _ = w.Write([]byte("\"1\""))
+				}),
+			)
 			var got string
 			return test{
 				name: "returns nil when no error occurs internally",
@@ -793,7 +841,13 @@ func TestRequest(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 
-			err := Request(test.args.ctx, test.args.method, test.args.url, test.args.payloyd, test.args.data)
+			err := Request(
+				test.args.ctx,
+				test.args.method,
+				test.args.url,
+				test.args.payloyd,
+				test.args.data,
+			)
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
