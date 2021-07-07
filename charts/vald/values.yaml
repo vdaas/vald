@@ -3035,7 +3035,7 @@ initializer:
       # initializer.cassandra.configmap.replication_class -- cassandra replication class
       replication_class: SimpleStrategy
       # initializer.cassandra.configmap.replication_factor -- cassandra replication factor
-      replication_factor 3
+      replication_factor: 3
       # initializer.cassandra.configmap.meta -- cassandra settings for metadata store
       meta:
         # initializer.cassandra.configmap.meta.enabled -- meta table enabled
@@ -3057,4 +3057,4 @@ initializer:
       name: cassandra-secret
       # initializer.cassandra.secret.data -- cassandra secret data
       data:
-        password: cGFzc3dvcmQ=:
+        password: cGFzc3dvcmQ=
