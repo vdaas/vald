@@ -22,7 +22,7 @@ if git diff HEAD^ --name-only | grep ".go$" > /dev/null; then
 
     # golines
     echo "Run golines..."
-    find ./ -type d -name .git -prune -o -type f -regex '.*[^\.pb]\.go' -print | xargs golines -w
+    find ./ -type d -name .git -prune -o -type f -regex '.*[^\.pb]\.go' -print | xargs golines -w -m 128
     echo "golines finished."
 
     # gofumpt
