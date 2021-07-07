@@ -3,17 +3,17 @@ module github.com/vdaas/vald
 go 1.16
 
 replace (
-	cloud.google.com/go => cloud.google.com/go v0.84.1-0.20210624210647-267787eb245d
-	cloud.google.com/go/storage => cloud.google.com/go/storage v1.15.1-0.20210624210647-267787eb245d
-	github.com/Azure/go-autorest => github.com/Azure/go-autorest v14.2.1-0.20210602190049-10e0b31633f1+incompatible
-	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.38.67
+	cloud.google.com/go => cloud.google.com/go v0.86.1-0.20210707201605-770477c795b8
+	cloud.google.com/go/storage => cloud.google.com/go/storage v1.16.1-0.20210707205623-1eae86f18826
+	github.com/Azure/go-autorest => github.com/Azure/go-autorest v14.2.1-0.20210701162346-76c7860e9b60+incompatible
+	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.39.2
 	github.com/boltdb/bolt => github.com/boltdb/bolt v1.3.1
 	github.com/chzyer/logex => github.com/chzyer/logex v1.1.11-0.20170329064859-445be9e134b2
 	github.com/coreos/etcd => go.etcd.io/etcd v3.3.25+incompatible
 	github.com/docker/docker => github.com/moby/moby v20.10.7+incompatible
 	github.com/envoyproxy/protoc-gen-validate => github.com/envoyproxy/protoc-gen-validate v0.6.1
 	github.com/go-sql-driver/mysql => github.com/go-sql-driver/mysql v1.6.0
-	github.com/gocql/gocql => github.com/gocql/gocql v0.0.0-20210621133426-d83b80dfb480
+	github.com/gocql/gocql => github.com/gocql/gocql v0.0.0-20210707082121-9a3953d1826d
 	github.com/gogo/googleapis => github.com/gogo/googleapis v1.4.1
 	github.com/gogo/protobuf => github.com/gogo/protobuf v1.3.2
 	github.com/google/go-cmp => github.com/google/go-cmp v0.5.6
@@ -26,19 +26,19 @@ replace (
 	github.com/kpango/glg => github.com/kpango/glg v1.6.0
 	github.com/tensorflow/tensorflow => github.com/tensorflow/tensorflow v2.1.2+incompatible
 	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20210616213533-5ff15b29337e
-	google.golang.org/grpc => google.golang.org/grpc v1.38.0
-	google.golang.org/protobuf => google.golang.org/protobuf v1.26.0
+	google.golang.org/grpc => google.golang.org/grpc v1.39.0
+	google.golang.org/protobuf => google.golang.org/protobuf v1.27.1
 	k8s.io/api => k8s.io/api v0.21.2
 	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.21.2
 	k8s.io/apimachinery => k8s.io/apimachinery v0.21.2
 	k8s.io/cli-runtime => k8s.io/cli-runtime v0.21.2
 	k8s.io/client-go => k8s.io/client-go v0.21.2
 	k8s.io/metrics => k8s.io/metrics v0.21.2
-	sigs.k8s.io/controller-runtime => sigs.k8s.io/controller-runtime v0.9.1
+	sigs.k8s.io/controller-runtime => sigs.k8s.io/controller-runtime v0.9.2
 )
 
 require (
-	cloud.google.com/go v0.84.0
+	cloud.google.com/go v0.86.0
 	cloud.google.com/go/storage v1.15.0
 	code.cloudfoundry.org/bytefmt v0.0.0-20210608160410-67692ebc98de
 	contrib.go.opencensus.io/exporter/jaeger v0.2.1
@@ -48,7 +48,7 @@ require (
 	github.com/cespare/xxhash/v2 v2.1.1
 	github.com/envoyproxy/protoc-gen-validate v0.1.0
 	github.com/fsnotify/fsnotify v1.4.9
-	github.com/go-redis/redis/v8 v8.10.0
+	github.com/go-redis/redis/v8 v8.11.0
 	github.com/go-sql-driver/mysql v1.6.0
 	github.com/go-toolsmith/strparse v1.0.0 // indirect
 	github.com/gocql/gocql v0.0.0-20200131111108-92af2e088537
@@ -78,20 +78,20 @@ require (
 	go.opencensus.io v0.23.0
 	go.uber.org/automaxprocs v1.4.0
 	go.uber.org/goleak v1.1.10
-	go.uber.org/zap v1.17.0
+	go.uber.org/zap v1.18.1
 	gocloud.dev v0.23.0
 	golang.org/x/net v0.0.0-20210614182718-04defd469f4e
-	golang.org/x/oauth2 v0.0.0-20210622215436-a8dc77f794b6
+	golang.org/x/oauth2 v0.0.0-20210628180205-a41e5a781914
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
-	golang.org/x/sys v0.0.0-20210616094352-59db8d763f22
+	golang.org/x/sys v0.0.0-20210630005230-0f9fa26af87c
 	golang.org/x/tools v0.1.4
 	gonum.org/v1/hdf5 v0.0.0-20210623100833-4dd8a5a777f9
 	gonum.org/v1/plot v0.9.0
-	google.golang.org/api v0.49.0
-	google.golang.org/genproto v0.0.0-20210624195500-8bfb893ecb84
-	google.golang.org/grpc v1.38.0
+	google.golang.org/api v0.50.0
+	google.golang.org/genproto v0.0.0-20210707164411-8c882eb9abba
+	google.golang.org/grpc v1.39.0
 	gopkg.in/yaml.v2 v2.4.0
-	inet.af/netaddr v0.0.0-20210603230628-bf05d8b52dda
+	inet.af/netaddr v0.0.0-20210707202901-70468d781e6c
 	k8s.io/api v0.21.2
 	k8s.io/apimachinery v0.21.2
 	k8s.io/cli-runtime v0.0.0-00010101000000-000000000000
