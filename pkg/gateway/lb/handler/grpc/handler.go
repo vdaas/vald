@@ -1637,7 +1637,7 @@ func (s *server) StreamUpsert(stream vald.Upsert_StreamUpsertServer) (err error)
 	return nil
 }
 
-func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequest) (locs *payload.Object_Locations, err error) {
+func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequest) (res *payload.Object_Locations, err error) {
 	ctx, span := trace.StartSpan(ctx, apiName+".MultiUpsert")
 	defer func() {
 		if span != nil {
@@ -1713,81 +1713,81 @@ func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequ
 		}
 	}
 
-	insertLocs := make([]*payload.Object_Location, 0, len(insertReqs))
-	updateLocs := make([]*payload.Object_Location, 0, len(updateReqs))
-
-	var (
-		errs error
-		mu   sync.Mutex
-	)
-	eg, ectx := errgroup.New(ctx)
-	eg.Go(safety.RecoverFunc(func() error {
-		if len(updateReqs) <= 0 {
-			return nil
-		}
-
-		ectx, span := trace.StartSpan(ectx, apiName+".MultiUpsert/Go-MultiUpdate")
-		defer func() {
-			if span != nil {
-				span.End()
-			}
-		}()
-		var err error
-		loc, err := s.MultiUpdate(ectx, &payload.Update_MultiRequest{
+	switch {
+	case len(insertReqs) <= 0:
+		res, err = s.MultiUpdate(ctx, &payload.Update_MultiRequest{
 			Requests: updateReqs,
 		})
-		if err == nil {
-			updateLocs = loc.GetLocations()
-		} else {
-			mu.Lock()
-			if errs == nil {
-				errs = err
-			} else {
-				errs = errors.Wrap(errs, err.Error())
-			}
-			mu.Unlock()
-		}
-		return nil
-	}))
-	eg.Go(safety.RecoverFunc(func() error {
-		if len(insertReqs) <= 0 {
-			return nil
-		}
-
-		ectx, span := trace.StartSpan(ectx, apiName+".MultiUpsert/Go-MultiInsert")
-		defer func() {
-			if span != nil {
-				span.End()
-			}
-		}()
-		var err error
-		loc, err := s.MultiInsert(ectx, &payload.Insert_MultiRequest{
+	case len(updateReqs) <= 0:
+		res, err = s.MultiInsert(ctx, &payload.Insert_MultiRequest{
 			Requests: insertReqs,
 		})
-		if err == nil {
-			insertLocs = loc.GetLocations()
-		} else {
-			mu.Lock()
+	default:
+		var (
+			ures, ires *payload.Object_Locations
+			errs       error
+			mu         sync.Mutex
+		)
+		eg, ectx := errgroup.New(ctx)
+		eg.Go(safety.RecoverFunc(func() (err error) {
+			ures, err = s.MultiUpdate(ectx, &payload.Update_MultiRequest{
+				Requests: updateReqs,
+			})
+			if err != nil {
+				mu.Lock()
+				if errs == nil {
+					errs = err
+				} else {
+					errs = errors.Wrap(errs, err.Error())
+				}
+				mu.Unlock()
+			}
+			return nil
+		}))
+		eg.Go(safety.RecoverFunc(func() (err error) {
+			ires, err = s.MultiInsert(ectx, &payload.Insert_MultiRequest{
+				Requests: insertReqs,
+			})
+			if err != nil {
+				mu.Lock()
+				if errs == nil {
+					errs = err
+				} else {
+					errs = errors.Wrap(errs, err.Error())
+				}
+				mu.Unlock()
+			}
+			return nil
+		}))
+		err = eg.Wait()
+		if err != nil {
 			if errs == nil {
 				errs = err
 			} else {
 				errs = errors.Wrap(errs, err.Error())
 			}
-			mu.Unlock()
 		}
-		return nil
-	}))
 
-	err = eg.Wait()
-	if err != nil {
 		if errs == nil {
-			errs = err
+			var locs []*payload.Object_Location
+			switch {
+			case ures.GetLocations() == nil:
+				locs = ires.GetLocations()
+			case ires.GetLocations() == nil:
+				locs = ures.GetLocations()
+			default:
+				locs = append(ures.GetLocations(), ires.GetLocations()...)
+			}
+			res = &payload.Object_Locations{
+				Locations: locs,
+			}
 		} else {
-			errs = errors.Wrap(errs, err.Error())
+			err = errs
 		}
+
 	}
-	if errs != nil {
-		st, msg, err := status.ParseError(errs, codes.Internal,
+	if err != nil {
+		st, msg, err := status.ParseError(err, codes.Internal,
 			"failed to parse MultiUpsert gRPC error response",
 			&errdetails.RequestInfo{
 				RequestId:   strings.Join(ids, ","),
@@ -1802,9 +1802,7 @@ func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequ
 		}
 		return nil, err
 	}
-	return location.ReStructure(ids, &payload.Object_Locations{
-		Locations: append(insertLocs, updateLocs...),
-	}), nil
+	return location.ReStructure(ids, res), nil
 }
 
 func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (locs *payload.Object_Location, err error) {
