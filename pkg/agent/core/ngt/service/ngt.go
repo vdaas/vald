@@ -585,21 +585,19 @@ func (n *ngt) deleteMultiple(uuids []string, now int64) (err error) {
 }
 
 func (n *ngt) GetObject(uuid string) (vec []float32, err error) {
-	oid, ok := n.kvs.Get(uuid)
+	vec, ok := n.vq.GetVector(uuid)
 	if !ok {
-		log.Debugf("GetObject\tuuid: %s's kvs data not found, trying to read from vqueue", uuid)
-		vec, ok := n.vq.GetVector(uuid)
+		log.Debugf("GetObject\tuuid: %s's data not found in vqueue, trying to read from indexed kvsdb data", uuid)
+		oid, ok := n.kvs.Get(uuid)
 		if !ok {
-			log.Debugf("GetObject\tuuid: %s's vqueue data not found", uuid)
+			log.Debugf("GetObject\tuuid: %s's data not found in kvsdb and vqueue", uuid)
 			return nil, errors.ErrObjectIDNotFound(uuid)
 		}
-		return vec, nil
-	}
-	log.Debugf("GetObject\tGetVector oid: %d", oid)
-	vec, err = n.core.GetVector(uint(oid))
-	if err != nil {
-		log.Debugf("GetObject\tuuid: %s oid: %d's vector not found", uuid, oid)
-		return nil, errors.ErrObjectNotFound(err, uuid)
+		vec, err = n.core.GetVector(uint(oid))
+		if err != nil {
+			log.Debugf("GetObject\tuuid: %s oid: %d's vector not found in ngt index", uuid, oid)
+			return nil, errors.ErrObjectNotFound(err, uuid)
+		}
 	}
 	return vec, nil
 }
