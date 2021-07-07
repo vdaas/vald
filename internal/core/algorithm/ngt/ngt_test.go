@@ -598,7 +598,7 @@ func Test_ngt_Search(t *testing.T) {
 			},
 		},
 
-		//other cases
+		// other cases
 		{
 			name: "return nothing if the search dimension is less than the inserted vector",
 			args: args{
@@ -2356,6 +2356,8 @@ func Test_ngt_CreateIndex(t *testing.T) {
 					mu:                  nil,
 				},
 				createFunc: func(t *testing.T, f fields) (NGT, error) {
+					t.Helper()
+
 					ngt, err := defaultCreateFunc(t, f)
 					if err != nil {
 						return nil, err
@@ -2417,6 +2419,8 @@ func Test_ngt_CreateIndex(t *testing.T) {
 					mu:                  nil,
 				},
 				createFunc: func(t *testing.T, f fields) (NGT, error) {
+					t.Helper()
+
 					ngt, err := defaultCreateFunc(t, f)
 					if err != nil {
 						return nil, err
