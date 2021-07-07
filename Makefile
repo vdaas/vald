@@ -355,7 +355,7 @@ tools/install: \
 	telepresence/install
 
 .PHONY: update
-## update deps, license, and run gofumpt, goimports
+## update deps, license, and run golines, gofumpt, goimports
 update: \
 	clean \
 	proto/all \
@@ -371,8 +371,9 @@ format: \
 	format/yaml
 
 .PHONY: format/go
-## run gofumpt, goimports for all go files
+## run golines, gofumpt, goimports for all go files
 format/go:
+	find ./ -type d -name .git -prune -o -type f -regex '.*[^\.pb]\.go' -print | xargs golines -w
 	find ./ -type d -name .git -prune -o -type f -regex '.*[^\.pb]\.go' -print | xargs gofumpt -w
 	find ./ -type d -name .git -prune -o -type f -regex '.*\.go' -print | xargs goimports -w
 
@@ -394,6 +395,7 @@ deps: \
 .PHONY: deps/install
 ## install dependencies
 deps/install: \
+	golines/install \
 	gofumpt/install \
 	goimports/install \
 	prettier/install \
@@ -420,6 +422,10 @@ goimports/install:
 .PHONY: gofumpt/install
 gofumpt/install:
 	go install mvdan.cc/gofumpt@latest
+
+.PHONY: golines/install
+golines/install:
+	go install github.com/segmentio/golines@latest
 
 .PHONY: prettier/install
 prettier/install:
