@@ -538,7 +538,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (res *
 		return nil, err
 	}
 
-	err = s.ngt.Insert(vec.GetId(), vec.GetVector())
+	err = s.ngt.InsertWithTime(vec.GetId(), vec.GetVector(), req.GetConfig().GetTimestamp())
 	if err != nil {
 		var code trace.Status
 
@@ -783,7 +783,7 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (res *
 		}
 		return nil, err
 	}
-	err = s.ngt.Update(vec.GetId(), vec.GetVector())
+	err = s.ngt.UpdateWithTime(vec.GetId(), vec.GetVector(), req.GetConfig().GetTimestamp())
 	if err != nil {
 		var code trace.Status
 		if errors.Is(err, errors.ErrObjectIDNotFound(vec.GetId())) {
@@ -1071,11 +1071,17 @@ func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *
 	if exists {
 		loc, err = s.Update(ctx, &payload.Update_Request{
 			Vector: req.GetVector(),
+			Config: &payload.Update_Config{
+				Timestamp: req.GetConfig().GetTimestamp(),
+			},
 		})
 		rtName = "/ngt.Update"
 	} else {
 		loc, err = s.Insert(ctx, &payload.Insert_Request{
 			Vector: req.GetVector(),
+			Config: &payload.Insert_Config{
+				Timestamp: req.GetConfig().GetTimestamp(),
+			},
 		})
 		rtName = "/ngt.Insert"
 	}
@@ -1252,7 +1258,7 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (res *
 	}()
 	id := req.GetId()
 	uuid := id.GetId()
-	err = s.ngt.Delete(uuid)
+	err = s.ngt.DeleteWithTime(uuid, req.GetConfig().GetTimestamp())
 	if err != nil {
 		var code trace.Status
 		if errors.Is(err, errors.ErrObjectIDNotFound(uuid)) {

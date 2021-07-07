@@ -49,11 +49,17 @@ type NGT interface {
 	Search(vec []float32, size uint32, epsilon, radius float32) ([]model.Distance, error)
 	SearchByID(uuid string, size uint32, epsilon, radius float32) ([]model.Distance, error)
 	Insert(uuid string, vec []float32) (err error)
+	InsertWithTime(uuid string, vec []float32, t int64) (err error)
 	InsertMultiple(vecs map[string][]float32) (err error)
+	InsertMultipleWithTime(vecs map[string][]float32, t int64) (err error)
 	Update(uuid string, vec []float32) (err error)
+	UpdateWithTime(uuid string, vec []float32, t int64) (err error)
 	UpdateMultiple(vecs map[string][]float32) (err error)
+	UpdateMultipleWithTime(vecs map[string][]float32, t int64) (err error)
 	Delete(uuid string) (err error)
+	DeleteWithTime(uuid string, t int64) (err error)
 	DeleteMultiple(uuids ...string) (err error)
+	DeleteMultipleWithTime(uuids []string, t int64) (err error)
 	GetObject(uuid string) (vec []float32, err error)
 	CreateIndex(ctx context.Context, poolSize uint32) (err error)
 	SaveIndex(ctx context.Context) (err error)
@@ -432,6 +438,13 @@ func (n *ngt) Insert(uuid string, vec []float32) (err error) {
 	return n.insert(uuid, vec, time.Now().UnixNano(), true)
 }
 
+func (n *ngt) InsertWithTime(uuid string, vec []float32, t int64) (err error) {
+	if t <= 0 {
+		t = time.Now().UnixNano()
+	}
+	return n.insert(uuid, vec, t, true)
+}
+
 func (n *ngt) insert(uuid string, vec []float32, t int64, validation bool) (err error) {
 	if len(uuid) == 0 {
 		err = errors.ErrUUIDNotFound(0)
@@ -451,6 +464,13 @@ func (n *ngt) InsertMultiple(vecs map[string][]float32) (err error) {
 	return n.insertMultiple(vecs, time.Now().UnixNano())
 }
 
+func (n *ngt) InsertMultipleWithTime(vecs map[string][]float32, t int64) (err error) {
+	if t <= 0 {
+		t = time.Now().UnixNano()
+	}
+	return n.insertMultiple(vecs, t)
+}
+
 func (n *ngt) insertMultiple(vecs map[string][]float32, now int64) (err error) {
 	for uuid, vec := range vecs {
 		ierr := n.insert(uuid, vec, now, true)
@@ -466,19 +486,40 @@ func (n *ngt) insertMultiple(vecs map[string][]float32, now int64) (err error) {
 }
 
 func (n *ngt) Update(uuid string, vec []float32) (err error) {
-	now := time.Now().UnixNano()
+	return n.update(uuid, vec, time.Now().UnixNano())
+}
+
+func (n *ngt) UpdateWithTime(uuid string, vec []float32, t int64) (err error) {
+	if t <= 0 {
+		t = time.Now().UnixNano()
+	}
+	return n.update(uuid, vec, t)
+}
+
+func (n *ngt) update(uuid string, vec []float32, t int64) (err error) {
 	if err = n.readyForUpdate(uuid, vec); err != nil {
 		return err
 	}
-	err = n.delete(uuid, now)
+	err = n.delete(uuid, t)
 	if err != nil {
 		return err
 	}
-	now++
-	return n.insert(uuid, vec, now, false)
+	t++
+	return n.insert(uuid, vec, t, false)
 }
 
 func (n *ngt) UpdateMultiple(vecs map[string][]float32) (err error) {
+	return n.updateMultiple(vecs, time.Now().UnixNano())
+}
+
+func (n *ngt) UpdateMultipleWithTime(vecs map[string][]float32, t int64) (err error) {
+	if t <= 0 {
+		t = time.Now().UnixNano()
+	}
+	return n.updateMultiple(vecs, t)
+}
+
+func (n *ngt) updateMultiple(vecs map[string][]float32, t int64) (err error) {
 	uuids := make([]string, 0, len(vecs))
 	for uuid, vec := range vecs {
 		if err = n.readyForUpdate(uuid, vec); err != nil {
@@ -487,17 +528,23 @@ func (n *ngt) UpdateMultiple(vecs map[string][]float32) (err error) {
 			uuids = append(uuids, uuid)
 		}
 	}
-	now := time.Now().UnixNano()
-	err = n.deleteMultiple(uuids, now)
+	err = n.deleteMultiple(uuids, t)
 	if err != nil {
 		return err
 	}
-	now++
-	return n.insertMultiple(vecs, now)
+	t++
+	return n.insertMultiple(vecs, t)
 }
 
 func (n *ngt) Delete(uuid string) (err error) {
 	return n.delete(uuid, time.Now().UnixNano())
+}
+
+func (n *ngt) DeleteWithTime(uuid string, t int64) (err error) {
+	if t <= 0 {
+		t = time.Now().UnixNano()
+	}
+	return n.delete(uuid, t)
 }
 
 func (n *ngt) delete(uuid string, t int64) (err error) {
@@ -516,6 +563,13 @@ func (n *ngt) DeleteMultiple(uuids ...string) (err error) {
 	return n.deleteMultiple(uuids, time.Now().UnixNano())
 }
 
+func (n *ngt) DeleteMultipleWithTime(uuids []string, t int64) (err error) {
+	if t <= 0 {
+		t = time.Now().UnixNano()
+	}
+	return n.deleteMultiple(uuids, t)
+}
+
 func (n *ngt) deleteMultiple(uuids []string, now int64) (err error) {
 	for _, uuid := range uuids {
 		ierr := n.delete(uuid, now)
@@ -531,21 +585,19 @@ func (n *ngt) deleteMultiple(uuids []string, now int64) (err error) {
 }
 
 func (n *ngt) GetObject(uuid string) (vec []float32, err error) {
-	oid, ok := n.kvs.Get(uuid)
+	vec, ok := n.vq.GetVector(uuid)
 	if !ok {
-		log.Debugf("GetObject\tuuid: %s's kvs data not found, trying to read from vqueue", uuid)
-		vec, ok := n.vq.GetVector(uuid)
+		log.Debugf("GetObject\tuuid: %s's data not found in vqueue, trying to read from indexed kvsdb data", uuid)
+		oid, ok := n.kvs.Get(uuid)
 		if !ok {
-			log.Debugf("GetObject\tuuid: %s's vqueue data not found", uuid)
+			log.Debugf("GetObject\tuuid: %s's data not found in kvsdb and vqueue", uuid)
 			return nil, errors.ErrObjectIDNotFound(uuid)
 		}
-		return vec, nil
-	}
-	log.Debugf("GetObject\tGetVector oid: %d", oid)
-	vec, err = n.core.GetVector(uint(oid))
-	if err != nil {
-		log.Debugf("GetObject\tuuid: %s oid: %d's vector not found", uuid, oid)
-		return nil, errors.ErrObjectNotFound(err, uuid)
+		vec, err = n.core.GetVector(uint(oid))
+		if err != nil {
+			log.Debugf("GetObject\tuuid: %s oid: %d's vector not found in ngt index", uuid, oid)
+			return nil, errors.ErrObjectNotFound(err, uuid)
+		}
 	}
 	return vec, nil
 }
