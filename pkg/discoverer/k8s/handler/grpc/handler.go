@@ -91,6 +91,8 @@ func (s *server) Pods(ctx context.Context, req *payload.Discoverer_Request) (*pa
 			&errdetails.ResourceInfo{
 				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/discoverer.v1.Pods",
 				ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
+				Owner:        errdetails.ValdResourceOwner,
+				Description:  err.Error(),
 			},
 			info.Get())
 		if span != nil {
@@ -108,6 +110,8 @@ func (s *server) Pods(ctx context.Context, req *payload.Discoverer_Request) (*pa
 			&errdetails.ResourceInfo{
 				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/discoverer.v1.Pods",
 				ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
+				Owner:        errdetails.ValdResourceOwner,
+				Description:  err.Error(),
 			},
 			info.Get())
 		if span != nil {
@@ -126,6 +130,8 @@ func (s *server) Pods(ctx context.Context, req *payload.Discoverer_Request) (*pa
 			&errdetails.ResourceInfo{
 				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/discoverer.v1.Pods",
 				ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
+				Owner:        errdetails.ValdResourceOwner,
+				Description:  err.Error(),
 			},
 			info.Get())
 		if span != nil {
@@ -144,6 +150,8 @@ func (s *server) Pods(ctx context.Context, req *payload.Discoverer_Request) (*pa
 			&errdetails.ResourceInfo{
 				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/discoverer.v1.Pods",
 				ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
+				Owner:        errdetails.ValdResourceOwner,
+				Description:  err.Error(),
 			},
 			info.Get())
 		if span != nil {
@@ -176,6 +184,8 @@ func (s *server) Nodes(ctx context.Context, req *payload.Discoverer_Request) (*p
 			&errdetails.ResourceInfo{
 				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/discoverer.v1.Nodes",
 				ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
+				Owner:        errdetails.ValdResourceOwner,
+				Description:  err.Error(),
 			},
 			info.Get())
 		if span != nil {
@@ -193,6 +203,8 @@ func (s *server) Nodes(ctx context.Context, req *payload.Discoverer_Request) (*p
 			&errdetails.ResourceInfo{
 				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/discoverer.v1.Nodes",
 				ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
+				Owner:        errdetails.ValdResourceOwner,
+				Description:  err.Error(),
 			},
 			info.Get())
 		if span != nil {
@@ -211,6 +223,8 @@ func (s *server) Nodes(ctx context.Context, req *payload.Discoverer_Request) (*p
 			&errdetails.ResourceInfo{
 				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/discoverer.v1.Nodes",
 				ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
+				Owner:        errdetails.ValdResourceOwner,
+				Description:  err.Error(),
 			},
 			info.Get())
 		if span != nil {
@@ -229,6 +243,8 @@ func (s *server) Nodes(ctx context.Context, req *payload.Discoverer_Request) (*p
 			&errdetails.ResourceInfo{
 				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/discoverer.v1.Nodes",
 				ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
+				Owner:        errdetails.ValdResourceOwner,
+				Description:  err.Error(),
 			},
 			info.Get())
 		if span != nil {
