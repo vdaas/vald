@@ -1,38 +1,9 @@
 # Configurations
 
 This page introduces best practices for setting up values for Vald Helm Chart.
+Before reading, please read the overview of Vald Helm Chart in [its README][vald-helm-chart].
 
-
-## Vald Helm Chart Overview
-
-Vald Helm Chart's `values.yaml` is composed of the following sections:
-
-- `defaults`
-    - default configurations of common parts
-    - be overridden by the fields in each section.
-- `gateway`
-    - configurations of vald-gateway
-- `agent`
-    - configurations of vald-agent
-- `discoverer`
-    - configurations of vald-discoverer
-- `compressor`
-    - configurations of vald-manager-compressor
-- `backupManager`
-    - configurations of vald-manager-backup
-- `indexManager`
-    - configurations of vald-manager-index
-- `meta`
-    - configurations of vald-meta
-- `initializer`
-    - configurations of MySQL, Cassandra and Redis initializer jobs
-
-In each section, users can configure the deployments and behaviors of each component.
-
-The detailed descriptions of each value can be found in [README of Vald Helm Chart][vald-helm-chart].
-
-
-## Notable values in Vald Helm Chart
+## Notable fields in Vald Helm Chart
 
 ### Basics
 
@@ -44,7 +15,7 @@ You can specify image version by set `image.tag` field in each component (`[comp
 ```yaml
 defaults:
   image:
-    tag: master
+    tag: v1.1.1
 ```
 
 or you can use the older image only for agent,
@@ -52,13 +23,13 @@ or you can use the older image only for agent,
 ```yaml
 agent:
   image:
-    tag: v0.0.31
+    tag: v1.1.0
 ```
 
 #### Specify appropriate logging level and format
 
 The default logging levels and formats are configured in `defaults.logging.level` and `defaults.logging.format`.
-You can also specify logging levels and formats in each component section (`[component].logging`).
+You can also specify them in each component section (`[component].logging`).
 
 ```yaml
 defaults:
@@ -67,19 +38,23 @@ defaults:
     format: raw
 ```
 
-you can specify log level `debug` and json format for gateway by the followings:
+you can specify log level `debug` and JSON format for lb-gateway by the followings:
 
 ```yaml
 gateway:
-  logging:
-    level: debug
-    format: json
+  lb:
+    logging:
+      level: debug
+      format: json
 ```
+
+The logging level is defined in [the Coding Style Guide][logging-level].
 
 #### Servers
 
 Each Vald component has several types of servers.
-They can be configured by specifying the values in `defaults.server_config` and can be overwritten by specifying `[component].server_config`.
+They can be configured by specifying the values in `defaults.server_config`.
+They can be overwritten by specifying `[component].server_config`.
 
 Examples:
 
@@ -99,38 +74,34 @@ defaults:
 
 ```yaml
 gateway:
-  server_config:
-    servers:
-      rest:
-        enabled: true
-        host: 0.0.0.0
-        port: 8080
-        servicePort: 8080
-        server:
-          mode: REST
-          ...
+  lb:
+    server_config:
+      servers:
+        rest:
+          enabled: true
+          host: 0.0.0.0
+          port: 8080
+          servicePort: 8080
+          server:
+            mode: REST
+            ...
 ```
 
 ##### gRPC server
 
-gRPC server should be enabled, because all Vald components are using gRPC to communicate with other Vald components.
-
+gRPC server should be enabled, because all Vald components use gRPC to communicate with others.
 The API specs are placed in [apis/docs][vald-apis-docs].
-
 
 ##### REST server
 
 REST server is optional.
-
 The swagger specs are placed in [apis/swagger][vald-swagger-specs].
-
 
 ##### Health check servers
 
-There are two types of health check servers are built-in, liveness and readiness.
+There are two types of built-in health check servers, liveness and readiness.
 They are used as servers for [Kubernetes liveness and readiness probe][kubernetes-liveness-readiness].
-
-By default, liveness servers are disabled for agent and compressor, because the liveness probes may accidentally kill these components.
+By default, liveness servers are disabled for agent, because the liveness probes may accidentally kill it.
 
 ```yaml
 agent:
@@ -142,24 +113,24 @@ agent:
 
 ##### Metrics servers
 
-Metrics servers are useful for debugging and monitor Vald components.
+Metrics servers are useful for debugging and monitoring Vald components.
 There are two types of metrics servers, pprof and Prometheus.
 
-pprof server is a server that implemented using Go's net/http/pprof package.
+pprof server is implemented using Go's net/http/pprof package.
 You can use [google's pprof][google-pprof] to analyze the profiling data exported from it.
 
 Prometheus server is a [Prometheus][prometheus-io] exporter.
-It is required to set the `observability` section on each Vald component to enable the monitoring using Prometheus.
+It is required to set the `observability` section on each Vald component to enable the monitoring using Prometheus. Plese refer to the next section.
 
 #### Observability
 
 The observability features are useful for monitoring Vald components.
-They can be enabled by setting the value `true` on the `defaults.observability.enabled` field or override it in each component (`[component].observability.enabled`). And also, enable each feature by setting the value `true` on its `enabled` field.
+They can be enabled by setting the value `true` on the `defaults.observability.enabled` field or override it in each component (`[component].observability.enabled`).
+And also, enable each feature by setting the value `true` on its `enabled` field.
 
-If observability features are enabled, the metrics will be collected periodically. the duration can be set on `observability.collector.duration`.
-
+If observability features are enabled, the metrics will be collected periodically.
+The duration can be set on `observability.collector.duration`.
 Please refer to [Vald operation guide][vald-operation-guide] for more detail.
-
 
 ### Agents
 
@@ -174,7 +145,7 @@ The important parameters are the followings:
 - `agent.ngt.distance_type`
 - `agent.ngt.object_type`
 
-Users should configure these parameters first for their use case.
+Users should configure these parameters first to fit to their use case.
 
 For further details, please read [NGT wiki][yj-ngt-wiki].
 
@@ -185,10 +156,9 @@ The behavior of this feature can be configured with these parameters:
 - `agent.ngt.auto_index_check_duration`
 - `agent.ngt.auto_index_length`
 
-
 #### Resource requests and limits, Pod priorities
 
-Because agent places indices on memory, termination of agent pods mean loss of indices.
+Because agent places indices on memory, termination of agent pods causes loss of indices.
 It is important to set resource requests and limits appropriately not to terminate agent pods.
 
 It is highly recommended to request a totally 40% of cluster memory for agent pods.
@@ -196,7 +166,6 @@ And also it is highly recommended not to set resource limits to agent pods.
 
 Pod priorities are also useful for saving agent pods from eviction.
 By default, very high priority is set to agent pods in the Chart.
-
 
 #### Pod scheduling
 
@@ -235,168 +204,64 @@ agent:
       preferredDuringSchedulingIgnoredDuringExecution: [] # to disable default settings
 ```
 
-### Gateway
+### Gateways
 
 #### Ingress
 
-Ingress for gateway can be configured by `gateway.ingress` field object.
-It is important to set your host to `gateway.ingress.host` field.
-`gateway.ingress.servicePort` should be `grpc` or `rest`.
+Ingress for gateways can be configured by `gateway.{backup,filter,lb,meta}.ingress` field object.
+It is important to set your host to `gateway.{backup,filter,lb,meta}.ingress.host` field.
+`gateway.{backup,filter,lb,meta}.ingress.servicePort` should be `grpc` or `rest`.
 
-If you're using Vald-Helm-operator, you can check the ingress host by using kubectl command.
-
-```bash
-$ kubectl get valdrelease
-NAME           INGRESS                  AGE
-vald-cluster   gateway.vald.vdaas.org   9d
+```yaml
+gateway:
+  lb:
+    ingress:
+      enabled: true
+      host: vald.vdaas.org # Set correct hostname here
+      servicePort: grpc
 ```
 
 #### Index replica
 
-`gateway.gateway_config.index_replica` means how many number of agent pods that a vector will be inserted.
+`gateway.lb.gateway_config.index_replica` represents how many agent pods that a vector will be inserted into.
 
-#### Discoverer request duration
-
-`gateway.gateway_config.discoverer.duration` means a frequency to ask agent pod's IPs to the discoverer.
-If discoverer's CPU utilization is too high, try to make this value longer or reduce the number of gateway pods.
-
-
-#### Meta cache
-
-Gateway has a cache functionality for metadata.
-It can be enabled by `gateway.gateway_config.meta.enable_cache` and the behaviors controlled by `gateway.gateway_config.meta.cache_expiration` and `gateway.gateway_config.meta.expired_cache_check_duration`.
+```yaml
+gateway:
+  lb:
+    gateway_config:
+      index_replica: 3
+```
 
 #### Resource requests and limits
 
 Gateway's resource requests and limits depend on the request traffic and available resources.
 If the request traffic varies largely, it is recommended to enable HPA for gateway and adjust the resource requests.
 
-#### Init containers
+#### Discoverer request duration
 
-Gateway should wait for discoverer, agent, meta, and compressor to be ready because it depends on these components.
-For this purpose, "wait-for" type initContainers are provided in the Chart.
+`gateway.lb.gateway_config.discoverer.duration` represents a frequency to send requests to discoverer.
+If discoverer's CPU utilization is too high, make this value longer or reduce the number of LB gateway pods.
 
 ```yaml
-  initContainers:
-    - type: wait-for
-      name: wait-for-manager-compressor
-      target: compressor
-      image: busybox
-      sleepDuration: 2
-      ...
+gateway:
+  lb:
+    gateway_config:
+      discoverer:
+        duration: 2s
 ```
-
-"wait-for" type initContainers check readiness port of the target component is ok or not every "sleepDuration" seconds.
-Once it became ready, the initContainer returns zero and become "Completed" status.
-
-The definitions can be found in `_helpers.tpl` in Chart's templates directory.
-
 
 ### Discoverer
 
 #### Resource requests and limits
 
-The number of discoverer pods and resource limits are determined by the configurations of your gateways and index managers because APIs of discoverers are called by gateways and index managers.
-Discoverer CPU loads depend on API request traffic = (the number of gateways x gateway's request duration) + (the number of index managers x index manager's request duration).
-
+The number of discoverer pods and resource limits can be estimated by the configurations of your LB gateways and index managers because its APIs are called by them.
+Discoverer CPU loads almost depend on API request traffic = (the number of LB gateways x its request frequency) + (the number of index managers x its request frequency).
 
 ### Index Manager
 
-#### Init containers
-
-Index managers depend on discoverer and agents.
-It is recommended to use initContainers to wait for these components to be ready.
-
-
 #### Discoverer request duration
 
-Same as gateway, `indexManager.indexer.discoverer.duration` means a frequency to ask agent pod IPs to discoverer.
-
-
-### Replication Manager
-
-TBW
-
-
-### Meta, Backup Manager
-
-#### Init containers
-
-Meta and backup manager depends on their backend databases such as Cassandra, MySQL, Redis, etc...
-The Chart provides useful initContainers for waiting for these databases.
-They can be used as follows:
-
-```yaml
-  initContainers:
-    - type: wait-for-mysql
-      name: wait-for-mysql
-      image: mysql:latest
-      mysql:
-        hosts:
-          - mysql.default.svc.cluster.local
-        options:
-          - "-uroot"
-          - "-p${MYSQL_PASSWORD}"
-      sleepDuration: 2
-      env:
-      - name: MYSQL_PASSWORD
-        valueFrom:
-          secretKeyRef:
-            name: mysql-secret
-            key: password
-```
-
-```yaml
-  initContainers:
-    - type: wait-for-redis
-      name: wait-for-redis
-      image: redis:latest
-      redis:
-        hosts:
-          - redis.default.svc.cluster.local
-        options:
-          - "-a ${REDIS_PASSWORD}"
-      sleepDuration: 2
-      env:
-        - name: REDIS_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: redis-secret
-              key: password
-```
-
-```yaml
-  initContainers:
-    - type: wait-for-cassandra
-      name: wait-for-cassandra
-      image: cassandra:latest
-      cassandra:
-        hosts:
-          - cassandra-0.cassandra.default.svc.cluster.local
-          - cassandra-1.cassandra.default.svc.cluster.local
-          - cassandra-2.cassandra.default.svc.cluster.local
-        options:
-          - "-uroot"
-          - "-p${CASSANDRA_PASSWORD}"
-      sleepDuration: 2
-      env:
-      - name: CASSANDRA_PASSWORD
-        valueFrom:
-          secretKeyRef:
-            name: cassandra-secret
-            key: password
-```
-
-The definitions can be found in `_helpers.tpl` in Chart's templates directory.
-
-
-## Advanced
-
-
-### Ingress/Egress Filters
-
-TBW
-
+Same as LB gateway, `manager.index.indexer.discoverer.duration` represents a frequency to send requests to discoverer.
 
 ## References
 
@@ -413,6 +278,7 @@ For further details, there are references of Helm values in GitHub Vald reposito
 
 [vald-apis-docs]: https://github.com/vdaas/vald/tree/master/apis/docs
 [vald-swagger-specs]: https://github.com/vdaas/vald/tree/master/apis/swagger
+[logging-level]: https://github.com/vdaas/vald/blob/master/docs/contributing/coding-style.md#logging
 [google-pprof]: https://github.com/google/pprof
 [prometheus-io]: https://prometheus.io/
 [kubernetes-liveness-readiness]: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/

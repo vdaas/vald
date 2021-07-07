@@ -3,7 +3,7 @@ Vald
 
 This is a Helm chart to install Vald components.
 
-Current chart version is `v1.1.1`
+Current chart version is `v1.1.2`
 
 Table of Contents
 ---
@@ -294,7 +294,7 @@ Configuration
 | defaults.grpc.client.tls.enabled | bool | `false` | TLS enabled |
 | defaults.grpc.client.tls.insecure_skip_verify | bool | `false` | enable/disable skip SSL certificate verification |
 | defaults.grpc.client.tls.key | string | `"/path/to/key"` | TLS key path |
-| defaults.image.tag | string | `"v1.1.1"` | docker image tag |
+| defaults.image.tag | string | `"v1.1.2"` | docker image tag |
 | defaults.ingress.usev1beta1 | bool | `false` | use networking.k8s.io/v1beta1 instead of v1 for ingresses. This option will be removed once k8s 1.22 is released. |
 | defaults.logging.format | string | `"raw"` | logging format. logging format must be `raw` or `json` |
 | defaults.logging.level | string | `"debug"` | logging level. logging level must be `debug`, `info`, `warn`, `error` or `fatal`. |
@@ -1161,6 +1161,8 @@ Configuration
 | manager.index.indexer.auto_index_check_duration | string | `"1m"` | check duration of automatic indexing |
 | manager.index.indexer.auto_index_duration_limit | string | `"30m"` | limit duration of automatic indexing |
 | manager.index.indexer.auto_index_length | int | `100` | number of cache to trigger automatic indexing |
+| manager.index.indexer.auto_save_index_duration_limit | string | `"3h"` | limit duration of automatic index saving |
+| manager.index.indexer.auto_save_index_wait_duration | string | `"10m"` | duration of automatic index saving wait duration for next saving |
 | manager.index.indexer.concurrency | int | `1` | concurrency |
 | manager.index.indexer.creation_pool_size | int | `10000` | number of pool size of create index processing |
 | manager.index.indexer.discoverer.agent_client_options | object | `{"dial_option":{"net":{"dialer":{"keep_alive":"15m"}}}}` | gRPC client options for agents (overrides defaults.grpc.client) |

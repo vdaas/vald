@@ -123,8 +123,6 @@ func (s *server) Exists(ctx context.Context, meta *payload.Object_ID) (id *paylo
 					&errdetails.ResourceInfo{
 						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.Exists",
 						ResourceName: fmt.Sprintf("%s: %s(%s) to %s", apiName, s.name, s.ip, target),
-						Owner:        errdetails.ValdResourceOwner,
-						Description:  err.Error(),
 					})
 				if sspan != nil {
 					sspan.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
@@ -162,8 +160,6 @@ func (s *server) Exists(ctx context.Context, meta *payload.Object_ID) (id *paylo
 			&errdetails.ResourceInfo{
 				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.Exists",
 				ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
-				Owner:        errdetails.ValdResourceOwner,
-				Description:  err.Error(),
 			})
 		if span != nil {
 			span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
@@ -217,8 +213,6 @@ func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *
 			&errdetails.ResourceInfo{
 				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.Search",
 				ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
-				Owner:        errdetails.ValdResourceOwner,
-				Description:  err.Error(),
 			}, info.Get())
 		if span != nil {
 			span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
@@ -272,8 +266,6 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 			&errdetails.ResourceInfo{
 				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.GetObject",
 				ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
-				Owner:        errdetails.ValdResourceOwner,
-				Description:  err.Error(),
 			}, info.Get())
 		var serr error
 		res, serr = s.search(ctx, req.GetConfig(),
@@ -293,8 +285,6 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 			&errdetails.ResourceInfo{
 				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.SearchByID",
 				ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
-				Owner:        errdetails.ValdResourceOwner,
-				Description:  err.Error(),
 			})
 		if span != nil {
 			span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
@@ -315,8 +305,6 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 			&errdetails.ResourceInfo{
 				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.Search",
 				ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
-				Owner:        errdetails.ValdResourceOwner,
-				Description:  err.Error(),
 			}, info.Get())
 		var serr error
 		res, serr = s.search(ctx, req.GetConfig(),
@@ -334,8 +322,6 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 			&errdetails.ResourceInfo{
 				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.SearchByID",
 				ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
-				Owner:        errdetails.ValdResourceOwner,
-				Description:  err.Error(),
 			})
 		err = errors.Wrap(err, serr.Error())
 		if span != nil {
@@ -405,8 +391,6 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 					&errdetails.ResourceInfo{
 						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.Search",
 						ResourceName: fmt.Sprintf("%s: %s(%s) to %s", apiName, s.name, s.ip, target),
-						Owner:        errdetails.ValdResourceOwner,
-						Description:  err.Error(),
 					})
 				if sspan != nil {
 					sspan.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
@@ -418,8 +402,6 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 					&errdetails.ResourceInfo{
 						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.Search",
 						ResourceName: fmt.Sprintf("%s: %s(%s) to %s", apiName, s.name, s.ip, target),
-						Owner:        errdetails.ValdResourceOwner,
-						Description:  err.Error(),
 					})
 				if sspan != nil {
 					sspan.SetStatus(trace.StatusCodeNotFound(err.Error()))
@@ -509,8 +491,6 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 					&errdetails.ResourceInfo{
 						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.search",
 						ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
-						Owner:        errdetails.ValdResourceOwner,
-						Description:  err.Error(),
 					}, info.Get())
 				if span != nil {
 					span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
@@ -530,8 +510,6 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 					&errdetails.ResourceInfo{
 						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.search",
 						ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
-						Owner:        errdetails.ValdResourceOwner,
-						Description:  err.Error(),
 					}, info.Get())
 				if span != nil {
 					span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
@@ -720,8 +698,6 @@ func (s *server) MultiSearch(ctx context.Context, reqs *payload.Search_MultiRequ
 			&errdetails.ResourceInfo{
 				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.MultiSearch",
 				ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
-				Owner:        errdetails.ValdResourceOwner,
-				Description:  errs.Error(),
 			})
 		if span != nil {
 			span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
@@ -792,8 +768,6 @@ func (s *server) MultiSearchByID(ctx context.Context, reqs *payload.Search_Multi
 			&errdetails.ResourceInfo{
 				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.MultiSearchByID",
 				ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
-				Owner:        errdetails.ValdResourceOwner,
-				Description:  errs.Error(),
 			})
 		if span != nil {
 			span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
@@ -850,8 +824,6 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 				&errdetails.ResourceInfo{
 					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.Exists",
 					ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
-					Owner:        errdetails.ValdResourceOwner,
-					Description:  err.Error(),
 				}, info.Get())
 			if span != nil {
 				span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
@@ -920,8 +892,6 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 				&errdetails.ResourceInfo{
 					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.Insert",
 					ResourceName: fmt.Sprintf("%s: %s(%s) to %s", apiName, s.name, s.ip, target),
-					Owner:        errdetails.ValdResourceOwner,
-					Description:  err.Error(),
 				})
 			if span != nil {
 				span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
@@ -961,8 +931,6 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 			&errdetails.ResourceInfo{
 				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.Insert.DoMulti",
 				ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
-				Owner:        errdetails.ValdResourceOwner,
-				Description:  errs.Error(),
 			}, info.Get())
 		if span != nil {
 			span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
@@ -1070,8 +1038,6 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 					&errdetails.ResourceInfo{
 						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.Exists",
 						ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
-						Owner:        errdetails.ValdResourceOwner,
-						Description:  err.Error(),
 					}, info.Get())
 				if span != nil {
 					span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
@@ -1141,8 +1107,6 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 				&errdetails.ResourceInfo{
 					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.MultiInsert",
 					ResourceName: fmt.Sprintf("%s: %s(%s) to %s", apiName, s.name, s.ip, target),
-					Owner:        errdetails.ValdResourceOwner,
-					Description:  err.Error(),
 				})
 			if span != nil {
 				span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
@@ -1182,8 +1146,6 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 			&errdetails.ResourceInfo{
 				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.MultiInsert.DoMulti",
 				ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
-				Owner:        errdetails.ValdResourceOwner,
-				Description:  errs.Error(),
 			}, info.Get())
 		if span != nil {
 			span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
@@ -1243,8 +1205,6 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (res *
 				&errdetails.ResourceInfo{
 					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.Update.GetObject",
 					ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
-					Owner:        errdetails.ValdResourceOwner,
-					Description:  err.Error(),
 				}, info.Get())
 			if span != nil {
 				span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
@@ -1264,8 +1224,6 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (res *
 				&errdetails.ResourceInfo{
 					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.GetObject",
 					ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
-					Owner:        errdetails.ValdResourceOwner,
-					Description:  err.Error(),
 				}, info.Get())
 			if span != nil {
 				span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
@@ -1305,8 +1263,6 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (res *
 			&errdetails.ResourceInfo{
 				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.Update.Remove",
 				ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
-				Owner:        errdetails.ValdResourceOwner,
-				Description:  err.Error(),
 			}, info.Get())
 		if span != nil {
 			span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
@@ -1333,8 +1289,6 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (res *
 			&errdetails.ResourceInfo{
 				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.Update.Insert",
 				ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
-				Owner:        errdetails.ValdResourceOwner,
-				Description:  err.Error(),
 			}, info.Get())
 		if span != nil {
 			span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
@@ -1445,8 +1399,6 @@ func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequ
 					&errdetails.ResourceInfo{
 						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.MultiUpdate.GetObject",
 						ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
-						Owner:        errdetails.ValdResourceOwner,
-						Description:  err.Error(),
 					}, info.Get())
 				if span != nil {
 					span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
@@ -1502,8 +1454,6 @@ func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequ
 			&errdetails.ResourceInfo{
 				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.MultiUpdate.MultiRemove",
 				ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
-				Owner:        errdetails.ValdResourceOwner,
-				Description:  err.Error(),
 			}, info.Get())
 		if span != nil {
 			span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
@@ -1524,8 +1474,6 @@ func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequ
 			&errdetails.ResourceInfo{
 				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.MultiUpdate.MultiInsert",
 				ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
-				Owner:        errdetails.ValdResourceOwner,
-				Description:  err.Error(),
 			}, info.Get())
 		if span != nil {
 			span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
@@ -1588,8 +1536,6 @@ func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *
 				&errdetails.ResourceInfo{
 					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.GetObject",
 					ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
-					Owner:        errdetails.ValdResourceOwner,
-					Description:  err.Error(),
 				}, info.Get())
 			if span != nil {
 				span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
@@ -1636,8 +1582,6 @@ func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *
 			&errdetails.ResourceInfo{
 				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.Upsert." + operation,
 				ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
-				Owner:        errdetails.ValdResourceOwner,
-				Description:  err.Error(),
 			}, info.Get())
 		if span != nil {
 			span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
@@ -1729,10 +1673,6 @@ func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequ
 			}
 			return nil, err
 		}
-		ids = append(ids, uuid)
-		_, err = s.Exists(ctx, &payload.Object_ID{
-			Id: uuid,
-		})
 		var shouldInsert bool
 		if !req.GetConfig().GetSkipStrictExistCheck() {
 			vec, err := s.GetObject(ctx, &payload.Object_VectorRequest{
@@ -1751,6 +1691,7 @@ func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequ
 			})
 			shouldInsert = err != nil || id == nil || len(id.GetId()) == 0
 		}
+		ids = append(ids, uuid)
 		if shouldInsert {
 			insertReqs = append(insertReqs, &payload.Insert_Request{
 				Vector: vec,
@@ -1846,7 +1787,7 @@ func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequ
 		}
 	}
 	if errs != nil {
-		st, msg, err := status.ParseError(err, codes.Internal,
+		st, msg, err := status.ParseError(errs, codes.Internal,
 			"failed to parse MultiUpsert gRPC error response",
 			&errdetails.RequestInfo{
 				RequestId:   strings.Join(ids, ","),
@@ -1855,8 +1796,6 @@ func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequ
 			&errdetails.ResourceInfo{
 				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.MultiUpsert",
 				ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
-				Owner:        errdetails.ValdResourceOwner,
-				Description:  err.Error(),
 			}, info.Get())
 		if span != nil {
 			span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
@@ -1892,8 +1831,6 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (locs 
 				&errdetails.ResourceInfo{
 					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.Exists",
 					ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
-					Owner:        errdetails.ValdResourceOwner,
-					Description:  err.Error(),
 				}, info.Get())
 			if span != nil {
 				span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
@@ -1919,6 +1856,7 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (locs 
 	var mu sync.Mutex
 	locs = &payload.Object_Location{
 		Uuid: id.GetId(),
+		Ips:  make([]string, 0, s.replica),
 	}
 	err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) (err error) {
 		ctx, span := trace.StartSpan(ctx, apiName+".Remove/"+target)
@@ -1938,13 +1876,15 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (locs 
 				&errdetails.ResourceInfo{
 					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.Remove",
 					ResourceName: fmt.Sprintf("%s: %s(%s) to %s", apiName, s.name, s.ip, target),
-					Owner:        errdetails.ValdResourceOwner,
-					Description:  err.Error(),
 				})
 			if span != nil {
 				span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
 			}
-			return err
+			if err != nil && st.Code() != codes.NotFound {
+				log.Error(err)
+				return err
+			}
+			return nil
 		}
 		mu.Lock()
 		locs.Ips = append(locs.GetIps(), loc.GetIps()...)
@@ -1962,11 +1902,25 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (locs 
 			&errdetails.ResourceInfo{
 				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.Remove",
 				ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
-				Owner:        errdetails.ValdResourceOwner,
-				Description:  err.Error(),
 			}, info.Get())
 		if span != nil {
 			span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
+		}
+		return nil, err
+	}
+	if len(locs.Ips) <= 0 {
+		err = errors.ErrIndexNotFound
+		err = status.WrapWithNotFound("Remove API remove target not found", err,
+			&errdetails.RequestInfo{
+				RequestId:   id.GetId(),
+				ServingData: errdetails.Serialize(req),
+			},
+			&errdetails.ResourceInfo{
+				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.Remove",
+				ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
+			})
+		if span != nil {
+			span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 		}
 		return nil, err
 	}
@@ -2047,8 +2001,6 @@ func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequ
 					&errdetails.ResourceInfo{
 						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.Exists",
 						ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
-						Owner:        errdetails.ValdResourceOwner,
-						Description:  err.Error(),
 					}, info.Get())
 				if span != nil {
 					span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
@@ -2114,8 +2066,6 @@ func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequ
 				&errdetails.ResourceInfo{
 					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.MultiRemove",
 					ResourceName: fmt.Sprintf("%s: %s(%s) to %s", apiName, s.name, s.ip, target),
-					Owner:        errdetails.ValdResourceOwner,
-					Description:  err.Error(),
 				})
 			if span != nil {
 				span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
@@ -2142,11 +2092,25 @@ func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequ
 			&errdetails.ResourceInfo{
 				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.MultiRemove",
 				ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
-				Owner:        errdetails.ValdResourceOwner,
-				Description:  err.Error(),
 			}, info.Get())
 		if span != nil {
 			span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
+		}
+		return nil, err
+	}
+	if len(locs.Locations) <= 0 {
+		err = errors.ErrIndexNotFound
+		err = status.WrapWithNotFound("MultiRemove API remove target not found", err,
+			&errdetails.RequestInfo{
+				RequestId:   strings.Join(ids, ","),
+				ServingData: errdetails.Serialize(reqs),
+			},
+			&errdetails.ResourceInfo{
+				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.MultiRemove",
+				ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
+			})
+		if span != nil {
+			span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 		}
 		return nil, err
 	}
@@ -2207,8 +2171,6 @@ func (s *server) GetObject(ctx context.Context, req *payload.Object_VectorReques
 					&errdetails.ResourceInfo{
 						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.GetObject",
 						ResourceName: fmt.Sprintf("%s: %s(%s) to %s", apiName, s.name, s.ip, target),
-						Owner:        errdetails.ValdResourceOwner,
-						Description:  err.Error(),
 					}, info.Get())
 				if span != nil {
 					span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
@@ -2245,8 +2207,6 @@ func (s *server) GetObject(ctx context.Context, req *payload.Object_VectorReques
 			&errdetails.ResourceInfo{
 				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.GetObject",
 				ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
-				Owner:        errdetails.ValdResourceOwner,
-				Description:  err.Error(),
 			}, info.Get())
 		if span != nil {
 			span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
