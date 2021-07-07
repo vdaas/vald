@@ -324,7 +324,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
           API_URL: ${{ github.event.issue.comments_url }}
   format:
-    name: Add license and run gofumpt + goimports
+    name: Add license and run gofumpt + goimports + golines
     needs:
       - rebase
       - gentest
@@ -411,7 +411,7 @@ jobs:
 
           echo "Install format dependencies"
 
-          make gofumpt/install goimports/install
+          make gofumpt/install goimports/install golines/install
           sudo make prettier/install
 
           echo "Update license headers and format go codes/yaml"

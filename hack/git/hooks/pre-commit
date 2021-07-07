@@ -25,6 +25,11 @@ if git diff HEAD^ --name-only | grep ".go$" > /dev/null; then
     find ./ -type f -regex ".*\.go" | xargs gofumpt -w
     echo "gofumpt finished."
 
+    # golines
+    echo "Run golines..."
+    find ./ -type f -regex ".*\.go" | xargs golines -w
+    echo "golines finished."
+
     # goimports
     echo "Run goimports..."
     find ./ -type f -regex ".*\.go" | xargs goimports -w
