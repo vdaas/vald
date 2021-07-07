@@ -14,14 +14,14 @@ Vald is based on the following techologies.
 
 - [Kubernetes](https://kubernetes.io/)
 
-    To easily scale and manage Vald, we deploy and run Vald on [Kubernetes](https://kubernetes.io/).
+    To easily scale and manage Vald, it is used by deploying and running on [Kubernetes](https://kubernetes.io/).
     Vald takes all of the advantages of using Kuberenetes.
-    For more details please read the next section.
+    For more details please read the [next section](#concept).
 
 - [Helm](https://helm.sh/)
 
     Helm helps you to deploy and configure Vald. 
-    Vald contains multiple components and configuration�.
+    Vald contains multiple components and configurations.
     Helm helps us to manage those manifest and provides a better and easy way to deploy and configure Vald.
 
 - [NGT](https://github.com/yahoojapan/NGT)
@@ -75,7 +75,7 @@ Here are the concepts of Vald.
 
 ## Basic Architecture
 
-Vald is based on microservice, which means Vald is composited by multiple components, you can deploy part of the components to your cluster depending on your needs.
+Vald is based on microservice architecture, which means Vald is composited by multiple components, you can deploy part of the components to your cluster depending on your needs.
 In this section, we will introduce the basic architecture of Vald.
 
 <img src="../../assets/docs/overview/minimal_architecture.png" />
@@ -90,15 +90,16 @@ Vald Agent uses [yahoojapan/NGT](https://github.com/yahoojapan/ngt) as a core li
 ### Vald LB Gateway
 
 Vald LB Gateway is a gateway to load balance the user request and forward user request to the Vald Agent based on the resource usage of the Vald Agent and the corresponding cluster node.
+In addition, it summarizes the search results from each Vald Agent and returns the final search result to the client.
 
 ### Vald Discoverer
 
 Vald Discoverer provides Vald Agent discovery service to discover active Vald Agent pods in the Kubernetes cluster.
-It also retrieves the corresponding Vald Agent resource usage for Vald LB gateway to determine the priority of which Vald Agent handles the user request.
+It also retrieves the corresponding Vald Agent resource usage including pod and node resource usage for Vald LB gateway to determine the priority of which Vald Agent handles the user request.
 
 ### Vald Index Manager
 
 Vald Index Manager controls the timing of the indexing of the Vald Agent.
-The index is used to increase the performance of the search action.
+Since the search operation will no work during the Vald Agent index operation is running, thanks to controlling the timing of indexing by Vald Index Manager, index operation of Vald Agent can be triggered and controlled by Vald Index Manager intelligently.
 
 It retrieves the active Vald Agent pods from the Vald Discoverer and triggers the indexing action on each Vald Agent.

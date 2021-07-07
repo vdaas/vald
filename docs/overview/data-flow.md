@@ -16,7 +16,7 @@ We will explain using this image in the following sections.
 
 ## Insert
 
-Users can insert a vector to Vald cluster using Insert API. When the insert command is processed, Vald will intelligently insert the index into the most suitable Vald Agent(s) base on the memory usage of the Vald Agent and the node.
+Users can insert a vector to Vald cluster using Insert API. When the insert command is processed, Vald will intelligently insert the index into the most suitable Vald Agent(s) based on the memory usage of the Vald Agent and the node.
 
 To obtain the memory usage of Vald Agent and the node, Vald Discoverer is required to rank which is the most suitable agent to perform the insert request by talking with the kube-apiserver.
 
@@ -28,9 +28,9 @@ Please note that only one embedding space is supported in a single Vald Cluster,
 
 When the user inserts data into Vald:
 
-1. Vald Ingress receives the request from the user. The request includes the vector and the vector ID.
+1. Vald Ingress receives the request from the user. The request includes the vector and the vector ID. The vector ID is the user-defined unique ID for each vector.
 2. Vald Ingress will forward the request to the Vald LB Gateway to process the request. Vald LB Gateway will determine which Vald Agent(s) to process the request based on the resource usage of the nodes and pods, and the number of vector replicas.
-3. Vald LB Gateway will forward the UUID and the vector data to the selected Vald Agents in parallel. Vald Agent will insert the vector and UUID in an on-memory vector queue. A vector queue will be committed to an ANN graph index by a `CreateIndex` instruction executed by the Vald Index Manager.
+3. Vald LB Gateway will generate the UUID, and forward the generated UUID and the vector data to the selected Vald Agents in parallel. Vald Agent will insert the vector and UUID in an on-memory vector queue. A vector queue will be committed to an ANN graph index by a `CreateIndex` instruction executed by the Vald Index Manager.
 4. If Vald Agent successfully inserts the request data, it will return success to the Vald LB Gateway.
 5. Vald LB Gateway will return success to the Vald Ingress.
 
@@ -60,8 +60,8 @@ When the user updates a vector from Vald:
 
 1. Vald Ingress receives the request from the user. The request includes the existing vector ID(s) and the new vector(s) to be updated.
 2. Vald Ingress will forward the request to the Vald LB Gateway to process the request.
-3. Vald LB Gateway will broadcast the delete request with UUID(s) to the Vald Agents. Each Vald Agent will delete the vector data and the metadata if the corresponding UUID(s) is found in the in-memory graph index.
-4. Each Vald Agent will return success to the Vald LB Gateway if it deletes the requested data successfully.
+3. Vald LB Gateway will generate the UUID(s), and broadcast the delete request with the generated UUID(s) to the Vald Agents. Each Vald Agent will delete the vector data and the metadata if the corresponding UUID(s) is found in the in-memory graph index.
+4. Each Vald Agent will return success to the Vald LB Gateway if completed to delete the requested data successfully.
 5. The insertion step will start after the deletion steps. Vald LB Gateway will determine which Vald Agent(s) to process the request based on the resource usage of the nodes and pods, and the number of vector replicas. Vald LB Gateway will forward each set of the UUID and the vector data to the selected Vald Agents in parallel. Vald Agent will insert the vector(s) and the UUID(s) in an in-memory vector queue. A vector queue will be committed to the graph index by a `CreateIndex` instruction which will be executed by the Vald Index Manager.
 6. If Vald Agent successfully inserts the request data, it will return success (e.g. IP address of pod) to the Vald LB Gateway.
 7. Vald Filter Gateway will return success to the Vald Ingress.
