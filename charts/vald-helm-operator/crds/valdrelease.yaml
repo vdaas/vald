@@ -1051,30 +1051,6 @@ spec:
                               properties:
                                 bucket:
                                   type: string
-                                cloud_storage:
-                                  type: object
-                                  properties:
-                                    client:
-                                      type: object
-                                      properties:
-                                        credentials_file_path:
-                                          type: string
-                                        credentials_json:
-                                          type: string
-                                    url:
-                                      type: string
-                                    write_buffer_size:
-                                      type: integer
-                                    write_cache_control:
-                                      type: string
-                                    write_content_disposition:
-                                      type: string
-                                    write_content_encoding:
-                                      type: string
-                                    write_content_language:
-                                      type: string
-                                    write_content_type:
-                                      type: string
                                 s3:
                                   type: object
                                   properties:
@@ -1120,7 +1096,6 @@ spec:
                                   type: string
                                   enum:
                                     - s3
-                                    - cloud_storage
                             client:
                               type: object
                               properties:
@@ -13152,10 +13127,6 @@ spec:
                               type: string
                             auto_index_length:
                               type: integer
-                            auto_save_index_duration_limit:
-                              type: string
-                            auto_save_index_wait_duration:
-                              type: string
                             concurrency:
                               type: integer
                               minimum: 1

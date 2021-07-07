@@ -29,6 +29,7 @@ import (
 )
 
 func Test_newEntryIndexInfos(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		i *payload.Info_Index_Count
 	}
@@ -101,6 +102,7 @@ func Test_newEntryIndexInfos(t *testing.T) {
 }
 
 func Test_indexInfos_Load(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		key string
 	}
@@ -202,6 +204,7 @@ func Test_indexInfos_Load(t *testing.T) {
 }
 
 func Test_entryIndexInfos_load(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		p unsafe.Pointer
 	}
@@ -281,6 +284,7 @@ func Test_entryIndexInfos_load(t *testing.T) {
 }
 
 func Test_indexInfos_Store(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		key   string
 		value *payload.Info_Index_Count
@@ -376,6 +380,7 @@ func Test_indexInfos_Store(t *testing.T) {
 }
 
 func Test_entryIndexInfos_tryStore(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		i **payload.Info_Index_Count
 	}
@@ -461,6 +466,7 @@ func Test_entryIndexInfos_tryStore(t *testing.T) {
 }
 
 func Test_entryIndexInfos_unexpungeLocked(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		p unsafe.Pointer
 	}
@@ -536,6 +542,7 @@ func Test_entryIndexInfos_unexpungeLocked(t *testing.T) {
 }
 
 func Test_entryIndexInfos_storeLocked(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		i **payload.Info_Index_Count
 	}
@@ -616,6 +623,7 @@ func Test_entryIndexInfos_storeLocked(t *testing.T) {
 }
 
 func Test_indexInfos_Delete(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		key string
 	}
@@ -708,6 +716,7 @@ func Test_indexInfos_Delete(t *testing.T) {
 }
 
 func Test_entryIndexInfos_delete(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		p unsafe.Pointer
 	}
@@ -783,6 +792,7 @@ func Test_entryIndexInfos_delete(t *testing.T) {
 }
 
 func Test_indexInfos_Range(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		f func(key string, value *payload.Info_Index_Count) bool
 	}
@@ -875,6 +885,7 @@ func Test_indexInfos_Range(t *testing.T) {
 }
 
 func Test_indexInfos_missLocked(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		mu     sync.Mutex
 		read   atomic.Value
@@ -957,6 +968,7 @@ func Test_indexInfos_missLocked(t *testing.T) {
 }
 
 func Test_indexInfos_dirtyLocked(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		mu     sync.Mutex
 		read   atomic.Value
@@ -1039,6 +1051,7 @@ func Test_indexInfos_dirtyLocked(t *testing.T) {
 }
 
 func Test_entryIndexInfos_tryExpungeLocked(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		p unsafe.Pointer
 	}

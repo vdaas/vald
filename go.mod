@@ -10,22 +10,22 @@ replace (
 	github.com/boltdb/bolt => github.com/boltdb/bolt v1.3.1
 	github.com/chzyer/logex => github.com/chzyer/logex v1.1.11-0.20170329064859-445be9e134b2
 	github.com/coreos/etcd => go.etcd.io/etcd v3.3.25+incompatible
-	github.com/docker/docker => github.com/moby/moby v20.10.7+incompatible
+	github.com/docker/docker => github.com/moby/moby v20.10.6+incompatible
 	github.com/envoyproxy/protoc-gen-validate => github.com/envoyproxy/protoc-gen-validate v0.6.1
 	github.com/go-sql-driver/mysql => github.com/go-sql-driver/mysql v1.6.0
 	github.com/gocql/gocql => github.com/gocql/gocql v0.0.0-20210515062232-b7ef815b4556
 	github.com/gogo/googleapis => github.com/gogo/googleapis v1.4.1
 	github.com/gogo/protobuf => github.com/gogo/protobuf v1.3.2
 	github.com/google/go-cmp => github.com/google/go-cmp v0.5.6
-	github.com/google/pprof => github.com/google/pprof v0.0.0-20210609004039-a478d1d731e9
+	github.com/google/pprof => github.com/google/pprof v0.0.0-20210506205249-923b5ab0fc1a
 	github.com/googleapis/gnostic => github.com/googleapis/gnostic v0.5.5
-	github.com/gophercloud/gophercloud => github.com/gophercloud/gophercloud v0.18.0
+	github.com/gophercloud/gophercloud => github.com/gophercloud/gophercloud v0.17.0
 	github.com/gorilla/websocket => github.com/gorilla/websocket v1.4.2
 	github.com/hailocab/go-hostpool => github.com/kpango/go-hostpool v0.0.0-20210303030322-aab80263dcd0
-	github.com/klauspost/compress => github.com/klauspost/compress v1.13.2-0.20210618164912-7cf5f14c70d5
+	github.com/klauspost/compress => github.com/klauspost/compress v1.12.4-0.20210528085627-d172db789e89
 	github.com/kpango/glg => github.com/kpango/glg v1.5.1
 	github.com/tensorflow/tensorflow => github.com/tensorflow/tensorflow v2.1.2+incompatible
-	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20210616213533-5ff15b29337e
+	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20210513164829-c07d793c2f9a
 	google.golang.org/grpc => google.golang.org/grpc v1.38.0
 	google.golang.org/protobuf => google.golang.org/protobuf v1.26.0
 	k8s.io/api => k8s.io/api v0.21.2
@@ -40,19 +40,19 @@ replace (
 require (
 	cloud.google.com/go v0.84.0
 	cloud.google.com/go/storage v1.15.0
-	code.cloudfoundry.org/bytefmt v0.0.0-20210608160410-67692ebc98de
+	code.cloudfoundry.org/bytefmt v0.0.0-20210524144015-27119551aaea
 	contrib.go.opencensus.io/exporter/jaeger v0.2.1
 	contrib.go.opencensus.io/exporter/prometheus v0.3.0
-	contrib.go.opencensus.io/exporter/stackdriver v0.13.8
+	contrib.go.opencensus.io/exporter/stackdriver v0.13.6
 	github.com/aws/aws-sdk-go v1.38.35
 	github.com/cespare/xxhash/v2 v2.1.1
 	github.com/envoyproxy/protoc-gen-validate v0.1.0
 	github.com/fsnotify/fsnotify v1.4.9
-	github.com/go-redis/redis/v8 v8.10.0
+	github.com/go-redis/redis/v8 v8.9.0
 	github.com/go-sql-driver/mysql v1.6.0
 	github.com/go-toolsmith/strparse v1.0.0 // indirect
 	github.com/gocql/gocql v0.0.0-20200131111108-92af2e088537
-	github.com/gocraft/dbr/v2 v2.7.2
+	github.com/gocraft/dbr/v2 v2.7.1
 	github.com/gogo/googleapis v0.0.0-20180223154316-0cd9801be74a
 	github.com/gogo/protobuf v1.3.2
 	github.com/gogo/status v1.1.0
@@ -80,7 +80,7 @@ require (
 	go.uber.org/goleak v1.1.10
 	go.uber.org/zap v1.17.0
 	gocloud.dev v0.23.0
-	golang.org/x/net v0.0.0-20210614182718-04defd469f4e
+	golang.org/x/net v0.0.0-20210525063256-abc453219eb5
 	golang.org/x/oauth2 v0.0.0-20210615190721-d04028783cf1
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 	golang.org/x/sys v0.0.0-20210616094352-59db8d763f22
