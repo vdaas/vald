@@ -37,7 +37,8 @@ runs:
       id: wait_for_images
       run: |
         tag=$(cat versions/VALD_VERSION)
-        for image in ${IMAGES} do
+        for image in ${IMAGES}
+        do
           echo "searching ${image}:${tag}"
           until curl -s "https://registry.hub.docker.com/v2/repositories/${image}/tags/${tag}" | jq '.name' | grep -v "null"; do
             echo "waiting for ${image}:${tag} to be uploaded..."

@@ -122,8 +122,6 @@ func (s *server) Exists(ctx context.Context, uid *payload.Object_ID) (res *paylo
 			&errdetails.ResourceInfo{
 				ResourceType: ngtResourceType + "/ngt.Exists",
 				ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
-				Owner:        errdetails.ValdResourceOwner,
-				Description:  err.Error(),
 			},
 			uid.GetId(), info.Get())
 		if span != nil {
@@ -162,8 +160,6 @@ func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *
 			&errdetails.ResourceInfo{
 				ResourceType: ngtResourceType + "/ngt.Search",
 				ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
-				Owner:        errdetails.ValdResourceOwner,
-				Description:  err.Error(),
 			})
 		log.Warn(err)
 		if span != nil {
@@ -188,8 +184,6 @@ func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *
 				&errdetails.ResourceInfo{
 					ResourceType: ngtResourceType + "/ngt.Search",
 					ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
-					Owner:        errdetails.ValdResourceOwner,
-					Description:  err.Error(),
 				})
 			stat = trace.StatusCodeResourceExhausted(err.Error())
 		} else {
@@ -201,8 +195,6 @@ func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *
 				&errdetails.ResourceInfo{
 					ResourceType: ngtResourceType + "/ngt.Search",
 					ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
-					Owner:        errdetails.ValdResourceOwner,
-					Description:  err.Error(),
 				}, info.Get())
 			log.Error(err)
 			stat = trace.StatusCodeInternal(err.Error())
@@ -240,8 +232,6 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 				&errdetails.ResourceInfo{
 					ResourceType: ngtResourceType + "/ngt.SearchByID",
 					ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
-					Owner:        errdetails.ValdResourceOwner,
-					Description:  err.Error(),
 				})
 			stat = trace.StatusCodeResourceExhausted(err.Error())
 		} else {
@@ -253,8 +243,6 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 				&errdetails.ResourceInfo{
 					ResourceType: ngtResourceType + "/ngt.SearchByID",
 					ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
-					Owner:        errdetails.ValdResourceOwner,
-					Description:  err.Error(),
 				}, info.Get())
 			log.Error(err)
 			stat = trace.StatusCodeInternal(err.Error())
@@ -436,8 +424,6 @@ func (s *server) MultiSearch(ctx context.Context, reqs *payload.Search_MultiRequ
 			&errdetails.ResourceInfo{
 				ResourceType: ngtResourceType + "/ngt.MultiSearch",
 				ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
-				Owner:        errdetails.ValdResourceOwner,
-				Description:  errs.Error(),
 			})
 		if span != nil {
 			span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
@@ -508,8 +494,6 @@ func (s *server) MultiSearchByID(ctx context.Context, reqs *payload.Search_Multi
 			&errdetails.ResourceInfo{
 				ResourceType: ngtResourceType + "/ngt.MultiSearchByID",
 				ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
-				Owner:        errdetails.ValdResourceOwner,
-				Description:  errs.Error(),
 			})
 		if span != nil {
 			span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
@@ -546,8 +530,6 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (res *
 			&errdetails.ResourceInfo{
 				ResourceType: ngtResourceType + "/ngt.Insert",
 				ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
-				Owner:        errdetails.ValdResourceOwner,
-				Description:  err.Error(),
 			})
 		log.Warn(err)
 		if span != nil {
@@ -569,8 +551,6 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (res *
 				&errdetails.ResourceInfo{
 					ResourceType: ngtResourceType + "/ngt.Insert",
 					ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
-					Owner:        errdetails.ValdResourceOwner,
-					Description:  err.Error(),
 				})
 			log.Warn(err)
 			code = trace.StatusCodeAlreadyExists(err.Error())
@@ -591,8 +571,6 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (res *
 				&errdetails.ResourceInfo{
 					ResourceType: ngtResourceType + "/ngt.Insert",
 					ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
-					Owner:        errdetails.ValdResourceOwner,
-					Description:  err.Error(),
 				})
 			log.Warn(err)
 			code = trace.StatusCodeInvalidArgument(err.Error())
@@ -610,8 +588,6 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (res *
 				&errdetails.ResourceInfo{
 					ResourceType: ngtResourceType + "/ngt.Insert",
 					ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
-					Owner:        errdetails.ValdResourceOwner,
-					Description:  err.Error(),
 				}, info.Get())
 			code = trace.FromGRPCStatus(st.Code(), msg)
 		}
@@ -699,8 +675,6 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 				&errdetails.ResourceInfo{
 					ResourceType: ngtResourceType + "/ngt.MultiInsert",
 					ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
-					Owner:        errdetails.ValdResourceOwner,
-					Description:  err.Error(),
 				})
 			log.Warn(err)
 			if span != nil {
@@ -731,8 +705,6 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 				&errdetails.ResourceInfo{
 					ResourceType: ngtResourceType + "/ngt.MultiInsert",
 					ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
-					Owner:        errdetails.ValdResourceOwner,
-					Description:  err.Error(),
 				})
 			log.Warn(err)
 			code = trace.StatusCodeAlreadyExists(err.Error())
@@ -753,8 +725,6 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 				&errdetails.ResourceInfo{
 					ResourceType: ngtResourceType + "/ngt.MultiInsert",
 					ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
-					Owner:        errdetails.ValdResourceOwner,
-					Description:  err.Error(),
 				})
 			log.Warn(err)
 			code = trace.StatusCodeInvalidArgument(err.Error())
@@ -767,8 +737,6 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 				&errdetails.ResourceInfo{
 					ResourceType: ngtResourceType + "/ngt.MultiInsert",
 					ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
-					Owner:        errdetails.ValdResourceOwner,
-					Description:  err.Error(),
 				}, info.Get())
 			log.Error(err)
 			code = trace.StatusCodeInternal(err.Error())
@@ -808,8 +776,6 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (res *
 			&errdetails.ResourceInfo{
 				ResourceType: ngtResourceType + "/ngt.Update",
 				ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
-				Owner:        errdetails.ValdResourceOwner,
-				Description:  err.Error(),
 			})
 		log.Warn(err)
 		if span != nil {
@@ -829,8 +795,6 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (res *
 				&errdetails.ResourceInfo{
 					ResourceType: ngtResourceType + "/ngt.Update",
 					ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
-					Owner:        errdetails.ValdResourceOwner,
-					Description:  err.Error(),
 				})
 			log.Warn(err)
 			code = trace.StatusCodeNotFound(err.Error())
@@ -851,8 +815,6 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (res *
 				&errdetails.ResourceInfo{
 					ResourceType: ngtResourceType + "/ngt.Update",
 					ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
-					Owner:        errdetails.ValdResourceOwner,
-					Description:  err.Error(),
 				})
 			log.Warn(err)
 			code = trace.StatusCodeInvalidArgument(err.Error())
@@ -865,8 +827,6 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (res *
 				&errdetails.ResourceInfo{
 					ResourceType: ngtResourceType + "/ngt.Update",
 					ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
-					Owner:        errdetails.ValdResourceOwner,
-					Description:  err.Error(),
 				})
 			log.Warn(err)
 			code = trace.StatusCodeAlreadyExists(err.Error())
@@ -879,8 +839,6 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (res *
 				&errdetails.ResourceInfo{
 					ResourceType: ngtResourceType + "/ngt.Update",
 					ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
-					Owner:        errdetails.ValdResourceOwner,
-					Description:  err.Error(),
 				}, info.Get())
 			log.Error(err)
 			code = trace.StatusCodeInternal(err.Error())
@@ -970,8 +928,6 @@ func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequ
 				&errdetails.ResourceInfo{
 					ResourceType: ngtResourceType + "/ngt.MultiUpdate",
 					ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
-					Owner:        errdetails.ValdResourceOwner,
-					Description:  err.Error(),
 				})
 			log.Warn(err)
 			if span != nil {
@@ -1003,8 +959,6 @@ func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequ
 				&errdetails.ResourceInfo{
 					ResourceType: ngtResourceType + "/ngt.MultiUpdate",
 					ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
-					Owner:        errdetails.ValdResourceOwner,
-					Description:  err.Error(),
 				})
 			log.Warn(err)
 			code = trace.StatusCodeNotFound(err.Error())
@@ -1033,8 +987,6 @@ func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequ
 				&errdetails.ResourceInfo{
 					ResourceType: ngtResourceType + "/ngt.MultiUpdate",
 					ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
-					Owner:        errdetails.ValdResourceOwner,
-					Description:  err.Error(),
 				})
 			log.Warn(err)
 			code = trace.StatusCodeInvalidArgument(err.Error())
@@ -1055,8 +1007,6 @@ func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequ
 				&errdetails.ResourceInfo{
 					ResourceType: ngtResourceType + "/ngt.MultiUpdate",
 					ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
-					Owner:        errdetails.ValdResourceOwner,
-					Description:  err.Error(),
 				})
 			log.Warn(err)
 			code = trace.StatusCodeAlreadyExists(err.Error())
@@ -1069,8 +1019,6 @@ func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequ
 				&errdetails.ResourceInfo{
 					ResourceType: ngtResourceType + "/ngt.Update",
 					ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
-					Owner:        errdetails.ValdResourceOwner,
-					Description:  err.Error(),
 				}, info.Get())
 			log.Error(err)
 			code = trace.StatusCodeInternal(err.Error())
@@ -1110,8 +1058,6 @@ func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *
 			&errdetails.ResourceInfo{
 				ResourceType: ngtResourceType + "/ngt.Upsert",
 				ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
-				Owner:        errdetails.ValdResourceOwner,
-				Description:  err.Error(),
 			})
 		log.Warn(err)
 		if span != nil {
@@ -1148,8 +1094,6 @@ func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *
 			&errdetails.ResourceInfo{
 				ResourceType: ngtResourceType + rtName,
 				ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
-				Owner:        errdetails.ValdResourceOwner,
-				Description:  err.Error(),
 			})
 		if span != nil {
 			span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
@@ -1240,8 +1184,6 @@ func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequ
 				&errdetails.ResourceInfo{
 					ResourceType: ngtResourceType + "/ngt.MultiUpsert",
 					ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
-					Owner:        errdetails.ValdResourceOwner,
-					Description:  err.Error(),
 				})
 			log.Warn(err)
 			if span != nil {
@@ -1294,8 +1236,6 @@ func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequ
 			&errdetails.ResourceInfo{
 				ResourceType: ngtResourceType + "/ngt.MultiUpsert",
 				ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
-				Owner:        errdetails.ValdResourceOwner,
-				Description:  err.Error(),
 			})
 		if span != nil {
 			span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
@@ -1330,8 +1270,6 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (res *
 				&errdetails.ResourceInfo{
 					ResourceType: ngtResourceType + "/ngt.Remove",
 					ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
-					Owner:        errdetails.ValdResourceOwner,
-					Description:  err.Error(),
 				})
 			log.Warn(err)
 			code = trace.StatusCodeNotFound(err.Error())
@@ -1352,8 +1290,6 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (res *
 				&errdetails.ResourceInfo{
 					ResourceType: ngtResourceType + "/ngt.Remove",
 					ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
-					Owner:        errdetails.ValdResourceOwner,
-					Description:  err.Error(),
 				})
 			log.Warn(err)
 			code = trace.StatusCodeInvalidArgument(err.Error())
@@ -1366,8 +1302,6 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (res *
 				&errdetails.ResourceInfo{
 					ResourceType: ngtResourceType + "/ngt.Remove",
 					ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
-					Owner:        errdetails.ValdResourceOwner,
-					Description:  err.Error(),
 				}, info.Get())
 			log.Error(err)
 			code = trace.StatusCodeInternal(err.Error())
@@ -1458,8 +1392,6 @@ func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequ
 				&errdetails.ResourceInfo{
 					ResourceType: ngtResourceType + "/ngt.MultiRemove",
 					ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
-					Owner:        errdetails.ValdResourceOwner,
-					Description:  err.Error(),
 				})
 			log.Warn(err)
 			code = trace.StatusCodeNotFound(err.Error())
@@ -1480,8 +1412,6 @@ func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequ
 				&errdetails.ResourceInfo{
 					ResourceType: ngtResourceType + "/ngt.MultiRemove",
 					ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
-					Owner:        errdetails.ValdResourceOwner,
-					Description:  err.Error(),
 				})
 			log.Warn(err)
 			code = trace.StatusCodeInvalidArgument(err.Error())
@@ -1494,8 +1424,6 @@ func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequ
 				&errdetails.ResourceInfo{
 					ResourceType: ngtResourceType + "/ngt.MultiRemove",
 					ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
-					Owner:        errdetails.ValdResourceOwner,
-					Description:  err.Error(),
 				}, info.Get())
 			log.Error(err)
 			code = trace.StatusCodeInternal(err.Error())
@@ -1527,8 +1455,6 @@ func (s *server) GetObject(ctx context.Context, id *payload.Object_VectorRequest
 			&errdetails.ResourceInfo{
 				ResourceType: ngtResourceType + "/ngt.GetObject",
 				ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
-				Owner:        errdetails.ValdResourceOwner,
-				Description:  err.Error(),
 			}, info.Get())
 		if span != nil {
 			span.SetStatus(trace.StatusCodeNotFound(err.Error()))
@@ -1608,8 +1534,6 @@ func (s *server) CreateIndex(ctx context.Context, c *payload.Control_CreateIndex
 				&errdetails.ResourceInfo{
 					ResourceType: ngtResourceType + "/ngt.CreateIndex",
 					ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
-					Owner:        errdetails.ValdResourceOwner,
-					Description:  err.Error(),
 				},
 				&errdetails.PreconditionFailure{
 					Violations: []*errdetails.PreconditionFailureViolation{
@@ -1631,8 +1555,6 @@ func (s *server) CreateIndex(ctx context.Context, c *payload.Control_CreateIndex
 			&errdetails.ResourceInfo{
 				ResourceType: ngtResourceType + "/ngt.CreateIndex",
 				ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
-				Owner:        errdetails.ValdResourceOwner,
-				Description:  err.Error(),
 			}, info.Get())
 		log.Error(err)
 		if span != nil {
@@ -1657,8 +1579,6 @@ func (s *server) SaveIndex(ctx context.Context, _ *payload.Empty) (res *payload.
 			&errdetails.ResourceInfo{
 				ResourceType: ngtResourceType + "/ngt.SaveIndex",
 				ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
-				Owner:        errdetails.ValdResourceOwner,
-				Description:  err.Error(),
 			}, info.Get())
 		log.Error(err)
 		if span != nil {
@@ -1687,8 +1607,6 @@ func (s *server) CreateAndSaveIndex(ctx context.Context, c *payload.Control_Crea
 				&errdetails.ResourceInfo{
 					ResourceType: ngtResourceType + "/ngt.CreateAndSaveIndex",
 					ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
-					Owner:        errdetails.ValdResourceOwner,
-					Description:  err.Error(),
 				},
 				&errdetails.PreconditionFailure{
 					Violations: []*errdetails.PreconditionFailureViolation{
@@ -1710,8 +1628,6 @@ func (s *server) CreateAndSaveIndex(ctx context.Context, c *payload.Control_Crea
 			&errdetails.ResourceInfo{
 				ResourceType: ngtResourceType + "/ngt.CreateAndSaveIndex",
 				ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
-				Owner:        errdetails.ValdResourceOwner,
-				Description:  err.Error(),
 			}, info.Get())
 		log.Error(err)
 		if span != nil {
