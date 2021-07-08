@@ -121,7 +121,7 @@ func (s *server) Exists(ctx context.Context, uid *payload.Object_ID) (res *paylo
 			},
 			&errdetails.ResourceInfo{
 				ResourceType: ngtResourceType + "/ngt.Exists",
-				ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
+				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
 			},
 			uid.GetId(), info.Get())
 		if span != nil {
@@ -159,7 +159,6 @@ func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *
 			},
 			&errdetails.ResourceInfo{
 				ResourceType: ngtResourceType + "/ngt.Search",
-				ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
 			})
 		log.Warn(err)
 		if span != nil {
@@ -176,16 +175,17 @@ func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *
 	if err != nil {
 		var stat trace.Status
 		if errors.Is(err, errors.ErrCreateIndexingIsInProgress) {
-			err = status.WrapWithResourceExhausted("Search API failed to process search request due to creating index is in progress", err,
+			err = status.WrapWithAborted("Search API aborted to process search request due to createing indices is in progress", err,
 				&errdetails.RequestInfo{
 					RequestId:   req.GetConfig().GetRequestId(),
 					ServingData: errdetails.Serialize(req),
 				},
 				&errdetails.ResourceInfo{
 					ResourceType: ngtResourceType + "/ngt.Search",
-					ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
+					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
 				})
-			stat = trace.StatusCodeResourceExhausted(err.Error())
+			log.Debug(err)
+			stat = trace.StatusCodeAborted(err.Error())
 		} else {
 			err = status.WrapWithInternal("Search API failed to process search request", err,
 				&errdetails.RequestInfo{
@@ -194,7 +194,7 @@ func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *
 				},
 				&errdetails.ResourceInfo{
 					ResourceType: ngtResourceType + "/ngt.Search",
-					ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
+					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
 				}, info.Get())
 			log.Error(err)
 			stat = trace.StatusCodeInternal(err.Error())
@@ -224,16 +224,17 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 	if err != nil {
 		var stat trace.Status
 		if errors.Is(err, errors.ErrCreateIndexingIsInProgress) {
-			err = status.WrapWithResourceExhausted("SearchByID API failed to process search request due to create indexing is in progress", err,
+			err = status.WrapWithAborted("SearchByID API aborted to process search request due to createing indices is in progress", err,
 				&errdetails.RequestInfo{
 					RequestId:   req.GetConfig().GetRequestId(),
 					ServingData: errdetails.Serialize(req),
 				},
 				&errdetails.ResourceInfo{
 					ResourceType: ngtResourceType + "/ngt.SearchByID",
-					ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
+					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
 				})
-			stat = trace.StatusCodeResourceExhausted(err.Error())
+			log.Debug(err)
+			stat = trace.StatusCodeAborted(err.Error())
 		} else {
 			err = status.WrapWithInternal("SearchByID API failed to process search request", err,
 				&errdetails.RequestInfo{
@@ -242,7 +243,7 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 				},
 				&errdetails.ResourceInfo{
 					ResourceType: ngtResourceType + "/ngt.SearchByID",
-					ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
+					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
 				}, info.Get())
 			log.Error(err)
 			stat = trace.StatusCodeInternal(err.Error())
@@ -423,7 +424,7 @@ func (s *server) MultiSearch(ctx context.Context, reqs *payload.Search_MultiRequ
 			},
 			&errdetails.ResourceInfo{
 				ResourceType: ngtResourceType + "/ngt.MultiSearch",
-				ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
+				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
 			})
 		if span != nil {
 			span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
@@ -493,7 +494,7 @@ func (s *server) MultiSearchByID(ctx context.Context, reqs *payload.Search_Multi
 			},
 			&errdetails.ResourceInfo{
 				ResourceType: ngtResourceType + "/ngt.MultiSearchByID",
-				ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
+				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
 			})
 		if span != nil {
 			span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
@@ -529,7 +530,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (res *
 			},
 			&errdetails.ResourceInfo{
 				ResourceType: ngtResourceType + "/ngt.Insert",
-				ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
+				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
 			})
 		log.Warn(err)
 		if span != nil {
@@ -550,7 +551,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (res *
 				},
 				&errdetails.ResourceInfo{
 					ResourceType: ngtResourceType + "/ngt.Insert",
-					ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
+					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
 				})
 			log.Warn(err)
 			code = trace.StatusCodeAlreadyExists(err.Error())
@@ -570,7 +571,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (res *
 				},
 				&errdetails.ResourceInfo{
 					ResourceType: ngtResourceType + "/ngt.Insert",
-					ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
+					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
 				})
 			log.Warn(err)
 			code = trace.StatusCodeInvalidArgument(err.Error())
@@ -587,7 +588,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (res *
 				},
 				&errdetails.ResourceInfo{
 					ResourceType: ngtResourceType + "/ngt.Insert",
-					ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
+					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
 				}, info.Get())
 			code = trace.FromGRPCStatus(st.Code(), msg)
 		}
@@ -674,7 +675,7 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 				},
 				&errdetails.ResourceInfo{
 					ResourceType: ngtResourceType + "/ngt.MultiInsert",
-					ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
+					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
 				})
 			log.Warn(err)
 			if span != nil {
@@ -704,7 +705,7 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 				},
 				&errdetails.ResourceInfo{
 					ResourceType: ngtResourceType + "/ngt.MultiInsert",
-					ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
+					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
 				})
 			log.Warn(err)
 			code = trace.StatusCodeAlreadyExists(err.Error())
@@ -724,7 +725,7 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 				},
 				&errdetails.ResourceInfo{
 					ResourceType: ngtResourceType + "/ngt.MultiInsert",
-					ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
+					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
 				})
 			log.Warn(err)
 			code = trace.StatusCodeInvalidArgument(err.Error())
@@ -736,7 +737,7 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 				},
 				&errdetails.ResourceInfo{
 					ResourceType: ngtResourceType + "/ngt.MultiInsert",
-					ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
+					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
 				}, info.Get())
 			log.Error(err)
 			code = trace.StatusCodeInternal(err.Error())
@@ -775,7 +776,7 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (res *
 			},
 			&errdetails.ResourceInfo{
 				ResourceType: ngtResourceType + "/ngt.Update",
-				ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
+				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
 			})
 		log.Warn(err)
 		if span != nil {
@@ -794,7 +795,7 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (res *
 				},
 				&errdetails.ResourceInfo{
 					ResourceType: ngtResourceType + "/ngt.Update",
-					ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
+					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
 				})
 			log.Warn(err)
 			code = trace.StatusCodeNotFound(err.Error())
@@ -814,7 +815,7 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (res *
 				},
 				&errdetails.ResourceInfo{
 					ResourceType: ngtResourceType + "/ngt.Update",
-					ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
+					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
 				})
 			log.Warn(err)
 			code = trace.StatusCodeInvalidArgument(err.Error())
@@ -826,7 +827,7 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (res *
 				},
 				&errdetails.ResourceInfo{
 					ResourceType: ngtResourceType + "/ngt.Update",
-					ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
+					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
 				})
 			log.Warn(err)
 			code = trace.StatusCodeAlreadyExists(err.Error())
@@ -838,7 +839,7 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (res *
 				},
 				&errdetails.ResourceInfo{
 					ResourceType: ngtResourceType + "/ngt.Update",
-					ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
+					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
 				}, info.Get())
 			log.Error(err)
 			code = trace.StatusCodeInternal(err.Error())
@@ -927,7 +928,7 @@ func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequ
 				},
 				&errdetails.ResourceInfo{
 					ResourceType: ngtResourceType + "/ngt.MultiUpdate",
-					ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
+					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
 				})
 			log.Warn(err)
 			if span != nil {
@@ -958,7 +959,7 @@ func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequ
 				},
 				&errdetails.ResourceInfo{
 					ResourceType: ngtResourceType + "/ngt.MultiUpdate",
-					ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
+					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
 				})
 			log.Warn(err)
 			code = trace.StatusCodeNotFound(err.Error())
@@ -986,7 +987,7 @@ func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequ
 				},
 				&errdetails.ResourceInfo{
 					ResourceType: ngtResourceType + "/ngt.MultiUpdate",
-					ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
+					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
 				})
 			log.Warn(err)
 			code = trace.StatusCodeInvalidArgument(err.Error())
@@ -1006,7 +1007,7 @@ func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequ
 				},
 				&errdetails.ResourceInfo{
 					ResourceType: ngtResourceType + "/ngt.MultiUpdate",
-					ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
+					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
 				})
 			log.Warn(err)
 			code = trace.StatusCodeAlreadyExists(err.Error())
@@ -1018,7 +1019,7 @@ func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequ
 				},
 				&errdetails.ResourceInfo{
 					ResourceType: ngtResourceType + "/ngt.Update",
-					ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
+					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
 				}, info.Get())
 			log.Error(err)
 			code = trace.StatusCodeInternal(err.Error())
@@ -1057,7 +1058,7 @@ func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *
 			},
 			&errdetails.ResourceInfo{
 				ResourceType: ngtResourceType + "/ngt.Upsert",
-				ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
+				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
 			})
 		log.Warn(err)
 		if span != nil {
@@ -1093,12 +1094,11 @@ func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *
 			},
 			&errdetails.ResourceInfo{
 				ResourceType: ngtResourceType + rtName,
-				ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
+				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
 			})
 		if span != nil {
 			span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
 		}
-		log.Error(err)
 		return nil, err
 	}
 	return loc, nil
@@ -1145,7 +1145,6 @@ func (s *server) StreamUpsert(stream vald.Upsert_StreamUpsertServer) (err error)
 		if span != nil {
 			span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
 		}
-		log.Error(err)
 		return err
 	}
 	return nil
@@ -1183,7 +1182,7 @@ func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequ
 				},
 				&errdetails.ResourceInfo{
 					ResourceType: ngtResourceType + "/ngt.MultiUpsert",
-					ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
+					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
 				})
 			log.Warn(err)
 			if span != nil {
@@ -1204,49 +1203,96 @@ func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequ
 		}
 	}
 
-	var ures, ires *payload.Object_Locations
-
-	eg, ectx := errgroup.New(ctx)
-	eg.Go(safety.RecoverFunc(func() error {
-		var err error
-		if len(updateReqs) > 0 {
+	switch {
+	case len(insertReqs) <= 0:
+		res, err = s.MultiUpdate(ctx, &payload.Update_MultiRequest{
+			Requests: updateReqs,
+		})
+	case len(updateReqs) <= 0:
+		res, err = s.MultiInsert(ctx, &payload.Insert_MultiRequest{
+			Requests: insertReqs,
+		})
+	default:
+		var (
+			ures, ires *payload.Object_Locations
+			errs       error
+			mu         sync.Mutex
+		)
+		eg, ectx := errgroup.New(ctx)
+		eg.Go(safety.RecoverFunc(func() (err error) {
 			ures, err = s.MultiUpdate(ectx, &payload.Update_MultiRequest{
 				Requests: updateReqs,
 			})
-		}
-		return err
-	}))
-
-	eg.Go(safety.RecoverFunc(func() error {
-		var err error
-		if len(insertReqs) > 0 {
+			if err != nil {
+				mu.Lock()
+				if errs == nil {
+					errs = err
+				} else {
+					errs = errors.Wrap(errs, err.Error())
+				}
+				mu.Unlock()
+			}
+			return nil
+		}))
+		eg.Go(safety.RecoverFunc(func() (err error) {
 			ires, err = s.MultiInsert(ectx, &payload.Insert_MultiRequest{
 				Requests: insertReqs,
 			})
+			if err != nil {
+				mu.Lock()
+				if errs == nil {
+					errs = err
+				} else {
+					errs = errors.Wrap(errs, err.Error())
+				}
+				mu.Unlock()
+			}
+			return nil
+		}))
+		err = eg.Wait()
+		if err != nil {
+			if errs == nil {
+				errs = err
+			} else {
+				errs = errors.Wrap(errs, err.Error())
+			}
 		}
-		return err
-	}))
-	err = eg.Wait()
+
+		if errs == nil {
+			var locs []*payload.Object_Location
+			switch {
+			case ures.GetLocations() == nil:
+				locs = ires.GetLocations()
+			case ires.GetLocations() == nil:
+				locs = ures.GetLocations()
+			default:
+				locs = append(ures.GetLocations(), ires.GetLocations()...)
+			}
+			res = &payload.Object_Locations{
+				Locations: locs,
+			}
+		} else {
+			err = errs
+		}
+
+	}
 	if err != nil {
-		st, msg, err := status.ParseError(err, codes.Internal, "failed to parse MultiUpsert gRPC error response",
+		st, msg, err := status.ParseError(err, codes.Internal,
+			"failed to parse MultiUpsert gRPC error response",
 			&errdetails.RequestInfo{
 				RequestId:   strings.Join(ids, ","),
 				ServingData: errdetails.Serialize(reqs),
 			},
 			&errdetails.ResourceInfo{
 				ResourceType: ngtResourceType + "/ngt.MultiUpsert",
-				ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
-			})
+				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+			}, info.Get())
 		if span != nil {
 			span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
 		}
-		log.Error(err)
 		return nil, err
 	}
-
-	return &payload.Object_Locations{
-		Locations: append(ures.GetLocations(), ires.Locations...),
-	}, nil
+	return res, nil
 }
 
 func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (res *payload.Object_Location, err error) {
@@ -1269,7 +1315,7 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (res *
 				},
 				&errdetails.ResourceInfo{
 					ResourceType: ngtResourceType + "/ngt.Remove",
-					ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
+					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
 				})
 			log.Warn(err)
 			code = trace.StatusCodeNotFound(err.Error())
@@ -1289,7 +1335,7 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (res *
 				},
 				&errdetails.ResourceInfo{
 					ResourceType: ngtResourceType + "/ngt.Remove",
-					ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
+					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
 				})
 			log.Warn(err)
 			code = trace.StatusCodeInvalidArgument(err.Error())
@@ -1301,7 +1347,7 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (res *
 				},
 				&errdetails.ResourceInfo{
 					ResourceType: ngtResourceType + "/ngt.Remove",
-					ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
+					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
 				}, info.Get())
 			log.Error(err)
 			code = trace.StatusCodeInternal(err.Error())
@@ -1355,7 +1401,6 @@ func (s *server) StreamRemove(stream vald.Remove_StreamRemoveServer) (err error)
 		if span != nil {
 			span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
 		}
-		log.Error(err)
 		return err
 	}
 	return nil
@@ -1391,7 +1436,7 @@ func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequ
 				},
 				&errdetails.ResourceInfo{
 					ResourceType: ngtResourceType + "/ngt.MultiRemove",
-					ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
+					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
 				})
 			log.Warn(err)
 			code = trace.StatusCodeNotFound(err.Error())
@@ -1411,7 +1456,7 @@ func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequ
 				},
 				&errdetails.ResourceInfo{
 					ResourceType: ngtResourceType + "/ngt.MultiRemove",
-					ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
+					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
 				})
 			log.Warn(err)
 			code = trace.StatusCodeInvalidArgument(err.Error())
@@ -1423,7 +1468,7 @@ func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequ
 				},
 				&errdetails.ResourceInfo{
 					ResourceType: ngtResourceType + "/ngt.MultiRemove",
-					ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
+					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
 				}, info.Get())
 			log.Error(err)
 			code = trace.StatusCodeInternal(err.Error())
@@ -1454,7 +1499,7 @@ func (s *server) GetObject(ctx context.Context, id *payload.Object_VectorRequest
 			},
 			&errdetails.ResourceInfo{
 				ResourceType: ngtResourceType + "/ngt.GetObject",
-				ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
+				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
 			}, info.Get())
 		if span != nil {
 			span.SetStatus(trace.StatusCodeNotFound(err.Error()))
@@ -1533,7 +1578,7 @@ func (s *server) CreateIndex(ctx context.Context, c *payload.Control_CreateIndex
 				},
 				&errdetails.ResourceInfo{
 					ResourceType: ngtResourceType + "/ngt.CreateIndex",
-					ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
+					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
 				},
 				&errdetails.PreconditionFailure{
 					Violations: []*errdetails.PreconditionFailureViolation{
@@ -1554,7 +1599,7 @@ func (s *server) CreateIndex(ctx context.Context, c *payload.Control_CreateIndex
 			},
 			&errdetails.ResourceInfo{
 				ResourceType: ngtResourceType + "/ngt.CreateIndex",
-				ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
+				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
 			}, info.Get())
 		log.Error(err)
 		if span != nil {
@@ -1578,7 +1623,7 @@ func (s *server) SaveIndex(ctx context.Context, _ *payload.Empty) (res *payload.
 		err = status.WrapWithInternal("SaveIndex API failed to save indices", err,
 			&errdetails.ResourceInfo{
 				ResourceType: ngtResourceType + "/ngt.SaveIndex",
-				ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
+				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
 			}, info.Get())
 		log.Error(err)
 		if span != nil {
@@ -1606,7 +1651,7 @@ func (s *server) CreateAndSaveIndex(ctx context.Context, c *payload.Control_Crea
 				},
 				&errdetails.ResourceInfo{
 					ResourceType: ngtResourceType + "/ngt.CreateAndSaveIndex",
-					ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
+					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
 				},
 				&errdetails.PreconditionFailure{
 					Violations: []*errdetails.PreconditionFailureViolation{
@@ -1627,7 +1672,7 @@ func (s *server) CreateAndSaveIndex(ctx context.Context, c *payload.Control_Crea
 			},
 			&errdetails.ResourceInfo{
 				ResourceType: ngtResourceType + "/ngt.CreateAndSaveIndex",
-				ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
+				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
 			}, info.Get())
 		log.Error(err)
 		if span != nil {
