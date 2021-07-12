@@ -291,6 +291,7 @@ func (v *vqueue) flushAndRangeInsert(f func(uuid string, vector []float32) bool)
 		if _, ok := v.udim.Load(idx.uuid); ok {
 			v.imu.Lock()
 			v.uii = append(v.uii, idx)
+			log.Debugf("[rebalancer] flushAndRangeInsert uuid detected in delete map, uuid: %s", idx.uuid)
 			v.imu.Unlock()
 			continue
 		}
@@ -309,8 +310,9 @@ func (v *vqueue) flushAndRangeInsert(f func(uuid string, vector []float32) bool)
 			}
 
 			v.uiim.Delete(idx.uuid)
+		} else {
+			log.Debugf("[rebalancer] flushAndRangeInsert uuid duplicated: %s", idx.uuid)
 		}
-
 	}
 }
 
@@ -332,6 +334,7 @@ func (v *vqueue) flushAndRangeDelete(f func(uuid string) bool) {
 		if !dup[idx.uuid] {
 			dup[idx.uuid] = true
 			if !f(idx.uuid) {
+				log.Debugf("[rebalancer] flushAndRangeDelete delete failed, uuid: %s", idx.uuid)
 				v.dmu.Lock()
 				v.udk = append(udk[i:], v.udk...)
 				v.dmu.Unlock()
@@ -339,6 +342,8 @@ func (v *vqueue) flushAndRangeDelete(f func(uuid string) bool) {
 			}
 			v.udim.Delete(idx.uuid)
 			udm[idx.uuid] = idx.date
+		} else {
+			log.Debugf("[rebalancer] flushAndRangeDelete uuid duplicated: %s", idx.uuid)
 		}
 	}
 
