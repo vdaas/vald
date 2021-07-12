@@ -29,6 +29,7 @@ import (
 	"sync"
 	"sync/atomic"
 	"time"
+	"unsafe"
 
 	"github.com/vdaas/vald/internal/config"
 	core "github.com/vdaas/vald/internal/core/algorithm/ngt"
@@ -89,7 +90,8 @@ type ngt struct {
 	// statuses
 	indexing  atomic.Value
 	saving    atomic.Value
-	lastNoice uint64 // last number of create index execution this value prevent unnecessary saveindex.
+	cimu      sync.Mutex // create index mutex
+	lastNoice uint64     // last number of create index execution this value prevent unnecessary saveindex.
 
 	// counters
 	nocie uint64 // number of create index execution
@@ -450,10 +452,9 @@ func (n *ngt) insert(uuid string, vec []float32, t int64, validation bool) (err 
 		err = errors.ErrUUIDNotFound(0)
 		return err
 	}
-	if validation && !n.vq.DVExists(uuid) {
-		// if delete schedule exists we can insert new vector
-		_, ok := n.kvs.Get(uuid)
-		if ok || n.vq.IVExists(uuid) {
+	if validation {
+		_, ok := n.Exists(uuid)
+		if ok {
 			return errors.ErrUUIDAlreadyExists(uuid)
 		}
 	}
@@ -584,24 +585,6 @@ func (n *ngt) deleteMultiple(uuids []string, now int64) (err error) {
 	return err
 }
 
-func (n *ngt) GetObject(uuid string) (vec []float32, err error) {
-	vec, ok := n.vq.GetVector(uuid)
-	if !ok {
-		log.Debugf("GetObject\tuuid: %s's data not found in vqueue, trying to read from indexed kvsdb data", uuid)
-		oid, ok := n.kvs.Get(uuid)
-		if !ok {
-			log.Debugf("GetObject\tuuid: %s's data not found in kvsdb and vqueue", uuid)
-			return nil, errors.ErrObjectIDNotFound(uuid)
-		}
-		vec, err = n.core.GetVector(uint(oid))
-		if err != nil {
-			log.Debugf("GetObject\tuuid: %s oid: %d's vector not found in ngt index", uuid, oid)
-			return nil, errors.ErrObjectNotFound(err, uuid)
-		}
-	}
-	return vec, nil
-}
-
 func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 	ctx, span := trace.StartSpan(ctx, "vald/agent-ngt/service/NGT.CreateIndex")
 	defer func() {
@@ -610,6 +593,8 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 		}
 	}()
 
+	n.cimu.Lock()
+	defer n.cimu.Unlock()
 	if n.IsIndexing() || n.IsSaving() {
 		return nil
 	}
@@ -783,32 +768,56 @@ func (n *ngt) CreateAndSaveIndex(ctx context.Context, poolSize uint32) (err erro
 }
 
 func (n *ngt) Exists(uuid string) (oid uint32, ok bool) {
-	oid, ok = n.kvs.Get(uuid)
+	ok = n.vq.IVExists(uuid)
 	if !ok {
-		ok = n.vq.IVExists(uuid)
-	} else {
-		ok = !n.vq.DVExists(uuid)
+		oid, ok = n.kvs.Get(uuid)
+		if !ok {
+			log.Debugf("Exists\tuuid: %s's data not found in kvsdb and insert vqueue\terror: %v", uuid, errors.ErrObjectIDNotFound(uuid))
+			return 0, false
+		}
+		if n.vq.DVExists(uuid) {
+			log.Debugf("Exists\tuuid: %s's data found in kvsdb and not found in insert vqueue, but delete vqueue data exists. the object will be delete soon\terror: %v",
+				uuid, errors.ErrObjectIDNotFound(uuid))
+			return 0, false
+		}
 	}
 	return oid, ok
+}
+
+func (n *ngt) GetObject(uuid string) (vec []float32, err error) {
+	vec, ok := n.vq.GetVector(uuid)
+	if !ok {
+		oid, ok := n.kvs.Get(uuid)
+		if !ok {
+			log.Debugf("GetObject\tuuid: %s's data not found in kvsdb and insert vqueue", uuid)
+			return nil, errors.ErrObjectIDNotFound(uuid)
+		}
+		if n.vq.DVExists(uuid) {
+			log.Debugf("GetObject\tuuid: %s's data found in kvsdb and not found in insert vqueue, but delete vqueue data exists. the object will be delete soon", uuid)
+			return nil, errors.ErrObjectIDNotFound(uuid)
+		}
+		vec, err = n.core.GetVector(uint(oid))
+		if err != nil {
+			log.Debugf("GetObject\tuuid: %s oid: %d's vector not found in ngt index", uuid, oid)
+			return nil, errors.ErrObjectNotFound(err, uuid)
+		}
+	}
+	return vec, nil
 }
 
 func (n *ngt) readyForUpdate(uuid string, vec []float32) (err error) {
 	if len(uuid) == 0 {
 		return errors.ErrUUIDNotFound(0)
 	}
-	if len(vec) == 0 {
-		return errors.ErrInvalidDimensionSize(len(vec), 0)
+	if len(vec) != n.GetDimensionSize() {
+		return errors.ErrInvalidDimensionSize(len(vec), n.GetDimensionSize())
 	}
 	ovec, err := n.GetObject(uuid)
-	if err != nil || len(vec) != len(ovec) {
-		// if error (GetObject cannot find vector) or vector length is not equal let's try update
+	if err != nil ||
+		len(vec) != len(ovec) ||
+		f32stos(vec) != f32stos(ovec) {
+		// if error (GetObject cannot find vector) or vector length is not equal or if difference exists let's try update
 		return nil
-	}
-	for i, v := range vec {
-		if v != ovec[i] {
-			// if difference exists return nil for update
-			return nil
-		}
 	}
 	// if no difference exists (same vector already exists) return error for skip update
 	return errors.ErrUUIDAlreadyExists(uuid)
@@ -878,4 +887,13 @@ func (n *ngt) Close(ctx context.Context) (err error) {
 	}
 	n.core.Close()
 	return
+}
+
+func f32stos(fs []float32) string {
+	lf := 4 * len(fs)
+	buf := (*(*[1]byte)(unsafe.Pointer(&(fs[0]))))[:]
+	addr := unsafe.Pointer(&buf)
+	(*(*int)(unsafe.Pointer(uintptr(addr) + uintptr(8)))) = lf
+	(*(*int)(unsafe.Pointer(uintptr(addr) + uintptr(16)))) = lf
+	return *(*string)(unsafe.Pointer(&buf))
 }
