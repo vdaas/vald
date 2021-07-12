@@ -799,7 +799,7 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (res *
 				})
 			log.Warn(err)
 			code = trace.StatusCodeNotFound(err.Error())
-		} else if errors.Is(err, errors.ErrUUIDNotFound(0)) || errors.Is(err, errors.ErrInvalidDimensionSize(len(vec.GetVector()), 0)) {
+		} else if errors.Is(err, errors.ErrUUIDNotFound(0)) || errors.Is(err, errors.ErrInvalidDimensionSize(len(vec.GetVector()), s.ngt.GetDimensionSize())) {
 			err = status.WrapWithInvalidArgument(fmt.Sprintf("Update API invalid argument for uuid \"%s\" vec \"%v\" detected", vec.GetId(), vec.GetVector()), err,
 				&errdetails.RequestInfo{
 					RequestId:   req.GetVector().GetId(),
@@ -966,7 +966,7 @@ func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequ
 		} else if invalidDimensionIDs := func() []string {
 			idis := make([]string, 0, len(uuids))
 			for id, vec := range vmap {
-				if errors.Is(err, errors.ErrInvalidDimensionSize(len(vec), 0)) {
+				if errors.Is(err, errors.ErrInvalidDimensionSize(len(vec), s.ngt.GetDimensionSize())) {
 					idis = append(idis, id)
 				}
 			}
