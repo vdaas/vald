@@ -128,8 +128,10 @@ func (s *server) Exists(ctx context.Context, meta *payload.Object_ID) (id *paylo
 					sspan.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
 				}
 				if err != nil && st.Code() != codes.NotFound {
+					log.Debugf("[rebalancer] exists return err, err: %s, st code: %s", err, st.Code())
 					return err
 				}
+				log.Debugf("[rebalancer] exists return nil, err: %s, st code: %s", err, st.Code())
 				return nil
 			}
 			if oid != nil && oid.GetId() != "" {
@@ -165,8 +167,10 @@ func (s *server) Exists(ctx context.Context, meta *payload.Object_ID) (id *paylo
 			span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
 		}
 
+		log.Debugf("[rebalancer] exists return error, err: %s", err)
 		return nil, err
 	}
+	log.Debugf("[rebalancer] exists return nil, err: %s", err)
 	return id, nil
 }
 
@@ -2138,6 +2142,7 @@ func (s *server) GetObject(ctx context.Context, req *payload.Object_VectorReques
 				}
 			}()
 			ovec, err := vc.GetObject(sctx, req, copts...)
+			log.Debugf("[rebalancer] get object return error: %s", err)
 			if err != nil {
 				switch {
 				case errors.Is(err, context.Canceled),
@@ -2174,8 +2179,10 @@ func (s *server) GetObject(ctx context.Context, req *payload.Object_VectorReques
 					span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
 				}
 				if err != nil && st.Code() != codes.NotFound {
+					log.Debugf("get object return error, err: %ss, st code: %s", err, st.Code())
 					return err
 				}
+				log.Debugf("get object return nil, st code: %s", st.Code())
 				return nil
 			}
 			if ovec != nil && ovec.GetId() != "" && ovec.GetVector() != nil {
@@ -2209,8 +2216,10 @@ func (s *server) GetObject(ctx context.Context, req *payload.Object_VectorReques
 		if span != nil {
 			span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
 		}
+		log.Debugf("[rebalancer] get object return error, err: %s", err)
 		return nil, err
 	}
+	log.Debugf("[rebalancer] get object return nil, vecid: %#s", vec.GetId())
 	return vec, nil
 }
 
