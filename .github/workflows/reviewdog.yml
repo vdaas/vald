@@ -17,8 +17,8 @@
 name: reviewdog
 on:
   pull_request:
-    paths:
-      - "**.go"
+    branches:
+      - main
 
 jobs:
   golangci-lint:

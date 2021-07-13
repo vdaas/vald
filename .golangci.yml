@@ -25,7 +25,43 @@ output:
 linters:
   enable-all: true
   disable:
-    - godot
+    - deadcode
+    - errcheck
+    - typecheck
+    - varcheck
+    - cyclop
+    - depguard
+    - exhaustivestruct
+    - forbidigo
+    - funlen
+    - gci
+    - gocognit
+    - gocyclo
+    - goerr113
+    - gofmt
+    - goheader
+    - golint
+    - gomoddirectives
+    - gomodguard
+    - goprintffuncname
+    - gosec
+    - ifshort
+    - importas
+    - interfacer
+    - lll
+    - maligned
+    - nestif
+    - nlreturn
+    - paralleltest
+    - revive
+    - promlinter
+    - scopelint
+    - testpackage
+    - tparallel
+    - wastedassign
+    - wrapcheck
+    - whitespace
+    - wsl
 
 issues:
   exclude-use-default: false
@@ -34,14 +70,17 @@ issues:
     - path: _test\.go
       linters:
         - dupl
-        - scopelint
-        - funlen
-        - gocognit
-        - godox
+        - forcetypeassert
         - gomnd
-    - path: option\.go
+        - noctx
+    - path: _test\.go
+      text: copylocks:
+      linters:
+        - govet
+    - path: options?\.go
       linters:
         - gochecknoglobals
+        - gomnd
     - path: main\.go
       linters:
         - gochecknoglobals
@@ -53,3 +92,9 @@ linters-settings:
     settings:
       ruleguard:
         rules: './hack/gorules/rules.go'
+  tagliatelle:
+    case:
+      use-field-name: true
+      rules:
+        json: snake
+        yaml: snake
