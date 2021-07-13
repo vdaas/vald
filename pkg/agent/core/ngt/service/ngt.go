@@ -592,20 +592,36 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 			span.End()
 		}
 	}()
-
-	n.cimu.Lock()
-	defer n.cimu.Unlock()
-	if n.IsIndexing() || n.IsSaving() {
-		return nil
-	}
 	ic := n.vq.IVQLen() + n.vq.DVQLen()
 	if ic == 0 {
 		return errors.ErrUncommittedIndexNotFound
 	}
+	err = func() error {
+		ticker := time.NewTicker(time.Millisecond * 100)
+		defer ticker.Stop()
+		// wait for not indexing & not saving
+		for n.IsIndexing() || n.IsSaving() {
+			runtime.Gosched()
+			select {
+			case <-ctx.Done():
+				return ctx.Err()
+			case <-ticker.C:
+			}
+		}
+		return nil
+	}()
+	if err != nil {
+		return err
+	}
 	n.indexing.Store(true)
 	defer n.indexing.Store(false)
+	n.cimu.Lock()
+	defer n.cimu.Unlock()
 	defer n.gc()
-
+	ic = n.vq.IVQLen() + n.vq.DVQLen()
+	if ic == 0 {
+		return errors.ErrUncommittedIndexNotFound
+	}
 	log.Infof("create index operation started, uncommitted indexes = %d", ic)
 	log.Debug("create index delete phase started")
 	n.vq.RangePopDelete(ctx, func(uuid string) bool {
@@ -670,16 +686,22 @@ func (n *ngt) saveIndex(ctx context.Context) (err error) {
 		return
 	}
 	atomic.SwapUint64(&n.lastNoice, noice)
-	ticker := time.NewTicker(time.Second)
-	defer ticker.Stop()
-	// wait for not indexing & not saving
-	for n.IsIndexing() || n.IsSaving() {
-		runtime.Gosched()
-		select {
-		case <-ctx.Done():
-			return ctx.Err()
-		case <-ticker.C:
+	err = func() error {
+		ticker := time.NewTicker(time.Second)
+		defer ticker.Stop()
+		// wait for not indexing & not saving
+		for n.IsIndexing() || n.IsSaving() {
+			runtime.Gosched()
+			select {
+			case <-ctx.Done():
+				return ctx.Err()
+			case <-ticker.C:
+			}
 		}
+		return nil
+	}()
+	if err != nil {
+		return err
 	}
 	n.saving.Store(true)
 	defer n.gc()
