@@ -74,7 +74,7 @@ issues:
         - gomnd
         - noctx
     - path: _test\.go
-      text: copylocks:
+      text: "copylocks:"
       linters:
         - govet
     - path: options?\.go
