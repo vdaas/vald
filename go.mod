@@ -84,7 +84,7 @@ require (
 	golang.org/x/oauth2 v0.0.0-20210628180205-a41e5a781914
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 	golang.org/x/sys v0.0.0-20210630005230-0f9fa26af87c
-	golang.org/x/tools v0.1.4
+	golang.org/x/tools v0.1.5
 	gonum.org/v1/hdf5 v0.0.0-20210623100833-4dd8a5a777f9
 	gonum.org/v1/plot v0.9.0
 	google.golang.org/api v0.50.0
