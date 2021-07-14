@@ -3,8 +3,8 @@ module github.com/vdaas/vald
 go 1.16
 
 replace (
-	cloud.google.com/go => cloud.google.com/go v0.87.0
-	cloud.google.com/go/storage => cloud.google.com/go/storage v1.16.1-0.20210713203959-2a43d6d30d70
+	cloud.google.com/go => cloud.google.com/go v0.87.1-0.20210714021338-4592a3a3f96d
+	cloud.google.com/go/storage => cloud.google.com/go/storage v1.16.1-0.20210714021338-4592a3a3f96d
 	github.com/Azure/go-autorest => github.com/Azure/go-autorest v14.2.1-0.20210701162346-76c7860e9b60+incompatible
 	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.39.6
 	github.com/boltdb/bolt => github.com/boltdb/bolt v1.3.1
@@ -23,7 +23,7 @@ replace (
 	github.com/gorilla/websocket => github.com/gorilla/websocket v1.4.2
 	github.com/hailocab/go-hostpool => github.com/kpango/go-hostpool v0.0.0-20210303030322-aab80263dcd0
 	github.com/klauspost/compress => github.com/klauspost/compress v1.13.2-0.20210709134322-94867dd0db71
-	github.com/kpango/glg => github.com/kpango/glg v1.6.0
+	github.com/kpango/glg => github.com/kpango/glg v1.6.1
 	github.com/tensorflow/tensorflow => github.com/tensorflow/tensorflow v2.1.2+incompatible
 	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20210711020723-a769d52b0f97
 	google.golang.org/grpc => google.golang.org/grpc v1.39.0
@@ -88,7 +88,7 @@ require (
 	gonum.org/v1/hdf5 v0.0.0-20210714002203-8c5d23bc6946
 	gonum.org/v1/plot v0.9.0
 	google.golang.org/api v0.50.0
-	google.golang.org/genproto v0.0.0-20210713002101-d411969a0d9a
+	google.golang.org/genproto v0.0.0-20210714021259-044028024a4f
 	google.golang.org/grpc v1.39.0
 	gopkg.in/yaml.v2 v2.4.0
 	inet.af/netaddr v0.0.0-20210707202901-70468d781e6c
