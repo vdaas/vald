@@ -618,7 +618,7 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 		}
 		if ierr != nil {
 			log.Error(ierr)
-			err = errors.Wrap(err, ierr.Error())
+			// err = errors.Wrap(err, ierr.Error())
 		}
 		return true
 	})
@@ -629,7 +629,7 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 		oid, ierr := n.core.Insert(vector)
 		if ierr != nil {
 			log.Error(ierr)
-			err = errors.Wrap(err, ierr.Error())
+			// err = errors.Wrap(err, ierr.Error())
 		} else {
 			n.kvs.Set(uuid, uint32(oid))
 		}
