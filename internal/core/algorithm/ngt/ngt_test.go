@@ -56,6 +56,11 @@ var (
 
 	defaultAfterFunc = func(t *testing.T, n NGT) error {
 		t.Helper()
+
+		if n == nil {
+			return nil
+		}
+
 		n.Close()
 		if ngt, ok := n.(*ngt); ok {
 			if !ngt.inMemory {
@@ -94,7 +99,7 @@ func TestNew(t *testing.T) {
 
 		// comparator for idxPath
 		comparators := append(ngtComparator, comparator.CompareField("idxPath", cmp.Comparer(func(s1, s2 string) bool {
-			return strings.HasPrefix(s1, "/tmp/ngt-") || strings.HasPrefix(s1, "/tmp/ngt-")
+			return strings.HasPrefix(s1, "/tmp/ngt-") || strings.HasPrefix(s2, "/tmp/ngt-")
 		})))
 
 		if diff := comparator.Diff(got, w.want, comparators...); diff != "" {
@@ -118,7 +123,7 @@ func TestNew(t *testing.T) {
 			},
 			want: want{
 				want: &ngt{
-					// these options is in defaultOpts list, but these fields are ignored because of cgo dependencies
+					// these options are in defaultOpts list, but these fields are ignored because of cgo dependencies
 					// WithDimension(minimumDimensionSize),
 					// WithCreationEdgeSize(10),
 					// WithSearchEdgeSize(40),
@@ -134,7 +139,7 @@ func TestNew(t *testing.T) {
 			},
 		},
 		{
-			name: "return NGT when option is set",
+			name: "return NGT when 1 option is set",
 			args: args{
 				opts: []Option{
 					WithObjectType(Uint8),
@@ -142,7 +147,7 @@ func TestNew(t *testing.T) {
 			},
 			want: want{
 				want: &ngt{
-					// these options is in defaultOpts list, but these fields are ignored because of cgo dependencies
+					// these options are in defaultOpts list, but these fields are ignored because of cgo dependencies
 					// WithDimension(minimumDimensionSize),
 					// WithCreationEdgeSize(10),
 					// WithSearchEdgeSize(40),
@@ -155,6 +160,42 @@ func TestNew(t *testing.T) {
 					objectType:          Uint8,
 					mu:                  &sync.RWMutex{},
 				},
+			},
+		},
+		{
+			name: "return NGT when multiple options are set",
+			args: args{
+				opts: []Option{
+					WithObjectType(Uint8),
+					WithDefaultPoolSize(100),
+				},
+			},
+			want: want{
+				want: &ngt{
+					// these options are in defaultOpts list, but these fields are ignored because of cgo dependencies
+					// WithDimension(minimumDimensionSize),
+					// WithCreationEdgeSize(10),
+					// WithSearchEdgeSize(40),
+					// WithDistanceType(L2),
+					idxPath:             "/tmp/ngt-",
+					radius:              DefaultRadius,
+					epsilon:             DefaultEpsilon,
+					poolSize:            100,
+					bulkInsertChunkSize: 100,
+					objectType:          Uint8,
+					mu:                  &sync.RWMutex{},
+				},
+			},
+		},
+		{
+			name: "return error when option return error",
+			args: args{
+				opts: []Option{
+					WithDimension(1),
+				},
+			},
+			want: want{
+				err: errors.NewErrCriticalOption("dimension", 1, errors.ErrInvalidDimensionSize(1, ngtVectorDimensionSizeLimit)),
 			},
 		},
 	}
@@ -429,7 +470,6 @@ func Test_ngt_Search(t *testing.T) {
 				},
 			},
 		},
-
 		// object type float
 		{
 			name: "return vector id after the same vector inserted (float)",
@@ -504,7 +544,7 @@ func Test_ngt_Search(t *testing.T) {
 				ivs := [][]float32{
 					{0, 1, 2, 3, 4, 5, 6, 7, 8},
 					{2, 3, 4, 5, 6, 7, 8, 9, 10},
-					{2, 3, 4, 5, math.MaxFloat32 / 2, 7, 8, 9, math.MaxFloat32},
+					{2, 3, 4, 5, math.MaxFloat32, 7, 8, 9, math.MaxFloat32},
 				}
 
 				return insertCreateFunc(t, fields, ivs, 1)
@@ -597,7 +637,6 @@ func Test_ngt_Search(t *testing.T) {
 				},
 			},
 		},
-
 		// other cases
 		{
 			name: "return nothing if the search dimension is less than the inserted vector",
@@ -774,7 +813,7 @@ func Test_ngt_Insert(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "return object id when object type is uint8",
+			name: "return object id when object type is uint8 and the vector is valid",
 			args: args{
 				vec: []float32{0, 1, 2, 3, 4, 5, 6, 7, 8},
 			},
@@ -794,7 +833,7 @@ func Test_ngt_Insert(t *testing.T) {
 			},
 		},
 		{
-			name: "return object id when object type is uint8 and vector is 0",
+			name: "return object id when object type is uint8 and all vector elem are 0",
 			args: args{
 				vec: []float32{0, 0, 0, 0, 0, 0, 0, 0, 0},
 			},
@@ -814,7 +853,7 @@ func Test_ngt_Insert(t *testing.T) {
 			},
 		},
 		{
-			name: "return object id when object type is uint8 and vector is min value",
+			name: "return object id when object type is uint8 and all vector elem are min value",
 			args: args{
 				vec: []float32{math.MinInt8, math.MinInt8, math.MinInt8, math.MinInt8,
 					math.MinInt8, math.MinInt8, math.MinInt8, math.MinInt8, math.MinInt8},
@@ -835,7 +874,7 @@ func Test_ngt_Insert(t *testing.T) {
 			},
 		},
 		{
-			name: "return object id when object type is uint8 and vector is max value",
+			name: "return object id when object type is uint8 and all vector elem are max value",
 			args: args{
 				vec: []float32{math.MaxUint8, math.MaxUint8, math.MaxUint8, math.MaxUint8,
 					math.MaxUint8, math.MaxUint8, math.MaxUint8, math.MaxUint8, math.MaxUint8},
@@ -876,7 +915,7 @@ func Test_ngt_Insert(t *testing.T) {
 			},
 		},
 		{
-			name: "return object id when object type is float and vector is 0",
+			name: "return object id when object type is float and all vector elem are 0",
 			args: args{
 				vec: []float32{0, 0, 0, 0, 0, 0, 0, 0, 0},
 			},
@@ -896,7 +935,7 @@ func Test_ngt_Insert(t *testing.T) {
 			},
 		},
 		{
-			name: "return object id when object type is float and vector is min value",
+			name: "return object id when object type is float and all vector elem are min value",
 			args: args{
 				vec: []float32{math.SmallestNonzeroFloat32, math.SmallestNonzeroFloat32, math.SmallestNonzeroFloat32, math.SmallestNonzeroFloat32,
 					math.SmallestNonzeroFloat32, math.SmallestNonzeroFloat32, math.SmallestNonzeroFloat32, math.SmallestNonzeroFloat32, math.SmallestNonzeroFloat32},
@@ -906,7 +945,7 @@ func Test_ngt_Insert(t *testing.T) {
 				inMemory:            false,
 				bulkInsertChunkSize: 0,
 				dimension:           9,
-				objectType:          Uint8,
+				objectType:          Float,
 				radius:              0,
 				epsilon:             0,
 				poolSize:            0,
@@ -917,7 +956,7 @@ func Test_ngt_Insert(t *testing.T) {
 			},
 		},
 		{
-			name: "return object id when object type is float and vector is max value",
+			name: "return object id when object type is float and all vector elem are max value",
 			args: args{
 				vec: []float32{math.MaxFloat32, math.MaxFloat32, math.MaxFloat32, math.MaxFloat32,
 					math.MaxFloat32, math.MaxFloat32, math.MaxFloat32, math.MaxFloat32, math.MaxFloat32},
@@ -927,7 +966,7 @@ func Test_ngt_Insert(t *testing.T) {
 				inMemory:            false,
 				bulkInsertChunkSize: 0,
 				dimension:           9,
-				objectType:          Uint8,
+				objectType:          Float,
 				radius:              0,
 				epsilon:             0,
 				poolSize:            0,
@@ -1087,7 +1126,7 @@ func Test_ngt_InsertCommit(t *testing.T) {
 			},
 		},
 		{
-			name: "return object id when object type is uint8 and vector is 0",
+			name: "return object id when object type is uint8 and all vector elem are 0",
 			args: args{
 				vec: []float32{0, 0, 0, 0, 0, 0, 0, 0, 0},
 			},
@@ -1107,7 +1146,7 @@ func Test_ngt_InsertCommit(t *testing.T) {
 			},
 		},
 		{
-			name: "return object id when object type is uint8 and vector is min value",
+			name: "return object id when object type is uint8 and all vector elem are min value",
 			args: args{
 				vec: []float32{math.MinInt8, math.MinInt8, math.MinInt8, math.MinInt8,
 					math.MinInt8, math.MinInt8, math.MinInt8, math.MinInt8, math.MinInt8},
@@ -1128,7 +1167,7 @@ func Test_ngt_InsertCommit(t *testing.T) {
 			},
 		},
 		{
-			name: "return object id when object type is uint8 and vector is max value",
+			name: "return object id when object type is uint8 and all vector elem are max value",
 			args: args{
 				vec: []float32{math.MaxUint8, math.MaxUint8, math.MaxUint8, math.MaxUint8,
 					math.MaxUint8, math.MaxUint8, math.MaxUint8, math.MaxUint8, math.MaxUint8},
@@ -1169,7 +1208,7 @@ func Test_ngt_InsertCommit(t *testing.T) {
 			},
 		},
 		{
-			name: "return object id when object type is float and vector is 0",
+			name: "return object id when object type is float and all vector elem are 0",
 			args: args{
 				vec: []float32{0, 0, 0, 0, 0, 0, 0, 0, 0},
 			},
@@ -1189,7 +1228,7 @@ func Test_ngt_InsertCommit(t *testing.T) {
 			},
 		},
 		{
-			name: "return object id when object type is float and vector is min value",
+			name: "return object id when object type is float and all vector elem are min value",
 			args: args{
 				vec: []float32{math.SmallestNonzeroFloat32, math.SmallestNonzeroFloat32, math.SmallestNonzeroFloat32, math.SmallestNonzeroFloat32,
 					math.SmallestNonzeroFloat32, math.SmallestNonzeroFloat32, math.SmallestNonzeroFloat32, math.SmallestNonzeroFloat32, math.SmallestNonzeroFloat32},
@@ -1199,7 +1238,7 @@ func Test_ngt_InsertCommit(t *testing.T) {
 				inMemory:            false,
 				bulkInsertChunkSize: 0,
 				dimension:           9,
-				objectType:          Uint8,
+				objectType:          Float,
 				radius:              0,
 				epsilon:             0,
 				poolSize:            0,
@@ -1210,7 +1249,7 @@ func Test_ngt_InsertCommit(t *testing.T) {
 			},
 		},
 		{
-			name: "return object id when object type is float and vector is max value",
+			name: "return object id when object type is float and all vector elem are max value",
 			args: args{
 				vec: []float32{math.MaxFloat32, math.MaxFloat32, math.MaxFloat32, math.MaxFloat32,
 					math.MaxFloat32, math.MaxFloat32, math.MaxFloat32, math.MaxFloat32, math.MaxFloat32},
@@ -1220,7 +1259,7 @@ func Test_ngt_InsertCommit(t *testing.T) {
 				inMemory:            false,
 				bulkInsertChunkSize: 0,
 				dimension:           9,
-				objectType:          Uint8,
+				objectType:          Float,
 				radius:              0,
 				epsilon:             0,
 				poolSize:            0,
