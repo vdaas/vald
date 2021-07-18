@@ -189,25 +189,44 @@ func (v *vqueue) PushDelete(uuid string, date int64) error {
 }
 
 func (v *vqueue) RangePopInsert(ctx context.Context, f func(uuid string, vector []float32) bool) {
-	// if finalizing, wait for all insert channel queue processed
-	for v.finalizingInsert.Load().(bool) {
-		select {
-		case <-ctx.Done():
-			return
-		case <-time.After(time.Millisecond * 100):
+	err := func() error {
+		ticker := time.NewTicker(time.Millisecond * 100)
+		defer ticker.Stop()
+		// if finalizing, wait for all insert channel queue processed
+		for v.finalizingInsert.Load().(bool) {
+			select {
+			case <-ctx.Done():
+				return ctx.Err()
+			case <-ticker.C:
+			}
 		}
+		return nil
+	}()
+	if err != nil {
+		log.Warn(err)
+		return
 	}
+
 	v.flushAndRangeInsert(f)
 }
 
 func (v *vqueue) RangePopDelete(ctx context.Context, f func(uuid string) bool) {
-	// if finalizing, wait for all insert & delete channel queue processed
-	for v.finalizingDelete.Load().(bool) || v.finalizingInsert.Load().(bool) {
-		select {
-		case <-ctx.Done():
-			return
-		case <-time.After(time.Millisecond * 100):
+	err := func() error {
+		ticker := time.NewTicker(time.Millisecond * 100)
+		defer ticker.Stop()
+		// if finalizing, wait for all insert & delete channel queue processed
+		for v.finalizingDelete.Load().(bool) || v.finalizingInsert.Load().(bool) {
+			select {
+			case <-ctx.Done():
+				return ctx.Err()
+			case <-ticker.C:
+			}
 		}
+		return nil
+	}()
+	if err != nil {
+		log.Warn(err)
+		return
 	}
 	v.flushAndRangeDelete(f)
 }
