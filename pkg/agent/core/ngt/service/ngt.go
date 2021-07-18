@@ -592,33 +592,46 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 			span.End()
 		}
 	}()
-
-	n.cimu.Lock()
-	defer n.cimu.Unlock()
-	if n.IsIndexing() || n.IsSaving() {
-		return nil
-	}
 	ic := n.vq.IVQLen() + n.vq.DVQLen()
 	if ic == 0 {
 		return errors.ErrUncommittedIndexNotFound
 	}
+	err = func() error {
+		ticker := time.NewTicker(time.Millisecond * 100)
+		defer ticker.Stop()
+		// wait for not indexing & not saving
+		for n.IsIndexing() || n.IsSaving() {
+			runtime.Gosched()
+			select {
+			case <-ctx.Done():
+				return ctx.Err()
+			case <-ticker.C:
+			}
+		}
+		return nil
+	}()
+	if err != nil {
+		return err
+	}
+	n.cimu.Lock()
+	defer n.cimu.Unlock()
 	n.indexing.Store(true)
 	defer n.indexing.Store(false)
 	defer n.gc()
-
+	ic = n.vq.IVQLen() + n.vq.DVQLen()
+	if ic == 0 {
+		return errors.ErrUncommittedIndexNotFound
+	}
 	log.Infof("create index operation started, uncommitted indexes = %d", ic)
 	log.Debug("create index delete phase started")
 	n.vq.RangePopDelete(ctx, func(uuid string) bool {
-		var ierr error
 		oid, ok := n.kvs.Delete(uuid)
-		if ok {
-			ierr = n.core.Remove(uint(oid))
-		} else {
-			ierr = errors.ErrObjectIDNotFound(uuid)
+		if !ok {
+			log.Warn(errors.ErrObjectIDNotFound(uuid))
+			return true
 		}
-		if ierr != nil {
-			log.Error(ierr)
-			err = errors.Wrap(err, ierr.Error())
+		if err := n.core.Remove(uint(oid)); err != nil {
+			log.Error(err)
 		}
 		return true
 	})
@@ -626,10 +639,9 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 	n.gc()
 	log.Debug("create index insert phase started")
 	n.vq.RangePopInsert(ctx, func(uuid string, vector []float32) bool {
-		oid, ierr := n.core.Insert(vector)
-		if ierr != nil {
-			log.Error(ierr)
-			err = errors.Wrap(err, ierr.Error())
+		oid, err := n.core.Insert(vector)
+		if err != nil {
+			log.Error(err)
 		} else {
 			n.kvs.Set(uuid, uint32(oid))
 		}
@@ -670,16 +682,22 @@ func (n *ngt) saveIndex(ctx context.Context) (err error) {
 		return
 	}
 	atomic.SwapUint64(&n.lastNoice, noice)
-	ticker := time.NewTicker(time.Second)
-	defer ticker.Stop()
-	// wait for not indexing & not saving
-	for n.IsIndexing() || n.IsSaving() {
-		runtime.Gosched()
-		select {
-		case <-ctx.Done():
-			return ctx.Err()
-		case <-ticker.C:
+	err = func() error {
+		ticker := time.NewTicker(time.Second)
+		defer ticker.Stop()
+		// wait for not indexing & not saving
+		for n.IsIndexing() || n.IsSaving() {
+			runtime.Gosched()
+			select {
+			case <-ctx.Done():
+				return ctx.Err()
+			case <-ticker.C:
+			}
 		}
+		return nil
+	}()
+	if err != nil {
+		return err
 	}
 	n.saving.Store(true)
 	defer n.gc()
