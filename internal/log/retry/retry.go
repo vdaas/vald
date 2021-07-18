@@ -64,7 +64,6 @@ func (r *retry) Out(
 			}
 		}
 	}
-
 }
 
 func (r *retry) Outf(
