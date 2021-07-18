@@ -176,6 +176,12 @@ func Test_getLogger(t *testing.T) {
 					glg.WithLevel(level.Unknown.String()),
 				),
 			},
+			checkFunc: func(w want, got logger.Logger) error {
+				if got == nil {
+					return errors.New("got object is empty")
+				}
+				return nil
+			},
 		},
 
 		{
@@ -187,6 +193,12 @@ func Test_getLogger(t *testing.T) {
 				want: glg.New(
 					glg.WithLevel(level.Unknown.String()),
 				),
+			},
+			checkFunc: func(w want, got logger.Logger) error {
+				if got == nil {
+					return errors.New("got object is empty")
+				}
+				return nil
 			},
 		},
 	}
