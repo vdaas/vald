@@ -37,16 +37,6 @@ jobs:
         if: startsWith( github.ref, 'refs/tags/')
         id: wait_for_docker_images
         uses: ./.github/actions/wait-for-docker-image
-        with:
-          images: "vdaas/vald-agent-ngt \
-            vdaas/vald-discoverer-k8s \
-            vdaas/vald-manager-compressor \
-            vdaas/vald-meta-cassandra \
-            vdaas/vald-manager-backup-cassandra \
-            vdaas/vald-backup-gateway \
-            vdaas/vald-lb-gateway \
-            vdaas/vald-meta-gateway \
-            vdaas/vald-manager-index"
       - name: Get PR number
         id: get_pr_number
         if: github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-deploy'
@@ -59,15 +49,6 @@ jobs:
         uses: ./.github/actions/detect-docker-image-tags
         with:
           tag_name: pr-${{ steps.get_pr_number.outputs.PR_NUM }}
-          images: "vdaas/vald-agent-ngt \
-            vdaas/vald-discoverer-k8s \
-            vdaas/vald-manager-compressor \
-            vdaas/vald-meta-cassandra \
-            vdaas/vald-manager-backup-cassandra \
-            vdaas/vald-backup-gateway \
-            vdaas/vald-lb-gateway \
-            vdaas/vald-meta-gateway \
-            vdaas/vald-manager-index"
       - name: Fetch Helm version
         run: |
           HELM_VERSION=`make version/helm`
@@ -95,7 +76,7 @@ jobs:
           require_scylla: "true"
           helm_extra_options: ${{ steps.specify_container_versions.outputs.HELM_EXTRA_OPTIONS }}
           values: .github/helm/values/values-chaos.yaml
-          wait_for_selector: app=vald-meta-gateway
+          wait_for_selector: app=vald-lb-gateway
       - name: deploy Chaos Mesh
         run: |
           curl -sSL https://mirrors.chaos-mesh.org/v1.2.1/install.sh | bash -s -- --k3s
@@ -135,16 +116,6 @@ jobs:
         if: startsWith( github.ref, 'refs/tags/')
         id: wait_for_docker_images
         uses: ./.github/actions/wait-for-docker-image
-        with:
-          images: "vdaas/vald-agent-ngt \
-            vdaas/vald-discoverer-k8s \
-            vdaas/vald-manager-compressor \
-            vdaas/vald-meta-cassandra \
-            vdaas/vald-manager-backup-cassandra \
-            vdaas/vald-backup-gateway \
-            vdaas/vald-lb-gateway \
-            vdaas/vald-meta-gateway \
-            vdaas/vald-manager-index"
       - name: Get PR number
         id: get_pr_number
         if: github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-deploy'
@@ -157,15 +128,6 @@ jobs:
         uses: ./.github/actions/detect-docker-image-tags
         with:
           tag_name: pr-${{ steps.get_pr_number.outputs.PR_NUM }}
-          images: "vdaas/vald-agent-ngt \
-            vdaas/vald-discoverer-k8s \
-            vdaas/vald-manager-compressor \
-            vdaas/vald-meta-cassandra \
-            vdaas/vald-manager-backup-cassandra \
-            vdaas/vald-backup-gateway \
-            vdaas/vald-lb-gateway \
-            vdaas/vald-meta-gateway \
-            vdaas/vald-manager-index"
       - name: Fetch Helm version
         run: |
           HELM_VERSION=`make version/helm`
@@ -193,7 +155,7 @@ jobs:
           require_scylla: "true"
           helm_extra_options: ${{ steps.specify_container_versions.outputs.HELM_EXTRA_OPTIONS }}
           values: .github/helm/values/values-chaos.yaml
-          wait_for_selector: app=vald-meta-gateway
+          wait_for_selector: app=vald-lb-gateway
       - name: deploy Chaos Mesh
         run: |
           curl -sSL https://mirrors.chaos-mesh.org/v1.2.1/install.sh | bash -s -- --k3s
@@ -204,7 +166,7 @@ jobs:
       - name: run Insert and Search jobs
         run: |
           make hack/benchmark/assets/dataset/${DATASET}
-          podname=`kubectl get pods --selector=app=vald-meta-gateway | tail -1 | awk '{print $1}'`
+          podname=`kubectl get pods --selector=app=vald-lb-gateway | tail -1 | awk '{print $1}'`
           go test \
             -v tests/e2e/crud/crud_test.go \
             -tags "e2e" \
@@ -223,8 +185,8 @@ jobs:
             -namespace=default
         env:
           DATASET: fashion-mnist-784-euclidean.hdf5
-  meta-network-partition:
-    name: "E2E chaos test (meta network partition: to test retries of meta insert/fetch)"
+  agent-network-partition:
+    name: "E2E chaos test (agent network partition: to test retries)"
     runs-on: ubuntu-latest
     timeout-minutes: 60
     if: startsWith( github.ref, 'refs/tags/') || github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-chaos'
@@ -234,16 +196,6 @@ jobs:
         if: startsWith( github.ref, 'refs/tags/')
         id: wait_for_docker_images
         uses: ./.github/actions/wait-for-docker-image
-        with:
-          images: "vdaas/vald-agent-ngt \
-            vdaas/vald-discoverer-k8s \
-            vdaas/vald-manager-compressor \
-            vdaas/vald-meta-cassandra \
-            vdaas/vald-manager-backup-cassandra \
-            vdaas/vald-backup-gateway \
-            vdaas/vald-lb-gateway \
-            vdaas/vald-meta-gateway \
-            vdaas/vald-manager-index"
       - name: Get PR number
         id: get_pr_number
         if: github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-deploy'
@@ -256,15 +208,6 @@ jobs:
         uses: ./.github/actions/detect-docker-image-tags
         with:
           tag_name: pr-${{ steps.get_pr_number.outputs.PR_NUM }}
-          images: "vdaas/vald-agent-ngt \
-            vdaas/vald-discoverer-k8s \
-            vdaas/vald-manager-compressor \
-            vdaas/vald-meta-cassandra \
-            vdaas/vald-manager-backup-cassandra \
-            vdaas/vald-backup-gateway \
-            vdaas/vald-lb-gateway \
-            vdaas/vald-meta-gateway \
-            vdaas/vald-manager-index"
       - name: Fetch Helm version
         run: |
           HELM_VERSION=`make version/helm`
@@ -292,7 +235,7 @@ jobs:
           require_scylla: "true"
           helm_extra_options: ${{ steps.specify_container_versions.outputs.HELM_EXTRA_OPTIONS }}
           values: .github/helm/values/values-chaos.yaml
-          wait_for_selector: app=vald-meta-gateway
+          wait_for_selector: app=vald-lb-gateway
       - name: deploy Chaos Mesh
         run: |
           curl -sSL https://mirrors.chaos-mesh.org/v1.2.1/install.sh | bash -s -- --k3s
@@ -332,11 +275,6 @@ jobs:
         if: startsWith( github.ref, 'refs/tags/')
         id: wait_for_docker_images
         uses: ./.github/actions/wait-for-docker-image
-        with:
-          images: "vdaas/vald-agent-ngt \
-            vdaas/vald-discoverer-k8s \
-            vdaas/vald-lb-gateway \
-            vdaas/vald-manager-index"
       - name: Get PR number
         id: get_pr_number
         if: github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-deploy'
@@ -349,10 +287,6 @@ jobs:
         uses: ./.github/actions/detect-docker-image-tags
         with:
           tag_name: pr-${{ steps.get_pr_number.outputs.PR_NUM }}
-          images: "vdaas/vald-agent-ngt \
-            vdaas/vald-discoverer-k8s \
-            vdaas/vald-lb-gateway \
-            vdaas/vald-manager-index"
       - name: Fetch Helm version
         run: |
           HELM_VERSION=`make version/helm`
@@ -432,7 +366,7 @@ jobs:
     needs:
       - agent-failure
       - random-pod-failure
-      - meta-network-partition
+      - agent-network-partition
       - clusterwide-network-bandwidth
     runs-on: ubuntu-latest
     if: startsWith( github.ref, 'refs/tags/')

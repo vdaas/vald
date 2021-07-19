@@ -44,7 +44,7 @@ networkChaos:
     selector:
       labelSelectors:
         app.kubernetes.io/name: vald
-        app.kubernetes.io/component: meta
+        app.kubernetes.io/component: agent
       namespaces:
         - default
     duration: "100ms"
