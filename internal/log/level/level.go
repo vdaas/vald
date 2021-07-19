@@ -57,32 +57,19 @@ func (l Level) String() string {
 
 func Atol(str string) Level {
 	str = strings.ToUpper(str)
-	switch str {
-	case DEBUG.String():
-		return DEBUG
-	case INFO.String():
-		return INFO
-	case WARN.String():
-		return WARN
-	case ERROR.String():
-		return ERROR
-	case FATAL.String():
-		return FATAL
+	for i := len(str); i > 0; i-- {
+		switch str[:i] {
+		case DEBUG.String(), "DEB", "DEBG", "DB", "DBG", "D":
+			return DEBUG
+		case INFO.String(), "IFO", "INF", "IF", "IN", "I":
+			return INFO
+		case WARN.String(), "WARNING", "WAR", "WRN", "WN", "W":
+			return WARN
+		case ERROR.String(), "ERROR", "ERRO", "ER", "ERR", "E":
+			return ERROR
+		case FATAL.String(), "FATA", "FAT", "FT", "FL", "F":
+			return FATAL
+		}
 	}
-	switch {
-	case len(str) < 3:
-		return Unknown
-	case str[:3] == DEBUG.String()[:3]:
-		return DEBUG
-	case str[:3] == INFO.String()[:3]:
-		return INFO
-	case str[:3] == WARN.String()[:3]:
-		return WARN
-	case str[:3] == ERROR.String()[:3]:
-		return ERROR
-	case str[:3] == FATAL.String()[:3]:
-		return FATAL
-	}
-
 	return Unknown
 }

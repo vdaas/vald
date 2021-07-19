@@ -3,10 +3,10 @@ module github.com/vdaas/vald
 go 1.16
 
 replace (
-	cloud.google.com/go => cloud.google.com/go v0.86.1-0.20210707201605-770477c795b8
-	cloud.google.com/go/storage => cloud.google.com/go/storage v1.16.1-0.20210707205623-1eae86f18826
+	cloud.google.com/go => cloud.google.com/go v0.87.1-0.20210716171406-8f3275c8ca36
+	cloud.google.com/go/storage => cloud.google.com/go/storage v1.16.1-0.20210716171406-8f3275c8ca36
 	github.com/Azure/go-autorest => github.com/Azure/go-autorest v14.2.1-0.20210701162346-76c7860e9b60+incompatible
-	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.39.2
+	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.40.2
 	github.com/boltdb/bolt => github.com/boltdb/bolt v1.3.1
 	github.com/chzyer/logex => github.com/chzyer/logex v1.1.11-0.20170329064859-445be9e134b2
 	github.com/coreos/etcd => go.etcd.io/etcd v3.3.25+incompatible
@@ -17,15 +17,15 @@ replace (
 	github.com/gogo/googleapis => github.com/gogo/googleapis v1.4.1
 	github.com/gogo/protobuf => github.com/gogo/protobuf v1.3.2
 	github.com/google/go-cmp => github.com/google/go-cmp v0.5.6
-	github.com/google/pprof => github.com/google/pprof v0.0.0-20210609004039-a478d1d731e9
+	github.com/google/pprof => github.com/google/pprof v0.0.0-20210715191844-86eeefc3e471
 	github.com/googleapis/gnostic => github.com/googleapis/gnostic v0.5.5
 	github.com/gophercloud/gophercloud => github.com/gophercloud/gophercloud v0.18.0
 	github.com/gorilla/websocket => github.com/gorilla/websocket v1.4.2
 	github.com/hailocab/go-hostpool => github.com/kpango/go-hostpool v0.0.0-20210303030322-aab80263dcd0
-	github.com/klauspost/compress => github.com/klauspost/compress v1.13.2-0.20210622115932-09f13c9b23f1
-	github.com/kpango/glg => github.com/kpango/glg v1.6.0
+	github.com/klauspost/compress => github.com/klauspost/compress v1.13.2-0.20210709134322-94867dd0db71
+	github.com/kpango/glg => github.com/kpango/glg v1.6.4
 	github.com/tensorflow/tensorflow => github.com/tensorflow/tensorflow v2.1.2+incompatible
-	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20210616213533-5ff15b29337e
+	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20210711020723-a769d52b0f97
 	google.golang.org/grpc => google.golang.org/grpc v1.39.0
 	google.golang.org/protobuf => google.golang.org/protobuf v1.27.1
 	k8s.io/api => k8s.io/api v0.21.2
@@ -63,10 +63,10 @@ require (
 	github.com/hashicorp/go-version v1.3.0
 	github.com/json-iterator/go v1.1.11
 	github.com/klauspost/compress v1.12.2
-	github.com/kpango/fastime v1.0.16
+	github.com/kpango/fastime v1.0.17
 	github.com/kpango/fuid v0.0.0-20210407064122-2990e29e1ea5
-	github.com/kpango/gache v1.2.5
-	github.com/kpango/glg v1.5.4
+	github.com/kpango/gache v1.2.6
+	github.com/kpango/glg v1.6.2
 	github.com/lucasb-eyer/go-colorful v1.2.0
 	github.com/pierrec/lz4/v3 v3.3.2
 	github.com/quasilyte/go-ruleguard v0.3.7
@@ -80,18 +80,18 @@ require (
 	go.uber.org/goleak v1.1.10
 	go.uber.org/zap v1.18.1
 	gocloud.dev v0.23.0
-	golang.org/x/net v0.0.0-20210614182718-04defd469f4e
+	golang.org/x/net v0.0.0-20210716203947-853a461950ff
 	golang.org/x/oauth2 v0.0.0-20210628180205-a41e5a781914
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 	golang.org/x/sys v0.0.0-20210630005230-0f9fa26af87c
-	golang.org/x/tools v0.1.4
-	gonum.org/v1/hdf5 v0.0.0-20210623100833-4dd8a5a777f9
+	golang.org/x/tools v0.1.5
+	gonum.org/v1/hdf5 v0.0.0-20210714002203-8c5d23bc6946
 	gonum.org/v1/plot v0.9.0
 	google.golang.org/api v0.50.0
-	google.golang.org/genproto v0.0.0-20210707164411-8c882eb9abba
+	google.golang.org/genproto v0.0.0-20210716133855-ce7ef5c701ea
 	google.golang.org/grpc v1.39.0
 	gopkg.in/yaml.v2 v2.4.0
-	inet.af/netaddr v0.0.0-20210707202901-70468d781e6c
+	inet.af/netaddr v0.0.0-20210718074554-06ca8145d722
 	k8s.io/api v0.21.2
 	k8s.io/apimachinery v0.21.2
 	k8s.io/cli-runtime v0.0.0-00010101000000-000000000000
