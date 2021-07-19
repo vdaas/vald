@@ -17,15 +17,15 @@
 name: reviewdog
 on:
   pull_request:
-    paths:
-      - "**.go"
+    branches:
+      - master
 
 jobs:
   golangci-lint:
     name: runner / golangci-lint
     runs-on: ubuntu-latest
     container:
-      image: vdaas/vald-ci-container:nightly
+      image: vdaas/vald-ci-container:pr-1342
     steps:
       - uses: actions/checkout@v2
       - name: go build
