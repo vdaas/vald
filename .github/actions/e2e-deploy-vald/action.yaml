@@ -20,18 +20,6 @@ inputs:
     description: "If libhdf5 is required, set this to true."
     required: false
     default: "false"
-  require_mysql:
-    description: "If MySQL is required, set this to true."
-    required: false
-    default: "false"
-  require_redis:
-    description: "If Redis is required, set this to true."
-    required: false
-    default: "false"
-  require_scylla:
-    description: "If Scylla is required, set this to true."
-    required: false
-    default: "false"
   require_minio:
     description: "If Minio is required, set this to true."
     required: false
@@ -47,7 +35,7 @@ inputs:
   wait_for_selector:
     description: "label selector used for specifying a pod waited for"
     required: false
-    default: "app=vald-meta-gateway"
+    default: "app=vald-lb-gateway"
   wait_for_timeout:
     description: "timeout used for waiting for pods"
     required: false
@@ -81,40 +69,6 @@ runs:
       id: helm_version
       run: |
         helm version
-    - name: deploy MySQL
-      id: deploy_mysql
-      shell: bash
-      run: |
-        if [[ "${REQUIRE_MYSQL}" == "true" ]]; then
-          sudo apparmor_parser -R /etc/apparmor.d/usr.sbin.mysqld
-          make K8S_SLEEP_DURATION_FOR_WAIT_COMMAND=10 k8s/external/mysql/deploy
-        else
-          echo "skipped."
-        fi
-      env:
-        REQUIRE_MYSQL: ${{ inputs.require_mysql }}
-    - name: deploy Redis
-      id: deploy_redis
-      shell: bash
-      run: |
-        if [[ "${REQUIRE_REDIS}" == "true" ]]; then
-          make K8S_SLEEP_DURATION_FOR_WAIT_COMMAND=10 k8s/external/redis/deploy
-        else
-          echo "skipped."
-        fi
-      env:
-        REQUIRE_REDIS: ${{ inputs.require_redis }}
-    - name: deploy Scylla
-      id: deploy_scylla
-      shell: bash
-      run: |
-        if [[ "${REQUIRE_SCYLLA}" == "true" ]]; then
-          make K8S_SLEEP_DURATION_FOR_WAIT_COMMAND=10 k8s/external/scylla/deploy
-        else
-          echo "skipped."
-        fi
-      env:
-        REQUIRE_SCYLLA: ${{ inputs.require_scylla }}
     - name: deploy Minio
       id: deploy_minio
       shell: bash

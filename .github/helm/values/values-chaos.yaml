@@ -45,23 +45,9 @@ gateway:
     gateway_config:
       index_replica: 2
   backup:
-    enabled: true
-    minReplicas: 2
-    hpa:
-      enabled: false
-    resources:
-      requests:
-        cpu: 100m
-        memory: 50Mi
+    enabled: false
   meta:
-    enabled: true
-    minReplicas: 2
-    hpa:
-      enabled: false
-    resources:
-      requests:
-        cpu: 100m
-        memory: 50Mi
+    enabled: false
 
 agent:
   minReplicas: 5
@@ -90,43 +76,10 @@ discoverer:
 
 manager:
   compressor:
-    minReplicas: 2
-    hpa:
-      enabled: false
-    resources:
-      requests:
-        cpu: 100m
-        memory: 50Mi
-    compress:
-      compress_algorithm: gob
+    enabled: false
 
   backup:
-    minReplicas: 2
-    hpa:
-      enabled: false
-    resources:
-      requests:
-        cpu: 100m
-        memory: 30Mi
-    image:
-      repository: vdaas/vald-manager-backup-cassandra
-    initContainers:
-      - type: wait-for-cassandra
-        name: wait-for-scylla
-        image: cassandra:latest
-        cassandra:
-          hosts:
-            - vald-scylla-cluster-dc0-rack0-0.scylla.svc.cluster.local
-        sleepDuration: 2
-    env: []
-    mysql:
-      enabled: false
-    cassandra:
-      enabled: true
-      config:
-        hosts:
-          - vald-scylla-cluster-dc0-rack0-0.scylla.svc.cluster.local
-        consistency: one
+    enabled: false
 
   index:
     replicas: 2
@@ -136,43 +89,4 @@ manager:
         memory: 30Mi
 
 meta:
-  minReplicas: 2
-  hpa:
-    enabled: false
-  resources:
-    requests:
-      cpu: 100m
-      memory: 30Mi
-  image:
-    repository: vdaas/vald-meta-cassandra
-  initContainers:
-    - type: wait-for-cassandra
-      name: wait-for-scylla
-      image: cassandra:latest
-      cassandra:
-        hosts:
-          - vald-scylla-cluster-dc0-rack0-0.scylla.svc.cluster.local
-      sleepDuration: 2
-  env: []
-  redis:
-    enabled: false
-  cassandra:
-    enabled: true
-    config:
-      hosts:
-        - vald-scylla-cluster-dc0-rack0-0.scylla.svc.cluster.local
-      consistency: one
-
-initializer:
-  cassandra:
-    enabled: true
-    name: scylla-init
-    env:
-      - name: CASSANDRA_HOST
-        value: vald-scylla-cluster-dc0-rack0-0.scylla.svc.cluster.local
-    configmap:
-      enabled: true
-      name: scylla-initdb
-      user: ""
-    secret:
-      enabled: false
+  enabled: false
