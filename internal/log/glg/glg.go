@@ -47,11 +47,13 @@ func New(opts ...Option) log.Logger {
 }
 
 func (l *logger) setLevelMode(lv level.Level) *logger {
-	l.glg.SetMode(glg.NONE)
+	l.glg.SetMode(glg.NONE).SetLineTraceMode(glg.TraceLineNone)
 
 	switch lv {
 	case level.DEBUG:
-		l.glg.SetLevelMode(glg.DEBG, glg.STD)
+		l.glg.SetLevelMode(glg.DEBG, glg.STD).
+			SetCallerDepth(5).
+			SetLineTraceMode(glg.TraceLineLong)
 		fallthrough
 	case level.INFO:
 		l.glg.SetLevelMode(glg.INFO, glg.STD)

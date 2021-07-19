@@ -22,6 +22,7 @@ import (
 	"github.com/vdaas/vald/internal/log/glg"
 	logger "github.com/vdaas/vald/internal/log/logger"
 	"github.com/vdaas/vald/internal/log/nop"
+	"github.com/vdaas/vald/internal/log/retry"
 	"github.com/vdaas/vald/internal/log/zap"
 )
 
@@ -62,11 +63,17 @@ func getLogger(o *option) logger.Logger {
 	case logger.GLG:
 		fallthrough
 	default:
-		gopts := []glg.Option{
+		return glg.New(
 			glg.WithLevel(o.level.String()),
 			glg.WithFormat(o.format.String()),
-		}
-		return glg.New(gopts...)
+			glg.WithRetry(
+				retry.New(
+					retry.WithError(Error),
+					retry.WithWarn(Warn),
+				),
+			),
+		)
+
 	}
 }
 
