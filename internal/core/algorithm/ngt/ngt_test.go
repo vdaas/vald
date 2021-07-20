@@ -475,6 +475,8 @@ func TestLoad(t *testing.T) {
 					opts: opts,
 				},
 				beforeFunc: func(t *testing.T, a args) {
+					t.Helper()
+
 					n, err := New(opts...)
 					if err != nil {
 						t.Error(err)
@@ -685,6 +687,8 @@ func Test_gen(t *testing.T) {
 					opts:   opts,
 				},
 				beforeFunc: func(t *testing.T, a args) {
+					t.Helper()
+
 					n, err := New(opts...)
 					if err != nil {
 						t.Error(err)
@@ -1093,7 +1097,7 @@ func Test_ngt_create(t *testing.T) {
 				idxPath:    "/tmp/ngt-not_exist",
 				inMemory:   false,
 				dimension:  9,
-				objectType: Float,
+				objectType: Uint8,
 			},
 			want: want{
 				err: nil,
@@ -1105,7 +1109,7 @@ func Test_ngt_create(t *testing.T) {
 				idxPath:    "/tmp/ngt-51",
 				inMemory:   false,
 				dimension:  9,
-				objectType: Float,
+				objectType: Uint8,
 			},
 			beforeFunc: func() {
 				_ = os.Mkdir("/tmp/ngt-51", 0750)
@@ -1120,7 +1124,7 @@ func Test_ngt_create(t *testing.T) {
 				idxPath:    "/tmp/ngt-52",
 				inMemory:   true,
 				dimension:  9,
-				objectType: Float,
+				objectType: Uint8,
 			},
 			want: want{
 				err: nil,
@@ -1240,6 +1244,8 @@ func Test_ngt_open(t *testing.T) {
 				mu:         &sync.RWMutex{},
 			},
 			beforeFunc: func(t *testing.T) {
+				t.Helper()
+
 				n, err := New(
 					WithIndexPath("/tmp/ngt-61"),
 					WithDimension(9),
@@ -1285,6 +1291,7 @@ func Test_ngt_open(t *testing.T) {
 				mu:         &sync.RWMutex{},
 			},
 			beforeFunc: func(*testing.T) {
+				t.Helper()
 				_ = os.Mkdir("/tmp/ngt-63", 0750)
 			},
 			checkFunc: func(w want, e error) error {
@@ -3330,6 +3337,8 @@ func Test_ngt_CreateAndSaveIndex(t *testing.T) {
 					mu:                  nil,
 				},
 				createFunc: func(t *testing.T, f fields) (NGT, error) {
+					t.Helper()
+
 					ngt, err := defaultCreateFunc(t, f)
 					if err != nil {
 						return nil, err
@@ -3391,6 +3400,8 @@ func Test_ngt_CreateAndSaveIndex(t *testing.T) {
 					mu:                  nil,
 				},
 				createFunc: func(t *testing.T, f fields) (NGT, error) {
+					t.Helper()
+
 					ngt, err := defaultCreateFunc(t, f)
 					if err != nil {
 						return nil, err
@@ -3878,6 +3889,8 @@ func Test_ngt_SaveIndex(t *testing.T) {
 					mu:                  nil,
 				},
 				createFunc: func(t *testing.T, f fields) (NGT, error) {
+					t.Helper()
+
 					ngt, err := defaultCreateFunc(t, f)
 					if err != nil {
 						return nil, err
@@ -3939,6 +3952,8 @@ func Test_ngt_SaveIndex(t *testing.T) {
 					mu:                  nil,
 				},
 				createFunc: func(t *testing.T, f fields) (NGT, error) {
+					t.Helper()
+
 					ngt, err := defaultCreateFunc(t, f)
 					if err != nil {
 						return nil, err
