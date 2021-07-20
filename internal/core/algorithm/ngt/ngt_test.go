@@ -283,6 +283,8 @@ func TestLoad(t *testing.T) {
 					opts: opts,
 				},
 				beforeFunc: func(t *testing.T, a args) {
+					t.Helper()
+
 					n, err := New(opts...)
 					if err != nil {
 						t.Error(err)
@@ -343,6 +345,8 @@ func TestLoad(t *testing.T) {
 					opts: opts,
 				},
 				beforeFunc: func(t *testing.T, a args) {
+					t.Helper()
+
 					n, err := New(opts...)
 					if err != nil {
 						t.Error(err)
@@ -409,6 +413,8 @@ func TestLoad(t *testing.T) {
 					opts: opts,
 				},
 				beforeFunc: func(t *testing.T, a args) {
+					t.Helper()
+
 					n, err := New(opts...)
 					if err != nil {
 						t.Error(err)
@@ -596,7 +602,6 @@ func TestLoad(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -768,7 +773,6 @@ func Test_gen(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -1016,7 +1020,6 @@ func Test_ngt_loadOptions(t *testing.T) {
 			if err := test.checkFunc(test.want, n, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -1105,7 +1108,7 @@ func Test_ngt_create(t *testing.T) {
 				objectType: Float,
 			},
 			beforeFunc: func() {
-				_ = os.Mkdir("/tmp/ngt-51", 0755)
+				_ = os.Mkdir("/tmp/ngt-51", 0750)
 			},
 			want: want{
 				err: nil,
@@ -1214,7 +1217,10 @@ func Test_ngt_open(t *testing.T) {
 			// ospace:              test.fields.ospace,
 			mu: fields.mu,
 		}
-		n.setup()
+		if err := n.setup(); err != nil {
+			t.Error(err)
+		}
+
 		return n, nil
 	}
 	defaultCheckFunc := func(w want, err error) error {
@@ -1243,7 +1249,9 @@ func Test_ngt_open(t *testing.T) {
 					t.Error(err)
 				}
 
-				n.Insert([]float32{0, 1, 2, 3, 4, 5, 6, 7, 8})
+				if _, err = n.Insert([]float32{0, 1, 2, 3, 4, 5, 6, 7, 8}); err != nil {
+					t.Error(err)
+				}
 
 				if err = n.CreateAndSaveIndex(1); err != nil {
 					t.Error(err)
@@ -1277,7 +1285,7 @@ func Test_ngt_open(t *testing.T) {
 				mu:         &sync.RWMutex{},
 			},
 			beforeFunc: func(*testing.T) {
-				_ = os.Mkdir("/tmp/ngt-63", 0755)
+				_ = os.Mkdir("/tmp/ngt-63", 0750)
 			},
 			checkFunc: func(w want, e error) error {
 				if e == nil {
@@ -1418,7 +1426,6 @@ func Test_ngt_loadObjectSpace(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -3179,7 +3186,11 @@ func Test_ngt_BulkInsertCommit(t *testing.T) {
 			if err != nil {
 				tt.Fatal(err)
 			}
-			defer test.afterFunc(tt, n)
+			defer func() {
+				if err := test.afterFunc(tt, n); err != nil {
+					tt.Error(err)
+				}
+			}()
 
 			got, got1 := n.BulkInsertCommit(test.args.vecs, test.args.poolSize)
 			if err := test.checkFunc(test.want, got, n, test.fields, test.args, got1); err != nil {
@@ -3451,7 +3462,11 @@ func Test_ngt_CreateAndSaveIndex(t *testing.T) {
 			if err != nil {
 				tt.Fatal(err)
 			}
-			defer test.afterFunc(tt, n)
+			defer func() {
+				if err := test.afterFunc(tt, n); err != nil {
+					tt.Error(err)
+				}
+			}()
 
 			err = n.CreateAndSaveIndex(test.args.poolSize)
 			if err := test.checkFunc(test.want, n, test.args, err); err != nil {
