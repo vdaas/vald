@@ -23,7 +23,6 @@ import (
 	"reflect"
 	"strings"
 	"sync"
-
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -142,7 +141,7 @@ func TestNew(t *testing.T) {
 			name: "return NGT when 1 option is set",
 			args: args{
 				opts: []Option{
-					WithObjectType(Uint8),
+					WithIndexPath("/tmp/ngt-01"),
 				},
 			},
 			want: want{
@@ -152,12 +151,12 @@ func TestNew(t *testing.T) {
 					// WithCreationEdgeSize(10),
 					// WithSearchEdgeSize(40),
 					// WithDistanceType(L2),
-					idxPath:             "/tmp/ngt-",
+					idxPath:             "/tmp/ngt-01",
 					radius:              DefaultRadius,
 					epsilon:             DefaultEpsilon,
 					poolSize:            DefaultPoolSize,
 					bulkInsertChunkSize: 100,
-					objectType:          Uint8,
+					objectType:          Float,
 					mu:                  &sync.RWMutex{},
 				},
 			},
@@ -168,6 +167,7 @@ func TestNew(t *testing.T) {
 				opts: []Option{
 					WithObjectType(Uint8),
 					WithDefaultPoolSize(100),
+					WithIndexPath("/tmp/ngt-02"),
 				},
 			},
 			want: want{
@@ -177,7 +177,7 @@ func TestNew(t *testing.T) {
 					// WithCreationEdgeSize(10),
 					// WithSearchEdgeSize(40),
 					// WithDistanceType(L2),
-					idxPath:             "/tmp/ngt-",
+					idxPath:             "/tmp/ngt-02",
 					radius:              DefaultRadius,
 					epsilon:             DefaultEpsilon,
 					poolSize:            100,
@@ -216,13 +216,1209 @@ func TestNew(t *testing.T) {
 			}
 
 			got, err := New(test.args.opts...)
+			defer func() {
+				if err := test.afterFunc(tt, got); err != nil {
+					tt.Error(err)
+				}
+			}()
+			if err := test.checkFunc(test.want, got, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func TestLoad(t *testing.T) {
+	type args struct {
+		opts []Option
+	}
+	type want struct {
+		want NGT
+		err  error
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, NGT, error) error
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, NGT) error
+	}
+	defaultCheckFunc := func(w want, got NGT, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+
+		// comparator for idxPath
+		comparators := append(ngtComparator, comparator.CompareField("idxPath", cmp.Comparer(func(s1, s2 string) bool {
+			return strings.HasPrefix(s1, "/tmp/ngt-") || strings.HasPrefix(s2, "/tmp/ngt-")
+		})))
+
+		if diff := comparator.Diff(got, w.want, comparators...); diff != "" {
+			return errors.Errorf("diff: %s", diff)
+		}
+
+		// check file is created in idxPath
+		if ngt, ok := got.(*ngt); ok {
+			if _, err := os.Stat(ngt.idxPath); errors.Is(err, os.ErrNotExist) {
+				return errors.Errorf("index file not exists, path: %s", ngt.idxPath)
+			}
+		}
+
+		return nil
+	}
+	tests := []test{
+		// uint
+		func() test {
+			idxPath := "/tmp/ngt-11"
+			opts := []Option{
+				WithDimension(9),
+				WithIndexPath(idxPath),
+				WithObjectType(Uint8),
+			}
+
+			return test{
+				name: "Load success to restore backup file with no vector inserted (uint)",
+				args: args{
+					opts: opts,
+				},
+				beforeFunc: func(t *testing.T, a args) {
+					n, err := New(opts...)
+					if err != nil {
+						t.Error(err)
+					}
+
+					if err = n.CreateAndSaveIndex(1); err != nil {
+						t.Error(err)
+					}
+					n.Close()
+				},
+				want: want{
+					want: &ngt{
+						idxPath:             idxPath,
+						radius:              DefaultRadius,
+						epsilon:             DefaultEpsilon,
+						poolSize:            DefaultPoolSize,
+						bulkInsertChunkSize: 100,
+						objectType:          Uint8,
+						mu:                  &sync.RWMutex{},
+					},
+				},
+				checkFunc: func(w want, n NGT, e error) error {
+					if err := defaultCheckFunc(w, n, e); err != nil {
+						return err
+					}
+
+					// check no vector exists
+					v, err := n.GetVector(1)
+					if err == nil || len(v) > 0 {
+						return errors.Errorf("vector exists but not inserted, vec: %s", v)
+					}
+
+					// check inserted vector can be searched
+					vs, err := n.Search([]float32{0, 1, 2, 3, 4, 5, 6, 7, 8}, 10, 0, 0)
+					if err != nil {
+						return err
+					}
+					if len(vs) != 0 {
+						t.Errorf("got vec is not the same as inserted vec, got: %v", vs)
+					}
+
+					return nil
+				},
+			}
+		}(),
+		func() test {
+			idxPath := "/tmp/ngt-12"
+			vec := []float32{0, 1, 2, 3, 4, 5, 6, 7, 8}
+			opts := []Option{
+				WithDimension(9),
+				WithIndexPath(idxPath),
+				WithObjectType(Uint8),
+			}
+
+			return test{
+				name: "Load success to restore backup file with 1 vector inserted (uint)",
+				args: args{
+					opts: opts,
+				},
+				beforeFunc: func(t *testing.T, a args) {
+					n, err := New(opts...)
+					if err != nil {
+						t.Error(err)
+					}
+
+					if _, err = n.Insert(vec); err != nil {
+						t.Error(err)
+					}
+					if err = n.CreateAndSaveIndex(1); err != nil {
+						t.Error(err)
+					}
+					n.Close()
+				},
+				want: want{
+					want: &ngt{
+						idxPath:             idxPath,
+						radius:              DefaultRadius,
+						epsilon:             DefaultEpsilon,
+						poolSize:            DefaultPoolSize,
+						bulkInsertChunkSize: 100,
+						objectType:          Uint8,
+						mu:                  &sync.RWMutex{},
+					},
+				},
+				checkFunc: func(w want, n NGT, e error) error {
+					if err := defaultCheckFunc(w, n, e); err != nil {
+						return err
+					}
+
+					// check inserted vector exists
+					v, err := n.GetVector(1)
+					if err != nil {
+						return err
+					}
+					if !reflect.DeepEqual(v, vec) {
+						t.Errorf("got vec is not the same as inserted vec, got: %v, want: %v", v, vec)
+					}
+
+					// check inserted vector can be searched
+					vs, err := n.Search(vec, 10, 0, 0)
+					if err != nil {
+						return err
+					}
+					if len(vs) != 1 || vs[0].ID != 1 || vs[0].Distance != 0 {
+						t.Errorf("got vec is not the same as inserted vec, got: %v, want: %v", vs, vec)
+					}
+
+					return nil
+				},
+			}
+		}(),
+		// float
+		func() test {
+			idxPath := "/tmp/ngt-13"
+			opts := []Option{
+				WithDimension(9),
+				WithIndexPath(idxPath),
+				WithObjectType(Float),
+			}
+
+			return test{
+				name: "Load success to restore backup file with no vector inserted (float)",
+				args: args{
+					opts: opts,
+				},
+				beforeFunc: func(t *testing.T, a args) {
+					n, err := New(opts...)
+					if err != nil {
+						t.Error(err)
+					}
+
+					if err = n.CreateAndSaveIndex(1); err != nil {
+						t.Error(err)
+					}
+					n.Close()
+				},
+				want: want{
+					want: &ngt{
+						idxPath:             idxPath,
+						radius:              DefaultRadius,
+						epsilon:             DefaultEpsilon,
+						poolSize:            DefaultPoolSize,
+						bulkInsertChunkSize: 100,
+						objectType:          Float,
+						mu:                  &sync.RWMutex{},
+					},
+				},
+				checkFunc: func(w want, n NGT, e error) error {
+					if err := defaultCheckFunc(w, n, e); err != nil {
+						return err
+					}
+
+					// check no vector exists
+					v, err := n.GetVector(1)
+					if err == nil || len(v) > 0 {
+						return errors.Errorf("vector exists but not inserted, vec: %s", v)
+					}
+
+					// check inserted vector can be searched
+					vs, err := n.Search([]float32{0, 1, 2, 3, 4, 5, 6, 7, 8}, 10, 0, 0)
+					if err != nil {
+						return err
+					}
+					if len(vs) != 0 {
+						t.Errorf("got vec is not the same as inserted vec, got: %v", vs)
+					}
+
+					return nil
+				},
+			}
+		}(),
+		func() test {
+			idxPath := "/tmp/ngt-14"
+			vec := []float32{0, 1, 2, 3, 4, 5, 6, 7, 8}
+			opts := []Option{
+				WithDimension(9),
+				WithIndexPath(idxPath),
+				WithObjectType(Float),
+			}
+
+			return test{
+				name: "Load success to restore backup file with 1 vector inserted (float)",
+				args: args{
+					opts: opts,
+				},
+				beforeFunc: func(t *testing.T, a args) {
+					n, err := New(opts...)
+					if err != nil {
+						t.Error(err)
+					}
+
+					if _, err = n.Insert(vec); err != nil {
+						t.Error(err)
+					}
+					if err = n.CreateAndSaveIndex(1); err != nil {
+						t.Error(err)
+					}
+					n.Close()
+				},
+				want: want{
+					want: &ngt{
+						idxPath:             idxPath,
+						radius:              DefaultRadius,
+						epsilon:             DefaultEpsilon,
+						poolSize:            DefaultPoolSize,
+						bulkInsertChunkSize: 100,
+						objectType:          Float,
+						mu:                  &sync.RWMutex{},
+					},
+				},
+				checkFunc: func(w want, n NGT, e error) error {
+					if err := defaultCheckFunc(w, n, e); err != nil {
+						return err
+					}
+
+					// check inserted vector exists
+					v, err := n.GetVector(1)
+					if err != nil {
+						return err
+					}
+					if !reflect.DeepEqual(v, vec) {
+						t.Errorf("got vec is not the same as inserted vec, got: %v, want: %v", v, vec)
+					}
+
+					// check inserted vector can be searched
+					vs, err := n.Search(vec, 10, 0, 0)
+					if err != nil {
+						return err
+					}
+					if len(vs) != 1 || vs[0].ID != 1 || vs[0].Distance != 0 {
+						t.Errorf("got vec is not the same as inserted vec, got: %v, want: %v", vs, vec)
+					}
+
+					return nil
+				},
+			}
+		}(),
+		// other
+		func() test {
+			idxPath := "/tmp/ngt-15"
+			vec := []float32{0, 1, 2, 3, 4, 5, 6, 7, 8}
+			opts := []Option{
+				WithDimension(9),
+				WithIndexPath(idxPath),
+				WithObjectType(Float),
+			}
+
+			return test{
+				name: "Load failed if the index path is not exists",
+				args: args{
+					opts: opts,
+				},
+				want: want{
+					want: &ngt{
+						idxPath:             idxPath,
+						radius:              DefaultRadius,
+						epsilon:             DefaultEpsilon,
+						poolSize:            DefaultPoolSize,
+						bulkInsertChunkSize: 100,
+						objectType:          Float,
+						mu:                  &sync.RWMutex{},
+					},
+				},
+				checkFunc: func(w want, n NGT, e error) error {
+					if err := defaultCheckFunc(w, n, e); err != nil {
+						return err
+					}
+
+					// check no vector exists
+					v, err := n.GetVector(1)
+					if err == nil || len(v) > 0 {
+						return errors.Errorf("vector exists but not inserted, vec: %s", v)
+					}
+
+					// check inserted vector can be searched
+					vs, err := n.Search(vec, 10, 0, 0)
+					if err != nil {
+						return err
+					}
+					if len(vs) != 0 {
+						t.Errorf("got vec is not the same as inserted vec, got: %v", vs)
+					}
+
+					return nil
+				},
+			}
+		}(),
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(tt, test.args)
+			}
+			if test.afterFunc == nil {
+				test.afterFunc = defaultAfterFunc
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+
+			got, err := Load(test.args.opts...)
+			defer func() {
+				if err := test.afterFunc(tt, got); err != nil {
+					tt.Error(err)
+				}
+			}()
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 
-			if err := test.afterFunc(tt, got); err != nil {
-				tt.Error(err)
+		})
+	}
+}
+
+func Test_gen(t *testing.T) {
+	type args struct {
+		isLoad bool
+		opts   []Option
+	}
+	type want struct {
+		want NGT
+		err  error
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, NGT, error) error
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, NGT) error
+	}
+	defaultCheckFunc := func(w want, got NGT, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+
+		// comparator for idxPath
+		comparators := append(ngtComparator, comparator.CompareField("idxPath", cmp.Comparer(func(s1, s2 string) bool {
+			return strings.HasPrefix(s1, "/tmp/ngt-") || strings.HasPrefix(s2, "/tmp/ngt-")
+		})))
+
+		if diff := comparator.Diff(got, w.want, comparators...); diff != "" {
+			return errors.Errorf("diff: %s", diff)
+		}
+
+		// check file is created in idxPath
+		if ngt, ok := got.(*ngt); ok {
+			if _, err := os.Stat(ngt.idxPath); errors.Is(err, os.ErrNotExist) {
+				return errors.Errorf("index file not exists, path: %s", ngt.idxPath)
 			}
+		}
+
+		return nil
+	}
+	tests := []test{
+		{
+			name: "gen success and do not load backup data",
+			args: args{
+				opts: nil,
+			},
+			want: want{
+				want: &ngt{
+					// these options are in defaultOpts list, but these fields are ignored because of cgo dependencies
+					// WithDimension(minimumDimensionSize),
+					// WithCreationEdgeSize(10),
+					// WithSearchEdgeSize(40),
+					// WithDistanceType(L2),
+					idxPath:             "/tmp/ngt-",
+					radius:              DefaultRadius,
+					epsilon:             DefaultEpsilon,
+					poolSize:            DefaultPoolSize,
+					bulkInsertChunkSize: 100,
+					objectType:          Float,
+					mu:                  &sync.RWMutex{},
+				},
+			},
+		},
+		func() test {
+			idxPath := "/tmp/ngt-21"
+			vec := []float32{0, 1, 2, 3, 4, 5, 6, 7, 8}
+			opts := []Option{
+				WithDimension(9),
+				WithIndexPath(idxPath),
+				WithObjectType(Uint8),
+			}
+
+			return test{
+				name: "gen success and load backup data success",
+				args: args{
+					isLoad: true,
+					opts:   opts,
+				},
+				beforeFunc: func(t *testing.T, a args) {
+					n, err := New(opts...)
+					if err != nil {
+						t.Error(err)
+					}
+
+					if _, err = n.Insert(vec); err != nil {
+						t.Error(err)
+					}
+					if err = n.CreateAndSaveIndex(1); err != nil {
+						t.Error(err)
+					}
+					n.Close()
+				},
+				want: want{
+					want: &ngt{
+						idxPath:             idxPath,
+						radius:              DefaultRadius,
+						epsilon:             DefaultEpsilon,
+						poolSize:            DefaultPoolSize,
+						bulkInsertChunkSize: 100,
+						objectType:          Uint8,
+						mu:                  &sync.RWMutex{},
+					},
+				},
+				checkFunc: func(w want, n NGT, e error) error {
+					if err := defaultCheckFunc(w, n, e); err != nil {
+						return err
+					}
+
+					// check inserted vector exists
+					v, err := n.GetVector(1)
+					if err != nil {
+						return err
+					}
+					if !reflect.DeepEqual(v, vec) {
+						t.Errorf("got vec is not the same as inserted vec, got: %v, want: %v", v, vec)
+					}
+
+					// check inserted vector can be searched
+					vs, err := n.Search(vec, 10, 0, 0)
+					if err != nil {
+						return err
+					}
+					if len(vs) != 1 || vs[0].ID != 1 || vs[0].Distance != 0 {
+						t.Errorf("got vec is not the same as inserted vec, got: %v, want: %v", vs, vec)
+					}
+
+					return nil
+				},
+			}
+		}(),
+		{
+			name: "return error when option return error",
+			args: args{
+				opts: []Option{
+					WithDimension(1),
+				},
+			},
+			want: want{
+				err: errors.NewErrCriticalOption("dimension", 1, errors.ErrInvalidDimensionSize(1, ngtVectorDimensionSizeLimit)),
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(tt, test.args)
+			}
+			if test.afterFunc == nil {
+				test.afterFunc = defaultAfterFunc
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+
+			got, err := gen(test.args.isLoad, test.args.opts...)
+			defer func() {
+				if err := test.afterFunc(tt, got); err != nil {
+					tt.Error(err)
+				}
+			}()
+			if err := test.checkFunc(test.want, got, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
+
+func Test_ngt_setup(t *testing.T) {
+	type fields struct {
+		idxPath             string
+		inMemory            bool
+		bulkInsertChunkSize int
+		// dimension           C.int32_t
+		objectType objectType
+		radius     float32
+		epsilon    float32
+		poolSize   uint32
+		// prop                C.NGTProperty
+		// ebuf                C.NGTError
+		// index               C.NGTIndex
+		// ospace              C.NGTObjectSpace
+		mu *sync.RWMutex
+	}
+	type want struct {
+		err error
+	}
+	type test struct {
+		name       string
+		fields     fields
+		want       want
+		checkFunc  func(want, error) error
+		beforeFunc func()
+		afterFunc  func(*testing.T, NGT) error
+	}
+	defaultCheckFunc := func(w want, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		return nil
+	}
+	tests := []test{
+
+		{
+			name: "return nil when object type is uint8",
+			fields: fields{
+				objectType: Uint8,
+			},
+			want: want{},
+		},
+		{
+			name: "return nil when object type is float",
+			fields: fields{
+				objectType: Float,
+			},
+			want: want{},
+		},
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc()
+			}
+			if test.afterFunc == nil {
+				test.afterFunc = defaultAfterFunc
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			n := &ngt{
+				idxPath:             test.fields.idxPath,
+				inMemory:            test.fields.inMemory,
+				bulkInsertChunkSize: test.fields.bulkInsertChunkSize,
+				// dimension:           test.fields.dimension,
+				objectType: test.fields.objectType,
+				radius:     test.fields.radius,
+				epsilon:    test.fields.epsilon,
+				poolSize:   test.fields.poolSize,
+				// prop:                test.fields.prop,
+				// ebuf:                test.fields.ebuf,
+				// index:               test.fields.index,
+				// ospace:              test.fields.ospace,
+				mu: test.fields.mu,
+			}
+			/*
+				defer func() {
+					if err := test.afterFunc(tt, n); err != nil {
+						tt.Error(err)
+					}
+				}()
+			*/
+
+			err := n.setup()
+			if err := test.checkFunc(test.want, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func Test_ngt_loadOptions(t *testing.T) {
+	type args struct {
+		opts []Option
+	}
+	type fields struct {
+		idxPath             string
+		inMemory            bool
+		bulkInsertChunkSize int
+		dimension           int
+		objectType          objectType
+		radius              float32
+		epsilon             float32
+		poolSize            uint32
+		// prop                C.NGTProperty
+		// ebuf                C.NGTError
+		// index               C.NGTIndex
+		// ospace              C.NGTObjectSpace
+		// mu *sync.RWMutex
+	}
+	type want struct {
+		err error
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		createFunc func(t *testing.T, fields fields) (NGT, error)
+		want       want
+		checkFunc  func(want, *ngt, error) error
+		beforeFunc func(args)
+		afterFunc  func(*testing.T, NGT) error
+	}
+	defaultCreateFunc := func(t *testing.T, fields fields) (NGT, error) {
+		t.Helper()
+
+		return New(WithInMemoryMode(true),
+			WithIndexPath(fields.idxPath),
+			WithBulkInsertChunkSize(fields.bulkInsertChunkSize),
+			WithObjectType(fields.objectType),
+			WithDefaultRadius(fields.radius),
+			WithDefaultEpsilon(fields.epsilon),
+			WithDefaultPoolSize(fields.poolSize),
+			WithDimension(fields.dimension),
+		)
+	}
+	defaultCheckFunc := func(w want, n *ngt, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		return nil
+	}
+	tests := []test{
+		func() test {
+			idxPath := "tmp/ngt-41"
+			return test{
+				name: "load option success",
+				args: args{
+					opts: []Option{
+						WithIndexPath(idxPath),
+					},
+				},
+				fields: fields{
+					objectType: Uint8,
+					dimension:  9,
+				},
+				checkFunc: func(w want, n *ngt, e error) error {
+					if err := defaultCheckFunc(w, n, e); err != nil {
+						return err
+					}
+
+					if n.idxPath != idxPath {
+						return errors.New("index path does not set")
+					}
+
+					return nil
+				},
+			}
+		}(),
+		{
+			name: "load option failed with critical error",
+			args: args{
+				opts: []Option{
+					func(n *ngt) error {
+						return errors.NewErrCriticalOption("objectType", 1)
+					},
+				},
+			},
+			fields: fields{
+				objectType: Uint8,
+				dimension:  9,
+			},
+			want: want{
+				err: errors.NewErrCriticalOption("objectType", 1),
+			},
+		},
+		{
+			name: "load option failed with Ignoreable error",
+			args: args{
+				opts: []Option{
+					func(n *ngt) error {
+						return errors.NewErrIgnoredOption("object")
+					},
+				},
+			},
+			fields: fields{
+				objectType: Uint8,
+				dimension:  9,
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc == nil {
+				test.afterFunc = defaultAfterFunc
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			if test.createFunc == nil {
+				test.createFunc = defaultCreateFunc
+			}
+
+			obj, err := test.createFunc(tt, test.fields)
+			if err != nil {
+				tt.Fatal(err)
+			}
+			/*
+				defer func() {
+					if err := test.afterFunc(tt, obj); err != nil {
+						tt.Error(err)
+					}
+				}()
+			*/
+
+			n := obj.(*ngt)
+
+			err = n.loadOptions(test.args.opts...)
+			if err := test.checkFunc(test.want, n, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
+
+func Test_ngt_create(t *testing.T) {
+	type fields struct {
+		idxPath             string
+		inMemory            bool
+		bulkInsertChunkSize int
+		dimension           int
+		objectType          objectType
+		radius              float32
+		epsilon             float32
+		poolSize            uint32
+		// prop                C.NGTProperty
+		// ebuf                C.NGTError
+		// index               C.NGTIndex
+		// ospace              C.NGTObjectSpace
+		mu *sync.RWMutex
+	}
+	type want struct {
+		err error
+	}
+	type test struct {
+		name       string
+		fields     fields
+		createFunc func(t *testing.T, fields fields) (NGT, error)
+		want       want
+		checkFunc  func(want, NGT, error) error
+		beforeFunc func()
+		afterFunc  func(*testing.T, NGT) error
+	}
+	defaultCreateFunc := func(t *testing.T, fields fields) (NGT, error) {
+		t.Helper()
+
+		return New(WithInMemoryMode(true),
+			WithIndexPath(fields.idxPath),
+			WithBulkInsertChunkSize(fields.bulkInsertChunkSize),
+			WithObjectType(fields.objectType),
+			WithDefaultRadius(fields.radius),
+			WithDefaultEpsilon(fields.epsilon),
+			WithDefaultPoolSize(fields.poolSize),
+			WithDimension(fields.dimension),
+		)
+	}
+	defaultCheckFunc := func(w want, n NGT, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+
+		if ngt, ok := n.(*ngt); ok {
+			_, err := os.Stat(ngt.idxPath)
+			// if ngt is in-memory mode, the index file should not be created
+			if ngt.inMemory {
+				if !errors.Is(err, os.ErrNotExist) {
+					return errors.Errorf("NGT index file created, err: %s", err)
+				}
+			} else { // if ngt is not in-memory mode, the file should be created
+				if err != nil {
+					return errors.Errorf("NGT index file error, err: %s", err)
+				}
+			}
+		}
+
+		return nil
+	}
+	tests := []test{
+		{
+			name: "create success when index file not exists",
+			fields: fields{
+				idxPath:    "/tmp/ngt-not_exist",
+				inMemory:   false,
+				dimension:  9,
+				objectType: Float,
+			},
+			want: want{
+				err: nil,
+			},
+		},
+		{
+			name: "create success when index file exists",
+			fields: fields{
+				idxPath:    "/tmp/ngt-51",
+				inMemory:   false,
+				dimension:  9,
+				objectType: Float,
+			},
+			beforeFunc: func() {
+				_ = os.Mkdir("/tmp/ngt-51", 0755)
+			},
+			want: want{
+				err: nil,
+			},
+		},
+		{
+			name: "create success when NGT is in-memory mode",
+			fields: fields{
+				idxPath:    "/tmp/ngt-52",
+				inMemory:   true,
+				dimension:  9,
+				objectType: Float,
+			},
+			want: want{
+				err: nil,
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc()
+			}
+			if test.afterFunc == nil {
+				test.afterFunc = defaultAfterFunc
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			if test.createFunc == nil {
+				test.createFunc = defaultCreateFunc
+			}
+
+			obj, err := test.createFunc(tt, test.fields)
+			if err != nil {
+				tt.Fatal(err)
+			}
+			/*
+				defer func() {
+					if err := test.afterFunc(tt, obj); err != nil {
+						tt.Error(err)
+					}
+				}()
+			*/
+
+			n, ok := obj.(*ngt)
+			if !ok {
+				tt.Fatal("cannot cast ngt")
+			}
+
+			err = n.create()
+			if err := test.checkFunc(test.want, n, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func Test_ngt_open(t *testing.T) {
+	type fields struct {
+		idxPath             string
+		inMemory            bool
+		bulkInsertChunkSize int
+		dimension           int
+		objectType          objectType
+		radius              float32
+		epsilon             float32
+		poolSize            uint32
+		// prop                C.NGTProperty
+		// ebuf                C.NGTError
+		// index               C.NGTIndex
+		// ospace              C.NGTObjectSpace
+		mu *sync.RWMutex
+	}
+	type want struct {
+		err error
+	}
+	type test struct {
+		name       string
+		fields     fields
+		createFunc func(t *testing.T, fields fields) (NGT, error)
+		want       want
+		checkFunc  func(want, error) error
+		beforeFunc func(*testing.T)
+		afterFunc  func(*testing.T, NGT) error
+	}
+	defaultCreateFunc := func(t *testing.T, fields fields) (NGT, error) {
+		t.Helper()
+
+		n := &ngt{
+			idxPath:             fields.idxPath,
+			inMemory:            fields.inMemory,
+			bulkInsertChunkSize: fields.bulkInsertChunkSize,
+			// dimension:           test.fields.dimension,
+			objectType: fields.objectType,
+			radius:     fields.radius,
+			epsilon:    fields.epsilon,
+			poolSize:   fields.poolSize,
+			// prop:                test.fields.prop,
+			// ebuf:                test.fields.ebuf,
+			// index:               test.fields.index,
+			// ospace:              test.fields.ospace,
+			mu: fields.mu,
+		}
+		n.setup()
+		return n, nil
+	}
+	defaultCheckFunc := func(w want, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		return nil
+	}
+	tests := []test{
+		{
+			name: "return nil when index exists",
+			fields: fields{
+				idxPath:    "/tmp/ngt-61",
+				inMemory:   false,
+				dimension:  9,
+				objectType: Float,
+				mu:         &sync.RWMutex{},
+			},
+			beforeFunc: func(t *testing.T) {
+				n, err := New(
+					WithIndexPath("/tmp/ngt-61"),
+					WithDimension(9),
+					WithObjectType(Float),
+				)
+				if err != nil {
+					t.Error(err)
+				}
+
+				n.Insert([]float32{0, 1, 2, 3, 4, 5, 6, 7, 8})
+
+				if err = n.CreateAndSaveIndex(1); err != nil {
+					t.Error(err)
+				}
+				n.Close()
+			},
+			want: want{
+				err: nil,
+			},
+		},
+		{
+			name: "return error when index path is not exists",
+			fields: fields{
+				idxPath:    "/tmp/ngt-62",
+				inMemory:   false,
+				dimension:  9,
+				objectType: Float,
+				mu:         &sync.RWMutex{},
+			},
+			want: want{
+				err: errors.ErrIndexNotFound,
+			},
+		},
+		{
+			name: "return error when index path contains no file",
+			fields: fields{
+				idxPath:    "/tmp/ngt-63",
+				inMemory:   false,
+				dimension:  9,
+				objectType: Float,
+				mu:         &sync.RWMutex{},
+			},
+			beforeFunc: func(*testing.T) {
+				_ = os.Mkdir("/tmp/ngt-63", 0755)
+			},
+			checkFunc: func(w want, e error) error {
+				if e == nil {
+					return errors.New("error should be returned")
+				}
+				return nil
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(tt)
+			}
+			if test.afterFunc == nil {
+				test.afterFunc = defaultAfterFunc
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			if test.createFunc == nil {
+				test.createFunc = defaultCreateFunc
+			}
+
+			obj, err := test.createFunc(tt, test.fields)
+			if err != nil {
+				tt.Fatal(err)
+			}
+			defer func() {
+				if err := test.afterFunc(tt, obj); err != nil {
+					tt.Error(err)
+				}
+			}()
+
+			n, ok := obj.(*ngt)
+			if !ok {
+				tt.Fatal("cannot cast ngt")
+			}
+
+			err = n.open()
+			if err := test.checkFunc(test.want, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func Test_ngt_loadObjectSpace(t *testing.T) {
+	type fields struct {
+		idxPath             string
+		inMemory            bool
+		bulkInsertChunkSize int
+		dimension           int
+		objectType          objectType
+		radius              float32
+		epsilon             float32
+		poolSize            uint32
+		// prop                C.NGTProperty
+		// ebuf                C.NGTError
+		// index               C.NGTIndex
+		// ospace              C.NGTObjectSpace
+		mu *sync.RWMutex
+	}
+	type want struct {
+		err error
+	}
+	type test struct {
+		name       string
+		fields     fields
+		createFunc func(t *testing.T, fields fields) (NGT, error)
+		want       want
+		checkFunc  func(want, error) error
+		beforeFunc func()
+		afterFunc  func()
+	}
+	defaultCreateFunc := func(t *testing.T, fields fields) (NGT, error) {
+		t.Helper()
+
+		return New(WithInMemoryMode(true),
+			WithIndexPath(fields.idxPath),
+			WithBulkInsertChunkSize(fields.bulkInsertChunkSize),
+			WithObjectType(fields.objectType),
+			WithDefaultRadius(fields.radius),
+			WithDefaultEpsilon(fields.epsilon),
+			WithDefaultPoolSize(fields.poolSize),
+			WithDimension(fields.dimension),
+		)
+	}
+	defaultCheckFunc := func(w want, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		return nil
+	}
+	tests := []test{
+		{
+			name: "return nil when load object space success",
+			fields: fields{
+				dimension:  9,
+				objectType: Float,
+			},
+			want: want{},
+		},
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc()
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc()
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			if test.createFunc == nil {
+				test.createFunc = defaultCreateFunc
+			}
+
+			obj, err := test.createFunc(tt, test.fields)
+			if err != nil {
+				tt.Fatal(err)
+			}
+			n, ok := obj.(*ngt)
+			if !ok {
+				tt.Fatal("cannot cast ngt")
+			}
+
+			err = n.loadObjectSpace()
+			if err := test.checkFunc(test.want, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
 		})
 	}
 }
@@ -359,7 +1555,7 @@ func Test_ngt_Search(t *testing.T) {
 			},
 		},
 		{
-			name: "return vector ids after insert with multiple vecs (uint8)",
+			name: "return vector ids after insert with multiple vectors (uint8)",
 			args: args{
 				vec:  []float32{1, 2, 3, 4, 5, 6, 7, 8, 9},
 				size: 5,
@@ -391,7 +1587,7 @@ func Test_ngt_Search(t *testing.T) {
 			},
 		},
 		{
-			name: "return limited result after insert 10 vecs with limited size 3 (uint8)",
+			name: "return limited result after insert 10 vectors with limited size 3 (uint8)",
 			args: args{
 				vec:  []float32{1, 2, 3, 4, 5, 6, 7, 8, 9},
 				size: 3,
@@ -430,7 +1626,7 @@ func Test_ngt_Search(t *testing.T) {
 			},
 		},
 		{
-			name: "return most accurate result after insert 10 vecs with limited size 5 (uint8)",
+			name: "return most accurate result after insert 10 vectors with limited size 5 (uint8)",
 			args: args{
 				vec:  []float32{1, 2, 3, 4, 5, 6, 7, 8, 9},
 				size: 5,
@@ -526,7 +1722,7 @@ func Test_ngt_Search(t *testing.T) {
 			},
 		},
 		{
-			name: "return vector ids after insert with multiple vecs (float)",
+			name: "return vector ids after insert with multiple vectors (float)",
 			args: args{
 				vec:  []float32{1, 2, 3, 4, 5, 6, 7, 8, 9},
 				size: 5,
@@ -558,7 +1754,7 @@ func Test_ngt_Search(t *testing.T) {
 			},
 		},
 		{
-			name: "return limited result after insert 10 vecs with limited size 3 (float)",
+			name: "return limited result after insert 10 vectors with limited size 3 (float)",
 			args: args{
 				vec:  []float32{1, 2, 3, 4, 5, 6, 7, 8, 9},
 				size: 3,
@@ -597,7 +1793,7 @@ func Test_ngt_Search(t *testing.T) {
 			},
 		},
 		{
-			name: "return most accurate result after insert 10 vecs with limited size 5 (float)",
+			name: "return most accurate result after insert 10 vectors with limited size 5 (float)",
 			args: args{
 				vec:  []float32{1, 2, 3, 4, 5, 6, 7, 8, 9},
 				size: 5,
@@ -977,7 +2173,7 @@ func Test_ngt_Insert(t *testing.T) {
 			},
 		},
 		{
-			name: "return error if dimension is not the same as insert vec",
+			name: "return error if dimension is not the same as insert vector",
 			args: args{
 				vec: []float32{0, 1, 2, 3, 4, 5, 6, 7, 8},
 			},
@@ -1270,7 +2466,7 @@ func Test_ngt_InsertCommit(t *testing.T) {
 			},
 		},
 		{
-			name: "return error if dimension is not the same as insert vec",
+			name: "return error if dimension is not the same as insert vector",
 			args: args{
 				vec: []float32{0, 1, 2, 3, 4, 5, 6, 7, 8},
 			},
@@ -1429,7 +2625,7 @@ func Test_ngt_BulkInsert(t *testing.T) {
 	tests := []test{
 		// int
 		{
-			name: "return 1 object id when insert 1 vec (uint8)",
+			name: "return 1 object id when insert 1 vector (uint8)",
 			args: args{
 				vecs: [][]float32{
 					{0, 1, 2, 3, 4, 5, 6, 7, 8},
@@ -1452,7 +2648,7 @@ func Test_ngt_BulkInsert(t *testing.T) {
 			},
 		},
 		{
-			name: "return 5 object id when insert 5 vec (uint8)",
+			name: "return 5 object id when insert 5 vectors (uint8)",
 			args: args{
 				vecs: [][]float32{
 					{0, 1, 2, 3, 4, 5, 6, 7, 8},
@@ -1479,7 +2675,7 @@ func Test_ngt_BulkInsert(t *testing.T) {
 			},
 		},
 		{
-			name: "return 2 object id when insert 2 same vec (uint8)",
+			name: "return 2 object id when insert 2 same vectors (uint8)",
 			args: args{
 				vecs: [][]float32{
 					{0, 1, 2, 3, 4, 5, 6, 7, 8},
@@ -1531,10 +2727,9 @@ func Test_ngt_BulkInsert(t *testing.T) {
 				},
 			},
 		},
-
 		// float
 		{
-			name: "return 1 object id when insert 1 vec (float)",
+			name: "return 1 object id when insert 1 vector (float)",
 			args: args{
 				vecs: [][]float32{
 					{0, 1, 2, 3, 4, 5, 6, 7, 8},
@@ -1557,7 +2752,7 @@ func Test_ngt_BulkInsert(t *testing.T) {
 			},
 		},
 		{
-			name: "return 5 object id when insert 5 vec (float)",
+			name: "return 5 object id when insert 5 vectors (float)",
 			args: args{
 				vecs: [][]float32{
 					{0, 1, 2, 3, 4, 5, 6, 7, 8},
@@ -1584,7 +2779,7 @@ func Test_ngt_BulkInsert(t *testing.T) {
 			},
 		},
 		{
-			name: "return 2 object id when insert 2 same vec (float)",
+			name: "return 2 object id when insert 2 same vectors (float)",
 			args: args{
 				vecs: [][]float32{
 					{0, 1, 2, 3, 4, 5, 6, 7, 8},
@@ -1754,7 +2949,7 @@ func Test_ngt_BulkInsertCommit(t *testing.T) {
 	tests := []test{ // copy from bulk insert test
 		// int
 		{
-			name: "return 1 object id when insert 1 vec (uint8)",
+			name: "return 1 object id when insert 1 vector (uint8)",
 			args: args{
 				vecs: [][]float32{
 					{0, 1, 2, 3, 4, 5, 6, 7, 8},
@@ -1777,7 +2972,7 @@ func Test_ngt_BulkInsertCommit(t *testing.T) {
 			},
 		},
 		{
-			name: "return 5 object id when insert 5 vec (uint8)",
+			name: "return 5 object id when insert 5 vectors (uint8)",
 			args: args{
 				vecs: [][]float32{
 					{0, 1, 2, 3, 4, 5, 6, 7, 8},
@@ -1804,7 +2999,7 @@ func Test_ngt_BulkInsertCommit(t *testing.T) {
 			},
 		},
 		{
-			name: "return 2 object id when insert 2 same vec (uint8)",
+			name: "return 2 object id when insert 2 same vectors (uint8)",
 			args: args{
 				vecs: [][]float32{
 					{0, 1, 2, 3, 4, 5, 6, 7, 8},
@@ -1856,10 +3051,9 @@ func Test_ngt_BulkInsertCommit(t *testing.T) {
 				},
 			},
 		},
-
 		// float
 		{
-			name: "return 1 object id when insert 1 vec (float)",
+			name: "return 1 object id when insert 1 vector (float)",
 			args: args{
 				vecs: [][]float32{
 					{0, 1, 2, 3, 4, 5, 6, 7, 8},
@@ -1882,7 +3076,7 @@ func Test_ngt_BulkInsertCommit(t *testing.T) {
 			},
 		},
 		{
-			name: "return 5 object id when insert 5 vec (float)",
+			name: "return 5 object id when insert 5 vectors (float)",
 			args: args{
 				vecs: [][]float32{
 					{0, 1, 2, 3, 4, 5, 6, 7, 8},
@@ -1909,7 +3103,7 @@ func Test_ngt_BulkInsertCommit(t *testing.T) {
 			},
 		},
 		{
-			name: "return 2 object id when insert 2 same vec (float)",
+			name: "return 2 object id when insert 2 same vectors (float)",
 			args: args{
 				vecs: [][]float32{
 					{0, 1, 2, 3, 4, 5, 6, 7, 8},
@@ -1985,6 +3179,7 @@ func Test_ngt_BulkInsertCommit(t *testing.T) {
 			if err != nil {
 				tt.Fatal(err)
 			}
+			defer test.afterFunc(tt, n)
 
 			got, got1 := n.BulkInsertCommit(test.args.vecs, test.args.poolSize)
 			if err := test.checkFunc(test.want, got, n, test.fields, test.args, got1); err != nil {
@@ -2256,6 +3451,7 @@ func Test_ngt_CreateAndSaveIndex(t *testing.T) {
 			if err != nil {
 				tt.Fatal(err)
 			}
+			defer test.afterFunc(tt, n)
 
 			err = n.CreateAndSaveIndex(test.args.poolSize)
 			if err := test.checkFunc(test.want, n, test.args, err); err != nil {
@@ -2941,7 +4137,6 @@ func Test_ngt_Remove(t *testing.T) {
 				return nil
 			},
 		},
-
 		// float
 		{
 			name: "remove success when id exists (float)",
@@ -3220,7 +4415,6 @@ func Test_ngt_BulkRemove(t *testing.T) {
 				return nil
 			},
 		},
-
 		// float
 		{
 			name: "remove success when id exists (float)",
@@ -3496,7 +4690,6 @@ func Test_ngt_GetVector(t *testing.T) {
 				return nil
 			},
 		},
-
 		// float
 		{
 			name: "return float vector when id exists",
@@ -3583,6 +4776,100 @@ func Test_ngt_GetVector(t *testing.T) {
 
 			got, err := n.GetVector(test.args.id)
 			if err := test.checkFunc(test.want, got, n, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+// skip to test this function because of it contains C dependencies in the argument list
+// keep this test function to avoid generating from gotests command
+func Test_ngt_newGoError(t *testing.T) {
+}
+
+func Test_ngt_Close(t *testing.T) {
+	type fields struct {
+		idxPath             string
+		inMemory            bool
+		bulkInsertChunkSize int
+		dimension           int
+		objectType          objectType
+		radius              float32
+		epsilon             float32
+		poolSize            uint32
+		// prop                C.NGTProperty
+		// ebuf                C.NGTError
+		// index               C.NGTIndex
+		// ospace              C.NGTObjectSpace
+		mu *sync.RWMutex
+	}
+	type want struct {
+	}
+	type test struct {
+		name       string
+		fields     fields
+		want       want
+		createFunc func(t *testing.T, fields fields) (NGT, error)
+		checkFunc  func(want) error
+		beforeFunc func()
+		afterFunc  func()
+	}
+	defaultCheckFunc := func(w want) error {
+		return nil
+	}
+	defaultCreateFunc := func(t *testing.T, fields fields) (NGT, error) {
+		t.Helper()
+
+		return New(WithInMemoryMode(true),
+			WithIndexPath(fields.idxPath),
+			WithBulkInsertChunkSize(fields.bulkInsertChunkSize),
+			WithObjectType(fields.objectType),
+			WithDefaultRadius(fields.radius),
+			WithDefaultEpsilon(fields.epsilon),
+			WithDefaultPoolSize(fields.poolSize),
+			WithDimension(fields.dimension),
+		)
+	}
+	tests := []test{
+		{
+			name: "close success",
+			fields: fields{
+				inMemory:            false,
+				bulkInsertChunkSize: 100,
+				dimension:           9,
+				objectType:          Float,
+				radius:              float32(-1.0),
+				epsilon:             float32(0.01),
+			},
+			want: want{},
+		},
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc()
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc()
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			if test.createFunc == nil {
+				test.createFunc = defaultCreateFunc
+			}
+
+			n, err := test.createFunc(tt, test.fields)
+			if err != nil {
+				tt.Fatal(err)
+			}
+
+			n.Close()
+			if err := test.checkFunc(test.want); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
