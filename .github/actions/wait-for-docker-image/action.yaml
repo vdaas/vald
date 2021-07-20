@@ -21,12 +21,7 @@ inputs:
     required: false
     default: "vdaas/vald-agent-ngt \
       vdaas/vald-discoverer-k8s \
-      vdaas/vald-manager-compressor \
-      vdaas/vald-meta-redis \
-      vdaas/vald-manager-backup-mysql \
-      vdaas/vald-backup-gateway \
       vdaas/vald-lb-gateway \
-      vdaas/vald-meta-gateway \
       vdaas/vald-manager-index"
 outputs: {}
 runs:
