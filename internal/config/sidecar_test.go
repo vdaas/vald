@@ -23,7 +23,7 @@ import (
 	"testing"
 
 	"github.com/vdaas/vald/internal/errors"
-	"go.uber.org/goleak"
+	"github.com/vdaas/vald/internal/test/goleak"
 )
 
 func TestAgentSidecar_Bind(t *testing.T) {
@@ -155,23 +155,25 @@ func TestAgentSidecar_Bind(t *testing.T) {
 			postStopTimeout := "5m"
 			filename := "vald-ngt-1"
 			filenameSuffix := "tar.gz"
+
+			envPrefix := "AGENTSIDECAR_BIND_"
 			m := map[string]string{
-				"MODE":                 mode,
-				"WATCH_DIR":            watchDir,
-				"AUTO_BACKUP_DURATION": autoBackupDuration,
-				"POST_STOP_TIMEOUT":    postStopTimeout,
-				"FILENAME":             filename,
-				"FILENAME_SUFFIX":      filenameSuffix,
+				envPrefix + "MODE":                 mode,
+				envPrefix + "WATCH_DIR":            watchDir,
+				envPrefix + "AUTO_BACKUP_DURATION": autoBackupDuration,
+				envPrefix + "POST_STOP_TIMEOUT":    postStopTimeout,
+				envPrefix + "FILENAME":             filename,
+				envPrefix + "FILENAME_SUFFIX":      filenameSuffix,
 			}
 			return test{
 				name: "return AgentSidecar when the data is loaded from the environment variable",
 				fields: fields{
-					Mode:               "_MODE_",
-					WatchDir:           "_WATCH_DIR_",
-					AutoBackupDuration: "_AUTO_BACKUP_DURATION_",
-					PostStopTimeout:    "_POST_STOP_TIMEOUT_",
-					Filename:           "_FILENAME_",
-					FilenameSuffix:     "_FILENAME_SUFFIX_",
+					Mode:               "_" + envPrefix + "MODE_",
+					WatchDir:           "_" + envPrefix + "WATCH_DIR_",
+					AutoBackupDuration: "_" + envPrefix + "AUTO_BACKUP_DURATION_",
+					PostStopTimeout:    "_" + envPrefix + "POST_STOP_TIMEOUT_",
+					Filename:           "_" + envPrefix + "FILENAME_",
+					FilenameSuffix:     "_" + envPrefix + "FILENAME_SUFFIX_",
 				},
 				beforeFunc: func(t *testing.T) {
 					t.Helper()
@@ -224,7 +226,6 @@ func TestAgentSidecar_Bind(t *testing.T) {
 	for _, tc := range tests {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(tt)

@@ -23,7 +23,7 @@ import (
 	"testing"
 
 	"github.com/vdaas/vald/internal/errors"
-	"go.uber.org/goleak"
+	"github.com/vdaas/vald/internal/test/goleak"
 )
 
 func TestBlobStorageType_String(t *testing.T) {
@@ -260,16 +260,17 @@ func TestBlob_Bind(t *testing.T) {
 			}
 		}(),
 		func() test {
+			envPrefix := "BLOB_BIND_"
 			m := map[string]string{
-				"STORAGE_TYPE": "s3",
-				"BUCKET":       "test.vald",
+				envPrefix + "STORAGE_TYPE": "s3",
+				envPrefix + "BUCKET":       "test.vald",
 			}
 
 			return test{
 				name: "return Blob when the bind successes and the data is loaded from the environment variable",
 				fields: fields{
-					StorageType: "_STORAGE_TYPE_",
-					Bucket:      "_BUCKET_",
+					StorageType: "_" + envPrefix + "STORAGE_TYPE_",
+					Bucket:      "_" + envPrefix + "BUCKET_",
 				},
 				beforeFunc: func(t *testing.T) {
 					t.Helper()
@@ -404,23 +405,24 @@ func TestS3Config_Bind(t *testing.T) {
 			}
 		}(),
 		func() test {
+			envPrefix := "S3CONFIG_BIND_"
 			m := map[string]string{
-				"ENDPOINT":          "https://test.us-west-2.amazonaws.com",
-				"REGION":            "us-west-2",
-				"ACCESS_KEY":        "access_key",
-				"SECRET_ACCESS_KEY": "secret_access_key",
-				"TOKEN":             "token",
-				"MAX_PART_SIZE":     "32mb",
-				"MAX_CHUNK_SIZE":    "42mb",
+				envPrefix + "ENDPOINT":          "https://test.us-west-2.amazonaws.com",
+				envPrefix + "REGION":            "us-west-2",
+				envPrefix + "ACCESS_KEY":        "access_key",
+				envPrefix + "SECRET_ACCESS_KEY": "secret_access_key",
+				envPrefix + "TOKEN":             "token",
+				envPrefix + "MAX_PART_SIZE":     "32mb",
+				envPrefix + "MAX_CHUNK_SIZE":    "42mb",
 			}
 			return test{
 				name: "return S3Config when the bind successes and the data is loaded from the environment variable",
 				fields: fields{
-					Endpoint:                   "_ENDPOINT_",
-					Region:                     "_REGION_",
-					AccessKey:                  "_ACCESS_KEY_",
-					SecretAccessKey:            "_SECRET_ACCESS_KEY_",
-					Token:                      "_TOKEN_",
+					Endpoint:                   "_" + envPrefix + "ENDPOINT_",
+					Region:                     "_" + envPrefix + "REGION_",
+					AccessKey:                  "_" + envPrefix + "ACCESS_KEY_",
+					SecretAccessKey:            "_" + envPrefix + "SECRET_ACCESS_KEY_",
+					Token:                      "_" + envPrefix + "TOKEN_",
 					MaxRetries:                 0,
 					ForcePathStyle:             false,
 					UseAccelerate:              false,
@@ -432,8 +434,8 @@ func TestS3Config_Bind(t *testing.T) {
 					EnableContentMD5Validation: false,
 					EnableEndpointDiscovery:    false,
 					EnableEndpointHostPrefix:   false,
-					MaxPartSize:                "_MAX_PART_SIZE_",
-					MaxChunkSize:               "_MAX_CHUNK_SIZE_",
+					MaxPartSize:                "_" + envPrefix + "MAX_PART_SIZE_",
+					MaxChunkSize:               "_" + envPrefix + "MAX_CHUNK_SIZE_",
 				},
 				beforeFunc: func(t *testing.T) {
 					t.Helper()
@@ -597,30 +599,31 @@ func TestCloudStorageConfig_Bind(t *testing.T) {
 			}
 		}(),
 		func() test {
+			envPrefix := "CLOUDSTORAGECONFIG_BIND_"
 			m := map[string]string{
-				"URL":                          "gs://test.vald",
-				"CLIENT_CREDENTIALS_FILE_PATH": "/var/cred",
-				"CLIENT_CREDENTIALS_JSON":      "{\"type\": \"json\"}",
-				"WRITE_CACHE_CONTROL":          "no-cache",
-				"WRITE_CONTENT_DISPOSITION":    "attachment",
-				"WRITE_CONTENT_ENCODING":       "uint8",
-				"WRITE_CONTENT_LANGUAGE":       "en-US",
-				"WRITE_CONTENT_TYPE":           "text/plain",
+				envPrefix + "URL":                          "gs://test.vald",
+				envPrefix + "CLIENT_CREDENTIALS_FILE_PATH": "/var/cred",
+				envPrefix + "CLIENT_CREDENTIALS_JSON":      "{\"type\": \"json\"}",
+				envPrefix + "WRITE_CACHE_CONTROL":          "no-cache",
+				envPrefix + "WRITE_CONTENT_DISPOSITION":    "attachment",
+				envPrefix + "WRITE_CONTENT_ENCODING":       "uint8",
+				envPrefix + "WRITE_CONTENT_LANGUAGE":       "en-US",
+				envPrefix + "WRITE_CONTENT_TYPE":           "text/plain",
 			}
 			return test{
 				name: "return CloudStorageConfig when the data is loaded from the environment variable",
 				fields: fields{
-					URL: "_URL_",
+					URL: "_" + envPrefix + "URL_",
 					Client: &CloudStorageClient{
-						CredentialsFilePath: "_CLIENT_CREDENTIALS_FILE_PATH_",
-						CredentialsJSON:     "_CLIENT_CREDENTIALS_JSON_",
+						CredentialsFilePath: "_" + envPrefix + "CLIENT_CREDENTIALS_FILE_PATH_",
+						CredentialsJSON:     "_" + envPrefix + "CLIENT_CREDENTIALS_JSON_",
 					},
 					WriteBufferSize:         256,
-					WriteCacheControl:       "_WRITE_CACHE_CONTROL_",
-					WriteContentDisposition: "_WRITE_CONTENT_DISPOSITION_",
-					WriteContentEncoding:    "_WRITE_CONTENT_ENCODING_",
-					WriteContentLanguage:    "_WRITE_CONTENT_LANGUAGE_",
-					WriteContentType:        "_WRITE_CONTENT_TYPE_",
+					WriteCacheControl:       "_" + envPrefix + "WRITE_CACHE_CONTROL_",
+					WriteContentDisposition: "_" + envPrefix + "WRITE_CONTENT_DISPOSITION_",
+					WriteContentEncoding:    "_" + envPrefix + "WRITE_CONTENT_ENCODING_",
+					WriteContentLanguage:    "_" + envPrefix + "WRITE_CONTENT_LANGUAGE_",
+					WriteContentType:        "_" + envPrefix + "WRITE_CONTENT_TYPE_",
 				},
 				beforeFunc: func(t *testing.T) {
 					t.Helper()
@@ -660,7 +663,6 @@ func TestCloudStorageConfig_Bind(t *testing.T) {
 	for _, tc := range tests {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(tt)

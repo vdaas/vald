@@ -23,7 +23,7 @@ import (
 	"testing"
 
 	"github.com/vdaas/vald/internal/errors"
-	"go.uber.org/goleak"
+	"github.com/vdaas/vald/internal/test/goleak"
 )
 
 func TestGateway_Bind(t *testing.T) {
@@ -169,11 +169,12 @@ func TestGateway_Bind(t *testing.T) {
 			}
 		}(),
 		func() test {
+			envPrefix := "GATEWAY_BIND_"
 			p := map[string]string{
-				"AGENT_NAME":      "vald-agent-ngt-0",
-				"AGENT_NAMESPACE": "vald",
-				"AGENT_DNS":       "vald-agent-ngt.svc.local",
-				"NODE_NAME":       "vald-prod",
+				envPrefix + "AGENT_NAME":      "vald-agent-ngt-0",
+				envPrefix + "AGENT_NAMESPACE": "vald",
+				envPrefix + "AGENT_DNS":       "vald-agent-ngt.svc.local",
+				envPrefix + "NODE_NAME":       "vald-prod",
 			}
 			port := 8081
 			ireplica := 3
@@ -181,10 +182,10 @@ func TestGateway_Bind(t *testing.T) {
 				name: "return Gateway when params set as environment value",
 				fields: fields{
 					AgentPort:      port,
-					AgentName:      "_AGENT_NAME_",
-					AgentNamespace: "_AGENT_NAMESPACE_",
-					AgentDNS:       "_AGENT_DNS_",
-					NodeName:       "_NODE_NAME_",
+					AgentName:      "_" + envPrefix + "AGENT_NAME_",
+					AgentNamespace: "_" + envPrefix + "AGENT_NAMESPACE_",
+					AgentDNS:       "_" + envPrefix + "AGENT_DNS_",
+					NodeName:       "_" + envPrefix + "NODE_NAME_",
 					IndexReplica:   ireplica,
 				},
 				beforeFunc: func(t *testing.T) {
@@ -232,7 +233,6 @@ func TestGateway_Bind(t *testing.T) {
 	for _, tc := range tests {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(tt)

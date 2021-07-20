@@ -24,7 +24,7 @@ import (
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/servers/server"
-	"go.uber.org/goleak"
+	"github.com/vdaas/vald/internal/test/goleak"
 )
 
 func TestServers_Bind(t *testing.T) {
@@ -272,7 +272,6 @@ func TestServers_Bind(t *testing.T) {
 	for _, tc := range tests {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc()
@@ -465,7 +464,6 @@ func TestServers_GetGRPCStreamConcurrency(t *testing.T) {
 	for _, tc := range tests {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc()
@@ -551,23 +549,24 @@ func TestHTTP_Bind(t *testing.T) {
 			}
 		}(),
 		func() test {
+			envPrefix := "HTTP_BIND_"
 			p := map[string]string{
-				"SHUTDOWN_DURATION":   "5s",
-				"HANDLER_TIMEOUT":     "5s",
-				"IDLE_TIMEOUT":        "1s",
-				"READ_HEADER_TIMEOUT": "1s",
-				"READ_TIMEOUT":        "1s",
-				"WRITE_TIMEOUT":       "1s",
+				envPrefix + "SHUTDOWN_DURATION":   "5s",
+				envPrefix + "HANDLER_TIMEOUT":     "5s",
+				envPrefix + "IDLE_TIMEOUT":        "1s",
+				envPrefix + "READ_HEADER_TIMEOUT": "1s",
+				envPrefix + "READ_TIMEOUT":        "1s",
+				envPrefix + "WRITE_TIMEOUT":       "1s",
 			}
 			return test{
 				name: "return HTTP when all parameters are set as environment value",
 				fields: fields{
-					ShutdownDuration:  "_SHUTDOWN_DURATION_",
-					HandlerTimeout:    "_HANDLER_TIMEOUT_",
-					IdleTimeout:       "_IDLE_TIMEOUT_",
-					ReadHeaderTimeout: "_READ_HEADER_TIMEOUT_",
-					ReadTimeout:       "_READ_TIMEOUT_",
-					WriteTimeout:      "_WRITE_TIMEOUT_",
+					ShutdownDuration:  "_" + envPrefix + "SHUTDOWN_DURATION_",
+					HandlerTimeout:    "_" + envPrefix + "HANDLER_TIMEOUT_",
+					IdleTimeout:       "_" + envPrefix + "IDLE_TIMEOUT_",
+					ReadHeaderTimeout: "_" + envPrefix + "READ_HEADER_TIMEOUT_",
+					ReadTimeout:       "_" + envPrefix + "READ_TIMEOUT_",
+					WriteTimeout:      "_" + envPrefix + "WRITE_TIMEOUT_",
 				},
 				beforeFunc: func(t *testing.T) {
 					t.Helper()
@@ -611,7 +610,6 @@ func TestHTTP_Bind(t *testing.T) {
 	for _, tc := range tests {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(tt)
@@ -732,9 +730,10 @@ func TestGRPC_Bind(t *testing.T) {
 			}
 		}(),
 		func() test {
+			envPrefix := "GRPC_BIND_"
 			p := map[string]string{
-				"CONNECTION_TIMEOUT": "3s",
-				"INTERCEPTORS":       "RecoverInterceptor",
+				envPrefix + "CONNECTION_TIMEOUT": "3s",
+				envPrefix + "INTERCEPTORS":       "RecoverInterceptor",
 			}
 			bidirectionalStreamConcurrency := 20
 			maxReceiveMessageSize := 5
@@ -764,11 +763,11 @@ func TestGRPC_Bind(t *testing.T) {
 					Keepalive:                      keepalive,
 					WriteBufferSize:                writeBufferSize,
 					ReadBufferSize:                 readBufferSize,
-					ConnectionTimeout:              "_CONNECTION_TIMEOUT_",
+					ConnectionTimeout:              "_" + envPrefix + "CONNECTION_TIMEOUT_",
 					MaxHeaderListSize:              maxHeaderListSize,
 					HeaderTableSize:                headerTableSize,
 					Interceptors: []string{
-						"_INTERCEPTORS_",
+						"_" + envPrefix + "INTERCEPTORS_",
 					},
 					EnableReflection: enableReflection,
 				},
@@ -823,7 +822,6 @@ func TestGRPC_Bind(t *testing.T) {
 	for _, tc := range tests {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(tt)
@@ -911,21 +909,22 @@ func TestGRPCKeepalive_Bind(t *testing.T) {
 			}
 		}(),
 		func() test {
+			envPrefix := "GRPCKEEPALIVE_BIND_"
 			p := map[string]string{
-				"MAX_CONN_IDLE":      "3",
-				"MAX_CONN_AGE":       "30s",
-				"MAX_CONN_AGE_GRACE": "45s",
-				"TIME":               "60s",
-				"TIMEOUT":            "90s",
+				envPrefix + "MAX_CONN_IDLE":      "3",
+				envPrefix + "MAX_CONN_AGE":       "30s",
+				envPrefix + "MAX_CONN_AGE_GRACE": "45s",
+				envPrefix + "TIME":               "60s",
+				envPrefix + "TIMEOUT":            "90s",
 			}
 			return test{
 				name: "return GPRCKeepalive when the parameters are set as environment value",
 				fields: fields{
-					MaxConnIdle:     "_MAX_CONN_IDLE_",
-					MaxConnAge:      "_MAX_CONN_AGE_",
-					MaxConnAgeGrace: "_MAX_CONN_AGE_GRACE_",
-					Time:            "_TIME_",
-					Timeout:         "_TIMEOUT_",
+					MaxConnIdle:     "_" + envPrefix + "MAX_CONN_IDLE_",
+					MaxConnAge:      "_" + envPrefix + "MAX_CONN_AGE_",
+					MaxConnAgeGrace: "_" + envPrefix + "MAX_CONN_AGE_GRACE_",
+					Time:            "_" + envPrefix + "TIME_",
+					Timeout:         "_" + envPrefix + "TIMEOUT_",
 				},
 				beforeFunc: func(t *testing.T) {
 					t.Helper()
@@ -968,7 +967,6 @@ func TestGRPCKeepalive_Bind(t *testing.T) {
 	for _, tc := range tests {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(tt)
@@ -1110,13 +1108,14 @@ func TestServer_Bind(t *testing.T) {
 			}
 		}(),
 		func() test {
+			envPrefix := "SERVER_BIND_"
 			p := map[string]string{
-				"NAME":            "vald-agent-ngt",
-				"NETWORK":         "tcp",
-				"HOST":            "0.0.0.0",
-				"SOCKET_PATH":     "/var/run/docker.sock",
-				"MODE":            "REST",
-				"PROBE_WAIT_TIME": "3s",
+				envPrefix + "NAME":            "vald-agent-ngt",
+				envPrefix + "NETWORK":         "tcp",
+				envPrefix + "HOST":            "0.0.0.0",
+				envPrefix + "SOCKET_PATH":     "/var/run/docker.sock",
+				envPrefix + "MODE":            "REST",
+				envPrefix + "PROBE_WAIT_TIME": "3s",
 			}
 			port := uint16(8081)
 			http := &HTTP{
@@ -1164,13 +1163,13 @@ func TestServer_Bind(t *testing.T) {
 			return test{
 				name: "return Server when all parameters are set",
 				fields: fields{
-					Name:          "_NAME_",
-					Network:       "_NETWORK_",
-					Host:          "_HOST_",
+					Name:          "_" + envPrefix + "NAME_",
+					Network:       "_" + envPrefix + "NETWORK_",
+					Host:          "_" + envPrefix + "HOST_",
 					Port:          port,
-					SocketPath:    "_SOCKET_PATH_",
-					Mode:          "_MODE_",
-					ProbeWaitTime: "_PROBE_WAIT_TIME_",
+					SocketPath:    "_" + envPrefix + "SOCKET_PATH_",
+					Mode:          "_" + envPrefix + "MODE_",
+					ProbeWaitTime: "_" + envPrefix + "PROBE_WAIT_TIME_",
 					HTTP:          http,
 					GRPC:          grpc,
 					SocketOption:  socketOption,
@@ -1225,7 +1224,6 @@ func TestServer_Bind(t *testing.T) {
 	for _, tc := range tests {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(tt)
@@ -1467,7 +1465,6 @@ func TestServer_Opts(t *testing.T) {
 	for _, tc := range tests {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc()

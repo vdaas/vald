@@ -27,7 +27,7 @@ import (
 	"github.com/vdaas/vald/internal/log/level"
 	"github.com/vdaas/vald/internal/log/mock"
 	"github.com/vdaas/vald/internal/log/retry"
-	"go.uber.org/goleak"
+	"github.com/vdaas/vald/internal/test/goleak"
 )
 
 func TestNew(t *testing.T) {

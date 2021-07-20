@@ -26,7 +26,7 @@ import (
 	"github.com/vdaas/vald/internal/db/kvs/redis"
 	"github.com/vdaas/vald/internal/errors"
 	testdata "github.com/vdaas/vald/internal/test"
-	"go.uber.org/goleak"
+	"github.com/vdaas/vald/internal/test/goleak"
 )
 
 func TestRedis_Bind(t *testing.T) {
@@ -211,26 +211,27 @@ func TestRedis_Bind(t *testing.T) {
 			}
 		}(),
 		func() test {
+			envPrefix := "REDIS_BIND_"
 			p := map[string]string{
-				"ADDRS":                "redis.default.svc.cluster.local:6379",
-				"DIAL_TIMEOUT":         "5s",
-				"IDLE_CHECK_FREQUENCY": "1m",
-				"IDLE_TIMEOUT":         "5m",
-				"KEY_PREF":             "vald",
-				"MAX_CONN_AGE":         "0s",
-				"MAX_RETRY_BACKOFF":    "512s",
-				"MIN_RETRY_BACKOFF":    "8ms",
-				"NETWORK":              "tcp",
-				"PASSWORD":             "password",
-				"POOL_TIMEOUT":         "4s",
-				"PREFIX_DELIMITER":     "_",
-				"READ_TIMEOUT":         "3s",
-				"SENTINEL_PASSWORD":    "",
-				"SENTINEL_MASTER_NAME": "",
-				"KV_PREFIX":            "",
-				"VK_PREFIX":            "",
-				"USERNAME":             "vald",
-				"WRITE_TIMEOUT":        "3s",
+				envPrefix + "ADDRS":                "redis.default.svc.cluster.local:6379",
+				envPrefix + "DIAL_TIMEOUT":         "5s",
+				envPrefix + "IDLE_CHECK_FREQUENCY": "1m",
+				envPrefix + "IDLE_TIMEOUT":         "5m",
+				envPrefix + "KEY_PREF":             "vald",
+				envPrefix + "MAX_CONN_AGE":         "0s",
+				envPrefix + "MAX_RETRY_BACKOFF":    "512s",
+				envPrefix + "MIN_RETRY_BACKOFF":    "8ms",
+				envPrefix + "NETWORK":              "tcp",
+				envPrefix + "PASSWORD":             "password",
+				envPrefix + "POOL_TIMEOUT":         "4s",
+				envPrefix + "PREFIX_DELIMITER":     "_",
+				envPrefix + "READ_TIMEOUT":         "3s",
+				envPrefix + "SENTINEL_PASSWORD":    "",
+				envPrefix + "SENTINEL_MASTER_NAME": "",
+				envPrefix + "KV_PREFIX":            "",
+				envPrefix + "VK_PREFIX":            "",
+				envPrefix + "USERNAME":             "vald",
+				envPrefix + "WRITE_TIMEOUT":        "3s",
 			}
 			db := 0
 			maxRedirects := 3
@@ -270,37 +271,37 @@ func TestRedis_Bind(t *testing.T) {
 			return test{
 				name: "return Redis when parameters are set as environment value",
 				fields: fields{
-					Addrs:                []string{"_ADDRS_"},
+					Addrs:                []string{"_" + envPrefix + "ADDRS_"},
 					DB:                   db,
-					DialTimeout:          "_DIAL_TIMEOUT_",
-					IdleCheckFrequency:   "_IDLE_CHECK_FREQUENCY_",
-					IdleTimeout:          "_IDLE_TIMEOUT_",
+					DialTimeout:          "_" + envPrefix + "DIAL_TIMEOUT_",
+					IdleCheckFrequency:   "_" + envPrefix + "IDLE_CHECK_FREQUENCY_",
+					IdleTimeout:          "_" + envPrefix + "IDLE_TIMEOUT_",
 					InitialPingDuration:  "",
 					InitialPingTimeLimit: "",
-					KVPrefix:             "_KV_PREFIX_",
-					KeyPref:              "_KEY_PREF_",
-					MaxConnAge:           "_MAX_CONN_AGE_",
+					KVPrefix:             "_" + envPrefix + "KV_PREFIX_",
+					KeyPref:              "_" + envPrefix + "KEY_PREF_",
+					MaxConnAge:           "_" + envPrefix + "MAX_CONN_AGE_",
 					MaxRedirects:         maxRedirects,
 					MaxRetries:           maxRetries,
-					MaxRetryBackoff:      "_MAX_RETRY_BACKOFF_",
+					MaxRetryBackoff:      "_" + envPrefix + "MAX_RETRY_BACKOFF_",
 					MinIdleConns:         minIdleConns,
-					MinRetryBackoff:      "_MIN_RETRY_BACKOFF_",
-					Network:              "_NETWORK_",
-					Password:             "_PASSWORD_",
+					MinRetryBackoff:      "_" + envPrefix + "MIN_RETRY_BACKOFF_",
+					Network:              "_" + envPrefix + "NETWORK_",
+					Password:             "_" + envPrefix + "PASSWORD_",
 					PoolSize:             poolSize,
-					PoolTimeout:          "_POOL_TIMEOUT_",
-					PrefixDelimiter:      "_PREFIX_DELIMITER_",
+					PoolTimeout:          "_" + envPrefix + "POOL_TIMEOUT_",
+					PrefixDelimiter:      "_" + envPrefix + "PREFIX_DELIMITER_",
 					ReadOnly:             readOnly,
-					ReadTimeout:          "_READ_TIMEOUT_",
+					ReadTimeout:          "_" + envPrefix + "READ_TIMEOUT_",
 					RouteByLatency:       routeByLatency,
 					RouteRandomly:        routeRandomly,
-					SentinelPassword:     "_SENTINEL_PASSWORD_",
-					SentinelMasterName:   "_SENTINEL_MASTER_NAME_",
+					SentinelPassword:     "_" + envPrefix + "SENTINEL_PASSWORD_",
+					SentinelMasterName:   "_" + envPrefix + "SENTINEL_MASTER_NAME_",
 					Net:                  net,
 					TLS:                  tls,
-					Username:             "_USERNAME_",
-					VKPrefix:             "_VK_PREFIX_",
-					WriteTimeout:         "_WRITE_TIMEOUT_",
+					Username:             "_" + envPrefix + "USERNAME_",
+					VKPrefix:             "_" + envPrefix + "VK_PREFIX_",
+					WriteTimeout:         "_" + envPrefix + "WRITE_TIMEOUT_",
 				},
 				beforeFunc: func(t *testing.T) {
 					t.Helper()
@@ -374,7 +375,6 @@ func TestRedis_Bind(t *testing.T) {
 	for _, tc := range tests {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(tt)
@@ -899,7 +899,6 @@ func TestRedis_Opts(t *testing.T) {
 	for _, tc := range tests {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc()

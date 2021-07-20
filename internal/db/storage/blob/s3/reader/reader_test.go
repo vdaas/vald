@@ -36,11 +36,12 @@ import (
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
-	"go.uber.org/goleak"
+	"github.com/vdaas/vald/internal/log/logger"
+	"github.com/vdaas/vald/internal/test/goleak"
 )
 
 func TestMain(m *testing.M) {
-	log.Init()
+	log.Init(log.WithLoggerType(logger.NOP.String()))
 	os.Exit(m.Run())
 }
 
@@ -422,9 +423,13 @@ func Test_reader_Open(t *testing.T) {
 								return
 							default:
 								if roopCnt == 0 {
-									_, _ = r.Read(bytes[0])
+									if _, err := r.Read(bytes[0]); errors.Is(err, io.EOF) {
+										return
+									}
 								} else {
-									_, _ = r.Read(bytes[1])
+									if _, err := r.Read(bytes[1]); errors.Is(err, io.EOF) {
+										return
+									}
 								}
 							}
 						}
@@ -455,6 +460,7 @@ func Test_reader_Open(t *testing.T) {
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
+
 			r := &reader{
 				eg:             test.fields.eg,
 				service:        test.fields.service,

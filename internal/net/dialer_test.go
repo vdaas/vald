@@ -40,8 +40,8 @@ import (
 	"github.com/vdaas/vald/internal/cache/gache"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/test/goleak"
 	"github.com/vdaas/vald/internal/tls"
-	"go.uber.org/goleak"
 )
 
 func Test_dialerCache_IP(t *testing.T) {

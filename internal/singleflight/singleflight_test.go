@@ -27,7 +27,7 @@ import (
 	"time"
 
 	"github.com/vdaas/vald/internal/errors"
-	"go.uber.org/goleak"
+	"github.com/vdaas/vald/internal/test/goleak"
 )
 
 func TestNew(t *testing.T) {
@@ -191,7 +191,6 @@ func Test_group_Do(t *testing.T) {
 				},
 			}
 		}(),
-
 		func() test {
 			var cnt uint32
 			var res string = "res_1"

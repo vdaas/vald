@@ -26,7 +26,7 @@ import (
 	"github.com/vdaas/vald/internal/db/nosql/cassandra"
 	"github.com/vdaas/vald/internal/errors"
 	testdata "github.com/vdaas/vald/internal/test"
-	"go.uber.org/goleak"
+	"github.com/vdaas/vald/internal/test/goleak"
 )
 
 func TestCassandra_Bind(t *testing.T) {
@@ -281,7 +281,7 @@ func TestCassandra_Bind(t *testing.T) {
 			}
 		}(),
 		func() test {
-			key := "PASSWORD"
+			key := "CASSANDRA_BIND_PASSWORD"
 			val := "cassandra_password"
 			return test{
 				name: "return Cassandra struct when Password is set via the envirionment value",
@@ -326,7 +326,6 @@ func TestCassandra_Bind(t *testing.T) {
 	for _, tc := range tests {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(tt)
@@ -857,7 +856,6 @@ func TestCassandra_Opts(t *testing.T) {
 	for _, tc := range tests {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(tt)
