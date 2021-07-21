@@ -452,12 +452,16 @@ func (n *ngt) insert(uuid string, vec []float32, t int64, validation bool) (err 
 		err = errors.ErrUUIDNotFound(0)
 		return err
 	}
+	/*
 	if validation {
-		_, ok := n.Exists(uuid)
-		if ok {
-			return errors.ErrUUIDAlreadyExists(uuid)
+		if !n.vq.DVExists(uuid) {
+			_, ok := n.kvs.Get(uuid)
+			if ok || n.vq.IVExists(uuid) {
+				return errors.ErrUUIDAlreadyExists(uuid)
+			}
 		}
 	}
+	*/
 	return n.vq.PushInsert(uuid, vec, t)
 }
 
