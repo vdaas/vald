@@ -27,13 +27,6 @@ import (
 	"go.uber.org/goleak"
 )
 
-var ngtComparator = []comparator.Option{
-	comparator.AllowUnexported(ngt{}),
-	// ignore C dependencies
-	comparator.IgnoreFields(ngt{},
-		"dimension", "prop", "ebuf", "index", "ospace"),
-}
-
 func TestWithInMemoryMode(t *testing.T) {
 	type T = ngt
 	type args struct {
