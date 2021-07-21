@@ -31,6 +31,11 @@ jobs:
         with:
           fetch-depth: 0
           token: ${{ secrets.DISPATCH_TOKEN }}
+      - uses: crazy-max/ghaction-import-gpg@v3
+        with:
+          gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
+          git-user-signingkey: true
+          git-commit-gpgsign: true
       - name: Get latest gitwerk
         run: |
           curl -LO "https://github.com/rinx/gitwerk/releases/download/v0.2.2/gitwerk-linux-amd64.zip"
@@ -91,9 +96,6 @@ jobs:
           CHANGELOG=`make changelog/next/print BODY="$BODY"`
           make changelog/update BODY="$BODY"
 
-          git config --global user.name "vdaas-ci"
-          git config --global user.email "ci@vdaas.org"
-
           git add \
             versions/VALD_VERSION \
             charts/vald/Chart.yaml \
@@ -105,7 +107,7 @@ jobs:
             charts/vald-helm-operator/values.schema.json \
             charts/vald-helm-operator/README.md \
             CHANGELOG.md
-          git commit --signoff -m ":bookmark: :robot: Release ${GITWERK_RESULT}"
+          git commit -S --signoff -m ":bookmark: :robot: Release ${GITWERK_RESULT}"
 
           git tag ${GITWERK_RESULT}
 
