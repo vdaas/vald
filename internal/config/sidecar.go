@@ -43,6 +43,9 @@ type AgentSidecar struct {
 	// FilenameSuffix represent suffix of backup filename
 	FilenameSuffix string `yaml:"filename_suffix" json:"filename_suffix"`
 
+	// KvsdbFilenameSuffix represent suffix of kvsdb backup filename
+	KvsdbFilenameSuffix string `yaml:"kvsdb_filename_suffix" json:"kvsdb_filename_suffix"`
+
 	// BlobStorage represent blob storage configurations
 	BlobStorage *Blob `yaml:"blob_storage" json:"blob_storage"`
 
@@ -67,6 +70,7 @@ func (s *AgentSidecar) Bind() *AgentSidecar {
 	s.PostStopTimeout = GetActualValue(s.PostStopTimeout)
 	s.Filename = GetActualValue(s.Filename)
 	s.FilenameSuffix = GetActualValue(s.FilenameSuffix)
+	s.KvsdbFilenameSuffix = GetActualValue(s.KvsdbFilenameSuffix)
 
 	if s.BlobStorage != nil {
 		s.BlobStorage = s.BlobStorage.Bind()

@@ -17,4 +17,22 @@
 // Package errors provides error types and function
 package errors
 
-var ErrInvalidReconcilerConfig = New("invalid reconciler config")
+var (
+	ErrInvalidReconcilerConfig = New("invalid reconciler config")
+
+	ErrK8sResourceNotFound = func(err error) error {
+		return Wrap(err, "k8s resource not found")
+	}
+
+	ErrK8sFailedToCreateJob = func(err error) error {
+		return Wrap(err, "failed to create k8s job")
+	}
+
+	ErrK8sFailedToDeleteJob = func(err error) error {
+		return Wrap(err, "failed to delete k8s job")
+	}
+
+	ErrEmptyReconcileResult = func(resType string) error {
+		return Errorf("reconcile result is empty: %s", resType)
+	}
+)

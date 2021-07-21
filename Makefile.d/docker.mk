@@ -350,3 +350,37 @@ docker/build/loadtest:
 	    -t $(ORG)/$(LOADTEST_IMAGE):$(TAG) . \
 	    --build-arg MAINTAINER=$(MAINTAINER) \
 	    --build-arg GO_VERSION=$(GO_VERSION)
+
+.PHONY: docker/name/rebalancer-storage-controller
+docker/name/rebalancer-storage-controller:
+	@echo "$(ORG)/$(REBALANCER_STORAGE_CONTROLLER_IMAGE)"
+
+.PHONY: docker/build/rebalancer-storage-controller
+## build rebalancer-storage-controller image
+docker/build/rebalancer-storage-controller:
+	$(DOCKER) build \
+	    $(DOCKER_OPTS) \
+	    -f dockers/rebalancer/storage/controller/Dockerfile \
+	    -t $(ORG)/$(REBALANCER_STORAGE_CONTROLLER_IMAGE):$(TAG) . \
+	    --build-arg GO_VERSION=$(GO_VERSION) \
+	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
+	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
+	    --build-arg MAINTAINER=$(MAINTAINER) \
+	    --build-arg UPX_OPTIONS=$(UPX_OPTIONS)
+
+.PHONY: docker/name/rebalancer-storage-job
+docker/name/rebalancer-storage-job:
+	@echo "$(ORG)/$(REBALANCER_STORAGE_JOB_IMAGE)"
+
+.PHONY: docker/build/rebalancer-storage-job
+## build rebalancer-storage-job image
+docker/build/rebalancer-storage-job:
+	$(DOCKER) build \
+	    $(DOCKER_OPTS) \
+	    -f dockers/rebalancer/storage/job/Dockerfile \
+	    -t $(ORG)/$(REBALANCER_STORAGE_JOB_IMAGE):$(TAG) . \
+	    --build-arg GO_VERSION=$(GO_VERSION) \
+	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
+	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
+	    --build-arg MAINTAINER=$(MAINTAINER) \
+	    --build-arg UPX_OPTIONS=$(UPX_OPTIONS)

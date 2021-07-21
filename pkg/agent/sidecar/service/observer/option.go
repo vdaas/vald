@@ -111,6 +111,15 @@ func WithBlobStorage(storage storage.Storage) Option {
 	}
 }
 
+func WithKvsdbBlobStorage(storage storage.Storage) Option {
+	return func(o *observer) error {
+		if storage != nil {
+			o.kvsdbStorage = storage
+		}
+		return nil
+	}
+}
+
 func WithHooks(hooks ...Hook) Option {
 	return func(o *observer) error {
 		if hooks == nil {

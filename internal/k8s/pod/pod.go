@@ -44,6 +44,8 @@ type reconciler struct {
 	onReconcile func(podList map[string][]Pod)
 }
 
+type PodList = corev1.PodList
+
 type Pod struct {
 	Name       string
 	NodeName   string
@@ -66,7 +68,7 @@ func New(opts ...Option) PodWatcher {
 }
 
 func (r *reconciler) Reconcile(ctx context.Context, req reconcile.Request) (res reconcile.Result, err error) {
-	ps := &corev1.PodList{}
+	ps := new(corev1.PodList)
 
 	err = r.mgr.GetClient().List(ctx, ps)
 
