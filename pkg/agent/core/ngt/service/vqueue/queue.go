@@ -69,15 +69,15 @@ type vqueue struct {
 }
 
 type index struct {
-	uuid   string
-	vector []float32
 	date   int64
+	vector []float32
+	uuid   string
 }
 
 type key struct {
-	uuid   string
-	vector []float32
 	date   int64
+	vector []float32
+	uuid   string
 }
 
 func New(opts ...Option) (Queue, error) {
@@ -162,12 +162,22 @@ func (v *vqueue) PushInsert(uuid string, vector []float32, date int64) error {
 	if date == 0 {
 		date = time.Now().UnixNano()
 	}
+	ddate, ok := v.udim.Load(uuid)
+	if ok && ddate > date {
+		return nil
+	}
 	idx := index{
 		uuid:   uuid,
 		vector: vector,
 		date:   date,
 	}
-	v.uiim.Store(uuid, idx)
+	oidx, loaded := v.uiim.LoadOrStore(uuid, idx)
+	if loaded {
+		if oidx.date > idx.date {
+			return nil
+		}
+		v.uiim.Store(uuid, idx)
+	}
 	v.ich <- idx
 	return nil
 }
@@ -180,7 +190,13 @@ func (v *vqueue) PushDelete(uuid string, date int64) error {
 	if date == 0 {
 		date = time.Now().UnixNano()
 	}
-	v.udim.Store(uuid, date)
+	odate, loaded := v.udim.LoadOrStore(uuid, date)
+	if loaded {
+		if odate > date {
+			return nil
+		}
+		v.udim.Store(uuid, date)
+	}
 	v.dch <- key{
 		uuid: uuid,
 		date: date,
@@ -281,12 +297,24 @@ func (v *vqueue) DVExists(uuid string) bool {
 }
 
 func (v *vqueue) addInsert(i index) {
+	date, ok := v.udim.Load(i.uuid)
+	if ok && i.date < date {
+		return
+	}
+	idx, ok := v.uiim.Load(i.uuid)
+	if ok && i.date < idx.date {
+		return
+	}
 	v.imu.Lock()
 	v.uii = append(v.uii, i)
 	v.imu.Unlock()
 }
 
 func (v *vqueue) addDelete(d key) {
+	date, ok := v.udim.Load(d.uuid)
+	if ok && d.date < date {
+		return
+	}
 	v.dmu.Lock()
 	v.udk = append(v.udk, d)
 	v.dmu.Unlock()
