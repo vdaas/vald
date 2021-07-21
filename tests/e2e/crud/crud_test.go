@@ -44,6 +44,7 @@ var (
 	searchByIDNum int
 	getObjectNum  int
 	updateNum     int
+	upsertNum     int
 	removeNum     int
 
 	insertFrom     int
@@ -51,6 +52,7 @@ var (
 	searchByIDFrom int
 	getObjectFrom  int
 	updateFrom     int
+	upsertFrom     int
 	removeFrom     int
 
 	waitAfterInsertDuration time.Duration
@@ -72,6 +74,7 @@ func init() {
 	flag.IntVar(&searchByIDNum, "search-by-id-num", 100, "number of id-vector pairs used for search-by-id")
 	flag.IntVar(&getObjectNum, "get-object-num", 100, "number of id-vector pairs used for get-object")
 	flag.IntVar(&updateNum, "update-num", 10000, "number of id-vector pairs used for update")
+	flag.IntVar(&upsertNum, "upsert-num", 10000, "number of id-vector pairs used for upsert")
 	flag.IntVar(&removeNum, "remove-num", 10000, "number of id-vector pairs used for remove")
 
 	flag.IntVar(&insertFrom, "insert-from", 0, "first index of id-vector pairs used for insert")
@@ -79,6 +82,7 @@ func init() {
 	flag.IntVar(&searchByIDFrom, "search-by-id-from", 0, "first index of id-vector pairs used for search-by-id")
 	flag.IntVar(&getObjectFrom, "get-object-from", 0, "first index of id-vector pairs used for get-object")
 	flag.IntVar(&updateFrom, "update-from", 0, "first index of id-vector pairs used for update")
+	flag.IntVar(&upsertFrom, "upsert-from", 0, "first index of id-vector pairs used for upsert")
 	flag.IntVar(&removeFrom, "remove-from", 0, "first index of id-vector pairs used for remove")
 
 	datasetName := flag.String("dataset", "fashion-mnist-784-euclidean.hdf5", "dataset")
@@ -186,6 +190,24 @@ func TestE2EUpdateOnly(t *testing.T) {
 	}
 }
 
+func TestE2EUpsertOnly(t *testing.T) {
+	ctx := context.Background()
+
+	op, err := operation.New(host, port)
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	err = op.Upsert(t, ctx, operation.Dataset{
+		Train: ds.Train[upsertFrom : upsertFrom+upsertNum],
+	})
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	teardown()
+}
+
 func TestE2ERemoveOnly(t *testing.T) {
 	ctx := context.Background()
 
@@ -264,6 +286,11 @@ func TestE2EStandardCRUD(t *testing.T) {
 		t.Fatalf("an error occurred: %s", err)
 	}
 
+	err = op.Exists(t, ctx, "0")
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
 	err = op.GetObject(t, ctx, operation.Dataset{
 		Train: ds.Train[getObjectFrom : getObjectFrom+getObjectNum],
 	})
@@ -273,6 +300,13 @@ func TestE2EStandardCRUD(t *testing.T) {
 
 	err = op.Update(t, ctx, operation.Dataset{
 		Train: ds.Train[updateFrom : updateFrom+updateNum],
+	})
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	err = op.Upsert(t, ctx, operation.Dataset{
+		Train: ds.Train[upsertFrom : upsertFrom+upsertNum],
 	})
 	if err != nil {
 		t.Fatalf("an error occurred: %s", err)

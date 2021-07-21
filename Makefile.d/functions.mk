@@ -81,6 +81,7 @@ define run-e2e-crud-test
 	    -search-by-id-num=$(E2E_SEARCH_BY_ID_COUNT) \
 	    -get-object-num=$(E2E_GET_OBJECT_COUNT) \
 	    -update-num=$(E2E_UPDATE_COUNT) \
+	    -upsert-num=$(E2E_UPSERT_COUNT) \
 	    -remove-num=$(E2E_REMOVE_COUNT) \
 	    -wait-after-insert=$(E2E_WAIT_FOR_CREATE_INDEX_DURATION) \
 	    -portforward \

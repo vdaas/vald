@@ -52,6 +52,7 @@ type Client interface {
 	Upsert(t *testing.T, ctx context.Context, ds Dataset) error
 	Remove(t *testing.T, ctx context.Context, ds Dataset) error
 	GetObject(t *testing.T, ctx context.Context, ds Dataset) error
+	Exists(t *testing.T, ctx context.Context, id string) error
 	CreateIndex(t *testing.T, ctx context.Context) error
 	SaveIndex(t *testing.T, ctx context.Context) error
 	IndexInfo(t *testing.T, ctx context.Context) (*payload.Info_Index_Count, error)
@@ -423,7 +424,7 @@ func (c *client) Upsert(t *testing.T, ctx context.Context, ds Dataset) error {
 		err := sc.Send(&payload.Upsert_Request{
 			Vector: &payload.Object_Vector{
 				Id:     id,
-				Vector: append(v[1:], v[0]),
+				Vector: v,
 			},
 			Config: &payload.Upsert_Config{
 				SkipStrictExistCheck: false,
@@ -509,6 +510,28 @@ func (c *client) Remove(t *testing.T, ctx context.Context, ds Dataset) error {
 	wg.Wait()
 
 	t.Log("remove operation finished")
+
+	return nil
+}
+
+func (c *client) Exists(t *testing.T, ctx context.Context, id string) error {
+	t.Log("exists operation started")
+
+	client, err := c.getClient(ctx)
+	if err != nil {
+		return err
+	}
+
+	req := &payload.Object_ID{
+		Id: id,
+	}
+
+	_, err = client.Exists(ctx, req)
+	if err != nil {
+		return err
+	}
+
+	t.Log("exists operation finished")
 
 	return nil
 }

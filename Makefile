@@ -270,6 +270,7 @@ E2E_SEARCH_COUNT                   ?= 1000
 E2E_SEARCH_BY_ID_COUNT             ?= 100
 E2E_GET_OBJECT_COUNT               ?= 10
 E2E_UPDATE_COUNT                   ?= 10
+E2E_UPSERT_COUNT                   ?= 10
 E2E_REMOVE_COUNT                   ?= 3
 E2E_WAIT_FOR_CREATE_INDEX_DURATION ?= 8m
 E2E_TARGET_NAME                    ?= vald-lb-gateway

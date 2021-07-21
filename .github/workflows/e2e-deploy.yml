@@ -92,6 +92,7 @@ jobs:
             -search-by-id-num=10000 \
             -get-object-num=100 \
             -update-num=100 \
+            -upsert-num=100 \
             -remove-num=100 \
             -wait-after-insert=3m \
             -portforward \
