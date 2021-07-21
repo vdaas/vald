@@ -23,8 +23,6 @@ defaults:
         enabled: true
 
 gateway:
-  backup:
-    enabled: false
   lb:
     podAnnotations:
       profefe.com/enable: "true"
@@ -34,8 +32,6 @@ gateway:
       requests:
         cpu: 100m
         memory: 50Mi
-  meta:
-    enabled: false
 
 agent:
   podAnnotations:
@@ -63,12 +59,6 @@ discoverer:
       memory: 50Mi
 
 manager:
-  compressor:
-    enabled: false
-
-  backup:
-    enabled: false
-
   index:
     podAnnotations:
       profefe.com/enable: "true"
@@ -78,6 +68,3 @@ manager:
       requests:
         cpu: 100m
         memory: 30Mi
-
-meta:
-  enabled: false
