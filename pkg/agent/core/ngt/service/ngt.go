@@ -452,6 +452,7 @@ func (n *ngt) insert(uuid string, vec []float32, t int64, validation bool) (err 
 		err = errors.ErrUUIDNotFound(0)
 		return err
 	}
+	/*
 	if validation {
 		if !n.vq.DVExists(uuid) {
 			_, ok := n.kvs.Get(uuid)
@@ -460,6 +461,7 @@ func (n *ngt) insert(uuid string, vec []float32, t int64, validation bool) (err 
 			}
 		}
 	}
+	*/
 	return n.vq.PushInsert(uuid, vec, t)
 }
 
