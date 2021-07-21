@@ -26,8 +26,6 @@ agent:
     search_edge_size: 10
 
 gateway:
-  vald:
-    enabled: false
   lb:
     enabled: false
 

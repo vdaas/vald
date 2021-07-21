@@ -715,67 +715,6 @@ Configuration
 | gateway.lb.version | string | `"v0.0.0"` | version of gateway config |
 | gateway.lb.volumeMounts | list | `[]` | volume mounts |
 | gateway.lb.volumes | list | `[]` | volumes |
-| gateway.vald.affinity.nodeAffinity.preferredDuringSchedulingIgnoredDuringExecution | list | `[]` | node affinity preferred scheduling terms |
-| gateway.vald.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms | list | `[]` | node affinity required node selectors |
-| gateway.vald.affinity.podAffinity.preferredDuringSchedulingIgnoredDuringExecution | list | `[]` | pod affinity preferred scheduling terms |
-| gateway.vald.affinity.podAffinity.requiredDuringSchedulingIgnoredDuringExecution | list | `[]` | pod affinity required scheduling terms |
-| gateway.vald.affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution | list | `[{"podAffinityTerm":{"labelSelector":{"matchExpressions":[{"key":"app","operator":"In","values":["vald-gateway"]}]},"topologyKey":"kubernetes.io/hostname"},"weight":100}]` | pod anti-affinity preferred scheduling terms |
-| gateway.vald.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution | list | `[]` | pod anti-affinity required scheduling terms |
-| gateway.vald.annotations | object | `{}` | deployment annotations |
-| gateway.vald.enabled | bool | `false` | gateway enabled |
-| gateway.vald.env | list | `[{"name":"MY_POD_NAMESPACE","valueFrom":{"fieldRef":{"fieldPath":"metadata.namespace"}}}]` | environment variables |
-| gateway.vald.externalTrafficPolicy | string | `""` | external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local |
-| gateway.vald.gateway_config.agent_namespace | string | `"_MY_POD_NAMESPACE_"` | agent namespace |
-| gateway.vald.gateway_config.discoverer.agent_client_options | object | `{}` | gRPC client options for agents (overrides defaults.grpc.client) |
-| gateway.vald.gateway_config.discoverer.client | object | `{}` | gRPC client for discoverer (overrides defaults.grpc.client) |
-| gateway.vald.gateway_config.discoverer.duration | string | `"200ms"` | discoverer duration |
-| gateway.vald.gateway_config.index_replica | int | `5` | number of index replica |
-| gateway.vald.gateway_config.meta.cache_expiration | string | `"30m"` | meta cache expire duration |
-| gateway.vald.gateway_config.meta.client | object | `{}` | gRPC client for meta (overrides defaults.grpc.client) |
-| gateway.vald.gateway_config.meta.enable_cache | bool | `true` | meta cache enabled |
-| gateway.vald.gateway_config.meta.expired_cache_check_duration | string | `"3m"` | meta cache expired check duration |
-| gateway.vald.gateway_config.node_name | string | `""` | node name |
-| gateway.vald.hpa.enabled | bool | `true` | HPA enabled |
-| gateway.vald.hpa.targetCPUUtilizationPercentage | int | `80` | HPA CPU utilization percentage |
-| gateway.vald.image.pullPolicy | string | `"Always"` | image pull policy |
-| gateway.vald.image.repository | string | `"vdaas/vald-gateway"` | image repository |
-| gateway.vald.image.tag | string | `""` | image tag (overrides defaults.image.tag) |
-| gateway.vald.ingress.annotations | object | `{"nginx.ingress.kubernetes.io/grpc-backend":"true"}` | annotations for ingress |
-| gateway.vald.ingress.enabled | bool | `false` | gateway ingress enabled |
-| gateway.vald.ingress.host | string | `"vald.gateway.vald.vdaas.org"` | ingress hostname |
-| gateway.vald.ingress.pathType | string | `"ImplementationSpecific"` | gateway ingress pathType |
-| gateway.vald.ingress.servicePort | string | `"grpc"` | service port to be exposed by ingress |
-| gateway.vald.initContainers | list | `[{"image":"busybox","name":"wait-for-discoverer","sleepDuration":2,"target":"discoverer","type":"wait-for"},{"image":"busybox","name":"wait-for-agent","sleepDuration":2,"target":"agent","type":"wait-for"}]` | init containers |
-| gateway.vald.kind | string | `"Deployment"` | deployment kind: Deployment or DaemonSet |
-| gateway.vald.logging | object | `{}` | logging config (overrides defaults.logging) |
-| gateway.vald.maxReplicas | int | `9` | maximum number of replicas. if HPA is disabled, this value will be ignored. |
-| gateway.vald.maxUnavailable | string | `"50%"` | maximum number of unavailable replicas |
-| gateway.vald.minReplicas | int | `3` | minimum number of replicas. if HPA is disabled, the replicas will be set to this value |
-| gateway.vald.name | string | `"vald-gateway"` | name of gateway deployment |
-| gateway.vald.nodeName | string | `""` | node name |
-| gateway.vald.nodeSelector | object | `{}` | node selector |
-| gateway.vald.observability | object | `{"jaeger":{"service_name":"vald-gateway"},"stackdriver":{"profiler":{"service":"vald-gateway"}}}` | observability config (overrides defaults.observability) |
-| gateway.vald.podAnnotations | object | `{}` | pod annotations |
-| gateway.vald.podPriority.enabled | bool | `true` | gateway pod PriorityClass enabled |
-| gateway.vald.podPriority.value | int | `1000000` | gateway pod PriorityClass value |
-| gateway.vald.podSecurityContext | object | `{"fsGroup":3002,"fsGroupChangePolicy":"OnRootMismatch","runAsGroup":2002,"runAsNonRoot":true,"runAsUser":1002}` | security context for pod |
-| gateway.vald.progressDeadlineSeconds | int | `600` | progress deadline seconds |
-| gateway.vald.resources | object | `{"limits":{"cpu":"2000m","memory":"700Mi"},"requests":{"cpu":"200m","memory":"150Mi"}}` | compute resources |
-| gateway.vald.revisionHistoryLimit | int | `2` | number of old history to retain to allow rollback |
-| gateway.vald.rollingUpdate.maxSurge | string | `"25%"` | max surge of rolling update |
-| gateway.vald.rollingUpdate.maxUnavailable | string | `"25%"` | max unavailable of rolling update |
-| gateway.vald.securityContext | object | `{"allowPrivilegeEscalation":false,"capabilities":{"drop":["ALL"]},"privileged":false,"readOnlyRootFilesystem":true,"runAsGroup":2002,"runAsNonRoot":true,"runAsUser":1002}` | security context for container |
-| gateway.vald.server_config | object | `{"healths":{"liveness":{},"readiness":{}},"metrics":{"pprof":{},"prometheus":{}},"servers":{"grpc":{},"rest":{}}}` | server config (overrides defaults.server_config) |
-| gateway.vald.service.annotations | object | `{}` | service annotations |
-| gateway.vald.service.labels | object | `{}` | service labels |
-| gateway.vald.serviceType | string | `"ClusterIP"` | service type: ClusterIP, LoadBalancer or NodePort |
-| gateway.vald.terminationGracePeriodSeconds | int | `30` | duration in seconds pod needs to terminate gracefully |
-| gateway.vald.time_zone | string | `""` | Time zone |
-| gateway.vald.tolerations | list | `[]` | tolerations |
-| gateway.vald.topologySpreadConstraints | list | `[]` | topology spread constraints of gateway pods |
-| gateway.vald.version | string | `"v0.0.0"` | version of gateway config |
-| gateway.vald.volumeMounts | list | `[]` | volume mounts |
-| gateway.vald.volumes | list | `[]` | volumes |
 | initializer.cassandra.configmap.backup.enabled | bool | `true` | backup table enabled |
 | initializer.cassandra.configmap.backup.name | string | `"backup_vector"` | name of backup table |
 | initializer.cassandra.configmap.enabled | bool | `false` | cassandra schema configmap will be created |
