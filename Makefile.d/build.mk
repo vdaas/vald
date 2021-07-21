@@ -20,16 +20,8 @@ binary/build: \
 	cmd/agent/core/ngt/ngt \
 	cmd/agent/sidecar/sidecar \
 	cmd/discoverer/k8s/discoverer \
-	cmd/gateway/vald/vald \
 	cmd/gateway/lb/lb \
-	cmd/gateway/meta/meta \
-	cmd/gateway/backup/backup \
 	cmd/gateway/filter/filter \
-	cmd/meta/redis/meta \
-	cmd/meta/cassandra/meta \
-	cmd/manager/backup/mysql/backup \
-	cmd/manager/backup/cassandra/backup \
-	cmd/manager/compressor/compressor \
 	cmd/filter/ingress/tensorflow/tensorflow \
 	cmd/manager/index/index
 
@@ -122,33 +114,6 @@ cmd/discoverer/k8s/discoverer: \
 		-o $@ \
 		$(dir $@)main.go
 
-cmd/gateway/vald/vald: \
-	$(GO_SOURCES_INTERNAL) \
-	$(PBGOS) \
-	$(shell find ./cmd/gateway/vald -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go') \
-	$(shell find ./pkg/gateway/vald -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
-	CGO_ENABLED= \
-	GO111MODULE=on \
-	GOPRIVATE=$(GOPRIVATE) \
-	go build \
-		--ldflags "-s -w -extldflags=-static \
-		-X '$(GOPKG)/internal/info.Version=$(VERSION)' \
-		-X '$(GOPKG)/internal/info.GitCommit=$(GIT_COMMIT)' \
-		-X '$(GOPKG)/internal/info.BuildTime=$(DATETIME)' \
-		-X '$(GOPKG)/internal/info.GoVersion=$(GO_VERSION)' \
-		-X '$(GOPKG)/internal/info.GoOS=$(GOOS)' \
-		-X '$(GOPKG)/internal/info.GoArch=$(GOARCH)' \
-		-X '$(GOPKG)/internal/info.CGOEnabled=$${CGO_ENABLED}' \
-		-X '$(GOPKG)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)' \
-		-buildid=" \
-		-mod=readonly \
-		-modcacherw \
-		-a \
-		-tags "osusergo netgo static_build" \
-		-trimpath \
-		-o $@ \
-		$(dir $@)main.go
-
 cmd/gateway/lb/lb: \
 	$(GO_SOURCES_INTERNAL) \
 	$(PBGOS) \
@@ -176,200 +141,11 @@ cmd/gateway/lb/lb: \
 		-o $@ \
 		$(dir $@)main.go
 
-cmd/gateway/meta/meta: \
-	$(GO_SOURCES_INTERNAL) \
-	$(PBGOS) \
-	$(shell find ./cmd/gateway/meta -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go') \
-	$(shell find ./pkg/gateway/meta -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
-	CGO_ENABLED=0 \
-	GO111MODULE=on \
-	GOPRIVATE=$(GOPRIVATE) \
-	go build \
-		--ldflags "-s -w -extldflags=-static \
-		-X '$(GOPKG)/internal/info.Version=$(VERSION)' \
-		-X '$(GOPKG)/internal/info.GitCommit=$(GIT_COMMIT)' \
-		-X '$(GOPKG)/internal/info.BuildTime=$(DATETIME)' \
-		-X '$(GOPKG)/internal/info.GoVersion=$(GO_VERSION)' \
-		-X '$(GOPKG)/internal/info.GoOS=$(GOOS)' \
-		-X '$(GOPKG)/internal/info.GoArch=$(GOARCH)' \
-		-X '$(GOPKG)/internal/info.CGOEnabled=$${CGO_ENABLED}' \
-		-X '$(GOPKG)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)' \
-		-buildid=" \
-		-mod=readonly \
-		-modcacherw \
-		-a \
-		-tags "osusergo netgo static_build" \
-		-trimpath \
-		-o $@ \
-		$(dir $@)main.go
-
-cmd/gateway/backup/backup: \
-	$(GO_SOURCES_INTERNAL) \
-	$(PBGOS) \
-	$(shell find ./cmd/gateway/backup -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go') \
-	$(shell find ./pkg/gateway/backup -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
-	CGO_ENABLED=0 \
-	GO111MODULE=on \
-	GOPRIVATE=$(GOPRIVATE) \
-	go build \
-		--ldflags "-s -w -extldflags=-static \
-		-X '$(GOPKG)/internal/info.Version=$(VERSION)' \
-		-X '$(GOPKG)/internal/info.GitCommit=$(GIT_COMMIT)' \
-		-X '$(GOPKG)/internal/info.BuildTime=$(DATETIME)' \
-		-X '$(GOPKG)/internal/info.GoVersion=$(GO_VERSION)' \
-		-X '$(GOPKG)/internal/info.GoOS=$(GOOS)' \
-		-X '$(GOPKG)/internal/info.GoArch=$(GOARCH)' \
-		-X '$(GOPKG)/internal/info.CGOEnabled=$${CGO_ENABLED}' \
-		-X '$(GOPKG)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)' \
-		-buildid=" \
-		-mod=readonly \
-		-modcacherw \
-		-a \
-		-tags "osusergo netgo static_build" \
-		-trimpath \
-		-o $@ \
-		$(dir $@)main.go
-
 cmd/gateway/filter/filter: \
 	$(GO_SOURCES_INTERNAL) \
 	$(PBGOS) \
 	$(shell find ./cmd/gateway/filter -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go') \
 	$(shell find ./pkg/gateway/filter -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
-	CGO_ENABLED=0 \
-	GO111MODULE=on \
-	GOPRIVATE=$(GOPRIVATE) \
-	go build \
-		--ldflags "-s -w -extldflags=-static \
-		-X '$(GOPKG)/internal/info.Version=$(VERSION)' \
-		-X '$(GOPKG)/internal/info.GitCommit=$(GIT_COMMIT)' \
-		-X '$(GOPKG)/internal/info.BuildTime=$(DATETIME)' \
-		-X '$(GOPKG)/internal/info.GoVersion=$(GO_VERSION)' \
-		-X '$(GOPKG)/internal/info.GoOS=$(GOOS)' \
-		-X '$(GOPKG)/internal/info.GoArch=$(GOARCH)' \
-		-X '$(GOPKG)/internal/info.CGOEnabled=$${CGO_ENABLED}' \
-		-X '$(GOPKG)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)' \
-		-buildid=" \
-		-mod=readonly \
-		-modcacherw \
-		-a \
-		-tags "osusergo netgo static_build" \
-		-trimpath \
-		-o $@ \
-		$(dir $@)main.go
-
-cmd/meta/redis/meta: \
-	$(GO_SOURCES_INTERNAL) \
-	$(PBGOS) \
-	$(shell find ./cmd/meta/redis -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go') \
-	$(shell find ./pkg/meta/redis -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
-	CGO_ENABLED=0 \
-	GO111MODULE=on \
-	GOPRIVATE=$(GOPRIVATE) \
-	go build \
-		--ldflags "-s -w -extldflags=-static \
-		-X '$(GOPKG)/internal/info.Version=$(VERSION)' \
-		-X '$(GOPKG)/internal/info.GitCommit=$(GIT_COMMIT)' \
-		-X '$(GOPKG)/internal/info.BuildTime=$(DATETIME)' \
-		-X '$(GOPKG)/internal/info.GoVersion=$(GO_VERSION)' \
-		-X '$(GOPKG)/internal/info.GoOS=$(GOOS)' \
-		-X '$(GOPKG)/internal/info.GoArch=$(GOARCH)' \
-		-X '$(GOPKG)/internal/info.CGOEnabled=$${CGO_ENABLED}' \
-		-X '$(GOPKG)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)' \
-		-buildid=" \
-		-mod=readonly \
-		-modcacherw \
-		-a \
-		-tags "osusergo netgo static_build" \
-		-trimpath \
-		-o $@ \
-		$(dir $@)main.go
-
-cmd/meta/cassandra/meta: \
-	$(GO_SOURCES_INTERNAL) \
-	$(PBGOS) \
-	$(shell find ./cmd/meta/cassandra -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go') \
-	$(shell find ./pkg/meta/cassandra -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
-	CGO_ENABLED=0 \
-	GO111MODULE=on \
-	GOPRIVATE=$(GOPRIVATE) \
-	go build \
-		--ldflags "-s -w -extldflags=-static \
-		-X '$(GOPKG)/internal/info.Version=$(VERSION)' \
-		-X '$(GOPKG)/internal/info.GitCommit=$(GIT_COMMIT)' \
-		-X '$(GOPKG)/internal/info.BuildTime=$(DATETIME)' \
-		-X '$(GOPKG)/internal/info.GoVersion=$(GO_VERSION)' \
-		-X '$(GOPKG)/internal/info.GoOS=$(GOOS)' \
-		-X '$(GOPKG)/internal/info.GoArch=$(GOARCH)' \
-		-X '$(GOPKG)/internal/info.CGOEnabled=$${CGO_ENABLED}' \
-		-X '$(GOPKG)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)' \
-		-buildid=" \
-		-mod=readonly \
-		-modcacherw \
-		-a \
-		-tags "osusergo netgo static_build" \
-		-trimpath \
-		-o $@ \
-		$(dir $@)main.go
-
-cmd/manager/backup/mysql/backup: \
-	$(GO_SOURCES_INTERNAL) \
-	$(PBGOS) \
-	$(shell find ./cmd/manager/backup/mysql -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go') \
-	$(shell find ./pkg/manager/backup/mysql -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
-	CGO_ENABLED=0 \
-	GO111MODULE=on \
-	GOPRIVATE=$(GOPRIVATE) \
-	go build \
-		--ldflags "-s -w -extldflags=-static \
-		-X '$(GOPKG)/internal/info.Version=$(VERSION)' \
-		-X '$(GOPKG)/internal/info.GitCommit=$(GIT_COMMIT)' \
-		-X '$(GOPKG)/internal/info.BuildTime=$(DATETIME)' \
-		-X '$(GOPKG)/internal/info.GoVersion=$(GO_VERSION)' \
-		-X '$(GOPKG)/internal/info.GoOS=$(GOOS)' \
-		-X '$(GOPKG)/internal/info.GoArch=$(GOARCH)' \
-		-X '$(GOPKG)/internal/info.CGOEnabled=$${CGO_ENABLED}' \
-		-X '$(GOPKG)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)' \
-		-buildid=" \
-		-mod=readonly \
-		-modcacherw \
-		-a \
-		-tags "osusergo netgo static_build" \
-		-trimpath \
-		-o $@ \
-		$(dir $@)main.go
-
-cmd/manager/backup/cassandra/backup: \
-	$(GO_SOURCES_INTERNAL) \
-	$(PBGOS) \
-	$(shell find ./cmd/manager/backup/cassandra -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go') \
-	$(shell find ./pkg/manager/backup/cassandra -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
-	CGO_ENABLED=0 \
-	GO111MODULE=on \
-	GOPRIVATE=$(GOPRIVATE) \
-	go build \
-		--ldflags "-s -w -extldflags=-static \
-		-X '$(GOPKG)/internal/info.Version=$(VERSION)' \
-		-X '$(GOPKG)/internal/info.GitCommit=$(GIT_COMMIT)' \
-		-X '$(GOPKG)/internal/info.BuildTime=$(DATETIME)' \
-		-X '$(GOPKG)/internal/info.GoVersion=$(GO_VERSION)' \
-		-X '$(GOPKG)/internal/info.GoOS=$(GOOS)' \
-		-X '$(GOPKG)/internal/info.GoArch=$(GOARCH)' \
-		-X '$(GOPKG)/internal/info.CGOEnabled=$${CGO_ENABLED}' \
-		-X '$(GOPKG)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)' \
-		-buildid=" \
-		-mod=readonly \
-		-modcacherw \
-		-a \
-		-tags "osusergo netgo static_build" \
-		-trimpath \
-		-o $@ \
-		$(dir $@)main.go
-
-cmd/manager/compressor/compressor: \
-	$(GO_SOURCES_INTERNAL) \
-	$(PBGOS) \
-	$(shell find ./cmd/manager/compressor -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go') \
-	$(shell find ./pkg/manager/compressor -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
 	CGO_ENABLED=0 \
 	GO111MODULE=on \
 	GOPRIVATE=$(GOPRIVATE) \
@@ -535,19 +311,7 @@ artifacts/vald-discoverer-k8s-$(GOOS)-$(GOARCH).zip: cmd/discoverer/k8s/discover
 	$(call mkdir, $(dir $@))
 	zip --junk-paths $@ $<
 
-artifacts/vald-gateway-$(GOOS)-$(GOARCH).zip: cmd/gateway/vald/vald
-	$(call mkdir, $(dir $@))
-	zip --junk-paths $@ $<
-
 artifacts/vald-lb-gateway-$(GOOS)-$(GOARCH).zip: cmd/gateway/lb/lb
-	$(call mkdir, $(dir $@))
-	zip --junk-paths $@ $<
-
-artifacts/vald-meta-gateway-$(GOOS)-$(GOARCH).zip: cmd/gateway/meta/meta
-	$(call mkdir, $(dir $@))
-	zip --junk-paths $@ $<
-
-artifacts/vald-backup-gateway-$(GOOS)-$(GOARCH).zip: cmd/gateway/backup/backup
 	$(call mkdir, $(dir $@))
 	zip --junk-paths $@ $<
 
@@ -555,30 +319,9 @@ artifacts/vald-filter-gateway-$(GOOS)-$(GOARCH).zip: cmd/gateway/filter/filter
 	$(call mkdir, $(dir $@))
 	zip --junk-paths $@ $<
 
-artifacts/vald-meta-redis-$(GOOS)-$(GOARCH).zip: cmd/meta/redis/meta
-	$(call mkdir, $(dir $@))
-	zip --junk-paths $@ $<
-
-artifacts/vald-meta-cassandra-$(GOOS)-$(GOARCH).zip: cmd/meta/cassandra/meta
-	$(call mkdir, $(dir $@))
-	zip --junk-paths $@ $<
-
-artifacts/vald-manager-backup-mysql-$(GOOS)-$(GOARCH).zip: cmd/manager/backup/mysql/backup
-	$(call mkdir, $(dir $@))
-	zip --junk-paths $@ $<
-
-artifacts/vald-manager-backup-cassandra-$(GOOS)-$(GOARCH).zip: cmd/manager/backup/cassandra/backup
-	$(call mkdir, $(dir $@))
-	zip --junk-paths $@ $<
-
-artifacts/vald-manager-compressor-$(GOOS)-$(GOARCH).zip: cmd/manager/compressor/compressor
-	$(call mkdir, $(dir $@))
-	zip --junk-paths $@ $<
-
 artifacts/vald-manager-index-$(GOOS)-$(GOARCH).zip: cmd/manager/index/index
 	$(call mkdir, $(dir $@))
 	zip --junk-paths $@ $<
-
 
 artifacts/vald-filter-ingress-tensorflow-$(GOOS)-$(GOARCH).zip: cmd/filter/ingress/tensorflow/tensorflow
 	$(call mkdir, $(dir $@))
