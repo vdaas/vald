@@ -1098,6 +1098,8 @@ func Test_ngt_create(t *testing.T) {
 				inMemory:   false,
 				dimension:  9,
 				objectType: Uint8,
+				radius:     float32(-1.0),
+				epsilon:    float32(0.01),
 			},
 			want: want{
 				err: nil,
@@ -1110,6 +1112,8 @@ func Test_ngt_create(t *testing.T) {
 				inMemory:   false,
 				dimension:  9,
 				objectType: Uint8,
+				radius:     float32(-1.0),
+				epsilon:    float32(0.01),
 			},
 			beforeFunc: func() {
 				_ = os.Mkdir("/tmp/ngt-51", 0750)
@@ -1125,6 +1129,8 @@ func Test_ngt_create(t *testing.T) {
 				inMemory:   true,
 				dimension:  9,
 				objectType: Uint8,
+				radius:     float32(-1.0),
+				epsilon:    float32(0.01),
 			},
 			want: want{
 				err: nil,
