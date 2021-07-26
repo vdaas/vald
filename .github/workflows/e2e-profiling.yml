@@ -124,3 +124,36 @@ jobs:
         with:
           name: profiles
           path: profiles/*
+      - uses: actions/cache@v2
+        id: cache
+        with:
+          path: ./profiles-master
+          key: ${{ runner.os }}-profiles-master-${{ github.sha }}
+          restore-keys: ${{ runner.os }}-profiles-master-
+      - name: Generate graphs
+        run: |
+          sudo apt update
+          sudo apt install -y graphviz
+          mkdir -p graphs
+          for svc in vald-agent-ngt vald-lb-gateway vald-discoverer vald-manager-index
+          do
+            for t in heap cpu
+            do
+              echo "generating: graphs/${svc}-${t}-${GITHUB_SHA::6}.svg"
+              go tool pprof --svg profiles/${svc}-${t}.pb > graphs/${svc}-${t}-${GITHUB_SHA::6}.svg
+              if [ -f profiles-master/${svc}-${t}.pb ]; then
+                echo "generating: graphs/${svc}-${t}-master-${GITHUB_SHA::6}.svg"
+                go tool pprof --svg -base=profiles-master/${svc}-${t}.pb profiles/${svc}-${t}.pb > graphs/${svc}-${t}-master-${GITHUB_SHA::6}.svg
+              else
+                echo "skipping: profiles-master/${svc}-${t}.pb does not exist."
+              fi
+            done
+          done
+      - name: Update cache
+        run: |
+          mkdir -p profiles-master
+          cp -f profiles/* profiles-master/
+      - uses: actions/upload-artifact@v2
+        with:
+          name: graphs
+          path: graphs/*
