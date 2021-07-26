@@ -925,7 +925,7 @@ func Test_ngt_loadOptions(t *testing.T) {
 			// ebuf:                test.fields.ebuf,
 			// index:               test.fields.index,
 			// ospace:              test.fields.ospace,
-			//mu: fields.mu,
+			// mu: fields.mu,
 		}
 		n.setup()
 		return n, nil
@@ -1127,7 +1127,7 @@ func Test_ngt_create(t *testing.T) {
 				objectType: Uint8,
 			},
 			beforeFunc: func() {
-				_ = os.Mkdir("/tmp/ngt-52", 0777)
+				_ = os.Mkdir("/tmp/ngt-52", 0o777)
 			},
 			want: want{
 				err: nil,
@@ -1305,7 +1305,7 @@ func Test_ngt_open(t *testing.T) {
 			},
 			beforeFunc: func(*testing.T) {
 				t.Helper()
-				_ = os.Mkdir("/tmp/ngt-63", 0777)
+				_ = os.Mkdir("/tmp/ngt-63", 0o777)
 			},
 			checkFunc: func(w want, e error) error {
 				if e == nil {
@@ -2099,8 +2099,10 @@ func Test_ngt_Insert(t *testing.T) {
 		{
 			name: "return object id when object type is uint8 and all vector elem are min value",
 			args: args{
-				vec: []float32{math.MinInt8, math.MinInt8, math.MinInt8, math.MinInt8,
-					math.MinInt8, math.MinInt8, math.MinInt8, math.MinInt8, math.MinInt8},
+				vec: []float32{
+					math.MinInt8, math.MinInt8, math.MinInt8, math.MinInt8,
+					math.MinInt8, math.MinInt8, math.MinInt8, math.MinInt8, math.MinInt8,
+				},
 			},
 			fields: fields{
 				idxPath:             "/tmp/ngt-93",
@@ -2120,8 +2122,10 @@ func Test_ngt_Insert(t *testing.T) {
 		{
 			name: "return object id when object type is uint8 and all vector elem are max value",
 			args: args{
-				vec: []float32{math.MaxUint8, math.MaxUint8, math.MaxUint8, math.MaxUint8,
-					math.MaxUint8, math.MaxUint8, math.MaxUint8, math.MaxUint8, math.MaxUint8},
+				vec: []float32{
+					math.MaxUint8, math.MaxUint8, math.MaxUint8, math.MaxUint8,
+					math.MaxUint8, math.MaxUint8, math.MaxUint8, math.MaxUint8, math.MaxUint8,
+				},
 			},
 			fields: fields{
 				idxPath:             "/tmp/ngt-94",
@@ -2181,8 +2185,10 @@ func Test_ngt_Insert(t *testing.T) {
 		{
 			name: "return object id when object type is float and all vector elem are min value",
 			args: args{
-				vec: []float32{math.SmallestNonzeroFloat32, math.SmallestNonzeroFloat32, math.SmallestNonzeroFloat32, math.SmallestNonzeroFloat32,
-					math.SmallestNonzeroFloat32, math.SmallestNonzeroFloat32, math.SmallestNonzeroFloat32, math.SmallestNonzeroFloat32, math.SmallestNonzeroFloat32},
+				vec: []float32{
+					math.SmallestNonzeroFloat32, math.SmallestNonzeroFloat32, math.SmallestNonzeroFloat32, math.SmallestNonzeroFloat32,
+					math.SmallestNonzeroFloat32, math.SmallestNonzeroFloat32, math.SmallestNonzeroFloat32, math.SmallestNonzeroFloat32, math.SmallestNonzeroFloat32,
+				},
 			},
 			fields: fields{
 				idxPath:             "/tmp/ngt-97",
@@ -2202,8 +2208,10 @@ func Test_ngt_Insert(t *testing.T) {
 		{
 			name: "return object id when object type is float and all vector elem are max value",
 			args: args{
-				vec: []float32{math.MaxFloat32, math.MaxFloat32, math.MaxFloat32, math.MaxFloat32,
-					math.MaxFloat32, math.MaxFloat32, math.MaxFloat32, math.MaxFloat32, math.MaxFloat32},
+				vec: []float32{
+					math.MaxFloat32, math.MaxFloat32, math.MaxFloat32, math.MaxFloat32,
+					math.MaxFloat32, math.MaxFloat32, math.MaxFloat32, math.MaxFloat32, math.MaxFloat32,
+				},
 			},
 			fields: fields{
 				idxPath:             "/tmp/ngt-98",
@@ -2393,8 +2401,10 @@ func Test_ngt_InsertCommit(t *testing.T) {
 		{
 			name: "return object id when object type is uint8 and all vector elem are min value",
 			args: args{
-				vec: []float32{math.MinInt8, math.MinInt8, math.MinInt8, math.MinInt8,
-					math.MinInt8, math.MinInt8, math.MinInt8, math.MinInt8, math.MinInt8},
+				vec: []float32{
+					math.MinInt8, math.MinInt8, math.MinInt8, math.MinInt8,
+					math.MinInt8, math.MinInt8, math.MinInt8, math.MinInt8, math.MinInt8,
+				},
 			},
 			fields: fields{
 				idxPath:             "/tmp/ngt-103",
@@ -2414,8 +2424,10 @@ func Test_ngt_InsertCommit(t *testing.T) {
 		{
 			name: "return object id when object type is uint8 and all vector elem are max value",
 			args: args{
-				vec: []float32{math.MaxUint8, math.MaxUint8, math.MaxUint8, math.MaxUint8,
-					math.MaxUint8, math.MaxUint8, math.MaxUint8, math.MaxUint8, math.MaxUint8},
+				vec: []float32{
+					math.MaxUint8, math.MaxUint8, math.MaxUint8, math.MaxUint8,
+					math.MaxUint8, math.MaxUint8, math.MaxUint8, math.MaxUint8, math.MaxUint8,
+				},
 			},
 			fields: fields{
 				idxPath:             "/tmp/ngt-104",
@@ -2475,8 +2487,10 @@ func Test_ngt_InsertCommit(t *testing.T) {
 		{
 			name: "return object id when object type is float and all vector elem are min value",
 			args: args{
-				vec: []float32{math.SmallestNonzeroFloat32, math.SmallestNonzeroFloat32, math.SmallestNonzeroFloat32, math.SmallestNonzeroFloat32,
-					math.SmallestNonzeroFloat32, math.SmallestNonzeroFloat32, math.SmallestNonzeroFloat32, math.SmallestNonzeroFloat32, math.SmallestNonzeroFloat32},
+				vec: []float32{
+					math.SmallestNonzeroFloat32, math.SmallestNonzeroFloat32, math.SmallestNonzeroFloat32, math.SmallestNonzeroFloat32,
+					math.SmallestNonzeroFloat32, math.SmallestNonzeroFloat32, math.SmallestNonzeroFloat32, math.SmallestNonzeroFloat32, math.SmallestNonzeroFloat32,
+				},
 			},
 			fields: fields{
 				idxPath:             "/tmp/ngt-107",
@@ -2496,8 +2510,10 @@ func Test_ngt_InsertCommit(t *testing.T) {
 		{
 			name: "return object id when object type is float and all vector elem are max value",
 			args: args{
-				vec: []float32{math.MaxFloat32, math.MaxFloat32, math.MaxFloat32, math.MaxFloat32,
-					math.MaxFloat32, math.MaxFloat32, math.MaxFloat32, math.MaxFloat32, math.MaxFloat32},
+				vec: []float32{
+					math.MaxFloat32, math.MaxFloat32, math.MaxFloat32, math.MaxFloat32,
+					math.MaxFloat32, math.MaxFloat32, math.MaxFloat32, math.MaxFloat32, math.MaxFloat32,
+				},
 			},
 			fields: fields{
 				idxPath:             "/tmp/ngt-108",
@@ -4910,8 +4926,7 @@ func Test_ngt_Close(t *testing.T) {
 		// ospace              C.NGTObjectSpace
 		mu *sync.RWMutex
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		fields     fields
