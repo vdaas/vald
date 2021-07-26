@@ -927,7 +927,9 @@ func Test_ngt_loadOptions(t *testing.T) {
 			// ospace:              test.fields.ospace,
 			// mu: fields.mu,
 		}
-		n.setup()
+		if err := n.setup(); err != nil {
+			return nil, err
+		}
 		return n, nil
 	}
 	defaultCheckFunc := func(w want, n *ngt, err error) error {
@@ -1127,7 +1129,7 @@ func Test_ngt_create(t *testing.T) {
 				objectType: Uint8,
 			},
 			beforeFunc: func() {
-				_ = os.Mkdir("/tmp/ngt-52", 0o777)
+				_ = os.Mkdir("/tmp/ngt-52", 0o750)
 			},
 			want: want{
 				err: nil,
@@ -1305,7 +1307,7 @@ func Test_ngt_open(t *testing.T) {
 			},
 			beforeFunc: func(*testing.T) {
 				t.Helper()
-				_ = os.Mkdir("/tmp/ngt-63", 0o777)
+				_ = os.Mkdir("/tmp/ngt-63", 0o750)
 			},
 			checkFunc: func(w want, e error) error {
 				if e == nil {
