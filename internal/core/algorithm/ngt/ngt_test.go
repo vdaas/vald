@@ -303,7 +303,7 @@ func TestLoad(t *testing.T) {
 						return errors.Errorf("vector exists but not inserted, vec: %s", v)
 					}
 
-					// check inserted vector can be searched
+					// check no vector can be searched
 					vs, err := n.Search([]float32{0, 1, 2, 3, 4, 5, 6, 7, 8}, 10, 0, 0)
 					if err != nil {
 						return err
@@ -433,7 +433,7 @@ func TestLoad(t *testing.T) {
 						return errors.Errorf("vector exists but not inserted, vec: %s", v)
 					}
 
-					// check inserted vector can be searched
+					// check no vector can be searched
 					vs, err := n.Search([]float32{0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8}, 10, 0, 0)
 					if err != nil {
 						return err
@@ -551,7 +551,63 @@ func TestLoad(t *testing.T) {
 						return errors.Errorf("vector exists but not inserted, vec: %s", v)
 					}
 
-					// check inserted vector can be searched
+					// check no vector can be searched
+					vs, err := n.Search(vec, 10, 0, 0)
+					if err != nil {
+						return err
+					}
+					if len(vs) != 0 {
+						t.Errorf("got vec is not the same as inserted vec, got: %v", vs)
+					}
+
+					return nil
+				},
+			}
+		}(),
+		func() test {
+			idxPath := "/tmp/ngt-16"
+			vec := []float32{0, 1, 2, 3, 4, 5, 6, 7, 8}
+			opts := []Option{
+				WithDimension(9),
+				WithIndexPath(idxPath),
+				WithObjectType(Float),
+			}
+
+			return test{
+				name: "Load success if the index path exists",
+				args: args{
+					opts: opts,
+				},
+				want: want{
+					want: &ngt{
+						idxPath:             idxPath,
+						radius:              DefaultRadius,
+						epsilon:             DefaultEpsilon,
+						poolSize:            DefaultPoolSize,
+						bulkInsertChunkSize: 100,
+						objectType:          Float,
+						mu:                  &sync.RWMutex{},
+					},
+				},
+				beforeFunc: func(t *testing.T, a args) {
+					t.Helper()
+
+					if err := os.Mkdir(idxPath, 0o750); err != nil {
+						t.Fatal(err)
+					}
+				},
+				checkFunc: func(w want, n NGT, e error) error {
+					if err := defaultCheckFunc(w, n, e); err != nil {
+						return err
+					}
+
+					// check no vector exists
+					v, err := n.GetVector(1)
+					if err == nil || len(v) > 0 {
+						return errors.Errorf("vector exists but not inserted, vec: %s", v)
+					}
+
+					// check no vector can be searched
 					vs, err := n.Search(vec, 10, 0, 0)
 					if err != nil {
 						return err
@@ -803,6 +859,13 @@ func Test_ngt_setup(t *testing.T) {
 			name: "return nil when object type is float",
 			fields: fields{
 				objectType: Float,
+			},
+			want: want{},
+		},
+		{
+			name: "return nil when object type is invalid value",
+			fields: fields{
+				objectType: 999,
 			},
 			want: want{},
 		},
@@ -4399,6 +4462,39 @@ func Test_ngt_GetVector(t *testing.T) {
 					return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 				}
 				return nil
+			},
+		},
+		// other
+		{
+			name: "return error when object type is invalid",
+			args: args{
+				id: 10,
+			},
+			fields: fields{
+				idxPath:             "/tmp/ngt-184",
+				inMemory:            false,
+				bulkInsertChunkSize: 100,
+				dimension:           9,
+				objectType:          999,
+				radius:              float32(-1.0),
+				epsilon:             float32(0.01),
+			},
+			createFunc: func(t *testing.T, fields fields) (NGT, error) {
+				t.Helper()
+
+				n := &ngt{
+					idxPath:             fields.idxPath,
+					inMemory:            fields.inMemory,
+					bulkInsertChunkSize: fields.bulkInsertChunkSize,
+					objectType:          fields.objectType,
+					radius:              fields.radius,
+					epsilon:             fields.epsilon,
+					poolSize:            fields.poolSize,
+				}
+				return n, nil
+			},
+			want: want{
+				err: errors.ErrUnsupportedObjectType,
 			},
 		},
 	}
