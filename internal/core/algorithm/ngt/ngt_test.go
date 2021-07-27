@@ -1240,7 +1240,6 @@ func Test_ngt_loadObjectSpace(t *testing.T) {
 		radius              float32
 		epsilon             float32
 		poolSize            uint32
-		mu                  *sync.RWMutex
 	}
 	type want struct {
 		err error
