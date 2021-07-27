@@ -64,7 +64,7 @@ var (
 		n.Close()
 		if ngt, ok := n.(*ngt); ok {
 			if !ngt.inMemory {
-				_ = os.RemoveAll(ngt.idxPath)
+				return os.RemoveAll(ngt.idxPath)
 			}
 		}
 		return nil
@@ -434,7 +434,7 @@ func TestLoad(t *testing.T) {
 					}
 
 					// check inserted vector can be searched
-					vs, err := n.Search([]float32{0, 1, 2, 3, 4, 5, 6, 7, 8}, 10, 0, 0)
+					vs, err := n.Search([]float32{0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8}, 10, 0, 0)
 					if err != nil {
 						return err
 					}
@@ -448,7 +448,7 @@ func TestLoad(t *testing.T) {
 		}(),
 		func() test {
 			idxPath := "/tmp/ngt-14"
-			vec := []float32{0, 1, 2, 3, 4, 5, 6, 7, 8}
+			vec := []float32{0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8}
 			opts := []Option{
 				WithDimension(9),
 				WithIndexPath(idxPath),
@@ -2477,7 +2477,7 @@ func Test_ngt_BulkInsert(t *testing.T) {
 			name: "return 1 object id when insert 1 vector (float)",
 			args: args{
 				vecs: [][]float32{
-					{0, 1, 2, 3, 4, 5, 6, 7, 8},
+					{0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8},
 				},
 			},
 			fields: fields{
@@ -2496,11 +2496,11 @@ func Test_ngt_BulkInsert(t *testing.T) {
 			name: "return 5 object id when insert 5 vectors (float)",
 			args: args{
 				vecs: [][]float32{
-					{0, 1, 2, 3, 4, 5, 6, 7, 8},
-					{1, 2, 3, 4, 5, 6, 7, 8, 9},
-					{2, 3, 4, 5, 6, 7, 8, 9, 10},
-					{3, 4, 5, 6, 7, 8, 9, 10, 11},
-					{4, 5, 6, 7, 8, 9, 10, 11, 12},
+					{0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8},
+					{0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9},
+					{0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.10},
+					{0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.10, 0.11},
+					{0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.10, 0.11, 0.12},
 				},
 			},
 			fields: fields{
@@ -2519,8 +2519,8 @@ func Test_ngt_BulkInsert(t *testing.T) {
 			name: "return 2 object id when insert 2 same vectors (float)",
 			args: args{
 				vecs: [][]float32{
-					{0, 1, 2, 3, 4, 5, 6, 7, 8},
-					{0, 1, 2, 3, 4, 5, 6, 7, 8},
+					{0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8},
+					{0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8},
 				},
 			},
 			fields: fields{
@@ -2539,10 +2539,10 @@ func Test_ngt_BulkInsert(t *testing.T) {
 			name: "return 2 object id and 2 errors when insert 2 vectors with same dimension and 2 with invalid dimension (float)",
 			args: args{
 				vecs: [][]float32{
-					{0, 1, 2, 3, 4, 5, 6, 7, 8},
-					{0, 1, 2, 3, 4, 5, 6, 7, 9},
-					{0, 1, 2, 3, 4, 5, 6, 7},
-					{0, 1, 2, 3, 4, 5, 6, 7, 8, 10},
+					{0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8},
+					{0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.9},
+					{0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7},
+					{0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.1},
 				},
 			},
 			fields: fields{
@@ -2770,7 +2770,7 @@ func Test_ngt_BulkInsertCommit(t *testing.T) {
 			name: "return 1 object id when insert 1 vector (float)",
 			args: args{
 				vecs: [][]float32{
-					{0, 1, 2, 3, 4, 5, 6, 7, 8},
+					{0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8},
 				},
 			},
 			fields: fields{
@@ -2789,11 +2789,11 @@ func Test_ngt_BulkInsertCommit(t *testing.T) {
 			name: "return 5 object id when insert 5 vectors (float)",
 			args: args{
 				vecs: [][]float32{
-					{0, 1, 2, 3, 4, 5, 6, 7, 8},
-					{1, 2, 3, 4, 5, 6, 7, 8, 9},
-					{2, 3, 4, 5, 6, 7, 8, 9, 10},
-					{3, 4, 5, 6, 7, 8, 9, 10, 11},
-					{4, 5, 6, 7, 8, 9, 10, 11, 12},
+					{0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8},
+					{0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9},
+					{0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.10},
+					{0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.10, 0.11},
+					{0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.10, 0.11, 0.12},
 				},
 			},
 			fields: fields{
@@ -2812,8 +2812,8 @@ func Test_ngt_BulkInsertCommit(t *testing.T) {
 			name: "return 2 object id when insert 2 same vectors (float)",
 			args: args{
 				vecs: [][]float32{
-					{0, 1, 2, 3, 4, 5, 6, 7, 8},
-					{0, 1, 2, 3, 4, 5, 6, 7, 8},
+					{0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8},
+					{0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8},
 				},
 			},
 			fields: fields{
@@ -2832,10 +2832,10 @@ func Test_ngt_BulkInsertCommit(t *testing.T) {
 			name: "return 2 object id and 2 errors when insert 2 vectors with same dimension and 2 with invalid dimension (float)",
 			args: args{
 				vecs: [][]float32{
-					{0, 1, 2, 3, 4, 5, 6, 7, 8},
-					{0, 1, 2, 3, 4, 5, 6, 7, 9},
-					{0, 1, 2, 3, 4, 5, 6, 7},
-					{0, 1, 2, 3, 4, 5, 6, 7, 8, 10},
+					{0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8},
+					{0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.9},
+					{0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7},
+					{0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.10},
 				},
 			},
 			fields: fields{
@@ -3803,7 +3803,7 @@ func Test_ngt_Remove(t *testing.T) {
 			},
 			createFunc: func(t *testing.T, fields fields) (NGT, error) {
 				t.Helper()
-				vec := []float32{0, 1, 2, 3, 4, 5, 6, 7, 8}
+				vec := []float32{0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8}
 
 				return insertCreateFunc(t, fields, [][]float32{vec}, 1)
 			},
@@ -3835,7 +3835,7 @@ func Test_ngt_Remove(t *testing.T) {
 			},
 			createFunc: func(t *testing.T, fields fields) (NGT, error) {
 				t.Helper()
-				vec := []float32{0, 1, 2, 3, 4, 5, 6, 7, 8}
+				vec := []float32{0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8}
 
 				return insertCreateFunc(t, fields, [][]float32{vec}, 1)
 			},
@@ -4081,7 +4081,7 @@ func Test_ngt_BulkRemove(t *testing.T) {
 			},
 			createFunc: func(t *testing.T, fields fields) (NGT, error) {
 				t.Helper()
-				vec := []float32{0, 1, 2, 3, 4, 5, 6, 7, 8}
+				vec := []float32{0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8}
 
 				return insertCreateFunc(t, fields, [][]float32{vec}, 1)
 			},
@@ -4113,7 +4113,7 @@ func Test_ngt_BulkRemove(t *testing.T) {
 			},
 			createFunc: func(t *testing.T, fields fields) (NGT, error) {
 				t.Helper()
-				vec := []float32{0, 1, 2, 3, 4, 5, 6, 7, 8}
+				vec := []float32{0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8}
 
 				return insertCreateFunc(t, fields, [][]float32{vec}, 1)
 			},
@@ -4147,9 +4147,9 @@ func Test_ngt_BulkRemove(t *testing.T) {
 			createFunc: func(t *testing.T, fields fields) (NGT, error) {
 				t.Helper()
 				vecs := [][]float32{
-					{0, 1, 2, 3, 4, 5, 6, 7, 8},  // vec id 1
-					{0, 1, 2, 3, 4, 5, 6, 7, 9},  // vec id 2
-					{0, 1, 2, 3, 4, 5, 6, 7, 10}, // vec id 3
+					{0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8},  // vec id 1
+					{0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.9},  // vec id 2
+					{0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.10}, // vec id 3
 				}
 
 				return insertCreateFunc(t, fields, vecs, 1)
@@ -4358,17 +4358,17 @@ func Test_ngt_GetVector(t *testing.T) {
 			createFunc: func(t *testing.T, fields fields) (NGT, error) {
 				t.Helper()
 				vecs := [][]float32{
-					{0, 1, 2, 3, 4, 5, 6, 7, 8},
-					{0, 1, 2, 3, 4, 5, 6, 7, 9},
-					{0, 1, 2, 3, 4, 5, 6, 7, 10},
-					{0, 1, 2, 3, 4, 5, 6, 7, 11},
-					{0, 1, 2, 3, 4, 5, 6, 7, 12},
+					{0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8},
+					{0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.9},
+					{0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.10},
+					{0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.11},
+					{0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.12},
 				}
 
 				return insertCreateFunc(t, fields, vecs, 1)
 			},
 			want: want{
-				want: []float32{0, 1, 2, 3, 4, 5, 6, 7, 8},
+				want: []float32{0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8},
 			},
 		},
 		{
@@ -4387,7 +4387,7 @@ func Test_ngt_GetVector(t *testing.T) {
 			},
 			createFunc: func(t *testing.T, fields fields) (NGT, error) {
 				t.Helper()
-				vec := []float32{0, 1, 2, 3, 4, 5, 6, 7, 8}
+				vec := []float32{0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8}
 
 				return insertCreateFunc(t, fields, [][]float32{vec}, 1)
 			},
