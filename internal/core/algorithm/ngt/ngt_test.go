@@ -36,7 +36,8 @@ import (
 var (
 	ngtComparator = []comparator.Option{
 		comparator.AllowUnexported(ngt{}),
-		// ignore C dependencies
+		// !!! These fields will not be verified in the entire test
+		// Do not validate C dependencies
 		comparator.IgnoreFields(ngt{},
 			"dimension", "prop", "ebuf", "index", "ospace"),
 		comparator.RWMutexComparer,
@@ -122,11 +123,6 @@ func TestNew(t *testing.T) {
 			},
 			want: want{
 				want: &ngt{
-					// these options are in defaultOpts list, but these fields are ignored because of cgo dependencies
-					// WithDimension(minimumDimensionSize),
-					// WithCreationEdgeSize(10),
-					// WithSearchEdgeSize(40),
-					// WithDistanceType(L2),
 					idxPath:             "/tmp/ngt-",
 					radius:              DefaultRadius,
 					epsilon:             DefaultEpsilon,
@@ -146,11 +142,6 @@ func TestNew(t *testing.T) {
 			},
 			want: want{
 				want: &ngt{
-					// these options are in defaultOpts list, but these fields are ignored because of cgo dependencies
-					// WithDimension(minimumDimensionSize),
-					// WithCreationEdgeSize(10),
-					// WithSearchEdgeSize(40),
-					// WithDistanceType(L2),
 					idxPath:             "/tmp/ngt-01",
 					radius:              DefaultRadius,
 					epsilon:             DefaultEpsilon,
@@ -172,11 +163,6 @@ func TestNew(t *testing.T) {
 			},
 			want: want{
 				want: &ngt{
-					// these options are in defaultOpts list, but these fields are ignored because of cgo dependencies
-					// WithDimension(minimumDimensionSize),
-					// WithCreationEdgeSize(10),
-					// WithSearchEdgeSize(40),
-					// WithDistanceType(L2),
 					idxPath:             "/tmp/ngt-02",
 					radius:              DefaultRadius,
 					epsilon:             DefaultEpsilon,
@@ -656,11 +642,6 @@ func Test_gen(t *testing.T) {
 			},
 			want: want{
 				want: &ngt{
-					// these options are in defaultOpts list, but these fields are ignored because of cgo dependencies
-					// WithDimension(minimumDimensionSize),
-					// WithCreationEdgeSize(10),
-					// WithSearchEdgeSize(40),
-					// WithDistanceType(L2),
 					idxPath:             "/tmp/ngt-",
 					radius:              DefaultRadius,
 					epsilon:             DefaultEpsilon,
@@ -786,16 +767,11 @@ func Test_ngt_setup(t *testing.T) {
 		idxPath             string
 		inMemory            bool
 		bulkInsertChunkSize int
-		// dimension           C.int32_t
-		objectType objectType
-		radius     float32
-		epsilon    float32
-		poolSize   uint32
-		// prop                C.NGTProperty
-		// ebuf                C.NGTError
-		// index               C.NGTIndex
-		// ospace              C.NGTObjectSpace
-		mu *sync.RWMutex
+		objectType          objectType
+		radius              float32
+		epsilon             float32
+		poolSize            uint32
+		mu                  *sync.RWMutex
 	}
 	type want struct {
 		err error
@@ -850,24 +826,17 @@ func Test_ngt_setup(t *testing.T) {
 				idxPath:             test.fields.idxPath,
 				inMemory:            test.fields.inMemory,
 				bulkInsertChunkSize: test.fields.bulkInsertChunkSize,
-				// dimension:           test.fields.dimension,
-				objectType: test.fields.objectType,
-				radius:     test.fields.radius,
-				epsilon:    test.fields.epsilon,
-				poolSize:   test.fields.poolSize,
-				// prop:                test.fields.prop,
-				// ebuf:                test.fields.ebuf,
-				// index:               test.fields.index,
-				// ospace:              test.fields.ospace,
-				mu: test.fields.mu,
+				objectType:          test.fields.objectType,
+				radius:              test.fields.radius,
+				epsilon:             test.fields.epsilon,
+				poolSize:            test.fields.poolSize,
+				mu:                  test.fields.mu,
 			}
-			/*
-				defer func() {
-					if err := test.afterFunc(tt, n); err != nil {
-						tt.Error(err)
-					}
-				}()
-			*/
+			defer func() {
+				if err := test.afterFunc(tt, n); err != nil {
+					tt.Error(err)
+				}
+			}()
 
 			err := n.setup()
 			if err := test.checkFunc(test.want, err); err != nil {
@@ -890,11 +859,7 @@ func Test_ngt_loadOptions(t *testing.T) {
 		radius              float32
 		epsilon             float32
 		poolSize            uint32
-		// prop                C.NGTProperty
-		// ebuf                C.NGTError
-		// index               C.NGTIndex
-		// ospace              C.NGTObjectSpace
-		// mu *sync.RWMutex
+		mu                  *sync.RWMutex
 	}
 	type want struct {
 		err error
@@ -916,16 +881,11 @@ func Test_ngt_loadOptions(t *testing.T) {
 			idxPath:             fields.idxPath,
 			inMemory:            fields.inMemory,
 			bulkInsertChunkSize: fields.bulkInsertChunkSize,
-			// dimension:           test.fields.dimension,
-			objectType: fields.objectType,
-			radius:     fields.radius,
-			epsilon:    fields.epsilon,
-			poolSize:   fields.poolSize,
-			// prop:                test.fields.prop,
-			// ebuf:                test.fields.ebuf,
-			// index:               test.fields.index,
-			// ospace:              test.fields.ospace,
-			// mu: fields.mu,
+			objectType:          fields.objectType,
+			radius:              fields.radius,
+			epsilon:             fields.epsilon,
+			poolSize:            fields.poolSize,
+			mu:                  fields.mu,
 		}
 		if err := n.setup(); err != nil {
 			return nil, err
@@ -1045,149 +1005,6 @@ func Test_ngt_create(t *testing.T) {
 	// We cannot initialize ngt.prop since it is C dependencies.
 	// This function is called by New(), and the ngt.prop is destoried in New(), so we cannot test this function individually.
 	t.SkipNow()
-	type fields struct {
-		idxPath             string
-		inMemory            bool
-		bulkInsertChunkSize int
-		dimension           int
-		objectType          objectType
-		radius              float32
-		epsilon             float32
-		poolSize            uint32
-		// prop                C.NGTProperty
-		// ebuf                C.NGTError
-		// index               C.NGTIndex
-		// ospace              C.NGTObjectSpace
-		mu *sync.RWMutex
-	}
-	type want struct {
-		err error
-	}
-	type test struct {
-		name       string
-		fields     fields
-		createFunc func(t *testing.T, fields fields) (NGT, error)
-		want       want
-		checkFunc  func(want, NGT, error) error
-		beforeFunc func()
-		afterFunc  func(*testing.T, NGT) error
-	}
-	defaultCreateFunc := func(t *testing.T, fields fields) (NGT, error) {
-		t.Helper()
-
-		return New(
-			WithInMemoryMode(fields.inMemory),
-			WithIndexPath(fields.idxPath),
-			WithBulkInsertChunkSize(fields.bulkInsertChunkSize),
-			WithObjectType(fields.objectType),
-			WithDefaultRadius(fields.radius),
-			WithDefaultEpsilon(fields.epsilon),
-			WithDefaultPoolSize(fields.poolSize),
-			WithDimension(fields.dimension),
-		)
-	}
-	defaultCheckFunc := func(w want, n NGT, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-		}
-
-		if ngt, ok := n.(*ngt); ok {
-			_, err := os.Stat(ngt.idxPath)
-			// if ngt is in-memory mode, the index file should not be created
-			if ngt.inMemory {
-				if !errors.Is(err, os.ErrNotExist) {
-					return errors.Errorf("NGT index file created, err: %s", err)
-				}
-			} else { // if ngt is not in-memory mode, the file should be created
-				if err != nil {
-					return errors.Errorf("NGT index file error, err: %s", err)
-				}
-			}
-		}
-
-		return nil
-	}
-	tests := []test{
-		{
-			name: "create success when index file not exists",
-			fields: fields{
-				idxPath:    "/tmp/ngt-51-not_exist",
-				inMemory:   false,
-				dimension:  9,
-				objectType: Uint8,
-			},
-			want: want{
-				err: nil,
-			},
-		},
-		{
-			name: "create success when index file exists",
-			fields: fields{
-				idxPath:    "/tmp/ngt-52",
-				inMemory:   false,
-				dimension:  9,
-				objectType: Uint8,
-			},
-			beforeFunc: func() {
-				_ = os.Mkdir("/tmp/ngt-52", 0o750)
-			},
-			want: want{
-				err: nil,
-			},
-		},
-		{
-			name: "create success when NGT is in-memory mode",
-			fields: fields{
-				idxPath:    "/tmp/ngt-53",
-				inMemory:   true,
-				dimension:  9,
-				objectType: Uint8,
-			},
-			want: want{
-				err: nil,
-			},
-		},
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-			if test.beforeFunc != nil {
-				test.beforeFunc()
-			}
-			if test.afterFunc == nil {
-				test.afterFunc = defaultAfterFunc
-			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
-			if test.createFunc == nil {
-				test.createFunc = defaultCreateFunc
-			}
-
-			obj, err := test.createFunc(tt, test.fields)
-			if err != nil {
-				tt.Fatal(err)
-			}
-			defer func() {
-				if err := test.afterFunc(tt, obj); err != nil {
-					tt.Error(err)
-				}
-			}()
-
-			n, ok := obj.(*ngt)
-			if !ok {
-				tt.Fatal("cannot cast ngt")
-			}
-
-			err = n.create()
-			if err := test.checkFunc(test.want, n, err); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
 }
 
 func Test_ngt_open(t *testing.T) {
@@ -1200,11 +1017,7 @@ func Test_ngt_open(t *testing.T) {
 		radius              float32
 		epsilon             float32
 		poolSize            uint32
-		// prop                C.NGTProperty
-		// ebuf                C.NGTError
-		// index               C.NGTIndex
-		// ospace              C.NGTObjectSpace
-		mu *sync.RWMutex
+		mu                  *sync.RWMutex
 	}
 	type want struct {
 		err error
@@ -1225,16 +1038,11 @@ func Test_ngt_open(t *testing.T) {
 			idxPath:             fields.idxPath,
 			inMemory:            fields.inMemory,
 			bulkInsertChunkSize: fields.bulkInsertChunkSize,
-			// dimension:           test.fields.dimension,
-			objectType: fields.objectType,
-			radius:     fields.radius,
-			epsilon:    fields.epsilon,
-			poolSize:   fields.poolSize,
-			// prop:                test.fields.prop,
-			// ebuf:                test.fields.ebuf,
-			// index:               test.fields.index,
-			// ospace:              test.fields.ospace,
-			mu: fields.mu,
+			objectType:          fields.objectType,
+			radius:              fields.radius,
+			epsilon:             fields.epsilon,
+			poolSize:            fields.poolSize,
+			mu:                  fields.mu,
 		}
 		if err := n.setup(); err != nil {
 			t.Error(err)
@@ -1369,11 +1177,7 @@ func Test_ngt_loadObjectSpace(t *testing.T) {
 		radius              float32
 		epsilon             float32
 		poolSize            uint32
-		// prop                C.NGTProperty
-		// ebuf                C.NGTError
-		// index               C.NGTIndex
-		// ospace              C.NGTObjectSpace
-		mu *sync.RWMutex
+		mu                  *sync.RWMutex
 	}
 	type want struct {
 		err error
@@ -1470,17 +1274,11 @@ func Test_ngt_Search(t *testing.T) {
 		idxPath             string
 		inMemory            bool
 		bulkInsertChunkSize int
-		//	dimension           C.int32_t
-		dimension  int
-		objectType objectType
-		radius     float32
-		epsilon    float32
-		poolSize   uint32
-		// prop                C.NGTProperty
-		// ebuf                C.NGTError
-		// index               C.NGTIndex
-		// ospace              C.NGTObjectSpace
-		mu *sync.RWMutex
+		dimension           int
+		objectType          objectType
+		radius              float32
+		epsilon             float32
+		poolSize            uint32
 	}
 	type want struct {
 		want []SearchResult
@@ -1985,11 +1783,6 @@ func Test_ngt_Insert(t *testing.T) {
 		radius              float32
 		epsilon             float32
 		poolSize            uint32
-		// prop                C.NGTProperty
-		// ebuf                C.NGTError
-		// index               C.NGTIndex
-		// ospace              C.NGTObjectSpace
-		mu *sync.RWMutex
 	}
 	type want struct {
 		want uint
@@ -2064,15 +1857,10 @@ func Test_ngt_Insert(t *testing.T) {
 				vec: []float32{0, 1, 2, 3, 4, 5, 6, 7, 8},
 			},
 			fields: fields{
-				idxPath:             "/tmp/ngt-91",
-				inMemory:            false,
-				bulkInsertChunkSize: 0,
-				dimension:           9,
-				objectType:          Uint8,
-				radius:              0,
-				epsilon:             0,
-				poolSize:            0,
-				mu:                  nil,
+				idxPath:    "/tmp/ngt-91",
+				inMemory:   false,
+				dimension:  9,
+				objectType: Uint8,
 			},
 			want: want{
 				want: 1,
@@ -2084,15 +1872,10 @@ func Test_ngt_Insert(t *testing.T) {
 				vec: []float32{0, 0, 0, 0, 0, 0, 0, 0, 0},
 			},
 			fields: fields{
-				idxPath:             "/tmp/ngt-92",
-				inMemory:            false,
-				bulkInsertChunkSize: 0,
-				dimension:           9,
-				objectType:          Uint8,
-				radius:              0,
-				epsilon:             0,
-				poolSize:            0,
-				mu:                  nil,
+				idxPath:    "/tmp/ngt-92",
+				inMemory:   false,
+				dimension:  9,
+				objectType: Uint8,
 			},
 			want: want{
 				want: 1,
@@ -2107,15 +1890,10 @@ func Test_ngt_Insert(t *testing.T) {
 				},
 			},
 			fields: fields{
-				idxPath:             "/tmp/ngt-93",
-				inMemory:            false,
-				bulkInsertChunkSize: 0,
-				dimension:           9,
-				objectType:          Uint8,
-				radius:              0,
-				epsilon:             0,
-				poolSize:            0,
-				mu:                  nil,
+				idxPath:    "/tmp/ngt-93",
+				inMemory:   false,
+				dimension:  9,
+				objectType: Uint8,
 			},
 			want: want{
 				want: 1,
@@ -2130,15 +1908,10 @@ func Test_ngt_Insert(t *testing.T) {
 				},
 			},
 			fields: fields{
-				idxPath:             "/tmp/ngt-94",
-				inMemory:            false,
-				bulkInsertChunkSize: 0,
-				dimension:           9,
-				objectType:          Uint8,
-				radius:              0,
-				epsilon:             0,
-				poolSize:            0,
-				mu:                  nil,
+				idxPath:    "/tmp/ngt-94",
+				inMemory:   false,
+				dimension:  9,
+				objectType: Uint8,
 			},
 			want: want{
 				want: 1,
@@ -2150,15 +1923,10 @@ func Test_ngt_Insert(t *testing.T) {
 				vec: []float32{0, 1, 2, 3, 4, 5, 6, 7, 8},
 			},
 			fields: fields{
-				idxPath:             "/tmp/ngt-95",
-				inMemory:            false,
-				bulkInsertChunkSize: 0,
-				dimension:           9,
-				objectType:          Float,
-				radius:              0,
-				epsilon:             0,
-				poolSize:            0,
-				mu:                  nil,
+				idxPath:    "/tmp/ngt-95",
+				inMemory:   false,
+				dimension:  9,
+				objectType: Float,
 			},
 			want: want{
 				want: 1,
@@ -2170,15 +1938,10 @@ func Test_ngt_Insert(t *testing.T) {
 				vec: []float32{0, 0, 0, 0, 0, 0, 0, 0, 0},
 			},
 			fields: fields{
-				idxPath:             "/tmp/ngt-96",
-				inMemory:            false,
-				bulkInsertChunkSize: 0,
-				dimension:           9,
-				objectType:          Float,
-				radius:              0,
-				epsilon:             0,
-				poolSize:            0,
-				mu:                  nil,
+				idxPath:    "/tmp/ngt-96",
+				inMemory:   false,
+				dimension:  9,
+				objectType: Float,
 			},
 			want: want{
 				want: 1,
@@ -2193,15 +1956,10 @@ func Test_ngt_Insert(t *testing.T) {
 				},
 			},
 			fields: fields{
-				idxPath:             "/tmp/ngt-97",
-				inMemory:            false,
-				bulkInsertChunkSize: 0,
-				dimension:           9,
-				objectType:          Float,
-				radius:              0,
-				epsilon:             0,
-				poolSize:            0,
-				mu:                  nil,
+				idxPath:    "/tmp/ngt-97",
+				inMemory:   false,
+				dimension:  9,
+				objectType: Float,
 			},
 			want: want{
 				want: 1,
@@ -2216,15 +1974,10 @@ func Test_ngt_Insert(t *testing.T) {
 				},
 			},
 			fields: fields{
-				idxPath:             "/tmp/ngt-98",
-				inMemory:            false,
-				bulkInsertChunkSize: 0,
-				dimension:           9,
-				objectType:          Float,
-				radius:              0,
-				epsilon:             0,
-				poolSize:            0,
-				mu:                  nil,
+				idxPath:    "/tmp/ngt-98",
+				inMemory:   false,
+				dimension:  9,
+				objectType: Float,
 			},
 			want: want{
 				want: 1,
@@ -2236,15 +1989,10 @@ func Test_ngt_Insert(t *testing.T) {
 				vec: []float32{0, 1, 2, 3, 4, 5, 6, 7, 8},
 			},
 			fields: fields{
-				idxPath:             "/tmp/ngt-99",
-				inMemory:            false,
-				bulkInsertChunkSize: 0,
-				dimension:           5,
-				objectType:          Float,
-				radius:              0,
-				epsilon:             0,
-				poolSize:            0,
-				mu:                  nil,
+				idxPath:    "/tmp/ngt-99",
+				inMemory:   false,
+				dimension:  5,
+				objectType: Float,
 			},
 			want: want{
 				err: errors.New("incompatible dimension size detected\trequested: 9,\tconfigured: 5"),
@@ -2301,11 +2049,6 @@ func Test_ngt_InsertCommit(t *testing.T) {
 		radius              float32
 		epsilon             float32
 		poolSize            uint32
-		// prop                C.NGTProperty
-		// ebuf                C.NGTError
-		// index               C.NGTIndex
-		// ospace              C.NGTObjectSpace
-		mu *sync.RWMutex
 	}
 	type want struct {
 		want uint
@@ -2366,15 +2109,10 @@ func Test_ngt_InsertCommit(t *testing.T) {
 				vec: []float32{0, 1, 2, 3, 4, 5, 6, 7, 8},
 			},
 			fields: fields{
-				idxPath:             "/tmp/ngt-101",
-				inMemory:            false,
-				bulkInsertChunkSize: 0,
-				dimension:           9,
-				objectType:          Uint8,
-				radius:              0,
-				epsilon:             0,
-				poolSize:            0,
-				mu:                  nil,
+				idxPath:    "/tmp/ngt-101",
+				inMemory:   false,
+				dimension:  9,
+				objectType: Uint8,
 			},
 			want: want{
 				want: 1,
@@ -2386,15 +2124,10 @@ func Test_ngt_InsertCommit(t *testing.T) {
 				vec: []float32{0, 0, 0, 0, 0, 0, 0, 0, 0},
 			},
 			fields: fields{
-				idxPath:             "/tmp/ngt-102",
-				inMemory:            false,
-				bulkInsertChunkSize: 0,
-				dimension:           9,
-				objectType:          Uint8,
-				radius:              0,
-				epsilon:             0,
-				poolSize:            0,
-				mu:                  nil,
+				idxPath:    "/tmp/ngt-102",
+				inMemory:   false,
+				dimension:  9,
+				objectType: Uint8,
 			},
 			want: want{
 				want: 1,
@@ -2409,15 +2142,10 @@ func Test_ngt_InsertCommit(t *testing.T) {
 				},
 			},
 			fields: fields{
-				idxPath:             "/tmp/ngt-103",
-				inMemory:            false,
-				bulkInsertChunkSize: 0,
-				dimension:           9,
-				objectType:          Uint8,
-				radius:              0,
-				epsilon:             0,
-				poolSize:            0,
-				mu:                  nil,
+				idxPath:    "/tmp/ngt-103",
+				inMemory:   false,
+				dimension:  9,
+				objectType: Uint8,
 			},
 			want: want{
 				want: 1,
@@ -2432,15 +2160,10 @@ func Test_ngt_InsertCommit(t *testing.T) {
 				},
 			},
 			fields: fields{
-				idxPath:             "/tmp/ngt-104",
-				inMemory:            false,
-				bulkInsertChunkSize: 0,
-				dimension:           9,
-				objectType:          Uint8,
-				radius:              0,
-				epsilon:             0,
-				poolSize:            0,
-				mu:                  nil,
+				idxPath:    "/tmp/ngt-104",
+				inMemory:   false,
+				dimension:  9,
+				objectType: Uint8,
 			},
 			want: want{
 				want: 1,
@@ -2452,15 +2175,10 @@ func Test_ngt_InsertCommit(t *testing.T) {
 				vec: []float32{0, 1, 2, 3, 4, 5, 6, 7, 8},
 			},
 			fields: fields{
-				idxPath:             "/tmp/ngt-105",
-				inMemory:            false,
-				bulkInsertChunkSize: 0,
-				dimension:           9,
-				objectType:          Float,
-				radius:              0,
-				epsilon:             0,
-				poolSize:            0,
-				mu:                  nil,
+				idxPath:    "/tmp/ngt-105",
+				inMemory:   false,
+				dimension:  9,
+				objectType: Float,
 			},
 			want: want{
 				want: 1,
@@ -2472,15 +2190,10 @@ func Test_ngt_InsertCommit(t *testing.T) {
 				vec: []float32{0, 0, 0, 0, 0, 0, 0, 0, 0},
 			},
 			fields: fields{
-				idxPath:             "/tmp/ngt-106",
-				inMemory:            false,
-				bulkInsertChunkSize: 0,
-				dimension:           9,
-				objectType:          Float,
-				radius:              0,
-				epsilon:             0,
-				poolSize:            0,
-				mu:                  nil,
+				idxPath:    "/tmp/ngt-106",
+				inMemory:   false,
+				dimension:  9,
+				objectType: Float,
 			},
 			want: want{
 				want: 1,
@@ -2495,15 +2208,10 @@ func Test_ngt_InsertCommit(t *testing.T) {
 				},
 			},
 			fields: fields{
-				idxPath:             "/tmp/ngt-107",
-				inMemory:            false,
-				bulkInsertChunkSize: 0,
-				dimension:           9,
-				objectType:          Float,
-				radius:              0,
-				epsilon:             0,
-				poolSize:            0,
-				mu:                  nil,
+				idxPath:    "/tmp/ngt-107",
+				inMemory:   false,
+				dimension:  9,
+				objectType: Float,
 			},
 			want: want{
 				want: 1,
@@ -2518,15 +2226,10 @@ func Test_ngt_InsertCommit(t *testing.T) {
 				},
 			},
 			fields: fields{
-				idxPath:             "/tmp/ngt-108",
-				inMemory:            false,
-				bulkInsertChunkSize: 0,
-				dimension:           9,
-				objectType:          Float,
-				radius:              0,
-				epsilon:             0,
-				poolSize:            0,
-				mu:                  nil,
+				idxPath:    "/tmp/ngt-108",
+				inMemory:   false,
+				dimension:  9,
+				objectType: Float,
 			},
 			want: want{
 				want: 1,
@@ -2538,15 +2241,10 @@ func Test_ngt_InsertCommit(t *testing.T) {
 				vec: []float32{0, 1, 2, 3, 4, 5, 6, 7, 8},
 			},
 			fields: fields{
-				idxPath:             "/tmp/ngt-109",
-				inMemory:            false,
-				bulkInsertChunkSize: 0,
-				dimension:           5,
-				objectType:          Float,
-				radius:              0,
-				epsilon:             0,
-				poolSize:            0,
-				mu:                  nil,
+				idxPath:    "/tmp/ngt-109",
+				inMemory:   false,
+				dimension:  5,
+				objectType: Float,
 			},
 			want: want{
 				err: errors.New("incompatible dimension size detected\trequested: 9,\tconfigured: 5"),
@@ -2602,11 +2300,6 @@ func Test_ngt_BulkInsert(t *testing.T) {
 		radius              float32
 		epsilon             float32
 		poolSize            uint32
-		// prop                C.NGTProperty
-		// ebuf                C.NGTError
-		// index               C.NGTIndex
-		// ospace              C.NGTObjectSpace
-		mu *sync.RWMutex
 	}
 	type want struct {
 		want  []uint
@@ -2705,10 +2398,6 @@ func Test_ngt_BulkInsert(t *testing.T) {
 				bulkInsertChunkSize: 5,
 				dimension:           9,
 				objectType:          Uint8,
-				radius:              0,
-				epsilon:             0,
-				poolSize:            0,
-				mu:                  nil,
 			},
 			want: want{
 				want:  []uint{1},
@@ -2732,10 +2421,6 @@ func Test_ngt_BulkInsert(t *testing.T) {
 				bulkInsertChunkSize: 5,
 				dimension:           9,
 				objectType:          Uint8,
-				radius:              0,
-				epsilon:             0,
-				poolSize:            0,
-				mu:                  nil,
 			},
 			want: want{
 				want:  []uint{1, 2, 3, 4, 5},
@@ -2756,10 +2441,6 @@ func Test_ngt_BulkInsert(t *testing.T) {
 				bulkInsertChunkSize: 5,
 				dimension:           9,
 				objectType:          Uint8,
-				radius:              0,
-				epsilon:             0,
-				poolSize:            0,
-				mu:                  nil,
 			},
 			want: want{
 				want:  []uint{1, 2},
@@ -2782,10 +2463,6 @@ func Test_ngt_BulkInsert(t *testing.T) {
 				bulkInsertChunkSize: 5,
 				dimension:           9,
 				objectType:          Uint8,
-				radius:              0,
-				epsilon:             0,
-				poolSize:            0,
-				mu:                  nil,
 			},
 			want: want{
 				want: []uint{1, 2},
@@ -2809,10 +2486,6 @@ func Test_ngt_BulkInsert(t *testing.T) {
 				bulkInsertChunkSize: 5,
 				dimension:           9,
 				objectType:          Float,
-				radius:              0,
-				epsilon:             0,
-				poolSize:            0,
-				mu:                  nil,
 			},
 			want: want{
 				want:  []uint{1},
@@ -2836,10 +2509,6 @@ func Test_ngt_BulkInsert(t *testing.T) {
 				bulkInsertChunkSize: 5,
 				dimension:           9,
 				objectType:          Float,
-				radius:              0,
-				epsilon:             0,
-				poolSize:            0,
-				mu:                  nil,
 			},
 			want: want{
 				want:  []uint{1, 2, 3, 4, 5},
@@ -2860,10 +2529,6 @@ func Test_ngt_BulkInsert(t *testing.T) {
 				bulkInsertChunkSize: 5,
 				dimension:           9,
 				objectType:          Float,
-				radius:              0,
-				epsilon:             0,
-				poolSize:            0,
-				mu:                  nil,
 			},
 			want: want{
 				want:  []uint{1, 2},
@@ -2886,10 +2551,6 @@ func Test_ngt_BulkInsert(t *testing.T) {
 				bulkInsertChunkSize: 5,
 				dimension:           9,
 				objectType:          Float,
-				radius:              0,
-				epsilon:             0,
-				poolSize:            0,
-				mu:                  nil,
 			},
 			want: want{
 				want: []uint{1, 2},
@@ -2951,11 +2612,6 @@ func Test_ngt_BulkInsertCommit(t *testing.T) {
 		radius              float32
 		epsilon             float32
 		poolSize            uint32
-		// prop                C.NGTProperty
-		// ebuf                C.NGTError
-		// index               C.NGTIndex
-		// ospace              C.NGTObjectSpace
-		mu *sync.RWMutex
 	}
 	type want struct {
 		want  []uint
@@ -3035,10 +2691,6 @@ func Test_ngt_BulkInsertCommit(t *testing.T) {
 				bulkInsertChunkSize: 5,
 				dimension:           9,
 				objectType:          Uint8,
-				radius:              0,
-				epsilon:             0,
-				poolSize:            0,
-				mu:                  nil,
 			},
 			want: want{
 				want:  []uint{1},
@@ -3062,10 +2714,6 @@ func Test_ngt_BulkInsertCommit(t *testing.T) {
 				bulkInsertChunkSize: 5,
 				dimension:           9,
 				objectType:          Uint8,
-				radius:              0,
-				epsilon:             0,
-				poolSize:            0,
-				mu:                  nil,
 			},
 			want: want{
 				want:  []uint{1, 2, 3, 4, 5},
@@ -3086,10 +2734,6 @@ func Test_ngt_BulkInsertCommit(t *testing.T) {
 				bulkInsertChunkSize: 5,
 				dimension:           9,
 				objectType:          Uint8,
-				radius:              0,
-				epsilon:             0,
-				poolSize:            0,
-				mu:                  nil,
 			},
 			want: want{
 				want:  []uint{1, 2},
@@ -3112,10 +2756,6 @@ func Test_ngt_BulkInsertCommit(t *testing.T) {
 				bulkInsertChunkSize: 5,
 				dimension:           9,
 				objectType:          Uint8,
-				radius:              0,
-				epsilon:             0,
-				poolSize:            0,
-				mu:                  nil,
 			},
 			want: want{
 				want: []uint{1, 2},
@@ -3139,10 +2779,6 @@ func Test_ngt_BulkInsertCommit(t *testing.T) {
 				bulkInsertChunkSize: 5,
 				dimension:           9,
 				objectType:          Float,
-				radius:              0,
-				epsilon:             0,
-				poolSize:            0,
-				mu:                  nil,
 			},
 			want: want{
 				want:  []uint{1},
@@ -3166,10 +2802,6 @@ func Test_ngt_BulkInsertCommit(t *testing.T) {
 				bulkInsertChunkSize: 5,
 				dimension:           9,
 				objectType:          Float,
-				radius:              0,
-				epsilon:             0,
-				poolSize:            0,
-				mu:                  nil,
 			},
 			want: want{
 				want:  []uint{1, 2, 3, 4, 5},
@@ -3190,10 +2822,6 @@ func Test_ngt_BulkInsertCommit(t *testing.T) {
 				bulkInsertChunkSize: 5,
 				dimension:           9,
 				objectType:          Float,
-				radius:              0,
-				epsilon:             0,
-				poolSize:            0,
-				mu:                  nil,
 			},
 			want: want{
 				want:  []uint{1, 2},
@@ -3216,10 +2844,6 @@ func Test_ngt_BulkInsertCommit(t *testing.T) {
 				bulkInsertChunkSize: 5,
 				dimension:           9,
 				objectType:          Float,
-				radius:              0,
-				epsilon:             0,
-				poolSize:            0,
-				mu:                  nil,
 			},
 			want: want{
 				want: []uint{1, 2},
@@ -3280,11 +2904,6 @@ func Test_ngt_CreateAndSaveIndex(t *testing.T) {
 		radius              float32
 		epsilon             float32
 		poolSize            uint32
-		// prop                C.NGTProperty
-		// ebuf                C.NGTError
-		// index               C.NGTIndex
-		// ospace              C.NGTObjectSpace
-		mu *sync.RWMutex
 	}
 	type want struct {
 		err error
@@ -3344,10 +2963,6 @@ func Test_ngt_CreateAndSaveIndex(t *testing.T) {
 				bulkInsertChunkSize: 5,
 				dimension:           9,
 				objectType:          Float,
-				radius:              0,
-				epsilon:             0,
-				poolSize:            0,
-				mu:                  nil,
 			},
 		},
 		{
@@ -3361,10 +2976,6 @@ func Test_ngt_CreateAndSaveIndex(t *testing.T) {
 				bulkInsertChunkSize: 5,
 				dimension:           9,
 				objectType:          Float,
-				radius:              0,
-				epsilon:             0,
-				poolSize:            0,
-				mu:                  nil,
 			},
 		},
 		func() test {
@@ -3392,10 +3003,6 @@ func Test_ngt_CreateAndSaveIndex(t *testing.T) {
 					bulkInsertChunkSize: 100,
 					dimension:           9,
 					objectType:          Float,
-					radius:              0,
-					epsilon:             0,
-					poolSize:            0,
-					mu:                  nil,
 				},
 				createFunc: func(t *testing.T, f fields) (NGT, error) {
 					t.Helper()
@@ -3455,10 +3062,6 @@ func Test_ngt_CreateAndSaveIndex(t *testing.T) {
 					bulkInsertChunkSize: 5,
 					dimension:           9,
 					objectType:          Float,
-					radius:              0,
-					epsilon:             0,
-					poolSize:            0,
-					mu:                  nil,
 				},
 				createFunc: func(t *testing.T, f fields) (NGT, error) {
 					t.Helper()
@@ -3504,10 +3107,6 @@ func Test_ngt_CreateAndSaveIndex(t *testing.T) {
 				bulkInsertChunkSize: 5,
 				dimension:           9,
 				objectType:          Float,
-				radius:              0,
-				epsilon:             0,
-				poolSize:            0,
-				mu:                  nil,
 			},
 		},
 	}
@@ -3561,11 +3160,6 @@ func Test_ngt_CreateIndex(t *testing.T) {
 		radius              float32
 		epsilon             float32
 		poolSize            uint32
-		// prop                C.NGTProperty
-		// ebuf                C.NGTError
-		// index               C.NGTIndex
-		// ospace              C.NGTObjectSpace
-		mu *sync.RWMutex
 	}
 	type want struct {
 		err error
@@ -3625,10 +3219,6 @@ func Test_ngt_CreateIndex(t *testing.T) {
 				bulkInsertChunkSize: 5,
 				dimension:           9,
 				objectType:          Float,
-				radius:              0,
-				epsilon:             0,
-				poolSize:            0,
-				mu:                  nil,
 			},
 		},
 		{
@@ -3642,10 +3232,6 @@ func Test_ngt_CreateIndex(t *testing.T) {
 				bulkInsertChunkSize: 5,
 				dimension:           9,
 				objectType:          Float,
-				radius:              0,
-				epsilon:             0,
-				poolSize:            0,
-				mu:                  nil,
 			},
 		},
 		func() test {
@@ -3673,10 +3259,6 @@ func Test_ngt_CreateIndex(t *testing.T) {
 					bulkInsertChunkSize: 100,
 					dimension:           9,
 					objectType:          Float,
-					radius:              0,
-					epsilon:             0,
-					poolSize:            0,
-					mu:                  nil,
 				},
 				createFunc: func(t *testing.T, f fields) (NGT, error) {
 					t.Helper()
@@ -3736,10 +3318,6 @@ func Test_ngt_CreateIndex(t *testing.T) {
 					bulkInsertChunkSize: 5,
 					dimension:           9,
 					objectType:          Float,
-					radius:              0,
-					epsilon:             0,
-					poolSize:            0,
-					mu:                  nil,
 				},
 				createFunc: func(t *testing.T, f fields) (NGT, error) {
 					t.Helper()
@@ -3785,10 +3363,6 @@ func Test_ngt_CreateIndex(t *testing.T) {
 				bulkInsertChunkSize: 5,
 				dimension:           9,
 				objectType:          Float,
-				radius:              0,
-				epsilon:             0,
-				poolSize:            0,
-				mu:                  nil,
 			},
 		},
 	}
@@ -3842,11 +3416,6 @@ func Test_ngt_SaveIndex(t *testing.T) {
 		radius              float32
 		epsilon             float32
 		poolSize            uint32
-		// prop                C.NGTProperty
-		// ebuf                C.NGTError
-		// index               C.NGTIndex
-		// ospace              C.NGTObjectSpace
-		mu *sync.RWMutex
 	}
 	type want struct {
 		err error
@@ -3903,10 +3472,6 @@ func Test_ngt_SaveIndex(t *testing.T) {
 				bulkInsertChunkSize: 5,
 				dimension:           9,
 				objectType:          Float,
-				radius:              0,
-				epsilon:             0,
-				poolSize:            0,
-				mu:                  nil,
 			},
 		},
 		{
@@ -3920,10 +3485,6 @@ func Test_ngt_SaveIndex(t *testing.T) {
 				bulkInsertChunkSize: 5,
 				dimension:           9,
 				objectType:          Float,
-				radius:              0,
-				epsilon:             0,
-				poolSize:            0,
-				mu:                  nil,
 			},
 		},
 		func() test {
@@ -3951,10 +3512,6 @@ func Test_ngt_SaveIndex(t *testing.T) {
 					bulkInsertChunkSize: 100,
 					dimension:           9,
 					objectType:          Float,
-					radius:              0,
-					epsilon:             0,
-					poolSize:            0,
-					mu:                  nil,
 				},
 				createFunc: func(t *testing.T, f fields) (NGT, error) {
 					t.Helper()
@@ -4014,10 +3571,6 @@ func Test_ngt_SaveIndex(t *testing.T) {
 					bulkInsertChunkSize: 5,
 					dimension:           9,
 					objectType:          Float,
-					radius:              0,
-					epsilon:             0,
-					poolSize:            0,
-					mu:                  nil,
 				},
 				createFunc: func(t *testing.T, f fields) (NGT, error) {
 					t.Helper()
@@ -4063,10 +3616,6 @@ func Test_ngt_SaveIndex(t *testing.T) {
 				bulkInsertChunkSize: 5,
 				dimension:           9,
 				objectType:          Float,
-				radius:              0,
-				epsilon:             0,
-				poolSize:            0,
-				mu:                  nil,
 			},
 		},
 	}
@@ -4115,17 +3664,11 @@ func Test_ngt_Remove(t *testing.T) {
 		idxPath             string
 		inMemory            bool
 		bulkInsertChunkSize int
-		//	dimension           C.int32_t
-		dimension  int
-		objectType objectType
-		radius     float32
-		epsilon    float32
-		poolSize   uint32
-		// prop                C.NGTProperty
-		// ebuf                C.NGTError
-		// index               C.NGTIndex
-		// ospace              C.NGTObjectSpace
-		mu *sync.RWMutex
+		dimension           int
+		objectType          objectType
+		radius              float32
+		epsilon             float32
+		poolSize            uint32
 	}
 	type want struct {
 		err error
@@ -4359,11 +3902,6 @@ func Test_ngt_BulkRemove(t *testing.T) {
 		radius              float32
 		epsilon             float32
 		poolSize            uint32
-		// prop                C.NGTProperty
-		// ebuf                C.NGTError
-		// index               C.NGTIndex
-		// ospace              C.NGTObjectSpace
-		mu *sync.RWMutex
 	}
 	type want struct {
 		err error
@@ -4687,11 +4225,6 @@ func Test_ngt_GetVector(t *testing.T) {
 		radius              float32
 		epsilon             float32
 		poolSize            uint32
-		// prop                C.NGTProperty
-		// ebuf                C.NGTError
-		// index               C.NGTIndex
-		// ospace              C.NGTObjectSpace
-		mu *sync.RWMutex
 	}
 	type want struct {
 		want []float32
@@ -4906,8 +4439,9 @@ func Test_ngt_GetVector(t *testing.T) {
 	}
 }
 
-// skip to test this function because of it contains C dependencies in the argument list
-// keep this test function to avoid generating from gotests command
+// Skip to test this function because of it contains C dependencies in the argument list,
+// and we cannot test it without importing C dependencies, but gotest does not support it.
+// Keep this test function to avoid generating from gotests command
 func Test_ngt_newGoError(t *testing.T) {
 	t.SkipNow()
 }
@@ -4922,11 +4456,6 @@ func Test_ngt_Close(t *testing.T) {
 		radius              float32
 		epsilon             float32
 		poolSize            uint32
-		// prop                C.NGTProperty
-		// ebuf                C.NGTError
-		// index               C.NGTIndex
-		// ospace              C.NGTObjectSpace
-		mu *sync.RWMutex
 	}
 	type want struct{}
 	type test struct {
