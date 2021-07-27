@@ -75,9 +75,8 @@ type index struct {
 }
 
 type key struct {
-	date   int64
-	vector []float32
-	uuid   string
+	date int64
+	uuid string
 }
 
 func New(opts ...Option) (Queue, error) {
