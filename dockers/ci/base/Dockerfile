@@ -46,6 +46,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     gawk \
     gcc \
     git \
+    gnupg2 \
     graphviz \
     jq \
     libhdf5-dev \
