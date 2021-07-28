@@ -26,6 +26,7 @@ import "C"
 
 import (
 	"os"
+	"path/filepath"
 	"reflect"
 	"sync"
 	"unsafe"
@@ -242,8 +243,15 @@ func (n *ngt) loadOptions(opts ...Option) (err error) {
 func (n *ngt) create() (err error) {
 	if fileExists(n.idxPath) {
 		log.Warnf("index path exists, will remove the directory. path: %s", n.idxPath)
-		if err = os.RemoveAll(n.idxPath); err != nil {
+		files, err := filepath.Glob(filepath.Join(filepath.Dir(n.idxPath), "*"))
+		if err != nil {
 			return err
+		}
+		for _, file := range files {
+			err = os.RemoveAll(file)
+			if err != nil {
+				return err
+			}
 		}
 	}
 	path := C.CString(n.idxPath)
