@@ -114,7 +114,7 @@ jobs:
           sleep 3
           for svc in vald-agent-ngt vald-lb-gateway vald-discoverer vald-manager-index
           do
-            for t in heap cpu
+            for t in heap cpu block mutex goroutine threadcreate
             do
               curl "http://localhost:10100/api/0/profiles/merge?service=${svc}&type=${t}&from=2021-07-01T00:00:00&to=2030-07-01T00:00:00" \
                 --output profiles/${svc}-${t}.pb
@@ -130,26 +130,29 @@ jobs:
           path: ./profiles-master
           key: ${{ runner.os }}-profiles-master-${{ github.sha }}
           restore-keys: ${{ runner.os }}-profiles-master-
-      - name: Generate graphs
+      - name: Install dependencies
         run: |
           sudo apt update
           sudo apt install -y graphviz
+      - name: Generate graphs
+        run: |
           mkdir -p graphs
           for svc in vald-agent-ngt vald-lb-gateway vald-discoverer vald-manager-index
           do
-            for t in heap cpu
+            for t in heap cpu block mutex goroutine threadcreate
             do
               echo "generating: graphs/${svc}-${t}-${GITHUB_SHA::6}.svg"
               go tool pprof --svg profiles/${svc}-${t}.pb > graphs/${svc}-${t}-${GITHUB_SHA::6}.svg
               if [ -f profiles-master/${svc}-${t}.pb ]; then
                 echo "generating: graphs/${svc}-${t}-master-${GITHUB_SHA::6}.svg"
-                go tool pprof --svg -base=profiles-master/${svc}-${t}.pb profiles/${svc}-${t}.pb > graphs/${svc}-${t}-master-${GITHUB_SHA::6}.svg
+                go tool pprof --svg -base=profiles-master/${svc}-${t}.pb profiles/${svc}-${t}.pb > graphs/${svc}-${t}-diff-master-${GITHUB_SHA::6}.svg
               else
                 echo "skipping: profiles-master/${svc}-${t}.pb does not exist."
               fi
             done
           done
       - name: Update cache
+        if: startsWith( github.ref, 'refs/tags/')
         run: |
           mkdir -p profiles-master
           cp -f profiles/* profiles-master/
