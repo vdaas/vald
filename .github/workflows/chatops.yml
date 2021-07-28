@@ -276,6 +276,7 @@ jobs:
         with:
           fetch-depth: 0
       - uses: crazy-max/ghaction-import-gpg@v3
+        if: steps.check_comments_gen_test.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         with:
           gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
           git-user-signingkey: true
@@ -385,6 +386,7 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.DISPATCH_TOKEN }}
       - uses: crazy-max/ghaction-import-gpg@v3
+        if: steps.check_comments_format.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         with:
           gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
           git-user-signingkey: true
