@@ -82,6 +82,7 @@ jobs:
           kubectl patch cronjob kprofefe -p '{"spec": {"schedule": "*/1 * * * *"}}'
           kubectl wait --for=condition=ready pod -l app=profefe --timeout=300s
       - name: run E2E CRUD
+        continue-on-error: true
         run: |
           make hack/benchmark/assets/dataset/${DATASET}
           go test \
