@@ -275,6 +275,11 @@ jobs:
         if: steps.check_comments_gen_test.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         with:
           fetch-depth: 0
+      - uses: crazy-max/ghaction-import-gpg@v3
+        with:
+          gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
+          git-user-signingkey: true
+          git-commit-gpgsign: true
       - name: Generate tests and push
         if: steps.check_comments_gen_test.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         run: |
@@ -293,11 +298,8 @@ jobs:
           make gotests/install
           make -j 4 gotests/gen
 
-          git config --global user.name "vdaas-ci"
-          git config --global user.email "ci@vdaas.org"
-
           git add cmd hack internal pkg
-          git commit --signoff -m ":robot: Add automatically generated tests"
+          git commit -S --signoff -m ":robot: Add automatically generated tests"
 
           git pull --rebase
 
@@ -382,6 +384,11 @@ jobs:
         with:
           fetch-depth: 0
           token: ${{ secrets.DISPATCH_TOKEN }}
+      - uses: crazy-max/ghaction-import-gpg@v3
+        with:
+          gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
+          git-user-signingkey: true
+          git-commit-gpgsign: true
       - name: Fetch golang version
         if: steps.check_comments_format.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         run: |
@@ -425,11 +432,8 @@ jobs:
           if git diff --quiet --exit-code; then
             echo "Nothing updated"
           else
-            git config --global user.name "vdaas-ci"
-            git config --global user.email "ci@vdaas.org"
-
             git add .
-            git commit --signoff -m ":robot: Update license headers / Format go codes and yaml files"
+            git commit -S --signoff -m ":robot: Update license headers / Format go codes and yaml files"
 
             git remote set-url origin "https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
 
