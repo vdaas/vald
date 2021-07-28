@@ -34,6 +34,11 @@ e2e/update:
 e2e/search:
 	$(call run-e2e-crud-test,-run TestE2ESearchOnly)
 
+.PHONY: e2e/upsert
+## run upsert e2e
+e2e/upsert:
+	$(call run-e2e-crud-test,-run TestE2EUpsertOnly)
+
 .PHONY: e2e/remove
 ## run remove e2e
 e2e/remove:
