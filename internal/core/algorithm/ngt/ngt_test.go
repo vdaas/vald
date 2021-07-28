@@ -1141,7 +1141,7 @@ func Test_ngt_open(t *testing.T) {
 					t.Error(err)
 				}
 
-				if _, err = n.Insert([]float32{0, 1, 2, 3, 4, 5, 6, 7, 8}); err != nil {
+				if _, err = n.Insert([]float32{0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8}); err != nil {
 					t.Error(err)
 				}
 
@@ -1572,7 +1572,7 @@ func Test_ngt_Search(t *testing.T) {
 		{
 			name: "return vector id after the same vector inserted (float)",
 			args: args{
-				vec:     []float32{0, 1, 2, 3, 4, 5, 6, 7, 8},
+				vec:     []float32{0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8},
 				size:    5,
 				epsilon: 0,
 				radius:  0,
@@ -1588,7 +1588,7 @@ func Test_ngt_Search(t *testing.T) {
 			},
 			createFunc: func(t *testing.T, fields fields) (NGT, error) {
 				t.Helper()
-				vec := []float32{0, 1, 2, 3, 4, 5, 6, 7, 8}
+				vec := []float32{0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8}
 
 				return insertCreateFunc(t, fields, [][]float32{vec}, 1)
 			},
@@ -1601,7 +1601,7 @@ func Test_ngt_Search(t *testing.T) {
 		{
 			name: "resturn vector id after the nearby vector inserted (float)",
 			args: args{
-				vec:  []float32{1, 2, 3, 4, 5, 6, 7, 8, 9},
+				vec:  []float32{0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.91},
 				size: 5,
 			},
 			fields: fields{
@@ -1615,7 +1615,7 @@ func Test_ngt_Search(t *testing.T) {
 			},
 			createFunc: func(t *testing.T, fields fields) (NGT, error) {
 				t.Helper()
-				iv := []float32{0, 1, 2, 3, 4, 5, 6, 7, 8}
+				iv := []float32{0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9}
 
 				return insertCreateFunc(t, fields, [][]float32{iv}, 1)
 			},
@@ -1628,7 +1628,7 @@ func Test_ngt_Search(t *testing.T) {
 		{
 			name: "return vector ids after insert with multiple vectors (float)",
 			args: args{
-				vec:  []float32{1, 2, 3, 4, 5, 6, 7, 8, 9},
+				vec:  []float32{0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9},
 				size: 5,
 			},
 			fields: fields{
@@ -1643,9 +1643,9 @@ func Test_ngt_Search(t *testing.T) {
 			createFunc: func(t *testing.T, fields fields) (NGT, error) {
 				t.Helper()
 				ivs := [][]float32{
-					{0, 1, 2, 3, 4, 5, 6, 7, 8},
-					{2, 3, 4, 5, 6, 7, 8, 9, 10},
-					{2, 3, 4, 5, math.MaxFloat32, 7, 8, 9, math.MaxFloat32},
+					{0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8},
+					{0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.10},
+					{0.2, 0.3, 0.4, 0.5, math.MaxFloat32, 0.7, 0.8, 0.9, math.MaxFloat32},
 				}
 
 				return insertCreateFunc(t, fields, ivs, 1)
@@ -1654,14 +1654,13 @@ func Test_ngt_Search(t *testing.T) {
 				want: []SearchResult{
 					{ID: uint32(1), Distance: 3},
 					{ID: uint32(2), Distance: 3},
-					//	{ID: uint32(3), Distance: 3},
 				},
 			},
 		},
 		{
 			name: "return limited result after insert 10 vectors with limited size 3 (float)",
 			args: args{
-				vec:  []float32{1, 2, 3, 4, 5, 6, 7, 8, 9},
+				vec:  []float32{0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9},
 				size: 3,
 			},
 			fields: fields{
@@ -1676,24 +1675,24 @@ func Test_ngt_Search(t *testing.T) {
 			createFunc: func(t *testing.T, fields fields) (NGT, error) {
 				t.Helper()
 				ivs := [][]float32{ // insert 10 vec
-					{0, 1, 2, 3, 4, 5, 6, 7, 8},
-					{2, 3, 4, 5, 6, 7, 8, 9, 10},
-					{0, 1, 2, 3, 4, 5, 6, 7, 8},
-					{2, 3, 4, 5, 6, 7, 8, 9, 10},
-					{0, 1, 2, 3, 4, 5, 6, 7, 8},
-					{2, 3, 4, 5, 6, 7, 8, 9, 10},
-					{0, 1, 2, 3, 4, 5, 6, 7, 8},
-					{2, 3, 4, 5, 6, 7, 8, 9, 10},
-					{2, 3, 4, 5, 6, 7, 8, 9, 10},
-					{2, 3, 4, 5, 6, 7, 8, 9, math.MaxFloat32},
+					{0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8},           // vec id 1
+					{0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9},         // vec id 2
+					{0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.10},        // vec id 3
+					{0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.10, 0.11},       // vec id 4
+					{0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.10, 0.11, 0.12},      // vec id 5
+					{0.5, 0.6, 0.7, 0.8, 0.9, 0.10, 0.11, 0.12, 0.13},     // vec id 6
+					{0.6, 0.7, 0.8, 0.9, 0.10, 0.11, 0.12, 0.13, 0.14},    // vec id 7
+					{0.7, 0.8, 0.9, 0.10, 0.11, 0.12, 0.13, 0.14, 0.15},   // vec id 8
+					{0.8, 0.9, 0.10, 0.11, 0.12, 0.13, 0.14, 0.15, 0.16},  // vec id 9
+					{0.9, 0.10, 0.11, 0.12, 0.13, 0.14, 0.15, 0.16, 0.17}, // vec id 10
 				}
 
 				return insertCreateFunc(t, fields, ivs, 1)
 			},
 			want: want{
 				want: []SearchResult{
+					{ID: uint32(2), Distance: 0},
 					{ID: uint32(1), Distance: 3},
-					{ID: uint32(2), Distance: 3},
 					{ID: uint32(3), Distance: 3},
 				},
 			},
@@ -1701,7 +1700,7 @@ func Test_ngt_Search(t *testing.T) {
 		{
 			name: "return most accurate result after insert 10 vectors with limited size 5 (float)",
 			args: args{
-				vec:  []float32{1, 2, 3, 4, 5, 6, 7, 8, 9},
+				vec:  []float32{0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9},
 				size: 5,
 			},
 			fields: fields{
@@ -1716,27 +1715,27 @@ func Test_ngt_Search(t *testing.T) {
 			createFunc: func(t *testing.T, fields fields) (NGT, error) {
 				t.Helper()
 				ivs := [][]float32{
-					{0, 1, 2, 3, 4, 5, 6, 7, 8},    // vec id 1
-					{2, 3, 4, 5, 6, 7, 8, 9, 10},   // vec id 2
-					{0, 1, 2, 3, 4, 5, 6, 7, 8},    // vec id 3
-					{2, 3, 4, 5, 6, 7, 8, 9, 10},   // vec id 4
-					{0, 1, 2, 3, 4, 5, 6, 7, 8},    // vec id 5
-					{2, 3, 4, 5, 6, 7, 8, 9, 10},   // vec id 6
-					{2, 3, 4, 5, 6, 7, 8, 9, 9.04}, // vec id 7
-					{2, 3, 4, 5, 6, 7, 8, 9, 9.03}, // vec id 8
-					{1, 2, 3, 4, 5, 6, 7, 8, 9.01}, // vec id 9
-					{1, 2, 3, 4, 5, 6, 7, 8, 9.02}, // vec id 10
+					{0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8},           // vec id 1
+					{0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9},         // vec id 2
+					{0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.10},        // vec id 3
+					{0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.10, 0.11},       // vec id 4
+					{0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.10, 0.11, 0.12},      // vec id 5
+					{0.5, 0.6, 0.7, 0.8, 0.9, 0.10, 0.11, 0.12, 0.13},     // vec id 6
+					{0.6, 0.7, 0.8, 0.9, 0.10, 0.11, 0.12, 0.13, 0.14},    // vec id 7
+					{0.7, 0.8, 0.9, 0.10, 0.11, 0.12, 0.13, 0.14, 0.15},   // vec id 8
+					{0.8, 0.9, 0.10, 0.11, 0.12, 0.13, 0.14, 0.15, 0.16},  // vec id 9
+					{0.9, 0.10, 0.11, 0.12, 0.13, 0.14, 0.15, 0.16, 0.17}, // vec id 10
 				}
 
 				return insertCreateFunc(t, fields, ivs, 1)
 			},
 			want: want{
 				want: []SearchResult{
-					{ID: uint32(9), Distance: 1},
-					{ID: uint32(10), Distance: 1},
-					{ID: uint32(8), Distance: 3},
-					{ID: uint32(7), Distance: 3},
+					{ID: uint32(2), Distance: 0},
 					{ID: uint32(1), Distance: 3},
+					{ID: uint32(3), Distance: 3},
+					{ID: uint32(4), Distance: 3},
+					{ID: uint32(5), Distance: 3},
 				},
 			},
 		},
