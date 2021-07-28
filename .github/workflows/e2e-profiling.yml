@@ -138,7 +138,7 @@ jobs:
           sudo apt install -y graphviz
       - name: Generate graphs
         run: |
-          tag=$(cat profiles-master/VALD_VERSION)
+          tag=$(cat profiles-master/VALD_VERSION || echo "unknown")
           mkdir -p graphs
           for svc in vald-agent-ngt vald-lb-gateway vald-discoverer vald-manager-index
           do
@@ -146,9 +146,13 @@ jobs:
             do
               echo "generating: graphs/${svc}-${t}-${GITHUB_SHA::6}.svg"
               go tool pprof --svg profiles/${svc}-${t}.pb > graphs/${svc}-${t}-${GITHUB_SHA::6}.svg
+              echo "generating: graphs/${svc}-${t}-${GITHUB_SHA::6}.png"
+              go tool pprof --png profiles/${svc}-${t}.pb > graphs/${svc}-${t}-${GITHUB_SHA::6}.png
               if [ -f profiles-master/${svc}-${t}.pb ]; then
                 echo "generating: graphs/${svc}-${t}-master-${GITHUB_SHA::6}.svg"
                 go tool pprof --svg -base=profiles-master/${svc}-${t}.pb profiles/${svc}-${t}.pb > graphs/${svc}-${t}-diff-${tag}-${GITHUB_SHA::6}.svg
+                echo "generating: graphs/${svc}-${t}-master-${GITHUB_SHA::6}.png"
+                go tool pprof --png -base=profiles-master/${svc}-${t}.pb profiles/${svc}-${t}.pb > graphs/${svc}-${t}-diff-${tag}-${GITHUB_SHA::6}.png
               else
                 echo "skipping: profiles-master/${svc}-${t}.pb does not exist."
               fi
@@ -179,3 +183,33 @@ jobs:
         env:
           GITHUB_USER: ${{ secrets.DISPATCH_USER }}
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
+      - name: Comment
+        if: github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-profiling'
+        run: |
+          base="https://raw.githubusercontent.com/vdaas-ci/vald-ci-images/main/${GITHUB_SHA::6}"
+          body="<table><tr><th>type</th>"
+          for svc in vald-agent-ngt vald-lb-gateway vald-discoverer vald-manager-index
+          do
+            body="$body<th>$svc</th>"
+          done
+          body="$body</tr>"
+          for t in cpu heap
+          do
+            body="$body<tr><td>${t}</td>"
+            for svc in vald-agent-ngt vald-lb-gateway vald-discoverer vald-manager-index
+            do
+              body="$body<td><img src=\\\"$base/${svc}-${t}-${GITHUB_SHA::6}.png\\\" width=\\\"100%\\\"></td>"
+            done
+            body="$body</tr>"
+          done
+          body="$body</table>"
+          curl --include --verbose --fail \
+          -H "Accept: application/json" \
+          -H "Content-Type:application/json" \
+          -H "Authorization: token ${GITHUB_TOKEN}" \
+          --request POST \
+          --data "{\"body\": \"# Profile Report\n$body\n<a href=\\\"https://github.com/vdaas-ci/vald-ci-images/tree/main/${GITHUB_SHA::6}\\\">other images</a>\"}" \
+          $API_URL
+        env:
+          GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
+          API_URL: ${{ github.event.pull_request.comments_url }}

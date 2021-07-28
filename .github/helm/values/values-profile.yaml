@@ -31,8 +31,6 @@ defaults:
             write_timeout: 3m
 
 gateway:
-  vald:
-    enabled: false
   lb:
     enabled: true
     minReplicas: 1
@@ -48,10 +46,9 @@ gateway:
         memory: 50Mi
     gateway_config:
       index_replica: 3
-  backup:
-    enabled: false
-  meta:
-    enabled: false
+    env:
+      - name: GOMAXPROCS
+        value: "1"
 
 agent:
   minReplicas: 3
@@ -72,6 +69,9 @@ agent:
     auto_index_check_duration: 30s
     auto_index_length: 1000
     dimension: 784
+  env:
+    - name: GOMAXPROCS
+      value: "1"
 
 discoverer:
   minReplicas: 1
@@ -85,14 +85,11 @@ discoverer:
     requests:
       cpu: 100m
       memory: 50Mi
+  env:
+    - name: GOMAXPROCS
+      value: "1"
 
 manager:
-  compressor:
-    enabled: false
-
-  backup:
-    enabled: false
-
   index:
     replicas: 1
     podAnnotations:
@@ -107,6 +104,6 @@ manager:
       auto_index_duration_limit: 2m
       auto_index_check_duration: 30s
       auto_index_length: 1000
-
-meta:
-  enabled: false
+    env:
+      - name: GOMAXPROCS
+        value: "1"
