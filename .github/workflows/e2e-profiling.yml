@@ -97,6 +97,7 @@ jobs:
             -search-by-id-num=100 \
             -get-object-num=100 \
             -update-num=100 \
+            -upsert-num=100 \
             -remove-num=100 \
             -wait-after-insert=3m \
             -portforward \
@@ -114,7 +115,7 @@ jobs:
           sleep 3
           for svc in vald-agent-ngt vald-lb-gateway vald-discoverer vald-manager-index
           do
-            for t in heap cpu block mutex goroutine threadcreate
+            for t in heap cpu goroutine threadcreate
             do
               curl "http://localhost:10100/api/0/profiles/merge?service=${svc}&type=${t}&from=2021-07-01T00:00:00&to=2030-07-01T00:00:00" \
                 --output profiles/${svc}-${t}.pb
@@ -136,27 +137,44 @@ jobs:
           sudo apt install -y graphviz
       - name: Generate graphs
         run: |
+          tag=$(cat profiles-master/VALD_VERSION)
           mkdir -p graphs
           for svc in vald-agent-ngt vald-lb-gateway vald-discoverer vald-manager-index
           do
-            for t in heap cpu block mutex goroutine threadcreate
+            for t in heap cpu goroutine threadcreate
             do
               echo "generating: graphs/${svc}-${t}-${GITHUB_SHA::6}.svg"
               go tool pprof --svg profiles/${svc}-${t}.pb > graphs/${svc}-${t}-${GITHUB_SHA::6}.svg
               if [ -f profiles-master/${svc}-${t}.pb ]; then
                 echo "generating: graphs/${svc}-${t}-master-${GITHUB_SHA::6}.svg"
-                go tool pprof --svg -base=profiles-master/${svc}-${t}.pb profiles/${svc}-${t}.pb > graphs/${svc}-${t}-diff-master-${GITHUB_SHA::6}.svg
+                go tool pprof --svg -base=profiles-master/${svc}-${t}.pb profiles/${svc}-${t}.pb > graphs/${svc}-${t}-diff-${tag}-${GITHUB_SHA::6}.svg
               else
                 echo "skipping: profiles-master/${svc}-${t}.pb does not exist."
               fi
             done
           done
+      - uses: actions/upload-artifact@v2
+        with:
+          name: graphs
+          path: graphs/*
       - name: Update cache
         if: startsWith( github.ref, 'refs/tags/')
         run: |
           mkdir -p profiles-master
           cp -f profiles/* profiles-master/
-      - uses: actions/upload-artifact@v2
-        with:
-          name: graphs
-          path: graphs/*
+          cp -f versions/VALD_VERSION profiles-master/
+      - name: Upload to vald-ci-images repository
+        if: github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-profiling'
+        run: |
+          CLONE_DIR=$(mktemp -d)
+          git clone --depth 1 https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/vdaas-ci/vald-ci-images.git $CLONE_DIR
+          cp -r graphs $CLONE_DIR/${GITHUB_SHA::6}
+          cd $CLONE_DIR
+          git config user.email "vald@vdaas.org"
+          git config user.name "vdaas-ci"
+          git add .
+          git commit -m ":robot: Add ${GITHUB_SHA::6}"
+          git push https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/vdaas-ci/vald-ci-images.git --set-upstream main
+        env:
+          GITHUB_USER: ${{ secrets.DISPATCH_USER }}
+          GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
