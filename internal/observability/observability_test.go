@@ -30,7 +30,7 @@ import (
 	"github.com/vdaas/vald/internal/observability/metrics"
 	"github.com/vdaas/vald/internal/observability/profiler"
 	"github.com/vdaas/vald/internal/observability/trace"
-	"go.uber.org/goleak"
+	"github.com/vdaas/vald/internal/test/goleak"
 )
 
 func TestNewWithConfig(t *testing.T) {

@@ -20,7 +20,7 @@ package node
 import (
 	"testing"
 
-	"go.uber.org/goleak"
+	"github.com/vdaas/vald/internal/test/goleak"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
 

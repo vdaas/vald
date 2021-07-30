@@ -21,7 +21,7 @@ import (
 	"reflect"
 	"testing"
 
-	"go.uber.org/goleak"
+	"github.com/vdaas/vald/internal/test/goleak"
 )
 
 func TestErrRedisInvalidKVVKPrefic(t *testing.T) {
@@ -785,7 +785,6 @@ func TestErrRedisNotFoundIdentity_Error(t *testing.T) {
 }
 
 func TestErrRedisNotFoundIdentity_Unwrap(t *testing.T) {
-	t.Parallel()
 	type fields struct {
 		err error
 	}
