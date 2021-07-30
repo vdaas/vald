@@ -30,8 +30,9 @@ import (
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/log/logger"
 	"github.com/vdaas/vald/internal/net"
-	"go.uber.org/goleak"
+	"github.com/vdaas/vald/internal/test/goleak"
 )
 
 // Goroutine leak is detected by `fastime`, but it should be ignored in the test because it is an external package.
@@ -42,7 +43,7 @@ var goleakIgnoreOptions = []goleak.Option{
 }
 
 func TestMain(m *testing.M) {
-	log.Init()
+	log.Init(log.WithLoggerType(logger.NOP.String()))
 	code := m.Run()
 	os.Exit(code)
 }
@@ -90,16 +91,17 @@ func TestNew(t *testing.T) {
 		func() test {
 			dummyErr := errors.New("error")
 
+			opt := dummyWithFunc(dummyErr)
 			return test{
 				name: "returns error when applying options failed",
 				args: args{
 					opts: []Option{
-						dummyWithFunc(dummyErr),
+						opt,
 					},
 				},
 				want: want{
 					wantRc: nil,
-					err:    errors.ErrOptionFailed(dummyErr, reflect.ValueOf(dummyWithFunc(dummyErr))),
+					err:    errors.ErrOptionFailed(dummyErr, reflect.ValueOf(opt)),
 				},
 				checkFunc: func(w want, gotRc Connector, err error) error {
 					if !errors.Is(err, w.err) {

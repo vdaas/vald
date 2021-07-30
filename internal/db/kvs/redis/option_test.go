@@ -27,7 +27,7 @@ import (
 	redis "github.com/go-redis/redis/v8"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net"
-	"go.uber.org/goleak"
+	"github.com/vdaas/vald/internal/test/goleak"
 )
 
 func TestWithDialer(t *testing.T) {

@@ -3,10 +3,10 @@ module github.com/vdaas/vald
 go 1.16
 
 replace (
-	cloud.google.com/go => cloud.google.com/go v0.87.1-0.20210716171406-8f3275c8ca36
-	cloud.google.com/go/storage => cloud.google.com/go/storage v1.16.1-0.20210716171406-8f3275c8ca36
+	cloud.google.com/go => cloud.google.com/go v0.89.1-0.20210730002651-eabc63a7eff6
+	cloud.google.com/go/storage => cloud.google.com/go/storage v1.16.1-0.20210730002651-eabc63a7eff6
 	github.com/Azure/go-autorest => github.com/Azure/go-autorest v14.2.1-0.20210701162346-76c7860e9b60+incompatible
-	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.40.2
+	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.40.11
 	github.com/boltdb/bolt => github.com/boltdb/bolt v1.3.1
 	github.com/chzyer/logex => github.com/chzyer/logex v1.1.11-0.20170329064859-445be9e134b2
 	github.com/coreos/etcd => go.etcd.io/etcd v3.3.25+incompatible
@@ -17,9 +17,9 @@ replace (
 	github.com/gogo/googleapis => github.com/gogo/googleapis v1.4.1
 	github.com/gogo/protobuf => github.com/gogo/protobuf v1.3.2
 	github.com/google/go-cmp => github.com/google/go-cmp v0.5.6
-	github.com/google/pprof => github.com/google/pprof v0.0.0-20210715191844-86eeefc3e471
+	github.com/google/pprof => github.com/google/pprof v0.0.0-20210726183535-c50bf4fe5303
 	github.com/googleapis/gnostic => github.com/googleapis/gnostic v0.5.5
-	github.com/gophercloud/gophercloud => github.com/gophercloud/gophercloud v0.18.0
+	github.com/gophercloud/gophercloud => github.com/gophercloud/gophercloud v0.19.0
 	github.com/gorilla/websocket => github.com/gorilla/websocket v1.4.2
 	github.com/hailocab/go-hostpool => github.com/kpango/go-hostpool v0.0.0-20210303030322-aab80263dcd0
 	github.com/klauspost/compress => github.com/klauspost/compress v1.13.2-0.20210709134322-94867dd0db71
@@ -28,17 +28,17 @@ replace (
 	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20210711020723-a769d52b0f97
 	google.golang.org/grpc => google.golang.org/grpc v1.39.0
 	google.golang.org/protobuf => google.golang.org/protobuf v1.27.1
-	k8s.io/api => k8s.io/api v0.21.2
-	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.21.2
-	k8s.io/apimachinery => k8s.io/apimachinery v0.21.2
-	k8s.io/cli-runtime => k8s.io/cli-runtime v0.21.2
-	k8s.io/client-go => k8s.io/client-go v0.21.2
-	k8s.io/metrics => k8s.io/metrics v0.21.2
-	sigs.k8s.io/controller-runtime => sigs.k8s.io/controller-runtime v0.9.2
+	k8s.io/api => k8s.io/api v0.21.3
+	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.21.3
+	k8s.io/apimachinery => k8s.io/apimachinery v0.21.3
+	k8s.io/cli-runtime => k8s.io/cli-runtime v0.21.3
+	k8s.io/client-go => k8s.io/client-go v0.21.3
+	k8s.io/metrics => k8s.io/metrics v0.21.3
+	sigs.k8s.io/controller-runtime => sigs.k8s.io/controller-runtime v0.9.5
 )
 
 require (
-	cloud.google.com/go v0.86.0
+	cloud.google.com/go v0.88.0
 	cloud.google.com/go/storage v1.15.0
 	code.cloudfoundry.org/bytefmt v0.0.0-20210608160410-67692ebc98de
 	contrib.go.opencensus.io/exporter/jaeger v0.2.1
@@ -48,7 +48,7 @@ require (
 	github.com/cespare/xxhash/v2 v2.1.1
 	github.com/envoyproxy/protoc-gen-validate v0.1.0
 	github.com/fsnotify/fsnotify v1.4.9
-	github.com/go-redis/redis/v8 v8.11.0
+	github.com/go-redis/redis/v8 v8.11.1
 	github.com/go-sql-driver/mysql v1.6.0
 	github.com/go-toolsmith/strparse v1.0.0 // indirect
 	github.com/gocql/gocql v0.0.0-20200131111108-92af2e088537
@@ -80,22 +80,22 @@ require (
 	go.uber.org/goleak v1.1.10
 	go.uber.org/zap v1.18.1
 	gocloud.dev v0.23.0
-	golang.org/x/net v0.0.0-20210716203947-853a461950ff
+	golang.org/x/net v0.0.0-20210726213435-c6fcb2dbf985
 	golang.org/x/oauth2 v0.0.0-20210628180205-a41e5a781914
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 	golang.org/x/sys v0.0.0-20210630005230-0f9fa26af87c
 	golang.org/x/tools v0.1.5
 	gonum.org/v1/hdf5 v0.0.0-20210714002203-8c5d23bc6946
 	gonum.org/v1/plot v0.9.0
-	google.golang.org/api v0.50.0
-	google.golang.org/genproto v0.0.0-20210716133855-ce7ef5c701ea
+	google.golang.org/api v0.52.0
+	google.golang.org/genproto v0.0.0-20210729151513-df9385d47c1b
 	google.golang.org/grpc v1.39.0
 	gopkg.in/yaml.v2 v2.4.0
-	inet.af/netaddr v0.0.0-20210718074554-06ca8145d722
-	k8s.io/api v0.21.2
-	k8s.io/apimachinery v0.21.2
+	inet.af/netaddr v0.0.0-20210729200904-31d5ee66059c
+	k8s.io/api v0.21.3
+	k8s.io/apimachinery v0.21.3
 	k8s.io/cli-runtime v0.0.0-00010101000000-000000000000
-	k8s.io/client-go v0.21.2
+	k8s.io/client-go v0.21.3
 	k8s.io/metrics v0.0.0-00010101000000-000000000000
 	sigs.k8s.io/controller-runtime v0.0.0-00010101000000-000000000000
 )

@@ -25,7 +25,7 @@ import (
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc"
-	"go.uber.org/goleak"
+	"github.com/vdaas/vald/internal/test/goleak"
 )
 
 func TestNew(t *testing.T) {

@@ -27,6 +27,7 @@ import (
 	"github.com/vdaas/vald/hack/benchmark/internal/starter/agent/core/ngt"
 	"github.com/vdaas/vald/internal/client/v1/client/agent/core"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/log/logger"
 	"github.com/vdaas/vald/internal/net/grpc"
 )
 
@@ -37,7 +38,7 @@ var (
 
 func init() {
 	testing.Init()
-	log.Init()
+	log.Init(log.WithLoggerType(logger.NOP.String()))
 
 	var dataset string
 

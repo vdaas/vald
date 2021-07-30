@@ -59,13 +59,13 @@ TENSORFLOW_C_VERSION := $(eval TENSORFLOW_C_VERSION := $(shell cat versions/TENS
 
 OPERATOR_SDK_VERSION := $(eval OPERATOR_SDK_VERSION := $(shell cat versions/OPERATOR_SDK_VERSION))$(OPERATOR_SDK_VERSION)
 
-KIND_VERSION         ?= v0.10.0
-HELM_VERSION         ?= v3.5.4
+KIND_VERSION         ?= v0.11.1
+HELM_VERSION         ?= v3.6.3
 HELM_DOCS_VERSION    ?= 1.5.0
-YQ_VERSION           ?= v4.7.1
-VALDCLI_VERSION      ?= v1.0.4
+YQ_VERSION           ?= v4.11.2
+VALDCLI_VERSION      ?= v1.1.2
 TELEPRESENCE_VERSION ?= 0.109
-KUBELINTER_VERSION   ?= 0.2.1
+KUBELINTER_VERSION   ?= 0.2.2
 
 SWAP_DEPLOYMENT_TYPE ?= deployment
 SWAP_IMAGE           ?= ""
@@ -270,6 +270,7 @@ E2E_SEARCH_COUNT                   ?= 1000
 E2E_SEARCH_BY_ID_COUNT             ?= 100
 E2E_GET_OBJECT_COUNT               ?= 10
 E2E_UPDATE_COUNT                   ?= 10
+E2E_UPSERT_COUNT                   ?= 10
 E2E_REMOVE_COUNT                   ?= 3
 E2E_WAIT_FOR_CREATE_INDEX_DURATION ?= 8m
 E2E_TARGET_NAME                    ?= vald-lb-gateway

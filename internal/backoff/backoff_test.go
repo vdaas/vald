@@ -27,13 +27,14 @@ import (
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
-	"go.uber.org/goleak"
+	"github.com/vdaas/vald/internal/log/logger"
+	"github.com/vdaas/vald/internal/test/goleak"
 )
 
 const str = "success"
 
 func TestMain(m *testing.M) {
-	log.Init()
+	log.Init(log.WithLoggerType(logger.NOP.String()))
 	os.Exit(m.Run())
 }
 

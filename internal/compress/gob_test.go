@@ -24,7 +24,7 @@ import (
 
 	"github.com/vdaas/vald/internal/compress/gob"
 	"github.com/vdaas/vald/internal/errors"
-	"go.uber.org/goleak"
+	"github.com/vdaas/vald/internal/test/goleak"
 )
 
 func TestNewGob(t *testing.T) {
