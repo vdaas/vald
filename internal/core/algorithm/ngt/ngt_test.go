@@ -565,7 +565,7 @@ func TestLoad(t *testing.T) {
 			}
 		}(),
 		func() test {
-			idxPath := "/tmp/ngt-test-16"
+			idxPath := "/tmp/ngt-16"
 			vec := []float32{0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8}
 			opts := []Option{
 				WithDimension(9),
