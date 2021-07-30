@@ -21,7 +21,7 @@ import (
 	"testing"
 
 	"github.com/vdaas/vald/internal/observability/client/google"
-	"go.uber.org/goleak"
+	"github.com/vdaas/vald/internal/test/goleak"
 )
 
 func TestWithProjectID(t *testing.T) {

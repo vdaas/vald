@@ -28,7 +28,7 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc"
 	testdata "github.com/vdaas/vald/internal/test"
-	"go.uber.org/goleak"
+	"github.com/vdaas/vald/internal/test/goleak"
 )
 
 func Test_newGRPCClientConfig(t *testing.T) {
@@ -64,7 +64,6 @@ func Test_newGRPCClientConfig(t *testing.T) {
 	for _, tc := range tests {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc()
@@ -226,7 +225,7 @@ func TestGRPCClient_Bind(t *testing.T) {
 				"10.40.98.17",
 				"10.40.84.215",
 			}
-			key := "HEALTH_CHECK_DURATION"
+			key := "GRPCCLIENT_BIND_HEALTH_CHECK_DURATION"
 			value := "30s"
 			return test{
 				name: "return GRPCClient when only healthcheck duration is set as environment value",
@@ -283,7 +282,6 @@ func TestGRPCClient_Bind(t *testing.T) {
 	for _, tc := range tests {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(tt)
@@ -357,15 +355,16 @@ func TestGRPCClientKeepalive_Bind(t *testing.T) {
 			}
 		}(),
 		func() test {
+			envPrefix := "GRPCCLIENTKEEPALIVE_BIND_"
 			p := map[string]string{
-				"TIME":    "100s",
-				"TIMEOUT": "300s",
+				envPrefix + "TIME":    "100s",
+				envPrefix + "TIMEOUT": "300s",
 			}
 			return test{
 				name: "return GRPCClientKeepalive when parameters are set as environment value",
 				fields: fields{
-					Time:    "_TIME_",
-					Timeout: "_TIMEOUT_",
+					Time:    "_" + envPrefix + "TIME_",
+					Timeout: "_" + envPrefix + "TIMEOUT_",
 				},
 				beforeFunc: func(t *testing.T) {
 					t.Helper()
@@ -405,7 +404,6 @@ func TestGRPCClientKeepalive_Bind(t *testing.T) {
 	for _, tc := range tests {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(tt)
@@ -492,7 +490,6 @@ func TestCallOption_Bind(t *testing.T) {
 	for _, tc := range tests {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc()
@@ -615,15 +612,16 @@ func TestDialOption_Bind(t *testing.T) {
 			}
 		}(),
 		func() test {
+			envPrefix := "DIALOPTION_BIND_"
 			p := map[string]string{
-				"BACKOFF_MAX_DELAY": "3m",
-				"TIMEOUT":           "3m",
+				envPrefix + "BACKOFF_MAX_DELAY": "3m",
+				envPrefix + "TIMEOUT":           "3m",
 			}
 			return test{
 				name: "return DialOption when parameters are set as environment value",
 				fields: fields{
-					BackoffMaxDelay: "_BACKOFF_MAX_DELAY_",
-					Timeout:         "_TIMEOUT_",
+					BackoffMaxDelay: "_" + envPrefix + "BACKOFF_MAX_DELAY_",
+					Timeout:         "_" + envPrefix + "TIMEOUT_",
 				},
 				beforeFunc: func(t *testing.T) {
 					t.Helper()
@@ -663,7 +661,6 @@ func TestDialOption_Bind(t *testing.T) {
 	for _, tc := range tests {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(tt)
@@ -1055,7 +1052,6 @@ func TestGRPCClient_Opts(t *testing.T) {
 	for _, tc := range tests {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc()

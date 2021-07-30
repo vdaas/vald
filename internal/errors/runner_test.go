@@ -18,11 +18,10 @@ package errors
 import (
 	"testing"
 
-	"go.uber.org/goleak"
+	"github.com/vdaas/vald/internal/test/goleak"
 )
 
 func TestErrDaemonStartFailed(t *testing.T) {
-	t.Parallel()
 	type args struct {
 		err error
 	}
@@ -89,7 +88,6 @@ func TestErrDaemonStartFailed(t *testing.T) {
 }
 
 func TestErrDaemonStopFailed(t *testing.T) {
-	t.Parallel()
 	type args struct {
 		err error
 	}
@@ -156,7 +154,6 @@ func TestErrDaemonStopFailed(t *testing.T) {
 }
 
 func TestErrStartFunc(t *testing.T) {
-	t.Parallel()
 	type args struct {
 		name string
 		err  error
@@ -243,7 +240,6 @@ func TestErrStartFunc(t *testing.T) {
 }
 
 func TestErrPreStopFunc(t *testing.T) {
-	t.Parallel()
 	type args struct {
 		name string
 		err  error
@@ -328,7 +324,6 @@ func TestErrPreStopFunc(t *testing.T) {
 }
 
 func TestErrStopFunc(t *testing.T) {
-	t.Parallel()
 	type args struct {
 		name string
 		err  error
@@ -413,7 +408,6 @@ func TestErrStopFunc(t *testing.T) {
 }
 
 func TestErrPostStopFunc(t *testing.T) {
-	t.Parallel()
 	type args struct {
 		name string
 		err  error
@@ -498,7 +492,6 @@ func TestErrPostStopFunc(t *testing.T) {
 }
 
 func TestErrRunnerWait(t *testing.T) {
-	t.Parallel()
 	type args struct {
 		name string
 		err  error

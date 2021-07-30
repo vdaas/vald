@@ -20,11 +20,10 @@ package errors
 import (
 	"testing"
 
-	"go.uber.org/goleak"
+	"github.com/vdaas/vald/internal/test/goleak"
 )
 
 func TestErrWorkerIsNotRunning(t *testing.T) {
-	t.Parallel()
 	type args struct {
 		name string
 	}
@@ -90,7 +89,6 @@ func TestErrWorkerIsNotRunning(t *testing.T) {
 }
 
 func TestErrWorkerIsAlreadyRunning(t *testing.T) {
-	t.Parallel()
 	type args struct {
 		name string
 	}
@@ -156,7 +154,6 @@ func TestErrWorkerIsAlreadyRunning(t *testing.T) {
 }
 
 func TestErrQueueIsNotRunning(t *testing.T) {
-	t.Parallel()
 	type want struct {
 		err error
 	}
@@ -206,7 +203,6 @@ func TestErrQueueIsNotRunning(t *testing.T) {
 }
 
 func TestErrQueueIsAlreadyRunning(t *testing.T) {
-	t.Parallel()
 	type want struct {
 		err error
 	}
@@ -256,7 +252,6 @@ func TestErrQueueIsAlreadyRunning(t *testing.T) {
 }
 
 func TestErrJobFuncIsNil(t *testing.T) {
-	t.Parallel()
 	type want struct {
 		err error
 	}
