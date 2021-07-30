@@ -734,6 +734,7 @@ func (n *ngt) saveIndex(ctx context.Context) (err error) {
 					derr := f.Close()
 					if derr != nil {
 						err = errors.Wrap(err, derr.Error())
+						log.Errorf("[rebalance controller] failed to close kvsdb file: %v", err)
 					}
 				}
 			}()
@@ -758,6 +759,11 @@ func (n *ngt) saveIndex(ctx context.Context) (err error) {
 	if err != nil {
 		return err
 	}
+
+	// TODO: delete this code
+	time.Sleep(10 * time.Second)
+
+	log.Infof("[rebalance controller] metadata area. kvs length: %d", n.kvs.Len())
 
 	return metadata.Store(
 		filepath.Join(n.path, metadata.AgentMetadataFileName),

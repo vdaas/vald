@@ -160,6 +160,10 @@
 - [apis/proto/v1/vald/upsert.proto](#apis/proto/v1/vald/upsert.proto)
     - [Upsert](#vald.v1.Upsert)
   
+- [apis/proto/v1/rebalancer/rebalancer.proto](#apis/proto/v1/rebalancer/rebalancer.proto)
+    - [Controller](#rebalancer.v1.Controller)
+    - [Job](#rebalancer.v1.Job)
+  
 - [Scalar Value Types](#scalar-value-types)
 
 
@@ -2167,6 +2171,40 @@
 | Upsert | [.payload.v1.Upsert.Request](#payload.v1.Upsert.Request) | [.payload.v1.Object.Location](#payload.v1.Object.Location) |  |
 | StreamUpsert | [.payload.v1.Upsert.Request](#payload.v1.Upsert.Request) stream | [.payload.v1.Object.StreamLocation](#payload.v1.Object.StreamLocation) stream |  |
 | MultiUpsert | [.payload.v1.Upsert.MultiRequest](#payload.v1.Upsert.MultiRequest) | [.payload.v1.Object.Locations](#payload.v1.Object.Locations) |  |
+
+ 
+
+
+
+<a name="apis/proto/v1/rebalancer/rebalancer.proto"></a>
+<p align="right"><a href="#top">Top</a></p>
+
+## apis/proto/v1/rebalancer/rebalancer.proto
+
+
+ 
+
+ 
+
+ 
+
+
+<a name="rebalancer.v1.Controller"></a>
+
+### Controller
+TODO define API spec here
+
+| Method Name | Request Type | Response Type | Description |
+| ----------- | ------------ | ------------- | ------------|
+
+
+<a name="rebalancer.v1.Job"></a>
+
+### Job
+TODO define API spec here
+
+| Method Name | Request Type | Response Type | Description |
+| ----------- | ------------ | ------------- | ------------|
 
  
 

@@ -25,6 +25,8 @@ import (
 	"gocloud.dev/blob/gcsblob"
 
 	iblob "github.com/vdaas/vald/internal/db/storage/blob"
+	"github.com/vdaas/vald/internal/db/storage/blob/s3/copier"
+	"github.com/vdaas/vald/internal/db/storage/blob/s3/deleter"
 	"github.com/vdaas/vald/internal/errors"
 )
 
@@ -77,4 +79,12 @@ func (c *client) Writer(ctx context.Context, key string) (io.WriteCloser, error)
 		return nil, errors.ErrBucketNotOpened
 	}
 	return c.bucket.NewWriter(ctx, key, c.writerOpts)
+}
+
+func (c *client) Deleter(ctx context.Context) (deleter.Deleter, error) {
+	return nil, errors.ErrUnsupportedStorageMethod
+}
+
+func (c *client) Copier(ctx context.Context) (copier.Copier, error) {
+	return nil, errors.ErrUnsupportedStorageMethod
 }

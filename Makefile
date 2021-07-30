@@ -14,32 +14,34 @@
 # limitations under the License.
 #
 
-ORG                             ?= vdaas
-NAME                            = vald
-GOPKG                           = github.com/$(ORG)/$(NAME)
-GOPRIVATE                       = $(GOPKG),$(GOPKG)/apis
-DATETIME                        = $(eval DATETIME := $(shell date -u +%Y/%m/%d_%H:%M:%S%z))$(DATETIME)
-TAG                            ?= latest
-AGENT_IMAGE                     = $(NAME)-agent-ngt
-AGENT_SIDECAR_IMAGE             = $(NAME)-agent-sidecar
-BACKUP_GATEWAY_IMAGE            = $(NAME)-backup-gateway
-CI_CONTAINER_IMAGE              = $(NAME)-ci-container
-DEV_CONTAINER_IMAGE             = $(NAME)-dev-container
-DISCOVERER_IMAGE                = $(NAME)-discoverer-k8s
-FILTER_GATEWAY_IMAGE            = $(NAME)-filter-gateway
-FILTER_INGRESS_TF_IMAGE         = $(NAME)-filter-ingress-tensorflow
-GATEWAY_IMAGE                   = $(NAME)-gateway
-HELM_OPERATOR_IMAGE             = $(NAME)-helm-operator
-LB_GATEWAY_IMAGE                = $(NAME)-lb-gateway
-LOADTEST_IMAGE                  = $(NAME)-loadtest
-MANAGER_BACKUP_CASSANDRA_IMAGE  = $(NAME)-manager-backup-cassandra
-MANAGER_BACKUP_MYSQL_IMAGE      = $(NAME)-manager-backup-mysql
-MANAGER_COMPRESSOR_IMAGE        = $(NAME)-manager-compressor
-MANAGER_INDEX_IMAGE             = $(NAME)-manager-index
-META_CASSANDRA_IMAGE            = $(NAME)-meta-cassandra
-META_GATEWAY_IMAGE              = $(NAME)-meta-gateway
-META_REDIS_IMAGE                = $(NAME)-meta-redis
-MAINTAINER                      = "$(ORG).org $(NAME) team <$(NAME)@$(ORG).org>"
+ORG                                ?= vdaas
+NAME                                = vald
+GOPKG                               = github.com/$(ORG)/$(NAME)
+GOPRIVATE                           = $(GOPKG),$(GOPKG)/apis
+DATETIME                            = $(eval DATETIME := $(shell date -u +%Y/%m/%d_%H:%M:%S%z))$(DATETIME)
+TAG                                ?= latest
+AGENT_IMAGE                         = $(NAME)-agent-ngt
+AGENT_SIDECAR_IMAGE                 = $(NAME)-agent-sidecar
+BACKUP_GATEWAY_IMAGE                = $(NAME)-backup-gateway
+CI_CONTAINER_IMAGE                  = $(NAME)-ci-container
+DEV_CONTAINER_IMAGE                 = $(NAME)-dev-container
+DISCOVERER_IMAGE                    = $(NAME)-discoverer-k8s
+FILTER_GATEWAY_IMAGE                = $(NAME)-filter-gateway
+FILTER_INGRESS_TF_IMAGE             = $(NAME)-filter-ingress-tensorflow
+GATEWAY_IMAGE                       = $(NAME)-gateway
+HELM_OPERATOR_IMAGE                 = $(NAME)-helm-operator
+LB_GATEWAY_IMAGE                    = $(NAME)-lb-gateway
+LOADTEST_IMAGE                      = $(NAME)-loadtest
+REBALANCER_STORAGE_CONTROLLER_IMAGE = $(NAME)-rebalancer-storage-controller
+REBALANCER_STORAGE_JOB_IMAGE        = $(NAME)-rebalancer-storage-job
+MANAGER_BACKUP_CASSANDRA_IMAGE      = $(NAME)-manager-backup-cassandra
+MANAGER_BACKUP_MYSQL_IMAGE          = $(NAME)-manager-backup-mysql
+MANAGER_COMPRESSOR_IMAGE            = $(NAME)-manager-compressor
+MANAGER_INDEX_IMAGE                 = $(NAME)-manager-index
+META_CASSANDRA_IMAGE                = $(NAME)-meta-cassandra
+META_GATEWAY_IMAGE                  = $(NAME)-meta-gateway
+META_REDIS_IMAGE                    = $(NAME)-meta-redis
+MAINTAINER                          = "$(ORG).org $(NAME) team <$(NAME)@$(ORG).org>"
 
 VERSION ?= $(eval VERSION := $(shell cat versions/VALD_VERSION))$(VERSION)
 

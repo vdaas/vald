@@ -40,6 +40,10 @@ import (
 	"github.com/vdaas/vald/pkg/agent/sidecar/service/storage"
 )
 
+const (
+	kvsFileName = "ngt-meta.kvsdb"
+)
+
 type StorageObserver interface {
 	Start(ctx context.Context) (<-chan error, error)
 	PostStop(ctx context.Context) error
@@ -58,9 +62,11 @@ type observer struct {
 	watchEnabled  bool
 	tickerEnabled bool
 
-	storage storage.Storage
+	storage      storage.Storage
+	kvsdbStorage storage.Storage
 
-	ch chan struct{}
+	ch    chan struct{}
+	kvsch chan struct{}
 
 	hooks []Hook
 }
@@ -89,7 +95,7 @@ func New(opts ...Option) (so StorageObserver, err error) {
 func (o *observer) Start(ctx context.Context) (<-chan error, error) {
 	ech := make(chan error, 100)
 
-	var wech, tech, sech, bech <-chan error
+	var wech, tech, sech, ksech, bech <-chan error
 	var err error
 
 	if o.watchEnabled {
@@ -113,6 +119,12 @@ func (o *observer) Start(ctx context.Context) (<-chan error, error) {
 		return nil, err
 	}
 
+	ksech, err = o.kvsdbStorage.Start(ctx)
+	if err != nil {
+		close(ech)
+		return nil, err
+	}
+
 	bech, err = o.startBackupLoop(ctx)
 	if err != nil {
 		close(ech)
@@ -129,6 +141,7 @@ func (o *observer) Start(ctx context.Context) (<-chan error, error) {
 			case err = <-wech:
 			case err = <-tech:
 			case err = <-sech:
+			case err = <-ksech:
 			case err = <-bech:
 			}
 			if err != nil {
@@ -167,6 +180,10 @@ func (o *observer) PostStop(ctx context.Context) (err error) {
 			return nil
 		}
 
+		err = o.kvsBackup(ctx)
+		if err != nil {
+			return errors.Wrap(o.backup(ctx), err.Error())
+		}
 		return o.backup(ctx)
 	}
 
@@ -263,6 +280,12 @@ func (o *observer) startTicker(ctx context.Context) (<-chan error, error) {
 					continue
 				}
 
+				err = o.requestKVSBackup(ctx)
+				if err != nil {
+					ech <- err
+					log.Error("failed to request kvsdb backup:", err)
+					err = nil
+				}
 				err = o.requestBackup(ctx)
 				if err != nil {
 					ech <- err
@@ -286,6 +309,7 @@ func (o *observer) startTicker(ctx context.Context) (<-chan error, error) {
 
 func (o *observer) startBackupLoop(ctx context.Context) (<-chan error, error) {
 	o.ch = make(chan struct{}, 1)
+	o.kvsch = make(chan struct{}, 1)
 
 	ech := make(chan error, 100)
 	o.eg.Go(safety.RecoverFunc(func() (err error) {
@@ -310,6 +334,13 @@ func (o *observer) startBackupLoop(ctx context.Context) (<-chan error, error) {
 					log.Error("an error occurred during backup:", err)
 					err = nil
 				}
+			case <-o.kvsch:
+				err = o.kvsBackup(ctx)
+				if err != nil {
+					ech <- err
+					log.Error("an error occurred during kvs backup:", err)
+					err = nil
+				}
 			}
 		}
 	}))
@@ -325,6 +356,8 @@ func (o *observer) onWrite(ctx context.Context, name string) error {
 		}
 	}()
 
+	log.Infof("[rebalance controller] onWrite event. name: %s", name)
+
 	if name != o.metadataPath {
 		return nil
 	}
@@ -336,6 +369,10 @@ func (o *observer) onWrite(ctx context.Context, name string) error {
 	}
 
 	if ok {
+		err := o.requestKVSBackup(ctx)
+		if err != nil {
+			return errors.Wrap(o.requestBackup(ctx), err.Error())
+		}
 		return o.requestBackup(ctx)
 	}
 
@@ -350,6 +387,8 @@ func (o *observer) onCreate(ctx context.Context, name string) error {
 		}
 	}()
 
+	log.Infof("[rebalance controller] onCreate event. name: %s", name)
+
 	if name != o.metadataPath {
 		return nil
 	}
@@ -361,6 +400,10 @@ func (o *observer) onCreate(ctx context.Context, name string) error {
 	}
 
 	if ok {
+		err := o.requestKVSBackup(ctx)
+		if err != nil {
+			return errors.Wrap(o.requestBackup(ctx), err.Error())
+		}
 		return o.requestBackup(ctx)
 	}
 
@@ -544,6 +587,157 @@ func (o *observer) backup(ctx context.Context) (err error) {
 	}
 
 	log.Infof("finished to backup directory %s", o.dir)
+
+	return nil
+}
+
+func (o *observer) requestKVSBackup(ctx context.Context) error {
+	select {
+	case o.kvsch <- struct{}{}:
+	default:
+		log.Debug("cannot request kvs backup: channel is full")
+	}
+
+	return nil
+}
+
+func (o *observer) kvsBackup(ctx context.Context) (err error) {
+	bi := &BackupInfo{
+		StorageInfo: o.kvsdbStorage.StorageInfo(),
+	}
+	bi.StartTime = time.Now()
+
+	for _, hook := range o.hooks {
+		ctx, err = hook.BeforeProcess(ctx, bi)
+		if err != nil {
+			return err
+		}
+	}
+
+	ctx, span := trace.StartSpan(ctx, "vald/agent-sidecar/service/observer/StorageObserver.kvsdbBackup")
+	if span != nil {
+		span.AddAttributes(
+			trace.StringAttribute("storage_type", bi.StorageInfo.Type),
+			trace.StringAttribute("bucket_name", bi.BucketName),
+			trace.StringAttribute("filename", bi.Filename),
+		)
+	}
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+
+	log.Info("started to backup kvsdb file")
+
+	pr, pw := io.Pipe()
+	defer func() {
+		e := pr.Close()
+		if e != nil {
+			log.Errorf("error on closing pipe reader: %s", e)
+		}
+	}()
+
+	sw, err := o.kvsdbStorage.Writer(ctx)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		e := sw.Close()
+		if e != nil {
+			log.Errorf("error on closing blob-storage writer: %s", e)
+		}
+	}()
+
+	file := filepath.Join(o.dir, kvsFileName)
+	fi, err := os.Stat(file)
+	if err != nil && os.IsNotExist(err) {
+		return err
+	}
+
+	wg := new(sync.WaitGroup)
+	wg.Add(1)
+
+	o.eg.Go(safety.RecoverFunc(func() (err error) {
+		defer wg.Done()
+		defer func() {
+			e := pw.Close()
+			if e != nil {
+				log.Errorf("error on closing pipe writer: %s", e)
+			}
+		}()
+
+		tw := tar.NewWriter(pw)
+		defer func() {
+			e := tw.Close()
+			if e != nil {
+				log.Errorf("error on closing tar writer: %s", e)
+			}
+		}()
+
+		header, err := tar.FileInfoHeader(fi, file)
+		if err != nil {
+			return err
+		}
+
+		rel, err := filepath.Rel(o.dir, file)
+		if err != nil {
+			return err
+		}
+
+		header.Name = filepath.ToSlash(rel)
+
+		err = tw.WriteHeader(header)
+		if err != nil {
+			return err
+		}
+
+		log.Debug("writing: ", file)
+
+		data, err := os.OpenFile(file, os.O_RDONLY, os.ModePerm)
+		if err != nil {
+			return err
+		}
+		defer func() {
+			e := data.Close()
+			if e != nil {
+				log.Errorf("failed to close %s: %s", file, e)
+			}
+		}()
+
+		d, err := io.NewReaderWithContext(ctx, data)
+		if err != nil {
+			return err
+		}
+
+		_, err = io.Copy(tw, d)
+		if err != nil {
+			return err
+		}
+		return nil
+	}))
+
+	prr, err := io.NewReaderWithContext(ctx, pr)
+	if err != nil {
+		return err
+	}
+
+	bi.Bytes, err = io.Copy(sw, prr)
+	if err != nil {
+		return err
+	}
+
+	wg.Wait()
+
+	bi.EndTime = time.Now()
+	for _, hook := range o.hooks {
+		err = hook.AfterProcess(ctx, bi)
+		if err != nil {
+			return err
+		}
+	}
+
+	log.Infof("finished to backup kvsdb: %s", file)
 
 	return nil
 }
