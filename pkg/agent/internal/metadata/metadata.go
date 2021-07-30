@@ -42,13 +42,15 @@ type NGT struct {
 
 func Load(path string) (meta *Metadata, err error) {
 	var fi os.FileInfo
-	if fi, err = os.Stat(path); err != nil {
+	exists, fi, err := file.ExistsWithDetail(path)
+	switch {
+	case !exists:
+		return nil, errors.ErrMetadataFileNotFound
+	case err != nil:
 		return nil, err
-	}
-	if fi.Size() == 0 {
+	case fi == nil || fi.Size() == 0:
 		return nil, errors.ErrMetadataFileEmpty
 	}
-
 	f, err := file.Open(path, os.O_RDONLY|os.O_SYNC, fs.ModePerm)
 	if err != nil {
 		return nil, err

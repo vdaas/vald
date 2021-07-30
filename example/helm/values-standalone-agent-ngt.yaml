@@ -36,10 +36,6 @@ agent:
     auto_index_check_duration: 10s
 
 gateway:
-  backup:
-    enabled: false
-  meta:
-    enabled: false
   lb:
     enabled: false
 
@@ -47,12 +43,5 @@ discoverer:
   enabled: false
 
 manager:
-  compressor:
-    enabled: false
-  backup:
-    enabled: false
   index:
     enabled: false
-
-meta:
-  enabled: false

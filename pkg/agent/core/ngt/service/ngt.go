@@ -184,8 +184,7 @@ func (n *ngt) initNGT(opts ...core.Option) (err error) {
 		return err
 	}
 
-	_, err = os.Stat(n.path)
-	if os.IsNotExist(err) {
+	if exist, _, err := file.ExistsWithDetail(n.path); !exist {
 		log.Debugf("index file not exists,\tpath: %s,\terr: %v", n.path, err)
 		n.core, err = core.New(opts...)
 		return err
@@ -203,8 +202,7 @@ func (n *ngt) initNGT(opts ...core.Option) (err error) {
 	}
 	if os.IsNotExist(err) || agentMetadata == nil || agentMetadata.NGT == nil || agentMetadata.NGT.IndexCount == 0 {
 		log.Warnf("cannot read metadata from %s: %v", metadata.AgentMetadataFileName, err)
-
-		if fi, err := os.Stat(filepath.Join(n.path, kvsFileName)); os.IsNotExist(err) || fi.Size() == 0 {
+		if exist, fi, err := file.ExistsWithDetail(filepath.Join(n.path, kvsFileName)); !exist || fi != nil && fi.Size() == 0 {
 			log.Warn("kvsdb file is not exist")
 			n.core, err = core.New(opts...)
 			return err
