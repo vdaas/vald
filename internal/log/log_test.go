@@ -27,7 +27,7 @@ import (
 	"github.com/vdaas/vald/internal/log/logger"
 	"github.com/vdaas/vald/internal/log/mock"
 	"github.com/vdaas/vald/internal/log/nop"
-	"go.uber.org/goleak"
+	"github.com/vdaas/vald/internal/test/goleak"
 )
 
 // Goroutine leak is detected by `fastime`, but it should be ignored in the test because it is an external package.

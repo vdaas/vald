@@ -23,7 +23,7 @@ import (
 	"testing"
 
 	"github.com/vdaas/vald/internal/errors"
-	"go.uber.org/goleak"
+	"github.com/vdaas/vald/internal/test/goleak"
 )
 
 func TestObservability_Bind(t *testing.T) {
@@ -152,15 +152,17 @@ func TestObservability_Bind(t *testing.T) {
 			jaegerPassword := "pass"
 			jaegerServiceName := "jaeger"
 			stackdriverProjectID := "vald"
+
+			envPrefix := "OBSERVABILITY_BIND_"
 			m := map[string]string{
-				"PROMETHEUS_ENDPOINT":       prometheusEndpoint,
-				"PROMETHUS_NAMESPACE":       prometheusNamespace,
-				"JAEGER_COLLECTOR_ENDPOINT": jaegerCollectorEndpoint,
-				"JAEGER_AGENT_ENDPOINT":     jaegerAgentEndpoint,
-				"JAEGER_USERNAME":           jaegerUsername,
-				"JAEGER_PASSWORD":           jaegerPassword,
-				"JAEGER_SERVICE_NAME":       jaegerServiceName,
-				"STACKDRIVER_PROJECT_ID":    stackdriverProjectID,
+				envPrefix + "PROMETHEUS_ENDPOINT":       prometheusEndpoint,
+				envPrefix + "PROMETHUS_NAMESPACE":       prometheusNamespace,
+				envPrefix + "JAEGER_COLLECTOR_ENDPOINT": jaegerCollectorEndpoint,
+				envPrefix + "JAEGER_AGENT_ENDPOINT":     jaegerAgentEndpoint,
+				envPrefix + "JAEGER_USERNAME":           jaegerUsername,
+				envPrefix + "JAEGER_PASSWORD":           jaegerPassword,
+				envPrefix + "JAEGER_SERVICE_NAME":       jaegerServiceName,
+				envPrefix + "STACKDRIVER_PROJECT_ID":    stackdriverProjectID,
 			}
 			return test{
 				name: "return Observability when the data is loaded environment variable",
@@ -171,18 +173,18 @@ func TestObservability_Bind(t *testing.T) {
 					},
 					Trace: new(Trace),
 					Prometheus: &Prometheus{
-						Endpoint:  "_PROMETHEUS_ENDPOINT_",
-						Namespace: "_PROMETHUS_NAMESPACE_",
+						Endpoint:  "_" + envPrefix + "PROMETHEUS_ENDPOINT_",
+						Namespace: "_" + envPrefix + "PROMETHUS_NAMESPACE_",
 					},
 					Jaeger: &Jaeger{
-						CollectorEndpoint: "_JAEGER_COLLECTOR_ENDPOINT_",
-						AgentEndpoint:     "_JAEGER_AGENT_ENDPOINT_",
-						Username:          "_JAEGER_USERNAME_",
-						Password:          "_JAEGER_PASSWORD_",
-						ServiceName:       "_JAEGER_SERVICE_NAME_",
+						CollectorEndpoint: "_" + envPrefix + "JAEGER_COLLECTOR_ENDPOINT_",
+						AgentEndpoint:     "_" + envPrefix + "JAEGER_AGENT_ENDPOINT_",
+						Username:          "_" + envPrefix + "JAEGER_USERNAME_",
+						Password:          "_" + envPrefix + "JAEGER_PASSWORD_",
+						ServiceName:       "_" + envPrefix + "JAEGER_SERVICE_NAME_",
 					},
 					Stackdriver: &Stackdriver{
-						ProjectID: "_STACKDRIVER_PROJECT_ID_",
+						ProjectID: "_" + envPrefix + "STACKDRIVER_PROJECT_ID_",
 						Client:    new(StackdriverClient),
 						Exporter:  new(StackdriverExporter),
 						Profiler:  new(StackdriverProfiler),
@@ -238,7 +240,6 @@ func TestObservability_Bind(t *testing.T) {
 	for _, tc := range tests {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(tt)
@@ -321,17 +322,19 @@ func TestCollector_Bind(t *testing.T) {
 		func() test {
 			duration := "5ms"
 			versionInfoLabels := "vald_version"
+
+			envPrefix := "COLLECTOR_BIND_"
 			m := map[string]string{
-				"DURATION":                    duration,
-				"METRICS_VERSION_INFO_LABELS": versionInfoLabels,
+				envPrefix + "DURATION":                    duration,
+				envPrefix + "METRICS_VERSION_INFO_LABELS": versionInfoLabels,
 			}
 			return test{
 				name: "return Collector when the data is loaded from the environment variable",
 				fields: fields{
-					Duration: "_DURATION_",
+					Duration: "_" + envPrefix + "DURATION_",
 					Metrics: &Metrics{
 						VersionInfoLabels: []string{
-							"_METRICS_VERSION_INFO_LABELS_",
+							"_" + envPrefix + "METRICS_VERSION_INFO_LABELS_",
 						},
 					},
 				},
@@ -368,7 +371,6 @@ func TestCollector_Bind(t *testing.T) {
 	for _, tc := range tests {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(tt)
@@ -459,24 +461,26 @@ func TestStackdriver_Bind(t *testing.T) {
 			clientAPIKey := "api_key"
 			exporterLocation := "asia-northeast1-a"
 			profileService := "vald-service"
+
+			envPrefix := "STACKDRIVER_BIND_"
 			m := map[string]string{
-				"PROJECT_ID":        projectID,
-				"CLIENT_API_KEY":    clientAPIKey,
-				"EXPORTER_LOCATION": exporterLocation,
-				"PROFILER_SERVICE":  profileService,
+				envPrefix + "PROJECT_ID":        projectID,
+				envPrefix + "CLIENT_API_KEY":    clientAPIKey,
+				envPrefix + "EXPORTER_LOCATION": exporterLocation,
+				envPrefix + "PROFILER_SERVICE":  profileService,
 			}
 			return test{
 				name: "return Stackdriver when the data is loaded from the environment variable",
 				fields: fields{
-					ProjectID: "_PROJECT_ID_",
+					ProjectID: "_" + envPrefix + "PROJECT_ID_",
 					Client: &StackdriverClient{
-						APIKey: "_CLIENT_API_KEY_",
+						APIKey: "_" + envPrefix + "CLIENT_API_KEY_",
 					},
 					Exporter: &StackdriverExporter{
-						Location: "_EXPORTER_LOCATION_",
+						Location: "_" + envPrefix + "EXPORTER_LOCATION_",
 					},
 					Profiler: &StackdriverProfiler{
-						Service: "_PROFILER_SERVICE_",
+						Service: "_" + envPrefix + "PROFILER_SERVICE_",
 					},
 				},
 				beforeFunc: func(t *testing.T) {
@@ -516,7 +520,6 @@ func TestStackdriver_Bind(t *testing.T) {
 	for _, tc := range tests {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(tt)

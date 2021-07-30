@@ -24,8 +24,8 @@ import (
 
 	"github.com/vdaas/vald/internal/cache/cacher"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/test/goleak"
 	"github.com/vdaas/vald/internal/timeutil"
-	"go.uber.org/goleak"
 )
 
 func TestWithExpiredHook(t *testing.T) {

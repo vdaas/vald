@@ -26,7 +26,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/kpango/gache"
 	"github.com/vdaas/vald/internal/errors"
-	"go.uber.org/goleak"
+	"github.com/vdaas/vald/internal/test/goleak"
 )
 
 func TestDefaultOptions(t *testing.T) {

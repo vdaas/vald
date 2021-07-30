@@ -24,7 +24,7 @@ import (
 
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
-	"go.uber.org/goleak"
+	"github.com/vdaas/vald/internal/test/goleak"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
 

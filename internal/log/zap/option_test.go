@@ -22,7 +22,7 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log/format"
 	"github.com/vdaas/vald/internal/log/level"
-	"go.uber.org/goleak"
+	"github.com/vdaas/vald/internal/test/goleak"
 )
 
 func TestWithLevel(t *testing.T) {

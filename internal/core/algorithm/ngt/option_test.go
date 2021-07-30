@@ -24,7 +24,7 @@ import (
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/test/comparator"
-	"go.uber.org/goleak"
+	"github.com/vdaas/vald/internal/test/goleak"
 )
 
 func TestWithInMemoryMode(t *testing.T) {
@@ -1400,13 +1400,13 @@ func TestWithDefaultRadius(t *testing.T) {
 			},
 		},
 		{
-			name: "set success when radius is SmallestNonzeroFloat32",
+			name: "set success when radius is MinFloat32",
 			args: args{
-				radius: math.SmallestNonzeroFloat32,
+				radius: -math.MaxFloat32,
 			},
 			want: want{
 				obj: &T{
-					radius: math.SmallestNonzeroFloat32,
+					radius: -math.MaxFloat32,
 				},
 			},
 		},
@@ -1496,13 +1496,13 @@ func TestWithDefaultEpsilon(t *testing.T) {
 			},
 		},
 		{
-			name: "set success when epsilon is SmallestNonzeroFloat32",
+			name: "set success when epsilon is MinFloat32",
 			args: args{
-				epsilon: math.SmallestNonzeroFloat32,
+				epsilon: -math.MaxFloat32, // https://github.com/golang/go/issues/797#issuecomment-66051314
 			},
 			want: want{
 				obj: &T{
-					epsilon: math.SmallestNonzeroFloat32,
+					epsilon: -math.MaxFloat32,
 				},
 			},
 		},

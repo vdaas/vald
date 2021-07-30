@@ -26,7 +26,7 @@ import (
 	"github.com/vdaas/vald/internal/db/nosql/cassandra"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/observability/metrics"
-	"go.uber.org/goleak"
+	"github.com/vdaas/vald/internal/test/goleak"
 )
 
 func TestNew(t *testing.T) {

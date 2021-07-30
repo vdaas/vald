@@ -72,19 +72,19 @@ func TestTLS_Bind(t *testing.T) {
 			name: "returns TLS with environment variable when it contains `_` prefix and suffix",
 			fields: fields{
 				Enabled: true,
-				Cert:    "_cert_",
-				Key:     "_key_",
-				CA:      "_ca_",
+				Cert:    "_TLS_BIND_CERT_",
+				Key:     "_TLS_BIND_KEY_",
+				CA:      "_TLS_BIND_CA_",
 			},
 			beforeFunc: func() {
-				_ = os.Setenv("cert", "tls_cert")
-				_ = os.Setenv("key", "tls_key")
-				_ = os.Setenv("ca", "tls_ca")
+				_ = os.Setenv("TLS_BIND_CERT", "tls_cert")
+				_ = os.Setenv("TLS_BIND_KEY", "tls_key")
+				_ = os.Setenv("TLS_BIND_CA", "tls_ca")
 			},
 			afterFunc: func() {
-				_ = os.Unsetenv("cert")
-				_ = os.Unsetenv("key")
-				_ = os.Unsetenv("ca")
+				_ = os.Unsetenv("TLS_BIND_CERT")
+				_ = os.Unsetenv("TLS_BIND_KEY")
+				_ = os.Unsetenv("TLS_BIND_CA")
 			},
 			want: want{
 				want: &TLS{
@@ -150,18 +150,6 @@ func TestTLS_Opts(t *testing.T) {
 	defaultCheckFunc := func(w want, got []tls.Option) error {
 		if len(w.want) != len(got) {
 			return errors.Errorf("len(got) = %d, len(want) = %d", len(got), len(w.want))
-		}
-		for i := range w.want {
-			ok := false
-			for j := range got {
-				if reflect.ValueOf(w.want[i]).Pointer() == reflect.ValueOf(got[j]).Pointer() {
-					ok = true
-					break
-				}
-			}
-			if !ok {
-				return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-			}
 		}
 		return nil
 	}

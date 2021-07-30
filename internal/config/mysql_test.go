@@ -28,7 +28,7 @@ import (
 	"github.com/vdaas/vald/internal/db/rdb/mysql"
 	"github.com/vdaas/vald/internal/errors"
 	testdata "github.com/vdaas/vald/internal/test"
-	"go.uber.org/goleak"
+	"github.com/vdaas/vald/internal/test/goleak"
 )
 
 func TestMySQL_Bind(t *testing.T) {
@@ -156,17 +156,17 @@ func TestMySQL_Bind(t *testing.T) {
 		{
 			name: "return MySQL with environment variable when it contains `_` as prefix and suffix",
 			fields: fields{
-				DB:                   "_db_",
-				Host:                 "_host_",
+				DB:                   "_MYSQL_BIND_DB_",
+				Host:                 "_MYSQL_BIND_HOST_",
 				Port:                 80,
-				User:                 "_user_",
-				Pass:                 "_pass_",
-				Name:                 "_name_",
-				Charset:              "_charset_",
-				Timezone:             "_timezone_",
-				InitialPingTimeLimit: "_initialPingTimeLimit_",
-				InitialPingDuration:  "_initialPingDuration_",
-				ConnMaxLifeTime:      "_connMaxLifeTime_",
+				User:                 "_MYSQL_BIND_USER_",
+				Pass:                 "_MYSQL_BIND_PASS_",
+				Name:                 "_MYSQL_BIND_NAME_",
+				Charset:              "_MYSQL_BIND_CHARSET_",
+				Timezone:             "_MYSQL_BIND_TIMEZONE_",
+				InitialPingTimeLimit: "_MYSQL_BIND_INITIAL_PING_TIME_LIMIT_",
+				InitialPingDuration:  "_MYSQL_BIND_INITIAL_PING_DURATION_",
+				ConnMaxLifeTime:      "_MYSQL_BIND_CONN_MAX_LIFE_TIME_",
 				MaxOpenConns:         10,
 				MaxIdleConns:         100,
 				TLS:                  new(TLS),
@@ -192,28 +192,28 @@ func TestMySQL_Bind(t *testing.T) {
 				},
 			},
 			beforeFunc: func() {
-				_ = os.Setenv("db", "db")
-				_ = os.Setenv("host", "host")
-				_ = os.Setenv("user", "user")
-				_ = os.Setenv("pass", "pass")
-				_ = os.Setenv("name", "name")
-				_ = os.Setenv("charset", "charset")
-				_ = os.Setenv("timezone", "timezone")
-				_ = os.Setenv("initialPingTimeLimit", "initialPingTimeLimit")
-				_ = os.Setenv("initialPingDuration", "initialPingDuration")
-				_ = os.Setenv("connMaxLifeTime", "connMaxLifeTime")
+				_ = os.Setenv("MYSQL_BIND_DB", "db")
+				_ = os.Setenv("MYSQL_BIND_HOST", "host")
+				_ = os.Setenv("MYSQL_BIND_USER", "user")
+				_ = os.Setenv("MYSQL_BIND_PASS", "pass")
+				_ = os.Setenv("MYSQL_BIND_NAME", "name")
+				_ = os.Setenv("MYSQL_BIND_CHARSET", "charset")
+				_ = os.Setenv("MYSQL_BIND_TIMEZONE", "timezone")
+				_ = os.Setenv("MYSQL_BIND_INITIAL_PING_TIME_LIMIT", "initialPingTimeLimit")
+				_ = os.Setenv("MYSQL_BIND_INITIAL_PING_DURATION", "initialPingDuration")
+				_ = os.Setenv("MYSQL_BIND_CONN_MAX_LIFE_TIME", "connMaxLifeTime")
 			},
 			afterFunc: func() {
-				_ = os.Unsetenv("db")
-				_ = os.Unsetenv("host")
-				_ = os.Unsetenv("user")
-				_ = os.Unsetenv("pass")
-				_ = os.Unsetenv("name")
-				_ = os.Unsetenv("charset")
-				_ = os.Unsetenv("timezone")
-				_ = os.Unsetenv("initialPingTimeLimit")
-				_ = os.Unsetenv("initialPingDuration")
-				_ = os.Unsetenv("connMaxLifeTime")
+				_ = os.Unsetenv("MYSQL_BIND_DB")
+				_ = os.Unsetenv("MYSQL_BIND_HOST")
+				_ = os.Unsetenv("MYSQL_BIND_USER")
+				_ = os.Unsetenv("MYSQL_BIND_PASS")
+				_ = os.Unsetenv("MYSQL_BIND_NAME")
+				_ = os.Unsetenv("MYSQL_BIND_CHARSET")
+				_ = os.Unsetenv("MYSQL_BIND_TIMEZONE")
+				_ = os.Unsetenv("MYSQL_BIND_INITIAL_PING_TIME_LIMIT")
+				_ = os.Unsetenv("MYSQL_BIND_INITIAL_PING_DURATION")
+				_ = os.Unsetenv("MYSQL_BIND_CONN_MAX_LIFE_TIME")
 			},
 		},
 	}
@@ -494,7 +494,6 @@ func TestMySQL_Opts(t *testing.T) {
 	for _, tc := range tests {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc()
