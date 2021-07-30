@@ -29,7 +29,7 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc/pool"
 	"github.com/vdaas/vald/internal/singleflight"
-	"go.uber.org/goleak"
+	"github.com/vdaas/vald/internal/test/goleak"
 	gbackoff "google.golang.org/grpc/backoff"
 )
 

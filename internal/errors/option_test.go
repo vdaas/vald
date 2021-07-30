@@ -19,11 +19,10 @@ import (
 	"reflect"
 	"testing"
 
-	"go.uber.org/goleak"
+	"github.com/vdaas/vald/internal/test/goleak"
 )
 
 func TestNewErrInvalidOption(t *testing.T) {
-	t.Parallel()
 	type args struct {
 		name string
 		val  interface{}
@@ -177,7 +176,6 @@ func TestNewErrInvalidOption(t *testing.T) {
 }
 
 func TestErrInvalidOption_Error(t *testing.T) {
-	t.Parallel()
 	type T = string
 	type fields struct {
 		err    error
@@ -248,7 +246,6 @@ func TestErrInvalidOption_Error(t *testing.T) {
 }
 
 func TestErrInvalidOption_Unwrap(t *testing.T) {
-	t.Parallel()
 	type T = error
 	type fields struct {
 		err    error
@@ -317,7 +314,6 @@ func TestErrInvalidOption_Unwrap(t *testing.T) {
 }
 
 func TestNewErrCriticalOption(t *testing.T) {
-	t.Parallel()
 	type T = error
 	type args struct {
 		name string
@@ -472,7 +468,6 @@ func TestNewErrCriticalOption(t *testing.T) {
 }
 
 func TestErrCriticalOption_Error(t *testing.T) {
-	t.Parallel()
 	type T = string
 	type fields struct {
 		err    error
@@ -542,7 +537,6 @@ func TestErrCriticalOption_Error(t *testing.T) {
 }
 
 func TestErrCriticalOption_Unwrap(t *testing.T) {
-	t.Parallel()
 	type T = error
 	type fields struct {
 		err    error
@@ -610,7 +604,6 @@ func TestErrCriticalOption_Unwrap(t *testing.T) {
 }
 
 func TestNewErrIgnoredOption(t *testing.T) {
-	t.Parallel()
 	type args struct {
 		name string
 		errs []error
@@ -755,7 +748,6 @@ func TestNewErrIgnoredOption(t *testing.T) {
 }
 
 func TestErrIgnoredOption_Error(t *testing.T) {
-	t.Parallel()
 	type T = string
 	type fields struct {
 		err    error
@@ -826,7 +818,6 @@ func TestErrIgnoredOption_Error(t *testing.T) {
 }
 
 func TestErrIgnoredOption_Unwrap(t *testing.T) {
-	t.Parallel()
 	type T = error
 	type fields struct {
 		err    error

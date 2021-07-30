@@ -24,7 +24,7 @@ import (
 
 	"github.com/vdaas/vald/internal/backoff"
 	"github.com/vdaas/vald/internal/errors"
-	"go.uber.org/goleak"
+	"github.com/vdaas/vald/internal/test/goleak"
 )
 
 func TestBackoff_Bind(t *testing.T) {
@@ -75,7 +75,7 @@ func TestBackoff_Bind(t *testing.T) {
 			}
 		}(),
 		func() test {
-			key := "INITIAL_DURATION"
+			key := "BACKOFF_BIND_INITIAL_DURATION"
 			val := "5m"
 			return test{
 				name: "return Backoff struct when initialDuration is set via the environment value",
@@ -115,7 +115,6 @@ func TestBackoff_Bind(t *testing.T) {
 	for _, tc := range tests {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(tt)
@@ -211,7 +210,6 @@ func TestBackoff_Opts(t *testing.T) {
 	for _, tc := range tests {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc()

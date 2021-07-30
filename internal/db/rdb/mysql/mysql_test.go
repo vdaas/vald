@@ -29,12 +29,13 @@ import (
 	"github.com/vdaas/vald/internal/db/rdb/mysql/dbr"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/log/logger"
 	"github.com/vdaas/vald/internal/net"
-	"go.uber.org/goleak"
+	"github.com/vdaas/vald/internal/test/goleak"
 )
 
 func TestMain(m *testing.M) {
-	log.Init()
+	log.Init(log.WithLoggerType(logger.NOP.String()))
 	os.Exit(m.Run())
 }
 
@@ -555,7 +556,7 @@ func Test_mySQLClient_Ping(t *testing.T) {
 				},
 				fields: fields{
 					initialPingTimeLimit: 1 * time.Microsecond,
-					initialPingDuration:  10 * time.Microsecond,
+					initialPingDuration:  100 * time.Microsecond,
 					session: &dbr.MockSession{
 						PingContextFunc: func(ctx context.Context) error {
 							return nil

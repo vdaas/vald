@@ -20,7 +20,6 @@ import (
 )
 
 func TestErrMetaDataAlreadyExists(t *testing.T) {
-	t.Parallel()
 	type args struct {
 		meta string
 	}
@@ -83,7 +82,6 @@ func TestErrMetaDataAlreadyExists(t *testing.T) {
 }
 
 func TestErrMetadataCannotFetch(t *testing.T) {
-	t.Parallel()
 	type want struct {
 		want error
 	}

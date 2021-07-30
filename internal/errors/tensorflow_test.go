@@ -20,11 +20,10 @@ import (
 	"math"
 	"testing"
 
-	"go.uber.org/goleak"
+	"github.com/vdaas/vald/internal/test/goleak"
 )
 
 func TestErrFailedToCastTF(t *testing.T) {
-	t.Parallel()
 	type args struct {
 		v interface{}
 	}
@@ -206,7 +205,6 @@ func TestErrFailedToCastTF(t *testing.T) {
 }
 
 func TestErrInputLength(t *testing.T) {
-	t.Parallel()
 	type args struct {
 		iLength int
 		fLength int
@@ -291,7 +289,6 @@ func TestErrInputLength(t *testing.T) {
 }
 
 func TestErrNilTensorTF(t *testing.T) {
-	t.Parallel()
 	type args struct {
 		v interface{}
 	}
@@ -473,7 +470,6 @@ func TestErrNilTensorTF(t *testing.T) {
 }
 
 func TestErrNilTensorValueTF(t *testing.T) {
-	t.Parallel()
 	type args struct {
 		v interface{}
 	}

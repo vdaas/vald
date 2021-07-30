@@ -22,11 +22,10 @@ import (
 	"testing"
 	"time"
 
-	"go.uber.org/goleak"
+	"github.com/vdaas/vald/internal/test/goleak"
 )
 
 func TestErrPanicRecovered(t *testing.T) {
-	t.Parallel()
 	type args struct {
 		err error
 		rec interface{}
@@ -234,7 +233,6 @@ func TestErrPanicRecovered(t *testing.T) {
 }
 
 func TestErrPanicString(t *testing.T) {
-	t.Parallel()
 	type args struct {
 		err error
 		msg string
@@ -336,7 +334,6 @@ func (e runtimeErr) Error() string {
 }
 
 func TestErrRuntimeError(t *testing.T) {
-	t.Parallel()
 	type args struct {
 		err error
 		r   runtime.Error

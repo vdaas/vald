@@ -26,7 +26,8 @@ import (
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
-	"go.uber.org/goleak"
+	"github.com/vdaas/vald/internal/log/logger"
+	"github.com/vdaas/vald/internal/test/goleak"
 )
 
 // Goroutine leak is detected by `fastime`, but it should be ignored in the test because it is an external package.
@@ -35,7 +36,7 @@ var goleakIgnoreOptions = []goleak.Option{
 }
 
 func TestMain(m *testing.M) {
-	log.Init()
+	log.Init(log.WithLoggerType(logger.NOP.String()))
 	os.Exit(m.Run())
 }
 
@@ -199,23 +200,24 @@ func TestGlobalConfig_Bind(t *testing.T) {
 			}
 		}(),
 		func() test {
+			envPrefix := "GLOBALCONFIG_BIND_"
 			env := map[string]string{
-				"VERSION": "v1.0.0",
-				"TZ":      "UTC",
-				"LOGGER":  "glg",
-				"LEVEL":   "warn",
-				"FORMAT":  "json",
+				envPrefix + "VERSION": "v1.0.0",
+				envPrefix + "TZ":      "UTC",
+				envPrefix + "LOGGER":  "glg",
+				envPrefix + "LEVEL":   "warn",
+				envPrefix + "FORMAT":  "json",
 			}
 
 			return test{
 				name: "return GlobalConfig when all fields are read from environment variable",
 				fields: fields{
-					Version: "_VERSION_",
-					TZ:      "_TZ_",
+					Version: "_" + envPrefix + "VERSION_",
+					TZ:      "_" + envPrefix + "TZ_",
 					Logging: &Logging{
-						Logger: "_LOGGER_",
-						Level:  "_LEVEL_",
-						Format: "_FORMAT_",
+						Logger: "_" + envPrefix + "LOGGER_",
+						Level:  "_" + envPrefix + "LEVEL_",
+						Format: "_" + envPrefix + "FORMAT_",
 					},
 				},
 				want: want{
@@ -915,19 +917,19 @@ func TestGetActualValue(t *testing.T) {
 	tests := []test{
 		func() test {
 			return test{
-				name: "return v1.0.0. when val is _VERSION_",
+				name: "return v1.0.0 when val is set in environment variable",
 				args: args{
-					val: "_VERSION_",
+					val: "_GETACTUALVALUE_VERSION_",
 				},
 				beforeFunc: func(t *testing.T, _ args) {
 					t.Helper()
-					if err := os.Setenv("VERSION", "v1.0.0"); err != nil {
+					if err := os.Setenv("GETACTUALVALUE_VERSION", "v1.0.0"); err != nil {
 						t.Error(err)
 					}
 				},
 				afterFunc: func(t *testing.T, _ args) {
 					t.Helper()
-					if err := os.Unsetenv("VERSION"); err != nil {
+					if err := os.Unsetenv("GETACTUALVALUE_VERSION"); err != nil {
 						t.Error(err)
 					}
 				},
@@ -940,17 +942,17 @@ func TestGetActualValue(t *testing.T) {
 			return test{
 				name: "return v1.0.0 when val is $VERSION",
 				args: args{
-					val: "$VERSION",
+					val: "$GETACTUALVALUE_1_VERSION",
 				},
 				beforeFunc: func(t *testing.T, _ args) {
 					t.Helper()
-					if err := os.Setenv("VERSION", "v1.0.0"); err != nil {
+					if err := os.Setenv("GETACTUALVALUE_1_VERSION", "v1.0.0"); err != nil {
 						t.Error(err)
 					}
 				},
 				afterFunc: func(t *testing.T, _ args) {
 					t.Helper()
-					if err := os.Unsetenv("VERSION"); err != nil {
+					if err := os.Unsetenv("GETACTUALVALUE_1_VERSION"); err != nil {
 						t.Error(err)
 					}
 				},
@@ -1064,17 +1066,18 @@ func TestGetActualValues(t *testing.T) {
 	}
 	tests := []test{
 		func() test {
+			envPrefix := "GETACTUALVALUES_"
 			env := map[string]string{
-				"VERSION": "v1.0.0",
-				"LOGGER":  "glg",
+				envPrefix + "VERSION": "v1.0.0",
+				envPrefix + "LOGGER":  "glg",
 			}
 
 			return test{
 				name: "return v1.0.0 and glg when vals are _LOGGER_ and _VERSION_",
 				args: args{
 					vals: []string{
-						"_VERSION_",
-						"_LOGGER_",
+						"_" + envPrefix + "VERSION_",
+						"_" + envPrefix + "LOGGER_",
 					},
 				},
 				beforeFunc: func(t *testing.T, _ args) {
@@ -1106,19 +1109,19 @@ func TestGetActualValues(t *testing.T) {
 				name: "return v1.0.0 and LOGGER when vals are _VERSION_ and LOGGER",
 				args: args{
 					vals: []string{
-						"_VERSION_",
+						"_GETACTUALVALUES_1_VERSION_",
 						"LOGGER",
 					},
 				},
 				beforeFunc: func(t *testing.T, _ args) {
 					t.Helper()
-					if err := os.Setenv("VERSION", "v1.0.0"); err != nil {
+					if err := os.Setenv("GETACTUALVALUES_1_VERSION", "v1.0.0"); err != nil {
 						t.Error(err)
 					}
 				},
 				afterFunc: func(t *testing.T, _ args) {
 					t.Helper()
-					if err := os.Unsetenv("VERSION"); err != nil {
+					if err := os.Unsetenv("GETACTUALVALUES_1_VERSION"); err != nil {
 						t.Error(err)
 					}
 				},

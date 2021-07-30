@@ -23,7 +23,7 @@ import (
 	"testing"
 
 	"github.com/vdaas/vald/internal/errors"
-	"go.uber.org/goleak"
+	"github.com/vdaas/vald/internal/test/goleak"
 )
 
 func Test_compressAlgorithm_String(t *testing.T) {
@@ -269,7 +269,7 @@ func TestCompressCore_Bind(t *testing.T) {
 			}
 		}(),
 		func() test {
-			key := "COMPRESS_ALGORITHM"
+			key := "COMPRESSCORE_BIND_COMPRESS_ALGORITHM"
 			wantVal := "gzip"
 
 			return test{
@@ -297,7 +297,7 @@ func TestCompressCore_Bind(t *testing.T) {
 			}
 		}(),
 		func() test {
-			key := "COMPRESS_ALGORITHM"
+			key := "COMPRESSCORE_BIND_COMPRESS_ALGORITHM_EMPTY"
 			wantVal := ""
 
 			return test{
@@ -328,7 +328,7 @@ func TestCompressCore_Bind(t *testing.T) {
 			return test{
 				name: "return CompressCore when the bind successes but loaded environment variable is not found",
 				fields: fields{
-					CompressAlgorithm: "_COMPRESS_ALGORITHM_",
+					CompressAlgorithm: "_COMPRESSCORE_BIND_COMPRESS_ALGORITHM_NOT_EXISTS_",
 				},
 				want: want{
 					want: &CompressCore{
@@ -410,7 +410,7 @@ func TestCompressor_Bind(t *testing.T) {
 			}
 		}(),
 		func() test {
-			key := "QUEUE_CHECK_DURATION"
+			key := "COMPRESSOR_BIND_QUEUE_CHECK_DURATION"
 			wantVal := "5ms"
 
 			var cm CompressCore
@@ -510,7 +510,7 @@ func TestCompressorRegisterer_Bind(t *testing.T) {
 			}
 		}(),
 		func() test {
-			key := "QUEUE_CHECK_DURATION"
+			key := "COMPRESSORREGISTERER_BIND_QUEUE_CHECK_DURATION"
 			wantVal := "5ms"
 
 			return test{
