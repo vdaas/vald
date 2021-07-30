@@ -26,13 +26,13 @@ import "C"
 
 import (
 	"os"
-	"path/filepath"
 	"reflect"
 	"sync"
 	"unsafe"
 
 	"github.com/vdaas/vald/internal/core/algorithm"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/file"
 	"github.com/vdaas/vald/internal/log"
 )
 
@@ -241,18 +241,17 @@ func (n *ngt) loadOptions(opts ...Option) (err error) {
 }
 
 func (n *ngt) create() (err error) {
-	if fileExists(n.idxPath) {
-		log.Warnf("index path exists, will remove the directory. path: %s", n.idxPath)
-		files, err := filepath.Glob(filepath.Join(filepath.Dir(n.idxPath), "*"))
-		if err != nil {
-			return err
-		}
-		for _, file := range files {
-			err = os.RemoveAll(file)
+	files, err := file.ListInDir(n.idxPath)
+	if err == nil {
+		log.Warnf("index path exists, will remove the directories: %v", files)
+		for _, f := range files {
+			err = os.RemoveAll(f)
 			if err != nil {
 				return err
 			}
 		}
+	} else {
+		log.Debug(err)
 	}
 	path := C.CString(n.idxPath)
 	defer C.free(unsafe.Pointer(path))
@@ -275,7 +274,7 @@ func (n *ngt) create() (err error) {
 }
 
 func (n *ngt) open() error {
-	if !fileExists(n.idxPath) {
+	if !file.Exists(n.idxPath) {
 		return errors.ErrIndexNotFound
 	}
 
