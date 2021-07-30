@@ -592,7 +592,7 @@ func TestLoad(t *testing.T) {
 				beforeFunc: func(t *testing.T, a args) {
 					t.Helper()
 
-					if err := os.Mkdir(idxPath, 0o750); err != nil {
+					if err := os.MkdirAll(idxPath, 0o750); err != nil {
 						t.Fatal(err)
 					}
 				},
@@ -1178,7 +1178,7 @@ func Test_ngt_open(t *testing.T) {
 			},
 			beforeFunc: func(*testing.T) {
 				t.Helper()
-				_ = os.Mkdir("/tmp/ngt-63", 0o750)
+				_ = os.MkdirAll("/tmp/ngt-63", 0o750)
 			},
 			checkFunc: func(w want, e error) error {
 				if e == nil {
