@@ -35,10 +35,6 @@ gateway:
       requests:
         cpu: 150m
         memory: 150Mi
-  backup:
-    enabled: false
-  meta:
-    enabled: false
 
 agent:
   minReplicas: 5
@@ -85,10 +81,3 @@ manager:
       # The check duration of automatic indexing.
       # This trigger the indexing on each Vald Agnet if the uncommitted index exceeds the limit.
       auto_index_check_duration: 40s
-  backup:
-    enabled: false
-  compressor:
-    enabled: false
-
-meta:
-  enabled: false

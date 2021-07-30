@@ -26,27 +26,12 @@ agent:
     search_edge_size: 10
 
 gateway:
-  vald:
-    enabled: false
   lb:
-    enabled: false
-  meta:
-    enabled: false
-  backup:
     enabled: false
 
 discoverer:
   enabled: false
 
 manager:
-  compressor:
-    enabled: false
-
-  backup:
-    enabled: false
-
   index:
     enabled: false
-
-meta:
-  enabled: false
