@@ -241,8 +241,8 @@ func (n *ngt) loadOptions(opts ...Option) (err error) {
 }
 
 func (n *ngt) create() (err error) {
-	files := file.ListInDir(n.idxPath)
-	if files != nil {
+	files, err := file.ListInDir(n.idxPath)
+	if err == nil {
 		log.Warnf("index path exists, will remove the directories: %v", files)
 		for _, f := range files {
 			err = os.RemoveAll(f)
@@ -250,6 +250,8 @@ func (n *ngt) create() (err error) {
 				return err
 			}
 		}
+	} else {
+		log.Debug(err)
 	}
 	path := C.CString(n.idxPath)
 	defer C.free(unsafe.Pointer(path))
@@ -272,7 +274,7 @@ func (n *ngt) create() (err error) {
 }
 
 func (n *ngt) open() error {
-	if exists, _, _ := file.Exists(n.idxPath); !exists {
+	if !file.Exists(n.idxPath) {
 		return errors.ErrIndexNotFound
 	}
 

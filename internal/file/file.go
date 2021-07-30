@@ -72,24 +72,44 @@ func Open(path string, flg int, perm fs.FileMode) (file *os.File, err error) {
 }
 
 // Exists returns file existence
-func Exists(path string) (exists, isFile, isDir bool) {
-	fi, err := os.Stat(path)
+func Exists(path string) (e bool) {
+	e, _, _ = exists(path)
+	return e
+}
+
+// ExistsWithDetail returns file existence
+func ExistsWithDetail(path string) (e bool, fi fs.FileInfo, err error) {
+	return exists(path)
+}
+
+// exists returns file existence with detailed information
+func exists(path string) (exists bool, fi fs.FileInfo, err error) {
+	fi, err = os.Stat(path)
 	if err != nil {
-		return !os.IsNotExist(err), false, false
+		if os.IsExist(err) {
+			return true, fi, nil
+		}
+		if os.IsNotExist(err) {
+			return false, fi, err
+		}
+		return false, fi, err
 	}
-	return true, fi.Mode().IsRegular(), fi.Mode().IsDir()
+	return true, fi, nil
 }
 
 // ListInDir returns file list in directory
-func ListInDir(path string) []string {
-	_, _, dir := Exists(path)
-	if dir {
-		path = strings.TrimSuffix(path, "/") + "/"
+func ListInDir(path string) ([]string, error) {
+	exists, fi, err := exists(path)
+	if !exists {
+		return nil, err
+	}
+	if fi.Mode().IsDir() && !strings.HasSuffix(path, "/") {
+		path = filepath.Clean(path) + "/"
 	}
 	path = filepath.Dir(path)
 	files, err := filepath.Glob(filepath.Join(path, "*"))
 	if err != nil {
-		return nil
+		return nil, err
 	}
-	return files
+	return files, nil
 }

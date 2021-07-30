@@ -389,7 +389,7 @@ func TestExists(t *testing.T) {
 			}
 
 			// TODO we have to check more patter about file or dir
-			got, _, _ := Exists(test.args.path)
+			got := Exists(test.args.path)
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
