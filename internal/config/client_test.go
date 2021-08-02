@@ -26,7 +26,6 @@ import (
 )
 
 func TestClient_Bind(t *testing.T) {
-
 	type fields struct {
 		Net       *Net
 		Transport *Transport
