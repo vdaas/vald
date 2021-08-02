@@ -13,13 +13,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+package comparator
 
-// Package ngt provides implementation of Go API for https://github.com/yahoojapan/NGT
-package ngt
+import (
+	"reflect"
+	"sync"
 
-import "os"
+	"github.com/vdaas/vald/internal/errors"
+)
 
-func fileExists(path string) bool {
-	_, err := os.Stat(path)
-	return !os.IsNotExist(err)
-}
+var (
+	RWMutexComparer = Comparer(func(x, y *sync.RWMutex) bool {
+		return reflect.DeepEqual(x, y)
+	})
+
+	ErrorComparer = Comparer(func(x, y error) bool {
+		return errors.Is(x, y)
+	})
+)

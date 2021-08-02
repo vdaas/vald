@@ -226,8 +226,11 @@ func (r *restorer) restore(ctx context.Context) (err error) {
 
 		switch header.Typeflag {
 		case tar.TypeDir:
-			_, err = os.Stat(target)
-			if err != nil {
+			exist, fi, err := file.ExistsWithDetail(target)
+			if !exist || err != nil || fi == nil || fi != nil && !fi.IsDir() {
+				if exist {
+					os.RemoveAll(target)
+				}
 				err = os.MkdirAll(target, 0o700)
 				if err != nil {
 					return err
@@ -251,10 +254,14 @@ func (r *restorer) restore(ctx context.Context) (err error) {
 }
 
 func copyFile(ctx context.Context, target string, tr io.Reader, mode fs.FileMode) (err error) {
-	if _, err = os.Stat(target); err == nil {
+	exist, fi, err := file.ExistsWithDetail(target)
+	switch {
+	case err == nil, exist:
 		return errors.ErrFileAlreadyExists(target)
-	} else if !os.IsNotExist(err) {
+	case err != nil && !os.IsNotExist(err):
 		return err
+	case fi != nil && fi.Size() != 0:
+		return errors.ErrFileAlreadyExists(target)
 	}
 
 	f, err := file.Open(

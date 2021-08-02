@@ -20,4 +20,5 @@ package errors
 var (
 	ErrInvalidMetaDataConfig = New("invalid metadata config")
 	ErrMetadataFileEmpty     = New("metadata file empty")
+	ErrMetadataFileNotFound  = New("metadata file not found")
 )

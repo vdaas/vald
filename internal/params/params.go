@@ -23,6 +23,7 @@ import (
 	"path/filepath"
 
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/file"
 )
 
 // Data is an interface to get the configuration path and flag.
@@ -87,8 +88,8 @@ func (p *parser) Parse() (Data, bool, error) {
 		return nil, true, nil
 	}
 
-	if _, err := os.Stat(d.configFilePath); !d.showVersion &&
-		(os.IsNotExist(err) ||
+	if exist, _, err := file.ExistsWithDetail(d.configFilePath); !d.showVersion &&
+		(!exist ||
 			d.configFilePath == "") {
 		f.Usage()
 		return nil, true, err
