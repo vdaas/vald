@@ -63,14 +63,14 @@ func New(opts ...Option) Buffer {
 	p.pool = sync.Pool{
 		New: alloc,
 	}
-	for i := p.Limit() - p.Len(); i > 0; i-- {
+	for i := p.Limit() - p.Len(); p.Limit() != 0 && i > 0; i-- {
 		p.Put(alloc())
 	}
 	return p
 }
 
 func (p *pool) Get() interface{} {
-	p.decrementLength(ctx)
+	p.decrementLength()
 	return p.pool.Get()
 }
 
@@ -86,12 +86,12 @@ func (p *pool) Put(data interface{}) {
 }
 
 func (p *pool) PutWithResize(data interface{}, size uint64) {
-	if size <= 1 || p.extender == nil {
+	if size <= 1 {
 		p.Put(data)
 		return
 	}
 	if extender, ok := data.(Extender); ok {
-		data = extender.Extend(p.extendSize(ctx, size))
+		data = extender.Extend(p.extendSize(size))
 	}
 	p.Put(data)
 }

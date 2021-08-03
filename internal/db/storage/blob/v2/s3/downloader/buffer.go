@@ -17,8 +17,9 @@ package downloader
 
 import (
 	"context"
-	"io"
 	"sync"
+
+	"github.com/vdaas/vald/internal/io"
 )
 
 type ReadWriterAtCloserBuffer interface {

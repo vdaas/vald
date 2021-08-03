@@ -16,7 +16,7 @@
 package lz4
 
 import (
-	"io"
+	"github.com/vdaas/vald/internal/io"
 
 	lz4 "github.com/pierrec/lz4/v3"
 )

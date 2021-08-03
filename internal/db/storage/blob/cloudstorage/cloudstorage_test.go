@@ -17,10 +17,11 @@ package cloudstorage
 
 import (
 	"context"
-	"io"
 	"net/url"
 	"reflect"
 	"testing"
+
+	"github.com/vdaas/vald/internal/io"
 
 	iblob "github.com/vdaas/vald/internal/db/storage/blob"
 	"github.com/vdaas/vald/internal/errors"

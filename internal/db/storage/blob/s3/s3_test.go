@@ -18,9 +18,10 @@ package s3
 
 import (
 	"context"
-	"io"
 	"reflect"
 	"testing"
+
+	"github.com/vdaas/vald/internal/io"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/request"

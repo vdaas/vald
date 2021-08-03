@@ -20,7 +20,8 @@ package reader
 
 import (
 	"context"
-	"io"
+
+	"github.com/vdaas/vald/internal/io"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/request"

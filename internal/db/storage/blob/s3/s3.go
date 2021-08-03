@@ -18,8 +18,9 @@ package s3
 
 import (
 	"context"
-	"io"
 	"reflect"
+
+	"github.com/vdaas/vald/internal/io"
 
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"

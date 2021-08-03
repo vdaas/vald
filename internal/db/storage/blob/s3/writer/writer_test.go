@@ -18,11 +18,12 @@ package writer
 
 import (
 	"context"
-	"io"
 	"os"
 	"reflect"
 	"sync"
 	"testing"
+
+	"github.com/vdaas/vald/internal/io"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3"

@@ -15,7 +15,7 @@
 //
 package gob
 
-import "io"
+import "github.com/vdaas/vald/internal/io"
 
 // MockEncoder represents mock struct of Encoder.
 type MockEncoder struct {

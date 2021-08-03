@@ -18,9 +18,10 @@
 package compress
 
 import (
-	"io"
 	"reflect"
 	"testing"
+
+	"github.com/vdaas/vald/internal/io"
 
 	"github.com/vdaas/vald/internal/compress/gzip"
 	"github.com/vdaas/vald/internal/errors"

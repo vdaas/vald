@@ -17,7 +17,7 @@
 // Package compress provides compressor interface
 package compress
 
-import "io"
+import "github.com/vdaas/vald/internal/io"
 
 type Compressor interface {
 	CompressVector(vector []float32) (bytes []byte, err error)

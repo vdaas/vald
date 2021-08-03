@@ -21,9 +21,10 @@ import (
 	"bytes"
 	"context"
 	"math"
+	"sync"
+	"sync/atomic"
 
 	"github.com/vdaas/vald/internal/errors"
-	"github.com/vdaas/vald/internal/pool"
 )
 
 var cio = NewCopier(0)
@@ -42,7 +43,8 @@ type Copier interface {
 }
 
 type copier struct {
-	buffer pool.Buffer
+	pool    sync.Pool
+	bufSize int64
 }
 
 const (
@@ -50,14 +52,18 @@ const (
 )
 
 func NewCopier(size int) Copier {
-	if size <= 0 {
-		size = defaultBufferSize
+	c := new(copier)
+	if size > 0 {
+		atomic.StoreInt64(&c.bufSize, int64(size))
+	} else {
+		atomic.StoreInt64(&c.bufSize, int64(defaultBufferSize))
 	}
-	return &copier{
-		buffer: pool.New(context.TODO(),
-			pool.WithSize(uint64(size)),
-		),
+	c.pool = sync.Pool{
+		New: func() interface{} {
+			return bytes.NewBuffer(make([]byte, int(atomic.LoadInt64(&c.bufSize))))
+		},
 	}
+	return c
 }
 
 func (c *copier) CopyWithContext(ctx context.Context, dst Writer, src Reader) (written int64, err error) {
@@ -69,10 +75,6 @@ func (c *copier) CopyWithContext(ctx context.Context, dst Writer, src Reader) (w
 }
 
 func (c *copier) Copy(dst Writer, src Reader) (written int64, err error) {
-	return c.copyContext(context.TODO(), dst, src)
-}
-
-func (c *copier) copyContext(ctx context.Context, dst Writer, src Reader) (written int64, err error) {
 	var (
 		wt WriterTo
 		rf ReaderFrom
@@ -87,7 +89,7 @@ func (c *copier) copyContext(ctx context.Context, dst Writer, src Reader) (writt
 
 	var (
 		limit int64 = math.MaxInt64
-		size        = int64(c.buffer.Size(ctx))
+		size  int64 = atomic.LoadInt64(&c.bufSize)
 		l     *LimitedReader
 		buf   *bytes.Buffer
 	)
@@ -95,14 +97,21 @@ func (c *copier) copyContext(ctx context.Context, dst Writer, src Reader) (writt
 		limit = l.N
 		size = limit
 	}
-	buf, ok = c.buffer.Get(ctx).(*bytes.Buffer)
+	buf, ok = c.pool.Get().(*bytes.Buffer)
 	if !ok || buf == nil {
 		buf = bytes.NewBuffer(make([]byte, size))
 	}
+	defer func() {
+		if atomic.LoadInt64(&c.bufSize) < size {
+			atomic.StoreInt64(&c.bufSize, size)
+			buf.Grow(int(size))
+		}
+		buf.Reset()
+		c.pool.Put(buf)
+	}()
 	if size > int64(buf.Cap()) {
 		size = int64(buf.Cap())
 	}
-	defer c.buffer.PutWithResize(ctx, buf, uint64(size))
 	var nr, nw int
 	for err != EOF {
 		nr, err = src.Read(buf.Bytes()[:size])

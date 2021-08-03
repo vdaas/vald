@@ -16,7 +16,7 @@
 package zstd
 
 import (
-	"io"
+	"github.com/vdaas/vald/internal/io"
 
 	"github.com/klauspost/compress/zstd"
 )

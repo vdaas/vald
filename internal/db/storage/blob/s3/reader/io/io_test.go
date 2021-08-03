@@ -17,9 +17,10 @@ package io
 
 import (
 	"context"
-	"io"
 	"reflect"
 	"testing"
+
+	"github.com/vdaas/vald/internal/io"
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/test/goleak"

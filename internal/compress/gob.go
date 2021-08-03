@@ -19,8 +19,9 @@ package compress
 
 import (
 	"bytes"
-	"io"
 	"reflect"
+
+	"github.com/vdaas/vald/internal/io"
 
 	"github.com/vdaas/vald/internal/compress/gob"
 	"github.com/vdaas/vald/internal/errors"

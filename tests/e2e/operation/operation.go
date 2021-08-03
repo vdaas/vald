@@ -17,12 +17,13 @@ package operation
 
 import (
 	"context"
-	"io"
 	"reflect"
 	"strconv"
 	"sync"
 	"testing"
 	"time"
+
+	"github.com/vdaas/vald/internal/io"
 
 	"github.com/vdaas/vald/apis/grpc/v1/agent/core"
 	"github.com/vdaas/vald/apis/grpc/v1/payload"

@@ -17,9 +17,10 @@ package cloudstorage
 
 import (
 	"context"
-	"io"
 	"net/url"
 	"reflect"
+
+	"github.com/vdaas/vald/internal/io"
 
 	"gocloud.dev/blob"
 	"gocloud.dev/blob/gcsblob"
