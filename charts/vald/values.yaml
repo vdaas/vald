@@ -1794,6 +1794,11 @@ agent:
       # @schema {"name": "agent.ngt.vqueue.delete_buffer_pool_size", "type": "integer"}
       # agent.ngt.vqueue.delete_buffer_pool_size -- delete slice pool buffer size
       delete_buffer_pool_size: 5000
+    # @schema {"name": "agent.ngt.kvsdb", "type": "object"}
+    kvsdb:
+      # @schema {"name": "agent.ngt.kvsdb.concurrency", "type": "integer"}
+      # agent.ngt.kvsdb.concurrency -- kvsdb processing concurrency
+      concurrency: 20
   # @schema {"name": "agent.sidecar", "type": "object"}
   sidecar:
     # @schema {"name": "agent.sidecar.enabled", "type": "boolean"}
