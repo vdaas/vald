@@ -43,6 +43,12 @@ var (
 	Ignore           = cmp.Ignore
 )
 
+func CompareField(field string, cmp Option) Option {
+	return FilterPath(func(p Path) bool {
+		return p.String() == field
+	}, cmp)
+}
+
 /*
 var (
 	AtomicValue = func(x, y atomicValue) bool {

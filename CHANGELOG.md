@@ -1,5 +1,130 @@
 # CHANGELOG
 
+## v1.2.0
+
+### Docker images
+
+<table>
+  <tr>
+    <th>component</th>
+    <th>Docker pull</th>
+  </tr>
+  <tr>
+    <td>Agent NGT</td>
+    <td>
+      <code>docker pull vdaas/vald-agent-ngt:v1.2.0</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-agent-ngt:v1.2.0</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Agent sidecar</td>
+    <td>
+      <code>docker pull vdaas/vald-agent-sidecar:v1.2.0</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-agent-sidecar:v1.2.0</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Discoverers</td>
+    <td>
+      <code>docker pull vdaas/vald-discoverer-k8s:v1.2.0</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-discoverer-k8s:v1.2.0</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Gateways</td>
+    <td>
+      <code>docker pull vdaas/vald-gateway:v1.2.0</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-gateway:v1.2.0</code><br/>
+      <code>docker pull vdaas/vald-backup-gateway:v1.2.0</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-backup-gateway:v1.2.0</code><br/>
+      <code>docker pull vdaas/vald-lb-gateway:v1.2.0</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-lb-gateway:v1.2.0</code><br/>
+      <code>docker pull vdaas/vald-meta-gateway:v1.2.0</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-meta-gateway:v1.2.0</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Backup managers</td>
+    <td>
+      <code>docker pull vdaas/vald-manager-backup-mysql:v1.2.0</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-manager-backup-mysql:v1.2.0</code><br/>
+      <code>docker pull vdaas/vald-manager-backup-cassandra:v1.2.0</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-manager-backup-cassandra:v1.2.0</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Compressor</td>
+    <td>
+      <code>docker pull vdaas/vald-manager-compressor:v1.2.0</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-manager-compressor:v1.2.0</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Metas</td>
+    <td>
+      <code>docker pull vdaas/vald-meta-redis:v1.2.0</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-meta-redis:v1.2.0</code><br/>
+      <code>docker pull vdaas/vald-meta-cassandra:v1.2.0</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-meta-cassandra:v1.2.0</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Index Manager</td>
+    <td>
+      <code>docker pull vdaas/vald-manager-index:v1.2.0</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-manager-index:v1.2.0</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Helm Operator</td>
+    <td>
+      <code>docker pull vdaas/vald-helm-operator:v1.2.0</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-helm-operator:v1.2.0</code>
+    </td>
+  </tr>
+</table>
+
+### Documents
+- [GoDoc](https://pkg.go.dev/github.com/vdaas/vald@v1.2.0)
+- [Helm Chart Reference](https://github.com/vdaas/vald/blob/v1.2.0/charts/vald/README.md)
+- [Helm Operator Chart Reference](https://github.com/vdaas/vald/blob/v1.2.0/charts/vald-helm-operator/README.md)
+
+### Changes
+# Release Vald v1.2.0
+
+
+## Changes:
+- fix build failure on arm cpu due to the xxh3 dependency version (#1368)
+- Add core algorithm ngt test (#1364)
+- add mote accurate directory detection logic for removing (#1366)
+- remove meta backup compressor from charts (#1334)
+- update go module version (#1363)
+- Update architecture overview (#1304)
+- Improve internal package tests (#1227)
+- fix bug of bulkinsert when error occurs and refactor error message (#1361)
+- change initial-index-directory removal logic (#1359)
+- ci: :construction_worker: Add gnupg to ci-container (#1362)
+- ci:  :construction_worker: add condition to trigger importing gpg key (#1360)
+- fix: :bug: Fix mount paths when using persistent volume claim template (#1358)
+- ci: :construction_worker: Add Upsert operation tests (#1347)
+- config: :gear: Use GPG key for signing commits (#1351)
+- add time validation for vqueue (#1352)
+- chore-deps: :arrow_up: Upgrade tools (#1355)
+- comment out backup/meta/compressor build command in Makefile (#1346)
+- remove: :heavy_minus_sign: Remove backup, meta components from CI (#1331)
+- add line trace logging when log mode is glg and level is debug (#1348)
+- update go version to 1.16.6 and update go module dependencies (#1345)
+- [bugfix] agent createindex operation's time.Ticker purges too slow & buffer overflow due to the unnecessary error wrapping (#1343)
+- [bugfix] change kvsdb and vqueue check order for Exists operation (#1341)
+- update go module dependencies (#1336)
+- bugfix nil pointer panic in agent's MultiUpsert operation (#1335)
+- [bugfix] agent.GetObject API returns old indexed vector problem instead of vqueue's new data (#1333)
+-  add timestamp handler for agent timestamp controlled update (#1324)
+- fix: :bug: Fix typo (#1330)
+- remove owner and description info from resource info rich error for each grpc handler (#1327)
+- Update documents: configurations (#1289
+
+
 ## v1.1.2
 
 ### Docker images

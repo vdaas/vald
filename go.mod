@@ -3,10 +3,10 @@ module github.com/vdaas/vald
 go 1.16
 
 replace (
-	cloud.google.com/go => cloud.google.com/go v0.89.1-0.20210730002651-eabc63a7eff6
-	cloud.google.com/go/storage => cloud.google.com/go/storage v1.16.1-0.20210730002651-eabc63a7eff6
+	cloud.google.com/go => cloud.google.com/go v0.89.1-0.20210730193825-e972f28472be
+	cloud.google.com/go/storage => cloud.google.com/go/storage v1.16.1-0.20210730193825-e972f28472be
 	github.com/Azure/go-autorest => github.com/Azure/go-autorest v14.2.1-0.20210701162346-76c7860e9b60+incompatible
-	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.40.11
+	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.40.12
 	github.com/boltdb/bolt => github.com/boltdb/bolt v1.3.1
 	github.com/chzyer/logex => github.com/chzyer/logex v1.1.11-0.20170329064859-445be9e134b2
 	github.com/coreos/etcd => go.etcd.io/etcd v3.3.25+incompatible
@@ -25,6 +25,7 @@ replace (
 	github.com/klauspost/compress => github.com/klauspost/compress v1.13.2-0.20210709134322-94867dd0db71
 	github.com/kpango/glg => github.com/kpango/glg v1.6.4
 	github.com/tensorflow/tensorflow => github.com/tensorflow/tensorflow v2.1.2+incompatible
+	github.com/zeebo/xxh3 => github.com/zeebo/xxh3 v0.10.0
 	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20210711020723-a769d52b0f97
 	google.golang.org/grpc => google.golang.org/grpc v1.39.0
 	google.golang.org/protobuf => google.golang.org/protobuf v1.27.1
