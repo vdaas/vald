@@ -14,25 +14,47 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-apiVersion: v1
-kind: Service
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
 metadata:
-  name: vald-helm-operator
+  name: discoverer
   labels:
-    app.kubernetes.io/name: vald-helm-operator
-    helm.sh/chart: vald-helm-operator-v1.2.0
+    app.kubernetes.io/name: vald
+    helm.sh/chart: vald-v1.2.0
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: RELEASE-NAME
     app.kubernetes.io/version: v1.2.0
-    app.kubernetes.io/component: helm-operator
-spec:
-  ports:
-    - name: prometheus
-      port: 6061
-      targetPort: 6061
-      protocol: TCP
-  selector:
-    app.kubernetes.io/name: vald-helm-operator
-    app.kubernetes.io/component: helm-operator
-  clusterIP: None
-  type: ClusterIP
+    app.kubernetes.io/component: discoverer
+rules:
+  - apiGroups:
+      - apps
+    resources:
+      - replicasets
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - ""
+    resources:
+      - nodes
+      - nodes/proxy
+      - services
+      - endpoints
+      - pods
+    verbs:
+      - get
+      - list
+      - watch
+  - nonResourceURLs:
+      - /metrics
+    verbs:
+      - get
+  - apiGroups:
+      - "metrics.k8s.io"
+    resources:
+      - nodes
+      - pods
+    verbs:
+      - get
+      - list

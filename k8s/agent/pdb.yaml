@@ -14,8 +14,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-apiVersion: v1
-kind: ServiceAccount
+apiVersion: policy/v1beta1
+kind: PodDisruptionBudget
 metadata:
-  name: vald-helm-operator
-  namespace: default
+  name: vald-agent-ngt
+  labels:
+    app.kubernetes.io/name: vald
+    helm.sh/chart: vald-v1.2.0
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/version: v1.2.0
+    app.kubernetes.io/component: agent
+spec:
+  maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: vald-agent-ngt

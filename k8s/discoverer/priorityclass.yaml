@@ -14,8 +14,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-apiVersion: v1
-kind: ServiceAccount
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
 metadata:
-  name: vald-helm-operator
-  namespace: default
+  name: default-vald-discoverer-priority
+  labels:
+    app.kubernetes.io/name: vald
+    helm.sh/chart: vald-v1.2.0
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/version: v1.2.0
+    app.kubernetes.io/component: discoverer
+value: 1e+06
+globalDefault: false
+description: "A priority class for Vald discoverer."

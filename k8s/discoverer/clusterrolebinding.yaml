@@ -14,8 +14,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-apiVersion: v1
-kind: ServiceAccount
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
 metadata:
-  name: vald-helm-operator
-  namespace: default
+  name: discoverer
+  labels:
+    app.kubernetes.io/name: vald
+    helm.sh/chart: vald-v1.2.0
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/version: v1.2.0
+    app.kubernetes.io/component: discoverer
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: discoverer
+subjects:
+  - kind: ServiceAccount
+    name: vald
+    namespace: default

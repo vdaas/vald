@@ -14,8 +14,28 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-apiVersion: v1
-kind: ServiceAccount
+apiVersion: batch/v1
+kind: Job
 metadata:
-  name: vald-helm-operator
-  namespace: default
+  name: redis-init
+spec:
+  template:
+    spec:
+      containers:
+        - name: redis-init
+          image: "redis:latest"
+          imagePullPolicy: Always
+          command:
+            - /bin/sh
+            - -c
+            - |
+              redis-cli -c -a ${REDIS_PASSWORD} -h ${REDIS_HOST} FLUSHALL
+          env:
+            - name: REDIS_HOST
+              value: redis.default.svc.cluster.local
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: password
+                  name: redis-secret
+      restartPolicy: Never

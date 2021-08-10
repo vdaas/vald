@@ -14,8 +14,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-apiVersion: v1
-kind: ServiceAccount
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
 metadata:
-  name: vald-helm-operator
-  namespace: default
+  name: vald-lb-gateway
+  labels:
+    app.kubernetes.io/name: vald
+    helm.sh/chart: vald-v1.2.0
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/version: v1.2.0
+    app.kubernetes.io/component: gateway-lb
+spec:
+  maxReplicas: 9
+  minReplicas: 3
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: vald-lb-gateway
+  targetCPUUtilizationPercentage: 80
+status:
