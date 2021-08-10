@@ -19,16 +19,8 @@ docker/build: \
 	docker/build/agent-ngt \
 	docker/build/agent-sidecar \
 	docker/build/discoverer-k8s \
-	docker/build/gateway-vald \
 	docker/build/gateway-lb \
-	docker/build/gateway-meta \
-	docker/build/gateway-backup \
 	docker/build/gateway-filter \
-	docker/build/meta-redis \
-	docker/build/meta-cassandra \
-	docker/build/backup-manager-mysql \
-	docker/build/backup-manager-cassandra \
-	docker/build/manager-compressor \
 	docker/build/manager-index \
 	docker/build/filter-ingress-tensorflow \
 	docker/build/helm-operator
@@ -96,23 +88,6 @@ docker/build/discoverer-k8s:
 	    --build-arg MAINTAINER=$(MAINTAINER) \
 	    --build-arg UPX_OPTIONS=$(UPX_OPTIONS)
 
-.PHONY: docker/name/gateway-vald
-docker/name/gateway-vald:
-	@echo "$(ORG)/$(GATEWAY_IMAGE)"
-
-.PHONY: docker/build/gateway-vald
-## build gateway-vald image
-docker/build/gateway-vald:
-	$(DOCKER) build \
-	    $(DOCKER_OPTS) \
-	    -f dockers/gateway/vald/Dockerfile \
-	    -t $(ORG)/$(GATEWAY_IMAGE):$(TAG) . \
-	    --build-arg GO_VERSION=$(GO_VERSION) \
-	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
-	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
-	    --build-arg MAINTAINER=$(MAINTAINER) \
-	    --build-arg UPX_OPTIONS=$(UPX_OPTIONS)
-
 .PHONY: docker/name/gateway-lb
 docker/name/gateway-lb:
 	@echo "$(ORG)/$(LB_GATEWAY_IMAGE)"
@@ -124,38 +99,6 @@ docker/build/gateway-lb:
 	    $(DOCKER_OPTS) \
 	    -f dockers/gateway/lb/Dockerfile \
 	    -t $(ORG)/$(LB_GATEWAY_IMAGE):$(TAG) . \
-	    --build-arg GO_VERSION=$(GO_VERSION) \
-	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
-	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
-	    --build-arg UPX_OPTIONS=$(UPX_OPTIONS)
-
-.PHONY: docker/name/gateway-meta
-docker/name/gateway-meta:
-	@echo "$(ORG)/$(META_GATEWAY_IMAGE)"
-
-.PHONY: docker/build/gateway-meta
-## build gateway-meta image
-docker/build/gateway-meta:
-	$(DOCKER) build \
-	    $(DOCKER_OPTS) \
-	    -f dockers/gateway/meta/Dockerfile \
-	    -t $(ORG)/$(META_GATEWAY_IMAGE):$(TAG) . \
-	    --build-arg GO_VERSION=$(GO_VERSION) \
-	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
-	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
-	    --build-arg UPX_OPTIONS=$(UPX_OPTIONS)
-
-.PHONY: docker/name/gateway-backup
-docker/name/gateway-backup:
-	@echo "$(ORG)/$(BACKUP_GATEWAY_IMAGE)"
-
-.PHONY: docker/build/gateway-backup
-## build gateway-backup image
-docker/build/gateway-backup:
-	$(DOCKER) build \
-	    $(DOCKER_OPTS) \
-	    -f dockers/gateway/backup/Dockerfile \
-	    -t $(ORG)/$(BACKUP_GATEWAY_IMAGE):$(TAG) . \
 	    --build-arg GO_VERSION=$(GO_VERSION) \
 	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
 	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
@@ -175,92 +118,6 @@ docker/build/gateway-filter:
 	    --build-arg GO_VERSION=$(GO_VERSION) \
 	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
 	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
-	    --build-arg UPX_OPTIONS=$(UPX_OPTIONS)
-
-
-.PHONY: docker/name/meta-redis
-docker/name/meta-redis:
-	@echo "$(ORG)/$(META_REDIS_IMAGE)"
-
-.PHONY: docker/build/meta-redis
-## build meta-redis image
-docker/build/meta-redis:
-	$(DOCKER) build \
-	    $(DOCKER_OPTS) \
-	    -f dockers/meta/redis/Dockerfile \
-	    -t $(ORG)/$(META_REDIS_IMAGE):$(TAG) . \
-	    --build-arg GO_VERSION=$(GO_VERSION) \
-	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
-	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
-	    --build-arg MAINTAINER=$(MAINTAINER) \
-	    --build-arg UPX_OPTIONS=$(UPX_OPTIONS)
-
-.PHONY: docker/name/meta-cassandra
-docker/name/meta-cassandra:
-	@echo "$(ORG)/$(META_CASSANDRA_IMAGE)"
-
-.PHONY: docker/build/meta-cassandra
-## build meta-cassandra image
-docker/build/meta-cassandra:
-	$(DOCKER) build \
-	    $(DOCKER_OPTS) \
-	    -f dockers/meta/cassandra/Dockerfile \
-	    -t $(ORG)/$(META_CASSANDRA_IMAGE):$(TAG) . \
-	    --build-arg GO_VERSION=$(GO_VERSION) \
-	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
-	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
-	    --build-arg MAINTAINER=$(MAINTAINER) \
-	    --build-arg UPX_OPTIONS=$(UPX_OPTIONS)
-
-.PHONY: docker/name/backup-manager-mysql
-docker/name/backup-manager-mysql:
-	@echo "$(ORG)/$(MANAGER_BACKUP_MYSQL_IMAGE)"
-
-.PHONY: docker/build/backup-manager-mysql
-## build backup-manager-mysql image
-docker/build/backup-manager-mysql:
-	$(DOCKER) build \
-	    $(DOCKER_OPTS) \
-	    -f dockers/manager/backup/mysql/Dockerfile \
-	    -t $(ORG)/$(MANAGER_BACKUP_MYSQL_IMAGE):$(TAG) . \
-	    --build-arg GO_VERSION=$(GO_VERSION) \
-	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
-	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
-	    --build-arg MAINTAINER=$(MAINTAINER) \
-	    --build-arg UPX_OPTIONS=$(UPX_OPTIONS)
-
-.PHONY: docker/name/backup-manager-cassandra
-docker/name/backup-manager-cassandra:
-	@echo "$(ORG)/$(MANAGER_BACKUP_CASSANDRA_IMAGE)"
-
-.PHONY: docker/build/backup-manager-cassandra
-## build backup-manager-cassandra image
-docker/build/backup-manager-cassandra:
-	$(DOCKER) build \
-	    $(DOCKER_OPTS) \
-	    -f dockers/manager/backup/cassandra/Dockerfile \
-	    -t $(ORG)/$(MANAGER_BACKUP_CASSANDRA_IMAGE):$(TAG) . \
-	    --build-arg GO_VERSION=$(GO_VERSION) \
-	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
-	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
-	    --build-arg MAINTAINER=$(MAINTAINER) \
-	    --build-arg UPX_OPTIONS=$(UPX_OPTIONS)
-
-.PHONY: docker/name/manager-compressor
-docker/name/manager-compressor:
-	@echo "$(ORG)/$(MANAGER_COMPRESSOR_IMAGE)"
-
-.PHONY: docker/build/manager-compressor
-## build manager-compressor image
-docker/build/manager-compressor:
-	$(DOCKER) build \
-	    $(DOCKER_OPTS) \
-	    -f dockers/manager/compressor/Dockerfile \
-	    -t $(ORG)/$(MANAGER_COMPRESSOR_IMAGE):$(TAG) . \
-	    --build-arg GO_VERSION=$(GO_VERSION) \
-	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
-	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
-	    --build-arg MAINTAINER=$(MAINTAINER) \
 	    --build-arg UPX_OPTIONS=$(UPX_OPTIONS)
 
 .PHONY: docker/name/manager-index

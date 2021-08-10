@@ -22,25 +22,17 @@ DATETIME                            = $(eval DATETIME := $(shell date -u +%Y/%m/
 TAG                                ?= latest
 AGENT_IMAGE                         = $(NAME)-agent-ngt
 AGENT_SIDECAR_IMAGE                 = $(NAME)-agent-sidecar
-BACKUP_GATEWAY_IMAGE                = $(NAME)-backup-gateway
 CI_CONTAINER_IMAGE                  = $(NAME)-ci-container
 DEV_CONTAINER_IMAGE                 = $(NAME)-dev-container
 DISCOVERER_IMAGE                    = $(NAME)-discoverer-k8s
 FILTER_GATEWAY_IMAGE                = $(NAME)-filter-gateway
 FILTER_INGRESS_TF_IMAGE             = $(NAME)-filter-ingress-tensorflow
-GATEWAY_IMAGE                       = $(NAME)-gateway
 HELM_OPERATOR_IMAGE                 = $(NAME)-helm-operator
 LB_GATEWAY_IMAGE                    = $(NAME)-lb-gateway
 LOADTEST_IMAGE                      = $(NAME)-loadtest
+MANAGER_INDEX_IMAGE                 = $(NAME)-manager-index
 REBALANCER_STORAGE_CONTROLLER_IMAGE = $(NAME)-rebalancer-storage-controller
 REBALANCER_STORAGE_JOB_IMAGE        = $(NAME)-rebalancer-storage-job
-MANAGER_BACKUP_CASSANDRA_IMAGE      = $(NAME)-manager-backup-cassandra
-MANAGER_BACKUP_MYSQL_IMAGE          = $(NAME)-manager-backup-mysql
-MANAGER_COMPRESSOR_IMAGE            = $(NAME)-manager-compressor
-MANAGER_INDEX_IMAGE                 = $(NAME)-manager-index
-META_CASSANDRA_IMAGE                = $(NAME)-meta-cassandra
-META_GATEWAY_IMAGE                  = $(NAME)-meta-gateway
-META_REDIS_IMAGE                    = $(NAME)-meta-redis
 MAINTAINER                          = "$(ORG).org $(NAME) team <$(NAME)@$(ORG).org>"
 
 VERSION ?= $(eval VERSION := $(shell cat versions/VALD_VERSION))$(VERSION)
@@ -97,11 +89,10 @@ BENCH_DATASET_MD5_DIR = $(BENCH_DATASET_BASE_DIR)/$(BENCH_DATASET_MD5_DIR_NAME)
 BENCH_DATASET_HDF5_DIR = $(BENCH_DATASET_BASE_DIR)/$(BENCH_DATASET_HDF5_DIR_NAME)
 
 PROTOS := $(eval PROTOS := $(shell find apis/proto -type f -regex ".*\.proto"))$(PROTOS)
-PROTOS_V0 := $(eval PROTOS_V0 := $(filter-out apis/proto/v%.proto,$(PROTOS)))$(PROTOS_V0)
 PROTOS_V1 := $(eval PROTOS_V1 := $(filter apis/proto/v1/%.proto,$(PROTOS)))$(PROTOS_V1)
 PBGOS = $(PROTOS:apis/proto/%.proto=apis/grpc/%.pb.go)
 SWAGGERS = $(PROTOS:apis/proto/%.proto=apis/swagger/%.swagger.json)
-PBDOCS = apis/docs/v0/docs.md apis/docs/v1/docs.md
+PBDOCS = apis/docs/v1/docs.md
 
 ifeq ($(GOARCH),amd64)
 CFLAGS ?= -mno-avx512f -mno-avx512dq -mno-avx512cd -mno-avx512bw -mno-avx512vl

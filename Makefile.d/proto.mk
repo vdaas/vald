@@ -212,11 +212,6 @@ $(PBDOCS): \
 	$(GOPATH)/src/github.com/gogo/googleapis \
 	$(GOPATH)/src/github.com/envoyproxy/protoc-gen-validate
 
-apis/docs/v0/docs.md: $(PROTOS_V0)
-	@$(call green, "generating documents for API v0...")
-	$(call mkdir, $(dir $@))
-	$(call protoc-gen, $(PROTOS_V0), --plugin=protoc-gen-doc=$(GOPATH)/bin/protoc-gen-doc --doc_opt=markdown$(COMMA)docs.md --doc_out=$(dir $@))
-
 apis/docs/v1/docs.md: $(PROTOS_V1)
 	@$(call green, "generating documents for API v1...")
 	$(call mkdir, $(dir $@))
