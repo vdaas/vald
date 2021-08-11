@@ -1875,61 +1875,102 @@ func Test_vqueue_IVQLen(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           ich: nil,
-		           uii: nil,
-		           imu: nil,
-		           uiim: uiim{},
-		           dch: nil,
-		           udk: nil,
-		           dmu: nil,
-		           udim: udim{},
-		           eg: nil,
-		           finalizingInsert: nil,
-		           finalizingDelete: nil,
-		           closed: nil,
-		           ichSize: 0,
-		           dchSize: 0,
-		           iBufSize: 0,
-		           dBufSize: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+		func() test {
+			size := 0
+			uii := make([]index, size)
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           ich: nil,
-		           uii: nil,
-		           imu: nil,
-		           uiim: uiim{},
-		           dch: nil,
-		           udk: nil,
-		           dmu: nil,
-		           udim: udim{},
-		           eg: nil,
-		           finalizingInsert: nil,
-		           finalizingDelete: nil,
-		           closed: nil,
-		           ichSize: 0,
-		           dchSize: 0,
-		           iBufSize: 0,
-		           dBufSize: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+			return test{
+				name: "return 0 when the capacity and length is 0",
+				fields: fields{
+					uii: uii,
+				},
+				want: want{
+					wantL: size,
+				},
+			}
+		}(),
+		func() test {
+			size := 10
+			uii := make([]index, size)
+
+			return test{
+				name: "return 10 when the capacity and length is 10",
+				fields: fields{
+					uii: uii,
+				},
+				want: want{
+					wantL: size,
+				},
+			}
+		}(),
+		func() test {
+			c := 10
+			l := 5
+			uii := make([]index, l, c)
+
+			return test{
+				name: "return 5 when the capacity is 10 and the length is 5",
+				fields: fields{
+					uii: uii,
+				},
+				want: want{
+					wantL: l,
+				},
+			}
+		}(),
+		func() test {
+			iniLen := 5
+			isrtSize := 2
+			uii := make([]index, iniLen, 10)
+			for i := 0; i < isrtSize; i++ {
+				uii = append(uii, index{})
+			}
+
+			return test{
+				name: "return 7 when the capacity is 10 and the initial length is 5 but the inserted size is 2",
+				fields: fields{
+					uii: uii,
+				},
+				want: want{
+					wantL: iniLen + isrtSize,
+				},
+			}
+		}(),
+		func() test {
+			size := 10
+			uii := make([]index, 0, size)
+			for i := 0; i < size; i++ {
+				uii = append(uii, index{})
+			}
+
+			return test{
+				name: "return 10 when the inserted size is 10",
+				fields: fields{
+					uii: uii,
+				},
+				want: want{
+					wantL: size,
+				},
+			}
+		}(),
+		func() test {
+			insertSize := 5
+			size := 10
+			udk := make([]key, 0, size)
+			for i := 0; i < insertSize; i++ {
+				udk = append(udk, key{})
+			}
+
+			return test{
+				name: "return 5 when the capacity is 10 and the inserted size is 5",
+				fields: fields{
+					udk: udk,
+				},
+				want: want{
+					wantL: insertSize,
+				},
+			}
+		}(),
 	}
 
 	for _, tc := range tests {
@@ -2010,61 +2051,102 @@ func Test_vqueue_DVQLen(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           ich: nil,
-		           uii: nil,
-		           imu: nil,
-		           uiim: uiim{},
-		           dch: nil,
-		           udk: nil,
-		           dmu: nil,
-		           udim: udim{},
-		           eg: nil,
-		           finalizingInsert: nil,
-		           finalizingDelete: nil,
-		           closed: nil,
-		           ichSize: 0,
-		           dchSize: 0,
-		           iBufSize: 0,
-		           dBufSize: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+		func() test {
+			size := 0
+			udk := make([]key, size)
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           ich: nil,
-		           uii: nil,
-		           imu: nil,
-		           uiim: uiim{},
-		           dch: nil,
-		           udk: nil,
-		           dmu: nil,
-		           udim: udim{},
-		           eg: nil,
-		           finalizingInsert: nil,
-		           finalizingDelete: nil,
-		           closed: nil,
-		           ichSize: 0,
-		           dchSize: 0,
-		           iBufSize: 0,
-		           dBufSize: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+			return test{
+				name: "return 0 when the capacity and length is 0",
+				fields: fields{
+					udk: udk,
+				},
+				want: want{
+					wantL: size,
+				},
+			}
+		}(),
+		func() test {
+			size := 10
+			udk := make([]key, size)
+
+			return test{
+				name: "return 10 when the capacity and length is 10",
+				fields: fields{
+					udk: udk,
+				},
+				want: want{
+					wantL: size,
+				},
+			}
+		}(),
+		func() test {
+			c := 10
+			l := 5
+			udk := make([]key, l, c)
+
+			return test{
+				name: "return 5 when the capacity is 10 and the length is 5",
+				fields: fields{
+					udk: udk,
+				},
+				want: want{
+					wantL: l,
+				},
+			}
+		}(),
+		func() test {
+			iniLen := 5
+			isrtSize := 2
+			udk := make([]key, iniLen, 10)
+			for i := 0; i < isrtSize; i++ {
+				udk = append(udk, key{})
+			}
+
+			return test{
+				name: "return 7 when the capacity is 10 and the initial length is 5 but the inserted size is 2",
+				fields: fields{
+					udk: udk,
+				},
+				want: want{
+					wantL: iniLen + isrtSize,
+				},
+			}
+		}(),
+		func() test {
+			size := 10
+			udk := make([]key, 0, size)
+			for i := 0; i < size; i++ {
+				udk = append(udk, key{})
+			}
+
+			return test{
+				name: "return 10 when the inserted size is 10",
+				fields: fields{
+					udk: udk,
+				},
+				want: want{
+					wantL: size,
+				},
+			}
+		}(),
+		func() test {
+			insertSize := 5
+			size := 10
+			udk := make([]key, 0, size)
+			for i := 0; i < insertSize; i++ {
+				udk = append(udk, key{})
+			}
+
+			return test{
+				name: "return 5 when the capacity is 10 and the inserted size is 5",
+				fields: fields{
+					udk: udk,
+				},
+				want: want{
+					wantL: insertSize,
+				},
+			}
+		}(),
 	}
 
 	for _, tc := range tests {
@@ -2145,61 +2227,81 @@ func Test_vqueue_IVCLen(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           ich: nil,
-		           uii: nil,
-		           imu: nil,
-		           uiim: uiim{},
-		           dch: nil,
-		           udk: nil,
-		           dmu: nil,
-		           udim: udim{},
-		           eg: nil,
-		           finalizingInsert: nil,
-		           finalizingDelete: nil,
-		           closed: nil,
-		           ichSize: 0,
-		           dchSize: 0,
-		           iBufSize: 0,
-		           dBufSize: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+		func() test {
+			size := 0
+			ich := make(chan index, size)
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           ich: nil,
-		           uii: nil,
-		           imu: nil,
-		           uiim: uiim{},
-		           dch: nil,
-		           udk: nil,
-		           dmu: nil,
-		           udim: udim{},
-		           eg: nil,
-		           finalizingInsert: nil,
-		           finalizingDelete: nil,
-		           closed: nil,
-		           ichSize: 0,
-		           dchSize: 0,
-		           iBufSize: 0,
-		           dBufSize: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+			return test{
+				name: "return 0 when the buffer size is 0",
+				fields: fields{
+					ich: ich,
+				},
+				afterFunc: func() {
+					close(ich)
+				},
+				want: want{
+					want: size,
+				},
+			}
+		}(),
+		func() test {
+			size := 10
+			ich := make(chan index, size)
+
+			return test{
+				name: "return 0 when the buffer size is 10 but there is no inserted index",
+				fields: fields{
+					ich: ich,
+				},
+				afterFunc: func() {
+					close(ich)
+				},
+				want: want{
+					want: size,
+				},
+			}
+		}(),
+		func() test {
+			size := 10
+			ich := make(chan index, size)
+			for i := 0; i < size; i++ {
+				ich <- index{}
+			}
+
+			return test{
+				name: "return 10 when the buffer size is 10",
+				fields: fields{
+					ich: ich,
+				},
+				afterFunc: func() {
+					close(ich)
+				},
+				want: want{
+					want: size,
+				},
+			}
+		}(),
+		func() test {
+			isrtSize := 5
+			size := 10
+			ich := make(chan index, size)
+			for i := 0; i < isrtSize; i++ {
+				ich <- index{}
+			}
+
+			return test{
+				name: "return 5 when the buffer size is 10 but the inserted size is 5",
+				fields: fields{
+					ich: ich,
+				},
+				afterFunc: func() {
+					close(ich)
+				},
+				want: want{
+					want: isrtSize,
+				},
+			}
+		}(),
 	}
 
 	for _, tc := range tests {
@@ -2280,61 +2382,81 @@ func Test_vqueue_DVCLen(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           ich: nil,
-		           uii: nil,
-		           imu: nil,
-		           uiim: uiim{},
-		           dch: nil,
-		           udk: nil,
-		           dmu: nil,
-		           udim: udim{},
-		           eg: nil,
-		           finalizingInsert: nil,
-		           finalizingDelete: nil,
-		           closed: nil,
-		           ichSize: 0,
-		           dchSize: 0,
-		           iBufSize: 0,
-		           dBufSize: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+		func() test {
+			size := 0
+			dch := make(chan key, size)
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           ich: nil,
-		           uii: nil,
-		           imu: nil,
-		           uiim: uiim{},
-		           dch: nil,
-		           udk: nil,
-		           dmu: nil,
-		           udim: udim{},
-		           eg: nil,
-		           finalizingInsert: nil,
-		           finalizingDelete: nil,
-		           closed: nil,
-		           ichSize: 0,
-		           dchSize: 0,
-		           iBufSize: 0,
-		           dBufSize: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+			return test{
+				name: "return 0 when the buffer size is 0",
+				fields: fields{
+					dch: dch,
+				},
+				afterFunc: func() {
+					close(dch)
+				},
+				want: want{
+					want: size,
+				},
+			}
+		}(),
+		func() test {
+			size := 10
+			dch := make(chan key, size)
+
+			return test{
+				name: "return 0 when the buffer size is 10 but there is no inserted key",
+				fields: fields{
+					dch: dch,
+				},
+				afterFunc: func() {
+					close(dch)
+				},
+				want: want{
+					want: 0,
+				},
+			}
+		}(),
+		func() test {
+			size := 10
+			dch := make(chan key, size)
+			for i := 0; i < size; i++ {
+				dch <- key{}
+			}
+
+			return test{
+				name: "return 10 when the buffer size is 10",
+				fields: fields{
+					dch: dch,
+				},
+				afterFunc: func() {
+					close(dch)
+				},
+				want: want{
+					want: size,
+				},
+			}
+		}(),
+		func() test {
+			insertSize := 5
+			size := 10
+			dch := make(chan key, size)
+			for i := 0; i < insertSize; i++ {
+				dch <- key{}
+			}
+
+			return test{
+				name: "return 5 when the buffer size is 10 but the inserted size is 5",
+				fields: fields{
+					dch: dch,
+				},
+				afterFunc: func() {
+					close(dch)
+				},
+				want: want{
+					want: insertSize,
+				},
+			}
+		}(),
 	}
 
 	for _, tc := range tests {
