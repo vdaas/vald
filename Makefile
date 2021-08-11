@@ -374,7 +374,6 @@ format/yaml:
 	    ".github/**/*.yaml" \
 	    ".github/**/*.yml" \
 	    "cmd/**/*.yaml" \
-	    "hack/**/*.yaml" \
 	    "k8s/**/*.yaml"
 
 .PHONY: deps
