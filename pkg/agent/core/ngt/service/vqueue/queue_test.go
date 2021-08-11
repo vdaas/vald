@@ -1956,15 +1956,15 @@ func Test_vqueue_IVQLen(t *testing.T) {
 		func() test {
 			insertSize := 5
 			size := 10
-			udk := make([]key, 0, size)
+			uii := make([]index, 0, size)
 			for i := 0; i < insertSize; i++ {
-				udk = append(udk, key{})
+				uii = append(uii, index{})
 			}
 
 			return test{
 				name: "return 5 when the capacity is 10 and the inserted size is 5",
 				fields: fields{
-					udk: udk,
+					uii: uii,
 				},
 				want: want{
 					wantL: insertSize,
@@ -2257,7 +2257,7 @@ func Test_vqueue_IVCLen(t *testing.T) {
 					close(ich)
 				},
 				want: want{
-					want: size,
+					want: 0,
 				},
 			}
 		}(),
