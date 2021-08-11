@@ -409,7 +409,7 @@ func (v *vqueue) flushAndRangeDelete(f func(uuid string) bool) {
 	}
 }
 
-// IVQLen returns the number of un inserted indexes.
+// IVQLen returns the number of uninserted indexes stored in the insert queue.
 func (v *vqueue) IVQLen() (l int) {
 	v.imu.Lock()
 	l = len(v.uii)
@@ -417,7 +417,7 @@ func (v *vqueue) IVQLen() (l int) {
 	return l
 }
 
-// DVQLen returns the number of un deleted keys.
+// DVQLen returns the number of undeleted keys stored in the delete queue.
 func (v *vqueue) DVQLen() (l int) {
 	v.dmu.Lock()
 	l = len(v.udk)
