@@ -212,8 +212,9 @@ func (idx *index) execute(ctx context.Context, enableLowIndexSkip, immediateSavi
 			if !immediateSaving {
 				_, err = ac.CreateIndex(ctx, req, copts...)
 				if err != nil {
-					if status.Code(err) == codes.FailedPrecondition {
-						log.Debugf("CreateIndex of %s skipped: %s", addr, err)
+					st, ok := status.FromError(err)
+					if ok && st != nil && st.Code() == codes.FailedPrecondition {
+						log.Debugf("CreateIndex of %s skipped, message: %s, err: %v", addr, st.Message(), errors.Wrap(st.Err(), err.Error()))
 						return nil
 					}
 					log.Warnf("an error occurred while calling CreateIndex of %s: %s", addr, err)
@@ -231,8 +232,9 @@ func (idx *index) execute(ctx context.Context, enableLowIndexSkip, immediateSavi
 			}
 			_, err = ac.CreateAndSaveIndex(ctx, req, copts...)
 			if err != nil {
-				if status.Code(err) == codes.FailedPrecondition {
-					log.Debugf("CreateAndSaveIndex of %s skipped: %s", addr, err)
+				st, ok := status.FromError(err)
+				if ok && st != nil && st.Code() == codes.FailedPrecondition {
+					log.Debugf("CreateIndex of %s skipped, message: %s, err: %v", addr, st.Message(), errors.Wrap(st.Err(), err.Error()))
 					return nil
 				}
 				log.Warnf("an error occurred while calling CreateAndSaveIndex of %s: %s", addr, err)

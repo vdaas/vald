@@ -19,19 +19,12 @@ syntax = "proto3";
 package filter.ingress.v1;
 
 import "apis/proto/v1/payload/payload.proto";
-import "github.com/gogo/protobuf/gogoproto/gogo.proto";
-import "github.com/gogo/googleapis/google/api/annotations.proto";
+import "github.com/googleapis/googleapis/google/api/annotations.proto";
 
 option go_package = "github.com/vdaas/vald/apis/grpc/v1/filter/ingress";
 option java_multiple_files = true;
 option java_package = "org.vdaas.vald.api.v1.filter.ingress";
 option java_outer_classname = "ValdIngressFilter";
-
-option (gogoproto.goproto_registration) = true;
-option (gogoproto.marshaler_all) = true;
-option (gogoproto.unmarshaler_all) = true;
-option (gogoproto.sizer_all) = true;
-option (gogoproto.messagename_all) = true;
 
 service Filter {
   rpc GenVector(payload.v1.Object.Blob) returns (payload.v1.Object.Vector) {
@@ -41,7 +34,8 @@ service Filter {
     };
   }
 
-  rpc FilterVector(payload.v1.Object.Vector) returns (payload.v1.Object.Vector) {
+  rpc FilterVector(payload.v1.Object.Vector)
+      returns (payload.v1.Object.Vector) {
     option (google.api.http) = {
       post : "/filter/ingress/vector"
       body : "*"

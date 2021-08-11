@@ -8,15 +8,12 @@ replace (
 	github.com/Azure/go-autorest => github.com/Azure/go-autorest master
 	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go latest
 	github.com/boltdb/bolt => github.com/boltdb/bolt v1.3.1
-	github.com/zeebo/xxh3 => github.com/zeebo/xxh3 v0.10.0
 	github.com/chzyer/logex => github.com/chzyer/logex master
 	github.com/coreos/etcd =>  go.etcd.io/etcd latest
 	github.com/docker/docker => github.com/moby/moby latest
 	github.com/envoyproxy/protoc-gen-validate => github.com/envoyproxy/protoc-gen-validate latest
 	github.com/go-sql-driver/mysql => github.com/go-sql-driver/mysql latest
-	github.com/kpango/glg => github.com/kpango/glg latest
 	github.com/gocql/gocql => github.com/gocql/gocql latest
-	github.com/gogo/googleapis => github.com/gogo/googleapis latest
 	github.com/gogo/protobuf => github.com/gogo/protobuf latest
 	github.com/google/go-cmp => github.com/google/go-cmp latest
 	github.com/google/pprof => github.com/google/pprof master
@@ -25,7 +22,9 @@ replace (
 	github.com/gorilla/websocket => github.com/gorilla/websocket latest
 	github.com/hailocab/go-hostpool => github.com/kpango/go-hostpool master
 	github.com/klauspost/compress => github.com/klauspost/compress master
+	github.com/kpango/glg => github.com/kpango/glg latest
 	github.com/tensorflow/tensorflow => github.com/tensorflow/tensorflow v2.1.2+incompatible
+	github.com/zeebo/xxh3 => github.com/zeebo/xxh3 v0.10.0
 	golang.org/x/crypto => golang.org/x/crypto latest
 	google.golang.org/grpc => google.golang.org/grpc latest
 	google.golang.org/protobuf => google.golang.org/protobuf latest

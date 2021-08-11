@@ -1,3 +1,4 @@
+//go:build e2e
 // +build e2e
 
 //
@@ -60,6 +61,10 @@ type Client interface {
 	SaveIndex(t *testing.T, ctx context.Context) error
 	IndexInfo(t *testing.T, ctx context.Context) (*payload.Info_Index_Count, error)
 }
+
+const (
+	defaultSearchTimeout = 4 * int64(time.Second)
+)
 
 func New(host string, port int) (Client, error) {
 	return &client{
