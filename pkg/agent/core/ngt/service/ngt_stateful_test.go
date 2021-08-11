@@ -19,6 +19,7 @@ package service
 
 import (
 	"context"
+	"flag"
 	"testing"
 	"time"
 
@@ -35,6 +36,9 @@ const (
 )
 
 var (
+	seed               int64
+	minSuccessfulTests int
+
 	vecCh = make(chan *vector, 10)
 
 	cfg = &config.NGT{
@@ -54,6 +58,13 @@ var (
 
 	f32sliceGen = gen.SliceOfN(dimension, gen.Float32())
 )
+
+func init() {
+	testing.Init()
+
+	flag.Int64Var(&seed, "pbt-seed", 0, "seed number used for PBT")
+	flag.IntVar(&minSuccessfulTests, "pbt-min-successful-tests", 10, "minimum number of successful tests in PBT")
+}
 
 type vector struct {
 	uuid   string
@@ -581,8 +592,10 @@ func TestStatefulNGT(t *testing.T) {
 	log.Init(log.WithLoggerType("nop"))
 
 	parameters := gopter.DefaultTestParameters()
-	// parameters.SetSeed(1234)
-	parameters.MinSuccessfulTests = 10
+	if seed != 0 {
+		parameters.SetSeed(seed)
+	}
+	parameters.MinSuccessfulTests = minSuccessfulTests
 
 	properties := gopter.NewProperties(parameters)
 	properties.Property("NGT", commands.Prop(rootCommands(t)))
