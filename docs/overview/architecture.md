@@ -78,7 +78,7 @@ Here are the concepts of Vald.
 Vald is based on microservice architecture, which means Vald is composited by multiple components, you can deploy part of the components to your cluster depending on your needs.
 In this section, we will introduce the basic architecture of Vald.
 
-<img src="../../assets/docs/overview/Vald Basic Architecture.svg" />
+<img src="../../assets/docs/overview/vald_basic_architecture.svg" />
 
 We will introduce each component and why it is needed in Vald.
 
