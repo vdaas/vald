@@ -225,6 +225,8 @@ data:
       enable_proactive_gc: true
       index_path: ""
       initial_delay_max_duration: 3m
+      kvsdb:
+        concurrency: 20
       load_index_timeout_factor: 1ms
       max_load_index_timeout: 10m
       min_load_index_timeout: 3m

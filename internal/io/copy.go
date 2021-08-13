@@ -37,8 +37,8 @@ type Copier interface {
 }
 
 type copier struct {
-	pool    sync.Pool
 	bufSize int64
+	pool    sync.Pool
 }
 
 const (

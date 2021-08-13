@@ -236,6 +236,11 @@ spec:
                           type: string
                         initial_delay_max_duration:
                           type: string
+                        kvsdb:
+                          type: object
+                          properties:
+                            concurrency:
+                              type: integer
                         load_index_timeout_factor:
                           type: string
                         max_load_index_timeout:
