@@ -1771,25 +1771,24 @@ func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequ
 				errs = errors.Wrap(errs, err.Error())
 			}
 		}
-
-		if errs == nil {
-			var locs []*payload.Object_Location
-			switch {
-			case ures.GetLocations() == nil:
-				locs = ires.GetLocations()
-			case ires.GetLocations() == nil:
-				locs = ures.GetLocations()
-			default:
-				locs = append(ures.GetLocations(), ires.GetLocations()...)
-			}
-			res = &payload.Object_Locations{
-				Locations: locs,
-			}
-		} else {
+		if errs != nil {
 			err = errs
+		}
+		switch {
+		case ures.GetLocations() == nil && ires.GetLocations() != nil:
+			res = ires
+		case ures.GetLocations() != nil && ires.GetLocations() == nil:
+			res = ures
+		case ures.GetLocations() != nil && ires.GetLocations() != nil:
+			res = &payload.Object_Locations{
+				Locations: append(ures.GetLocations(), ires.GetLocations()...),
+			}
+		default:
+			res = new(payload.Object_Locations)
 		}
 
 	}
+
 	if err != nil {
 		st, msg, err := status.ParseError(err, codes.Internal,
 			"failed to parse MultiUpsert gRPC error response",

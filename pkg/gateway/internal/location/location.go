@@ -15,30 +15,57 @@
 //
 package location
 
-import "github.com/vdaas/vald/apis/grpc/v1/payload"
+import (
+	"sync"
+	"sync/atomic"
+
+	"github.com/vdaas/vald/apis/grpc/v1/payload"
+)
+
+var (
+	poolSize uint64 = 10
+	locPool         = &sync.Pool{
+		New: func() interface{} {
+			return make(map[string]*payload.Object_Location, atomic.LoadUint64(&poolSize))
+		},
+	}
+)
 
 func ReStructure(uuids []string, locs *payload.Object_Locations) *payload.Object_Locations {
-	if locs == nil {
+	if locs == nil || locs.Locations == nil {
 		return nil
 	}
-	lmap := make(map[string]*payload.Object_Location, len(locs.GetLocations()))
+	ll := uint64(len(locs.GetLocations()))
+	if ll > atomic.LoadUint64(&poolSize) {
+		atomic.StoreUint64(&poolSize, uint64(len(locs.GetLocations())))
+	}
+	lp := locPool.Get()
+	lmap, ok := lp.(map[string]*payload.Object_Location)
+	if !ok || lmap == nil {
+		lmap = make(map[string]*payload.Object_Location, ll)
+	}
 	for _, loc := range locs.Locations {
 		uuid := loc.GetUuid()
-		_, ok := lmap[uuid]
-		if !ok {
+		lm, ok := lmap[uuid]
+		if !ok || lm == nil {
 			lmap[uuid] = new(payload.Object_Location)
 		}
 		lmap[uuid].Ips = append(lmap[uuid].GetIps(), loc.GetIps()...)
 	}
-	locs = &payload.Object_Locations{
-		Locations: make([]*payload.Object_Location, 0, len(lmap)),
-	}
+	locs.Locations = locs.Locations[:0]
 	for _, id := range uuids {
 		loc, ok := lmap[id]
 		if !ok {
 			loc = new(payload.Object_Location)
+		} else {
+			delete(lmap, id)
 		}
 		locs.Locations = append(locs.GetLocations(), loc)
 	}
+	for id, lm := range lmap {
+		locs.Locations = append(locs.GetLocations(), lm)
+		delete(lmap, id)
+	}
+	locPool.Put(lmap)
 	return locs
 }

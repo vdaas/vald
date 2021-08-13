@@ -18,12 +18,12 @@ package kvs
 
 import (
 	"context"
-	"reflect"
 	"sync"
 	"sync/atomic"
-	"unsafe"
 
-	xxhash "github.com/cespare/xxhash/v2"
+	"github.com/vdaas/vald/internal/errgroup"
+	"github.com/vdaas/vald/internal/safety"
+	"github.com/zeebo/xxh3"
 )
 
 // BidiMap represents an interface for operating kvs.
@@ -35,12 +35,15 @@ type BidiMap interface {
 	DeleteInverse(uint32) (string, bool)
 	Range(ctx context.Context, f func(string, uint32) bool)
 	Len() uint64
+	Close() error
 }
 
 type bidi struct {
-	ou [slen]*ou
-	uo [slen]*uo
-	l  uint64
+	concurrency int
+	l           uint64
+	ou          [slen]*ou
+	uo          [slen]*uo
+	eg          errgroup.Group
 }
 
 const (
@@ -53,9 +56,13 @@ const (
 )
 
 // New returns the bidi that satisfies the BidiMap interface.
-func New() BidiMap {
+func New(opts ...Option) BidiMap {
 	b := &bidi{
-		l: 0,
+		l:           0,
+		concurrency: 0,
+	}
+	for _, opt := range append(defaultOptions, opts...) {
+		opt(b)
 	}
 	for i := range b.ou {
 		b.ou[i] = new(ou)
@@ -63,13 +70,19 @@ func New() BidiMap {
 	for i := range b.uo {
 		b.uo[i] = new(uo)
 	}
+	if b.eg == nil {
+		b.eg, _ = errgroup.New(context.Background())
+	}
+	if b.concurrency > 1 {
+		b.eg.Limitation(b.concurrency)
+	}
 	return b
 }
 
 // Get returns the value and boolean from the given key.
 // If the value does not exist, it returns nil and false.
 func (b *bidi) Get(key string) (uint32, bool) {
-	return b.uo[xxhash.Sum64(stringToBytes(key))&mask].Load(key)
+	return b.uo[xxh3.HashString(key)&mask].Load(key)
 }
 
 // GetInverse returns the key and the boolean from the given val.
@@ -80,7 +93,7 @@ func (b *bidi) GetInverse(val uint32) (string, bool) {
 
 // Set sets the key and val to the bidi.
 func (b *bidi) Set(key string, val uint32) {
-	id := xxhash.Sum64(stringToBytes(key)) & mask
+	id := xxh3.HashString(key) & mask
 	old, loaded := b.uo[id].LoadOrStore(key, val)
 	if !loaded { // increase the count only if the key is not exists before
 		atomic.AddUint64(&b.l, 1)
@@ -94,7 +107,7 @@ func (b *bidi) Set(key string, val uint32) {
 // Delete deletes the key and the value from the bidi by the given key and returns val and true.
 // If the value for the key does not exist, it returns nil and false.
 func (b *bidi) Delete(key string) (val uint32, ok bool) {
-	val, ok = b.uo[xxhash.Sum64(stringToBytes(key))&mask].LoadAndDelete(key)
+	val, ok = b.uo[xxh3.HashString(key)&mask].LoadAndDelete(key)
 	if ok {
 		b.ou[val&mask].Delete(val)
 		atomic.AddUint64(&b.l, ^uint64(0))
@@ -110,7 +123,7 @@ func (b *bidi) DeleteInverse(val uint32) (key string, ok bool) {
 	if !ok {
 		return "", false
 	}
-	b.uo[xxhash.Sum64(stringToBytes(key))&mask].Delete(key)
+	b.uo[xxh3.HashString(key)&mask].Delete(key)
 	b.ou[val&mask].Delete(val)
 	atomic.AddUint64(&b.l, ^uint64(0))
 	return key, true
@@ -118,21 +131,23 @@ func (b *bidi) DeleteInverse(val uint32) (key string, ok bool) {
 
 // Range retrieves all set keys and values and calls the callback function f.
 func (b *bidi) Range(ctx context.Context, f func(string, uint32) bool) {
-	wg := new(sync.WaitGroup)
+	var wg sync.WaitGroup
 	for i := range b.uo {
+		idx := i
 		wg.Add(1)
-		go func(c context.Context, idx int) {
+		b.eg.Go(safety.RecoverFunc(func() (err error) {
 			b.uo[idx].Range(func(uuid string, oid uint32) bool {
+				f(uuid, oid)
 				select {
-				case <-c.Done():
+				case <-ctx.Done():
 					return false
 				default:
-					f(uuid, oid)
 					return true
 				}
 			})
 			wg.Done()
-		}(ctx, i)
+			return nil
+		}))
 	}
 	wg.Wait()
 }
@@ -142,11 +157,6 @@ func (b *bidi) Len() uint64 {
 	return atomic.LoadUint64(&b.l)
 }
 
-func stringToBytes(s string) (b []byte) {
-	sh := (*reflect.StringHeader)(unsafe.Pointer(&s))
-	return *(*[]byte)(unsafe.Pointer(&reflect.SliceHeader{
-		Data: sh.Data,
-		Len:  sh.Len,
-		Cap:  sh.Len,
-	}))
+func (b *bidi) Close() error {
+	return b.eg.Wait()
 }

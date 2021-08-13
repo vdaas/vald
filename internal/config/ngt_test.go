@@ -41,6 +41,7 @@ func TestNGT_Bind(t *testing.T) {
 		InitialDelayMaxDuration string
 		EnableInMemoryMode      bool
 		VQueue                  *VQueue
+		KVSDB                   *KVSDB
 	}
 	type want struct {
 		want *NGT
@@ -77,6 +78,7 @@ func TestNGT_Bind(t *testing.T) {
 				InitialDelayMaxDuration: "1h",
 				EnableInMemoryMode:      false,
 				VQueue:                  new(VQueue),
+				KVSDB:                   new(KVSDB),
 			},
 			want: want{
 				want: &NGT{
@@ -94,6 +96,7 @@ func TestNGT_Bind(t *testing.T) {
 					InitialDelayMaxDuration: "1h",
 					EnableInMemoryMode:      false,
 					VQueue:                  new(VQueue),
+					KVSDB:                   new(KVSDB),
 				},
 			},
 		},
@@ -114,6 +117,7 @@ func TestNGT_Bind(t *testing.T) {
 				InitialDelayMaxDuration: "_NGT_BIND_INITIAL_DELAY_MAX_DURATION_",
 				EnableInMemoryMode:      false,
 				VQueue:                  new(VQueue),
+				KVSDB:                   new(KVSDB),
 			},
 			beforeFunc: func() {
 				_ = os.Setenv("NGT_BIND_INDEX_PATH", "config/ngt")
@@ -149,6 +153,7 @@ func TestNGT_Bind(t *testing.T) {
 					InitialDelayMaxDuration: "1h",
 					EnableInMemoryMode:      false,
 					VQueue:                  new(VQueue),
+					KVSDB:                   new(KVSDB),
 				},
 			},
 		},
@@ -157,6 +162,7 @@ func TestNGT_Bind(t *testing.T) {
 			want: want{
 				want: &NGT{
 					VQueue: new(VQueue),
+					KVSDB:  new(KVSDB),
 				},
 			},
 		},

@@ -135,8 +135,21 @@ func New(cfg *config.NGT, opts ...Option) (nn NGT, err error) {
 		}
 	}
 
-	n.kvs = kvs.New()
 	n.dim = cfg.Dimension
+
+	n.kvs = kvs.New(func() []kvs.Option {
+		if cfg.KVSDB.Concurrency < 1 {
+			return []kvs.Option{
+				// n.eg is global errgroup we can use it only concurrency < 1 (which means unlimited)
+				// if we use global errgroup under the limited concurrency it will affect other daemon process
+				kvs.WithErrGroup(n.eg),
+			}
+		}
+		return []kvs.Option{
+			// when concurrency >= 1 which means limited concurrency for retrieving kvsdb, we shouldn't use global errgroup kvsdb will automatically generates it's own errgroup
+			kvs.WithConcurrency(cfg.KVSDB.Concurrency),
+		}
+	}()...)
 
 	err = n.initNGT(
 		core.WithInMemoryMode(n.inMem),
@@ -170,7 +183,6 @@ func New(cfg *config.NGT, opts ...Option) (nn NGT, err error) {
 			return nil, err
 		}
 	}
-
 	n.indexing.Store(false)
 	n.saving.Store(false)
 
@@ -246,7 +258,7 @@ func (n *ngt) initNGT(opts ...core.Option) (err error) {
 
 	// NOTE: when it exceeds the timeout while loading,
 	// it should exit this function and leave this goroutine running.
-	go func() {
+	n.eg.Go(safety.RecoverFunc(func() error {
 		defer close(ech)
 		err = safety.RecoverFunc(func() (err error) {
 			err = eg.Wait()
@@ -259,7 +271,8 @@ func (n *ngt) initNGT(opts ...core.Option) (err error) {
 		if err != nil {
 			ech <- err
 		}
-	}()
+		return nil
+	}))
 
 	select {
 	case err := <-ech:
@@ -362,6 +375,10 @@ func (n *ngt) Start(ctx context.Context) <-chan error {
 			err = nil
 			select {
 			case <-ctx.Done():
+				err = n.kvs.Close()
+				if err != nil {
+					ech <- err
+				}
 				err = n.CreateIndex(ctx, n.poolSize)
 				if err != nil && !errors.Is(err, errors.ErrUncommittedIndexNotFound) {
 					ech <- err
@@ -902,8 +919,16 @@ func (n *ngt) GetDimensionSize() int {
 }
 
 func (n *ngt) Close(ctx context.Context) (err error) {
+	err = n.kvs.Close()
 	if len(n.path) != 0 {
-		err = n.CreateAndSaveIndex(ctx, n.poolSize)
+		cerr := n.CreateAndSaveIndex(ctx, n.poolSize)
+		if cerr != nil {
+			if err != nil {
+				err = errors.Wrap(cerr, err.Error())
+			} else {
+				err = cerr
+			}
+		}
 	}
 	n.core.Close()
 	return

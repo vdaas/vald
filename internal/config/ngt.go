@@ -81,6 +81,15 @@ type NGT struct {
 
 	// VQueue represent the ngt vector queue buffer size
 	VQueue *VQueue `json:"vqueue,omitempty" yaml:"vqueue"`
+
+	// KVSDB represent the ngt bidirectional kv store configuration
+	KVSDB *KVSDB `json:"kvsdb,omitempty" yaml:"kvsdb"`
+}
+
+// KVSDB represent the ngt vector bidirectional kv store configuration
+type KVSDB struct {
+	// Concurrency represents kvsdb range loop processing concurrency
+	Concurrency int `json:"concurrency,omitempty" yaml:"concurrency,omitempty"`
 }
 
 // VQueue represent the ngt vector queue buffer size
@@ -110,8 +119,13 @@ func (n *NGT) Bind() *NGT {
 	n.MinLoadIndexTimeout = GetActualValue(n.MinLoadIndexTimeout)
 	n.MaxLoadIndexTimeout = GetActualValue(n.MaxLoadIndexTimeout)
 	n.LoadIndexTimeoutFactor = GetActualValue(n.LoadIndexTimeoutFactor)
+
 	if n.VQueue == nil {
 		n.VQueue = new(VQueue)
 	}
+	if n.KVSDB == nil {
+		n.KVSDB = new(KVSDB)
+	}
+
 	return n
 }
