@@ -54,7 +54,7 @@ func (c *client) MultiSearch(t *testing.T, ctx context.Context, ds Dataset) erro
 	}
 	
 	if len(res.GetResponses()) != len(ds.Test) {
-		return errors.New("number of responses does not match with sent requests")
+		t.Error("number of responses does not match with sent requests")
 	}
 
 	return nil
