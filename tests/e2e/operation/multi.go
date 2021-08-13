@@ -48,9 +48,13 @@ func (c *client) MultiSearch(t *testing.T, ctx context.Context, ds Dataset) erro
 	req := &payload.Search_MultiRequest{
 		Requests: reqs,
 	}
-	_, err = client.MultiSearch(ctx, req)
+	res, err := client.MultiSearch(ctx, req)
 	if err != nil {
 		return err
+	}
+	
+	if len(res.GetResponses()) != len(ds.Test) {
+		return errors.New("number of responses does not match with sent requests")
 	}
 
 	return nil
