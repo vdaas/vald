@@ -143,7 +143,9 @@ func New(cfg *config.NGT, opts ...Option) (nn NGT, err error) {
 				kvs.WithErrGroup(n.eg),
 			}
 		}
-		return nil
+		return  []kvs.Option{
+			kvs.WithConcurrency(cfg.KVSDB.Concurrency),
+		}
 	}()...)
 
 	err = n.initNGT(
