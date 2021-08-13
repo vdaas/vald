@@ -118,7 +118,12 @@ func Errorf(code codes.Code, format string, args ...interface{}) error {
 	return status.Errorf(code, format, args...)
 }
 
-func ParseError(err error, defaultCode codes.Code, defaultMsg string, details ...interface{}) (st *Status, msg string, rerr error) {
+func ParseError(
+	err error,
+	defaultCode codes.Code,
+	defaultMsg string,
+	details ...interface{},
+) (st *Status, msg string, rerr error) {
 	if err == nil {
 		st = newStatus(codes.OK, "", nil, details...)
 		msg = st.Message()

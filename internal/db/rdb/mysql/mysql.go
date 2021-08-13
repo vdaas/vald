@@ -210,7 +210,11 @@ func (m *mySQLClient) GetVector(ctx context.Context, uuid string) (Vector, error
 	}
 
 	var data *data
-	_, err := m.session.Select(asterisk).From(vectorTableName).Where(m.dbr.Eq(uuidColumnName, uuid)).Limit(1).LoadContext(ctx, &data)
+	_, err := m.session.Select(asterisk).
+		From(vectorTableName).
+		Where(m.dbr.Eq(uuidColumnName, uuid)).
+		Limit(1).
+		LoadContext(ctx, &data)
 	if err != nil {
 		return nil, err
 	}
@@ -243,7 +247,11 @@ func (m *mySQLClient) GetIPs(ctx context.Context, uuid string) ([]string, error)
 	}
 
 	var id int64
-	_, err := m.session.Select(idColumnName).From(vectorTableName).Where(m.dbr.Eq(uuidColumnName, uuid)).Limit(1).LoadContext(ctx, &id)
+	_, err := m.session.Select(idColumnName).
+		From(vectorTableName).
+		Where(m.dbr.Eq(uuidColumnName, uuid)).
+		Limit(1).
+		LoadContext(ctx, &id)
 	if err != nil {
 		return nil, err
 	}
@@ -305,7 +313,11 @@ func (m *mySQLClient) SetVector(ctx context.Context, vec Vector) error {
 	}
 
 	var id int64
-	_, err = tx.Select(idColumnName).From(vectorTableName).Where(m.dbr.Eq(uuidColumnName, vec.GetUUID())).Limit(1).LoadContext(ctx, &id)
+	_, err = tx.Select(idColumnName).
+		From(vectorTableName).
+		Where(m.dbr.Eq(uuidColumnName, vec.GetUUID())).
+		Limit(1).
+		LoadContext(ctx, &id)
 	if err != nil {
 		return err
 	}
@@ -357,7 +369,8 @@ func (m *mySQLClient) SetVectors(ctx context.Context, vecs ...Vector) error {
 		_, err = tx.InsertBySql("INSERT INTO "+vectorTableName+"(uuid, vector) VALUES (?, ?) ON DUPLICATE KEY UPDATE vector = ?",
 			vec.GetUUID(),
 			vec.GetVector(),
-			vec.GetVector()).ExecContext(ctx)
+			vec.GetVector()).
+			ExecContext(ctx)
 		if err != nil {
 			return err
 		}
@@ -365,7 +378,11 @@ func (m *mySQLClient) SetVectors(ctx context.Context, vecs ...Vector) error {
 
 	for _, vec := range vecs {
 		var id int64
-		_, err = tx.Select(idColumnName).From(vectorTableName).Where(m.dbr.Eq(uuidColumnName, vec.GetUUID())).Limit(1).LoadContext(ctx, &id)
+		_, err = tx.Select(idColumnName).
+			From(vectorTableName).
+			Where(m.dbr.Eq(uuidColumnName, vec.GetUUID())).
+			Limit(1).
+			LoadContext(ctx, &id)
 		if err != nil {
 			return err
 		}

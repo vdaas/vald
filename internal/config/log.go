@@ -20,7 +20,7 @@ package config
 // Logging represents Logging configuration.
 type Logging struct {
 	Logger string `json:"logger" yaml:"logger"`
-	Level  string `json:"level" yaml:"level"`
+	Level  string `json:"level"  yaml:"level"`
 	Format string `json:"format" yaml:"format"`
 }
 

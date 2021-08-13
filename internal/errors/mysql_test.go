@@ -247,7 +247,9 @@ func TestErrRequiredElementNotFoundByUUID(t *testing.T) {
 			},
 			want: want{
 				want: &ErrMySQLNotFoundIdentity{
-					err: New("error required element not found, uuid: ef45b56c-1d90-12a7-c143-2567vaef218d: error mysql element not found"),
+					err: New(
+						"error required element not found, uuid: ef45b56c-1d90-12a7-c143-2567vaef218d: error mysql element not found",
+					),
 				},
 			},
 		},

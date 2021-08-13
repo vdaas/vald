@@ -341,10 +341,13 @@ func (d *dialer) tlsHandshake(ctx context.Context, conn Conn, addr string) (*tls
 		return nil, err
 	}
 	if tconn != nil {
-		log.Infof("tls handshake addr %s succeed from %s://%s to %s://%s,\tconnectionstate: [ Version:%d, ServerName: %s, HandshakeComplete: %v, DidResume: %v, NegotiatedProtocol: %s ]",
+		log.Infof(
+			"tls handshake addr %s succeed from %s://%s to %s://%s,\tconnectionstate: [ Version:%d, ServerName: %s, HandshakeComplete: %v, DidResume: %v, NegotiatedProtocol: %s ]",
 			addr,
-			tconn.LocalAddr().Network(), tconn.LocalAddr().String(),
-			tconn.RemoteAddr().Network(), tconn.RemoteAddr().String(),
+			tconn.LocalAddr().Network(),
+			tconn.LocalAddr().String(),
+			tconn.RemoteAddr().Network(),
+			tconn.RemoteAddr().String(),
 			tconn.ConnectionState().Version,
 			tconn.ConnectionState().ServerName,
 			tconn.ConnectionState().HandshakeComplete,

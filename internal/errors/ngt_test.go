@@ -246,7 +246,11 @@ func TestErrInvalidDimensionSize(t *testing.T) {
 				limit:   int(math.MinInt64),
 			},
 			want: want{
-				want: Errorf("dimension size %d is invalid, the supporting dimension size must be between 2 ~ %d", int(math.MinInt64), int(math.MinInt64)),
+				want: Errorf(
+					"dimension size %d is invalid, the supporting dimension size must be between 2 ~ %d",
+					int(math.MinInt64),
+					int(math.MinInt64),
+				),
 			},
 		},
 		{
@@ -256,7 +260,11 @@ func TestErrInvalidDimensionSize(t *testing.T) {
 				limit:   int(math.MaxInt64),
 			},
 			want: want{
-				want: Errorf("dimension size %d is invalid, the supporting dimension size must be between 2 ~ %d", int(math.MaxInt64), int(math.MaxInt64)),
+				want: Errorf(
+					"dimension size %d is invalid, the supporting dimension size must be between 2 ~ %d",
+					int(math.MaxInt64),
+					int(math.MaxInt64),
+				),
 			},
 		},
 	}
@@ -332,7 +340,11 @@ func TestErrDimensionLimitExceed(t *testing.T) {
 				limit:   int(math.MinInt64),
 			},
 			want: want{
-				want: Errorf("supported dimension limit exceed:\trequired = %d,\tlimit = %d", int(math.MinInt64), int(math.MinInt64)),
+				want: Errorf(
+					"supported dimension limit exceed:\trequired = %d,\tlimit = %d",
+					int(math.MinInt64),
+					int(math.MinInt64),
+				),
 			},
 		},
 		{
@@ -342,7 +354,11 @@ func TestErrDimensionLimitExceed(t *testing.T) {
 				limit:   int(math.MaxInt64),
 			},
 			want: want{
-				want: Errorf("supported dimension limit exceed:\trequired = %d,\tlimit = %d", int(math.MaxInt64), int(math.MaxInt64)),
+				want: Errorf(
+					"supported dimension limit exceed:\trequired = %d,\tlimit = %d",
+					int(math.MaxInt64),
+					int(math.MaxInt64),
+				),
 			},
 		},
 	}

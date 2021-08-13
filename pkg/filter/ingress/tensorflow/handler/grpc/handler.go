@@ -57,7 +57,11 @@ func (s *server) GenVector(ctx context.Context, req *payload.Object_Blob) (vec *
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
 		}
-		return nil, status.WrapWithInternal(fmt.Sprintf("GenVector API id %s's object could not vectorize", req.GetId()), err, info.Get())
+		return nil, status.WrapWithInternal(
+			fmt.Sprintf("GenVector API id %s's object could not vectorize", req.GetId()),
+			err,
+			info.Get(),
+		)
 	}
 
 	vec = &payload.Object_Vector{

@@ -177,7 +177,9 @@ func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *
 	if err != nil {
 		var stat trace.Status
 		if errors.Is(err, errors.ErrCreateIndexingIsInProgress) {
-			err = status.WrapWithAborted("Search API aborted to process search request due to createing indices is in progress", err,
+			err = status.WrapWithAborted(
+				"Search API aborted to process search request due to createing indices is in progress",
+				err,
 				&errdetails.RequestInfo{
 					RequestId:   req.GetConfig().GetRequestId(),
 					ServingData: errdetails.Serialize(req),
@@ -185,7 +187,8 @@ func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *
 				&errdetails.ResourceInfo{
 					ResourceType: ngtResourceType + "/ngt.Search",
 					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-				})
+				},
+			)
 			log.Debug(err)
 			stat = trace.StatusCodeAborted(err.Error())
 		} else {
@@ -227,7 +230,9 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 		var stat trace.Status
 		switch {
 		case errors.Is(err, errors.ErrCreateIndexingIsInProgress):
-			err = status.WrapWithAborted("SearchByID API aborted to process search request due to createing indices is in progress", err,
+			err = status.WrapWithAborted(
+				"SearchByID API aborted to process search request due to createing indices is in progress",
+				err,
 				&errdetails.RequestInfo{
 					RequestId:   req.GetConfig().GetRequestId(),
 					ServingData: errdetails.Serialize(req),
@@ -235,7 +240,8 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 				&errdetails.ResourceInfo{
 					ResourceType: ngtResourceType + "/ngt.SearchByID",
 					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-				})
+				},
+			)
 			log.Debug(err)
 			stat = trace.StatusCodeAborted(err.Error())
 		case errors.Is(err, errors.ErrObjectIDNotFound(req.GetId())),
@@ -380,7 +386,10 @@ func (s *server) StreamSearchByID(stream vald.Search_StreamSearchByIDServer) (er
 	return nil
 }
 
-func (s *server) MultiSearch(ctx context.Context, reqs *payload.Search_MultiRequest) (res *payload.Search_Responses, errs error) {
+func (s *server) MultiSearch(
+	ctx context.Context,
+	reqs *payload.Search_MultiRequest,
+) (res *payload.Search_Responses, errs error) {
 	ctx, span := trace.StartSpan(ctx, apiName+".MultiSearch")
 	defer func() {
 		if span != nil {
@@ -450,7 +459,10 @@ func (s *server) MultiSearch(ctx context.Context, reqs *payload.Search_MultiRequ
 	return res, nil
 }
 
-func (s *server) MultiSearchByID(ctx context.Context, reqs *payload.Search_MultiIDRequest) (res *payload.Search_Responses, errs error) {
+func (s *server) MultiSearchByID(
+	ctx context.Context,
+	reqs *payload.Search_MultiIDRequest,
+) (res *payload.Search_Responses, errs error) {
 	ctx, span := trace.StartSpan(ctx, apiName+".MultiSearchByID")
 	defer func() {
 		if span != nil {
@@ -662,7 +674,10 @@ func (s *server) StreamInsert(stream vald.Insert_StreamInsertServer) (err error)
 	return nil
 }
 
-func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequest) (res *payload.Object_Locations, err error) {
+func (s *server) MultiInsert(
+	ctx context.Context,
+	reqs *payload.Insert_MultiRequest,
+) (res *payload.Object_Locations, err error) {
 	_, span := trace.StartSpan(ctx, apiName+".MultiInsert")
 	defer func() {
 		if span != nil {
@@ -914,7 +929,10 @@ func (s *server) StreamUpdate(stream vald.Update_StreamUpdateServer) (err error)
 	return nil
 }
 
-func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequest) (res *payload.Object_Locations, err error) {
+func (s *server) MultiUpdate(
+	ctx context.Context,
+	reqs *payload.Update_MultiRequest,
+) (res *payload.Object_Locations, err error) {
 	_, span := trace.StartSpan(ctx, apiName+".MultiUpdate")
 	defer func() {
 		if span != nil {
@@ -1166,7 +1184,10 @@ func (s *server) StreamUpsert(stream vald.Upsert_StreamUpsertServer) (err error)
 	return nil
 }
 
-func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequest) (res *payload.Object_Locations, err error) {
+func (s *server) MultiUpsert(
+	ctx context.Context,
+	reqs *payload.Upsert_MultiRequest,
+) (res *payload.Object_Locations, err error) {
 	ctx, span := trace.StartSpan(ctx, apiName+".MultiUpsert")
 	defer func() {
 		if span != nil {
@@ -1422,7 +1443,10 @@ func (s *server) StreamRemove(stream vald.Remove_StreamRemoveServer) (err error)
 	return nil
 }
 
-func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequest) (res *payload.Object_Locations, err error) {
+func (s *server) MultiRemove(
+	ctx context.Context,
+	reqs *payload.Remove_MultiRequest,
+) (res *payload.Object_Locations, err error) {
 	ctx, span := trace.StartSpan(ctx, apiName+".MultiRemove")
 	defer func() {
 		if span != nil {
@@ -1588,7 +1612,9 @@ func (s *server) CreateIndex(ctx context.Context, c *payload.Control_CreateIndex
 	err = s.ngt.CreateIndex(ctx, c.GetPoolSize())
 	if err != nil {
 		if err == errors.ErrUncommittedIndexNotFound {
-			err = status.WrapWithFailedPrecondition(fmt.Sprintf("CreateIndex API failed to create indexes pool_size = %d", c.GetPoolSize()), err,
+			err = status.WrapWithFailedPrecondition(
+				fmt.Sprintf("CreateIndex API failed to create indexes pool_size = %d", c.GetPoolSize()),
+				err,
 				&errdetails.RequestInfo{
 					ServingData: errdetails.Serialize(c),
 				},
@@ -1603,20 +1629,26 @@ func (s *server) CreateIndex(ctx context.Context, c *payload.Control_CreateIndex
 							Subject: "failed to CreateIndex operation caused by empty uncommited indices",
 						},
 					},
-				}, info.Get())
+				},
+				info.Get(),
+			)
 			if span != nil {
 				span.SetStatus(trace.StatusCodeFailedPrecondition(err.Error()))
 			}
 			return nil, err
 		}
-		err = status.WrapWithInternal(fmt.Sprintf("CreateIndex API failed to create indexes pool_size = %d", c.GetPoolSize()), err,
+		err = status.WrapWithInternal(
+			fmt.Sprintf("CreateIndex API failed to create indexes pool_size = %d", c.GetPoolSize()),
+			err,
 			&errdetails.RequestInfo{
 				ServingData: errdetails.Serialize(c),
 			},
 			&errdetails.ResourceInfo{
 				ResourceType: ngtResourceType + "/ngt.CreateIndex",
 				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-			}, info.Get())
+			},
+			info.Get(),
+		)
 		log.Error(err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))
@@ -1650,7 +1682,10 @@ func (s *server) SaveIndex(ctx context.Context, _ *payload.Empty) (res *payload.
 	return res, nil
 }
 
-func (s *server) CreateAndSaveIndex(ctx context.Context, c *payload.Control_CreateIndexRequest) (res *payload.Empty, err error) {
+func (s *server) CreateAndSaveIndex(
+	ctx context.Context,
+	c *payload.Control_CreateIndexRequest,
+) (res *payload.Empty, err error) {
 	ctx, span := trace.StartSpan(ctx, apiName+".CreateAndSaveIndex")
 	defer func() {
 		if span != nil {
@@ -1661,7 +1696,9 @@ func (s *server) CreateAndSaveIndex(ctx context.Context, c *payload.Control_Crea
 	err = s.ngt.CreateAndSaveIndex(ctx, c.GetPoolSize())
 	if err != nil {
 		if err == errors.ErrUncommittedIndexNotFound {
-			err = status.WrapWithFailedPrecondition(fmt.Sprintf("CreateAndSaveIndex API failed to create indexes pool_size = %d", c.GetPoolSize()), err,
+			err = status.WrapWithFailedPrecondition(
+				fmt.Sprintf("CreateAndSaveIndex API failed to create indexes pool_size = %d", c.GetPoolSize()),
+				err,
 				&errdetails.RequestInfo{
 					ServingData: errdetails.Serialize(c),
 				},
@@ -1676,20 +1713,26 @@ func (s *server) CreateAndSaveIndex(ctx context.Context, c *payload.Control_Crea
 							Subject: "failed to CreateAndSaveIndex operation caused by empty uncommited indices",
 						},
 					},
-				}, info.Get())
+				},
+				info.Get(),
+			)
 			if span != nil {
 				span.SetStatus(trace.StatusCodeFailedPrecondition(err.Error()))
 			}
 			return nil, err
 		}
-		err = status.WrapWithInternal(fmt.Sprintf("CreateAndSaveIndex API failed to create indexes pool_size = %d", c.GetPoolSize()), err,
+		err = status.WrapWithInternal(
+			fmt.Sprintf("CreateAndSaveIndex API failed to create indexes pool_size = %d", c.GetPoolSize()),
+			err,
 			&errdetails.RequestInfo{
 				ServingData: errdetails.Serialize(c),
 			},
 			&errdetails.ResourceInfo{
 				ResourceType: ngtResourceType + "/ngt.CreateAndSaveIndex",
 				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-			}, info.Get())
+			},
+			info.Get(),
+		)
 		log.Error(err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInternal(err.Error()))

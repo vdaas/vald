@@ -133,7 +133,15 @@ func Data(name string) func() (Dataset, error) {
 	case "kosarak":
 		return loadSmallData("kosarak-jaccard.hdf5", name, "jaccard", "float")
 	case "sift1b":
-		return loadLargeData("bigann_base.bvecs", "bigann_query.bvecs", "gnd/idx_1000M.ivecs", "gnd/dis_1000M.fvecs", name, "l2", "uint8")
+		return loadLargeData(
+			"bigann_base.bvecs",
+			"bigann_query.bvecs",
+			"gnd/idx_1000M.ivecs",
+			"gnd/dis_1000M.fvecs",
+			name,
+			"l2",
+			"uint8",
+		)
 	case "deep1b":
 		return loadLargeData("deep1B_base.fvecs", "deep1B_query.fvecs", "deep1B_groundtruth.ivecs", "", name, "l2", "float")
 	}

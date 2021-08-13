@@ -208,13 +208,17 @@ func (l *loader) do(ctx context.Context, f func(interface{}, error), notify func
 					err = nil
 				}
 			}()
-			_, err = l.client.Do(egctx, l.addr, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
-				st, err := l.loaderFunc(ctx, conn, nil, copts...)
-				if err != nil {
-					return nil, err
-				}
-				return nil, grpc.BidirectionalStreamClient(st.(grpc.ClientStream), l.dataProvider, newData, f)
-			})
+			_, err = l.client.Do(
+				egctx,
+				l.addr,
+				func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
+					st, err := l.loaderFunc(ctx, conn, nil, copts...)
+					if err != nil {
+						return nil, err
+					}
+					return nil, grpc.BidirectionalStreamClient(st.(grpc.ClientStream), l.dataProvider, newData, f)
+				},
+			)
 			return err
 		}))
 		err = eg.Wait()
@@ -232,11 +236,15 @@ func (l *loader) do(ctx context.Context, f func(interface{}, error), notify func
 					notify(egctx, err)
 					err = nil
 				}()
-				_, err = l.client.Do(egctx, l.addr, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
-					res, err := l.loaderFunc(egctx, conn, r)
-					f(res, err)
-					return res, err
-				})
+				_, err = l.client.Do(
+					egctx,
+					l.addr,
+					func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
+						res, err := l.loaderFunc(egctx, conn, r)
+						f(res, err)
+						return res, err
+					},
+				)
 
 				return err
 			}))

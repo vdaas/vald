@@ -21,26 +21,26 @@ import "encoding/base64"
 
 // Tensorflow represent the Tensorflow converter core configuration for server.
 type Tensorflow struct {
-	SessionOption         *SessionOption `json:"session_option,omitempty" yaml:"session_option"`
-	ExportPath            string         `json:"export_path,omitempty" yaml:"export_path"`
-	Tags                  []string       `json:"tags,omitempty" yaml:"tags"`
-	Feeds                 []*OutputSpec  `json:"feeds,omitempty" yaml:"feeds"`
-	FeedsMap              map[string]int `json:"-" yaml:"-"`
-	Fetches               []*OutputSpec  `json:"fetches,omitempty" yaml:"fetches"`
-	FetchesMap            map[string]int `json:"-" yaml:"-"`
-	WarmupInputs          []string       `json:"warmup_inputs,omitempty" yaml:"warmup_inputs"`
+	SessionOption         *SessionOption `json:"session_option,omitempty"          yaml:"session_option"`
+	ExportPath            string         `json:"export_path,omitempty"             yaml:"export_path"`
+	Tags                  []string       `json:"tags,omitempty"                    yaml:"tags"`
+	Feeds                 []*OutputSpec  `json:"feeds,omitempty"                   yaml:"feeds"`
+	FeedsMap              map[string]int `json:"-"                                 yaml:"-"`
+	Fetches               []*OutputSpec  `json:"fetches,omitempty"                 yaml:"fetches"`
+	FetchesMap            map[string]int `json:"-"                                 yaml:"-"`
+	WarmupInputs          []string       `json:"warmup_inputs,omitempty"           yaml:"warmup_inputs"`
 	ResultNestedDimension uint8          `json:"result_nested_dimension,omitempty" yaml:"result_nested_dimension"`
 }
 
 type SessionOption struct {
-	Target       string `json:"target,omitempty" yaml:"target"`
+	Target       string `json:"target,omitempty"        yaml:"target"`
 	Base64Config string `json:"base64_config,omitempty" yaml:"base64_config"`
-	Config       []byte `json:"-" yaml:"-"`
+	Config       []byte `json:"-"                       yaml:"-"`
 }
 
 type OutputSpec struct {
 	OperationName string `json:"operation_name,omitempty" yaml:"operation_name"`
-	OutputIndex   int    `json:"output_index,omitempty" yaml:"output_index"`
+	OutputIndex   int    `json:"output_index,omitempty"   yaml:"output_index"`
 }
 
 // Bind returns Tensorflow object whose some string value is filed value or environment value.

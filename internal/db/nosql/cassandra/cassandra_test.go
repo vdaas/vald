@@ -571,7 +571,10 @@ func TestNew(t *testing.T) {
 						ReconnectionPolicy: &gocql.ExponentialReconnectionPolicy{},
 						PoolConfig: gocql.PoolConfig{
 							HostSelectionPolicy: func() gocql.HostSelectionPolicy {
-								return gocql.TokenAwareHostPolicy(gocql.RoundRobinHostPolicy(), gocql.NonLocalReplicasFallback())
+								return gocql.TokenAwareHostPolicy(
+									gocql.RoundRobinHostPolicy(),
+									gocql.NonLocalReplicasFallback(),
+								)
 							}(),
 						},
 
@@ -651,7 +654,11 @@ func TestNew(t *testing.T) {
 						ReconnectionPolicy: &gocql.ExponentialReconnectionPolicy{},
 						PoolConfig: gocql.PoolConfig{
 							HostSelectionPolicy: func() gocql.HostSelectionPolicy {
-								return gocql.TokenAwareHostPolicy(gocql.RoundRobinHostPolicy(), gocql.ShuffleReplicas(), gocql.NonLocalReplicasFallback())
+								return gocql.TokenAwareHostPolicy(
+									gocql.RoundRobinHostPolicy(),
+									gocql.ShuffleReplicas(),
+									gocql.NonLocalReplicasFallback(),
+								)
 							}(),
 						},
 
@@ -1282,7 +1289,9 @@ func Test_client_Open(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt, append(goleakIgnoreOptions, goleak.IgnoreTopFunction("github.com/gocql/gocql.(*eventDebouncer).flusher"))...)
+			defer goleak.VerifyNone(
+				tt,
+				append(goleakIgnoreOptions, goleak.IgnoreTopFunction("github.com/gocql/gocql.(*eventDebouncer).flusher"))...)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}

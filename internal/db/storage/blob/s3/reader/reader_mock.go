@@ -35,7 +35,11 @@ type MockS3API struct {
 }
 
 // GetObjectWithContext calls GetObjectWithContextFunc.
-func (m *MockS3API) GetObjectWithContext(ctx aws.Context, in *s3.GetObjectInput, opts ...request.Option) (*s3.GetObjectOutput, error) {
+func (m *MockS3API) GetObjectWithContext(
+	ctx aws.Context,
+	in *s3.GetObjectInput,
+	opts ...request.Option,
+) (*s3.GetObjectOutput, error) {
 	return m.GetObjectWithContextFunc(ctx, in, opts...)
 }
 

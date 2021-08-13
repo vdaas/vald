@@ -181,7 +181,11 @@ func TestNew(t *testing.T) {
 				},
 			},
 			want: want{
-				err: errors.NewErrCriticalOption("dimension", 1, errors.ErrInvalidDimensionSize(1, ngtVectorDimensionSizeLimit)),
+				err: errors.NewErrCriticalOption(
+					"dimension",
+					1,
+					errors.ErrInvalidDimensionSize(1, ngtVectorDimensionSizeLimit),
+				),
 			},
 		},
 	}
@@ -785,7 +789,11 @@ func Test_gen(t *testing.T) {
 				},
 			},
 			want: want{
-				err: errors.NewErrCriticalOption("dimension", 1, errors.ErrInvalidDimensionSize(1, ngtVectorDimensionSizeLimit)),
+				err: errors.NewErrCriticalOption(
+					"dimension",
+					1,
+					errors.ErrInvalidDimensionSize(1, ngtVectorDimensionSizeLimit),
+				),
 			},
 		},
 	}
@@ -2528,8 +2536,12 @@ func Test_ngt_BulkInsert(t *testing.T) {
 			want: want{
 				want: []uint{1, 2},
 				want1: []error{
-					errors.New("bulkinsert error detected index number: 2,	id: 0: incompatible dimension size detected	requested: 8,	configured: 9"),
-					errors.New("bulkinsert error detected index number: 3,	id: 0: incompatible dimension size detected	requested: 10,	configured: 9"),
+					errors.New(
+						"bulkinsert error detected index number: 2,	id: 0: incompatible dimension size detected	requested: 8,	configured: 9",
+					),
+					errors.New(
+						"bulkinsert error detected index number: 3,	id: 0: incompatible dimension size detected	requested: 10,	configured: 9",
+					),
 				},
 			},
 		},
@@ -2616,8 +2628,12 @@ func Test_ngt_BulkInsert(t *testing.T) {
 			want: want{
 				want: []uint{1, 2},
 				want1: []error{
-					errors.New("bulkinsert error detected index number: 2,	id: 0: incompatible dimension size detected	requested: 8,	configured: 9"),
-					errors.New("bulkinsert error detected index number: 3,	id: 0: incompatible dimension size detected	requested: 10,	configured: 9"),
+					errors.New(
+						"bulkinsert error detected index number: 2,	id: 0: incompatible dimension size detected	requested: 8,	configured: 9",
+					),
+					errors.New(
+						"bulkinsert error detected index number: 3,	id: 0: incompatible dimension size detected	requested: 10,	configured: 9",
+					),
 				},
 			},
 		},
@@ -2821,8 +2837,12 @@ func Test_ngt_BulkInsertCommit(t *testing.T) {
 			want: want{
 				want: []uint{1, 2},
 				want1: []error{
-					errors.New("bulkinsert error detected index number: 2,	id: 0: incompatible dimension size detected	requested: 8,	configured: 9"),
-					errors.New("bulkinsert error detected index number: 3,	id: 0: incompatible dimension size detected	requested: 10,	configured: 9"),
+					errors.New(
+						"bulkinsert error detected index number: 2,	id: 0: incompatible dimension size detected	requested: 8,	configured: 9",
+					),
+					errors.New(
+						"bulkinsert error detected index number: 3,	id: 0: incompatible dimension size detected	requested: 10,	configured: 9",
+					),
 				},
 			},
 		},
@@ -2909,8 +2929,12 @@ func Test_ngt_BulkInsertCommit(t *testing.T) {
 			want: want{
 				want: []uint{1, 2},
 				want1: []error{
-					errors.New("bulkinsert error detected index number: 2,	id: 0: incompatible dimension size detected	requested: 8,	configured: 9"),
-					errors.New("bulkinsert error detected index number: 3,	id: 0: incompatible dimension size detected	requested: 10,	configured: 9"),
+					errors.New(
+						"bulkinsert error detected index number: 2,	id: 0: incompatible dimension size detected	requested: 8,	configured: 9",
+					),
+					errors.New(
+						"bulkinsert error detected index number: 3,	id: 0: incompatible dimension size detected	requested: 10,	configured: 9",
+					),
 				},
 			},
 		},

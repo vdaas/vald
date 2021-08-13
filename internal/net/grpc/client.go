@@ -384,7 +384,11 @@ func (g *gRPCClient) OrderedRange(ctx context.Context,
 			p, ok := g.conns.Load(addr)
 			if !ok || p == nil {
 				g.crl.Store(addr, true)
-				log.Warnf("gRPCClient.OrderedRange operation failed, grpc pool connection for %s is invalid,\terror: %v", addr, errors.ErrGRPCClientConnNotFound(addr))
+				log.Warnf(
+					"gRPCClient.OrderedRange operation failed, grpc pool connection for %s is invalid,\terror: %v",
+					addr,
+					errors.ErrGRPCClientConnNotFound(addr),
+				)
 				continue
 			}
 			ssctx, span := trace.StartSpan(sctx, apiName+"/Client.OrderedRange/"+addr)
@@ -402,8 +406,12 @@ func (g *gRPCClient) OrderedRange(ctx context.Context,
 	return nil
 }
 
-func (g *gRPCClient) OrderedRangeConcurrent(ctx context.Context,
-	orders []string, concurrency int, f func(ctx context.Context, addr string, conn *ClientConn, copts ...CallOption) error) (rerr error) {
+func (g *gRPCClient) OrderedRangeConcurrent(
+	ctx context.Context,
+	orders []string,
+	concurrency int,
+	f func(ctx context.Context, addr string, conn *ClientConn, copts ...CallOption) error,
+) (rerr error) {
 	sctx, span := trace.StartSpan(ctx, apiName+"/Client.OrderedRangeConcurrent")
 	defer func() {
 		if span != nil {
@@ -422,7 +430,11 @@ func (g *gRPCClient) OrderedRangeConcurrent(ctx context.Context,
 			p, ok := g.conns.Load(addr)
 			if !ok || p == nil {
 				g.crl.Store(addr, true)
-				log.Warnf("gRPCClient.OrderedRangeConcurrent operation failed, grpc pool connection for %s is invalid,\terror: %v", addr, errors.ErrGRPCClientConnNotFound(addr))
+				log.Warnf(
+					"gRPCClient.OrderedRangeConcurrent operation failed, grpc pool connection for %s is invalid,\terror: %v",
+					addr,
+					errors.ErrGRPCClientConnNotFound(addr),
+				)
 				return nil
 			}
 			ssctx, sspan := trace.StartSpan(sctx, apiName+"/Client.OrderedRangeConcurrent/"+addr)
@@ -612,7 +624,12 @@ func (g *gRPCClient) Connect(ctx context.Context, addr string, dopts ...DialOpti
 				g.atomicAddrs.Add(addr)
 				return conn, nil
 			}
-			log.Warnf("failed to reconnect unhealthy pool addr= %s\tconn= %v\terror= %v\t trying to disconnect", addr, conn, err)
+			log.Warnf(
+				"failed to reconnect unhealthy pool addr= %s\tconn= %v\terror= %v\t trying to disconnect",
+				addr,
+				conn,
+				err,
+			)
 			err = g.Disconnect(ctx, addr)
 			if err != nil {
 				log.Warnf("failed to disconnect unhealthy pool addr= %s\terror= %s", addr, err.Error())

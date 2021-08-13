@@ -137,9 +137,12 @@ func TestGet(t *testing.T) {
 		{
 			name: "return detail with initialized runtime information",
 			beforeFunc: func() {
-				infoProvider, _ = New(WithServerName(""), WithRuntimeCaller(func(skip int) (pc uintptr, file string, line int, ok bool) {
-					return uintptr(0), "", 0, false
-				}))
+				infoProvider, _ = New(
+					WithServerName(""),
+					WithRuntimeCaller(func(skip int) (pc uintptr, file string, line int, ok bool) {
+						return uintptr(0), "", 0, false
+					}),
+				)
 			},
 			afterFunc: func() {
 				once = sync.Once{}
@@ -920,7 +923,9 @@ func Test_info_Get(t *testing.T) {
 					rtCaller: func(skip int) (pc uintptr, file string, line int, ok bool) {
 						if i == 0 {
 							i++
-							return uintptr(0), "/tmp/go/pkg/mod/github.com/vdaas@v0.0.0-20171023180738-a3a6125de932/vald/internal/info_test.go", 100, true
+							return uintptr(
+								0,
+							), "/tmp/go/pkg/mod/github.com/vdaas@v0.0.0-20171023180738-a3a6125de932/vald/internal/info_test.go", 100, true
 						}
 						return uintptr(1), "info_test.go", 100, false
 					},
@@ -959,7 +964,9 @@ func Test_info_Get(t *testing.T) {
 					rtCaller: func(skip int) (pc uintptr, file string, line int, ok bool) {
 						if i == 0 {
 							i++
-							return uintptr(0), "/tmp/go/pkg/mod/github.com/vdaas@v0.0.0-20171023180738-a3a6125de932-a843423387/vald/internal/info_test.go", 100, true
+							return uintptr(
+								0,
+							), "/tmp/go/pkg/mod/github.com/vdaas@v0.0.0-20171023180738-a3a6125de932-a843423387/vald/internal/info_test.go", 100, true
 						}
 						return uintptr(1), "info_test.go", 100, false
 					},

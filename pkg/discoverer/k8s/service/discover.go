@@ -182,10 +182,12 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 				return ctx.Err()
 			case <-dt.C:
 				var (
-					podsByNode      = make(map[string]map[string]map[string][]*payload.Info_Pod) // map[node][namespace][name][]pod
-					podsByNamespace = make(map[string]map[string][]*payload.Info_Pod)            // map[namespace][name][]pod
-					podsByName      = make(map[string][]*payload.Info_Pod)                       // map[name][]pod
-					nodeByName      = make(map[string]*payload.Info_Node)                        // map[name]node
+					podsByNode = make(
+						map[string]map[string]map[string][]*payload.Info_Pod,
+					) // map[node][namespace][name][]pod
+					podsByNamespace = make(map[string]map[string][]*payload.Info_Pod) // map[namespace][name][]pod
+					podsByName      = make(map[string][]*payload.Info_Pod)            // map[name][]pod
+					nodeByName      = make(map[string]*payload.Info_Node)             // map[name]node
 				)
 
 				d.nodes.Range(func(nodeName string, n *node.Node) bool {
@@ -275,7 +277,10 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 								if !ok {
 									podsByName[appName] = make([]*payload.Info_Pod, 0, len(pods))
 								}
-								podsByNode[p.NodeName][p.Namespace][appName] = append(podsByNode[p.NodeName][p.Namespace][appName], pi)
+								podsByNode[p.NodeName][p.Namespace][appName] = append(
+									podsByNode[p.NodeName][p.Namespace][appName],
+									pi,
+								)
 								podsByNamespace[p.Namespace][appName] = append(podsByNamespace[p.Namespace][appName], pi)
 								podsByName[appName] = append(podsByName[appName], pi)
 							}

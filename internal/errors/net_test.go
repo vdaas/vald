@@ -132,7 +132,11 @@ func TestErrInvalidDNSConfig(t *testing.T) {
 				dnsCacheExp:   time.Duration(math.MinInt64),
 			},
 			want: want{
-				want: Errorf("dnsRefreshDuration  > dnsCacheExp, %s, %s", time.Duration(math.MinInt64), time.Duration(math.MinInt64)),
+				want: Errorf(
+					"dnsRefreshDuration  > dnsCacheExp, %s, %s",
+					time.Duration(math.MinInt64),
+					time.Duration(math.MinInt64),
+				),
 			},
 		},
 		{
@@ -142,7 +146,11 @@ func TestErrInvalidDNSConfig(t *testing.T) {
 				dnsCacheExp:   time.Duration(math.MaxInt64),
 			},
 			want: want{
-				want: Errorf("dnsRefreshDuration  > dnsCacheExp, %s, %s", time.Duration(math.MaxInt64), time.Duration(math.MaxInt64)),
+				want: Errorf(
+					"dnsRefreshDuration  > dnsCacheExp, %s, %s",
+					time.Duration(math.MaxInt64),
+					time.Duration(math.MaxInt64),
+				),
 			},
 		},
 	}

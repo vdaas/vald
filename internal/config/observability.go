@@ -19,23 +19,23 @@ package config
 
 // Observability represents the configuration for the observability.
 type Observability struct {
-	Enabled     bool         `json:"enabled" yaml:"enabled"`
-	Collector   *Collector   `json:"collector" yaml:"collector"`
-	Trace       *Trace       `json:"trace" yaml:"trace"`
-	Prometheus  *Prometheus  `json:"prometheus" yaml:"prometheus"`
-	Jaeger      *Jaeger      `json:"jaeger" yaml:"jaeger"`
+	Enabled     bool         `json:"enabled"     yaml:"enabled"`
+	Collector   *Collector   `json:"collector"   yaml:"collector"`
+	Trace       *Trace       `json:"trace"       yaml:"trace"`
+	Prometheus  *Prometheus  `json:"prometheus"  yaml:"prometheus"`
+	Jaeger      *Jaeger      `json:"jaeger"      yaml:"jaeger"`
 	Stackdriver *Stackdriver `json:"stackdriver" yaml:"stackdriver"`
 }
 
 // Collector represents the configuration for the collector.
 type Collector struct {
 	Duration string   `json:"duration" yaml:"duration"`
-	Metrics  *Metrics `json:"metrics" yaml:"metrics"`
+	Metrics  *Metrics `json:"metrics"  yaml:"metrics"`
 }
 
 // Trace represents the configuration for the trace.
 type Trace struct {
-	Enabled      bool    `json:"enabled" yaml:"enabled"`
+	Enabled      bool    `json:"enabled"       yaml:"enabled"`
 	SamplingRate float64 `json:"sampling_rate" yaml:"sampling_rate"`
 }
 
@@ -43,15 +43,15 @@ type Trace struct {
 type Metrics struct {
 	EnableVersionInfo bool     `json:"enable_version_info" yaml:"enable_version_info"`
 	VersionInfoLabels []string `json:"version_info_labels" yaml:"version_info_labels"`
-	EnableMemory      bool     `json:"enable_memory" yaml:"enable_memory"`
-	EnableGoroutine   bool     `json:"enable_goroutine" yaml:"enable_goroutine"`
-	EnableCGO         bool     `json:"enable_cgo" yaml:"enable_cgo"`
+	EnableMemory      bool     `json:"enable_memory"       yaml:"enable_memory"`
+	EnableGoroutine   bool     `json:"enable_goroutine"    yaml:"enable_goroutine"`
+	EnableCGO         bool     `json:"enable_cgo"          yaml:"enable_cgo"`
 }
 
 // Prometheus represents the configuration for the prometheus.
 type Prometheus struct {
-	Enabled   bool   `json:"enabled" yaml:"enabled"`
-	Endpoint  string `json:"endpoint" yaml:"endpoint"`
+	Enabled   bool   `json:"enabled"   yaml:"enabled"`
+	Endpoint  string `json:"endpoint"  yaml:"endpoint"`
 	Namespace string `json:"namespace" yaml:"namespace"`
 }
 
@@ -60,7 +60,7 @@ type Jaeger struct {
 	Enabled bool `json:"enabled" yaml:"enabled"`
 
 	CollectorEndpoint string `json:"collector_endpoint" yaml:"collector_endpoint"`
-	AgentEndpoint     string `json:"agent_endpoint" yaml:"agent_endpoint"`
+	AgentEndpoint     string `json:"agent_endpoint"     yaml:"agent_endpoint"`
 
 	Username string `json:"username" yaml:"username"`
 	Password string `json:"password" yaml:"password"`
@@ -82,48 +82,48 @@ type Stackdriver struct {
 
 // StackdriverClient represents the configuration for the client of stackdriver.
 type StackdriverClient struct {
-	APIKey                string   `json:"api_key" yaml:"api_key"`
-	Audiences             []string `json:"audiences" yaml:"audiences"`
-	CredentialsFile       string   `json:"credentials_file" yaml:"credentials_file"`
-	CredentialsJSON       string   `json:"credentials_json" yaml:"credentials_json"`
-	Endpoint              string   `json:"endpoint" yaml:"endpoint"`
-	QuotaProject          string   `json:"quota_project" yaml:"quota_project"`
-	RequestReason         string   `json:"request_reason" yaml:"request_reason"`
-	Scopes                []string `json:"scopes" yaml:"scopes"`
-	UserAgent             string   `json:"user_agent" yaml:"user_agent"`
-	TelemetryEnabled      bool     `json:"telemetry_enabled" yaml:"telemetry_enabled"`
+	APIKey                string   `json:"api_key"                yaml:"api_key"`
+	Audiences             []string `json:"audiences"              yaml:"audiences"`
+	CredentialsFile       string   `json:"credentials_file"       yaml:"credentials_file"`
+	CredentialsJSON       string   `json:"credentials_json"       yaml:"credentials_json"`
+	Endpoint              string   `json:"endpoint"               yaml:"endpoint"`
+	QuotaProject          string   `json:"quota_project"          yaml:"quota_project"`
+	RequestReason         string   `json:"request_reason"         yaml:"request_reason"`
+	Scopes                []string `json:"scopes"                 yaml:"scopes"`
+	UserAgent             string   `json:"user_agent"             yaml:"user_agent"`
+	TelemetryEnabled      bool     `json:"telemetry_enabled"      yaml:"telemetry_enabled"`
 	AuthenticationEnabled bool     `json:"authentication_enabled" yaml:"authentication_enabled"`
 }
 
 // StackdriverExporter represents the configuration for the exporter of stackdriver.
 type StackdriverExporter struct {
 	MonitoringEnabled bool `json:"monitoring_enabled" yaml:"monitoring_enabled"`
-	TracingEnabled    bool `json:"tracing_enabled" yaml:"tracing_enabled"`
+	TracingEnabled    bool `json:"tracing_enabled"    yaml:"tracing_enabled"`
 
-	Location                 string `json:"location" yaml:"location"`
-	BundleDelayThreshold     string `json:"bundle_delay_threshold" yaml:"bundle_delay_threshold"`
-	BundleCountThreshold     int    `json:"bundle_count_threshold" yaml:"bundle_count_threshold"`
+	Location                 string `json:"location"                     yaml:"location"`
+	BundleDelayThreshold     string `json:"bundle_delay_threshold"       yaml:"bundle_delay_threshold"`
+	BundleCountThreshold     int    `json:"bundle_count_threshold"       yaml:"bundle_count_threshold"`
 	TraceSpansBufferMaxBytes int    `json:"trace_spans_buffer_max_bytes" yaml:"trace_spans_buffer_max_bytes"`
 
 	MetricPrefix string `json:"metric_prefix" yaml:"metric_prefix"`
 
-	SkipCMD           bool   `json:"skip_cmd" yaml:"skip_cmd"`
-	Timeout           string `json:"timeout" yaml:"timeout"`
+	SkipCMD           bool   `json:"skip_cmd"           yaml:"skip_cmd"`
+	Timeout           string `json:"timeout"            yaml:"timeout"`
 	ReportingInterval string `json:"reporting_interval" yaml:"reporting_interval"`
-	NumberOfWorkers   int    `json:"number_of_workers" yaml:"number_of_workers"`
+	NumberOfWorkers   int    `json:"number_of_workers"  yaml:"number_of_workers"`
 }
 
 // StackdriverProfiler represents the configuration for the profiler of stackdriver.
 type StackdriverProfiler struct {
-	Enabled        bool   `json:"enabled" yaml:"enabled"`
-	Service        string `json:"service" yaml:"service"`
+	Enabled        bool   `json:"enabled"         yaml:"enabled"`
+	Service        string `json:"service"         yaml:"service"`
 	ServiceVersion string `json:"service_version" yaml:"service_version"`
-	DebugLogging   bool   `json:"debug_logging" yaml:"debug_logging"`
+	DebugLogging   bool   `json:"debug_logging"   yaml:"debug_logging"`
 
-	MutexProfiling     bool `json:"mutex_profiling" yaml:"mutex_profiling"`
-	CPUProfiling       bool `json:"cpu_profiling" yaml:"cpu_profiling"`
-	AllocProfiling     bool `json:"alloc_profiling" yaml:"alloc_profiling"`
-	HeapProfiling      bool `json:"heap_profiling" yaml:"heap_profiling"`
+	MutexProfiling     bool `json:"mutex_profiling"     yaml:"mutex_profiling"`
+	CPUProfiling       bool `json:"cpu_profiling"       yaml:"cpu_profiling"`
+	AllocProfiling     bool `json:"alloc_profiling"     yaml:"alloc_profiling"`
+	HeapProfiling      bool `json:"heap_profiling"      yaml:"heap_profiling"`
 	GoroutineProfiling bool `json:"goroutine_profiling" yaml:"goroutine_profiling"`
 
 	AllocForceGC bool `json:"alloc_force_gc" yaml:"alloc_force_gc"`
@@ -131,7 +131,7 @@ type StackdriverProfiler struct {
 	APIAddr string `json:"api_addr" yaml:"api_addr"`
 
 	Instance string `json:"instance" yaml:"instance"`
-	Zone     string `json:"zone" yaml:"zone"`
+	Zone     string `json:"zone"     yaml:"zone"`
 }
 
 // Bind binds the actual data from the Observability receiver fields.

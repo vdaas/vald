@@ -116,7 +116,11 @@ func BidirectionalStream(ctx context.Context, stream ServerStream,
 					if err != nil {
 						runtime.Gosched()
 						errMap.Store(err.Error(), err)
-						st, msg, err := status.ParseError(err, codes.Internal, fmt.Sprintf("failed to parse BidirectionalStream id= %020d gRPC error response", id))
+						st, msg, err := status.ParseError(
+							err,
+							codes.Internal,
+							fmt.Sprintf("failed to parse BidirectionalStream id= %020d gRPC error response", id),
+						)
 						if sspan != nil {
 							sspan.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
 						}
@@ -130,11 +134,15 @@ func BidirectionalStream(ctx context.Context, stream ServerStream,
 						mu.Unlock()
 						if err != nil {
 							runtime.Gosched()
-							st, msg, err := status.ParseError(err, codes.Internal, fmt.Sprintf("failed to parse BidirectionalStream.SendMsg id= %020d gRPC error response", id),
+							st, msg, err := status.ParseError(
+								err,
+								codes.Internal,
+								fmt.Sprintf("failed to parse BidirectionalStream.SendMsg id= %020d gRPC error response", id),
 								&errdetails.RequestInfo{
 									RequestId:   fmt.Sprintf("%s/BidirectionalStream/stream-%020d/SendMsg", apiName, id),
 									ServingData: errdetails.Serialize(res),
-								})
+								},
+							)
 							if sspan != nil {
 								sspan.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
 							}

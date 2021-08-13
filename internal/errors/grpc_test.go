@@ -137,7 +137,9 @@ func TestErrInvalidGRPCPort(t *testing.T) {
 				port: 8080,
 			},
 			want: want{
-				want: New("invalid gRPC client connection port to addr: 127.0.0.1,\thost: gateway.default.svc.cluster.local\t port: 8080"),
+				want: New(
+					"invalid gRPC client connection port to addr: 127.0.0.1,\thost: gateway.default.svc.cluster.local\t port: 8080",
+				),
 			},
 		},
 		{
@@ -148,7 +150,9 @@ func TestErrInvalidGRPCPort(t *testing.T) {
 				port: 8080,
 			},
 			want: want{
-				want: New("invalid gRPC client connection port to addr: ,\thost: gateway.default.svc.cluster.local\t port: 8080"),
+				want: New(
+					"invalid gRPC client connection port to addr: ,\thost: gateway.default.svc.cluster.local\t port: 8080",
+				),
 			},
 		},
 		{
@@ -170,7 +174,9 @@ func TestErrInvalidGRPCPort(t *testing.T) {
 				port: 0,
 			},
 			want: want{
-				want: New("invalid gRPC client connection port to addr: 127.0.0.1,\thost: gateway.default.svc.cluster.local\t port: 0"),
+				want: New(
+					"invalid gRPC client connection port to addr: 127.0.0.1,\thost: gateway.default.svc.cluster.local\t port: 0",
+				),
 			},
 		},
 		{
@@ -181,7 +187,9 @@ func TestErrInvalidGRPCPort(t *testing.T) {
 				port: 1,
 			},
 			want: want{
-				want: New("invalid gRPC client connection port to addr: 127.0.0.1,\thost: gateway.default.svc.cluster.local\t port: 1"),
+				want: New(
+					"invalid gRPC client connection port to addr: 127.0.0.1,\thost: gateway.default.svc.cluster.local\t port: 1",
+				),
 			},
 		},
 		{
@@ -192,7 +200,10 @@ func TestErrInvalidGRPCPort(t *testing.T) {
 				port: math.MaxUint16,
 			},
 			want: want{
-				want: Errorf("invalid gRPC client connection port to addr: 127.0.0.1,\thost: gateway.default.svc.cluster.local\t port: %d", math.MaxUint16),
+				want: Errorf(
+					"invalid gRPC client connection port to addr: 127.0.0.1,\thost: gateway.default.svc.cluster.local\t port: %d",
+					math.MaxUint16,
+				),
 			},
 		},
 		{
@@ -203,7 +214,10 @@ func TestErrInvalidGRPCPort(t *testing.T) {
 				port: math.MaxUint16 - 1,
 			},
 			want: want{
-				want: Errorf("invalid gRPC client connection port to addr: 127.0.0.1,\thost: gateway.default.svc.cluster.local\t port: %d", math.MaxUint16-1),
+				want: Errorf(
+					"invalid gRPC client connection port to addr: 127.0.0.1,\thost: gateway.default.svc.cluster.local\t port: %d",
+					math.MaxUint16-1,
+				),
 			},
 		},
 	}

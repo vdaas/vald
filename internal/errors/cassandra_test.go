@@ -692,7 +692,9 @@ func TestErrCassandraFailedToCreateSession(t *testing.T) {
 				cqlVersion: "3.0.0",
 			},
 			want: want{
-				want: New("error cassandra client failed to create session to hosts: [vald-cassandra-01.dev.com vald-cassandra-02.dev.com]\tport: 9042\tcql_version: 3.0.0 : database error"),
+				want: New(
+					"error cassandra client failed to create session to hosts: [vald-cassandra-01.dev.com vald-cassandra-02.dev.com]\tport: 9042\tcql_version: 3.0.0 : database error",
+				),
 			},
 		},
 		{
@@ -706,7 +708,9 @@ func TestErrCassandraFailedToCreateSession(t *testing.T) {
 				cqlVersion: "3.0.0",
 			},
 			want: want{
-				want: New("error cassandra client failed to create session to hosts: [vald-cassandra-01.dev.com vald-cassandra-02.dev.com]\tport: 9042\tcql_version: 3.0.0 "),
+				want: New(
+					"error cassandra client failed to create session to hosts: [vald-cassandra-01.dev.com vald-cassandra-02.dev.com]\tport: 9042\tcql_version: 3.0.0 ",
+				),
 			},
 		},
 		{
@@ -720,7 +724,9 @@ func TestErrCassandraFailedToCreateSession(t *testing.T) {
 				cqlVersion: "3.0.0",
 			},
 			want: want{
-				want: New("error cassandra client failed to create session to hosts: [vald-cassandra-01.dev.com vald-cassandra-02.dev.com]\tport: 0\tcql_version: 3.0.0 : database error"),
+				want: New(
+					"error cassandra client failed to create session to hosts: [vald-cassandra-01.dev.com vald-cassandra-02.dev.com]\tport: 0\tcql_version: 3.0.0 : database error",
+				),
 			},
 		},
 		{
@@ -731,7 +737,9 @@ func TestErrCassandraFailedToCreateSession(t *testing.T) {
 				cqlVersion: "3.0.0",
 			},
 			want: want{
-				want: New("error cassandra client failed to create session to hosts: []\tport: 9042\tcql_version: 3.0.0 : database error"),
+				want: New(
+					"error cassandra client failed to create session to hosts: []\tport: 9042\tcql_version: 3.0.0 : database error",
+				),
 			},
 		},
 		{
@@ -745,7 +753,9 @@ func TestErrCassandraFailedToCreateSession(t *testing.T) {
 				port: 9042,
 			},
 			want: want{
-				want: New("error cassandra client failed to create session to hosts: [vald-cassandra-01.dev.com vald-cassandra-02.dev.com]\tport: 9042\tcql_version:  : database error"),
+				want: New(
+					"error cassandra client failed to create session to hosts: [vald-cassandra-01.dev.com vald-cassandra-02.dev.com]\tport: 9042\tcql_version:  : database error",
+				),
 			},
 		},
 		{

@@ -72,7 +72,8 @@ func payloadObjectAccesses() {
 	if loc != nil && loc.GetName() != "" { // OK: use function to access the field
 	}
 
-	if ireq != nil && ireq.Vector.Id != "" { // want `\QAvoid to access struct fields directly` `\QAvoid to access struct fields directly`
+	if ireq != nil &&
+		ireq.Vector.Id != "" { // want `\QAvoid to access struct fields directly` `\QAvoid to access struct fields directly`
 	}
 
 	if ireq != nil && ireq.Vector.GetId() != "" { // want `\QAvoid to access struct fields directly`

@@ -628,7 +628,12 @@ func TestEncodeRequest(t *testing.T) {
 					}
 
 					if len(gotHeaders) != 1 {
-						return errors.Errorf("header value length is wrong. key:%s want: %d, but got: %d", rest.ContentType, 1, len(gotHeaders))
+						return errors.Errorf(
+							"header value length is wrong. key:%s want: %d, but got: %d",
+							rest.ContentType,
+							1,
+							len(gotHeaders),
+						)
 					}
 
 					if want, got := "application/json", gotHeaders[0]; want != got {

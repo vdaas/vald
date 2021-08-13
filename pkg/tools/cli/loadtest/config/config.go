@@ -75,13 +75,13 @@ func (o Operation) String() string {
 // In K8s environment, this configuration is stored in K8s ConfigMap.
 type Data struct {
 	config.GlobalConfig `json:",inline" yaml:",inline"`
-	Addr                string             `json:"addr" yaml:"addr"`
-	Operation           string             `json:"operation" yaml:"operation"`
-	Dataset             string             `json:"dataset" yaml:"dataset"`
-	Concurrency         int                `json:"concurrency" yaml:"concurrency"`
-	BatchSize           int                `json:"batch_size" yaml:"batch_size"`
+	Addr                string             `json:"addr"              yaml:"addr"`
+	Operation           string             `json:"operation"         yaml:"operation"`
+	Dataset             string             `json:"dataset"           yaml:"dataset"`
+	Concurrency         int                `json:"concurrency"       yaml:"concurrency"`
+	BatchSize           int                `json:"batch_size"        yaml:"batch_size"`
 	ProgressDuration    string             `json:"progress_duration" yaml:"progress_duration"`
-	Client              *config.GRPCClient `json:"client" yaml:"client"`
+	Client              *config.GRPCClient `json:"client"            yaml:"client"`
 }
 
 // NewConfig returns loaded configuration from file.

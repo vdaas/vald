@@ -75,7 +75,7 @@ var (
 
 type Detail struct {
 	TypeURL string        `json:"type_url,omitempty" yaml:"type_url"`
-	Message proto.Message `json:"message,omitempty" yaml:"message"`
+	Message proto.Message `json:"message,omitempty"  yaml:"message"`
 }
 
 func decodeDetails(objs ...interface{}) (details []Detail) {
@@ -276,7 +276,8 @@ func AnyToErrorDetail(a *types.Any) proto.Message {
 
 func DebugInfoFromInfoDetail(v *info.Detail) *DebugInfo {
 	debug := &DebugInfo{
-		Detail: fmt.Sprintf("Version: %s,Name: %s, GitCommit: %s, BuildTime: %s, NGT_Version: %s ,Go_Version: %s, GOARCH: %s, GOOS: %s, CGO_Enabled: %s, BuildCPUInfo: [%s]",
+		Detail: fmt.Sprintf(
+			"Version: %s,Name: %s, GitCommit: %s, BuildTime: %s, NGT_Version: %s ,Go_Version: %s, GOARCH: %s, GOOS: %s, CGO_Enabled: %s, BuildCPUInfo: [%s]",
 			v.Version,
 			v.ServerName,
 			v.GitCommit,

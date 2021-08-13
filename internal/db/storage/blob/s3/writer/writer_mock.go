@@ -59,7 +59,11 @@ type MockUploadClient struct {
 	UploadWithContextFunc func(aws.Context, *s3manager.UploadInput, ...func(*s3manager.Uploader)) (*s3manager.UploadOutput, error)
 }
 
-func (m *MockUploadClient) UploadWithContext(ctx aws.Context, input *s3manager.UploadInput, opts ...func(*s3manager.Uploader)) (*s3manager.UploadOutput, error) {
+func (m *MockUploadClient) UploadWithContext(
+	ctx aws.Context,
+	input *s3manager.UploadInput,
+	opts ...func(*s3manager.Uploader),
+) (*s3manager.UploadOutput, error) {
 	return m.UploadWithContextFunc(ctx, input, opts...)
 }
 

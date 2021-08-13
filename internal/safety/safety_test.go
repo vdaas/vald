@@ -82,7 +82,9 @@ func TestRecoverFunc(t *testing.T) {
 			},
 			want: want{
 				wantPanic: func() error {
-					return errors.New("system panicked caused by runtime error: runtime error: index out of range [10] with length 0")
+					return errors.New(
+						"system panicked caused by runtime error: runtime error: index out of range [10] with length 0",
+					)
 				},
 			},
 		},

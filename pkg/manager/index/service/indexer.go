@@ -159,9 +159,10 @@ func (idx *index) Start(ctx context.Context) (<-chan error, error) {
 				return
 			case addr := <-idx.saveIndexTargetAddrCh:
 				idx.schMap.Delete(addr)
-				_, err = idx.client.GetClient().Do(ctx, addr, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (_ interface{}, err error) {
-					return agent.NewAgentClient(conn).SaveIndex(ctx, &payload.Empty{}, copts...)
-				})
+				_, err = idx.client.GetClient().
+					Do(ctx, addr, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (_ interface{}, err error) {
+						return agent.NewAgentClient(conn).SaveIndex(ctx, &payload.Empty{}, copts...)
+					})
 				if err != nil {
 					log.Warnf("an error occurred while calling SaveIndex of %s: %s", addr, err)
 					select {
@@ -214,7 +215,12 @@ func (idx *index) execute(ctx context.Context, enableLowIndexSkip, immediateSavi
 				if err != nil {
 					st, ok := status.FromError(err)
 					if ok && st != nil && st.Code() == codes.FailedPrecondition {
-						log.Debugf("CreateIndex of %s skipped, message: %s, err: %v", addr, st.Message(), errors.Wrap(st.Err(), err.Error()))
+						log.Debugf(
+							"CreateIndex of %s skipped, message: %s, err: %v",
+							addr,
+							st.Message(),
+							errors.Wrap(st.Err(), err.Error()),
+						)
 						return nil
 					}
 					log.Warnf("an error occurred while calling CreateIndex of %s: %s", addr, err)
@@ -234,7 +240,12 @@ func (idx *index) execute(ctx context.Context, enableLowIndexSkip, immediateSavi
 			if err != nil {
 				st, ok := status.FromError(err)
 				if ok && st != nil && st.Code() == codes.FailedPrecondition {
-					log.Debugf("CreateIndex of %s skipped, message: %s, err: %v", addr, st.Message(), errors.Wrap(st.Err(), err.Error()))
+					log.Debugf(
+						"CreateIndex of %s skipped, message: %s, err: %v",
+						addr,
+						st.Message(),
+						errors.Wrap(st.Err(), err.Error()),
+					)
 					return nil
 				}
 				log.Warnf("an error occurred while calling CreateAndSaveIndex of %s: %s", addr, err)
