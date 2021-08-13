@@ -107,7 +107,7 @@ Write example here
 ## Architecture Overview
 
 <div align="center">
-<img src="./assets/image/svg/Vald Architecture Overview.svg" width="100%">
+<img src="./assets/image/svg/vald_architecture_overview.svg" width="100%">
 </div>
 
 Please refer [here](./docs/overview/architecture.md) for more details of the architecture overview in the future.

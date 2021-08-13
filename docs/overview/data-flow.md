@@ -5,7 +5,7 @@ It will help you to understand what Vald does from users' requests.
 
 The below image is the basic Vald architecture.
 
-<img src="../../assets/docs/overview/Vald Basic Architecture.svg" />
+<img src="../../assets/docs/overview/vald_basic_architecture.svg" />
 
 We will explain using this image in the following sections.
 - [Data Flow](#data-flow)

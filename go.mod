@@ -59,7 +59,6 @@ require (
 	github.com/gogo/status v1.1.0
 	github.com/golang/protobuf v1.5.2
 	github.com/google/go-cmp v0.5.6
-	github.com/google/gofuzz v1.2.0
 	github.com/gorilla/mux v1.8.0
 	github.com/hashicorp/go-version v1.3.0
 	github.com/json-iterator/go v1.1.11
@@ -89,7 +88,6 @@ require (
 	gonum.org/v1/hdf5 v0.0.0-20210714002203-8c5d23bc6946
 	gonum.org/v1/plot v0.9.0
 	google.golang.org/api v0.52.0
-	google.golang.org/genproto v0.0.0-20210729151513-df9385d47c1b
 	google.golang.org/grpc v1.39.0
 	gopkg.in/yaml.v2 v2.4.0
 	inet.af/netaddr v0.0.0-20210729200904-31d5ee66059c
