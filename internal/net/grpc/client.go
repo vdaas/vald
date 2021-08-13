@@ -476,13 +476,14 @@ func (g *gRPCClient) RoundRobin(ctx context.Context, f func(ctx context.Context,
 			r, err = g.do(ictx, p, addr, false, f)
 			if err != nil {
 				st, ok := status.FromError(err)
-				if !ok {
+				if !ok || st == nil {
 					if errors.Is(err, context.Canceled) ||
 						errors.Is(err, context.DeadlineExceeded) {
 						return nil, false, err
 					}
 					return nil, err != nil, err
 				}
+				status.Log(st.Code(), err)
 				switch st.Code() {
 				case codes.Internal,
 					codes.Unavailable,
@@ -553,6 +554,7 @@ func (g *gRPCClient) do(ctx context.Context, p pool.Conn, addr string, enableBac
 					}
 					return nil, err != nil, err
 				}
+				status.Log(st.Code(), err)
 				switch st.Code() {
 				case codes.Internal,
 					codes.Unavailable,

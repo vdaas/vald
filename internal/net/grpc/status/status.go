@@ -238,10 +238,13 @@ func withDetails(st *Status, err error, details ...interface{}) *Status {
 	} else {
 		log.Warn("failed to set error details:", err)
 	}
-	err = st.Err()
+	Log(st.Code(), st.Err())
+	return st
+}
+
+func Log(code codes.Code, err error) {
 	if err != nil {
-		switch st.Code() {
-		case codes.OK:
+		switch code {
 		case codes.Internal,
 			codes.DataLoss:
 			log.Error(err.Error())
@@ -263,9 +266,7 @@ func withDetails(st *Status, err error, details ...interface{}) *Status {
 			codes.OK,
 			codes.Unimplemented:
 		default:
-			log.Warnf("unexcepted error detected: code %d, errro: %v", st.Code(), err.Error())
+			log.Warn(errors.ErrGRPCUnexpectedStatusError(code.String(), err))
 		}
 	}
-
-	return st
 }
