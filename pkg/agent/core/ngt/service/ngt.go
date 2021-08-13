@@ -145,7 +145,7 @@ func New(cfg *config.NGT, opts ...Option) (nn NGT, err error) {
 				kvs.WithErrGroup(n.eg),
 			}
 		}
-		return  []kvs.Option{
+		return []kvs.Option{
 			// when concurrency >= 1 which means limited concurrency for retrieving kvsdb, we shouldn't use global errgroup kvsdb will automatically generates it's own errgroup
 			kvs.WithConcurrency(cfg.KVSDB.Concurrency),
 		}
