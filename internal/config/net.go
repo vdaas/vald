@@ -25,37 +25,37 @@ import (
 
 // Net represents the network configuration tcp, udp, unix domain socket.
 type Net struct {
-	DNS          *DNS          `yaml:"dns" json:"dns,omitempty"`
-	Dialer       *Dialer       `yaml:"dialer" json:"dialer,omitempty"`
-	SocketOption *SocketOption `json:"socket_option,omitempty" yaml:"socket_option"`
-	TLS          *TLS          `yaml:"tls" json:"tls,omitempty"`
+	DNS          *DNS          `yaml:"dns"           json:"dns,omitempty"`
+	Dialer       *Dialer       `yaml:"dialer"        json:"dialer,omitempty"`
+	SocketOption *SocketOption `yaml:"socket_option" json:"socket_option,omitempty"`
+	TLS          *TLS          `yaml:"tls"           json:"tls,omitempty"`
 }
 
 // Dialer represents the configuration for dial.
 type Dialer struct {
-	Timeout          string `yaml:"timeout" json:"timeout,omitempty"`
-	KeepAlive        string `yaml:"keep_alive" json:"keep_alive,omitempty"`
-	FallbackDelay    string `yaml:"fallback_delay" json:"fallback_delay,omitempty"`
+	Timeout          string `yaml:"timeout"            json:"timeout,omitempty"`
+	KeepAlive        string `yaml:"keep_alive"         json:"keep_alive,omitempty"`
+	FallbackDelay    string `yaml:"fallback_delay"     json:"fallback_delay,omitempty"`
 	DualStackEnabled bool   `yaml:"dual_stack_enabled" json:"dual_stack_enabled,omitempty"`
 }
 
 // DNS represents the configuration for resolving DNS.
 type DNS struct {
-	CacheEnabled    bool   `yaml:"cache_enabled" json:"cache_enabled,omitempty"`
+	CacheEnabled    bool   `yaml:"cache_enabled"    json:"cache_enabled,omitempty"`
 	RefreshDuration string `yaml:"refresh_duration" json:"refresh_duration,omitempty"`
 	CacheExpiration string `yaml:"cache_expiration" json:"cache_expiration,omitempty"`
 }
 
 // SocketOption represents the socket configurations.
 type SocketOption struct {
-	ReusePort                bool `json:"reuse_port,omitempty" yaml:"reuse_port"`
-	ReuseAddr                bool `json:"reuse_addr,omitempty" yaml:"reuse_addr"`
-	TCPFastOpen              bool `json:"tcp_fast_open,omitempty" yaml:"tcp_fast_open"`
-	TCPNoDelay               bool `json:"tcp_no_delay,omitempty" yaml:"tcp_no_delay"`
-	TCPCork                  bool `json:"tcp_cork,omitempty" yaml:"tcp_cork"`
-	TCPQuickAck              bool `json:"tcp_quick_ack,omitempty" yaml:"tcp_quick_ack"`
-	TCPDeferAccept           bool `json:"tcp_defer_accept,omitempty" yaml:"tcp_defer_accept"`
-	IPTransparent            bool `json:"ip_transparent,omitempty" yaml:"ip_transparent"`
+	ReusePort                bool `json:"reuse_port,omitempty"                  yaml:"reuse_port"`
+	ReuseAddr                bool `json:"reuse_addr,omitempty"                  yaml:"reuse_addr"`
+	TCPFastOpen              bool `json:"tcp_fast_open,omitempty"               yaml:"tcp_fast_open"`
+	TCPNoDelay               bool `json:"tcp_no_delay,omitempty"                yaml:"tcp_no_delay"`
+	TCPCork                  bool `json:"tcp_cork,omitempty"                    yaml:"tcp_cork"`
+	TCPQuickAck              bool `json:"tcp_quick_ack,omitempty"               yaml:"tcp_quick_ack"`
+	TCPDeferAccept           bool `json:"tcp_defer_accept,omitempty"            yaml:"tcp_defer_accept"`
+	IPTransparent            bool `json:"ip_transparent,omitempty"              yaml:"ip_transparent"`
 	IPRecoverDestinationAddr bool `json:"ip_recover_destination_addr,omitempty" yaml:"ip_recover_destination_addr"`
 }
 

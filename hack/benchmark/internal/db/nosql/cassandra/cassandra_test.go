@@ -53,17 +53,17 @@ CREATE TABLE vald.backup_vector (
 )
 
 type ReadMetaVector struct {
-	UUID   string   `json:"uuid" yaml:"uuid"`
+	UUID   string   `json:"uuid"   yaml:"uuid"`
 	Vector string   `json:"vector" yaml:"vector"`
-	Meta   string   `json:"meta" yaml:"meta"`
-	IPs    []string `json:"ips" yaml:"ips"`
+	Meta   string   `json:"meta"   yaml:"meta"`
+	IPs    []string `json:"ips"    yaml:"ips"`
 }
 
 type MetaVector struct {
-	UUID   string   `json:"uuid" db:"uuid"`
+	UUID   string   `json:"uuid"   db:"uuid"`
 	Vector []byte   `json:"vector" db:"vector"`
-	Meta   string   `json:"meta" db:"meta"`
-	IPs    []string `json:"ips" db:"ips"`
+	Meta   string   `json:"meta"   db:"meta"`
+	IPs    []string `json:"ips"    db:"ips"`
 }
 
 func init() {

@@ -204,7 +204,9 @@ func (s *server) Nodes(ctx context.Context, req *payload.Discoverer_Request) (*p
 	}
 	cp := proto.Clone(res.(*payload.Info_Nodes))
 	if cp == nil {
-		err = status.WrapWithNotFound(fmt.Sprintf("Nodes API request (name: %s, namespace: %s, node: %s) nodes not found, cloned response is nil", req.GetName(), req.GetNamespace(), req.GetNode()), err,
+		err = status.WrapWithNotFound(
+			fmt.Sprintf("Nodes API request (name: %s, namespace: %s, node: %s) nodes not found, cloned response is nil", req.GetName(), req.GetNamespace(), req.GetNode()),
+			err,
 			&errdetails.RequestInfo{
 				RequestId:   key,
 				ServingData: errdetails.Serialize(req),
@@ -213,7 +215,8 @@ func (s *server) Nodes(ctx context.Context, req *payload.Discoverer_Request) (*p
 				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/discoverer.v1.Nodes",
 				ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
 			},
-			info.Get())
+			info.Get(),
+		)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 		}
@@ -222,7 +225,9 @@ func (s *server) Nodes(ctx context.Context, req *payload.Discoverer_Request) (*p
 	}
 	in, ok := cp.(*payload.Info_Nodes)
 	if in == nil || !ok {
-		err = status.WrapWithNotFound(fmt.Sprintf("Nodes API request (name: %s, namespace: %s, node: %s) nodes not found, cloned response is nil", req.GetName(), req.GetNamespace(), req.GetNode()), err,
+		err = status.WrapWithNotFound(
+			fmt.Sprintf("Nodes API request (name: %s, namespace: %s, node: %s) nodes not found, cloned response is nil", req.GetName(), req.GetNamespace(), req.GetNode()),
+			err,
 			&errdetails.RequestInfo{
 				RequestId:   key,
 				ServingData: errdetails.Serialize(req),
@@ -231,7 +236,8 @@ func (s *server) Nodes(ctx context.Context, req *payload.Discoverer_Request) (*p
 				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/discoverer.v1.Nodes",
 				ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
 			},
-			info.Get())
+			info.Get(),
+		)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 		}

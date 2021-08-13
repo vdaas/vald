@@ -1,3 +1,4 @@
+//go:build e2e
 // +build e2e
 
 //
@@ -56,7 +57,16 @@ func (c *client) Search(t *testing.T, ctx context.Context, ds Dataset) error {
 
 			if err != nil {
 				st, serr := status.FromError(err)
-				t.Errorf("error: %v\tserror: %v\tcode: %s\tdetails: %s\tmessage: %s\tstatus-error: %s\tproto: %s", err, serr, st.Code().String(), errdetails.Serialize(st.Details()), st.Message(), st.Err().Error(), errdetails.Serialize(st.Proto()))
+				t.Errorf(
+					"error: %v\tserror: %v\tcode: %s\tdetails: %s\tmessage: %s\tstatus-error: %s\tproto: %s",
+					err,
+					serr,
+					st.Code().String(),
+					errdetails.Serialize(st.Details()),
+					st.Message(),
+					st.Err().Error(),
+					errdetails.Serialize(st.Proto()),
+				)
 				continue
 			}
 
@@ -144,7 +154,16 @@ func (c *client) SearchByID(t *testing.T, ctx context.Context, ds Dataset) error
 
 			if err != nil {
 				st, serr := status.FromError(err)
-				t.Errorf("error: %v\tserror: %v\tcode: %s\tdetails: %s\tmessage: %s\tstatus-error: %s\tproto: %s", err, serr, st.Code().String(), errdetails.Serialize(st.Details()), st.Message(), st.Err().Error(), errdetails.Serialize(st.Proto()))
+				t.Errorf(
+					"error: %v\tserror: %v\tcode: %s\tdetails: %s\tmessage: %s\tstatus-error: %s\tproto: %s",
+					err,
+					serr,
+					st.Code().String(),
+					errdetails.Serialize(st.Details()),
+					st.Message(),
+					st.Err().Error(),
+					errdetails.Serialize(st.Proto()),
+				)
 				continue
 			}
 
@@ -222,7 +241,16 @@ func (c *client) Insert(t *testing.T, ctx context.Context, ds Dataset) error {
 
 			if err != nil {
 				st, serr := status.FromError(err)
-				t.Errorf("error: %v\tserror: %v\tcode: %s\tdetails: %s\tmessage: %s\tstatus-error: %s\tproto: %s", err, serr, st.Code().String(), errdetails.Serialize(st.Details()), st.Message(), st.Err().Error(), errdetails.Serialize(st.Proto()))
+				t.Errorf(
+					"error: %v\tserror: %v\tcode: %s\tdetails: %s\tmessage: %s\tstatus-error: %s\tproto: %s",
+					err,
+					serr,
+					st.Code().String(),
+					errdetails.Serialize(st.Details()),
+					st.Message(),
+					st.Err().Error(),
+					errdetails.Serialize(st.Proto()),
+				)
 				continue
 			}
 
@@ -293,7 +321,16 @@ func (c *client) Update(t *testing.T, ctx context.Context, ds Dataset) error {
 
 			if err != nil {
 				st, serr := status.FromError(err)
-				t.Errorf("error: %v\tserror: %v\tcode: %s\tdetails: %s\tmessage: %s\tstatus-error: %s\tproto: %s", err, serr, st.Code().String(), errdetails.Serialize(st.Details()), st.Message(), st.Err().Error(), errdetails.Serialize(st.Proto()))
+				t.Errorf(
+					"error: %v\tserror: %v\tcode: %s\tdetails: %s\tmessage: %s\tstatus-error: %s\tproto: %s",
+					err,
+					serr,
+					st.Code().String(),
+					errdetails.Serialize(st.Details()),
+					st.Message(),
+					st.Err().Error(),
+					errdetails.Serialize(st.Proto()),
+				)
 				continue
 			}
 
@@ -364,7 +401,16 @@ func (c *client) Upsert(t *testing.T, ctx context.Context, ds Dataset) error {
 
 			if err != nil {
 				st, serr := status.FromError(err)
-				t.Errorf("error: %v\tserror: %v\tcode: %s\tdetails: %s\tmessage: %s\tstatus-error: %s\tproto: %s", err, serr, st.Code().String(), errdetails.Serialize(st.Details()), st.Message(), st.Err().Error(), errdetails.Serialize(st.Proto()))
+				t.Errorf(
+					"error: %v\tserror: %v\tcode: %s\tdetails: %s\tmessage: %s\tstatus-error: %s\tproto: %s",
+					err,
+					serr,
+					st.Code().String(),
+					errdetails.Serialize(st.Details()),
+					st.Message(),
+					st.Err().Error(),
+					errdetails.Serialize(st.Proto()),
+				)
 				continue
 			}
 
@@ -435,7 +481,16 @@ func (c *client) Remove(t *testing.T, ctx context.Context, ds Dataset) error {
 
 			if err != nil {
 				st, serr := status.FromError(err)
-				t.Errorf("error: %v\tserror: %v\tcode: %s\tdetails: %s\tmessage: %s\tstatus-error: %s\tproto: %s", err, serr, st.Code().String(), errdetails.Serialize(st.Details()), st.Message(), st.Err().Error(), errdetails.Serialize(st.Proto()))
+				t.Errorf(
+					"error: %v\tserror: %v\tcode: %s\tdetails: %s\tmessage: %s\tstatus-error: %s\tproto: %s",
+					err,
+					serr,
+					st.Code().String(),
+					errdetails.Serialize(st.Details()),
+					st.Message(),
+					st.Err().Error(),
+					errdetails.Serialize(st.Proto()),
+				)
 				continue
 			}
 
@@ -527,7 +582,16 @@ func (c *client) GetObject(t *testing.T, ctx context.Context, ds Dataset) error 
 
 			if err != nil {
 				st, serr := status.FromError(err)
-				t.Errorf("error: %v\tserror: %v\tcode: %s\tdetails: %s\tmessage: %s\tstatus-error: %s\tproto: %s", err, serr, st.Code().String(), errdetails.Serialize(st.Details()), st.Message(), st.Err().Error(), errdetails.Serialize(st.Proto()))
+				t.Errorf(
+					"error: %v\tserror: %v\tcode: %s\tdetails: %s\tmessage: %s\tstatus-error: %s\tproto: %s",
+					err,
+					serr,
+					st.Code().String(),
+					errdetails.Serialize(st.Details()),
+					st.Message(),
+					st.Err().Error(),
+					errdetails.Serialize(st.Proto()),
+				)
 				continue
 			}
 

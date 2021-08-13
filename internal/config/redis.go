@@ -29,37 +29,37 @@ import (
 
 // Redis represents the configuration for redis cluster.
 type Redis struct {
-	Addrs                []string `json:"addrs,omitempty" yaml:"addrs"`
-	DB                   int      `json:"db,omitempty" yaml:"db"`
-	DialTimeout          string   `json:"dial_timeout,omitempty" yaml:"dial_timeout"`
-	IdleCheckFrequency   string   `json:"idle_check_frequency,omitempty" yaml:"idle_check_frequency"`
-	IdleTimeout          string   `json:"idle_timeout,omitempty" yaml:"idle_timeout"`
-	InitialPingDuration  string   `json:"initial_ping_duration,omitempty" yaml:"initial_ping_duration"`
+	Addrs                []string `json:"addrs,omitempty"                   yaml:"addrs"`
+	DB                   int      `json:"db,omitempty"                      yaml:"db"`
+	DialTimeout          string   `json:"dial_timeout,omitempty"            yaml:"dial_timeout"`
+	IdleCheckFrequency   string   `json:"idle_check_frequency,omitempty"    yaml:"idle_check_frequency"`
+	IdleTimeout          string   `json:"idle_timeout,omitempty"            yaml:"idle_timeout"`
+	InitialPingDuration  string   `json:"initial_ping_duration,omitempty"   yaml:"initial_ping_duration"`
 	InitialPingTimeLimit string   `json:"initial_ping_time_limit,omitempty" yaml:"initial_ping_time_limit"`
-	KVPrefix             string   `json:"kv_prefix,omitempty" yaml:"kv_prefix"`
-	KeyPref              string   `json:"key_pref,omitempty" yaml:"key_pref"`
-	MaxConnAge           string   `json:"max_conn_age,omitempty" yaml:"max_conn_age"`
-	MaxRedirects         int      `json:"max_redirects,omitempty" yaml:"max_redirects"`
-	MaxRetries           int      `json:"max_retries,omitempty" yaml:"max_retries"`
-	MaxRetryBackoff      string   `json:"max_retry_backoff,omitempty" yaml:"max_retry_backoff"`
-	MinIdleConns         int      `json:"min_idle_conns,omitempty" yaml:"min_idle_conns"`
-	MinRetryBackoff      string   `json:"min_retry_backoff,omitempty" yaml:"min_retry_backoff"`
-	Network              string   `json:"network,omitempty" yaml:"network"`
-	Password             string   `json:"password,omitempty" yaml:"password"`
-	PoolSize             int      `json:"pool_size,omitempty" yaml:"pool_size"`
-	PoolTimeout          string   `json:"pool_timeout,omitempty" yaml:"pool_timeout"`
-	PrefixDelimiter      string   `json:"prefix_delimiter,omitempty" yaml:"prefix_delimiter"`
-	ReadOnly             bool     `json:"read_only,omitempty" yaml:"read_only"`
-	ReadTimeout          string   `json:"read_timeout,omitempty" yaml:"read_timeout"`
-	RouteByLatency       bool     `json:"route_by_latency,omitempty" yaml:"route_by_latency"`
-	RouteRandomly        bool     `json:"route_randomly,omitempty" yaml:"route_randomly"`
+	KVPrefix             string   `json:"kv_prefix,omitempty"               yaml:"kv_prefix"`
+	KeyPref              string   `json:"key_pref,omitempty"                yaml:"key_pref"`
+	MaxConnAge           string   `json:"max_conn_age,omitempty"            yaml:"max_conn_age"`
+	MaxRedirects         int      `json:"max_redirects,omitempty"           yaml:"max_redirects"`
+	MaxRetries           int      `json:"max_retries,omitempty"             yaml:"max_retries"`
+	MaxRetryBackoff      string   `json:"max_retry_backoff,omitempty"       yaml:"max_retry_backoff"`
+	MinIdleConns         int      `json:"min_idle_conns,omitempty"          yaml:"min_idle_conns"`
+	MinRetryBackoff      string   `json:"min_retry_backoff,omitempty"       yaml:"min_retry_backoff"`
+	Network              string   `json:"network,omitempty"                 yaml:"network"`
+	Password             string   `json:"password,omitempty"                yaml:"password"`
+	PoolSize             int      `json:"pool_size,omitempty"               yaml:"pool_size"`
+	PoolTimeout          string   `json:"pool_timeout,omitempty"            yaml:"pool_timeout"`
+	PrefixDelimiter      string   `json:"prefix_delimiter,omitempty"        yaml:"prefix_delimiter"`
+	ReadOnly             bool     `json:"read_only,omitempty"               yaml:"read_only"`
+	ReadTimeout          string   `json:"read_timeout,omitempty"            yaml:"read_timeout"`
+	RouteByLatency       bool     `json:"route_by_latency,omitempty"        yaml:"route_by_latency"`
+	RouteRandomly        bool     `json:"route_randomly,omitempty"          yaml:"route_randomly"`
 	SentinelPassword     string   `json:"sentinel_password,omitempty"`
 	SentinelMasterName   string   `json:"sentinel_master_name,omitempty"`
-	Net                  *Net     `json:"tcp,omitempty" yaml:"net"`
-	TLS                  *TLS     `json:"tls,omitempty" yaml:"tls"`
-	Username             string   `json:"username,omitempty" yaml:"username"`
-	VKPrefix             string   `json:"vk_prefix,omitempty" yaml:"vk_prefix"`
-	WriteTimeout         string   `json:"write_timeout,omitempty" yaml:"write_timeout"`
+	Net                  *Net     `json:"tcp,omitempty"                     yaml:"net"`
+	TLS                  *TLS     `json:"tls,omitempty"                     yaml:"tls"`
+	Username             string   `json:"username,omitempty"                yaml:"username"`
+	VKPrefix             string   `json:"vk_prefix,omitempty"               yaml:"vk_prefix"`
+	WriteTimeout         string   `json:"write_timeout,omitempty"           yaml:"write_timeout"`
 }
 
 // Bind binds the actual data from the Redis receiver fields.

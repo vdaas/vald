@@ -25,43 +25,43 @@ import (
 
 // Cassandra represents the configuration for the internal cassandra package.
 type Cassandra struct {
-	Hosts             []string `json:"hosts" yaml:"hosts"`
-	CQLVersion        string   `json:"cql_version" yaml:"cql_version"`
-	ProtoVersion      int      `json:"proto_version" yaml:"proto_version"`
-	Timeout           string   `json:"timeout" yaml:"timeout"`
-	ConnectTimeout    string   `json:"connect_timeout" yaml:"connect_timeout"`
-	Port              int      `json:"port" yaml:"port"`
-	Keyspace          string   `json:"keyspace" yaml:"keyspace"`
-	NumConns          int      `json:"num_conns" yaml:"num_conns"`
-	Consistency       string   `json:"consistency" yaml:"consistency"`
+	Hosts             []string `json:"hosts"              yaml:"hosts"`
+	CQLVersion        string   `json:"cql_version"        yaml:"cql_version"`
+	ProtoVersion      int      `json:"proto_version"      yaml:"proto_version"`
+	Timeout           string   `json:"timeout"            yaml:"timeout"`
+	ConnectTimeout    string   `json:"connect_timeout"    yaml:"connect_timeout"`
+	Port              int      `json:"port"               yaml:"port"`
+	Keyspace          string   `json:"keyspace"           yaml:"keyspace"`
+	NumConns          int      `json:"num_conns"          yaml:"num_conns"`
+	Consistency       string   `json:"consistency"        yaml:"consistency"`
 	SerialConsistency string   `json:"serial_consistency" yaml:"serial_consistency"`
 
 	Username string `json:"username" yaml:"username"`
 	Password string `json:"password" yaml:"password"`
 
-	PoolConfig         *PoolConfig         `json:"pool_config" yaml:"pool_config"`
-	RetryPolicy        *RetryPolicy        `json:"retry_policy" yaml:"retry_policy"`
+	PoolConfig         *PoolConfig         `json:"pool_config"         yaml:"pool_config"`
+	RetryPolicy        *RetryPolicy        `json:"retry_policy"        yaml:"retry_policy"`
 	ReconnectionPolicy *ReconnectionPolicy `json:"reconnection_policy" yaml:"reconnection_policy"`
-	HostFilter         *HostFilter         `json:"host_filter" yaml:"host_filter"`
+	HostFilter         *HostFilter         `json:"host_filter"         yaml:"host_filter"`
 
-	SocketKeepalive          string `json:"socket_keepalive" yaml:"socket_keepalive"`
-	MaxPreparedStmts         int    `json:"max_prepared_stmts" yaml:"max_prepared_stmts"`
-	MaxRoutingKeyInfo        int    `json:"max_routing_key_info" yaml:"max_routing_key_info"`
-	PageSize                 int    `json:"page_size" yaml:"page_size"`
-	TLS                      *TLS   `json:"tls" yaml:"tls"`
-	Net                      *Net   `json:"net" yaml:"net"`
-	EnableHostVerification   bool   `json:"enable_host_verification" yaml:"enable_host_verification"`
-	DefaultTimestamp         bool   `json:"default_timestamp" yaml:"default_timestamp"`
-	ReconnectInterval        string `json:"reconnect_interval" yaml:"reconnect_interval"`
-	MaxWaitSchemaAgreement   string `json:"max_wait_schema_agreement" yaml:"max_wait_schema_agreement"`
-	IgnorePeerAddr           bool   `json:"ignore_peer_addr" yaml:"ignore_peer_addr"`
+	SocketKeepalive          string `json:"socket_keepalive"            yaml:"socket_keepalive"`
+	MaxPreparedStmts         int    `json:"max_prepared_stmts"          yaml:"max_prepared_stmts"`
+	MaxRoutingKeyInfo        int    `json:"max_routing_key_info"        yaml:"max_routing_key_info"`
+	PageSize                 int    `json:"page_size"                   yaml:"page_size"`
+	TLS                      *TLS   `json:"tls"                         yaml:"tls"`
+	Net                      *Net   `json:"net"                         yaml:"net"`
+	EnableHostVerification   bool   `json:"enable_host_verification"    yaml:"enable_host_verification"`
+	DefaultTimestamp         bool   `json:"default_timestamp"           yaml:"default_timestamp"`
+	ReconnectInterval        string `json:"reconnect_interval"          yaml:"reconnect_interval"`
+	MaxWaitSchemaAgreement   string `json:"max_wait_schema_agreement"   yaml:"max_wait_schema_agreement"`
+	IgnorePeerAddr           bool   `json:"ignore_peer_addr"            yaml:"ignore_peer_addr"`
 	DisableInitialHostLookup bool   `json:"disable_initial_host_lookup" yaml:"disable_initial_host_lookup"`
-	DisableNodeStatusEvents  bool   `json:"disable_node_status_events" yaml:"disable_node_status_events"`
-	DisableTopologyEvents    bool   `json:"disable_topology_events" yaml:"disable_topology_events"`
-	DisableSchemaEvents      bool   `json:"disable_schema_events" yaml:"disable_schema_events"`
-	DisableSkipMetadata      bool   `json:"disable_skip_metadata" yaml:"disable_skip_metadata"`
-	DefaultIdempotence       bool   `json:"default_idempotence" yaml:"default_idempotence"`
-	WriteCoalesceWaitTime    string `json:"write_coalesce_wait_time" yaml:"write_coalesce_wait_time"`
+	DisableNodeStatusEvents  bool   `json:"disable_node_status_events"  yaml:"disable_node_status_events"`
+	DisableTopologyEvents    bool   `json:"disable_topology_events"     yaml:"disable_topology_events"`
+	DisableSchemaEvents      bool   `json:"disable_schema_events"       yaml:"disable_schema_events"`
+	DisableSkipMetadata      bool   `json:"disable_skip_metadata"       yaml:"disable_skip_metadata"`
+	DefaultIdempotence       bool   `json:"default_idempotence"         yaml:"default_idempotence"`
+	WriteCoalesceWaitTime    string `json:"write_coalesce_wait_time"    yaml:"write_coalesce_wait_time"`
 
 	// meta
 	KVTable string `json:"kv_table" yaml:"kv_table"`
@@ -73,23 +73,23 @@ type Cassandra struct {
 
 // PoolConfig represents the configuration for the pool config.
 type PoolConfig struct {
-	DataCenter               string `json:"data_center" yaml:"data_center"`
-	DCAwareRouting           bool   `json:"dc_aware_routing" yaml:"dc_aware_routing"`
+	DataCenter               string `json:"data_center"                 yaml:"data_center"`
+	DCAwareRouting           bool   `json:"dc_aware_routing"            yaml:"dc_aware_routing"`
 	NonLocalReplicasFallback bool   `json:"non_local_replicas_fallback" yaml:"non_local_replicas_fallback"`
-	ShuffleReplicas          bool   `json:"shuffle_replicas" yaml:"shuffle_replicas"`
-	TokenAwareHostPolicy     bool   `json:"token_aware_host_policy" yaml:"token_aware_host_policy"`
+	ShuffleReplicas          bool   `json:"shuffle_replicas"            yaml:"shuffle_replicas"`
+	TokenAwareHostPolicy     bool   `json:"token_aware_host_policy"     yaml:"token_aware_host_policy"`
 }
 
 // RetryPolicy represents the configuration for the retry policy.
 type RetryPolicy struct {
-	NumRetries  int    `json:"num_retries" yaml:"num_retries"`
+	NumRetries  int    `json:"num_retries"  yaml:"num_retries"`
 	MinDuration string `json:"min_duration" yaml:"min_duration"`
 	MaxDuration string `json:"max_duration" yaml:"max_duration"`
 }
 
 // ReconnectionPolicy represents the configuration for the reconnection policy.
 type ReconnectionPolicy struct {
-	MaxRetries      int    `json:"max_retries" yaml:"max_retries"`
+	MaxRetries      int    `json:"max_retries"      yaml:"max_retries"`
 	InitialInterval string `json:"initial_interval" yaml:"initial_interval"`
 }
 
@@ -97,7 +97,7 @@ type ReconnectionPolicy struct {
 type HostFilter struct {
 	Enabled    bool     `json:"enabled"`
 	DataCenter string   `json:"data_center" yaml:"data_center"`
-	WhiteList  []string `json:"white_list" yaml:"white_list"`
+	WhiteList  []string `json:"white_list"  yaml:"white_list"`
 }
 
 // Bind binds the actual data from the Cassandra receiver fields.

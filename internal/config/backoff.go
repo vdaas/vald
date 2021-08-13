@@ -21,13 +21,13 @@ import "github.com/vdaas/vald/internal/backoff"
 
 // Backoff represents the configuration for the internal backoff package.
 type Backoff struct {
-	InitialDuration  string  `json:"initial_duration" yaml:"initial_duration"`
+	InitialDuration  string  `json:"initial_duration"   yaml:"initial_duration"`
 	BackoffTimeLimit string  `json:"backoff_time_limit" yaml:"backoff_time_limit"`
-	MaximumDuration  string  `json:"maximum_duration" yaml:"maximum_duration"`
-	JitterLimit      string  `json:"jitter_limit" yaml:"jitter_limit"`
-	BackoffFactor    float64 `json:"backoff_factor" yaml:"backoff_factor"`
-	RetryCount       int     `json:"retry_count" yaml:"retry_count"`
-	EnableErrorLog   bool    `json:"enable_error_log" yaml:"enable_error_log"`
+	MaximumDuration  string  `json:"maximum_duration"   yaml:"maximum_duration"`
+	JitterLimit      string  `json:"jitter_limit"       yaml:"jitter_limit"`
+	BackoffFactor    float64 `json:"backoff_factor"     yaml:"backoff_factor"`
+	RetryCount       int     `json:"retry_count"        yaml:"retry_count"`
+	EnableErrorLog   bool    `json:"enable_error_log"   yaml:"enable_error_log"`
 }
 
 // Bind binds the actual data from the Backoff receiver fields.

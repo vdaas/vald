@@ -249,7 +249,7 @@ DOCKER_OPTS      ?=
 DISTROLESS_IMAGE      ?= gcr.io/distroless/static
 DISTROLESS_IMAGE_TAG  ?= nonroot
 UPX_OPTIONS           ?= -9
-GOLINES_MAX_WIDTH     ?= 128
+GOLINES_MAX_WIDTH     ?= 200
 
 K8S_EXTERNAL_SCYLLA_MANIFEST        ?= k8s/external/scylla/scyllacluster.yaml
 K8S_SLEEP_DURATION_FOR_WAIT_COMMAND ?= 5

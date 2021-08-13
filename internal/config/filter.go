@@ -19,15 +19,15 @@ package config
 
 // EgressFilter represents the EgressFilter configuration.
 type EgressFilter struct {
-	Client          *GRPCClient `json:"client,omitempty" yaml:"client"`
+	Client          *GRPCClient `json:"client,omitempty"           yaml:"client"`
 	DistanceFilters []string    `json:"distance_filters,omitempty" yaml:"distance_filters"`
-	ObjectFilters   []string    `json:"object_filters,omitempty" yaml:"object_filters"`
+	ObjectFilters   []string    `json:"object_filters,omitempty"   yaml:"object_filters"`
 }
 
 // IngressFilter represents the IngressFilter configuration.
 type IngressFilter struct {
-	Client        *GRPCClient `json:"client,omitempty" yaml:"client"`
-	Vectorizer    string      `json:"vectorizer,omitempty" yaml:"vectorizer"`
+	Client        *GRPCClient `json:"client,omitempty"         yaml:"client"`
+	Vectorizer    string      `json:"vectorizer,omitempty"     yaml:"vectorizer"`
 	SearchFilters []string    `json:"search_filters,omitempty" yaml:"search_filters"`
 	InsertFilters []string    `json:"insert_filters,omitempty" yaml:"insert_filters"`
 	UpdateFilters []string    `json:"update_filters,omitempty" yaml:"update_filters"`
