@@ -57,4 +57,9 @@ var (
 
 	// ErrGRPCTargetAddrNotFound represents an error that the gRPC target address couldn't find.
 	ErrGRPCTargetAddrNotFound = New("grpc connection target not found")
+
+	// ErrGRPCUnexpectedStatusError represents an error that the gRPC status code is undefined
+	ErrGRPCUnexpectedStatusError = func(code string, err error) error {
+		return Wrapf(err, "unexcepted error detected: code %s", code)
+	}
 )

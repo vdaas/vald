@@ -18,12 +18,12 @@
 package types
 
 import (
-	"github.com/gogo/protobuf/proto"
-	"github.com/gogo/protobuf/types"
+	"github.com/vdaas/vald/internal/net/grpc/proto"
+	"google.golang.org/protobuf/types/known/anypb"
 )
 
-type Any = types.Any
+type Any = anypb.Any
 
-func UnmarshalAny(any *Any, pb proto.Message) error {
-	return types.UnmarshalAny(any, pb)
+func UnmarshalAny(any *Any, m proto.Message) error {
+	return any.UnmarshalTo(m)
 }

@@ -32,7 +32,7 @@ import (
 type Server ingress.FilterServer
 
 type server struct {
-	*ingress.UnimplementedFilterServer
+	ingress.UnimplementedFilterServer
 	tf tensorflow.TF
 }
 

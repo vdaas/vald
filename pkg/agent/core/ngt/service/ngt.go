@@ -415,6 +415,10 @@ func (n *ngt) Search(vec []float32, size uint32, epsilon, radius float32) ([]mod
 	}
 	sr, err := n.core.Search(vec, int(size), epsilon, radius)
 	if err != nil {
+		log.Errorf("cgo error detected: ngt code api returned error %v", err)
+		if n.IsIndexing() {
+			return nil, errors.ErrCreateIndexingIsInProgress
+		}
 		return nil, err
 	}
 

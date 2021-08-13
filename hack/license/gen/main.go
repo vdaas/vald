@@ -66,6 +66,7 @@ const (
 )
 
 func main() {
+	log.Init()
 	if len(os.Args) < minimumArgumentLength {
 		log.Fatal(errors.New("invalid argument"))
 	}

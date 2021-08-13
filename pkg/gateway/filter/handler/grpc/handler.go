@@ -54,6 +54,7 @@ type server struct {
 	InsertFilters     []string
 	UpdateFilters     []string
 	UpsertFilters     []string
+	vald.UnimplementedValdServerWithFilter
 }
 
 const apiName = "vald/gateway-filter"

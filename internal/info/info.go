@@ -245,7 +245,7 @@ func (i info) Get() Detail {
 	defaultURL := fmt.Sprintf("https://%s/tree/%s", valdRepo, i.detail.GitCommit)
 
 	i.detail.StackTrace = make([]StackTrace, 0, 10)
-	for j := 3; ; j++ {
+	for j := 2; ; j++ {
 		pc, file, line, ok := i.rtCaller(j)
 		if !ok {
 			break

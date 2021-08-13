@@ -20,6 +20,8 @@ GOPKG                           = github.com/$(ORG)/$(NAME)
 GOPRIVATE                       = $(GOPKG),$(GOPKG)/apis
 DATETIME                        = $(eval DATETIME := $(shell date -u +%Y/%m/%d_%H:%M:%S%z))$(DATETIME)
 TAG                            ?= latest
+CRORG                          ?= $(ORG)
+# CRORG                           = ghcr.io/vdaas/vald
 AGENT_IMAGE                     = $(NAME)-agent-ngt
 AGENT_SIDECAR_IMAGE             = $(NAME)-agent-sidecar
 CI_CONTAINER_IMAGE              = $(NAME)-ci-container
@@ -40,10 +42,11 @@ NGT_REPO = github.com/yahoojapan/NGT
 
 GOPROXY=direct
 GO_VERSION := $(eval GO_VERSION := $(shell cat versions/GO_VERSION))$(GO_VERSION)
-GOOS := $(eval GOOS := $(shell go env GOOS))$(GOOS)
 GOARCH := $(eval GOARCH := $(shell go env GOARCH))$(GOARCH)
-GOPATH := $(eval GOPATH := $(shell go env GOPATH))$(GOPATH)
+GOBIN := $(eval GOBIN := $(shell go env GOBIN))$(GOBIN)
 GOCACHE := $(eval GOCACHE := $(shell go env GOCACHE))$(GOCACHE)
+GOOS := $(eval GOOS := $(shell go env GOOS))$(GOOS)
+GOPATH := $(eval GOPATH := $(shell go env GOPATH))$(GOPATH)
 
 TEMP_DIR := $(eval TEMP_DIR := $(shell mktemp -d))$(TEMP_DIR)
 
@@ -151,8 +154,12 @@ PROTO_PATHS = \
 	$(PWD) \
 	$(GOPATH)/src \
 	$(GOPATH)/src/$(GOPKG) \
+	$(GOPATH)/src/$(GOPKG)/apis/proto/v1 \
+	$(GOPATH)/src/github.com/envoyproxy/protoc-gen-validate \
 	$(GOPATH)/src/github.com/googleapis/googleapis \
-	$(GOPATH)/src/github.com/gogo/googleapis
+	$(GOPATH)/src/github.com/planetscale/vtprotobuf \
+	$(GOPATH)/src/github.com/protocolbuffers/protobuf \
+	$(GOPATH)/src/google.golang.org/genproto
 
 # [Warning]
 # The below packages have no original implementation.

@@ -20,9 +20,9 @@ package types
 import (
 	"testing"
 
-	"github.com/gogo/protobuf/proto"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/test/goleak"
+	"google.golang.org/protobuf/proto"
 )
 
 func TestUnmarshalAny(t *testing.T) {
