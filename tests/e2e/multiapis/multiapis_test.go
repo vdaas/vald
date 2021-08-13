@@ -16,8 +16,8 @@
 // limitations under the License.
 //
 
-// package crud provides e2e tests using ann-benchmarks datasets
-package crud
+// package multiapis provides e2e tests for multi APIs
+package multiapis
 
 import (
 	"context"
@@ -69,13 +69,13 @@ func init() {
 	flag.StringVar(&host, "host", "localhost", "hostname")
 	flag.IntVar(&port, "port", 8081, "gRPC port")
 
-	flag.IntVar(&insertNum, "insert-num", 10000, "number of id-vector pairs used for insert")
-	flag.IntVar(&searchNum, "search-num", 10000, "number of id-vector pairs used for search")
-	flag.IntVar(&searchByIDNum, "search-by-id-num", 100, "number of id-vector pairs used for search-by-id")
-	flag.IntVar(&getObjectNum, "get-object-num", 100, "number of id-vector pairs used for get-object")
-	flag.IntVar(&updateNum, "update-num", 10000, "number of id-vector pairs used for update")
-	flag.IntVar(&upsertNum, "upsert-num", 10000, "number of id-vector pairs used for upsert")
-	flag.IntVar(&removeNum, "remove-num", 10000, "number of id-vector pairs used for remove")
+	flag.IntVar(&insertNum, "insert-num", 10, "number of id-vector pairs used for insert")
+	flag.IntVar(&searchNum, "search-num", 10, "number of id-vector pairs used for search")
+	flag.IntVar(&searchByIDNum, "search-by-id-num", 10, "number of id-vector pairs used for search-by-id")
+	flag.IntVar(&getObjectNum, "get-object-num", 10, "number of id-vector pairs used for get-object")
+	flag.IntVar(&updateNum, "update-num", 10, "number of id-vector pairs used for update")
+	flag.IntVar(&upsertNum, "upsert-num", 10, "number of id-vector pairs used for upsert")
+	flag.IntVar(&removeNum, "remove-num", 10, "number of id-vector pairs used for remove")
 
 	flag.IntVar(&insertFrom, "insert-from", 0, "first index of id-vector pairs used for insert")
 	flag.IntVar(&searchFrom, "search-from", 0, "first index of id-vector pairs used for search")
@@ -137,7 +137,7 @@ func sleep(t *testing.T, dur time.Duration) {
 	t.Logf("%v sleep finished.", time.Now())
 }
 
-func TestE2EInsertOnly(t *testing.T) {
+func TestE2EMultiAPIs(t *testing.T) {
 	t.Cleanup(teardown)
 	ctx := context.Background()
 
@@ -146,94 +146,7 @@ func TestE2EInsertOnly(t *testing.T) {
 		t.Fatalf("an error occurred: %s", err)
 	}
 
-	err = op.Insert(t, ctx, operation.Dataset{
-		Train: ds.Train[insertFrom : insertFrom+insertNum],
-	})
-	if err != nil {
-		t.Fatalf("an error occurred: %s", err)
-	}
-}
-
-func TestE2ESearchOnly(t *testing.T) {
-	t.Cleanup(teardown)
-	ctx := context.Background()
-
-	op, err := operation.New(host, port)
-	if err != nil {
-		t.Fatalf("an error occurred: %s", err)
-	}
-
-	err = op.Search(t, ctx, operation.Dataset{
-		Test:      ds.Test[searchFrom : searchFrom+searchNum],
-		Neighbors: ds.Neighbors[searchFrom : searchFrom+searchNum],
-	})
-	if err != nil {
-		t.Fatalf("an error occurred: %s", err)
-	}
-}
-
-func TestE2EUpdateOnly(t *testing.T) {
-	t.Cleanup(teardown)
-	ctx := context.Background()
-
-	op, err := operation.New(host, port)
-	if err != nil {
-		t.Fatalf("an error occurred: %s", err)
-	}
-
-	err = op.Update(t, ctx, operation.Dataset{
-		Train: ds.Train[updateFrom : updateFrom+updateNum],
-	})
-	if err != nil {
-		t.Fatalf("an error occurred: %s", err)
-	}
-}
-
-func TestE2EUpsertOnly(t *testing.T) {
-	ctx := context.Background()
-
-	op, err := operation.New(host, port)
-	if err != nil {
-		t.Fatalf("an error occurred: %s", err)
-	}
-
-	err = op.Upsert(t, ctx, operation.Dataset{
-		Train: ds.Train[upsertFrom : upsertFrom+upsertNum],
-	})
-	if err != nil {
-		t.Fatalf("an error occurred: %s", err)
-	}
-
-	teardown()
-}
-
-func TestE2ERemoveOnly(t *testing.T) {
-	t.Cleanup(teardown)
-	ctx := context.Background()
-
-	op, err := operation.New(host, port)
-	if err != nil {
-		t.Fatalf("an error occurred: %s", err)
-	}
-
-	err = op.Remove(t, ctx, operation.Dataset{
-		Train: ds.Train[removeFrom : removeFrom+removeNum],
-	})
-	if err != nil {
-		t.Fatalf("an error occurred: %s", err)
-	}
-}
-
-func TestE2EInsertAndSearch(t *testing.T) {
-	t.Cleanup(teardown)
-	ctx := context.Background()
-
-	op, err := operation.New(host, port)
-	if err != nil {
-		t.Fatalf("an error occurred: %s", err)
-	}
-
-	err = op.Insert(t, ctx, operation.Dataset{
+	err = op.MultiInsert(t, ctx, operation.Dataset{
 		Train: ds.Train[insertFrom : insertFrom+insertNum],
 	})
 	if err != nil {
@@ -242,34 +155,7 @@ func TestE2EInsertAndSearch(t *testing.T) {
 
 	sleep(t, waitAfterInsertDuration)
 
-	err = op.Search(t, ctx, operation.Dataset{
-		Test:      ds.Test[searchFrom : searchFrom+searchNum],
-		Neighbors: ds.Neighbors[searchFrom : searchFrom+searchNum],
-	})
-	if err != nil {
-		t.Fatalf("an error occurred: %s", err)
-	}
-}
-
-func TestE2EStandardCRUD(t *testing.T) {
-	t.Cleanup(teardown)
-	ctx := context.Background()
-
-	op, err := operation.New(host, port)
-	if err != nil {
-		t.Fatalf("an error occurred: %s", err)
-	}
-
-	err = op.Insert(t, ctx, operation.Dataset{
-		Train: ds.Train[insertFrom : insertFrom+insertNum],
-	})
-	if err != nil {
-		t.Fatalf("an error occurred: %s", err)
-	}
-
-	sleep(t, waitAfterInsertDuration)
-
-	err = op.Search(t, ctx, operation.Dataset{
+	err = op.MultiSearch(t, ctx, operation.Dataset{
 		Test:      ds.Test[searchFrom : searchFrom+searchNum],
 		Neighbors: ds.Neighbors[searchFrom : searchFrom+searchNum],
 	})
@@ -277,40 +163,28 @@ func TestE2EStandardCRUD(t *testing.T) {
 		t.Fatalf("an error occurred: %s", err)
 	}
 
-	err = op.SearchByID(t, ctx, operation.Dataset{
+	err = op.MultiSearchByID(t, ctx, operation.Dataset{
 		Train: ds.Train[searchByIDFrom : searchByIDFrom+searchByIDNum],
 	})
 	if err != nil {
 		t.Fatalf("an error occurred: %s", err)
 	}
 
-	err = op.Exists(t, ctx, "0")
-	if err != nil {
-		t.Fatalf("an error occurred: %s", err)
-	}
-
-	err = op.GetObject(t, ctx, operation.Dataset{
-		Train: ds.Train[getObjectFrom : getObjectFrom+getObjectNum],
-	})
-	if err != nil {
-		t.Fatalf("an error occurred: %s", err)
-	}
-
-	err = op.Update(t, ctx, operation.Dataset{
+	err = op.MultiUpdate(t, ctx, operation.Dataset{
 		Train: ds.Train[updateFrom : updateFrom+updateNum],
 	})
 	if err != nil {
 		t.Fatalf("an error occurred: %s", err)
 	}
 
-	err = op.Upsert(t, ctx, operation.Dataset{
+	err = op.MultiUpsert(t, ctx, operation.Dataset{
 		Train: ds.Train[upsertFrom : upsertFrom+upsertNum],
 	})
 	if err != nil {
 		t.Fatalf("an error occurred: %s", err)
 	}
 
-	err = op.Remove(t, ctx, operation.Dataset{
+	err = op.MultiRemove(t, ctx, operation.Dataset{
 		Train: ds.Train[removeFrom : removeFrom+removeNum],
 	})
 	if err != nil {
