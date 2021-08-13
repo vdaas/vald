@@ -93,7 +93,7 @@ func (b *bidi) GetInverse(val uint32) (string, bool) {
 
 // Set sets the key and val to the bidi.
 func (b *bidi) Set(key string, val uint32) {
-	id := xxh3.HashString((key)) & mask
+	id := xxh3.HashString(key) & mask
 	old, loaded := b.uo[id].LoadOrStore(key, val)
 	if !loaded { // increase the count only if the key is not exists before
 		atomic.AddUint64(&b.l, 1)
@@ -107,7 +107,7 @@ func (b *bidi) Set(key string, val uint32) {
 // Delete deletes the key and the value from the bidi by the given key and returns val and true.
 // If the value for the key does not exist, it returns nil and false.
 func (b *bidi) Delete(key string) (val uint32, ok bool) {
-	val, ok = b.uo[xxh3.HashString((key))&mask].LoadAndDelete(key)
+	val, ok = b.uo[xxh3.HashString(key)&mask].LoadAndDelete(key)
 	if ok {
 		b.ou[val&mask].Delete(val)
 		atomic.AddUint64(&b.l, ^uint64(0))
@@ -123,7 +123,7 @@ func (b *bidi) DeleteInverse(val uint32) (key string, ok bool) {
 	if !ok {
 		return "", false
 	}
-	b.uo[xxh3.HashString((key))&mask].Delete(key)
+	b.uo[xxh3.HashString(key)&mask].Delete(key)
 	b.ou[val&mask].Delete(val)
 	atomic.AddUint64(&b.l, ^uint64(0))
 	return key, true

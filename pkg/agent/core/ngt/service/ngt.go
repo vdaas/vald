@@ -137,6 +137,15 @@ func New(cfg *config.NGT, opts ...Option) (nn NGT, err error) {
 
 	n.dim = cfg.Dimension
 
+	n.kvs = kvs.New(func() []kvs.Option {
+		if cfg.KVSDB.Concurrency < 1 {
+			return []kvs.Option{
+				kvs.WithErrGroup(n.eg),
+			}
+		}
+		return nil
+	}()...)
+
 	err = n.initNGT(
 		core.WithInMemoryMode(n.inMem),
 		core.WithIndexPath(n.path),
@@ -169,16 +178,6 @@ func New(cfg *config.NGT, opts ...Option) (nn NGT, err error) {
 			return nil, err
 		}
 	}
-
-	n.kvs = kvs.New(func() []kvs.Option {
-		if cfg.KVSDB.Concurrency < 1 {
-			return []kvs.Option{
-				kvs.WithErrGroup(n.eg),
-			}
-		}
-		return nil
-	}()...)
-
 	n.indexing.Store(false)
 	n.saving.Store(false)
 
