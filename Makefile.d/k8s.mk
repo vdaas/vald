@@ -74,6 +74,12 @@ k8s/vald/deploy:
 	helm template \
 	    --values charts/vald/values/dev.yaml \
 	    --set defaults.image.tag=$(VERSION) \
+	    --set agent.image.repository=$(CRORG)/$(AGENT_IMAGE) \
+	    --set agent.sidecar.image.repository=$(CRORG)/$(AGENT_SIDECAR_IMAGE) \
+	    --set discoverer.image.repository=$(CRORG)/$(DISCOVERER_IMAGE) \
+	    --set gateway.filter.image.repository=$(CRORG)/$(FILTER_GATEWAY_IMAGE) \
+	    --set gateway.lb.image.repository=$(CRORG)/$(LB_GATEWAY_IMAGE) \
+	    --set manager.index.image.repository=$(CRORG)/$(MANAGER_INDEX_IMAGE) \
 	    --output-dir $(TEMP_DIR) \
 	    charts/vald
 	kubectl apply -f $(TEMP_DIR)/vald/templates/manager/index
@@ -89,6 +95,12 @@ k8s/vald/delete:
 	helm template \
 	    --values charts/vald/values/dev.yaml \
 	    --set defaults.image.tag=$(VERSION) \
+	    --set agent.image.repository=$(CRORG)/$(AGENT_IMAGE) \
+	    --set agent.sidecar.image.repository=$(CRORG)/$(AGENT_SIDECAR_IMAGE) \
+	    --set discoverer.image.repository=$(CRORG)/$(DISCOVERER_IMAGE) \
+	    --set gateway.filter.image.repository=$(CRORG)/$(FILTER_GATEWAY_IMAGE) \
+	    --set gateway.lb.image.repository=$(CRORG)/$(LB_GATEWAY_IMAGE) \
+	    --set manager.index.image.repository=$(CRORG)/$(MANAGER_INDEX_IMAGE) \
 	    --output-dir $(TEMP_DIR) \
 	    charts/vald
 	kubectl delete -f $(TEMP_DIR)/vald/templates/gateway/lb
