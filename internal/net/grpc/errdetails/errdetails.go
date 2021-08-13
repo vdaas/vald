@@ -75,7 +75,7 @@ var (
 
 type Detail struct {
 	TypeURL string        `json:"type_url,omitempty" yaml:"type_url"`
-	Message proto.Message `json:"message,omitempty" yaml:"message"`
+	Message proto.Message `json:"message,omitempty"  yaml:"message"`
 }
 
 func decodeDetails(objs ...interface{}) (details []Detail) {

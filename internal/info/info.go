@@ -47,25 +47,25 @@ type info struct {
 
 // Detail represents environment information of system and stacktrace information.
 type Detail struct {
-	Version           string       `json:"vald_version,omitempty" yaml:"vald_version,omitempty"`
-	ServerName        string       `json:"server_name,omitempty" yaml:"server_name,omitempty"`
-	GitCommit         string       `json:"git_commit,omitempty" yaml:"git_commit,omitempty"`
-	BuildTime         string       `json:"build_time,omitempty" yaml:"build_time,omitempty"`
-	GoVersion         string       `json:"go_version,omitempty" yaml:"go_version,omitempty"`
-	GoOS              string       `json:"go_os,omitempty" yaml:"go_os,omitempty"`
-	GoArch            string       `json:"go_arch,omitempty" yaml:"go_arch,omitempty"`
-	CGOEnabled        string       `json:"cgo_enabled,omitempty" yaml:"cgo_enabled,omitempty"`
-	NGTVersion        string       `json:"ngt_version,omitempty" yaml:"ngt_version,omitempty"`
+	Version           string       `json:"vald_version,omitempty"         yaml:"vald_version,omitempty"`
+	ServerName        string       `json:"server_name,omitempty"          yaml:"server_name,omitempty"`
+	GitCommit         string       `json:"git_commit,omitempty"           yaml:"git_commit,omitempty"`
+	BuildTime         string       `json:"build_time,omitempty"           yaml:"build_time,omitempty"`
+	GoVersion         string       `json:"go_version,omitempty"           yaml:"go_version,omitempty"`
+	GoOS              string       `json:"go_os,omitempty"                yaml:"go_os,omitempty"`
+	GoArch            string       `json:"go_arch,omitempty"              yaml:"go_arch,omitempty"`
+	CGOEnabled        string       `json:"cgo_enabled,omitempty"          yaml:"cgo_enabled,omitempty"`
+	NGTVersion        string       `json:"ngt_version,omitempty"          yaml:"ngt_version,omitempty"`
 	BuildCPUInfoFlags []string     `json:"build_cpu_info_flags,omitempty" yaml:"build_cpu_info_flags,omitempty"`
-	StackTrace        []StackTrace `json:"stack_trace,omitempty" yaml:"stack_trace,omitempty"`
+	StackTrace        []StackTrace `json:"stack_trace,omitempty"          yaml:"stack_trace,omitempty"`
 }
 
 // StackTrace represents stacktrace information about url, function name, file, line ..etc.
 type StackTrace struct {
-	URL      string `json:"url,omitempty" yaml:"url,omitempty"`
+	URL      string `json:"url,omitempty"           yaml:"url,omitempty"`
 	FuncName string `json:"function_name,omitempty" yaml:"func_name,omitempty"`
-	File     string `json:"file,omitempty" yaml:"file,omitempty"`
-	Line     int    `json:"line,omitempty" yaml:"line,omitempty"`
+	File     string `json:"file,omitempty"          yaml:"file,omitempty"`
+	Line     int    `json:"line,omitempty"          yaml:"line,omitempty"`
 }
 
 var (

@@ -1485,7 +1485,11 @@ func TestWithRetryPolicyMinDuration(t *testing.T) {
 				minDuration: "dummy",
 			},
 			want: want{
-				err: errors.NewErrCriticalOption("retryPolicyMinDuration", "dummy", errors.New("invalid timeout value: dummy	:timeout parse error out put failed: time: invalid duration \"dummy\"")),
+				err: errors.NewErrCriticalOption(
+					"retryPolicyMinDuration",
+					"dummy",
+					errors.New("invalid timeout value: dummy	:timeout parse error out put failed: time: invalid duration \"dummy\""),
+				),
 				obj: &T{},
 			},
 		},
@@ -1571,7 +1575,11 @@ func TestWithRetryPolicyMaxDuration(t *testing.T) {
 				maxDuration: "dummy",
 			},
 			want: want{
-				err: errors.NewErrCriticalOption("retryPolicyMaxDuration", "dummy", errors.New("invalid timeout value: dummy	:timeout parse error out put failed: time: invalid duration \"dummy\"")),
+				err: errors.NewErrCriticalOption(
+					"retryPolicyMaxDuration",
+					"dummy",
+					errors.New("invalid timeout value: dummy	:timeout parse error out put failed: time: invalid duration \"dummy\""),
+				),
 				obj: &T{},
 			},
 		},
@@ -1657,7 +1665,11 @@ func TestWithReconnectionPolicyInitialInterval(t *testing.T) {
 				initialInterval: "dummy",
 			},
 			want: want{
-				err: errors.NewErrCriticalOption("reconnectionPolicyInitialInterval", "dummy", errors.New("invalid timeout value: dummy	:timeout parse error out put failed: time: invalid duration \"dummy\"")),
+				err: errors.NewErrCriticalOption(
+					"reconnectionPolicyInitialInterval",
+					"dummy",
+					errors.New("invalid timeout value: dummy	:timeout parse error out put failed: time: invalid duration \"dummy\""),
+				),
 				obj: &T{},
 			},
 		},
@@ -2883,7 +2895,11 @@ func TestWithMaxWaitSchemaAgreement(t *testing.T) {
 				maxWaitSchemaAgreement: "dummy",
 			},
 			want: want{
-				err: errors.NewErrCriticalOption("maxWaitSchemaAgreement", "dummy", errors.New("invalid timeout value: dummy	:timeout parse error out put failed: time: invalid duration \"dummy\"")),
+				err: errors.NewErrCriticalOption(
+					"maxWaitSchemaAgreement",
+					"dummy",
+					errors.New("invalid timeout value: dummy	:timeout parse error out put failed: time: invalid duration \"dummy\""),
+				),
 				obj: &T{},
 			},
 		},
