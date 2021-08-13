@@ -24,7 +24,7 @@ import (
 	"contrib.go.opencensus.io/exporter/stackdriver/monitoredresource"
 	"github.com/vdaas/vald/internal/observability/client/google"
 	"github.com/vdaas/vald/internal/observability/metrics"
-	"go.uber.org/goleak"
+	"github.com/vdaas/vald/internal/test/goleak"
 )
 
 func TestWithMonitoring(t *testing.T) {

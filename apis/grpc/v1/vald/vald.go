@@ -35,6 +35,20 @@ type ServerWithFilter interface {
 	FilterServer
 }
 
+type UnimplementedValdServer struct {
+	UnimplementedInsertServer
+	UnimplementedUpdateServer
+	UnimplementedUpsertServer
+	UnimplementedSearchServer
+	UnimplementedRemoveServer
+	UnimplementedObjectServer
+}
+
+type UnimplementedValdServerWithFilter struct {
+	UnimplementedValdServer
+	UnimplementedFilterServer
+}
+
 type Client interface {
 	InsertClient
 	UpdateClient

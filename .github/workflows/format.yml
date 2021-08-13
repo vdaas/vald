@@ -31,6 +31,11 @@ jobs:
         with:
           fetch-depth: 0
           token: ${{ secrets.DISPATCH_TOKEN }}
+      - uses: crazy-max/ghaction-import-gpg@v3
+        with:
+          gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
+          git-user-signingkey: true
+          git-commit-gpgsign: true
       - name: switch new branch
         id: switch_to_new_branch
         run: |
@@ -51,11 +56,8 @@ jobs:
           if git diff --quiet --exit-code; then
             echo "Nothing updated"
           else
-            git config --global user.name "vdaas-ci"
-            git config --global user.email "ci@vdaas.org"
-
             git add .
-            git commit --signoff -m ":robot: Update license headers / Format Go codes and YAML files"
+            git commit -S --signoff -m ":robot: Update license headers / Format Go codes and YAML files"
 
             git remote set-url origin "https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
             git push -u origin ${BRANCH_NAME}

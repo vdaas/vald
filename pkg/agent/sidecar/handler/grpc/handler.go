@@ -24,6 +24,7 @@ import (
 
 type server struct {
 	so observer.StorageObserver
+	sidecar.UnimplementedSidecarServer
 }
 
 func New(opts ...Option) sidecar.SidecarServer {

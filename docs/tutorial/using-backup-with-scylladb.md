@@ -1,5 +1,7 @@
 # Using Backup with ScyllaDB
 
+**This article is unable for use from v1.2 ~**.
+
 This article will show you how to deploy Vald with ScyllaDB as a backup database using Helm and run it on your Kubernetes cluster.
 
 ## Overview

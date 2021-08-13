@@ -32,6 +32,17 @@ define mkdir
 	mkdir -p $1
 endef
 
+define proto-code-gen
+	protoc \
+		$(PROTO_PATHS:%=-I %) \
+                --go_out=$(GOPATH)/src --plugin protoc-gen-go="$(GOPATH)/bin/protoc-gen-go" \
+                --go-vtproto_out=$(GOPATH)/src --plugin protoc-gen-go-vtproto="$(GOPATH)/bin/protoc-gen-go-vtproto" \
+                --go-vtproto_opt=features=grpc+marshal+unmarshal+size+pool \
+                --go-vtproto_opt=pool=$(GOPKG)/apis/proto/v1/payload.Search.Request \
+                --go-vtproto_opt=pool=$(GOPKG)/apis/proto/v1/payload.Object.Vector \
+		$1
+endef
+
 define protoc-gen
 	protoc \
 		$(PROTO_PATHS:%=-I %) \
@@ -81,6 +92,7 @@ define run-e2e-crud-test
 	    -search-by-id-num=$(E2E_SEARCH_BY_ID_COUNT) \
 	    -get-object-num=$(E2E_GET_OBJECT_COUNT) \
 	    -update-num=$(E2E_UPDATE_COUNT) \
+	    -upsert-num=$(E2E_UPSERT_COUNT) \
 	    -remove-num=$(E2E_REMOVE_COUNT) \
 	    -wait-after-insert=$(E2E_WAIT_FOR_CREATE_INDEX_DURATION) \
 	    -portforward \

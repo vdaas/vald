@@ -69,15 +69,14 @@ type vqueue struct {
 }
 
 type index struct {
-	uuid   string
-	vector []float32
 	date   int64
+	vector []float32
+	uuid   string
 }
 
 type key struct {
-	uuid   string
-	vector []float32
-	date   int64
+	date int64
+	uuid string
 }
 
 func New(opts ...Option) (Queue, error) {
@@ -162,12 +161,22 @@ func (v *vqueue) PushInsert(uuid string, vector []float32, date int64) error {
 	if date == 0 {
 		date = time.Now().UnixNano()
 	}
+	ddate, ok := v.udim.Load(uuid)
+	if ok && ddate > date {
+		return nil
+	}
 	idx := index{
 		uuid:   uuid,
 		vector: vector,
 		date:   date,
 	}
-	v.uiim.Store(uuid, idx)
+	oidx, loaded := v.uiim.LoadOrStore(uuid, idx)
+	if loaded {
+		if oidx.date > idx.date {
+			return nil
+		}
+		v.uiim.Store(uuid, idx)
+	}
 	v.ich <- idx
 	return nil
 }
@@ -180,7 +189,13 @@ func (v *vqueue) PushDelete(uuid string, date int64) error {
 	if date == 0 {
 		date = time.Now().UnixNano()
 	}
-	v.udim.Store(uuid, date)
+	odate, loaded := v.udim.LoadOrStore(uuid, date)
+	if loaded {
+		if odate > date {
+			return nil
+		}
+		v.udim.Store(uuid, date)
+	}
 	v.dch <- key{
 		uuid: uuid,
 		date: date,
@@ -189,25 +204,44 @@ func (v *vqueue) PushDelete(uuid string, date int64) error {
 }
 
 func (v *vqueue) RangePopInsert(ctx context.Context, f func(uuid string, vector []float32) bool) {
-	// if finalizing, wait for all insert channel queue processed
-	for v.finalizingInsert.Load().(bool) {
-		select {
-		case <-ctx.Done():
-			return
-		case <-time.After(time.Millisecond * 100):
+	err := func() error {
+		ticker := time.NewTicker(time.Millisecond * 100)
+		defer ticker.Stop()
+		// if finalizing, wait for all insert channel queue processed
+		for v.finalizingInsert.Load().(bool) {
+			select {
+			case <-ctx.Done():
+				return ctx.Err()
+			case <-ticker.C:
+			}
 		}
+		return nil
+	}()
+	if err != nil {
+		log.Warn(err)
+		return
 	}
+
 	v.flushAndRangeInsert(f)
 }
 
 func (v *vqueue) RangePopDelete(ctx context.Context, f func(uuid string) bool) {
-	// if finalizing, wait for all insert & delete channel queue processed
-	for v.finalizingDelete.Load().(bool) || v.finalizingInsert.Load().(bool) {
-		select {
-		case <-ctx.Done():
-			return
-		case <-time.After(time.Millisecond * 100):
+	err := func() error {
+		ticker := time.NewTicker(time.Millisecond * 100)
+		defer ticker.Stop()
+		// if finalizing, wait for all insert & delete channel queue processed
+		for v.finalizingDelete.Load().(bool) || v.finalizingInsert.Load().(bool) {
+			select {
+			case <-ctx.Done():
+				return ctx.Err()
+			case <-ticker.C:
+			}
 		}
+		return nil
+	}()
+	if err != nil {
+		log.Warn(err)
+		return
 	}
 	v.flushAndRangeDelete(f)
 }
@@ -262,12 +296,24 @@ func (v *vqueue) DVExists(uuid string) bool {
 }
 
 func (v *vqueue) addInsert(i index) {
+	date, ok := v.udim.Load(i.uuid)
+	if ok && i.date < date {
+		return
+	}
+	idx, ok := v.uiim.Load(i.uuid)
+	if ok && i.date < idx.date {
+		return
+	}
 	v.imu.Lock()
 	v.uii = append(v.uii, i)
 	v.imu.Unlock()
 }
 
 func (v *vqueue) addDelete(d key) {
+	date, ok := v.udim.Load(d.uuid)
+	if ok && d.date < date {
+		return
+	}
 	v.dmu.Lock()
 	v.udk = append(v.udk, d)
 	v.dmu.Unlock()
@@ -363,6 +409,7 @@ func (v *vqueue) flushAndRangeDelete(f func(uuid string) bool) {
 	}
 }
 
+// IVQLen returns the number of uninserted indexes stored in the insert queue.
 func (v *vqueue) IVQLen() (l int) {
 	v.imu.Lock()
 	l = len(v.uii)
@@ -370,6 +417,7 @@ func (v *vqueue) IVQLen() (l int) {
 	return l
 }
 
+// DVQLen returns the number of undeleted keys stored in the delete queue.
 func (v *vqueue) DVQLen() (l int) {
 	v.dmu.Lock()
 	l = len(v.udk)
@@ -377,10 +425,12 @@ func (v *vqueue) DVQLen() (l int) {
 	return l
 }
 
+// IVCLen returns the number stored in the insert channel.
 func (v *vqueue) IVCLen() int {
 	return len(v.ich)
 }
 
+// IVCLen returns the number stored in the delete channel.
 func (v *vqueue) DVCLen() int {
 	return len(v.dch)
 }

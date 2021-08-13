@@ -25,7 +25,7 @@ import (
 	"cloud.google.com/go/profiler"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/observability/client/google"
-	"go.uber.org/goleak"
+	"github.com/vdaas/vald/internal/test/goleak"
 )
 
 func TestNew(t *testing.T) {

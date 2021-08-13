@@ -21,6 +21,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/vdaas/vald/internal/errors"
 )
@@ -68,4 +69,47 @@ func Open(path string, flg int, perm fs.FileMode) (file *os.File, err error) {
 	}
 
 	return file, nil
+}
+
+// Exists returns file existence
+func Exists(path string) (e bool) {
+	e, _, _ = exists(path)
+	return e
+}
+
+// ExistsWithDetail returns file existence
+func ExistsWithDetail(path string) (e bool, fi fs.FileInfo, err error) {
+	return exists(path)
+}
+
+// exists returns file existence with detailed information
+func exists(path string) (exists bool, fi fs.FileInfo, err error) {
+	fi, err = os.Stat(path)
+	if err != nil {
+		if os.IsExist(err) {
+			return true, fi, nil
+		}
+		if os.IsNotExist(err) {
+			return false, fi, err
+		}
+		return false, fi, err
+	}
+	return true, fi, nil
+}
+
+// ListInDir returns file list in directory
+func ListInDir(path string) ([]string, error) {
+	exists, fi, err := exists(path)
+	if !exists {
+		return nil, err
+	}
+	if fi.Mode().IsDir() && !strings.HasSuffix(path, "/") {
+		path = filepath.Clean(path) + "/"
+	}
+	path = filepath.Dir(path)
+	files, err := filepath.Glob(filepath.Join(path, "*"))
+	if err != nil {
+		return nil, err
+	}
+	return files, nil
 }

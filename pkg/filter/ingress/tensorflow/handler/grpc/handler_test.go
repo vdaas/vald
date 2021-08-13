@@ -109,7 +109,7 @@ func Test_server_GenVector(t *testing.T) {
 		req *payload.Object_Blob
 	}
 	type fields struct {
-		UnimplementedFilterServer *ingress.UnimplementedFilterServer
+		UnimplementedFilterServer ingress.UnimplementedFilterServer
 		tf                        tensorflow.TF
 	}
 	type want struct {

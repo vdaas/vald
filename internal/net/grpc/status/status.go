@@ -19,22 +19,23 @@ package status
 
 import (
 	"context"
-	"fmt"
 	"os"
-	"strings"
 
-	"github.com/gogo/status"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/info"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/net/grpc/errdetails"
 	"github.com/vdaas/vald/internal/net/grpc/proto"
+	"github.com/vdaas/vald/internal/net/grpc/types"
+	spb "google.golang.org/genproto/googleapis/rpc/status"
+	"google.golang.org/grpc/status"
 )
 
-type Status = status.Status
-
-var Code = status.Code
+type (
+	Status = status.Status
+	Code   = codes.Code
+)
 
 func New(c codes.Code, msg string) *Status {
 	return status.New(c, msg)
@@ -42,110 +43,7 @@ func New(c codes.Code, msg string) *Status {
 
 func newStatus(code codes.Code, msg string, err error, details ...interface{}) (st *Status) {
 	st = New(code, msg)
-
-	messages := make([]proto.Message, 0, 4)
-	debugFunc := func(v *info.Detail) *errdetails.DebugInfo {
-		debug := &errdetails.DebugInfo{
-			Detail: fmt.Sprintf("Version: %s,Name: %s, GitCommit: %s, BuildTime: %s, NGT_Version: %s ,Go_Version: %s, GOARCH: %s, GOOS: %s, CGO_Enabled: %s, BuildCPUInfo: [%s]",
-				v.Version,
-				v.ServerName,
-				v.GitCommit,
-				v.BuildTime,
-				v.NGTVersion,
-				v.GoVersion,
-				v.GoArch,
-				v.GoOS,
-				v.CGOEnabled,
-				strings.Join(v.BuildCPUInfoFlags, ", "),
-			),
-		}
-		if debug.GetStackEntries() == nil {
-			debug.StackEntries = make([]string, 0, len(v.StackTrace))
-		}
-		for i, stack := range v.StackTrace {
-			debug.StackEntries = append(debug.GetStackEntries(), fmt.Sprintf("id: %d stack_trace: %s", i, stack.String()))
-		}
-		return debug
-	}
-	if len(details) != 0 {
-		for _, detail := range details {
-			switch v := detail.(type) {
-			case *info.Detail:
-				messages = append(messages, debugFunc(v))
-			case info.Detail:
-				messages = append(messages, debugFunc(&v))
-			case proto.Message:
-				messages = append(messages, v)
-			case *proto.Message:
-				messages = append(messages, *v)
-			}
-		}
-	}
-
-	if err != nil {
-		messages = append(messages, &errdetails.ErrorInfo{
-			Reason: err.Error(),
-			Domain: func() (hostname string) {
-				var err error
-				hostname, err = os.Hostname()
-				if err != nil {
-					log.Warn("failed to fetch hostname:", err)
-				}
-				return hostname
-			}(),
-		})
-	}
-
-	prevSt, ok := FromError(err)
-	if ok {
-		for _, detail := range prevSt.Details() {
-			switch v := detail.(type) {
-			case *info.Detail:
-				messages = append(messages, debugFunc(v))
-			case info.Detail:
-				messages = append(messages, debugFunc(&v))
-			case proto.Message:
-				messages = append(messages, v)
-			case *proto.Message:
-				messages = append(messages, *v)
-			}
-		}
-	}
-
-	st, err = st.WithDetails(messages...)
-	if err != nil {
-		log.Warn("failed to set error details:", err)
-	}
-
-	err = st.Err()
-	if err != nil {
-		switch st.Code() {
-		case codes.Internal,
-			codes.DataLoss:
-			log.Error(err.Error())
-		case codes.Unavailable,
-			codes.ResourceExhausted:
-			log.Warn(err.Error())
-		case codes.FailedPrecondition,
-			codes.InvalidArgument,
-			codes.OutOfRange,
-			codes.Unauthenticated,
-			codes.PermissionDenied,
-			codes.Unknown:
-			log.Debug(err.Error())
-		case codes.Aborted,
-			codes.Canceled,
-			codes.DeadlineExceeded,
-			codes.AlreadyExists,
-			codes.NotFound,
-			codes.OK,
-			codes.Unimplemented:
-		default:
-			log.Warn(err.Error())
-		}
-	}
-
-	return st
+	return withDetails(st, err, details...)
 }
 
 func WrapWithCanceled(msg string, err error, details ...interface{}) error {
@@ -245,35 +143,9 @@ func ParseError(err error, defaultCode codes.Code, defaultMsg string, details ..
 		return st, msg, errors.Wrap(st.Err(), err.Error())
 	}
 
-	pms := make([]proto.Message, 0, len(details))
-	for _, detail := range details {
-		pm, ok := detail.(proto.Message)
-		if ok {
-			pms = append(pms, pm)
-		}
-	}
-	sst, err := st.WithDetails(pms...)
-	if err == nil {
-		st = sst
-		err = st.Err()
-	} else {
-		log.Error(err)
-	}
-	err = st.Err()
-	if err == nil {
-		msg = st.Message()
-	} else {
-		msg = st.Err().Error()
-		rerr = err
-		switch st.Code() {
-		case codes.Internal:
-			log.Error(rerr.Error())
-		case codes.Unavailable,
-			codes.ResourceExhausted:
-			log.Warn(rerr.Error())
-		}
-	}
-	return st, msg, rerr
+	st = withDetails(st, err, details...)
+	msg = st.Message()
+	return st, msg, err
 }
 
 func FromError(err error) (st *Status, ok bool) {
@@ -281,28 +153,6 @@ func FromError(err error) (st *Status, ok bool) {
 		return nil, false
 	}
 	root := err
-	defer func() {
-		if !ok {
-			return
-		}
-		ierr := errors.Unwrap(err)
-		sst, ok := FromError(ierr)
-		if ok && sst != nil && sst.Err() != nil {
-			pms := make([]interface{}, 0, len(st.Details())+len(sst.Details())+1)
-			for _, detail := range append(st.Details(), sst.Details()) {
-				pm, ok := detail.(proto.Message)
-				if ok {
-					pms = append(pms, pm)
-				}
-			}
-			pms = append(pms, &errdetails.ErrorInfo{
-				Domain: fmt.Sprintf("code: %d, message: %s", sst.Code(), sst.Message()),
-				Reason: sst.Err().Error(),
-			})
-			st = newStatus(st.Code(), st.Message(), st.Err(), pms...)
-		}
-	}()
-
 	for {
 		if st, ok = status.FromError(err); ok && st != nil {
 			return st, true
@@ -310,25 +160,113 @@ func FromError(err error) (st *Status, ok bool) {
 		if uerr := errors.Unwrap(err); uerr != nil {
 			err = uerr
 		} else {
-			err = root
-			for {
-				switch err {
-				case context.DeadlineExceeded:
-					st = newStatus(codes.DeadlineExceeded, root.Error(), errors.Unwrap(err))
-					return st, true
-				case context.Canceled:
-					st = newStatus(codes.Canceled, root.Error(), errors.Unwrap(err))
-					return st, true
-				case nil:
-					st = New(codes.Unknown, root.Error())
-					return st, false
-				}
-				if uerr := errors.Unwrap(err); uerr == nil {
-					return New(codes.Unknown, root.Error()), false
-				} else {
-					err = uerr
-				}
+			switch {
+			case errors.Is(root, context.DeadlineExceeded):
+				st = newStatus(codes.DeadlineExceeded, root.Error(), errors.Unwrap(root))
+				return st, true
+			case errors.Is(root, context.Canceled):
+				st = newStatus(codes.Canceled, root.Error(), errors.Unwrap(root))
+				return st, true
+			default:
+				st = newStatus(codes.Unknown, root.Error(), errors.Unwrap(root))
+				return st, false
 			}
+		}
+	}
+}
+
+func withDetails(st *Status, err error, details ...interface{}) *Status {
+	msgs := make([]proto.MessageV1, 0, len(details)*2)
+	if err != nil {
+		msgs = append(msgs, &errdetails.ErrorInfo{
+			Reason: err.Error(),
+			Domain: func() (hostname string) {
+				var err error
+				hostname, err = os.Hostname()
+				if err != nil {
+					log.Warn("failed to fetch hostname:", err)
+				}
+				return hostname
+			}(),
+		})
+		pst, ok := FromError(err)
+		if ok && pst.Code() != codes.OK {
+			details = append(details, pst.Details()...)
+		}
+	}
+	for _, detail := range details {
+		switch v := detail.(type) {
+		case spb.Status:
+			msgs = append(msgs, proto.ToMessageV1(&v))
+		case *spb.Status:
+			msgs = append(msgs, proto.ToMessageV1(v))
+		case status.Status:
+			msgs = append(msgs, proto.ToMessageV1(&spb.Status{
+				Code:    v.Proto().GetCode(),
+				Message: v.Message(),
+			}))
+			for _, d := range v.Proto().Details {
+				msgs = append(msgs, proto.ToMessageV1(errdetails.AnyToErrorDetail(d)))
+			}
+		case *status.Status:
+			msgs = append(msgs, proto.ToMessageV1(&spb.Status{
+				Code:    v.Proto().GetCode(),
+				Message: v.Message(),
+			}))
+			for _, d := range v.Proto().Details {
+				msgs = append(msgs, proto.ToMessageV1(errdetails.AnyToErrorDetail(d)))
+			}
+		case *info.Detail:
+			msgs = append(msgs, errdetails.DebugInfoFromInfoDetail(v))
+		case info.Detail:
+			msgs = append(msgs, errdetails.DebugInfoFromInfoDetail(&v))
+		case proto.Message:
+			msgs = append(msgs, proto.ToMessageV1(v))
+		case *proto.Message:
+			msgs = append(msgs, proto.ToMessageV1(*v))
+		case proto.MessageV1:
+			msgs = append(msgs, v)
+		case *proto.MessageV1:
+			msgs = append(msgs, *v)
+		case types.Any:
+			msgs = append(msgs, proto.ToMessageV1(errdetails.AnyToErrorDetail(&v)))
+		}
+	}
+	sst, err := st.WithDetails(msgs...)
+	if err == nil && sst != nil {
+		st = sst
+	} else {
+		log.Warn("failed to set error details:", err)
+	}
+	Log(st.Code(), st.Err())
+	return st
+}
+
+func Log(code codes.Code, err error) {
+	if err != nil {
+		switch code {
+		case codes.Internal,
+			codes.DataLoss:
+			log.Error(err.Error())
+		case codes.Unavailable,
+			codes.ResourceExhausted:
+			log.Warn(err.Error())
+		case codes.FailedPrecondition,
+			codes.InvalidArgument,
+			codes.OutOfRange,
+			codes.Unauthenticated,
+			codes.PermissionDenied,
+			codes.Unknown:
+			log.Debug(err.Error())
+		case codes.Aborted,
+			codes.Canceled,
+			codes.DeadlineExceeded,
+			codes.AlreadyExists,
+			codes.NotFound,
+			codes.OK,
+			codes.Unimplemented:
+		default:
+			log.Warn(errors.ErrGRPCUnexpectedStatusError(code.String(), err))
 		}
 	}
 }

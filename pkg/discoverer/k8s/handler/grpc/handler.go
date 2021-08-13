@@ -44,6 +44,7 @@ type server struct {
 	group singleflight.Group
 	ip    string
 	name  string
+	discoverer.UnimplementedDiscovererServer
 }
 
 const (

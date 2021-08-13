@@ -126,6 +126,7 @@ func TestNewConfig(t *testing.T) {
 						NGT: &config.NGT{
 							IndexPath: "/var/index",
 							VQueue:    new(config.VQueue),
+							KVSDB:     new(config.KVSDB),
 						},
 					},
 					err: nil,
@@ -183,6 +184,7 @@ func TestNewConfig(t *testing.T) {
 						NGT: &config.NGT{
 							IndexPath: "/var/index",
 							VQueue:    new(config.VQueue),
+							KVSDB:     new(config.KVSDB),
 						},
 					},
 					err: nil,
@@ -253,6 +255,7 @@ func TestNewConfig(t *testing.T) {
 						NGT: &config.NGT{
 							IndexPath: "/var/index",
 							VQueue:    new(config.VQueue),
+							KVSDB:     new(config.KVSDB),
 						},
 					},
 					err: nil,
@@ -308,6 +311,7 @@ func TestNewConfig(t *testing.T) {
 						NGT: &config.NGT{
 							IndexPath: "/var/index",
 							VQueue:    new(config.VQueue),
+							KVSDB:     new(config.KVSDB),
 						},
 					},
 					err: nil,

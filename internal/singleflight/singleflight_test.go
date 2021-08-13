@@ -27,7 +27,7 @@ import (
 	"time"
 
 	"github.com/vdaas/vald/internal/errors"
-	"go.uber.org/goleak"
+	"github.com/vdaas/vald/internal/test/goleak"
 )
 
 func TestNew(t *testing.T) {
@@ -162,6 +162,7 @@ func Test_group_Do(t *testing.T) {
 				beforeFunc: func(g Group, args args) {
 					gcnt := 10
 					ch := make(chan struct{}, gcnt)
+					defer close(ch)
 
 					for i := 0; i < gcnt; i++ {
 						wg.Add(1)
@@ -181,9 +182,10 @@ func Test_group_Do(t *testing.T) {
 					for i := 0; i < gcnt; i++ {
 						<-ch
 					}
-					close(ch)
+					cond.Broadcast()
 				},
 				checkFunc: func(w want, gotV interface{}, gotShared bool, err error) error {
+					wg.Wait()
 					if got, want := int(atomic.LoadUint32(&cnt)), 11; got != want {
 						return errors.Errorf("cnt got = %d, want = %d", got, want)
 					}
@@ -191,7 +193,6 @@ func Test_group_Do(t *testing.T) {
 				},
 			}
 		}(),
-
 		func() test {
 			var cnt uint32
 			var res string = "res_1"
@@ -243,6 +244,7 @@ func Test_group_Do(t *testing.T) {
 
 					gcnt := 3
 					ch := make(chan struct{}, gcnt)
+					defer close(ch)
 
 					for i := 0; i < gcnt; i++ {
 						wg.Add(1)
@@ -261,9 +263,10 @@ func Test_group_Do(t *testing.T) {
 					for i := 0; i < gcnt; i++ {
 						<-ch
 					}
-					close(ch)
+					cond.Broadcast()
 				},
 				checkFunc: func(w want, gotV interface{}, gotShared bool, err error) error {
+					wg.Wait()
 					if got, want := int(atomic.LoadUint32(&cnt)), 1; got != want {
 						return errors.Errorf("cnt got = %d, want = %d", got, want)
 					}

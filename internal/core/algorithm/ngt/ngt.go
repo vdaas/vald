@@ -32,6 +32,7 @@ import (
 
 	"github.com/vdaas/vald/internal/core/algorithm"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/file"
 	"github.com/vdaas/vald/internal/log"
 )
 
@@ -240,11 +241,17 @@ func (n *ngt) loadOptions(opts ...Option) (err error) {
 }
 
 func (n *ngt) create() (err error) {
-	if fileExists(n.idxPath) {
-		log.Warnf("index path exists, will remove the directory. path: %s", n.idxPath)
-		if err = os.RemoveAll(n.idxPath); err != nil {
-			return err
+	files, err := file.ListInDir(n.idxPath)
+	if err == nil {
+		log.Warnf("index path exists, will remove the directories: %v", files)
+		for _, f := range files {
+			err = os.RemoveAll(f)
+			if err != nil {
+				return err
+			}
 		}
+	} else {
+		log.Debug(err)
 	}
 	path := C.CString(n.idxPath)
 	defer C.free(unsafe.Pointer(path))
@@ -267,7 +274,7 @@ func (n *ngt) create() (err error) {
 }
 
 func (n *ngt) open() error {
-	if !fileExists(n.idxPath) {
+	if !file.Exists(n.idxPath) {
 		return errors.ErrIndexNotFound
 	}
 
@@ -408,8 +415,9 @@ func (n *ngt) BulkInsert(vecs [][]float32) ([]uint, []error) {
 		id, err := n.Insert(vec)
 		if err != nil {
 			errs = append(errs, errors.Wrapf(err, "bulkinsert error detected index number: %d,\tid: %d", i, id))
+		} else {
+			ids = append(ids, id)
 		}
-		ids = append(ids, id)
 	}
 
 	return ids, errs
@@ -425,7 +433,7 @@ func (n *ngt) BulkInsertCommit(vecs [][]float32, poolSize uint32) ([]uint, []err
 	var id uint
 	var err error
 
-	for _, vec := range vecs {
+	for i, vec := range vecs {
 		if id, err = n.Insert(vec); err == nil {
 			ids = append(ids, id)
 			idx++
@@ -437,7 +445,7 @@ func (n *ngt) BulkInsertCommit(vecs [][]float32, poolSize uint32) ([]uint, []err
 				idx = 0
 			}
 		} else {
-			errs = append(errs, err)
+			errs = append(errs, errors.Wrapf(err, "bulkinsert error detected index number: %d,\tid: %d", i, id))
 		}
 	}
 

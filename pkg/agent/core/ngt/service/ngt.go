@@ -29,6 +29,7 @@ import (
 	"sync"
 	"sync/atomic"
 	"time"
+	"unsafe"
 
 	"github.com/vdaas/vald/internal/config"
 	core "github.com/vdaas/vald/internal/core/algorithm/ngt"
@@ -89,7 +90,8 @@ type ngt struct {
 	// statuses
 	indexing  atomic.Value
 	saving    atomic.Value
-	lastNoice uint64 // last number of create index execution this value prevent unnecessary saveindex.
+	cimu      sync.Mutex // create index mutex
+	lastNoice uint64     // last number of create index execution this value prevent unnecessary saveindex.
 
 	// counters
 	nocie uint64 // number of create index execution
@@ -133,8 +135,21 @@ func New(cfg *config.NGT, opts ...Option) (nn NGT, err error) {
 		}
 	}
 
-	n.kvs = kvs.New()
 	n.dim = cfg.Dimension
+
+	n.kvs = kvs.New(func() []kvs.Option {
+		if cfg.KVSDB.Concurrency < 1 {
+			return []kvs.Option{
+				// n.eg is global errgroup we can use it only concurrency < 1 (which means unlimited)
+				// if we use global errgroup under the limited concurrency it will affect other daemon process
+				kvs.WithErrGroup(n.eg),
+			}
+		}
+		return []kvs.Option{
+			// when concurrency >= 1 which means limited concurrency for retrieving kvsdb, we shouldn't use global errgroup kvsdb will automatically generates it's own errgroup
+			kvs.WithConcurrency(cfg.KVSDB.Concurrency),
+		}
+	}()...)
 
 	err = n.initNGT(
 		core.WithInMemoryMode(n.inMem),
@@ -168,7 +183,6 @@ func New(cfg *config.NGT, opts ...Option) (nn NGT, err error) {
 			return nil, err
 		}
 	}
-
 	n.indexing.Store(false)
 	n.saving.Store(false)
 
@@ -182,8 +196,7 @@ func (n *ngt) initNGT(opts ...core.Option) (err error) {
 		return err
 	}
 
-	_, err = os.Stat(n.path)
-	if os.IsNotExist(err) {
+	if exist, _, err := file.ExistsWithDetail(n.path); !exist {
 		log.Debugf("index file not exists,\tpath: %s,\terr: %v", n.path, err)
 		n.core, err = core.New(opts...)
 		return err
@@ -201,8 +214,7 @@ func (n *ngt) initNGT(opts ...core.Option) (err error) {
 	}
 	if os.IsNotExist(err) || agentMetadata == nil || agentMetadata.NGT == nil || agentMetadata.NGT.IndexCount == 0 {
 		log.Warnf("cannot read metadata from %s: %v", metadata.AgentMetadataFileName, err)
-
-		if fi, err := os.Stat(filepath.Join(n.path, kvsFileName)); os.IsNotExist(err) || fi.Size() == 0 {
+		if exist, fi, err := file.ExistsWithDetail(filepath.Join(n.path, kvsFileName)); !exist || fi != nil && fi.Size() == 0 {
 			log.Warn("kvsdb file is not exist")
 			n.core, err = core.New(opts...)
 			return err
@@ -246,7 +258,7 @@ func (n *ngt) initNGT(opts ...core.Option) (err error) {
 
 	// NOTE: when it exceeds the timeout while loading,
 	// it should exit this function and leave this goroutine running.
-	go func() {
+	n.eg.Go(safety.RecoverFunc(func() error {
 		defer close(ech)
 		err = safety.RecoverFunc(func() (err error) {
 			err = eg.Wait()
@@ -259,7 +271,8 @@ func (n *ngt) initNGT(opts ...core.Option) (err error) {
 		if err != nil {
 			ech <- err
 		}
-	}()
+		return nil
+	}))
 
 	select {
 	case err := <-ech:
@@ -362,6 +375,10 @@ func (n *ngt) Start(ctx context.Context) <-chan error {
 			err = nil
 			select {
 			case <-ctx.Done():
+				err = n.kvs.Close()
+				if err != nil {
+					ech <- err
+				}
 				err = n.CreateIndex(ctx, n.poolSize)
 				if err != nil && !errors.Is(err, errors.ErrUncommittedIndexNotFound) {
 					ech <- err
@@ -398,6 +415,10 @@ func (n *ngt) Search(vec []float32, size uint32, epsilon, radius float32) ([]mod
 	}
 	sr, err := n.core.Search(vec, int(size), epsilon, radius)
 	if err != nil {
+		log.Errorf("cgo error detected: ngt code api returned error %v", err)
+		if n.IsIndexing() {
+			return nil, errors.ErrCreateIndexingIsInProgress
+		}
 		return nil, err
 	}
 
@@ -450,10 +471,9 @@ func (n *ngt) insert(uuid string, vec []float32, t int64, validation bool) (err 
 		err = errors.ErrUUIDNotFound(0)
 		return err
 	}
-	if validation && !n.vq.DVExists(uuid) {
-		// if delete schedule exists we can insert new vector
-		_, ok := n.kvs.Get(uuid)
-		if ok || n.vq.IVExists(uuid) {
+	if validation {
+		_, ok := n.Exists(uuid)
+		if ok {
 			return errors.ErrUUIDAlreadyExists(uuid)
 		}
 	}
@@ -584,24 +604,6 @@ func (n *ngt) deleteMultiple(uuids []string, now int64) (err error) {
 	return err
 }
 
-func (n *ngt) GetObject(uuid string) (vec []float32, err error) {
-	vec, ok := n.vq.GetVector(uuid)
-	if !ok {
-		log.Debugf("GetObject\tuuid: %s's data not found in vqueue, trying to read from indexed kvsdb data", uuid)
-		oid, ok := n.kvs.Get(uuid)
-		if !ok {
-			log.Debugf("GetObject\tuuid: %s's data not found in kvsdb and vqueue", uuid)
-			return nil, errors.ErrObjectIDNotFound(uuid)
-		}
-		vec, err = n.core.GetVector(uint(oid))
-		if err != nil {
-			log.Debugf("GetObject\tuuid: %s oid: %d's vector not found in ngt index", uuid, oid)
-			return nil, errors.ErrObjectNotFound(err, uuid)
-		}
-	}
-	return vec, nil
-}
-
 func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 	ctx, span := trace.StartSpan(ctx, "vald/agent-ngt/service/NGT.CreateIndex")
 	defer func() {
@@ -609,31 +611,46 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 			span.End()
 		}
 	}()
-
-	if n.IsIndexing() || n.IsSaving() {
-		return nil
-	}
 	ic := n.vq.IVQLen() + n.vq.DVQLen()
 	if ic == 0 {
 		return errors.ErrUncommittedIndexNotFound
 	}
+	err = func() error {
+		ticker := time.NewTicker(time.Millisecond * 100)
+		defer ticker.Stop()
+		// wait for not indexing & not saving
+		for n.IsIndexing() || n.IsSaving() {
+			runtime.Gosched()
+			select {
+			case <-ctx.Done():
+				return ctx.Err()
+			case <-ticker.C:
+			}
+		}
+		return nil
+	}()
+	if err != nil {
+		return err
+	}
+	n.cimu.Lock()
+	defer n.cimu.Unlock()
 	n.indexing.Store(true)
 	defer n.indexing.Store(false)
 	defer n.gc()
-
+	ic = n.vq.IVQLen() + n.vq.DVQLen()
+	if ic == 0 {
+		return errors.ErrUncommittedIndexNotFound
+	}
 	log.Infof("create index operation started, uncommitted indexes = %d", ic)
 	log.Debug("create index delete phase started")
 	n.vq.RangePopDelete(ctx, func(uuid string) bool {
-		var ierr error
 		oid, ok := n.kvs.Delete(uuid)
-		if ok {
-			ierr = n.core.Remove(uint(oid))
-		} else {
-			ierr = errors.ErrObjectIDNotFound(uuid)
+		if !ok {
+			log.Warn(errors.ErrObjectIDNotFound(uuid))
+			return true
 		}
-		if ierr != nil {
-			log.Error(ierr)
-			err = errors.Wrap(err, ierr.Error())
+		if err := n.core.Remove(uint(oid)); err != nil {
+			log.Error(err)
 		}
 		return true
 	})
@@ -641,10 +658,9 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 	n.gc()
 	log.Debug("create index insert phase started")
 	n.vq.RangePopInsert(ctx, func(uuid string, vector []float32) bool {
-		oid, ierr := n.core.Insert(vector)
-		if ierr != nil {
-			log.Error(ierr)
-			err = errors.Wrap(err, ierr.Error())
+		oid, err := n.core.Insert(vector)
+		if err != nil {
+			log.Error(err)
 		} else {
 			n.kvs.Set(uuid, uint32(oid))
 		}
@@ -685,16 +701,22 @@ func (n *ngt) saveIndex(ctx context.Context) (err error) {
 		return
 	}
 	atomic.SwapUint64(&n.lastNoice, noice)
-	ticker := time.NewTicker(time.Second)
-	defer ticker.Stop()
-	// wait for not indexing & not saving
-	for n.IsIndexing() || n.IsSaving() {
-		runtime.Gosched()
-		select {
-		case <-ctx.Done():
-			return ctx.Err()
-		case <-ticker.C:
+	err = func() error {
+		ticker := time.NewTicker(time.Second)
+		defer ticker.Stop()
+		// wait for not indexing & not saving
+		for n.IsIndexing() || n.IsSaving() {
+			runtime.Gosched()
+			select {
+			case <-ctx.Done():
+				return ctx.Err()
+			case <-ticker.C:
+			}
 		}
+		return nil
+	}()
+	if err != nil {
+		return err
 	}
 	n.saving.Store(true)
 	defer n.gc()
@@ -783,32 +805,56 @@ func (n *ngt) CreateAndSaveIndex(ctx context.Context, poolSize uint32) (err erro
 }
 
 func (n *ngt) Exists(uuid string) (oid uint32, ok bool) {
-	oid, ok = n.kvs.Get(uuid)
+	ok = n.vq.IVExists(uuid)
 	if !ok {
-		ok = n.vq.IVExists(uuid)
-	} else {
-		ok = !n.vq.DVExists(uuid)
+		oid, ok = n.kvs.Get(uuid)
+		if !ok {
+			log.Debugf("Exists\tuuid: %s's data not found in kvsdb and insert vqueue\terror: %v", uuid, errors.ErrObjectIDNotFound(uuid))
+			return 0, false
+		}
+		if n.vq.DVExists(uuid) {
+			log.Debugf("Exists\tuuid: %s's data found in kvsdb and not found in insert vqueue, but delete vqueue data exists. the object will be delete soon\terror: %v",
+				uuid, errors.ErrObjectIDNotFound(uuid))
+			return 0, false
+		}
 	}
 	return oid, ok
+}
+
+func (n *ngt) GetObject(uuid string) (vec []float32, err error) {
+	vec, ok := n.vq.GetVector(uuid)
+	if !ok {
+		oid, ok := n.kvs.Get(uuid)
+		if !ok {
+			log.Debugf("GetObject\tuuid: %s's data not found in kvsdb and insert vqueue", uuid)
+			return nil, errors.ErrObjectIDNotFound(uuid)
+		}
+		if n.vq.DVExists(uuid) {
+			log.Debugf("GetObject\tuuid: %s's data found in kvsdb and not found in insert vqueue, but delete vqueue data exists. the object will be delete soon", uuid)
+			return nil, errors.ErrObjectIDNotFound(uuid)
+		}
+		vec, err = n.core.GetVector(uint(oid))
+		if err != nil {
+			log.Debugf("GetObject\tuuid: %s oid: %d's vector not found in ngt index", uuid, oid)
+			return nil, errors.ErrObjectNotFound(err, uuid)
+		}
+	}
+	return vec, nil
 }
 
 func (n *ngt) readyForUpdate(uuid string, vec []float32) (err error) {
 	if len(uuid) == 0 {
 		return errors.ErrUUIDNotFound(0)
 	}
-	if len(vec) == 0 {
-		return errors.ErrInvalidDimensionSize(len(vec), 0)
+	if len(vec) != n.GetDimensionSize() {
+		return errors.ErrInvalidDimensionSize(len(vec), n.GetDimensionSize())
 	}
 	ovec, err := n.GetObject(uuid)
-	if err != nil || len(vec) != len(ovec) {
-		// if error (GetObject cannot find vector) or vector length is not equal let's try update
+	if err != nil ||
+		len(vec) != len(ovec) ||
+		f32stos(vec) != f32stos(ovec) {
+		// if error (GetObject cannot find vector) or vector length is not equal or if difference exists let's try update
 		return nil
-	}
-	for i, v := range vec {
-		if v != ovec[i] {
-			// if difference exists return nil for update
-			return nil
-		}
 	}
 	// if no difference exists (same vector already exists) return error for skip update
 	return errors.ErrUUIDAlreadyExists(uuid)
@@ -873,9 +919,26 @@ func (n *ngt) GetDimensionSize() int {
 }
 
 func (n *ngt) Close(ctx context.Context) (err error) {
+	err = n.kvs.Close()
 	if len(n.path) != 0 {
-		err = n.CreateAndSaveIndex(ctx, n.poolSize)
+		cerr := n.CreateAndSaveIndex(ctx, n.poolSize)
+		if cerr != nil {
+			if err != nil {
+				err = errors.Wrap(cerr, err.Error())
+			} else {
+				err = cerr
+			}
+		}
 	}
 	n.core.Close()
 	return
+}
+
+func f32stos(fs []float32) string {
+	lf := 4 * len(fs)
+	buf := (*(*[1]byte)(unsafe.Pointer(&(fs[0]))))[:]
+	addr := unsafe.Pointer(&buf)
+	(*(*int)(unsafe.Pointer(uintptr(addr) + uintptr(8)))) = lf
+	(*(*int)(unsafe.Pointer(uintptr(addr) + uintptr(16)))) = lf
+	return *(*string)(unsafe.Pointer(&buf))
 }

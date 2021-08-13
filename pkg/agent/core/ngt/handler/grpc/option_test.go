@@ -234,6 +234,9 @@ func TestWithNGT(t *testing.T) {
 						DeleteBufferSize:     100,
 						DeleteBufferPoolSize: 50,
 					},
+					KVSDB: &config.KVSDB{
+						Concurrency: 0,
+					},
 				})
 				if err != nil {
 					t.Fatal(err)

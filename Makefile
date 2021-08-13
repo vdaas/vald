@@ -20,25 +20,19 @@ GOPKG                           = github.com/$(ORG)/$(NAME)
 GOPRIVATE                       = $(GOPKG),$(GOPKG)/apis
 DATETIME                        = $(eval DATETIME := $(shell date -u +%Y/%m/%d_%H:%M:%S%z))$(DATETIME)
 TAG                            ?= latest
+CRORG                          ?= $(ORG)
+# CRORG                           = ghcr.io/vdaas/vald
 AGENT_IMAGE                     = $(NAME)-agent-ngt
 AGENT_SIDECAR_IMAGE             = $(NAME)-agent-sidecar
-BACKUP_GATEWAY_IMAGE            = $(NAME)-backup-gateway
 CI_CONTAINER_IMAGE              = $(NAME)-ci-container
 DEV_CONTAINER_IMAGE             = $(NAME)-dev-container
 DISCOVERER_IMAGE                = $(NAME)-discoverer-k8s
 FILTER_GATEWAY_IMAGE            = $(NAME)-filter-gateway
 FILTER_INGRESS_TF_IMAGE         = $(NAME)-filter-ingress-tensorflow
-GATEWAY_IMAGE                   = $(NAME)-gateway
 HELM_OPERATOR_IMAGE             = $(NAME)-helm-operator
 LB_GATEWAY_IMAGE                = $(NAME)-lb-gateway
 LOADTEST_IMAGE                  = $(NAME)-loadtest
-MANAGER_BACKUP_CASSANDRA_IMAGE  = $(NAME)-manager-backup-cassandra
-MANAGER_BACKUP_MYSQL_IMAGE      = $(NAME)-manager-backup-mysql
-MANAGER_COMPRESSOR_IMAGE        = $(NAME)-manager-compressor
 MANAGER_INDEX_IMAGE             = $(NAME)-manager-index
-META_CASSANDRA_IMAGE            = $(NAME)-meta-cassandra
-META_GATEWAY_IMAGE              = $(NAME)-meta-gateway
-META_REDIS_IMAGE                = $(NAME)-meta-redis
 MAINTAINER                      = "$(ORG).org $(NAME) team <$(NAME)@$(ORG).org>"
 
 VERSION ?= $(eval VERSION := $(shell cat versions/VALD_VERSION))$(VERSION)
@@ -48,10 +42,11 @@ NGT_REPO = github.com/yahoojapan/NGT
 
 GOPROXY=direct
 GO_VERSION := $(eval GO_VERSION := $(shell cat versions/GO_VERSION))$(GO_VERSION)
-GOOS := $(eval GOOS := $(shell go env GOOS))$(GOOS)
 GOARCH := $(eval GOARCH := $(shell go env GOARCH))$(GOARCH)
-GOPATH := $(eval GOPATH := $(shell go env GOPATH))$(GOPATH)
+GOBIN := $(eval GOBIN := $(shell go env GOBIN))$(GOBIN)
 GOCACHE := $(eval GOCACHE := $(shell go env GOCACHE))$(GOCACHE)
+GOOS := $(eval GOOS := $(shell go env GOOS))$(GOOS)
+GOPATH := $(eval GOPATH := $(shell go env GOPATH))$(GOPATH)
 
 TEMP_DIR := $(eval TEMP_DIR := $(shell mktemp -d))$(TEMP_DIR)
 
@@ -59,13 +54,13 @@ TENSORFLOW_C_VERSION := $(eval TENSORFLOW_C_VERSION := $(shell cat versions/TENS
 
 OPERATOR_SDK_VERSION := $(eval OPERATOR_SDK_VERSION := $(shell cat versions/OPERATOR_SDK_VERSION))$(OPERATOR_SDK_VERSION)
 
-KIND_VERSION         ?= v0.10.0
-HELM_VERSION         ?= v3.5.4
+KIND_VERSION         ?= v0.11.1
+HELM_VERSION         ?= v3.6.3
 HELM_DOCS_VERSION    ?= 1.5.0
-YQ_VERSION           ?= v4.7.1
-VALDCLI_VERSION      ?= v1.0.4
+YQ_VERSION           ?= v4.11.2
+VALDCLI_VERSION      ?= v1.1.2
 TELEPRESENCE_VERSION ?= 0.109
-KUBELINTER_VERSION   ?= 0.2.1
+KUBELINTER_VERSION   ?= 0.2.2
 
 SWAP_DEPLOYMENT_TYPE ?= deployment
 SWAP_IMAGE           ?= ""
@@ -95,11 +90,10 @@ BENCH_DATASET_MD5_DIR = $(BENCH_DATASET_BASE_DIR)/$(BENCH_DATASET_MD5_DIR_NAME)
 BENCH_DATASET_HDF5_DIR = $(BENCH_DATASET_BASE_DIR)/$(BENCH_DATASET_HDF5_DIR_NAME)
 
 PROTOS := $(eval PROTOS := $(shell find apis/proto -type f -regex ".*\.proto"))$(PROTOS)
-PROTOS_V0 := $(eval PROTOS_V0 := $(filter-out apis/proto/v%.proto,$(PROTOS)))$(PROTOS_V0)
 PROTOS_V1 := $(eval PROTOS_V1 := $(filter apis/proto/v1/%.proto,$(PROTOS)))$(PROTOS_V1)
 PBGOS = $(PROTOS:apis/proto/%.proto=apis/grpc/%.pb.go)
 SWAGGERS = $(PROTOS:apis/proto/%.proto=apis/swagger/%.swagger.json)
-PBDOCS = apis/docs/v0/docs.md apis/docs/v1/docs.md
+PBDOCS = apis/docs/v1/docs.md
 
 ifeq ($(GOARCH),amd64)
 CFLAGS ?= -mno-avx512f -mno-avx512dq -mno-avx512cd -mno-avx512bw -mno-avx512vl
@@ -160,8 +154,12 @@ PROTO_PATHS = \
 	$(PWD) \
 	$(GOPATH)/src \
 	$(GOPATH)/src/$(GOPKG) \
+	$(GOPATH)/src/$(GOPKG)/apis/proto/v1 \
+	$(GOPATH)/src/github.com/envoyproxy/protoc-gen-validate \
 	$(GOPATH)/src/github.com/googleapis/googleapis \
-	$(GOPATH)/src/github.com/gogo/googleapis
+	$(GOPATH)/src/github.com/planetscale/vtprotobuf \
+	$(GOPATH)/src/github.com/protocolbuffers/protobuf \
+	$(GOPATH)/src/google.golang.org/genproto
 
 # [Warning]
 # The below packages have no original implementation.
@@ -271,6 +269,7 @@ E2E_SEARCH_COUNT                   ?= 1000
 E2E_SEARCH_BY_ID_COUNT             ?= 100
 E2E_GET_OBJECT_COUNT               ?= 10
 E2E_UPDATE_COUNT                   ?= 10
+E2E_UPSERT_COUNT                   ?= 10
 E2E_REMOVE_COUNT                   ?= 3
 E2E_WAIT_FOR_CREATE_INDEX_DURATION ?= 8m
 E2E_TARGET_NAME                    ?= vald-lb-gateway
@@ -384,7 +383,6 @@ format/yaml:
 	    ".github/**/*.yaml" \
 	    ".github/**/*.yml" \
 	    "cmd/**/*.yaml" \
-	    "hack/**/*.yaml" \
 	    "k8s/**/*.yaml"
 
 .PHONY: deps

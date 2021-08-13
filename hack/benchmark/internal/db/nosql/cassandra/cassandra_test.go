@@ -25,6 +25,7 @@ import (
 
 	"github.com/vdaas/vald/internal/db/nosql/cassandra"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/log/logger"
 )
 
 var (
@@ -66,7 +67,7 @@ type MetaVector struct {
 }
 
 func init() {
-	log.Init()
+	log.Init(log.WithLoggerType(logger.NOP.String()))
 	var err error
 	c, err = cassandra.New(
 		cassandra.WithHosts(

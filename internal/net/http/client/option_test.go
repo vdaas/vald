@@ -27,7 +27,7 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/test/comparator"
-	"go.uber.org/goleak"
+	"github.com/vdaas/vald/internal/test/goleak"
 )
 
 func TestWithProxy(t *testing.T) {
@@ -1374,55 +1374,65 @@ func TestWithBackoffOpts(t *testing.T) {
 	}
 
 	tests := []test{
-		{
-			name: "set backoff opts success when origin backoff opts is nil",
-			args: args{
-				opts: []backoff.Option{backoff.WithEnableErrorLog()},
-			},
-			want: want{
-				obj: &T{
-					Transport:   &http.Transport{},
-					backoffOpts: []backoff.Option{backoff.WithEnableErrorLog()},
+		func() test {
+			opts := []backoff.Option{backoff.WithEnableErrorLog()}
+			return test{
+				name: "set backoff opts success when origin backoff opts is nil",
+				args: args{
+					opts: opts,
 				},
-			},
-		},
-		{
-			name: "set backoff opts success when origin backoff opts is not nil",
-			args: args{
-				opts: []backoff.Option{backoff.WithEnableErrorLog()},
-			},
-			fields: fields{
-				backoffOpts: []backoff.Option{backoff.WithRetryCount(20)},
-			},
-			want: want{
-				obj: &T{
-					Transport: &http.Transport{},
-					backoffOpts: []backoff.Option{
-						backoff.WithRetryCount(20),
-						backoff.WithEnableErrorLog(),
+				want: want{
+					obj: &T{
+						Transport:   &http.Transport{},
+						backoffOpts: opts,
 					},
 				},
-			},
-		},
-		{
-			name: "return error when opt is empty",
-			args: args{},
-			fields: fields{
-				backoffOpts: []backoff.Option{backoff.WithRetryCount(20)},
-			},
-			want: want{
-				obj: &T{
-					Transport: &http.Transport{},
-					backoffOpts: []backoff.Option{
-						backoff.WithRetryCount(20),
+			}
+		}(),
+		func() test {
+			opt1 := backoff.WithEnableErrorLog()
+			opt2 := backoff.WithRetryCount(20)
+			return test{
+				name: "set backoff opts success when origin backoff opts is not nil",
+				args: args{
+					opts: []backoff.Option{opt2},
+				},
+				fields: fields{
+					backoffOpts: []backoff.Option{opt1},
+				},
+				want: want{
+					obj: &T{
+						Transport: &http.Transport{},
+						backoffOpts: []backoff.Option{
+							opt1,
+							opt2,
+						},
 					},
 				},
-				err: func() error {
-					var bo []backoff.Option
-					return errors.NewErrInvalidOption("backoffOpts", bo)
-				}(),
-			},
-		},
+			}
+		}(),
+		func() test {
+			var opts []backoff.Option
+			fieldOpt := backoff.WithRetryCount(20)
+			return test{
+				name: "return error when opt is empty",
+				args: args{
+					opts: opts,
+				},
+				fields: fields{
+					backoffOpts: []backoff.Option{fieldOpt},
+				},
+				want: want{
+					obj: &T{
+						Transport: &http.Transport{},
+						backoffOpts: []backoff.Option{
+							fieldOpt,
+						},
+					},
+					err: errors.NewErrInvalidOption("backoffOpts", opts),
+				},
+			}
+		}(),
 	}
 
 	for _, test := range tests {

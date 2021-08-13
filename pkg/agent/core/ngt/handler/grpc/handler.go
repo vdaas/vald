@@ -53,6 +53,8 @@ type server struct {
 	ngt               service.NGT
 	eg                errgroup.Group
 	streamConcurrency int
+	agent.UnimplementedAgentServer
+	vald.UnimplementedValdServer
 }
 
 const (
@@ -223,7 +225,8 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 			req.GetConfig().GetRadius()))
 	if err != nil {
 		var stat trace.Status
-		if errors.Is(err, errors.ErrCreateIndexingIsInProgress) {
+		switch {
+		case errors.Is(err, errors.ErrCreateIndexingIsInProgress):
 			err = status.WrapWithAborted("SearchByID API aborted to process search request due to createing indices is in progress", err,
 				&errdetails.RequestInfo{
 					RequestId:   req.GetConfig().GetRequestId(),
@@ -235,7 +238,20 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 				})
 			log.Debug(err)
 			stat = trace.StatusCodeAborted(err.Error())
-		} else {
+		case errors.Is(err, errors.ErrObjectIDNotFound(req.GetId())),
+			strings.Contains(err.Error(), fmt.Sprintf("ngt uuid %s's object not found", req.GetId())):
+			err = status.WrapWithNotFound(fmt.Sprintf("SearchByID API uuid %s's object not found", req.GetId()), err,
+				&errdetails.RequestInfo{
+					RequestId:   req.GetConfig().GetRequestId(),
+					ServingData: errdetails.Serialize(req),
+				},
+				&errdetails.ResourceInfo{
+					ResourceType: ngtResourceType + "/ngt.SearchByID",
+					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+				})
+			log.Debug(err)
+			stat = trace.StatusCodeNotFound(err.Error())
+		default:
 			err = status.WrapWithInternal("SearchByID API failed to process search request", err,
 				&errdetails.RequestInfo{
 					RequestId:   req.GetConfig().GetRequestId(),
@@ -258,10 +274,10 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 }
 
 func toSearchResponse(dists []model.Distance, err error) (res *payload.Search_Response, rerr error) {
-	res = new(payload.Search_Response)
-	if err != nil {
+	if err != nil || len(dists) == 0 {
 		return nil, err
 	}
+	res = new(payload.Search_Response)
 	res.Results = make([]*payload.Object_Distance, 0, len(dists))
 	for _, dist := range dists {
 		res.Results = append(res.GetResults(), &payload.Object_Distance{
@@ -799,7 +815,7 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (res *
 				})
 			log.Warn(err)
 			code = trace.StatusCodeNotFound(err.Error())
-		} else if errors.Is(err, errors.ErrUUIDNotFound(0)) || errors.Is(err, errors.ErrInvalidDimensionSize(len(vec.GetVector()), 0)) {
+		} else if errors.Is(err, errors.ErrUUIDNotFound(0)) || errors.Is(err, errors.ErrInvalidDimensionSize(len(vec.GetVector()), s.ngt.GetDimensionSize())) {
 			err = status.WrapWithInvalidArgument(fmt.Sprintf("Update API invalid argument for uuid \"%s\" vec \"%v\" detected", vec.GetId(), vec.GetVector()), err,
 				&errdetails.RequestInfo{
 					RequestId:   req.GetVector().GetId(),
@@ -966,7 +982,7 @@ func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequ
 		} else if invalidDimensionIDs := func() []string {
 			idis := make([]string, 0, len(uuids))
 			for id, vec := range vmap {
-				if errors.Is(err, errors.ErrInvalidDimensionSize(len(vec), 0)) {
+				if errors.Is(err, errors.ErrInvalidDimensionSize(len(vec), s.ngt.GetDimensionSize())) {
 					idis = append(idis, id)
 				}
 			}

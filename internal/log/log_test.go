@@ -27,7 +27,7 @@ import (
 	"github.com/vdaas/vald/internal/log/logger"
 	"github.com/vdaas/vald/internal/log/mock"
 	"github.com/vdaas/vald/internal/log/nop"
-	"go.uber.org/goleak"
+	"github.com/vdaas/vald/internal/test/goleak"
 )
 
 // Goroutine leak is detected by `fastime`, but it should be ignored in the test because it is an external package.
@@ -176,6 +176,12 @@ func Test_getLogger(t *testing.T) {
 					glg.WithLevel(level.Unknown.String()),
 				),
 			},
+			checkFunc: func(w want, got logger.Logger) error {
+				if got == nil {
+					return errors.New("got object is empty")
+				}
+				return nil
+			},
 		},
 
 		{
@@ -187,6 +193,12 @@ func Test_getLogger(t *testing.T) {
 				want: glg.New(
 					glg.WithLevel(level.Unknown.String()),
 				),
+			},
+			checkFunc: func(w want, got logger.Logger) error {
+				if got == nil {
+					return errors.New("got object is empty")
+				}
+				return nil
 			},
 		},
 	}

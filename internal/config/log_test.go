@@ -67,19 +67,19 @@ func TestLogging_Bind(t *testing.T) {
 		{
 			name: "returns Logging with environment variable when it contains `_` prefix and suffix",
 			fields: fields{
-				Logger: "_logger_",
-				Level:  "_level_",
-				Format: "_format_",
+				Logger: "_LOGGING_BIND_LOGGER_",
+				Level:  "_LOGGING_BIND_LEVEL_",
+				Format: "_LOGGING_BIND_FORMAT_",
 			},
 			beforeFunc: func() {
-				_ = os.Setenv("logger", "glg")
-				_ = os.Setenv("level", "info")
-				_ = os.Setenv("format", "json")
+				_ = os.Setenv("LOGGING_BIND_LOGGER", "glg")
+				_ = os.Setenv("LOGGING_BIND_LEVEL", "info")
+				_ = os.Setenv("LOGGING_BIND_FORMAT", "json")
 			},
 			afterFunc: func() {
-				_ = os.Unsetenv("logger")
-				_ = os.Unsetenv("level")
-				_ = os.Unsetenv("format")
+				_ = os.Unsetenv("LOGGING_BIND_LOGGER")
+				_ = os.Unsetenv("LOGGING_BIND_LEVEL")
+				_ = os.Unsetenv("LOGGING_BIND_FORMAT")
 			},
 			want: want{
 				want: &Logging{

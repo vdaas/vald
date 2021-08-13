@@ -52,6 +52,7 @@ type server struct {
 	streamConcurrency int
 	name              string
 	ip                string
+	vald.UnimplementedValdServer
 }
 
 const apiName = "vald/gateway/lb"
@@ -207,8 +208,7 @@ func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *
 		st, msg, err := status.ParseError(err, codes.Internal,
 			"failed to parse Search gRPC error response",
 			&errdetails.RequestInfo{
-				RequestId:   req.GetConfig().GetRequestId(),
-				ServingData: errdetails.Serialize(req),
+				RequestId: req.GetConfig().GetRequestId(),
 			},
 			&errdetails.ResourceInfo{
 				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.Search",
@@ -266,7 +266,7 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 			&errdetails.ResourceInfo{
 				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.GetObject",
 				ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
-			}, info.Get())
+			})
 		var serr error
 		res, serr = s.search(ctx, req.GetConfig(),
 			func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error) {
@@ -279,8 +279,7 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 		err = errors.Wrap(err, serr.Error())
 		st, msg, serr := status.ParseError(err, codes.Internal, "SearchByID API failed to process search request",
 			&errdetails.RequestInfo{
-				RequestId:   req.GetConfig().GetRequestId(),
-				ServingData: errdetails.Serialize(req),
+				RequestId: req.GetConfig().GetRequestId(),
 			},
 			&errdetails.ResourceInfo{
 				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.SearchByID",
@@ -299,8 +298,7 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 	if err != nil {
 		_, _, err := status.ParseError(err, codes.Internal, "SearchByID API failed to process search request",
 			&errdetails.RequestInfo{
-				RequestId:   req.GetConfig().GetRequestId(),
-				ServingData: errdetails.Serialize(sreq),
+				RequestId: req.GetConfig().GetRequestId(),
 			},
 			&errdetails.ResourceInfo{
 				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.Search",
@@ -316,8 +314,7 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 		}
 		st, msg, serr := status.ParseError(serr, codes.Internal, "SearchByID API failed to process search request",
 			&errdetails.RequestInfo{
-				RequestId:   req.GetConfig().GetRequestId(),
-				ServingData: errdetails.Serialize(req),
+				RequestId: req.GetConfig().GetRequestId(),
 			},
 			&errdetails.ResourceInfo{
 				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.SearchByID",
@@ -387,7 +384,7 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 							target + " deadline_exceeded: " + err.Error()))
 				}
 			case err != nil:
-				st, msg, err := status.ParseError(err, codes.Internal, "failed to parse Search gRPC error response",
+				st, msg, err := status.ParseError(err, codes.Internal, "failed to parse search gRPC error response",
 					&errdetails.ResourceInfo{
 						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.Search",
 						ResourceName: fmt.Sprintf("%s: %s(%s) to %s", apiName, s.name, s.ip, target),
@@ -395,7 +392,12 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 				if sspan != nil {
 					sspan.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
 				}
-				return err
+				switch st.Code() {
+				case codes.Internal,
+					codes.Unavailable,
+					codes.ResourceExhausted:
+					return err
+				}
 			case r == nil || len(r.GetResults()) == 0:
 				err = errors.ErrEmptySearchResult
 				err = status.WrapWithNotFound("failed to process search request", err,
@@ -406,21 +408,20 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 				if sspan != nil {
 					sspan.SetStatus(trace.StatusCodeNotFound(err.Error()))
 				}
-			default:
-				for _, dist := range r.GetResults() {
-					if dist == nil {
-						continue
-					}
+			}
+			for _, dist := range r.GetResults() {
+				if dist == nil {
+					continue
+				}
 
-					if dist.GetDistance() >= math.Float32frombits(atomic.LoadUint32(&maxDist)) {
+				if dist.GetDistance() >= math.Float32frombits(atomic.LoadUint32(&maxDist)) {
+					return nil
+				}
+				if _, already := visited.LoadOrStore(dist.GetId(), struct{}{}); !already {
+					select {
+					case <-ectx.Done():
 						return nil
-					}
-					if _, already := visited.LoadOrStore(dist.GetId(), struct{}{}); !already {
-						select {
-						case <-ectx.Done():
-							return nil
-						case dch <- dist:
-						}
+					case dch <- dist:
 					}
 				}
 			}
@@ -495,7 +496,10 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 				if span != nil {
 					span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
 				}
-				return nil, err
+				log.Warn(err)
+				if len(res.GetResults()) == 0 {
+					return nil, err
+				}
 			}
 			if num != 0 && len(res.GetResults()) == 0 {
 				if err == nil {
@@ -1767,25 +1771,24 @@ func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequ
 				errs = errors.Wrap(errs, err.Error())
 			}
 		}
-
-		if errs == nil {
-			var locs []*payload.Object_Location
-			switch {
-			case ures.GetLocations() == nil:
-				locs = ires.GetLocations()
-			case ires.GetLocations() == nil:
-				locs = ures.GetLocations()
-			default:
-				locs = append(ures.GetLocations(), ires.GetLocations()...)
-			}
-			res = &payload.Object_Locations{
-				Locations: locs,
-			}
-		} else {
+		if errs != nil {
 			err = errs
+		}
+		switch {
+		case ures.GetLocations() == nil && ires.GetLocations() != nil:
+			res = ires
+		case ures.GetLocations() != nil && ires.GetLocations() == nil:
+			res = ures
+		case ures.GetLocations() != nil && ires.GetLocations() != nil:
+			res = &payload.Object_Locations{
+				Locations: append(ures.GetLocations(), ires.GetLocations()...),
+			}
+		default:
+			res = new(payload.Object_Locations)
 		}
 
 	}
+
 	if err != nil {
 		st, msg, err := status.ParseError(err, codes.Internal,
 			"failed to parse MultiUpsert gRPC error response",

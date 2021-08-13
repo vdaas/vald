@@ -28,6 +28,7 @@ import (
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/log/logger"
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/net/control"
 	"github.com/vdaas/vald/internal/net/grpc"
@@ -297,7 +298,7 @@ func TestNew(t *testing.T) {
 		}(),
 	}
 
-	log.Init()
+	log.Init(log.WithLoggerType(logger.NOP.String()))
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			s, err := New(tt.opts...)
@@ -475,7 +476,7 @@ func TestListenAndServe(t *testing.T) {
 		}(),
 	}
 
-	log.Init()
+	log.Init(log.WithLoggerType(logger.NOP.String()))
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			defer func() {
@@ -621,7 +622,7 @@ func TestShutdown(t *testing.T) {
 		}(),
 	}
 
-	log.Init()
+	log.Init(log.WithLoggerType(logger.NOP.String()))
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			defer func() {

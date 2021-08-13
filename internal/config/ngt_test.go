@@ -41,6 +41,7 @@ func TestNGT_Bind(t *testing.T) {
 		InitialDelayMaxDuration string
 		EnableInMemoryMode      bool
 		VQueue                  *VQueue
+		KVSDB                   *KVSDB
 	}
 	type want struct {
 		want *NGT
@@ -77,6 +78,7 @@ func TestNGT_Bind(t *testing.T) {
 				InitialDelayMaxDuration: "1h",
 				EnableInMemoryMode:      false,
 				VQueue:                  new(VQueue),
+				KVSDB:                   new(KVSDB),
 			},
 			want: want{
 				want: &NGT{
@@ -94,44 +96,46 @@ func TestNGT_Bind(t *testing.T) {
 					InitialDelayMaxDuration: "1h",
 					EnableInMemoryMode:      false,
 					VQueue:                  new(VQueue),
+					KVSDB:                   new(KVSDB),
 				},
 			},
 		},
 		{
 			name: "return NGT with environment variable when it contains `_` as prefix and suffix",
 			fields: fields{
-				IndexPath:               "_indexPath_",
+				IndexPath:               "_NGT_BIND_INDEX_PATH_",
 				Dimension:               1000,
 				BulkInsertChunkSize:     100,
-				DistanceType:            "_distanceType_",
-				ObjectType:              "_objectType_",
+				DistanceType:            "_NGT_BIND_DISTANCE_TYPE_",
+				ObjectType:              "_NGT_BIND_OBJECT_TYPE_",
 				CreationEdgeSize:        3,
 				SearchEdgeSize:          5,
-				AutoIndexDurationLimit:  "_autoIndexDurationLimit_",
-				AutoIndexCheckDuration:  "_autoIndexCheckDuration_",
-				AutoSaveIndexDuration:   "_autoSaveIndexDuration_",
+				AutoIndexDurationLimit:  "_NGT_BIND_AUTO_INDEX_DURATION_LIMIT_",
+				AutoIndexCheckDuration:  "_NGT_BIND_AUTO_INDEX_CHECK_DURATION_",
+				AutoSaveIndexDuration:   "_NGT_BIND_AUTO_SAVE_INDEX_DURATION_",
 				AutoIndexLength:         100,
-				InitialDelayMaxDuration: "_initialDelayMaxDuration_",
+				InitialDelayMaxDuration: "_NGT_BIND_INITIAL_DELAY_MAX_DURATION_",
 				EnableInMemoryMode:      false,
 				VQueue:                  new(VQueue),
+				KVSDB:                   new(KVSDB),
 			},
 			beforeFunc: func() {
-				_ = os.Setenv("indexPath", "config/ngt")
-				_ = os.Setenv("distanceType", "l2")
-				_ = os.Setenv("objectType", "float")
-				_ = os.Setenv("autoIndexDurationLimit", "1h")
-				_ = os.Setenv("autoIndexCheckDuration", "30m")
-				_ = os.Setenv("autoSaveIndexDuration", "30m")
-				_ = os.Setenv("initialDelayMaxDuration", "1h")
+				_ = os.Setenv("NGT_BIND_INDEX_PATH", "config/ngt")
+				_ = os.Setenv("NGT_BIND_DISTANCE_TYPE", "l2")
+				_ = os.Setenv("NGT_BIND_OBJECT_TYPE", "float")
+				_ = os.Setenv("NGT_BIND_AUTO_INDEX_DURATION_LIMIT", "1h")
+				_ = os.Setenv("NGT_BIND_AUTO_INDEX_CHECK_DURATION", "30m")
+				_ = os.Setenv("NGT_BIND_AUTO_SAVE_INDEX_DURATION", "30m")
+				_ = os.Setenv("NGT_BIND_INITIAL_DELAY_MAX_DURATION", "1h")
 			},
 			afterFunc: func() {
-				_ = os.Unsetenv("indexPath")
-				_ = os.Unsetenv("distanceType")
-				_ = os.Unsetenv("objectType")
-				_ = os.Unsetenv("autoIndexDurationLimit")
-				_ = os.Unsetenv("autoIndexCheckDuration")
-				_ = os.Unsetenv("autoSaveIndexDuration")
-				_ = os.Unsetenv("initialDelayMaxDuration")
+				_ = os.Unsetenv("NGT_BIND_INDEX_PATH")
+				_ = os.Unsetenv("NGT_BIND_DISTANCE_TYPE")
+				_ = os.Unsetenv("NGT_BIND_OBJECT_TYPE")
+				_ = os.Unsetenv("NGT_BIND_AUTO_INDEX_DURATION_LIMIT")
+				_ = os.Unsetenv("NGT_BIND_AUTO_INDEX_CHECK_DURATION")
+				_ = os.Unsetenv("NGT_BIND_AUTO_SAVE_INDEX_DURATION")
+				_ = os.Unsetenv("NGT_BIND_INITIAL_DELAY_MAX_DURATION")
 			},
 			want: want{
 				want: &NGT{
@@ -149,6 +153,7 @@ func TestNGT_Bind(t *testing.T) {
 					InitialDelayMaxDuration: "1h",
 					EnableInMemoryMode:      false,
 					VQueue:                  new(VQueue),
+					KVSDB:                   new(KVSDB),
 				},
 			},
 		},
@@ -157,6 +162,7 @@ func TestNGT_Bind(t *testing.T) {
 			want: want{
 				want: &NGT{
 					VQueue: new(VQueue),
+					KVSDB:  new(KVSDB),
 				},
 			},
 		},

@@ -24,7 +24,7 @@ import (
 	"github.com/vdaas/vald/internal/log/level"
 	"github.com/vdaas/vald/internal/log/logger"
 	"github.com/vdaas/vald/internal/log/mock"
-	"go.uber.org/goleak"
+	"github.com/vdaas/vald/internal/test/goleak"
 )
 
 func TestWithLogger(t *testing.T) {
@@ -148,7 +148,7 @@ func TestWithLoggerType(t *testing.T) {
 		{
 			name: "set nothing when str is invalid",
 			args: args{
-				str: "invalid",
+				str: "valdvaldinvalid",
 			},
 			want: want{
 				obj: new(T),
@@ -225,7 +225,7 @@ func TestWithLevel(t *testing.T) {
 		{
 			name: "set nothing when str is invalid",
 			args: args{
-				str: "invalid",
+				str: "valdvaldinvalid",
 			},
 			want: want{
 				obj: new(T),
@@ -308,7 +308,7 @@ func TestWithFormat(t *testing.T) {
 			return test{
 				name: "set nothing when str is invalid",
 				args: args{
-					str: "invalid",
+					str: "valdvaldinvalid",
 				},
 				want: want{
 					obj: new(T),

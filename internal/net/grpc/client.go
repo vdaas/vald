@@ -320,22 +320,14 @@ func (g *gRPCClient) Range(ctx context.Context,
 		case <-ctx.Done():
 			return false
 		default:
-			_, err := g.do(ssctx, p, addr, true, func(ictx context.Context,
+			g.do(ssctx, p, addr, true, func(ictx context.Context,
 				conn *ClientConn, copts ...CallOption) (interface{}, error) {
 				return nil, f(ictx, addr, conn, copts...)
 			})
-			if err != nil {
-				err = errors.ErrRPCCallFailed(addr, err)
-				if rerr == nil {
-					rerr = err
-				} else {
-					rerr = errors.Wrap(rerr, err.Error())
-				}
-			}
 		}
 		return true
 	})
-	return rerr
+	return nil
 }
 
 func (g *gRPCClient) RangeConcurrent(ctx context.Context,
@@ -346,7 +338,6 @@ func (g *gRPCClient) RangeConcurrent(ctx context.Context,
 			span.End()
 		}
 	}()
-	var mu sync.Mutex
 	eg, egctx := errgroup.New(sctx)
 	eg.Limitation(concurrency)
 	g.conns.Range(func(addr string, p pool.Conn) bool {
@@ -361,36 +352,16 @@ func (g *gRPCClient) RangeConcurrent(ctx context.Context,
 			case <-egctx.Done():
 				return nil
 			default:
-				_, err := g.do(ssctx, p, addr, true, func(ictx context.Context,
+				g.do(ssctx, p, addr, true, func(ictx context.Context,
 					conn *ClientConn, copts ...CallOption) (interface{}, error) {
 					return nil, f(ictx, addr, conn, copts...)
 				})
-				if err != nil {
-					err = errors.ErrRPCCallFailed(addr, err)
-					mu.Lock()
-					if rerr == nil {
-						rerr = err
-					} else {
-						rerr = errors.Wrap(rerr, err.Error())
-					}
-					mu.Unlock()
-				}
 				return nil
 			}
 		}))
 		return true
 	})
-	err := eg.Wait()
-	if err != nil {
-		mu.Lock()
-		if rerr == nil {
-			rerr = err
-		} else {
-			rerr = errors.Wrap(rerr, err.Error())
-		}
-		mu.Unlock()
-	}
-	return rerr
+	return eg.Wait()
 }
 
 func (g *gRPCClient) OrderedRange(ctx context.Context,
@@ -422,21 +393,13 @@ func (g *gRPCClient) OrderedRange(ctx context.Context,
 					span.End()
 				}
 			}()
-			_, err := g.do(ssctx, p, addr, true, func(ictx context.Context,
+			g.do(ssctx, p, addr, true, func(ictx context.Context,
 				conn *ClientConn, copts ...CallOption) (interface{}, error) {
 				return nil, f(ictx, addr, conn, copts...)
 			})
-			if err != nil {
-				err = errors.ErrRPCCallFailed(addr, err)
-				if rerr == nil {
-					rerr = err
-				} else {
-					rerr = errors.Wrap(rerr, err.Error())
-				}
-			}
 		}
 	}
-	return rerr
+	return nil
 }
 
 func (g *gRPCClient) OrderedRangeConcurrent(ctx context.Context,
@@ -451,7 +414,6 @@ func (g *gRPCClient) OrderedRangeConcurrent(ctx context.Context,
 		log.Warn("no order found for OrderedRangeConcurrent")
 		return g.RangeConcurrent(sctx, concurrency, f)
 	}
-	var mu sync.Mutex
 	eg, egctx := errgroup.New(sctx)
 	eg.Limitation(concurrency)
 	for _, order := range orders {
@@ -473,35 +435,15 @@ func (g *gRPCClient) OrderedRangeConcurrent(ctx context.Context,
 			case <-egctx.Done():
 				return nil
 			default:
-				_, err := g.do(ssctx, p, addr, true, func(ictx context.Context,
+				g.do(ssctx, p, addr, true, func(ictx context.Context,
 					conn *ClientConn, copts ...CallOption) (interface{}, error) {
 					return nil, f(ictx, addr, conn, copts...)
 				})
-				if err != nil {
-					err = errors.ErrRPCCallFailed(addr, err)
-					mu.Lock()
-					if rerr == nil {
-						rerr = err
-					} else {
-						rerr = errors.Wrap(rerr, err.Error())
-					}
-					mu.Unlock()
-				}
 				return nil
 			}
 		}))
 	}
-	err := eg.Wait()
-	if err != nil {
-		mu.Lock()
-		if rerr == nil {
-			rerr = err
-		} else {
-			rerr = errors.Wrap(rerr, err.Error())
-		}
-		mu.Unlock()
-	}
-	return rerr
+	return eg.Wait()
 }
 
 func (g *gRPCClient) RoundRobin(ctx context.Context, f func(ctx context.Context,
@@ -534,13 +476,14 @@ func (g *gRPCClient) RoundRobin(ctx context.Context, f func(ctx context.Context,
 			r, err = g.do(ictx, p, addr, false, f)
 			if err != nil {
 				st, ok := status.FromError(err)
-				if !ok {
+				if !ok || st == nil {
 					if errors.Is(err, context.Canceled) ||
 						errors.Is(err, context.DeadlineExceeded) {
 						return nil, false, err
 					}
 					return nil, err != nil, err
 				}
+				status.Log(st.Code(), err)
 				switch st.Code() {
 				case codes.Internal,
 					codes.Unavailable,
@@ -611,6 +554,7 @@ func (g *gRPCClient) do(ctx context.Context, p pool.Conn, addr string, enableBac
 					}
 					return nil, err != nil, err
 				}
+				status.Log(st.Code(), err)
 				switch st.Code() {
 				case codes.Internal,
 					codes.Unavailable,

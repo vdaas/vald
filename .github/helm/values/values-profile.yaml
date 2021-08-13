@@ -1,0 +1,109 @@
+#
+# Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+defaults:
+  logging:
+    level: info
+  server_config:
+    metrics:
+      pprof:
+        enabled: true
+        server:
+          http:
+            shutdown_duration: 5s
+            handler_timeout: 5s
+            idle_timeout: 2s
+            read_header_timeout: 2s
+            read_timeout: 2s
+            write_timeout: 3m
+
+gateway:
+  lb:
+    enabled: true
+    minReplicas: 1
+    podAnnotations:
+      profefe.com/enable: "true"
+      profefe.com/port: "6060"
+      profefe.com/service: "vald-lb-gateway"
+    hpa:
+      enabled: false
+    resources:
+      requests:
+        cpu: 100m
+        memory: 50Mi
+    gateway_config:
+      index_replica: 3
+    env:
+      - name: GOMAXPROCS
+        value: "1"
+
+agent:
+  minReplicas: 3
+  maxReplicas: 10
+  podAnnotations:
+    profefe.com/enable: "true"
+    profefe.com/port: "6060"
+    profefe.com/service: "vald-agent-ngt"
+  podManagementPolicy: Parallel
+  hpa:
+    enabled: false
+  resources:
+    requests:
+      cpu: 100m
+      memory: 50Mi
+  ngt:
+    auto_index_duration_limit: 2m
+    auto_index_check_duration: 30s
+    auto_index_length: 1000
+    dimension: 784
+  env:
+    - name: GOMAXPROCS
+      value: "1"
+
+discoverer:
+  minReplicas: 1
+  podAnnotations:
+    profefe.com/enable: "true"
+    profefe.com/port: "6060"
+    profefe.com/service: "vald-discoverer"
+  hpa:
+    enabled: false
+  resources:
+    requests:
+      cpu: 100m
+      memory: 50Mi
+  env:
+    - name: GOMAXPROCS
+      value: "1"
+
+manager:
+  index:
+    replicas: 1
+    podAnnotations:
+      profefe.com/enable: "true"
+      profefe.com/port: "6060"
+      profefe.com/service: "vald-manager-index"
+    resources:
+      requests:
+        cpu: 100m
+        memory: 30Mi
+    indexer:
+      auto_index_duration_limit: 2m
+      auto_index_check_duration: 30s
+      auto_index_length: 1000
+    env:
+      - name: GOMAXPROCS
+        value: "1"
