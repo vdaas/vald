@@ -48,11 +48,12 @@ func (c *client) MultiSearch(t *testing.T, ctx context.Context, ds Dataset) erro
 	req := &payload.Search_MultiRequest{
 		Requests: reqs,
 	}
+
 	res, err := client.MultiSearch(ctx, req)
 	if err != nil {
 		return err
 	}
-	
+
 	if len(res.GetResponses()) != len(ds.Test) {
 		t.Error("number of responses does not match with sent requests")
 	}
@@ -83,9 +84,14 @@ func (c *client) MultiSearchByID(t *testing.T, ctx context.Context, ds Dataset) 
 	req := &payload.Search_MultiIDRequest{
 		Requests: reqs,
 	}
-	_, err = client.MultiSearchByID(ctx, req)
+
+	res, err := client.MultiSearchByID(ctx, req)
 	if err != nil {
 		return err
+	}
+
+	if len(res.GetResponses()) != len(ds.Test) {
+		t.Error("number of responses does not match with sent requests")
 	}
 
 	return nil
@@ -116,9 +122,13 @@ func (c *client) MultiInsert(t *testing.T, ctx context.Context, ds Dataset) erro
 		Requests: reqs,
 	}
 
-	_, err = client.MultiInsert(ctx, req)
+	res, err := client.MultiInsert(ctx, req)
 	if err != nil {
 		return err
+	}
+
+	if len(res.GetLocations()) != len(ds.Train) {
+		t.Error("number of responses does not match with sent requests")
 	}
 
 	return nil
@@ -149,9 +159,13 @@ func (c *client) MultiUpdate(t *testing.T, ctx context.Context, ds Dataset) erro
 		Requests: reqs,
 	}
 
-	_, err = client.MultiUpdate(ctx, req)
+	res, err := client.MultiUpdate(ctx, req)
 	if err != nil {
 		return err
+	}
+
+	if len(res.GetLocations()) != len(ds.Train) {
+		t.Error("number of responses does not match with sent requests")
 	}
 
 	return nil
@@ -182,9 +196,13 @@ func (c *client) MultiUpsert(t *testing.T, ctx context.Context, ds Dataset) erro
 		Requests: reqs,
 	}
 
-	_, err = client.MultiUpsert(ctx, req)
+	res, err := client.MultiUpsert(ctx, req)
 	if err != nil {
 		return err
+	}
+
+	if len(res.GetLocations()) != len(ds.Train) {
+		t.Error("number of responses does not match with sent requests")
 	}
 
 	return nil
@@ -214,9 +232,13 @@ func (c *client) MultiRemove(t *testing.T, ctx context.Context, ds Dataset) erro
 		Requests: reqs,
 	}
 
-	_, err = client.MultiRemove(ctx, req)
+	res, err := client.MultiRemove(ctx, req)
 	if err != nil {
 		return err
+	}
+
+	if len(res.GetLocations()) != len(ds.Train) {
+		t.Error("number of responses does not match with sent requests")
 	}
 
 	return nil
