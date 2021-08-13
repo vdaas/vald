@@ -22,6 +22,8 @@ on:
       - ".github/actions/docker-build/actions.yaml"
       - ".github/workflows/dockers-ci-container-image.yml"
       - "dockers/ci/**"
+      - "Makefile"
+      - "Makefile.d/**"
       - "versions/GO_VERSION"
       - "versions/NGT_VERSION"
   pull_request:
@@ -29,6 +31,8 @@ on:
       - ".github/actions/docker-build/actions.yaml"
       - ".github/workflows/dockers-ci-container-image.yml"
       - "dockers/ci/**"
+      - "Makefile"
+      - "Makefile.d/**"
       - "versions/GO_VERSION"
       - "versions/NGT_VERSION"
 
