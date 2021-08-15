@@ -1,6 +1,3 @@
-//go:build e2e
-// +build e2e
-
 //
 // Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
@@ -17,5 +14,17 @@
 // limitations under the License.
 //
 
-// package operation provides wrapper APIs used in e2e tests
-package operation
+// Package health provides generic functionality for grpc health checks.
+package health
+
+import (
+	"github.com/vdaas/vald/internal/net/grpc"
+	"google.golang.org/grpc/health"
+	"google.golang.org/grpc/health/grpc_health_v1"
+)
+
+func Register(name string, srv *grpc.Server) {
+	server := health.NewServer()
+	grpc_health_v1.RegisterHealthServer(srv, server)
+	server.SetServingStatus(name, grpc_health_v1.HealthCheckResponse_SERVING)
+}
