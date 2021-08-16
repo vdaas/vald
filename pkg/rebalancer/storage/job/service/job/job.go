@@ -101,7 +101,9 @@ func (r *rebalancer) Start(ctx context.Context) (<-chan error, error) {
 				}
 			}
 			log.Info("send SIGTERM to the process")
-			p.Signal(syscall.SIGTERM)
+			if err := p.Signal(syscall.SIGTERM); err != nil {
+				log.Error(err)
+			}
 		}()
 
 		// Download tar gz file
