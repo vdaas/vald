@@ -287,7 +287,7 @@ Note:</p>
 <ul>
 <li>Please check whether there is <code>config.yaml</code> file and <code>backup</code> directory in your current directory.</li>
 </ul>
-<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>docker run -v <span style=color:#66d9ef>$(</span>pwd<span style=color:#66d9ef>)</span>/:/etc/server -p 8081:8081 --rm -it vdaas/vald-agent-ngt
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>docker run -v <span style=color:#66d9ef>$(</span>pwd<span style=color:#66d9ef>)</span>:/etc/server -u <span style=color:#e6db74>&#34;</span><span style=color:#66d9ef>$(</span>id -u $USER<span style=color:#66d9ef>)</span><span style=color:#e6db74>:</span><span style=color:#66d9ef>$(</span>id -g $USER<span style=color:#66d9ef>)</span><span style=color:#e6db74>&#34;</span> -v /etc/passwd:/etc/passwd:ro -v /etc/group:/etc/group:ro -p 8081:8081 --rm -it vdaas/vald-agent-ngt
 </code></pre></div></li>
 <li>
 <p>Verify</p>
@@ -326,6 +326,14 @@ go run main.go
 <ul>
 <li>We recommend you to run <code>CreateIndex()</code> after <code>Insert()</code> without waiting for auto indexing.</li>
 <li>When finish indexing completely, the backup files (metadata.json and ngt-meta.kvsdb) can be confirmed in your mount directory.</li>
+</ul>
+<p>Warning:</p>
+<ul>
+<li>If you use Go(v1.16~) and catch the error like <code>missing go.sum entry to add it</code> when running <code>go run main.go</code>, please run <code>go mod tidy</code> and retry.
+<ul>
+<li>This error comes from <a href=https://golang.org/doc/go1.16#go-command>Go Command Changes of Go 1.16 Release Notes</a>.</li>
+</ul>
+</li>
 </ul>
 </li>
 <li>
