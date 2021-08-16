@@ -22,6 +22,7 @@ import (
 
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/net/grpc"
+	"github.com/vdaas/vald/internal/net/grpc/health"
 	"github.com/vdaas/vald/internal/net/grpc/reflection"
 	"github.com/vdaas/vald/internal/servers/server"
 )
@@ -269,6 +270,9 @@ func (s *Server) Opts() []server.Option {
 				server.WithGRPCMaxHeaderListSize(s.GRPC.MaxHeaderListSize),
 				server.WithGRPCHeaderTableSize(s.GRPC.HeaderTableSize),
 				server.WithGRPCInterceptors(s.GRPC.Interceptors...),
+				server.WithGRPCRegistFunc(func(srv *grpc.Server) {
+					health.Register(s.Name, srv)
+				}),
 			)
 			if s.GRPC.EnableReflection {
 				opts = append(opts,
