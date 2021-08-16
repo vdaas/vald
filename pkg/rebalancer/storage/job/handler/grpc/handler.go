@@ -31,6 +31,8 @@ type Rebalancer interface {
 }
 
 type server struct {
+	rebalancer.UnimplementedJobServer
+
 	rb    job.Rebalancer
 	group singleflight.Group
 }
