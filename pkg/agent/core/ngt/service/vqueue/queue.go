@@ -246,6 +246,9 @@ func (v *vqueue) RangePopDelete(ctx context.Context, f func(uuid string) bool) {
 	v.flushAndRangeDelete(f)
 }
 
+// GetVector returns the vector stored in the queue.
+// If the same uuid exists in the insert and delete queue, the timestamp is compared.
+// And the vector is returned if the timestamp in the insert queue is newer than the delete queue.
 func (v *vqueue) GetVector(uuid string) ([]float32, bool) {
 	vec, ok := v.uiim.Load(uuid)
 	if !ok {
@@ -264,6 +267,9 @@ func (v *vqueue) GetVector(uuid string) ([]float32, bool) {
 	return nil, false
 }
 
+// IVExists returns true if there is uuid in the insert queue.
+// If the same uuid exists in the insert and delete queue, the timestamp is compared.
+// And the true is returned if the timestamp in the insert queue is newer than the delete queue.
 func (v *vqueue) IVExists(uuid string) bool {
 	vec, ok := v.uiim.Load(uuid)
 	if !ok {
@@ -280,6 +286,9 @@ func (v *vqueue) IVExists(uuid string) bool {
 	return di <= vec.date
 }
 
+// DVExists returns true if there is uuid in the delete queue.
+// If the same uuid exists in the insert and delete queue, the timestamp is compared.
+// And the true is returned if the timestamp in the delete queue is newer than the insert queue.
 func (v *vqueue) DVExists(uuid string) bool {
 	di, ok := v.udim.Load(uuid)
 	if !ok {
