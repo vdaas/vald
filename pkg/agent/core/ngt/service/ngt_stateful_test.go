@@ -33,11 +33,6 @@ import (
 	"github.com/vdaas/vald/pkg/agent/core/ngt/model"
 )
 
-type vector struct {
-	uuid   string
-	vector []float32
-}
-
 type ngtSystem struct {
 	ctx context.Context
 	ech <-chan error
@@ -295,10 +290,8 @@ var (
 			for k, v := range st.states {
 				switch v {
 				case IN_INSERT_QUEUE:
-
 					st.states[k] = INDEXED
 				case IN_DELETE_QUEUE:
-
 					st.states[k] = NOT_INSERTED
 				}
 			}
@@ -373,7 +366,7 @@ var (
 						Status: gopter.PropFalse,
 						Labels: []string{
 							"Exists-A",
-							"uuid exists",
+							"uuid exists, but Exists returns false",
 						},
 					}
 				}
@@ -383,7 +376,7 @@ var (
 						Status: gopter.PropFalse,
 						Labels: []string{
 							"Exists-A",
-							"uuid does not exist",
+							"uuid does not exist, but Exists returns true",
 						},
 					}
 				}
@@ -425,7 +418,7 @@ var (
 						Status: gopter.PropFalse,
 						Labels: []string{
 							"Exists-B",
-							"uuid exists",
+							"uuid exists, but Exists returns false",
 						},
 					}
 				}
@@ -435,7 +428,7 @@ var (
 						Status: gopter.PropFalse,
 						Labels: []string{
 							"Exists-B",
-							"uuid does not exist",
+							"uuid does not exist, but Exists returns true",
 						},
 					}
 				}
@@ -477,7 +470,7 @@ var (
 						Status: gopter.PropFalse,
 						Labels: []string{
 							"Exists-C",
-							"uuid exists",
+							"uuid exists, but Exists returns false",
 						},
 					}
 				}
@@ -487,7 +480,7 @@ var (
 						Status: gopter.PropFalse,
 						Labels: []string{
 							"Exists-C",
-							"uuid does not exist",
+							"uuid does not exist, but Exists returns true",
 						},
 					}
 				}
@@ -1132,53 +1125,6 @@ var (
 			return &gopter.PropResult{Status: gopter.PropTrue}
 		},
 	}
-
-	lenCommand = &commands.ProtoCommand{
-		Name: "Len",
-		RunFunc: func(
-			systemUnderTest commands.SystemUnderTest,
-		) commands.Result {
-			ngt := systemUnderTest.(*ngtSystem).ngt
-
-			return &resultContainer{
-				len: ngt.Len(),
-			}
-		},
-		NextStateFunc: func(state commands.State) commands.State {
-			return state
-		},
-		PreConditionFunc: func(state commands.State) bool {
-			_, ok := state.(*ngtState)
-			return ok
-		},
-		PostConditionFunc: func(
-			state commands.State,
-			result commands.Result,
-		) *gopter.PropResult {
-			st := state.(*ngtState)
-			rc := result.(*resultContainer)
-
-			count := 0
-			for _, v := range st.states {
-				if v == INDEXED {
-					count++
-				}
-			}
-
-			if rc.len != uint64(count) {
-				return &gopter.PropResult{
-					Status: gopter.PropFalse,
-					Labels: []string{
-						"Len",
-						"invalid length",
-						fmt.Sprintf("got: %d, expected: %d", rc.len, count),
-					},
-				}
-			}
-
-			return &gopter.PropResult{Status: gopter.PropTrue}
-		},
-	}
 )
 
 func rootCommands(t *testing.T) commands.Commands {
@@ -1226,7 +1172,6 @@ func rootCommands(t *testing.T) commands.Commands {
 			cs := make([]interface{}, 0)
 			cs = append(
 				cs,
-				lenCommand,
 				existsACommand,
 				existsBCommand,
 				existsCCommand,
@@ -1236,6 +1181,7 @@ func rootCommands(t *testing.T) commands.Commands {
 			for _, v := range st.states {
 				if v == IN_INSERT_QUEUE || v == IN_DELETE_QUEUE {
 					cs = append(cs, createIndexCommand)
+
 					break
 				}
 			}
