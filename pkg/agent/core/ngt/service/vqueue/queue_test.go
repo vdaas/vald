@@ -884,67 +884,309 @@ func Test_vqueue_GetVector(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           uuid: "",
-		       },
-		       fields: fields {
-		           ich: nil,
-		           uii: nil,
-		           imu: nil,
-		           uiim: uiim{},
-		           dch: nil,
-		           udk: nil,
-		           dmu: nil,
-		           udim: udim{},
-		           eg: nil,
-		           finalizingInsert: nil,
-		           finalizingDelete: nil,
-		           closed: nil,
-		           ichSize: 0,
-		           dchSize: 0,
-		           iBufSize: 0,
-		           dBufSize: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+		func() test {
+			uuid := "146bbe1a-bc48-11eb-8529-0242ac130003"
+			uii := []index{
+				{
+					uuid: "246bbe1a-bc48-11eb-8529-0242ac130003",
+					date: 2000000000,
+				},
+				{
+					uuid: "346bbe1a-bc48-11eb-8529-0242ac130003",
+					date: 3000000000,
+				},
+			}
+			var uiim uiim
+			for _, idx := range uii {
+				uiim.Store(idx.uuid, idx)
+			}
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           uuid: "",
-		           },
-		           fields: fields {
-		           ich: nil,
-		           uii: nil,
-		           imu: nil,
-		           uiim: uiim{},
-		           dch: nil,
-		           udk: nil,
-		           dmu: nil,
-		           udim: udim{},
-		           eg: nil,
-		           finalizingInsert: nil,
-		           finalizingDelete: nil,
-		           closed: nil,
-		           ichSize: 0,
-		           dchSize: 0,
-		           iBufSize: 0,
-		           dBufSize: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+			return test{
+				name: "return (nil, false) when the uiid dose not exit in uiim",
+				args: args{
+					uuid: uuid,
+				},
+				fields: fields{
+					uiim: uiim,
+				},
+				want: want{
+					want:  nil,
+					want1: false,
+				},
+			}
+		}(),
+		func() test {
+			uii := []index{
+				{
+					uuid: "146bbe1a-bc48-11eb-8529-0242ac130003",
+					date: 2000000000,
+				},
+				{
+					uuid: "246bbe1a-bc48-11eb-8529-0242ac130003",
+					date: 3000000000,
+				},
+			}
+			var uiim uiim
+			for _, idx := range uii {
+				uiim.Store(idx.uuid, idx)
+			}
+
+			return test{
+				name: "return (nil, false) when the uuid is empty",
+				args: args{
+					uuid: "",
+				},
+				fields: fields{
+					uiim: uiim,
+				},
+				want: want{
+					want:  nil,
+					want1: false,
+				},
+			}
+		}(),
+		func() test {
+			return test{
+				name: "return (nil, false) when the uiim is empty",
+				args: args{
+					uuid: "146bbe1a-bc48-11eb-8529-0242ac130003",
+				},
+				fields: fields{},
+				want: want{
+					want:  nil,
+					want1: false,
+				},
+			}
+		}(),
+		func() test {
+			uuid := "146bbe1a-bc48-11eb-8529-0242ac130003"
+			uii := []index{
+				{
+					uuid:   uuid,
+					vector: []float32{1},
+					date:   1000000000,
+				},
+				{
+					uuid:   "246bbe1a-bc48-11eb-8529-0242ac130003",
+					vector: []float32{2},
+					date:   2000000000,
+				},
+			}
+			var uiim uiim
+			for _, idx := range uii {
+				uiim.Store(idx.uuid, idx)
+			}
+
+			udk := []key{
+				{
+					uuid: "346bbe1a-bc48-11eb-8529-0242ac130003",
+					date: 1000000000,
+				},
+				{
+					uuid: "446bbe1a-bc48-11eb-8529-0242ac130003",
+					date: 4000000000,
+				},
+			}
+			var udim udim
+			for _, key := range udk {
+				udim.Store(key.uuid, key.date)
+			}
+
+			return test{
+				name: "return (1, true) when the uiid dose not exit in udim",
+				args: args{
+					uuid: uuid,
+				},
+				fields: fields{
+					uiim: uiim,
+					udim: udim,
+				},
+				want: want{
+					want:  []float32{1},
+					want1: true,
+				},
+			}
+		}(),
+		func() test {
+			uuid := "146bbe1a-bc48-11eb-8529-0242ac130003"
+			uii := []index{
+				{
+					uuid:   uuid,
+					vector: []float32{1},
+					date:   1000000000,
+				},
+				{
+					uuid:   "246bbe1a-bc48-11eb-8529-0242ac130003",
+					vector: []float32{2},
+					date:   2000000000,
+				},
+			}
+			var uiim uiim
+			for _, idx := range uii {
+				uiim.Store(idx.uuid, idx)
+			}
+
+			return test{
+				name: "return (1, true) when the udim is empty",
+				args: args{
+					uuid: uuid,
+				},
+				fields: fields{
+					uiim: uiim,
+				},
+				want: want{
+					want:  []float32{1},
+					want1: true,
+				},
+			}
+		}(),
+		func() test {
+			uuid := "146bbe1a-bc48-11eb-8529-0242ac130003"
+			uii := []index{
+				{
+					uuid:   uuid,
+					vector: []float32{1},
+					date:   1000000000,
+				},
+				{
+					uuid:   "246bbe1a-bc48-11eb-8529-0242ac130003",
+					vector: []float32{2},
+					date:   2000000000,
+				},
+			}
+			var uiim uiim
+			for _, idx := range uii {
+				uiim.Store(idx.uuid, idx)
+			}
+
+			udk := []key{
+				{
+					uuid: uuid,
+					date: 1000000000,
+				},
+				{
+					uuid: "346bbe1a-bc48-11eb-8529-0242ac130003",
+					date: 4000000000,
+				},
+			}
+			var udim udim
+			for _, key := range udk {
+				udim.Store(key.uuid, key.date)
+			}
+
+			return test{
+				name: "return (1, true) when the date of uiim is equal the date of udim",
+				args: args{
+					uuid: uuid,
+				},
+				fields: fields{
+					uiim: uiim,
+					udim: udim,
+				},
+				want: want{
+					want:  []float32{1},
+					want1: true,
+				},
+			}
+		}(),
+		func() test {
+			uuid := "146bbe1a-bc48-11eb-8529-0242ac130003"
+			uii := []index{
+				{
+					uuid:   uuid,
+					vector: []float32{1},
+					date:   1000000001,
+				},
+				{
+					uuid:   "246bbe1a-bc48-11eb-8529-0242ac130003",
+					vector: []float32{2},
+					date:   2000000000,
+				},
+			}
+			var uiim uiim
+			for _, idx := range uii {
+				uiim.Store(idx.uuid, idx)
+			}
+
+			udk := []key{
+				{
+					uuid: uuid,
+					date: 1000000000,
+				},
+				{
+					uuid: "346bbe1a-bc48-11eb-8529-0242ac130003",
+					date: 4000000000,
+				},
+			}
+			var udim udim
+			for _, key := range udk {
+				udim.Store(key.uuid, key.date)
+			}
+
+			return test{
+				name: "return (1, true) when the date of uiim is newer than the date of udim",
+				args: args{
+					uuid: uuid,
+				},
+				fields: fields{
+					uiim: uiim,
+					udim: udim,
+				},
+				want: want{
+					want:  []float32{1},
+					want1: true,
+				},
+			}
+		}(),
+		func() test {
+			uuid := "146bbe1a-bc48-11eb-8529-0242ac130003"
+			uii := []index{
+				{
+					uuid:   uuid,
+					vector: []float32{1},
+					date:   999999999,
+				},
+				{
+					uuid:   "246bbe1a-bc48-11eb-8529-0242ac130003",
+					vector: []float32{2},
+					date:   2000000000,
+				},
+			}
+			var uiim uiim
+			for _, idx := range uii {
+				uiim.Store(idx.uuid, idx)
+			}
+
+			udk := []key{
+				{
+					uuid: uuid,
+					date: 1000000000,
+				},
+				{
+					uuid: "346bbe1a-bc48-11eb-8529-0242ac130003",
+					date: 4000000000,
+				},
+			}
+			var udim udim
+			for _, key := range udk {
+				udim.Store(key.uuid, key.date)
+			}
+
+			return test{
+				name: "return (1, true) when the date of uiim is older than the date of udim",
+				args: args{
+					uuid: uuid,
+				},
+				fields: fields{
+					uiim: uiim,
+					udim: udim,
+				},
+				want: want{
+					want:  nil,
+					want1: false,
+				},
+			}
+		}(),
 	}
 
 	for _, tc := range tests {
