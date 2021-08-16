@@ -137,19 +137,7 @@ func New(cfg *config.NGT, opts ...Option) (nn NGT, err error) {
 
 	n.dim = cfg.Dimension
 
-	n.kvs = kvs.New(func() []kvs.Option {
-		if cfg.KVSDB.Concurrency < 1 {
-			return []kvs.Option{
-				// n.eg is global errgroup we can use it only concurrency < 1 (which means unlimited)
-				// if we use global errgroup under the limited concurrency it will affect other daemon process
-				kvs.WithErrGroup(n.eg),
-			}
-		}
-		return []kvs.Option{
-			// when concurrency >= 1 which means limited concurrency for retrieving kvsdb, we shouldn't use global errgroup kvsdb will automatically generates it's own errgroup
-			kvs.WithConcurrency(cfg.KVSDB.Concurrency),
-		}
-	}()...)
+	n.kvs = kvs.New(kvs.WithConcurrency(cfg.KVSDB.Concurrency))
 
 	err = n.initNGT(
 		core.WithInMemoryMode(n.inMem),
