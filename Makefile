@@ -20,6 +20,8 @@ GOPKG                               = github.com/$(ORG)/$(NAME)
 GOPRIVATE                           = $(GOPKG),$(GOPKG)/apis
 DATETIME                            = $(eval DATETIME := $(shell date -u +%Y/%m/%d_%H:%M:%S%z))$(DATETIME)
 TAG                                ?= latest
+CRORG                              ?= $(ORG)
+# CRORG                               = ghcr.io/vdaas/vald
 AGENT_IMAGE                         = $(NAME)-agent-ngt
 AGENT_SIDECAR_IMAGE                 = $(NAME)-agent-sidecar
 CI_CONTAINER_IMAGE                  = $(NAME)-ci-container
@@ -42,10 +44,11 @@ NGT_REPO = github.com/yahoojapan/NGT
 
 GOPROXY=direct
 GO_VERSION := $(eval GO_VERSION := $(shell cat versions/GO_VERSION))$(GO_VERSION)
-GOOS := $(eval GOOS := $(shell go env GOOS))$(GOOS)
 GOARCH := $(eval GOARCH := $(shell go env GOARCH))$(GOARCH)
-GOPATH := $(eval GOPATH := $(shell go env GOPATH))$(GOPATH)
+GOBIN := $(eval GOBIN := $(shell go env GOBIN))$(GOBIN)
 GOCACHE := $(eval GOCACHE := $(shell go env GOCACHE))$(GOCACHE)
+GOOS := $(eval GOOS := $(shell go env GOOS))$(GOOS)
+GOPATH := $(eval GOPATH := $(shell go env GOPATH))$(GOPATH)
 
 TEMP_DIR := $(eval TEMP_DIR := $(shell mktemp -d))$(TEMP_DIR)
 
@@ -153,8 +156,12 @@ PROTO_PATHS = \
 	$(PWD) \
 	$(GOPATH)/src \
 	$(GOPATH)/src/$(GOPKG) \
+	$(GOPATH)/src/$(GOPKG)/apis/proto/v1 \
+	$(GOPATH)/src/github.com/envoyproxy/protoc-gen-validate \
 	$(GOPATH)/src/github.com/googleapis/googleapis \
-	$(GOPATH)/src/github.com/gogo/googleapis
+	$(GOPATH)/src/github.com/planetscale/vtprotobuf \
+	$(GOPATH)/src/github.com/protocolbuffers/protobuf \
+	$(GOPATH)/src/google.golang.org/genproto
 
 # [Warning]
 # The below packages have no original implementation.
@@ -244,6 +251,7 @@ DOCKER_OPTS      ?=
 DISTROLESS_IMAGE      ?= gcr.io/distroless/static
 DISTROLESS_IMAGE_TAG  ?= nonroot
 UPX_OPTIONS           ?= -9
+GOLINES_MAX_WIDTH     ?= 200
 
 K8S_EXTERNAL_SCYLLA_MANIFEST        ?= k8s/external/scylla/scyllacluster.yaml
 K8S_SLEEP_DURATION_FOR_WAIT_COMMAND ?= 5
@@ -349,7 +357,7 @@ tools/install: \
 	telepresence/install
 
 .PHONY: update
-## update deps, license, and run gofumpt, goimports
+## update deps, license, and run golines, gofumpt, goimports
 update: \
 	clean \
 	proto/all \
@@ -365,8 +373,9 @@ format: \
 	format/yaml
 
 .PHONY: format/go
-## run gofumpt, goimports for all go files
+## run golines, gofumpt, goimports for all go files
 format/go:
+	find ./ -type d -name .git -prune -o -type f -regex '.*[^\.pb]\.go' -print | xargs golines -w -m $(GOLINES_MAX_WIDTH)
 	find ./ -type d -name .git -prune -o -type f -regex '.*[^\.pb]\.go' -print | xargs gofumpt -w
 	find ./ -type d -name .git -prune -o -type f -regex '.*\.go' -print | xargs goimports -w
 
@@ -376,7 +385,6 @@ format/yaml:
 	    ".github/**/*.yaml" \
 	    ".github/**/*.yml" \
 	    "cmd/**/*.yaml" \
-	    "hack/**/*.yaml" \
 	    "k8s/**/*.yaml"
 
 .PHONY: deps
@@ -388,6 +396,7 @@ deps: \
 .PHONY: deps/install
 ## install dependencies
 deps/install: \
+	golines/install \
 	gofumpt/install \
 	goimports/install \
 	prettier/install \
@@ -414,6 +423,10 @@ goimports/install:
 .PHONY: gofumpt/install
 gofumpt/install:
 	go install mvdan.cc/gofumpt@latest
+
+.PHONY: golines/install
+golines/install:
+	go install github.com/segmentio/golines@latest
 
 .PHONY: prettier/install
 prettier/install:

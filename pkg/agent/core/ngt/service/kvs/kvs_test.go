@@ -24,6 +24,7 @@ import (
 	"sync/atomic"
 	"testing"
 
+	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"go.uber.org/goleak"
 )
@@ -63,6 +64,7 @@ func TestNew(t *testing.T) {
 						l:  0,
 						ou: wantOu,
 						uo: wantUo,
+						eg: errgroup.Get(),
 					},
 				},
 			}
@@ -84,7 +86,7 @@ func TestNew(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 
-			got := New()
+			got := New(WithErrGroup(errgroup.Get()))
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -1572,6 +1574,7 @@ func Test_bidi_Range(t *testing.T) {
 				ou: test.fields.ou,
 				uo: test.fields.uo,
 				l:  test.fields.l,
+				eg: errgroup.Get(),
 			}
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args, b)
@@ -1665,75 +1668,6 @@ func Test_bidi_Len(t *testing.T) {
 
 			got := b.Len()
 			if err := test.checkFunc(test.want, got); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
-
-func Test_stringToBytes(t *testing.T) {
-	t.Parallel()
-	type args struct {
-		s string
-	}
-	type want struct {
-		wantB []byte
-	}
-	type test struct {
-		name       string
-		args       args
-		want       want
-		checkFunc  func(want, []byte) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-	defaultCheckFunc := func(w want, gotB []byte) error {
-		if !reflect.DeepEqual(gotB, w.wantB) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotB, w.wantB)
-		}
-		return nil
-	}
-	tests := []test{
-		func() test {
-			s := "vdaas/vald"
-			return test{
-				name: "return bytes when s is vdaas/vald",
-				args: args{
-					s: s,
-				},
-				want: want{
-					wantB: []byte(s),
-				},
-			}
-		}(),
-		func() test {
-			return test{
-				name: "return nil bytes when s is default value",
-				args: args{},
-				want: want{
-					wantB: []byte(nil),
-				},
-			}
-		}(),
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
-
-			gotB := stringToBytes(test.args.s)
-			if err := test.checkFunc(test.want, gotB); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

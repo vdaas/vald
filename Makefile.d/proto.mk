@@ -43,26 +43,24 @@ proto/paths/print:
 .PHONY: proto/deps
 ## install protobuf dependencies
 proto/deps: \
+	$(GOPATH)/bin/google.golang.org/genproto \
 	$(GOPATH)/bin/protoc-gen-doc \
 	$(GOPATH)/bin/protoc-gen-go \
-	$(GOPATH)/bin/protoc-gen-gogo \
-	$(GOPATH)/bin/protoc-gen-gofast \
-	$(GOPATH)/bin/protoc-gen-gogofast \
-	$(GOPATH)/bin/protoc-gen-gogofaster \
-	$(GOPATH)/bin/protoc-gen-gogoslick \
+	$(GOPATH)/bin/protoc-gen-go-grpc \
+	$(GOPATH)/bin/protoc-gen-go-vtproto \
 	$(GOPATH)/bin/protoc-gen-grpc-gateway \
 	$(GOPATH)/bin/protoc-gen-swagger \
 	$(GOPATH)/bin/protoc-gen-validate \
 	$(GOPATH)/bin/prototool \
 	$(GOPATH)/bin/swagger \
-	$(GOPATH)/src/google.golang.org/protobuf \
-	$(GOPATH)/src/google.golang.org/genproto \
-	$(GOPATH)/src/github.com/protocolbuffers/protobuf \
-	$(GOPATH)/src/github.com/googleapis/googleapis \
+	$(GOPATH)/src/github.com/envoyproxy/protoc-gen-validate \
 	$(GOPATH)/src/github.com/golang/protobuf \
-	$(GOPATH)/src/github.com/gogo/googleapis \
-	$(GOPATH)/src/github.com/gogo/protobuf \
-	$(GOPATH)/src/github.com/envoyproxy/protoc-gen-validate
+	$(GOPATH)/src/github.com/googleapis/googleapis \
+	$(GOPATH)/src/github.com/planetscale/vtprotobuf \
+	$(GOPATH)/src/github.com/protocolbuffers/protobuf \
+	$(GOPATH)/src/github.com/vdaas/vald/apis/proto/v1 \
+	$(GOPATH)/src/google.golang.org/genproto \
+	$(GOPATH)/src/google.golang.org/protobuf
 
 $(GOPATH)/src/github.com/protocolbuffers/protobuf:
 	git clone \
@@ -82,18 +80,6 @@ $(GOPATH)/src/github.com/golang/protobuf:
 		https://github.com/golang/protobuf \
 		$(GOPATH)/src/github.com/golang/protobuf
 
-$(GOPATH)/src/github.com/gogo/googleapis:
-	git clone \
-		--depth 1 \
-		https://github.com/gogo/googleapis \
-		$(GOPATH)/src/github.com/gogo/googleapis
-
-$(GOPATH)/src/github.com/gogo/protobuf:
-	git clone \
-		--depth 1 \
-		https://github.com/gogo/protobuf \
-		$(GOPATH)/src/github.com/gogo/protobuf
-
 $(GOPATH)/src/github.com/envoyproxy/protoc-gen-validate:
 	git clone \
 		--depth 1 \
@@ -106,26 +92,26 @@ $(GOPATH)/src/google.golang.org/protobuf:
 		https://go.googlesource.com/protobuf \
 		$(GOPATH)/src/google.golang.org/protobuf
 
+$(GOPATH)/src/github.com/planetscale/vtprotobuf:
+	git clone \
+		--depth 1 \
+		https://github.com/planetscale/vtprotobuf \
+		$(GOPATH)/src/github.com/planetscale/vtprotobuf
+
 $(GOPATH)/src/google.golang.org/genproto:
+	git clone \
+		--depth 1 \
+		https://github.com/googleapis/go-genproto \
+		$(GOPATH)/src/google.golang.org/genproto
+
+$(GOPATH)/bin/google.golang.org/genproto:
 	$(call go-get, google.golang.org/genproto/...)
 
 $(GOPATH)/bin/protoc-gen-go:
-	$(call go-get, github.com/golang/protobuf/protoc-gen-go)
+	$(call go-get, google.golang.org/protobuf/cmd/protoc-gen-go)
 
-$(GOPATH)/bin/protoc-gen-gogo:
-	$(call go-get-no-mod, github.com/gogo/protobuf/protoc-gen-gogo)
-
-$(GOPATH)/bin/protoc-gen-gofast:
-	$(call go-get-no-mod, github.com/gogo/protobuf/protoc-gen-gofast)
-
-$(GOPATH)/bin/protoc-gen-gogofast:
-	$(call go-get-no-mod, github.com/gogo/protobuf/protoc-gen-gogofast)
-
-$(GOPATH)/bin/protoc-gen-gogofaster:
-	$(call go-get-no-mod, github.com/gogo/protobuf/protoc-gen-gogofaster)
-
-$(GOPATH)/bin/protoc-gen-gogoslick:
-	$(call go-get-no-mod, github.com/gogo/protobuf/protoc-gen-gogoslick)
+$(GOPATH)/bin/protoc-gen-go-grpc:
+	$(call go-get-no-mod, google.golang.org/grpc/cmd/protoc-gen-go-grpc)
 
 $(GOPATH)/bin/protoc-gen-grpc-gateway:
 	$(call go-get, github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway)
@@ -142,75 +128,31 @@ $(GOPATH)/bin/prototool:
 $(GOPATH)/bin/protoc-gen-doc:
 	$(call go-get, github.com/pseudomuto/protoc-gen-doc/cmd/protoc-gen-doc)
 
+$(GOPATH)/bin/protoc-gen-go-vtproto:
+	$(call go-get, github.com/planetscale/vtprotobuf/cmd/protoc-gen-go-vtproto)
+
 $(GOPATH)/bin/swagger:
 	$(call go-get, github.com/go-swagger/go-swagger/cmd/swagger)
 
 $(PBGOS): \
 	$(PROTOS) \
-	$(GOPATH)/bin/protoc-gen-doc \
-	$(GOPATH)/bin/protoc-gen-go \
-	$(GOPATH)/bin/protoc-gen-gogo \
-	$(GOPATH)/bin/protoc-gen-gofast \
-	$(GOPATH)/bin/protoc-gen-gogofast \
-	$(GOPATH)/bin/protoc-gen-gogofaster \
-	$(GOPATH)/bin/protoc-gen-gogoslick \
-	$(GOPATH)/bin/protoc-gen-grpc-gateway \
-	$(GOPATH)/bin/protoc-gen-swagger \
-	$(GOPATH)/bin/protoc-gen-validate \
-	$(GOPATH)/bin/swagger \
-	$(GOPATH)/src/google.golang.org/genproto \
-	$(GOPATH)/src/github.com/protocolbuffers/protobuf \
-	$(GOPATH)/src/github.com/googleapis/googleapis \
-	$(GOPATH)/src/github.com/gogo/googleapis \
-	$(GOPATH)/src/github.com/envoyproxy/protoc-gen-validate
+	proto/deps
 	@$(call green, "generating pb.go files...")
 	$(call mkdir, $(dir $@))
-	$(call protoc-gen, $(patsubst apis/grpc/%.pb.go,apis/proto/%.proto,$@), --gogofast_out=plugins=grpc:$(GOPATH)/src)
+	$(call proto-code-gen, $(patsubst apis/grpc/%.pb.go,apis/proto/%.proto,$@))
 	find $(ROOTDIR)/apis/grpc/* -name '*.go' | xargs sed -i -E "s%google.golang.org/grpc/codes%github.com/vdaas/vald/internal/net/grpc/codes%g"
 	find $(ROOTDIR)/apis/grpc/* -name '*.go' | xargs sed -i -E "s%google.golang.org/grpc/status%github.com/vdaas/vald/internal/net/grpc/status%g"
-	# we have to enable validate after https://github.com/envoyproxy/protoc-gen-validate/pull/257 is merged
-	# $(call protoc-gen, $(patsubst apis/grpc/%.pb.go,apis/proto/%.proto,$@), --gogofast_out=plugins=grpc:$(GOPATH)/src --validate_out=lang=gogo:$(GOPATH)/src)
 
 $(SWAGGERS): \
 	$(PROTOS) \
-	$(GOPATH)/bin/protoc-gen-doc \
-	$(GOPATH)/bin/protoc-gen-go \
-	$(GOPATH)/bin/protoc-gen-gogo \
-	$(GOPATH)/bin/protoc-gen-gofast \
-	$(GOPATH)/bin/protoc-gen-gogofast \
-	$(GOPATH)/bin/protoc-gen-gogofaster \
-	$(GOPATH)/bin/protoc-gen-gogoslick \
-	$(GOPATH)/bin/protoc-gen-grpc-gateway \
-	$(GOPATH)/bin/protoc-gen-swagger \
-	$(GOPATH)/bin/protoc-gen-validate \
-	$(GOPATH)/bin/swagger \
-	$(GOPATH)/src/google.golang.org/genproto \
-	$(GOPATH)/src/github.com/protocolbuffers/protobuf \
-	$(GOPATH)/src/github.com/googleapis/googleapis \
-	$(GOPATH)/src/github.com/gogo/googleapis \
-	$(GOPATH)/src/github.com/envoyproxy/protoc-gen-validate
+	proto/deps
 	@$(call green, "generating swagger.json files...")
 	$(call mkdir, $(dir $@))
 	$(call protoc-gen, $(patsubst apis/swagger/%.swagger.json,apis/proto/%.proto,$@), --swagger_out=json_names_for_fields=true:$(dir $@))
 
 $(PBDOCS): \
 	$(PROTOS) \
-	$(GOPATH)/bin/protoc-gen-doc \
-	$(GOPATH)/bin/protoc-gen-go \
-	$(GOPATH)/bin/protoc-gen-gogo \
-	$(GOPATH)/bin/protoc-gen-gofast \
-	$(GOPATH)/bin/protoc-gen-gogofast \
-	$(GOPATH)/bin/protoc-gen-gogofaster \
-	$(GOPATH)/bin/protoc-gen-gogoslick \
-	$(GOPATH)/bin/protoc-gen-grpc-gateway \
-	$(GOPATH)/bin/protoc-gen-swagger \
-	$(GOPATH)/bin/protoc-gen-validate \
-	$(GOPATH)/bin/swagger \
-	$(GOPATH)/src/google.golang.org/genproto \
-	$(GOPATH)/src/github.com/protocolbuffers/protobuf \
-	$(GOPATH)/src/github.com/googleapis/googleapis \
-	$(GOPATH)/src/github.com/gogo/googleapis \
-	$(GOPATH)/src/github.com/envoyproxy/protoc-gen-validate
+	proto/deps
 
 apis/docs/v1/docs.md: $(PROTOS_V1)
 	@$(call green, "generating documents for API v1...")

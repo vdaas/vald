@@ -74,6 +74,12 @@ k8s/vald/deploy:
 	helm template \
 	    --values charts/vald/values/dev.yaml \
 	    --set defaults.image.tag=$(VERSION) \
+	    --set agent.image.repository=$(CRORG)/$(AGENT_IMAGE) \
+	    --set agent.sidecar.image.repository=$(CRORG)/$(AGENT_SIDECAR_IMAGE) \
+	    --set discoverer.image.repository=$(CRORG)/$(DISCOVERER_IMAGE) \
+	    --set gateway.filter.image.repository=$(CRORG)/$(FILTER_GATEWAY_IMAGE) \
+	    --set gateway.lb.image.repository=$(CRORG)/$(LB_GATEWAY_IMAGE) \
+	    --set manager.index.image.repository=$(CRORG)/$(MANAGER_INDEX_IMAGE) \
 	    --output-dir $(TEMP_DIR) \
 	    charts/vald
 	kubectl apply -f $(TEMP_DIR)/vald/templates/manager/index
@@ -89,6 +95,12 @@ k8s/vald/delete:
 	helm template \
 	    --values charts/vald/values/dev.yaml \
 	    --set defaults.image.tag=$(VERSION) \
+	    --set agent.image.repository=$(CRORG)/$(AGENT_IMAGE) \
+	    --set agent.sidecar.image.repository=$(CRORG)/$(AGENT_SIDECAR_IMAGE) \
+	    --set discoverer.image.repository=$(CRORG)/$(DISCOVERER_IMAGE) \
+	    --set gateway.filter.image.repository=$(CRORG)/$(FILTER_GATEWAY_IMAGE) \
+	    --set gateway.lb.image.repository=$(CRORG)/$(LB_GATEWAY_IMAGE) \
+	    --set manager.index.image.repository=$(CRORG)/$(MANAGER_INDEX_IMAGE) \
 	    --output-dir $(TEMP_DIR) \
 	    charts/vald
 	kubectl delete -f $(TEMP_DIR)/vald/templates/gateway/lb
@@ -96,50 +108,6 @@ k8s/vald/delete:
 	kubectl delete -f $(TEMP_DIR)/vald/templates/discoverer
 	kubectl delete -f $(TEMP_DIR)/vald/templates/agent
 	rm -rf $(TEMP_DIR)
-
-.PHONY: k8s/vald/deploy/scylla
-## deploy vald sample cluster with scylla to k8s
-k8s/vald/deploy/scylla: \
-	k8s/external/scylla/deploy
-	helm template \
-	    --values charts/vald/values/scylla.yaml \
-	    --set defaults.image.tag=$(VERSION) \
-	    --output-dir $(TEMP_DIR) \
-	    charts/vald
-	kubectl apply -f $(TEMP_DIR)/vald/templates/jobs/db/initialize/cassandra
-	kubectl apply -f $(TEMP_DIR)/vald/templates/agent
-	kubectl apply -f $(TEMP_DIR)/vald/templates/discoverer
-	kubectl apply -f $(TEMP_DIR)/vald/templates/manager/index
-	kubectl apply -f $(TEMP_DIR)/vald/templates/gateway/lb
-	kubectl apply -f $(TEMP_DIR)/vald/templates/manager/backup
-	kubectl apply -f $(TEMP_DIR)/vald/templates/manager/compressor
-	kubectl apply -f $(TEMP_DIR)/vald/templates/gateway/backup
-	kubectl apply -f $(TEMP_DIR)/vald/templates/meta
-	kubectl apply -f $(TEMP_DIR)/vald/templates/gateway/meta
-	rm -rf $(TEMP_DIR)
-	kubectl get pods -o jsonpath="{.items[*].spec.containers[*].image}" | tr " " "\n"
-
-.PHONY: k8s/vald/delete/scylla
-## delete vald sample cluster with scylla to k8s
-k8s/vald/delete/scylla: \
-	k8s/external/scylla/delete
-	helm template \
-	    --values charts/vald/values/scylla.yaml \
-	    --set defaults.image.tag=$(VERSION) \
-	    --output-dir $(TEMP_DIR) \
-	    charts/vald
-	kubectl delete -f $(TEMP_DIR)/vald/templates/gateway/meta
-	kubectl delete -f $(TEMP_DIR)/vald/templates/meta
-	kubectl delete -f $(TEMP_DIR)/vald/templates/gateway/backup
-	kubectl delete -f $(TEMP_DIR)/vald/templates/manager/compressor
-	kubectl delete -f $(TEMP_DIR)/vald/templates/manager/backup
-	kubectl delete -f $(TEMP_DIR)/vald/templates/gateway/lb
-	kubectl delete -f $(TEMP_DIR)/vald/templates/manager/index
-	kubectl delete -f $(TEMP_DIR)/vald/templates/discoverer
-	kubectl delete -f $(TEMP_DIR)/vald/templates/agent
-	kubectl delete -f $(TEMP_DIR)/vald/templates/jobs/db/initialize/cassandra
-	rm -rf $(TEMP_DIR)
-
 
 .PHONY: k8s/vald-helm-operator/deploy
 ## deploy vald-helm-operator to k8s

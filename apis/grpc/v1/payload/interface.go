@@ -15,7 +15,7 @@
 //
 package payload
 
-import proto "github.com/gogo/protobuf/proto"
+import proto "google.golang.org/protobuf/proto"
 
 type Payload interface {
 	Reset()

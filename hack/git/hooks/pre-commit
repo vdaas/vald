@@ -20,14 +20,19 @@ if git diff HEAD^ --name-only | grep ".go$" > /dev/null; then
     cp go.mod ${TMPDIR}
     cp go.sum ${TMPDIR}
 
+    # golines
+    echo "Run golines..."
+    find ./ -type d -name .git -prune -o -type f -regex '.*[^\.pb]\.go' -print | xargs golines -w -m 200
+    echo "golines finished."
+
     # gofumpt
     echo "Run gofumpt..."
-    find ./ -type f -regex ".*\.go" | xargs gofumpt -w
+    find ./ -type d -name .git -prune -o -type f -regex '.*[^\.pb]\.go' -print | xargs gofumpt -w
     echo "gofumpt finished."
 
     # goimports
     echo "Run goimports..."
-    find ./ -type f -regex ".*\.go" | xargs goimports -w
+    find ./ -type d -name .git -prune -o -type f -regex '.*\.go' -print | xargs goimports -w
     echo "goimports finished."
 
     # go build

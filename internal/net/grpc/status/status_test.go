@@ -21,10 +21,10 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/gogo/status"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/test/goleak"
+	"google.golang.org/grpc/status"
 )
 
 func TestNew(t *testing.T) {

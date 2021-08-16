@@ -54,6 +54,7 @@ type server struct {
 	InsertFilters     []string
 	UpdateFilters     []string
 	UpsertFilters     []string
+	vald.UnimplementedValdServerWithFilter
 }
 
 const apiName = "vald/gateway-filter"
@@ -844,7 +845,11 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (loc *
 	}
 	vec, err = c.FilterVector(ctx, req.GetVector())
 	if err != nil {
-		return nil, status.WrapWithInternal(fmt.Sprintf("Insert API ingress filter request to %v failure on id: %s\tvec: %v", addrs, req.GetVector().GetId(), req.GetVector().GetVector()), err, info.Get())
+		return nil, status.WrapWithInternal(
+			fmt.Sprintf("Insert API ingress filter request to %v failure on id: %s\tvec: %v", addrs, req.GetVector().GetId(), req.GetVector().GetVector()),
+			err,
+			info.Get(),
+		)
 	}
 	if vec.GetId() == "" {
 		vec.Id = req.GetVector().GetId()
@@ -1004,7 +1009,11 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (loc *
 	}
 	vec, err = c.FilterVector(ctx, req.GetVector())
 	if err != nil {
-		return nil, status.WrapWithInternal(fmt.Sprintf("Update API ingress filter request to %v failure on id: %s\tvec: %v", addrs, req.GetVector().GetId(), req.GetVector().GetVector()), err, info.Get())
+		return nil, status.WrapWithInternal(
+			fmt.Sprintf("Update API ingress filter request to %v failure on id: %s\tvec: %v", addrs, req.GetVector().GetId(), req.GetVector().GetVector()),
+			err,
+			info.Get(),
+		)
 	}
 	if vec.GetId() == "" {
 		vec.Id = req.GetVector().GetId()
@@ -1164,7 +1173,11 @@ func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *
 	}
 	vec, err = c.FilterVector(ctx, req.GetVector())
 	if err != nil {
-		return nil, status.WrapWithInternal(fmt.Sprintf("Upsert API ingress filter request to %v failure on id: %s\tvec: %v", addrs, req.GetVector().GetId(), req.GetVector().GetVector()), err, info.Get())
+		return nil, status.WrapWithInternal(
+			fmt.Sprintf("Upsert API ingress filter request to %v failure on id: %s\tvec: %v", addrs, req.GetVector().GetId(), req.GetVector().GetVector()),
+			err,
+			info.Get(),
+		)
 	}
 	if vec.GetId() == "" {
 		vec.Id = req.GetVector().GetId()

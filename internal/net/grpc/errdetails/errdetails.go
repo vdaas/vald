@@ -22,11 +22,14 @@ import (
 	"reflect"
 	"strings"
 
-	errdetails "github.com/gogo/googleapis/google/rpc"
-	"github.com/gogo/status"
 	"github.com/vdaas/vald/internal/encoding/json"
+	"github.com/vdaas/vald/internal/info"
+	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc/proto"
 	"github.com/vdaas/vald/internal/net/grpc/types"
+	"google.golang.org/genproto/googleapis/rpc/errdetails"
+	spb "google.golang.org/genproto/googleapis/rpc/status"
+	"google.golang.org/grpc/status"
 )
 
 type (
@@ -46,46 +49,40 @@ type (
 	RetryInfo                    = errdetails.RetryInfo
 )
 
-type ErrorDetails struct {
-	Code    int32           `json:"code,omitempty"`
-	Message string          `json:"message,omitempty"`
-	Error   error           `json:"error,omitempty"`
-	Details []*ErrorDetails `json:"details,omitempty"`
-}
-
 const (
 	ValdResourceOwner          = "vdaas.org vald team <vald@vdaas.org>"
 	ValdGRPCResourceTypePrefix = "github.com/vdaas/vald/apis/grpc/v1"
 
-	typePrefix = "type.googleapis.com/"
+	typePrefix = "type.googleapis.com/google.rpc."
 )
 
 var (
-	debugInfoMessageName                    = new(DebugInfo).XXX_MessageName()
-	errorInfoMessageName                    = new(ErrorInfo).XXX_MessageName()
-	badRequestMessageName                   = new(BadRequest).XXX_MessageName()
-	badRequestFieldViolationMessageName     = new(BadRequestFieldViolation).XXX_MessageName()
-	localizedMessageMessageName             = new(LocalizedMessage).XXX_MessageName()
-	preconditionFailureMessageName          = new(PreconditionFailure).XXX_MessageName()
-	preconditionFailureViolationMessageName = new(PreconditionFailureViolation).XXX_MessageName()
-	helpMessageName                         = new(Help).XXX_MessageName()
-	helpLinkMessageName                     = new(HelpLink).XXX_MessageName()
-	quotaFailureMessageName                 = new(QuotaFailure).XXX_MessageName()
-	quotaFailureViolationMessageName        = new(QuotaFailureViolation).XXX_MessageName()
-	requestInfoMessageName                  = new(RequestInfo).XXX_MessageName()
-	resourceInfoMessageName                 = new(ResourceInfo).XXX_MessageName()
-	retryInfoMessageName                    = new(RetryInfo).XXX_MessageName()
+	debugInfoMessageName                    = new(DebugInfo).ProtoReflect().Descriptor().FullName().Name()
+	errorInfoMessageName                    = new(ErrorInfo).ProtoReflect().Descriptor().FullName().Name()
+	badRequestMessageName                   = new(BadRequest).ProtoReflect().Descriptor().FullName().Name()
+	badRequestFieldViolationMessageName     = new(BadRequestFieldViolation).ProtoReflect().Descriptor().FullName().Name()
+	localizedMessageMessageName             = new(LocalizedMessage).ProtoReflect().Descriptor().FullName().Name()
+	preconditionFailureMessageName          = new(PreconditionFailure).ProtoReflect().Descriptor().FullName().Name()
+	preconditionFailureViolationMessageName = new(PreconditionFailureViolation).ProtoReflect().Descriptor().FullName().Name()
+	helpMessageName                         = new(Help).ProtoReflect().Descriptor().FullName().Name()
+	helpLinkMessageName                     = new(HelpLink).ProtoReflect().Descriptor().FullName().Name()
+	quotaFailureMessageName                 = new(QuotaFailure).ProtoReflect().Descriptor().FullName().Name()
+	quotaFailureViolationMessageName        = new(QuotaFailureViolation).ProtoReflect().Descriptor().FullName().Name()
+	requestInfoMessageName                  = new(RequestInfo).ProtoReflect().Descriptor().FullName().Name()
+	resourceInfoMessageName                 = new(ResourceInfo).ProtoReflect().Descriptor().FullName().Name()
+	retryInfoMessageName                    = new(RetryInfo).ProtoReflect().Descriptor().FullName().Name()
 )
 
-func (e *ErrorDetails) String() string {
-	return fmt.Sprintf("code: %d,\tmessage: %s,\terror: %v,details: %v", e.Code, e.Message, e.Error, e.Details)
+type Detail struct {
+	TypeURL string        `json:"type_url,omitempty" yaml:"type_url"`
+	Message proto.Message `json:"message,omitempty"  yaml:"message"`
 }
 
-func DecodeErrorDetails(objs ...interface{}) (es []*ErrorDetails) {
+func decodeDetails(objs ...interface{}) (details []Detail) {
 	if objs == nil {
 		return nil
 	}
-	es = make([]*ErrorDetails, 0, len(objs))
+	details = make([]Detail, 0, len(objs))
 	for _, obj := range objs {
 		v := reflect.ValueOf(obj)
 		if v.Kind() == reflect.Ptr {
@@ -94,213 +91,209 @@ func DecodeErrorDetails(objs ...interface{}) (es []*ErrorDetails) {
 		if v.Kind() == reflect.Slice || v.Kind() == reflect.Array {
 			iobjs := make([]interface{}, 0, v.Len())
 			for i := 0; i < v.Len(); i++ {
-				val := v.Index(i).Interface()
-				iobjs = append(iobjs, val)
+				var val interface{}
+				if v.Index(i).Kind() == reflect.Ptr {
+					val = v.Index(i).Elem().Interface()
+				} else {
+					val = v.Index(i).Interface()
+				}
+				if val != nil {
+					iobjs = append(iobjs, val)
+				}
 			}
-			details := DecodeErrorDetails(iobjs...)
-			if details == nil {
+			if len(iobjs) == 0 {
 				continue
 			}
-			es = append(es, &ErrorDetails{
-				Code:    0,
-				Message: v.Kind().String(),
-				Details: details,
-			})
+			details = append(details, decodeDetails(iobjs...)...)
 			continue
 		}
 		switch v := obj.(type) {
-		case status.Status:
-			es = append(es, &ErrorDetails{
-				Code:    int32(v.Code()),
-				Message: v.Message(),
-				Error:   v.Err(),
-				Details: append(DecodeErrorDetails(v.Details()), DecodeErrorDetails(v.Proto())...),
-			})
 		case *status.Status:
-			es = append(es, &ErrorDetails{
-				Code:    int32(v.Code()),
-				Message: v.Message(),
-				Error:   v.Err(),
-				Details: append(DecodeErrorDetails(v.Details()), DecodeErrorDetails(v.Proto())...),
-			})
-		case errdetails.Status:
-			es = append(es, &ErrorDetails{
-				Code:    v.GetCode(),
-				Message: v.GetMessage(),
-				Details: DecodeErrorDetails(v.GetDetails()),
-			})
-		case *errdetails.Status:
-			es = append(es, &ErrorDetails{
-				Code:    v.GetCode(),
-				Message: v.GetMessage(),
-				Details: DecodeErrorDetails(v.GetDetails()),
-			})
+			details = append(details, append([]Detail{
+				{
+					TypeURL: string(v.Proto().ProtoReflect().Descriptor().FullName()),
+					Message: &spb.Status{
+						Code:    v.Proto().GetCode(),
+						Message: v.Message(),
+					},
+				},
+			}, decodeDetails(v.Proto().Details)...)...)
+		case status.Status:
+			details = append(details, append([]Detail{
+				{
+					TypeURL: string(v.Proto().ProtoReflect().Descriptor().FullName()),
+					Message: &spb.Status{
+						Code:    v.Proto().GetCode(),
+						Message: v.Message(),
+					},
+				},
+			}, decodeDetails(v.Proto().Details)...)...)
 		case *types.Any:
-			d, err := DecodeDetail(v)
-			if err != nil {
-				es = append(es, &ErrorDetails{
-					Code:    0,
-					Message: fmt.Sprintf("type: %s\tserialization error: %v,\tpayload: %#v", v.GetTypeUrl(), err, objs),
-					Error:   err,
-				})
-			} else {
-				es = append(es, &ErrorDetails{
-					Code:    0,
-					Message: v.GetTypeUrl(),
-					Details: DecodeErrorDetails(d),
-				})
-			}
+			details = append(details, Detail{
+				TypeURL: v.GetTypeUrl(),
+				Message: AnyToErrorDetail(v),
+			})
 		case types.Any:
-			d, err := DecodeDetail(&v)
-			if err != nil {
-				es = append(es, &ErrorDetails{
-					Code:    0,
-					Message: fmt.Sprintf("type: %s\tserialization error: %v,\tpayload: %#v", v.GetTypeUrl(), err, objs),
-					Error:   err,
-				})
-			} else {
-				es = append(es, &ErrorDetails{
-					Code:    0,
-					Message: v.GetTypeUrl(),
-					Details: DecodeErrorDetails(d),
-				})
-			}
-		case proto.Message:
-			es = append(es, &ErrorDetails{
-				Code:    0,
-				Message: v.String(),
+			details = append(details, Detail{
+				TypeURL: v.GetTypeUrl(),
+				Message: AnyToErrorDetail(&v),
 			})
 		case *proto.Message:
-			es = append(es, &ErrorDetails{
-				Code:    0,
-				Message: (*v).String(),
+			details = append(details, Detail{
+				TypeURL: string((*v).ProtoReflect().Descriptor().FullName()),
+				Message: *v,
 			})
-		case ErrorDetails:
-			es = append(es, &v)
-		case *ErrorDetails:
-			es = append(es, v)
-		default:
-			b, err := json.Marshal(objs)
-			if err != nil {
-				es = append(es, &ErrorDetails{
-					Code:    0,
-					Message: fmt.Sprintf("serialization error: %v,\tpayload: %#v", err, objs),
-					Error:   err,
-				})
-			} else {
-				es = append(es, &ErrorDetails{
-					Code:    0,
-					Message: string(b),
-				})
-			}
+		case proto.Message:
+			details = append(details, Detail{
+				TypeURL: string(v.ProtoReflect().Descriptor().FullName()),
+				Message: v,
+			})
+		case *Detail:
+			details = append(details, *v)
+		case Detail:
+			details = append(details, v)
 		}
 	}
-	return es
+	return details
 }
 
 func Serialize(objs ...interface{}) string {
-	ed := DecodeErrorDetails(objs...)
 	var (
 		b   []byte
 		err error
 	)
-
-	switch len(ed) {
+	msgs := decodeDetails(objs...)
+	switch len(msgs) {
 	case 0:
 		return fmt.Sprint(objs...)
 	case 1:
-		b, err = json.Marshal(ed[0])
+		b, err = json.Marshal(msgs[0])
 	default:
-		b, err = json.Marshal(ed)
+		b, err = json.Marshal(msgs)
 	}
 	if err != nil {
-		msgs := make([]string, 0, len(ed))
-		for _, e := range ed {
-			msgs = append(msgs, e.String())
-		}
-		return strings.Join(msgs, ",\t")
+		return fmt.Sprint(objs...)
 	}
 	return string(b)
 }
 
-func DecodeDetail(detail *types.Any) (data interface{}, err error) {
-	switch strings.TrimPrefix(detail.GetTypeUrl(), typePrefix) {
+func AnyToErrorDetail(a *types.Any) proto.Message {
+	if a == nil {
+		return nil
+	}
+	var err error
+	switch proto.Name(strings.TrimPrefix(a.GetTypeUrl(), typePrefix)) {
 	case debugInfoMessageName:
 		var m DebugInfo
-		err = types.UnmarshalAny(detail, &m)
-		return m, err
+		err = types.UnmarshalAny(a, &m)
+		if err == nil {
+			return &m
+		}
 	case errorInfoMessageName:
 		var m ErrorInfo
-		err = types.UnmarshalAny(detail, &m)
-		return m, err
+		err = types.UnmarshalAny(a, &m)
+		if err == nil {
+			return &m
+		}
 	case badRequestFieldViolationMessageName:
 		var m BadRequestFieldViolation
-		err = types.UnmarshalAny(detail, &m)
-		return m, err
+		err = types.UnmarshalAny(a, &m)
+		if err == nil {
+			return &m
+		}
 	case badRequestMessageName:
 		var m BadRequest
-		err = types.UnmarshalAny(detail, &m)
-		return m, err
+		err = types.UnmarshalAny(a, &m)
+		if err == nil {
+			return &m
+		}
 	case localizedMessageMessageName:
 		var m LocalizedMessage
-		err = types.UnmarshalAny(detail, &m)
-		return m, err
+		err = types.UnmarshalAny(a, &m)
+		if err == nil {
+			return &m
+		}
 	case preconditionFailureViolationMessageName:
 		var m PreconditionFailureViolation
-		err = types.UnmarshalAny(detail, &m)
-		return m, err
+		err = types.UnmarshalAny(a, &m)
+		if err == nil {
+			return &m
+		}
 	case preconditionFailureMessageName:
 		var m PreconditionFailure
-		err = types.UnmarshalAny(detail, &m)
-		return m, err
+		err = types.UnmarshalAny(a, &m)
+		if err == nil {
+			return &m
+		}
 	case helpLinkMessageName:
 		var m HelpLink
-		err = types.UnmarshalAny(detail, &m)
-		return m, err
+		err = types.UnmarshalAny(a, &m)
+		if err == nil {
+			return &m
+		}
 	case helpMessageName:
 		var m Help
-		err = types.UnmarshalAny(detail, &m)
-		return m, err
+		err = types.UnmarshalAny(a, &m)
+		if err == nil {
+			return &m
+		}
 	case quotaFailureViolationMessageName:
 		var m QuotaFailureViolation
-		err = types.UnmarshalAny(detail, &m)
-		return m, err
+		err = types.UnmarshalAny(a, &m)
+		if err == nil {
+			return &m
+		}
 	case quotaFailureMessageName:
 		var m QuotaFailure
-		err = types.UnmarshalAny(detail, &m)
-		return m, err
+		err = types.UnmarshalAny(a, &m)
+		if err == nil {
+			return &m
+		}
 	case requestInfoMessageName:
 		var m RequestInfo
-		err = types.UnmarshalAny(detail, &m)
-		return m, err
+		err = types.UnmarshalAny(a, &m)
+		if err == nil {
+			return &m
+		}
 	case resourceInfoMessageName:
 		var m ResourceInfo
-		err = types.UnmarshalAny(detail, &m)
-		return m, err
+		err = types.UnmarshalAny(a, &m)
+		if err == nil {
+			return &m
+		}
 	case retryInfoMessageName:
 		var m RetryInfo
-		err = types.UnmarshalAny(detail, &m)
-		return m, err
-	}
-	return nil, nil
-}
-
-func DecodeDetails(details ...*types.Any) (ds []interface{}, err error) {
-	ds = make([]interface{}, 0, len(details))
-	for _, detail := range details {
-		d, err := DecodeDetail(detail)
-		if err != nil {
-			return nil, err
+		err = types.UnmarshalAny(a, &m)
+		if err == nil {
+			return &m
 		}
-		ds = append(ds, d)
 	}
-	return ds, nil
+	if err != nil {
+		log.Warn(err)
+	}
+	return a.ProtoReflect().Interface()
 }
 
-func DecodeDetailsToString(details ...*types.Any) (msg string, err error) {
-	ds, err := DecodeDetails(details...)
-	if err != nil {
-		return "", err
+func DebugInfoFromInfoDetail(v *info.Detail) *DebugInfo {
+	debug := &DebugInfo{
+		Detail: fmt.Sprintf("Version: %s,Name: %s, GitCommit: %s, BuildTime: %s, NGT_Version: %s ,Go_Version: %s, GOARCH: %s, GOOS: %s, CGO_Enabled: %s, BuildCPUInfo: [%s]",
+			v.Version,
+			v.ServerName,
+			v.GitCommit,
+			v.BuildTime,
+			v.NGTVersion,
+			v.GoVersion,
+			v.GoArch,
+			v.GoOS,
+			v.CGOEnabled,
+			strings.Join(v.BuildCPUInfoFlags, ", "),
+		),
 	}
-	return Serialize(ds...), nil
+	if debug.GetStackEntries() == nil {
+		debug.StackEntries = make([]string, 0, len(v.StackTrace))
+	}
+	for i, stack := range v.StackTrace {
+		debug.StackEntries = append(debug.GetStackEntries(), fmt.Sprintf("id: %d stack_trace: %s", i, stack.String()))
+	}
+	return debug
 }

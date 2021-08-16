@@ -20,10 +20,17 @@ package grpc
 import (
 	"time"
 
+	vgrpc "github.com/planetscale/vtprotobuf/codec/grpc"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/encoding"
+	_ "google.golang.org/grpc/encoding/proto"
 	"google.golang.org/grpc/keepalive"
 )
+
+func init() {
+	encoding.RegisterCodec(vgrpc.Codec{})
+}
 
 type (
 	Server       = grpc.Server

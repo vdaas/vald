@@ -21,12 +21,6 @@
 - [apis/proto/v1/manager/index/index_manager.proto](#apis/proto/v1/manager/index/index_manager.proto)
     - [Index](#manager.index.v1.Index)
   
-- [apis/proto/v1/manager/replication/agent/replication_manager.proto](#apis/proto/v1/manager/replication/agent/replication_manager.proto)
-    - [Replication](#manager.replication.agent.v1.Replication)
-  
-- [apis/proto/v1/manager/replication/controller/replication_manager.proto](#apis/proto/v1/manager/replication/controller/replication_manager.proto)
-    - [ReplicationController](#manager.replication.controller.v1.ReplicationController)
-  
 - [apis/proto/v1/payload/payload.proto](#apis/proto/v1/payload/payload.proto)
     - [Backup](#payload.v1.Backup)
     - [Backup.Compressed](#payload.v1.Backup.Compressed)
@@ -312,60 +306,6 @@
 | Method Name | Request Type | Response Type | Description |
 | ----------- | ------------ | ------------- | ------------|
 | IndexInfo | [.payload.v1.Empty](#payload.v1.Empty) | [.payload.v1.Info.Index.Count](#payload.v1.Info.Index.Count) |  |
-
- 
-
-
-
-<a name="apis/proto/v1/manager/replication/agent/replication_manager.proto"></a>
-<p align="right"><a href="#top">Top</a></p>
-
-## apis/proto/v1/manager/replication/agent/replication_manager.proto
-
-
- 
-
- 
-
- 
-
-
-<a name="manager.replication.agent.v1.Replication"></a>
-
-### Replication
-
-
-| Method Name | Request Type | Response Type | Description |
-| ----------- | ------------ | ------------- | ------------|
-| Recover | [.payload.v1.Replication.Recovery](#payload.v1.Replication.Recovery) | [.payload.v1.Empty](#payload.v1.Empty) |  |
-| Rebalance | [.payload.v1.Replication.Rebalance](#payload.v1.Replication.Rebalance) | [.payload.v1.Empty](#payload.v1.Empty) |  |
-| AgentInfo | [.payload.v1.Empty](#payload.v1.Empty) | [.payload.v1.Replication.Agents](#payload.v1.Replication.Agents) |  |
-
- 
-
-
-
-<a name="apis/proto/v1/manager/replication/controller/replication_manager.proto"></a>
-<p align="right"><a href="#top">Top</a></p>
-
-## apis/proto/v1/manager/replication/controller/replication_manager.proto
-
-
- 
-
- 
-
- 
-
-
-<a name="manager.replication.controller.v1.ReplicationController"></a>
-
-### ReplicationController
-
-
-| Method Name | Request Type | Response Type | Description |
-| ----------- | ------------ | ------------- | ------------|
-| ReplicationInfo | [.payload.v1.Empty](#payload.v1.Empty) | [.payload.v1.Replication.Agents](#payload.v1.Replication.Agents) |  |
 
  
 

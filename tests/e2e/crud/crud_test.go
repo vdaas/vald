@@ -1,4 +1,3 @@
-//go:build e2e
 // +build e2e
 
 //
@@ -139,6 +138,7 @@ func sleep(t *testing.T, dur time.Duration) {
 }
 
 func TestE2EInsertOnly(t *testing.T) {
+	t.Cleanup(teardown)
 	ctx := context.Background()
 
 	op, err := operation.New(host, port)
@@ -152,11 +152,10 @@ func TestE2EInsertOnly(t *testing.T) {
 	if err != nil {
 		t.Fatalf("an error occurred: %s", err)
 	}
-
-	teardown()
 }
 
 func TestE2ESearchOnly(t *testing.T) {
+	t.Cleanup(teardown)
 	ctx := context.Background()
 
 	op, err := operation.New(host, port)
@@ -171,11 +170,10 @@ func TestE2ESearchOnly(t *testing.T) {
 	if err != nil {
 		t.Fatalf("an error occurred: %s", err)
 	}
-
-	teardown()
 }
 
 func TestE2EUpdateOnly(t *testing.T) {
+	t.Cleanup(teardown)
 	ctx := context.Background()
 
 	op, err := operation.New(host, port)
@@ -210,6 +208,7 @@ func TestE2EUpsertOnly(t *testing.T) {
 }
 
 func TestE2ERemoveOnly(t *testing.T) {
+	t.Cleanup(teardown)
 	ctx := context.Background()
 
 	op, err := operation.New(host, port)
@@ -223,11 +222,10 @@ func TestE2ERemoveOnly(t *testing.T) {
 	if err != nil {
 		t.Fatalf("an error occurred: %s", err)
 	}
-
-	teardown()
 }
 
 func TestE2EInsertAndSearch(t *testing.T) {
+	t.Cleanup(teardown)
 	ctx := context.Background()
 
 	op, err := operation.New(host, port)
@@ -251,11 +249,10 @@ func TestE2EInsertAndSearch(t *testing.T) {
 	if err != nil {
 		t.Fatalf("an error occurred: %s", err)
 	}
-
-	teardown()
 }
 
 func TestE2EStandardCRUD(t *testing.T) {
+	t.Cleanup(teardown)
 	ctx := context.Background()
 
 	op, err := operation.New(host, port)
@@ -319,6 +316,4 @@ func TestE2EStandardCRUD(t *testing.T) {
 	if err != nil {
 		t.Fatalf("an error occurred: %s", err)
 	}
-
-	teardown()
 }

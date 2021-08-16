@@ -17,10 +17,24 @@
 // Package proto provides proto file logic
 package proto
 
-import "github.com/gogo/protobuf/proto"
+import (
+	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/reflect/protoreflect"
+	"google.golang.org/protobuf/runtime/protoiface"
+	"google.golang.org/protobuf/runtime/protoimpl"
+)
 
-type Message = proto.Message
+type (
+	Message   = proto.Message
+	MessageV1 = protoiface.MessageV1
+	Name      = protoreflect.Name
+)
 
 func Clone(m Message) Message {
 	return proto.Clone(m)
+}
+
+// ToMessageV1 downcasts Messages to V1 protobuf MessageV1
+func ToMessageV1(m Message) MessageV1 {
+	return protoimpl.X.ProtoMessageV1Of(m)
 }
