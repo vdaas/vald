@@ -66,16 +66,17 @@ func New(opts ...Option) BidiMap {
 	}
 	for i := range b.ou {
 		b.ou[i] = new(ou)
-	}
-	for i := range b.uo {
 		b.uo[i] = new(uo)
 	}
+
 	if b.eg == nil {
 		b.eg, _ = errgroup.New(context.Background())
 	}
-	if b.concurrency > 1 {
+
+	if b.concurrency > 0 {
 		b.eg.Limitation(b.concurrency)
 	}
+
 	return b
 }
 

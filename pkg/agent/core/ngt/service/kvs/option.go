@@ -37,7 +37,7 @@ func WithErrGroup(eg errgroup.Group) Option {
 // WithConcurrency returns the option to set the concurrency.
 func WithConcurrency(c int) Option {
 	return func(b *bidi) {
-		if c > 1 {
+		if c > 0 {
 			b.concurrency = c
 		}
 	}
