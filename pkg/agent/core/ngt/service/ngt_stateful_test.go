@@ -42,10 +42,8 @@ type ngtSystem struct {
 type resultContainer struct {
 	err     error
 	results []model.Distance
-	uuid    string
 	vector  []float32
 	exists  bool
-	len     uint64
 }
 
 type ngtState struct {
