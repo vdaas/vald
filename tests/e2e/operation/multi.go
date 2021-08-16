@@ -168,9 +168,9 @@ func (c *client) MultiUpdate(t *testing.T, ctx context.Context, ds Dataset) erro
 	// Note: The MultiUpdate API internally checks the identity of the vectors to be updated by the LB Gateway,
 	// so it is important to remember that the number of responses is not always the same as the number of requested data.
 	// The response includes an ID, so the client can check the order of the data based on the requested ID.
-	// if len(res.GetLocations()) != len(ds.Train) {
-	// 	t.Error("number of responses does not match with sent requests")
-	// }
+	if len(res.GetLocations()) == 0 {
+		t.Error("empty response detected")
+	}
 
 	return nil
 }
@@ -208,9 +208,9 @@ func (c *client) MultiUpsert(t *testing.T, ctx context.Context, ds Dataset) erro
 	// Note: The MultiUpsert API internally checks the identity of the vectors to be updated by the LB Gateway,
 	// so it is important to remember that the number of responses is not always the same as the number of requested data.
 	// The response includes an ID, so the client can check the order of the data based on the requested ID.
-	// if len(res.GetLocations()) != len(ds.Train) {
-	// 	t.Error("number of responses does not match with sent requests")
-	// }
+	if len(res.GetLocations()) == 0 {
+		t.Error("empty response detected")
+	}
 
 	return nil
 }
