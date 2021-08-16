@@ -3,10 +3,10 @@ module github.com/vdaas/vald
 go 1.16
 
 replace (
-	cloud.google.com/go => cloud.google.com/go v0.91.2-0.20210812224627-a38d0372f7b7
-	cloud.google.com/go/storage => cloud.google.com/go/storage v1.16.1-0.20210812224627-a38d0372f7b7
+	cloud.google.com/go => cloud.google.com/go v0.91.2-0.20210813224423-15c1eb9730f0
+	cloud.google.com/go/storage => cloud.google.com/go/storage v1.16.1-0.20210813224423-15c1eb9730f0
 	github.com/Azure/go-autorest => github.com/Azure/go-autorest v14.2.1-0.20210701162346-76c7860e9b60+incompatible
-	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.40.21
+	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.40.22
 	github.com/boltdb/bolt => github.com/boltdb/bolt v1.3.1
 	github.com/chzyer/logex => github.com/chzyer/logex v1.1.11-0.20170329064859-445be9e134b2
 	github.com/coreos/etcd => go.etcd.io/etcd v3.3.25+incompatible
@@ -25,7 +25,7 @@ replace (
 	github.com/kpango/glg => github.com/kpango/glg v1.6.4
 	github.com/tensorflow/tensorflow => github.com/tensorflow/tensorflow v2.1.2+incompatible
 	github.com/zeebo/xxh3 => github.com/zeebo/xxh3 v0.10.0
-	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20210812204632-0ba0e8f03122
+	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20210813211128-0a44fdfbc16e
 	google.golang.org/grpc => google.golang.org/grpc v1.40.0
 	google.golang.org/protobuf => google.golang.org/protobuf v1.27.1
 	k8s.io/api => k8s.io/api v0.21.3
@@ -76,15 +76,15 @@ require (
 	go.uber.org/goleak v1.1.10
 	go.uber.org/zap v1.19.0
 	gocloud.dev v0.23.0
-	golang.org/x/net v0.0.0-20210805182204-aaa1db679c0d
+	golang.org/x/net v0.0.0-20210813160813-60bc85c4be6d
 	golang.org/x/oauth2 v0.0.0-20210810183815-faf39c7919d5
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 	golang.org/x/sys v0.0.0-20210809222454-d867a43fc93e
 	golang.org/x/tools v0.1.5
 	gonum.org/v1/hdf5 v0.0.0-20210714002203-8c5d23bc6946
 	gonum.org/v1/plot v0.9.0
-	google.golang.org/api v0.53.0
-	google.golang.org/genproto v0.0.0-20210811021853-ddbe55d93216
+	google.golang.org/api v0.54.0
+	google.golang.org/genproto v0.0.0-20210813162853-db860fec028c
 	google.golang.org/grpc v1.39.1
 	google.golang.org/protobuf v1.27.1
 	gopkg.in/yaml.v2 v2.4.0

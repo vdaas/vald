@@ -36,6 +36,7 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/grpc/credentials"
 	"github.com/vdaas/vald/internal/net/grpc/keepalive"
+	glog "github.com/vdaas/vald/internal/net/grpc/logger"
 	"github.com/vdaas/vald/internal/safety"
 )
 
@@ -299,6 +300,7 @@ func (s *server) ListenAndServe(ctx context.Context, ech chan<- error) (err erro
 						ech <- err
 					}
 				case GRPC:
+					glog.Init()
 					err = s.grpc.srv.Serve(l)
 					if err != nil && err != grpc.ErrServerStopped {
 						ech <- err

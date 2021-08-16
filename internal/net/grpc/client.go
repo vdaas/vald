@@ -31,6 +31,7 @@ import (
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/net/grpc/codes"
+	"github.com/vdaas/vald/internal/net/grpc/logger"
 	"github.com/vdaas/vald/internal/net/grpc/pool"
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/observability/trace"
@@ -142,6 +143,7 @@ func New(opts ...Option) (c Client) {
 }
 
 func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) (<-chan error, error) {
+	logger.Init()
 	if r, ok := g.monitorRunning.Load().(bool); ok && r {
 		return g.ech, nil
 	}
