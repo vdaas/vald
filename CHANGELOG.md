@@ -1,5 +1,114 @@
 # CHANGELOG
 
+## v1.2.1
+
+### Docker images
+
+<table>
+  <tr>
+    <th>component</th>
+    <th>Docker pull</th>
+  </tr>
+  <tr>
+    <td>Agent NGT</td>
+    <td>
+      <code>docker pull vdaas/vald-agent-ngt:v1.2.1</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-agent-ngt:v1.2.1</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Agent sidecar</td>
+    <td>
+      <code>docker pull vdaas/vald-agent-sidecar:v1.2.1</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-agent-sidecar:v1.2.1</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Discoverers</td>
+    <td>
+      <code>docker pull vdaas/vald-discoverer-k8s:v1.2.1</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-discoverer-k8s:v1.2.1</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Gateways</td>
+    <td>
+      <code>docker pull vdaas/vald-gateway:v1.2.1</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-gateway:v1.2.1</code><br/>
+      <code>docker pull vdaas/vald-backup-gateway:v1.2.1</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-backup-gateway:v1.2.1</code><br/>
+      <code>docker pull vdaas/vald-lb-gateway:v1.2.1</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-lb-gateway:v1.2.1</code><br/>
+      <code>docker pull vdaas/vald-meta-gateway:v1.2.1</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-meta-gateway:v1.2.1</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Backup managers</td>
+    <td>
+      <code>docker pull vdaas/vald-manager-backup-mysql:v1.2.1</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-manager-backup-mysql:v1.2.1</code><br/>
+      <code>docker pull vdaas/vald-manager-backup-cassandra:v1.2.1</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-manager-backup-cassandra:v1.2.1</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Compressor</td>
+    <td>
+      <code>docker pull vdaas/vald-manager-compressor:v1.2.1</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-manager-compressor:v1.2.1</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Metas</td>
+    <td>
+      <code>docker pull vdaas/vald-meta-redis:v1.2.1</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-meta-redis:v1.2.1</code><br/>
+      <code>docker pull vdaas/vald-meta-cassandra:v1.2.1</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-meta-cassandra:v1.2.1</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Index Manager</td>
+    <td>
+      <code>docker pull vdaas/vald-manager-index:v1.2.1</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-manager-index:v1.2.1</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Helm Operator</td>
+    <td>
+      <code>docker pull vdaas/vald-helm-operator:v1.2.1</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-helm-operator:v1.2.1</code>
+    </td>
+  </tr>
+</table>
+
+### Documents
+- [GoDoc](https://pkg.go.dev/github.com/vdaas/vald@v1.2.1)
+- [Helm Chart Reference](https://github.com/vdaas/vald/blob/v1.2.1/charts/vald/README.md)
+- [Helm Operator Chart Reference](https://github.com/vdaas/vald/blob/v1.2.1/charts/vald-helm-operator/README.md)
+
+### Changes
+- remove global errgroup from kvsdb goroutine limitation (#1398)
+- add google grpc healthz & logger (#1394)
+- fix e2e multi apis test code (#1397)
+- :pencil: fix command in vald agent standalone on docker (#1393)
+- add Makefile & Makefile.d to build kick rule (#1391)
+- format codes (#1389)
+- [proposal] add golines as vald default formatter (#1337)
+- replace gogo protobuf to vt protobuf (#1378)
+- refactor gateway request result location aggregation logic & use xxh3 for kvsdb hashing (#1376)
+- Add E2E tests for multi-APIs (#1353)
+- Add test for the function to get length of vqueue (#1382)
+- remove unused path of format/yaml command (#1383)
+- [Documentation] fix image filename (#1377)
+- Vald moves to a vector search engine that enables more simple and high-speed retrieval. This is the first step of Simple-Vald. (#1365)
+- Add e2e-profiling job (#1356)
+- fix svg error on dataflow image (#1375)
+- remove invalid gateway component reference from chart.NOTES (#1371)
+
+
 ## v1.2.0
 
 ### Docker images
