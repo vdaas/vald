@@ -86,6 +86,7 @@ var (
 	seed               int64
 	minSuccessfulTests int
 	maxDiscardRatio    float64
+	applicationLog     bool
 
 	cfg = &config.NGT{
 		Dimension:              dimension,
@@ -114,6 +115,7 @@ func init() {
 	flag.Int64Var(&seed, "pbt-seed", 0, "seed number used for PBT")
 	flag.IntVar(&minSuccessfulTests, "pbt-min-successful-tests", 10, "minimum number of successful tests in PBT")
 	flag.Float64Var(&maxDiscardRatio, "pbt-max-discard-ratio", 5.0, "maximum discard ratio of PBT")
+	flag.BoolVar(&applicationLog, "pbt-enable-application-log", false, "enable application log on PBT")
 }
 
 var (
@@ -1305,8 +1307,11 @@ func rootCommands(t *testing.T) commands.Commands {
 
 func TestStatefulNGT(t *testing.T) {
 	// initialize logger
-	log.Init(log.WithLoggerType("nop"))
-	// log.Init()
+	if applicationLog {
+		log.Init()
+	} else {
+		log.Init(log.WithLoggerType("nop"))
+	}
 
 	parameters := gopter.DefaultTestParameters()
 	if seed != 0 {
