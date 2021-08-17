@@ -22,18 +22,15 @@ import (
 	"reflect"
 	"sort"
 	"sync"
-	"sync/atomic"
 	"time"
 
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
-	"github.com/vdaas/vald/internal/safety"
 )
 
 // Queue
 type Queue interface {
-	Start(ctx context.Context) (<-chan error, error)
 	PushInsert(uuid string, vector []float32, date int64) error
 	PushDelete(uuid string, date int64) error
 	GetVector(uuid string) ([]float32, bool)
@@ -48,19 +45,17 @@ type Queue interface {
 }
 
 type vqueue struct {
-	ich              chan index // ich is insert channel
-	uii              []index    // uii is un inserted index
-	imu              sync.Mutex // insert mutex
-	uiim             uiim       // uiim is un inserted index map (this value is used for GetVector operation to return queued vector cache data)
-	dch              chan key   // dch is delete channel
-	udk              []key      // udk is un deleted key
-	dmu              sync.Mutex // delete mutex
-	udim             udim       // udim is un deleted index map (this value is used for Exists operation to return cache data existence)
-	eg               errgroup.Group
-	finalizingInsert atomic.Value
-	finalizingDelete atomic.Value
-	closed           atomic.Value
+	ich  chan index // ich is insert channel
+	uii  []index    // uii is un inserted index
+	imu  sync.Mutex // insert mutex
+	uiim uiim       // uiim is un inserted index map (this value is used for GetVector operation to return queued vector cache data)
+	dch  chan key   // dch is delete channel
+	udk  []key      // udk is un deleted key
+	dmu  sync.Mutex // delete mutex
+	udim udim       // udim is un deleted index map (this value is used for Exists operation to return cache data existence)
+	eg   errgroup.Group
 
+	// TODO: delete this configuration
 	// buffer config
 	ichSize  int
 	dchSize  int
@@ -97,67 +92,10 @@ func New(opts ...Option) (Queue, error) {
 	vq.uii = make([]index, 0, vq.iBufSize)
 	vq.dch = make(chan key, vq.dchSize)
 	vq.udk = make([]key, 0, vq.dBufSize)
-	vq.finalizingInsert.Store(false)
-	vq.finalizingDelete.Store(false)
-	vq.closed.Store(true)
 	return vq, nil
 }
 
-func (v *vqueue) Start(ctx context.Context) (<-chan error, error) {
-	ech := make(chan error, 1)
-	v.eg.Go(safety.RecoverFunc(func() (err error) {
-		v.closed.Store(false)
-		defer v.closed.Store(true)
-		defer close(ech)
-		for {
-			select {
-			case <-ctx.Done():
-				v.finalizingInsert.Store(true)
-				close(v.ich)
-				for i := range v.ich {
-					v.addInsert(i)
-				}
-				v.finalizingInsert.Store(false)
-				err := ctx.Err()
-				if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
-					return nil
-				}
-				return err
-			case i := <-v.ich:
-				v.addInsert(i)
-			}
-		}
-	}))
-	v.eg.Go(safety.RecoverFunc(func() (err error) {
-		v.closed.Store(false)
-		defer v.closed.Store(true)
-		for {
-			select {
-			case <-ctx.Done():
-				v.finalizingDelete.Store(true)
-				close(v.dch)
-				for d := range v.dch {
-					v.addDelete(d)
-				}
-				v.finalizingDelete.Store(false)
-				err := ctx.Err()
-				if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
-					return nil
-				}
-				return err
-			case d := <-v.dch:
-				v.addDelete(d)
-			}
-		}
-	}))
-	return ech, nil
-}
-
 func (v *vqueue) PushInsert(uuid string, vector []float32, date int64) error {
-	// we have to check this instance's channel bypass daemon is finalizing or not, if in finalizing process we should not send new index to channel
-	if v.finalizingInsert.Load().(bool) || v.closed.Load().(bool) {
-		return errors.ErrVQueueFinalizing
-	}
 	if date == 0 {
 		date = time.Now().UnixNano()
 	}
@@ -177,15 +115,11 @@ func (v *vqueue) PushInsert(uuid string, vector []float32, date int64) error {
 		}
 		v.uiim.Store(uuid, idx)
 	}
-	v.ich <- idx
+	v.addInsert(idx)
 	return nil
 }
 
 func (v *vqueue) PushDelete(uuid string, date int64) error {
-	// we have to check this instance's channel bypass daemon is finalizing or not, if in finalizing process we should not send new index to channel
-	if v.finalizingDelete.Load().(bool) || v.closed.Load().(bool) {
-		return errors.ErrVQueueFinalizing
-	}
 	if date == 0 {
 		date = time.Now().UnixNano()
 	}
@@ -196,54 +130,11 @@ func (v *vqueue) PushDelete(uuid string, date int64) error {
 		}
 		v.udim.Store(uuid, date)
 	}
-	v.dch <- key{
+	v.addDelete(key{
 		uuid: uuid,
 		date: date,
-	}
+	})
 	return nil
-}
-
-func (v *vqueue) RangePopInsert(ctx context.Context, f func(uuid string, vector []float32) bool) {
-	err := func() error {
-		ticker := time.NewTicker(time.Millisecond * 100)
-		defer ticker.Stop()
-		// if finalizing, wait for all insert channel queue processed
-		for v.finalizingInsert.Load().(bool) {
-			select {
-			case <-ctx.Done():
-				return ctx.Err()
-			case <-ticker.C:
-			}
-		}
-		return nil
-	}()
-	if err != nil {
-		log.Warn(err)
-		return
-	}
-
-	v.flushAndRangeInsert(f)
-}
-
-func (v *vqueue) RangePopDelete(ctx context.Context, f func(uuid string) bool) {
-	err := func() error {
-		ticker := time.NewTicker(time.Millisecond * 100)
-		defer ticker.Stop()
-		// if finalizing, wait for all insert & delete channel queue processed
-		for v.finalizingDelete.Load().(bool) || v.finalizingInsert.Load().(bool) {
-			select {
-			case <-ctx.Done():
-				return ctx.Err()
-			case <-ticker.C:
-			}
-		}
-		return nil
-	}()
-	if err != nil {
-		log.Warn(err)
-		return
-	}
-	v.flushAndRangeDelete(f)
 }
 
 func (v *vqueue) GetVector(uuid string) ([]float32, bool) {
@@ -319,7 +210,7 @@ func (v *vqueue) addDelete(d key) {
 	v.dmu.Unlock()
 }
 
-func (v *vqueue) flushAndRangeInsert(f func(uuid string, vector []float32) bool) {
+func (v *vqueue) RangePopInsert(ctx context.Context, f func(uuid string, vector []float32) bool) {
 	v.imu.Lock()
 	uii := make([]index, len(v.uii))
 	copy(uii, v.uii)
@@ -354,7 +245,7 @@ func (v *vqueue) flushAndRangeInsert(f func(uuid string, vector []float32) bool)
 	}
 }
 
-func (v *vqueue) flushAndRangeDelete(f func(uuid string) bool) {
+func (v *vqueue) RangePopDelete(ctx context.Context, f func(uuid string) bool) {
 	v.dmu.Lock()
 	udk := make([]key, len(v.udk))
 	copy(udk, v.udk)

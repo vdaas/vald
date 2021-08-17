@@ -328,10 +328,6 @@ func (n *ngt) Start(ctx context.Context) <-chan error {
 		return nil
 	}
 	ech := make(chan error, 2)
-	vqech, err := n.vq.Start(ctx)
-	if err != nil {
-		return nil
-	}
 	n.eg.Go(safety.RecoverFunc(func() (err error) {
 		defer close(ech)
 		if n.dur <= 0 {
@@ -381,11 +377,6 @@ func (n *ngt) Start(ctx context.Context) <-chan error {
 				err = n.CreateAndSaveIndex(ctx, n.poolSize)
 			case <-sTick.C:
 				err = n.SaveIndex(ctx)
-			case err := <-vqech:
-				if err != nil {
-					ech <- err
-					err = nil
-				}
 			}
 			if err != nil && err != errors.ErrUncommittedIndexNotFound {
 				ech <- err
