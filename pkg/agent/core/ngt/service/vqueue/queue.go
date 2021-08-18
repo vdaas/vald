@@ -298,7 +298,6 @@ func (v *vqueue) DVExists(uuid string) bool {
 func (v *vqueue) addInsert(i index) {
 	date, ok := v.udim.Load(i.uuid)
 	if ok && i.date < date {
-		v.uiim.Delete(i.uuid)
 		return
 	}
 	idx, ok := v.uiim.Load(i.uuid)
