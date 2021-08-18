@@ -38,7 +38,7 @@ jobs:
           git-commit-gpgsign: true
       - name: Get latest gitwerk
         run: |
-          curl -LO "https://github.com/rinx/gitwerk/releases/download/v0.2.2/gitwerk-linux-amd64.zip"
+          wget "https://github.com/rinx/gitwerk/releases/latest/download/gitwerk-linux-amd64.zip"
           unzip gitwerk-linux-amd64.zip
       - name: Run gitwerk semver-auto
         id: semver

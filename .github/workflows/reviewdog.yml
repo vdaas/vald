@@ -30,7 +30,7 @@ jobs:
       - uses: actions/checkout@v2
       - name: go build
         run: |
-          go build ./...
+          go build -mod=readonly ./...
       - name: Run golangci-lint
         run: |
           golangci-lint run --config .golangci.yml --issues-exit-code 0

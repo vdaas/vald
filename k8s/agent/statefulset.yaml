@@ -106,9 +106,9 @@ spec:
                 - ALL
             privileged: false
             readOnlyRootFilesystem: false
-            runAsGroup: 2002
+            runAsGroup: 65532
             runAsNonRoot: true
-            runAsUser: 1002
+            runAsUser: 65532
           volumeMounts:
             - name: vald-agent-ngt-config
               mountPath: /etc/server/
@@ -116,11 +116,11 @@ spec:
       restartPolicy: Always
       schedulerName: default-scheduler
       securityContext:
-        fsGroup: 3002
+        fsGroup: 65532
         fsGroupChangePolicy: OnRootMismatch
-        runAsGroup: 2002
+        runAsGroup: 65532
         runAsNonRoot: true
-        runAsUser: 1002
+        runAsUser: 65532
       terminationGracePeriodSeconds: 120
       volumes:
         - name: vald-agent-ngt-config

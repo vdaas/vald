@@ -29,8 +29,6 @@ jobs:
   e2e-deploy-lb:
     name: "E2E deploy test (only LB Gateway)"
     runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/vdaas/vald/vald-ci-container:nightly
     timeout-minutes: 60
     if: startsWith( github.ref, 'refs/tags/') || github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-deploy'
     steps:
@@ -63,9 +61,6 @@ jobs:
           agents: 3
       - name: check k3d
         run: |
-          go version
-          k3d version
-          kubectl version
           kubectl cluster-info
       - uses: azure/setup-helm@v1
         with:
@@ -81,6 +76,14 @@ jobs:
           helm_extra_options: ${{ steps.specify_container_versions.outputs.HELM_EXTRA_OPTIONS }}
           values: .github/helm/values/values-lb.yaml
           wait_for_selector: app=vald-lb-gateway
+      - name: Fetch golang version
+        run: |
+          GO_VERSION=`make version/go`
+          echo "::set-output name=version::${GO_VERSION}"
+        id: golang_version
+      - uses: actions/setup-go@v2
+        with:
+          go-version: ${{ steps.golang_version.outputs.version }}
       - name: run E2E CRUD
         run: |
           make hack/benchmark/assets/dataset/${DATASET}
@@ -113,8 +116,6 @@ jobs:
   e2e-deploy-lb-multiapis:
     name: "E2E deploy test (only LB Gateway, multi-APIs)"
     runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/vdaas/vald/vald-ci-container:nightly
     timeout-minutes: 60
     if: startsWith( github.ref, 'refs/tags/') || github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-deploy'
     steps:
@@ -140,7 +141,7 @@ jobs:
           HELM_VERSION=`make version/helm`
           echo "::set-output name=helm::${HELM_VERSION}"
         id: version
-      - uses: rinx/setup-k3d@v0.0.2
+      - uses: rinx/setup-k3d@v0.0.3
         with:
           version: latest
           name: vald
@@ -162,6 +163,14 @@ jobs:
           helm_extra_options: ${{ steps.specify_container_versions.outputs.HELM_EXTRA_OPTIONS }}
           values: .github/helm/values/values-lb.yaml
           wait_for_selector: app=vald-lb-gateway
+      - name: Fetch golang version
+        run: |
+          GO_VERSION=`make version/go`
+          echo "::set-output name=version::${GO_VERSION}"
+        id: golang_version
+      - uses: actions/setup-go@v2
+        with:
+          go-version: ${{ steps.golang_version.outputs.version }}
       - name: run E2E CRUD
         run: |
           make hack/benchmark/assets/dataset/${DATASET}
@@ -187,8 +196,6 @@ jobs:
   e2e-deploy-sidecar:
     name: "E2E deploy test (Agent & Sidecar)"
     runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/vdaas/vald/vald-ci-container:nightly
     timeout-minutes: 60
     if: startsWith( github.ref, 'refs/tags/') || github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-deploy'
     steps:
@@ -221,7 +228,7 @@ jobs:
           HELM_VERSION=`make version/helm`
           echo "::set-output name=helm::${HELM_VERSION}"
         id: version
-      - uses: rinx/setup-k3d@v0.0.2
+      - uses: rinx/setup-k3d@v0.0.3
         with:
           version: latest
           name: vald
@@ -244,6 +251,14 @@ jobs:
           helm_extra_options: ${{ steps.specify_container_versions.outputs.HELM_EXTRA_OPTIONS }}
           values: .github/helm/values/values-agent-sidecar.yaml
           wait_for_selector: app=vald-agent-ngt
+      - name: Fetch golang version
+        run: |
+          GO_VERSION=`make version/go`
+          echo "::set-output name=version::${GO_VERSION}"
+        id: golang_version
+      - uses: actions/setup-go@v2
+        with:
+          go-version: ${{ steps.golang_version.outputs.version }}
       - name: run E2E Agent & Sidecar
         run: |
           make hack/benchmark/assets/dataset/${DATASET}
