@@ -39,7 +39,7 @@ jobs:
     name: Run tests for cmd packages
     runs-on: ubuntu-latest
     container:
-      image: vdaas/vald-ci-container:nightly
+      image: ghcr.io/vdaas/vald/vald-ci-container:nightly
     steps:
       - name: Check out code.
         uses: actions/checkout@v2
@@ -53,7 +53,7 @@ jobs:
     name: Run tests for internal packages
     runs-on: ubuntu-latest
     container:
-      image: vdaas/vald-ci-container:nightly
+      image: ghcr.io/vdaas/vald/vald-ci-container:nightly
     steps:
       - name: Check out code.
         uses: actions/checkout@v2
@@ -67,7 +67,7 @@ jobs:
     name: Run tests for pkg packages
     runs-on: ubuntu-latest
     container:
-      image: vdaas/vald-ci-container:nightly
+      image: ghcr.io/vdaas/vald/vald-ci-container:nightly
     steps:
       - name: Check out code.
         uses: actions/checkout@v2

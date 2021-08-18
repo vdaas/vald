@@ -63,6 +63,7 @@ runs:
       shell: bash
       id: check_k3d
       run: |
+        go version
         kubectl cluster-info
     - name: Helm version
       shell: bash

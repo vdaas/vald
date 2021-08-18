@@ -86,7 +86,9 @@ jobs:
       - name: run Insert and Search jobs
         run: |
           make hack/benchmark/assets/dataset/${DATASET}
+          go version
           go test \
+            -mod=readonly \
             -v tests/e2e/crud/crud_test.go \
             -tags "e2e" \
             -run "TestE2EInsertAndSearch" \
@@ -167,7 +169,9 @@ jobs:
         run: |
           make hack/benchmark/assets/dataset/${DATASET}
           podname=`kubectl get pods --selector=app=vald-lb-gateway | tail -1 | awk '{print $1}'`
+          go version
           go test \
+            -mod=readonly \
             -v tests/e2e/crud/crud_test.go \
             -tags "e2e" \
             -run "TestE2EInsertAndSearch" \
@@ -245,7 +249,9 @@ jobs:
       - name: run Insert and Search jobs
         run: |
           make hack/benchmark/assets/dataset/${DATASET}
+          go version
           go test \
+            -mod=readonly \
             -v tests/e2e/crud/crud_test.go \
             -tags "e2e" \
             -run "TestE2EInsertAndSearch" \
@@ -323,7 +329,9 @@ jobs:
       - name: run Insert jobs
         run: |
           make hack/benchmark/assets/dataset/${DATASET}
+          go version
           go test \
+            -mod=readonly \
             -v tests/e2e/crud/crud_test.go \
             -tags "e2e" \
             -run "TestE2EInsertOnly" \
@@ -344,7 +352,9 @@ jobs:
       - name: run Search jobs
         run: |
           make hack/benchmark/assets/dataset/${DATASET}
+          go version
           go test \
+            -mod=readonly \
             -v tests/e2e/crud/crud_test.go \
             -tags "e2e" \
             -run "TestE2ESearchOnly" \

@@ -335,7 +335,7 @@ clean:
 license:
 	GOPRIVATE=$(GOPRIVATE) \
 	MAINTAINER=$(MAINTAINER) \
-	go run hack/license/gen/main.go ./
+	go run -mod=readonly hack/license/gen/main.go ./
 
 .PHONY: init
 ## initialize development environment
