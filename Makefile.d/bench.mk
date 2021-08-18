@@ -130,6 +130,7 @@ pprof/core/ngt/sequential.bin: \
 	hack/benchmark/core/ngt/ngt_bench_test.go
 	mkdir -p $(dir $@)
 	go test \
+	    -mod=readonly \
 	    -count=1 \
 	    -timeout=1h \
 	    -bench=NGTSequential \
@@ -150,6 +151,7 @@ pprof/core/ngt/parallel.bin: \
 	hack/benchmark/core/ngt/ngt_bench_test.go
 	mkdir -p $(dir $@)
 	go test \
+	    -mod=readonly \
 	    -count=1 \
 	    -timeout=1h \
 	    -bench=NGTParallel \
@@ -176,6 +178,7 @@ pprof/core/gongt/sequential.bin: \
 	hack/benchmark/core/gongt/gongt_bench_test.go
 	mkdir -p $(dir $@)
 	go test \
+	    -mod=readonly \
 	    -count=1 \
 	    -timeout=1h \
 	    -bench=GoNGTSequential \
@@ -196,6 +199,7 @@ pprof/core/gongt/parallel.bin: \
 	hack/benchmark/core/gongt/gongt_bench_test.go
 	mkdir -p $(dir $@)
 	go test \
+	    -mod=readonly \
 	    -count=1 \
 	    -timeout=1h \
 	    -bench=GoNGTParallel \
@@ -224,6 +228,7 @@ pprof/agent/stream.bin: \
 	ngt/install
 	mkdir -p $(dir $@)
 	go test \
+	    -mod=readonly \
 	    -count=1 \
 	    -timeout=1h \
 	    -bench=gRPC_Stream \
@@ -245,6 +250,7 @@ pprof/agent/sequential/grpc.bin: \
 	ngt/install
 	mkdir -p $(dir $@)
 	go test \
+	    -mod=readonly \
 	    -count=1 \
 	    -timeout=1h \
 	    -bench=gRPC_Sequential \
@@ -266,6 +272,7 @@ pprof/agent/sequential/rest.bin: \
 	ngt/install
 	mkdir -p $(dir $@)
 	go test \
+	    -mod=readonly \
 	    -count=1 \
 	    -timeout=1h \
 	    -bench=REST_Sequential \
@@ -294,6 +301,7 @@ pprof/ngtd/stream.bin: \
 	ngt/install
 	mkdir -p $(dir $@)
 	go test \
+	    -mod=readonly \
 	    -count=1 \
 	    -timeout=1h \
 	    -bench=gRPC_Stream \
@@ -315,6 +323,7 @@ pprof/ngtd/sequential/grpc.bin: \
 	ngt/install
 	mkdir -p $(dir $@)
 	go test \
+	    -mod=readonly \
 	    -count=1 \
 	    -timeout=1h \
 	    -bench=gRPC_Sequential \
@@ -336,6 +345,7 @@ pprof/ngtd/sequential/rest.bin: \
 	ngt/install
 	mkdir -p $(dir $@)
 	go test \
+	    -mod=readonly \
 	    -count=1 \
 	    -timeout=1h \
 	    -bench=REST_Sequential \
@@ -362,6 +372,7 @@ pprof/gateway/sequential.bin: \
 	ngt/install
 	mkdir -p $(dir $@)
 	go test \
+	    -mod=readonly \
 	    -count=1 \
 	    -timeout=1h \
 	    -bench=Sequential \
@@ -422,7 +433,7 @@ metrics/agent: \
 metrics/agent/core/ngt: $(ROOTDIR)/metrics.gob
 
 $(ROOTDIR)/metrics.gob:
-	go test -v --timeout=1h ./hack/benchmark/e2e/agent/core/ngt/... -output=$(ROOTDIR)/metrics.gob
+	go test -mod=readonly -v --timeout=1h ./hack/benchmark/e2e/agent/core/ngt/... -output=$(ROOTDIR)/metrics.gob
 
 .PHONY: metrics/chart
 ## create metrics chart

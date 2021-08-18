@@ -27,7 +27,7 @@ jobs:
     name: "trigger FOSSA scan"
     runs-on: ubuntu-latest
     container:
-      image: vdaas/vald-ci-container:nightly
+      image: ghcr.io/vdaas/vald/vald-ci-container:nightly
     if: github.ref == 'refs/heads/master' || github.event.action == 'labeled' && github.event.label.name == 'actions/fossa'
     steps:
       - uses: actions/checkout@v2

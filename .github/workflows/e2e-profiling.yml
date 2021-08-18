@@ -54,7 +54,7 @@ jobs:
           HELM_VERSION=`make version/helm`
           echo "::set-output name=helm::${HELM_VERSION}"
         id: version
-      - uses: rinx/setup-k3d@v0.0.2
+      - uses: rinx/setup-k3d@v0.0.3
         with:
           version: latest
           name: vald
@@ -81,6 +81,14 @@ jobs:
           make k8s/metrics/profefe/deploy
           kubectl patch cronjob kprofefe -p '{"spec": {"schedule": "*/1 * * * *"}}'
           kubectl wait --for=condition=ready pod -l app=profefe --timeout=300s
+      - name: Fetch golang version
+        run: |
+          GO_VERSION=`make version/go`
+          echo "::set-output name=version::${GO_VERSION}"
+        id: golang_version
+      - uses: actions/setup-go@v2
+        with:
+          go-version: ${{ steps.golang_version.outputs.version }}
       - name: run E2E CRUD
         continue-on-error: true
         run: |
