@@ -42,13 +42,110 @@ var cfg = &config.NGT{
 }
 
 const (
-	maxIDNum                   = 10
-	duplicateIDNum             = 1000
+	maxIDNum                   = 100
+	duplicateIDNum             = 10000
 	maxCreateIndexNum          = 5
 	createIndexPoolSize uint32 = 10000
 )
 
+func registerVector(ctx context.Context, n NGT) error {
+	for i := int64(0); i < maxIDNum; i++ {
+		uuid := strconv.FormatInt(i, 10)
+
+		err := n.Insert(uuid, []float32{float32(i), float32(i)})
+		if err != nil {
+			return err
+		}
+	}
+	if err := n.CreateIndex(ctx, createIndexPoolSize); err != nil {
+		return err
+	}
+
+	for i := int64(0); i < maxIDNum; i++ {
+		uuid := strconv.FormatInt(i, 10)
+
+		_, err := n.GetObject(uuid)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func Test_ngt_parallel_delete_and_insert(t *testing.T) {
+	n, err := New(cfg.Bind())
+	if err != nil {
+		t.Fatalf("failed to create ngt service: %v", err)
+	}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	n.Start(ctx)
+	time.Sleep(10 * time.Millisecond)
+
+	if err := registerVector(ctx, n); err != nil {
+		t.Fatalf("failed to register vector: %v", err)
+	}
+
+	wg := sync.WaitGroup{}
+	mu := sync.Mutex{}
+	c := sync.NewCond(&mu)
+
+	for dup := 0; dup < duplicateIDNum; dup++ {
+		for i := int64(0); i < maxIDNum; i++ {
+			i := i
+			wg.Add(1)
+			go func() {
+				mu.Lock()
+				defer mu.Unlock()
+				defer wg.Done()
+				c.Wait()
+
+				uuid := strconv.FormatInt(i, 10)
+
+				n.Delete(uuid)
+				n.Insert(uuid, []float32{float32(i), float32(i)})
+			}()
+		}
+	}
+
+	wg.Add(1)
+	go func() {
+		mu.Lock()
+		defer mu.Unlock()
+		defer wg.Done()
+		c.Wait()
+
+		tic := time.NewTicker(10 * time.Millisecond)
+		defer tic.Stop()
+
+		for i := 0; i < maxCreateIndexNum; i++ {
+			select {
+			case <-tic.C:
+				n.CreateIndex(ctx, createIndexPoolSize)
+			}
+		}
+	}()
+
+	time.Sleep(1 * time.Second)
+	c.Broadcast()
+	wg.Wait()
+
+	for i := int64(0); i < maxIDNum; i++ {
+		uuid := strconv.FormatInt(i, 10)
+		_, err := n.GetObject(uuid)
+		if err != nil {
+			t.Error(err)
+		}
+		err = n.Insert(uuid, []float32{1, 2})
+		if err == nil {
+			t.Error(err)
+		}
+	}
+}
+
+func Test_ngt_parallel_insert_and_delete(t *testing.T) {
 	n, err := New(cfg.Bind())
 	if err != nil {
 		t.Fatalf("failed to create ngt service: %v", err)
@@ -76,9 +173,8 @@ func Test_ngt_parallel_delete_and_insert(t *testing.T) {
 
 				uuid := strconv.FormatInt(i, 10)
 
-				// NOTE: shoudl we check error?
-				_ = n.Insert(uuid, []float32{float32(i), float32(i)})
-				_ = n.Delete(uuid)
+				n.Insert(uuid, []float32{float32(i), float32(i)})
+				n.Delete(uuid)
 			}()
 		}
 	}
@@ -96,7 +192,6 @@ func Test_ngt_parallel_delete_and_insert(t *testing.T) {
 		for i := 0; i < maxCreateIndexNum; i++ {
 			select {
 			case <-tic.C:
-				// NOTE: shoudl we check error?
 				n.CreateIndex(ctx, createIndexPoolSize)
 			}
 		}
@@ -109,7 +204,7 @@ func Test_ngt_parallel_delete_and_insert(t *testing.T) {
 	for i := int64(0); i < maxIDNum; i++ {
 		uuid := strconv.FormatInt(i, 10)
 		if err := n.Insert(uuid, []float32{float32(i), float32(i)}); err != nil {
-			t.Errorf("Insert error: %v", err)
+			t.Error(err)
 		}
 	}
 }
