@@ -913,7 +913,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 			return nil
 		}
 		mu.Lock()
-		ce.Ips = append(ce.GetIps(), loc.GetIps()...)
+		ce.Ips = append(ce.GetIps(), loc.GetName())
 		ce.Name = loc.GetName()
 		mu.Unlock()
 		return nil
