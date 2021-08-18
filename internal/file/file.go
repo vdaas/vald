@@ -103,8 +103,8 @@ func ListInDir(path string) ([]string, error) {
 	if !exists {
 		return nil, err
 	}
-	if fi.Mode().IsDir() && !strings.HasSuffix(path, "/") {
-		path = filepath.Clean(path) + "/"
+	if fi.Mode().IsDir() && !strings.HasSuffix(path, string(os.PathSeparator)) {
+		path = filepath.Clean(path) + string(os.PathSeparator)
 	}
 	path = filepath.Dir(path)
 	files, err := filepath.Glob(filepath.Join(path, "*"))

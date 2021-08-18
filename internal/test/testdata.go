@@ -33,7 +33,7 @@ func baseDir() string {
 		return ""
 	}
 
-	for cur := filepath.Dir(wd); cur != "/"; cur = filepath.Dir(cur) {
+	for cur := filepath.Dir(wd); cur != string(os.PathSeparator); cur = filepath.Dir(cur) {
 		if strings.HasSuffix(cur, "vald") {
 			return cur
 		}
