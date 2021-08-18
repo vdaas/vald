@@ -1015,24 +1015,53 @@ gateway:
     # @schema {"name": "gateway.lb.terminationGracePeriodSeconds", "type": "integer", "minimum": 0}
     # gateway.lb.terminationGracePeriodSeconds -- duration in seconds pod needs to terminate gracefully
     terminationGracePeriodSeconds: 30
-    # @schema {"name": "gateway.lb.podSecurityContext", "type": "object"}
+    # @schema {"name": "gateway.lb.podSecurityContext", "type": "object", "anchor": "podSecurityContext"}
     # gateway.lb.podSecurityContext -- security context for pod
     podSecurityContext:
-      runAsUser: 1002
+      # @schema {"name": "gateway.lb.podSecurityContext.runAsUser", "type": "integer", "minimum": 0, "maximum": 65535}
+      # gateway.lb.podSecurityContext.runAsUser -- vald pod wide user
+      runAsUser: 65532
+      # @schema {"name": "gateway.lb.podSecurityContext.runAsNonRoot", "type": "boolean"}
+      # gateway.lb.podSecurityContext.runAsNonRoot -- flag to use non-root user or root
       runAsNonRoot: true
-      runAsGroup: 2002
-      fsGroup: 3002
+      # @schema {"name": "gateway.lb.podSecurityContext.runAsGroup", "type": "integer", "minimum": 0, "maximum": 65535}
+      # gateway.lb.podSecurityContext.runAsGroup -- vald pod wide group
+      runAsGroup: 65532
+      # @schema {"name": "gateway.lb.podSecurityContext.fsGroup", "type": "integer", "minimum": 0, "maximum": 65535}
+      # gateway.lb.podSecurityContext.fsGroup -- vald pod wide filesystem group
+      fsGroup: 65532
+      # @schema {"name": "gateway.lb.podSecurityContext.fsGroupChangePolicy", "type": "string", "enum": ["Always", "OnRootMismatch"]}
+      # gateway.lb.podSecurityContext.fsGroupChangePolicy -- behavior for changing ownership and permission of the volume before being exposed inside a Pod
       fsGroupChangePolicy: "OnRootMismatch"
-    # @schema {"name": "gateway.lb.securityContext", "type": "object"}
+    # @schema {"name": "gateway.lb.securityContext", "type": "object", "anchor": "securityContext"}
     # gateway.lb.securityContext -- security context for container
     securityContext:
-      runAsUser: 1002
+      # @schema {"name": "gateway.lb.securityContext.runAsUser", "type": "integer", "minimum": 0, "maximum": 65535}
+      # gateway.lb.securityContext.runAsUser -- vald process user
+      runAsUser: 65532
+      # @schema {"name": "gateway.lb.securityContext.runAsNonRoot", "type": "boolean"}
+      # gateway.lb.securityContext.runAsNonRoot -- flag to use non-root user or root
       runAsNonRoot: true
-      runAsGroup: 2002
+      # @schema {"name": "gateway.lb.securityContext.runAsGroup", "type": "integer", "minimum": 0, "maximum": 65535}
+      # gateway.lb.securityContext.runAsGroup -- vald process group
+      runAsGroup: 65532
+      # @schema {"name": "gateway.lb.securityContext.privileged", "type": "boolean"}
+      # gateway.lb.securityContext.privileged -- flag to use privileged container or not
       privileged: false
+      # @schema {"name": "gateway.lb.securityContext.allowPrivilegeEscalation", "type": "boolean"}
+      # gateway.lb.securityContext.allowPrivilegeEscalation -- flag to allow privileged escalation
       allowPrivilegeEscalation: false
+      # @schema {"name": "gateway.lb.securityContext.readOnlyRootFilesystem", "type": "boolean"}
+      # gateway.lb.securityContext.readOnlyRootFilesystem -- flag to read only file system or not
       readOnlyRootFilesystem: true
+      # @schema {"name": "gateway.lb.securityContext.capabilities", "type": "object"}
+      # gateway.lb.securityContext.capabilities -- capabilities granted by the container runtime
       capabilities:
+        # @schema {"name": "gateway.lb.securityContext.capabilities.add", "type": "array", "items": {"type": "string"}}
+        # gateway.lb.securityContext.capabilities.add -- added capabilities
+        add: []
+        # @schema {"name": "gateway.lb.securityContext.capabilities.drop", "type": "array", "items": {"type": "string"}}
+        # gateway.lb.securityContext.capabilities.drop -- removed capabilities
         drop:
           - ALL
     # @schema {"name": "gateway.lb.podPriority", "type": "object", "anchor": "podPriority"}
@@ -1280,20 +1309,20 @@ gateway:
     # @schema {"name": "gateway.filter.terminationGracePeriodSeconds", "type": "integer", "minimum": 0}
     # gateway.filter.terminationGracePeriodSeconds -- duration in seconds pod needs to terminate gracefully
     terminationGracePeriodSeconds: 30
-    # @schema {"name": "gateway.filter.podSecurityContext", "type": "object"}
+    # @schema {"name": "gateway.filter.podSecurityContext", "alias": "podSecurityContext"}
     # gateway.filter.podSecurityContext -- security context for pod
     podSecurityContext:
-      runAsUser: 1002
+      runAsUser: 65532
       runAsNonRoot: true
-      runAsGroup: 2002
-      fsGroup: 3002
+      runAsGroup: 65532
+      fsGroup: 65532
       fsGroupChangePolicy: "OnRootMismatch"
-    # @schema {"name": "gateway.filter.securityContext", "type": "object"}
+    # @schema {"name": "gateway.filter.securityContext", "alias": "securityContext"}
     # gateway.filter.securityContext -- security context for container
     securityContext:
-      runAsUser: 1002
+      runAsUser: 65532
       runAsNonRoot: true
-      runAsGroup: 2002
+      runAsGroup: 65532
       privileged: false
       allowPrivilegeEscalation: false
       readOnlyRootFilesystem: true
@@ -1549,20 +1578,20 @@ agent:
   # @schema {"name": "agent.terminationGracePeriodSeconds", "type": "integer", "minimum": 0}
   # agent.terminationGracePeriodSeconds -- duration in seconds pod needs to terminate gracefully
   terminationGracePeriodSeconds: 120
-  # @schema {"name": "agent.podSecurityContext", "type": "object"}
+  # @schema {"name": "agent.podSecurityContext", "alias": "podSecurityContext"}
   # agent.podSecurityContext -- security context for pod
   podSecurityContext:
-    runAsUser: 1002
+    runAsUser: 65532
     runAsNonRoot: true
-    runAsGroup: 2002
-    fsGroup: 3002
+    runAsGroup: 65532
+    fsGroup: 65532
     fsGroupChangePolicy: "OnRootMismatch"
-  # @schema {"name": "agent.securityContext", "type": "object"}
+  # @schema {"name": "agent.securityContext", "alias": "securityContext"}
   # agent.securityContext -- security context for container
   securityContext:
-    runAsUser: 1002
+    runAsUser: 65532
     runAsNonRoot: true
-    runAsGroup: 2002
+    runAsGroup: 65532
     privileged: false
     allowPrivilegeEscalation: false
     readOnlyRootFilesystem: false
@@ -2200,20 +2229,20 @@ discoverer:
   # @schema {"name": "discoverer.terminationGracePeriodSeconds", "type": "integer", "minimum": 0}
   # discoverer.terminationGracePeriodSeconds -- duration in seconds pod needs to terminate gracefully
   terminationGracePeriodSeconds: 30
-  # @schema {"name": "discoverer.podSecurityContext", "type": "object"}
+  # @schema {"name": "discoverer.podSecurityContext", "alias": "podSecurityContext"}
   # discoverer.podSecurityContext -- security context for pod
   podSecurityContext:
-    runAsUser: 1002
+    runAsUser: 65532
     runAsNonRoot: true
-    runAsGroup: 2002
-    fsGroup: 3002
+    runAsGroup: 65532
+    fsGroup: 65532
     fsGroupChangePolicy: "OnRootMismatch"
-  # @schema {"name": "discoverer.securityContext", "type": "object"}
+  # @schema {"name": "discoverer.securityContext", "alias": "securityContext"}
   # discoverer.securityContext -- security context for container
   securityContext:
-    runAsUser: 1002
+    runAsUser: 65532
     runAsNonRoot: true
-    runAsGroup: 2002
+    runAsGroup: 65532
     privileged: false
     allowPrivilegeEscalation: false
     readOnlyRootFilesystem: true
@@ -2468,20 +2497,20 @@ manager:
     # @schema {"name": "manager.index.terminationGracePeriodSeconds", "type": "integer", "minimum": 0}
     # manager.index.terminationGracePeriodSeconds -- duration in seconds pod needs to terminate gracefully
     terminationGracePeriodSeconds: 30
-    # @schema {"name": "manager.index.podSecurityContext", "type": "object"}
+    # @schema {"name": "manager.index.podSecurityContext", "alias": "podSecurityContext"}
     # manager.index.podSecurityContext -- security context for pod
     podSecurityContext:
-      runAsUser: 1002
+      runAsUser: 65532
       runAsNonRoot: true
-      runAsGroup: 2002
-      fsGroup: 3002
+      runAsGroup: 65532
+      fsGroup: 65532
       fsGroupChangePolicy: "OnRootMismatch"
-    # @schema {"name": "manager.index.securityContext", "type": "object"}
+    # @schema {"name": "manager.index.securityContext", "alias": "securityContext"}
     # manager.index.securityContext -- security context for container
     securityContext:
-      runAsUser: 1002
+      runAsUser: 65532
       runAsNonRoot: true
-      runAsGroup: 2002
+      runAsGroup: 65532
       privileged: false
       allowPrivilegeEscalation: false
       readOnlyRootFilesystem: true
