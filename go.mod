@@ -46,7 +46,7 @@ require (
 	contrib.go.opencensus.io/exporter/stackdriver v0.13.8
 	github.com/aws/aws-sdk-go v1.38.35
 	github.com/envoyproxy/protoc-gen-validate v0.1.0
-	github.com/fsnotify/fsnotify v1.4.9
+	github.com/fsnotify/fsnotify v1.5.0
 	github.com/go-redis/redis/v8 v8.11.3
 	github.com/go-sql-driver/mysql v1.6.0
 	github.com/go-toolsmith/strparse v1.0.0 // indirect
