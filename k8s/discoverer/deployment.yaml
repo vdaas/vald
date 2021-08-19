@@ -123,9 +123,9 @@ spec:
                 - ALL
             privileged: false
             readOnlyRootFilesystem: true
-            runAsGroup: 65532
+            runAsGroup: 2002
             runAsNonRoot: true
-            runAsUser: 65532
+            runAsUser: 1002
           env:
             - name: MY_POD_NAMESPACE
               valueFrom:
@@ -139,11 +139,11 @@ spec:
       schedulerName: default-scheduler
       serviceAccountName: vald
       securityContext:
-        fsGroup: 65532
+        fsGroup: 3002
         fsGroupChangePolicy: OnRootMismatch
-        runAsGroup: 65532
+        runAsGroup: 2002
         runAsNonRoot: true
-        runAsUser: 65532
+        runAsUser: 1002
       terminationGracePeriodSeconds: 30
       volumes:
         - name: vald-discoverer-config

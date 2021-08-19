@@ -455,26 +455,7 @@ spec:
                           type: integer
                     podSecurityContext:
                       type: object
-                      properties:
-                        fsGroup:
-                          type: integer
-                          maximum: 65535
-                          minimum: 0
-                        fsGroupChangePolicy:
-                          type: string
-                          enum:
-                            - Always
-                            - OnRootMismatch
-                        runAsGroup:
-                          type: integer
-                          maximum: 65535
-                          minimum: 0
-                        runAsNonRoot:
-                          type: boolean
-                        runAsUser:
-                          type: integer
-                          maximum: 65535
-                          minimum: 0
+                      x-kubernetes-preserve-unknown-fields: true
                     progressDeadlineSeconds:
                       type: integer
                     resources:
@@ -500,34 +481,7 @@ spec:
                           type: integer
                     securityContext:
                       type: object
-                      properties:
-                        allowPrivilegeEscalation:
-                          type: boolean
-                        capabilities:
-                          type: object
-                          properties:
-                            add:
-                              type: array
-                              items:
-                                type: string
-                            drop:
-                              type: array
-                              items:
-                                type: string
-                        privileged:
-                          type: boolean
-                        readOnlyRootFilesystem:
-                          type: boolean
-                        runAsGroup:
-                          type: integer
-                          maximum: 65535
-                          minimum: 0
-                        runAsNonRoot:
-                          type: boolean
-                        runAsUser:
-                          type: integer
-                          maximum: 65535
-                          minimum: 0
+                      x-kubernetes-preserve-unknown-fields: true
                     server_config:
                       type: object
                       properties:
@@ -3366,26 +3320,7 @@ spec:
                           type: integer
                     podSecurityContext:
                       type: object
-                      properties:
-                        fsGroup:
-                          type: integer
-                          maximum: 65535
-                          minimum: 0
-                        fsGroupChangePolicy:
-                          type: string
-                          enum:
-                            - Always
-                            - OnRootMismatch
-                        runAsGroup:
-                          type: integer
-                          maximum: 65535
-                          minimum: 0
-                        runAsNonRoot:
-                          type: boolean
-                        runAsUser:
-                          type: integer
-                          maximum: 65535
-                          minimum: 0
+                      x-kubernetes-preserve-unknown-fields: true
                     progressDeadlineSeconds:
                       type: integer
                     resources:
@@ -3409,34 +3344,7 @@ spec:
                           type: string
                     securityContext:
                       type: object
-                      properties:
-                        allowPrivilegeEscalation:
-                          type: boolean
-                        capabilities:
-                          type: object
-                          properties:
-                            add:
-                              type: array
-                              items:
-                                type: string
-                            drop:
-                              type: array
-                              items:
-                                type: string
-                        privileged:
-                          type: boolean
-                        readOnlyRootFilesystem:
-                          type: boolean
-                        runAsGroup:
-                          type: integer
-                          maximum: 65535
-                          minimum: 0
-                        runAsNonRoot:
-                          type: boolean
-                        runAsUser:
-                          type: integer
-                          maximum: 65535
-                          minimum: 0
+                      x-kubernetes-preserve-unknown-fields: true
                     server_config:
                       type: object
                       properties:
@@ -4838,26 +4746,7 @@ spec:
                               type: integer
                         podSecurityContext:
                           type: object
-                          properties:
-                            fsGroup:
-                              type: integer
-                              maximum: 65535
-                              minimum: 0
-                            fsGroupChangePolicy:
-                              type: string
-                              enum:
-                                - Always
-                                - OnRootMismatch
-                            runAsGroup:
-                              type: integer
-                              maximum: 65535
-                              minimum: 0
-                            runAsNonRoot:
-                              type: boolean
-                            runAsUser:
-                              type: integer
-                              maximum: 65535
-                              minimum: 0
+                          x-kubernetes-preserve-unknown-fields: true
                         progressDeadlineSeconds:
                           type: integer
                         resources:
@@ -4881,34 +4770,7 @@ spec:
                               type: string
                         securityContext:
                           type: object
-                          properties:
-                            allowPrivilegeEscalation:
-                              type: boolean
-                            capabilities:
-                              type: object
-                              properties:
-                                add:
-                                  type: array
-                                  items:
-                                    type: string
-                                drop:
-                                  type: array
-                                  items:
-                                    type: string
-                            privileged:
-                              type: boolean
-                            readOnlyRootFilesystem:
-                              type: boolean
-                            runAsGroup:
-                              type: integer
-                              maximum: 65535
-                              minimum: 0
-                            runAsNonRoot:
-                              type: boolean
-                            runAsUser:
-                              type: integer
-                              maximum: 65535
-                              minimum: 0
+                          x-kubernetes-preserve-unknown-fields: true
                         server_config:
                           type: object
                           properties:
@@ -6124,26 +5986,7 @@ spec:
                               type: integer
                         podSecurityContext:
                           type: object
-                          properties:
-                            fsGroup:
-                              type: integer
-                              maximum: 65535
-                              minimum: 0
-                            fsGroupChangePolicy:
-                              type: string
-                              enum:
-                                - Always
-                                - OnRootMismatch
-                            runAsGroup:
-                              type: integer
-                              maximum: 65535
-                              minimum: 0
-                            runAsNonRoot:
-                              type: boolean
-                            runAsUser:
-                              type: integer
-                              maximum: 65535
-                              minimum: 0
+                          x-kubernetes-preserve-unknown-fields: true
                         progressDeadlineSeconds:
                           type: integer
                         resources:
@@ -6167,34 +6010,7 @@ spec:
                               type: string
                         securityContext:
                           type: object
-                          properties:
-                            allowPrivilegeEscalation:
-                              type: boolean
-                            capabilities:
-                              type: object
-                              properties:
-                                add:
-                                  type: array
-                                  items:
-                                    type: string
-                                drop:
-                                  type: array
-                                  items:
-                                    type: string
-                            privileged:
-                              type: boolean
-                            readOnlyRootFilesystem:
-                              type: boolean
-                            runAsGroup:
-                              type: integer
-                              maximum: 65535
-                              minimum: 0
-                            runAsNonRoot:
-                              type: boolean
-                            runAsUser:
-                              type: integer
-                              maximum: 65535
-                              minimum: 0
+                          x-kubernetes-preserve-unknown-fields: true
                         server_config:
                           type: object
                           properties:
@@ -7401,26 +7217,7 @@ spec:
                               type: integer
                         podSecurityContext:
                           type: object
-                          properties:
-                            fsGroup:
-                              type: integer
-                              maximum: 65535
-                              minimum: 0
-                            fsGroupChangePolicy:
-                              type: string
-                              enum:
-                                - Always
-                                - OnRootMismatch
-                            runAsGroup:
-                              type: integer
-                              maximum: 65535
-                              minimum: 0
-                            runAsNonRoot:
-                              type: boolean
-                            runAsUser:
-                              type: integer
-                              maximum: 65535
-                              minimum: 0
+                          x-kubernetes-preserve-unknown-fields: true
                         progressDeadlineSeconds:
                           type: integer
                         replicas:
@@ -7447,34 +7244,7 @@ spec:
                               type: string
                         securityContext:
                           type: object
-                          properties:
-                            allowPrivilegeEscalation:
-                              type: boolean
-                            capabilities:
-                              type: object
-                              properties:
-                                add:
-                                  type: array
-                                  items:
-                                    type: string
-                                drop:
-                                  type: array
-                                  items:
-                                    type: string
-                            privileged:
-                              type: boolean
-                            readOnlyRootFilesystem:
-                              type: boolean
-                            runAsGroup:
-                              type: integer
-                              maximum: 65535
-                              minimum: 0
-                            runAsNonRoot:
-                              type: boolean
-                            runAsUser:
-                              type: integer
-                              maximum: 65535
-                              minimum: 0
+                          x-kubernetes-preserve-unknown-fields: true
                         server_config:
                           type: object
                           properties:
