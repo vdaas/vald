@@ -145,9 +145,9 @@ spec:
                 - ALL
             privileged: false
             readOnlyRootFilesystem: true
-            runAsGroup: 2002
+            runAsGroup: 65532
             runAsNonRoot: true
-            runAsUser: 1002
+            runAsUser: 65532
           env:
             - name: MY_POD_NAMESPACE
               valueFrom:
@@ -160,11 +160,11 @@ spec:
       restartPolicy: Always
       schedulerName: default-scheduler
       securityContext:
-        fsGroup: 3002
+        fsGroup: 65532
         fsGroupChangePolicy: OnRootMismatch
-        runAsGroup: 2002
+        runAsGroup: 65532
         runAsNonRoot: true
-        runAsUser: 1002
+        runAsUser: 65532
       terminationGracePeriodSeconds: 30
       volumes:
         - name: vald-lb-gateway-config
