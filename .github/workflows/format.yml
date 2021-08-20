@@ -44,6 +44,14 @@ jobs:
           git checkout master
           git checkout -b ${BRANCH_NAME}
           echo "::set-output name=BRANCH_NAME::${BRANCH_NAME}"
+      - name: Fetch golang version
+        run: |
+          GO_VERSION=`make version/go`
+          echo "::set-output name=version::${GO_VERSION}"
+        id: golang_version
+      - uses: actions/setup-go@v2
+        with:
+          go-version: ${{ steps.golang_version.outputs.version }}
       - name: Run formatter and license.go
         run: |
           make format/go
