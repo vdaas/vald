@@ -27,7 +27,7 @@ jobs:
     name: Update k8s manifest
     runs-on: ubuntu-latest
     container:
-      image: vdaas/vald-ci-container:nightly
+      image: ghcr.io/vdaas/vald/vald-ci-container:nightly
     steps:
       - name: Check out code.
         uses: actions/checkout@v2
@@ -82,7 +82,7 @@ jobs:
     name: Update Helm chart
     runs-on: ubuntu-latest
     container:
-      image: vdaas/vald-ci-container:nightly
+      image: ghcr.io/vdaas/vald/vald-ci-container:nightly
     steps:
       - name: Check out code.
         uses: actions/checkout@v2

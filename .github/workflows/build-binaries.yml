@@ -23,7 +23,7 @@ jobs:
   build-linux:
     runs-on: ubuntu-latest
     container:
-      image: vdaas/vald-ci-container:nightly
+      image: ghcr.io/vdaas/vald/vald-ci-container:nightly
     steps:
       - uses: actions/checkout@v2
         with:
@@ -33,7 +33,7 @@ jobs:
           GO_VERSION=`make version/go`
           echo "::set-output name=version::${GO_VERSION}"
         id: golang_version
-      - uses: actions/setup-go@v1
+      - uses: actions/setup-go@v2
         with:
           go-version: ${{ steps.golang_version.outputs.version }}
       - name: Build and zip
@@ -55,7 +55,7 @@ jobs:
   #         GO_VERSION=`make version/go`
   #         echo "::set-output name=version::${GO_VERSION}"
   #       id: golang_version
-  #     - uses: actions/setup-go@v1
+  #     - uses: actions/setup-go@v2
   #       with:
   #         go-version: ${{ steps.golang_version.outputs.version }}
   #     - name: Build and zip

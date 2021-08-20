@@ -80,6 +80,7 @@ endef
 
 define run-e2e-crud-test
 	go test \
+	    -mod=readonly \
 	    $1 \
 	    -v $(ROOTDIR)/tests/e2e/crud/crud_test.go \
 	    -tags "e2e" \

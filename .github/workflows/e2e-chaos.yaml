@@ -54,7 +54,7 @@ jobs:
           HELM_VERSION=`make version/helm`
           echo "::set-output name=helm::${HELM_VERSION}"
         id: version
-      - uses: rinx/setup-k3d@v0.0.2
+      - uses: rinx/setup-k3d@v0.0.3
         with:
           version: latest
           name: vald
@@ -83,10 +83,20 @@ jobs:
           helm install \
             --set podChaos.failure.enabled=true \
             vald-chaos-test tests/chaos/chart
+      - name: Fetch golang version
+        run: |
+          GO_VERSION=`make version/go`
+          echo "::set-output name=version::${GO_VERSION}"
+        id: golang_version
+      - uses: actions/setup-go@v2
+        with:
+          go-version: ${{ steps.golang_version.outputs.version }}
       - name: run Insert and Search jobs
         run: |
           make hack/benchmark/assets/dataset/${DATASET}
+          go version
           go test \
+            -mod=readonly \
             -v tests/e2e/crud/crud_test.go \
             -tags "e2e" \
             -run "TestE2EInsertAndSearch" \
@@ -133,7 +143,7 @@ jobs:
           HELM_VERSION=`make version/helm`
           echo "::set-output name=helm::${HELM_VERSION}"
         id: version
-      - uses: rinx/setup-k3d@v0.0.2
+      - uses: rinx/setup-k3d@v0.0.3
         with:
           version: latest
           name: vald
@@ -163,11 +173,21 @@ jobs:
             --set podChaos.failure.enabled=true \
             --set podChaos.failure.selector.labelSelectors."app\.kubernetes\.io/component"=null \
             vald-chaos-test tests/chaos/chart
+      - name: Fetch golang version
+        run: |
+          GO_VERSION=`make version/go`
+          echo "::set-output name=version::${GO_VERSION}"
+        id: golang_version
+      - uses: actions/setup-go@v2
+        with:
+          go-version: ${{ steps.golang_version.outputs.version }}
       - name: run Insert and Search jobs
         run: |
           make hack/benchmark/assets/dataset/${DATASET}
           podname=`kubectl get pods --selector=app=vald-lb-gateway | tail -1 | awk '{print $1}'`
+          go version
           go test \
+            -mod=readonly \
             -v tests/e2e/crud/crud_test.go \
             -tags "e2e" \
             -run "TestE2EInsertAndSearch" \
@@ -213,7 +233,7 @@ jobs:
           HELM_VERSION=`make version/helm`
           echo "::set-output name=helm::${HELM_VERSION}"
         id: version
-      - uses: rinx/setup-k3d@v0.0.2
+      - uses: rinx/setup-k3d@v0.0.3
         with:
           version: latest
           name: vald
@@ -242,10 +262,20 @@ jobs:
           helm install \
             --set networkChaos.partition.enabled=true \
             vald-chaos-test tests/chaos/chart
+      - name: Fetch golang version
+        run: |
+          GO_VERSION=`make version/go`
+          echo "::set-output name=version::${GO_VERSION}"
+        id: golang_version
+      - uses: actions/setup-go@v2
+        with:
+          go-version: ${{ steps.golang_version.outputs.version }}
       - name: run Insert and Search jobs
         run: |
           make hack/benchmark/assets/dataset/${DATASET}
+          go version
           go test \
+            -mod=readonly \
             -v tests/e2e/crud/crud_test.go \
             -tags "e2e" \
             -run "TestE2EInsertAndSearch" \
@@ -292,7 +322,7 @@ jobs:
           HELM_VERSION=`make version/helm`
           echo "::set-output name=helm::${HELM_VERSION}"
         id: version
-      - uses: rinx/setup-k3d@v0.0.2
+      - uses: rinx/setup-k3d@v0.0.3
         with:
           version: latest
           name: vald
@@ -320,10 +350,20 @@ jobs:
           helm install \
             --set networkChaos.bandwidth.enabled=true \
             vald-chaos-test tests/chaos/chart
+      - name: Fetch golang version
+        run: |
+          GO_VERSION=`make version/go`
+          echo "::set-output name=version::${GO_VERSION}"
+        id: golang_version
+      - uses: actions/setup-go@v2
+        with:
+          go-version: ${{ steps.golang_version.outputs.version }}
       - name: run Insert jobs
         run: |
           make hack/benchmark/assets/dataset/${DATASET}
+          go version
           go test \
+            -mod=readonly \
             -v tests/e2e/crud/crud_test.go \
             -tags "e2e" \
             -run "TestE2EInsertOnly" \
@@ -344,7 +384,9 @@ jobs:
       - name: run Search jobs
         run: |
           make hack/benchmark/assets/dataset/${DATASET}
+          go version
           go test \
+            -mod=readonly \
             -v tests/e2e/crud/crud_test.go \
             -tags "e2e" \
             -run "TestE2ESearchOnly" \

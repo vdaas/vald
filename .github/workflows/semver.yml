@@ -24,7 +24,7 @@ jobs:
     name: Run semver-auto
     runs-on: ubuntu-latest
     container:
-      image: vdaas/vald-ci-container:nightly
+      image: ghcr.io/vdaas/vald/vald-ci-container:nightly
     steps:
       - name: Check out code.
         uses: actions/checkout@v2
@@ -38,7 +38,7 @@ jobs:
           git-commit-gpgsign: true
       - name: Get latest gitwerk
         run: |
-          curl -LO "https://github.com/rinx/gitwerk/releases/download/v0.2.2/gitwerk-linux-amd64.zip"
+          wget "https://github.com/rinx/gitwerk/releases/latest/download/gitwerk-linux-amd64.zip"
           unzip gitwerk-linux-amd64.zip
       - name: Run gitwerk semver-auto
         id: semver
