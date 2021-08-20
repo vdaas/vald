@@ -21,7 +21,7 @@
 
 <!--- Please change the versions below along with your environment -->
 
-- Go Version: 1.16.6
+- Go Version: 1.17
 - Docker Version: 19.03.8
 - Kubernetes Version: 1.18.2
 - NGT Version: 1.12.3
