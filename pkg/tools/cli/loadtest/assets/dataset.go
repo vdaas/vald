@@ -84,7 +84,7 @@ func findDir(path string) (string, error) {
 			}
 		}
 	}(wd)
-	return filepath.Join(root, path) + "/", nil
+	return filepath.Join(root, path) + string(os.PathSeparator), nil
 }
 
 // Data loads specified dataset and returns it.
