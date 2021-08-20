@@ -109,14 +109,14 @@ Configuration
 | agent.podManagementPolicy | string | `"OrderedReady"` | pod management policy: OrderedReady or Parallel |
 | agent.podPriority.enabled | bool | `true` | agent pod PriorityClass enabled |
 | agent.podPriority.value | int | `1000000000` | agent pod PriorityClass value |
-| agent.podSecurityContext | object | `{"fsGroup":3002,"fsGroupChangePolicy":"OnRootMismatch","runAsGroup":2002,"runAsNonRoot":true,"runAsUser":1002}` | security context for pod |
+| agent.podSecurityContext | object | `{"fsGroup":65532,"fsGroupChangePolicy":"OnRootMismatch","runAsGroup":65532,"runAsNonRoot":true,"runAsUser":65532}` | security context for pod |
 | agent.progressDeadlineSeconds | int | `600` | progress deadline seconds |
 | agent.resources | object | `{"requests":{"cpu":"300m","memory":"4Gi"}}` | compute resources. recommended setting of memory requests = cluster memory * 0.4 / number of agent pods |
 | agent.revisionHistoryLimit | int | `2` | number of old history to retain to allow rollback |
 | agent.rollingUpdate.maxSurge | string | `"25%"` | max surge of rolling update |
 | agent.rollingUpdate.maxUnavailable | string | `"25%"` | max unavailable of rolling update |
 | agent.rollingUpdate.partition | int | `0` | StatefulSet partition |
-| agent.securityContext | object | `{"allowPrivilegeEscalation":false,"capabilities":{"drop":["ALL"]},"privileged":false,"readOnlyRootFilesystem":false,"runAsGroup":2002,"runAsNonRoot":true,"runAsUser":1002}` | security context for container |
+| agent.securityContext | object | `{"allowPrivilegeEscalation":false,"capabilities":{"drop":["ALL"]},"privileged":false,"readOnlyRootFilesystem":false,"runAsGroup":65532,"runAsNonRoot":true,"runAsUser":65532}` | security context for container |
 | agent.server_config | object | `{"healths":{"liveness":{"enabled":false},"readiness":{}},"metrics":{"pprof":{},"prometheus":{}},"servers":{"grpc":{},"rest":{}}}` | server config (overrides defaults.server_config) |
 | agent.service.annotations | object | `{}` | service annotations |
 | agent.service.labels | object | `{}` | service labels |
@@ -576,13 +576,13 @@ Configuration
 | discoverer.podAnnotations | object | `{}` | pod annotations |
 | discoverer.podPriority.enabled | bool | `true` | discoverer pod PriorityClass enabled |
 | discoverer.podPriority.value | int | `1000000` | discoverer pod PriorityClass value |
-| discoverer.podSecurityContext | object | `{"fsGroup":3002,"fsGroupChangePolicy":"OnRootMismatch","runAsGroup":2002,"runAsNonRoot":true,"runAsUser":1002}` | security context for pod |
+| discoverer.podSecurityContext | object | `{"fsGroup":65532,"fsGroupChangePolicy":"OnRootMismatch","runAsGroup":65532,"runAsNonRoot":true,"runAsUser":65532}` | security context for pod |
 | discoverer.progressDeadlineSeconds | int | `600` | progress deadline seconds |
 | discoverer.resources | object | `{"limits":{"cpu":"600m","memory":"200Mi"},"requests":{"cpu":"200m","memory":"65Mi"}}` | compute resources |
 | discoverer.revisionHistoryLimit | int | `2` | number of old history to retain to allow rollback |
 | discoverer.rollingUpdate.maxSurge | string | `"25%"` | max surge of rolling update |
 | discoverer.rollingUpdate.maxUnavailable | string | `"25%"` | max unavailable of rolling update |
-| discoverer.securityContext | object | `{"allowPrivilegeEscalation":false,"capabilities":{"drop":["ALL"]},"privileged":false,"readOnlyRootFilesystem":true,"runAsGroup":2002,"runAsNonRoot":true,"runAsUser":1002}` | security context for container |
+| discoverer.securityContext | object | `{"allowPrivilegeEscalation":false,"capabilities":{"drop":["ALL"]},"privileged":false,"readOnlyRootFilesystem":true,"runAsGroup":65532,"runAsNonRoot":true,"runAsUser":65532}` | security context for container |
 | discoverer.server_config | object | `{"healths":{"liveness":{},"readiness":{}},"metrics":{"pprof":{},"prometheus":{}},"servers":{"grpc":{},"rest":{}}}` | server config (overrides defaults.server_config) |
 | discoverer.service.annotations | object | `{}` | service annotations |
 | discoverer.service.labels | object | `{}` | service labels |
@@ -641,13 +641,13 @@ Configuration
 | gateway.filter.podAnnotations | object | `{}` | pod annotations |
 | gateway.filter.podPriority.enabled | bool | `true` | gateway pod PriorityClass enabled |
 | gateway.filter.podPriority.value | int | `1000000` | gateway pod PriorityClass value |
-| gateway.filter.podSecurityContext | object | `{"fsGroup":3002,"fsGroupChangePolicy":"OnRootMismatch","runAsGroup":2002,"runAsNonRoot":true,"runAsUser":1002}` | security context for pod |
+| gateway.filter.podSecurityContext | object | `{"fsGroup":65532,"fsGroupChangePolicy":"OnRootMismatch","runAsGroup":65532,"runAsNonRoot":true,"runAsUser":65532}` | security context for pod |
 | gateway.filter.progressDeadlineSeconds | int | `600` | progress deadline seconds |
 | gateway.filter.resources | object | `{"limits":{"cpu":"2000m","memory":"700Mi"},"requests":{"cpu":"200m","memory":"150Mi"}}` | compute resources |
 | gateway.filter.revisionHistoryLimit | int | `2` | number of old history to retain to allow rollback |
 | gateway.filter.rollingUpdate.maxSurge | string | `"25%"` | max surge of rolling update |
 | gateway.filter.rollingUpdate.maxUnavailable | string | `"25%"` | max unavailable of rolling update |
-| gateway.filter.securityContext | object | `{"allowPrivilegeEscalation":false,"capabilities":{"drop":["ALL"]},"privileged":false,"readOnlyRootFilesystem":true,"runAsGroup":2002,"runAsNonRoot":true,"runAsUser":1002}` | security context for container |
+| gateway.filter.securityContext | object | `{"allowPrivilegeEscalation":false,"capabilities":{"drop":["ALL"]},"privileged":false,"readOnlyRootFilesystem":true,"runAsGroup":65532,"runAsNonRoot":true,"runAsUser":65532}` | security context for container |
 | gateway.filter.server_config | object | `{"healths":{"liveness":{},"readiness":{}},"metrics":{"pprof":{},"prometheus":{}},"servers":{"grpc":{},"rest":{}}}` | server config (overrides defaults.server_config) |
 | gateway.filter.service.annotations | object | `{}` | service annotations |
 | gateway.filter.service.labels | object | `{}` | service labels |
@@ -698,13 +698,13 @@ Configuration
 | gateway.lb.podAnnotations | object | `{}` | pod annotations |
 | gateway.lb.podPriority.enabled | bool | `true` | gateway pod PriorityClass enabled |
 | gateway.lb.podPriority.value | int | `1000000` | gateway pod PriorityClass value |
-| gateway.lb.podSecurityContext | object | `{"fsGroup":3002,"fsGroupChangePolicy":"OnRootMismatch","runAsGroup":2002,"runAsNonRoot":true,"runAsUser":1002}` | security context for pod |
+| gateway.lb.podSecurityContext | object | `{"fsGroup":65532,"fsGroupChangePolicy":"OnRootMismatch","runAsGroup":65532,"runAsNonRoot":true,"runAsUser":65532}` | security context for pod |
 | gateway.lb.progressDeadlineSeconds | int | `600` | progress deadline seconds |
 | gateway.lb.resources | object | `{"limits":{"cpu":"2000m","memory":"700Mi"},"requests":{"cpu":"200m","memory":"150Mi"}}` | compute resources |
 | gateway.lb.revisionHistoryLimit | int | `2` | number of old history to retain to allow rollback |
 | gateway.lb.rollingUpdate.maxSurge | string | `"25%"` | max surge of rolling update |
 | gateway.lb.rollingUpdate.maxUnavailable | string | `"25%"` | max unavailable of rolling update |
-| gateway.lb.securityContext | object | `{"allowPrivilegeEscalation":false,"capabilities":{"drop":["ALL"]},"privileged":false,"readOnlyRootFilesystem":true,"runAsGroup":2002,"runAsNonRoot":true,"runAsUser":1002}` | security context for container |
+| gateway.lb.securityContext | object | `{"allowPrivilegeEscalation":false,"capabilities":{"drop":["ALL"]},"privileged":false,"readOnlyRootFilesystem":true,"runAsGroup":65532,"runAsNonRoot":true,"runAsUser":65532}` | security context for container |
 | gateway.lb.server_config | object | `{"healths":{"liveness":{},"readiness":{}},"metrics":{"pprof":{},"prometheus":{}},"servers":{"grpc":{},"rest":{}}}` | server config (overrides defaults.server_config) |
 | gateway.lb.service.annotations | object | `{}` | service annotations |
 | gateway.lb.service.labels | object | `{}` | service labels |
@@ -799,14 +799,14 @@ Configuration
 | manager.index.podAnnotations | object | `{}` | pod annotations |
 | manager.index.podPriority.enabled | bool | `true` | index manager pod PriorityClass enabled |
 | manager.index.podPriority.value | int | `1000000` | index manager pod PriorityClass value |
-| manager.index.podSecurityContext | object | `{"fsGroup":3002,"fsGroupChangePolicy":"OnRootMismatch","runAsGroup":2002,"runAsNonRoot":true,"runAsUser":1002}` | security context for pod |
+| manager.index.podSecurityContext | object | `{"fsGroup":65532,"fsGroupChangePolicy":"OnRootMismatch","runAsGroup":65532,"runAsNonRoot":true,"runAsUser":65532}` | security context for pod |
 | manager.index.progressDeadlineSeconds | int | `600` | progress deadline seconds |
 | manager.index.replicas | int | `1` | number of replicas |
 | manager.index.resources | object | `{"limits":{"cpu":"1000m","memory":"500Mi"},"requests":{"cpu":"200m","memory":"80Mi"}}` | compute resources |
 | manager.index.revisionHistoryLimit | int | `2` | number of old history to retain to allow rollback |
 | manager.index.rollingUpdate.maxSurge | string | `"25%"` | max surge of rolling update |
 | manager.index.rollingUpdate.maxUnavailable | string | `"25%"` | max unavailable of rolling update |
-| manager.index.securityContext | object | `{"allowPrivilegeEscalation":false,"capabilities":{"drop":["ALL"]},"privileged":false,"readOnlyRootFilesystem":true,"runAsGroup":2002,"runAsNonRoot":true,"runAsUser":1002}` | security context for container |
+| manager.index.securityContext | object | `{"allowPrivilegeEscalation":false,"capabilities":{"drop":["ALL"]},"privileged":false,"readOnlyRootFilesystem":true,"runAsGroup":65532,"runAsNonRoot":true,"runAsUser":65532}` | security context for container |
 | manager.index.server_config | object | `{"healths":{"liveness":{},"readiness":{}},"metrics":{"pprof":{},"prometheus":{}},"servers":{"grpc":{},"rest":{}}}` | server config (overrides defaults.server_config) |
 | manager.index.service.annotations | object | `{}` | service annotations |
 | manager.index.service.labels | object | `{}` | service labels |
