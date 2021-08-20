@@ -40,52 +40,56 @@ func Init() {
 	})
 }
 
+const (
+	tag = "[gRPC Log]"
+)
+
 func (l *logger) Info(args ...interface{}) {
-	log.Info(args...)
+	log.Debug(append([]interface{}{tag}, args...)...)
 }
 
 func (l *logger) Infoln(args ...interface{}) {
-	log.Info(args...)
+	log.Debug(append([]interface{}{tag}, args...)...)
 }
 
 func (l *logger) Infof(format string, args ...interface{}) {
-	log.Infof(format, args...)
+	log.Debugf(tag+"\t"+format, args...)
 }
 
 func (l *logger) Warning(args ...interface{}) {
-	log.Warn(args...)
+	log.Warn(append([]interface{}{tag}, args...)...)
 }
 
 func (l *logger) Warningln(args ...interface{}) {
-	log.Warn(args...)
+	log.Warn(append([]interface{}{tag}, args...)...)
 }
 
 func (l *logger) Warningf(format string, args ...interface{}) {
-	log.Warnf(format, args...)
+	log.Warnf(tag+"\t"+format, args...)
 }
 
 func (l *logger) Error(args ...interface{}) {
-	log.Error(args...)
+	log.Error(append([]interface{}{tag}, args...)...)
 }
 
 func (l *logger) Errorln(args ...interface{}) {
-	log.Error(args...)
+	log.Error(append([]interface{}{tag}, args...)...)
 }
 
 func (l *logger) Errorf(format string, args ...interface{}) {
-	log.Errorf(format, args...)
+	log.Errorf(tag+"\t"+format, args...)
 }
 
 func (l *logger) Fatal(args ...interface{}) {
-	log.Fatal(args...)
+	log.Fatal(append([]interface{}{tag}, args...)...)
 }
 
 func (l *logger) Fatalln(args ...interface{}) {
-	log.Fatal(args...)
+	log.Fatal(append([]interface{}{tag}, args...)...)
 }
 
 func (l *logger) Fatalf(format string, args ...interface{}) {
-	log.Fatalf(format, args...)
+	log.Fatalf(tag+"\t"+format, args...)
 }
 
 func (l *logger) V(v int) bool {
