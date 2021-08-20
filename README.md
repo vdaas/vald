@@ -69,7 +69,7 @@ Go to [Get Started](./docs/tutorial/get-started.md) page to try out Vald :)
 
 ## Requirements
 
-- Kubernetes 1.17~
+- Kubernetes 1.19~
 - AVX2 instructions (required by Vald Agent NGT)
 
 ## Get Started
