@@ -3,13 +3,13 @@ module github.com/vdaas/vald
 go 1.17
 
 replace (
-	cloud.google.com/go => cloud.google.com/go v0.93.4-0.20210818223644-fcf13b0abad4
-	cloud.google.com/go/monitoring => cloud.google.com/go/monitoring v0.1.1-0.20210818223644-fcf13b0abad4
-	cloud.google.com/go/profiler => cloud.google.com/go/profiler v0.1.1-0.20210818223644-fcf13b0abad4
-	cloud.google.com/go/storage => cloud.google.com/go/storage v1.16.1-0.20210818223644-fcf13b0abad4
-	cloud.google.com/go/trace => cloud.google.com/go/trace v0.1.1-0.20210818223644-fcf13b0abad4
+	cloud.google.com/go => cloud.google.com/go v0.93.4-0.20210819222228-ffcb7f558675
+	cloud.google.com/go/monitoring => cloud.google.com/go/monitoring v0.1.1-0.20210819222228-ffcb7f558675
+	cloud.google.com/go/profiler => cloud.google.com/go/profiler v0.1.1-0.20210819222228-ffcb7f558675
+	cloud.google.com/go/storage => cloud.google.com/go/storage v1.16.1-0.20210819222228-ffcb7f558675
+	cloud.google.com/go/trace => cloud.google.com/go/trace v0.1.1-0.20210819222228-ffcb7f558675
 	github.com/Azure/go-autorest => github.com/Azure/go-autorest v14.2.1-0.20210701162346-76c7860e9b60+incompatible
-	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.40.25
+	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.40.26
 	github.com/boltdb/bolt => github.com/boltdb/bolt v1.3.1
 	github.com/chzyer/logex => github.com/chzyer/logex v1.1.11-0.20170329064859-445be9e134b2
 	github.com/coreos/etcd => go.etcd.io/etcd v3.3.25+incompatible
@@ -25,20 +25,20 @@ replace (
 	github.com/gophercloud/gophercloud => github.com/gophercloud/gophercloud v0.20.0
 	github.com/gorilla/websocket => github.com/gorilla/websocket v1.4.2
 	github.com/hailocab/go-hostpool => github.com/kpango/go-hostpool v0.0.0-20210303030322-aab80263dcd0
-	github.com/klauspost/compress => github.com/klauspost/compress v1.13.5-0.20210817075520-77932353352e
+	github.com/klauspost/compress => github.com/klauspost/compress v1.13.5-0.20210819102241-290f4cfacb3e
 	github.com/kpango/glg => github.com/kpango/glg v1.6.4
 	github.com/tensorflow/tensorflow => github.com/tensorflow/tensorflow v2.1.2+incompatible
 	github.com/zeebo/xxh3 => github.com/zeebo/xxh3 v0.10.0
 	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20210817164053-32db794688a5
-	golang.org/x/exp => golang.org/x/exp v0.0.0-20210817205419-cf631fceb1a5
+	golang.org/x/exp => golang.org/x/exp v0.0.0-20210819164307-503510c5c1ec
 	golang.org/x/image => golang.org/x/image v0.0.0-20210628002857-a66eb6448b8d
 	golang.org/x/lint => golang.org/x/lint v0.0.0-20210508222113-6edffad5e616
 	golang.org/x/mobile => golang.org/x/mobile v0.0.0-20210716004757-34ab1303b554
 	golang.org/x/mod => golang.org/x/mod v0.5.0
 	golang.org/x/net => golang.org/x/net v0.0.0-20210813160813-60bc85c4be6d
-	golang.org/x/oauth2 => golang.org/x/oauth2 v0.0.0-20210817223510-7df4dd6e12ab
+	golang.org/x/oauth2 => golang.org/x/oauth2 v0.0.0-20210819190943-2bc19b11175f
 	golang.org/x/sync => golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
-	golang.org/x/sys => golang.org/x/sys v0.0.0-20210818153620-00dd8d7831e7
+	golang.org/x/sys => golang.org/x/sys v0.0.0-20210819135213-f52c844e1c1c
 	golang.org/x/term => golang.org/x/term v0.0.0-20210615171337-6886f2dfbf5b
 	golang.org/x/text => golang.org/x/text v0.3.7
 	golang.org/x/time => golang.org/x/time v0.0.0-20210723032227-1f47c861a9ac
@@ -61,7 +61,7 @@ replace (
 	k8s.io/klog/v2 => k8s.io/klog/v2 v2.10.0
 	k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20210817084001-7fbd8d59e5b8
 	k8s.io/metrics => k8s.io/metrics v0.21.4
-	k8s.io/utils => k8s.io/utils v0.0.0-20210802155522-efc7438f0176
+	k8s.io/utils => k8s.io/utils v0.0.0-20210819203725-bdf08cb9a70a
 	sigs.k8s.io/apiserver-network-proxy/konnectivity-client => sigs.k8s.io/apiserver-network-proxy/konnectivity-client v0.0.23
 	sigs.k8s.io/controller-runtime => sigs.k8s.io/controller-runtime v0.9.6
 	sigs.k8s.io/kustomize/api => sigs.k8s.io/kustomize/api v0.8.11
@@ -116,7 +116,7 @@ require (
 	gonum.org/v1/hdf5 v0.0.0-20210714002203-8c5d23bc6946
 	gonum.org/v1/plot v0.9.0
 	google.golang.org/api v0.54.0
-	google.golang.org/genproto v0.0.0-20210818220304-27ea9cc85d9f
+	google.golang.org/genproto v0.0.0-20210820002220-43fce44e7af1
 	google.golang.org/grpc v1.40.0
 	google.golang.org/protobuf v1.27.1
 	gopkg.in/yaml.v2 v2.4.0
