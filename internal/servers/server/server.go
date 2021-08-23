@@ -260,7 +260,7 @@ func (s *server) ListenAndServe(ctx context.Context, ech chan<- error) (err erro
 		}(), func() string {
 			if s.network == net.UNIX {
 				if len(s.socketPath) == 0 {
-					s.socketPath = os.TempDir() + "/" + s.name + "." + strconv.Itoa(os.Getpid()) + ".sock"
+					s.socketPath = os.TempDir() + string(os.PathSeparator) + s.name + "." + strconv.Itoa(os.Getpid()) + ".sock"
 				}
 				return s.socketPath
 			}

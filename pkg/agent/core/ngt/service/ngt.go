@@ -359,10 +359,6 @@ func (n *ngt) Start(ctx context.Context) <-chan error {
 			err = nil
 			select {
 			case <-ctx.Done():
-				err = n.kvs.Close()
-				if err != nil {
-					ech <- err
-				}
 				err = n.CreateIndex(ctx, n.poolSize)
 				if err != nil && !errors.Is(err, errors.ErrUncommittedIndexNotFound) {
 					ech <- err
@@ -648,10 +644,9 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 	log.Debug("create index insert phase finished")
 	log.Debug("create graph and tree phase started")
 	log.Debugf("pool size = %d", poolSize)
-	cierr := n.core.CreateIndex(poolSize)
-	if cierr != nil {
-		log.Error("an error occurred on creating graph and tree phase:", cierr)
-		err = errors.Wrap(err, cierr.Error())
+	err = n.core.CreateIndex(poolSize)
+	if err != nil {
+		log.Error("an error occurred on creating graph and tree phase:", err)
 	}
 	log.Debug("create graph and tree phase finished")
 
@@ -668,10 +663,9 @@ func (n *ngt) SaveIndex(ctx context.Context) (err error) {
 		}
 	}()
 	if len(n.path) != 0 && !n.inMem {
-		err = n.saveIndex(ctx)
+		return n.saveIndex(ctx)
 	}
-
-	return
+	return nil
 }
 
 func (n *ngt) saveIndex(ctx context.Context) (err error) {
@@ -777,7 +771,10 @@ func (n *ngt) CreateAndSaveIndex(ctx context.Context, poolSize uint32) (err erro
 	}()
 
 	err = n.CreateIndex(ctx, poolSize)
-	if err != nil {
+	if err != nil &&
+		!errors.Is(err, errors.ErrUncommittedIndexNotFound) &&
+		!errors.Is(err, context.Canceled) &&
+		!errors.Is(err, context.DeadlineExceeded) {
 		return err
 	}
 	return n.SaveIndex(ctx)
@@ -900,12 +897,26 @@ func (n *ngt) GetDimensionSize() int {
 func (n *ngt) Close(ctx context.Context) (err error) {
 	err = n.kvs.Close()
 	if len(n.path) != 0 {
-		cerr := n.CreateAndSaveIndex(ctx, n.poolSize)
-		if cerr != nil {
+		cerr := n.CreateIndex(ctx, n.poolSize)
+		if cerr != nil &&
+			!errors.Is(err, errors.ErrUncommittedIndexNotFound) &&
+			!errors.Is(err, context.Canceled) &&
+			!errors.Is(err, context.DeadlineExceeded) {
 			if err != nil {
 				err = errors.Wrap(cerr, err.Error())
 			} else {
 				err = cerr
+			}
+		}
+		serr := n.SaveIndex(ctx)
+		if serr != nil &&
+			!errors.Is(err, errors.ErrUncommittedIndexNotFound) &&
+			!errors.Is(err, context.Canceled) &&
+			!errors.Is(err, context.DeadlineExceeded) {
+			if err != nil {
+				err = errors.Wrap(serr, err.Error())
+			} else {
+				err = serr
 			}
 		}
 	}

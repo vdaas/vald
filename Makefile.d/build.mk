@@ -59,6 +59,7 @@ cmd/agent/core/ngt/ngt: \
 		-trimpath \
 		-o $@ \
 		$(dir $@)main.go
+	$@ -version
 
 cmd/agent/sidecar/sidecar: \
 	$(GO_SOURCES_INTERNAL) \
@@ -86,6 +87,7 @@ cmd/agent/sidecar/sidecar: \
 		-trimpath \
 		-o $@ \
 		$(dir $@)main.go
+	$@ -version
 
 cmd/discoverer/k8s/discoverer: \
 	$(GO_SOURCES_INTERNAL) \
@@ -113,6 +115,7 @@ cmd/discoverer/k8s/discoverer: \
 		-trimpath \
 		-o $@ \
 		$(dir $@)main.go
+	$@ -version
 
 cmd/gateway/lb/lb: \
 	$(GO_SOURCES_INTERNAL) \
@@ -140,6 +143,7 @@ cmd/gateway/lb/lb: \
 		-trimpath \
 		-o $@ \
 		$(dir $@)main.go
+	$@ -version
 
 cmd/gateway/filter/filter: \
 	$(GO_SOURCES_INTERNAL) \
@@ -167,6 +171,7 @@ cmd/gateway/filter/filter: \
 		-trimpath \
 		-o $@ \
 		$(dir $@)main.go
+	$@ -version
 
 cmd/manager/index/index: \
 	$(GO_SOURCES_INTERNAL) \
@@ -194,6 +199,7 @@ cmd/manager/index/index: \
 		-trimpath \
 		-o $@ \
 		$(dir $@)main.go
+	$@ -version
 
 cmd/filter/ingress/tensorflow/tensorflow: \
 	tensorflow/install \
@@ -226,6 +232,7 @@ cmd/filter/ingress/tensorflow/tensorflow: \
 		-trimpath \
 		-o $@ \
 		$(dir $@)main.go
+	$@ -version
 
 .PHONY: binary/build/zip
 ## build all binaries and zip them

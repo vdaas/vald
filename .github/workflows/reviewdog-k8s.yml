@@ -42,7 +42,7 @@ jobs:
     name: runner / kubelinter
     runs-on: ubuntu-latest
     container:
-      image: vdaas/vald-ci-container:nightly
+      image: ghcr.io/vdaas/vald/vald-ci-container:nightly
     steps:
       - uses: actions/checkout@v2
       - name: kubelinter for k8s directory
@@ -57,7 +57,7 @@ jobs:
     name: runner / kubelinter for vald chart
     runs-on: ubuntu-latest
     container:
-      image: vdaas/vald-ci-container:nightly
+      image: ghcr.io/vdaas/vald/vald-ci-container:nightly
     steps:
       - uses: actions/checkout@v2
       - name: kubelinter for generated manifests

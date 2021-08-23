@@ -25,12 +25,12 @@ jobs:
     name: runner / golangci-lint
     runs-on: ubuntu-latest
     container:
-      image: vdaas/vald-ci-container:nightly
+      image: ghcr.io/vdaas/vald/vald-ci-container:nightly
     steps:
       - uses: actions/checkout@v2
       - name: go build
         run: |
-          go build ./...
+          go build -mod=readonly ./...
       - name: Run golangci-lint
         run: |
           golangci-lint run --config .golangci.yml --issues-exit-code 0

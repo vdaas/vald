@@ -37,7 +37,7 @@ if git diff HEAD^ --name-only | grep ".go$" > /dev/null; then
 
     # go build
     echo "Run go build..."
-    go build ./...
+    go build -mod=readonly ./...
     echo "go build finished."
 
     if [ `git rev-parse --abbrev-ref HEAD` = "master" ]; then
