@@ -37,8 +37,8 @@ type Queue interface {
 	PushInsert(uuid string, vector []float32, date int64) error
 	PushDelete(uuid string, date int64) error
 	GetVector(uuid string) ([]float32, bool)
-	RangePopInsert(ctx context.Context, f func(uuid string, vector []float32) bool)
-	RangePopDelete(ctx context.Context, f func(uuid string) bool)
+	RangePopInsert(ctx context.Context, now int64, f func(uuid string, vector []float32) bool)
+	RangePopDelete(ctx context.Context, now int64, f func(uuid string) bool)
 	IVExists(uuid string) bool
 	DVExists(uuid string) bool
 	IVQLen() int
@@ -203,7 +203,7 @@ func (v *vqueue) PushDelete(uuid string, date int64) error {
 	return nil
 }
 
-func (v *vqueue) RangePopInsert(ctx context.Context, f func(uuid string, vector []float32) bool) {
+func (v *vqueue) RangePopInsert(ctx context.Context, now int64, f func(uuid string, vector []float32) bool) {
 	err := func() error {
 		ticker := time.NewTicker(time.Millisecond * 100)
 		defer ticker.Stop()
@@ -222,10 +222,10 @@ func (v *vqueue) RangePopInsert(ctx context.Context, f func(uuid string, vector 
 		return
 	}
 
-	v.flushAndRangeInsert(f)
+	v.flushAndRangeInsert(now, f)
 }
 
-func (v *vqueue) RangePopDelete(ctx context.Context, f func(uuid string) bool) {
+func (v *vqueue) RangePopDelete(ctx context.Context, now int64, f func(uuid string) bool) {
 	err := func() error {
 		ticker := time.NewTicker(time.Millisecond * 100)
 		defer ticker.Stop()
@@ -243,7 +243,7 @@ func (v *vqueue) RangePopDelete(ctx context.Context, f func(uuid string) bool) {
 		log.Warn(err)
 		return
 	}
-	v.flushAndRangeDelete(f)
+	v.flushAndRangeDelete(now, f)
 }
 
 func (v *vqueue) GetVector(uuid string) ([]float32, bool) {
@@ -319,7 +319,7 @@ func (v *vqueue) addDelete(d key) {
 	v.dmu.Unlock()
 }
 
-func (v *vqueue) flushAndRangeInsert(f func(uuid string, vector []float32) bool) {
+func (v *vqueue) flushAndRangeInsert(now int64, f func(uuid string, vector []float32) bool) {
 	v.imu.Lock()
 	uii := make([]index, len(v.uii))
 	copy(uii, v.uii)
@@ -331,6 +331,13 @@ func (v *vqueue) flushAndRangeInsert(f func(uuid string, vector []float32) bool)
 	})
 	dup := make(map[string]bool, len(uii)/2)
 	for i, idx := range uii {
+		if idx.date > now {
+			v.imu.Lock()
+			v.uii = append(v.uii, idx)
+			v.imu.Unlock()
+			continue
+		}
+
 		// if the same uuid is detected in the delete map during insert phase, which means the data is not processed in the delete phase.
 		// we need to add it back to insert map to process it in next create index process.
 		if _, ok := v.udim.Load(idx.uuid); ok {
@@ -354,7 +361,7 @@ func (v *vqueue) flushAndRangeInsert(f func(uuid string, vector []float32) bool)
 	}
 }
 
-func (v *vqueue) flushAndRangeDelete(f func(uuid string) bool) {
+func (v *vqueue) flushAndRangeDelete(now int64, f func(uuid string) bool) {
 	v.dmu.Lock()
 	udk := make([]key, len(v.udk))
 	copy(udk, v.udk)
@@ -366,6 +373,12 @@ func (v *vqueue) flushAndRangeDelete(f func(uuid string) bool) {
 	dup := make(map[string]bool, len(udk)/2)
 	udm := make(map[string]int64, len(udk))
 	for i, idx := range udk {
+		if idx.date > now {
+			v.imu.Lock()
+			v.udk = append(v.udk, idx)
+			v.imu.Unlock()
+			continue
+		}
 		if !dup[idx.uuid] {
 			dup[idx.uuid] = true
 			if !f(idx.uuid) {
@@ -388,10 +401,13 @@ func (v *vqueue) flushAndRangeDelete(f func(uuid string) bool) {
 	// we should check insert vqueue if insert vqueue exists and delete operation date is newer than insert operation date then we should remove insert vqueue's data.
 	v.imu.Lock()
 	for i, idx := range v.uii {
+		if idx.date > now {
+			continue
+		}
 		// check same uuid & operation date
 		// if date is equal, it may update operation we shouldn't remove at that time
 		date, exists := udm[idx.uuid]
-		if exists && date > idx.date {
+		if exists && date <= now && date > idx.date {
 			dl = append(dl, i)
 		}
 	}
