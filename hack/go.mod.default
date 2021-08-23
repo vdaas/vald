@@ -3,7 +3,7 @@ module github.com/vdaas/vald
 go 1.17
 
 replace (
-	cloud.google.com/go => cloud.google.com/go master
+	cloud.google.com/go => cloud.google.com/go latest
 	cloud.google.com/go/monitoring => cloud.google.com/go/monitoring master
 	cloud.google.com/go/profiler => cloud.google.com/go/profiler master
 	cloud.google.com/go/storage => cloud.google.com/go/storage master
