@@ -38,7 +38,7 @@ defaults:
   image:
     # @schema {"name": "defaults.image.tag", "type": "string"}
     # defaults.image.tag -- docker image tag
-    tag: v1.2.0
+    tag: v1.2.1
   # @schema {"name": "defaults.server_config", "type": "object", "anchor": "server_config"}
   server_config:
     # @schema {"name": "defaults.server_config.servers", "type": "object"}
@@ -1018,17 +1018,17 @@ gateway:
     # @schema {"name": "gateway.lb.podSecurityContext", "type": "object"}
     # gateway.lb.podSecurityContext -- security context for pod
     podSecurityContext:
-      runAsUser: 1002
+      runAsUser: 65532
       runAsNonRoot: true
-      runAsGroup: 2002
-      fsGroup: 3002
+      runAsGroup: 65532
+      fsGroup: 65532
       fsGroupChangePolicy: "OnRootMismatch"
     # @schema {"name": "gateway.lb.securityContext", "type": "object"}
     # gateway.lb.securityContext -- security context for container
     securityContext:
-      runAsUser: 1002
+      runAsUser: 65532
       runAsNonRoot: true
-      runAsGroup: 2002
+      runAsGroup: 65532
       privileged: false
       allowPrivilegeEscalation: false
       readOnlyRootFilesystem: true
@@ -1283,17 +1283,17 @@ gateway:
     # @schema {"name": "gateway.filter.podSecurityContext", "type": "object"}
     # gateway.filter.podSecurityContext -- security context for pod
     podSecurityContext:
-      runAsUser: 1002
+      runAsUser: 65532
       runAsNonRoot: true
-      runAsGroup: 2002
-      fsGroup: 3002
+      runAsGroup: 65532
+      fsGroup: 65532
       fsGroupChangePolicy: "OnRootMismatch"
     # @schema {"name": "gateway.filter.securityContext", "type": "object"}
     # gateway.filter.securityContext -- security context for container
     securityContext:
-      runAsUser: 1002
+      runAsUser: 65532
       runAsNonRoot: true
-      runAsGroup: 2002
+      runAsGroup: 65532
       privileged: false
       allowPrivilegeEscalation: false
       readOnlyRootFilesystem: true
@@ -1552,17 +1552,17 @@ agent:
   # @schema {"name": "agent.podSecurityContext", "type": "object"}
   # agent.podSecurityContext -- security context for pod
   podSecurityContext:
-    runAsUser: 1002
+    runAsUser: 65532
     runAsNonRoot: true
-    runAsGroup: 2002
-    fsGroup: 3002
+    runAsGroup: 65532
+    fsGroup: 65532
     fsGroupChangePolicy: "OnRootMismatch"
   # @schema {"name": "agent.securityContext", "type": "object"}
   # agent.securityContext -- security context for container
   securityContext:
-    runAsUser: 1002
+    runAsUser: 65532
     runAsNonRoot: true
-    runAsGroup: 2002
+    runAsGroup: 65532
     privileged: false
     allowPrivilegeEscalation: false
     readOnlyRootFilesystem: false
@@ -2206,17 +2206,17 @@ discoverer:
   # @schema {"name": "discoverer.podSecurityContext", "type": "object"}
   # discoverer.podSecurityContext -- security context for pod
   podSecurityContext:
-    runAsUser: 1002
+    runAsUser: 65532
     runAsNonRoot: true
-    runAsGroup: 2002
-    fsGroup: 3002
+    runAsGroup: 65532
+    fsGroup: 65532
     fsGroupChangePolicy: "OnRootMismatch"
   # @schema {"name": "discoverer.securityContext", "type": "object"}
   # discoverer.securityContext -- security context for container
   securityContext:
-    runAsUser: 1002
+    runAsUser: 65532
     runAsNonRoot: true
-    runAsGroup: 2002
+    runAsGroup: 65532
     privileged: false
     allowPrivilegeEscalation: false
     readOnlyRootFilesystem: true
@@ -2474,17 +2474,17 @@ manager:
     # @schema {"name": "manager.index.podSecurityContext", "type": "object"}
     # manager.index.podSecurityContext -- security context for pod
     podSecurityContext:
-      runAsUser: 1002
+      runAsUser: 65532
       runAsNonRoot: true
-      runAsGroup: 2002
-      fsGroup: 3002
+      runAsGroup: 65532
+      fsGroup: 65532
       fsGroupChangePolicy: "OnRootMismatch"
     # @schema {"name": "manager.index.securityContext", "type": "object"}
     # manager.index.securityContext -- security context for container
     securityContext:
-      runAsUser: 1002
+      runAsUser: 65532
       runAsNonRoot: true
-      runAsGroup: 2002
+      runAsGroup: 65532
       privileged: false
       allowPrivilegeEscalation: false
       readOnlyRootFilesystem: true

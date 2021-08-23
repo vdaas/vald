@@ -41,7 +41,7 @@ jobs:
     name: Run tests for hack packages
     runs-on: ubuntu-latest
     container:
-      image: vdaas/vald-ci-container:nightly
+      image: ghcr.io/vdaas/vald/vald-ci-container:nightly
     steps:
       - name: Check out code.
         uses: actions/checkout@v2

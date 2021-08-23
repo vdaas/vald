@@ -47,7 +47,7 @@ jobs:
     name: grpc-sequential
     runs-on: ubuntu-latest
     container:
-      image: vdaas/vald-ci-container:nightly
+      image: ghcr.io/vdaas/vald/vald-ci-container:nightly
     steps:
       - name: Check out code.
         uses: actions/checkout@v2
@@ -70,7 +70,7 @@ jobs:
     name: grpc-stream
     runs-on: ubuntu-latest
     container:
-      image: vdaas/vald-ci-container:nightly
+      image: ghcr.io/vdaas/vald/vald-ci-container:nightly
     steps:
       - name: Check out code.
         uses: actions/checkout@v2
@@ -93,7 +93,7 @@ jobs:
     name: rest
     runs-on: ubuntu-latest
     container:
-      image: vdaas/vald-ci-container:nightly
+      image: ghcr.io/vdaas/vald/vald-ci-container:nightly
     steps:
       - name: Check out code.
         uses: actions/checkout@v2

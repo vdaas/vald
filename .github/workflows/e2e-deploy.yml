@@ -54,7 +54,7 @@ jobs:
           HELM_VERSION=`make version/helm`
           echo "::set-output name=helm::${HELM_VERSION}"
         id: version
-      - uses: rinx/setup-k3d@v0.0.2
+      - uses: rinx/setup-k3d@v0.0.3
         with:
           version: latest
           name: vald
@@ -76,10 +76,20 @@ jobs:
           helm_extra_options: ${{ steps.specify_container_versions.outputs.HELM_EXTRA_OPTIONS }}
           values: .github/helm/values/values-lb.yaml
           wait_for_selector: app=vald-lb-gateway
+      - name: Fetch golang version
+        run: |
+          GO_VERSION=`make version/go`
+          echo "::set-output name=version::${GO_VERSION}"
+        id: golang_version
+      - uses: actions/setup-go@v2
+        with:
+          go-version: ${{ steps.golang_version.outputs.version }}
       - name: run E2E CRUD
         run: |
           make hack/benchmark/assets/dataset/${DATASET}
+          go version
           go test \
+            -mod=readonly \
             -v tests/e2e/crud/crud_test.go \
             -tags "e2e" \
             -timeout 30m \
@@ -131,7 +141,7 @@ jobs:
           HELM_VERSION=`make version/helm`
           echo "::set-output name=helm::${HELM_VERSION}"
         id: version
-      - uses: rinx/setup-k3d@v0.0.2
+      - uses: rinx/setup-k3d@v0.0.3
         with:
           version: latest
           name: vald
@@ -153,10 +163,20 @@ jobs:
           helm_extra_options: ${{ steps.specify_container_versions.outputs.HELM_EXTRA_OPTIONS }}
           values: .github/helm/values/values-lb.yaml
           wait_for_selector: app=vald-lb-gateway
+      - name: Fetch golang version
+        run: |
+          GO_VERSION=`make version/go`
+          echo "::set-output name=version::${GO_VERSION}"
+        id: golang_version
+      - uses: actions/setup-go@v2
+        with:
+          go-version: ${{ steps.golang_version.outputs.version }}
       - name: run E2E CRUD
         run: |
           make hack/benchmark/assets/dataset/${DATASET}
+          go version
           go test \
+            -mod=readonly \
             -v tests/e2e/multiapis/multiapis_test.go \
             -tags "e2e" \
             -timeout 30m \
@@ -208,7 +228,7 @@ jobs:
           HELM_VERSION=`make version/helm`
           echo "::set-output name=helm::${HELM_VERSION}"
         id: version
-      - uses: rinx/setup-k3d@v0.0.2
+      - uses: rinx/setup-k3d@v0.0.3
         with:
           version: latest
           name: vald
@@ -231,10 +251,20 @@ jobs:
           helm_extra_options: ${{ steps.specify_container_versions.outputs.HELM_EXTRA_OPTIONS }}
           values: .github/helm/values/values-agent-sidecar.yaml
           wait_for_selector: app=vald-agent-ngt
+      - name: Fetch golang version
+        run: |
+          GO_VERSION=`make version/go`
+          echo "::set-output name=version::${GO_VERSION}"
+        id: golang_version
+      - uses: actions/setup-go@v2
+        with:
+          go-version: ${{ steps.golang_version.outputs.version }}
       - name: run E2E Agent & Sidecar
         run: |
           make hack/benchmark/assets/dataset/${DATASET}
+          go version
           go test \
+            -mod=readonly \
             -v tests/e2e/sidecar/sidecar_test.go \
             -tags "e2e" \
             -timeout 30m \

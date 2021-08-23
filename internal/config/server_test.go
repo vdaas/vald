@@ -1457,7 +1457,7 @@ func TestServer_Opts(t *testing.T) {
 				Restart: false,
 			},
 			want: want{
-				want: make([]server.Option, 25),
+				want: make([]server.Option, 26),
 			},
 		},
 	}

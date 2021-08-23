@@ -22,7 +22,6 @@ import (
 	"os"
 	"reflect"
 	"strings"
-	"syscall"
 	"testing"
 
 	"github.com/fsnotify/fsnotify"
@@ -193,7 +192,7 @@ func Test_watch_init(t *testing.T) {
 				},
 			},
 			want: want{
-				err: syscall.Errno(0x2),
+				err: errors.New("error resolving \"vald.go\": lstat vald.go: no such file or directory"),
 			},
 		},
 		{
@@ -204,7 +203,7 @@ func Test_watch_init(t *testing.T) {
 				},
 			},
 			want: want{
-				err: syscall.Errno(0x2),
+				err: errors.New("error resolving \"test\": lstat test: no such file or directory"),
 			},
 		},
 		{
@@ -216,7 +215,7 @@ func Test_watch_init(t *testing.T) {
 				},
 			},
 			want: want{
-				err: syscall.Errno(0x2),
+				err: errors.New("error resolving \"vald.go\": lstat vald.go: no such file or directory"),
 			},
 		},
 		{
@@ -914,7 +913,7 @@ func Test_watch_Add(t *testing.T) {
 				dirs: make(map[string]struct{}),
 			},
 			want: want{
-				err: syscall.Errno(0x2),
+				err: errors.New("error resolving \"vald.go\": lstat vald.go: no such file or directory"),
 				want: &watch{
 					dirs: map[string]struct{}{
 						"watch.go": {},

@@ -337,7 +337,7 @@ clean:
 license:
 	GOPRIVATE=$(GOPRIVATE) \
 	MAINTAINER=$(MAINTAINER) \
-	go run hack/license/gen/main.go ./
+	go run -mod=readonly hack/license/gen/main.go ./
 
 .PHONY: init
 ## initialize development environment
@@ -375,9 +375,9 @@ format: \
 .PHONY: format/go
 ## run golines, gofumpt, goimports for all go files
 format/go:
-	find ./ -type d -name .git -prune -o -type f -regex '.*[^\.pb]\.go' -print | xargs golines -w -m $(GOLINES_MAX_WIDTH)
-	find ./ -type d -name .git -prune -o -type f -regex '.*[^\.pb]\.go' -print | xargs gofumpt -w
-	find ./ -type d -name .git -prune -o -type f -regex '.*\.go' -print | xargs goimports -w
+	find ./ -type d -name .git -prune -o -type f -regex '.*[^\.pb]\.go' -print | xargs $(GOPATH)/bin/golines -w -m $(GOLINES_MAX_WIDTH)
+	find ./ -type d -name .git -prune -o -type f -regex '.*[^\.pb]\.go' -print | xargs $(GOPATH)/bin/gofumpt -w
+	find ./ -type d -name .git -prune -o -type f -regex '.*\.go' -print | xargs $(GOPATH)/bin/goimports -w
 
 .PHONY: format/yaml
 format/yaml:

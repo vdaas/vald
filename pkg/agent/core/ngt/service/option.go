@@ -17,6 +17,7 @@
 package service
 
 import (
+	"os"
 	"path/filepath"
 	"strings"
 	"time"
@@ -68,9 +69,7 @@ func WithIndexPath(path string) Option {
 		if path == "" {
 			return nil
 		}
-
-		n.path = filepath.Clean(strings.TrimSuffix(path, "/"))
-
+		n.path = filepath.Clean(strings.TrimSuffix(path, string(os.PathSeparator)))
 		return nil
 	}
 }
