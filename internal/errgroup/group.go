@@ -84,13 +84,28 @@ func Go(f func() error) {
 
 func (g *group) Limitation(limit int) {
 	if limit > 0 {
-		if g.limitation != nil {
-			close(g.limitation)
-		}
-		g.limitation = make(chan struct{}, limit)
+		ch := make(chan struct{}, limit)
+		g.closeLimitation()
+		g.limitation = ch
 		g.enableLimitation.Store(true)
 	} else {
 		g.enableLimitation.Store(false)
+	}
+}
+
+func (g *group) closeLimitation() {
+	if g.limitation != nil {
+		for {
+			select {
+			case _, live := <-g.limitation:
+				if !live {
+					return
+				}
+			default:
+				close(g.limitation)
+				return
+			}
+		}
 	}
 }
 
@@ -152,9 +167,7 @@ func Wait() error {
 func (g *group) Wait() error {
 	g.wg.Wait()
 	g.doCancel()
-	if g.limitation != nil {
-		close(g.limitation)
-	}
+	g.closeLimitation()
 	g.enableLimitation.Store(false)
 	g.mu.RLock()
 	for _, err := range g.errs {
