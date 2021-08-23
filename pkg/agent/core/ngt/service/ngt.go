@@ -610,6 +610,7 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 	n.cimu.Lock()
 	defer n.cimu.Unlock()
 	n.indexing.Store(true)
+	now := time.Now().UnixNano()
 	defer n.indexing.Store(false)
 	defer n.gc()
 	ic = n.vq.IVQLen() + n.vq.DVQLen()
@@ -618,7 +619,7 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 	}
 	log.Infof("create index operation started, uncommitted indexes = %d", ic)
 	log.Debug("create index delete phase started")
-	n.vq.RangePopDelete(ctx, func(uuid string) bool {
+	n.vq.RangePopDelete(ctx, now, func(uuid string) bool {
 		oid, ok := n.kvs.Delete(uuid)
 		if !ok {
 			log.Warn(errors.ErrObjectIDNotFound(uuid))
@@ -632,7 +633,7 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 	log.Debug("create index delete phase finished")
 	n.gc()
 	log.Debug("create index insert phase started")
-	n.vq.RangePopInsert(ctx, func(uuid string, vector []float32) bool {
+	n.vq.RangePopInsert(ctx, now, func(uuid string, vector []float32) bool {
 		oid, err := n.core.Insert(vector)
 		if err != nil {
 			log.Error(err)
