@@ -3,13 +3,13 @@ module github.com/vdaas/vald
 go 1.17
 
 replace (
-	cloud.google.com/go => cloud.google.com/go v0.93.4-0.20210819222228-ffcb7f558675
-	cloud.google.com/go/monitoring => cloud.google.com/go/monitoring v0.1.1-0.20210819222228-ffcb7f558675
-	cloud.google.com/go/profiler => cloud.google.com/go/profiler v0.1.1-0.20210819222228-ffcb7f558675
-	cloud.google.com/go/storage => cloud.google.com/go/storage v1.16.1-0.20210819222228-ffcb7f558675
-	cloud.google.com/go/trace => cloud.google.com/go/trace v0.1.1-0.20210819222228-ffcb7f558675
+	cloud.google.com/go => cloud.google.com/go v0.93.3
+	cloud.google.com/go/monitoring => cloud.google.com/go/monitoring v0.1.1-0.20210823000502-cde8697be01f
+	cloud.google.com/go/profiler => cloud.google.com/go/profiler v0.1.1-0.20210823000502-cde8697be01f
+	cloud.google.com/go/storage => cloud.google.com/go/storage v1.16.1-0.20210823000502-cde8697be01f
+	cloud.google.com/go/trace => cloud.google.com/go/trace v0.1.1-0.20210823000502-cde8697be01f
 	github.com/Azure/go-autorest => github.com/Azure/go-autorest v14.2.1-0.20210701162346-76c7860e9b60+incompatible
-	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.40.26
+	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.40.27
 	github.com/boltdb/bolt => github.com/boltdb/bolt v1.3.1
 	github.com/chzyer/logex => github.com/chzyer/logex v1.1.11-0.20170329064859-445be9e134b2
 	github.com/coreos/etcd => go.etcd.io/etcd v3.3.25+incompatible
@@ -38,7 +38,7 @@ replace (
 	golang.org/x/net => golang.org/x/net v0.0.0-20210813160813-60bc85c4be6d
 	golang.org/x/oauth2 => golang.org/x/oauth2 v0.0.0-20210819190943-2bc19b11175f
 	golang.org/x/sync => golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
-	golang.org/x/sys => golang.org/x/sys v0.0.0-20210819135213-f52c844e1c1c
+	golang.org/x/sys => golang.org/x/sys v0.0.0-20210823070655-63515b42dcdf
 	golang.org/x/term => golang.org/x/term v0.0.0-20210615171337-6886f2dfbf5b
 	golang.org/x/text => golang.org/x/text v0.3.7
 	golang.org/x/time => golang.org/x/time v0.0.0-20210723032227-1f47c861a9ac
@@ -61,8 +61,8 @@ replace (
 	k8s.io/klog/v2 => k8s.io/klog/v2 v2.10.0
 	k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20210817084001-7fbd8d59e5b8
 	k8s.io/metrics => k8s.io/metrics v0.21.4
-	k8s.io/utils => k8s.io/utils v0.0.0-20210819203725-bdf08cb9a70a
-	sigs.k8s.io/apiserver-network-proxy/konnectivity-client => sigs.k8s.io/apiserver-network-proxy/konnectivity-client v0.0.23
+	k8s.io/utils => k8s.io/utils v0.0.0-20210820185131-d34e5cb4466e
+	sigs.k8s.io/apiserver-network-proxy/konnectivity-client => sigs.k8s.io/apiserver-network-proxy/konnectivity-client v0.0.24
 	sigs.k8s.io/controller-runtime => sigs.k8s.io/controller-runtime v0.9.6
 	sigs.k8s.io/kustomize/api => sigs.k8s.io/kustomize/api v0.8.11
 	sigs.k8s.io/kustomize/kyaml => sigs.k8s.io/kustomize/kyaml v0.11.0
@@ -116,7 +116,7 @@ require (
 	gonum.org/v1/hdf5 v0.0.0-20210714002203-8c5d23bc6946
 	gonum.org/v1/plot v0.9.0
 	google.golang.org/api v0.54.0
-	google.golang.org/genproto v0.0.0-20210820002220-43fce44e7af1
+	google.golang.org/genproto v0.0.0-20210821163610-241b8fcbd6c8
 	google.golang.org/grpc v1.40.0
 	google.golang.org/protobuf v1.27.1
 	gopkg.in/yaml.v2 v2.4.0
