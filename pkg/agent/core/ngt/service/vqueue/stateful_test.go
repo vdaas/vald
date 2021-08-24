@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/leanovate/gopter"
 	"github.com/leanovate/gopter/commands"
@@ -877,13 +878,17 @@ var (
 			sy := systemUnderTest.(*qSystem)
 			q := sy.q
 
+			now := time.Now().UnixNano()
+
 			q.RangePopDelete(
 				sy.ctx,
+				now,
 				func(uuid string) bool { return true },
 			)
 
 			q.RangePopInsert(
 				sy.ctx,
+				now,
 				func(uuid string, vector []float32) bool { return true },
 			)
 
