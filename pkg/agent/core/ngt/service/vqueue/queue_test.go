@@ -902,7 +902,7 @@ func Test_vqueue_GetVector(t *testing.T) {
 			}
 
 			return test{
-				name: "return (nil, false) when the uiid dose not exit in uiim",
+				name: "return (nil, false) when the uiid dose not exist in uiim",
 				args: args{
 					uuid: uuid,
 				},
@@ -993,7 +993,7 @@ func Test_vqueue_GetVector(t *testing.T) {
 			}
 
 			return test{
-				name: "return (1, true) when the uiid dose not exit in udim",
+				name: "return (1, true) when the uiid dose not exist in udim",
 				args: args{
 					uuid: uuid,
 				},
