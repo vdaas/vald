@@ -32,6 +32,18 @@ import (
 )
 
 func (c *client) Search(t *testing.T, ctx context.Context, ds Dataset) error {
+	return c.SearchWithParameters(t, ctx, ds, 100, -1.0, 0.1, 3000000000)
+}
+
+func (c *client) SearchWithParameters(
+	t *testing.T,
+	ctx context.Context,
+	ds Dataset,
+	num uint32,
+	radius float32,
+	epsilon float32,
+	timeout int64,
+) error {
 	t.Log("search operation started")
 
 	client, err := c.getClient(ctx)
@@ -108,10 +120,10 @@ func (c *client) Search(t *testing.T, ctx context.Context, ds Dataset) error {
 			Vector: ds.Test[i],
 			Config: &payload.Search_Config{
 				RequestId: id,
-				Num:       100,
-				Radius:    -1.0,
-				Epsilon:   0.1,
-				Timeout:   3000000000,
+				Num:       num,
+				Radius:    radius,
+				Epsilon:   epsilon,
+				Timeout:   timeout,
 			},
 		})
 		if err != nil {
@@ -129,6 +141,18 @@ func (c *client) Search(t *testing.T, ctx context.Context, ds Dataset) error {
 }
 
 func (c *client) SearchByID(t *testing.T, ctx context.Context, ds Dataset) error {
+	return c.SearchByIDWithParameters(t, ctx, ds, 100, -1.0, 0.1, 3000000000)
+}
+
+func (c *client) SearchByIDWithParameters(
+	t *testing.T,
+	ctx context.Context,
+	ds Dataset,
+	num uint32,
+	radius float32,
+	epsilon float32,
+	timeout int64,
+) error {
 	t.Log("searchByID operation started")
 
 	client, err := c.getClient(ctx)
@@ -195,10 +219,10 @@ func (c *client) SearchByID(t *testing.T, ctx context.Context, ds Dataset) error
 			Id: id,
 			Config: &payload.Search_Config{
 				RequestId: id,
-				Num:       100,
-				Radius:    -1.0,
-				Epsilon:   0.1,
-				Timeout:   3000000000,
+				Num:       num,
+				Radius:    radius,
+				Epsilon:   epsilon,
+				Timeout:   timeout,
 			},
 		})
 		if err != nil {
@@ -216,6 +240,15 @@ func (c *client) SearchByID(t *testing.T, ctx context.Context, ds Dataset) error
 }
 
 func (c *client) Insert(t *testing.T, ctx context.Context, ds Dataset) error {
+	return c.InsertWithParameters(t, ctx, ds, false)
+}
+
+func (c *client) InsertWithParameters(
+	t *testing.T,
+	ctx context.Context,
+	ds Dataset,
+	skipStrictExistCheck bool,
+) error {
 	t.Log("insert operation started")
 
 	client, err := c.getClient(ctx)
@@ -278,7 +311,7 @@ func (c *client) Insert(t *testing.T, ctx context.Context, ds Dataset) error {
 				Vector: ds.Train[i],
 			},
 			Config: &payload.Insert_Config{
-				SkipStrictExistCheck: false,
+				SkipStrictExistCheck: skipStrictExistCheck,
 			},
 		})
 		if err != nil {
@@ -296,6 +329,15 @@ func (c *client) Insert(t *testing.T, ctx context.Context, ds Dataset) error {
 }
 
 func (c *client) Update(t *testing.T, ctx context.Context, ds Dataset) error {
+	return c.UpdateWithParameters(t, ctx, ds, false)
+}
+
+func (c *client) UpdateWithParameters(
+	t *testing.T,
+	ctx context.Context,
+	ds Dataset,
+	skipStrictExistCheck bool,
+) error {
 	t.Log("update operation started")
 
 	client, err := c.getClient(ctx)
@@ -358,7 +400,7 @@ func (c *client) Update(t *testing.T, ctx context.Context, ds Dataset) error {
 				Vector: append(v[1:], v[0]),
 			},
 			Config: &payload.Update_Config{
-				SkipStrictExistCheck: false,
+				SkipStrictExistCheck: skipStrictExistCheck,
 			},
 		})
 		if err != nil {
@@ -376,6 +418,15 @@ func (c *client) Update(t *testing.T, ctx context.Context, ds Dataset) error {
 }
 
 func (c *client) Upsert(t *testing.T, ctx context.Context, ds Dataset) error {
+	return c.UpsertWithParameters(t, ctx, ds, false)
+}
+
+func (c *client) UpsertWithParameters(
+	t *testing.T,
+	ctx context.Context,
+	ds Dataset,
+	skipStrictExistCheck bool,
+) error {
 	t.Log("upsert operation started")
 
 	client, err := c.getClient(ctx)
@@ -438,7 +489,7 @@ func (c *client) Upsert(t *testing.T, ctx context.Context, ds Dataset) error {
 				Vector: v,
 			},
 			Config: &payload.Upsert_Config{
-				SkipStrictExistCheck: false,
+				SkipStrictExistCheck: skipStrictExistCheck,
 			},
 		})
 		if err != nil {
@@ -456,6 +507,15 @@ func (c *client) Upsert(t *testing.T, ctx context.Context, ds Dataset) error {
 }
 
 func (c *client) Remove(t *testing.T, ctx context.Context, ds Dataset) error {
+	return c.RemoveWithParameters(t, ctx, ds, false)
+}
+
+func (c *client) RemoveWithParameters(
+	t *testing.T,
+	ctx context.Context,
+	ds Dataset,
+	skipStrictExistCheck bool,
+) error {
 	t.Log("remove operation started")
 
 	client, err := c.getClient(ctx)
@@ -517,7 +577,7 @@ func (c *client) Remove(t *testing.T, ctx context.Context, ds Dataset) error {
 				Id: id,
 			},
 			Config: &payload.Remove_Config{
-				SkipStrictExistCheck: false,
+				SkipStrictExistCheck: skipStrictExistCheck,
 			},
 		})
 		if err != nil {

@@ -318,3 +318,70 @@ func TestE2EStandardCRUD(t *testing.T) {
 		t.Fatalf("an error occurred: %s", err)
 	}
 }
+
+func TestE2ECRUDWithSkipStrictExistCheck(t *testing.T) {
+	t.Cleanup(teardown)
+	ctx := context.Background()
+
+	op, err := operation.New(host, port)
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	err = op.InsertWithParameters(t, ctx, operation.Dataset{
+		Train: ds.Train[insertFrom : insertFrom+insertNum],
+	}, true)
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	sleep(t, waitAfterInsertDuration)
+
+	err = op.Search(t, ctx, operation.Dataset{
+		Test:      ds.Test[searchFrom : searchFrom+searchNum],
+		Neighbors: ds.Neighbors[searchFrom : searchFrom+searchNum],
+	})
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	err = op.SearchByID(t, ctx, operation.Dataset{
+		Train: ds.Train[searchByIDFrom : searchByIDFrom+searchByIDNum],
+	})
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	err = op.Exists(t, ctx, "0")
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	err = op.GetObject(t, ctx, operation.Dataset{
+		Train: ds.Train[getObjectFrom : getObjectFrom+getObjectNum],
+	})
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	err = op.UpdateWithParameters(t, ctx, operation.Dataset{
+		Train: ds.Train[updateFrom : updateFrom+updateNum],
+	}, true)
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	err = op.UpsertWithParameters(t, ctx, operation.Dataset{
+		Train: ds.Train[upsertFrom : upsertFrom+upsertNum],
+	}, true)
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	err = op.RemoveWithParameters(t, ctx, operation.Dataset{
+		Train: ds.Train[removeFrom : removeFrom+removeNum],
+	}, true)
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+}
