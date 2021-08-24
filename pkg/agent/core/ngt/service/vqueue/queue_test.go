@@ -382,6 +382,7 @@ func Test_vqueue_PushDelete(t *testing.T) {
 func Test_vqueue_RangePopInsert(t *testing.T) {
 	type args struct {
 		ctx context.Context
+		now int64
 		f   func(uuid string, vector []float32) bool
 	}
 	type fields struct {
@@ -502,7 +503,7 @@ func Test_vqueue_RangePopInsert(t *testing.T) {
 				dBufSize: test.fields.dBufSize,
 			}
 
-			v.RangePopInsert(test.args.ctx, test.args.f)
+			v.RangePopInsert(test.args.ctx, test.args.now, test.args.f)
 			if err := test.checkFunc(test.want); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -513,6 +514,7 @@ func Test_vqueue_RangePopInsert(t *testing.T) {
 func Test_vqueue_RangePopDelete(t *testing.T) {
 	type args struct {
 		ctx context.Context
+		now int64
 		f   func(uuid string) bool
 	}
 	type fields struct {
@@ -633,7 +635,7 @@ func Test_vqueue_RangePopDelete(t *testing.T) {
 				dBufSize: test.fields.dBufSize,
 			}
 
-			v.RangePopDelete(test.args.ctx, test.args.f)
+			v.RangePopDelete(test.args.ctx, test.args.now, test.args.f)
 			if err := test.checkFunc(test.want); err != nil {
 				tt.Errorf("error = %v", err)
 			}
