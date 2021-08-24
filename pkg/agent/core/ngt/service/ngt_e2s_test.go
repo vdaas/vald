@@ -25,6 +25,7 @@ import (
 	"time"
 
 	"github.com/vdaas/vald/internal/config"
+	"github.com/vdaas/vald/internal/errors"
 )
 
 var cfg = &config.NGT{
@@ -104,8 +105,15 @@ func Test_ngt_parallel_delete_and_insert(t *testing.T) {
 
 				uuid := strconv.FormatInt(i, 10)
 
-				n.Delete(uuid)
-				n.Insert(uuid, []float32{float32(i), float32(i)})
+				err := n.Delete(uuid)
+				if err != nil && !errors.Is(err, errors.ErrObjectIDNotFound(uuid)) {
+					t.Error(err)
+				}
+
+				err = n.Insert(uuid, []float32{float32(i), float32(i)})
+				if err != nil && !errors.Is(err, errors.ErrUUIDAlreadyExists(uuid)) {
+					t.Error(err)
+				}
 			}()
 		}
 	}
@@ -123,7 +131,10 @@ func Test_ngt_parallel_delete_and_insert(t *testing.T) {
 		for i := 0; i < maxCreateIndexNum; i++ {
 			select {
 			case <-tic.C:
-				n.CreateIndex(ctx, createIndexPoolSize)
+				err := n.CreateIndex(ctx, createIndexPoolSize)
+				if err != nil && !errors.Is(err, errors.ErrUncommittedIndexNotFound) {
+					t.Error(err)
+				}
 			}
 		}
 	}()
@@ -177,8 +188,15 @@ func Test_ngt_parallel_insert_and_delete(t *testing.T) {
 
 				uuid := strconv.FormatInt(i, 10)
 
-				n.Insert(uuid, []float32{float32(i), float32(i)})
-				n.Delete(uuid)
+				err := n.Insert(uuid, []float32{float32(i), float32(i)})
+				if err != nil && !errors.Is(err, errors.ErrUUIDAlreadyExists(uuid)) {
+					t.Error(err)
+				}
+
+				err = n.Delete(uuid)
+				if err != nil && !errors.Is(err, errors.ErrObjectIDNotFound(uuid)) {
+					t.Error(err)
+				}
 			}()
 		}
 	}
@@ -196,7 +214,10 @@ func Test_ngt_parallel_insert_and_delete(t *testing.T) {
 		for i := 0; i < maxCreateIndexNum; i++ {
 			select {
 			case <-tic.C:
-				n.CreateIndex(ctx, createIndexPoolSize)
+				err := n.CreateIndex(ctx, createIndexPoolSize)
+				if err != nil && !errors.Is(err, errors.ErrUncommittedIndexNotFound) {
+					t.Error(err)
+				}
 			}
 		}
 	}()
