@@ -1289,7 +1289,7 @@ func Test_vqueue_IVExists(t *testing.T) {
 			}
 
 			return test{
-				name: "return false when the uiid dose not exit in uiim",
+				name: "return false when the uiid dose not exist in uiim",
 				args: args{
 					uuid: uuid,
 				},
@@ -1377,7 +1377,7 @@ func Test_vqueue_IVExists(t *testing.T) {
 			}
 
 			return test{
-				name: "return true when the uiid dose not exit in udim",
+				name: "return true when the uiid dose not exist in udim",
 				args: args{
 					uuid: uuid,
 				},
@@ -1668,7 +1668,7 @@ func Test_vqueue_DVExists(t *testing.T) {
 			}
 
 			return test{
-				name: "return false when the uiid dose not exit in udim",
+				name: "return false when the uiid dose not exist in udim",
 				args: args{
 					uuid: uuid,
 				},
@@ -1756,7 +1756,7 @@ func Test_vqueue_DVExists(t *testing.T) {
 			}
 
 			return test{
-				name: "return true when the uiid dose not exit in uiim",
+				name: "return true when the uiid dose not exist in uiim",
 				args: args{
 					uuid: uuid,
 				},
