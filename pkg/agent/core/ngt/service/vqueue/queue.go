@@ -39,17 +39,13 @@ type Queue interface {
 	IVExists(uuid string) bool
 	DVExists(uuid string) bool
 	IVQLen() int
-	IVCLen() int
 	DVQLen() int
-	DVCLen() int
 }
 
 type vqueue struct {
-	ich  chan index // ich is insert channel
 	uii  []index    // uii is un inserted index
 	imu  sync.Mutex // insert mutex
 	uiim uiim       // uiim is un inserted index map (this value is used for GetVector operation to return queued vector cache data)
-	dch  chan key   // dch is delete channel
 	udk  []key      // udk is un deleted key
 	dmu  sync.Mutex // delete mutex
 	udim udim       // udim is un deleted index map (this value is used for Exists operation to return cache data existence)
@@ -88,9 +84,7 @@ func New(opts ...Option) (Queue, error) {
 			log.Warn(werr)
 		}
 	}
-	vq.ich = make(chan index, vq.ichSize)
 	vq.uii = make([]index, 0, vq.iBufSize)
-	vq.dch = make(chan key, vq.dchSize)
 	vq.udk = make([]key, 0, vq.dBufSize)
 	return vq, nil
 }
@@ -330,14 +324,4 @@ func (v *vqueue) DVQLen() (l int) {
 	l = len(v.udk)
 	v.dmu.Unlock()
 	return l
-}
-
-// IVCLen returns the number stored in the insert channel.
-func (v *vqueue) IVCLen() int {
-	return len(v.ich)
-}
-
-// IVCLen returns the number stored in the delete channel.
-func (v *vqueue) DVCLen() int {
-	return len(v.dch)
 }

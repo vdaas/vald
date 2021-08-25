@@ -74,8 +74,6 @@ type NGT interface {
 	UUIDs(context.Context) (uuids []string)
 	DeleteVQueueBufferLen() uint64
 	InsertVQueueBufferLen() uint64
-	DeleteVQueueChannelLen() uint64
-	InsertVQueueChannelLen() uint64
 	GetDimensionSize() int
 	Close(ctx context.Context) error
 }
@@ -162,8 +160,6 @@ func New(cfg *config.NGT, opts ...Option) (nn NGT, err error) {
 	if n.vq == nil {
 		n.vq, err = vqueue.New(
 			vqueue.WithErrGroup(n.eg),
-			vqueue.WithInsertBufferSize(cfg.VQueue.InsertBufferSize),
-			vqueue.WithDeleteBufferSize(cfg.VQueue.DeleteBufferSize),
 			vqueue.WithInsertBufferPoolSize(cfg.VQueue.InsertBufferPoolSize),
 			vqueue.WithDeleteBufferPoolSize(cfg.VQueue.DeleteBufferPoolSize),
 		)
@@ -881,14 +877,6 @@ func (n *ngt) InsertVQueueBufferLen() uint64 {
 
 func (n *ngt) DeleteVQueueBufferLen() uint64 {
 	return uint64(n.vq.DVQLen())
-}
-
-func (n *ngt) InsertVQueueChannelLen() uint64 {
-	return uint64(n.vq.IVCLen())
-}
-
-func (n *ngt) DeleteVQueueChannelLen() uint64 {
-	return uint64(n.vq.DVCLen())
 }
 
 func (n *ngt) GetDimensionSize() int {
