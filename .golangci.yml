@@ -105,6 +105,7 @@ linters-settings:
     include-go-root: true
     packages-with-error-message:
       - errors: "errors is allowed only by internal/errors"
+      - k8s.io/apimachinery/pkg/api/errors: "errors is allowed only by internal/errors"
       - github.com/cockroachdb/errors: "errors is allowed only by internal/errors"
       - github.com/pkg/errors: "errors is allowed only by internal/errors"
       - github.com/go-errors/errors: "errors is allowed only by internal/errors"
