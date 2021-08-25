@@ -30,7 +30,6 @@ linters:
     - typecheck
     - varcheck
     - cyclop
-    - depguard
     - exhaustivestruct
     - forbidigo
     - funlen
@@ -85,6 +84,9 @@ issues:
     - path: main\.go
       linters:
         - gochecknoglobals
+    - path: internal/errors/errors\.go
+      linters:
+        - depguard
 
 linters-settings:
   gocritic:
@@ -99,6 +101,13 @@ linters-settings:
       rules:
         json: snake
         yaml: snake
+  depguard:
+    list-type: blacklist
+    include-go-root: true
+    packages:
+      - errors
+    packages-with-error-message:
+      - errors: "errors is allowed only by internal/errors"
   govet:
     check-shadowing: true
     enable-all: true
