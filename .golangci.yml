@@ -43,7 +43,6 @@ linters:
     - gomoddirectives
     - gomodguard
     - goprintffuncname
-    - gosec
     - ifshort
     - importas
     - interfacer
