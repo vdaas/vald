@@ -256,9 +256,9 @@ func (v *vqueue) RangePopDelete(ctx context.Context, now int64, f func(uuid stri
 	udm := make(map[string]int64, len(udk))
 	for i, idx := range udk {
 		if idx.date > now {
-			v.imu.Lock()
+			v.dmu.Lock()
 			v.udk = append(v.udk, idx)
-			v.imu.Unlock()
+			v.dmu.Unlock()
 			continue
 		}
 		if !dup[idx.uuid] {
