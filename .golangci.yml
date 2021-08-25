@@ -73,6 +73,7 @@ issues:
         - forcetypeassert
         - gomnd
         - noctx
+        - gochecknoinits
     - path: _test\.go
       text: "copylocks:"
       linters:
