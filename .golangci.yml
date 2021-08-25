@@ -103,10 +103,12 @@ linters-settings:
   depguard:
     list-type: blacklist
     include-go-root: true
-    packages:
-      - errors
     packages-with-error-message:
       - errors: "errors is allowed only by internal/errors"
+      - github.com/cockroachdb/errors: "errors is allowed only by internal/errors"
+      - github.com/pkg/errors: "errors is allowed only by internal/errors"
+      - github.com/go-errors/errors: "errors is allowed only by internal/errors"
+      - golang.org/x/sync/errgroup: "errgroup is allowed only by internal/errgroup"
   govet:
     check-shadowing: true
     enable-all: true
