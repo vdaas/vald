@@ -259,11 +259,7 @@ spec:
                           properties:
                             delete_buffer_pool_size:
                               type: integer
-                            delete_buffer_size:
-                              type: integer
                             insert_buffer_pool_size:
-                              type: integer
-                            insert_buffer_size:
                               type: integer
                     nodeName:
                       type: string
