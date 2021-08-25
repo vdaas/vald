@@ -51,10 +51,7 @@ type vqueue struct {
 	udim udim       // udim is un deleted index map (this value is used for Exists operation to return cache data existence)
 	eg   errgroup.Group
 
-	// TODO: delete this configuration
 	// buffer config
-	ichSize  int
-	dchSize  int
 	iBufSize int
 	dBufSize int
 }

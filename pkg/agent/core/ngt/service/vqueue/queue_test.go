@@ -118,8 +118,6 @@ func Test_vqueue_PushInsert(t *testing.T) {
 		dmu      sync.Mutex
 		udim     udim
 		eg       errgroup.Group
-		ichSize  int
-		dchSize  int
 		iBufSize int
 		dBufSize int
 	}
@@ -225,8 +223,6 @@ func Test_vqueue_PushInsert(t *testing.T) {
 				dmu:      test.fields.dmu,
 				udim:     test.fields.udim,
 				eg:       test.fields.eg,
-				ichSize:  test.fields.ichSize,
-				dchSize:  test.fields.dchSize,
 				iBufSize: test.fields.iBufSize,
 				dBufSize: test.fields.dBufSize,
 			}
@@ -252,8 +248,6 @@ func Test_vqueue_PushDelete(t *testing.T) {
 		dmu      sync.Mutex
 		udim     udim
 		eg       errgroup.Group
-		ichSize  int
-		dchSize  int
 		iBufSize int
 		dBufSize int
 	}
@@ -357,8 +351,6 @@ func Test_vqueue_PushDelete(t *testing.T) {
 				dmu:      test.fields.dmu,
 				udim:     test.fields.udim,
 				eg:       test.fields.eg,
-				ichSize:  test.fields.ichSize,
-				dchSize:  test.fields.dchSize,
 				iBufSize: test.fields.iBufSize,
 				dBufSize: test.fields.dBufSize,
 			}
@@ -385,8 +377,6 @@ func Test_vqueue_RangePopInsert(t *testing.T) {
 		dmu      sync.Mutex
 		udim     udim
 		eg       errgroup.Group
-		ichSize  int
-		dchSize  int
 		iBufSize int
 		dBufSize int
 	}
@@ -485,8 +475,6 @@ func Test_vqueue_RangePopInsert(t *testing.T) {
 				dmu:      test.fields.dmu,
 				udim:     test.fields.udim,
 				eg:       test.fields.eg,
-				ichSize:  test.fields.ichSize,
-				dchSize:  test.fields.dchSize,
 				iBufSize: test.fields.iBufSize,
 				dBufSize: test.fields.dBufSize,
 			}
@@ -513,8 +501,6 @@ func Test_vqueue_RangePopDelete(t *testing.T) {
 		dmu      sync.Mutex
 		udim     udim
 		eg       errgroup.Group
-		ichSize  int
-		dchSize  int
 		iBufSize int
 		dBufSize int
 	}
@@ -613,8 +599,6 @@ func Test_vqueue_RangePopDelete(t *testing.T) {
 				dmu:      test.fields.dmu,
 				udim:     test.fields.udim,
 				eg:       test.fields.eg,
-				ichSize:  test.fields.ichSize,
-				dchSize:  test.fields.dchSize,
 				iBufSize: test.fields.iBufSize,
 				dBufSize: test.fields.dBufSize,
 			}
@@ -639,8 +623,6 @@ func Test_vqueue_GetVector(t *testing.T) {
 		dmu      sync.Mutex
 		udim     udim
 		eg       errgroup.Group
-		ichSize  int
-		dchSize  int
 		iBufSize int
 		dBufSize int
 	}
@@ -746,8 +728,6 @@ func Test_vqueue_GetVector(t *testing.T) {
 				dmu:      test.fields.dmu,
 				udim:     test.fields.udim,
 				eg:       test.fields.eg,
-				ichSize:  test.fields.ichSize,
-				dchSize:  test.fields.dchSize,
 				iBufSize: test.fields.iBufSize,
 				dBufSize: test.fields.dBufSize,
 			}
@@ -772,8 +752,6 @@ func Test_vqueue_IVExists(t *testing.T) {
 		dmu      sync.Mutex
 		udim     udim
 		eg       errgroup.Group
-		ichSize  int
-		dchSize  int
 		iBufSize int
 		dBufSize int
 	}
@@ -875,8 +853,6 @@ func Test_vqueue_IVExists(t *testing.T) {
 				dmu:      test.fields.dmu,
 				udim:     test.fields.udim,
 				eg:       test.fields.eg,
-				ichSize:  test.fields.ichSize,
-				dchSize:  test.fields.dchSize,
 				iBufSize: test.fields.iBufSize,
 				dBufSize: test.fields.dBufSize,
 			}
@@ -901,8 +877,6 @@ func Test_vqueue_DVExists(t *testing.T) {
 		dmu      sync.Mutex
 		udim     udim
 		eg       errgroup.Group
-		ichSize  int
-		dchSize  int
 		iBufSize int
 		dBufSize int
 	}
@@ -1004,8 +978,6 @@ func Test_vqueue_DVExists(t *testing.T) {
 				dmu:      test.fields.dmu,
 				udim:     test.fields.udim,
 				eg:       test.fields.eg,
-				ichSize:  test.fields.ichSize,
-				dchSize:  test.fields.dchSize,
 				iBufSize: test.fields.iBufSize,
 				dBufSize: test.fields.dBufSize,
 			}
@@ -1030,8 +1002,6 @@ func Test_vqueue_addInsert(t *testing.T) {
 		dmu      sync.Mutex
 		udim     udim
 		eg       errgroup.Group
-		ichSize  int
-		dchSize  int
 		iBufSize int
 		dBufSize int
 	}
@@ -1128,8 +1098,6 @@ func Test_vqueue_addInsert(t *testing.T) {
 				dmu:      test.fields.dmu,
 				udim:     test.fields.udim,
 				eg:       test.fields.eg,
-				ichSize:  test.fields.ichSize,
-				dchSize:  test.fields.dchSize,
 				iBufSize: test.fields.iBufSize,
 				dBufSize: test.fields.dBufSize,
 			}
@@ -1154,8 +1122,6 @@ func Test_vqueue_addDelete(t *testing.T) {
 		dmu      sync.Mutex
 		udim     udim
 		eg       errgroup.Group
-		ichSize  int
-		dchSize  int
 		iBufSize int
 		dBufSize int
 	}
@@ -1252,8 +1218,6 @@ func Test_vqueue_addDelete(t *testing.T) {
 				dmu:      test.fields.dmu,
 				udim:     test.fields.udim,
 				eg:       test.fields.eg,
-				ichSize:  test.fields.ichSize,
-				dchSize:  test.fields.dchSize,
 				iBufSize: test.fields.iBufSize,
 				dBufSize: test.fields.dBufSize,
 			}
@@ -1275,8 +1239,6 @@ func Test_vqueue_IVQLen(t *testing.T) {
 		dmu      sync.Mutex
 		udim     udim
 		eg       errgroup.Group
-		ichSize  int
-		dchSize  int
 		iBufSize int
 		dBufSize int
 	}
@@ -1418,8 +1380,6 @@ func Test_vqueue_IVQLen(t *testing.T) {
 				dmu:      test.fields.dmu,
 				udim:     test.fields.udim,
 				eg:       test.fields.eg,
-				ichSize:  test.fields.ichSize,
-				dchSize:  test.fields.dchSize,
 				iBufSize: test.fields.iBufSize,
 				dBufSize: test.fields.dBufSize,
 			}
@@ -1441,8 +1401,6 @@ func Test_vqueue_DVQLen(t *testing.T) {
 		dmu      sync.Mutex
 		udim     udim
 		eg       errgroup.Group
-		ichSize  int
-		dchSize  int
 		iBufSize int
 		dBufSize int
 	}
@@ -1584,8 +1542,6 @@ func Test_vqueue_DVQLen(t *testing.T) {
 				dmu:      test.fields.dmu,
 				udim:     test.fields.udim,
 				eg:       test.fields.eg,
-				ichSize:  test.fields.ichSize,
-				dchSize:  test.fields.dchSize,
 				iBufSize: test.fields.iBufSize,
 				dBufSize: test.fields.dBufSize,
 			}
