@@ -86,7 +86,7 @@ var (
 	maxDiscardRatio    float64
 	applicationLog     bool
 
-	cfg = &config.NGT{
+	ncfg = &config.NGT{
 		Dimension:              dimension,
 		DistanceType:           "l2",
 		ObjectType:             "float",
@@ -1133,7 +1133,7 @@ func rootCommands(t *testing.T) commands.Commands {
 		NewSystemUnderTestFunc: func(
 			initialState commands.State,
 		) commands.SystemUnderTest {
-			n, err := New(cfg.Bind())
+			n, err := New(ncfg.Bind())
 			if err != nil {
 				t.Fatalf("error: %s", err)
 			}
