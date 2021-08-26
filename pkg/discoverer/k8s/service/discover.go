@@ -454,6 +454,9 @@ func (d *discoverer) GetNodes(req *payload.Discoverer_Request) (nodes *payload.I
 				for i := range ps.Pods {
 					ps.GetPods()[i].Node = nil
 				}
+				sort.Slice(ps.Pods, func(i, j int) bool {
+					return ps.GetPods()[i].GetMemory().GetUsage() < ps.GetPods()[j].GetMemory().GetUsage()
+				})
 				n.Pods = ps
 			}
 		}

@@ -66,6 +66,14 @@ define go-lint
 	golangci-lint run --enable-all --disable=gochecknoglobals --fix --color always -j 16 --skip-dirs apis/grpc --exclude-use-default=false ./...
 endef
 
+define go-vet
+	cat <(GOARCH=amd64 go vet ./...) \
+	  <(GOARCH=386 go vet ./...) \
+	  <(GOARCH=arm go vet ./...) \
+	  | rg -v "Mutex" | sort | uniq
+endef
+
+
 define telepresence
 	[ -z $(SWAP_IMAGE) ] && IMAGE=$2 || IMAGE=$(SWAP_IMAGE) \
 	&& echo "telepresence replaces $(SWAP_DEPLOYMENT_TYPE)/$1 with $${IMAGE}:$(SWAP_TAG)" \

@@ -600,7 +600,7 @@ func (g *gRPCClient) Connect(ctx context.Context, addr string, dopts ...DialOpti
 			span.End()
 		}
 	}()
-	_, _, err = g.group.Do(ctx, "connect-"+addr, func() (interface{}, error) {
+	ci, shared, err := g.group.Do(ctx, "connect-"+addr, func() (interface{}, error) {
 		conn, ok := g.conns.Load(addr)
 		if ok && conn != nil {
 			if conn.IsHealthy(ctx) {
@@ -665,6 +665,12 @@ func (g *gRPCClient) Connect(ctx context.Context, addr string, dopts ...DialOpti
 	})
 	if err != nil {
 		return nil, err
+	}
+	if shared {
+		sconn, ok := ci.(pool.Conn)
+		if ok {
+			return sconn, nil
+		}
 	}
 	return conn, nil
 }
