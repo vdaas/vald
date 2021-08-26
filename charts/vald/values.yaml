@@ -1782,12 +1782,6 @@ agent:
     enable_proactive_gc: true
     # @schema {"name": "agent.ngt.vqueue", "type": "object"}
     vqueue:
-      # @schema {"name": "agent.ngt.vqueue.insert_buffer_size", "type": "integer"}
-      # agent.ngt.vqueue.insert_buffer_size -- insert channel buffer size
-      insert_buffer_size: 100
-      # @schema {"name": "agent.ngt.vqueue.delete_buffer_size", "type": "integer"}
-      # agent.ngt.vqueue.delete_buffer_size -- delete channel buffer size
-      delete_buffer_size: 100
       # @schema {"name": "agent.ngt.vqueue.insert_buffer_pool_size", "type": "integer"}
       # agent.ngt.vqueue.insert_buffer_pool_size -- insert slice pool buffer size
       insert_buffer_pool_size: 10000

@@ -94,14 +94,8 @@ type KVSDB struct {
 
 // VQueue represent the ngt vector queue buffer size
 type VQueue struct {
-	// InsertBufferSize represents insert channel buffer size
-	InsertBufferSize int `json:"insert_buffer_size,omitempty" yaml:"insert_buffer_size"`
-
 	// InsertBufferPoolSize represents insert time ordered slice buffer size
 	InsertBufferPoolSize int `json:"insert_buffer_pool_size,omitempty" yaml:"insert_buffer_pool_size"`
-
-	// DeleteBufferSize represents delete channel buffer size
-	DeleteBufferSize int `json:"delete_buffer_size,omitempty" yaml:"delete_buffer_size"`
 
 	// DeleteBufferPoolSize represents delete time ordered slice buffer size
 	DeleteBufferPoolSize int `json:"delete_buffer_pool_size,omitempty" yaml:"delete_buffer_pool_size"`
