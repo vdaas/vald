@@ -129,7 +129,7 @@ func main() {
 			Config: &payload.Search_Config{
 				Num:     10,   // the number of search results
 				Radius:  -1,   // Radius is used to determine the space of search candidate radius for neighborhood vectors. -1 means infinite circle.
-				Epsilon: 0.01, // Epsilon is used to determines how much to expand from search candidate radius.
+				Epsilon: 0.1, // Epsilon is used to determines how much to expand from search candidate radius.
 
 			},
 		})

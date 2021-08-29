@@ -320,7 +320,7 @@ If you are interested in, please refer to [SDKs](../user-guides/sdks.md).<br>
                     Config: &payload.Search_Config{
                         Num: 10,
                         Radius: -1,
-                        Epsilon: 0.01,
+                        Epsilon: 0.1,
                     }
                 }
                 if err != nil {

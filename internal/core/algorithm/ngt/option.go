@@ -36,7 +36,7 @@ type Option func(*ngt) error
 var (
 	DefaultPoolSize = uint32(10000)
 	DefaultRadius   = float32(-1.0)
-	DefaultEpsilon  = float32(0.01)
+	DefaultEpsilon  = float32(0.1)
 
 	defaultOptions = []Option{
 		WithIndexPath("/tmp/ngt-" + string(fastime.FormattedNow())),

@@ -310,7 +310,7 @@ This chapter uses [NGT](https://github.com/yahoojapan/ngt) as Vald Agent to perf
                     Config: &payload.Search_Config{
                         Num: 10,
                         Radius: -1,
-                        Epsilon: 0.01,
+                        Epsilon: 0.1,
                     }
                 }
                 if err != nil {
