@@ -19,7 +19,9 @@ package log
 import (
 	"sync"
 
+	"github.com/vdaas/vald/internal/log/format"
 	"github.com/vdaas/vald/internal/log/glg"
+	"github.com/vdaas/vald/internal/log/level"
 	logger "github.com/vdaas/vald/internal/log/logger"
 	"github.com/vdaas/vald/internal/log/nop"
 	"github.com/vdaas/vald/internal/log/retry"
@@ -30,6 +32,20 @@ var (
 	l    logger.Logger
 	once sync.Once
 )
+
+func init() {
+	l = glg.New(
+		glg.WithLevel(level.DEBUG.String()),
+		glg.WithFormat(format.RAW.String()),
+		glg.WithRetry(
+			retry.New(
+				retry.WithError(Error),
+				retry.WithWarn(Warn),
+			),
+		),
+	)
+
+}
 
 func Init(opts ...Option) {
 	once.Do(func() {
