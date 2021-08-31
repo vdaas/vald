@@ -110,7 +110,7 @@ func (c *client) Search(t *testing.T, ctx context.Context, ds Dataset) error {
 				RequestId: id,
 				Num:       100,
 				Radius:    -1.0,
-				Epsilon:   0.01,
+				Epsilon:   0.1,
 				Timeout:   3000000000,
 			},
 		})
@@ -197,7 +197,7 @@ func (c *client) SearchByID(t *testing.T, ctx context.Context, ds Dataset) error
 				RequestId: id,
 				Num:       100,
 				Radius:    -1.0,
-				Epsilon:   0.01,
+				Epsilon:   0.1,
 				Timeout:   3000000000,
 			},
 		})

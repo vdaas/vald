@@ -24,7 +24,7 @@ type SearchOption func(*search)
 var searchCfg = &client.SearchConfig{
 	Num:     10,
 	Radius:  -1,
-	Epsilon: 0.01,
+	Epsilon: 0.1,
 }
 
 var defaultSearchOptions = []SearchOption{
