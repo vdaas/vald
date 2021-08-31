@@ -79,7 +79,7 @@ Configuration
 | agent.ngt.auto_save_index_duration | string | `"35m"` | duration of automatic save index |
 | agent.ngt.bulk_insert_chunk_size | int | `10` | bulk insert chunk size |
 | agent.ngt.creation_edge_size | int | `20` | creation edge size |
-| agent.ngt.default_epsilon | float | `0.01` | default epsilon used for search |
+| agent.ngt.default_epsilon | float | `0.1` | default epsilon used for search |
 | agent.ngt.default_pool_size | int | `10000` | default create index batch pool size |
 | agent.ngt.default_radius | float | `-1` | default radius used for search |
 | agent.ngt.dimension | int | `4096` | vector dimension |
