@@ -113,7 +113,6 @@ bench: \
 ## run benchmarks for core
 bench/core: \
 	bench/core/ngt \
-	bench/core/gongt
 
 .PHONY: bench/core/ngt
 ## run benchmark for NGT core
@@ -155,54 +154,6 @@ pprof/core/ngt/parallel.bin: \
 	    -count=1 \
 	    -timeout=1h \
 	    -bench=NGTParallel \
-	    -benchmem \
-	    -o $@ \
-	    -cpuprofile $(patsubst %.bin,%.cpu.out,$@) \
-	    -memprofile $(patsubst %.bin,%.mem.out,$@) \
-	    -trace $(patsubst %.bin,%.trace.out,$@) \
-	    $< \
-	    -dataset=$(DATASET_ARGS)
-
-.PHONY: bench/core/gongt
-## run benchmark for gongt core
-bench/core/gongt: \
-	bench/core/gongt/sequential \
-	bench/core/gongt/parallel
-
-.PHONY: bench/core/gongt/sequential
-## run benchmark for gongt core sequential methods
-bench/core/gongt/sequential: \
-	pprof/core/gongt/sequential.cpu.svg \
-	pprof/core/gongt/sequential.mem.svg
-pprof/core/gongt/sequential.bin: \
-	hack/benchmark/core/gongt/gongt_bench_test.go
-	mkdir -p $(dir $@)
-	go test \
-	    -mod=readonly \
-	    -count=1 \
-	    -timeout=1h \
-	    -bench=GoNGTSequential \
-	    -benchmem \
-	    -o $@ \
-	    -cpuprofile $(patsubst %.bin,%.cpu.out,$@) \
-	    -memprofile $(patsubst %.bin,%.mem.out,$@) \
-	    -trace $(patsubst %.bin,%.trace.out,$@) \
-	    $< \
-	    -dataset=$(DATASET_ARGS)
-
-.PHONY: bench/core/gongt/parallel
-## run benchmark for gongt core parallel methods
-bench/core/gongt/parallel: \
-	pprof/core/gongt/parallel.cpu.svg \
-	pprof/core/gongt/parallel.mem.svg
-pprof/core/gongt/parallel.bin: \
-	hack/benchmark/core/gongt/gongt_bench_test.go
-	mkdir -p $(dir $@)
-	go test \
-	    -mod=readonly \
-	    -count=1 \
-	    -timeout=1h \
-	    -bench=GoNGTParallel \
 	    -benchmem \
 	    -o $@ \
 	    -cpuprofile $(patsubst %.bin,%.cpu.out,$@) \
