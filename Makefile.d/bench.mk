@@ -262,28 +262,6 @@ pprof/agent/sequential/grpc.bin: \
 	    $< \
 	    -dataset=$(DATASET_ARGS)
 
-.PHONY: bench/agent/sequential/rest
-## run benchmark for agent REST
-bench/agent/sequential/rest: \
-	pprof/agent/sequential/rest.cpu.svg \
-	pprof/agent/sequential/rest.mem.svg
-pprof/agent/sequential/rest.bin: \
-	hack/benchmark/e2e/agent/core/ngt/ngt_bench_test.go \
-	ngt/install
-	mkdir -p $(dir $@)
-	go test \
-	    -mod=readonly \
-	    -count=1 \
-	    -timeout=1h \
-	    -bench=REST_Sequential \
-	    -benchmem \
-	    -o $@ \
-	    -cpuprofile $(patsubst %.bin,%.cpu.out,$@) \
-	    -memprofile $(patsubst %.bin,%.mem.out,$@) \
-	    -trace $(patsubst %.bin,%.trace.out,$@) \
-	    $< \
-	    -dataset=$(DATASET_ARGS)
-
 .PHONY: bench/ngtd
 ## run benchmarks for NGTD
 bench/ngtd: \
@@ -327,28 +305,6 @@ pprof/ngtd/sequential/grpc.bin: \
 	    -count=1 \
 	    -timeout=1h \
 	    -bench=gRPC_Sequential \
-	    -benchmem \
-	    -o $@ \
-	    -cpuprofile $(patsubst %.bin,%.cpu.out,$@) \
-	    -memprofile $(patsubst %.bin,%.mem.out,$@) \
-	    -trace $(patsubst %.bin,%.trace.out,$@) \
-	    $< \
-	    -dataset=$(DATASET_ARGS)
-
-.PHONY: bench/ngtd/sequential/rest
-## run benchmark for NGTD REST stream
-bench/ngtd/sequential/rest: \
-	pprof/ngtd/sequential/rest.cpu.svg \
-	pprof/ngtd/sequential/rest.mem.svg
-pprof/ngtd/sequential/rest.bin: \
-	hack/benchmark/e2e/external/ngtd/ngtd_bench_test.go \
-	ngt/install
-	mkdir -p $(dir $@)
-	go test \
-	    -mod=readonly \
-	    -count=1 \
-	    -timeout=1h \
-	    -bench=REST_Sequential \
 	    -benchmem \
 	    -o $@ \
 	    -cpuprofile $(patsubst %.bin,%.cpu.out,$@) \

@@ -88,26 +88,3 @@ jobs:
             ./pprof/agent/stream.trace.out
             ./pprof/agent/stream.cpu.svg
             ./pprof/agent/stream.mem.svg
-
-  rest:
-    name: rest
-    runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/vdaas/vald/vald-ci-container:nightly
-    steps:
-      - name: Check out code.
-        uses: actions/checkout@v2
-      - name: Run rest
-        run: |
-          make bench/agent/sequential/rest
-      - name: Upload artifact
-        uses: actions/upload-artifact@v2
-        with:
-          name: agent-sequential-rest
-          path: |
-            ./pprof/agent/sequential/rest.bin
-            ./pprof/agent/sequential/rest.cpu.out
-            ./pprof/agent/sequential/rest.mem.out
-            ./pprof/agent/sequential/rest.trace.out
-            ./pprof/agent/sequential/rest.cpu.svg
-            ./pprof/agent/sequential/rest.mem.svg
