@@ -20,9 +20,11 @@ import (
 	"context"
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/rand"
 	"go.uber.org/goleak"
 )
 
@@ -208,33 +210,28 @@ func TestWithIndexPath(t *testing.T) {
 	}
 
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           path: "",
-		       },
-		       want: want {
-		           obj: new(T),
-		       },
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           path: "",
-		           },
-		           want: want {
-		               obj: new(T),
-		           },
-		       }
-		   }(),
-		*/
+		{
+			name: "set success when path is not empty",
+			args: args{
+				path: "/var/vald",
+			},
+			want: want{
+				obj: &T{
+					path: "/var/vald",
+				},
+			},
+		},
+		{
+			name: "set success when path is empty",
+			args: args{
+				path: "",
+			},
+			want: want{
+				obj: &T{
+					path: "",
+				},
+			},
+		},
 	}
 
 	for _, tc := range tests {
@@ -289,33 +286,38 @@ func TestWithAutoIndexCheckDuration(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           dur: "",
-		       },
-		       want: want {
-		           obj: new(T),
-		       },
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           dur: "",
-		           },
-		           want: want {
-		               obj: new(T),
-		           },
-		       }
-		   }(),
-		*/
+		{
+			name: "set success when duration is empty string",
+			args: args{
+				dur: "",
+			},
+			want: want{
+				obj: &T{
+					dur: 0,
+				},
+			},
+		},
+		{
+			name: "set success when duration is a valid duration string",
+			args: args{
+				dur: "5s",
+			},
+			want: want{
+				obj: &T{
+					dur: 5 * time.Second,
+				},
+			},
+		},
+		{
+			name: "return error when duration is not a valid duration string",
+			args: args{
+				dur: "5ss",
+			},
+			want: want{
+				obj: &T{},
+				err: errors.New("invalid timeout value: 5ss\t:timeout parse error out put failed: time: unknown unit \"ss\" in duration \"5ss\""),
+			},
+		},
 	}
 
 	for _, tc := range tests {
@@ -370,33 +372,38 @@ func TestWithAutoIndexDurationLimit(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           dur: "",
-		       },
-		       want: want {
-		           obj: new(T),
-		       },
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           dur: "",
-		           },
-		           want: want {
-		               obj: new(T),
-		           },
-		       }
-		   }(),
-		*/
+		{
+			name: "set success when duration is empty string",
+			args: args{
+				dur: "",
+			},
+			want: want{
+				obj: &T{
+					lim: 0,
+				},
+			},
+		},
+		{
+			name: "set success when duration is a valid duration string",
+			args: args{
+				dur: "5s",
+			},
+			want: want{
+				obj: &T{
+					lim: 5 * time.Second,
+				},
+			},
+		},
+		{
+			name: "return error when duration is not a valid duration string",
+			args: args{
+				dur: "5ss",
+			},
+			want: want{
+				obj: &T{},
+				err: errors.New("invalid timeout value: 5ss\t:timeout parse error out put failed: time: unknown unit \"ss\" in duration \"5ss\""),
+			},
+		},
 	}
 
 	for _, tc := range tests {
@@ -451,33 +458,38 @@ func TestWithAutoSaveIndexDuration(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           dur: "",
-		       },
-		       want: want {
-		           obj: new(T),
-		       },
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           dur: "",
-		           },
-		           want: want {
-		               obj: new(T),
-		           },
-		       }
-		   }(),
-		*/
+		{
+			name: "set success when duration is empty string",
+			args: args{
+				dur: "",
+			},
+			want: want{
+				obj: &T{
+					sdur: 0,
+				},
+			},
+		},
+		{
+			name: "set success when duration is a valid duration string",
+			args: args{
+				dur: "5s",
+			},
+			want: want{
+				obj: &T{
+					sdur: 5 * time.Second,
+				},
+			},
+		},
+		{
+			name: "return error when duration is not a valid duration string",
+			args: args{
+				dur: "5ss",
+			},
+			want: want{
+				obj: &T{},
+				err: errors.New("invalid timeout value: 5ss\t:timeout parse error out put failed: time: unknown unit \"ss\" in duration \"5ss\""),
+			},
+		},
 	}
 
 	for _, tc := range tests {
@@ -532,33 +544,28 @@ func TestWithAutoIndexLength(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           l: 0,
-		       },
-		       want: want {
-		           obj: new(T),
-		       },
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           l: 0,
-		           },
-		           want: want {
-		               obj: new(T),
-		           },
-		       }
-		   }(),
-		*/
+		{
+			name: "set index length success",
+			args: args{
+				l: 10,
+			},
+			want: want{
+				obj: &T{
+					alen: 10,
+				},
+			},
+		},
+		{
+			name: "set index length success when length is 0",
+			args: args{
+				l: 0,
+			},
+			want: want{
+				obj: &T{
+					alen: 0,
+				},
+			},
+		},
 	}
 
 	for _, tc := range tests {
@@ -613,33 +620,38 @@ func TestWithInitialDelayMaxDuration(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           dur: "",
-		       },
-		       want: want {
-		           obj: new(T),
-		       },
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           dur: "",
-		           },
-		           want: want {
-		               obj: new(T),
-		           },
-		       }
-		   }(),
-		*/
+		{
+			name: "set success when duration is empty string",
+			args: args{
+				dur: "",
+			},
+			want: want{
+				obj: &T{
+					idelay: 0,
+				},
+			},
+		},
+		{
+			name: "set success when duration is a valid duration string",
+			args: args{
+				dur: "5s",
+			},
+			want: want{
+				obj: &T{
+					idelay: time.Duration(int64(rand.LimitedUint32(uint64(5*time.Second/time.Second)))) * time.Second,
+				},
+			},
+		},
+		{
+			name: "return error when duration is not a valid duration string",
+			args: args{
+				dur: "5ss",
+			},
+			want: want{
+				obj: &T{},
+				err: errors.New("invalid timeout value: 5ss\t:timeout parse error out put failed: time: unknown unit \"ss\" in duration \"5ss\""),
+			},
+		},
 	}
 
 	for _, tc := range tests {
@@ -694,33 +706,38 @@ func TestWithMinLoadIndexTimeout(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           dur: "",
-		       },
-		       want: want {
-		           obj: new(T),
-		       },
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           dur: "",
-		           },
-		           want: want {
-		               obj: new(T),
-		           },
-		       }
-		   }(),
-		*/
+		{
+			name: "set success when duration is empty string",
+			args: args{
+				dur: "",
+			},
+			want: want{
+				obj: &T{
+					minLit: 0,
+				},
+			},
+		},
+		{
+			name: "set success when duration is a valid duration string",
+			args: args{
+				dur: "5s",
+			},
+			want: want{
+				obj: &T{
+					minLit: 5 * time.Second,
+				},
+			},
+		},
+		{
+			name: "return error when duration is not a valid duration string",
+			args: args{
+				dur: "5ss",
+			},
+			want: want{
+				obj: &T{},
+				err: errors.New("invalid timeout value: 5ss\t:timeout parse error out put failed: time: unknown unit \"ss\" in duration \"5ss\""),
+			},
+		},
 	}
 
 	for _, tc := range tests {
@@ -775,33 +792,38 @@ func TestWithMaxLoadIndexTimeout(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           dur: "",
-		       },
-		       want: want {
-		           obj: new(T),
-		       },
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           dur: "",
-		           },
-		           want: want {
-		               obj: new(T),
-		           },
-		       }
-		   }(),
-		*/
+		{
+			name: "set success when duration is empty string",
+			args: args{
+				dur: "",
+			},
+			want: want{
+				obj: &T{
+					maxLit: 0,
+				},
+			},
+		},
+		{
+			name: "set success when duration is a valid duration string",
+			args: args{
+				dur: "5s",
+			},
+			want: want{
+				obj: &T{
+					maxLit: 5 * time.Second,
+				},
+			},
+		},
+		{
+			name: "return error when duration is not a valid duration string",
+			args: args{
+				dur: "5ss",
+			},
+			want: want{
+				obj: &T{},
+				err: errors.New("invalid timeout value: 5ss\t:timeout parse error out put failed: time: unknown unit \"ss\" in duration \"5ss\""),
+			},
+		},
 	}
 
 	for _, tc := range tests {
@@ -856,33 +878,38 @@ func TestWithLoadIndexTimeoutFactor(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           dur: "",
-		       },
-		       want: want {
-		           obj: new(T),
-		       },
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           dur: "",
-		           },
-		           want: want {
-		               obj: new(T),
-		           },
-		       }
-		   }(),
-		*/
+		{
+			name: "set success when duration is empty string",
+			args: args{
+				dur: "",
+			},
+			want: want{
+				obj: &T{
+					litFactor: 0,
+				},
+			},
+		},
+		{
+			name: "set success when duration is a valid duration string",
+			args: args{
+				dur: "5s",
+			},
+			want: want{
+				obj: &T{
+					litFactor: 5 * time.Second,
+				},
+			},
+		},
+		{
+			name: "return error when duration is not a valid duration string",
+			args: args{
+				dur: "5ss",
+			},
+			want: want{
+				obj: &T{},
+				err: errors.New("invalid timeout value: 5ss\t:timeout parse error out put failed: time: unknown unit \"ss\" in duration \"5ss\""),
+			},
+		},
 	}
 
 	for _, tc := range tests {
@@ -937,33 +964,28 @@ func TestWithDefaultPoolSize(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ps: 0,
-		       },
-		       want: want {
-		           obj: new(T),
-		       },
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ps: 0,
-		           },
-		           want: want {
-		               obj: new(T),
-		           },
-		       }
-		   }(),
-		*/
+		{
+			name: "set pool size success",
+			args: args{
+				ps: 50,
+			},
+			want: want{
+				obj: &T{
+					poolSize: 50,
+				},
+			},
+		},
+		{
+			name: "set success when pool size is 0",
+			args: args{
+				ps: 0,
+			},
+			want: want{
+				obj: &T{
+					poolSize: 0,
+				},
+			},
+		},
 	}
 
 	for _, tc := range tests {
@@ -1018,33 +1040,28 @@ func TestWithDefaultRadius(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           rad: 0,
-		       },
-		       want: want {
-		           obj: new(T),
-		       },
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           rad: 0,
-		           },
-		           want: want {
-		               obj: new(T),
-		           },
-		       }
-		   }(),
-		*/
+		{
+			name: "set default radius success",
+			args: args{
+				rad: 0.4,
+			},
+			want: want{
+				obj: &T{
+					radius: 0.4,
+				},
+			},
+		},
+		{
+			name: "set success when radius is 0",
+			args: args{
+				rad: 0,
+			},
+			want: want{
+				obj: &T{
+					radius: 0,
+				},
+			},
+		},
 	}
 
 	for _, tc := range tests {
@@ -1099,33 +1116,28 @@ func TestWithDefaultEpsilon(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           epsilon: 0,
-		       },
-		       want: want {
-		           obj: new(T),
-		       },
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           epsilon: 0,
-		           },
-		           want: want {
-		               obj: new(T),
-		           },
-		       }
-		   }(),
-		*/
+		{
+			name: "set default epsilon success",
+			args: args{
+				epsilon: 50,
+			},
+			want: want{
+				obj: &T{
+					epsilon: 50,
+				},
+			},
+		},
+		{
+			name: "set success when epsilon is 0",
+			args: args{
+				epsilon: 0,
+			},
+			want: want{
+				obj: &T{
+					epsilon: 0,
+				},
+			},
+		},
 	}
 
 	for _, tc := range tests {
@@ -1180,33 +1192,28 @@ func TestWithProactiveGC(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           enabled: false,
-		       },
-		       want: want {
-		           obj: new(T),
-		       },
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           enabled: false,
-		           },
-		           want: want {
-		               obj: new(T),
-		           },
-		       }
-		   }(),
-		*/
+		{
+			name: "set proactive GC success",
+			args: args{
+				enabled: true,
+			},
+			want: want{
+				obj: &T{
+					enableProactiveGC: true,
+				},
+			},
+		},
+		{
+			name: "set proactive GC success when it is false",
+			args: args{
+				enabled: false,
+			},
+			want: want{
+				obj: &T{
+					enableProactiveGC: false,
+				},
+			},
+		},
 	}
 
 	for _, tc := range tests {
