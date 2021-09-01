@@ -94,6 +94,7 @@ jobs:
         run: |
           make hack/benchmark/assets/dataset/${DATASET}
           go test \
+            -shuffle=on \
             -v tests/e2e/crud/crud_test.go \
             -tags "e2e" \
             -timeout 30m \
