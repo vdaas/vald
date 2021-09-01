@@ -44,7 +44,6 @@ func init() {
 			),
 		),
 	)
-
 }
 
 func Init(opts ...Option) {
