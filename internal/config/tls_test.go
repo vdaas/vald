@@ -18,7 +18,6 @@
 package config
 
 import (
-	"os"
 	"reflect"
 	"testing"
 
@@ -77,14 +76,9 @@ func TestTLS_Bind(t *testing.T) {
 				CA:      "_TLS_BIND_CA_",
 			},
 			beforeFunc: func() {
-				_ = os.Setenv("TLS_BIND_CERT", "tls_cert")
-				_ = os.Setenv("TLS_BIND_KEY", "tls_key")
-				_ = os.Setenv("TLS_BIND_CA", "tls_ca")
-			},
-			afterFunc: func() {
-				_ = os.Unsetenv("TLS_BIND_CERT")
-				_ = os.Unsetenv("TLS_BIND_KEY")
-				_ = os.Unsetenv("TLS_BIND_CA")
+				t.Setenv("TLS_BIND_CERT", "tls_cert")
+				t.Setenv("TLS_BIND_KEY", "tls_key")
+				t.Setenv("TLS_BIND_CA", "tls_ca")
 			},
 			want: want{
 				want: &TLS{

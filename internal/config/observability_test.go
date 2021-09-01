@@ -18,7 +18,6 @@
 package config
 
 import (
-	"os"
 	"reflect"
 	"testing"
 
@@ -193,17 +192,7 @@ func TestObservability_Bind(t *testing.T) {
 				beforeFunc: func(t *testing.T) {
 					t.Helper()
 					for k, v := range m {
-						if err := os.Setenv(k, v); err != nil {
-							t.Fatal(err)
-						}
-					}
-				},
-				afterFunc: func(t *testing.T) {
-					t.Helper()
-					for k := range m {
-						if err := os.Unsetenv(k); err != nil {
-							t.Fatal(err)
-						}
+						t.Setenv(k, v)
 					}
 				},
 				want: want{
@@ -341,17 +330,7 @@ func TestCollector_Bind(t *testing.T) {
 				beforeFunc: func(t *testing.T) {
 					t.Helper()
 					for k, v := range m {
-						if err := os.Setenv(k, v); err != nil {
-							t.Fatal(err)
-						}
-					}
-				},
-				afterFunc: func(t *testing.T) {
-					t.Helper()
-					for k := range m {
-						if err := os.Unsetenv(k); err != nil {
-							t.Fatal(err)
-						}
+						t.Setenv(k, v)
 					}
 				},
 				want: want{
@@ -486,17 +465,7 @@ func TestStackdriver_Bind(t *testing.T) {
 				beforeFunc: func(t *testing.T) {
 					t.Helper()
 					for k, v := range m {
-						if err := os.Setenv(k, v); err != nil {
-							t.Fatal(err)
-						}
-					}
-				},
-				afterFunc: func(t *testing.T) {
-					t.Helper()
-					for k := range m {
-						if err := os.Unsetenv(k); err != nil {
-							t.Fatal(err)
-						}
+						t.Setenv(k, v)
 					}
 				},
 				want: want{

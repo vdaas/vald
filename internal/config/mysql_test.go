@@ -19,7 +19,6 @@ package config
 
 import (
 	"io/fs"
-	"os"
 	"reflect"
 	"syscall"
 	"testing"
@@ -192,28 +191,16 @@ func TestMySQL_Bind(t *testing.T) {
 				},
 			},
 			beforeFunc: func() {
-				_ = os.Setenv("MYSQL_BIND_DB", "db")
-				_ = os.Setenv("MYSQL_BIND_HOST", "host")
-				_ = os.Setenv("MYSQL_BIND_USER", "user")
-				_ = os.Setenv("MYSQL_BIND_PASS", "pass")
-				_ = os.Setenv("MYSQL_BIND_NAME", "name")
-				_ = os.Setenv("MYSQL_BIND_CHARSET", "charset")
-				_ = os.Setenv("MYSQL_BIND_TIMEZONE", "timezone")
-				_ = os.Setenv("MYSQL_BIND_INITIAL_PING_TIME_LIMIT", "initialPingTimeLimit")
-				_ = os.Setenv("MYSQL_BIND_INITIAL_PING_DURATION", "initialPingDuration")
-				_ = os.Setenv("MYSQL_BIND_CONN_MAX_LIFE_TIME", "connMaxLifeTime")
-			},
-			afterFunc: func() {
-				_ = os.Unsetenv("MYSQL_BIND_DB")
-				_ = os.Unsetenv("MYSQL_BIND_HOST")
-				_ = os.Unsetenv("MYSQL_BIND_USER")
-				_ = os.Unsetenv("MYSQL_BIND_PASS")
-				_ = os.Unsetenv("MYSQL_BIND_NAME")
-				_ = os.Unsetenv("MYSQL_BIND_CHARSET")
-				_ = os.Unsetenv("MYSQL_BIND_TIMEZONE")
-				_ = os.Unsetenv("MYSQL_BIND_INITIAL_PING_TIME_LIMIT")
-				_ = os.Unsetenv("MYSQL_BIND_INITIAL_PING_DURATION")
-				_ = os.Unsetenv("MYSQL_BIND_CONN_MAX_LIFE_TIME")
+				t.Setenv("MYSQL_BIND_DB", "db")
+				t.Setenv("MYSQL_BIND_HOST", "host")
+				t.Setenv("MYSQL_BIND_USER", "user")
+				t.Setenv("MYSQL_BIND_PASS", "pass")
+				t.Setenv("MYSQL_BIND_NAME", "name")
+				t.Setenv("MYSQL_BIND_CHARSET", "charset")
+				t.Setenv("MYSQL_BIND_TIMEZONE", "timezone")
+				t.Setenv("MYSQL_BIND_INITIAL_PING_TIME_LIMIT", "initialPingTimeLimit")
+				t.Setenv("MYSQL_BIND_INITIAL_PING_DURATION", "initialPingDuration")
+				t.Setenv("MYSQL_BIND_CONN_MAX_LIFE_TIME", "connMaxLifeTime")
 			},
 		},
 	}

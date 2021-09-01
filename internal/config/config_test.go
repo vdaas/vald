@@ -233,12 +233,7 @@ func TestGlobalConfig_Bind(t *testing.T) {
 				},
 				beforeFunc: func() {
 					for key, val := range env {
-						os.Setenv(key, val)
-					}
-				},
-				afterFunc: func() {
-					for key := range env {
-						os.Unsetenv(key)
+						t.Setenv(key, val)
 					}
 				},
 			}
@@ -923,15 +918,7 @@ func TestGetActualValue(t *testing.T) {
 				},
 				beforeFunc: func(t *testing.T, _ args) {
 					t.Helper()
-					if err := os.Setenv("GETACTUALVALUE_VERSION", "v1.0.0"); err != nil {
-						t.Error(err)
-					}
-				},
-				afterFunc: func(t *testing.T, _ args) {
-					t.Helper()
-					if err := os.Unsetenv("GETACTUALVALUE_VERSION"); err != nil {
-						t.Error(err)
-					}
+					t.Setenv("GETACTUALVALUE_VERSION", "v1.0.0")
 				},
 				want: want{
 					wantRes: "v1.0.0",
@@ -946,15 +933,7 @@ func TestGetActualValue(t *testing.T) {
 				},
 				beforeFunc: func(t *testing.T, _ args) {
 					t.Helper()
-					if err := os.Setenv("GETACTUALVALUE_1_VERSION", "v1.0.0"); err != nil {
-						t.Error(err)
-					}
-				},
-				afterFunc: func(t *testing.T, _ args) {
-					t.Helper()
-					if err := os.Unsetenv("GETACTUALVALUE_1_VERSION"); err != nil {
-						t.Error(err)
-					}
+					t.Setenv("GETACTUALVALUE_1_VERSION", "v1.0.0")
 				},
 				want: want{
 					wantRes: "v1.0.0",
@@ -1083,17 +1062,7 @@ func TestGetActualValues(t *testing.T) {
 				beforeFunc: func(t *testing.T, _ args) {
 					t.Helper()
 					for key, val := range env {
-						if err := os.Setenv(key, val); err != nil {
-							t.Error(err)
-						}
-					}
-				},
-				afterFunc: func(t *testing.T, _ args) {
-					t.Helper()
-					for key := range env {
-						if err := os.Unsetenv(key); err != nil {
-							t.Error(err)
-						}
+						t.Setenv(key, val)
 					}
 				},
 				want: want{
@@ -1115,15 +1084,7 @@ func TestGetActualValues(t *testing.T) {
 				},
 				beforeFunc: func(t *testing.T, _ args) {
 					t.Helper()
-					if err := os.Setenv("GETACTUALVALUES_1_VERSION", "v1.0.0"); err != nil {
-						t.Error(err)
-					}
-				},
-				afterFunc: func(t *testing.T, _ args) {
-					t.Helper()
-					if err := os.Unsetenv("GETACTUALVALUES_1_VERSION"); err != nil {
-						t.Error(err)
-					}
+					t.Setenv("GETACTUALVALUES_1_VERSION", "v1.0.0")
 				},
 				want: want{
 					want: []string{

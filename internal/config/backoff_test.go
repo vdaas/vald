@@ -18,7 +18,6 @@
 package config
 
 import (
-	"os"
 	"reflect"
 	"testing"
 
@@ -84,15 +83,7 @@ func TestBackoff_Bind(t *testing.T) {
 				},
 				beforeFunc: func(t *testing.T) {
 					t.Helper()
-					if err := os.Setenv(key, val); err != nil {
-						t.Fatal(err)
-					}
-				},
-				afterFunc: func(t *testing.T) {
-					t.Helper()
-					if err := os.Unsetenv(key); err != nil {
-						t.Fatal(err)
-					}
+					t.Setenv(key, val)
 				},
 				want: want{
 					want: &Backoff{

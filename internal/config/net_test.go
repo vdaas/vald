@@ -18,7 +18,6 @@
 package config
 
 import (
-	"os"
 	"reflect"
 	"testing"
 
@@ -90,17 +89,7 @@ func TestDNS_Bind(t *testing.T) {
 				beforeFunc: func(t *testing.T) {
 					t.Helper()
 					for k, v := range p {
-						if err := os.Setenv(k, v); err != nil {
-							t.Fatal(err)
-						}
-					}
-				},
-				afterFunc: func(*testing.T) {
-					t.Helper()
-					for k := range p {
-						if err := os.Unsetenv(k); err != nil {
-							t.Fatal(err)
-						}
+						t.Setenv(k, v)
 					}
 				},
 				want: want{
@@ -223,17 +212,7 @@ func TestDialer_Bind(t *testing.T) {
 				beforeFunc: func(t *testing.T) {
 					t.Helper()
 					for k, v := range p {
-						if err := os.Setenv(k, v); err != nil {
-							t.Fatal(err)
-						}
-					}
-				},
-				afterFunc: func(t *testing.T) {
-					t.Helper()
-					for k := range p {
-						if err := os.Unsetenv(k); err != nil {
-							t.Fatal(err)
-						}
+						t.Setenv(k, v)
 					}
 				},
 			}

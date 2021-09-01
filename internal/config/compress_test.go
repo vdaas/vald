@@ -18,7 +18,6 @@
 package config
 
 import (
-	"os"
 	"reflect"
 	"testing"
 
@@ -279,15 +278,7 @@ func TestCompressCore_Bind(t *testing.T) {
 				},
 				beforeFunc: func(t *testing.T) {
 					t.Helper()
-					if err := os.Setenv(key, wantVal); err != nil {
-						t.Fatal(err)
-					}
-				},
-				afterFunc: func(t *testing.T) {
-					t.Helper()
-					if err := os.Unsetenv(key); err != nil {
-						t.Fatal(err)
-					}
+					t.Setenv(key, wantVal)
 				},
 				want: want{
 					want: &CompressCore{
@@ -307,15 +298,7 @@ func TestCompressCore_Bind(t *testing.T) {
 				},
 				beforeFunc: func(t *testing.T) {
 					t.Helper()
-					if err := os.Setenv(key, wantVal); err != nil {
-						t.Fatal(err)
-					}
-				},
-				afterFunc: func(t *testing.T) {
-					t.Helper()
-					if err := os.Unsetenv(key); err != nil {
-						t.Fatal(err)
-					}
+					t.Setenv(key, wantVal)
 				},
 				want: want{
 					want: &CompressCore{
@@ -423,15 +406,7 @@ func TestCompressor_Bind(t *testing.T) {
 				},
 				beforeFunc: func(t *testing.T) {
 					t.Helper()
-					if err := os.Setenv(key, wantVal); err != nil {
-						t.Fatal(err)
-					}
-				},
-				afterFunc: func(t *testing.T) {
-					t.Helper()
-					if err := os.Unsetenv(key); err != nil {
-						t.Fatal(err)
-					}
+					t.Setenv(key, wantVal)
 				},
 				want: want{
 					want: &Compressor{
@@ -528,15 +503,7 @@ func TestCompressorRegisterer_Bind(t *testing.T) {
 				},
 				beforeFunc: func(t *testing.T) {
 					t.Helper()
-					if err := os.Setenv(key, wantVal); err != nil {
-						t.Fatal(err)
-					}
-				},
-				afterFunc: func(t *testing.T) {
-					t.Helper()
-					if err := os.Unsetenv(key); err != nil {
-						t.Fatal(err)
-					}
+					t.Setenv(key, wantVal)
 				},
 			}
 		}(),

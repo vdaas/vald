@@ -18,7 +18,6 @@
 package config
 
 import (
-	"os"
 	"reflect"
 	"testing"
 
@@ -72,14 +71,9 @@ func TestLogging_Bind(t *testing.T) {
 				Format: "_LOGGING_BIND_FORMAT_",
 			},
 			beforeFunc: func() {
-				_ = os.Setenv("LOGGING_BIND_LOGGER", "glg")
-				_ = os.Setenv("LOGGING_BIND_LEVEL", "info")
-				_ = os.Setenv("LOGGING_BIND_FORMAT", "json")
-			},
-			afterFunc: func() {
-				_ = os.Unsetenv("LOGGING_BIND_LOGGER")
-				_ = os.Unsetenv("LOGGING_BIND_LEVEL")
-				_ = os.Unsetenv("LOGGING_BIND_FORMAT")
+				t.Setenv("LOGGING_BIND_LOGGER", "glg")
+				t.Setenv("LOGGING_BIND_LEVEL", "info")
+				t.Setenv("LOGGING_BIND_FORMAT", "json")
 			},
 			want: want{
 				want: &Logging{

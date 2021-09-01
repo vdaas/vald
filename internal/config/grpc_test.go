@@ -19,7 +19,6 @@ package config
 
 import (
 	"io/fs"
-	"os"
 	"reflect"
 	"syscall"
 	"testing"
@@ -235,15 +234,7 @@ func TestGRPCClient_Bind(t *testing.T) {
 				},
 				beforeFunc: func(t *testing.T) {
 					t.Helper()
-					if err := os.Setenv(key, value); err != nil {
-						t.Fatal(err)
-					}
-				},
-				afterFunc: func(t *testing.T) {
-					t.Helper()
-					if err := os.Unsetenv(key); err != nil {
-						t.Fatal(err)
-					}
+					t.Setenv(key, value)
 				},
 				want: want{
 					want: &GRPCClient{
@@ -369,17 +360,7 @@ func TestGRPCClientKeepalive_Bind(t *testing.T) {
 				beforeFunc: func(t *testing.T) {
 					t.Helper()
 					for key, value := range p {
-						if err := os.Setenv(key, value); err != nil {
-							t.Fatal(err)
-						}
-					}
-				},
-				afterFunc: func(t *testing.T) {
-					t.Helper()
-					for key := range p {
-						if err := os.Unsetenv(key); err != nil {
-							t.Fatal(err)
-						}
+						t.Setenv(key, value)
 					}
 				},
 				want: want{
@@ -626,17 +607,7 @@ func TestDialOption_Bind(t *testing.T) {
 				beforeFunc: func(t *testing.T) {
 					t.Helper()
 					for key, value := range p {
-						if err := os.Setenv(key, value); err != nil {
-							t.Fatal(err)
-						}
-					}
-				},
-				afterFunc: func(t *testing.T) {
-					t.Helper()
-					for key := range p {
-						if err := os.Unsetenv(key); err != nil {
-							t.Fatal(err)
-						}
+						t.Setenv(key, value)
 					}
 				},
 				want: want{
