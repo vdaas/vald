@@ -141,7 +141,7 @@ func WithAutoIndexLength(l int) Option {
 	}
 }
 
-// WithInitialDelayMaxDuration returns the functional option to set the inital delay duration.
+// WithInitialDelayMaxDuration returns the functional option to set the initial delay duration.
 func WithInitialDelayMaxDuration(dur string) Option {
 	return func(n *ngt) error {
 		if dur == "" {
