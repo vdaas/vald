@@ -1,5 +1,111 @@
 # CHANGELOG
 
+## v1.2.2
+
+### Docker images
+
+<table>
+  <tr>
+    <th>component</th>
+    <th>Docker pull</th>
+  </tr>
+  <tr>
+    <td>Agent NGT</td>
+    <td>
+      <code>docker pull vdaas/vald-agent-ngt:v1.2.2</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-agent-ngt:v1.2.2</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Agent sidecar</td>
+    <td>
+      <code>docker pull vdaas/vald-agent-sidecar:v1.2.2</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-agent-sidecar:v1.2.2</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Discoverers</td>
+    <td>
+      <code>docker pull vdaas/vald-discoverer-k8s:v1.2.2</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-discoverer-k8s:v1.2.2</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Gateways</td>
+    <td>
+      <code>docker pull vdaas/vald-gateway:v1.2.2</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-gateway:v1.2.2</code><br/>
+      <code>docker pull vdaas/vald-backup-gateway:v1.2.2</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-backup-gateway:v1.2.2</code><br/>
+      <code>docker pull vdaas/vald-lb-gateway:v1.2.2</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-lb-gateway:v1.2.2</code><br/>
+      <code>docker pull vdaas/vald-meta-gateway:v1.2.2</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-meta-gateway:v1.2.2</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Backup managers</td>
+    <td>
+      <code>docker pull vdaas/vald-manager-backup-mysql:v1.2.2</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-manager-backup-mysql:v1.2.2</code><br/>
+      <code>docker pull vdaas/vald-manager-backup-cassandra:v1.2.2</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-manager-backup-cassandra:v1.2.2</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Compressor</td>
+    <td>
+      <code>docker pull vdaas/vald-manager-compressor:v1.2.2</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-manager-compressor:v1.2.2</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Metas</td>
+    <td>
+      <code>docker pull vdaas/vald-meta-redis:v1.2.2</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-meta-redis:v1.2.2</code><br/>
+      <code>docker pull vdaas/vald-meta-cassandra:v1.2.2</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-meta-cassandra:v1.2.2</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Index Manager</td>
+    <td>
+      <code>docker pull vdaas/vald-manager-index:v1.2.2</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-manager-index:v1.2.2</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Helm Operator</td>
+    <td>
+      <code>docker pull vdaas/vald-helm-operator:v1.2.2</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-helm-operator:v1.2.2</code>
+    </td>
+  </tr>
+</table>
+
+### Documents
+- [GoDoc](https://pkg.go.dev/github.com/vdaas/vald@v1.2.2)
+- [Helm Chart Reference](https://github.com/vdaas/vald/blob/v1.2.2/charts/vald/README.md)
+- [Helm Operator Chart Reference](https://github.com/vdaas/vald/blob/v1.2.2/charts/vald-helm-operator/README.md)
+
+### Changes
+- Add stateful PBT for NGT service (#1384)
+- add default logger when logger not initialized (#1424)
+- feat: :sparkles: Add LB gateway dashboard (#1420)
+- chore-deps: :arrow_up: Upgrade OSDK to v1.11.0 (#1422)
+- change default epsilon value to 0.1 from 0.0.1 (#1421)
+- add go vet for checking cpu compatibility and update deps and refactor small code (#1418)
+- Delete insert and delete channel of vqueue (#1400)
+- downgrade cloud.google.com/go to resolve runtime panic (#1413)
+- [bugfix] resolve errgroup limitation channel close panic (#1412)
+- Update PULL_REQUEST_TEMPLATE and ISSUE_TEMPLATE (#1409)
+- update go version to 1.17 and update go module dependencies (#1404)
+- refactor grpc logging and use os.PathSeparator instead of / (#1405)
+- Remove schema of security contexts (#1406)
+- change security context uid to distroless nonroot uid (#1402)
+
+
 ## v1.2.1
 
 ### Docker images
