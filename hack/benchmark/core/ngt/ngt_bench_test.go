@@ -33,7 +33,7 @@ import (
 const (
 	size    int     = 1
 	radius  float32 = -1
-	epsilon float32 = 0.01
+	epsilon float32 = 0.1
 )
 
 var targets []string

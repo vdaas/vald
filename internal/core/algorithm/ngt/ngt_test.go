@@ -1412,7 +1412,7 @@ func Test_ngt_Search(t *testing.T) {
 				dimension:           9,
 				objectType:          Uint8,
 				radius:              float32(-1.0),
-				epsilon:             float32(0.01),
+				epsilon:             float32(0.1),
 			},
 			createFunc: func(t *testing.T, fields fields) (NGT, error) {
 				t.Helper()
@@ -1439,7 +1439,7 @@ func Test_ngt_Search(t *testing.T) {
 				dimension:           9,
 				objectType:          Uint8,
 				radius:              float32(-1.0),
-				epsilon:             float32(0.01),
+				epsilon:             float32(0.1),
 			},
 			createFunc: func(t *testing.T, fields fields) (NGT, error) {
 				t.Helper()
@@ -1466,7 +1466,7 @@ func Test_ngt_Search(t *testing.T) {
 				dimension:           9,
 				objectType:          Uint8,
 				radius:              float32(-1.0),
-				epsilon:             float32(0.01),
+				epsilon:             float32(0.1),
 			},
 			createFunc: func(t *testing.T, fields fields) (NGT, error) {
 				t.Helper()
@@ -1499,7 +1499,7 @@ func Test_ngt_Search(t *testing.T) {
 				dimension:           9,
 				objectType:          Uint8,
 				radius:              float32(-1.0),
-				epsilon:             float32(0.01),
+				epsilon:             float32(0.1),
 			},
 			createFunc: func(t *testing.T, fields fields) (NGT, error) {
 				t.Helper()
@@ -1539,7 +1539,7 @@ func Test_ngt_Search(t *testing.T) {
 				dimension:           9,
 				objectType:          Uint8,
 				radius:              float32(-1.0),
-				epsilon:             float32(0.01),
+				epsilon:             float32(0.1),
 			},
 			createFunc: func(t *testing.T, fields fields) (NGT, error) {
 				t.Helper()
@@ -1584,7 +1584,7 @@ func Test_ngt_Search(t *testing.T) {
 				dimension:           9,
 				objectType:          Float,
 				radius:              float32(-1.0),
-				epsilon:             float32(0.01),
+				epsilon:             float32(0.1),
 			},
 			createFunc: func(t *testing.T, fields fields) (NGT, error) {
 				t.Helper()
@@ -1611,7 +1611,7 @@ func Test_ngt_Search(t *testing.T) {
 				dimension:           9,
 				objectType:          Float,
 				radius:              float32(-1.0),
-				epsilon:             float32(0.01),
+				epsilon:             float32(0.1),
 			},
 			createFunc: func(t *testing.T, fields fields) (NGT, error) {
 				t.Helper()
@@ -1638,7 +1638,7 @@ func Test_ngt_Search(t *testing.T) {
 				dimension:           9,
 				objectType:          Float,
 				radius:              float32(-1.0),
-				epsilon:             float32(0.01),
+				epsilon:             float32(0.1),
 			},
 			createFunc: func(t *testing.T, fields fields) (NGT, error) {
 				t.Helper()
@@ -1670,7 +1670,7 @@ func Test_ngt_Search(t *testing.T) {
 				dimension:           9,
 				objectType:          Float,
 				radius:              float32(-1.0),
-				epsilon:             float32(0.01),
+				epsilon:             float32(0.1),
 			},
 			createFunc: func(t *testing.T, fields fields) (NGT, error) {
 				t.Helper()
@@ -1710,7 +1710,7 @@ func Test_ngt_Search(t *testing.T) {
 				dimension:           9,
 				objectType:          Float,
 				radius:              float32(-1.0),
-				epsilon:             float32(0.01),
+				epsilon:             float32(0.1),
 			},
 			createFunc: func(t *testing.T, fields fields) (NGT, error) {
 				t.Helper()
@@ -1755,7 +1755,7 @@ func Test_ngt_Search(t *testing.T) {
 				dimension:           9,
 				objectType:          Uint8,
 				radius:              float32(-1.0),
-				epsilon:             float32(0.01),
+				epsilon:             float32(0.1),
 			},
 			createFunc: func(t *testing.T, fields fields) (NGT, error) {
 				t.Helper()
@@ -1782,7 +1782,7 @@ func Test_ngt_Search(t *testing.T) {
 				dimension:           9,
 				objectType:          Uint8,
 				radius:              float32(-1.0),
-				epsilon:             float32(0.01),
+				epsilon:             float32(0.1),
 			},
 			createFunc: func(t *testing.T, fields fields) (NGT, error) {
 				t.Helper()
@@ -3794,7 +3794,7 @@ func Test_ngt_Remove(t *testing.T) {
 				dimension:           9,
 				objectType:          Uint8,
 				radius:              float32(-1.0),
-				epsilon:             float32(0.01),
+				epsilon:             float32(0.1),
 			},
 			createFunc: func(t *testing.T, fields fields) (NGT, error) {
 				t.Helper()
@@ -3826,7 +3826,7 @@ func Test_ngt_Remove(t *testing.T) {
 				dimension:           9,
 				objectType:          Uint8,
 				radius:              float32(-1.0),
-				epsilon:             float32(0.01),
+				epsilon:             float32(0.1),
 			},
 			createFunc: func(t *testing.T, fields fields) (NGT, error) {
 				t.Helper()
@@ -3860,7 +3860,7 @@ func Test_ngt_Remove(t *testing.T) {
 				dimension:           9,
 				objectType:          Float,
 				radius:              float32(-1.0),
-				epsilon:             float32(0.01),
+				epsilon:             float32(0.1),
 			},
 			createFunc: func(t *testing.T, fields fields) (NGT, error) {
 				t.Helper()
@@ -3892,7 +3892,7 @@ func Test_ngt_Remove(t *testing.T) {
 				dimension:           9,
 				objectType:          Float,
 				radius:              float32(-1.0),
-				epsilon:             float32(0.01),
+				epsilon:             float32(0.1),
 			},
 			createFunc: func(t *testing.T, fields fields) (NGT, error) {
 				t.Helper()
@@ -4027,7 +4027,7 @@ func Test_ngt_BulkRemove(t *testing.T) {
 				dimension:           9,
 				objectType:          Uint8,
 				radius:              float32(-1.0),
-				epsilon:             float32(0.01),
+				epsilon:             float32(0.1),
 			},
 			createFunc: func(t *testing.T, fields fields) (NGT, error) {
 				t.Helper()
@@ -4059,7 +4059,7 @@ func Test_ngt_BulkRemove(t *testing.T) {
 				dimension:           9,
 				objectType:          Uint8,
 				radius:              float32(-1.0),
-				epsilon:             float32(0.01),
+				epsilon:             float32(0.1),
 			},
 			createFunc: func(t *testing.T, fields fields) (NGT, error) {
 				t.Helper()
@@ -4092,7 +4092,7 @@ func Test_ngt_BulkRemove(t *testing.T) {
 				dimension:           9,
 				objectType:          Uint8,
 				radius:              float32(-1.0),
-				epsilon:             float32(0.01),
+				epsilon:             float32(0.1),
 			},
 			createFunc: func(t *testing.T, fields fields) (NGT, error) {
 				t.Helper()
@@ -4138,7 +4138,7 @@ func Test_ngt_BulkRemove(t *testing.T) {
 				dimension:           9,
 				objectType:          Uint8,
 				radius:              float32(-1.0),
-				epsilon:             float32(0.01),
+				epsilon:             float32(0.1),
 			},
 			createFunc: func(t *testing.T, fields fields) (NGT, error) {
 				t.Helper()
@@ -4170,7 +4170,7 @@ func Test_ngt_BulkRemove(t *testing.T) {
 				dimension:           9,
 				objectType:          Float,
 				radius:              float32(-1.0),
-				epsilon:             float32(0.01),
+				epsilon:             float32(0.1),
 			},
 			createFunc: func(t *testing.T, fields fields) (NGT, error) {
 				t.Helper()
@@ -4203,7 +4203,7 @@ func Test_ngt_BulkRemove(t *testing.T) {
 				dimension:           9,
 				objectType:          Float,
 				radius:              float32(-1.0),
-				epsilon:             float32(0.01),
+				epsilon:             float32(0.1),
 			},
 			createFunc: func(t *testing.T, fields fields) (NGT, error) {
 				t.Helper()
@@ -4353,7 +4353,7 @@ func Test_ngt_GetVector(t *testing.T) {
 				dimension:           9,
 				objectType:          Uint8,
 				radius:              float32(-1.0),
-				epsilon:             float32(0.01),
+				epsilon:             float32(0.1),
 			},
 			createFunc: func(t *testing.T, fields fields) (NGT, error) {
 				t.Helper()
@@ -4383,7 +4383,7 @@ func Test_ngt_GetVector(t *testing.T) {
 				dimension:           9,
 				objectType:          Uint8,
 				radius:              float32(-1.0),
-				epsilon:             float32(0.01),
+				epsilon:             float32(0.1),
 			},
 			createFunc: func(t *testing.T, fields fields) (NGT, error) {
 				t.Helper()
@@ -4414,7 +4414,7 @@ func Test_ngt_GetVector(t *testing.T) {
 				dimension:           9,
 				objectType:          Float,
 				radius:              float32(-1.0),
-				epsilon:             float32(0.01),
+				epsilon:             float32(0.1),
 			},
 			createFunc: func(t *testing.T, fields fields) (NGT, error) {
 				t.Helper()
@@ -4444,7 +4444,7 @@ func Test_ngt_GetVector(t *testing.T) {
 				dimension:           9,
 				objectType:          Float,
 				radius:              float32(-1.0),
-				epsilon:             float32(0.01),
+				epsilon:             float32(0.1),
 			},
 			createFunc: func(t *testing.T, fields fields) (NGT, error) {
 				t.Helper()
@@ -4475,7 +4475,7 @@ func Test_ngt_GetVector(t *testing.T) {
 				dimension:           9,
 				objectType:          999,
 				radius:              float32(-1.0),
-				epsilon:             float32(0.01),
+				epsilon:             float32(0.1),
 			},
 			createFunc: func(t *testing.T, fields fields) (NGT, error) {
 				t.Helper()
@@ -4588,7 +4588,7 @@ func Test_ngt_Close(t *testing.T) {
 				dimension:           9,
 				objectType:          Float,
 				radius:              float32(-1.0),
-				epsilon:             float32(0.01),
+				epsilon:             float32(0.1),
 			},
 			want: want{},
 		},
