@@ -60,7 +60,7 @@
 v1.2
 </summary>
 <ul class=version__list>
-<il class=version__item><a href=javascript:void(0) class="version__link version__link--latest">v1.2.1</a></il>
+<il class=version__item><a href=javascript:void(0) class="version__link version__link--latest">v1.2.2</a></il>
 <il class=version__item><a href=javascript:void(0) class=version__link>v1.2</a></il>
 <il class=version__item><a href=javascript:void(0) class=version__link>v1.1</a></il>
 <il class=version__item><a href=javascript:void(0) class=version__link>v1.0</a></il>
@@ -101,13 +101,13 @@ v1.2
 <li class=withchild id=cat_Tutorial>Tutorial
 <ul>
 <li class=index>
+<a href=/docs/v1.2/tutorial/vald-agent-standalone-on-docker/>Vald Agent Standalone on Docker</a>
+</li>
+<li class=index>
 <a href=/docs/v1.2/tutorial/get-started/>Get Started</a>
 </li>
 <li class=view>
 <a href=/docs/v1.2/tutorial/vald-agent-standalone-on-k8s/>Vald Agent Standalone on K8s</a>
-</li>
-<li class=index>
-<a href=/docs/v1.2/tutorial/vald-agent-standalone-on-docker/>Vald Agent Standalone on Docker</a>
 </li>
 </ul>
 </li>
@@ -433,7 +433,7 @@ In this example, you can create index manually using <code>CreateAndSaveIndex()<
         <span style=color:#a6e22e>Config</span>: <span style=color:#f92672>&amp;</span><span style=color:#a6e22e>payload</span>.<span style=color:#a6e22e>Search_Config</span>{
             <span style=color:#a6e22e>Num</span>: <span style=color:#ae81ff>10</span>,
             <span style=color:#a6e22e>Radius</span>: <span style=color:#f92672>-</span><span style=color:#ae81ff>1</span>,
-            <span style=color:#a6e22e>Epsilon</span>: <span style=color:#ae81ff>0.01</span>,
+            <span style=color:#a6e22e>Epsilon</span>: <span style=color:#ae81ff>0.1</span>,
         }
     }
     <span style=color:#66d9ef>if</span> <span style=color:#a6e22e>err</span> <span style=color:#f92672>!=</span> <span style=color:#66d9ef>nil</span> {
