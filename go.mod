@@ -72,12 +72,12 @@ replace (
 
 require (
 	cloud.google.com/go/profiler v0.0.0-00010101000000-000000000000
-	cloud.google.com/go/storage v1.15.0
+	cloud.google.com/go/storage v1.16.1
 	code.cloudfoundry.org/bytefmt v0.0.0-20210608160410-67692ebc98de
 	contrib.go.opencensus.io/exporter/jaeger v0.2.1
 	contrib.go.opencensus.io/exporter/prometheus v0.4.0
 	contrib.go.opencensus.io/exporter/stackdriver v0.13.8
-	github.com/aws/aws-sdk-go v1.38.35
+	github.com/aws/aws-sdk-go v1.40.34
 	github.com/envoyproxy/protoc-gen-validate v0.1.0
 	github.com/fsnotify/fsnotify v1.5.1
 	github.com/go-redis/redis/v8 v8.11.3
@@ -88,7 +88,7 @@ require (
 	github.com/gorilla/mux v1.8.0
 	github.com/hashicorp/go-version v1.3.0
 	github.com/json-iterator/go v1.1.11
-	github.com/klauspost/compress v1.12.2
+	github.com/klauspost/compress v1.13.5
 	github.com/kpango/fastime v1.0.17
 	github.com/kpango/fuid v0.0.0-20210407064122-2990e29e1ea5
 	github.com/kpango/gache v1.2.6
@@ -108,16 +108,16 @@ require (
 	go.uber.org/automaxprocs v1.4.0
 	go.uber.org/goleak v1.1.10
 	go.uber.org/zap v1.19.0
-	gocloud.dev v0.23.0
-	golang.org/x/net v0.0.0-20210614182718-04defd469f4e
-	golang.org/x/oauth2 v0.0.0-20210805134026-6f1e6394065a
+	gocloud.dev v0.24.0
+	golang.org/x/net v0.0.0-20210825183410-e898025ed96a
+	golang.org/x/oauth2 v0.0.0-20210819190943-2bc19b11175f
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
-	golang.org/x/sys v0.0.0-20210806184541-e5e7981a1069
+	golang.org/x/sys v0.0.0-20210831042530-f4d43177bf5e
 	golang.org/x/tools v0.1.5
 	gonum.org/v1/hdf5 v0.0.0-20210714002203-8c5d23bc6946
 	gonum.org/v1/plot v0.9.0
-	google.golang.org/api v0.54.0
-	google.golang.org/genproto v0.0.0-20210825212027-de86158e7fda
+	google.golang.org/api v0.56.0
+	google.golang.org/genproto v0.0.0-20210831024726-fe130286e0e2
 	google.golang.org/grpc v1.40.0
 	google.golang.org/protobuf v1.27.1
 	gopkg.in/yaml.v2 v2.4.0
@@ -131,9 +131,9 @@ require (
 )
 
 require (
-	cloud.google.com/go v0.93.3 // indirect
-	cloud.google.com/go/monitoring v0.0.0-00010101000000-000000000000 // indirect
-	cloud.google.com/go/trace v0.0.0-00010101000000-000000000000 // indirect
+	cloud.google.com/go v0.94.0 // indirect
+	cloud.google.com/go/monitoring v0.1.0 // indirect
+	cloud.google.com/go/trace v0.1.0 // indirect
 	github.com/PuerkitoBio/purell v1.1.1 // indirect
 	github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578 // indirect
 	github.com/ajstarks/svgo v0.0.0-20180226025133-644b8db467af // indirect
@@ -167,9 +167,9 @@ require (
 	github.com/google/gofuzz v1.1.0 // indirect
 	github.com/google/pprof v0.0.0-20210804190019-f964ff605595 // indirect
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510 // indirect
-	github.com/google/uuid v1.2.0 // indirect
+	github.com/google/uuid v1.3.0 // indirect
 	github.com/google/wire v0.5.0 // indirect
-	github.com/googleapis/gax-go/v2 v2.0.5 // indirect
+	github.com/googleapis/gax-go/v2 v2.1.0 // indirect
 	github.com/googleapis/gnostic v0.5.5 // indirect
 	github.com/gregjones/httpcache v0.0.0-20180305231024-9cad4c3443a7 // indirect
 	github.com/hailocab/go-hostpool v0.0.0-20160125115350-e80d13ce29ed // indirect
@@ -201,15 +201,15 @@ require (
 	github.com/uber/jaeger-client-go v2.25.0+incompatible // indirect
 	github.com/xlab/treeprint v0.0.0-20181112141820-a009c3971eca // indirect
 	go.starlark.net v0.0.0-20200306205701-8dd3e2ee1dd5 // indirect
-	go.uber.org/atomic v1.7.0 // indirect
-	go.uber.org/multierr v1.6.0 // indirect
+	go.uber.org/atomic v1.9.0 // indirect
+	go.uber.org/multierr v1.7.0 // indirect
 	go4.org/intern v0.0.0-20210108033219-3eb7198706b2 // indirect
 	go4.org/unsafe/assume-no-moving-gc v0.0.0-20201222180813-1025295fd063 // indirect
 	golang.org/x/image v0.0.0-20210216034530-4410531fe030 // indirect
 	golang.org/x/lint v0.0.0-20210508222113-6edffad5e616 // indirect
-	golang.org/x/mod v0.4.2 // indirect
+	golang.org/x/mod v0.5.0 // indirect
 	golang.org/x/term v0.0.0-20210220032956-6a3ed077a48d // indirect
-	golang.org/x/text v0.3.6 // indirect
+	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/time v0.0.0-20210723032227-1f47c861a9ac // indirect
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
 	gomodules.xyz/jsonpatch/v2 v2.2.0 // indirect
