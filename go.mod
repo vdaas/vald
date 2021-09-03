@@ -72,7 +72,7 @@ replace (
 
 require (
 	cloud.google.com/go/profiler v0.0.0-00010101000000-000000000000
-	cloud.google.com/go/storage v1.15.0
+	cloud.google.com/go/storage v1.16.1
 	code.cloudfoundry.org/bytefmt v0.0.0-20210608160410-67692ebc98de
 	contrib.go.opencensus.io/exporter/jaeger v0.2.1
 	contrib.go.opencensus.io/exporter/prometheus v0.4.0
