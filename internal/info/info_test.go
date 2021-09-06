@@ -55,7 +55,7 @@ func TestString(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got string) error {
 		if got != w.want {
-			return errors.Errorf("\tgot: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+			return errors.Errorf("\tgot: \"%v\",\n\t\t\t\twant: \"%v\"", got, w.want)
 		}
 		return nil
 	}
@@ -91,7 +91,7 @@ func TestString(t *testing.T) {
 				infoProvider = nil
 			},
 			want: want{
-				want: "\nbuild cpu info flags ->\t[]\ngit commit           ->\tmaster\ngo arch              ->\t" + runtime.GOARCH + "\ngo os                ->\t" + runtime.GOOS + "\ngo version           ->\t" + runtime.Version() + "\nvald version         ->\t\x1b[1m\x1b[22m",
+				want: "\nbuild cpu info flags ->\t[]\ngit commit           ->\tmaster\ngo arch              ->\t" + runtime.GOARCH + "\ngo os                ->\t" + runtime.GOOS + "\ngo version           ->\t" + runtime.Version() + "\nvald version         ->\t\x1b[1mv0.0.1\x1b[22m",
 			},
 		},
 	}
@@ -216,6 +216,13 @@ func TestInit(t *testing.T) {
 		}
 		return nil
 	}
+
+	gitCommit := GitCommit
+	version := Version
+	buildTime := BuildTime
+	cgoEnabled := CGOEnabled
+	ngtVersion := NGTVersion
+	buildCPUInfoFlags := BuildCPUInfoFlags
 	tests := []test{
 		{
 			name: "set success when the server name is not empty",
@@ -227,7 +234,7 @@ func TestInit(t *testing.T) {
 					detail: Detail{
 						GitCommit:  "gitcommit",
 						ServerName: "gateway",
-						Version:    "gitcommit",
+						Version:    "",
 						BuildTime:  "1s",
 						GoVersion:  runtime.Version(),
 						GoOS:       runtime.GOOS,
@@ -258,6 +265,13 @@ func TestInit(t *testing.T) {
 			afterFunc: func(args) {
 				once = sync.Once{}
 				infoProvider = nil
+
+				GitCommit = gitCommit
+				Version = version
+				BuildTime = buildTime
+				CGOEnabled = cgoEnabled
+				NGTVersion = ngtVersion
+				BuildCPUInfoFlags = buildCPUInfoFlags
 			},
 		},
 		{
@@ -270,7 +284,7 @@ func TestInit(t *testing.T) {
 					detail: Detail{
 						GitCommit:  "gitcommit",
 						ServerName: "",
-						Version:    "gitcommit",
+						Version:    "",
 						BuildTime:  "1s",
 						GoVersion:  runtime.Version(),
 						GoOS:       runtime.GOOS,
@@ -301,6 +315,13 @@ func TestInit(t *testing.T) {
 			afterFunc: func(args) {
 				once = sync.Once{}
 				infoProvider = nil
+
+				GitCommit = gitCommit
+				Version = version
+				BuildTime = buildTime
+				CGOEnabled = cgoEnabled
+				NGTVersion = ngtVersion
+				BuildCPUInfoFlags = buildCPUInfoFlags
 			},
 		},
 	}
@@ -372,7 +393,7 @@ func TestNew(t *testing.T) {
 				want: &info{
 					detail: Detail{
 						ServerName:        "",
-						Version:           GitCommit,
+						Version:           Version,
 						GitCommit:         GitCommit,
 						BuildTime:         BuildTime,
 						GoVersion:         runtime.Version(),
@@ -403,7 +424,7 @@ func TestNew(t *testing.T) {
 				want: &info{
 					detail: Detail{
 						ServerName:        "gateway",
-						Version:           GitCommit,
+						Version:           Version,
 						GitCommit:         GitCommit,
 						BuildTime:         BuildTime,
 						GoVersion:         runtime.Version(),
@@ -470,7 +491,7 @@ func TestNew(t *testing.T) {
 				want: &info{
 					detail: Detail{
 						ServerName:        "",
-						Version:           GitCommit,
+						Version:           Version,
 						GitCommit:         GitCommit,
 						BuildTime:         BuildTime,
 						GoVersion:         runtime.Version(),
@@ -546,7 +567,7 @@ func Test_info_String(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got string) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+			return errors.Errorf("got: \"%v\",\n\t\t\t\twant: \"%v\"", got, w.want)
 		}
 		return nil
 	}
@@ -600,7 +621,7 @@ func Test_info_String(t *testing.T) {
 				},
 			},
 			want: want{
-				want: "\nbuild cpu info flags ->\t[avx512f avx512dq]\nbuild time           ->\tbt\ncgo enabled          ->\ttrue\ngit commit           ->\tcommit\ngo arch              ->\tgoarch\ngo os                ->\tgoos\ngo version           ->\t1.1\nngt version          ->\t1.2\nserver name          ->\tsrv\nvald version         ->\t\x1b[1m1.0\x1b[22m",
+				want: "\nbuild cpu info flags ->\t[]\nbuild time           ->\tbt\ncgo enabled          ->\ttrue\ngit commit           ->\tcommit\ngo arch              ->\tgoarch\ngo os                ->\tgoos\ngo version           ->\t1.1\nngt version          ->\t1.2\nserver name          ->\tsrv\nvald version         ->\t\x1b[1m1.0\x1b[22m",
 			},
 		},
 	}
@@ -765,7 +786,7 @@ func Test_info_Get(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got Detail) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+			return errors.Errorf("got: \"%v\",\n\t\t\t\twant: \"%v\"", got, w.want)
 		}
 		return nil
 	}
@@ -779,17 +800,22 @@ func Test_info_Get(t *testing.T) {
 			},
 			want: want{
 				want: Detail{
-					ServerName:        "",
-					Version:           GitCommit,
-					GitCommit:         "master",
-					GoVersion:         runtime.Version(),
-					GoOS:              runtime.GOOS,
-					GoArch:            runtime.GOARCH,
-					CGOEnabled:        CGOEnabled,
-					StackTrace:        []StackTrace{},
-					NGTVersion:        NGTVersion,
-					BuildTime:         BuildTime,
-					BuildCPUInfoFlags: []string{"avx512f", "avx512dq"},
+					ServerName: "",
+					Version:    Version,
+					GitCommit:  "master",
+					GoVersion:  runtime.Version(),
+					GoOS:       runtime.GOOS,
+					GoArch:     runtime.GOARCH,
+					CGOEnabled: CGOEnabled,
+					StackTrace: []StackTrace{},
+					NGTVersion: NGTVersion,
+					BuildTime:  BuildTime,
+					BuildCPUInfoFlags: func() []string {
+						if len(BuildCPUInfoFlags) == 0 {
+							return nil
+						}
+						return strings.Split(strings.TrimSpace(BuildCPUInfoFlags), " ")
+					}(),
 				},
 			},
 		},
@@ -813,7 +839,7 @@ func Test_info_Get(t *testing.T) {
 			want: want{
 				want: Detail{
 					ServerName: "",
-					Version:    GitCommit,
+					Version:    Version,
 					GitCommit:  "master",
 					GoVersion:  runtime.Version(),
 					GoOS:       runtime.GOOS,
@@ -827,9 +853,14 @@ func Test_info_Get(t *testing.T) {
 							Line:     100,
 						},
 					},
-					NGTVersion:        NGTVersion,
-					BuildTime:         BuildTime,
-					BuildCPUInfoFlags: []string{"avx512f", "avx512dq"},
+					NGTVersion: NGTVersion,
+					BuildTime:  BuildTime,
+					BuildCPUInfoFlags: func() []string {
+						if len(BuildCPUInfoFlags) == 0 {
+							return nil
+						}
+						return strings.Split(strings.TrimSpace(BuildCPUInfoFlags), " ")
+					}(),
 				},
 			},
 		},
@@ -853,7 +884,7 @@ func Test_info_Get(t *testing.T) {
 			want: want{
 				want: Detail{
 					ServerName: "",
-					Version:    GitCommit,
+					Version:    Version,
 					GitCommit:  "master",
 					GoVersion:  runtime.Version(),
 					GoOS:       runtime.GOOS,
@@ -867,9 +898,14 @@ func Test_info_Get(t *testing.T) {
 							Line:     100,
 						},
 					},
-					NGTVersion:        NGTVersion,
-					BuildTime:         BuildTime,
-					BuildCPUInfoFlags: []string{"avx512f", "avx512dq"},
+					NGTVersion: NGTVersion,
+					BuildTime:  BuildTime,
+					BuildCPUInfoFlags: func() []string {
+						if len(BuildCPUInfoFlags) == 0 {
+							return nil
+						}
+						return strings.Split(strings.TrimSpace(BuildCPUInfoFlags), " ")
+					}(),
 				},
 			},
 		},
@@ -892,7 +928,7 @@ func Test_info_Get(t *testing.T) {
 			}(),
 			want: want{
 				want: Detail{
-					Version:    GitCommit,
+					Version:    Version,
 					GitCommit:  "master",
 					GoVersion:  runtime.Version(),
 					GoOS:       runtime.GOOS,
@@ -906,9 +942,14 @@ func Test_info_Get(t *testing.T) {
 							Line:     100,
 						},
 					},
-					NGTVersion:        NGTVersion,
-					BuildTime:         BuildTime,
-					BuildCPUInfoFlags: []string{"avx512f", "avx512dq"},
+					NGTVersion: NGTVersion,
+					BuildTime:  BuildTime,
+					BuildCPUInfoFlags: func() []string {
+						if len(BuildCPUInfoFlags) == 0 {
+							return nil
+						}
+						return strings.Split(strings.TrimSpace(BuildCPUInfoFlags), " ")
+					}(),
 				},
 			},
 		},
@@ -931,7 +972,7 @@ func Test_info_Get(t *testing.T) {
 			}(),
 			want: want{
 				want: Detail{
-					Version:    GitCommit,
+					Version:    Version,
 					GitCommit:  "master",
 					GoVersion:  runtime.Version(),
 					GoOS:       runtime.GOOS,
@@ -945,9 +986,14 @@ func Test_info_Get(t *testing.T) {
 							Line:     100,
 						},
 					},
-					NGTVersion:        NGTVersion,
-					BuildTime:         BuildTime,
-					BuildCPUInfoFlags: []string{"avx512f", "avx512dq"},
+					NGTVersion: NGTVersion,
+					BuildTime:  BuildTime,
+					BuildCPUInfoFlags: func() []string {
+						if len(BuildCPUInfoFlags) == 0 {
+							return nil
+						}
+						return strings.Split(strings.TrimSpace(BuildCPUInfoFlags), " ")
+					}(),
 				},
 			},
 		},
@@ -970,7 +1016,7 @@ func Test_info_Get(t *testing.T) {
 			}(),
 			want: want{
 				want: Detail{
-					Version:    GitCommit,
+					Version:    Version,
 					GitCommit:  "master",
 					GoVersion:  runtime.Version(),
 					GoOS:       runtime.GOOS,
@@ -984,9 +1030,14 @@ func Test_info_Get(t *testing.T) {
 							Line:     100,
 						},
 					},
-					NGTVersion:        NGTVersion,
-					BuildTime:         BuildTime,
-					BuildCPUInfoFlags: []string{"avx512f", "avx512dq"},
+					NGTVersion: NGTVersion,
+					BuildTime:  BuildTime,
+					BuildCPUInfoFlags: func() []string {
+						if len(BuildCPUInfoFlags) == 0 {
+							return nil
+						}
+						return strings.Split(strings.TrimSpace(BuildCPUInfoFlags), " ")
+					}(),
 				},
 			},
 		},
@@ -1009,7 +1060,7 @@ func Test_info_Get(t *testing.T) {
 			}(),
 			want: want{
 				want: Detail{
-					Version:    GitCommit,
+					Version:    Version,
 					GitCommit:  "master",
 					GoVersion:  runtime.Version(),
 					GoOS:       runtime.GOOS,
@@ -1023,9 +1074,14 @@ func Test_info_Get(t *testing.T) {
 							Line:     100,
 						},
 					},
-					NGTVersion:        NGTVersion,
-					BuildTime:         BuildTime,
-					BuildCPUInfoFlags: []string{"avx512f", "avx512dq"},
+					NGTVersion: NGTVersion,
+					BuildTime:  BuildTime,
+					BuildCPUInfoFlags: func() []string {
+						if len(BuildCPUInfoFlags) == 0 {
+							return nil
+						}
+						return strings.Split(strings.TrimSpace(BuildCPUInfoFlags), " ")
+					}(),
 				},
 			},
 		},
@@ -1093,16 +1149,19 @@ func Test_info_prepare(t *testing.T) {
 				want: info{
 					detail: Detail{
 						GitCommit:  "master",
-						Version:    "gitcommit",
-						BuildTime:  "1s",
+						Version:    Version,
+						BuildTime:  BuildTime,
 						GoVersion:  runtime.Version(),
 						GoOS:       runtime.GOOS,
 						GoArch:     runtime.GOARCH,
-						CGOEnabled: "true",
-						NGTVersion: "v1.11.6",
-						BuildCPUInfoFlags: []string{
-							"avx512f", "avx512dq",
-						},
+						CGOEnabled: CGOEnabled,
+						NGTVersion: NGTVersion,
+						BuildCPUInfoFlags: func() []string {
+							if len(BuildCPUInfoFlags) == 0 {
+								return nil
+							}
+							return strings.Split(strings.TrimSpace(BuildCPUInfoFlags), " ")
+						}(),
 					},
 				},
 			},
@@ -1118,16 +1177,19 @@ func Test_info_prepare(t *testing.T) {
 				want: info{
 					detail: Detail{
 						GitCommit:  "internal",
-						Version:    "gitcommit",
-						BuildTime:  "1s",
+						Version:    Version,
+						BuildTime:  BuildTime,
 						GoVersion:  runtime.Version(),
 						GoOS:       runtime.GOOS,
 						GoArch:     runtime.GOARCH,
-						CGOEnabled: "true",
-						NGTVersion: "v1.11.6",
-						BuildCPUInfoFlags: []string{
-							"avx512f", "avx512dq",
-						},
+						CGOEnabled: CGOEnabled,
+						NGTVersion: NGTVersion,
+						BuildCPUInfoFlags: func() []string {
+							if len(BuildCPUInfoFlags) == 0 {
+								return nil
+							}
+							return strings.Split(strings.TrimSpace(BuildCPUInfoFlags), " ")
+						}(),
 					},
 				},
 			},
@@ -1144,15 +1206,18 @@ func Test_info_prepare(t *testing.T) {
 					detail: Detail{
 						GitCommit:  "master",
 						Version:    "v1.0.0",
-						BuildTime:  "1s",
+						BuildTime:  BuildTime,
 						GoVersion:  runtime.Version(),
 						GoOS:       runtime.GOOS,
 						GoArch:     runtime.GOARCH,
-						CGOEnabled: "true",
-						NGTVersion: "v1.11.6",
-						BuildCPUInfoFlags: []string{
-							"avx512f", "avx512dq",
-						},
+						CGOEnabled: CGOEnabled,
+						NGTVersion: NGTVersion,
+						BuildCPUInfoFlags: func() []string {
+							if len(BuildCPUInfoFlags) == 0 {
+								return nil
+							}
+							return strings.Split(strings.TrimSpace(BuildCPUInfoFlags), " ")
+						}(),
 					},
 				},
 			},
@@ -1168,16 +1233,19 @@ func Test_info_prepare(t *testing.T) {
 				want: info{
 					detail: Detail{
 						GitCommit:  "master",
-						Version:    "gitcommit",
+						Version:    Version,
 						BuildTime:  "10s",
 						GoVersion:  runtime.Version(),
 						GoOS:       runtime.GOOS,
 						GoArch:     runtime.GOARCH,
-						CGOEnabled: "true",
-						NGTVersion: "v1.11.6",
-						BuildCPUInfoFlags: []string{
-							"avx512f", "avx512dq",
-						},
+						CGOEnabled: CGOEnabled,
+						NGTVersion: NGTVersion,
+						BuildCPUInfoFlags: func() []string {
+							if len(BuildCPUInfoFlags) == 0 {
+								return nil
+							}
+							return strings.Split(strings.TrimSpace(BuildCPUInfoFlags), " ")
+						}(),
 					},
 				},
 			},
@@ -1193,16 +1261,19 @@ func Test_info_prepare(t *testing.T) {
 				want: info{
 					detail: Detail{
 						GitCommit:  "master",
-						Version:    "gitcommit",
-						BuildTime:  "1s",
+						Version:    Version,
+						BuildTime:  BuildTime,
 						GoVersion:  "1.14",
 						GoOS:       runtime.GOOS,
 						GoArch:     runtime.GOARCH,
-						CGOEnabled: "true",
-						NGTVersion: "v1.11.6",
-						BuildCPUInfoFlags: []string{
-							"avx512f", "avx512dq",
-						},
+						CGOEnabled: CGOEnabled,
+						NGTVersion: NGTVersion,
+						BuildCPUInfoFlags: func() []string {
+							if len(BuildCPUInfoFlags) == 0 {
+								return nil
+							}
+							return strings.Split(strings.TrimSpace(BuildCPUInfoFlags), " ")
+						}(),
 					},
 				},
 			},
@@ -1218,16 +1289,19 @@ func Test_info_prepare(t *testing.T) {
 				want: info{
 					detail: Detail{
 						GitCommit:  "master",
-						Version:    "gitcommit",
-						BuildTime:  "1s",
+						Version:    Version,
+						BuildTime:  BuildTime,
 						GoVersion:  runtime.Version(),
 						GoOS:       "linux",
 						GoArch:     runtime.GOARCH,
-						CGOEnabled: "true",
-						NGTVersion: "v1.11.6",
-						BuildCPUInfoFlags: []string{
-							"avx512f", "avx512dq",
-						},
+						CGOEnabled: CGOEnabled,
+						NGTVersion: NGTVersion,
+						BuildCPUInfoFlags: func() []string {
+							if len(BuildCPUInfoFlags) == 0 {
+								return nil
+							}
+							return strings.Split(strings.TrimSpace(BuildCPUInfoFlags), " ")
+						}(),
 					},
 				},
 			},
@@ -1243,16 +1317,19 @@ func Test_info_prepare(t *testing.T) {
 				want: info{
 					detail: Detail{
 						GitCommit:  "master",
-						Version:    "gitcommit",
-						BuildTime:  "1s",
+						Version:    Version,
+						BuildTime:  BuildTime,
 						GoVersion:  runtime.Version(),
 						GoOS:       runtime.GOOS,
 						GoArch:     "amd",
-						CGOEnabled: "true",
-						NGTVersion: "v1.11.6",
-						BuildCPUInfoFlags: []string{
-							"avx512f", "avx512dq",
-						},
+						CGOEnabled: CGOEnabled,
+						NGTVersion: NGTVersion,
+						BuildCPUInfoFlags: func() []string {
+							if len(BuildCPUInfoFlags) == 0 {
+								return nil
+							}
+							return strings.Split(strings.TrimSpace(BuildCPUInfoFlags), " ")
+						}(),
 					},
 				},
 			},
@@ -1268,16 +1345,19 @@ func Test_info_prepare(t *testing.T) {
 				want: info{
 					detail: Detail{
 						GitCommit:  "master",
-						Version:    "gitcommit",
-						BuildTime:  "1s",
+						Version:    Version,
+						BuildTime:  BuildTime,
 						GoVersion:  runtime.Version(),
 						GoOS:       runtime.GOOS,
 						GoArch:     runtime.GOARCH,
 						CGOEnabled: "1",
-						NGTVersion: "v1.11.6",
-						BuildCPUInfoFlags: []string{
-							"avx512f", "avx512dq",
-						},
+						NGTVersion: NGTVersion,
+						BuildCPUInfoFlags: func() []string {
+							if len(BuildCPUInfoFlags) == 0 {
+								return nil
+							}
+							return strings.Split(strings.TrimSpace(BuildCPUInfoFlags), " ")
+						}(),
 					},
 				},
 			},
@@ -1293,16 +1373,19 @@ func Test_info_prepare(t *testing.T) {
 				want: info{
 					detail: Detail{
 						GitCommit:  "master",
-						Version:    "gitcommit",
-						BuildTime:  "1s",
+						Version:    Version,
+						BuildTime:  BuildTime,
 						GoVersion:  runtime.Version(),
 						GoOS:       runtime.GOOS,
 						GoArch:     runtime.GOARCH,
-						CGOEnabled: "true",
+						CGOEnabled: CGOEnabled,
 						NGTVersion: "v1.11.5",
-						BuildCPUInfoFlags: []string{
-							"avx512f", "avx512dq",
-						},
+						BuildCPUInfoFlags: func() []string {
+							if len(BuildCPUInfoFlags) == 0 {
+								return nil
+							}
+							return strings.Split(strings.TrimSpace(BuildCPUInfoFlags), " ")
+						}(),
 					},
 				},
 			},
@@ -1317,17 +1400,15 @@ func Test_info_prepare(t *testing.T) {
 			want: want{
 				want: info{
 					detail: Detail{
-						GitCommit:  "master",
-						Version:    "gitcommit",
-						BuildTime:  "1s",
-						GoVersion:  runtime.Version(),
-						GoOS:       runtime.GOOS,
-						GoArch:     runtime.GOARCH,
-						CGOEnabled: "true",
-						NGTVersion: "v1.11.6",
-						BuildCPUInfoFlags: []string{
-							"avx512f",
-						},
+						GitCommit:         "master",
+						Version:           Version,
+						BuildTime:         BuildTime,
+						GoVersion:         runtime.Version(),
+						GoOS:              runtime.GOOS,
+						GoArch:            runtime.GOARCH,
+						CGOEnabled:        CGOEnabled,
+						NGTVersion:        NGTVersion,
+						BuildCPUInfoFlags: []string{"avx512f"},
 					},
 				},
 			},
