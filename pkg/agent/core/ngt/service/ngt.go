@@ -74,8 +74,6 @@ type NGT interface {
 	UUIDs(context.Context) (uuids []string)
 	DeleteVQueueBufferLen() uint64
 	InsertVQueueBufferLen() uint64
-	DeleteVQueueChannelLen() uint64
-	InsertVQueueChannelLen() uint64
 	GetDimensionSize() int
 	Close(ctx context.Context) error
 }
@@ -162,8 +160,6 @@ func New(cfg *config.NGT, opts ...Option) (nn NGT, err error) {
 	if n.vq == nil {
 		n.vq, err = vqueue.New(
 			vqueue.WithErrGroup(n.eg),
-			vqueue.WithInsertBufferSize(cfg.VQueue.InsertBufferSize),
-			vqueue.WithDeleteBufferSize(cfg.VQueue.DeleteBufferSize),
 			vqueue.WithInsertBufferPoolSize(cfg.VQueue.InsertBufferPoolSize),
 			vqueue.WithDeleteBufferPoolSize(cfg.VQueue.DeleteBufferPoolSize),
 		)
@@ -328,10 +324,6 @@ func (n *ngt) Start(ctx context.Context) <-chan error {
 		return nil
 	}
 	ech := make(chan error, 2)
-	vqech, err := n.vq.Start(ctx)
-	if err != nil {
-		return nil
-	}
 	n.eg.Go(safety.RecoverFunc(func() (err error) {
 		defer close(ech)
 		if n.dur <= 0 {
@@ -377,11 +369,6 @@ func (n *ngt) Start(ctx context.Context) <-chan error {
 				err = n.CreateAndSaveIndex(ctx, n.poolSize)
 			case <-sTick.C:
 				err = n.SaveIndex(ctx)
-			case err := <-vqech:
-				if err != nil {
-					ech <- err
-					err = nil
-				}
 			}
 			if err != nil && err != errors.ErrUncommittedIndexNotFound {
 				ech <- err
@@ -619,6 +606,7 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 	n.cimu.Lock()
 	defer n.cimu.Unlock()
 	n.indexing.Store(true)
+	now := time.Now().UnixNano()
 	defer n.indexing.Store(false)
 	defer n.gc()
 	ic = n.vq.IVQLen() + n.vq.DVQLen()
@@ -627,7 +615,7 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 	}
 	log.Infof("create index operation started, uncommitted indexes = %d", ic)
 	log.Debug("create index delete phase started")
-	n.vq.RangePopDelete(ctx, func(uuid string) bool {
+	n.vq.RangePopDelete(ctx, now, func(uuid string) bool {
 		oid, ok := n.kvs.Delete(uuid)
 		if !ok {
 			log.Warn(errors.ErrObjectIDNotFound(uuid))
@@ -641,7 +629,7 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 	log.Debug("create index delete phase finished")
 	n.gc()
 	log.Debug("create index insert phase started")
-	n.vq.RangePopInsert(ctx, func(uuid string, vector []float32) bool {
+	n.vq.RangePopInsert(ctx, now, func(uuid string, vector []float32) bool {
 		oid, err := n.core.Insert(vector)
 		if err != nil {
 			log.Error(err)
@@ -895,14 +883,6 @@ func (n *ngt) InsertVQueueBufferLen() uint64 {
 
 func (n *ngt) DeleteVQueueBufferLen() uint64 {
 	return uint64(n.vq.DVQLen())
-}
-
-func (n *ngt) InsertVQueueChannelLen() uint64 {
-	return uint64(n.vq.IVCLen())
-}
-
-func (n *ngt) DeleteVQueueChannelLen() uint64 {
-	return uint64(n.vq.DVCLen())
 }
 
 func (n *ngt) GetDimensionSize() int {

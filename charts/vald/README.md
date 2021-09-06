@@ -3,7 +3,7 @@ Vald
 
 This is a Helm chart to install Vald components.
 
-Current chart version is `v1.2.1`
+Current chart version is `v1.2.2`
 
 Table of Contents
 ---
@@ -79,7 +79,7 @@ Configuration
 | agent.ngt.auto_save_index_duration | string | `"35m"` | duration of automatic save index |
 | agent.ngt.bulk_insert_chunk_size | int | `10` | bulk insert chunk size |
 | agent.ngt.creation_edge_size | int | `20` | creation edge size |
-| agent.ngt.default_epsilon | float | `0.01` | default epsilon used for search |
+| agent.ngt.default_epsilon | float | `0.1` | default epsilon used for search |
 | agent.ngt.default_pool_size | int | `10000` | default create index batch pool size |
 | agent.ngt.default_radius | float | `-1` | default radius used for search |
 | agent.ngt.dimension | int | `4096` | vector dimension |
@@ -95,9 +95,7 @@ Configuration
 | agent.ngt.object_type | string | `"float"` | object type. it should be `float` or `uint8`. for further details: https://github.com/yahoojapan/NGT/wiki/Command-Quick-Reference |
 | agent.ngt.search_edge_size | int | `10` | search edge size |
 | agent.ngt.vqueue.delete_buffer_pool_size | int | `5000` | delete slice pool buffer size |
-| agent.ngt.vqueue.delete_buffer_size | int | `100` | delete channel buffer size |
 | agent.ngt.vqueue.insert_buffer_pool_size | int | `10000` | insert slice pool buffer size |
-| agent.ngt.vqueue.insert_buffer_size | int | `100` | insert channel buffer size |
 | agent.nodeName | string | `""` | node name |
 | agent.nodeSelector | object | `{}` | node selector |
 | agent.observability | object | `{"jaeger":{"service_name":"vald-agent-ngt"},"stackdriver":{"profiler":{"service":"vald-agent-ngt"}}}` | observability config (overrides defaults.observability) |
@@ -288,7 +286,7 @@ Configuration
 | defaults.grpc.client.tls.enabled | bool | `false` | TLS enabled |
 | defaults.grpc.client.tls.insecure_skip_verify | bool | `false` | enable/disable skip SSL certificate verification |
 | defaults.grpc.client.tls.key | string | `"/path/to/key"` | TLS key path |
-| defaults.image.tag | string | `"v1.2.1"` | docker image tag |
+| defaults.image.tag | string | `"v1.2.2"` | docker image tag |
 | defaults.ingress.usev1beta1 | bool | `false` | use networking.k8s.io/v1beta1 instead of v1 for ingresses. This option will be removed once k8s 1.22 is released. |
 | defaults.logging.format | string | `"raw"` | logging format. logging format must be `raw` or `json` |
 | defaults.logging.level | string | `"debug"` | logging level. logging level must be `debug`, `info`, `warn`, `error` or `fatal`. |

@@ -229,9 +229,7 @@ func TestWithNGT(t *testing.T) {
 					DistanceType: "cos",
 					ObjectType:   "uint8",
 					VQueue: &config.VQueue{
-						InsertBufferSize:     100,
 						InsertBufferPoolSize: 50,
-						DeleteBufferSize:     100,
 						DeleteBufferPoolSize: 50,
 					},
 					KVSDB: &config.KVSDB{

@@ -498,8 +498,13 @@ endif
 
 .PHONY: lint
 ## run lints
-lint:
+lint: vet
 	$(call go-lint)
+
+.PHONY: vet
+## run go vet
+vet:
+	$(call go-vet)
 
 .PHONY: changelog/update
 ## update changelog

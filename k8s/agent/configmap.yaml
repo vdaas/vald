@@ -20,10 +20,10 @@ metadata:
   name: vald-agent-ngt-config
   labels:
     app.kubernetes.io/name: vald
-    helm.sh/chart: vald-v1.2.1
+    helm.sh/chart: vald-v1.2.2
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: RELEASE-NAME
-    app.kubernetes.io/version: v1.2.1
+    app.kubernetes.io/version: v1.2.2
     app.kubernetes.io/component: agent
 data:
   config.yaml: |
@@ -216,7 +216,7 @@ data:
       auto_save_index_duration: 35m
       bulk_insert_chunk_size: 10
       creation_edge_size: 20
-      default_epsilon: 0.01
+      default_epsilon: 0.1
       default_pool_size: 10000
       default_radius: -1
       dimension: 784
@@ -234,6 +234,4 @@ data:
       search_edge_size: 10
       vqueue:
         delete_buffer_pool_size: 5000
-        delete_buffer_size: 100
         insert_buffer_pool_size: 10000
-        insert_buffer_size: 100

@@ -29,8 +29,6 @@ var defaultOptions = []Option{
 	WithErrGroup(errgroup.Get()),
 	WithDeleteBufferPoolSize(1000),
 	WithInsertBufferPoolSize(1000),
-	WithDeleteBufferSize(100),
-	WithInsertBufferSize(100),
 }
 
 // WithErrGroup returns the option to set the errgroup.
@@ -40,30 +38,6 @@ func WithErrGroup(eg errgroup.Group) Option {
 			return errors.NewErrInvalidOption("errgroup", eg)
 		}
 		v.eg = eg
-
-		return nil
-	}
-}
-
-// WithInsertBufferSize returns the option to set the size of the insert buffer.
-func WithInsertBufferSize(size int) Option {
-	return func(v *vqueue) error {
-		if size <= 0 {
-			return errors.NewErrInvalidOption("insertBufferSize", size)
-		}
-		v.ichSize = size
-
-		return nil
-	}
-}
-
-// WithDeleteBufferSize returns the option to set the size of the delete buffer.
-func WithDeleteBufferSize(size int) Option {
-	return func(v *vqueue) error {
-		if size <= 0 {
-			return errors.NewErrInvalidOption("deleteBufferSize", size)
-		}
-		v.dchSize = size
 
 		return nil
 	}
