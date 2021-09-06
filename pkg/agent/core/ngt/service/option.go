@@ -96,7 +96,7 @@ func WithAutoIndexCheckDuration(dur string) Option {
 	}
 }
 
-// WithCache returns the functional option to set the cache.
+// WithAutoIndexDurationLimit returns the functional option to set the auto index duration limit.
 func WithAutoIndexDurationLimit(dur string) Option {
 	return func(n *ngt) error {
 		if dur == "" {
