@@ -99,6 +99,7 @@ jobs:
           go version
           go test \
             -shuffle=on \
+            -race \
             -mod=readonly \
             -v tests/e2e/crud/crud_test.go \
             -tags "e2e" \
@@ -193,6 +194,7 @@ jobs:
           go version
           go test \
             -shuffle=on \
+            -race \
             -mod=readonly \
             -v tests/e2e/crud/crud_test.go \
             -tags "e2e" \
@@ -284,6 +286,7 @@ jobs:
           go version
           go test \
             -shuffle=on \
+            -race \
             -mod=readonly \
             -v tests/e2e/crud/crud_test.go \
             -tags "e2e" \
@@ -375,6 +378,7 @@ jobs:
           go version
           go test \
             -shuffle=on \
+            -race \
             -mod=readonly \
             -v tests/e2e/crud/crud_test.go \
             -tags "e2e" \
@@ -399,6 +403,7 @@ jobs:
           go version
           go test \
             -shuffle=on \
+            -race \
             -mod=readonly \
             -v tests/e2e/crud/crud_test.go \
             -tags "e2e" \
