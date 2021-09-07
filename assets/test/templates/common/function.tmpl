@@ -118,8 +118,9 @@ func {{ .TestName }}(t *testing.T) {
                 if test.afterFunc != nil {
                     defer test.afterFunc({{- if .TestParameters }} test.args {{- end }})
                 }
+                checkFunc := test.checkFunc
                 if test.checkFunc == nil {
-                    test.checkFunc = defaultCheckFunc
+                    checkFunc = defaultCheckFunc
                 }
 
                 {{- with .Receiver }}
@@ -141,12 +142,12 @@ func {{ .TestName }}(t *testing.T) {
                 {{ $len := len .Results }}
                 {{- if or (ge $len 1) (.OnlyReturnsOneValue) (.OnlyReturnsError) }}
                     {{ template "results" $f }} := {{ template "call" $f }}
-                    if err := test.checkFunc(test.want, {{ template "results" $f }} {{- range .Parameters }}{{- if .IsWriter }}, {{ Param . }}.String(){{- end }}{{- end }}); err != nil {
+                    if err := checkFunc(test.want, {{ template "results" $f }} {{- range .Parameters }}{{- if .IsWriter }}, {{ Param . }}.String(){{- end }}{{- end }}); err != nil {
                         tt.Errorf("error = %v", err)
                     }
                 {{ else }}
                     {{ template "call" $f }}
-                    if err := test.checkFunc(test.want); err != nil {
+                    if err := checkFunc(test.want); err != nil {
                         tt.Errorf("error = %v", err)
                     }
                 {{- end }}
