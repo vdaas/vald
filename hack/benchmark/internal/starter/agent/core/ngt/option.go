@@ -63,6 +63,13 @@ var defaultOptions = []Option{
 			CreationEdgeSize:   20,
 			SearchEdgeSize:     10,
 			EnableInMemoryMode: true,
+			KVSDB: &iconfig.KVSDB{
+				Concurrency: 1,
+			},
+			VQueue: &iconfig.VQueue{
+				InsertBufferPoolSize: 10000,
+				DeleteBufferPoolSize: 10000,
+			},
 		},
 	}),
 }

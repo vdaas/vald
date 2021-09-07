@@ -19,11 +19,11 @@ package ngt
 
 import (
 	"context"
+	"sync"
 	"testing"
 	"time"
 
 	"github.com/vdaas/vald/hack/benchmark/internal/starter"
-	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/runner"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/config"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/usecase"
@@ -45,7 +45,6 @@ func New(opts ...Option) starter.Starter {
 
 func (s *server) Run(ctx context.Context, tb testing.TB) func() {
 	tb.Helper()
-	log.Init()
 
 	daemon, err := usecase.New(s.cfg)
 	if err != nil {
@@ -54,7 +53,11 @@ func (s *server) Run(ctx context.Context, tb testing.TB) func() {
 
 	ctx, cancel := context.WithCancel(ctx)
 
+	var wg sync.WaitGroup
+	wg.Add(1)
+
 	go func() {
+		defer wg.Done()
 		err := runner.Run(ctx, daemon, name)
 		if err != nil {
 			tb.Fatalf("agent runner returned error %s", err.Error())
@@ -65,5 +68,6 @@ func (s *server) Run(ctx context.Context, tb testing.TB) func() {
 
 	return func() {
 		cancel()
+		wg.Wait()
 	}
 }
