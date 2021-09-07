@@ -152,8 +152,9 @@ func Test_dialerCache_IP(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			d := &dialerCache{
 				ips: test.fields.ips,
@@ -161,7 +162,7 @@ func Test_dialerCache_IP(t *testing.T) {
 			}
 
 			got := d.IP()
-			if err := test.checkFunc(d, test.want, got); err != nil {
+			if err := checkFunc(d, test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -209,8 +210,9 @@ func Test_dialerCache_Len(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			d := &dialerCache{
 				ips: test.fields.ips,
@@ -218,7 +220,7 @@ func Test_dialerCache_Len(t *testing.T) {
 			}
 
 			got := d.Len()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -387,12 +389,13 @@ func TestNewDialer(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			gotDer, err := NewDialer(test.args.opts...)
-			if err := test.checkFunc(test.want, gotDer, err); err != nil {
+			if err := checkFunc(test.want, gotDer, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -446,15 +449,16 @@ func Test_dialer_GetDialer(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			d := &dialer{
 				dialer: test.fields.dialer,
 			}
 
 			got := d.GetDialer()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -610,8 +614,9 @@ func Test_dialer_lookup(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			d := &dialer{
@@ -629,7 +634,7 @@ func Test_dialer_lookup(t *testing.T) {
 				dialer:                test.fields.dialer,
 			}
 			got, err := d.lookup(test.args.ctx, test.args.addr)
-			if err := test.checkFunc(test.want, got, err, d); err != nil {
+			if err := checkFunc(test.want, got, err, d); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -786,8 +791,9 @@ func Test_dialer_StartDialerCache(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			d := &dialer{
 				cache:                 test.fields.cache,
@@ -808,7 +814,7 @@ func Test_dialer_StartDialerCache(t *testing.T) {
 			}
 
 			d.StartDialerCache(test.args.ctx)
-			if err := test.checkFunc(d); err != nil {
+			if err := checkFunc(d); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 			if test.afterFunc != nil {
@@ -877,15 +883,16 @@ func Test_dialer_DialContext(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			d := &dialer{
 				dialer: test.fields.dialer,
 			}
 
 			got, err := d.DialContext(test.args.ctx, test.args.network, test.args.address)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1377,8 +1384,9 @@ func Test_dialer_cachedDialer(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			d := &dialer{
 				cache:                 test.fields.cache,
@@ -1396,7 +1404,7 @@ func Test_dialer_cachedDialer(t *testing.T) {
 			}
 
 			gotConn, gotErr := d.cachedDialer(test.args.dctx, test.args.network, test.args.addr)
-			if err := test.checkFunc(d, test.want, gotConn, gotErr); err != nil {
+			if err := checkFunc(d, test.want, gotConn, gotErr); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1591,8 +1599,9 @@ func Test_dialer_dial(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			d := &dialer{
 				tlsConfig: test.fields.tlsConfig,
@@ -1600,7 +1609,7 @@ func Test_dialer_dial(t *testing.T) {
 			}
 
 			got, err := d.dial(test.args.ctx, test.args.network, test.args.addr)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1683,8 +1692,9 @@ func Test_dialer_cacheExpireHook(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			d := &dialer{
 				cache:                 test.fields.cache,
@@ -1706,7 +1716,7 @@ func Test_dialer_cacheExpireHook(t *testing.T) {
 			}
 
 			d.cacheExpireHook(test.args.ctx, test.args.addr)
-			if err := test.checkFunc(d); err != nil {
+			if err := checkFunc(d); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1917,8 +1927,9 @@ func Test_dialer_tlsHandshake(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			d := &dialer{
 				cache:                 test.fields.cache,
@@ -1939,7 +1950,7 @@ func Test_dialer_tlsHandshake(t *testing.T) {
 			}
 
 			got, err := d.tlsHandshake(test.args.ctx, test.args.conn, test.args.addr)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

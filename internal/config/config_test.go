@@ -249,8 +249,9 @@ func TestGlobalConfig_Bind(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			c := &GlobalConfig{
 				Version: test.fields.Version,
@@ -259,7 +260,7 @@ func TestGlobalConfig_Bind(t *testing.T) {
 			}
 
 			got := c.Bind()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -876,12 +877,13 @@ func TestRead(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(tt, test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			err := Read(test.args.path, test.args.cfg)
-			if err := test.checkFunc(test.want, test.args.cfg, err); err != nil {
+			if err := checkFunc(test.want, test.args.cfg, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1010,12 +1012,13 @@ func TestGetActualValue(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(tt, test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			gotRes := GetActualValue(test.args.val)
-			if err := test.checkFunc(test.want, gotRes); err != nil {
+			if err := checkFunc(test.want, gotRes); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1116,12 +1119,13 @@ func TestGetActualValues(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(tt, test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := GetActualValues(test.args.vals)
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1284,12 +1288,13 @@ func Test_checkPrefixAndSuffix(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := checkPrefixAndSuffix(test.args.str, test.args.pref, test.args.suf)
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1406,12 +1411,13 @@ func TestToRawYaml(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := ToRawYaml(test.args.data)
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

@@ -122,8 +122,9 @@ func TestNew(t *testing.T) {
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			if test.afterFunc == nil {
 				test.afterFunc = defaultAfterFunc
@@ -132,7 +133,7 @@ func TestNew(t *testing.T) {
 			got, err := New(test.args.opts...)
 			defer test.afterFunc(tt, test.args, got)
 
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -281,8 +282,9 @@ func Test_watch_init(t *testing.T) {
 			if test.beforeFunc != nil {
 				test.beforeFunc(tt, &test.fields)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			if test.afterFunc == nil {
 				test.afterFunc = defaultAfterFunc
@@ -295,7 +297,7 @@ func Test_watch_init(t *testing.T) {
 			defer test.afterFunc(tt, w)
 
 			got, err := w.init()
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -763,8 +765,9 @@ func Test_watch_Start(t *testing.T) {
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			if test.afterFunc == nil {
 				test.afterFunc = defaultAfterFunc
@@ -786,7 +789,7 @@ func Test_watch_Start(t *testing.T) {
 			defer test.afterFunc(tt, test.args, w)
 
 			got, err := w.Start(test.args.ctx)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -930,8 +933,9 @@ func Test_watch_Add(t *testing.T) {
 			if test.beforeFunc == nil {
 				test.beforeFunc = defaultBeforeFunc
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			if test.afterFunc == nil {
 				test.afterFunc = defaultAfterFunc
@@ -947,7 +951,7 @@ func Test_watch_Add(t *testing.T) {
 			defer test.afterFunc(tt, test.args, w)
 
 			err := w.Add(test.args.dirs...)
-			if err := test.checkFunc(test.want, w, err); err != nil {
+			if err := checkFunc(test.want, w, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1108,8 +1112,9 @@ func Test_watch_Remove(t *testing.T) {
 			if test.beforeFunc == nil {
 				test.beforeFunc = defaultBeforeFunc
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			if test.afterFunc == nil {
 				test.afterFunc = defaultAfterFunc
@@ -1124,7 +1129,7 @@ func Test_watch_Remove(t *testing.T) {
 			defer test.afterFunc(tt, test.args, w)
 
 			err := w.Remove(test.args.dirs...)
-			if err := test.checkFunc(test.want, w, err); err != nil {
+			if err := checkFunc(test.want, w, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1259,8 +1264,9 @@ func Test_watch_Stop(t *testing.T) {
 			if test.beforeFunc == nil {
 				test.beforeFunc = defaultBeforeFunc
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			if test.afterFunc == nil {
 				test.afterFunc = defaultAfterFunc
@@ -1275,7 +1281,7 @@ func Test_watch_Stop(t *testing.T) {
 			defer test.afterFunc(tt, test.args, w)
 
 			err := w.Stop(test.args.ctx)
-			if err := test.checkFunc(test.want, w, err); err != nil {
+			if err := checkFunc(test.want, w, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

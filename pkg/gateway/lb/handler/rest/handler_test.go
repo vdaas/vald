@@ -88,12 +88,13 @@ func TestNew(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := New(test.args.opts...)
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -178,15 +179,16 @@ func Test_handler_Index(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			h := &handler{
 				vald: test.fields.vald,
 			}
 
 			got, err := h.Index(test.args.w, test.args.r)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -271,15 +273,16 @@ func Test_handler_Search(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			h := &handler{
 				vald: test.fields.vald,
 			}
 
 			gotCode, err := h.Search(test.args.w, test.args.r)
-			if err := test.checkFunc(test.want, gotCode, err); err != nil {
+			if err := checkFunc(test.want, gotCode, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -364,15 +367,16 @@ func Test_handler_SearchByID(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			h := &handler{
 				vald: test.fields.vald,
 			}
 
 			gotCode, err := h.SearchByID(test.args.w, test.args.r)
-			if err := test.checkFunc(test.want, gotCode, err); err != nil {
+			if err := checkFunc(test.want, gotCode, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -457,15 +461,16 @@ func Test_handler_MultiSearch(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			h := &handler{
 				vald: test.fields.vald,
 			}
 
 			gotCode, err := h.MultiSearch(test.args.w, test.args.r)
-			if err := test.checkFunc(test.want, gotCode, err); err != nil {
+			if err := checkFunc(test.want, gotCode, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -550,15 +555,16 @@ func Test_handler_MultiSearchByID(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			h := &handler{
 				vald: test.fields.vald,
 			}
 
 			gotCode, err := h.MultiSearchByID(test.args.w, test.args.r)
-			if err := test.checkFunc(test.want, gotCode, err); err != nil {
+			if err := checkFunc(test.want, gotCode, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -643,15 +649,16 @@ func Test_handler_Insert(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			h := &handler{
 				vald: test.fields.vald,
 			}
 
 			gotCode, err := h.Insert(test.args.w, test.args.r)
-			if err := test.checkFunc(test.want, gotCode, err); err != nil {
+			if err := checkFunc(test.want, gotCode, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -736,15 +743,16 @@ func Test_handler_MultiInsert(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			h := &handler{
 				vald: test.fields.vald,
 			}
 
 			gotCode, err := h.MultiInsert(test.args.w, test.args.r)
-			if err := test.checkFunc(test.want, gotCode, err); err != nil {
+			if err := checkFunc(test.want, gotCode, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -829,15 +837,16 @@ func Test_handler_Update(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			h := &handler{
 				vald: test.fields.vald,
 			}
 
 			gotCode, err := h.Update(test.args.w, test.args.r)
-			if err := test.checkFunc(test.want, gotCode, err); err != nil {
+			if err := checkFunc(test.want, gotCode, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -922,15 +931,16 @@ func Test_handler_MultiUpdate(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			h := &handler{
 				vald: test.fields.vald,
 			}
 
 			gotCode, err := h.MultiUpdate(test.args.w, test.args.r)
-			if err := test.checkFunc(test.want, gotCode, err); err != nil {
+			if err := checkFunc(test.want, gotCode, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1015,15 +1025,16 @@ func Test_handler_Upsert(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			h := &handler{
 				vald: test.fields.vald,
 			}
 
 			gotCode, err := h.Upsert(test.args.w, test.args.r)
-			if err := test.checkFunc(test.want, gotCode, err); err != nil {
+			if err := checkFunc(test.want, gotCode, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1108,15 +1119,16 @@ func Test_handler_MultiUpsert(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			h := &handler{
 				vald: test.fields.vald,
 			}
 
 			gotCode, err := h.MultiUpsert(test.args.w, test.args.r)
-			if err := test.checkFunc(test.want, gotCode, err); err != nil {
+			if err := checkFunc(test.want, gotCode, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1201,15 +1213,16 @@ func Test_handler_Remove(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			h := &handler{
 				vald: test.fields.vald,
 			}
 
 			gotCode, err := h.Remove(test.args.w, test.args.r)
-			if err := test.checkFunc(test.want, gotCode, err); err != nil {
+			if err := checkFunc(test.want, gotCode, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1294,15 +1307,16 @@ func Test_handler_MultiRemove(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			h := &handler{
 				vald: test.fields.vald,
 			}
 
 			gotCode, err := h.MultiRemove(test.args.w, test.args.r)
-			if err := test.checkFunc(test.want, gotCode, err); err != nil {
+			if err := checkFunc(test.want, gotCode, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1387,15 +1401,16 @@ func Test_handler_GetObject(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			h := &handler{
 				vald: test.fields.vald,
 			}
 
 			gotCode, err := h.GetObject(test.args.w, test.args.r)
-			if err := test.checkFunc(test.want, gotCode, err); err != nil {
+			if err := checkFunc(test.want, gotCode, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1480,15 +1495,16 @@ func Test_handler_Exists(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			h := &handler{
 				vald: test.fields.vald,
 			}
 
 			gotCode, err := h.Exists(test.args.w, test.args.r)
-			if err := test.checkFunc(test.want, gotCode, err); err != nil {
+			if err := checkFunc(test.want, gotCode, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

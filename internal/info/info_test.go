@@ -104,12 +104,13 @@ func TestString(t *testing.T) {
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := String()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -171,12 +172,13 @@ func TestGet(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := Get()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -334,12 +336,13 @@ func TestInit(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			Init(test.args.name)
-			if err := test.checkFunc(test.want, infoProvider); err != nil {
+			if err := checkFunc(test.want, infoProvider); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -535,12 +538,13 @@ func TestNew(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got, err := New(test.args.opts...)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -635,8 +639,9 @@ func Test_info_String(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			i := info{
 				detail:      test.fields.detail,
@@ -646,7 +651,7 @@ func Test_info_String(t *testing.T) {
 			}
 
 			got := i.String()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -741,8 +746,9 @@ func TestDetail_String(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			d := Detail{
 				Version:           test.fields.Version,
@@ -759,7 +765,7 @@ func TestDetail_String(t *testing.T) {
 			}
 
 			got := d.String()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1096,8 +1102,9 @@ func Test_info_Get(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			i := info{
 				detail:      test.fields.detail,
@@ -1107,7 +1114,7 @@ func Test_info_Get(t *testing.T) {
 			}
 
 			got := i.Get()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1424,8 +1431,9 @@ func Test_info_prepare(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			i := &info{
 				detail:      test.fields.detail,
@@ -1435,7 +1443,7 @@ func Test_info_prepare(t *testing.T) {
 			}
 
 			i.prepare()
-			if err := test.checkFunc(*i, test.want); err != nil {
+			if err := checkFunc(*i, test.want); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1490,8 +1498,9 @@ func TestStackTrace_String(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			s := StackTrace{
 				URL:      test.fields.URL,
@@ -1501,7 +1510,7 @@ func TestStackTrace_String(t *testing.T) {
 			}
 
 			got := s.String()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

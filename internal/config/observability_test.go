@@ -236,8 +236,9 @@ func TestObservability_Bind(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(tt)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			o := &Observability{
 				Enabled:     test.fields.Enabled,
@@ -249,7 +250,7 @@ func TestObservability_Bind(t *testing.T) {
 			}
 
 			got := o.Bind()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -357,8 +358,9 @@ func TestCollector_Bind(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(tt)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			c := &Collector{
 				Duration: test.fields.Duration,
@@ -366,7 +368,7 @@ func TestCollector_Bind(t *testing.T) {
 			}
 
 			got := c.Bind()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -496,8 +498,9 @@ func TestStackdriver_Bind(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(tt)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			sd := &Stackdriver{
 				ProjectID: test.fields.ProjectID,
@@ -507,7 +510,7 @@ func TestStackdriver_Bind(t *testing.T) {
 			}
 
 			got := sd.Bind()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

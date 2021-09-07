@@ -200,8 +200,9 @@ func TestMeta_Bind(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(tt)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			m := &Meta{
 				Host:                      test.fields.Host,
@@ -213,7 +214,7 @@ func TestMeta_Bind(t *testing.T) {
 			}
 
 			got := m.Bind()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

@@ -207,8 +207,9 @@ func TestOpen(t *testing.T) {
 			if test.beforeFunc != nil {
 				test.beforeFunc(tt, test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			if test.afterFunc == nil {
 				test.afterFunc = defaultAfterFunc
@@ -217,7 +218,7 @@ func TestOpen(t *testing.T) {
 			got, err := Open(test.args.path, test.args.flg, test.args.perm)
 			defer test.afterFunc(tt, test.args, got)
 
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -385,13 +386,14 @@ func TestExists(t *testing.T) {
 			}
 			defer test.afterFunc(tt, test.args)
 
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			// TODO we have to check more patter about file or dir
 			got := Exists(test.args.path)
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

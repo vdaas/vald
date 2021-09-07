@@ -159,8 +159,9 @@ func TestRoundTripper_Bind(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(tt)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			r := &RoundTripper{
 				TLSHandshakeTimeout:   test.fields.TLSHandshakeTimeout,
@@ -177,7 +178,7 @@ func TestRoundTripper_Bind(t *testing.T) {
 			}
 
 			got := r.Bind()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -289,8 +290,9 @@ func TestTransport_Bind(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(tt)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			t := &Transport{
 				RoundTripper: test.fields.RoundTripper,
@@ -298,7 +300,7 @@ func TestTransport_Bind(t *testing.T) {
 			}
 
 			got := t.Bind()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

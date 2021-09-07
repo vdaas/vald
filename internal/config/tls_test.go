@@ -105,8 +105,9 @@ func TestTLS_Bind(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			t := &TLS{
 				Enabled: test.fields.Enabled,
@@ -116,7 +117,7 @@ func TestTLS_Bind(t *testing.T) {
 			}
 
 			got := t.Bind()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -186,8 +187,9 @@ func TestTLS_Opts(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			t := &TLS{
 				Enabled: test.fields.Enabled,
@@ -197,7 +199,7 @@ func TestTLS_Opts(t *testing.T) {
 			}
 
 			got := t.Opts()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

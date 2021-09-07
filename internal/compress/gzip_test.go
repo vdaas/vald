@@ -95,12 +95,13 @@ func TestNewGzip(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got, err := NewGzip(test.args.opts...)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -280,8 +281,9 @@ func Test_gzipCompressor_CompressVector(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			g := &gzipCompressor{
@@ -291,7 +293,7 @@ func Test_gzipCompressor_CompressVector(t *testing.T) {
 			}
 
 			got, err := g.CompressVector(test.args.vector)
-			if err := test.checkFunc(test.want, got, err, g); err != nil {
+			if err := checkFunc(test.want, got, err, g); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -353,8 +355,9 @@ func Test_E2E_gzipCompressor_CompressVector(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			g, err := NewGzip()
@@ -363,7 +366,7 @@ func Test_E2E_gzipCompressor_CompressVector(t *testing.T) {
 			}
 
 			got, err := g.CompressVector(test.args.vector)
-			if err := test.checkFunc(test.want, got, err, g); err != nil {
+			if err := checkFunc(test.want, got, err, g); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -493,8 +496,9 @@ func Test_gzipCompressor_DecompressVector(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			g := &gzipCompressor{
 				gobc: test.fields.gobc,
@@ -502,7 +506,7 @@ func Test_gzipCompressor_DecompressVector(t *testing.T) {
 			}
 
 			got, err := g.DecompressVector(test.args.bs)
-			if err := test.checkFunc(test.want, got, err, g); err != nil {
+			if err := checkFunc(test.want, got, err, g); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -596,15 +600,16 @@ func Test_gzipCompressor_Reader(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			g := &gzipCompressor{
 				gzip: test.fields.gzip,
 			}
 
 			got, err := g.Reader(test.args.src)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -699,8 +704,9 @@ func Test_gzipCompressor_Writer(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			g := &gzipCompressor{
 				compressionLevel: test.fields.compressionLevel,
@@ -708,7 +714,7 @@ func Test_gzipCompressor_Writer(t *testing.T) {
 			}
 
 			got, err := g.Writer(test.args.dst)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -774,8 +780,9 @@ func Test_gzipReader_Read(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			g := &gzipReader{
 				src: test.fields.src,
@@ -783,7 +790,7 @@ func Test_gzipReader_Read(t *testing.T) {
 			}
 
 			gotN, err := g.Read(test.args.p)
-			if err := test.checkFunc(test.want, gotN, err); err != nil {
+			if err := checkFunc(test.want, gotN, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -899,8 +906,9 @@ func Test_gzipReader_Close(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			g := &gzipReader{
 				src: test.fields.src,
@@ -908,7 +916,7 @@ func Test_gzipReader_Close(t *testing.T) {
 			}
 
 			err := g.Close()
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -974,8 +982,9 @@ func Test_gzipWriter_Write(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			g := &gzipWriter{
 				dst: test.fields.dst,
@@ -983,7 +992,7 @@ func Test_gzipWriter_Write(t *testing.T) {
 			}
 
 			gotN, err := g.Write(test.args.p)
-			if err := test.checkFunc(test.want, gotN, err); err != nil {
+			if err := checkFunc(test.want, gotN, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1099,8 +1108,9 @@ func Test_gzipWriter_Close(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			g := &gzipWriter{
 				dst: test.fields.dst,
@@ -1108,7 +1118,7 @@ func Test_gzipWriter_Close(t *testing.T) {
 			}
 
 			err := g.Close()
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

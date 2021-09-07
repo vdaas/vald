@@ -105,12 +105,13 @@ func TestParseBytes(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			gotBytes, err := ParseBytes(test.args.bs)
-			if err := test.checkFunc(test.want, gotBytes, err); err != nil {
+			if err := checkFunc(test.want, gotBytes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

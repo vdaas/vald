@@ -2583,7 +2583,7 @@ func TestWithNetwork(t *testing.T) {
 
 			   got := WithNetwork(test.args.network)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -2596,7 +2596,7 @@ func TestWithNetwork(t *testing.T) {
 			   got := WithNetwork(test.args.network)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
+			   if err := checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -2699,7 +2699,7 @@ func TestWithSocketPath(t *testing.T) {
 
 			   got := WithSocketPath(test.args.path)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -2712,7 +2712,7 @@ func TestWithSocketPath(t *testing.T) {
 			   got := WithSocketPath(test.args.path)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
+			   if err := checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -2815,7 +2815,7 @@ func TestWithSocketFlag(t *testing.T) {
 
 			   got := WithSocketFlag(test.args.flg)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -2828,7 +2828,7 @@ func TestWithSocketFlag(t *testing.T) {
 			   got := WithSocketFlag(test.args.flg)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
+			   if err := checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -2931,7 +2931,7 @@ func TestWithPreStopFunction(t *testing.T) {
 
 			   got := WithPreStopFunction(test.args.f)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -2944,7 +2944,7 @@ func TestWithPreStopFunction(t *testing.T) {
 			   got := WithPreStopFunction(test.args.f)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
+			   if err := checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/

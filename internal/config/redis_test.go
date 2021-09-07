@@ -371,8 +371,9 @@ func TestRedis_Bind(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(tt)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			r := &Redis{
 				Addrs:                test.fields.Addrs,
@@ -409,7 +410,7 @@ func TestRedis_Bind(t *testing.T) {
 			}
 
 			got := r.Bind()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -895,8 +896,9 @@ func TestRedis_Opts(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			r := &Redis{
 				Addrs:                test.fields.Addrs,
@@ -933,7 +935,7 @@ func TestRedis_Opts(t *testing.T) {
 			}
 
 			gotOpts, err := r.Opts()
-			if err := test.checkFunc(test.want, gotOpts, err); err != nil {
+			if err := checkFunc(test.want, gotOpts, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

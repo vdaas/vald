@@ -166,8 +166,9 @@ func TestNGT_Bind(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			n := &NGT{
 				IndexPath:               test.fields.IndexPath,
@@ -186,7 +187,7 @@ func TestNGT_Bind(t *testing.T) {
 			}
 
 			got := n.Bind()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

@@ -87,12 +87,13 @@ func Test_newStrategy(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := newStrategy(test.args.opts...)
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -206,8 +207,9 @@ func Test_strategy_Init(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			s := &strategy{
 				core32:    test.fields.core32,
@@ -225,7 +227,7 @@ func Test_strategy_Init(t *testing.T) {
 			}
 
 			err := s.Init(test.args.ctx, test.args.b, test.args.dataset)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -343,8 +345,9 @@ func Test_strategy_PreProp(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			s := &strategy{
 				core32:    test.fields.core32,
@@ -362,7 +365,7 @@ func Test_strategy_PreProp(t *testing.T) {
 			}
 
 			got, err := s.PreProp(test.args.ctx, test.args.b, test.args.dataset)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -474,8 +477,9 @@ func Test_strategy_Run(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			s := &strategy{
 				core32:    test.fields.core32,
@@ -493,7 +497,7 @@ func Test_strategy_Run(t *testing.T) {
 			}
 
 			s.Run(test.args.ctx, test.args.b, test.args.dataset, test.args.ids)
-			if err := test.checkFunc(test.want); err != nil {
+			if err := checkFunc(test.want); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -586,8 +590,9 @@ func Test_strategy_Close(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			s := &strategy{
 				core32:    test.fields.core32,
@@ -605,7 +610,7 @@ func Test_strategy_Close(t *testing.T) {
 			}
 
 			s.Close()
-			if err := test.checkFunc(test.want); err != nil {
+			if err := checkFunc(test.want); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -720,8 +725,9 @@ func Test_strategy_float32(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			s := &strategy{
 				core32:    test.fields.core32,
@@ -739,7 +745,7 @@ func Test_strategy_float32(t *testing.T) {
 			}
 
 			s.float32(test.args.ctx, test.args.b, test.args.dataset, test.args.ids, test.args.cnt)
-			if err := test.checkFunc(test.want); err != nil {
+			if err := checkFunc(test.want); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -854,8 +860,9 @@ func Test_strategy_float64(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			s := &strategy{
 				core32:    test.fields.core32,
@@ -873,7 +880,7 @@ func Test_strategy_float64(t *testing.T) {
 			}
 
 			s.float64(test.args.ctx, test.args.b, test.args.dataset, test.args.ids, test.args.cnt)
-			if err := test.checkFunc(test.want); err != nil {
+			if err := checkFunc(test.want); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

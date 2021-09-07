@@ -122,8 +122,9 @@ func TestDNS_Bind(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(tt)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			d := &DNS{
 				CacheEnabled:    test.fields.CacheEnabled,
@@ -132,7 +133,7 @@ func TestDNS_Bind(t *testing.T) {
 			}
 
 			got := d.Bind()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -238,8 +239,9 @@ func TestDialer_Bind(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(tt)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			d := &Dialer{
 				Timeout:          test.fields.Timeout,
@@ -249,7 +251,7 @@ func TestDialer_Bind(t *testing.T) {
 			}
 
 			got := d.Bind()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -345,8 +347,9 @@ func TestSocketOption_Bind(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			s := &SocketOption{
 				ReusePort:                test.fields.ReusePort,
@@ -361,7 +364,7 @@ func TestSocketOption_Bind(t *testing.T) {
 			}
 
 			got := s.Bind()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -536,13 +539,14 @@ func TestSocketOption_ToSocketFlag(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			s := test.fields.socketOpts
 
 			got := s.ToSocketFlag()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -639,8 +643,9 @@ func TestNet_Bind(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			tr := &Net{
 				DNS:          test.fields.DNS,
@@ -650,7 +655,7 @@ func TestNet_Bind(t *testing.T) {
 			}
 
 			got := tr.Bind()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -841,8 +846,9 @@ func TestNet_Opts(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			tr := &Net{
 				DNS:          test.fields.DNS,
@@ -852,7 +858,7 @@ func TestNet_Opts(t *testing.T) {
 			}
 
 			got, err := tr.Opts()
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

@@ -192,8 +192,9 @@ func TestIndexer_Bind(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(tt)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			im := &Indexer{
 				AgentPort:              test.fields.AgentPort,
@@ -210,7 +211,7 @@ func TestIndexer_Bind(t *testing.T) {
 			}
 
 			got := im.Bind()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

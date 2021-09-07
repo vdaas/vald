@@ -324,8 +324,9 @@ func TestCassandra_Bind(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(tt)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			c := &Cassandra{
 				Hosts:                    test.fields.Hosts,
@@ -368,7 +369,7 @@ func TestCassandra_Bind(t *testing.T) {
 			}
 
 			got := c.Bind()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -854,8 +855,9 @@ func TestCassandra_Opts(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(tt)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			cfg := &Cassandra{
 				Hosts:                    test.fields.Hosts,
@@ -898,7 +900,7 @@ func TestCassandra_Opts(t *testing.T) {
 			}
 
 			gotOpts, err := cfg.Opts()
-			if err := test.checkFunc(test.want, gotOpts, err); err != nil {
+			if err := checkFunc(test.want, gotOpts, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
