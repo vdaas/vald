@@ -194,8 +194,7 @@ func readAndRewrite(path string) error {
 		once := sync.Once{}
 		for sc.Scan() {
 			line := sc.Text()
-			if filepath.Ext(path) == ".go" && strings.HasPrefix(line, "// +build") ||
-				filepath.Ext(path) == ".py" && strings.HasPrefix(line, "# -*-") {
+			if isBuildFlag(path, line) {
 				bf = true
 				_, err = buf.WriteString(line)
 				if err != nil {
@@ -271,6 +270,17 @@ func readAndRewrite(path string) error {
 		log.Fatal(err)
 	}
 	return nil
+}
+
+func isBuildFlag(path, line string) bool {
+	switch filepath.Ext(path) {
+	case ".go":
+		return strings.HasPrefix(line, "// +build") || strings.HasPrefix(line, "//go:build")
+	case ".py":
+		return strings.HasPrefix(line, "# -*-")
+	default:
+		return false
+	}
 }
 
 var license = template.Must(template.New("LICENSE").Parse(
