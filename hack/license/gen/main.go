@@ -24,7 +24,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"sync"
 	"text/template"
 	"time"
 
@@ -160,14 +159,17 @@ func readAndRewrite(path string) error {
 	if err != nil {
 		return errors.Errorf("filepath %s, could not open", path)
 	}
+	defer func() {
+		if err := f.Close(); err != nil {
+			log.Errorf("filepath %s, could not close, err: %s", path, err)
+		}
+	}()
+
 	fi, err := f.Stat()
 	if err != nil {
-		err = f.Close()
-		if err != nil {
-			log.Fatal(err)
-		}
 		return errors.Errorf("filepath %s, could not open", path)
 	}
+
 	buf := bytes.NewBuffer(make([]byte, 0, fi.Size()))
 	maintainer := os.Getenv(maintainerKey)
 	if len(maintainer) == 0 {
@@ -178,102 +180,106 @@ func readAndRewrite(path string) error {
 		Year:       time.Now().Year(),
 		Escape:     sharpEscape,
 	}
+
 	if fi.Name() == "LICENSE" {
 		err = license.Execute(buf, d)
 		if err != nil {
 			log.Fatal(err)
 		}
 	} else {
-		switch filepath.Ext(path) {
+		ext := filepath.Ext(path)
+		switch ext {
 		case ".go", ".proto":
 			d.Escape = slushEscape
 		}
-		lf := true
-		bf := false
 		sc := bufio.NewScanner(f)
-		once := sync.Once{}
-		for sc.Scan() {
-			line := sc.Text()
-			if isBuildFlag(path, line) {
-				bf = true
-				_, err = buf.WriteString(line)
-				if err != nil {
-					log.Fatal(err)
-				}
-				_, err = buf.WriteString("\n")
-				if err != nil {
-					log.Fatal(err)
-				}
-				_, err = buf.WriteString("\n")
-				if err != nil {
-					log.Fatal(err)
-				}
-				continue
-			}
-			if (filepath.Ext(path) == ".yaml" || filepath.Ext(path) == ".yml") && strings.HasPrefix(line, "---") {
-				_, err = buf.WriteString(line)
-				if err != nil {
-					log.Fatal(err)
-				}
-				_, err = buf.WriteString("\n")
-				if err != nil {
-					log.Fatal(err)
-				}
-				continue
-			}
-			if lf && strings.HasPrefix(line, d.Escape) {
-				continue
-			} else if !bf {
-				once.Do(func() {
-					err = apache.Execute(buf, d)
-					if err != nil {
-						log.Fatal(err)
-					}
-				})
-				lf = false
-			}
-			if !lf {
-				_, err = buf.WriteString(line)
-				if err != nil {
-					log.Fatal(err)
-				}
-				_, err = buf.WriteString("\n")
-				if err != nil {
-					log.Fatal(err)
-				}
-			}
-			bf = false
-		}
+
+		process(sc, ext, buf, d)
 	}
-	err = f.Close()
-	if err != nil {
-		return errors.Errorf("filepath %s, could not close", path)
-	}
+
 	err = os.RemoveAll(path)
 	if err != nil {
 		return errors.Errorf("filepath %s, could not delete", path)
 	}
+
 	f, err = os.Create(path)
 	if err != nil {
-		err = f.Close()
-		if err != nil {
+		if err := f.Close(); err != nil {
 			log.Fatal(err)
 		}
 		return errors.Errorf("filepath %s, could not open", path)
 	}
-	_, err = f.WriteString(strings.ReplaceAll(buf.String(), d.Escape+"\n\n\n", d.Escape+"\n\n"))
-	if err != nil {
+	defer func() {
+		if err = f.Close(); err != nil {
+			log.Fatal(err)
+		}
+	}()
+
+	if _, err = f.WriteString(strings.ReplaceAll(buf.String(), d.Escape+"\n\n\n", d.Escape+"\n\n")); err != nil {
 		log.Fatal(err)
 	}
-	err = f.Close()
-	if err != nil {
-		log.Fatal(err)
+	if err := f.Sync(); err != nil {
+		return err
 	}
+
 	return nil
 }
 
-func isBuildFlag(path, line string) bool {
-	switch filepath.Ext(path) {
+func process(in *bufio.Scanner, ext string, out *bytes.Buffer, d Data) {
+	haveHeader := false
+	var line string
+
+	// write header string to output
+	for in.Scan() {
+		line = in.Text()
+		if strings.HasPrefix(line, d.Escape) {
+			continue
+		}
+
+		if !isBuildFlag(ext, line) {
+			break
+		}
+
+		if _, err := out.WriteString(line); err != nil {
+			log.Fatal(err)
+		}
+		if _, err := out.WriteString("\n"); err != nil {
+			log.Fatal(err)
+		}
+		haveHeader = true
+	}
+
+	// append empty line between header and content
+	if haveHeader {
+		if _, err := out.WriteString("\n"); err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	// write license
+	if err := apache.Execute(out, d); err != nil {
+		log.Fatal(err)
+	}
+
+	// process the remaining line read from scanner
+	if _, err := out.WriteString(line); err != nil {
+		log.Fatal(err)
+	}
+
+	// write remaining contents
+	for in.Scan() {
+		line = in.Text()
+		if _, err := out.WriteString(line); err != nil {
+			log.Fatal(err)
+		}
+		if _, err := out.WriteString("\n"); err != nil {
+			log.Fatal(err)
+		}
+	}
+}
+
+func isBuildFlag(ext, line string) bool {
+	switch ext {
 	case ".go":
 		return strings.HasPrefix(line, "// +build") || strings.HasPrefix(line, "//go:build")
 	case ".py":
