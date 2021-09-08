@@ -232,11 +232,10 @@ func process(in *bufio.Scanner, ext string, out *bytes.Buffer, d Data) {
 	// write header string to output
 	for in.Scan() {
 		line = in.Text()
-		if strings.HasPrefix(line, d.Escape) {
-			continue
-		}
-
 		if !isBuildFlag(ext, line) {
+			if strings.HasPrefix(line, d.Escape) {
+				continue
+			}
 			break
 		}
 
@@ -263,6 +262,9 @@ func process(in *bufio.Scanner, ext string, out *bytes.Buffer, d Data) {
 
 	// process the remaining line read from scanner
 	if _, err := out.WriteString(line); err != nil {
+		log.Fatal(err)
+	}
+	if _, err := out.WriteString("\n"); err != nil {
 		log.Fatal(err)
 	}
 
