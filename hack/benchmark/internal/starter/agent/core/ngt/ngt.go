@@ -19,11 +19,13 @@ package ngt
 
 import (
 	"context"
+	"fmt"
 	"sync"
 	"testing"
 	"time"
 
 	"github.com/vdaas/vald/hack/benchmark/internal/starter"
+	"github.com/vdaas/vald/internal/client/v1/client/vald"
 	"github.com/vdaas/vald/internal/runner"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/config"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/usecase"
@@ -32,7 +34,8 @@ import (
 const name = "agent-ngt"
 
 type server struct {
-	cfg *config.Data
+	cfg    *config.Data
+	client vald.Client
 }
 
 func New(opts ...Option) starter.Starter {
@@ -66,8 +69,29 @@ func (s *server) Run(ctx context.Context, tb testing.TB) func() {
 
 	time.Sleep(5 * time.Second)
 
+	ech, err := s.client.Start(ctx)
+	if err != nil {
+		tb.Fatal(err)
+	}
+	fmt.Println(ech)
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case err := <-ech:
+				tb.Error(err)
+			}
+		}
+	}()
+
 	return func() {
 		cancel()
+		s.client.Stop(ctx)
 		wg.Wait()
 	}
 }

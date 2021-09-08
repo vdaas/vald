@@ -12,9 +12,17 @@ import (
 
 type Operation interface {
 	Search(b *testing.B, ctx context.Context, ds assets.Dataset)
-	SearchByID(b *testing.B, ctx context.Context, ds assets.Dataset)
-	Insert(b *testing.B, ctx context.Context, ds assets.Dataset) int
-	Remove(b *testing.B, ctx context.Context, ds assets.Dataset, maxIdNum int)
+	SearchByID(b *testing.B, ctx context.Context, maxIdNum int)
+
+	StreamSearch(b *testing.B, ctx context.Context, ds assets.Dataset)
+	StreamSearchByID(b *testing.B, ctx context.Context, maxIdNum int)
+
+	Insert(b *testing.B, ctx context.Context, ds assets.Dataset) (insertedNum int)
+	StreamInsert(b *testing.B, ctx context.Context, ds assets.Dataset) (insertedNum int)
+
+	Remove(b *testing.B, ctx context.Context, maxIdNum int)
+	StreamRemove(b *testing.B, ctx context.Context, maxIdNum int)
+
 	CreateIndex(b *testing.B, ctx context.Context)
 }
 
@@ -32,8 +40,6 @@ func New(opts ...Option) Operation {
 }
 
 func (o *operation) CreateIndex(b *testing.B, ctx context.Context) {
-	b.Log("createIndex operation started")
-
 	req := &payload.Control_CreateIndexRequest{
 		PoolSize: 10000,
 	}

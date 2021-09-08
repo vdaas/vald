@@ -55,11 +55,46 @@ func BenchmarkAgentNGT_gRPC_Sequential(b *testing.B) {
 
 			dataset := assets.Data(dname)(b)
 
+			c, err := core.New(
+				core.WithAddrs(grpcAddr),
+				core.WithGRPCClient(
+					grpc.New(
+						grpc.WithAddrs(grpcAddr),
+						grpc.WithInsecure(true),
+					),
+				),
+			)
+			if err != nil {
+				b.Fatal(err)
+			}
+
 			defer ngt.New(
 				ngt.WithDimension(dataset.Dimension()),
 				ngt.WithDistanceType(dataset.DistanceType()),
 				ngt.WithObjectType(dataset.ObjectType()),
+				ngt.WithClient(c),
 			).Run(ctx, b)()
+
+			op := operation.New(
+				operation.WithClient(c),
+				operation.WithIndexer(c),
+			)
+
+			insertedNum := op.Insert(b, ctx, dataset)
+			op.CreateIndex(b, ctx)
+			op.Search(b, ctx, dataset)
+			op.SearchByID(b, ctx, insertedNum)
+			op.Remove(b, ctx, insertedNum)
+		})
+	}
+}
+
+func BenchmarkAgentNGT_gRPC_Stream(b *testing.B) {
+	for _, dname := range datasets {
+		b.Run(dname, func(b *testing.B) {
+			ctx := context.Background()
+
+			dataset := assets.Data(dname)(b)
 
 			c, err := core.New(
 				core.WithAddrs(grpcAddr),
@@ -74,36 +109,24 @@ func BenchmarkAgentNGT_gRPC_Sequential(b *testing.B) {
 				b.Fatal(err)
 			}
 
-			// TODO: add error handling.
-			c.Start(ctx)
-			defer c.Stop(ctx)
+			defer ngt.New(
+				ngt.WithDimension(dataset.Dimension()),
+				ngt.WithDistanceType(dataset.DistanceType()),
+				ngt.WithObjectType(dataset.ObjectType()),
+				ngt.WithClient(c),
+			).Run(ctx, b)()
 
 			op := operation.New(
 				operation.WithClient(c),
 				operation.WithIndexer(c),
 			)
 
-			insertedNum := op.Insert(b, ctx, dataset)
+			// NOTE: StreamInsert not working..
+			insertedNum := op.StreamInsert(b, ctx, dataset)
 			op.CreateIndex(b, ctx)
-			op.Search(b, ctx, dataset)
-			op.SearchByID(b, ctx, dataset)
-			op.Remove(b, ctx, dataset, insertedNum)
-		})
-	}
-}
-
-func BenchmarkAgentNGT_gRPC_Stream(b *testing.B) {
-	for _, dname := range datasets {
-		b.Run(dname, func(b *testing.B) {
-			ctx := context.Background()
-
-			dataset := assets.Data(dname)(b)
-
-			defer ngt.New(
-				ngt.WithDimension(dataset.Dimension()),
-				ngt.WithDistanceType(dataset.DistanceType()),
-				ngt.WithObjectType(dataset.ObjectType()),
-			).Run(ctx, b)()
+			op.StreamSearch(b, ctx, dataset)
+			op.StreamSearchByID(b, ctx, insertedNum)
+			op.StreamRemove(b, ctx, insertedNum)
 		})
 	}
 }
