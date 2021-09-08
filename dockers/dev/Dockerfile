@@ -16,9 +16,9 @@
 
 ARG MAINTAINER="vdaas.org vald team <vald@vdaas.org>"
 
-FROM ubuntu:devel AS builder
+FROM ubuntu:hirsute AS builder
 ARG PROTOBUF_VERSION=3.14.0
-ARG GOLANGCI_LINT_VERSION=v1.36.0
+ARG GOLANGCI_LINT_VERSION=v1.42.1
 ARG REVIEWDOG_VERSION=v0.11.0
 ARG YQ_VERSION=4.5.0
 
