@@ -134,13 +134,12 @@ func ParseError(err error, defaultCode codes.Code, defaultMsg string, details ..
 			defaultMsg = "failed to parse grpc status from error"
 		}
 		st = newStatus(defaultCode, defaultMsg, err, details...)
-		rerr = errors.Wrap(st.Err(), err.Error())
 		if st == nil || st.Message() == "" {
-			msg = rerr.Error()
+			msg = st.Err().Error()
 		} else {
 			msg = st.Message()
 		}
-		return st, msg, errors.Wrap(st.Err(), err.Error())
+		return st, msg, st.Err()
 	}
 
 	st = withDetails(st, err, details...)
@@ -189,10 +188,6 @@ func withDetails(st *Status, err error, details ...interface{}) *Status {
 				return hostname
 			}(),
 		})
-		pst, ok := FromError(err)
-		if ok && pst.Code() != codes.OK {
-			details = append(details, pst.Details()...)
-		}
 	}
 	for _, detail := range details {
 		switch v := detail.(type) {

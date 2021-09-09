@@ -21,6 +21,7 @@ import (
 	"context"
 	"fmt"
 	"math"
+	"math/big"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -352,8 +353,8 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 		timeout = s.timeout
 	}
 
-	var maxDist uint32
-	atomic.StoreUint32(&maxDist, math.Float32bits(math.MaxFloat32))
+	var maxDist uint64
+	atomic.StoreUint64(&maxDist, math.Float64bits(math.MaxFloat64))
 	ectx, cancel = context.WithTimeout(ectx, timeout)
 	eg.Go(safety.RecoverFunc(func() error {
 		defer cancel()
@@ -399,8 +400,7 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 					return err
 				}
 			case r == nil || len(r.GetResults()) == 0:
-				err = errors.ErrEmptySearchResult
-				err = status.WrapWithNotFound("failed to process search request", err,
+				err = status.WrapWithNotFound("failed to process search request", errors.ErrEmptySearchResult,
 					&errdetails.ResourceInfo{
 						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.Search",
 						ResourceName: fmt.Sprintf("%s: %s(%s) to %s", apiName, s.name, s.ip, target),
@@ -413,8 +413,7 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 				if dist == nil {
 					continue
 				}
-
-				if dist.GetDistance() >= math.Float32frombits(atomic.LoadUint32(&maxDist)) {
+				if big.NewFloat(float64(dist.GetDistance())).Cmp(big.NewFloat(math.Float64frombits(atomic.LoadUint64(&maxDist)))) >= 0 {
 					return nil
 				}
 				if _, already := visited.LoadOrStore(dist.GetId(), struct{}{}); !already {
@@ -430,14 +429,17 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 	}))
 	add := func(dist *payload.Object_Distance) {
 		rl := len(res.GetResults()) // result length
-		if rl >= num && dist.GetDistance() >= math.Float32frombits(atomic.LoadUint32(&maxDist)) {
+		fmax := big.NewFloat(math.Float64frombits(atomic.LoadUint64(&maxDist)))
+		distance := big.NewFloat(float64(dist.GetDistance()))
+		if rl >= num && distance.Cmp(fmax) >= 0 {
 			return
 		}
 		switch rl {
 		case 0:
 			res.Results = append(res.GetResults(), dist)
 		case 1:
-			if res.GetResults()[0].GetDistance() <= dist.GetDistance() {
+
+			if distance.Cmp(big.NewFloat(float64(res.GetResults()[0].GetDistance()))) >= 0 {
 				res.Results = append(res.GetResults(), dist)
 			} else {
 				res.Results = []*payload.Object_Distance{dist, res.GetResults()[0]}
@@ -445,7 +447,7 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 		default:
 			pos := rl
 			for idx := rl; idx >= 1; idx-- {
-				if res.GetResults()[idx-1].GetDistance() <= dist.GetDistance() {
+				if distance.Cmp(big.NewFloat(float64(res.GetResults()[idx-1].GetDistance()))) >= 0 {
 					pos = idx - 1
 					break
 				}
@@ -465,9 +467,9 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 			res.Results = res.GetResults()[:num]
 			rl = len(res.GetResults())
 		}
-		if distEnd := res.GetResults()[rl-1].GetDistance(); rl >= num &&
-			distEnd < math.Float32frombits(atomic.LoadUint32(&maxDist)) {
-			atomic.StoreUint32(&maxDist, math.Float32bits(distEnd))
+		if distEnd := float64(res.GetResults()[rl-1].GetDistance()); rl >= num &&
+			big.NewFloat(distEnd).Cmp(fmax) < 0 {
+			atomic.StoreUint64(&maxDist, math.Float64bits(distEnd))
 		}
 	}
 	for {
@@ -505,8 +507,7 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 				if err == nil {
 					err = errors.ErrEmptySearchResult
 				}
-				st, msg, err := status.ParseError(err, codes.NotFound,
-					"error search result length is 0",
+				err = status.WrapWithNotFound("error search result length is 0", err,
 					&errdetails.RequestInfo{
 						RequestId:   cfg.GetRequestId(),
 						ServingData: errdetails.Serialize(cfg),
@@ -516,7 +517,7 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 						ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
 					}, info.Get())
 				if span != nil {
-					span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
+					span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 				}
 				return nil, err
 			}

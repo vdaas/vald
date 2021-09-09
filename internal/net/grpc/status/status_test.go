@@ -1701,6 +1701,7 @@ func TestParseError(t *testing.T) {
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
+	// info.Init("")
 	defaultCheckFunc := func(w want, gotSt *Status, gotMsg string, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
@@ -1714,7 +1715,41 @@ func TestParseError(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
+		// func() test {
+		// 	err := WrapWithNotFound(errors.ErrEmptySearchResult.Error(), errors.ErrEmptySearchResult,
+		// 		&errdetails.RequestInfo{
+		// 			RequestId: "sample request ID",
+		// 		},
+		// 		&errdetails.ResourceInfo{
+		// 			ResourceType: "sample resource type",
+		// 			ResourceName: "sample resource name",
+		// 		}, info.Get())
+		// 	// _, _, err := ParseError(errors.ErrEmptySearchResult, codes.NotFound,
+		// 	// 	"error search result length is 0",
+		// 	// 	&errdetails.RequestInfo{
+		// 	// 		RequestId: "sample request ID",
+		// 	// 	},
+		// 	// 	&errdetails.ResourceInfo{
+		// 	// 		ResourceType: "sample resource type",
+		// 	// 		ResourceName: "sample resource name",
+		// 	// 	}, info.Get())
+		// 	// _, _ = st, msg
+		// 	return test{
+		// 		name: "test_case_1",
+		// 		args: args{
+		// 			err:         err,
+		// 			defaultCode: codes.Internal,
+		// 			defaultMsg:  "failed to parse Search gRPC error response",
+		// 			details:     nil,
+		// 		},
+		// 		want: want{},
+		// 		checkFunc: func(w want, gotSt *Status, gotMsg string, err error) error {
+		// 			b, err := json.MarshalIndent(gotSt.Details(), "", "\t")
+		// 			t.Log(gotSt.String(), string(b), err)
+		// 			return errors.ErrEmptySearchResult
+		// 		},
+		// 	}
+		// }(),
 		/*
 		   {
 		       name: "test_case_1",
