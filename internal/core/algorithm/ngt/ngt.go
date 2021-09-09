@@ -305,7 +305,7 @@ func (n *ngt) loadObjectSpace() error {
 }
 
 // Search returns search result as []SearchResult.
-func (n *ngt) Search(vec []float32, size int, epsilon, radius float32) ([]SearchResult, error) {
+func (n *ngt) Search(vec []float32, size int, epsilon, radius float32) (result []SearchResult, err error) {
 	if len(vec) != int(n.dimension) {
 		return nil, errors.ErrIncompatibleDimensionSize(len(vec), int(n.dimension))
 	}
@@ -345,16 +345,18 @@ func (n *ngt) Search(vec []float32, size int, epsilon, radius float32) ([]Search
 		n.mu.RUnlock()
 		return nil, n.newGoError(ne)
 	}
-
 	n.mu.RUnlock()
 
-	rsize := int(C.ngt_get_result_size(results, n.ebuf))
-	if rsize == -1 {
+	switch rsize := int(C.ngt_get_result_size(results, n.ebuf)); rsize {
+	case -1:
 		return nil, n.newGoError(n.ebuf)
+	case 0:
+		return nil, errors.ErrEmptySearchResult
+	default:
+		result = make([]SearchResult, rsize)
 	}
 
-	result := make([]SearchResult, rsize)
-	for i := 0; i < rsize; i++ {
+	for i := range result {
 		d := C.ngt_get_result(results, C.uint32_t(i), n.ebuf)
 		if d.id == 0 && d.distance == 0 {
 			result[i] = SearchResult{0, 0, n.newGoError(n.ebuf)}
