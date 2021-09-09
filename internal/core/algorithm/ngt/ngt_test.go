@@ -305,7 +305,7 @@ func TestLoad(t *testing.T) {
 
 					// check no vector can be searched
 					vs, err := n.Search([]float32{0, 1, 2, 3, 4, 5, 6, 7, 8}, 10, 0, 0)
-					if err != nil {
+					if err != nil && !errors.Is(err, errors.ErrEmptySearchResult) {
 						return err
 					}
 					if len(vs) != 0 {
@@ -373,7 +373,7 @@ func TestLoad(t *testing.T) {
 
 					// check inserted vector can be searched
 					vs, err := n.Search(vec, 10, 0, 0)
-					if err != nil {
+					if err != nil && !errors.Is(err, errors.ErrEmptySearchResult) {
 						return err
 					}
 					if len(vs) != 1 || vs[0].ID != 1 || vs[0].Distance != 0 {
@@ -435,7 +435,7 @@ func TestLoad(t *testing.T) {
 
 					// check no vector can be searched
 					vs, err := n.Search([]float32{0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8}, 10, 0, 0)
-					if err != nil {
+					if err != nil && !errors.Is(err, errors.ErrEmptySearchResult) {
 						return err
 					}
 					if len(vs) != 0 {
@@ -503,7 +503,7 @@ func TestLoad(t *testing.T) {
 
 					// check inserted vector can be searched
 					vs, err := n.Search(vec, 10, 0, 0)
-					if err != nil {
+					if err != nil && !errors.Is(err, errors.ErrEmptySearchResult) {
 						return err
 					}
 					if len(vs) != 1 || vs[0].ID != 1 || vs[0].Distance != 0 {
@@ -553,7 +553,7 @@ func TestLoad(t *testing.T) {
 
 					// check no vector can be searched
 					vs, err := n.Search(vec, 10, 0, 0)
-					if err != nil {
+					if err != nil && !errors.Is(err, errors.ErrEmptySearchResult) {
 						return err
 					}
 					if len(vs) != 0 {
@@ -609,7 +609,7 @@ func TestLoad(t *testing.T) {
 
 					// check no vector can be searched
 					vs, err := n.Search(vec, 10, 0, 0)
-					if err != nil {
+					if err != nil && !errors.Is(err, errors.ErrEmptySearchResult) {
 						return err
 					}
 					if len(vs) != 0 {
@@ -766,7 +766,7 @@ func Test_gen(t *testing.T) {
 
 					// check inserted vector can be searched
 					vs, err := n.Search(vec, 10, 0, 0)
-					if err != nil {
+					if err != nil && !errors.Is(err, errors.ErrEmptySearchResult) {
 						return err
 					}
 					if len(vs) != 1 || vs[0].ID != 1 || vs[0].Distance != 0 {
@@ -1887,7 +1887,7 @@ func Test_ngt_Insert(t *testing.T) {
 
 		// search before indexing, it should return nothing
 		r, err := n.Search(args.vec, 5, 0, 0)
-		if err != nil {
+		if err != nil && !errors.Is(err, errors.ErrEmptySearchResult) {
 			return err
 		}
 		if len(r) != 0 {
@@ -2415,7 +2415,7 @@ func Test_ngt_BulkInsert(t *testing.T) {
 				continue
 			}
 			r, err := n.Search(vec, 1, 0, 0)
-			if err != nil {
+			if err != nil && !errors.Is(err, errors.ErrEmptySearchResult) {
 				return err
 			}
 			if len(r) != 0 {
@@ -3596,7 +3596,7 @@ func Test_ngt_SaveIndex(t *testing.T) {
 
 					// search the inserted vector exists after create index
 					for _, v := range ivs {
-						if rs, err := n.Search(v, 1, 0, 0); err != nil {
+						if rs, err := n.Search(v, 1, 0, 0); err != nil && !errors.Is(err, errors.ErrEmptySearchResult) {
 							if rs[0].Distance != 0 {
 								return errors.Errorf("vector distance is invalid, got: %d, want: %d", rs[0].Distance, 0)
 							}
@@ -3655,7 +3655,7 @@ func Test_ngt_SaveIndex(t *testing.T) {
 
 					// search the inserted vector exists after create index
 					for _, v := range ivs {
-						if rs, err := n.Search(v, 1, 0, 0); err != nil {
+						if rs, err := n.Search(v, 1, 0, 0); err != nil && !errors.Is(err, errors.ErrEmptySearchResult) {
 							if rs[0].Distance != 0 {
 								return errors.Errorf("vector distance is invalid, got: %d, want: %d", rs[0].Distance, 0)
 							}

@@ -29,6 +29,7 @@ import (
 	"github.com/leanovate/gopter/commands"
 	"github.com/leanovate/gopter/gen"
 	"github.com/vdaas/vald/internal/config"
+	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/model"
 )
@@ -515,8 +516,7 @@ var (
 			result commands.Result,
 		) *gopter.PropResult {
 			rc := result.(*resultContainer)
-
-			if rc.err != nil {
+			if rc.err != nil && !errors.Is(rc.err, errors.ErrEmptySearchResult) {
 				return &gopter.PropResult{
 					Status: gopter.PropFalse,
 					Error:  rc.err,
@@ -562,7 +562,7 @@ var (
 		) *gopter.PropResult {
 			rc := result.(*resultContainer)
 
-			if rc.err != nil {
+			if rc.err != nil && !errors.Is(rc.err, errors.ErrEmptySearchResult) {
 				return &gopter.PropResult{
 					Status: gopter.PropFalse,
 					Error:  rc.err,
@@ -608,7 +608,7 @@ var (
 		) *gopter.PropResult {
 			rc := result.(*resultContainer)
 
-			if rc.err != nil {
+			if rc.err != nil && !errors.Is(rc.err, errors.ErrEmptySearchResult) {
 				return &gopter.PropResult{
 					Status: gopter.PropFalse,
 					Error:  rc.err,
@@ -654,7 +654,7 @@ var (
 		) *gopter.PropResult {
 			rc := result.(*resultContainer)
 
-			if rc.err != nil {
+			if rc.err != nil && !errors.Is(rc.err, errors.ErrEmptySearchResult) {
 				return &gopter.PropResult{
 					Status: gopter.PropFalse,
 					Error:  rc.err,
