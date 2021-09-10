@@ -515,8 +515,13 @@ var (
 			state commands.State,
 			result commands.Result,
 		) *gopter.PropResult {
+			st := state.(*ngtState)
 			rc := result.(*resultContainer)
-			if rc.err != nil && !errors.Is(rc.err, errors.ErrEmptySearchResult) {
+			if rc.err != nil &&
+				!(st.states[idA] != INDEXED &&
+					st.states[idB] != INDEXED &&
+					st.states[idC] != INDEXED &&
+					errors.Is(rc.err, errors.ErrEmptySearchResult)) {
 				return &gopter.PropResult{
 					Status: gopter.PropFalse,
 					Error:  rc.err,
@@ -562,7 +567,7 @@ var (
 		) *gopter.PropResult {
 			rc := result.(*resultContainer)
 
-			if rc.err != nil && !errors.Is(rc.err, errors.ErrEmptySearchResult) {
+			if rc.err != nil {
 				return &gopter.PropResult{
 					Status: gopter.PropFalse,
 					Error:  rc.err,
@@ -608,7 +613,7 @@ var (
 		) *gopter.PropResult {
 			rc := result.(*resultContainer)
 
-			if rc.err != nil && !errors.Is(rc.err, errors.ErrEmptySearchResult) {
+			if rc.err != nil {
 				return &gopter.PropResult{
 					Status: gopter.PropFalse,
 					Error:  rc.err,
@@ -654,7 +659,7 @@ var (
 		) *gopter.PropResult {
 			rc := result.(*resultContainer)
 
-			if rc.err != nil && !errors.Is(rc.err, errors.ErrEmptySearchResult) {
+			if rc.err != nil {
 				return &gopter.PropResult{
 					Status: gopter.PropFalse,
 					Error:  rc.err,

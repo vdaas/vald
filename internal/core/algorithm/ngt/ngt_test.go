@@ -1794,6 +1794,26 @@ func Test_ngt_Search(t *testing.T) {
 				err: errors.New("incompatible dimension size detected\trequested: 10,\tconfigured: 9"),
 			},
 		},
+		{
+			name: "return ErrEmptySearchResult error if there is no inserted vector",
+			args: args{
+				vec:  []float32{0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9},
+				size: 3,
+			},
+			fields: fields{
+				inMemory:            false,
+				idxPath:             "/tmp/ngt-812",
+				bulkInsertChunkSize: 100,
+				dimension:           9,
+				objectType:          Float,
+				radius:              float32(-1.0),
+				epsilon:             float32(0.1),
+			},
+			createFunc: defaultCreateFunc,
+			want: want{
+				err: errors.ErrEmptySearchResult,
+			},
+		},
 	}
 
 	for _, tc := range tests {
