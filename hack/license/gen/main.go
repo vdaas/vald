@@ -20,6 +20,7 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -50,6 +51,7 @@ var (
 `))
 	slushEscape = "//"
 	sharpEscape = "#"
+	licMap      = make(map[string]*bytes.Buffer)
 )
 
 type Data struct {
@@ -71,8 +73,7 @@ func main() {
 	}
 	for _, path := range dirwalk(os.Args[1]) {
 		fmt.Println(path)
-		err := readAndRewrite(path)
-		if err != nil {
+		if err := readAndRewrite(path); err != nil {
 			log.Fatal(err)
 		}
 	}
@@ -175,6 +176,7 @@ func readAndRewrite(path string) error {
 	if len(maintainer) == 0 {
 		maintainer = defaultMaintainer
 	}
+
 	d := Data{
 		Maintainer: maintainer,
 		Year:       time.Now().Year(),
@@ -182,8 +184,7 @@ func readAndRewrite(path string) error {
 	}
 
 	if fi.Name() == "LICENSE" {
-		err = license.Execute(buf, d)
-		if err != nil {
+		if err := license.Execute(buf, d); err != nil {
 			log.Fatal(err)
 		}
 	} else {
@@ -194,90 +195,95 @@ func readAndRewrite(path string) error {
 		}
 		sc := bufio.NewScanner(f)
 
-		process(sc, ext, buf, d)
+		lic, err := getLicenseHeader(ext, &d)
+		if err != nil {
+			return nil
+		}
+
+		if err := process(sc, ext, buf, lic); err != nil {
+			return errors.Errorf("error writing to buffer, err: %s", err)
+		}
 	}
 
-	err = os.RemoveAll(path)
-	if err != nil {
+	// remove origin file
+	if err = os.RemoveAll(path); err != nil {
 		return errors.Errorf("filepath %s, could not delete", path)
 	}
 
-	f, err = os.Create(path)
+	// create file and write content
+	of, err := os.Create(path)
 	if err != nil {
-		if err := f.Close(); err != nil {
-			log.Fatal(err)
-		}
 		return errors.Errorf("filepath %s, could not open", path)
 	}
 	defer func() {
-		if err = f.Close(); err != nil {
+		if err = of.Close(); err != nil {
 			log.Fatal(err)
 		}
 	}()
 
-	if _, err = f.WriteString(strings.ReplaceAll(buf.String(), d.Escape+"\n\n\n", d.Escape+"\n\n")); err != nil {
+	if _, err = of.WriteString(strings.ReplaceAll(buf.String(), d.Escape+"\n\n\n", d.Escape+"\n\n")); err != nil {
 		log.Fatal(err)
 	}
-	if err := f.Sync(); err != nil {
+	if err := of.Sync(); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func process(in *bufio.Scanner, ext string, out *bytes.Buffer, d Data) {
+func process(in *bufio.Scanner, ext string, out *bytes.Buffer, licenseHeader *bytes.Buffer) error {
 	haveHeader := false
-	var line string
+	line := ""
 
 	// write header string to output
 	for in.Scan() {
 		line = in.Text()
-		if !isBuildFlag(ext, line) {
-			if strings.HasPrefix(line, d.Escape) {
-				continue
+		if isBuildFlag(ext, line) {
+			if _, err := out.WriteString(line); err != nil {
+				return err
 			}
+			if _, err := out.WriteString("\n"); err != nil {
+				return err
+			}
+			haveHeader = true
+		} else if line == "" {
+			continue
+		} else {
 			break
 		}
-
-		if _, err := out.WriteString(line); err != nil {
-			log.Fatal(err)
-		}
-		if _, err := out.WriteString("\n"); err != nil {
-			log.Fatal(err)
-		}
-		haveHeader = true
 	}
 
-	// append empty line between header and content
+	// append license
 	if haveHeader {
-		if _, err := out.WriteString("\n"); err != nil {
-			log.Fatal(err)
+		// write license
+		if _, err := io.Copy(out, licenseHeader); err != nil {
+			return err
 		}
-	}
-
-	// write license
-	if err := apache.Execute(out, d); err != nil {
-		log.Fatal(err)
+		if _, err := out.WriteString("\n"); err != nil {
+			return err
+		}
 	}
 
 	// process the remaining line read from scanner
 	if _, err := out.WriteString(line); err != nil {
-		log.Fatal(err)
+		return err
 	}
 	if _, err := out.WriteString("\n"); err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	// write remaining contents
 	for in.Scan() {
 		line = in.Text()
 		if _, err := out.WriteString(line); err != nil {
-			log.Fatal(err)
+			return err
 		}
 		if _, err := out.WriteString("\n"); err != nil {
-			log.Fatal(err)
+			return err
 		}
 	}
+
+	return nil
 }
 
 func isBuildFlag(ext, line string) bool {
@@ -289,6 +295,19 @@ func isBuildFlag(ext, line string) bool {
 	default:
 		return false
 	}
+}
+
+func getLicenseHeader(ext string, d *Data) (*bytes.Buffer, error) {
+	if buf, ok := licMap[ext]; ok {
+		return buf, nil
+	}
+	lic := new(bytes.Buffer)
+	if err := apache.Execute(lic, d); err != nil {
+		return nil, err
+	}
+
+	licMap[ext] = lic
+	return lic, nil
 }
 
 var license = template.Must(template.New("LICENSE").Parse(
