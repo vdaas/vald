@@ -90,7 +90,9 @@ func (o *operation) StreamSearch(b *testing.B, ctx context.Context, ds assets.Da
 			}
 		}
 
-		sc.CloseSend()
+		if err := sc.CloseSend(); err != nil {
+			b.Fatal(err)
+		}
 		wg.Wait()
 	})
 }
@@ -161,7 +163,9 @@ func (o *operation) StreamSearchByID(b *testing.B, ctx context.Context, maxIdNum
 			}
 		}
 
-		sc.CloseSend()
+		if err := sc.CloseSend(); err != nil {
+			b.Fatal(err)
+		}
 		wg.Wait()
 	})
 }

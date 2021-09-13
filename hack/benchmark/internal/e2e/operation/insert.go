@@ -5,6 +5,7 @@ import (
 	"io"
 	"strconv"
 	"sync"
+	"sync/atomic"
 	"testing"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
@@ -18,24 +19,26 @@ func (o *operation) Insert(b *testing.B, ctx context.Context, ds assets.Dataset)
 	b.Run("Insert", func(b *testing.B) {
 		req := &payload.Insert_Request{
 			Vector: &payload.Object_Vector{},
+			Config: &payload.Insert_Config{
+				SkipStrictExistCheck: false,
+			},
 		}
 		b.ResetTimer()
 
 		for i := 0; i < b.N; i++ {
-			idx := i % ds.TrainSize()
-			v, err := ds.Train(idx)
+			v, err := ds.Train(i % ds.TrainSize())
 			if err != nil {
 				b.Error(err)
 				continue
 			}
 
-			req.Vector.Id, req.Vector.Vector = strconv.Itoa(idx), v.([]float32)
+			req.Vector.Id, req.Vector.Vector = strconv.Itoa(i), v.([]float32)
 
 			loc, err := o.client.Insert(ctx, req)
 			if err != nil {
-				st, ok := status.FromError(err)
-				if !ok || st.Code() != codes.AlreadyExists {
-					statusError(b, st)
+				st, _ := status.FromError(err)
+				if st.Code() != codes.AlreadyExists {
+					statusError(b, int32(st.Code()), st.Message(), st.Details()...)
 				}
 				continue
 			}
@@ -48,7 +51,8 @@ func (o *operation) Insert(b *testing.B, ctx context.Context, ds assets.Dataset)
 	return insertedNum
 }
 
-func (o *operation) StreamInsert(b *testing.B, ctx context.Context, ds assets.Dataset) (insertedNum int) {
+func (o *operation) StreamInsert(b *testing.B, ctx context.Context, ds assets.Dataset) int {
+	var insertedNum int64
 	b.ResetTimer()
 	b.Run("StreamInsert", func(b *testing.B) {
 		sc, err := o.client.StreamInsert(ctx)
@@ -61,6 +65,9 @@ func (o *operation) StreamInsert(b *testing.B, ctx context.Context, ds assets.Da
 
 		req := &payload.Insert_Request{
 			Vector: &payload.Object_Vector{},
+			Config: &payload.Insert_Config{
+				SkipStrictExistCheck: false,
+			},
 		}
 		b.ResetTimer()
 
@@ -74,40 +81,44 @@ func (o *operation) StreamInsert(b *testing.B, ctx context.Context, ds assets.Da
 				}
 
 				if err != nil {
-					st, ok := status.FromError(err)
-					if !ok || st.Code() != codes.AlreadyExists {
-						statusError(b, st)
-					}
-					continue
+					return
 				}
 
 				loc := res.GetLocation()
 				if loc == nil {
+					st := res.GetStatus()
+					if st != nil {
+						if st.GetCode() != int32(codes.AlreadyExists) {
+							statusError(b, st.GetCode(), st.GetMessage(), st.GetDetails())
+						}
+						continue
+					}
 					b.Error("returned loc is nil")
+					continue
 				}
+				atomic.AddInt64(&insertedNum, 1)
 			}
 		}()
 
 		for i := 0; i < b.N; i++ {
-			idx := i % ds.TrainSize()
-			v, err := ds.Train(idx)
+			v, err := ds.Train(i % ds.TrainSize())
 			if err != nil {
 				b.Error(err)
 				continue
 			}
 
-			req.Vector.Id, req.Vector.Vector = strconv.Itoa(idx), v.([]float32)
+			req.Vector.Id, req.Vector.Vector = strconv.Itoa(i), v.([]float32)
 			err = sc.Send(req)
 			if err != nil {
 				b.Error(err)
-				continue
 			}
-			insertedNum++
 		}
 
-		sc.CloseSend()
+		if err := sc.CloseSend(); err != nil {
+			b.Fatal(err)
+		}
 		wg.Wait()
 	})
 
-	return insertedNum
+	return int(insertedNum)
 }

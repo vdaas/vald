@@ -8,7 +8,6 @@ import (
 	"testing"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
-	"google.golang.org/grpc/status"
 )
 
 func (o *operation) Remove(b *testing.B, ctx context.Context, maxIdNum int) {
@@ -73,7 +72,7 @@ func (o *operation) StreamRemove(b *testing.B, ctx context.Context, maxIdNum int
 				if loc == nil {
 					st := res.GetStatus()
 					if st != nil {
-						statusError(b, status.FromProto(st))
+						statusError(b, st.GetCode(), st.GetMessage(), st.GetDetails())
 						continue
 					}
 
@@ -91,7 +90,9 @@ func (o *operation) StreamRemove(b *testing.B, ctx context.Context, maxIdNum int
 			}
 		}
 
-		sc.CloseSend()
+		if err := sc.CloseSend(); err != nil {
+			b.Fatal(err)
+		}
 		wg.Wait()
 	})
 }

@@ -25,13 +25,10 @@ func grpcError(tb testing.TB, err error) {
 	)
 }
 
-func statusError(tb testing.TB, st *status.Status) {
+func statusError(tb testing.TB, code int32, message string, details ...interface{}) {
 	tb.Helper()
-	if st == nil {
-		return
-	}
 	tb.Errorf("code: %d\tmessage: %s\tdetails: %s",
-		st.Code(),
-		st.Message(),
-		errdetails.Serialize(st.Details()))
+		code,
+		message,
+		errdetails.Serialize(details...))
 }

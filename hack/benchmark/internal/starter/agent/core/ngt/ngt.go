@@ -19,13 +19,13 @@ package ngt
 
 import (
 	"context"
-	"fmt"
 	"sync"
 	"testing"
 	"time"
 
 	"github.com/vdaas/vald/hack/benchmark/internal/starter"
 	"github.com/vdaas/vald/internal/client/v1/client/vald"
+	"github.com/vdaas/vald/internal/info"
 	"github.com/vdaas/vald/internal/runner"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/config"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/usecase"
@@ -48,6 +48,8 @@ func New(opts ...Option) starter.Starter {
 
 func (s *server) Run(ctx context.Context, tb testing.TB) func() {
 	tb.Helper()
+
+	info.Init(name)
 
 	daemon, err := usecase.New(s.cfg)
 	if err != nil {
@@ -73,7 +75,6 @@ func (s *server) Run(ctx context.Context, tb testing.TB) func() {
 	if err != nil {
 		tb.Fatal(err)
 	}
-	fmt.Println(ech)
 
 	wg.Add(1)
 	go func() {
