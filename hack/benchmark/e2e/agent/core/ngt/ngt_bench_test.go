@@ -22,7 +22,7 @@ import (
 	"testing"
 
 	"github.com/vdaas/vald/hack/benchmark/internal/assets"
-	"github.com/vdaas/vald/hack/benchmark/internal/e2e/operation"
+	"github.com/vdaas/vald/hack/benchmark/internal/operation"
 	"github.com/vdaas/vald/hack/benchmark/internal/starter/agent/core/ngt"
 	"github.com/vdaas/vald/internal/client/v1/client/agent/core"
 	"github.com/vdaas/vald/internal/log"
@@ -121,7 +121,6 @@ func BenchmarkAgentNGT_gRPC_Stream(b *testing.B) {
 				operation.WithIndexer(c),
 			)
 
-			// NOTE: StreamInsert not working..
 			insertedNum := op.StreamInsert(b, ctx, dataset)
 			op.CreateIndex(b, ctx)
 			op.StreamSearch(b, ctx, dataset)
