@@ -24,7 +24,6 @@ import (
 
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
-	"github.com/vdaas/vald/internal/rand"
 	"go.uber.org/goleak"
 )
 
@@ -92,13 +91,14 @@ func TestWithErrGroup(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+			checkFunc := defaultCheckFunc
+			if test.checkFunc != nil {
+				checkFunc = test.checkFunc
 			}
 
 			got := WithErrGroup(test.args.eg)
 			obj := new(T)
-			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			if err := checkFunc(test.want, obj, got(obj)); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -168,13 +168,14 @@ func TestWithEnableInMemoryMode(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+			checkFunc := defaultCheckFunc
+			if test.checkFunc != nil {
+				checkFunc = test.checkFunc
 			}
 
 			got := WithEnableInMemoryMode(test.args.enabled)
 			obj := new(T)
-			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			if err := checkFunc(test.want, obj, got(obj)); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -245,13 +246,14 @@ func TestWithIndexPath(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+			checkFunc := defaultCheckFunc
+			if test.checkFunc != nil {
+				checkFunc = test.checkFunc
 			}
 
 			got := WithIndexPath(test.args.path)
 			obj := new(T)
-			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			if err := checkFunc(test.want, obj, got(obj)); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -331,13 +333,14 @@ func TestWithAutoIndexCheckDuration(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+			checkFunc := defaultCheckFunc
+			if test.checkFunc != nil {
+				checkFunc = test.checkFunc
 			}
 
 			got := WithAutoIndexCheckDuration(test.args.dur)
 			obj := new(T)
-			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			if err := checkFunc(test.want, obj, got(obj)); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -417,13 +420,14 @@ func TestWithAutoIndexDurationLimit(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+			checkFunc := defaultCheckFunc
+			if test.checkFunc != nil {
+				checkFunc = test.checkFunc
 			}
 
 			got := WithAutoIndexDurationLimit(test.args.dur)
 			obj := new(T)
-			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			if err := checkFunc(test.want, obj, got(obj)); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -503,13 +507,14 @@ func TestWithAutoSaveIndexDuration(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+			checkFunc := defaultCheckFunc
+			if test.checkFunc != nil {
+				checkFunc = test.checkFunc
 			}
 
 			got := WithAutoSaveIndexDuration(test.args.dur)
 			obj := new(T)
-			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			if err := checkFunc(test.want, obj, got(obj)); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -579,13 +584,14 @@ func TestWithAutoIndexLength(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+			checkFunc := defaultCheckFunc
+			if test.checkFunc != nil {
+				checkFunc = test.checkFunc
 			}
 
 			got := WithAutoIndexLength(test.args.l)
 			obj := new(T)
-			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			if err := checkFunc(test.want, obj, got(obj)); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -636,10 +642,11 @@ func TestWithInitialDelayMaxDuration(t *testing.T) {
 			args: args{
 				dur: "5s",
 			},
-			want: want{
-				obj: &T{
-					idelay: time.Duration(int64(rand.LimitedUint32(uint64(5*time.Second/time.Second)))) * time.Second,
-				},
+			checkFunc: func(w want, t *T, e error) error {
+				if t.idelay == 0 {
+					return errors.New("delay value is 0")
+				}
+				return nil
 			},
 		},
 		{
@@ -665,13 +672,14 @@ func TestWithInitialDelayMaxDuration(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+			checkFunc := defaultCheckFunc
+			if test.checkFunc != nil {
+				checkFunc = test.checkFunc
 			}
 
 			got := WithInitialDelayMaxDuration(test.args.dur)
 			obj := new(T)
-			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			if err := checkFunc(test.want, obj, got(obj)); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -751,13 +759,14 @@ func TestWithMinLoadIndexTimeout(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+			checkFunc := defaultCheckFunc
+			if test.checkFunc != nil {
+				checkFunc = test.checkFunc
 			}
 
 			got := WithMinLoadIndexTimeout(test.args.dur)
 			obj := new(T)
-			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			if err := checkFunc(test.want, obj, got(obj)); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -837,13 +846,14 @@ func TestWithMaxLoadIndexTimeout(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+			checkFunc := defaultCheckFunc
+			if test.checkFunc != nil {
+				checkFunc = test.checkFunc
 			}
 
 			got := WithMaxLoadIndexTimeout(test.args.dur)
 			obj := new(T)
-			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			if err := checkFunc(test.want, obj, got(obj)); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -923,13 +933,14 @@ func TestWithLoadIndexTimeoutFactor(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+			checkFunc := defaultCheckFunc
+			if test.checkFunc != nil {
+				checkFunc = test.checkFunc
 			}
 
 			got := WithLoadIndexTimeoutFactor(test.args.dur)
 			obj := new(T)
-			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			if err := checkFunc(test.want, obj, got(obj)); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -999,13 +1010,14 @@ func TestWithDefaultPoolSize(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+			checkFunc := defaultCheckFunc
+			if test.checkFunc != nil {
+				checkFunc = test.checkFunc
 			}
 
 			got := WithDefaultPoolSize(test.args.ps)
 			obj := new(T)
-			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			if err := checkFunc(test.want, obj, got(obj)); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1075,13 +1087,14 @@ func TestWithDefaultRadius(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+			checkFunc := defaultCheckFunc
+			if test.checkFunc != nil {
+				checkFunc = test.checkFunc
 			}
 
 			got := WithDefaultRadius(test.args.rad)
 			obj := new(T)
-			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			if err := checkFunc(test.want, obj, got(obj)); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1151,13 +1164,14 @@ func TestWithDefaultEpsilon(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+			checkFunc := defaultCheckFunc
+			if test.checkFunc != nil {
+				checkFunc = test.checkFunc
 			}
 
 			got := WithDefaultEpsilon(test.args.epsilon)
 			obj := new(T)
-			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			if err := checkFunc(test.want, obj, got(obj)); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1227,13 +1241,14 @@ func TestWithProactiveGC(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+			checkFunc := defaultCheckFunc
+			if test.checkFunc != nil {
+				checkFunc = test.checkFunc
 			}
 
 			got := WithProactiveGC(test.args.enabled)
 			obj := new(T)
-			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			if err := checkFunc(test.want, obj, got(obj)); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
