@@ -81,6 +81,9 @@ func (o *operation) StreamInsert(b *testing.B, ctx context.Context, ds assets.Da
 				}
 
 				if err != nil {
+					// When the StreamInsert handler on the Server side returns an error, the error will be returned to Recv method.
+					// In the case of multiple executions, such as benchmarking, an error will occur even if AlreadyExist occurs for some of them.
+					// To prevent this, we close the stream early when an error occurs.
 					return
 				}
 
