@@ -329,7 +329,7 @@ func (c *client) InsertWithParameters(
 }
 
 func (c *client) Update(t *testing.T, ctx context.Context, ds Dataset) error {
-	return c.UpdateWithParameters(t, ctx, ds, false)
+	return c.UpdateWithParameters(t, ctx, ds, false, 0)
 }
 
 func (c *client) UpdateWithParameters(
@@ -337,6 +337,7 @@ func (c *client) UpdateWithParameters(
 	ctx context.Context,
 	ds Dataset,
 	skipStrictExistCheck bool,
+	offset int,
 ) error {
 	t.Log("update operation started")
 
@@ -397,7 +398,7 @@ func (c *client) UpdateWithParameters(
 		err := sc.Send(&payload.Update_Request{
 			Vector: &payload.Object_Vector{
 				Id:     id,
-				Vector: append(v[1:], v[0]),
+				Vector: append(v[offset+1:], v[offset]),
 			},
 			Config: &payload.Update_Config{
 				SkipStrictExistCheck: skipStrictExistCheck,
@@ -418,7 +419,7 @@ func (c *client) UpdateWithParameters(
 }
 
 func (c *client) Upsert(t *testing.T, ctx context.Context, ds Dataset) error {
-	return c.UpsertWithParameters(t, ctx, ds, false)
+	return c.UpsertWithParameters(t, ctx, ds, false, 1)
 }
 
 func (c *client) UpsertWithParameters(
@@ -426,6 +427,7 @@ func (c *client) UpsertWithParameters(
 	ctx context.Context,
 	ds Dataset,
 	skipStrictExistCheck bool,
+	offset int,
 ) error {
 	t.Log("upsert operation started")
 
@@ -486,7 +488,7 @@ func (c *client) UpsertWithParameters(
 		err := sc.Send(&payload.Upsert_Request{
 			Vector: &payload.Object_Vector{
 				Id:     id,
-				Vector: v,
+				Vector: append(v[offset+1:], v[offset]),
 			},
 			Config: &payload.Upsert_Config{
 				SkipStrictExistCheck: skipStrictExistCheck,

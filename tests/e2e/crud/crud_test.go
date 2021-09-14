@@ -29,6 +29,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/tests/e2e/hdf5"
 	"github.com/vdaas/vald/tests/e2e/kubernetes/client"
 	"github.com/vdaas/vald/tests/e2e/kubernetes/portforward"
@@ -328,60 +329,122 @@ func TestE2ECRUDWithSkipStrictExistCheck(t *testing.T) {
 		t.Fatalf("an error occurred: %s", err)
 	}
 
+	// #1 run Update with SkipStrictExistCheck=true and check that it fails.
+	err = op.UpdateWithParameters(t, ctx, operation.Dataset{
+		Train: ds.Train[insertFrom : insertFrom+insertNum],
+	}, true, 1)
+	if err == nil {
+		t.Fatalf("no error occurred on Update #1")
+	}
+
+	// #2 run Update with SkipStrictExistCheck=false, and check that the internal Remove Operation returns a NotFound error
+	err = op.UpdateWithParameters(t, ctx, operation.Dataset{
+		Train: ds.Train[insertFrom : insertFrom+insertNum],
+	}, false, 1)
+	if err == nil {
+		t.Fatalf("no error occurred on Update #1")
+	}
+	if !errors.As(err, errors.ErrIndexNotFound) {
+		t.Fatalf("the returned error is not a NotFound error on Update #2: %s", err)
+	}
+
+	// #3 run Insert with SkipStrictExistCheck=false and confirmed that it succeeded
 	err = op.InsertWithParameters(t, ctx, operation.Dataset{
 		Train: ds.Train[insertFrom : insertFrom+insertNum],
-	}, true)
+	}, false)
 	if err != nil {
-		t.Fatalf("an error occurred: %s", err)
+		t.Fatalf("an error occurred on #3: %s", err)
 	}
 
-	sleep(t, waitAfterInsertDuration)
-
-	err = op.Search(t, ctx, operation.Dataset{
-		Test:      ds.Test[searchFrom : searchFrom+searchNum],
-		Neighbors: ds.Neighbors[searchFrom : searchFrom+searchNum],
-	})
-	if err != nil {
-		t.Fatalf("an error occurred: %s", err)
-	}
-
-	err = op.SearchByID(t, ctx, operation.Dataset{
-		Train: ds.Train[searchByIDFrom : searchByIDFrom+searchByIDNum],
-	})
-	if err != nil {
-		t.Fatalf("an error occurred: %s", err)
-	}
-
-	err = op.Exists(t, ctx, "0")
-	if err != nil {
-		t.Fatalf("an error occurred: %s", err)
-	}
-
-	err = op.GetObject(t, ctx, operation.Dataset{
-		Train: ds.Train[getObjectFrom : getObjectFrom+getObjectNum],
-	})
-	if err != nil {
-		t.Fatalf("an error occurred: %s", err)
-	}
-
+	// #4 run Update with SkipStrictExistCheck=false & a different vector, and check that it succeeds
 	err = op.UpdateWithParameters(t, ctx, operation.Dataset{
-		Train: ds.Train[updateFrom : updateFrom+updateNum],
-	}, true)
+		Train: ds.Train[insertFrom : insertFrom+insertNum],
+	}, false, 1)
 	if err != nil {
-		t.Fatalf("an error occurred: %s", err)
+		t.Fatalf("an error occurred on #4: %s", err)
 	}
 
-	err = op.UpsertWithParameters(t, ctx, operation.Dataset{
-		Train: ds.Train[upsertFrom : upsertFrom+upsertNum],
-	}, true)
-	if err != nil {
-		t.Fatalf("an error occurred: %s", err)
+	// #5 run Update with SkipStrictExistCheck=false & same vector as 4 and check that AlreadyExists returns
+	err = op.UpdateWithParameters(t, ctx, operation.Dataset{
+		Train: ds.Train[insertFrom : insertFrom+insertNum],
+	}, false, 1)
+	if err == nil {
+		t.Fatalf("no error occurred on Update #5")
+	}
+	if !errors.As(err, errors.ErrSameVectorAlreadyExists) {
+		t.Fatalf("the returned error is not a NotFound error on Update #2: %s", err)
 	}
 
+	// #6 run Update with the same vector as SkipStrictExistCheck=true & 4 and check that it succeeds
+	err = op.UpdateWithParameters(t, ctx, operation.Dataset{
+		Train: ds.Train[insertFrom : insertFrom+insertNum],
+	}, true, 1)
+	if err != nil {
+		t.Fatalf("an error occurred on #6: %s", err)
+	}
+
+	// #7 remove the vector in 6 with SkipStrictExistCheck=false and check that it succeeds
+	err = op.RemoveWithParameters(t, ctx, operation.Dataset{
+		Train: ds.Train[removeFrom : removeFrom+removeNum],
+	}, false)
+	if err != nil {
+		t.Fatalf("an error occurred on #7: %s", err)
+	}
+
+	// #8 removed the vector of 6 with SkipStrictExistCheck=false and confirmed that it became NotFound
+	err = op.RemoveWithParameters(t, ctx, operation.Dataset{
+		Train: ds.Train[removeFrom : removeFrom+removeNum],
+	}, false)
+	if err == nil {
+		t.Fatalf("no error occurred on #8")
+	}
+	if !errors.As(err, errors.ErrIndexNotFound) {
+		t.Fatalf("the returned error is not a NotFound error on Update #8: %s", err)
+	}
+
+	// #9 remove vector 6 with SkipStrictExistCheck=true and check that it also becomes NotFound
 	err = op.RemoveWithParameters(t, ctx, operation.Dataset{
 		Train: ds.Train[removeFrom : removeFrom+removeNum],
 	}, true)
+	if err == nil {
+		t.Fatalf("no error occurred on #9")
+	}
+	if !errors.As(err, errors.ErrIndexNotFound) {
+		t.Fatalf("the returned error is not a NotFound error on Update #9: %s", err)
+	}
+
+	// #10 execute Upsert with SkipStrictExistCheck=false and check that it succeeds
+	err = op.UpsertWithParameters(t, ctx, operation.Dataset{
+		Train: ds.Train[upsertFrom : upsertFrom+upsertNum],
+	}, false, 2)
 	if err != nil {
-		t.Fatalf("an error occurred: %s", err)
+		t.Fatalf("an error occurred on #10: %s", err)
+	}
+
+	// #11 executed Upsert with SkipStrictExistCheck=false using the same vector as 10 and confirmed that AlreadyExists was returned
+	err = op.UpsertWithParameters(t, ctx, operation.Dataset{
+		Train: ds.Train[upsertFrom : upsertFrom+upsertNum],
+	}, false, 2)
+	if err == nil {
+		t.Fatalf("no error occurred on #11")
+	}
+	if !errors.As(err, errors.ErrSameVectorAlreadyExists) {
+		t.Fatalf("the returned error is not a AlreadyExists error on Update #11: %s", err)
+	}
+
+	// #12 executed SkipStrictExistCheck=false using a different vector than 10 for Upsert and confirmed that it succeeded
+	err = op.UpsertWithParameters(t, ctx, operation.Dataset{
+		Train: ds.Train[upsertFrom : upsertFrom+upsertNum],
+	}, false, 3)
+	if err != nil {
+		t.Fatalf("an error occurred on #12: %s", err)
+	}
+
+	// #13 executed SkipStrictExistCheck=true using the same vector as Upsert 12 and confirmed that it succeeded
+	err = op.UpsertWithParameters(t, ctx, operation.Dataset{
+		Train: ds.Train[upsertFrom : upsertFrom+upsertNum],
+	}, true, 3)
+	if err != nil {
+		t.Fatalf("an error occurred on #13: %s", err)
 	}
 }

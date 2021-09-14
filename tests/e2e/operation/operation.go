@@ -81,12 +81,14 @@ type Client interface {
 		ctx context.Context,
 		ds Dataset,
 		skipStrictExistCheck bool,
+		offset int,
 	) error
 	UpsertWithParameters(
 		t *testing.T,
 		ctx context.Context,
 		ds Dataset,
 		skipStrictExistCheck bool,
+		offset int,
 	) error
 	RemoveWithParameters(
 		t *testing.T,

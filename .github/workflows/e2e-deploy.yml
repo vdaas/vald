@@ -184,10 +184,7 @@ jobs:
             -host=localhost \
             -port=8081 \
             -dataset=`pwd`/hack/benchmark/assets/dataset/${DATASET} \
-            -insert-num=60000 \
-            -search-num=10000 \
-            -search-by-id-num=10000 \
-            -get-object-num=100 \
+            -insert-num=100 \
             -update-num=100 \
             -upsert-num=100 \
             -remove-num=100 \
@@ -374,6 +371,7 @@ jobs:
     needs:
       - e2e-deploy-lb
       - e2e-deploy-lb-multiapis
+      - e2e-deploy-lb-skip-exist-check
       - e2e-deploy-sidecar
     runs-on: ubuntu-latest
     if: startsWith( github.ref, 'refs/tags/')
