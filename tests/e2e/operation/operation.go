@@ -54,6 +54,7 @@ type Client interface {
 		radius float32,
 		epsilon float32,
 		timeout int64,
+		validator ErrorValidator,
 	) error
 	SearchByIDWithParameters(
 		t *testing.T,
@@ -63,6 +64,7 @@ type Client interface {
 		radius float32,
 		epsilon float32,
 		timeout int64,
+		validator ErrorValidator,
 	) error
 
 	Insert(t *testing.T, ctx context.Context, ds Dataset) error
@@ -75,6 +77,7 @@ type Client interface {
 		ctx context.Context,
 		ds Dataset,
 		skipStrictExistCheck bool,
+		validator ErrorValidator,
 	) error
 	UpdateWithParameters(
 		t *testing.T,
@@ -82,6 +85,7 @@ type Client interface {
 		ds Dataset,
 		skipStrictExistCheck bool,
 		offset int,
+		validator ErrorValidator,
 	) error
 	UpsertWithParameters(
 		t *testing.T,
@@ -89,12 +93,14 @@ type Client interface {
 		ds Dataset,
 		skipStrictExistCheck bool,
 		offset int,
+		validator ErrorValidator,
 	) error
 	RemoveWithParameters(
 		t *testing.T,
 		ctx context.Context,
 		ds Dataset,
 		skipStrictExistCheck bool,
+		validator ErrorValidator,
 	) error
 
 	MultiSearch(t *testing.T, ctx context.Context, ds Dataset) error

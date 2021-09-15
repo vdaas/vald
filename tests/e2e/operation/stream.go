@@ -27,12 +27,38 @@ import (
 	"testing"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
+	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/net/grpc/errdetails"
 	"github.com/vdaas/vald/internal/net/grpc/status"
 )
 
+type ErrorValidator = func(t *testing.T, err error) (fail bool, newErr error)
+
+func DefaultErrorValidator(t *testing.T, err error) (bool, error) {
+	t.Helper()
+
+	st, _, newErr := status.ParseError(err, codes.Unknown, "nothing")
+	if newErr != nil {
+		t.Errorf(
+			"error: %v\tserror: %v\tcode: %s\tdetails: %s\tmessage: %s\tstatus-error: %s\tproto: %s",
+			err,
+			newErr,
+			st.Code().String(),
+			errdetails.Serialize(st.Details()),
+			st.Message(),
+			st.Err().Error(),
+			errdetails.Serialize(st.Proto()),
+		)
+
+		return true, newErr
+	}
+
+	return false, nil
+}
+
 func (c *client) Search(t *testing.T, ctx context.Context, ds Dataset) error {
-	return c.SearchWithParameters(t, ctx, ds, 100, -1.0, 0.1, 3000000000)
+	return c.SearchWithParameters(t, ctx, ds, 100, -1.0, 0.1, 3000000000, DefaultErrorValidator)
 }
 
 func (c *client) SearchWithParameters(
@@ -43,7 +69,8 @@ func (c *client) SearchWithParameters(
 	radius float32,
 	epsilon float32,
 	timeout int64,
-) error {
+	validator ErrorValidator,
+) (rerr error) {
 	t.Log("search operation started")
 
 	client, err := c.getClient(ctx)
@@ -67,18 +94,16 @@ func (c *client) SearchWithParameters(
 				return
 			}
 
+			fail, newErr := validator(t, err)
+			if fail {
+				if newErr != nil {
+					rerr = errors.Wrap(rerr, newErr.Error())
+					continue
+				}
+
+				rerr = errors.Wrap(rerr, err.Error())
+			}
 			if err != nil {
-				st, serr := status.FromError(err)
-				t.Errorf(
-					"error: %v\tserror: %v\tcode: %s\tdetails: %s\tmessage: %s\tstatus-error: %s\tproto: %s",
-					err,
-					serr,
-					st.Code().String(),
-					errdetails.Serialize(st.Details()),
-					st.Message(),
-					st.Err().Error(),
-					errdetails.Serialize(st.Proto()),
-				)
 				continue
 			}
 
@@ -137,11 +162,11 @@ func (c *client) SearchWithParameters(
 
 	t.Log("search operation finished")
 
-	return nil
+	return rerr
 }
 
 func (c *client) SearchByID(t *testing.T, ctx context.Context, ds Dataset) error {
-	return c.SearchByIDWithParameters(t, ctx, ds, 100, -1.0, 0.1, 3000000000)
+	return c.SearchByIDWithParameters(t, ctx, ds, 100, -1.0, 0.1, 3000000000, DefaultErrorValidator)
 }
 
 func (c *client) SearchByIDWithParameters(
@@ -152,7 +177,8 @@ func (c *client) SearchByIDWithParameters(
 	radius float32,
 	epsilon float32,
 	timeout int64,
-) error {
+	validator ErrorValidator,
+) (rerr error) {
 	t.Log("searchByID operation started")
 
 	client, err := c.getClient(ctx)
@@ -176,18 +202,16 @@ func (c *client) SearchByIDWithParameters(
 				return
 			}
 
+			fail, newErr := validator(t, err)
+			if fail {
+				if newErr != nil {
+					rerr = errors.Wrap(rerr, newErr.Error())
+					continue
+				}
+
+				rerr = errors.Wrap(rerr, err.Error())
+			}
 			if err != nil {
-				st, serr := status.FromError(err)
-				t.Errorf(
-					"error: %v\tserror: %v\tcode: %s\tdetails: %s\tmessage: %s\tstatus-error: %s\tproto: %s",
-					err,
-					serr,
-					st.Code().String(),
-					errdetails.Serialize(st.Details()),
-					st.Message(),
-					st.Err().Error(),
-					errdetails.Serialize(st.Proto()),
-				)
 				continue
 			}
 
@@ -236,11 +260,11 @@ func (c *client) SearchByIDWithParameters(
 
 	t.Log("searchByID operation finished")
 
-	return nil
+	return rerr
 }
 
 func (c *client) Insert(t *testing.T, ctx context.Context, ds Dataset) error {
-	return c.InsertWithParameters(t, ctx, ds, false)
+	return c.InsertWithParameters(t, ctx, ds, false, DefaultErrorValidator)
 }
 
 func (c *client) InsertWithParameters(
@@ -248,7 +272,8 @@ func (c *client) InsertWithParameters(
 	ctx context.Context,
 	ds Dataset,
 	skipStrictExistCheck bool,
-) error {
+	validator ErrorValidator,
+) (rerr error) {
 	t.Log("insert operation started")
 
 	client, err := c.getClient(ctx)
@@ -272,18 +297,16 @@ func (c *client) InsertWithParameters(
 				return
 			}
 
+			fail, newErr := validator(t, err)
+			if fail {
+				if newErr != nil {
+					rerr = errors.Wrap(rerr, newErr.Error())
+					continue
+				}
+
+				rerr = errors.Wrap(rerr, err.Error())
+			}
 			if err != nil {
-				st, serr := status.FromError(err)
-				t.Errorf(
-					"error: %v\tserror: %v\tcode: %s\tdetails: %s\tmessage: %s\tstatus-error: %s\tproto: %s",
-					err,
-					serr,
-					st.Code().String(),
-					errdetails.Serialize(st.Details()),
-					st.Message(),
-					st.Err().Error(),
-					errdetails.Serialize(st.Proto()),
-				)
 				continue
 			}
 
@@ -325,11 +348,11 @@ func (c *client) InsertWithParameters(
 
 	t.Log("insert operation finished")
 
-	return nil
+	return rerr
 }
 
 func (c *client) Update(t *testing.T, ctx context.Context, ds Dataset) error {
-	return c.UpdateWithParameters(t, ctx, ds, false, 0)
+	return c.UpdateWithParameters(t, ctx, ds, false, 0, DefaultErrorValidator)
 }
 
 func (c *client) UpdateWithParameters(
@@ -338,7 +361,8 @@ func (c *client) UpdateWithParameters(
 	ds Dataset,
 	skipStrictExistCheck bool,
 	offset int,
-) error {
+	validator ErrorValidator,
+) (rerr error) {
 	t.Log("update operation started")
 
 	client, err := c.getClient(ctx)
@@ -362,18 +386,16 @@ func (c *client) UpdateWithParameters(
 				return
 			}
 
+			fail, newErr := validator(t, err)
+			if fail {
+				if newErr != nil {
+					rerr = errors.Wrap(rerr, newErr.Error())
+					continue
+				}
+
+				rerr = errors.Wrap(rerr, err.Error())
+			}
 			if err != nil {
-				st, serr := status.FromError(err)
-				t.Errorf(
-					"error: %v\tserror: %v\tcode: %s\tdetails: %s\tmessage: %s\tstatus-error: %s\tproto: %s",
-					err,
-					serr,
-					st.Code().String(),
-					errdetails.Serialize(st.Details()),
-					st.Message(),
-					st.Err().Error(),
-					errdetails.Serialize(st.Proto()),
-				)
 				continue
 			}
 
@@ -415,11 +437,11 @@ func (c *client) UpdateWithParameters(
 
 	t.Log("update operation finished")
 
-	return nil
+	return rerr
 }
 
 func (c *client) Upsert(t *testing.T, ctx context.Context, ds Dataset) error {
-	return c.UpsertWithParameters(t, ctx, ds, false, 1)
+	return c.UpsertWithParameters(t, ctx, ds, false, 1, DefaultErrorValidator)
 }
 
 func (c *client) UpsertWithParameters(
@@ -428,7 +450,8 @@ func (c *client) UpsertWithParameters(
 	ds Dataset,
 	skipStrictExistCheck bool,
 	offset int,
-) error {
+	validator ErrorValidator,
+) (rerr error) {
 	t.Log("upsert operation started")
 
 	client, err := c.getClient(ctx)
@@ -452,18 +475,16 @@ func (c *client) UpsertWithParameters(
 				return
 			}
 
+			fail, newErr := validator(t, err)
+			if fail {
+				if newErr != nil {
+					rerr = errors.Wrap(rerr, newErr.Error())
+					continue
+				}
+
+				rerr = errors.Wrap(rerr, err.Error())
+			}
 			if err != nil {
-				st, serr := status.FromError(err)
-				t.Errorf(
-					"error: %v\tserror: %v\tcode: %s\tdetails: %s\tmessage: %s\tstatus-error: %s\tproto: %s",
-					err,
-					serr,
-					st.Code().String(),
-					errdetails.Serialize(st.Details()),
-					st.Message(),
-					st.Err().Error(),
-					errdetails.Serialize(st.Proto()),
-				)
 				continue
 			}
 
@@ -505,11 +526,11 @@ func (c *client) UpsertWithParameters(
 
 	t.Log("upsert operation finished")
 
-	return nil
+	return rerr
 }
 
 func (c *client) Remove(t *testing.T, ctx context.Context, ds Dataset) error {
-	return c.RemoveWithParameters(t, ctx, ds, false)
+	return c.RemoveWithParameters(t, ctx, ds, false, DefaultErrorValidator)
 }
 
 func (c *client) RemoveWithParameters(
@@ -517,7 +538,8 @@ func (c *client) RemoveWithParameters(
 	ctx context.Context,
 	ds Dataset,
 	skipStrictExistCheck bool,
-) error {
+	validator ErrorValidator,
+) (rerr error) {
 	t.Log("remove operation started")
 
 	client, err := c.getClient(ctx)
@@ -541,18 +563,16 @@ func (c *client) RemoveWithParameters(
 				return
 			}
 
+			fail, newErr := validator(t, err)
+			if fail {
+				if newErr != nil {
+					rerr = errors.Wrap(rerr, newErr.Error())
+					continue
+				}
+
+				rerr = errors.Wrap(rerr, err.Error())
+			}
 			if err != nil {
-				st, serr := status.FromError(err)
-				t.Errorf(
-					"error: %v\tserror: %v\tcode: %s\tdetails: %s\tmessage: %s\tstatus-error: %s\tproto: %s",
-					err,
-					serr,
-					st.Code().String(),
-					errdetails.Serialize(st.Details()),
-					st.Message(),
-					st.Err().Error(),
-					errdetails.Serialize(st.Proto()),
-				)
 				continue
 			}
 
@@ -593,7 +613,7 @@ func (c *client) RemoveWithParameters(
 
 	t.Log("remove operation finished")
 
-	return nil
+	return rerr
 }
 
 func (c *client) Exists(t *testing.T, ctx context.Context, id string) error {
