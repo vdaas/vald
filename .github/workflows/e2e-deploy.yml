@@ -184,11 +184,10 @@ jobs:
             -host=localhost \
             -port=8081 \
             -dataset=`pwd`/hack/benchmark/assets/dataset/${DATASET} \
-            -insert-num=100 \
-            -update-num=100 \
-            -upsert-num=100 \
-            -remove-num=100 \
-            -wait-after-insert=3m \
+            -insert-num=10 \
+            -update-num=10 \
+            -upsert-num=10 \
+            -remove-num=10 \
             -portforward \
             -portforward-pod-name=${POD_NAME} \
             -portforward-pod-port=8081 \
