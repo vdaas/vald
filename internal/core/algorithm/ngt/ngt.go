@@ -275,7 +275,7 @@ func (n *ngt) create() (err error) {
 
 func (n *ngt) open() error {
 	if !file.Exists(n.idxPath) {
-		return errors.ErrIndexNotFound
+		return errors.ErrIndexFileNotFound
 	}
 
 	path := C.CString(n.idxPath)

@@ -1164,7 +1164,7 @@ func Test_ngt_open(t *testing.T) {
 				mu:         &sync.RWMutex{},
 			},
 			want: want{
-				err: errors.ErrIndexNotFound,
+				err: errors.ErrIndexFileNotFound,
 			},
 		},
 		{
