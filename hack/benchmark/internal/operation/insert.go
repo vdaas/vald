@@ -105,8 +105,7 @@ func (o *operation) StreamInsert(b *testing.B, ctx context.Context, ds assets.Da
 		for i := 0; i < b.N; i++ {
 			v, err := ds.Train(i % ds.TrainSize())
 			if err != nil {
-				b.Error(err)
-				continue
+				b.Fatal(err)
 			}
 
 			req.Vector.Id, req.Vector.Vector = strconv.Itoa(i), v.([]float32)

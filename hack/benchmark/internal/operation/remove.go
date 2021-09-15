@@ -86,7 +86,7 @@ func (o *operation) StreamRemove(b *testing.B, ctx context.Context, maxIdNum int
 			req.Id.Id = strconv.Itoa(i % maxIdNum)
 			err := sc.Send(req)
 			if err != nil {
-				b.Error(err)
+				b.Fatal(err)
 			}
 		}
 

@@ -159,7 +159,7 @@ func (o *operation) StreamSearchByID(b *testing.B, ctx context.Context, maxIdNum
 				Config: cfg,
 			})
 			if err != nil {
-				b.Error(err)
+				b.Fatal(err)
 			}
 		}
 
