@@ -54,7 +54,7 @@ jobs:
           HELM_VERSION=`make version/helm`
           echo "::set-output name=helm::${HELM_VERSION}"
         id: version
-      - uses: rinx/setup-k3d@v0.0.3
+      - uses: rinx/setup-k3d@v0.0.4
         with:
           version: latest
           name: vald
@@ -141,7 +141,7 @@ jobs:
           HELM_VERSION=`make version/helm`
           echo "::set-output name=helm::${HELM_VERSION}"
         id: version
-      - uses: rinx/setup-k3d@v0.0.3
+      - uses: rinx/setup-k3d@v0.0.4
         with:
           version: latest
           name: vald
@@ -225,7 +225,7 @@ jobs:
           HELM_VERSION=`make version/helm`
           echo "::set-output name=helm::${HELM_VERSION}"
         id: version
-      - uses: rinx/setup-k3d@v0.0.3
+      - uses: rinx/setup-k3d@v0.0.4
         with:
           version: latest
           name: vald
@@ -312,7 +312,7 @@ jobs:
           HELM_VERSION=`make version/helm`
           echo "::set-output name=helm::${HELM_VERSION}"
         id: version
-      - uses: rinx/setup-k3d@v0.0.3
+      - uses: rinx/setup-k3d@v0.0.4
         with:
           version: latest
           name: vald
