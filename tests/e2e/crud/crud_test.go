@@ -336,7 +336,7 @@ func TestE2ECRUDWithSkipStrictExistCheck(t *testing.T) {
 		t,
 		ctx,
 		operation.Dataset{
-			Train: ds.Train[insertFrom : insertFrom+insertNum],
+			Train: ds.Train[updateFrom : updateFrom+updateNum],
 		},
 		true,
 		1,
@@ -357,7 +357,7 @@ func TestE2ECRUDWithSkipStrictExistCheck(t *testing.T) {
 		t,
 		ctx,
 		operation.Dataset{
-			Train: ds.Train[insertFrom : insertFrom+insertNum],
+			Train: ds.Train[updateFrom : updateFrom+updateNum],
 		},
 		false,
 		1,
@@ -396,7 +396,7 @@ func TestE2ECRUDWithSkipStrictExistCheck(t *testing.T) {
 		t,
 		ctx,
 		operation.Dataset{
-			Train: ds.Train[insertFrom : insertFrom+insertNum],
+			Train: ds.Train[updateFrom : updateFrom+updateNum],
 		},
 		false,
 		1,
@@ -411,7 +411,7 @@ func TestE2ECRUDWithSkipStrictExistCheck(t *testing.T) {
 		t,
 		ctx,
 		operation.Dataset{
-			Train: ds.Train[insertFrom : insertFrom+insertNum],
+			Train: ds.Train[updateFrom : updateFrom+updateNum],
 		},
 		false,
 		1,
@@ -436,7 +436,7 @@ func TestE2ECRUDWithSkipStrictExistCheck(t *testing.T) {
 		t,
 		ctx,
 		operation.Dataset{
-			Train: ds.Train[insertFrom : insertFrom+insertNum],
+			Train: ds.Train[updateFrom : updateFrom+updateNum],
 		},
 		true,
 		1,
