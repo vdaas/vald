@@ -420,7 +420,7 @@ func (c *client) UpdateWithParameters(
 		err := sc.Send(&payload.Update_Request{
 			Vector: &payload.Object_Vector{
 				Id:     id,
-				Vector: append(v[offset+1:], v[offset]),
+				Vector: append(v[offset:], v[:offset]...),
 			},
 			Config: &payload.Update_Config{
 				SkipStrictExistCheck: skipStrictExistCheck,
@@ -509,7 +509,7 @@ func (c *client) UpsertWithParameters(
 		err := sc.Send(&payload.Upsert_Request{
 			Vector: &payload.Object_Vector{
 				Id:     id,
-				Vector: append(v[offset+1:], v[offset]),
+				Vector: append(v[offset:], v[:offset]...),
 			},
 			Config: &payload.Upsert_Config{
 				SkipStrictExistCheck: skipStrictExistCheck,
