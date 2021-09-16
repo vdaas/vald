@@ -115,6 +115,8 @@ jobs:
           POD_NAME: ${{ steps.deploy_vald.outputs.POD_NAME }}
   e2e-deploy-lb-skip-exist-check:
     name: "E2E deploy test (skip strict exist check)"
+    needs:
+      - e2e-deploy-lb
     runs-on: ubuntu-latest
     timeout-minutes: 60
     if: startsWith( github.ref, 'refs/tags/') || github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-deploy'
@@ -198,6 +200,8 @@ jobs:
           POD_NAME: ${{ steps.deploy_vald.outputs.POD_NAME }}
   e2e-deploy-lb-multiapis:
     name: "E2E deploy test (only LB Gateway, multi-APIs)"
+    needs:
+      - e2e-deploy-lb-skip-exist-check
     runs-on: ubuntu-latest
     timeout-minutes: 60
     if: startsWith( github.ref, 'refs/tags/') || github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-deploy'
@@ -278,6 +282,8 @@ jobs:
           POD_NAME: ${{ steps.deploy_vald.outputs.POD_NAME }}
   e2e-deploy-sidecar:
     name: "E2E deploy test (Agent & Sidecar)"
+    needs:
+      - e2e-deploy-lb-multiapis
     runs-on: ubuntu-latest
     timeout-minutes: 60
     if: startsWith( github.ref, 'refs/tags/') || github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-deploy'
