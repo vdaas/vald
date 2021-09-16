@@ -344,6 +344,10 @@ func TestE2ECRUDWithSkipStrictExistCheck(t *testing.T) {
 			if err == nil {
 				return true, errors.New("no error occurred on Update #1")
 			}
+			st, _, _ := status.ParseError(err, codes.Unknown, "")
+			if st.Code() != codes.NotFound {
+				return true, errors.Errorf("the returned error is not a NotFound error on Update #1: %s", err)
+			}
 
 			t.Logf("successfully returned an error on Update #1: %s", err)
 
