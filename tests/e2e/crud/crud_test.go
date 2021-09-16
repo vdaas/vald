@@ -345,6 +345,8 @@ func TestE2ECRUDWithSkipStrictExistCheck(t *testing.T) {
 				return true, errors.New("no error occurred on Update #1")
 			}
 
+			t.Logf("successfully returned an error on Update #1: %s", err)
+
 			return false, nil
 		},
 	)
@@ -369,6 +371,8 @@ func TestE2ECRUDWithSkipStrictExistCheck(t *testing.T) {
 			if st.Code() != codes.NotFound {
 				return true, errors.Errorf("the returned error is not a NotFound error on Update #2: %s", err)
 			}
+
+			t.Logf("successfully NotFound error is returned on Update #2")
 
 			return false, nil
 		},
@@ -424,6 +428,8 @@ func TestE2ECRUDWithSkipStrictExistCheck(t *testing.T) {
 				return true, errors.Errorf("the returned error is not a NotFound error on Update #2: %s", err)
 			}
 
+			t.Logf("successfully NotFound error is returned on Update #5")
+
 			return false, nil
 		},
 	)
@@ -474,8 +480,10 @@ func TestE2ECRUDWithSkipStrictExistCheck(t *testing.T) {
 			}
 			st, _, _ := status.ParseError(err, codes.Unknown, "")
 			if st.Code() != codes.NotFound {
-				return true, errors.Errorf("the returned error is not a NotFound error on Update #8: %s", err)
+				return true, errors.Errorf("the returned error is not a NotFound error on Remove #8: %s", err)
 			}
+
+			t.Logf("successfully NotFound error is returned on Remove #8")
 
 			return false, nil
 		},
@@ -498,8 +506,10 @@ func TestE2ECRUDWithSkipStrictExistCheck(t *testing.T) {
 			}
 			st, _, _ := status.ParseError(err, codes.Unknown, "")
 			if st.Code() != codes.NotFound {
-				return true, errors.Errorf("the returned error is not a NotFound error on Update #9: %s", err)
+				return true, errors.Errorf("the returned error is not a NotFound error on Remove #9: %s", err)
 			}
+
+			t.Logf("successfully NotFound error is returned on Remove #9")
 
 			return false, nil
 		},
@@ -538,8 +548,10 @@ func TestE2ECRUDWithSkipStrictExistCheck(t *testing.T) {
 			}
 			st, _, _ := status.ParseError(err, codes.Unknown, "")
 			if st.Code() != codes.AlreadyExists {
-				return true, errors.Errorf("the returned error is not a AlreadyExists error on Update #11: %s", err)
+				return true, errors.Errorf("the returned error is not a AlreadyExists error on Upsert #11: %s", err)
 			}
+
+			t.Logf("successfully AlreadyExists error is returned on Upsert #11")
 
 			return false, nil
 		},
