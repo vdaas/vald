@@ -352,7 +352,7 @@ func (c *client) InsertWithParameters(
 }
 
 func (c *client) Update(t *testing.T, ctx context.Context, ds Dataset) error {
-	return c.UpdateWithParameters(t, ctx, ds, false, 0, DefaultErrorValidator)
+	return c.UpdateWithParameters(t, ctx, ds, false, 1, DefaultErrorValidator)
 }
 
 func (c *client) UpdateWithParameters(
@@ -441,7 +441,7 @@ func (c *client) UpdateWithParameters(
 }
 
 func (c *client) Upsert(t *testing.T, ctx context.Context, ds Dataset) error {
-	return c.UpsertWithParameters(t, ctx, ds, false, 1, DefaultErrorValidator)
+	return c.UpsertWithParameters(t, ctx, ds, false, 2, DefaultErrorValidator)
 }
 
 func (c *client) UpsertWithParameters(
