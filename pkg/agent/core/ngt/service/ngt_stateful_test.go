@@ -68,6 +68,20 @@ func (st *ngtState) Reset() {
 
 type vectorState uint8
 
+func (v vectorState) String() string {
+	switch v {
+	case NOT_INSERTED:
+		return "not inserted"
+	case IN_INSERT_QUEUE:
+		return "in insert queue"
+	case IN_DELETE_QUEUE:
+		return "in delete queue"
+	case INDEXED:
+		return "indexed"
+	}
+	return "unknown"
+}
+
 const (
 	dimension = 3
 
