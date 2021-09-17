@@ -601,7 +601,7 @@ var (
 					Status: gopter.PropFalse,
 					Error:  rc.err,
 					Labels: []string{
-						"Search",
+						"SearchByID-A",
 						"error",
 						rc.err.Error(),
 					},
@@ -665,7 +665,7 @@ var (
 					Status: gopter.PropFalse,
 					Error:  rc.err,
 					Labels: []string{
-						"Search",
+						"SearchByID-B",
 						"error",
 						rc.err.Error(),
 					},
@@ -729,7 +729,7 @@ var (
 					Status: gopter.PropFalse,
 					Error:  rc.err,
 					Labels: []string{
-						"Search",
+						"SearchByID-C",
 						"error",
 						rc.err.Error(),
 					},
