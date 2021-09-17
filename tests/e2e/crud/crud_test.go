@@ -340,9 +340,13 @@ func TestE2ECRUDWithSkipStrictExistCheck(t *testing.T) {
 		true,
 		1,
 		func(t *testing.T, status int32, msg string) error {
+			t.Helper()
+
 			if status != int32(codes.NotFound) {
 				return errors.Errorf("the returned status is not NotFound on Update #1: %s", err)
 			}
+
+			t.Logf("received a NotFound error: %s", msg)
 
 			return nil
 		},
@@ -361,6 +365,8 @@ func TestE2ECRUDWithSkipStrictExistCheck(t *testing.T) {
 		false,
 		1,
 		func(t *testing.T, status int32, msg string) error {
+			t.Helper()
+
 			if status != int32(codes.NotFound) {
 				return errors.Errorf("the returned status is not NotFound on Update #2: %s", err)
 			}
@@ -411,6 +417,8 @@ func TestE2ECRUDWithSkipStrictExistCheck(t *testing.T) {
 		false,
 		1,
 		func(t *testing.T, status int32, msg string) error {
+			t.Helper()
+
 			if status != int32(codes.AlreadyExists) {
 				return errors.Errorf("the returned status is not NotFound on Update #2: %s", err)
 			}
@@ -460,6 +468,8 @@ func TestE2ECRUDWithSkipStrictExistCheck(t *testing.T) {
 		},
 		false,
 		func(t *testing.T, status int32, msg string) error {
+			t.Helper()
+
 			if status != int32(codes.NotFound) {
 				return errors.Errorf("the returned status is not NotFound on Remove #8: %s", err)
 			}
@@ -480,6 +490,8 @@ func TestE2ECRUDWithSkipStrictExistCheck(t *testing.T) {
 		},
 		true,
 		func(t *testing.T, status int32, msg string) error {
+			t.Helper()
+
 			if status != int32(codes.NotFound) {
 				return errors.Errorf("the returned status is not NotFound on Remove #9: %s", err)
 			}
@@ -516,6 +528,8 @@ func TestE2ECRUDWithSkipStrictExistCheck(t *testing.T) {
 		false,
 		2,
 		func(t *testing.T, status int32, msg string) error {
+			t.Helper()
+
 			if status != int32(codes.AlreadyExists) {
 				return errors.Errorf("the returned status is not AlreadyExists on Upsert #11: %s", err)
 			}

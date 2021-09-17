@@ -103,7 +103,13 @@ func (c *client) SearchWithParameters(
 
 			if err != nil {
 				err = parseAndLogError(t, err)
-				rerr = errors.Wrap(rerr, err.Error())
+				rerr = errors.Wrap(
+					rerr,
+					errors.Errorf(
+						"stream finished by an error: %s",
+						err.Error(),
+					).Error(),
+				)
 				return
 			}
 
@@ -210,7 +216,13 @@ func (c *client) SearchByIDWithParameters(
 
 			if err != nil {
 				err = parseAndLogError(t, err)
-				rerr = errors.Wrap(rerr, err.Error())
+				rerr = errors.Wrap(
+					rerr,
+					errors.Errorf(
+						"stream finished by an error: %s",
+						err.Error(),
+					).Error(),
+				)
 				return
 			}
 
@@ -304,7 +316,13 @@ func (c *client) InsertWithParameters(
 
 			if err != nil {
 				err = parseAndLogError(t, err)
-				rerr = errors.Wrap(rerr, err.Error())
+				rerr = errors.Wrap(
+					rerr,
+					errors.Errorf(
+						"stream finished by an error: %s",
+						err.Error(),
+					).Error(),
+				)
 				return
 			}
 
@@ -392,7 +410,13 @@ func (c *client) UpdateWithParameters(
 
 			if err != nil {
 				err = parseAndLogError(t, err)
-				rerr = errors.Wrap(rerr, err.Error())
+				rerr = errors.Wrap(
+					rerr,
+					errors.Errorf(
+						"stream finished by an error: %s",
+						err.Error(),
+					).Error(),
+				)
 				return
 			}
 
@@ -481,7 +505,13 @@ func (c *client) UpsertWithParameters(
 
 			if err != nil {
 				err = parseAndLogError(t, err)
-				rerr = errors.Wrap(rerr, err.Error())
+				rerr = errors.Wrap(
+					rerr,
+					errors.Errorf(
+						"stream finished by an error: %s",
+						err.Error(),
+					).Error(),
+				)
 				return
 			}
 
@@ -569,7 +599,13 @@ func (c *client) RemoveWithParameters(
 
 			if err != nil {
 				err = parseAndLogError(t, err)
-				rerr = errors.Wrap(rerr, err.Error())
+				rerr = errors.Wrap(
+					rerr,
+					errors.Errorf(
+						"stream finished by an error: %s",
+						err.Error(),
+					).Error(),
+				)
 				return
 			}
 
@@ -671,7 +707,13 @@ func (c *client) GetObject(
 
 			if err != nil {
 				err = parseAndLogError(t, err)
-				rerr = errors.Wrap(rerr, err.Error())
+				rerr = errors.Wrap(
+					rerr,
+					errors.Errorf(
+						"stream finished by an error: %s",
+						err.Error(),
+					).Error(),
+				)
 				return
 			}
 
