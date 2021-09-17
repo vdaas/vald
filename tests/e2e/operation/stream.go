@@ -33,7 +33,10 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc/status"
 )
 
-type StatusValidator = func(t *testing.T, status int32, msg string) (err error)
+type (
+	StatusValidator = func(t *testing.T, status int32, msg string) (err error)
+	ErrorValidator  = func(t *testing.T, err error) error
+)
 
 func DefaultStatusValidator(t *testing.T, status int32, msg string) (err error) {
 	t.Helper()
@@ -42,7 +45,7 @@ func DefaultStatusValidator(t *testing.T, status int32, msg string) (err error) 
 	return errors.Errorf("code: %d, message: %s", status, msg)
 }
 
-func parseAndLogError(t *testing.T, err error) error {
+func ParseAndLogError(t *testing.T, err error) error {
 	t.Helper()
 
 	st, _, parsed := status.ParseError(err, codes.Unknown, "nothing")
@@ -65,7 +68,17 @@ func parseAndLogError(t *testing.T, err error) error {
 }
 
 func (c *client) Search(t *testing.T, ctx context.Context, ds Dataset) error {
-	return c.SearchWithParameters(t, ctx, ds, 100, -1.0, 0.1, 3000000000, DefaultStatusValidator)
+	return c.SearchWithParameters(
+		t,
+		ctx,
+		ds,
+		100,
+		-1.0,
+		0.1,
+		3000000000,
+		DefaultStatusValidator,
+		ParseAndLogError,
+	)
 }
 
 func (c *client) SearchWithParameters(
@@ -76,7 +89,8 @@ func (c *client) SearchWithParameters(
 	radius float32,
 	epsilon float32,
 	timeout int64,
-	validator StatusValidator,
+	svalidator StatusValidator,
+	evalidator ErrorValidator,
 ) (rerr error) {
 	t.Log("search operation started")
 
@@ -102,14 +116,15 @@ func (c *client) SearchWithParameters(
 			}
 
 			if err != nil {
-				err = parseAndLogError(t, err)
-				rerr = errors.Wrap(
-					rerr,
-					errors.Errorf(
-						"stream finished by an error: %s",
-						err.Error(),
-					).Error(),
-				)
+				if err := evalidator(t, err); err != nil {
+					rerr = errors.Wrap(
+						rerr,
+						errors.Errorf(
+							"stream finished by an error: %s",
+							err.Error(),
+						).Error(),
+					)
+				}
 				return
 			}
 
@@ -117,7 +132,7 @@ func (c *client) SearchWithParameters(
 			if resp == nil {
 				status := res.GetStatus()
 				if status != nil {
-					if e := validator(t, status.GetCode(), status.GetMessage()); e != nil {
+					if e := svalidator(t, status.GetCode(), status.GetMessage()); e != nil {
 						t.Errorf("an error returned:\tcode: %d\tmessage: %s\tdetails: %s",
 							status.GetCode(),
 							status.GetMessage(),
@@ -178,7 +193,16 @@ func (c *client) SearchWithParameters(
 }
 
 func (c *client) SearchByID(t *testing.T, ctx context.Context, ds Dataset) error {
-	return c.SearchByIDWithParameters(t, ctx, ds, 100, -1.0, 0.1, 3000000000, DefaultStatusValidator)
+	return c.SearchByIDWithParameters(t,
+		ctx,
+		ds,
+		100,
+		-1.0,
+		0.1,
+		3000000000,
+		DefaultStatusValidator,
+		ParseAndLogError,
+	)
 }
 
 func (c *client) SearchByIDWithParameters(
@@ -189,7 +213,8 @@ func (c *client) SearchByIDWithParameters(
 	radius float32,
 	epsilon float32,
 	timeout int64,
-	validator StatusValidator,
+	svalidator StatusValidator,
+	evalidator ErrorValidator,
 ) (rerr error) {
 	t.Log("searchByID operation started")
 
@@ -215,14 +240,15 @@ func (c *client) SearchByIDWithParameters(
 			}
 
 			if err != nil {
-				err = parseAndLogError(t, err)
-				rerr = errors.Wrap(
-					rerr,
-					errors.Errorf(
-						"stream finished by an error: %s",
-						err.Error(),
-					).Error(),
-				)
+				if err := evalidator(t, err); err != nil {
+					rerr = errors.Wrap(
+						rerr,
+						errors.Errorf(
+							"stream finished by an error: %s",
+							err.Error(),
+						).Error(),
+					)
+				}
 				return
 			}
 
@@ -230,7 +256,7 @@ func (c *client) SearchByIDWithParameters(
 			if resp == nil {
 				status := res.GetStatus()
 				if status != nil {
-					if e := validator(t, status.GetCode(), status.GetMessage()); e != nil {
+					if e := svalidator(t, status.GetCode(), status.GetMessage()); e != nil {
 						t.Errorf("an error returned:\tcode: %d\tmessage: %s\tdetails: %s",
 							status.GetCode(),
 							status.GetMessage(),
@@ -281,7 +307,13 @@ func (c *client) SearchByIDWithParameters(
 }
 
 func (c *client) Insert(t *testing.T, ctx context.Context, ds Dataset) error {
-	return c.InsertWithParameters(t, ctx, ds, false, DefaultStatusValidator)
+	return c.InsertWithParameters(t,
+		ctx,
+		ds,
+		false,
+		DefaultStatusValidator,
+		ParseAndLogError,
+	)
 }
 
 func (c *client) InsertWithParameters(
@@ -289,7 +321,8 @@ func (c *client) InsertWithParameters(
 	ctx context.Context,
 	ds Dataset,
 	skipStrictExistCheck bool,
-	validator StatusValidator,
+	svalidator StatusValidator,
+	evalidator ErrorValidator,
 ) (rerr error) {
 	t.Log("insert operation started")
 
@@ -315,14 +348,15 @@ func (c *client) InsertWithParameters(
 			}
 
 			if err != nil {
-				err = parseAndLogError(t, err)
-				rerr = errors.Wrap(
-					rerr,
-					errors.Errorf(
-						"stream finished by an error: %s",
-						err.Error(),
-					).Error(),
-				)
+				if err := evalidator(t, err); err != nil {
+					rerr = errors.Wrap(
+						rerr,
+						errors.Errorf(
+							"stream finished by an error: %s",
+							err.Error(),
+						).Error(),
+					)
+				}
 				return
 			}
 
@@ -330,7 +364,7 @@ func (c *client) InsertWithParameters(
 			if loc == nil {
 				status := res.GetStatus()
 				if status != nil {
-					if e := validator(t, status.GetCode(), status.GetMessage()); e != nil {
+					if e := svalidator(t, status.GetCode(), status.GetMessage()); e != nil {
 						t.Errorf("an error returned:\tcode: %d\tmessage: %s\tdetails: %s",
 							status.GetCode(),
 							status.GetMessage(),
@@ -374,7 +408,14 @@ func (c *client) InsertWithParameters(
 }
 
 func (c *client) Update(t *testing.T, ctx context.Context, ds Dataset) error {
-	return c.UpdateWithParameters(t, ctx, ds, false, 1, DefaultStatusValidator)
+	return c.UpdateWithParameters(t,
+		ctx,
+		ds,
+		false,
+		1,
+		DefaultStatusValidator,
+		ParseAndLogError,
+	)
 }
 
 func (c *client) UpdateWithParameters(
@@ -383,7 +424,8 @@ func (c *client) UpdateWithParameters(
 	ds Dataset,
 	skipStrictExistCheck bool,
 	offset int,
-	validator StatusValidator,
+	svalidator StatusValidator,
+	evalidator ErrorValidator,
 ) (rerr error) {
 	t.Log("update operation started")
 
@@ -409,14 +451,15 @@ func (c *client) UpdateWithParameters(
 			}
 
 			if err != nil {
-				err = parseAndLogError(t, err)
-				rerr = errors.Wrap(
-					rerr,
-					errors.Errorf(
-						"stream finished by an error: %s",
-						err.Error(),
-					).Error(),
-				)
+				if err := evalidator(t, err); err != nil {
+					rerr = errors.Wrap(
+						rerr,
+						errors.Errorf(
+							"stream finished by an error: %s",
+							err.Error(),
+						).Error(),
+					)
+				}
 				return
 			}
 
@@ -424,7 +467,7 @@ func (c *client) UpdateWithParameters(
 			if loc == nil {
 				status := res.GetStatus()
 				if status != nil {
-					if e := validator(t, status.GetCode(), status.GetMessage()); e != nil {
+					if e := svalidator(t, status.GetCode(), status.GetMessage()); e != nil {
 						t.Errorf("an error returned:\tcode: %d\tmessage: %s\tdetails: %s",
 							status.GetCode(),
 							status.GetMessage(),
@@ -469,7 +512,14 @@ func (c *client) UpdateWithParameters(
 }
 
 func (c *client) Upsert(t *testing.T, ctx context.Context, ds Dataset) error {
-	return c.UpsertWithParameters(t, ctx, ds, false, 2, DefaultStatusValidator)
+	return c.UpsertWithParameters(t,
+		ctx,
+		ds,
+		false,
+		2,
+		DefaultStatusValidator,
+		ParseAndLogError,
+	)
 }
 
 func (c *client) UpsertWithParameters(
@@ -478,7 +528,8 @@ func (c *client) UpsertWithParameters(
 	ds Dataset,
 	skipStrictExistCheck bool,
 	offset int,
-	validator StatusValidator,
+	svalidator StatusValidator,
+	evalidator ErrorValidator,
 ) (rerr error) {
 	t.Log("upsert operation started")
 
@@ -504,14 +555,15 @@ func (c *client) UpsertWithParameters(
 			}
 
 			if err != nil {
-				err = parseAndLogError(t, err)
-				rerr = errors.Wrap(
-					rerr,
-					errors.Errorf(
-						"stream finished by an error: %s",
-						err.Error(),
-					).Error(),
-				)
+				if err := evalidator(t, err); err != nil {
+					rerr = errors.Wrap(
+						rerr,
+						errors.Errorf(
+							"stream finished by an error: %s",
+							err.Error(),
+						).Error(),
+					)
+				}
 				return
 			}
 
@@ -519,7 +571,7 @@ func (c *client) UpsertWithParameters(
 			if loc == nil {
 				status := res.GetStatus()
 				if status != nil {
-					if e := validator(t, status.GetCode(), status.GetMessage()); e != nil {
+					if e := svalidator(t, status.GetCode(), status.GetMessage()); e != nil {
 						t.Errorf("an error returned:\tcode: %d\tmessage: %s\tdetails: %s",
 							status.GetCode(),
 							status.GetMessage(),
@@ -564,7 +616,13 @@ func (c *client) UpsertWithParameters(
 }
 
 func (c *client) Remove(t *testing.T, ctx context.Context, ds Dataset) error {
-	return c.RemoveWithParameters(t, ctx, ds, false, DefaultStatusValidator)
+	return c.RemoveWithParameters(t,
+		ctx,
+		ds,
+		false,
+		DefaultStatusValidator,
+		ParseAndLogError,
+	)
 }
 
 func (c *client) RemoveWithParameters(
@@ -572,7 +630,8 @@ func (c *client) RemoveWithParameters(
 	ctx context.Context,
 	ds Dataset,
 	skipStrictExistCheck bool,
-	validator StatusValidator,
+	svalidator StatusValidator,
+	evalidator ErrorValidator,
 ) (rerr error) {
 	t.Log("remove operation started")
 
@@ -598,14 +657,15 @@ func (c *client) RemoveWithParameters(
 			}
 
 			if err != nil {
-				err = parseAndLogError(t, err)
-				rerr = errors.Wrap(
-					rerr,
-					errors.Errorf(
-						"stream finished by an error: %s",
-						err.Error(),
-					).Error(),
-				)
+				if err := evalidator(t, err); err != nil {
+					rerr = errors.Wrap(
+						rerr,
+						errors.Errorf(
+							"stream finished by an error: %s",
+							err.Error(),
+						).Error(),
+					)
+				}
 				return
 			}
 
@@ -613,7 +673,7 @@ func (c *client) RemoveWithParameters(
 			if loc == nil {
 				status := res.GetStatus()
 				if status != nil {
-					if e := validator(t, status.GetCode(), status.GetMessage()); e != nil {
+					if e := svalidator(t, status.GetCode(), status.GetMessage()); e != nil {
 						t.Errorf("an error returned:\tcode: %d\tmessage: %s\tdetails: %s",
 							status.GetCode(),
 							status.GetMessage(),
@@ -706,7 +766,7 @@ func (c *client) GetObject(
 			}
 
 			if err != nil {
-				err = parseAndLogError(t, err)
+				err = ParseAndLogError(t, err)
 				rerr = errors.Wrap(
 					rerr,
 					errors.Errorf(
