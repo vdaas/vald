@@ -548,7 +548,7 @@ var (
 					}
 					return &gopter.PropResult{Status: gopter.PropTrue}
 				}
-				if !errors.Is(rc.err, errors.ErrEmptySearchResult) {
+				if errors.Is(rc.err, errors.ErrEmptySearchResult) {
 					return &gopter.PropResult{
 						Status: gopter.PropFalse,
 						Error:  rc.err,
@@ -558,7 +558,6 @@ var (
 							rc.err.Error(),
 						},
 					}
-
 				}
 				return &gopter.PropResult{
 					Status: gopter.PropFalse,
@@ -624,12 +623,24 @@ var (
 					}
 					return &gopter.PropResult{Status: gopter.PropTrue}
 				}
+				if errors.Is(rc.err, errors.ErrEmptySearchResult) {
+					return &gopter.PropResult{
+						Status: gopter.PropFalse,
+						Error:  rc.err,
+						Labels: []string{
+							"SearchByID-A",
+							fmt.Sprintf("some indices are exists %v but it returned ErrEmptySearchResult", st.states),
+							rc.err.Error(),
+						},
+					}
+				}
 				return &gopter.PropResult{
 					Status: gopter.PropFalse,
 					Error:  rc.err,
 					Labels: []string{
 						"SearchByID-A",
 						"error",
+						fmt.Sprintf("%v", st.states),
 						rc.err.Error(),
 					},
 				}
@@ -688,12 +699,24 @@ var (
 					}
 					return &gopter.PropResult{Status: gopter.PropTrue}
 				}
+				if errors.Is(rc.err, errors.ErrEmptySearchResult) {
+					return &gopter.PropResult{
+						Status: gopter.PropFalse,
+						Error:  rc.err,
+						Labels: []string{
+							"SearchByID-B",
+							fmt.Sprintf("some indices are exists %v but it returned ErrEmptySearchResult", st.states),
+							rc.err.Error(),
+						},
+					}
+				}
 				return &gopter.PropResult{
 					Status: gopter.PropFalse,
 					Error:  rc.err,
 					Labels: []string{
 						"SearchByID-B",
 						"error",
+						fmt.Sprintf("%v", st.states),
 						rc.err.Error(),
 					},
 				}
@@ -752,12 +775,24 @@ var (
 					}
 					return &gopter.PropResult{Status: gopter.PropTrue}
 				}
+				if errors.Is(rc.err, errors.ErrEmptySearchResult) {
+					return &gopter.PropResult{
+						Status: gopter.PropFalse,
+						Error:  rc.err,
+						Labels: []string{
+							"SearchByID-C",
+							fmt.Sprintf("some indices are exists %v but it returned ErrEmptySearchResult", st.states),
+							rc.err.Error(),
+						},
+					}
+				}
 				return &gopter.PropResult{
 					Status: gopter.PropFalse,
 					Error:  rc.err,
 					Labels: []string{
 						"SearchByID-C",
 						"error",
+						fmt.Sprintf("%v", st.states),
 						rc.err.Error(),
 					},
 				}
