@@ -515,13 +515,23 @@ var (
 			state commands.State,
 			result commands.Result,
 		) *gopter.PropResult {
-			st := state.(*ngtState)
 			rc := result.(*resultContainer)
-			if rc.err != nil &&
-				!(st.states[idA] != INDEXED &&
+			if rc.err != nil {
+				st := state.(*ngtState)
+				if st.states[idA] != INDEXED &&
 					st.states[idB] != INDEXED &&
 					st.states[idC] != INDEXED &&
-					errors.Is(rc.err, errors.ErrEmptySearchResult)) {
+					!errors.Is(rc.err, errors.ErrEmptySearchResult) {
+					return &gopter.PropResult{
+						Status: gopter.PropFalse,
+						Error:  rc.err,
+						Labels: []string{
+							"Search",
+							"there's no index but it doesn't return ErrEmptySearchResult",
+							rc.err.Error(),
+						},
+					}
+				}
 				return &gopter.PropResult{
 					Status: gopter.PropFalse,
 					Error:  rc.err,
@@ -532,7 +542,6 @@ var (
 					},
 				}
 			}
-
 			return &gopter.PropResult{Status: gopter.PropTrue}
 		},
 	}
@@ -566,13 +575,29 @@ var (
 			result commands.Result,
 		) *gopter.PropResult {
 			rc := result.(*resultContainer)
-
 			if rc.err != nil {
+				st := state.(*ngtState)
+				// TODO: In this test case, the possibility of retrieving a non-indexed ID is low,
+				// but the test returns with an error, which needs to be investigated at a later time
+				if st.states[idA] != INDEXED &&
+					st.states[idB] != INDEXED &&
+					st.states[idC] != INDEXED &&
+					!errors.Is(rc.err, errors.ErrEmptySearchResult) {
+					return &gopter.PropResult{
+						Status: gopter.PropFalse,
+						Error:  rc.err,
+						Labels: []string{
+							"SearchByID-A",
+							"there's no index but it doesn't return ErrEmptySearchResult",
+							rc.err.Error(),
+						},
+					}
+				}
 				return &gopter.PropResult{
 					Status: gopter.PropFalse,
 					Error:  rc.err,
 					Labels: []string{
-						"SearchByID-A",
+						"Search",
 						"error",
 						rc.err.Error(),
 					},
@@ -612,13 +637,29 @@ var (
 			result commands.Result,
 		) *gopter.PropResult {
 			rc := result.(*resultContainer)
-
 			if rc.err != nil {
+				st := state.(*ngtState)
+				// TODO: In this test case, the possibility of retrieving a non-indexed ID is low,
+				// but the test returns with an error, which needs to be investigated at a later time
+				if st.states[idA] != INDEXED &&
+					st.states[idB] != INDEXED &&
+					st.states[idC] != INDEXED &&
+					!errors.Is(rc.err, errors.ErrEmptySearchResult) {
+					return &gopter.PropResult{
+						Status: gopter.PropFalse,
+						Error:  rc.err,
+						Labels: []string{
+							"SearchByID-B",
+							"there's no index but it doesn't return ErrEmptySearchResult",
+							rc.err.Error(),
+						},
+					}
+				}
 				return &gopter.PropResult{
 					Status: gopter.PropFalse,
 					Error:  rc.err,
 					Labels: []string{
-						"SearchByID-B",
+						"Search",
 						"error",
 						rc.err.Error(),
 					},
@@ -658,13 +699,29 @@ var (
 			result commands.Result,
 		) *gopter.PropResult {
 			rc := result.(*resultContainer)
-
 			if rc.err != nil {
+				st := state.(*ngtState)
+				// TODO: In this test case, the possibility of retrieving a non-indexed ID is low,
+				// but the test returns with an error, which needs to be investigated at a later time
+				if st.states[idA] != INDEXED &&
+					st.states[idB] != INDEXED &&
+					st.states[idC] != INDEXED &&
+					!errors.Is(rc.err, errors.ErrEmptySearchResult) {
+					return &gopter.PropResult{
+						Status: gopter.PropFalse,
+						Error:  rc.err,
+						Labels: []string{
+							"SearchByID-C",
+							"there's no index but it doesn't return ErrEmptySearchResult",
+							rc.err.Error(),
+						},
+					}
+				}
 				return &gopter.PropResult{
 					Status: gopter.PropFalse,
 					Error:  rc.err,
 					Labels: []string{
-						"SearchByID-C",
+						"Search",
 						"error",
 						rc.err.Error(),
 					},
