@@ -353,7 +353,7 @@ func (n *ngt) Search(vec []float32, size int, epsilon, radius float32) (result [
 		if err != nil {
 			err = errors.ErrEmptySearchResult
 		}
-		return err
+		return nil, err
 	}
 	// switch rsize := int(C.ngt_get_result_size(results, n.ebuf)); rsize {
 	// case -1:
