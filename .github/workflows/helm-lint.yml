@@ -69,7 +69,7 @@ jobs:
       - name: Generate ValdRelease schema
         run: |
           make helm/schema/crd/vald
-      - uses: rinx/setup-k3d@v0.0.3
+      - uses: rinx/setup-k3d@v0.0.4
         with:
           version: latest
           name: vald
