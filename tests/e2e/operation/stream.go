@@ -33,32 +33,39 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc/status"
 )
 
-type ErrorValidator = func(t *testing.T, err error) (fail bool, newErr error)
+type StatusValidator = func(t *testing.T, status int32, msg string) (err error)
 
-func DefaultErrorValidator(t *testing.T, err error) (bool, error) {
+func DefaultStatusValidator(t *testing.T, status int32, msg string) (err error) {
 	t.Helper()
 
-	st, _, newErr := status.ParseError(err, codes.Unknown, "nothing")
-	if newErr != nil {
-		t.Errorf(
-			"error: %v\tserror: %v\tcode: %s\tdetails: %s\tmessage: %s\tstatus-error: %s\tproto: %s",
-			err,
-			newErr,
-			st.Code().String(),
-			errdetails.Serialize(st.Details()),
-			st.Message(),
-			st.Err().Error(),
-			errdetails.Serialize(st.Proto()),
-		)
+	// TODO: convert int32->codes.Code
+	return errors.Errorf("code: %d, message: %s", status, msg)
+}
 
-		return true, newErr
+func parseAndLogError(t *testing.T, err error) error {
+	t.Helper()
+
+	st, _, parsed := status.ParseError(err, codes.Unknown, "nothing")
+	if parsed == nil {
+		return err
 	}
 
-	return false, nil
+	t.Errorf(
+		"error: %v\tserror: %v\tcode: %s\tdetails: %s\tmessage: %s\tstatus-error: %s\tproto: %s",
+		err,
+		parsed,
+		st.Code().String(),
+		errdetails.Serialize(st.Details()),
+		st.Message(),
+		st.Err().Error(),
+		errdetails.Serialize(st.Proto()),
+	)
+
+	return parsed
 }
 
 func (c *client) Search(t *testing.T, ctx context.Context, ds Dataset) error {
-	return c.SearchWithParameters(t, ctx, ds, 100, -1.0, 0.1, 3000000000, DefaultErrorValidator)
+	return c.SearchWithParameters(t, ctx, ds, 100, -1.0, 0.1, 3000000000, DefaultStatusValidator)
 }
 
 func (c *client) SearchWithParameters(
@@ -69,7 +76,7 @@ func (c *client) SearchWithParameters(
 	radius float32,
 	epsilon float32,
 	timeout int64,
-	validator ErrorValidator,
+	validator StatusValidator,
 ) (rerr error) {
 	t.Log("search operation started")
 
@@ -94,24 +101,23 @@ func (c *client) SearchWithParameters(
 				return
 			}
 
-			fail, newErr := validator(t, err)
-			if fail {
-				if newErr != nil {
-					rerr = errors.Wrap(rerr, newErr.Error())
-					continue
-				}
-
-				rerr = errors.Wrap(rerr, err.Error())
-			}
 			if err != nil {
-				continue
+				err = parseAndLogError(t, err)
+				rerr = errors.Wrap(rerr, err.Error())
+				return
 			}
 
 			resp := res.GetResponse()
 			if resp == nil {
-				err := res.GetStatus()
-				if err != nil {
-					t.Errorf("an error returned:\tcode: %d\tmessage: %s\tdetails: %s", err.GetCode(), err.GetMessage(), errdetails.Serialize(err.GetDetails()))
+				status := res.GetStatus()
+				if status != nil {
+					if e := validator(t, status.GetCode(), status.GetMessage()); e != nil {
+						t.Errorf("an error returned:\tcode: %d\tmessage: %s\tdetails: %s",
+							status.GetCode(),
+							status.GetMessage(),
+							errdetails.Serialize(status.GetDetails()))
+						rerr = errors.Wrap(rerr, e.Error())
+					}
 					continue
 				}
 
@@ -166,7 +172,7 @@ func (c *client) SearchWithParameters(
 }
 
 func (c *client) SearchByID(t *testing.T, ctx context.Context, ds Dataset) error {
-	return c.SearchByIDWithParameters(t, ctx, ds, 100, -1.0, 0.1, 3000000000, DefaultErrorValidator)
+	return c.SearchByIDWithParameters(t, ctx, ds, 100, -1.0, 0.1, 3000000000, DefaultStatusValidator)
 }
 
 func (c *client) SearchByIDWithParameters(
@@ -177,7 +183,7 @@ func (c *client) SearchByIDWithParameters(
 	radius float32,
 	epsilon float32,
 	timeout int64,
-	validator ErrorValidator,
+	validator StatusValidator,
 ) (rerr error) {
 	t.Log("searchByID operation started")
 
@@ -202,24 +208,23 @@ func (c *client) SearchByIDWithParameters(
 				return
 			}
 
-			fail, newErr := validator(t, err)
-			if fail {
-				if newErr != nil {
-					rerr = errors.Wrap(rerr, newErr.Error())
-					continue
-				}
-
-				rerr = errors.Wrap(rerr, err.Error())
-			}
 			if err != nil {
-				continue
+				err = parseAndLogError(t, err)
+				rerr = errors.Wrap(rerr, err.Error())
+				return
 			}
 
 			resp := res.GetResponse()
 			if resp == nil {
-				err := res.GetStatus()
-				if err != nil {
-					t.Errorf("an error returned:\tcode: %d\tmessage: %s\tdetails: %s", err.GetCode(), err.GetMessage(), errdetails.Serialize(err.GetDetails()))
+				status := res.GetStatus()
+				if status != nil {
+					if e := validator(t, status.GetCode(), status.GetMessage()); e != nil {
+						t.Errorf("an error returned:\tcode: %d\tmessage: %s\tdetails: %s",
+							status.GetCode(),
+							status.GetMessage(),
+							errdetails.Serialize(status.GetDetails()))
+						rerr = errors.Wrap(rerr, e.Error())
+					}
 					continue
 				}
 
@@ -264,7 +269,7 @@ func (c *client) SearchByIDWithParameters(
 }
 
 func (c *client) Insert(t *testing.T, ctx context.Context, ds Dataset) error {
-	return c.InsertWithParameters(t, ctx, ds, false, DefaultErrorValidator)
+	return c.InsertWithParameters(t, ctx, ds, false, DefaultStatusValidator)
 }
 
 func (c *client) InsertWithParameters(
@@ -272,7 +277,7 @@ func (c *client) InsertWithParameters(
 	ctx context.Context,
 	ds Dataset,
 	skipStrictExistCheck bool,
-	validator ErrorValidator,
+	validator StatusValidator,
 ) (rerr error) {
 	t.Log("insert operation started")
 
@@ -297,24 +302,23 @@ func (c *client) InsertWithParameters(
 				return
 			}
 
-			fail, newErr := validator(t, err)
-			if fail {
-				if newErr != nil {
-					rerr = errors.Wrap(rerr, newErr.Error())
-					continue
-				}
-
-				rerr = errors.Wrap(rerr, err.Error())
-			}
 			if err != nil {
-				continue
+				err = parseAndLogError(t, err)
+				rerr = errors.Wrap(rerr, err.Error())
+				return
 			}
 
 			loc := res.GetLocation()
 			if loc == nil {
-				err := res.GetStatus()
-				if err != nil {
-					t.Errorf("an error returned:\tcode: %d\tmessage: %s\tdetails: %s", err.GetCode(), err.GetMessage(), errdetails.Serialize(err.GetDetails()))
+				status := res.GetStatus()
+				if status != nil {
+					if e := validator(t, status.GetCode(), status.GetMessage()); e != nil {
+						t.Errorf("an error returned:\tcode: %d\tmessage: %s\tdetails: %s",
+							status.GetCode(),
+							status.GetMessage(),
+							errdetails.Serialize(status.GetDetails()))
+						rerr = errors.Wrap(rerr, e.Error())
+					}
 					continue
 				}
 
@@ -352,7 +356,7 @@ func (c *client) InsertWithParameters(
 }
 
 func (c *client) Update(t *testing.T, ctx context.Context, ds Dataset) error {
-	return c.UpdateWithParameters(t, ctx, ds, false, 1, DefaultErrorValidator)
+	return c.UpdateWithParameters(t, ctx, ds, false, 1, DefaultStatusValidator)
 }
 
 func (c *client) UpdateWithParameters(
@@ -361,7 +365,7 @@ func (c *client) UpdateWithParameters(
 	ds Dataset,
 	skipStrictExistCheck bool,
 	offset int,
-	validator ErrorValidator,
+	validator StatusValidator,
 ) (rerr error) {
 	t.Log("update operation started")
 
@@ -386,28 +390,28 @@ func (c *client) UpdateWithParameters(
 				return
 			}
 
-			fail, newErr := validator(t, err)
-			if fail {
-				if newErr != nil {
-					rerr = errors.Wrap(rerr, newErr.Error())
-					continue
-				}
-
-				rerr = errors.Wrap(rerr, err.Error())
-			}
 			if err != nil {
-				continue
+				err = parseAndLogError(t, err)
+				rerr = errors.Wrap(rerr, err.Error())
+				return
 			}
 
 			loc := res.GetLocation()
 			if loc == nil {
-				err := res.GetStatus()
-				if err != nil {
-					t.Errorf("an error returned:\tcode: %d\tmessage: %s\tdetails: %s", err.GetCode(), err.GetMessage(), errdetails.Serialize(err.GetDetails()))
+				status := res.GetStatus()
+				if status != nil {
+					if e := validator(t, status.GetCode(), status.GetMessage()); e != nil {
+						t.Errorf("an error returned:\tcode: %d\tmessage: %s\tdetails: %s",
+							status.GetCode(),
+							status.GetMessage(),
+							errdetails.Serialize(status.GetDetails()))
+						rerr = errors.Wrap(rerr, e.Error())
+					}
 					continue
 				}
 
 				t.Error("returned loc is nil")
+				continue
 			}
 
 			t.Logf("returned: %s", loc)
@@ -441,7 +445,7 @@ func (c *client) UpdateWithParameters(
 }
 
 func (c *client) Upsert(t *testing.T, ctx context.Context, ds Dataset) error {
-	return c.UpsertWithParameters(t, ctx, ds, false, 2, DefaultErrorValidator)
+	return c.UpsertWithParameters(t, ctx, ds, false, 2, DefaultStatusValidator)
 }
 
 func (c *client) UpsertWithParameters(
@@ -450,7 +454,7 @@ func (c *client) UpsertWithParameters(
 	ds Dataset,
 	skipStrictExistCheck bool,
 	offset int,
-	validator ErrorValidator,
+	validator StatusValidator,
 ) (rerr error) {
 	t.Log("upsert operation started")
 
@@ -475,28 +479,28 @@ func (c *client) UpsertWithParameters(
 				return
 			}
 
-			fail, newErr := validator(t, err)
-			if fail {
-				if newErr != nil {
-					rerr = errors.Wrap(rerr, newErr.Error())
-					continue
-				}
-
-				rerr = errors.Wrap(rerr, err.Error())
-			}
 			if err != nil {
-				continue
+				err = parseAndLogError(t, err)
+				rerr = errors.Wrap(rerr, err.Error())
+				return
 			}
 
 			loc := res.GetLocation()
 			if loc == nil {
-				err := res.GetStatus()
-				if err != nil {
-					t.Errorf("an error returned:\tcode: %d\tmessage: %s\tdetails: %s", err.GetCode(), err.GetMessage(), errdetails.Serialize(err.GetDetails()))
+				status := res.GetStatus()
+				if status != nil {
+					if e := validator(t, status.GetCode(), status.GetMessage()); e != nil {
+						t.Errorf("an error returned:\tcode: %d\tmessage: %s\tdetails: %s",
+							status.GetCode(),
+							status.GetMessage(),
+							errdetails.Serialize(status.GetDetails()))
+						rerr = errors.Wrap(rerr, e.Error())
+					}
 					continue
 				}
 
 				t.Error("returned loc is nil")
+				continue
 			}
 
 			t.Logf("returned: %s", loc)
@@ -530,7 +534,7 @@ func (c *client) UpsertWithParameters(
 }
 
 func (c *client) Remove(t *testing.T, ctx context.Context, ds Dataset) error {
-	return c.RemoveWithParameters(t, ctx, ds, false, DefaultErrorValidator)
+	return c.RemoveWithParameters(t, ctx, ds, false, DefaultStatusValidator)
 }
 
 func (c *client) RemoveWithParameters(
@@ -538,7 +542,7 @@ func (c *client) RemoveWithParameters(
 	ctx context.Context,
 	ds Dataset,
 	skipStrictExistCheck bool,
-	validator ErrorValidator,
+	validator StatusValidator,
 ) (rerr error) {
 	t.Log("remove operation started")
 
@@ -563,24 +567,23 @@ func (c *client) RemoveWithParameters(
 				return
 			}
 
-			fail, newErr := validator(t, err)
-			if fail {
-				if newErr != nil {
-					rerr = errors.Wrap(rerr, newErr.Error())
-					continue
-				}
-
-				rerr = errors.Wrap(rerr, err.Error())
-			}
 			if err != nil {
-				continue
+				err = parseAndLogError(t, err)
+				rerr = errors.Wrap(rerr, err.Error())
+				return
 			}
 
 			loc := res.GetLocation()
 			if loc == nil {
-				err := res.GetStatus()
-				if err != nil {
-					t.Errorf("an error returned:\tcode: %d\tmessage: %s\tdetails: %s", err.GetCode(), err.GetMessage(), errdetails.Serialize(err.GetDetails()))
+				status := res.GetStatus()
+				if status != nil {
+					if e := validator(t, status.GetCode(), status.GetMessage()); e != nil {
+						t.Errorf("an error returned:\tcode: %d\tmessage: %s\tdetails: %s",
+							status.GetCode(),
+							status.GetMessage(),
+							errdetails.Serialize(status.GetDetails()))
+						rerr = errors.Wrap(rerr, e.Error())
+					}
 					continue
 				}
 
@@ -638,7 +641,11 @@ func (c *client) Exists(t *testing.T, ctx context.Context, id string) error {
 	return nil
 }
 
-func (c *client) GetObject(t *testing.T, ctx context.Context, ds Dataset) error {
+func (c *client) GetObject(
+	t *testing.T,
+	ctx context.Context,
+	ds Dataset,
+) (rerr error) {
 	t.Log("getObject operation started")
 
 	client, err := c.getClient(ctx)
@@ -663,18 +670,9 @@ func (c *client) GetObject(t *testing.T, ctx context.Context, ds Dataset) error 
 			}
 
 			if err != nil {
-				st, serr := status.FromError(err)
-				t.Errorf(
-					"error: %v\tserror: %v\tcode: %s\tdetails: %s\tmessage: %s\tstatus-error: %s\tproto: %s",
-					err,
-					serr,
-					st.Code().String(),
-					errdetails.Serialize(st.Details()),
-					st.Message(),
-					st.Err().Error(),
-					errdetails.Serialize(st.Proto()),
-				)
-				continue
+				err = parseAndLogError(t, err)
+				rerr = errors.Wrap(rerr, err.Error())
+				return
 			}
 
 			resp := res.GetVector()
@@ -682,6 +680,7 @@ func (c *client) GetObject(t *testing.T, ctx context.Context, ds Dataset) error 
 				err := res.GetStatus()
 				if err != nil {
 					t.Errorf("an error returned:\tcode: %d\tmessage: %s\tdetails: %s", err.GetCode(), err.GetMessage(), errdetails.Serialize(err.GetDetails()))
+					rerr = errors.Wrap(rerr, err.String())
 					continue
 				}
 
@@ -723,5 +722,5 @@ func (c *client) GetObject(t *testing.T, ctx context.Context, ds Dataset) error 
 
 	t.Log("getObject operation finished")
 
-	return nil
+	return rerr
 }

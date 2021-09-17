@@ -31,7 +31,6 @@ import (
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc/codes"
-	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/tests/e2e/hdf5"
 	"github.com/vdaas/vald/tests/e2e/kubernetes/client"
 	"github.com/vdaas/vald/tests/e2e/kubernetes/portforward"
@@ -340,18 +339,12 @@ func TestE2ECRUDWithSkipStrictExistCheck(t *testing.T) {
 		},
 		true,
 		1,
-		func(t *testing.T, err error) (bool, error) {
-			if err == nil {
-				return true, errors.New("no error occurred on Update #1")
-			}
-			st, _, _ := status.ParseError(err, codes.Unknown, "")
-			if st.Code() != codes.NotFound {
-				return true, errors.Errorf("the returned error is not a NotFound error on Update #1: %s", err)
+		func(t *testing.T, status int32, msg string) error {
+			if status != int32(codes.NotFound) {
+				return errors.Errorf("the returned status is not NotFound on Update #1: %s", err)
 			}
 
-			t.Logf("successfully returned an error on Update #1: %s", err)
-
-			return false, nil
+			return nil
 		},
 	)
 	if err != nil {
@@ -367,18 +360,12 @@ func TestE2ECRUDWithSkipStrictExistCheck(t *testing.T) {
 		},
 		false,
 		1,
-		func(t *testing.T, err error) (bool, error) {
-			if err == nil {
-				return true, errors.New("no error occurred on Update #2")
-			}
-			st, _, _ := status.ParseError(err, codes.Unknown, "")
-			if st.Code() != codes.NotFound {
-				return true, errors.Errorf("the returned error is not a NotFound error on Update #2: %s", err)
+		func(t *testing.T, status int32, msg string) error {
+			if status != int32(codes.NotFound) {
+				return errors.Errorf("the returned status is not NotFound on Update #2: %s", err)
 			}
 
-			t.Logf("successfully NotFound error is returned on Update #2")
-
-			return false, nil
+			return nil
 		},
 	)
 	if err != nil {
@@ -393,7 +380,7 @@ func TestE2ECRUDWithSkipStrictExistCheck(t *testing.T) {
 			Train: ds.Train[insertFrom : insertFrom+insertNum],
 		},
 		false,
-		operation.DefaultErrorValidator,
+		operation.DefaultStatusValidator,
 	)
 	if err != nil {
 		t.Fatalf("an error occurred on #3: %s", err)
@@ -408,7 +395,7 @@ func TestE2ECRUDWithSkipStrictExistCheck(t *testing.T) {
 		},
 		false,
 		1,
-		operation.DefaultErrorValidator,
+		operation.DefaultStatusValidator,
 	)
 	if err != nil {
 		t.Fatalf("an error occurred on #4: %s", err)
@@ -423,18 +410,12 @@ func TestE2ECRUDWithSkipStrictExistCheck(t *testing.T) {
 		},
 		false,
 		1,
-		func(t *testing.T, err error) (bool, error) {
-			if err == nil {
-				return true, errors.New("no error occurred on Update #5")
-			}
-			st, _, _ := status.ParseError(err, codes.Unknown, "")
-			if st.Code() != codes.AlreadyExists {
-				return true, errors.Errorf("the returned error is not a NotFound error on Update #2: %s", err)
+		func(t *testing.T, status int32, msg string) error {
+			if status != int32(codes.AlreadyExists) {
+				return errors.Errorf("the returned status is not NotFound on Update #2: %s", err)
 			}
 
-			t.Logf("successfully NotFound error is returned on Update #5")
-
-			return false, nil
+			return nil
 		},
 	)
 	if err != nil {
@@ -450,7 +431,7 @@ func TestE2ECRUDWithSkipStrictExistCheck(t *testing.T) {
 		},
 		true,
 		1,
-		operation.DefaultErrorValidator,
+		operation.DefaultStatusValidator,
 	)
 	if err != nil {
 		t.Fatalf("an error occurred on #6: %s", err)
@@ -464,7 +445,7 @@ func TestE2ECRUDWithSkipStrictExistCheck(t *testing.T) {
 			Train: ds.Train[removeFrom : removeFrom+removeNum],
 		},
 		false,
-		operation.DefaultErrorValidator,
+		operation.DefaultStatusValidator,
 	)
 	if err != nil {
 		t.Fatalf("an error occurred on #7: %s", err)
@@ -478,18 +459,12 @@ func TestE2ECRUDWithSkipStrictExistCheck(t *testing.T) {
 			Train: ds.Train[removeFrom : removeFrom+removeNum],
 		},
 		false,
-		func(t *testing.T, err error) (bool, error) {
-			if err == nil {
-				return true, errors.New("no error occurred on #8")
-			}
-			st, _, _ := status.ParseError(err, codes.Unknown, "")
-			if st.Code() != codes.NotFound {
-				return true, errors.Errorf("the returned error is not a NotFound error on Remove #8: %s", err)
+		func(t *testing.T, status int32, msg string) error {
+			if status != int32(codes.NotFound) {
+				return errors.Errorf("the returned status is not NotFound on Remove #8: %s", err)
 			}
 
-			t.Logf("successfully NotFound error is returned on Remove #8")
-
-			return false, nil
+			return nil
 		},
 	)
 	if err != nil {
@@ -504,18 +479,12 @@ func TestE2ECRUDWithSkipStrictExistCheck(t *testing.T) {
 			Train: ds.Train[removeFrom : removeFrom+removeNum],
 		},
 		true,
-		func(t *testing.T, err error) (bool, error) {
-			if err == nil {
-				return true, errors.New("no error occurred on #9")
-			}
-			st, _, _ := status.ParseError(err, codes.Unknown, "")
-			if st.Code() != codes.NotFound {
-				return true, errors.Errorf("the returned error is not a NotFound error on Remove #9: %s", err)
+		func(t *testing.T, status int32, msg string) error {
+			if status != int32(codes.NotFound) {
+				return errors.Errorf("the returned status is not NotFound on Remove #9: %s", err)
 			}
 
-			t.Logf("successfully NotFound error is returned on Remove #9")
-
-			return false, nil
+			return nil
 		},
 	)
 	if err != nil {
@@ -531,7 +500,7 @@ func TestE2ECRUDWithSkipStrictExistCheck(t *testing.T) {
 		},
 		false,
 		2,
-		operation.DefaultErrorValidator,
+		operation.DefaultStatusValidator,
 	)
 	if err != nil {
 		t.Fatalf("an error occurred on #10: %s", err)
@@ -546,18 +515,12 @@ func TestE2ECRUDWithSkipStrictExistCheck(t *testing.T) {
 		},
 		false,
 		2,
-		func(t *testing.T, err error) (bool, error) {
-			if err == nil {
-				return true, errors.New("no error occurred on #11")
-			}
-			st, _, _ := status.ParseError(err, codes.Unknown, "")
-			if st.Code() != codes.AlreadyExists {
-				return true, errors.Errorf("the returned error is not a AlreadyExists error on Upsert #11: %s", err)
+		func(t *testing.T, status int32, msg string) error {
+			if status != int32(codes.AlreadyExists) {
+				return errors.Errorf("the returned status is not AlreadyExists on Upsert #11: %s", err)
 			}
 
-			t.Logf("successfully AlreadyExists error is returned on Upsert #11")
-
-			return false, nil
+			return nil
 		},
 	)
 	if err != nil {
@@ -573,7 +536,7 @@ func TestE2ECRUDWithSkipStrictExistCheck(t *testing.T) {
 		},
 		false,
 		3,
-		operation.DefaultErrorValidator,
+		operation.DefaultStatusValidator,
 	)
 	if err != nil {
 		t.Fatalf("an error occurred on #12: %s", err)
@@ -588,7 +551,7 @@ func TestE2ECRUDWithSkipStrictExistCheck(t *testing.T) {
 		},
 		true,
 		3,
-		operation.DefaultErrorValidator,
+		operation.DefaultStatusValidator,
 	)
 	if err != nil {
 		t.Fatalf("an error occurred on #13: %s", err)
