@@ -534,6 +534,18 @@ var (
 					}
 					return &gopter.PropResult{Status: gopter.PropTrue}
 				}
+				if !errors.Is(rc.err, errors.ErrEmptySearchResult) {
+					return &gopter.PropResult{
+						Status: gopter.PropFalse,
+						Error:  rc.err,
+						Labels: []string{
+							"Search",
+							fmt.Sprintf("some indices are exists %v but it returned ErrEmptySearchResult", st.states),
+							rc.err.Error(),
+						},
+					}
+
+				}
 				return &gopter.PropResult{
 					Status: gopter.PropFalse,
 					Error:  rc.err,
