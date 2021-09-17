@@ -347,14 +347,23 @@ func (n *ngt) Search(vec []float32, size int, epsilon, radius float32) (result [
 	}
 	n.mu.RUnlock()
 
-	switch rsize := int(C.ngt_get_result_size(results, n.ebuf)); rsize {
-	case -1:
-		return nil, n.newGoError(n.ebuf)
-	case 0:
-		return nil, errors.ErrEmptySearchResult
-	default:
-		result = make([]SearchResult, rsize)
+	rsize := int(C.ngt_get_result_size(results, n.ebuf))
+	if rsize <= 0 {
+		err = n.newGoError(n.ebuf)
+		if err != nil {
+			err = errors.ErrEmptySearchResult
+		}
+		return err
 	}
+	// switch rsize := int(C.ngt_get_result_size(results, n.ebuf)); rsize {
+	// case -1:
+	// 	return nil, n.newGoError(n.ebuf)
+	// case 0:
+	// 	return nil, errors.ErrEmptySearchResult
+	// default:
+	// 	result = make([]SearchResult, rsize)
+	// }
+	result = make([]SearchResult, rsize)
 
 	for i := range result {
 		d := C.ngt_get_result(results, C.uint32_t(i), n.ebuf)
