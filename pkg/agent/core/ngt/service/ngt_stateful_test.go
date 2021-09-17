@@ -566,6 +566,7 @@ var (
 					Labels: []string{
 						"Search",
 						"error",
+						fmt.Sprintf("%v", st.states),
 						rc.err.Error(),
 					},
 				}
