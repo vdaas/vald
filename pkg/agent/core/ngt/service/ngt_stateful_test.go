@@ -817,7 +817,6 @@ var (
 		NextStateFunc: func(state commands.State) commands.State {
 			st := state.(*ngtState)
 			st.vectors[idA] = 1
-			st.states[idA] = IN_INSERT_QUEUE
 			return state
 		},
 		PreConditionFunc: func(state commands.State) bool {
@@ -865,7 +864,6 @@ var (
 		NextStateFunc: func(state commands.State) commands.State {
 			st := state.(*ngtState)
 			st.vectors[idB] = 1
-			st.states[idA] = IN_INSERT_QUEUE
 			return state
 		},
 		PreConditionFunc: func(state commands.State) bool {
@@ -913,7 +911,6 @@ var (
 		NextStateFunc: func(state commands.State) commands.State {
 			st := state.(*ngtState)
 			st.vectors[idC] = 1
-			st.states[idA] = IN_INSERT_QUEUE
 			return state
 		},
 		PreConditionFunc: func(state commands.State) bool {
