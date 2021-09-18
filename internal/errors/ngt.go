@@ -26,8 +26,8 @@ var (
 		return Wrap(err, "failed to create property")
 	}
 
-	// ErrIndexNotFound represents an error that the index file is not found.
-	ErrIndexNotFound = New("index file not found")
+	// ErrIndexFileNotFound represents an error that the index file is not found.
+	ErrIndexFileNotFound = New("index file not found")
 
 	// ErrIndexLoadTimeout represents an error that the index loading timeout.
 	ErrIndexLoadTimeout = New("index load timeout")

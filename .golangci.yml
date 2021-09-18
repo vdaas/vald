@@ -18,6 +18,9 @@ run:
   skip-dirs:
     - (^|/)apis($|/)
     - (^|/)hack/benchmark($|/)
+    - (^|/)pkg/filter/ingress($|/)
+    - (^|/)internal/core/algorithm/ngt($|/)
+    - (^|/)internal/core/converter/tensorflow($|/)
 
 output:
   format: line-number

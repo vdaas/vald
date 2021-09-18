@@ -174,9 +174,10 @@ func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *
 			req.GetConfig().GetNum(),
 			req.GetConfig().GetEpsilon(),
 			req.GetConfig().GetRadius()))
-	if err != nil {
+	if err != nil || res == nil {
 		var stat trace.Status
-		if errors.Is(err, errors.ErrCreateIndexingIsInProgress) {
+		switch {
+		case errors.Is(err, errors.ErrCreateIndexingIsInProgress):
 			err = status.WrapWithAborted("Search API aborted to process search request due to createing indices is in progress", err,
 				&errdetails.RequestInfo{
 					RequestId:   req.GetConfig().GetRequestId(),
@@ -188,7 +189,19 @@ func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *
 				})
 			log.Debug(err)
 			stat = trace.StatusCodeAborted(err.Error())
-		} else {
+		case errors.Is(err, errors.ErrEmptySearchResult):
+			err = status.WrapWithNotFound(fmt.Sprintf("Search API requestID %s's search result not found", req.GetConfig().GetRequestId()), err,
+				&errdetails.RequestInfo{
+					RequestId:   req.GetConfig().GetRequestId(),
+					ServingData: errdetails.Serialize(req),
+				},
+				&errdetails.ResourceInfo{
+					ResourceType: ngtResourceType + "/ngt.Search",
+					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+				})
+			log.Debug(err)
+			stat = trace.StatusCodeNotFound(err.Error())
+		default:
 			err = status.WrapWithInternal("Search API failed to process search request", err,
 				&errdetails.RequestInfo{
 					RequestId:   req.GetConfig().GetRequestId(),
@@ -223,7 +236,7 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 			req.GetConfig().GetNum(),
 			req.GetConfig().GetEpsilon(),
 			req.GetConfig().GetRadius()))
-	if err != nil {
+	if err != nil || res == nil {
 		var stat trace.Status
 		switch {
 		case errors.Is(err, errors.ErrCreateIndexingIsInProgress):
@@ -238,6 +251,18 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 				})
 			log.Debug(err)
 			stat = trace.StatusCodeAborted(err.Error())
+		case errors.Is(err, errors.ErrEmptySearchResult):
+			err = status.WrapWithNotFound(fmt.Sprintf("SearchByID API uuid %s's search result not found", req.GetId()), err,
+				&errdetails.RequestInfo{
+					RequestId:   req.GetConfig().GetRequestId(),
+					ServingData: errdetails.Serialize(req),
+				},
+				&errdetails.ResourceInfo{
+					ResourceType: ngtResourceType + "/ngt.SearchByID",
+					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+				})
+			log.Debug(err)
+			stat = trace.StatusCodeNotFound(err.Error())
 		case errors.Is(err, errors.ErrObjectIDNotFound(req.GetId())),
 			strings.Contains(err.Error(), fmt.Sprintf("ngt uuid %s's object not found", req.GetId())):
 			err = status.WrapWithNotFound(fmt.Sprintf("SearchByID API uuid %s's object not found", req.GetId()), err,
@@ -274,8 +299,11 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 }
 
 func toSearchResponse(dists []model.Distance, err error) (res *payload.Search_Response, rerr error) {
-	if err != nil || len(dists) == 0 {
+	if err != nil {
 		return nil, err
+	}
+	if len(dists) == 0 {
+		return nil, errors.ErrEmptySearchResult
 	}
 	res = new(payload.Search_Response)
 	res.Results = make([]*payload.Object_Distance, 0, len(dists))
@@ -285,7 +313,7 @@ func toSearchResponse(dists []model.Distance, err error) (res *payload.Search_Re
 			Distance: dist.Distance,
 		})
 	}
-	return res, err
+	return res, nil
 }
 
 func (s *server) StreamSearch(stream vald.Search_StreamSearchServer) (err error) {

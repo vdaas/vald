@@ -393,6 +393,10 @@ func (n *ngt) Search(vec []float32, size uint32, epsilon, radius float32) ([]mod
 		return nil, err
 	}
 
+	if len(sr) == 0 {
+		return nil, errors.ErrEmptySearchResult
+	}
+
 	ds := make([]model.Distance, 0, len(sr))
 	for _, d := range sr {
 		if err = d.Error; d.ID == 0 && err != nil {
