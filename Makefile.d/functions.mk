@@ -62,8 +62,7 @@ define profile-web
 endef
 
 define go-lint
-	find ./ -type d -name .git -prune -o -type f -regex '.*\.go' -print | xargs goimports -w
-	golangci-lint run --enable-all --disable=gochecknoglobals --fix --color always -j 16 --skip-dirs apis/grpc --exclude-use-default=false ./...
+	golangci-lint run --config .golangci.yml
 endef
 
 define go-vet
