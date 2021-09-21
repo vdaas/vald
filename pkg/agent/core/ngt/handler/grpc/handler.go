@@ -1117,18 +1117,20 @@ func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *
 		loc, err = s.Update(ctx, &payload.Update_Request{
 			Vector: req.GetVector(),
 			Config: &payload.Update_Config{
-				Timestamp: req.GetConfig().GetTimestamp(),
+				Timestamp:            req.GetConfig().GetTimestamp(),
+				SkipStrictExistCheck: true,
 			},
 		})
-		rtName = "/ngt.Update"
+		rtName += "/ngt.Update"
 	} else {
 		loc, err = s.Insert(ctx, &payload.Insert_Request{
 			Vector: req.GetVector(),
 			Config: &payload.Insert_Config{
-				Timestamp: req.GetConfig().GetTimestamp(),
+				Timestamp:            req.GetConfig().GetTimestamp(),
+				SkipStrictExistCheck: true,
 			},
 		})
-		rtName = "/ngt.Insert"
+		rtName += "/ngt.Insert"
 	}
 	if err != nil {
 		st, msg, err := status.ParseError(err, codes.Internal, "failed to parse Upsert gRPC error response",
@@ -1239,10 +1241,18 @@ func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequ
 		if exists {
 			updateReqs = append(updateReqs, &payload.Update_Request{
 				Vector: vec,
+				Config: &payload.Update_Config{
+					Timestamp:            req.GetConfig().GetTimestamp(),
+					SkipStrictExistCheck: true,
+				},
 			})
 		} else {
 			insertReqs = append(insertReqs, &payload.Insert_Request{
 				Vector: vec,
+				Config: &payload.Insert_Config{
+					Timestamp:            req.GetConfig().GetTimestamp(),
+					SkipStrictExistCheck: true,
+				},
 			})
 		}
 	}
