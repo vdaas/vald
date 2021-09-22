@@ -28,7 +28,62 @@
 
 .top__lead {
   font-size: 3.2rem;
+  margin-bottom: 36px;
 }
+
+.top__linklist {
+  width: 100%;
+}
+
+.top__linkitem {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 24px;
+  margin-bottom: 10px;
+  border: 1px solid #ffffff;
+  background: rgba(255,255,255,0.2);
+  color: #ffffff;
+}
+.top__linkitem:hover{
+  background: rgba(255,255,255,0.1);
+  transition: all 0.2s;
+}
+
+
+.top__linkitem::before{
+  content: '';
+  display: inline-flex;
+  margin-right: 8px;
+  background-size: 16px 16px;
+  background-repeat: no-repeat;
+  width: 16px;
+  height: 16px;
+}
+
+.top__linkitem--getstarted::before{
+  background-image: url(../images/top_icon_getstarted.svg);
+}
+
+.top__linkitem--docs::before{
+  background-image: url(../images/top_icon_docs.svg);
+}
+
+.top__linkitem--valdslack::before{
+  background-image: url(../images/top_icon_valdslack.svg);
+}
+
+
+@media screen and (min-width: 768px) {
+  .top__linkitem {
+    width: 24%;
+    display: inline-flex;
+    padding: 12px 24px;
+    margin-bottom: 0;
+    margin-right: 10px;
+  }
+}
+
 
 .top__bg {
   position: absolute;
