@@ -635,15 +635,24 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 	log.Debug("create index delete phase finished")
 	n.gc()
 	log.Debug("create index insert phase started")
+	var icnt uint32
 	n.vq.RangePopInsert(ctx, now, func(uuid string, vector []float32) bool {
 		oid, err := n.core.Insert(vector)
 		if err != nil {
 			log.Error(err)
 		} else {
 			n.kvs.Set(uuid, uint32(oid))
+			atomic.AddUint32(&icnt, 1)
 		}
 		return true
 	})
+	if poolSize <= 0 {
+		if n.poolSize < atomic.LoadUint32(&icnt) {
+			poolSize = n.poolSize
+		} else {
+			poolSize = atomic.LoadUint32(&icnt)
+		}
+	}
 	log.Debug("create index insert phase finished")
 	log.Debug("create graph and tree phase started")
 	log.Debugf("pool size = %d", poolSize)
