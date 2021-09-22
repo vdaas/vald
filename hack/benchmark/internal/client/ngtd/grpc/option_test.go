@@ -22,7 +22,7 @@ import (
 
 	"github.com/vdaas/vald/internal/net/grpc"
 
-	"go.uber.org/goleak"
+	"github.com/vdaas/vald/internal/test/goleak"
 )
 
 func TestWithAddr(t *testing.T) {

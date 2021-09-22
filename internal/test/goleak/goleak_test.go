@@ -13,35 +13,29 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-package assets
+package goleak
 
 import (
-	"reflect"
 	"testing"
 
-	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/test/goleak"
 )
 
-func TestData(t *testing.T) {
+func TestVerifyNone(t *testing.T) {
 	type args struct {
-		name string
+		t       goleak.TestingT
+		options []goleak.Option
 	}
-	type want struct {
-		want func(testing.TB) Dataset
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
 		want       want
-		checkFunc  func(want, func(testing.TB) Dataset) error
+		checkFunc  func(want) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, got func(testing.TB) Dataset) error {
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-		}
+	defaultCheckFunc := func(w want) error {
 		return nil
 	}
 	tests := []test{
@@ -50,7 +44,8 @@ func TestData(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
-		           name: "",
+		           t: nil,
+		           options: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -63,7 +58,8 @@ func TestData(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
-		           name: "",
+		           t: nil,
+		           options: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -72,9 +68,11 @@ func TestData(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -85,8 +83,8 @@ func TestData(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 
-			got := Data(test.args.name)
-			if err := test.checkFunc(test.want, got); err != nil {
+			VerifyNone(test.args.t, test.args.options...)
+			if err := test.checkFunc(test.want); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

@@ -27,10 +27,10 @@ import (
 	"github.com/vdaas/vald/internal/observability"
 	"github.com/vdaas/vald/internal/runner"
 	"github.com/vdaas/vald/internal/servers/starter"
+	"github.com/vdaas/vald/internal/test/goleak"
 	"github.com/vdaas/vald/pkg/discoverer/k8s/config"
 	handler "github.com/vdaas/vald/pkg/discoverer/k8s/handler/grpc"
 	"github.com/vdaas/vald/pkg/discoverer/k8s/service"
-	"go.uber.org/goleak"
 )
 
 func TestNew(t *testing.T) {

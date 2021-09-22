@@ -21,7 +21,7 @@ import (
 	"testing"
 
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
-	"go.uber.org/goleak"
+	"github.com/vdaas/vald/internal/test/goleak"
 )
 
 func TestWithVald(t *testing.T) {

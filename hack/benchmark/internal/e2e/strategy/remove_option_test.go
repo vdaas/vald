@@ -20,7 +20,7 @@ package strategy
 import (
 	"testing"
 
-	"go.uber.org/goleak"
+	"github.com/vdaas/vald/internal/test/goleak"
 )
 
 func TestWithParallelRemove(t *testing.T) {

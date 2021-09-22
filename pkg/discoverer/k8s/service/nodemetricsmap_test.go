@@ -25,7 +25,7 @@ import (
 
 	"github.com/vdaas/vald/internal/errors"
 	mnode "github.com/vdaas/vald/internal/k8s/metrics/node"
-	"go.uber.org/goleak"
+	"github.com/vdaas/vald/internal/test/goleak"
 )
 
 func Test_newEntryNodeMetricsMap(t *testing.T) {

@@ -3,15 +3,15 @@ module github.com/vdaas/vald
 go 1.17
 
 replace (
-	cloud.google.com/go => cloud.google.com/go v0.94.1
-	cloud.google.com/go/monitoring => cloud.google.com/go/monitoring v0.2.1-0.20210918000357-c8f83f03efee
-	cloud.google.com/go/profiler => cloud.google.com/go/profiler v0.1.1-0.20210918000357-c8f83f03efee
-	cloud.google.com/go/storage => cloud.google.com/go/storage v1.16.2-0.20210918000357-c8f83f03efee
-	cloud.google.com/go/trace => cloud.google.com/go/trace v0.1.1-0.20210918000357-c8f83f03efee
+	cloud.google.com/go => cloud.google.com/go v0.95.0
+	cloud.google.com/go/monitoring => cloud.google.com/go/monitoring v0.3.1-0.20210922000614-ad373eebd04c
+	cloud.google.com/go/profiler => cloud.google.com/go/profiler v0.1.1-0.20210922000614-ad373eebd04c
+	cloud.google.com/go/storage => cloud.google.com/go/storage v1.16.2-0.20210922000614-ad373eebd04c
+	cloud.google.com/go/trace => cloud.google.com/go/trace v0.1.1-0.20210922000614-ad373eebd04c
 	github.com/Azure/go-autorest => github.com/Azure/go-autorest v14.2.1-0.20210910151046-492f94bc3a56+incompatible
 	github.com/Azure/go-autorest/autorest => github.com/Azure/go-autorest/autorest v0.11.21
 	github.com/Azure/go-autorest/autorest/adal => github.com/Azure/go-autorest/autorest/adal v0.9.17-0.20210910151046-492f94bc3a56
-	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.40.45
+	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.40.46
 	github.com/boltdb/bolt => github.com/boltdb/bolt v1.3.1
 	github.com/chzyer/logex => github.com/chzyer/logex v1.1.11-0.20170329064859-445be9e134b2
 	github.com/coreos/etcd => go.etcd.io/etcd v3.3.25+incompatible
@@ -34,7 +34,7 @@ replace (
 	go.uber.org/goleak => go.uber.org/goleak v1.1.11
 	go.uber.org/multierr => go.uber.org/multierr v1.7.0
 	go.uber.org/zap => go.uber.org/zap v1.19.1
-	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20210915214749-c084706c2272
+	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20210921155107-089bfa567519
 	golang.org/x/exp => golang.org/x/exp v0.0.0-20210916165020-5cb4fee858ee
 	golang.org/x/image => golang.org/x/image v0.0.0-20210628002857-a66eb6448b8d
 	golang.org/x/lint => golang.org/x/lint v0.0.0-20210508222113-6edffad5e616
@@ -43,7 +43,7 @@ replace (
 	golang.org/x/net => golang.org/x/net v0.0.0-20210917221730-978cfadd31cf
 	golang.org/x/oauth2 => golang.org/x/oauth2 v0.0.0-20210819190943-2bc19b11175f
 	golang.org/x/sync => golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
-	golang.org/x/sys => golang.org/x/sys v0.0.0-20210917161153-d61c044b1678
+	golang.org/x/sys => golang.org/x/sys v0.0.0-20210921065528-437939a70204
 	golang.org/x/term => golang.org/x/term v0.0.0-20210916214954-140adaaadfaf
 	golang.org/x/text => golang.org/x/text v0.3.7
 	golang.org/x/time => golang.org/x/time v0.0.0-20210723032227-1f47c861a9ac
@@ -122,8 +122,8 @@ require (
 	golang.org/x/tools v0.1.5
 	gonum.org/v1/hdf5 v0.0.0-20210714002203-8c5d23bc6946
 	gonum.org/v1/plot v0.9.0
-	google.golang.org/api v0.56.0
-	google.golang.org/genproto v0.0.0-20210917145530-b395a37504d4
+	google.golang.org/api v0.57.0
+	google.golang.org/genproto v0.0.0-20210921142501-181ce0d877f6
 	google.golang.org/grpc v1.40.0
 	google.golang.org/protobuf v1.27.1
 	gopkg.in/yaml.v2 v2.4.0

@@ -21,7 +21,7 @@ import (
 	"testing"
 
 	"github.com/vdaas/vald/internal/client/v1/client"
-	"go.uber.org/goleak"
+	"github.com/vdaas/vald/internal/test/goleak"
 )
 
 func TestWithSearchParallel(t *testing.T) {

@@ -20,7 +20,7 @@ import (
 	"testing"
 
 	"github.com/vdaas/vald/internal/errgroup"
-	"go.uber.org/goleak"
+	"github.com/vdaas/vald/internal/test/goleak"
 )
 
 func TestWithErrGroup(t *testing.T) {

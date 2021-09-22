@@ -20,7 +20,7 @@ package benchmark
 import (
 	"testing"
 
-	"go.uber.org/goleak"
+	"github.com/vdaas/vald/internal/test/goleak"
 )
 
 func TestWithName(t *testing.T) {
