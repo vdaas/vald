@@ -120,7 +120,8 @@ gotests/patch: \
 	find $(ROOTDIR)/* -name '*_test.go' | xargs sed -i -E "s%go.uber.org/goleak%github.com/vdaas/vald/internal/test/goleak%g"
 	find $(ROOTDIR)/internal/errors -name '*_test.go' | xargs sed -i -E "s%\"github.com/vdaas/vald/internal/errors\"%%g"
 	find $(ROOTDIR)/internal/errors -name '*_test.go' | xargs sed -i -E "s/errors\.//g"
-	sed -i -E "s%github.com/vdaas/vald/internal/test/goleak%go.uber.org/goleak%g" $(ROOTDIR)/internal/test/goleak/*.go
+	find $(ROOTDIR)/internal/test/goleak -name '*_test.go' | xargs sed -i -E "s%\"github.com/vdaas/vald/internal/test/goleak\"%%g"
+	find $(ROOTDIR)/internal/test/goleak -name '*_test.go' | xargs sed -i -E "s/goleak\.//g"
 
 $(GO_TEST_SOURCES): \
 	./assets/test/templates/common \

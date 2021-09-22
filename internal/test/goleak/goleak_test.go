@@ -17,14 +17,12 @@ package goleak
 
 import (
 	"testing"
-
-	"go.uber.org/goleak"
 )
 
 func TestVerifyNone(t *testing.T) {
 	type args struct {
-		t       goleak.TestingT
-		options []goleak.Option
+		t       TestingT
+		options []Option
 	}
 	type want struct{}
 	type test struct {
@@ -72,7 +70,7 @@ func TestVerifyNone(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			defer VerifyNone(tt, IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
