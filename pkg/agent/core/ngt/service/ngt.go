@@ -647,7 +647,7 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 		return true
 	})
 	if poolSize <= 0 {
-		if n.poolSize < atomic.LoadUint32(&icnt) {
+		if n.poolSize > 0 && n.poolSize < atomic.LoadUint32(&icnt) {
 			poolSize = n.poolSize
 		} else {
 			poolSize = atomic.LoadUint32(&icnt)
