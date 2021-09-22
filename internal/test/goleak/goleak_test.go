@@ -18,7 +18,7 @@ package goleak
 import (
 	"testing"
 
-	"github.com/vdaas/vald/internal/test/goleak"
+	"go.uber.org/goleak"
 )
 
 func TestVerifyNone(t *testing.T) {
