@@ -340,7 +340,6 @@ func (n *ngt) Search(vec []float32, size int, epsilon, radius float32) (result [
 		n.ebuf)
 
 	if ret == ErrorCode {
-		// TODO global lock取るのどうする問題
 		ne := n.ebuf
 		n.mu.RUnlock()
 		return nil, n.newGoError(ne)
@@ -355,14 +354,6 @@ func (n *ngt) Search(vec []float32, size int, epsilon, radius float32) (result [
 		}
 		return nil, err
 	}
-	// switch rsize := int(C.ngt_get_result_size(results, n.ebuf)); rsize {
-	// case -1:
-	// 	return nil, n.newGoError(n.ebuf)
-	// case 0:
-	// 	return nil, errors.ErrEmptySearchResult
-	// default:
-	// 	result = make([]SearchResult, rsize)
-	// }
 	result = make([]SearchResult, rsize)
 
 	for i := range result {
@@ -573,11 +564,14 @@ func (n *ngt) GetVector(id uint) ([]float32, error) {
 
 func (n *ngt) newGoError(ne C.NGTError) (err error) {
 	n.mu.Lock()
-	err = errors.New(C.GoString(C.ngt_get_error_string(ne)))
+	msg := C.GoString(C.ngt_get_error_string(ne))
 	C.ngt_destroy_error_object(n.ebuf)
 	n.ebuf = C.ngt_create_error_object()
 	n.mu.Unlock()
-	return err
+	if len(msg) == 0 {
+		return nil
+	}
+	return errors.NewNGTError(msg)
 }
 
 // Close NGT index.

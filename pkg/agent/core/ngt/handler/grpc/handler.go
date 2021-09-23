@@ -201,6 +201,39 @@ func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *
 				})
 			log.Debug(err)
 			stat = trace.StatusCodeNotFound(err.Error())
+		case errors.As(err, errors.NGTError{}):
+			log.Errorf("ngt core process returned error: %v", err)
+			err = status.WrapWithInternal("Search API failed to process search request due to ngt core process returned error", err,
+				&errdetails.RequestInfo{
+					RequestId:   req.GetConfig().GetRequestId(),
+					ServingData: errdetails.Serialize(req),
+				},
+				&errdetails.ResourceInfo{
+					ResourceType: ngtResourceType + "/ngt.Search/core.ngt",
+					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+				}, info.Get())
+			log.Error(err)
+			stat = trace.StatusCodeInternal(err.Error())
+		case errors.Is(err, errors.ErrIncompatibleDimensionSize(len(req.GetVector()), int(s.ngt.GetDimensionSize()))):
+			err = status.WrapWithInvalidArgument("Search API Incompatible Dimension Size detected",
+				err,
+				&errdetails.RequestInfo{
+					RequestId:   req.GetConfig().GetRequestId(),
+					ServingData: errdetails.Serialize(req),
+				},
+				&errdetails.BadRequest{
+					FieldViolations: []*errdetails.BadRequestFieldViolation{
+						{
+							Field:       "vector dimension size",
+							Description: err.Error(),
+						},
+					},
+				},
+				&errdetails.ResourceInfo{
+					ResourceType: ngtResourceType + "/ngt.Search",
+				})
+			log.Warn(err)
+			stat = trace.StatusCodeInvalidArgument(err.Error())
 		default:
 			err = status.WrapWithInternal("Search API failed to process search request", err,
 				&errdetails.RequestInfo{
