@@ -26,8 +26,10 @@ option java_multiple_files = true;
 option java_package = "org.vdaas.vald.api.v1.vald";
 option java_outer_classname = "ValdSearch";
 
+// Search service provides ways to search indexed vectors.
 service Search {
 
+  // A method to search indexed vectors by a raw vector.
   rpc Search(payload.v1.Search.Request) returns (payload.v1.Search.Response) {
     option (google.api.http) = {
       post : "/search"
@@ -35,6 +37,7 @@ service Search {
     };
   }
 
+  // A method to search indexed vectors by ID.
   rpc SearchByID(payload.v1.Search.IDRequest)
       returns (payload.v1.Search.Response) {
     option (google.api.http) = {
@@ -43,12 +46,15 @@ service Search {
     };
   }
 
+  // A method to search indexed vectors by multiple vectors.
   rpc StreamSearch(stream payload.v1.Search.Request)
       returns (stream payload.v1.Search.StreamResponse) {}
 
+  // A method to search indexed vectors by multiple IDs.
   rpc StreamSearchByID(stream payload.v1.Search.IDRequest)
       returns (stream payload.v1.Search.StreamResponse) {}
 
+  // A method to search indexed vectors by multiple vectors in a single request.
   rpc MultiSearch(payload.v1.Search.MultiRequest)
       returns (payload.v1.Search.Responses) {
     option (google.api.http) = {
@@ -57,6 +63,7 @@ service Search {
     };
   }
 
+  // A method to search indexed vectors by multiple IDs in a single request.
   rpc MultiSearchByID(payload.v1.Search.MultiIDRequest)
       returns (payload.v1.Search.Responses) {
     option (google.api.http) = {
