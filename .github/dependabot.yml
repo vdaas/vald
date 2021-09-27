@@ -22,7 +22,7 @@ updates:
     open-pull-requests-limit: 10
     reviewers:
       - kpango
-      - rinx
+      # - add someone here?
     labels:
       - type/dependency
     ignore:
