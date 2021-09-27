@@ -31,39 +31,8 @@
   <tr>
     <td>Gateways</td>
     <td>
-      <code>docker pull vdaas/vald-gateway:{{ version }}</code><br/>
-      <code>docker pull ghcr.io/vdaas/vald/vald-gateway:{{ version }}</code><br/>
-      <code>docker pull vdaas/vald-backup-gateway:{{ version }}</code><br/>
-      <code>docker pull ghcr.io/vdaas/vald/vald-backup-gateway:{{ version }}</code><br/>
       <code>docker pull vdaas/vald-lb-gateway:{{ version }}</code><br/>
       <code>docker pull ghcr.io/vdaas/vald/vald-lb-gateway:{{ version }}</code><br/>
-      <code>docker pull vdaas/vald-meta-gateway:{{ version }}</code><br/>
-      <code>docker pull ghcr.io/vdaas/vald/vald-meta-gateway:{{ version }}</code>
-    </td>
-  </tr>
-  <tr>
-    <td>Backup managers</td>
-    <td>
-      <code>docker pull vdaas/vald-manager-backup-mysql:{{ version }}</code><br/>
-      <code>docker pull ghcr.io/vdaas/vald/vald-manager-backup-mysql:{{ version }}</code><br/>
-      <code>docker pull vdaas/vald-manager-backup-cassandra:{{ version }}</code><br/>
-      <code>docker pull ghcr.io/vdaas/vald/vald-manager-backup-cassandra:{{ version }}</code>
-    </td>
-  </tr>
-  <tr>
-    <td>Compressor</td>
-    <td>
-      <code>docker pull vdaas/vald-manager-compressor:{{ version }}</code><br/>
-      <code>docker pull ghcr.io/vdaas/vald/vald-manager-compressor:{{ version }}</code>
-    </td>
-  </tr>
-  <tr>
-    <td>Metas</td>
-    <td>
-      <code>docker pull vdaas/vald-meta-redis:{{ version }}</code><br/>
-      <code>docker pull ghcr.io/vdaas/vald/vald-meta-redis:{{ version }}</code><br/>
-      <code>docker pull vdaas/vald-meta-cassandra:{{ version }}</code><br/>
-      <code>docker pull ghcr.io/vdaas/vald/vald-meta-cassandra:{{ version }}</code>
     </td>
   </tr>
   <tr>

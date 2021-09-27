@@ -38,22 +38,6 @@ analyze:
     type: go
     target: github.com/vdaas/vald/cmd/gateway/vald
     path: cmd/gateway/vald
-  - name: github.com/vdaas/vald/cmd/manager/backup/cassandra
-    type: go
-    target: github.com/vdaas/vald/cmd/manager/backup/cassandra
-    path: cmd/manager/backup/cassandra
-  - name: github.com/vdaas/vald/cmd/manager/backup/mysql
-    type: go
-    target: github.com/vdaas/vald/cmd/manager/backup/mysql
-    path: cmd/manager/backup/mysql
-  - name: github.com/vdaas/vald/cmd/manager/compressor
-    type: go
-    target: github.com/vdaas/vald/cmd/manager/compressor
-    path: cmd/manager/compressor
-  - name: github.com/vdaas/vald/cmd/manager/index
-    type: go
-    target: github.com/vdaas/vald/cmd/manager/index
-    path: cmd/manager/index
   - name: github.com/vdaas/vald/cmd/manager/replication/agent
     type: go
     target: github.com/vdaas/vald/cmd/manager/replication/agent
@@ -62,14 +46,6 @@ analyze:
     type: go
     target: github.com/vdaas/vald/cmd/manager/replication/controller
     path: cmd/manager/replication/controller
-  - name: github.com/vdaas/vald/cmd/meta/cassandra
-    type: go
-    target: github.com/vdaas/vald/cmd/meta/cassandra
-    path: cmd/meta/cassandra
-  - name: github.com/vdaas/vald/cmd/meta/redis
-    type: go
-    target: github.com/vdaas/vald/cmd/meta/redis
-    path: cmd/meta/redis
   - name: github.com/vdaas/vald/cmd/tools/cli/vdctl
     type: go
     target: github.com/vdaas/vald/cmd/tools/cli/vdctl
@@ -90,18 +66,6 @@ analyze:
     type: go
     target: github.com/vdaas/vald/hack/tools/config/discoverer/k8s
     path: hack/tools/config/discoverer/k8s
-  - name: github.com/vdaas/vald/hack/tools/config/gateway/vald
-    type: go
-    target: github.com/vdaas/vald/hack/tools/config/gateway/vald
-    path: hack/tools/config/gateway/vald
-  - name: github.com/vdaas/vald/hack/tools/config/manager/backup/mysql
-    type: go
-    target: github.com/vdaas/vald/hack/tools/config/manager/backup/mysql
-    path: hack/tools/config/manager/backup/mysql
-  - name: github.com/vdaas/vald/hack/tools/config/meta/redis
-    type: go
-    target: github.com/vdaas/vald/hack/tools/config/meta/redis
-    path: hack/tools/config/meta/redis
   - name: github.com/vdaas/vald/hack/tools/metrics
     type: go
     target: github.com/vdaas/vald/hack/tools/metrics

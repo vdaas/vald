@@ -39,11 +39,7 @@ enabled = true
   dockerfile_paths = [
     "dockers/agent/ngt/Dockerfile",
     "dockers/discoverer/k8s/Dockerfile",
-    "dockers/gateway/vald/Dockerfile",
-    "dockers/manager/backup/mysql/Dockerfile",
-    "dockers/manager/backup/cassandra/Dockerfile",
-    "dockers/meta/cassandra/Dockerfile",
-    "dockers/meta/redis/Dockerfile"
+    "dockers/gateway/vald/Dockerfile"
   ]
 
   trusted_registries = [
