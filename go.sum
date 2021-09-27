@@ -779,8 +779,8 @@ golang.org/x/oauth2 v0.0.0-20210819190943-2bc19b11175f h1:Qmd2pbz05z7z6lm0DrgQVV
 golang.org/x/oauth2 v0.0.0-20210819190943-2bc19b11175f/go.mod h1:KelEdhl1UZF7XfJ4dDtk6s++YSgaE7mD/BuKKDLBl4A=
 golang.org/x/sync v0.0.0-20210220032951-036812b2e83c h1:5KslGYwFpkhGh+Q16bwMP3cOontH8FOep7tGV86Y7SQ=
 golang.org/x/sync v0.0.0-20210220032951-036812b2e83c/go.mod h1:RxMgew5VJxzue5/jJTE5uejpjVlOe/izrB70Jof72aM=
-golang.org/x/sys v0.0.0-20210925032602-92d5a993a665 h1:QOQNt6vCjMpXE7JSK5VvAzJC1byuN3FgTNSBwf+CJgI=
-golang.org/x/sys v0.0.0-20210925032602-92d5a993a665/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
+golang.org/x/sys v0.0.0-20210927052749-1cf2251ac284 h1:lBPNCmq8u4zFP3huKCmUQ2Fx8kcY4X+O12UgGnyKsrg=
+golang.org/x/sys v0.0.0-20210927052749-1cf2251ac284/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
 golang.org/x/term v0.0.0-20210916214954-140adaaadfaf h1:Ihq/mm/suC88gF8WFcVwk+OV6Tq+wyA1O0E5UEvDglI=
 golang.org/x/term v0.0.0-20210916214954-140adaaadfaf/go.mod h1:jbD1KX2456YbFQfuXm/mYQcufACuNUgVhRMnK/tPxf8=
 golang.org/x/text v0.3.7 h1:olpwvP2KacW1ZWvsR7uQhoyTYvKAupfQrRGBFM352Gk=
@@ -898,8 +898,8 @@ nhooyr.io/websocket v1.8.6/go.mod h1:B70DZP8IakI65RVQ51MsWP/8jndNma26DVA/nFSCgW0
 nhooyr.io/websocket v1.8.7/go.mod h1:B70DZP8IakI65RVQ51MsWP/8jndNma26DVA/nFSCgW0=
 rsc.io/pdf v0.1.1/go.mod h1:n8OzWcQ6Sp37PL01nO98y4iUCRdTGarVfzxY20ICaU4=
 sigs.k8s.io/apiserver-network-proxy/konnectivity-client v0.0.24/go.mod h1:LEScyzhFmoF5pso/YSeBstl57mOzx9xlU9n85RGrDQg=
-sigs.k8s.io/controller-runtime v0.10.0 h1:HgyZmMpjUOrtkaFtCnfxsR1bGRuFoAczSNbn2MoKj5U=
-sigs.k8s.io/controller-runtime v0.10.0/go.mod h1:GCdh6kqV6IY4LK0JLwX0Zm6g233RtVGdb/f0+KSfprg=
+sigs.k8s.io/controller-runtime v0.10.1 h1:+eLHgY/VrJWnfg6iXUqhCUqNXgPH1NZeP9drNAAgWlg=
+sigs.k8s.io/controller-runtime v0.10.1/go.mod h1:CQp8eyUQZ/Q7PJvnIrB6/hgfTC1kBkGylwsLgOQi1WY=
 sigs.k8s.io/kustomize/api v0.10.0 h1:HK5gVSlVV24AmZ2fTHUIchZ6osaYNegK1jAdx7lJ/mU=
 sigs.k8s.io/kustomize/api v0.10.0/go.mod h1:syysqD8Oews9oghLfCitMCuCPxxu4MErSJ6uw8ge9jk=
 sigs.k8s.io/kustomize/kyaml v0.12.0 h1:k08l8SLwnKa/eXXB5GW2/OnEc/4gJF90VDFebsOwqw4=

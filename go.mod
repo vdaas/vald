@@ -43,7 +43,7 @@ replace (
 	golang.org/x/net => golang.org/x/net v0.0.0-20210924151903-3ad01bbaa167
 	golang.org/x/oauth2 => golang.org/x/oauth2 v0.0.0-20210819190943-2bc19b11175f
 	golang.org/x/sync => golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
-	golang.org/x/sys => golang.org/x/sys v0.0.0-20210925032602-92d5a993a665
+	golang.org/x/sys => golang.org/x/sys v0.0.0-20210927052749-1cf2251ac284
 	golang.org/x/term => golang.org/x/term v0.0.0-20210916214954-140adaaadfaf
 	golang.org/x/text => golang.org/x/text v0.3.7
 	golang.org/x/time => golang.org/x/time v0.0.0-20210723032227-1f47c861a9ac
@@ -69,7 +69,7 @@ replace (
 	k8s.io/metrics => k8s.io/metrics v0.22.2
 	k8s.io/utils => k8s.io/utils v0.0.0-20210820185131-d34e5cb4466e
 	sigs.k8s.io/apiserver-network-proxy/konnectivity-client => sigs.k8s.io/apiserver-network-proxy/konnectivity-client v0.0.24
-	sigs.k8s.io/controller-runtime => sigs.k8s.io/controller-runtime v0.10.0
+	sigs.k8s.io/controller-runtime => sigs.k8s.io/controller-runtime v0.10.1
 	sigs.k8s.io/kustomize/api => sigs.k8s.io/kustomize/api v0.10.0
 	sigs.k8s.io/kustomize/kyaml => sigs.k8s.io/kustomize/kyaml v0.12.0
 	sigs.k8s.io/structured-merge-diff/v4 => sigs.k8s.io/structured-merge-diff/v4 v4.1.2
@@ -221,7 +221,7 @@ require (
 	google.golang.org/appengine v1.6.7 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
-	k8s.io/apiextensions-apiserver v0.22.1 // indirect
+	k8s.io/apiextensions-apiserver v0.22.2 // indirect
 	k8s.io/component-base v0.22.2 // indirect
 	k8s.io/klog/v2 v2.9.0 // indirect
 	k8s.io/kube-openapi v0.0.0-20210421082810-95288971da7e // indirect
