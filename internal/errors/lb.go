@@ -17,4 +17,9 @@
 // Package errors provides error types and function
 package errors
 
-var ErrEmptySearchResult = New("search result is empty")
+var (
+	ErrEmptySearchResult = New("search result is empty")
+
+	// ErrIndexNotFound represents an error that the index not found.
+	ErrIndexNotFound = New("index not found")
+)

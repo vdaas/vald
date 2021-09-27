@@ -16,7 +16,7 @@
 
 apiVersion: v2
 name: vald-helm-operator
-version: v1.2.2
+version: v1.2.3
 description: A Helm chart for vald-helm-operator
 type: application
 keywords:
@@ -35,7 +35,7 @@ keywords:
   - AI
   - artificial-intelligence
 home: https://vald.vdaas.org
-icon: https://raw.githubusercontent.com/vdaas/vald/master/assets/image/svg/icon_color.svg
+icon: https://raw.githubusercontent.com/vdaas/vald/master/assets/image/svg/symbol.svg
 sources:
   - https://github.com/vdaas/vald
 maintainers:
