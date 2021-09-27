@@ -49,14 +49,6 @@ area/filter/ingress:
   - cmd/filter/ingress/**/*
   - pkg/filter/ingress/**/*
 
-area/gateway:
-  - apis/proto/v1/gateway/vald/**/*
-  - apis/grpc/v1/gateway/vald/**/*
-  - apis/proto/gateway/vald/**/*
-  - apis/grpc/gateway/vald/**/*
-  - cmd/gateway/vald/**/*
-  - pkg/gateway/vald/**/*
-
 area/gateway/lb:
   - apis/proto/v1/payload/**/*
   - apis/proto/v1/vald/**/*
@@ -82,12 +74,6 @@ area/manager/replication:
   - apis/grpc/manager/replication/**/*
   - cmd/manager/replication/**/*
   - pkg/manager/replication/**/*
-
-area/meta:
-  - apis/proto/meta/**/*
-  - apis/grpc/meta/**/*
-  - cmd/meta/**/*
-  - pkg/meta/**/*
 
 area/tools/cli/loadtest:
   - apis/proto/agent/core/**/*
