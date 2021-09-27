@@ -28,6 +28,7 @@ import (
 	"github.com/vdaas/vald/internal/timeutil"
 )
 
+// Option represent the functional option for ngt
 type Option func(n *ngt) error
 
 var defaultOptions = []Option{
@@ -46,6 +47,7 @@ var defaultOptions = []Option{
 	WithProactiveGC(true),
 }
 
+// WithErrGroup returns the functional option to set the error group.
 func WithErrGroup(eg errgroup.Group) Option {
 	return func(n *ngt) error {
 		if eg != nil {
@@ -56,6 +58,7 @@ func WithErrGroup(eg errgroup.Group) Option {
 	}
 }
 
+// WithEnableInMemoryMode returns the functional option to set the in memory mode flag.
 func WithEnableInMemoryMode(enabled bool) Option {
 	return func(n *ngt) error {
 		n.inMem = enabled
@@ -64,6 +67,7 @@ func WithEnableInMemoryMode(enabled bool) Option {
 	}
 }
 
+// WithIndexPath returns the functional option to set the index path of the NGT.
 func WithIndexPath(path string) Option {
 	return func(n *ngt) error {
 		if path == "" {
@@ -74,6 +78,7 @@ func WithIndexPath(path string) Option {
 	}
 }
 
+// WithAutoIndexCheckDuration returns the functional option to set the index check duration.
 func WithAutoIndexCheckDuration(dur string) Option {
 	return func(n *ngt) error {
 		if dur == "" {
@@ -91,6 +96,7 @@ func WithAutoIndexCheckDuration(dur string) Option {
 	}
 }
 
+// WithAutoIndexDurationLimit returns the functional option to set the auto index duration limit.
 func WithAutoIndexDurationLimit(dur string) Option {
 	return func(n *ngt) error {
 		if dur == "" {
@@ -108,6 +114,7 @@ func WithAutoIndexDurationLimit(dur string) Option {
 	}
 }
 
+// WithAutoSaveIndexDuration returns the functional option to set the auto save index duration.
 func WithAutoSaveIndexDuration(dur string) Option {
 	return func(n *ngt) error {
 		if dur == "" {
@@ -125,6 +132,7 @@ func WithAutoSaveIndexDuration(dur string) Option {
 	}
 }
 
+// WithAutoIndexLength returns the functional option to set the auto index length.
 func WithAutoIndexLength(l int) Option {
 	return func(n *ngt) error {
 		n.alen = l
@@ -133,6 +141,7 @@ func WithAutoIndexLength(l int) Option {
 	}
 }
 
+// WithInitialDelayMaxDuration returns the functional option to set the initial delay duration.
 func WithInitialDelayMaxDuration(dur string) Option {
 	return func(n *ngt) error {
 		if dur == "" {
@@ -150,6 +159,7 @@ func WithInitialDelayMaxDuration(dur string) Option {
 	}
 }
 
+// WithMinLoadIndexTimeout returns the functional option to set the minimal load index timeout.
 func WithMinLoadIndexTimeout(dur string) Option {
 	return func(n *ngt) error {
 		if dur == "" {
@@ -167,6 +177,7 @@ func WithMinLoadIndexTimeout(dur string) Option {
 	}
 }
 
+// WithMaxLoadIndexTimeout returns the functional option to set the maximum load index timeout.
 func WithMaxLoadIndexTimeout(dur string) Option {
 	return func(n *ngt) error {
 		if dur == "" {
@@ -184,6 +195,7 @@ func WithMaxLoadIndexTimeout(dur string) Option {
 	}
 }
 
+// WithLoadIndexTimeoutFactor returns the functional option to set the factor of load index timeout.
 func WithLoadIndexTimeoutFactor(dur string) Option {
 	return func(n *ngt) error {
 		if dur == "" {
@@ -201,6 +213,7 @@ func WithLoadIndexTimeoutFactor(dur string) Option {
 	}
 }
 
+// WithDefaultPoolSize returns the functional option to set the default pool size for NGT.
 func WithDefaultPoolSize(ps uint32) Option {
 	return func(n *ngt) error {
 		n.poolSize = ps
@@ -209,6 +222,7 @@ func WithDefaultPoolSize(ps uint32) Option {
 	}
 }
 
+// WithDefaultRadius returns the functional option to set the default radius for NGT.
 func WithDefaultRadius(rad float32) Option {
 	return func(n *ngt) error {
 		n.radius = rad
@@ -217,6 +231,7 @@ func WithDefaultRadius(rad float32) Option {
 	}
 }
 
+// WithDefaultEpsilon returns the functional option to set the default epsilon for NGT.
 func WithDefaultEpsilon(epsilon float32) Option {
 	return func(n *ngt) error {
 		n.epsilon = epsilon
@@ -225,6 +240,7 @@ func WithDefaultEpsilon(epsilon float32) Option {
 	}
 }
 
+// WithProactiveGC returns the functional option to set the proactive GC enable flag.
 func WithProactiveGC(enabled bool) Option {
 	return func(n *ngt) error {
 		n.enableProactiveGC = enabled
