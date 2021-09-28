@@ -22,7 +22,7 @@ updates:
     open-pull-requests-limit: 10
     reviewers:
       - kpango
-      # - add someone here?
+      - kmrmt
     labels:
       - type/dependency
     ignore:
