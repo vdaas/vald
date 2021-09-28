@@ -26,8 +26,10 @@ option java_multiple_files = true;
 option java_package = "org.vdaas.vald.api.v1.vald";
 option java_outer_classname = "ValdUpdate";
 
+// Update service provides ways to update indexed vectors.
 service Update {
 
+  // A method to update an indexed vector.
   rpc Update(payload.v1.Update.Request) returns (payload.v1.Object.Location) {
     option (google.api.http) = {
       post : "/update"
@@ -35,9 +37,11 @@ service Update {
     };
   }
 
+  // A method to update multiple indexed vectors by bidirectional streaming.
   rpc StreamUpdate(stream payload.v1.Update.Request)
       returns (stream payload.v1.Object.StreamLocation) {}
 
+  // A method to update multiple indexed vectors in a single request.
   rpc MultiUpdate(payload.v1.Update.MultiRequest)
       returns (payload.v1.Object.Locations) {
     option (google.api.http) = {

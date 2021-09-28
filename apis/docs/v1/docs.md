@@ -162,13 +162,13 @@
 <a name="vald.v1.Upsert"></a>
 
 ### Upsert
-
+Upsert service provides ways to insert/update vectors.
 
 | Method Name | Request Type | Response Type | Description |
 | ----------- | ------------ | ------------- | ------------|
-| Upsert | [.payload.v1.Upsert.Request](#payload.v1.Upsert.Request) | [.payload.v1.Object.Location](#payload.v1.Object.Location) |  |
-| StreamUpsert | [.payload.v1.Upsert.Request](#payload.v1.Upsert.Request) stream | [.payload.v1.Object.StreamLocation](#payload.v1.Object.StreamLocation) stream |  |
-| MultiUpsert | [.payload.v1.Upsert.MultiRequest](#payload.v1.Upsert.MultiRequest) | [.payload.v1.Object.Locations](#payload.v1.Object.Locations) |  |
+| Upsert | [.payload.v1.Upsert.Request](#payload.v1.Upsert.Request) | [.payload.v1.Object.Location](#payload.v1.Object.Location) | A method to insert/update a vector. |
+| StreamUpsert | [.payload.v1.Upsert.Request](#payload.v1.Upsert.Request) stream | [.payload.v1.Object.StreamLocation](#payload.v1.Object.StreamLocation) stream | A method to insert/update multiple vectors by bidirectional streaming. |
+| MultiUpsert | [.payload.v1.Upsert.MultiRequest](#payload.v1.Upsert.MultiRequest) | [.payload.v1.Object.Locations](#payload.v1.Object.Locations) | A method to insert/update multiple vectors in a single request. |
 
  
 
@@ -227,13 +227,13 @@
 <a name="vald.v1.Object"></a>
 
 ### Object
-
+Object service provides ways to fetch indexed vectors.
 
 | Method Name | Request Type | Response Type | Description |
 | ----------- | ------------ | ------------- | ------------|
-| Exists | [.payload.v1.Object.ID](#payload.v1.Object.ID) | [.payload.v1.Object.ID](#payload.v1.Object.ID) |  |
-| GetObject | [.payload.v1.Object.VectorRequest](#payload.v1.Object.VectorRequest) | [.payload.v1.Object.Vector](#payload.v1.Object.Vector) |  |
-| StreamGetObject | [.payload.v1.Object.VectorRequest](#payload.v1.Object.VectorRequest) stream | [.payload.v1.Object.StreamVector](#payload.v1.Object.StreamVector) stream |  |
+| Exists | [.payload.v1.Object.ID](#payload.v1.Object.ID) | [.payload.v1.Object.ID](#payload.v1.Object.ID) | A method to check whether a specified ID is indexed or not. |
+| GetObject | [.payload.v1.Object.VectorRequest](#payload.v1.Object.VectorRequest) | [.payload.v1.Object.Vector](#payload.v1.Object.Vector) | A method to fetch a vector. |
+| StreamGetObject | [.payload.v1.Object.VectorRequest](#payload.v1.Object.VectorRequest) stream | [.payload.v1.Object.StreamVector](#payload.v1.Object.StreamVector) stream | A method to fetch vectors by bidirectional streaming. |
 
  
 
@@ -314,13 +314,13 @@ Search service provides ways to search indexed vectors.
 <a name="vald.v1.Remove"></a>
 
 ### Remove
-
+Remove service provides ways to remove indexed vectors.
 
 | Method Name | Request Type | Response Type | Description |
 | ----------- | ------------ | ------------- | ------------|
-| Remove | [.payload.v1.Remove.Request](#payload.v1.Remove.Request) | [.payload.v1.Object.Location](#payload.v1.Object.Location) |  |
-| StreamRemove | [.payload.v1.Remove.Request](#payload.v1.Remove.Request) stream | [.payload.v1.Object.StreamLocation](#payload.v1.Object.StreamLocation) stream |  |
-| MultiRemove | [.payload.v1.Remove.MultiRequest](#payload.v1.Remove.MultiRequest) | [.payload.v1.Object.Locations](#payload.v1.Object.Locations) |  |
+| Remove | [.payload.v1.Remove.Request](#payload.v1.Remove.Request) | [.payload.v1.Object.Location](#payload.v1.Object.Location) | A method to remove an indexed vector. |
+| StreamRemove | [.payload.v1.Remove.Request](#payload.v1.Remove.Request) stream | [.payload.v1.Object.StreamLocation](#payload.v1.Object.StreamLocation) stream | A method to remove multiple indexed vectors by bidirectional streaming. |
+| MultiRemove | [.payload.v1.Remove.MultiRequest](#payload.v1.Remove.MultiRequest) | [.payload.v1.Object.Locations](#payload.v1.Object.Locations) | A method to remove multiple indexed vectors in a single request. |
 
  
 
@@ -342,13 +342,13 @@ Search service provides ways to search indexed vectors.
 <a name="vald.v1.Update"></a>
 
 ### Update
-
+Update service provides ways to update indexed vectors.
 
 | Method Name | Request Type | Response Type | Description |
 | ----------- | ------------ | ------------- | ------------|
-| Update | [.payload.v1.Update.Request](#payload.v1.Update.Request) | [.payload.v1.Object.Location](#payload.v1.Object.Location) |  |
-| StreamUpdate | [.payload.v1.Update.Request](#payload.v1.Update.Request) stream | [.payload.v1.Object.StreamLocation](#payload.v1.Object.StreamLocation) stream |  |
-| MultiUpdate | [.payload.v1.Update.MultiRequest](#payload.v1.Update.MultiRequest) | [.payload.v1.Object.Locations](#payload.v1.Object.Locations) |  |
+| Update | [.payload.v1.Update.Request](#payload.v1.Update.Request) | [.payload.v1.Object.Location](#payload.v1.Object.Location) | A method to update an indexed vector. |
+| StreamUpdate | [.payload.v1.Update.Request](#payload.v1.Update.Request) stream | [.payload.v1.Object.StreamLocation](#payload.v1.Object.StreamLocation) stream | A method to update multiple indexed vectors by bidirectional streaming. |
+| MultiUpdate | [.payload.v1.Update.MultiRequest](#payload.v1.Update.MultiRequest) | [.payload.v1.Object.Locations](#payload.v1.Object.Locations) | A method to update multiple indexed vectors in a single request. |
 
  
 
