@@ -71,6 +71,9 @@ users:
     role:
       - author
       - admin
+  rinx:
+    role:
+      - contributor
   kmrmt:
     role:
       - author
