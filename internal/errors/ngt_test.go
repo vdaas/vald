@@ -88,7 +88,7 @@ func TestErrCreateProperty(t *testing.T) {
 	}
 }
 
-func TestErrIndexFileNotFound(t *testing.T) {
+func TestErrIndexNotFound(t *testing.T) {
 	type want struct {
 		want error
 	}
@@ -107,9 +107,9 @@ func TestErrIndexFileNotFound(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "return an ErrIndexFileNotFound error",
+			name: "return an ErrIndexNotFound error",
 			want: want{
-				want: New("index file not found"),
+				want: New("index not found"),
 			},
 		},
 	}
