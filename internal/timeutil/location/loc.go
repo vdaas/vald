@@ -18,7 +18,9 @@ package location
 
 import (
 	"strings"
+	"sync/atomic"
 	"time"
+	"unsafe"
 )
 
 const (
@@ -35,16 +37,20 @@ var (
 )
 
 func Set(loc string) {
+	var local *time.Location
+
 	switch strings.ToLower(loc) {
 	case strings.ToLower(locationUTC):
-		time.Local = UTC()
+		local = UTC()
 	case strings.ToLower(locationGMT):
-		time.Local = GMT()
+		local = GMT()
 	case strings.ToLower(locationJST), strings.ToLower(locationTokyo):
-		time.Local = JST()
+		local = JST()
 	default:
-		time.Local = location(loc, 0)
+		local = location(loc, 0)
 	}
+
+	atomic.StorePointer((*unsafe.Pointer)(unsafe.Pointer(&time.Local)), unsafe.Pointer(local))
 }
 
 func GMT() *time.Location {
