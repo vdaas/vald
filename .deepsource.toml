@@ -39,7 +39,14 @@ enabled = true
   dockerfile_paths = [
     "dockers/agent/ngt/Dockerfile",
     "dockers/discoverer/k8s/Dockerfile",
-    "dockers/gateway/vald/Dockerfile"
+    "dockers/agent/sidecar/Dockerfile",
+    "dockers/gateway/lb/Dockerfile",
+    "dockers/gateway/filter/Dockerfile",
+    "dockers/manager/index/Dockerfile",
+    "dockers/operator/helm/Dockerfile",
+    "dockers/ci/base/Dockerfile",
+    "dockers/dev/Dockerfile",
+    "dockers/tools/cli/loadtest/Dockerfile"
   ]
 
   trusted_registries = [
