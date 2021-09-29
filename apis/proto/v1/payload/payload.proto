@@ -207,65 +207,101 @@ message Remove {
   }
 }
 
+// Common messages.
 message Object {
+
+  // Represents a request to fetch raw vector.
   message VectorRequest {
+    // ID.
     ID id = 1 [ (validate.rules).repeated .min_items = 2 ];
+    // filter configurations.
     Filter.Config filters = 2;
   }
 
+  // Represents ID and distance pair.
   message Distance {
+    // ID.
     string id = 1;
+    // distance.
     float distance = 2;
   }
 
+  // Represents stream response of distances.
   message StreamDistance {
     oneof payload {
+      // distance.
       Distance distance = 1;
+      // error status.
       google.rpc.Status status = 2;
     }
   }
 
+  // Represents ID.
   message ID { string id = 1 [ (validate.rules).string.min_len = 1 ]; }
+
+  //Represents IDs.
   message IDs { repeated string ids = 1; }
 
+  // Represents a vector.
   message Vector {
+    // ID.
     string id = 1 [ (validate.rules).string.min_len = 1 ];
+    // vector.
     repeated float vector = 2 [ (validate.rules).repeated .min_items = 2 ];
   }
+
+  // Represents multiple vectors.
   message Vectors { repeated Vector vectors = 1; }
 
+  // Represents stream response of vectors.
   message StreamVector {
     oneof payload {
+      // vectors.
       Vector vector = 1;
+      // error status.
       google.rpc.Status status = 2;
     }
   }
 
+  // Represents binary object.
   message Blob {
+    // ID.
     string id = 1 [ (validate.rules).string.min_len = 1 ];
+    // binary object.
     bytes object = 2;
   }
 
+  // Represents stream response of binary objects.
   message StreamBlob {
     oneof payload {
+      // binary object.
       Blob blob = 1;
+      // error status.
       google.rpc.Status status = 2;
     }
   }
 
+  // Represents a vector location.
   message Location {
+    // name of the location.
     string name = 1;
+    // UUID.
     string uuid = 2;
+    // IP list.
     repeated string ips = 3;
   }
 
+  // Represents stream response of locations.
   message StreamLocation {
     oneof payload {
+      // location.
       Location location = 1;
+      // error status.
       google.rpc.Status status = 2;
     }
   }
 
+  // Represents multiple vector locations.
   message Locations { repeated Location locations = 1; }
 }
 

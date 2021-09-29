@@ -1133,7 +1133,7 @@ Represents an insert request.
 <a name="payload.v1.Object"></a>
 
 ### Object
-
+Common messages.
 
 
 
@@ -1143,13 +1143,13 @@ Represents an insert request.
 <a name="payload.v1.Object.Blob"></a>
 
 ### Object.Blob
-
+Represents binary object.
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| id | [string](#string) |  |  |
-| object | [bytes](#bytes) |  |  |
+| id | [string](#string) |  | ID. |
+| object | [bytes](#bytes) |  | binary object. |
 
 
 
@@ -1159,13 +1159,13 @@ Represents an insert request.
 <a name="payload.v1.Object.Distance"></a>
 
 ### Object.Distance
-
+Represents ID and distance pair.
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| id | [string](#string) |  |  |
-| distance | [float](#float) |  |  |
+| id | [string](#string) |  | ID. |
+| distance | [float](#float) |  | distance. |
 
 
 
@@ -1175,7 +1175,7 @@ Represents an insert request.
 <a name="payload.v1.Object.ID"></a>
 
 ### Object.ID
-
+Represents ID.
 
 
 | Field | Type | Label | Description |
@@ -1190,7 +1190,7 @@ Represents an insert request.
 <a name="payload.v1.Object.IDs"></a>
 
 ### Object.IDs
-
+Represents IDs.
 
 
 | Field | Type | Label | Description |
@@ -1205,14 +1205,14 @@ Represents an insert request.
 <a name="payload.v1.Object.Location"></a>
 
 ### Object.Location
-
+Represents a vector location.
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| name | [string](#string) |  |  |
-| uuid | [string](#string) |  |  |
-| ips | [string](#string) | repeated |  |
+| name | [string](#string) |  | name of the location. |
+| uuid | [string](#string) |  | UUID. |
+| ips | [string](#string) | repeated | IP list. |
 
 
 
@@ -1222,7 +1222,7 @@ Represents an insert request.
 <a name="payload.v1.Object.Locations"></a>
 
 ### Object.Locations
-
+Represents multiple vector locations.
 
 
 | Field | Type | Label | Description |
@@ -1237,13 +1237,13 @@ Represents an insert request.
 <a name="payload.v1.Object.StreamBlob"></a>
 
 ### Object.StreamBlob
-
+Represents stream response of binary objects.
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| blob | [Object.Blob](#payload.v1.Object.Blob) |  |  |
-| status | [google.rpc.Status](#google.rpc.Status) |  |  |
+| blob | [Object.Blob](#payload.v1.Object.Blob) |  | binary object. |
+| status | [google.rpc.Status](#google.rpc.Status) |  | error status. |
 
 
 
@@ -1253,13 +1253,13 @@ Represents an insert request.
 <a name="payload.v1.Object.StreamDistance"></a>
 
 ### Object.StreamDistance
-
+Represents stream response of distances.
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| distance | [Object.Distance](#payload.v1.Object.Distance) |  |  |
-| status | [google.rpc.Status](#google.rpc.Status) |  |  |
+| distance | [Object.Distance](#payload.v1.Object.Distance) |  | distance. |
+| status | [google.rpc.Status](#google.rpc.Status) |  | error status. |
 
 
 
@@ -1269,13 +1269,13 @@ Represents an insert request.
 <a name="payload.v1.Object.StreamLocation"></a>
 
 ### Object.StreamLocation
-
+Represents stream response of locations.
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| location | [Object.Location](#payload.v1.Object.Location) |  |  |
-| status | [google.rpc.Status](#google.rpc.Status) |  |  |
+| location | [Object.Location](#payload.v1.Object.Location) |  | location. |
+| status | [google.rpc.Status](#google.rpc.Status) |  | error status. |
 
 
 
@@ -1285,13 +1285,13 @@ Represents an insert request.
 <a name="payload.v1.Object.StreamVector"></a>
 
 ### Object.StreamVector
-
+Represents stream response of vectors.
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| vector | [Object.Vector](#payload.v1.Object.Vector) |  |  |
-| status | [google.rpc.Status](#google.rpc.Status) |  |  |
+| vector | [Object.Vector](#payload.v1.Object.Vector) |  | vectors. |
+| status | [google.rpc.Status](#google.rpc.Status) |  | error status. |
 
 
 
@@ -1301,13 +1301,13 @@ Represents an insert request.
 <a name="payload.v1.Object.Vector"></a>
 
 ### Object.Vector
-
+Represents a vector.
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| id | [string](#string) |  |  |
-| vector | [float](#float) | repeated |  |
+| id | [string](#string) |  | ID. |
+| vector | [float](#float) | repeated | vector. |
 
 
 
@@ -1317,13 +1317,13 @@ Represents an insert request.
 <a name="payload.v1.Object.VectorRequest"></a>
 
 ### Object.VectorRequest
-
+Represents a request to fetch raw vector.
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| id | [Object.ID](#payload.v1.Object.ID) |  |  |
-| filters | [Filter.Config](#payload.v1.Filter.Config) |  |  |
+| id | [Object.ID](#payload.v1.Object.ID) |  | ID. |
+| filters | [Filter.Config](#payload.v1.Filter.Config) |  | filter configurations. |
 
 
 
@@ -1333,7 +1333,7 @@ Represents an insert request.
 <a name="payload.v1.Object.Vectors"></a>
 
 ### Object.Vectors
-
+Represents multiple vectors.
 
 
 | Field | Type | Label | Description |
