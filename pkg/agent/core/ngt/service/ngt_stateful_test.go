@@ -584,7 +584,7 @@ var (
 		) commands.Result {
 			ngt := systemUnderTest.(*ngtSystem).ngt
 
-			res, err := ngt.SearchByID(idA, 3, 0.1, -1.0)
+			_, res, err := ngt.SearchByID(idA, 3, 0.1, -1.0)
 			return &resultContainer{
 				err:     err,
 				results: res,
@@ -663,7 +663,7 @@ var (
 		) commands.Result {
 			ngt := systemUnderTest.(*ngtSystem).ngt
 
-			res, err := ngt.SearchByID(idB, 3, 0.1, -1.0)
+			_, res, err := ngt.SearchByID(idB, 3, 0.1, -1.0)
 			return &resultContainer{
 				err:     err,
 				results: res,
@@ -742,7 +742,7 @@ var (
 		) commands.Result {
 			ngt := systemUnderTest.(*ngtSystem).ngt
 
-			res, err := ngt.SearchByID(idC, 3, 0.1, -1.0)
+			_, res, err := ngt.SearchByID(idC, 3, 0.1, -1.0)
 			return &resultContainer{
 				err:     err,
 				results: res,

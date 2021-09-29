@@ -48,7 +48,7 @@ import (
 type NGT interface {
 	Start(ctx context.Context) <-chan error
 	Search(vec []float32, size uint32, epsilon, radius float32) ([]model.Distance, error)
-	SearchByID(uuid string, size uint32, epsilon, radius float32) ([]model.Distance, error)
+	SearchByID(uuid string, size uint32, epsilon, radius float32) ([]float32, []model.Distance, error)
 	Insert(uuid string, vec []float32) (err error)
 	InsertWithTime(uuid string, vec []float32, t int64) (err error)
 	InsertMultiple(vecs map[string][]float32) (err error)
@@ -417,17 +417,22 @@ func (n *ngt) Search(vec []float32, size uint32, epsilon, radius float32) ([]mod
 	return ds, nil
 }
 
-func (n *ngt) SearchByID(uuid string, size uint32, epsilon, radius float32) (dst []model.Distance, err error) {
+func (n *ngt) SearchByID(uuid string, size uint32, epsilon, radius float32) (vec []float32, dst []model.Distance, err error) {
 	if n.IsIndexing() {
-		return nil, errors.ErrCreateIndexingIsInProgress
+		return nil, nil, errors.ErrCreateIndexingIsInProgress
 	}
 	log.Debugf("SearchByID\tuuid: %s size: %d epsilon: %f radius: %f", uuid, size, epsilon, radius)
-	vec, err := n.GetObject(uuid)
+	vec, err = n.GetObject(uuid)
 	if err != nil {
 		log.Debugf("SearchByID\tuuid: %s's vector not found", uuid)
-		return nil, err
+		return nil, nil, err
 	}
-	return n.Search(vec, size, epsilon, radius)
+	dst, err = n.Search(vec, size, epsilon, radius)
+	if err != nil {
+		log.Debugf("Search for SearchByID\t: uuid %s, vector %v failed", uuid, vec)
+		return vec, nil, err
+	}
+	return vec, dst, nil
 }
 
 func (n *ngt) Insert(uuid string, vec []float32) (err error) {

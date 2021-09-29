@@ -264,12 +264,12 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 			span.End()
 		}
 	}()
-	res, err = toSearchResponse(
-		s.ngt.SearchByID(
-			req.GetId(),
-			req.GetConfig().GetNum(),
-			req.GetConfig().GetEpsilon(),
-			req.GetConfig().GetRadius()))
+	vec, dst, err := s.ngt.SearchByID(
+		req.GetId(),
+		req.GetConfig().GetNum(),
+		req.GetConfig().GetEpsilon(),
+		req.GetConfig().GetRadius())
+	res, err = toSearchResponse(dst, err)
 	if err != nil || res == nil {
 		var stat trace.Status
 		switch {
@@ -324,7 +324,7 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 				}, info.Get())
 			log.Error(err)
 			stat = trace.StatusCodeInternal(err.Error())
-		case errors.Is(err, errors.ErrIncompatibleDimensionSize(len(req.GetVector()), int(s.ngt.GetDimensionSize()))):
+		case errors.Is(err, errors.ErrIncompatibleDimensionSize(len(vec), int(s.ngt.GetDimensionSize()))):
 			err = status.WrapWithInvalidArgument("SearchByID API Incompatible Dimension Size detected",
 				err,
 				&errdetails.RequestInfo{
