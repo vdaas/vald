@@ -39,7 +39,7 @@ var (
 		// !!! These fields will not be verified in the entire test
 		// Do not validate C dependencies
 		comparator.IgnoreFields(ngt{},
-			"dimension", "prop", "ebuf", "index", "ospace"),
+			"dimension", "prop", "epool", "index", "ospace"),
 		comparator.RWMutexComparer,
 		comparator.ErrorComparer,
 	}

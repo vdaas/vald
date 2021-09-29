@@ -189,7 +189,8 @@ func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *
 				})
 			log.Debug(err)
 			stat = trace.StatusCodeAborted(err.Error())
-		case errors.Is(err, errors.ErrEmptySearchResult):
+		case errors.Is(err, errors.ErrEmptySearchResult),
+			err == nil && res == nil:
 			err = status.WrapWithNotFound(fmt.Sprintf("Search API requestID %s's search result not found", req.GetConfig().GetRequestId()), err,
 				&errdetails.RequestInfo{
 					RequestId:   req.GetConfig().GetRequestId(),
