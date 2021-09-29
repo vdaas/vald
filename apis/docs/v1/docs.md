@@ -703,7 +703,7 @@ Update service provides ways to update indexed vectors.
 <a name="payload.v1.Filter"></a>
 
 ### Filter
-
+Filter related messages.
 
 
 
@@ -713,7 +713,7 @@ Update service provides ways to update indexed vectors.
 <a name="payload.v1.Filter.Config"></a>
 
 ### Filter.Config
-
+Represents filter server configurations.
 
 
 | Field | Type | Label | Description |
@@ -728,13 +728,13 @@ Update service provides ways to update indexed vectors.
 <a name="payload.v1.Filter.Target"></a>
 
 ### Filter.Target
-
+Represents filter server.
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| host | [string](#string) |  |  |
-| port | [uint32](#uint32) |  |  |
+| host | [string](#string) |  | hostname. |
+| port | [uint32](#uint32) |  | port. |
 
 
 
@@ -942,7 +942,7 @@ Update service provides ways to update indexed vectors.
 <a name="payload.v1.Insert"></a>
 
 ### Insert
-
+Insert related messages.
 
 
 
@@ -952,14 +952,14 @@ Update service provides ways to update indexed vectors.
 <a name="payload.v1.Insert.Config"></a>
 
 ### Insert.Config
-
+Represents insert configurations.
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| skip_strict_exist_check | [bool](#bool) |  |  |
-| filters | [Filter.Config](#payload.v1.Filter.Config) |  |  |
-| timestamp | [int64](#int64) |  |  |
+| skip_strict_exist_check | [bool](#bool) |  | If it is enabled, exist checking will be skipped during insert operation. |
+| filters | [Filter.Config](#payload.v1.Filter.Config) |  | filter configurations. |
+| timestamp | [int64](#int64) |  | timestamp. |
 
 
 
@@ -969,7 +969,7 @@ Update service provides ways to update indexed vectors.
 <a name="payload.v1.Insert.MultiObjectRequest"></a>
 
 ### Insert.MultiObjectRequest
-
+Represents multiple insert request by binary object.
 
 
 | Field | Type | Label | Description |
@@ -984,7 +984,7 @@ Update service provides ways to update indexed vectors.
 <a name="payload.v1.Insert.MultiRequest"></a>
 
 ### Insert.MultiRequest
-
+Represents multiple insert requests.
 
 
 | Field | Type | Label | Description |
@@ -999,14 +999,14 @@ Update service provides ways to update indexed vectors.
 <a name="payload.v1.Insert.ObjectRequest"></a>
 
 ### Insert.ObjectRequest
-
+Represents an insert request by binary object.
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| object | [Object.Blob](#payload.v1.Object.Blob) |  |  |
-| config | [Insert.Config](#payload.v1.Insert.Config) |  |  |
-| vectorizer | [Filter.Target](#payload.v1.Filter.Target) |  |  |
+| object | [Object.Blob](#payload.v1.Object.Blob) |  | binary object. |
+| config | [Insert.Config](#payload.v1.Insert.Config) |  | insert configurations. |
+| vectorizer | [Filter.Target](#payload.v1.Filter.Target) |  | filter configurations. |
 
 
 
@@ -1016,13 +1016,13 @@ Update service provides ways to update indexed vectors.
 <a name="payload.v1.Insert.Request"></a>
 
 ### Insert.Request
-
+Represents an insert request.
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| vector | [Object.Vector](#payload.v1.Object.Vector) |  |  |
-| config | [Insert.Config](#payload.v1.Insert.Config) |  |  |
+| vector | [Object.Vector](#payload.v1.Object.Vector) |  | vector. |
+| config | [Insert.Config](#payload.v1.Insert.Config) |  | insert configurations. |
 
 
 
@@ -1463,7 +1463,7 @@ Update service provides ways to update indexed vectors.
 <a name="payload.v1.Search"></a>
 
 ### Search
-
+Search related messages.
 
 
 
@@ -1473,18 +1473,18 @@ Update service provides ways to update indexed vectors.
 <a name="payload.v1.Search.Config"></a>
 
 ### Search.Config
-
+Represents search configuration.
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| request_id | [string](#string) |  |  |
-| num | [uint32](#uint32) |  |  |
-| radius | [float](#float) |  |  |
-| epsilon | [float](#float) |  |  |
-| timeout | [int64](#int64) |  |  |
-| ingress_filters | [Filter.Config](#payload.v1.Filter.Config) |  |  |
-| egress_filters | [Filter.Config](#payload.v1.Filter.Config) |  |  |
+| request_id | [string](#string) |  | unique request ID. |
+| num | [uint32](#uint32) |  | number of results. |
+| radius | [float](#float) |  | search radius. |
+| epsilon | [float](#float) |  | search coefficient. |
+| timeout | [int64](#int64) |  | timeout in nanoseconds. |
+| ingress_filters | [Filter.Config](#payload.v1.Filter.Config) |  | ingress filter configurations. |
+| egress_filters | [Filter.Config](#payload.v1.Filter.Config) |  | egress filter configurations. |
 
 
 
@@ -1494,13 +1494,13 @@ Update service provides ways to update indexed vectors.
 <a name="payload.v1.Search.IDRequest"></a>
 
 ### Search.IDRequest
-
+Represents a search request by ID.
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| id | [string](#string) |  |  |
-| config | [Search.Config](#payload.v1.Search.Config) |  |  |
+| id | [string](#string) |  | vector ID. |
+| config | [Search.Config](#payload.v1.Search.Config) |  | search configuration. |
 
 
 
@@ -1510,7 +1510,7 @@ Update service provides ways to update indexed vectors.
 <a name="payload.v1.Search.MultiIDRequest"></a>
 
 ### Search.MultiIDRequest
-
+Represents multiple search requests by IDs.
 
 
 | Field | Type | Label | Description |
@@ -1525,7 +1525,7 @@ Update service provides ways to update indexed vectors.
 <a name="payload.v1.Search.MultiObjectRequest"></a>
 
 ### Search.MultiObjectRequest
-
+Represents multiple search requests by binary objects.
 
 
 | Field | Type | Label | Description |
@@ -1540,7 +1540,7 @@ Update service provides ways to update indexed vectors.
 <a name="payload.v1.Search.MultiRequest"></a>
 
 ### Search.MultiRequest
-
+Represents multiple search requests.
 
 
 | Field | Type | Label | Description |
@@ -1555,14 +1555,14 @@ Update service provides ways to update indexed vectors.
 <a name="payload.v1.Search.ObjectRequest"></a>
 
 ### Search.ObjectRequest
-
+Represents a search request by binary object.
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| object | [bytes](#bytes) |  |  |
-| config | [Search.Config](#payload.v1.Search.Config) |  |  |
-| vectorizer | [Filter.Target](#payload.v1.Filter.Target) |  |  |
+| object | [bytes](#bytes) |  | binary object. |
+| config | [Search.Config](#payload.v1.Search.Config) |  | search configuration. |
+| vectorizer | [Filter.Target](#payload.v1.Filter.Target) |  | filter configuration. |
 
 
 
@@ -1572,13 +1572,13 @@ Update service provides ways to update indexed vectors.
 <a name="payload.v1.Search.Request"></a>
 
 ### Search.Request
-
+Represents a search request.
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| vector | [float](#float) | repeated |  |
-| config | [Search.Config](#payload.v1.Search.Config) |  |  |
+| vector | [float](#float) | repeated | vector. |
+| config | [Search.Config](#payload.v1.Search.Config) |  | search configuration. |
 
 
 
@@ -1588,13 +1588,13 @@ Update service provides ways to update indexed vectors.
 <a name="payload.v1.Search.Response"></a>
 
 ### Search.Response
-
+Represents a search response.
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| request_id | [string](#string) |  |  |
-| results | [Object.Distance](#payload.v1.Object.Distance) | repeated |  |
+| request_id | [string](#string) |  | unique request ID. |
+| results | [Object.Distance](#payload.v1.Object.Distance) | repeated | search results. |
 
 
 
@@ -1604,7 +1604,7 @@ Update service provides ways to update indexed vectors.
 <a name="payload.v1.Search.Responses"></a>
 
 ### Search.Responses
-
+Represents multiple search responses.
 
 
 | Field | Type | Label | Description |
@@ -1619,13 +1619,13 @@ Update service provides ways to update indexed vectors.
 <a name="payload.v1.Search.StreamResponse"></a>
 
 ### Search.StreamResponse
-
+Represents stream response.
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| response | [Search.Response](#payload.v1.Search.Response) |  |  |
-| status | [google.rpc.Status](#google.rpc.Status) |  |  |
+| response | [Search.Response](#payload.v1.Search.Response) |  | search response. |
+| status | [google.rpc.Status](#google.rpc.Status) |  | error status. |
 
 
 

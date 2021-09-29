@@ -26,76 +26,133 @@ option java_multiple_files = true;
 option java_package = "org.vdaas.vald.api.v1.payload";
 option java_outer_classname = "ValdPayload";
 
+// Search related messages.
 message Search {
+
+  // Represents a search request.
   message Request {
+    // vector.
     repeated float vector = 1 [ (validate.rules).repeated .min_items = 2 ];
+    // search configuration.
     Config config = 2;
   }
+
+  // Represents multiple search requests.
   message MultiRequest { repeated Request requests = 1; }
 
+  // Represents a search request by ID.
   message IDRequest {
+    // vector ID.
     string id = 1;
+    // search configuration.
     Config config = 2;
   }
+
+  // Represents multiple search requests by IDs.
   message MultiIDRequest { repeated IDRequest requests = 1; }
 
+  // Represents a search request by binary object.
   message ObjectRequest {
+    // binary object.
     bytes object = 1;
+    // search configuration.
     Config config = 2;
+    // filter configuration.
     Filter.Target vectorizer = 3;
   }
 
+  // Represents multiple search requests by binary objects.
   message MultiObjectRequest { repeated ObjectRequest requests = 1; }
 
+  // Represents search configuration.
   message Config {
+    // unique request ID.
     string request_id = 1;
+    // number of results.
     uint32 num = 2 [ (validate.rules).uint32.gte = 1 ];
+    // search radius.
     float radius = 3;
+    // search coefficient.
     float epsilon = 4;
+    // timeout in nanoseconds.
     int64 timeout = 5;
+    // ingress filter configurations.
     Filter.Config ingress_filters = 6;
+    // egress filter configurations.
     Filter.Config egress_filters = 7;
   }
 
+  // Represents a search response.
   message Response {
+    // unique request ID.
     string request_id = 1;
+    // search results.
     repeated Object.Distance results = 2;
   }
 
+  // Represents multiple search responses.
   message Responses { repeated Response responses = 1; }
 
+  // Represents stream response.
   message StreamResponse {
     oneof payload {
+      // search response.
       Response response = 1;
+      // error status.
       google.rpc.Status status = 2;
     }
   }
 }
 
+// Filter related messages.
 message Filter {
+
+  // Represents filter server.
   message Target {
+    // hostname.
     string host = 1;
+    // port.
     uint32 port = 2;
   }
 
+  // Represents filter server configurations.
   message Config { repeated Target targets = 1; }
 }
 
+// Insert related messages.
 message Insert {
+
+  // Represents an insert request.
   message Request {
+    // vector.
     Object.Vector vector = 1 [ (validate.rules).repeated .min_items = 2 ];
+    // insert configurations.
     Config config = 2;
   }
+
+  // Represents multiple insert requests.
   message MultiRequest { repeated Request requests = 1; }
+
+  // Represents an insert request by binary object.
   message ObjectRequest {
+    // binary object.
     Object.Blob object = 1;
+    // insert configurations.
     Config config = 2;
+    // filter configurations.
     Filter.Target vectorizer = 3;
   }
+
+  // Represents multiple insert request by binary object.
   message MultiObjectRequest { repeated ObjectRequest requests = 1; }
+
+  // Represents insert configurations.
   message Config {
+    // If it is enabled, exist checking will be skipped during insert operation.
     bool skip_strict_exist_check = 1;
+    // filter configurations.
     Filter.Config filters = 2;
+    // timestamp.
     int64 timestamp = 3;
   }
 }
