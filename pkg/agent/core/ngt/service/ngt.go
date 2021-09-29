@@ -639,7 +639,16 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 	n.vq.RangePopInsert(ctx, now, func(uuid string, vector []float32) bool {
 		oid, err := n.core.Insert(vector)
 		if err != nil {
-			log.Error(err)
+			log.Warn(err)
+			if !errors.Is(err, errors.ErrIncompatibleDimensionSize(len(vector), n.dim)) {
+				oid, err = n.core.Insert(vector)
+				if err != nil {
+					log.Error(err)
+					return true
+				}
+				n.kvs.Set(uuid, uint32(oid))
+				atomic.AddUint32(&icnt, 1)
+			}
 		} else {
 			n.kvs.Set(uuid, uint32(oid))
 			atomic.AddUint32(&icnt, 1)

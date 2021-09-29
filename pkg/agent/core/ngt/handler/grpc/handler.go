@@ -285,7 +285,8 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 				})
 			log.Debug(err)
 			stat = trace.StatusCodeAborted(err.Error())
-		case errors.Is(err, errors.ErrEmptySearchResult):
+		case errors.Is(err, errors.ErrEmptySearchResult),
+			err == nil && res == nil:
 			err = status.WrapWithNotFound(fmt.Sprintf("SearchByID API uuid %s's search result not found", req.GetId()), err,
 				&errdetails.RequestInfo{
 					RequestId:   req.GetConfig().GetRequestId(),
@@ -310,6 +311,39 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 				})
 			log.Debug(err)
 			stat = trace.StatusCodeNotFound(err.Error())
+		case errors.As(err, errors.NGTError{}):
+			log.Errorf("ngt core process returned error: %v", err)
+			err = status.WrapWithInternal("SearchByID API failed to process search request due to ngt core process returned error", err,
+				&errdetails.RequestInfo{
+					RequestId:   req.GetConfig().GetRequestId(),
+					ServingData: errdetails.Serialize(req),
+				},
+				&errdetails.ResourceInfo{
+					ResourceType: ngtResourceType + "/ngt.SearchByID/core.ngt",
+					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+				}, info.Get())
+			log.Error(err)
+			stat = trace.StatusCodeInternal(err.Error())
+		case errors.Is(err, errors.ErrIncompatibleDimensionSize(len(req.GetVector()), int(s.ngt.GetDimensionSize()))):
+			err = status.WrapWithInvalidArgument("SearchByID API Incompatible Dimension Size detected",
+				err,
+				&errdetails.RequestInfo{
+					RequestId:   req.GetConfig().GetRequestId(),
+					ServingData: errdetails.Serialize(req),
+				},
+				&errdetails.BadRequest{
+					FieldViolations: []*errdetails.BadRequestFieldViolation{
+						{
+							Field:       "vector dimension size",
+							Description: err.Error(),
+						},
+					},
+				},
+				&errdetails.ResourceInfo{
+					ResourceType: ngtResourceType + "/ngt.SearchByID",
+				})
+			log.Warn(err)
+			stat = trace.StatusCodeInvalidArgument(err.Error())
 		default:
 			err = status.WrapWithInternal("SearchByID API failed to process search request", err,
 				&errdetails.RequestInfo{
