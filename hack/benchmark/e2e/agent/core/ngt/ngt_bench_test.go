@@ -41,7 +41,7 @@ func init() {
 
 	var dataset string
 
-	flag.StringVar(&dataset, "dataset", "fashion-mnist", "set available dataset list (choice with comma)")
+	flag.StringVar(&dataset, "dataset", "identity-128", "set available dataset list (choice with comma)")
 	flag.StringVar(&grpcAddr, "grpc_address", "127.0.0.1:8081", "set vald agent address for gRPC")
 	flag.Parse()
 
