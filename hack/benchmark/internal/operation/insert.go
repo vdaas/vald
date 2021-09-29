@@ -14,7 +14,7 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc/status"
 )
 
-func (o *operation) Insert(b *testing.B, ctx context.Context, ds assets.Dataset) (insertedNum int) {
+func (o *operation) Insert(ctx context.Context, b *testing.B, ds assets.Dataset) (insertedNum int) {
 	b.ResetTimer()
 	b.Run("Insert", func(b *testing.B) {
 		req := &payload.Insert_Request{
@@ -50,7 +50,7 @@ func (o *operation) Insert(b *testing.B, ctx context.Context, ds assets.Dataset)
 	return insertedNum
 }
 
-func (o *operation) StreamInsert(b *testing.B, ctx context.Context, ds assets.Dataset) int {
+func (o *operation) StreamInsert(ctx context.Context, b *testing.B, ds assets.Dataset) int {
 	var insertedNum int64
 	b.ResetTimer()
 	b.Run("StreamInsert", func(b *testing.B) {

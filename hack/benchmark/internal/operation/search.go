@@ -11,7 +11,7 @@ import (
 	"github.com/vdaas/vald/hack/benchmark/internal/assets"
 )
 
-func (o *operation) Search(b *testing.B, ctx context.Context, ds assets.Dataset) {
+func (o *operation) Search(ctx context.Context, b *testing.B, ds assets.Dataset) {
 	b.ResetTimer()
 	b.Run("Search", func(b *testing.B) {
 		cfg := &payload.Search_Config{
@@ -38,7 +38,7 @@ func (o *operation) Search(b *testing.B, ctx context.Context, ds assets.Dataset)
 	})
 }
 
-func (o *operation) StreamSearch(b *testing.B, ctx context.Context, ds assets.Dataset) {
+func (o *operation) StreamSearch(ctx context.Context, b *testing.B, ds assets.Dataset) {
 	b.ResetTimer()
 	b.Run("StreamSearch", func(b *testing.B) {
 		sc, err := o.client.StreamSearch(ctx)
@@ -97,7 +97,7 @@ func (o *operation) StreamSearch(b *testing.B, ctx context.Context, ds assets.Da
 	})
 }
 
-func (o *operation) SearchByID(b *testing.B, ctx context.Context, maxIdNum int) {
+func (o *operation) SearchByID(ctx context.Context, b *testing.B, maxIdNum int) {
 	b.Run("SearchByID", func(b *testing.B) {
 		cfg := &payload.Search_Config{
 			Num:     10,
@@ -118,7 +118,7 @@ func (o *operation) SearchByID(b *testing.B, ctx context.Context, maxIdNum int) 
 	})
 }
 
-func (o *operation) StreamSearchByID(b *testing.B, ctx context.Context, maxIdNum int) {
+func (o *operation) StreamSearchByID(ctx context.Context, b *testing.B, maxIdNum int) {
 	b.ResetTimer()
 	b.Run("StreamSearchByID", func(b *testing.B) {
 		sc, err := o.client.StreamSearchByID(ctx)

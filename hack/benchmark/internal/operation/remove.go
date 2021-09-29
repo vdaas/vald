@@ -10,7 +10,7 @@ import (
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 )
 
-func (o *operation) Remove(b *testing.B, ctx context.Context, maxIdNum int) {
+func (o *operation) Remove(ctx context.Context, b *testing.B, maxIdNum int) {
 	b.ResetTimer()
 	b.Run("Remove", func(b *testing.B) {
 		req := &payload.Remove_Request{
@@ -35,7 +35,7 @@ func (o *operation) Remove(b *testing.B, ctx context.Context, maxIdNum int) {
 	})
 }
 
-func (o *operation) StreamRemove(b *testing.B, ctx context.Context, maxIdNum int) {
+func (o *operation) StreamRemove(ctx context.Context, b *testing.B, maxIdNum int) {
 	b.ResetTimer()
 	b.Run("StreamRemove", func(b *testing.B) {
 		sc, err := o.client.StreamRemove(ctx)

@@ -80,11 +80,11 @@ func BenchmarkAgentNGT_gRPC_Sequential(b *testing.B) {
 				operation.WithIndexer(c),
 			)
 
-			insertedNum := op.Insert(b, ctx, dataset)
-			op.CreateIndex(b, ctx)
-			op.Search(b, ctx, dataset)
-			op.SearchByID(b, ctx, insertedNum)
-			op.Remove(b, ctx, insertedNum)
+			insertedNum := op.Insert(ctx, b, dataset)
+			op.CreateIndex(ctx, b)
+			op.Search(ctx, b, dataset)
+			op.SearchByID(ctx, b, insertedNum)
+			op.Remove(ctx, b, insertedNum)
 		})
 	}
 }
@@ -121,11 +121,11 @@ func BenchmarkAgentNGT_gRPC_Stream(b *testing.B) {
 				operation.WithIndexer(c),
 			)
 
-			insertedNum := op.StreamInsert(b, ctx, dataset)
-			op.CreateIndex(b, ctx)
-			op.StreamSearch(b, ctx, dataset)
-			op.StreamSearchByID(b, ctx, insertedNum)
-			op.StreamRemove(b, ctx, insertedNum)
+			insertedNum := op.StreamInsert(ctx, b, dataset)
+			op.CreateIndex(ctx, b)
+			op.StreamSearch(ctx, b, dataset)
+			op.StreamSearchByID(ctx, b, insertedNum)
+			op.StreamRemove(ctx, b, insertedNum)
 		})
 	}
 }

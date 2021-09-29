@@ -11,19 +11,19 @@ import (
 )
 
 type Operation interface {
-	Search(b *testing.B, ctx context.Context, ds assets.Dataset)
-	SearchByID(b *testing.B, ctx context.Context, maxIdNum int)
+	Search(ctx context.Context, b *testing.B, ds assets.Dataset)
+	SearchByID(ctx context.Context, b *testing.B, maxIdNum int)
 
-	StreamSearch(b *testing.B, ctx context.Context, ds assets.Dataset)
-	StreamSearchByID(b *testing.B, ctx context.Context, maxIdNum int)
+	StreamSearch(ctx context.Context, b *testing.B, ds assets.Dataset)
+	StreamSearchByID(ctx context.Context, b *testing.B, maxIdNum int)
 
-	Insert(b *testing.B, ctx context.Context, ds assets.Dataset) (insertedNum int)
-	StreamInsert(b *testing.B, ctx context.Context, ds assets.Dataset) (insertedNum int)
+	Insert(ctx context.Context, b *testing.B, ds assets.Dataset) (insertedNum int)
+	StreamInsert(ctx context.Context, b *testing.B, ds assets.Dataset) (insertedNum int)
 
-	Remove(b *testing.B, ctx context.Context, maxIdNum int)
-	StreamRemove(b *testing.B, ctx context.Context, maxIdNum int)
+	Remove(ctx context.Context, b *testing.B, maxIdNum int)
+	StreamRemove(ctx context.Context, b *testing.B, maxIdNum int)
 
-	CreateIndex(b *testing.B, ctx context.Context)
+	CreateIndex(ctx context.Context, b *testing.B)
 }
 
 type operation struct {
@@ -39,7 +39,7 @@ func New(opts ...Option) Operation {
 	return o
 }
 
-func (o *operation) CreateIndex(b *testing.B, ctx context.Context) {
+func (o *operation) CreateIndex(ctx context.Context, b *testing.B) {
 	req := &payload.Control_CreateIndexRequest{
 		PoolSize: 10000,
 	}
