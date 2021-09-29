@@ -106,7 +106,6 @@ pprof/%.mem.svg: \
 bench: \
 	bench/core \
 	bench/agent \
-	bench/ngtd \
 	bench/gateway
 
 .PHONY: bench/core
@@ -167,7 +166,6 @@ pprof/core/ngt/parallel.bin: \
 bench/agent: \
 	bench/agent/stream \
 	bench/agent/sequential/grpc \
-	bench/agent/sequential/rest
 
 .PHONY: bench/agent/stream
 ## run benchmark for agent gRPC stream
@@ -198,57 +196,6 @@ bench/agent/sequential/grpc: \
 	pprof/agent/sequential/grpc.mem.svg
 pprof/agent/sequential/grpc.bin: \
 	hack/benchmark/e2e/agent/core/ngt/ngt_bench_test.go \
-	ngt/install
-	mkdir -p $(dir $@)
-	go test \
-	    -mod=readonly \
-	    -count=1 \
-	    -timeout=1h \
-	    -bench=gRPC_Sequential \
-	    -benchmem \
-	    -o $@ \
-	    -cpuprofile $(patsubst %.bin,%.cpu.out,$@) \
-	    -memprofile $(patsubst %.bin,%.mem.out,$@) \
-	    -trace $(patsubst %.bin,%.trace.out,$@) \
-	    $< \
-	    -dataset=$(DATASET_ARGS)
-
-.PHONY: bench/ngtd
-## run benchmarks for NGTD
-bench/ngtd: \
-	bench/ngtd/stream \
-	bench/ngtd/sequential/grpc \
-	bench/ngtd/sequential/rest
-
-.PHONY: bench/ngtd/stream
-## run benchmark for NGTD gRPC stream
-bench/ngtd/stream: \
-	pprof/ngtd/stream.cpu.svg \
-	pprof/ngtd/stream.mem.svg
-pprof/ngtd/stream.bin: \
-	hack/benchmark/e2e/external/ngtd/ngtd_bench_test.go \
-	ngt/install
-	mkdir -p $(dir $@)
-	go test \
-	    -mod=readonly \
-	    -count=1 \
-	    -timeout=1h \
-	    -bench=gRPC_Stream \
-	    -benchmem \
-	    -o $@ \
-	    -cpuprofile $(patsubst %.bin,%.cpu.out,$@) \
-	    -memprofile $(patsubst %.bin,%.mem.out,$@) \
-	    -trace $(patsubst %.bin,%.trace.out,$@) \
-	    $< \
-	    -dataset=$(DATASET_ARGS)
-
-.PHONY: bench/ngtd/sequential/grpc
-## run benchmark for NGTD gRPC sequential
-bench/ngtd/sequential/grpc: \
-	pprof/ngtd/sequential/grpc.cpu.svg \
-	pprof/ngtd/sequential/grpc.mem.svg
-pprof/ngtd/sequential/grpc.bin: \
-	hack/benchmark/e2e/external/ngtd/ngtd_bench_test.go \
 	ngt/install
 	mkdir -p $(dir $@)
 	go test \
@@ -299,7 +246,6 @@ profile: \
 	bench \
 	profile/agent/stream \
 	profile/agent/sequential/grpc \
-	profile/agent/sequential/rest
 
 .PHONY: profile/agent/stream
 profile/agent/stream:
@@ -308,22 +254,6 @@ profile/agent/stream:
 .PHONY: profile/agent/sequential/grpc
 profile/agent/sequential/grpc:
 	$(call profile-web,pprof/agent/sequential/grpc)
-
-.PHONY: profile/agent/sequential/rest
-profile/agent/sequential/rest:
-	$(call profile-web,pprof/agent/sequential/rest)
-
-.PHONY: profile/ngtd/stream
-profile/ngtd/stream:
-	$(call profile-web,pprof/ngtd/stream)
-
-.PHONY: profile/ngtd/sequential/grpc
-profile/ngtd/sequential/grpc:
-	$(call profile-web,pprof/ngtd/sequential/grpc)
-
-.PHONY: profile/ngtd/sequential/rest
-profile/ngtd/sequential/rest:
-	$(call profile-web,pprof/ngtd/sequential/rest)
 
 .PHONY: metrics
 ## calculate all metrics
