@@ -54,7 +54,7 @@ jobs:
       - name: Run grpc-sequential
         run: |
           make hack/benchmark/assets/dataset/${DATASET}
-          ${DATASET_ARGS} make bench/agent/sequential/grpc
+          DATASET_ARGS=${DATASET_ARGS} make bench/agent/sequential/grpc
         env:
           DATASET: fashion-mnist-784-euclidean.hdf5
           DATASET_ARGS: fashion-mnist
@@ -81,7 +81,7 @@ jobs:
       - name: Run grpc-stream
         run: |
           make hack/benchmark/assets/dataset/${DATASET}
-          ${DATASET_ARGS} make bench/agent/stream
+          DATASET_ARGS=${DATASET_ARGS} make bench/agent/stream
         env:
           DATASET: fashion-mnist-784-euclidean.hdf5
           DATASET_ARGS: fashion-mnist
