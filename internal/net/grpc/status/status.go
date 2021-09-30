@@ -227,13 +227,18 @@ func withDetails(st *Status, err error, details ...interface{}) *Status {
 			msgs = append(msgs, proto.ToMessageV1(errdetails.AnyToErrorDetail(&v)))
 		}
 	}
-	sst, err := st.WithDetails(msgs...)
-	if err == nil && sst != nil {
-		st = sst
-	} else {
-		log.Warn("failed to set error details:", err)
+
+	if len(msgs) != 0 {
+		sst, err := st.WithDetails(msgs...)
+		if err == nil && sst != nil {
+			st = sst
+		} else {
+			log.Warn("failed to set error details:", err)
+		}
 	}
+
 	Log(st.Code(), st.Err())
+
 	return st
 }
 
