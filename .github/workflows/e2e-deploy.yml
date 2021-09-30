@@ -27,6 +27,8 @@ on:
 
 jobs:
   e2e-deploy-lb:
+    needs:
+      - e2e-deploy-lb-multiapis
     name: "E2E deploy test (only LB Gateway)"
     runs-on: ubuntu-latest
     timeout-minutes: 60
@@ -113,8 +115,95 @@ jobs:
         env:
           DATASET: fashion-mnist-784-euclidean.hdf5
           POD_NAME: ${{ steps.deploy_vald.outputs.POD_NAME }}
+  e2e-deploy-lb-skip-exist-check:
+    name: "E2E deploy test (skip strict exist check)"
+    # needs:
+    #   - e2e-deploy-lb
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    if: startsWith( github.ref, 'refs/tags/') || github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-deploy'
+    steps:
+      - uses: actions/checkout@v2
+      - name: Wait for Docker images
+        if: startsWith( github.ref, 'refs/tags/')
+        id: wait_for_docker_images
+        uses: ./.github/actions/wait-for-docker-image
+      - name: Get PR number
+        id: get_pr_number
+        if: github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-deploy'
+        run: |
+          pr_num=`cat $GITHUB_EVENT_PATH | jq -r ".number"`
+          echo "::set-output name=PR_NUM::${pr_num}"
+      - name: Specify container versions
+        if: github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-deploy'
+        id: specify_container_versions
+        uses: ./.github/actions/detect-docker-image-tags
+        with:
+          tag_name: pr-${{ steps.get_pr_number.outputs.PR_NUM }}
+      - name: Fetch Helm version
+        run: |
+          HELM_VERSION=`make version/helm`
+          echo "::set-output name=helm::${HELM_VERSION}"
+        id: version
+      - uses: rinx/setup-k3d@v0.0.4
+        with:
+          version: latest
+          name: vald
+          agents: 3
+      - name: check k3d
+        run: |
+          kubectl cluster-info
+      - uses: azure/setup-helm@v1
+        with:
+          version: ${{ steps.version.outputs.helm }}
+      - name: Helm version
+        run: |
+          helm version
+      - name: deploy Vald
+        id: deploy_vald
+        uses: ./.github/actions/e2e-deploy-vald
+        with:
+          require_libhdf5: "true"
+          helm_extra_options: ${{ steps.specify_container_versions.outputs.HELM_EXTRA_OPTIONS }}
+          values: .github/helm/values/values-lb.yaml
+          wait_for_selector: app=vald-lb-gateway
+      - name: Fetch golang version
+        run: |
+          GO_VERSION=`make version/go`
+          echo "::set-output name=version::${GO_VERSION}"
+        id: golang_version
+      - uses: actions/setup-go@v2
+        with:
+          go-version: ${{ steps.golang_version.outputs.version }}
+      - name: run E2E CRUD
+        run: |
+          make hack/benchmark/assets/dataset/${DATASET}
+          go version
+          go test \
+            -mod=readonly \
+            -v tests/e2e/crud/crud_test.go \
+            -tags "e2e" \
+            -timeout 30m \
+            -run "TestE2ECRUDWithSkipStrictExistCheck" \
+            -host=localhost \
+            -port=8081 \
+            -dataset=`pwd`/hack/benchmark/assets/dataset/${DATASET} \
+            -insert-num=10 \
+            -update-num=10 \
+            -upsert-num=10 \
+            -remove-num=10 \
+            -portforward \
+            -portforward-pod-name=${POD_NAME} \
+            -portforward-pod-port=8081 \
+            -kubeconfig=${KUBECONFIG} \
+            -namespace=default
+        env:
+          DATASET: fashion-mnist-784-euclidean.hdf5
+          POD_NAME: ${{ steps.deploy_vald.outputs.POD_NAME }}
   e2e-deploy-lb-multiapis:
     name: "E2E deploy test (only LB Gateway, multi-APIs)"
+    needs:
+      - e2e-deploy-lb-skip-exist-check
     runs-on: ubuntu-latest
     timeout-minutes: 60
     if: startsWith( github.ref, 'refs/tags/') || github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-deploy'
@@ -195,6 +284,8 @@ jobs:
           POD_NAME: ${{ steps.deploy_vald.outputs.POD_NAME }}
   e2e-deploy-sidecar:
     name: "E2E deploy test (Agent & Sidecar)"
+    needs:
+      - e2e-deploy-lb-multiapis
     runs-on: ubuntu-latest
     timeout-minutes: 60
     if: startsWith( github.ref, 'refs/tags/') || github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-deploy'
@@ -287,6 +378,7 @@ jobs:
     needs:
       - e2e-deploy-lb
       - e2e-deploy-lb-multiapis
+      - e2e-deploy-lb-skip-exist-check
       - e2e-deploy-sidecar
     runs-on: ubuntu-latest
     if: startsWith( github.ref, 'refs/tags/')

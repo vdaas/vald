@@ -29,6 +29,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/net/grpc/codes"
+	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/tests/e2e/hdf5"
 	"github.com/vdaas/vald/tests/e2e/kubernetes/client"
 	"github.com/vdaas/vald/tests/e2e/kubernetes/portforward"
@@ -316,5 +319,341 @@ func TestE2EStandardCRUD(t *testing.T) {
 	})
 	if err != nil {
 		t.Fatalf("an error occurred: %s", err)
+	}
+}
+
+func TestE2ECRUDWithSkipStrictExistCheck(t *testing.T) {
+	t.Cleanup(teardown)
+	ctx := context.Background()
+
+	op, err := operation.New(host, port)
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	// #1 run Update with SkipStrictExistCheck=true and check that it fails.
+	err = op.UpdateWithParameters(
+		t,
+		ctx,
+		operation.Dataset{
+			Train: ds.Train[updateFrom : updateFrom+updateNum],
+		},
+		true,
+		1,
+		func(t *testing.T, status int32, msg string) error {
+			t.Helper()
+
+			if status != int32(codes.NotFound) {
+				return errors.Errorf("the returned status is not NotFound on Update #1: %s", err)
+			}
+
+			t.Logf("received a NotFound error on #1: %s", msg)
+
+			return nil
+		},
+		func(t *testing.T, err error) error {
+			t.Helper()
+
+			st, _, _ := status.ParseError(err, codes.Unknown, "")
+			if st.Code() != codes.NotFound {
+				return err
+			}
+
+			return nil
+		},
+	)
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	// #2 run Update with SkipStrictExistCheck=false, and check that the internal Remove Operation returns a NotFound error
+	err = op.UpdateWithParameters(
+		t,
+		ctx,
+		operation.Dataset{
+			Train: ds.Train[updateFrom : updateFrom+updateNum],
+		},
+		false,
+		1,
+		func(t *testing.T, status int32, msg string) error {
+			t.Helper()
+
+			if status != int32(codes.NotFound) {
+				return errors.Errorf("the returned status is not NotFound on Update #2: %s", err)
+			}
+
+			t.Logf("received a NotFound error on #2: %s", msg)
+
+			return nil
+		},
+		func(t *testing.T, err error) error {
+			t.Helper()
+
+			// TODO: This should be NotFound error but it returns
+			// `code = Unknown desc = ngt uuid 7's object not found: ...`
+			// st, _, _ := status.ParseError(err, codes.Unknown, "")
+			// if st.Code() != codes.NotFound {
+			// 	return err
+			// }
+
+			return nil
+		},
+	)
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	// #3 run Insert with SkipStrictExistCheck=false and confirmed that it succeeded
+	err = op.InsertWithParameters(
+		t,
+		ctx,
+		operation.Dataset{
+			Train: ds.Train[insertFrom : insertFrom+insertNum],
+		},
+		false,
+		operation.DefaultStatusValidator,
+		operation.ParseAndLogError,
+	)
+	if err != nil {
+		t.Fatalf("an error occurred on #3: %s", err)
+	}
+
+	// #4 run Update with SkipStrictExistCheck=false & a different vector, and check that it succeeds
+	err = op.UpdateWithParameters(
+		t,
+		ctx,
+		operation.Dataset{
+			Train: ds.Train[updateFrom : updateFrom+updateNum],
+		},
+		false,
+		1,
+		operation.DefaultStatusValidator,
+		operation.ParseAndLogError,
+	)
+	if err != nil {
+		t.Fatalf("an error occurred on #4: %s", err)
+	}
+
+	// #5 run Update with SkipStrictExistCheck=false & same vector as 4 and check that AlreadyExists returns
+	err = op.UpdateWithParameters(
+		t,
+		ctx,
+		operation.Dataset{
+			Train: ds.Train[updateFrom : updateFrom+updateNum],
+		},
+		false,
+		1,
+		func(t *testing.T, status int32, msg string) error {
+			t.Helper()
+
+			if status != int32(codes.AlreadyExists) {
+				return errors.Errorf("the returned status is not NotFound on Update #5: %s", err)
+			}
+
+			t.Logf("received an AlreadyExists error on #5: %s", msg)
+
+			return nil
+		},
+		func(t *testing.T, err error) error {
+			t.Helper()
+
+			// TODO: This should be AlreadyExists error but it returns
+			// `code = Unknown desc = rpc error: ...`
+			// st, _, _ := status.ParseError(err, codes.Unknown, "")
+			// if st.Code() != codes.AlreadyExists {
+			// 	return err
+			// }
+
+			return nil
+		},
+	)
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	// #6 run Update with the same vector as SkipStrictExistCheck=true & 4 and check that it succeeds
+	err = op.UpdateWithParameters(
+		t,
+		ctx,
+		operation.Dataset{
+			Train: ds.Train[updateFrom : updateFrom+updateNum],
+		},
+		true,
+		1,
+		operation.DefaultStatusValidator,
+		operation.ParseAndLogError,
+	)
+	if err != nil {
+		t.Fatalf("an error occurred on #6: %s", err)
+	}
+
+	// #7 remove the vector in 6 with SkipStrictExistCheck=false and check that it succeeds
+	err = op.RemoveWithParameters(
+		t,
+		ctx,
+		operation.Dataset{
+			Train: ds.Train[removeFrom : removeFrom+removeNum],
+		},
+		false,
+		operation.DefaultStatusValidator,
+		operation.ParseAndLogError,
+	)
+	if err != nil {
+		t.Fatalf("an error occurred on #7: %s", err)
+	}
+
+	// #8 removed the vector of 6 with SkipStrictExistCheck=false and confirmed that it became NotFound
+	err = op.RemoveWithParameters(
+		t,
+		ctx,
+		operation.Dataset{
+			Train: ds.Train[removeFrom : removeFrom+removeNum],
+		},
+		false,
+		func(t *testing.T, status int32, msg string) error {
+			t.Helper()
+
+			if status != int32(codes.NotFound) {
+				return errors.Errorf("the returned status is not NotFound on Remove #8: %s", err)
+			}
+
+			t.Logf("received a NotFound error on #8: %s", msg)
+
+			return nil
+		},
+		func(t *testing.T, err error) error {
+			t.Helper()
+
+			// TODO: This should be NotFound error but it returns
+			// `code = Unknown desc = rpc error: ...`
+			// st, _, _ := status.ParseError(err, codes.Unknown, "")
+			// if st.Code() != codes.NotFound {
+			// 	return err
+			// }
+
+			return nil
+		},
+	)
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	// #9 remove vector 6 with SkipStrictExistCheck=true and check that it also becomes NotFound
+	err = op.RemoveWithParameters(
+		t,
+		ctx,
+		operation.Dataset{
+			Train: ds.Train[removeFrom : removeFrom+removeNum],
+		},
+		true,
+		func(t *testing.T, status int32, msg string) error {
+			t.Helper()
+
+			if status != int32(codes.NotFound) {
+				return errors.Errorf("the returned status is not NotFound on Remove #9: %s", err)
+			}
+
+			t.Logf("received a NotFound error on #9: %s", msg)
+
+			return nil
+		},
+		func(t *testing.T, err error) error {
+			t.Helper()
+
+			st, _, _ := status.ParseError(err, codes.Unknown, "")
+			if st.Code() != codes.NotFound {
+				return err
+			}
+
+			return nil
+		},
+	)
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	// #10 execute Upsert with SkipStrictExistCheck=false and check that it succeeds
+	err = op.UpsertWithParameters(
+		t,
+		ctx,
+		operation.Dataset{
+			Train: ds.Train[upsertFrom : upsertFrom+upsertNum],
+		},
+		false,
+		2,
+		operation.DefaultStatusValidator,
+		operation.ParseAndLogError,
+	)
+	if err != nil {
+		t.Fatalf("an error occurred on #10: %s", err)
+	}
+
+	// #11 executed Upsert with SkipStrictExistCheck=false using the same vector as 10 and confirmed that AlreadyExists was returned
+	err = op.UpsertWithParameters(
+		t,
+		ctx,
+		operation.Dataset{
+			Train: ds.Train[upsertFrom : upsertFrom+upsertNum],
+		},
+		false,
+		2,
+		func(t *testing.T, status int32, msg string) error {
+			t.Helper()
+
+			if status != int32(codes.AlreadyExists) {
+				return errors.Errorf("the returned status is not AlreadyExists on Upsert #11: %s", err)
+			}
+
+			t.Logf("received an AlreadyExists error on #11: %s", msg)
+
+			return nil
+		},
+		func(t *testing.T, err error) error {
+			t.Helper()
+
+			// TODO: This should be AlreadyExists error but it returns
+			// `code = Unknown desc = rpc error: ...`
+			// st, _, _ := status.ParseError(err, codes.Unknown, "")
+			// if st.Code() != codes.AlreadyExists {
+			// 	return err
+			// }
+
+			return nil
+		},
+	)
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	// #12 executed SkipStrictExistCheck=false using a different vector than 10 for Upsert and confirmed that it succeeded
+	err = op.UpsertWithParameters(
+		t,
+		ctx,
+		operation.Dataset{
+			Train: ds.Train[upsertFrom : upsertFrom+upsertNum],
+		},
+		false,
+		3,
+		operation.DefaultStatusValidator,
+		operation.ParseAndLogError,
+	)
+	if err != nil {
+		t.Fatalf("an error occurred on #12: %s", err)
+	}
+
+	// #13 executed SkipStrictExistCheck=true using the same vector as Upsert 12 and confirmed that it succeeded
+	err = op.UpsertWithParameters(
+		t,
+		ctx,
+		operation.Dataset{
+			Train: ds.Train[upsertFrom : upsertFrom+upsertNum],
+		},
+		true,
+		3,
+		operation.DefaultStatusValidator,
+		operation.ParseAndLogError,
+	)
+	if err != nil {
+		t.Fatalf("an error occurred on #13: %s", err)
 	}
 }
