@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-name: "Run e2e bench: bench-agent"
+name: "Run code level e2e bench: bench-agent"
 on:
   push:
     branches:
