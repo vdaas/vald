@@ -168,6 +168,12 @@ make init
       <a href="https://github.com/orgs/vdaas/packages/container/package/vald/vald-lb-gateway">
         <img src="https://img.shields.io/badge/ghcr.io-vdaas%2Fvald%2Fvald--lb--gateway-brightgreen?logo=docker&style=flat-square"/>
       </a><br/>
+      <a href="https://hub.docker.com/r/vdaas/vald-filter-gateway">
+        <img src="https://img.shields.io/docker/pulls/vdaas/vald-filter-gateway?label=vdaas%2Fvald-filter-gateway&logo=docker&style=flat-square"/>
+      </a><br/>
+      <a href="https://github.com/orgs/vdaas/packages/container/package/vald/vald-filter-gateway">
+        <img src="https://img.shields.io/badge/ghcr.io-vdaas%2Fvald%2Fvald--filter--gateway-brightgreen?logo=docker&style=flat-square"/>
+      </a><br/>
     </td>
   </tr>
   <tr>

@@ -37,18 +37,6 @@ area/discoverer:
   - cmd/discoverer/**/*
   - pkg/discoverer/**/*
 
-area/filter/egress:
-  - apis/proto/filter/egress/**/*
-  - apis/grpc/filter/egress/**/*
-  - cmd/filter/egress/**/*
-  - pkg/filter/egress/**/*
-
-area/filter/ingress:
-  - apis/proto/filter/ingress/**/*
-  - apis/grpc/filter/ingress/**/*
-  - cmd/filter/ingress/**/*
-  - pkg/filter/ingress/**/*
-
 area/gateway/lb:
   - apis/proto/v1/payload/**/*
   - apis/proto/v1/vald/**/*
@@ -64,8 +52,9 @@ area/gateway/filter:
   - pkg/gateway/filter/**/*
 
 area/manager/index:
-  - apis/proto/manager/index/**/*
-  - apis/grpc/manager/index/**/*
+  - apis/proto/v1/payload/**/*
+  - apis/proto/v1/manager/index/**/*
+  - apis/grpc/v1/manager/index/**/*
   - cmd/manager/index/**/*
   - pkg/manager/index/**/*
 

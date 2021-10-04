@@ -33,6 +33,8 @@
     <td>
       <code>docker pull vdaas/vald-lb-gateway:{{ version }}</code><br/>
       <code>docker pull ghcr.io/vdaas/vald/vald-lb-gateway:{{ version }}</code><br/>
+      <code>docker pull vdaas/vald-filter-gateway:{{ version }}</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-filter-gateway:{{ version }}</code>
     </td>
   </tr>
   <tr>

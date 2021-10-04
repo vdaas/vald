@@ -4,6 +4,10 @@ This document will give you an overview of all the components developed and used
 
 ## Table of Contents <!-- omit in toc -->
 
+- [Vald Filter](#vald-filter)
+  - [Vald Ingress Filter](#vald-ingress-filter)
+  - [Vald Egress Filter](#vald-egress-filter)
+  - [Vald Filter Gateway](#vald-filter-gateway)
 - [Vald Load Balancing](#vald-load-balancing)
   - [Vald LB Gateway](#vald-lb-gateway)
   - [Agent Discoverer](#agent-discoverer)
@@ -11,11 +15,35 @@ This document will give you an overview of all the components developed and used
   - [Vald Agent](#vald-agent)
   - [Vald Agent Scheduler](#vald-agent-scheduler)
   - [Vald Index Manager](#vald-index-manager)
-- [Vald Replication Manager](#vald-replication-manager)
 - [Kubernetes Components](#kubernetes-components)
   - [Kube-apiserver](#kube-apiserver)
   - [Custom Resources](#custom-resources)
 
+## Vald Filter
+
+Vald Filter is an optional functionality in Vald.
+User can implement the custom filtering logic and integrate with Vald.
+
+Vald Filter provides the following functionalities.
+
+- Custom filter based on request query
+- Custom filter for the searching result
+
+### Vald Ingress Filter
+
+Vald Ingress Filter filters the incoming request before processing it.
+
+Users can implement custom filtering logic such as changing the vectors or filtering based on user ID.
+
+### Vald Egress Filter
+
+Vald Egress Filter filters the response before sending it to the user.
+
+This component can reorder the searching result from multiple Vald Agents based on the user-defined ranking.
+
+### Vald Filter Gateway
+
+Vald Filter Gateway forwards the request to Vald Ingress Filter before processing it and forwards the response to the Vald Egress Filter before returning the searching result to the user.
 ## Vald Load Balancing
 
 Load balancing is one of the important concepts in distributed computing, which means it distributes a set of tasks over a set of resources aiming for making the overall processing more efficient.
@@ -58,11 +86,6 @@ Vald Index Manager controls the timing of the indexing inserted vectors on the V
 The index is used to increase the performance of the search action.
 
 It retrieves the active Vald Agent pods from the Vald Discoverer and triggers the indexing action on each Vald Agent.
-
-## Vald Replication Manager
-
-Vald Replication Manager manages the healthiness of the Vald Agent.
-When the pod is dead, Vald Replication Manager will recover the cache automatically to keeps the reliability of the service.
 
 ## Kubernetes Components
 

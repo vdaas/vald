@@ -396,11 +396,6 @@ $(BINDIR)/telepresence:
 telepresence/swap/agent-ngt:
 	@$(call telepresence,vald-agent-ngt,vdaas/vald-agent-ngt)
 
-.PHONY: telepresence/swap/gateway
-## swap gateway deployment using telepresence
-telepresence/swap/gateway:
-	@$(call telepresence,vald-gateway,vdaas/vald-gateway)
-
 .PHONY: telepresence/swap/discoverer
 ## swap discoverer deployment using telepresence
 telepresence/swap/discoverer:

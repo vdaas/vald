@@ -34,10 +34,18 @@ analyze:
     type: go
     target: github.com/vdaas/vald/cmd/discoverer/k8s
     path: cmd/discoverer/k8s
-  - name: github.com/vdaas/vald/cmd/gateway/vald
+  - name: github.com/vdaas/vald/cmd/gateway/filter
     type: go
-    target: github.com/vdaas/vald/cmd/gateway/vald
-    path: cmd/gateway/vald
+    target: github.com/vdaas/vald/cmd/gateway/filter
+    path: cmd/gateway/filter
+  - name: github.com/vdaas/vald/cmd/gateway/lb
+    type: go
+    target: github.com/vdaas/vald/cmd/gateway/lb
+    path: cmd/gateway/lb
+  - name: github.com/vdaas/vald/cmd/manager/index
+    type: go
+    target: github.com/vdaas/vald/cmd/manager/index
+    path: cmd/manager/index
   - name: github.com/vdaas/vald/cmd/manager/replication/agent
     type: go
     target: github.com/vdaas/vald/cmd/manager/replication/agent
@@ -46,6 +54,14 @@ analyze:
     type: go
     target: github.com/vdaas/vald/cmd/manager/replication/controller
     path: cmd/manager/replication/controller
+  - name: github.com/vdaas/vald/cmd/meta/cassandra
+    type: go
+    target: github.com/vdaas/vald/cmd/meta/cassandra
+    path: cmd/meta/cassandra
+  - name: github.com/vdaas/vald/cmd/meta/redis
+    type: go
+    target: github.com/vdaas/vald/cmd/meta/redis
+    path: cmd/meta/redis
   - name: github.com/vdaas/vald/cmd/tools/cli/vdctl
     type: go
     target: github.com/vdaas/vald/cmd/tools/cli/vdctl
