@@ -20,11 +20,9 @@ package singleflight
 import (
 	"context"
 	"reflect"
-	"strconv"
 	"sync"
 	"sync/atomic"
 	"testing"
-	"time"
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/test/goleak"
@@ -85,13 +83,7 @@ func Test_group_Do(t *testing.T) {
 		fn  func() (interface{}, error)
 	}
 	type fields struct {
-		m map[string]*call
-	}
-	type util struct {
-		mu         *sync.Mutex
-		wg         *sync.WaitGroup
-		cond       *sync.Cond
-		condWaitFn func()
+		m sync.Map
 	}
 	type want struct {
 		wantV      interface{}
@@ -102,10 +94,10 @@ func Test_group_Do(t *testing.T) {
 		name       string
 		args       args
 		fields     fields
-		util       util
 		want       want
+		beforeFunc func(args)
+		execFunc   func(*testing.T, *group, args) (interface{}, bool, error)
 		checkFunc  func(want, interface{}, bool, error) error
-		beforeFunc func(Group, args)
 		afterFunc  func(args)
 	}
 	defaultCheckFunc := func(w want, gotV interface{}, gotShared bool, err error) error {
@@ -120,74 +112,67 @@ func Test_group_Do(t *testing.T) {
 		}
 		return nil
 	}
+	defaultExecFunc := func(t *testing.T, g *group, a args) (interface{}, bool, error) {
+		return g.Do(a.ctx, a.key, a.fn)
+	}
 	tests := []test{
 		func() test {
-			var cnt uint32
-			var res string = "res_1"
+			// routine1
+			key1 := "req_1"
+			var cnt1 uint32
+			fn1 := func() (interface{}, error) {
+				atomic.AddUint32(&cnt1, 1)
+				return "res_1", nil
+			}
 
-			var (
-				mu         = new(sync.Mutex)
-				cond       = sync.NewCond(mu)
-				wg         = new(sync.WaitGroup)
-				condWaitFn = func() {
-					mu.Lock()
-					defer mu.Unlock()
-					cond.Wait()
-				}
-			)
+			// routine 2
+			key2 := "req_2"
+			var cnt2 uint32
+			fn2 := func() (interface{}, error) {
+				atomic.AddUint32(&cnt2, 1)
+				return "res_2", nil
+			}
 
 			return test{
-				name: "returns (v, nil, false) when Do is called with another key",
-				fields: fields{
-					m: make(map[string]*call),
-				},
-				util: util{
-					mu:         mu,
-					cond:       cond,
-					wg:         wg,
-					condWaitFn: condWaitFn,
-				},
+				name:   "returns (v, false, nil) when Do is called with another key",
+				fields: fields{},
 				args: args{
-					key: "req_1",
+					key: key1,
 					ctx: context.Background(),
-					fn: func() (interface{}, error) {
-						atomic.AddUint32(&cnt, 1)
-						return res, nil
-					},
+					fn:  fn1,
 				},
 				want: want{
-					wantV:      res,
+					wantV:      "res_1",
 					wantShared: false,
 					err:        nil,
 				},
-				beforeFunc: func(g Group, args args) {
-					gcnt := 10
-					ch := make(chan struct{}, gcnt)
-					defer close(ch)
+				execFunc: func(t *testing.T, g *group, a args) (interface{}, bool, error) {
+					wg := new(sync.WaitGroup)
 
-					for i := 0; i < gcnt; i++ {
-						wg.Add(1)
-						go func(i int) {
-							ch <- struct{}{}
-							defer wg.Done()
-							condWaitFn()
+					var got interface{}
+					var gotShared bool
+					var err error
 
-							g.Do(context.Background(), strconv.Itoa(i), func() (interface{}, error) {
-								time.Sleep(time.Nanosecond * 100)
-								atomic.AddUint32(&cnt, 1)
-								return "vdaas/vald", nil
-							})
-						}(i)
-					}
+					wg.Add(1)
+					go func() {
+						got, gotShared, err = g.Do(a.ctx, a.key, a.fn)
+						wg.Done()
+					}()
 
-					for i := 0; i < gcnt; i++ {
-						<-ch
-					}
-					cond.Broadcast()
+					wg.Add(1)
+					go func() {
+						_, _, _ = g.Do(a.ctx, key2, fn2)
+						wg.Done()
+					}()
+
+					wg.Wait()
+					return got, gotShared, err
 				},
 				checkFunc: func(w want, gotV interface{}, gotShared bool, err error) error {
-					wg.Wait()
-					if got, want := int(atomic.LoadUint32(&cnt)), 11; got != want {
+					if got, want := int(atomic.LoadUint32(&cnt1)), 1; got != want {
+						return errors.Errorf("cnt got = %d, want = %d", got, want)
+					}
+					if got, want := int(atomic.LoadUint32(&cnt2)), 1; got != want {
 						return errors.Errorf("cnt got = %d, want = %d", got, want)
 					}
 					return defaultCheckFunc(w, gotV, gotShared, err)
@@ -195,85 +180,81 @@ func Test_group_Do(t *testing.T) {
 			}
 		}(),
 		func() test {
-			var cnt uint32
-			var res string = "res_1"
+			wg := new(sync.WaitGroup)
+			wg.Add(2)
 
-			var (
-				mu         = new(sync.Mutex)
-				cond       = sync.NewCond(mu)
-				wg         = new(sync.WaitGroup)
-				condWaitFn = func() {
-					mu.Lock()
-					defer mu.Unlock()
-					cond.Wait()
+			// routine1
+			key1 := "req_1"
+			var cnt1 uint32
+
+			fn1 := func() (interface{}, error) {
+				atomic.AddUint32(&cnt1, 1)
+				wg.Done()
+				wg.Wait()
+				return "res_1", nil
+			}
+
+			// routine 2
+			var cnt2 uint32
+			fn2 := func() (interface{}, error) {
+				atomic.AddUint32(&cnt2, 1)
+				wg.Done()
+				wg.Wait()
+				return "res_2", nil
+			}
+
+			w := want{
+				wantV:      "res_1",
+				wantShared: false,
+				err:        nil,
+			}
+			checkFunc := func(w want, gotV interface{}, gotShared bool, err error) error {
+				if got, want := int(atomic.LoadUint32(&cnt1)), 1; got != want {
+					return errors.Errorf("cnt got = %d, want = %d", got, want)
 				}
-			)
+				if got, want := int(atomic.LoadUint32(&cnt2)), 0; got != want {
+					return errors.Errorf("cnt got = %d, want = %d", got, want)
+				}
+				return defaultCheckFunc(w, gotV, gotShared, err)
+			}
 
 			return test{
-				name: "returns (v, nil, true) when Do is called with same key",
+				name:   "returns (v, true, nil) when Do is called with the same key",
+				fields: fields{},
 				args: args{
-					key: "req_1",
+					key: key1,
 					ctx: context.Background(),
-					fn: func() (interface{}, error) {
-						atomic.AddUint32(&cnt, 1)
-						return res, nil
-					},
+					fn:  fn1,
 				},
-				fields: fields{
-					m: make(map[string]*call),
-				},
-				util: util{
-					mu:         mu,
-					cond:       cond,
-					wg:         wg,
-					condWaitFn: condWaitFn,
-				},
-				want: want{
-					wantV:      res,
-					wantShared: true,
-					err:        nil,
-				},
-				beforeFunc: func(g Group, args args) {
+				want: w,
+				execFunc: func(t *testing.T, g *group, a args) (interface{}, bool, error) {
+					wg := new(sync.WaitGroup)
+
+					var got, got1 interface{}
+					var gotShared, gotShared1 bool
+					var err, err1 error
+
 					wg.Add(1)
 					go func() {
-						defer wg.Done()
-						g.Do(context.Background(), args.key, func() (interface{}, error) {
-							time.Sleep(3 * time.Second)
-							return args.fn()
-						})
+						got, gotShared, err = g.Do(a.ctx, a.key, a.fn)
+						wg.Done()
 					}()
 
-					gcnt := 3
-					ch := make(chan struct{}, gcnt)
-					defer close(ch)
+					// call with the same key but with another function
+					wg.Add(1)
+					go func() {
+						got1, gotShared1, err1 = g.Do(a.ctx, a.key, fn2)
+						wg.Done()
+					}()
 
-					for i := 0; i < gcnt; i++ {
-						wg.Add(1)
-						go func() {
-							ch <- struct{}{}
-							defer wg.Done()
-							condWaitFn()
-
-							g.Do(context.Background(), args.key, func() (interface{}, error) {
-								atomic.AddUint32(&cnt, 1)
-								return "vdaas/vald", nil
-							})
-						}()
-					}
-
-					for i := 0; i < gcnt; i++ {
-						<-ch
-					}
-					cond.Broadcast()
-				},
-				checkFunc: func(w want, gotV interface{}, gotShared bool, err error) error {
 					wg.Wait()
-					if got, want := int(atomic.LoadUint32(&cnt)), 1; got != want {
-						return errors.Errorf("cnt got = %d, want = %d", got, want)
-					}
 
-					return defaultCheckFunc(w, gotV, gotShared, err)
+					if err := checkFunc(w, got1, gotShared1, err1); err != nil {
+						return nil, false, nil
+					}
+					return got, gotShared, err
 				},
+				checkFunc: checkFunc,
 			}
 		}(),
 	}
@@ -284,32 +265,24 @@ func Test_group_Do(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+
+			g := &group{
+				m: test.fields.m,
+			}
+
+			execFunc := defaultExecFunc
+			if test.execFunc != nil {
+				execFunc = test.execFunc
+			}
+			gotV, gotShared, err := execFunc(t, g, test.args)
+
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
-
-			g := new(group)
-
-			if test.beforeFunc != nil {
-				test.beforeFunc(g, test.args)
-			}
-
-			var (
-				gotV      interface{}
-				gotShared bool
-				err       error
-			)
-
-			test.util.wg.Add(1)
-			go func() {
-				defer test.util.wg.Done()
-				gotV, gotShared, err = g.Do(context.Background(), test.args.key, test.args.fn)
-			}()
-
-			test.util.cond.Broadcast()
-			test.util.wg.Wait()
-
 			if err := checkFunc(test.want, gotV, gotShared, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
