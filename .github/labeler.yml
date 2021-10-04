@@ -58,12 +58,6 @@ area/manager/index:
   - cmd/manager/index/**/*
   - pkg/manager/index/**/*
 
-area/manager/replication:
-  - apis/proto/manager/replication/**/*
-  - apis/grpc/manager/replication/**/*
-  - cmd/manager/replication/**/*
-  - pkg/manager/replication/**/*
-
 area/tools/cli/loadtest:
   - apis/proto/agent/core/**/*
   - apis/grpc/agent/core/**/*
