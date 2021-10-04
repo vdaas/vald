@@ -99,8 +99,9 @@ func main() {
 	}
 	glg.Infof("Finish Inserting %d training vector to Vald Agent", insertCount)
 	/**
-	Option: Run Indexing instead of Auto Indexing
+	Optional: Run Indexing instead of Auto Indexing
 	If you run client.CreateAndSaveIndex, it costs less time for search
+	When default_pool_size is not set, the below codes are required.
 	**/
 	glg.Info("Start Indexing dataset.")
 	_, err = agent.NewAgentClient(conn).CreateAndSaveIndex(ctx, &payload.Control_CreateIndexRequest{
