@@ -20,8 +20,8 @@ package router
 import (
 	"testing"
 
+	"github.com/vdaas/vald/internal/test/goleak"
 	"github.com/vdaas/vald/pkg/agent/sidecar/handler/rest"
-	"go.uber.org/goleak"
 )
 
 func TestWithHandler(t *testing.T) {

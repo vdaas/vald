@@ -25,7 +25,7 @@ import (
 
 	"github.com/vdaas/vald/internal/errors"
 	mpod "github.com/vdaas/vald/internal/k8s/metrics/pod"
-	"go.uber.org/goleak"
+	"github.com/vdaas/vald/internal/test/goleak"
 )
 
 func Test_newEntryPodMetricsMap(t *testing.T) {

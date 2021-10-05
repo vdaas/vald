@@ -24,7 +24,7 @@ import (
 
 	"github.com/vdaas/vald/internal/errors"
 
-	"go.uber.org/goleak"
+	"github.com/vdaas/vald/internal/test/goleak"
 )
 
 // A version of bytes.Buffer without ReadFrom and WriteTo

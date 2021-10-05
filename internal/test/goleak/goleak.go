@@ -18,7 +18,8 @@ package goleak
 import "go.uber.org/goleak"
 
 type (
-	Option = goleak.Option
+	Option   = goleak.Option
+	TestingT = goleak.TestingT
 )
 
 var (

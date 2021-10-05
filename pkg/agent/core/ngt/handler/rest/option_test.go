@@ -20,8 +20,8 @@ package rest
 import (
 	"testing"
 
+	"github.com/vdaas/vald/internal/test/goleak"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/handler/grpc"
-	"go.uber.org/goleak"
 )
 
 func TestWithAgent(t *testing.T) {

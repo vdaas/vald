@@ -21,8 +21,8 @@ import (
 	"testing"
 
 	"github.com/vdaas/vald/internal/errgroup"
+	"github.com/vdaas/vald/internal/test/goleak"
 	"github.com/vdaas/vald/pkg/discoverer/k8s/handler/rest"
-	"go.uber.org/goleak"
 )
 
 func TestWithHandler(t *testing.T) {
