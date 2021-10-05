@@ -73,10 +73,7 @@ users:
       - admin
   rinx:
     role:
-      - author
-      - sig-lead
-      - sig-core
-      - sig-sre
+      - contributor
   kmrmt:
     role:
       - author
