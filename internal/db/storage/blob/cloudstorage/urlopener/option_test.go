@@ -19,7 +19,7 @@ import (
 	"net/http"
 	"testing"
 
-	"go.uber.org/goleak"
+	"github.com/vdaas/vald/internal/test/goleak"
 )
 
 func TestWithCredentialsFile(t *testing.T) {

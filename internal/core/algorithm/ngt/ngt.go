@@ -91,7 +91,7 @@ type (
 		epsilon             float32
 		poolSize            uint32
 		prop                C.NGTProperty
-		ebuf                C.NGTError // TODO BufferPoolとかにしたほうが良さそう
+		epool               sync.Pool
 		index               C.NGTIndex
 		ospace              C.NGTObjectSpace
 		mu                  *sync.RWMutex
@@ -210,12 +210,22 @@ func gen(isLoad bool, opts ...Option) (NGT, error) {
 }
 
 func (n *ngt) setup() error {
-	n.ebuf = C.ngt_create_error_object()
-
-	n.prop = C.ngt_create_property(n.ebuf)
-	if n.prop == nil {
-		return errors.ErrCreateProperty(n.newGoError(n.ebuf))
+	n.epool = sync.Pool{
+		New: func() interface{} {
+			return C.ngt_create_error_object()
+		},
 	}
+
+	for i := 0; i < 20; i++ {
+		n.PutErrorBuffer(C.ngt_create_error_object())
+	}
+
+	ebuf := n.GetErrorBuffer()
+	n.prop = C.ngt_create_property(ebuf)
+	if n.prop == nil {
+		return errors.ErrCreateProperty(n.newGoError(ebuf))
+	}
+	n.PutErrorBuffer(ebuf)
 	return nil
 }
 
@@ -255,66 +265,75 @@ func (n *ngt) create() (err error) {
 	}
 	path := C.CString(n.idxPath)
 	defer C.free(unsafe.Pointer(path))
+
+	ebuf := n.GetErrorBuffer()
 	if !n.inMemory {
-		n.index = C.ngt_create_graph_and_tree(path, n.prop, n.ebuf)
+		n.index = C.ngt_create_graph_and_tree(path, n.prop, ebuf)
 		if n.index == nil {
-			return n.newGoError(n.ebuf)
+			return n.newGoError(ebuf)
 		}
-		if C.ngt_save_index(n.index, path, n.ebuf) == ErrorCode {
-			return n.newGoError(n.ebuf)
+		if C.ngt_save_index(n.index, path, ebuf) == ErrorCode {
+			return n.newGoError(ebuf)
 		}
 	} else {
-		n.index = C.ngt_create_graph_and_tree_in_memory(n.prop, n.ebuf)
+		n.index = C.ngt_create_graph_and_tree_in_memory(n.prop, ebuf)
 		if n.index == nil {
-			return n.newGoError(n.ebuf)
+			return n.newGoError(ebuf)
 		}
 	}
+	n.PutErrorBuffer(ebuf)
 
 	return nil
 }
 
 func (n *ngt) open() error {
 	if !file.Exists(n.idxPath) {
-		return errors.ErrIndexNotFound
+		return errors.ErrIndexFileNotFound
 	}
 
 	path := C.CString(n.idxPath)
 	defer C.free(unsafe.Pointer(path))
-	n.index = C.ngt_open_index(path, n.ebuf)
+
+	ebuf := n.GetErrorBuffer()
+	n.index = C.ngt_open_index(path, ebuf)
 	if n.index == nil {
-		return n.newGoError(n.ebuf)
+		return n.newGoError(ebuf)
 	}
 
-	if C.ngt_get_property(n.index, n.prop, n.ebuf) == ErrorCode {
-		return n.newGoError(n.ebuf)
+	if C.ngt_get_property(n.index, n.prop, ebuf) == ErrorCode {
+		return n.newGoError(ebuf)
 	}
 
-	n.dimension = C.ngt_get_property_dimension(n.prop, n.ebuf)
+	n.dimension = C.ngt_get_property_dimension(n.prop, ebuf)
 	if int(n.dimension) == -1 {
-		return n.newGoError(n.ebuf)
+		return n.newGoError(ebuf)
 	}
+	n.PutErrorBuffer(ebuf)
 	return nil
 }
 
 func (n *ngt) loadObjectSpace() error {
-	n.ospace = C.ngt_get_object_space(n.index, n.ebuf)
+	ebuf := n.GetErrorBuffer()
+	n.ospace = C.ngt_get_object_space(n.index, ebuf)
 	if n.ospace == nil {
-		return n.newGoError(n.ebuf)
+		return n.newGoError(ebuf)
 	}
+	n.PutErrorBuffer(ebuf)
 	return nil
 }
 
 // Search returns search result as []SearchResult.
-func (n *ngt) Search(vec []float32, size int, epsilon, radius float32) ([]SearchResult, error) {
+func (n *ngt) Search(vec []float32, size int, epsilon, radius float32) (result []SearchResult, err error) {
 	if len(vec) != int(n.dimension) {
 		return nil, errors.ErrIncompatibleDimensionSize(len(vec), int(n.dimension))
 	}
 
-	results := C.ngt_create_empty_results(n.ebuf)
+	ebuf := n.GetErrorBuffer()
+	results := C.ngt_create_empty_results(ebuf)
 
 	defer C.ngt_destroy_results(results)
 	if results == nil {
-		return nil, n.newGoError(n.ebuf)
+		return nil, n.newGoError(ebuf)
 	}
 
 	if epsilon == 0 {
@@ -337,31 +356,35 @@ func (n *ngt) Search(vec []float32, size int, epsilon, radius float32) ([]Search
 		*(*C.float)(unsafe.Pointer(&radius)),
 		// C.float(radius),
 		results,
-		n.ebuf)
+		ebuf)
 
 	if ret == ErrorCode {
-		// TODO global lock取るのどうする問題
-		ne := n.ebuf
+		ne := ebuf
 		n.mu.RUnlock()
 		return nil, n.newGoError(ne)
 	}
-
 	n.mu.RUnlock()
 
-	rsize := int(C.ngt_get_result_size(results, n.ebuf))
-	if rsize == -1 {
-		return nil, n.newGoError(n.ebuf)
+	rsize := int(C.ngt_get_result_size(results, ebuf))
+	if rsize <= 0 {
+		err = n.newGoError(ebuf)
+		if err == nil {
+			err = errors.ErrEmptySearchResult
+		}
+		return nil, err
 	}
+	result = make([]SearchResult, rsize)
 
-	result := make([]SearchResult, rsize)
-	for i := 0; i < rsize; i++ {
-		d := C.ngt_get_result(results, C.uint32_t(i), n.ebuf)
+	for i := range result {
+		d := C.ngt_get_result(results, C.uint32_t(i), ebuf)
 		if d.id == 0 && d.distance == 0 {
-			result[i] = SearchResult{0, 0, n.newGoError(n.ebuf)}
+			result[i] = SearchResult{0, 0, n.newGoError(ebuf)}
+			ebuf = n.GetErrorBuffer()
 		} else {
 			result[i] = SearchResult{uint32(d.id), float32(d.distance), nil}
 		}
 	}
+	n.PutErrorBuffer(ebuf)
 
 	return result, nil
 }
@@ -373,12 +396,15 @@ func (n *ngt) Insert(vec []float32) (uint, error) {
 	if len(vec) != dim {
 		return 0, errors.ErrIncompatibleDimensionSize(len(vec), dim)
 	}
+
+	ebuf := n.GetErrorBuffer()
 	n.mu.Lock()
-	id := C.ngt_insert_index_as_float(n.index, (*C.float)(&vec[0]), C.uint32_t(n.dimension), n.ebuf)
+	id := C.ngt_insert_index_as_float(n.index, (*C.float)(&vec[0]), C.uint32_t(n.dimension), ebuf)
 	n.mu.Unlock()
 	if id == 0 {
-		return 0, n.newGoError(n.ebuf)
+		return 0, n.newGoError(ebuf)
 	}
+	n.PutErrorBuffer(ebuf)
 
 	return uint(id), nil
 }
@@ -472,14 +498,14 @@ func (n *ngt) CreateIndex(poolSize uint32) error {
 	if poolSize == 0 {
 		poolSize = n.poolSize
 	}
+	ebuf := n.GetErrorBuffer()
 	n.mu.Lock()
-	ret := C.ngt_create_index(n.index, C.uint32_t(poolSize), n.ebuf)
-	if ret == ErrorCode {
-		ne := n.ebuf
-		n.mu.Unlock()
-		return n.newGoError(ne)
-	}
+	ret := C.ngt_create_index(n.index, C.uint32_t(poolSize), ebuf)
 	n.mu.Unlock()
+	if ret == ErrorCode {
+		return n.newGoError(ebuf)
+	}
+	n.PutErrorBuffer(ebuf)
 
 	return nil
 }
@@ -489,14 +515,14 @@ func (n *ngt) SaveIndex() error {
 	if !n.inMemory {
 		path := C.CString(n.idxPath)
 		defer C.free(unsafe.Pointer(path))
+		ebuf := n.GetErrorBuffer()
 		n.mu.Lock()
-		ret := C.ngt_save_index(n.index, path, n.ebuf)
-		if ret == ErrorCode {
-			ne := n.ebuf
-			n.mu.Unlock()
-			return n.newGoError(ne)
-		}
+		ret := C.ngt_save_index(n.index, path, ebuf)
 		n.mu.Unlock()
+		if ret == ErrorCode {
+			return n.newGoError(ebuf)
+		}
+		n.PutErrorBuffer(ebuf)
 	}
 
 	return nil
@@ -504,14 +530,14 @@ func (n *ngt) SaveIndex() error {
 
 // Remove removes from NGT index.
 func (n *ngt) Remove(id uint) error {
+	ebuf := n.GetErrorBuffer()
 	n.mu.Lock()
-	ret := C.ngt_remove_index(n.index, C.ObjectID(id), n.ebuf)
-	if ret == ErrorCode {
-		ne := n.ebuf
-		n.mu.Unlock()
-		return n.newGoError(ne)
-	}
+	ret := C.ngt_remove_index(n.index, C.ObjectID(id), ebuf)
 	n.mu.Unlock()
+	if ret == ErrorCode {
+		return n.newGoError(ebuf)
+	}
+	n.PutErrorBuffer(ebuf)
 
 	return nil
 }
@@ -531,13 +557,14 @@ func (n *ngt) BulkRemove(ids ...uint) (errs error) {
 func (n *ngt) GetVector(id uint) ([]float32, error) {
 	dimension := int(n.dimension)
 	var ret []float32
+	ebuf := n.GetErrorBuffer()
 	switch n.objectType {
 	case Float:
 		n.mu.RLock()
-		results := C.ngt_get_object_as_float(n.ospace, C.ObjectID(id), n.ebuf)
+		results := C.ngt_get_object_as_float(n.ospace, C.ObjectID(id), ebuf)
 		n.mu.RUnlock()
 		if results == nil {
-			return nil, n.newGoError(n.ebuf)
+			return nil, n.newGoError(ebuf)
 		}
 		ret = (*[ngtVectorDimensionSizeLimit]float32)(unsafe.Pointer(results))[:dimension:dimension]
 		// for _, elem := range (*[ngtVectorDimensionSizeLimit]C.float)(unsafe.Pointer(results))[:dimension:dimension]{
@@ -545,37 +572,53 @@ func (n *ngt) GetVector(id uint) ([]float32, error) {
 		// }
 	case Uint8:
 		n.mu.RLock()
-		results := C.ngt_get_object_as_integer(n.ospace, C.ObjectID(id), n.ebuf)
+		results := C.ngt_get_object_as_integer(n.ospace, C.ObjectID(id), ebuf)
 		n.mu.RUnlock()
 		if results == nil {
-			return nil, n.newGoError(n.ebuf)
+			return nil, n.newGoError(ebuf)
 		}
 		ret = make([]float32, 0, dimension)
 		for _, elem := range (*[ngtVectorDimensionSizeLimit]C.uint8_t)(unsafe.Pointer(results))[:dimension:dimension] {
 			ret = append(ret, float32(elem))
 		}
 	default:
+		n.PutErrorBuffer(ebuf)
 		return nil, errors.ErrUnsupportedObjectType
 	}
+	n.PutErrorBuffer(ebuf)
 	return ret, nil
 }
 
-func (n *ngt) newGoError(ne C.NGTError) (err error) {
-	n.mu.Lock()
-	err = errors.New(C.GoString(C.ngt_get_error_string(ne)))
-	C.ngt_destroy_error_object(n.ebuf)
-	n.ebuf = C.ngt_create_error_object()
-	n.mu.Unlock()
-	return err
+func (n *ngt) newGoError(ebuf C.NGTError) (err error) {
+	msg := C.GoString(C.ngt_get_error_string(ebuf))
+	if len(msg) == 0 {
+		n.PutErrorBuffer(ebuf)
+		return nil
+	}
+	n.PutErrorBuffer(C.ngt_create_error_object())
+	C.ngt_destroy_error_object(ebuf)
+	return errors.NewNGTError(msg)
 }
 
 // Close NGT index.
 func (n *ngt) Close() {
 	if n.index != nil {
 		C.ngt_close_index(n.index)
-		C.ngt_destroy_error_object(n.ebuf)
 		n.index = nil
 		n.prop = nil
 		n.ospace = nil
 	}
+}
+
+func (n *ngt) GetErrorBuffer() (ebuf C.NGTError) {
+	var ok bool
+	ebuf, ok = n.epool.Get().(C.NGTError)
+	if !ok {
+		ebuf = C.ngt_create_error_object()
+	}
+	return ebuf
+}
+
+func (n *ngt) PutErrorBuffer(ebuf C.NGTError) {
+	n.epool.Put(ebuf)
 }

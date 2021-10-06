@@ -21,8 +21,8 @@ import (
 	"testing"
 
 	"github.com/vdaas/vald/internal/errgroup"
+	"github.com/vdaas/vald/internal/test/goleak"
 	"github.com/vdaas/vald/pkg/agent/sidecar/service/storage"
-	"go.uber.org/goleak"
 )
 
 func TestWithBackupDuration(t *testing.T) {

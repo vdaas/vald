@@ -20,8 +20,8 @@ package grpc
 import (
 	"testing"
 
+	"github.com/vdaas/vald/internal/test/goleak"
 	"github.com/vdaas/vald/pkg/agent/sidecar/service/observer"
-	"go.uber.org/goleak"
 )
 
 func TestWithStorageObserver(t *testing.T) {

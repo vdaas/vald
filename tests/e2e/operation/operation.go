@@ -45,10 +45,70 @@ type Dataset struct {
 type Client interface {
 	Search(t *testing.T, ctx context.Context, ds Dataset) error
 	SearchByID(t *testing.T, ctx context.Context, ds Dataset) error
+
+	SearchWithParameters(
+		t *testing.T,
+		ctx context.Context,
+		ds Dataset,
+		num uint32,
+		radius float32,
+		epsilon float32,
+		timeout int64,
+		statusValidator StatusValidator,
+		errorValidator ErrorValidator,
+	) error
+	SearchByIDWithParameters(
+		t *testing.T,
+		ctx context.Context,
+		ds Dataset,
+		num uint32,
+		radius float32,
+		epsilon float32,
+		timeout int64,
+		statusValidator StatusValidator,
+		errorValidator ErrorValidator,
+	) error
+
 	Insert(t *testing.T, ctx context.Context, ds Dataset) error
 	Update(t *testing.T, ctx context.Context, ds Dataset) error
 	Upsert(t *testing.T, ctx context.Context, ds Dataset) error
 	Remove(t *testing.T, ctx context.Context, ds Dataset) error
+
+	InsertWithParameters(
+		t *testing.T,
+		ctx context.Context,
+		ds Dataset,
+		skipStrictExistCheck bool,
+		statusValidator StatusValidator,
+		errorValidator ErrorValidator,
+	) error
+	UpdateWithParameters(
+		t *testing.T,
+		ctx context.Context,
+		ds Dataset,
+		skipStrictExistCheck bool,
+		offset int,
+		statusValidator StatusValidator,
+		errorValidator ErrorValidator,
+	) error
+	UpsertWithParameters(
+		t *testing.T,
+		ctx context.Context,
+		ds Dataset,
+		skipStrictExistCheck bool,
+		offset int,
+		statusValidator StatusValidator,
+		errorValidator ErrorValidator,
+	) error
+	RemoveWithParameters(
+		t *testing.T,
+		ctx context.Context,
+		ds Dataset,
+		skipStrictExistCheck bool,
+		statusValidator StatusValidator,
+		errorValidator ErrorValidator,
+	) error
+
 	MultiSearch(t *testing.T, ctx context.Context, ds Dataset) error
 	MultiSearchByID(t *testing.T, ctx context.Context, ds Dataset) error
 	MultiInsert(t *testing.T, ctx context.Context, ds Dataset) error

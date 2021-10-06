@@ -22,8 +22,8 @@ import (
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/runner"
+	"github.com/vdaas/vald/internal/test/goleak"
 	"github.com/vdaas/vald/pkg/agent/sidecar/config"
-	"go.uber.org/goleak"
 )
 
 func TestNew(t *testing.T) {

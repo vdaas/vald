@@ -23,8 +23,8 @@ import (
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc/codes"
+	"github.com/vdaas/vald/internal/test/goleak"
 	"go.opencensus.io/trace"
-	"go.uber.org/goleak"
 )
 
 func TestStatusCodeOK(t *testing.T) {

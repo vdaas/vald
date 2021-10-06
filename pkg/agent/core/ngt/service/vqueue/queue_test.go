@@ -25,7 +25,7 @@ import (
 
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
-	"go.uber.org/goleak"
+	"github.com/vdaas/vald/internal/test/goleak"
 )
 
 func TestNew(t *testing.T) {
@@ -112,10 +112,10 @@ func Test_vqueue_PushInsert(t *testing.T) {
 	}
 	type fields struct {
 		uii      []index
-		imu      sync.Mutex
+		imu      sync.RWMutex
 		uiim     uiim
 		udk      []key
-		dmu      sync.Mutex
+		dmu      sync.RWMutex
 		udim     udim
 		eg       errgroup.Group
 		iBufSize int
@@ -242,10 +242,10 @@ func Test_vqueue_PushDelete(t *testing.T) {
 	}
 	type fields struct {
 		uii      []index
-		imu      sync.Mutex
+		imu      sync.RWMutex
 		uiim     uiim
 		udk      []key
-		dmu      sync.Mutex
+		dmu      sync.RWMutex
 		udim     udim
 		eg       errgroup.Group
 		iBufSize int
@@ -371,10 +371,10 @@ func Test_vqueue_RangePopInsert(t *testing.T) {
 	}
 	type fields struct {
 		uii      []index
-		imu      sync.Mutex
+		imu      sync.RWMutex
 		uiim     uiim
 		udk      []key
-		dmu      sync.Mutex
+		dmu      sync.RWMutex
 		udim     udim
 		eg       errgroup.Group
 		iBufSize int
@@ -495,10 +495,10 @@ func Test_vqueue_RangePopDelete(t *testing.T) {
 	}
 	type fields struct {
 		uii      []index
-		imu      sync.Mutex
+		imu      sync.RWMutex
 		uiim     uiim
 		udk      []key
-		dmu      sync.Mutex
+		dmu      sync.RWMutex
 		udim     udim
 		eg       errgroup.Group
 		iBufSize int
@@ -617,10 +617,10 @@ func Test_vqueue_GetVector(t *testing.T) {
 	}
 	type fields struct {
 		uii      []index
-		imu      sync.Mutex
+		imu      sync.RWMutex
 		uiim     uiim
 		udk      []key
-		dmu      sync.Mutex
+		dmu      sync.RWMutex
 		udim     udim
 		eg       errgroup.Group
 		iBufSize int
@@ -994,10 +994,10 @@ func Test_vqueue_IVExists(t *testing.T) {
 	}
 	type fields struct {
 		uii      []index
-		imu      sync.Mutex
+		imu      sync.RWMutex
 		uiim     uiim
 		udk      []key
-		dmu      sync.Mutex
+		dmu      sync.RWMutex
 		udim     udim
 		eg       errgroup.Group
 		iBufSize int
@@ -1359,10 +1359,10 @@ func Test_vqueue_DVExists(t *testing.T) {
 	}
 	type fields struct {
 		uii      []index
-		imu      sync.Mutex
+		imu      sync.RWMutex
 		uiim     uiim
 		udk      []key
-		dmu      sync.Mutex
+		dmu      sync.RWMutex
 		udim     udim
 		eg       errgroup.Group
 		iBufSize int
@@ -1722,10 +1722,10 @@ func Test_vqueue_addInsert(t *testing.T) {
 	}
 	type fields struct {
 		uii      []index
-		imu      sync.Mutex
+		imu      sync.RWMutex
 		uiim     uiim
 		udk      []key
-		dmu      sync.Mutex
+		dmu      sync.RWMutex
 		udim     udim
 		eg       errgroup.Group
 		iBufSize int
@@ -1842,10 +1842,10 @@ func Test_vqueue_addDelete(t *testing.T) {
 	}
 	type fields struct {
 		uii      []index
-		imu      sync.Mutex
+		imu      sync.RWMutex
 		uiim     uiim
 		udk      []key
-		dmu      sync.Mutex
+		dmu      sync.RWMutex
 		udim     udim
 		eg       errgroup.Group
 		iBufSize int
@@ -1959,10 +1959,10 @@ func Test_vqueue_addDelete(t *testing.T) {
 func Test_vqueue_IVQLen(t *testing.T) {
 	type fields struct {
 		uii      []index
-		imu      sync.Mutex
+		imu      sync.RWMutex
 		uiim     uiim
 		udk      []key
-		dmu      sync.Mutex
+		dmu      sync.RWMutex
 		udim     udim
 		eg       errgroup.Group
 		iBufSize int
@@ -2121,10 +2121,10 @@ func Test_vqueue_IVQLen(t *testing.T) {
 func Test_vqueue_DVQLen(t *testing.T) {
 	type fields struct {
 		uii      []index
-		imu      sync.Mutex
+		imu      sync.RWMutex
 		uiim     uiim
 		udk      []key
-		dmu      sync.Mutex
+		dmu      sync.RWMutex
 		udim     udim
 		eg       errgroup.Group
 		iBufSize int
