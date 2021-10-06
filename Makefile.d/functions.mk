@@ -87,7 +87,6 @@ endef
 
 define run-e2e-crud-test
 	go test \
-	    -shuffle=on \
 		-race \
 	    -mod=readonly \
 	    $1 \

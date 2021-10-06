@@ -91,7 +91,6 @@ jobs:
           make hack/benchmark/assets/dataset/${DATASET}
           go version
           go test \
-            -shuffle=on \
             -race \
             -mod=readonly \
             -v tests/e2e/crud/crud_test.go \
@@ -182,6 +181,7 @@ jobs:
           make hack/benchmark/assets/dataset/${DATASET}
           go version
           go test \
+            -race \
             -mod=readonly \
             -v tests/e2e/crud/crud_test.go \
             -tags "e2e" \
@@ -267,7 +267,6 @@ jobs:
           make hack/benchmark/assets/dataset/${DATASET}
           go version
           go test \
-            -shuffle=on \
             -race \
             -mod=readonly \
             -v tests/e2e/multiapis/multiapis_test.go \
@@ -360,7 +359,6 @@ jobs:
           make hack/benchmark/assets/dataset/${DATASET}
           go version
           go test \
-            -shuffle=on \
             -race \
             -mod=readonly \
             -v tests/e2e/sidecar/sidecar_test.go \
