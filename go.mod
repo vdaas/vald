@@ -12,7 +12,6 @@ replace (
 	github.com/Azure/go-autorest/autorest => github.com/Azure/go-autorest/autorest v0.11.21
 	github.com/Azure/go-autorest/autorest/adal => github.com/Azure/go-autorest/autorest/adal v0.9.17-0.20210910151046-492f94bc3a56
 	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.40.56
-	github.com/boltdb/bolt => github.com/boltdb/bolt v1.3.1
 	github.com/chzyer/logex => github.com/chzyer/logex v1.1.11-0.20170329064859-445be9e134b2
 	github.com/coreos/etcd => go.etcd.io/etcd v3.3.26+incompatible
 	github.com/docker/docker => github.com/moby/moby v20.10.9+incompatible
