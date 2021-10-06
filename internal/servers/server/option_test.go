@@ -27,7 +27,7 @@ import (
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/net/control"
 	"github.com/vdaas/vald/internal/net/grpc"
-	"go.uber.org/goleak"
+	"github.com/vdaas/vald/internal/test/goleak"
 )
 
 func TestWithHost(t *testing.T) {

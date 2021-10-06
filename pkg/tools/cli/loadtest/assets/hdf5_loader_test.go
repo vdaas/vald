@@ -20,7 +20,7 @@ import (
 	"testing"
 
 	"github.com/vdaas/vald/internal/errors"
-	"go.uber.org/goleak"
+	"github.com/vdaas/vald/internal/test/goleak"
 	"gonum.org/v1/hdf5"
 )
 

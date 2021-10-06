@@ -120,3 +120,17 @@ var (
 		return Errorf("object id %d is not indexed we cannot remove it", oid)
 	}
 )
+
+type NGTError struct {
+	Msg string
+}
+
+func NewNGTError(msg string) error {
+	return NGTError{
+		Msg: msg,
+	}
+}
+
+func (n NGTError) Error() string {
+	return n.Msg
+}

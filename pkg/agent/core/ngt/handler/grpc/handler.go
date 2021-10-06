@@ -189,7 +189,8 @@ func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *
 				})
 			log.Debug(err)
 			stat = trace.StatusCodeAborted(err.Error())
-		case errors.Is(err, errors.ErrEmptySearchResult):
+		case errors.Is(err, errors.ErrEmptySearchResult),
+			err == nil && res == nil:
 			err = status.WrapWithNotFound(fmt.Sprintf("Search API requestID %s's search result not found", req.GetConfig().GetRequestId()), err,
 				&errdetails.RequestInfo{
 					RequestId:   req.GetConfig().GetRequestId(),
@@ -201,6 +202,39 @@ func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *
 				})
 			log.Debug(err)
 			stat = trace.StatusCodeNotFound(err.Error())
+		case errors.As(err, errors.NGTError{}):
+			log.Errorf("ngt core process returned error: %v", err)
+			err = status.WrapWithInternal("Search API failed to process search request due to ngt core process returned error", err,
+				&errdetails.RequestInfo{
+					RequestId:   req.GetConfig().GetRequestId(),
+					ServingData: errdetails.Serialize(req),
+				},
+				&errdetails.ResourceInfo{
+					ResourceType: ngtResourceType + "/ngt.Search/core.ngt",
+					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+				}, info.Get())
+			log.Error(err)
+			stat = trace.StatusCodeInternal(err.Error())
+		case errors.Is(err, errors.ErrIncompatibleDimensionSize(len(req.GetVector()), int(s.ngt.GetDimensionSize()))):
+			err = status.WrapWithInvalidArgument("Search API Incompatible Dimension Size detected",
+				err,
+				&errdetails.RequestInfo{
+					RequestId:   req.GetConfig().GetRequestId(),
+					ServingData: errdetails.Serialize(req),
+				},
+				&errdetails.BadRequest{
+					FieldViolations: []*errdetails.BadRequestFieldViolation{
+						{
+							Field:       "vector dimension size",
+							Description: err.Error(),
+						},
+					},
+				},
+				&errdetails.ResourceInfo{
+					ResourceType: ngtResourceType + "/ngt.Search",
+				})
+			log.Warn(err)
+			stat = trace.StatusCodeInvalidArgument(err.Error())
 		default:
 			err = status.WrapWithInternal("Search API failed to process search request", err,
 				&errdetails.RequestInfo{
@@ -230,12 +264,12 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 			span.End()
 		}
 	}()
-	res, err = toSearchResponse(
-		s.ngt.SearchByID(
-			req.GetId(),
-			req.GetConfig().GetNum(),
-			req.GetConfig().GetEpsilon(),
-			req.GetConfig().GetRadius()))
+	vec, dst, err := s.ngt.SearchByID(
+		req.GetId(),
+		req.GetConfig().GetNum(),
+		req.GetConfig().GetEpsilon(),
+		req.GetConfig().GetRadius())
+	res, err = toSearchResponse(dst, err)
 	if err != nil || res == nil {
 		var stat trace.Status
 		switch {
@@ -251,7 +285,8 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 				})
 			log.Debug(err)
 			stat = trace.StatusCodeAborted(err.Error())
-		case errors.Is(err, errors.ErrEmptySearchResult):
+		case errors.Is(err, errors.ErrEmptySearchResult),
+			err == nil && res == nil:
 			err = status.WrapWithNotFound(fmt.Sprintf("SearchByID API uuid %s's search result not found", req.GetId()), err,
 				&errdetails.RequestInfo{
 					RequestId:   req.GetConfig().GetRequestId(),
@@ -276,6 +311,39 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 				})
 			log.Debug(err)
 			stat = trace.StatusCodeNotFound(err.Error())
+		case errors.As(err, errors.NGTError{}):
+			log.Errorf("ngt core process returned error: %v", err)
+			err = status.WrapWithInternal("SearchByID API failed to process search request due to ngt core process returned error", err,
+				&errdetails.RequestInfo{
+					RequestId:   req.GetConfig().GetRequestId(),
+					ServingData: errdetails.Serialize(req),
+				},
+				&errdetails.ResourceInfo{
+					ResourceType: ngtResourceType + "/ngt.SearchByID/core.ngt",
+					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+				}, info.Get())
+			log.Error(err)
+			stat = trace.StatusCodeInternal(err.Error())
+		case errors.Is(err, errors.ErrIncompatibleDimensionSize(len(vec), int(s.ngt.GetDimensionSize()))):
+			err = status.WrapWithInvalidArgument("SearchByID API Incompatible Dimension Size detected",
+				err,
+				&errdetails.RequestInfo{
+					RequestId:   req.GetConfig().GetRequestId(),
+					ServingData: errdetails.Serialize(req),
+				},
+				&errdetails.BadRequest{
+					FieldViolations: []*errdetails.BadRequestFieldViolation{
+						{
+							Field:       "vector dimension size",
+							Description: err.Error(),
+						},
+					},
+				},
+				&errdetails.ResourceInfo{
+					ResourceType: ngtResourceType + "/ngt.SearchByID",
+				})
+			log.Warn(err)
+			stat = trace.StatusCodeInvalidArgument(err.Error())
 		default:
 			err = status.WrapWithInternal("SearchByID API failed to process search request", err,
 				&errdetails.RequestInfo{
@@ -1117,18 +1185,20 @@ func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *
 		loc, err = s.Update(ctx, &payload.Update_Request{
 			Vector: req.GetVector(),
 			Config: &payload.Update_Config{
-				Timestamp: req.GetConfig().GetTimestamp(),
+				Timestamp:            req.GetConfig().GetTimestamp(),
+				SkipStrictExistCheck: true,
 			},
 		})
-		rtName = "/ngt.Update"
+		rtName += "/ngt.Update"
 	} else {
 		loc, err = s.Insert(ctx, &payload.Insert_Request{
 			Vector: req.GetVector(),
 			Config: &payload.Insert_Config{
-				Timestamp: req.GetConfig().GetTimestamp(),
+				Timestamp:            req.GetConfig().GetTimestamp(),
+				SkipStrictExistCheck: true,
 			},
 		})
-		rtName = "/ngt.Insert"
+		rtName += "/ngt.Insert"
 	}
 	if err != nil {
 		st, msg, err := status.ParseError(err, codes.Internal, "failed to parse Upsert gRPC error response",
@@ -1239,10 +1309,18 @@ func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequ
 		if exists {
 			updateReqs = append(updateReqs, &payload.Update_Request{
 				Vector: vec,
+				Config: &payload.Update_Config{
+					Timestamp:            req.GetConfig().GetTimestamp(),
+					SkipStrictExistCheck: true,
+				},
 			})
 		} else {
 			insertReqs = append(insertReqs, &payload.Insert_Request{
 				Vector: vec,
+				Config: &payload.Insert_Config{
+					Timestamp:            req.GetConfig().GetTimestamp(),
+					SkipStrictExistCheck: true,
+				},
 			})
 		}
 	}

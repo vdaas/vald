@@ -30,7 +30,7 @@ import (
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/log/logger"
 	"github.com/vdaas/vald/internal/test/comparator"
-	"go.uber.org/goleak"
+	"github.com/vdaas/vald/internal/test/goleak"
 )
 
 var (
@@ -39,7 +39,7 @@ var (
 		// !!! These fields will not be verified in the entire test
 		// Do not validate C dependencies
 		comparator.IgnoreFields(ngt{},
-			"dimension", "prop", "ebuf", "index", "ospace"),
+			"dimension", "prop", "epool", "index", "ospace"),
 		comparator.RWMutexComparer,
 		comparator.ErrorComparer,
 	}

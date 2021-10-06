@@ -21,7 +21,7 @@ import (
 	"testing"
 
 	"github.com/vdaas/vald/apis/grpc/v1/agent/sidecar"
-	"go.uber.org/goleak"
+	"github.com/vdaas/vald/internal/test/goleak"
 )
 
 func TestWithSidecar(t *testing.T) {

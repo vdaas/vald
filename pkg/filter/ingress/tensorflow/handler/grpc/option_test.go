@@ -21,7 +21,7 @@ import (
 	"testing"
 
 	"github.com/vdaas/vald/internal/core/converter/tensorflow"
-	"go.uber.org/goleak"
+	"github.com/vdaas/vald/internal/test/goleak"
 )
 
 func TestWithTensorFlow(t *testing.T) {

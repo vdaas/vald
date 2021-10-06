@@ -330,6 +330,11 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 	return res, nil
 }
 
+type DistPayload struct {
+	raw      *payload.Object_Distance
+	distance *big.Float
+}
+
 func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 	f func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error)) (
 	res *payload.Search_Response, err error) {
@@ -343,7 +348,7 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 	num := int(cfg.GetNum())
 	res = new(payload.Search_Response)
 	res.Results = make([]*payload.Object_Distance, 0, s.gateway.GetAgentCount(ctx)*num)
-	dch := make(chan *payload.Object_Distance, cap(res.GetResults())/2)
+	dch := make(chan DistPayload, cap(res.GetResults())/2)
 	eg, ectx := errgroup.New(ctx)
 	var cancel context.CancelFunc
 	var timeout time.Duration
@@ -353,8 +358,8 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 		timeout = s.timeout
 	}
 
-	var maxDist uint64
-	atomic.StoreUint64(&maxDist, math.Float64bits(math.MaxFloat64))
+	var maxDist atomic.Value
+	maxDist.Store(big.NewFloat(math.MaxFloat64))
 	ectx, cancel = context.WithTimeout(ectx, timeout)
 	eg.Go(safety.RecoverFunc(func() error {
 		defer cancel()
@@ -413,24 +418,28 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 				if dist == nil {
 					continue
 				}
-				if big.NewFloat(float64(dist.GetDistance())).Cmp(big.NewFloat(math.Float64frombits(atomic.LoadUint64(&maxDist)))) >= 0 {
+				fdist := big.NewFloat(float64(dist.GetDistance()))
+				bf, ok := maxDist.Load().(*big.Float)
+				if !ok || fdist.Cmp(bf) >= 0 {
 					return nil
 				}
 				if _, already := visited.LoadOrStore(dist.GetId(), struct{}{}); !already {
 					select {
 					case <-ectx.Done():
 						return nil
-					case dch <- dist:
+					case dch <- DistPayload{raw: dist, distance: fdist}:
 					}
 				}
 			}
 			return nil
 		})
 	}))
-	add := func(dist *payload.Object_Distance) {
+	add := func(distance *big.Float, dist *payload.Object_Distance) {
 		rl := len(res.GetResults()) // result length
-		fmax := big.NewFloat(math.Float64frombits(atomic.LoadUint64(&maxDist)))
-		distance := big.NewFloat(float64(dist.GetDistance()))
+		fmax, ok := maxDist.Load().(*big.Float)
+		if !ok {
+			return
+		}
 		if rl >= num && distance.Cmp(fmax) >= 0 {
 			return
 		}
@@ -467,9 +476,9 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 			res.Results = res.GetResults()[:num]
 			rl = len(res.GetResults())
 		}
-		if distEnd := float64(res.GetResults()[rl-1].GetDistance()); rl >= num &&
-			big.NewFloat(distEnd).Cmp(fmax) < 0 {
-			atomic.StoreUint64(&maxDist, math.Float64bits(distEnd))
+		if distEnd := big.NewFloat(float64(res.GetResults()[rl-1].GetDistance())); rl >= num &&
+			distEnd.Cmp(fmax) < 0 {
+			maxDist.Store(distEnd)
 		}
 	}
 	for {
@@ -479,7 +488,7 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 			close(dch)
 			// range over channel patter to check remaining channel's data for vald's search accuracy
 			for dist := range dch {
-				add(dist)
+				add(dist.distance, dist.raw)
 			}
 			if num != 0 && len(res.GetResults()) > num {
 				res.Results = res.GetResults()[:num]
@@ -524,7 +533,7 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 			res.RequestId = cfg.GetRequestId()
 			return res, nil
 		case dist := <-dch:
-			add(dist)
+			add(dist.distance, dist.raw)
 		}
 	}
 }
