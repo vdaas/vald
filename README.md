@@ -162,75 +162,18 @@ make init
   <tr>
     <td>Gateways</td>
     <td>
-      <a href="https://hub.docker.com/r/vdaas/vald-gateway">
-        <img src="https://img.shields.io/docker/pulls/vdaas/vald-gateway?label=vdaas%2Fvald-gateway&logo=docker&style=flat-square"/>
-      </a><br/>
-      <a href="https://github.com/orgs/vdaas/packages/container/package/vald/vald-gateway">
-        <img src="https://img.shields.io/badge/ghcr.io-vdaas%2Fvald%2Fvald--gateway-brightgreen?logo=docker&style=flat-square"/>
-      </a><br/>
-      <a href="https://hub.docker.com/r/vdaas/vald-backup-gateway">
-        <img src="https://img.shields.io/docker/pulls/vdaas/vald-backup-gateway?label=vdaas%2Fvald-backup-gateway&logo=docker&style=flat-square"/>
-      </a><br/>
-      <a href="https://github.com/orgs/vdaas/packages/container/package/vald/vald-backup-gateway">
-        <img src="https://img.shields.io/badge/ghcr.io-vdaas%2Fvald%2Fvald--backup--gateway-brightgreen?logo=docker&style=flat-square"/>
-      </a><br/>
       <a href="https://hub.docker.com/r/vdaas/vald-lb-gateway">
         <img src="https://img.shields.io/docker/pulls/vdaas/vald-lb-gateway?label=vdaas%2Fvald-lb-gateway&logo=docker&style=flat-square"/>
       </a><br/>
       <a href="https://github.com/orgs/vdaas/packages/container/package/vald/vald-lb-gateway">
         <img src="https://img.shields.io/badge/ghcr.io-vdaas%2Fvald%2Fvald--lb--gateway-brightgreen?logo=docker&style=flat-square"/>
       </a><br/>
-      <a href="https://hub.docker.com/r/vdaas/vald-meta-gateway">
-        <img src="https://img.shields.io/docker/pulls/vdaas/vald-meta-gateway?label=vdaas%2Fvald-meta-gateway&logo=docker&style=flat-square"/>
+      <a href="https://hub.docker.com/r/vdaas/vald-filter-gateway">
+        <img src="https://img.shields.io/docker/pulls/vdaas/vald-filter-gateway?label=vdaas%2Fvald-filter-gateway&logo=docker&style=flat-square"/>
       </a><br/>
-      <a href="https://github.com/orgs/vdaas/packages/container/package/vald/vald-meta-gateway">
-        <img src="https://img.shields.io/badge/ghcr.io-vdaas%2Fvald%2Fvald--meta--gateway-brightgreen?logo=docker&style=flat-square"/>
-      </a>
-    </td>
-  </tr>
-  <tr>
-    <td>Backup Managers</td>
-    <td>
-      <a href="https://hub.docker.com/r/vdaas/vald-manager-backup-mysql">
-        <img src="https://img.shields.io/docker/pulls/vdaas/vald-manager-backup-mysql?label=vdaas%2Fvald-manager-backup-mysql&logo=docker&style=flat-square"/>
+      <a href="https://github.com/orgs/vdaas/packages/container/package/vald/vald-filter-gateway">
+        <img src="https://img.shields.io/badge/ghcr.io-vdaas%2Fvald%2Fvald--filter--gateway-brightgreen?logo=docker&style=flat-square"/>
       </a><br/>
-      <a href="https://github.com/orgs/vdaas/packages/container/package/vald/vald-manager-backup-mysql">
-        <img src="https://img.shields.io/badge/ghcr.io-vdaas%2Fvald%2Fvald--manager--backup--mysql-brightgreen?logo=docker&style=flat-square"/>
-      </a><br/>
-      <a href="https://hub.docker.com/r/vdaas/vald-manager-backup-cassandra">
-        <img src="https://img.shields.io/docker/pulls/vdaas/vald-manager-backup-cassandra?label=vdaas%2Fvald-manager-backup-cassandra&logo=docker&style=flat-square"/>
-      </a><br/>
-      <a href="https://github.com/orgs/vdaas/packages/container/package/vald/vald-manager-backup-cassandra">
-        <img src="https://img.shields.io/badge/ghcr.io-vdaas%2Fvald%2Fvald--manager--backup--cassandra-brightgreen?logo=docker&style=flat-square"/>
-      </a>
-    </td>
-  </tr>
-  <tr>
-    <td>Compressor</td>
-    <td>
-      <a href="https://hub.docker.com/r/vdaas/vald-manager-compressor">
-        <img src="https://img.shields.io/docker/pulls/vdaas/vald-manager-compressor?label=vdaas%2Fvald-manager-compressor&logo=docker&style=flat-square"/>
-      </a><br/>
-      <a href="https://github.com/orgs/vdaas/packages/container/package/vald/vald-manager-compressor">
-        <img src="https://img.shields.io/badge/ghcr.io-vdaas%2Fvald%2Fvald--manager--compressor-brightgreen?logo=docker&style=flat-square"/>
-      </a>
-    </td>
-  </tr>
-  <tr>
-    <td>Metas</td>
-    <td>
-      <a href="https://hub.docker.com/r/vdaas/vald-meta-redis">
-        <img src="https://img.shields.io/docker/pulls/vdaas/vald-meta-redis?label=vdaas%2Fvald-meta-redis&logo=docker&style=flat-square"/>
-      </a><br/>
-      <a href="https://github.com/orgs/vdaas/packages/container/package/vald/vald-meta-redis">
-        <img src="https://img.shields.io/badge/ghcr.io-vdaas%2Fvald%2Fvald--meta--redis-brightgreen?logo=docker&style=flat-square"/>
-      </a><br/>
-      <a href="https://hub.docker.com/r/vdaas/vald-meta-cassandra">
-        <img src="https://img.shields.io/docker/pulls/vdaas/vald-meta-cassandra?label=vdaas%2Fvald-meta-cassandra&logo=docker&style=flat-square"/>
-      </a><br/>
-      <a href="https://github.com/orgs/vdaas/packages/container/package/vald/vald-meta-cassandra">
-        <img src="https://img.shields.io/badge/ghcr.io-vdaas%2Fvald%2Fvald--meta--cassandra-brightgreen?logo=docker&style=flat-square"/>
-      </a>
     </td>
   </tr>
   <tr>
