@@ -12,7 +12,6 @@ replace (
 	github.com/Azure/go-autorest/autorest => github.com/Azure/go-autorest/autorest master
 	github.com/Azure/go-autorest/autorest/adal => github.com/Azure/go-autorest/autorest/adal master
 	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go latest
-	github.com/boltdb/bolt => github.com/boltdb/bolt v1.3.1
 	github.com/chzyer/logex => github.com/chzyer/logex master
 	github.com/coreos/etcd =>  go.etcd.io/etcd latest
 	github.com/docker/docker => github.com/moby/moby latest

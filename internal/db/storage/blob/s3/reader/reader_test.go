@@ -183,8 +183,8 @@ func Test_reader_Open(t *testing.T) {
 				},
 				afterFunc: func(_ args, t *testing.T) {
 					t.Helper()
-					if err := eg.Wait(); !errors.Is(err, context.Canceled) {
-						t.Errorf("want: %v, but got: %v", context.Canceled, err)
+					if err := eg.Wait(); err != nil {
+						t.Errorf("want: %v, but got: %v", nil, err)
 					}
 				},
 			}

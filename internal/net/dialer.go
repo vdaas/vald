@@ -27,7 +27,6 @@ import (
 	"time"
 
 	"github.com/vdaas/vald/internal/cache"
-	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/observability/trace"
@@ -62,7 +61,6 @@ type dialer struct {
 	addrs                 sync.Map
 	der                   *net.Dialer
 	dialer                func(ctx context.Context, network, addr string) (Conn, error)
-	eg                    errgroup.Group
 }
 
 type addrInfo struct {
@@ -297,10 +295,6 @@ func (d *dialer) tlsHandshake(ctx context.Context, conn Conn, addr string) (*tls
 		}
 	}
 	tconn := tls.Client(conn, d.tlsConfig)
-	ech := make(chan error)
-	if d.eg == nil {
-		d.eg = errgroup.Get()
-	}
 	var tctx context.Context
 	if d.der.Timeout > 0 {
 		var cancel context.CancelFunc
@@ -309,25 +303,7 @@ func (d *dialer) tlsHandshake(ctx context.Context, conn Conn, addr string) (*tls
 	} else {
 		tctx = ctx
 	}
-	d.eg.Go(safety.RecoverFunc(func() error {
-		defer close(ech)
-		select {
-		case <-tctx.Done():
-		case ech <- tconn.Handshake(): // wait for tls handshake connection
-		}
-		return nil
-	}))
-	select {
-	case <-tctx.Done():
-		err = tctx.Err() // if Handshake timeout we should cancel rawconnection
-	case err = <-ech:
-		if err != nil {
-			terr := tctx.Err()
-			if terr != nil {
-				err = terr
-			}
-		}
-	}
+	err = tconn.HandshakeContext(tctx)
 	if err != nil {
 		defer func(conn Conn) {
 			if conn != nil {

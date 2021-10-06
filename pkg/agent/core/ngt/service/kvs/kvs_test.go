@@ -20,6 +20,7 @@ import (
 	"context"
 	"math"
 	"reflect"
+	"runtime"
 	"sync"
 	"sync/atomic"
 	"testing"
@@ -61,10 +62,11 @@ func TestNew(t *testing.T) {
 				name: "return the bidi struct",
 				want: want{
 					want: &bidi{
-						l:  0,
-						ou: wantOu,
-						uo: wantUo,
-						eg: errgroup.Get(),
+						concurrency: runtime.GOMAXPROCS(-1) * 10,
+						l:           0,
+						ou:          wantOu,
+						uo:          wantUo,
+						eg:          errgroup.Get(),
 					},
 				},
 			}

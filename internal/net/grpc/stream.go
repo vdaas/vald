@@ -167,7 +167,7 @@ func BidirectionalStreamClient(stream ClientStream,
 			default:
 				res := newData()
 				err = stream.RecvMsg(res)
-				if err == io.EOF {
+				if err == io.EOF || errors.Is(err, io.EOF) {
 					cancel()
 					return nil
 				}

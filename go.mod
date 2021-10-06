@@ -4,18 +4,17 @@ go 1.17
 
 replace (
 	cloud.google.com/go => cloud.google.com/go v0.97.0
-	cloud.google.com/go/monitoring => cloud.google.com/go/monitoring v1.0.1-0.20211002205228-1a0720f2f33b
-	cloud.google.com/go/profiler => cloud.google.com/go/profiler v0.1.1-0.20211002205228-1a0720f2f33b
-	cloud.google.com/go/storage => cloud.google.com/go/storage v1.17.1-0.20211002205228-1a0720f2f33b
-	cloud.google.com/go/trace => cloud.google.com/go/trace v1.0.1-0.20211002205228-1a0720f2f33b
+	cloud.google.com/go/monitoring => cloud.google.com/go/monitoring v1.0.1-0.20211005223612-0e102a385dc6
+	cloud.google.com/go/profiler => cloud.google.com/go/profiler v0.1.1-0.20211005223612-0e102a385dc6
+	cloud.google.com/go/storage => cloud.google.com/go/storage v1.17.1-0.20211005223612-0e102a385dc6
+	cloud.google.com/go/trace => cloud.google.com/go/trace v1.0.1-0.20211005223612-0e102a385dc6
 	github.com/Azure/go-autorest => github.com/Azure/go-autorest v14.2.1-0.20210910151046-492f94bc3a56+incompatible
 	github.com/Azure/go-autorest/autorest => github.com/Azure/go-autorest/autorest v0.11.21
 	github.com/Azure/go-autorest/autorest/adal => github.com/Azure/go-autorest/autorest/adal v0.9.17-0.20210910151046-492f94bc3a56
-	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.40.54
-	github.com/boltdb/bolt => github.com/boltdb/bolt v1.3.1
+	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.40.56
 	github.com/chzyer/logex => github.com/chzyer/logex v1.1.11-0.20170329064859-445be9e134b2
-	github.com/coreos/etcd => go.etcd.io/etcd v3.3.25+incompatible
-	github.com/docker/docker => github.com/moby/moby v20.10.8+incompatible
+	github.com/coreos/etcd => go.etcd.io/etcd v3.3.26+incompatible
+	github.com/docker/docker => github.com/moby/moby v20.10.9+incompatible
 	github.com/envoyproxy/protoc-gen-validate => github.com/envoyproxy/protoc-gen-validate v0.6.1
 	github.com/go-sql-driver/mysql => github.com/go-sql-driver/mysql v1.6.0
 	github.com/gocql/gocql => github.com/gocql/gocql v0.0.0-20210817081954-bc256bbb90de
@@ -31,7 +30,7 @@ replace (
 	github.com/kpango/glg => github.com/kpango/glg v1.6.4
 	github.com/tensorflow/tensorflow => github.com/tensorflow/tensorflow v2.1.2+incompatible
 	github.com/zeebo/xxh3 => github.com/zeebo/xxh3 v0.13.0
-	go.uber.org/goleak => go.uber.org/goleak v1.1.11
+	go.uber.org/goleak => go.uber.org/goleak v1.1.12
 	go.uber.org/multierr => go.uber.org/multierr v1.7.0
 	go.uber.org/zap => go.uber.org/zap v1.19.1
 	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20210921155107-089bfa567519
@@ -40,10 +39,10 @@ replace (
 	golang.org/x/lint => golang.org/x/lint v0.0.0-20210508222113-6edffad5e616
 	golang.org/x/mobile => golang.org/x/mobile v0.0.0-20210924032853-1c027f395ef7
 	golang.org/x/mod => golang.org/x/mod v0.5.1
-	golang.org/x/net => golang.org/x/net v0.0.0-20210929193557-e81a3d93ecf6
-	golang.org/x/oauth2 => golang.org/x/oauth2 v0.0.0-20210819190943-2bc19b11175f
+	golang.org/x/net => golang.org/x/net v0.0.0-20211005215030-d2e5035098b3
+	golang.org/x/oauth2 => golang.org/x/oauth2 v0.0.0-20211005180243-6b3c2da341f1
 	golang.org/x/sync => golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
-	golang.org/x/sys => golang.org/x/sys v0.0.0-20211003122950-b1ebd4e1001c
+	golang.org/x/sys => golang.org/x/sys v0.0.0-20211004093028-2c5d950f24ef
 	golang.org/x/term => golang.org/x/term v0.0.0-20210927222741-03fcf44c2211
 	golang.org/x/text => golang.org/x/text v0.3.7
 	golang.org/x/time => golang.org/x/time v0.0.0-20210723032227-1f47c861a9ac
@@ -79,14 +78,14 @@ replace (
 require (
 	cloud.google.com/go/profiler v0.0.0-00010101000000-000000000000
 	cloud.google.com/go/storage v1.16.1
-	code.cloudfoundry.org/bytefmt v0.0.0-20210608160410-67692ebc98de
+	code.cloudfoundry.org/bytefmt v0.0.0-20211005130812-5bb3c17173e5
 	contrib.go.opencensus.io/exporter/jaeger v0.2.1
 	contrib.go.opencensus.io/exporter/prometheus v0.4.0
 	contrib.go.opencensus.io/exporter/stackdriver v0.13.8
 	github.com/aws/aws-sdk-go v1.40.34
 	github.com/envoyproxy/protoc-gen-validate v0.1.0
 	github.com/fsnotify/fsnotify v1.5.1
-	github.com/go-redis/redis/v8 v8.11.3
+	github.com/go-redis/redis/v8 v8.11.4
 	github.com/go-sql-driver/mysql v1.6.0
 	github.com/gocql/gocql v0.0.0-20200131111108-92af2e088537
 	github.com/gocraft/dbr/v2 v2.7.2
@@ -107,8 +106,6 @@ require (
 	github.com/quasilyte/go-ruleguard/dsl v0.3.6
 	github.com/scylladb/gocqlx v1.5.0
 	github.com/tensorflow/tensorflow v0.0.0-00010101000000-000000000000
-	github.com/yahoojapan/gongt v0.0.0-20190517050727-966dcc7aa5e8
-	github.com/yahoojapan/ngtd v0.0.0-20200424071638-9872bbae3700
 	github.com/zeebo/xxh3 v0.12.0
 	go.opencensus.io v0.23.0
 	go.uber.org/automaxprocs v1.4.0
@@ -123,7 +120,7 @@ require (
 	gonum.org/v1/hdf5 v0.0.0-20210714002203-8c5d23bc6946
 	gonum.org/v1/plot v0.10.0
 	google.golang.org/api v0.58.0
-	google.golang.org/genproto v0.0.0-20211001223012-bfb93cce50d9
+	google.golang.org/genproto v0.0.0-20211005153810-c76a74d43a8e
 	google.golang.org/grpc v1.40.0
 	google.golang.org/protobuf v1.27.1
 	gopkg.in/yaml.v2 v2.4.0
@@ -137,16 +134,15 @@ require (
 )
 
 require (
-	cloud.google.com/go v0.94.1 // indirect
+	cloud.google.com/go v0.97.0 // indirect
 	cloud.google.com/go/monitoring v0.1.0 // indirect
 	cloud.google.com/go/trace v0.1.0 // indirect
 	github.com/PuerkitoBio/purell v1.1.1 // indirect
 	github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578 // indirect
 	github.com/ajstarks/svgo v0.0.0-20210923152817-c3b6e2f0c527 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
-	github.com/boltdb/bolt v1.3.1 // indirect
 	github.com/census-instrumentation/opencensus-proto v0.3.0 // indirect
-	github.com/cespare/xxhash/v2 v2.1.1 // indirect
+	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/evanphx/json-patch v4.11.0+incompatible // indirect
@@ -161,7 +157,6 @@ require (
 	github.com/go-openapi/jsonreference v0.19.5 // indirect
 	github.com/go-openapi/swag v0.19.14 // indirect
 	github.com/go-pdf/fpdf v0.5.0 // indirect
-	github.com/go-redis/redis v6.15.2+incompatible // indirect
 	github.com/go-toolsmith/astequal v1.0.0 // indirect
 	github.com/go-toolsmith/strparse v1.0.0 // indirect
 	github.com/goccy/go-json v0.7.4 // indirect
@@ -203,7 +198,6 @@ require (
 	github.com/spf13/cobra v1.1.3 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/stretchr/testify v1.7.0 // indirect
-	github.com/syndtr/goleveldb v1.0.0 // indirect
 	github.com/uber/jaeger-client-go v2.25.0+incompatible // indirect
 	github.com/xlab/treeprint v0.0.0-20181112141820-a009c3971eca // indirect
 	go.starlark.net v0.0.0-20200306205701-8dd3e2ee1dd5 // indirect

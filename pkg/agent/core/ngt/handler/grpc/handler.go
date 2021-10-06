@@ -1339,10 +1339,12 @@ func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequ
 			ures, ires *payload.Object_Locations
 			errs       error
 			mu         sync.Mutex
+			wg         sync.WaitGroup
 		)
-		eg, ectx := errgroup.New(ctx)
-		eg.Go(safety.RecoverFunc(func() (err error) {
-			ures, err = s.MultiUpdate(ectx, &payload.Update_MultiRequest{
+		wg.Add(1)
+		s.eg.Go(safety.RecoverFunc(func() (err error) {
+			defer wg.Done()
+			ures, err = s.MultiUpdate(ctx, &payload.Update_MultiRequest{
 				Requests: updateReqs,
 			})
 			if err != nil {
@@ -1356,8 +1358,10 @@ func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequ
 			}
 			return nil
 		}))
-		eg.Go(safety.RecoverFunc(func() (err error) {
-			ires, err = s.MultiInsert(ectx, &payload.Insert_MultiRequest{
+		wg.Add(1)
+		s.eg.Go(safety.RecoverFunc(func() (err error) {
+			defer wg.Done()
+			ires, err = s.MultiInsert(ctx, &payload.Insert_MultiRequest{
 				Requests: insertReqs,
 			})
 			if err != nil {
@@ -1371,14 +1375,7 @@ func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequ
 			}
 			return nil
 		}))
-		err = eg.Wait()
-		if err != nil {
-			if errs == nil {
-				errs = err
-			} else {
-				errs = errors.Wrap(errs, err.Error())
-			}
-		}
+		wg.Wait()
 
 		if errs == nil {
 			var locs []*payload.Object_Location
@@ -1693,7 +1690,7 @@ func (s *server) CreateIndex(ctx context.Context, c *payload.Control_CreateIndex
 	res = new(payload.Empty)
 	err = s.ngt.CreateIndex(ctx, c.GetPoolSize())
 	if err != nil {
-		if err == errors.ErrUncommittedIndexNotFound {
+		if errors.Is(err, errors.ErrUncommittedIndexNotFound) {
 			err = status.WrapWithFailedPrecondition(fmt.Sprintf("CreateIndex API failed to create indexes pool_size = %d", c.GetPoolSize()), err,
 				&errdetails.RequestInfo{
 					ServingData: errdetails.Serialize(c),
@@ -1766,7 +1763,7 @@ func (s *server) CreateAndSaveIndex(ctx context.Context, c *payload.Control_Crea
 	res = new(payload.Empty)
 	err = s.ngt.CreateAndSaveIndex(ctx, c.GetPoolSize())
 	if err != nil {
-		if err == errors.ErrUncommittedIndexNotFound {
+		if errors.Is(err, errors.ErrUncommittedIndexNotFound) {
 			err = status.WrapWithFailedPrecondition(fmt.Sprintf("CreateAndSaveIndex API failed to create indexes pool_size = %d", c.GetPoolSize()), err,
 				&errdetails.RequestInfo{
 					ServingData: errdetails.Serialize(c),
