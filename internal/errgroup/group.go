@@ -34,7 +34,7 @@ type Group interface {
 
 type group struct {
 	egctx  context.Context
-	cancel func()
+	cancel context.CancelFunc
 
 	wg sync.WaitGroup
 
@@ -115,20 +115,22 @@ func (g *group) Go(f func() error) {
 		go func() {
 			defer g.wg.Done()
 			limited := g.enableLimitation.Load().(bool)
+			var err error
 			if limited {
 				select {
 				case <-g.egctx.Done():
 					return
 				case g.limitation <- struct{}{}:
 				}
-			}
-			if err := f(); err != nil {
-				if limited {
-					select {
-					case <-g.limitation:
-					case <-g.egctx.Done():
-					}
+				err = f()
+				select {
+				case <-g.limitation:
+				case <-g.egctx.Done():
 				}
+			} else {
+				err = f()
+			}
+			if err != nil && !errors.Is(err, context.Canceled) {
 				runtime.Gosched()
 				g.mu.RLock()
 				_, ok := g.emap[err.Error()]
@@ -141,12 +143,6 @@ func (g *group) Go(f func() error) {
 				}
 				g.doCancel()
 				return
-			}
-			if limited {
-				select {
-				case <-g.limitation:
-				case <-g.egctx.Done():
-				}
 			}
 		}()
 	}

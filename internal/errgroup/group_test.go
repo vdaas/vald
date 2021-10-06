@@ -423,7 +423,7 @@ func Test_group_Go(t *testing.T) {
 	}
 	type fields struct {
 		egctx            context.Context
-		cancel           func()
+		cancel           context.CancelFunc
 		limitation       chan struct{}
 		enableLimitation atomic.Value
 		emap             map[string]struct{}
@@ -570,7 +570,7 @@ func Test_group_Go(t *testing.T) {
 
 func Test_group_doCancel(t *testing.T) {
 	type fields struct {
-		cancel func()
+		cancel context.CancelFunc
 	}
 	type test struct {
 		name       string
@@ -775,7 +775,7 @@ func Test_group_Wait(t *testing.T) {
 func Test_group_closeLimitation(t *testing.T) {
 	type fields struct {
 		egctx            context.Context
-		cancel           func()
+		cancel           context.CancelFunc
 		wg               sync.WaitGroup
 		limitation       chan struct{}
 		enableLimitation atomic.Value
