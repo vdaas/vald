@@ -222,7 +222,7 @@ data:
       dimension: 784
       distance_type: l2
       enable_in_memory_mode: true
-      enable_proactive_gc: true
+      enable_proactive_gc: false
       index_path: ""
       initial_delay_max_duration: 3m
       kvsdb:

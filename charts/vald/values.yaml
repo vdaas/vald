@@ -1779,7 +1779,7 @@ agent:
     load_index_timeout_factor: 1ms
     # @schema {"name": "agent.ngt.enable_proactive_gc", "type": "boolean"}
     # agent.ngt.enable_proactive_gc -- enable proactive GC call for reducing heap memory allocation
-    enable_proactive_gc: true
+    enable_proactive_gc: false
     # @schema {"name": "agent.ngt.vqueue", "type": "object"}
     vqueue:
       # @schema {"name": "agent.ngt.vqueue.insert_buffer_pool_size", "type": "integer"}
