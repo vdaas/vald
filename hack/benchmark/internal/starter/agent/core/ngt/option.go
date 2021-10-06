@@ -18,6 +18,7 @@
 package ngt
 
 import (
+	"github.com/vdaas/vald/internal/client/v1/client/vald"
 	iconfig "github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/config"
 )
@@ -63,6 +64,13 @@ var defaultOptions = []Option{
 			CreationEdgeSize:   20,
 			SearchEdgeSize:     10,
 			EnableInMemoryMode: true,
+			KVSDB: &iconfig.KVSDB{
+				Concurrency: 1,
+			},
+			VQueue: &iconfig.VQueue{
+				InsertBufferPoolSize: 10000,
+				DeleteBufferPoolSize: 10000,
+			},
 		},
 	}),
 }
@@ -102,5 +110,11 @@ func WithObjectType(otype string) Option {
 				s.cfg.NGT.ObjectType = otype
 			}
 		}
+	}
+}
+
+func WithClient(c vald.Client) Option {
+	return func(s *server) {
+		s.client = c
 	}
 }

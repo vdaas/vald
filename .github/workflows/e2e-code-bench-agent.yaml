@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-name: "Run e2e bench: bench-agent"
+name: "Run e2e code bench: bench-agent"
 on:
   push:
     branches:
@@ -53,7 +53,11 @@ jobs:
         uses: actions/checkout@v2
       - name: Run grpc-sequential
         run: |
-          make bench/agent/sequential/grpc
+          make hack/benchmark/assets/dataset/${DATASET}
+          DATASET_ARGS=${DATASET_ARGS} make bench/agent/sequential/grpc
+        env:
+          DATASET: fashion-mnist-784-euclidean.hdf5
+          DATASET_ARGS: fashion-mnist
       - name: Upload artifact
         uses: actions/upload-artifact@v2
         with:
@@ -76,7 +80,11 @@ jobs:
         uses: actions/checkout@v2
       - name: Run grpc-stream
         run: |
-          make bench/agent/stream
+          make hack/benchmark/assets/dataset/${DATASET}
+          DATASET_ARGS=${DATASET_ARGS} make bench/agent/stream
+        env:
+          DATASET: fashion-mnist-784-euclidean.hdf5
+          DATASET_ARGS: fashion-mnist
       - name: Upload artifact
         uses: actions/upload-artifact@v2
         with:
@@ -88,26 +96,3 @@ jobs:
             ./pprof/agent/stream.trace.out
             ./pprof/agent/stream.cpu.svg
             ./pprof/agent/stream.mem.svg
-
-  rest:
-    name: rest
-    runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/vdaas/vald/vald-ci-container:nightly
-    steps:
-      - name: Check out code.
-        uses: actions/checkout@v2
-      - name: Run rest
-        run: |
-          make bench/agent/sequential/rest
-      - name: Upload artifact
-        uses: actions/upload-artifact@v2
-        with:
-          name: agent-sequential-rest
-          path: |
-            ./pprof/agent/sequential/rest.bin
-            ./pprof/agent/sequential/rest.cpu.out
-            ./pprof/agent/sequential/rest.mem.out
-            ./pprof/agent/sequential/rest.trace.out
-            ./pprof/agent/sequential/rest.cpu.svg
-            ./pprof/agent/sequential/rest.mem.svg
