@@ -28,12 +28,11 @@ func Data(name string) func(testing.TB) Dataset {
 		tb.Helper()
 		fn := assets.Data(name)
 		if fn == nil {
-			return nil
+			tb.Fatalf("not supported dataset: %s", name)
 		}
 		dataset, err := fn()
 		if err != nil {
-			tb.Error(err)
-			return nil
+			tb.Fatalf("failed to load dataset: %s, err: %v", name, err)
 		}
 		return dataset
 	}
