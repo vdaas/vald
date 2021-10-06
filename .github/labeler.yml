@@ -37,46 +37,12 @@ area/discoverer:
   - cmd/discoverer/**/*
   - pkg/discoverer/**/*
 
-area/filter/egress:
-  - apis/proto/filter/egress/**/*
-  - apis/grpc/filter/egress/**/*
-  - cmd/filter/egress/**/*
-  - pkg/filter/egress/**/*
-
-area/filter/ingress:
-  - apis/proto/filter/ingress/**/*
-  - apis/grpc/filter/ingress/**/*
-  - cmd/filter/ingress/**/*
-  - pkg/filter/ingress/**/*
-
-area/gateway:
-  - apis/proto/v1/gateway/vald/**/*
-  - apis/grpc/v1/gateway/vald/**/*
-  - apis/proto/gateway/vald/**/*
-  - apis/grpc/gateway/vald/**/*
-  - cmd/gateway/vald/**/*
-  - pkg/gateway/vald/**/*
-
 area/gateway/lb:
   - apis/proto/v1/payload/**/*
   - apis/proto/v1/vald/**/*
   - apis/grpc/v1/vald/**/*
   - cmd/gateway/lb/**/*
   - pkg/gateway/lb/**/*
-
-area/gateway/meta:
-  - apis/proto/v1/payload/**/*
-  - apis/proto/v1/vald/**/*
-  - apis/grpc/v1/vald/**/*
-  - cmd/gateway/meta/**/*
-  - pkg/gateway/meta/**/*
-
-area/gateway/backup:
-  - apis/proto/v1/payload/**/*
-  - apis/proto/v1/vald/**/*
-  - apis/grpc/v1/vald/**/*
-  - cmd/gateway/backup/**/*
-  - pkg/gateway/backup/**/*
 
 area/gateway/filter:
   - apis/proto/v1/payload/**/*
@@ -85,29 +51,12 @@ area/gateway/filter:
   - cmd/gateway/filter/**/*
   - pkg/gateway/filter/**/*
 
-area/manager/backup:
-  - apis/proto/manager/backup/**/*
-  - apis/grpc/manager/backup/**/*
-  - cmd/manager/backup/**/*
-  - pkg/manager/backup/**/*
-
 area/manager/index:
-  - apis/proto/manager/index/**/*
-  - apis/grpc/manager/index/**/*
+  - apis/proto/v1/payload/**/*
+  - apis/proto/v1/manager/index/**/*
+  - apis/grpc/v1/manager/index/**/*
   - cmd/manager/index/**/*
   - pkg/manager/index/**/*
-
-area/manager/replication:
-  - apis/proto/manager/replication/**/*
-  - apis/grpc/manager/replication/**/*
-  - cmd/manager/replication/**/*
-  - pkg/manager/replication/**/*
-
-area/meta:
-  - apis/proto/meta/**/*
-  - apis/grpc/meta/**/*
-  - cmd/meta/**/*
-  - pkg/meta/**/*
 
 area/tools/cli/loadtest:
   - apis/proto/agent/core/**/*
