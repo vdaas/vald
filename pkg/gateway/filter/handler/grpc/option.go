@@ -18,6 +18,8 @@
 package grpc
 
 import (
+	"runtime"
+
 	"github.com/vdaas/vald/internal/client/v1/client/filter/egress"
 	"github.com/vdaas/vald/internal/client/v1/client/filter/ingress"
 	"github.com/vdaas/vald/internal/client/v1/client/vald"
@@ -28,7 +30,7 @@ type Option func(*server)
 
 var defaultOptions = []Option{
 	WithErrGroup(errgroup.Get()),
-	WithStreamConcurrency(20),
+	WithStreamConcurrency(runtime.GOMAXPROCS(-1) * 10),
 }
 
 func WithIngressFilterClient(c ingress.Client) Option {
