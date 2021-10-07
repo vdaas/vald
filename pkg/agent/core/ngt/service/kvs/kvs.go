@@ -119,15 +119,12 @@ func (b *bidi) Delete(key string) (val uint32, ok bool) {
 // DeleteInverse deletes the key and the value from the bidi by the given val and returns the key and true.
 // If the key for the val does not exist, it returns nil and false.
 func (b *bidi) DeleteInverse(val uint32) (key string, ok bool) {
-	idx := val & mask
-	key, ok = b.ou[idx].Load(val)
-	if !ok {
-		return "", false
+	key, ok = b.ou[val&mask].LoadAndDelete(val)
+	if ok {
+		b.uo[xxh3.HashString(key)&mask].Delete(key)
+		atomic.AddUint64(&b.l, ^uint64(0))
 	}
-	b.uo[xxh3.HashString(key)&mask].Delete(key)
-	b.ou[val&mask].Delete(val)
-	atomic.AddUint64(&b.l, ^uint64(0))
-	return key, true
+	return key, ok
 }
 
 // Range retrieves all set keys and values and calls the callback function f.

@@ -13,7 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-
 package kvs
 
 import (
@@ -71,13 +70,11 @@ func (e *entryOu) load() (value string, ok bool) {
 	return *(*string)(p), true
 }
 
-// Store sets the value for a key.
 func (m *ou) Store(key uint32, value string) {
 	read, _ := m.read.Load().(readOnlyOu)
 	if e, ok := read.m[key]; ok && e.tryStore(&value) {
 		return
 	}
-
 	m.mu.Lock()
 	read, _ = m.read.Load().(readOnlyOu)
 	if e, ok := read.m[key]; ok {
@@ -117,7 +114,60 @@ func (e *entryOu) storeLocked(i *string) {
 	atomic.StorePointer(&e.p, unsafe.Pointer(i))
 }
 
-func (m *ou) Delete(key uint32) {
+func (m *ou) LoadOrStore(key uint32, value string) (actual string, loaded bool) {
+	read, _ := m.read.Load().(readOnlyOu)
+	if e, ok := read.m[key]; ok {
+		actual, loaded, ok := e.tryLoadOrStore(value)
+		if ok {
+			return actual, loaded
+		}
+	}
+	m.mu.Lock()
+	read, _ = m.read.Load().(readOnlyOu)
+	if e, ok := read.m[key]; ok {
+		if e.unexpungeLocked() {
+			m.dirty[key] = e
+		}
+		actual, loaded, _ = e.tryLoadOrStore(value)
+	} else if e, ok := m.dirty[key]; ok {
+		actual, loaded, _ = e.tryLoadOrStore(value)
+		m.missLocked()
+	} else {
+		if !read.amended {
+			m.dirtyLocked()
+			m.read.Store(readOnlyOu{m: read.m, amended: true})
+		}
+		m.dirty[key] = newEntryOu(value)
+		actual, loaded = value, false
+	}
+	m.mu.Unlock()
+	return actual, loaded
+}
+
+func (e *entryOu) tryLoadOrStore(i string) (actual string, loaded, ok bool) {
+	p := atomic.LoadPointer(&e.p)
+	if p == expungedOu {
+		return actual, false, false
+	}
+	if p != nil {
+		return *(*string)(p), true, true
+	}
+	ic := i
+	for {
+		if atomic.CompareAndSwapPointer(&e.p, nil, unsafe.Pointer(&ic)) {
+			return i, false, true
+		}
+		p = atomic.LoadPointer(&e.p)
+		if p == expungedOu {
+			return actual, false, false
+		}
+		if p != nil {
+			return *(*string)(p), true, true
+		}
+	}
+}
+
+func (m *ou) LoadAndDelete(key uint32) (value string, loaded bool) {
 	read, _ := m.read.Load().(readOnlyOu)
 	e, ok := read.m[key]
 	if !ok && read.amended {
@@ -125,23 +175,56 @@ func (m *ou) Delete(key uint32) {
 		read, _ = m.read.Load().(readOnlyOu)
 		e, ok = read.m[key]
 		if !ok && read.amended {
+			e, ok = m.dirty[key]
 			delete(m.dirty, key)
+			m.missLocked()
 		}
 		m.mu.Unlock()
 	}
 	if ok {
-		e.delete()
+		return e.delete()
 	}
+	return value, false
 }
 
-func (e *entryOu) delete() (hadValue bool) {
+func (m *ou) Delete(key uint32) {
+	m.LoadAndDelete(key)
+}
+
+func (e *entryOu) delete() (value string, ok bool) {
 	for {
 		p := atomic.LoadPointer(&e.p)
 		if p == nil || p == expungedOu {
-			return false
+			return value, false
 		}
 		if atomic.CompareAndSwapPointer(&e.p, p, nil) {
-			return true
+			return *(*string)(p), true
+		}
+	}
+}
+
+func (m *ou) Range(f func(key uint32, value string) bool) {
+	read, _ := m.read.Load().(readOnlyOu)
+	if read.amended {
+
+		m.mu.Lock()
+		read, _ = m.read.Load().(readOnlyOu)
+		if read.amended {
+			read = readOnlyOu{m: m.dirty}
+			m.read.Store(read)
+			m.dirty = nil
+			m.misses = 0
+		}
+		m.mu.Unlock()
+	}
+
+	for k, e := range read.m {
+		v, ok := e.load()
+		if !ok {
+			continue
+		}
+		if !f(k, v) {
+			break
 		}
 	}
 }

@@ -330,7 +330,7 @@ func (n *ngt) Search(vec []float32, size int, epsilon, radius float32) (result [
 
 	ebuf := n.GetErrorBuffer()
 	results := C.ngt_create_empty_results(ebuf)
-
+	// defer C.free(unsafe.Pointer(results))
 	defer C.ngt_destroy_results(results)
 	if results == nil {
 		return nil, n.newGoError(ebuf)
@@ -590,7 +590,9 @@ func (n *ngt) GetVector(id uint) ([]float32, error) {
 }
 
 func (n *ngt) newGoError(ebuf C.NGTError) (err error) {
-	msg := C.GoString(C.ngt_get_error_string(ebuf))
+	cstr := C.ngt_get_error_string(ebuf)
+	defer C.free(unsafe.Pointer(cstr))
+	msg := C.GoString(cstr)
 	if len(msg) == 0 {
 		n.PutErrorBuffer(ebuf)
 		return nil
