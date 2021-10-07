@@ -590,9 +590,7 @@ func (n *ngt) GetVector(id uint) ([]float32, error) {
 }
 
 func (n *ngt) newGoError(ebuf C.NGTError) (err error) {
-	cstr := C.ngt_get_error_string(ebuf)
-	defer C.free(unsafe.Pointer(cstr))
-	msg := C.GoString(cstr)
+	msg := C.GoString(C.ngt_get_error_string(ebuf))
 	if len(msg) == 0 {
 		n.PutErrorBuffer(ebuf)
 		return nil
