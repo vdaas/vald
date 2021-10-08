@@ -64,7 +64,7 @@ func New(opts ...Option) PodWatcher {
 func (r *reconciler) Reconcile(ctx context.Context, req reconcile.Request) (res reconcile.Result, err error) {
 	m := &metrics.PodMetricsList{}
 
-	lo := make([]client.ListOption, 2)
+	lo := make([]client.ListOption, 0)
 	if r.namespace != "" {
 		lo = append(lo, client.InNamespace(r.namespace))
 	}
