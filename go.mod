@@ -4,14 +4,14 @@ go 1.17
 
 replace (
 	cloud.google.com/go => cloud.google.com/go v0.97.0
-	cloud.google.com/go/monitoring => cloud.google.com/go/monitoring v1.0.1-0.20211005223612-0e102a385dc6
-	cloud.google.com/go/profiler => cloud.google.com/go/profiler v0.1.1-0.20211005223612-0e102a385dc6
-	cloud.google.com/go/storage => cloud.google.com/go/storage v1.17.1-0.20211005223612-0e102a385dc6
-	cloud.google.com/go/trace => cloud.google.com/go/trace v1.0.1-0.20211005223612-0e102a385dc6
+	cloud.google.com/go/monitoring => cloud.google.com/go/monitoring v1.0.1-0.20211007001514-de9e465bea8c
+	cloud.google.com/go/profiler => cloud.google.com/go/profiler v0.1.1-0.20211007001514-de9e465bea8c
+	cloud.google.com/go/storage => cloud.google.com/go/storage v1.17.1-0.20211007001514-de9e465bea8c
+	cloud.google.com/go/trace => cloud.google.com/go/trace v1.0.1-0.20211007001514-de9e465bea8c
 	github.com/Azure/go-autorest => github.com/Azure/go-autorest v14.2.1-0.20210910151046-492f94bc3a56+incompatible
 	github.com/Azure/go-autorest/autorest => github.com/Azure/go-autorest/autorest v0.11.21
 	github.com/Azure/go-autorest/autorest/adal => github.com/Azure/go-autorest/autorest/adal v0.9.17-0.20210910151046-492f94bc3a56
-	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.40.56
+	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.40.57
 	github.com/chzyer/logex => github.com/chzyer/logex v1.1.11-0.20170329064859-445be9e134b2
 	github.com/coreos/etcd => go.etcd.io/etcd v3.3.26+incompatible
 	github.com/docker/docker => github.com/moby/moby v20.10.9+incompatible
@@ -26,7 +26,7 @@ replace (
 	github.com/gophercloud/gophercloud => github.com/gophercloud/gophercloud v0.21.0
 	github.com/gorilla/websocket => github.com/gorilla/websocket v1.4.2
 	github.com/hailocab/go-hostpool => github.com/kpango/go-hostpool v0.0.0-20210303030322-aab80263dcd0
-	github.com/klauspost/compress => github.com/klauspost/compress v1.13.7-0.20210916161719-61a4f62ec419
+	github.com/klauspost/compress => github.com/klauspost/compress v1.13.7-0.20211006133717-98cd9e8bc058
 	github.com/kpango/glg => github.com/kpango/glg v1.6.4
 	github.com/tensorflow/tensorflow => github.com/tensorflow/tensorflow v2.1.2+incompatible
 	github.com/zeebo/xxh3 => github.com/zeebo/xxh3 v0.13.0
@@ -39,10 +39,10 @@ replace (
 	golang.org/x/lint => golang.org/x/lint v0.0.0-20210508222113-6edffad5e616
 	golang.org/x/mobile => golang.org/x/mobile v0.0.0-20210924032853-1c027f395ef7
 	golang.org/x/mod => golang.org/x/mod v0.5.1
-	golang.org/x/net => golang.org/x/net v0.0.0-20211005215030-d2e5035098b3
+	golang.org/x/net => golang.org/x/net v0.0.0-20211006190231-62292e806868
 	golang.org/x/oauth2 => golang.org/x/oauth2 v0.0.0-20211005180243-6b3c2da341f1
 	golang.org/x/sync => golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
-	golang.org/x/sys => golang.org/x/sys v0.0.0-20211004093028-2c5d950f24ef
+	golang.org/x/sys => golang.org/x/sys v0.0.0-20211007075335-d3039528d8ac
 	golang.org/x/term => golang.org/x/term v0.0.0-20210927222741-03fcf44c2211
 	golang.org/x/text => golang.org/x/text v0.3.7
 	golang.org/x/time => golang.org/x/time v0.0.0-20210723032227-1f47c861a9ac

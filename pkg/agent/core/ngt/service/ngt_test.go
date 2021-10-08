@@ -19,6 +19,7 @@ package service
 
 import (
 	"context"
+	"os"
 	"reflect"
 	"sync"
 	"sync/atomic"
@@ -29,11 +30,18 @@ import (
 	core "github.com/vdaas/vald/internal/core/algorithm/ngt"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/log/logger"
 	"github.com/vdaas/vald/internal/test/goleak"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/model"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/service/kvs"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/service/vqueue"
 )
+
+func TestMain(m *testing.M) {
+	log.Init(log.WithLoggerType(logger.NOP.String()))
+	os.Exit(m.Run())
+}
 
 func TestNew(t *testing.T) {
 	type args struct {

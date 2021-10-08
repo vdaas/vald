@@ -330,7 +330,7 @@ func (n *ngt) Search(vec []float32, size int, epsilon, radius float32) (result [
 
 	ebuf := n.GetErrorBuffer()
 	results := C.ngt_create_empty_results(ebuf)
-
+	// defer C.free(unsafe.Pointer(results))
 	defer C.ngt_destroy_results(results)
 	if results == nil {
 		return nil, n.newGoError(ebuf)

@@ -734,8 +734,8 @@ func (n *ngt) saveIndex(ctx context.Context) (err error) {
 			n.kvs.Range(ctx, func(key string, id uint32) bool {
 				mu.Lock()
 				m[key] = id
-				kvsLen++
 				mu.Unlock()
+				atomic.AddUint64(&kvsLen, 1)
 				return true
 			})
 			var f *os.File
@@ -764,6 +764,7 @@ func (n *ngt) saveIndex(ctx context.Context) (err error) {
 			if err != nil {
 				return err
 			}
+			m = make(map[string]uint32)
 		}
 		return nil
 	}))

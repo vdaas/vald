@@ -342,6 +342,7 @@ jobs:
           helm_extra_options: ${{ steps.specify_container_versions.outputs.HELM_EXTRA_OPTIONS }}
           values: .github/helm/values/values-agent-sidecar.yaml
           wait_for_selector: app=vald-agent-ngt
+          wait_for_timeout: 29m
       - name: Fetch golang version
         run: |
           GO_VERSION=`make version/go`

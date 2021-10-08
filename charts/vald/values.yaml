@@ -1792,7 +1792,7 @@ agent:
     kvsdb:
       # @schema {"name": "agent.ngt.kvsdb.concurrency", "type": "integer"}
       # agent.ngt.kvsdb.concurrency -- kvsdb processing concurrency
-      concurrency: 20
+      concurrency: 6
   # @schema {"name": "agent.sidecar", "type": "object"}
   sidecar:
     # @schema {"name": "agent.sidecar.enabled", "type": "boolean"}
