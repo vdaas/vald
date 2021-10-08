@@ -578,7 +578,10 @@ func (g *gRPCClient) do(ctx context.Context, p pool.Conn, addr string, enableBac
 	}
 	if err != nil {
 		if p.Len() <= 0 {
-			err = errors.Wrap(g.Disconnect(ctx, addr), err.Error())
+			derr := g.Disconnect(ctx, addr)
+			if derr != nil {
+				err = errors.Wrap(err, derr.Error())
+			}
 		}
 		return nil, errors.ErrRPCCallFailed(addr, err)
 	}
