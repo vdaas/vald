@@ -101,6 +101,7 @@ func New(opts ...Option) (dsc Discoverer, err error) {
 			mpod.WithOnErrorFunc(func(err error) {
 				log.Error("failed to reconcile:", err)
 			}),
+			mpod.WithNamespace(d.namespace),
 			mpod.WithOnReconcileFunc(func(podList map[string]mpod.Pod) {
 				log.Debugf("pod metrics reconciled\t%#v", podList)
 				for name, pods := range podList {
@@ -120,6 +121,7 @@ func New(opts ...Option) (dsc Discoverer, err error) {
 			pod.WithOnErrorFunc(func(err error) {
 				log.Error("failed to reconcile:", err)
 			}),
+			pod.WithNamespace(d.namespace),
 			pod.WithOnReconcileFunc(func(podList map[string][]pod.Pod) {
 				log.Debugf("pod resource reconciled\t%#v", podList)
 				for name, pods := range podList {

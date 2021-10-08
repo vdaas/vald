@@ -50,3 +50,10 @@ func WithOnReconcileFunc(f func(podList map[string]Pod)) Option {
 		return nil
 	}
 }
+
+func WithNamespace(ns string) Option {
+	return func(r *reconciler) error {
+		r.namespace = ns
+		return nil
+	}
+}

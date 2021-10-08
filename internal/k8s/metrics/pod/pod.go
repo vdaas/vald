@@ -39,6 +39,10 @@ type reconciler struct {
 	name        string
 	onError     func(err error)
 	onReconcile func(podList map[string]Pod)
+
+	// list options
+	namespace string
+	labels    map[string]string
 }
 
 type Pod struct {
@@ -61,8 +65,12 @@ func New(opts ...Option) PodWatcher {
 func (r *reconciler) Reconcile(ctx context.Context, req reconcile.Request) (res reconcile.Result, err error) {
 	m := &metrics.PodMetricsList{}
 
-	err = r.mgr.GetClient().List(ctx, m)
+	lo := make([]client.ListOption, 2)
+	if r.namespace != "" {
+		lo = append(lo, client.InNamespace(r.namespace))
+	}
 
+	err = r.mgr.GetClient().List(ctx, m, lo...)
 	if err != nil {
 		if r.onError != nil {
 			r.onError(err)

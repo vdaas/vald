@@ -39,9 +39,12 @@ type PodWatcher k8s.ResourceController
 type reconciler struct {
 	mgr         manager.Manager
 	name        string
-	namespace   string
 	onError     func(err error)
 	onReconcile func(podList map[string][]Pod)
+
+	// list options
+	namespace string
+	labels    map[string]string
 }
 
 type Pod struct {
@@ -68,8 +71,15 @@ func New(opts ...Option) PodWatcher {
 func (r *reconciler) Reconcile(ctx context.Context, req reconcile.Request) (res reconcile.Result, err error) {
 	ps := &corev1.PodList{}
 
-	err = r.mgr.GetClient().List(ctx, ps)
+	lo := make([]client.ListOption, 3)
+	if r.namespace != "" {
+		lo = append(lo, client.InNamespace(r.namespace))
+	}
+	if r.labels != nil || len(r.labels) > 0 {
+		lo = append(lo, client.MatchingLabels(r.labels))
+	}
 
+	err = r.mgr.GetClient().List(ctx, ps, lo...)
 	if err != nil {
 		if r.onError != nil {
 			r.onError(err)
