@@ -21,6 +21,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/test/goleak"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
