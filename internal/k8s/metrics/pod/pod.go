@@ -42,7 +42,6 @@ type reconciler struct {
 
 	// list options
 	namespace string
-	labels    map[string]string
 }
 
 type Pod struct {
