@@ -103,7 +103,7 @@ require (
 	github.com/pierrec/lz4/v3 v3.3.2
 	github.com/planetscale/vtprotobuf v0.2.0
 	github.com/quasilyte/go-ruleguard v0.3.7
-	github.com/quasilyte/go-ruleguard/dsl v0.3.6
+	github.com/quasilyte/go-ruleguard/dsl v0.3.8
 	github.com/scylladb/gocqlx v1.5.0
 	github.com/tensorflow/tensorflow v0.0.0-00010101000000-000000000000
 	github.com/zeebo/xxh3 v0.12.0
