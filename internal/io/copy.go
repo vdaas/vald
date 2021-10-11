@@ -61,6 +61,9 @@ func NewCopier(size int) Copier {
 }
 
 func (c *copier) Copy(dst io.Writer, src io.Reader) (written int64, err error) {
+	if dst == nil || src == nil {
+		return 0, errors.New("empty source or destination")
+	}
 	var (
 		wt io.WriterTo
 		rf io.ReaderFrom
