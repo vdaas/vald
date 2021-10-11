@@ -611,11 +611,11 @@ github.com/prometheus/statsd_exporter v0.21.0 h1:hA05Q5RFeIjgwKIYEdFd59xu5Wwaznf
 github.com/prometheus/statsd_exporter v0.21.0/go.mod h1:rbT83sZq2V+p73lHhPZfMc3MLCHmSHelCh9hSGYNLTQ=
 github.com/prometheus/tsdb v0.7.1/go.mod h1:qhTCs0VvXwvX/y3TZrWD7rabWM+ijKTux40TwIPHuXU=
 github.com/quasilyte/go-ruleguard v0.3.1-0.20210203134552-1b5a410e1cc8/go.mod h1:KsAh3x0e7Fkpgs+Q9pNLS5XpFSvYCEVl5gP9Pp1xp30=
-github.com/quasilyte/go-ruleguard v0.3.7 h1:fcKxvLDaTvWtzw3eFPtWQ9/a8u1+fILOT1nIm/gVzdg=
-github.com/quasilyte/go-ruleguard v0.3.7/go.mod h1:YpxSZWWWAASP72886tiMJvfJ9+K7REf8Mori5CVLoxU=
+github.com/quasilyte/go-ruleguard v0.3.9 h1:dbAu8yjAk4a+iP22LgrRGFi+cGdwJZDDyUSQzJWJLpE=
+github.com/quasilyte/go-ruleguard v0.3.9/go.mod h1:HsNdC4Odeot0vxQovES8ke1sGiBIUxV7yuEgsm+fWTQ=
 github.com/quasilyte/go-ruleguard/dsl v0.3.0/go.mod h1:KeCP03KrjuSO0H1kTuZQCWlQPulDV6YMIXmpQss17rU=
-github.com/quasilyte/go-ruleguard/dsl v0.3.6 h1:W2wnISJifyda0x/RXq15Qjrsu9iOhX2gy4+Ku+owylw=
-github.com/quasilyte/go-ruleguard/dsl v0.3.6/go.mod h1:KeCP03KrjuSO0H1kTuZQCWlQPulDV6YMIXmpQss17rU=
+github.com/quasilyte/go-ruleguard/dsl v0.3.8 h1:QVckSrF3bljZbRIcPNF7gPuRXi7wfFdKu8WNT1R8PwU=
+github.com/quasilyte/go-ruleguard/dsl v0.3.8/go.mod h1:KeCP03KrjuSO0H1kTuZQCWlQPulDV6YMIXmpQss17rU=
 github.com/quasilyte/go-ruleguard/rules v0.0.0-20201231183845-9e62ed36efe1/go.mod h1:7JTjp89EGyU1d6XfBiXihJNG37wB2VRkd125Q1u7Plc=
 github.com/quasilyte/go-ruleguard/rules v0.0.0-20210428214800-545e0d2e0bf7/go.mod h1:4cgAphtvu7Ftv7vOT2ZOYhC6CvBxZixcasr8qIOTA50=
 github.com/rcrowley/go-metrics v0.0.0-20181016184325-3113b8401b8a/go.mod h1:bCqnVzQkZxMG4s8nGwiZ5l3QUCyqpo9Y+/ZMZ9VjZe4=
