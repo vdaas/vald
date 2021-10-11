@@ -302,6 +302,7 @@ func copyFile(ctx context.Context, target string, tr io.Reader, mode fs.FileMode
 		return err
 	}
 
+	_, err = io.Copy(fw, tr)
 	if err != nil && !errors.Is(err, io.EOF) {
 		return err
 	}
