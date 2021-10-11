@@ -62,6 +62,10 @@ const (
 	ngtResourceType = "vald/internal/core/algorithm"
 )
 
+var (
+	errNGT = new(errors.NGTError)
+)
+
 func New(opts ...Option) (Server, error) {
 	s := new(server)
 
@@ -202,7 +206,7 @@ func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *
 				})
 			log.Debug(err)
 			stat = trace.StatusCodeNotFound(err.Error())
-		case errors.As(err, errors.NGTError{}):
+		case errors.As(err, errNGT):
 			log.Errorf("ngt core process returned error: %v", err)
 			err = status.WrapWithInternal("Search API failed to process search request due to ngt core process returned error", err,
 				&errdetails.RequestInfo{
@@ -311,7 +315,7 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 				})
 			log.Debug(err)
 			stat = trace.StatusCodeNotFound(err.Error())
-		case errors.As(err, errors.NGTError{}):
+		case errors.As(err, errNGT):
 			log.Errorf("ngt core process returned error: %v", err)
 			err = status.WrapWithInternal("SearchByID API failed to process search request due to ngt core process returned error", err,
 				&errdetails.RequestInfo{

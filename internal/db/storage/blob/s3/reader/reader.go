@@ -51,6 +51,12 @@ type reader struct {
 	maxChunkSize   int64
 }
 
+var (
+	errBlobNoSuchBucket      = new(errors.ErrBlobNoSuchBucket)
+	errBlobNoSuchKey         = new(errors.ErrBlobNoSuchKey)
+	errBlobInvalidChunkRange = new(errors.ErrBlobInvalidChunkRange)
+)
+
 // Reader is an interface that groups the basic Read and Close and Open methods.
 type Reader interface {
 	Open(ctx context.Context, key string) error
@@ -104,9 +110,9 @@ func (r *reader) Open(ctx context.Context, key string) (err error) {
 				return r.getObject(ctx, key, offset, r.maxChunkSize)
 			}()
 			if err != nil {
-				if errors.As(err, &errors.ErrBlobNoSuchBucket{}) ||
-					errors.As(err, &errors.ErrBlobNoSuchKey{}) ||
-					errors.As(err, &errors.ErrBlobInvalidChunkRange{}) {
+				if errors.As(err, errBlobNoSuchBucket) ||
+					errors.As(err, errBlobNoSuchKey) ||
+					errors.As(err, errBlobInvalidChunkRange) {
 					return nil
 				}
 				return err
@@ -140,9 +146,9 @@ func (r *reader) getObjectWithBackoff(ctx context.Context, key string, offset, l
 	_, err = r.bo.Do(ctx, func(ctx context.Context) (interface{}, bool, error) {
 		res, err = r.getObject(ctx, key, offset, length)
 		if err != nil {
-			if errors.As(err, &errors.ErrBlobNoSuchBucket{}) ||
-				errors.As(err, &errors.ErrBlobNoSuchKey{}) ||
-				errors.As(err, &errors.ErrBlobInvalidChunkRange{}) {
+			if errors.As(err, errBlobNoSuchBucket) ||
+				errors.As(err, errBlobNoSuchKey) ||
+				errors.As(err, errBlobInvalidChunkRange) {
 				return res, false, err
 			}
 			return res, true, err
