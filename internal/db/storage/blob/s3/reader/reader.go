@@ -110,9 +110,9 @@ func (r *reader) Open(ctx context.Context, key string) (err error) {
 				return r.getObject(ctx, key, offset, r.maxChunkSize)
 			}()
 			if err != nil {
-				if errors.As(err, errBlobNoSuchBucket) ||
-					errors.As(err, errBlobNoSuchKey) ||
-					errors.As(err, errBlobInvalidChunkRange) {
+				if errors.As(err, &errBlobNoSuchBucket) ||
+					errors.As(err, &errBlobNoSuchKey) ||
+					errors.As(err, &errBlobInvalidChunkRange) {
 					return nil
 				}
 				return err
@@ -146,9 +146,9 @@ func (r *reader) getObjectWithBackoff(ctx context.Context, key string, offset, l
 	_, err = r.bo.Do(ctx, func(ctx context.Context) (interface{}, bool, error) {
 		res, err = r.getObject(ctx, key, offset, length)
 		if err != nil {
-			if errors.As(err, errBlobNoSuchBucket) ||
-				errors.As(err, errBlobNoSuchKey) ||
-				errors.As(err, errBlobInvalidChunkRange) {
+			if errors.As(err, &errBlobNoSuchBucket) ||
+				errors.As(err, &errBlobNoSuchKey) ||
+				errors.As(err, &errBlobInvalidChunkRange) {
 				return res, false, err
 			}
 			return res, true, err
