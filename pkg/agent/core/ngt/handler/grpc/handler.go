@@ -62,9 +62,7 @@ const (
 	ngtResourceType = "vald/internal/core/algorithm"
 )
 
-var (
-	errNGT = new(errors.NGTError)
-)
+var errNGT = new(errors.NGTError)
 
 func New(opts ...Option) (Server, error) {
 	s := new(server)

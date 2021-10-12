@@ -113,6 +113,7 @@ func (r *reader) Open(ctx context.Context, key string) (err error) {
 				if errors.As(err, &errBlobNoSuchBucket) ||
 					errors.As(err, &errBlobNoSuchKey) ||
 					errors.As(err, &errBlobInvalidChunkRange) {
+					log.Warn(err)
 					return nil
 				}
 				return err
