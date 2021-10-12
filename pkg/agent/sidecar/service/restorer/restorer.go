@@ -191,11 +191,13 @@ func (r *restorer) restore(ctx context.Context) (err error) {
 
 		sr, err := r.storage.Reader(ctx)
 		if err != nil {
+			log.Warn(err)
 			return err
 		}
 
 		sr, err = io.NewReadCloserWithContext(ctx, sr)
 		if err != nil {
+			log.Warn(err)
 			return err
 		}
 		defer func() {
@@ -207,6 +209,7 @@ func (r *restorer) restore(ctx context.Context) (err error) {
 
 		_, err = io.Copy(pw, sr)
 		if err != nil && !errors.Is(err, io.EOF) {
+			log.Warn(err)
 			return err
 		}
 
