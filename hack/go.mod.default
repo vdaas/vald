@@ -22,7 +22,7 @@ replace (
 	github.com/golang/protobuf => github.com/golang/protobuf latest
 	github.com/google/go-cmp => github.com/google/go-cmp latest
 	github.com/google/pprof => github.com/google/pprof master
-	github.com/googleapis/gnostic => github.com/googleapis/gnostic latest
+	github.com/google/gnostic => github.com/google/gnostic latest
 	github.com/gophercloud/gophercloud => github.com/gophercloud/gophercloud latest
 	github.com/gorilla/websocket => github.com/gorilla/websocket latest
 	github.com/hailocab/go-hostpool => github.com/kpango/go-hostpool master
@@ -64,7 +64,7 @@ replace (
 	k8s.io/metrics => k8s.io/metrics v0.22.2
 	k8s.io/utils => k8s.io/utils latest
 	sigs.k8s.io/apiserver-network-proxy/konnectivity-client => sigs.k8s.io/apiserver-network-proxy/konnectivity-client latest
-	sigs.k8s.io/controller-runtime => sigs.k8s.io/controller-runtime v0.10.1
+	sigs.k8s.io/controller-runtime => sigs.k8s.io/controller-runtime v0.10.2
 	sigs.k8s.io/kustomize/api => sigs.k8s.io/kustomize/api latest
 	sigs.k8s.io/kustomize/kyaml => sigs.k8s.io/kustomize/kyaml latest
 	sigs.k8s.io/structured-merge-diff/v4 => sigs.k8s.io/structured-merge-diff/v4 latest

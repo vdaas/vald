@@ -19,7 +19,6 @@ package reader
 import (
 	"bytes"
 	"context"
-	"io/ioutil"
 	"strconv"
 	"sync"
 
@@ -51,6 +50,12 @@ type reader struct {
 	bo             backoff.Backoff
 	maxChunkSize   int64
 }
+
+var (
+	errBlobNoSuchBucket      = new(errors.ErrBlobNoSuchBucket)
+	errBlobNoSuchKey         = new(errors.ErrBlobNoSuchKey)
+	errBlobInvalidChunkRange = new(errors.ErrBlobInvalidChunkRange)
+)
 
 // Reader is an interface that groups the basic Read and Close and Open methods.
 type Reader interface {
@@ -105,6 +110,12 @@ func (r *reader) Open(ctx context.Context, key string) (err error) {
 				return r.getObject(ctx, key, offset, r.maxChunkSize)
 			}()
 			if err != nil {
+				if errors.As(err, &errBlobNoSuchBucket) ||
+					errors.As(err, &errBlobNoSuchKey) ||
+					errors.As(err, &errBlobInvalidChunkRange) {
+					log.Warn(err)
+					return nil
+				}
 				return err
 			}
 
@@ -114,7 +125,7 @@ func (r *reader) Open(ctx context.Context, key string) (err error) {
 			}
 
 			chunk, err := io.Copy(pw, body)
-			if err != nil {
+			if err != nil && !errors.Is(err, io.EOF) {
 				return err
 			}
 
@@ -135,7 +146,15 @@ func (r *reader) getObjectWithBackoff(ctx context.Context, key string, offset, l
 	}
 	_, err = r.bo.Do(ctx, func(ctx context.Context) (interface{}, bool, error) {
 		res, err = r.getObject(ctx, key, offset, length)
-		return res, err != nil, err
+		if err != nil {
+			if errors.As(err, &errBlobNoSuchBucket) ||
+				errors.As(err, &errBlobNoSuchKey) ||
+				errors.As(err, &errBlobInvalidChunkRange) {
+				return res, false, err
+			}
+			return res, true, err
+		}
+		return res, false, nil
 	})
 	if err != nil {
 		return nil, err
@@ -144,32 +163,27 @@ func (r *reader) getObjectWithBackoff(ctx context.Context, key string, offset, l
 }
 
 func (r *reader) getObject(ctx context.Context, key string, offset, length int64) (io.Reader, error) {
-	log.Debugf("reading %d-%d bytes...", offset, offset+length-1)
+	rng := aws.String("bytes=" + strconv.FormatInt(offset, 10) + "-" + strconv.FormatInt(offset+length-1, 10))
+	log.Debugf("reading %s", *rng)
 	resp, err := r.service.GetObjectWithContext(
 		ctx,
 		&s3.GetObjectInput{
 			Bucket: aws.String(r.bucket),
 			Key:    aws.String(key),
-			Range: aws.String("bytes=" + strconv.FormatInt(offset, 10) +
-				"-" +
-				strconv.FormatInt(offset+length-1, 10),
-			),
+			Range:  rng,
 		},
 	)
 	if err != nil {
 		if aerr, ok := err.(awserr.Error); ok {
 			switch aerr.Code() {
 			case s3.ErrCodeNoSuchBucket:
-				log.Error(errors.NewErrBlobNoSuchBucket(err, r.bucket))
-				return ioutil.NopCloser(bytes.NewReader(nil)), nil
+				return nil, errors.NewErrBlobNoSuchBucket(err, r.bucket)
 			case s3.ErrCodeNoSuchKey:
-				log.Error(errors.NewErrBlobNoSuchKey(err, key))
-				return ioutil.NopCloser(bytes.NewReader(nil)), nil
+				return nil, errors.NewErrBlobNoSuchKey(err, key)
 			case "InvalidRange":
-				return ioutil.NopCloser(bytes.NewReader(nil)), nil
+				return nil, errors.NewErrBlobInvalidChunkRange(err, *rng)
 			}
 		}
-
 		return nil, err
 	}
 
