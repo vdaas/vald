@@ -45,7 +45,6 @@ func Set(loc string) {
 	default:
 		time.Local = location(loc, 0)
 	}
-	time.LoadLocation()
 }
 
 func GMT() *time.Location {
