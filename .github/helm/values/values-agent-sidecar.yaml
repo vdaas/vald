@@ -16,7 +16,7 @@
 
 defaults:
   logging:
-    level: info
+    level: debug
 
 agent:
   minReplicas: 1

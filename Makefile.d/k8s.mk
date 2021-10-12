@@ -276,9 +276,13 @@ k8s/external/cert-manager/delete:
 .PHONY: k8s/external/minio/deploy
 ## deploy minio
 k8s/external/minio/deploy:
-	kubectl apply -f k8s/external/minio
+	kubectl apply -f k8s/external/minio/deployment.yaml
+	kubectl apply -f k8s/external/minio/svc.yaml
 	sleep $(K8S_SLEEP_DURATION_FOR_WAIT_COMMAND)
 	kubectl wait --for=condition=ready pod -l app=minio --timeout=600s
+	kubectl apply -f k8s/external/minio/mb-job.yaml
+	sleep $(K8S_SLEEP_DURATION_FOR_WAIT_COMMAND)
+	kubectl wait --for=condition=complete job/minio-make-bucket --timeout=600s
 
 .PHONY: k8s/external/minio/delete
 ## delete minio
