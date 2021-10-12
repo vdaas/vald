@@ -191,7 +191,9 @@ func (r *restorer) restore(ctx context.Context) (err error) {
 
 		sr, err := r.storage.Reader(ctx)
 		if err != nil {
-			log.Warn(err)
+			if errors.Is(err, io.EOF) {
+				return nil
+			}
 			return err
 		}
 
