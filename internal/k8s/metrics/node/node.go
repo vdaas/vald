@@ -22,6 +22,7 @@ import (
 	"time"
 
 	"github.com/vdaas/vald/internal/k8s"
+	"github.com/vdaas/vald/internal/log"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metrics "k8s.io/metrics/pkg/apis/metrics/v1beta1"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
@@ -61,6 +62,10 @@ func New(opts ...Option) NodeWatcher {
 }
 
 func (r *reconciler) addListOpts(opt client.ListOption) {
+	if opt == nil {
+		return
+	}
+	log.Debugf("%#v", opt)
 	if r.lopts == nil {
 		r.lopts = make([]client.ListOption, 0, 1)
 	}

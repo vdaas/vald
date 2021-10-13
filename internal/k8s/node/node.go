@@ -65,6 +65,10 @@ func New(opts ...Option) NodeWatcher {
 }
 
 func (r *reconciler) addListOpts(opt client.ListOption) {
+	if opt == nil {
+		return
+	}
+	log.Debugf("%#v", opt)
 	if r.lopts == nil {
 		r.lopts = make([]client.ListOption, 0, 1)
 	}
