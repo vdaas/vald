@@ -20,10 +20,10 @@ metadata:
   name: vald-agent-ngt-config
   labels:
     app.kubernetes.io/name: vald
-    helm.sh/chart: vald-v1.2.3
+    helm.sh/chart: vald-v1.2.4
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: RELEASE-NAME
-    app.kubernetes.io/version: v1.2.3
+    app.kubernetes.io/version: v1.2.4
     app.kubernetes.io/component: agent
 data:
   config.yaml: |
@@ -226,7 +226,7 @@ data:
       index_path: ""
       initial_delay_max_duration: 3m
       kvsdb:
-        concurrency: 20
+        concurrency: 6
       load_index_timeout_factor: 1ms
       max_load_index_timeout: 10m
       min_load_index_timeout: 3m

@@ -21,10 +21,10 @@ metadata:
   labels:
     app: vald-agent-ngt
     app.kubernetes.io/name: vald
-    helm.sh/chart: vald-v1.2.3
+    helm.sh/chart: vald-v1.2.4
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: RELEASE-NAME
-    app.kubernetes.io/version: v1.2.3
+    app.kubernetes.io/version: v1.2.4
     app.kubernetes.io/component: agent
 spec:
   serviceName: vald-agent-ngt
@@ -79,7 +79,7 @@ spec:
               path: /readiness
               port: readiness
               scheme: HTTP
-            initialDelaySeconds: 10
+            initialDelaySeconds: 60
             periodSeconds: 3
             successThreshold: 1
             timeoutSeconds: 2
