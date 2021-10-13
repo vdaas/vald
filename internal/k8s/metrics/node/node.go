@@ -57,15 +57,12 @@ func New(opts ...Option) NodeWatcher {
 	for _, opt := range append(defaultOptions, opts...) {
 		opt(r)
 	}
-	if r.lopts == nil {
-		r.lopts = make([]client.ListOption, 0, 1)
-	}
 	return r
 }
 
 func (r *reconciler) addListOpts(opt client.ListOption) {
 	if r.lopts == nil {
-		r.lopts = make([]client.ListOption, 0, 3)
+		r.lopts = make([]client.ListOption, 0, 1)
 	}
 	r.lopts = append(r.lopts, opt)
 }
@@ -73,7 +70,11 @@ func (r *reconciler) addListOpts(opt client.ListOption) {
 func (r *reconciler) Reconcile(ctx context.Context, req reconcile.Request) (res reconcile.Result, err error) {
 	m := &metrics.NodeMetricsList{}
 
-	err = r.mgr.GetClient().List(ctx, m, r.lopts...)
+	if r.lopts != nil {
+		err = r.mgr.GetClient().List(ctx, m, r.lopts...)
+	} else {
+		err = r.mgr.GetClient().List(ctx, m)
+	}
 
 	if err != nil {
 		if r.onError != nil {
