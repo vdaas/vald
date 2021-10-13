@@ -165,6 +165,19 @@ func (r *reconciler) NewReconciler(mgr manager.Manager) reconcile.Reconciler {
 		r.mgr = mgr
 	}
 	metrics.AddToScheme(r.mgr.GetScheme())
+	if err := r.mgr.GetFieldIndexer().IndexField(context.Background(), &metrics.PodMetrics{}, "containers.name", func(obj client.Object) []string {
+		pod, ok := obj.(*metrics.PodMetrics)
+		if !ok {
+			return nil
+		}
+		res := make([]string, 0, len(pod.Containers))
+		for _, pc := range pod.Containers {
+			res = append(res, pc.Name)
+		}
+		return res
+	}); err != nil {
+		log.Error(err)
+	}
 	return r
 }
 
