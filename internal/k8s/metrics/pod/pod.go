@@ -37,8 +37,10 @@ type PodWatcher k8s.ResourceController
 type reconciler struct {
 	mgr         manager.Manager
 	name        string
+	namespace   string
 	onError     func(err error)
 	onReconcile func(podList map[string]Pod)
+	lopts       []client.ListOption
 }
 
 type Pod struct {
@@ -58,10 +60,17 @@ func New(opts ...Option) PodWatcher {
 	return r
 }
 
+func (r *reconciler) addListOpts(opt client.ListOption) {
+	if r.lopts == nil {
+		r.lopts = make([]client.ListOption, 3)
+	}
+	r.lopts = append(r.lopts, opt)
+}
+
 func (r *reconciler) Reconcile(ctx context.Context, req reconcile.Request) (res reconcile.Result, err error) {
 	m := &metrics.PodMetricsList{}
 
-	err = r.mgr.GetClient().List(ctx, m)
+	err = r.mgr.GetClient().List(ctx, m, r.lopts...)
 
 	if err != nil {
 		if r.onError != nil {

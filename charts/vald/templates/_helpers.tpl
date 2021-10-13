@@ -884,3 +884,60 @@ podAntiAffinity:
   requiredDuringSchedulingIgnoredDuringExecution: []
   {{- end }}
 {{- end -}}
+
+{{/*
+Discoverer selector config
+*/}}
+{{- define "vald.discoverer.selector" -}}
+pod:
+  labels:
+    app.kubernetes.io/component: agent
+    app.kubernetes.io/instance: {{ .chart.Release.Name }}
+    {{- if .Values.pod.labels }}
+      {{- toYaml .Values.pod.labels | nindent 4 }}
+    {{- end }}
+  fields:
+    status.phase: Running
+    {{- if .Values.pod.fields }}
+      {{- toYaml .Values.pod.fields | nindent 4 }}
+    {{- end }}
+node:
+  {{- if .Values.node.labels }}
+  labels:
+    {{- toYaml .Values.node.labels | nindent 4 }}
+  {{- else }}
+  labels: {}
+  {{- end }}
+  {{- if .Values.node.fields }}
+  fields:
+    {{- toYaml .Values.node.fields | nindent 4 }}
+  {{- else }}
+  fields: {}
+  {{- end }}
+pod_metrics:
+  {{- if .Values.pod_metrics.labels }}
+  labels:
+    {{- toYaml .Values.pod_metrics.labels | nindent 4 }}
+  {{- else }}
+  labels: {}
+  {{- end }}
+  {{- if .Values.pod_metrics.fields }}
+  fields:
+    {{- toYaml .Values.pod_metrics.fields | nindent 4 }}
+  {{- else }}
+  fields: {}
+  {{- end }}
+node_metrics:
+  {{- if .Values.node_metrics.labels }}
+  labels:
+    {{- toYaml .Values.node_metrics.labels | nindent 4 }}
+  {{- else }}
+  labels: {}
+  {{- end }}
+  {{- if .Values.node_metrics.fields }}
+  fields:
+    {{- toYaml .Values.node_metrics.fields | nindent 4 }}
+  {{- else }}
+  fields: {}
+  {{- end }}
+{{- end -}}

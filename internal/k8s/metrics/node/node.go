@@ -37,8 +37,10 @@ type NodeWatcher k8s.ResourceController
 type reconciler struct {
 	mgr         manager.Manager
 	name        string
+	namespace   string
 	onError     func(err error)
 	onReconcile func(nodeList map[string]Node)
+	lopts       []client.ListOption
 }
 
 type Node struct {
@@ -59,10 +61,17 @@ func New(opts ...Option) NodeWatcher {
 	return r
 }
 
+func (r *reconciler) addListOpts(opt client.ListOption) {
+	if r.lopts == nil {
+		r.lopts = make([]client.ListOption, 3)
+	}
+	r.lopts = append(r.lopts, opt)
+}
+
 func (r *reconciler) Reconcile(ctx context.Context, req reconcile.Request) (res reconcile.Result, err error) {
 	m := &metrics.NodeMetricsList{}
 
-	err = r.mgr.GetClient().List(ctx, m)
+	err = r.mgr.GetClient().List(ctx, m, r.lopts...)
 
 	if err != nil {
 		if r.onError != nil {

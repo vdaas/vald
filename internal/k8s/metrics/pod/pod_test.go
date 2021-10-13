@@ -24,6 +24,7 @@ import (
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/test/goleak"
+	"github.com/vdaas/vald/internal/errors"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
@@ -670,6 +671,107 @@ func Test_reconciler_Watches(t *testing.T) {
 
 			got, got1, got2 := r.Watches()
 			if err := test.checkFunc(test.want, got, got1, got2); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func Test_reconciler_addListOpts(t *testing.T) {
+	type args struct {
+		opt client.ListOption
+	}
+	type fields struct {
+		mgr         manager.Manager
+		name        string
+		namespace   string
+		onError     func(err error)
+		onReconcile func(podList map[string]Pod)
+		lopts       []client.ListOption
+	}
+	type want struct {
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want) error {
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           opt: nil,
+		       },
+		       fields: fields {
+		           mgr: nil,
+		           name: "",
+		           namespace: "",
+		           onError: nil,
+		           onReconcile: nil,
+		           lopts: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           opt: nil,
+		           },
+		           fields: fields {
+		           mgr: nil,
+		           name: "",
+		           namespace: "",
+		           onError: nil,
+		           onReconcile: nil,
+		           lopts: nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			r := &reconciler{
+				mgr:         test.fields.mgr,
+				name:        test.fields.name,
+				namespace:   test.fields.namespace,
+				onError:     test.fields.onError,
+				onReconcile: test.fields.onReconcile,
+				lopts:       test.fields.lopts,
+			}
+
+			r.addListOpts(test.args.opt)
+			if err := test.checkFunc(test.want); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

@@ -41,5 +41,12 @@ data:
       {{- $observability := dict "Values" $discoverer.observability "default" .Values.defaults.observability }}
       {{- include "vald.observability" $observability | nindent 6 }}
     discoverer:
-      {{- toYaml $discoverer.discoverer | nindent 6 }}
+      name: {{ $discoverer.discoverer.name | quote }}
+      namespace: {{ $discoverer.discoverer.namespace | quote }}
+      discovery_duration: {{ $discoverer.discoverer.discovery_duration }}
+      selectors:
+        {{- $selectors := dict "Values" $discoverer.discoverer.selectors "chart" . }}
+        {{- include "vald.discoverer.selector" $selectors | nindent 10 }}
+      net:
+      {{- toYaml $discoverer.discoverer.net | nindent 8 }}
 {{- end }}

@@ -19,10 +19,23 @@ package config
 
 // Discoverer represents the Discoverer configurations.
 type Discoverer struct {
-	Name              string `json:"name"               yaml:"name"`
-	Namespace         string `json:"namespace"          yaml:"namespace"`
-	DiscoveryDuration string `json:"discovery_duration" yaml:"discovery_duration"`
-	Net               *Net   `json:"net"                yaml:"net"`
+	Name              string     `json:"name,omitempty" yaml:"name"`
+	Namespace         string     `json:"namespace,omitempty" yaml:"namespace"`
+	DiscoveryDuration string     `json:"discovery_duration,omitempty" yaml:"discovery_duration"`
+	Net               *Net       `json:"net,omitempty" yaml:"net"`
+	Selectors         *Selectors `json:"selectors,omitempty" yaml:"selectors"`
+}
+
+type Selectors struct {
+	Pod         *Selector `json:"pod,omitempty" yaml:"pod"`
+	Node        *Selector `json:"node,omitempty" yaml:"node"`
+	NodeMetrics *Selector `json:"node_metrics,omitempty" yaml:"node_metrics"`
+	PodMetrics  *Selector `json:"pod_metrics,omitempty" yaml:"pod_metrics"`
+}
+
+type Selector struct {
+	Labels map[string]string `json:"labels,omitempty" yaml:"labels"`
+	Fields map[string]string `json:"fields,omitempty" yaml:"fields"`
 }
 
 // Bind binds the actual data from the Discoverer receiver field.
@@ -36,6 +49,32 @@ func (d *Discoverer) Bind() *Discoverer {
 		d.Net = new(Net)
 	}
 	return d
+}
+
+// Bind binds the actual data from the Selectors receiver field.
+func (s *Selectors) Bind() *Selectors {
+	if s == nil {
+		s = new(Selectors)
+	}
+	s.Pod = s.Pod.Bind()
+	s.Node = s.Node.Bind()
+	s.PodMetrics = s.PodMetrics.Bind()
+	s.NodeMetrics = s.NodeMetrics.Bind()
+	return s
+}
+
+// Bind binds the actual data from the Selector receiver field.
+func (s *Selector) Bind() *Selector {
+	if s == nil {
+		return new(Selector)
+	}
+	for k, v := range s.Labels {
+		s.Labels[k] = GetActualValue(v)
+	}
+	for k, v := range s.Fields {
+		s.Fields[k] = GetActualValue(v)
+	}
+	return s
 }
 
 // DiscovererClient represents the DiscovererClient configurations.

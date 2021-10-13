@@ -25,6 +25,7 @@ import (
 	"time"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
+	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/k8s"
@@ -35,7 +36,8 @@ import (
 func TestNew(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		opts []Option
+		selector *config.Selectors
+		opts     []Option
 	}
 	type want struct {
 		wantDsc Discoverer
@@ -101,7 +103,7 @@ func TestNew(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 
-			gotDsc, err := New(test.args.opts...)
+			gotDsc, err := New(test.args.selector, test.args.opts...)
 			if err := test.checkFunc(test.want, gotDsc, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}

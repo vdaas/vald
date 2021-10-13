@@ -1,4 +1,5 @@
 ---
+# Source: vald/templates/discoverer/deployment.yaml
 #
 # Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 #
@@ -47,7 +48,7 @@ spec:
         app.kubernetes.io/instance: RELEASE-NAME
         app.kubernetes.io/component: discoverer
       annotations:
-        checksum/configmap: 2e0685d324ed0a7edc1190dda533084f0afeb673b7e73338d8276d91eb626233
+        checksum/configmap: c0aedb9b4e553a19585ec033fee00692d229dccc30b011760ae8feca42d4fef1
         profefe.com/enable: "true"
         profefe.com/port: "6060"
         profefe.com/service: vald-discoverer
@@ -63,10 +64,10 @@ spec:
             - podAffinityTerm:
                 labelSelector:
                   matchExpressions:
-                    - key: app
-                      operator: In
-                      values:
-                        - vald-discoverer
+                  - key: app
+                    operator: In
+                    values:
+                    - vald-discoverer
                 topologyKey: kubernetes.io/hostname
               weight: 100
           requiredDuringSchedulingIgnoredDuringExecution: []
@@ -120,7 +121,7 @@ spec:
             allowPrivilegeEscalation: false
             capabilities:
               drop:
-                - ALL
+              - ALL
             privileged: false
             readOnlyRootFilesystem: true
             runAsGroup: 65532

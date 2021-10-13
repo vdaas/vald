@@ -41,6 +41,7 @@ type reconciler struct {
 	namespace   string
 	onError     func(err error)
 	onReconcile func(nodes []Node)
+	lopts       []client.ListOption
 }
 
 type Node struct {
@@ -63,10 +64,17 @@ func New(opts ...Option) NodeWatcher {
 	return r
 }
 
+func (r *reconciler) addListOpts(opt client.ListOption) {
+	if r.lopts == nil {
+		r.lopts = make([]client.ListOption, 3)
+	}
+	r.lopts = append(r.lopts, opt)
+}
+
 func (r *reconciler) Reconcile(ctx context.Context, req reconcile.Request) (res reconcile.Result, err error) {
 	ns := &corev1.NodeList{}
 
-	err = r.mgr.GetClient().List(ctx, ns)
+	err = r.mgr.GetClient().List(ctx, ns, r.lopts...)
 
 	if err != nil {
 		if r.onError != nil {
@@ -88,7 +96,8 @@ func (r *reconciler) Reconcile(ctx context.Context, req reconcile.Request) (res 
 	nodes := make([]Node, 0, len(ns.Items))
 
 	for _, node := range ns.Items {
-		if node.GetObjectMeta().GetDeletionTimestamp() != nil {
+		if node.GetObjectMeta().GetDeletionTimestamp() != nil ||
+			node.Status.Phase != corev1.NodeRunning {
 			continue
 		}
 		remain := node.Status.Allocatable

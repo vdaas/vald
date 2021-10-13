@@ -17,7 +17,10 @@
 // Package pod provides kubernetes pod information and preriodically update
 package pod
 
-import "sigs.k8s.io/controller-runtime/pkg/manager"
+import (
+	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/manager"
+)
 
 type Option func(*reconciler) error
 
@@ -47,6 +50,35 @@ func WithOnErrorFunc(f func(err error)) Option {
 func WithOnReconcileFunc(f func(podList map[string][]Pod)) Option {
 	return func(r *reconciler) error {
 		r.onReconcile = f
+		return nil
+	}
+}
+
+func WithNamespace(ns string) Option {
+	return func(r *reconciler) error {
+		if ns == "" {
+			return nil
+		}
+		r.namespace = ns
+		r.addListOpts(client.InNamespace(ns))
+		return nil
+	}
+}
+
+func WithLabels(ls map[string]string) Option {
+	return func(r *reconciler) error {
+		if ls != nil {
+			r.addListOpts(client.MatchingLabels(ls))
+		}
+		return nil
+	}
+}
+
+func WithFields(fs map[string]string) Option {
+	return func(r *reconciler) error {
+		if fs != nil {
+			r.addListOpts(client.MatchingFields(ls))
+		}
 		return nil
 	}
 }
