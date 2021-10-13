@@ -76,7 +76,7 @@ func WithLabels(ls map[string]string) Option {
 func WithFields(fs map[string]string) Option {
 	return func(r *reconciler) error {
 		if fs != nil {
-			r.addListOpts(client.MatchingFields(ls))
+			r.addListOpts(client.MatchingFields(fs))
 		}
 		return nil
 	}
