@@ -62,12 +62,15 @@ func New(opts ...Option) PodWatcher {
 	for _, opt := range append(defaultOptions, opts...) {
 		opt(r)
 	}
+	if r.lopts == nil {
+		r.lopts = make([]client.ListOption, 0, 1)
+	}
 	return r
 }
 
 func (r *reconciler) addListOpts(opt client.ListOption) {
 	if r.lopts == nil {
-		r.lopts = make([]client.ListOption, 3)
+		r.lopts = make([]client.ListOption, 0, 3)
 	}
 	r.lopts = append(r.lopts, opt)
 }
