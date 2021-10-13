@@ -22,6 +22,7 @@ import (
 	"time"
 
 	"github.com/vdaas/vald/internal/k8s"
+	"github.com/vdaas/vald/internal/log"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
@@ -98,6 +99,10 @@ func (r *reconciler) Reconcile(ctx context.Context, req reconcile.Request) (res 
 	for _, node := range ns.Items {
 		if node.GetObjectMeta().GetDeletionTimestamp() != nil ||
 			node.Status.Phase != corev1.NodeRunning {
+			log.Debugf("reconcile process will be skipped for node: %s, status: %s, deletion timestamp: %s",
+				node.GetName(),
+				node.Status.Phase,
+				node.GetObjectMeta().GetDeletionTimestamp())
 			continue
 		}
 		remain := node.Status.Allocatable
