@@ -24,7 +24,6 @@ import (
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/test/goleak"
-	"github.com/vdaas/vald/internal/errors"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
@@ -713,8 +712,7 @@ func Test_reconciler_addListOpts(t *testing.T) {
 		onReconcile func(podList map[string][]Pod)
 		lopts       []client.ListOption
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args

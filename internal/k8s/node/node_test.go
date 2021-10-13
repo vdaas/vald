@@ -24,7 +24,6 @@ import (
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/test/goleak"
-	"github.com/vdaas/vald/internal/errors"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -714,8 +713,7 @@ func Test_reconciler_addListOpts(t *testing.T) {
 		onReconcile func(nodes []Node)
 		lopts       []client.ListOption
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args

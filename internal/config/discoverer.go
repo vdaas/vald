@@ -19,18 +19,18 @@ package config
 
 // Discoverer represents the Discoverer configurations.
 type Discoverer struct {
-	Name              string     `json:"name,omitempty" yaml:"name"`
-	Namespace         string     `json:"namespace,omitempty" yaml:"namespace"`
+	Name              string     `json:"name,omitempty"               yaml:"name"`
+	Namespace         string     `json:"namespace,omitempty"          yaml:"namespace"`
 	DiscoveryDuration string     `json:"discovery_duration,omitempty" yaml:"discovery_duration"`
-	Net               *Net       `json:"net,omitempty" yaml:"net"`
-	Selectors         *Selectors `json:"selectors,omitempty" yaml:"selectors"`
+	Net               *Net       `json:"net,omitempty"                yaml:"net"`
+	Selectors         *Selectors `json:"selectors,omitempty"          yaml:"selectors"`
 }
 
 type Selectors struct {
-	Pod         *Selector `json:"pod,omitempty" yaml:"pod"`
-	Node        *Selector `json:"node,omitempty" yaml:"node"`
+	Pod         *Selector `json:"pod,omitempty"          yaml:"pod"`
+	Node        *Selector `json:"node,omitempty"         yaml:"node"`
 	NodeMetrics *Selector `json:"node_metrics,omitempty" yaml:"node_metrics"`
-	PodMetrics  *Selector `json:"pod_metrics,omitempty" yaml:"pod_metrics"`
+	PodMetrics  *Selector `json:"pod_metrics,omitempty"  yaml:"pod_metrics"`
 }
 
 type Selector struct {
