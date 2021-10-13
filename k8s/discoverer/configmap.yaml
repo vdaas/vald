@@ -249,7 +249,8 @@ data:
             fields: {}
           pod_metrics:
             labels: {}
-            fields: {}
+            fields:
+              containers.name: vald-agent-ngt
           node_metrics:
             labels: {}
             fields: {}

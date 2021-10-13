@@ -921,12 +921,11 @@ pod_metrics:
   {{- else }}
   labels: {}
   {{- end }}
-  {{- if .Values.pod_metrics.fields }}
   fields:
-    {{- toYaml .Values.pod_metrics.fields | nindent 4 }}
-  {{- else }}
-  fields: {}
-  {{- end }}
+    containers.name: {{ .agent.name }}
+    {{- if .Values.pod_metrics.fields }}
+      {{- toYaml .Values.pod_metrics.fields | nindent 4 }}
+    {{- end }}
 node_metrics:
   {{- if .Values.node_metrics.labels }}
   labels:
