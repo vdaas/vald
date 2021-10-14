@@ -182,16 +182,6 @@ func (r *reconciler) NewReconciler(ctx context.Context, mgr manager.Manager) rec
 		r.mgr = mgr
 	}
 	corev1.AddToScheme(r.mgr.GetScheme())
-	if err := r.mgr.GetFieldIndexer().IndexField(ctx, &corev1.Node{}, "status.phase", func(obj client.Object) []string {
-		node, ok := obj.(*corev1.Node)
-		if !ok || node.GetDeletionTimestamp() != nil {
-			return nil
-		}
-		log.Infof("status: %s,\tdetail: %#v", node.Status.Phase, node)
-		return []string{string(node.Status.Phase)}
-	}); err != nil {
-		log.Error(err)
-	}
 	return r
 }
 
