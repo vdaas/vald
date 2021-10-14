@@ -187,6 +187,7 @@ func (r *reconciler) NewReconciler(ctx context.Context, mgr manager.Manager) rec
 		if !ok || node.GetDeletionTimestamp() != nil {
 			return nil
 		}
+		log.Infof("status: %s,\tdetail: %#v", node.Status.Phase, node)
 		return []string{string(node.Status.Phase)}
 	}); err != nil {
 		log.Error(err)
