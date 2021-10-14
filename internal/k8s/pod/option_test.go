@@ -25,7 +25,6 @@ import (
 )
 
 func TestWithControllerName(t *testing.T) {
-	t.Parallel()
 	// Change interface type to the type of object you are testing
 	type T = interface{}
 	type args struct {
@@ -104,7 +103,7 @@ func TestWithControllerName(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -142,7 +141,6 @@ func TestWithControllerName(t *testing.T) {
 }
 
 func TestWithManager(t *testing.T) {
-	t.Parallel()
 	// Change interface type to the type of object you are testing
 	type T = interface{}
 	type args struct {
@@ -221,7 +219,7 @@ func TestWithManager(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -259,7 +257,6 @@ func TestWithManager(t *testing.T) {
 }
 
 func TestWithOnErrorFunc(t *testing.T) {
-	t.Parallel()
 	// Change interface type to the type of object you are testing
 	type T = interface{}
 	type args struct {
@@ -338,7 +335,7 @@ func TestWithOnErrorFunc(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -376,7 +373,6 @@ func TestWithOnErrorFunc(t *testing.T) {
 }
 
 func TestWithOnReconcileFunc(t *testing.T) {
-	t.Parallel()
 	// Change interface type to the type of object you are testing
 	type T = interface{}
 	type args struct {
@@ -455,7 +451,7 @@ func TestWithOnReconcileFunc(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
