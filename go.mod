@@ -4,10 +4,10 @@ go 1.17
 
 replace (
 	cloud.google.com/go => cloud.google.com/go v0.97.0
-	cloud.google.com/go/monitoring => cloud.google.com/go/monitoring v1.0.1-0.20211012163212-0f7457c6a9ef
-	cloud.google.com/go/profiler => cloud.google.com/go/profiler v0.1.1-0.20211012163212-0f7457c6a9ef
-	cloud.google.com/go/storage => cloud.google.com/go/storage v1.18.1-0.20211012163212-0f7457c6a9ef
-	cloud.google.com/go/trace => cloud.google.com/go/trace v1.0.1-0.20211012163212-0f7457c6a9ef
+	cloud.google.com/go/monitoring => cloud.google.com/go/monitoring v1.0.1-0.20211014052716-e17334d1fe76
+	cloud.google.com/go/profiler => cloud.google.com/go/profiler v0.1.1-0.20211014052716-e17334d1fe76
+	cloud.google.com/go/storage => cloud.google.com/go/storage v1.18.1-0.20211014052716-e17334d1fe76
+	cloud.google.com/go/trace => cloud.google.com/go/trace v1.0.1-0.20211014052716-e17334d1fe76
 	github.com/Azure/go-autorest => github.com/Azure/go-autorest v14.2.1-0.20210910151046-492f94bc3a56+incompatible
 	github.com/Azure/go-autorest/autorest => github.com/Azure/go-autorest/autorest v0.11.21
 	github.com/Azure/go-autorest/autorest/adal => github.com/Azure/go-autorest/autorest/adal v0.9.17-0.20210910151046-492f94bc3a56
