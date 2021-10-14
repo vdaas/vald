@@ -60,7 +60,7 @@
 v1.2
 </summary>
 <ul class=version__list>
-<il class=version__item><a href=javascript:void(0) class="version__link version__link--latest">v1.2.3</a></il>
+<il class=version__item><a href=javascript:void(0) class="version__link version__link--latest">v1.2.4</a></il>
 <il class=version__item><a href=javascript:void(0) class=version__link>v1.2</a></il>
 <il class=version__item><a href=javascript:void(0) class=version__link>v1.1</a></il>
 <il class=version__item><a href=javascript:void(0) class=version__link>v1.0</a></il>
@@ -174,8 +174,81 @@ v1.2
 <div class=content>
 <div class=markdown id=markdown>
 <h1 id=changelog>CHANGELOG</h1>
-<h2 id=v123>v1.2.3</h2>
+<h2 id=v124>v1.2.4</h2>
 <h3 id=docker-images>Docker images</h3>
+<table>
+<tr>
+<th>component</th>
+<th>Docker pull</th>
+</tr>
+<tr>
+<td>Agent NGT</td>
+<td>
+<code>docker pull vdaas/vald-agent-ngt:v1.2.4</code><br>
+<code>docker pull ghcr.io/vdaas/vald/vald-agent-ngt:v1.2.4</code>
+</td>
+</tr>
+<tr>
+<td>Agent sidecar</td>
+<td>
+<code>docker pull vdaas/vald-agent-sidecar:v1.2.4</code><br>
+<code>docker pull ghcr.io/vdaas/vald/vald-agent-sidecar:v1.2.4</code>
+</td>
+</tr>
+<tr>
+<td>Discoverers</td>
+<td>
+<code>docker pull vdaas/vald-discoverer-k8s:v1.2.4</code><br>
+<code>docker pull ghcr.io/vdaas/vald/vald-discoverer-k8s:v1.2.4</code>
+</td>
+</tr>
+<tr>
+<td>Gateways</td>
+<td>
+<code>docker pull vdaas/vald-lb-gateway:v1.2.4</code><br>
+<code>docker pull ghcr.io/vdaas/vald/vald-lb-gateway:v1.2.4</code><br>
+<code>docker pull vdaas/vald-filter-gateway:v1.2.4</code><br>
+<code>docker pull ghcr.io/vdaas/vald/vald-filter-gateway:v1.2.4</code>
+</td>
+</tr>
+<tr>
+<td>Index Manager</td>
+<td>
+<code>docker pull vdaas/vald-manager-index:v1.2.4</code><br>
+<code>docker pull ghcr.io/vdaas/vald/vald-manager-index:v1.2.4</code>
+</td>
+</tr>
+<tr>
+<td>Helm Operator</td>
+<td>
+<code>docker pull vdaas/vald-helm-operator:v1.2.4</code><br>
+<code>docker pull ghcr.io/vdaas/vald/vald-helm-operator:v1.2.4</code>
+</td>
+</tr>
+</table>
+<h3 id=documents>Documents</h3>
+<ul>
+<li><a href=https://pkg.go.dev/github.com/vdaas/vald@v1.2.4>GoDoc</a></li>
+<li><a href=https://github.com/vdaas/vald/blob/v1.2.4/charts/vald/README>Helm Chart Reference</a></li>
+<li><a href=https://github.com/vdaas/vald/blob/v1.2.4/charts/vald-helm-operator/README>Helm Operator Chart Reference</a></li>
+</ul>
+<h3 id=changes>Changes</h3>
+<ul>
+<li>update go patch version (#1464)</li>
+<li>[bugfix] sidecar e2e testing (#1465)</li>
+<li>update dependencies version including NGT (#1461)</li>
+<li>fix unlimited gorountine processing in kvsdb (#1458)</li>
+<li>Refactor hack pkg agent e2e benchmark (#1430)</li>
+<li>Remove non-exist components from doc and ci (#1450)</li>
+<li>:recycle: :pencil: add default_pool_size in example yml (#1457)</li>
+<li>reduce memory usage around ngt implementation & refactor agent/lb & auto-generate unit test (#1449)</li>
+<li>Remove rinx from several yamls (#1451)</li>
+<li>Add E2E scenario with SkipStrictExistCheck enabled (#1415)</li>
+<li>fix filter-gateway chart (#1454)</li>
+<li>Implement pkg/agent/core/ngt/service/option test (#1429)</li>
+</ul>
+<h2 id=v123>v1.2.3</h2>
+<h3 id=docker-images-1>Docker images</h3>
 <table>
 <tr>
 <th>component</th>
@@ -255,13 +328,13 @@ v1.2
 </td>
 </tr>
 </table>
-<h3 id=documents>Documents</h3>
+<h3 id=documents-1>Documents</h3>
 <ul>
 <li><a href=https://pkg.go.dev/github.com/vdaas/vald@v1.2.3>GoDoc</a></li>
 <li><a href=https://github.com/vdaas/vald/blob/v1.2.3/charts/vald/README>Helm Chart Reference</a></li>
 <li><a href=https://github.com/vdaas/vald/blob/v1.2.3/charts/vald-helm-operator/README>Helm Operator Chart Reference</a></li>
 </ul>
-<h3 id=changes>Changes</h3>
+<h3 id=changes-1>Changes</h3>
 <ul>
 <li>update go module dependencies & update go patch version to 1.17.1 (#1445)</li>
 <li>[bugfix] fix unknown status problems in search operation (#1439)</li>
@@ -273,7 +346,7 @@ v1.2
 <li>Add vqueue test for Exists and GetVector method (#1425)</li>
 </ul>
 <h2 id=v122>v1.2.2</h2>
-<h3 id=docker-images-1>Docker images</h3>
+<h3 id=docker-images-2>Docker images</h3>
 <table>
 <tr>
 <th>component</th>
@@ -353,13 +426,13 @@ v1.2
 </td>
 </tr>
 </table>
-<h3 id=documents-1>Documents</h3>
+<h3 id=documents-2>Documents</h3>
 <ul>
 <li><a href=https://pkg.go.dev/github.com/vdaas/vald@v1.2.2>GoDoc</a></li>
 <li><a href=https://github.com/vdaas/vald/blob/v1.2.2/charts/vald/README>Helm Chart Reference</a></li>
 <li><a href=https://github.com/vdaas/vald/blob/v1.2.2/charts/vald-helm-operator/README>Helm Operator Chart Reference</a></li>
 </ul>
-<h3 id=changes-1>Changes</h3>
+<h3 id=changes-2>Changes</h3>
 <ul>
 <li>Add stateful PBT for NGT service (#1384)</li>
 <li>add default logger when logger not initialized (#1424)</li>
@@ -377,7 +450,7 @@ v1.2
 <li>change security context uid to distroless nonroot uid (#1402)</li>
 </ul>
 <h2 id=v121>v1.2.1</h2>
-<h3 id=docker-images-2>Docker images</h3>
+<h3 id=docker-images-3>Docker images</h3>
 <table>
 <tr>
 <th>component</th>
@@ -457,13 +530,13 @@ v1.2
 </td>
 </tr>
 </table>
-<h3 id=documents-2>Documents</h3>
+<h3 id=documents-3>Documents</h3>
 <ul>
 <li><a href=https://pkg.go.dev/github.com/vdaas/vald@v1.2.1>GoDoc</a></li>
 <li><a href=https://github.com/vdaas/vald/blob/v1.2.1/charts/vald/README>Helm Chart Reference</a></li>
 <li><a href=https://github.com/vdaas/vald/blob/v1.2.1/charts/vald-helm-operator/README>Helm Operator Chart Reference</a></li>
 </ul>
-<h3 id=changes-2>Changes</h3>
+<h3 id=changes-3>Changes</h3>
 <ul>
 <li>remove global errgroup from kvsdb goroutine limitation (#1398)</li>
 <li>add google grpc healthz & logger (#1394)</li>
@@ -484,7 +557,7 @@ v1.2
 <li>remove invalid gateway component reference from chart.NOTES (#1371)</li>
 </ul>
 <h2 id=v120>v1.2.0</h2>
-<h3 id=docker-images-3>Docker images</h3>
+<h3 id=docker-images-4>Docker images</h3>
 <table>
 <tr>
 <th>component</th>
@@ -564,15 +637,15 @@ v1.2
 </td>
 </tr>
 </table>
-<h3 id=documents-3>Documents</h3>
+<h3 id=documents-4>Documents</h3>
 <ul>
 <li><a href=https://pkg.go.dev/github.com/vdaas/vald@v1.2.0>GoDoc</a></li>
 <li><a href=https://github.com/vdaas/vald/blob/v1.2.0/charts/vald/README>Helm Chart Reference</a></li>
 <li><a href=https://github.com/vdaas/vald/blob/v1.2.0/charts/vald-helm-operator/README>Helm Operator Chart Reference</a></li>
 </ul>
-<h3 id=changes-3>Changes</h3>
+<h3 id=changes-4>Changes</h3>
 <h1 id=release-vald-v120>Release Vald v1.2.0</h1>
-<h2 id=changes-4>Changes:</h2>
+<h2 id=changes-5>Changes:</h2>
 <ul>
 <li>fix build failure on arm cpu due to the xxh3 dependency version (#1368)</li>
 <li>Add core algorithm ngt test (#1364)</li>
@@ -605,7 +678,7 @@ v1.2
 <li>Update documents: configurations (#1289</li>
 </ul>
 <h2 id=v112>v1.1.2</h2>
-<h3 id=docker-images-4>Docker images</h3>
+<h3 id=docker-images-5>Docker images</h3>
 <table>
 <tr>
 <th>component</th>
@@ -685,13 +758,13 @@ v1.2
 </td>
 </tr>
 </table>
-<h3 id=documents-4>Documents</h3>
+<h3 id=documents-5>Documents</h3>
 <ul>
 <li><a href=https://pkg.go.dev/github.com/vdaas/vald@v1.1.2>GoDoc</a></li>
 <li><a href=https://github.com/vdaas/vald/blob/v1.1.2/charts/vald/README>Helm Chart Reference</a></li>
 <li><a href=https://github.com/vdaas/vald/blob/v1.1.2/charts/vald-helm-operator/README>Helm Operator Chart Reference</a></li>
 </ul>
-<h3 id=changes-5>Changes</h3>
+<h3 id=changes-6>Changes</h3>
 <ul>
 <li>bugfix remove api return wrong error of non exsiting replicas (#1318)</li>
 <li>update go modules and update go version to 1.16.5 from 1.16.4 (#1306)</li>
@@ -717,7 +790,7 @@ v1.2
 <li>:bug: Fix the chart: agent-sidecar initContainer mode (#1271)</li>
 </ul>
 <h2 id=v111>v1.1.1</h2>
-<h3 id=docker-images-5>Docker images</h3>
+<h3 id=docker-images-6>Docker images</h3>
 <table>
 <tr>
 <th>component</th>
@@ -797,13 +870,13 @@ v1.2
 </td>
 </tr>
 </table>
-<h3 id=documents-5>Documents</h3>
+<h3 id=documents-6>Documents</h3>
 <ul>
 <li><a href=https://pkg.go.dev/github.com/vdaas/vald@v1.1.1>GoDoc</a></li>
 <li><a href=https://github.com/vdaas/vald/blob/v1.1.1/charts/vald/README>Helm Chart Reference</a></li>
 <li><a href=https://github.com/vdaas/vald/blob/v1.1.1/charts/vald-helm-operator/README>Helm Operator Chart Reference</a></li>
 </ul>
-<h3 id=changes-6>Changes</h3>
+<h3 id=changes-7>Changes</h3>
 <ul>
 <li>[patch] release Vald v1.1.1 (<a href=https://github.com/vdaas/vald/pull/1268>#1268</a>)</li>
 <li>fix copy CI error (<a href=https://github.com/vdaas/vald/pull/1269>#1269</a>)</li>
@@ -828,7 +901,7 @@ v1.2
 <li>Fix path to the yq binary (<a href=https://github.com/vdaas/vald/pull/1247>#1247</a>)</li>
 </ul>
 <h2 id=v110>v1.1.0</h2>
-<h3 id=docker-images-6>Docker images</h3>
+<h3 id=docker-images-7>Docker images</h3>
 <table>
 <tr>
 <th>component</th>
@@ -908,13 +981,13 @@ v1.2
 </td>
 </tr>
 </table>
-<h3 id=documents-6>Documents</h3>
+<h3 id=documents-7>Documents</h3>
 <ul>
 <li><a href=https://pkg.go.dev/github.com/vdaas/vald@v1.1.0>GoDoc</a></li>
 <li><a href=https://github.com/vdaas/vald/blob/v1.1.0/charts/vald/README>Helm Chart Reference</a></li>
 <li><a href=https://github.com/vdaas/vald/blob/v1.1.0/charts/vald-helm-operator/README>Helm Operator Chart Reference</a></li>
 </ul>
-<h3 id=changes-7>Changes</h3>
+<h3 id=changes-8>Changes</h3>
 <h4 id=feature>Feature</h4>
 <ul>
 <li>add correct grpc status and error handling (#1224)</li>
@@ -1017,7 +1090,7 @@ v1.2
 <li>improve internal/timeutil/location implementation (#1176)</li>
 </ul>
 <h2 id=v104>v1.0.4</h2>
-<h3 id=docker-images-7>Docker images</h3>
+<h3 id=docker-images-8>Docker images</h3>
 <table>
 <tr>
 <th>component</th>
@@ -1097,13 +1170,13 @@ v1.2
 </td>
 </tr>
 </table>
-<h3 id=documents-7>Documents</h3>
+<h3 id=documents-8>Documents</h3>
 <ul>
 <li><a href=https://pkg.go.dev/github.com/vdaas/vald@v1.0.4>GoDoc</a></li>
 <li><a href=https://github.com/vdaas/vald/blob/v1.0.4/charts/vald/README>Helm Chart Reference</a></li>
 <li><a href=https://github.com/vdaas/vald/blob/v1.0.4/charts/vald-helm-operator/README>Helm Operator Chart Reference</a></li>
 </ul>
-<h3 id=changes-8>Changes</h3>
+<h3 id=changes-9>Changes</h3>
 <ul>
 <li>Fix error handling of SearchByID API in lb gateway (<a href=https://github.com/vdaas/vald/pull/1084>#1084</a>)</li>
 <li>Update Agent dashboard (<a href=https://github.com/vdaas/vald/pull/1069>#1069</a>)</li>
@@ -1116,7 +1189,7 @@ v1.2
 <li>Upgrade Operator SDK version to v1.4.2 (<a href=https://github.com/vdaas/vald/pull/1038>#1038</a>)</li>
 </ul>
 <h2 id=v103>v1.0.3</h2>
-<h3 id=docker-images-8>Docker images</h3>
+<h3 id=docker-images-9>Docker images</h3>
 <table>
 <tr>
 <th>component</th>
@@ -1196,13 +1269,13 @@ v1.2
 </td>
 </tr>
 </table>
-<h3 id=documents-8>Documents</h3>
+<h3 id=documents-9>Documents</h3>
 <ul>
 <li><a href=https://pkg.go.dev/github.com/vdaas/vald@v1.0.3>GoDoc</a></li>
 <li><a href=https://github.com/vdaas/vald/blob/v1.0.3/charts/vald/README>Helm Chart Reference</a></li>
 <li><a href=https://github.com/vdaas/vald/blob/v1.0.3/charts/vald-helm-operator/README>Helm Operator Chart Reference</a></li>
 </ul>
-<h3 id=changes-9>Changes</h3>
+<h3 id=changes-10>Changes</h3>
 <ul>
 <li>fix MySQL panic test (<a href=https://github.com/vdaas/vald/pull/996>#996</a>)</li>
 <li>Update tutorial to support v1 (<a href=https://github.com/vdaas/vald/pull/1009>#1009</a>)</li>
@@ -1216,7 +1289,7 @@ v1.2
 <li>Add test case for internal/errors/observability.go (<a href=https://github.com/vdaas/vald/pull/993>#993</a>)</li>
 </ul>
 <h2 id=v102>v1.0.2</h2>
-<h3 id=docker-images-9>Docker images</h3>
+<h3 id=docker-images-10>Docker images</h3>
 <table>
 <tr>
 <th>component</th>
@@ -1300,13 +1373,13 @@ v1.2
 </td>
 </tr>
 </table>
-<h3 id=documents-9>Documents</h3>
+<h3 id=documents-10>Documents</h3>
 <ul>
 <li><a href=https://pkg.go.dev/github.com/vdaas/vald@v1.0.2>GoDoc</a></li>
 <li><a href=https://github.com/vdaas/vald/blob/v1.0.2/charts/vald/README>Helm Chart Reference</a></li>
 <li><a href=https://github.com/vdaas/vald/blob/v1.0.2/charts/vald-helm-operator/README>Helm Operator Chart Reference</a></li>
 </ul>
-<h3 id=changes-10>Changes</h3>
+<h3 id=changes-11>Changes</h3>
 <ul>
 <li>v1.0.2 Release (<a href=https://github.com/vdaas/vald/pull/998>#998</a>)</li>
 <li>:robot: Automatically update PULL_REQUEST_TEMPLATE and ISSUE_TEMPLATE (<a href=https://github.com/vdaas/vald/pull/997>#997</a>)</li>
@@ -1322,7 +1395,7 @@ v1.2
 <li>:robot: Automatically update k8s manifests (<a href=https://github.com/vdaas/vald/pull/981>#981</a>)</li>
 </ul>
 <h2 id=v101>v1.0.1</h2>
-<h3 id=docker-images-10>Docker images</h3>
+<h3 id=docker-images-11>Docker images</h3>
 <table>
 <tr>
 <th>component</th>
@@ -1406,13 +1479,13 @@ v1.2
 </td>
 </tr>
 </table>
-<h3 id=documents-10>Documents</h3>
+<h3 id=documents-11>Documents</h3>
 <ul>
 <li><a href=https://pkg.go.dev/github.com/vdaas/vald@v1.0.1>GoDoc</a></li>
 <li><a href=https://github.com/vdaas/vald/blob/v1.0.1/charts/vald/README>Helm Chart Reference</a></li>
 <li><a href=https://github.com/vdaas/vald/blob/v1.0.1/charts/vald-helm-operator/README>Helm Operator Chart Reference</a></li>
 </ul>
-<h3 id=changes-11>Changes</h3>
+<h3 id=changes-12>Changes</h3>
 <ul>
 <li>bugfix lb-gateway&rsquo;s Insert rpc nil pointer panic (<a href=https://github.com/vdaas/vald/pull/980>#980</a>)</li>
 <li>Implement internal/errors/worker test (<a href=https://github.com/vdaas/vald/pull/952>#952</a>)</li>
@@ -1421,7 +1494,7 @@ v1.2
 <li>:robot: Automatically update k8s manifests (<a href=https://github.com/vdaas/vald/pull/975>#975</a>)</li>
 </ul>
 <h2 id=v100>v1.0.0</h2>
-<h3 id=docker-images-11>Docker images</h3>
+<h3 id=docker-images-12>Docker images</h3>
 <table>
 <tr>
 <th>component</th>
@@ -1505,13 +1578,13 @@ v1.2
 </td>
 </tr>
 </table>
-<h3 id=documents-11>Documents</h3>
+<h3 id=documents-12>Documents</h3>
 <ul>
 <li><a href=https://pkg.go.dev/github.com/vdaas/vald@v1.0.0>GoDoc</a></li>
 <li><a href=https://github.com/vdaas/vald/blob/v1.0.0/charts/vald/README>Helm Chart Reference</a></li>
 <li><a href=https://github.com/vdaas/vald/blob/v1.0.0/charts/vald-helm-operator/README>Helm Operator Chart Reference</a></li>
 </ul>
-<h3 id=changes-12>Changes</h3>
+<h3 id=changes-13>Changes</h3>
 <ul>
 <li>v1.0.0 Release (<a href=https://github.com/vdaas/vald/pull/974>#974</a>)</li>
 <li>Bug fix for gateway (<a href=https://github.com/vdaas/vald/pull/963>#963</a>)</li>
@@ -1557,7 +1630,7 @@ v1.2
 <li>:robot: Automatically update k8s manifests (<a href=https://github.com/vdaas/vald/pull/914>#914</a>)</li>
 </ul>
 <h2 id=v0066>v0.0.66</h2>
-<h3 id=docker-images-12>Docker images</h3>
+<h3 id=docker-images-13>Docker images</h3>
 <table>
 <tr>
 <th>component</th>
@@ -1641,13 +1714,13 @@ v1.2
 </td>
 </tr>
 </table>
-<h3 id=documents-12>Documents</h3>
+<h3 id=documents-13>Documents</h3>
 <ul>
 <li><a href=https://pkg.go.dev/github.com/vdaas/vald@v0.0.66>GoDoc</a></li>
 <li><a href=https://github.com/vdaas/vald/blob/v0.0.66/charts/vald/README>Helm Chart Reference</a></li>
 <li><a href=https://github.com/vdaas/vald/blob/v0.0.66/charts/vald-helm-operator/README>Helm Operator Chart Reference</a></li>
 </ul>
-<h3 id=changes-13>Changes</h3>
+<h3 id=changes-14>Changes</h3>
 <ul>
 <li>bugfix: do not create metadata file when create/append flag is not set for the agent/agent-sidecar (<a href=https://github.com/vdaas/vald/pull/904>#904</a>)</li>
 <li>:robot: Update license headers / Format Go codes and YAML files (<a href=https://github.com/vdaas/vald/pull/913>#913</a>)</li>
@@ -1658,7 +1731,7 @@ v1.2
 <li>:robot: Automatically update k8s manifests (<a href=https://github.com/vdaas/vald/pull/906>#906</a>)</li>
 </ul>
 <h2 id=v0065>v0.0.65</h2>
-<h3 id=docker-images-13>Docker images</h3>
+<h3 id=docker-images-14>Docker images</h3>
 <table>
 <tr>
 <th>component</th>
@@ -1742,20 +1815,20 @@ v1.2
 </td>
 </tr>
 </table>
-<h3 id=documents-13>Documents</h3>
+<h3 id=documents-14>Documents</h3>
 <ul>
 <li><a href=https://pkg.go.dev/github.com/vdaas/vald@v0.0.65>GoDoc</a></li>
 <li><a href=https://github.com/vdaas/vald/blob/v0.0.65/charts/vald/README>Helm Chart Reference</a></li>
 <li><a href=https://github.com/vdaas/vald/blob/v0.0.65/charts/vald-helm-operator/README>Helm Operator Chart Reference</a></li>
 </ul>
-<h3 id=changes-14>Changes</h3>
+<h3 id=changes-15>Changes</h3>
 <ul>
 <li>Happy new year (<a href=https://github.com/vdaas/vald/pull/905>#905</a>)</li>
 <li>:white_check_mark: Add test case for internal/errors/file.go (<a href=https://github.com/vdaas/vald/pull/893>#893</a>)</li>
 <li>:robot: Automatically update k8s manifests (<a href=https://github.com/vdaas/vald/pull/902>#902</a>)</li>
 </ul>
 <h2 id=v0064>v0.0.64</h2>
-<h3 id=docker-images-14>Docker images</h3>
+<h3 id=docker-images-15>Docker images</h3>
 <table>
 <tr>
 <th>component</th>
@@ -1839,13 +1912,13 @@ v1.2
 </td>
 </tr>
 </table>
-<h3 id=documents-14>Documents</h3>
+<h3 id=documents-15>Documents</h3>
 <ul>
 <li><a href=https://pkg.go.dev/github.com/vdaas/vald@v0.0.64>GoDoc</a></li>
 <li><a href=https://github.com/vdaas/vald/blob/v0.0.64/charts/vald/README>Helm Chart Reference</a></li>
 <li><a href=https://github.com/vdaas/vald/blob/v0.0.64/charts/vald-helm-operator/README>Helm Operator Chart Reference</a></li>
 </ul>
-<h3 id=changes-15>Changes</h3>
+<h3 id=changes-16>Changes</h3>
 <ul>
 <li>:wrench: Rename PriorityClass names to contain namespace (<a href=https://github.com/vdaas/vald/pull/901>#901</a>)</li>
 <li>:bug: Fix bug on updating status of VR & VHOR resources (<a href=https://github.com/vdaas/vald/pull/892>#892</a>)</li>
@@ -1857,7 +1930,7 @@ v1.2
 <li>:robot: Automatically update k8s manifests (<a href=https://github.com/vdaas/vald/pull/887>#887</a>)</li>
 </ul>
 <h2 id=v0063>v0.0.63</h2>
-<h3 id=docker-images-15>Docker images</h3>
+<h3 id=docker-images-16>Docker images</h3>
 <table>
 <tr>
 <th>component</th>
@@ -1941,13 +2014,13 @@ v1.2
 </td>
 </tr>
 </table>
-<h3 id=documents-15>Documents</h3>
+<h3 id=documents-16>Documents</h3>
 <ul>
 <li><a href=https://pkg.go.dev/github.com/vdaas/vald@v0.0.63>GoDoc</a></li>
 <li><a href=https://github.com/vdaas/vald/blob/v0.0.63/charts/vald/README>Helm Chart Reference</a></li>
 <li><a href=https://github.com/vdaas/vald/blob/v0.0.63/charts/vald-helm-operator/README>Helm Operator Chart Reference</a></li>
 </ul>
-<h3 id=changes-16>Changes</h3>
+<h3 id=changes-17>Changes</h3>
 <ul>
 <li>Remove go mod tidy from base image / Add valid token to semver job (<a href=https://github.com/vdaas/vald/pull/886>#886</a>)</li>
 <li>bugfix agent duplicated data update execution (<a href=https://github.com/vdaas/vald/pull/885>#885</a>)</li>
@@ -1969,7 +2042,7 @@ v1.2
 <li>:robot: Automatically update k8s manifests (<a href=https://github.com/vdaas/vald/pull/781>#781</a>)</li>
 </ul>
 <h2 id=v0062>v0.0.62</h2>
-<h3 id=docker-images-16>Docker images</h3>
+<h3 id=docker-images-17>Docker images</h3>
 <table>
 <tr>
 <th>component</th>
@@ -2053,20 +2126,20 @@ v1.2
 </td>
 </tr>
 </table>
-<h3 id=documents-16>Documents</h3>
+<h3 id=documents-17>Documents</h3>
 <ul>
 <li><a href=https://pkg.go.dev/github.com/vdaas/vald@v0.0.62>GoDoc</a></li>
 <li><a href=https://github.com/vdaas/vald/blob/v0.0.62/charts/vald/README>Helm Chart Reference</a></li>
 <li><a href=https://github.com/vdaas/vald/blob/v0.0.62/charts/vald-helm-operator/README>Helm Operator Chart Reference</a></li>
 </ul>
-<h3 id=changes-17>Changes</h3>
+<h3 id=changes-18>Changes</h3>
 <ul>
 <li>add 3 new distance type support for agent-ngt (<a href=https://github.com/vdaas/vald/pull/780>#780</a>)</li>
 <li>upgrade KinD, Helm, valdcli, telepresence, tensorlfow, operator-sdk, helm-docs (<a href=https://github.com/vdaas/vald/pull/776>#776</a>)</li>
 <li>:robot: Automatically update k8s manifests (<a href=https://github.com/vdaas/vald/pull/774>#774</a>)</li>
 </ul>
 <h2 id=v0061>v0.0.61</h2>
-<h3 id=docker-images-17>Docker images</h3>
+<h3 id=docker-images-18>Docker images</h3>
 <table>
 <tr>
 <th>component</th>
@@ -2150,19 +2223,19 @@ v1.2
 </td>
 </tr>
 </table>
-<h3 id=documents-17>Documents</h3>
+<h3 id=documents-18>Documents</h3>
 <ul>
 <li><a href=https://pkg.go.dev/github.com/vdaas/vald@v0.0.61>GoDoc</a></li>
 <li><a href=https://github.com/vdaas/vald/blob/v0.0.61/charts/vald/README>Helm Chart Reference</a></li>
 <li><a href=https://github.com/vdaas/vald/blob/v0.0.61/charts/vald-helm-operator/README>Helm Operator Chart Reference</a></li>
 </ul>
-<h3 id=changes-18>Changes</h3>
+<h3 id=changes-19>Changes</h3>
 <ul>
 <li>fix search result sorting codes (<a href=https://github.com/vdaas/vald/pull/772>#772</a>)</li>
 <li>:robot: Automatically update k8s manifests (<a href=https://github.com/vdaas/vald/pull/771>#771</a>)</li>
 </ul>
 <h2 id=v0060>v0.0.60</h2>
-<h3 id=docker-images-18>Docker images</h3>
+<h3 id=docker-images-19>Docker images</h3>
 <table>
 <tr>
 <th>component</th>
@@ -2246,20 +2319,20 @@ v1.2
 </td>
 </tr>
 </table>
-<h3 id=documents-18>Documents</h3>
+<h3 id=documents-19>Documents</h3>
 <ul>
 <li><a href=https://pkg.go.dev/github.com/vdaas/vald@v0.0.60>GoDoc</a></li>
 <li><a href=https://github.com/vdaas/vald/blob/v0.0.60/charts/vald/README>Helm Chart Reference</a></li>
 <li><a href=https://github.com/vdaas/vald/blob/v0.0.60/charts/vald-helm-operator/README>Helm Operator Chart Reference</a></li>
 </ul>
-<h3 id=changes-19>Changes</h3>
+<h3 id=changes-20>Changes</h3>
 <ul>
 <li>Fix fails test for s3 reader (<a href=https://github.com/vdaas/vald/pull/770>#770</a>)</li>
 <li>CI: Make docker builds fast again (<a href=https://github.com/vdaas/vald/pull/756>#756</a>)</li>
 <li>:robot: Automatically update k8s manifests (<a href=https://github.com/vdaas/vald/pull/769>#769</a>)</li>
 </ul>
 <h2 id=v0059>v0.0.59</h2>
-<h3 id=docker-images-19>Docker images</h3>
+<h3 id=docker-images-20>Docker images</h3>
 <table>
 <thead>
 <tr>
@@ -2314,19 +2387,19 @@ v1.2
 </tr>
 </tbody>
 </table>
-<h3 id=documents-19>Documents</h3>
+<h3 id=documents-20>Documents</h3>
 <ul>
 <li><a href=https://pkg.go.dev/github.com/vdaas/vald@v0.0.59>GoDoc</a></li>
 <li><a href=https://github.com/vdaas/vald/blob/v0.0.59/charts/vald/README>Helm Chart Reference</a></li>
 <li><a href=https://github.com/vdaas/vald/blob/v0.0.59/charts/vald-helm-operator/README>Helm Operator Chart Reference</a></li>
 </ul>
-<h3 id=changes-20>Changes</h3>
+<h3 id=changes-21>Changes</h3>
 <ul>
 <li>bugfix gateway index out of bounds (<a href=https://github.com/vdaas/vald/pull/768>#768</a>)</li>
 <li>:robot: Automatically update k8s manifests (<a href=https://github.com/vdaas/vald/pull/766>#766</a>)</li>
 </ul>
 <h2 id=v0058>v0.0.58</h2>
-<h3 id=docker-images-20>Docker images</h3>
+<h3 id=docker-images-21>Docker images</h3>
 <table>
 <thead>
 <tr>
@@ -2381,13 +2454,13 @@ v1.2
 </tr>
 </tbody>
 </table>
-<h3 id=documents-20>Documents</h3>
+<h3 id=documents-21>Documents</h3>
 <ul>
 <li><a href=https://pkg.go.dev/github.com/vdaas/vald@v0.0.58>GoDoc</a></li>
 <li><a href=https://github.com/vdaas/vald/blob/v0.0.58/charts/vald/README>Helm Chart Reference</a></li>
 <li><a href=https://github.com/vdaas/vald/blob/v0.0.58/charts/vald-helm-operator/README>Helm Operator Chart Reference</a></li>
 </ul>
-<h3 id=changes-21>Changes</h3>
+<h3 id=changes-22>Changes</h3>
 <ul>
 <li>change gateway vald&rsquo;s mutex lock (<a href=https://github.com/vdaas/vald/pull/765>#765</a>)</li>
 <li>patch add more effective Close function for internal/core (<a href=https://github.com/vdaas/vald/pull/764>#764</a>)</li>
@@ -2404,7 +2477,7 @@ v1.2
 <li>:robot: Automatically update k8s manifests (<a href=https://github.com/vdaas/vald/pull/730>#730</a>)</li>
 </ul>
 <h2 id=v0057>v0.0.57</h2>
-<h3 id=docker-images-21>Docker images</h3>
+<h3 id=docker-images-22>Docker images</h3>
 <table>
 <thead>
 <tr>
@@ -2459,13 +2532,13 @@ v1.2
 </tr>
 </tbody>
 </table>
-<h3 id=documents-21>Documents</h3>
+<h3 id=documents-22>Documents</h3>
 <ul>
 <li><a href=https://pkg.go.dev/github.com/vdaas/vald@v0.0.57>GoDoc</a></li>
 <li><a href=https://github.com/vdaas/vald/blob/v0.0.57/charts/vald/README>Helm Chart Reference</a></li>
 <li><a href=https://github.com/vdaas/vald/blob/v0.0.57/charts/vald-helm-operator/README>Helm Operator Chart Reference</a></li>
 </ul>
-<h3 id=changes-22>Changes</h3>
+<h3 id=changes-23>Changes</h3>
 <ul>
 <li>fix duplicated search result (<a href=https://github.com/vdaas/vald/pull/729>#729</a>)</li>
 <li>:recycle: enable to inject only agent-sidecar on initContainer mode without enabling sidecar mode (<a href=https://github.com/vdaas/vald/pull/726>#726</a>)</li>
@@ -2476,7 +2549,7 @@ v1.2
 <li>:robot: Automatically update k8s manifests (<a href=https://github.com/vdaas/vald/pull/708>#708</a>)</li>
 </ul>
 <h2 id=v0056>v0.0.56</h2>
-<h3 id=docker-images-22>Docker images</h3>
+<h3 id=docker-images-23>Docker images</h3>
 <table>
 <thead>
 <tr>
@@ -2531,13 +2604,13 @@ v1.2
 </tr>
 </tbody>
 </table>
-<h3 id=documents-22>Documents</h3>
+<h3 id=documents-23>Documents</h3>
 <ul>
 <li><a href=https://pkg.go.dev/github.com/vdaas/vald@v0.0.56>GoDoc</a></li>
 <li><a href=https://github.com/vdaas/vald/blob/v0.0.56/charts/vald/README>Helm Chart Reference</a></li>
 <li><a href=https://github.com/vdaas/vald/blob/v0.0.56/charts/vald-helm-operator/README>Helm Operator Chart Reference</a></li>
 </ul>
-<h3 id=changes-23>Changes</h3>
+<h3 id=changes-24>Changes</h3>
 <ul>
 <li>add C.free & delete ivc before core.BulkInsert C' function executing for reducing memory usage (<a href=https://github.com/vdaas/vald/pull/701>#701</a>)</li>
 <li>Add cassandra option test (<a href=https://github.com/vdaas/vald/pull/644>#644</a>)</li>
@@ -2552,7 +2625,7 @@ v1.2
 <li>:robot: Automatically update k8s manifests (<a href=https://github.com/vdaas/vald/pull/684>#684</a>)</li>
 </ul>
 <h2 id=v0055>v0.0.55</h2>
-<h3 id=docker-images-23>Docker images</h3>
+<h3 id=docker-images-24>Docker images</h3>
 <table>
 <thead>
 <tr>
@@ -2607,19 +2680,19 @@ v1.2
 </tr>
 </tbody>
 </table>
-<h3 id=documents-23>Documents</h3>
+<h3 id=documents-24>Documents</h3>
 <ul>
 <li><a href=https://pkg.go.dev/github.com/vdaas/vald@v0.0.55>GoDoc</a></li>
 <li><a href=https://github.com/vdaas/vald/blob/v0.0.55/charts/vald/README>Helm Chart Reference</a></li>
 <li><a href=https://github.com/vdaas/vald/blob/v0.0.55/charts/vald-helm-operator/README>Helm Operator Chart Reference</a></li>
 </ul>
-<h3 id=changes-24>Changes</h3>
+<h3 id=changes-25>Changes</h3>
 <ul>
 <li>pass CFLAGS, CXXFLAGS to NGT build command (<a href=https://github.com/vdaas/vald/pull/683>#683</a>)</li>
 <li>:robot: Automatically update k8s manifests (<a href=https://github.com/vdaas/vald/pull/681>#681</a>)</li>
 </ul>
 <h2 id=v0054>v0.0.54</h2>
-<h3 id=docker-images-24>Docker images</h3>
+<h3 id=docker-images-25>Docker images</h3>
 <table>
 <thead>
 <tr>
@@ -2674,19 +2747,19 @@ v1.2
 </tr>
 </tbody>
 </table>
-<h3 id=documents-24>Documents</h3>
+<h3 id=documents-25>Documents</h3>
 <ul>
 <li><a href=https://pkg.go.dev/github.com/vdaas/vald@v0.0.54>GoDoc</a></li>
 <li><a href=https://github.com/vdaas/vald/blob/v0.0.54/charts/vald/README>Helm Chart Reference</a></li>
 <li><a href=https://github.com/vdaas/vald/blob/v0.0.54/charts/vald-helm-operator/README>Helm Operator Chart Reference</a></li>
 </ul>
-<h3 id=changes-25>Changes</h3>
+<h3 id=changes-26>Changes</h3>
 <ul>
 <li>bugfix error assertion (<a href=https://github.com/vdaas/vald/pull/680>#680</a>)</li>
 <li>:robot: Automatically update k8s manifests (<a href=https://github.com/vdaas/vald/pull/679>#679</a>)</li>
 </ul>
 <h2 id=v0053>v0.0.53</h2>
-<h3 id=docker-images-25>Docker images</h3>
+<h3 id=docker-images-26>Docker images</h3>
 <table>
 <thead>
 <tr>
@@ -2741,13 +2814,13 @@ v1.2
 </tr>
 </tbody>
 </table>
-<h3 id=documents-25>Documents</h3>
+<h3 id=documents-26>Documents</h3>
 <ul>
 <li><a href=https://pkg.go.dev/github.com/vdaas/vald@v0.0.53>GoDoc</a></li>
 <li><a href=https://github.com/vdaas/vald/blob/v0.0.53/charts/vald/README>Helm Chart Reference</a></li>
 <li><a href=https://github.com/vdaas/vald/blob/v0.0.53/charts/vald-helm-operator/README>Helm Operator Chart Reference</a></li>
 </ul>
-<h3 id=changes-26>Changes</h3>
+<h3 id=changes-27>Changes</h3>
 <ul>
 <li>remove cockroachdb/errors (<a href=https://github.com/vdaas/vald/pull/677>#677</a>)</li>
 <li>:white_check_mark: Add test case for storage/blob/s3/writer/option (<a href=https://github.com/vdaas/vald/pull/656>#656</a>)</li>
@@ -2756,7 +2829,7 @@ v1.2
 <li>:robot: Automatically update k8s manifests (<a href=https://github.com/vdaas/vald/pull/666>#666</a>)</li>
 </ul>
 <h2 id=v0052>v0.0.52</h2>
-<h3 id=docker-images-26>Docker images</h3>
+<h3 id=docker-images-27>Docker images</h3>
 <table>
 <thead>
 <tr>
@@ -2811,20 +2884,20 @@ v1.2
 </tr>
 </tbody>
 </table>
-<h3 id=documents-26>Documents</h3>
+<h3 id=documents-27>Documents</h3>
 <ul>
 <li><a href=https://pkg.go.dev/github.com/vdaas/vald@v0.0.52>GoDoc</a></li>
 <li><a href=https://github.com/vdaas/vald/blob/v0.0.52/charts/vald/README>Helm Chart Reference</a></li>
 <li><a href=https://github.com/vdaas/vald/blob/v0.0.52/charts/vald-helm-operator/README>Helm Operator Chart Reference</a></li>
 </ul>
-<h3 id=changes-27>Changes</h3>
+<h3 id=changes-28>Changes</h3>
 <ul>
 <li>add build stage for operator-sdk docker v1.0.0 permission changes (<a href=https://github.com/vdaas/vald/pull/665>#665</a>)</li>
 <li>:robot: Automatically update PULL_REQUEST_TEMPLATE and ISSUE_TEMPLATE (<a href=https://github.com/vdaas/vald/pull/663>#663</a>)</li>
 <li>:robot: Automatically update k8s manifests (<a href=https://github.com/vdaas/vald/pull/664>#664</a>)</li>
 </ul>
 <h2 id=v0051>v0.0.51</h2>
-<h3 id=docker-images-27>Docker images</h3>
+<h3 id=docker-images-28>Docker images</h3>
 <table>
 <thead>
 <tr>
@@ -2879,13 +2952,13 @@ v1.2
 </tr>
 </tbody>
 </table>
-<h3 id=documents-27>Documents</h3>
+<h3 id=documents-28>Documents</h3>
 <ul>
 <li><a href=https://pkg.go.dev/github.com/vdaas/vald@v0.0.51>GoDoc</a></li>
 <li><a href=https://github.com/vdaas/vald/blob/v0.0.51/charts/vald/README>Helm Chart Reference</a></li>
 <li><a href=https://github.com/vdaas/vald/blob/v0.0.51/charts/vald-helm-operator/README>Helm Operator Chart Reference</a></li>
 </ul>
-<h3 id=changes-28>Changes</h3>
+<h3 id=changes-29>Changes</h3>
 <ul>
 <li>update deps (<a href=https://github.com/vdaas/vald/pull/660>#660</a>)</li>
 <li>add metrics for indexer and sidecar (<a href=https://github.com/vdaas/vald/pull/642>#642</a>)</li>
@@ -2929,7 +3002,7 @@ v1.2
 <li>:robot: Automatically update k8s manifests (<a href=https://github.com/vdaas/vald/pull/609>#609</a>)</li>
 </ul>
 <h2 id=v0050>v0.0.50</h2>
-<h3 id=docker-images-28>Docker images</h3>
+<h3 id=docker-images-29>Docker images</h3>
 <table>
 <thead>
 <tr>
@@ -2984,13 +3057,13 @@ v1.2
 </tr>
 </tbody>
 </table>
-<h3 id=documents-28>Documents</h3>
+<h3 id=documents-29>Documents</h3>
 <ul>
 <li><a href=https://pkg.go.dev/github.com/vdaas/vald@v0.0.50>GoDoc</a></li>
 <li><a href=https://github.com/vdaas/vald/blob/v0.0.50/charts/vald/README>Helm Chart Reference</a></li>
 <li><a href=https://github.com/vdaas/vald/blob/v0.0.50/charts/vald-helm-operator/README>Helm Operator Chart Reference</a></li>
 </ul>
-<h3 id=changes-29>Changes</h3>
+<h3 id=changes-30>Changes</h3>
 <ul>
 <li>Add warn logging messages to agent-sidecar & ignore io.EOF error when reading metadata.json (<a href=https://github.com/vdaas/vald/pull/608>#608</a>)</li>
 <li>Add DB metrics: Cassandra (<a href=https://github.com/vdaas/vald/pull/587>#587</a>)</li>
@@ -3004,7 +3077,7 @@ v1.2
 <li>:robot: Automatically update k8s manifests (<a href=https://github.com/vdaas/vald/pull/599>#599</a>)</li>
 </ul>
 <h2 id=v0049>v0.0.49</h2>
-<h3 id=docker-images-29>Docker images</h3>
+<h3 id=docker-images-30>Docker images</h3>
 <table>
 <thead>
 <tr>
@@ -3059,19 +3132,19 @@ v1.2
 </tr>
 </tbody>
 </table>
-<h3 id=documents-29>Documents</h3>
+<h3 id=documents-30>Documents</h3>
 <ul>
 <li><a href=https://pkg.go.dev/github.com/vdaas/vald@v0.0.49>GoDoc</a></li>
 <li><a href=https://github.com/vdaas/vald/blob/v0.0.49/charts/vald/README>Helm Chart Reference</a></li>
 <li><a href=https://github.com/vdaas/vald/blob/v0.0.49/charts/vald-helm-operator/README>Helm Operator Chart Reference</a></li>
 </ul>
-<h3 id=changes-30>Changes</h3>
+<h3 id=changes-31>Changes</h3>
 <ul>
 <li>:bug: fix agent sidecar behavior (<a href=https://github.com/vdaas/vald/pull/598>#598</a>)</li>
 <li>:robot: Automatically update k8s manifests (<a href=https://github.com/vdaas/vald/pull/597>#597</a>)</li>
 </ul>
 <h2 id=v0048>v0.0.48</h2>
-<h3 id=docker-images-30>Docker images</h3>
+<h3 id=docker-images-31>Docker images</h3>
 <table>
 <thead>
 <tr>
@@ -3126,13 +3199,13 @@ v1.2
 </tr>
 </tbody>
 </table>
-<h3 id=documents-30>Documents</h3>
+<h3 id=documents-31>Documents</h3>
 <ul>
 <li><a href=https://pkg.go.dev/github.com/vdaas/vald@v0.0.48>GoDoc</a></li>
 <li><a href=https://github.com/vdaas/vald/blob/v0.0.48/charts/vald/README>Helm Chart Reference</a></li>
 <li><a href=https://github.com/vdaas/vald/blob/v0.0.48/charts/vald-helm-operator/README>Helm Operator Chart Reference</a></li>
 </ul>
-<h3 id=changes-31>Changes</h3>
+<h3 id=changes-32>Changes</h3>
 <ul>
 <li>:bug: fix behavior when index path is empty (<a href=https://github.com/vdaas/vald/pull/596>#596</a>)</li>
 <li>:white_check_mark: add internal/net/http/transport/option test (<a href=https://github.com/vdaas/vald/pull/594>#594</a>)</li>
@@ -3140,7 +3213,7 @@ v1.2
 <li>:robot: Automatically update k8s manifests (<a href=https://github.com/vdaas/vald/pull/592>#592</a>)</li>
 </ul>
 <h2 id=v0047>v0.0.47</h2>
-<h3 id=docker-images-31>Docker images</h3>
+<h3 id=docker-images-32>Docker images</h3>
 <table>
 <thead>
 <tr>
@@ -3195,20 +3268,20 @@ v1.2
 </tr>
 </tbody>
 </table>
-<h3 id=documents-31>Documents</h3>
+<h3 id=documents-32>Documents</h3>
 <ul>
 <li><a href=https://pkg.go.dev/github.com/vdaas/vald@v0.0.47>GoDoc</a></li>
 <li><a href=https://github.com/vdaas/vald/blob/v0.0.47/charts/vald/README>Helm Chart Reference</a></li>
 <li><a href=https://github.com/vdaas/vald/blob/v0.0.47/charts/vald-helm-operator/README>Helm Operator Chart Reference</a></li>
 </ul>
-<h3 id=changes-32>Changes</h3>
+<h3 id=changes-33>Changes</h3>
 <ul>
 <li>[agent-NGT, sidecar] Improve S3 backup/recover behavior (<a href=https://github.com/vdaas/vald/pull/556>#556</a>)</li>
 <li>:white_check_mark: add internal/cache/option test (<a href=https://github.com/vdaas/vald/pull/586>#586</a>)</li>
 <li>:robot: Automatically update k8s manifests (<a href=https://github.com/vdaas/vald/pull/588>#588</a>)</li>
 </ul>
 <h2 id=v0046>v0.0.46</h2>
-<h3 id=docker-images-32>Docker images</h3>
+<h3 id=docker-images-33>Docker images</h3>
 <table>
 <thead>
 <tr>
@@ -3263,13 +3336,13 @@ v1.2
 </tr>
 </tbody>
 </table>
-<h3 id=documents-32>Documents</h3>
+<h3 id=documents-33>Documents</h3>
 <ul>
 <li><a href=https://pkg.go.dev/github.com/vdaas/vald@v0.0.46>GoDoc</a></li>
 <li><a href=https://github.com/vdaas/vald/blob/v0.0.46/charts/vald/README>Helm Chart Reference</a></li>
 <li><a href=https://github.com/vdaas/vald/blob/v0.0.46/charts/vald-helm-operator/README>Helm Operator Chart Reference</a></li>
 </ul>
-<h3 id=changes-33>Changes</h3>
+<h3 id=changes-34>Changes</h3>
 <ul>
 <li>Test/internal/tcp (<a href=https://github.com/vdaas/vald/pull/501>#501</a>)</li>
 <li>:white_check_mark: add internal/cache/gache test (<a href=https://github.com/vdaas/vald/pull/583>#583</a>)</li>
@@ -3283,7 +3356,7 @@ v1.2
 <li>:robot: Automatically update PULL_REQUEST_TEMPLATE and ISSUE_TEMPLATE (<a href=https://github.com/vdaas/vald/pull/570>#570</a>)</li>
 </ul>
 <h2 id=v0045>v0.0.45</h2>
-<h3 id=docker-images-33>Docker images</h3>
+<h3 id=docker-images-34>Docker images</h3>
 <table>
 <thead>
 <tr>
@@ -3338,13 +3411,13 @@ v1.2
 </tr>
 </tbody>
 </table>
-<h3 id=documents-33>Documents</h3>
+<h3 id=documents-34>Documents</h3>
 <ul>
 <li><a href=https://pkg.go.dev/github.com/vdaas/vald@v0.0.45>GoDoc</a></li>
 <li><a href=https://github.com/vdaas/vald/blob/v0.0.45/charts/vald/README>Helm Chart Reference</a></li>
 <li><a href=https://github.com/vdaas/vald/blob/v0.0.45/charts/vald-helm-operator/README>Helm Operator Chart Reference</a></li>
 </ul>
-<h3 id=changes-34>Changes</h3>
+<h3 id=changes-35>Changes</h3>
 <ul>
 <li>bugfix gateway & internal/net/grpc (<a href=https://github.com/vdaas/vald/pull/569>#569</a>)</li>
 <li>fix update-k8s workflow & update sample manifests (<a href=https://github.com/vdaas/vald/pull/567>#567</a>)</li>
@@ -3366,7 +3439,7 @@ v1.2
 <li>exclude hack codes (<a href=https://github.com/vdaas/vald/pull/543>#543</a>)</li>
 </ul>
 <h2 id=v0044>v0.0.44</h2>
-<h3 id=docker-images-34>Docker images</h3>
+<h3 id=docker-images-35>Docker images</h3>
 <table>
 <thead>
 <tr>
@@ -3421,13 +3494,13 @@ v1.2
 </tr>
 </tbody>
 </table>
-<h3 id=documents-34>Documents</h3>
+<h3 id=documents-35>Documents</h3>
 <ul>
 <li><a href=https://pkg.go.dev/github.com/vdaas/vald@v0.0.44>GoDoc</a></li>
 <li><a href=https://github.com/vdaas/vald/blob/v0.0.44/charts/vald/README>Helm Chart Reference</a></li>
 <li><a href=https://github.com/vdaas/vald/blob/v0.0.44/charts/vald-helm-operator/README>Helm Operator Chart Reference</a></li>
 </ul>
-<h3 id=changes-35>Changes</h3>
+<h3 id=changes-36>Changes</h3>
 <ul>
 <li>use Len and InsertVCacheLen method for IndexInfo / add mutex for (Create|Save)Index (<a href=https://github.com/vdaas/vald/pull/536>#536</a>)</li>
 <li>documentation: tutorial/agent-on-docker (<a href=https://github.com/vdaas/vald/pull/516>#516</a>)</li>
@@ -3443,7 +3516,7 @@ v1.2
 <li>Added test case for <code>internal/unit</code> pacakge (<a href=https://github.com/vdaas/vald/pull/515>#515</a>)</li>
 </ul>
 <h2 id=v0043>v0.0.43</h2>
-<h3 id=docker-images-35>Docker images</h3>
+<h3 id=docker-images-36>Docker images</h3>
 <table>
 <thead>
 <tr>
@@ -3498,13 +3571,13 @@ v1.2
 </tr>
 </tbody>
 </table>
-<h3 id=documents-35>Documents</h3>
+<h3 id=documents-36>Documents</h3>
 <ul>
 <li><a href=https://pkg.go.dev/github.com/vdaas/vald@v0.0.43>GoDoc</a></li>
 <li><a href=https://github.com/vdaas/vald/blob/v0.0.43/charts/vald/README>Helm Chart Reference</a></li>
 <li><a href=https://github.com/vdaas/vald/blob/v0.0.43/charts/vald-helm-operator/README>Helm Operator Chart Reference</a></li>
 </ul>
-<h3 id=changes-36>Changes</h3>
+<h3 id=changes-37>Changes</h3>
 <ul>
 <li>Revise S3 reader/writer: compatible with IBM Cloud Object Storage (<a href=https://github.com/vdaas/vald/pull/509>#509</a>)</li>
 <li>:bug: Close <a href=https://github.com/vdaas/vald/pull/502>#502</a> / Fix roundtrip error handling (#508)</li>
@@ -3514,7 +3587,7 @@ v1.2
 <li>Revise triggers of workflow run & Fix reading changelogs from PR comments (<a href=https://github.com/vdaas/vald/pull/495>#495</a>)</li>
 </ul>
 <h2 id=v0042>v0.0.42</h2>
-<h3 id=docker-images-36>Docker images</h3>
+<h3 id=docker-images-37>Docker images</h3>
 <table>
 <thead>
 <tr>
@@ -3569,13 +3642,13 @@ v1.2
 </tr>
 </tbody>
 </table>
-<h3 id=documents-36>Documents</h3>
+<h3 id=documents-37>Documents</h3>
 <ul>
 <li><a href=https://pkg.go.dev/github.com/vdaas/vald@v0.0.42>GoDoc</a></li>
 <li><a href=https://github.com/vdaas/vald/blob/v0.0.42/charts/vald/README>Helm Chart Reference</a></li>
 <li><a href=https://github.com/vdaas/vald/blob/v0.0.42/charts/vald-helm-operator/README>Helm Operator Chart Reference</a></li>
 </ul>
-<h3 id=changes-37>Changes</h3>
+<h3 id=changes-38>Changes</h3>
 <ul>
 <li>✨ Add Stackdriver Monitoring, Tracing and Profiler support (<a href=https://github.com/vdaas/vald/pull/479>#479</a>)</li>
 <li>:green_heart: Add CodeQL workflow instead of LGTM.com (<a href=https://github.com/vdaas/vald/pull/486>#486</a>)</li>
@@ -3586,7 +3659,7 @@ v1.2
 <li>internal/db/storage/blob/s3: remove ctx from struct (<a href=https://github.com/vdaas/vald/pull/473>#473</a>)</li>
 </ul>
 <h2 id=v0041>v0.0.41</h2>
-<h3 id=docker-images-37>Docker images</h3>
+<h3 id=docker-images-38>Docker images</h3>
 <table>
 <thead>
 <tr>
@@ -3641,13 +3714,13 @@ v1.2
 </tr>
 </tbody>
 </table>
-<h3 id=documents-37>Documents</h3>
+<h3 id=documents-38>Documents</h3>
 <ul>
 <li><a href=https://pkg.go.dev/github.com/vdaas/vald@v0.0.41>GoDoc</a></li>
 <li><a href=https://github.com/vdaas/vald/blob/v0.0.41/charts/vald/README>Helm Chart Reference</a></li>
 <li><a href=https://github.com/vdaas/vald/blob/v0.0.41/charts/vald-helm-operator/README>Helm Operator Chart Reference</a></li>
 </ul>
-<h3 id=changes-38>Changes</h3>
+<h3 id=changes-39>Changes</h3>
 <ul>
 <li>Refactor agent-sidecar: fix S3 reader & add backoff logic (<a href=https://github.com/vdaas/vald/pull/467>#467</a>)</li>
 <li>:bug: :pencil: fix link (<a href=https://github.com/vdaas/vald/pull/471>#471</a>)</li>
@@ -3662,7 +3735,7 @@ v1.2
 <li>:art: trim white margin at data flow images (<a href=https://github.com/vdaas/vald/pull/459>#459</a>)</li>
 </ul>
 <h2 id=v0040>v0.0.40</h2>
-<h3 id=docker-images-38>Docker images</h3>
+<h3 id=docker-images-39>Docker images</h3>
 <table>
 <thead>
 <tr>
@@ -3717,13 +3790,13 @@ v1.2
 </tr>
 </tbody>
 </table>
-<h3 id=documents-38>Documents</h3>
+<h3 id=documents-39>Documents</h3>
 <ul>
 <li><a href=https://pkg.go.dev/github.com/vdaas/vald@v0.0.40>GoDoc</a></li>
 <li><a href=https://github.com/vdaas/vald/blob/v0.0.40/charts/vald/README>Helm Chart Reference</a></li>
 <li><a href=https://github.com/vdaas/vald/blob/v0.0.40/charts/vald-helm-operator/README>Helm Operator Chart Reference</a></li>
 </ul>
-<h3 id=changes-39>Changes</h3>
+<h3 id=changes-40>Changes</h3>
 <ul>
 <li>Documentation: add concept section to the architecture document (<a href=https://github.com/vdaas/vald/pull/438>#438</a>)</li>
 <li>feat: level pacakge test (<a href=https://github.com/vdaas/vald/pull/455>#455</a>)</li>
@@ -3738,7 +3811,7 @@ v1.2
 <li>🐛 Fix bug on changelog command (<a href=https://github.com/vdaas/vald/pull/448>#448</a>)</li>
 </ul>
 <h2 id=v0039>v0.0.39</h2>
-<h3 id=docker-images-39>Docker images</h3>
+<h3 id=docker-images-40>Docker images</h3>
 <table>
 <thead>
 <tr>
@@ -3793,13 +3866,13 @@ v1.2
 </tr>
 </tbody>
 </table>
-<h3 id=documents-39>Documents</h3>
+<h3 id=documents-40>Documents</h3>
 <ul>
 <li><a href=https://pkg.go.dev/github.com/vdaas/vald@v0.0.39>GoDoc</a></li>
 <li><a href=https://github.com/vdaas/vald/blob/v0.0.39/charts/vald/README>Helm Chart Reference</a></li>
 <li><a href=https://github.com/vdaas/vald/blob/v0.0.39/charts/vald-helm-operator/README>Helm Operator Chart Reference</a></li>
 </ul>
-<h3 id=changes-40>Changes</h3>
+<h3 id=changes-41>Changes</h3>
 <ul>
 <li>[patch] fix doc file path (<a href=https://github.com/vdaas/vald/pull/444>#444</a>)</li>
 <li>Add changelog command (ChatOps) (<a href=https://github.com/vdaas/vald/pull/447>#447</a>)</li>
@@ -3815,7 +3888,7 @@ v1.2
 <li>:pencil2: Fix typo (<a href=https://github.com/vdaas/vald/pull/436>#436</a>)</li>
 </ul>
 <h2 id=v0038>v0.0.38</h2>
-<h3 id=docker-images-40>Docker images</h3>
+<h3 id=docker-images-41>Docker images</h3>
 <table>
 <thead>
 <tr>
@@ -3870,13 +3943,13 @@ v1.2
 </tr>
 </tbody>
 </table>
-<h3 id=documents-40>Documents</h3>
+<h3 id=documents-41>Documents</h3>
 <ul>
 <li><a href=https://pkg.go.dev/github.com/vdaas/vald@v0.0.38>GoDoc</a></li>
 <li><a href=https://github.com/vdaas/vald/blob/v0.0.38/charts/vald/README>Helm Chart Reference</a></li>
 <li><a href=https://github.com/vdaas/vald/blob/v0.0.38/charts/vald-helm-operator/README>Helm Operator Chart Reference</a></li>
 </ul>
-<h3 id=changes-41>Changes</h3>
+<h3 id=changes-42>Changes</h3>
 <ul>
 <li>send PR when K8s manifests are updated (<a href=https://github.com/vdaas/vald/pull/435>#435</a>)</li>
 <li>Implementation of agent-sidecar storage backup logic (<a href=https://github.com/vdaas/vald/pull/409>#409</a>)</li>
@@ -3900,7 +3973,7 @@ v1.2
 <li>Add internal/db/storage/blob (<a href=https://github.com/vdaas/vald/pull/388>#388</a>)</li>
 </ul>
 <h2 id=v0037>v0.0.37</h2>
-<h3 id=docker-images-41>Docker images</h3>
+<h3 id=docker-images-42>Docker images</h3>
 <table>
 <thead>
 <tr>
@@ -3951,20 +4024,20 @@ v1.2
 </tr>
 </tbody>
 </table>
-<h3 id=documents-41>Documents</h3>
+<h3 id=documents-42>Documents</h3>
 <ul>
 <li><a href=https://pkg.go.dev/github.com/vdaas/vald@v0.0.37>GoDoc</a></li>
 <li><a href=https://github.com/vdaas/vald/blob/v0.0.37/charts/vald/README>Helm Chart Reference</a></li>
 <li><a href=https://github.com/vdaas/vald/blob/v0.0.37/charts/vald-helm-operator/README>Helm Operator Chart Reference</a></li>
 </ul>
-<h3 id=changes-42>Changes</h3>
+<h3 id=changes-43>Changes</h3>
 <ul>
 <li>add agent auto save indexing feature (<a href=https://github.com/vdaas/vald/pull/385>#385</a>)</li>
 <li>:bug: fix ngt <code>distance_type</code> (<a href=https://github.com/vdaas/vald/pull/384>#384</a>)</li>
 <li>Add topology spread constraints (<a href=https://github.com/vdaas/vald/pull/383>#383</a>)</li>
 </ul>
 <h2 id=v0036>v0.0.36</h2>
-<h3 id=docker-images-42>Docker images</h3>
+<h3 id=docker-images-43>Docker images</h3>
 <table>
 <thead>
 <tr>
@@ -4015,13 +4088,13 @@ v1.2
 </tr>
 </tbody>
 </table>
-<h3 id=documents-42>Documents</h3>
+<h3 id=documents-43>Documents</h3>
 <ul>
 <li><a href=https://pkg.go.dev/github.com/vdaas/vald@v0.0.36>GoDoc</a></li>
 <li><a href=https://github.com/vdaas/vald/blob/v0.0.36/charts/vald/README>Helm Chart Reference</a></li>
 <li><a href=https://github.com/vdaas/vald/blob/v0.0.36/charts/vald-helm-operator/README>Helm Operator Chart Reference</a></li>
 </ul>
-<h3 id=changes-43>Changes</h3>
+<h3 id=changes-44>Changes</h3>
 <ul>
 <li>update dependencies version (<a href=https://github.com/vdaas/vald/pull/381>#381</a>)</li>
 <li>Fix missing value on compressor health servers (<a href=https://github.com/vdaas/vald/pull/377>#377</a>)</li>
@@ -4034,7 +4107,7 @@ v1.2
 <li>Add configurations (<a href=https://github.com/vdaas/vald/pull/356>#356</a>)</li>
 </ul>
 <h2 id=v0035>v0.0.35</h2>
-<h3 id=docker-images-43>Docker images</h3>
+<h3 id=docker-images-44>Docker images</h3>
 <table>
 <thead>
 <tr>
@@ -4085,13 +4158,13 @@ v1.2
 </tr>
 </tbody>
 </table>
-<h3 id=documents-43>Documents</h3>
+<h3 id=documents-44>Documents</h3>
 <ul>
 <li><a href=https://pkg.go.dev/github.com/vdaas/vald@v0.0.35>GoDoc</a></li>
 <li><a href=https://github.com/vdaas/vald/blob/v0.0.35/charts/vald/README>Helm Chart Reference</a></li>
 <li><a href=https://github.com/vdaas/vald/blob/v0.0.35/charts/vald-helm-operator/README>Helm Operator Chart Reference</a></li>
 </ul>
-<h3 id=changes-44>Changes</h3>
+<h3 id=changes-45>Changes</h3>
 <ul>
 <li>add storage backup option to agent (<a href=https://github.com/vdaas/vald/pull/367>#367</a>)</li>
 <li>Add client-node dispatcher (<a href=https://github.com/vdaas/vald/pull/370>#370</a>)</li>
@@ -4100,7 +4173,7 @@ v1.2
 <li>add goleak (<a href=https://github.com/vdaas/vald/pull/359>#359</a>)</li>
 </ul>
 <h2 id=v0034>v0.0.34</h2>
-<h3 id=docker-images-44>Docker images</h3>
+<h3 id=docker-images-45>Docker images</h3>
 <table>
 <thead>
 <tr>
@@ -4151,13 +4224,13 @@ v1.2
 </tr>
 </tbody>
 </table>
-<h3 id=documents-44>Documents</h3>
+<h3 id=documents-45>Documents</h3>
 <ul>
 <li><a href=https://pkg.go.dev/github.com/vdaas/vald@v0.0.34>GoDoc</a></li>
 <li><a href=https://github.com/vdaas/vald/blob/v0.0.34/charts/vald/README>Helm Chart Reference</a></li>
 <li><a href=https://github.com/vdaas/vald/blob/v0.0.34/charts/vald-helm-operator/README>Helm Operator Chart Reference</a></li>
 </ul>
-<h3 id=changes-45>Changes</h3>
+<h3 id=changes-46>Changes</h3>
 <ul>
 <li>feature/internal/cassandra/add option (<a href=https://github.com/vdaas/vald/pull/358>#358</a>)</li>
 <li>update helm docs when version is published (<a href=https://github.com/vdaas/vald/pull/355>#355</a>)</li>
@@ -4167,7 +4240,7 @@ v1.2
 <li>Add more options and remove valdhelmoperatorrelease, valdrelease from vald-helm-operator chart (<a href=https://github.com/vdaas/vald/pull/334>#334</a>)</li>
 </ul>
 <h2 id=v0033>v0.0.33</h2>
-<h3 id=docker-images-45>Docker images</h3>
+<h3 id=docker-images-46>Docker images</h3>
 <table>
 <thead>
 <tr>
@@ -4218,13 +4291,13 @@ v1.2
 </tr>
 </tbody>
 </table>
-<h3 id=documents-45>Documents</h3>
+<h3 id=documents-46>Documents</h3>
 <ul>
 <li><a href=https://pkg.go.dev/github.com/vdaas/vald@v0.0.33>GoDoc</a></li>
 <li><a href=https://github.com/vdaas/vald/blob/v0.0.33/charts/vald/README>Helm Chart Reference</a></li>
 <li><a href=https://github.com/vdaas/vald/blob/v0.0.33/charts/vald-helm-operator/README>Helm Operator Chart Reference</a></li>
 </ul>
-<h3 id=changes-46>Changes</h3>
+<h3 id=changes-47>Changes</h3>
 <ul>
 <li>update k8s dependencies (<a href=https://github.com/vdaas/vald/pull/349>#349</a>)</li>
 <li>create missing test files by the our original test template (<a href=https://github.com/vdaas/vald/pull/348>#348</a>)</li>
@@ -4233,7 +4306,7 @@ v1.2
 <li>fix tensorflow.go, option.go (<a href=https://github.com/vdaas/vald/pull/261>#261</a>)</li>
 </ul>
 <h2 id=v0032>v0.0.32</h2>
-<h3 id=docker-images-46>Docker images</h3>
+<h3 id=docker-images-47>Docker images</h3>
 <table>
 <thead>
 <tr>
@@ -4284,20 +4357,20 @@ v1.2
 </tr>
 </tbody>
 </table>
-<h3 id=documents-46>Documents</h3>
+<h3 id=documents-47>Documents</h3>
 <ul>
 <li><a href=https://pkg.go.dev/github.com/vdaas/vald@v0.0.32>GoDoc</a></li>
 <li><a href=https://github.com/vdaas/vald/blob/v0.0.32/charts/vald/README>Helm Chart Reference</a></li>
 <li><a href=https://github.com/vdaas/vald/blob/v0.0.32/charts/vald-helm-operator/README>Helm Operator Chart Reference</a></li>
 </ul>
-<h3 id=changes-47>Changes</h3>
+<h3 id=changes-48>Changes</h3>
 <ul>
 <li>bugfix ip discoverer disconnection too slow (<a href=https://github.com/vdaas/vald/pull/344>#344</a>)</li>
 <li>Compressor: backup vectors in queue using PostStop function (<a href=https://github.com/vdaas/vald/pull/345>#345</a>)</li>
 <li>Revise backup/meta Cassandra default values (<a href=https://github.com/vdaas/vald/pull/336>#336</a>)</li>
 </ul>
 <h2 id=v0031>v0.0.31</h2>
-<h3 id=docker-images-47>Docker images</h3>
+<h3 id=docker-images-48>Docker images</h3>
 <table>
 <thead>
 <tr>
@@ -4348,18 +4421,18 @@ v1.2
 </tr>
 </tbody>
 </table>
-<h3 id=documents-47>Documents</h3>
+<h3 id=documents-48>Documents</h3>
 <ul>
 <li><a href=https://pkg.go.dev/github.com/vdaas/vald@v0.0.31>GoDoc</a></li>
 <li><a href=https://github.com/vdaas/vald/blob/v0.0.31/charts/vald/README>Helm Chart Reference</a></li>
 <li><a href=https://github.com/vdaas/vald/blob/v0.0.31/charts/vald-helm-operator/README>Helm Operator Chart Reference</a></li>
 </ul>
-<h3 id=changes-48>Changes</h3>
+<h3 id=changes-49>Changes</h3>
 <ul>
 <li>Resolve busy-loop on worker (<a href=https://github.com/vdaas/vald/pull/339>#339</a>)</li>
 </ul>
 <h2 id=v0030>v0.0.30</h2>
-<h3 id=docker-images-48>Docker images</h3>
+<h3 id=docker-images-49>Docker images</h3>
 <table>
 <thead>
 <tr>
@@ -4410,13 +4483,13 @@ v1.2
 </tr>
 </tbody>
 </table>
-<h3 id=documents-48>Documents</h3>
+<h3 id=documents-49>Documents</h3>
 <ul>
 <li><a href=https://pkg.go.dev/github.com/vdaas/vald@v0.0.30>GoDoc</a></li>
 <li><a href=https://github.com/vdaas/vald/blob/v0.0.30/charts/vald/README>Helm Chart Reference</a></li>
 <li><a href=https://github.com/vdaas/vald/blob/v0.0.30/charts/vald-helm-operator/README>Helm Operator Chart Reference</a></li>
 </ul>
-<h3 id=changes-49>Changes</h3>
+<h3 id=changes-50>Changes</h3>
 <ul>
 <li>async compressor</li>
 <li>optimized gRPC pool connection</li>
@@ -4429,7 +4502,7 @@ v1.2
 <li>coding guideline</li>
 </ul>
 <h2 id=v0026>v0.0.26</h2>
-<h3 id=docker-images-49>Docker images</h3>
+<h3 id=docker-images-50>Docker images</h3>
 <table>
 <thead>
 <tr>
@@ -4480,13 +4553,13 @@ v1.2
 </tr>
 </tbody>
 </table>
-<h3 id=documents-49>Documents</h3>
+<h3 id=documents-50>Documents</h3>
 <ul>
 <li><a href=https://pkg.go.dev/github.com/vdaas/vald@v0.0.26>GoDoc</a></li>
 <li><a href=https://github.com/vdaas/vald/blob/v0.0.26/charts/vald/README>Helm Chart Reference</a></li>
 <li><a href=https://github.com/vdaas/vald/blob/v0.0.26/charts/vald-helm-operator/README>Helm Operator Chart Reference</a></li>
 </ul>
-<h3 id=changes-50>Changes</h3>
+<h3 id=changes-51>Changes</h3>
 <ul>
 <li>added helm operator</li>
 <li>added telepresence</li>
@@ -4499,357 +4572,364 @@ v1.2
 <button class=menu><span class=dot></span></button>
 <nav id=TableOfContents>
 <ul>
-<li><a href=#v123>v1.2.3</a>
+<li><a href=#v124>v1.2.4</a>
 <ul>
 <li><a href=#docker-images>Docker images</a></li>
 <li><a href=#documents>Documents</a></li>
 <li><a href=#changes>Changes</a></li>
 </ul>
 </li>
-<li><a href=#v122>v1.2.2</a>
+<li><a href=#v123>v1.2.3</a>
 <ul>
 <li><a href=#docker-images-1>Docker images</a></li>
 <li><a href=#documents-1>Documents</a></li>
 <li><a href=#changes-1>Changes</a></li>
 </ul>
 </li>
-<li><a href=#v121>v1.2.1</a>
+<li><a href=#v122>v1.2.2</a>
 <ul>
 <li><a href=#docker-images-2>Docker images</a></li>
 <li><a href=#documents-2>Documents</a></li>
 <li><a href=#changes-2>Changes</a></li>
 </ul>
 </li>
-<li><a href=#v120>v1.2.0</a>
+<li><a href=#v121>v1.2.1</a>
 <ul>
 <li><a href=#docker-images-3>Docker images</a></li>
 <li><a href=#documents-3>Documents</a></li>
 <li><a href=#changes-3>Changes</a></li>
 </ul>
 </li>
-</ul>
-<ul>
-<li><a href=#changes-4>Changes:</a></li>
-<li><a href=#v112>v1.1.2</a>
+<li><a href=#v120>v1.2.0</a>
 <ul>
 <li><a href=#docker-images-4>Docker images</a></li>
 <li><a href=#documents-4>Documents</a></li>
-<li><a href=#changes-5>Changes</a></li>
+<li><a href=#changes-4>Changes</a></li>
 </ul>
 </li>
-<li><a href=#v111>v1.1.1</a>
+</ul>
+<ul>
+<li><a href=#changes-5>Changes:</a></li>
+<li><a href=#v112>v1.1.2</a>
 <ul>
 <li><a href=#docker-images-5>Docker images</a></li>
 <li><a href=#documents-5>Documents</a></li>
 <li><a href=#changes-6>Changes</a></li>
 </ul>
 </li>
-<li><a href=#v110>v1.1.0</a>
+<li><a href=#v111>v1.1.1</a>
 <ul>
 <li><a href=#docker-images-6>Docker images</a></li>
 <li><a href=#documents-6>Documents</a></li>
 <li><a href=#changes-7>Changes</a></li>
 </ul>
 </li>
-<li><a href=#v104>v1.0.4</a>
+<li><a href=#v110>v1.1.0</a>
 <ul>
 <li><a href=#docker-images-7>Docker images</a></li>
 <li><a href=#documents-7>Documents</a></li>
 <li><a href=#changes-8>Changes</a></li>
 </ul>
 </li>
-<li><a href=#v103>v1.0.3</a>
+<li><a href=#v104>v1.0.4</a>
 <ul>
 <li><a href=#docker-images-8>Docker images</a></li>
 <li><a href=#documents-8>Documents</a></li>
 <li><a href=#changes-9>Changes</a></li>
 </ul>
 </li>
-<li><a href=#v102>v1.0.2</a>
+<li><a href=#v103>v1.0.3</a>
 <ul>
 <li><a href=#docker-images-9>Docker images</a></li>
 <li><a href=#documents-9>Documents</a></li>
 <li><a href=#changes-10>Changes</a></li>
 </ul>
 </li>
-<li><a href=#v101>v1.0.1</a>
+<li><a href=#v102>v1.0.2</a>
 <ul>
 <li><a href=#docker-images-10>Docker images</a></li>
 <li><a href=#documents-10>Documents</a></li>
 <li><a href=#changes-11>Changes</a></li>
 </ul>
 </li>
-<li><a href=#v100>v1.0.0</a>
+<li><a href=#v101>v1.0.1</a>
 <ul>
 <li><a href=#docker-images-11>Docker images</a></li>
 <li><a href=#documents-11>Documents</a></li>
 <li><a href=#changes-12>Changes</a></li>
 </ul>
 </li>
-<li><a href=#v0066>v0.0.66</a>
+<li><a href=#v100>v1.0.0</a>
 <ul>
 <li><a href=#docker-images-12>Docker images</a></li>
 <li><a href=#documents-12>Documents</a></li>
 <li><a href=#changes-13>Changes</a></li>
 </ul>
 </li>
-<li><a href=#v0065>v0.0.65</a>
+<li><a href=#v0066>v0.0.66</a>
 <ul>
 <li><a href=#docker-images-13>Docker images</a></li>
 <li><a href=#documents-13>Documents</a></li>
 <li><a href=#changes-14>Changes</a></li>
 </ul>
 </li>
-<li><a href=#v0064>v0.0.64</a>
+<li><a href=#v0065>v0.0.65</a>
 <ul>
 <li><a href=#docker-images-14>Docker images</a></li>
 <li><a href=#documents-14>Documents</a></li>
 <li><a href=#changes-15>Changes</a></li>
 </ul>
 </li>
-<li><a href=#v0063>v0.0.63</a>
+<li><a href=#v0064>v0.0.64</a>
 <ul>
 <li><a href=#docker-images-15>Docker images</a></li>
 <li><a href=#documents-15>Documents</a></li>
 <li><a href=#changes-16>Changes</a></li>
 </ul>
 </li>
-<li><a href=#v0062>v0.0.62</a>
+<li><a href=#v0063>v0.0.63</a>
 <ul>
 <li><a href=#docker-images-16>Docker images</a></li>
 <li><a href=#documents-16>Documents</a></li>
 <li><a href=#changes-17>Changes</a></li>
 </ul>
 </li>
-<li><a href=#v0061>v0.0.61</a>
+<li><a href=#v0062>v0.0.62</a>
 <ul>
 <li><a href=#docker-images-17>Docker images</a></li>
 <li><a href=#documents-17>Documents</a></li>
 <li><a href=#changes-18>Changes</a></li>
 </ul>
 </li>
-<li><a href=#v0060>v0.0.60</a>
+<li><a href=#v0061>v0.0.61</a>
 <ul>
 <li><a href=#docker-images-18>Docker images</a></li>
 <li><a href=#documents-18>Documents</a></li>
 <li><a href=#changes-19>Changes</a></li>
 </ul>
 </li>
-<li><a href=#v0059>v0.0.59</a>
+<li><a href=#v0060>v0.0.60</a>
 <ul>
 <li><a href=#docker-images-19>Docker images</a></li>
 <li><a href=#documents-19>Documents</a></li>
 <li><a href=#changes-20>Changes</a></li>
 </ul>
 </li>
-<li><a href=#v0058>v0.0.58</a>
+<li><a href=#v0059>v0.0.59</a>
 <ul>
 <li><a href=#docker-images-20>Docker images</a></li>
 <li><a href=#documents-20>Documents</a></li>
 <li><a href=#changes-21>Changes</a></li>
 </ul>
 </li>
-<li><a href=#v0057>v0.0.57</a>
+<li><a href=#v0058>v0.0.58</a>
 <ul>
 <li><a href=#docker-images-21>Docker images</a></li>
 <li><a href=#documents-21>Documents</a></li>
 <li><a href=#changes-22>Changes</a></li>
 </ul>
 </li>
-<li><a href=#v0056>v0.0.56</a>
+<li><a href=#v0057>v0.0.57</a>
 <ul>
 <li><a href=#docker-images-22>Docker images</a></li>
 <li><a href=#documents-22>Documents</a></li>
 <li><a href=#changes-23>Changes</a></li>
 </ul>
 </li>
-<li><a href=#v0055>v0.0.55</a>
+<li><a href=#v0056>v0.0.56</a>
 <ul>
 <li><a href=#docker-images-23>Docker images</a></li>
 <li><a href=#documents-23>Documents</a></li>
 <li><a href=#changes-24>Changes</a></li>
 </ul>
 </li>
-<li><a href=#v0054>v0.0.54</a>
+<li><a href=#v0055>v0.0.55</a>
 <ul>
 <li><a href=#docker-images-24>Docker images</a></li>
 <li><a href=#documents-24>Documents</a></li>
 <li><a href=#changes-25>Changes</a></li>
 </ul>
 </li>
-<li><a href=#v0053>v0.0.53</a>
+<li><a href=#v0054>v0.0.54</a>
 <ul>
 <li><a href=#docker-images-25>Docker images</a></li>
 <li><a href=#documents-25>Documents</a></li>
 <li><a href=#changes-26>Changes</a></li>
 </ul>
 </li>
-<li><a href=#v0052>v0.0.52</a>
+<li><a href=#v0053>v0.0.53</a>
 <ul>
 <li><a href=#docker-images-26>Docker images</a></li>
 <li><a href=#documents-26>Documents</a></li>
 <li><a href=#changes-27>Changes</a></li>
 </ul>
 </li>
-<li><a href=#v0051>v0.0.51</a>
+<li><a href=#v0052>v0.0.52</a>
 <ul>
 <li><a href=#docker-images-27>Docker images</a></li>
 <li><a href=#documents-27>Documents</a></li>
 <li><a href=#changes-28>Changes</a></li>
 </ul>
 </li>
-<li><a href=#v0050>v0.0.50</a>
+<li><a href=#v0051>v0.0.51</a>
 <ul>
 <li><a href=#docker-images-28>Docker images</a></li>
 <li><a href=#documents-28>Documents</a></li>
 <li><a href=#changes-29>Changes</a></li>
 </ul>
 </li>
-<li><a href=#v0049>v0.0.49</a>
+<li><a href=#v0050>v0.0.50</a>
 <ul>
 <li><a href=#docker-images-29>Docker images</a></li>
 <li><a href=#documents-29>Documents</a></li>
 <li><a href=#changes-30>Changes</a></li>
 </ul>
 </li>
-<li><a href=#v0048>v0.0.48</a>
+<li><a href=#v0049>v0.0.49</a>
 <ul>
 <li><a href=#docker-images-30>Docker images</a></li>
 <li><a href=#documents-30>Documents</a></li>
 <li><a href=#changes-31>Changes</a></li>
 </ul>
 </li>
-<li><a href=#v0047>v0.0.47</a>
+<li><a href=#v0048>v0.0.48</a>
 <ul>
 <li><a href=#docker-images-31>Docker images</a></li>
 <li><a href=#documents-31>Documents</a></li>
 <li><a href=#changes-32>Changes</a></li>
 </ul>
 </li>
-<li><a href=#v0046>v0.0.46</a>
+<li><a href=#v0047>v0.0.47</a>
 <ul>
 <li><a href=#docker-images-32>Docker images</a></li>
 <li><a href=#documents-32>Documents</a></li>
 <li><a href=#changes-33>Changes</a></li>
 </ul>
 </li>
-<li><a href=#v0045>v0.0.45</a>
+<li><a href=#v0046>v0.0.46</a>
 <ul>
 <li><a href=#docker-images-33>Docker images</a></li>
 <li><a href=#documents-33>Documents</a></li>
 <li><a href=#changes-34>Changes</a></li>
 </ul>
 </li>
-<li><a href=#v0044>v0.0.44</a>
+<li><a href=#v0045>v0.0.45</a>
 <ul>
 <li><a href=#docker-images-34>Docker images</a></li>
 <li><a href=#documents-34>Documents</a></li>
 <li><a href=#changes-35>Changes</a></li>
 </ul>
 </li>
-<li><a href=#v0043>v0.0.43</a>
+<li><a href=#v0044>v0.0.44</a>
 <ul>
 <li><a href=#docker-images-35>Docker images</a></li>
 <li><a href=#documents-35>Documents</a></li>
 <li><a href=#changes-36>Changes</a></li>
 </ul>
 </li>
-<li><a href=#v0042>v0.0.42</a>
+<li><a href=#v0043>v0.0.43</a>
 <ul>
 <li><a href=#docker-images-36>Docker images</a></li>
 <li><a href=#documents-36>Documents</a></li>
 <li><a href=#changes-37>Changes</a></li>
 </ul>
 </li>
-<li><a href=#v0041>v0.0.41</a>
+<li><a href=#v0042>v0.0.42</a>
 <ul>
 <li><a href=#docker-images-37>Docker images</a></li>
 <li><a href=#documents-37>Documents</a></li>
 <li><a href=#changes-38>Changes</a></li>
 </ul>
 </li>
-<li><a href=#v0040>v0.0.40</a>
+<li><a href=#v0041>v0.0.41</a>
 <ul>
 <li><a href=#docker-images-38>Docker images</a></li>
 <li><a href=#documents-38>Documents</a></li>
 <li><a href=#changes-39>Changes</a></li>
 </ul>
 </li>
-<li><a href=#v0039>v0.0.39</a>
+<li><a href=#v0040>v0.0.40</a>
 <ul>
 <li><a href=#docker-images-39>Docker images</a></li>
 <li><a href=#documents-39>Documents</a></li>
 <li><a href=#changes-40>Changes</a></li>
 </ul>
 </li>
-<li><a href=#v0038>v0.0.38</a>
+<li><a href=#v0039>v0.0.39</a>
 <ul>
 <li><a href=#docker-images-40>Docker images</a></li>
 <li><a href=#documents-40>Documents</a></li>
 <li><a href=#changes-41>Changes</a></li>
 </ul>
 </li>
-<li><a href=#v0037>v0.0.37</a>
+<li><a href=#v0038>v0.0.38</a>
 <ul>
 <li><a href=#docker-images-41>Docker images</a></li>
 <li><a href=#documents-41>Documents</a></li>
 <li><a href=#changes-42>Changes</a></li>
 </ul>
 </li>
-<li><a href=#v0036>v0.0.36</a>
+<li><a href=#v0037>v0.0.37</a>
 <ul>
 <li><a href=#docker-images-42>Docker images</a></li>
 <li><a href=#documents-42>Documents</a></li>
 <li><a href=#changes-43>Changes</a></li>
 </ul>
 </li>
-<li><a href=#v0035>v0.0.35</a>
+<li><a href=#v0036>v0.0.36</a>
 <ul>
 <li><a href=#docker-images-43>Docker images</a></li>
 <li><a href=#documents-43>Documents</a></li>
 <li><a href=#changes-44>Changes</a></li>
 </ul>
 </li>
-<li><a href=#v0034>v0.0.34</a>
+<li><a href=#v0035>v0.0.35</a>
 <ul>
 <li><a href=#docker-images-44>Docker images</a></li>
 <li><a href=#documents-44>Documents</a></li>
 <li><a href=#changes-45>Changes</a></li>
 </ul>
 </li>
-<li><a href=#v0033>v0.0.33</a>
+<li><a href=#v0034>v0.0.34</a>
 <ul>
 <li><a href=#docker-images-45>Docker images</a></li>
 <li><a href=#documents-45>Documents</a></li>
 <li><a href=#changes-46>Changes</a></li>
 </ul>
 </li>
-<li><a href=#v0032>v0.0.32</a>
+<li><a href=#v0033>v0.0.33</a>
 <ul>
 <li><a href=#docker-images-46>Docker images</a></li>
 <li><a href=#documents-46>Documents</a></li>
 <li><a href=#changes-47>Changes</a></li>
 </ul>
 </li>
-<li><a href=#v0031>v0.0.31</a>
+<li><a href=#v0032>v0.0.32</a>
 <ul>
 <li><a href=#docker-images-47>Docker images</a></li>
 <li><a href=#documents-47>Documents</a></li>
 <li><a href=#changes-48>Changes</a></li>
 </ul>
 </li>
-<li><a href=#v0030>v0.0.30</a>
+<li><a href=#v0031>v0.0.31</a>
 <ul>
 <li><a href=#docker-images-48>Docker images</a></li>
 <li><a href=#documents-48>Documents</a></li>
 <li><a href=#changes-49>Changes</a></li>
 </ul>
 </li>
-<li><a href=#v0026>v0.0.26</a>
+<li><a href=#v0030>v0.0.30</a>
 <ul>
 <li><a href=#docker-images-49>Docker images</a></li>
 <li><a href=#documents-49>Documents</a></li>
 <li><a href=#changes-50>Changes</a></li>
+</ul>
+</li>
+<li><a href=#v0026>v0.0.26</a>
+<ul>
+<li><a href=#docker-images-50>Docker images</a></li>
+<li><a href=#documents-50>Documents</a></li>
+<li><a href=#changes-51>Changes</a></li>
 </ul>
 </li>
 </ul>

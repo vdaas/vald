@@ -57,10 +57,10 @@
 <li class=header__item>
 <details class=header__version id=version_details>
 <summary class=version__current id=current_version>
-v1.2.3
+v1.2.4
 </summary>
 <ul class=version__list>
-<il class=version__item><a href=javascript:void(0) class="version__link version__link--latest">v1.2.3</a></il>
+<il class=version__item><a href=javascript:void(0) class="version__link version__link--latest">v1.2.4</a></il>
 <il class=version__item><a href=javascript:void(0) class=version__link>v1.2</a></il>
 <il class=version__item><a href=javascript:void(0) class=version__link>v1.1</a></il>
 <il class=version__item><a href=javascript:void(0) class=version__link>v1.0</a></il>
@@ -273,6 +273,9 @@ You can also check <a href=https://github.com/vdaas/vald/blob/master/cmd/agent/c
 </span><span style=color:#e6db74>  # The maximum limit duration for an initial delay
 </span><span style=color:#e6db74>  # initial_delay_max_duration should be 3m-5m for production use. The below setting is a just example.
 </span><span style=color:#e6db74>  initial_delay_max_duration: 60s
+</span><span style=color:#e6db74>  # The default create index batch pool size.
+</span><span style=color:#e6db74>  # When it is too large comparing to machine resource, the docker container will be crash.
+</span><span style=color:#e6db74>  default_pool_size: 500
 </span><span style=color:#e6db74>EOF</span>
 </code></pre></div></li>
 <li>
