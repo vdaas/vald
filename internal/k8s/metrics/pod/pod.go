@@ -64,32 +64,6 @@ func (r *reconciler) addListOpts(opt client.ListOption) {
 	if opt == nil {
 		return
 	}
-	switch v := opt.(type) {
-	case client.MatchingFields:
-		if len(v) == 0 {
-			return
-		}
-	case *client.MatchingFields:
-		if len(*v) == 0 {
-			return
-		}
-	case client.MatchingLabels:
-		if len(v) == 0 {
-			return
-		}
-	case *client.MatchingLabels:
-		if len(*v) == 0 {
-			return
-		}
-	case client.InNamespace:
-		if len(v) == 0 {
-			return
-		}
-	case *client.InNamespace:
-		if len(*v) == 0 {
-			return
-		}
-	}
 	if r.lopts == nil {
 		r.lopts = make([]client.ListOption, 0, 1)
 	}
