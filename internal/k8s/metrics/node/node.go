@@ -146,7 +146,7 @@ func (r *reconciler) GetName() string {
 	return r.name
 }
 
-func (r *reconciler) NewReconciler(mgr manager.Manager) reconcile.Reconciler {
+func (r *reconciler) NewReconciler(ctx context.Context, mgr manager.Manager) reconcile.Reconciler {
 	if r.mgr == nil && mgr != nil {
 		r.mgr = mgr
 	}

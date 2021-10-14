@@ -129,12 +129,12 @@ func (r *reconciler) Reconcile(ctx context.Context, req reconcile.Request) (res 
 	nodes := make([]Node, 0, len(ns.Items))
 
 	for _, node := range ns.Items {
-		if node.GetObjectMeta().GetDeletionTimestamp() != nil ||
+		if node.GetDeletionTimestamp() != nil ||
 			node.Status.Phase != corev1.NodeRunning {
 			log.Debugf("reconcile process will be skipped for node: %s, status: %s, deletion timestamp: %s",
 				node.GetName(),
 				node.Status.Phase,
-				node.GetObjectMeta().GetDeletionTimestamp())
+				node.GetDeletionTimestamp())
 			continue
 		}
 		remain := node.Status.Allocatable
@@ -177,12 +177,12 @@ func (r *reconciler) GetName() string {
 	return r.name
 }
 
-func (r *reconciler) NewReconciler(mgr manager.Manager) reconcile.Reconciler {
+func (r *reconciler) NewReconciler(ctx context.Context, mgr manager.Manager) reconcile.Reconciler {
 	if r.mgr == nil && mgr != nil {
 		r.mgr = mgr
 	}
 	corev1.AddToScheme(r.mgr.GetScheme())
-	if err := r.mgr.GetFieldIndexer().IndexField(context.Background(), &corev1.Node{}, "status.phase", func(obj client.Object) []string {
+	if err := r.mgr.GetFieldIndexer().IndexField(ctx, &corev1.Node{}, "status.phase", func(obj client.Object) []string {
 		node, ok := obj.(*corev1.Node)
 		if !ok || node.GetDeletionTimestamp() != nil {
 			return nil

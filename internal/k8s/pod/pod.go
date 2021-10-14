@@ -190,12 +190,12 @@ func (r *reconciler) GetName() string {
 	return r.name
 }
 
-func (r *reconciler) NewReconciler(mgr manager.Manager) reconcile.Reconciler {
+func (r *reconciler) NewReconciler(ctx context.Context, mgr manager.Manager) reconcile.Reconciler {
 	if r.mgr == nil && mgr != nil {
 		r.mgr = mgr
 	}
 	corev1.AddToScheme(r.mgr.GetScheme())
-	if err := r.mgr.GetFieldIndexer().IndexField(context.Background(), &corev1.Pod{}, "status.phase", func(obj client.Object) []string {
+	if err := r.mgr.GetFieldIndexer().IndexField(ctx, &corev1.Pod{}, "status.phase", func(obj client.Object) []string {
 		pod, ok := obj.(*corev1.Pod)
 		if !ok || pod.GetDeletionTimestamp() != nil {
 			return nil

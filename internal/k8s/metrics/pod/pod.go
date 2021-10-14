@@ -159,12 +159,12 @@ func (r *reconciler) GetName() string {
 	return r.name
 }
 
-func (r *reconciler) NewReconciler(mgr manager.Manager) reconcile.Reconciler {
+func (r *reconciler) NewReconciler(ctx context.Context, mgr manager.Manager) reconcile.Reconciler {
 	if r.mgr == nil && mgr != nil {
 		r.mgr = mgr
 	}
 	metrics.AddToScheme(r.mgr.GetScheme())
-	if err := r.mgr.GetFieldIndexer().IndexField(context.Background(), &metrics.PodMetrics{}, "containers.name", func(obj client.Object) []string {
+	if err := r.mgr.GetFieldIndexer().IndexField(ctx, &metrics.PodMetrics{}, "containers.name", func(obj client.Object) []string {
 		pod, ok := obj.(*metrics.PodMetrics)
 		if !ok {
 			return nil
