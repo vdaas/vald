@@ -90,7 +90,6 @@ func (r *reconciler) addListOpts(opt client.ListOption) {
 			return
 		}
 	}
-	log.Debugf("%#v", opt)
 	if r.lopts == nil {
 		r.lopts = make([]client.ListOption, 0, 1)
 	}
