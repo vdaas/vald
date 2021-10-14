@@ -129,8 +129,7 @@ func (r *reconciler) Reconcile(ctx context.Context, req reconcile.Request) (res 
 	nodes := make([]Node, 0, len(ns.Items))
 
 	for _, node := range ns.Items {
-		if node.GetDeletionTimestamp() != nil ||
-			node.Status.Phase != corev1.NodeRunning {
+		if node.GetDeletionTimestamp() != nil {
 			log.Debugf("reconcile process will be skipped for node: %s, status: %s, deletion timestamp: %s",
 				node.GetName(),
 				node.Status.Phase,
