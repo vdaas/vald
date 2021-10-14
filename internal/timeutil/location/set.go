@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,38 +16,19 @@
 package location
 
 import (
+	"strings"
 	"time"
 )
 
-const (
-	locationTokyo = "Asia/Tokyo"
-	locationJST   = "JST"
-	locationUTC   = "UTC"
-	locationGMT   = "GMT"
-)
-
-var (
-	gmt = location(locationGMT, 0)
-	utc = location(locationUTC, 0)
-	jst = location(locationJST, 9*60*60)
-)
-
-func GMT() *time.Location {
-	return gmt
-}
-
-func UTC() *time.Location {
-	return utc
-}
-
-func JST() *time.Location {
-	return jst
-}
-
-func location(zone string, offset int) *time.Location {
-	loc, err := time.LoadLocation(zone)
-	if err != nil {
-		return time.FixedZone(zone, offset)
+func Set(loc string) {
+	switch strings.ToLower(loc) {
+	case strings.ToLower(locationUTC):
+		time.Local = UTC()
+	case strings.ToLower(locationGMT):
+		time.Local = GMT()
+	case strings.ToLower(locationJST), strings.ToLower(locationTokyo):
+		time.Local = JST()
+	default:
+		time.Local = location(loc, 0)
 	}
-	return loc
 }
