@@ -182,6 +182,15 @@ func (r *reconciler) NewReconciler(mgr manager.Manager) reconcile.Reconciler {
 		r.mgr = mgr
 	}
 	corev1.AddToScheme(r.mgr.GetScheme())
+	if err := r.mgr.GetFieldIndexer().IndexField(context.Background(), &corev1.Node{}, "status.phase", func(obj client.Object) []string {
+		node, ok := obj.(*corev1.Node)
+		if !ok || node.GetDeletionTimestamp() != nil {
+			return nil
+		}
+		return []string{string(node.Status.Phase)}
+	}); err != nil {
+		log.Error(err)
+	}
 	return r
 }
 

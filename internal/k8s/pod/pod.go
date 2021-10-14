@@ -197,7 +197,7 @@ func (r *reconciler) NewReconciler(mgr manager.Manager) reconcile.Reconciler {
 	corev1.AddToScheme(r.mgr.GetScheme())
 	if err := r.mgr.GetFieldIndexer().IndexField(context.Background(), &corev1.Pod{}, "status.phase", func(obj client.Object) []string {
 		pod, ok := obj.(*corev1.Pod)
-		if !ok {
+		if !ok || pod.GetDeletionTimestamp() != nil {
 			return nil
 		}
 		return []string{string(pod.Status.Phase)}
