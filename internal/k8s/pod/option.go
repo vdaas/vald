@@ -67,7 +67,7 @@ func WithNamespace(ns string) Option {
 
 func WithLabels(ls map[string]string) Option {
 	return func(r *reconciler) error {
-		if ls != nil && len(ls) > 0 {
+		if len(ls) > 0 {
 			r.addListOpts(client.MatchingLabels(ls))
 		}
 		return nil
@@ -76,7 +76,7 @@ func WithLabels(ls map[string]string) Option {
 
 func WithFields(fs map[string]string) Option {
 	return func(r *reconciler) error {
-		if fs != nil && len(fs) > 0 {
+		if len(fs) > 0 {
 			r.addListOpts(client.MatchingFields(fs))
 		}
 		return nil
