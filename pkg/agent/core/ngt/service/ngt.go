@@ -326,6 +326,7 @@ func (n *ngt) Start(ctx context.Context) <-chan error {
 	if n.dcd {
 		return nil
 	}
+	n.removeInvalidIndex(ctx)
 	ech := make(chan error, 2)
 	n.eg.Go(safety.RecoverFunc(func() (err error) {
 		defer close(ech)
@@ -637,7 +638,9 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 		}
 		if err := n.core.Remove(uint(oid)); err != nil {
 			log.Errorf("failed to remove oid: %d from ngt index. error: %v", oid, err)
+			n.fmu.Lock()
 			n.fmap[uuid] = oid
+			n.fmu.Unlock()
 		}
 		return true
 	})
@@ -662,10 +665,12 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 			n.kvs.Set(uuid, uint32(oid))
 			atomic.AddUint32(&icnt, 1)
 		}
+		n.fmu.Lock()
 		_, ok := n.fmap[uuid]
 		if ok {
 			delete(n.fmap, uuid)
 		}
+		n.fmu.Unlock()
 		return true
 	})
 	if poolSize <= 0 {
@@ -702,9 +707,9 @@ func (n *ngt) removeInvalidIndex(ctx context.Context) {
 		if err != nil || vec == nil || len(vec) != n.dim {
 			log.Debugf("invalid index detected uuid: %s\toid: %d will remove", uuid, oid)
 			n.kvs.Delete(uuid)
-			mu.Lock()
+			n.fmu.Lock()
 			n.fmap[uuid] = oid
-			mu.Unlock()
+			n.fmu.Unlock()
 		}
 		return true
 	})
