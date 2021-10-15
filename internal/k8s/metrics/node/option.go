@@ -17,7 +17,10 @@
 // Package node provides kubernetes node information and preriodically update
 package node
 
-import "sigs.k8s.io/controller-runtime/pkg/manager"
+import (
+	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/manager"
+)
 
 type Option func(*reconciler) error
 
@@ -47,6 +50,34 @@ func WithOnErrorFunc(f func(err error)) Option {
 func WithOnReconcileFunc(f func(nodes map[string]Node)) Option {
 	return func(r *reconciler) error {
 		r.onReconcile = f
+		return nil
+	}
+}
+
+func WithNamespace(ns string) Option {
+	return func(r *reconciler) error {
+		if ns == "" {
+			return nil
+		}
+		r.namespace = ns
+		return nil
+	}
+}
+
+func WithLabels(ls map[string]string) Option {
+	return func(r *reconciler) error {
+		if len(ls) > 0 {
+			r.addListOpts(client.MatchingLabels(ls))
+		}
+		return nil
+	}
+}
+
+func WithFields(fs map[string]string) Option {
+	return func(r *reconciler) error {
+		if len(fs) > 0 {
+			r.addListOpts(client.MatchingFields(fs))
+		}
 		return nil
 	}
 }

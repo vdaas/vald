@@ -26,6 +26,7 @@ import (
 	"time"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
+	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/k8s"
@@ -62,7 +63,7 @@ type discoverer struct {
 	eg              errgroup.Group
 }
 
-func New(opts ...Option) (dsc Discoverer, err error) {
+func New(selector *config.Selectors, opts ...Option) (dsc Discoverer, err error) {
 	d := new(discoverer)
 	for _, opt := range append(defaultOptions, opts...) {
 		if err := opt(d); err != nil {
@@ -95,6 +96,9 @@ func New(opts ...Option) (dsc Discoverer, err error) {
 					return true
 				})
 			}),
+			mnode.WithNamespace(d.namespace),
+			mnode.WithFields(selector.NodeMetrics.Fields),
+			mnode.WithLabels(selector.NodeMetrics.Labels),
 		)),
 		k8s.WithResourceController(mpod.New(
 			mpod.WithControllerName("pod metrics discoverer"),
@@ -114,6 +118,9 @@ func New(opts ...Option) (dsc Discoverer, err error) {
 					return true
 				})
 			}),
+			mpod.WithNamespace(d.namespace),
+			mpod.WithFields(selector.PodMetrics.Fields),
+			mpod.WithLabels(selector.PodMetrics.Labels),
 		)),
 		k8s.WithResourceController(pod.New(
 			pod.WithControllerName("pod discoverer"),
@@ -136,6 +143,9 @@ func New(opts ...Option) (dsc Discoverer, err error) {
 					return true
 				})
 			}),
+			pod.WithNamespace(d.namespace),
+			pod.WithFields(selector.Pod.Fields),
+			pod.WithLabels(selector.Pod.Labels),
 		)),
 		k8s.WithResourceController(node.New(
 			node.WithControllerName("node discoverer"),
@@ -157,6 +167,9 @@ func New(opts ...Option) (dsc Discoverer, err error) {
 					return true
 				})
 			}),
+			node.WithNamespace(d.namespace),
+			node.WithFields(selector.Node.Fields),
+			node.WithLabels(selector.Node.Labels),
 		)),
 	)
 	if err != nil {

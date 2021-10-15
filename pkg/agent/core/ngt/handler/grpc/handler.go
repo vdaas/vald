@@ -1714,6 +1714,7 @@ func (s *server) CreateIndex(ctx context.Context, c *payload.Control_CreateIndex
 			}
 			return nil, err
 		}
+		log.Error(err)
 		err = status.WrapWithInternal(fmt.Sprintf("CreateIndex API failed to create indexes pool_size = %d", c.GetPoolSize()), err,
 			&errdetails.RequestInfo{
 				ServingData: errdetails.Serialize(c),
@@ -1741,6 +1742,7 @@ func (s *server) SaveIndex(ctx context.Context, _ *payload.Empty) (res *payload.
 	res = new(payload.Empty)
 	err = s.ngt.SaveIndex(ctx)
 	if err != nil {
+		log.Error(err)
 		err = status.WrapWithInternal("SaveIndex API failed to save indices", err,
 			&errdetails.ResourceInfo{
 				ResourceType: ngtResourceType + "/ngt.SaveIndex",

@@ -60,6 +60,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		return nil, err
 	}
 	dsc, err := service.New(
+		cfg.Discoverer.Selectors,
 		service.WithDiscoverDuration(cfg.Discoverer.DiscoveryDuration),
 		service.WithErrGroup(eg),
 		service.WithName(cfg.Discoverer.Name),
