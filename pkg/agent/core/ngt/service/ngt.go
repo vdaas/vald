@@ -392,7 +392,7 @@ func (n *ngt) Search(vec []float32, size uint32, epsilon, radius float32) ([]mod
 		if n.IsIndexing() {
 			return nil, errors.ErrCreateIndexingIsInProgress
 		}
-		log.Errorf("cgo error detected: ngt code api returned error %v", err)
+		log.Errorf("cgo error detected: ngt api returned error %v", err)
 		return nil, err
 	}
 
