@@ -137,7 +137,7 @@ func (r *reconciler) GetName() string {
 }
 
 // NewReconciler returns the reconciler for the StatefulSet.
-func (r *reconciler) NewReconciler(mgr manager.Manager) reconcile.Reconciler {
+func (r *reconciler) NewReconciler(ctx context.Context, mgr manager.Manager) reconcile.Reconciler {
 	if r.mgr == nil && mgr != nil {
 		r.mgr = mgr
 	}
