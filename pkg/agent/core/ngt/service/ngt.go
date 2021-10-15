@@ -170,7 +170,6 @@ func New(cfg *config.NGT, opts ...Option) (nn NGT, err error) {
 		}
 	}
 
-	n.removeInvalidIndex(ctx)
 	n.indexing.Store(false)
 	n.saving.Store(false)
 
