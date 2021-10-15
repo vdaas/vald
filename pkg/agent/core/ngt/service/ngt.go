@@ -127,7 +127,9 @@ const (
 )
 
 func New(cfg *config.NGT, opts ...Option) (nn NGT, err error) {
-	n := new(ngt)
+	n := &ngt{
+		fmap: make(map[string]uint32),
+	}
 
 	for _, opt := range append(defaultOptions, opts...) {
 		if err := opt(n); err != nil {
