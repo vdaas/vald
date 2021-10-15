@@ -1,5 +1,180 @@
 # CHANGELOG
 
+## v1.2.4
+
+### Docker images
+
+<table>
+  <tr>
+    <th>component</th>
+    <th>Docker pull</th>
+  </tr>
+  <tr>
+    <td>Agent NGT</td>
+    <td>
+      <code>docker pull vdaas/vald-agent-ngt:v1.2.4</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-agent-ngt:v1.2.4</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Agent sidecar</td>
+    <td>
+      <code>docker pull vdaas/vald-agent-sidecar:v1.2.4</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-agent-sidecar:v1.2.4</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Discoverers</td>
+    <td>
+      <code>docker pull vdaas/vald-discoverer-k8s:v1.2.4</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-discoverer-k8s:v1.2.4</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Gateways</td>
+    <td>
+      <code>docker pull vdaas/vald-lb-gateway:v1.2.4</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-lb-gateway:v1.2.4</code><br/>
+      <code>docker pull vdaas/vald-filter-gateway:v1.2.4</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-filter-gateway:v1.2.4</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Index Manager</td>
+    <td>
+      <code>docker pull vdaas/vald-manager-index:v1.2.4</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-manager-index:v1.2.4</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Helm Operator</td>
+    <td>
+      <code>docker pull vdaas/vald-helm-operator:v1.2.4</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-helm-operator:v1.2.4</code>
+    </td>
+  </tr>
+</table>
+
+### Documents
+- [GoDoc](https://pkg.go.dev/github.com/vdaas/vald@v1.2.4)
+- [Helm Chart Reference](https://github.com/vdaas/vald/blob/v1.2.4/charts/vald/README.md)
+- [Helm Operator Chart Reference](https://github.com/vdaas/vald/blob/v1.2.4/charts/vald-helm-operator/README.md)
+
+### Changes
+- update go patch version (#1464)
+- [bugfix] sidecar e2e testing (#1465)
+- update dependencies version including NGT (#1461)
+- fix unlimited gorountine processing in kvsdb (#1458)
+- Refactor hack pkg agent e2e benchmark (#1430)
+- Remove non-exist components from doc and ci (#1450)
+- :recycle: :pencil: add default_pool_size in example yml (#1457)
+- reduce memory usage around ngt implementation & refactor agent/lb & auto-generate unit test  (#1449)
+- Remove rinx from several yamls (#1451)
+- Add E2E scenario with SkipStrictExistCheck enabled (#1415)
+- fix filter-gateway chart (#1454)
+- Implement pkg/agent/core/ngt/service/option test  (#1429)
+
+
+## v1.2.3
+
+### Docker images
+
+<table>
+  <tr>
+    <th>component</th>
+    <th>Docker pull</th>
+  </tr>
+  <tr>
+    <td>Agent NGT</td>
+    <td>
+      <code>docker pull vdaas/vald-agent-ngt:v1.2.3</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-agent-ngt:v1.2.3</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Agent sidecar</td>
+    <td>
+      <code>docker pull vdaas/vald-agent-sidecar:v1.2.3</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-agent-sidecar:v1.2.3</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Discoverers</td>
+    <td>
+      <code>docker pull vdaas/vald-discoverer-k8s:v1.2.3</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-discoverer-k8s:v1.2.3</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Gateways</td>
+    <td>
+      <code>docker pull vdaas/vald-gateway:v1.2.3</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-gateway:v1.2.3</code><br/>
+      <code>docker pull vdaas/vald-backup-gateway:v1.2.3</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-backup-gateway:v1.2.3</code><br/>
+      <code>docker pull vdaas/vald-lb-gateway:v1.2.3</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-lb-gateway:v1.2.3</code><br/>
+      <code>docker pull vdaas/vald-meta-gateway:v1.2.3</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-meta-gateway:v1.2.3</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Backup managers</td>
+    <td>
+      <code>docker pull vdaas/vald-manager-backup-mysql:v1.2.3</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-manager-backup-mysql:v1.2.3</code><br/>
+      <code>docker pull vdaas/vald-manager-backup-cassandra:v1.2.3</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-manager-backup-cassandra:v1.2.3</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Compressor</td>
+    <td>
+      <code>docker pull vdaas/vald-manager-compressor:v1.2.3</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-manager-compressor:v1.2.3</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Metas</td>
+    <td>
+      <code>docker pull vdaas/vald-meta-redis:v1.2.3</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-meta-redis:v1.2.3</code><br/>
+      <code>docker pull vdaas/vald-meta-cassandra:v1.2.3</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-meta-cassandra:v1.2.3</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Index Manager</td>
+    <td>
+      <code>docker pull vdaas/vald-manager-index:v1.2.3</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-manager-index:v1.2.3</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Helm Operator</td>
+    <td>
+      <code>docker pull vdaas/vald-helm-operator:v1.2.3</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-helm-operator:v1.2.3</code>
+    </td>
+  </tr>
+</table>
+
+### Documents
+- [GoDoc](https://pkg.go.dev/github.com/vdaas/vald@v1.2.3)
+- [Helm Chart Reference](https://github.com/vdaas/vald/blob/v1.2.3/charts/vald/README.md)
+- [Helm Operator Chart Reference](https://github.com/vdaas/vald/blob/v1.2.3/charts/vald-helm-operator/README.md)
+
+### Changes
+- update go module dependencies & update go patch version to 1.17.1 (#1445)
+- [bugfix] fix unknown status problems in search operation (#1439)
+- Add tools.mk for installing CI tools (#1442)
+- Fix icon image path in Chart.yaml (#1441)
+- fix(Makefile): :bug: Remove components (#1440)
+- Change golangci-lint version to the latest and Fix docker build error (#1435)
+- Fix golangci-lint rule (#1380)
+- Add vqueue test for Exists and GetVector method (#1425)
+
+
 ## v1.2.2
 
 ### Docker images

@@ -21,8 +21,8 @@ import (
 	"testing"
 
 	"github.com/vdaas/vald/internal/errgroup"
+	"github.com/vdaas/vald/internal/test/goleak"
 	"github.com/vdaas/vald/pkg/gateway/lb/service"
-	"go.uber.org/goleak"
 )
 
 func TestWithGateway(t *testing.T) {

@@ -19,6 +19,7 @@ package grpc
 
 import (
 	"os"
+	"runtime"
 	"time"
 
 	"github.com/vdaas/vald/internal/errgroup"
@@ -33,7 +34,7 @@ type Option func(*server)
 var defaultOptions = []Option{
 	WithErrGroup(errgroup.Get()),
 	WithReplicationCount(3),
-	WithStreamConcurrency(20),
+	WithStreamConcurrency(runtime.GOMAXPROCS(-1) * 10),
 	WithTimeout("5s"),
 	WithName(func() string {
 		name, err := os.Hostname()

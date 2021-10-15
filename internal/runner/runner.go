@@ -67,7 +67,6 @@ func Do(ctx context.Context, opts ...Option) error {
 	p, isHelp, err := params.New(
 		params.WithConfigFileDescription(fmt.Sprintf("%s config file path", r.name)),
 	).Parse()
-
 	if isHelp || err != nil {
 		log.Init(log.WithLevel(level.FATAL.String()))
 		return err

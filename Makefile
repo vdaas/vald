@@ -59,10 +59,13 @@ OPERATOR_SDK_VERSION := $(eval OPERATOR_SDK_VERSION := $(shell cat versions/OPER
 KIND_VERSION         ?= v0.11.1
 HELM_VERSION         ?= v3.6.3
 HELM_DOCS_VERSION    ?= 1.5.0
-YQ_VERSION           ?= v4.11.2
-VALDCLI_VERSION      ?= v1.1.2
+YQ_VERSION           ?= v4.12.2
+VALDCLI_VERSION      ?= v1.2.2
 TELEPRESENCE_VERSION ?= 0.109
-KUBELINTER_VERSION   ?= 0.2.2
+KUBELINTER_VERSION   ?= 0.2.3
+GOLANGCILINT_VERSION ?= v1.42.1
+REVIEWDOG_VERSION    ?= v0.13.0
+PROTOBUF_VERSION     ?= 3.14.0
 
 SWAP_DEPLOYMENT_TYPE ?= deployment
 SWAP_IMAGE           ?= ""
@@ -535,4 +538,5 @@ include Makefile.d/kind.mk
 include Makefile.d/client.mk
 include Makefile.d/ml.mk
 include Makefile.d/test.mk
+include Makefile.d/tools.mk
 include Makefile.d/e2e.mk

@@ -18,6 +18,9 @@ run:
   skip-dirs:
     - (^|/)apis($|/)
     - (^|/)hack/benchmark($|/)
+    - (^|/)pkg/filter/ingress($|/)
+    - (^|/)internal/core/algorithm/ngt($|/)
+    - (^|/)internal/core/converter/tensorflow($|/)
 
 output:
   format: line-number
@@ -25,7 +28,41 @@ output:
 linters:
   enable-all: true
   disable:
-    - godot
+    - deadcode
+    - errcheck
+    - typecheck
+    - varcheck
+    - cyclop
+    - exhaustivestruct
+    - forbidigo
+    - funlen
+    - gci
+    - gocognit
+    - gocyclo
+    - goerr113
+    - gofmt
+    - goheader
+    - golint
+    - gomoddirectives
+    - gomodguard
+    - goprintffuncname
+    - ifshort
+    - importas
+    - interfacer
+    - lll
+    - maligned
+    - nestif
+    - nlreturn
+    - paralleltest
+    - revive
+    - promlinter
+    - scopelint
+    - testpackage
+    - tparallel
+    - wastedassign
+    - wrapcheck
+    - whitespace
+    - wsl
 
 issues:
   exclude-use-default: false
@@ -34,17 +71,24 @@ issues:
     - path: _test\.go
       linters:
         - dupl
-        - scopelint
-        - funlen
-        - gocognit
-        - godox
+        - forcetypeassert
         - gomnd
-    - path: option\.go
+        - noctx
+        - gochecknoinits
+    - path: _test\.go
+      text: "copylocks:"
+      linters:
+        - govet
+    - path: options?\.go
       linters:
         - gochecknoglobals
+        - gomnd
     - path: main\.go
       linters:
         - gochecknoglobals
+    - path: internal/errors/errors\.go
+      linters:
+        - depguard
 
 linters-settings:
   gocritic:
@@ -53,3 +97,22 @@ linters-settings:
     settings:
       ruleguard:
         rules: './hack/gorules/rules.go'
+  tagliatelle:
+    case:
+      use-field-name: true
+      rules:
+        json: snake
+        yaml: snake
+  depguard:
+    list-type: blacklist
+    include-go-root: true
+    packages-with-error-message:
+      - errors: "errors is allowed only by internal/errors"
+      - k8s.io/apimachinery/pkg/api/errors: "errors is allowed only by internal/errors"
+      - github.com/cockroachdb/errors: "errors is allowed only by internal/errors"
+      - github.com/pkg/errors: "errors is allowed only by internal/errors"
+      - github.com/go-errors/errors: "errors is allowed only by internal/errors"
+      - golang.org/x/sync/errgroup: "errgroup is allowed only by internal/errgroup"
+  govet:
+    check-shadowing: true
+    enable-all: true

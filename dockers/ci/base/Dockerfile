@@ -20,9 +20,6 @@ ARG MAINTAINER="vdaas.org vald team <vald@vdaas.org>"
 FROM golang:${GO_VERSION} AS golang
 
 FROM ubuntu:hirsute AS builder
-ARG PROTOBUF_VERSION=3.14.0
-ARG GOLANGCI_LINT_VERSION=v1.36.0
-ARG REVIEWDOG_VERSION=v0.11.0
 
 LABEL maintainer "${MAINTAINER}"
 
@@ -58,13 +55,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-WORKDIR /tmp
-RUN curl -OL "https://github.com/google/protobuf/releases/download/v${PROTOBUF_VERSION}/protoc-${PROTOBUF_VERSION}-linux-x86_64.zip" \
-    && unzip protoc-${PROTOBUF_VERSION}-linux-x86_64.zip -d protoc3 \
-    && mv protoc3/bin/* /usr/local/bin/ \
-    && mv protoc3/include/* /usr/local/include/ \
-    && rm -rf protoc-${PROTOBUF_VERSION}-linux-x86_64.zip protoc3
-
 WORKDIR ${GOPATH}/src/github.com/vdaas/vald
 
 COPY go.mod .
@@ -77,25 +67,19 @@ COPY hack/go.mod.default hack/go.mod.default
 
 RUN make deps
 
-RUN make ngt/install
-RUN make tensorflow/install
-
-RUN make helm/install
-RUN make helm-docs/install
-RUN make kind/install
-RUN make valdcli/install
-RUN make kubelinter/install
-RUN make yq/install
-
-RUN make tparse/install
-
-RUN curl -L "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl" -o /usr/local/bin/kubectl \
-    && chmod a+x /usr/local/bin/kubectl
-
-RUN curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh \
-    | sh -s -- -b $(go env GOPATH)/bin ${GOLANGCI_LINT_VERSION}
-RUN curl -sSfL https://raw.githubusercontent.com/reviewdog/reviewdog/master/install.sh \
-    | sh -s -- -b $(go env GOPATH)/bin ${REVIEWDOG_VERSION}
+RUN make ngt/install \
+    && make tensorflow/install \
+    && make helm/install \
+    && make helm-docs/install \
+    && make kind/install \
+    && make valdcli/install \
+    && make kubelinter/install \
+    && make yq/install \
+    && make tparse/install \
+    && make golangci-lint/install \
+    && make reviewdog/install \
+    && make kubectl/install \
+    && make protobuf/install
 
 ENV PATH=$PATH:$GOPATH/bin
 

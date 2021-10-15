@@ -22,8 +22,8 @@ import (
 
 	"github.com/vdaas/vald/internal/backoff"
 	"github.com/vdaas/vald/internal/errgroup"
+	"github.com/vdaas/vald/internal/test/goleak"
 	"github.com/vdaas/vald/pkg/agent/sidecar/service/storage"
-	"go.uber.org/goleak"
 )
 
 func TestWithErrGroup(t *testing.T) {

@@ -43,12 +43,12 @@ type Queue interface {
 }
 
 type vqueue struct {
-	uii  []index    // uii is un inserted index
-	imu  sync.Mutex // insert mutex
-	uiim uiim       // uiim is un inserted index map (this value is used for GetVector operation to return queued vector cache data)
-	udk  []key      // udk is un deleted key
-	dmu  sync.Mutex // delete mutex
-	udim udim       // udim is un deleted index map (this value is used for Exists operation to return cache data existence)
+	uii  []index      // uii is un inserted index
+	imu  sync.RWMutex // insert mutex
+	uiim uiim         // uiim is un inserted index map (this value is used for GetVector operation to return queued vector cache data)
+	udk  []key        // udk is un deleted key
+	dmu  sync.RWMutex // delete mutex
+	udim udim         // udim is un deleted index map (this value is used for Exists operation to return cache data existence)
 	eg   errgroup.Group
 
 	// buffer config
@@ -128,6 +128,9 @@ func (v *vqueue) PushDelete(uuid string, date int64) error {
 	return nil
 }
 
+// GetVector returns the vector stored in the queue.
+// If the same UUID exists in the insert queue and the delete queue, the timestamp is compared.
+// And the vector is returned if the timestamp in the insert queue is newer than the delete queue.
 func (v *vqueue) GetVector(uuid string) ([]float32, bool) {
 	vec, ok := v.uiim.Load(uuid)
 	if !ok {
@@ -146,6 +149,9 @@ func (v *vqueue) GetVector(uuid string) ([]float32, bool) {
 	return nil, false
 }
 
+// IVExists returns true if there is the UUID in the insert queue.
+// If the same UUID exists in the insert queue and the delete queue, the timestamp is compared.
+// And the true is returned if the timestamp in the insert queue is newer than the delete queue.
 func (v *vqueue) IVExists(uuid string) bool {
 	vec, ok := v.uiim.Load(uuid)
 	if !ok {
@@ -162,6 +168,9 @@ func (v *vqueue) IVExists(uuid string) bool {
 	return di <= vec.date
 }
 
+// DVExists returns true if there is the UUID in the delete queue.
+// If the same UUID exists in the insert queue and the delete queue, the timestamp is compared.
+// And the true is returned if the timestamp in the delete queue is newer than the insert queue.
 func (v *vqueue) DVExists(uuid string) bool {
 	di, ok := v.udim.Load(uuid)
 	if !ok {
@@ -281,7 +290,7 @@ func (v *vqueue) RangePopDelete(ctx context.Context, now int64, f func(uuid stri
 	// and it is possible that data that was intended to be deleted is registered again.
 	// For this reason, the data is deleted from the Insert Queue only when retrieving data from the Delete Queue.
 	// we should check insert vqueue if insert vqueue exists and delete operation date is newer than insert operation date then we should remove insert vqueue's data.
-	v.imu.Lock()
+	v.imu.RLock()
 	for i, idx := range v.uii {
 		if idx.date > now {
 			continue
@@ -293,7 +302,7 @@ func (v *vqueue) RangePopDelete(ctx context.Context, now int64, f func(uuid stri
 			dl = append(dl, i)
 		}
 	}
-	v.imu.Unlock()
+	v.imu.RUnlock()
 	sort.Sort(sort.Reverse(sort.IntSlice(dl)))
 	for _, i := range dl {
 		v.imu.Lock()
@@ -309,16 +318,16 @@ func (v *vqueue) RangePopDelete(ctx context.Context, now int64, f func(uuid stri
 
 // IVQLen returns the number of uninserted indexes stored in the insert queue.
 func (v *vqueue) IVQLen() (l int) {
-	v.imu.Lock()
+	v.imu.RLock()
 	l = len(v.uii)
-	v.imu.Unlock()
+	v.imu.RUnlock()
 	return l
 }
 
 // DVQLen returns the number of undeleted keys stored in the delete queue.
 func (v *vqueue) DVQLen() (l int) {
-	v.dmu.Lock()
+	v.dmu.RLock()
 	l = len(v.udk)
-	v.dmu.Unlock()
+	v.dmu.RUnlock()
 	return l
 }

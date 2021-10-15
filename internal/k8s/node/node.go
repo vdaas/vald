@@ -22,6 +22,7 @@ import (
 	"time"
 
 	"github.com/vdaas/vald/internal/k8s"
+	"github.com/vdaas/vald/internal/log"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
@@ -41,6 +42,7 @@ type reconciler struct {
 	namespace   string
 	onError     func(err error)
 	onReconcile func(nodes []Node)
+	lopts       []client.ListOption
 }
 
 type Node struct {
@@ -59,14 +61,27 @@ func New(opts ...Option) NodeWatcher {
 	for _, opt := range append(defaultOptions, opts...) {
 		opt(r)
 	}
-
 	return r
+}
+
+func (r *reconciler) addListOpts(opt client.ListOption) {
+	if opt == nil {
+		return
+	}
+	if r.lopts == nil {
+		r.lopts = make([]client.ListOption, 0, 1)
+	}
+	r.lopts = append(r.lopts, opt)
 }
 
 func (r *reconciler) Reconcile(ctx context.Context, req reconcile.Request) (res reconcile.Result, err error) {
 	ns := new(corev1.NodeList)
 
-	err = r.mgr.GetClient().List(ctx, ns)
+	if r.lopts != nil {
+		err = r.mgr.GetClient().List(ctx, ns, r.lopts...)
+	} else {
+		err = r.mgr.GetClient().List(ctx, ns)
+	}
 
 	if err != nil {
 		if r.onError != nil {
@@ -88,7 +103,11 @@ func (r *reconciler) Reconcile(ctx context.Context, req reconcile.Request) (res 
 	nodes := make([]Node, 0, len(ns.Items))
 
 	for _, node := range ns.Items {
-		if node.GetObjectMeta().GetDeletionTimestamp() != nil {
+		if node.GetDeletionTimestamp() != nil {
+			log.Debugf("reconcile process will be skipped for node: %s, status: %s, deletion timestamp: %s",
+				node.GetName(),
+				node.Status.Phase,
+				node.GetDeletionTimestamp())
 			continue
 		}
 		remain := node.Status.Allocatable
@@ -131,11 +150,20 @@ func (r *reconciler) GetName() string {
 	return r.name
 }
 
-func (r *reconciler) NewReconciler(mgr manager.Manager) reconcile.Reconciler {
+func (r *reconciler) NewReconciler(ctx context.Context, mgr manager.Manager) reconcile.Reconciler {
 	if r.mgr == nil && mgr != nil {
 		r.mgr = mgr
 	}
 	corev1.AddToScheme(r.mgr.GetScheme())
+	if err := r.mgr.GetFieldIndexer().IndexField(context.Background(), &corev1.Node{}, "status.phase", func(obj client.Object) []string {
+		node, ok := obj.(*corev1.Node)
+		if !ok || node.GetDeletionTimestamp() != nil {
+			return nil
+		}
+		return []string{string(node.Status.Phase)}
+	}); err != nil {
+		log.Error(err)
+	}
 	return r
 }
 

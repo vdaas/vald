@@ -45,7 +45,7 @@ type Controller interface {
 
 type ResourceController interface {
 	GetName() string
-	NewReconciler(mgr Manager) reconcile.Reconciler
+	NewReconciler(ctx context.Context, mgr manager.Manager) reconcile.Reconciler
 	For() (client.Object, []builder.ForOption)
 	Owns() (client.Object, []builder.OwnsOption)
 	Watches() (*source.Kind, handler.EventHandler, []builder.WatchesOption)
@@ -96,6 +96,13 @@ func New(opts ...Option) (cl Controller, err error) {
 		}
 	}
 
+	return c, nil
+}
+
+func (c *controller) Start(ctx context.Context) (<-chan error, error) {
+	if c.der != nil {
+		c.der.StartDialerCache(ctx)
+	}
 	for _, rc := range c.rcs {
 		if rc != nil {
 			bc := builder.ControllerManagedBy(c.mgr).Named(rc.GetName())
@@ -114,26 +121,21 @@ func New(opts ...Option) (cl Controller, err error) {
 				}
 				bc = bc.Watches(src, h, wopts...)
 			}
-			_, err = bc.Build(rc.NewReconciler(c.mgr))
+			_, err := bc.Build(rc.NewReconciler(ctx, c.mgr))
 			if err != nil {
 				return nil, err
 			}
 		}
-	}
-
-	return c, nil
-}
-
-func (c *controller) Start(ctx context.Context) (<-chan error, error) {
-	if c.der != nil {
-		c.der.StartDialerCache(ctx)
 	}
 	ech := make(chan error, 1)
 	c.eg.Go(safety.RecoverFunc(func() error {
 		defer close(ech)
 		err := c.mgr.Start(ctx)
 		if err != nil {
-			ech <- err
+			select {
+			case <-ctx.Done():
+			case ech <- err:
+			}
 		}
 		return nil
 	}))

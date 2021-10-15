@@ -276,9 +276,13 @@ k8s/external/cert-manager/delete:
 .PHONY: k8s/external/minio/deploy
 ## deploy minio
 k8s/external/minio/deploy:
-	kubectl apply -f k8s/external/minio
+	kubectl apply -f k8s/external/minio/deployment.yaml
+	kubectl apply -f k8s/external/minio/svc.yaml
 	sleep $(K8S_SLEEP_DURATION_FOR_WAIT_COMMAND)
 	kubectl wait --for=condition=ready pod -l app=minio --timeout=600s
+	kubectl apply -f k8s/external/minio/mb-job.yaml
+	sleep $(K8S_SLEEP_DURATION_FOR_WAIT_COMMAND)
+	kubectl wait --for=condition=complete job/minio-make-bucket --timeout=600s
 
 .PHONY: k8s/external/minio/delete
 ## delete minio
@@ -396,30 +400,10 @@ $(BINDIR)/telepresence:
 telepresence/swap/agent-ngt:
 	@$(call telepresence,vald-agent-ngt,vdaas/vald-agent-ngt)
 
-.PHONY: telepresence/swap/gateway
-## swap gateway deployment using telepresence
-telepresence/swap/gateway:
-	@$(call telepresence,vald-gateway,vdaas/vald-gateway)
-
 .PHONY: telepresence/swap/discoverer
 ## swap discoverer deployment using telepresence
 telepresence/swap/discoverer:
 	@$(call telepresence,vald-discoverer,vdaas/vald-discoverer-k8s)
-
-.PHONY: telepresence/swap/meta
-## swap meta deployment using telepresence
-telepresence/swap/meta:
-	@$(call telepresence,vald-meta,vdaas/vald-meta-redis)
-
-.PHONY: telepresence/swap/manager-backup
-## swap manager-backup deployment using telepresence
-telepresence/swap/manager-backup:
-	@$(call telepresence,vald-manager-backup,vdaas/vald-manager-backup-mysql)
-
-.PHONY: telepresence/swap/manager-compressor
-## swap manager-compressor deployment using telepresence
-telepresence/swap/manager-compressor:
-	@$(call telepresence,vald-manager-compressor,vdaas/vald-manager-compressor)
 
 .PHONY: telepresence/swap/manager-index
 ## swap manager-index deployment using telepresence
@@ -430,16 +414,6 @@ telepresence/swap/manager-index:
 ## swap lb-gateway deployment using telepresence
 telepresence/swap/lb-gateway:
 	@$(call telepresence,vald-lb-gateway,vdaas/vald-lb-gateway)
-
-.PHONY: telepresence/swap/backup-gateway
-## swap backup-gateway deployment using telepresence
-telepresence/swap/backup-gateway:
-	@$(call telepresence,vald-backup-gateway,vdaas/vald-backup-gateway)
-
-.PHONY: telepresence/swap/meta-gateway
-## swap meta-gateway deployment using telepresence
-telepresence/swap/meta-gateway:
-	@$(call telepresence,vald-meta-gateway,vdaas/vald-meta-gateway)
 
 .PHONY: kubelinter/install
 ## install kubelinter

@@ -3,7 +3,7 @@ Vald
 
 This is a Helm chart to install Vald components.
 
-Current chart version is `v1.2.2`
+Current chart version is `v1.2.4`
 
 Table of Contents
 ---
@@ -85,10 +85,10 @@ Configuration
 | agent.ngt.dimension | int | `4096` | vector dimension |
 | agent.ngt.distance_type | string | `"l2"` | distance type. it should be `l1`, `l2`, `angle`, `hamming`, `cosine`, `normalizedangle`, `normalizedcosine` or `jaccard`. for further details about NGT libraries supported distance is https://github.com/yahoojapan/NGT/wiki/Command-Quick-Reference and vald agent's supported NGT distance type is https://pkg.go.dev/github.com/vdaas/vald/internal/core/algorithm/ngt#pkg-constants |
 | agent.ngt.enable_in_memory_mode | bool | `true` | in-memory mode enabled |
-| agent.ngt.enable_proactive_gc | bool | `true` | enable proactive GC call for reducing heap memory allocation |
+| agent.ngt.enable_proactive_gc | bool | `false` | enable proactive GC call for reducing heap memory allocation |
 | agent.ngt.index_path | string | `""` | path to index data |
 | agent.ngt.initial_delay_max_duration | string | `"3m"` | maximum duration for initial delay |
-| agent.ngt.kvsdb.concurrency | int | `20` | kvsdb processing concurrency |
+| agent.ngt.kvsdb.concurrency | int | `6` | kvsdb processing concurrency |
 | agent.ngt.load_index_timeout_factor | string | `"1ms"` | a factor of load index timeout. timeout duration will be calculated by (index count to be loaded) * (factor). |
 | agent.ngt.max_load_index_timeout | string | `"10m"` | maximum duration of load index timeout |
 | agent.ngt.min_load_index_timeout | string | `"3m"` | minimum duration of load index timeout |
@@ -286,7 +286,7 @@ Configuration
 | defaults.grpc.client.tls.enabled | bool | `false` | TLS enabled |
 | defaults.grpc.client.tls.insecure_skip_verify | bool | `false` | enable/disable skip SSL certificate verification |
 | defaults.grpc.client.tls.key | string | `"/path/to/key"` | TLS key path |
-| defaults.image.tag | string | `"v1.2.2"` | docker image tag |
+| defaults.image.tag | string | `"v1.2.4"` | docker image tag |
 | defaults.ingress.usev1beta1 | bool | `false` | use networking.k8s.io/v1beta1 instead of v1 for ingresses. This option will be removed once k8s 1.22 is released. |
 | defaults.logging.format | string | `"raw"` | logging format. logging format must be `raw` or `json` |
 | defaults.logging.level | string | `"debug"` | logging level. logging level must be `debug`, `info`, `warn`, `error` or `fatal`. |

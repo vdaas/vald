@@ -27,7 +27,6 @@ import (
 )
 
 func TestWithErrGroup(t *testing.T) {
-	t.Parallel()
 	// Change interface type to the type of object you are testing
 	type T = interface{}
 	type args struct {
@@ -106,7 +105,7 @@ func TestWithErrGroup(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -144,7 +143,6 @@ func TestWithErrGroup(t *testing.T) {
 }
 
 func TestWithControllerName(t *testing.T) {
-	t.Parallel()
 	// Change interface type to the type of object you are testing
 	type T = interface{}
 	type args struct {
@@ -223,7 +221,7 @@ func TestWithControllerName(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -261,7 +259,6 @@ func TestWithControllerName(t *testing.T) {
 }
 
 func TestWithResourceController(t *testing.T) {
-	t.Parallel()
 	// Change interface type to the type of object you are testing
 	type T = interface{}
 	type args struct {
@@ -340,7 +337,7 @@ func TestWithResourceController(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -378,7 +375,6 @@ func TestWithResourceController(t *testing.T) {
 }
 
 func TestWithManager(t *testing.T) {
-	t.Parallel()
 	// Change interface type to the type of object you are testing
 	type T = interface{}
 	type args struct {
@@ -457,7 +453,7 @@ func TestWithManager(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -495,7 +491,6 @@ func TestWithManager(t *testing.T) {
 }
 
 func TestWithMetricsAddress(t *testing.T) {
-	t.Parallel()
 	// Change interface type to the type of object you are testing
 	type T = interface{}
 	type args struct {
@@ -574,7 +569,7 @@ func TestWithMetricsAddress(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -612,7 +607,6 @@ func TestWithMetricsAddress(t *testing.T) {
 }
 
 func TestWithEnableLeaderElection(t *testing.T) {
-	t.Parallel()
 	// Change interface type to the type of object you are testing
 	type T = interface{}
 	type want struct {
@@ -681,7 +675,7 @@ func TestWithEnableLeaderElection(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -719,7 +713,6 @@ func TestWithEnableLeaderElection(t *testing.T) {
 }
 
 func TestWithDisableLeaderElection(t *testing.T) {
-	t.Parallel()
 	// Change interface type to the type of object you are testing
 	type T = interface{}
 	type want struct {
@@ -788,7 +781,7 @@ func TestWithDisableLeaderElection(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -826,7 +819,6 @@ func TestWithDisableLeaderElection(t *testing.T) {
 }
 
 func TestWithDialer(t *testing.T) {
-	t.Parallel()
 	// Change interface type to the type of object you are testing
 	type T = interface{}
 	type args struct {

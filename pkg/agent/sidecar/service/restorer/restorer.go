@@ -132,6 +132,10 @@ func (r *restorer) startRestore(ctx context.Context) (<-chan error, error) {
 		err := r.restore(ctx)
 		if err != nil {
 			log.Errorf("restoring failed: %s", err)
+			select {
+			case <-ctx.Done():
+			case ech <- err:
+			}
 			return nil, true, err
 		}
 
@@ -149,9 +153,21 @@ func (r *restorer) startRestore(ctx context.Context) (<-chan error, error) {
 
 		if err != nil {
 			log.Errorf("couldn't restore: %s", err)
+			select {
+			case <-ctx.Done():
+			case ech <- err:
+			}
 		}
 
-		return p.Signal(syscall.SIGTERM) // TODO: #403
+		err = p.Signal(syscall.SIGTERM) // TODO: #403
+		if err != nil && !errors.Is(err, os.ErrProcessDone) {
+			select {
+			case <-ctx.Done():
+			case ech <- err:
+			}
+			return err
+		}
+		return nil
 	}))
 
 	return ech, nil
@@ -175,11 +191,15 @@ func (r *restorer) restore(ctx context.Context) (err error) {
 
 		sr, err := r.storage.Reader(ctx)
 		if err != nil {
+			if errors.Is(err, io.EOF) {
+				return nil
+			}
 			return err
 		}
 
 		sr, err = io.NewReadCloserWithContext(ctx, sr)
 		if err != nil {
+			log.Warn(err)
 			return err
 		}
 		defer func() {
@@ -190,7 +210,8 @@ func (r *restorer) restore(ctx context.Context) (err error) {
 		}()
 
 		_, err = io.Copy(pw, sr)
-		if err != nil {
+		if err != nil && !errors.Is(err, io.EOF) {
+			log.Warn(err)
 			return err
 		}
 
@@ -208,7 +229,7 @@ func (r *restorer) restore(ctx context.Context) (err error) {
 
 		header, err := tr.Next()
 		if err != nil {
-			if err == io.EOF {
+			if errors.Is(err, io.EOF) {
 				break
 			}
 
@@ -287,7 +308,7 @@ func copyFile(ctx context.Context, target string, tr io.Reader, mode fs.FileMode
 	}
 
 	_, err = io.Copy(fw, tr)
-	if err != nil {
+	if err != nil && !errors.Is(err, io.EOF) {
 		return err
 	}
 	err = f.Sync()

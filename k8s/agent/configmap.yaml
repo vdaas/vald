@@ -20,10 +20,10 @@ metadata:
   name: vald-agent-ngt-config
   labels:
     app.kubernetes.io/name: vald
-    helm.sh/chart: vald-v1.2.2
+    helm.sh/chart: vald-v1.2.4
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: RELEASE-NAME
-    app.kubernetes.io/version: v1.2.2
+    app.kubernetes.io/version: v1.2.4
     app.kubernetes.io/component: agent
 data:
   config.yaml: |
@@ -75,6 +75,30 @@ data:
             tcp_quick_ack: true
           socket_path: ""
       health_check_servers:
+        - name: liveness
+          host: 0.0.0.0
+          port: 3000
+          http:
+            handler_timeout: ""
+            idle_timeout: ""
+            read_header_timeout: ""
+            read_timeout: ""
+            shutdown_duration: 5s
+            write_timeout: ""
+          mode: ""
+          network: tcp
+          probe_wait_time: 3s
+          socket_option:
+            ip_recover_destination_addr: false
+            ip_transparent: false
+            reuse_addr: true
+            reuse_port: true
+            tcp_cork: false
+            tcp_defer_accept: true
+            tcp_fast_open: true
+            tcp_no_delay: true
+            tcp_quick_ack: true
+          socket_path: ""
         - name: readiness
           host: 0.0.0.0
           port: 3001
@@ -125,6 +149,7 @@ data:
             tcp_quick_ack: true
           socket_path: ""
       startup_strategy:
+        - liveness
         - pprof
         - grpc
         - readiness
@@ -222,11 +247,11 @@ data:
       dimension: 784
       distance_type: l2
       enable_in_memory_mode: true
-      enable_proactive_gc: true
+      enable_proactive_gc: false
       index_path: ""
       initial_delay_max_duration: 3m
       kvsdb:
-        concurrency: 20
+        concurrency: 6
       load_index_timeout_factor: 1ms
       max_load_index_timeout: 10m
       min_load_index_timeout: 3m

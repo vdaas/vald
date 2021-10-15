@@ -20,8 +20,8 @@ package grpc
 import (
 	"testing"
 
+	"github.com/vdaas/vald/internal/test/goleak"
 	"github.com/vdaas/vald/pkg/discoverer/k8s/service"
-	"go.uber.org/goleak"
 )
 
 func TestWithDiscoverer(t *testing.T) {

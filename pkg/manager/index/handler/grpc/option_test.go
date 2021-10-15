@@ -20,8 +20,8 @@ package grpc
 import (
 	"testing"
 
+	"github.com/vdaas/vald/internal/test/goleak"
 	"github.com/vdaas/vald/pkg/manager/index/service"
-	"go.uber.org/goleak"
 )
 
 func TestWithIndexer(t *testing.T) {

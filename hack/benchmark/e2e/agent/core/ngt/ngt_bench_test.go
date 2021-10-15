@@ -22,8 +22,7 @@ import (
 	"testing"
 
 	"github.com/vdaas/vald/hack/benchmark/internal/assets"
-	"github.com/vdaas/vald/hack/benchmark/internal/e2e"
-	"github.com/vdaas/vald/hack/benchmark/internal/e2e/strategy"
+	"github.com/vdaas/vald/hack/benchmark/internal/operation"
 	"github.com/vdaas/vald/hack/benchmark/internal/starter/agent/core/ngt"
 	"github.com/vdaas/vald/internal/client/v1/client/agent/core"
 	"github.com/vdaas/vald/internal/log"
@@ -32,7 +31,7 @@ import (
 )
 
 var (
-	targets  []string
+	datasets []string
 	grpcAddr string
 )
 
@@ -42,81 +41,91 @@ func init() {
 
 	var dataset string
 
-	flag.StringVar(&dataset, "dataset", "", "set available dataset list (choice with comma)")
+	flag.StringVar(&dataset, "dataset", "identity-128", "set available dataset list (choice with comma)")
 	flag.StringVar(&grpcAddr, "grpc_address", "127.0.0.1:8081", "set vald agent address for gRPC")
 	flag.Parse()
 
-	targets = strings.Split(strings.TrimSpace(dataset), ",")
+	datasets = strings.Split(strings.TrimSpace(dataset), ",")
 }
 
 func BenchmarkAgentNGT_gRPC_Sequential(b *testing.B) {
-	ctx := context.Background()
-	client, err := core.New(
-		core.WithAddrs(grpcAddr),
-		core.WithGRPCClient(
-			grpc.New(grpc.WithAddrs(grpcAddr),
-				grpc.WithInsecure(true))))
-	if err != nil {
-		b.Fatal(err)
-	}
-	client.Start(ctx)
-	defer client.Stop(ctx)
-	for _, name := range targets {
-		bench := e2e.New(
-			b,
-			e2e.WithName(name),
-			e2e.WithServerStarter(func(ctx context.Context, tb testing.TB, d assets.Dataset) func() {
-				return ngt.New(
-					ngt.WithDimension(d.Dimension()),
-					ngt.WithDistanceType(d.DistanceType()),
-					ngt.WithObjectType(d.ObjectType()),
-				).Run(ctx, tb)
-			}),
-			e2e.WithClient(client),
-			e2e.WithStrategy(
-				strategy.NewInsert(),
-				strategy.NewCreateIndex(
-					strategy.WithCreateIndexClient(client),
+	for _, dname := range datasets {
+		b.Run(dname, func(b *testing.B) {
+			ctx := context.Background()
+
+			dataset := assets.Data(dname)(b)
+
+			c, err := core.New(
+				core.WithAddrs(grpcAddr),
+				core.WithGRPCClient(
+					grpc.New(
+						grpc.WithAddrs(grpcAddr),
+						grpc.WithInsecure(true),
+					),
 				),
-				strategy.NewSearch(),
-			),
-		)
-		bench.Run(ctx, b)
+			)
+			if err != nil {
+				b.Fatal(err)
+			}
+
+			defer ngt.New(
+				ngt.WithDimension(dataset.Dimension()),
+				ngt.WithDistanceType(dataset.DistanceType()),
+				ngt.WithObjectType(dataset.ObjectType()),
+				ngt.WithClient(c),
+			).Run(ctx, b)()
+
+			op := operation.New(
+				operation.WithClient(c),
+				operation.WithIndexer(c),
+			)
+
+			insertedNum := op.Insert(ctx, b, dataset)
+			op.CreateIndex(ctx, b)
+			op.Search(ctx, b, dataset)
+			op.SearchByID(ctx, b, insertedNum)
+			op.Remove(ctx, b, insertedNum)
+		})
 	}
 }
 
 func BenchmarkAgentNGT_gRPC_Stream(b *testing.B) {
-	ctx := context.Background()
-	client, err := core.New(
-		core.WithAddrs(grpcAddr),
-		core.WithGRPCClient(
-			grpc.New(grpc.WithAddrs(grpcAddr),
-				grpc.WithInsecure(true))))
-	if err != nil {
-		b.Fatal(err)
-	}
-	client.Start(ctx)
-	defer client.Stop(ctx)
-	for _, name := range targets {
-		bench := e2e.New(
-			b,
-			e2e.WithName(name),
-			e2e.WithServerStarter(func(ctx context.Context, tb testing.TB, d assets.Dataset) func() {
-				return ngt.New(
-					ngt.WithDimension(d.Dimension()),
-					ngt.WithDistanceType(d.DistanceType()),
-					ngt.WithObjectType(d.ObjectType()),
-				).Run(ctx, tb)
-			}),
-			e2e.WithClient(client),
-			e2e.WithStrategy(
-				strategy.NewStreamInsert(),
-				strategy.NewCreateIndex(
-					strategy.WithCreateIndexClient(client),
+	for _, dname := range datasets {
+		b.Run(dname, func(b *testing.B) {
+			ctx := context.Background()
+
+			dataset := assets.Data(dname)(b)
+
+			c, err := core.New(
+				core.WithAddrs(grpcAddr),
+				core.WithGRPCClient(
+					grpc.New(
+						grpc.WithAddrs(grpcAddr),
+						grpc.WithInsecure(true),
+					),
 				),
-				strategy.NewStreamSearch(),
-			),
-		)
-		bench.Run(ctx, b)
+			)
+			if err != nil {
+				b.Fatal(err)
+			}
+
+			defer ngt.New(
+				ngt.WithDimension(dataset.Dimension()),
+				ngt.WithDistanceType(dataset.DistanceType()),
+				ngt.WithObjectType(dataset.ObjectType()),
+				ngt.WithClient(c),
+			).Run(ctx, b)()
+
+			op := operation.New(
+				operation.WithClient(c),
+				operation.WithIndexer(c),
+			)
+
+			insertedNum := op.StreamInsert(ctx, b, dataset)
+			op.CreateIndex(ctx, b)
+			op.StreamSearch(ctx, b, dataset)
+			op.StreamSearchByID(ctx, b, insertedNum)
+			op.StreamRemove(ctx, b, insertedNum)
+		})
 	}
 }

@@ -17,13 +17,17 @@
 package kvs
 
 import (
+	"runtime"
+
 	"github.com/vdaas/vald/internal/errgroup"
 )
 
 // Option represents the functional option for bidi.
 type Option func(n *bidi)
 
-var defaultOptions = []Option{}
+var defaultOptions = []Option{
+	WithConcurrency(runtime.GOMAXPROCS(-1) * 10),
+}
 
 // WithErrGroup returns the option to set the errgroup.
 func WithErrGroup(eg errgroup.Group) Option {

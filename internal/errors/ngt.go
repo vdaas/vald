@@ -26,8 +26,8 @@ var (
 		return Wrap(err, "failed to create property")
 	}
 
-	// ErrIndexNotFound represents an error that the index file is not found.
-	ErrIndexNotFound = New("index file not found")
+	// ErrIndexFileNotFound represents an error that the index file is not found.
+	ErrIndexFileNotFound = New("index file not found")
 
 	// ErrIndexLoadTimeout represents an error that the index loading timeout.
 	ErrIndexLoadTimeout = New("index load timeout")
@@ -120,3 +120,17 @@ var (
 		return Errorf("object id %d is not indexed we cannot remove it", oid)
 	}
 )
+
+type NGTError struct {
+	Msg string
+}
+
+func NewNGTError(msg string) error {
+	return NGTError{
+		Msg: msg,
+	}
+}
+
+func (n NGTError) Error() string {
+	return n.Msg
+}

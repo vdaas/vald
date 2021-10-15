@@ -19,6 +19,7 @@ package grpc
 
 import (
 	"os"
+	"runtime"
 
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
@@ -39,7 +40,7 @@ var defaultOptions = []Option{
 		return name
 	}()),
 	WithIP(net.LoadLocalIP()),
-	WithStreamConcurrency(20),
+	WithStreamConcurrency(runtime.GOMAXPROCS(-1) * 10),
 	WithErrGroup(errgroup.Get()),
 }
 

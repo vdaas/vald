@@ -290,16 +290,9 @@ binary/build/zip: \
 	artifacts/vald-agent-ngt-$(GOOS)-$(GOARCH).zip \
 	artifacts/vald-agent-sidecar-$(GOOS)-$(GOARCH).zip \
 	artifacts/vald-discoverer-k8s-$(GOOS)-$(GOARCH).zip \
-	artifacts/vald-gateway-$(GOOS)-$(GOARCH).zip \
 	artifacts/vald-lb-gateway-$(GOOS)-$(GOARCH).zip \
-	artifacts/vald-meta-gateway-$(GOOS)-$(GOARCH).zip \
+	artifacts/vald-filter-gateway-$(GOOS)-$(GOARCH).zip \
 	artifacts/vald-filter-ingress-tensorflow-$(GOOS)-$(GOARCH).zip \
-	artifacts/vald-backup-gateway-$(GOOS)-$(GOARCH).zip \
-	artifacts/vald-meta-redis-$(GOOS)-$(GOARCH).zip \
-	artifacts/vald-meta-cassandra-$(GOOS)-$(GOARCH).zip \
-	artifacts/vald-manager-backup-mysql-$(GOOS)-$(GOARCH).zip \
-	artifacts/vald-manager-backup-cassandra-$(GOOS)-$(GOARCH).zip \
-	artifacts/vald-manager-compressor-$(GOOS)-$(GOARCH).zip \
 	artifacts/vald-manager-index-$(GOOS)-$(GOARCH).zip
 
 artifacts/vald-agent-ngt-$(GOOS)-$(GOARCH).zip: cmd/agent/core/ngt/ngt

@@ -42,6 +42,7 @@ type reconciler struct {
 	namespace   string
 	onError     func(err error)
 	onReconcile func(podList map[string][]Pod)
+	lopts       []client.ListOption
 }
 
 type PodList = corev1.PodList
@@ -63,14 +64,27 @@ func New(opts ...Option) PodWatcher {
 	for _, opt := range append(defaultOptions, opts...) {
 		opt(r)
 	}
-
 	return r
+}
+
+func (r *reconciler) addListOpts(opt client.ListOption) {
+	if opt == nil {
+		return
+	}
+	if r.lopts == nil {
+		r.lopts = make([]client.ListOption, 0, 1)
+	}
+	r.lopts = append(r.lopts, opt)
 }
 
 func (r *reconciler) Reconcile(ctx context.Context, req reconcile.Request) (res reconcile.Result, err error) {
 	ps := new(corev1.PodList)
 
-	err = r.mgr.GetClient().List(ctx, ps)
+	if r.lopts != nil {
+		err = r.mgr.GetClient().List(ctx, ps, r.lopts...)
+	} else {
+		err = r.mgr.GetClient().List(ctx, ps)
+	}
 
 	if err != nil {
 		if r.onError != nil {
@@ -99,47 +113,47 @@ func (r *reconciler) Reconcile(ctx context.Context, req reconcile.Request) (res 
 	)
 
 	for _, pod := range ps.Items {
-		if pod.GetObjectMeta().GetDeletionTimestamp() != nil {
+		if pod.GetObjectMeta().GetDeletionTimestamp() != nil ||
+			(r.namespace != "" && !strings.EqualFold(pod.GetNamespace(), r.namespace)) ||
+			pod.Status.Phase != corev1.PodRunning {
 			continue
 		}
-		if pod.Status.Phase == corev1.PodRunning {
-			cpuLimit = 0.0
-			memLimit = 0.0
-			cpuRequest = 0.0
-			memRequest = 0.0
-			for _, container := range pod.Spec.Containers {
-				request := container.Resources.Requests
-				limit := container.Resources.Limits
-				cpuLimit += float64(limit.Cpu().Value())
-				memLimit += float64(limit.Memory().Value())
-				cpuRequest += float64(request.Cpu().Value())
-				memRequest += float64(request.Memory().Value())
-			}
-			cpuLimit /= float64(len(pod.Spec.Containers))
-			memLimit /= float64(len(pod.Spec.Containers))
-			cpuRequest /= float64(len(pod.Spec.Containers))
-			memRequest /= float64(len(pod.Spec.Containers))
-			podName, ok := pod.GetObjectMeta().GetLabels()["app"]
-			if !ok {
-				pns := strings.Split(pod.GetName(), "-")
-				podName = strings.Join(pns[:len(pns)-1], "-")
-			}
-
-			if _, ok := pods[podName]; !ok {
-				pods[podName] = make([]Pod, 0, len(ps.Items))
-			}
-
-			pods[podName] = append(pods[podName], Pod{
-				Name:       pod.GetName(),
-				NodeName:   pod.Spec.NodeName,
-				Namespace:  pod.GetNamespace(),
-				IP:         pod.Status.PodIP,
-				CPULimit:   cpuLimit,
-				CPURequest: cpuRequest,
-				MemLimit:   memLimit,
-				MemRequest: memRequest,
-			})
+		cpuLimit = 0.0
+		memLimit = 0.0
+		cpuRequest = 0.0
+		memRequest = 0.0
+		for _, container := range pod.Spec.Containers {
+			request := container.Resources.Requests
+			limit := container.Resources.Limits
+			cpuLimit += float64(limit.Cpu().Value())
+			memLimit += float64(limit.Memory().Value())
+			cpuRequest += float64(request.Cpu().Value())
+			memRequest += float64(request.Memory().Value())
 		}
+		cpuLimit /= float64(len(pod.Spec.Containers))
+		memLimit /= float64(len(pod.Spec.Containers))
+		cpuRequest /= float64(len(pod.Spec.Containers))
+		memRequest /= float64(len(pod.Spec.Containers))
+		podName, ok := pod.GetObjectMeta().GetLabels()["app"]
+		if !ok {
+			pns := strings.Split(pod.GetName(), "-")
+			podName = strings.Join(pns[:len(pns)-1], "-")
+		}
+
+		if _, ok := pods[podName]; !ok {
+			pods[podName] = make([]Pod, 0, len(ps.Items))
+		}
+
+		pods[podName] = append(pods[podName], Pod{
+			Name:       pod.GetName(),
+			NodeName:   pod.Spec.NodeName,
+			Namespace:  pod.GetNamespace(),
+			IP:         pod.Status.PodIP,
+			CPULimit:   cpuLimit,
+			CPURequest: cpuRequest,
+			MemLimit:   memLimit,
+			MemRequest: memRequest,
+		})
 	}
 
 	if r.onReconcile != nil {
@@ -152,11 +166,20 @@ func (r *reconciler) GetName() string {
 	return r.name
 }
 
-func (r *reconciler) NewReconciler(mgr manager.Manager) reconcile.Reconciler {
+func (r *reconciler) NewReconciler(ctx context.Context, mgr manager.Manager) reconcile.Reconciler {
 	if r.mgr == nil && mgr != nil {
 		r.mgr = mgr
 	}
 	corev1.AddToScheme(r.mgr.GetScheme())
+	if err := r.mgr.GetFieldIndexer().IndexField(ctx, &corev1.Pod{}, "status.phase", func(obj client.Object) []string {
+		pod, ok := obj.(*corev1.Pod)
+		if !ok || pod.GetDeletionTimestamp() != nil {
+			return nil
+		}
+		return []string{string(pod.Status.Phase)}
+	}); err != nil {
+		log.Error(err)
+	}
 	return r
 }
 

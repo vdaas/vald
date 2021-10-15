@@ -48,7 +48,7 @@ import (
 type NGT interface {
 	Start(ctx context.Context) <-chan error
 	Search(vec []float32, size uint32, epsilon, radius float32) ([]model.Distance, error)
-	SearchByID(uuid string, size uint32, epsilon, radius float32) ([]model.Distance, error)
+	SearchByID(uuid string, size uint32, epsilon, radius float32) ([]float32, []model.Distance, error)
 	Insert(uuid string, vec []float32) (err error)
 	InsertWithTime(uuid string, vec []float32, t int64) (err error)
 	InsertMultiple(vecs map[string][]float32) (err error)
@@ -83,6 +83,8 @@ type ngt struct {
 	core core.NGT
 	eg   errgroup.Group
 	kvs  kvs.BidiMap
+	fmu  sync.Mutex
+	fmap map[string]uint32 // failure map for index
 	vq   vqueue.Queue
 
 	// statuses
@@ -167,6 +169,7 @@ func New(cfg *config.NGT, opts ...Option) (nn NGT, err error) {
 			return nil, err
 		}
 	}
+
 	n.indexing.Store(false)
 	n.saving.Store(false)
 
@@ -277,7 +280,6 @@ func (n *ngt) initNGT(opts ...core.Option) (err error) {
 			if err != nil {
 				return err
 			}
-
 			return errors.ErrIndexLoadTimeout
 		}
 	}
@@ -323,6 +325,7 @@ func (n *ngt) Start(ctx context.Context) <-chan error {
 	if n.dcd {
 		return nil
 	}
+	n.removeInvalidIndex(ctx)
 	ech := make(chan error, 2)
 	n.eg.Go(safety.RecoverFunc(func() (err error) {
 		defer close(ech)
@@ -386,11 +389,15 @@ func (n *ngt) Search(vec []float32, size uint32, epsilon, radius float32) ([]mod
 	}
 	sr, err := n.core.Search(vec, int(size), epsilon, radius)
 	if err != nil {
-		log.Errorf("cgo error detected: ngt code api returned error %v", err)
 		if n.IsIndexing() {
 			return nil, errors.ErrCreateIndexingIsInProgress
 		}
+		log.Errorf("cgo error detected: ngt api returned error %v", err)
 		return nil, err
+	}
+
+	if len(sr) == 0 {
+		return nil, errors.ErrEmptySearchResult
 	}
 
 	ds := make([]model.Distance, 0, len(sr))
@@ -413,17 +420,22 @@ func (n *ngt) Search(vec []float32, size uint32, epsilon, radius float32) ([]mod
 	return ds, nil
 }
 
-func (n *ngt) SearchByID(uuid string, size uint32, epsilon, radius float32) (dst []model.Distance, err error) {
+func (n *ngt) SearchByID(uuid string, size uint32, epsilon, radius float32) (vec []float32, dst []model.Distance, err error) {
 	if n.IsIndexing() {
-		return nil, errors.ErrCreateIndexingIsInProgress
+		return nil, nil, errors.ErrCreateIndexingIsInProgress
 	}
 	log.Debugf("SearchByID\tuuid: %s size: %d epsilon: %f radius: %f", uuid, size, epsilon, radius)
-	vec, err := n.GetObject(uuid)
+	vec, err = n.GetObject(uuid)
 	if err != nil {
 		log.Debugf("SearchByID\tuuid: %s's vector not found", uuid)
-		return nil, err
+		return nil, nil, err
 	}
-	return n.Search(vec, size, epsilon, radius)
+	dst, err = n.Search(vec, size, epsilon, radius)
+	if err != nil {
+		log.Debugf("Search for SearchByID\t: uuid %s, vector %v failed", uuid, vec)
+		return vec, nil, err
+	}
+	return vec, dst, nil
 }
 
 func (n *ngt) Insert(uuid string, vec []float32) (err error) {
@@ -452,19 +464,19 @@ func (n *ngt) insert(uuid string, vec []float32, t int64, validation bool) (err 
 }
 
 func (n *ngt) InsertMultiple(vecs map[string][]float32) (err error) {
-	return n.insertMultiple(vecs, time.Now().UnixNano())
+	return n.insertMultiple(vecs, time.Now().UnixNano(), true)
 }
 
 func (n *ngt) InsertMultipleWithTime(vecs map[string][]float32, t int64) (err error) {
 	if t <= 0 {
 		t = time.Now().UnixNano()
 	}
-	return n.insertMultiple(vecs, t)
+	return n.insertMultiple(vecs, t, true)
 }
 
-func (n *ngt) insertMultiple(vecs map[string][]float32, now int64) (err error) {
+func (n *ngt) insertMultiple(vecs map[string][]float32, now int64, validation bool) (err error) {
 	for uuid, vec := range vecs {
-		ierr := n.insert(uuid, vec, now, true)
+		ierr := n.insert(uuid, vec, now, validation)
 		if ierr != nil {
 			if err != nil {
 				err = errors.Wrap(ierr, err.Error())
@@ -491,7 +503,7 @@ func (n *ngt) update(uuid string, vec []float32, t int64) (err error) {
 	if err = n.readyForUpdate(uuid, vec); err != nil {
 		return err
 	}
-	err = n.delete(uuid, t)
+	err = n.delete(uuid, t, false)
 	if err != nil {
 		return err
 	}
@@ -519,51 +531,53 @@ func (n *ngt) updateMultiple(vecs map[string][]float32, t int64) (err error) {
 			uuids = append(uuids, uuid)
 		}
 	}
-	err = n.deleteMultiple(uuids, t)
+	err = n.deleteMultiple(uuids, t, false)
 	if err != nil {
 		return err
 	}
 	t++
-	return n.insertMultiple(vecs, t)
+	return n.insertMultiple(vecs, t, false)
 }
 
 func (n *ngt) Delete(uuid string) (err error) {
-	return n.delete(uuid, time.Now().UnixNano())
+	return n.delete(uuid, time.Now().UnixNano(), true)
 }
 
 func (n *ngt) DeleteWithTime(uuid string, t int64) (err error) {
 	if t <= 0 {
 		t = time.Now().UnixNano()
 	}
-	return n.delete(uuid, t)
+	return n.delete(uuid, t, true)
 }
 
-func (n *ngt) delete(uuid string, t int64) (err error) {
+func (n *ngt) delete(uuid string, t int64, validation bool) (err error) {
 	if len(uuid) == 0 {
 		err = errors.ErrUUIDNotFound(0)
 		return err
 	}
-	_, ok := n.kvs.Get(uuid)
-	if !ok && !n.vq.IVExists(uuid) {
-		return errors.ErrObjectIDNotFound(uuid)
+	if validation {
+		_, ok := n.kvs.Get(uuid)
+		if !ok && !n.vq.IVExists(uuid) {
+			return errors.ErrObjectIDNotFound(uuid)
+		}
 	}
 	return n.vq.PushDelete(uuid, t)
 }
 
 func (n *ngt) DeleteMultiple(uuids ...string) (err error) {
-	return n.deleteMultiple(uuids, time.Now().UnixNano())
+	return n.deleteMultiple(uuids, time.Now().UnixNano(), true)
 }
 
 func (n *ngt) DeleteMultipleWithTime(uuids []string, t int64) (err error) {
 	if t <= 0 {
 		t = time.Now().UnixNano()
 	}
-	return n.deleteMultiple(uuids, t)
+	return n.deleteMultiple(uuids, t, true)
 }
 
-func (n *ngt) deleteMultiple(uuids []string, now int64) (err error) {
+func (n *ngt) deleteMultiple(uuids []string, now int64, validation bool) (err error) {
 	for _, uuid := range uuids {
-		ierr := n.delete(uuid, now)
+		ierr := n.delete(uuid, now, validation)
 		if ierr != nil {
 			if err != nil {
 				err = errors.Wrap(ierr, err.Error())
@@ -622,22 +636,49 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 			return true
 		}
 		if err := n.core.Remove(uint(oid)); err != nil {
-			log.Error(err)
+			log.Errorf("failed to remove oid: %d from ngt index. error: %v", oid, err)
+			n.fmu.Lock()
+			n.fmap[uuid] = oid
+			n.fmu.Unlock()
 		}
 		return true
 	})
 	log.Debug("create index delete phase finished")
 	n.gc()
 	log.Debug("create index insert phase started")
+	var icnt uint32
 	n.vq.RangePopInsert(ctx, now, func(uuid string, vector []float32) bool {
 		oid, err := n.core.Insert(vector)
 		if err != nil {
-			log.Error(err)
+			log.Warnf("failed to insert vector uuid: %s vec: %v to ngt index. error: %v", uuid, vector, err)
+			if !errors.Is(err, errors.ErrIncompatibleDimensionSize(len(vector), n.dim)) {
+				oid, err = n.core.Insert(vector)
+				if err != nil {
+					log.Errorf("failed to retry insert vector uuid: %s vec: %v to ngt index. error: %v", uuid, vector, err)
+					return true
+				}
+				n.kvs.Set(uuid, uint32(oid))
+				atomic.AddUint32(&icnt, 1)
+			}
 		} else {
 			n.kvs.Set(uuid, uint32(oid))
+			atomic.AddUint32(&icnt, 1)
 		}
+		n.fmu.Lock()
+		_, ok := n.fmap[uuid]
+		if ok {
+			delete(n.fmap, uuid)
+		}
+		n.fmu.Unlock()
 		return true
 	})
+	if poolSize <= 0 {
+		if n.poolSize > 0 && n.poolSize < atomic.LoadUint32(&icnt) {
+			poolSize = n.poolSize
+		} else {
+			poolSize = atomic.LoadUint32(&icnt)
+		}
+	}
 	log.Debug("create index insert phase finished")
 	log.Debug("create graph and tree phase started")
 	log.Debugf("pool size = %d", poolSize)
@@ -647,9 +688,30 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 	}
 	log.Debug("create graph and tree phase finished")
 
+	log.Debug("cleanup invalid index started")
+	n.removeInvalidIndex(ctx)
+	log.Debug("cleanup invalid index finished")
+
 	log.Info("create index operation finished")
 	atomic.AddUint64(&n.nocie, 1)
 	return err
+}
+
+func (n *ngt) removeInvalidIndex(ctx context.Context) {
+	n.kvs.Range(ctx, func(uuid string, oid uint32) bool {
+		if n.vq.IVExists(uuid) {
+			return true
+		}
+		vec, err := n.core.GetVector(uint(oid))
+		if err != nil || vec == nil || len(vec) != n.dim {
+			log.Debugf("invalid index detected uuid: %s\toid: %d will remove", uuid, oid)
+			n.kvs.Delete(uuid)
+			n.fmu.Lock()
+			n.fmap[uuid] = oid
+			n.fmu.Unlock()
+		}
+		return true
+	})
 }
 
 func (n *ngt) SaveIndex(ctx context.Context) (err error) {
@@ -697,7 +759,6 @@ func (n *ngt) saveIndex(ctx context.Context) (err error) {
 	// we want to ensure the acutal kvs size between kvsdb and metadata,
 	// so we create thie counter to count the actual kvs size instead of using kvs.Len()
 	var kvsLen uint64
-
 	eg.Go(safety.RecoverFunc(func() (err error) {
 		if n.path != "" {
 			m := make(map[string]uint32, n.Len())
@@ -705,8 +766,8 @@ func (n *ngt) saveIndex(ctx context.Context) (err error) {
 			n.kvs.Range(ctx, func(key string, id uint32) bool {
 				mu.Lock()
 				m[key] = id
-				kvsLen++
 				mu.Unlock()
+				atomic.AddUint64(&kvsLen, 1)
 				return true
 			})
 			var f *os.File
@@ -729,6 +790,41 @@ func (n *ngt) saveIndex(ctx context.Context) (err error) {
 			}()
 			gob.Register(map[string]uint32{})
 			err = gob.NewEncoder(f).Encode(&m)
+			if err != nil {
+				return err
+			}
+			err = f.Sync()
+			if err != nil {
+				return err
+			}
+			m = make(map[string]uint32)
+		}
+		return nil
+	}))
+
+	eg.Go(safety.RecoverFunc(func() (err error) {
+		if n.path != "" {
+			var f *os.File
+			f, err = file.Open(
+				filepath.Join(n.path, "invalid-"+kvsFileName),
+				os.O_WRONLY|os.O_CREATE|os.O_TRUNC,
+				fs.ModePerm,
+			)
+			if err != nil {
+				return err
+			}
+			defer func() {
+				if f != nil {
+					derr := f.Close()
+					if derr != nil {
+						err = errors.Wrap(err, derr.Error())
+					}
+				}
+			}()
+			gob.Register(map[string]uint32{})
+			n.fmu.Lock()
+			err = gob.NewEncoder(f).Encode(&n.fmap)
+			n.fmu.Unlock()
 			if err != nil {
 				return err
 			}

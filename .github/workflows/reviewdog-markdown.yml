@@ -17,6 +17,8 @@
 name: "reviewdog - Markdown"
 on:
   pull_request:
+    paths-ignore:
+      - "apis/docs/v1/docs.md"
     paths:
       - "**.md"
       - "**.md.gotmpl"
