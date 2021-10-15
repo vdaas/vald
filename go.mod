@@ -4,14 +4,14 @@ go 1.17
 
 replace (
 	cloud.google.com/go => cloud.google.com/go v0.97.0
-	cloud.google.com/go/monitoring => cloud.google.com/go/monitoring v1.0.1-0.20211011223216-5edfd3693b2c
-	cloud.google.com/go/profiler => cloud.google.com/go/profiler v0.1.1-0.20211011223216-5edfd3693b2c
-	cloud.google.com/go/storage => cloud.google.com/go/storage v1.18.1-0.20211011223216-5edfd3693b2c
-	cloud.google.com/go/trace => cloud.google.com/go/trace v1.0.1-0.20211011223216-5edfd3693b2c
+	cloud.google.com/go/monitoring => cloud.google.com/go/monitoring v1.0.1-0.20211014235613-30794e70050b
+	cloud.google.com/go/profiler => cloud.google.com/go/profiler v0.1.1-0.20211014235613-30794e70050b
+	cloud.google.com/go/storage => cloud.google.com/go/storage v1.18.2-0.20211014235613-30794e70050b
+	cloud.google.com/go/trace => cloud.google.com/go/trace v1.0.1-0.20211014235613-30794e70050b
 	github.com/Azure/go-autorest => github.com/Azure/go-autorest v14.2.1-0.20210910151046-492f94bc3a56+incompatible
 	github.com/Azure/go-autorest/autorest => github.com/Azure/go-autorest/autorest v0.11.21
 	github.com/Azure/go-autorest/autorest/adal => github.com/Azure/go-autorest/autorest/adal v0.9.17-0.20210910151046-492f94bc3a56
-	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.41.0
+	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.41.3
 	github.com/chzyer/logex => github.com/chzyer/logex v1.1.11-0.20170329064859-445be9e134b2
 	github.com/coreos/etcd => go.etcd.io/etcd v3.3.26+incompatible
 	github.com/docker/docker => github.com/moby/moby v20.10.9+incompatible
@@ -34,15 +34,15 @@ replace (
 	go.uber.org/multierr => go.uber.org/multierr v1.7.0
 	go.uber.org/zap => go.uber.org/zap v1.19.1
 	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20210921155107-089bfa567519
-	golang.org/x/exp => golang.org/x/exp v0.0.0-20211011213208-1d87cf485e27
+	golang.org/x/exp => golang.org/x/exp v0.0.0-20211012155715-ffe10e552389
 	golang.org/x/image => golang.org/x/image v0.0.0-20210628002857-a66eb6448b8d
 	golang.org/x/lint => golang.org/x/lint v0.0.0-20210508222113-6edffad5e616
 	golang.org/x/mobile => golang.org/x/mobile v0.0.0-20210924032853-1c027f395ef7
 	golang.org/x/mod => golang.org/x/mod v0.5.1
-	golang.org/x/net => golang.org/x/net v0.0.0-20211011170408-caeb26a5c8c0
+	golang.org/x/net => golang.org/x/net v0.0.0-20211014222326-fd004c51d1d6
 	golang.org/x/oauth2 => golang.org/x/oauth2 v0.0.0-20211005180243-6b3c2da341f1
 	golang.org/x/sync => golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
-	golang.org/x/sys => golang.org/x/sys v0.0.0-20211007075335-d3039528d8ac
+	golang.org/x/sys => golang.org/x/sys v0.0.0-20211013075003-97ac67df715c
 	golang.org/x/term => golang.org/x/term v0.0.0-20210927222741-03fcf44c2211
 	golang.org/x/text => golang.org/x/text v0.3.7
 	golang.org/x/time => golang.org/x/time v0.0.0-20210723032227-1f47c861a9ac
@@ -64,7 +64,7 @@ replace (
 	k8s.io/component-base => k8s.io/component-base v0.22.2
 	k8s.io/gengo => k8s.io/gengo v0.0.0-20210915205010-39e73c8a59cd
 	k8s.io/klog/v2 => k8s.io/klog/v2 v2.10.0
-	k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20210929172449-94abcedd1aa4
+	k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20211014175136-b3fe75cc9b2f
 	k8s.io/metrics => k8s.io/metrics v0.22.2
 	k8s.io/utils => k8s.io/utils v0.0.0-20210930125809-cb0fa318a74b
 	sigs.k8s.io/apiserver-network-proxy/konnectivity-client => sigs.k8s.io/apiserver-network-proxy/konnectivity-client v0.0.24
@@ -120,7 +120,7 @@ require (
 	gonum.org/v1/hdf5 v0.0.0-20210714002203-8c5d23bc6946
 	gonum.org/v1/plot v0.10.0
 	google.golang.org/api v0.58.0
-	google.golang.org/genproto v0.0.0-20211011165927-a5fb3255271e
+	google.golang.org/genproto v0.0.0-20211013025323-ce878158c4d4
 	google.golang.org/grpc v1.40.0
 	google.golang.org/protobuf v1.27.1
 	gopkg.in/yaml.v2 v2.4.0
