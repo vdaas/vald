@@ -762,7 +762,7 @@ func (n *ngt) saveIndex(ctx context.Context) (err error) {
 	// so we create thie counter to count the actual kvs size instead of using kvs.Len()
 	var kvsLen uint64
 	eg.Go(safety.RecoverFunc(func() (err error) {
-		if n.path != "" {
+		if n.path != "" && n.kvs.Len() > 0 {
 			m := make(map[string]uint32, n.Len())
 			var mu sync.Mutex
 			n.kvs.Range(ctx, func(key string, id uint32) bool {
@@ -804,7 +804,10 @@ func (n *ngt) saveIndex(ctx context.Context) (err error) {
 	}))
 
 	eg.Go(safety.RecoverFunc(func() (err error) {
-		if n.path != "" {
+		n.fmu.Lock()
+		fl := len(n.fmap)
+		n.fmu.Unlock()
+		if n.path != "" && fl > 0 {
 			var f *os.File
 			f, err = file.Open(
 				filepath.Join(n.path, "invalid-"+kvsFileName),
