@@ -726,15 +726,11 @@ func Test_reconciler_Watches(t *testing.T) {
 		onReconcile func(podList map[string][]Pod)
 		lopts       []client.ListOption
 	}
-<<<<<<< HEAD
 	type want struct {
 		want  *source.Kind
 		want1 handler.EventHandler
 		want2 []builder.WatchesOption
 	}
-=======
-	type want struct{}
->>>>>>> 98e3f71a (fix)
 	type test struct {
 		name       string
 		fields     fields
