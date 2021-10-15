@@ -94,7 +94,7 @@ spec:
               path: /liveness
               port: liveness
               scheme: HTTP
-            initialDelaySeconds: 60
+            initialDelaySeconds: 5
             periodSeconds: 3
             successThreshold: 1
             timeoutSeconds: 2
@@ -104,8 +104,18 @@ spec:
               path: /readiness
               port: readiness
               scheme: HTTP
-            initialDelaySeconds: 60
+            initialDelaySeconds: 10
             periodSeconds: 3
+            successThreshold: 1
+            timeoutSeconds: 2
+          startupProbe:
+            failureThreshold: 30
+            httpGet:
+              path: /liveness
+              port: liveness
+              scheme: HTTP
+            initialDelaySeconds: 5
+            periodSeconds: 5
             successThreshold: 1
             timeoutSeconds: 2
           ports:
