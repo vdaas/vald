@@ -18,13 +18,6 @@ defaults:
   image:
     tag: nightly
   server_config:
-    healths:
-      liveness:
-        livenessProbe:
-          initialDelaySeconds: 60
-      readiness:
-        readinessProbe:
-          initialDelaySeconds: 60
     metrics:
       pprof:
         enabled: true
