@@ -22,6 +22,7 @@ import (
 	"time"
 
 	"github.com/vdaas/vald/internal/k8s"
+	"github.com/vdaas/vald/internal/log"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metrics "k8s.io/metrics/pkg/apis/metrics/v1beta1"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
@@ -37,8 +38,10 @@ type PodWatcher k8s.ResourceController
 type reconciler struct {
 	mgr         manager.Manager
 	name        string
+	namespace   string
 	onError     func(err error)
 	onReconcile func(podList map[string]Pod)
+	lopts       []client.ListOption
 }
 
 type Pod struct {
@@ -54,14 +57,27 @@ func New(opts ...Option) PodWatcher {
 	for _, opt := range append(defaultOptions, opts...) {
 		opt(r)
 	}
-
 	return r
+}
+
+func (r *reconciler) addListOpts(opt client.ListOption) {
+	if opt == nil {
+		return
+	}
+	if r.lopts == nil {
+		r.lopts = make([]client.ListOption, 0, 1)
+	}
+	r.lopts = append(r.lopts, opt)
 }
 
 func (r *reconciler) Reconcile(ctx context.Context, req reconcile.Request) (res reconcile.Result, err error) {
 	m := &metrics.PodMetricsList{}
 
-	err = r.mgr.GetClient().List(ctx, m)
+	if r.lopts != nil {
+		err = r.mgr.GetClient().List(ctx, m, r.lopts...)
+	} else {
+		err = r.mgr.GetClient().List(ctx, m)
+	}
 
 	if err != nil {
 		if r.onError != nil {
@@ -117,11 +133,24 @@ func (r *reconciler) GetName() string {
 	return r.name
 }
 
-func (r *reconciler) NewReconciler(mgr manager.Manager) reconcile.Reconciler {
+func (r *reconciler) NewReconciler(ctx context.Context, mgr manager.Manager) reconcile.Reconciler {
 	if r.mgr == nil && mgr != nil {
 		r.mgr = mgr
 	}
 	metrics.AddToScheme(r.mgr.GetScheme())
+	if err := r.mgr.GetFieldIndexer().IndexField(ctx, &metrics.PodMetrics{}, "containers.name", func(obj client.Object) []string {
+		pod, ok := obj.(*metrics.PodMetrics)
+		if !ok {
+			return nil
+		}
+		res := make([]string, 0, len(pod.Containers))
+		for _, pc := range pod.Containers {
+			res = append(res, pc.Name)
+		}
+		return res
+	}); err != nil {
+		log.Error(err)
+	}
 	return r
 }
 

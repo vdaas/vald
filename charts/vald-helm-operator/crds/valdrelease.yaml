@@ -3165,6 +3165,45 @@ spec:
                                   type: boolean
                                 key:
                                   type: string
+                        selectors:
+                          type: object
+                          properties:
+                            node:
+                              type: object
+                              properties:
+                                fields:
+                                  type: object
+                                  x-kubernetes-preserve-unknown-fields: true
+                                labels:
+                                  type: object
+                                  x-kubernetes-preserve-unknown-fields: true
+                            node_metrics:
+                              type: object
+                              properties:
+                                fields:
+                                  type: object
+                                  x-kubernetes-preserve-unknown-fields: true
+                                labels:
+                                  type: object
+                                  x-kubernetes-preserve-unknown-fields: true
+                            pod:
+                              type: object
+                              properties:
+                                fields:
+                                  type: object
+                                  x-kubernetes-preserve-unknown-fields: true
+                                labels:
+                                  type: object
+                                  x-kubernetes-preserve-unknown-fields: true
+                            pod_metrics:
+                              type: object
+                              properties:
+                                fields:
+                                  type: object
+                                  x-kubernetes-preserve-unknown-fields: true
+                                labels:
+                                  type: object
+                                  x-kubernetes-preserve-unknown-fields: true
                     enabled:
                       type: boolean
                     env:

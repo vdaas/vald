@@ -34,7 +34,6 @@ import (
 )
 
 func TestNew(t *testing.T) {
-	t.Parallel()
 	type args struct {
 		opts []Option
 	}
@@ -87,7 +86,7 @@ func TestNew(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -106,8 +105,107 @@ func TestNew(t *testing.T) {
 	}
 }
 
+func Test_reconciler_addListOpts(t *testing.T) {
+	type args struct {
+		opt client.ListOption
+	}
+	type fields struct {
+		mgr         manager.Manager
+		name        string
+		namespace   string
+		onError     func(err error)
+		onReconcile func(nodes []Node)
+		lopts       []client.ListOption
+	}
+	type want struct{}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want) error {
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           opt: nil,
+		       },
+		       fields: fields {
+		           mgr: nil,
+		           name: "",
+		           namespace: "",
+		           onError: nil,
+		           onReconcile: nil,
+		           lopts: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           opt: nil,
+		           },
+		           fields: fields {
+		           mgr: nil,
+		           name: "",
+		           namespace: "",
+		           onError: nil,
+		           onReconcile: nil,
+		           lopts: nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			r := &reconciler{
+				mgr:         test.fields.mgr,
+				name:        test.fields.name,
+				namespace:   test.fields.namespace,
+				onError:     test.fields.onError,
+				onReconcile: test.fields.onReconcile,
+				lopts:       test.fields.lopts,
+			}
+
+			r.addListOpts(test.args.opt)
+			if err := test.checkFunc(test.want); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
 func Test_reconciler_Reconcile(t *testing.T) {
-	t.Parallel()
 	type args struct {
 		ctx context.Context
 		req reconcile.Request
@@ -118,6 +216,7 @@ func Test_reconciler_Reconcile(t *testing.T) {
 		namespace   string
 		onError     func(err error)
 		onReconcile func(nodes []Node)
+		lopts       []client.ListOption
 	}
 	type want struct {
 		wantRes reconcile.Result
@@ -156,6 +255,7 @@ func Test_reconciler_Reconcile(t *testing.T) {
 		           namespace: "",
 		           onError: nil,
 		           onReconcile: nil,
+		           lopts: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -177,6 +277,7 @@ func Test_reconciler_Reconcile(t *testing.T) {
 		           namespace: "",
 		           onError: nil,
 		           onReconcile: nil,
+		           lopts: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -189,7 +290,7 @@ func Test_reconciler_Reconcile(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -205,6 +306,7 @@ func Test_reconciler_Reconcile(t *testing.T) {
 				namespace:   test.fields.namespace,
 				onError:     test.fields.onError,
 				onReconcile: test.fields.onReconcile,
+				lopts:       test.fields.lopts,
 			}
 
 			gotRes, err := r.Reconcile(test.args.ctx, test.args.req)
@@ -216,13 +318,13 @@ func Test_reconciler_Reconcile(t *testing.T) {
 }
 
 func Test_reconciler_GetName(t *testing.T) {
-	t.Parallel()
 	type fields struct {
 		mgr         manager.Manager
 		name        string
 		namespace   string
 		onError     func(err error)
 		onReconcile func(nodes []Node)
+		lopts       []client.ListOption
 	}
 	type want struct {
 		want string
@@ -252,6 +354,7 @@ func Test_reconciler_GetName(t *testing.T) {
 		           namespace: "",
 		           onError: nil,
 		           onReconcile: nil,
+		           lopts: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -269,6 +372,7 @@ func Test_reconciler_GetName(t *testing.T) {
 		           namespace: "",
 		           onError: nil,
 		           onReconcile: nil,
+		           lopts: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -281,7 +385,7 @@ func Test_reconciler_GetName(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -297,6 +401,7 @@ func Test_reconciler_GetName(t *testing.T) {
 				namespace:   test.fields.namespace,
 				onError:     test.fields.onError,
 				onReconcile: test.fields.onReconcile,
+				lopts:       test.fields.lopts,
 			}
 
 			got := r.GetName()
@@ -308,8 +413,8 @@ func Test_reconciler_GetName(t *testing.T) {
 }
 
 func Test_reconciler_NewReconciler(t *testing.T) {
-	t.Parallel()
 	type args struct {
+		ctx context.Context
 		mgr manager.Manager
 	}
 	type fields struct {
@@ -318,6 +423,7 @@ func Test_reconciler_NewReconciler(t *testing.T) {
 		namespace   string
 		onError     func(err error)
 		onReconcile func(nodes []Node)
+		lopts       []client.ListOption
 	}
 	type want struct {
 		want reconcile.Reconciler
@@ -343,6 +449,7 @@ func Test_reconciler_NewReconciler(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
+		           ctx: nil,
 		           mgr: nil,
 		       },
 		       fields: fields {
@@ -351,6 +458,7 @@ func Test_reconciler_NewReconciler(t *testing.T) {
 		           namespace: "",
 		           onError: nil,
 		           onReconcile: nil,
+		           lopts: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -363,6 +471,7 @@ func Test_reconciler_NewReconciler(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
+		           ctx: nil,
 		           mgr: nil,
 		           },
 		           fields: fields {
@@ -371,6 +480,7 @@ func Test_reconciler_NewReconciler(t *testing.T) {
 		           namespace: "",
 		           onError: nil,
 		           onReconcile: nil,
+		           lopts: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -383,7 +493,7 @@ func Test_reconciler_NewReconciler(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -399,9 +509,10 @@ func Test_reconciler_NewReconciler(t *testing.T) {
 				namespace:   test.fields.namespace,
 				onError:     test.fields.onError,
 				onReconcile: test.fields.onReconcile,
+				lopts:       test.fields.lopts,
 			}
 
-			got := r.NewReconciler(test.args.mgr)
+			got := r.NewReconciler(test.args.ctx, test.args.mgr)
 			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -410,13 +521,13 @@ func Test_reconciler_NewReconciler(t *testing.T) {
 }
 
 func Test_reconciler_For(t *testing.T) {
-	t.Parallel()
 	type fields struct {
 		mgr         manager.Manager
 		name        string
 		namespace   string
 		onError     func(err error)
 		onReconcile func(nodes []Node)
+		lopts       []client.ListOption
 	}
 	type want struct {
 		want  client.Object
@@ -450,6 +561,7 @@ func Test_reconciler_For(t *testing.T) {
 		           namespace: "",
 		           onError: nil,
 		           onReconcile: nil,
+		           lopts: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -467,6 +579,7 @@ func Test_reconciler_For(t *testing.T) {
 		           namespace: "",
 		           onError: nil,
 		           onReconcile: nil,
+		           lopts: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -479,7 +592,7 @@ func Test_reconciler_For(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -495,6 +608,7 @@ func Test_reconciler_For(t *testing.T) {
 				namespace:   test.fields.namespace,
 				onError:     test.fields.onError,
 				onReconcile: test.fields.onReconcile,
+				lopts:       test.fields.lopts,
 			}
 
 			got, got1 := r.For()
@@ -506,13 +620,13 @@ func Test_reconciler_For(t *testing.T) {
 }
 
 func Test_reconciler_Owns(t *testing.T) {
-	t.Parallel()
 	type fields struct {
 		mgr         manager.Manager
 		name        string
 		namespace   string
 		onError     func(err error)
 		onReconcile func(nodes []Node)
+		lopts       []client.ListOption
 	}
 	type want struct {
 		want  client.Object
@@ -546,6 +660,7 @@ func Test_reconciler_Owns(t *testing.T) {
 		           namespace: "",
 		           onError: nil,
 		           onReconcile: nil,
+		           lopts: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -563,6 +678,7 @@ func Test_reconciler_Owns(t *testing.T) {
 		           namespace: "",
 		           onError: nil,
 		           onReconcile: nil,
+		           lopts: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -575,7 +691,7 @@ func Test_reconciler_Owns(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -591,6 +707,7 @@ func Test_reconciler_Owns(t *testing.T) {
 				namespace:   test.fields.namespace,
 				onError:     test.fields.onError,
 				onReconcile: test.fields.onReconcile,
+				lopts:       test.fields.lopts,
 			}
 
 			got, got1 := r.Owns()
@@ -602,13 +719,13 @@ func Test_reconciler_Owns(t *testing.T) {
 }
 
 func Test_reconciler_Watches(t *testing.T) {
-	t.Parallel()
 	type fields struct {
 		mgr         manager.Manager
 		name        string
 		namespace   string
 		onError     func(err error)
 		onReconcile func(nodes []Node)
+		lopts       []client.ListOption
 	}
 	type want struct {
 		want  *source.Kind
@@ -646,6 +763,7 @@ func Test_reconciler_Watches(t *testing.T) {
 		           namespace: "",
 		           onError: nil,
 		           onReconcile: nil,
+		           lopts: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -663,6 +781,7 @@ func Test_reconciler_Watches(t *testing.T) {
 		           namespace: "",
 		           onError: nil,
 		           onReconcile: nil,
+		           lopts: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -675,7 +794,7 @@ func Test_reconciler_Watches(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -691,6 +810,7 @@ func Test_reconciler_Watches(t *testing.T) {
 				namespace:   test.fields.namespace,
 				onError:     test.fields.onError,
 				onReconcile: test.fields.onReconcile,
+				lopts:       test.fields.lopts,
 			}
 
 			got, got1, got2 := r.Watches()

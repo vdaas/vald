@@ -2392,6 +2392,45 @@ discoverer:
     # @schema {"name": "discoverer.discoverer.discovery_duration", "type": "string"}
     # discoverer.discoverer.discovery_duration -- duration to discovery
     discovery_duration: 3s
+    # @schema {"name": "discoverer.discoverer.selectors", "type": "object"}
+    # discoverer.discoverer.selectors -- k8s resource selectors
+    selectors:
+      # @schema {"name": "discoverer.discoverer.selectors.pod", "type": "object"}
+      # discoverer.discoverer.selectors.pod -- k8s resource selectors for pod discovery
+      pod:
+        # @schema {"name": "discoverer.discoverer.selectors.pod.labels", "type": "object"}
+        # discoverer.discoverer.selectors.pod.labels -- k8s label selectors for pod discovery
+        labels: {}
+        # @schema {"name": "discoverer.discoverer.selectors.pod.fields", "type": "object"}
+        # discoverer.discoverer.selectors.pod.fields -- k8s field selectors for pod discovery
+        fields: {}
+      # @schema {"name": "discoverer.discoverer.selectors.node", "type": "object"}
+      # discoverer.discoverer.selectors.node -- k8s resource selectors for node discovery
+      node:
+        # @schema {"name": "discoverer.discoverer.selectors.node.labels", "type": "object"}
+        # discoverer.discoverer.selectors.node.labels -- k8s label selectors for node discovery
+        labels: {}
+        # @schema {"name": "discoverer.discoverer.selectors.node.fields", "type": "object"}
+        # discoverer.discoverer.selectors.node.fields -- k8s field selectors for node discovery
+        fields: {}
+      # @schema {"name": "discoverer.discoverer.selectors.pod_metrics", "type": "object"}
+      # discoverer.discoverer.selectors.pod_metrics -- k8s resource selectors for pod_metrics discovery
+      pod_metrics:
+        # @schema {"name": "discoverer.discoverer.selectors.pod_metrics.labels", "type": "object"}
+        # discoverer.discoverer.selectors.pod_metrics.labels -- k8s label selectors for pod_metrics discovery
+        labels: {}
+        # @schema {"name": "discoverer.discoverer.selectors.pod_metrics.fields", "type": "object"}
+        # discoverer.discoverer.selectors.pod_metrics.fields -- k8s field selectors for pod_metrics discovery
+        fields: {}
+      # @schema {"name": "discoverer.discoverer.selectors.node_metrics", "type": "object"}
+      # discoverer.discoverer.selectors.node_metrics -- k8s resource selectors for node_metrics discovery
+      node_metrics:
+        # @schema {"name": "discoverer.discoverer.selectors.node_metrics.labels", "type": "object"}
+        # discoverer.discoverer.selectors.node_metrics.labels -- k8s label selectors for node_metrics discovery
+        labels: {}
+        # @schema {"name": "discoverer.discoverer.selectors.node_metrics.fields", "type": "object"}
+        # discoverer.discoverer.selectors.node_metrics.fields -- k8s field selectors for node_metrics discovery
+        fields: {}
     # @schema {"name": "discoverer.discoverer.net", "alias": "net"}
     net:
       dns:

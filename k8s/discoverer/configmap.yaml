@@ -234,9 +234,26 @@ data:
           instance: ""
           zone: ""
     discoverer:
-      discovery_duration: 3s
       name: ""
-      namespace: _MY_POD_NAMESPACE_
+      namespace: "_MY_POD_NAMESPACE_"
+      discovery_duration: 3s
+      selectors:
+          pod:
+            labels:
+              app.kubernetes.io/component: agent
+              app.kubernetes.io/instance: RELEASE-NAME
+            fields:
+              status.phase: Running
+          node:
+            labels: {}
+            fields: {}
+          pod_metrics:
+            labels: {}
+            fields:
+              containers.name: vald-agent-ngt
+          node_metrics:
+            labels: {}
+            fields: {}
       net:
         dialer:
           dual_stack_enabled: false
