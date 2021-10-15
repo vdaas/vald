@@ -83,6 +83,8 @@ type ngt struct {
 	core core.NGT
 	eg   errgroup.Group
 	kvs  kvs.BidiMap
+	fmu  sync.Mutex
+	fmap map[string]uint32 // failure map for index
 	vq   vqueue.Queue
 
 	// statuses
@@ -167,6 +169,8 @@ func New(cfg *config.NGT, opts ...Option) (nn NGT, err error) {
 			return nil, err
 		}
 	}
+
+	n.removeInvalidIndex(ctx)
 	n.indexing.Store(false)
 	n.saving.Store(false)
 
@@ -277,7 +281,6 @@ func (n *ngt) initNGT(opts ...core.Option) (err error) {
 			if err != nil {
 				return err
 			}
-
 			return errors.ErrIndexLoadTimeout
 		}
 	}
@@ -633,7 +636,8 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 			return true
 		}
 		if err := n.core.Remove(uint(oid)); err != nil {
-			log.Error(err)
+			log.Errorf("failed to remove oid: %d from ngt index. error: %v", oid, err)
+			n.fmap[uuid] = oid
 		}
 		return true
 	})
@@ -644,11 +648,11 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 	n.vq.RangePopInsert(ctx, now, func(uuid string, vector []float32) bool {
 		oid, err := n.core.Insert(vector)
 		if err != nil {
-			log.Warn(err)
+			log.Warnf("failed to insert vector uuid: %s vec: %v to ngt index. error: %v", uuid, vector, err)
 			if !errors.Is(err, errors.ErrIncompatibleDimensionSize(len(vector), n.dim)) {
 				oid, err = n.core.Insert(vector)
 				if err != nil {
-					log.Error(err)
+					log.Errorf("failed to retry insert vector uuid: %s vec: %v to ngt index. error: %v", uuid, vector, err)
 					return true
 				}
 				n.kvs.Set(uuid, uint32(oid))
@@ -657,6 +661,10 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 		} else {
 			n.kvs.Set(uuid, uint32(oid))
 			atomic.AddUint32(&icnt, 1)
+		}
+		_, ok := n.fmap[uuid]
+		if ok {
+			delete(n.fmap, uuid)
 		}
 		return true
 	})
@@ -676,9 +684,30 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 	}
 	log.Debug("create graph and tree phase finished")
 
+	log.Debug("cleanup invalid index started")
+	n.removeInvalidIndex(ctx)
+	log.Debug("cleanup invalid index finished")
+
 	log.Info("create index operation finished")
 	atomic.AddUint64(&n.nocie, 1)
 	return err
+}
+
+func (n *ngt) removeInvalidIndex(ctx context.Context) {
+	n.kvs.Range(ctx, func(uuid string, oid uint32) bool {
+		if n.vq.IVExists(uuid) {
+			return true
+		}
+		vec, err := n.core.GetVector(uint(oid))
+		if err != nil || vec == nil || len(vec) != n.dim {
+			log.Debugf("invalid index detected uuid: %s\toid: %d will remove", uuid, oid)
+			n.kvs.Delete(uuid)
+			mu.Lock()
+			n.fmap[uuid] = oid
+			mu.Unlock()
+		}
+		return true
+	})
 }
 
 func (n *ngt) SaveIndex(ctx context.Context) (err error) {
@@ -726,7 +755,6 @@ func (n *ngt) saveIndex(ctx context.Context) (err error) {
 	// we want to ensure the acutal kvs size between kvsdb and metadata,
 	// so we create thie counter to count the actual kvs size instead of using kvs.Len()
 	var kvsLen uint64
-
 	eg.Go(safety.RecoverFunc(func() (err error) {
 		if n.path != "" {
 			m := make(map[string]uint32, n.Len())
@@ -765,6 +793,40 @@ func (n *ngt) saveIndex(ctx context.Context) (err error) {
 				return err
 			}
 			m = make(map[string]uint32)
+		}
+		return nil
+	}))
+
+	eg.Go(safety.RecoverFunc(func() (err error) {
+		if n.path != "" {
+			var f *os.File
+			f, err = file.Open(
+				filepath.Join(n.path, "invalid-"+kvsFileName),
+				os.O_WRONLY|os.O_CREATE|os.O_TRUNC,
+				fs.ModePerm,
+			)
+			if err != nil {
+				return err
+			}
+			defer func() {
+				if f != nil {
+					derr := f.Close()
+					if derr != nil {
+						err = errors.Wrap(err, derr.Error())
+					}
+				}
+			}()
+			gob.Register(map[string]uint32{})
+			n.fmu.Lock()
+			err = gob.NewEncoder(f).Encode(&n.fmap)
+			n.fmu.Unlock()
+			if err != nil {
+				return err
+			}
+			err = f.Sync()
+			if err != nil {
+				return err
+			}
 		}
 		return nil
 	}))
