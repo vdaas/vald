@@ -36,7 +36,7 @@ cmd/agent/core/ngt/ngt: \
 	CGO_ENABLED=1 \
 	CGO_CXXFLAGS="-g -Ofast -march=native" \
 	CGO_FFLAGS="-g -Ofast -march=native" \
-	CGO_LDFLAGS="-g -Ofast -march=native" \
+	CGO_LDFLAGS="-g -Ofast -march=native -ljemalloc" \
 	GO111MODULE=on \
 	GOPRIVATE=$(GOPRIVATE) \
 	go build \

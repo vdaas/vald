@@ -18,7 +18,7 @@
 package ngt
 
 /*
-#cgo LDFLAGS: -lngt
+#cgo LDFLAGS: -lngt -ljemalloc
 #include <NGT/Capi.h>
 */
 import "C"
