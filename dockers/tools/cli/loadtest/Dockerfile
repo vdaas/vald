@@ -30,6 +30,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     upx \
     git \
     libhdf5-dev \
+    libjemalloc-dev \
     && ldconfig \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
