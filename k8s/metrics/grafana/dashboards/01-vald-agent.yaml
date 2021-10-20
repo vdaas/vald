@@ -98,7 +98,7 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "8.2.1",
+          "pluginVersion": "8.0.1",
           "targets": [
             {
               "expr": "vald_app_version_info{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"}",
@@ -172,7 +172,7 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "8.2.1",
+          "pluginVersion": "8.0.1",
           "targets": [
             {
               "expr": "label_replace(vald_app_version_info{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"}, \"go_version\", \"v$1\", \"go_version\", \"([^v].*)\")",
@@ -246,7 +246,7 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "8.2.1",
+          "pluginVersion": "8.0.1",
           "targets": [
             {
               "expr": "vald_app_version_info{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"}",
@@ -324,7 +324,7 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "8.2.1",
+          "pluginVersion": "8.0.1",
           "targets": [
             {
               "expr": "count(up{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance!=\"\"})",
@@ -404,7 +404,7 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "8.2.1",
+          "pluginVersion": "8.0.1",
           "targets": [
             {
               "exemplar": true,
@@ -478,7 +478,7 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "8.2.1",
+          "pluginVersion": "8.0.1",
           "targets": [
             {
               "expr": "vald_app_version_info{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"}",
@@ -552,7 +552,7 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "8.2.1",
+          "pluginVersion": "8.0.1",
           "targets": [
             {
               "expr": "vald_app_version_info{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"}",
@@ -630,7 +630,7 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "8.2.1",
+          "pluginVersion": "8.0.1",
           "targets": [
             {
               "expr": "sum(vald_agent_core_ngt_index_count{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"})",
@@ -707,7 +707,7 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "8.2.1",
+          "pluginVersion": "8.0.1",
           "targets": [
             {
               "expr": "sum(vald_agent_core_ngt_is_indexing{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"})",
@@ -785,7 +785,7 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "8.2.1",
+          "pluginVersion": "8.0.1",
           "repeat": null,
           "repeatDirection": "h",
           "targets": [
@@ -864,7 +864,7 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "8.2.1",
+          "pluginVersion": "8.0.1",
           "targets": [
             {
               "expr": "sum(vald_agent_core_ngt_insert_vqueue_count{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"})",
@@ -941,7 +941,7 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "8.2.1",
+          "pluginVersion": "8.0.1",
           "targets": [
             {
               "expr": "sum(vald_agent_core_ngt_delete_vqueue_count{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"})",
@@ -1014,7 +1014,7 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "8.2.1",
+          "pluginVersion": "8.0.1",
           "targets": [
             {
               "expr": "label_replace(vald_app_version_info{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"}, \"ngt_version\", \"v$1\", \"ngt_version\", \"([^v].*)\")",
@@ -1084,7 +1084,7 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "8.2.1",
+          "pluginVersion": "8.0.1",
           "targets": [
             {
               "exemplar": true,
@@ -1155,7 +1155,7 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "8.2.1",
+          "pluginVersion": "8.0.1",
           "targets": [
             {
               "exemplar": true,
@@ -1226,7 +1226,7 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "8.2.1",
+          "pluginVersion": "8.0.1",
           "targets": [
             {
               "exemplar": true,
@@ -1281,7 +1281,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "8.2.1",
+          "pluginVersion": "8.0.1",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -1379,7 +1379,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "8.2.1",
+          "pluginVersion": "8.0.1",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -1477,7 +1477,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "8.2.1",
+          "pluginVersion": "8.0.1",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -1574,7 +1574,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "8.2.1",
+          "pluginVersion": "8.0.1",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -1683,7 +1683,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "8.2.1",
+          "pluginVersion": "8.0.1",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -1787,7 +1787,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "8.2.1",
+          "pluginVersion": "8.0.1",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -1797,7 +1797,6 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "exemplar": true,
               "expr": "vald_goroutine_count{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"}",
               "interval": "",
               "intervalFactor": 1,
@@ -1885,7 +1884,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "8.2.1",
+          "pluginVersion": "8.0.1",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -1989,7 +1988,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "8.2.1",
+          "pluginVersion": "8.0.1",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -2091,7 +2090,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "8.2.1",
+          "pluginVersion": "8.0.1",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -2151,7 +2150,7 @@ data:
         }
       ],
       "refresh": "",
-      "schemaVersion": 31,
+      "schemaVersion": 30,
       "style": "dark",
       "tags": [],
       "templating": {
