@@ -17,6 +17,7 @@
 package service
 
 import (
+	"math"
 	"os"
 	"path/filepath"
 	"strings"
@@ -153,7 +154,21 @@ func WithInitialDelayMaxDuration(dur string) Option {
 			return err
 		}
 
-		n.idelay = time.Duration(int64(rand.LimitedUint32(uint64(d/time.Second)))) * time.Second
+		if d <= 0 {
+			return nil
+		}
+
+		rnd := int64(rand.LimitedUint32(uint64(d / time.Second)))
+		if rnd <= 0 || rnd >= math.MaxInt64 || rnd <= math.MinInt64 {
+			return WithInitialDelayMaxDuration(dur)(n)
+		}
+
+		delay := time.Duration(rnd) * time.Second
+		if delay <= 0 || delay >= math.MaxInt64 || delay <= math.MinInt64 {
+			return WithInitialDelayMaxDuration(dur)(n)
+		}
+
+		n.idelay = delay
 
 		return nil
 	}
