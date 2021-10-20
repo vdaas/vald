@@ -158,7 +158,12 @@ func WithInitialDelayMaxDuration(dur string) Option {
 			return nil
 		}
 
-		rnd := int64(rand.LimitedUint32(uint64(d / time.Second)))
+		dbs := float64(d) / float64(time.Second.Nanoseconds())
+		if dbs <= 0 || dbs >= math.MaxFloat64 || dbs <= math.SmallestNonzeroFloat64 {
+			return WithInitialDelayMaxDuration(dur)(n)
+		}
+
+		rnd := int64(rand.LimitedUint32(uint64(dbs)))
 		if rnd <= 0 || rnd >= math.MaxInt64 || rnd <= math.MinInt64 {
 			return WithInitialDelayMaxDuration(dur)(n)
 		}
