@@ -3,7 +3,7 @@ Vald
 
 This is a Helm chart to install Vald components.
 
-Current chart version is `v1.2.3`
+Current chart version is `v1.3.0`
 
 Table of Contents
 ---
@@ -85,10 +85,10 @@ Configuration
 | agent.ngt.dimension | int | `4096` | vector dimension |
 | agent.ngt.distance_type | string | `"l2"` | distance type. it should be `l1`, `l2`, `angle`, `hamming`, `cosine`, `normalizedangle`, `normalizedcosine` or `jaccard`. for further details about NGT libraries supported distance is https://github.com/yahoojapan/NGT/wiki/Command-Quick-Reference and vald agent's supported NGT distance type is https://pkg.go.dev/github.com/vdaas/vald/internal/core/algorithm/ngt#pkg-constants |
 | agent.ngt.enable_in_memory_mode | bool | `true` | in-memory mode enabled |
-| agent.ngt.enable_proactive_gc | bool | `true` | enable proactive GC call for reducing heap memory allocation |
+| agent.ngt.enable_proactive_gc | bool | `false` | enable proactive GC call for reducing heap memory allocation |
 | agent.ngt.index_path | string | `""` | path to index data |
 | agent.ngt.initial_delay_max_duration | string | `"3m"` | maximum duration for initial delay |
-| agent.ngt.kvsdb.concurrency | int | `20` | kvsdb processing concurrency |
+| agent.ngt.kvsdb.concurrency | int | `6` | kvsdb processing concurrency |
 | agent.ngt.load_index_timeout_factor | string | `"1ms"` | a factor of load index timeout. timeout duration will be calculated by (index count to be loaded) * (factor). |
 | agent.ngt.max_load_index_timeout | string | `"10m"` | maximum duration of load index timeout |
 | agent.ngt.min_load_index_timeout | string | `"3m"` | minimum duration of load index timeout |
@@ -115,7 +115,7 @@ Configuration
 | agent.rollingUpdate.maxUnavailable | string | `"25%"` | max unavailable of rolling update |
 | agent.rollingUpdate.partition | int | `0` | StatefulSet partition |
 | agent.securityContext | object | `{"allowPrivilegeEscalation":false,"capabilities":{"drop":["ALL"]},"privileged":false,"readOnlyRootFilesystem":false,"runAsGroup":65532,"runAsNonRoot":true,"runAsUser":65532}` | security context for container |
-| agent.server_config | object | `{"healths":{"liveness":{"enabled":false},"readiness":{}},"metrics":{"pprof":{},"prometheus":{}},"servers":{"grpc":{},"rest":{}}}` | server config (overrides defaults.server_config) |
+| agent.server_config | object | `{"healths":{"liveness":{},"readiness":{},"startup":{"startupProbe":{"failureThreshold":200,"periodSeconds":5}}},"metrics":{"pprof":{},"prometheus":{}},"servers":{"grpc":{},"rest":{}}}` | server config (overrides defaults.server_config) |
 | agent.service.annotations | object | `{}` | service annotations |
 | agent.service.labels | object | `{}` | service labels |
 | agent.serviceType | string | `"ClusterIP"` | service type: ClusterIP, LoadBalancer or NodePort |
@@ -212,7 +212,7 @@ Configuration
 | agent.sidecar.name | string | `"vald-agent-sidecar"` | name of agent sidecar |
 | agent.sidecar.observability | object | `{"jaeger":{"service_name":"vald-agent-sidecar"},"stackdriver":{"profiler":{"service":"vald-agent-sidecar"}}}` | observability config (overrides defaults.observability) |
 | agent.sidecar.resources | object | `{"requests":{"cpu":"100m","memory":"100Mi"}}` | compute resources. |
-| agent.sidecar.server_config | object | `{"healths":{"liveness":{"enabled":false,"port":13000,"servicePort":13000},"readiness":{"enabled":false,"port":13001,"servicePort":13001}},"metrics":{"pprof":{"port":16060,"servicePort":16060},"prometheus":{"port":16061,"servicePort":16061}},"servers":{"grpc":{"enabled":false,"port":18081,"servicePort":18081},"rest":{"enabled":false,"port":18080,"servicePort":18080}}}` | server config (overrides defaults.server_config) |
+| agent.sidecar.server_config | object | `{"healths":{"liveness":{"enabled":false,"port":13000,"servicePort":13000},"readiness":{"enabled":false,"port":13001,"servicePort":13001},"startup":{"enabled":false,"port":13001}},"metrics":{"pprof":{"port":16060,"servicePort":16060},"prometheus":{"port":16061,"servicePort":16061}},"servers":{"grpc":{"enabled":false,"port":18081,"servicePort":18081},"rest":{"enabled":false,"port":18080,"servicePort":18080}}}` | server config (overrides defaults.server_config) |
 | agent.sidecar.service.annotations | object | `{}` | agent sidecar service annotations |
 | agent.sidecar.service.enabled | bool | `false` | agent sidecar service enabled |
 | agent.sidecar.service.externalTrafficPolicy | string | `""` | external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local |
@@ -286,7 +286,7 @@ Configuration
 | defaults.grpc.client.tls.enabled | bool | `false` | TLS enabled |
 | defaults.grpc.client.tls.insecure_skip_verify | bool | `false` | enable/disable skip SSL certificate verification |
 | defaults.grpc.client.tls.key | string | `"/path/to/key"` | TLS key path |
-| defaults.image.tag | string | `"v1.2.3"` | docker image tag |
+| defaults.image.tag | string | `"v1.3.0"` | docker image tag |
 | defaults.ingress.usev1beta1 | bool | `false` | use networking.k8s.io/v1beta1 instead of v1 for ingresses. This option will be removed once k8s 1.22 is released. |
 | defaults.logging.format | string | `"raw"` | logging format. logging format must be `raw` or `json` |
 | defaults.logging.level | string | `"debug"` | logging level. logging level must be `debug`, `info`, `warn`, `error` or `fatal`. |
@@ -409,6 +409,16 @@ Configuration
 | defaults.server_config.healths.readiness.server.socket_option.tcp_quick_ack | bool | `true` | server listen socket option for tcp_quick_ack functionality |
 | defaults.server_config.healths.readiness.server.socket_path | string | `""` | mysql socket_path |
 | defaults.server_config.healths.readiness.servicePort | int | `3001` | readiness server service port |
+| defaults.server_config.healths.startup.enabled | bool | `true` | startup server enabled |
+| defaults.server_config.healths.startup.port | int | `3000` | startup server port |
+| defaults.server_config.healths.startup.startupProbe.failureThreshold | int | `30` | startup probe failure threshold |
+| defaults.server_config.healths.startup.startupProbe.httpGet.path | string | `"/liveness"` | startup probe path |
+| defaults.server_config.healths.startup.startupProbe.httpGet.port | string | `"liveness"` | startup probe port |
+| defaults.server_config.healths.startup.startupProbe.httpGet.scheme | string | `"HTTP"` | startup probe scheme |
+| defaults.server_config.healths.startup.startupProbe.initialDelaySeconds | int | `5` | startup probe initial delay seconds |
+| defaults.server_config.healths.startup.startupProbe.periodSeconds | int | `5` | startup probe period seconds |
+| defaults.server_config.healths.startup.startupProbe.successThreshold | int | `1` | startup probe success threshold |
+| defaults.server_config.healths.startup.startupProbe.timeoutSeconds | int | `2` | startup probe timeout seconds |
 | defaults.server_config.metrics.pprof.enabled | bool | `false` | pprof server enabled |
 | defaults.server_config.metrics.pprof.host | string | `"0.0.0.0"` | pprof server host |
 | defaults.server_config.metrics.pprof.port | int | `6060` | pprof server port |
@@ -553,6 +563,19 @@ Configuration
 | discoverer.discoverer.net.tls.enabled | bool | `false` | TLS enabled |
 | discoverer.discoverer.net.tls.insecure_skip_verify | bool | `false` | enable/disable skip SSL certificate verification |
 | discoverer.discoverer.net.tls.key | string | `"/path/to/key"` | TLS key path |
+| discoverer.discoverer.selectors | object | `{"node":{"fields":{},"labels":{}},"node_metrics":{"fields":{},"labels":{}},"pod":{"fields":{},"labels":{}},"pod_metrics":{"fields":{},"labels":{}}}` | k8s resource selectors |
+| discoverer.discoverer.selectors.node | object | `{"fields":{},"labels":{}}` | k8s resource selectors for node discovery |
+| discoverer.discoverer.selectors.node.fields | object | `{}` | k8s field selectors for node discovery |
+| discoverer.discoverer.selectors.node.labels | object | `{}` | k8s label selectors for node discovery |
+| discoverer.discoverer.selectors.node_metrics | object | `{"fields":{},"labels":{}}` | k8s resource selectors for node_metrics discovery |
+| discoverer.discoverer.selectors.node_metrics.fields | object | `{}` | k8s field selectors for node_metrics discovery |
+| discoverer.discoverer.selectors.node_metrics.labels | object | `{}` | k8s label selectors for node_metrics discovery |
+| discoverer.discoverer.selectors.pod | object | `{"fields":{},"labels":{}}` | k8s resource selectors for pod discovery |
+| discoverer.discoverer.selectors.pod.fields | object | `{}` | k8s field selectors for pod discovery |
+| discoverer.discoverer.selectors.pod.labels | object | `{}` | k8s label selectors for pod discovery |
+| discoverer.discoverer.selectors.pod_metrics | object | `{"fields":{},"labels":{}}` | k8s resource selectors for pod_metrics discovery |
+| discoverer.discoverer.selectors.pod_metrics.fields | object | `{}` | k8s field selectors for pod_metrics discovery |
+| discoverer.discoverer.selectors.pod_metrics.labels | object | `{}` | k8s label selectors for pod_metrics discovery |
 | discoverer.enabled | bool | `true` | discoverer enabled |
 | discoverer.env | list | `[{"name":"MY_POD_NAMESPACE","valueFrom":{"fieldRef":{"fieldPath":"metadata.namespace"}}}]` | environment variables |
 | discoverer.externalTrafficPolicy | string | `""` | external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local |
@@ -581,7 +604,7 @@ Configuration
 | discoverer.rollingUpdate.maxSurge | string | `"25%"` | max surge of rolling update |
 | discoverer.rollingUpdate.maxUnavailable | string | `"25%"` | max unavailable of rolling update |
 | discoverer.securityContext | object | `{"allowPrivilegeEscalation":false,"capabilities":{"drop":["ALL"]},"privileged":false,"readOnlyRootFilesystem":true,"runAsGroup":65532,"runAsNonRoot":true,"runAsUser":65532}` | security context for container |
-| discoverer.server_config | object | `{"healths":{"liveness":{},"readiness":{}},"metrics":{"pprof":{},"prometheus":{}},"servers":{"grpc":{},"rest":{}}}` | server config (overrides defaults.server_config) |
+| discoverer.server_config | object | `{"healths":{"liveness":{},"readiness":{},"startup":{}},"metrics":{"pprof":{},"prometheus":{}},"servers":{"grpc":{},"rest":{}}}` | server config (overrides defaults.server_config) |
 | discoverer.service.annotations | object | `{}` | service annotations |
 | discoverer.service.labels | object | `{}` | service labels |
 | discoverer.serviceAccount.enabled | bool | `true` | creates service account |
@@ -646,7 +669,7 @@ Configuration
 | gateway.filter.rollingUpdate.maxSurge | string | `"25%"` | max surge of rolling update |
 | gateway.filter.rollingUpdate.maxUnavailable | string | `"25%"` | max unavailable of rolling update |
 | gateway.filter.securityContext | object | `{"allowPrivilegeEscalation":false,"capabilities":{"drop":["ALL"]},"privileged":false,"readOnlyRootFilesystem":true,"runAsGroup":65532,"runAsNonRoot":true,"runAsUser":65532}` | security context for container |
-| gateway.filter.server_config | object | `{"healths":{"liveness":{},"readiness":{}},"metrics":{"pprof":{},"prometheus":{}},"servers":{"grpc":{},"rest":{}}}` | server config (overrides defaults.server_config) |
+| gateway.filter.server_config | object | `{"healths":{"liveness":{},"readiness":{},"startup":{}},"metrics":{"pprof":{},"prometheus":{}},"servers":{"grpc":{},"rest":{}}}` | server config (overrides defaults.server_config) |
 | gateway.filter.service.annotations | object | `{}` | service annotations |
 | gateway.filter.service.labels | object | `{}` | service labels |
 | gateway.filter.serviceType | string | `"ClusterIP"` | service type: ClusterIP, LoadBalancer or NodePort |
@@ -703,7 +726,7 @@ Configuration
 | gateway.lb.rollingUpdate.maxSurge | string | `"25%"` | max surge of rolling update |
 | gateway.lb.rollingUpdate.maxUnavailable | string | `"25%"` | max unavailable of rolling update |
 | gateway.lb.securityContext | object | `{"allowPrivilegeEscalation":false,"capabilities":{"drop":["ALL"]},"privileged":false,"readOnlyRootFilesystem":true,"runAsGroup":65532,"runAsNonRoot":true,"runAsUser":65532}` | security context for container |
-| gateway.lb.server_config | object | `{"healths":{"liveness":{},"readiness":{}},"metrics":{"pprof":{},"prometheus":{}},"servers":{"grpc":{},"rest":{}}}` | server config (overrides defaults.server_config) |
+| gateway.lb.server_config | object | `{"healths":{"liveness":{},"readiness":{},"startup":{}},"metrics":{"pprof":{},"prometheus":{}},"servers":{"grpc":{},"rest":{}}}` | server config (overrides defaults.server_config) |
 | gateway.lb.service.annotations | object | `{}` | service annotations |
 | gateway.lb.service.labels | object | `{}` | service labels |
 | gateway.lb.serviceType | string | `"ClusterIP"` | service type: ClusterIP, LoadBalancer or NodePort |
@@ -805,7 +828,7 @@ Configuration
 | manager.index.rollingUpdate.maxSurge | string | `"25%"` | max surge of rolling update |
 | manager.index.rollingUpdate.maxUnavailable | string | `"25%"` | max unavailable of rolling update |
 | manager.index.securityContext | object | `{"allowPrivilegeEscalation":false,"capabilities":{"drop":["ALL"]},"privileged":false,"readOnlyRootFilesystem":true,"runAsGroup":65532,"runAsNonRoot":true,"runAsUser":65532}` | security context for container |
-| manager.index.server_config | object | `{"healths":{"liveness":{},"readiness":{}},"metrics":{"pprof":{},"prometheus":{}},"servers":{"grpc":{},"rest":{}}}` | server config (overrides defaults.server_config) |
+| manager.index.server_config | object | `{"healths":{"liveness":{},"readiness":{},"startup":{}},"metrics":{"pprof":{},"prometheus":{}},"servers":{"grpc":{},"rest":{}}}` | server config (overrides defaults.server_config) |
 | manager.index.service.annotations | object | `{}` | service annotations |
 | manager.index.service.labels | object | `{}` | service labels |
 | manager.index.serviceType | string | `"ClusterIP"` | service type: ClusterIP, LoadBalancer or NodePort |

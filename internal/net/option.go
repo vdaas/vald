@@ -22,7 +22,6 @@ import (
 	"time"
 
 	"github.com/vdaas/vald/internal/cache"
-	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/net/control"
 	"github.com/vdaas/vald/internal/timeutil"
 )
@@ -36,7 +35,6 @@ var defaultDialerOptions = []DialerOption{
 	WithDialerFallbackDelay("300ms"),
 	WithEnableDialerDualStack(),
 	WithDisableDNSCache(),
-	WithErrGroup(errgroup.Get()),
 }
 
 // WithCache returns the functional option to set the cache.
@@ -162,13 +160,5 @@ func WithEnableDialerDualStack() DialerOption {
 func WithDisableDialerDualStack() DialerOption {
 	return func(d *dialer) {
 		d.dialerDualStack = false
-	}
-}
-
-func WithErrGroup(eg errgroup.Group) DialerOption {
-	return func(d *dialer) {
-		if eg != nil {
-			d.eg = eg
-		}
 	}
 }

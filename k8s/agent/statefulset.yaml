@@ -21,10 +21,10 @@ metadata:
   labels:
     app: vald-agent-ngt
     app.kubernetes.io/name: vald
-    helm.sh/chart: vald-v1.2.3
+    helm.sh/chart: vald-v1.3.0
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: RELEASE-NAME
-    app.kubernetes.io/version: v1.2.3
+    app.kubernetes.io/version: v1.3.0
     app.kubernetes.io/component: agent
 spec:
   serviceName: vald-agent-ngt
@@ -73,6 +73,16 @@ spec:
         - name: vald-agent-ngt
           image: "vdaas/vald-agent-ngt:nightly"
           imagePullPolicy: Always
+          livenessProbe:
+            failureThreshold: 2
+            httpGet:
+              path: /liveness
+              port: liveness
+              scheme: HTTP
+            initialDelaySeconds: 5
+            periodSeconds: 3
+            successThreshold: 1
+            timeoutSeconds: 2
           readinessProbe:
             failureThreshold: 2
             httpGet:
@@ -83,7 +93,20 @@ spec:
             periodSeconds: 3
             successThreshold: 1
             timeoutSeconds: 2
+          startupProbe:
+            httpGet:
+              path: /liveness
+              port: liveness
+              scheme: HTTP
+            initialDelaySeconds: 5
+            timeoutSeconds: 2
+            successThreshold: 1
+            failureThreshold: 200
+            periodSeconds: 5
           ports:
+            - name: liveness
+              protocol: TCP
+              containerPort: 3000
             - name: readiness
               protocol: TCP
               containerPort: 3001

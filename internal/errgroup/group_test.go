@@ -423,7 +423,7 @@ func Test_group_Go(t *testing.T) {
 	}
 	type fields struct {
 		egctx            context.Context
-		cancel           func()
+		cancel           context.CancelFunc
 		limitation       chan struct{}
 		enableLimitation atomic.Value
 		emap             map[string]struct{}
@@ -570,7 +570,7 @@ func Test_group_Go(t *testing.T) {
 
 func Test_group_doCancel(t *testing.T) {
 	type fields struct {
-		cancel func()
+		cancel context.CancelFunc
 	}
 	type test struct {
 		name       string
@@ -766,6 +766,112 @@ func Test_group_Wait(t *testing.T) {
 
 			err := g.Wait()
 			if err := test.checkFunc(test.want, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func Test_group_closeLimitation(t *testing.T) {
+	type fields struct {
+		egctx            context.Context
+		cancel           context.CancelFunc
+		wg               sync.WaitGroup
+		limitation       chan struct{}
+		enableLimitation atomic.Value
+		cancelOnce       sync.Once
+		mu               sync.RWMutex
+		emap             map[string]struct{}
+		errs             []error
+		err              error
+	}
+	type want struct{}
+	type test struct {
+		name       string
+		fields     fields
+		want       want
+		checkFunc  func(want) error
+		beforeFunc func()
+		afterFunc  func()
+	}
+	defaultCheckFunc := func(w want) error {
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       fields: fields {
+		           egctx: nil,
+		           cancel: nil,
+		           wg: sync.WaitGroup{},
+		           limitation: nil,
+		           enableLimitation: nil,
+		           cancelOnce: sync.Once{},
+		           mu: sync.RWMutex{},
+		           emap: nil,
+		           errs: nil,
+		           err: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           fields: fields {
+		           egctx: nil,
+		           cancel: nil,
+		           wg: sync.WaitGroup{},
+		           limitation: nil,
+		           enableLimitation: nil,
+		           cancelOnce: sync.Once{},
+		           mu: sync.RWMutex{},
+		           emap: nil,
+		           errs: nil,
+		           err: nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc()
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc()
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			g := &group{
+				egctx:            test.fields.egctx,
+				cancel:           test.fields.cancel,
+				wg:               test.fields.wg,
+				limitation:       test.fields.limitation,
+				enableLimitation: test.fields.enableLimitation,
+				cancelOnce:       test.fields.cancelOnce,
+				mu:               test.fields.mu,
+				emap:             test.fields.emap,
+				errs:             test.fields.errs,
+				err:              test.fields.err,
+			}
+
+			g.closeLimitation()
+			if err := test.checkFunc(test.want); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

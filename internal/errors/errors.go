@@ -93,7 +93,7 @@ var (
 	// When the input error is not nil, it will return the error based on the input error.
 	Wrap = func(err error, msg string) error {
 		if err != nil {
-			if msg != "" {
+			if msg != "" && err.Error() != msg {
 				return fmt.Errorf("%s: %w", msg, err)
 			}
 			return err

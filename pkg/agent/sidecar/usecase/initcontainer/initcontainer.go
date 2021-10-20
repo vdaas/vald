@@ -18,6 +18,8 @@ package initcontainer
 
 import (
 	"context"
+	"errors"
+	"io"
 
 	"github.com/vdaas/vald/apis/grpc/v1/agent/sidecar"
 	iconf "github.com/vdaas/vald/internal/config"
@@ -246,6 +248,9 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 			case <-ctx.Done():
 				return ctx.Err()
 			case err = <-rsech:
+				if errors.Is(err, io.EOF) {
+					err = nil
+				}
 			case err = <-oech:
 			case err = <-sech:
 			}

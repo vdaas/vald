@@ -81,6 +81,10 @@ Container ports
 {{- if hasKey .Values.healths.liveness "enabled" }}
 {{- $livenessEnabled = .Values.healths.liveness.enabled }}
 {{- end }}
+{{- $startupEnabled := .default.healths.startup.enabled }}
+{{- if hasKey .Values.healths.startup "enabled" }}
+{{- $startupEnabled = .Values.healths.startup.enabled }}
+{{- end }}
 {{- if $livenessEnabled }}
 livenessProbe:
   {{- if .Values.healths.liveness.livenessProbe }}
@@ -92,7 +96,9 @@ livenessProbe:
     {{- else }}
     {{- toYaml .default.healths.liveness.livenessProbe.httpGet | nindent 4 }}
     {{- end }}
+  {{- if not $startupEnabled }}
   initialDelaySeconds: {{ default .default.healths.liveness.livenessProbe.initialDelaySeconds .Values.healths.liveness.livenessProbe.initialDelaySeconds }}
+  {{- end }}
   timeoutSeconds: {{ default .default.healths.liveness.livenessProbe.timeoutSeconds .Values.healths.liveness.livenessProbe.timeoutSeconds }}
   successThreshold: {{ default .default.healths.liveness.livenessProbe.successThreshold .Values.healths.liveness.livenessProbe.successThreshold }}
   failureThreshold: {{ default .default.healths.liveness.livenessProbe.failureThreshold .Values.healths.liveness.livenessProbe.failureThreshold }}
@@ -123,6 +129,26 @@ readinessProbe:
   periodSeconds: {{ default .default.healths.readiness.readinessProbe.periodSeconds .Values.healths.readiness.readinessProbe.periodSeconds }}
   {{- else }}
   {{- toYaml .default.healths.readiness.readinessProbe | nindent 2 }}
+  {{- end }}
+{{- end }}
+{{- if $startupEnabled }}
+startupProbe:
+  {{- if .Values.healths.startup.startupProbe }}
+  httpGet:
+    {{- if .Values.healths.startup.startupProbe.httpGet }}
+    path: {{ default .default.healths.startup.startupProbe.httpGet.path .Values.healths.startup.startupProbe.httpGet.path }}
+    port: {{ default .default.healths.startup.startupProbe.httpGet.port .Values.healths.startup.startupProbe.httpGet.port }}
+    scheme: {{ default .default.healths.startup.startupProbe.httpGet.scheme .Values.healths.startup.startupProbe.httpGet.scheme }}
+    {{- else }}
+    {{- toYaml .default.healths.startup.startupProbe.httpGet | nindent 4 }}
+    {{- end }}
+  initialDelaySeconds: {{ default .default.healths.startup.startupProbe.initialDelaySeconds .Values.healths.startup.startupProbe.initialDelaySeconds }}
+  timeoutSeconds: {{ default .default.healths.startup.startupProbe.timeoutSeconds .Values.healths.startup.startupProbe.timeoutSeconds }}
+  successThreshold: {{ default .default.healths.startup.startupProbe.successThreshold .Values.healths.startup.startupProbe.successThreshold }}
+  failureThreshold: {{ default .default.healths.startup.startupProbe.failureThreshold .Values.healths.startup.startupProbe.failureThreshold }}
+  periodSeconds: {{ default .default.healths.startup.startupProbe.periodSeconds .Values.healths.startup.startupProbe.periodSeconds }}
+  {{- else }}
+  {{- toYaml .default.healths.startup.startupProbe | nindent 2 }}
   {{- end }}
 {{- end }}
 ports:
@@ -882,5 +908,61 @@ podAntiAffinity:
     {{- toYaml .podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution | nindent 4 }}
   {{- else }}
   requiredDuringSchedulingIgnoredDuringExecution: []
+  {{- end }}
+{{- end -}}
+
+{{/*
+Discoverer selector config
+*/}}
+{{- define "vald.discoverer.selector" -}}
+pod:
+  labels:
+    app.kubernetes.io/component: agent
+    app.kubernetes.io/instance: {{ .chart.Release.Name }}
+    {{- if .Values.pod.labels }}
+      {{- toYaml .Values.pod.labels | nindent 4 }}
+    {{- end }}
+  fields:
+    status.phase: Running
+    {{- if .Values.pod.fields }}
+      {{- toYaml .Values.pod.fields | nindent 4 }}
+    {{- end }}
+node:
+  {{- if .Values.node.labels }}
+  labels:
+    {{- toYaml .Values.node.labels | nindent 4 }}
+  {{- else }}
+  labels: {}
+  {{- end }}
+  {{- if .Values.node.fields }}
+  fields:
+    {{- toYaml .Values.node.fields | nindent 4 }}
+  {{- else }}
+  fields: {}
+  {{- end }}
+pod_metrics:
+  {{- if .Values.pod_metrics.labels }}
+  labels:
+    {{- toYaml .Values.pod_metrics.labels | nindent 4 }}
+  {{- else }}
+  labels: {}
+  {{- end }}
+  fields:
+    containers.name: {{ .agent.name }}
+    {{- if .Values.pod_metrics.fields }}
+      {{- toYaml .Values.pod_metrics.fields | nindent 4 }}
+    {{- end }}
+node_metrics:
+  {{- if .Values.node_metrics.labels }}
+  labels:
+    {{- toYaml .Values.node_metrics.labels | nindent 4 }}
+  {{- else }}
+  labels: {}
+  {{- end }}
+  {{- if .Values.node_metrics.fields }}
+  fields:
+    {{- toYaml .Values.node_metrics.fields | nindent 4 }}
+  {{- else }}
+  fields: {}
   {{- end }}
 {{- end -}}

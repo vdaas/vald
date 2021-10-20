@@ -13,7 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-
 package kvs
 
 import (
@@ -76,7 +75,6 @@ func (m *uo) Store(key string, value uint32) {
 	if e, ok := read.m[key]; ok && e.tryStore(&value) {
 		return
 	}
-
 	m.mu.Lock()
 	read, _ = m.read.Load().(readOnlyUo)
 	if e, ok := read.m[key]; ok {
@@ -124,7 +122,6 @@ func (m *uo) LoadOrStore(key string, value uint32) (actual uint32, loaded bool) 
 			return actual, loaded
 		}
 	}
-
 	m.mu.Lock()
 	read, _ = m.read.Load().(readOnlyUo)
 	if e, ok := read.m[key]; ok {
@@ -144,7 +141,6 @@ func (m *uo) LoadOrStore(key string, value uint32) (actual uint32, loaded bool) 
 		actual, loaded = value, false
 	}
 	m.mu.Unlock()
-
 	return actual, loaded
 }
 
@@ -156,7 +152,6 @@ func (e *entryUo) tryLoadOrStore(i uint32) (actual uint32, loaded, ok bool) {
 	if p != nil {
 		return *(*uint32)(p), true, true
 	}
-
 	ic := i
 	for {
 		if atomic.CompareAndSwapPointer(&e.p, nil, unsafe.Pointer(&ic)) {

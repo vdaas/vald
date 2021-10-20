@@ -674,6 +674,37 @@ spec:
                                   type: integer
                                   maximum: 65535
                                   minimum: 0
+                            startup:
+                              type: object
+                              properties:
+                                enabled:
+                                  type: boolean
+                                port:
+                                  type: integer
+                                  maximum: 65535
+                                  minimum: 0
+                                startupProbe:
+                                  type: object
+                                  properties:
+                                    failureThreshold:
+                                      type: integer
+                                    httpGet:
+                                      type: object
+                                      properties:
+                                        path:
+                                          type: string
+                                        port:
+                                          type: string
+                                        scheme:
+                                          type: string
+                                    initialDelaySeconds:
+                                      type: integer
+                                    periodSeconds:
+                                      type: integer
+                                    successThreshold:
+                                      type: integer
+                                    timeoutSeconds:
+                                      type: integer
                         metrics:
                           type: object
                           properties:
@@ -1663,6 +1694,37 @@ spec:
                                       type: integer
                                       maximum: 65535
                                       minimum: 0
+                                startup:
+                                  type: object
+                                  properties:
+                                    enabled:
+                                      type: boolean
+                                    port:
+                                      type: integer
+                                      maximum: 65535
+                                      minimum: 0
+                                    startupProbe:
+                                      type: object
+                                      properties:
+                                        failureThreshold:
+                                          type: integer
+                                        httpGet:
+                                          type: object
+                                          properties:
+                                            path:
+                                              type: string
+                                            port:
+                                              type: string
+                                            scheme:
+                                              type: string
+                                        initialDelaySeconds:
+                                          type: integer
+                                        periodSeconds:
+                                          type: integer
+                                        successThreshold:
+                                          type: integer
+                                        timeoutSeconds:
+                                          type: integer
                             metrics:
                               type: object
                               properties:
@@ -2601,6 +2663,37 @@ spec:
                                   type: integer
                                   maximum: 65535
                                   minimum: 0
+                            startup:
+                              type: object
+                              properties:
+                                enabled:
+                                  type: boolean
+                                port:
+                                  type: integer
+                                  maximum: 65535
+                                  minimum: 0
+                                startupProbe:
+                                  type: object
+                                  properties:
+                                    failureThreshold:
+                                      type: integer
+                                    httpGet:
+                                      type: object
+                                      properties:
+                                        path:
+                                          type: string
+                                        port:
+                                          type: string
+                                        scheme:
+                                          type: string
+                                    initialDelaySeconds:
+                                      type: integer
+                                    periodSeconds:
+                                      type: integer
+                                    successThreshold:
+                                      type: integer
+                                    timeoutSeconds:
+                                      type: integer
                         metrics:
                           type: object
                           properties:
@@ -3072,6 +3165,45 @@ spec:
                                   type: boolean
                                 key:
                                   type: string
+                        selectors:
+                          type: object
+                          properties:
+                            node:
+                              type: object
+                              properties:
+                                fields:
+                                  type: object
+                                  x-kubernetes-preserve-unknown-fields: true
+                                labels:
+                                  type: object
+                                  x-kubernetes-preserve-unknown-fields: true
+                            node_metrics:
+                              type: object
+                              properties:
+                                fields:
+                                  type: object
+                                  x-kubernetes-preserve-unknown-fields: true
+                                labels:
+                                  type: object
+                                  x-kubernetes-preserve-unknown-fields: true
+                            pod:
+                              type: object
+                              properties:
+                                fields:
+                                  type: object
+                                  x-kubernetes-preserve-unknown-fields: true
+                                labels:
+                                  type: object
+                                  x-kubernetes-preserve-unknown-fields: true
+                            pod_metrics:
+                              type: object
+                              properties:
+                                fields:
+                                  type: object
+                                  x-kubernetes-preserve-unknown-fields: true
+                                labels:
+                                  type: object
+                                  x-kubernetes-preserve-unknown-fields: true
                     enabled:
                       type: boolean
                     env:
@@ -3537,6 +3669,37 @@ spec:
                                   type: integer
                                   maximum: 65535
                                   minimum: 0
+                            startup:
+                              type: object
+                              properties:
+                                enabled:
+                                  type: boolean
+                                port:
+                                  type: integer
+                                  maximum: 65535
+                                  minimum: 0
+                                startupProbe:
+                                  type: object
+                                  properties:
+                                    failureThreshold:
+                                      type: integer
+                                    httpGet:
+                                      type: object
+                                      properties:
+                                        path:
+                                          type: string
+                                        port:
+                                          type: string
+                                        scheme:
+                                          type: string
+                                    initialDelaySeconds:
+                                      type: integer
+                                    periodSeconds:
+                                      type: integer
+                                    successThreshold:
+                                      type: integer
+                                    timeoutSeconds:
+                                      type: integer
                         metrics:
                           type: object
                           properties:
@@ -4963,6 +5126,37 @@ spec:
                                       type: integer
                                       maximum: 65535
                                       minimum: 0
+                                startup:
+                                  type: object
+                                  properties:
+                                    enabled:
+                                      type: boolean
+                                    port:
+                                      type: integer
+                                      maximum: 65535
+                                      minimum: 0
+                                    startupProbe:
+                                      type: object
+                                      properties:
+                                        failureThreshold:
+                                          type: integer
+                                        httpGet:
+                                          type: object
+                                          properties:
+                                            path:
+                                              type: string
+                                            port:
+                                              type: string
+                                            scheme:
+                                              type: string
+                                        initialDelaySeconds:
+                                          type: integer
+                                        periodSeconds:
+                                          type: integer
+                                        successThreshold:
+                                          type: integer
+                                        timeoutSeconds:
+                                          type: integer
                             metrics:
                               type: object
                               properties:
@@ -6203,6 +6397,37 @@ spec:
                                       type: integer
                                       maximum: 65535
                                       minimum: 0
+                                startup:
+                                  type: object
+                                  properties:
+                                    enabled:
+                                      type: boolean
+                                    port:
+                                      type: integer
+                                      maximum: 65535
+                                      minimum: 0
+                                    startupProbe:
+                                      type: object
+                                      properties:
+                                        failureThreshold:
+                                          type: integer
+                                        httpGet:
+                                          type: object
+                                          properties:
+                                            path:
+                                              type: string
+                                            port:
+                                              type: string
+                                            scheme:
+                                              type: string
+                                        initialDelaySeconds:
+                                          type: integer
+                                        periodSeconds:
+                                          type: integer
+                                        successThreshold:
+                                          type: integer
+                                        timeoutSeconds:
+                                          type: integer
                             metrics:
                               type: object
                               properties:
@@ -7437,6 +7662,37 @@ spec:
                                       type: integer
                                       maximum: 65535
                                       minimum: 0
+                                startup:
+                                  type: object
+                                  properties:
+                                    enabled:
+                                      type: boolean
+                                    port:
+                                      type: integer
+                                      maximum: 65535
+                                      minimum: 0
+                                    startupProbe:
+                                      type: object
+                                      properties:
+                                        failureThreshold:
+                                          type: integer
+                                        httpGet:
+                                          type: object
+                                          properties:
+                                            path:
+                                              type: string
+                                            port:
+                                              type: string
+                                            scheme:
+                                              type: string
+                                        initialDelaySeconds:
+                                          type: integer
+                                        periodSeconds:
+                                          type: integer
+                                        successThreshold:
+                                          type: integer
+                                        timeoutSeconds:
+                                          type: integer
                             metrics:
                               type: object
                               properties:

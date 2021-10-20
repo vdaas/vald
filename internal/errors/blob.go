@@ -31,6 +31,13 @@ var (
 			err: Wrap(err, Errorf("key %s not found", key).Error()),
 		}
 	}
+
+	// NewErrBlobInvalidChunkRange represents a function to create invalid chunk range error.
+	NewErrBlobInvalidChunkRange = func(err error, rng string) error {
+		return &ErrBlobInvalidChunkRange{
+			err: Wrap(err, Errorf("chunk range %s is invalid", rng).Error()),
+		}
+	}
 )
 
 // ErrBlobNoSuchBucket represents no such bucket error of S3.
@@ -73,4 +80,19 @@ func (e *ErrBlobNoSuchKey) Unwrap() error {
 func IsErrBlobNoSuchKey(err error) bool {
 	target := new(ErrBlobNoSuchKey)
 	return As(err, &target)
+}
+
+// ErrBlobInvalidChunkRange represents no invalid chunk range error of S3.
+type ErrBlobInvalidChunkRange struct {
+	err error
+}
+
+// Error returns the string representation of the internal error.
+func (e *ErrBlobInvalidChunkRange) Error() string {
+	return e.err.Error()
+}
+
+// Unwrap unwraps and returns the internal error.
+func (e *ErrBlobInvalidChunkRange) Unwrap() error {
+	return e.err
 }

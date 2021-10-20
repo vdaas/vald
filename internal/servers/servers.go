@@ -90,7 +90,9 @@ func (l *listener) ListenAndServe(ctx context.Context) <-chan error {
 		defer close(ech)
 		<-ctx.Done()
 		err = ctx.Err()
-		if err != nil && err != context.Canceled {
+		if err != nil &&
+			!errors.Is(err, context.Canceled) &&
+			!errors.Is(err, context.DeadlineExceeded) {
 			return err
 		}
 		return nil

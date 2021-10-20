@@ -38,7 +38,6 @@ import (
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/vdaas/vald/internal/cache"
 	"github.com/vdaas/vald/internal/cache/gache"
-	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/test/goleak"
 	"github.com/vdaas/vald/internal/tls"
@@ -257,7 +256,7 @@ func TestNewDialer(t *testing.T) {
 		got := gotDer.(*dialer)
 		opts := []cmp.Option{
 			cmp.AllowUnexported(*want),
-			cmpopts.IgnoreFields(*want, "dialer", "der", "addrs", "eg", "dnsCachedOnce", "ctrl"),
+			cmpopts.IgnoreFields(*want, "dialer", "der", "addrs", "dnsCachedOnce", "ctrl"),
 			cmp.Comparer(func(x, y cache.Cache) bool {
 				if x == nil && y == nil {
 					return true
@@ -303,7 +302,6 @@ func TestNewDialer(t *testing.T) {
 						dialerDualStack:     true,
 						der:                 d,
 						dialer:              d.DialContext,
-						eg:                  errgroup.Get(),
 					},
 				},
 			}
@@ -1394,7 +1392,6 @@ func Test_dialer_cachedDialer(t *testing.T) {
 				dialerDualStack:       test.fields.dialerDualStack,
 				der:                   test.fields.der,
 				dialer:                test.fields.dialer,
-				eg:                    errgroup.Get(),
 			}
 
 			gotConn, gotErr := d.cachedDialer(test.args.dctx, test.args.network, test.args.addr)
@@ -1599,7 +1596,6 @@ func Test_dialer_dial(t *testing.T) {
 			d := &dialer{
 				tlsConfig: test.fields.tlsConfig,
 				der:       test.fields.der,
-				eg:        errgroup.Get(),
 			}
 
 			got, err := d.dial(test.args.ctx, test.args.network, test.args.addr)
@@ -1739,7 +1735,6 @@ func Test_dialer_tlsHandshake(t *testing.T) {
 		addrs                 sync.Map
 		der                   *net.Dialer
 		dialer                func(ctx context.Context, network, addr string) (Conn, error)
-		eg                    errgroup.Group
 	}
 	type want struct {
 		want *tls.Conn
@@ -1789,7 +1784,6 @@ func Test_dialer_tlsHandshake(t *testing.T) {
 		           addrs: sync.Map{},
 		           der: nil,
 		           dialer: nil,
-		           eg: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -1822,7 +1816,6 @@ func Test_dialer_tlsHandshake(t *testing.T) {
 		           addrs: sync.Map{},
 		           der: nil,
 		           dialer: nil,
-		           eg: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -1861,7 +1854,6 @@ func Test_dialer_tlsHandshake(t *testing.T) {
 				addrs:                 test.fields.addrs,
 				der:                   test.fields.der,
 				dialer:                test.fields.dialer,
-				eg:                    test.fields.eg,
 			}
 
 			got, err := d.tlsHandshake(test.args.ctx, test.args.conn, test.args.addr)

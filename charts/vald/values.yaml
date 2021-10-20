@@ -38,7 +38,7 @@ defaults:
   image:
     # @schema {"name": "defaults.image.tag", "type": "string"}
     # defaults.image.tag -- docker image tag
-    tag: v1.2.3
+    tag: v1.3.0
   # @schema {"name": "defaults.server_config", "type": "object", "anchor": "server_config"}
   server_config:
     # @schema {"name": "defaults.server_config.servers", "type": "object"}
@@ -229,6 +229,42 @@ defaults:
           restart: true
     # @schema {"name": "defaults.server_config.healths", "type": "object"}
     healths:
+      # @schema {"name": "defaults.server_config.healths.startup", "type": "object"}
+      startup:
+        # @schema {"name": "defaults.server_config.healths.startup.enabled", "type": "boolean"}
+        # defaults.server_config.healths.startup.enabled -- startup server enabled
+        enabled: true
+        # @schema {"name": "defaults.server_config.healths.startup.port", "type": "integer", "minimum": 0, "maximum": 65535}
+        # defaults.server_config.healths.startup.port -- startup server port
+        port: 3000
+        # @schema {"name": "defaults.server_config.healths.startup.startupProbe", "type": "object"}
+        startupProbe:
+          # @schema {"name": "defaults.server_config.healths.startup.startupProbe.httpGet", "type": "object"}
+          httpGet:
+            # @schema {"name": "defaults.server_config.healths.startup.startupProbe.httpGet.path", "type": "string"}
+            # defaults.server_config.healths.startup.startupProbe.httpGet.path -- startup probe path
+            path: /liveness
+            # @schema {"name": "defaults.server_config.healths.startup.startupProbe.httpGet.port", "type": "string"}
+            # defaults.server_config.healths.startup.startupProbe.httpGet.port -- startup probe port
+            port: liveness
+            # @schema {"name": "defaults.server_config.healths.startup.startupProbe.httpGet.scheme", "type": "string"}
+            # defaults.server_config.healths.startup.startupProbe.httpGet.scheme -- startup probe scheme
+            scheme: HTTP
+          # @schema {"name": "defaults.server_config.healths.startup.startupProbe.initialDelaySeconds", "type": "integer"}
+          # defaults.server_config.healths.startup.startupProbe.initialDelaySeconds -- startup probe initial delay seconds
+          initialDelaySeconds: 5
+          # @schema {"name": "defaults.server_config.healths.startup.startupProbe.timeoutSeconds", "type": "integer"}
+          # defaults.server_config.healths.startup.startupProbe.timeoutSeconds -- startup probe timeout seconds
+          timeoutSeconds: 2
+          # @schema {"name": "defaults.server_config.healths.startup.startupProbe.successThreshold", "type": "integer"}
+          # defaults.server_config.healths.startup.startupProbe.successThreshold -- startup probe success threshold
+          successThreshold: 1
+          # @schema {"name": "defaults.server_config.healths.startup.startupProbe.failureThreshold", "type": "integer"}
+          # defaults.server_config.healths.startup.startupProbe.failureThreshold -- startup probe failure threshold
+          failureThreshold: 30
+          # @schema {"name": "defaults.server_config.healths.startup.startupProbe.periodSeconds", "type": "integer"}
+          # defaults.server_config.healths.startup.startupProbe.periodSeconds -- startup probe period seconds
+          periodSeconds: 5
       # @schema {"name": "defaults.server_config.healths.liveness", "type": "object"}
       liveness:
         # @schema {"name": "defaults.server_config.healths.liveness.enabled", "type": "boolean"}
@@ -1172,6 +1208,7 @@ gateway:
       healths:
         liveness: {}
         readiness: {}
+        startup: {}
       metrics:
         pprof: {}
         prometheus: {}
@@ -1424,6 +1461,7 @@ gateway:
       healths:
         liveness: {}
         readiness: {}
+        startup: {}
       metrics:
         pprof: {}
         prometheus: {}
@@ -1688,9 +1726,12 @@ agent:
       rest: {}
       grpc: {}
     healths:
-      liveness:
-        enabled: false
+      liveness: {}
       readiness: {}
+      startup:
+        startupProbe:
+          failureThreshold: 200
+          periodSeconds: 5
     metrics:
       pprof: {}
       prometheus: {}
@@ -1779,7 +1820,7 @@ agent:
     load_index_timeout_factor: 1ms
     # @schema {"name": "agent.ngt.enable_proactive_gc", "type": "boolean"}
     # agent.ngt.enable_proactive_gc -- enable proactive GC call for reducing heap memory allocation
-    enable_proactive_gc: true
+    enable_proactive_gc: false
     # @schema {"name": "agent.ngt.vqueue", "type": "object"}
     vqueue:
       # @schema {"name": "agent.ngt.vqueue.insert_buffer_pool_size", "type": "integer"}
@@ -1792,7 +1833,7 @@ agent:
     kvsdb:
       # @schema {"name": "agent.ngt.kvsdb.concurrency", "type": "integer"}
       # agent.ngt.kvsdb.concurrency -- kvsdb processing concurrency
-      concurrency: 20
+      concurrency: 6
   # @schema {"name": "agent.sidecar", "type": "object"}
   sidecar:
     # @schema {"name": "agent.sidecar.enabled", "type": "boolean"}
@@ -1876,6 +1917,9 @@ agent:
           enabled: false
           port: 13001
           servicePort: 13001
+        startup:
+          enabled: false
+          port: 13001
       metrics:
         pprof:
           port: 16060
@@ -2316,6 +2360,7 @@ discoverer:
     healths:
       liveness: {}
       readiness: {}
+      startup: {}
     metrics:
       pprof: {}
       prometheus: {}
@@ -2347,6 +2392,45 @@ discoverer:
     # @schema {"name": "discoverer.discoverer.discovery_duration", "type": "string"}
     # discoverer.discoverer.discovery_duration -- duration to discovery
     discovery_duration: 3s
+    # @schema {"name": "discoverer.discoverer.selectors", "type": "object"}
+    # discoverer.discoverer.selectors -- k8s resource selectors
+    selectors:
+      # @schema {"name": "discoverer.discoverer.selectors.pod", "type": "object"}
+      # discoverer.discoverer.selectors.pod -- k8s resource selectors for pod discovery
+      pod:
+        # @schema {"name": "discoverer.discoverer.selectors.pod.labels", "type": "object"}
+        # discoverer.discoverer.selectors.pod.labels -- k8s label selectors for pod discovery
+        labels: {}
+        # @schema {"name": "discoverer.discoverer.selectors.pod.fields", "type": "object"}
+        # discoverer.discoverer.selectors.pod.fields -- k8s field selectors for pod discovery
+        fields: {}
+      # @schema {"name": "discoverer.discoverer.selectors.node", "type": "object"}
+      # discoverer.discoverer.selectors.node -- k8s resource selectors for node discovery
+      node:
+        # @schema {"name": "discoverer.discoverer.selectors.node.labels", "type": "object"}
+        # discoverer.discoverer.selectors.node.labels -- k8s label selectors for node discovery
+        labels: {}
+        # @schema {"name": "discoverer.discoverer.selectors.node.fields", "type": "object"}
+        # discoverer.discoverer.selectors.node.fields -- k8s field selectors for node discovery
+        fields: {}
+      # @schema {"name": "discoverer.discoverer.selectors.pod_metrics", "type": "object"}
+      # discoverer.discoverer.selectors.pod_metrics -- k8s resource selectors for pod_metrics discovery
+      pod_metrics:
+        # @schema {"name": "discoverer.discoverer.selectors.pod_metrics.labels", "type": "object"}
+        # discoverer.discoverer.selectors.pod_metrics.labels -- k8s label selectors for pod_metrics discovery
+        labels: {}
+        # @schema {"name": "discoverer.discoverer.selectors.pod_metrics.fields", "type": "object"}
+        # discoverer.discoverer.selectors.pod_metrics.fields -- k8s field selectors for pod_metrics discovery
+        fields: {}
+      # @schema {"name": "discoverer.discoverer.selectors.node_metrics", "type": "object"}
+      # discoverer.discoverer.selectors.node_metrics -- k8s resource selectors for node_metrics discovery
+      node_metrics:
+        # @schema {"name": "discoverer.discoverer.selectors.node_metrics.labels", "type": "object"}
+        # discoverer.discoverer.selectors.node_metrics.labels -- k8s label selectors for node_metrics discovery
+        labels: {}
+        # @schema {"name": "discoverer.discoverer.selectors.node_metrics.fields", "type": "object"}
+        # discoverer.discoverer.selectors.node_metrics.fields -- k8s field selectors for node_metrics discovery
+        fields: {}
     # @schema {"name": "discoverer.discoverer.net", "alias": "net"}
     net:
       dns:
@@ -2583,6 +2667,7 @@ manager:
       healths:
         liveness: {}
         readiness: {}
+        startup: {}
       metrics:
         pprof: {}
         prometheus: {}

@@ -21,7 +21,7 @@ import (
 	"testing"
 
 	"github.com/vdaas/vald/apis/grpc/v1/filter/ingress"
-	"go.uber.org/goleak"
+	"github.com/vdaas/vald/internal/test/goleak"
 )
 
 func TestWithFilter(t *testing.T) {

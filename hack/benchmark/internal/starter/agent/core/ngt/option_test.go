@@ -22,7 +22,7 @@ import (
 
 	"github.com/vdaas/vald/pkg/agent/core/ngt/config"
 
-	"go.uber.org/goleak"
+	"github.com/vdaas/vald/internal/test/goleak"
 )
 
 func TestWithConfig(t *testing.T) {

@@ -1,5 +1,145 @@
 # CHANGELOG
 
+## v1.3.0
+
+### Docker images
+
+<table>
+  <tr>
+    <th>component</th>
+    <th>Docker pull</th>
+  </tr>
+  <tr>
+    <td>Agent NGT</td>
+    <td>
+      <code>docker pull vdaas/vald-agent-ngt:v1.3.0</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-agent-ngt:v1.3.0</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Agent sidecar</td>
+    <td>
+      <code>docker pull vdaas/vald-agent-sidecar:v1.3.0</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-agent-sidecar:v1.3.0</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Discoverers</td>
+    <td>
+      <code>docker pull vdaas/vald-discoverer-k8s:v1.3.0</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-discoverer-k8s:v1.3.0</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Gateways</td>
+    <td>
+      <code>docker pull vdaas/vald-lb-gateway:v1.3.0</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-lb-gateway:v1.3.0</code><br/>
+      <code>docker pull vdaas/vald-filter-gateway:v1.3.0</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-filter-gateway:v1.3.0</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Index Manager</td>
+    <td>
+      <code>docker pull vdaas/vald-manager-index:v1.3.0</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-manager-index:v1.3.0</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Helm Operator</td>
+    <td>
+      <code>docker pull vdaas/vald-helm-operator:v1.3.0</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-helm-operator:v1.3.0</code>
+    </td>
+  </tr>
+</table>
+
+### Documents
+- [GoDoc](https://pkg.go.dev/github.com/vdaas/vald@v1.3.0)
+- [Helm Chart Reference](https://github.com/vdaas/vald/blob/v1.3.0/charts/vald/README.md)
+- [Helm Operator Chart Reference](https://github.com/vdaas/vald/blob/v1.3.0/charts/vald-helm-operator/README.md)
+
+### Changes
+- add startupProbe support (#1473)
+- add label / field selectors for discoverer (#1472)
+
+
+## v1.2.4
+
+### Docker images
+
+<table>
+  <tr>
+    <th>component</th>
+    <th>Docker pull</th>
+  </tr>
+  <tr>
+    <td>Agent NGT</td>
+    <td>
+      <code>docker pull vdaas/vald-agent-ngt:v1.2.4</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-agent-ngt:v1.2.4</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Agent sidecar</td>
+    <td>
+      <code>docker pull vdaas/vald-agent-sidecar:v1.2.4</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-agent-sidecar:v1.2.4</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Discoverers</td>
+    <td>
+      <code>docker pull vdaas/vald-discoverer-k8s:v1.2.4</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-discoverer-k8s:v1.2.4</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Gateways</td>
+    <td>
+      <code>docker pull vdaas/vald-lb-gateway:v1.2.4</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-lb-gateway:v1.2.4</code><br/>
+      <code>docker pull vdaas/vald-filter-gateway:v1.2.4</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-filter-gateway:v1.2.4</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Index Manager</td>
+    <td>
+      <code>docker pull vdaas/vald-manager-index:v1.2.4</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-manager-index:v1.2.4</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Helm Operator</td>
+    <td>
+      <code>docker pull vdaas/vald-helm-operator:v1.2.4</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-helm-operator:v1.2.4</code>
+    </td>
+  </tr>
+</table>
+
+### Documents
+- [GoDoc](https://pkg.go.dev/github.com/vdaas/vald@v1.2.4)
+- [Helm Chart Reference](https://github.com/vdaas/vald/blob/v1.2.4/charts/vald/README.md)
+- [Helm Operator Chart Reference](https://github.com/vdaas/vald/blob/v1.2.4/charts/vald-helm-operator/README.md)
+
+### Changes
+- update go patch version (#1464)
+- [bugfix] sidecar e2e testing (#1465)
+- update dependencies version including NGT (#1461)
+- fix unlimited gorountine processing in kvsdb (#1458)
+- Refactor hack pkg agent e2e benchmark (#1430)
+- Remove non-exist components from doc and ci (#1450)
+- :recycle: :pencil: add default_pool_size in example yml (#1457)
+- reduce memory usage around ngt implementation & refactor agent/lb & auto-generate unit test  (#1449)
+- Remove rinx from several yamls (#1451)
+- Add E2E scenario with SkipStrictExistCheck enabled (#1415)
+- fix filter-gateway chart (#1454)
+- Implement pkg/agent/core/ngt/service/option test  (#1429)
+
+
 ## v1.2.3
 
 ### Docker images

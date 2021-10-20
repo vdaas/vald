@@ -13,7 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-
 package kvs
 
 import (
@@ -24,7 +23,7 @@ import (
 	"unsafe"
 
 	"github.com/vdaas/vald/internal/errors"
-	"go.uber.org/goleak"
+	"github.com/vdaas/vald/internal/test/goleak"
 )
 
 func Test_newEntryUo(t *testing.T) {
@@ -140,7 +139,7 @@ func Test_uo_Load(t *testing.T) {
 		           key: "",
 		       },
 		       fields: fields {
-		           mu: nil,
+		           mu: sync.Mutex{},
 		           read: nil,
 		           dirty: nil,
 		           misses: 0,
@@ -159,7 +158,7 @@ func Test_uo_Load(t *testing.T) {
 		           key: "",
 		           },
 		           fields: fields {
-		           mu: nil,
+		           mu: sync.Mutex{},
 		           read: nil,
 		           dirty: nil,
 		           misses: 0,
@@ -313,7 +312,7 @@ func Test_uo_Store(t *testing.T) {
 		           value: 0,
 		       },
 		       fields: fields {
-		           mu: nil,
+		           mu: sync.Mutex{},
 		           read: nil,
 		           dirty: nil,
 		           misses: 0,
@@ -333,7 +332,7 @@ func Test_uo_Store(t *testing.T) {
 		           value: 0,
 		           },
 		           fields: fields {
-		           mu: nil,
+		           mu: sync.Mutex{},
 		           read: nil,
 		           dirty: nil,
 		           misses: 0,
@@ -476,11 +475,7 @@ func Test_entryUo_unexpungeLocked(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotWasExpunged bool) error {
 		if !reflect.DeepEqual(gotWasExpunged, w.wantWasExpunged) {
-			return errors.Errorf(
-				"got: \"%#v\",\n\t\t\t\twant: \"%#v\"",
-				gotWasExpunged,
-				w.wantWasExpunged,
-			)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotWasExpunged, w.wantWasExpunged)
 		}
 		return nil
 	}
@@ -661,7 +656,7 @@ func Test_uo_LoadOrStore(t *testing.T) {
 		           value: 0,
 		       },
 		       fields: fields {
-		           mu: nil,
+		           mu: sync.Mutex{},
 		           read: nil,
 		           dirty: nil,
 		           misses: 0,
@@ -681,7 +676,7 @@ func Test_uo_LoadOrStore(t *testing.T) {
 		           value: 0,
 		           },
 		           fields: fields {
-		           mu: nil,
+		           mu: sync.Mutex{},
 		           read: nil,
 		           dirty: nil,
 		           misses: 0,
@@ -856,7 +851,7 @@ func Test_uo_LoadAndDelete(t *testing.T) {
 		           key: "",
 		       },
 		       fields: fields {
-		           mu: nil,
+		           mu: sync.Mutex{},
 		           read: nil,
 		           dirty: nil,
 		           misses: 0,
@@ -875,7 +870,7 @@ func Test_uo_LoadAndDelete(t *testing.T) {
 		           key: "",
 		           },
 		           fields: fields {
-		           mu: nil,
+		           mu: sync.Mutex{},
 		           read: nil,
 		           dirty: nil,
 		           misses: 0,
@@ -948,7 +943,7 @@ func Test_uo_Delete(t *testing.T) {
 		           key: "",
 		       },
 		       fields: fields {
-		           mu: nil,
+		           mu: sync.Mutex{},
 		           read: nil,
 		           dirty: nil,
 		           misses: 0,
@@ -967,7 +962,7 @@ func Test_uo_Delete(t *testing.T) {
 		           key: "",
 		           },
 		           fields: fields {
-		           mu: nil,
+		           mu: sync.Mutex{},
 		           read: nil,
 		           dirty: nil,
 		           misses: 0,
@@ -1119,7 +1114,7 @@ func Test_uo_Range(t *testing.T) {
 		           f: nil,
 		       },
 		       fields: fields {
-		           mu: nil,
+		           mu: sync.Mutex{},
 		           read: nil,
 		           dirty: nil,
 		           misses: 0,
@@ -1138,7 +1133,7 @@ func Test_uo_Range(t *testing.T) {
 		           f: nil,
 		           },
 		           fields: fields {
-		           mu: nil,
+		           mu: sync.Mutex{},
 		           read: nil,
 		           dirty: nil,
 		           misses: 0,
@@ -1204,7 +1199,7 @@ func Test_uo_missLocked(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       fields: fields {
-		           mu: nil,
+		           mu: sync.Mutex{},
 		           read: nil,
 		           dirty: nil,
 		           misses: 0,
@@ -1220,7 +1215,7 @@ func Test_uo_missLocked(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           fields: fields {
-		           mu: nil,
+		           mu: sync.Mutex{},
 		           read: nil,
 		           dirty: nil,
 		           misses: 0,
@@ -1286,7 +1281,7 @@ func Test_uo_dirtyLocked(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       fields: fields {
-		           mu: nil,
+		           mu: sync.Mutex{},
 		           read: nil,
 		           dirty: nil,
 		           misses: 0,
@@ -1302,7 +1297,7 @@ func Test_uo_dirtyLocked(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           fields: fields {
-		           mu: nil,
+		           mu: sync.Mutex{},
 		           read: nil,
 		           dirty: nil,
 		           misses: 0,
@@ -1360,11 +1355,7 @@ func Test_entryUo_tryExpungeLocked(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotIsExpunged bool) error {
 		if !reflect.DeepEqual(gotIsExpunged, w.wantIsExpunged) {
-			return errors.Errorf(
-				"got: \"%#v\",\n\t\t\t\twant: \"%#v\"",
-				gotIsExpunged,
-				w.wantIsExpunged,
-			)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotIsExpunged, w.wantIsExpunged)
 		}
 		return nil
 	}

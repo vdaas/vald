@@ -28,6 +28,8 @@ import (
 	"github.com/vdaas/vald/hack/benchmark/internal/assets"
 	"github.com/vdaas/vald/hack/benchmark/internal/core/algorithm"
 	"github.com/vdaas/vald/hack/benchmark/internal/core/algorithm/ngt"
+	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/log/logger"
 )
 
 const (
@@ -40,6 +42,7 @@ var targets []string
 
 func init() {
 	testing.Init()
+	log.Init(log.WithLoggerType(logger.NOP.String()))
 
 	var dataset string
 	flag.StringVar(&dataset, "dataset", "", "available dataset(choice with comma)")

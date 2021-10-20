@@ -106,14 +106,12 @@ pprof/%.mem.svg: \
 bench: \
 	bench/core \
 	bench/agent \
-	bench/ngtd \
 	bench/gateway
 
 .PHONY: bench/core
 ## run benchmarks for core
 bench/core: \
 	bench/core/ngt \
-	bench/core/gongt
 
 .PHONY: bench/core/ngt
 ## run benchmark for NGT core
@@ -163,60 +161,11 @@ pprof/core/ngt/parallel.bin: \
 	    $< \
 	    -dataset=$(DATASET_ARGS)
 
-.PHONY: bench/core/gongt
-## run benchmark for gongt core
-bench/core/gongt: \
-	bench/core/gongt/sequential \
-	bench/core/gongt/parallel
-
-.PHONY: bench/core/gongt/sequential
-## run benchmark for gongt core sequential methods
-bench/core/gongt/sequential: \
-	pprof/core/gongt/sequential.cpu.svg \
-	pprof/core/gongt/sequential.mem.svg
-pprof/core/gongt/sequential.bin: \
-	hack/benchmark/core/gongt/gongt_bench_test.go
-	mkdir -p $(dir $@)
-	go test \
-	    -mod=readonly \
-	    -count=1 \
-	    -timeout=1h \
-	    -bench=GoNGTSequential \
-	    -benchmem \
-	    -o $@ \
-	    -cpuprofile $(patsubst %.bin,%.cpu.out,$@) \
-	    -memprofile $(patsubst %.bin,%.mem.out,$@) \
-	    -trace $(patsubst %.bin,%.trace.out,$@) \
-	    $< \
-	    -dataset=$(DATASET_ARGS)
-
-.PHONY: bench/core/gongt/parallel
-## run benchmark for gongt core parallel methods
-bench/core/gongt/parallel: \
-	pprof/core/gongt/parallel.cpu.svg \
-	pprof/core/gongt/parallel.mem.svg
-pprof/core/gongt/parallel.bin: \
-	hack/benchmark/core/gongt/gongt_bench_test.go
-	mkdir -p $(dir $@)
-	go test \
-	    -mod=readonly \
-	    -count=1 \
-	    -timeout=1h \
-	    -bench=GoNGTParallel \
-	    -benchmem \
-	    -o $@ \
-	    -cpuprofile $(patsubst %.bin,%.cpu.out,$@) \
-	    -memprofile $(patsubst %.bin,%.mem.out,$@) \
-	    -trace $(patsubst %.bin,%.trace.out,$@) \
-	    $< \
-	    -dataset=$(DATASET_ARGS)
-
 .PHONY: bench/agent
 ## run benchmarks for vald agent
 bench/agent: \
 	bench/agent/stream \
 	bench/agent/sequential/grpc \
-	bench/agent/sequential/rest
 
 .PHONY: bench/agent/stream
 ## run benchmark for agent gRPC stream
@@ -262,101 +211,6 @@ pprof/agent/sequential/grpc.bin: \
 	    $< \
 	    -dataset=$(DATASET_ARGS)
 
-.PHONY: bench/agent/sequential/rest
-## run benchmark for agent REST
-bench/agent/sequential/rest: \
-	pprof/agent/sequential/rest.cpu.svg \
-	pprof/agent/sequential/rest.mem.svg
-pprof/agent/sequential/rest.bin: \
-	hack/benchmark/e2e/agent/core/ngt/ngt_bench_test.go \
-	ngt/install
-	mkdir -p $(dir $@)
-	go test \
-	    -mod=readonly \
-	    -count=1 \
-	    -timeout=1h \
-	    -bench=REST_Sequential \
-	    -benchmem \
-	    -o $@ \
-	    -cpuprofile $(patsubst %.bin,%.cpu.out,$@) \
-	    -memprofile $(patsubst %.bin,%.mem.out,$@) \
-	    -trace $(patsubst %.bin,%.trace.out,$@) \
-	    $< \
-	    -dataset=$(DATASET_ARGS)
-
-.PHONY: bench/ngtd
-## run benchmarks for NGTD
-bench/ngtd: \
-	bench/ngtd/stream \
-	bench/ngtd/sequential/grpc \
-	bench/ngtd/sequential/rest
-
-.PHONY: bench/ngtd/stream
-## run benchmark for NGTD gRPC stream
-bench/ngtd/stream: \
-	pprof/ngtd/stream.cpu.svg \
-	pprof/ngtd/stream.mem.svg
-pprof/ngtd/stream.bin: \
-	hack/benchmark/e2e/external/ngtd/ngtd_bench_test.go \
-	ngt/install
-	mkdir -p $(dir $@)
-	go test \
-	    -mod=readonly \
-	    -count=1 \
-	    -timeout=1h \
-	    -bench=gRPC_Stream \
-	    -benchmem \
-	    -o $@ \
-	    -cpuprofile $(patsubst %.bin,%.cpu.out,$@) \
-	    -memprofile $(patsubst %.bin,%.mem.out,$@) \
-	    -trace $(patsubst %.bin,%.trace.out,$@) \
-	    $< \
-	    -dataset=$(DATASET_ARGS)
-
-.PHONY: bench/ngtd/sequential/grpc
-## run benchmark for NGTD gRPC sequential
-bench/ngtd/sequential/grpc: \
-	pprof/ngtd/sequential/grpc.cpu.svg \
-	pprof/ngtd/sequential/grpc.mem.svg
-pprof/ngtd/sequential/grpc.bin: \
-	hack/benchmark/e2e/external/ngtd/ngtd_bench_test.go \
-	ngt/install
-	mkdir -p $(dir $@)
-	go test \
-	    -mod=readonly \
-	    -count=1 \
-	    -timeout=1h \
-	    -bench=gRPC_Sequential \
-	    -benchmem \
-	    -o $@ \
-	    -cpuprofile $(patsubst %.bin,%.cpu.out,$@) \
-	    -memprofile $(patsubst %.bin,%.mem.out,$@) \
-	    -trace $(patsubst %.bin,%.trace.out,$@) \
-	    $< \
-	    -dataset=$(DATASET_ARGS)
-
-.PHONY: bench/ngtd/sequential/rest
-## run benchmark for NGTD REST stream
-bench/ngtd/sequential/rest: \
-	pprof/ngtd/sequential/rest.cpu.svg \
-	pprof/ngtd/sequential/rest.mem.svg
-pprof/ngtd/sequential/rest.bin: \
-	hack/benchmark/e2e/external/ngtd/ngtd_bench_test.go \
-	ngt/install
-	mkdir -p $(dir $@)
-	go test \
-	    -mod=readonly \
-	    -count=1 \
-	    -timeout=1h \
-	    -bench=REST_Sequential \
-	    -benchmem \
-	    -o $@ \
-	    -cpuprofile $(patsubst %.bin,%.cpu.out,$@) \
-	    -memprofile $(patsubst %.bin,%.mem.out,$@) \
-	    -trace $(patsubst %.bin,%.trace.out,$@) \
-	    $< \
-	    -dataset=$(DATASET_ARGS)
-
 .PHONY: bench/gateway
 ## run benchmarks for gateway
 bench/gateway: \
@@ -392,7 +246,6 @@ profile: \
 	bench \
 	profile/agent/stream \
 	profile/agent/sequential/grpc \
-	profile/agent/sequential/rest
 
 .PHONY: profile/agent/stream
 profile/agent/stream:
@@ -401,22 +254,6 @@ profile/agent/stream:
 .PHONY: profile/agent/sequential/grpc
 profile/agent/sequential/grpc:
 	$(call profile-web,pprof/agent/sequential/grpc)
-
-.PHONY: profile/agent/sequential/rest
-profile/agent/sequential/rest:
-	$(call profile-web,pprof/agent/sequential/rest)
-
-.PHONY: profile/ngtd/stream
-profile/ngtd/stream:
-	$(call profile-web,pprof/ngtd/stream)
-
-.PHONY: profile/ngtd/sequential/grpc
-profile/ngtd/sequential/grpc:
-	$(call profile-web,pprof/ngtd/sequential/grpc)
-
-.PHONY: profile/ngtd/sequential/rest
-profile/ngtd/sequential/rest:
-	$(call profile-web,pprof/ngtd/sequential/rest)
 
 .PHONY: metrics
 ## calculate all metrics

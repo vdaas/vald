@@ -24,7 +24,7 @@ import (
 
 	iblob "github.com/vdaas/vald/internal/db/storage/blob"
 	"github.com/vdaas/vald/internal/errors"
-	"go.uber.org/goleak"
+	"github.com/vdaas/vald/internal/test/goleak"
 	"gocloud.dev/blob"
 	"gocloud.dev/blob/gcsblob"
 )

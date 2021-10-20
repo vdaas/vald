@@ -20,7 +20,6 @@ import (
 	"bytes"
 	"context"
 	"io"
-	"io/ioutil"
 	"os"
 	"reflect"
 	"sync"
@@ -183,8 +182,8 @@ func Test_reader_Open(t *testing.T) {
 				},
 				afterFunc: func(_ args, t *testing.T) {
 					t.Helper()
-					if err := eg.Wait(); !errors.Is(err, context.Canceled) {
-						t.Errorf("want: %v, but got: %v", context.Canceled, err)
+					if err := eg.Wait(); err != nil {
+						t.Errorf("want: %v, but got: %v", nil, err)
 					}
 				},
 			}
@@ -941,7 +940,7 @@ func Test_reader_getObject(t *testing.T) {
 		},
 
 		{
-			name: "returns nil when s3 service returns error and error code is ErrBlobNoSuchBucket",
+			name: "returns ErrBlobNoSuchBucket when s3 service returns error and error code is ErrBlobNoSuchBucket",
 			args: args{
 				ctx:    context.Background(),
 				key:    "vald",
@@ -957,8 +956,8 @@ func Test_reader_getObject(t *testing.T) {
 				bucket: "vald",
 			},
 			want: want{
-				want: ioutil.NopCloser(bytes.NewReader(nil)),
-				err:  nil,
+				want: nil,
+				err:  errors.NewErrBlobNoSuchBucket(awserr.New(s3.ErrCodeNoSuchBucket, "", nil), "vald"),
 			},
 		},
 
@@ -978,8 +977,8 @@ func Test_reader_getObject(t *testing.T) {
 				},
 			},
 			want: want{
-				want: ioutil.NopCloser(bytes.NewReader(nil)),
-				err:  nil,
+				want: nil,
+				err:  errors.NewErrBlobNoSuchKey(awserr.New(s3.ErrCodeNoSuchKey, "", nil), "vald"),
 			},
 		},
 
@@ -999,8 +998,8 @@ func Test_reader_getObject(t *testing.T) {
 				},
 			},
 			want: want{
-				want: ioutil.NopCloser(bytes.NewReader(nil)),
-				err:  nil,
+				want: nil,
+				err:  errors.NewErrBlobInvalidChunkRange(awserr.New("InvalidRange", "", nil), "bytes=2-11"),
 			},
 		},
 

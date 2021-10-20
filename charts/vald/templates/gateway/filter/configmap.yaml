@@ -68,7 +68,7 @@ data:
         {{- include "vald.grpc.client.addrs" $ingressFilterAddrs | nindent 8 }}
         {{- $ingressFilterGRPCClient := dict "Values" $ingressFilterClient "default" .Values.defaults.grpc.client }}
         {{- include "vald.grpc.client" $ingressFilterGRPCClient | nindent 8 }}
-      vectorizer: {{- $gateway.gateway_config.ingress_filter.vectorizer | quote }}
+      vectorizer: {{ $gateway.gateway_config.ingress_filter.vectorizer | quote }}
       {{- if $gateway.gateway_config.ingress_filter.search_filters }}
       search_filters: 
         {{- toYaml $gateway.gateway_config.ingress_filter.search_filters | nindent 8 }}

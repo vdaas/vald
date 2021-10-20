@@ -24,12 +24,12 @@ import (
 
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/test/goleak"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
 
 func TestNew(t *testing.T) {
-	t.Parallel()
 	type args struct {
 		opts []Option
 	}
@@ -86,7 +86,7 @@ func TestNew(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -106,7 +106,6 @@ func TestNew(t *testing.T) {
 }
 
 func Test_controller_Start(t *testing.T) {
-	t.Parallel()
 	type args struct {
 		ctx context.Context
 	}
@@ -117,6 +116,7 @@ func Test_controller_Start(t *testing.T) {
 		leaderElection bool
 		mgr            manager.Manager
 		rcs            []ResourceController
+		der            net.Dialer
 	}
 	type want struct {
 		want <-chan error
@@ -155,6 +155,7 @@ func Test_controller_Start(t *testing.T) {
 		           leaderElection: false,
 		           mgr: nil,
 		           rcs: nil,
+		           der: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -176,6 +177,7 @@ func Test_controller_Start(t *testing.T) {
 		           leaderElection: false,
 		           mgr: nil,
 		           rcs: nil,
+		           der: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -188,7 +190,7 @@ func Test_controller_Start(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -205,6 +207,7 @@ func Test_controller_Start(t *testing.T) {
 				leaderElection: test.fields.leaderElection,
 				mgr:            test.fields.mgr,
 				rcs:            test.fields.rcs,
+				der:            test.fields.der,
 			}
 
 			got, err := c.Start(test.args.ctx)
