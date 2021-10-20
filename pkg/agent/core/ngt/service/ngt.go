@@ -691,11 +691,6 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 		log.Error("an error occurred on creating graph and tree phase:", err)
 	}
 	log.Debug("create graph and tree phase finished")
-
-	log.Debug("cleanup invalid index started")
-	n.removeInvalidIndex(ctx)
-	log.Debug("cleanup invalid index finished")
-
 	log.Info("create index operation finished")
 	atomic.AddUint64(&n.nocie, 1)
 	return err
@@ -757,6 +752,10 @@ func (n *ngt) saveIndex(ctx context.Context) (err error) {
 	n.saving.Store(true)
 	defer n.gc()
 	defer n.saving.Store(false)
+
+	log.Debug("cleanup invalid index started")
+	n.removeInvalidIndex(ctx)
+	log.Debug("cleanup invalid index finished")
 
 	eg, ctx := errgroup.New(ctx)
 
