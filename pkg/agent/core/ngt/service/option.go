@@ -18,6 +18,7 @@ package service
 
 import (
 	"math"
+	"math/big"
 	"os"
 	"path/filepath"
 	"strings"
@@ -142,6 +143,18 @@ func WithAutoIndexLength(l int) Option {
 	}
 }
 
+const (
+	defaultDurationLimit float64 = 1.1
+	defaultRandDuration  int64   = 1
+)
+
+var (
+	bigMaxFloat64 = big.NewFloat(math.MaxFloat64)
+	bigMinFloat64 = big.NewFloat(math.SmallestNonzeroFloat64)
+	bigMaxInt64   = big.NewInt(math.MaxInt64)
+	bigMinInt64   = big.NewInt(math.MinInt64)
+)
+
 // WithInitialDelayMaxDuration returns the functional option to set the initial delay duration.
 func WithInitialDelayMaxDuration(dur string) Option {
 	return func(n *ngt) error {
@@ -159,13 +172,15 @@ func WithInitialDelayMaxDuration(dur string) Option {
 		}
 
 		dbs := math.Round(float64(d) / float64(time.Second))
-		if dbs <= 0 || dbs >= math.MaxFloat64 || dbs <= math.SmallestNonzeroFloat64 {
-			dbs = 1.1
+		bdbs := big.NewFloat(dbs)
+		if dbs <= 0 || bigMaxFloat64.Cmp(bdbs) <= 0 || bigMinFloat64.Cmp(bdbs) >= 0 {
+			dbs = defaultDurationLimit
 		}
 
 		rnd := int64(rand.LimitedUint32(uint64(dbs)))
-		if rnd <= 0 || rnd >= math.MaxInt64 || rnd <= math.MinInt64 {
-			rnd = 1
+		brnd := big.NewInt(rnd)
+		if rnd <= 0 || bigMaxInt64.Cmp(brnd) <= 0 || bigMinInt64.Cmp(brnd) >= 0 {
+			rnd = defaultRandDuration
 		}
 
 		delay := time.Duration(rnd) * time.Second
