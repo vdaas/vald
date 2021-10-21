@@ -166,12 +166,21 @@ func WithInitialDelayMaxDuration(dur string) Option {
 		if err != nil {
 			return err
 		}
-
-		if d <= 0 {
+		var dt time.Duration
+		switch {
+		case d <= time.Nanosecond:
 			return nil
+		case d <= time.Microsecond:
+			dt = time.Nanosecond
+		case d <= time.Millisecond:
+			dt = time.Microsecond
+		case d <= time.Second:
+			dt = time.Millisecond
+		default:
+			dt = time.Second
 		}
 
-		dbs := math.Round(float64(d) / float64(time.Second))
+		dbs := math.Round(float64(d) / float64(dt))
 		bdbs := big.NewFloat(dbs)
 		if dbs <= 0 || bigMaxFloat64.Cmp(bdbs) <= 0 || bigMinFloat64.Cmp(bdbs) >= 0 {
 			dbs = defaultDurationLimit
@@ -183,7 +192,7 @@ func WithInitialDelayMaxDuration(dur string) Option {
 			rnd = defaultRandDuration
 		}
 
-		delay := time.Duration(rnd) * time.Second
+		delay := time.Duration(rnd) * dt
 		if delay <= 0 || delay >= math.MaxInt64 || delay <= math.MinInt64 {
 			return WithInitialDelayMaxDuration(dur)(n)
 		}
