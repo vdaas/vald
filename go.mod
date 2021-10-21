@@ -100,7 +100,7 @@ require (
 	github.com/kpango/glg v1.6.2
 	github.com/leanovate/gopter v0.2.9
 	github.com/lucasb-eyer/go-colorful v1.2.0
-	github.com/pierrec/lz4/v3 v3.3.2
+	github.com/pierrec/lz4/v3 v3.3.3
 	github.com/planetscale/vtprotobuf v0.2.0
 	github.com/quasilyte/go-ruleguard v0.3.10
 	github.com/quasilyte/go-ruleguard/dsl v0.3.10
