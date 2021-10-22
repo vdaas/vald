@@ -283,7 +283,7 @@ func TestNewDialer(t *testing.T) {
 		func() test {
 			d := &net.Dialer{
 				Timeout:       0,
-				Keepalive:     time.Second * 30,
+				KeepAlive:     time.Second * 30,
 				FallbackDelay: time.Millisecond * 300,
 				DualStack:     true,
 			}
@@ -309,7 +309,7 @@ func TestNewDialer(t *testing.T) {
 		func() test {
 			d := &net.Dialer{
 				Timeout:   time.Second * 30,
-				Keepalive: time.Second * 30,
+				KeepAlive: time.Second * 30,
 				DualStack: true,
 			}
 			d.Resolver = &Resolver{
@@ -351,7 +351,7 @@ func TestNewDialer(t *testing.T) {
 		func() test {
 			d := &net.Dialer{
 				Timeout:   time.Second * 30,
-				Keepalive: time.Second * 30,
+				KeepAlive: time.Second * 30,
 				DualStack: true,
 			}
 			d.Resolver = &Resolver{
@@ -689,7 +689,7 @@ func Test_dialer_StartDialerCache(t *testing.T) {
 
 					d.der = &net.Dialer{
 						Timeout:   time.Minute,
-						Keepalive: time.Minute,
+						KeepAlive: time.Minute,
 						DualStack: d.dialerDualStack,
 						Resolver: &Resolver{
 							PreferGo: false,
@@ -747,7 +747,7 @@ func Test_dialer_StartDialerCache(t *testing.T) {
 
 					d.der = &net.Dialer{
 						Timeout:   time.Minute,
-						Keepalive: time.Minute,
+						KeepAlive: time.Minute,
 						DualStack: d.dialerDualStack,
 						Resolver: &Resolver{
 							PreferGo: false,
@@ -1446,7 +1446,7 @@ func Test_dialer_dial(t *testing.T) {
 				tlsConfig: nil,
 				der: &net.Dialer{
 					Timeout:   time.Minute,
-					Keepalive: time.Minute,
+					KeepAlive: time.Minute,
 					DualStack: true,
 				},
 			},
@@ -1462,7 +1462,7 @@ func Test_dialer_dial(t *testing.T) {
 				tlsConfig: new(tls.Config),
 				der: &net.Dialer{
 					Timeout:   time.Minute,
-					Keepalive: time.Minute,
+					KeepAlive: time.Minute,
 					DualStack: true,
 				},
 			},
@@ -1478,7 +1478,7 @@ func Test_dialer_dial(t *testing.T) {
 				tlsConfig: nil,
 				der: &net.Dialer{
 					Timeout:   time.Minute,
-					Keepalive: time.Minute,
+					KeepAlive: time.Minute,
 					DualStack: true,
 				},
 			},
@@ -1506,7 +1506,7 @@ func Test_dialer_dial(t *testing.T) {
 				tlsConfig: nil,
 				der: &net.Dialer{
 					Timeout:   time.Minute,
-					Keepalive: time.Minute,
+					KeepAlive: time.Minute,
 					DualStack: true,
 				},
 			},
@@ -1534,7 +1534,7 @@ func Test_dialer_dial(t *testing.T) {
 				tlsConfig: nil,
 				der: &net.Dialer{
 					Timeout:   time.Minute,
-					Keepalive: time.Minute,
+					KeepAlive: time.Minute,
 					DualStack: true,
 				},
 			},
@@ -1561,7 +1561,7 @@ func Test_dialer_dial(t *testing.T) {
 				tlsConfig: nil,
 				der: &net.Dialer{
 					Timeout:   time.Minute,
-					Keepalive: time.Minute,
+					KeepAlive: time.Minute,
 					DualStack: true,
 				},
 			},
@@ -1657,7 +1657,7 @@ func Test_dialer_cacheExpireHook(t *testing.T) {
 
 					d.der = &net.Dialer{
 						Timeout:   time.Minute,
-						Keepalive: time.Minute,
+						KeepAlive: time.Minute,
 						DualStack: d.dialerDualStack,
 						Resolver: &Resolver{
 							PreferGo: false,
