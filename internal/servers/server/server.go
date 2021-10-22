@@ -391,9 +391,7 @@ func (s *server) Shutdown(ctx context.Context) (rerr error) {
 	case REST, GQL:
 		sctx, scancel := context.WithTimeout(ctx, s.sddur)
 		defer scancel()
-
-		s.http.srv.SetKeepalivesEnabled(false)
-
+		s.http.srv.SetKeepAlivesEnabled(false)
 		err := s.http.srv.Shutdown(sctx)
 		if err != nil && err != http.ErrServerClosed && err != grpc.ErrServerStopped {
 			rerr = errors.Wrap(rerr, err.Error())
