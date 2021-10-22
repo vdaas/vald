@@ -3,7 +3,7 @@ Vald
 
 This is a Helm chart to install Vald components.
 
-Current chart version is `v1.3.0`
+Current chart version is `v1.3.1`
 
 Table of Contents
 ---
@@ -241,7 +241,7 @@ Configuration
 | defaults.grpc.client.call_option.wait_for_ready | bool | `true` | gRPC client call option wait for ready |
 | defaults.grpc.client.connection_pool.enable_dns_resolver | bool | `true` | enables gRPC client connection pool dns resolver, when enabled vald uses ip handshake exclude dns discovery which improves network performance |
 | defaults.grpc.client.connection_pool.enable_rebalance | bool | `true` | enables gRPC client connection pool rebalance |
-| defaults.grpc.client.connection_pool.old_conn_close_duration | string | `"3s"` | makes delay before gRPC client connection closing during connection pool rebalance |
+| defaults.grpc.client.connection_pool.old_conn_close_duration | string | `"2m"` | makes delay before gRPC client connection closing during connection pool rebalance |
 | defaults.grpc.client.connection_pool.rebalance_duration | string | `"30m"` | gRPC client connection pool rebalance duration |
 | defaults.grpc.client.connection_pool.size | int | `3` | gRPC client connection pool size |
 | defaults.grpc.client.dial_option.backoff_base_delay | string | `"1s"` | gRPC client dial option base backoff delay |
@@ -252,9 +252,9 @@ Configuration
 | defaults.grpc.client.dial_option.initial_connection_window_size | int | `0` | gRPC client dial option initial connection window size |
 | defaults.grpc.client.dial_option.initial_window_size | int | `0` | gRPC client dial option initial window size |
 | defaults.grpc.client.dial_option.insecure | bool | `true` | gRPC client dial option insecure enabled |
-| defaults.grpc.client.dial_option.keepalive.permit_without_stream | bool | `false` | gRPC client keep alive permit without stream |
-| defaults.grpc.client.dial_option.keepalive.time | string | `""` | gRPC client keep alive time |
-| defaults.grpc.client.dial_option.keepalive.timeout | string | `""` | gRPC client keep alive timeout |
+| defaults.grpc.client.dial_option.keepalive.permit_without_stream | bool | `true` | gRPC client keep alive permit without stream |
+| defaults.grpc.client.dial_option.keepalive.time | string | `"120s"` | gRPC client keep alive time |
+| defaults.grpc.client.dial_option.keepalive.timeout | string | `"30s"` | gRPC client keep alive timeout |
 | defaults.grpc.client.dial_option.max_msg_size | int | `0` | gRPC client dial option max message size |
 | defaults.grpc.client.dial_option.min_connection_timeout | string | `"20s"` | gRPC client dial option minimum connection timeout |
 | defaults.grpc.client.dial_option.net.dialer.dual_stack_enabled | bool | `true` | gRPC client TCP dialer dual stack enabled |
@@ -286,7 +286,7 @@ Configuration
 | defaults.grpc.client.tls.enabled | bool | `false` | TLS enabled |
 | defaults.grpc.client.tls.insecure_skip_verify | bool | `false` | enable/disable skip SSL certificate verification |
 | defaults.grpc.client.tls.key | string | `"/path/to/key"` | TLS key path |
-| defaults.image.tag | string | `"v1.3.0"` | docker image tag |
+| defaults.image.tag | string | `"v1.3.1"` | docker image tag |
 | defaults.ingress.usev1beta1 | bool | `false` | use networking.k8s.io/v1beta1 instead of v1 for ingresses. This option will be removed once k8s 1.22 is released. |
 | defaults.logging.format | string | `"raw"` | logging format. logging format must be `raw` or `json` |
 | defaults.logging.level | string | `"debug"` | logging level. logging level must be `debug`, `info`, `warn`, `error` or `fatal`. |
@@ -478,8 +478,10 @@ Configuration
 | defaults.server_config.servers.grpc.server.grpc.keepalive.max_conn_age | string | `""` | gRPC server keep alive max connection age |
 | defaults.server_config.servers.grpc.server.grpc.keepalive.max_conn_age_grace | string | `""` | gRPC server keep alive max connection age grace |
 | defaults.server_config.servers.grpc.server.grpc.keepalive.max_conn_idle | string | `""` | gRPC server keep alive max connection idle |
-| defaults.server_config.servers.grpc.server.grpc.keepalive.time | string | `""` | gRPC server keep alive time |
-| defaults.server_config.servers.grpc.server.grpc.keepalive.timeout | string | `""` | gRPC server keep alive timeout |
+| defaults.server_config.servers.grpc.server.grpc.keepalive.min_time | string | `"60s"` | gRPC server keep alive min_time |
+| defaults.server_config.servers.grpc.server.grpc.keepalive.permit_without_stream | bool | `true` | gRPC server keep alive permit_without_stream |
+| defaults.server_config.servers.grpc.server.grpc.keepalive.time | string | `"120s"` | gRPC server keep alive time |
+| defaults.server_config.servers.grpc.server.grpc.keepalive.timeout | string | `"30s"` | gRPC server keep alive timeout |
 | defaults.server_config.servers.grpc.server.grpc.max_header_list_size | int | `0` | gRPC server max header list size |
 | defaults.server_config.servers.grpc.server.grpc.max_receive_message_size | int | `0` | gRPC server max receive message size |
 | defaults.server_config.servers.grpc.server.grpc.max_send_message_size | int | `0` | gRPC server max send message size |
