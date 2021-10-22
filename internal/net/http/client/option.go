@@ -80,7 +80,7 @@ func WithTLSHandshakeTimeout(dur string) Option {
 // WithEnableKeepalives returns the option to enable keep alive.
 func WithEnableKeepalives(enable bool) Option {
 	return func(tr *transport) error {
-		tr.DisableKeepalives = !enable
+		tr.DisableKeepAlives = !enable
 
 		return nil
 	}
