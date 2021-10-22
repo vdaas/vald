@@ -25,7 +25,6 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/test/goleak"
 	"google.golang.org/grpc/credentials"
-	_ "google.golang.org/grpc/encoding/proto"
 	"google.golang.org/grpc/keepalive"
 )
 
