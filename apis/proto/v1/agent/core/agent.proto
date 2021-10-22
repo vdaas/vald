@@ -26,18 +26,27 @@ option java_multiple_files = true;
 option java_package = "org.vdaas.vald.api.v1.agent.core";
 option java_outer_classname = "ValdAgent";
 
+// Represent the agent service.
 service Agent {
+
+  // Represent the create index RPC.
   rpc CreateIndex(payload.v1.Control.CreateIndexRequest)
       returns (payload.v1.Empty) {
     option (google.api.http).get = "/index/create";
   }
+
+  // Represent the save index RPC.
   rpc SaveIndex(payload.v1.Empty) returns (payload.v1.Empty) {
     option (google.api.http).get = "/index/save";
   }
+
+  // Represent the create and save index RPC.
   rpc CreateAndSaveIndex(payload.v1.Control.CreateIndexRequest)
       returns (payload.v1.Empty) {
     option (google.api.http).get = "/index/createandsave";
   }
+
+  // Represent the RPC to get the agent index information.
   rpc IndexInfo(payload.v1.Empty) returns (payload.v1.Info.Index.Count) {
     option (google.api.http).get = "/index/info";
   }
