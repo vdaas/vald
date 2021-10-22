@@ -324,7 +324,7 @@ func TestWithEnableKeepalives(t *testing.T) {
 			want: want{
 				obj: &T{
 					Transport: &http.Transport{
-						DisableKeepalives: false,
+						DisableKeepAlives: false,
 					},
 				},
 			},
@@ -337,7 +337,7 @@ func TestWithEnableKeepalives(t *testing.T) {
 			want: want{
 				obj: &T{
 					Transport: &http.Transport{
-						DisableKeepalives: true,
+						DisableKeepAlives: true,
 					},
 				},
 			},
