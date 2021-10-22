@@ -287,7 +287,7 @@ func TestWithTLSHandshakeTimeout(t *testing.T) {
 	}
 }
 
-func TestWithEnableKeepAlives(t *testing.T) {
+func TestWithEnableKeepalives(t *testing.T) {
 	type T = transport
 	type args struct {
 		enable bool
@@ -324,7 +324,7 @@ func TestWithEnableKeepAlives(t *testing.T) {
 			want: want{
 				obj: &T{
 					Transport: &http.Transport{
-						DisableKeepAlives: false,
+						DisableKeepalives: false,
 					},
 				},
 			},
@@ -337,7 +337,7 @@ func TestWithEnableKeepAlives(t *testing.T) {
 			want: want{
 				obj: &T{
 					Transport: &http.Transport{
-						DisableKeepAlives: true,
+						DisableKeepalives: true,
 					},
 				},
 			},
@@ -357,7 +357,7 @@ func TestWithEnableKeepAlives(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 
-			got := WithEnableKeepAlives(test.args.enable)
+			got := WithEnableKeepalives(test.args.enable)
 			obj := &T{
 				Transport: &http.Transport{},
 			}

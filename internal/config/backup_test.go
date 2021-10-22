@@ -91,7 +91,7 @@ func TestBackupManager_Bind(t *testing.T) {
 				Insecure:                    true,
 				Timeout:                     "5m",
 				Net:                         &Net{},
-				KeepAlive: &GRPCClientKeepalive{
+				Keepalive: &GRPCClientKeepalive{
 					Time:                "100s",
 					Timeout:             "300s",
 					PermitWithoutStream: true,

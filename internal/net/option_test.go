@@ -345,7 +345,7 @@ func TestWithDialerTimeout(t *testing.T) {
 	}
 }
 
-func TestWithDialerKeepAlive(t *testing.T) {
+func TestWithDialerKeepalive(t *testing.T) {
 	type T = dialer
 	type args struct {
 		dur string
@@ -377,7 +377,7 @@ func TestWithDialerKeepAlive(t *testing.T) {
 			},
 			want: want{
 				obj: &T{
-					dialerKeepAlive: 10 * time.Second,
+					dialerKeepalive: 10 * time.Second,
 				},
 			},
 		},
@@ -388,7 +388,7 @@ func TestWithDialerKeepAlive(t *testing.T) {
 			},
 			want: want{
 				obj: &T{
-					dialerKeepAlive: 30 * time.Second,
+					dialerKeepalive: 30 * time.Second,
 				},
 			},
 		},
@@ -413,7 +413,7 @@ func TestWithDialerKeepAlive(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 
-			got := WithDialerKeepAlive(test.args.dur)
+			got := WithDialerKeepalive(test.args.dur)
 			obj := new(T)
 			got(obj)
 			if err := test.checkFunc(test.want, obj); err != nil {

@@ -34,7 +34,7 @@ type Net struct {
 // Dialer represents the configuration for dial.
 type Dialer struct {
 	Timeout          string `yaml:"timeout"            json:"timeout,omitempty"`
-	KeepAlive        string `yaml:"keepalive"          json:"keepalive,omitempty"`
+	Keepalive        string `yaml:"keepalive"          json:"keepalive,omitempty"`
 	FallbackDelay    string `yaml:"fallback_delay"     json:"fallback_delay,omitempty"`
 	DualStackEnabled bool   `yaml:"dual_stack_enabled" json:"dual_stack_enabled,omitempty"`
 }
@@ -69,7 +69,7 @@ func (d *DNS) Bind() *DNS {
 // Bind binds the actual data from the Dialer fields.
 func (d *Dialer) Bind() *Dialer {
 	d.Timeout = GetActualValue(d.Timeout)
-	d.KeepAlive = GetActualValue(d.KeepAlive)
+	d.Keepalive = GetActualValue(d.Keepalive)
 	d.FallbackDelay = GetActualValue(d.FallbackDelay)
 	return d
 }
@@ -149,7 +149,7 @@ func (t *Net) Opts() ([]net.DialerOption, error) {
 
 	if t.Dialer != nil {
 		opts = append(opts,
-			net.WithDialerKeepAlive(t.Dialer.KeepAlive),
+			net.WithDialerKeepalive(t.Dialer.Keepalive),
 			net.WithDialerTimeout(t.Dialer.Timeout),
 			net.WithDialerFallbackDelay(t.Dialer.FallbackDelay),
 		)

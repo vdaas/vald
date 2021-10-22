@@ -53,7 +53,7 @@ type dialer struct {
 	dnsRefreshDuration    time.Duration
 	dnsCacheExpiration    time.Duration
 	dialerTimeout         time.Duration
-	dialerKeepAlive       time.Duration
+	dialerKeepalive       time.Duration
 	dialerFallbackDelay   time.Duration
 	ctrl                  control.SocketController
 	sockFlg               control.SocketFlag
@@ -98,11 +98,11 @@ func NewDialer(opts ...DialerOption) (der Dialer, err error) {
 	for _, opt := range append(defaultDialerOptions, opts...) {
 		opt(d)
 	}
-	d.ctrl = control.New(d.sockFlg, int(d.dialerKeepAlive))
+	d.ctrl = control.New(d.sockFlg, int(d.dialerKeepalive))
 
 	d.der = &net.Dialer{
 		Timeout:       d.dialerTimeout,
-		KeepAlive:     d.dialerKeepAlive,
+		KeepAlive:     d.dialerKeepalive,
 		DualStack:     d.dialerDualStack,
 		FallbackDelay: d.dialerFallbackDelay,
 		Control: func(network, addr string, c syscall.RawConn) (err error) {

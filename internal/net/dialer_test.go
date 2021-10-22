@@ -283,7 +283,7 @@ func TestNewDialer(t *testing.T) {
 		func() test {
 			d := &net.Dialer{
 				Timeout:       0,
-				KeepAlive:     time.Second * 30,
+				Keepalive:     time.Second * 30,
 				FallbackDelay: time.Millisecond * 300,
 				DualStack:     true,
 			}
@@ -296,7 +296,7 @@ func TestNewDialer(t *testing.T) {
 				name: "returns dialer when option is empty",
 				want: want{
 					wantDer: &dialer{
-						dialerKeepAlive:     time.Second * 30,
+						dialerKeepalive:     time.Second * 30,
 						dialerTimeout:       0,
 						dialerFallbackDelay: time.Millisecond * 300,
 						dialerDualStack:     true,
@@ -309,7 +309,7 @@ func TestNewDialer(t *testing.T) {
 		func() test {
 			d := &net.Dialer{
 				Timeout:   time.Second * 30,
-				KeepAlive: time.Second * 30,
+				Keepalive: time.Second * 30,
 				DualStack: true,
 			}
 			d.Resolver = &Resolver{
@@ -331,7 +331,7 @@ func TestNewDialer(t *testing.T) {
 				},
 				want: want{
 					wantDer: &dialer{
-						dialerKeepAlive:       time.Second * 30,
+						dialerKeepalive:       time.Second * 30,
 						dialerTimeout:         0,
 						dialerFallbackDelay:   time.Millisecond * 300,
 						dnsRefreshDuration:    time.Second * 5,
@@ -351,7 +351,7 @@ func TestNewDialer(t *testing.T) {
 		func() test {
 			d := &net.Dialer{
 				Timeout:   time.Second * 30,
-				KeepAlive: time.Second * 30,
+				Keepalive: time.Second * 30,
 				DualStack: true,
 			}
 			d.Resolver = &Resolver{
@@ -474,7 +474,7 @@ func Test_dialer_lookup(t *testing.T) {
 		dnsRefreshDuration    time.Duration
 		dnsCacheExpiration    time.Duration
 		dialerTimeout         time.Duration
-		dialerKeepAlive       time.Duration
+		dialerKeepalive       time.Duration
 		dialerDualStack       bool
 		der                   *net.Dialer
 		dialer                func(ctx context.Context, network, addr string) (Conn, error)
@@ -622,7 +622,7 @@ func Test_dialer_lookup(t *testing.T) {
 				dnsRefreshDuration:    test.fields.dnsRefreshDuration,
 				dnsCacheExpiration:    test.fields.dnsCacheExpiration,
 				dialerTimeout:         test.fields.dialerTimeout,
-				dialerKeepAlive:       test.fields.dialerKeepAlive,
+				dialerKeepalive:       test.fields.dialerKeepalive,
 				dialerDualStack:       test.fields.dialerDualStack,
 				der:                   test.fields.der,
 				dialer:                test.fields.dialer,
@@ -648,7 +648,7 @@ func Test_dialer_StartDialerCache(t *testing.T) {
 		dnsRefreshDuration    time.Duration
 		dnsCacheExpiration    time.Duration
 		dialerTimeout         time.Duration
-		dialerKeepAlive       time.Duration
+		dialerKeepalive       time.Duration
 		dialerDualStack       bool
 		der                   *net.Dialer
 		dialer                func(ctx context.Context, network, addr string) (Conn, error)
@@ -689,7 +689,7 @@ func Test_dialer_StartDialerCache(t *testing.T) {
 
 					d.der = &net.Dialer{
 						Timeout:   time.Minute,
-						KeepAlive: time.Minute,
+						Keepalive: time.Minute,
 						DualStack: d.dialerDualStack,
 						Resolver: &Resolver{
 							PreferGo: false,
@@ -747,7 +747,7 @@ func Test_dialer_StartDialerCache(t *testing.T) {
 
 					d.der = &net.Dialer{
 						Timeout:   time.Minute,
-						KeepAlive: time.Minute,
+						Keepalive: time.Minute,
 						DualStack: d.dialerDualStack,
 						Resolver: &Resolver{
 							PreferGo: false,
@@ -797,7 +797,7 @@ func Test_dialer_StartDialerCache(t *testing.T) {
 				dnsRefreshDuration:    test.fields.dnsRefreshDuration,
 				dnsCacheExpiration:    test.fields.dnsCacheExpiration,
 				dialerTimeout:         test.fields.dialerTimeout,
-				dialerKeepAlive:       test.fields.dialerKeepAlive,
+				dialerKeepalive:       test.fields.dialerKeepalive,
 				dialerDualStack:       test.fields.dialerDualStack,
 				der:                   test.fields.der,
 				dialer:                test.fields.dialer,
@@ -906,7 +906,7 @@ func Test_dialer_cachedDialer(t *testing.T) {
 		dnsRefreshDuration    time.Duration
 		dnsCacheExpiration    time.Duration
 		dialerTimeout         time.Duration
-		dialerKeepAlive       time.Duration
+		dialerKeepalive       time.Duration
 		dialerDualStack       bool
 		der                   *net.Dialer
 		dialer                func(ctx context.Context, network, addr string) (Conn, error)
@@ -1388,7 +1388,7 @@ func Test_dialer_cachedDialer(t *testing.T) {
 				dnsRefreshDuration:    test.fields.dnsRefreshDuration,
 				dnsCacheExpiration:    test.fields.dnsCacheExpiration,
 				dialerTimeout:         test.fields.dialerTimeout,
-				dialerKeepAlive:       test.fields.dialerKeepAlive,
+				dialerKeepalive:       test.fields.dialerKeepalive,
 				dialerDualStack:       test.fields.dialerDualStack,
 				der:                   test.fields.der,
 				dialer:                test.fields.dialer,
@@ -1446,7 +1446,7 @@ func Test_dialer_dial(t *testing.T) {
 				tlsConfig: nil,
 				der: &net.Dialer{
 					Timeout:   time.Minute,
-					KeepAlive: time.Minute,
+					Keepalive: time.Minute,
 					DualStack: true,
 				},
 			},
@@ -1462,7 +1462,7 @@ func Test_dialer_dial(t *testing.T) {
 				tlsConfig: new(tls.Config),
 				der: &net.Dialer{
 					Timeout:   time.Minute,
-					KeepAlive: time.Minute,
+					Keepalive: time.Minute,
 					DualStack: true,
 				},
 			},
@@ -1478,7 +1478,7 @@ func Test_dialer_dial(t *testing.T) {
 				tlsConfig: nil,
 				der: &net.Dialer{
 					Timeout:   time.Minute,
-					KeepAlive: time.Minute,
+					Keepalive: time.Minute,
 					DualStack: true,
 				},
 			},
@@ -1506,7 +1506,7 @@ func Test_dialer_dial(t *testing.T) {
 				tlsConfig: nil,
 				der: &net.Dialer{
 					Timeout:   time.Minute,
-					KeepAlive: time.Minute,
+					Keepalive: time.Minute,
 					DualStack: true,
 				},
 			},
@@ -1534,7 +1534,7 @@ func Test_dialer_dial(t *testing.T) {
 				tlsConfig: nil,
 				der: &net.Dialer{
 					Timeout:   time.Minute,
-					KeepAlive: time.Minute,
+					Keepalive: time.Minute,
 					DualStack: true,
 				},
 			},
@@ -1561,7 +1561,7 @@ func Test_dialer_dial(t *testing.T) {
 				tlsConfig: nil,
 				der: &net.Dialer{
 					Timeout:   time.Minute,
-					KeepAlive: time.Minute,
+					Keepalive: time.Minute,
 					DualStack: true,
 				},
 			},
@@ -1620,7 +1620,7 @@ func Test_dialer_cacheExpireHook(t *testing.T) {
 		dnsRefreshDuration    time.Duration
 		dnsCacheExpiration    time.Duration
 		dialerTimeout         time.Duration
-		dialerKeepAlive       time.Duration
+		dialerKeepalive       time.Duration
 		dialerDualStack       bool
 		der                   *net.Dialer
 		dialer                func(ctx context.Context, network, addr string) (Conn, error)
@@ -1657,7 +1657,7 @@ func Test_dialer_cacheExpireHook(t *testing.T) {
 
 					d.der = &net.Dialer{
 						Timeout:   time.Minute,
-						KeepAlive: time.Minute,
+						Keepalive: time.Minute,
 						DualStack: d.dialerDualStack,
 						Resolver: &Resolver{
 							PreferGo: false,
@@ -1694,7 +1694,7 @@ func Test_dialer_cacheExpireHook(t *testing.T) {
 				dnsRefreshDuration:    test.fields.dnsRefreshDuration,
 				dnsCacheExpiration:    test.fields.dnsCacheExpiration,
 				dialerTimeout:         test.fields.dialerTimeout,
-				dialerKeepAlive:       test.fields.dialerKeepAlive,
+				dialerKeepalive:       test.fields.dialerKeepalive,
 				dialerDualStack:       test.fields.dialerDualStack,
 				der:                   test.fields.der,
 				dialer:                test.fields.dialer,
@@ -1729,7 +1729,7 @@ func Test_dialer_tlsHandshake(t *testing.T) {
 		dnsRefreshDuration    time.Duration
 		dnsCacheExpiration    time.Duration
 		dialerTimeout         time.Duration
-		dialerKeepAlive       time.Duration
+		dialerKeepalive       time.Duration
 		dialerFallbackDelay   time.Duration
 		dialerDualStack       bool
 		addrs                 sync.Map
@@ -1778,7 +1778,7 @@ func Test_dialer_tlsHandshake(t *testing.T) {
 		           dnsRefreshDuration: nil,
 		           dnsCacheExpiration: nil,
 		           dialerTimeout: nil,
-		           dialerKeepAlive: nil,
+		           dialerKeepalive: nil,
 		           dialerFallbackDelay: nil,
 		           dialerDualStack: false,
 		           addrs: sync.Map{},
@@ -1810,7 +1810,7 @@ func Test_dialer_tlsHandshake(t *testing.T) {
 		           dnsRefreshDuration: nil,
 		           dnsCacheExpiration: nil,
 		           dialerTimeout: nil,
-		           dialerKeepAlive: nil,
+		           dialerKeepalive: nil,
 		           dialerFallbackDelay: nil,
 		           dialerDualStack: false,
 		           addrs: sync.Map{},
@@ -1848,7 +1848,7 @@ func Test_dialer_tlsHandshake(t *testing.T) {
 				dnsRefreshDuration:    test.fields.dnsRefreshDuration,
 				dnsCacheExpiration:    test.fields.dnsCacheExpiration,
 				dialerTimeout:         test.fields.dialerTimeout,
-				dialerKeepAlive:       test.fields.dialerKeepAlive,
+				dialerKeepalive:       test.fields.dialerKeepalive,
 				dialerFallbackDelay:   test.fields.dialerFallbackDelay,
 				dialerDualStack:       test.fields.dialerDualStack,
 				addrs:                 test.fields.addrs,

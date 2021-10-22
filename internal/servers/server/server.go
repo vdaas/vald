@@ -92,7 +92,7 @@ type server struct {
 	}
 	grpc struct { // gRPC API
 		srv       *grpc.Server
-		keepAlive *grpcKeepAlive
+		keepAlive *grpcKeepalive
 		opts      []grpc.ServerOption
 		regs      []func(*grpc.Server)
 	}
@@ -117,7 +117,7 @@ type server struct {
 	preStopFunc   func() error // PreStopFunction
 }
 
-type grpcKeepAlive struct {
+type grpcKeepalive struct {
 	maxConnIdle         time.Duration
 	maxConnAge          time.Duration
 	maxConnAgeGrace     time.Duration
@@ -392,7 +392,7 @@ func (s *server) Shutdown(ctx context.Context) (rerr error) {
 		sctx, scancel := context.WithTimeout(ctx, s.sddur)
 		defer scancel()
 
-		s.http.srv.SetKeepAlivesEnabled(false)
+		s.http.srv.SetKeepalivesEnabled(false)
 
 		err := s.http.srv.Shutdown(sctx)
 		if err != nil && err != http.ErrServerClosed && err != grpc.ErrServerStopped {

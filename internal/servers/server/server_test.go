@@ -497,7 +497,7 @@ func TestListenAndServe(t *testing.T) {
 				},
 				grpc: struct {
 					srv       *grpc.Server
-					keepAlive *grpcKeepAlive
+					keepAlive *grpcKeepalive
 					opts      []grpc.ServerOption
 					regs      []func(*grpc.Server)
 				}{
@@ -643,7 +643,7 @@ func TestShutdown(t *testing.T) {
 				},
 				grpc: struct {
 					srv       *grpc.Server
-					keepAlive *grpcKeepAlive
+					keepAlive *grpcKeepalive
 					opts      []grpc.ServerOption
 					regs      []func(*grpc.Server)
 				}{
@@ -740,7 +740,7 @@ func Test_server_IsRunning(t *testing.T) {
 		}
 		grpc struct {
 			srv       *grpc.Server
-			keepAlive *grpcKeepAlive
+			keepAlive *grpcKeepalive
 			opts      []grpc.ServerOption
 			regs      []func(*grpc.Server)
 		}
@@ -924,7 +924,7 @@ func Test_server_Name(t *testing.T) {
 		}
 		grpc struct {
 			srv       *grpc.Server
-			keepAlive *grpcKeepAlive
+			keepAlive *grpcKeepalive
 			opts      []grpc.ServerOption
 			regs      []func(*grpc.Server)
 		}
@@ -1112,7 +1112,7 @@ func Test_server_ListenAndServe(t *testing.T) {
 		}
 		grpc struct {
 			srv       *grpc.Server
-			keepAlive *grpcKeepAlive
+			keepAlive *grpcKeepalive
 			opts      []grpc.ServerOption
 			regs      []func(*grpc.Server)
 		}
@@ -1308,7 +1308,7 @@ func Test_server_Shutdown(t *testing.T) {
 		}
 		grpc struct {
 			srv       *grpc.Server
-			keepAlive *grpcKeepAlive
+			keepAlive *grpcKeepalive
 			opts      []grpc.ServerOption
 			regs      []func(*grpc.Server)
 		}

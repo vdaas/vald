@@ -147,7 +147,7 @@ func TestCassandra_Bind(t *testing.T) {
 						},
 						Dialer: &Dialer{
 							Timeout:          "30s",
-							KeepAlive:        "10m",
+							Keepalive:        "10m",
 							DualStackEnabled: false,
 						},
 						TLS: &TLS{
@@ -241,7 +241,7 @@ func TestCassandra_Bind(t *testing.T) {
 							},
 							Dialer: &Dialer{
 								Timeout:          "30s",
-								KeepAlive:        "10m",
+								Keepalive:        "10m",
 								DualStackEnabled: false,
 							},
 							TLS: &TLS{
@@ -509,7 +509,7 @@ func TestCassandra_Opts(t *testing.T) {
 						},
 						Dialer: &Dialer{
 							Timeout:          "30s",
-							KeepAlive:        "10m",
+							Keepalive:        "10m",
 							DualStackEnabled: false,
 						},
 						TLS: &TLS{
@@ -610,7 +610,7 @@ func TestCassandra_Opts(t *testing.T) {
 						},
 						Dialer: &Dialer{
 							Timeout:          "30s",
-							KeepAlive:        "10m",
+							Keepalive:        "10m",
 							DualStackEnabled: false,
 						},
 						TLS: &TLS{
@@ -715,7 +715,7 @@ func TestCassandra_Opts(t *testing.T) {
 						},
 						Dialer: &Dialer{
 							Timeout:          "30s",
-							KeepAlive:        "10m",
+							Keepalive:        "10m",
 							DualStackEnabled: false,
 						},
 						TLS: &TLS{
@@ -813,7 +813,7 @@ func TestCassandra_Opts(t *testing.T) {
 						},
 						Dialer: &Dialer{
 							Timeout:          "30s",
-							KeepAlive:        "10m",
+							Keepalive:        "10m",
 							DualStackEnabled: false,
 						},
 						TLS: &TLS{

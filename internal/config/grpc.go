@@ -59,7 +59,7 @@ type DialOption struct {
 	Insecure                    bool                 `json:"insecure"                       yaml:"insecure"`
 	Timeout                     string               `json:"timeout"                        yaml:"timeout"`
 	Net                         *Net                 `json:"net"                            yaml:"net"`
-	KeepAlive                   *GRPCClientKeepalive `json:"keepalive"                      yaml:"keepalive"`
+	Keepalive                   *GRPCClientKeepalive `json:"keepalive"                      yaml:"keepalive"`
 }
 
 // ConnectionPool represents the configurations for connection pool.
@@ -225,12 +225,12 @@ func (g *GRPCClient) Opts() ([]grpc.Option, error) {
 			)
 		}
 
-		if g.DialOption.KeepAlive != nil {
+		if g.DialOption.Keepalive != nil {
 			opts = append(opts,
 				grpc.WithKeepaliveParams(
-					g.DialOption.KeepAlive.Time,
-					g.DialOption.KeepAlive.Timeout,
-					g.DialOption.KeepAlive.PermitWithoutStream,
+					g.DialOption.Keepalive.Time,
+					g.DialOption.Keepalive.Timeout,
+					g.DialOption.Keepalive.PermitWithoutStream,
 				),
 			)
 		}
