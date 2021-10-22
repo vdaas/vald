@@ -1282,8 +1282,8 @@ func TestServer_Opts(t *testing.T) {
 		afterFunc  func()
 	}
 	defaultCheckFunc := func(w want, got []server.Option) error {
-		if !reflect.DeepEqual(len(got), len(w.want)) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+		if len(got) != len(w.want) {
+			return errors.Errorf("got: %d\"%#v\",\n\t\t\t\twant: %d\"%#v\"", len(got), got, len(w.want), w.want)
 		}
 		return nil
 	}
