@@ -901,6 +901,10 @@ spec:
                                               type: string
                                             max_conn_idle:
                                               type: string
+                                            min_time:
+                                              type: string
+                                            permit_without_stream:
+                                              type: boolean
                                             time:
                                               type: string
                                             timeout:
@@ -1921,6 +1925,10 @@ spec:
                                                   type: string
                                                 max_conn_idle:
                                                   type: string
+                                                min_time:
+                                                  type: string
+                                                permit_without_stream:
+                                                  type: boolean
                                                 time:
                                                   type: string
                                                 timeout:
@@ -2890,6 +2898,10 @@ spec:
                                               type: string
                                             max_conn_idle:
                                               type: string
+                                            min_time:
+                                              type: string
+                                            permit_without_stream:
+                                              type: boolean
                                             time:
                                               type: string
                                             timeout:
@@ -3896,6 +3908,10 @@ spec:
                                               type: string
                                             max_conn_idle:
                                               type: string
+                                            min_time:
+                                              type: string
+                                            permit_without_stream:
+                                              type: boolean
                                             time:
                                               type: string
                                             timeout:
@@ -5353,6 +5369,10 @@ spec:
                                                   type: string
                                                 max_conn_idle:
                                                   type: string
+                                                min_time:
+                                                  type: string
+                                                permit_without_stream:
+                                                  type: boolean
                                                 time:
                                                   type: string
                                                 timeout:
@@ -6624,6 +6644,10 @@ spec:
                                                   type: string
                                                 max_conn_idle:
                                                   type: string
+                                                min_time:
+                                                  type: string
+                                                permit_without_stream:
+                                                  type: boolean
                                                 time:
                                                   type: string
                                                 timeout:
@@ -7889,6 +7913,10 @@ spec:
                                                   type: string
                                                 max_conn_idle:
                                                   type: string
+                                                min_time:
+                                                  type: string
+                                                permit_without_stream:
+                                                  type: boolean
                                                 time:
                                                   type: string
                                                 timeout:

@@ -94,11 +94,13 @@ type GRPC struct {
 
 // GRPCKeepalive represents the configuration for gRPC keep-alive.
 type GRPCKeepalive struct {
-	MaxConnIdle     string `json:"max_conn_idle"      yaml:"max_conn_idle"`
-	MaxConnAge      string `json:"max_conn_age"       yaml:"max_conn_age"`
-	MaxConnAgeGrace string `json:"max_conn_age_grace" yaml:"max_conn_age_grace"`
-	Time            string `json:"time"               yaml:"time"`
-	Timeout         string `json:"timeout"            yaml:"timeout"`
+	MaxConnIdle         string `json:"max_conn_idle"         yaml:"max_conn_idle"`
+	MaxConnAge          string `json:"max_conn_age"          yaml:"max_conn_age"`
+	MaxConnAgeGrace     string `json:"max_conn_age_grace"    yaml:"max_conn_age_grace"`
+	Time                string `json:"time"                  yaml:"time"`
+	Timeout             string `json:"timeout"               yaml:"timeout"`
+	MinTime             string `json:"min_time"              yaml:"min_time"`
+	PermitWithoutStream bool   `json:"permit_without_stream" yaml:"permit_without_stream"`
 }
 
 // Bind binds the actual value from the Servers struct field.
@@ -190,6 +192,7 @@ func (k *GRPCKeepalive) Bind() *GRPCKeepalive {
 	k.MaxConnAgeGrace = GetActualValue(k.MaxConnAgeGrace)
 	k.Time = GetActualValue(k.Time)
 	k.Timeout = GetActualValue(k.Timeout)
+	k.MinTime = GetActualValue(k.MinTime)
 	return k
 }
 
@@ -287,6 +290,8 @@ func (s *Server) Opts() []server.Option {
 					server.WithGRPCKeepaliveMaxConnAgeGrace(s.GRPC.Keepalive.MaxConnAgeGrace),
 					server.WithGRPCKeepaliveTime(s.GRPC.Keepalive.Time),
 					server.WithGRPCKeepaliveTimeout(s.GRPC.Keepalive.Timeout),
+					server.WithGRPCKeepaliveMinTime(s.GRPC.Keepalive.MinTime),
+					server.WithGRPCKeepalivePermitWithoutStream(s.GRPC.Keepalive.PermitWithoutStream),
 				)
 			}
 		}

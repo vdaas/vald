@@ -411,6 +411,31 @@ func WithGRPCKeepaliveTimeout(dur string) Option {
 	}
 }
 
+func WithGRPCKeepaliveMinTime(min string) Option {
+	return func(s *server) {
+		if len(min) == 0 {
+			return
+		}
+		d, err := timeutil.Parse(min)
+		if err != nil {
+			return
+		}
+		if s.grpc.keepAlive == nil {
+			s.grpc.keepAlive = new(grpcKeepAlive)
+		}
+		s.grpc.keepAlive.minTime = d
+	}
+}
+
+func WithGRPCKeepalivePermitWithoutStream(pws bool) Option {
+	return func(s *server) {
+		if s.grpc.keepAlive == nil {
+			s.grpc.keepAlive = new(grpcKeepAlive)
+		}
+		s.grpc.keepAlive.permitWithoutStream = pws
+	}
+}
+
 func WithGRPCWriteBufferSize(size int) Option {
 	return func(s *server) {
 		if size > 0 || size == -1 {

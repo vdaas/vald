@@ -178,10 +178,16 @@ defaults:
               max_conn_age_grace: ""
               # @schema {"name": "defaults.server_config.servers.grpc.server.grpc.keepalive.time", "type": "string"}
               # defaults.server_config.servers.grpc.server.grpc.keepalive.time -- gRPC server keep alive time
-              time: ""
+              time: "120s"
               # @schema {"name": "defaults.server_config.servers.grpc.server.grpc.keepalive.timeout", "type": "string"}
               # defaults.server_config.servers.grpc.server.grpc.keepalive.timeout -- gRPC server keep alive timeout
-              timeout: ""
+              timeout: "30s"
+              # @schema {"name": "defaults.server_config.servers.grpc.server.grpc.keepalive.min_time", "type": "string"}
+              # defaults.server_config.servers.grpc.server.grpc.keepalive.min_time -- gRPC server keep alive min_time
+              min_time: "60s"
+              # @schema {"name": "defaults.server_config.servers.grpc.server.grpc.keepalive.permit_without_stream", "type": "boolean"}
+              # defaults.server_config.servers.grpc.server.grpc.keepalive.permit_without_stream -- gRPC server keep alive permit_without_stream
+              permit_without_stream: true
             # @schema {"name": "defaults.server_config.servers.grpc.server.grpc.write_buffer_size", "type": "integer"}
             # defaults.server_config.servers.grpc.server.grpc.write_buffer_size -- gRPC server write buffer size
             write_buffer_size: 0
@@ -641,7 +647,7 @@ defaults:
         size: 3
         # @schema {"name": "defaults.grpc.client.connection_pool.old_conn_close_duration", "type": "string"}
         # defaults.grpc.client.connection_pool.old_conn_close_duration -- makes delay before gRPC client connection closing during connection pool rebalance
-        old_conn_close_duration: "3s"
+        old_conn_close_duration: "2m"
       # @schema {"name": "defaults.grpc.client.backoff", "type": "object", "anchor": "backoff"}
       backoff:
         # @schema {"name": "defaults.grpc.client.backoff.initial_duration", "type": "string"}
@@ -780,13 +786,13 @@ defaults:
         keep_alive:
           # @schema {"name": "defaults.grpc.client.dial_option.keep_alive.time", "type": "string"}
           # defaults.grpc.client.dial_option.keep_alive.time -- gRPC client keep alive time
-          time: ""
+          time: "120s"
           # @schema {"name": "defaults.grpc.client.dial_option.keep_alive.timeout", "type": "string"}
           # defaults.grpc.client.dial_option.keep_alive.timeout -- gRPC client keep alive timeout
-          timeout: ""
+          timeout: "30s"
           # @schema {"name": "defaults.grpc.client.dial_option.keep_alive.permit_without_stream", "type": "boolean"}
           # defaults.grpc.client.dial_option.keep_alive.permit_without_stream -- gRPC client keep alive permit without stream
-          permit_without_stream: false
+          permit_without_stream: true
       # @schema {"name": "defaults.grpc.client.tls", "alias": "tls"}
       tls:
         # defaults.grpc.client.tls.enabled -- TLS enabled

@@ -19,6 +19,7 @@ package pool
 
 import (
 	"github.com/vdaas/vald/internal/backoff"
+	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/timeutil"
 )
 
@@ -28,8 +29,9 @@ var defaultOptions = []Option{
 	WithSize(3),
 	WithStartPort(80),
 	WithEndPort(65535),
+	WithErrGroup(errgroup.Get()),
 	WithDialTimeout("1s"),
-	WithOldConnCloseDuration("1s"),
+	WithOldConnCloseDuration("2m"),
 	WithResolveDNS(true),
 }
 
@@ -137,5 +139,13 @@ func WithOldConnCloseDuration(dur string) Option {
 			return
 		}
 		p.roccd = d
+	}
+}
+
+func WithErrGroup(eg errgroup.Group) Option {
+	return func(p *pool) {
+		if eg != nil {
+			p.eg = eg
+		}
 	}
 }

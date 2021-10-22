@@ -329,6 +329,8 @@ servers:
         max_conn_age_grace: {{ default .default.servers.grpc.server.grpc.keepalive.max_conn_age_grace .Values.servers.grpc.server.grpc.keepalive.max_conn_age_grace | quote }}
         time: {{ default .default.servers.grpc.server.grpc.keepalive.time .Values.servers.grpc.server.grpc.keepalive.time | quote }}
         timeout: {{ default .default.servers.grpc.server.grpc.keepalive.timeout .Values.servers.grpc.server.grpc.keepalive.timeout | quote }}
+        min_time: {{ default .default.servers.grpc.server.grpc.keepalive.min_time .Values.servers.grpc.server.grpc.keepalive.min_time | quote }}
+        permit_without_stream: {{ default .default.servers.grpc.server.grpc.keepalive.permit_without_stream .Values.servers.grpc.server.grpc.keepalive.permit_without_stream | quote }}
         {{- else }}
         {{- toYaml .default.servers.grpc.server.grpc.keepalive | nindent 8 }}
         {{- end }}

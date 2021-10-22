@@ -118,11 +118,13 @@ type server struct {
 }
 
 type grpcKeepAlive struct {
-	maxConnIdle     time.Duration
-	maxConnAge      time.Duration
-	maxConnAgeGrace time.Duration
-	t               time.Duration
-	timeout         time.Duration
+	maxConnIdle         time.Duration
+	maxConnAge          time.Duration
+	maxConnAgeGrace     time.Duration
+	t                   time.Duration
+	timeout             time.Duration
+	minTime             time.Duration
+	permitWithoutStream bool
 }
 
 func New(opts ...Option) (Server, error) {
@@ -188,8 +190,12 @@ func New(opts ...Option) (Server, error) {
 					Time:                  srv.grpc.keepAlive.t,
 					Timeout:               srv.grpc.keepAlive.timeout,
 				}),
+				grpc.KeepaliveEnforcementPolicy(keepalive.EnforcementPolicy{
+					MinTime:             srv.grpc.keepAlive.minTime,
+					PermitWithoutStream: srv.grpc.keepAlive.permitWithoutStream,
+				}),
 			)
-			keepAlive = srv.grpc.keepAlive.timeout
+			keepAlive = srv.grpc.keepAlive.t
 		}
 
 		if srv.tcfg != nil &&

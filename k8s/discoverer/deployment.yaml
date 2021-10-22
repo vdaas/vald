@@ -47,7 +47,7 @@ spec:
         app.kubernetes.io/instance: RELEASE-NAME
         app.kubernetes.io/component: discoverer
       annotations:
-        checksum/configmap: 92c81e9fa60e2462cc1bfac65940864b2b9a8ca5928991f47b75116e29842f78
+        checksum/configmap: c48218339350de4e0bba0e4587a26b35bc717d288f6139c936566554a7d07e7b
         profefe.com/enable: "true"
         profefe.com/port: "6060"
         profefe.com/service: vald-discoverer
