@@ -341,7 +341,7 @@ func WithGRPCKeepaliveMaxConnIdle(max string) Option {
 			return
 		}
 		if s.grpc.keepAlive == nil {
-			s.grpc.keepAlive = new(grpcKeepAlive)
+			s.grpc.keepAlive = new(grpcKeepalive)
 		}
 		s.grpc.keepAlive.maxConnIdle = d
 	}
@@ -357,7 +357,7 @@ func WithGRPCKeepaliveMaxConnAge(max string) Option {
 			return
 		}
 		if s.grpc.keepAlive == nil {
-			s.grpc.keepAlive = new(grpcKeepAlive)
+			s.grpc.keepAlive = new(grpcKeepalive)
 		}
 		s.grpc.keepAlive.maxConnAge = d
 	}
@@ -373,7 +373,7 @@ func WithGRPCKeepaliveMaxConnAgeGrace(max string) Option {
 			return
 		}
 		if s.grpc.keepAlive == nil {
-			s.grpc.keepAlive = new(grpcKeepAlive)
+			s.grpc.keepAlive = new(grpcKeepalive)
 		}
 		s.grpc.keepAlive.maxConnAgeGrace = d
 	}
@@ -389,7 +389,7 @@ func WithGRPCKeepaliveTime(dur string) Option {
 			return
 		}
 		if s.grpc.keepAlive == nil {
-			s.grpc.keepAlive = new(grpcKeepAlive)
+			s.grpc.keepAlive = new(grpcKeepalive)
 		}
 		s.grpc.keepAlive.t = d
 	}
@@ -405,9 +405,34 @@ func WithGRPCKeepaliveTimeout(dur string) Option {
 			return
 		}
 		if s.grpc.keepAlive == nil {
-			s.grpc.keepAlive = new(grpcKeepAlive)
+			s.grpc.keepAlive = new(grpcKeepalive)
 		}
 		s.grpc.keepAlive.timeout = d
+	}
+}
+
+func WithGRPCKeepaliveMinTime(min string) Option {
+	return func(s *server) {
+		if len(min) == 0 {
+			return
+		}
+		d, err := timeutil.Parse(min)
+		if err != nil {
+			return
+		}
+		if s.grpc.keepAlive == nil {
+			s.grpc.keepAlive = new(grpcKeepalive)
+		}
+		s.grpc.keepAlive.minTime = d
+	}
+}
+
+func WithGRPCKeepalivePermitWithoutStream(pws bool) Option {
+	return func(s *server) {
+		if s.grpc.keepAlive == nil {
+			s.grpc.keepAlive = new(grpcKeepalive)
+		}
+		s.grpc.keepAlive.permitWithoutStream = pws
 	}
 }
 

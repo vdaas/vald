@@ -19,4 +19,7 @@ package keepalive
 
 import "google.golang.org/grpc/keepalive"
 
-type ServerParameters = keepalive.ServerParameters
+type (
+	ServerParameters  = keepalive.ServerParameters
+	EnforcementPolicy = keepalive.EnforcementPolicy
+)

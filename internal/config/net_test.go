@@ -153,7 +153,7 @@ func TestDNS_Bind(t *testing.T) {
 func TestDialer_Bind(t *testing.T) {
 	type fields struct {
 		Timeout          string
-		KeepAlive        string
+		Keepalive        string
 		FallbackDelay    string
 		DualStackEnabled bool
 	}
@@ -184,14 +184,14 @@ func TestDialer_Bind(t *testing.T) {
 				name: "return Dialer when fields are not empty",
 				fields: fields{
 					Timeout:          timeout,
-					KeepAlive:        keepalive,
+					Keepalive:        keepalive,
 					FallbackDelay:    fallbackDelay,
 					DualStackEnabled: dualStackEnabled,
 				},
 				want: want{
 					want: &Dialer{
 						Timeout:          timeout,
-						KeepAlive:        keepalive,
+						Keepalive:        keepalive,
 						FallbackDelay:    fallbackDelay,
 						DualStackEnabled: dualStackEnabled,
 					},
@@ -209,13 +209,13 @@ func TestDialer_Bind(t *testing.T) {
 				name: "return Dialer when fields are set as environment value",
 				fields: fields{
 					Timeout:       "_" + envPrefix + "TIMEOUT_",
-					KeepAlive:     "_" + envPrefix + "KEEP_ALIVE_",
+					Keepalive:     "_" + envPrefix + "KEEP_ALIVE_",
 					FallbackDelay: "_" + envPrefix + "DUAL_STACK_DELAY_",
 				},
 				want: want{
 					want: &Dialer{
 						Timeout:          "3s",
-						KeepAlive:        "5m",
+						Keepalive:        "5m",
 						FallbackDelay:    "10m",
 						DualStackEnabled: false,
 					},
@@ -264,7 +264,7 @@ func TestDialer_Bind(t *testing.T) {
 			}
 			d := &Dialer{
 				Timeout:          test.fields.Timeout,
-				KeepAlive:        test.fields.KeepAlive,
+				Keepalive:        test.fields.Keepalive,
 				FallbackDelay:    test.fields.FallbackDelay,
 				DualStackEnabled: test.fields.DualStackEnabled,
 			}
@@ -603,7 +603,7 @@ func TestNet_Bind(t *testing.T) {
 			}
 			dialer := &Dialer{
 				Timeout:          "3s",
-				KeepAlive:        "5m",
+				Keepalive:        "5m",
 				FallbackDelay:    "10m",
 				DualStackEnabled: false,
 			}
@@ -717,7 +717,7 @@ func TestNet_Opts(t *testing.T) {
 				},
 				Dialer: &Dialer{
 					Timeout:          "3s",
-					KeepAlive:        "5m",
+					Keepalive:        "5m",
 					FallbackDelay:    "10m",
 					DualStackEnabled: true,
 				},
@@ -750,7 +750,7 @@ func TestNet_Opts(t *testing.T) {
 				},
 				Dialer: &Dialer{
 					Timeout:          "3s",
-					KeepAlive:        "5m",
+					Keepalive:        "5m",
 					FallbackDelay:    "10m",
 					DualStackEnabled: false,
 				},
@@ -783,7 +783,7 @@ func TestNet_Opts(t *testing.T) {
 				},
 				Dialer: &Dialer{
 					Timeout:          "3s",
-					KeepAlive:        "5m",
+					Keepalive:        "5m",
 					FallbackDelay:    "10m",
 					DualStackEnabled: true,
 				},
@@ -817,7 +817,7 @@ func TestNet_Opts(t *testing.T) {
 				},
 				Dialer: &Dialer{
 					Timeout:          "3s",
-					KeepAlive:        "5m",
+					Keepalive:        "5m",
 					FallbackDelay:    "10m",
 					DualStackEnabled: true,
 				},

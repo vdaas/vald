@@ -50,7 +50,7 @@ client:
     initial_connection_window_size: 0
     initial_window_size: 0
     insecure: true
-    keep_alive:
+    keepalive:
       permit_without_stream: false
       time: ""
       timeout: ""
@@ -60,7 +60,7 @@ client:
     tcp:
       dialer:
         dual_stack_enabled: true
-        keep_alive: ""
+        keepalive: ""
         timeout: ""
       dns:
         cache_enabled: false

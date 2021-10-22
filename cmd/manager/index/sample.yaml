@@ -194,7 +194,7 @@ indexer:
         initial_connection_window_size: 0
         initial_window_size: 0
         insecure: true
-        keep_alive:
+        keepalive:
           permit_without_stream: false
           time: ""
           timeout: ""
@@ -204,7 +204,7 @@ indexer:
         tcp:
           dialer:
             dual_stack_enabled: true
-            keep_alive: ""
+            keepalive: ""
             timeout: ""
           dns:
             cache_enabled: true
@@ -265,14 +265,14 @@ indexer:
             refresh_duration: 30m
           dialer:
             timeout: ""
-            keep_alive: "15m"
+            keepalive: "15m"
             dual_stack_enabled: true
           tls:
             ca: /path/to/ca
             cert: /path/to/cert
             enabled: false
             key: /path/to/key
-        keep_alive:
+        keepalive:
           permit_without_stream: false
           time: ""
           timeout: ""
