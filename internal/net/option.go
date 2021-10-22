@@ -30,7 +30,7 @@ import (
 type DialerOption func(*dialer)
 
 var defaultDialerOptions = []DialerOption{
-	WithDialerKeepAlive("30s"),
+	WithDialerKeepalive("30s"),
 	WithDialerTimeout("0s"),
 	WithDialerFallbackDelay("300ms"),
 	WithEnableDialerDualStack(),
@@ -100,8 +100,8 @@ func WithDialerTimeout(dur string) DialerOption {
 	}
 }
 
-// WithDialerKeepAlive returns the functional option to set the DialerKeepAlive.
-func WithDialerKeepAlive(dur string) DialerOption {
+// WithDialerKeepalive returns the functional option to set the DialerKeepalive.
+func WithDialerKeepalive(dur string) DialerOption {
 	return func(d *dialer) {
 		if dur == "" {
 			return
@@ -110,7 +110,7 @@ func WithDialerKeepAlive(dur string) DialerOption {
 		if err != nil {
 			pd = time.Second * 30
 		}
-		d.dialerKeepAlive = pd
+		d.dialerKeepalive = pd
 	}
 }
 

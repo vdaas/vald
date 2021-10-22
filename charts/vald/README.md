@@ -151,7 +151,7 @@ Configuration
 | agent.sidecar.config.blob_storage.s3.use_dual_stack | bool | `false` | use dual stack |
 | agent.sidecar.config.blob_storage.storage_type | string | `"s3"` | storage type |
 | agent.sidecar.config.client.net.dialer.dual_stack_enabled | bool | `false` | HTTP client TCP dialer dual stack enabled |
-| agent.sidecar.config.client.net.dialer.keep_alive | string | `"5m"` | HTTP client TCP dialer keep alive |
+| agent.sidecar.config.client.net.dialer.keepalive | string | `"5m"` | HTTP client TCP dialer keep alive |
 | agent.sidecar.config.client.net.dialer.timeout | string | `"5s"` | HTTP client TCP dialer connect timeout |
 | agent.sidecar.config.client.net.dns.cache_enabled | bool | `true` | HTTP client TCP DNS cache enabled |
 | agent.sidecar.config.client.net.dns.cache_expiration | string | `"24h"` |  |
@@ -252,13 +252,13 @@ Configuration
 | defaults.grpc.client.dial_option.initial_connection_window_size | int | `0` | gRPC client dial option initial connection window size |
 | defaults.grpc.client.dial_option.initial_window_size | int | `0` | gRPC client dial option initial window size |
 | defaults.grpc.client.dial_option.insecure | bool | `true` | gRPC client dial option insecure enabled |
-| defaults.grpc.client.dial_option.keep_alive.permit_without_stream | bool | `false` | gRPC client keep alive permit without stream |
-| defaults.grpc.client.dial_option.keep_alive.time | string | `""` | gRPC client keep alive time |
-| defaults.grpc.client.dial_option.keep_alive.timeout | string | `""` | gRPC client keep alive timeout |
+| defaults.grpc.client.dial_option.keepalive.permit_without_stream | bool | `false` | gRPC client keep alive permit without stream |
+| defaults.grpc.client.dial_option.keepalive.time | string | `""` | gRPC client keep alive time |
+| defaults.grpc.client.dial_option.keepalive.timeout | string | `""` | gRPC client keep alive timeout |
 | defaults.grpc.client.dial_option.max_msg_size | int | `0` | gRPC client dial option max message size |
 | defaults.grpc.client.dial_option.min_connection_timeout | string | `"20s"` | gRPC client dial option minimum connection timeout |
 | defaults.grpc.client.dial_option.net.dialer.dual_stack_enabled | bool | `true` | gRPC client TCP dialer dual stack enabled |
-| defaults.grpc.client.dial_option.net.dialer.keep_alive | string | `""` | gRPC client TCP dialer keep alive |
+| defaults.grpc.client.dial_option.net.dialer.keepalive | string | `""` | gRPC client TCP dialer keep alive |
 | defaults.grpc.client.dial_option.net.dialer.timeout | string | `""` | gRPC client TCP dialer timeout |
 | defaults.grpc.client.dial_option.net.dns.cache_enabled | bool | `true` | gRPC client TCP DNS cache enabled |
 | defaults.grpc.client.dial_option.net.dns.cache_expiration | string | `"1h"` | gRPC client TCP DNS cache expiration |
@@ -544,7 +544,7 @@ Configuration
 | discoverer.discoverer.name | string | `""` | name to discovery |
 | discoverer.discoverer.namespace | string | `"_MY_POD_NAMESPACE_"` | namespace to discovery |
 | discoverer.discoverer.net.dialer.dual_stack_enabled | bool | `false` | TCP dialer dual stack enabled |
-| discoverer.discoverer.net.dialer.keep_alive | string | `"10m"` | TCP dialer keep alive |
+| discoverer.discoverer.net.dialer.keepalive | string | `"10m"` | TCP dialer keep alive |
 | discoverer.discoverer.net.dialer.timeout | string | `"30s"` | TCP dialer timeout |
 | discoverer.discoverer.net.dns.cache_enabled | bool | `true` | TCP DNS cache enabled |
 | discoverer.discoverer.net.dns.cache_expiration | string | `"24h"` | TCP DNS cache expiration |
@@ -805,7 +805,7 @@ Configuration
 | manager.index.indexer.auto_save_index_wait_duration | string | `"10m"` | duration of automatic index saving wait duration for next saving |
 | manager.index.indexer.concurrency | int | `1` | concurrency |
 | manager.index.indexer.creation_pool_size | int | `10000` | number of pool size of create index processing |
-| manager.index.indexer.discoverer.agent_client_options | object | `{"dial_option":{"net":{"dialer":{"keep_alive":"15m"}}}}` | gRPC client options for agents (overrides defaults.grpc.client) |
+| manager.index.indexer.discoverer.agent_client_options | object | `{"dial_option":{"net":{"dialer":{"keepalive":"15m"}}}}` | gRPC client options for agents (overrides defaults.grpc.client) |
 | manager.index.indexer.discoverer.client | object | `{}` | gRPC client for discoverer (overrides defaults.grpc.client) |
 | manager.index.indexer.discoverer.duration | string | `"500ms"` | refresh duration to discover |
 | manager.index.indexer.node_name | string | `""` | node name |

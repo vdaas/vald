@@ -178,10 +178,16 @@ defaults:
               max_conn_age_grace: ""
               # @schema {"name": "defaults.server_config.servers.grpc.server.grpc.keepalive.time", "type": "string"}
               # defaults.server_config.servers.grpc.server.grpc.keepalive.time -- gRPC server keep alive time
-              time: ""
+              time: "120s"
               # @schema {"name": "defaults.server_config.servers.grpc.server.grpc.keepalive.timeout", "type": "string"}
               # defaults.server_config.servers.grpc.server.grpc.keepalive.timeout -- gRPC server keep alive timeout
-              timeout: ""
+              timeout: "30s"
+              # @schema {"name": "defaults.server_config.servers.grpc.server.grpc.keepalive.min_time", "type": "string"}
+              # defaults.server_config.servers.grpc.server.grpc.keepalive.min_time -- gRPC server keep alive min_time
+              min_time: "60s"
+              # @schema {"name": "defaults.server_config.servers.grpc.server.grpc.keepalive.permit_without_stream", "type": "boolean"}
+              # defaults.server_config.servers.grpc.server.grpc.keepalive.permit_without_stream -- gRPC server keep alive permit_without_stream
+              permit_without_stream: true
             # @schema {"name": "defaults.server_config.servers.grpc.server.grpc.write_buffer_size", "type": "integer"}
             # defaults.server_config.servers.grpc.server.grpc.write_buffer_size -- gRPC server write buffer size
             write_buffer_size: 0
@@ -641,7 +647,7 @@ defaults:
         size: 3
         # @schema {"name": "defaults.grpc.client.connection_pool.old_conn_close_duration", "type": "string"}
         # defaults.grpc.client.connection_pool.old_conn_close_duration -- makes delay before gRPC client connection closing during connection pool rebalance
-        old_conn_close_duration: "3s"
+        old_conn_close_duration: "2m"
       # @schema {"name": "defaults.grpc.client.backoff", "type": "object", "anchor": "backoff"}
       backoff:
         # @schema {"name": "defaults.grpc.client.backoff.initial_duration", "type": "string"}
@@ -738,9 +744,9 @@ defaults:
             # @schema {"name": "defaults.grpc.client.dial_option.net.dialer.timeout", "type": "string"}
             # defaults.grpc.client.dial_option.net.dialer.timeout -- gRPC client TCP dialer timeout
             timeout: ""
-            # @schema {"name": "defaults.grpc.client.dial_option.net.dialer.keep_alive", "type": "string"}
-            # defaults.grpc.client.dial_option.net.dialer.keep_alive -- gRPC client TCP dialer keep alive
-            keep_alive: ""
+            # @schema {"name": "defaults.grpc.client.dial_option.net.dialer.keepalive", "type": "string"}
+            # defaults.grpc.client.dial_option.net.dialer.keepalive -- gRPC client TCP dialer keep alive
+            keepalive: ""
             # @schema {"name": "defaults.grpc.client.dial_option.net.dialer.dual_stack_enabled", "type": "boolean"}
             # defaults.grpc.client.dial_option.net.dialer.dual_stack_enabled -- gRPC client TCP dialer dual stack enabled
             dual_stack_enabled: true
@@ -776,17 +782,17 @@ defaults:
             ip_transparent: false
             # defaults.grpc.client.dial_option.net.socket_option.ip_recover_destination_addr -- server listen socket option for ip_recover_destination_addr functionality
             ip_recover_destination_addr: false
-        # @schema {"name": "defaults.grpc.client.dial_option.keep_alive", "type": "object"}
-        keep_alive:
-          # @schema {"name": "defaults.grpc.client.dial_option.keep_alive.time", "type": "string"}
-          # defaults.grpc.client.dial_option.keep_alive.time -- gRPC client keep alive time
-          time: ""
-          # @schema {"name": "defaults.grpc.client.dial_option.keep_alive.timeout", "type": "string"}
-          # defaults.grpc.client.dial_option.keep_alive.timeout -- gRPC client keep alive timeout
-          timeout: ""
-          # @schema {"name": "defaults.grpc.client.dial_option.keep_alive.permit_without_stream", "type": "boolean"}
-          # defaults.grpc.client.dial_option.keep_alive.permit_without_stream -- gRPC client keep alive permit without stream
-          permit_without_stream: false
+        # @schema {"name": "defaults.grpc.client.dial_option.keepalive", "type": "object"}
+        keepalive:
+          # @schema {"name": "defaults.grpc.client.dial_option.keepalive.time", "type": "string"}
+          # defaults.grpc.client.dial_option.keepalive.time -- gRPC client keep alive time
+          time: "120s"
+          # @schema {"name": "defaults.grpc.client.dial_option.keepalive.timeout", "type": "string"}
+          # defaults.grpc.client.dial_option.keepalive.timeout -- gRPC client keep alive timeout
+          timeout: "30s"
+          # @schema {"name": "defaults.grpc.client.dial_option.keepalive.permit_without_stream", "type": "boolean"}
+          # defaults.grpc.client.dial_option.keepalive.permit_without_stream -- gRPC client keep alive permit without stream
+          permit_without_stream: true
       # @schema {"name": "defaults.grpc.client.tls", "alias": "tls"}
       tls:
         # defaults.grpc.client.tls.enabled -- TLS enabled
@@ -2084,8 +2090,8 @@ agent:
           dialer:
             # agent.sidecar.config.client.net.dialer.timeout -- HTTP client TCP dialer connect timeout
             timeout: 5s
-            # agent.sidecar.config.client.net.dialer.keep_alive -- HTTP client TCP dialer keep alive
-            keep_alive: 5m
+            # agent.sidecar.config.client.net.dialer.keepalive -- HTTP client TCP dialer keep alive
+            keepalive: 5m
             # agent.sidecar.config.client.net.dialer.dual_stack_enabled -- HTTP client TCP dialer dual stack enabled
             dual_stack_enabled: false
           tls:
@@ -2443,8 +2449,8 @@ discoverer:
       dialer:
         # discoverer.discoverer.net.dialer.timeout -- TCP dialer timeout
         timeout: 30s
-        # discoverer.discoverer.net.dialer.keep_alive -- TCP dialer keep alive
-        keep_alive: 10m
+        # discoverer.discoverer.net.dialer.keepalive -- TCP dialer keep alive
+        keepalive: 10m
         # discoverer.discoverer.net.dialer.dual_stack_enabled -- TCP dialer dual stack enabled
         dual_stack_enabled: false
       tls:
@@ -2731,7 +2737,7 @@ manager:
           dial_option:
             net:
               dialer:
-                keep_alive: 15m #indexer fetches uncommitted index length, which includes huge payload so we need to set keep_alive longer than usual
+                keepalive: 15m #indexer fetches uncommitted index length, which includes huge payload so we need to set keepalive longer than usual
 
 # @schema {"name": "initializer", "type": "object"}
 initializer:
