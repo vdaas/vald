@@ -26,9 +26,11 @@ import (
 	"time"
 
 	"github.com/vdaas/vald/internal/backoff"
+	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net"
+	"github.com/vdaas/vald/internal/safety"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/connectivity"
 )
@@ -64,6 +66,7 @@ type pool struct {
 	size          uint64
 	current       uint64
 	bo            backoff.Backoff
+	eg            errgroup.Group
 	dopts         []DialOption
 	dialTimeout   time.Duration
 	roccd         time.Duration // reconnection old connection closing duration
@@ -118,6 +121,10 @@ func New(ctx context.Context, opts ...Option) (c Conn, err error) {
 		}
 	}
 
+	if p.eg == nil {
+		p.eg = errgroup.Get()
+	}
+
 	return p, nil
 }
 
@@ -164,19 +171,14 @@ func (p *pool) Connect(ctx context.Context) (c Conn, err error) {
 				addr: addr,
 			})
 			if pc != nil {
-				log.Debugf("waiting for old connection to %s to be closed...", pc.addr)
-				t := time.NewTimer(p.roccd)
-				select {
-				case <-ctx.Done():
-					t.Stop()
-					return p, ctx.Err()
-				case <-t.C:
-					t.Stop()
-					err = pc.conn.Close()
+				p.eg.Go(safety.RecoverFunc(func() error {
+					log.Debugf("waiting for old connection to %s to be closed...", pc.addr)
+					err = pc.Close(ctx, p.roccd)
 					if err != nil {
 						log.Debugf("failed to close pool connection addr = %s\terror = %v", pc.addr, err)
 					}
-				}
+					return nil
+				}))
 			}
 		}
 	}
@@ -220,19 +222,14 @@ func (p *pool) connect(ctx context.Context) (c Conn, err error) {
 				addr: p.addr,
 			})
 			if pc != nil {
-				log.Debugf("waiting for old connection to %s to be closed...", pc.addr)
-				t := time.NewTimer(p.roccd)
-				select {
-				case <-ctx.Done():
-					t.Stop()
-					return p, ctx.Err()
-				case <-t.C:
-					t.Stop()
-					err = pc.conn.Close()
+				p.eg.Go(safety.RecoverFunc(func() error {
+					log.Debugf("waiting for old connection to %s to be closed...", pc.addr)
+					err = pc.Close(ctx, p.roccd)
 					if err != nil {
 						log.Debugf("failed to close pool connection addr = %s\terror = %v", pc.addr, err)
 					}
-				}
+					return nil
+				}))
 			}
 		}
 	}
@@ -318,10 +315,14 @@ func (p *pool) IsHealthy(ctx context.Context) bool {
 				conn: conn,
 				addr: pc.addr,
 			})
-			err = pc.conn.Close()
-			if err != nil {
-				log.Warnf("failed to close old connection for %s,\terr: %v", pc.addr, err)
-			}
+			p.eg.Go(safety.RecoverFunc(func() error {
+				log.Debugf("waiting for old connection to %s to be closed...", pc.addr)
+				err = pc.Close(ctx, p.roccd)
+				if err != nil {
+					log.Warnf("failed to close old connection for %s,\terr: %v", pc.addr, err)
+				}
+				return nil
+			}))
 		}
 	}
 	return true
@@ -457,6 +458,50 @@ func (p *pool) scanGRPCPort(ctx context.Context) (err error) {
 		}
 	}
 	return errors.ErrInvalidGRPCPort(p.addr, p.host, p.port)
+}
+
+func (pc *poolConn) Close(ctx context.Context, delay time.Duration) error {
+	tdelay := delay / 10
+	if tdelay < time.Millisecond*200 {
+		tdelay = time.Millisecond * 200
+	} else if tdelay > time.Minute {
+		tdelay = time.Second * 5
+	}
+	tick := time.NewTicker(tdelay)
+	defer tick.Stop()
+	ctx, cancel := context.WithTimeout(ctx, delay)
+	defer cancel()
+	for {
+		select {
+		case <-ctx.Done():
+			err := pc.conn.Close()
+			if err != nil {
+				if ctx.Err() != nil &&
+					!errors.Is(ctx.Err(), context.DeadlineExceeded) &&
+					!errors.Is(ctx.Err(), context.Canceled) {
+					return errors.Wrap(err, ctx.Err().Error())
+				}
+				return err
+			}
+			if ctx.Err() != nil &&
+				!errors.Is(ctx.Err(), context.DeadlineExceeded) &&
+				!errors.Is(ctx.Err(), context.Canceled) {
+				return ctx.Err()
+			}
+			return nil
+		case <-tick.C:
+			switch pc.conn.GetState() {
+			case connectivity.Idle, connectivity.Connecting, connectivity.TransientFailure:
+				err := pc.conn.Close()
+				if err != nil {
+					return err
+				}
+				return nil
+			case connectivity.Shutdown:
+				return nil
+			}
+		}
+	}
 }
 
 func isGRPCPort(ctx context.Context, host string, port uint16) bool {

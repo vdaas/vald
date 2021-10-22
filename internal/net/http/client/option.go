@@ -32,7 +32,7 @@ type Option func(*transport) error
 
 var defaultOptions = []Option{
 	WithProxy(http.ProxyFromEnvironment),
-	WithEnableKeepAlives(true),
+	WithEnableKeepalives(true),
 	WithEnableCompression(true),
 }
 
@@ -77,8 +77,8 @@ func WithTLSHandshakeTimeout(dur string) Option {
 	}
 }
 
-// WithEnableKeepAlives returns the option to enable keep alive.
-func WithEnableKeepAlives(enable bool) Option {
+// WithEnableKeepalives returns the option to enable keep alive.
+func WithEnableKeepalives(enable bool) Option {
 	return func(tr *transport) error {
 		tr.DisableKeepAlives = !enable
 

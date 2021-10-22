@@ -51,6 +51,10 @@ func KeepaliveParams(kp keepalive.ServerParameters) ServerOption {
 	return grpc.KeepaliveParams(kp)
 }
 
+func KeepaliveEnforcementPolicy(kep keepalive.EnforcementPolicy) ServerOption {
+	return grpc.KeepaliveEnforcementPolicy(kep)
+}
+
 func MaxRecvMsgSize(size int) ServerOption {
 	return grpc.MaxRecvMsgSize(size)
 }

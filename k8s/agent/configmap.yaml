@@ -52,8 +52,10 @@ data:
               max_conn_age: ""
               max_conn_age_grace: ""
               max_conn_idle: ""
-              time: ""
-              timeout: ""
+              min_time: 60s
+              permit_without_stream: true
+              time: 120s
+              timeout: 30s
             max_header_list_size: 0
             max_receive_message_size: 0
             max_send_message_size: 0

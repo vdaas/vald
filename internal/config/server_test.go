@@ -1282,8 +1282,8 @@ func TestServer_Opts(t *testing.T) {
 		afterFunc  func()
 	}
 	defaultCheckFunc := func(w want, got []server.Option) error {
-		if !reflect.DeepEqual(len(got), len(w.want)) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+		if len(got) != len(w.want) {
+			return errors.Errorf("got: %d\"%#v\",\n\t\t\t\twant: %d\"%#v\"", len(got), got, len(w.want), w.want)
 		}
 		return nil
 	}
@@ -1427,11 +1427,13 @@ func TestServer_Opts(t *testing.T) {
 					InitialWindowSize:              1,
 					InitialConnWindowSize:          1,
 					Keepalive: &GRPCKeepalive{
-						MaxConnIdle:     "3",
-						MaxConnAge:      "30s",
-						MaxConnAgeGrace: "45s",
-						Time:            "60s",
-						Timeout:         "90s",
+						MaxConnIdle:         "3",
+						MaxConnAge:          "30s",
+						MaxConnAgeGrace:     "45s",
+						Time:                "60s",
+						Timeout:             "90s",
+						MinTime:             "120s",
+						PermitWithoutStream: true,
 					},
 					WriteBufferSize:   3,
 					ReadBufferSize:    3,
@@ -1457,7 +1459,7 @@ func TestServer_Opts(t *testing.T) {
 				Restart: false,
 			},
 			want: want{
-				want: make([]server.Option, 26),
+				want: make([]server.Option, 28),
 			},
 		},
 	}

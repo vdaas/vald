@@ -122,7 +122,7 @@ func TestRedis_Bind(t *testing.T) {
 				},
 				Dialer: &Dialer{
 					Timeout:          "5s",
-					KeepAlive:        "5m",
+					Keepalive:        "5m",
 					DualStackEnabled: false,
 				},
 				TLS: tls,
@@ -252,7 +252,7 @@ func TestRedis_Bind(t *testing.T) {
 				},
 				Dialer: &Dialer{
 					Timeout:          "5s",
-					KeepAlive:        "5m",
+					Keepalive:        "5m",
 					DualStackEnabled: false,
 				},
 				TLS: tls,
@@ -523,7 +523,7 @@ func TestRedis_Opts(t *testing.T) {
 					},
 					Dialer: &Dialer{
 						Timeout:          "5s",
-						KeepAlive:        "5m",
+						Keepalive:        "5m",
 						DualStackEnabled: false,
 					},
 					TLS: &TLS{
@@ -591,7 +591,7 @@ func TestRedis_Opts(t *testing.T) {
 					},
 					Dialer: &Dialer{
 						Timeout:          "5s",
-						KeepAlive:        "5m",
+						Keepalive:        "5m",
 						DualStackEnabled: false,
 					},
 					TLS: &TLS{
@@ -658,7 +658,7 @@ func TestRedis_Opts(t *testing.T) {
 					},
 					Dialer: &Dialer{
 						Timeout:          "5s",
-						KeepAlive:        "5m",
+						Keepalive:        "5m",
 						DualStackEnabled: false,
 					},
 					TLS: &TLS{
@@ -726,7 +726,7 @@ func TestRedis_Opts(t *testing.T) {
 					},
 					Dialer: &Dialer{
 						Timeout:          "5s",
-						KeepAlive:        "5m",
+						Keepalive:        "5m",
 						DualStackEnabled: false,
 					},
 					TLS: &TLS{
@@ -795,7 +795,7 @@ func TestRedis_Opts(t *testing.T) {
 					},
 					Dialer: &Dialer{
 						Timeout:          "5s",
-						KeepAlive:        "5m",
+						Keepalive:        "5m",
 						DualStackEnabled: false,
 					},
 					TLS: &TLS{
@@ -864,7 +864,7 @@ func TestRedis_Opts(t *testing.T) {
 					},
 					Dialer: &Dialer{
 						Timeout:          "5s",
-						KeepAlive:        "5m",
+						Keepalive:        "5m",
 						DualStackEnabled: false,
 					},
 					TLS: &TLS{

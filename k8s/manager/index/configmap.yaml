@@ -52,8 +52,10 @@ data:
               max_conn_age: ""
               max_conn_age_grace: ""
               max_conn_idle: ""
-              time: ""
-              timeout: ""
+              min_time: 60s
+              permit_without_stream: true
+              time: 120s
+              timeout: 30s
             max_header_list_size: 0
             max_receive_message_size: 0
             max_send_message_size: 0
@@ -248,7 +250,7 @@ data:
           connection_pool:
             enable_dns_resolver: true
             enable_rebalance: true
-            old_conn_close_duration: 3s
+            old_conn_close_duration: 2m
             rebalance_duration: 30m
             size: 3
           backoff:
@@ -273,16 +275,16 @@ data:
             initial_connection_window_size: 0
             initial_window_size: 0
             insecure: true
-            keep_alive:
-              permit_without_stream: false
-              time: ""
-              timeout: ""
+            keepalive:
+              permit_without_stream: true
+              time: 120s
+              timeout: 30s
             max_msg_size: 0
             min_connection_timeout: 20s
             net:
               dialer:
                 dual_stack_enabled: true
-                keep_alive: ""
+                keepalive: ""
                 timeout: ""
               dns:
                 cache_enabled: true
@@ -319,7 +321,7 @@ data:
           connection_pool:
             enable_dns_resolver: true
             enable_rebalance: true
-            old_conn_close_duration: 3s
+            old_conn_close_duration: 2m
             rebalance_duration: 30m
             size: 3
           backoff:
@@ -356,7 +358,7 @@ data:
                 refresh_duration: 30m
               dialer:
                 timeout: ""
-                keep_alive: "15m"
+                keepalive: "15m"
                 dual_stack_enabled: true
               tls:
                 ca: /path/to/ca
@@ -374,10 +376,10 @@ data:
                 tcp_fast_open: true
                 tcp_no_delay: true
                 tcp_quick_ack: true
-            keep_alive:
-              permit_without_stream: false
-              time: ""
-              timeout: ""
+            keepalive:
+              permit_without_stream: true
+              time: 120s
+              timeout: 30s
           tls:
             ca: /path/to/ca
             cert: /path/to/cert

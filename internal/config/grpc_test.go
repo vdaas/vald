@@ -183,7 +183,7 @@ func TestGRPCClient_Bind(t *testing.T) {
 				Insecure:                    true,
 				Timeout:                     "5m",
 				Net:                         &Net{},
-				KeepAlive: &GRPCClientKeepalive{
+				Keepalive: &GRPCClientKeepalive{
 					Time:                "100s",
 					Timeout:             "300s",
 					PermitWithoutStream: true,
@@ -531,7 +531,7 @@ func TestDialOption_Bind(t *testing.T) {
 		Insecure                    bool
 		Timeout                     string
 		Net                         *Net
-		KeepAlive                   *GRPCClientKeepalive
+		Keepalive                   *GRPCClientKeepalive
 	}
 	type want struct {
 		want *DialOption
@@ -588,7 +588,7 @@ func TestDialOption_Bind(t *testing.T) {
 					Insecure:                    insecure,
 					Timeout:                     timeout,
 					Net:                         net,
-					KeepAlive:                   keepAlive,
+					Keepalive:                   keepAlive,
 				},
 				want: want{
 					want: &DialOption{
@@ -606,7 +606,7 @@ func TestDialOption_Bind(t *testing.T) {
 						Insecure:                    insecure,
 						Timeout:                     timeout,
 						Net:                         net,
-						KeepAlive:                   keepAlive,
+						Keepalive:                   keepAlive,
 					},
 				},
 			}
@@ -686,7 +686,7 @@ func TestDialOption_Bind(t *testing.T) {
 				Insecure:                    test.fields.Insecure,
 				Timeout:                     test.fields.Timeout,
 				Net:                         test.fields.Net,
-				KeepAlive:                   test.fields.KeepAlive,
+				Keepalive:                   test.fields.Keepalive,
 			}
 
 			got := d.Bind()
@@ -785,7 +785,7 @@ func TestGRPCClient_Opts(t *testing.T) {
 							CA:      testdata.GetTestdataPath("tls/dummyCa.pem"),
 						},
 					},
-					KeepAlive: &GRPCClientKeepalive{
+					Keepalive: &GRPCClientKeepalive{
 						Time:                "100s",
 						Timeout:             "300s",
 						PermitWithoutStream: true,
@@ -863,7 +863,7 @@ func TestGRPCClient_Opts(t *testing.T) {
 							CA:      testdata.GetTestdataPath("tls/dummyCa.pem"),
 						},
 					},
-					KeepAlive: &GRPCClientKeepalive{
+					Keepalive: &GRPCClientKeepalive{
 						Time:                "100s",
 						Timeout:             "300s",
 						PermitWithoutStream: true,
@@ -942,7 +942,7 @@ func TestGRPCClient_Opts(t *testing.T) {
 							CA:      testdata.GetTestdataPath("tls/dummyCa.pem"),
 						},
 					},
-					KeepAlive: &GRPCClientKeepalive{
+					Keepalive: &GRPCClientKeepalive{
 						Time:                "100s",
 						Timeout:             "300s",
 						PermitWithoutStream: true,
@@ -1022,7 +1022,7 @@ func TestGRPCClient_Opts(t *testing.T) {
 							Enabled: true,
 						},
 					},
-					KeepAlive: &GRPCClientKeepalive{
+					Keepalive: &GRPCClientKeepalive{
 						Time:                "100s",
 						Timeout:             "300s",
 						PermitWithoutStream: true,

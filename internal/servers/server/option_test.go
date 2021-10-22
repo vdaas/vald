@@ -1557,14 +1557,14 @@ func TestWithGRPCKeepaliveMaxConnIdle(t *testing.T) {
 		{
 			name: "not set when max is empty",
 			checkFunc: func(opt Option) error {
-				grpcKeepAlive := &grpcKeepAlive{
+				grpcKeepalive := &grpcKeepalive{
 					maxConnIdle: 10 * time.Second,
 				}
 				got := new(server)
-				got.grpc.keepAlive = grpcKeepAlive
+				got.grpc.keepAlive = grpcKeepalive
 				opt(got)
 
-				if !reflect.DeepEqual(got.grpc.keepAlive, grpcKeepAlive) {
+				if !reflect.DeepEqual(got.grpc.keepAlive, grpcKeepalive) {
 					return errors.New("invalid param was set")
 				}
 				return nil
@@ -1575,14 +1575,14 @@ func TestWithGRPCKeepaliveMaxConnIdle(t *testing.T) {
 			name: "not set when max is invalid",
 			max:  "vald",
 			checkFunc: func(opt Option) error {
-				grpcKeepAlive := &grpcKeepAlive{
+				grpcKeepalive := &grpcKeepalive{
 					maxConnIdle: 10 * time.Second,
 				}
 				got := new(server)
-				got.grpc.keepAlive = grpcKeepAlive
+				got.grpc.keepAlive = grpcKeepalive
 				opt(got)
 
-				if !reflect.DeepEqual(got.grpc.keepAlive, grpcKeepAlive) {
+				if !reflect.DeepEqual(got.grpc.keepAlive, grpcKeepalive) {
 					return errors.New("invalid param was set")
 				}
 				return nil
@@ -1625,14 +1625,14 @@ func TestWithGRPCKeepaliveMaxConnAge(t *testing.T) {
 		{
 			name: "not set when max is empty",
 			checkFunc: func(opt Option) error {
-				grpcKeepAlive := &grpcKeepAlive{
+				grpcKeepalive := &grpcKeepalive{
 					maxConnAge: 10 * time.Second,
 				}
 				got := new(server)
-				got.grpc.keepAlive = grpcKeepAlive
+				got.grpc.keepAlive = grpcKeepalive
 				opt(got)
 
-				if !reflect.DeepEqual(got.grpc.keepAlive, grpcKeepAlive) {
+				if !reflect.DeepEqual(got.grpc.keepAlive, grpcKeepalive) {
 					return errors.New("invalid param was set")
 				}
 				return nil
@@ -1643,14 +1643,14 @@ func TestWithGRPCKeepaliveMaxConnAge(t *testing.T) {
 			name: "not set when max is invalid",
 			max:  "vald",
 			checkFunc: func(opt Option) error {
-				grpcKeepAlive := &grpcKeepAlive{
+				grpcKeepalive := &grpcKeepalive{
 					maxConnAge: 10 * time.Second,
 				}
 				got := new(server)
-				got.grpc.keepAlive = grpcKeepAlive
+				got.grpc.keepAlive = grpcKeepalive
 				opt(got)
 
-				if !reflect.DeepEqual(got.grpc.keepAlive, grpcKeepAlive) {
+				if !reflect.DeepEqual(got.grpc.keepAlive, grpcKeepalive) {
 					return errors.New("invalid param was set")
 				}
 				return nil
@@ -1693,14 +1693,14 @@ func TestWithGRPCKeepaliveMaxConnAgeGrace(t *testing.T) {
 		{
 			name: "not set when max is empty",
 			checkFunc: func(opt Option) error {
-				grpcKeepAlive := &grpcKeepAlive{
+				grpcKeepalive := &grpcKeepalive{
 					maxConnAgeGrace: 10 * time.Second,
 				}
 				got := new(server)
-				got.grpc.keepAlive = grpcKeepAlive
+				got.grpc.keepAlive = grpcKeepalive
 				opt(got)
 
-				if !reflect.DeepEqual(got.grpc.keepAlive, grpcKeepAlive) {
+				if !reflect.DeepEqual(got.grpc.keepAlive, grpcKeepalive) {
 					return errors.New("invalid param was set")
 				}
 				return nil
@@ -1711,14 +1711,14 @@ func TestWithGRPCKeepaliveMaxConnAgeGrace(t *testing.T) {
 			name: "not set when max is invalid",
 			max:  "vald",
 			checkFunc: func(opt Option) error {
-				grpcKeepAlive := &grpcKeepAlive{
+				grpcKeepalive := &grpcKeepalive{
 					maxConnAgeGrace: 10 * time.Second,
 				}
 				got := new(server)
-				got.grpc.keepAlive = grpcKeepAlive
+				got.grpc.keepAlive = grpcKeepalive
 				opt(got)
 
-				if !reflect.DeepEqual(got.grpc.keepAlive, grpcKeepAlive) {
+				if !reflect.DeepEqual(got.grpc.keepAlive, grpcKeepalive) {
 					return errors.New("invalid param was set")
 				}
 				return nil
@@ -1761,14 +1761,14 @@ func TestWithGRPCKeepaliveTime(t *testing.T) {
 		{
 			name: "not set when dur is empty",
 			checkFunc: func(opt Option) error {
-				grpcKeepAlive := &grpcKeepAlive{
+				grpcKeepalive := &grpcKeepalive{
 					t: 10 * time.Second,
 				}
 				got := new(server)
-				got.grpc.keepAlive = grpcKeepAlive
+				got.grpc.keepAlive = grpcKeepalive
 				opt(got)
 
-				if !reflect.DeepEqual(got.grpc.keepAlive, grpcKeepAlive) {
+				if !reflect.DeepEqual(got.grpc.keepAlive, grpcKeepalive) {
 					return errors.New("invalid param was set")
 				}
 				return nil
@@ -1779,14 +1779,14 @@ func TestWithGRPCKeepaliveTime(t *testing.T) {
 			name: "not set when dur is invalid",
 			dur:  "vald",
 			checkFunc: func(opt Option) error {
-				grpcKeepAlive := &grpcKeepAlive{
+				grpcKeepalive := &grpcKeepalive{
 					t: 10 * time.Second,
 				}
 				got := new(server)
-				got.grpc.keepAlive = grpcKeepAlive
+				got.grpc.keepAlive = grpcKeepalive
 				opt(got)
 
-				if !reflect.DeepEqual(got.grpc.keepAlive, grpcKeepAlive) {
+				if !reflect.DeepEqual(got.grpc.keepAlive, grpcKeepalive) {
 					return errors.New("invalid param was set")
 				}
 				return nil
@@ -1829,14 +1829,14 @@ func TestWithGRPCKeepaliveTimeout(t *testing.T) {
 		{
 			name: "returns nothing when dur is empty",
 			checkFunc: func(opt Option) error {
-				grpcKeepAlive := &grpcKeepAlive{
+				grpcKeepalive := &grpcKeepalive{
 					timeout: 10 * time.Second,
 				}
 				got := new(server)
-				got.grpc.keepAlive = grpcKeepAlive
+				got.grpc.keepAlive = grpcKeepalive
 				opt(got)
 
-				if !reflect.DeepEqual(got.grpc.keepAlive, grpcKeepAlive) {
+				if !reflect.DeepEqual(got.grpc.keepAlive, grpcKeepalive) {
 					return errors.New("invalid param was set")
 				}
 				return nil
@@ -1847,14 +1847,14 @@ func TestWithGRPCKeepaliveTimeout(t *testing.T) {
 			name: "returns nothing when dur is invalid",
 			dur:  "vald",
 			checkFunc: func(opt Option) error {
-				grpcKeepAlive := &grpcKeepAlive{
+				grpcKeepalive := &grpcKeepalive{
 					timeout: 10 * time.Second,
 				}
 				got := new(server)
-				got.grpc.keepAlive = grpcKeepAlive
+				got.grpc.keepAlive = grpcKeepalive
 				opt(got)
 
-				if !reflect.DeepEqual(got.grpc.keepAlive, grpcKeepAlive) {
+				if !reflect.DeepEqual(got.grpc.keepAlive, grpcKeepalive) {
 					return errors.New("invalid param was set")
 				}
 				return nil
@@ -2942,6 +2942,238 @@ func TestWithPreStopFunction(t *testing.T) {
 			       test.checkFunc = defaultCheckFunc
 			   }
 			   got := WithPreStopFunction(test.args.f)
+			   obj := new(T)
+			   got(obj)
+			   if err := test.checkFunc(test.want, obj); err != nil {
+			       tt.Errorf("error = %v", err)
+			   }
+			*/
+		})
+	}
+}
+
+func TestWithGRPCKeepaliveMinTime(t *testing.T) {
+	// Change interface type to the type of object you are testing
+	type T = interface{}
+	type args struct {
+		min string
+	}
+	type want struct {
+		obj *T
+		// Uncomment this line if the option returns an error, otherwise delete it
+		// err error
+	}
+	type test struct {
+		name string
+		args args
+		want want
+		// Use the first line if the option returns an error. otherwise use the second line
+		// checkFunc  func(want, *T, error) error
+		// checkFunc  func(want, *T) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+
+	// Uncomment this block if the option returns an error, otherwise delete it
+	/*
+	   defaultCheckFunc := func(w want, obj *T, err error) error {
+	       if !errors.Is(err, w.err) {
+	           return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+	       }
+	       if !reflect.DeepEqual(obj, w.obj) {
+	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
+	       }
+	       return nil
+	   }
+	*/
+
+	// Uncomment this block if the option do not returns an error, otherwise delete it
+	/*
+	   defaultCheckFunc := func(w want, obj *T) error {
+	       if !reflect.DeepEqual(obj, w.obj) {
+	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
+	       }
+	       return nil
+	   }
+	*/
+
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           min: "",
+		       },
+		       want: want {
+		           obj: new(T),
+		       },
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           min: "",
+		           },
+		           want: want {
+		               obj: new(T),
+		           },
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+
+			// Uncomment this block if the option returns an error, otherwise delete it
+			/*
+			   if test.checkFunc == nil {
+			       test.checkFunc = defaultCheckFunc
+			   }
+
+			   got := WithGRPCKeepaliveMinTime(test.args.min)
+			   obj := new(T)
+			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			       tt.Errorf("error = %v", err)
+			   }
+			*/
+
+			// Uncomment this block if the option do not return an error, otherwise delete it
+			/*
+			   if test.checkFunc == nil {
+			       test.checkFunc = defaultCheckFunc
+			   }
+			   got := WithGRPCKeepaliveMinTime(test.args.min)
+			   obj := new(T)
+			   got(obj)
+			   if err := test.checkFunc(test.want, obj); err != nil {
+			       tt.Errorf("error = %v", err)
+			   }
+			*/
+		})
+	}
+}
+
+func TestWithGRPCKeepalivePermitWithoutStream(t *testing.T) {
+	// Change interface type to the type of object you are testing
+	type T = interface{}
+	type args struct {
+		pws bool
+	}
+	type want struct {
+		obj *T
+		// Uncomment this line if the option returns an error, otherwise delete it
+		// err error
+	}
+	type test struct {
+		name string
+		args args
+		want want
+		// Use the first line if the option returns an error. otherwise use the second line
+		// checkFunc  func(want, *T, error) error
+		// checkFunc  func(want, *T) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+
+	// Uncomment this block if the option returns an error, otherwise delete it
+	/*
+	   defaultCheckFunc := func(w want, obj *T, err error) error {
+	       if !errors.Is(err, w.err) {
+	           return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+	       }
+	       if !reflect.DeepEqual(obj, w.obj) {
+	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
+	       }
+	       return nil
+	   }
+	*/
+
+	// Uncomment this block if the option do not returns an error, otherwise delete it
+	/*
+	   defaultCheckFunc := func(w want, obj *T) error {
+	       if !reflect.DeepEqual(obj, w.obj) {
+	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
+	       }
+	       return nil
+	   }
+	*/
+
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           pws: false,
+		       },
+		       want: want {
+		           obj: new(T),
+		       },
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           pws: false,
+		           },
+		           want: want {
+		               obj: new(T),
+		           },
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+
+			// Uncomment this block if the option returns an error, otherwise delete it
+			/*
+			   if test.checkFunc == nil {
+			       test.checkFunc = defaultCheckFunc
+			   }
+
+			   got := WithGRPCKeepalivePermitWithoutStream(test.args.pws)
+			   obj := new(T)
+			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			       tt.Errorf("error = %v", err)
+			   }
+			*/
+
+			// Uncomment this block if the option do not return an error, otherwise delete it
+			/*
+			   if test.checkFunc == nil {
+			       test.checkFunc = defaultCheckFunc
+			   }
+			   got := WithGRPCKeepalivePermitWithoutStream(test.args.pws)
 			   obj := new(T)
 			   got(obj)
 			   if err := test.checkFunc(test.want, obj); err != nil {

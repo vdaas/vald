@@ -92,7 +92,7 @@ type server struct {
 	}
 	grpc struct { // gRPC API
 		srv       *grpc.Server
-		keepAlive *grpcKeepAlive
+		keepAlive *grpcKeepalive
 		opts      []grpc.ServerOption
 		regs      []func(*grpc.Server)
 	}
@@ -117,12 +117,14 @@ type server struct {
 	preStopFunc   func() error // PreStopFunction
 }
 
-type grpcKeepAlive struct {
-	maxConnIdle     time.Duration
-	maxConnAge      time.Duration
-	maxConnAgeGrace time.Duration
-	t               time.Duration
-	timeout         time.Duration
+type grpcKeepalive struct {
+	maxConnIdle         time.Duration
+	maxConnAge          time.Duration
+	maxConnAgeGrace     time.Duration
+	t                   time.Duration
+	timeout             time.Duration
+	minTime             time.Duration
+	permitWithoutStream bool
 }
 
 func New(opts ...Option) (Server, error) {
@@ -188,8 +190,12 @@ func New(opts ...Option) (Server, error) {
 					Time:                  srv.grpc.keepAlive.t,
 					Timeout:               srv.grpc.keepAlive.timeout,
 				}),
+				grpc.KeepaliveEnforcementPolicy(keepalive.EnforcementPolicy{
+					MinTime:             srv.grpc.keepAlive.minTime,
+					PermitWithoutStream: srv.grpc.keepAlive.permitWithoutStream,
+				}),
 			)
-			keepAlive = srv.grpc.keepAlive.timeout
+			keepAlive = srv.grpc.keepAlive.t
 		}
 
 		if srv.tcfg != nil &&
@@ -385,9 +391,7 @@ func (s *server) Shutdown(ctx context.Context) (rerr error) {
 	case REST, GQL:
 		sctx, scancel := context.WithTimeout(ctx, s.sddur)
 		defer scancel()
-
 		s.http.srv.SetKeepAlivesEnabled(false)
-
 		err := s.http.srv.Shutdown(sctx)
 		if err != nil && err != http.ErrServerClosed && err != grpc.ErrServerStopped {
 			rerr = errors.Wrap(rerr, err.Error())
