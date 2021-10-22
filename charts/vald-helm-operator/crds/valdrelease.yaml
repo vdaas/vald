@@ -1160,7 +1160,7 @@ spec:
                                       properties:
                                         dual_stack_enabled:
                                           type: boolean
-                                        keep_alive:
+                                        keepalive:
                                           type: string
                                         timeout:
                                           type: string
@@ -2190,7 +2190,7 @@ spec:
                                   type: integer
                                 insecure:
                                   type: boolean
-                                keep_alive:
+                                keepalive:
                                   type: object
                                   properties:
                                     permit_without_stream:
@@ -2211,7 +2211,7 @@ spec:
                                       properties:
                                         dual_stack_enabled:
                                           type: boolean
-                                        keep_alive:
+                                        keepalive:
                                           type: string
                                         timeout:
                                           type: string
@@ -3130,7 +3130,7 @@ spec:
                               properties:
                                 dual_stack_enabled:
                                   type: boolean
-                                keep_alive:
+                                keepalive:
                                   type: string
                                 timeout:
                                   type: string
@@ -4234,7 +4234,7 @@ spec:
                                           type: integer
                                         insecure:
                                           type: boolean
-                                        keep_alive:
+                                        keepalive:
                                           type: object
                                           properties:
                                             permit_without_stream:
@@ -4255,7 +4255,7 @@ spec:
                                               properties:
                                                 dual_stack_enabled:
                                                   type: boolean
-                                                keep_alive:
+                                                keepalive:
                                                   type: string
                                                 timeout:
                                                   type: string
@@ -4398,7 +4398,7 @@ spec:
                                       type: integer
                                     insecure:
                                       type: boolean
-                                    keep_alive:
+                                    keepalive:
                                       type: object
                                       properties:
                                         permit_without_stream:
@@ -4419,7 +4419,7 @@ spec:
                                           properties:
                                             dual_stack_enabled:
                                               type: boolean
-                                            keep_alive:
+                                            keepalive:
                                               type: string
                                             timeout:
                                               type: string
@@ -4557,7 +4557,7 @@ spec:
                                           type: integer
                                         insecure:
                                           type: boolean
-                                        keep_alive:
+                                        keepalive:
                                           type: object
                                           properties:
                                             permit_without_stream:
@@ -4578,7 +4578,7 @@ spec:
                                               properties:
                                                 dual_stack_enabled:
                                                   type: boolean
-                                                keep_alive:
+                                                keepalive:
                                                   type: string
                                                 timeout:
                                                   type: string
@@ -5687,7 +5687,7 @@ spec:
                                           type: integer
                                         insecure:
                                           type: boolean
-                                        keep_alive:
+                                        keepalive:
                                           type: object
                                           properties:
                                             permit_without_stream:
@@ -5708,7 +5708,7 @@ spec:
                                               properties:
                                                 dual_stack_enabled:
                                                   type: boolean
-                                                keep_alive:
+                                                keepalive:
                                                   type: string
                                                 timeout:
                                                   type: string
@@ -5843,7 +5843,7 @@ spec:
                                           type: integer
                                         insecure:
                                           type: boolean
-                                        keep_alive:
+                                        keepalive:
                                           type: object
                                           properties:
                                             permit_without_stream:
@@ -5864,7 +5864,7 @@ spec:
                                               properties:
                                                 dual_stack_enabled:
                                                   type: boolean
-                                                keep_alive:
+                                                keepalive:
                                                   type: string
                                                 timeout:
                                                   type: string
@@ -6996,7 +6996,7 @@ spec:
                                           type: integer
                                         insecure:
                                           type: boolean
-                                        keep_alive:
+                                        keepalive:
                                           type: object
                                           properties:
                                             permit_without_stream:
@@ -7017,7 +7017,7 @@ spec:
                                               properties:
                                                 dual_stack_enabled:
                                                   type: boolean
-                                                keep_alive:
+                                                keepalive:
                                                   type: string
                                                 timeout:
                                                   type: string
@@ -7152,7 +7152,7 @@ spec:
                                           type: integer
                                         insecure:
                                           type: boolean
-                                        keep_alive:
+                                        keepalive:
                                           type: object
                                           properties:
                                             permit_without_stream:
@@ -7173,7 +7173,7 @@ spec:
                                               properties:
                                                 dual_stack_enabled:
                                                   type: boolean
-                                                keep_alive:
+                                                keepalive:
                                                   type: string
                                                 timeout:
                                                   type: string

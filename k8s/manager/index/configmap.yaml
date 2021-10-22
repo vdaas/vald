@@ -275,7 +275,7 @@ data:
             initial_connection_window_size: 0
             initial_window_size: 0
             insecure: true
-            keep_alive:
+            keepalive:
               permit_without_stream: true
               time: 120s
               timeout: 30s
@@ -284,7 +284,7 @@ data:
             net:
               dialer:
                 dual_stack_enabled: true
-                keep_alive: ""
+                keepalive: ""
                 timeout: ""
               dns:
                 cache_enabled: true
@@ -358,7 +358,7 @@ data:
                 refresh_duration: 30m
               dialer:
                 timeout: ""
-                keep_alive: "15m"
+                keepalive: "15m"
                 dual_stack_enabled: true
               tls:
                 ca: /path/to/ca
@@ -376,7 +376,7 @@ data:
                 tcp_fast_open: true
                 tcp_no_delay: true
                 tcp_quick_ack: true
-            keep_alive:
+            keepalive:
               permit_without_stream: true
               time: 120s
               timeout: 30s

@@ -34,7 +34,7 @@ type Net struct {
 // Dialer represents the configuration for dial.
 type Dialer struct {
 	Timeout          string `yaml:"timeout"            json:"timeout,omitempty"`
-	KeepAlive        string `yaml:"keep_alive"         json:"keep_alive,omitempty"`
+	KeepAlive        string `yaml:"keepalive"          json:"keepalive,omitempty"`
 	FallbackDelay    string `yaml:"fallback_delay"     json:"fallback_delay,omitempty"`
 	DualStackEnabled bool   `yaml:"dual_stack_enabled" json:"dual_stack_enabled,omitempty"`
 }

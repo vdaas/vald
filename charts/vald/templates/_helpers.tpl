@@ -582,7 +582,7 @@ dial_option:
     dialer:
       {{- if .Values.dial_option.net.dialer }}
       timeout: {{ default .default.dial_option.net.dialer.timeout .Values.dial_option.net.dialer.timeout | quote }}
-      keep_alive: {{ default .default.dial_option.net.dialer.keep_alive .Values.dial_option.net.dialer.keep_alive | quote }}
+      keepalive: {{ default .default.dial_option.net.dialer.keepalive .Values.dial_option.net.dialer.keepalive | quote }}
       dual_stack_enabled: {{ default .default.dial_option.net.dialer.dual_stack_enabled .Values.dial_option.net.dialer.dual_stack_enabled }}
       {{- else }}
       {{- toYaml .default.dial_option.net.dialer | nindent 6 }}
@@ -614,13 +614,13 @@ dial_option:
     {{- else }}
     {{- toYaml .default.dial_option.net | nindent 4 }}
     {{- end }}
-  keep_alive:
-    {{- if .Values.dial_option.keep_alive }}
-    time: {{ default .default.dial_option.keep_alive.time .Values.dial_option.keep_alive.time | quote }}
-    timeout: {{ default .default.dial_option.keep_alive.timeout .Values.dial_option.keep_alive.timeout | quote }}
-    permit_without_stream: {{ default .default.dial_option.keep_alive.permit_without_stream .Values.dial_option.keep_alive.permit_without_stream }}
+  keepalive:
+    {{- if .Values.dial_option.keepalive }}
+    time: {{ default .default.dial_option.keepalive.time .Values.dial_option.keepalive.time | quote }}
+    timeout: {{ default .default.dial_option.keepalive.timeout .Values.dial_option.keepalive.timeout | quote }}
+    permit_without_stream: {{ default .default.dial_option.keepalive.permit_without_stream .Values.dial_option.keepalive.permit_without_stream }}
     {{- else }}
-    {{- toYaml .default.dial_option.keep_alive | nindent 4 }}
+    {{- toYaml .default.dial_option.keepalive | nindent 4 }}
     {{- end }}
   {{- else }}
   {{- toYaml .default.dial_option | nindent 2 }}

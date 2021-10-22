@@ -163,7 +163,7 @@ discoverer:
   tcp:
     dialer:
       dual_stack_enabled: false
-      keep_alive: 10m
+      keepalive: 10m
       timeout: 30s
     dns:
       cache_enabled: true

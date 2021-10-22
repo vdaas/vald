@@ -276,7 +276,7 @@ data:
             initial_connection_window_size: 0
             initial_window_size: 0
             insecure: true
-            keep_alive:
+            keepalive:
               permit_without_stream: true
               time: 120s
               timeout: 30s
@@ -285,7 +285,7 @@ data:
             net:
               dialer:
                 dual_stack_enabled: true
-                keep_alive: ""
+                keepalive: ""
                 timeout: ""
               dns:
                 cache_enabled: true
@@ -347,7 +347,7 @@ data:
             initial_connection_window_size: 0
             initial_window_size: 0
             insecure: true
-            keep_alive:
+            keepalive:
               permit_without_stream: true
               time: 120s
               timeout: 30s
@@ -356,7 +356,7 @@ data:
             net:
               dialer:
                 dual_stack_enabled: true
-                keep_alive: ""
+                keepalive: ""
                 timeout: ""
               dns:
                 cache_enabled: true

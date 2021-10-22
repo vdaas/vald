@@ -59,7 +59,7 @@ type DialOption struct {
 	Insecure                    bool                 `json:"insecure"                       yaml:"insecure"`
 	Timeout                     string               `json:"timeout"                        yaml:"timeout"`
 	Net                         *Net                 `json:"net"                            yaml:"net"`
-	KeepAlive                   *GRPCClientKeepalive `json:"keep_alive"                     yaml:"keep_alive"`
+	KeepAlive                   *GRPCClientKeepalive `json:"keepalive"                      yaml:"keepalive"`
 }
 
 // ConnectionPool represents the configurations for connection pool.
