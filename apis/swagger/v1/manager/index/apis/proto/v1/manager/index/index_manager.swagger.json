@@ -13,6 +13,7 @@
   "paths": {
     "/index/info": {
       "get": {
+        "summary": "Represent the RPC to get the index information.",
         "operationId": "Index_IndexInfo",
         "responses": {
           "200": {
@@ -40,19 +41,24 @@
       "properties": {
         "stored": {
           "type": "integer",
-          "format": "int64"
+          "format": "int64",
+          "description": "The stored index count."
         },
         "uncommitted": {
           "type": "integer",
-          "format": "int64"
+          "format": "int64",
+          "description": "The uncommitted index count."
         },
         "indexing": {
-          "type": "boolean"
+          "type": "boolean",
+          "description": "The indexing index count."
         },
         "saving": {
-          "type": "boolean"
+          "type": "boolean",
+          "description": "The saving index count."
         }
-      }
+      },
+      "description": "Represent the index count message."
     },
     "protobufAny": {
       "type": "object",

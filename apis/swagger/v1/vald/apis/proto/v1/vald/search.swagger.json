@@ -13,6 +13,7 @@
   "paths": {
     "/search": {
       "post": {
+        "summary": "A method to search indexed vectors by a raw vector.",
         "operationId": "Search_Search",
         "responses": {
           "200": {
@@ -45,6 +46,7 @@
     },
     "/search/id": {
       "post": {
+        "summary": "A method to search indexed vectors by ID.",
         "operationId": "Search_SearchByID",
         "responses": {
           "200": {
@@ -77,6 +79,7 @@
     },
     "/search/id/multiple": {
       "post": {
+        "summary": "A method to search indexed vectors by multiple IDs in a single request.",
         "operationId": "Search_MultiSearchByID",
         "responses": {
           "200": {
@@ -109,6 +112,7 @@
     },
     "/search/multiple": {
       "post": {
+        "summary": "A method to search indexed vectors by multiple vectors in a single request.",
         "operationId": "Search_MultiSearch",
         "responses": {
           "200": {
@@ -145,36 +149,45 @@
       "type": "object",
       "properties": {
         "host": {
-          "type": "string"
+          "type": "string",
+          "description": "The target hostname."
         },
         "port": {
           "type": "integer",
-          "format": "int64"
+          "format": "int64",
+          "description": "The target port."
         }
-      }
+      },
+      "description": "Represent the target filter server."
     },
     "ObjectDistance": {
       "type": "object",
       "properties": {
         "id": {
-          "type": "string"
+          "type": "string",
+          "description": "The vector ID."
         },
         "distance": {
           "type": "number",
-          "format": "float"
+          "format": "float",
+          "description": "The distance."
         }
-      }
+      },
+      "description": "Represent the ID and distance pair."
     },
     "SearchIDRequest": {
       "type": "object",
       "properties": {
         "id": {
-          "type": "string"
+          "type": "string",
+          "description": "The vector ID to be searched."
         },
         "config": {
-          "$ref": "#/definitions/v1SearchConfig"
+          "$ref": "#/definitions/v1SearchConfig",
+          "description": "The configuration of the search request."
         }
-      }
+      },
+      "description": "Represent a search by ID request."
     },
     "SearchMultiIDRequest": {
       "type": "object",
@@ -183,23 +196,28 @@
           "type": "array",
           "items": {
             "$ref": "#/definitions/SearchIDRequest"
-          }
+          },
+          "description": "Represent the multiple search by ID request content."
         }
-      }
+      },
+      "description": "Represent the multiple search by ID request."
     },
     "SearchResponse": {
       "type": "object",
       "properties": {
         "requestId": {
-          "type": "string"
+          "type": "string",
+          "description": "The unique request ID."
         },
         "results": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/ObjectDistance"
-          }
+          },
+          "description": "Search results."
         }
-      }
+      },
+      "description": "Represent a search response."
     },
     "SearchResponses": {
       "type": "object",
@@ -208,20 +226,25 @@
           "type": "array",
           "items": {
             "$ref": "#/definitions/SearchResponse"
-          }
+          },
+          "description": "Represent the multiple search response content."
         }
-      }
+      },
+      "description": "Represent multiple search responses."
     },
     "SearchStreamResponse": {
       "type": "object",
       "properties": {
         "response": {
-          "$ref": "#/definitions/SearchResponse"
+          "$ref": "#/definitions/SearchResponse",
+          "description": "Represent the search response."
         },
         "status": {
-          "$ref": "#/definitions/rpcStatus"
+          "$ref": "#/definitions/rpcStatus",
+          "description": "The RPC error status."
         }
-      }
+      },
+      "description": "Represent stream search response."
     },
     "protobufAny": {
       "type": "object",
@@ -313,39 +336,49 @@
           "type": "array",
           "items": {
             "$ref": "#/definitions/FilterTarget"
-          }
+          },
+          "description": "Represent the filter target configuration."
         }
-      }
+      },
+      "description": "Represent filter configuration."
     },
     "v1SearchConfig": {
       "type": "object",
       "properties": {
         "requestId": {
-          "type": "string"
+          "type": "string",
+          "description": "Unique request ID."
         },
         "num": {
           "type": "integer",
-          "format": "int64"
+          "format": "int64",
+          "description": "Maximum number of result to be returned."
         },
         "radius": {
           "type": "number",
-          "format": "float"
+          "format": "float",
+          "description": "Search radius."
         },
         "epsilon": {
           "type": "number",
-          "format": "float"
+          "format": "float",
+          "description": "Search coefficient."
         },
         "timeout": {
           "type": "string",
-          "format": "int64"
+          "format": "int64",
+          "description": "Search timeout in nanoseconds."
         },
         "ingressFilters": {
-          "$ref": "#/definitions/v1FilterConfig"
+          "$ref": "#/definitions/v1FilterConfig",
+          "description": "Ingress filter configurations."
         },
         "egressFilters": {
-          "$ref": "#/definitions/v1FilterConfig"
+          "$ref": "#/definitions/v1FilterConfig",
+          "description": "Egress filter configurations."
         }
-      }
+      },
+      "description": "Represent search configuration."
     },
     "v1SearchMultiRequest": {
       "type": "object",
@@ -354,9 +387,11 @@
           "type": "array",
           "items": {
             "$ref": "#/definitions/v1SearchRequest"
-          }
+          },
+          "description": "Represent the multiple search request content."
         }
-      }
+      },
+      "description": "Represent the multiple search request."
     },
     "v1SearchRequest": {
       "type": "object",
@@ -366,12 +401,15 @@
           "items": {
             "type": "number",
             "format": "float"
-          }
+          },
+          "description": "The vector to be searched."
         },
         "config": {
-          "$ref": "#/definitions/v1SearchConfig"
+          "$ref": "#/definitions/v1SearchConfig",
+          "description": "The configuration of the search request."
         }
-      }
+      },
+      "description": "Represent a search request."
     }
   }
 }

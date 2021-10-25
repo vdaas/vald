@@ -13,6 +13,7 @@
   "paths": {
     "/update": {
       "post": {
+        "summary": "A method to update an indexed vector.",
         "operationId": "Update_Update",
         "responses": {
           "200": {
@@ -45,6 +46,7 @@
     },
     "/update/multiple": {
       "post": {
+        "summary": "A method to update multiple indexed vectors in a single request.",
         "operationId": "Update_MultiUpdate",
         "responses": {
           "200": {
@@ -81,24 +83,30 @@
       "type": "object",
       "properties": {
         "host": {
-          "type": "string"
+          "type": "string",
+          "description": "The target hostname."
         },
         "port": {
           "type": "integer",
-          "format": "int64"
+          "format": "int64",
+          "description": "The target port."
         }
-      }
+      },
+      "description": "Represent the target filter server."
     },
     "ObjectStreamLocation": {
       "type": "object",
       "properties": {
         "location": {
-          "$ref": "#/definitions/v1ObjectLocation"
+          "$ref": "#/definitions/v1ObjectLocation",
+          "description": "The vector location."
         },
         "status": {
-          "$ref": "#/definitions/rpcStatus"
+          "$ref": "#/definitions/rpcStatus",
+          "description": "The RPC error status."
         }
-      }
+      },
+      "description": "Represent the stream response of the vector location."
     },
     "protobufAny": {
       "type": "object",
@@ -190,26 +198,32 @@
           "type": "array",
           "items": {
             "$ref": "#/definitions/FilterTarget"
-          }
+          },
+          "description": "Represent the filter target configuration."
         }
-      }
+      },
+      "description": "Represent filter configuration."
     },
     "v1ObjectLocation": {
       "type": "object",
       "properties": {
         "name": {
-          "type": "string"
+          "type": "string",
+          "description": "The name of the location."
         },
         "uuid": {
-          "type": "string"
+          "type": "string",
+          "description": "The UUID of the vector."
         },
         "ips": {
           "type": "array",
           "items": {
             "type": "string"
-          }
+          },
+          "description": "The IP list."
         }
-      }
+      },
+      "description": "Represent the vector location."
     },
     "v1ObjectLocations": {
       "type": "object",
@@ -220,37 +234,45 @@
             "$ref": "#/definitions/v1ObjectLocation"
           }
         }
-      }
+      },
+      "description": "Represent multiple vector locations."
     },
     "v1ObjectVector": {
       "type": "object",
       "properties": {
         "id": {
-          "type": "string"
+          "type": "string",
+          "description": "The vector ID."
         },
         "vector": {
           "type": "array",
           "items": {
             "type": "number",
             "format": "float"
-          }
+          },
+          "description": "The vector."
         }
-      }
+      },
+      "description": "Represent a vector."
     },
     "v1UpdateConfig": {
       "type": "object",
       "properties": {
         "skipStrictExistCheck": {
-          "type": "boolean"
+          "type": "boolean",
+          "description": "A flag to skip exist check during update operation."
         },
         "filters": {
-          "$ref": "#/definitions/v1FilterConfig"
+          "$ref": "#/definitions/v1FilterConfig",
+          "description": "Filter configuration."
         },
         "timestamp": {
           "type": "string",
-          "format": "int64"
+          "format": "int64",
+          "description": "Update timestamp."
         }
-      }
+      },
+      "description": "Represent the update configuration."
     },
     "v1UpdateMultiRequest": {
       "type": "object",
@@ -259,20 +281,25 @@
           "type": "array",
           "items": {
             "$ref": "#/definitions/v1UpdateRequest"
-          }
+          },
+          "description": "Represent the multiple update request content."
         }
-      }
+      },
+      "description": "Represent the multiple update request."
     },
     "v1UpdateRequest": {
       "type": "object",
       "properties": {
         "vector": {
-          "$ref": "#/definitions/v1ObjectVector"
+          "$ref": "#/definitions/v1ObjectVector",
+          "description": "The vector to be updated."
         },
         "config": {
-          "$ref": "#/definitions/v1UpdateConfig"
+          "$ref": "#/definitions/v1UpdateConfig",
+          "description": "The configuration of the update request."
         }
-      }
+      },
+      "description": "Represent the update request."
     }
   }
 }

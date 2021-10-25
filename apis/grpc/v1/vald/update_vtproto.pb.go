@@ -42,8 +42,11 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type UpdateClient interface {
+	// A method to update an indexed vector.
 	Update(ctx context.Context, in *payload.Update_Request, opts ...grpc.CallOption) (*payload.Object_Location, error)
+	// A method to update multiple indexed vectors by bidirectional streaming.
 	StreamUpdate(ctx context.Context, opts ...grpc.CallOption) (Update_StreamUpdateClient, error)
+	// A method to update multiple indexed vectors in a single request.
 	MultiUpdate(ctx context.Context, in *payload.Update_MultiRequest, opts ...grpc.CallOption) (*payload.Object_Locations, error)
 }
 
@@ -108,8 +111,11 @@ func (c *updateClient) MultiUpdate(ctx context.Context, in *payload.Update_Multi
 // All implementations must embed UnimplementedUpdateServer
 // for forward compatibility
 type UpdateServer interface {
+	// A method to update an indexed vector.
 	Update(context.Context, *payload.Update_Request) (*payload.Object_Location, error)
+	// A method to update multiple indexed vectors by bidirectional streaming.
 	StreamUpdate(Update_StreamUpdateServer) error
+	// A method to update multiple indexed vectors in a single request.
 	MultiUpdate(context.Context, *payload.Update_MultiRequest) (*payload.Object_Locations, error)
 	mustEmbedUnimplementedUpdateServer()
 }

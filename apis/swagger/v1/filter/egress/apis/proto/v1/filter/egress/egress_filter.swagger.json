@@ -13,6 +13,7 @@
   "paths": {
     "/filter/egress/distance": {
       "post": {
+        "summary": "Represent the RPC to filter the distance.",
         "operationId": "Filter_FilterDistance",
         "responses": {
           "200": {
@@ -45,6 +46,7 @@
     },
     "/filter/egress/vector": {
       "post": {
+        "summary": "Represent the RPC to filter the vector.",
         "operationId": "Filter_FilterVector",
         "responses": {
           "200": {
@@ -81,13 +83,16 @@
       "type": "object",
       "properties": {
         "id": {
-          "type": "string"
+          "type": "string",
+          "description": "The vector ID."
         },
         "distance": {
           "type": "number",
-          "format": "float"
+          "format": "float",
+          "description": "The distance."
         }
-      }
+      },
+      "description": "Represent the ID and distance pair."
     },
     "protobufAny": {
       "type": "object",
@@ -129,16 +134,19 @@
       "type": "object",
       "properties": {
         "id": {
-          "type": "string"
+          "type": "string",
+          "description": "The vector ID."
         },
         "vector": {
           "type": "array",
           "items": {
             "type": "number",
             "format": "float"
-          }
+          },
+          "description": "The vector."
         }
-      }
+      },
+      "description": "Represent a vector."
     }
   }
 }
