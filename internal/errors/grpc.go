@@ -62,4 +62,8 @@ var (
 	ErrGRPCUnexpectedStatusError = func(code string, err error) error {
 		return Wrapf(err, "unexcepted error detected: code %s", code)
 	}
+
+	ErrInvalidProtoMessageType = func(v interface{}) error {
+		return Errorf("failed to marshal/unmarshal proto message, message type is %T (missing vtprotobuf/protobuf helpers)", v)
+	}
 )

@@ -20,7 +20,6 @@ package grpc
 import (
 	"time"
 
-	vgrpc "github.com/planetscale/vtprotobuf/codec/grpc"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/encoding"
@@ -29,7 +28,7 @@ import (
 )
 
 func init() {
-	encoding.RegisterCodec(vgrpc.Codec{})
+	encoding.RegisterCodec(Codec{})
 }
 
 type (
