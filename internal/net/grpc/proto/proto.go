@@ -30,6 +30,14 @@ type (
 	Name      = protoreflect.Name
 )
 
+func Marshal(m Message) ([]byte, error) {
+	return proto.Marshal(m)
+}
+
+func Unmarshal(data []byte, v Message) error {
+	return proto.Unmarshal(data, v)
+}
+
 func Clone(m Message) Message {
 	return proto.Clone(m)
 }
