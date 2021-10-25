@@ -13,6 +13,7 @@
   "paths": {
     "/upsert": {
       "post": {
+        "summary": "A method to insert/update a vector.",
         "operationId": "Upsert_Upsert",
         "responses": {
           "200": {
@@ -45,6 +46,7 @@
     },
     "/upsert/multiple": {
       "post": {
+        "summary": "A method to insert/update multiple vectors in a single request.",
         "operationId": "Upsert_MultiUpsert",
         "responses": {
           "200": {
@@ -81,24 +83,30 @@
       "type": "object",
       "properties": {
         "host": {
-          "type": "string"
+          "type": "string",
+          "description": "The target hostname."
         },
         "port": {
           "type": "integer",
-          "format": "int64"
+          "format": "int64",
+          "description": "The target port."
         }
-      }
+      },
+      "description": "Represent the target filter server."
     },
     "ObjectStreamLocation": {
       "type": "object",
       "properties": {
         "location": {
-          "$ref": "#/definitions/v1ObjectLocation"
+          "$ref": "#/definitions/v1ObjectLocation",
+          "description": "The vector location."
         },
         "status": {
-          "$ref": "#/definitions/rpcStatus"
+          "$ref": "#/definitions/rpcStatus",
+          "description": "The RPC error status."
         }
-      }
+      },
+      "description": "Represent the stream response of the vector location."
     },
     "protobufAny": {
       "type": "object",
@@ -190,26 +198,32 @@
           "type": "array",
           "items": {
             "$ref": "#/definitions/FilterTarget"
-          }
+          },
+          "description": "Represent the filter target configuration."
         }
-      }
+      },
+      "description": "Represent filter configuration."
     },
     "v1ObjectLocation": {
       "type": "object",
       "properties": {
         "name": {
-          "type": "string"
+          "type": "string",
+          "description": "The name of the location."
         },
         "uuid": {
-          "type": "string"
+          "type": "string",
+          "description": "The UUID of the vector."
         },
         "ips": {
           "type": "array",
           "items": {
             "type": "string"
-          }
+          },
+          "description": "The IP list."
         }
-      }
+      },
+      "description": "Represent the vector location."
     },
     "v1ObjectLocations": {
       "type": "object",
@@ -220,37 +234,45 @@
             "$ref": "#/definitions/v1ObjectLocation"
           }
         }
-      }
+      },
+      "description": "Represent multiple vector locations."
     },
     "v1ObjectVector": {
       "type": "object",
       "properties": {
         "id": {
-          "type": "string"
+          "type": "string",
+          "description": "The vector ID."
         },
         "vector": {
           "type": "array",
           "items": {
             "type": "number",
             "format": "float"
-          }
+          },
+          "description": "The vector."
         }
-      }
+      },
+      "description": "Represent a vector."
     },
     "v1UpsertConfig": {
       "type": "object",
       "properties": {
         "skipStrictExistCheck": {
-          "type": "boolean"
+          "type": "boolean",
+          "description": "A flag to skip exist check during upsert operation."
         },
         "filters": {
-          "$ref": "#/definitions/v1FilterConfig"
+          "$ref": "#/definitions/v1FilterConfig",
+          "description": "Filter configuration."
         },
         "timestamp": {
           "type": "string",
-          "format": "int64"
+          "format": "int64",
+          "description": "Upsert timestamp."
         }
-      }
+      },
+      "description": "Represent the upsert configuration."
     },
     "v1UpsertMultiRequest": {
       "type": "object",
@@ -259,20 +281,25 @@
           "type": "array",
           "items": {
             "$ref": "#/definitions/v1UpsertRequest"
-          }
+          },
+          "description": "Represent the multiple upsert request content."
         }
-      }
+      },
+      "description": "Represent mthe ultiple upsert request."
     },
     "v1UpsertRequest": {
       "type": "object",
       "properties": {
         "vector": {
-          "$ref": "#/definitions/v1ObjectVector"
+          "$ref": "#/definitions/v1ObjectVector",
+          "description": "The vector to be upserted."
         },
         "config": {
-          "$ref": "#/definitions/v1UpsertConfig"
+          "$ref": "#/definitions/v1UpsertConfig",
+          "description": "The configuration of the upsert request."
         }
-      }
+      },
+      "description": "Represent the upsert request."
     }
   }
 }

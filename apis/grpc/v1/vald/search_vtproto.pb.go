@@ -42,11 +42,17 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type SearchClient interface {
+	// A method to search indexed vectors by a raw vector.
 	Search(ctx context.Context, in *payload.Search_Request, opts ...grpc.CallOption) (*payload.Search_Response, error)
+	// A method to search indexed vectors by ID.
 	SearchByID(ctx context.Context, in *payload.Search_IDRequest, opts ...grpc.CallOption) (*payload.Search_Response, error)
+	// A method to search indexed vectors by multiple vectors.
 	StreamSearch(ctx context.Context, opts ...grpc.CallOption) (Search_StreamSearchClient, error)
+	// A method to search indexed vectors by multiple IDs.
 	StreamSearchByID(ctx context.Context, opts ...grpc.CallOption) (Search_StreamSearchByIDClient, error)
+	// A method to search indexed vectors by multiple vectors in a single request.
 	MultiSearch(ctx context.Context, in *payload.Search_MultiRequest, opts ...grpc.CallOption) (*payload.Search_Responses, error)
+	// A method to search indexed vectors by multiple IDs in a single request.
 	MultiSearchByID(ctx context.Context, in *payload.Search_MultiIDRequest, opts ...grpc.CallOption) (*payload.Search_Responses, error)
 }
 
@@ -160,11 +166,17 @@ func (c *searchClient) MultiSearchByID(ctx context.Context, in *payload.Search_M
 // All implementations must embed UnimplementedSearchServer
 // for forward compatibility
 type SearchServer interface {
+	// A method to search indexed vectors by a raw vector.
 	Search(context.Context, *payload.Search_Request) (*payload.Search_Response, error)
+	// A method to search indexed vectors by ID.
 	SearchByID(context.Context, *payload.Search_IDRequest) (*payload.Search_Response, error)
+	// A method to search indexed vectors by multiple vectors.
 	StreamSearch(Search_StreamSearchServer) error
+	// A method to search indexed vectors by multiple IDs.
 	StreamSearchByID(Search_StreamSearchByIDServer) error
+	// A method to search indexed vectors by multiple vectors in a single request.
 	MultiSearch(context.Context, *payload.Search_MultiRequest) (*payload.Search_Responses, error)
+	// A method to search indexed vectors by multiple IDs in a single request.
 	MultiSearchByID(context.Context, *payload.Search_MultiIDRequest) (*payload.Search_Responses, error)
 	mustEmbedUnimplementedSearchServer()
 }

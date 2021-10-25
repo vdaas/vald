@@ -42,6 +42,7 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type IndexClient interface {
+	// Represent the RPC to get the index information.
 	IndexInfo(ctx context.Context, in *payload.Empty, opts ...grpc.CallOption) (*payload.Info_Index_Count, error)
 }
 
@@ -66,6 +67,7 @@ func (c *indexClient) IndexInfo(ctx context.Context, in *payload.Empty, opts ...
 // All implementations must embed UnimplementedIndexServer
 // for forward compatibility
 type IndexServer interface {
+	// Represent the RPC to get the index information.
 	IndexInfo(context.Context, *payload.Empty) (*payload.Info_Index_Count, error)
 	mustEmbedUnimplementedIndexServer()
 }

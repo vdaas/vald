@@ -42,17 +42,29 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type FilterClient interface {
+	// A method to search object.
 	SearchObject(ctx context.Context, in *payload.Search_ObjectRequest, opts ...grpc.CallOption) (*payload.Search_Response, error)
+	// A method to search multiple objects.
 	MultiSearchObject(ctx context.Context, in *payload.Search_MultiObjectRequest, opts ...grpc.CallOption) (*payload.Search_Responses, error)
+	// A method to search object by bidirectional streaming.
 	StreamSearchObject(ctx context.Context, opts ...grpc.CallOption) (Filter_StreamSearchObjectClient, error)
+	// A method insert object.
 	InsertObject(ctx context.Context, in *payload.Insert_ObjectRequest, opts ...grpc.CallOption) (*payload.Object_Location, error)
+	// Represent the streaming RPC to insert object by bidirectional streaming.
 	StreamInsertObject(ctx context.Context, opts ...grpc.CallOption) (Filter_StreamInsertObjectClient, error)
+	// A method to insert multiple objects.
 	MultiInsertObject(ctx context.Context, in *payload.Insert_MultiObjectRequest, opts ...grpc.CallOption) (*payload.Object_Locations, error)
+	// A method to update object.
 	UpdateObject(ctx context.Context, in *payload.Update_ObjectRequest, opts ...grpc.CallOption) (*payload.Object_Location, error)
+	// A method to update object by bidirectional streaming.
 	StreamUpdateObject(ctx context.Context, opts ...grpc.CallOption) (Filter_StreamUpdateObjectClient, error)
+	// A method to update multiple objects.
 	MultiUpdateObject(ctx context.Context, in *payload.Update_MultiObjectRequest, opts ...grpc.CallOption) (*payload.Object_Locations, error)
+	// A method to upsert object.
 	UpsertObject(ctx context.Context, in *payload.Upsert_ObjectRequest, opts ...grpc.CallOption) (*payload.Object_Location, error)
+	// A method to upsert object by bidirectional streaming.
 	StreamUpsertObject(ctx context.Context, opts ...grpc.CallOption) (Filter_StreamUpsertObjectClient, error)
+	// A method to upsert multiple objects.
 	MultiUpsertObject(ctx context.Context, in *payload.Upsert_MultiObjectRequest, opts ...grpc.CallOption) (*payload.Object_Locations, error)
 }
 
@@ -264,17 +276,29 @@ func (c *filterClient) MultiUpsertObject(ctx context.Context, in *payload.Upsert
 // All implementations must embed UnimplementedFilterServer
 // for forward compatibility
 type FilterServer interface {
+	// A method to search object.
 	SearchObject(context.Context, *payload.Search_ObjectRequest) (*payload.Search_Response, error)
+	// A method to search multiple objects.
 	MultiSearchObject(context.Context, *payload.Search_MultiObjectRequest) (*payload.Search_Responses, error)
+	// A method to search object by bidirectional streaming.
 	StreamSearchObject(Filter_StreamSearchObjectServer) error
+	// A method insert object.
 	InsertObject(context.Context, *payload.Insert_ObjectRequest) (*payload.Object_Location, error)
+	// Represent the streaming RPC to insert object by bidirectional streaming.
 	StreamInsertObject(Filter_StreamInsertObjectServer) error
+	// A method to insert multiple objects.
 	MultiInsertObject(context.Context, *payload.Insert_MultiObjectRequest) (*payload.Object_Locations, error)
+	// A method to update object.
 	UpdateObject(context.Context, *payload.Update_ObjectRequest) (*payload.Object_Location, error)
+	// A method to update object by bidirectional streaming.
 	StreamUpdateObject(Filter_StreamUpdateObjectServer) error
+	// A method to update multiple objects.
 	MultiUpdateObject(context.Context, *payload.Update_MultiObjectRequest) (*payload.Object_Locations, error)
+	// A method to upsert object.
 	UpsertObject(context.Context, *payload.Upsert_ObjectRequest) (*payload.Object_Location, error)
+	// A method to upsert object by bidirectional streaming.
 	StreamUpsertObject(Filter_StreamUpsertObjectServer) error
+	// A method to upsert multiple objects.
 	MultiUpsertObject(context.Context, *payload.Upsert_MultiObjectRequest) (*payload.Object_Locations, error)
 	mustEmbedUnimplementedFilterServer()
 }

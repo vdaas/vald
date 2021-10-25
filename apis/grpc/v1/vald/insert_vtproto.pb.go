@@ -42,8 +42,11 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type InsertClient interface {
+	// A method to add a new single vector.
 	Insert(ctx context.Context, in *payload.Insert_Request, opts ...grpc.CallOption) (*payload.Object_Location, error)
+	// A method to add new multiple vectors by bidirectional streaming.
 	StreamInsert(ctx context.Context, opts ...grpc.CallOption) (Insert_StreamInsertClient, error)
+	// A method to add new multiple vectors in a single request.
 	MultiInsert(ctx context.Context, in *payload.Insert_MultiRequest, opts ...grpc.CallOption) (*payload.Object_Locations, error)
 }
 
@@ -108,8 +111,11 @@ func (c *insertClient) MultiInsert(ctx context.Context, in *payload.Insert_Multi
 // All implementations must embed UnimplementedInsertServer
 // for forward compatibility
 type InsertServer interface {
+	// A method to add a new single vector.
 	Insert(context.Context, *payload.Insert_Request) (*payload.Object_Location, error)
+	// A method to add new multiple vectors by bidirectional streaming.
 	StreamInsert(Insert_StreamInsertServer) error
+	// A method to add new multiple vectors in a single request.
 	MultiInsert(context.Context, *payload.Insert_MultiRequest) (*payload.Object_Locations, error)
 	mustEmbedUnimplementedInsertServer()
 }

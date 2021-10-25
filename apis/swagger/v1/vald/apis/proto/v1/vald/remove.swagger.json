@@ -13,6 +13,7 @@
   "paths": {
     "/remove": {
       "post": {
+        "summary": "A method to remove an indexed vector.",
         "operationId": "Remove_Remove",
         "responses": {
           "200": {
@@ -45,6 +46,7 @@
     },
     "/remove/multiple": {
       "post": {
+        "summary": "A method to remove multiple indexed vectors in a single request.",
         "operationId": "Remove_MultiRemove",
         "responses": {
           "200": {
@@ -83,29 +85,36 @@
         "id": {
           "type": "string"
         }
-      }
+      },
+      "description": "Represent the vector ID."
     },
     "ObjectStreamLocation": {
       "type": "object",
       "properties": {
         "location": {
-          "$ref": "#/definitions/v1ObjectLocation"
+          "$ref": "#/definitions/v1ObjectLocation",
+          "description": "The vector location."
         },
         "status": {
-          "$ref": "#/definitions/rpcStatus"
+          "$ref": "#/definitions/rpcStatus",
+          "description": "The RPC error status."
         }
-      }
+      },
+      "description": "Represent the stream response of the vector location."
     },
     "payloadv1RemoveRequest": {
       "type": "object",
       "properties": {
         "id": {
-          "$ref": "#/definitions/ObjectID"
+          "$ref": "#/definitions/ObjectID",
+          "description": "The object ID to be removed."
         },
         "config": {
-          "$ref": "#/definitions/v1RemoveConfig"
+          "$ref": "#/definitions/v1RemoveConfig",
+          "description": "The configuration of the remove request."
         }
-      }
+      },
+      "description": "Represent the remove request."
     },
     "protobufAny": {
       "type": "object",
@@ -194,18 +203,22 @@
       "type": "object",
       "properties": {
         "name": {
-          "type": "string"
+          "type": "string",
+          "description": "The name of the location."
         },
         "uuid": {
-          "type": "string"
+          "type": "string",
+          "description": "The UUID of the vector."
         },
         "ips": {
           "type": "array",
           "items": {
             "type": "string"
-          }
+          },
+          "description": "The IP list."
         }
-      }
+      },
+      "description": "Represent the vector location."
     },
     "v1ObjectLocations": {
       "type": "object",
@@ -216,19 +229,23 @@
             "$ref": "#/definitions/v1ObjectLocation"
           }
         }
-      }
+      },
+      "description": "Represent multiple vector locations."
     },
     "v1RemoveConfig": {
       "type": "object",
       "properties": {
         "skipStrictExistCheck": {
-          "type": "boolean"
+          "type": "boolean",
+          "description": "A flag to skip exist check during upsert operation."
         },
         "timestamp": {
           "type": "string",
-          "format": "int64"
+          "format": "int64",
+          "description": "Remove timestamp."
         }
-      }
+      },
+      "description": "Represent the remove configuration."
     },
     "v1RemoveMultiRequest": {
       "type": "object",
@@ -237,9 +254,11 @@
           "type": "array",
           "items": {
             "$ref": "#/definitions/payloadv1RemoveRequest"
-          }
+          },
+          "description": "Represent the multiple remove request content."
         }
-      }
+      },
+      "description": "Represent the multiple remove request."
     }
   }
 }

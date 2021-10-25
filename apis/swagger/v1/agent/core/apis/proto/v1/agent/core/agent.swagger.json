@@ -13,6 +13,7 @@
   "paths": {
     "/index/create": {
       "get": {
+        "summary": "Represent the create index RPC.",
         "operationId": "Agent_CreateIndex",
         "responses": {
           "200": {
@@ -31,6 +32,7 @@
         "parameters": [
           {
             "name": "poolSize",
+            "description": "The pool size of the create index operation.",
             "in": "query",
             "required": false,
             "type": "integer",
@@ -44,6 +46,7 @@
     },
     "/index/createandsave": {
       "get": {
+        "summary": "Represent the create and save index RPC.",
         "operationId": "Agent_CreateAndSaveIndex",
         "responses": {
           "200": {
@@ -62,6 +65,7 @@
         "parameters": [
           {
             "name": "poolSize",
+            "description": "The pool size of the create index operation.",
             "in": "query",
             "required": false,
             "type": "integer",
@@ -75,6 +79,7 @@
     },
     "/index/info": {
       "get": {
+        "summary": "Represent the RPC to get the agent index information.",
         "operationId": "Agent_IndexInfo",
         "responses": {
           "200": {
@@ -97,6 +102,7 @@
     },
     "/index/save": {
       "get": {
+        "summary": "Represent the save index RPC.",
         "operationId": "Agent_SaveIndex",
         "responses": {
           "200": {
@@ -124,19 +130,24 @@
       "properties": {
         "stored": {
           "type": "integer",
-          "format": "int64"
+          "format": "int64",
+          "description": "The stored index count."
         },
         "uncommitted": {
           "type": "integer",
-          "format": "int64"
+          "format": "int64",
+          "description": "The uncommitted index count."
         },
         "indexing": {
-          "type": "boolean"
+          "type": "boolean",
+          "description": "The indexing index count."
         },
         "saving": {
-          "type": "boolean"
+          "type": "boolean",
+          "description": "The saving index count."
         }
-      }
+      },
+      "description": "Represent the index count message."
     },
     "protobufAny": {
       "type": "object",
@@ -175,7 +186,8 @@
       }
     },
     "v1Empty": {
-      "type": "object"
+      "type": "object",
+      "description": "Represent an empty message."
     }
   }
 }
