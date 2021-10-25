@@ -42,8 +42,11 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ObjectClient interface {
+	// A method to check whether a specified ID is indexed or not.
 	Exists(ctx context.Context, in *payload.Object_ID, opts ...grpc.CallOption) (*payload.Object_ID, error)
+	// A method to fetch a vector.
 	GetObject(ctx context.Context, in *payload.Object_VectorRequest, opts ...grpc.CallOption) (*payload.Object_Vector, error)
+	// A method to fetch vectors by bidirectional streaming.
 	StreamGetObject(ctx context.Context, opts ...grpc.CallOption) (Object_StreamGetObjectClient, error)
 }
 
@@ -108,8 +111,11 @@ func (x *objectStreamGetObjectClient) Recv() (*payload.Object_StreamVector, erro
 // All implementations must embed UnimplementedObjectServer
 // for forward compatibility
 type ObjectServer interface {
+	// A method to check whether a specified ID is indexed or not.
 	Exists(context.Context, *payload.Object_ID) (*payload.Object_ID, error)
+	// A method to fetch a vector.
 	GetObject(context.Context, *payload.Object_VectorRequest) (*payload.Object_Vector, error)
+	// A method to fetch vectors by bidirectional streaming.
 	StreamGetObject(Object_StreamGetObjectServer) error
 	mustEmbedUnimplementedObjectServer()
 }

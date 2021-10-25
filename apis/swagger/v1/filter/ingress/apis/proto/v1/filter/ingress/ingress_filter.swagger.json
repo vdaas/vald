@@ -13,6 +13,7 @@
   "paths": {
     "/filter/ingress/object": {
       "post": {
+        "summary": "Represent the RPC to generate the vector.",
         "operationId": "Filter_GenVector",
         "responses": {
           "200": {
@@ -45,6 +46,7 @@
     },
     "/filter/ingress/vector": {
       "post": {
+        "summary": "Represent the RPC to filter the vector.",
         "operationId": "Filter_FilterVector",
         "responses": {
           "200": {
@@ -81,13 +83,16 @@
       "type": "object",
       "properties": {
         "id": {
-          "type": "string"
+          "type": "string",
+          "description": "The object ID."
         },
         "object": {
           "type": "string",
-          "format": "byte"
+          "format": "byte",
+          "description": "The binary object."
         }
-      }
+      },
+      "description": "Represent the binary object."
     },
     "protobufAny": {
       "type": "object",
@@ -129,16 +134,19 @@
       "type": "object",
       "properties": {
         "id": {
-          "type": "string"
+          "type": "string",
+          "description": "The vector ID."
         },
         "vector": {
           "type": "array",
           "items": {
             "type": "number",
             "format": "float"
-          }
+          },
+          "description": "The vector."
         }
-      }
+      },
+      "description": "Represent a vector."
     }
   }
 }

@@ -42,7 +42,9 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type DiscovererClient interface {
+	// Represent the RPC to get the agent pods information.
 	Pods(ctx context.Context, in *payload.Discoverer_Request, opts ...grpc.CallOption) (*payload.Info_Pods, error)
+	// Represent the RPC to get the node information.
 	Nodes(ctx context.Context, in *payload.Discoverer_Request, opts ...grpc.CallOption) (*payload.Info_Nodes, error)
 }
 
@@ -76,7 +78,9 @@ func (c *discovererClient) Nodes(ctx context.Context, in *payload.Discoverer_Req
 // All implementations must embed UnimplementedDiscovererServer
 // for forward compatibility
 type DiscovererServer interface {
+	// Represent the RPC to get the agent pods information.
 	Pods(context.Context, *payload.Discoverer_Request) (*payload.Info_Pods, error)
+	// Represent the RPC to get the node information.
 	Nodes(context.Context, *payload.Discoverer_Request) (*payload.Info_Nodes, error)
 	mustEmbedUnimplementedDiscovererServer()
 }

@@ -689,28 +689,53 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 	err = n.core.CreateIndex(poolSize)
 	if err != nil {
 		log.Error("an error occurred on creating graph and tree phase:", err)
+	} else {
+		atomic.AddUint64(&n.nocie, 1)
 	}
 	log.Debug("create graph and tree phase finished")
 	log.Info("create index operation finished")
-	atomic.AddUint64(&n.nocie, 1)
 	return err
 }
 
 func (n *ngt) removeInvalidIndex(ctx context.Context) {
+	var dcnt uint32
 	n.kvs.Range(ctx, func(uuid string, oid uint32) bool {
-		if n.vq.IVExists(uuid) {
-			return true
-		}
 		vec, err := n.core.GetVector(uint(oid))
 		if err != nil || vec == nil || len(vec) != n.dim {
-			log.Debugf("invalid index detected uuid: %s\toid: %d will remove", uuid, oid)
+			log.Debugf("invalid index detected err: %v\tuuid: %s\toid: %d will remove", err, uuid, oid)
 			n.kvs.Delete(uuid)
 			n.fmu.Lock()
+			err = n.core.Remove(uint(oid))
 			n.fmap[uuid] = oid
 			n.fmu.Unlock()
+			atomic.AddUint32(&dcnt, 1)
+			if err != nil {
+				log.Debugf("invalid index remove operation returned error: %v", err)
+			}
 		}
 		return true
 	})
+	if atomic.LoadUint32(&dcnt) <= 0 {
+		return
+	}
+	var poolSize uint32
+	if n.poolSize > 0 && n.poolSize < atomic.LoadUint32(&dcnt) {
+		poolSize = n.poolSize
+	} else {
+		poolSize = atomic.LoadUint32(&dcnt)
+	}
+	n.cimu.Lock()
+	defer n.cimu.Unlock()
+	n.indexing.Store(true)
+	defer n.indexing.Store(false)
+	log.Debug("create graph and tree phase for removing invalid index started")
+	err := n.core.CreateIndex(poolSize)
+	if err != nil {
+		log.Error("an error occurred on creating graph and tree phase:", err)
+	} else {
+		atomic.AddUint64(&n.nocie, 1)
+	}
+	log.Debug("create graph and tree phase for removing invalid index finished")
 }
 
 func (n *ngt) SaveIndex(ctx context.Context) (err error) {

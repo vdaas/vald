@@ -42,8 +42,11 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type UpsertClient interface {
+	// A method to insert/update a vector.
 	Upsert(ctx context.Context, in *payload.Upsert_Request, opts ...grpc.CallOption) (*payload.Object_Location, error)
+	// A method to insert/update multiple vectors by bidirectional streaming.
 	StreamUpsert(ctx context.Context, opts ...grpc.CallOption) (Upsert_StreamUpsertClient, error)
+	// A method to insert/update multiple vectors in a single request.
 	MultiUpsert(ctx context.Context, in *payload.Upsert_MultiRequest, opts ...grpc.CallOption) (*payload.Object_Locations, error)
 }
 
@@ -108,8 +111,11 @@ func (c *upsertClient) MultiUpsert(ctx context.Context, in *payload.Upsert_Multi
 // All implementations must embed UnimplementedUpsertServer
 // for forward compatibility
 type UpsertServer interface {
+	// A method to insert/update a vector.
 	Upsert(context.Context, *payload.Upsert_Request) (*payload.Object_Location, error)
+	// A method to insert/update multiple vectors by bidirectional streaming.
 	StreamUpsert(Upsert_StreamUpsertServer) error
+	// A method to insert/update multiple vectors in a single request.
 	MultiUpsert(context.Context, *payload.Upsert_MultiRequest) (*payload.Object_Locations, error)
 	mustEmbedUnimplementedUpsertServer()
 }

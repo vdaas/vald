@@ -13,6 +13,7 @@
   "paths": {
     "/exists/{id}": {
       "get": {
+        "summary": "A method to check whether a specified ID is indexed or not.",
         "operationId": "Object_Exists",
         "responses": {
           "200": {
@@ -43,6 +44,7 @@
     },
     "/object/{id.id}": {
       "get": {
+        "summary": "A method to fetch a vector.",
         "operationId": "Object_GetObject",
         "responses": {
           "200": {
@@ -77,13 +79,16 @@
       "type": "object",
       "properties": {
         "host": {
-          "type": "string"
+          "type": "string",
+          "description": "The target hostname."
         },
         "port": {
           "type": "integer",
-          "format": "int64"
+          "format": "int64",
+          "description": "The target port."
         }
-      }
+      },
+      "description": "Represent the target filter server."
     },
     "ObjectID": {
       "type": "object",
@@ -91,18 +96,22 @@
         "id": {
           "type": "string"
         }
-      }
+      },
+      "description": "Represent the vector ID."
     },
     "ObjectStreamVector": {
       "type": "object",
       "properties": {
         "vector": {
-          "$ref": "#/definitions/v1ObjectVector"
+          "$ref": "#/definitions/v1ObjectVector",
+          "description": "The vector."
         },
         "status": {
-          "$ref": "#/definitions/rpcStatus"
+          "$ref": "#/definitions/rpcStatus",
+          "description": "The RPC error status."
         }
-      }
+      },
+      "description": "Represent stream response of the vector."
     },
     "protobufAny": {
       "type": "object",
@@ -194,24 +203,29 @@
           "type": "array",
           "items": {
             "$ref": "#/definitions/FilterTarget"
-          }
+          },
+          "description": "Represent the filter target configuration."
         }
-      }
+      },
+      "description": "Represent filter configuration."
     },
     "v1ObjectVector": {
       "type": "object",
       "properties": {
         "id": {
-          "type": "string"
+          "type": "string",
+          "description": "The vector ID."
         },
         "vector": {
           "type": "array",
           "items": {
             "type": "number",
             "format": "float"
-          }
+          },
+          "description": "The vector."
         }
-      }
+      },
+      "description": "Represent a vector."
     }
   }
 }

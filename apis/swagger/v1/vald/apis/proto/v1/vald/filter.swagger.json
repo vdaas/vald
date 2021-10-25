@@ -13,6 +13,7 @@
   "paths": {
     "/insert/object": {
       "post": {
+        "summary": "A method insert object.",
         "operationId": "Filter_InsertObject",
         "responses": {
           "200": {
@@ -45,6 +46,7 @@
     },
     "/insert/object/multiple": {
       "post": {
+        "summary": "A method to insert multiple objects.",
         "operationId": "Filter_MultiInsertObject",
         "responses": {
           "200": {
@@ -77,6 +79,7 @@
     },
     "/search/object": {
       "post": {
+        "summary": "A method to search object.",
         "operationId": "Filter_SearchObject",
         "responses": {
           "200": {
@@ -109,6 +112,7 @@
     },
     "/search/object/multiple": {
       "post": {
+        "summary": "A method to search multiple objects.",
         "operationId": "Filter_MultiSearchObject",
         "responses": {
           "200": {
@@ -141,6 +145,7 @@
     },
     "/update/object": {
       "post": {
+        "summary": "A method to update object.",
         "operationId": "Filter_UpdateObject",
         "responses": {
           "200": {
@@ -173,6 +178,7 @@
     },
     "/update/object/multiple": {
       "post": {
+        "summary": "A method to update multiple objects.",
         "operationId": "Filter_MultiUpdateObject",
         "responses": {
           "200": {
@@ -205,6 +211,7 @@
     },
     "/upsert/object": {
       "post": {
+        "summary": "A method to upsert object.",
         "operationId": "Filter_UpsertObject",
         "responses": {
           "200": {
@@ -237,6 +244,7 @@
     },
     "/upsert/object/multiple": {
       "post": {
+        "summary": "A method to upsert multiple objects.",
         "operationId": "Filter_MultiUpsertObject",
         "responses": {
           "200": {
@@ -273,62 +281,77 @@
       "type": "object",
       "properties": {
         "host": {
-          "type": "string"
+          "type": "string",
+          "description": "The target hostname."
         },
         "port": {
           "type": "integer",
-          "format": "int64"
+          "format": "int64",
+          "description": "The target port."
         }
-      }
+      },
+      "description": "Represent the target filter server."
     },
     "ObjectBlob": {
       "type": "object",
       "properties": {
         "id": {
-          "type": "string"
+          "type": "string",
+          "description": "The object ID."
         },
         "object": {
           "type": "string",
-          "format": "byte"
+          "format": "byte",
+          "description": "The binary object."
         }
-      }
+      },
+      "description": "Represent the binary object."
     },
     "ObjectDistance": {
       "type": "object",
       "properties": {
         "id": {
-          "type": "string"
+          "type": "string",
+          "description": "The vector ID."
         },
         "distance": {
           "type": "number",
-          "format": "float"
+          "format": "float",
+          "description": "The distance."
         }
-      }
+      },
+      "description": "Represent the ID and distance pair."
     },
     "ObjectStreamLocation": {
       "type": "object",
       "properties": {
         "location": {
-          "$ref": "#/definitions/v1ObjectLocation"
+          "$ref": "#/definitions/v1ObjectLocation",
+          "description": "The vector location."
         },
         "status": {
-          "$ref": "#/definitions/rpcStatus"
+          "$ref": "#/definitions/rpcStatus",
+          "description": "The RPC error status."
         }
-      }
+      },
+      "description": "Represent the stream response of the vector location."
     },
     "SearchResponse": {
       "type": "object",
       "properties": {
         "requestId": {
-          "type": "string"
+          "type": "string",
+          "description": "The unique request ID."
         },
         "results": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/ObjectDistance"
-          }
+          },
+          "description": "Search results."
         }
-      }
+      },
+      "description": "Represent a search response."
     },
     "SearchResponses": {
       "type": "object",
@@ -337,20 +360,25 @@
           "type": "array",
           "items": {
             "$ref": "#/definitions/SearchResponse"
-          }
+          },
+          "description": "Represent the multiple search response content."
         }
-      }
+      },
+      "description": "Represent multiple search responses."
     },
     "SearchStreamResponse": {
       "type": "object",
       "properties": {
         "response": {
-          "$ref": "#/definitions/SearchResponse"
+          "$ref": "#/definitions/SearchResponse",
+          "description": "Represent the search response."
         },
         "status": {
-          "$ref": "#/definitions/rpcStatus"
+          "$ref": "#/definitions/rpcStatus",
+          "description": "The RPC error status."
         }
-      }
+      },
+      "description": "Represent stream search response."
     },
     "protobufAny": {
       "type": "object",
@@ -442,24 +470,30 @@
           "type": "array",
           "items": {
             "$ref": "#/definitions/FilterTarget"
-          }
+          },
+          "description": "Represent the filter target configuration."
         }
-      }
+      },
+      "description": "Represent filter configuration."
     },
     "v1InsertConfig": {
       "type": "object",
       "properties": {
         "skipStrictExistCheck": {
-          "type": "boolean"
+          "type": "boolean",
+          "description": "A flag to skip exist check during insert operation."
         },
         "filters": {
-          "$ref": "#/definitions/v1FilterConfig"
+          "$ref": "#/definitions/v1FilterConfig",
+          "description": "Filter configurations."
         },
         "timestamp": {
           "type": "string",
-          "format": "int64"
+          "format": "int64",
+          "description": "Insert timestamp."
         }
-      }
+      },
+      "description": "Represent insert configurations."
     },
     "v1InsertMultiObjectRequest": {
       "type": "object",
@@ -468,40 +502,50 @@
           "type": "array",
           "items": {
             "$ref": "#/definitions/v1InsertObjectRequest"
-          }
+          },
+          "description": "Represent multiple insert by object content."
         }
-      }
+      },
+      "description": "Represent the multiple insert by binary object request."
     },
     "v1InsertObjectRequest": {
       "type": "object",
       "properties": {
         "object": {
-          "$ref": "#/definitions/ObjectBlob"
+          "$ref": "#/definitions/ObjectBlob",
+          "description": "The binary object to be inserted."
         },
         "config": {
-          "$ref": "#/definitions/v1InsertConfig"
+          "$ref": "#/definitions/v1InsertConfig",
+          "description": "The configuration of the insert request."
         },
         "vectorizer": {
-          "$ref": "#/definitions/FilterTarget"
+          "$ref": "#/definitions/FilterTarget",
+          "description": "Filter configurations."
         }
-      }
+      },
+      "description": "Represent the insert by binary object request."
     },
     "v1ObjectLocation": {
       "type": "object",
       "properties": {
         "name": {
-          "type": "string"
+          "type": "string",
+          "description": "The name of the location."
         },
         "uuid": {
-          "type": "string"
+          "type": "string",
+          "description": "The UUID of the vector."
         },
         "ips": {
           "type": "array",
           "items": {
             "type": "string"
-          }
+          },
+          "description": "The IP list."
         }
-      }
+      },
+      "description": "Represent the vector location."
     },
     "v1ObjectLocations": {
       "type": "object",
@@ -512,37 +556,46 @@
             "$ref": "#/definitions/v1ObjectLocation"
           }
         }
-      }
+      },
+      "description": "Represent multiple vector locations."
     },
     "v1SearchConfig": {
       "type": "object",
       "properties": {
         "requestId": {
-          "type": "string"
+          "type": "string",
+          "description": "Unique request ID."
         },
         "num": {
           "type": "integer",
-          "format": "int64"
+          "format": "int64",
+          "description": "Maximum number of result to be returned."
         },
         "radius": {
           "type": "number",
-          "format": "float"
+          "format": "float",
+          "description": "Search radius."
         },
         "epsilon": {
           "type": "number",
-          "format": "float"
+          "format": "float",
+          "description": "Search coefficient."
         },
         "timeout": {
           "type": "string",
-          "format": "int64"
+          "format": "int64",
+          "description": "Search timeout in nanoseconds."
         },
         "ingressFilters": {
-          "$ref": "#/definitions/v1FilterConfig"
+          "$ref": "#/definitions/v1FilterConfig",
+          "description": "Ingress filter configurations."
         },
         "egressFilters": {
-          "$ref": "#/definitions/v1FilterConfig"
+          "$ref": "#/definitions/v1FilterConfig",
+          "description": "Egress filter configurations."
         }
-      }
+      },
+      "description": "Represent search configuration."
     },
     "v1SearchMultiObjectRequest": {
       "type": "object",
@@ -551,39 +604,49 @@
           "type": "array",
           "items": {
             "$ref": "#/definitions/v1SearchObjectRequest"
-          }
+          },
+          "description": "Represent the multiple search by binary object request content."
         }
-      }
+      },
+      "description": "Represent the multiple search by binary object request."
     },
     "v1SearchObjectRequest": {
       "type": "object",
       "properties": {
         "object": {
           "type": "string",
-          "format": "byte"
+          "format": "byte",
+          "description": "The binary object to be searched."
         },
         "config": {
-          "$ref": "#/definitions/v1SearchConfig"
+          "$ref": "#/definitions/v1SearchConfig",
+          "description": "The configuration of the search request."
         },
         "vectorizer": {
-          "$ref": "#/definitions/FilterTarget"
+          "$ref": "#/definitions/FilterTarget",
+          "description": "Filter configuration."
         }
-      }
+      },
+      "description": "Represent a search by binary object request."
     },
     "v1UpdateConfig": {
       "type": "object",
       "properties": {
         "skipStrictExistCheck": {
-          "type": "boolean"
+          "type": "boolean",
+          "description": "A flag to skip exist check during update operation."
         },
         "filters": {
-          "$ref": "#/definitions/v1FilterConfig"
+          "$ref": "#/definitions/v1FilterConfig",
+          "description": "Filter configuration."
         },
         "timestamp": {
           "type": "string",
-          "format": "int64"
+          "format": "int64",
+          "description": "Update timestamp."
         }
-      }
+      },
+      "description": "Represent the update configuration."
     },
     "v1UpdateMultiObjectRequest": {
       "type": "object",
@@ -592,38 +655,48 @@
           "type": "array",
           "items": {
             "$ref": "#/definitions/v1UpdateObjectRequest"
-          }
+          },
+          "description": "Represent the multiple update object request content."
         }
-      }
+      },
+      "description": "Represent the multiple update binary object request."
     },
     "v1UpdateObjectRequest": {
       "type": "object",
       "properties": {
         "object": {
-          "$ref": "#/definitions/ObjectBlob"
+          "$ref": "#/definitions/ObjectBlob",
+          "description": "The binary object to be updated."
         },
         "config": {
-          "$ref": "#/definitions/v1UpdateConfig"
+          "$ref": "#/definitions/v1UpdateConfig",
+          "description": "The configuration of the update request."
         },
         "vectorizer": {
-          "$ref": "#/definitions/FilterTarget"
+          "$ref": "#/definitions/FilterTarget",
+          "description": "Filter target."
         }
-      }
+      },
+      "description": "Represent the update binary object request."
     },
     "v1UpsertConfig": {
       "type": "object",
       "properties": {
         "skipStrictExistCheck": {
-          "type": "boolean"
+          "type": "boolean",
+          "description": "A flag to skip exist check during upsert operation."
         },
         "filters": {
-          "$ref": "#/definitions/v1FilterConfig"
+          "$ref": "#/definitions/v1FilterConfig",
+          "description": "Filter configuration."
         },
         "timestamp": {
           "type": "string",
-          "format": "int64"
+          "format": "int64",
+          "description": "Upsert timestamp."
         }
-      }
+      },
+      "description": "Represent the upsert configuration."
     },
     "v1UpsertMultiObjectRequest": {
       "type": "object",
@@ -632,23 +705,29 @@
           "type": "array",
           "items": {
             "$ref": "#/definitions/v1UpsertObjectRequest"
-          }
+          },
+          "description": "Represent the multiple upsert object request content."
         }
-      }
+      },
+      "description": "Represent the multiple upsert binary object request."
     },
     "v1UpsertObjectRequest": {
       "type": "object",
       "properties": {
         "object": {
-          "$ref": "#/definitions/ObjectBlob"
+          "$ref": "#/definitions/ObjectBlob",
+          "description": "The binary object to be upserted."
         },
         "config": {
-          "$ref": "#/definitions/v1UpsertConfig"
+          "$ref": "#/definitions/v1UpsertConfig",
+          "description": "The configuration of the upsert request."
         },
         "vectorizer": {
-          "$ref": "#/definitions/FilterTarget"
+          "$ref": "#/definitions/FilterTarget",
+          "description": "Filter target."
         }
-      }
+      },
+      "description": "Represent the upsert binary object request."
     }
   }
 }

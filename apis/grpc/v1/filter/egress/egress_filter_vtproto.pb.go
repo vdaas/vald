@@ -42,7 +42,9 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type FilterClient interface {
+	// Represent the RPC to filter the distance.
 	FilterDistance(ctx context.Context, in *payload.Object_Distance, opts ...grpc.CallOption) (*payload.Object_Distance, error)
+	// Represent the RPC to filter the vector.
 	FilterVector(ctx context.Context, in *payload.Object_Vector, opts ...grpc.CallOption) (*payload.Object_Vector, error)
 }
 
@@ -76,7 +78,9 @@ func (c *filterClient) FilterVector(ctx context.Context, in *payload.Object_Vect
 // All implementations must embed UnimplementedFilterServer
 // for forward compatibility
 type FilterServer interface {
+	// Represent the RPC to filter the distance.
 	FilterDistance(context.Context, *payload.Object_Distance) (*payload.Object_Distance, error)
+	// Represent the RPC to filter the vector.
 	FilterVector(context.Context, *payload.Object_Vector) (*payload.Object_Vector, error)
 	mustEmbedUnimplementedFilterServer()
 }

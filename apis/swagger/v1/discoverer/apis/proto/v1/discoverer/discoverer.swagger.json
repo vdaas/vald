@@ -13,6 +13,7 @@
   "paths": {
     "/discover/nodes": {
       "post": {
+        "summary": "Represent the RPC to get the node information.",
         "operationId": "Discoverer_Nodes",
         "responses": {
           "200": {
@@ -45,6 +46,7 @@
     },
     "/discover/pods": {
       "post": {
+        "summary": "Represent the RPC to get the agent pods information.",
         "operationId": "Discoverer_Pods",
         "responses": {
           "200": {
@@ -82,57 +84,72 @@
       "properties": {
         "limit": {
           "type": "number",
-          "format": "double"
+          "format": "double",
+          "description": "The CPU resource limit."
         },
         "request": {
           "type": "number",
-          "format": "double"
+          "format": "double",
+          "description": "The CPU resource requested."
         },
         "usage": {
           "type": "number",
-          "format": "double"
+          "format": "double",
+          "description": "The CPU usage."
         }
-      }
+      },
+      "description": "Represent the CPU information message."
     },
     "InfoMemory": {
       "type": "object",
       "properties": {
         "limit": {
           "type": "number",
-          "format": "double"
+          "format": "double",
+          "description": "The memory limit."
         },
         "request": {
           "type": "number",
-          "format": "double"
+          "format": "double",
+          "description": "The memory requested."
         },
         "usage": {
           "type": "number",
-          "format": "double"
+          "format": "double",
+          "description": "The memory usage."
         }
-      }
+      },
+      "description": "Represent the memory information message."
     },
     "InfoNode": {
       "type": "object",
       "properties": {
         "name": {
-          "type": "string"
+          "type": "string",
+          "description": "The name of the node."
         },
         "internalAddr": {
-          "type": "string"
+          "type": "string",
+          "description": "The internal IP address of the node."
         },
         "externalAddr": {
-          "type": "string"
+          "type": "string",
+          "description": "The external IP address of the node."
         },
         "cpu": {
-          "$ref": "#/definitions/InfoCPU"
+          "$ref": "#/definitions/InfoCPU",
+          "description": "The CPU information of the node."
         },
         "memory": {
-          "$ref": "#/definitions/InfoMemory"
+          "$ref": "#/definitions/InfoMemory",
+          "description": "The memory information of the node."
         },
         "Pods": {
-          "$ref": "#/definitions/InfoPods"
+          "$ref": "#/definitions/InfoPods",
+          "description": "The pod information of the node."
         }
-      }
+      },
+      "description": "Represent the node information message."
     },
     "InfoNodes": {
       "type": "object",
@@ -141,35 +158,45 @@
           "type": "array",
           "items": {
             "$ref": "#/definitions/InfoNode"
-          }
+          },
+          "description": "The multiple node information."
         }
-      }
+      },
+      "description": "Represent the multiple node information message."
     },
     "InfoPod": {
       "type": "object",
       "properties": {
         "appName": {
-          "type": "string"
+          "type": "string",
+          "description": "The app name of the pod on the label."
         },
         "name": {
-          "type": "string"
+          "type": "string",
+          "description": "The name of the pod."
         },
         "namespace": {
-          "type": "string"
+          "type": "string",
+          "description": "The namespace of the pod."
         },
         "ip": {
-          "type": "string"
+          "type": "string",
+          "description": "The IP of the pod."
         },
         "cpu": {
-          "$ref": "#/definitions/InfoCPU"
+          "$ref": "#/definitions/InfoCPU",
+          "description": "The CPU information of the pod."
         },
         "memory": {
-          "$ref": "#/definitions/InfoMemory"
+          "$ref": "#/definitions/InfoMemory",
+          "description": "The memory information of the pod."
         },
         "node": {
-          "$ref": "#/definitions/InfoNode"
+          "$ref": "#/definitions/InfoNode",
+          "description": "The node information of the pod."
         }
-      }
+      },
+      "description": "Represent the pod information message."
     },
     "InfoPods": {
       "type": "object",
@@ -178,9 +205,11 @@
           "type": "array",
           "items": {
             "$ref": "#/definitions/InfoPod"
-          }
+          },
+          "description": "The multiple pod information."
         }
-      }
+      },
+      "description": "Represent the multiple pod information message."
     },
     "protobufAny": {
       "type": "object",
@@ -222,15 +251,19 @@
       "type": "object",
       "properties": {
         "name": {
-          "type": "string"
+          "type": "string",
+          "description": "The agent name to be discover."
         },
         "namespace": {
-          "type": "string"
+          "type": "string",
+          "description": "The namespace to be discover."
         },
         "node": {
-          "type": "string"
+          "type": "string",
+          "description": "The node to be discover."
         }
-      }
+      },
+      "description": "Represent the dicoverer request."
     }
   }
 }
