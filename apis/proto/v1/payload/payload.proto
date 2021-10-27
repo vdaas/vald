@@ -407,22 +407,6 @@ message Control {
   }
 }
 
-// Replication related messages. (Not used)
-message Replication {
-  message Recovery { repeated string deleted_agents = 1; }
-
-  message Rebalance {
-    repeated string high_usage_agents = 1;
-    repeated string low_usage_agents = 2;
-  }
-
-  message Agents {
-    repeated string agents = 1;
-    repeated string removed_agents = 2;
-    repeated string replicating_agent = 3;
-  }
-}
-
 // Discoverer related messages.
 message Discoverer {
 
