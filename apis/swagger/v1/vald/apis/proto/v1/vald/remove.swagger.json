@@ -35,7 +35,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/payloadv1RemoveRequest"
+              "$ref": "#/definitions/v1RemoveRequest"
             }
           }
         ],
@@ -52,7 +52,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/v1ObjectLocations"
+              "$ref": "#/definitions/ObjectLocations"
             }
           },
           "default": {
@@ -88,6 +88,18 @@
       },
       "description": "Represent the vector ID."
     },
+    "ObjectLocations": {
+      "type": "object",
+      "properties": {
+        "locations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1ObjectLocation"
+          }
+        }
+      },
+      "description": "Represent multiple vector locations."
+    },
     "ObjectStreamLocation": {
       "type": "object",
       "properties": {
@@ -101,20 +113,6 @@
         }
       },
       "description": "Represent the stream response of the vector location."
-    },
-    "payloadv1RemoveRequest": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "$ref": "#/definitions/ObjectID",
-          "description": "The object ID to be removed."
-        },
-        "config": {
-          "$ref": "#/definitions/v1RemoveConfig",
-          "description": "The configuration of the remove request."
-        }
-      },
-      "description": "Represent the remove request."
     },
     "protobufAny": {
       "type": "object",
@@ -220,18 +218,6 @@
       },
       "description": "Represent the vector location."
     },
-    "v1ObjectLocations": {
-      "type": "object",
-      "properties": {
-        "locations": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/v1ObjectLocation"
-          }
-        }
-      },
-      "description": "Represent multiple vector locations."
-    },
     "v1RemoveConfig": {
       "type": "object",
       "properties": {
@@ -253,12 +239,26 @@
         "requests": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/payloadv1RemoveRequest"
+            "$ref": "#/definitions/v1RemoveRequest"
           },
           "description": "Represent the multiple remove request content."
         }
       },
       "description": "Represent the multiple remove request."
+    },
+    "v1RemoveRequest": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "#/definitions/ObjectID",
+          "description": "The object ID to be removed."
+        },
+        "config": {
+          "$ref": "#/definitions/v1RemoveConfig",
+          "description": "The configuration of the remove request."
+        }
+      },
+      "description": "Represent the remove request."
     }
   }
 }

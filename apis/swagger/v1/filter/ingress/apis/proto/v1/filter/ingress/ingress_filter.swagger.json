@@ -19,7 +19,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/v1ObjectVector"
+              "$ref": "#/definitions/ObjectVector"
             }
           },
           "default": {
@@ -52,7 +52,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/v1ObjectVector"
+              "$ref": "#/definitions/ObjectVector"
             }
           },
           "default": {
@@ -68,7 +68,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/v1ObjectVector"
+              "$ref": "#/definitions/ObjectVector"
             }
           }
         ],
@@ -93,6 +93,24 @@
         }
       },
       "description": "Represent the binary object."
+    },
+    "ObjectVector": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "The vector ID."
+        },
+        "vector": {
+          "type": "array",
+          "items": {
+            "type": "number",
+            "format": "float"
+          },
+          "description": "The vector."
+        }
+      },
+      "description": "Represent a vector."
     },
     "protobufAny": {
       "type": "object",
@@ -129,24 +147,6 @@
           }
         }
       }
-    },
-    "v1ObjectVector": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "The vector ID."
-        },
-        "vector": {
-          "type": "array",
-          "items": {
-            "type": "number",
-            "format": "float"
-          },
-          "description": "The vector."
-        }
-      },
-      "description": "Represent a vector."
     }
   }
 }
