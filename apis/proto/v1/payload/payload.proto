@@ -348,6 +348,14 @@ message Object {
     }
   }
 
+  // Represent reshape vector.
+  message ReshapeVector {
+    // The binary object.
+    bytes object = 1;
+    // The new shape.
+    repeated int32 shape = 2;
+  }
+
   // Represent the binary object.
   message Blob {
     // The object ID.
@@ -390,41 +398,12 @@ message Object {
   message Locations { repeated Location locations = 1; }
 }
 
-// Meta related messages. (Not used)
-message Meta {
-  message Key { string key = 1; }
-  message Keys { repeated string keys = 1; }
-  message Val { string val = 1; }
-  message Vals { repeated string vals = 1; }
-  message KeyVal {
-    string key = 1;
-    string val = 2;
-  }
-  message KeyVals { repeated KeyVal kvs = 1; }
-}
-
 // Control related messages.
 message Control {
   // Represent the create index request.
   message CreateIndexRequest {
     // The pool size of the create index operation.
     uint32 pool_size = 1 [ (validate.rules).uint32.gte = 0 ];
-  }
-}
-
-// Replication related messages. (Not used)
-message Replication {
-  message Recovery { repeated string deleted_agents = 1; }
-
-  message Rebalance {
-    repeated string high_usage_agents = 1;
-    repeated string low_usage_agents = 2;
-  }
-
-  message Agents {
-    repeated string agents = 1;
-    repeated string removed_agents = 2;
-    repeated string replicating_agent = 3;
   }
 }
 
@@ -439,56 +418,6 @@ message Discoverer {
     string namespace = 2;
     // The node to be discover.
     string node = 3;
-  }
-}
-
-// Backup related messages. (Not used)
-message Backup {
-  message GetVector {
-    message Request { string uuid = 1 [ (validate.rules).string.min_len = 1 ]; }
-    message Owner { string ip = 1 [ (validate.rules).string.min_len = 1 ]; }
-  }
-
-  message Locations {
-    message Request { string uuid = 1 [ (validate.rules).string.min_len = 1 ]; }
-  }
-
-  message Remove {
-    message Request { string uuid = 1 [ (validate.rules).string.min_len = 1 ]; }
-    message RequestMulti {
-      repeated string uuids = 1 [ (validate.rules).repeated .min_items = 1 ];
-    }
-  }
-
-  message IP {
-    message Register {
-      message Request {
-        string uuid = 1 [ (validate.rules).string.min_len = 1 ];
-        repeated string ips = 2 [ (validate.rules).repeated .min_items = 1 ];
-      }
-    }
-    message Remove {
-      message Request {
-        repeated string ips = 1 [ (validate.rules).repeated .min_items = 1 ];
-      }
-    }
-  }
-
-  message Vector {
-    string uuid = 1;
-    repeated float vector = 3 [ (validate.rules).repeated .min_items = 2 ];
-    repeated string ips = 4;
-  }
-  message Vectors { repeated Vector vectors = 1; }
-
-  message Compressed {
-    message Vector {
-      string uuid = 1;
-      bytes vector = 3;
-      repeated string ips = 4;
-    }
-
-    message Vectors { repeated Vector vectors = 1; }
   }
 }
 
