@@ -23,6 +23,7 @@ import (
 	"sync"
 	"sync/atomic"
 	"testing"
+	"time"
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/test/goleak"
@@ -180,17 +181,12 @@ func Test_group_Do(t *testing.T) {
 			}
 		}(),
 		func() test {
-			wg := new(sync.WaitGroup)
-			wg.Add(2)
-
 			// routine1
-			key1 := "req_1"
 			var cnt1 uint32
 
 			fn1 := func() (interface{}, error) {
 				atomic.AddUint32(&cnt1, 1)
-				wg.Done()
-				wg.Wait()
+				time.Sleep(time.Millisecond * 800)
 				return "res_1", nil
 			}
 
@@ -198,20 +194,19 @@ func Test_group_Do(t *testing.T) {
 			var cnt2 uint32
 			fn2 := func() (interface{}, error) {
 				atomic.AddUint32(&cnt2, 1)
-				wg.Done()
-				wg.Wait()
 				return "res_2", nil
 			}
 
 			w := want{
 				wantV:      "res_1",
-				wantShared: false,
+				wantShared: true,
 				err:        nil,
 			}
 			checkFunc := func(w want, gotV interface{}, gotShared bool, err error) error {
 				if got, want := int(atomic.LoadUint32(&cnt1)), 1; got != want {
 					return errors.Errorf("cnt got = %d, want = %d", got, want)
 				}
+				// we expected go routine 2 will not be executed
 				if got, want := int(atomic.LoadUint32(&cnt2)), 0; got != want {
 					return errors.Errorf("cnt got = %d, want = %d", got, want)
 				}
@@ -222,7 +217,7 @@ func Test_group_Do(t *testing.T) {
 				name:   "returns (v, true, nil) when Do is called with the same key",
 				fields: fields{},
 				args: args{
-					key: key1,
+					key: "req_1",
 					ctx: context.Background(),
 					fn:  fn1,
 				},
@@ -236,7 +231,7 @@ func Test_group_Do(t *testing.T) {
 
 					wg.Add(1)
 					go func() {
-						got, gotShared, err = g.Do(a.ctx, a.key, a.fn)
+						got, gotShared, err = g.Do(a.ctx, a.key, fn1)
 						wg.Done()
 					}()
 
@@ -250,11 +245,10 @@ func Test_group_Do(t *testing.T) {
 					wg.Wait()
 
 					if err := checkFunc(w, got1, gotShared1, err1); err != nil {
-						return nil, false, nil
+						t.Fatal(err)
 					}
 					return got, gotShared, err
 				},
-				checkFunc: checkFunc,
 			}
 		}(),
 	}
