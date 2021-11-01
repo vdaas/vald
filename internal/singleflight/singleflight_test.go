@@ -41,7 +41,7 @@ func TestNew(t *testing.T) {
 		afterFunc  func()
 	}
 	defaultCheckFunc := func(w want, got Group) error {
-		if !reflect.DeepEqual(got, w.want) {
+		if !reflect.DeepEqual(got.(*group).pool.New(), w.want.(*group).pool.New()) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
@@ -50,7 +50,13 @@ func TestNew(t *testing.T) {
 		{
 			name: "returns Group implementation",
 			want: want{
-				want: new(group),
+				want: &group{
+					pool: &sync.Pool{
+						New: func() interface{} {
+							return new(call)
+						},
+					},
+				},
 			},
 		},
 	}
@@ -84,7 +90,8 @@ func Test_group_Do(t *testing.T) {
 		fn  func() (interface{}, error)
 	}
 	type fields struct {
-		m sync.Map
+		m    sync.Map
+		pool *sync.Pool
 	}
 	type want struct {
 		wantV      interface{}
@@ -135,8 +142,14 @@ func Test_group_Do(t *testing.T) {
 			}
 
 			return test{
-				name:   "returns (v, false, nil) when Do is called with another key",
-				fields: fields{},
+				name: "returns (v, false, nil) when Do is called with another key",
+				fields: fields{
+					pool: &sync.Pool{
+						New: func() interface{} {
+							return new(call)
+						},
+					},
+				},
 				args: args{
 					key: key1,
 					ctx: context.Background(),
@@ -213,8 +226,14 @@ func Test_group_Do(t *testing.T) {
 			}
 
 			return test{
-				name:   "returns (v, true, nil) when Do is called with the same key",
-				fields: fields{},
+				name: "returns (v, true, nil) when Do is called with the same key",
+				fields: fields{
+					pool: &sync.Pool{
+						New: func() interface{} {
+							return new(call)
+						},
+					},
+				},
 				args: args{
 					key: "req_1",
 					ctx: context.Background(),
@@ -264,7 +283,8 @@ func Test_group_Do(t *testing.T) {
 			}
 
 			g := &group{
-				m: test.fields.m,
+				m:    test.fields.m,
+				pool: test.fields.pool,
 			}
 
 			execFunc := defaultExecFunc

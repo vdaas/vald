@@ -37,12 +37,19 @@ type Group interface {
 }
 
 type group struct {
-	m sync.Map
+	m    sync.Map
+	pool *sync.Pool
 }
 
 // New returns Group implementation.
 func New() Group {
-	return new(group)
+	return &group{
+		pool: &sync.Pool{
+			New: func() interface{} {
+				return new(call)
+			},
+		},
+	}
 }
 
 // Do execute the given function and return the result.
@@ -50,7 +57,13 @@ func New() Group {
 // If duplicate comes, the duplicated call with the same key will wait for the first caller return.
 // It returns the result and the error of the given function, and whether the result is shared from the first caller.
 func (g *group) Do(ctx context.Context, key string, fn func() (interface{}, error)) (v interface{}, shared bool, err error) {
-	actual, _ := g.m.LoadOrStore(key, new(call))
+	gc := g.pool.Get()
+
+	actual, loaded := g.m.LoadOrStore(key, gc)
+	if loaded {
+		g.pool.Put(gc)
+	}
+
 	c := actual.(*call)
 
 	atomic.AddUint64(&c.dups, 1)
