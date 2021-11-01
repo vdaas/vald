@@ -186,7 +186,7 @@ func Test_group_Do(t *testing.T) {
 
 			fn1 := func() (interface{}, error) {
 				atomic.AddUint32(&cnt1, 1)
-				time.Sleep(time.Millisecond * 800)
+				time.Sleep(time.Millisecond * 500)
 				return "res_1", nil
 			}
 
@@ -203,12 +203,11 @@ func Test_group_Do(t *testing.T) {
 				err:        nil,
 			}
 			checkFunc := func(w want, gotV interface{}, gotShared bool, err error) error {
-				if got, want := int(atomic.LoadUint32(&cnt1)), 1; got != want {
-					return errors.Errorf("cnt got = %d, want = %d", got, want)
-				}
-				// we expected go routine 2 will not be executed
-				if got, want := int(atomic.LoadUint32(&cnt2)), 0; got != want {
-					return errors.Errorf("cnt got = %d, want = %d", got, want)
+				c1 := int(atomic.LoadUint32(&cnt1))
+				c2 := int(atomic.LoadUint32(&cnt2))
+				// since there is a chance that the go routine 2 is executed before routine 1, we need to check if either one is executed
+				if !((c1 == 1 && c2 == 0) || (c1 == 0 && c2 == 1)) {
+					return errors.Errorf("cnt1 and cnt2 is executed, %d, %d", c1, c2)
 				}
 				return defaultCheckFunc(w, gotV, gotShared, err)
 			}
@@ -237,6 +236,7 @@ func Test_group_Do(t *testing.T) {
 
 					// call with the same key but with another function
 					wg.Add(1)
+					time.Sleep(time.Millisecond * 100)
 					go func() {
 						got1, gotShared1, err1 = g.Do(a.ctx, a.key, fn2)
 						wg.Done()

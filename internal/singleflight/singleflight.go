@@ -59,11 +59,11 @@ func (g *group) Do(ctx context.Context, key string, fn func() (interface{}, erro
 			c.wg.Add(1)
 			c.val, c.err = fn()
 			c.wg.Done()
+			g.m.Delete(key)
 		},
 	)
 
 	c.wg.Wait()
-	g.m.Delete(key)
 
 	return c.val, atomic.LoadUint64(&c.dups) > 1, c.err
 }
