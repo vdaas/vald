@@ -52,7 +52,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/v1ObjectLocations"
+              "$ref": "#/definitions/ObjectLocations"
             }
           },
           "default": {
@@ -94,6 +94,18 @@
       },
       "description": "Represent the target filter server."
     },
+    "ObjectLocations": {
+      "type": "object",
+      "properties": {
+        "locations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1ObjectLocation"
+          }
+        }
+      },
+      "description": "Represent multiple vector locations."
+    },
     "ObjectStreamLocation": {
       "type": "object",
       "properties": {
@@ -107,6 +119,24 @@
         }
       },
       "description": "Represent the stream response of the vector location."
+    },
+    "ObjectVector": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "The vector ID."
+        },
+        "vector": {
+          "type": "array",
+          "items": {
+            "type": "number",
+            "format": "float"
+          },
+          "description": "The vector."
+        }
+      },
+      "description": "Represent a vector."
     },
     "protobufAny": {
       "type": "object",
@@ -225,36 +255,6 @@
       },
       "description": "Represent the vector location."
     },
-    "v1ObjectLocations": {
-      "type": "object",
-      "properties": {
-        "locations": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/v1ObjectLocation"
-          }
-        }
-      },
-      "description": "Represent multiple vector locations."
-    },
-    "v1ObjectVector": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "The vector ID."
-        },
-        "vector": {
-          "type": "array",
-          "items": {
-            "type": "number",
-            "format": "float"
-          },
-          "description": "The vector."
-        }
-      },
-      "description": "Represent a vector."
-    },
     "v1UpsertConfig": {
       "type": "object",
       "properties": {
@@ -291,7 +291,7 @@
       "type": "object",
       "properties": {
         "vector": {
-          "$ref": "#/definitions/v1ObjectVector",
+          "$ref": "#/definitions/ObjectVector",
           "description": "The vector to be upserted."
         },
         "config": {

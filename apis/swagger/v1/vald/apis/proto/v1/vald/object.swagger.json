@@ -50,7 +50,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/v1ObjectVector"
+              "$ref": "#/definitions/ObjectVector"
             }
           },
           "default": {
@@ -103,7 +103,7 @@
       "type": "object",
       "properties": {
         "vector": {
-          "$ref": "#/definitions/v1ObjectVector",
+          "$ref": "#/definitions/ObjectVector",
           "description": "The vector."
         },
         "status": {
@@ -112,6 +112,24 @@
         }
       },
       "description": "Represent stream response of the vector."
+    },
+    "ObjectVector": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "The vector ID."
+        },
+        "vector": {
+          "type": "array",
+          "items": {
+            "type": "number",
+            "format": "float"
+          },
+          "description": "The vector."
+        }
+      },
+      "description": "Represent a vector."
     },
     "protobufAny": {
       "type": "object",
@@ -208,24 +226,6 @@
         }
       },
       "description": "Represent filter configuration."
-    },
-    "v1ObjectVector": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "The vector ID."
-        },
-        "vector": {
-          "type": "array",
-          "items": {
-            "type": "number",
-            "format": "float"
-          },
-          "description": "The vector."
-        }
-      },
-      "description": "Represent a vector."
     }
   }
 }

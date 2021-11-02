@@ -52,7 +52,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/v1ObjectLocations"
+              "$ref": "#/definitions/ObjectLocations"
             }
           },
           "default": {
@@ -184,7 +184,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/v1ObjectLocations"
+              "$ref": "#/definitions/ObjectLocations"
             }
           },
           "default": {
@@ -250,7 +250,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/v1ObjectLocations"
+              "$ref": "#/definitions/ObjectLocations"
             }
           },
           "default": {
@@ -321,6 +321,18 @@
         }
       },
       "description": "Represent the ID and distance pair."
+    },
+    "ObjectLocations": {
+      "type": "object",
+      "properties": {
+        "locations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1ObjectLocation"
+          }
+        }
+      },
+      "description": "Represent multiple vector locations."
     },
     "ObjectStreamLocation": {
       "type": "object",
@@ -546,18 +558,6 @@
         }
       },
       "description": "Represent the vector location."
-    },
-    "v1ObjectLocations": {
-      "type": "object",
-      "properties": {
-        "locations": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/v1ObjectLocation"
-          }
-        }
-      },
-      "description": "Represent multiple vector locations."
     },
     "v1SearchConfig": {
       "type": "object",

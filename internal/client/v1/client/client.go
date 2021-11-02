@@ -47,11 +47,9 @@ type (
 	ControlCreateIndexRequest = payload.Control_CreateIndexRequest
 	InfoIndex                 = payload.Info_Index
 	InfoIndexCount            = payload.Info_Index_Count
-	MetaObject                = payload.Backup_Vector
 	Empty                     = payload.Empty
 	SearchConfig              = payload.Search_Config
 	ObjectDistance            = payload.Object_Distance
-	BackupMetaVector          = payload.Backup_Vector
 
 	Searcher     = vald.SearchClient
 	Inserter     = vald.InsertClient
