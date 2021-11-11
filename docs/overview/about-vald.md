@@ -31,7 +31,7 @@ Vald is easy to use, feature-rich and highly customizable as you needed.
     - Horizontal scalable on memory and CPU for your demand.
 
 - Auto Backup for Index data
-    - Vald has a feature to store the backup of the each Vald Agent index data using Object Storage or Persistent Volume.
+    - Vald supports to backup Vald Agent index data using Object Storage or Persistent Volume.
 
 - Distributed Indexing
     - Vald distribute vector index to multiple agents, each agent stores different index.
