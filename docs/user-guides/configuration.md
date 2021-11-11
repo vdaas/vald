@@ -208,7 +208,7 @@ agent:
 
 #### Ingress
 
-Ingress for gateways can be configured by `gateway.lb.ingress` field object.
+Ingress for gateways can be configured by `gateway.{filter,lb}.ingress` field object.
 It is important to set your host to `gateway.lb.ingress.host` field.
 `gateway.lb.ingress.servicePort` should be `grpc` or `rest`.
 
