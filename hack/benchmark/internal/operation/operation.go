@@ -28,16 +28,12 @@ import (
 type Operation interface {
 	Search(ctx context.Context, b *testing.B, ds assets.Dataset)
 	SearchByID(ctx context.Context, b *testing.B, maxIdNum int)
-
 	StreamSearch(ctx context.Context, b *testing.B, ds assets.Dataset)
 	StreamSearchByID(ctx context.Context, b *testing.B, maxIdNum int)
-
 	Insert(ctx context.Context, b *testing.B, ds assets.Dataset) (insertedNum int)
 	StreamInsert(ctx context.Context, b *testing.B, ds assets.Dataset) (insertedNum int)
-
 	Remove(ctx context.Context, b *testing.B, maxIdNum int)
 	StreamRemove(ctx context.Context, b *testing.B, maxIdNum int)
-
 	CreateIndex(ctx context.Context, b *testing.B)
 }
 

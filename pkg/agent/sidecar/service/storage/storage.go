@@ -38,7 +38,6 @@ type Storage interface {
 	Stop(ctx context.Context) error
 	Reader(ctx context.Context) (io.ReadCloser, error)
 	Writer(ctx context.Context) (io.WriteCloser, error)
-
 	StorageInfo() *StorageInfo
 }
 

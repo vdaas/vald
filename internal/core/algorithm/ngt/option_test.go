@@ -1291,7 +1291,6 @@ func TestWithDefaultPoolSize(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-
 		{
 			name: "set success when size is 1",
 			args: args{
