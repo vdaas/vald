@@ -208,9 +208,9 @@ agent:
 
 #### Ingress
 
-Ingress for gateways can be configured by `gateway.{backup,filter,lb,meta}.ingress` field object.
-It is important to set your host to `gateway.{backup,filter,lb,meta}.ingress.host` field.
-`gateway.{backup,filter,lb,meta}.ingress.servicePort` should be `grpc` or `rest`.
+Ingress for gateways can be configured by `gateway.{filter,lb}.ingress` field object.
+It is important to set your host to `gateway.{filter,lb}.ingress.host` field.
+`gateway.{filter,lb}.ingress.servicePort` should be `grpc` or `rest`.
 
 ```yaml
 gateway:
