@@ -44,7 +44,7 @@ func TestNew(t *testing.T) {
 		afterFunc  func()
 	}
 	defaultCheckFunc := func(w want, got Group) error {
-		if !reflect.DeepEqual(got, w.want) {
+		if !reflect.DeepEqual(got.(*group).pool.New(), w.want.(*group).pool.New()) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
@@ -53,7 +53,13 @@ func TestNew(t *testing.T) {
 		{
 			name: "returns Group implementation",
 			want: want{
-				want: &group{},
+				want: &group{
+					pool: &sync.Pool{
+						New: func() interface{} {
+							return new(call)
+						},
+					},
+				},
 			},
 		},
 	}
@@ -87,7 +93,8 @@ func Test_group_Do(t *testing.T) {
 		fn  func() (interface{}, error)
 	}
 	type fields struct {
-		m sync.Map
+		m    sync.Map
+		pool *sync.Pool
 	}
 	type want struct {
 		wantV      interface{}
@@ -124,10 +131,6 @@ func Test_group_Do(t *testing.T) {
 			// routine1
 			key1 := "req_1"
 			var cnt1 uint32
-
-			// the unparam lint rule is disabled here because we need to match the interface to singleflight implementation.
-			// if this rule is not disabled, if will warns that the error will always return null.
-			//nolint:unparam
 			fn1 := func() (interface{}, error) {
 				atomic.AddUint32(&cnt1, 1)
 				return "res_1", nil
@@ -136,10 +139,6 @@ func Test_group_Do(t *testing.T) {
 			// routine 2
 			key2 := "req_2"
 			var cnt2 uint32
-
-			// the unparam lint rule is disabled here because we need to match the interface to singleflight implementation.
-			// if this rule is not disabled, if will warns that the error will always return null.
-			//nolint:unparam
 			fn2 := func() (interface{}, error) {
 				atomic.AddUint32(&cnt2, 1)
 				return "res_2", nil
@@ -147,6 +146,13 @@ func Test_group_Do(t *testing.T) {
 
 			return test{
 				name: "returns (v, false, nil) when Do is called with another key",
+				fields: fields{
+					pool: &sync.Pool{
+						New: func() interface{} {
+							return new(call)
+						},
+					},
+				},
 				args: args{
 					key: key1,
 					ctx: context.Background(),
@@ -157,10 +163,13 @@ func Test_group_Do(t *testing.T) {
 					wantShared: false,
 					err:        nil,
 				},
-				execFunc: func(t *testing.T, g *group, a args) (got interface{}, gotShared bool, err error) {
-					t.Helper()
-
+				execFunc: func(t *testing.T, g *group, a args) (interface{}, bool, error) {
 					wg := new(sync.WaitGroup)
+
+					var got interface{}
+					var gotShared bool
+					var err error
+
 					wg.Add(1)
 					go func() {
 						got, gotShared, err = g.Do(a.ctx, a.key, a.fn)
@@ -191,9 +200,6 @@ func Test_group_Do(t *testing.T) {
 			// routine1
 			var cnt1 uint32
 
-			// the unparam lint rule is disabled here because we need to match the interface to singleflight implementation.
-			// if this rule is not disabled, if will warns that the error will always return null.
-			//nolint:unparam
 			fn1 := func() (interface{}, error) {
 				atomic.AddUint32(&cnt1, 1)
 				time.Sleep(time.Millisecond * 500)
@@ -202,10 +208,6 @@ func Test_group_Do(t *testing.T) {
 
 			// routine 2
 			var cnt2 uint32
-
-			// the unparam lint rule is disabled here because we need to match the interface to singleflight implementation.
-			// if this rule is not disabled, if will warns that the error will always return null.
-			//nolint:unparam
 			fn2 := func() (interface{}, error) {
 				atomic.AddUint32(&cnt2, 1)
 				return "res_2", nil
@@ -228,6 +230,13 @@ func Test_group_Do(t *testing.T) {
 
 			return test{
 				name: "returns (v, true, nil) when Do is called with the same key",
+				fields: fields{
+					pool: &sync.Pool{
+						New: func() interface{} {
+							return new(call)
+						},
+					},
+				},
 				args: args{
 					key: "req_1",
 					ctx: context.Background(),
@@ -235,9 +244,8 @@ func Test_group_Do(t *testing.T) {
 				},
 				want: w,
 				execFunc: func(t *testing.T, g *group, a args) (interface{}, bool, error) {
-					t.Helper()
-
 					wg := new(sync.WaitGroup)
+
 					var got, got1 interface{}
 					var gotShared, gotShared1 bool
 					var err, err1 error
@@ -278,7 +286,8 @@ func Test_group_Do(t *testing.T) {
 			}
 
 			g := &group{
-				m: test.fields.m,
+				m:    test.fields.m,
+				pool: test.fields.pool,
 			}
 
 			execFunc := defaultExecFunc

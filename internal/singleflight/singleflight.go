@@ -25,6 +25,7 @@ import (
 
 type call struct {
 	wg   sync.WaitGroup
+	once sync.Once
 	val  interface{}
 	err  error
 	dups uint64
@@ -36,12 +37,19 @@ type Group interface {
 }
 
 type group struct {
-	m sync.Map
+	m    sync.Map
+	pool *sync.Pool
 }
 
 // New returns Group implementation.
 func New() Group {
-	return new(group)
+	return &group{
+		pool: &sync.Pool{
+			New: func() interface{} {
+				return new(call)
+			},
+		},
+	}
 }
 
 // Do execute the given function and return the result.
@@ -49,19 +57,26 @@ func New() Group {
 // If duplicate comes, the duplicated call with the same key will wait for the first caller return.
 // It returns the result and the error of the given function, and whether the result is shared from the first caller.
 func (g *group) Do(ctx context.Context, key string, fn func() (interface{}, error)) (v interface{}, shared bool, err error) {
-	actual, loaded := g.m.LoadOrStore(key, new(call))
-	c := actual.(*call)
+	gc := g.pool.Get()
+
+	actual, loaded := g.m.LoadOrStore(key, gc)
 	if loaded {
-		atomic.AddUint64(&c.dups, 1)
-		c.wg.Wait()
-		v, err = c.val, c.err
-		return v, true, err
+		g.pool.Put(gc)
 	}
-	c.wg.Add(1)
-	c.val, c.err = fn()
-	c.wg.Done()
 
-	g.m.LoadAndDelete(key)
+	c := actual.(*call)
 
-	return c.val, atomic.LoadUint64(&c.dups) > 0, c.err
+	atomic.AddUint64(&c.dups, 1)
+	c.once.Do(
+		func() {
+			c.wg.Add(1)
+			c.val, c.err = fn()
+			c.wg.Done()
+			g.m.Delete(key)
+		},
+	)
+
+	c.wg.Wait()
+
+	return c.val, atomic.LoadUint64(&c.dups) > 1, c.err
 }
