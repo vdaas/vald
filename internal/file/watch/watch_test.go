@@ -327,7 +327,7 @@ func Test_watch_Start(t *testing.T) {
 	type test struct {
 		name       string
 		args       args
-		fieldsFunc func(*testing.T) fields
+		fields     fields
 		want       want
 		checkFunc  func(want, <-chan error, error) error
 		beforeFunc func(args)
@@ -367,14 +367,13 @@ func Test_watch_Start(t *testing.T) {
 				args: args{
 					ctx: ctx,
 				},
-				fieldsFunc: func(t *testing.T) fields {
-					t.Helper()
+				fields: func() fields {
 					w, err := fsnotify.NewWatcher()
 					if err != nil {
 						t.Fatal(err)
 					}
-					w.Errors = make(chan error, 1)
 
+					w.Errors = make(chan error, 1)
 					w.Errors <- errors.New("err")
 					w.Close()
 
@@ -385,7 +384,7 @@ func Test_watch_Start(t *testing.T) {
 							"vald": {},
 						},
 					}
-				},
+				}(),
 				afterFunc: func(t *testing.T, args args, w Watcher) {
 					t.Helper()
 					_ = w.Remove("vald")
@@ -411,9 +410,7 @@ func Test_watch_Start(t *testing.T) {
 				args: args{
 					ctx: ctx,
 				},
-				fieldsFunc: func(t *testing.T) fields {
-					t.Helper()
-
+				fields: func() fields {
 					w, err := fsnotify.NewWatcher()
 					if err != nil {
 						t.Fatal(err)
@@ -441,7 +438,7 @@ func Test_watch_Start(t *testing.T) {
 							return errors.New("err2")
 						},
 					}
-				},
+				}(),
 				afterFunc: func(t *testing.T, args args, w Watcher) {
 					t.Helper()
 					defaultAfterFunc(t, args, w)
@@ -467,8 +464,7 @@ func Test_watch_Start(t *testing.T) {
 				args: args{
 					ctx: ctx,
 				},
-				fieldsFunc: func(t *testing.T) fields {
-					t.Helper()
+				fields: func() fields {
 					w, err := fsnotify.NewWatcher()
 					if err != nil {
 						t.Fatal(err)
@@ -490,7 +486,7 @@ func Test_watch_Start(t *testing.T) {
 							return errors.New("err")
 						},
 					}
-				},
+				}(),
 				afterFunc: func(t *testing.T, args args, w Watcher) {
 					t.Helper()
 					defaultAfterFunc(t, args, w)
@@ -515,8 +511,7 @@ func Test_watch_Start(t *testing.T) {
 				args: args{
 					ctx: ctx,
 				},
-				fieldsFunc: func(t *testing.T) fields {
-					t.Helper()
+				fields: func() fields {
 					w, err := fsnotify.NewWatcher()
 					if err != nil {
 						t.Fatal(err)
@@ -538,7 +533,7 @@ func Test_watch_Start(t *testing.T) {
 							return errors.New("err")
 						},
 					}
-				},
+				}(),
 				afterFunc: func(t *testing.T, args args, w Watcher) {
 					t.Helper()
 					defaultAfterFunc(t, args, w)
@@ -563,8 +558,7 @@ func Test_watch_Start(t *testing.T) {
 				args: args{
 					ctx: ctx,
 				},
-				fieldsFunc: func(t *testing.T) fields {
-					t.Helper()
+				fields: func() fields {
 					w, err := fsnotify.NewWatcher()
 					if err != nil {
 						t.Fatal(err)
@@ -586,7 +580,7 @@ func Test_watch_Start(t *testing.T) {
 							return errors.New("err")
 						},
 					}
-				},
+				}(),
 				afterFunc: func(t *testing.T, args args, w Watcher) {
 					t.Helper()
 					defaultAfterFunc(t, args, w)
@@ -611,8 +605,7 @@ func Test_watch_Start(t *testing.T) {
 				args: args{
 					ctx: ctx,
 				},
-				fieldsFunc: func(t *testing.T) fields {
-					t.Helper()
+				fields: func() fields {
 					w, err := fsnotify.NewWatcher()
 					if err != nil {
 						t.Fatal(err)
@@ -634,7 +627,7 @@ func Test_watch_Start(t *testing.T) {
 							return errors.New("err")
 						},
 					}
-				},
+				}(),
 				afterFunc: func(t *testing.T, args args, w Watcher) {
 					t.Helper()
 					defaultAfterFunc(t, args, w)
@@ -659,8 +652,7 @@ func Test_watch_Start(t *testing.T) {
 				args: args{
 					ctx: ctx,
 				},
-				fieldsFunc: func(t *testing.T) fields {
-					t.Helper()
+				fields: func() fields {
 					w, err := fsnotify.NewWatcher()
 					if err != nil {
 						t.Fatal(err)
@@ -682,7 +674,7 @@ func Test_watch_Start(t *testing.T) {
 							return errors.New("err")
 						},
 					}
-				},
+				}(),
 				afterFunc: func(t *testing.T, args args, w Watcher) {
 					defaultAfterFunc(t, args, w)
 					cancel()
@@ -706,8 +698,7 @@ func Test_watch_Start(t *testing.T) {
 				args: args{
 					ctx: ctx,
 				},
-				fieldsFunc: func(t *testing.T) fields {
-					t.Helper()
+				fields: func() fields {
 					w, err := fsnotify.NewWatcher()
 					if err != nil {
 						t.Fatal(err)
@@ -740,7 +731,7 @@ func Test_watch_Start(t *testing.T) {
 							return errors.New("err2")
 						},
 					}
-				},
+				}(),
 				afterFunc: func(t *testing.T, args args, w Watcher) {
 					defaultAfterFunc(t, args, w)
 					cancel()
@@ -772,19 +763,18 @@ func Test_watch_Start(t *testing.T) {
 			if test.afterFunc == nil {
 				test.afterFunc = defaultAfterFunc
 			}
-			fields := test.fieldsFunc(tt)
 
 			w := &watch{
-				w:        fields.w,
-				eg:       fields.eg,
-				dirs:     fields.dirs,
-				onChange: fields.onChange,
-				onCreate: fields.onCreate,
-				onRename: fields.onRename,
-				onDelete: fields.onDelete,
-				onWrite:  fields.onWrite,
-				onChmod:  fields.onChmod,
-				onError:  fields.onError,
+				w:        test.fields.w,
+				eg:       test.fields.eg,
+				dirs:     test.fields.dirs,
+				onChange: test.fields.onChange,
+				onCreate: test.fields.onCreate,
+				onRename: test.fields.onRename,
+				onDelete: test.fields.onDelete,
+				onWrite:  test.fields.onWrite,
+				onChmod:  test.fields.onChmod,
+				onError:  test.fields.onError,
 			}
 			defer test.afterFunc(tt, test.args, w)
 
