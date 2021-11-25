@@ -351,60 +351,15 @@ func Test_watch_Start(t *testing.T) {
 			if err != nil {
 				t.Error(err)
 			}
-			if watch, ok := w.(*watch); ok {
-				err := watch.w.Close()
-				if err != nil {
-					t.Error(err)
-				}
-			}
+			// if watch, ok := w.(*watch); ok {
+			// 	err := watch.w.Close()
+			// 	if err != nil {
+			// 		t.Error(err)
+			// 	}
+			// }
 		}
 	}
 	tests := []test{
-		/*
-			func() test {
-				ctx, cancel := context.WithCancel(context.Background())
-				return test{
-					name: "returns channel with error when watcher closed and initialize fails",
-					args: args{
-						ctx: ctx,
-					},
-					fields: func() fields {
-						w, err := fsnotify.NewWatcher()
-						if err != nil {
-							t.Fatal(err)
-						}
-
-						//w.Errors = make(chan error, 1)
-						//w.Errors <- errors.New("err")
-						//w.Close()
-
-						return fields{
-							w:  w,
-							eg: errgroup.Get(),
-							dirs: map[string]struct{}{
-								"vald": {},
-							},
-						}
-					}(),
-					afterFunc: func(t *testing.T, args args, w Watcher) {
-						t.Helper()
-						_ = w.Remove("vald")
-						defaultAfterFunc(t, args, w)
-						cancel()
-					},
-					want: want{
-						want: func() chan error {
-							ch := make(chan error, 1)
-							ch <- errors.New("err")
-							close(ch)
-							return ch
-						}(),
-						err: nil,
-					},
-				}
-			}(),
-		*/
-
 		func() test {
 			ctx, cancel := context.WithCancel(context.Background())
 			tmpDir, err := os.MkdirTemp("", "")
@@ -439,7 +394,7 @@ func Test_watch_Start(t *testing.T) {
 					},
 				},
 				checkFunc: func(w want, c <-chan error, e error) error {
-					ioutil.WriteFile(tmpDir+"/watch.go", []byte{0}, 0777)
+					ioutil.WriteFile(tmpDir+"/watch.go", []byte{0}, 0o777)
 					return defaultCheckFunc(w, c, e)
 				},
 				want: want{
@@ -490,7 +445,7 @@ func Test_watch_Start(t *testing.T) {
 					},
 				},
 				checkFunc: func(w want, c <-chan error, e error) error {
-					ioutil.WriteFile(tmpDir+"/watch.go", []byte{0}, 0777)
+					ioutil.WriteFile(tmpDir+"/watch.go", []byte{0}, 0o777)
 					return defaultCheckFunc(w, c, e)
 				},
 				want: want{
@@ -547,7 +502,7 @@ func Test_watch_Start(t *testing.T) {
 					err: nil,
 				},
 				checkFunc: func(w want, c <-chan error, e error) error {
-					ioutil.WriteFile(tmpDir+"/watch.go", []byte{0}, 0777)
+					ioutil.WriteFile(tmpDir+"/watch.go", []byte{0}, 0o777)
 					return defaultCheckFunc(w, c, e)
 				},
 				afterFunc: func(t *testing.T, args args, w Watcher) {
@@ -648,7 +603,7 @@ func Test_watch_Start(t *testing.T) {
 					err: nil,
 				},
 				checkFunc: func(w want, c <-chan error, e error) error {
-					if err := os.Chmod(tmpDir+"/watch.go", 0777); err != nil {
+					if err := os.Chmod(tmpDir+"/watch.go", 0o777); err != nil {
 						return err
 					}
 					return defaultCheckFunc(w, c, e)
