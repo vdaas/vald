@@ -26,7 +26,6 @@ type Retry interface {
 		fn func(vals ...interface{}) error,
 		vals ...interface{},
 	)
-
 	Outf(
 		fn func(format string, vals ...interface{}) error,
 		format string, vals ...interface{},

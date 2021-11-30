@@ -1,3 +1,18 @@
+//
+// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    https://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
 package vald
 
 import (
@@ -276,8 +291,7 @@ type EgressFilter struct {
 }
 
 // EnvItems
-type EnvItems struct {
-}
+type EnvItems struct{}
 
 // Exporter
 type Exporter struct {
@@ -317,8 +331,7 @@ type Exporter struct {
 }
 
 // Fields k8s field selectors for pod discovery
-type Fields struct {
-}
+type Fields struct{}
 
 // Filter
 type Filter struct {
@@ -681,8 +694,7 @@ type InitContainersItems struct {
 }
 
 // Initializer
-type Initializer struct {
-}
+type Initializer struct{}
 
 // Jaeger
 type Jaeger struct {
@@ -826,8 +838,7 @@ type Lb struct {
 }
 
 // Limits
-type Limits struct {
-}
+type Limits struct{}
 
 // Liveness
 type Liveness struct {
@@ -930,12 +941,10 @@ type NodeMetrics struct {
 }
 
 // NodeSelector node selector
-type NodeSelector struct {
-}
+type NodeSelector struct{}
 
 // NodeSelectorTermsItems
-type NodeSelectorTermsItems struct {
-}
+type NodeSelectorTermsItems struct{}
 
 // Observability
 type Observability struct {
@@ -985,8 +994,7 @@ type PodAffinity struct {
 }
 
 // PodAnnotations pod annotations
-type PodAnnotations struct {
-}
+type PodAnnotations struct{}
 
 // PodAntiAffinity
 type PodAntiAffinity struct {
@@ -1019,8 +1027,7 @@ type PodPriority struct {
 }
 
 // PodSecurityContext security context for pod
-type PodSecurityContext struct {
-}
+type PodSecurityContext struct{}
 
 // Pprof
 type Pprof struct {
@@ -1040,8 +1047,7 @@ type Pprof struct {
 }
 
 // PreferredDuringSchedulingIgnoredDuringExecutionItems
-type PreferredDuringSchedulingIgnoredDuringExecutionItems struct {
-}
+type PreferredDuringSchedulingIgnoredDuringExecutionItems struct{}
 
 // Profiler
 type Profiler struct {
@@ -1138,8 +1144,7 @@ type ReadinessProbe struct {
 }
 
 // Requests
-type Requests struct {
-}
+type Requests struct{}
 
 // RequiredDuringSchedulingIgnoredDuringExecution
 type RequiredDuringSchedulingIgnoredDuringExecution struct {
@@ -1149,8 +1154,7 @@ type RequiredDuringSchedulingIgnoredDuringExecution struct {
 }
 
 // RequiredDuringSchedulingIgnoredDuringExecutionItems
-type RequiredDuringSchedulingIgnoredDuringExecutionItems struct {
-}
+type RequiredDuringSchedulingIgnoredDuringExecutionItems struct{}
 
 // Resources compute resources
 type Resources struct {
@@ -1244,8 +1248,7 @@ type S3 struct {
 }
 
 // SecurityContext security context for container
-type SecurityContext struct {
-}
+type SecurityContext struct{}
 
 // Selectors k8s resource selectors
 type Selectors struct {
@@ -1410,12 +1413,10 @@ type Tls struct {
 }
 
 // TolerationsItems
-type TolerationsItems struct {
-}
+type TolerationsItems struct{}
 
 // TopologySpreadConstraintsItems
-type TopologySpreadConstraintsItems struct {
-}
+type TopologySpreadConstraintsItems struct{}
 
 // Trace
 type Trace struct {
@@ -1438,12 +1439,10 @@ type Values struct {
 }
 
 // VolumeMountsItems
-type VolumeMountsItems struct {
-}
+type VolumeMountsItems struct{}
 
 // VolumesItems
-type VolumesItems struct {
-}
+type VolumesItems struct{}
 
 // Vqueue
 type VQueue struct {

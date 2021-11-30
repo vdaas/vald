@@ -11,7 +11,7 @@ replace (
 	github.com/Azure/go-autorest => github.com/Azure/go-autorest v14.2.1-0.20211129235838-50e09bb39af1+incompatible
 	github.com/Azure/go-autorest/autorest => github.com/Azure/go-autorest/autorest v0.11.23-0.20211129235838-50e09bb39af1
 	github.com/Azure/go-autorest/autorest/adal => github.com/Azure/go-autorest/autorest/adal v0.9.18-0.20211129235838-50e09bb39af1
-	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.42.15
+	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.42.16
 	github.com/chzyer/logex => github.com/chzyer/logex v1.1.11-0.20170329064859-445be9e134b2
 	github.com/coreos/etcd => go.etcd.io/etcd v3.3.27+incompatible
 	github.com/docker/docker => github.com/moby/moby v20.10.11+incompatible
@@ -26,7 +26,7 @@ replace (
 	github.com/gophercloud/gophercloud => github.com/gophercloud/gophercloud v0.23.0
 	github.com/gorilla/websocket => github.com/gorilla/websocket v1.4.2
 	github.com/hailocab/go-hostpool => github.com/kpango/go-hostpool v0.0.0-20210303030322-aab80263dcd0
-	github.com/klauspost/compress => github.com/klauspost/compress v1.13.7-0.20211011124647-94ad1f0bf03c
+	github.com/klauspost/compress => github.com/klauspost/compress v1.13.7-0.20211130170833-a4773d2d37a0
 	github.com/kpango/glg => github.com/kpango/glg v1.6.4
 	github.com/tensorflow/tensorflow => github.com/tensorflow/tensorflow v2.1.2+incompatible
 	github.com/zeebo/xxh3 => github.com/zeebo/xxh3 v1.0.1

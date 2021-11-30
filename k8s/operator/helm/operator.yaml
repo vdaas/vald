@@ -1,0 +1,96 @@
+---
+#
+# Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vald-helm-operator
+  namespace: default
+  labels:
+    app: vald-helm-operator
+    app.kubernetes.io/name: vald-helm-operator
+    helm.sh/chart: vald-helm-operator-v1.3.1
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/version: v1.3.1
+    app.kubernetes.io/component: helm-operator
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      name: vald-helm-operator
+  template:
+    metadata:
+      labels:
+        name: vald-helm-operator
+        app.kubernetes.io/name: vald-helm-operator
+        app.kubernetes.io/instance: RELEASE-NAME
+        app.kubernetes.io/component: helm-operator
+    spec:
+      serviceAccountName: vald-helm-operator
+      containers:
+        - name: vald-helm-operator
+          image: "vdaas/vald-helm-operator:v1.3.1"
+          imagePullPolicy: Always
+          args:
+            - "run"
+            - "--watches-file=./watches.yaml"
+            - "--leader-elect"
+            - "--leader-election-id=vald-helm-operator"
+            - "--leader-election-namespace=default"
+            - "--metrics-bind-address=:6061"
+            - "--health-probe-bind-address=:8081"
+            - "--reconcile-period=1m"
+            - "--max-concurrent-reconciles=1"
+            - "--zap-encoder=console"
+            - "--zap-log-level=info"
+            - "--zap-stacktrace-level=error"
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: health
+              scheme: HTTP
+            initialDelaySeconds: 15
+            periodSeconds: 20
+            successThreshold: 1
+            failureThreshold: 2
+            timeoutSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: health
+              scheme: HTTP
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 2
+            timeoutSeconds: 5
+          ports:
+            - name: health
+              protocol: TCP
+              containerPort: 8081
+            - name: prometheus
+              protocol: TCP
+              containerPort: 6061
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: WATCH_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
