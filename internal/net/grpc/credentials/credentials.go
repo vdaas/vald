@@ -23,6 +23,7 @@ import (
 	"google.golang.org/grpc/credentials"
 )
 
+// NewTLS returns the TLS credentials.
 func NewTLS(c *tls.Config) credentials.TransportCredentials {
 	return credentials.NewTLS(c)
 }
