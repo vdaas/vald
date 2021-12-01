@@ -14,6 +14,7 @@ replace (
 	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.42.16
 	github.com/chzyer/logex => github.com/chzyer/logex v1.1.11-0.20170329064859-445be9e134b2
 	github.com/coreos/etcd => go.etcd.io/etcd v3.3.27+incompatible
+	github.com/dgrijalva/jwt-go => github.com/golang-jwt/jwt/v4 v4.1.0
 	github.com/docker/docker => github.com/moby/moby v20.10.11+incompatible
 	github.com/envoyproxy/protoc-gen-validate => github.com/envoyproxy/protoc-gen-validate v0.6.2
 	github.com/go-sql-driver/mysql => github.com/go-sql-driver/mysql v1.6.0
