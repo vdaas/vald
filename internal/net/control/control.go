@@ -24,7 +24,7 @@ import (
 	"github.com/vdaas/vald/internal/log"
 )
 
-// SocketController represent the socket listener controller.
+// SocketController represents the socket listener controller.
 type SocketController interface {
 	GetControl() func(network, addr string, c syscall.RawConn) (err error)
 }
@@ -42,7 +42,7 @@ type control struct {
 	keepAlive                int
 }
 
-// SockerFlag represent the flag to enable specific feature for the socket listener.
+// SocketFlag represents the flag to enable specific feature for the socket listener.
 type SocketFlag uint
 
 const (
@@ -57,7 +57,7 @@ const (
 	IPRecoverDestinationAddr
 )
 
-// New return the socket controller.
+// New returns the socket controller.
 func New(flag SocketFlag, keepAlive int) SocketController {
 	return &control{
 		reusePort:                flag&ReusePort == ReusePort,

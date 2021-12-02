@@ -219,7 +219,7 @@ func Test_isTCP(t *testing.T) {
 			},
 		},
 		{
-			name: "return true when network not tcp",
+			name: "return false when network is not tcp",
 			args: args{
 				network: "udp",
 			},
@@ -503,7 +503,6 @@ func Test_control_controlFunc(t *testing.T) {
 			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
