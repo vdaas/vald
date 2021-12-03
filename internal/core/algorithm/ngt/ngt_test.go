@@ -847,7 +847,6 @@ func Test_ngt_setup(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-
 		{
 			name: "return nil when object type is uint8",
 			fields: fields{

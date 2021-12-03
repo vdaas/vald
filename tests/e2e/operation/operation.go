@@ -45,7 +45,6 @@ type Dataset struct {
 type Client interface {
 	Search(t *testing.T, ctx context.Context, ds Dataset) error
 	SearchByID(t *testing.T, ctx context.Context, ds Dataset) error
-
 	SearchWithParameters(
 		t *testing.T,
 		ctx context.Context,
@@ -68,12 +67,10 @@ type Client interface {
 		statusValidator StatusValidator,
 		errorValidator ErrorValidator,
 	) error
-
 	Insert(t *testing.T, ctx context.Context, ds Dataset) error
 	Update(t *testing.T, ctx context.Context, ds Dataset) error
 	Upsert(t *testing.T, ctx context.Context, ds Dataset) error
 	Remove(t *testing.T, ctx context.Context, ds Dataset) error
-
 	InsertWithParameters(
 		t *testing.T,
 		ctx context.Context,
@@ -108,7 +105,6 @@ type Client interface {
 		statusValidator StatusValidator,
 		errorValidator ErrorValidator,
 	) error
-
 	MultiSearch(t *testing.T, ctx context.Context, ds Dataset) error
 	MultiSearchByID(t *testing.T, ctx context.Context, ds Dataset) error
 	MultiInsert(t *testing.T, ctx context.Context, ds Dataset) error
