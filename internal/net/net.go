@@ -45,9 +45,10 @@ type (
 
 	// Resolver is an alias of net.Resolver.
 	Resolver = net.Resolver
-)
 
-type NetworkType uint
+	// NetworkType represents a network type such as TCP, TCP6, etc.
+	NetworkType uint
+)
 
 const (
 	localIPv4   = "127.0.0.1"
@@ -81,6 +82,7 @@ var (
 	IPv4 = net.IPv4
 )
 
+// NetworkTypeFromString returns the corresponding network type from string.
 func NetworkTypeFromString(str string) NetworkType {
 	switch strings.ToLower(str) {
 	case UNIX.String():
@@ -111,6 +113,7 @@ func NetworkTypeFromString(str string) NetworkType {
 	return Unknown
 }
 
+// String returns the string of the network type.
 func (n NetworkType) String() string {
 	switch n {
 	case UNIX:
