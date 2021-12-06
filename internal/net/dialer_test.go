@@ -1759,69 +1759,162 @@ func Test_dialer_tlsHandshake(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx: nil,
-		           conn: nil,
-		           addr: "",
-		       },
-		       fields: fields {
-		           cache: nil,
-		           dnsCache: false,
-		           dnsCachedOnce: sync.Once{},
-		           tlsConfig: nil,
-		           dnsRefreshDurationStr: "",
-		           dnsCacheExpirationStr: "",
-		           dnsRefreshDuration: nil,
-		           dnsCacheExpiration: nil,
-		           dialerTimeout: nil,
-		           dialerKeepalive: nil,
-		           dialerFallbackDelay: nil,
-		           dialerDualStack: false,
-		           addrs: sync.Map{},
-		           der: nil,
-		           dialer: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ctx: nil,
-		           conn: nil,
-		           addr: "",
-		           },
-		           fields: fields {
-		           cache: nil,
-		           dnsCache: false,
-		           dnsCachedOnce: sync.Once{},
-		           tlsConfig: nil,
-		           dnsRefreshDurationStr: "",
-		           dnsCacheExpirationStr: "",
-		           dnsRefreshDuration: nil,
-		           dnsCacheExpiration: nil,
-		           dialerTimeout: nil,
-		           dialerKeepalive: nil,
-		           dialerFallbackDelay: nil,
-		           dialerDualStack: false,
-		           addrs: sync.Map{},
-		           der: nil,
-		           dialer: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+			h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				w.WriteHeader(200)
+			})
+			srv := httptest.NewTLSServer(h)
+			srv.TLS.InsecureSkipVerify = true
+
+			d, err := NewDialer()
+			if err != nil {
+				t.Error(err)
+			}
+
+			host, port, _ := SplitHostPort(strings.TrimPrefix(strings.TrimPrefix(srv.URL, "https://"), "http://"))
+			addr := host + ":" + strconv.FormatUint(uint64(port), 10)
+
+			conn, err := d.DialContext(ctx, "tcp", addr)
+			if err != nil {
+				t.Error(err)
+			}
+
+			return test{
+				name: "return tls connection with handshake success with default timeout",
+				args: args{
+					ctx:  ctx,
+					conn: conn,
+					addr: srv.URL,
+				},
+				fields: fields{
+					dnsCache:        false,
+					dnsCachedOnce:   sync.Once{},
+					tlsConfig:       srv.TLS,
+					dialerDualStack: false,
+					addrs:           sync.Map{},
+					der:             &net.Dialer{},
+					dialer:          nil,
+				},
+				checkFunc: func(w want, c *tls.Conn, e error) error {
+					if !c.ConnectionState().HandshakeComplete {
+						return errors.New("Handshake not completed")
+					}
+					return nil
+				},
+				afterFunc: func(a args) {
+					srv.Close()
+					conn.Close()
+					cancel()
+				},
+			}
+		}(),
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+
+			h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				w.WriteHeader(200)
+			})
+			srv := httptest.NewTLSServer(h)
+			srv.TLS.InsecureSkipVerify = true
+
+			d, err := NewDialer()
+			if err != nil {
+				t.Error(err)
+			}
+
+			host, port, _ := SplitHostPort(strings.TrimPrefix(strings.TrimPrefix(srv.URL, "https://"), "http://"))
+			addr := host + ":" + strconv.FormatUint(uint64(port), 10)
+
+			conn, err := d.DialContext(ctx, "tcp", addr)
+			if err != nil {
+				t.Error(err)
+			}
+
+			return test{
+				name: "return error when handshake timeout",
+				args: args{
+					ctx:  ctx,
+					conn: conn,
+					addr: srv.URL,
+				},
+				fields: fields{
+					dnsCache:        false,
+					dnsCachedOnce:   sync.Once{},
+					tlsConfig:       srv.TLS,
+					dialerDualStack: false,
+					addrs:           sync.Map{},
+					der: &net.Dialer{
+						Timeout: 1,
+					},
+					dialer: nil,
+				},
+				checkFunc: func(w want, c *tls.Conn, e error) error {
+					if e == nil {
+						return errors.New("timeout error should be returned")
+					}
+					return nil
+				},
+				afterFunc: func(a args) {
+					srv.Close()
+					conn.Close()
+					cancel()
+				},
+			}
+		}(),
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+
+			h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				w.WriteHeader(200)
+			})
+			srv := httptest.NewTLSServer(h)
+			srv.TLS.InsecureSkipVerify = true
+
+			d, err := NewDialer()
+			if err != nil {
+				t.Error(err)
+			}
+
+			host, port, _ := SplitHostPort(strings.TrimPrefix(strings.TrimPrefix(srv.URL, "https://"), "http://"))
+			addr := host + ":" + strconv.FormatUint(uint64(port), 10)
+
+			conn, err := d.DialContext(ctx, "tcp", addr)
+			if err != nil {
+				t.Error(err)
+			}
+
+			srv.Close()
+
+			return test{
+				name: "return error when host not found",
+				args: args{
+					ctx:  ctx,
+					conn: conn,
+					addr: srv.URL,
+				},
+				fields: fields{
+					dnsCache:        false,
+					dnsCachedOnce:   sync.Once{},
+					tlsConfig:       &tls.Config{},
+					dialerDualStack: false,
+					addrs:           sync.Map{},
+					der:             &net.Dialer{},
+				},
+				checkFunc: func(w want, c *tls.Conn, e error) error {
+					if e == nil {
+						return errors.New("Handshake not completed")
+					}
+					return nil
+				},
+				afterFunc: func(a args) {
+					// srv.Close()
+					conn.Close()
+					cancel()
+				},
+			}
+		}(),
 	}
 
 	for _, tc := range tests {
