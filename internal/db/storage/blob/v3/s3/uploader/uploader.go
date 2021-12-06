@@ -81,7 +81,7 @@ func (c *client) Close() (err error) {
 		_ = c.pw.Close()
 	}
 
-	if werr := c.eg.Wait(); werr != nil {
+	if err = c.eg.Wait(); err != nil {
 		return err
 	}
 	return nil

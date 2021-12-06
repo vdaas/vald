@@ -15,6 +15,7 @@ import (
 
 	"github.com/vdaas/vald/internal/db/storage/blob"
 	"github.com/vdaas/vald/internal/db/storage/blob/v3/s3/downloader"
+	"github.com/vdaas/vald/internal/db/storage/blob/v3/s3/logger"
 	"github.com/vdaas/vald/internal/db/storage/blob/v3/s3/uploader"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
@@ -57,6 +58,7 @@ func New(opts ...Option) (b blob.Bucket, err error) {
 			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 		}
 	}
+	c.logger = logger.New()
 	return c, nil
 }
 
@@ -65,6 +67,7 @@ func (c *client) Open(ctx context.Context) (err error) {
 		config.WithDefaultRegion(c.region),
 		config.WithRegion(c.region),
 		config.WithHTTPClient(c.client),
+		config.WithLogger(c.logger),
 		config.WithClientLogMode(c.logMode),
 		config.WithLogConfigurationWarnings(true),
 		config.WithRetryer(func() aws.Retryer {
