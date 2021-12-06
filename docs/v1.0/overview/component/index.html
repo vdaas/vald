@@ -270,7 +270,7 @@ Vald can load balance the request base on node resources.</p>
 Agent-NGT uses <a href=https://github.com/yahoojapan/NGT>yahoojapan/NGT</a> as a core library.</p>
 <p>Each Vald Agent pod has its own vector data space because only several Vald Agents are selected to be inserted/updated in a single insert/update request.</p>
 <p>When searching a vector in Vald, each Vald Agent return different results of <em>k</em>-nearest neighbors depending on their index, and you&rsquo;ll get the merged result of them.</p>
-<p><img src=..//images/v1.0/vector_data_space_explain.svg></p>
+<img src=..//images/v1.0/vector_data_space_explain.svg>
 <h3 id=vald-agent-scheduler>Vald Agent Scheduler</h3>
 <p>Vald Agent Scheduler is the scheduler of the Vald Agent.
 It implements it&rsquo;s own custom scheduling logic to increase the scalability of the Vald Agent.</p>

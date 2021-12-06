@@ -230,10 +230,10 @@ Before reading this document, you need to have some understanding of the basic i
 <p>This section describes the data flow inside Vald and how Vald&rsquo;s vector indexes are stored.
 This is the most important part for the users to understand Vald.</p>
 <p>The below image is the overview of Vald&rsquo;s architecture.</p>
-<p><img src=/images/v1.1/vald_architecture_overview.png></p>
+<img src=/images/v1.1/vald_architecture_overview.png>
 <p>We will explain this image in the following sections.</p>
 <h3 id=insert>Insert</h3>
-<p><img src=/images/v1.1/insert_flow.png></p>
+<img src=/images/v1.1/insert_flow.png>
 <p>When the user inserts data into Vald:</p>
 <ol>
 <li>Vald Ingress receives the request from the user. The request includes the vector and the vector ID.</li>
@@ -256,7 +256,7 @@ This is the most important part for the users to understand Vald.</p>
 <li>Vald Filter Gateway will return success to the Vald Ingress.</li>
 </ol>
 <h3 id=search>Search</h3>
-<p><img src=/images/v1.1/search_flow.png></p>
+<img src=/images/v1.1/search_flow.png>
 <p>When the user searches a vector from Vald:</p>
 <ol>
 <li>Vald Ingress receives a search request from the user. Vald provides 2 searching interfaces to the user, the user can search by vector or search by the vector ID.</li>
@@ -277,7 +277,7 @@ This is the most important part for the users to understand Vald.</p>
 <li>Vald Filter Gateway will return the final result to the Vald Ingress.</li>
 </ol>
 <h3 id=update>Update</h3>
-<p><img src=/images/v1.1/update_flow.png></p>
+<img src=/images/v1.1/update_flow.png>
 <p>When the user updates a vector from Vald:</p>
 <ol>
 <li>Vald Ingress receives the request from the user. The request includes the existing vector ID(s) and the new vector(s) to be updated.</li>
@@ -307,7 +307,7 @@ This is the most important part for the users to understand Vald.</p>
 <li>Vald Filter Gateway will return success to the Vald Ingress.</li>
 </ol>
 <h3 id=upsert>Upsert</h3>
-<p><img src=/images/v1.1/upsert_flow.png></p>
+<img src=/images/v1.1/upsert_flow.png>
 <p>Upsert request updates the existing vector if the same vector ID exists, or inserts the vector into Vald.
 When the user upsert a vector to Vald:</p>
 <ol>
@@ -321,7 +321,7 @@ When the user upsert a vector to Vald:</p>
 <li>If the vector with the same vector ID exists, Vald Meta Gateway will process the Update flow from step 5 to step 25. If the vector does not exist, Vald Meta Gateway will process the insert flow from step 5 to step 18.</li>
 </ol>
 <h3 id=delete>Delete</h3>
-<p><img src=/images/v1.1/delete_flow.png></p>
+<img src=/images/v1.1/delete_flow.png>
 <p>When the user deletes a vector which is indexed in Vald Agent:</p>
 <ol>
 <li>Vald Ingress receives the delete request from the user. The request includes the vector ID(s), which is specified by the user.</li>

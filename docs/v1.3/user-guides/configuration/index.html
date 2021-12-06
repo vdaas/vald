@@ -316,9 +316,9 @@ To achieve this, the following <a href=https://kubernetes.io/docs/concepts/sched
       <span style=color:#f92672>preferredDuringSchedulingIgnoredDuringExecution</span>: [] <span style=color:#75715e># to disable default settings</span>
 </code></pre></div><h3 id=gateways>Gateways</h3>
 <h4 id=ingress>Ingress</h4>
-<p>Ingress for gateways can be configured by <code>gateway.{backup,filter,lb,meta}.ingress</code> field object.
-It is important to set your host to <code>gateway.{backup,filter,lb,meta}.ingress.host</code> field.
-<code>gateway.{backup,filter,lb,meta}.ingress.servicePort</code> should be <code>grpc</code> or <code>rest</code>.</p>
+<p>Ingress for gateways can be configured by <code>gateway.{filter,lb}.ingress</code> field object.
+It is important to set your host to <code>gateway.{filter,lb}.ingress.host</code> field.
+<code>gateway.{filter,lb}.ingress.servicePort</code> should be <code>grpc</code> or <code>rest</code>.</p>
 <div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-yaml data-lang=yaml><span style=color:#f92672>gateway</span>:
   <span style=color:#f92672>lb</span>:
     <span style=color:#f92672>ingress</span>:

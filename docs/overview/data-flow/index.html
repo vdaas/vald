@@ -178,7 +178,7 @@ v1.3.1
 <p>On this page, we describe the data flow inside Vald and how vector indexes are stored in the Vald Cluster.
 It will help you to understand what Vald does from users' requests.</p>
 <p>The below image is the basic Vald architecture.</p>
-<p><img src="/images/overview/Vald Basic Architecture.svg"></p>
+<img src="/images/overview/Vald Basic Architecture.svg">
 <p>We will explain using this image in the following sections.</p>
 <ul>
 <li><a href=#data-flow>Data Flow</a>
@@ -196,7 +196,7 @@ It will help you to understand what Vald does from users' requests.</p>
 <p>To obtain the memory usage of Vald Agent and the node, Vald Discoverer is required to rank which is the most suitable agent to perform the insert request by talking with the kube-apiserver.</p>
 <p>To make the insert command effective, the <code>CreateIndex</code> instruction is required by the Vald Index Manager or Vald Agent itself to update the index to provide extremely high searching performance to users.</p>
 <p>Please note that only one embedding space is supported in a single Vald Cluster, if you want to support multiple embedded spaces, you may need to consider to deploy multiple Vald cluster to support this use case.</p>
-<p><img src=/images/overview/insert_flow_v2.svg></p>
+<img src=/images/overview/insert_flow_v2.svg>
 <p>When the user inserts data into Vald:</p>
 <ol>
 <li>Vald Ingress receives the request from the user. The request includes the vector and the vector ID. The vector ID is the user-defined unique ID for each vector.</li>
@@ -210,7 +210,7 @@ It will help you to understand what Vald does from users' requests.</p>
 <h2 id=search>Search</h2>
 <p>Users can perform a <em>k</em> nearest neighbor vector searching in Vald. The searching performance is extremely high because of the on-memory graph index structure and optimized Vald structure.</p>
 <p>The search request will be broadcast to all Vald Agents to search the top <em>k</em> nearest neighbor vectors from each Vald Agents, and the result will be combined and sorted by the distance of the target vector by the Vald LB Gateway.</p>
-<p><img src=/images/overview/search_flow_v2.svg></p>
+<img src=/images/overview/search_flow_v2.svg>
 <p>When the user searches a vector from Vald:</p>
 <ol>
 <li>Vald Ingress receives a search request from the user. Vald provides 2 searching interfaces to the user, the user can search by vector or search by the vector ID.</li>
@@ -223,7 +223,7 @@ It will help you to understand what Vald does from users' requests.</p>
 </ol>
 <h2 id=update>Update</h2>
 <p>Users can update a vector by sending an update request to Vald. Vald will perform delete and insert requests to perform a single update command.</p>
-<p><img src=/images/overview/update_flow_v2.svg></p>
+<img src=/images/overview/update_flow_v2.svg>
 <p>When the user updates a vector from Vald:</p>
 <ol>
 <li>Vald Ingress receives the request from the user. The request includes the existing vector ID(s) and the new vector(s) to be updated.</li>
@@ -237,7 +237,7 @@ It will help you to understand what Vald does from users' requests.</p>
 </ol>
 <h2 id=upsert>Upsert</h2>
 <p>Upsert request updates the existing vector if the same vector ID exists, or inserts the vector into Vald.</p>
-<p><img src=/images/overview/upsert_flow_v2.svg></p>
+<img src=/images/overview/upsert_flow_v2.svg>
 <p>When the user upserts a vector to Vald:</p>
 <ol>
 <li>Vald Ingress receives the request from the user. The request includes the vector ID(s) and the vector(s).</li>
@@ -251,7 +251,7 @@ It will help you to understand what Vald does from users' requests.</p>
 </ol>
 <h2 id=delete>Delete</h2>
 <p>Delete request will delete the vector in Vald cluster. Vald will broadcast the delete request to all Vald Agents to delete the vector inside the cluster. To make the delete command effective, the <code>CreateIndex</code> command is required by the Vald Index Manager or Vald Agent itself to update the vector index.</p>
-<p><img src=/images/overview/delete_flow_v2.svg></p>
+<img src=/images/overview/delete_flow_v2.svg>
 <p>When the user deletes a vector that is indexed in Vald Agent:</p>
 <ol>
 <li>Vald Ingress receives the delete request from the user. The request includes the vector ID(s), which is specified by the user.</li>
