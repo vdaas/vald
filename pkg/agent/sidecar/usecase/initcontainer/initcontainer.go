@@ -25,8 +25,7 @@ import (
 	iconf "github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/db/storage/blob/cloudstorage"
 	"github.com/vdaas/vald/internal/db/storage/blob/cloudstorage/urlopener"
-	"github.com/vdaas/vald/internal/db/storage/blob/s3"
-	"github.com/vdaas/vald/internal/db/storage/blob/s3/session"
+	"github.com/vdaas/vald/internal/db/storage/blob/v3/s3"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net"
@@ -108,30 +107,21 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		storage.WithBucketName(cfg.AgentSidecar.BlobStorage.Bucket),
 		storage.WithFilename(cfg.AgentSidecar.Filename),
 		storage.WithFilenameSuffix(cfg.AgentSidecar.FilenameSuffix),
-		storage.WithS3SessionOpts(
-			session.WithEndpoint(cfg.AgentSidecar.BlobStorage.S3.Endpoint),
-			session.WithRegion(cfg.AgentSidecar.BlobStorage.S3.Region),
-			session.WithAccessKey(cfg.AgentSidecar.BlobStorage.S3.AccessKey),
-			session.WithSecretAccessKey(cfg.AgentSidecar.BlobStorage.S3.SecretAccessKey),
-			session.WithToken(cfg.AgentSidecar.BlobStorage.S3.Token),
-			session.WithMaxRetries(cfg.AgentSidecar.BlobStorage.S3.MaxRetries),
-			session.WithForcePathStyle(cfg.AgentSidecar.BlobStorage.S3.ForcePathStyle),
-			session.WithUseAccelerate(cfg.AgentSidecar.BlobStorage.S3.UseAccelerate),
-			session.WithUseARNRegion(cfg.AgentSidecar.BlobStorage.S3.UseARNRegion),
-			session.WithUseDualStack(cfg.AgentSidecar.BlobStorage.S3.UseDualStack),
-			session.WithEnableSSL(cfg.AgentSidecar.BlobStorage.S3.EnableSSL),
-			session.WithEnableParamValidation(cfg.AgentSidecar.BlobStorage.S3.EnableParamValidation),
-			session.WithEnable100Continue(cfg.AgentSidecar.BlobStorage.S3.Enable100Continue),
-			session.WithEnableContentMD5Validation(cfg.AgentSidecar.BlobStorage.S3.EnableContentMD5Validation),
-			session.WithEnableEndpointDiscovery(cfg.AgentSidecar.BlobStorage.S3.EnableEndpointDiscovery),
-			session.WithEnableEndpointHostPrefix(cfg.AgentSidecar.BlobStorage.S3.EnableEndpointHostPrefix),
-			session.WithHTTPClient(client),
-		),
 		storage.WithS3Opts(
+			s3.WithEndpoint(cfg.AgentSidecar.BlobStorage.S3.Endpoint),
+			s3.WithRegion(cfg.AgentSidecar.BlobStorage.S3.Region),
+			s3.WithAccessKey(cfg.AgentSidecar.BlobStorage.S3.AccessKey),
+			s3.WithSecretAccessKey(cfg.AgentSidecar.BlobStorage.S3.SecretAccessKey),
+			s3.WithToken(cfg.AgentSidecar.BlobStorage.S3.Token),
+			s3.WithMaxRetries(cfg.AgentSidecar.BlobStorage.S3.MaxRetries),
+			s3.WithForcePathStyle(cfg.AgentSidecar.BlobStorage.S3.ForcePathStyle),
+			s3.WithUseAccelerate(cfg.AgentSidecar.BlobStorage.S3.UseAccelerate),
+			s3.WithUseARNRegion(cfg.AgentSidecar.BlobStorage.S3.UseARNRegion),
+			s3.WithUseDualStack(cfg.AgentSidecar.BlobStorage.S3.UseDualStack),
+			s3.WithEnableSSL(cfg.AgentSidecar.BlobStorage.S3.EnableSSL),
+			s3.WithEnableEndpointDiscovery(cfg.AgentSidecar.BlobStorage.S3.EnableEndpointDiscovery),
+			s3.WithHTTPClient(client),
 			s3.WithMaxPartSize(cfg.AgentSidecar.BlobStorage.S3.MaxPartSize),
-			s3.WithMaxChunkSize(cfg.AgentSidecar.BlobStorage.S3.MaxChunkSize),
-			s3.WithReaderBackoff(cfg.AgentSidecar.RestoreBackoffEnabled),
-			s3.WithReaderBackoffOpts(cfg.AgentSidecar.RestoreBackoff.Opts()...),
 		),
 		storage.WithCloudStorageURLOpenerOpts(
 			urlopener.WithCredentialsFile(cfg.AgentSidecar.BlobStorage.CloudStorage.Client.CredentialsFilePath),

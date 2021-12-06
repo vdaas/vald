@@ -26,8 +26,7 @@ import (
 	"github.com/vdaas/vald/internal/db/storage/blob"
 	"github.com/vdaas/vald/internal/db/storage/blob/cloudstorage"
 	"github.com/vdaas/vald/internal/db/storage/blob/cloudstorage/urlopener"
-	"github.com/vdaas/vald/internal/db/storage/blob/s3"
-	"github.com/vdaas/vald/internal/db/storage/blob/s3/session"
+	"github.com/vdaas/vald/internal/db/storage/blob/v3/s3"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/io"
@@ -48,8 +47,7 @@ type bs struct {
 	filename    string
 	suffix      string
 
-	s3Opts        []s3.Option
-	s3SessionOpts []session.Option
+	s3Opts []s3.Option
 
 	cloudStorageOpts          []cloudstorage.Option
 	cloudStorageURLOpenerOpts []urlopener.Option
@@ -108,16 +106,9 @@ func (b *bs) initCompressor() (err error) {
 func (b *bs) initBucket(ctx context.Context) (err error) {
 	switch config.AtoBST(b.storageType) {
 	case config.S3:
-		s, err := session.New(b.s3SessionOpts...).Session()
-		if err != nil {
-			return err
-		}
-
 		b.bucket, err = s3.New(
 			append(
 				b.s3Opts,
-				s3.WithErrGroup(b.eg),
-				s3.WithSession(s),
 				s3.WithBucket(b.bucketName),
 			)...,
 		)
