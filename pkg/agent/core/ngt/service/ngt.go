@@ -430,15 +430,12 @@ func (n *ngt) SearchByID(uuid string, size uint32, epsilon, radius float32) (vec
 	if n.IsIndexing() {
 		return nil, nil, errors.ErrCreateIndexingIsInProgress
 	}
-	log.Debugf("SearchByID\tuuid: %s size: %d epsilon: %f radius: %f", uuid, size, epsilon, radius)
 	vec, err = n.GetObject(uuid)
 	if err != nil {
-		log.Debugf("SearchByID\tuuid: %s's vector not found", uuid)
 		return nil, nil, err
 	}
 	dst, err = n.Search(vec, size, epsilon, radius)
 	if err != nil {
-		log.Debugf("Search for SearchByID\t: uuid %s, vector %v failed", uuid, vec)
 		return vec, nil, err
 	}
 	return vec, dst, nil
