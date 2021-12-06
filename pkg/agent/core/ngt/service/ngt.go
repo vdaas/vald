@@ -485,15 +485,12 @@ func (n *ngt) LinearSearchByID(uuid string, size uint32) (vec []float32, dst []m
 	if n.IsIndexing() {
 		return nil, nil, errors.ErrCreateIndexingIsInProgress
 	}
-	log.Debugf("SearchByID\tuuid: %s size: %d epsilon: %f radius: %f", uuid, size)
 	vec, err = n.GetObject(uuid)
 	if err != nil {
-		log.Debugf("SearchByID\tuuid: %s's vector not found", uuid)
 		return nil, nil, err
 	}
 	dst, err = n.LinearSearch(vec, size)
 	if err != nil {
-		log.Debugf("Search for SearchByID\t: uuid %s, vector %v failed", uuid, vec)
 		return vec, nil, err
 	}
 	return vec, dst, nil
