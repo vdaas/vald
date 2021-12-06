@@ -8167,7 +8167,6 @@ func Test_ngt_LinearSearch(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -8372,7 +8371,6 @@ func Test_ngt_LinearSearchByID(t *testing.T) {
 			if err := test.checkFunc(test.want, gotVec, gotDst, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
