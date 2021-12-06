@@ -7970,3 +7970,409 @@ func Test_ngt_removeInvalidIndex(t *testing.T) {
 		})
 	}
 }
+
+func Test_ngt_LinearSearch(t *testing.T) {
+	type args struct {
+		vec  []float32
+		size uint32
+	}
+	type fields struct {
+		core              core.NGT
+		eg                errgroup.Group
+		kvs               kvs.BidiMap
+		fmu               sync.Mutex
+		fmap              map[string]uint32
+		vq                vqueue.Queue
+		indexing          atomic.Value
+		saving            atomic.Value
+		cimu              sync.Mutex
+		lastNoice         uint64
+		nocie             uint64
+		nogce             uint64
+		inMem             bool
+		dim               int
+		alen              int
+		lim               time.Duration
+		dur               time.Duration
+		sdur              time.Duration
+		minLit            time.Duration
+		maxLit            time.Duration
+		litFactor         time.Duration
+		enableProactiveGC bool
+		path              string
+		poolSize          uint32
+		radius            float32
+		epsilon           float32
+		idelay            time.Duration
+		dcd               bool
+	}
+	type want struct {
+		want []model.Distance
+		err  error
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, []model.Distance, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, got []model.Distance, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           vec: nil,
+		           size: 0,
+		       },
+		       fields: fields {
+		           core: nil,
+		           eg: nil,
+		           kvs: nil,
+		           fmu: sync.Mutex{},
+		           fmap: nil,
+		           vq: nil,
+		           indexing: nil,
+		           saving: nil,
+		           cimu: sync.Mutex{},
+		           lastNoice: 0,
+		           nocie: 0,
+		           nogce: 0,
+		           inMem: false,
+		           dim: 0,
+		           alen: 0,
+		           lim: nil,
+		           dur: nil,
+		           sdur: nil,
+		           minLit: nil,
+		           maxLit: nil,
+		           litFactor: nil,
+		           enableProactiveGC: false,
+		           path: "",
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
+		           idelay: nil,
+		           dcd: false,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           vec: nil,
+		           size: 0,
+		           },
+		           fields: fields {
+		           core: nil,
+		           eg: nil,
+		           kvs: nil,
+		           fmu: sync.Mutex{},
+		           fmap: nil,
+		           vq: nil,
+		           indexing: nil,
+		           saving: nil,
+		           cimu: sync.Mutex{},
+		           lastNoice: 0,
+		           nocie: 0,
+		           nogce: 0,
+		           inMem: false,
+		           dim: 0,
+		           alen: 0,
+		           lim: nil,
+		           dur: nil,
+		           sdur: nil,
+		           minLit: nil,
+		           maxLit: nil,
+		           litFactor: nil,
+		           enableProactiveGC: false,
+		           path: "",
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
+		           idelay: nil,
+		           dcd: false,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			n := &ngt{
+				core:              test.fields.core,
+				eg:                test.fields.eg,
+				kvs:               test.fields.kvs,
+				fmu:               test.fields.fmu,
+				fmap:              test.fields.fmap,
+				vq:                test.fields.vq,
+				indexing:          test.fields.indexing,
+				saving:            test.fields.saving,
+				cimu:              test.fields.cimu,
+				lastNoice:         test.fields.lastNoice,
+				nocie:             test.fields.nocie,
+				nogce:             test.fields.nogce,
+				inMem:             test.fields.inMem,
+				dim:               test.fields.dim,
+				alen:              test.fields.alen,
+				lim:               test.fields.lim,
+				dur:               test.fields.dur,
+				sdur:              test.fields.sdur,
+				minLit:            test.fields.minLit,
+				maxLit:            test.fields.maxLit,
+				litFactor:         test.fields.litFactor,
+				enableProactiveGC: test.fields.enableProactiveGC,
+				path:              test.fields.path,
+				poolSize:          test.fields.poolSize,
+				radius:            test.fields.radius,
+				epsilon:           test.fields.epsilon,
+				idelay:            test.fields.idelay,
+				dcd:               test.fields.dcd,
+			}
+
+			got, err := n.LinearSearch(test.args.vec, test.args.size)
+			if err := test.checkFunc(test.want, got, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
+
+func Test_ngt_LinearSearchByID(t *testing.T) {
+	type args struct {
+		uuid string
+		size uint32
+	}
+	type fields struct {
+		core              core.NGT
+		eg                errgroup.Group
+		kvs               kvs.BidiMap
+		fmu               sync.Mutex
+		fmap              map[string]uint32
+		vq                vqueue.Queue
+		indexing          atomic.Value
+		saving            atomic.Value
+		cimu              sync.Mutex
+		lastNoice         uint64
+		nocie             uint64
+		nogce             uint64
+		inMem             bool
+		dim               int
+		alen              int
+		lim               time.Duration
+		dur               time.Duration
+		sdur              time.Duration
+		minLit            time.Duration
+		maxLit            time.Duration
+		litFactor         time.Duration
+		enableProactiveGC bool
+		path              string
+		poolSize          uint32
+		radius            float32
+		epsilon           float32
+		idelay            time.Duration
+		dcd               bool
+	}
+	type want struct {
+		wantVec []float32
+		wantDst []model.Distance
+		err     error
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, []float32, []model.Distance, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, gotVec []float32, gotDst []model.Distance, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(gotVec, w.wantVec) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotVec, w.wantVec)
+		}
+		if !reflect.DeepEqual(gotDst, w.wantDst) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotDst, w.wantDst)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           uuid: "",
+		           size: 0,
+		       },
+		       fields: fields {
+		           core: nil,
+		           eg: nil,
+		           kvs: nil,
+		           fmu: sync.Mutex{},
+		           fmap: nil,
+		           vq: nil,
+		           indexing: nil,
+		           saving: nil,
+		           cimu: sync.Mutex{},
+		           lastNoice: 0,
+		           nocie: 0,
+		           nogce: 0,
+		           inMem: false,
+		           dim: 0,
+		           alen: 0,
+		           lim: nil,
+		           dur: nil,
+		           sdur: nil,
+		           minLit: nil,
+		           maxLit: nil,
+		           litFactor: nil,
+		           enableProactiveGC: false,
+		           path: "",
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
+		           idelay: nil,
+		           dcd: false,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           uuid: "",
+		           size: 0,
+		           },
+		           fields: fields {
+		           core: nil,
+		           eg: nil,
+		           kvs: nil,
+		           fmu: sync.Mutex{},
+		           fmap: nil,
+		           vq: nil,
+		           indexing: nil,
+		           saving: nil,
+		           cimu: sync.Mutex{},
+		           lastNoice: 0,
+		           nocie: 0,
+		           nogce: 0,
+		           inMem: false,
+		           dim: 0,
+		           alen: 0,
+		           lim: nil,
+		           dur: nil,
+		           sdur: nil,
+		           minLit: nil,
+		           maxLit: nil,
+		           litFactor: nil,
+		           enableProactiveGC: false,
+		           path: "",
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
+		           idelay: nil,
+		           dcd: false,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			n := &ngt{
+				core:              test.fields.core,
+				eg:                test.fields.eg,
+				kvs:               test.fields.kvs,
+				fmu:               test.fields.fmu,
+				fmap:              test.fields.fmap,
+				vq:                test.fields.vq,
+				indexing:          test.fields.indexing,
+				saving:            test.fields.saving,
+				cimu:              test.fields.cimu,
+				lastNoice:         test.fields.lastNoice,
+				nocie:             test.fields.nocie,
+				nogce:             test.fields.nogce,
+				inMem:             test.fields.inMem,
+				dim:               test.fields.dim,
+				alen:              test.fields.alen,
+				lim:               test.fields.lim,
+				dur:               test.fields.dur,
+				sdur:              test.fields.sdur,
+				minLit:            test.fields.minLit,
+				maxLit:            test.fields.maxLit,
+				litFactor:         test.fields.litFactor,
+				enableProactiveGC: test.fields.enableProactiveGC,
+				path:              test.fields.path,
+				poolSize:          test.fields.poolSize,
+				radius:            test.fields.radius,
+				epsilon:           test.fields.epsilon,
+				idelay:            test.fields.idelay,
+				dcd:               test.fields.dcd,
+			}
+
+			gotVec, gotDst, err := n.LinearSearchByID(test.args.uuid, test.args.size)
+			if err := test.checkFunc(test.want, gotVec, gotDst, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
