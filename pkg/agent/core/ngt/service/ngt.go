@@ -49,6 +49,8 @@ type NGT interface {
 	Start(ctx context.Context) <-chan error
 	Search(vec []float32, size uint32, epsilon, radius float32) ([]model.Distance, error)
 	SearchByID(uuid string, size uint32, epsilon, radius float32) ([]float32, []model.Distance, error)
+	LinearSearch(vec []float32, size uint32) ([]model.Distance, error)
+	LinearSearchByID(uuid string, size uint32) ([]float32, []model.Distance, error)
 	Insert(uuid string, vec []float32) (err error)
 	InsertWithTime(uuid string, vec []float32, t int64) (err error)
 	InsertMultiple(vecs map[string][]float32) (err error)
@@ -428,15 +430,64 @@ func (n *ngt) SearchByID(uuid string, size uint32, epsilon, radius float32) (vec
 	if n.IsIndexing() {
 		return nil, nil, errors.ErrCreateIndexingIsInProgress
 	}
-	log.Debugf("SearchByID\tuuid: %s size: %d epsilon: %f radius: %f", uuid, size, epsilon, radius)
 	vec, err = n.GetObject(uuid)
 	if err != nil {
-		log.Debugf("SearchByID\tuuid: %s's vector not found", uuid)
 		return nil, nil, err
 	}
 	dst, err = n.Search(vec, size, epsilon, radius)
 	if err != nil {
-		log.Debugf("Search for SearchByID\t: uuid %s, vector %v failed", uuid, vec)
+		return vec, nil, err
+	}
+	return vec, dst, nil
+}
+
+func (n *ngt) LinearSearch(vec []float32, size uint32) ([]model.Distance, error) {
+	if n.IsIndexing() {
+		return nil, errors.ErrCreateIndexingIsInProgress
+	}
+	sr, err := n.core.LinearSearch(vec, int(size))
+	if err != nil {
+		if n.IsIndexing() {
+			return nil, errors.ErrCreateIndexingIsInProgress
+		}
+		log.Errorf("cgo error detected: ngt api returned error %v", err)
+		return nil, err
+	}
+
+	if len(sr) == 0 {
+		return nil, errors.ErrEmptySearchResult
+	}
+
+	ds := make([]model.Distance, 0, len(sr))
+	for _, d := range sr {
+		if err = d.Error; d.ID == 0 && err != nil {
+			log.Warnf("an error occurred while searching: %s", err)
+			continue
+		}
+		key, ok := n.kvs.GetInverse(d.ID)
+		if ok {
+			ds = append(ds, model.Distance{
+				ID:       key,
+				Distance: d.Distance,
+			})
+		} else {
+			log.Warn("not found", d.ID, d.Distance)
+		}
+	}
+
+	return ds, nil
+}
+
+func (n *ngt) LinearSearchByID(uuid string, size uint32) (vec []float32, dst []model.Distance, err error) {
+	if n.IsIndexing() {
+		return nil, nil, errors.ErrCreateIndexingIsInProgress
+	}
+	vec, err = n.GetObject(uuid)
+	if err != nil {
+		return nil, nil, err
+	}
+	dst, err = n.LinearSearch(vec, size)
+	if err != nil {
 		return vec, nil, err
 	}
 	return vec, dst, nil
