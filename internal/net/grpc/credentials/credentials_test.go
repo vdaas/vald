@@ -62,10 +62,14 @@ func TestNewTLS(t *testing.T) {
 		{
 			name: "return credential when config is not nil",
 			args: args{
-				c: &tls.Config{},
+				c: &tls.Config{
+					MinVersion: tls.VersionTLS12,
+				},
 			},
 			want: want{
-				want: credentials.NewTLS(&tls.Config{}),
+				want: credentials.NewTLS(&tls.Config{
+					MinVersion: tls.VersionTLS12,
+				}),
 			},
 		},
 	}
