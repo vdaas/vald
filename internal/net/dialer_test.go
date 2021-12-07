@@ -19,6 +19,7 @@ package net
 
 import (
 	"context"
+	ctls "crypto/tls"
 	stderrors "errors"
 	"fmt"
 	"io/ioutil"
@@ -1789,13 +1790,8 @@ func Test_dialer_tlsHandshake(t *testing.T) {
 					addr: srv.URL,
 				},
 				fields: fields{
-					dnsCache:        false,
-					dnsCachedOnce:   sync.Once{},
-					tlsConfig:       srv.TLS,
-					dialerDualStack: false,
-					addrs:           sync.Map{},
-					der:             &net.Dialer{},
-					dialer:          nil,
+					tlsConfig: srv.TLS,
+					der:       new(net.Dialer),
 				},
 				checkFunc: func(w want, c *tls.Conn, e error) error {
 					if !c.ConnectionState().HandshakeComplete {
@@ -1840,15 +1836,10 @@ func Test_dialer_tlsHandshake(t *testing.T) {
 					addr: srv.URL,
 				},
 				fields: fields{
-					dnsCache:        false,
-					dnsCachedOnce:   sync.Once{},
-					tlsConfig:       srv.TLS,
-					dialerDualStack: false,
-					addrs:           sync.Map{},
+					tlsConfig: srv.TLS,
 					der: &net.Dialer{
 						Timeout: 1,
 					},
-					dialer: nil,
 				},
 				checkFunc: func(w want, c *tls.Conn, e error) error {
 					if e == nil {
@@ -1885,6 +1876,7 @@ func Test_dialer_tlsHandshake(t *testing.T) {
 				t.Error(err)
 			}
 
+			// close the server before the test
 			srv.Close()
 
 			return test{
@@ -1895,12 +1887,10 @@ func Test_dialer_tlsHandshake(t *testing.T) {
 					addr: srv.URL,
 				},
 				fields: fields{
-					dnsCache:        false,
-					dnsCachedOnce:   sync.Once{},
-					tlsConfig:       &tls.Config{},
-					dialerDualStack: false,
-					addrs:           sync.Map{},
-					der:             &net.Dialer{},
+					tlsConfig: &tls.Config{
+						MinVersion: ctls.VersionTLS12,
+					},
+					der: new(net.Dialer),
 				},
 				checkFunc: func(w want, c *tls.Conn, e error) error {
 					if e == nil {
@@ -1909,7 +1899,6 @@ func Test_dialer_tlsHandshake(t *testing.T) {
 					return nil
 				},
 				afterFunc: func(a args) {
-					// srv.Close()
 					conn.Close()
 					cancel()
 				},
