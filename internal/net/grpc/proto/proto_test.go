@@ -97,7 +97,6 @@ func TestMarshal(t *testing.T) {
 			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -191,7 +190,6 @@ func TestUnmarshal(t *testing.T) {
 			if err := test.checkFunc(test, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
