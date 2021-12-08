@@ -25,19 +25,27 @@ import (
 )
 
 type (
-	Message   = proto.Message
+	// Message is a type alias of proto.Message.
+	Message = proto.Message
+
+	// MessageV1 is a type alias of protoiface.MessageV1.
 	MessageV1 = protoiface.MessageV1
-	Name      = protoreflect.Name
+
+	// Name is a type alias of protoreflect.Name.
+	Name = protoreflect.Name
 )
 
+// Marshal returns the wire-format encoding of m.
 func Marshal(m Message) ([]byte, error) {
 	return proto.Marshal(m)
 }
 
+// Unmarshal parses the wire-format message in b and places the result in m.
 func Unmarshal(data []byte, v Message) error {
 	return proto.Unmarshal(data, v)
 }
 
+// Clone returns a deep copy of m.
 func Clone(m Message) Message {
 	return proto.Clone(m)
 }

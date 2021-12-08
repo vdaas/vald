@@ -21,8 +21,10 @@ import (
 	"go.opencensus.io/plugin/ocgrpc"
 )
 
+// ServerHandler is a type alias of ocgrpc.ServerHandler to record OpenCensus stats and traces.
 type ServerHandler = ocgrpc.ServerHandler
 
+// NewServerHandler returns the server handler of OpenCensus stats and traces.
 func NewServerHandler(opts ...ServerOption) *ServerHandler {
 	handler := new(ServerHandler)
 
