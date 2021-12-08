@@ -8,9 +8,16 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 
 	"github.com/vdaas/vald/internal/db/storage/blob/v3/s3/file"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/log"
+)
+
+var (
+	errBlobNoSuchBucket = new(types.NoSuchBucket)
+	errBlobNoSuchKey    = new(types.NoSuchKey)
 )
 
 type Client interface {
@@ -50,6 +57,11 @@ func (c *client) Download(ctx context.Context, key string) (rc io.ReadCloser, er
 
 	err = c.download(ctx, key, f)
 	if err != nil {
+		if errors.As(err, &errBlobNoSuchBucket) ||
+			errors.As(err, &errBlobNoSuchKey) {
+			log.Warn(err)
+			return f, nil
+		}
 		return nil, err
 	}
 
