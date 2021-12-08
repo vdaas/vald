@@ -20,6 +20,7 @@ package health
 import (
 	"testing"
 
+	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/test/goleak"
 )
@@ -42,33 +43,23 @@ func TestRegister(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           name: "",
-		           srv: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+		func() test {
+			srv := grpc.NewServer()
+			return test{
+				name: "success to register the health check server",
+				args: args{
+					name: "api health check",
+					srv:  srv,
+				},
+				checkFunc: func(w want) error {
+					if _, ok := srv.GetServiceInfo()["grpc.health.v1.Health"]; !ok {
+						return errors.New("health check server not registered")
+					}
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           name: "",
-		           srv: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+					return nil
+				},
+			}
+		}(),
 	}
 
 	for _, tc := range tests {

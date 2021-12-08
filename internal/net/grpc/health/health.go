@@ -23,6 +23,7 @@ import (
 	"google.golang.org/grpc/health/grpc_health_v1"
 )
 
+// Register register the generic gRPC health check server implementation to the srv.
 func Register(name string, srv *grpc.Server) {
 	server := health.NewServer()
 	grpc_health_v1.RegisterHealthServer(srv, server)
