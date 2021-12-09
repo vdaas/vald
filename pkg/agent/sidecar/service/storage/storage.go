@@ -110,6 +110,7 @@ func (b *bs) initBucket(ctx context.Context) (err error) {
 			append(
 				b.s3Opts,
 				s3.WithBucket(b.bucketName),
+				s3.WithErrGroup(b.eg),
 			)...,
 		)
 		if err != nil {

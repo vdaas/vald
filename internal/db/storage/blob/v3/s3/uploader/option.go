@@ -2,6 +2,8 @@ package uploader
 
 import (
 	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
+
+	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 )
 
@@ -9,9 +11,21 @@ import (
 type Option func(c *client) error
 
 var defaultOptions = []Option{
+	WithErrGroup(errgroup.Get()),
 	WithContentType("application/octet-stream"),
 	WithMaxPartSize(12 * 1024 * 1024),
 	WithConcurrency(manager.DefaultUploadConcurrency),
+}
+
+// WithErrGroup returns the option to set the eg.
+func WithErrGroup(eg errgroup.Group) Option {
+	return func(c *client) error {
+		if eg == nil {
+			return errors.NewErrInvalidOption("errgroup", eg)
+		}
+		c.eg = eg
+		return nil
+	}
 }
 
 // WithBucket returns the option to set bucket for writer.

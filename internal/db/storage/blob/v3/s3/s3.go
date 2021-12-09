@@ -124,6 +124,7 @@ func (c *client) Open(ctx context.Context) (err error) {
 
 	if c.uclient == nil {
 		c.uclient, err = uploader.New(
+			uploader.WithErrGroup(c.eg),
 			uploader.WithAPIClient(c.s3client),
 			uploader.WithBucket(c.bucket),
 			uploader.WithConcurrency(c.concurrency),

@@ -4,6 +4,7 @@ import (
 	"context"
 	"io"
 	"reflect"
+	"sync"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
@@ -31,6 +32,7 @@ type client struct {
 
 	pr *io.PipeReader
 	pw *io.PipeWriter
+	wg *sync.WaitGroup
 }
 
 func New(opts ...Option) (Client, error) {
@@ -44,13 +46,16 @@ func New(opts ...Option) (Client, error) {
 }
 
 func (c *client) Open(ctx context.Context, key string) (err error) {
+	c.wg = new(sync.WaitGroup)
 	f, err := file.CreateTemp()
 	if err != nil {
 		return err
 	}
 	c.pr, c.pw = io.Pipe()
 
+	c.wg.Add(1)
 	c.eg.Go(func() (err error) {
+		defer c.wg.Done()
 		defer f.Close()
 		defer c.pr.Close()
 
@@ -81,8 +86,8 @@ func (c *client) Close() (err error) {
 		_ = c.pw.Close()
 	}
 
-	if err = c.eg.Wait(); err != nil {
-		return err
+	if c.wg != nil {
+		c.wg.Wait()
 	}
 	return nil
 }
