@@ -880,7 +880,7 @@ make gotests/install
 If you use the following command to generate the missing test code.
 
 ```bash
-make make gotests/gen
+make gotests/gen
 ```
 
 After the command above executed, the file `*target*_test.go` will be generated for each Go source file.
