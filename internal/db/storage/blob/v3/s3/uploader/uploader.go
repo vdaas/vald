@@ -14,6 +14,7 @@ import (
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	iio "github.com/vdaas/vald/internal/io"
+	"github.com/vdaas/vald/internal/log"
 )
 
 type Client interface {
@@ -107,12 +108,15 @@ func (c *client) upload(ctx context.Context, key string, body io.Reader) (err er
 		ContentType: aws.String(c.contentType),
 	}
 
-	_, err = manager.NewUploader(c.client).Upload(ctx, input, func(u *manager.Uploader) {
+	res, err := manager.NewUploader(c.client).Upload(ctx, input, func(u *manager.Uploader) {
 		u.Concurrency = c.concurrency
 		u.PartSize = c.partSize
 	})
 	if err != nil {
 		return err
 	}
+
+	log.Infof("s3 upload completed: %s", res.Location)
+
 	return nil
 }
