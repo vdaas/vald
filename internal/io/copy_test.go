@@ -13,6 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+
+// Package io provides io functions
 package io
 
 import (
@@ -23,149 +25,196 @@ import (
 	"testing"
 
 	"github.com/vdaas/vald/internal/errors"
-
 	"github.com/vdaas/vald/internal/test/goleak"
 )
 
-// A version of bytes.Buffer without ReadFrom and WriteTo
-type Buffer struct {
-	bytes.Buffer
-	io.ReaderFrom // conflicts with and hides bytes.Buffer's ReaderFrom.
-	io.WriterTo   // conflicts with and hides bytes.Buffer's WriterTo.
-}
-
 func TestCopy(t *testing.T) {
-	rb := new(Buffer)
-	wb := new(Buffer)
-	txt := "hello, world."
-	rb.WriteString(txt)
-	Copy(wb, rb)
-	if wb.String() != txt {
-		t.Errorf("Copy did not work properly")
+	// A version of bytes.buffer without ReadFrom and WriteTo
+	type buffer struct {
+		bytes.Buffer
+		io.ReaderFrom // conflicts with and hides bytes.Buffer's ReaderFrom.
+		io.WriterTo   // conflicts with and hides bytes.Buffer's WriterTo.
 	}
-}
-
-func TestCopyNegative(t *testing.T) {
-	rb := new(Buffer)
-	wb := new(Buffer)
-	rb.WriteString("hello")
-	Copy(wb, &io.LimitedReader{R: rb, N: -1})
-	if wb.String() != "" {
-		t.Errorf("Copy on LimitedReader with N<0 copied data")
+	type args struct {
+		dst io.Writer
+		src io.Reader
 	}
-}
-
-func TestCopyBuffer(t *testing.T) {
-	rb := new(Buffer)
-	wb := new(Buffer)
-	rb.WriteString("hello, world.")
-	Copy(wb, rb) // Tiny buffer to keep it honest.
-	if wb.String() != "hello, world." {
-		t.Errorf("CopyBuffer did not work properly")
+	type want struct {
+		wantWritten int64
+		wantDst     string
+		err         error
 	}
-}
-
-func TestCopyBufferNil(t *testing.T) {
-	rb := new(Buffer)
-	wb := new(Buffer)
-	rb.WriteString("hello, world.")
-	Copy(wb, rb) // Should allocate a buffer.
-	if wb.String() != "hello, world." {
-		t.Errorf("CopyBuffer did not work properly")
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, int64, io.Writer, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
 	}
-}
-
-func TestCopyReadFrom(t *testing.T) {
-	rb := new(Buffer)
-	wb := new(bytes.Buffer) // implements ReadFrom.
-	rb.WriteString("hello, world.")
-	Copy(wb, rb)
-	if wb.String() != "hello, world." {
-		t.Errorf("Copy did not work properly")
+	checkFunc := func(w want, gotWritten int64, got string, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(gotWritten, w.wantWritten) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotWritten, w.wantWritten)
+		}
+		if !reflect.DeepEqual(got, w.wantDst) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.wantDst)
+		}
+		return nil
 	}
-}
-
-func TestCopyWriteTo(t *testing.T) {
-	rb := new(bytes.Buffer) // implements WriteTo.
-	wb := new(Buffer)
-	rb.WriteString("hello, world.")
-	Copy(wb, rb)
-	if wb.String() != "hello, world." {
-		t.Errorf("Copy did not work properly")
+	defaultCheckFunc := func(w want, gotWritten int64, dst io.Writer, err error) error {
+		v := dst.(*buffer)
+		return checkFunc(w, gotWritten, v.String(), err)
 	}
-}
-
-type writeToChecker struct {
-	bytes.Buffer
-	writeToCalled bool
-}
-
-func (wt *writeToChecker) WriteTo(w io.Writer) (int64, error) {
-	wt.writeToCalled = true
-	return wt.Buffer.WriteTo(w)
-}
-
-func TestCopyPriority(t *testing.T) {
-	rb := new(writeToChecker)
-	wb := new(bytes.Buffer)
-	rb.WriteString("hello, world.")
-	Copy(wb, rb)
-	if wb.String() != "hello, world." {
-		t.Errorf("Copy did not work properly")
-	} else if !rb.writeToCalled {
-		t.Errorf("WriteTo was not prioritized over ReadFrom")
+	tests := []test{
+		func() test {
+			dst := new(buffer)
+			src := new(buffer)
+			txt := "hello, world."
+			src.WriteString(txt)
+			return test{
+				name: "copy string",
+				args: args{
+					dst: dst,
+					src: src,
+				},
+				want: want{
+					wantWritten: int64(len(txt)),
+					wantDst:     txt,
+					err:         nil,
+				},
+			}
+		}(),
+		func() test {
+			dst := new(buffer)
+			src := new(buffer)
+			src.WriteString("hello")
+			return test{
+				name: "copy with LimitedReader",
+				args: args{
+					dst: dst,
+					src: &io.LimitedReader{R: src, N: -1},
+				},
+				want: want{
+					wantWritten: 0,
+					wantDst:     "",
+					err:         nil,
+				},
+			}
+		}(),
+		func() test {
+			dst := new(buffer)
+			src := new(buffer)
+			txt := "hello"
+			src.WriteString(txt)
+			bufferSize := 32 * 1024
+			return test{
+				name: "copy with LimitedReader smaller buffer than defaultBufferSize",
+				args: args{
+					dst: dst,
+					src: &io.LimitedReader{R: src, N: int64(bufferSize)},
+				},
+				want: want{
+					wantWritten: int64(len(txt)),
+					wantDst:     txt,
+					err:         nil,
+				},
+			}
+		}(),
+		func() test {
+			dst := new(buffer)
+			src := new(bytes.Buffer)
+			txt := "hello, world."
+			src.WriteString(txt)
+			return test{
+				name: "copy with ReadFrom",
+				args: args{
+					dst: dst,
+					src: src,
+				},
+				want: want{
+					wantWritten: int64(len(txt)),
+					wantDst:     txt,
+					err:         nil,
+				},
+			}
+		}(),
+		func() test {
+			dst := new(bytes.Buffer)
+			src := new(buffer)
+			txt := "hello, world."
+			src.WriteString(txt)
+			return test{
+				name: "copy with WriteTo",
+				args: args{
+					dst: dst,
+					src: src,
+				},
+				want: want{
+					wantWritten: int64(len(txt)),
+					wantDst:     txt,
+					err:         nil,
+				},
+				checkFunc: func(w want, gotWritten int64, dst io.Writer, err error) error {
+					v := dst.(*bytes.Buffer)
+					return checkFunc(w, gotWritten, v.String(), err)
+				},
+			}
+		}(),
+		{
+			name: "dst is nil",
+			args: args{
+				dst: nil,
+				src: new(buffer),
+			},
+			want: want{
+				wantWritten: 0,
+				wantDst:     "",
+				err:         errors.New("empty source or destination"),
+			},
+			checkFunc: func(w want, gotWritten int64, dst io.Writer, err error) error {
+				return checkFunc(w, gotWritten, "", err)
+			},
+		},
+		{
+			name: "src is nil",
+			args: args{
+				dst: new(buffer),
+				src: nil,
+			},
+			want: want{
+				wantWritten: 0,
+				wantDst:     "",
+				err:         errors.New("empty source or destination"),
+			},
+			checkFunc: func(w want, gotWritten int64, dst io.Writer, err error) error {
+				return checkFunc(w, gotWritten, "", err)
+			},
+		},
 	}
-}
 
-type zeroErrReader struct {
-	err error
-}
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
 
-func (r zeroErrReader) Read(p []byte) (int, error) {
-	return copy(p, []byte{0}), r.err
-}
-
-type errWriter struct {
-	err error
-}
-
-func (w errWriter) Write([]byte) (int, error) {
-	return 0, w.err
-}
-
-func TestCopyReadErrWriteErr(t *testing.T) {
-	er, ew := errors.New("readError"), errors.New("writeError")
-	r, w := zeroErrReader{err: er}, errWriter{err: ew}
-	n, err := Copy(w, r)
-	if n != 0 || err != ew {
-		t.Errorf("Copy(zeroErrReader, errWriter) = %d, %v; want 0, writeError", n, err)
-	}
-}
-
-type largeWriter struct {
-	err error
-}
-
-func (w largeWriter) Write(p []byte) (int, error) {
-	return len(p) + 1, w.err
-}
-
-func TestCopyLargeWriter(t *testing.T) {
-	want := errors.New("invalid write result")
-	rb := new(Buffer)
-	wb := largeWriter{}
-	rb.WriteString("hello, world.")
-	_, err := Copy(wb, rb)
-	if err.Error() != want.Error() {
-		t.Errorf("Copy error: got %v, want %v", err, want)
-	}
-
-	want = errors.New("largeWriterError")
-	rb = new(Buffer)
-	wb = largeWriter{err: want}
-	rb.WriteString("hello, world.")
-	if _, err := Copy(wb, rb); err != want {
-		t.Errorf("Copy error: got %v, want %v", err, want)
+			gotWritten, err := Copy(test.args.dst, test.args.src)
+			if err := test.checkFunc(test.want, gotWritten, test.args.dst, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
 	}
 }
 
@@ -191,31 +240,30 @@ func TestNewCopier(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           size: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           size: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "return default buffer size Copier",
+			args: args{
+				size: 0,
+			},
+			checkFunc: func(w want, got Copier) error {
+				if got == nil {
+					return errors.New("got is nil")
+				}
+				return nil
+			},
+		},
+		{
+			name: "return user set buffer size Copier",
+			args: args{
+				size: 128 * 1024,
+			},
+			checkFunc: func(w want, got Copier) error {
+				if got == nil {
+					return errors.New("got is nil")
+				}
+				return nil
+			},
+		},
 	}
 
 	for _, tc := range tests {
@@ -246,8 +294,8 @@ func Test_copier_Copy(t *testing.T) {
 		src io.Reader
 	}
 	type fields struct {
-		pool    sync.Pool
 		bufSize int64
+		pool    sync.Pool
 	}
 	type want struct {
 		wantWritten int64
@@ -275,41 +323,7 @@ func Test_copier_Copy(t *testing.T) {
 		}
 		return nil
 	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           src: nil,
-		       },
-		       fields: fields {
-		           pool: sync.Pool{},
-		           bufSize: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           src: nil,
-		           },
-		           fields: fields {
-		           pool: sync.Pool{},
-		           bufSize: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
+	tests := []test{}
 
 	for _, tc := range tests {
 		test := tc
@@ -326,8 +340,8 @@ func Test_copier_Copy(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			c := &copier{
-				pool:    test.fields.pool,
 				bufSize: test.fields.bufSize,
+				pool:    test.fields.pool,
 			}
 			dst := &bytes.Buffer{}
 
@@ -335,6 +349,7 @@ func Test_copier_Copy(t *testing.T) {
 			if err := test.checkFunc(test.want, gotWritten, dst.String(), err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
