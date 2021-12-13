@@ -21,10 +21,6 @@ var defaultOptions = []Option{
 	WithUseDualStack(false),
 	WithEnableSSL(true),
 	WithEnableEndpointDiscovery(false),
-	// WithEnableParamValidation(true),
-	// WithEnable100Continue(true),
-	// WithEnableContentMD5Validation(true),
-	// WithEnableEndpointHostPrefix(true),
 }
 
 // WithErrGroup returns the option to set the eg.
@@ -164,7 +160,7 @@ func WithEnableEndpointDiscovery(enabled bool) Option {
 func WithHTTPClient(hc *http.Client) Option {
 	return func(c *client) error {
 		if hc == nil {
-			return errors.NewErrInvalidOption("httpClient", hc)
+			return errors.NewErrCriticalOption("httpClient", hc)
 		}
 		c.client = hc
 		return nil
@@ -178,7 +174,7 @@ func WithMaxPartSize(size string) Option {
 	return func(c *client) error {
 		b, err := unit.ParseBytes(size)
 		if err != nil {
-			return err
+			return errors.NewErrCriticalOption("partSizze", size, err)
 		}
 
 		if n := int64(b); n >= manager.DefaultUploadPartSize {
@@ -188,6 +184,7 @@ func WithMaxPartSize(size string) Option {
 	}
 }
 
+// WithConcurrency returns the option to set the the nuber of goroutines for download and upload.
 func WithConcurrency(n int) Option {
 	return func(c *client) error {
 		if n >= manager.DefaultDownloadConcurrency {

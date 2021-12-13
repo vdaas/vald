@@ -20,6 +20,7 @@ import (
 	"github.com/vdaas/vald/internal/db/storage/blob/v3/s3/uploader"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/log"
 )
 
 type client struct {
@@ -56,13 +57,21 @@ func New(opts ...Option) (b blob.Bucket, err error) {
 	c := new(client)
 	for _, opt := range append(defaultOptions, opts...) {
 		if err := opt(c); err != nil {
-			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
+			werr := errors.ErrOptionFailed(err, reflect.ValueOf(opt))
+
+			e := new(errors.ErrCriticalOption)
+			if errors.As(err, &e) {
+				log.Error(werr)
+				return nil, werr
+			}
+			log.Warn(werr)
 		}
 	}
 	c.logger = logger.New()
 	return c, nil
 }
 
+// Open loads the configuration and creates s3 client.
 func (c *client) Open(ctx context.Context) (err error) {
 	cfg, err := config.LoadDefaultConfig(ctx,
 		config.WithDefaultRegion(c.region),
@@ -144,13 +153,13 @@ func (c *client) Close() error {
 }
 
 // Reader creates reader.Reader implementation and returns it.
-// An error will be returned when the reader initialization fails or an error occurs in reader.Open.
+// An error will be returned when an error occurs in downloader.Download.
 func (c *client) Reader(ctx context.Context, key string) (rc io.ReadCloser, err error) {
 	return c.dclient.Download(ctx, key)
 }
 
 // Writer creates writer.Writer implementation and returns it.
-// An error will be returned when the writer initialization fails or an error occurs in writer.Open.
+// An error will be returned when the uploader initialization fails or an error occurs in uploader.Open.
 func (c *client) Writer(ctx context.Context, key string) (wc io.WriteCloser, err error) {
 	err = c.uclient.Open(ctx, key)
 	if err != nil {
