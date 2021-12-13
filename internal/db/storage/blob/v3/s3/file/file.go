@@ -1,3 +1,4 @@
+// Package file provides temporary file functions for download and upload.
 package file
 
 import (

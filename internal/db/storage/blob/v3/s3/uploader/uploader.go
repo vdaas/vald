@@ -1,3 +1,4 @@
+// Package uploader provides upload functions for s3.
 package uploader
 
 import (

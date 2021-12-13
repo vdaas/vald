@@ -1,3 +1,4 @@
+// Package s3 provides s3 functions.
 package s3
 
 import (

@@ -1,3 +1,4 @@
+// Package logger provides logging functions for s3.
 package logger
 
 import (

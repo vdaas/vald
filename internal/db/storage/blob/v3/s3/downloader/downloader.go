@@ -1,3 +1,4 @@
+// Package downloader provides download functions for s3.
 package downloader
 
 import (
