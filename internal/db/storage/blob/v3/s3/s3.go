@@ -48,7 +48,6 @@ type client struct {
 
 	maxPartSize int64
 	concurrency int
-	logMode     aws.ClientLogMode
 	logger      logging.Logger
 }
 
@@ -78,7 +77,6 @@ func (c *client) Open(ctx context.Context) (err error) {
 		config.WithRegion(c.region),
 		config.WithHTTPClient(c.client),
 		config.WithLogger(c.logger),
-		config.WithClientLogMode(c.logMode),
 		config.WithLogConfigurationWarnings(true),
 		config.WithRetryer(func() aws.Retryer {
 			if c.maxRetries < 1 {
