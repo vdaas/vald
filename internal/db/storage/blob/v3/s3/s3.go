@@ -102,10 +102,12 @@ func (c *client) Open(ctx context.Context) (err error) {
 		o.UsePathStyle = c.forcePathStyle
 		o.UseAccelerate = c.useAccelerate
 		o.UseARNRegion = c.useARNRegion
-		o.UseDualstack = c.useDualStack
 
 		if len(c.endpoint) != 0 {
 			o.EndpointResolver = s3.EndpointResolverFromURL(c.endpoint)
+		}
+		if c.useDualStack {
+			o.EndpointOptions.UseDualStackEndpoint = aws.DualStackEndpointStateEnabled
 		}
 		if !c.enableSSL {
 			o.EndpointOptions.DisableHTTPS = true
