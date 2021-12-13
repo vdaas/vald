@@ -132,7 +132,6 @@ func (s *S3Config) Bind() *S3Config {
 	s.SecretAccessKey = GetActualValue(s.SecretAccessKey)
 	s.Token = GetActualValue(s.Token)
 	s.MaxPartSize = GetActualValue(s.MaxPartSize)
-	s.MaxChunkSize = GetActualValue(s.MaxChunkSize)
 
 	return s
 }
