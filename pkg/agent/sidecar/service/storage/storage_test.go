@@ -26,8 +26,7 @@ import (
 	"github.com/vdaas/vald/internal/db/storage/blob"
 	"github.com/vdaas/vald/internal/db/storage/blob/cloudstorage"
 	"github.com/vdaas/vald/internal/db/storage/blob/cloudstorage/urlopener"
-	"github.com/vdaas/vald/internal/db/storage/blob/s3"
-	"github.com/vdaas/vald/internal/db/storage/blob/s3/session"
+	"github.com/vdaas/vald/internal/db/storage/blob/v3/s3"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/io"
@@ -120,7 +119,6 @@ func Test_bs_initCompressor(t *testing.T) {
 		filename          string
 		suffix            string
 		s3Opts            []s3.Option
-		s3SessionOpts     []session.Option
 		compressAlgorithm string
 		compressionLevel  int
 		bucket            blob.Bucket
@@ -212,7 +210,6 @@ func Test_bs_initCompressor(t *testing.T) {
 				filename:          test.fields.filename,
 				suffix:            test.fields.suffix,
 				s3Opts:            test.fields.s3Opts,
-				s3SessionOpts:     test.fields.s3SessionOpts,
 				compressAlgorithm: test.fields.compressAlgorithm,
 				compressionLevel:  test.fields.compressionLevel,
 				bucket:            test.fields.bucket,
@@ -239,7 +236,6 @@ func Test_bs_initBucket(t *testing.T) {
 		filename          string
 		suffix            string
 		s3Opts            []s3.Option
-		s3SessionOpts     []session.Option
 		compressAlgorithm string
 		compressionLevel  int
 		bucket            blob.Bucket
@@ -332,7 +328,6 @@ func Test_bs_initBucket(t *testing.T) {
 				filename:          test.fields.filename,
 				suffix:            test.fields.suffix,
 				s3Opts:            test.fields.s3Opts,
-				s3SessionOpts:     test.fields.s3SessionOpts,
 				compressAlgorithm: test.fields.compressAlgorithm,
 				compressionLevel:  test.fields.compressionLevel,
 				bucket:            test.fields.bucket,
@@ -359,7 +354,6 @@ func Test_bs_Start(t *testing.T) {
 		filename          string
 		suffix            string
 		s3Opts            []s3.Option
-		s3SessionOpts     []session.Option
 		compressAlgorithm string
 		compressionLevel  int
 		bucket            blob.Bucket
@@ -462,7 +456,6 @@ func Test_bs_Start(t *testing.T) {
 				filename:          test.fields.filename,
 				suffix:            test.fields.suffix,
 				s3Opts:            test.fields.s3Opts,
-				s3SessionOpts:     test.fields.s3SessionOpts,
 				compressAlgorithm: test.fields.compressAlgorithm,
 				compressionLevel:  test.fields.compressionLevel,
 				bucket:            test.fields.bucket,
@@ -489,7 +482,6 @@ func Test_bs_Reader(t *testing.T) {
 		filename          string
 		suffix            string
 		s3Opts            []s3.Option
-		s3SessionOpts     []session.Option
 		compressAlgorithm string
 		compressionLevel  int
 		bucket            blob.Bucket
@@ -592,7 +584,6 @@ func Test_bs_Reader(t *testing.T) {
 				filename:          test.fields.filename,
 				suffix:            test.fields.suffix,
 				s3Opts:            test.fields.s3Opts,
-				s3SessionOpts:     test.fields.s3SessionOpts,
 				compressAlgorithm: test.fields.compressAlgorithm,
 				compressionLevel:  test.fields.compressionLevel,
 				bucket:            test.fields.bucket,
@@ -619,7 +610,6 @@ func Test_bs_Writer(t *testing.T) {
 		filename          string
 		suffix            string
 		s3Opts            []s3.Option
-		s3SessionOpts     []session.Option
 		compressAlgorithm string
 		compressionLevel  int
 		bucket            blob.Bucket
@@ -722,7 +712,6 @@ func Test_bs_Writer(t *testing.T) {
 				filename:          test.fields.filename,
 				suffix:            test.fields.suffix,
 				s3Opts:            test.fields.s3Opts,
-				s3SessionOpts:     test.fields.s3SessionOpts,
 				compressAlgorithm: test.fields.compressAlgorithm,
 				compressionLevel:  test.fields.compressionLevel,
 				bucket:            test.fields.bucket,
@@ -746,7 +735,6 @@ func Test_bs_StorageInfo(t *testing.T) {
 		filename          string
 		suffix            string
 		s3Opts            []s3.Option
-		s3SessionOpts     []session.Option
 		compressAlgorithm string
 		compressionLevel  int
 		bucket            blob.Bucket
@@ -838,7 +826,6 @@ func Test_bs_StorageInfo(t *testing.T) {
 				filename:          test.fields.filename,
 				suffix:            test.fields.suffix,
 				s3Opts:            test.fields.s3Opts,
-				s3SessionOpts:     test.fields.s3SessionOpts,
 				compressAlgorithm: test.fields.compressAlgorithm,
 				compressionLevel:  test.fields.compressionLevel,
 				bucket:            test.fields.bucket,
@@ -864,7 +851,6 @@ func Test_bs_Stop(t *testing.T) {
 		filename                  string
 		suffix                    string
 		s3Opts                    []s3.Option
-		s3SessionOpts             []session.Option
 		cloudStorageOpts          []cloudstorage.Option
 		cloudStorageURLOpenerOpts []urlopener.Option
 		compressAlgorithm         string
@@ -969,7 +955,6 @@ func Test_bs_Stop(t *testing.T) {
 				filename:                  test.fields.filename,
 				suffix:                    test.fields.suffix,
 				s3Opts:                    test.fields.s3Opts,
-				s3SessionOpts:             test.fields.s3SessionOpts,
 				cloudStorageOpts:          test.fields.cloudStorageOpts,
 				cloudStorageURLOpenerOpts: test.fields.cloudStorageURLOpenerOpts,
 				compressAlgorithm:         test.fields.compressAlgorithm,
