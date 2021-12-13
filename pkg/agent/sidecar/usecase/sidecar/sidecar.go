@@ -112,6 +112,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 			s3.WithEnableEndpointDiscovery(cfg.AgentSidecar.BlobStorage.S3.EnableEndpointDiscovery),
 			s3.WithHTTPClient(client),
 			s3.WithMaxPartSize(cfg.AgentSidecar.BlobStorage.S3.MaxPartSize),
+			s3.WithConcurrency(cfg.AgentSidecar.BlobStorage.S3.Concurrency),
 		),
 		storage.WithCloudStorageURLOpenerOpts(
 			urlopener.WithCredentialsFile(cfg.AgentSidecar.BlobStorage.CloudStorage.Client.CredentialsFilePath),

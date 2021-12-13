@@ -1108,15 +1108,10 @@ spec:
                                   properties:
                                     access_key:
                                       type: string
-                                    enable_100_continue:
-                                      type: boolean
-                                    enable_content_md5_validation:
-                                      type: boolean
+                                    concurrency:
+                                      type: integer
+                                      minimum: 3
                                     enable_endpoint_discovery:
-                                      type: boolean
-                                    enable_endpoint_host_prefix:
-                                      type: boolean
-                                    enable_param_validation:
                                       type: boolean
                                     enable_ssl:
                                       type: boolean
@@ -1124,9 +1119,6 @@ spec:
                                       type: string
                                     force_path_style:
                                       type: boolean
-                                    max_chunk_size:
-                                      type: string
-                                      pattern: ^[0-9]+(kb|mb|gb)$
                                     max_part_size:
                                       type: string
                                       pattern: ^[0-9]+(kb|mb|gb)$
