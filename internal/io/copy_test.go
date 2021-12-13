@@ -28,6 +28,10 @@ import (
 	"github.com/vdaas/vald/internal/test/goleak"
 )
 
+const (
+	testString = "hello, world."
+)
+
 func TestCopy(t *testing.T) {
 	// A version of bytes.buffer without ReadFrom and WriteTo
 	type buffer struct {
@@ -72,8 +76,7 @@ func TestCopy(t *testing.T) {
 		func() test {
 			dst := new(buffer)
 			src := new(buffer)
-			txt := "hello, world."
-			src.WriteString(txt)
+			src.WriteString(testString)
 			return test{
 				name: "copy string",
 				args: args{
@@ -81,8 +84,8 @@ func TestCopy(t *testing.T) {
 					src: src,
 				},
 				want: want{
-					wantWritten: int64(len(txt)),
-					wantDst:     txt,
+					wantWritten: int64(len(testString)),
+					wantDst:     testString,
 					err:         nil,
 				},
 			}
@@ -90,7 +93,7 @@ func TestCopy(t *testing.T) {
 		func() test {
 			dst := new(buffer)
 			src := new(buffer)
-			src.WriteString("hello")
+			src.WriteString(testString)
 			return test{
 				name: "copy with LimitedReader",
 				args: args{
@@ -107,8 +110,7 @@ func TestCopy(t *testing.T) {
 		func() test {
 			dst := new(buffer)
 			src := new(buffer)
-			txt := "hello"
-			src.WriteString(txt)
+			src.WriteString(testString)
 			bufferSize := 32 * 1024
 			return test{
 				name: "copy with LimitedReader smaller buffer than defaultBufferSize",
@@ -117,8 +119,8 @@ func TestCopy(t *testing.T) {
 					src: &io.LimitedReader{R: src, N: int64(bufferSize)},
 				},
 				want: want{
-					wantWritten: int64(len(txt)),
-					wantDst:     txt,
+					wantWritten: int64(len(testString)),
+					wantDst:     testString,
 					err:         nil,
 				},
 			}
@@ -126,8 +128,7 @@ func TestCopy(t *testing.T) {
 		func() test {
 			dst := new(buffer)
 			src := new(bytes.Buffer)
-			txt := "hello, world."
-			src.WriteString(txt)
+			src.WriteString(testString)
 			return test{
 				name: "copy with ReadFrom",
 				args: args{
@@ -135,8 +136,8 @@ func TestCopy(t *testing.T) {
 					src: src,
 				},
 				want: want{
-					wantWritten: int64(len(txt)),
-					wantDst:     txt,
+					wantWritten: int64(len(testString)),
+					wantDst:     testString,
 					err:         nil,
 				},
 			}
@@ -144,8 +145,7 @@ func TestCopy(t *testing.T) {
 		func() test {
 			dst := new(bytes.Buffer)
 			src := new(buffer)
-			txt := "hello, world."
-			src.WriteString(txt)
+			src.WriteString(testString)
 			return test{
 				name: "copy with WriteTo",
 				args: args{
@@ -153,8 +153,8 @@ func TestCopy(t *testing.T) {
 					src: src,
 				},
 				want: want{
-					wantWritten: int64(len(txt)),
-					wantDst:     txt,
+					wantWritten: int64(len(testString)),
+					wantDst:     testString,
 					err:         nil,
 				},
 				checkFunc: func(w want, gotWritten int64, dst io.Writer, err error) error {
@@ -349,7 +349,6 @@ func Test_copier_Copy(t *testing.T) {
 			if err := test.checkFunc(test.want, gotWritten, dst.String(), err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
