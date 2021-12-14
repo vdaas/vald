@@ -65,7 +65,7 @@ func TestReadFile(t *testing.T) {
 			}
 			path := tempfile.Name()
 			return test{
-				name: "return file content as string",
+				name: "success when output string to file",
 				args: args{
 					path: path,
 				},
@@ -73,7 +73,6 @@ func TestReadFile(t *testing.T) {
 					want: []byte(content),
 					err:  nil,
 				},
-				checkFunc: defaultCheckFunc,
 				afterFunc: func(a args) {
 					if err := os.Remove(a.path); err != nil {
 						t.Errorf("error = %v", err)
@@ -83,7 +82,7 @@ func TestReadFile(t *testing.T) {
 		}(),
 		func() test {
 			return test{
-				name: "return error with empty path",
+				name: "fail with empty path",
 				args: args{
 					path: "",
 				},
@@ -91,7 +90,6 @@ func TestReadFile(t *testing.T) {
 					want: nil,
 					err:  errors.New("the path is not specified"),
 				},
-				checkFunc: defaultCheckFunc,
 			}
 		}(),
 	}

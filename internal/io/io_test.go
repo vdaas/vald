@@ -56,26 +56,22 @@ func TestNewReaderWithContext(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		func() test {
-			ctx := context.Background()
-			r := &bytes.Buffer{}
-			return test{
-				name: "return ReaderWithContext instance",
-				args: args{
-					ctx: ctx,
-					r:   r,
-				},
-				want: want{
-					want: &ctxReader{
-						ctx: ctx,
-						r:   r,
-					},
-					err: nil,
-				},
-			}
-		}(),
 		{
-			name: "return error with nil reader",
+			name: "success when context.Context and io.Reader are not nil",
+			args: args{
+				ctx: context.Background(),
+				r:   &bytes.Buffer{},
+			},
+			want: want{
+				want: &ctxReader{
+					ctx: context.Background(),
+					r:   &bytes.Buffer{},
+				},
+				err: nil,
+			},
+		},
+		{
+			name: "fail when io.Reader is nil",
 			args: args{
 				ctx: context.Background(),
 				r:   nil,
@@ -86,7 +82,7 @@ func TestNewReaderWithContext(t *testing.T) {
 			},
 		},
 		{
-			name: "return error with nil context",
+			name: "fail when context.Context is nil",
 			args: args{
 				ctx: nil,
 				r:   &bytes.Buffer{},
@@ -149,26 +145,22 @@ func TestNewReadCloserWithContext(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		func() test {
-			ctx := context.Background()
-			r := io.NopCloser(&bytes.Buffer{})
-			return test{
-				name: "return ReaderCloserWithContext instance",
-				args: args{
-					ctx: ctx,
-					r:   r,
-				},
-				want: want{
-					want: &ctxReader{
-						ctx: ctx,
-						r:   r,
-					},
-					err: nil,
-				},
-			}
-		}(),
 		{
-			name: "return error with nil ReadCloser",
+			name: "success when context.Context and io.ReadCloser are not nil",
+			args: args{
+				ctx: context.Background(),
+				r:   io.NopCloser(&bytes.Buffer{}),
+			},
+			want: want{
+				want: &ctxReader{
+					ctx: context.Background(),
+					r:   io.NopCloser(&bytes.Buffer{}),
+				},
+				err: nil,
+			},
+		},
+		{
+			name: "fail when io.ReadCloser is nil",
 			args: args{
 				ctx: context.Background(),
 				r:   nil,
@@ -179,7 +171,7 @@ func TestNewReadCloserWithContext(t *testing.T) {
 			},
 		},
 		{
-			name: "return error with nil Context",
+			name: "fail when context.Context is nil",
 			args: args{
 				ctx: nil,
 				r:   io.NopCloser(&bytes.Buffer{}),
@@ -248,16 +240,15 @@ func Test_ctxReader_Read(t *testing.T) {
 	tests := []test{
 		func() test {
 			txt := "hello, world."
-			ctx := context.Background()
 			r := &bytes.Buffer{}
 			r.WriteString(txt)
 			return test{
-				name: "return read length",
+				name: "success when doing nothing",
 				args: args{
 					p: make([]byte, 64),
 				},
 				fields: fields{
-					ctx: ctx,
+					ctx: context.Background(),
 					r:   r,
 				},
 				want: want{
@@ -269,7 +260,7 @@ func Test_ctxReader_Read(t *testing.T) {
 		func() test {
 			ctx, cancel := context.WithCancel(context.Background())
 			return test{
-				name: "return context.Canceled error",
+				name: "fail when calling cancel function",
 				args: args{
 					p: make([]byte, 64),
 				},
@@ -342,7 +333,7 @@ func Test_ctxReader_Close(t *testing.T) {
 		func() test {
 			ctx := context.Background()
 			return test{
-				name: "success close",
+				name: "success when doing nothing",
 				fields: fields{
 					ctx: ctx,
 					r:   &bytes.Buffer{},
@@ -355,7 +346,7 @@ func Test_ctxReader_Close(t *testing.T) {
 		func() test {
 			ctx, cancel := context.WithCancel(context.Background())
 			return test{
-				name: "return context.Canceled",
+				name: "fail when calling cancel function",
 				fields: fields{
 					ctx: ctx,
 					r:   &bytes.Buffer{},
@@ -371,7 +362,7 @@ func Test_ctxReader_Close(t *testing.T) {
 		func() test {
 			ctx := context.Background()
 			return test{
-				name: "success close with Closer",
+				name: "success with Closer",
 				fields: fields{
 					ctx: ctx,
 					r:   io.NopCloser(&bytes.Buffer{}),
@@ -442,7 +433,7 @@ func TestNewWriterWithContext(t *testing.T) {
 			ctx := context.Background()
 			w := &bytes.Buffer{}
 			return test{
-				name: "return WriterWithContext instance",
+				name: "success when context.Context and io.Writer is not nil",
 				args: args{
 					ctx: ctx,
 					w:   w,
@@ -457,7 +448,7 @@ func TestNewWriterWithContext(t *testing.T) {
 			}
 		}(),
 		{
-			name: "return error with nil writer",
+			name: "fail when io.Writer is nil",
 			args: args{
 				ctx: context.Background(),
 				w:   nil,
@@ -468,7 +459,7 @@ func TestNewWriterWithContext(t *testing.T) {
 			},
 		},
 		{
-			name: "return error with nil context",
+			name: "fail when context.Context is nil",
 			args: args{
 				ctx: nil,
 				w:   &bytes.Buffer{},
@@ -539,26 +530,22 @@ func TestNewWriteCloserWithContext(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		func() test {
-			ctx := context.Background()
-			w := &nopWriteCloser{}
-			return test{
-				name: "return WriteCloserWithContext instance",
-				args: args{
-					ctx: ctx,
-					w:   w,
-				},
-				want: want{
-					want: &ctxWriter{
-						ctx: ctx,
-						w:   w,
-					},
-					err: nil,
-				},
-			}
-		}(),
 		{
-			name: "return error with nil WriteCloser",
+			name: "success when context.Context and io.WriteClose are not nil",
+			args: args{
+				ctx: context.Background(),
+				w:   &nopWriteCloser{},
+			},
+			want: want{
+				want: &ctxWriter{
+					ctx: context.Background(),
+					w:   &nopWriteCloser{},
+				},
+				err: nil,
+			},
+		},
+		{
+			name: "fail when io.WriteCloser is nil",
 			args: args{
 				ctx: context.Background(),
 				w:   nil,
@@ -569,7 +556,7 @@ func TestNewWriteCloserWithContext(t *testing.T) {
 			},
 		},
 		{
-			name: "return error with nil Context",
+			name: "fail when context.Context is nil",
 			args: args{
 				ctx: nil,
 				w:   &nopWriteCloser{},
@@ -641,7 +628,7 @@ func Test_ctxWriter_Write(t *testing.T) {
 			ctx := context.Background()
 			w := &bytes.Buffer{}
 			return test{
-				name: "return read length",
+				name: "success when doing nothing",
 				args: args{
 					p: []byte(txt),
 				},
@@ -658,7 +645,7 @@ func Test_ctxWriter_Write(t *testing.T) {
 		func() test {
 			ctx, cancel := context.WithCancel(context.Background())
 			return test{
-				name: "return context.Canceled error",
+				name: "fail when calling cancel function",
 				args: args{
 					[]byte{},
 				},
@@ -731,7 +718,7 @@ func Test_ctxWriter_Close(t *testing.T) {
 		func() test {
 			ctx := context.Background()
 			return test{
-				name: "success close",
+				name: "success without Closer",
 				fields: fields{
 					ctx: ctx,
 					w:   &bytes.Buffer{},
@@ -744,7 +731,7 @@ func Test_ctxWriter_Close(t *testing.T) {
 		func() test {
 			ctx, cancel := context.WithCancel(context.Background())
 			return test{
-				name: "return context.Canceled",
+				name: "fail when calling cancel function",
 				fields: fields{
 					ctx: ctx,
 					w:   &bytes.Buffer{},
@@ -760,7 +747,7 @@ func Test_ctxWriter_Close(t *testing.T) {
 		func() test {
 			ctx := context.Background()
 			return test{
-				name: "success close with Closer",
+				name: "success with Closer",
 				fields: fields{
 					ctx: ctx,
 					w:   &nopWriteCloser{},

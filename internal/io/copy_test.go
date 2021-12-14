@@ -72,99 +72,82 @@ func TestCopy(t *testing.T) {
 		v := dst.(*buffer)
 		return checkFunc(w, gotWritten, v.String(), err)
 	}
+	bufferWithStringFunc := func() *buffer {
+		buf := new(buffer)
+		buf.WriteString(testString)
+		return buf
+	}
 	tests := []test{
-		func() test {
-			dst := new(buffer)
-			src := new(buffer)
-			src.WriteString(testString)
-			return test{
-				name: "copy string",
-				args: args{
-					dst: dst,
-					src: src,
-				},
-				want: want{
-					wantWritten: int64(len(testString)),
-					wantDst:     testString,
-					err:         nil,
-				},
-			}
-		}(),
-		func() test {
-			dst := new(buffer)
-			src := new(buffer)
-			src.WriteString(testString)
-			return test{
-				name: "copy with LimitedReader",
-				args: args{
-					dst: dst,
-					src: &io.LimitedReader{R: src, N: -1},
-				},
-				want: want{
-					wantWritten: 0,
-					wantDst:     "",
-					err:         nil,
-				},
-			}
-		}(),
-		func() test {
-			dst := new(buffer)
-			src := new(buffer)
-			src.WriteString(testString)
-			bufferSize := 32 * 1024
-			return test{
-				name: "copy with LimitedReader smaller buffer than defaultBufferSize",
-				args: args{
-					dst: dst,
-					src: &io.LimitedReader{R: src, N: int64(bufferSize)},
-				},
-				want: want{
-					wantWritten: int64(len(testString)),
-					wantDst:     testString,
-					err:         nil,
-				},
-			}
-		}(),
-		func() test {
-			dst := new(buffer)
-			src := new(bytes.Buffer)
-			src.WriteString(testString)
-			return test{
-				name: "copy with ReadFrom",
-				args: args{
-					dst: dst,
-					src: src,
-				},
-				want: want{
-					wantWritten: int64(len(testString)),
-					wantDst:     testString,
-					err:         nil,
-				},
-			}
-		}(),
-		func() test {
-			dst := new(bytes.Buffer)
-			src := new(buffer)
-			src.WriteString(testString)
-			return test{
-				name: "copy with WriteTo",
-				args: args{
-					dst: dst,
-					src: src,
-				},
-				want: want{
-					wantWritten: int64(len(testString)),
-					wantDst:     testString,
-					err:         nil,
-				},
-				checkFunc: func(w want, gotWritten int64, dst io.Writer, err error) error {
-					v := dst.(*bytes.Buffer)
-					return checkFunc(w, gotWritten, v.String(), err)
-				},
-			}
-		}(),
 		{
-			name: "dst is nil",
+			name: "copy success with not nil string",
+			args: args{
+				dst: new(buffer),
+				src: bufferWithStringFunc(),
+			},
+			want: want{
+				wantWritten: int64(len(testString)),
+				wantDst:     testString,
+				err:         nil,
+			},
+		},
+		{
+			name: "copy success with LimitedReader",
+			args: args{
+				dst: new(buffer),
+				src: &io.LimitedReader{R: bufferWithStringFunc(), N: -1},
+			},
+			want: want{
+				wantWritten: 0,
+				wantDst:     "",
+				err:         nil,
+			},
+		},
+		{
+			name: "copy success with LimitedReader smaller buffer size than defaultBufferSize",
+			args: args{
+				dst: new(buffer),
+				src: &io.LimitedReader{R: bufferWithStringFunc(), N: 32 * 1024},
+			},
+			want: want{
+				wantWritten: int64(len(testString)),
+				wantDst:     testString,
+				err:         nil,
+			},
+		},
+		{
+			name: "copy success with using ReadFrom function",
+			args: func() args {
+				src := new(bytes.Buffer)
+				src.WriteString(testString)
+				return args{
+					dst: new(buffer),
+					src: src,
+				}
+			}(),
+			want: want{
+				wantWritten: int64(len(testString)),
+				wantDst:     testString,
+				err:         nil,
+			},
+		},
+		{
+			name: "copy success with using WriteTo function",
+			args: args{
+				dst: new(bytes.Buffer),
+				src: bufferWithStringFunc(),
+			},
+			want: want{
+				wantWritten: int64(len(testString)),
+				wantDst:     testString,
+				err:         nil,
+			},
+			checkFunc: func(w want, gotWritten int64, dst io.Writer, err error) error {
+				v := dst.(*bytes.Buffer)
+				return checkFunc(w, gotWritten, v.String(), err)
+			},
+		},
+		{
+			name: "copy fail when dst is nil",
 			args: args{
 				dst: nil,
 				src: new(buffer),
@@ -179,7 +162,7 @@ func TestCopy(t *testing.T) {
 			},
 		},
 		{
-			name: "src is nil",
+			name: "copy fail when src is nil",
 			args: args{
 				dst: new(buffer),
 				src: nil,
