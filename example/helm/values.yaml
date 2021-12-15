@@ -27,6 +27,7 @@ defaults:
         readinessProbe:
           initialDelaySeconds: 60
 
+## vald-lb-gateway settings
 gateway:
   lb:
     minReplicas: 3
@@ -35,10 +36,24 @@ gateway:
       requests:
         cpu: 150m
         memory: 150Mi
+    hpa:
+      enabled: false
+    ingress:
+      # if enabled is true, vald-lb-gateway will be connected to k8s ingress.
+      enabled: true
+      # TODO: Set your ingress host.
+      host: localhost
+      annotations:
+        # TODO: Set annotations which you have to set for your k8s cluster.
+        ingress.kubernetes.io/protocol: "h2c"
+        ingress.kubernetes.io/ssl-passthrough: "true"
+        kubernetes.io/ingress.class: "traefik"
+        traefik.protocol: "h2c"
 
+## vald-agent settings
 agent:
-  minReplicas: 5
-  maxReplicas: 5
+  minReplicas: 6
+  maxReplicas: 6
   # Set Parallel to podManagementPolicy is not recommended for production.
   # In this time, it is just an example, we set Parallel to podManagementPolicy.
   podManagementPolicy: Parallel
@@ -62,12 +77,14 @@ agent:
     # The default create index batch pool size
     default_pool_size: 100
 
+## vald-discoverer settings
 discoverer:
   resources:
     requests:
       cpu: 150m
       memory: 50Mi
 
+## vald-manager settings
 manager:
   index:
     resources:

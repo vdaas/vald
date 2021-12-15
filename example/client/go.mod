@@ -1,6 +1,6 @@
 module github.com/vdaas/vald/example/client
 
-go 1.14
+go 1.17
 
 require (
 	github.com/kpango/fuid v0.0.0-20190507064958-80435564606b

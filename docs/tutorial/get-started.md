@@ -3,14 +3,14 @@
 Vald is a highly scalable distributed fast approximate nearest neighbor dense vector search engine.<br>
 Vald is designed and implemented based on Cloud-Native architecture.
 
-This article will show you how to deploy and run the Vald components on your Kubernetes cluster.
+This tutorial shows how to deploy and run the Vald components on your Kubernetes cluster.
 And, Fashion-mnist is used as an example of a dataset.
 
 ## Overview
 
-Before starting, let's check the below image.
-It shows the architecture image about the deployment result of Get Started.<br>
+The below image shows the architecture image about the deployment result of `Get Started`.<br>
 The 4 kinds of components, `Vald LB Gateway`, `Vald Discoverer`, `Vald Agent`, and `Vald Index Manager` will be deployed to the Kubernetes.
+For more information about Vald's architecture, please refer to [Architecture](../../docs/overview/architecture.md).
 
 <img src="../../assets/docs/tutorial/getstarted.png" />
 
@@ -56,20 +56,23 @@ brew install hdf5
 
 ## Prepare the Kubernetes Cluster
 
-1. Prepare Kubernetes cluster
+This tutorial requires the Kubernetes cluster.<br>
+Vald will run on Cloud Service such as GKE, AWS.
+In the sense of trying to `Get Started`, [k3d](https://k3d.io/) or [kind](https://kind.sigs.k8s.io/) are easy Kubernetes tools to use.
 
-    To complete get started, the Kubernetes cluster is required.<br>
-    Vald will run on Cloud Service such as GKE, AWS.
-    In the sense of trying to "Get-Started", [k3d](https://k3d.io/) or [kind](https://kind.sigs.k8s.io/) are easy Kubernetes tools to use.
 
-1. Apply Kubernetes metrics server
+This tutorial uses Kubernetes Ingress and [Kubernetes Metrics Server](https://github.com/kubernetes-sigs/metrics-server) for running Vald.<br>
+Please make sure these functions are available.<br>
 
-    After creating your Kubernetes cluster, let's apply Kubernetes metrics server.
+The configuration of Kubernetes Ingress is depended on your Kubernetes cluster's provider.
+Please refer to on yourself.
 
-    ```bash
-    kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
-    kubectl wait -n kube-system --for=condition=ready pod -l k8s-app=metrics-server --timeout=600s
-    ```
+The way to deploy Kubernetes Metrics Service is here:
+
+```bash
+kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+kubectl wait -n kube-system --for=condition=ready pod -l k8s-app=metrics-server --timeout=600s
+```
 
 ## Deploy Vald on Kubernetes Cluster
 
@@ -78,8 +81,6 @@ In this tutorial, you will deploy the basic configuration of Vald that is consis
 
 1. Clone the repository
 
-    To use the `deployment yaml` for deploy, let's clone [`vdaas/vald`](https://github.com/vdaas/vald.git) repository.
-
     ```bash
     git clone https://github.com/vdaas/vald.git
     cd vald
@@ -87,16 +88,43 @@ In this tutorial, you will deploy the basic configuration of Vald that is consis
 
 1. Confirm which cluster to deploy
 
-   ```bash
-   kubectl cluster-info
-   ```
+    ```bash
+    kubectl cluster-info
+    ```
+
+1. Edit Values
+
+    You have to set the exact parameters for connecting Kubernetes ingress and vald-lb-gateway.
+    Please set the these parameters.
+
+    ```bash
+    vim example/helm/values.yaml
+    ===
+    ## vald-lb-gateway settings
+    gateway:
+      lb:
+        ...
+        ingress:
+          enabled: true
+          # TODO: Set your ingress host.
+          host: localhost
+          # TODO: Set annotations which you have to set for your k8s cluster.
+          annotations:
+            ...
+    ```
+
+    Note:<br>
+        If using port-forward instead of ingress, please set `gateway.lb.ingress.enabled` as `false`.
 
 1. Deploy Vald using Helm
 
+    Add vald repo into the helm repo.
     ```bash
-    # add vald repo into helm repo
     helm repo add vald https://vald.vdaas.org/charts
-    # deploy vald on your kubernetes cluster
+    ```
+
+    Deploy vald on your Kubernetes cluster.
+    ```bash
     helm install vald vald/vald --values example/helm/values.yaml
     ```
 
@@ -124,18 +152,48 @@ In this tutorial, you will deploy the basic configuration of Vald that is consis
     vald-manager-index-74c7b5ddd6-jrnlw        1/1     Running     0          7m12s
     ```
 
+    </details>
+
+    ```bash
+    kubectl get ingress
+    ```
+
+    <details><summary>Example output</summary><br>
+
+    ```bash
+    NAME                      CLASS    HOSTS       ADDRESS        PORTS   AGE
+    vald-lb-gateway-ingress   <none>   localhost   192.168.16.2   80      7m43s
+    ```
+
+    </details>
+
+    ```bash
+    kubectl get svc
+    ```
+
+    <details><summary>Example output</summary><br>
+    ```bash
+    NAME                 TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)             AGE
+    kubernetes           ClusterIP   10.43.0.1    <none>        443/TCP             9m29s
+    vald-agent-ngt       ClusterIP   None         <none>        8081/TCP,3001/TCP   8m48s
+    vald-discoverer      ClusterIP   None         <none>        8081/TCP,3001/TCP   8m48s
+    vald-manager-index   ClusterIP   None         <none>        8081/TCP,3001/TCP   8m48s
+    vald-lb-gateway      ClusterIP   None         <none>        8081/TCP,3001/TCP   8m48s
+    ```
+    </details>
+
 ## Run Example Code
 
 In this chapter, you will execute insert vectors, search vectors, and delete vectors to your Vald cluster using the example code.<br>
 The [fashion-mnist](https://github.com/zalandoresearch/fashion-mnist) is used as a dataset for indexing and search query.
 
-The example code is implemented Go and using [vald-client-go](https://github.com/vdaas/vald-client-go), one of the official Vald client libraries,  for requesting to Vald cluster.
+The example code is implemented Go and using [vald-client-go](https://github.com/vdaas/vald-client-go), one of the official Vald client libraries, for requesting to Vald cluster.
 Vald provides multiple language client libraries such as Go, Java, Node.js, Python, and so on.
 If you are interested in, please refer to [SDKs](../user-guides/sdks.md).<br>
 
-1. Port Forward
+1. Port Forward(option)
 
-    At first, port-forward is required to make request from your local environment possible.
+    If you do not use Kubernetes Ingress, port-forward is required to make request from your local environment possible.
 
     ```bash
     kubectl port-forward deployment/vald-lb-gateway 8081:8081
@@ -145,24 +203,25 @@ If you are interested in, please refer to [SDKs](../user-guides/sdks.md).<br>
 
     Download [fashion-mnist](https://github.com/zalandoresearch/fashion-mnist) that is used as a dataset for indexing and search query.
 
+    Move to the working directory
     ```bash
-    # move to the working directory
     cd example/client
+    ```
 
-    # download fashion-mnist testing dataset
+    Download fashion-mnist testing dataset
+    ```bash
     wget http://ann-benchmarks.com/fashion-mnist-784-euclidean.hdf5
     ```
 
 1. Run Example
 
     We use [`example/client/main.go`](https://github.com/vdaas/vald/blob/master/example/client/main.go) to run the example.<br>
-    This example will insert and index 400 vectors into the Vald from the fashion-mnist dataset via gRPC.
+    This example will insert and index 400 vectors into the Vald from the fashion-mnist dataset via [gRPC](https://grpc.io/).
     And then after waiting for indexing, it will request for searching the nearest vector 10 times.
     You will get the 10 nearest neighbor vectors for each search query.<br>
     Run example codes by executing the below command.
 
     ```bash
-    # run example
     go run main.go
     ```
 
@@ -276,7 +335,7 @@ If you are interested in, please refer to [SDKs](../user-guides/sdks.md).<br>
             for i := range ids [:insertCount] {
                 _, err := client.Insert(ctx, &payload.Insert_Request{
                     Vector: &payload.Object_Vector{
-                        Id: ids[i],
+                        Id:     ids[i],
                         Vector: train[i],
                     },
                     Config: &payload.Insert_Config{
