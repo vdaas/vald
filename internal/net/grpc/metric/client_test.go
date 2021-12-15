@@ -23,6 +23,7 @@ import (
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/test/goleak"
+	"go.opencensus.io/trace"
 )
 
 func TestNewClientHandler(t *testing.T) {
@@ -49,12 +50,31 @@ func TestNewClientHandler(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "return client handler",
+			name: "return client handler when option is nil",
 			args: args{
 				opts: nil,
 			},
 			want: want{
 				want: new(ClientHandler),
+			},
+		},
+		{
+			name: "return client handler when option is not nil",
+			args: args{
+				opts: []ClientOption{
+					func(h *ClientHandler) {
+						h.StartOptions = trace.StartOptions{
+							SpanKind: 1,
+						}
+					},
+				},
+			},
+			want: want{
+				want: &ClientHandler{
+					StartOptions: trace.StartOptions{
+						SpanKind: 1,
+					},
+				},
 			},
 		},
 	}

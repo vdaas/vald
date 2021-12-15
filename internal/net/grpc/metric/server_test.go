@@ -49,9 +49,24 @@ func TestNewServerHandler(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "return server handler",
+			name: "return server handler when option is nil",
 			want: want{
 				want: new(ServerHandler),
+			},
+		},
+		{
+			name: "return server handler when option is not nil",
+			args: args{
+				opts: []ServerOption{
+					func(h *ServerHandler) {
+						h.IsPublicEndpoint = true
+					},
+				},
+			},
+			want: want{
+				want: &ServerHandler{
+					IsPublicEndpoint: true,
+				},
 			},
 		},
 	}

@@ -156,19 +156,21 @@ func TestUnmarshal(t *testing.T) {
 				},
 			}
 		}(),
-		{
-			name: "return error when unmarshal failed",
-			args: args{
-				data: []byte{1, 2, 3, 4},
-				v:    &payload.Object_Vector{},
-			},
-			checkFunc: func(t test, e error) error {
-				if e == nil {
-					return errors.New("error should be returned")
-				}
-				return nil
-			},
-		},
+		func() test {
+			return test{
+				name: "return error when unmarshal failed",
+				args: args{
+					data: []byte{1, 2, 3, 4},
+					v:    &payload.Object_Vector{},
+				},
+				checkFunc: func(t test, e error) error {
+					if e == nil {
+						return errors.New("error should be returned")
+					}
+					return nil
+				},
+			}
+		}(),
 	}
 
 	for _, tc := range tests {
