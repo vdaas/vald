@@ -175,6 +175,7 @@ In this tutorial, you will deploy the basic configuration of Vald that is consis
    ```
 
    <details><summary>Example output</summary><br>
+
    ```bash
    NAME                 TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)             AGE
    kubernetes           ClusterIP   10.43.0.1    <none>        443/TCP             9m29s
