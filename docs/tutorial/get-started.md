@@ -114,7 +114,7 @@ In this tutorial, you will deploy the basic configuration of Vald that is consis
    ```
 
    Note:<br>
-   If you decided to use port-forwarding instead of ingress, please set `gateway.lb.ingress.enabled` to `false`.
+   If you decided to use port-forward instead of ingress, please set `gateway.lb.ingress.enabled` to `false`.
 
 1. Deploy Vald using Helm
 
