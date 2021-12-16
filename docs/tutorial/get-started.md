@@ -198,7 +198,7 @@ If you are interested in, please refer to [SDKs](../user-guides/sdks.md).<br>
 
 1.  Port Forward(option)
 
-    If you do not use Kubernetes Ingress, port-forward is required to make request from your local environment possible.
+    If you do not use Kubernetes Ingress, port-forward is required to make requests from your local environment.
 
     ```bash
     kubectl port-forward deployment/vald-lb-gateway 8081:8081
