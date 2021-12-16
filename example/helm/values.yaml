@@ -39,7 +39,7 @@ gateway:
     hpa:
       enabled: false
     ingress:
-      # if enabled is true, vald-lb-gateway will be connected to k8s ingress.
+      # if enabled is true, vald-lb-gateway can be connected through Kubernetes ingress to the external.
       enabled: true
       # TODO: Set your ingress host.
       host: localhost

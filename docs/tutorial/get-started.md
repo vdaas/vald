@@ -58,7 +58,7 @@ brew install hdf5
 ## Prepare the Kubernetes Cluster
 
 This tutorial requires the Kubernetes cluster.<br>
-Vald will run on Cloud Service such as GKE, AWS.
+Vald runs on public Cloud Services such as GKE, AWS.
 In the sense of trying to `Get Started`, [k3d](https://k3d.io/) or [kind](https://kind.sigs.k8s.io/) are easy Kubernetes tools to use.
 
 This tutorial uses Kubernetes Ingress and [Kubernetes Metrics Server](https://github.com/kubernetes-sigs/metrics-server) for running Vald.<br>
@@ -92,9 +92,9 @@ In this tutorial, you will deploy the basic configuration of Vald that is consis
    kubectl cluster-info
    ```
 
-1. Edit Values
+1. Edit Configurations
 
-   You have to set the exact parameters for connecting Kubernetes ingress and vald-lb-gateway.
+   Set the parameters for connecting to the vald-lb-gateway through Kubernetes ingress from the external network.
    Please set the these parameters.
 
    ```bash
