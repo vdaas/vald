@@ -18,6 +18,8 @@
 package ioutil
 
 import (
+	"io/ioutil"
+	"os"
 	"reflect"
 	"testing"
 
@@ -52,38 +54,51 @@ func TestReadFile(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           path: "",
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           path: "",
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		func() test {
+			const content = "test case 1"
+			tempfile, err := ioutil.TempFile("", "")
+			if err != nil {
+				t.Errorf("error = %v", err)
+			}
+			if _, err = tempfile.WriteString(content); err != nil {
+				t.Errorf("error = %v", err)
+			}
+			path := tempfile.Name()
+			return test{
+				name: "success when output string to file",
+				args: args{
+					path: path,
+				},
+				want: want{
+					want: []byte(content),
+					err:  nil,
+				},
+				afterFunc: func(a args) {
+					if err := os.Remove(a.path); err != nil {
+						t.Errorf("error = %v", err)
+					}
+				},
+			}
+		}(),
+		func() test {
+			return test{
+				name: "fail with empty path",
+				args: args{
+					path: "",
+				},
+				want: want{
+					want: nil,
+					err:  errors.New("the path is not specified"),
+				},
+			}
+		}(),
 	}
 
 	for _, tc := range tests {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
