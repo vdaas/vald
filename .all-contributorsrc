@@ -116,6 +116,15 @@
         "doc",
         "tutorial"
       ]
+    },
+    {
+      "login": "zchee",
+      "name": "Koichi Shiraishi",
+      "avatar_url": "https://avatars.githubusercontent.com/u/6366270?v=4",
+      "profile": "https://github.com/zchee",
+      "contributions": [
+        "a11y"
+      ]
     }
   ],
   "contributorsPerLine": 7,
