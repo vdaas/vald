@@ -214,6 +214,120 @@ func (c *client) MultiSearchByID(ctx context.Context, in *payload.Search_MultiID
 	return res, nil
 }
 
+func (c *client) LinearSearch(ctx context.Context, in *payload.Search_Request, opts ...grpc.CallOption) (res *payload.Search_Response, err error) {
+	ctx, span := trace.StartSpan(ctx, apiName+"/Client.LinearSearch")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	_, err = c.c.RoundRobin(ctx, func(ctx context.Context,
+		conn *grpc.ClientConn,
+		copts ...grpc.CallOption) (interface{}, error) {
+		res, err = vald.NewValdClient(conn).LinearSearch(ctx, in, append(copts, opts...)...)
+		return nil, err
+	})
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
+}
+
+func (c *client) LinearSearchByID(ctx context.Context, in *payload.Search_IDRequest, opts ...grpc.CallOption) (res *payload.Search_Response, err error) {
+	ctx, span := trace.StartSpan(ctx, apiName+"/Client.LinearSearchByID")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	_, err = c.c.RoundRobin(ctx, func(ctx context.Context,
+		conn *grpc.ClientConn,
+		copts ...grpc.CallOption) (interface{}, error) {
+		res, err = vald.NewValdClient(conn).LinearSearchByID(ctx, in, append(copts, opts...)...)
+		return nil, err
+	})
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
+}
+
+func (c *client) StreamLinearSearch(ctx context.Context, opts ...grpc.CallOption) (res vald.Search_StreamLinearSearchClient, err error) {
+	ctx, span := trace.StartSpan(ctx, apiName+"/Client.LinearStreamSearch")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	_, err = c.c.RoundRobin(ctx, func(ctx context.Context,
+		conn *grpc.ClientConn,
+		copts ...grpc.CallOption) (interface{}, error) {
+		res, err = vald.NewValdClient(conn).StreamLinearSearch(ctx, append(copts, opts...)...)
+		return nil, err
+	})
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
+}
+
+func (c *client) StreamLinearSearchByID(ctx context.Context, opts ...grpc.CallOption) (res vald.Search_StreamLinearSearchByIDClient, err error) {
+	ctx, span := trace.StartSpan(ctx, apiName+"/Client.StreamLinearSearchByID")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	_, err = c.c.RoundRobin(ctx, func(ctx context.Context,
+		conn *grpc.ClientConn,
+		copts ...grpc.CallOption) (interface{}, error) {
+		res, err = vald.NewValdClient(conn).StreamLinearSearchByID(ctx, append(copts, opts...)...)
+		return nil, err
+	})
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
+}
+
+func (c *client) MultiLinearSearch(ctx context.Context, in *payload.Search_MultiRequest, opts ...grpc.CallOption) (res *payload.Search_Responses, err error) {
+	ctx, span := trace.StartSpan(ctx, apiName+"/Client.MultiLinearSearch")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	_, err = c.c.RoundRobin(ctx, func(ctx context.Context,
+		conn *grpc.ClientConn,
+		copts ...grpc.CallOption) (interface{}, error) {
+		res, err = vald.NewValdClient(conn).MultiLinearSearch(ctx, in, append(copts, opts...)...)
+		return nil, err
+	})
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
+}
+
+func (c *client) MultiLinearSearchByID(ctx context.Context, in *payload.Search_MultiIDRequest, opts ...grpc.CallOption) (res *payload.Search_Responses, err error) {
+	ctx, span := trace.StartSpan(ctx, apiName+"/Client.MultiLinearSearchByID")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	_, err = c.c.RoundRobin(ctx, func(ctx context.Context,
+		conn *grpc.ClientConn,
+		copts ...grpc.CallOption) (interface{}, error) {
+		res, err = vald.NewValdClient(conn).MultiLinearSearchByID(ctx, in, append(copts, opts...)...)
+		return nil, err
+	})
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
+}
+
 func (c *client) Insert(ctx context.Context, in *payload.Insert_Request, opts ...grpc.CallOption) (res *payload.Object_Location, err error) {
 	ctx, span := trace.StartSpan(ctx, apiName+"/Client.Insert")
 	defer func() {
@@ -560,6 +674,66 @@ func (c *singleClient) MultiSearchByID(ctx context.Context, in *payload.Search_M
 		}
 	}()
 	return c.vc.MultiSearchByID(ctx, in, opts...)
+}
+
+func (c *singleClient) LinearSearch(ctx context.Context, in *payload.Search_Request, opts ...grpc.CallOption) (res *payload.Search_Response, err error) {
+	ctx, span := trace.StartSpan(ctx, apiName+"/singleClient.LinearSearch")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	return c.vc.LinearSearch(ctx, in, opts...)
+}
+
+func (c *singleClient) LinearSearchByID(ctx context.Context, in *payload.Search_IDRequest, opts ...grpc.CallOption) (res *payload.Search_Response, err error) {
+	ctx, span := trace.StartSpan(ctx, apiName+"/singleClient.LinearSearchByID")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	return c.vc.LinearSearchByID(ctx, in, opts...)
+}
+
+func (c *singleClient) StreamLinearSearch(ctx context.Context, opts ...grpc.CallOption) (res vald.Search_StreamSearchClient, err error) {
+	ctx, span := trace.StartSpan(ctx, apiName+"/singleClient.StreamLinearSearch")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	return c.vc.StreamLinearSearch(ctx, opts...)
+}
+
+func (c *singleClient) StreamLinearSearchByID(ctx context.Context, opts ...grpc.CallOption) (res vald.Search_StreamSearchByIDClient, err error) {
+	ctx, span := trace.StartSpan(ctx, apiName+"/singleClient.StreamLinearSearchByID")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	return c.vc.StreamLinearSearchByID(ctx, opts...)
+}
+
+func (c *singleClient) MultiLinearSearch(ctx context.Context, in *payload.Search_MultiRequest, opts ...grpc.CallOption) (res *payload.Search_Responses, err error) {
+	ctx, span := trace.StartSpan(ctx, apiName+"/singleClient.MultiLinearSearch")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	return c.vc.MultiLinearSearch(ctx, in, opts...)
+}
+
+func (c *singleClient) MultiLinearSearchByID(ctx context.Context, in *payload.Search_MultiIDRequest, opts ...grpc.CallOption) (res *payload.Search_Responses, err error) {
+	ctx, span := trace.StartSpan(ctx, apiName+"/singleClient.MultiLinearSearchByID")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	return c.vc.MultiLinearSearchByID(ctx, in, opts...)
 }
 
 func (c *singleClient) Insert(ctx context.Context, in *payload.Insert_Request, opts ...grpc.CallOption) (res *payload.Object_Location, err error) {

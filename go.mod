@@ -83,30 +83,52 @@ require (
 	contrib.go.opencensus.io/exporter/jaeger v0.2.1
 	contrib.go.opencensus.io/exporter/prometheus v0.4.0
 	contrib.go.opencensus.io/exporter/stackdriver v0.13.10
+	github.com/Masterminds/goutils v1.1.1 // indirect
+	github.com/Masterminds/semver v1.5.0 // indirect
+	github.com/Masterminds/sprig v2.22.0+incompatible // indirect
+	github.com/aokoli/goutils v1.1.1 // indirect
 	github.com/aws/aws-sdk-go v1.40.34
-	github.com/envoyproxy/protoc-gen-validate v0.1.0
+	github.com/emicklei/proto v1.9.1 // indirect
+	github.com/envoyproxy/protoc-gen-validate v0.6.2
 	github.com/fsnotify/fsnotify v1.5.1
+	github.com/fullstorydev/grpcurl v1.8.5 // indirect
+	github.com/go-openapi/analysis v0.21.1 // indirect
+	github.com/go-openapi/runtime v0.21.0 // indirect
+	github.com/go-openapi/strfmt v0.21.1 // indirect
 	github.com/go-redis/redis/v8 v8.11.4
 	github.com/go-sql-driver/mysql v1.6.0
+	github.com/go-swagger/go-swagger v0.28.0 // indirect
+	github.com/gobuffalo/flect v0.2.4 // indirect
 	github.com/gocql/gocql v0.0.0-20200131111108-92af2e088537
 	github.com/gocraft/dbr/v2 v2.7.3
 	github.com/google/go-cmp v0.5.6
 	github.com/gorilla/mux v1.8.0
+	github.com/grpc-ecosystem/grpc-gateway v1.16.0 // indirect
 	github.com/hashicorp/go-version v1.3.0
+	github.com/huandu/xstrings v1.3.2 // indirect
 	github.com/json-iterator/go v1.1.12
-	github.com/klauspost/compress v1.13.5
+	github.com/klauspost/compress v1.13.6
 	github.com/kpango/fastime v1.0.17
 	github.com/kpango/fuid v0.0.0-20210407064122-2990e29e1ea5
 	github.com/kpango/gache v1.2.6
 	github.com/kpango/glg v1.6.2
 	github.com/leanovate/gopter v0.2.9
 	github.com/lucasb-eyer/go-colorful v1.2.0
+	github.com/lyft/protoc-gen-star v0.6.0 // indirect
+	github.com/mitchellh/copystructure v1.2.0 // indirect
+	github.com/mitchellh/go-wordwrap v1.0.1 // indirect
+	github.com/mwitkow/go-proto-validators v0.3.2 // indirect
 	github.com/pierrec/lz4/v3 v3.3.4
 	github.com/quasilyte/go-ruleguard v0.3.14
 	github.com/quasilyte/go-ruleguard/dsl v0.3.10
+	github.com/rogpeppe/go-internal v1.8.1 // indirect
 	github.com/scylladb/gocqlx v1.5.0
+	github.com/spf13/cobra v1.3.0 // indirect
+	github.com/spf13/viper v1.10.1 // indirect
 	github.com/tensorflow/tensorflow v0.0.0-00010101000000-000000000000
+	github.com/uber/prototool v1.10.0 // indirect
 	github.com/zeebo/xxh3 v0.12.0
+	go.mongodb.org/mongo-driver v1.8.1 // indirect
 	go.opencensus.io v0.23.0
 	go.uber.org/automaxprocs v1.4.0
 	go.uber.org/goleak v1.1.12
