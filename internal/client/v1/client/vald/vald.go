@@ -696,7 +696,7 @@ func (c *singleClient) LinearSearchByID(ctx context.Context, in *payload.Search_
 	return c.vc.LinearSearchByID(ctx, in, opts...)
 }
 
-func (c *singleClient) StreamLinearSearch(ctx context.Context, opts ...grpc.CallOption) (res vald.Search_StreamSearchClient, err error) {
+func (c *singleClient) StreamLinearSearch(ctx context.Context, opts ...grpc.CallOption) (res vald.Search_StreamLinearSearchClient, err error) {
 	ctx, span := trace.StartSpan(ctx, apiName+"/singleClient.StreamLinearSearch")
 	defer func() {
 		if span != nil {
@@ -706,7 +706,7 @@ func (c *singleClient) StreamLinearSearch(ctx context.Context, opts ...grpc.Call
 	return c.vc.StreamLinearSearch(ctx, opts...)
 }
 
-func (c *singleClient) StreamLinearSearchByID(ctx context.Context, opts ...grpc.CallOption) (res vald.Search_StreamSearchByIDClient, err error) {
+func (c *singleClient) StreamLinearSearchByID(ctx context.Context, opts ...grpc.CallOption) (res vald.Search_StreamLinearSearchByIDClient, err error) {
 	ctx, span := trace.StartSpan(ctx, apiName+"/singleClient.StreamLinearSearchByID")
 	defer func() {
 		if span != nil {
