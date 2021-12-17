@@ -2327,7 +2327,6 @@ func Test_handler_LinearSearch(t *testing.T) {
 			if err := test.checkFunc(test.want, gotCode, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -2420,7 +2419,6 @@ func Test_handler_LinearSearchByID(t *testing.T) {
 			if err := test.checkFunc(test.want, gotCode, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -2513,7 +2511,6 @@ func Test_handler_MultiLinearSearch(t *testing.T) {
 			if err := test.checkFunc(test.want, gotCode, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -2606,7 +2603,6 @@ func Test_handler_MultiLinearSearchByID(t *testing.T) {
 			if err := test.checkFunc(test.want, gotCode, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
