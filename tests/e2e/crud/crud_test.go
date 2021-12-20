@@ -176,6 +176,24 @@ func TestE2ESearchOnly(t *testing.T) {
 	}
 }
 
+func TestE2ELinearSearchOnly(t *testing.T) {
+	t.Cleanup(teardown)
+	ctx := context.Background()
+
+	op, err := operation.New(host, port)
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	err = op.LinearSearch(t, ctx, operation.Dataset{
+		Test:      ds.Test[searchFrom : searchFrom+searchNum],
+		Neighbors: ds.Neighbors[searchFrom : searchFrom+searchNum],
+	})
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+}
+
 func TestE2EUpdateOnly(t *testing.T) {
 	t.Cleanup(teardown)
 	ctx := context.Background()
@@ -255,6 +273,33 @@ func TestE2EInsertAndSearch(t *testing.T) {
 	}
 }
 
+func TestE2EInsertAndLinearSearch(t *testing.T) {
+	t.Cleanup(teardown)
+	ctx := context.Background()
+
+	op, err := operation.New(host, port)
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	err = op.Insert(t, ctx, operation.Dataset{
+		Train: ds.Train[insertFrom : insertFrom+insertNum],
+	})
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	sleep(t, waitAfterInsertDuration)
+
+	err = op.LinearSearch(t, ctx, operation.Dataset{
+		Test:      ds.Test[searchFrom : searchFrom+searchNum],
+		Neighbors: ds.Neighbors[searchFrom : searchFrom+searchNum],
+	})
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+}
+
 func TestE2EStandardCRUD(t *testing.T) {
 	t.Cleanup(teardown)
 	ctx := context.Background()
@@ -282,6 +327,21 @@ func TestE2EStandardCRUD(t *testing.T) {
 	}
 
 	err = op.SearchByID(t, ctx, operation.Dataset{
+		Train: ds.Train[searchByIDFrom : searchByIDFrom+searchByIDNum],
+	})
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	err = op.LinearSearch(t, ctx, operation.Dataset{
+		Test:      ds.Test[searchFrom : searchFrom+searchNum],
+		Neighbors: ds.Neighbors[searchFrom : searchFrom+searchNum],
+	})
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	err = op.LinearSearchByID(t, ctx, operation.Dataset{
 		Train: ds.Train[searchByIDFrom : searchByIDFrom+searchByIDNum],
 	})
 	if err != nil {
