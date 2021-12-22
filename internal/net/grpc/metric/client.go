@@ -21,8 +21,10 @@ import (
 	"go.opencensus.io/plugin/ocgrpc"
 )
 
+// ClientHandler is a type alias of ocgrpc.ClientHandler to record OpenCensus stats and traces.
 type ClientHandler = ocgrpc.ClientHandler
 
+// NewClientHandler returns the client handler of OpenCensus stats and traces.
 func NewClientHandler(opts ...ClientOption) *ClientHandler {
 	handler := new(ClientHandler)
 
