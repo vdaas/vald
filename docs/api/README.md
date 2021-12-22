@@ -1,8 +1,8 @@
 # Vald API Overview
 
 Vald provides 6 kinds of API for handling vector with Vald cluster.<br>
-There are 2 choices using gRPC or REST API.
-Vald recommends to use **gRPC** in the sense of high performance.
+Vald provide 2 API interface: gRPC and REST API.
+Using **gRPC** is preferred for better performance.
 
 The APIs overview tables is here:
 

@@ -16,7 +16,7 @@ service Insert {
 
 ## Insert RPC
 
-Inset RPC is the method to ad a new single vector.
+Inset RPC is the method to add a new single vector.
 
 ### Input
 
@@ -48,13 +48,13 @@ Inset RPC is the method to ad a new single vector.
     |field|type|label|required|desc.|
     |:---:|:---|:---|:---:|:---|
     |vector|Object.Vector| | \* | the information of vector |
-    |config|Config| | \* | configuration for inserting vector |
+    |config|Config| | \* | the configuration of the insert request |
 
   - Insert.Config
     |field|type|label|required|desc.|
     |:---:|:---|:---|:---:|:---|
     |skip_strict_exist_check|bool| | | check the same vector is already inserted or not.<br>the same ID is not indexed if the value is `true`|
-    |timestamp|int64| | | it shows the time of vector is inserted.<br>if it is N/A, Vald will use unix timestamp.
+    |timestamp|int64| | | the timestamp of the vector inserted.<br>if it is N/A, the current time will be used.
     |filters|Filter.Config| | | configuration for filter |
 
   - Object.Vector
@@ -81,7 +81,7 @@ Inset RPC is the method to ad a new single vector.
     |field|type|label|desc.|
     |:---:|:---|:---|:---|
     |name|string| | the name of vald agent pod which has been inserted the request vector. |
-    |uuid|string| | the ID of a inserted vector. it is same as Object.Vector |
+    |uuid|string| | the ID of the inserted vector. It is the same as Object.Vector |
     |ips|string| repeated(Array[string]) | the ip list of `vald-agent` pods which has been inserted the request vector. |
 
 ### Status Code
@@ -98,7 +98,7 @@ Inset RPC is the method to ad a new single vector.
 StreamInset RPC is the method  to add new multiple vectors by the [bidirectional streaming RPC](https://grpc.io/docs/what-is-grpc/core-concepts/#bidirectional-streaming-rpc).<br>
 It can communicate between client and server in any order.
 Each Insert request and response are independent.
-It's a recommended method when a large amount of vector should be inserted.
+It's a recommended method to insert the large amount of vectors.
 
 ### Input
 
@@ -129,14 +129,14 @@ It's a recommended method when a large amount of vector should be inserted.
     |field|type|label|required|desc.|
     |:---:|:---|:---|:---:|:---|
     |vector|Object.Vector| | \* | the information of vector |
-    |config|Config| | \* | configuration for inserting vector |
+    |config|Config| | \* | the configuration of the insert request |
 
   - Insert.Config
     |field|type|label|required|desc.|
     |:---:|:---|:---|:---:|:---|
     |skip_strict_exist_check|bool| | | check the same vector is already inserted or not.<br>the same ID is not indexed if the value is `true`|
-    |timestamp|int64| | | it shows the time of vector is inserted.<br>if it is N/A, Vald will use unix timestamp.
-    |filters|Filter.Config| | | configuration for filter |
+    |timestamp|int64| | | the timestamp of the vector inserted.<br>if it is N/A, the current time will be used.
+    |filters|Filter.Config| | | configuration of the filter request |
 
   - Object.Vector
     |field|type|label|required:|desc.|
