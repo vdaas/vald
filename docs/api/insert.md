@@ -26,7 +26,7 @@ Inset RPC is the method to ad a new single vector.
   message Insert {
       message Request {
           Object.Vector vector = 1 [ (validate.rules).repeated.min_items = 2 ];
-          Config config =2;
+          Config config = 2;
       }
 
       message Config {
