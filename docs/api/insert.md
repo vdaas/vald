@@ -60,7 +60,7 @@ Inset RPC is the method to add a new single vector.
   - Object.Vector
     |field|type|label|required|desc.|
     |:---:|:---|:---|:---:|:---|
-    |id|string| | \* | the ID of a vector. ID consists 1 or more strings. |
+    |id|string| | \* | the ID of a vector. ID should consist of 1 or more strings. |
     |vector|float| repeated(Array[float]) | \* | the vector data. its dimension is between 2 and 65,536.|
 
 ### Output
@@ -81,7 +81,7 @@ Inset RPC is the method to add a new single vector.
     |field|type|label|desc.|
     |:---:|:---|:---|:---|
     |name|string| | the name of vald agent pod where the request vector is inserted. |
-    |uuid|string| | the ID of the inserted vector. It is the same as Object.Vector |
+    |uuid|string| | the ID of the inserted vector. It is the same as an Object.Vector |
 |ips|string| repeated(Array[string]) | the ip list of `vald-agent` pods where the request vector is inserted. |
 
 ### Status Code
@@ -141,7 +141,7 @@ It's a recommended method to insert the large amount of vectors.
   - Object.Vector
     |field|type|label|required:|desc.|
     |:---:|:---|:---|:---:|:---|
-    |id|string| | \* | the ID of a vector. ID should consist 1 or more characters. |
+    |id|string| | \* | the ID of a vector. ID should consist of 1 or more characters. |
     |vector|float| repeated(Array[float]) | \* | the vector data. its dimension is between 2 and 65,536. |
 
 ### Output
@@ -175,7 +175,7 @@ It's a recommended method to insert the large amount of vectors.
     |field|type|label|desc.|
     |:---:|:---|:---|:---|
     |name|string| | the name of vald agent pod which has been inserted the request vector. |
-    |uuid|string| | the ID of a inserted vector. it is same as Object.Vector |
+    |uuid|string| | the ID of an inserted vector. it is the same as an Object.Vector |
     |ips|string| repeated(Array[string]) | the ip list of `vald-agent` pods which has been inserted the request vector. |
 
   - [google.rpc.Status](https://github.com/googleapis/googleapis/blob/master/google/rpc/status.proto)
@@ -252,7 +252,7 @@ Please check the request is smaller than it.
   - Object.Vector
     |field|type|label|required|desc.|
     |:---:|:---|:---|:---:|:---|
-    |id|string| | \* | the ID of a vector. ID consists 1 or more strings. |
+    |id|string| | \* | the ID of a vector. ID should consist of 1 or more strings. |
     |vector|float| repeated(Array[float]) | \* | the vector data. its dimension is between 2 and 65,536.|
 
 ### Output
@@ -280,7 +280,7 @@ Please check the request is smaller than it.
     |field|type|label|desc.|
     |:---:|:---|:---|:---|
     |name|string| | the name of vald agent pod which has been inserted the request vector. |
-    |uuid|string| | the ID of a inserted vector. it is same as Object.Vector |
+    |uuid|string| | the ID of an inserted vector. it is the same as an Object.Vector |
     |ips|string| repeated(Array[string]) | the ip list of `vald-agent` pods which has been inserted the request vector. |
 
 ### Status Code
