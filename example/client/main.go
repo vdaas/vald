@@ -49,7 +49,7 @@ func init() {
 	Wait option specifies indexing wait time (in seconds). Default value is  `60`.
 	**/
 	flag.StringVar(&datasetPath, "path", "fashion-mnist-784-euclidean.hdf5", "dataset path")
-	flag.StringVar(&grpcServerAddr, "addr", "127.0.0.1:8081", "gRPC server address")
+	flag.StringVar(&grpcServerAddr, "addr", "localhost:8080", "gRPC server address")
 	flag.UintVar(&indexingWaitSeconds, "wait", 60, "indexing wait seconds")
 	flag.Parse()
 }
