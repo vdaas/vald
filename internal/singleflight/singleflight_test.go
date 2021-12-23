@@ -149,13 +149,10 @@ func Test_group_Do(t *testing.T) {
 					wantShared: false,
 					err:        nil,
 				},
-				execFunc: func(t *testing.T, g *group, a args) (interface{}, bool, error) {
+				execFunc: func(t *testing.T, g *group, a args) (got interface{}, gotShared bool, err error) {
+					t.Helper()
+
 					wg := new(sync.WaitGroup)
-
-					var got interface{}
-					var gotShared bool
-					var err error
-
 					wg.Add(1)
 					go func() {
 						got, gotShared, err = g.Do(a.ctx, a.key, a.fn)
@@ -223,8 +220,9 @@ func Test_group_Do(t *testing.T) {
 				},
 				want: w,
 				execFunc: func(t *testing.T, g *group, a args) (interface{}, bool, error) {
-					wg := new(sync.WaitGroup)
+					t.Helper()
 
+					wg := new(sync.WaitGroup)
 					var got, got1 interface{}
 					var gotShared, gotShared1 bool
 					var err, err1 error

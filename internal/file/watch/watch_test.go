@@ -603,7 +603,7 @@ func Test_watch_Start(t *testing.T) {
 					err: nil,
 				},
 				checkFunc: func(w want, c <-chan error, e error) error {
-					if err := os.Chmod(tmpDir+"/watch.go", 0o777); err != nil {
+					if err := os.Chmod(tmpDir+"/watch.go", 0o600); err != nil {
 						return err
 					}
 					return defaultCheckFunc(w, c, e)
