@@ -307,7 +307,7 @@ func (c *client) SearchByIDWithParameters(
 }
 
 func (c *client) LinearSearch(t *testing.T, ctx context.Context, ds Dataset) error {
-	return c.SearchWithParameters(
+	return c.LinearSearchWithParameters(
 		t,
 		ctx,
 		ds,
@@ -426,7 +426,7 @@ func (c *client) LinearSearchWithParameters(
 }
 
 func (c *client) LinearSearchByID(t *testing.T, ctx context.Context, ds Dataset) error {
-	return c.SearchByIDWithParameters(t,
+	return c.LinearSearchByIDWithParameters(t,
 		ctx,
 		ds,
 		100,
