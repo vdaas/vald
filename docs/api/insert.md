@@ -80,9 +80,9 @@ Inset RPC is the method to add a new single vector.
   - Object.Location
     |field|type|label|desc.|
     |:---:|:---|:---|:---|
-    |name|string| | the name of vald agent pod which has been inserted the request vector. |
+    |name|string| | the name of vald agent pod where the request vector is inserted. |
     |uuid|string| | the ID of the inserted vector. It is the same as Object.Vector |
-    |ips|string| repeated(Array[string]) | the ip list of `vald-agent` pods which has been inserted the request vector. |
+|ips|string| repeated(Array[string]) | the ip list of `vald-agent` pods where the request vector is inserted. |
 
 ### Status Code
 
@@ -95,7 +95,7 @@ Inset RPC is the method to add a new single vector.
 
 ## StreamInsert RPC<sup>recommended</sup>
 
-StreamInset RPC is the method  to add new multiple vectors by the [bidirectional streaming RPC](https://grpc.io/docs/what-is-grpc/core-concepts/#bidirectional-streaming-rpc).<br>
+StreamInset RPC is the method to add new multiple vectors using by the [bidirectional streaming RPC](https://grpc.io/docs/what-is-grpc/core-concepts/#bidirectional-streaming-rpc).<br>
 It can communicate between client and server in any order.
 Each Insert request and response are independent.
 It's a recommended method to insert the large amount of vectors.
@@ -108,7 +108,7 @@ It's a recommended method to insert the large amount of vectors.
   message Insert {
       message Request {
           Object.Vector vector = 1 [ (validate.rules).repeated.min_items = 2 ];
-          Config config =2;
+          Config config = 2;
       }
       message Config {
           bool skip_strict_exist_check = 1;
