@@ -95,10 +95,10 @@ Inset RPC is the method to add a new single vector.
 
 ## StreamInsert RPC<sup>recommended</sup>
 
-StreamInset RPC is the method to add new multiple vectors using by the [bidirectional streaming RPC](https://grpc.io/docs/what-is-grpc/core-concepts/#bidirectional-streaming-rpc).<br>
-It can communicate between client and server in any order.
+StreamInset RPC is the method to add new multiple vectors using the [bidirectional streaming RPC](https://grpc.io/docs/what-is-grpc/core-concepts/#bidirectional-streaming-rpc).<br>
+By using the bidirectional streaming PRC, the insert request can be communicated in any order between client and server.
 Each Insert request and response are independent.
-It's a recommended method to insert the large amount of vectors.
+It's the recommended method to insert the large amount of vectors.
 
 ### Input
 
@@ -141,7 +141,7 @@ It's a recommended method to insert the large amount of vectors.
   - Object.Vector
     |field|type|label|required|desc.|
     |:---:|:---|:---|:---:|:---|
-    |id|string| | \* | the ID of a vector. ID should consist of 1 or more characters. |
+    |id|string| | \* | the ID of the vector. ID should consist of 1 or more characters. |
     |vector|float| repeated(Array[float]) | \* | the vector data. its dimension is between 2 and 65,536.|
 
 ### Output
@@ -199,8 +199,8 @@ It's a recommended method to insert the large amount of vectors.
 MultiInsert is the method to add new multiple vectors in **1** request.
 
 <div class="card-note">
-gRPC has the limitation message size.<br>
-Please check the request is smaller than it.
+gRPC has the message size limitation.<br>
+Please be careful that the size of the request exceed the limit.
 </div>
 
 ### Input
@@ -240,7 +240,7 @@ Please check the request is smaller than it.
     |field|type|label|required|desc.|
     |:---:|:---|:---|:---:|:---|
     |vector|Object.Vector| | \* | the information of vector |
-    |config|Config| | \* | configuration for inserting vector |
+    |config|Config| | \* | the configuration of the insert request |
 
   - Insert.Config
     |field|type|label|required|desc.|
@@ -252,7 +252,7 @@ Please check the request is smaller than it.
   - Object.Vector
     |field|type|label|required|desc.|
     |:---:|:---|:---|:---:|:---|
-    |id|string| | \* | the ID of a vector. ID should consist of 1 or more strings. |
+    |id|string| | \* | the ID of a vector. ID should consist of 1 or more characters. |
     |vector|float| repeated(Array[float]) | \* | the vector data. its dimension is between 2 and 65,536.|
 
 ### Output
