@@ -58,7 +58,7 @@ brew install hdf5
 ## Prepare the Kubernetes Cluster
 
 This tutorial requires the Kubernetes cluster.<br>
-Vald runs on public Cloud Services such as GKE, AWS.
+Vald runs on public Cloud Kubernetes Services such as GKE, EKS.
 In the sense of trying to `Get Started`, [k3d](https://k3d.io/) or [kind](https://kind.sigs.k8s.io/) are easy Kubernetes tools to use.
 
 This tutorial uses Kubernetes Ingress and [Kubernetes Metrics Server](https://github.com/kubernetes-sigs/metrics-server) for running Vald.<br>
