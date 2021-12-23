@@ -99,8 +99,8 @@ func TestNew(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 
-			got, err := New(test.args.opts...)
-			if err := checkFunc(test.want, got, err); err != nil {
+			got, gotErr := New(test.args.opts...)
+			if err := checkFunc(test.want, got, gotErr); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -194,8 +194,8 @@ func Test_client_Start(t *testing.T) {
 				c:     test.fields.c,
 			}
 
-			got, err := c.Start(test.args.ctx)
-			if err := checkFunc(test.want, got, err); err != nil {
+			got, gotErr := c.Start(test.args.ctx)
+			if err := checkFunc(test.want, got, gotErr); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -285,8 +285,8 @@ func Test_client_Stop(t *testing.T) {
 				c:     test.fields.c,
 			}
 
-			err := c.Stop(test.args.ctx)
-			if err := checkFunc(test.want, err); err != nil {
+			gotErr := c.Stop(test.args.ctx)
+			if err := checkFunc(test.want, gotErr); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -467,8 +467,8 @@ func Test_client_Exists(t *testing.T) {
 				c:     test.fields.c,
 			}
 
-			gotOid, err := c.Exists(test.args.ctx, test.args.in, test.args.opts...)
-			if err := checkFunc(test.want, gotOid, err); err != nil {
+			gotOid, gotErr := c.Exists(test.args.ctx, test.args.in, test.args.opts...)
+			if err := checkFunc(test.want, gotOid, gotErr); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -568,8 +568,8 @@ func Test_client_Search(t *testing.T) {
 				c:     test.fields.c,
 			}
 
-			gotRes, err := c.Search(test.args.ctx, test.args.in, test.args.opts...)
-			if err := checkFunc(test.want, gotRes, err); err != nil {
+			gotRes, gotErr := c.Search(test.args.ctx, test.args.in, test.args.opts...)
+			if err := checkFunc(test.want, gotRes, gotErr); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -669,8 +669,8 @@ func Test_client_SearchByID(t *testing.T) {
 				c:     test.fields.c,
 			}
 
-			gotRes, err := c.SearchByID(test.args.ctx, test.args.in, test.args.opts...)
-			if err := checkFunc(test.want, gotRes, err); err != nil {
+			gotRes, gotErr := c.SearchByID(test.args.ctx, test.args.in, test.args.opts...)
+			if err := checkFunc(test.want, gotRes, gotErr); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -767,8 +767,8 @@ func Test_client_StreamSearch(t *testing.T) {
 				c:     test.fields.c,
 			}
 
-			gotRes, err := c.StreamSearch(test.args.ctx, test.args.opts...)
-			if err := checkFunc(test.want, gotRes, err); err != nil {
+			gotRes, gotErr := c.StreamSearch(test.args.ctx, test.args.opts...)
+			if err := checkFunc(test.want, gotRes, gotErr); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -865,8 +865,8 @@ func Test_client_StreamSearchByID(t *testing.T) {
 				c:     test.fields.c,
 			}
 
-			gotRes, err := c.StreamSearchByID(test.args.ctx, test.args.opts...)
-			if err := checkFunc(test.want, gotRes, err); err != nil {
+			gotRes, gotErr := c.StreamSearchByID(test.args.ctx, test.args.opts...)
+			if err := checkFunc(test.want, gotRes, gotErr); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -966,8 +966,8 @@ func Test_client_MultiSearch(t *testing.T) {
 				c:     test.fields.c,
 			}
 
-			gotRes, err := c.MultiSearch(test.args.ctx, test.args.in, test.args.opts...)
-			if err := checkFunc(test.want, gotRes, err); err != nil {
+			gotRes, gotErr := c.MultiSearch(test.args.ctx, test.args.in, test.args.opts...)
+			if err := checkFunc(test.want, gotRes, gotErr); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1067,8 +1067,8 @@ func Test_client_MultiSearchByID(t *testing.T) {
 				c:     test.fields.c,
 			}
 
-			gotRes, err := c.MultiSearchByID(test.args.ctx, test.args.in, test.args.opts...)
-			if err := checkFunc(test.want, gotRes, err); err != nil {
+			gotRes, gotErr := c.MultiSearchByID(test.args.ctx, test.args.in, test.args.opts...)
+			if err := checkFunc(test.want, gotRes, gotErr); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1168,8 +1168,8 @@ func Test_client_Insert(t *testing.T) {
 				c:     test.fields.c,
 			}
 
-			gotRes, err := c.Insert(test.args.ctx, test.args.in, test.args.opts...)
-			if err := checkFunc(test.want, gotRes, err); err != nil {
+			gotRes, gotErr := c.Insert(test.args.ctx, test.args.in, test.args.opts...)
+			if err := checkFunc(test.want, gotRes, gotErr); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1266,8 +1266,8 @@ func Test_client_StreamInsert(t *testing.T) {
 				c:     test.fields.c,
 			}
 
-			gotRes, err := c.StreamInsert(test.args.ctx, test.args.opts...)
-			if err := checkFunc(test.want, gotRes, err); err != nil {
+			gotRes, gotErr := c.StreamInsert(test.args.ctx, test.args.opts...)
+			if err := checkFunc(test.want, gotRes, gotErr); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1367,8 +1367,8 @@ func Test_client_MultiInsert(t *testing.T) {
 				c:     test.fields.c,
 			}
 
-			gotRes, err := c.MultiInsert(test.args.ctx, test.args.in, test.args.opts...)
-			if err := checkFunc(test.want, gotRes, err); err != nil {
+			gotRes, gotErr := c.MultiInsert(test.args.ctx, test.args.in, test.args.opts...)
+			if err := checkFunc(test.want, gotRes, gotErr); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1468,8 +1468,8 @@ func Test_client_Update(t *testing.T) {
 				c:     test.fields.c,
 			}
 
-			gotRes, err := c.Update(test.args.ctx, test.args.in, test.args.opts...)
-			if err := checkFunc(test.want, gotRes, err); err != nil {
+			gotRes, gotErr := c.Update(test.args.ctx, test.args.in, test.args.opts...)
+			if err := checkFunc(test.want, gotRes, gotErr); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1566,8 +1566,8 @@ func Test_client_StreamUpdate(t *testing.T) {
 				c:     test.fields.c,
 			}
 
-			gotRes, err := c.StreamUpdate(test.args.ctx, test.args.opts...)
-			if err := checkFunc(test.want, gotRes, err); err != nil {
+			gotRes, gotErr := c.StreamUpdate(test.args.ctx, test.args.opts...)
+			if err := checkFunc(test.want, gotRes, gotErr); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1667,8 +1667,8 @@ func Test_client_MultiUpdate(t *testing.T) {
 				c:     test.fields.c,
 			}
 
-			gotRes, err := c.MultiUpdate(test.args.ctx, test.args.in, test.args.opts...)
-			if err := checkFunc(test.want, gotRes, err); err != nil {
+			gotRes, gotErr := c.MultiUpdate(test.args.ctx, test.args.in, test.args.opts...)
+			if err := checkFunc(test.want, gotRes, gotErr); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1768,8 +1768,8 @@ func Test_client_Upsert(t *testing.T) {
 				c:     test.fields.c,
 			}
 
-			gotRes, err := c.Upsert(test.args.ctx, test.args.in, test.args.opts...)
-			if err := checkFunc(test.want, gotRes, err); err != nil {
+			gotRes, gotErr := c.Upsert(test.args.ctx, test.args.in, test.args.opts...)
+			if err := checkFunc(test.want, gotRes, gotErr); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1866,8 +1866,8 @@ func Test_client_StreamUpsert(t *testing.T) {
 				c:     test.fields.c,
 			}
 
-			gotRes, err := c.StreamUpsert(test.args.ctx, test.args.opts...)
-			if err := checkFunc(test.want, gotRes, err); err != nil {
+			gotRes, gotErr := c.StreamUpsert(test.args.ctx, test.args.opts...)
+			if err := checkFunc(test.want, gotRes, gotErr); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1967,8 +1967,8 @@ func Test_client_MultiUpsert(t *testing.T) {
 				c:     test.fields.c,
 			}
 
-			gotRes, err := c.MultiUpsert(test.args.ctx, test.args.in, test.args.opts...)
-			if err := checkFunc(test.want, gotRes, err); err != nil {
+			gotRes, gotErr := c.MultiUpsert(test.args.ctx, test.args.in, test.args.opts...)
+			if err := checkFunc(test.want, gotRes, gotErr); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -2068,8 +2068,8 @@ func Test_client_Remove(t *testing.T) {
 				c:     test.fields.c,
 			}
 
-			gotRes, err := c.Remove(test.args.ctx, test.args.in, test.args.opts...)
-			if err := checkFunc(test.want, gotRes, err); err != nil {
+			gotRes, gotErr := c.Remove(test.args.ctx, test.args.in, test.args.opts...)
+			if err := checkFunc(test.want, gotRes, gotErr); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -2166,8 +2166,8 @@ func Test_client_StreamRemove(t *testing.T) {
 				c:     test.fields.c,
 			}
 
-			gotRes, err := c.StreamRemove(test.args.ctx, test.args.opts...)
-			if err := checkFunc(test.want, gotRes, err); err != nil {
+			gotRes, gotErr := c.StreamRemove(test.args.ctx, test.args.opts...)
+			if err := checkFunc(test.want, gotRes, gotErr); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -2267,8 +2267,8 @@ func Test_client_MultiRemove(t *testing.T) {
 				c:     test.fields.c,
 			}
 
-			gotRes, err := c.MultiRemove(test.args.ctx, test.args.in, test.args.opts...)
-			if err := checkFunc(test.want, gotRes, err); err != nil {
+			gotRes, gotErr := c.MultiRemove(test.args.ctx, test.args.in, test.args.opts...)
+			if err := checkFunc(test.want, gotRes, gotErr); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -2368,8 +2368,8 @@ func Test_client_GetObject(t *testing.T) {
 				c:     test.fields.c,
 			}
 
-			gotRes, err := c.GetObject(test.args.ctx, test.args.in, test.args.opts...)
-			if err := checkFunc(test.want, gotRes, err); err != nil {
+			gotRes, gotErr := c.GetObject(test.args.ctx, test.args.in, test.args.opts...)
+			if err := checkFunc(test.want, gotRes, gotErr); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -2466,8 +2466,8 @@ func Test_client_StreamGetObject(t *testing.T) {
 				c:     test.fields.c,
 			}
 
-			gotRes, err := c.StreamGetObject(test.args.ctx, test.args.opts...)
-			if err := checkFunc(test.want, gotRes, err); err != nil {
+			gotRes, gotErr := c.StreamGetObject(test.args.ctx, test.args.opts...)
+			if err := checkFunc(test.want, gotRes, gotErr); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -2629,8 +2629,8 @@ func Test_singleClient_Start(t *testing.T) {
 				vc: test.fields.vc,
 			}
 
-			got, err := c.Start(test.args.ctx)
-			if err := checkFunc(test.want, got, err); err != nil {
+			got, gotErr := c.Start(test.args.ctx)
+			if err := checkFunc(test.want, got, gotErr); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -2715,8 +2715,8 @@ func Test_singleClient_Stop(t *testing.T) {
 				vc: test.fields.vc,
 			}
 
-			err := c.Stop(test.args.ctx)
-			if err := checkFunc(test.want, err); err != nil {
+			gotErr := c.Stop(test.args.ctx)
+			if err := checkFunc(test.want, gotErr); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -2887,8 +2887,8 @@ func Test_singleClient_Exists(t *testing.T) {
 				vc: test.fields.vc,
 			}
 
-			gotOid, err := c.Exists(test.args.ctx, test.args.in, test.args.opts...)
-			if err := checkFunc(test.want, gotOid, err); err != nil {
+			gotOid, gotErr := c.Exists(test.args.ctx, test.args.in, test.args.opts...)
+			if err := checkFunc(test.want, gotOid, gotErr); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -2983,8 +2983,8 @@ func Test_singleClient_Search(t *testing.T) {
 				vc: test.fields.vc,
 			}
 
-			gotRes, err := c.Search(test.args.ctx, test.args.in, test.args.opts...)
-			if err := checkFunc(test.want, gotRes, err); err != nil {
+			gotRes, gotErr := c.Search(test.args.ctx, test.args.in, test.args.opts...)
+			if err := checkFunc(test.want, gotRes, gotErr); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -3079,8 +3079,8 @@ func Test_singleClient_SearchByID(t *testing.T) {
 				vc: test.fields.vc,
 			}
 
-			gotRes, err := c.SearchByID(test.args.ctx, test.args.in, test.args.opts...)
-			if err := checkFunc(test.want, gotRes, err); err != nil {
+			gotRes, gotErr := c.SearchByID(test.args.ctx, test.args.in, test.args.opts...)
+			if err := checkFunc(test.want, gotRes, gotErr); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -3172,8 +3172,8 @@ func Test_singleClient_StreamSearch(t *testing.T) {
 				vc: test.fields.vc,
 			}
 
-			gotRes, err := c.StreamSearch(test.args.ctx, test.args.opts...)
-			if err := checkFunc(test.want, gotRes, err); err != nil {
+			gotRes, gotErr := c.StreamSearch(test.args.ctx, test.args.opts...)
+			if err := checkFunc(test.want, gotRes, gotErr); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -3265,8 +3265,8 @@ func Test_singleClient_StreamSearchByID(t *testing.T) {
 				vc: test.fields.vc,
 			}
 
-			gotRes, err := c.StreamSearchByID(test.args.ctx, test.args.opts...)
-			if err := checkFunc(test.want, gotRes, err); err != nil {
+			gotRes, gotErr := c.StreamSearchByID(test.args.ctx, test.args.opts...)
+			if err := checkFunc(test.want, gotRes, gotErr); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -3361,8 +3361,8 @@ func Test_singleClient_MultiSearch(t *testing.T) {
 				vc: test.fields.vc,
 			}
 
-			gotRes, err := c.MultiSearch(test.args.ctx, test.args.in, test.args.opts...)
-			if err := checkFunc(test.want, gotRes, err); err != nil {
+			gotRes, gotErr := c.MultiSearch(test.args.ctx, test.args.in, test.args.opts...)
+			if err := checkFunc(test.want, gotRes, gotErr); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -3457,8 +3457,8 @@ func Test_singleClient_MultiSearchByID(t *testing.T) {
 				vc: test.fields.vc,
 			}
 
-			gotRes, err := c.MultiSearchByID(test.args.ctx, test.args.in, test.args.opts...)
-			if err := checkFunc(test.want, gotRes, err); err != nil {
+			gotRes, gotErr := c.MultiSearchByID(test.args.ctx, test.args.in, test.args.opts...)
+			if err := checkFunc(test.want, gotRes, gotErr); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -3553,8 +3553,8 @@ func Test_singleClient_Insert(t *testing.T) {
 				vc: test.fields.vc,
 			}
 
-			gotRes, err := c.Insert(test.args.ctx, test.args.in, test.args.opts...)
-			if err := checkFunc(test.want, gotRes, err); err != nil {
+			gotRes, gotErr := c.Insert(test.args.ctx, test.args.in, test.args.opts...)
+			if err := checkFunc(test.want, gotRes, gotErr); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -3646,8 +3646,8 @@ func Test_singleClient_StreamInsert(t *testing.T) {
 				vc: test.fields.vc,
 			}
 
-			gotRes, err := c.StreamInsert(test.args.ctx, test.args.opts...)
-			if err := checkFunc(test.want, gotRes, err); err != nil {
+			gotRes, gotErr := c.StreamInsert(test.args.ctx, test.args.opts...)
+			if err := checkFunc(test.want, gotRes, gotErr); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -3742,8 +3742,8 @@ func Test_singleClient_MultiInsert(t *testing.T) {
 				vc: test.fields.vc,
 			}
 
-			gotRes, err := c.MultiInsert(test.args.ctx, test.args.in, test.args.opts...)
-			if err := checkFunc(test.want, gotRes, err); err != nil {
+			gotRes, gotErr := c.MultiInsert(test.args.ctx, test.args.in, test.args.opts...)
+			if err := checkFunc(test.want, gotRes, gotErr); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -3838,8 +3838,8 @@ func Test_singleClient_Update(t *testing.T) {
 				vc: test.fields.vc,
 			}
 
-			gotRes, err := c.Update(test.args.ctx, test.args.in, test.args.opts...)
-			if err := checkFunc(test.want, gotRes, err); err != nil {
+			gotRes, gotErr := c.Update(test.args.ctx, test.args.in, test.args.opts...)
+			if err := checkFunc(test.want, gotRes, gotErr); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -3931,8 +3931,8 @@ func Test_singleClient_StreamUpdate(t *testing.T) {
 				vc: test.fields.vc,
 			}
 
-			gotRes, err := c.StreamUpdate(test.args.ctx, test.args.opts...)
-			if err := checkFunc(test.want, gotRes, err); err != nil {
+			gotRes, gotErr := c.StreamUpdate(test.args.ctx, test.args.opts...)
+			if err := checkFunc(test.want, gotRes, gotErr); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -4027,8 +4027,8 @@ func Test_singleClient_MultiUpdate(t *testing.T) {
 				vc: test.fields.vc,
 			}
 
-			gotRes, err := c.MultiUpdate(test.args.ctx, test.args.in, test.args.opts...)
-			if err := checkFunc(test.want, gotRes, err); err != nil {
+			gotRes, gotErr := c.MultiUpdate(test.args.ctx, test.args.in, test.args.opts...)
+			if err := checkFunc(test.want, gotRes, gotErr); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -4123,8 +4123,8 @@ func Test_singleClient_Upsert(t *testing.T) {
 				vc: test.fields.vc,
 			}
 
-			gotRes, err := c.Upsert(test.args.ctx, test.args.in, test.args.opts...)
-			if err := checkFunc(test.want, gotRes, err); err != nil {
+			gotRes, gotErr := c.Upsert(test.args.ctx, test.args.in, test.args.opts...)
+			if err := checkFunc(test.want, gotRes, gotErr); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -4216,8 +4216,8 @@ func Test_singleClient_StreamUpsert(t *testing.T) {
 				vc: test.fields.vc,
 			}
 
-			gotRes, err := c.StreamUpsert(test.args.ctx, test.args.opts...)
-			if err := checkFunc(test.want, gotRes, err); err != nil {
+			gotRes, gotErr := c.StreamUpsert(test.args.ctx, test.args.opts...)
+			if err := checkFunc(test.want, gotRes, gotErr); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -4312,8 +4312,8 @@ func Test_singleClient_MultiUpsert(t *testing.T) {
 				vc: test.fields.vc,
 			}
 
-			gotRes, err := c.MultiUpsert(test.args.ctx, test.args.in, test.args.opts...)
-			if err := checkFunc(test.want, gotRes, err); err != nil {
+			gotRes, gotErr := c.MultiUpsert(test.args.ctx, test.args.in, test.args.opts...)
+			if err := checkFunc(test.want, gotRes, gotErr); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -4408,8 +4408,8 @@ func Test_singleClient_Remove(t *testing.T) {
 				vc: test.fields.vc,
 			}
 
-			gotRes, err := c.Remove(test.args.ctx, test.args.in, test.args.opts...)
-			if err := checkFunc(test.want, gotRes, err); err != nil {
+			gotRes, gotErr := c.Remove(test.args.ctx, test.args.in, test.args.opts...)
+			if err := checkFunc(test.want, gotRes, gotErr); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -4501,8 +4501,8 @@ func Test_singleClient_StreamRemove(t *testing.T) {
 				vc: test.fields.vc,
 			}
 
-			gotRes, err := c.StreamRemove(test.args.ctx, test.args.opts...)
-			if err := checkFunc(test.want, gotRes, err); err != nil {
+			gotRes, gotErr := c.StreamRemove(test.args.ctx, test.args.opts...)
+			if err := checkFunc(test.want, gotRes, gotErr); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -4597,8 +4597,8 @@ func Test_singleClient_MultiRemove(t *testing.T) {
 				vc: test.fields.vc,
 			}
 
-			gotRes, err := c.MultiRemove(test.args.ctx, test.args.in, test.args.opts...)
-			if err := checkFunc(test.want, gotRes, err); err != nil {
+			gotRes, gotErr := c.MultiRemove(test.args.ctx, test.args.in, test.args.opts...)
+			if err := checkFunc(test.want, gotRes, gotErr); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -4693,8 +4693,8 @@ func Test_singleClient_GetObject(t *testing.T) {
 				vc: test.fields.vc,
 			}
 
-			gotRes, err := c.GetObject(test.args.ctx, test.args.in, test.args.opts...)
-			if err := checkFunc(test.want, gotRes, err); err != nil {
+			gotRes, gotErr := c.GetObject(test.args.ctx, test.args.in, test.args.opts...)
+			if err := checkFunc(test.want, gotRes, gotErr); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -4786,8 +4786,8 @@ func Test_singleClient_StreamGetObject(t *testing.T) {
 				vc: test.fields.vc,
 			}
 
-			gotRes, err := c.StreamGetObject(test.args.ctx, test.args.opts...)
-			if err := checkFunc(test.want, gotRes, err); err != nil {
+			gotRes, gotErr := c.StreamGetObject(test.args.ctx, test.args.opts...)
+			if err := checkFunc(test.want, gotRes, gotErr); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
