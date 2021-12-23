@@ -11,7 +11,7 @@ service Insert {
     rpc StreamInsert(stream payload.v1.Insert.Request) returns (stream payload.v1.Object.Location) {}
 
     rpc MultiInsert(payload.v1.Insert.MultiRequest) returns (payload.v1.Object.Location) {}
-    }
+}
 ```
 
 ## Insert RPC
