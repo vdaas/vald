@@ -1,0 +1,16 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: pyroscope
+  labels:
+    app.kubernetes.io/name: pyroscope
+    app.kubernetes.io/instance: pyroscope
+    app.kubernetes.io/version: "0.4.1"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: pyroscope
+subjects:
+  - kind: ServiceAccount
+    name: pyroscope
+    namespace: default
