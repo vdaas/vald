@@ -53,7 +53,7 @@ Inset RPC is the method to add a new single vector.
   - Insert.Config
     |field|type|label|required|desc.|
     |:---:|:---|:---|:---:|:---|
-    |skip_strict_exist_check|bool| | | check the same vector is already inserted or not.<br>the same ID is not indexed if the value is `true`|
+    |skip_strict_exist_check|bool| | | check the same vector is already inserted or not.<br>the ID should be unique if the value is `true`|
     |timestamp|int64| | | the timestamp of the vector inserted.<br>if it is N/A, the current time will be used.
     |filters|Filter.Config| | | configuration for filter |
 
@@ -134,14 +134,14 @@ It's a recommended method to insert the large amount of vectors.
   - Insert.Config
     |field|type|label|required|desc.|
     |:---:|:---|:---|:---:|:---|
-    |skip_strict_exist_check|bool| | | check the same vector is already inserted or not.<br>the same ID is not indexed if the value is `true`|
+    |skip_strict_exist_check|bool| | | check the same vector is already inserted or not.<br>the ID should be unique if the value is `true`|
     |timestamp|int64| | | the timestamp of the vector inserted.<br>if it is N/A, the current time will be used.
     |filters|Filter.Config| | | configuration of the filter request |
 
   - Object.Vector
     |field|type|label|required:|desc.|
     |:---:|:---|:---|:---:|:---|
-    |id|string| | \* | the ID of a vector. ID consists 1 or more strings. |
+    |id|string| | \* | the ID of a vector. ID should consist 1 or more characters. |
     |vector|float| repeated(Array[float]) | \* | the vector data. its dimension is between 2 and 65,536. |
 
 ### Output
