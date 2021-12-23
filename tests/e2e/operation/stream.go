@@ -516,8 +516,6 @@ func (c *client) LinearSearchByIDWithParameters(
 			Config: &payload.Search_Config{
 				RequestId: id,
 				Num:       num,
-				Radius:    radius,
-				Epsilon:   epsilon,
 				Timeout:   timeout,
 			},
 		})
