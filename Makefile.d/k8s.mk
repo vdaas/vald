@@ -371,7 +371,7 @@ k8s/metrics/pyroscope/deploy:
 
 .PHONY: k8s/metrics/pyroscope/delete
 ## delete pyroscope
-k8s/metrics/profefe/delete:
+k8s/metrics/pyroscope/delete:
 	kubectl delete -f k8s/metrics/pyroscope
 
 .PHONY: k8s/linkerd/deploy
