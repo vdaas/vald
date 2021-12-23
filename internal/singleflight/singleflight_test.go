@@ -1,3 +1,6 @@
+//go:build !race
+// +build !race
+
 //
 // Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
 //
@@ -41,7 +44,7 @@ func TestNew(t *testing.T) {
 		afterFunc  func()
 	}
 	defaultCheckFunc := func(w want, got Group) error {
-		if !reflect.DeepEqual(got.(*group).pool.New(), w.want.(*group).pool.New()) {
+		if !reflect.DeepEqual(got, w.want) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
@@ -50,13 +53,7 @@ func TestNew(t *testing.T) {
 		{
 			name: "returns Group implementation",
 			want: want{
-				want: &group{
-					pool: &sync.Pool{
-						New: func() interface{} {
-							return new(call)
-						},
-					},
-				},
+				want: &group{},
 			},
 		},
 	}
@@ -90,8 +87,7 @@ func Test_group_Do(t *testing.T) {
 		fn  func() (interface{}, error)
 	}
 	type fields struct {
-		m    sync.Map
-		pool *sync.Pool
+		m sync.Map
 	}
 	type want struct {
 		wantV      interface{}
@@ -143,13 +139,6 @@ func Test_group_Do(t *testing.T) {
 
 			return test{
 				name: "returns (v, false, nil) when Do is called with another key",
-				fields: fields{
-					pool: &sync.Pool{
-						New: func() interface{} {
-							return new(call)
-						},
-					},
-				},
 				args: args{
 					key: key1,
 					ctx: context.Background(),
@@ -227,13 +216,6 @@ func Test_group_Do(t *testing.T) {
 
 			return test{
 				name: "returns (v, true, nil) when Do is called with the same key",
-				fields: fields{
-					pool: &sync.Pool{
-						New: func() interface{} {
-							return new(call)
-						},
-					},
-				},
 				args: args{
 					key: "req_1",
 					ctx: context.Background(),
@@ -283,8 +265,7 @@ func Test_group_Do(t *testing.T) {
 			}
 
 			g := &group{
-				m:    test.fields.m,
-				pool: test.fields.pool,
+				m: test.fields.m,
 			}
 
 			execFunc := defaultExecFunc
