@@ -290,8 +290,8 @@ func (i *info) prepare() {
 		if len(i.detail.GitCommit) == 0 {
 			i.detail.GitCommit = "master"
 		}
-		if len(Version) != 0 && len(i.detail.Version) == 0 {
-			i.detail.Version = Version
+		if len(Version) == 0 && len(i.detail.Version) == 0 {
+			i.detail.Version = GitCommit
 		}
 		if len(i.detail.BuildTime) == 0 {
 			i.detail.BuildTime = BuildTime

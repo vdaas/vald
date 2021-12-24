@@ -91,7 +91,7 @@ func TestString(t *testing.T) {
 				infoProvider = nil
 			},
 			want: want{
-				want: "\nbuild cpu info flags ->\t[]\ngit commit           ->\tmaster\ngo arch              ->\t" + runtime.GOARCH + "\ngo os                ->\t" + runtime.GOOS + "\ngo version           ->\t" + runtime.Version() + "\nvald version         ->\t\x1b[1mv0.0.1\x1b[22m",
+				want: "\nbuild cpu info flags ->\t[]\ngit commit           ->\tmaster\ngo arch              ->\t" + runtime.GOARCH + "\ngo os                ->\t" + runtime.GOOS + "\ngo version           ->\t" + runtime.Version() + "\nvald version         ->\t\x1b[1m\x1b[22m",
 			},
 		},
 	}
@@ -236,7 +236,7 @@ func TestInit(t *testing.T) {
 					detail: Detail{
 						GitCommit:  "gitcommit",
 						ServerName: "gateway",
-						Version:    "",
+						Version:    "gitcommit",
 						BuildTime:  "1s",
 						GoVersion:  runtime.Version(),
 						GoOS:       runtime.GOOS,
@@ -286,7 +286,7 @@ func TestInit(t *testing.T) {
 					detail: Detail{
 						GitCommit:  "gitcommit",
 						ServerName: "",
-						Version:    "",
+						Version:    "gitcommit",
 						BuildTime:  "1s",
 						GoVersion:  runtime.Version(),
 						GoOS:       runtime.GOOS,
@@ -807,7 +807,7 @@ func Test_info_Get(t *testing.T) {
 			want: want{
 				want: Detail{
 					ServerName: "",
-					Version:    Version,
+					Version:    "",
 					GitCommit:  "master",
 					GoVersion:  runtime.Version(),
 					GoOS:       runtime.GOOS,
@@ -845,7 +845,7 @@ func Test_info_Get(t *testing.T) {
 			want: want{
 				want: Detail{
 					ServerName: "",
-					Version:    Version,
+					Version:    "",
 					GitCommit:  "master",
 					GoVersion:  runtime.Version(),
 					GoOS:       runtime.GOOS,
@@ -890,7 +890,7 @@ func Test_info_Get(t *testing.T) {
 			want: want{
 				want: Detail{
 					ServerName: "",
-					Version:    Version,
+					Version:    "",
 					GitCommit:  "master",
 					GoVersion:  runtime.Version(),
 					GoOS:       runtime.GOOS,
@@ -934,7 +934,7 @@ func Test_info_Get(t *testing.T) {
 			}(),
 			want: want{
 				want: Detail{
-					Version:    Version,
+					Version:    "",
 					GitCommit:  "master",
 					GoVersion:  runtime.Version(),
 					GoOS:       runtime.GOOS,
@@ -978,7 +978,7 @@ func Test_info_Get(t *testing.T) {
 			}(),
 			want: want{
 				want: Detail{
-					Version:    Version,
+					Version:    "",
 					GitCommit:  "master",
 					GoVersion:  runtime.Version(),
 					GoOS:       runtime.GOOS,
@@ -1022,7 +1022,7 @@ func Test_info_Get(t *testing.T) {
 			}(),
 			want: want{
 				want: Detail{
-					Version:    Version,
+					Version:    "",
 					GitCommit:  "master",
 					GoVersion:  runtime.Version(),
 					GoOS:       runtime.GOOS,
@@ -1066,7 +1066,7 @@ func Test_info_Get(t *testing.T) {
 			}(),
 			want: want{
 				want: Detail{
-					Version:    Version,
+					Version:    "",
 					GitCommit:  "master",
 					GoVersion:  runtime.Version(),
 					GoOS:       runtime.GOOS,
@@ -1156,7 +1156,7 @@ func Test_info_prepare(t *testing.T) {
 				want: info{
 					detail: Detail{
 						GitCommit:  "master",
-						Version:    Version,
+						Version:    "",
 						BuildTime:  BuildTime,
 						GoVersion:  runtime.Version(),
 						GoOS:       runtime.GOOS,
@@ -1184,7 +1184,7 @@ func Test_info_prepare(t *testing.T) {
 				want: info{
 					detail: Detail{
 						GitCommit:  "internal",
-						Version:    Version,
+						Version:    "",
 						BuildTime:  BuildTime,
 						GoVersion:  runtime.Version(),
 						GoOS:       runtime.GOOS,
@@ -1240,7 +1240,7 @@ func Test_info_prepare(t *testing.T) {
 				want: info{
 					detail: Detail{
 						GitCommit:  "master",
-						Version:    Version,
+						Version:    "",
 						BuildTime:  "10s",
 						GoVersion:  runtime.Version(),
 						GoOS:       runtime.GOOS,
@@ -1268,7 +1268,7 @@ func Test_info_prepare(t *testing.T) {
 				want: info{
 					detail: Detail{
 						GitCommit:  "master",
-						Version:    Version,
+						Version:    "",
 						BuildTime:  BuildTime,
 						GoVersion:  "1.14",
 						GoOS:       runtime.GOOS,
@@ -1296,7 +1296,7 @@ func Test_info_prepare(t *testing.T) {
 				want: info{
 					detail: Detail{
 						GitCommit:  "master",
-						Version:    Version,
+						Version:    "",
 						BuildTime:  BuildTime,
 						GoVersion:  runtime.Version(),
 						GoOS:       "linux",
@@ -1324,7 +1324,7 @@ func Test_info_prepare(t *testing.T) {
 				want: info{
 					detail: Detail{
 						GitCommit:  "master",
-						Version:    Version,
+						Version:    "",
 						BuildTime:  BuildTime,
 						GoVersion:  runtime.Version(),
 						GoOS:       runtime.GOOS,
@@ -1352,7 +1352,7 @@ func Test_info_prepare(t *testing.T) {
 				want: info{
 					detail: Detail{
 						GitCommit:  "master",
-						Version:    Version,
+						Version:    "",
 						BuildTime:  BuildTime,
 						GoVersion:  runtime.Version(),
 						GoOS:       runtime.GOOS,
@@ -1380,7 +1380,7 @@ func Test_info_prepare(t *testing.T) {
 				want: info{
 					detail: Detail{
 						GitCommit:  "master",
-						Version:    Version,
+						Version:    "",
 						BuildTime:  BuildTime,
 						GoVersion:  runtime.Version(),
 						GoOS:       runtime.GOOS,
@@ -1408,7 +1408,7 @@ func Test_info_prepare(t *testing.T) {
 				want: info{
 					detail: Detail{
 						GitCommit:         "master",
-						Version:           Version,
+						Version:           "",
 						BuildTime:         BuildTime,
 						GoVersion:         runtime.Version(),
 						GoOS:              runtime.GOOS,
