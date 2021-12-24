@@ -551,7 +551,7 @@ func Test_backoff_Do(t *testing.T) {
 			f := func(context.Context) (interface{}, bool, error) {
 				cnt++
 				if cnt > 1 {
-					time.Sleep(1000 * time.Microsecond)
+					time.Sleep(10 * time.Millisecond)
 				}
 				return str, true, err
 			}
@@ -570,7 +570,7 @@ func Test_backoff_Do(t *testing.T) {
 					durationLimit:         10,
 					maxDuration:           0,
 					maxRetryCount:         1,
-					backoffTimeLimit:      100 * time.Microsecond,
+					backoffTimeLimit:      50 * time.Microsecond,
 					errLog:                true,
 				},
 				want: want{
