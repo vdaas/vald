@@ -102,7 +102,7 @@ require (
 	github.com/leanovate/gopter v0.2.9
 	github.com/lucasb-eyer/go-colorful v1.2.0
 	github.com/pierrec/lz4/v3 v3.3.4
-	github.com/quasilyte/go-ruleguard v0.3.13
+	github.com/quasilyte/go-ruleguard v0.3.14
 	github.com/quasilyte/go-ruleguard/dsl v0.3.10
 	github.com/scylladb/gocqlx v1.5.0
 	github.com/tensorflow/tensorflow v0.0.0-00010101000000-000000000000
@@ -160,6 +160,7 @@ require (
 	github.com/go-openapi/jsonreference v0.19.5 // indirect
 	github.com/go-openapi/swag v0.19.14 // indirect
 	github.com/go-pdf/fpdf v0.5.0 // indirect
+	github.com/go-toolsmith/astcopy v1.0.0 // indirect
 	github.com/go-toolsmith/astequal v1.0.1 // indirect
 	github.com/goccy/go-json v0.7.4 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
@@ -197,6 +198,7 @@ require (
 	github.com/prometheus/common v0.28.0 // indirect
 	github.com/prometheus/procfs v0.6.0 // indirect
 	github.com/prometheus/statsd_exporter v0.21.0 // indirect
+	github.com/quasilyte/gogrep v0.0.0-20211226113550-e12a97c7d96d // indirect
 	github.com/scylladb/go-reflectx v1.0.1 // indirect
 	github.com/spf13/cobra v1.2.1 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
