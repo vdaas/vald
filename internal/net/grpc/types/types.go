@@ -22,8 +22,10 @@ import (
 	"google.golang.org/protobuf/types/known/anypb"
 )
 
+// Any is a type alias of anypb.Any representing a serialized protocol buffer message.
 type Any = anypb.Any
 
+// UnmarshalAny unmarshal protocol buffer message to any.
 func UnmarshalAny(any *Any, m proto.Message) error {
 	return any.UnmarshalTo(m)
 }

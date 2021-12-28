@@ -48,31 +48,27 @@ func TestNewServerHandler(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           opts: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           opts: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "return server handler when option is nil",
+			want: want{
+				want: new(ServerHandler),
+			},
+		},
+		{
+			name: "return server handler when option is not nil",
+			args: args{
+				opts: []ServerOption{
+					func(h *ServerHandler) {
+						h.IsPublicEndpoint = true
+					},
+				},
+			},
+			want: want{
+				want: &ServerHandler{
+					IsPublicEndpoint: true,
+				},
+			},
+		},
 	}
 
 	for _, tc := range tests {
