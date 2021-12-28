@@ -89,7 +89,7 @@ require (
 	github.com/go-redis/redis/v8 v8.11.4
 	github.com/go-sql-driver/mysql v1.6.0
 	github.com/gocql/gocql v0.0.0-20200131111108-92af2e088537
-	github.com/gocraft/dbr/v2 v2.7.2
+	github.com/gocraft/dbr/v2 v2.7.3
 	github.com/google/go-cmp v0.5.6
 	github.com/gorilla/mux v1.8.0
 	github.com/hashicorp/go-version v1.3.0
