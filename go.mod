@@ -11,14 +11,14 @@ replace (
 	github.com/Azure/go-autorest => github.com/Azure/go-autorest v14.2.1-0.20211214020533-2e1acb24564e+incompatible
 	github.com/Azure/go-autorest/autorest => github.com/Azure/go-autorest/autorest v0.11.24-0.20211214020533-2e1acb24564e
 	github.com/Azure/go-autorest/autorest/adal => github.com/Azure/go-autorest/autorest/adal v0.9.19-0.20211214020533-2e1acb24564e
-	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.42.23
-	github.com/chzyer/logex => github.com/chzyer/logex v1.1.11-0.20170329064859-445be9e134b2
+	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.42.25
+	github.com/chzyer/logex => github.com/chzyer/logex v1.2.0
 	github.com/coreos/etcd => go.etcd.io/etcd v3.3.27+incompatible
 	github.com/dgrijalva/jwt-go => github.com/golang-jwt/jwt/v4 v4.2.0
 	github.com/docker/docker => github.com/moby/moby v20.10.12+incompatible
 	github.com/envoyproxy/protoc-gen-validate => github.com/envoyproxy/protoc-gen-validate v0.6.2
 	github.com/go-sql-driver/mysql => github.com/go-sql-driver/mysql v1.6.0
-	github.com/gocql/gocql => github.com/gocql/gocql v0.0.0-20211015133455-b225f9b53fa1
+	github.com/gocql/gocql => github.com/gocql/gocql v0.0.0-20211222173705-d73e6b1002a7
 	github.com/gogo/protobuf => github.com/gogo/protobuf v1.3.2
 	github.com/golang/protobuf => github.com/golang/protobuf v1.5.2
 	github.com/google/gnostic => github.com/google/gnostic v0.5.7
@@ -27,15 +27,15 @@ replace (
 	github.com/gophercloud/gophercloud => github.com/gophercloud/gophercloud v0.24.0
 	github.com/gorilla/websocket => github.com/gorilla/websocket v1.4.2
 	github.com/hailocab/go-hostpool => github.com/kpango/go-hostpool v0.0.0-20210303030322-aab80263dcd0
-	github.com/klauspost/compress => github.com/klauspost/compress v1.13.7-0.20211209135849-e2d8c6d68bfe
-	github.com/kpango/glg => github.com/kpango/glg v1.6.4
+	github.com/klauspost/compress => github.com/klauspost/compress v1.13.7-0.20211228124448-dff5f6bb3dfc
+	github.com/kpango/glg => github.com/kpango/glg v1.6.5
 	github.com/tensorflow/tensorflow => github.com/tensorflow/tensorflow v2.1.2+incompatible
 	github.com/zeebo/xxh3 => github.com/zeebo/xxh3 v1.0.1
 	go.uber.org/goleak => go.uber.org/goleak v1.1.12
 	go.uber.org/multierr => go.uber.org/multierr v1.7.0
 	go.uber.org/zap => go.uber.org/zap v1.19.1
 	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20211215153901-e495a2d5b3d3
-	golang.org/x/exp => golang.org/x/exp v0.0.0-20211216164055-b2b84827b756
+	golang.org/x/exp => golang.org/x/exp v0.0.0-20211221223016-e29036178569
 	golang.org/x/image => golang.org/x/image v0.0.0-20211028202545-6944b10bf410
 	golang.org/x/lint => golang.org/x/lint v0.0.0-20210508222113-6edffad5e616
 	golang.org/x/mobile => golang.org/x/mobile v0.0.0-20211207041440-4e6c2922fdee
@@ -52,7 +52,7 @@ replace (
 	google.golang.org/api => google.golang.org/api v0.63.0
 	google.golang.org/appengine => google.golang.org/appengine v1.6.7
 	google.golang.org/grpc => google.golang.org/grpc v1.43.0
-	google.golang.org/grpc/cmd/protoc-gen-go-grpc => google.golang.org/grpc/cmd/protoc-gen-go-grpc v1.1.0
+	google.golang.org/grpc/cmd/protoc-gen-go-grpc => google.golang.org/grpc/cmd/protoc-gen-go-grpc v1.2.0
 	google.golang.org/protobuf => google.golang.org/protobuf v1.27.1
 	gopkg.in/check.v1 => gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c
 	k8s.io/api => k8s.io/api v0.23.1
@@ -64,14 +64,14 @@ replace (
 	k8s.io/code-generator => k8s.io/code-generator v0.23.1
 	k8s.io/component-base => k8s.io/component-base v0.23.1
 	k8s.io/gengo => k8s.io/gengo v0.0.0-20211129171323-c02415ce4185
-	k8s.io/klog/v2 => k8s.io/klog/v2 v2.40.0
+	k8s.io/klog/v2 => k8s.io/klog/v2 v2.40.1
 	k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20211115234752-e816edb12b65
 	k8s.io/metrics => k8s.io/metrics v0.23.1
 	k8s.io/utils => k8s.io/utils v0.0.0-20211208161948-7d6a63dca704
 	sigs.k8s.io/apiserver-network-proxy/konnectivity-client => sigs.k8s.io/apiserver-network-proxy/konnectivity-client v0.0.27
 	sigs.k8s.io/controller-runtime => sigs.k8s.io/controller-runtime v0.11.0
 	sigs.k8s.io/kustomize/api => sigs.k8s.io/kustomize/api v0.10.1
-	sigs.k8s.io/kustomize/kyaml => sigs.k8s.io/kustomize/kyaml v0.13.0
+	sigs.k8s.io/kustomize/kyaml => sigs.k8s.io/kustomize/kyaml v0.13.1
 	sigs.k8s.io/structured-merge-diff/v4 => sigs.k8s.io/structured-merge-diff/v4 v4.2.0
 	sigs.k8s.io/yaml => sigs.k8s.io/yaml v1.3.0
 )
@@ -89,7 +89,7 @@ require (
 	github.com/go-redis/redis/v8 v8.11.4
 	github.com/go-sql-driver/mysql v1.6.0
 	github.com/gocql/gocql v0.0.0-20200131111108-92af2e088537
-	github.com/gocraft/dbr/v2 v2.7.2
+	github.com/gocraft/dbr/v2 v2.7.3
 	github.com/google/go-cmp v0.5.6
 	github.com/gorilla/mux v1.8.0
 	github.com/hashicorp/go-version v1.3.0
@@ -102,7 +102,7 @@ require (
 	github.com/leanovate/gopter v0.2.9
 	github.com/lucasb-eyer/go-colorful v1.2.0
 	github.com/pierrec/lz4/v3 v3.3.4
-	github.com/quasilyte/go-ruleguard v0.3.13
+	github.com/quasilyte/go-ruleguard v0.3.14
 	github.com/quasilyte/go-ruleguard/dsl v0.3.10
 	github.com/scylladb/gocqlx v1.5.0
 	github.com/tensorflow/tensorflow v0.0.0-00010101000000-000000000000
@@ -120,7 +120,7 @@ require (
 	gonum.org/v1/hdf5 v0.0.0-20210714002203-8c5d23bc6946
 	gonum.org/v1/plot v0.10.0
 	google.golang.org/api v0.61.0
-	google.golang.org/genproto v0.0.0-20211208223120-3a66f561d7aa
+	google.golang.org/genproto v0.0.0-20211223182754-3ac035c7e7cb
 	google.golang.org/grpc v1.40.1
 	google.golang.org/protobuf v1.27.1
 	gopkg.in/yaml.v2 v2.4.0
@@ -160,8 +160,9 @@ require (
 	github.com/go-openapi/jsonreference v0.19.5 // indirect
 	github.com/go-openapi/swag v0.19.14 // indirect
 	github.com/go-pdf/fpdf v0.5.0 // indirect
+	github.com/go-toolsmith/astcopy v1.0.0 // indirect
 	github.com/go-toolsmith/astequal v1.0.1 // indirect
-	github.com/goccy/go-json v0.7.4 // indirect
+	github.com/goccy/go-json v0.8.1 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
@@ -197,6 +198,7 @@ require (
 	github.com/prometheus/common v0.28.0 // indirect
 	github.com/prometheus/procfs v0.6.0 // indirect
 	github.com/prometheus/statsd_exporter v0.21.0 // indirect
+	github.com/quasilyte/gogrep v0.0.0-20211226113550-e12a97c7d96d // indirect
 	github.com/scylladb/go-reflectx v1.0.1 // indirect
 	github.com/spf13/cobra v1.2.1 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
