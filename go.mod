@@ -27,7 +27,7 @@ replace (
 	github.com/gophercloud/gophercloud => github.com/gophercloud/gophercloud v0.24.0
 	github.com/gorilla/websocket => github.com/gorilla/websocket v1.4.2
 	github.com/hailocab/go-hostpool => github.com/kpango/go-hostpool v0.0.0-20210303030322-aab80263dcd0
-	github.com/klauspost/compress => github.com/klauspost/compress v1.13.7-0.20211209135849-e2d8c6d68bfe
+	github.com/klauspost/compress => github.com/klauspost/compress v1.13.7-0.20211228124448-dff5f6bb3dfc
 	github.com/kpango/glg => github.com/kpango/glg v1.6.5
 	github.com/tensorflow/tensorflow => github.com/tensorflow/tensorflow v2.1.2+incompatible
 	github.com/zeebo/xxh3 => github.com/zeebo/xxh3 v1.0.1
