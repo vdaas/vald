@@ -102,8 +102,8 @@ require (
 	github.com/leanovate/gopter v0.2.9
 	github.com/lucasb-eyer/go-colorful v1.2.0
 	github.com/pierrec/lz4/v3 v3.3.4
-	github.com/quasilyte/go-ruleguard v0.3.14
-	github.com/quasilyte/go-ruleguard/dsl v0.3.10
+	github.com/quasilyte/go-ruleguard v0.3.15
+	github.com/quasilyte/go-ruleguard/dsl v0.3.12-0.20220101150716-969a394a9451
 	github.com/scylladb/gocqlx v1.5.0
 	github.com/tensorflow/tensorflow v0.0.0-00010101000000-000000000000
 	github.com/zeebo/xxh3 v0.12.0
@@ -198,7 +198,7 @@ require (
 	github.com/prometheus/common v0.28.0 // indirect
 	github.com/prometheus/procfs v0.6.0 // indirect
 	github.com/prometheus/statsd_exporter v0.21.0 // indirect
-	github.com/quasilyte/gogrep v0.0.0-20211226113550-e12a97c7d96d // indirect
+	github.com/quasilyte/gogrep v0.0.0-20220103110004-ffaa07af02e3 // indirect
 	github.com/scylladb/go-reflectx v1.0.1 // indirect
 	github.com/spf13/cobra v1.2.1 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
