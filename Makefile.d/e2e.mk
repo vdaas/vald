@@ -35,7 +35,7 @@ e2e/search:
 	$(call run-e2e-crud-test,-run TestE2ESearchOnly)
 
 .PHONY: e2e/linearsearch
-## run lienarsearch e2e
+## run linearsearch e2e
 e2e/linearsearch:
 	$(call run-e2e-crud-test,-run TestE2ELinearSearchOnly)
 
