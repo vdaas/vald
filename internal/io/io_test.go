@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -56,39 +56,49 @@ func TestNewReaderWithContext(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx: nil,
-		           r: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ctx: nil,
-		           r: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "success when context.Context and io.Reader are not nil",
+			args: args{
+				ctx: context.Background(),
+				r:   &bytes.Buffer{},
+			},
+			want: want{
+				want: &ctxReader{
+					ctx: context.Background(),
+					r:   &bytes.Buffer{},
+				},
+				err: nil,
+			},
+		},
+		{
+			name: "fail when io.Reader is nil",
+			args: args{
+				ctx: context.Background(),
+				r:   nil,
+			},
+			want: want{
+				want: nil,
+				err:  errors.NewErrReaderNotProvided(),
+			},
+		},
+		{
+			name: "fail when context.Context is nil",
+			args: args{
+				ctx: nil,
+				r:   &bytes.Buffer{},
+			},
+			want: want{
+				want: nil,
+				err:  errors.NewErrContextNotProvided(),
+			},
+		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -135,39 +145,49 @@ func TestNewReadCloserWithContext(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx: nil,
-		           r: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ctx: nil,
-		           r: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "success when context.Context and io.ReadCloser are not nil",
+			args: args{
+				ctx: context.Background(),
+				r:   io.NopCloser(&bytes.Buffer{}),
+			},
+			want: want{
+				want: &ctxReader{
+					ctx: context.Background(),
+					r:   io.NopCloser(&bytes.Buffer{}),
+				},
+				err: nil,
+			},
+		},
+		{
+			name: "fail when io.ReadCloser is nil",
+			args: args{
+				ctx: context.Background(),
+				r:   nil,
+			},
+			want: want{
+				want: nil,
+				err:  errors.NewErrReaderNotProvided(),
+			},
+		},
+		{
+			name: "fail when context.Context is nil",
+			args: args{
+				ctx: nil,
+				r:   io.NopCloser(&bytes.Buffer{}),
+			},
+			want: want{
+				want: nil,
+				err:  errors.NewErrContextNotProvided(),
+			},
+		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -218,45 +238,52 @@ func Test_ctxReader_Read(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           p: nil,
-		       },
-		       fields: fields {
-		           ctx: nil,
-		           r: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           p: nil,
-		           },
-		           fields: fields {
-		           ctx: nil,
-		           r: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		func() test {
+			txt := "hello, world."
+			r := &bytes.Buffer{}
+			r.WriteString(txt)
+			return test{
+				name: "success when doing nothing",
+				args: args{
+					p: make([]byte, 64),
+				},
+				fields: fields{
+					ctx: context.Background(),
+					r:   r,
+				},
+				want: want{
+					wantN: len(txt),
+					err:   nil,
+				},
+			}
+		}(),
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			return test{
+				name: "fail when calling cancel function",
+				args: args{
+					p: make([]byte, 64),
+				},
+				fields: fields{
+					ctx: ctx,
+					r:   &bytes.Buffer{},
+				},
+				want: want{
+					wantN: 0,
+					err:   context.Canceled,
+				},
+				beforeFunc: func(args) {
+					cancel()
+				},
+			}
+		}(),
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -303,39 +330,55 @@ func Test_ctxReader_Close(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           ctx: nil,
-		           r: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           ctx: nil,
-		           r: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		func() test {
+			ctx := context.Background()
+			return test{
+				name: "success when doing nothing",
+				fields: fields{
+					ctx: ctx,
+					r:   &bytes.Buffer{},
+				},
+				want: want{
+					err: nil,
+				},
+			}
+		}(),
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			return test{
+				name: "fail when calling cancel function",
+				fields: fields{
+					ctx: ctx,
+					r:   &bytes.Buffer{},
+				},
+				want: want{
+					err: context.Canceled,
+				},
+				beforeFunc: func() {
+					cancel()
+				},
+			}
+		}(),
+		func() test {
+			ctx := context.Background()
+			return test{
+				name: "success with Closer",
+				fields: fields{
+					ctx: ctx,
+					r:   io.NopCloser(&bytes.Buffer{}),
+				},
+				want: want{
+					err: nil,
+				},
+			}
+		}(),
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -362,64 +405,77 @@ func TestNewWriterWithContext(t *testing.T) {
 	t.Parallel()
 	type args struct {
 		ctx context.Context
+		w   io.Writer
 	}
 	type want struct {
-		want  io.Writer
-		wantW string
-		err   error
+		want io.Writer
+		err  error
 	}
 	type test struct {
 		name       string
 		args       args
 		want       want
-		checkFunc  func(want, io.Writer, string, error) error
+		checkFunc  func(want, io.Writer, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, got io.Writer, gotW string, err error) error {
+	defaultCheckFunc := func(w want, got io.Writer, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got error = %v, want %v", err, w.err)
 		}
 		if !reflect.DeepEqual(got, w.want) {
 			return errors.Errorf("got = %v, want %v", got, w.want)
 		}
-		if !reflect.DeepEqual(gotW, w.wantW) {
-			return errors.Errorf("got = %v, want %v", gotW, w.wantW)
-		}
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ctx: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		func() test {
+			ctx := context.Background()
+			w := &bytes.Buffer{}
+			return test{
+				name: "success when context.Context and io.Writer is not nil",
+				args: args{
+					ctx: ctx,
+					w:   w,
+				},
+				want: want{
+					want: &ctxWriter{
+						ctx: ctx,
+						w:   w,
+					},
+					err: nil,
+				},
+			}
+		}(),
+		{
+			name: "fail when io.Writer is nil",
+			args: args{
+				ctx: context.Background(),
+				w:   nil,
+			},
+			want: want{
+				want: nil,
+				err:  errors.NewErrWriterNotProvided(),
+			},
+		},
+		{
+			name: "fail when context.Context is nil",
+			args: args{
+				ctx: nil,
+				w:   &bytes.Buffer{},
+			},
+			want: want{
+				want: nil,
+				err:  errors.NewErrContextNotProvided(),
+			},
+		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -429,14 +485,21 @@ func TestNewWriterWithContext(t *testing.T) {
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
-			w := &bytes.Buffer{}
 
-			got, err := NewWriterWithContext(test.args.ctx, w)
-			if err := test.checkFunc(test.want, got, w.String(), err); err != nil {
+			got, err := NewWriterWithContext(test.args.ctx, test.args.w)
+			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
 	}
+}
+
+type nopWriteCloser struct {
+	*bytes.Buffer
+}
+
+func (w *nopWriteCloser) Close() error {
+	return nil
 }
 
 func TestNewWriteCloserWithContext(t *testing.T) {
@@ -467,39 +530,49 @@ func TestNewWriteCloserWithContext(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx: nil,
-		           w: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ctx: nil,
-		           w: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "success when context.Context and io.WriteClose are not nil",
+			args: args{
+				ctx: context.Background(),
+				w:   &nopWriteCloser{},
+			},
+			want: want{
+				want: &ctxWriter{
+					ctx: context.Background(),
+					w:   &nopWriteCloser{},
+				},
+				err: nil,
+			},
+		},
+		{
+			name: "fail when io.WriteCloser is nil",
+			args: args{
+				ctx: context.Background(),
+				w:   nil,
+			},
+			want: want{
+				want: nil,
+				err:  errors.NewErrWriterNotProvided(),
+			},
+		},
+		{
+			name: "fail when context.Context is nil",
+			args: args{
+				ctx: nil,
+				w:   &nopWriteCloser{},
+			},
+			want: want{
+				want: nil,
+				err:  errors.NewErrContextNotProvided(),
+			},
+		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -550,45 +623,52 @@ func Test_ctxWriter_Write(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           p: nil,
-		       },
-		       fields: fields {
-		           ctx: nil,
-		           w: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           p: nil,
-		           },
-		           fields: fields {
-		           ctx: nil,
-		           w: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		func() test {
+			txt := "hello, world."
+			ctx := context.Background()
+			w := &bytes.Buffer{}
+			return test{
+				name: "success when doing nothing",
+				args: args{
+					p: []byte(txt),
+				},
+				fields: fields{
+					ctx: ctx,
+					w:   w,
+				},
+				want: want{
+					wantN: len(txt),
+					err:   nil,
+				},
+			}
+		}(),
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			return test{
+				name: "fail when calling cancel function",
+				args: args{
+					[]byte{},
+				},
+				fields: fields{
+					ctx: ctx,
+					w:   &bytes.Buffer{},
+				},
+				want: want{
+					wantN: 0,
+					err:   context.Canceled,
+				},
+				beforeFunc: func(args) {
+					cancel()
+				},
+			}
+		}(),
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -635,39 +715,55 @@ func Test_ctxWriter_Close(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           ctx: nil,
-		           w: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           ctx: nil,
-		           w: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		func() test {
+			ctx := context.Background()
+			return test{
+				name: "success without Closer",
+				fields: fields{
+					ctx: ctx,
+					w:   &bytes.Buffer{},
+				},
+				want: want{
+					err: nil,
+				},
+			}
+		}(),
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			return test{
+				name: "fail when calling cancel function",
+				fields: fields{
+					ctx: ctx,
+					w:   &bytes.Buffer{},
+				},
+				want: want{
+					err: context.Canceled,
+				},
+				beforeFunc: func() {
+					cancel()
+				},
+			}
+		}(),
+		func() test {
+			ctx := context.Background()
+			return test{
+				name: "success with Closer",
+				fields: fields{
+					ctx: ctx,
+					w:   &nopWriteCloser{},
+				},
+				want: want{
+					err: nil,
+				},
+			}
+		}(),
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}

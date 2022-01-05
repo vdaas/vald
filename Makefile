@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -55,15 +55,15 @@ TENSORFLOW_C_VERSION := $(eval TENSORFLOW_C_VERSION := $(shell cat versions/TENS
 OPERATOR_SDK_VERSION := $(eval OPERATOR_SDK_VERSION := $(shell cat versions/OPERATOR_SDK_VERSION))$(OPERATOR_SDK_VERSION)
 
 KIND_VERSION         ?= v0.11.1
-HELM_VERSION         ?= v3.7.1
+HELM_VERSION         ?= v3.7.2
 HELM_DOCS_VERSION    ?= 1.5.0
-YQ_VERSION           ?= v4.13.5
-VALDCLI_VERSION      ?= v1.3.0
-TELEPRESENCE_VERSION ?= 2.4.5
+YQ_VERSION           ?= v4.16.1
+VALDCLI_VERSION      ?= v1.3.1
+TELEPRESENCE_VERSION ?= 2.4.9
 KUBELINTER_VERSION   ?= 0.2.5
-GOLANGCILINT_VERSION ?= v1.42.1
+GOLANGCILINT_VERSION ?= v1.43.0
 REVIEWDOG_VERSION    ?= v0.13.0
-PROTOBUF_VERSION     ?= 3.19.0
+PROTOBUF_VERSION     ?= 3.19.1
 
 SWAP_DEPLOYMENT_TYPE ?= deployment
 SWAP_IMAGE           ?= ""
