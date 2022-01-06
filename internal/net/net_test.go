@@ -464,7 +464,11 @@ func TestSplitHostPort(t *testing.T) {
 			want: want{
 				wantHost: "dummy",
 				wantPort: uint16(80),
-				err:      &strconv.NumError{"ParseUint", "", strconv.ErrSyntax},
+				err: &strconv.NumError{
+					Func: "ParseUint",
+					Num:  "",
+					Err:  strconv.ErrSyntax,
+				},
 			},
 		},
 		{
@@ -475,7 +479,11 @@ func TestSplitHostPort(t *testing.T) {
 			want: want{
 				wantHost: "192.168.1.1",
 				wantPort: uint16(80),
-				err:      &strconv.NumError{"ParseUint", "", strconv.ErrSyntax},
+				err: &strconv.NumError{
+					Func: "ParseUint",
+					Num:  "",
+					Err:  strconv.ErrSyntax,
+				},
 			},
 		},
 		{
@@ -486,7 +494,11 @@ func TestSplitHostPort(t *testing.T) {
 			want: want{
 				wantHost: "2001:db8::1",
 				wantPort: uint16(80),
-				err:      &strconv.NumError{"ParseUint", "", strconv.ErrSyntax},
+				err: &strconv.NumError{
+					Func: "ParseUint",
+					Num:  "",
+					Err:  strconv.ErrSyntax,
+				},
 			},
 		},
 		{
