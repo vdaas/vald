@@ -21,6 +21,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/test/goleak"
 )
@@ -52,31 +53,44 @@ func TestCodec_Marshal(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           v: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           v: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "return marshal result when val is vtproto message",
+			args: args{
+				v: &payload.Object_Vector{
+					Id:     "1",
+					Vector: []float32{1.0, 2.1},
+				},
+			},
+			checkFunc: func(w want, b []byte, e error) error {
+				if e != nil {
+					return e
+				}
+				if len(b) == 0 {
+					return errors.New("return byte is empty")
+				}
+				return nil
+			},
+		},
+		{
+			name: "return marshal result when val is empty proto message",
+			args: args{
+				v: &payload.Empty{},
+			},
+			want: want{
+				want: []byte{},
+				err:  nil,
+			},
+		},
+		{
+			name: "return error when val is not proto message",
+			args: args{
+				v: []int{1},
+			},
+			want: want{
+				want: nil,
+				err:  errors.ErrInvalidProtoMessageType([]int{1}),
+			},
+		},
 	}
 
 	for _, tc := range tests {
@@ -117,44 +131,59 @@ func TestCodec_Unmarshal(t *testing.T) {
 		args       args
 		c          Codec
 		want       want
-		checkFunc  func(want, error) error
+		checkFunc  func(test, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+	defaultCheckFunc := func(t test, err error) error {
+		if !errors.Is(err, t.want.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, t.want.err)
 		}
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           data: nil,
-		           v: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           data: nil,
-		           v: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "unmarshal data into v",
+			args: args{
+				data: func() []byte {
+					b, _ := Codec{}.Marshal(&payload.Object_Vector{
+						Id:     "1",
+						Vector: []float32{1.0, 2.1},
+					})
+					return b
+				}(),
+				v: &payload.Object_Vector{},
+			},
+			checkFunc: func(t test, e error) error {
+				if !reflect.DeepEqual(t.args.v, &payload.Object_Vector{
+					Id:     "1",
+					Vector: []float32{1.0, 2.1},
+				}) {
+					return errors.New("unmarshal result is not correct")
+				}
+				return nil
+			},
+		},
+		{
+			name: "return error when data is invalid",
+			args: args{
+				data: []byte{0, 1, 2},
+				v:    &payload.Object_Vector{},
+			},
+			want: want{
+				err: errors.New("proto: Object_Vector: illegal tag 0 (wire type 0)"),
+			},
+		},
+		{
+			name: "return error when v is invalid",
+			args: args{
+				data: []byte{0, 1, 2},
+				v:    Codec{},
+			},
+			want: want{
+				err: errors.New("failed to marshal/unmarshal proto message, message type is grpc.Codec (missing vtprotobuf/protobuf helpers)"),
+			},
+		},
 	}
 
 	for _, tc := range tests {
@@ -175,7 +204,7 @@ func TestCodec_Unmarshal(t *testing.T) {
 			c := Codec{}
 
 			err := c.Unmarshal(test.args.data, test.args.v)
-			if err := checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -201,25 +230,12 @@ func TestCodec_Name(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "return codec name",
+			want: want{
+				want: "proto",
+			},
+		},
 	}
 
 	for _, tc := range tests {

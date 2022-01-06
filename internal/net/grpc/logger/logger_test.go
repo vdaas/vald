@@ -21,6 +21,7 @@ import (
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/test/goleak"
+	"google.golang.org/grpc/grpclog"
 )
 
 func TestInit(t *testing.T) {
@@ -29,41 +30,48 @@ func TestInit(t *testing.T) {
 		name       string
 		want       want
 		checkFunc  func(want) error
-		beforeFunc func()
+		beforeFunc func(*testing.T)
 		afterFunc  func()
 	}
 	defaultCheckFunc := func(w want) error {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "set logger success with verbosity level is not set",
+			checkFunc: func(w want) error {
+				if grpclog.V(1) {
+					return errors.New("verbosity level is set")
+				}
+				return nil
+			},
+		},
+		// {
+		// 	name: "set logger success with verbosity level is set",
+		// 	beforeFunc: func(t *testing.T) {
+		// 		t.Setenv("GRPC_GO_LOG_VERBOSITY_LEVEL", "2")
+		// 	},
+		// 	checkFunc: func(w want) error {
+		// 		if !grpclog.V(1) {
+		// 			return errors.New("verbosity level 1 is not set")
+		// 		}
+		// 		if !grpclog.V(2) {
+		// 			//	return errors.New("verbosity level is not set")
+		// 		}
+		// 		if grpclog.V(3) {
+		// 			return errors.New("verbosity level is not correct")
+		// 		}
+		// 		return nil
+		// 	},
+		// },
 	}
 
 	for _, tc := range tests {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
 				defer test.afterFunc()
@@ -101,37 +109,15 @@ func Test_logger_Info(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           args: nil,
-		       },
-		       fields: fields {
-		           v: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           args: nil,
-		           },
-		           fields: fields {
-		           v: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "info log the message",
+			args: args{
+				args: []interface{}{"log message"},
+			},
+			fields: fields{
+				v: 0,
+			},
+		},
 	}
 
 	for _, tc := range tests {
@@ -181,37 +167,15 @@ func Test_logger_Infoln(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           args: nil,
-		       },
-		       fields: fields {
-		           v: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           args: nil,
-		           },
-		           fields: fields {
-		           v: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "infoln log the message",
+			args: args{
+				args: []interface{}{"log message"},
+			},
+			fields: fields{
+				v: 0,
+			},
+		},
 	}
 
 	for _, tc := range tests {
@@ -262,39 +226,15 @@ func Test_logger_Infof(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           format: "",
-		           args: nil,
-		       },
-		       fields: fields {
-		           v: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           format: "",
-		           args: nil,
-		           },
-		           fields: fields {
-		           v: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "infof log the message",
+			args: args{
+				args: []interface{}{"log message"},
+			},
+			fields: fields{
+				v: 0,
+			},
+		},
 	}
 
 	for _, tc := range tests {
@@ -344,37 +284,15 @@ func Test_logger_Warning(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           args: nil,
-		       },
-		       fields: fields {
-		           v: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           args: nil,
-		           },
-		           fields: fields {
-		           v: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "warning log the message",
+			args: args{
+				args: []interface{}{"log message"},
+			},
+			fields: fields{
+				v: 0,
+			},
+		},
 	}
 
 	for _, tc := range tests {
@@ -424,37 +342,15 @@ func Test_logger_Warningln(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           args: nil,
-		       },
-		       fields: fields {
-		           v: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           args: nil,
-		           },
-		           fields: fields {
-		           v: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "warningln log the message",
+			args: args{
+				args: []interface{}{"log message"},
+			},
+			fields: fields{
+				v: 0,
+			},
+		},
 	}
 
 	for _, tc := range tests {
@@ -505,39 +401,15 @@ func Test_logger_Warningf(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           format: "",
-		           args: nil,
-		       },
-		       fields: fields {
-		           v: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           format: "",
-		           args: nil,
-		           },
-		           fields: fields {
-		           v: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "warningf log the message",
+			args: args{
+				args: []interface{}{"log message"},
+			},
+			fields: fields{
+				v: 0,
+			},
+		},
 	}
 
 	for _, tc := range tests {
@@ -587,37 +459,15 @@ func Test_logger_Error(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           args: nil,
-		       },
-		       fields: fields {
-		           v: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           args: nil,
-		           },
-		           fields: fields {
-		           v: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "error log the message",
+			args: args{
+				args: []interface{}{"log message"},
+			},
+			fields: fields{
+				v: 0,
+			},
+		},
 	}
 
 	for _, tc := range tests {
@@ -667,37 +517,15 @@ func Test_logger_Errorln(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           args: nil,
-		       },
-		       fields: fields {
-		           v: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           args: nil,
-		           },
-		           fields: fields {
-		           v: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "errorln log the message",
+			args: args{
+				args: []interface{}{"log message"},
+			},
+			fields: fields{
+				v: 0,
+			},
+		},
 	}
 
 	for _, tc := range tests {
@@ -748,39 +576,15 @@ func Test_logger_Errorf(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           format: "",
-		           args: nil,
-		       },
-		       fields: fields {
-		           v: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           format: "",
-		           args: nil,
-		           },
-		           fields: fields {
-		           v: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "errorf log the message",
+			args: args{
+				args: []interface{}{"log message"},
+			},
+			fields: fields{
+				v: 0,
+			},
+		},
 	}
 
 	for _, tc := range tests {
@@ -809,6 +613,7 @@ func Test_logger_Errorf(t *testing.T) {
 	}
 }
 
+// Fatal(), Fatalf() and Fatalln() is untestable since it calls os.Exit().
 func Test_logger_Fatal(t *testing.T) {
 	type args struct {
 		args []interface{}
@@ -830,37 +635,18 @@ func Test_logger_Fatal(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           args: nil,
-		       },
-		       fields: fields {
-		           v: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           args: nil,
-		           },
-		           fields: fields {
-		           v: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		// {
+		// 	name: "fatal log the message",
+		// 	args: args{
+		// 		args: []interface{}{"log message"},
+		// 	},
+		// 	fields: fields{
+		// 		v: 0,
+		// 	},
+		// 	afterFunc: func(a args) {
+		// 		_ = recover()
+		// 	},
+		// },
 	}
 
 	for _, tc := range tests {
@@ -910,37 +696,18 @@ func Test_logger_Fatalln(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           args: nil,
-		       },
-		       fields: fields {
-		           v: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           args: nil,
-		           },
-		           fields: fields {
-		           v: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		// {
+		// 	name: "fatalln log the message",
+		// 	args: args{
+		// 		args: []interface{}{"log message"},
+		// 	},
+		// 	fields: fields{
+		// 		v: 0,
+		// 	},
+		// 	afterFunc: func(a args) {
+		// 		_ = recover()
+		// 	},
+		// },
 	}
 
 	for _, tc := range tests {
@@ -991,39 +758,18 @@ func Test_logger_Fatalf(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           format: "",
-		           args: nil,
-		       },
-		       fields: fields {
-		           v: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           format: "",
-		           args: nil,
-		           },
-		           fields: fields {
-		           v: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		// {
+		// 	name: "fatalf log the message",
+		// 	args: args{
+		// 		args: []interface{}{"log message"},
+		// 	},
+		// 	fields: fields{
+		// 		v: 0,
+		// 	},
+		// 	afterFunc: func(a args) {
+		// 		_ = recover()
+		// 	},
+		// },
 	}
 
 	for _, tc := range tests {
@@ -1078,37 +824,42 @@ func Test_logger_V(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           v: 0,
-		       },
-		       fields: fields {
-		           v: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           v: 0,
-		           },
-		           fields: fields {
-		           v: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "return true if v is less than verbosity level",
+			args: args{
+				v: 3,
+			},
+			fields: fields{
+				v: 5,
+			},
+			want: want{
+				want: true,
+			},
+		},
+		{
+			name: "return true if v is equal than verbosity level",
+			args: args{
+				v: 5,
+			},
+			fields: fields{
+				v: 5,
+			},
+			want: want{
+				want: true,
+			},
+		},
+		{
+			name: "return false if v is larger than verbosity level",
+			args: args{
+				v: 5,
+			},
+			fields: fields{
+				v: 3,
+			},
+			want: want{
+				want: false,
+			},
+		},
 	}
 
 	for _, tc := range tests {
