@@ -95,7 +95,7 @@ Update RPC is the method to update a single vector instead of a inserted vector.
 
 ## StreamUpdate RPC<sup>recommended</sup>
 
-StreamUpdate RPC is the method to add new multiple vectors using the [bidirectional streaming RPC](https://grpc.io/docs/what-is-grpc/core-concepts/#bidirectional-streaming-rpc).<br>
+StreamUpdate RPC is the method to update multiple vectors using the [bidirectional streaming RPC](https://grpc.io/docs/what-is-grpc/core-concepts/#bidirectional-streaming-rpc).<br>
 By using the bidirectional streaming PRC, the update request can be communicated in any order between client and server.
 Each Update request and response are independent.
 It's the recommended method to update the large amount of vectors.
