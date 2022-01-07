@@ -174,8 +174,8 @@ It's the recommended method to update the large amount of vectors.
   - Object.Location
     |field|type|label|desc.|
     |:---:|:---|:---|:---|
-    |name|string| | the name of vald agent pod where the request vector is inserted. |
-    |uuid|string| | the ID of the inserted vector. It is the same as an Object.Vector |
+    |name|string| | the name of vald agent pod where the request vector is updated. |
+    |uuid|string| | the ID of the exists vector. It is the same as an Object.Vector |
     |ips|string| repeated(Array[string]) | the ip list of `vald-agent` pods where the request vector is inserted. |
 
   - [google.rpc.Status](https://github.com/googleapis/googleapis/blob/master/google/rpc/status.proto)
