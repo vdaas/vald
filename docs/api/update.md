@@ -16,7 +16,7 @@ service Update {
 
 ## Update RPC
 
-Update RPC is the method to update a single vector instead of a inserted vector.
+Update RPC is the method to update a single vector.
 
 ### Input
 
