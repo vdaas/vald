@@ -2144,11 +2144,15 @@ func TestWithTLS(t *testing.T) {
 		{
 			name: "set compressor success",
 			args: args{
-				tls: &tls.Config{},
+				tls: &tls.Config{
+					MinVersion: tls.VersionTLS13,
+				},
 			},
 			want: want{
 				obj: &T{
-					tls: &tls.Config{},
+					tls: &tls.Config{
+						MinVersion: tls.VersionTLS13,
+					},
 				},
 			},
 		},

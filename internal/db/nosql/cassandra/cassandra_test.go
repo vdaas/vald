@@ -955,7 +955,9 @@ func TestNew(t *testing.T) {
 			name: "New returns cassandra with tls",
 			args: args{
 				opts: []Option{
-					WithTLS(&tls.Config{}),
+					WithTLS(&tls.Config{
+						MinVersion: tls.VersionTLS13,
+					}),
 				},
 			},
 			want: want{
@@ -1021,7 +1023,9 @@ func TestNew(t *testing.T) {
 						Timeout:                600 * time.Millisecond,
 						WriteCoalesceWaitTime:  200 * time.Microsecond,
 						SslOpts: &gocql.SslOptions{
-							Config: &tls.Config{},
+							Config: &tls.Config{
+								MinVersion: tls.VersionTLS13,
+							},
 						},
 					},
 					poolConfig: poolConfig{
@@ -1030,7 +1034,9 @@ func TestNew(t *testing.T) {
 						enableShuffleReplicas:          false,
 						enableTokenAwareHostPolicy:     true,
 					},
-					tls: &tls.Config{},
+					tls: &tls.Config{
+						MinVersion: tls.VersionTLS13,
+					},
 				},
 			},
 		},

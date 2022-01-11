@@ -1898,7 +1898,7 @@ func Test_dialer_tlsHandshake(t *testing.T) {
 				},
 				fields: fields{
 					tlsConfig: &tls.Config{
-						MinVersion: ctls.VersionTLS12,
+						MinVersion: ctls.VersionTLS13,
 					},
 					der: new(net.Dialer),
 				},
