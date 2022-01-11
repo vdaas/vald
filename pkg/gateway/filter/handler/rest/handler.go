@@ -33,6 +33,10 @@ type Handler interface {
 	SearchByID(w http.ResponseWriter, r *http.Request) (int, error)
 	MultiSearch(w http.ResponseWriter, r *http.Request) (int, error)
 	MultiSearchByID(w http.ResponseWriter, r *http.Request) (int, error)
+	LinearSearch(w http.ResponseWriter, r *http.Request) (int, error)
+	LinearSearchByID(w http.ResponseWriter, r *http.Request) (int, error)
+	MultiLinearSearch(w http.ResponseWriter, r *http.Request) (int, error)
+	MultiLinearSearchByID(w http.ResponseWriter, r *http.Request) (int, error)
 	Insert(w http.ResponseWriter, r *http.Request) (int, error)
 	MultiInsert(w http.ResponseWriter, r *http.Request) (int, error)
 	Update(w http.ResponseWriter, r *http.Request) (int, error)
@@ -97,6 +101,34 @@ func (h *handler) MultiSearchByID(w http.ResponseWriter, r *http.Request) (code 
 	var req *payload.Search_MultiIDRequest
 	return json.Handler(w, r, &req, func() (interface{}, error) {
 		return h.vald.MultiSearchByID(r.Context(), req)
+	})
+}
+
+func (h *handler) LinearSearch(w http.ResponseWriter, r *http.Request) (code int, err error) {
+	var req *payload.Search_Request
+	return json.Handler(w, r, &req, func() (interface{}, error) {
+		return h.vald.LinearSearch(r.Context(), req)
+	})
+}
+
+func (h *handler) LinearSearchByID(w http.ResponseWriter, r *http.Request) (code int, err error) {
+	var req *payload.Search_IDRequest
+	return json.Handler(w, r, &req, func() (interface{}, error) {
+		return h.vald.LinearSearchByID(r.Context(), req)
+	})
+}
+
+func (h *handler) MultiLinearSearch(w http.ResponseWriter, r *http.Request) (code int, err error) {
+	var req *payload.Search_MultiRequest
+	return json.Handler(w, r, &req, func() (interface{}, error) {
+		return h.vald.MultiLinearSearch(r.Context(), req)
+	})
+}
+
+func (h *handler) MultiLinearSearchByID(w http.ResponseWriter, r *http.Request) (code int, err error) {
+	var req *payload.Search_MultiIDRequest
+	return json.Handler(w, r, &req, func() (interface{}, error) {
+		return h.vald.MultiLinearSearchByID(r.Context(), req)
 	})
 }
 

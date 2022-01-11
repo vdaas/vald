@@ -74,6 +74,22 @@ func New(opts ...Option) http.Handler {
 				h.SearchByID,
 			},
 			{
+				"LinearSearch",
+				[]string{
+					http.MethodPost,
+				},
+				"/linearsearch",
+				h.LinearSearch,
+			},
+			{
+				"LinearSearch By ID",
+				[]string{
+					http.MethodPost,
+				},
+				"/id/linearsearch",
+				h.LinearSearchByID,
+			},
+			{
 				"Insert",
 				[]string{
 					http.MethodPost,

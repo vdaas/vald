@@ -4743,3 +4743,1155 @@ func Test_singleClient_StreamGetObject(t *testing.T) {
 		})
 	}
 }
+
+func Test_client_LinearSearch(t *testing.T) {
+	type args struct {
+		ctx  context.Context
+		in   *payload.Search_Request
+		opts []grpc.CallOption
+	}
+	type fields struct {
+		addrs []string
+		c     grpc.Client
+	}
+	type want struct {
+		wantRes *payload.Search_Response
+		err     error
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, *payload.Search_Response, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, gotRes *payload.Search_Response, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(gotRes, w.wantRes) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           ctx: nil,
+		           in: nil,
+		           opts: nil,
+		       },
+		       fields: fields {
+		           addrs: nil,
+		           c: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           ctx: nil,
+		           in: nil,
+		           opts: nil,
+		           },
+		           fields: fields {
+		           addrs: nil,
+		           c: nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			c := &client{
+				addrs: test.fields.addrs,
+				c:     test.fields.c,
+			}
+
+			gotRes, err := c.LinearSearch(test.args.ctx, test.args.in, test.args.opts...)
+			if err := test.checkFunc(test.want, gotRes, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func Test_client_LinearSearchByID(t *testing.T) {
+	type args struct {
+		ctx  context.Context
+		in   *payload.Search_IDRequest
+		opts []grpc.CallOption
+	}
+	type fields struct {
+		addrs []string
+		c     grpc.Client
+	}
+	type want struct {
+		wantRes *payload.Search_Response
+		err     error
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, *payload.Search_Response, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, gotRes *payload.Search_Response, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(gotRes, w.wantRes) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           ctx: nil,
+		           in: nil,
+		           opts: nil,
+		       },
+		       fields: fields {
+		           addrs: nil,
+		           c: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           ctx: nil,
+		           in: nil,
+		           opts: nil,
+		           },
+		           fields: fields {
+		           addrs: nil,
+		           c: nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			c := &client{
+				addrs: test.fields.addrs,
+				c:     test.fields.c,
+			}
+
+			gotRes, err := c.LinearSearchByID(test.args.ctx, test.args.in, test.args.opts...)
+			if err := test.checkFunc(test.want, gotRes, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func Test_client_StreamLinearSearch(t *testing.T) {
+	type args struct {
+		ctx  context.Context
+		opts []grpc.CallOption
+	}
+	type fields struct {
+		addrs []string
+		c     grpc.Client
+	}
+	type want struct {
+		wantRes vald.Search_StreamLinearSearchClient
+		err     error
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, vald.Search_StreamLinearSearchClient, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, gotRes vald.Search_StreamLinearSearchClient, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(gotRes, w.wantRes) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           ctx: nil,
+		           opts: nil,
+		       },
+		       fields: fields {
+		           addrs: nil,
+		           c: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           ctx: nil,
+		           opts: nil,
+		           },
+		           fields: fields {
+		           addrs: nil,
+		           c: nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			c := &client{
+				addrs: test.fields.addrs,
+				c:     test.fields.c,
+			}
+
+			gotRes, err := c.StreamLinearSearch(test.args.ctx, test.args.opts...)
+			if err := test.checkFunc(test.want, gotRes, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func Test_client_StreamLinearSearchByID(t *testing.T) {
+	type args struct {
+		ctx  context.Context
+		opts []grpc.CallOption
+	}
+	type fields struct {
+		addrs []string
+		c     grpc.Client
+	}
+	type want struct {
+		wantRes vald.Search_StreamLinearSearchByIDClient
+		err     error
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, vald.Search_StreamLinearSearchByIDClient, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, gotRes vald.Search_StreamLinearSearchByIDClient, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(gotRes, w.wantRes) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           ctx: nil,
+		           opts: nil,
+		       },
+		       fields: fields {
+		           addrs: nil,
+		           c: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           ctx: nil,
+		           opts: nil,
+		           },
+		           fields: fields {
+		           addrs: nil,
+		           c: nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			c := &client{
+				addrs: test.fields.addrs,
+				c:     test.fields.c,
+			}
+
+			gotRes, err := c.StreamLinearSearchByID(test.args.ctx, test.args.opts...)
+			if err := test.checkFunc(test.want, gotRes, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func Test_client_MultiLinearSearch(t *testing.T) {
+	type args struct {
+		ctx  context.Context
+		in   *payload.Search_MultiRequest
+		opts []grpc.CallOption
+	}
+	type fields struct {
+		addrs []string
+		c     grpc.Client
+	}
+	type want struct {
+		wantRes *payload.Search_Responses
+		err     error
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, *payload.Search_Responses, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, gotRes *payload.Search_Responses, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(gotRes, w.wantRes) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           ctx: nil,
+		           in: nil,
+		           opts: nil,
+		       },
+		       fields: fields {
+		           addrs: nil,
+		           c: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           ctx: nil,
+		           in: nil,
+		           opts: nil,
+		           },
+		           fields: fields {
+		           addrs: nil,
+		           c: nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			c := &client{
+				addrs: test.fields.addrs,
+				c:     test.fields.c,
+			}
+
+			gotRes, err := c.MultiLinearSearch(test.args.ctx, test.args.in, test.args.opts...)
+			if err := test.checkFunc(test.want, gotRes, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func Test_client_MultiLinearSearchByID(t *testing.T) {
+	type args struct {
+		ctx  context.Context
+		in   *payload.Search_MultiIDRequest
+		opts []grpc.CallOption
+	}
+	type fields struct {
+		addrs []string
+		c     grpc.Client
+	}
+	type want struct {
+		wantRes *payload.Search_Responses
+		err     error
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, *payload.Search_Responses, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, gotRes *payload.Search_Responses, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(gotRes, w.wantRes) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           ctx: nil,
+		           in: nil,
+		           opts: nil,
+		       },
+		       fields: fields {
+		           addrs: nil,
+		           c: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           ctx: nil,
+		           in: nil,
+		           opts: nil,
+		           },
+		           fields: fields {
+		           addrs: nil,
+		           c: nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			c := &client{
+				addrs: test.fields.addrs,
+				c:     test.fields.c,
+			}
+
+			gotRes, err := c.MultiLinearSearchByID(test.args.ctx, test.args.in, test.args.opts...)
+			if err := test.checkFunc(test.want, gotRes, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func Test_singleClient_LinearSearch(t *testing.T) {
+	type args struct {
+		ctx  context.Context
+		in   *payload.Search_Request
+		opts []grpc.CallOption
+	}
+	type fields struct {
+		vc vald.Client
+	}
+	type want struct {
+		wantRes *payload.Search_Response
+		err     error
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, *payload.Search_Response, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, gotRes *payload.Search_Response, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(gotRes, w.wantRes) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           ctx: nil,
+		           in: nil,
+		           opts: nil,
+		       },
+		       fields: fields {
+		           vc: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           ctx: nil,
+		           in: nil,
+		           opts: nil,
+		           },
+		           fields: fields {
+		           vc: nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			c := &singleClient{
+				vc: test.fields.vc,
+			}
+
+			gotRes, err := c.LinearSearch(test.args.ctx, test.args.in, test.args.opts...)
+			if err := test.checkFunc(test.want, gotRes, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func Test_singleClient_LinearSearchByID(t *testing.T) {
+	type args struct {
+		ctx  context.Context
+		in   *payload.Search_IDRequest
+		opts []grpc.CallOption
+	}
+	type fields struct {
+		vc vald.Client
+	}
+	type want struct {
+		wantRes *payload.Search_Response
+		err     error
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, *payload.Search_Response, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, gotRes *payload.Search_Response, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(gotRes, w.wantRes) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           ctx: nil,
+		           in: nil,
+		           opts: nil,
+		       },
+		       fields: fields {
+		           vc: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           ctx: nil,
+		           in: nil,
+		           opts: nil,
+		           },
+		           fields: fields {
+		           vc: nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			c := &singleClient{
+				vc: test.fields.vc,
+			}
+
+			gotRes, err := c.LinearSearchByID(test.args.ctx, test.args.in, test.args.opts...)
+			if err := test.checkFunc(test.want, gotRes, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func Test_singleClient_StreamLinearSearch(t *testing.T) {
+	type args struct {
+		ctx  context.Context
+		opts []grpc.CallOption
+	}
+	type fields struct {
+		vc vald.Client
+	}
+	type want struct {
+		wantRes vald.Search_StreamSearchClient
+		err     error
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, vald.Search_StreamSearchClient, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, gotRes vald.Search_StreamSearchClient, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(gotRes, w.wantRes) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           ctx: nil,
+		           opts: nil,
+		       },
+		       fields: fields {
+		           vc: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           ctx: nil,
+		           opts: nil,
+		           },
+		           fields: fields {
+		           vc: nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			c := &singleClient{
+				vc: test.fields.vc,
+			}
+
+			gotRes, err := c.StreamLinearSearch(test.args.ctx, test.args.opts...)
+			if err := test.checkFunc(test.want, gotRes, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func Test_singleClient_StreamLinearSearchByID(t *testing.T) {
+	type args struct {
+		ctx  context.Context
+		opts []grpc.CallOption
+	}
+	type fields struct {
+		vc vald.Client
+	}
+	type want struct {
+		wantRes vald.Search_StreamSearchByIDClient
+		err     error
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, vald.Search_StreamSearchByIDClient, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, gotRes vald.Search_StreamSearchByIDClient, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(gotRes, w.wantRes) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           ctx: nil,
+		           opts: nil,
+		       },
+		       fields: fields {
+		           vc: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           ctx: nil,
+		           opts: nil,
+		           },
+		           fields: fields {
+		           vc: nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			c := &singleClient{
+				vc: test.fields.vc,
+			}
+
+			gotRes, err := c.StreamLinearSearchByID(test.args.ctx, test.args.opts...)
+			if err := test.checkFunc(test.want, gotRes, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func Test_singleClient_MultiLinearSearch(t *testing.T) {
+	type args struct {
+		ctx  context.Context
+		in   *payload.Search_MultiRequest
+		opts []grpc.CallOption
+	}
+	type fields struct {
+		vc vald.Client
+	}
+	type want struct {
+		wantRes *payload.Search_Responses
+		err     error
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, *payload.Search_Responses, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, gotRes *payload.Search_Responses, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(gotRes, w.wantRes) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           ctx: nil,
+		           in: nil,
+		           opts: nil,
+		       },
+		       fields: fields {
+		           vc: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           ctx: nil,
+		           in: nil,
+		           opts: nil,
+		           },
+		           fields: fields {
+		           vc: nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			c := &singleClient{
+				vc: test.fields.vc,
+			}
+
+			gotRes, err := c.MultiLinearSearch(test.args.ctx, test.args.in, test.args.opts...)
+			if err := test.checkFunc(test.want, gotRes, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func Test_singleClient_MultiLinearSearchByID(t *testing.T) {
+	type args struct {
+		ctx  context.Context
+		in   *payload.Search_MultiIDRequest
+		opts []grpc.CallOption
+	}
+	type fields struct {
+		vc vald.Client
+	}
+	type want struct {
+		wantRes *payload.Search_Responses
+		err     error
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, *payload.Search_Responses, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, gotRes *payload.Search_Responses, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(gotRes, w.wantRes) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           ctx: nil,
+		           in: nil,
+		           opts: nil,
+		       },
+		       fields: fields {
+		           vc: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           ctx: nil,
+		           in: nil,
+		           opts: nil,
+		           },
+		           fields: fields {
+		           vc: nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			c := &singleClient{
+				vc: test.fields.vc,
+			}
+
+			gotRes, err := c.MultiLinearSearchByID(test.args.ctx, test.args.in, test.args.opts...)
+			if err := test.checkFunc(test.want, gotRes, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}

@@ -279,6 +279,7 @@ E2E_TARGET_NAME                    ?= vald-lb-gateway
 E2E_TARGET_POD_NAME                ?= $(eval E2E_TARGET_POD_NAME := $(shell kubectl get pods --selector=app=$(E2E_TARGET_NAME) | tail -1 | cut -f1 -d " "))$(E2E_TARGET_POD_NAME)
 E2E_TARGET_NAMESPACE               ?= default
 E2E_TARGET_PORT                    ?= 8081
+E2E_PORTFORWARD_ENEBLED            ?= true
 
 include Makefile.d/functions.mk
 
