@@ -26,6 +26,7 @@ import (
 
 	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/pkg/agent/core/ngt/service"
 )
 
 var cfg = &config.NGT{
@@ -49,7 +50,7 @@ const (
 	createIndexPoolSize uint32 = 10000
 )
 
-func registerVector(ctx context.Context, n NGT) error {
+func registerVector(ctx context.Context, n service.NGT) error {
 	for i := int64(0); i < maxIDNum; i++ {
 		uuid := strconv.FormatInt(i, 10)
 
@@ -74,7 +75,7 @@ func registerVector(ctx context.Context, n NGT) error {
 }
 
 func Test_ngt_parallel_delete_and_insert(t *testing.T) {
-	n, err := New(cfg.Bind())
+	n, err := service.New(cfg.Bind())
 	if err != nil {
 		t.Fatalf("failed to create ngt service: %v", err)
 	}
@@ -161,7 +162,7 @@ func Test_ngt_parallel_delete_and_insert(t *testing.T) {
 }
 
 func Test_ngt_parallel_insert_and_delete(t *testing.T) {
-	n, err := New(cfg.Bind())
+	n, err := service.New(cfg.Bind())
 	if err != nil {
 		t.Fatalf("failed to create ngt service: %v", err)
 	}
