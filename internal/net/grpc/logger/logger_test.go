@@ -110,7 +110,7 @@ func Test_logger_Info(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "info log the message",
+			name: "info success to log the message",
 			args: args{
 				args: []interface{}{"log message"},
 			},
