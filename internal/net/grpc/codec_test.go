@@ -143,7 +143,7 @@ func TestCodec_Unmarshal(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "unmarshal data into v",
+			name: "unmarshal success to parse data into v",
 			args: args{
 				data: func() []byte {
 					b, _ := Codec{}.Marshal(&payload.Object_Vector{
