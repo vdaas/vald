@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,9 +20,12 @@ package types
 import (
 	"testing"
 
+	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/test/goleak"
 	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/runtime/protoimpl"
+	"google.golang.org/protobuf/types/known/anypb"
 )
 
 func TestUnmarshalAny(t *testing.T) {
@@ -49,33 +52,46 @@ func TestUnmarshalAny(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           any: nil,
-		           pb: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           any: nil,
-		           pb: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "return nil when success to unmarshal insert",
+			args: args{
+				any: func() *Any {
+					any, err := anypb.New(new(payload.Insert_Request))
+					if err != nil {
+						t.Error(err)
+					}
+					return any
+				}(),
+				pb: &payload.Insert_Request{
+					Vector: &payload.Object_Vector{
+						Id:     "1",
+						Vector: []float32{1.0, 2.1, 3.1},
+					},
+				},
+			},
+			want: want{
+				err: nil,
+			},
+		},
+		{
+			name: "return error when unmarshal type mismatch",
+			args: args{
+				any: func() *Any {
+					any, err := anypb.New(new(payload.Insert_Request))
+					if err != nil {
+						t.Error(err)
+					}
+					return any
+				}(),
+				pb: &payload.Object_Vector{
+					Id:     "1",
+					Vector: []float32{1.0, 2.1, 3.1},
+				},
+			},
+			want: want{
+				err: protoimpl.X.NewError("mismatched message type: got \"payload.v1.Object.Vector\", want \"payload.v1.Insert.Request\""),
+			},
+		},
 	}
 
 	for _, tc := range tests {

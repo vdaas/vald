@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -161,6 +161,119 @@ func (s *server) StreamSearchObject(stream vald.Filter_StreamSearchObjectServer)
 		func() interface{} { return new(payload.Search_ObjectRequest) },
 		func(ctx context.Context, data interface{}) (interface{}, error) {
 			res, err := s.SearchObject(ctx, data.(*payload.Search_ObjectRequest))
+			if err != nil {
+				st, ok := status.FromError(err)
+				if !ok {
+					st = status.New(codes.Internal, errors.Wrap(err, "failed to parse grpc status from error").Error())
+					err = errors.Wrap(st.Err(), err.Error())
+				}
+				return &payload.Search_StreamResponse{
+					Payload: &payload.Search_StreamResponse_Status{
+						Status: st.Proto(),
+					},
+				}, err
+			}
+			return &payload.Search_StreamResponse{
+				Payload: &payload.Search_StreamResponse_Response{
+					Response: res,
+				},
+			}, nil
+		})
+}
+
+func (s *server) LinearSearchObject(ctx context.Context, req *payload.Search_ObjectRequest) (*payload.Search_Response, error) {
+	ctx, span := trace.StartSpan(ctx, apiName+".LinearSearchObject")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	vr := req.GetVectorizer()
+	if vr == nil || vr.GetPort() == 0 {
+		return nil, status.WrapWithInvalidArgument("LinearSearchObject API vectorizer configuration is invalid", errors.ErrFilterNotFound, info.Get())
+	}
+	if vr.GetHost() == "" {
+		vr.Host = "localhost"
+	}
+	target := fmt.Sprintf("%s:%d", vr.GetHost(), vr.GetPort())
+	if len(target) == 0 {
+		if len(s.Vectorizer) == 0 {
+			return nil, status.WrapWithInvalidArgument("LinearSearchObject API vectorizer configuration is invalid", errors.ErrFilterNotFound, info.Get())
+		}
+		target = s.Vectorizer
+	}
+	c, err := s.ingress.Target(ctx, target)
+	if err != nil {
+		return nil, status.WrapWithUnavailable("LinearSearchObject API target filter API unavailable", err, req, info.Get())
+	}
+	vec, err := c.GenVector(ctx, &payload.Object_Blob{
+		Object: req.GetObject(),
+	})
+	if err != nil {
+		return nil, status.WrapWithInternal("LinearSearchObject API failed to extract vector from filter", err, req, info.Get())
+	}
+	return s.LinearSearch(ctx, &payload.Search_Request{
+		Vector: vec.GetVector(),
+		Config: req.GetConfig(),
+	})
+}
+
+func (s *server) MultiLinearSearchObject(ctx context.Context, reqs *payload.Search_MultiObjectRequest) (res *payload.Search_Responses, errs error) {
+	ctx, span := trace.StartSpan(ctx, apiName+".MultiLinearSearchObject")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+
+	res = &payload.Search_Responses{
+		Responses: make([]*payload.Search_Response, len(reqs.GetRequests())),
+	}
+	var wg sync.WaitGroup
+	var mu sync.Mutex
+	for i, req := range reqs.Requests {
+		idx, query := i, req
+		wg.Add(1)
+		s.eg.Go(func() error {
+			defer wg.Done()
+			r, err := s.LinearSearchObject(ctx, query)
+			if err != nil {
+				if span != nil {
+					span.SetStatus(trace.StatusCodeNotFound(err.Error()))
+				}
+				mu.Lock()
+				if errs == nil {
+					errs = status.WrapWithNotFound(
+						fmt.Sprintf("MultiLinearSearchObject API object %s's search request result not found",
+							string(query.GetObject())), err, info.Get())
+				} else {
+					errs = errors.Wrap(errs,
+						status.WrapWithNotFound(
+							fmt.Sprintf("MultiLinearSearchObject API object %s's search request result not found",
+								string(query.GetObject())), err, info.Get()).Error())
+				}
+				mu.Unlock()
+				return nil
+			}
+			res.Responses[idx] = r
+			return nil
+		})
+	}
+	wg.Wait()
+	return res, errs
+}
+
+func (s *server) StreamLinearSearchObject(stream vald.Filter_StreamSearchObjectServer) error {
+	ctx, span := trace.StartSpan(stream.Context(), apiName+".StreamLinearSearchObject")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	return grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
+		func() interface{} { return new(payload.Search_ObjectRequest) },
+		func(ctx context.Context, data interface{}) (interface{}, error) {
+			res, err := s.LinearSearchObject(ctx, data.(*payload.Search_ObjectRequest))
 			if err != nil {
 				st, ok := status.FromError(err)
 				if !ok {
@@ -784,6 +897,268 @@ func (s *server) MultiSearchByID(ctx context.Context, reqs *payload.Search_Multi
 					errs = errors.Wrap(errs,
 						status.WrapWithNotFound(
 							fmt.Sprintf("MultiSearchByID API id %s's search request result not found",
+								query.GetId()), err, info.Get()).Error())
+				}
+				mu.Unlock()
+				return nil
+			}
+			res.Responses[idx] = r
+			return nil
+		})
+	}
+	wg.Wait()
+	return res, errs
+}
+
+func (s *server) LinearSearch(ctx context.Context, req *payload.Search_Request) (res *payload.Search_Response, err error) {
+	ctx, span := trace.StartSpan(ctx, apiName+".LinearSearch")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	targets := req.GetConfig().GetIngressFilters().GetTargets()
+	if targets != nil || s.SearchFilters != nil {
+		addrs := make([]string, 0, len(targets)+len(s.SearchFilters))
+		addrs = append(addrs, s.SearchFilters...)
+		for _, target := range targets {
+			addrs = append(addrs, fmt.Sprintf("%s:%d", target.GetHost(), target.GetPort()))
+		}
+		c, err := s.ingress.Target(ctx, addrs...)
+		if err != nil {
+			return nil, status.WrapWithUnavailable(fmt.Sprintf("LinearSearch API ingress filter targets %v not found", addrs), err, info.Get())
+		}
+		vec, err := c.FilterVector(ctx, &payload.Object_Vector{
+			Vector: req.GetVector(),
+		})
+		if err != nil {
+			return nil, status.WrapWithInternal(fmt.Sprintf("LinearSearch API ingress filter request to %v failure on vec %v", addrs, req.GetVector()), err, info.Get())
+		}
+		req.Vector = vec.GetVector()
+	}
+	res, err = s.gateway.LinearSearch(ctx, req, s.copts...)
+	if err != nil {
+		return nil, err
+	}
+	targets = req.GetConfig().GetEgressFilters().GetTargets()
+	if targets != nil || s.DistanceFilters != nil {
+		addrs := make([]string, 0, len(targets)+len(s.DistanceFilters))
+		addrs = append(addrs, s.DistanceFilters...)
+		for _, target := range targets {
+			addrs = append(addrs, fmt.Sprintf("%s:%d", target.GetHost(), target.GetPort()))
+		}
+		c, err := s.egress.Target(ctx, addrs...)
+		if err != nil {
+			return nil, status.WrapWithUnavailable(fmt.Sprintf("LinearSearch API egress filter targets %v not found", addrs), err, info.Get())
+		}
+		for i, dist := range res.GetResults() {
+			d, err := c.FilterDistance(ctx, dist)
+			if err != nil {
+				return nil, status.WrapWithInternal(fmt.Sprintf("LinearSearch API egress filter request to %v failure on id %s", addrs, dist.GetId()), err, info.Get())
+			}
+			res.Results[i] = d
+		}
+	}
+	return res, nil
+}
+
+func (s *server) LinearSearchByID(ctx context.Context, req *payload.Search_IDRequest) (res *payload.Search_Response, err error) {
+	ctx, span := trace.StartSpan(ctx, apiName+".LinearSearchByID")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	res, err = s.gateway.LinearSearchByID(ctx, req, s.copts...)
+	if err != nil {
+		return nil, err
+	}
+	targets := req.GetConfig().GetEgressFilters().GetTargets()
+	if targets != nil || s.DistanceFilters != nil {
+		addrs := make([]string, 0, len(targets)+len(s.DistanceFilters))
+		addrs = append(addrs, s.DistanceFilters...)
+		for _, target := range targets {
+			addrs = append(addrs, fmt.Sprintf("%s:%d", target.GetHost(), target.GetPort()))
+		}
+		c, err := s.egress.Target(ctx, addrs...)
+		if err != nil {
+			return nil, status.WrapWithUnavailable(fmt.Sprintf("LinearSearchByID API egress filter targets %v not found", addrs), err, info.Get())
+		}
+		for i, dist := range res.GetResults() {
+			d, err := c.FilterDistance(ctx, dist)
+			if err != nil {
+				return nil, status.WrapWithInternal(fmt.Sprintf("LinearSearchByID API egress filter request to %v failure on id %s", addrs, dist.GetId()), err, info.Get())
+			}
+			res.Results[i] = d
+		}
+	}
+	return res, nil
+}
+
+func (s *server) StreamLinearSearch(stream vald.Search_StreamLinearSearchServer) (err error) {
+	ctx, span := trace.StartSpan(stream.Context(), apiName+".StreamLinearSearch")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	err = grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
+		func() interface{} { return new(payload.Search_Request) },
+		func(ctx context.Context, data interface{}) (interface{}, error) {
+			res, err := s.LinearSearch(ctx, data.(*payload.Search_Request))
+			if err != nil {
+				st, ok := status.FromError(err)
+				if !ok {
+					st = status.New(codes.Internal, errors.Wrap(err, "failed to parse grpc status from error").Error())
+					err = errors.Wrap(st.Err(), err.Error())
+				}
+				return &payload.Search_StreamResponse{
+					Payload: &payload.Search_StreamResponse_Status{
+						Status: st.Proto(),
+					},
+				}, err
+			}
+			return &payload.Search_StreamResponse{
+				Payload: &payload.Search_StreamResponse_Response{
+					Response: res,
+				},
+			}, nil
+		})
+
+	if err != nil {
+		if span != nil {
+			span.SetStatus(trace.StatusCodeInternal(err.Error()))
+		}
+		log.Error(err)
+		return err
+	}
+	return nil
+}
+
+func (s *server) StreamLinearSearchByID(stream vald.Search_StreamLinearSearchByIDServer) (err error) {
+	ctx, span := trace.StartSpan(stream.Context(), apiName+".StreamLinearSearchByID")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	err = grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
+		func() interface{} { return new(payload.Search_IDRequest) },
+		func(ctx context.Context, data interface{}) (interface{}, error) {
+			req := data.(*payload.Search_IDRequest)
+			ctx, sspan := trace.StartSpan(ctx, apiName+".StreamLinearSearchByID/id-"+req.GetId())
+			defer func() {
+				if sspan != nil {
+					sspan.End()
+				}
+			}()
+			res, err := s.LinearSearchByID(ctx, req)
+			if err != nil {
+				st, ok := status.FromError(err)
+				if !ok {
+					st = status.New(codes.Internal, errors.Wrap(err, "failed to parse grpc status from error").Error())
+					err = errors.Wrap(st.Err(), err.Error())
+				}
+				if sspan != nil {
+					sspan.SetStatus(trace.StatusCodeInternal(err.Error()))
+				}
+				return &payload.Search_StreamResponse{
+					Payload: &payload.Search_StreamResponse_Status{
+						Status: st.Proto(),
+					},
+				}, err
+			}
+			return &payload.Search_StreamResponse{
+				Payload: &payload.Search_StreamResponse_Response{
+					Response: res,
+				},
+			}, nil
+		})
+	if err != nil {
+		if span != nil {
+			span.SetStatus(trace.StatusCodeInternal(err.Error()))
+		}
+		log.Error(err)
+		return err
+	}
+	return nil
+}
+
+func (s *server) MultiLinearSearch(ctx context.Context, reqs *payload.Search_MultiRequest) (res *payload.Search_Responses, errs error) {
+	ctx, span := trace.StartSpan(ctx, apiName+".MultiLinearSearch")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	res = &payload.Search_Responses{
+		Responses: make([]*payload.Search_Response, len(reqs.GetRequests())),
+	}
+	var wg sync.WaitGroup
+	var mu sync.Mutex
+	for i, req := range reqs.Requests {
+		idx, query := i, req
+		wg.Add(1)
+		s.eg.Go(func() error {
+			defer wg.Done()
+			r, err := s.LinearSearch(ctx, query)
+			if err != nil {
+				if span != nil {
+					span.SetStatus(trace.StatusCodeNotFound(err.Error()))
+				}
+				mu.Lock()
+				if errs == nil {
+					errs = status.WrapWithNotFound(
+						fmt.Sprintf("MultiLinearSearch API vector %v's search request result not found",
+							query.GetVector()), err, info.Get())
+				} else {
+					errs = errors.Wrap(errs,
+						status.WrapWithNotFound(
+							fmt.Sprintf("MultiLinearSearch API vector %v's search request result not found",
+								query.GetVector()), err, info.Get()).Error())
+				}
+				mu.Unlock()
+				return nil
+			}
+			res.Responses[idx] = r
+			return nil
+		})
+	}
+	wg.Wait()
+	return res, errs
+}
+
+func (s *server) MultiLinearSearchByID(ctx context.Context, reqs *payload.Search_MultiIDRequest) (res *payload.Search_Responses, errs error) {
+	ctx, span := trace.StartSpan(ctx, apiName+".MultiLinearSearchByID")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	res = &payload.Search_Responses{
+		Responses: make([]*payload.Search_Response, len(reqs.GetRequests())),
+	}
+	var wg sync.WaitGroup
+	var mu sync.Mutex
+	for i, req := range reqs.Requests {
+		idx, query := i, req
+		wg.Add(1)
+		s.eg.Go(func() error {
+			defer wg.Done()
+			r, err := s.LinearSearchByID(ctx, query)
+			if err != nil {
+				if span != nil {
+					span.SetStatus(trace.StatusCodeNotFound(err.Error()))
+				}
+				mu.Lock()
+				if errs == nil {
+					errs = status.WrapWithNotFound(
+						fmt.Sprintf("MultiLinearSearchByID API id %s's search request result not found",
+							query.GetId()), err, info.Get())
+				} else {
+					errs = errors.Wrap(errs,
+						status.WrapWithNotFound(
+							fmt.Sprintf("MultiLinearSearchByID API id %s's search request result not found",
 								query.GetId()), err, info.Get()).Error())
 				}
 				mu.Unlock()

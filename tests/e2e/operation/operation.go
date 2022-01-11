@@ -2,7 +2,7 @@
 // +build e2e
 
 //
-// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -67,6 +67,26 @@ type Client interface {
 		statusValidator StatusValidator,
 		errorValidator ErrorValidator,
 	) error
+	LinearSearch(t *testing.T, ctx context.Context, ds Dataset) error
+	LinearSearchByID(t *testing.T, ctx context.Context, ds Dataset) error
+	LinearSearchWithParameters(
+		t *testing.T,
+		ctx context.Context,
+		ds Dataset,
+		num uint32,
+		timeout int64,
+		statusValidator StatusValidator,
+		errorValidator ErrorValidator,
+	) error
+	LinearSearchByIDWithParameters(
+		t *testing.T,
+		ctx context.Context,
+		ds Dataset,
+		num uint32,
+		timeout int64,
+		statusValidator StatusValidator,
+		errorValidator ErrorValidator,
+	) error
 	Insert(t *testing.T, ctx context.Context, ds Dataset) error
 	Update(t *testing.T, ctx context.Context, ds Dataset) error
 	Upsert(t *testing.T, ctx context.Context, ds Dataset) error
@@ -107,6 +127,8 @@ type Client interface {
 	) error
 	MultiSearch(t *testing.T, ctx context.Context, ds Dataset) error
 	MultiSearchByID(t *testing.T, ctx context.Context, ds Dataset) error
+	MultiLinearSearch(t *testing.T, ctx context.Context, ds Dataset) error
+	MultiLinearSearchByID(t *testing.T, ctx context.Context, ds Dataset) error
 	MultiInsert(t *testing.T, ctx context.Context, ds Dataset) error
 	MultiUpdate(t *testing.T, ctx context.Context, ds Dataset) error
 	MultiUpsert(t *testing.T, ctx context.Context, ds Dataset) error

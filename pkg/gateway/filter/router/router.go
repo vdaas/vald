@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -65,7 +65,6 @@ func New(opts ...Option) http.Handler {
 				"/search/{id}",
 				h.SearchByID,
 			},
-
 			{
 				"Multi Search",
 				[]string{
@@ -81,6 +80,38 @@ func New(opts ...Option) http.Handler {
 				},
 				"/search/multi/{id}",
 				h.MultiSearchByID,
+			},
+			{
+				"Linear_Search",
+				[]string{
+					http.MethodPost,
+				},
+				"/linearsearch",
+				h.LinearSearch,
+			},
+			{
+				"Linear_Search By ID",
+				[]string{
+					http.MethodGet,
+				},
+				"/linearsearch/{id}",
+				h.SearchByID,
+			},
+			{
+				"Multi Linear_Search",
+				[]string{
+					http.MethodPost,
+				},
+				"/linearsearch/multi",
+				h.MultiLinearSearch,
+			},
+			{
+				"Multi Linear_Search By ID",
+				[]string{
+					http.MethodGet,
+				},
+				"/linearsearch/multi/{id}",
+				h.MultiLinearSearchByID,
 			},
 			{
 				"Insert",

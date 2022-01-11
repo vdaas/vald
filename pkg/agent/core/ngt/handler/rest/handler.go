@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -31,6 +31,8 @@ type Handler interface {
 	Exists(w http.ResponseWriter, r *http.Request) (int, error)
 	Search(w http.ResponseWriter, r *http.Request) (int, error)
 	SearchByID(w http.ResponseWriter, r *http.Request) (int, error)
+	LinearSearch(w http.ResponseWriter, r *http.Request) (int, error)
+	LinearSearchByID(w http.ResponseWriter, r *http.Request) (int, error)
 	Insert(w http.ResponseWriter, r *http.Request) (int, error)
 	MultiInsert(w http.ResponseWriter, r *http.Request) (int, error)
 	Update(w http.ResponseWriter, r *http.Request) (int, error)
@@ -74,6 +76,20 @@ func (h *handler) SearchByID(w http.ResponseWriter, r *http.Request) (code int, 
 	var req *payload.Search_IDRequest
 	return json.Handler(w, r, &req, func() (interface{}, error) {
 		return h.agent.SearchByID(r.Context(), req)
+	})
+}
+
+func (h *handler) LinearSearch(w http.ResponseWriter, r *http.Request) (code int, err error) {
+	var req *payload.Search_Request
+	return json.Handler(w, r, &req, func() (interface{}, error) {
+		return h.agent.LinearSearch(r.Context(), req)
+	})
+}
+
+func (h *handler) LinearSearchByID(w http.ResponseWriter, r *http.Request) (code int, err error) {
+	var req *payload.Search_IDRequest
+	return json.Handler(w, r, &req, func() (interface{}, error) {
+		return h.agent.LinearSearchByID(r.Context(), req)
 	})
 }
 

@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -48,31 +48,27 @@ func TestNewServerHandler(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           opts: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           opts: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "return server handler when option is nil",
+			want: want{
+				want: new(ServerHandler),
+			},
+		},
+		{
+			name: "return server handler when option is not nil",
+			args: args{
+				opts: []ServerOption{
+					func(h *ServerHandler) {
+						h.IsPublicEndpoint = true
+					},
+				},
+			},
+			want: want{
+				want: &ServerHandler{
+					IsPublicEndpoint: true,
+				},
+			},
+		},
 	}
 
 	for _, tc := range tests {

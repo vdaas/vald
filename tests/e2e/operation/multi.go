@@ -2,7 +2,7 @@
 // +build e2e
 
 //
-// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -87,6 +87,74 @@ func (c *client) MultiSearchByID(t *testing.T, ctx context.Context, ds Dataset) 
 	}
 
 	res, err := client.MultiSearchByID(ctx, req)
+	if err != nil {
+		return err
+	}
+
+	if len(res.GetResponses()) != len(ds.Test) {
+		t.Error("number of responses does not match with sent requests")
+	}
+
+	return nil
+}
+
+func (c *client) MultiLinearSearch(t *testing.T, ctx context.Context, ds Dataset) error {
+	client, err := c.getClient(ctx)
+	if err != nil {
+		return err
+	}
+
+	cfg := &payload.Search_Config{
+		Num: 3,
+	}
+
+	reqs := make([]*payload.Search_Request, 0, len(ds.Test))
+	for _, v := range ds.Test {
+		reqs = append(reqs, &payload.Search_Request{
+			Vector: v,
+			Config: cfg,
+		})
+	}
+
+	req := &payload.Search_MultiRequest{
+		Requests: reqs,
+	}
+
+	res, err := client.MultiLinearSearch(ctx, req)
+	if err != nil {
+		return err
+	}
+
+	if len(res.GetResponses()) != len(ds.Test) {
+		t.Error("number of responses does not match with sent requests")
+	}
+
+	return nil
+}
+
+func (c *client) MultiLinearSearchByID(t *testing.T, ctx context.Context, ds Dataset) error {
+	client, err := c.getClient(ctx)
+	if err != nil {
+		return err
+	}
+
+	cfg := &payload.Search_Config{
+		Num: 3,
+	}
+
+	reqs := make([]*payload.Search_IDRequest, 0, len(ds.Test))
+	for i := range ds.Test {
+		reqs = append(reqs, &payload.Search_IDRequest{
+			Id:     strconv.Itoa(i),
+			Config: cfg,
+		})
+	}
+
+	req := &payload.Search_MultiIDRequest{
+		Requests: reqs,
+	}
+
+	res, err := client.MultiLinearSearchByID(ctx, req)
 	if err != nil {
 		return err
 	}

@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -33,6 +33,11 @@ e2e/update:
 ## run search e2e
 e2e/search:
 	$(call run-e2e-crud-test,-run TestE2ESearchOnly)
+
+.PHONY: e2e/linearsearch
+## run linearsearch e2e
+e2e/linearsearch:
+	$(call run-e2e-crud-test,-run TestE2ELinearSearchOnly)
 
 .PHONY: e2e/upsert
 ## run upsert e2e
