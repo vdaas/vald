@@ -2,7 +2,7 @@
 
 ## Overview
 
-Upsert Service is responsible for updating existing vectors in the `vald-agent` and inserting new vectors into the `vald-agent`.
+Upsert Service is responsible for updating existing vectors in the `vald-agent` or inserting new vectors into the `vald-agent` if the vector is not exists.
 
 ```bash
 service Upsert {
@@ -99,7 +99,7 @@ Upsert RPC is the method to update a single vector and add a new single vector.
 
 ## StreamUpsert RPC
 
-StreamUpsert RPC is the method to update multiple exist vectors and add new multiple vectors using the [bidirectional streaming RPC](https://grpc.io/docs/what-is-grpc/core-concepts/#bidirectional-streaming-rpc).<br>
+StreamUpsert RPC is the method to update multiple exist vectors or add new multiple vectors using the [bidirectional streaming RPC](https://grpc.io/docs/what-is-grpc/core-concepts/#bidirectional-streaming-rpc).<br>
 By using the bidirectional streaming PRC, the upsert request can be communicated in any order between client and server.
 Each Upsert request and response are independent.
 It's the recommended method to upsert the large amount of vectors.
