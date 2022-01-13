@@ -196,7 +196,7 @@ It's the recommended method to insert the large amount of vectors.
 
 ## MultiInsert RPC
 
-MultiInsert PRC is the method to add new multiple vectors in **1** request.
+MultiInsert RPC is the method to add new multiple vectors in **1** request.
 
 <div class="card-note">
 gRPC has the message size limitation.<br>
