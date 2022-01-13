@@ -706,7 +706,7 @@ LinearSearch RPC is the method to linear search vector(s) similar to request vec
 
 ## LinearSearchByID RPC
 
-LinearSearchByID PRC it the method to linear search similar vectors using by user defined vector ID.<br>
+LinearSearchByID RPC is the method to linear search similar vectors using by user defined vector ID.<br>
 The vector whose ID is same to requested ID should be indexed into the `vald-agent` before searching.
 
 ### Input
@@ -977,7 +977,7 @@ Each LinearSearchByID request and response are independent.
 
 ## MultiLinearSearch RPC
 
-MultiLinearSearch PRC is the method to linear search vectors with multiple vectors in **1** request.
+MultiLinearSearch RPC is the method to linear search vectors with multiple vectors in **1** request.
 
 <div class="card-note">
 gRPC has the message size limitation.<br>
@@ -1080,7 +1080,7 @@ Please be careful that the size of the request exceed the limit.
 
 ### MultiLinearSearchByID RPC
 
-MultiLinearSearchByID PRC is the method to linear search vectors with multiple IDs in **1** request.
+MultiLinearSearchByID RPC is the method to linear search vectors with multiple IDs in **1** request.
 
 <div class="card-note">
 gRPC has the message size limitation.<br>
