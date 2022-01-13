@@ -196,7 +196,7 @@ It's the recommended method to insert the large amount of vectors.
 
 ## MultiInsert RPC
 
-MultiInsert is the method to add new multiple vectors in **1** request.
+MultiInsert PRC is the method to add new multiple vectors in **1** request.
 
 <div class="card-note">
 gRPC has the message size limitation.<br>
@@ -246,7 +246,7 @@ Please be careful that the size of the request exceed the limit.
     |field|type|label|required|desc.|
     |:---:|:---|:---|:---:|:---|
     |skip_strict_exist_check|bool| | | check the same vector is already inserted or not.<br>the ID should be unique if the value is `true`|
-    |timestamp|int64| | | the timestamp of the vector inserted.<br>if it is N/A, the current time will be used.
+    |timestamp|int64| | | the timestamp of the vector inserted.<br>if it is N/A, the current time will be used |
     |filters|Filter.Config| | | configuration for filter |
 
   - Object.Vector
