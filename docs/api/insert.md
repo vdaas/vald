@@ -96,7 +96,7 @@ Inset RPC is the method to add a new single vector.
 ## StreamInsert RPC
 
 StreamInsert RPC is the method to add new multiple vectors using the [bidirectional streaming RPC](https://grpc.io/docs/what-is-grpc/core-concepts/#bidirectional-streaming-rpc).<br>
-By using the bidirectional streaming PRC, the insert request can be communicated in any order between client and server.
+By using the bidirectional streaming RPC, the insert request can be communicated in any order between client and server.
 Each Insert request and response are independent.
 It's the recommended method to insert the large amount of vectors.
 
