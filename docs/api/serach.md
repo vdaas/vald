@@ -707,7 +707,8 @@ LinearSearch RPC is the method to linear search vector(s) similar to request vec
 ## LinearSearchByID RPC
 
 LinearSearchByID RPC is the method to linear search similar vectors using by user defined vector ID.<br>
-The vector whose ID is same to requested ID should be indexed into the `vald-agent` before searching.
+The vector whose ID is the same as the requested ID should be indexed into the `vald-agent` before searching.
+If the vector doesn't be stored, you will get a `NOT_FOUND` error as a result.
 
 ### Input
 
