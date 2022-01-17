@@ -128,8 +128,8 @@ Search RPC is the method to search vector(s) similar to request vector.
 
 ## SearchByID RPC
 
-SearchByID PRC it the method to search similar vectors using by user defined vector ID.<br>
-The vector whose ID is same to requested ID should be indexed into the `vald-agent` before searching.
+SearchByID RPC it the method to search similar vectors using by user defined vector ID.<br>
+The vector with the same requested ID should be indexed into the `vald-agent` before searching.
 
 ### Input
 
@@ -411,7 +411,7 @@ Each SearchByID request and response are independent.
 
 ## MultiSearch RPC
 
-MultiSearch PRC is the method to search vectors with multiple vectors in **1** request.
+MultiSearch RPC is the method to search vectors with multiple vectors in **1** request.
 
 <div class="card-note">
 gRPC has the message size limitation.<br>
@@ -518,7 +518,7 @@ Please be careful that the size of the request exceed the limit.
 
 ### MultiSearchByID RPC
 
-MultiSearchByID PRC is the method to search vectors with multiple IDs in **1** request.
+MultiSearchByID RPC is the method to search vectors with multiple IDs in **1** request.
 
 <div class="card-note">
 gRPC has the message size limitation.<br>
@@ -707,7 +707,7 @@ LinearSearch RPC is the method to linear search vector(s) similar to request vec
 ## LinearSearchByID RPC
 
 LinearSearchByID RPC is the method to linear search similar vectors using by user defined vector ID.<br>
-The vector whose ID is the same as the requested ID should be indexed into the `vald-agent` before searching.
+The vector with the same requested ID should be indexed into the `vald-agent` before searching.
 If the vector doesn't be stored, you will get a `NOT_FOUND` error as a result.
 
 ### Input
