@@ -211,10 +211,10 @@ The vector with the same requested ID should be indexed into the `vald-agent` be
 |  3   | INVALID_ARGUMENT |
 |  5   | NOT_FOUND        |
 
-## StreamSearch PRC
+## StreamSearch RPC
 
 StreamSearch RPC is the method to search vectors with multi queries(vectors) using the [bidirectional streaming RPC](https://grpc.io/docs/what-is-grpc/core-concepts/#bidirectional-streaming-rpc).<br>
-By using the bidirectional streaming PRC, the search request can be communicated in any order between client and server.
+By using the bidirectional streaming RPC, the search request can be communicated in any order between client and server.
 Each Search request and response are independent.
 
 ### Input
@@ -313,7 +313,7 @@ Each Search request and response are independent.
 ## StreamSearchByID RPC
 
 StreamSearchByID RPC is the method to search vectors with multi queries(IDs) using the [bidirectional streaming RPC](https://grpc.io/docs/what-is-grpc/core-concepts/#bidirectional-streaming-rpc).<br>
-By using the bidirectional streaming PRC, the search request can be communicated in any order between client and server.
+By using the bidirectional streaming RPC, the search request can be communicated in any order between client and server.
 Each SearchByID request and response are independent.
 
 ### Input
@@ -786,10 +786,10 @@ If the vector doesn't be stored, you will get a `NOT_FOUND` error as a result.
 |  3   | INVALID_ARGUMENT |
 |  5   | NOT_FOUND        |
 
-## StreamLinearSearch PRC
+## StreamLinearSearch RPC
 
 StreamLinearSearch RPC is the method to linear search vectors with multi queries(vectors) using the [bidirectional streaming RPC](https://grpc.io/docs/what-is-grpc/core-concepts/#bidirectional-streaming-rpc).<br>
-By using the bidirectional streaming PRC, the linear search request can be communicated in any order between client and server.
+By using the bidirectional streaming RPC, the linear search request can be communicated in any order between client and server.
 Each LinearSearch request and response are independent.
 
 ### Input
@@ -884,7 +884,7 @@ Each LinearSearch request and response are independent.
 ## StreamLinearSearchByID RPC
 
 StreamLinearSearchByID RPC is the method to linear search vectors with multi queries(IDs) using the [bidirectional streaming RPC](https://grpc.io/docs/what-is-grpc/core-concepts/#bidirectional-streaming-rpc).<br>
-By using the bidirectional streaming PRC, the linear search request can be communicated in any order between client and server.
+By using the bidirectional streaming RPC, the linear search request can be communicated in any order between client and server.
 Each LinearSearchByID request and response are independent.
 
 ### Input
