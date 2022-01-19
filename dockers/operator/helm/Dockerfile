@@ -78,10 +78,19 @@ RUN make helm/schema/vald
 RUN make helm/schema/vald-helm-operator
 RUN cp -r charts /charts
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apt clean \
+    && rm -rf \
+        /var/lib/apt/lists/* \
+        /var/cache/* \
+    && apt update -y \
+    && apt upgrade -y \
+    && apt install -y --no-install-recommends --fix-missing \
     upx \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+    && apt clean \
+    && rm -rf \
+        /var/lib/apt/lists/* \
+        /var/cache/* \
+    && apt autoremove
 
 ENV APP_NAME helm-operator
 
