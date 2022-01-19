@@ -157,7 +157,7 @@ The vector with the same requested ID should be indexed into the `vald-agent` be
   - Search.IDRequest
     |field|type|label|required|desc.|
     |:---:|:---|:---|:---:|:---|
-    |id|string| | \* | the vector ID to be searched.|
+    |id|string| | \* | the vector ID to be searched |
     |config|Config| | \* | the configuration of the search request |
 
   - Search.Config
@@ -288,7 +288,7 @@ Each Search request and response are independent.
     |field|type|label|desc.|
     |:---:|:---|:---|:---|
     |response|Response| | the search result response |
-    |status|google.rpc.Status| | the status of google RPC. |
+    |status|google.rpc.Status| | the status of google RPC |
 
   - Search.Response
     |field|type|label|desc.|
@@ -342,7 +342,7 @@ Each SearchByID request and response are independent.
   - Search.IDRequest
     |field|type|label|required|desc.|
     |:---:|:---|:---|:---:|:---|
-    |id|string| | \* | the vector ID to be searched.|
+    |id|string| | \* | the vector ID to be searched |
     |config|Config| | \* | the configuration of the search request |
 
   - Search.Config
@@ -387,7 +387,7 @@ Each SearchByID request and response are independent.
     |field|type|label|desc.|
     |:---:|:---|:---|:---|
     |response|Response| | the search result response |
-    |status|google.rpc.Status| | the status of google RPC. |
+    |status|google.rpc.Status| | the status of google RPC |
 
   - Search.Response
     |field|type|label|desc.|
@@ -561,7 +561,7 @@ Please be careful that the size of the request exceed the limit.
   - Search.IDRequest
     |field|type|label|required|desc.|
     |:---:|:---|:---|:---:|:---|
-    |id|string| | \* | the vector ID to be searched.|
+    |id|string| | \* | the vector ID to be searched |
     |config|Config| | \* | the configuration of the search request |
 
   - Search.Config
@@ -734,7 +734,7 @@ If the vector doesn't be stored, you will get a `NOT_FOUND` error as a result.
   - Search.IDRequest
     |field|type|label|required|desc.|
     |:---:|:---|:---|:---:|:---|
-    |id|string| | \* | the vector ID to be searched.|
+    |id|string| | \* | the vector ID to be searched |
     |config|Config| | \* | the configuration of the search request |
 
   - Search.Config
@@ -859,7 +859,7 @@ Each LinearSearch request and response are independent.
     |field|type|label|desc.|
     |:---:|:---|:---|:---|
     |response|Response| | the search result response |
-    |status|google.rpc.Status| | the status of google RPC. |
+    |status|google.rpc.Status| | the status of google RPC |
 
   - Search.Response
     |field|type|label|desc.|
@@ -911,7 +911,7 @@ Each LinearSearchByID request and response are independent.
   - Search.IDRequest
     |field|type|label|required|desc.|
     |:---:|:---|:---|:---:|:---|
-    |id|string| | \* | the vector ID to be searched.|
+    |id|string| | \* | the vector ID to be searched |
     |config|Config| | \* | the configuration of the search request |
 
   - Search.Config
@@ -954,7 +954,7 @@ Each LinearSearchByID request and response are independent.
     |field|type|label|desc.|
     |:---:|:---|:---|:---|
     |response|Response| | the search result response |
-    |status|google.rpc.Status| | the status of google RPC. |
+    |status|google.rpc.Status| | the status of google RPC |
 
   - Search.Response
     |field|type|label|desc.|

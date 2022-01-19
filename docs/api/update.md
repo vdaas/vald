@@ -53,7 +53,7 @@ Update RPC is the method to update a single vector.
   - Update.Config
     |field|type|label|required|desc.|
     |:---:|:---|:---|:---:|:---|
-    |skip_strict_exist_check|bool| | | check the same vector is already inserted or not.<br>the ID should be unique if the value is `true`|
+    |skip_strict_exist_check|bool| | | check the same vector is already inserted or not.<br>the ID should be unique if the value is `true`. |
     |timestamp|int64| | | the timestamp of the vector updated.<br>if it is N/A, the current time will be used. |
     |filters|Filter.Config| | | configuration for filter |
 
@@ -81,8 +81,8 @@ Update RPC is the method to update a single vector.
     |field|type|label|desc.|
     |:---:|:---|:---|:---|
     |name|string| | the name of vald agent pod where the request vector is updated. |
-    |uuid|string| | the ID of the updated vector. It is the same as an Object.Vector |
-    |ips|string| repeated(Array[string]) | the ip list of `vald-agent` pods where the request vector is updated. |
+    |uuid|string| | the ID of the updated vector. It is the same as an `Object.Vector`. |
+    |ips|string| repeated(Array[string]) | the IP list of `vald-agent` pods where the request vector is updated. |
 
 ### Status Code
 
@@ -134,7 +134,7 @@ It's the recommended method to update the large amount of vectors.
   - Update.Config
     |field|type|label|required|desc.|
     |:---:|:---|:---|:---:|:---|
-    |skip_strict_exist_check|bool| | | check the same vector is already inserted or not.<br>the ID should be unique if the value is `true`|
+    |skip_strict_exist_check|bool| | | check the same vector is already inserted or not.<br>the ID should be unique if the value is `true`. |
     |timestamp|int64| | | the timestamp of the vector updated.<br>if it is N/A, the current time will be used. |
     |filters|Filter.Config| | | configuration for filter |
 
@@ -142,7 +142,7 @@ It's the recommended method to update the large amount of vectors.
     |field|type|label|required|desc.|
     |:---:|:---|:---|:---:|:---|
     |id|string| | \* | the ID of the vector. ID should consist of 1 or more characters. |
-    |vector|float| repeated(Array[float]) | \* | the vector data. its dimension is between 2 and 65,536.|
+    |vector|float| repeated(Array[float]) | \* | the vector data. its dimension is between 2 and 65,536. |
 
 ### Output
 
@@ -175,8 +175,8 @@ It's the recommended method to update the large amount of vectors.
     |field|type|label|desc.|
     |:---:|:---|:---|:---|
     |name|string| | the name of vald agent pod where the request vector is updated. |
-    |uuid|string| | the ID of the exists vector. It is the same as an Object.Vector |
-    |ips|string| repeated(Array[string]) | the ip list of `vald-agent` pods where the request vector is inserted. |
+    |uuid|string| | the ID of the exists vector. It is the same as an `Object.Vector`. |
+    |ips|string| repeated(Array[string]) | the IP list of `vald-agent` pods where the request vector is inserted. |
 
   - [google.rpc.Status](https://github.com/googleapis/googleapis/blob/master/google/rpc/status.proto)
     |field|type|label|desc.|
@@ -245,7 +245,7 @@ Please be careful that the size of the request exceed the limit.
   - Update.Config
     |field|type|label|required|desc.|
     |:---:|:---|:---|:---:|:---|
-    |skip_strict_exist_check|bool| | | check the same vector is already inserted or not.<br>the ID should be unique if the value is `true`|
+    |skip_strict_exist_check|bool| | | check the same vector is already inserted or not.<br>the ID should be unique if the value is `true`. |
     |timestamp|int64| | | the timestamp of the vector updated.<br>if it is N/A, the current time will be used. |
     |filters|Filter.Config| | | configuration for filter |
 
@@ -274,13 +274,13 @@ Please be careful that the size of the request exceed the limit.
   - Object.Locations
     |field|type|label|desc.|
     |:---:|:---|:---|:---|
-    |location|Object.Location| repeated(Array[Object.Location]) | the list of Object.Location. |
+    |location|Object.Location| repeated(Array[Object.Location]) | the list of `Object.Location`. |
 
   - Object.Location
     |field|type|label|desc.|
     |:---:|:---|:---|:---|
     |name|string| | the name of vald agent pod where the request vector is updated. |
-    |uuid|string| | the ID of the updated vector. It is the same as an Object.Vector |
+    |uuid|string| | the ID of the updated vector. It is the same as an `Object.Vector`. |
     |ips|string| repeated(Array[string]) | the ip list of `vald-agent` pods where the request vector is updated. |
 
 ### Status Code

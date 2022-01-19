@@ -57,7 +57,7 @@ Upsert RPC is the method to update a single vector and add a new single vector.
   - Upsert.Config
     |field|type|label|required|desc.|
     |:---:|:---|:---|:---:|:---|
-    |skip_strict_exist_check|bool| | | check the same vector is already inserted or not.<br>the ID should be unique if the value is `true`|
+    |skip_strict_exist_check|bool| | | check the same vector is already inserted or not.<br>the ID should be unique if the value is `true`. |
     |timestamp|int64| | | the timestamp of the vector updated/inserted.<br>if it is N/A, the current time will be used. |
     |filters|Filter.Config| | | configuration for filter |
 
@@ -85,8 +85,8 @@ Upsert RPC is the method to update a single vector and add a new single vector.
     |field|type|label|desc.|
     |:---:|:---|:---|:---|
     |name|string| | the name of vald agent pod where the request vector is updated/inserted. |
-    |uuid|string| | the ID of the updated/inserted vector. It is the same as an Object.Vector |
-    |ips|string| repeated(Array[string]) | the ip list of `vald-agent` pods where the request vector is updated/inserted. |
+    |uuid|string| | the ID of the updated/inserted vector. It is the same as an `Object.Vector`. |
+    |ips|string| repeated(Array[string]) | the IP list of `vald-agent` pods where the request vector is updated/inserted. |
 
 ### Status Code
 
@@ -138,7 +138,7 @@ It's the recommended method to upsert the large amount of vectors.
   - Upsert.Config
     |field|type|label|required|desc.|
     |:---:|:---|:---|:---:|:---|
-    |skip_strict_exist_check|bool| | | check the same vector is already inserted or not.<br>the ID should be unique if the value is `true`|
+    |skip_strict_exist_check|bool| | | check the same vector is already inserted or not.<br>the ID should be unique if the value is `true`. |
     |timestamp|int64| | | the timestamp of the vector updated/inserted.<br>if it is N/A, the current time will be used. |
     |filters|Filter.Config| | | configuration for filter |
 
@@ -179,8 +179,8 @@ It's the recommended method to upsert the large amount of vectors.
     |field|type|label|desc.|
     |:---:|:---|:---|:---|
     |name|string| | the name of vald agent pod where the request vector is updated/inserted. |
-    |uuid|string| | the ID of the updated/inserted vector. It is the same as an Object.Vector |
-    |ips|string| repeated(Array[string]) | the ip list of `vald-agent` pods where the request vector is updated/inserted. |
+    |uuid|string| | the ID of the updated/inserted vector. It is the same as an `Object.Vector`. |
+    |ips|string| repeated(Array[string]) | the IP list of `vald-agent` pods where the request vector is updated/inserted. |
 
   - [google.rpc.Status](https://github.com/googleapis/googleapis/blob/master/google/rpc/status.proto)
     |field|type|label|desc.|
@@ -249,7 +249,7 @@ Please be careful that the size of the request exceed the limit.
   - Upsert.Config
     |field|type|label|required|desc.|
     |:---:|:---|:---|:---:|:---|
-    |skip_strict_exist_check|bool| | | check the same vector is already updated/inserted or not.<br>the ID should be unique if the value is `true`|
+    |skip_strict_exist_check|bool| | | check the same vector is already updated/inserted or not.<br>the ID should be unique if the value is `true`. |
     |timestamp|int64| | | the timestamp of the vector updated/inserted.<br>if it is N/A, the current time will be used. |
     |filters|Filter.Config| | | configuration for filter |
 
@@ -278,14 +278,14 @@ Please be careful that the size of the request exceed the limit.
   - Object.Locations
     |field|type|label|desc.|
     |:---:|:---|:---|:---|
-    |location|Object.Location| repeated(Array[Object.Location]) | the list of Object.Location. |
+    |location|Object.Location| repeated(Array[Object.Location]) | the list of `Object.Location` |
 
   - Object.Location
     |field|type|label|desc.|
     |:---:|:---|:---|:---|
     |name|string| | the name of vald agent pod where the request vector is updated/inserted. |
-    |uuid|string| | the ID of the updated/inserted vector. It is the same as an Object.Vector |
-    |ips|string| repeated(Array[string]) | the ip list of `vald-agent` pods where the request vector is updated/inserted. |
+    |uuid|string| | the ID of the updated/inserted vector. It is the same as an `Object.Vector`. |
+    |ips|string| repeated(Array[string]) | the IP list of `vald-agent` pods where the request vector is updated/inserted. |
 
 ### Status Code
 
