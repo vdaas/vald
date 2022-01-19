@@ -85,9 +85,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 ENV APP_NAME helm-operator
 
-COPY --from=operator /usr/local/bin/${APP_NAME} /usr/local/bin/${APP_NAME}
+COPY --from=operator /usr/local/bin/${APP_NAME} /usr/bin/${APP_NAME}
 
-RUN upx ${UPX_OPTIONS} -o "/usr/bin/${APP_NAME}" "/usr/local/bin/${APP_NAME}"
+RUN upx ${UPX_OPTIONS} "/usr/bin/${APP_NAME}"
 
 FROM ${DISTROLESS_IMAGE}:${DISTROLESS_IMAGE_TAG}
 LABEL maintainer "${MAINTAINER}"
