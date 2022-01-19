@@ -14,6 +14,8 @@
 # limitations under the License.
 #
 ARG GO_VERSION=latest
+ARG DISTROLESS_IMAGE=gcr.io/distroless/static
+ARG DISTROLESS_IMAGE_TAG=nonroot
 ARG OPERATOR_SDK_VERSION
 ARG VERSION="v1"
 ARG GROUP="vald.vdaas.org"
@@ -72,10 +74,21 @@ RUN make helm/schema/vald
 RUN make helm/schema/vald-helm-operator
 RUN cp -r charts /charts
 
-FROM quay.io/operator-framework/helm-operator:${OPERATOR_SDK_VERSION}
+FROM quay.io/operator-framework/helm-operator:${OPERATOR_SDK_VERSION} AS operator
+
+FROM ${DISTROLESS_IMAGE}:${DISTROLESS_IMAGE_TAG}
 LABEL maintainer "${MAINTAINER}"
 
-COPY --from=builder /tmp/watches.yaml ${HOME}/watches.yaml
+ENV HOME=/opt/helm
+WORKDIR ${HOME}
 
-COPY --from=builder /charts/vald ${HOME}/helm-charts/vald
-COPY --from=builder /charts/vald-helm-operator ${HOME}/helm-charts/vald-helm-operator
+COPY --from=builder /tmp/watches.yaml watches.yaml
+
+COPY --from=builder /charts/vald helm-charts/vald
+COPY --from=builder /charts/vald-helm-operator helm-charts/vald-helm-operator
+
+COPY --from=operator /usr/local/bin/helm-operator /usr/local/bin/helm-operator
+
+USER nonroot:nonroot
+
+ENTRYPOINT ["/usr/local/bin/helm-operator", "run", "--watches-file=./watches.yaml"]
