@@ -194,7 +194,8 @@ docker/build/operator/helm:
 	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
 	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
 	    --build-arg MAINTAINER=$(MAINTAINER) \
-	    --build-arg OPERATOR_SDK_VERSION=$(OPERATOR_SDK_VERSION)
+	    --build-arg OPERATOR_SDK_VERSION=$(OPERATOR_SDK_VERSION) \
+	    --build-arg UPX_OPTIONS=$(UPX_OPTIONS)
 
 .PHONY: docker/name/loadtest
 docker/name/loadtest:
