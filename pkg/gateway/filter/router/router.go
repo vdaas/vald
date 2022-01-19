@@ -65,7 +65,6 @@ func New(opts ...Option) http.Handler {
 				"/search/{id}",
 				h.SearchByID,
 			},
-
 			{
 				"Multi Search",
 				[]string{
@@ -81,6 +80,38 @@ func New(opts ...Option) http.Handler {
 				},
 				"/search/multi/{id}",
 				h.MultiSearchByID,
+			},
+			{
+				"Linear_Search",
+				[]string{
+					http.MethodPost,
+				},
+				"/linearsearch",
+				h.LinearSearch,
+			},
+			{
+				"Linear_Search By ID",
+				[]string{
+					http.MethodGet,
+				},
+				"/linearsearch/{id}",
+				h.SearchByID,
+			},
+			{
+				"Multi Linear_Search",
+				[]string{
+					http.MethodPost,
+				},
+				"/linearsearch/multi",
+				h.MultiLinearSearch,
+			},
+			{
+				"Multi Linear_Search By ID",
+				[]string{
+					http.MethodGet,
+				},
+				"/linearsearch/multi/{id}",
+				h.MultiLinearSearchByID,
 			},
 			{
 				"Insert",
