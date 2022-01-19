@@ -53,7 +53,7 @@ Inset RPC is the method to add a new single vector.
   - Insert.Config
     |field|type|label|required|desc.|
     |:---:|:---|:---|:---:|:---|
-    |skip_strict_exist_check|bool| | | check the same vector is already inserted or not.<br>the ID should be unique if the value is `true`|
+    |skip_strict_exist_check|bool| | | check the same vector is already inserted or not.<br>the ID should be unique if the value is `true`. |
     |timestamp|int64| | | the timestamp of the vector inserted.<br>if it is N/A, the current time will be used. |
     |filters|Filter.Config| | | configuration for filter |
 
