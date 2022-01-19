@@ -16,6 +16,8 @@
 package logger
 
 import (
+	"os"
+	"os/exec"
 	"reflect"
 	"testing"
 
@@ -613,8 +615,17 @@ func Test_logger_Errorf(t *testing.T) {
 	}
 }
 
-// Fatal(), Fatalf() and Fatalln() is untestable since it calls os.Exit().
 func Test_logger_Fatal(t *testing.T) {
+	if os.Getenv("BE_CRASHER") != "1" {
+		cmd := exec.Command(os.Args[0], "-test.run=Test_logger_Fatal")
+		cmd.Env = append(os.Environ(), "BE_CRASHER=1")
+		err := cmd.Run()
+		if e, ok := err.(*exec.ExitError); ok && !e.Success() {
+			return
+		}
+		t.Fatalf("process ran with err %v, want exit status 1", err)
+	}
+
 	type args struct {
 		args []interface{}
 	}
@@ -635,18 +646,18 @@ func Test_logger_Fatal(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// {
-		// 	name: "fatal log the message",
-		// 	args: args{
-		// 		args: []interface{}{"log message"},
-		// 	},
-		// 	fields: fields{
-		// 		v: 0,
-		// 	},
-		// 	afterFunc: func(a args) {
-		// 		_ = recover()
-		// 	},
-		// },
+		{
+			name: "fatal log the message",
+			args: args{
+				args: []interface{}{"log message"},
+			},
+			fields: fields{
+				v: 0,
+			},
+			afterFunc: func(a args) {
+				_ = recover()
+			},
+		},
 	}
 
 	for _, tc := range tests {
@@ -676,6 +687,16 @@ func Test_logger_Fatal(t *testing.T) {
 }
 
 func Test_logger_Fatalln(t *testing.T) {
+	if os.Getenv("BE_CRASHER") != "1" {
+		cmd := exec.Command(os.Args[0], "-test.run=Test_logger_Fatalln")
+		cmd.Env = append(os.Environ(), "BE_CRASHER=1")
+		err := cmd.Run()
+		if e, ok := err.(*exec.ExitError); ok && !e.Success() {
+			return
+		}
+		t.Fatalf("process ran with err %v, want exit status 1", err)
+	}
+
 	type args struct {
 		args []interface{}
 	}
@@ -696,18 +717,15 @@ func Test_logger_Fatalln(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// {
-		// 	name: "fatalln log the message",
-		// 	args: args{
-		// 		args: []interface{}{"log message"},
-		// 	},
-		// 	fields: fields{
-		// 		v: 0,
-		// 	},
-		// 	afterFunc: func(a args) {
-		// 		_ = recover()
-		// 	},
-		// },
+		{
+			name: "fatalln log the message",
+			args: args{
+				args: []interface{}{"log message"},
+			},
+			fields: fields{
+				v: 0,
+			},
+		},
 	}
 
 	for _, tc := range tests {
@@ -737,6 +755,16 @@ func Test_logger_Fatalln(t *testing.T) {
 }
 
 func Test_logger_Fatalf(t *testing.T) {
+	if os.Getenv("BE_CRASHER") != "1" {
+		cmd := exec.Command(os.Args[0], "-test.run=Test_logger_Fatalf")
+		cmd.Env = append(os.Environ(), "BE_CRASHER=1")
+		err := cmd.Run()
+		if e, ok := err.(*exec.ExitError); ok && !e.Success() {
+			return
+		}
+		t.Fatalf("process ran with err %v, want exit status 1", err)
+	}
+
 	type args struct {
 		format string
 		args   []interface{}
@@ -758,18 +786,18 @@ func Test_logger_Fatalf(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// {
-		// 	name: "fatalf log the message",
-		// 	args: args{
-		// 		args: []interface{}{"log message"},
-		// 	},
-		// 	fields: fields{
-		// 		v: 0,
-		// 	},
-		// 	afterFunc: func(a args) {
-		// 		_ = recover()
-		// 	},
-		// },
+		{
+			name: "fatalf log the message",
+			args: args{
+				args: []interface{}{"log message"},
+			},
+			fields: fields{
+				v: 0,
+			},
+			afterFunc: func(a args) {
+				_ = recover()
+			},
+		},
 	}
 
 	for _, tc := range tests {
