@@ -53,8 +53,8 @@ Inset RPC is the method to add a new single vector.
   - Insert.Config
     |field|type|label|required|desc.|
     |:---:|:---|:---|:---:|:---|
-    |skip_strict_exist_check|bool| | | check the same vector is already inserted or not.<br>the ID should be unique if the value is `true`|
-    |timestamp|int64| | | the timestamp of the vector inserted.<br>if it is N/A, the current time will be used.
+    |skip_strict_exist_check|bool| | | check the same vector is already inserted or not.<br>the ID should be unique if the value is `true`. |
+    |timestamp|int64| | | the timestamp of the vector inserted.<br>if it is N/A, the current time will be used. |
     |filters|Filter.Config| | | configuration for filter |
 
   - Object.Vector
@@ -81,8 +81,8 @@ Inset RPC is the method to add a new single vector.
     |field|type|label|desc.|
     |:---:|:---|:---|:---|
     |name|string| | the name of vald agent pod where the request vector is inserted. |
-    |uuid|string| | the ID of the inserted vector. It is the same as an Object.Vector |
-    |ips|string| repeated(Array[string]) | the ip list of `vald-agent` pods where the request vector is inserted. |
+    |uuid|string| | the ID of the inserted vector. It is the same as an `Object.Vector`. |
+    |ips|string| repeated(Array[string]) | the IP list of `vald-agent` pods where the request vector is inserted. |
 
 ### Status Code
 
@@ -96,7 +96,7 @@ Inset RPC is the method to add a new single vector.
 ## StreamInsert RPC
 
 StreamInsert RPC is the method to add new multiple vectors using the [bidirectional streaming RPC](https://grpc.io/docs/what-is-grpc/core-concepts/#bidirectional-streaming-rpc).<br>
-By using the bidirectional streaming PRC, the insert request can be communicated in any order between client and server.
+By using the bidirectional streaming RPC, the insert request can be communicated in any order between client and server.
 Each Insert request and response are independent.
 It's the recommended method to insert the large amount of vectors.
 
@@ -134,15 +134,15 @@ It's the recommended method to insert the large amount of vectors.
   - Insert.Config
     |field|type|label|required|desc.|
     |:---:|:---|:---|:---:|:---|
-    |skip_strict_exist_check|bool| | | check the same vector is already inserted or not.<br>the ID should be unique if the value is `true`|
-    |timestamp|int64| | | the timestamp of the vector inserted.<br>if it is N/A, the current time will be used.
+    |skip_strict_exist_check|bool| | | check the same vector is already inserted or not.<br>the ID should be unique if the value is `true`. |
+    |timestamp|int64| | | the timestamp of the vector inserted.<br>if it is N/A, the current time will be used. |
     |filters|Filter.Config| | | configuration for filter |
 
   - Object.Vector
     |field|type|label|required|desc.|
     |:---:|:---|:---|:---:|:---|
     |id|string| | \* | the ID of the vector. ID should consist of 1 or more characters. |
-    |vector|float| repeated(Array[float]) | \* | the vector data. its dimension is between 2 and 65,536.|
+    |vector|float| repeated(Array[float]) | \* | the vector data. its dimension is between 2 and 65,536. |
 
 ### Output
 
@@ -168,15 +168,15 @@ It's the recommended method to insert the large amount of vectors.
   - Object.StreamLocation
     |field|type|label|desc.|
     |:---:|:---|:---|:---|
-    |location|Object.Location| | the information of Object.Location data. |
+    |location|Object.Location| | the information of `Object.Location` data. |
     |status|google.rpc.Status| | the status of google RPC. |
 
   - Object.Location
     |field|type|label|desc.|
     |:---:|:---|:---|:---|
     |name|string| | the name of vald agent pod where the request vector is inserted. |
-    |uuid|string| | the ID of the inserted vector. It is the same as an Object.Vector |
-    |ips|string| repeated(Array[string]) | the ip list of `vald-agent` pods where the request vector is inserted. |
+    |uuid|string| | the ID of the inserted vector. It is the same as an `Object.Vector`. |
+    |ips|string| repeated(Array[string]) | the IP list of `vald-agent` pods where the request vector is inserted. |
 
   - [google.rpc.Status](https://github.com/googleapis/googleapis/blob/master/google/rpc/status.proto)
     |field|type|label|desc.|
@@ -196,7 +196,7 @@ It's the recommended method to insert the large amount of vectors.
 
 ## MultiInsert RPC
 
-MultiInsert is the method to add new multiple vectors in **1** request.
+MultiInsert RPC is the method to add new multiple vectors in **1** request.
 
 <div class="card-note">
 gRPC has the message size limitation.<br>
@@ -245,8 +245,8 @@ Please be careful that the size of the request exceed the limit.
   - Insert.Config
     |field|type|label|required|desc.|
     |:---:|:---|:---|:---:|:---|
-    |skip_strict_exist_check|bool| | | check the same vector is already inserted or not.<br>the ID should be unique if the value is `true`|
-    |timestamp|int64| | | the timestamp of the vector inserted.<br>if it is N/A, the current time will be used.
+    |skip_strict_exist_check|bool| | | check the same vector is already inserted or not.<br>the ID should be unique if the value is `true`. |
+    |timestamp|int64| | | the timestamp of the vector inserted.<br>if it is N/A, the current time will be used. |
     |filters|Filter.Config| | | configuration for filter |
 
   - Object.Vector
@@ -274,14 +274,14 @@ Please be careful that the size of the request exceed the limit.
   - Object.Locations
     |field|type|label|desc.|
     |:---:|:---|:---|:---|
-    |location|Object.Location| repeated(Array[Object.Location]) | the list of Object.Location. |
+    |location|Object.Location| repeated(Array[Object.Location]) | the list of `Object.Location`. |
 
   - Object.Location
     |field|type|label|desc.|
     |:---:|:---|:---|:---|
     |name|string| | the name of vald agent pod where the request vector is inserted. |
-    |uuid|string| | the ID of the inserted vector. It is the same as an Object.Vector |
-    |ips|string| repeated(Array[string]) | the ip list of `vald-agent` pods where the request vector is inserted. |
+    |uuid|string| | the ID of the inserted vector. It is the same as an `Object.Vector`. |
+    |ips|string| repeated(Array[string]) | the IP list of `vald-agent` pods where the request vector is inserted. |
 
 ### Status Code
 
