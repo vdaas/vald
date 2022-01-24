@@ -81,7 +81,7 @@ Remove RPC is the method to remove a single vector.
     |:---:|:---|:---|:---|
     |name|string| | the name of vald agent pod where the request vector is removed. |
     |uuid|string| | the ID of the removed vector. It is the same as an `Object.ID`. |
-    |ips|string| repeated(Array[string]) | the IP list of `vald-agent` pods where the request vector is removed |
+    |ips|string| repeated(Array[string]) | the IP list of `vald-agent` pods where the request vector is removed. |
 
 ### Status Code
 
@@ -170,9 +170,9 @@ It's the recommended method to remove the large amount of vectors.
   - Object.Location
     |field|type|label|desc.|
     |:---:|:---|:---|:---|
-    |name|string| | the name of vald agent pod where the request vector is removed |
+    |name|string| | the name of vald agent pod where the request vector is removed. |
     |uuid|string| | the ID of the removed vector. It is the same as an `Object.ID`. |
-    |ips|string| repeated(Array[string]) | the IP list of `vald-agent` pods where the request vector is removed |
+    |ips|string| repeated(Array[string]) | the IP list of `vald-agent` pods where the request vector is removed. |
 
   - [google.rpc.Status](https://github.com/googleapis/googleapis/blob/master/google/rpc/status.proto)
     |field|type|label|desc.|
@@ -273,9 +273,9 @@ Please be careful that the size of the request exceed the limit.
   - Object.Location
     |field|type|label|desc.|
     |:---:|:---|:---|:---|
-    |name|string| | the name of vald agent pod where the request vector is removed |
-    |uuid|string| | the ID of the removed vector. It is the same as an Object.Vector |
-    |ips|string| repeated(Array[string]) | the IP list of `vald-agent` pods where the request vector is removed |
+    |name|string| | the name of vald agent pod where the request vector is removed. |
+    |uuid|string| | the ID of the removed vector. It is the same as an Object.Vector. |
+    |ips|string| repeated(Array[string]) | the IP list of `vald-agent` pods where the request vector is removed. |
 
 ### Status Code
 
