@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pyroscope
+  labels:
+    app.kubernetes.io/name: pyroscope
+    app.kubernetes.io/instance: pyroscope
+    app.kubernetes.io/version: "0.4.1"
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: pyroscope
+      app.kubernetes.io/instance: pyroscope
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        checksum/config: 3c6072792732d5f2705b223544cd8841484aa7cca7a986bc6afb4bb52be2a4b6 
+      labels:
+        app.kubernetes.io/name: pyroscope
+        app.kubernetes.io/instance: pyroscope 
+    spec:
+      serviceAccountName: pyroscope
+      securityContext:
+        fsGroup: 101
+      containers:
+        - name: pyroscope
+          args:
+            - "server"
+            - "-config"
+            - "/tmp/config.yaml"
+          securityContext:
+            {}
+          image: "pyroscope/pyroscope:0.4.1"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: api
+              containerPort: 4040
+              protocol: TCP
+          readinessProbe:
+            initialDelaySeconds: 30
+            periodSeconds: 5
+            timeoutSeconds: 30
+            successThreshold: 1
+            failureThreshold: 3
+            httpGet:
+              path: /healthz
+              port: 4040
+          livenessProbe:
+            initialDelaySeconds: 30
+            periodSeconds: 15
+            timeoutSeconds: 30
+            successThreshold: 1
+            failureThreshold: 3
+            httpGet:
+              path: /healthz
+              port: 4040
+          resources:
+            {}
+          volumeMounts:
+            - name: config 
+              mountPath: /tmp/config.yaml
+              subPath: config.yaml
+      volumes:
+        - name: config
+          configMap:
+            name: pyroscope

@@ -40,7 +40,7 @@ cmd/agent/core/ngt/ngt: \
 	GO111MODULE=on \
 	GOPRIVATE=$(GOPRIVATE) \
 	go build \
-		--ldflags "-s -w -linkmode 'external' \
+		--ldflags "-w -linkmode 'external' \
 		-extldflags '-static -fPIC -pthread -fopenmp -std=gnu++20 -lstdc++ -lm -z relro -z now $(EXTLDFLAGS)' \
 		-X '$(GOPKG)/internal/info.Version=$(VERSION)' \
 		-X '$(GOPKG)/internal/info.GitCommit=$(GIT_COMMIT)' \

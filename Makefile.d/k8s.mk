@@ -364,6 +364,16 @@ k8s/metrics/profefe/deploy:
 k8s/metrics/profefe/delete:
 	kubectl delete -f k8s/metrics/profefe
 
+.PHONY: k8s/metrics/pyroscope/deploy
+## deploy pyroscope
+k8s/metrics/pyroscope/deploy:
+	kubectl apply -f k8s/metrics/pyroscope
+
+.PHONY: k8s/metrics/pyroscope/delete
+## delete pyroscope
+k8s/metrics/pyroscope/delete:
+	kubectl delete -f k8s/metrics/pyroscope
+
 .PHONY: k8s/linkerd/deploy
 ## deploy linkerd to k8s
 k8s/linkerd/deploy:

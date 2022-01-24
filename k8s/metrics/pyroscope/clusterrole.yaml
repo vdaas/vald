@@ -1,0 +1,21 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: pyroscope
+  labels:
+    app.kubernetes.io/name: pyroscope
+    app.kubernetes.io/instance: pyroscope
+    app.kubernetes.io/version: "0.4.1"
+rules:
+- apiGroups: ['']
+  resources:
+    - nodes
+    - services
+    - endpoints
+    - pods
+  verbs: ['get', 'list', 'watch']
+- apiGroups:
+    - networking.k8s.io
+  resources:
+    - ingresses
+  verbs: ['get', 'list', 'watch']

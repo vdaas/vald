@@ -90,7 +90,7 @@ RUN make ngt/install
 COPY .git .
 
 RUN make REPO=${ORG} NAME=${REPO} cmd/${PKG}/${APP_NAME} \
-    && upx ${UPX_OPTIONS} -o "/usr/bin/${APP_NAME}" "cmd/${PKG}/${APP_NAME}"
+    && mv "cmd/${PKG}/${APP_NAME}" "/usr/bin/${APP_NAME}"
 
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/cmd/${PKG}
 RUN cp sample.yaml /tmp/config.yaml
