@@ -53,8 +53,8 @@ Update RPC is the method to update a single vector.
   - Update.Config
     |field|type|label|required|desc.|
     |:---:|:---|:---|:---:|:---|
-    |skip_strict_exist_check|bool| | | check the same vector is already inserted or not.<br>the ID should be unique if the value is `true`|
-    |timestamp|int64| | | the timestamp of the vector updated.<br>if it is N/A, the current time will be used.
+    |skip_strict_exist_check|bool| | | check the same vector is already inserted or not.<br>the ID should be unique if the value is `true`. |
+    |timestamp|int64| | | the timestamp of the vector updated.<br>if it is N/A, the current time will be used. |
     |filters|Filter.Config| | | configuration for filter |
 
   - Object.Vector
@@ -81,8 +81,8 @@ Update RPC is the method to update a single vector.
     |field|type|label|desc.|
     |:---:|:---|:---|:---|
     |name|string| | the name of vald agent pod where the request vector is updated. |
-    |uuid|string| | the ID of the updated vector. It is the same as an Object.Vector |
-    |ips|string| repeated(Array[string]) | the ip list of `vald-agent` pods where the request vector is updated. |
+    |uuid|string| | the ID of the updated vector. It is the same as an `Object.Vector`. |
+    |ips|string| repeated(Array[string]) | the IP list of `vald-agent` pods where the request vector is updated. |
 
 ### Status Code
 
@@ -96,7 +96,7 @@ Update RPC is the method to update a single vector.
 ## StreamUpdate RPC
 
 StreamUpdate RPC is the method to update multiple vectors using the [bidirectional streaming RPC](https://grpc.io/docs/what-is-grpc/core-concepts/#bidirectional-streaming-rpc).<br>
-By using the bidirectional streaming PRC, the update request can be communicated in any order between client and server.
+By using the bidirectional streaming RPC, the update request can be communicated in any order between client and server.
 Each Update request and response are independent.
 It's the recommended method to update the large amount of vectors.
 
@@ -134,15 +134,15 @@ It's the recommended method to update the large amount of vectors.
   - Update.Config
     |field|type|label|required|desc.|
     |:---:|:---|:---|:---:|:---|
-    |skip_strict_exist_check|bool| | | check the same vector is already inserted or not.<br>the ID should be unique if the value is `true`|
-    |timestamp|int64| | | the timestamp of the vector updated.<br>if it is N/A, the current time will be used.
+    |skip_strict_exist_check|bool| | | check the same vector is already inserted or not.<br>the ID should be unique if the value is `true`. |
+    |timestamp|int64| | | the timestamp of the vector updated.<br>if it is N/A, the current time will be used. |
     |filters|Filter.Config| | | configuration for filter |
 
   - Object.Vector
     |field|type|label|required|desc.|
     |:---:|:---|:---|:---:|:---|
     |id|string| | \* | the ID of the vector. ID should consist of 1 or more characters. |
-    |vector|float| repeated(Array[float]) | \* | the vector data. its dimension is between 2 and 65,536.|
+    |vector|float| repeated(Array[float]) | \* | the vector data. its dimension is between 2 and 65,536. |
 
 ### Output
 
@@ -175,8 +175,8 @@ It's the recommended method to update the large amount of vectors.
     |field|type|label|desc.|
     |:---:|:---|:---|:---|
     |name|string| | the name of vald agent pod where the request vector is updated. |
-    |uuid|string| | the ID of the exists vector. It is the same as an Object.Vector |
-    |ips|string| repeated(Array[string]) | the ip list of `vald-agent` pods where the request vector is inserted. |
+    |uuid|string| | the ID of the exists vector. It is the same as an `Object.Vector`. |
+    |ips|string| repeated(Array[string]) | the IP list of `vald-agent` pods where the request vector is inserted. |
 
   - [google.rpc.Status](https://github.com/googleapis/googleapis/blob/master/google/rpc/status.proto)
     |field|type|label|desc.|
@@ -245,8 +245,8 @@ Please be careful that the size of the request exceed the limit.
   - Update.Config
     |field|type|label|required|desc.|
     |:---:|:---|:---|:---:|:---|
-    |skip_strict_exist_check|bool| | | check the same vector is already inserted or not.<br>the ID should be unique if the value is `true`|
-    |timestamp|int64| | | the timestamp of the vector updated.<br>if it is N/A, the current time will be used.
+    |skip_strict_exist_check|bool| | | check the same vector is already inserted or not.<br>the ID should be unique if the value is `true`. |
+    |timestamp|int64| | | the timestamp of the vector updated.<br>if it is N/A, the current time will be used. |
     |filters|Filter.Config| | | configuration for filter |
 
   - Object.Vector
@@ -274,13 +274,13 @@ Please be careful that the size of the request exceed the limit.
   - Object.Locations
     |field|type|label|desc.|
     |:---:|:---|:---|:---|
-    |location|Object.Location| repeated(Array[Object.Location]) | the list of Object.Location. |
+    |location|Object.Location| repeated(Array[Object.Location]) | the list of `Object.Location`. |
 
   - Object.Location
     |field|type|label|desc.|
     |:---:|:---|:---|:---|
     |name|string| | the name of vald agent pod where the request vector is updated. |
-    |uuid|string| | the ID of the updated vector. It is the same as an Object.Vector |
+    |uuid|string| | the ID of the updated vector. It is the same as an `Object.Vector`. |
     |ips|string| repeated(Array[string]) | the ip list of `vald-agent` pods where the request vector is updated. |
 
 ### Status Code
