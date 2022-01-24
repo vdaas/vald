@@ -164,7 +164,7 @@ It's the recommended method to remove the large amount of vectors.
   - Object.StreamLocation
     |field|type|label|desc.|
     |:---:|:---|:---|:---|
-    |location|Object.Location| | the information of Object.Location data. |
+    |location|Object.Location| | the information of `Object.Location` data. |
     |status|google.rpc.Status| | the status of google RPC |
 
   - Object.Location
@@ -268,13 +268,13 @@ Please be careful that the size of the request exceed the limit.
   - Object.Locations
     |field|type|label|desc.|
     |:---:|:---|:---|:---|
-    |location|Object.Location| repeated(Array[Object.Location]) | the list of Object.Location. |
+    |location|Object.Location| repeated(Array[Object.Location]) | the list of `Object.Location`. |
 
   - Object.Location
     |field|type|label|desc.|
     |:---:|:---|:---|:---|
     |name|string| | the name of vald agent pod where the request vector is removed. |
-    |uuid|string| | the ID of the removed vector. It is the same as an Object.Vector. |
+    |uuid|string| | the ID of the removed vector. It is the same as an `Object.Vector`. |
     |ips|string| repeated(Array[string]) | the IP list of `vald-agent` pods where the request vector is removed. |
 
 ### Status Code
