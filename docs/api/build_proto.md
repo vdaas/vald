@@ -137,7 +137,7 @@ There are many tools for building proto in Rust, we use [tonic](https://github.c
 
 1.  Implement `build.rs` and Build proto
 
-    1. `builde.rs`
+    1. `build.rs`
 
        ```rust
        fn main() -> Result<(), Box<dyn std::error::Error>> {
