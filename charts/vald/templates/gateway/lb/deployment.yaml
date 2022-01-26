@@ -58,6 +58,14 @@ spec:
         {{- if $gateway.podAnnotations }}
         {{- toYaml $gateway.podAnnotations | nindent 8 }}
         {{- end }}
+        {{- $pprof := $gateway.server_config.metrics.pprof }}
+        {{- if $pprof.enabled }}
+        pyroscope.io/scrape: "true"
+        pyroscope.io/application-name: {{ $gateway.name }}
+        pyroscope.io/profile-cpu-enabled: "true"
+        pyroscope.io/profile-mem-enabled: "true"
+        pyroscope.io/port: {{ $pprof.port }}
+        {{- end }}
     spec:
       {{- if $gateway.initContainers }}
       initContainers:

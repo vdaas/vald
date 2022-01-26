@@ -48,10 +48,18 @@ spec:
         app.kubernetes.io/name: {{ include "vald.name" . }}
         app.kubernetes.io/instance: {{ .Release.Name }}
         app.kubernetes.io/component: agent
-      {{- if or $agent.podAnnotations $agent.sidecar.enabled }}
+      {{- $pprof := $agent.server_config.metrics.pprof }}
+      {{- if or $agent.podAnnotations $agent.sidecar.enabled $pprof.enabled }}
       annotations:
         {{- if $agent.podAnnotations }}
         {{- toYaml $agent.podAnnotations | nindent 8 }}
+        {{- end }}
+        {{- if $pprof.enabled }}
+        pyroscope.io/scrape: "true"
+        pyroscope.io/application-name: {{ $agent.name }}
+        pyroscope.io/profile-cpu-enabled: "true"
+        pyroscope.io/profile-mem-enabled: "true"
+        pyroscope.io/port: {{ $pprof.port }}
         {{- end }}
         {{- if $agent.sidecar.enabled }}
         checksum/configmap: {{ include (print $.Template.BasePath "/agent/configmap.yaml") . | sha256sum }}
