@@ -53,7 +53,7 @@ spec:
         app.kubernetes.io/name: {{ include "vald.name" . }}
         app.kubernetes.io/instance: {{ .Release.Name }}
         app.kubernetes.io/component: agent
-      {{- $pprof := $agent.server_config.metrics.pprof }}
+      {{- $pprof := default .Values.defaults.server_config.metrics.pprof $agent.server_config.metrics.pprof }}
       {{- if or $agent.podAnnotations $agent.sidecar.enabled $pprof.enabled }}
       annotations:
         {{- if $agent.podAnnotations }}

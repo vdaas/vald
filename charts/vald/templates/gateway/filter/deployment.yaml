@@ -58,7 +58,7 @@ spec:
         {{- if $gateway.podAnnotations }}
         {{- toYaml $gateway.podAnnotations | nindent 8 }}
         {{- end }}
-        {{- $pprof := $gateway.server_config.metrics.pprof }}
+        {{- $pprof := default .Values.defaults.server_config.metrics.pprof $gateway.server_config.metrics.pprof }}
         {{- if $pprof.enabled }}
         pyroscope.io/scrape: "true"
         pyroscope.io/application-name: {{ $gateway.name }}
