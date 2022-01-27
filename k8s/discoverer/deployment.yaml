@@ -1,4 +1,5 @@
 ---
+# Source: vald/templates/discoverer/deployment.yaml
 #
 # Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
 #
@@ -23,7 +24,7 @@ metadata:
     app.kubernetes.io/name: vald
     helm.sh/chart: vald-v1.3.1
     app.kubernetes.io/managed-by: Helm
-    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/instance: release-name
     app.kubernetes.io/version: v1.3.1
     app.kubernetes.io/component: discoverer
 spec:
@@ -44,13 +45,18 @@ spec:
       labels:
         app: vald-discoverer
         app.kubernetes.io/name: vald
-        app.kubernetes.io/instance: RELEASE-NAME
+        app.kubernetes.io/instance: release-name
         app.kubernetes.io/component: discoverer
       annotations:
-        checksum/configmap: 6667259a11ad94b56bdc5f789e9883cc76927291b2225f4d0359ea789d98af2b
+        checksum/configmap: 1dc0d9ef99966824f6546d60dfff4aa0fababd3bcf925c53c5d2908287804457
         profefe.com/enable: "true"
         profefe.com/port: "6060"
         profefe.com/service: vald-discoverer
+        pyroscope.io/scrape: "true"
+        pyroscope.io/application-name: vald-discoverer
+        pyroscope.io/profile-cpu-enabled: "true"
+        pyroscope.io/profile-mem-enabled: "true"
+        pyroscope.io/port: "6060"
     spec:
       affinity:
         nodeAffinity:
@@ -63,10 +69,10 @@ spec:
             - podAffinityTerm:
                 labelSelector:
                   matchExpressions:
-                    - key: app
-                      operator: In
-                      values:
-                        - vald-discoverer
+                  - key: app
+                    operator: In
+                    values:
+                    - vald-discoverer
                 topologyKey: kubernetes.io/hostname
               weight: 100
           requiredDuringSchedulingIgnoredDuringExecution: []
@@ -130,7 +136,7 @@ spec:
             allowPrivilegeEscalation: false
             capabilities:
               drop:
-                - ALL
+              - ALL
             privileged: false
             readOnlyRootFilesystem: true
             runAsGroup: 65532
