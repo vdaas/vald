@@ -1,5 +1,4 @@
 ---
-# Source: vald/templates/agent/statefulset.yaml
 #
 # Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
 #
@@ -24,7 +23,7 @@ metadata:
     app.kubernetes.io/name: vald
     helm.sh/chart: vald-v1.3.1
     app.kubernetes.io/managed-by: Helm
-    app.kubernetes.io/instance: release-name
+    app.kubernetes.io/instance: RELEASE-NAME
     app.kubernetes.io/version: v1.3.1
     app.kubernetes.io/component: agent
 spec:
@@ -45,17 +44,12 @@ spec:
       labels:
         app: vald-agent-ngt
         app.kubernetes.io/name: vald
-        app.kubernetes.io/instance: release-name
+        app.kubernetes.io/instance: RELEASE-NAME
         app.kubernetes.io/component: agent
       annotations:
         profefe.com/enable: "true"
         profefe.com/port: "6060"
         profefe.com/service: vald-agent-ngt
-        pyroscope.io/scrape: "true"
-        pyroscope.io/application-name: vald-agent-ngt
-        pyroscope.io/profile-cpu-enabled: "true"
-        pyroscope.io/profile-mem-enabled: "true"
-        pyroscope.io/port: "6060"
     spec:
       affinity:
         nodeAffinity:
@@ -68,10 +62,10 @@ spec:
             - podAffinityTerm:
                 labelSelector:
                   matchExpressions:
-                  - key: app
-                    operator: In
-                    values:
-                    - vald-agent-ngt
+                    - key: app
+                      operator: In
+                      values:
+                        - vald-agent-ngt
                 topologyKey: kubernetes.io/hostname
               weight: 100
           requiredDuringSchedulingIgnoredDuringExecution: []
@@ -132,7 +126,7 @@ spec:
             allowPrivilegeEscalation: false
             capabilities:
               drop:
-              - ALL
+                - ALL
             privileged: false
             readOnlyRootFilesystem: false
             runAsGroup: 65532

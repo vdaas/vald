@@ -1,5 +1,4 @@
 ---
-# Source: vald/templates/manager/index/priorityclass.yaml
 #
 # Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
 #
@@ -23,7 +22,7 @@ metadata:
     app.kubernetes.io/name: vald
     helm.sh/chart: vald-v1.3.1
     app.kubernetes.io/managed-by: Helm
-    app.kubernetes.io/instance: release-name
+    app.kubernetes.io/instance: RELEASE-NAME
     app.kubernetes.io/version: v1.3.1
     app.kubernetes.io/component: manager-index
 value: 1e+06
