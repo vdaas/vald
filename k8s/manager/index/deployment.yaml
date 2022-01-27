@@ -47,10 +47,15 @@ spec:
         app.kubernetes.io/instance: RELEASE-NAME
         app.kubernetes.io/component: manager-index
       annotations:
-        checksum/configmap: d149134765d4c7ff7d0dcb3b4736bfd1bd5603663e8e1c443b4fa94275ff029d
+        checksum/configmap: 957e28b56696a3322f027d79ad0472409e73f8ee6520b413a3afff4d2b982866
         profefe.com/enable: "true"
         profefe.com/port: "6060"
         profefe.com/service: vald-manager-index
+        pyroscope.io/scrape: "true"
+        pyroscope.io/application-name: vald-manager-index
+        pyroscope.io/profile-cpu-enabled: "true"
+        pyroscope.io/profile-mem-enabled: "true"
+        pyroscope.io/port: "6060"
     spec:
       initContainers:
         - name: wait-for-agent

@@ -46,10 +46,15 @@ spec:
         app.kubernetes.io/instance: RELEASE-NAME
         app.kubernetes.io/component: gateway-lb
       annotations:
-        checksum/configmap: 2b1668c4f5e78c7a140f937596c5d5dbdbda1325606fead449c5640ecce8d982
+        checksum/configmap: 4f1710d79fc9c31a00220e45cbd585cf1a8c94b7c92141075d62b7c234575a3f
         profefe.com/enable: "true"
         profefe.com/port: "6060"
         profefe.com/service: vald-lb-gateway
+        pyroscope.io/scrape: "true"
+        pyroscope.io/application-name: vald-lb-gateway
+        pyroscope.io/profile-cpu-enabled: "true"
+        pyroscope.io/profile-mem-enabled: "true"
+        pyroscope.io/port: "6060"
     spec:
       initContainers:
         - name: wait-for-discoverer

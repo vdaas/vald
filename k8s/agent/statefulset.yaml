@@ -50,6 +50,11 @@ spec:
         profefe.com/enable: "true"
         profefe.com/port: "6060"
         profefe.com/service: vald-agent-ngt
+        pyroscope.io/scrape: "true"
+        pyroscope.io/application-name: vald-agent-ngt
+        pyroscope.io/profile-cpu-enabled: "true"
+        pyroscope.io/profile-mem-enabled: "true"
+        pyroscope.io/port: "6060"
     spec:
       affinity:
         nodeAffinity:
