@@ -70,7 +70,7 @@ cmd/agent/sidecar/sidecar: \
 	GO111MODULE=on \
 	GOPRIVATE=$(GOPRIVATE) \
 	go build \
-		--ldflags "-s -w -extldflags=-static \
+		--ldflags "-w -extldflags=-static \
 		-X '$(GOPKG)/internal/info.Version=$(VERSION)' \
 		-X '$(GOPKG)/internal/info.GitCommit=$(GIT_COMMIT)' \
 		-X '$(GOPKG)/internal/info.BuildTime=$(DATETIME)' \
@@ -98,7 +98,7 @@ cmd/discoverer/k8s/discoverer: \
 	GO111MODULE=on \
 	GOPRIVATE=$(GOPRIVATE) \
 	go build \
-		--ldflags "-s -w -extldflags=-static \
+		--ldflags "-w -extldflags=-static \
 		-X '$(GOPKG)/internal/info.Version=$(VERSION)' \
 		-X '$(GOPKG)/internal/info.GitCommit=$(GIT_COMMIT)' \
 		-X '$(GOPKG)/internal/info.BuildTime=$(DATETIME)' \
@@ -126,7 +126,7 @@ cmd/gateway/lb/lb: \
 	GO111MODULE=on \
 	GOPRIVATE=$(GOPRIVATE) \
 	go build \
-		--ldflags "-s -w -extldflags=-static \
+		--ldflags "-w -extldflags=-static \
 		-X '$(GOPKG)/internal/info.Version=$(VERSION)' \
 		-X '$(GOPKG)/internal/info.GitCommit=$(GIT_COMMIT)' \
 		-X '$(GOPKG)/internal/info.BuildTime=$(DATETIME)' \
@@ -154,7 +154,7 @@ cmd/gateway/filter/filter: \
 	GO111MODULE=on \
 	GOPRIVATE=$(GOPRIVATE) \
 	go build \
-		--ldflags "-s -w -extldflags=-static \
+		--ldflags "-w -extldflags=-static \
 		-X '$(GOPKG)/internal/info.Version=$(VERSION)' \
 		-X '$(GOPKG)/internal/info.GitCommit=$(GIT_COMMIT)' \
 		-X '$(GOPKG)/internal/info.BuildTime=$(DATETIME)' \
@@ -182,7 +182,7 @@ cmd/manager/index/index: \
 	GO111MODULE=on \
 	GOPRIVATE=$(GOPRIVATE) \
 	go build \
-		--ldflags "-s -w -extldflags=-static \
+		--ldflags "-w -extldflags=-static \
 		-X '$(GOPKG)/internal/info.Version=$(VERSION)' \
 		-X '$(GOPKG)/internal/info.GitCommit=$(GIT_COMMIT)' \
 		-X '$(GOPKG)/internal/info.BuildTime=$(DATETIME)' \
@@ -216,7 +216,7 @@ cmd/filter/ingress/tensorflow/tensorflow: \
 	GO111MODULE=on \
 	GOPRIVATE=$(GOPRIVATE) \
 	go build \
-		--ldflags "-s -w \
+		--ldflags "-w \
 		-extldflags '-pthread -fopenmp -std=gnu++2a -lstdc++ -lm $(EXTLDFLAGS)' \
 		-X '$(GOPKG)/internal/info.Version=$(VERSION)' \
 		-X '$(GOPKG)/internal/info.GitCommit=$(GIT_COMMIT)' \
