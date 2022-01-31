@@ -9,7 +9,7 @@ Vald provides [the official client libraries](../user-guides/sdks.md), if you ca
 ## Target proto files
 
 Vald defines proto file for each API.
-Let's to check the below table.
+Let's check the below table for the details.
 
 | API service name |                                           proto                                           |                                                                                              dependencies                                                                                               | usage                                                              |
 | :--------------: | :---------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :----------------------------------------------------------------- |
@@ -20,7 +20,7 @@ Let's to check the below table.
 |      Remove      | [remove.proto](https://github.com/vdaas/vald/blob/master/apis/proto/v1/vald/remove.proto) | [payload.proto](https://github.com/vdaas/vald/blob/master/apis/proto/v1/payload/payload.proto)<br>[annotation.proto](https://github.com/googleapis/googleapis/blob/master/google/api/annotations.proto) | Remove stored vectors from Vald Agent                              |
 |      Object      | [object.proto](https://github.com/vdaas/vald/blob/master/apis/proto/v1/vald/object.proto) | [payload.proto](https://github.com/vdaas/vald/blob/master/apis/proto/v1/payload/payload.proto)<br>[annotation.proto](https://github.com/googleapis/googleapis/blob/master/google/api/annotations.proto) | Get object information of vector stored in Vald Agent              |
 
-## How to build proto
+## How to build protobuf
 
 ### The way to build proto file
 
