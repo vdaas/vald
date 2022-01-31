@@ -2,7 +2,7 @@
 
 This page shows how to build gRPC proto file for calling API to your Vald Cluster.
 
-<div class="information">
+<div class="notice">
 Vald provides [the official client libraries](../user-guides/sdks.md), if you can use one of SDKs we recommend to use it.
 </div>
 
@@ -26,7 +26,7 @@ Let's check the below table for the details.
 
 Let's build proto files using your favorite programming language.
 
-There are 3 steps to build api protos:
+There are 3 steps to build api proto:
 
 1. Install gRPC tools
 
