@@ -1,0 +1,71 @@
+#
+# Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pyroscope
+  labels:
+    app.kubernetes.io/name: pyroscope
+    app.kubernetes.io/instance: pyroscope
+    app.kubernetes.io/version: "0.4.1"
+data:
+  config.yaml: |
+    log-level: debug
+    scrape-configs:
+    - enabled-profiles:
+      - cpu
+      - mem
+      job-name: kubernetes-pods
+      kubernetes-sd-configs:
+      - role: pod
+      relabel-configs:
+      - action: keep
+        regex: true
+        source-labels:
+        - __meta_kubernetes_pod_annotation_pyroscope_io_scrape
+      - action: replace
+        source-labels:
+        - __meta_kubernetes_pod_annotation_pyroscope_io_application_name
+        target-label: __name__
+      - action: replace
+        regex: (https?)
+        source-labels:
+        - __meta_kubernetes_pod_annotation_pyroscope_io_scheme
+        target-label: __scheme__
+      - action: replace
+        regex: ([^:]+)(?::\d+)?;(\d+)
+        replacement: $1:$2
+        source-labels:
+        - __address__
+        - __meta_kubernetes_pod_annotation_pyroscope_io_port
+        target-label: __address__
+      - action: labelmap
+        regex: __meta_kubernetes_pod_label_(.+)
+      - action: replace
+        source-labels:
+        - __meta_kubernetes_namespace
+        target-label: kubernetes_namespace
+      - action: replace
+        source-labels:
+        - __meta_kubernetes_pod_name
+        target-label: kubernetes_pod_name
+      - action: drop
+        regex: Pending|Succeeded|Failed|Completed
+        source-labels:
+        - __meta_kubernetes_pod_phase
+      - action: labelmap
+        regex: __meta_kubernetes_pod_annotation_pyroscope_io_profile_(.+)
+        replacement: __profile_$1

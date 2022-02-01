@@ -47,10 +47,15 @@ spec:
         app.kubernetes.io/instance: RELEASE-NAME
         app.kubernetes.io/component: discoverer
       annotations:
-        checksum/configmap: 6667259a11ad94b56bdc5f789e9883cc76927291b2225f4d0359ea789d98af2b
+        checksum/configmap: 1dc0d9ef99966824f6546d60dfff4aa0fababd3bcf925c53c5d2908287804457
         profefe.com/enable: "true"
         profefe.com/port: "6060"
         profefe.com/service: vald-discoverer
+        pyroscope.io/scrape: "true"
+        pyroscope.io/application-name: vald-discoverer
+        pyroscope.io/profile-cpu-enabled: "true"
+        pyroscope.io/profile-mem-enabled: "true"
+        pyroscope.io/port: "6060"
     spec:
       affinity:
         nodeAffinity:
