@@ -387,6 +387,7 @@ If you are interested in, please refer to [SDKs](../user-guides/sdks.md).<br>
                       Num: 10,
                       Radius: -1,
                       Epsilon: 0.1,
+                      Timeout: 100000000,
                   }
               }
               if err != nil {
