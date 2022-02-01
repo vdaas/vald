@@ -359,17 +359,21 @@ func Test_watch_Start(t *testing.T) {
 			}
 		}
 	}
+	defaultWatcher := func(t *testing.T) (*fsnotify.Watcher, string) {
+		tmpDir, err := os.MkdirTemp("", "")
+		if err != nil {
+			t.Error(err)
+		}
+		w, err := fsnotify.NewWatcher()
+		if err != nil {
+			t.Fatal(err)
+		}
+		return w, tmpDir
+	}
 	tests := []test{
 		func() test {
 			ctx, cancel := context.WithCancel(context.Background())
-			tmpDir, err := os.MkdirTemp("", "")
-			if err != nil {
-				t.Error(err)
-			}
-			w, err := fsnotify.NewWatcher()
-			if err != nil {
-				t.Fatal(err)
-			}
+			w, tmpDir := defaultWatcher(t)
 			w.Add(tmpDir)
 
 			return test{
@@ -417,16 +421,7 @@ func Test_watch_Start(t *testing.T) {
 		}(),
 		func() test {
 			ctx, cancel := context.WithCancel(context.Background())
-			tmpDir, err := os.MkdirTemp("", "")
-			if err != nil {
-				t.Error(err)
-			}
-			os.Create(tmpDir + "/watch.go")
-
-			w, err := fsnotify.NewWatcher()
-			if err != nil {
-				t.Fatal(err)
-			}
+			w, tmpDir := defaultWatcher(t)
 			w.Add(tmpDir)
 
 			return test{
@@ -467,14 +462,7 @@ func Test_watch_Start(t *testing.T) {
 		}(),
 		func() test {
 			ctx, cancel := context.WithCancel(context.Background())
-			tmpDir, err := os.MkdirTemp("", "")
-			if err != nil {
-				t.Error(err)
-			}
-			w, err := fsnotify.NewWatcher()
-			if err != nil {
-				t.Fatal(err)
-			}
+			w, tmpDir := defaultWatcher(t)
 			w.Add(tmpDir)
 
 			return test{
@@ -515,14 +503,7 @@ func Test_watch_Start(t *testing.T) {
 		}(),
 		func() test {
 			ctx, cancel := context.WithCancel(context.Background())
-			tmpDir, err := os.MkdirTemp("", "")
-			if err != nil {
-				t.Error(err)
-			}
-			w, err := fsnotify.NewWatcher()
-			if err != nil {
-				t.Fatal(err)
-			}
+			w, tmpDir := defaultWatcher(t)
 			os.Create(tmpDir + "/watch.go")
 			w.Add(tmpDir)
 
@@ -567,14 +548,7 @@ func Test_watch_Start(t *testing.T) {
 
 		func() test {
 			ctx, cancel := context.WithCancel(context.Background())
-			tmpDir, err := os.MkdirTemp("", "")
-			if err != nil {
-				t.Error(err)
-			}
-			w, err := fsnotify.NewWatcher()
-			if err != nil {
-				t.Fatal(err)
-			}
+			w, tmpDir := defaultWatcher(t)
 			os.Create(tmpDir + "/watch.go")
 			w.Add(tmpDir)
 
@@ -618,14 +592,7 @@ func Test_watch_Start(t *testing.T) {
 		}(),
 		func() test {
 			ctx, cancel := context.WithCancel(context.Background())
-			tmpDir, err := os.MkdirTemp("", "")
-			if err != nil {
-				t.Error(err)
-			}
-			w, err := fsnotify.NewWatcher()
-			if err != nil {
-				t.Fatal(err)
-			}
+			w, tmpDir := defaultWatcher(t)
 			os.Create(tmpDir + "/watch.go")
 			w.Add(tmpDir)
 
