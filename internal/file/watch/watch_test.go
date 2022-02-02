@@ -340,6 +340,8 @@ func Test_watch_Start(t *testing.T) {
 		}
 	}
 	defaultWatcher := func(t *testing.T) (*fsnotify.Watcher, string) {
+		t.Helper()
+
 		tmpDir, err := os.MkdirTemp("", "")
 		if err != nil {
 			t.Error(err)
