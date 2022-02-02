@@ -150,6 +150,7 @@ There are many tools for building proto in Rust, we use [tonic](https://github.c
 
            tonic_build::configure()
                .build_client(true)
+               .out_dir("./src/proto")
                .compile(
                    &[
                        insert_proto,
@@ -172,6 +173,21 @@ There are many tools for building proto in Rust, we use [tonic](https://github.c
        $ cargo build
        ```
 
+1.  Edit `Cargo.toml`
+
+    ```bash
+    $ cd vald-grpc
+    $ vim Cargo.toml
+    ---
+    [package]
+    ...
+
+    [[bin]]
+    name = "client"
+    path = "src/client.rs"
+    ...
+    ```
+
 1.  Implement code using client
 
     1.  `lib.rs`
@@ -181,25 +197,25 @@ There are many tools for building proto in Rust, we use [tonic](https://github.c
         ```rust
         pub mod vald {
             pub mod v1 {
-                tonic::include_proto!("vald.v1");
+                include!("./proto/vald.v1.rs");
             }
         }
 
         pub mod payload {
             pub mod v1 {
-                tonic::include_proto!("payload.v1");
+                include!("./proto/payload.v1.rs");
             }
         }
 
         pub mod google {
             pub mod rpc {
-                tonic::include_proto!("google.rpc");
+                include!("./proto/google.rpc.rs");
             }
             pub mod api {
-                tonic::include_proto!("google.api");
+                include!("./proto/google.api.rs");
             }
             pub mod protobuf {
-                tonic::include_proto!("google.protobuf");
+                include!("./proto/google.protobuf.rs");
             }
         }
         ```
@@ -336,6 +352,14 @@ There are many tools for building proto in Rust, we use [tonic](https://github.c
             Ok(())
         }
         ```
+
+1.  Build
+
+    Build implemented codes before running example code.
+
+    ```bash
+    $ cargo build
+    ```
 
 1.  Running example
 
