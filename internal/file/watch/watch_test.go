@@ -80,12 +80,6 @@ func TestNew(t *testing.T) {
 			if err != nil {
 				t.Error(err)
 			}
-			if watch, ok := w.(*watch); ok {
-				err := watch.w.Close()
-				if err != nil {
-					t.Error(err)
-				}
-			}
 		}
 	}
 	tests := []test{
@@ -342,12 +336,6 @@ func Test_watch_Start(t *testing.T) {
 			err := w.Stop(context.Background())
 			if err != nil {
 				t.Error(err)
-			}
-			if watch, ok := w.(*watch); ok {
-				err := watch.w.Close()
-				if err != nil {
-					t.Error(err)
-				}
 			}
 		}
 	}
@@ -717,12 +705,6 @@ func Test_watch_Add(t *testing.T) {
 			if err != nil {
 				t.Error(err)
 			}
-			if watch, ok := w.(*watch); ok {
-				err := watch.w.Close()
-				if err != nil {
-					t.Error(err)
-				}
-			}
 		}
 	}
 	tests := []test{
@@ -896,12 +878,6 @@ func Test_watch_Remove(t *testing.T) {
 			if err != nil {
 				t.Error(err)
 			}
-			if watch, ok := w.(*watch); ok {
-				err := watch.w.Close()
-				if err != nil {
-					t.Error(err)
-				}
-			}
 		}
 	}
 	tests := []test{
@@ -1066,12 +1042,6 @@ func Test_watch_Stop(t *testing.T) {
 			err := w.Stop(context.Background())
 			if err != nil {
 				t.Error(err)
-			}
-			if watch, ok := w.(*watch); ok {
-				err := watch.w.Close()
-				if err != nil {
-					t.Error(err)
-				}
 			}
 		}
 	}
