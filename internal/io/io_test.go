@@ -503,7 +503,7 @@ type nopWriteCloser struct {
 	*bytes.Buffer
 }
 
-func (w *nopWriteCloser) Close() error {
+func (*nopWriteCloser) Close() error {
 	return nil
 }
 

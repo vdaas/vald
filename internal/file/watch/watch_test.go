@@ -177,14 +177,6 @@ func Test_watch_init(t *testing.T) {
 		if err != nil {
 			t.Error(err)
 		}
-		if watch, ok := w.(*watch); ok {
-			if watch.w != nil {
-				err := watch.w.Close()
-				if err != nil {
-					t.Error(err)
-				}
-			}
-		}
 	}
 	tests := []test{
 		{

@@ -330,7 +330,7 @@ type runtimeErr struct {
 	err error
 }
 
-func (e runtimeErr) RuntimeError() {}
+func (runtimeErr) RuntimeError() {}
 func (e runtimeErr) Error() string {
 	return e.err.Error()
 }
