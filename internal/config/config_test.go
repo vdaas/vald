@@ -866,7 +866,7 @@ func TestRead(t *testing.T) {
 				},
 				want: want{
 					want: cfg,
-					err:  errors.New("readObjectStart: expect { or n, but found t, error found in #1 byte of ...|timezone\n:|..., bigger context ...|timezone\n:|..."),
+					err:  errors.New("invalid character 't' looking for beginning of value"),
 				},
 			}
 		}(),

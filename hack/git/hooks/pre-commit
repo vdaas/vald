@@ -31,6 +31,11 @@ if git diff HEAD^ --name-only | grep ".go$" > /dev/null; then
     echo "gofumpt finished."
 
     # goimports
+    echo "Run strictgoimports..."
+    find ./ -type d -name .git -prune -o -type f -regex '.*\.go' -print | xargs strictgoimports -w
+    echo "strictgoimports finished."
+
+    # goimports
     echo "Run goimports..."
     find ./ -type d -name .git -prune -o -type f -regex '.*\.go' -print | xargs goimports -w
     echo "goimports finished."

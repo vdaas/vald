@@ -19,7 +19,6 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log/format"
 	"github.com/vdaas/vald/internal/log/level"
-
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )

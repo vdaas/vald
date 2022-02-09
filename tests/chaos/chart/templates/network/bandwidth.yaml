@@ -22,7 +22,7 @@ metadata:
 spec:
   action: bandwidth
   mode: one
-  duration: {{ .Values.networkChaos.bandwidth.duration }}
+  # duration: {{ .Values.networkChaos.bandwidth.duration }}
   bandwidth:
     rate: {{ .Values.networkChaos.bandwidth.rate }}
     limit: {{ .Values.networkChaos.bandwidth.limit }}
@@ -31,6 +31,4 @@ spec:
     minburst: {{ .Values.networkChaos.bandwidth.minburst }}
   selector:
     {{- toYaml .Values.networkChaos.bandwidth.selector | nindent 4 }}
-  scheduler:
-    cron: "{{ .Values.networkChaos.bandwidth.cron }}"
 {{- end }}

@@ -22,9 +22,11 @@ metadata:
 spec:
   action: pod-kill
   mode: one
-  value: ''
   selector:
-    {{- toYaml .Values.podChaos.kill.selector | nindent 4 }}
-  scheduler:
-    cron: "{{ .Values.podChaos.kill.cron }}"
+    labelSelectors:
+      app.kubernetes.io/name: "{{ .Values.podChaos.kill.selector.labelSelectors.name }}"
+      app.kubernetes.io/component: "{{ .Values.podChaos.kill.selector.labelSelectors.component }}"
+    namespaces:
+      {{- toYaml .Values.podChaos.kill.selector.namespaces | nindent 6 }}
+  duration: "{{ .Values.podChaos.kill.duration }}"
 {{- end }}

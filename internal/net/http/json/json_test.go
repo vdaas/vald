@@ -581,7 +581,7 @@ func TestEncodeRequest(t *testing.T) {
 		afterFunc  func(args)
 	}
 	defaultCheckFunc := func(w want, err error) error {
-		if !errors.Is(err, w.err) {
+		if w.err != nil && err != nil && !strings.HasPrefix(err.Error(), w.err.Error()) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		return nil
@@ -596,7 +596,7 @@ func TestEncodeRequest(t *testing.T) {
 					data: val,
 				},
 				want: want{
-					err: errors.New("complex128 is unsupported type"),
+					err: errors.New("json: unsupported type:"),
 				},
 			}
 		}(),
@@ -724,8 +724,14 @@ func TestRequest(t *testing.T) {
 					payloyd: 1 + 3i,
 					data:    new(interface{}),
 				},
+				checkFunc: func(w want, err error) error {
+					if w.err != nil && err != nil && !strings.HasPrefix(err.Error(), w.err.Error()) {
+						return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+					}
+					return nil
+				},
 				want: want{
-					err: errors.New("complex128 is unsupported type"),
+					err: errors.New("json: unsupported type:"),
 				},
 			}
 		}(),
