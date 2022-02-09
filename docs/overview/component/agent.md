@@ -1,6 +1,6 @@
 # Vald Agent
 
-Vald Agent is the core component of Vald cluster.
+Vald Agent is the core component of the Vald cluster.
 
 Mainly, it consists of 1 or 2 small components, Vald Core and Vald Agent sidecar, depending on the intended use.
 
@@ -10,21 +10,21 @@ This page introduces the overview and features of Vald Agent.
 
 Vald Agent is responsible for:
 
-- Store index data along to the user requests.
+- Store index data along to the user requests
   - The store destination is In-Memory, Volume Mounts, Persistent Volume, or External Storage.
-- Search the nearest neighbor vectors of the request vector and return the search result.
+- Search the nearest neighbor vectors of the request vector and return the search result
 
 ## Features
 
-Vald Agent has 2 components, `core`, and `sidecar`.
+Vald Agent has two components, `core` and `sidecar`.
 
-This chapter shows the features of each small component.
+This chapter shows the characteristics of each small component.
 
 ### Core
 
 `Core` is responsible for the main features of Vald Agent.
 
-It uses a specific algorithm for applying features and you can choose for your depend.
+It uses a specific algorithm for applying features, and you can choose for your depend.
 
 Vald provides:
 
@@ -40,32 +40,36 @@ The main functions are following:
 
 - Insert
   - Request to insert new vectors into the NGT.
-  - Requested vectors are stored in the queue.
+  - Requested vectors are stored in the `vqueue`.
 - Search
   - Get the nearest neighbor vectors of the request vector from NGT indexes.
 - Update
   - Create a request to update the specific vectors to the new vectors.
-  - Requested vectors are stored in the queue.
+  - Requested vectors are stored in the `vqueue`.
 - Delete
   - Create a request to remove the specific vectors from NGT indexes.
-  - Requested vectors are stored in the queue.
+  - Requested vectors are stored in the `vqueue`.
 - GetObject
   - Get the information of the indexed vectors.
 - Exist
   - Check the specific vectors are already indexed or not.
 - CreateIndex
-  - Create a new NGT index structure in memory using vectors stored in the queue, and the existing NGT index structure if exists.
+  - Create a new NGT index structure in memory using vectors stored in the `vqueue` and the existing NGT index structure if it exists.
 - SaveIndex
   - Save metadata about NGT index information to the internal storage.
 
 <div class="notice">
 You have to control the duration of CreateIndex and SaveIndex by configuration.
+
 These methods don’t always run when getting the request.
+
 </div>
 
 <div class="warning">
 As you see, Vald Agent NGT can only search the nearest neighbors from the NGT index.
-It is that you have to wait for CreateIndex and SaveIndex to be completed.
+
+You have to wait to complete CreateIndex and SaveIndex functions.
+
 </div>
 
 This image shows the mechanism to create NGT index.
@@ -76,17 +80,17 @@ Please refer to [Go Doc](https://pkg.go.dev/github.com/vdaas/vald@v1.3.1/pkg/age
 
 ### Sidecar
 
-`Sidecar` saves the index metadata file to external storage like Amazon S3, Google Cloud Storage.
+`Sidecar` saves the index metadata file to external storage like Amazon S3 or Google Cloud Storage.
 
-The main functions are backup and restore.
+The main functions are:
 
 - Backup
-  - When the index metadata files are created, `Sidecar` hooks to request to save these to the external storage.
+  - When `Agent Core` completes creating the index metadata files, `Sidecar` hooks to store these to the external storage.
 
 <img src="../../../assets/docs/overview/component/agent/sidecar_backup.png" />
 
 - Restore
-  - When the Vald Agent Pod is rebooting, the index structure is restored using external backup files.
+  - When the Vald Agent Pod reboots, the index structure is restored using external backup files.
 
 <img src="../../../assets/docs/overview/component/agent/sidecar_restore.png" />
 
