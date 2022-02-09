@@ -95,7 +95,7 @@ require (
 	github.com/hashicorp/go-version v1.3.0
 	github.com/json-iterator/go v1.1.12
 	github.com/klauspost/compress v1.13.5
-	github.com/kpango/fastime v1.0.17
+	github.com/kpango/fastime v1.1.4
 	github.com/kpango/fuid v0.0.0-20210407064122-2990e29e1ea5
 	github.com/kpango/gache v1.2.6
 	github.com/kpango/glg v1.6.2

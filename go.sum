@@ -444,8 +444,9 @@ github.com/klauspost/cpuid/v2 v2.0.9/go.mod h1:FInQzS24/EEf25PyTYn52gqo7WaD8xa02
 github.com/konsorten/go-windows-terminal-sequences v1.0.1/go.mod h1:T0+1ngSBFLxvqU3pZ+m/2kptfBszLMUkC4ZK/EgS/cQ=
 github.com/konsorten/go-windows-terminal-sequences v1.0.3/go.mod h1:T0+1ngSBFLxvqU3pZ+m/2kptfBszLMUkC4ZK/EgS/cQ=
 github.com/kpango/fastime v1.0.8/go.mod h1:Y5XY5bLG5yc7g2XmMUzc22XYV1XaH+KgUOHkDvLp4SA=
-github.com/kpango/fastime v1.0.17 h1:IZOBLEJrr2MIpsY1ihGhpkY+9pEikJWYwPEMu0/VdcY=
 github.com/kpango/fastime v1.0.17/go.mod h1:lVqUTcXmQnk1wriyvq5DElbRSRDC0XtqbXQRdz0Eo+g=
+github.com/kpango/fastime v1.1.4 h1:pus9JgJBg/8Jie3ozayA4yNIV67BUPhbq0wMZY3CtYo=
+github.com/kpango/fastime v1.1.4/go.mod h1:tTNDbIo5qL6D7g5vh2YbkyUbOVP2kD/we3rSjN22PMY=
 github.com/kpango/fuid v0.0.0-20210407064122-2990e29e1ea5 h1:hFKpPJAs79qzMq0vMTy5J0yac7Lmk0zMz08YnZtz5Ds=
 github.com/kpango/fuid v0.0.0-20210407064122-2990e29e1ea5/go.mod h1:bEZnEsoNQBYRlqBYmY9cgTnoBpS8r1o4tYT06t05Mjw=
 github.com/kpango/gache v1.2.6 h1:pmeoSJdW5sH0jk4N5sfTM3Mi0/+ML9Ebr6eVf1zvHW8=
