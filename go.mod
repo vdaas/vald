@@ -12,7 +12,7 @@ replace (
 	github.com/Azure/go-autorest => github.com/Azure/go-autorest v14.2.1-0.20220131174551-b3899c105742+incompatible
 	github.com/Azure/go-autorest/autorest => github.com/Azure/go-autorest/autorest v0.11.25-0.20220131174551-b3899c105742
 	github.com/Azure/go-autorest/autorest/adal => github.com/Azure/go-autorest/autorest/adal v0.9.19-0.20220131174551-b3899c105742
-	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.42.49
+	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.42.50
 	github.com/chzyer/logex => github.com/chzyer/logex v1.2.0
 	github.com/coreos/etcd => go.etcd.io/etcd v3.3.27+incompatible
 	github.com/dgrijalva/jwt-go => github.com/golang-jwt/jwt/v4 v4.1.0
@@ -43,8 +43,8 @@ replace (
 	go.uber.org/goleak => go.uber.org/goleak v1.1.12
 	go.uber.org/multierr => go.uber.org/multierr v1.7.0
 	go.uber.org/zap => go.uber.org/zap v1.21.0
-	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20220208233918-bba287dce954
-	golang.org/x/exp => golang.org/x/exp v0.0.0-20220205015713-f5f519d967d6
+	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20220209195652-db638375bc3a
+	golang.org/x/exp => golang.org/x/exp v0.0.0-20220209042442-160e291fcf24
 	golang.org/x/image => golang.org/x/image v0.0.0-20211028202545-6944b10bf410
 	golang.org/x/lint => golang.org/x/lint v0.0.0-20210508222113-6edffad5e616
 	golang.org/x/mobile => golang.org/x/mobile v0.0.0-20220112015953-858099ff7816
@@ -52,7 +52,7 @@ replace (
 	golang.org/x/net => golang.org/x/net v0.0.0-20220127200216-cd36cc0744dd
 	golang.org/x/oauth2 => golang.org/x/oauth2 v0.0.0-20211104180415-d3ed0bb246c8
 	golang.org/x/sync => golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
-	golang.org/x/sys => golang.org/x/sys v0.0.0-20220207234003-57398862261d
+	golang.org/x/sys => golang.org/x/sys v0.0.0-20220209214540-3681064d5158
 	golang.org/x/term => golang.org/x/term v0.0.0-20210927222741-03fcf44c2211
 	golang.org/x/text => golang.org/x/text v0.3.7
 	golang.org/x/time => golang.org/x/time v0.0.0-20211116232009-f0f3c7e86c11
@@ -80,7 +80,7 @@ replace (
 	k8s.io/utils => k8s.io/utils v0.0.0-20220127004650-9b3446523e65
 	sigs.k8s.io/apiserver-network-proxy/konnectivity-client => sigs.k8s.io/apiserver-network-proxy/konnectivity-client v0.0.27
 	sigs.k8s.io/controller-runtime => sigs.k8s.io/controller-runtime v0.11.0
-	sigs.k8s.io/kustomize/api => sigs.k8s.io/kustomize/api v0.11.1
+	sigs.k8s.io/kustomize/api => sigs.k8s.io/kustomize/api v0.11.2
 	sigs.k8s.io/kustomize/kyaml => sigs.k8s.io/kustomize/kyaml v0.13.3
 	sigs.k8s.io/structured-merge-diff/v4 => sigs.k8s.io/structured-merge-diff/v4 v4.2.1
 	sigs.k8s.io/yaml => sigs.k8s.io/yaml v1.3.0
@@ -106,9 +106,9 @@ require (
 	github.com/hashicorp/go-version v1.4.0
 	github.com/klauspost/compress v1.13.5
 	github.com/kpango/fastime v1.1.4
-	github.com/kpango/fuid v0.0.0-20210407064122-2990e29e1ea5
+	github.com/kpango/fuid v0.0.0-20220209050620-e5987ba1ea5e
 	github.com/kpango/gache v1.2.6
-	github.com/kpango/glg v1.6.2
+	github.com/kpango/glg v1.6.10
 	github.com/leanovate/gopter v0.2.9
 	github.com/lucasb-eyer/go-colorful v1.2.0
 	github.com/pierrec/lz4/v3 v3.3.4
