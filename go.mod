@@ -12,7 +12,7 @@ replace (
 	github.com/Azure/go-autorest => github.com/Azure/go-autorest v14.2.1-0.20220131174551-b3899c105742+incompatible
 	github.com/Azure/go-autorest/autorest => github.com/Azure/go-autorest/autorest v0.11.25-0.20220131174551-b3899c105742
 	github.com/Azure/go-autorest/autorest/adal => github.com/Azure/go-autorest/autorest/adal v0.9.19-0.20220131174551-b3899c105742
-	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.42.50
+	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.42.52
 	github.com/chzyer/logex => github.com/chzyer/logex v1.2.0
 	github.com/coreos/etcd => go.etcd.io/etcd v3.3.27+incompatible
 	github.com/dgrijalva/jwt-go => github.com/golang-jwt/jwt/v4 v4.1.0
@@ -36,15 +36,15 @@ replace (
 	github.com/gorilla/websocket => github.com/gorilla/websocket v1.4.2
 	github.com/hailocab/go-hostpool => github.com/kpango/go-hostpool v0.0.0-20210303030322-aab80263dcd0
 	github.com/json-iterator/go => github.com/json-iterator/go v1.1.12
-	github.com/klauspost/compress => github.com/klauspost/compress v1.14.3-0.20220207182347-b5a73a16fd19
+	github.com/klauspost/compress => github.com/klauspost/compress v1.14.3-0.20220212123257-91d9d326ec88
 	github.com/kpango/glg => github.com/kpango/glg v1.6.10
 	github.com/tensorflow/tensorflow => github.com/tensorflow/tensorflow v2.1.2+incompatible
 	github.com/zeebo/xxh3 => github.com/zeebo/xxh3 v1.0.1
 	go.uber.org/goleak => go.uber.org/goleak v1.1.12
 	go.uber.org/multierr => go.uber.org/multierr v1.7.0
 	go.uber.org/zap => go.uber.org/zap v1.21.0
-	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20220209195652-db638375bc3a
-	golang.org/x/exp => golang.org/x/exp v0.0.0-20220209042442-160e291fcf24
+	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20220213190939-1e6e3497d506
+	golang.org/x/exp => golang.org/x/exp v0.0.0-20220212023102-3e31098684e2
 	golang.org/x/image => golang.org/x/image v0.0.0-20211028202545-6944b10bf410
 	golang.org/x/lint => golang.org/x/lint v0.0.0-20210508222113-6edffad5e616
 	golang.org/x/mobile => golang.org/x/mobile v0.0.0-20220112015953-858099ff7816
@@ -55,12 +55,12 @@ replace (
 	golang.org/x/sys => golang.org/x/sys v0.0.0-20220209214540-3681064d5158
 	golang.org/x/term => golang.org/x/term v0.0.0-20210927222741-03fcf44c2211
 	golang.org/x/text => golang.org/x/text v0.3.7
-	golang.org/x/time => golang.org/x/time v0.0.0-20211116232009-f0f3c7e86c11
+	golang.org/x/time => golang.org/x/time v0.0.0-20220210224613-90d013bbcef8
 	golang.org/x/tools => golang.org/x/tools v0.1.9
 	golang.org/x/xerrors => golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1
 	google.golang.org/api => google.golang.org/api v0.68.0
 	google.golang.org/appengine => google.golang.org/appengine v1.6.7
-	google.golang.org/genproto => google.golang.org/genproto v0.0.0-20220208230804-65c12eb4c068
+	google.golang.org/genproto => google.golang.org/genproto v0.0.0-20220211171837-173942840c17
 	google.golang.org/grpc => google.golang.org/grpc v1.44.0
 	google.golang.org/grpc/cmd/protoc-gen-go-grpc => google.golang.org/grpc/cmd/protoc-gen-go-grpc v1.2.0
 	google.golang.org/protobuf => google.golang.org/protobuf v1.27.1
@@ -77,7 +77,7 @@ replace (
 	k8s.io/klog/v2 => k8s.io/klog/v2 v2.40.1
 	k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20220124234850-424119656bbf
 	k8s.io/metrics => k8s.io/metrics v0.23.3
-	k8s.io/utils => k8s.io/utils v0.0.0-20220127004650-9b3446523e65
+	k8s.io/utils => k8s.io/utils v0.0.0-20220210201930-3a6ce19ff2f9
 	sigs.k8s.io/apiserver-network-proxy/konnectivity-client => sigs.k8s.io/apiserver-network-proxy/konnectivity-client v0.0.27
 	sigs.k8s.io/controller-runtime => sigs.k8s.io/controller-runtime v0.11.0
 	sigs.k8s.io/kustomize/api => sigs.k8s.io/kustomize/api v0.11.2
@@ -113,7 +113,7 @@ require (
 	github.com/lucasb-eyer/go-colorful v1.2.0
 	github.com/pierrec/lz4/v3 v3.3.4
 	github.com/quasilyte/go-ruleguard v0.3.15
-	github.com/quasilyte/go-ruleguard/dsl v0.3.16
+	github.com/quasilyte/go-ruleguard/dsl v0.3.17
 	github.com/scylladb/gocqlx v1.5.0
 	github.com/tensorflow/tensorflow v0.0.0-00010101000000-000000000000
 	github.com/zeebo/xxh3 v0.12.0
