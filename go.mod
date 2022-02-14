@@ -107,7 +107,7 @@ require (
 	github.com/klauspost/compress v1.13.5
 	github.com/kpango/fastime v1.1.4
 	github.com/kpango/fuid v0.0.0-20220209050620-e5987ba1ea5e
-	github.com/kpango/gache v1.2.6
+	github.com/kpango/gache v1.2.7
 	github.com/kpango/glg v1.6.10
 	github.com/leanovate/gopter v0.2.9
 	github.com/lucasb-eyer/go-colorful v1.2.0
@@ -116,7 +116,7 @@ require (
 	github.com/quasilyte/go-ruleguard/dsl v0.3.17
 	github.com/scylladb/gocqlx v1.5.0
 	github.com/tensorflow/tensorflow v0.0.0-00010101000000-000000000000
-	github.com/zeebo/xxh3 v0.12.0
+	github.com/zeebo/xxh3 v1.0.1
 	go.opencensus.io v0.23.0
 	go.uber.org/automaxprocs v1.4.0
 	go.uber.org/goleak v1.1.12
