@@ -1,8 +1,10 @@
-# Vald API Overview
+# Vald APIs
 
 Vald provides 6 kinds of API for handling vector with Vald cluster.<br>
 Vald provide 2 API interface: gRPC and REST API.
 Using **gRPC** is preferred for better performance.
+
+## Vald APIs Overview
 
 The APIs overview tables is here:
 
@@ -15,3 +17,12 @@ The APIs overview tables is here:
 |       ^        | ^                                                                                                                                                 | [LinearSearch](../api/search.md#linearsearch-rpc)<br>[LinearSearchByID](../api/search.md#linearsearchbyid-rpc)<br>[StreamLinearSearch](../api/search.md#streamlinearsearch-rpc)<br>[StreamLinearSearchByID](../api/search.md#streamlinearsearchbyid-rpc)<br>[MultiLinearSearch](../api/search.md#multilinearsearch-rpc)<br>[MultiLinearSearchByID](../api/search.md#multilinearsearchbyid-rpc) | ^                                    |
 | Remove Service | Remove the exists vector(s) from the Vald Agent Pods.                                                                                             | [Remove](../api/remove.md#remove-rpc)<br>[StreamRemove](../api/remove.md#streamremove-rpc)<br>[MultiRemove](../api/remove.md#multiremove-rpc)                                                                                                                                                                                                                                                  | [Vald Remove APIs](../api/remove.md) |
 | Object Service | Get information of vector(s) indexed into the Vald Agent Pods.                                                                                    | [Exists](../api/object.md#exists-rpc)<br>[GetObject](../api/object.md#getobject-rpc)<br>[StreamGetObject](../api/object.md#streamgetobject-rpc)                                                                                                                                                                                                                                                | [Vald Object APIs](../api/object.md) |
+
+<div class="notice">
+linear search services are available in v1.4.0 and later version.
+</div>
+
+## Client Library
+
+Vald provides [the public client libraries](../user-guides/sdks.md) for some programming languages.
+If there is no client library for your favorite programming language, please refer to [build proto docs](../api/build_proto.md) to build on yourself.
