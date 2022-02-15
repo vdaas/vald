@@ -4,15 +4,15 @@ go 1.17
 
 replace (
 	cloud.google.com/go => cloud.google.com/go v0.100.2
-	cloud.google.com/go/iam => cloud.google.com/go/iam v0.1.1
-	cloud.google.com/go/monitoring => cloud.google.com/go/monitoring v1.2.0
-	cloud.google.com/go/profiler => cloud.google.com/go/profiler v0.1.2
+	cloud.google.com/go/iam => cloud.google.com/go/iam v0.2.0
+	cloud.google.com/go/monitoring => cloud.google.com/go/monitoring v1.3.0
+	cloud.google.com/go/profiler => cloud.google.com/go/profiler v0.2.0
 	cloud.google.com/go/storage => cloud.google.com/go/storage v1.20.0
-	cloud.google.com/go/trace => cloud.google.com/go/trace v1.0.0
+	cloud.google.com/go/trace => cloud.google.com/go/trace v1.1.0
 	github.com/Azure/go-autorest => github.com/Azure/go-autorest v14.2.1-0.20220131174551-b3899c105742+incompatible
 	github.com/Azure/go-autorest/autorest => github.com/Azure/go-autorest/autorest v0.11.25-0.20220131174551-b3899c105742
 	github.com/Azure/go-autorest/autorest/adal => github.com/Azure/go-autorest/autorest/adal v0.9.19-0.20220131174551-b3899c105742
-	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.42.52
+	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.42.53
 	github.com/chzyer/logex => github.com/chzyer/logex v1.2.0
 	github.com/coreos/etcd => go.etcd.io/etcd v3.3.27+incompatible
 	github.com/dgrijalva/jwt-go => github.com/golang-jwt/jwt/v4 v4.1.0
@@ -36,14 +36,14 @@ replace (
 	github.com/gorilla/websocket => github.com/gorilla/websocket v1.4.2
 	github.com/hailocab/go-hostpool => github.com/kpango/go-hostpool v0.0.0-20210303030322-aab80263dcd0
 	github.com/json-iterator/go => github.com/json-iterator/go v1.1.12
-	github.com/klauspost/compress => github.com/klauspost/compress v1.14.3-0.20220212123257-91d9d326ec88
+	github.com/klauspost/compress => github.com/klauspost/compress v1.14.3-0.20220214135504-fe93d93a2d9e
 	github.com/kpango/glg => github.com/kpango/glg v1.6.10
 	github.com/tensorflow/tensorflow => github.com/tensorflow/tensorflow v2.1.2+incompatible
 	github.com/zeebo/xxh3 => github.com/zeebo/xxh3 v1.0.1
 	go.uber.org/goleak => go.uber.org/goleak v1.1.12
 	go.uber.org/multierr => go.uber.org/multierr v1.7.0
 	go.uber.org/zap => go.uber.org/zap v1.21.0
-	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20220213190939-1e6e3497d506
+	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20220214200702-86341886e292
 	golang.org/x/exp => golang.org/x/exp v0.0.0-20220212023102-3e31098684e2
 	golang.org/x/image => golang.org/x/image v0.0.0-20211028202545-6944b10bf410
 	golang.org/x/lint => golang.org/x/lint v0.0.0-20210508222113-6edffad5e616
@@ -129,8 +129,8 @@ require (
 	golang.org/x/tools v0.1.8-0.20211029000441-d6a9af8af023
 	gonum.org/v1/hdf5 v0.0.0-20210714002203-8c5d23bc6946
 	gonum.org/v1/plot v0.10.0
-	google.golang.org/api v0.66.0
-	google.golang.org/genproto v0.0.0-20220204002441-d6cc3cc0770e
+	google.golang.org/api v0.67.0
+	google.golang.org/genproto v0.0.0-20220207164111-0872dc986b00
 	google.golang.org/grpc v1.44.0
 	google.golang.org/protobuf v1.27.1
 	gopkg.in/yaml.v2 v2.4.0
@@ -178,7 +178,7 @@ require (
 	github.com/golang/snappy v0.0.3 // indirect
 	github.com/google/btree v1.0.1 // indirect
 	github.com/google/gofuzz v1.1.0 // indirect
-	github.com/google/pprof v0.0.0-20211214055906-6f57359322fd // indirect
+	github.com/google/pprof v0.0.0-20220113144219-d25a53d42d00 // indirect
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510 // indirect
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/google/wire v0.5.0 // indirect
