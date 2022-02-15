@@ -75,6 +75,7 @@ issues:
         - gomnd
         - noctx
         - gochecknoinits
+        - unparam
     - path: _test\.go
       text: "copylocks:"
       linters:
