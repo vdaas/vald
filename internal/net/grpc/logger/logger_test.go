@@ -48,6 +48,8 @@ func TestInit(t *testing.T) {
 				return nil
 			},
 		},
+		// this test case cannot be run because the once object is initialized
+		// as the init() will be called when we import the package
 		// {
 		// 	name: "set logger success with verbosity level is set",
 		// 	beforeFunc: func(t *testing.T) {
