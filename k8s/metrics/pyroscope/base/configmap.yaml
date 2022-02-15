@@ -24,6 +24,7 @@ metadata:
 data:
   config.yaml: |
     log-level: debug
+    storage-path: /var/lib/pyroscope
     scrape-configs:
     - enabled-profiles:
       - cpu
