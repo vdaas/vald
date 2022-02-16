@@ -117,6 +117,8 @@ const (
 	Uint8
 	// Float is 32bit floating point number.
 	Float
+	// HalfFloat is 16bit floating point number.
+	HalfFloat
 	// -------------------------------------------------------------.
 
 	// -------------------------------------------------------------
@@ -617,7 +619,7 @@ func (n *ngt) GetVector(id uint) ([]float32, error) {
 	var ret []float32
 	ebuf := n.GetErrorBuffer()
 	switch n.objectType {
-	case Float:
+	case Float, HalfFloat:
 		n.mu.RLock()
 		results := C.ngt_get_object_as_float(n.ospace, C.ObjectID(id), ebuf)
 		n.mu.RUnlock()
