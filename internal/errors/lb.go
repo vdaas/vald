@@ -20,8 +20,8 @@ package errors
 var (
 	ErrEmptySearchResult = New("search result is empty")
 
-	// ErrLessSearchResult represents an error that the search result is less than required.
-	ErrLessSearchResult = New("search result is less than required")
+	// ErrInsuffcientSearchResult represents an error that the search result is insufficient.
+	ErrInsuffcientSearchResult = New("search result is less than required")
 
 	// ErrIndexNotFound represents an error that the index not found.
 	ErrIndexNotFound = New("index not found")

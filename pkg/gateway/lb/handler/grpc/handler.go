@@ -499,7 +499,7 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 			if errors.Is(ectx.Err(), context.DeadlineExceeded) {
 				if len(res.GetResults()) == 0 {
 					err = status.WrapWithDeadlineExceeded(
-						"error search result length is 0",
+						"error search result length is 0 due to the timeoutage limit",
 						errors.ErrEmptySearchResult,
 						&errdetails.RequestInfo{
 							RequestId:   cfg.GetRequestId(),
@@ -517,8 +517,8 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 				}
 				if 0 < min && len(res.GetResults()) < min {
 					err = status.WrapWithDeadlineExceeded(
-						"error search result length is "+strconv.Itoa(len(res.GetResults())),
-						errors.ErrLessSearchResult,
+						fmt.Sprintf("error search result length is not enough due to the timeoutage limit, required: %d, found: %d", min, len(res.GetResults())),
+						errors.ErrInsuffcientSearchResult,
 						&errdetails.RequestInfo{
 							RequestId:   cfg.GetRequestId(),
 							ServingData: errdetails.Serialize(cfg),
@@ -575,14 +575,14 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 
 			if 0 < min && len(res.GetResults()) < min {
 				if err == nil {
-					err = errors.ErrLessSearchResult
+					err = errors.ErrInsuffcientSearchResult
 				}
 				if span != nil {
 					span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 				}
 				err = status.WrapWithNotFound(
-					"error search result length is "+strconv.Itoa(len(res.GetResults())),
-					errors.ErrLessSearchResult,
+					fmt.Sprintf("error search result length is not enough required: %d, found: %d", min, len(res.GetResults())),
+					errors.ErrInsuffcientSearchResult,
 					&errdetails.RequestInfo{
 						RequestId:   cfg.GetRequestId(),
 						ServingData: errdetails.Serialize(cfg),
@@ -1198,7 +1198,7 @@ func (s *server) linearsearch(ctx context.Context, cfg *payload.Search_Config,
 				if 0 < min && len(res.GetResults()) < min {
 					err = status.WrapWithDeadlineExceeded(
 						"error search result length is "+strconv.Itoa(len(res.GetResults())),
-						errors.ErrLessSearchResult,
+						errors.ErrInsuffcientSearchResult,
 						&errdetails.RequestInfo{
 							RequestId:   cfg.GetRequestId(),
 							ServingData: errdetails.Serialize(cfg),
@@ -1255,14 +1255,14 @@ func (s *server) linearsearch(ctx context.Context, cfg *payload.Search_Config,
 
 			if 0 < min && len(res.GetResults()) < min {
 				if err == nil {
-					err = errors.ErrLessSearchResult
+					err = errors.ErrInsuffcientSearchResult
 				}
 				if span != nil {
 					span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 				}
 				err = status.WrapWithNotFound(
 					"error search result length is "+strconv.Itoa(len(res.GetResults())),
-					errors.ErrLessSearchResult,
+					errors.ErrInsuffcientSearchResult,
 					&errdetails.RequestInfo{
 						RequestId:   cfg.GetRequestId(),
 						ServingData: errdetails.Serialize(cfg),
