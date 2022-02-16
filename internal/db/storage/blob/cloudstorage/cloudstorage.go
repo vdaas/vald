@@ -17,15 +17,17 @@ package cloudstorage
 
 import (
 	"context"
-	"io"
 	"net/url"
 	"reflect"
 
 	"gocloud.dev/blob"
 	"gocloud.dev/blob/gcsblob"
+	"gocloud.dev/gcerrors"
 
 	iblob "github.com/vdaas/vald/internal/db/storage/blob"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/io"
+	"github.com/vdaas/vald/internal/log"
 )
 
 type client struct {
@@ -69,7 +71,14 @@ func (c *client) Reader(ctx context.Context, key string) (io.ReadCloser, error) 
 	if c.bucket == nil {
 		return nil, errors.ErrBucketNotOpened
 	}
-	return c.bucket.NewReader(ctx, key, c.readerOpts)
+	rc, err := c.bucket.NewReader(ctx, key, c.readerOpts)
+	if err != nil {
+		log.Warn(err)
+		if gcerrors.Code(err) == gcerrors.NotFound {
+			return io.NopCloser(io.NewEOFReader()), nil
+		}
+	}
+	return rc, nil
 }
 
 func (c *client) Writer(ctx context.Context, key string) (io.WriteCloser, error) {

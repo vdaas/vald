@@ -33,8 +33,9 @@ type (
 )
 
 var (
-	Pipe = io.Pipe
-	EOF  = io.EOF
+	Pipe      = io.Pipe
+	EOF       = io.EOF
+	NopCloser = io.NopCloser
 )
 
 type ctxReader struct {
@@ -146,9 +147,20 @@ func (w *ctxWriter) Close() error {
 	default:
 	}
 
-	if c, ok := w.w.(io.Closer); ok {
+	if c, ok := w.w.(Closer); ok {
 		return c.Close()
 	}
 
 	return nil
+}
+
+type eofReader struct {
+}
+
+func NewEOFReader() Reader {
+	return &eofReader{}
+}
+
+func (r *eofReader) Read(b []byte) (n int, err error) {
+	return 0, EOF
 }

@@ -149,12 +149,12 @@ func TestNewReadCloserWithContext(t *testing.T) {
 			name: "success when context.Context and io.ReadCloser are not nil",
 			args: args{
 				ctx: context.Background(),
-				r:   io.NopCloser(&bytes.Buffer{}),
+				r:   NopCloser(&bytes.Buffer{}),
 			},
 			want: want{
 				want: &ctxReader{
 					ctx: context.Background(),
-					r:   io.NopCloser(&bytes.Buffer{}),
+					r:   NopCloser(&bytes.Buffer{}),
 				},
 				err: nil,
 			},
@@ -174,7 +174,7 @@ func TestNewReadCloserWithContext(t *testing.T) {
 			name: "fail when context.Context is nil",
 			args: args{
 				ctx: nil,
-				r:   io.NopCloser(&bytes.Buffer{}),
+				r:   NopCloser(&bytes.Buffer{}),
 			},
 			want: want{
 				want: nil,
@@ -365,7 +365,7 @@ func Test_ctxReader_Close(t *testing.T) {
 				name: "success with Closer",
 				fields: fields{
 					ctx: ctx,
-					r:   io.NopCloser(&bytes.Buffer{}),
+					r:   NopCloser(&bytes.Buffer{}),
 				},
 				want: want{
 					err: nil,
