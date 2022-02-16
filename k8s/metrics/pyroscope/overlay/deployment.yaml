@@ -1,0 +1,16 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pyroscope
+spec:
+  template:
+    spec:
+      containers:
+        - name: pyroscope
+          volumeMounts:
+            - name: pyroscope-pv-storage
+              mountPath: /var/lib/pyroscope
+      volumes:
+        - name: pyroscope-pv-storage
+          persistentVolumeClaim:
+            claimName: pyroscope-pvc
