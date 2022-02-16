@@ -469,7 +469,123 @@ func Test_server_Search(t *testing.T) {
 		}
 		return nil
 	}
+
+	/*
+		Search test cases:
+		- Equivalence Class Testing
+			- uint8, float32 common
+				- case 1: vector success
+				- case 2: different dimension fail
+		- Boundary Value Testing
+		  	- uint8, float32 common
+				- case 1: min value vector success
+				- case 2: max value vector success
+				- case 3: 0 length vector fail?
+				- case 4: max length vector fail?
+				- case 5: nil vector fail
+			- uint8
+			- float32
+				- case 6: 0 value vector success
+				- case 7: NaN value vector fail?
+		- Decision Table Testing
+			- uint8, float32 common
+		    | same vector       | false | false | false | true | true | true |
+			| inserted          |     5 |    10 |    20 |    5 |   10 |   20 |
+			| Search_Config.Num |    10 |    10 |    10 |   10 |   10 |   10 |
+				- case 1: inserted 5 different vector, Num is 10 success
+				- case 2: inserted 10 different vector, Num is 10 success
+				- case 3: inserted 20 different vector, Num is 10 success
+				- case 4: inserted 5 same vector, Num is 10 success?
+				- case 5: inserted 10 same vector, Num is 10 success?
+				- case 6: inserted 20 same vector, Num is 10 success?
+	*/
 	tests := []test{
+		{
+			name: "Equivalence Class Testing uint8 case 1: vector success",
+		},
+		{
+			name: "Equivalence Class Testing uint8 case 2: different dimension fail",
+		},
+		{
+			name: "Equivalence Class Testing float32 case 1: vector success",
+		},
+		{
+			name: "Equivalence Class Testing float32 case 2: different dimension fail",
+		},
+
+		{
+			name: "Boundary Value Testing uint8 case 1: min value vector success",
+		},
+		{
+			name: "Boundary Value Testing uint8 case 2: max value vector success",
+		},
+		{
+			name: "Boundary Value Testing uint8 case 3: 0 length vector fail",
+		},
+		{
+			name: "Boundary Value Testing uint8 case 4: max length fail",
+		},
+		{
+			name: "Boundary Value Testing uint8 case 5: nil fail",
+		},
+		{
+			name: "Boundary Value Testing float32 case 1: min value vector success",
+		},
+		{
+			name: "Boundary Value Testing float32 case 2: max value vector success",
+		},
+		{
+			name: "Boundary Value Testing float32 case 3: 0 length vector fail",
+		},
+		{
+			name: "Boundary Value Testing float32 case 4: max length fail",
+		},
+		{
+			name: "Boundary Value Testing float32 case 5: nil fail",
+		},
+		{
+			name: "Boundary Value Testing float32 case 6: 0 value vector success",
+		},
+		{
+			name: "Boundary Value Testing float32 case 7: NaN value fail",
+		},
+
+		{
+			name: "Decision Table Testing uint8 case 1: inserted 5 different vector, Num is 10 success",
+		},
+		{
+			name: "Decision Table Testing uint8 case 2: inserted 10 different vector, Num is 10 success",
+		},
+		{
+			name: "Decision Table Testing uint8 case 3: inserted 20 different vector, Num is 10 success",
+		},
+		{
+			name: "Decision Table Testing uint8 case 4: inserted 5 same vector, Num is 10 success?",
+		},
+		{
+			name: "Decision Table Testing uint8 case 5: inserted 10 same vector, Num is 10 success?",
+		},
+		{
+			name: "Decision Table Testing uint8 case 6: inserted 20 same vector, Num is 10 success?",
+		},
+		{
+			name: "Decision Table Testing float32 case 1: inserted 5 different vector, Num is 10 success",
+		},
+		{
+			name: "Decision Table Testing float32 case 2: inserted 10 different vector, Num is 10 success",
+		},
+		{
+			name: "Decision Table Testing float32 case 3: inserted 20 different vector, Num is 10 success",
+		},
+		{
+			name: "Decision Table Testing float32 case 4: inserted 5 same vector, Num is 10 success?",
+		},
+		{
+			name: "Decision Table Testing float32 case 5: inserted 10 same vector, Num is 10 success?",
+		},
+		{
+			name: "Decision Table Testing float32 case 6: inserted 20 same vector, Num is 10 success?",
+		},
 		// TODO test cases
 		/*
 		   {
