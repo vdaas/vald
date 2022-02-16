@@ -19,14 +19,18 @@ package grpc
 
 import (
 	"context"
+	"fmt"
 	"reflect"
 	"testing"
 
 	agent "github.com/vdaas/vald/apis/grpc/v1/agent/core"
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
+	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/net/grpc/errdetails"
+	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/test/goleak"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/model"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/service"
@@ -1189,47 +1193,165 @@ func Test_server_Insert(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx: nil,
-		           req: nil,
-		       },
-		       fields: fields {
-		           name: "",
-		           ip: "",
-		           ngt: nil,
-		           eg: nil,
-		           streamConcurrency: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+		func() test {
+			ngt, err := service.New(&config.NGT{
+				Dimension:    3,
+				DistanceType: "ang",
+				ObjectType:   "uint8",
+				KVSDB: &config.KVSDB{
+					Concurrency: 10,
+				},
+				VQueue: &config.VQueue{},
+			},
+				service.WithErrGroup(errgroup.Get()),
+				service.WithEnableInMemoryMode(true),
+			)
+			if err != nil {
+				t.Error(err)
+			}
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ctx: nil,
-		           req: nil,
-		           },
-		           fields: fields {
-		           name: "",
-		           ip: "",
-		           ngt: nil,
-		           eg: nil,
-		           streamConcurrency: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+			name := "vald-agent-ngt-1"
+			id := "uuid1"
+			ip := "127.0.0.1"
+
+			return test{
+				name: "sucess to insert integer vector",
+				args: args{
+					ctx: context.Background(),
+					req: &payload.Insert_Request{
+						Vector: &payload.Object_Vector{
+							Id:     id,
+							Vector: []float32{1, 2, 3},
+						},
+					},
+				},
+				fields: fields{
+					name: name,
+					ip:   ip,
+					ngt:  ngt,
+					eg:   errgroup.Get(),
+				},
+				want: want{
+					wantRes: &payload.Object_Location{
+						Name: name,
+						Uuid: id,
+						Ips:  []string{ip},
+					},
+				},
+			}
+		}(),
+		func() test {
+			ngt, err := service.New(&config.NGT{
+				Dimension:    3,
+				DistanceType: "ang",
+				ObjectType:   "float",
+				KVSDB: &config.KVSDB{
+					Concurrency: 10,
+				},
+				VQueue: &config.VQueue{},
+			},
+				service.WithErrGroup(errgroup.Get()),
+				service.WithEnableInMemoryMode(true),
+			)
+			if err != nil {
+				t.Error(err)
+			}
+
+			name := "vald-agent-ngt-1"
+			id := "uuid1"
+			ip := "127.0.0.1"
+
+			return test{
+				name: "sucess to insert float vector",
+				args: args{
+					ctx: context.Background(),
+					req: &payload.Insert_Request{
+						Vector: &payload.Object_Vector{
+							Id:     id,
+							Vector: []float32{1.5, 2.3, 3.6},
+						},
+					},
+				},
+				fields: fields{
+					name: name,
+					ip:   ip,
+					ngt:  ngt,
+					eg:   errgroup.Get(),
+				},
+				want: want{
+					wantRes: &payload.Object_Location{
+						Name: name,
+						Uuid: id,
+						Ips:  []string{ip},
+					},
+				},
+			}
+		}(),
+		func() test {
+			ngt, err := service.New(&config.NGT{
+				Dimension:    3,
+				DistanceType: "ang",
+				ObjectType:   "float",
+				KVSDB: &config.KVSDB{
+					Concurrency: 10,
+				},
+				VQueue: &config.VQueue{},
+			},
+				service.WithErrGroup(errgroup.Get()),
+				service.WithEnableInMemoryMode(true),
+			)
+			if err != nil {
+				t.Error(err)
+			}
+
+			name := "vald-agent-ngt-1"
+			id := "uuid1"
+			ip := "127.0.0.1"
+			vec := []float32{1.5, 2.3, 3.6, 4.5, 6, 7}
+			req := &payload.Insert_Request{
+				Vector: &payload.Object_Vector{
+					Id:     id,
+					Vector: vec,
+				},
+			}
+
+			return test{
+				name: "fail to insert vector with different dimension",
+				args: args{
+					ctx: context.Background(),
+					req: req,
+				},
+				fields: fields{
+					name: name,
+					ip:   ip,
+					ngt:  ngt,
+					eg:   errgroup.Get(),
+				},
+				want: want{
+					err: func() error {
+						err := errors.ErrIncompatibleDimensionSize(len(vec), 3)
+						return status.WrapWithInvalidArgument("Insert API Incompatible Dimension Size detected",
+							err,
+							&errdetails.RequestInfo{
+								RequestId:   id,
+								ServingData: errdetails.Serialize(req),
+							},
+							&errdetails.BadRequest{
+								FieldViolations: []*errdetails.BadRequestFieldViolation{
+									{
+										Field:       "vector dimension size",
+										Description: err.Error(),
+									},
+								},
+							},
+							&errdetails.ResourceInfo{
+								ResourceType: ngtResourceType + "/ngt.Insert",
+								ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, name, ip),
+							})
+					}(),
+				},
+			}
+		}(),
 	}
 
 	for _, tc := range tests {
