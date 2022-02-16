@@ -989,6 +989,7 @@ Represent search configuration.
 | timeout | [int64](#int64) |  | Search timeout in nanoseconds. |
 | ingress_filters | [Filter.Config](#payload.v1.Filter.Config) |  | Ingress filter configurations. |
 | egress_filters | [Filter.Config](#payload.v1.Filter.Config) |  | Egress filter configurations. |
+| min_num | [uint32](#uint32) |  | Minimum number of result to be returned. |
 
 
 

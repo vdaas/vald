@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"math"
 	"math/big"
+	"strconv"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -346,6 +347,7 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 	}()
 
 	num := int(cfg.GetNum())
+	min := int(cfg.GetMinNum())
 	res = new(payload.Search_Response)
 	res.Results = make([]*payload.Object_Distance, 0, s.gateway.GetAgentCount(ctx)*num)
 	dch := make(chan DistPayload, cap(res.GetResults())/2)
@@ -493,6 +495,46 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 			if num != 0 && len(res.GetResults()) > num {
 				res.Results = res.GetResults()[:num]
 			}
+
+			if errors.Is(ectx.Err(), context.DeadlineExceeded) {
+				if len(res.GetResults()) == 0 {
+					err = status.WrapWithDeadlineExceeded(
+						"error search result length is 0 due to the timeoutage limit",
+						errors.ErrEmptySearchResult,
+						&errdetails.RequestInfo{
+							RequestId:   cfg.GetRequestId(),
+							ServingData: errdetails.Serialize(cfg),
+						},
+						&errdetails.ResourceInfo{
+							ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.search",
+							ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
+						}, info.Get(),
+					)
+					if span != nil {
+						span.SetStatus(trace.StatusCodeDeadlineExceeded(err.Error()))
+					}
+					return nil, err
+				}
+				if 0 < min && len(res.GetResults()) < min {
+					err = status.WrapWithDeadlineExceeded(
+						fmt.Sprintf("error search result length is not enough due to the timeoutage limit, required: %d, found: %d", min, len(res.GetResults())),
+						errors.ErrInsuffcientSearchResult,
+						&errdetails.RequestInfo{
+							RequestId:   cfg.GetRequestId(),
+							ServingData: errdetails.Serialize(cfg),
+						},
+						&errdetails.ResourceInfo{
+							ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.search",
+							ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
+						}, info.Get(),
+					)
+					if span != nil {
+						span.SetStatus(trace.StatusCodeDeadlineExceeded(err.Error()))
+					}
+					return nil, err
+				}
+			}
+
 			if err != nil {
 				st, msg, err := status.ParseError(err, codes.Internal,
 					"failed to parse search gRPC error response",
@@ -525,6 +567,31 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.search",
 						ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
 					}, info.Get())
+				if span != nil {
+					span.SetStatus(trace.StatusCodeNotFound(err.Error()))
+				}
+				return nil, err
+			}
+
+			if 0 < min && len(res.GetResults()) < min {
+				if err == nil {
+					err = errors.ErrInsuffcientSearchResult
+				}
+				if span != nil {
+					span.SetStatus(trace.StatusCodeNotFound(err.Error()))
+				}
+				err = status.WrapWithNotFound(
+					fmt.Sprintf("error search result length is not enough required: %d, found: %d", min, len(res.GetResults())),
+					errors.ErrInsuffcientSearchResult,
+					&errdetails.RequestInfo{
+						RequestId:   cfg.GetRequestId(),
+						ServingData: errdetails.Serialize(cfg),
+					},
+					&errdetails.ResourceInfo{
+						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.search",
+						ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
+					}, info.Get(),
+				)
 				if span != nil {
 					span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 				}
@@ -960,6 +1027,7 @@ func (s *server) linearsearch(ctx context.Context, cfg *payload.Search_Config,
 	}()
 
 	num := int(cfg.GetNum())
+	min := int(cfg.GetMinNum())
 	res = new(payload.Search_Response)
 	res.Results = make([]*payload.Object_Distance, 0, s.gateway.GetAgentCount(ctx)*num)
 	dch := make(chan DistPayload, cap(res.GetResults())/2)
@@ -1107,6 +1175,46 @@ func (s *server) linearsearch(ctx context.Context, cfg *payload.Search_Config,
 			if num != 0 && len(res.GetResults()) > num {
 				res.Results = res.GetResults()[:num]
 			}
+
+			if errors.Is(ectx.Err(), context.DeadlineExceeded) {
+				if len(res.GetResults()) == 0 {
+					err = status.WrapWithDeadlineExceeded(
+						"error search result length is 0",
+						errors.ErrEmptySearchResult,
+						&errdetails.RequestInfo{
+							RequestId:   cfg.GetRequestId(),
+							ServingData: errdetails.Serialize(cfg),
+						},
+						&errdetails.ResourceInfo{
+							ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.search",
+							ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
+						}, info.Get(),
+					)
+					if span != nil {
+						span.SetStatus(trace.StatusCodeDeadlineExceeded(err.Error()))
+					}
+					return nil, err
+				}
+				if 0 < min && len(res.GetResults()) < min {
+					err = status.WrapWithDeadlineExceeded(
+						"error search result length is "+strconv.Itoa(len(res.GetResults())),
+						errors.ErrInsuffcientSearchResult,
+						&errdetails.RequestInfo{
+							RequestId:   cfg.GetRequestId(),
+							ServingData: errdetails.Serialize(cfg),
+						},
+						&errdetails.ResourceInfo{
+							ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.search",
+							ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
+						}, info.Get(),
+					)
+					if span != nil {
+						span.SetStatus(trace.StatusCodeDeadlineExceeded(err.Error()))
+					}
+					return nil, err
+				}
+			}
+
 			if err != nil {
 				st, msg, err := status.ParseError(err, codes.Internal,
 					"failed to parse search gRPC error response",
@@ -1139,6 +1247,31 @@ func (s *server) linearsearch(ctx context.Context, cfg *payload.Search_Config,
 						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.linearsearch",
 						ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
 					}, info.Get())
+				if span != nil {
+					span.SetStatus(trace.StatusCodeNotFound(err.Error()))
+				}
+				return nil, err
+			}
+
+			if 0 < min && len(res.GetResults()) < min {
+				if err == nil {
+					err = errors.ErrInsuffcientSearchResult
+				}
+				if span != nil {
+					span.SetStatus(trace.StatusCodeNotFound(err.Error()))
+				}
+				err = status.WrapWithNotFound(
+					"error search result length is "+strconv.Itoa(len(res.GetResults())),
+					errors.ErrInsuffcientSearchResult,
+					&errdetails.RequestInfo{
+						RequestId:   cfg.GetRequestId(),
+						ServingData: errdetails.Serialize(cfg),
+					},
+					&errdetails.ResourceInfo{
+						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.search",
+						ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
+					}, info.Get(),
+				)
 				if span != nil {
 					span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 				}

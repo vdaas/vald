@@ -593,6 +593,11 @@
         "egressFilters": {
           "$ref": "#/definitions/v1FilterConfig",
           "description": "Egress filter configurations."
+        },
+        "minNum": {
+          "type": "integer",
+          "format": "int64",
+          "description": "Minimum number of result to be returned."
         }
       },
       "description": "Represent search configuration."
