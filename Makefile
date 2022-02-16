@@ -55,15 +55,15 @@ TENSORFLOW_C_VERSION := $(eval TENSORFLOW_C_VERSION := $(shell cat versions/TENS
 OPERATOR_SDK_VERSION := $(eval OPERATOR_SDK_VERSION := $(shell cat versions/OPERATOR_SDK_VERSION))$(OPERATOR_SDK_VERSION)
 
 KIND_VERSION         ?= v0.11.1
-HELM_VERSION         ?= v3.7.2
-HELM_DOCS_VERSION    ?= 1.5.0
-YQ_VERSION           ?= v4.16.1
+HELM_VERSION         ?= v3.8.0
+HELM_DOCS_VERSION    ?= 1.7.0
+YQ_VERSION           ?= v4.19.1
 VALDCLI_VERSION      ?= v1.3.1
-TELEPRESENCE_VERSION ?= 2.4.9
+TELEPRESENCE_VERSION ?= 2.4.10
 KUBELINTER_VERSION   ?= 0.2.5
-GOLANGCILINT_VERSION ?= v1.43.0
-REVIEWDOG_VERSION    ?= v0.13.0
-PROTOBUF_VERSION     ?= 3.19.1
+GOLANGCILINT_VERSION ?= v1.44.0
+REVIEWDOG_VERSION    ?= v0.13.1
+PROTOBUF_VERSION     ?= 3.19.4
 
 SWAP_DEPLOYMENT_TYPE ?= deployment
 SWAP_IMAGE           ?= ""
@@ -379,6 +379,7 @@ format: \
 format/go:
 	find ./ -type d -name .git -prune -o -type f -regex '.*[^\.pb]\.go' -print | xargs $(GOPATH)/bin/golines -w -m $(GOLINES_MAX_WIDTH)
 	find ./ -type d -name .git -prune -o -type f -regex '.*[^\.pb]\.go' -print | xargs $(GOPATH)/bin/gofumpt -w
+	find ./ -type d -name .git -prune -o -type f -regex '.*[^\.pb]\.go' -print | xargs $(GOPATH)/bin/strictgoimports -w
 	find ./ -type d -name .git -prune -o -type f -regex '.*\.go' -print | xargs $(GOPATH)/bin/goimports -w
 
 .PHONY: format/yaml
@@ -400,6 +401,7 @@ deps: \
 deps/install: \
 	golines/install \
 	gofumpt/install \
+	strictgoimports/install \
 	goimports/install \
 	prettier/install \
 	go/deps
@@ -407,8 +409,15 @@ deps/install: \
 .PHONY: go/deps
 ## install Go package dependencies
 go/deps:
+	rm -rf vendor \
+		/go/pkg \
+		$(GOCACHE) \
+		./go.sum \
+		./go.mod
+	cp ./hack/go.mod.default ./go.mod
+	GOPRIVATE=$(GOPRIVATE) go mod tidy
 	go clean -cache -modcache -testcache -i -r
-	rm -rf \
+	rm -rf vendor \
 		/go/pkg \
 		$(GOCACHE) \
 		./go.sum \
@@ -416,23 +425,6 @@ go/deps:
 	cp ./hack/go.mod.default ./go.mod
 	GOPRIVATE=$(GOPRIVATE) go mod tidy
 	go get -u all 2>/dev/null || true
-
-
-.PHONY: goimports/install
-goimports/install:
-	go install golang.org/x/tools/cmd/goimports@latest
-
-.PHONY: gofumpt/install
-gofumpt/install:
-	go install mvdan.cc/gofumpt@latest
-
-.PHONY: golines/install
-golines/install:
-	go install github.com/segmentio/golines@latest
-
-.PHONY: prettier/install
-prettier/install:
-	type prettier || npm install -g prettier
 
 .PHONY: version
 ## print vald version

@@ -38,7 +38,7 @@ import (
 
 // Goroutine leak is detected by `fastime`, but it should be ignored in the test because it is an external package.
 var goleakIgnoreOptions = []goleak.Option{
-	goleak.IgnoreTopFunction("github.com/kpango/fastime.(*Fastime).StartTimerD.func1"),
+	goleak.IgnoreTopFunction("github.com/kpango/fastime.(*fastime).StartTimerD.func1"),
 	goleak.IgnoreTopFunction("internal/poll.runtime_pollWait"),
 	goleak.IgnoreTopFunction("net._C2func_getaddrinfo"),
 }

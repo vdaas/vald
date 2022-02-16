@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pyroscope-pvc
+spec:
+  accessModes:
+  - ReadWriteOnce
+  storageClassName: local-path # for k3d environment
+  resources:
+    requests:
+      storage: 1Gi

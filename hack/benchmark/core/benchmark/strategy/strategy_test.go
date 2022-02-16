@@ -26,7 +26,6 @@ import (
 	"github.com/vdaas/vald/hack/benchmark/internal/assets"
 	"github.com/vdaas/vald/hack/benchmark/internal/core/algorithm"
 	"github.com/vdaas/vald/internal/errors"
-
 	"github.com/vdaas/vald/internal/test/goleak"
 )
 

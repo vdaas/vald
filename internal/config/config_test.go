@@ -32,7 +32,7 @@ import (
 
 // Goroutine leak is detected by `fastime`, but it should be ignored in the test because it is an external package.
 var goleakIgnoreOptions = []goleak.Option{
-	goleak.IgnoreTopFunction("github.com/kpango/fastime.(*Fastime).StartTimerD.func1"),
+	goleak.IgnoreTopFunction("github.com/kpango/fastime.(*fastime).StartTimerD.func1"),
 }
 
 func TestMain(m *testing.M) {
@@ -866,7 +866,7 @@ func TestRead(t *testing.T) {
 				},
 				want: want{
 					want: cfg,
-					err:  errors.New("readObjectStart: expect { or n, but found t, error found in #1 byte of ...|timezone\n:|..., bigger context ...|timezone\n:|..."),
+					err:  errors.New("invalid character 't' looking for beginning of value"),
 				},
 			}
 		}(),
