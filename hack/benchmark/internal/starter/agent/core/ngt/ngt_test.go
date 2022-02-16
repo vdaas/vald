@@ -24,9 +24,8 @@ import (
 
 	"github.com/vdaas/vald/hack/benchmark/internal/starter"
 	"github.com/vdaas/vald/internal/errors"
-	"github.com/vdaas/vald/pkg/agent/core/ngt/config"
-
 	"github.com/vdaas/vald/internal/test/goleak"
+	"github.com/vdaas/vald/pkg/agent/core/ngt/config"
 )
 
 func TestNew(t *testing.T) {

@@ -420,7 +420,7 @@ jobs:
 
           echo "Install format dependencies"
 
-          make golines/install gofumpt/install goimports/install
+          make golines/install gofumpt/install goimports/install strictgoimports/install
           sudo make prettier/install
 
           echo "Update license headers and format go codes/yaml"
