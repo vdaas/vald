@@ -2,7 +2,7 @@
 
 Vald Agent is the core component of the Vald cluster.
 
-Mainly, it consists of 1 or 2 small components, Vald Core and Vald Agent sidecar, depending on the intended use.
+Mainly, it consists of 1 or 2 small components, Vald Core and Vald Agent sidecar, depending on the use case.
 
 This page introduces the overview and features of Vald Agent.
 
@@ -24,7 +24,7 @@ This chapter shows the characteristics of each small component.
 
 `Core` is responsible for the main features of Vald Agent.
 
-It uses a specific algorithm for applying features, and you can choose for your depend.
+It uses a specific algorithm, and you can choose one algorithm depending on your needs.
 
 Vald provides:
 
@@ -52,7 +52,7 @@ The main functions are following:
 - GetObject
   - Get the information of the indexed vectors.
 - Exist
-  - Check the specific vectors are already indexed or not.
+  - Check the specific vectors are already inserted or not.
 - CreateIndex
   - Create a new NGT index structure in memory using vectors stored in the `vqueue` and the existing NGT index structure if it exists.
 - SaveIndex
@@ -68,7 +68,7 @@ These methods don’t always run when getting the request.
 <div class="warning">
 As you see, Vald Agent NGT can only search the nearest neighbors from the NGT index.
 
-You have to wait to complete CreateIndex and SaveIndex functions.
+You have to wait to complete the CreateIndex and SaveIndex functions before searching.
 
 </div>
 
@@ -85,12 +85,12 @@ Please refer to [Go Doc](https://pkg.go.dev/github.com/vdaas/vald@v1.3.1/pkg/age
 The main functions are:
 
 - Backup
-  - When `Agent Core` completes creating the index metadata files, `Sidecar` hooks to store these to the external storage.
+  - When `Agent Core` completes creating the index metadata files, `Sidecar` hooks to store them to the external storage.
 
 <img src="../../../assets/docs/overview/component/agent/sidecar_backup.png" />
 
 - Restore
-  - When the Vald Agent Pod reboots, the index structure is restored using external backup files.
+  - When the Vald Agent Pod restarts, the index structure is restored from the external backup files.
 
 <img src="../../../assets/docs/overview/component/agent/sidecar_restore.png" />
 
