@@ -22,7 +22,7 @@ replace (
 	github.com/go-logr/logr => github.com/go-logr/logr v1.2.2
 	github.com/go-sql-driver/mysql => github.com/go-sql-driver/mysql v1.6.0
 	github.com/goccy/go-json => github.com/goccy/go-json v0.9.4
-	github.com/gocql/gocql => github.com/gocql/gocql v0.0.0-20211222173705-d73e6b1002a7
+	github.com/gocql/gocql => github.com/gocql/gocql v0.0.0-20220215161543-dbb3730926ea
 	github.com/gogo/protobuf => github.com/gogo/protobuf v1.3.2
 	github.com/golang/groupcache => github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da
 	github.com/golang/protobuf => github.com/golang/protobuf v1.5.2
@@ -33,7 +33,7 @@ replace (
 	github.com/google/pprof => github.com/google/pprof v0.0.0-20220128192902-513e8ac6eea1
 	github.com/google/uuid => github.com/google/uuid v1.3.0
 	github.com/gophercloud/gophercloud => github.com/gophercloud/gophercloud v0.24.0
-	github.com/gorilla/websocket => github.com/gorilla/websocket v1.4.2
+	github.com/gorilla/websocket => github.com/gorilla/websocket v1.5.0
 	github.com/hailocab/go-hostpool => github.com/kpango/go-hostpool v0.0.0-20210303030322-aab80263dcd0
 	github.com/json-iterator/go => github.com/json-iterator/go v1.1.12
 	github.com/klauspost/compress => github.com/klauspost/compress v1.14.3-0.20220214135504-fe93d93a2d9e
@@ -44,7 +44,7 @@ replace (
 	go.uber.org/multierr => go.uber.org/multierr v1.7.0
 	go.uber.org/zap => go.uber.org/zap v1.21.0
 	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20220214200702-86341886e292
-	golang.org/x/exp => golang.org/x/exp v0.0.0-20220212023102-3e31098684e2
+	golang.org/x/exp => golang.org/x/exp v0.0.0-20220215214139-058d147d01d4
 	golang.org/x/image => golang.org/x/image v0.0.0-20211028202545-6944b10bf410
 	golang.org/x/lint => golang.org/x/lint v0.0.0-20210508222113-6edffad5e616
 	golang.org/x/mobile => golang.org/x/mobile v0.0.0-20220112015953-858099ff7816
@@ -58,9 +58,9 @@ replace (
 	golang.org/x/time => golang.org/x/time v0.0.0-20220210224613-90d013bbcef8
 	golang.org/x/tools => golang.org/x/tools v0.1.9
 	golang.org/x/xerrors => golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1
-	google.golang.org/api => google.golang.org/api v0.68.0
+	google.golang.org/api => google.golang.org/api v0.69.0
 	google.golang.org/appengine => google.golang.org/appengine v1.6.7
-	google.golang.org/genproto => google.golang.org/genproto v0.0.0-20220211171837-173942840c17
+	google.golang.org/genproto => google.golang.org/genproto v0.0.0-20220215190005-e57b466719ef
 	google.golang.org/grpc => google.golang.org/grpc v1.44.0
 	google.golang.org/grpc/cmd/protoc-gen-go-grpc => google.golang.org/grpc/cmd/protoc-gen-go-grpc v1.2.0
 	google.golang.org/protobuf => google.golang.org/protobuf v1.27.1
@@ -122,15 +122,15 @@ require (
 	go.uber.org/goleak v1.1.12
 	go.uber.org/zap v1.21.0
 	gocloud.dev v0.24.0
-	golang.org/x/net v0.0.0-20211216030914-fe4d6282115f
+	golang.org/x/net v0.0.0-20220127200216-cd36cc0744dd
 	golang.org/x/oauth2 v0.0.0-20211104180415-d3ed0bb246c8
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
-	golang.org/x/sys v0.0.0-20220204135822-1c1b9b1eba6a
+	golang.org/x/sys v0.0.0-20220209214540-3681064d5158
 	golang.org/x/tools v0.1.8-0.20211029000441-d6a9af8af023
 	gonum.org/v1/hdf5 v0.0.0-20210714002203-8c5d23bc6946
 	gonum.org/v1/plot v0.10.0
 	google.golang.org/api v0.67.0
-	google.golang.org/genproto v0.0.0-20220207164111-0872dc986b00
+	google.golang.org/genproto v0.0.0-20220211171837-173942840c17
 	google.golang.org/grpc v1.44.0
 	google.golang.org/protobuf v1.27.1
 	gopkg.in/yaml.v2 v2.4.0
