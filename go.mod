@@ -38,8 +38,18 @@ replace (
 	github.com/json-iterator/go => github.com/json-iterator/go v1.1.12
 	github.com/klauspost/compress => github.com/klauspost/compress v1.14.3-0.20220214135504-fe93d93a2d9e
 	github.com/kpango/glg => github.com/kpango/glg v1.6.10
+	github.com/onsi/ginkgo => github.com/onsi/ginkgo v1.16.5
+	github.com/onsi/gomega => github.com/onsi/gomega v1.18.1
+	github.com/opentracing/opentracing-go => github.com/opentracing/opentracing-go v1.2.0
+	github.com/prometheus/client_golang => github.com/prometheus/client_golang v1.12.1
+	github.com/prometheus/client_model => github.com/prometheus/client_model v0.2.0
+	github.com/prometheus/common => github.com/prometheus/common v0.32.1
+	github.com/prometheus/procfs => github.com/prometheus/procfs v0.7.3
+	github.com/sirupsen/logrus => github.com/sirupsen/logrus v1.8.1
+	github.com/stretchr/testify => github.com/stretchr/testify v1.7.0
 	github.com/tensorflow/tensorflow => github.com/tensorflow/tensorflow v2.1.2+incompatible
 	github.com/zeebo/xxh3 => github.com/zeebo/xxh3 v1.0.1
+	go.opencensus.io => go.opencensus.io v0.23.0
 	go.uber.org/goleak => go.uber.org/goleak v1.1.12
 	go.uber.org/multierr => go.uber.org/multierr v1.7.0
 	go.uber.org/zap => go.uber.org/zap v1.21.0
@@ -58,6 +68,8 @@ replace (
 	golang.org/x/time => golang.org/x/time v0.0.0-20220210224613-90d013bbcef8
 	golang.org/x/tools => golang.org/x/tools v0.1.9
 	golang.org/x/xerrors => golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1
+	gonum.org/v1/gonum => gonum.org/v1/gonum v0.9.3
+	gonum.org/v1/plot => gonum.org/v1/plot v0.10.0
 	google.golang.org/api => google.golang.org/api v0.69.0
 	google.golang.org/appengine => google.golang.org/appengine v1.6.7
 	google.golang.org/genproto => google.golang.org/genproto v0.0.0-20220215190005-e57b466719ef
@@ -65,6 +77,8 @@ replace (
 	google.golang.org/grpc/cmd/protoc-gen-go-grpc => google.golang.org/grpc/cmd/protoc-gen-go-grpc v1.2.0
 	google.golang.org/protobuf => google.golang.org/protobuf v1.27.1
 	gopkg.in/check.v1 => gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c
+	gopkg.in/yaml.v2 => gopkg.in/yaml.v2 v2.4.0
+	gopkg.in/yaml.v3 => gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 	k8s.io/api => k8s.io/api v0.23.3
 	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.23.3
 	k8s.io/apimachinery => k8s.io/apimachinery v0.23.3
@@ -128,7 +142,7 @@ require (
 	golang.org/x/sys v0.0.0-20220209214540-3681064d5158
 	golang.org/x/tools v0.1.8-0.20211029000441-d6a9af8af023
 	gonum.org/v1/hdf5 v0.0.0-20210714002203-8c5d23bc6946
-	gonum.org/v1/plot v0.10.0
+	gonum.org/v1/plot v0.9.0
 	google.golang.org/api v0.67.0
 	google.golang.org/genproto v0.0.0-20220211171837-173942840c17
 	google.golang.org/grpc v1.44.0
@@ -204,8 +218,8 @@ require (
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/prometheus/client_golang v1.11.0 // indirect
 	github.com/prometheus/client_model v0.2.0 // indirect
-	github.com/prometheus/common v0.28.0 // indirect
-	github.com/prometheus/procfs v0.6.0 // indirect
+	github.com/prometheus/common v0.32.1 // indirect
+	github.com/prometheus/procfs v0.7.3 // indirect
 	github.com/prometheus/statsd_exporter v0.21.0 // indirect
 	github.com/quasilyte/gogrep v0.0.0-20220103110004-ffaa07af02e3 // indirect
 	github.com/scylladb/go-reflectx v1.0.1 // indirect
