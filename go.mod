@@ -33,8 +33,10 @@ replace (
 	github.com/google/pprof => github.com/google/pprof v0.0.0-20220128192902-513e8ac6eea1
 	github.com/google/uuid => github.com/google/uuid v1.3.0
 	github.com/gophercloud/gophercloud => github.com/gophercloud/gophercloud v0.24.0
+	github.com/gorilla/mux => github.com/gorilla/mux v1.8.0
 	github.com/gorilla/websocket => github.com/gorilla/websocket v1.5.0
 	github.com/hailocab/go-hostpool => github.com/kpango/go-hostpool v0.0.0-20210303030322-aab80263dcd0
+	github.com/hashicorp/go-version => github.com/hashicorp/go-version v1.4.0
 	github.com/json-iterator/go => github.com/json-iterator/go v1.1.12
 	github.com/klauspost/compress => github.com/klauspost/compress v1.14.3-0.20220214135504-fe93d93a2d9e
 	github.com/kpango/glg => github.com/kpango/glg v1.6.10
@@ -45,11 +47,18 @@ replace (
 	github.com/prometheus/client_model => github.com/prometheus/client_model v0.2.0
 	github.com/prometheus/common => github.com/prometheus/common v0.32.1
 	github.com/prometheus/procfs => github.com/prometheus/procfs v0.7.3
+	github.com/rs/xid => github.com/rs/xid v1.3.0
 	github.com/sirupsen/logrus => github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify => github.com/stretchr/testify v1.7.0
 	github.com/tensorflow/tensorflow => github.com/tensorflow/tensorflow v2.1.2+incompatible
 	github.com/zeebo/xxh3 => github.com/zeebo/xxh3 v1.0.1
+	go.etcd.io/bbolt => go.etcd.io/bbolt v1.3.6
 	go.opencensus.io => go.opencensus.io v0.23.0
+	go.opentelemetry.io/otel => go.opentelemetry.io/otel v1.4.0
+	go.opentelemetry.io/otel/metric => go.opentelemetry.io/otel/metric v0.27.0
+	go.opentelemetry.io/otel/sdk => go.opentelemetry.io/otel/sdk v1.4.0
+	go.opentelemetry.io/otel/trace => go.opentelemetry.io/otel/trace v1.4.0
+	go.uber.org/atomic => go.uber.org/atomic v1.9.0
 	go.uber.org/goleak => go.uber.org/goleak v1.1.12
 	go.uber.org/multierr => go.uber.org/multierr v1.7.0
 	go.uber.org/zap => go.uber.org/zap v1.21.0
@@ -117,7 +126,7 @@ require (
 	github.com/gocraft/dbr/v2 v2.7.3
 	github.com/google/go-cmp v0.5.7
 	github.com/gorilla/mux v1.8.0
-	github.com/hashicorp/go-version v1.4.0
+	github.com/hashicorp/go-version v1.2.0
 	github.com/klauspost/compress v1.13.5
 	github.com/kpango/fastime v1.1.4
 	github.com/kpango/fuid v0.0.0-20220209050620-e5987ba1ea5e
