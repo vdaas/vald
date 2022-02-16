@@ -15,7 +15,7 @@ replace (
 	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.42.53
 	github.com/chzyer/logex => github.com/chzyer/logex v1.2.0
 	github.com/coreos/etcd => go.etcd.io/etcd v3.3.27+incompatible
-	github.com/dgrijalva/jwt-go => github.com/golang-jwt/jwt/v4 v4.1.0
+	github.com/dgrijalva/jwt-go => github.com/golang-jwt/jwt/v4 v4.3.0
 	github.com/docker/docker => github.com/moby/moby v20.10.12+incompatible
 	github.com/envoyproxy/protoc-gen-validate => github.com/envoyproxy/protoc-gen-validate v0.6.3
 	github.com/fsnotify/fsnotify => github.com/fsnotify/fsnotify v1.5.1
@@ -102,7 +102,7 @@ replace (
 	k8s.io/metrics => k8s.io/metrics v0.23.3
 	k8s.io/utils => k8s.io/utils v0.0.0-20220210201930-3a6ce19ff2f9
 	sigs.k8s.io/apiserver-network-proxy/konnectivity-client => sigs.k8s.io/apiserver-network-proxy/konnectivity-client v0.0.27
-	sigs.k8s.io/controller-runtime => sigs.k8s.io/controller-runtime v0.11.0
+	sigs.k8s.io/controller-runtime => sigs.k8s.io/controller-runtime v0.11.1
 	sigs.k8s.io/kustomize/api => sigs.k8s.io/kustomize/api v0.11.2
 	sigs.k8s.io/kustomize/kyaml => sigs.k8s.io/kustomize/kyaml v0.13.3
 	sigs.k8s.io/structured-merge-diff/v4 => sigs.k8s.io/structured-merge-diff/v4 v4.2.1
