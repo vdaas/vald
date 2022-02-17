@@ -142,6 +142,31 @@ v1.3.1
 </li>
 </ul>
 </li>
+<li class=withchild id=cat_Api>Api
+<ul>
+<li class=index>
+<a href=/docs/api/insert/>Insert</a>
+</li>
+<li class=index>
+<a href=/docs/api/update/>Update</a>
+</li>
+<li class=index>
+<a href=/docs/api/upsert/>Upsert</a>
+</li>
+<li class=index>
+<a href=/docs/api/serach/>Serach</a>
+</li>
+<li class=index>
+<a href=/docs/api/remove/>Remove</a>
+</li>
+<li class=index>
+<a href=/docs/api/object/>Object</a>
+</li>
+<li class=index>
+<a href=/docs/api/build_proto/>Build Proto</a>
+</li>
+</ul>
+</li>
 <li class=withchild id=cat_Contributing>Contributing
 <ul>
 <li class=index>
@@ -901,7 +926,7 @@ We should test with more realistic value as user use, to produce more realistic 
 If you want to install <code>gotest</code> tools, please execute the following command under the project root directory.</p>
 <div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>make gotests/install
 </code></pre></div><p>If you use the following command to generate the missing test code.</p>
-<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>make make gotests/gen
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>make gotests/gen
 </code></pre></div><p>After the command above executed, the file <code>*target*_test.go</code> will be generated for each Go source file.
 The test code generated follows the table-driven test format.
 You can implement your test code under the <code>tests</code> variable generated following the table-driven test format.</p>
@@ -927,7 +952,7 @@ To skip the goleak detection we need to create the following variable to store t
 <div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-go data-lang=go><span style=color:#66d9ef>var</span> (
     <span style=color:#75715e>// Goroutine leak is detected by `fastime`, but it should be ignored in the test because it is an external package.
 </span><span style=color:#75715e></span>    <span style=color:#a6e22e>goleakIgnoreOptions</span> = []<span style=color:#a6e22e>goleak</span>.<span style=color:#a6e22e>Option</span>{
-        <span style=color:#a6e22e>goleak</span>.<span style=color:#a6e22e>IgnoreTopFunction</span>(<span style=color:#e6db74>&#34;github.com/kpango/fastime.(*Fastime).StartTimerD.func1&#34;</span>),
+        <span style=color:#a6e22e>goleak</span>.<span style=color:#a6e22e>IgnoreTopFunction</span>(<span style=color:#e6db74>&#34;github.com/kpango/fastime.(*fastime).StartTimerD.func1&#34;</span>),
     }
 )
 </code></pre></div><p>And modify the generated test code.</p>
@@ -1148,7 +1173,7 @@ For example, the following struct and the corresponding function:</p>
 </li>
 </ul>
 </div>
-<p class=footer__copylight>©2019-2021 vald.vdaas.org Vald team</p>
+<p class=footer__copylight>©2019-2022 vald.vdaas.org Vald team</p>
 </footer>
 </body>
 </html>

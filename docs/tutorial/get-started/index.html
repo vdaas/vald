@@ -142,6 +142,31 @@ v1.3.1
 </li>
 </ul>
 </li>
+<li class=withchild id=cat_Api>Api
+<ul>
+<li class=index>
+<a href=/docs/api/insert/>Insert</a>
+</li>
+<li class=index>
+<a href=/docs/api/update/>Update</a>
+</li>
+<li class=index>
+<a href=/docs/api/upsert/>Upsert</a>
+</li>
+<li class=index>
+<a href=/docs/api/serach/>Serach</a>
+</li>
+<li class=index>
+<a href=/docs/api/remove/>Remove</a>
+</li>
+<li class=index>
+<a href=/docs/api/object/>Object</a>
+</li>
+<li class=index>
+<a href=/docs/api/build_proto/>Build Proto</a>
+</li>
+</ul>
+</li>
 <li class=withchild id=cat_Contributing>Contributing
 <ul>
 <li class=index>
@@ -177,12 +202,12 @@ v1.3.1
 <h1 id=get-started>Get Started</h1>
 <p>Vald is a highly scalable distributed fast approximate nearest neighbor dense vector search engine.<br>
 Vald is designed and implemented based on Cloud-Native architecture.</p>
-<p>This article will show you how to deploy and run the Vald components on your Kubernetes cluster.
+<p>This tutorial shows how to deploy and run the Vald components on your Kubernetes cluster.
 And, Fashion-mnist is used as an example of a dataset.</p>
 <h2 id=overview>Overview</h2>
-<p>Before starting, let&rsquo;s check the below image.
-It shows the architecture image about the deployment result of Get Started.<br>
-The 4 kinds of components, <code>Vald LB Gateway</code>, <code>Vald Discoverer</code>, <code>Vald Agent</code>, and <code>Vald Index Manager</code> will be deployed to the Kubernetes.</p>
+<p>The below image shows the architecture image about the deployment result of <code>Get Started</code>.<br>
+The 4 kinds of components, <code>Vald LB Gateway</code>, <code>Vald Discoverer</code>, <code>Vald Agent</code>, and <code>Vald Index Manager</code> will be deployed to the Kubernetes.
+For more information about Vald&rsquo;s architecture, please refer to <a href=/docs/docs/overview/architecture>Architecture</a>.</p>
 <img src=/images/tutorial/getstarted.png>
 <p>The 5 steps to Get Started with Vald:</p>
 <ol>
@@ -215,27 +240,22 @@ apt-get install libhdf5-serial-dev
 brew install hdf5
 </code></pre></div></details>
 <h2 id=prepare-the-kubernetes-cluster>Prepare the Kubernetes Cluster</h2>
-<ol>
-<li>
-<p>Prepare Kubernetes cluster</p>
-<p>To complete get started, the Kubernetes cluster is required.<br>
-Vald will run on Cloud Service such as GKE, AWS.
-In the sense of trying to &ldquo;Get-Started&rdquo;, <a href=https://k3d.io/>k3d</a> or <a href=https://kind.sigs.k8s.io/>kind</a> are easy Kubernetes tools to use.</p>
-</li>
-<li>
-<p>Apply Kubernetes metrics server</p>
-<p>After creating your Kubernetes cluster, let&rsquo;s apply Kubernetes metrics server.</p>
+<p>This tutorial requires the Kubernetes cluster.<br>
+Vald runs on public Cloud Kubernetes Services such as GKE, EKS.
+In the sense of trying to <code>Get Started</code>, <a href=https://k3d.io/>k3d</a> or <a href=https://kind.sigs.k8s.io/>kind</a> are easy Kubernetes tools to use.</p>
+<p>This tutorial uses Kubernetes Ingress and <a href=https://github.com/kubernetes-sigs/metrics-server>Kubernetes Metrics Server</a> for running Vald.<br>
+Please make sure these functions are available.<br></p>
+<p>The configuration of Kubernetes Ingress is depended on your Kubernetes cluster&rsquo;s provider.
+Please refer to on yourself.</p>
+<p>The way to deploy Kubernetes Metrics Service is here:</p>
 <div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
 kubectl wait -n kube-system --for<span style=color:#f92672>=</span>condition<span style=color:#f92672>=</span>ready pod -l k8s-app<span style=color:#f92672>=</span>metrics-server --timeout<span style=color:#f92672>=</span>600s
-</code></pre></div></li>
-</ol>
-<h2 id=deploy-vald-on-kubernetes-cluster>Deploy Vald on Kubernetes Cluster</h2>
+</code></pre></div><h2 id=deploy-vald-on-kubernetes-cluster>Deploy Vald on Kubernetes Cluster</h2>
 <p>This chapter shows the way to deploy Vald using Helm and to run on your Kubernetes cluster.<br>
 In this tutorial, you will deploy the basic configuration of Vald that is consisted of vald-agent-ngt, vald-lb-gateway, vald-discoverer and vald-manager-index.<br></p>
 <ol>
 <li>
 <p>Clone the repository</p>
-<p>To use the <code>deployment yaml</code> for deploy, let&rsquo;s clone <a href=https://github.com/vdaas/vald.git><code>vdaas/vald</code></a> repository.</p>
 <div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>git clone https://github.com/vdaas/vald.git
 cd vald
 </code></pre></div></li>
@@ -244,17 +264,37 @@ cd vald
 <div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>kubectl cluster-info
 </code></pre></div></li>
 <li>
+<p>Edit Configurations</p>
+<p>Set the parameters for connecting to the vald-lb-gateway through Kubernetes ingress from the external network.
+Please set the these parameters.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>vim example/helm/values.yaml
+<span style=color:#f92672>===</span>
+<span style=color:#75715e>## vald-lb-gateway settings</span>
+gateway:
+  lb:
+    ...
+    ingress:
+      enabled: true
+      <span style=color:#75715e># TODO: Set your ingress host.</span>
+      host: localhost
+      <span style=color:#75715e># TODO: Set annotations which you have to set for your k8s cluster.</span>
+      annotations:
+        ...
+</code></pre></div><p>Note:<br>
+If you decided to use port-forward instead of ingress, please set <code>gateway.lb.ingress.enabled</code> to <code>false</code>.</p>
+</li>
+<li>
 <p>Deploy Vald using Helm</p>
-<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=color:#75715e># add vald repo into helm repo</span>
-helm repo add vald https://vald.vdaas.org/charts
-<span style=color:#75715e># deploy vald on your kubernetes cluster</span>
-helm install vald vald/vald --values example/helm/values.yaml
+<p>Add vald repo into the helm repo.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>helm repo add vald https://vald.vdaas.org/charts
+</code></pre></div><p>Deploy vald on your Kubernetes cluster.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>helm install vald vald/vald --values example/helm/values.yaml
 </code></pre></div></li>
 <li>
 <p>Verify</p>
 <p>When finish deploying Vald, you can check the Vald&rsquo;s pods status following command.</p>
 <div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>kubectl get pods
-</code></pre></div> <details><summary>Example output</summary><br>
+</code></pre></div><details><summary>Example output</summary><br>
 If the deployment is successful, all Vald components should be running.
 <div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>NAME                                       READY   STATUS      RESTARTS   AGE
 vald-agent-ngt-0                           1/1     Running     <span style=color:#ae81ff>0</span>          7m12s
@@ -267,7 +307,22 @@ vald-lb-gateway-6b7b9f6948-4z5md           1/1     Running     <span style=color
 vald-lb-gateway-6b7b9f6948-68g94           1/1     Running     <span style=color:#ae81ff>0</span>          6m56s
 vald-lb-gateway-6b7b9f6948-cvspq           1/1     Running     <span style=color:#ae81ff>0</span>          6m56s
 vald-manager-index-74c7b5ddd6-jrnlw        1/1     Running     <span style=color:#ae81ff>0</span>          7m12s
-</code></pre></div></li>
+</code></pre></div></details>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>kubectl get ingress
+</code></pre></div><details><summary>Example output</summary><br>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>NAME                      CLASS    HOSTS       ADDRESS        PORTS   AGE
+vald-lb-gateway-ingress   &lt;none&gt;   localhost   192.168.16.2   <span style=color:#ae81ff>80</span>      7m43s
+</code></pre></div></details>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>kubectl get svc
+</code></pre></div><details><summary>Example output</summary><br>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>NAME                 TYPE        CLUSTER-IP   EXTERNAL-IP   PORT<span style=color:#f92672>(</span>S<span style=color:#f92672>)</span>             AGE
+kubernetes           ClusterIP   10.43.0.1    &lt;none&gt;        443/TCP             9m29s
+vald-agent-ngt       ClusterIP   None         &lt;none&gt;        8081/TCP,3001/TCP   8m48s
+vald-discoverer      ClusterIP   None         &lt;none&gt;        8081/TCP,3001/TCP   8m48s
+vald-manager-index   ClusterIP   None         &lt;none&gt;        8081/TCP,3001/TCP   8m48s
+vald-lb-gateway      ClusterIP   None         &lt;none&gt;        8081/TCP,3001/TCP   8m48s
+</code></pre></div></details>
+</li>
 </ol>
 <h2 id=run-example-code>Run Example Code</h2>
 <p>In this chapter, you will execute insert vectors, search vectors, and delete vectors to your Vald cluster using the example code.<br>
@@ -277,29 +332,27 @@ Vald provides multiple language client libraries such as Go, Java, Node.js, Pyth
 If you are interested in, please refer to <a href=/docs/user-guides/sdks>SDKs</a>.<br></p>
 <ol>
 <li>
-<p>Port Forward</p>
-<p>At first, port-forward is required to make request from your local environment possible.</p>
+<p>Port Forward(option)</p>
+<p>If you do not use Kubernetes Ingress, port-forward is required to make requests from your local environment.</p>
 <div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>kubectl port-forward deployment/vald-lb-gateway 8081:8081
 </code></pre></div></li>
 <li>
 <p>Download dataset</p>
 <p>Download <a href=https://github.com/zalandoresearch/fashion-mnist>fashion-mnist</a> that is used as a dataset for indexing and search query.</p>
-<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=color:#75715e># move to the working directory</span>
-cd example/client
-
-<span style=color:#75715e># download fashion-mnist testing dataset</span>
-wget http://ann-benchmarks.com/fashion-mnist-784-euclidean.hdf5
+<p>Move to the working directory</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>cd example/client
+</code></pre></div><p>Download fashion-mnist testing dataset</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>wget http://ann-benchmarks.com/fashion-mnist-784-euclidean.hdf5
 </code></pre></div></li>
 <li>
 <p>Run Example</p>
 <p>We use <a href=https://github.com/vdaas/vald/blob/master/example/client/main.go><code>example/client/main.go</code></a> to run the example.<br>
-This example will insert and index 400 vectors into the Vald from the fashion-mnist dataset via gRPC.
+This example will insert and index 400 vectors into the Vald from the fashion-mnist dataset via <a href=https://grpc.io/>gRPC</a>.
 And then after waiting for indexing, it will request for searching the nearest vector 10 times.
 You will get the 10 nearest neighbor vectors for each search query.<br>
 Run example codes by executing the below command.</p>
-<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=color:#75715e># run example</span>
-go run main.go
-</code></pre></div> <details><summary>The detailed explanation of example code is here</summary><br>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>go run main.go
+</code></pre></div><details><summary>The detailed explanation of example code is here</summary><br>
 This will execute 6 steps.
 <ol>
 <li>
@@ -388,7 +441,7 @@ This will execute 6 steps.
 }
 
 <span style=color:#a6e22e>client</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>vald</span>.<span style=color:#a6e22e>NewValdClient</span>(<span style=color:#a6e22e>conn</span>)
-</code></pre></div> </details>
+</code></pre></div></details>
 </li>
 <li>
 <p>Insert and Index</p>
@@ -399,7 +452,7 @@ This will execute 6 steps.
 <div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-go data-lang=go><span style=color:#66d9ef>for</span> <span style=color:#a6e22e>i</span> <span style=color:#f92672>:=</span> <span style=color:#66d9ef>range</span> <span style=color:#a6e22e>ids</span> [:<span style=color:#a6e22e>insertCount</span>] {
     <span style=color:#a6e22e>_</span>, <span style=color:#a6e22e>err</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>client</span>.<span style=color:#a6e22e>Insert</span>(<span style=color:#a6e22e>ctx</span>, <span style=color:#f92672>&amp;</span><span style=color:#a6e22e>payload</span>.<span style=color:#a6e22e>Insert_Request</span>{
         <span style=color:#a6e22e>Vector</span>: <span style=color:#f92672>&amp;</span><span style=color:#a6e22e>payload</span>.<span style=color:#a6e22e>Object_Vector</span>{
-            <span style=color:#a6e22e>Id</span>: <span style=color:#a6e22e>ids</span>[<span style=color:#a6e22e>i</span>],
+            <span style=color:#a6e22e>Id</span>:     <span style=color:#a6e22e>ids</span>[<span style=color:#a6e22e>i</span>],
             <span style=color:#a6e22e>Vector</span>: <span style=color:#a6e22e>train</span>[<span style=color:#a6e22e>i</span>],
         },
         <span style=color:#a6e22e>Config</span>: <span style=color:#f92672>&amp;</span><span style=color:#a6e22e>payload</span>.<span style=color:#a6e22e>Insert_Config</span>{
@@ -442,6 +495,7 @@ This will execute 6 steps.
             <span style=color:#a6e22e>Num</span>: <span style=color:#ae81ff>10</span>,
             <span style=color:#a6e22e>Radius</span>: <span style=color:#f92672>-</span><span style=color:#ae81ff>1</span>,
             <span style=color:#a6e22e>Epsilon</span>: <span style=color:#ae81ff>0.1</span>,
+            <span style=color:#a6e22e>Timeout</span>: <span style=color:#ae81ff>100000000</span>,
         }
     }
     <span style=color:#66d9ef>if</span> <span style=color:#a6e22e>err</span> <span style=color:#f92672>!=</span> <span style=color:#66d9ef>nil</span> {
@@ -458,29 +512,30 @@ This will execute 6 steps.
 </li>
 <li>
 <p>Remove</p>
-<ul>
-<li>
-<p>Remove 400 indexed training datasets from the Vald agent.</p>
-<details><summary>example code</summary><br>
-<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-go data-lang=go><span style=color:#66d9ef>for</span> <span style=color:#a6e22e>i</span> <span style=color:#f92672>:=</span> <span style=color:#66d9ef>range</span> <span style=color:#a6e22e>ids</span> [:<span style=color:#a6e22e>insertCount</span>] {
-    <span style=color:#a6e22e>_</span>, <span style=color:#a6e22e>err</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>client</span>.<span style=color:#a6e22e>Remove</span>(<span style=color:#a6e22e>ctx</span>, <span style=color:#f92672>&amp;</span><span style=color:#a6e22e>payload</span>.<span style=color:#a6e22e>Remove_Request</span>{
-        <span style=color:#a6e22e>Id</span>: <span style=color:#f92672>&amp;</span><span style=color:#a6e22e>payload</span>.<span style=color:#a6e22e>Object_ID</span>{
-            <span style=color:#a6e22e>Id</span>: <span style=color:#a6e22e>ids</span>[<span style=color:#a6e22e>i</span>],
-        },
-    })
-    <span style=color:#66d9ef>if</span> <span style=color:#a6e22e>err</span> <span style=color:#f92672>!=</span> <span style=color:#66d9ef>nil</span> {
-        <span style=color:#a6e22e>glg</span>.<span style=color:#a6e22e>Fatal</span>(<span style=color:#a6e22e>err</span>)
+<pre><code>- Remove 400 indexed training datasets from the Vald agent.
+    &lt;details&gt;&lt;summary&gt;example code&lt;/summary&gt;&lt;br&gt;
+
+    ```go
+    for i := range ids [:insertCount] {
+        _, err := client.Remove(ctx, &amp;payload.Remove_Request{
+            Id: &amp;payload.Object_ID{
+                Id: ids[i],
+            },
+        })
+        if err != nil {
+            glg.Fatal(err)
+        }
+        if i%10 == 0 {
+            glg.Infof(&quot;Removed %d&quot;, i)
+        }
     }
-    <span style=color:#66d9ef>if</span> <span style=color:#a6e22e>i</span><span style=color:#f92672>%</span><span style=color:#ae81ff>10</span> <span style=color:#f92672>==</span> <span style=color:#ae81ff>0</span> {
-        <span style=color:#a6e22e>glg</span>.<span style=color:#a6e22e>Infof</span>(<span style=color:#e6db74>&#34;Removed %d&#34;</span>, <span style=color:#a6e22e>i</span>)
-    }
-}
-</code></pre></div> </details>
-</li>
-</ul>
+    ```
+
+    &lt;/details&gt;
+</code></pre>
+</details>
 </li>
 </ol>
-</details>
 </li>
 </ol>
 <h2 id=cleanup>Cleanup</h2>
@@ -544,7 +599,7 @@ This will execute 6 steps.
 </li>
 </ul>
 </div>
-<p class=footer__copylight>©2019-2021 vald.vdaas.org Vald team</p>
+<p class=footer__copylight>©2019-2022 vald.vdaas.org Vald team</p>
 </footer>
 </body>
 </html>
