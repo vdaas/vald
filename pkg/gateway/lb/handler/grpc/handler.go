@@ -201,7 +201,9 @@ func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *
 		return nil, err
 	}
 	cfg := req.GetConfig()
-	cfg.MinNum = 0
+	if cfg != nil {
+		cfg.MinNum = 0
+	}
 	res, err = s.search(ctx, cfg,
 		func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error) {
 			return vc.Search(ctx, req, copts...)
@@ -261,7 +263,9 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 	}
 	vec, err := s.GetObject(ctx, oreq)
 	cfg := req.GetConfig()
-	cfg.MinNum = 0
+	if cfg != nil {
+		cfg.MinNum = 0
+	}
 	if err != nil {
 		_, _, err := status.ParseError(err, codes.NotFound, fmt.Sprintf("SearchByID API failed to get uuid %s's object", req.GetId()),
 			&errdetails.RequestInfo{
@@ -889,7 +893,9 @@ func (s *server) LinearSearch(ctx context.Context, req *payload.Search_Request) 
 		return nil, err
 	}
 	cfg := req.GetConfig()
-	cfg.MinNum = 0
+	if cfg != nil {
+		cfg.MinNum = 0
+	}
 	res, err = s.search(ctx, cfg,
 		func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error) {
 			return vc.LinearSearch(ctx, req, copts...)
@@ -948,9 +954,10 @@ func (s *server) LinearSearchByID(ctx context.Context, req *payload.Search_IDReq
 		Filters: req.GetConfig().GetEgressFilters(),
 	}
 	vec, err := s.GetObject(ctx, oreq)
-
 	cfg := req.GetConfig()
-	cfg.MinNum = 0
+	if cfg != nil {
+		cfg.MinNum = 0
+	}
 	if err != nil {
 		_, _, err := status.ParseError(err, codes.NotFound, fmt.Sprintf("LinearSearchByID API failed to get uuid %s's object", req.GetId()),
 			&errdetails.RequestInfo{
@@ -999,7 +1006,7 @@ func (s *server) LinearSearchByID(ctx context.Context, req *payload.Search_IDReq
 				ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
 			}, info.Get())
 		var serr error
-		res, serr = s.search(ctx, req.GetConfig(),
+		res, serr = s.search(ctx, cfg,
 			func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error) {
 				return vc.LinearSearchByID(ctx, req, copts...)
 			})
