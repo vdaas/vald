@@ -17,26 +17,26 @@
 package json
 
 import (
-	jsoniter "github.com/json-iterator/go"
+	json "github.com/goccy/go-json"
 	"github.com/vdaas/vald/internal/io"
 )
 
 func Encode(w io.Writer, data interface{}) (err error) {
-	return jsoniter.NewEncoder(w).Encode(data)
+	return json.NewEncoder(w).Encode(data)
 }
 
 func Decode(r io.Reader, data interface{}) (err error) {
-	return jsoniter.NewDecoder(r).Decode(data)
+	return json.NewDecoder(r).Decode(data)
 }
 
 func Unmarshal(data []byte, i interface{}) error {
-	return jsoniter.Unmarshal(data, i)
+	return json.Unmarshal(data, i)
 }
 
 func Marshal(data interface{}) ([]byte, error) {
-	return jsoniter.Marshal(data)
+	return json.Marshal(data)
 }
 
 func MarshalIndent(data interface{}, pref, ind string) ([]byte, error) {
-	return jsoniter.MarshalIndent(data, pref, ind)
+	return json.MarshalIndent(data, pref, ind)
 }

@@ -20,9 +20,8 @@ package ngt
 import (
 	"testing"
 
-	"github.com/vdaas/vald/pkg/agent/core/ngt/config"
-
 	"github.com/vdaas/vald/internal/test/goleak"
+	"github.com/vdaas/vald/pkg/agent/core/ngt/config"
 )
 
 func TestWithConfig(t *testing.T) {

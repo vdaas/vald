@@ -22,9 +22,7 @@ metadata:
 spec:
   action: partition
   mode: one
-  duration: {{ .Values.networkChaos.partition.duration }}
+  # duration: {{ .Values.networkChaos.partition.duration }}
   selector:
     {{- toYaml .Values.networkChaos.partition.selector | nindent 4 }}
-  scheduler:
-    cron: "{{ .Values.networkChaos.partition.cron }}"
 {{- end }}

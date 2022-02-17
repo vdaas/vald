@@ -89,6 +89,8 @@ message Search {
     Filter.Config ingress_filters = 6;
     // Egress filter configurations.
     Filter.Config egress_filters = 7;
+    // Minimum number of result to be returned.
+    uint32 min_num = 8 [ (validate.rules).uint32.gte = 0 ];
   }
 
   // Represent a search response.

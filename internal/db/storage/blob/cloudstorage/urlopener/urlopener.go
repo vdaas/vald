@@ -23,11 +23,10 @@ import (
 	"unsafe"
 
 	"cloud.google.com/go/storage"
+	"github.com/vdaas/vald/internal/errors"
 	"gocloud.dev/blob/gcsblob"
 	"gocloud.dev/gcp"
 	"golang.org/x/oauth2/google"
-
-	"github.com/vdaas/vald/internal/errors"
 )
 
 // URLOpener returns gcsblob.URLOpener and error.
