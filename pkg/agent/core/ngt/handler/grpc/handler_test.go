@@ -19,7 +19,6 @@ package grpc
 
 import (
 	"context"
-	"fmt"
 	"reflect"
 	"testing"
 
@@ -29,8 +28,6 @@ import (
 	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
-	"github.com/vdaas/vald/internal/net/grpc/errdetails"
-	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/test/goleak"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/model"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/service"
@@ -1159,6 +1156,9 @@ func Test_server_MultiSearchByID(t *testing.T) {
 
 func Test_server_Insert(t *testing.T) {
 	t.Parallel()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
 	type args struct {
 		ctx context.Context
 		req *payload.Insert_Request
@@ -1169,6 +1169,9 @@ func Test_server_Insert(t *testing.T) {
 		ngt               service.NGT
 		eg                errgroup.Group
 		streamConcurrency int
+
+		svcCfg  config.NGT
+		svcOpts []service.Option
 	}
 	type want struct {
 		wantRes *payload.Object_Location
@@ -1192,166 +1195,105 @@ func Test_server_Insert(t *testing.T) {
 		}
 		return nil
 	}
+
+	/*
+		- Equivalence Class Testing
+			- uint8, float32
+				- case 1: Insert vector success
+				- case 2: Insert vector with different dimension
+
+		- Boundary Value Testing
+			- uint8, float32
+				- case 1: Insert vector with 0 value success
+				- case 2: Insert vector with min value success
+				- case 3: Insert vector with max value success
+				- case 4: Insert with empty UUID fail
+			- float32
+				- case 5: Insert vector with NaN value fail
+
+			- case 6: Insert nil insert request fail
+			- case 7: Insert nil vector fail
+			- case 8: Insert empty insert vector fail
+
+		- Decision Table Testing
+			- duplicated ID, duplicated vector, duplicated ID & vector
+				- case 1: Insert duplicated request success when SkipStrictExistCheck is off
+				- case 2: Insert duplicated request fail when SkipStrictExistCheck is on
+	*/
 	tests := []test{
-		func() test {
-			ngt, err := service.New(&config.NGT{
-				Dimension:    3,
-				DistanceType: "ang",
-				ObjectType:   "uint8",
-				KVSDB: &config.KVSDB{
-					Concurrency: 10,
-				},
-				VQueue: &config.VQueue{},
-			},
-				service.WithErrGroup(errgroup.Get()),
-				service.WithEnableInMemoryMode(true),
-			)
-			if err != nil {
-				t.Error(err)
-			}
+		// Equivalence Class Testing
+		{
+			name: "Equivalence Class Testing uint8 case 1: Insert vector success",
+			// arg: uuid 1, vec int, expected: success with ip&host
+		},
+		{
+			name: "Equivalence Class Testing float32 case 1: Insert vector success",
+		},
+		{
+			name: "Equivalence Class Testing uint8 case 2: Insert vector with different dimension",
+		},
+		{
+			name: "Equivalence Class Testing float32 case 2: Insert vector with different dimension",
+		},
 
-			name := "vald-agent-ngt-1"
-			id := "uuid1"
-			ip := "127.0.0.1"
+		// Boundary Value Testing
+		{
+			name: "Boundary Value Testing uint8 case 1: Insert vector with 0 value success",
+		},
+		{
+			name: "Boundary Value Testing float32 case 1: Insert vector with 0 value success",
+		},
+		{
+			name: "Boundary Value Testing uint8 case 2: Insert vector with min value success",
+		},
+		{
+			name: "Boundary Value Testing float32 case 2: Insert vector with min value success",
+		},
+		{
+			name: "Boundary Value Testing uint8 case 3: Insert vector with max value success",
+		},
+		{
+			name: "Boundary Value Testing float32 case 3: Insert vector with max value success",
+		},
+		{
+			name: "Boundary Value Testing uint8 case 4: Insert with empty UUID fail",
+		},
+		{
+			name: "Boundary Value Testing float32 case 4: Insert with empty UUID fail",
+		},
+		{
+			name: "Boundary Value Testing float32 case 5: Insert vector with NaN value fail",
+			// not sure if it will success or fail
+		},
+		{
+			name: "Boundary Value Testing case 6: Insert nil insert request fail",
+		},
+		{
+			name: "Boundary Value Testing case 7: Insert nil vector fail",
+		},
+		{
+			name: "Boundary Value Testing case 8: Insert empty insert vector fail",
+		},
 
-			return test{
-				name: "sucess to insert integer vector",
-				args: args{
-					ctx: context.Background(),
-					req: &payload.Insert_Request{
-						Vector: &payload.Object_Vector{
-							Id:     id,
-							Vector: []float32{1, 2, 3},
-						},
-					},
-				},
-				fields: fields{
-					name: name,
-					ip:   ip,
-					ngt:  ngt,
-					eg:   errgroup.Get(),
-				},
-				want: want{
-					wantRes: &payload.Object_Location{
-						Name: name,
-						Uuid: id,
-						Ips:  []string{ip},
-					},
-				},
-			}
-		}(),
-		func() test {
-			ngt, err := service.New(&config.NGT{
-				Dimension:    3,
-				DistanceType: "ang",
-				ObjectType:   "float",
-				KVSDB: &config.KVSDB{
-					Concurrency: 10,
-				},
-				VQueue: &config.VQueue{},
-			},
-				service.WithErrGroup(errgroup.Get()),
-				service.WithEnableInMemoryMode(true),
-			)
-			if err != nil {
-				t.Error(err)
-			}
-
-			name := "vald-agent-ngt-1"
-			id := "uuid1"
-			ip := "127.0.0.1"
-
-			return test{
-				name: "sucess to insert float vector",
-				args: args{
-					ctx: context.Background(),
-					req: &payload.Insert_Request{
-						Vector: &payload.Object_Vector{
-							Id:     id,
-							Vector: []float32{1.5, 2.3, 3.6},
-						},
-					},
-				},
-				fields: fields{
-					name: name,
-					ip:   ip,
-					ngt:  ngt,
-					eg:   errgroup.Get(),
-				},
-				want: want{
-					wantRes: &payload.Object_Location{
-						Name: name,
-						Uuid: id,
-						Ips:  []string{ip},
-					},
-				},
-			}
-		}(),
-		func() test {
-			ngt, err := service.New(&config.NGT{
-				Dimension:    3,
-				DistanceType: "ang",
-				ObjectType:   "float",
-				KVSDB: &config.KVSDB{
-					Concurrency: 10,
-				},
-				VQueue: &config.VQueue{},
-			},
-				service.WithErrGroup(errgroup.Get()),
-				service.WithEnableInMemoryMode(true),
-			)
-			if err != nil {
-				t.Error(err)
-			}
-
-			name := "vald-agent-ngt-1"
-			id := "uuid1"
-			ip := "127.0.0.1"
-			vec := []float32{1.5, 2.3, 3.6, 4.5, 6, 7}
-			req := &payload.Insert_Request{
-				Vector: &payload.Object_Vector{
-					Id:     id,
-					Vector: vec,
-				},
-			}
-
-			return test{
-				name: "fail to insert vector with different dimension",
-				args: args{
-					ctx: context.Background(),
-					req: req,
-				},
-				fields: fields{
-					name: name,
-					ip:   ip,
-					ngt:  ngt,
-					eg:   errgroup.Get(),
-				},
-				want: want{
-					err: func() error {
-						err := errors.ErrIncompatibleDimensionSize(len(vec), 3)
-						return status.WrapWithInvalidArgument("Insert API Incompatible Dimension Size detected",
-							err,
-							&errdetails.RequestInfo{
-								RequestId:   id,
-								ServingData: errdetails.Serialize(req),
-							},
-							&errdetails.BadRequest{
-								FieldViolations: []*errdetails.BadRequestFieldViolation{
-									{
-										Field:       "vector dimension size",
-										Description: err.Error(),
-									},
-								},
-							},
-							&errdetails.ResourceInfo{
-								ResourceType: ngtResourceType + "/ngt.Insert",
-								ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, name, ip),
-							})
-					}(),
-				},
-			}
-		}(),
+		// Decision Table Testing
+		{
+			name: "Decision Table Testing duplicated ID case 1: Insert duplicated request success when SkipStrictExistCheck is off",
+		},
+		{
+			name: "Decision Table Testing duplicated vector case 1: Insert duplicated request success when SkipStrictExistCheck is off",
+		},
+		{
+			name: "Decision Table Testing duplicated ID & vector case 1: Insert duplicated request success when SkipStrictExistCheck is off",
+		},
+		{
+			name: "Decision Table Testing duplicated ID case 2: Insert duplicated request fail when SkipStrictExistCheck is on",
+		},
+		{
+			name: "Decision Table Testing duplicated vector case 2: Insert duplicated request fail when SkipStrictExistCheck is on",
+		},
+		{
+			name: "Decision Table Testing duplicated ID & vector case 2: Insert duplicated request fail when SkipStrictExistCheck is on",
+		},
 	}
 
 	for _, tc := range tests {
