@@ -12,7 +12,7 @@ replace (
 	github.com/Azure/go-autorest => github.com/Azure/go-autorest v14.2.1-0.20220131174551-b3899c105742+incompatible
 	github.com/Azure/go-autorest/autorest => github.com/Azure/go-autorest/autorest v0.11.25-0.20220131174551-b3899c105742
 	github.com/Azure/go-autorest/autorest/adal => github.com/Azure/go-autorest/autorest/adal v0.9.19-0.20220131174551-b3899c105742
-	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.42.53
+	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.43.0
 	github.com/chzyer/logex => github.com/chzyer/logex v1.2.0
 	github.com/coreos/etcd => go.etcd.io/etcd v3.3.27+incompatible
 	github.com/dgrijalva/jwt-go => github.com/golang-jwt/jwt/v4 v4.3.0
@@ -22,7 +22,7 @@ replace (
 	github.com/go-logr/logr => github.com/go-logr/logr v1.2.2
 	github.com/go-sql-driver/mysql => github.com/go-sql-driver/mysql v1.6.0
 	github.com/goccy/go-json => github.com/goccy/go-json v0.9.4
-	github.com/gocql/gocql => github.com/gocql/gocql v0.0.0-20220215161543-dbb3730926ea
+	github.com/gocql/gocql => github.com/gocql/gocql v0.0.0-20220216114134-360b71ee0a29
 	github.com/gogo/protobuf => github.com/gogo/protobuf v1.3.2
 	github.com/golang/groupcache => github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da
 	github.com/golang/protobuf => github.com/golang/protobuf v1.5.2
@@ -54,10 +54,10 @@ replace (
 	github.com/zeebo/xxh3 => github.com/zeebo/xxh3 v1.0.1
 	go.etcd.io/bbolt => go.etcd.io/bbolt v1.3.6
 	go.opencensus.io => go.opencensus.io v0.23.0
-	go.opentelemetry.io/otel => go.opentelemetry.io/otel v1.4.0
+	go.opentelemetry.io/otel => go.opentelemetry.io/otel v1.4.1
 	go.opentelemetry.io/otel/metric => go.opentelemetry.io/otel/metric v0.27.0
-	go.opentelemetry.io/otel/sdk => go.opentelemetry.io/otel/sdk v1.4.0
-	go.opentelemetry.io/otel/trace => go.opentelemetry.io/otel/trace v1.4.0
+	go.opentelemetry.io/otel/sdk => go.opentelemetry.io/otel/sdk v1.4.1
+	go.opentelemetry.io/otel/trace => go.opentelemetry.io/otel/trace v1.4.1
 	go.uber.org/atomic => go.uber.org/atomic v1.9.0
 	go.uber.org/goleak => go.uber.org/goleak v1.1.12
 	go.uber.org/multierr => go.uber.org/multierr v1.7.0
@@ -81,7 +81,7 @@ replace (
 	gonum.org/v1/plot => gonum.org/v1/plot v0.10.0
 	google.golang.org/api => google.golang.org/api v0.69.0
 	google.golang.org/appengine => google.golang.org/appengine v1.6.7
-	google.golang.org/genproto => google.golang.org/genproto v0.0.0-20220215190005-e57b466719ef
+	google.golang.org/genproto => google.golang.org/genproto v0.0.0-20220216160803-4663080d8bc8
 	google.golang.org/grpc => google.golang.org/grpc v1.44.0
 	google.golang.org/grpc/cmd/protoc-gen-go-grpc => google.golang.org/grpc/cmd/protoc-gen-go-grpc v1.2.0
 	google.golang.org/protobuf => google.golang.org/protobuf v1.27.1
