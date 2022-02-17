@@ -201,14 +201,22 @@ func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *
 		return nil, err
 	}
 	cfg := req.GetConfig()
-	if cfg != nil {
-		cfg.MinNum = 0
+	mn := cfg.GetMinNum()
+	if req.Config != nil {
+		req.Config.MinNum = 0
 	}
-	res, err = s.search(ctx, cfg,
-		func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error) {
-			return vc.Search(ctx, req, copts...)
-		})
-
+	res, err = s.search(ctx, &payload.Search_Config{
+		RequestId:      cfg.GetRequestId(),
+		Num:            cfg.GetNum(),
+		MinNum:         mn,
+		Radius:         cfg.GetRadius(),
+		Epsilon:        cfg.GetEpsilon(),
+		Timeout:        cfg.GetTimeout(),
+		IngressFilters: cfg.GetIngressFilters(),
+		EgressFilters:  cfg.GetEgressFilters(),
+	}, func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error) {
+		return vc.Search(ctx, req, copts...)
+	})
 	if err != nil {
 		st, msg, err := status.ParseError(err, codes.Internal,
 			"failed to parse Search gRPC error response",
@@ -263,8 +271,19 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 	}
 	vec, err := s.GetObject(ctx, oreq)
 	cfg := req.GetConfig()
-	if cfg != nil {
-		cfg.MinNum = 0
+	mn := cfg.GetMinNum()
+	if req.Config != nil {
+		req.Config.MinNum = 0
+	}
+	scfg := &payload.Search_Config{
+		RequestId:      cfg.GetRequestId(),
+		Num:            cfg.GetNum(),
+		MinNum:         mn,
+		Radius:         cfg.GetRadius(),
+		Epsilon:        cfg.GetEpsilon(),
+		Timeout:        cfg.GetTimeout(),
+		IngressFilters: cfg.GetIngressFilters(),
+		EgressFilters:  cfg.GetEgressFilters(),
 	}
 	if err != nil {
 		_, _, err := status.ParseError(err, codes.NotFound, fmt.Sprintf("SearchByID API failed to get uuid %s's object", req.GetId()),
@@ -277,11 +296,9 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 				ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
 			})
 		var serr error
-		res, serr = s.search(ctx, cfg,
-			func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error) {
-				return vc.SearchByID(ctx, req, copts...)
-			})
-
+		res, serr = s.search(ctx, scfg, func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error) {
+			return vc.SearchByID(ctx, req, copts...)
+		})
 		if serr == nil {
 			return res, nil
 		}
@@ -301,7 +318,7 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 	}
 	res, err = s.Search(ctx, &payload.Search_Request{
 		Vector: vec.GetVector(),
-		Config: cfg,
+		Config: scfg,
 	})
 	if err != nil {
 		_, _, err := status.ParseError(err, codes.Internal, "SearchByID API failed to process search request",
@@ -313,10 +330,9 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 				ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
 			}, info.Get())
 		var serr error
-		res, serr = s.search(ctx, cfg,
-			func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error) {
-				return vc.SearchByID(ctx, req, copts...)
-			})
+		res, serr = s.search(ctx, scfg, func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error) {
+			return vc.SearchByID(ctx, req, copts...)
+		})
 		if serr == nil {
 			return res, nil
 		}
@@ -893,14 +909,20 @@ func (s *server) LinearSearch(ctx context.Context, req *payload.Search_Request) 
 		return nil, err
 	}
 	cfg := req.GetConfig()
-	if cfg != nil {
-		cfg.MinNum = 0
+	mn := cfg.GetMinNum()
+	if req.Config != nil {
+		req.Config.MinNum = 0
 	}
-	res, err = s.search(ctx, cfg,
-		func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error) {
-			return vc.LinearSearch(ctx, req, copts...)
-		})
-
+	res, err = s.search(ctx, &payload.Search_Config{
+		RequestId:      cfg.GetRequestId(),
+		Num:            cfg.GetNum(),
+		MinNum:         mn,
+		Timeout:        cfg.GetTimeout(),
+		IngressFilters: cfg.GetIngressFilters(),
+		EgressFilters:  cfg.GetEgressFilters(),
+	}, func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error) {
+		return vc.LinearSearch(ctx, req, copts...)
+	})
 	if err != nil {
 		st, msg, err := status.ParseError(err, codes.Internal,
 			"failed to parse LinearSearch gRPC error response",
@@ -955,8 +977,17 @@ func (s *server) LinearSearchByID(ctx context.Context, req *payload.Search_IDReq
 	}
 	vec, err := s.GetObject(ctx, oreq)
 	cfg := req.GetConfig()
-	if cfg != nil {
-		cfg.MinNum = 0
+	mn := cfg.GetMinNum()
+	if req.Config != nil {
+		req.Config.MinNum = 0
+	}
+	scfg := &payload.Search_Config{
+		RequestId:      cfg.GetRequestId(),
+		Num:            cfg.GetNum(),
+		MinNum:         mn,
+		Timeout:        cfg.GetTimeout(),
+		IngressFilters: cfg.GetIngressFilters(),
+		EgressFilters:  cfg.GetEgressFilters(),
 	}
 	if err != nil {
 		_, _, err := status.ParseError(err, codes.NotFound, fmt.Sprintf("LinearSearchByID API failed to get uuid %s's object", req.GetId()),
@@ -969,11 +1000,9 @@ func (s *server) LinearSearchByID(ctx context.Context, req *payload.Search_IDReq
 				ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
 			})
 		var serr error
-		res, serr = s.search(ctx, cfg,
-			func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error) {
-				return vc.LinearSearchByID(ctx, req, copts...)
-			})
-
+		res, serr = s.search(ctx, scfg, func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error) {
+			return vc.LinearSearchByID(ctx, req, copts...)
+		})
 		if serr == nil {
 			return res, nil
 		}
@@ -994,7 +1023,7 @@ func (s *server) LinearSearchByID(ctx context.Context, req *payload.Search_IDReq
 
 	res, err = s.LinearSearch(ctx, &payload.Search_Request{
 		Vector: vec.GetVector(),
-		Config: cfg,
+		Config: scfg,
 	})
 	if err != nil {
 		_, _, err := status.ParseError(err, codes.Internal, "LinearSearchByID API failed to process search request",
@@ -1006,10 +1035,9 @@ func (s *server) LinearSearchByID(ctx context.Context, req *payload.Search_IDReq
 				ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
 			}, info.Get())
 		var serr error
-		res, serr = s.search(ctx, cfg,
-			func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error) {
-				return vc.LinearSearchByID(ctx, req, copts...)
-			})
+		res, serr = s.search(ctx, scfg, func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error) {
+			return vc.LinearSearchByID(ctx, req, copts...)
+		})
 		if serr == nil {
 			return res, nil
 		}
