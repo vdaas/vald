@@ -251,6 +251,7 @@ spec:
                           type: string
                           enum:
                             - float
+                            - float16
                             - uint8
                         search_edge_size:
                           type: integer
