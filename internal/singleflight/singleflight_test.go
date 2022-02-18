@@ -124,7 +124,7 @@ func Test_group_Do(t *testing.T) {
 			// routine1
 			key1 := "req_1"
 			var cnt1 uint32
-			fn1 := func() (interface{}, error) {
+			fn1 := func() (interface{}, error) { //nolint:unparam
 				atomic.AddUint32(&cnt1, 1)
 				return "res_1", nil
 			}
@@ -132,7 +132,7 @@ func Test_group_Do(t *testing.T) {
 			// routine 2
 			key2 := "req_2"
 			var cnt2 uint32
-			fn2 := func() (interface{}, error) {
+			fn2 := func() (interface{}, error) { //nolint:unparam
 				atomic.AddUint32(&cnt2, 1)
 				return "res_2", nil
 			}
@@ -183,7 +183,7 @@ func Test_group_Do(t *testing.T) {
 			// routine1
 			var cnt1 uint32
 
-			fn1 := func() (interface{}, error) {
+			fn1 := func() (interface{}, error) { //nolint:unparam
 				atomic.AddUint32(&cnt1, 1)
 				time.Sleep(time.Millisecond * 500)
 				return "res_1", nil
@@ -191,7 +191,7 @@ func Test_group_Do(t *testing.T) {
 
 			// routine 2
 			var cnt2 uint32
-			fn2 := func() (interface{}, error) {
+			fn2 := func() (interface{}, error) { //nolint:unparam
 				atomic.AddUint32(&cnt2, 1)
 				return "res_2", nil
 			}
