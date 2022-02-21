@@ -7,12 +7,12 @@ replace (
 	cloud.google.com/go/iam => cloud.google.com/go/iam v0.2.0
 	cloud.google.com/go/monitoring => cloud.google.com/go/monitoring v1.3.0
 	cloud.google.com/go/profiler => cloud.google.com/go/profiler v0.2.0
-	cloud.google.com/go/storage => cloud.google.com/go/storage v1.20.0
+	cloud.google.com/go/storage => cloud.google.com/go/storage v1.21.0
 	cloud.google.com/go/trace => cloud.google.com/go/trace v1.1.0
 	github.com/Azure/go-autorest => github.com/Azure/go-autorest v14.2.1-0.20220131174551-b3899c105742+incompatible
 	github.com/Azure/go-autorest/autorest => github.com/Azure/go-autorest/autorest v0.11.25-0.20220131174551-b3899c105742
 	github.com/Azure/go-autorest/autorest/adal => github.com/Azure/go-autorest/autorest/adal v0.9.19-0.20220131174551-b3899c105742
-	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.43.0
+	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.43.3
 	github.com/chzyer/logex => github.com/chzyer/logex v1.2.0
 	github.com/coreos/etcd => go.etcd.io/etcd v3.3.27+incompatible
 	github.com/dgrijalva/jwt-go => github.com/golang-jwt/jwt/v4 v4.3.0
@@ -30,7 +30,7 @@ replace (
 	github.com/google/btree => github.com/google/btree v1.0.1
 	github.com/google/gnostic => github.com/google/gnostic v0.6.6
 	github.com/google/go-cmp => github.com/google/go-cmp v0.5.7
-	github.com/google/pprof => github.com/google/pprof v0.0.0-20220128192902-513e8ac6eea1
+	github.com/google/pprof => github.com/google/pprof v0.0.0-20220218203455-0368bd9e19a7
 	github.com/google/uuid => github.com/google/uuid v1.3.0
 	github.com/gophercloud/gophercloud => github.com/gophercloud/gophercloud v0.24.0
 	github.com/gorilla/mux => github.com/gorilla/mux v1.8.0
@@ -38,7 +38,7 @@ replace (
 	github.com/hailocab/go-hostpool => github.com/kpango/go-hostpool v0.0.0-20210303030322-aab80263dcd0
 	github.com/hashicorp/go-version => github.com/hashicorp/go-version v1.4.0
 	github.com/json-iterator/go => github.com/json-iterator/go v1.1.12
-	github.com/klauspost/compress => github.com/klauspost/compress v1.14.3-0.20220214135504-fe93d93a2d9e
+	github.com/klauspost/compress => github.com/klauspost/compress v1.14.4-0.20220221065423-910cf1695b98
 	github.com/kpango/glg => github.com/kpango/glg v1.6.10
 	github.com/onsi/ginkgo => github.com/onsi/ginkgo v1.16.5
 	github.com/onsi/gomega => github.com/onsi/gomega v1.18.1
@@ -63,7 +63,7 @@ replace (
 	go.uber.org/multierr => go.uber.org/multierr v1.7.0
 	go.uber.org/zap => go.uber.org/zap v1.21.0
 	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20220214200702-86341886e292
-	golang.org/x/exp => golang.org/x/exp v0.0.0-20220215214139-058d147d01d4
+	golang.org/x/exp => golang.org/x/exp v0.0.0-20220218215828-6cf2b201936e
 	golang.org/x/image => golang.org/x/image v0.0.0-20211028202545-6944b10bf410
 	golang.org/x/lint => golang.org/x/lint v0.0.0-20210508222113-6edffad5e616
 	golang.org/x/mobile => golang.org/x/mobile v0.0.0-20220112015953-858099ff7816
@@ -81,25 +81,25 @@ replace (
 	gonum.org/v1/plot => gonum.org/v1/plot v0.10.0
 	google.golang.org/api => google.golang.org/api v0.69.0
 	google.golang.org/appengine => google.golang.org/appengine v1.6.7
-	google.golang.org/genproto => google.golang.org/genproto v0.0.0-20220216160803-4663080d8bc8
+	google.golang.org/genproto => google.golang.org/genproto v0.0.0-20220218161850-94dd64e39d7c
 	google.golang.org/grpc => google.golang.org/grpc v1.44.0
 	google.golang.org/grpc/cmd/protoc-gen-go-grpc => google.golang.org/grpc/cmd/protoc-gen-go-grpc v1.2.0
 	google.golang.org/protobuf => google.golang.org/protobuf v1.27.1
 	gopkg.in/check.v1 => gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c
 	gopkg.in/yaml.v2 => gopkg.in/yaml.v2 v2.4.0
 	gopkg.in/yaml.v3 => gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
-	k8s.io/api => k8s.io/api v0.23.3
-	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.23.3
-	k8s.io/apimachinery => k8s.io/apimachinery v0.23.3
-	k8s.io/apiserver => k8s.io/apiserver v0.23.3
-	k8s.io/cli-runtime => k8s.io/cli-runtime v0.23.3
-	k8s.io/client-go => k8s.io/client-go v0.23.3
-	k8s.io/code-generator => k8s.io/code-generator v0.23.3
-	k8s.io/component-base => k8s.io/component-base v0.23.3
+	k8s.io/api => k8s.io/api v0.23.4
+	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.23.4
+	k8s.io/apimachinery => k8s.io/apimachinery v0.23.4
+	k8s.io/apiserver => k8s.io/apiserver v0.23.4
+	k8s.io/cli-runtime => k8s.io/cli-runtime v0.23.4
+	k8s.io/client-go => k8s.io/client-go v0.23.4
+	k8s.io/code-generator => k8s.io/code-generator v0.23.4
+	k8s.io/component-base => k8s.io/component-base v0.23.4
 	k8s.io/gengo => k8s.io/gengo v0.0.0-20211129171323-c02415ce4185
 	k8s.io/klog/v2 => k8s.io/klog/v2 v2.40.1
 	k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20220124234850-424119656bbf
-	k8s.io/metrics => k8s.io/metrics v0.23.3
+	k8s.io/metrics => k8s.io/metrics v0.23.4
 	k8s.io/utils => k8s.io/utils v0.0.0-20220210201930-3a6ce19ff2f9
 	sigs.k8s.io/apiserver-network-proxy/konnectivity-client => sigs.k8s.io/apiserver-network-proxy/konnectivity-client v0.0.27
 	sigs.k8s.io/controller-runtime => sigs.k8s.io/controller-runtime v0.11.1
@@ -126,7 +126,7 @@ require (
 	github.com/gocraft/dbr/v2 v2.7.3
 	github.com/google/go-cmp v0.5.7
 	github.com/gorilla/mux v1.8.0
-	github.com/hashicorp/go-version v1.2.0
+	github.com/hashicorp/go-version v0.0.0-00010101000000-000000000000
 	github.com/klauspost/compress v1.13.5
 	github.com/kpango/fastime v1.1.4
 	github.com/kpango/fuid v0.0.0-20220209050620-e5987ba1ea5e
@@ -152,16 +152,16 @@ require (
 	golang.org/x/tools v0.1.8-0.20211029000441-d6a9af8af023
 	gonum.org/v1/hdf5 v0.0.0-20210714002203-8c5d23bc6946
 	gonum.org/v1/plot v0.9.0
-	google.golang.org/api v0.67.0
-	google.golang.org/genproto v0.0.0-20220211171837-173942840c17
+	google.golang.org/api v0.69.0
+	google.golang.org/genproto v0.0.0-20220216160803-4663080d8bc8
 	google.golang.org/grpc v1.44.0
 	google.golang.org/protobuf v1.27.1
 	gopkg.in/yaml.v2 v2.4.0
 	inet.af/netaddr v0.0.0-20211027220019-c74959edd3b6
-	k8s.io/api v0.23.3
-	k8s.io/apimachinery v0.23.3
+	k8s.io/api v0.23.4
+	k8s.io/apimachinery v0.23.4
 	k8s.io/cli-runtime v0.0.0-00010101000000-000000000000
-	k8s.io/client-go v0.23.3
+	k8s.io/client-go v0.23.4
 	k8s.io/metrics v0.0.0-00010101000000-000000000000
 	sigs.k8s.io/controller-runtime v0.0.0-00010101000000-000000000000
 )
@@ -253,7 +253,7 @@ require (
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
 	k8s.io/apiextensions-apiserver v0.23.0 // indirect
-	k8s.io/component-base v0.23.3 // indirect
+	k8s.io/component-base v0.23.4 // indirect
 	k8s.io/klog/v2 v2.30.0 // indirect
 	k8s.io/kube-openapi v0.0.0-20211115234752-e816edb12b65 // indirect
 	k8s.io/utils v0.0.0-20211116205334-6203023598ed // indirect
