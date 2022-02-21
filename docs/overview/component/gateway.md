@@ -19,7 +19,7 @@ Vald Gateway is responsible for:
 Vald Gateway has two kinds of components:
 
 1. Vald LB Gateway
-   - The main component of the Vald cluster and connecting to Kubernetes Ingress.
+   - The main component of the Vald cluster and connecting to Kubernetes Ingress
 2. Vald Filter Gateway
    - Bypass between Vald LB Gateway and user-defined Ingress filter or Egress filter components
    - Vald LB Gateway passes the requests to Vald Filter Gateway when they need the filter processes.
