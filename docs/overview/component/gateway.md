@@ -1,8 +1,8 @@
 # Vald Gateway
 
-Vald Gateway handles any requests component in the Vald cluster, as its name suggests.
+Vald Gateway is the component to handle all requests in the Vald cluster.
 
-This component is essential for operating as Vald cluster because it depends on most components.
+This component is essential to operate the Vald cluster because all requests should pass it, and other components depend on it.
 
 This page introduces the overview and features of Vald Gateway.
 
@@ -10,7 +10,7 @@ This page introduces the overview and features of Vald Gateway.
 
 Vald Gateway is responsible for:
 
-- Pass requests to the other vald components
+- Pass requests to the other Vald components
 - Control request timeout
 - Sort out search results as user demand
 
@@ -19,10 +19,10 @@ Vald Gateway is responsible for:
 Vald Gateway has two kinds of components:
 
 1. Vald LB Gateway
-   - The main component for Vald cluster and connecting to Kubernetes Ingress.
+   - The main component of the Vald cluster and connecting to Kubernetes Ingress.
 2. Vald Filter Gateway
    - Bypass between Vald LB Gateway and user-defined Ingress filter or Egress filter components
-   - Vald LB Gateway passes to the requests at the right time.
+   - Vald LB Gateway passes the requests to Vald Filter Gateway when they need the filter processes.
 
 <!-- TODO: insert image of vald lb gateway and vald filter gateway -->
 
@@ -33,7 +33,7 @@ Like the above, we will focus on introducing the features of Vald LB Gateway.
   - User requests have passed Kubernetes Ingress reaches to Vald LB Gateway.
   - Vald LB Gateway will suspend processing according to timeout and return a response when the internal processing takes a long time.
 
-- Control inserting vector
+- Control insert vectors
   - As its name shows, Vald LB Gateway has the load balancing feature.
   - Vald LB Gateway controls insert vector requests based on `index replica` and each Vald Agent Pod resource usage, which Vald Discoverer provides, to avoid uneven resource usage.
 
