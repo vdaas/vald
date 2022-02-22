@@ -1,6 +1,6 @@
-<mxfile host="app.diagrams.net" modified="2022-02-21T10:29:11.754Z" agent="5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.102 Safari/537.36" etag="jADMErEGm_zboaKPz76K" version="16.6.1" type="github" pages="6">
+<mxfile host="app.diagrams.net" modified="2022-02-22T04:27:08.104Z" agent="5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.102 Safari/537.36" etag="-WGhbyiwczU6wnvFg7yg" version="16.6.1" type="github" pages="6">
   <diagram id="G1JGPGgUFOdblld4p04J" name="insert flow">
-    <mxGraphModel dx="2391" dy="2569" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+    <mxGraphModel dx="1038" dy="1764" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -398,7 +398,7 @@
           <mxGeometry x="1486" y="690" width="91.73" height="74.68" as="geometry" />
         </mxCell>
         <mxCell id="_-VnSy5BovDdd2gs6nWq-2" value="&lt;h1&gt;Vald Insert Flow&lt;/h1&gt;" style="text;html=1;resizable=0;autosize=1;align=center;verticalAlign=middle;points=[];fillColor=none;strokeColor=none;rounded=0;fontColor=#006076;" vertex="1" parent="1">
-          <mxGeometry x="41" y="60" width="193" height="50" as="geometry" />
+          <mxGeometry x="42.81" y="42" width="193" height="50" as="geometry" />
         </mxCell>
         <mxCell id="_-VnSy5BovDdd2gs6nWq-63" value="" style="group" vertex="1" connectable="0" parent="1">
           <mxGeometry x="957" y="238" width="110" height="14.29" as="geometry" />
@@ -1384,6 +1384,9 @@
         </mxCell>
         <mxCell id="laIRqskWxECtjhU21OYd-2" value="・・・・" style="text;html=1;resizable=0;autosize=1;align=left;verticalAlign=middle;points=[];rounded=0;fontSize=10;fontStyle=1" vertex="1" parent="1">
           <mxGeometry x="515.8600000000001" y="1080" width="50" height="16" as="geometry" />
+        </mxCell>
+        <mxCell id="laIRqskWxECtjhU21OYd-101" value="Vald Agent" style="text;html=1;resizable=0;autosize=1;align=left;verticalAlign=middle;points=[];rounded=0;fontSize=10;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="40.780000000000086" y="129" width="70" height="20" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
