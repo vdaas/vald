@@ -2293,11 +2293,6 @@ spec:
                       properties:
                         tag:
                           type: string
-                    ingress:
-                      type: object
-                      properties:
-                        usev1beta1:
-                          type: boolean
                     logging:
                       type: object
                       properties:
