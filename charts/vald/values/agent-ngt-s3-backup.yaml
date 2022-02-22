@@ -1,0 +1,79 @@
+defaults:
+  image:
+    tag: nightly
+  server_config:
+    metrics:
+      pprof:
+        enabled: true
+
+gateway:
+  lb:
+    podAnnotations:
+      profefe.com/enable: "true"
+      profefe.com/port: "6060"
+      profefe.com/service: "vald-lb-gateway"
+    resources:
+      requests:
+        cpu: 100m
+        memory: 50Mi
+
+agent:
+  podAnnotations:
+    profefe.com/enable: "true"
+    profefe.com/port: "6060"
+    profefe.com/service: "vald-agent-ngt"
+  minReplicas: 5
+  maxReplicas: 10
+  podManagementPolicy: Parallel
+  resources:
+    requests:
+      cpu: 100m
+      memory: 50Mi
+  ngt:
+    dimension: 784
+    index_path: "/var/ngt/index"
+    enable_in_memory_mode: false
+  sidecar:
+    enabled: true
+    initContainerEnabled: true
+    # This is the s3 settings.
+    # Please change it according to your environment.
+    config:
+      blob_storage:
+        storage_type: "s3"
+        bucket: "vald"
+        s3:
+          region: "us-central1"
+    # If you enable sidecar, the following environment variables will be created automatically by default values.
+    # So, please create the 'aws-secret' resource before deploying.
+    # env:
+    #   - name: AWS_ACCESS_KEY
+    #     valueFrom:
+    #       secretKeyRef:
+    #         name: aws-secret
+    #         key: access-key
+    #   - name: AWS_SECRET_ACCESS_KEY
+    #     valueFrom:
+    #       secretKeyRef:
+    #         name: aws-secret
+    #         key: secret-access-key
+discoverer:
+  podAnnotations:
+    profefe.com/enable: "true"
+    profefe.com/port: "6060"
+    profefe.com/service: "vald-discoverer"
+  resources:
+    requests:
+      cpu: 100m
+      memory: 50Mi
+
+manager:
+  index:
+    podAnnotations:
+      profefe.com/enable: "true"
+      profefe.com/port: "6060"
+      profefe.com/service: "vald-manager-index"
+    resources:
+      requests:
+        cpu: 100m
+        memory: 30Mi
