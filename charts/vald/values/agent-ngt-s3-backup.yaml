@@ -36,7 +36,7 @@ agent:
   sidecar:
     enabled: true
     initContainerEnabled: true
-    # This is the s3 settings.
+    # This is the Amazon S3 settings.
     # Please change it according to your environment.
     config:
       blob_storage:
