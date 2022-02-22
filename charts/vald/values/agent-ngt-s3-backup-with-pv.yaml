@@ -29,7 +29,7 @@ agent:
     requests:
       cpu: 100m
       memory: 50Mi
-  # This is the persistent volume settings for the k3d environment.
+  # This is the persistent volume settings.
   # Please change it according to your environment.
   persistentVolume:
     enabled: true
