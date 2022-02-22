@@ -19,6 +19,7 @@ import (
 	"os"
 	"os/exec"
 	"reflect"
+	"sync"
 	"testing"
 
 	"github.com/vdaas/vald/internal/errors"
@@ -47,27 +48,31 @@ func TestInit(t *testing.T) {
 				}
 				return nil
 			},
+			afterFunc: func() {
+				once = sync.Once{}
+			},
 		},
-		// this test case cannot be run because the once object is initialized
-		// as the init() will be called when we import the package
-		// {
-		// 	name: "set logger success with verbosity level is set",
-		// 	beforeFunc: func(t *testing.T) {
-		// 		t.Setenv("GRPC_GO_LOG_VERBOSITY_LEVEL", "2")
-		// 	},
-		// 	checkFunc: func(w want) error {
-		// 		if !grpclog.V(1) {
-		// 			return errors.New("verbosity level 1 is not set")
-		// 		}
-		// 		if !grpclog.V(2) {
-		// 			//	return errors.New("verbosity level is not set")
-		// 		}
-		// 		if grpclog.V(3) {
-		// 			return errors.New("verbosity level is not correct")
-		// 		}
-		// 		return nil
-		// 	},
-		// },
+		{
+			name: "set logger success with verbosity level is set",
+			beforeFunc: func(t *testing.T) {
+				t.Setenv("GRPC_GO_LOG_VERBOSITY_LEVEL", "2")
+			},
+			checkFunc: func(w want) error {
+				if !grpclog.V(1) {
+					return errors.New("verbosity level 1 is not set")
+				}
+				if !grpclog.V(2) {
+					return errors.New("verbosity level is not set")
+				}
+				if grpclog.V(3) {
+					return errors.New("verbosity level is not correct")
+				}
+				return nil
+			},
+			afterFunc: func() {
+				once = sync.Once{}
+			},
+		},
 	}
 
 	for _, tc := range tests {
