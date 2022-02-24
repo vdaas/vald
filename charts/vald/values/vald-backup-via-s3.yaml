@@ -9,6 +9,7 @@ gateway:
         cpu: 100m
         memory: 50Mi
     gateway_config:
+      # number of index replica
       index_replica: 2
 
 agent:
@@ -62,10 +63,17 @@ manager:
         cpu: 100m
         memory: 30Mi
     indexer:
+      # concurrency for indexing operation.
       concurrency: 2
-      auto_index_duration_limit: 30m
+      # limit duration of automatic indexing.
+      auto_index_duration_limit: 10m 
+      # check duration of automatic indexing.
       auto_index_check_duration: 1m
-      auto_save_index_duration_limit: 3h
+      # limit duration of automatic index saving.
+      auto_save_index_duration_limit: 1h
+      # duration of automatic index saving wait duration for next saving.
       auto_save_index_wait_duration: 10m
+      # number of cache to trigger automatic indexing.
       auto_index_length: 100
+      # number of pool size of create index processing.
       creation_pool_size: 10000
