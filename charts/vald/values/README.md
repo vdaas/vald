@@ -2,7 +2,7 @@
 
 This is the manifest to deploy Vald.
 
-## Deploy an only vald-agent-ngt.
+## Deploy an only vald-agent-ngt
 
 ```
 helm install --values agent-ngt-standalone.yaml vald-cluster vald/vald
