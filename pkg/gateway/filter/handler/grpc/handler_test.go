@@ -94,12 +94,13 @@ func TestNew(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := New(test.args.opts...)
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -226,8 +227,9 @@ func Test_server_SearchObject(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			s := &server{
 				eg:                test.fields.eg,
@@ -248,7 +250,7 @@ func Test_server_SearchObject(t *testing.T) {
 			}
 
 			got, err := s.SearchObject(test.args.ctx, test.args.req)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -375,8 +377,9 @@ func Test_server_MultiSearchObject(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			s := &server{
 				eg:                test.fields.eg,
@@ -397,7 +400,7 @@ func Test_server_MultiSearchObject(t *testing.T) {
 			}
 
 			gotRes, err := s.MultiSearchObject(test.args.ctx, test.args.reqs)
-			if err := test.checkFunc(test.want, gotRes, err); err != nil {
+			if err := checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -517,8 +520,9 @@ func Test_server_StreamSearchObject(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			s := &server{
 				eg:                test.fields.eg,
@@ -539,7 +543,7 @@ func Test_server_StreamSearchObject(t *testing.T) {
 			}
 
 			err := s.StreamSearchObject(test.args.stream)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -666,8 +670,9 @@ func Test_server_InsertObject(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			s := &server{
 				eg:                test.fields.eg,
@@ -688,7 +693,7 @@ func Test_server_InsertObject(t *testing.T) {
 			}
 
 			got, err := s.InsertObject(test.args.ctx, test.args.req)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -808,8 +813,9 @@ func Test_server_StreamInsertObject(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			s := &server{
 				eg:                test.fields.eg,
@@ -830,7 +836,7 @@ func Test_server_StreamInsertObject(t *testing.T) {
 			}
 
 			err := s.StreamInsertObject(test.args.stream)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -957,8 +963,9 @@ func Test_server_MultiInsertObject(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			s := &server{
 				eg:                test.fields.eg,
@@ -979,7 +986,7 @@ func Test_server_MultiInsertObject(t *testing.T) {
 			}
 
 			gotLocs, err := s.MultiInsertObject(test.args.ctx, test.args.reqs)
-			if err := test.checkFunc(test.want, gotLocs, err); err != nil {
+			if err := checkFunc(test.want, gotLocs, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1106,8 +1113,9 @@ func Test_server_UpdateObject(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			s := &server{
 				eg:                test.fields.eg,
@@ -1128,7 +1136,7 @@ func Test_server_UpdateObject(t *testing.T) {
 			}
 
 			got, err := s.UpdateObject(test.args.ctx, test.args.req)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1248,8 +1256,9 @@ func Test_server_StreamUpdateObject(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			s := &server{
 				eg:                test.fields.eg,
@@ -1270,7 +1279,7 @@ func Test_server_StreamUpdateObject(t *testing.T) {
 			}
 
 			err := s.StreamUpdateObject(test.args.stream)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1397,8 +1406,9 @@ func Test_server_MultiUpdateObject(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			s := &server{
 				eg:                test.fields.eg,
@@ -1419,7 +1429,7 @@ func Test_server_MultiUpdateObject(t *testing.T) {
 			}
 
 			gotLocs, err := s.MultiUpdateObject(test.args.ctx, test.args.reqs)
-			if err := test.checkFunc(test.want, gotLocs, err); err != nil {
+			if err := checkFunc(test.want, gotLocs, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1546,8 +1556,9 @@ func Test_server_UpsertObject(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			s := &server{
 				eg:                test.fields.eg,
@@ -1568,7 +1579,7 @@ func Test_server_UpsertObject(t *testing.T) {
 			}
 
 			got, err := s.UpsertObject(test.args.ctx, test.args.req)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1688,8 +1699,9 @@ func Test_server_StreamUpsertObject(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			s := &server{
 				eg:                test.fields.eg,
@@ -1710,7 +1722,7 @@ func Test_server_StreamUpsertObject(t *testing.T) {
 			}
 
 			err := s.StreamUpsertObject(test.args.stream)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1837,8 +1849,9 @@ func Test_server_MultiUpsertObject(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			s := &server{
 				eg:                test.fields.eg,
@@ -1859,7 +1872,7 @@ func Test_server_MultiUpsertObject(t *testing.T) {
 			}
 
 			gotLocs, err := s.MultiUpsertObject(test.args.ctx, test.args.reqs)
-			if err := test.checkFunc(test.want, gotLocs, err); err != nil {
+			if err := checkFunc(test.want, gotLocs, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1986,8 +1999,9 @@ func Test_server_Exists(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			s := &server{
 				eg:                test.fields.eg,
@@ -2008,7 +2022,7 @@ func Test_server_Exists(t *testing.T) {
 			}
 
 			got, err := s.Exists(test.args.ctx, test.args.meta)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -2135,8 +2149,9 @@ func Test_server_Search(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			s := &server{
 				eg:                test.fields.eg,
@@ -2157,7 +2172,7 @@ func Test_server_Search(t *testing.T) {
 			}
 
 			gotRes, err := s.Search(test.args.ctx, test.args.req)
-			if err := test.checkFunc(test.want, gotRes, err); err != nil {
+			if err := checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -2284,8 +2299,9 @@ func Test_server_SearchByID(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			s := &server{
 				eg:                test.fields.eg,
@@ -2306,7 +2322,7 @@ func Test_server_SearchByID(t *testing.T) {
 			}
 
 			gotRes, err := s.SearchByID(test.args.ctx, test.args.req)
-			if err := test.checkFunc(test.want, gotRes, err); err != nil {
+			if err := checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -2426,8 +2442,9 @@ func Test_server_StreamSearch(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			s := &server{
 				eg:                test.fields.eg,
@@ -2448,7 +2465,7 @@ func Test_server_StreamSearch(t *testing.T) {
 			}
 
 			err := s.StreamSearch(test.args.stream)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -2568,8 +2585,9 @@ func Test_server_StreamSearchByID(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			s := &server{
 				eg:                test.fields.eg,
@@ -2590,7 +2608,7 @@ func Test_server_StreamSearchByID(t *testing.T) {
 			}
 
 			err := s.StreamSearchByID(test.args.stream)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -2717,8 +2735,9 @@ func Test_server_MultiSearch(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			s := &server{
 				eg:                test.fields.eg,
@@ -2739,7 +2758,7 @@ func Test_server_MultiSearch(t *testing.T) {
 			}
 
 			gotRes, err := s.MultiSearch(test.args.ctx, test.args.reqs)
-			if err := test.checkFunc(test.want, gotRes, err); err != nil {
+			if err := checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -2866,8 +2885,9 @@ func Test_server_MultiSearchByID(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			s := &server{
 				eg:                test.fields.eg,
@@ -2888,7 +2908,7 @@ func Test_server_MultiSearchByID(t *testing.T) {
 			}
 
 			gotRes, err := s.MultiSearchByID(test.args.ctx, test.args.reqs)
-			if err := test.checkFunc(test.want, gotRes, err); err != nil {
+			if err := checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -3015,8 +3035,9 @@ func Test_server_Insert(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			s := &server{
 				eg:                test.fields.eg,
@@ -3037,7 +3058,7 @@ func Test_server_Insert(t *testing.T) {
 			}
 
 			gotLoc, err := s.Insert(test.args.ctx, test.args.req)
-			if err := test.checkFunc(test.want, gotLoc, err); err != nil {
+			if err := checkFunc(test.want, gotLoc, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -3157,8 +3178,9 @@ func Test_server_StreamInsert(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			s := &server{
 				eg:                test.fields.eg,
@@ -3179,7 +3201,7 @@ func Test_server_StreamInsert(t *testing.T) {
 			}
 
 			err := s.StreamInsert(test.args.stream)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -3306,8 +3328,9 @@ func Test_server_MultiInsert(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			s := &server{
 				eg:                test.fields.eg,
@@ -3328,7 +3351,7 @@ func Test_server_MultiInsert(t *testing.T) {
 			}
 
 			gotLocs, err := s.MultiInsert(test.args.ctx, test.args.reqs)
-			if err := test.checkFunc(test.want, gotLocs, err); err != nil {
+			if err := checkFunc(test.want, gotLocs, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -3455,8 +3478,9 @@ func Test_server_Update(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			s := &server{
 				eg:                test.fields.eg,
@@ -3477,7 +3501,7 @@ func Test_server_Update(t *testing.T) {
 			}
 
 			gotLoc, err := s.Update(test.args.ctx, test.args.req)
-			if err := test.checkFunc(test.want, gotLoc, err); err != nil {
+			if err := checkFunc(test.want, gotLoc, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -3597,8 +3621,9 @@ func Test_server_StreamUpdate(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			s := &server{
 				eg:                test.fields.eg,
@@ -3619,7 +3644,7 @@ func Test_server_StreamUpdate(t *testing.T) {
 			}
 
 			err := s.StreamUpdate(test.args.stream)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -3746,8 +3771,9 @@ func Test_server_MultiUpdate(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			s := &server{
 				eg:                test.fields.eg,
@@ -3768,7 +3794,7 @@ func Test_server_MultiUpdate(t *testing.T) {
 			}
 
 			gotLocs, err := s.MultiUpdate(test.args.ctx, test.args.reqs)
-			if err := test.checkFunc(test.want, gotLocs, err); err != nil {
+			if err := checkFunc(test.want, gotLocs, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -3895,8 +3921,9 @@ func Test_server_Upsert(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			s := &server{
 				eg:                test.fields.eg,
@@ -3917,7 +3944,7 @@ func Test_server_Upsert(t *testing.T) {
 			}
 
 			gotLoc, err := s.Upsert(test.args.ctx, test.args.req)
-			if err := test.checkFunc(test.want, gotLoc, err); err != nil {
+			if err := checkFunc(test.want, gotLoc, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -4037,8 +4064,9 @@ func Test_server_StreamUpsert(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			s := &server{
 				eg:                test.fields.eg,
@@ -4059,7 +4087,7 @@ func Test_server_StreamUpsert(t *testing.T) {
 			}
 
 			err := s.StreamUpsert(test.args.stream)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -4186,8 +4214,9 @@ func Test_server_MultiUpsert(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			s := &server{
 				eg:                test.fields.eg,
@@ -4208,7 +4237,7 @@ func Test_server_MultiUpsert(t *testing.T) {
 			}
 
 			gotLocs, err := s.MultiUpsert(test.args.ctx, test.args.reqs)
-			if err := test.checkFunc(test.want, gotLocs, err); err != nil {
+			if err := checkFunc(test.want, gotLocs, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -4335,8 +4364,9 @@ func Test_server_Remove(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			s := &server{
 				eg:                test.fields.eg,
@@ -4357,7 +4387,7 @@ func Test_server_Remove(t *testing.T) {
 			}
 
 			gotLoc, err := s.Remove(test.args.ctx, test.args.req)
-			if err := test.checkFunc(test.want, gotLoc, err); err != nil {
+			if err := checkFunc(test.want, gotLoc, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -4477,8 +4507,9 @@ func Test_server_StreamRemove(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			s := &server{
 				eg:                test.fields.eg,
@@ -4499,7 +4530,7 @@ func Test_server_StreamRemove(t *testing.T) {
 			}
 
 			err := s.StreamRemove(test.args.stream)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -4626,8 +4657,9 @@ func Test_server_MultiRemove(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			s := &server{
 				eg:                test.fields.eg,
@@ -4648,7 +4680,7 @@ func Test_server_MultiRemove(t *testing.T) {
 			}
 
 			gotLocs, err := s.MultiRemove(test.args.ctx, test.args.reqs)
-			if err := test.checkFunc(test.want, gotLocs, err); err != nil {
+			if err := checkFunc(test.want, gotLocs, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -4775,8 +4807,9 @@ func Test_server_GetObject(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			s := &server{
 				eg:                test.fields.eg,
@@ -4797,7 +4830,7 @@ func Test_server_GetObject(t *testing.T) {
 			}
 
 			gotVec, err := s.GetObject(test.args.ctx, test.args.req)
-			if err := test.checkFunc(test.want, gotVec, err); err != nil {
+			if err := checkFunc(test.want, gotVec, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -4917,8 +4950,9 @@ func Test_server_StreamGetObject(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			s := &server{
 				eg:                test.fields.eg,
@@ -4939,7 +4973,7 @@ func Test_server_StreamGetObject(t *testing.T) {
 			}
 
 			err := s.StreamGetObject(test.args.stream)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

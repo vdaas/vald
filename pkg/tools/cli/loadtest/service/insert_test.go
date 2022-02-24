@@ -100,12 +100,13 @@ func Test_insertRequestProvider(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			gotF, gotSize, err := insertRequestProvider(test.args.dataset, test.args.batchSize)
-			if err := test.checkFunc(test.want, gotF, gotSize, err); err != nil {
+			if err := checkFunc(test.want, gotF, gotSize, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -177,12 +178,13 @@ func Test_objectVectorProvider(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got, got1 := objectVectorProvider(test.args.dataset)
-			if err := test.checkFunc(test.want, got, got1); err != nil {
+			if err := checkFunc(test.want, got, got1); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -257,12 +259,13 @@ func Test_objectVectorsProvider(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got, got1 := objectVectorsProvider(test.args.dataset, test.args.n)
-			if err := test.checkFunc(test.want, got, got1); err != nil {
+			if err := checkFunc(test.want, got, got1); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -364,8 +367,9 @@ func Test_loader_newInsert(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			l := &loader{
 				eg:               test.fields.eg,
@@ -382,7 +386,7 @@ func Test_loader_newInsert(t *testing.T) {
 			}
 
 			gotF, err := l.newInsert()
-			if err := test.checkFunc(test.want, gotF, err); err != nil {
+			if err := checkFunc(test.want, gotF, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -484,8 +488,9 @@ func Test_loader_newStreamInsert(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			l := &loader{
 				eg:               test.fields.eg,
@@ -502,7 +507,7 @@ func Test_loader_newStreamInsert(t *testing.T) {
 			}
 
 			gotF, err := l.newStreamInsert()
-			if err := test.checkFunc(test.want, gotF, err); err != nil {
+			if err := checkFunc(test.want, gotF, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

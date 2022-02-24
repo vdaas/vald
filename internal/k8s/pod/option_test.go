@@ -119,7 +119,7 @@ func TestWithControllerName(t *testing.T) {
 
 			   got := WithControllerName(test.args.name)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -132,7 +132,7 @@ func TestWithControllerName(t *testing.T) {
 			   got := WithControllerName(test.args.name)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
+			   if err := checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -235,7 +235,7 @@ func TestWithManager(t *testing.T) {
 
 			   got := WithManager(test.args.mgr)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -248,7 +248,7 @@ func TestWithManager(t *testing.T) {
 			   got := WithManager(test.args.mgr)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
+			   if err := checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -351,7 +351,7 @@ func TestWithOnErrorFunc(t *testing.T) {
 
 			   got := WithOnErrorFunc(test.args.f)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -364,7 +364,7 @@ func TestWithOnErrorFunc(t *testing.T) {
 			   got := WithOnErrorFunc(test.args.f)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
+			   if err := checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -467,7 +467,7 @@ func TestWithOnReconcileFunc(t *testing.T) {
 
 			   got := WithOnReconcileFunc(test.args.f)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -480,7 +480,7 @@ func TestWithOnReconcileFunc(t *testing.T) {
 			   got := WithOnReconcileFunc(test.args.f)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
+			   if err := checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/

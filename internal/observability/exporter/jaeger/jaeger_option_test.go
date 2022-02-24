@@ -116,7 +116,7 @@ func TestWithCollectorEndpoint(t *testing.T) {
 
 			   got := WithCollectorEndpoint(test.args.cep)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -129,7 +129,7 @@ func TestWithCollectorEndpoint(t *testing.T) {
 			   got := WithCollectorEndpoint(test.args.cep)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
+			   if err := checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -230,7 +230,7 @@ func TestWithAgentEndpoint(t *testing.T) {
 
 			   got := WithAgentEndpoint(test.args.aep)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -243,7 +243,7 @@ func TestWithAgentEndpoint(t *testing.T) {
 			   got := WithAgentEndpoint(test.args.aep)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
+			   if err := checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -344,7 +344,7 @@ func TestWithUsername(t *testing.T) {
 
 			   got := WithUsername(test.args.username)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -357,7 +357,7 @@ func TestWithUsername(t *testing.T) {
 			   got := WithUsername(test.args.username)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
+			   if err := checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -458,7 +458,7 @@ func TestWithPassword(t *testing.T) {
 
 			   got := WithPassword(test.args.password)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -471,7 +471,7 @@ func TestWithPassword(t *testing.T) {
 			   got := WithPassword(test.args.password)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
+			   if err := checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -572,7 +572,7 @@ func TestWithServiceName(t *testing.T) {
 
 			   got := WithServiceName(test.args.serviceName)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -585,7 +585,7 @@ func TestWithServiceName(t *testing.T) {
 			   got := WithServiceName(test.args.serviceName)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
+			   if err := checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -686,7 +686,7 @@ func TestWithBufferMaxCount(t *testing.T) {
 
 			   got := WithBufferMaxCount(test.args.cnt)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -699,7 +699,7 @@ func TestWithBufferMaxCount(t *testing.T) {
 			   got := WithBufferMaxCount(test.args.cnt)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
+			   if err := checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -800,7 +800,7 @@ func TestWithOnErrorFunc(t *testing.T) {
 
 			   got := WithOnErrorFunc(test.args.f)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -813,7 +813,7 @@ func TestWithOnErrorFunc(t *testing.T) {
 			   got := WithOnErrorFunc(test.args.f)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
+			   if err := checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/

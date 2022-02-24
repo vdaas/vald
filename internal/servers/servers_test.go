@@ -438,8 +438,9 @@ func Test_listener_ListenAndServe(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			l := &listener{
 				servers: test.fields.servers,
@@ -450,7 +451,7 @@ func Test_listener_ListenAndServe(t *testing.T) {
 			}
 
 			got := l.ListenAndServe(test.args.ctx)
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -537,8 +538,9 @@ func Test_listener_Shutdown(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			l := &listener{
 				servers: test.fields.servers,
@@ -549,7 +551,7 @@ func Test_listener_Shutdown(t *testing.T) {
 			}
 
 			err := l.Shutdown(test.args.ctx)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

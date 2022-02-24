@@ -95,12 +95,13 @@ func TestNew(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			gotIdx, err := New(test.args.opts...)
-			if err := test.checkFunc(test.want, gotIdx, err); err != nil {
+			if err := checkFunc(test.want, gotIdx, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -223,8 +224,9 @@ func Test_index_Start(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			idx := &index{
 				client:                 test.fields.client,
@@ -245,7 +247,7 @@ func Test_index_Start(t *testing.T) {
 			}
 
 			got, err := idx.Start(test.args.ctx)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -370,8 +372,9 @@ func Test_index_execute(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			idx := &index{
 				client:                 test.fields.client,
@@ -392,7 +395,7 @@ func Test_index_execute(t *testing.T) {
 			}
 
 			err := idx.execute(test.args.ctx, test.args.enableLowIndexSkip, test.args.immediateSaving)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -506,8 +509,9 @@ func Test_index_waitForNextSaving(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			idx := &index{
 				client:                 test.fields.client,
@@ -528,7 +532,7 @@ func Test_index_waitForNextSaving(t *testing.T) {
 			}
 
 			idx.waitForNextSaving(test.args.ctx)
-			if err := test.checkFunc(test.want); err != nil {
+			if err := checkFunc(test.want); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -647,8 +651,9 @@ func Test_index_loadInfos(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			idx := &index{
 				client:                 test.fields.client,
@@ -669,7 +674,7 @@ func Test_index_loadInfos(t *testing.T) {
 			}
 
 			err := idx.loadInfos(test.args.ctx)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -778,8 +783,9 @@ func Test_index_IsIndexing(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			idx := &index{
 				client:                 test.fields.client,
@@ -800,7 +806,7 @@ func Test_index_IsIndexing(t *testing.T) {
 			}
 
 			got := idx.IsIndexing()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -909,8 +915,9 @@ func Test_index_NumberOfUUIDs(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			idx := &index{
 				client:                 test.fields.client,
@@ -931,7 +938,7 @@ func Test_index_NumberOfUUIDs(t *testing.T) {
 			}
 
 			got := idx.NumberOfUUIDs()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1040,8 +1047,9 @@ func Test_index_NumberOfUncommittedUUIDs(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			idx := &index{
 				client:                 test.fields.client,
@@ -1062,7 +1070,7 @@ func Test_index_NumberOfUncommittedUUIDs(t *testing.T) {
 			}
 
 			got := idx.NumberOfUncommittedUUIDs()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

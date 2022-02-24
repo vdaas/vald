@@ -92,12 +92,13 @@ func TestNew(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got, got1 := New(test.args.ctx)
-			if err := test.checkFunc(test.want, got, got1); err != nil {
+			if err := checkFunc(test.want, got, got1); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -163,12 +164,13 @@ func TestInit(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			gotEgctx := Init(test.args.ctx)
-			if err := test.checkFunc(test.want, gotEgctx); err != nil {
+			if err := checkFunc(test.want, gotEgctx); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -247,12 +249,13 @@ func TestGet(t *testing.T) {
 			}
 			defer test.afterFunc()
 
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := Get()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -313,12 +316,13 @@ func TestGo(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			Go(test.args.f)
-			if err := test.checkFunc(instance); err != nil {
+			if err := checkFunc(instance); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -401,8 +405,9 @@ func Test_group_Limitation(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			g := &group{
 				limitation:       test.fields.limitation,
@@ -410,7 +415,7 @@ func Test_group_Limitation(t *testing.T) {
 			}
 
 			g.Limitation(test.args.limit)
-			if err := test.checkFunc(test.want, g); err != nil {
+			if err := checkFunc(test.want, g); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -544,8 +549,9 @@ func Test_group_Go(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			g := &group{
@@ -561,7 +567,7 @@ func Test_group_Go(t *testing.T) {
 			}
 
 			g.Go(test.args.f)
-			if err := test.checkFunc(g); err != nil {
+			if err := checkFunc(g); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -612,15 +618,16 @@ func Test_group_doCancel(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			g := &group{
 				cancel: test.fields.cancel,
 			}
 
 			g.doCancel()
-			if err := test.checkFunc(); err != nil {
+			if err := checkFunc(); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -665,12 +672,13 @@ func TestWait(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			err := Wait()
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -751,8 +759,9 @@ func Test_group_Wait(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			g := &group{
 				limitation:       test.fields.limitation,
@@ -765,7 +774,7 @@ func Test_group_Wait(t *testing.T) {
 			}
 
 			err := g.Wait()
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

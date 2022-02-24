@@ -116,7 +116,7 @@ func TestWithAPIKey(t *testing.T) {
 
 			   got := WithAPIKey(test.args.apiKey)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -129,7 +129,7 @@ func TestWithAPIKey(t *testing.T) {
 			   got := WithAPIKey(test.args.apiKey)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
+			   if err := checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -230,7 +230,7 @@ func TestWithAudiences(t *testing.T) {
 
 			   got := WithAudiences(test.args.audiences...)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -243,7 +243,7 @@ func TestWithAudiences(t *testing.T) {
 			   got := WithAudiences(test.args.audiences...)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
+			   if err := checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -344,7 +344,7 @@ func TestWithCredentialsFile(t *testing.T) {
 
 			   got := WithCredentialsFile(test.args.path)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -357,7 +357,7 @@ func TestWithCredentialsFile(t *testing.T) {
 			   got := WithCredentialsFile(test.args.path)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
+			   if err := checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -458,7 +458,7 @@ func TestWithEndpoint(t *testing.T) {
 
 			   got := WithEndpoint(test.args.endpoint)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -471,7 +471,7 @@ func TestWithEndpoint(t *testing.T) {
 			   got := WithEndpoint(test.args.endpoint)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
+			   if err := checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -572,7 +572,7 @@ func TestWithQuotaProject(t *testing.T) {
 
 			   got := WithQuotaProject(test.args.qp)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -585,7 +585,7 @@ func TestWithQuotaProject(t *testing.T) {
 			   got := WithQuotaProject(test.args.qp)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
+			   if err := checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -686,7 +686,7 @@ func TestWithRequestReason(t *testing.T) {
 
 			   got := WithRequestReason(test.args.rr)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -699,7 +699,7 @@ func TestWithRequestReason(t *testing.T) {
 			   got := WithRequestReason(test.args.rr)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
+			   if err := checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -800,7 +800,7 @@ func TestWithScopes(t *testing.T) {
 
 			   got := WithScopes(test.args.scopes...)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -813,7 +813,7 @@ func TestWithScopes(t *testing.T) {
 			   got := WithScopes(test.args.scopes...)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
+			   if err := checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -914,7 +914,7 @@ func TestWithUserAgent(t *testing.T) {
 
 			   got := WithUserAgent(test.args.ua)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -927,7 +927,7 @@ func TestWithUserAgent(t *testing.T) {
 			   got := WithUserAgent(test.args.ua)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
+			   if err := checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -1028,7 +1028,7 @@ func TestWithCredentialsJSON(t *testing.T) {
 
 			   got := WithCredentialsJSON(test.args.json)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -1041,7 +1041,7 @@ func TestWithCredentialsJSON(t *testing.T) {
 			   got := WithCredentialsJSON(test.args.json)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
+			   if err := checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -1142,7 +1142,7 @@ func TestWithTelemetry(t *testing.T) {
 
 			   got := WithTelemetry(test.args.enabled)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -1155,7 +1155,7 @@ func TestWithTelemetry(t *testing.T) {
 			   got := WithTelemetry(test.args.enabled)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
+			   if err := checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -1256,7 +1256,7 @@ func TestWithAuthentication(t *testing.T) {
 
 			   got := WithAuthentication(test.args.enabled)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -1269,7 +1269,7 @@ func TestWithAuthentication(t *testing.T) {
 			   got := WithAuthentication(test.args.enabled)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
+			   if err := checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/

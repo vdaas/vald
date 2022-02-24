@@ -103,8 +103,9 @@ func Test_loadLargeData(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := loadLargeData(
@@ -116,7 +117,7 @@ func Test_loadLargeData(t *testing.T) {
 				test.args.distanceType,
 				test.args.objectType,
 			)
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -210,8 +211,9 @@ func Test_largeDataset_Train(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			d := &largeDataset{
 				dataset:     test.fields.dataset,
@@ -222,7 +224,7 @@ func Test_largeDataset_Train(t *testing.T) {
 			}
 
 			got, err := d.Train(test.args.i)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -302,8 +304,9 @@ func Test_largeDataset_TrainSize(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			d := &largeDataset{
 				dataset:     test.fields.dataset,
@@ -314,7 +317,7 @@ func Test_largeDataset_TrainSize(t *testing.T) {
 			}
 
 			got := d.TrainSize()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -408,8 +411,9 @@ func Test_largeDataset_Query(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			d := &largeDataset{
 				dataset:     test.fields.dataset,
@@ -420,7 +424,7 @@ func Test_largeDataset_Query(t *testing.T) {
 			}
 
 			got, err := d.Query(test.args.i)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -500,8 +504,9 @@ func Test_largeDataset_QuerySize(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			d := &largeDataset{
 				dataset:     test.fields.dataset,
@@ -512,7 +517,7 @@ func Test_largeDataset_QuerySize(t *testing.T) {
 			}
 
 			got := d.QuerySize()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -606,8 +611,9 @@ func Test_largeDataset_Distance(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			d := &largeDataset{
 				dataset:     test.fields.dataset,
@@ -618,7 +624,7 @@ func Test_largeDataset_Distance(t *testing.T) {
 			}
 
 			got, err := d.Distance(test.args.i)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -698,8 +704,9 @@ func Test_largeDataset_DistanceSize(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			d := &largeDataset{
 				dataset:     test.fields.dataset,
@@ -710,7 +717,7 @@ func Test_largeDataset_DistanceSize(t *testing.T) {
 			}
 
 			got := d.DistanceSize()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -804,8 +811,9 @@ func Test_largeDataset_Neighbor(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			d := &largeDataset{
 				dataset:     test.fields.dataset,
@@ -816,7 +824,7 @@ func Test_largeDataset_Neighbor(t *testing.T) {
 			}
 
 			got, err := d.Neighbor(test.args.i)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -896,8 +904,9 @@ func Test_largeDataset_NeighborSize(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			d := &largeDataset{
 				dataset:     test.fields.dataset,
@@ -908,7 +917,7 @@ func Test_largeDataset_NeighborSize(t *testing.T) {
 			}
 
 			got := d.NeighborSize()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -988,8 +997,9 @@ func Test_largeDataset_Dimension(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			d := &largeDataset{
 				dataset:     test.fields.dataset,
@@ -1000,7 +1010,7 @@ func Test_largeDataset_Dimension(t *testing.T) {
 			}
 
 			got := d.Dimension()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1080,8 +1090,9 @@ func Test_largeDataset_DistanceType(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			d := &largeDataset{
 				dataset:     test.fields.dataset,
@@ -1092,7 +1103,7 @@ func Test_largeDataset_DistanceType(t *testing.T) {
 			}
 
 			got := d.DistanceType()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1172,8 +1183,9 @@ func Test_largeDataset_ObjectType(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			d := &largeDataset{
 				dataset:     test.fields.dataset,
@@ -1184,7 +1196,7 @@ func Test_largeDataset_ObjectType(t *testing.T) {
 			}
 
 			got := d.ObjectType()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1264,8 +1276,9 @@ func Test_largeDataset_Name(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			d := &largeDataset{
 				dataset:     test.fields.dataset,
@@ -1276,7 +1289,7 @@ func Test_largeDataset_Name(t *testing.T) {
 			}
 
 			got := d.Name()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
