@@ -197,8 +197,9 @@ func TestNew(t *testing.T) {
 			if test.afterFunc == nil {
 				test.afterFunc = defaultAfterFunc
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got, err := New(test.args.opts...)
@@ -207,7 +208,7 @@ func TestNew(t *testing.T) {
 					tt.Error(err)
 				}
 			}()
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -633,8 +634,9 @@ func TestLoad(t *testing.T) {
 			if test.afterFunc == nil {
 				test.afterFunc = defaultAfterFunc
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got, err := Load(test.args.opts...)
@@ -643,7 +645,7 @@ func TestLoad(t *testing.T) {
 					tt.Error(err)
 				}
 			}()
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -801,8 +803,9 @@ func Test_gen(t *testing.T) {
 			if test.afterFunc == nil {
 				test.afterFunc = defaultAfterFunc
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got, err := gen(test.args.isLoad, test.args.opts...)
@@ -811,7 +814,7 @@ func Test_gen(t *testing.T) {
 					tt.Error(err)
 				}
 			}()
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -881,8 +884,9 @@ func Test_ngt_setup(t *testing.T) {
 			if test.afterFunc == nil {
 				test.afterFunc = defaultAfterFunc
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
 				idxPath:             test.fields.idxPath,
@@ -901,7 +905,7 @@ func Test_ngt_setup(t *testing.T) {
 			}()
 
 			err := n.setup()
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1035,8 +1039,9 @@ func Test_ngt_loadOptions(t *testing.T) {
 			if test.afterFunc == nil {
 				test.afterFunc = defaultAfterFunc
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			if test.createFunc == nil {
 				test.createFunc = defaultCreateFunc
@@ -1055,7 +1060,7 @@ func Test_ngt_loadOptions(t *testing.T) {
 			n := obj.(*ngt)
 
 			err = n.loadOptions(test.args.opts...)
-			if err := test.checkFunc(test.want, n, err); err != nil {
+			if err := checkFunc(test.want, n, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1199,8 +1204,9 @@ func Test_ngt_open(t *testing.T) {
 			if test.afterFunc == nil {
 				test.afterFunc = defaultAfterFunc
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			if test.createFunc == nil {
 				test.createFunc = defaultCreateFunc
@@ -1222,7 +1228,7 @@ func Test_ngt_open(t *testing.T) {
 			}
 
 			err = n.open()
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1295,8 +1301,9 @@ func Test_ngt_loadObjectSpace(t *testing.T) {
 			if test.afterFunc == nil {
 				test.afterFunc = defaultAfterFunc
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			if test.createFunc == nil {
 				test.createFunc = defaultCreateFunc
@@ -1317,7 +1324,7 @@ func Test_ngt_loadObjectSpace(t *testing.T) {
 			}
 
 			err = n.loadObjectSpace()
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1826,8 +1833,9 @@ func Test_ngt_Search(t *testing.T) {
 			if test.afterFunc == nil {
 				test.afterFunc = defaultAfterFunc
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			if test.createFunc == nil {
 				test.createFunc = defaultCreateFunc
@@ -1839,7 +1847,7 @@ func Test_ngt_Search(t *testing.T) {
 			}
 
 			got, err := n.Search(test.args.vec, test.args.size, test.args.epsilon, test.args.radius)
-			if err := test.checkFunc(test.want, got, n, err); err != nil {
+			if err := checkFunc(test.want, got, n, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 
@@ -2091,8 +2099,9 @@ func Test_ngt_Insert(t *testing.T) {
 			if test.afterFunc == nil {
 				test.afterFunc = defaultAfterFunc
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			if test.createFunc == nil {
 				test.createFunc = defaultCreateFunc
@@ -2104,7 +2113,7 @@ func Test_ngt_Insert(t *testing.T) {
 			}
 
 			got, err := n.Insert(test.args.vec)
-			if err := test.checkFunc(test.want, got, n, test.args, err); err != nil {
+			if err := checkFunc(test.want, got, n, test.args, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 
@@ -2343,8 +2352,9 @@ func Test_ngt_InsertCommit(t *testing.T) {
 			if test.afterFunc == nil {
 				test.afterFunc = defaultAfterFunc
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			if test.createFunc == nil {
 				test.createFunc = defaultCreateFunc
@@ -2356,7 +2366,7 @@ func Test_ngt_InsertCommit(t *testing.T) {
 			}
 
 			got, err := n.InsertCommit(test.args.vec, test.args.poolSize)
-			if err := test.checkFunc(test.want, got, n, test.args, err); err != nil {
+			if err := checkFunc(test.want, got, n, test.args, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 
@@ -2653,8 +2663,9 @@ func Test_ngt_BulkInsert(t *testing.T) {
 			if test.afterFunc == nil {
 				test.afterFunc = defaultAfterFunc
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			if test.createFunc == nil {
 				test.createFunc = defaultCreateFunc
@@ -2671,7 +2682,7 @@ func Test_ngt_BulkInsert(t *testing.T) {
 			}()
 
 			got, got1 := n.BulkInsert(test.args.vecs)
-			if err := test.checkFunc(test.want, got, n, test.fields, test.args, got1); err != nil {
+			if err := checkFunc(test.want, got, n, test.fields, test.args, got1); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -2946,8 +2957,9 @@ func Test_ngt_BulkInsertCommit(t *testing.T) {
 			if test.afterFunc == nil {
 				test.afterFunc = defaultAfterFunc
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			if test.createFunc == nil {
 				test.createFunc = defaultCreateFunc
@@ -2964,7 +2976,7 @@ func Test_ngt_BulkInsertCommit(t *testing.T) {
 			}()
 
 			got, got1 := n.BulkInsertCommit(test.args.vecs, test.args.poolSize)
-			if err := test.checkFunc(test.want, got, n, test.fields, test.args, got1); err != nil {
+			if err := checkFunc(test.want, got, n, test.fields, test.args, got1); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -3202,8 +3214,9 @@ func Test_ngt_CreateAndSaveIndex(t *testing.T) {
 			if test.afterFunc == nil {
 				test.afterFunc = defaultAfterFunc
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			if test.createFunc == nil {
 				test.createFunc = defaultCreateFunc
@@ -3220,7 +3233,7 @@ func Test_ngt_CreateAndSaveIndex(t *testing.T) {
 			}()
 
 			err = n.CreateAndSaveIndex(test.args.poolSize)
-			if err := test.checkFunc(test.want, n, test.args, err); err != nil {
+			if err := checkFunc(test.want, n, test.args, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -3458,8 +3471,9 @@ func Test_ngt_CreateIndex(t *testing.T) {
 			if test.afterFunc == nil {
 				test.afterFunc = defaultAfterFunc
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			if test.createFunc == nil {
 				test.createFunc = defaultCreateFunc
@@ -3476,7 +3490,7 @@ func Test_ngt_CreateIndex(t *testing.T) {
 			}()
 
 			err = n.CreateIndex(test.args.poolSize)
-			if err := test.checkFunc(test.want, n, test.args, err); err != nil {
+			if err := checkFunc(test.want, n, test.args, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -3711,8 +3725,9 @@ func Test_ngt_SaveIndex(t *testing.T) {
 			if test.afterFunc == nil {
 				test.afterFunc = defaultAfterFunc
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			if test.createFunc == nil {
 				test.createFunc = defaultCreateFunc
@@ -3729,7 +3744,7 @@ func Test_ngt_SaveIndex(t *testing.T) {
 			}()
 
 			err = n.SaveIndex()
-			if err := test.checkFunc(test.want, n, test.args, err); err != nil {
+			if err := checkFunc(test.want, n, test.args, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -3945,8 +3960,9 @@ func Test_ngt_Remove(t *testing.T) {
 			if test.afterFunc == nil {
 				test.afterFunc = defaultAfterFunc
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			if test.createFunc == nil {
 				test.createFunc = defaultCreateFunc
@@ -3958,7 +3974,7 @@ func Test_ngt_Remove(t *testing.T) {
 			}
 
 			err = n.Remove(test.args.id)
-			if err := test.checkFunc(test.want, n, err); err != nil {
+			if err := checkFunc(test.want, n, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 
@@ -4268,8 +4284,9 @@ func Test_ngt_BulkRemove(t *testing.T) {
 			if test.afterFunc == nil {
 				test.afterFunc = defaultAfterFunc
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			if test.createFunc == nil {
 				test.createFunc = defaultCreateFunc
@@ -4281,7 +4298,7 @@ func Test_ngt_BulkRemove(t *testing.T) {
 			}
 
 			err = n.BulkRemove(test.args.ids...)
-			if err := test.checkFunc(test.want, n, err); err != nil {
+			if err := checkFunc(test.want, n, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 
@@ -4527,8 +4544,9 @@ func Test_ngt_GetVector(t *testing.T) {
 			if test.afterFunc == nil {
 				test.afterFunc = defaultAfterFunc
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			if test.createFunc == nil {
 				test.createFunc = defaultCreateFunc
@@ -4545,7 +4563,7 @@ func Test_ngt_GetVector(t *testing.T) {
 			}()
 
 			got, err := n.GetVector(test.args.id)
-			if err := test.checkFunc(test.want, got, n, err); err != nil {
+			if err := checkFunc(test.want, got, n, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -4624,8 +4642,9 @@ func Test_ngt_Close(t *testing.T) {
 			if test.afterFunc == nil {
 				test.afterFunc = defaultAfterFunc
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			if test.createFunc == nil {
 				test.createFunc = defaultCreateFunc
@@ -4642,7 +4661,7 @@ func Test_ngt_Close(t *testing.T) {
 			}()
 
 			n.Close()
-			if err := test.checkFunc(test.want); err != nil {
+			if err := checkFunc(test.want); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

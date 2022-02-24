@@ -117,7 +117,7 @@ func TestWithURL(t *testing.T) {
 
 			   got := WithURL(test.args.str)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -130,7 +130,7 @@ func TestWithURL(t *testing.T) {
 			   got := WithURL(test.args.str)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
+			   if err := checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -233,7 +233,7 @@ func TestWithURLOpener(t *testing.T) {
 
 			   got := WithURLOpener(test.args.uo)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -246,7 +246,7 @@ func TestWithURLOpener(t *testing.T) {
 			   got := WithURLOpener(test.args.uo)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
+			   if err := checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -349,7 +349,7 @@ func TestWithBeforeRead(t *testing.T) {
 
 			   got := WithBeforeRead(test.args.fn)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -362,7 +362,7 @@ func TestWithBeforeRead(t *testing.T) {
 			   got := WithBeforeRead(test.args.fn)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
+			   if err := checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -465,7 +465,7 @@ func TestWithWriteBufferSize(t *testing.T) {
 
 			   got := WithWriteBufferSize(test.args.size)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -478,7 +478,7 @@ func TestWithWriteBufferSize(t *testing.T) {
 			   got := WithWriteBufferSize(test.args.size)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
+			   if err := checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -581,7 +581,7 @@ func TestWithWriteCacheControl(t *testing.T) {
 
 			   got := WithWriteCacheControl(test.args.str)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -594,7 +594,7 @@ func TestWithWriteCacheControl(t *testing.T) {
 			   got := WithWriteCacheControl(test.args.str)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
+			   if err := checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -697,7 +697,7 @@ func TestWithWriteContentDisposition(t *testing.T) {
 
 			   got := WithWriteContentDisposition(test.args.str)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -710,7 +710,7 @@ func TestWithWriteContentDisposition(t *testing.T) {
 			   got := WithWriteContentDisposition(test.args.str)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
+			   if err := checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -813,7 +813,7 @@ func TestWithWriteContentEncoding(t *testing.T) {
 
 			   got := WithWriteContentEncoding(test.args.str)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -826,7 +826,7 @@ func TestWithWriteContentEncoding(t *testing.T) {
 			   got := WithWriteContentEncoding(test.args.str)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
+			   if err := checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -929,7 +929,7 @@ func TestWithWriteContentLanguage(t *testing.T) {
 
 			   got := WithWriteContentLanguage(test.args.str)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -942,7 +942,7 @@ func TestWithWriteContentLanguage(t *testing.T) {
 			   got := WithWriteContentLanguage(test.args.str)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
+			   if err := checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -1045,7 +1045,7 @@ func TestWithWriteContentType(t *testing.T) {
 
 			   got := WithWriteContentType(test.args.str)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -1058,7 +1058,7 @@ func TestWithWriteContentType(t *testing.T) {
 			   got := WithWriteContentType(test.args.str)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
+			   if err := checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -1161,7 +1161,7 @@ func TestWithWriteContentMD5(t *testing.T) {
 
 			   got := WithWriteContentMD5(test.args.b)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -1174,7 +1174,7 @@ func TestWithWriteContentMD5(t *testing.T) {
 			   got := WithWriteContentMD5(test.args.b)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
+			   if err := checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -1277,7 +1277,7 @@ func TestWithWriteMetadata(t *testing.T) {
 
 			   got := WithWriteMetadata(test.args.meta)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -1290,7 +1290,7 @@ func TestWithWriteMetadata(t *testing.T) {
 			   got := WithWriteMetadata(test.args.meta)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
+			   if err := checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -1393,7 +1393,7 @@ func TestWithBeforeWrite(t *testing.T) {
 
 			   got := WithBeforeWrite(test.args.f)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -1406,7 +1406,7 @@ func TestWithBeforeWrite(t *testing.T) {
 			   got := WithBeforeWrite(test.args.f)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
+			   if err := checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/

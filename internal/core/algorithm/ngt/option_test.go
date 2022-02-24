@@ -89,13 +89,14 @@ func TestWithInMemoryMode(t *testing.T) {
 			if test.afterFunc != nil {
 				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := WithInMemoryMode(test.args.flg)
 			obj := new(T)
-			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			if err := checkFunc(test.want, obj, got(obj)); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -162,13 +163,14 @@ func TestWithIndexPath(t *testing.T) {
 			if test.afterFunc != nil {
 				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := WithIndexPath(test.args.path)
 			obj := new(T)
-			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			if err := checkFunc(test.want, obj, got(obj)); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -267,13 +269,14 @@ func TestWithBulkInsertChunkSize(t *testing.T) {
 			if test.afterFunc != nil {
 				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := WithBulkInsertChunkSize(test.args.size)
 			obj := new(T)
-			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			if err := checkFunc(test.want, obj, got(obj)); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -415,8 +418,9 @@ func TestWithDimension(t *testing.T) {
 			if test.afterFunc != nil {
 				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := WithDimension(test.args.size)
@@ -424,7 +428,7 @@ func TestWithDimension(t *testing.T) {
 			if err := obj.setup(); err != nil {
 				t.Fatal(err)
 			}
-			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			if err := checkFunc(test.want, obj, got(obj)); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -644,8 +648,9 @@ func TestWithDistanceTypeByString(t *testing.T) {
 			if test.afterFunc != nil {
 				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := WithDistanceTypeByString(test.args.dt)
@@ -653,7 +658,7 @@ func TestWithDistanceTypeByString(t *testing.T) {
 			if err := obj.setup(); err != nil {
 				t.Fatal(err)
 			}
-			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			if err := checkFunc(test.want, obj, got(obj)); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -782,8 +787,9 @@ func TestWithDistanceType(t *testing.T) {
 			if test.afterFunc != nil {
 				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := WithDistanceType(test.args.t)
@@ -791,7 +797,7 @@ func TestWithDistanceType(t *testing.T) {
 			if err := obj.setup(); err != nil {
 				t.Fatal(err)
 			}
-			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			if err := checkFunc(test.want, obj, got(obj)); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -957,8 +963,9 @@ func TestWithObjectTypeByString(t *testing.T) {
 			if test.afterFunc != nil {
 				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := WithObjectTypeByString(test.args.ot)
@@ -966,7 +973,7 @@ func TestWithObjectTypeByString(t *testing.T) {
 			if err := obj.setup(); err != nil {
 				t.Fatal(err)
 			}
-			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			if err := checkFunc(test.want, obj, got(obj)); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1045,8 +1052,9 @@ func TestWithObjectType(t *testing.T) {
 			if test.afterFunc != nil {
 				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := WithObjectType(test.args.t)
@@ -1054,7 +1062,7 @@ func TestWithObjectType(t *testing.T) {
 			if err := obj.setup(); err != nil {
 				t.Fatal(err)
 			}
-			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			if err := checkFunc(test.want, obj, got(obj)); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1146,8 +1154,9 @@ func TestWithCreationEdgeSize(t *testing.T) {
 			if test.afterFunc != nil {
 				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := WithCreationEdgeSize(test.args.size)
@@ -1155,7 +1164,7 @@ func TestWithCreationEdgeSize(t *testing.T) {
 			if err := obj.setup(); err != nil {
 				t.Fatal(err)
 			}
-			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			if err := checkFunc(test.want, obj, got(obj)); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1247,8 +1256,9 @@ func TestWithSearchEdgeSize(t *testing.T) {
 			if test.afterFunc != nil {
 				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := WithSearchEdgeSize(test.args.size)
@@ -1256,7 +1266,7 @@ func TestWithSearchEdgeSize(t *testing.T) {
 			if err := obj.setup(); err != nil {
 				t.Fatal(err)
 			}
-			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			if err := checkFunc(test.want, obj, got(obj)); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1335,13 +1345,14 @@ func TestWithDefaultPoolSize(t *testing.T) {
 			if test.afterFunc != nil {
 				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := WithDefaultPoolSize(test.args.poolSize)
 			obj := new(T)
-			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			if err := checkFunc(test.want, obj, got(obj)); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1431,13 +1442,14 @@ func TestWithDefaultRadius(t *testing.T) {
 			if test.afterFunc != nil {
 				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := WithDefaultRadius(test.args.radius)
 			obj := new(T)
-			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			if err := checkFunc(test.want, obj, got(obj)); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1527,13 +1539,14 @@ func TestWithDefaultEpsilon(t *testing.T) {
 			if test.afterFunc != nil {
 				tt.Cleanup(func() { test.afterFunc(test.args) })
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := WithDefaultEpsilon(test.args.epsilon)
 			obj := new(T)
-			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			if err := checkFunc(test.want, obj, got(obj)); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

@@ -86,12 +86,13 @@ func Test_wrapErrors(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			err := wrapErrors(test.args.errs)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -166,12 +167,13 @@ func Test_insertAndCreateIndex32(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			gotIds, err := insertAndCreateIndex32(test.args.ctx, test.args.c, test.args.dataset)
-			if err := test.checkFunc(test.want, gotIds, err); err != nil {
+			if err := checkFunc(test.want, gotIds, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -246,12 +248,13 @@ func Test_insertAndCreateIndex64(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			gotIds, err := insertAndCreateIndex64(test.args.ctx, test.args.c, test.args.dataset)
-			if err := test.checkFunc(test.want, gotIds, err); err != nil {
+			if err := checkFunc(test.want, gotIds, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -318,12 +321,13 @@ func Test_float32To64(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			gotY := float32To64(test.args.x)
-			if err := test.checkFunc(test.want, gotY); err != nil {
+			if err := checkFunc(test.want, gotY); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

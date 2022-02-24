@@ -98,6 +98,7 @@ jobs:
           make hack/benchmark/assets/dataset/${DATASET}
           go version
           go test \
+            -race \
             -mod=readonly \
             -v tests/e2e/crud/crud_test.go \
             -tags "e2e" \
@@ -191,6 +192,7 @@ jobs:
           podname=`kubectl get pods --selector=app=vald-lb-gateway | tail -1 | awk '{print $1}'`
           go version
           go test \
+            -race \
             -mod=readonly \
             -v tests/e2e/crud/crud_test.go \
             -tags "e2e" \
@@ -281,6 +283,7 @@ jobs:
           make hack/benchmark/assets/dataset/${DATASET}
           go version
           go test \
+            -race \
             -mod=readonly \
             -v tests/e2e/crud/crud_test.go \
             -tags "e2e" \
@@ -371,6 +374,7 @@ jobs:
           make hack/benchmark/assets/dataset/${DATASET}
           go version
           go test \
+            -race \
             -mod=readonly \
             -v tests/e2e/crud/crud_test.go \
             -tags "e2e" \
@@ -394,6 +398,7 @@ jobs:
           make hack/benchmark/assets/dataset/${DATASET}
           go version
           go test \
+            -race \
             -mod=readonly \
             -v tests/e2e/crud/crud_test.go \
             -tags "e2e" \

@@ -269,8 +269,9 @@ func Test_timeout_Wrap(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			t := &timeout{
 				dur: test.fields.dur,
@@ -278,7 +279,7 @@ func Test_timeout_Wrap(t *testing.T) {
 			}
 
 			got := t.Wrap(test.args.h)
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

@@ -88,12 +88,13 @@ func TestNew(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := New(test.args.i)
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -183,8 +184,9 @@ func Test_indexerMetrics_Measurement(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			i := &indexerMetrics{
 				indexer:              test.fields.indexer,
@@ -194,7 +196,7 @@ func Test_indexerMetrics_Measurement(t *testing.T) {
 			}
 
 			got, err := i.Measurement(test.args.ctx)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -284,8 +286,9 @@ func Test_indexerMetrics_MeasurementWithTags(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			i := &indexerMetrics{
 				indexer:              test.fields.indexer,
@@ -295,7 +298,7 @@ func Test_indexerMetrics_MeasurementWithTags(t *testing.T) {
 			}
 
 			got, err := i.MeasurementWithTags(test.args.ctx)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -371,8 +374,9 @@ func Test_indexerMetrics_View(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			i := &indexerMetrics{
 				indexer:              test.fields.indexer,
@@ -382,7 +386,7 @@ func Test_indexerMetrics_View(t *testing.T) {
 			}
 
 			got := i.View()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

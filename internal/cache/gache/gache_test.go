@@ -112,11 +112,12 @@ func TestNew(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			gotC := New(test.args.opts...)
-			if err := test.checkFunc(test.want, gotC); err != nil {
+			if err := checkFunc(test.want, gotC); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -174,8 +175,9 @@ func Test_cache_Start(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			c := &cache{
 				gache:          test.fields.gache,
@@ -184,7 +186,7 @@ func Test_cache_Start(t *testing.T) {
 				expiredHook:    test.fields.expiredHook,
 			}
 			c.Start(test.args.ctx)
-			if err := test.checkFunc(test.want); err != nil {
+			if err := checkFunc(test.want); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -276,11 +278,12 @@ func Test_cache_Get(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			got, got1 := c.Get(test.args.key)
-			if err := test.checkFunc(test.want, got, got1); err != nil {
+			if err := checkFunc(test.want, got, got1); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -352,8 +355,9 @@ func Test_cache_Set(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			c := &cache{
 				gache:          test.fields.gache,
@@ -363,7 +367,7 @@ func Test_cache_Set(t *testing.T) {
 			}
 
 			c.Set(test.args.key, test.args.val)
-			if err := test.checkFunc(test.want, c); err != nil {
+			if err := checkFunc(test.want, c); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -459,12 +463,13 @@ func Test_cache_Delete(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			c.Delete(test.args.key)
-			if err := test.checkFunc(test.want, c); err != nil {
+			if err := checkFunc(test.want, c); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -556,12 +561,13 @@ func Test_cache_GetAndDelete(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got, got1 := c.GetAndDelete(test.args.key)
-			if err := test.checkFunc(test.want, got, got1); err != nil {
+			if err := checkFunc(test.want, got, got1); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

@@ -955,7 +955,9 @@ func TestNew(t *testing.T) {
 			name: "New returns cassandra with tls",
 			args: args{
 				opts: []Option{
-					WithTLS(&tls.Config{}),
+					WithTLS(&tls.Config{
+						MinVersion: tls.VersionTLS13,
+					}),
 				},
 			},
 			want: want{
@@ -1021,7 +1023,9 @@ func TestNew(t *testing.T) {
 						Timeout:                600 * time.Millisecond,
 						WriteCoalesceWaitTime:  200 * time.Microsecond,
 						SslOpts: &gocql.SslOptions{
-							Config: &tls.Config{},
+							Config: &tls.Config{
+								MinVersion: tls.VersionTLS13,
+							},
 						},
 					},
 					poolConfig: poolConfig{
@@ -1030,7 +1034,9 @@ func TestNew(t *testing.T) {
 						enableShuffleReplicas:          false,
 						enableTokenAwareHostPolicy:     true,
 					},
-					tls: &tls.Config{},
+					tls: &tls.Config{
+						MinVersion: tls.VersionTLS13,
+					},
 				},
 			},
 		},
@@ -1139,12 +1145,13 @@ func TestNew(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got, err := New(test.args.opts...)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1289,8 +1296,9 @@ func Test_client_Open(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			c := &client{
 				hosts:                    test.fields.hosts,
@@ -1337,7 +1345,7 @@ func Test_client_Open(t *testing.T) {
 			}
 
 			err := c.Open(test.args.ctx)
-			if err := test.checkFunc(c, test.want, err); err != nil {
+			if err := checkFunc(c, test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1448,8 +1456,9 @@ func Test_client_Close(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			c := &client{
 				hosts:                    test.fields.hosts,
@@ -1496,7 +1505,7 @@ func Test_client_Close(t *testing.T) {
 			}
 
 			err := c.Close(test.args.ctx)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1624,8 +1633,9 @@ func Test_client_Query(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			c := &client{
 				hosts:                    test.fields.hosts,
@@ -1672,7 +1682,7 @@ func Test_client_Query(t *testing.T) {
 			}
 
 			got := c.Query(test.args.stmt, test.args.names)
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1748,12 +1758,13 @@ func TestSelect(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			gotStmt, gotNames := Select(test.args.table, test.args.columns, test.args.cmps...)
-			if err := test.checkFunc(test.want, gotStmt, gotNames); err != nil {
+			if err := checkFunc(test.want, gotStmt, gotNames); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1819,12 +1830,13 @@ func TestDelete(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := Delete(test.args.table, test.args.cmps...)
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1875,12 +1887,13 @@ func TestInsert(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := Insert(test.args.table, test.args.columns...)
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1929,12 +1942,13 @@ func TestUpdate(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := Update(test.args.table)
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1976,12 +1990,13 @@ func TestBatch(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := Batch()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -2030,12 +2045,13 @@ func TestEq(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := Eq(test.args.column)
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -2084,12 +2100,13 @@ func TestIn(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := In(test.args.column)
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -2138,12 +2155,13 @@ func TestContains(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := Contains(test.args.column)
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -2311,12 +2329,13 @@ func TestWrapErrorWithKeys(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			err := WrapErrorWithKeys(test.args.err, test.args.keys...)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

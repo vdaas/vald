@@ -90,12 +90,13 @@ func TestNewGob(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got, err := NewGob(test.args.opts...)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -191,15 +192,16 @@ func Test_gobCompressor_CompressVector(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			g := &gobCompressor{
 				transcoder: test.fields.transcoder,
 			}
 
 			got, err := g.CompressVector(test.args.vector)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -257,8 +259,9 @@ func Test_E2E_gobCompressor_CompressVector(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			g, err := NewGob()
@@ -267,7 +270,7 @@ func Test_E2E_gobCompressor_CompressVector(t *testing.T) {
 			}
 
 			got, err := g.CompressVector(test.args.vector)
-			if err := test.checkFunc(test.want, got, err, g); err != nil {
+			if err := checkFunc(test.want, got, err, g); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -363,15 +366,16 @@ func Test_gobCompressor_DecompressVector(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			g := &gobCompressor{
 				transcoder: test.fields.transcoder,
 			}
 
 			got, err := g.DecompressVector(test.args.bs)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -443,15 +447,16 @@ func Test_gobCompressor_Reader(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			g := &gobCompressor{
 				transcoder: test.fields.transcodr,
 			}
 
 			got, err := g.Reader(test.args.src)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -523,15 +528,16 @@ func Test_gobCompressor_Writer(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			g := &gobCompressor{
 				transcoder: test.fields.transcoder,
 			}
 
 			got, err := g.Writer(test.args.dst)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -616,15 +622,16 @@ func Test_gobReader_Read(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			gr := &gobReader{
 				decoder: test.fields.decoder,
 			}
 
 			gotN, err := gr.Read(test.args.p)
-			if err := test.checkFunc(test.want, gotN, err); err != nil {
+			if err := checkFunc(test.want, gotN, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -678,15 +685,16 @@ func Test_gobReader_Close(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			gr := &gobReader{
 				src: test.fields.src,
 			}
 
 			err := gr.Close()
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -771,15 +779,16 @@ func Test_gobWriter_Write(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			gw := &gobWriter{
 				encoder: test.fields.encoder,
 			}
 
 			gotN, err := gw.Write(test.args.p)
-			if err := test.checkFunc(test.want, gotN, err); err != nil {
+			if err := checkFunc(test.want, gotN, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -833,15 +842,16 @@ func Test_gobWriter_Close(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			gw := &gobWriter{
 				dst: test.fields.dst,
 			}
 
 			err := gw.Close()
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
