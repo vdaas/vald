@@ -22,6 +22,8 @@ agent:
       memory: 50Mi
     limits:
       memory: 1Gi
+  # Please set a long time to consider the PV and S3 backup time.
+  terminationGracePeriodSeconds: 3600
   # This is the persistent volume settings.
   # Please change it according to your environment.
   persistentVolume:
