@@ -120,11 +120,12 @@ Search RPC is the method to search vector(s) similar to request vector.
 
 ### Status Code
 
-| code | desc.            |
-| :--: | :--------------- |
-|  0   | OK               |
-|  3   | INVALID_ARGUMENT |
-|  5   | NOT_FOUND        |
+| code | desc.             |
+| :--: | :---------------- |
+|  0   | OK                |
+|  3   | INVALID_ARGUMENT  |
+|  4   | DEADLINE_EXCEEDED |
+|  5   | NOT_FOUND         |
 
 ## SearchByID RPC
 
@@ -205,11 +206,12 @@ The vector with the same requested ID should be indexed into the `vald-agent` be
 
 ### Status Code
 
-| code | desc.            |
-| :--: | :--------------- |
-|  0   | OK               |
-|  3   | INVALID_ARGUMENT |
-|  5   | NOT_FOUND        |
+| code | desc.             |
+| :--: | :---------------- |
+|  0   | OK                |
+|  3   | INVALID_ARGUMENT  |
+|  4   | DEADLINE_EXCEEDED |
+|  5   | NOT_FOUND         |
 
 ## StreamSearch RPC
 
@@ -304,11 +306,12 @@ Each Search request and response are independent.
 
 ### Status Code
 
-| code | desc.            |
-| :--: | :--------------- |
-|  0   | OK               |
-|  3   | INVALID_ARGUMENT |
-|  5   | NOT_FOUND        |
+| code | desc.             |
+| :--: | :---------------- |
+|  0   | OK                |
+|  3   | INVALID_ARGUMENT  |
+|  4   | DEADLINE_EXCEEDED |
+|  5   | NOT_FOUND         |
 
 ## StreamSearchByID RPC
 
@@ -403,11 +406,12 @@ Each SearchByID request and response are independent.
 
 ### Status Code
 
-| code | desc.            |
-| :--: | :--------------- |
-|  0   | OK               |
-|  3   | INVALID_ARGUMENT |
-|  5   | NOT_FOUND        |
+| code | desc.             |
+| :--: | :---------------- |
+|  0   | OK                |
+|  3   | INVALID_ARGUMENT  |
+|  4   | DEADLINE_EXCEEDED |
+|  5   | NOT_FOUND         |
 
 ## MultiSearch RPC
 
@@ -510,11 +514,12 @@ Please be careful that the size of the request exceed the limit.
 
 ### Status Code
 
-| code | desc.            |
-| :--: | :--------------- |
-|  0   | OK               |
-|  3   | INVALID_ARGUMENT |
-|  5   | NOT_FOUND        |
+| code | desc.             |
+| :--: | :---------------- |
+|  0   | OK                |
+|  3   | INVALID_ARGUMENT  |
+|  4   | DEADLINE_EXCEEDED |
+|  5   | NOT_FOUND         |
 
 ### MultiSearchByID RPC
 
@@ -524,7 +529,6 @@ MultiSearchByID RPC is the method to search vectors with multiple IDs in **1** r
 gRPC has the message size limitation.<br>
 Please be careful that the size of the request exceed the limit.
 </div>
-
 
 ### Input
 
@@ -553,6 +557,7 @@ Please be careful that the size of the request exceed the limit.
     }
   }
   ```
+
   - Search.MultiIDRequest
     |field|type|label|required|desc.|
     |:---:|:---|:---|:---:|:---|
@@ -618,11 +623,12 @@ Please be careful that the size of the request exceed the limit.
 
 ### Status Code
 
-| code | desc.            |
-| :--: | :--------------- |
-|  0   | OK               |
-|  3   | INVALID_ARGUMENT |
-|  5   | NOT_FOUND        |
+| code | desc.             |
+| :--: | :---------------- |
+|  0   | OK                |
+|  3   | INVALID_ARGUMENT  |
+|  4   | DEADLINE_EXCEEDED |
+|  5   | NOT_FOUND         |
 
 ## LinearSearch RPC
 
@@ -698,11 +704,12 @@ LinearSearch RPC is the method to linear search vector(s) similar to request vec
 
 ### Status Code
 
-| code | desc.            |
-| :--: | :--------------- |
-|  0   | OK               |
-|  3   | INVALID_ARGUMENT |
-|  5   | NOT_FOUND        |
+| code | desc.             |
+| :--: | :---------------- |
+|  0   | OK                |
+|  3   | INVALID_ARGUMENT  |
+|  4   | DEADLINE_EXCEEDED |
+|  5   | NOT_FOUND         |
 
 ## LinearSearchByID RPC
 
@@ -780,11 +787,12 @@ If the vector doesn't be stored, you will get a `NOT_FOUND` error as a result.
 
 ### Status Code
 
-| code | desc.            |
-| :--: | :--------------- |
-|  0   | OK               |
-|  3   | INVALID_ARGUMENT |
-|  5   | NOT_FOUND        |
+| code | desc.             |
+| :--: | :---------------- |
+|  0   | OK                |
+|  3   | INVALID_ARGUMENT  |
+|  4   | DEADLINE_EXCEEDED |
+|  5   | NOT_FOUND         |
 
 ## StreamLinearSearch RPC
 
@@ -875,11 +883,12 @@ Each LinearSearch request and response are independent.
 
 ### Status Code
 
-| code | desc.            |
-| :--: | :--------------- |
-|  0   | OK               |
-|  3   | INVALID_ARGUMENT |
-|  5   | NOT_FOUND        |
+| code | desc.             |
+| :--: | :---------------- |
+|  0   | OK                |
+|  3   | INVALID_ARGUMENT  |
+|  4   | DEADLINE_EXCEEDED |
+|  5   | NOT_FOUND         |
 
 ## StreamLinearSearchByID RPC
 
@@ -970,11 +979,12 @@ Each LinearSearchByID request and response are independent.
 
 ### Status Code
 
-| code | desc.            |
-| :--: | :--------------- |
-|  0   | OK               |
-|  3   | INVALID_ARGUMENT |
-|  5   | NOT_FOUND        |
+| code | desc.             |
+| :--: | :---------------- |
+|  0   | OK                |
+|  3   | INVALID_ARGUMENT  |
+|  4   | DEADLINE_EXCEEDED |
+|  5   | NOT_FOUND         |
 
 ## MultiLinearSearch RPC
 
@@ -1073,11 +1083,12 @@ Please be careful that the size of the request exceed the limit.
 
 ### Status Code
 
-| code | desc.            |
-| :--: | :--------------- |
-|  0   | OK               |
-|  3   | INVALID_ARGUMENT |
-|  5   | NOT_FOUND        |
+| code | desc.             |
+| :--: | :---------------- |
+|  0   | OK                |
+|  3   | INVALID_ARGUMENT  |
+|  4   | DEADLINE_EXCEEDED |
+|  5   | NOT_FOUND         |
 
 ### MultiLinearSearchByID RPC
 
@@ -1087,7 +1098,6 @@ MultiLinearSearchByID RPC is the method to linear search vectors with multiple I
 gRPC has the message size limitation.<br>
 Please be careful that the size of the request exceed the limit.
 </div>
-
 
 ### Input
 
@@ -1178,8 +1188,9 @@ Please be careful that the size of the request exceed the limit.
 
 ### Status Code
 
-| code | desc.            |
-| :--: | :--------------- |
-|  0   | OK               |
-|  3   | INVALID_ARGUMENT |
-|  5   | NOT_FOUND        |
+| code | desc.             |
+| :--: | :---------------- |
+|  0   | OK                |
+|  3   | INVALID_ARGUMENT  |
+|  4   | DEADLINE_EXCEEDED |
+|  5   | NOT_FOUND         |
