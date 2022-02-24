@@ -236,7 +236,8 @@ func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *
 }
 
 func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) (
-	res *payload.Search_Response, err error) {
+	res *payload.Search_Response, err error,
+) {
 	ctx, span := trace.StartSpan(ctx, apiName+".SearchByID")
 	defer func() {
 		if span != nil {
@@ -360,7 +361,8 @@ type DistPayload struct {
 
 func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 	f func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error)) (
-	res *payload.Search_Response, err error) {
+	res *payload.Search_Response, err error,
+) {
 	ctx, span := trace.StartSpan(ctx, apiName+".search")
 	defer func() {
 		if span != nil {
@@ -942,7 +944,8 @@ func (s *server) LinearSearch(ctx context.Context, req *payload.Search_Request) 
 }
 
 func (s *server) LinearSearchByID(ctx context.Context, req *payload.Search_IDRequest) (
-	res *payload.Search_Response, err error) {
+	res *payload.Search_Response, err error,
+) {
 	ctx, span := trace.StartSpan(ctx, apiName+".LinearSearchByID")
 	defer func() {
 		if span != nil {

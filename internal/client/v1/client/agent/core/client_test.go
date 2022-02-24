@@ -555,7 +555,8 @@ func TestNewAgentClient(t *testing.T) {
 		vald.Client
 		client.ObjectReader
 		client.Indexer
-	}) error {
+	},
+	) error {
 		if !reflect.DeepEqual(got, w.want) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
