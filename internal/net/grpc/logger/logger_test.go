@@ -28,21 +28,19 @@ import (
 )
 
 func TestInit(t *testing.T) {
-	type want struct{}
 	type test struct {
 		name       string
-		want       want
-		checkFunc  func(want) error
+		checkFunc  func() error
 		beforeFunc func(*testing.T)
 		afterFunc  func()
 	}
-	defaultCheckFunc := func(w want) error {
+	defaultCheckFunc := func() error {
 		return nil
 	}
 	tests := []test{
 		{
 			name: "set logger success with verbosity level is not set",
-			checkFunc: func(w want) error {
+			checkFunc: func() error {
 				if grpclog.V(1) {
 					return errors.New("verbosity level is set")
 				}
@@ -57,7 +55,7 @@ func TestInit(t *testing.T) {
 			beforeFunc: func(t *testing.T) {
 				t.Setenv("GRPC_GO_LOG_VERBOSITY_LEVEL", "2")
 			},
-			checkFunc: func(w want) error {
+			checkFunc: func() error {
 				if !grpclog.V(1) {
 					return errors.New("verbosity level 1 is not set")
 				}
@@ -90,7 +88,7 @@ func TestInit(t *testing.T) {
 			}
 
 			Init()
-			if err := test.checkFunc(test.want); err != nil {
+			if err := test.checkFunc(); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
