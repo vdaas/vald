@@ -22,7 +22,7 @@ agent:
       memory: 50Mi
     limits:
       memory: 1Gi
-  # Please set a long time to consider the PV backup time.
+  # We recommend to set this value long enough to ensure the backup speed of PV, since the Index is backed up at the end of the pod.
   terminationGracePeriodSeconds: 600
   # This is the persistent volume settings.
   # Please change it according to your environment.
@@ -60,7 +60,7 @@ manager:
         memory: 30Mi
     indexer:
       # concurrency for indexing operation.
-      concurrency: 2
+      concurrency: 1
       # limit duration of automatic indexing.
       auto_index_duration_limit: 10m 
       # check duration of automatic indexing.

@@ -83,7 +83,7 @@ manager:
         memory: 30Mi
     indexer:
       # concurrency for indexing operation.
-      concurrency: 2
+      concurrency: 1
       # limit duration of automatic indexing.
       auto_index_duration_limit: 10m 
       # check duration of automatic indexing.
