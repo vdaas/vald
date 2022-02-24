@@ -1,0 +1,113 @@
+#
+# Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+defaults:
+  image:
+    tag: latest
+
+gateway:
+  lb:
+    resources:
+      requests:
+        cpu: 100m
+        memory: 50Mi
+    gateway_config:
+      # number of index replica.
+      index_replica: 2
+
+agent:
+  minReplicas: 6
+  maxReplicas: 6
+  podManagementPolicy: Parallel
+  resources:
+    requests:
+      cpu: 100m
+      memory: 50Mi
+    limits:
+      memory: 1Gi
+  # We recommend to set this value long enough to ensure the backup speed of S3 and PV, since the Index is backed up at the end of the pod.
+  terminationGracePeriodSeconds: 3600
+  # This is the persistent volume settings.
+  # Please change it according to your environment.
+  persistentVolume:
+    enabled: true
+    accessMode: ReadWriteOnce
+    storageClass: local-path
+    size: 2Gi
+  ngt:
+    dimension: 784
+    index_path: "/var/ngt/index"
+    enable_in_memory_mode: false
+    # limit duration of automatic indexing.
+    auto_index_duration_limit: 730h
+    # check duration of automatic indexing.
+    auto_index_check_duration: 24h
+    # number of cache to trigger automatic indexing.
+    auto_index_length: 1000
+    # duration of automatic save index.
+    auto_save_index_duration: 365h
+    # batch process pool size of automatic create index operation.
+    auto_create_index_pool_size: 1000
+  sidecar:
+    enabled: true
+    initContainerEnabled: true
+    # This is the Amazon S3 settings.
+    # Please change it according to your environment.
+    config:
+      blob_storage:
+        storage_type: "s3"
+        bucket: "vald"
+        s3:
+          region: "us-central1"
+    # If you enable sidecar, the following environment variables will be created automatically by default values.
+    # So, please create the 'aws-secret' resource before deploying.
+    # env:
+    #   - name: AWS_ACCESS_KEY
+    #     valueFrom:
+    #       secretKeyRef:
+    #         name: aws-secret
+    #         key: access-key
+    #   - name: AWS_SECRET_ACCESS_KEY
+    #     valueFrom:
+    #       secretKeyRef:
+    #         name: aws-secret
+    #         key: secret-access-key
+discoverer:
+  resources:
+    requests:
+      cpu: 100m
+      memory: 50Mi
+
+manager:
+  index:
+    resources:
+      requests:
+        cpu: 100m
+        memory: 30Mi
+    indexer:
+      # concurrency for indexing operation.
+      concurrency: 1
+      # limit duration of automatic indexing.
+      auto_index_duration_limit: 10m 
+      # check duration of automatic indexing.
+      auto_index_check_duration: 1m
+      # limit duration of automatic index saving.
+      auto_save_index_duration_limit: 1h
+      # duration of automatic index saving wait duration for next saving.
+      auto_save_index_wait_duration: 10m
+      # number of cache to trigger automatic indexing.
+      auto_index_length: 100
+      # number of pool size of create index processing.
+      creation_pool_size: 10000
