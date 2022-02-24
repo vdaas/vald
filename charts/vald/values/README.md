@@ -1,6 +1,6 @@
 # Vald
 
-This is the manifest to deploy Vald.
+This is the sample manifests to deploy Vald.
 
 ## Deploy an only vald-agent-ngt
 
