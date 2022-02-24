@@ -102,17 +102,15 @@ func Test_logger_Info(t *testing.T) {
 	type fields struct {
 		v int
 	}
-	type want struct{}
 	type test struct {
 		name       string
 		args       args
 		fields     fields
-		want       want
-		checkFunc  func(want) error
+		checkFunc  func() error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want) error {
+	defaultCheckFunc := func() error {
 		return nil
 	}
 	tests := []test{
@@ -146,7 +144,7 @@ func Test_logger_Info(t *testing.T) {
 			}
 
 			l.Info(test.args.args...)
-			if err := test.checkFunc(test.want); err != nil {
+			if err := test.checkFunc(); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -160,17 +158,15 @@ func Test_logger_Infoln(t *testing.T) {
 	type fields struct {
 		v int
 	}
-	type want struct{}
 	type test struct {
 		name       string
 		args       args
 		fields     fields
-		want       want
-		checkFunc  func(want) error
+		checkFunc  func() error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want) error {
+	defaultCheckFunc := func() error {
 		return nil
 	}
 	tests := []test{
@@ -204,7 +200,7 @@ func Test_logger_Infoln(t *testing.T) {
 			}
 
 			l.Infoln(test.args.args...)
-			if err := test.checkFunc(test.want); err != nil {
+			if err := test.checkFunc(); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -219,17 +215,15 @@ func Test_logger_Infof(t *testing.T) {
 	type fields struct {
 		v int
 	}
-	type want struct{}
 	type test struct {
 		name       string
 		args       args
 		fields     fields
-		want       want
-		checkFunc  func(want) error
+		checkFunc  func() error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want) error {
+	defaultCheckFunc := func() error {
 		return nil
 	}
 	tests := []test{
@@ -263,7 +257,7 @@ func Test_logger_Infof(t *testing.T) {
 			}
 
 			l.Infof(test.args.format, test.args.args...)
-			if err := test.checkFunc(test.want); err != nil {
+			if err := test.checkFunc(); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -277,17 +271,15 @@ func Test_logger_Warning(t *testing.T) {
 	type fields struct {
 		v int
 	}
-	type want struct{}
 	type test struct {
 		name       string
 		args       args
 		fields     fields
-		want       want
-		checkFunc  func(want) error
+		checkFunc  func() error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want) error {
+	defaultCheckFunc := func() error {
 		return nil
 	}
 	tests := []test{
@@ -321,7 +313,7 @@ func Test_logger_Warning(t *testing.T) {
 			}
 
 			l.Warning(test.args.args...)
-			if err := test.checkFunc(test.want); err != nil {
+			if err := test.checkFunc(); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -335,17 +327,15 @@ func Test_logger_Warningln(t *testing.T) {
 	type fields struct {
 		v int
 	}
-	type want struct{}
 	type test struct {
 		name       string
 		args       args
 		fields     fields
-		want       want
-		checkFunc  func(want) error
+		checkFunc  func() error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want) error {
+	defaultCheckFunc := func() error {
 		return nil
 	}
 	tests := []test{
@@ -379,7 +369,7 @@ func Test_logger_Warningln(t *testing.T) {
 			}
 
 			l.Warningln(test.args.args...)
-			if err := test.checkFunc(test.want); err != nil {
+			if err := test.checkFunc(); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -394,17 +384,15 @@ func Test_logger_Warningf(t *testing.T) {
 	type fields struct {
 		v int
 	}
-	type want struct{}
 	type test struct {
 		name       string
 		args       args
 		fields     fields
-		want       want
-		checkFunc  func(want) error
+		checkFunc  func() error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want) error {
+	defaultCheckFunc := func() error {
 		return nil
 	}
 	tests := []test{
@@ -438,7 +426,7 @@ func Test_logger_Warningf(t *testing.T) {
 			}
 
 			l.Warningf(test.args.format, test.args.args...)
-			if err := test.checkFunc(test.want); err != nil {
+			if err := test.checkFunc(); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -452,17 +440,15 @@ func Test_logger_Error(t *testing.T) {
 	type fields struct {
 		v int
 	}
-	type want struct{}
 	type test struct {
 		name       string
 		args       args
 		fields     fields
-		want       want
-		checkFunc  func(want) error
+		checkFunc  func() error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want) error {
+	defaultCheckFunc := func() error {
 		return nil
 	}
 	tests := []test{
@@ -496,7 +482,7 @@ func Test_logger_Error(t *testing.T) {
 			}
 
 			l.Error(test.args.args...)
-			if err := test.checkFunc(test.want); err != nil {
+			if err := test.checkFunc(); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -510,17 +496,15 @@ func Test_logger_Errorln(t *testing.T) {
 	type fields struct {
 		v int
 	}
-	type want struct{}
 	type test struct {
 		name       string
 		args       args
 		fields     fields
-		want       want
-		checkFunc  func(want) error
+		checkFunc  func() error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want) error {
+	defaultCheckFunc := func() error {
 		return nil
 	}
 	tests := []test{
@@ -554,7 +538,7 @@ func Test_logger_Errorln(t *testing.T) {
 			}
 
 			l.Errorln(test.args.args...)
-			if err := test.checkFunc(test.want); err != nil {
+			if err := test.checkFunc(); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -569,17 +553,15 @@ func Test_logger_Errorf(t *testing.T) {
 	type fields struct {
 		v int
 	}
-	type want struct{}
 	type test struct {
 		name       string
 		args       args
 		fields     fields
-		want       want
-		checkFunc  func(want) error
+		checkFunc  func() error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want) error {
+	defaultCheckFunc := func() error {
 		return nil
 	}
 	tests := []test{
@@ -613,7 +595,7 @@ func Test_logger_Errorf(t *testing.T) {
 			}
 
 			l.Errorf(test.args.format, test.args.args...)
-			if err := test.checkFunc(test.want); err != nil {
+			if err := test.checkFunc(); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -637,17 +619,15 @@ func Test_logger_Fatal(t *testing.T) {
 	type fields struct {
 		v int
 	}
-	type want struct{}
 	type test struct {
 		name       string
 		args       args
 		fields     fields
-		want       want
-		checkFunc  func(want) error
+		checkFunc  func() error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want) error {
+	defaultCheckFunc := func() error {
 		return nil
 	}
 	tests := []test{
@@ -684,7 +664,7 @@ func Test_logger_Fatal(t *testing.T) {
 			}
 
 			l.Fatal(test.args.args...)
-			if err := test.checkFunc(test.want); err != nil {
+			if err := test.checkFunc(); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -708,17 +688,15 @@ func Test_logger_Fatalln(t *testing.T) {
 	type fields struct {
 		v int
 	}
-	type want struct{}
 	type test struct {
 		name       string
 		args       args
 		fields     fields
-		want       want
-		checkFunc  func(want) error
+		checkFunc  func() error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want) error {
+	defaultCheckFunc := func() error {
 		return nil
 	}
 	tests := []test{
@@ -752,7 +730,7 @@ func Test_logger_Fatalln(t *testing.T) {
 			}
 
 			l.Fatalln(test.args.args...)
-			if err := test.checkFunc(test.want); err != nil {
+			if err := test.checkFunc(); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -777,17 +755,15 @@ func Test_logger_Fatalf(t *testing.T) {
 	type fields struct {
 		v int
 	}
-	type want struct{}
 	type test struct {
 		name       string
 		args       args
 		fields     fields
-		want       want
-		checkFunc  func(want) error
+		checkFunc  func() error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want) error {
+	defaultCheckFunc := func() error {
 		return nil
 	}
 	tests := []test{
@@ -824,7 +800,7 @@ func Test_logger_Fatalf(t *testing.T) {
 			}
 
 			l.Fatalf(test.args.format, test.args.args...)
-			if err := test.checkFunc(test.want); err != nil {
+			if err := test.checkFunc(); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
