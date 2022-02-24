@@ -36,13 +36,13 @@ agent:
     index_path: "/var/ngt/index"
     enable_in_memory_mode: false
     # limit duration of automatic indexing.
-    auto_index_duration_limit: 24h
+    auto_index_duration_limit: 730h
     # check duration of automatic indexing.
-    auto_index_check_duration: 5h
+    auto_index_check_duration: 24h
     # number of cache to trigger automatic indexing.
-    auto_index_length: 100
+    auto_index_length: 1000
     # duration of automatic save index.
-    auto_save_index_duration: 10h
+    auto_save_index_duration: 365h
     # batch process pool size of automatic create index operation.
     auto_create_index_pool_size: 1000
 
