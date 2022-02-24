@@ -15,7 +15,24 @@ window.onload = () => {
 // click event
 window.onclick = (event) => {
   let elem = getElemByEvent(event);
-  if (elem.id === 'current') {
+  // copy code to clipboard
+  if (elem.id === '' && elem.className === "highlight") {
+    const code = elem.children[0].children[0].innerText;
+    navigator.clipboard.writeText(code)
+      .then(() => {
+        if (!elem.classList.contains("clicked")) {
+          elem.classList.add("clicked")
+          setTimeout(() => {
+            elem.classList.remove("clicked");
+          }, 500);
+        } else {
+          elem.classList.remove("clicked");
+        }
+      })
+      .catch((e) => {
+        console.log("failed to copy code");
+      })
+  } else if (elem.id === 'current') {
     toggleTocNav();
   } else if (elem.className.includes('version__') || elem.className.includes('__version')) {
     if (elem.className == 'header__version' || elem.className == 'version__current') {
@@ -26,8 +43,10 @@ window.onclick = (event) => {
   } else {
     if (elem.id === 'list-button') {
       toggleSideAll();
+      toggleTocNav(true);
     } else if (elem.id.startsWith('cat_')) {
       toggleSidebar(elem);
+      toggleTocNav(true);
     } else if (elem.href) {
       let id = elem.href.split('/').slice(-1)[0];
       if (id.startsWith('#')) {
@@ -35,8 +54,8 @@ window.onclick = (event) => {
           scrollTocNav(id.replace('#', ''));
         }, 200);
       }
+      toggleTocNav(true);
     }
-    toggleTocNav(true);
   }
 }
 

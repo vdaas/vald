@@ -57,10 +57,10 @@
 <li class=header__item>
 <details class=header__version id=version_details>
 <summary class=version__current id=current_version>
-v1.4.0
+v1.4.1
 </summary>
 <ul class=version__list>
-<il class=version__item><a href=javascript:void(0) class="version__link version__link--latest">v1.4.0</a></il>
+<il class=version__item><a href=javascript:void(0) class="version__link version__link--latest">v1.4.1</a></il>
 <il class=version__item><a href=javascript:void(0) class=version__link>v1.4</a></il>
 <il class=version__item><a href=javascript:void(0) class=version__link>v1.3</a></il>
 <il class=version__item><a href=javascript:void(0) class=version__link>v1.2</a></il>
@@ -288,11 +288,10 @@ After that, please update the image tags of Vald components in your deployments.
 <p>In case of using Helm and Vald&rsquo;s chart, please update <code>defaults.image.tag</code> field and install it.</p>
 <h3 id=in-case-of-using-vald-helm-operator>In case of using Vald-Helm-Operator</h3>
 <p>In case of using Vald-Helm-Operator, please upgrade the CRDs first because Helm doesn&rsquo;t have a support to upgrade CRDs.</p>
-<pre><code>$ VERSION=v1.0.4
-$ kubectl replace -f https://raw.githubusercontent.com/vdaas/vald/${VERSION}/charts/vald-helm-operator/crds/valdrelease.yaml
-$ kubectl replace -f https://raw.githubusercontent.com/vdaas/vald/${VERSION}/charts/vald-helm-operator/crds/valdhelmoperatorrelease.yaml
-</code></pre>
-<p>After upgrading CRDs, please upgrade the operator.
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>$ VERSION<span style=color:#f92672>=</span>v1.0.4
+$ kubectl replace -f https://raw.githubusercontent.com/vdaas/vald/<span style=color:#e6db74>${</span>VERSION<span style=color:#e6db74>}</span>/charts/vald-helm-operator/crds/valdrelease.yaml
+$ kubectl replace -f https://raw.githubusercontent.com/vdaas/vald/<span style=color:#e6db74>${</span>VERSION<span style=color:#e6db74>}</span>/charts/vald-helm-operator/crds/valdhelmoperatorrelease.yaml
+</code></pre></div><p>After upgrading CRDs, please upgrade the operator.
 If you&rsquo;re using <code>valdhelmoperatorrelease</code> (or <code>vhor</code>) resource, please update the <code>spec.image.tag</code> field of it.
 On the other hand, please update the operator&rsquo;s deployment manually.</p>
 <p>After that, please update <code>image.tag</code> field in your valdrelease (or <code>vr</code>) resource.
