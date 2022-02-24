@@ -8,7 +8,7 @@ This is the manifest to deploy Vald.
 helm install --values agent-ngt-standalone.yaml vald-cluster vald/vald
 ```
 
-## Deploy an vald-agent-ngt with backup features.
+## Deploy an vald-agent-ngt with backup features
 
 ### Backup to the persistent volume
 
