@@ -487,6 +487,8 @@ func Test_server_Search(t *testing.T) {
 			- float32
 				- case 6: 0 value vector success
 				- case 7: NaN value vector fail?
+				- case 8: Inf value vector fail?
+				- case 9: -Inf value vector fail?
 		- Decision Table Testing
 			- uint8, float32 common
 		    | same vector       | false | false | false | true | true | true |
