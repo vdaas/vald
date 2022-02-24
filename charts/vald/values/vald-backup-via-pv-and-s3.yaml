@@ -9,7 +9,7 @@ gateway:
         cpu: 100m
         memory: 50Mi
     gateway_config:
-      # number of index replica
+      # number of index replica.
       index_replica: 2
 
 agent:
