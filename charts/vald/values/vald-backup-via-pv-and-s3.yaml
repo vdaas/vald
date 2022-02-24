@@ -35,8 +35,6 @@ agent:
     requests:
       cpu: 100m
       memory: 50Mi
-    limits:
-      memory: 1Gi
   # We recommend to set this value long enough to ensure the backup speed of S3 and PV, since the Index is backed up at the end of the pod.
   terminationGracePeriodSeconds: 3600
   # This is the persistent volume settings.
