@@ -8,13 +8,13 @@ This is the sample manifests to deploy Vald.
 helm install --values agent-ngt-standalone.yaml vald-cluster vald/vald
 ```
 
-## Deploy a vald-agent-ngt in memory mode without the backup features.
+## Deploy Vald in memory mode without the backup features.
 
 ```
 helm install --values vald-in-memory-mode-no-backup.yaml vald-cluster vald/vald
 ```
 
-## Deploy a vald-agent-ngt with backup features
+## Deploy Vald with backup features
 
 ### Backup to the persistent volume
 
