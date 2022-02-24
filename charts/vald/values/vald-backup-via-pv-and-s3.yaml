@@ -33,6 +33,16 @@ agent:
     dimension: 784
     index_path: "/var/ngt/index"
     enable_in_memory_mode: false
+    # limit duration of automatic indexing.
+    auto_index_duration_limit: 24h
+    # check duration of automatic indexing.
+    auto_index_check_duration: 5h
+    # number of cache to trigger automatic indexing.
+    auto_index_length: 100
+    # duration of automatic save index.
+    auto_save_index_duration: 10h
+    # batch process pool size of automatic create index operation.
+    auto_create_index_pool_size: 1000
   sidecar:
     enabled: true
     initContainerEnabled: true
