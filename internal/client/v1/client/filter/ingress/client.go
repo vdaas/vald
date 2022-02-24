@@ -139,7 +139,8 @@ func (c *client) GenVector(ctx context.Context, in *payload.Object_Blob, opts ..
 	}()
 	_, err = c.c.RoundRobin(ctx, func(ctx context.Context,
 		conn *grpc.ClientConn,
-		copts ...grpc.CallOption) (interface{}, error) {
+		copts ...grpc.CallOption,
+	) (interface{}, error) {
 		res, err = ingress.NewFilterClient(conn).GenVector(ctx, in, append(copts, opts...)...)
 		return nil, err
 	})
@@ -158,7 +159,8 @@ func (c *client) FilterVector(ctx context.Context, in *payload.Object_Vector, op
 	}()
 	_, err = c.c.RoundRobin(ctx, func(ctx context.Context,
 		conn *grpc.ClientConn,
-		copts ...grpc.CallOption) (interface{}, error) {
+		copts ...grpc.CallOption,
+	) (interface{}, error) {
 		res, err = ingress.NewFilterClient(conn).FilterVector(ctx, in, append(copts, opts...)...)
 		return nil, err
 	})
@@ -177,7 +179,8 @@ func (s *specificAddrClient) GenVector(ctx context.Context, in *payload.Object_B
 	}()
 	_, err = s.c.Do(ctx, s.addr, func(ctx context.Context,
 		conn *grpc.ClientConn,
-		copts ...grpc.CallOption) (interface{}, error) {
+		copts ...grpc.CallOption,
+	) (interface{}, error) {
 		res, err = ingress.NewFilterClient(conn).GenVector(ctx, in, append(copts, opts...)...)
 		return nil, err
 	})
@@ -196,7 +199,8 @@ func (s *specificAddrClient) FilterVector(ctx context.Context, in *payload.Objec
 	}()
 	_, err = s.c.Do(ctx, s.addr, func(ctx context.Context,
 		conn *grpc.ClientConn,
-		copts ...grpc.CallOption) (interface{}, error) {
+		copts ...grpc.CallOption,
+	) (interface{}, error) {
 		res, err = ingress.NewFilterClient(conn).FilterVector(ctx, in, append(copts, opts...)...)
 		return nil, err
 	})
@@ -215,7 +219,8 @@ func (m *multipleAddrsClient) GenVector(ctx context.Context, in *payload.Object_
 	}()
 	_, err = m.c.Do(ctx, m.addrs[0], func(ctx context.Context,
 		conn *grpc.ClientConn,
-		copts ...grpc.CallOption) (interface{}, error) {
+		copts ...grpc.CallOption,
+	) (interface{}, error) {
 		res, err = ingress.NewFilterClient(conn).GenVector(ctx, in, append(copts, opts...)...)
 		return nil, err
 	})
@@ -234,7 +239,8 @@ func (m *multipleAddrsClient) FilterVector(ctx context.Context, in *payload.Obje
 	}()
 	err = m.c.OrderedRange(ctx, m.addrs, func(ctx context.Context, addr string,
 		conn *grpc.ClientConn,
-		copts ...grpc.CallOption) error {
+		copts ...grpc.CallOption,
+	) error {
 		res, err = ingress.NewFilterClient(conn).FilterVector(ctx, in, append(copts, opts...)...)
 		if err != nil {
 			return err

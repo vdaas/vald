@@ -45,7 +45,8 @@ type (
 func BidirectionalStream(ctx context.Context, stream ServerStream,
 	concurrency int,
 	newData func() interface{},
-	f func(context.Context, interface{}) (interface{}, error)) (err error) {
+	f func(context.Context, interface{}) (interface{}, error),
+) (err error) {
 	ctx, span := trace.StartSpan(stream.Context(), apiName+"/BidirectionalStream")
 	defer func() {
 		if span != nil {
@@ -151,7 +152,8 @@ func BidirectionalStream(ctx context.Context, stream ServerStream,
 // BidirectionalStreamClient is gRPC client stream.
 func BidirectionalStreamClient(stream ClientStream,
 	dataProvider, newData func() interface{},
-	f func(interface{}, error)) (err error) {
+	f func(interface{}, error),
+) (err error) {
 	if stream == nil {
 		return errors.ErrGRPCClientStreamNotFound
 	}
