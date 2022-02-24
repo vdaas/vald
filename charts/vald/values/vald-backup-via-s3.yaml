@@ -1,41 +1,26 @@
 defaults:
   image:
-    tag: nightly
-  server_config:
-    metrics:
-      pprof:
-        enabled: true
+    tag: latest
 
 gateway:
   lb:
-    podAnnotations:
-      profefe.com/enable: "true"
-      profefe.com/port: "6060"
-      profefe.com/service: "vald-lb-gateway"
     resources:
       requests:
         cpu: 100m
         memory: 50Mi
+    gateway_config:
+      index_replica: 2
 
 agent:
-  podAnnotations:
-    profefe.com/enable: "true"
-    profefe.com/port: "6060"
-    profefe.com/service: "vald-agent-ngt"
-  minReplicas: 5
-  maxReplicas: 10
+  minReplicas: 6
+  maxReplicas: 6
   podManagementPolicy: Parallel
   resources:
     requests:
       cpu: 100m
       memory: 50Mi
-  # This is the persistent volume settings.
-  # Please change it according to your environment.
-  persistentVolume:
-    enabled: true
-    accessMode: ReadWriteOnce
-    storageClass: local-path
-    size: 5Gi
+    limits:
+      memory: 1Gi
   ngt:
     dimension: 784
     index_path: "/var/ngt/index"
@@ -65,10 +50,6 @@ agent:
     #         name: aws-secret
     #         key: secret-access-key
 discoverer:
-  podAnnotations:
-    profefe.com/enable: "true"
-    profefe.com/port: "6060"
-    profefe.com/service: "vald-discoverer"
   resources:
     requests:
       cpu: 100m
@@ -76,11 +57,15 @@ discoverer:
 
 manager:
   index:
-    podAnnotations:
-      profefe.com/enable: "true"
-      profefe.com/port: "6060"
-      profefe.com/service: "vald-manager-index"
     resources:
       requests:
         cpu: 100m
         memory: 30Mi
+    indexer:
+      concurrency: 2
+      auto_index_duration_limit: 30m
+      auto_index_check_duration: 1m
+      auto_save_index_duration_limit: 3h
+      auto_save_index_wait_duration: 10m
+      auto_index_length: 100
+      creation_pool_size: 10000

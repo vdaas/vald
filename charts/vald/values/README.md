@@ -13,17 +13,17 @@ helm install --values agent-ngt-standalone.yaml vald-cluster vald/vald
 ### Backup to the persistent volume
 
 ```
-helm install --values agent-ngt-pv-backup.yaml vald-cluster vald/vald
+helm install --values vald-backup-via-pv.yaml vald-cluster vald/vald
 ```
 
 ### Backup to the Amazon S3
 
 ```
-helm install --values agent-ngt-s3-backup.yaml vald-cluster vald/vald
+helm install --values vald-backup-via-s3.yaml vald-cluster vald/vald
 ```
 
 ### Backup to the persistent volume and the Amazon S3
 
 ```
-helm install --values agent-ngt-s3-backup-with-pv.yaml vald-cluster vald/vald
+helm install --values vald-backup-via-pv-and-s3.yaml vald-cluster vald/vald
 ```
