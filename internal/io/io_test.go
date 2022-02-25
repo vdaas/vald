@@ -853,7 +853,6 @@ func TestNewEOFReader(t *testing.T) {
 			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -933,7 +932,6 @@ func Test_eofReader_Read(t *testing.T) {
 			if err := checkFunc(test.want, gotN, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
