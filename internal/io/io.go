@@ -154,8 +154,7 @@ func (w *ctxWriter) Close() error {
 	return nil
 }
 
-type eofReader struct {
-}
+type eofReader struct{}
 
 func NewEOFReader() Reader {
 	return &eofReader{}
