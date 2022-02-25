@@ -29,7 +29,7 @@ import (
 
 // Goroutine leak is detected by `fastime`, but it should be ignored in the test because it is an external package.
 var goleakIgnoreOptions = []goleak.Option{
-	goleak.IgnoreTopFunction("github.com/kpango/fastime.(*Fastime).StartTimerD.func1"),
+	goleak.IgnoreTopFunction("github.com/kpango/fastime.(*fastime).StartTimerD.func1"),
 }
 
 func TestMain(m *testing.M) {
@@ -152,12 +152,13 @@ func TestRecoverFunc(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := RecoverFunc(test.args.fn)
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -222,12 +223,13 @@ func TestRecoverWithoutPanicFunc(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := RecoverWithoutPanicFunc(test.args.fn)
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -295,12 +297,13 @@ func Test_recoverFunc(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := recoverFunc(test.args.fn, test.args.withPanic)
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

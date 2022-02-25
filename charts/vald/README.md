@@ -3,7 +3,7 @@ Vald
 
 This is a Helm chart to install Vald components.
 
-Current chart version is `v1.3.1`
+Current chart version is `v1.4.1`
 
 Table of Contents
 ---
@@ -92,7 +92,7 @@ Configuration
 | agent.ngt.load_index_timeout_factor | string | `"1ms"` | a factor of load index timeout. timeout duration will be calculated by (index count to be loaded) * (factor). |
 | agent.ngt.max_load_index_timeout | string | `"10m"` | maximum duration of load index timeout |
 | agent.ngt.min_load_index_timeout | string | `"3m"` | minimum duration of load index timeout |
-| agent.ngt.object_type | string | `"float"` | object type. it should be `float` or `uint8`. for further details: https://github.com/yahoojapan/NGT/wiki/Command-Quick-Reference |
+| agent.ngt.object_type | string | `"float"` | object type. it should be `float` or `uint8` or `float16`. for further details: https://github.com/yahoojapan/NGT/wiki/Command-Quick-Reference |
 | agent.ngt.search_edge_size | int | `10` | search edge size |
 | agent.ngt.vqueue.delete_buffer_pool_size | int | `5000` | delete slice pool buffer size |
 | agent.ngt.vqueue.insert_buffer_pool_size | int | `10000` | insert slice pool buffer size |
@@ -286,8 +286,7 @@ Configuration
 | defaults.grpc.client.tls.enabled | bool | `false` | TLS enabled |
 | defaults.grpc.client.tls.insecure_skip_verify | bool | `false` | enable/disable skip SSL certificate verification |
 | defaults.grpc.client.tls.key | string | `"/path/to/key"` | TLS key path |
-| defaults.image.tag | string | `"v1.3.1"` | docker image tag |
-| defaults.ingress.usev1beta1 | bool | `false` | use networking.k8s.io/v1beta1 instead of v1 for ingresses. This option will be removed once k8s 1.22 is released. |
+| defaults.image.tag | string | `"v1.4.1"` | docker image tag |
 | defaults.logging.format | string | `"raw"` | logging format. logging format must be `raw` or `json` |
 | defaults.logging.level | string | `"debug"` | logging level. logging level must be `debug`, `info`, `warn`, `error` or `fatal`. |
 | defaults.logging.logger | string | `"glg"` | logger name. currently logger must be `glg` or `zap`. |

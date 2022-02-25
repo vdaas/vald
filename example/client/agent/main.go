@@ -23,13 +23,11 @@ import (
 
 	"github.com/kpango/fuid"
 	"github.com/kpango/glg"
-	"google.golang.org/grpc"
-
 	agent "github.com/vdaas/vald-client-go/v1/agent/core"
 	"github.com/vdaas/vald-client-go/v1/payload"
 	"github.com/vdaas/vald-client-go/v1/vald"
-
 	"gonum.org/v1/hdf5"
+	"google.golang.org/grpc"
 )
 
 const (

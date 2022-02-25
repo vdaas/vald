@@ -13,11 +13,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-
 package location
 
 import (
-	"strings"
 	"time"
 )
 
@@ -33,19 +31,6 @@ var (
 	utc = location(locationUTC, 0)
 	jst = location(locationJST, 9*60*60)
 )
-
-func Set(loc string) {
-	switch strings.ToLower(loc) {
-	case strings.ToLower(locationUTC):
-		time.Local = UTC()
-	case strings.ToLower(locationGMT):
-		time.Local = GMT()
-	case strings.ToLower(locationJST), strings.ToLower(locationTokyo):
-		time.Local = JST()
-	default:
-		time.Local = location(loc, 0)
-	}
-}
 
 func GMT() *time.Location {
 	return gmt

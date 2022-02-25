@@ -121,7 +121,7 @@ func TestWithAddr(t *testing.T) {
 
 			   got := WithAddr(test.args.addr)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -134,7 +134,7 @@ func TestWithAddr(t *testing.T) {
 			   got := WithAddr(test.args.addr)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
+			   if err := checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -238,7 +238,7 @@ func TestWithHost(t *testing.T) {
 
 			   got := WithHost(test.args.host)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -251,7 +251,7 @@ func TestWithHost(t *testing.T) {
 			   got := WithHost(test.args.host)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
+			   if err := checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -355,7 +355,7 @@ func TestWithPort(t *testing.T) {
 
 			   got := WithPort(test.args.port)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -368,7 +368,7 @@ func TestWithPort(t *testing.T) {
 			   got := WithPort(test.args.port)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
+			   if err := checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -472,7 +472,7 @@ func TestWithStartPort(t *testing.T) {
 
 			   got := WithStartPort(test.args.port)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -485,7 +485,7 @@ func TestWithStartPort(t *testing.T) {
 			   got := WithStartPort(test.args.port)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
+			   if err := checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -589,7 +589,7 @@ func TestWithEndPort(t *testing.T) {
 
 			   got := WithEndPort(test.args.port)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -602,7 +602,7 @@ func TestWithEndPort(t *testing.T) {
 			   got := WithEndPort(test.args.port)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
+			   if err := checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -706,7 +706,7 @@ func TestWithResolveDNS(t *testing.T) {
 
 			   got := WithResolveDNS(test.args.flg)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -719,7 +719,7 @@ func TestWithResolveDNS(t *testing.T) {
 			   got := WithResolveDNS(test.args.flg)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
+			   if err := checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -823,7 +823,7 @@ func TestWithBackoff(t *testing.T) {
 
 			   got := WithBackoff(test.args.bo)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -836,7 +836,7 @@ func TestWithBackoff(t *testing.T) {
 			   got := WithBackoff(test.args.bo)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
+			   if err := checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -940,7 +940,7 @@ func TestWithSize(t *testing.T) {
 
 			   got := WithSize(test.args.size)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -953,7 +953,7 @@ func TestWithSize(t *testing.T) {
 			   got := WithSize(test.args.size)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
+			   if err := checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -1057,7 +1057,7 @@ func TestWithDialOptions(t *testing.T) {
 
 			   got := WithDialOptions(test.args.opts...)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -1070,7 +1070,7 @@ func TestWithDialOptions(t *testing.T) {
 			   got := WithDialOptions(test.args.opts...)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
+			   if err := checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -1174,7 +1174,7 @@ func TestWithDialTimeout(t *testing.T) {
 
 			   got := WithDialTimeout(test.args.dur)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -1187,7 +1187,7 @@ func TestWithDialTimeout(t *testing.T) {
 			   got := WithDialTimeout(test.args.dur)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
+			   if err := checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -1291,7 +1291,7 @@ func TestWithOldConnCloseDuration(t *testing.T) {
 
 			   got := WithOldConnCloseDuration(test.args.dur)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -1304,7 +1304,7 @@ func TestWithOldConnCloseDuration(t *testing.T) {
 			   got := WithOldConnCloseDuration(test.args.dur)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
+			   if err := checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/

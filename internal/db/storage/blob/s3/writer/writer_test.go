@@ -123,12 +123,13 @@ func TestNew(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := New(test.args.opts...)
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -203,8 +204,9 @@ func Test_writer_Open(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			w := &writer{
 				eg:          test.fields.eg,
@@ -217,7 +219,7 @@ func Test_writer_Open(t *testing.T) {
 			}
 
 			err := w.Open(test.args.ctx, test.args.key)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -300,8 +302,9 @@ func Test_writer_Close(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			w := &writer{
 				eg:          test.fields.eg,
@@ -313,7 +316,7 @@ func Test_writer_Close(t *testing.T) {
 			}
 
 			err := w.Close()
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -413,8 +416,9 @@ func Test_writer_Write(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			w := &writer{
 				eg:          test.fields.eg,
@@ -426,7 +430,7 @@ func Test_writer_Write(t *testing.T) {
 			}
 
 			gotN, err := w.Write(test.args.p)
-			if err := test.checkFunc(test.want, gotN, err); err != nil {
+			if err := checkFunc(test.want, gotN, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -551,8 +555,9 @@ func Test_writer_upload(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			fields := test.fieldsFunc(t)
@@ -568,7 +573,7 @@ func Test_writer_upload(t *testing.T) {
 			}
 
 			err := w.upload(test.args.ctx, test.args.key, test.args.body)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

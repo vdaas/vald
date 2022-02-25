@@ -66,12 +66,13 @@ func TestErrParseUnitFailed(t *testing.T) {
 			if test.afterFunc != nil {
 				test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := ErrParseUnitFailed(test.args.str)
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

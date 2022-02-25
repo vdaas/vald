@@ -21,7 +21,7 @@ pink   = printf "\x1b[35m\#\# %s\x1b[0m\n" $1
 cyan   = printf "\x1b[36m\#\# %s\x1b[0m\n" $1
 
 define go-get
-	GO111MODULE=on go get -u $1
+	GO111MODULE=on go install $1@latest
 endef
 
 define go-get-no-mod
@@ -87,6 +87,7 @@ endef
 
 define run-e2e-crud-test
 	go test \
+	    -race \
 	    -mod=readonly \
 	    $1 \
 	    -v $(ROOTDIR)/tests/e2e/crud/crud_test.go \

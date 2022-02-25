@@ -14,16 +14,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-apiVersion: policy/v1beta1
+apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
   name: vald-manager-index
   labels:
     app.kubernetes.io/name: vald
-    helm.sh/chart: vald-v1.3.1
+    helm.sh/chart: vald-v1.4.1
     app.kubernetes.io/managed-by: Helm
-    app.kubernetes.io/instance: RELEASE-NAME
-    app.kubernetes.io/version: v1.3.1
+    app.kubernetes.io/instance: release-name
+    app.kubernetes.io/version: v1.4.1
     app.kubernetes.io/component: manager-index
 spec:
   maxUnavailable: 50%

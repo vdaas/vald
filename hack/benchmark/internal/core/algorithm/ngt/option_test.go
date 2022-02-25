@@ -115,7 +115,7 @@ func TestWithIndexPath(t *testing.T) {
 
 			   got := WithIndexPath(test.args.path)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -128,7 +128,7 @@ func TestWithIndexPath(t *testing.T) {
 			   got := WithIndexPath(test.args.path)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(tt.want, obj); err != nil {
+			   if err := checkFunc(tt.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -228,7 +228,7 @@ func TestWithObjectType(t *testing.T) {
 
 			   got := WithObjectType(test.args.typ)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -241,7 +241,7 @@ func TestWithObjectType(t *testing.T) {
 			   got := WithObjectType(test.args.typ)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(tt.want, obj); err != nil {
+			   if err := checkFunc(tt.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -341,7 +341,7 @@ func TestWithDimension(t *testing.T) {
 
 			   got := WithDimension(test.args.dimension)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -354,7 +354,7 @@ func TestWithDimension(t *testing.T) {
 			   got := WithDimension(test.args.dimension)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(tt.want, obj); err != nil {
+			   if err := checkFunc(tt.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/

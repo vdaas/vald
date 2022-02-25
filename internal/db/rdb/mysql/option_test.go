@@ -30,7 +30,7 @@ import (
 
 // Goroutine leak is detected by `fastime`, but it should be ignored in the test because it is an external package.
 var goleakIgnoreOptions = []goleak.Option{
-	goleak.IgnoreTopFunction("github.com/kpango/fastime.(*Fastime).StartTimerD.func1"),
+	goleak.IgnoreTopFunction("github.com/kpango/fastime.(*fastime).StartTimerD.func1"),
 	goleak.IgnoreCurrent(),
 }
 
@@ -91,13 +91,14 @@ func TestWithTimezone(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := WithTimezone(test.args.tz)
 			obj := new(T)
-			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			if err := checkFunc(test.want, obj, got(obj)); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -162,13 +163,14 @@ func TestWithCharset(t *testing.T) {
 				defer test.afterFunc(test.args)
 			}
 
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := WithCharset(test.args.cs)
 			obj := new(T)
-			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			if err := checkFunc(test.want, obj, got(obj)); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -233,13 +235,14 @@ func TestWithDB(t *testing.T) {
 				defer test.afterFunc(test.args)
 			}
 
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := WithDB(test.args.db)
 			obj := new(T)
-			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			if err := checkFunc(test.want, obj, got(obj)); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -304,13 +307,14 @@ func TestWithHost(t *testing.T) {
 				defer test.afterFunc(test.args)
 			}
 
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := WithHost(test.args.host)
 			obj := new(T)
-			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			if err := checkFunc(test.want, obj, got(obj)); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -375,13 +379,14 @@ func TestWithPort(t *testing.T) {
 				defer test.afterFunc(test.args)
 			}
 
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := WithPort(test.args.port)
 			obj := new(T)
-			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			if err := checkFunc(test.want, obj, got(obj)); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -449,13 +454,14 @@ func TestWithUser(t *testing.T) {
 				defer test.afterFunc(test.args)
 			}
 
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := WithUser(test.args.user)
 			obj := new(T)
-			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			if err := checkFunc(test.want, obj, got(obj)); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -520,13 +526,14 @@ func TestWithPass(t *testing.T) {
 				defer test.afterFunc(test.args)
 			}
 
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := WithPass(test.args.pass)
 			obj := new(T)
-			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			if err := checkFunc(test.want, obj, got(obj)); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -591,13 +598,14 @@ func TestWithName(t *testing.T) {
 				defer test.afterFunc(test.args)
 			}
 
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := WithName(test.args.name)
 			obj := new(T)
-			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			if err := checkFunc(test.want, obj, got(obj)); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -673,13 +681,14 @@ func TestWithInitialPingTimeLimit(t *testing.T) {
 				defer test.afterFunc(test.args)
 			}
 
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := WithInitialPingTimeLimit(test.args.lim)
 			obj := new(T)
-			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			if err := checkFunc(test.want, obj, got(obj)); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -755,13 +764,14 @@ func TestWithInitialPingDuration(t *testing.T) {
 				defer test.afterFunc(test.args)
 			}
 
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := WithInitialPingDuration(test.args.dur)
 			obj := new(T)
-			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			if err := checkFunc(test.want, obj, got(obj)); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -837,13 +847,14 @@ func TestWithConnectionLifeTimeLimit(t *testing.T) {
 				defer test.afterFunc(test.args)
 			}
 
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := WithConnectionLifeTimeLimit(test.args.dur)
 			obj := new(T)
-			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			if err := checkFunc(test.want, obj, got(obj)); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -908,13 +919,14 @@ func TestWithMaxIdleConns(t *testing.T) {
 				defer test.afterFunc(test.args)
 			}
 
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := WithMaxIdleConns(test.args.conns)
 			obj := new(T)
-			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			if err := checkFunc(test.want, obj, got(obj)); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -979,13 +991,14 @@ func TestWithMaxOpenConns(t *testing.T) {
 				defer test.afterFunc(test.args)
 			}
 
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := WithMaxOpenConns(test.args.conns)
 			obj := new(T)
-			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			if err := checkFunc(test.want, obj, got(obj)); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1055,13 +1068,14 @@ func TestWithTLSConfig(t *testing.T) {
 				defer test.afterFunc(test.args)
 			}
 
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := WithTLSConfig(test.args.cfg)
 			obj := new(T)
-			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			if err := checkFunc(test.want, obj, got(obj)); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1133,13 +1147,14 @@ func TestWithDialerFunc(t *testing.T) {
 				defer test.afterFunc(test.args)
 			}
 
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := WithDialerFunc(test.args.der)
 			obj := new(T)
-			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			if err := checkFunc(test.want, obj, got(obj)); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1211,13 +1226,14 @@ func TestWithDialer(t *testing.T) {
 				defer test.afterFunc(test.args)
 			}
 
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := WithDialer(test.args.der)
 			obj := new(T)
-			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			if err := checkFunc(test.want, obj, got(obj)); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1286,13 +1302,14 @@ func TestWithEventReceiver(t *testing.T) {
 				defer test.afterFunc(test.args)
 			}
 
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := WithEventReceiver(test.args.er)
 			obj := new(T)
-			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			if err := checkFunc(test.want, obj, got(obj)); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1395,7 +1412,7 @@ func TestWithNetwork(t *testing.T) {
 
 			   got := WithNetwork(test.args.network)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -1408,7 +1425,7 @@ func TestWithNetwork(t *testing.T) {
 			   got := WithNetwork(test.args.network)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
+			   if err := checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -1512,7 +1529,7 @@ func TestWithSocketPath(t *testing.T) {
 
 			   got := WithSocketPath(test.args.socketPath)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -1525,7 +1542,7 @@ func TestWithSocketPath(t *testing.T) {
 			   got := WithSocketPath(test.args.socketPath)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
+			   if err := checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/

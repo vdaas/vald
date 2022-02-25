@@ -186,10 +186,12 @@ func WithDistanceType(t distanceType) Option {
 func WithObjectTypeByString(ot string) Option {
 	var o objectType
 	switch strings.NewReplacer("-", "", "_", "", " ", "", "double", "float").Replace(strings.ToLower(ot)) {
-	case "uint8":
+	case "uint8", "ui8", "u8":
 		o = Uint8
-	case "float":
+	case "float", "float32", "f", "f32", "fp32":
 		o = Float
+	case "float16", "halfFloat", "half_float", "f16", "fp16":
+		o = HalfFloat
 	}
 	return WithObjectType(o)
 }
@@ -202,6 +204,11 @@ func WithObjectType(t objectType) Option {
 		case Uint8:
 			if C.ngt_set_property_object_type_integer(n.prop, ebuf) == ErrorCode {
 				err := errors.ErrFailedToSetObjectType(n.newGoError(ebuf), "Uint8")
+				return errors.NewErrCriticalOption("objectType", t, err)
+			}
+		case HalfFloat:
+			if C.ngt_set_property_object_type_float16(n.prop, ebuf) == ErrorCode {
+				err := errors.ErrFailedToSetObjectType(n.newGoError(ebuf), "HalfFloat")
 				return errors.NewErrCriticalOption("objectType", t, err)
 			}
 		case Float:

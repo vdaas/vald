@@ -88,12 +88,13 @@ func TestErrInvalidCompressionLevel(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := ErrInvalidCompressionLevel(test.args.level)
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -150,12 +151,13 @@ func TestErrCompressorNameNotFound(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := ErrCompressorNameNotFound(test.args.name)
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -196,12 +198,13 @@ func TestErrCompressorRegistererIsNotRunning(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := ErrCompressorRegistererIsNotRunning()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -242,12 +245,13 @@ func TestErrCompressorRegistererChannelIsFull(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := ErrCompressorRegistererChannelIsFull()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

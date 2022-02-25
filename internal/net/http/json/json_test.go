@@ -36,7 +36,7 @@ import (
 
 // Goroutine leak is detected by `fastime`, but it should be ignored in the test because it is an external package.
 var goleakIgnoreOptions = []goleak.Option{
-	goleak.IgnoreTopFunction("github.com/kpango/fastime.(*Fastime).StartTimerD.func1"),
+	goleak.IgnoreTopFunction("github.com/kpango/fastime.(*fastime).StartTimerD.func1"),
 	goleak.IgnoreTopFunction("internal/poll.runtime_pollWait"),
 }
 
@@ -551,12 +551,13 @@ func TestDecodeResponse(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			err := DecodeResponse(test.args.res, test.args.data)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -581,7 +582,7 @@ func TestEncodeRequest(t *testing.T) {
 		afterFunc  func(args)
 	}
 	defaultCheckFunc := func(w want, err error) error {
-		if !errors.Is(err, w.err) {
+		if w.err != nil && err != nil && !strings.HasPrefix(err.Error(), w.err.Error()) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		return nil
@@ -596,7 +597,7 @@ func TestEncodeRequest(t *testing.T) {
 					data: val,
 				},
 				want: want{
-					err: errors.New("complex128 is unsupported type"),
+					err: errors.New("json: unsupported type:"),
 				},
 			}
 		}(),
@@ -661,12 +662,13 @@ func TestEncodeRequest(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			err := EncodeRequest(test.args.req, test.args.data, test.args.contentTypes...)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -724,8 +726,14 @@ func TestRequest(t *testing.T) {
 					payloyd: 1 + 3i,
 					data:    new(interface{}),
 				},
+				checkFunc: func(w want, err error) error {
+					if w.err != nil && err != nil && !strings.HasPrefix(err.Error(), w.err.Error()) {
+						return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+					}
+					return nil
+				},
 				want: want{
-					err: errors.New("complex128 is unsupported type"),
+					err: errors.New("json: unsupported type:"),
 				},
 			}
 		}(),
@@ -790,12 +798,13 @@ func TestRequest(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			err := Request(test.args.ctx, test.args.method, test.args.url, test.args.payloyd, test.args.data)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

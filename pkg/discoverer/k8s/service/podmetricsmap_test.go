@@ -89,12 +89,13 @@ func Test_newEntryPodMetricsMap(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := newEntryPodMetricsMap(test.args.i)
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -185,8 +186,9 @@ func Test_podMetricsMap_Load(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			m := &podMetricsMap{
 				mu:     test.fields.mu,
@@ -196,7 +198,7 @@ func Test_podMetricsMap_Load(t *testing.T) {
 			}
 
 			gotValue, gotOk := m.Load(test.args.key)
-			if err := test.checkFunc(test.want, gotValue, gotOk); err != nil {
+			if err := checkFunc(test.want, gotValue, gotOk); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -268,15 +270,16 @@ func Test_entryPodMetricsMap_load(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			e := &entryPodMetricsMap{
 				p: test.fields.p,
 			}
 
 			gotValue, gotOk := e.load()
-			if err := test.checkFunc(test.want, gotValue, gotOk); err != nil {
+			if err := checkFunc(test.want, gotValue, gotOk); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -361,8 +364,9 @@ func Test_podMetricsMap_Store(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			m := &podMetricsMap{
 				mu:     test.fields.mu,
@@ -372,7 +376,7 @@ func Test_podMetricsMap_Store(t *testing.T) {
 			}
 
 			m.Store(test.args.key, test.args.value)
-			if err := test.checkFunc(test.want); err != nil {
+			if err := checkFunc(test.want); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -450,15 +454,16 @@ func Test_entryPodMetricsMap_tryStore(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			e := &entryPodMetricsMap{
 				p: test.fields.p,
 			}
 
 			got := e.tryStore(test.args.i)
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -526,15 +531,16 @@ func Test_entryPodMetricsMap_unexpungeLocked(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			e := &entryPodMetricsMap{
 				p: test.fields.p,
 			}
 
 			gotWasExpunged := e.unexpungeLocked()
-			if err := test.checkFunc(test.want, gotWasExpunged); err != nil {
+			if err := checkFunc(test.want, gotWasExpunged); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -607,15 +613,16 @@ func Test_entryPodMetricsMap_storeLocked(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			e := &entryPodMetricsMap{
 				p: test.fields.p,
 			}
 
 			e.storeLocked(test.args.i)
-			if err := test.checkFunc(test.want); err != nil {
+			if err := checkFunc(test.want); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -709,8 +716,9 @@ func Test_podMetricsMap_LoadOrStore(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			m := &podMetricsMap{
 				mu:     test.fields.mu,
@@ -720,7 +728,7 @@ func Test_podMetricsMap_LoadOrStore(t *testing.T) {
 			}
 
 			gotActual, gotLoaded := m.LoadOrStore(test.args.key, test.args.value)
-			if err := test.checkFunc(test.want, gotActual, gotLoaded); err != nil {
+			if err := checkFunc(test.want, gotActual, gotLoaded); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -806,15 +814,16 @@ func Test_entryPodMetricsMap_tryLoadOrStore(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			e := &entryPodMetricsMap{
 				p: test.fields.p,
 			}
 
 			gotActual, gotLoaded, gotOk := e.tryLoadOrStore(test.args.i)
-			if err := test.checkFunc(test.want, gotActual, gotLoaded, gotOk); err != nil {
+			if err := checkFunc(test.want, gotActual, gotLoaded, gotOk); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -896,8 +905,9 @@ func Test_podMetricsMap_Delete(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			m := &podMetricsMap{
 				mu:     test.fields.mu,
@@ -907,7 +917,7 @@ func Test_podMetricsMap_Delete(t *testing.T) {
 			}
 
 			m.Delete(test.args.key)
-			if err := test.checkFunc(test.want); err != nil {
+			if err := checkFunc(test.want); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -975,15 +985,16 @@ func Test_entryPodMetricsMap_delete(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			e := &entryPodMetricsMap{
 				p: test.fields.p,
 			}
 
 			gotHadValue := e.delete()
-			if err := test.checkFunc(test.want, gotHadValue); err != nil {
+			if err := checkFunc(test.want, gotHadValue); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1065,8 +1076,9 @@ func Test_podMetricsMap_Range(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			m := &podMetricsMap{
 				mu:     test.fields.mu,
@@ -1076,7 +1088,7 @@ func Test_podMetricsMap_Range(t *testing.T) {
 			}
 
 			m.Range(test.args.f)
-			if err := test.checkFunc(test.want); err != nil {
+			if err := checkFunc(test.want); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1148,8 +1160,9 @@ func Test_podMetricsMap_missLocked(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			m := &podMetricsMap{
 				mu:     test.fields.mu,
@@ -1159,7 +1172,7 @@ func Test_podMetricsMap_missLocked(t *testing.T) {
 			}
 
 			m.missLocked()
-			if err := test.checkFunc(test.want); err != nil {
+			if err := checkFunc(test.want); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1231,8 +1244,9 @@ func Test_podMetricsMap_dirtyLocked(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			m := &podMetricsMap{
 				mu:     test.fields.mu,
@@ -1242,7 +1256,7 @@ func Test_podMetricsMap_dirtyLocked(t *testing.T) {
 			}
 
 			m.dirtyLocked()
-			if err := test.checkFunc(test.want); err != nil {
+			if err := checkFunc(test.want); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1310,15 +1324,16 @@ func Test_entryPodMetricsMap_tryExpungeLocked(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			e := &entryPodMetricsMap{
 				p: test.fields.p,
 			}
 
 			gotIsExpunged := e.tryExpungeLocked()
-			if err := test.checkFunc(test.want, gotIsExpunged); err != nil {
+			if err := checkFunc(test.want, gotIsExpunged); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

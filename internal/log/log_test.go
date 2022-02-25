@@ -32,7 +32,7 @@ import (
 
 // Goroutine leak is detected by `fastime`, but it should be ignored in the test because it is an external package.
 var goleakIgnoreOptions = []goleak.Option{
-	goleak.IgnoreTopFunction("github.com/kpango/fastime.(*Fastime).StartTimerD.func1"),
+	goleak.IgnoreTopFunction("github.com/kpango/fastime.(*fastime).StartTimerD.func1"),
 }
 
 func TestInit(t *testing.T) {
@@ -100,12 +100,13 @@ func TestInit(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			Init(test.args.opts...)
-			if err := test.checkFunc(test.want, l); err != nil {
+			if err := checkFunc(test.want, l); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -212,12 +213,13 @@ func Test_getLogger(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := getLogger(test.args.o)
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -266,12 +268,13 @@ func TestBold(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := Bold(test.args.str)
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1097,12 +1100,13 @@ func TestDebugd(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			Debugd(test.args.msg, test.args.details...)
-			if err := test.checkFunc(test.want); err != nil {
+			if err := checkFunc(test.want); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1168,12 +1172,13 @@ func TestInfod(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			Infod(test.args.msg, test.args.details...)
-			if err := test.checkFunc(test.want); err != nil {
+			if err := checkFunc(test.want); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1239,12 +1244,13 @@ func TestWarnd(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			Warnd(test.args.msg, test.args.details...)
-			if err := test.checkFunc(test.want); err != nil {
+			if err := checkFunc(test.want); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1310,12 +1316,13 @@ func TestErrord(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			Errord(test.args.msg, test.args.details...)
-			if err := test.checkFunc(test.want); err != nil {
+			if err := checkFunc(test.want); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1381,12 +1388,13 @@ func TestFatald(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			Fatald(test.args.msg, test.args.details...)
-			if err := test.checkFunc(test.want); err != nil {
+			if err := checkFunc(test.want); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1444,12 +1452,13 @@ func TestClose(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			err := Close()
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

@@ -38,7 +38,7 @@ defaults:
   image:
     # @schema {"name": "defaults.image.tag", "type": "string"}
     # defaults.image.tag -- docker image tag
-    tag: v1.3.1
+    tag: v1.4.1
   # @schema {"name": "defaults.server_config", "type": "object", "anchor": "server_config"}
   server_config:
     # @schema {"name": "defaults.server_config.servers", "type": "object"}
@@ -1002,13 +1002,6 @@ defaults:
         # defaults.observability.stackdriver.profiler.zone -- the zone of Compute Engine instance.
         # This is normally determined from the Compute Engine metadata server and doesn't need to be initialized.
         zone: ""
-  # @schema {"name": "defaults.ingress", "type": "object"}
-  ingress:
-    # @schema {"name": "defaults.ingress.usev1beta1", "type": "boolean"}
-    # defaults.ingress.usev1beta1 -- use networking.k8s.io/v1beta1 instead of v1 for ingresses.
-    # This option will be removed once k8s 1.22 is released.
-    usev1beta1: false
-
 # @schema {"name": "gateway", "type": "object"}
 gateway:
   # @schema {"name": "gateway.lb", "type": "object"}
@@ -1791,9 +1784,9 @@ agent:
     # for further details about NGT libraries supported distance is https://github.com/yahoojapan/NGT/wiki/Command-Quick-Reference
     # and vald agent's supported NGT distance type is https://pkg.go.dev/github.com/vdaas/vald/internal/core/algorithm/ngt#pkg-constants
     distance_type: l2
-    # @schema {"name": "agent.ngt.object_type", "type": "string", "enum": ["float", "uint8"]}
+      # @schema {"name": "agent.ngt.object_type", "type": "string", "enum": ["float", "float16", "uint8"]}
     # agent.ngt.object_type -- object type.
-    # it should be `float` or `uint8`.
+    # it should be `float` or `uint8` or `float16`.
     # for further details: https://github.com/yahoojapan/NGT/wiki/Command-Quick-Reference
     object_type: float
     # @schema {"name": "agent.ngt.creation_edge_size", "type": "integer"}

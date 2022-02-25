@@ -120,7 +120,7 @@ func TestWithStorageObserver(t *testing.T) {
 
 			   got := WithStorageObserver(test.args.so)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -133,7 +133,7 @@ func TestWithStorageObserver(t *testing.T) {
 			   got := WithStorageObserver(test.args.so)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
+			   if err := checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/

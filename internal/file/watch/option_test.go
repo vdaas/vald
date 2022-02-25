@@ -85,13 +85,14 @@ func TestWithErrGroup(t *testing.T) {
 				defer test.afterFunc(test.args)
 			}
 
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := WithErrGroup(test.args.eg)
 			obj := new(T)
-			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			if err := checkFunc(test.want, obj, got(obj)); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -189,15 +190,16 @@ func TestWithDirs(t *testing.T) {
 				defer test.afterFunc(test.args)
 			}
 
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := WithDirs(test.args.dirs...)
 			obj := &T{
 				dirs: test.field.dirs,
 			}
-			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			if err := checkFunc(test.want, obj, got(obj)); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -268,13 +270,14 @@ func TestWithOnChange(t *testing.T) {
 				defer test.afterFunc(test.args)
 			}
 
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := WithOnChange(test.args.f)
 			obj := new(T)
-			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			if err := checkFunc(test.want, obj, got(obj)); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -345,13 +348,14 @@ func TestWithOnCreate(t *testing.T) {
 				defer test.afterFunc(test.args)
 			}
 
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := WithOnCreate(test.args.f)
 			obj := new(T)
-			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			if err := checkFunc(test.want, obj, got(obj)); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -422,13 +426,14 @@ func TestWithOnChmod(t *testing.T) {
 				defer test.afterFunc(test.args)
 			}
 
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := WithOnChmod(test.args.f)
 			obj := new(T)
-			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			if err := checkFunc(test.want, obj, got(obj)); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -499,13 +504,14 @@ func TestWithOnRename(t *testing.T) {
 				defer test.afterFunc(test.args)
 			}
 
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := WithOnRename(test.args.f)
 			obj := new(T)
-			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			if err := checkFunc(test.want, obj, got(obj)); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -576,13 +582,14 @@ func TestWithOnDelete(t *testing.T) {
 				defer test.afterFunc(test.args)
 			}
 
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := WithOnDelete(test.args.f)
 			obj := new(T)
-			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			if err := checkFunc(test.want, obj, got(obj)); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -653,13 +660,14 @@ func TestWithOnWrite(t *testing.T) {
 				defer test.afterFunc(test.args)
 			}
 
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := WithOnWrite(test.args.f)
 			obj := new(T)
-			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			if err := checkFunc(test.want, obj, got(obj)); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -730,13 +738,14 @@ func TestWithOnError(t *testing.T) {
 				defer test.afterFunc(test.args)
 			}
 
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := WithOnError(test.args.f)
 			obj := new(T)
-			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			if err := checkFunc(test.want, obj, got(obj)); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

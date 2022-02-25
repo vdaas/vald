@@ -95,12 +95,13 @@ func TestNew(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got, err := New(test.args.opts...)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -194,8 +195,9 @@ func Test_agentClient_CreateIndex(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			c := &agentClient{
 				Client: test.fields.Client,
@@ -204,7 +206,7 @@ func Test_agentClient_CreateIndex(t *testing.T) {
 			}
 
 			got, err := c.CreateIndex(test.args.ctx, test.args.req, test.args.opts...)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -298,8 +300,9 @@ func Test_agentClient_SaveIndex(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			c := &agentClient{
 				Client: test.fields.Client,
@@ -308,7 +311,7 @@ func Test_agentClient_SaveIndex(t *testing.T) {
 			}
 
 			got, err := c.SaveIndex(test.args.ctx, test.args.req, test.args.opts...)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -402,8 +405,9 @@ func Test_agentClient_CreateAndSaveIndex(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			c := &agentClient{
 				Client: test.fields.Client,
@@ -412,7 +416,7 @@ func Test_agentClient_CreateAndSaveIndex(t *testing.T) {
 			}
 
 			got, err := c.CreateAndSaveIndex(test.args.ctx, test.args.req, test.args.opts...)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -506,8 +510,9 @@ func Test_agentClient_IndexInfo(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			c := &agentClient{
 				Client: test.fields.Client,
@@ -516,7 +521,7 @@ func Test_agentClient_IndexInfo(t *testing.T) {
 			}
 
 			gotRes, err := c.IndexInfo(test.args.ctx, test.args.req, test.args.opts...)
-			if err := test.checkFunc(test.want, gotRes, err); err != nil {
+			if err := checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -550,7 +555,8 @@ func TestNewAgentClient(t *testing.T) {
 		vald.Client
 		client.ObjectReader
 		client.Indexer
-	}) error {
+	},
+	) error {
 		if !reflect.DeepEqual(got, w.want) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
@@ -595,12 +601,13 @@ func TestNewAgentClient(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := NewAgentClient(test.args.cc)
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -690,8 +697,9 @@ func Test_singleAgentClient_CreateIndex(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			c := &singleAgentClient{
 				Client: test.fields.Client,
@@ -699,7 +707,7 @@ func Test_singleAgentClient_CreateIndex(t *testing.T) {
 			}
 
 			got, err := c.CreateIndex(test.args.ctx, test.args.req, test.args.opts...)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -789,8 +797,9 @@ func Test_singleAgentClient_SaveIndex(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			c := &singleAgentClient{
 				Client: test.fields.Client,
@@ -798,7 +807,7 @@ func Test_singleAgentClient_SaveIndex(t *testing.T) {
 			}
 
 			got, err := c.SaveIndex(test.args.ctx, test.args.req, test.args.opts...)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -888,8 +897,9 @@ func Test_singleAgentClient_CreateAndSaveIndex(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			c := &singleAgentClient{
 				Client: test.fields.Client,
@@ -897,7 +907,7 @@ func Test_singleAgentClient_CreateAndSaveIndex(t *testing.T) {
 			}
 
 			got, err := c.CreateAndSaveIndex(test.args.ctx, test.args.req, test.args.opts...)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -987,8 +997,9 @@ func Test_singleAgentClient_IndexInfo(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			c := &singleAgentClient{
 				Client: test.fields.Client,
@@ -996,7 +1007,7 @@ func Test_singleAgentClient_IndexInfo(t *testing.T) {
 			}
 
 			gotRes, err := c.IndexInfo(test.args.ctx, test.args.req, test.args.opts...)
-			if err := test.checkFunc(test.want, gotRes, err); err != nil {
+			if err := checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

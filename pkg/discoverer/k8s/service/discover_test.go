@@ -99,12 +99,13 @@ func TestNew(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			gotDsc, err := New(test.args.selector, test.args.opts...)
-			if err := test.checkFunc(test.want, gotDsc, err); err != nil {
+			if err := checkFunc(test.want, gotDsc, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -228,8 +229,9 @@ func Test_discoverer_Start(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			d := &discoverer{
 				maxPods:         test.fields.maxPods,
@@ -250,7 +252,7 @@ func Test_discoverer_Start(t *testing.T) {
 			}
 
 			got, err := d.Start(test.args.ctx)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -374,8 +376,9 @@ func Test_discoverer_GetPods(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			d := &discoverer{
 				maxPods:         test.fields.maxPods,
@@ -396,7 +399,7 @@ func Test_discoverer_GetPods(t *testing.T) {
 			}
 
 			gotPods, err := d.GetPods(test.args.req)
-			if err := test.checkFunc(test.want, gotPods, err); err != nil {
+			if err := checkFunc(test.want, gotPods, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -520,8 +523,9 @@ func Test_discoverer_GetNodes(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			d := &discoverer{
 				maxPods:         test.fields.maxPods,
@@ -542,7 +546,7 @@ func Test_discoverer_GetNodes(t *testing.T) {
 			}
 
 			gotNodes, err := d.GetNodes(test.args.req)
-			if err := test.checkFunc(test.want, gotNodes, err); err != nil {
+			if err := checkFunc(test.want, gotNodes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

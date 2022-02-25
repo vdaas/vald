@@ -28,7 +28,7 @@ import (
 )
 
 var goleakIgnoreOptions = []goleak.Option{
-	goleak.IgnoreTopFunction("github.com/kpango/fastime.(*Fastime).StartTimerD.func1"),
+	goleak.IgnoreTopFunction("github.com/kpango/fastime.(*fastime).StartTimerD.func1"),
 }
 
 func TestWithErrGroup(t *testing.T) {
@@ -103,14 +103,15 @@ func TestWithErrGroup(t *testing.T) {
 				defer test.afterFunc(test.args)
 			}
 
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			got := WithErrGroup(test.args.eg)
 			obj := &T{
 				eg: test.fields.eg,
 			}
-			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			if err := checkFunc(test.want, obj, got(obj)); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -196,14 +197,15 @@ func TestWithService(t *testing.T) {
 				defer test.afterFunc(test.args)
 			}
 
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			got := WithService(test.args.s)
 			obj := &T{
 				service: test.fields.service,
 			}
-			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			if err := checkFunc(test.want, obj, got(obj)); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -273,12 +275,13 @@ func TestWithBucket(t *testing.T) {
 				defer test.afterFunc(test.args)
 			}
 
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			got := WithBucket(test.args.bucket)
 			obj := new(T)
-			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			if err := checkFunc(test.want, obj, got(obj)); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -348,12 +351,13 @@ func TestWithMaxPartSize(t *testing.T) {
 				defer test.afterFunc(test.args)
 			}
 
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			got := WithMaxPartSize(test.args.max)
 			obj := new(T)
-			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			if err := checkFunc(test.want, obj, got(obj)); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -423,13 +427,14 @@ func TestWithContentType(t *testing.T) {
 				defer test.afterFunc(test.args)
 			}
 
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := WithContentType(test.args.ct)
 			obj := new(T)
-			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			if err := checkFunc(test.want, obj, got(obj)); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

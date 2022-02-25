@@ -81,14 +81,15 @@ func TestWithError(t *testing.T) {
 				defer test.afterFunc(test.args)
 			}
 
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := WithError(test.args.fn)
 			obj := new(T)
 			got(obj)
-			if err := test.checkFunc(test.want, obj); err != nil {
+			if err := checkFunc(test.want, obj); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -153,13 +154,14 @@ func TestWithWarn(t *testing.T) {
 				defer test.afterFunc(test.args)
 			}
 
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			got := WithWarn(test.args.fn)
 			obj := new(T)
 			got(obj)
-			if err := test.checkFunc(test.want, obj); err != nil {
+			if err := checkFunc(test.want, obj); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

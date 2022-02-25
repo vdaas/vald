@@ -37,7 +37,7 @@ import (
 
 // Goroutine leak is detected by `fastime`, but it should be ignored in the test because it is an external package.
 var goleakIgnoreOptions = []goleak.Option{
-	goleak.IgnoreTopFunction("github.com/kpango/fastime.(*Fastime).StartTimerD.func1"),
+	goleak.IgnoreTopFunction("github.com/kpango/fastime.(*fastime).StartTimerD.func1"),
 	goleak.IgnoreTopFunction("github.com/go-redis/redis/v8/internal/pool.(*ConnPool).reaper"),
 	goleak.IgnoreTopFunction("github.com/go-redis/redis/v8.(*ClusterClient).reaper"),
 }
@@ -123,12 +123,13 @@ func TestNew(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			gotRc, err := New(test.args.opts...)
-			if err := test.checkFunc(test.want, gotRc, err); err != nil {
+			if err := checkFunc(test.want, gotRc, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -229,8 +230,9 @@ func Test_redisClient_ping(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			rc := &redisClient{
 				initialPingDuration:  test.fields.initialPingDuration,
@@ -239,7 +241,7 @@ func Test_redisClient_ping(t *testing.T) {
 			}
 
 			gotR, err := rc.ping(test.args.ctx)
-			if err := test.checkFunc(test.want, gotR, err); err != nil {
+			if err := checkFunc(test.want, gotR, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -377,8 +379,9 @@ func Test_redisClient_setClient(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			rc := &redisClient{
 				addrs:                test.fields.addrs,
@@ -413,7 +416,7 @@ func Test_redisClient_setClient(t *testing.T) {
 			}
 
 			err := rc.setClient(test.args.ctx)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -595,8 +598,9 @@ func Test_redisClient_newClient(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			rc := &redisClient{
 				addrs:                test.fields.addrs,
@@ -631,7 +635,7 @@ func Test_redisClient_newClient(t *testing.T) {
 			}
 
 			got, err := rc.newClient(context.Background())
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -843,8 +847,9 @@ func Test_redisClient_newClusterClient(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			rc := &redisClient{
 				addrs:                test.fields.addrs,
@@ -879,7 +884,7 @@ func Test_redisClient_newClusterClient(t *testing.T) {
 			}
 
 			got, err := rc.newClusterClient(test.args.ctx)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -999,8 +1004,9 @@ func Test_redisClient_Connect(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			rc := &redisClient{
 				addrs:                test.fields.addrs,
@@ -1035,7 +1041,7 @@ func Test_redisClient_Connect(t *testing.T) {
 			}
 
 			got, err := rc.Connect(test.args.ctx)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

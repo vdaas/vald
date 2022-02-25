@@ -20,9 +20,8 @@ package ngt
 import (
 	"testing"
 
-	"github.com/vdaas/vald/pkg/agent/core/ngt/config"
-
 	"github.com/vdaas/vald/internal/test/goleak"
+	"github.com/vdaas/vald/pkg/agent/core/ngt/config"
 )
 
 func TestWithConfig(t *testing.T) {
@@ -117,7 +116,7 @@ func TestWithConfig(t *testing.T) {
 
 			   got := WithConfig(test.args.cfg)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -130,7 +129,7 @@ func TestWithConfig(t *testing.T) {
 			   got := WithConfig(test.args.cfg)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(tt.want, obj); err != nil {
+			   if err := checkFunc(tt.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -230,7 +229,7 @@ func TestWithDimension(t *testing.T) {
 
 			   got := WithDimension(test.args.d)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -243,7 +242,7 @@ func TestWithDimension(t *testing.T) {
 			   got := WithDimension(test.args.d)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(tt.want, obj); err != nil {
+			   if err := checkFunc(tt.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -343,7 +342,7 @@ func TestWithDistanceType(t *testing.T) {
 
 			   got := WithDistanceType(test.args.dtype)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -356,7 +355,7 @@ func TestWithDistanceType(t *testing.T) {
 			   got := WithDistanceType(test.args.dtype)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(tt.want, obj); err != nil {
+			   if err := checkFunc(tt.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -456,7 +455,7 @@ func TestWithObjectType(t *testing.T) {
 
 			   got := WithObjectType(test.args.otype)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -469,7 +468,7 @@ func TestWithObjectType(t *testing.T) {
 			   got := WithObjectType(test.args.otype)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(tt.want, obj); err != nil {
+			   if err := checkFunc(tt.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/

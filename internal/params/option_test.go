@@ -83,13 +83,14 @@ func TestWithConfigFilePathKeys(t *testing.T) {
 				defer test.afterFunc(test.args)
 			}
 
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			got := WithConfigFilePathKeys(test.args.keys...)
 			obj := new(T)
 			got(obj)
-			if err := test.checkFunc(test.want, obj); err != nil {
+			if err := checkFunc(test.want, obj); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -150,13 +151,14 @@ func TestWithConfigFilePathDefault(t *testing.T) {
 				defer test.afterFunc(test.args)
 			}
 
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			got := WithConfigFilePathDefault(test.args.path)
 			obj := new(T)
 			got(obj)
-			if err := test.checkFunc(test.want, obj); err != nil {
+			if err := checkFunc(test.want, obj); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -217,13 +219,14 @@ func TestWithConfigFileDescription(t *testing.T) {
 				defer test.afterFunc(test.args)
 			}
 
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			got := WithConfigFileDescription(test.args.desc)
 			obj := new(T)
 			got(obj)
-			if err := test.checkFunc(test.want, obj); err != nil {
+			if err := checkFunc(test.want, obj); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -288,13 +291,14 @@ func TestWithVersionKeys(t *testing.T) {
 				defer test.afterFunc(test.args)
 			}
 
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			got := WithVersionKeys(test.args.keys...)
 			obj := new(T)
 			got(obj)
-			if err := test.checkFunc(test.want, obj); err != nil {
+			if err := checkFunc(test.want, obj); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -355,13 +359,14 @@ func TestWithVersionFlagDefault(t *testing.T) {
 				defer test.afterFunc(test.args)
 			}
 
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			got := WithVersionFlagDefault(test.args.flag)
 			obj := new(T)
 			got(obj)
-			if err := test.checkFunc(test.want, obj); err != nil {
+			if err := checkFunc(test.want, obj); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -422,13 +427,14 @@ func TestWithVersionDescription(t *testing.T) {
 				defer test.afterFunc(test.args)
 			}
 
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			got := WithVersionDescription(test.args.desc)
 			obj := new(T)
 			got(obj)
-			if err := test.checkFunc(test.want, obj); err != nil {
+			if err := checkFunc(test.want, obj); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

@@ -59,6 +59,7 @@ jobs:
           version: latest
           name: vald
           agents: 3
+          options: "--image docker.io/rancher/k3s:latest"
       - name: check k3d
         run: |
           kubectl cluster-info
@@ -79,7 +80,8 @@ jobs:
           wait_for_selector: app=vald-lb-gateway
       - name: deploy Chaos Mesh
         run: |
-          curl -sSL https://mirrors.chaos-mesh.org/v1.2.1/install.sh | bash -s -- --k3s
+          make kubectl/install
+          curl -sSL https://mirrors.chaos-mesh.org/v2.1.2/install.sh | bash -s -- --k3s
           helm install \
             --set podChaos.failure.enabled=true \
             vald-chaos-test tests/chaos/chart
@@ -96,6 +98,7 @@ jobs:
           make hack/benchmark/assets/dataset/${DATASET}
           go version
           go test \
+            -race \
             -mod=readonly \
             -v tests/e2e/crud/crud_test.go \
             -tags "e2e" \
@@ -148,6 +151,7 @@ jobs:
           version: latest
           name: vald
           agents: 3
+          options: "--image docker.io/rancher/k3s:latest"
       - name: check k3d
         run: |
           kubectl cluster-info
@@ -168,7 +172,8 @@ jobs:
           wait_for_selector: app=vald-lb-gateway
       - name: deploy Chaos Mesh
         run: |
-          curl -sSL https://mirrors.chaos-mesh.org/v1.2.1/install.sh | bash -s -- --k3s
+          make kubectl/install
+          curl -sSL https://mirrors.chaos-mesh.org/v2.1.2/install.sh | bash -s -- --k3s
           helm install \
             --set podChaos.failure.enabled=true \
             --set podChaos.failure.selector.labelSelectors."app\.kubernetes\.io/component"=null \
@@ -187,6 +192,7 @@ jobs:
           podname=`kubectl get pods --selector=app=vald-lb-gateway | tail -1 | awk '{print $1}'`
           go version
           go test \
+            -race \
             -mod=readonly \
             -v tests/e2e/crud/crud_test.go \
             -tags "e2e" \
@@ -238,6 +244,7 @@ jobs:
           version: latest
           name: vald
           agents: 3
+          options: "--image docker.io/rancher/k3s:latest"
       - name: check k3d
         run: |
           kubectl cluster-info
@@ -258,7 +265,8 @@ jobs:
           wait_for_selector: app=vald-lb-gateway
       - name: deploy Chaos Mesh
         run: |
-          curl -sSL https://mirrors.chaos-mesh.org/v1.2.1/install.sh | bash -s -- --k3s
+          make kubectl/install
+          curl -sSL https://mirrors.chaos-mesh.org/v2.1.2/install.sh | bash -s -- --k3s
           helm install \
             --set networkChaos.partition.enabled=true \
             vald-chaos-test tests/chaos/chart
@@ -275,6 +283,7 @@ jobs:
           make hack/benchmark/assets/dataset/${DATASET}
           go version
           go test \
+            -race \
             -mod=readonly \
             -v tests/e2e/crud/crud_test.go \
             -tags "e2e" \
@@ -327,6 +336,7 @@ jobs:
           version: latest
           name: vald
           agents: 3
+          options: "--image docker.io/rancher/k3s:latest"
       - name: check k3d
         run: |
           kubectl cluster-info
@@ -346,7 +356,8 @@ jobs:
           wait_for_selector: app=vald-lb-gateway
       - name: deploy Chaos Mesh
         run: |
-          curl -sSL https://mirrors.chaos-mesh.org/v1.2.1/install.sh | bash -s -- --k3s
+          make kubectl/install
+          curl -sSL https://mirrors.chaos-mesh.org/v2.1.2/install.sh | bash -s -- --k3s
           helm install \
             --set networkChaos.bandwidth.enabled=true \
             vald-chaos-test tests/chaos/chart
@@ -363,6 +374,7 @@ jobs:
           make hack/benchmark/assets/dataset/${DATASET}
           go version
           go test \
+            -race \
             -mod=readonly \
             -v tests/e2e/crud/crud_test.go \
             -tags "e2e" \
@@ -386,6 +398,7 @@ jobs:
           make hack/benchmark/assets/dataset/${DATASET}
           go version
           go test \
+            -race \
             -mod=readonly \
             -v tests/e2e/crud/crud_test.go \
             -tags "e2e" \

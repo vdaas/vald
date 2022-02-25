@@ -444,12 +444,13 @@ func TestNewConfig(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(tt, test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			gotCfg, err := NewConfig(test.args.path)
-			if err := test.checkFunc(test.want, gotCfg, err); err != nil {
+			if err := checkFunc(test.want, gotCfg, err); err != nil {
 				tt.Errorf("error = %v, got = %#v", err, gotCfg)
 			}
 		})

@@ -552,8 +552,9 @@ func Test_srvs_setupAPIs(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			s := &srvs{
 				rest:    test.fields.rest,
@@ -565,7 +566,7 @@ func Test_srvs_setupAPIs(t *testing.T) {
 			}
 
 			got, err := s.setupAPIs(test.args.cfg)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -659,8 +660,9 @@ func Test_srvs_setupHealthCheck(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			s := &srvs{
 				rest:    test.fields.rest,
@@ -672,7 +674,7 @@ func Test_srvs_setupHealthCheck(t *testing.T) {
 			}
 
 			got, err := s.setupHealthCheck(test.args.cfg)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -766,8 +768,9 @@ func Test_srvs_setupMetrics(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			s := &srvs{
 				rest:    test.fields.rest,
@@ -779,7 +782,7 @@ func Test_srvs_setupMetrics(t *testing.T) {
 			}
 
 			got, err := s.setupMetrics(test.args.cfg)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

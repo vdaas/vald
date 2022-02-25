@@ -61,12 +61,13 @@ func TestNewConvictionPolicy(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := NewConvictionPolicy()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -122,13 +123,14 @@ func Test_convictionPolicy_AddFailure(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			c := &convictionPolicy{}
 
 			got := c.AddFailure(test.args.err, test.args.host)
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -174,13 +176,14 @@ func Test_convictionPolicy_Reset(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			c := &convictionPolicy{}
 
 			c.Reset(test.args.host)
-			if err := test.checkFunc(test.want); err != nil {
+			if err := checkFunc(test.want); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

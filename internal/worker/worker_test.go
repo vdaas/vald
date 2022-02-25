@@ -157,12 +157,13 @@ func TestNew(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got, err := New(test.args.opts...)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -295,8 +296,9 @@ func Test_worker_Start(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			w := &worker{
 				name:           test.fields.name,
@@ -310,7 +312,7 @@ func Test_worker_Start(t *testing.T) {
 			}
 
 			got, err := w.Start(test.args.ctx)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -553,8 +555,9 @@ func Test_worker_startJobLoop(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			w := &worker{
 				name:           test.fields.name,
@@ -568,7 +571,7 @@ func Test_worker_startJobLoop(t *testing.T) {
 			}
 
 			got := w.startJobLoop(test.args.ctx)
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -625,8 +628,9 @@ func Test_worker_Pause(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			w := &worker{
 				name:           test.fields.name,
@@ -640,7 +644,7 @@ func Test_worker_Pause(t *testing.T) {
 			}
 
 			w.Pause()
-			if err := test.checkFunc(test.want, w); err != nil {
+			if err := checkFunc(test.want, w); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -697,8 +701,9 @@ func Test_worker_Resume(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			w := &worker{
 				name:           test.fields.name,
@@ -712,7 +717,7 @@ func Test_worker_Resume(t *testing.T) {
 			}
 
 			w.Resume()
-			if err := test.checkFunc(test.want, w); err != nil {
+			if err := checkFunc(test.want, w); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -783,8 +788,9 @@ func Test_worker_IsRunning(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			w := &worker{
 				name:           test.fields.name,
@@ -798,7 +804,7 @@ func Test_worker_IsRunning(t *testing.T) {
 			}
 
 			got := w.IsRunning()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -854,8 +860,9 @@ func Test_worker_Name(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			w := &worker{
 				name:           test.fields.name,
@@ -869,7 +876,7 @@ func Test_worker_Name(t *testing.T) {
 			}
 
 			got := w.Name()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -929,8 +936,9 @@ func Test_worker_Len(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			w := &worker{
 				name:           test.fields.name,
@@ -944,7 +952,7 @@ func Test_worker_Len(t *testing.T) {
 			}
 
 			got := w.Len()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1000,8 +1008,9 @@ func Test_worker_TotalRequested(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			w := &worker{
 				name:           test.fields.name,
@@ -1015,7 +1024,7 @@ func Test_worker_TotalRequested(t *testing.T) {
 			}
 
 			got := w.TotalRequested()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1071,8 +1080,9 @@ func Test_worker_TotalCompleted(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			w := &worker{
 				name:           test.fields.name,
@@ -1086,7 +1096,7 @@ func Test_worker_TotalCompleted(t *testing.T) {
 			}
 
 			got := w.TotalCompleted()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1223,8 +1233,9 @@ func Test_worker_Dispatch(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			w := &worker{
 				name:           test.fields.name,
@@ -1238,7 +1249,7 @@ func Test_worker_Dispatch(t *testing.T) {
 			}
 
 			err := w.Dispatch(test.args.ctx, test.args.f)
-			if err := test.checkFunc(w, test.want, err); err != nil {
+			if err := checkFunc(w, test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

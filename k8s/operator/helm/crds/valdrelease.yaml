@@ -251,6 +251,7 @@ spec:
                           type: string
                           enum:
                             - float
+                            - float16
                             - uint8
                         search_edge_size:
                           type: integer
@@ -2292,11 +2293,6 @@ spec:
                       properties:
                         tag:
                           type: string
-                    ingress:
-                      type: object
-                      properties:
-                        usev1beta1:
-                          type: boolean
                     logging:
                       type: object
                       properties:

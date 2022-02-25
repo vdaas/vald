@@ -18,7 +18,6 @@
 package config
 
 import (
-	"os"
 	"reflect"
 	"testing"
 
@@ -83,12 +82,13 @@ func TestBlobStorageType_String(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := test.bst.String()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -179,12 +179,13 @@ func TestAtoBST(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := AtoBST(test.args.bst)
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -276,18 +277,7 @@ func TestBlob_Bind(t *testing.T) {
 					t.Helper()
 
 					for key, val := range m {
-						if err := os.Setenv(key, val); err != nil {
-							t.Fatal(err)
-						}
-					}
-				},
-				afterFunc: func(t *testing.T) {
-					t.Helper()
-
-					for key := range m {
-						if err := os.Unsetenv(key); err != nil {
-							t.Fatal(err)
-						}
+						t.Setenv(key, val)
 					}
 				},
 				want: want{
@@ -311,8 +301,9 @@ func TestBlob_Bind(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(tt)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			b := &Blob{
 				StorageType:  test.fields.StorageType,
@@ -322,7 +313,7 @@ func TestBlob_Bind(t *testing.T) {
 			}
 
 			got := b.Bind()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -441,18 +432,7 @@ func TestS3Config_Bind(t *testing.T) {
 					t.Helper()
 
 					for key, val := range m {
-						if err := os.Setenv(key, val); err != nil {
-							t.Fatal(err)
-						}
-					}
-				},
-				afterFunc: func(t *testing.T) {
-					t.Helper()
-
-					for key := range m {
-						if err := os.Unsetenv(key); err != nil {
-							t.Fatal(err)
-						}
+						t.Setenv(key, val)
 					}
 				},
 				want: want{
@@ -479,8 +459,9 @@ func TestS3Config_Bind(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(tt)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			s := &S3Config{
 				Endpoint:                   test.fields.Endpoint,
@@ -504,7 +485,7 @@ func TestS3Config_Bind(t *testing.T) {
 			}
 
 			got := s.Bind()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -628,17 +609,7 @@ func TestCloudStorageConfig_Bind(t *testing.T) {
 				beforeFunc: func(t *testing.T) {
 					t.Helper()
 					for k, v := range m {
-						if err := os.Setenv(k, v); err != nil {
-							t.Fatal(err)
-						}
-					}
-				},
-				afterFunc: func(t *testing.T) {
-					t.Helper()
-					for k := range m {
-						if err := os.Unsetenv(k); err != nil {
-							t.Fatal(err)
-						}
+						t.Setenv(k, v)
 					}
 				},
 				want: want{
@@ -670,8 +641,9 @@ func TestCloudStorageConfig_Bind(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(tt)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			c := &CloudStorageConfig{
 				URL:                     test.fields.URL,
@@ -685,7 +657,7 @@ func TestCloudStorageConfig_Bind(t *testing.T) {
 			}
 
 			got := c.Bind()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

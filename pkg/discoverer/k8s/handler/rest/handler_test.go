@@ -88,12 +88,13 @@ func TestNew(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := New(test.args.opts...)
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -178,15 +179,16 @@ func Test_handler_Index(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			h := &handler{
 				dsc: test.fields.dsc,
 			}
 
 			got, err := h.Index(test.args.w, test.args.r)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -271,15 +273,16 @@ func Test_handler_Pods(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			h := &handler{
 				dsc: test.fields.dsc,
 			}
 
 			gotCode, err := h.Pods(test.args.w, test.args.r)
-			if err := test.checkFunc(test.want, gotCode, err); err != nil {
+			if err := checkFunc(test.want, gotCode, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -364,15 +367,16 @@ func Test_handler_Nodes(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			h := &handler{
 				dsc: test.fields.dsc,
 			}
 
 			gotCode, err := h.Nodes(test.args.w, test.args.r)
-			if err := test.checkFunc(test.want, gotCode, err); err != nil {
+			if err := checkFunc(test.want, gotCode, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

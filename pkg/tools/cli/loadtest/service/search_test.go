@@ -97,12 +97,13 @@ func Test_searchRequestProvider(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got, got1, err := searchRequestProvider(test.args.dataset)
-			if err := test.checkFunc(test.want, got, got1, err); err != nil {
+			if err := checkFunc(test.want, got, got1, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -204,8 +205,9 @@ func Test_loader_newSearch(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			l := &loader{
 				eg:               test.fields.eg,
@@ -222,7 +224,7 @@ func Test_loader_newSearch(t *testing.T) {
 			}
 
 			got, err := l.newSearch()
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -324,8 +326,9 @@ func Test_loader_newStreamSearch(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			l := &loader{
 				eg:               test.fields.eg,
@@ -342,7 +345,7 @@ func Test_loader_newStreamSearch(t *testing.T) {
 			}
 
 			got, err := l.newStreamSearch()
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
