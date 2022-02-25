@@ -485,10 +485,11 @@ func Test_server_Search(t *testing.T) {
 				- case 5: nil vector fail
 			- uint8
 			- float32
-				- case 6: 0 value vector success
-				- case 7: NaN value vector fail?
-				- case 8: Inf value vector fail?
-				- case 9: -Inf value vector fail?
+				- case 6: +0 value vector success
+				- case 7: -0 value vector success
+				- case 8: NaN value vector fail?
+				- case 9: Inf value vector fail?
+				- case 10: -Inf value vector fail?
 		- Decision Table Testing
 			- uint8, float32 common
 		    | same vector       | false | false | false | true | true | true |
@@ -502,6 +503,7 @@ func Test_server_Search(t *testing.T) {
 				- case 6: inserted 20 same vector, Num is 10 success?
 	*/
 	tests := []test{
+		// Equivalence Class Testing
 		{
 			name: "Equivalence Class Testing uint8 case 1: vector success",
 		},
@@ -515,6 +517,7 @@ func Test_server_Search(t *testing.T) {
 			name: "Equivalence Class Testing float32 case 2: different dimension fail",
 		},
 
+		// Boundary Value Testing
 		{
 			name: "Boundary Value Testing uint8 case 1: min value vector success",
 		},
@@ -546,12 +549,22 @@ func Test_server_Search(t *testing.T) {
 			name: "Boundary Value Testing float32 case 5: nil fail",
 		},
 		{
-			name: "Boundary Value Testing float32 case 6: 0 value vector success",
+			name: "Boundary Value Testing float32 case 6: +0 value vector success",
 		},
 		{
-			name: "Boundary Value Testing float32 case 7: NaN value fail",
+			name: "Boundary Value Testing float32 case 7: -0 value vector success",
+		},
+		{
+			name: "Boundary Value Testing float32 case 8: NaN value fail",
+		},
+		{
+			name: "Boundary Value Testing float32 case 9: Inf value fail",
+		},
+		{
+			name: "Boundary Value Testing float32 case 10: -Inf value fail",
 		},
 
+		// Decision Table Testing
 		{
 			name: "Decision Table Testing uint8 case 1: inserted 5 different vector, Num is 10 success",
 		},
