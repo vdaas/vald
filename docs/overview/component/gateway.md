@@ -34,6 +34,7 @@ Vald Gateway has two kinds of components:
 <figcaption align="center">relationship between LB Gateway and Egress Filter</figcaption>
 </figure>
 
+
 Vald LB Gateway is the mandatory component for Vald cluster, and Vald Filter Gateway is optional component.
 From now on, we will focus on introducing the features of Vald LB Gateway more deeply.
 
