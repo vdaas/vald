@@ -57,9 +57,9 @@ When Vald Agent Pod does not return search result by the timeout limit, Vald LB 
 
 </div>
 
-### Work together with Ingress/Egress filter
+### Work together with Vald Filter Gateway
 
-Vald LB Gateway is the only component to connect to Vald Ingress filter or Egress filter via Vald Filter Gateway.
+Vald LB Gateway is the only component to connect to ingress (or egress) filter component via Vald Filter Gateway.
 
 When ingress component runs, Vald LB Gateway will pass the object of request to the Ingress, then get the vector converted from it.
 When egress component runs, Vald LB Gateway will pass the search result to the Egress and get the filtered result.
