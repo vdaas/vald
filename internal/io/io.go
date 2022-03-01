@@ -160,6 +160,6 @@ func NewEOFReader() Reader {
 	return &eofReader{}
 }
 
-func (r *eofReader) Read(b []byte) (n int, err error) {
+func (_ *eofReader) Read(_ []byte) (n int, err error) {
 	return 0, EOF
 }
