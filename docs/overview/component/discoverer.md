@@ -6,15 +6,15 @@ It is also the only component that communicates with [kube-apiserver](https://ku
 
 ## Responsibility
 
-Vald Discoverer is responsible for sharing resource usage about each Node and Pod to the other components by communicating [kube-apiserver](https://kubernetes.io/docs/reference/command-line-tools-reference/kube-apiserver/).
+Vald Discoverer is responsible for retrieving each Node and Pod resource usage from [kube-apiserver](https://kubernetes.io/docs/reference/command-line-tools-reference/kube-apiserver/) and sharing it with other components in the Vald cluster.
 
 ## Feature
 
 ### Getting Node and Pod metrics
 
-Vald Discoverer requires [kube-apiserver](<[https://kubernetes.io/ja/docs/reference/command-line-tools-reference/kube-apiserver/](https://kubernetes.io/ja/docs/reference/command-line-tools-reference/kube-apiserver/)>) for getting each Node and Pod metrics in the Vald cluster.
+Vald Discoverer requires [kube-apiserver](<[https://kubernetes.io/ja/docs/reference/command-line-tools-reference/kube-apiserver/](https://kubernetes.io/ja/docs/reference/command-line-tools-reference/kube-apiserver/)>) to get Node and Pod metrics in the Vald cluster.
 
-It uses `Reconcile function`, one of the internal implementations, which runs on changing metrics for syncing metrics.
+It synchronizes the metrics when it changes by the `Reconcile function`, one of the internal functions.
 
 The kind of metrics are here:
 
