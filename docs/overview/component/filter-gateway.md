@@ -9,7 +9,7 @@ This page introduces the overview of Vald Filter Gateway
 Vald Filter Gateway is the optional component in the Vald cluster.
 
 It is implemented for available of user-defined filtering.
-The responsibilities is bypass between the Vald cluster and user defined ingress filter (or egress filter) components
+The responsibility is bypass between the Vald cluster and user-defined ingress filter (or egress filter) components.
 
 ## Features
 
