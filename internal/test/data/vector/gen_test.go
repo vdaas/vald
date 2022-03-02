@@ -41,7 +41,7 @@ func TestFloat32VectorGenerator(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "gaussian distributed random vector test",
+			name: "success generating gaussian distributed random vector",
 			args: args{
 				d:   Gaussian,
 				n:   20,
@@ -54,7 +54,7 @@ func TestFloat32VectorGenerator(t *testing.T) {
 			},
 		},
 		{
-			name: "uniform distributed random vector test",
+			name: "success generating uniform distributed random vector",
 			args: args{
 				d:   Uniform,
 				n:   20,
@@ -67,7 +67,7 @@ func TestFloat32VectorGenerator(t *testing.T) {
 			},
 		},
 		{
-			name: "unknown distribution error",
+			name: "fail generating random vector with unknown distribution",
 			args: args{
 				d: -1,
 			},
@@ -97,7 +97,6 @@ func TestFloat32VectorGenerator(t *testing.T) {
 			if err := checkFunc(test.args, test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -135,7 +134,7 @@ func TestUint8VectorGenerator(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "gaussian distributed random vector test",
+			name: "success generating gaussian distributed random vector",
 			args: args{
 				d:   Gaussian,
 				n:   200,
@@ -148,7 +147,7 @@ func TestUint8VectorGenerator(t *testing.T) {
 			},
 		},
 		{
-			name: "uniform distributed random vector test",
+			name: "success generating uniform distributed random vector",
 			args: args{
 				d:   Uniform,
 				n:   200,
@@ -161,7 +160,7 @@ func TestUint8VectorGenerator(t *testing.T) {
 			},
 		},
 		{
-			name: "unknown distribution error",
+			name: "fail generating random vector with unknown distribution",
 			args: args{
 				d: -1,
 			},
@@ -191,7 +190,6 @@ func TestUint8VectorGenerator(t *testing.T) {
 			if err := checkFunc(test.args, test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -271,7 +269,6 @@ func Test_float32VectorGenerator(t *testing.T) {
 			if err := checkFunc(test.want, gotRet); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -348,7 +345,6 @@ func TestUniformDistributedFloat32VectorGenerator(t *testing.T) {
 			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -425,7 +421,6 @@ func TestGaussianDistributedFloat32VectorGenerator(t *testing.T) {
 			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -505,7 +500,6 @@ func Test_uint8VectorGenerator(t *testing.T) {
 			if err := checkFunc(test.want, gotRet); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -582,7 +576,6 @@ func TestUniformDistributedUint8VectorGenerator(t *testing.T) {
 			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -659,7 +652,6 @@ func TestGaussianDistributedUint8VectorGenerator(t *testing.T) {
 			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
