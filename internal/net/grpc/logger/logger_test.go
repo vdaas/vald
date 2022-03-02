@@ -115,7 +115,7 @@ func Test_logger_Info(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "info success to log the message",
+			name: "Info success to log the message",
 			args: args{
 				args: []interface{}{"log message"},
 			},
@@ -171,7 +171,7 @@ func Test_logger_Infoln(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "infoln success to log the message",
+			name: "Infoln success to log the message",
 			args: args{
 				args: []interface{}{"log message"},
 			},
@@ -228,7 +228,7 @@ func Test_logger_Infof(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "infof success to log the message",
+			name: "Infof success to log the message",
 			args: args{
 				args: []interface{}{"log message"},
 			},
@@ -284,7 +284,7 @@ func Test_logger_Warning(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "warning success to log the message",
+			name: "Warning success to log the message",
 			args: args{
 				args: []interface{}{"log message"},
 			},
@@ -340,7 +340,7 @@ func Test_logger_Warningln(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "warningln success to log the message",
+			name: "Warningln success to log the message",
 			args: args{
 				args: []interface{}{"log message"},
 			},
@@ -397,7 +397,7 @@ func Test_logger_Warningf(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "warningf success to log the message",
+			name: "Warningf success to log the message",
 			args: args{
 				args: []interface{}{"log message"},
 			},
@@ -453,7 +453,7 @@ func Test_logger_Error(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "error success to log the message",
+			name: "Error success to log the message",
 			args: args{
 				args: []interface{}{"log message"},
 			},
@@ -509,7 +509,7 @@ func Test_logger_Errorln(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "errorln success to log the message",
+			name: "Errorln success to log the message",
 			args: args{
 				args: []interface{}{"log message"},
 			},
@@ -566,7 +566,7 @@ func Test_logger_Errorf(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "errorf success to log the message",
+			name: "Errorf success to log the message",
 			args: args{
 				args: []interface{}{"log message"},
 			},
@@ -632,7 +632,7 @@ func Test_logger_Fatal(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "fatal log the message",
+			name: "Fatal log the message",
 			args: args{
 				args: []interface{}{"log message"},
 			},
@@ -701,7 +701,7 @@ func Test_logger_Fatalln(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "fatalln log the message",
+			name: "Fatalln log the message",
 			args: args{
 				args: []interface{}{"log message"},
 			},
@@ -768,7 +768,7 @@ func Test_logger_Fatalf(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "fatalf log the message",
+			name: "Fatalf log the message",
 			args: args{
 				args: []interface{}{"log message"},
 			},
