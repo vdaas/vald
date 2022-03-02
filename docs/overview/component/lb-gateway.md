@@ -10,15 +10,15 @@ This page introduces the overview and features of Vald Gateway.
 
 Vald LB Gateway is responsible for:
 
-- Pass and load balancing requests to the other Vald components
+- Pass and load balancing requests to other Vald components
 - Control processing with timeout setting
-- Gathering search results and sorting out as a result
+- Aggregate search results from each Vald Agent and rerank searching result
 
 The next chapter shows the main features.
 
 ## Features
 
-Vald LB Gateway is the mandatory component for the Vald cluster.
+Vald LB Gateway is a mandatory component for the Vald cluster.
 
 Each following section introduces each feature.
 
