@@ -109,11 +109,17 @@ func UniformDistributedUint8VectorGenerator(n, dim int) [][]uint8 {
 
 // GaussianDistributedUint8VectorGenerator returns n uint8 vectors with dim dimension and their values under Gaussian distribution
 func GaussianDistributedUint8VectorGenerator(n, dim int) [][]uint8 {
-	// mean:128, sigma:128/3, all of 99.7% are in [0, 255]
+	// NOTE: mean:128, sigma:128/3, all of 99.7% are in [0, 255]
 	const (
 		mean  float64 = 128
 		sigma float64 = 128 / 3
 	)
+	return gaussianDistributedUint8VectorGenerator(n, dim, mean, sigma)
+}
+
+// gaussianDistributedUint8VectorGenerator returns n uint8 vectors with dim dimension and their values under Gaussian distribution with user-specified mean and sigma
+func gaussianDistributedUint8VectorGenerator(n, dim int, mean, sigma float64) [][]uint8 {
+	// NOTE: The boundary test is the main purpose for refactoring. Now, passing this function is dependent on the seed of the random generator. We should fix the randomness of the passing test.
 	return uint8VectorGenerator(n, dim, func() uint8 {
 		val := rand.NormFloat64()*sigma + mean
 		if val < 0 {
