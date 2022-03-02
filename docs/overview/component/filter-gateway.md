@@ -1,8 +1,8 @@
 # Vald Filter Gateway
 
-Vald Filter Gateway is the component to communicate user defined ingress / egress filter components with requests.
+Vald Filter Gateway is the component to communicate user-defined ingress / egress filter components with requests.
 
-This page introduces the overview of Vald Filter Gateway
+This page introduces the overview of Vald Filter Gateway.
 
 ## Responsibility
 
