@@ -150,12 +150,12 @@ func TestNewReadCloserWithContext(t *testing.T) {
 			name: "success when context.Context and io.ReadCloser are not nil",
 			args: args{
 				ctx: context.Background(),
-				r:   io.NopCloser(&bytes.Buffer{}),
+				r:   NopCloser(&bytes.Buffer{}),
 			},
 			want: want{
 				want: &ctxReader{
 					ctx: context.Background(),
-					r:   io.NopCloser(&bytes.Buffer{}),
+					r:   NopCloser(&bytes.Buffer{}),
 				},
 				err: nil,
 			},
@@ -175,7 +175,7 @@ func TestNewReadCloserWithContext(t *testing.T) {
 			name: "fail when context.Context is nil",
 			args: args{
 				ctx: nil,
-				r:   io.NopCloser(&bytes.Buffer{}),
+				r:   NopCloser(&bytes.Buffer{}),
 			},
 			want: want{
 				want: nil,
@@ -368,7 +368,7 @@ func Test_ctxReader_Close(t *testing.T) {
 				name: "success with Closer",
 				fields: fields{
 					ctx: ctx,
-					r:   io.NopCloser(&bytes.Buffer{}),
+					r:   NopCloser(&bytes.Buffer{}),
 				},
 				want: want{
 					err: nil,
@@ -788,6 +788,148 @@ func Test_ctxWriter_Close(t *testing.T) {
 
 			err := w.Close()
 			if err := checkFunc(test.want, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func TestNewEOFReader(t *testing.T) {
+	type want struct {
+		want Reader
+	}
+	type test struct {
+		name       string
+		want       want
+		checkFunc  func(want, Reader) error
+		beforeFunc func()
+		afterFunc  func()
+	}
+	defaultCheckFunc := func(w want, got Reader) error {
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc()
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc()
+			}
+			checkFunc := test.checkFunc
+			if test.checkFunc == nil {
+				checkFunc = defaultCheckFunc
+			}
+
+			got := NewEOFReader()
+			if err := checkFunc(test.want, got); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func Test_eofReader_Read(t *testing.T) {
+	type args struct {
+		b []byte
+	}
+	type want struct {
+		wantN int
+		err   error
+	}
+	type test struct {
+		name       string
+		args       args
+		r          *eofReader
+		want       want
+		checkFunc  func(want, int, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, gotN int, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(gotN, w.wantN) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotN, w.wantN)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           b: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           b: nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			checkFunc := test.checkFunc
+			if test.checkFunc == nil {
+				checkFunc = defaultCheckFunc
+			}
+			r := &eofReader{}
+
+			gotN, err := r.Read(test.args.b)
+			if err := checkFunc(test.want, gotN, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
