@@ -771,6 +771,8 @@ func (o objectType) String() string {
 		return "uint8"
 	case Float:
 		return "float"
+	case HalfFloat:
+		return "float16"
 	}
 
 	return ""
