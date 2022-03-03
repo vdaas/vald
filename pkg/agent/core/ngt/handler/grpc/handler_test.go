@@ -1199,17 +1199,24 @@ func Test_server_Insert(t *testing.T) {
 	/*
 		- Equivalence Class Testing
 			- uint8, float32
-				- case 1: Insert vector success
-				- case 2: Insert vector with different dimension
+				- case 1.1: Insert vector success (vector type is uint8)
+				- case 1.2: Insert vector success (vector type is float32)
+				- case 2.1: Insert vector with different dimension (vector type is uint8)
+				- case 2.2: Insert vector with different dimension (vector type is float32)
 
 		- Boundary Value Testing
 			- uint8, float32
-				- case 1: Insert vector with 0 value success
-				- case 2: Insert vector with min value success
-				- case 3: Insert vector with max value success
-				- case 4: Insert with empty UUID fail
+				- case 1.1: Insert vector with 0 value success (vector type is uint8)
+				- case 1.1: Insert vector with 0 value success (vector type is float32)
+				- case 2.1: Insert vector with min value success (vector type is uint8)
+				- case 2.2: Insert vector with min value success (vector type is float32)
+				- case 3.1: Insert vector with max value success (vector type is uint8)
+				- case 3.2: Insert vector with max value success (vector type is float32)
+				- case 4.1: Insert with empty UUID fail (vector type is uint8)
+				- case 4.2: Insert with empty UUID fail (vector type is float32)
+
 			- float32
-				- case 5: Insert vector with NaN value fail
+				- case 5: Insert vector with NaN value fail (vector type is float32)
 
 			- case 6: Insert nil insert request fail
 			- case 7: Insert nil vector fail
@@ -1217,52 +1224,56 @@ func Test_server_Insert(t *testing.T) {
 
 		- Decision Table Testing
 			- duplicated ID, duplicated vector, duplicated ID & vector
-				- case 1: Insert duplicated request success when SkipStrictExistCheck is off
-				- case 2: Insert duplicated request fail when SkipStrictExistCheck is on
+				- case 1.1: Insert duplicated request success when SkipStrictExistCheck is off (duplicated ID)
+				- case 1.2: Insert duplicated request success when SkipStrictExistCheck is off (duplicated vector)
+				- case 1.3: Insert duplicated request success when SkipStrictExistCheck is off (duplicated ID & vector)
+				- case 2.1: Insert duplicated request fail when SkipStrictExistCheck is on (duplicated ID)
+				- case 2.2: Insert duplicated request fail when SkipStrictExistCheck is on (duplicated vector)
+				- case 2.3: Insert duplicated request fail when SkipStrictExistCheck is on (duplicated ID & vector)
 	*/
 	tests := []test{
 		// Equivalence Class Testing
 		{
-			name: "Equivalence Class Testing uint8 case 1: Insert vector success",
+			name: "Equivalence Class Testing case 1.1: Insert vector success (vector type is uint8)",
 			// arg: uuid 1, vec int, expected: success with ip&host
 		},
 		{
-			name: "Equivalence Class Testing float32 case 1: Insert vector success",
+			name: "Equivalence Class Testing case 1.2: Insert vector success (vector type is float32)",
 		},
 		{
-			name: "Equivalence Class Testing uint8 case 2: Insert vector with different dimension",
+			name: "Equivalence Class Testing case 2.1: Insert vector with different dimension (vector type is uint8)",
 		},
 		{
-			name: "Equivalence Class Testing float32 case 2: Insert vector with different dimension",
+			name: "Equivalence Class Testing case 2.2: Insert vector with different dimension (vector type is float32)",
 		},
 
 		// Boundary Value Testing
 		{
-			name: "Boundary Value Testing uint8 case 1: Insert vector with 0 value success",
+			name: "Boundary Value Testing case 1.1: Insert vector with 0 value success (vector type is uint8)",
 		},
 		{
-			name: "Boundary Value Testing float32 case 1: Insert vector with 0 value success",
+			name: "Boundary Value Testing case 1.2: Insert vector with 0 value success (vector type is float32)",
 		},
 		{
-			name: "Boundary Value Testing uint8 case 2: Insert vector with min value success",
+			name: "Boundary Value Testing case 2.1: Insert vector with min value success (vector type is uint8)",
 		},
 		{
-			name: "Boundary Value Testing float32 case 2: Insert vector with min value success",
+			name: "Boundary Value Testing case 2.2: Insert vector with min value success (vector type is float32)",
 		},
 		{
-			name: "Boundary Value Testing uint8 case 3: Insert vector with max value success",
+			name: "Boundary Value Testing case 3.1: Insert vector with max value success (vector type is uint8)",
 		},
 		{
-			name: "Boundary Value Testing float32 case 3: Insert vector with max value success",
+			name: "Boundary Value Testing case 3.2: Insert vector with max value success (vector type is float32)",
 		},
 		{
-			name: "Boundary Value Testing uint8 case 4: Insert with empty UUID fail",
+			name: "Boundary Value Testing case 4.1: Insert with empty UUID fail (vector type is uint8)",
 		},
 		{
-			name: "Boundary Value Testing float32 case 4: Insert with empty UUID fail",
+			name: "Boundary Value Testing case 4.2: Insert with empty UUID fail (vector type is float32)",
 		},
 		{
-			name: "Boundary Value Testing float32 case 5: Insert vector with NaN value fail",
+			name: "Boundary Value Testing case 5: Insert vector with NaN value fail (vector type is float32)",
 			// not sure if it will success or fail
 		},
 		{
@@ -1277,22 +1288,22 @@ func Test_server_Insert(t *testing.T) {
 
 		// Decision Table Testing
 		{
-			name: "Decision Table Testing duplicated ID case 1: Insert duplicated request success when SkipStrictExistCheck is off",
+			name: "Decision Table Testing case 1.1: Insert duplicated request success when SkipStrictExistCheck is off (duplicated ID)",
 		},
 		{
-			name: "Decision Table Testing duplicated vector case 1: Insert duplicated request success when SkipStrictExistCheck is off",
+			name: "Decision Table Testing case 1.2: Insert duplicated request success when SkipStrictExistCheck is off (duplicated vector)",
 		},
 		{
-			name: "Decision Table Testing duplicated ID & vector case 1: Insert duplicated request success when SkipStrictExistCheck is off",
+			name: "Decision Table Testing case 1.3: Insert duplicated request success when SkipStrictExistCheck is off (duplicated ID & vector)",
 		},
 		{
-			name: "Decision Table Testing duplicated ID case 2: Insert duplicated request fail when SkipStrictExistCheck is on",
+			name: "Decision Table Testing case 2.1: Insert duplicated request fail when SkipStrictExistCheck is on (duplicated ID)",
 		},
 		{
-			name: "Decision Table Testing duplicated vector case 2: Insert duplicated request fail when SkipStrictExistCheck is on",
+			name: "Decision Table Testing case 2.2: Insert duplicated request fail when SkipStrictExistCheck is on (duplicated vector)",
 		},
 		{
-			name: "Decision Table Testing duplicated ID & vector case 2: Insert duplicated request fail when SkipStrictExistCheck is on",
+			name: "Decision Table Testing case 2.3: Insert duplicated request fail when SkipStrictExistCheck is on (duplicated ID & vector)",
 		},
 	}
 
