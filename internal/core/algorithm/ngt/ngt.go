@@ -741,3 +741,37 @@ func (n *ngt) GetErrorBuffer() (ebuf C.NGTError) {
 func (n *ngt) PutErrorBuffer(ebuf C.NGTError) {
 	n.epool.Put(ebuf)
 }
+
+func (a distanceType) String() string {
+	switch a {
+	case L1:
+		return "l1"
+	case L2:
+		return "l2"
+	case Angle:
+		return "angle"
+	case Hamming:
+		return "hamming"
+	case Cosine:
+		return "cosine"
+	case NormalizedAngle:
+		return "normalizedangle"
+	case NormalizedCosine:
+		return "normalizedcosine"
+	case Jaccard:
+		return "jaccard"
+	}
+
+	return ""
+}
+
+func (o objectType) String() string {
+	switch o {
+	case Uint8:
+		return "uint8"
+	case Float:
+		return "float"
+	}
+
+	return ""
+}

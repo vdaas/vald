@@ -1170,7 +1170,7 @@ func Test_server_Insert(t *testing.T) {
 		eg                errgroup.Group
 		streamConcurrency int
 
-		svcCfg  config.NGT
+		svcCfg  *config.NGT
 		svcOpts []service.Option
 	}
 	type want struct {
@@ -1183,8 +1183,16 @@ func Test_server_Insert(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, *payload.Object_Location, error) error
-		beforeFunc func(args)
+		beforeFunc func(*testing.T, test)
 		afterFunc  func(args)
+	}
+	defaultBeforeFunc := func(t *testing.T, test test) {
+		t.Helper()
+		ngt, err := service.New(test.fields.svcCfg, test.fields.svcOpts...)
+		if err != nil {
+			t.Error(err)
+		}
+		test.fields.ngt = ngt
 	}
 	defaultCheckFunc := func(w want, gotRes *payload.Object_Location, err error) error {
 		if !errors.Is(err, w.err) {
@@ -1312,8 +1320,8 @@ func Test_server_Insert(t *testing.T) {
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+			if test.beforeFunc == nil {
+				test.beforeFunc = defaultBeforeFunc
 			}
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
@@ -1322,6 +1330,8 @@ func Test_server_Insert(t *testing.T) {
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
+			test.beforeFunc(tt, test)
+
 			s := &server{
 				name:              test.fields.name,
 				ip:                test.fields.ip,
