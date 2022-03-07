@@ -19,6 +19,8 @@ package grpc
 
 import (
 	"context"
+	"fmt"
+	"math"
 	"reflect"
 	"testing"
 
@@ -26,8 +28,11 @@ import (
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
 	"github.com/vdaas/vald/internal/config"
+	"github.com/vdaas/vald/internal/core/algorithm/ngt"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/net/grpc/errdetails"
+	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/test/goleak"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/model"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/service"
@@ -98,13 +103,12 @@ func TestNew(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
-			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
+				test.checkFunc = defaultCheckFunc
 			}
 
 			got, err := New(test.args.opts...)
-			if err := checkFunc(test.want, got, err); err != nil {
+			if err := test.checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -194,9 +198,8 @@ func Test_server_newLocations(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
-			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
+				test.checkFunc = defaultCheckFunc
 			}
 			s := &server{
 				name:              test.fields.name,
@@ -207,7 +210,7 @@ func Test_server_newLocations(t *testing.T) {
 			}
 
 			gotLocs := s.newLocations(test.args.uuids...)
-			if err := checkFunc(test.want, gotLocs); err != nil {
+			if err := test.checkFunc(test.want, gotLocs); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -297,9 +300,8 @@ func Test_server_newLocation(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
-			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
+				test.checkFunc = defaultCheckFunc
 			}
 			s := &server{
 				name:              test.fields.name,
@@ -310,7 +312,7 @@ func Test_server_newLocation(t *testing.T) {
 			}
 
 			got := s.newLocation(test.args.uuid)
-			if err := checkFunc(test.want, got); err != nil {
+			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -407,9 +409,8 @@ func Test_server_Exists(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
-			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
+				test.checkFunc = defaultCheckFunc
 			}
 			s := &server{
 				name:              test.fields.name,
@@ -420,7 +421,7 @@ func Test_server_Exists(t *testing.T) {
 			}
 
 			gotRes, err := s.Exists(test.args.ctx, test.args.uid)
-			if err := checkFunc(test.want, gotRes, err); err != nil {
+			if err := test.checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -517,9 +518,8 @@ func Test_server_Search(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
-			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
+				test.checkFunc = defaultCheckFunc
 			}
 			s := &server{
 				name:              test.fields.name,
@@ -530,7 +530,7 @@ func Test_server_Search(t *testing.T) {
 			}
 
 			gotRes, err := s.Search(test.args.ctx, test.args.req)
-			if err := checkFunc(test.want, gotRes, err); err != nil {
+			if err := test.checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -627,9 +627,8 @@ func Test_server_SearchByID(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
-			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
+				test.checkFunc = defaultCheckFunc
 			}
 			s := &server{
 				name:              test.fields.name,
@@ -640,7 +639,7 @@ func Test_server_SearchByID(t *testing.T) {
 			}
 
 			gotRes, err := s.SearchByID(test.args.ctx, test.args.req)
-			if err := checkFunc(test.want, gotRes, err); err != nil {
+			if err := test.checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -715,13 +714,12 @@ func Test_toSearchResponse(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
-			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
+				test.checkFunc = defaultCheckFunc
 			}
 
 			gotRes, err := toSearchResponse(test.args.dists, test.args.err)
-			if err := checkFunc(test.want, gotRes, err); err != nil {
+			if err := test.checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -811,9 +809,8 @@ func Test_server_StreamSearch(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
-			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
+				test.checkFunc = defaultCheckFunc
 			}
 			s := &server{
 				name:              test.fields.name,
@@ -824,7 +821,7 @@ func Test_server_StreamSearch(t *testing.T) {
 			}
 
 			err := s.StreamSearch(test.args.stream)
-			if err := checkFunc(test.want, err); err != nil {
+			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -914,9 +911,8 @@ func Test_server_StreamSearchByID(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
-			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
+				test.checkFunc = defaultCheckFunc
 			}
 			s := &server{
 				name:              test.fields.name,
@@ -927,7 +923,7 @@ func Test_server_StreamSearchByID(t *testing.T) {
 			}
 
 			err := s.StreamSearchByID(test.args.stream)
-			if err := checkFunc(test.want, err); err != nil {
+			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1024,9 +1020,8 @@ func Test_server_MultiSearch(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
-			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
+				test.checkFunc = defaultCheckFunc
 			}
 			s := &server{
 				name:              test.fields.name,
@@ -1037,7 +1032,7 @@ func Test_server_MultiSearch(t *testing.T) {
 			}
 
 			gotRes, err := s.MultiSearch(test.args.ctx, test.args.reqs)
-			if err := checkFunc(test.want, gotRes, err); err != nil {
+			if err := test.checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1134,9 +1129,8 @@ func Test_server_MultiSearchByID(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
-			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
+				test.checkFunc = defaultCheckFunc
 			}
 			s := &server{
 				name:              test.fields.name,
@@ -1147,7 +1141,7 @@ func Test_server_MultiSearchByID(t *testing.T) {
 			}
 
 			gotRes, err := s.MultiSearchByID(test.args.ctx, test.args.reqs)
-			if err := checkFunc(test.want, gotRes, err); err != nil {
+			if err := test.checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1156,6 +1150,7 @@ func Test_server_MultiSearchByID(t *testing.T) {
 
 func Test_server_Insert(t *testing.T) {
 	t.Parallel()
+
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -1183,10 +1178,10 @@ func Test_server_Insert(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, *payload.Object_Location, error) error
-		beforeFunc func(*testing.T, test)
+		beforeFunc func(*testing.T, *test)
 		afterFunc  func(args)
 	}
-	defaultBeforeFunc := func(t *testing.T, test test) {
+	defaultBeforeFunc := func(t *testing.T, test *test) {
 		t.Helper()
 		ngt, err := service.New(test.fields.svcCfg, test.fields.svcOpts...)
 		if err != nil {
@@ -1241,78 +1236,518 @@ func Test_server_Insert(t *testing.T) {
 	*/
 	tests := []test{
 		// Equivalence Class Testing
-		{
-			name: "Equivalence Class Testing case 1.1: Insert vector success (vector type is uint8)",
-			// arg: uuid 1, vec int, expected: success with ip&host
-		},
-		{
-			name: "Equivalence Class Testing case 1.2: Insert vector success (vector type is float32)",
-		},
-		{
-			name: "Equivalence Class Testing case 2.1: Insert vector with different dimension (vector type is uint8)",
-		},
-		{
-			name: "Equivalence Class Testing case 2.2: Insert vector with different dimension (vector type is float32)",
-		},
+		func() test {
+			name := "vald-agent-ngt-1"
+			id := "uuid1"
+			ip := "127.0.0.1"
+
+			return test{
+				name: "Equivalence Class Testing case 1.1: Insert vector success (vector type is uint8)",
+				args: args{
+					ctx: ctx,
+					req: &payload.Insert_Request{
+						Vector: &payload.Object_Vector{
+							Id:     id,
+							Vector: []float32{1, 2, 3},
+						},
+					},
+				},
+				fields: fields{
+					name: name,
+					ip:   ip,
+					eg:   errgroup.Get(),
+					svcCfg: &config.NGT{
+						Dimension:    3,
+						DistanceType: ngt.Angle.String(),
+						ObjectType:   ngt.Uint8.String(),
+						KVSDB: &config.KVSDB{
+							Concurrency: 10,
+						},
+						VQueue: &config.VQueue{},
+					},
+					svcOpts: []service.Option{
+						service.WithErrGroup(errgroup.Get()),
+						service.WithEnableInMemoryMode(true),
+					},
+				},
+				want: want{
+					wantRes: &payload.Object_Location{
+						Name: name,
+						Uuid: id,
+						Ips:  []string{ip},
+					},
+				},
+			}
+		}(),
+		func() test {
+			name := "vald-agent-ngt-1"
+			id := "uuid1"
+			ip := "127.0.0.1"
+
+			return test{
+				name: "Equivalence Class Testing case 1.2: Insert vector success (vector type is float32)",
+				args: args{
+					ctx: ctx,
+					req: &payload.Insert_Request{
+						Vector: &payload.Object_Vector{
+							Id:     id,
+							Vector: []float32{1.5, 2.3, 3.6},
+						},
+					},
+				},
+				fields: fields{
+					name: name,
+					ip:   ip,
+					eg:   errgroup.Get(),
+					svcCfg: &config.NGT{
+						Dimension:    3,
+						DistanceType: ngt.Angle.String(),
+						ObjectType:   ngt.Float.String(),
+						KVSDB: &config.KVSDB{
+							Concurrency: 10,
+						},
+						VQueue: &config.VQueue{},
+					},
+					svcOpts: []service.Option{
+						service.WithErrGroup(errgroup.Get()),
+						service.WithEnableInMemoryMode(true),
+					},
+				},
+				want: want{
+					wantRes: &payload.Object_Location{
+						Name: name,
+						Uuid: id,
+						Ips:  []string{ip},
+					},
+				},
+			}
+		}(),
+		func() test {
+			name := "vald-agent-ngt-1"
+			id := "uuid1"
+			ip := "127.0.0.1"
+			vec := []float32{1, 2, 3, 4, 5, 6, 7}
+			req := &payload.Insert_Request{
+				Vector: &payload.Object_Vector{
+					Id:     id,
+					Vector: vec,
+				},
+			}
+			return test{
+				name: "Equivalence Class Testing case 2.1: Insert vector with different dimension (vector type is uint8)",
+				args: args{
+					ctx: ctx,
+					req: req,
+				},
+				fields: fields{
+					name: name,
+					ip:   ip,
+					eg:   errgroup.Get(),
+					svcCfg: &config.NGT{
+						Dimension:    3,
+						DistanceType: ngt.Angle.String(),
+						ObjectType:   ngt.Uint8.String(),
+						KVSDB: &config.KVSDB{
+							Concurrency: 10,
+						},
+						VQueue: &config.VQueue{},
+					},
+					svcOpts: []service.Option{
+						service.WithErrGroup(func() errgroup.Group {
+							eg, _ := errgroup.New(ctx)
+							return eg
+						}()),
+						service.WithEnableInMemoryMode(true),
+					},
+				},
+				want: want{
+					err: func() error {
+						err := errors.ErrIncompatibleDimensionSize(len(vec), 3)
+						return status.WrapWithInvalidArgument("Insert API Incompatible Dimension Size detected",
+							err,
+							&errdetails.RequestInfo{
+								RequestId:   id,
+								ServingData: errdetails.Serialize(req),
+							},
+							&errdetails.BadRequest{
+								FieldViolations: []*errdetails.BadRequestFieldViolation{
+									{
+										Field:       "vector dimension size",
+										Description: err.Error(),
+									},
+								},
+							},
+							&errdetails.ResourceInfo{
+								ResourceType: ngtResourceType + "/ngt.Insert",
+								ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, name, ip),
+							})
+					}(),
+				},
+			}
+		}(),
+		func() test {
+			name := "vald-agent-ngt-1"
+			id := "uuid1"
+			ip := "127.0.0.1"
+			vec := []float32{1.5, 2.3, 3.6, 4.5, 6.6, 7.7}
+			req := &payload.Insert_Request{
+				Vector: &payload.Object_Vector{
+					Id:     id,
+					Vector: vec,
+				},
+			}
+
+			return test{
+				name: "Equivalence Class Testing case 2.2: Insert vector with different dimension (vector type is float32)",
+				args: args{
+					ctx: ctx,
+					req: req,
+				},
+				fields: fields{
+					name: name,
+					ip:   ip,
+					eg:   errgroup.Get(),
+					svcCfg: &config.NGT{
+						Dimension:    3,
+						DistanceType: ngt.Angle.String(),
+						ObjectType:   ngt.Float.String(),
+						KVSDB: &config.KVSDB{
+							Concurrency: 10,
+						},
+						VQueue: &config.VQueue{},
+					},
+					svcOpts: []service.Option{
+						service.WithErrGroup(func() errgroup.Group {
+							eg, _ := errgroup.New(ctx)
+							return eg
+						}()),
+						service.WithEnableInMemoryMode(true),
+					},
+				},
+				want: want{
+					err: func() error {
+						err := errors.ErrIncompatibleDimensionSize(len(vec), 3)
+						return status.WrapWithInvalidArgument("Insert API Incompatible Dimension Size detected",
+							err,
+							&errdetails.RequestInfo{
+								RequestId:   id,
+								ServingData: errdetails.Serialize(req),
+							},
+							&errdetails.BadRequest{
+								FieldViolations: []*errdetails.BadRequestFieldViolation{
+									{
+										Field:       "vector dimension size",
+										Description: err.Error(),
+									},
+								},
+							},
+							&errdetails.ResourceInfo{
+								ResourceType: ngtResourceType + "/ngt.Insert",
+								ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, name, ip),
+							})
+					}(),
+				},
+			}
+		}(),
 
 		// Boundary Value Testing
-		{
-			name: "Boundary Value Testing case 1.1: Insert vector with 0 value success (vector type is uint8)",
-		},
-		{
-			name: "Boundary Value Testing case 1.2: Insert vector with 0 value success (vector type is float32)",
-		},
-		{
-			name: "Boundary Value Testing case 2.1: Insert vector with min value success (vector type is uint8)",
-		},
-		{
-			name: "Boundary Value Testing case 2.2: Insert vector with min value success (vector type is float32)",
-		},
-		{
-			name: "Boundary Value Testing case 3.1: Insert vector with max value success (vector type is uint8)",
-		},
-		{
-			name: "Boundary Value Testing case 3.2: Insert vector with max value success (vector type is float32)",
-		},
-		{
-			name: "Boundary Value Testing case 4.1: Insert with empty UUID fail (vector type is uint8)",
-		},
-		{
-			name: "Boundary Value Testing case 4.2: Insert with empty UUID fail (vector type is float32)",
-		},
-		{
-			name: "Boundary Value Testing case 5: Insert vector with NaN value fail (vector type is float32)",
-			// not sure if it will success or fail
-		},
-		{
-			name: "Boundary Value Testing case 6: Insert nil insert request fail",
-		},
-		{
-			name: "Boundary Value Testing case 7: Insert nil vector fail",
-		},
-		{
-			name: "Boundary Value Testing case 8: Insert empty insert vector fail",
-		},
+		func() test {
+			name := "vald-agent-ngt-1"
+			id := "uuid1"
+			ip := "127.0.0.1"
 
-		// Decision Table Testing
-		{
-			name: "Decision Table Testing case 1.1: Insert duplicated request success when SkipStrictExistCheck is off (duplicated ID)",
-		},
-		{
-			name: "Decision Table Testing case 1.2: Insert duplicated request success when SkipStrictExistCheck is off (duplicated vector)",
-		},
-		{
-			name: "Decision Table Testing case 1.3: Insert duplicated request success when SkipStrictExistCheck is off (duplicated ID & vector)",
-		},
-		{
-			name: "Decision Table Testing case 2.1: Insert duplicated request fail when SkipStrictExistCheck is on (duplicated ID)",
-		},
-		{
-			name: "Decision Table Testing case 2.2: Insert duplicated request fail when SkipStrictExistCheck is on (duplicated vector)",
-		},
-		{
-			name: "Decision Table Testing case 2.3: Insert duplicated request fail when SkipStrictExistCheck is on (duplicated ID & vector)",
-		},
+			return test{
+				name: "Boundary Value Testing case 1.1: Insert vector with 0 value success (vector type is uint8)",
+				args: args{
+					ctx: ctx,
+					req: &payload.Insert_Request{
+						Vector: &payload.Object_Vector{
+							Id:     id,
+							Vector: []float32{0, 0, 0},
+						},
+					},
+				},
+				fields: fields{
+					name: name,
+					ip:   ip,
+					eg:   errgroup.Get(),
+					svcCfg: &config.NGT{
+						Dimension:    3,
+						DistanceType: ngt.Angle.String(),
+						ObjectType:   ngt.Uint8.String(),
+						KVSDB: &config.KVSDB{
+							Concurrency: 10,
+						},
+						VQueue: &config.VQueue{},
+					},
+					svcOpts: []service.Option{
+						service.WithErrGroup(errgroup.Get()),
+						service.WithEnableInMemoryMode(true),
+					},
+				},
+				want: want{
+					wantRes: &payload.Object_Location{
+						Name: name,
+						Uuid: id,
+						Ips:  []string{ip},
+					},
+				},
+			}
+		}(),
+		func() test {
+			name := "vald-agent-ngt-1"
+			id := "uuid1"
+			ip := "127.0.0.1"
+
+			return test{
+				name: "Boundary Value Testing case 1.2: Insert vector with 0 value success (vector type is float32)",
+				args: args{
+					ctx: ctx,
+					req: &payload.Insert_Request{
+						Vector: &payload.Object_Vector{
+							Id:     id,
+							Vector: []float32{0, 0, 0},
+						},
+					},
+				},
+				fields: fields{
+					name: name,
+					ip:   ip,
+					eg:   errgroup.Get(),
+					svcCfg: &config.NGT{
+						Dimension:    3,
+						DistanceType: ngt.Angle.String(),
+						ObjectType:   ngt.Float.String(),
+						KVSDB: &config.KVSDB{
+							Concurrency: 10,
+						},
+						VQueue: &config.VQueue{},
+					},
+					svcOpts: []service.Option{
+						service.WithErrGroup(errgroup.Get()),
+						service.WithEnableInMemoryMode(true),
+					},
+				},
+				want: want{
+					wantRes: &payload.Object_Location{
+						Name: name,
+						Uuid: id,
+						Ips:  []string{ip},
+					},
+				},
+			}
+		}(),
+		func() test {
+			name := "vald-agent-ngt-1"
+			id := "uuid1"
+			ip := "127.0.0.1"
+
+			return test{
+				name: "Boundary Value Testing case 2.1: Insert vector with min value success (vector type is uint8)",
+				args: args{
+					ctx: ctx,
+					req: &payload.Insert_Request{
+						Vector: &payload.Object_Vector{
+							Id:     id,
+							Vector: []float32{math.MinInt, math.MinInt, math.MinInt},
+						},
+					},
+				},
+				fields: fields{
+					name: name,
+					ip:   ip,
+					eg:   errgroup.Get(),
+					svcCfg: &config.NGT{
+						Dimension:    3,
+						DistanceType: ngt.Angle.String(),
+						ObjectType:   ngt.Uint8.String(),
+						KVSDB: &config.KVSDB{
+							Concurrency: 10,
+						},
+						VQueue: &config.VQueue{},
+					},
+					svcOpts: []service.Option{
+						service.WithErrGroup(errgroup.Get()),
+						service.WithEnableInMemoryMode(true),
+					},
+				},
+				want: want{
+					wantRes: &payload.Object_Location{
+						Name: name,
+						Uuid: id,
+						Ips:  []string{ip},
+					},
+				},
+			}
+		}(),
+		func() test {
+			name := "vald-agent-ngt-1"
+			id := "uuid1"
+			ip := "127.0.0.1"
+
+			return test{
+				name: "Boundary Value Testing case 2.2: Insert vector with min value success (vector type is float32)",
+				args: args{
+					ctx: ctx,
+					req: &payload.Insert_Request{
+						Vector: &payload.Object_Vector{
+							Id:     id,
+							Vector: []float32{math.SmallestNonzeroFloat32, math.SmallestNonzeroFloat32, math.SmallestNonzeroFloat32},
+						},
+					},
+				},
+				fields: fields{
+					name: name,
+					ip:   ip,
+					eg:   errgroup.Get(),
+					svcCfg: &config.NGT{
+						Dimension:    3,
+						DistanceType: ngt.Angle.String(),
+						ObjectType:   ngt.Float.String(),
+						KVSDB: &config.KVSDB{
+							Concurrency: 10,
+						},
+						VQueue: &config.VQueue{},
+					},
+					svcOpts: []service.Option{
+						service.WithErrGroup(errgroup.Get()),
+						service.WithEnableInMemoryMode(true),
+					},
+				},
+				want: want{
+					wantRes: &payload.Object_Location{
+						Name: name,
+						Uuid: id,
+						Ips:  []string{ip},
+					},
+				},
+			}
+		}(),
+		func() test {
+			name := "vald-agent-ngt-1"
+			id := "uuid1"
+			ip := "127.0.0.1"
+
+			return test{
+				name: "Boundary Value Testing case 3.1: Insert vector with max value success (vector type is uint8)",
+				args: args{
+					ctx: ctx,
+					req: &payload.Insert_Request{
+						Vector: &payload.Object_Vector{
+							Id:     id,
+							Vector: []float32{math.MaxInt, math.MaxInt, math.MaxInt},
+						},
+					},
+				},
+				fields: fields{
+					name: name,
+					ip:   ip,
+					eg:   errgroup.Get(),
+					svcCfg: &config.NGT{
+						Dimension:    3,
+						DistanceType: ngt.Angle.String(),
+						ObjectType:   ngt.Uint8.String(),
+						KVSDB: &config.KVSDB{
+							Concurrency: 10,
+						},
+						VQueue: &config.VQueue{},
+					},
+					svcOpts: []service.Option{
+						service.WithErrGroup(errgroup.Get()),
+						service.WithEnableInMemoryMode(true),
+					},
+				},
+				want: want{
+					wantRes: &payload.Object_Location{
+						Name: name,
+						Uuid: id,
+						Ips:  []string{ip},
+					},
+				},
+			}
+		}(),
+		func() test {
+			name := "vald-agent-ngt-1"
+			id := "uuid1"
+			ip := "127.0.0.1"
+
+			return test{
+				name: "Boundary Value Testing case 3.2: Insert vector with max value success (vector type is float32)",
+				args: args{
+					ctx: ctx,
+					req: &payload.Insert_Request{
+						Vector: &payload.Object_Vector{
+							Id:     id,
+							Vector: []float32{math.MaxFloat32, math.MaxFloat32, math.MaxFloat32},
+						},
+					},
+				},
+				fields: fields{
+					name: name,
+					ip:   ip,
+					eg:   errgroup.Get(),
+					svcCfg: &config.NGT{
+						Dimension:    3,
+						DistanceType: ngt.Angle.String(),
+						ObjectType:   ngt.Float.String(),
+						KVSDB: &config.KVSDB{
+							Concurrency: 10,
+						},
+						VQueue: &config.VQueue{},
+					},
+					svcOpts: []service.Option{
+						service.WithErrGroup(errgroup.Get()),
+						service.WithEnableInMemoryMode(true),
+					},
+				},
+				want: want{
+					wantRes: &payload.Object_Location{
+						Name: name,
+						Uuid: id,
+						Ips:  []string{ip},
+					},
+				},
+			}
+		}(),
+		// {
+		// 	name: "Boundary Value Testing case 4.1: Insert with empty UUID fail (vector type is uint8)",
+		// },
+		// {
+		// 	name: "Boundary Value Testing case 4.2: Insert with empty UUID fail (vector type is float32)",
+		// },
+		// {
+		// 	name: "Boundary Value Testing case 5: Insert vector with NaN value fail (vector type is float32)",
+		// 	// not sure if it will success or fail
+		// },
+		// {
+		// 	name: "Boundary Value Testing case 6: Insert nil insert request fail",
+		// },
+		// {
+		// 	name: "Boundary Value Testing case 7: Insert nil vector fail",
+		// },
+		// {
+		// 	name: "Boundary Value Testing case 8: Insert empty insert vector fail",
+		// },
+
+		// // Decision Table Testing
+		// {
+		// 	name: "Decision Table Testing case 1.1: Insert duplicated request success when SkipStrictExistCheck is off (duplicated ID)",
+		// },
+		// {
+		// 	name: "Decision Table Testing case 1.2: Insert duplicated request success when SkipStrictExistCheck is off (duplicated vector)",
+		// },
+		// {
+		// 	name: "Decision Table Testing case 1.3: Insert duplicated request success when SkipStrictExistCheck is off (duplicated ID & vector)",
+		// },
+		// {
+		// 	name: "Decision Table Testing case 2.1: Insert duplicated request fail when SkipStrictExistCheck is on (duplicated ID)",
+		// },
+		// {
+		// 	name: "Decision Table Testing case 2.2: Insert duplicated request fail when SkipStrictExistCheck is on (duplicated vector)",
+		// },
+		// {
+		// 	name: "Decision Table Testing case 2.3: Insert duplicated request fail when SkipStrictExistCheck is on (duplicated ID & vector)",
+		// },
 	}
 
 	for _, tc := range tests {
@@ -1326,11 +1761,10 @@ func Test_server_Insert(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
-			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
+				test.checkFunc = defaultCheckFunc
 			}
-			test.beforeFunc(tt, test)
+			test.beforeFunc(tt, &test)
 
 			s := &server{
 				name:              test.fields.name,
@@ -1341,7 +1775,7 @@ func Test_server_Insert(t *testing.T) {
 			}
 
 			gotRes, err := s.Insert(test.args.ctx, test.args.req)
-			if err := checkFunc(test.want, gotRes, err); err != nil {
+			if err := test.checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1431,9 +1865,8 @@ func Test_server_StreamInsert(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
-			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
+				test.checkFunc = defaultCheckFunc
 			}
 			s := &server{
 				name:              test.fields.name,
@@ -1444,7 +1877,7 @@ func Test_server_StreamInsert(t *testing.T) {
 			}
 
 			err := s.StreamInsert(test.args.stream)
-			if err := checkFunc(test.want, err); err != nil {
+			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1541,9 +1974,8 @@ func Test_server_MultiInsert(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
-			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
+				test.checkFunc = defaultCheckFunc
 			}
 			s := &server{
 				name:              test.fields.name,
@@ -1554,7 +1986,7 @@ func Test_server_MultiInsert(t *testing.T) {
 			}
 
 			gotRes, err := s.MultiInsert(test.args.ctx, test.args.reqs)
-			if err := checkFunc(test.want, gotRes, err); err != nil {
+			if err := test.checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1651,9 +2083,8 @@ func Test_server_Update(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
-			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
+				test.checkFunc = defaultCheckFunc
 			}
 			s := &server{
 				name:              test.fields.name,
@@ -1664,7 +2095,7 @@ func Test_server_Update(t *testing.T) {
 			}
 
 			gotRes, err := s.Update(test.args.ctx, test.args.req)
-			if err := checkFunc(test.want, gotRes, err); err != nil {
+			if err := test.checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1754,9 +2185,8 @@ func Test_server_StreamUpdate(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
-			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
+				test.checkFunc = defaultCheckFunc
 			}
 			s := &server{
 				name:              test.fields.name,
@@ -1767,7 +2197,7 @@ func Test_server_StreamUpdate(t *testing.T) {
 			}
 
 			err := s.StreamUpdate(test.args.stream)
-			if err := checkFunc(test.want, err); err != nil {
+			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1864,9 +2294,8 @@ func Test_server_MultiUpdate(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
-			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
+				test.checkFunc = defaultCheckFunc
 			}
 			s := &server{
 				name:              test.fields.name,
@@ -1877,7 +2306,7 @@ func Test_server_MultiUpdate(t *testing.T) {
 			}
 
 			gotRes, err := s.MultiUpdate(test.args.ctx, test.args.reqs)
-			if err := checkFunc(test.want, gotRes, err); err != nil {
+			if err := test.checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1974,9 +2403,8 @@ func Test_server_Upsert(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
-			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
+				test.checkFunc = defaultCheckFunc
 			}
 			s := &server{
 				name:              test.fields.name,
@@ -1987,7 +2415,7 @@ func Test_server_Upsert(t *testing.T) {
 			}
 
 			gotLoc, err := s.Upsert(test.args.ctx, test.args.req)
-			if err := checkFunc(test.want, gotLoc, err); err != nil {
+			if err := test.checkFunc(test.want, gotLoc, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -2077,9 +2505,8 @@ func Test_server_StreamUpsert(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
-			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
+				test.checkFunc = defaultCheckFunc
 			}
 			s := &server{
 				name:              test.fields.name,
@@ -2090,7 +2517,7 @@ func Test_server_StreamUpsert(t *testing.T) {
 			}
 
 			err := s.StreamUpsert(test.args.stream)
-			if err := checkFunc(test.want, err); err != nil {
+			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -2187,9 +2614,8 @@ func Test_server_MultiUpsert(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
-			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
+				test.checkFunc = defaultCheckFunc
 			}
 			s := &server{
 				name:              test.fields.name,
@@ -2200,7 +2626,7 @@ func Test_server_MultiUpsert(t *testing.T) {
 			}
 
 			gotRes, err := s.MultiUpsert(test.args.ctx, test.args.reqs)
-			if err := checkFunc(test.want, gotRes, err); err != nil {
+			if err := test.checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -2297,9 +2723,8 @@ func Test_server_Remove(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
-			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
+				test.checkFunc = defaultCheckFunc
 			}
 			s := &server{
 				name:              test.fields.name,
@@ -2310,7 +2735,7 @@ func Test_server_Remove(t *testing.T) {
 			}
 
 			gotRes, err := s.Remove(test.args.ctx, test.args.req)
-			if err := checkFunc(test.want, gotRes, err); err != nil {
+			if err := test.checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -2400,9 +2825,8 @@ func Test_server_StreamRemove(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
-			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
+				test.checkFunc = defaultCheckFunc
 			}
 			s := &server{
 				name:              test.fields.name,
@@ -2413,7 +2837,7 @@ func Test_server_StreamRemove(t *testing.T) {
 			}
 
 			err := s.StreamRemove(test.args.stream)
-			if err := checkFunc(test.want, err); err != nil {
+			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -2510,9 +2934,8 @@ func Test_server_MultiRemove(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
-			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
+				test.checkFunc = defaultCheckFunc
 			}
 			s := &server{
 				name:              test.fields.name,
@@ -2523,7 +2946,7 @@ func Test_server_MultiRemove(t *testing.T) {
 			}
 
 			gotRes, err := s.MultiRemove(test.args.ctx, test.args.reqs)
-			if err := checkFunc(test.want, gotRes, err); err != nil {
+			if err := test.checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -2620,9 +3043,8 @@ func Test_server_GetObject(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
-			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
+				test.checkFunc = defaultCheckFunc
 			}
 			s := &server{
 				name:              test.fields.name,
@@ -2633,7 +3055,7 @@ func Test_server_GetObject(t *testing.T) {
 			}
 
 			gotRes, err := s.GetObject(test.args.ctx, test.args.id)
-			if err := checkFunc(test.want, gotRes, err); err != nil {
+			if err := test.checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -2723,9 +3145,8 @@ func Test_server_StreamGetObject(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
-			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
+				test.checkFunc = defaultCheckFunc
 			}
 			s := &server{
 				name:              test.fields.name,
@@ -2736,7 +3157,7 @@ func Test_server_StreamGetObject(t *testing.T) {
 			}
 
 			err := s.StreamGetObject(test.args.stream)
-			if err := checkFunc(test.want, err); err != nil {
+			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -2833,9 +3254,8 @@ func Test_server_CreateIndex(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
-			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
+				test.checkFunc = defaultCheckFunc
 			}
 			s := &server{
 				name:              test.fields.name,
@@ -2846,7 +3266,7 @@ func Test_server_CreateIndex(t *testing.T) {
 			}
 
 			gotRes, err := s.CreateIndex(test.args.ctx, test.args.c)
-			if err := checkFunc(test.want, gotRes, err); err != nil {
+			if err := test.checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -2943,9 +3363,8 @@ func Test_server_SaveIndex(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
-			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
+				test.checkFunc = defaultCheckFunc
 			}
 			s := &server{
 				name:              test.fields.name,
@@ -2956,7 +3375,7 @@ func Test_server_SaveIndex(t *testing.T) {
 			}
 
 			gotRes, err := s.SaveIndex(test.args.ctx, test.args.in1)
-			if err := checkFunc(test.want, gotRes, err); err != nil {
+			if err := test.checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -3053,9 +3472,8 @@ func Test_server_CreateAndSaveIndex(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
-			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
+				test.checkFunc = defaultCheckFunc
 			}
 			s := &server{
 				name:              test.fields.name,
@@ -3066,7 +3484,7 @@ func Test_server_CreateAndSaveIndex(t *testing.T) {
 			}
 
 			gotRes, err := s.CreateAndSaveIndex(test.args.ctx, test.args.c)
-			if err := checkFunc(test.want, gotRes, err); err != nil {
+			if err := test.checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -3163,9 +3581,8 @@ func Test_server_IndexInfo(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
-			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
+				test.checkFunc = defaultCheckFunc
 			}
 			s := &server{
 				name:              test.fields.name,
@@ -3176,7 +3593,7 @@ func Test_server_IndexInfo(t *testing.T) {
 			}
 
 			gotRes, err := s.IndexInfo(test.args.ctx, test.args.in1)
-			if err := checkFunc(test.want, gotRes, err); err != nil {
+			if err := test.checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
