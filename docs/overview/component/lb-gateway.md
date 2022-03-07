@@ -44,7 +44,7 @@ As its name shows, Vald LB Gateway has the load balancing feature.
 
 Vald LB Gateway controls insert vector requests based on `index replica` and each Vald Agent Pod resource usage, which [Vald Discoverer](../component/discoverer.md) provides, to avoid uneven resource usage.
 
-### Broadcast and Gathering search result
+### Broadcast search request and aggregate search result
 
 Vald LB Gateway broadcasts searching requests, e.g., `Search`, `GetObject`, `Exist`, to all Vald Agent Pods and gets their result.
 
