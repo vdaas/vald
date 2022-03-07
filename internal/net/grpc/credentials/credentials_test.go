@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -50,31 +50,28 @@ func TestNewTLS(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           c: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           c: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "return credential when config is nil",
+			args: args{
+				c: nil,
+			},
+			want: want{
+				want: credentials.NewTLS(nil),
+			},
+		},
+		{
+			name: "return credential when config is not nil",
+			args: args{
+				c: &tls.Config{
+					MinVersion: tls.VersionTLS12,
+				},
+			},
+			want: want{
+				want: credentials.NewTLS(&tls.Config{
+					MinVersion: tls.VersionTLS12,
+				}),
+			},
+		},
 	}
 
 	for _, tc := range tests {
@@ -88,12 +85,13 @@ func TestNewTLS(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := NewTLS(test.args.c)
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

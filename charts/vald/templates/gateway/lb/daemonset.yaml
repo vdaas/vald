@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -52,6 +52,14 @@ spec:
         checksum/configmap: {{ include (print $.Template.BasePath "/gateway/lb/configmap.yaml") . | sha256sum }}
         {{- if $gateway.podAnnotations }}
         {{- toYaml $gateway.podAnnotations | nindent 8 }}
+        {{- end }}
+        {{- $pprof := default .Values.defaults.server_config.metrics.pprof $gateway.server_config.metrics.pprof }}
+        {{- if $pprof.enabled }}
+        pyroscope.io/scrape: "true"
+        pyroscope.io/application-name: {{ $gateway.name }}
+        pyroscope.io/profile-cpu-enabled: "true"
+        pyroscope.io/profile-mem-enabled: "true"
+        pyroscope.io/port: "{{ $pprof.port }}"
         {{- end }}
     spec:
       {{- if $gateway.initContainers }}

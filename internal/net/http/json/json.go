@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -43,7 +43,8 @@ type RFC7807Error struct {
 
 // EncodeResponse encodes http response body.
 func EncodeResponse(w http.ResponseWriter,
-	data interface{}, status int, contentTypes ...string) error {
+	data interface{}, status int, contentTypes ...string,
+) error {
 	for _, ct := range contentTypes {
 		w.Header().Add(rest.ContentType, ct)
 	}
@@ -74,7 +75,8 @@ func DecodeResponse(res *http.Response, data interface{}) (err error) {
 
 // EncodeRequest encodes http request.
 func EncodeRequest(req *http.Request,
-	data interface{}, contentTypes ...string) error {
+	data interface{}, contentTypes ...string,
+) error {
 	for _, ct := range contentTypes {
 		req.Header.Add(rest.ContentType, ct)
 	}
@@ -113,7 +115,8 @@ func DecodeRequest(r *http.Request, data interface{}) (err error) {
 // Handler responds to an HTTP request to perform a logic function.
 func Handler(w http.ResponseWriter, r *http.Request,
 	data interface{}, logic func() (interface{},
-		error)) (code int, err error) {
+		error),
+) (code int, err error) {
 	err = DecodeRequest(r, &data)
 	if err != nil {
 		return http.StatusBadRequest, err
@@ -132,7 +135,8 @@ func Handler(w http.ResponseWriter, r *http.Request,
 
 // ErrorHandler responds to an HTTP request to send RFC 7807 error.
 func ErrorHandler(w http.ResponseWriter, r *http.Request,
-	msg string, code int, err error) error {
+	msg string, code int, err error,
+) error {
 	data := RFC7807Error{
 		Type:   r.RequestURI,
 		Title:  msg,

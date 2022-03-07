@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -95,12 +95,13 @@ func TestNew(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			gotSo, err := New(test.args.opts...)
-			if err := test.checkFunc(test.want, gotSo, err); err != nil {
+			if err := checkFunc(test.want, gotSo, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -212,8 +213,9 @@ func Test_observer_Start(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			o := &observer{
 				w:               test.fields.w,
@@ -230,7 +232,7 @@ func Test_observer_Start(t *testing.T) {
 			}
 
 			got, err := o.Start(test.args.ctx)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -338,8 +340,9 @@ func Test_observer_PostStop(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			o := &observer{
 				w:               test.fields.w,
@@ -356,7 +359,7 @@ func Test_observer_PostStop(t *testing.T) {
 			}
 
 			err := o.PostStop(test.args.ctx)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -468,8 +471,9 @@ func Test_observer_startTicker(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			o := &observer{
 				w:               test.fields.w,
@@ -486,7 +490,7 @@ func Test_observer_startTicker(t *testing.T) {
 			}
 
 			got, err := o.startTicker(test.args.ctx)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -598,8 +602,9 @@ func Test_observer_startBackupLoop(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			o := &observer{
 				w:               test.fields.w,
@@ -616,7 +621,7 @@ func Test_observer_startBackupLoop(t *testing.T) {
 			}
 
 			got, err := o.startBackupLoop(test.args.ctx)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -727,8 +732,9 @@ func Test_observer_onWrite(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			o := &observer{
 				w:               test.fields.w,
@@ -745,7 +751,7 @@ func Test_observer_onWrite(t *testing.T) {
 			}
 
 			err := o.onWrite(test.args.ctx, test.args.name)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -856,8 +862,9 @@ func Test_observer_onCreate(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			o := &observer{
 				w:               test.fields.w,
@@ -874,7 +881,7 @@ func Test_observer_onCreate(t *testing.T) {
 			}
 
 			err := o.onCreate(test.args.ctx, test.args.name)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -976,8 +983,9 @@ func Test_observer_isValidMetadata(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			o := &observer{
 				w:               test.fields.w,
@@ -994,7 +1002,7 @@ func Test_observer_isValidMetadata(t *testing.T) {
 			}
 
 			got, err := o.isValidMetadata()
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1092,8 +1100,9 @@ func Test_observer_terminate(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			o := &observer{
 				w:               test.fields.w,
@@ -1110,7 +1119,7 @@ func Test_observer_terminate(t *testing.T) {
 			}
 
 			err := o.terminate()
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1218,8 +1227,9 @@ func Test_observer_requestBackup(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			o := &observer{
 				w:               test.fields.w,
@@ -1236,7 +1246,7 @@ func Test_observer_requestBackup(t *testing.T) {
 			}
 
 			err := o.requestBackup(test.args.ctx)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1344,8 +1354,9 @@ func Test_observer_backup(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			o := &observer{
 				w:               test.fields.w,
@@ -1362,7 +1373,7 @@ func Test_observer_backup(t *testing.T) {
 			}
 
 			err := o.backup(test.args.ctx)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

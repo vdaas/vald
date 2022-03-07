@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -53,10 +53,18 @@ spec:
         app.kubernetes.io/name: {{ include "vald.name" . }}
         app.kubernetes.io/instance: {{ .Release.Name }}
         app.kubernetes.io/component: agent
-      {{- if or $agent.podAnnotations $agent.sidecar.enabled }}
+      {{- $pprof := default .Values.defaults.server_config.metrics.pprof $agent.server_config.metrics.pprof }}
+      {{- if or $agent.podAnnotations $agent.sidecar.enabled $pprof.enabled }}
       annotations:
         {{- if $agent.podAnnotations }}
         {{- toYaml $agent.podAnnotations | nindent 8 }}
+        {{- end }}
+        {{- if $pprof.enabled }}
+        pyroscope.io/scrape: "true"
+        pyroscope.io/application-name: {{ $agent.name }}
+        pyroscope.io/profile-cpu-enabled: "true"
+        pyroscope.io/profile-mem-enabled: "true"
+        pyroscope.io/port: "{{ $pprof.port }}"
         {{- end }}
         {{- if $agent.sidecar.enabled }}
         checksum/configmap: {{ include (print $.Template.BasePath "/agent/configmap.yaml") . | sha256sum }}
@@ -98,6 +106,9 @@ spec:
             {{- if $agent.persistentVolume.enabled }}
             - name: {{ $agent.name }}-pvc
               mountPath: {{ dir $agent.ngt.index_path }}
+            {{- else }}
+            - name: {{ $agent.name }}-local
+              mountPath: {{ dir $agent.ngt.index_path }}
             {{- end }}
             {{- end }}
             {{- end }}
@@ -138,6 +149,9 @@ spec:
             {{- if $agent.persistentVolume.enabled }}
             - name: {{ $agent.name }}-pvc
               mountPath: {{ dir $agent.ngt.index_path }}
+            {{- else }}
+            - name: {{ $agent.name }}-local
+              mountPath: {{ dir $agent.ngt.index_path }}
             {{- end }}
             {{- end }}
             {{- end }}
@@ -172,6 +186,9 @@ spec:
             {{- if $agent.persistentVolume.enabled }}
             - name: {{ $agent.name }}-pvc
               mountPath: {{ dir $agent.ngt.index_path }}
+            {{- else }}
+            - name: {{ $agent.name }}-local
+              mountPath: {{ dir $agent.ngt.index_path }}
             {{- end }}
             {{- end }}
             {{- end }}
@@ -197,6 +214,14 @@ spec:
           configMap:
             defaultMode: 420
             name: {{ $agent.sidecar.name }}-config
+        {{- end }}
+        {{- if not $agent.ngt.enable_in_memory_mode }}
+        {{- if $agent.ngt.index_path }}
+        {{- if not $agent.persistentVolume.enabled }}
+        - name: {{ $agent.name }}-local
+          emptyDir: {}
+        {{- end }}
+        {{- end }}
         {{- end }}
         {{- if $agent.volumes }}
         {{- toYaml $agent.volumes | nindent 8 }}

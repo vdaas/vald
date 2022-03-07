@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import (
 	"google.golang.org/grpc/health/grpc_health_v1"
 )
 
+// Register register the generic gRPC health check server implementation to the srv.
 func Register(name string, srv *grpc.Server) {
 	server := health.NewServer()
 	grpc_health_v1.RegisterHealthServer(srv, server)

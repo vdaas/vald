@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -124,7 +124,7 @@ func TestWithErrGroup(t *testing.T) {
 
 			   got := WithErrGroup(test.args.eg)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -137,7 +137,7 @@ func TestWithErrGroup(t *testing.T) {
 			   got := WithErrGroup(test.args.eg)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
+			   if err := checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -241,7 +241,7 @@ func TestWithType(t *testing.T) {
 
 			   got := WithType(test.args.bst)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -254,7 +254,7 @@ func TestWithType(t *testing.T) {
 			   got := WithType(test.args.bst)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
+			   if err := checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -358,7 +358,7 @@ func TestWithBucketName(t *testing.T) {
 
 			   got := WithBucketName(test.args.bn)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -371,7 +371,7 @@ func TestWithBucketName(t *testing.T) {
 			   got := WithBucketName(test.args.bn)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
+			   if err := checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -475,7 +475,7 @@ func TestWithFilename(t *testing.T) {
 
 			   got := WithFilename(test.args.fn)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -488,7 +488,7 @@ func TestWithFilename(t *testing.T) {
 			   got := WithFilename(test.args.fn)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
+			   if err := checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -592,7 +592,7 @@ func TestWithFilenameSuffix(t *testing.T) {
 
 			   got := WithFilenameSuffix(test.args.sf)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -605,7 +605,7 @@ func TestWithFilenameSuffix(t *testing.T) {
 			   got := WithFilenameSuffix(test.args.sf)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
+			   if err := checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -709,7 +709,7 @@ func TestWithS3Opts(t *testing.T) {
 
 			   got := WithS3Opts(test.args.opts...)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -722,7 +722,7 @@ func TestWithS3Opts(t *testing.T) {
 			   got := WithS3Opts(test.args.opts...)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
+			   if err := checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -826,7 +826,7 @@ func TestWithS3SessionOpts(t *testing.T) {
 
 			   got := WithS3SessionOpts(test.args.opts...)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -839,7 +839,7 @@ func TestWithS3SessionOpts(t *testing.T) {
 			   got := WithS3SessionOpts(test.args.opts...)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
+			   if err := checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -943,7 +943,7 @@ func TestWithCompressAlgorithm(t *testing.T) {
 
 			   got := WithCompressAlgorithm(test.args.al)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -956,7 +956,7 @@ func TestWithCompressAlgorithm(t *testing.T) {
 			   got := WithCompressAlgorithm(test.args.al)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
+			   if err := checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -1060,7 +1060,7 @@ func TestWithCompressionLevel(t *testing.T) {
 
 			   got := WithCompressionLevel(test.args.level)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -1073,7 +1073,7 @@ func TestWithCompressionLevel(t *testing.T) {
 			   got := WithCompressionLevel(test.args.level)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
+			   if err := checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -1176,7 +1176,7 @@ func TestWithCloudStorageOpts(t *testing.T) {
 
 			   got := WithCloudStorageOpts(test.args.opts...)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -1189,7 +1189,7 @@ func TestWithCloudStorageOpts(t *testing.T) {
 			   got := WithCloudStorageOpts(test.args.opts...)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
+			   if err := checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -1292,7 +1292,7 @@ func TestWithCloudStorageURLOpenerOpts(t *testing.T) {
 
 			   got := WithCloudStorageURLOpenerOpts(test.args.opts...)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -1305,7 +1305,7 @@ func TestWithCloudStorageURLOpenerOpts(t *testing.T) {
 			   got := WithCloudStorageURLOpenerOpts(test.args.opts...)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
+			   if err := checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/

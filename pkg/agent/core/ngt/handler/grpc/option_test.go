@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -103,13 +103,14 @@ func TestWithIP(t *testing.T) {
 				defer test.afterFunc(test.args)
 			}
 
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := WithIP(test.args.ip)
 			obj := new(T)
-			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			if err := checkFunc(test.want, obj, got(obj)); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -178,13 +179,14 @@ func TestWithName(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := WithName(test.args.name)
 			obj := new(T)
-			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			if err := checkFunc(test.want, obj, got(obj)); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -268,13 +270,14 @@ func TestWithNGT(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(tt, test.args, test.want)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := WithNGT(test.args.n)
 			obj := new(T)
-			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			if err := checkFunc(test.want, obj, got(obj)); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -358,13 +361,14 @@ func TestWithStreamConcurrency(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := WithStreamConcurrency(test.args.c)
 			obj := new(T)
-			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			if err := checkFunc(test.want, obj, got(obj)); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -441,13 +445,14 @@ func TestWithErrGroup(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := WithErrGroup(test.args.eg)
 			obj := new(T)
-			if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			if err := checkFunc(test.want, obj, got(obj)); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

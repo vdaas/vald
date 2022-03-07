@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -97,12 +97,13 @@ func TestNew(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			gotC, err := New(test.args.ctx, test.args.opts...)
-			if err := test.checkFunc(test.want, gotC, err); err != nil {
+			if err := checkFunc(test.want, gotC, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -229,8 +230,9 @@ func Test_pool_Connect(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			p := &pool{
 				pool:          test.fields.pool,
@@ -252,7 +254,7 @@ func Test_pool_Connect(t *testing.T) {
 			}
 
 			gotC, err := p.Connect(test.args.ctx)
-			if err := test.checkFunc(test.want, gotC, err); err != nil {
+			if err := checkFunc(test.want, gotC, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -379,8 +381,9 @@ func Test_pool_load(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			p := &pool{
 				pool:          test.fields.pool,
@@ -402,7 +405,7 @@ func Test_pool_load(t *testing.T) {
 			}
 
 			gotPc, gotOk := p.load(test.args.idx)
-			if err := test.checkFunc(test.want, gotPc, gotOk); err != nil {
+			if err := checkFunc(test.want, gotPc, gotOk); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -529,8 +532,9 @@ func Test_pool_connect(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			p := &pool{
 				pool:          test.fields.pool,
@@ -552,7 +556,7 @@ func Test_pool_connect(t *testing.T) {
 			}
 
 			gotC, err := p.connect(test.args.ctx)
-			if err := test.checkFunc(test.want, gotC, err); err != nil {
+			if err := checkFunc(test.want, gotC, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -665,8 +669,9 @@ func Test_pool_Disconnect(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			p := &pool{
 				pool:          test.fields.pool,
@@ -688,7 +693,7 @@ func Test_pool_Disconnect(t *testing.T) {
 			}
 
 			err := p.Disconnect()
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -818,8 +823,9 @@ func Test_pool_dial(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			p := &pool{
 				pool:          test.fields.pool,
@@ -841,7 +847,7 @@ func Test_pool_dial(t *testing.T) {
 			}
 
 			gotConn, err := p.dial(test.args.ctx, test.args.addr)
-			if err := test.checkFunc(test.want, gotConn, err); err != nil {
+			if err := checkFunc(test.want, gotConn, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -964,8 +970,9 @@ func Test_pool_IsHealthy(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			p := &pool{
 				pool:          test.fields.pool,
@@ -987,7 +994,7 @@ func Test_pool_IsHealthy(t *testing.T) {
 			}
 
 			got := p.IsHealthy(test.args.ctx)
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1110,8 +1117,9 @@ func Test_pool_Do(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			p := &pool{
 				pool:          test.fields.pool,
@@ -1133,7 +1141,7 @@ func Test_pool_Do(t *testing.T) {
 			}
 
 			err := p.Do(test.args.f)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1250,8 +1258,9 @@ func Test_pool_Get(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			p := &pool{
 				pool:          test.fields.pool,
@@ -1273,7 +1282,7 @@ func Test_pool_Get(t *testing.T) {
 			}
 
 			got, got1 := p.Get()
-			if err := test.checkFunc(test.want, got, got1); err != nil {
+			if err := checkFunc(test.want, got, got1); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1400,8 +1409,9 @@ func Test_pool_get(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			p := &pool{
 				pool:          test.fields.pool,
@@ -1423,7 +1433,7 @@ func Test_pool_get(t *testing.T) {
 			}
 
 			got, got1 := p.get(test.args.retry)
-			if err := test.checkFunc(test.want, got, got1); err != nil {
+			if err := checkFunc(test.want, got, got1); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1536,8 +1546,9 @@ func Test_pool_Len(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			p := &pool{
 				pool:          test.fields.pool,
@@ -1559,7 +1570,7 @@ func Test_pool_Len(t *testing.T) {
 			}
 
 			got := p.Len()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1672,8 +1683,9 @@ func Test_pool_Size(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			p := &pool{
 				pool:          test.fields.pool,
@@ -1695,7 +1707,7 @@ func Test_pool_Size(t *testing.T) {
 			}
 
 			got := p.Size()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1822,8 +1834,9 @@ func Test_pool_lookupIPAddr(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			p := &pool{
 				pool:          test.fields.pool,
@@ -1845,7 +1858,7 @@ func Test_pool_lookupIPAddr(t *testing.T) {
 			}
 
 			gotIps, err := p.lookupIPAddr(test.args.ctx)
-			if err := test.checkFunc(test.want, gotIps, err); err != nil {
+			if err := checkFunc(test.want, gotIps, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1975,8 +1988,9 @@ func Test_pool_Reconnect(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			p := &pool{
 				pool:          test.fields.pool,
@@ -1998,7 +2012,7 @@ func Test_pool_Reconnect(t *testing.T) {
 			}
 
 			gotC, err := p.Reconnect(test.args.ctx, test.args.force)
-			if err := test.checkFunc(test.want, gotC, err); err != nil {
+			if err := checkFunc(test.want, gotC, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -2121,8 +2135,9 @@ func Test_pool_scanGRPCPort(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			p := &pool{
 				pool:          test.fields.pool,
@@ -2144,7 +2159,7 @@ func Test_pool_scanGRPCPort(t *testing.T) {
 			}
 
 			err := p.scanGRPCPort(test.args.ctx)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -2218,12 +2233,13 @@ func Test_isGRPCPort(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := isGRPCPort(test.args.ctx, test.args.host, test.args.port)
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -2291,12 +2307,13 @@ func Test_isHealthy(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := isHealthy(test.args.conn)
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

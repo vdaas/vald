@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -120,7 +120,7 @@ func TestWithHandler(t *testing.T) {
 
 			   got := WithHandler(test.args.h)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -133,7 +133,7 @@ func TestWithHandler(t *testing.T) {
 			   got := WithHandler(test.args.h)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
+			   if err := checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -237,7 +237,7 @@ func TestWithTimeout(t *testing.T) {
 
 			   got := WithTimeout(test.args.timeout)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -250,7 +250,7 @@ func TestWithTimeout(t *testing.T) {
 			   got := WithTimeout(test.args.timeout)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
+			   if err := checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/

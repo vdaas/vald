@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -79,6 +79,7 @@ jobs:
       - name: Test to apply
         run: |
           kubectl create -f charts/vald-helm-operator/crds/valdrelease.yaml
+          sleep 3
           yq eval \
               '{"apiVersion": "vald.vdaas.org/v1", "kind": "ValdRelease", "metadata":{"name":"vald-cluster"}, "spec": .}' \
               charts/vald/values.yaml \

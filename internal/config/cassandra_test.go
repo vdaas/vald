@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@
 package config
 
 import (
-	"os"
 	"reflect"
 	"testing"
 	"time"
@@ -290,15 +289,7 @@ func TestCassandra_Bind(t *testing.T) {
 				},
 				beforeFunc: func(t *testing.T) {
 					t.Helper()
-					if err := os.Setenv(key, val); err != nil {
-						t.Fatal(err)
-					}
-				},
-				afterFunc: func(t *testing.T) {
-					t.Helper()
-					if err := os.Unsetenv(key); err != nil {
-						t.Fatal(err)
-					}
+					t.Setenv(key, val)
 				},
 				want: want{
 					want: &Cassandra{
@@ -333,8 +324,9 @@ func TestCassandra_Bind(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(tt)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			c := &Cassandra{
 				Hosts:                    test.fields.Hosts,
@@ -377,7 +369,7 @@ func TestCassandra_Bind(t *testing.T) {
 			}
 
 			got := c.Bind()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -863,8 +855,9 @@ func TestCassandra_Opts(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(tt)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			cfg := &Cassandra{
 				Hosts:                    test.fields.Hosts,
@@ -907,7 +900,7 @@ func TestCassandra_Opts(t *testing.T) {
 			}
 
 			gotOpts, err := cfg.Opts()
-			if err := test.checkFunc(test.want, gotOpts, err); err != nil {
+			if err := checkFunc(test.want, gotOpts, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

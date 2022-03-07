@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -123,7 +123,7 @@ func TestWithIngressFilterClient(t *testing.T) {
 
 			   got := WithIngressFilterClient(test.args.c)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -136,7 +136,7 @@ func TestWithIngressFilterClient(t *testing.T) {
 			   got := WithIngressFilterClient(test.args.c)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
+			   if err := checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -240,7 +240,7 @@ func TestWithEgressFilterClient(t *testing.T) {
 
 			   got := WithEgressFilterClient(test.args.c)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -253,7 +253,7 @@ func TestWithEgressFilterClient(t *testing.T) {
 			   got := WithEgressFilterClient(test.args.c)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
+			   if err := checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -357,7 +357,7 @@ func TestWithValdClient(t *testing.T) {
 
 			   got := WithValdClient(test.args.g)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -370,7 +370,7 @@ func TestWithValdClient(t *testing.T) {
 			   got := WithValdClient(test.args.g)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
+			   if err := checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -474,7 +474,7 @@ func TestWithErrGroup(t *testing.T) {
 
 			   got := WithErrGroup(test.args.eg)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -487,7 +487,7 @@ func TestWithErrGroup(t *testing.T) {
 			   got := WithErrGroup(test.args.eg)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
+			   if err := checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -591,7 +591,7 @@ func TestWithStreamConcurrency(t *testing.T) {
 
 			   got := WithStreamConcurrency(test.args.c)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -604,7 +604,7 @@ func TestWithStreamConcurrency(t *testing.T) {
 			   got := WithStreamConcurrency(test.args.c)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
+			   if err := checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -708,7 +708,7 @@ func TestWithVectorizerTargets(t *testing.T) {
 
 			   got := WithVectorizerTargets(test.args.addr)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -721,7 +721,7 @@ func TestWithVectorizerTargets(t *testing.T) {
 			   got := WithVectorizerTargets(test.args.addr)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
+			   if err := checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -825,7 +825,7 @@ func TestWithDistanceFilterTargets(t *testing.T) {
 
 			   got := WithDistanceFilterTargets(test.args.addrs...)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -838,7 +838,7 @@ func TestWithDistanceFilterTargets(t *testing.T) {
 			   got := WithDistanceFilterTargets(test.args.addrs...)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
+			   if err := checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -942,7 +942,7 @@ func TestWithObjectFilterTargets(t *testing.T) {
 
 			   got := WithObjectFilterTargets(test.args.addrs...)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -955,7 +955,7 @@ func TestWithObjectFilterTargets(t *testing.T) {
 			   got := WithObjectFilterTargets(test.args.addrs...)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
+			   if err := checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -1059,7 +1059,7 @@ func TestWithSearchFilterTargets(t *testing.T) {
 
 			   got := WithSearchFilterTargets(test.args.addrs...)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -1072,7 +1072,7 @@ func TestWithSearchFilterTargets(t *testing.T) {
 			   got := WithSearchFilterTargets(test.args.addrs...)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
+			   if err := checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -1176,7 +1176,7 @@ func TestWithInsertFilterTargets(t *testing.T) {
 
 			   got := WithInsertFilterTargets(test.args.addrs...)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -1189,7 +1189,7 @@ func TestWithInsertFilterTargets(t *testing.T) {
 			   got := WithInsertFilterTargets(test.args.addrs...)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
+			   if err := checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -1293,7 +1293,7 @@ func TestWithUpdateFilterTargets(t *testing.T) {
 
 			   got := WithUpdateFilterTargets(test.args.addrs...)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -1306,7 +1306,7 @@ func TestWithUpdateFilterTargets(t *testing.T) {
 			   got := WithUpdateFilterTargets(test.args.addrs...)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
+			   if err := checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -1410,7 +1410,7 @@ func TestWithUpsertFilterTargets(t *testing.T) {
 
 			   got := WithUpsertFilterTargets(test.args.addrs...)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -1423,7 +1423,7 @@ func TestWithUpsertFilterTargets(t *testing.T) {
 			   got := WithUpsertFilterTargets(test.args.addrs...)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
+			   if err := checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/

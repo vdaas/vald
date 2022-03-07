@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -362,6 +362,11 @@ func (m *Search_Config) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 	if m.unknownFields != nil {
 		i -= len(m.unknownFields)
 		copy(dAtA[i:], m.unknownFields)
+	}
+	if m.MinNum != 0 {
+		i = encodeVarint(dAtA, i, uint64(m.MinNum))
+		i--
+		dAtA[i] = 0x40
 	}
 	if m.EgressFilters != nil {
 		size, err := m.EgressFilters.MarshalToSizedBufferVT(dAtA[:i])
@@ -3731,6 +3736,9 @@ func (m *Search_Config) SizeVT() (n int) {
 		l = m.EgressFilters.SizeVT()
 		n += 1 + l + sov(uint64(l))
 	}
+	if m.MinNum != 0 {
+		n += 1 + sov(uint64(m.MinNum))
+	}
 	if m.unknownFields != nil {
 		n += len(m.unknownFields)
 	}
@@ -5892,6 +5900,25 @@ func (m *Search_Config) UnmarshalVT(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
+		case 8:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field MinNum", wireType)
+			}
+			m.MinNum = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.MinNum |= uint32(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
 		default:
 			iNdEx = preIndex
 			skippy, err := skip(dAtA[iNdEx:])

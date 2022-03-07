@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@
 package config
 
 import (
-	"os"
 	"reflect"
 	"testing"
 
@@ -105,17 +104,7 @@ func TestDiscoverer_Bind(t *testing.T) {
 				beforeFunc: func(t *testing.T) {
 					t.Helper()
 					for key, val := range m {
-						if err := os.Setenv(key, val); err != nil {
-							t.Fatal(err)
-						}
-					}
-				},
-				afterFunc: func(t *testing.T) {
-					t.Helper()
-					for key := range m {
-						if err := os.Unsetenv(key); err != nil {
-							t.Fatal(err)
-						}
+						t.Setenv(key, val)
 					}
 				},
 				want: want{
@@ -140,8 +129,9 @@ func TestDiscoverer_Bind(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(tt)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			d := &Discoverer{
 				Name:              test.fields.Name,
@@ -150,7 +140,7 @@ func TestDiscoverer_Bind(t *testing.T) {
 			}
 
 			got := d.Bind()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -247,15 +237,7 @@ func TestDiscovererClient_Bind(t *testing.T) {
 				},
 				beforeFunc: func(t *testing.T) {
 					t.Helper()
-					if err := os.Setenv(key, val); err != nil {
-						t.Fatal(err)
-					}
-				},
-				afterFunc: func(t *testing.T) {
-					t.Helper()
-					if err := os.Unsetenv(key); err != nil {
-						t.Fatal(err)
-					}
+					t.Setenv(key, val)
 				},
 				want: want{
 					want: &DiscovererClient{
@@ -285,8 +267,9 @@ func TestDiscovererClient_Bind(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(tt)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			d := &DiscovererClient{
 				Duration:           test.fields.Duration,
@@ -295,7 +278,7 @@ func TestDiscovererClient_Bind(t *testing.T) {
 			}
 
 			got := d.Bind()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

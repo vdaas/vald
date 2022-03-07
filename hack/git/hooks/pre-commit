@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -29,6 +29,11 @@ if git diff HEAD^ --name-only | grep ".go$" > /dev/null; then
     echo "Run gofumpt..."
     find ./ -type d -name .git -prune -o -type f -regex '.*[^\.pb]\.go' -print | xargs gofumpt -w
     echo "gofumpt finished."
+
+    # goimports
+    echo "Run strictgoimports..."
+    find ./ -type d -name .git -prune -o -type f -regex '.*\.go' -print | xargs strictgoimports -w
+    echo "strictgoimports finished."
 
     # goimports
     echo "Run goimports..."

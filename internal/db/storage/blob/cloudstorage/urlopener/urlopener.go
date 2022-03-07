@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,11 +23,10 @@ import (
 	"unsafe"
 
 	"cloud.google.com/go/storage"
+	"github.com/vdaas/vald/internal/errors"
 	"gocloud.dev/blob/gcsblob"
 	"gocloud.dev/gcp"
 	"golang.org/x/oauth2/google"
-
-	"github.com/vdaas/vald/internal/errors"
 )
 
 // URLOpener returns gcsblob.URLOpener and error.

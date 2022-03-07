@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -99,12 +99,13 @@ func TestNew(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got, err := New(test.args.opts...)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -202,8 +203,9 @@ func Test_bs_initCompressor(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			b := &bs{
 				eg:                test.fields.eg,
@@ -220,7 +222,7 @@ func Test_bs_initCompressor(t *testing.T) {
 			}
 
 			err := b.initCompressor()
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -322,8 +324,9 @@ func Test_bs_initBucket(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			b := &bs{
 				eg:                test.fields.eg,
@@ -340,7 +343,7 @@ func Test_bs_initBucket(t *testing.T) {
 			}
 
 			err := b.initBucket(test.args.ctx)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -452,8 +455,9 @@ func Test_bs_Start(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			b := &bs{
 				eg:                test.fields.eg,
@@ -470,7 +474,7 @@ func Test_bs_Start(t *testing.T) {
 			}
 
 			got, err := b.Start(test.args.ctx)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -582,8 +586,9 @@ func Test_bs_Reader(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			b := &bs{
 				eg:                test.fields.eg,
@@ -600,7 +605,7 @@ func Test_bs_Reader(t *testing.T) {
 			}
 
 			gotR, err := b.Reader(test.args.ctx)
-			if err := test.checkFunc(test.want, gotR, err); err != nil {
+			if err := checkFunc(test.want, gotR, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -712,8 +717,9 @@ func Test_bs_Writer(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			b := &bs{
 				eg:                test.fields.eg,
@@ -730,7 +736,7 @@ func Test_bs_Writer(t *testing.T) {
 			}
 
 			gotW, err := b.Writer(test.args.ctx)
-			if err := test.checkFunc(test.want, gotW, err); err != nil {
+			if err := checkFunc(test.want, gotW, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -828,8 +834,9 @@ func Test_bs_StorageInfo(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			b := &bs{
 				eg:                test.fields.eg,
@@ -846,7 +853,7 @@ func Test_bs_StorageInfo(t *testing.T) {
 			}
 
 			got := b.StorageInfo()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -959,8 +966,9 @@ func Test_bs_Stop(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			b := &bs{
 				eg:                        test.fields.eg,
@@ -979,7 +987,7 @@ func Test_bs_Stop(t *testing.T) {
 			}
 
 			err := b.Stop(test.args.ctx)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

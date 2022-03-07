@@ -880,7 +880,7 @@ make gotests/install
 If you use the following command to generate the missing test code.
 
 ```bash
-make make gotests/gen
+make gotests/gen
 ```
 
 After the command above executed, the file `*target*_test.go` will be generated for each Go source file.
@@ -916,7 +916,7 @@ We do not suggest to modify the generated code other than the `tests` variable, 
     var (
         // Goroutine leak is detected by `fastime`, but it should be ignored in the test because it is an external package.
         goleakIgnoreOptions = []goleak.Option{
-            goleak.IgnoreTopFunction("github.com/kpango/fastime.(*Fastime).StartTimerD.func1"),
+            goleak.IgnoreTopFunction("github.com/kpango/fastime.(*fastime).StartTimerD.func1"),
         }
     )
     ```

@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -363,6 +363,26 @@ k8s/metrics/profefe/deploy:
 ## delete profefe
 k8s/metrics/profefe/delete:
 	kubectl delete -f k8s/metrics/profefe
+
+.PHONY: k8s/metrics/pyroscope/deploy
+## deploy pyroscope
+k8s/metrics/pyroscope/deploy:
+	kubectl apply -k k8s/metrics/pyroscope/base
+
+.PHONY: k8s/metrics/pyroscope/delete
+## delete pyroscope
+k8s/metrics/pyroscope/delete:
+	kubectl delete -k k8s/metrics/pyroscope/base
+
+.PHONY: k8s/metrics/pyroscope/pv/deploy
+## deploy pyroscope on persistent volume
+k8s/metrics/pyroscope/pv/deploy:
+	kubectl apply -k k8s/metrics/pyroscope/overlay
+
+.PHONY: k8s/metrics/pyroscope/pv/delete
+## delete pyroscope on persistent volume
+k8s/metrics/pyroscope/pv/delete:
+	kubectl delete -k k8s/metrics/pyroscope/overlay
 
 .PHONY: k8s/linkerd/deploy
 ## deploy linkerd to k8s

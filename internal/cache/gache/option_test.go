@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -77,14 +77,15 @@ func TestDefaultOptions(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			g := new(cache)
 			for _, opt := range defaultOptions() {
 				opt(g)
 			}
-			if err := test.checkFunc(test.want, g); err != nil {
+			if err := checkFunc(test.want, g); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -149,13 +150,14 @@ func TestWithGache(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			got := WithGache(test.args.g)
 			want := new(T)
 			got(want)
-			if err := test.checkFunc(test.want, want); err != nil {
+			if err := checkFunc(test.want, want); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -226,13 +228,14 @@ func TestWithExpiredHook(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			got := WithExpiredHook(test.args.f)
 			want := new(T)
 			got(want)
-			if err := test.checkFunc(test.want, want); err != nil {
+			if err := checkFunc(test.want, want); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -296,13 +299,14 @@ func TestWithExpireDuration(t *testing.T) {
 				defer test.afterFunc(test.args)
 			}
 
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			got := WithExpireDuration(test.args.dur)
 			want := new(T)
 			got(want)
-			if err := test.checkFunc(test.want, want); err != nil {
+			if err := checkFunc(test.want, want); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -365,13 +369,14 @@ func TestWithExpireCheckDuration(t *testing.T) {
 				defer test.afterFunc(test.args)
 			}
 
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			got := WithExpireCheckDuration(test.args.dur)
 			want := new(T)
 			got(want)
-			if err := test.checkFunc(test.want, want); err != nil {
+			if err := checkFunc(test.want, want); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -461,7 +466,7 @@ func Test_defaultOptions(t *testing.T) {
 
 			   got := defaultOptions()
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -474,7 +479,7 @@ func Test_defaultOptions(t *testing.T) {
 			   got := defaultOptions()
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
+			   if err := checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/

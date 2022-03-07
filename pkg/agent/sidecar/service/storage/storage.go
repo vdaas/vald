@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -38,7 +38,6 @@ type Storage interface {
 	Stop(ctx context.Context) error
 	Reader(ctx context.Context) (io.ReadCloser, error)
 	Writer(ctx context.Context) (io.WriteCloser, error)
-
 	StorageInfo() *StorageInfo
 }
 

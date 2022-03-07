@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -90,12 +90,13 @@ func Test_newEntryGrpcConns(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := newEntryGrpcConns(test.args.i)
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -186,8 +187,9 @@ func Test_grpcConns_Load(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			m := &grpcConns{
 				mu:     test.fields.mu,
@@ -197,7 +199,7 @@ func Test_grpcConns_Load(t *testing.T) {
 			}
 
 			gotValue, gotOk := m.Load(test.args.key)
-			if err := test.checkFunc(test.want, gotValue, gotOk); err != nil {
+			if err := checkFunc(test.want, gotValue, gotOk); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -269,15 +271,16 @@ func Test_entryGrpcConns_load(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			e := &entryGrpcConns{
 				p: test.fields.p,
 			}
 
 			gotValue, gotOk := e.load()
-			if err := test.checkFunc(test.want, gotValue, gotOk); err != nil {
+			if err := checkFunc(test.want, gotValue, gotOk); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -362,8 +365,9 @@ func Test_grpcConns_Store(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			m := &grpcConns{
 				mu:     test.fields.mu,
@@ -373,7 +377,7 @@ func Test_grpcConns_Store(t *testing.T) {
 			}
 
 			m.Store(test.args.key, test.args.value)
-			if err := test.checkFunc(test.want); err != nil {
+			if err := checkFunc(test.want); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -451,15 +455,16 @@ func Test_entryGrpcConns_tryStore(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			e := &entryGrpcConns{
 				p: test.fields.p,
 			}
 
 			got := e.tryStore(test.args.i)
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -527,15 +532,16 @@ func Test_entryGrpcConns_unexpungeLocked(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			e := &entryGrpcConns{
 				p: test.fields.p,
 			}
 
 			gotWasExpunged := e.unexpungeLocked()
-			if err := test.checkFunc(test.want, gotWasExpunged); err != nil {
+			if err := checkFunc(test.want, gotWasExpunged); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -608,15 +614,16 @@ func Test_entryGrpcConns_storeLocked(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			e := &entryGrpcConns{
 				p: test.fields.p,
 			}
 
 			e.storeLocked(test.args.i)
-			if err := test.checkFunc(test.want); err != nil {
+			if err := checkFunc(test.want); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -698,8 +705,9 @@ func Test_grpcConns_Delete(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			m := &grpcConns{
 				mu:     test.fields.mu,
@@ -709,7 +717,7 @@ func Test_grpcConns_Delete(t *testing.T) {
 			}
 
 			m.Delete(test.args.key)
-			if err := test.checkFunc(test.want); err != nil {
+			if err := checkFunc(test.want); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -777,15 +785,16 @@ func Test_entryGrpcConns_delete(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			e := &entryGrpcConns{
 				p: test.fields.p,
 			}
 
 			gotHadValue := e.delete()
-			if err := test.checkFunc(test.want, gotHadValue); err != nil {
+			if err := checkFunc(test.want, gotHadValue); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -867,8 +876,9 @@ func Test_grpcConns_Range(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			m := &grpcConns{
 				mu:     test.fields.mu,
@@ -878,7 +888,7 @@ func Test_grpcConns_Range(t *testing.T) {
 			}
 
 			m.Range(test.args.f)
-			if err := test.checkFunc(test.want); err != nil {
+			if err := checkFunc(test.want); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -950,8 +960,9 @@ func Test_grpcConns_missLocked(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			m := &grpcConns{
 				mu:     test.fields.mu,
@@ -961,7 +972,7 @@ func Test_grpcConns_missLocked(t *testing.T) {
 			}
 
 			m.missLocked()
-			if err := test.checkFunc(test.want); err != nil {
+			if err := checkFunc(test.want); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1033,8 +1044,9 @@ func Test_grpcConns_dirtyLocked(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			m := &grpcConns{
 				mu:     test.fields.mu,
@@ -1044,7 +1056,7 @@ func Test_grpcConns_dirtyLocked(t *testing.T) {
 			}
 
 			m.dirtyLocked()
-			if err := test.checkFunc(test.want); err != nil {
+			if err := checkFunc(test.want); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1112,15 +1124,16 @@ func Test_entryGrpcConns_tryExpungeLocked(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			e := &entryGrpcConns{
 				p: test.fields.p,
 			}
 
 			gotIsExpunged := e.tryExpungeLocked()
-			if err := test.checkFunc(test.want, gotIsExpunged); err != nil {
+			if err := checkFunc(test.want, gotIsExpunged); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

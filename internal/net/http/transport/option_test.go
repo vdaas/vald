@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@ import (
 
 // Goroutine leak is detected by `fastime`, but it should be ignored in the test because it is an external package.
 var goleakIgnoreOptions = []goleak.Option{
-	goleak.IgnoreTopFunction("github.com/kpango/fastime.(*Fastime).StartTimerD.func1"),
+	goleak.IgnoreTopFunction("github.com/kpango/fastime.(*fastime).StartTimerD.func1"),
 }
 
 func TestWithRoundTripper(t *testing.T) {
@@ -83,13 +83,14 @@ func TestWithRoundTripper(t *testing.T) {
 				defer test.afterFunc(test.args)
 			}
 
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			got := WithRoundTripper(test.args.tr)
 			obj := new(T)
 			got(obj)
-			if err := test.checkFunc(test.want, obj); err != nil {
+			if err := checkFunc(test.want, obj); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -147,13 +148,14 @@ func TestWithBackoff(t *testing.T) {
 				defer test.afterFunc(test.args)
 			}
 
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			got := WithBackoff(test.args.bo)
 			obj := new(T)
 			got(obj)
-			if err := test.checkFunc(test.want, obj); err != nil {
+			if err := checkFunc(test.want, obj); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

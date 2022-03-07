@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -89,6 +89,8 @@ message Search {
     Filter.Config ingress_filters = 6;
     // Egress filter configurations.
     Filter.Config egress_filters = 7;
+    // Minimum number of result to be returned.
+    uint32 min_num = 8 [ (validate.rules).uint32.gte = 0 ];
   }
 
   // Represent a search response.

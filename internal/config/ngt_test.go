@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@
 package config
 
 import (
-	"os"
 	"reflect"
 	"testing"
 
@@ -120,22 +119,13 @@ func TestNGT_Bind(t *testing.T) {
 				KVSDB:                   new(KVSDB),
 			},
 			beforeFunc: func() {
-				_ = os.Setenv("NGT_BIND_INDEX_PATH", "config/ngt")
-				_ = os.Setenv("NGT_BIND_DISTANCE_TYPE", "l2")
-				_ = os.Setenv("NGT_BIND_OBJECT_TYPE", "float")
-				_ = os.Setenv("NGT_BIND_AUTO_INDEX_DURATION_LIMIT", "1h")
-				_ = os.Setenv("NGT_BIND_AUTO_INDEX_CHECK_DURATION", "30m")
-				_ = os.Setenv("NGT_BIND_AUTO_SAVE_INDEX_DURATION", "30m")
-				_ = os.Setenv("NGT_BIND_INITIAL_DELAY_MAX_DURATION", "1h")
-			},
-			afterFunc: func() {
-				_ = os.Unsetenv("NGT_BIND_INDEX_PATH")
-				_ = os.Unsetenv("NGT_BIND_DISTANCE_TYPE")
-				_ = os.Unsetenv("NGT_BIND_OBJECT_TYPE")
-				_ = os.Unsetenv("NGT_BIND_AUTO_INDEX_DURATION_LIMIT")
-				_ = os.Unsetenv("NGT_BIND_AUTO_INDEX_CHECK_DURATION")
-				_ = os.Unsetenv("NGT_BIND_AUTO_SAVE_INDEX_DURATION")
-				_ = os.Unsetenv("NGT_BIND_INITIAL_DELAY_MAX_DURATION")
+				t.Setenv("NGT_BIND_INDEX_PATH", "config/ngt")
+				t.Setenv("NGT_BIND_DISTANCE_TYPE", "l2")
+				t.Setenv("NGT_BIND_OBJECT_TYPE", "float")
+				t.Setenv("NGT_BIND_AUTO_INDEX_DURATION_LIMIT", "1h")
+				t.Setenv("NGT_BIND_AUTO_INDEX_CHECK_DURATION", "30m")
+				t.Setenv("NGT_BIND_AUTO_SAVE_INDEX_DURATION", "30m")
+				t.Setenv("NGT_BIND_INITIAL_DELAY_MAX_DURATION", "1h")
 			},
 			want: want{
 				want: &NGT{
@@ -176,8 +166,9 @@ func TestNGT_Bind(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			n := &NGT{
 				IndexPath:               test.fields.IndexPath,
@@ -196,7 +187,7 @@ func TestNGT_Bind(t *testing.T) {
 			}
 
 			got := n.Bind()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

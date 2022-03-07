@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -110,12 +110,13 @@ func TestNew(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			gotNn, err := New(test.args.cfg, test.args.opts...)
-			if err := test.checkFunc(test.want, gotNn, err); err != nil {
+			if err := checkFunc(test.want, gotNn, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -267,8 +268,9 @@ func Test_ngt_initNGT(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
 				core:              test.fields.core,
@@ -300,7 +302,7 @@ func Test_ngt_initNGT(t *testing.T) {
 			}
 
 			err := n.initNGT(test.args.opts...)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -442,8 +444,9 @@ func Test_ngt_loadKVS(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
 				core:              test.fields.core,
@@ -475,7 +478,7 @@ func Test_ngt_loadKVS(t *testing.T) {
 			}
 
 			err := n.loadKVS()
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -627,8 +630,9 @@ func Test_ngt_Start(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
 				core:              test.fields.core,
@@ -660,7 +664,7 @@ func Test_ngt_Start(t *testing.T) {
 			}
 
 			got := n.Start(test.args.ctx)
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -825,8 +829,9 @@ func Test_ngt_Search(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
 				core:              test.fields.core,
@@ -858,7 +863,7 @@ func Test_ngt_Search(t *testing.T) {
 			}
 
 			got, err := n.Search(test.args.vec, test.args.size, test.args.epsilon, test.args.radius)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1023,8 +1028,9 @@ func Test_ngt_SearchByID(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
 				core:              test.fields.core,
@@ -1056,7 +1062,7 @@ func Test_ngt_SearchByID(t *testing.T) {
 			}
 
 			_, gotDst, err := n.SearchByID(test.args.uuid, test.args.size, test.args.epsilon, test.args.radius)
-			if err := test.checkFunc(test.want, gotDst, err); err != nil {
+			if err := checkFunc(test.want, gotDst, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1211,8 +1217,9 @@ func Test_ngt_Insert(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
 				core:              test.fields.core,
@@ -1244,7 +1251,7 @@ func Test_ngt_Insert(t *testing.T) {
 			}
 
 			err := n.Insert(test.args.uuid, test.args.vec)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1402,8 +1409,9 @@ func Test_ngt_InsertWithTime(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
 				core:              test.fields.core,
@@ -1435,7 +1443,7 @@ func Test_ngt_InsertWithTime(t *testing.T) {
 			}
 
 			err := n.InsertWithTime(test.args.uuid, test.args.vec, test.args.t)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1596,8 +1604,9 @@ func Test_ngt_insert(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
 				core:              test.fields.core,
@@ -1629,7 +1638,7 @@ func Test_ngt_insert(t *testing.T) {
 			}
 
 			err := n.insert(test.args.uuid, test.args.vec, test.args.t, test.args.validation)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1781,8 +1790,9 @@ func Test_ngt_InsertMultiple(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
 				core:              test.fields.core,
@@ -1814,7 +1824,7 @@ func Test_ngt_InsertMultiple(t *testing.T) {
 			}
 
 			err := n.InsertMultiple(test.args.vecs)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1969,8 +1979,9 @@ func Test_ngt_InsertMultipleWithTime(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
 				core:              test.fields.core,
@@ -2002,7 +2013,7 @@ func Test_ngt_InsertMultipleWithTime(t *testing.T) {
 			}
 
 			err := n.InsertMultipleWithTime(test.args.vecs, test.args.t)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -2160,8 +2171,9 @@ func Test_ngt_insertMultiple(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
 				core:              test.fields.core,
@@ -2193,7 +2205,7 @@ func Test_ngt_insertMultiple(t *testing.T) {
 			}
 
 			err := n.insertMultiple(test.args.vecs, test.args.now, test.args.validation)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -2348,8 +2360,9 @@ func Test_ngt_Update(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
 				core:              test.fields.core,
@@ -2381,7 +2394,7 @@ func Test_ngt_Update(t *testing.T) {
 			}
 
 			err := n.Update(test.args.uuid, test.args.vec)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -2539,8 +2552,9 @@ func Test_ngt_UpdateWithTime(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
 				core:              test.fields.core,
@@ -2572,7 +2586,7 @@ func Test_ngt_UpdateWithTime(t *testing.T) {
 			}
 
 			err := n.UpdateWithTime(test.args.uuid, test.args.vec, test.args.t)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -2730,8 +2744,9 @@ func Test_ngt_update(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
 				core:              test.fields.core,
@@ -2763,7 +2778,7 @@ func Test_ngt_update(t *testing.T) {
 			}
 
 			err := n.update(test.args.uuid, test.args.vec, test.args.t)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -2915,8 +2930,9 @@ func Test_ngt_UpdateMultiple(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
 				core:              test.fields.core,
@@ -2948,7 +2964,7 @@ func Test_ngt_UpdateMultiple(t *testing.T) {
 			}
 
 			err := n.UpdateMultiple(test.args.vecs)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -3103,8 +3119,9 @@ func Test_ngt_UpdateMultipleWithTime(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
 				core:              test.fields.core,
@@ -3136,7 +3153,7 @@ func Test_ngt_UpdateMultipleWithTime(t *testing.T) {
 			}
 
 			err := n.UpdateMultipleWithTime(test.args.vecs, test.args.t)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -3291,8 +3308,9 @@ func Test_ngt_updateMultiple(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
 				core:              test.fields.core,
@@ -3324,7 +3342,7 @@ func Test_ngt_updateMultiple(t *testing.T) {
 			}
 
 			err := n.updateMultiple(test.args.vecs, test.args.t)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -3476,8 +3494,9 @@ func Test_ngt_Delete(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
 				core:              test.fields.core,
@@ -3509,7 +3528,7 @@ func Test_ngt_Delete(t *testing.T) {
 			}
 
 			err := n.Delete(test.args.uuid)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -3664,8 +3683,9 @@ func Test_ngt_DeleteWithTime(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
 				core:              test.fields.core,
@@ -3697,7 +3717,7 @@ func Test_ngt_DeleteWithTime(t *testing.T) {
 			}
 
 			err := n.DeleteWithTime(test.args.uuid, test.args.t)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -3855,8 +3875,9 @@ func Test_ngt_delete(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
 				core:              test.fields.core,
@@ -3888,7 +3909,7 @@ func Test_ngt_delete(t *testing.T) {
 			}
 
 			err := n.delete(test.args.uuid, test.args.t, test.args.validation)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -4040,8 +4061,9 @@ func Test_ngt_DeleteMultiple(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
 				core:              test.fields.core,
@@ -4073,7 +4095,7 @@ func Test_ngt_DeleteMultiple(t *testing.T) {
 			}
 
 			err := n.DeleteMultiple(test.args.uuids...)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -4228,8 +4250,9 @@ func Test_ngt_DeleteMultipleWithTime(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
 				core:              test.fields.core,
@@ -4261,7 +4284,7 @@ func Test_ngt_DeleteMultipleWithTime(t *testing.T) {
 			}
 
 			err := n.DeleteMultipleWithTime(test.args.uuids, test.args.t)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -4419,8 +4442,9 @@ func Test_ngt_deleteMultiple(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
 				core:              test.fields.core,
@@ -4452,7 +4476,7 @@ func Test_ngt_deleteMultiple(t *testing.T) {
 			}
 
 			err := n.deleteMultiple(test.args.uuids, test.args.now, test.args.validation)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -4607,8 +4631,9 @@ func Test_ngt_CreateIndex(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
 				core:              test.fields.core,
@@ -4640,7 +4665,7 @@ func Test_ngt_CreateIndex(t *testing.T) {
 			}
 
 			err := n.CreateIndex(test.args.ctx, test.args.poolSize)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -4792,8 +4817,9 @@ func Test_ngt_SaveIndex(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
 				core:              test.fields.core,
@@ -4825,7 +4851,7 @@ func Test_ngt_SaveIndex(t *testing.T) {
 			}
 
 			err := n.SaveIndex(test.args.ctx)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -4977,8 +5003,9 @@ func Test_ngt_saveIndex(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
 				core:              test.fields.core,
@@ -5010,7 +5037,7 @@ func Test_ngt_saveIndex(t *testing.T) {
 			}
 
 			err := n.saveIndex(test.args.ctx)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -5165,8 +5192,9 @@ func Test_ngt_CreateAndSaveIndex(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
 				core:              test.fields.core,
@@ -5198,7 +5226,7 @@ func Test_ngt_CreateAndSaveIndex(t *testing.T) {
 			}
 
 			err := n.CreateAndSaveIndex(test.args.ctx, test.args.poolSize)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -5354,8 +5382,9 @@ func Test_ngt_Exists(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
 				core:              test.fields.core,
@@ -5387,7 +5416,7 @@ func Test_ngt_Exists(t *testing.T) {
 			}
 
 			gotOid, gotOk := n.Exists(test.args.uuid)
-			if err := test.checkFunc(test.want, gotOid, gotOk); err != nil {
+			if err := checkFunc(test.want, gotOid, gotOk); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -5543,8 +5572,9 @@ func Test_ngt_GetObject(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
 				core:              test.fields.core,
@@ -5576,7 +5606,7 @@ func Test_ngt_GetObject(t *testing.T) {
 			}
 
 			gotVec, err := n.GetObject(test.args.uuid)
-			if err := test.checkFunc(test.want, gotVec, err); err != nil {
+			if err := checkFunc(test.want, gotVec, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -5731,8 +5761,9 @@ func Test_ngt_readyForUpdate(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
 				core:              test.fields.core,
@@ -5764,7 +5795,7 @@ func Test_ngt_readyForUpdate(t *testing.T) {
 			}
 
 			err := n.readyForUpdate(test.args.uuid, test.args.vec)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -5906,8 +5937,9 @@ func Test_ngt_IsSaving(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
 				core:              test.fields.core,
@@ -5939,7 +5971,7 @@ func Test_ngt_IsSaving(t *testing.T) {
 			}
 
 			got := n.IsSaving()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -6081,8 +6113,9 @@ func Test_ngt_IsIndexing(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
 				core:              test.fields.core,
@@ -6114,7 +6147,7 @@ func Test_ngt_IsIndexing(t *testing.T) {
 			}
 
 			got := n.IsIndexing()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -6266,8 +6299,9 @@ func Test_ngt_UUIDs(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
 				core:              test.fields.core,
@@ -6299,7 +6333,7 @@ func Test_ngt_UUIDs(t *testing.T) {
 			}
 
 			gotUuids := n.UUIDs(test.args.ctx)
-			if err := test.checkFunc(test.want, gotUuids); err != nil {
+			if err := checkFunc(test.want, gotUuids); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -6441,8 +6475,9 @@ func Test_ngt_NumberOfCreateIndexExecution(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
 				core:              test.fields.core,
@@ -6474,7 +6509,7 @@ func Test_ngt_NumberOfCreateIndexExecution(t *testing.T) {
 			}
 
 			got := n.NumberOfCreateIndexExecution()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -6616,8 +6651,9 @@ func Test_ngt_NumberOfProactiveGCExecution(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
 				core:              test.fields.core,
@@ -6649,7 +6685,7 @@ func Test_ngt_NumberOfProactiveGCExecution(t *testing.T) {
 			}
 
 			got := n.NumberOfProactiveGCExecution()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -6786,8 +6822,9 @@ func Test_ngt_gc(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
 				core:              test.fields.core,
@@ -6819,7 +6856,7 @@ func Test_ngt_gc(t *testing.T) {
 			}
 
 			n.gc()
-			if err := test.checkFunc(test.want); err != nil {
+			if err := checkFunc(test.want); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -6961,8 +6998,9 @@ func Test_ngt_Len(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
 				core:              test.fields.core,
@@ -6994,7 +7032,7 @@ func Test_ngt_Len(t *testing.T) {
 			}
 
 			got := n.Len()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -7136,8 +7174,9 @@ func Test_ngt_InsertVQueueBufferLen(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
 				core:              test.fields.core,
@@ -7169,7 +7208,7 @@ func Test_ngt_InsertVQueueBufferLen(t *testing.T) {
 			}
 
 			got := n.InsertVQueueBufferLen()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -7311,8 +7350,9 @@ func Test_ngt_DeleteVQueueBufferLen(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
 				core:              test.fields.core,
@@ -7344,7 +7384,7 @@ func Test_ngt_DeleteVQueueBufferLen(t *testing.T) {
 			}
 
 			got := n.DeleteVQueueBufferLen()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -7486,8 +7526,9 @@ func Test_ngt_GetDimensionSize(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
 				core:              test.fields.core,
@@ -7519,7 +7560,7 @@ func Test_ngt_GetDimensionSize(t *testing.T) {
 			}
 
 			got := n.GetDimensionSize()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -7671,8 +7712,9 @@ func Test_ngt_Close(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
 				core:              test.fields.core,
@@ -7704,7 +7746,7 @@ func Test_ngt_Close(t *testing.T) {
 			}
 
 			err := n.Close(test.args.ctx)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -7771,12 +7813,13 @@ func Test_f32stos(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := f32stos(test.args.fs)
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -7965,6 +8008,410 @@ func Test_ngt_removeInvalidIndex(t *testing.T) {
 
 			n.removeInvalidIndex(test.args.ctx)
 			if err := test.checkFunc(test.want); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func Test_ngt_LinearSearch(t *testing.T) {
+	type args struct {
+		vec  []float32
+		size uint32
+	}
+	type fields struct {
+		core              core.NGT
+		eg                errgroup.Group
+		kvs               kvs.BidiMap
+		fmu               sync.Mutex
+		fmap              map[string]uint32
+		vq                vqueue.Queue
+		indexing          atomic.Value
+		saving            atomic.Value
+		cimu              sync.Mutex
+		lastNoice         uint64
+		nocie             uint64
+		nogce             uint64
+		inMem             bool
+		dim               int
+		alen              int
+		lim               time.Duration
+		dur               time.Duration
+		sdur              time.Duration
+		minLit            time.Duration
+		maxLit            time.Duration
+		litFactor         time.Duration
+		enableProactiveGC bool
+		path              string
+		poolSize          uint32
+		radius            float32
+		epsilon           float32
+		idelay            time.Duration
+		dcd               bool
+	}
+	type want struct {
+		want []model.Distance
+		err  error
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, []model.Distance, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, got []model.Distance, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           vec: nil,
+		           size: 0,
+		       },
+		       fields: fields {
+		           core: nil,
+		           eg: nil,
+		           kvs: nil,
+		           fmu: sync.Mutex{},
+		           fmap: nil,
+		           vq: nil,
+		           indexing: nil,
+		           saving: nil,
+		           cimu: sync.Mutex{},
+		           lastNoice: 0,
+		           nocie: 0,
+		           nogce: 0,
+		           inMem: false,
+		           dim: 0,
+		           alen: 0,
+		           lim: nil,
+		           dur: nil,
+		           sdur: nil,
+		           minLit: nil,
+		           maxLit: nil,
+		           litFactor: nil,
+		           enableProactiveGC: false,
+		           path: "",
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
+		           idelay: nil,
+		           dcd: false,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           vec: nil,
+		           size: 0,
+		           },
+		           fields: fields {
+		           core: nil,
+		           eg: nil,
+		           kvs: nil,
+		           fmu: sync.Mutex{},
+		           fmap: nil,
+		           vq: nil,
+		           indexing: nil,
+		           saving: nil,
+		           cimu: sync.Mutex{},
+		           lastNoice: 0,
+		           nocie: 0,
+		           nogce: 0,
+		           inMem: false,
+		           dim: 0,
+		           alen: 0,
+		           lim: nil,
+		           dur: nil,
+		           sdur: nil,
+		           minLit: nil,
+		           maxLit: nil,
+		           litFactor: nil,
+		           enableProactiveGC: false,
+		           path: "",
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
+		           idelay: nil,
+		           dcd: false,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			n := &ngt{
+				core:              test.fields.core,
+				eg:                test.fields.eg,
+				kvs:               test.fields.kvs,
+				fmu:               test.fields.fmu,
+				fmap:              test.fields.fmap,
+				vq:                test.fields.vq,
+				indexing:          test.fields.indexing,
+				saving:            test.fields.saving,
+				cimu:              test.fields.cimu,
+				lastNoice:         test.fields.lastNoice,
+				nocie:             test.fields.nocie,
+				nogce:             test.fields.nogce,
+				inMem:             test.fields.inMem,
+				dim:               test.fields.dim,
+				alen:              test.fields.alen,
+				lim:               test.fields.lim,
+				dur:               test.fields.dur,
+				sdur:              test.fields.sdur,
+				minLit:            test.fields.minLit,
+				maxLit:            test.fields.maxLit,
+				litFactor:         test.fields.litFactor,
+				enableProactiveGC: test.fields.enableProactiveGC,
+				path:              test.fields.path,
+				poolSize:          test.fields.poolSize,
+				radius:            test.fields.radius,
+				epsilon:           test.fields.epsilon,
+				idelay:            test.fields.idelay,
+				dcd:               test.fields.dcd,
+			}
+
+			got, err := n.LinearSearch(test.args.vec, test.args.size)
+			if err := test.checkFunc(test.want, got, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func Test_ngt_LinearSearchByID(t *testing.T) {
+	type args struct {
+		uuid string
+		size uint32
+	}
+	type fields struct {
+		core              core.NGT
+		eg                errgroup.Group
+		kvs               kvs.BidiMap
+		fmu               sync.Mutex
+		fmap              map[string]uint32
+		vq                vqueue.Queue
+		indexing          atomic.Value
+		saving            atomic.Value
+		cimu              sync.Mutex
+		lastNoice         uint64
+		nocie             uint64
+		nogce             uint64
+		inMem             bool
+		dim               int
+		alen              int
+		lim               time.Duration
+		dur               time.Duration
+		sdur              time.Duration
+		minLit            time.Duration
+		maxLit            time.Duration
+		litFactor         time.Duration
+		enableProactiveGC bool
+		path              string
+		poolSize          uint32
+		radius            float32
+		epsilon           float32
+		idelay            time.Duration
+		dcd               bool
+	}
+	type want struct {
+		wantVec []float32
+		wantDst []model.Distance
+		err     error
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, []float32, []model.Distance, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, gotVec []float32, gotDst []model.Distance, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(gotVec, w.wantVec) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotVec, w.wantVec)
+		}
+		if !reflect.DeepEqual(gotDst, w.wantDst) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotDst, w.wantDst)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           uuid: "",
+		           size: 0,
+		       },
+		       fields: fields {
+		           core: nil,
+		           eg: nil,
+		           kvs: nil,
+		           fmu: sync.Mutex{},
+		           fmap: nil,
+		           vq: nil,
+		           indexing: nil,
+		           saving: nil,
+		           cimu: sync.Mutex{},
+		           lastNoice: 0,
+		           nocie: 0,
+		           nogce: 0,
+		           inMem: false,
+		           dim: 0,
+		           alen: 0,
+		           lim: nil,
+		           dur: nil,
+		           sdur: nil,
+		           minLit: nil,
+		           maxLit: nil,
+		           litFactor: nil,
+		           enableProactiveGC: false,
+		           path: "",
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
+		           idelay: nil,
+		           dcd: false,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           uuid: "",
+		           size: 0,
+		           },
+		           fields: fields {
+		           core: nil,
+		           eg: nil,
+		           kvs: nil,
+		           fmu: sync.Mutex{},
+		           fmap: nil,
+		           vq: nil,
+		           indexing: nil,
+		           saving: nil,
+		           cimu: sync.Mutex{},
+		           lastNoice: 0,
+		           nocie: 0,
+		           nogce: 0,
+		           inMem: false,
+		           dim: 0,
+		           alen: 0,
+		           lim: nil,
+		           dur: nil,
+		           sdur: nil,
+		           minLit: nil,
+		           maxLit: nil,
+		           litFactor: nil,
+		           enableProactiveGC: false,
+		           path: "",
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
+		           idelay: nil,
+		           dcd: false,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
+			}
+			n := &ngt{
+				core:              test.fields.core,
+				eg:                test.fields.eg,
+				kvs:               test.fields.kvs,
+				fmu:               test.fields.fmu,
+				fmap:              test.fields.fmap,
+				vq:                test.fields.vq,
+				indexing:          test.fields.indexing,
+				saving:            test.fields.saving,
+				cimu:              test.fields.cimu,
+				lastNoice:         test.fields.lastNoice,
+				nocie:             test.fields.nocie,
+				nogce:             test.fields.nogce,
+				inMem:             test.fields.inMem,
+				dim:               test.fields.dim,
+				alen:              test.fields.alen,
+				lim:               test.fields.lim,
+				dur:               test.fields.dur,
+				sdur:              test.fields.sdur,
+				minLit:            test.fields.minLit,
+				maxLit:            test.fields.maxLit,
+				litFactor:         test.fields.litFactor,
+				enableProactiveGC: test.fields.enableProactiveGC,
+				path:              test.fields.path,
+				poolSize:          test.fields.poolSize,
+				radius:            test.fields.radius,
+				epsilon:           test.fields.epsilon,
+				idelay:            test.fields.idelay,
+				dcd:               test.fields.dcd,
+			}
+
+			gotVec, gotDst, err := n.LinearSearchByID(test.args.uuid, test.args.size)
+			if err := test.checkFunc(test.want, gotVec, gotDst, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

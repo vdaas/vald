@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -88,12 +88,13 @@ func Test_newAddr(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := newAddr(test.args.addrList)
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -174,8 +175,9 @@ func Test_atomicAddrs_GetAll(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			a := &atomicAddrs{
 				addrs:      test.fields.addrs,
@@ -185,7 +187,7 @@ func Test_atomicAddrs_GetAll(t *testing.T) {
 			}
 
 			got, got1 := a.GetAll()
-			if err := test.checkFunc(test.want, got, got1); err != nil {
+			if err := checkFunc(test.want, got, got1); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -267,8 +269,9 @@ func Test_atomicAddrs_Range(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			a := &atomicAddrs{
 				addrs:      test.fields.addrs,
@@ -278,7 +281,7 @@ func Test_atomicAddrs_Range(t *testing.T) {
 			}
 
 			a.Range(test.args.f)
-			if err := test.checkFunc(test.want); err != nil {
+			if err := checkFunc(test.want); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -360,8 +363,9 @@ func Test_atomicAddrs_Add(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			a := &atomicAddrs{
 				addrs:      test.fields.addrs,
@@ -371,7 +375,7 @@ func Test_atomicAddrs_Add(t *testing.T) {
 			}
 
 			a.Add(test.args.addr)
-			if err := test.checkFunc(test.want); err != nil {
+			if err := checkFunc(test.want); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -453,8 +457,9 @@ func Test_atomicAddrs_Delete(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			a := &atomicAddrs{
 				addrs:      test.fields.addrs,
@@ -464,7 +469,7 @@ func Test_atomicAddrs_Delete(t *testing.T) {
 			}
 
 			a.Delete(test.args.addr)
-			if err := test.checkFunc(test.want); err != nil {
+			if err := checkFunc(test.want); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -545,8 +550,9 @@ func Test_atomicAddrs_Next(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			a := &atomicAddrs{
 				addrs:      test.fields.addrs,
@@ -556,7 +562,7 @@ func Test_atomicAddrs_Next(t *testing.T) {
 			}
 
 			got, got1 := a.Next()
-			if err := test.checkFunc(test.want, got, got1); err != nil {
+			if err := checkFunc(test.want, got, got1); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -633,8 +639,9 @@ func Test_atomicAddrs_Len(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			a := &atomicAddrs{
 				addrs:      test.fields.addrs,
@@ -644,7 +651,7 @@ func Test_atomicAddrs_Len(t *testing.T) {
 			}
 
 			got := a.Len()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

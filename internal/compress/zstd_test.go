@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -130,12 +130,13 @@ func TestNewZstd(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got, err := NewZstd(test.args.opts...)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -312,8 +313,9 @@ func Test_zstdCompressor_CompressVector(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			z := &zstdCompressor{
 				gobc:     test.fields.gobc,
@@ -322,7 +324,7 @@ func Test_zstdCompressor_CompressVector(t *testing.T) {
 			}
 
 			got, err := z.CompressVector(test.args.vector)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -380,8 +382,9 @@ func Test_E2E_zstdCompressor_CompressVector(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			g, err := NewZstd()
@@ -390,7 +393,7 @@ func Test_E2E_zstdCompressor_CompressVector(t *testing.T) {
 			}
 
 			got, err := g.CompressVector(test.args.vector)
-			if err := test.checkFunc(test.want, got, err, g); err != nil {
+			if err := checkFunc(test.want, got, err, g); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -551,8 +554,9 @@ func Test_zstdCompressor_DecompressVector(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			z := &zstdCompressor{
 				gobc:     test.fields.gobc,
@@ -561,7 +565,7 @@ func Test_zstdCompressor_DecompressVector(t *testing.T) {
 			}
 
 			got, err := z.DecompressVector(test.args.bs)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -658,8 +662,9 @@ func Test_zstdCompressor_Reader(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			z := &zstdCompressor{
 				gobc:     test.fields.gobc,
@@ -668,7 +673,7 @@ func Test_zstdCompressor_Reader(t *testing.T) {
 			}
 
 			got, err := z.Reader(test.args.src)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -766,8 +771,9 @@ func Test_zstdCompressor_Writer(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			z := &zstdCompressor{
 				gobc:     test.fields.gobc,
@@ -776,7 +782,7 @@ func Test_zstdCompressor_Writer(t *testing.T) {
 			}
 
 			got, err := z.Writer(test.args.dst)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -858,8 +864,9 @@ func Test_zstdReader_Read(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			z := &zstdReader{
 				src: test.fields.src,
@@ -867,7 +874,7 @@ func Test_zstdReader_Read(t *testing.T) {
 			}
 
 			gotN, err := z.Read(test.args.p)
-			if err := test.checkFunc(test.want, gotN, err); err != nil {
+			if err := checkFunc(test.want, gotN, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -934,8 +941,9 @@ func Test_zstdReader_Close(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			z := &zstdReader{
 				src: test.fields.src,
@@ -943,7 +951,7 @@ func Test_zstdReader_Close(t *testing.T) {
 			}
 
 			err := z.Close()
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1025,8 +1033,9 @@ func Test_zstdWriter_Write(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			z := &zstdWriter{
 				dst: test.fields.dst,
@@ -1034,7 +1043,7 @@ func Test_zstdWriter_Write(t *testing.T) {
 			}
 
 			gotN, err := z.Write(test.args.p)
-			if err := test.checkFunc(test.want, gotN, err); err != nil {
+			if err := checkFunc(test.want, gotN, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1147,8 +1156,9 @@ func Test_zstdWriter_Close(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			z := &zstdWriter{
 				dst: test.fields.dst,
@@ -1156,7 +1166,7 @@ func Test_zstdWriter_Close(t *testing.T) {
 			}
 
 			err := z.Close()
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -38,7 +38,7 @@ import (
 
 // Goroutine leak is detected by `fastime`, but it should be ignored in the test because it is an external package.
 var goleakIgnoreOptions = []goleak.Option{
-	goleak.IgnoreTopFunction("github.com/kpango/fastime.(*Fastime).StartTimerD.func1"),
+	goleak.IgnoreTopFunction("github.com/kpango/fastime.(*fastime).StartTimerD.func1"),
 	goleak.IgnoreTopFunction("internal/poll.runtime_pollWait"),
 	goleak.IgnoreTopFunction("net._C2func_getaddrinfo"),
 }
@@ -126,12 +126,13 @@ func TestIsLocal(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := IsLocal(test.args.host)
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -213,12 +214,13 @@ func TestDialContext(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			gotConn, err := DialContext(test.args.ctx, test.args.network, test.args.addr)
-			if err := test.checkFunc(test.want, gotConn, err); err != nil {
+			if err := checkFunc(test.want, gotConn, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -381,12 +383,13 @@ func TestParse(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			gotHost, gotPort, gotIsLocal, gotIsV4, gotIsV6, err := Parse(test.args.addr)
-			if err := test.checkFunc(test.want, gotHost, gotPort, gotIsLocal, gotIsV4, gotIsV6, err); err != nil {
+			if err := checkFunc(test.want, gotHost, gotPort, gotIsLocal, gotIsV4, gotIsV6, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -461,7 +464,11 @@ func TestSplitHostPort(t *testing.T) {
 			want: want{
 				wantHost: "dummy",
 				wantPort: uint16(80),
-				err:      &strconv.NumError{"ParseUint", "", strconv.ErrSyntax},
+				err: &strconv.NumError{
+					Func: "ParseUint",
+					Num:  "",
+					Err:  strconv.ErrSyntax,
+				},
 			},
 		},
 		{
@@ -472,7 +479,11 @@ func TestSplitHostPort(t *testing.T) {
 			want: want{
 				wantHost: "192.168.1.1",
 				wantPort: uint16(80),
-				err:      &strconv.NumError{"ParseUint", "", strconv.ErrSyntax},
+				err: &strconv.NumError{
+					Func: "ParseUint",
+					Num:  "",
+					Err:  strconv.ErrSyntax,
+				},
 			},
 		},
 		{
@@ -483,7 +494,11 @@ func TestSplitHostPort(t *testing.T) {
 			want: want{
 				wantHost: "2001:db8::1",
 				wantPort: uint16(80),
-				err:      &strconv.NumError{"ParseUint", "", strconv.ErrSyntax},
+				err: &strconv.NumError{
+					Func: "ParseUint",
+					Num:  "",
+					Err:  strconv.ErrSyntax,
+				},
 			},
 		},
 		{
@@ -507,12 +522,13 @@ func TestSplitHostPort(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			gotHost, gotPort, err := SplitHostPort(test.args.hostport)
-			if err := test.checkFunc(test.want, gotHost, gotPort, err); err != nil {
+			if err := checkFunc(test.want, gotHost, gotPort, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -710,12 +726,13 @@ func TestScanPorts(t *testing.T) {
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			gotPorts, err := ScanPorts(test.args.ctx, test.args.start, test.args.end, test.args.host)
-			if err := test.checkFunc(test.want, gotPorts, err); err != nil {
+			if err := checkFunc(test.want, gotPorts, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 
@@ -749,7 +766,6 @@ func TestLoadLocalIP(t *testing.T) {
 			want: want{
 				want: "127.0.0.1",
 			},
-			checkFunc: defaultCheckFunc,
 		},
 	}
 
@@ -763,12 +779,13 @@ func TestLoadLocalIP(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := LoadLocalIP()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -798,31 +815,123 @@ func TestNetworkTypeFromString(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           str: "",
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           str: "",
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "return UNIX when the string is UNIX",
+			args: args{
+				str: "UNIX",
+			},
+			want: want{
+				want: UNIX,
+			},
+		},
+		{
+			name: "return UNIXGRAM when the string is UNIXGRAM",
+			args: args{
+				str: "UNIXGRAM",
+			},
+			want: want{
+				want: UNIXGRAM,
+			},
+		},
+		{
+			name: "return UNIXPACKET when the string is UNIXPACKET",
+			args: args{
+				str: "UNIXPACKET",
+			},
+			want: want{
+				want: UNIXPACKET,
+			},
+		},
+		{
+			name: "return ICMP when the string is ICMP",
+			args: args{
+				str: "ICMP",
+			},
+			want: want{
+				want: ICMP,
+			},
+		},
+		{
+			name: "return ICMP6 when the string is ipv6-icmp",
+			args: args{
+				str: "ipv6-icmp",
+			},
+			want: want{
+				want: ICMP6,
+			},
+		},
+		{
+			name: "return IGMP when the string is IGMP",
+			args: args{
+				str: "IGMP",
+			},
+			want: want{
+				want: IGMP,
+			},
+		},
+		{
+			name: "return TCP when the string is TCP",
+			args: args{
+				str: "TCP",
+			},
+			want: want{
+				want: TCP,
+			},
+		},
+		{
+			name: "return TCP4 when the string is TCP4",
+			args: args{
+				str: "TCP4",
+			},
+			want: want{
+				want: TCP4,
+			},
+		},
+		{
+			name: "return TCP6 when the string is TCP6",
+			args: args{
+				str: "TCP6",
+			},
+			want: want{
+				want: TCP6,
+			},
+		},
+		{
+			name: "return UDP when the string is UDP",
+			args: args{
+				str: "UDP",
+			},
+			want: want{
+				want: UDP,
+			},
+		},
+		{
+			name: "return UDP4 when the string is UDP4",
+			args: args{
+				str: "UDP4",
+			},
+			want: want{
+				want: UDP4,
+			},
+		},
+		{
+			name: "return UDP6 when the string is UDP6",
+			args: args{
+				str: "UDP6",
+			},
+			want: want{
+				want: UDP6,
+			},
+		},
+		{
+			name: "return UNKNOWN when the string is invalid string",
+			args: args{
+				str: "invalid type",
+			},
+			want: want{
+				want: Unknown,
+			},
+		},
 	}
 
 	for _, tc := range tests {
@@ -836,12 +945,13 @@ func TestNetworkTypeFromString(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := NetworkTypeFromString(test.args.str)
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -868,25 +978,97 @@ func TestNetworkType_String(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "return unix when the type is UNIX",
+			n:    UNIX,
+			want: want{
+				want: "unix",
+			},
+		},
+		{
+			name: "return unixgram when the type is UNIXGRAM",
+			n:    UNIXGRAM,
+			want: want{
+				want: "unixgram",
+			},
+		},
+		{
+			name: "return unixpacket when the type is UNIXPACKET",
+			n:    UNIXPACKET,
+			want: want{
+				want: "unixpacket",
+			},
+		},
+		{
+			name: "return tcp when the type is TCP",
+			n:    TCP,
+			want: want{
+				want: "tcp",
+			},
+		},
+		{
+			name: "return tcp4 when the type is TCP4",
+			n:    TCP4,
+			want: want{
+				want: "tcp4",
+			},
+		},
+		{
+			name: "return tcp6 when the type is TCP6",
+			n:    TCP6,
+			want: want{
+				want: "tcp6",
+			},
+		},
+		{
+			name: "return udp when the type is UDP",
+			n:    UDP,
+			want: want{
+				want: "udp",
+			},
+		},
+		{
+			name: "return udp4 when the type is UDP4",
+			n:    UDP4,
+			want: want{
+				want: "udp4",
+			},
+		},
+		{
+			name: "return udp6 when the type is UDP6",
+			n:    UDP6,
+			want: want{
+				want: "udp6",
+			},
+		},
+		{
+			name: "return icmp when the type is ICMP",
+			n:    ICMP,
+			want: want{
+				want: "icmp",
+			},
+		},
+		{
+			name: "return igmp when the type is IGMP",
+			n:    IGMP,
+			want: want{
+				want: "igmp",
+			},
+		},
+		{
+			name: "return ipv6-icmp when the type is ICMP6",
+			n:    ICMP6,
+			want: want{
+				want: "ipv6-icmp",
+			},
+		},
+		{
+			name: "return unknown when the type is Unknown",
+			n:    Unknown,
+			want: want{
+				want: "unknown",
+			},
+		},
 	}
 
 	for _, tc := range tests {
@@ -900,12 +1082,13 @@ func TestNetworkType_String(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := test.n.String()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -936,33 +1119,36 @@ func TestJoinHostPort(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           host: "",
-		           port: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           host: "",
-		           port: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "return ipv4 host port",
+			args: args{
+				host: "127.0.0.1",
+				port: 8080,
+			},
+			want: want{
+				want: "127.0.0.1:8080",
+			},
+		},
+		{
+			name: "return ipv6 host port",
+			args: args{
+				host: "2001:db8::1",
+				port: 8081,
+			},
+			want: want{
+				want: "[2001:db8::1]:8081",
+			},
+		},
+		{
+			name: "return hostname port",
+			args: args{
+				host: "www.example.com",
+				port: 80,
+			},
+			want: want{
+				want: "www.example.com:80",
+			},
+		},
 	}
 
 	for _, tc := range tests {
@@ -976,12 +1162,13 @@ func TestJoinHostPort(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := JoinHostPort(test.args.host, test.args.port)
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

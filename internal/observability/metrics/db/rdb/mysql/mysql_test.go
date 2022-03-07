@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -83,12 +83,13 @@ func TestNew(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			gotE, err := New()
-			if err := test.checkFunc(test.want, gotE, err); err != nil {
+			if err := checkFunc(test.want, gotE, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -181,8 +182,9 @@ func Test_mysqlMetrics_Measurement(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			mm := &mysqlMetrics{
 				queryTotal:        test.fields.queryTotal,
@@ -193,7 +195,7 @@ func Test_mysqlMetrics_Measurement(t *testing.T) {
 			}
 
 			got, err := mm.Measurement(test.args.ctx)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -286,8 +288,9 @@ func Test_mysqlMetrics_MeasurementWithTags(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			mm := &mysqlMetrics{
 				queryTotal:        test.fields.queryTotal,
@@ -298,7 +301,7 @@ func Test_mysqlMetrics_MeasurementWithTags(t *testing.T) {
 			}
 
 			got, err := mm.MeasurementWithTags(test.args.ctx)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -377,8 +380,9 @@ func Test_mysqlMetrics_View(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			mm := &mysqlMetrics{
 				queryTotal:        test.fields.queryTotal,
@@ -389,7 +393,7 @@ func Test_mysqlMetrics_View(t *testing.T) {
 			}
 
 			got := mm.View()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -484,8 +488,9 @@ func Test_mysqlMetrics_SpanStart(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			mm := &mysqlMetrics{
 				queryTotal:        test.fields.queryTotal,
@@ -496,7 +501,7 @@ func Test_mysqlMetrics_SpanStart(t *testing.T) {
 			}
 
 			got := mm.SpanStart(test.args.ctx, test.args.eventName, test.args.query)
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -583,8 +588,9 @@ func Test_mysqlMetrics_SpanError(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			mm := &mysqlMetrics{
 				queryTotal:        test.fields.queryTotal,
@@ -595,7 +601,7 @@ func Test_mysqlMetrics_SpanError(t *testing.T) {
 			}
 
 			mm.SpanError(test.args.ctx, test.args.err)
-			if err := test.checkFunc(test.want); err != nil {
+			if err := checkFunc(test.want); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -679,8 +685,9 @@ func Test_mysqlMetrics_SpanFinish(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			mm := &mysqlMetrics{
 				queryTotal:        test.fields.queryTotal,
@@ -691,7 +698,7 @@ func Test_mysqlMetrics_SpanFinish(t *testing.T) {
 			}
 
 			mm.SpanFinish(test.args.ctx)
-			if err := test.checkFunc(test.want); err != nil {
+			if err := checkFunc(test.want); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

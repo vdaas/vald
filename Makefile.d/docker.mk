@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -51,8 +51,7 @@ docker/build/agent-ngt:
 	    --build-arg GO_VERSION=$(GO_VERSION) \
 	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
 	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
-	    --build-arg MAINTAINER=$(MAINTAINER) \
-	    --build-arg UPX_OPTIONS=$(UPX_OPTIONS)
+	    --build-arg MAINTAINER=$(MAINTAINER)
 
 .PHONY: docker/name/agent-sidecar
 docker/name/agent-sidecar:
@@ -68,8 +67,7 @@ docker/build/agent-sidecar:
 	    --build-arg GO_VERSION=$(GO_VERSION) \
 	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
 	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
-	    --build-arg MAINTAINER=$(MAINTAINER) \
-	    --build-arg UPX_OPTIONS=$(UPX_OPTIONS)
+	    --build-arg MAINTAINER=$(MAINTAINER)
 
 .PHONY: docker/name/discoverer-k8s
 docker/name/discoverer-k8s:
@@ -85,8 +83,7 @@ docker/build/discoverer-k8s:
 	    --build-arg GO_VERSION=$(GO_VERSION) \
 	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
 	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
-	    --build-arg MAINTAINER=$(MAINTAINER) \
-	    --build-arg UPX_OPTIONS=$(UPX_OPTIONS)
+	    --build-arg MAINTAINER=$(MAINTAINER)
 
 .PHONY: docker/name/gateway-lb
 docker/name/gateway-lb:
@@ -101,8 +98,7 @@ docker/build/gateway-lb:
 	    -t $(ORG)/$(LB_GATEWAY_IMAGE):$(TAG) . \
 	    --build-arg GO_VERSION=$(GO_VERSION) \
 	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
-	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
-	    --build-arg UPX_OPTIONS=$(UPX_OPTIONS)
+	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG)
 
 .PHONY: docker/name/gateway-filter
 docker/name/gateway-filter:
@@ -117,8 +113,7 @@ docker/build/gateway-filter:
 	    -t $(ORG)/$(FILTER_GATEWAY_IMAGE):$(TAG) . \
 	    --build-arg GO_VERSION=$(GO_VERSION) \
 	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
-	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
-	    --build-arg UPX_OPTIONS=$(UPX_OPTIONS)
+	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG)
 
 .PHONY: docker/name/manager-index
 docker/name/manager-index:
@@ -134,8 +129,7 @@ docker/build/manager-index:
 	    --build-arg GO_VERSION=$(GO_VERSION) \
 	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
 	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
-	    --build-arg MAINTAINER=$(MAINTAINER) \
-	    --build-arg UPX_OPTIONS=$(UPX_OPTIONS)
+	    --build-arg MAINTAINER=$(MAINTAINER)
 
 .PHONY: docker/name/filter-ingress-tensorflow
 docker/name/filter-ingress-tensorflow:
@@ -191,8 +185,11 @@ docker/build/operator/helm:
 	    -f dockers/operator/helm/Dockerfile \
 	    -t $(ORG)/$(HELM_OPERATOR_IMAGE):$(TAG) . \
 	    --build-arg GO_VERSION=$(GO_VERSION) \
+	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
+	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
 	    --build-arg MAINTAINER=$(MAINTAINER) \
-	    --build-arg OPERATOR_SDK_VERSION=$(OPERATOR_SDK_VERSION)
+	    --build-arg OPERATOR_SDK_VERSION=$(OPERATOR_SDK_VERSION) \
+	    --build-arg UPX_OPTIONS=$(UPX_OPTIONS)
 
 .PHONY: docker/name/loadtest
 docker/name/loadtest:

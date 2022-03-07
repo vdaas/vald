@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -95,12 +95,13 @@ func TestNew(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got, err := New(test.args.opts...)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -188,8 +189,9 @@ func Test_client_Start(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			c := &client{
 				addrs: test.fields.addrs,
@@ -198,7 +200,7 @@ func Test_client_Start(t *testing.T) {
 			}
 
 			got, err := c.Start(test.args.ctx)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -282,8 +284,9 @@ func Test_client_Stop(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			c := &client{
 				addrs: test.fields.addrs,
@@ -292,7 +295,7 @@ func Test_client_Stop(t *testing.T) {
 			}
 
 			err := c.Stop(test.args.ctx)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -366,8 +369,9 @@ func Test_client_GRPCClient(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			c := &client{
 				addrs: test.fields.addrs,
@@ -376,7 +380,7 @@ func Test_client_GRPCClient(t *testing.T) {
 			}
 
 			got := c.GRPCClient()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -467,8 +471,9 @@ func Test_client_Target(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			c := &client{
 				addrs: test.fields.addrs,
@@ -477,7 +482,7 @@ func Test_client_Target(t *testing.T) {
 			}
 
 			got, err := c.Target(test.args.ctx, test.args.targets...)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -571,8 +576,9 @@ func Test_client_GenVector(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			c := &client{
 				addrs: test.fields.addrs,
@@ -581,7 +587,7 @@ func Test_client_GenVector(t *testing.T) {
 			}
 
 			gotRes, err := c.GenVector(test.args.ctx, test.args.in, test.args.opts...)
-			if err := test.checkFunc(test.want, gotRes, err); err != nil {
+			if err := checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -675,8 +681,9 @@ func Test_client_FilterVector(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			c := &client{
 				addrs: test.fields.addrs,
@@ -685,7 +692,7 @@ func Test_client_FilterVector(t *testing.T) {
 			}
 
 			gotRes, err := c.FilterVector(test.args.ctx, test.args.in, test.args.opts...)
-			if err := test.checkFunc(test.want, gotRes, err); err != nil {
+			if err := checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -776,8 +783,9 @@ func Test_specificAddrClient_GenVector(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			s := &specificAddrClient{
 				addr: test.fields.addr,
@@ -785,7 +793,7 @@ func Test_specificAddrClient_GenVector(t *testing.T) {
 			}
 
 			gotRes, err := s.GenVector(test.args.ctx, test.args.in, test.args.opts...)
-			if err := test.checkFunc(test.want, gotRes, err); err != nil {
+			if err := checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -876,8 +884,9 @@ func Test_specificAddrClient_FilterVector(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			s := &specificAddrClient{
 				addr: test.fields.addr,
@@ -885,7 +894,7 @@ func Test_specificAddrClient_FilterVector(t *testing.T) {
 			}
 
 			gotRes, err := s.FilterVector(test.args.ctx, test.args.in, test.args.opts...)
-			if err := test.checkFunc(test.want, gotRes, err); err != nil {
+			if err := checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -976,8 +985,9 @@ func Test_multipleAddrsClient_GenVector(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			m := &multipleAddrsClient{
 				addrs: test.fields.addrs,
@@ -985,7 +995,7 @@ func Test_multipleAddrsClient_GenVector(t *testing.T) {
 			}
 
 			gotRes, err := m.GenVector(test.args.ctx, test.args.in, test.args.opts...)
-			if err := test.checkFunc(test.want, gotRes, err); err != nil {
+			if err := checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1076,8 +1086,9 @@ func Test_multipleAddrsClient_FilterVector(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			m := &multipleAddrsClient{
 				addrs: test.fields.addrs,
@@ -1085,7 +1096,7 @@ func Test_multipleAddrsClient_FilterVector(t *testing.T) {
 			}
 
 			gotRes, err := m.FilterVector(test.args.ctx, test.args.in, test.args.opts...)
-			if err := test.checkFunc(test.want, gotRes, err); err != nil {
+			if err := checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

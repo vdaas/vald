@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,22 +20,21 @@ podChaos:
     name: vald-pod-failure
     selector:
       labelSelectors:
-        app.kubernetes.io/name: vald
-        app.kubernetes.io/component: agent
+        name: vald
+        component: agent
       namespaces:
         - default
     duration: "10s"
-    cron: "@every 20s"
   kill:
     enabled: false
     name: vald-pod-kill
     selector:
       labelSelectors:
-        app.kubernetes.io/name: vald
-        app.kubernetes.io/component: agent
+        name: vald
+        component: agent
       namespaces:
         - default
-    cron: "@every 2m"
+    duration: "2m"
 
 networkChaos:
   partition:

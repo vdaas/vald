@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -143,8 +143,9 @@ func Test_backoff_addJitter(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			b := &backoff{
 				wg:                    test.fields.wg,
@@ -160,7 +161,7 @@ func Test_backoff_addJitter(t *testing.T) {
 			}
 
 			got := b.addJitter(test.args.dur)
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -205,15 +206,16 @@ func Test_backoff_Close(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			b := &backoff{
 				wg: test.fields.wg,
 			}
 
 			b.Close()
-			if err := test.checkFunc(test.want); err != nil {
+			if err := checkFunc(test.want); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -551,7 +553,7 @@ func Test_backoff_Do(t *testing.T) {
 			f := func(context.Context) (interface{}, bool, error) {
 				cnt++
 				if cnt > 1 {
-					time.Sleep(1000 * time.Microsecond)
+					time.Sleep(10 * time.Millisecond)
 				}
 				return str, true, err
 			}
@@ -570,7 +572,7 @@ func Test_backoff_Do(t *testing.T) {
 					durationLimit:         10,
 					maxDuration:           0,
 					maxRetryCount:         1,
-					backoffTimeLimit:      100 * time.Microsecond,
+					backoffTimeLimit:      50 * time.Microsecond,
 					errLog:                true,
 				},
 				want: want{
@@ -591,8 +593,9 @@ func Test_backoff_Do(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			b := &backoff{
 				wg:                    test.fields.wg,
@@ -608,7 +611,7 @@ func Test_backoff_Do(t *testing.T) {
 			}
 
 			gotRes, err := b.Do(test.args.ctx, test.args.f)
-			if err := test.checkFunc(test.want, gotRes, err); err != nil {
+			if err := checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

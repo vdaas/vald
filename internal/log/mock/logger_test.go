@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -84,8 +84,9 @@ func TestLogger_Debug(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			fields := test.fieldsFunc(tt)
 			l := &Logger{
@@ -93,7 +94,7 @@ func TestLogger_Debug(t *testing.T) {
 			}
 
 			l.Debug(test.args.vals...)
-			if err := test.checkFunc(test.want); err != nil {
+			if err := checkFunc(test.want); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -164,8 +165,9 @@ func TestLogger_Debugf(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			fields := test.fieldsFunc(tt)
 			l := &Logger{
@@ -173,7 +175,7 @@ func TestLogger_Debugf(t *testing.T) {
 			}
 
 			l.Debugf(test.args.format, test.args.vals...)
-			if err := test.checkFunc(test.want); err != nil {
+			if err := checkFunc(test.want); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -241,8 +243,9 @@ func TestLogger_Info(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			fields := test.fieldsFunc(tt)
 			l := &Logger{
@@ -250,7 +253,7 @@ func TestLogger_Info(t *testing.T) {
 			}
 
 			l.Info(test.args.vals...)
-			if err := test.checkFunc(test.want); err != nil {
+			if err := checkFunc(test.want); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -321,8 +324,9 @@ func TestLogger_Infof(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			fields := test.fieldsFunc(t)
 			l := &Logger{
@@ -330,7 +334,7 @@ func TestLogger_Infof(t *testing.T) {
 			}
 
 			l.Infof(test.args.format, test.args.vals...)
-			if err := test.checkFunc(test.want); err != nil {
+			if err := checkFunc(test.want); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -398,8 +402,9 @@ func TestLogger_Warn(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			fields := test.fieldsFunc(tt)
 			l := &Logger{
@@ -407,7 +412,7 @@ func TestLogger_Warn(t *testing.T) {
 			}
 
 			l.Warn(test.args.vals...)
-			if err := test.checkFunc(test.want); err != nil {
+			if err := checkFunc(test.want); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -478,8 +483,9 @@ func TestLogger_Warnf(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			fields := test.fieldsFunc(tt)
 			l := &Logger{
@@ -487,7 +493,7 @@ func TestLogger_Warnf(t *testing.T) {
 			}
 
 			l.Warnf(test.args.format, test.args.vals...)
-			if err := test.checkFunc(test.want); err != nil {
+			if err := checkFunc(test.want); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -555,8 +561,9 @@ func TestLogger_Error(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			fields := test.fieldsFunc(tt)
 			l := &Logger{
@@ -564,7 +571,7 @@ func TestLogger_Error(t *testing.T) {
 			}
 
 			l.Error(test.args.vals...)
-			if err := test.checkFunc(test.want); err != nil {
+			if err := checkFunc(test.want); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -635,8 +642,9 @@ func TestLogger_Errorf(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			fields := test.fieldsFunc(tt)
 			l := &Logger{
@@ -644,7 +652,7 @@ func TestLogger_Errorf(t *testing.T) {
 			}
 
 			l.Errorf(test.args.format, test.args.vals...)
-			if err := test.checkFunc(test.want); err != nil {
+			if err := checkFunc(test.want); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -712,8 +720,9 @@ func TestLogger_Fatal(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			fields := test.fieldsFunc(tt)
 			l := &Logger{
@@ -721,7 +730,7 @@ func TestLogger_Fatal(t *testing.T) {
 			}
 
 			l.Fatal(test.args.vals...)
-			if err := test.checkFunc(test.want); err != nil {
+			if err := checkFunc(test.want); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -792,8 +801,9 @@ func TestLogger_Fatalf(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			fields := test.fieldsFunc(tt)
 			l := &Logger{
@@ -801,7 +811,7 @@ func TestLogger_Fatalf(t *testing.T) {
 			}
 
 			l.Fatalf(test.args.format, test.args.vals...)
-			if err := test.checkFunc(test.want); err != nil {
+			if err := checkFunc(test.want); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -904,8 +914,9 @@ func TestLogger_Debugd(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			l := &Logger{
 				DebugFunc:  test.fields.DebugFunc,
@@ -921,7 +932,7 @@ func TestLogger_Debugd(t *testing.T) {
 			}
 
 			l.Debugd(test.args.msg, test.args.details...)
-			if err := test.checkFunc(test.want); err != nil {
+			if err := checkFunc(test.want); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1024,8 +1035,9 @@ func TestLogger_Infod(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			l := &Logger{
 				DebugFunc:  test.fields.DebugFunc,
@@ -1041,7 +1053,7 @@ func TestLogger_Infod(t *testing.T) {
 			}
 
 			l.Infod(test.args.msg, test.args.details...)
-			if err := test.checkFunc(test.want); err != nil {
+			if err := checkFunc(test.want); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1144,8 +1156,9 @@ func TestLogger_Warnd(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			l := &Logger{
 				DebugFunc:  test.fields.DebugFunc,
@@ -1161,7 +1174,7 @@ func TestLogger_Warnd(t *testing.T) {
 			}
 
 			l.Warnd(test.args.msg, test.args.details...)
-			if err := test.checkFunc(test.want); err != nil {
+			if err := checkFunc(test.want); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1264,8 +1277,9 @@ func TestLogger_Errord(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			l := &Logger{
 				DebugFunc:  test.fields.DebugFunc,
@@ -1281,7 +1295,7 @@ func TestLogger_Errord(t *testing.T) {
 			}
 
 			l.Errord(test.args.msg, test.args.details...)
-			if err := test.checkFunc(test.want); err != nil {
+			if err := checkFunc(test.want); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1384,8 +1398,9 @@ func TestLogger_Fatald(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			l := &Logger{
 				DebugFunc:  test.fields.DebugFunc,
@@ -1401,7 +1416,7 @@ func TestLogger_Fatald(t *testing.T) {
 			}
 
 			l.Fatald(test.args.msg, test.args.details...)
-			if err := test.checkFunc(test.want); err != nil {
+			if err := checkFunc(test.want); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1496,8 +1511,9 @@ func TestLogger_Close(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			l := &Logger{
 				DebugFunc:  test.fields.DebugFunc,
@@ -1513,7 +1529,7 @@ func TestLogger_Close(t *testing.T) {
 			}
 
 			err := l.Close()
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

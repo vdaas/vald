@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -139,7 +139,8 @@ func (c *client) FilterDistance(ctx context.Context, in *payload.Object_Distance
 	}()
 	_, err = c.c.RoundRobin(ctx, func(ctx context.Context,
 		conn *grpc.ClientConn,
-		copts ...grpc.CallOption) (interface{}, error) {
+		copts ...grpc.CallOption,
+	) (interface{}, error) {
 		res, err = egress.NewFilterClient(conn).FilterDistance(ctx, in, append(copts, opts...)...)
 		return nil, err
 	})
@@ -158,7 +159,8 @@ func (s *specificAddrClient) FilterDistance(ctx context.Context, in *payload.Obj
 	}()
 	_, err = s.c.Do(ctx, s.addr, func(ctx context.Context,
 		conn *grpc.ClientConn,
-		copts ...grpc.CallOption) (interface{}, error) {
+		copts ...grpc.CallOption,
+	) (interface{}, error) {
 		res, err = egress.NewFilterClient(conn).FilterDistance(ctx, in, append(copts, opts...)...)
 		if err != nil {
 			return nil, err
@@ -181,7 +183,8 @@ func (m *multipleAddrsClient) FilterDistance(ctx context.Context, in *payload.Ob
 	}()
 	err = m.c.OrderedRange(ctx, m.addrs, func(ctx context.Context, addr string,
 		conn *grpc.ClientConn,
-		copts ...grpc.CallOption) error {
+		copts ...grpc.CallOption,
+	) error {
 		res, err = egress.NewFilterClient(conn).FilterDistance(ctx, in, append(copts, opts...)...)
 		if err != nil {
 			return err
@@ -204,7 +207,8 @@ func (c *client) FilterVector(ctx context.Context, in *payload.Object_Vector, op
 	}()
 	_, err = c.c.RoundRobin(ctx, func(ctx context.Context,
 		conn *grpc.ClientConn,
-		copts ...grpc.CallOption) (interface{}, error) {
+		copts ...grpc.CallOption,
+	) (interface{}, error) {
 		res, err = egress.NewFilterClient(conn).FilterVector(ctx, in, append(copts, opts...)...)
 		return nil, err
 	})
@@ -223,7 +227,8 @@ func (s *specificAddrClient) FilterVector(ctx context.Context, in *payload.Objec
 	}()
 	_, err = s.c.Do(ctx, s.addr, func(ctx context.Context,
 		conn *grpc.ClientConn,
-		copts ...grpc.CallOption) (interface{}, error) {
+		copts ...grpc.CallOption,
+	) (interface{}, error) {
 		res, err = egress.NewFilterClient(conn).FilterVector(ctx, in, append(copts, opts...)...)
 		if err != nil {
 			return nil, err
@@ -246,7 +251,8 @@ func (m *multipleAddrsClient) FilterVector(ctx context.Context, in *payload.Obje
 	}()
 	err = m.c.OrderedRange(ctx, m.addrs, func(ctx context.Context, addr string,
 		conn *grpc.ClientConn,
-		copts ...grpc.CallOption) error {
+		copts ...grpc.CallOption,
+	) error {
 		res, err = egress.NewFilterClient(conn).FilterVector(ctx, in, append(copts, opts...)...)
 		if err != nil {
 			return err

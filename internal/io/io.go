@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -33,8 +33,9 @@ type (
 )
 
 var (
-	Pipe = io.Pipe
-	EOF  = io.EOF
+	Pipe      = io.Pipe
+	EOF       = io.EOF
+	NopCloser = io.NopCloser
 )
 
 type ctxReader struct {
@@ -146,9 +147,19 @@ func (w *ctxWriter) Close() error {
 	default:
 	}
 
-	if c, ok := w.w.(io.Closer); ok {
+	if c, ok := w.w.(Closer); ok {
 		return c.Close()
 	}
 
 	return nil
+}
+
+type eofReader struct{}
+
+func NewEOFReader() Reader {
+	return &eofReader{}
+}
+
+func (_ *eofReader) Read(_ []byte) (n int, err error) {
+	return 0, EOF
 }

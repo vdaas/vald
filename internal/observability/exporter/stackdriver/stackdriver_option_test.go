@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -120,7 +120,7 @@ func TestWithMonitoring(t *testing.T) {
 
 			   got := WithMonitoring(test.args.enabled)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -133,7 +133,7 @@ func TestWithMonitoring(t *testing.T) {
 			   got := WithMonitoring(test.args.enabled)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
+			   if err := checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -234,7 +234,7 @@ func TestWithTracing(t *testing.T) {
 
 			   got := WithTracing(test.args.enabled)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -247,7 +247,7 @@ func TestWithTracing(t *testing.T) {
 			   got := WithTracing(test.args.enabled)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
+			   if err := checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -348,7 +348,7 @@ func TestWithProjectID(t *testing.T) {
 
 			   got := WithProjectID(test.args.pid)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -361,7 +361,7 @@ func TestWithProjectID(t *testing.T) {
 			   got := WithProjectID(test.args.pid)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
+			   if err := checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -462,7 +462,7 @@ func TestWithLocation(t *testing.T) {
 
 			   got := WithLocation(test.args.loc)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -475,7 +475,7 @@ func TestWithLocation(t *testing.T) {
 			   got := WithLocation(test.args.loc)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
+			   if err := checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -576,7 +576,7 @@ func TestWithOnErrorFunc(t *testing.T) {
 
 			   got := WithOnErrorFunc(test.args.f)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -589,7 +589,7 @@ func TestWithOnErrorFunc(t *testing.T) {
 			   got := WithOnErrorFunc(test.args.f)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
+			   if err := checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -690,7 +690,7 @@ func TestWithMonitoringClientOptions(t *testing.T) {
 
 			   got := WithMonitoringClientOptions(test.args.copts...)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -703,7 +703,7 @@ func TestWithMonitoringClientOptions(t *testing.T) {
 			   got := WithMonitoringClientOptions(test.args.copts...)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
+			   if err := checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -804,7 +804,7 @@ func TestWithTraceClientOptions(t *testing.T) {
 
 			   got := WithTraceClientOptions(test.args.copts...)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -817,7 +817,7 @@ func TestWithTraceClientOptions(t *testing.T) {
 			   got := WithTraceClientOptions(test.args.copts...)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
+			   if err := checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -918,7 +918,7 @@ func TestWithBundleDelayThreshold(t *testing.T) {
 
 			   got := WithBundleDelayThreshold(test.args.dur)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -931,7 +931,7 @@ func TestWithBundleDelayThreshold(t *testing.T) {
 			   got := WithBundleDelayThreshold(test.args.dur)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
+			   if err := checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -1032,7 +1032,7 @@ func TestWithBundleCountThreshold(t *testing.T) {
 
 			   got := WithBundleCountThreshold(test.args.cnt)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -1045,7 +1045,7 @@ func TestWithBundleCountThreshold(t *testing.T) {
 			   got := WithBundleCountThreshold(test.args.cnt)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
+			   if err := checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -1146,7 +1146,7 @@ func TestWithTraceSpansBufferMaxBytes(t *testing.T) {
 
 			   got := WithTraceSpansBufferMaxBytes(test.args.bs)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -1159,7 +1159,7 @@ func TestWithTraceSpansBufferMaxBytes(t *testing.T) {
 			   got := WithTraceSpansBufferMaxBytes(test.args.bs)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
+			   if err := checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -1260,7 +1260,7 @@ func TestWithMonitoredResource(t *testing.T) {
 
 			   got := WithMonitoredResource(test.args.mr)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -1273,7 +1273,7 @@ func TestWithMonitoredResource(t *testing.T) {
 			   got := WithMonitoredResource(test.args.mr)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
+			   if err := checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -1374,7 +1374,7 @@ func TestWithMetricPrefix(t *testing.T) {
 
 			   got := WithMetricPrefix(test.args.prefix)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -1387,7 +1387,7 @@ func TestWithMetricPrefix(t *testing.T) {
 			   got := WithMetricPrefix(test.args.prefix)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
+			   if err := checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -1488,7 +1488,7 @@ func TestWithGetMetricDisplayName(t *testing.T) {
 
 			   got := WithGetMetricDisplayName(test.args.f)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -1501,7 +1501,7 @@ func TestWithGetMetricDisplayName(t *testing.T) {
 			   got := WithGetMetricDisplayName(test.args.f)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
+			   if err := checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -1602,7 +1602,7 @@ func TestWithGetMetricPrefix(t *testing.T) {
 
 			   got := WithGetMetricPrefix(test.args.f)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -1615,7 +1615,7 @@ func TestWithGetMetricPrefix(t *testing.T) {
 			   got := WithGetMetricPrefix(test.args.f)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
+			   if err := checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -1716,7 +1716,7 @@ func TestWithDefaultMonitoringLabels(t *testing.T) {
 
 			   got := WithDefaultMonitoringLabels(test.args.lbs)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -1729,7 +1729,7 @@ func TestWithDefaultMonitoringLabels(t *testing.T) {
 			   got := WithDefaultMonitoringLabels(test.args.lbs)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
+			   if err := checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -1830,7 +1830,7 @@ func TestWithSkipCMD(t *testing.T) {
 
 			   got := WithSkipCMD(test.args.skip)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -1843,7 +1843,7 @@ func TestWithSkipCMD(t *testing.T) {
 			   got := WithSkipCMD(test.args.skip)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
+			   if err := checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -1944,7 +1944,7 @@ func TestWithTimeout(t *testing.T) {
 
 			   got := WithTimeout(test.args.dur)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -1957,7 +1957,7 @@ func TestWithTimeout(t *testing.T) {
 			   got := WithTimeout(test.args.dur)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
+			   if err := checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -2058,7 +2058,7 @@ func TestWithReportingInterval(t *testing.T) {
 
 			   got := WithReportingInterval(test.args.dur)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -2071,7 +2071,7 @@ func TestWithReportingInterval(t *testing.T) {
 			   got := WithReportingInterval(test.args.dur)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
+			   if err := checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -2172,7 +2172,7 @@ func TestWithNumberOfWorkers(t *testing.T) {
 
 			   got := WithNumberOfWorkers(test.args.n)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -2185,7 +2185,7 @@ func TestWithNumberOfWorkers(t *testing.T) {
 			   got := WithNumberOfWorkers(test.args.n)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
+			   if err := checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/

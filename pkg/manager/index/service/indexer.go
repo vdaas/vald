@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -195,7 +195,8 @@ func (idx *index) execute(ctx context.Context, enableLowIndexSkip, immediateSavi
 	err = idx.client.GetClient().OrderedRangeConcurrent(ctx, addrs,
 		idx.concurrency,
 		func(ctx context.Context,
-			addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) (err error) {
+			addr string, conn *grpc.ClientConn, copts ...grpc.CallOption,
+		) (err error) {
 			select {
 			case <-ctx.Done():
 				return nil
@@ -272,7 +273,8 @@ func (idx *index) loadInfos(ctx context.Context) (err error) {
 	var infoMap indexInfos
 	err = idx.client.GetClient().RangeConcurrent(ctx, len(idx.client.GetAddrs(ctx)),
 		func(ctx context.Context,
-			addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) (err error) {
+			addr string, conn *grpc.ClientConn, copts ...grpc.CallOption,
+		) (err error) {
 			select {
 			case <-ctx.Done():
 				return nil

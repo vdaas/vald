@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,10 +23,8 @@ import (
 
 	"github.com/kpango/fuid"
 	"github.com/kpango/glg"
-
 	"github.com/vdaas/vald-client-go/v1/payload"
 	"github.com/vdaas/vald-client-go/v1/vald"
-
 	"gonum.org/v1/hdf5"
 	"google.golang.org/grpc"
 )
@@ -49,7 +47,7 @@ func init() {
 	Wait option specifies indexing wait time (in seconds). Default value is  `60`.
 	**/
 	flag.StringVar(&datasetPath, "path", "fashion-mnist-784-euclidean.hdf5", "dataset path")
-	flag.StringVar(&grpcServerAddr, "addr", "127.0.0.1:8081", "gRPC server address")
+	flag.StringVar(&grpcServerAddr, "addr", "localhost:8080", "gRPC server address")
 	flag.UintVar(&indexingWaitSeconds, "wait", 60, "indexing wait seconds")
 	flag.Parse()
 }
@@ -113,10 +111,10 @@ func main() {
 			Vector: vec,
 			// Conditions for hitting the search.
 			Config: &payload.Search_Config{
-				Num:     10,  // the number of search results
-				Radius:  -1,  // Radius is used to determine the space of search candidate radius for neighborhood vectors. -1 means infinite circle.
-				Epsilon: 0.1, // Epsilon is used to determines how much to expand from search candidate radius.
-
+				Num:     10,        // the number of search results
+				Radius:  -1,        // Radius is used to determine the space of search candidate radius for neighborhood vectors. -1 means infinite circle.
+				Epsilon: 0.1,       // Epsilon is used to determines how much to expand from search candidate radius.
+				Timeout: 100000000, // Timeout is used for search time deadline. The unit is nano-seconds.
 			},
 		})
 		if err != nil {

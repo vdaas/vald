@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -105,12 +105,13 @@ func TestParseBytes(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			gotBytes, err := ParseBytes(test.args.bs)
-			if err := test.checkFunc(test.want, gotBytes, err); err != nil {
+			if err := checkFunc(test.want, gotBytes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

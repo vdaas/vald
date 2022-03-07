@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -92,14 +92,15 @@ func TestWithCache(t *testing.T) {
 				defer test.afterFunc(test.args)
 			}
 
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := WithCache(test.args.c)
 			obj := new(T)
 			got(obj)
-			if err := test.checkFunc(test.want, obj); err != nil {
+			if err := checkFunc(test.want, obj); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -173,13 +174,14 @@ func TestWithDNSRefreshDuration(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			got := WithDNSRefreshDuration(test.args.dur)
 			obj := new(T)
 			got(obj)
-			if err := test.checkFunc(test.want, obj); err != nil {
+			if err := checkFunc(test.want, obj); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -255,13 +257,14 @@ func TestWithDNSCacheExpiration(t *testing.T) {
 				defer test.afterFunc(test.args)
 			}
 
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			got := WithDNSCacheExpiration(test.args.dur)
 			obj := new(T)
 			got(obj)
-			if err := test.checkFunc(test.want, obj); err != nil {
+			if err := checkFunc(test.want, obj); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -332,13 +335,14 @@ func TestWithDialerTimeout(t *testing.T) {
 				defer test.afterFunc(test.args)
 			}
 
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			got := WithDialerTimeout(test.args.dur)
 			obj := new(T)
 			got(obj)
-			if err := test.checkFunc(test.want, obj); err != nil {
+			if err := checkFunc(test.want, obj); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -409,14 +413,15 @@ func TestWithDialerKeepalive(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := WithDialerKeepalive(test.args.dur)
 			obj := new(T)
 			got(obj)
-			if err := test.checkFunc(test.want, obj); err != nil {
+			if err := checkFunc(test.want, obj); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -478,14 +483,15 @@ func TestWithTLS(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := WithTLS(test.args.cfg)
 			obj := new(T)
 			got(obj)
-			if err := test.checkFunc(test.want, obj); err != nil {
+			if err := checkFunc(test.want, obj); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -531,14 +537,15 @@ func TestWithEnableDNSCache(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := WithEnableDNSCache()
 			obj := new(T)
 			got(obj)
-			if err := test.checkFunc(test.want, obj); err != nil {
+			if err := checkFunc(test.want, obj); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -584,14 +591,15 @@ func TestWithDisableDNSCache(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := WithDisableDNSCache()
 			obj := new(T)
 			got(obj)
-			if err := test.checkFunc(test.want, obj); err != nil {
+			if err := checkFunc(test.want, obj); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -637,14 +645,15 @@ func TestWithEnableDialerDualStack(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := WithEnableDialerDualStack()
 			obj := new(T)
 			got(obj)
-			if err := test.checkFunc(test.want, obj); err != nil {
+			if err := checkFunc(test.want, obj); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -690,14 +699,15 @@ func TestWithDisableDialerDualStack(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := WithDisableDialerDualStack()
 			obj := new(T)
 			got(obj)
-			if err := test.checkFunc(test.want, obj); err != nil {
+			if err := checkFunc(test.want, obj); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -800,7 +810,7 @@ func TestWithDialerFallbackDelay(t *testing.T) {
 
 			   got := WithDialerFallbackDelay(test.args.dur)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -813,7 +823,7 @@ func TestWithDialerFallbackDelay(t *testing.T) {
 			   got := WithDialerFallbackDelay(test.args.dur)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
+			   if err := checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -917,7 +927,7 @@ func TestWithSocketFlag(t *testing.T) {
 
 			   got := WithSocketFlag(test.args.flg)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -930,7 +940,7 @@ func TestWithSocketFlag(t *testing.T) {
 			   got := WithSocketFlag(test.args.flg)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
+			   if err := checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/

@@ -47,7 +47,7 @@ Go to [Get Started](./docs/tutorial/get-started.md) page to try out Vald :)
     - Horizontal scalable on memory and CPU for your demand.
 
 - Auto Backup for Index data
-    - Vald has a feature to store the backup of the index data using MySQL or Cassandra which enables disaster recovery.
+    - Vald supports to backup Vald Agent index data using Object Storage or Persistent Volume.
 
 - Distributed Indexing
     - Vald distribute vector index to multiple agents, each agent stores different index.
@@ -206,7 +206,7 @@ Please read the [contribution guide](https://github.com/vdaas/vald/blob/master/C
 
 ## Contributors
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-10-orange.svg?style=flat-square)](#contributors)
+[![All Contributors](https://img.shields.io/badge/all_contributors-12-orange.svg?style=flat-square)](#contributors)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
@@ -227,6 +227,8 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
     <td align="center"><a href="https://github.com/taisuou"><img src="https://avatars0.githubusercontent.com/u/21119375?v=4?s=100" width="100px;" alt=""/><br /><sub><b>taisho</b></sub></a><br /><a href="#design-taisuou" title="Design">🎨</a> <a href="https://github.com/vdaas/vald/commits?author=taisuou" title="Documentation">📖</a> <a href="#example-taisuou" title="Examples">💡</a></td>
     <td align="center"><a href="https://github.com/pgrimaud"><img src="https://avatars1.githubusercontent.com/u/1866496?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Pierre Grimaud</b></sub></a><br /><a href="https://github.com/vdaas/vald/commits?author=pgrimaud" title="Documentation">📖</a></td>
     <td align="center"><a href="http://omerkatz.com"><img src="https://avatars.githubusercontent.com/u/48936?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Omer Katz</b></sub></a><br /><a href="https://github.com/vdaas/vald/commits?author=thedrow" title="Documentation">📖</a> <a href="#tutorial-thedrow" title="Tutorials">✅</a></td>
+    <td align="center"><a href="https://github.com/zchee"><img src="https://avatars.githubusercontent.com/u/6366270?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Koichi Shiraishi</b></sub></a><br /><a href="#a11y-zchee" title="Accessibility">️️️️♿️</a></td>
+    <td align="center"><a href="https://github.com/liusy182"><img src="https://avatars.githubusercontent.com/u/3293332?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Siyuan Liu</b></sub></a><br /><a href="#a11y-liusy182" title="Accessibility">️️️️♿️</a> <a href="#example-liusy182" title="Examples">💡</a></td>
   </tr>
 </table>
 

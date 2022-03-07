@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,6 +21,35 @@ golangci-lint/install: $(BINDIR)/golangci-lint
 $(BINDIR)/golangci-lint:
 	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh \
 		| sh -s -- -b $(BINDIR) $(GOLANGCILINT_VERSION)
+
+.PHONY: goimports/install
+goimports/install: $(GOPATH)/bin/goimports
+
+$(GOPATH)/bin/goimports:
+	go install golang.org/x/tools/cmd/goimports@latest
+
+.PHONY: strictgoimports/install
+strictgoimports/install: $(GOPATH)/bin/strictgoimports
+
+$(GOPATH)/bin/strictgoimports:
+	go install github.com/momotaro98/strictgoimports/cmd/strictgoimports@latest
+
+.PHONY: gofumpt/install
+gofumpt/install: $(GOPATH)/bin/gofumpt
+
+$(GOPATH)/bin/gofumpt:
+	go install mvdan.cc/gofumpt@latest
+
+.PHONY: golines/install
+golines/install: $(GOPATH)/bin/golines
+
+$(GOPATH)/bin/golines:
+	go install github.com/segmentio/golines@latest
+
+.PHONY: prettier/install
+prettier/install: $(BINDIR)/prettier
+$(BINDIR)/prettier:
+	type prettier || npm install -g prettier
 
 .PHONY: reviewdog/install
 ## install reviewdog
@@ -44,16 +73,16 @@ $(BINDIR)/kubectl:
 endif
 
 .PHONY: protobuf/install
-protobuf/install: /usr/local/bin/protoc
+protobuf/install: $(BINDIR)/protoc
 
 ifeq ($(UNAME),Darwin)
-/usr/local/bin/protoc:
+$(BINDIR)/protoc:
 	curl -L "https://github.com/protocolbuffers/protobuf/releases/download/v$(PROTOBUF_VERSION)/protoc-$(PROTOBUF_VERSION)-osx-x86_64.zip" -o /tmp/protoc.zip
 	sudo unzip -o /tmp/protoc.zip -d /usr/local bin/protoc
 	sudo unzip -o /tmp/protoc.zip -d /usr/local 'include/*'
 	rm -f /tmp/protoc.zip
 else
-/usr/local/bin/protoc:
+$(BINDIR)/protoc:
 	curl -L "https://github.com/protocolbuffers/protobuf/releases/download/v$(PROTOBUF_VERSION)/protoc-$(PROTOBUF_VERSION)-linux-x86_64.zip" -o /tmp/protoc.zip
 	unzip -o /tmp/protoc.zip -d /usr/local bin/protoc
 	unzip -o /tmp/protoc.zip -d /usr/local 'include/*'

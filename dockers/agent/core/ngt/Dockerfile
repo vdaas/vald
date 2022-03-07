@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,14 +17,11 @@
 ARG GO_VERSION=latest
 ARG DISTROLESS_IMAGE=gcr.io/distroless/static
 ARG DISTROLESS_IMAGE_TAG=nonroot
-ARG UPX_OPTIONS=-9
 ARG MAINTAINER="vdaas.org vald team <vald@vdaas.org>"
 
 FROM golang:${GO_VERSION} AS golang
 
 FROM ubuntu:hirsute AS builder
-
-ARG UPX_OPTIONS
 
 ENV GO111MODULE on
 ENV DEBIAN_FRONTEND noninteractive
@@ -90,7 +87,7 @@ RUN make ngt/install
 COPY .git .
 
 RUN make REPO=${ORG} NAME=${REPO} cmd/${PKG}/${APP_NAME} \
-    && upx ${UPX_OPTIONS} -o "/usr/bin/${APP_NAME}" "cmd/${PKG}/${APP_NAME}"
+    && mv "cmd/${PKG}/${APP_NAME}" "/usr/bin/${APP_NAME}"
 
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/cmd/${PKG}
 RUN cp sample.yaml /tmp/config.yaml

@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -94,12 +94,13 @@ func TestNew(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			gotC := New(test.args.opts...)
-			if err := test.checkFunc(test.want, gotC); err != nil {
+			if err := checkFunc(test.want, gotC); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -232,8 +233,9 @@ func Test_gRPCClient_StartConnectionMonitor(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			g := &gRPCClient{
 				addrs:               test.fields.addrs,
@@ -257,7 +259,7 @@ func Test_gRPCClient_StartConnectionMonitor(t *testing.T) {
 			}
 
 			got, err := g.StartConnectionMonitor(test.args.ctx)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -389,8 +391,9 @@ func Test_gRPCClient_Range(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			g := &gRPCClient{
 				addrs:               test.fields.addrs,
@@ -414,7 +417,7 @@ func Test_gRPCClient_Range(t *testing.T) {
 			}
 
 			err := g.Range(test.args.ctx, test.args.f)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -549,8 +552,9 @@ func Test_gRPCClient_RangeConcurrent(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			g := &gRPCClient{
 				addrs:               test.fields.addrs,
@@ -574,7 +578,7 @@ func Test_gRPCClient_RangeConcurrent(t *testing.T) {
 			}
 
 			err := g.RangeConcurrent(test.args.ctx, test.args.concurrency, test.args.f)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -709,8 +713,9 @@ func Test_gRPCClient_OrderedRange(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			g := &gRPCClient{
 				addrs:               test.fields.addrs,
@@ -734,7 +739,7 @@ func Test_gRPCClient_OrderedRange(t *testing.T) {
 			}
 
 			err := g.OrderedRange(test.args.ctx, test.args.orders, test.args.f)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -872,8 +877,9 @@ func Test_gRPCClient_OrderedRangeConcurrent(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			g := &gRPCClient{
 				addrs:               test.fields.addrs,
@@ -897,7 +903,7 @@ func Test_gRPCClient_OrderedRangeConcurrent(t *testing.T) {
 			}
 
 			err := g.OrderedRangeConcurrent(test.args.ctx, test.args.orders, test.args.concurrency, test.args.f)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1033,8 +1039,9 @@ func Test_gRPCClient_RoundRobin(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			g := &gRPCClient{
 				addrs:               test.fields.addrs,
@@ -1058,7 +1065,7 @@ func Test_gRPCClient_RoundRobin(t *testing.T) {
 			}
 
 			gotData, err := g.RoundRobin(test.args.ctx, test.args.f)
-			if err := test.checkFunc(test.want, gotData, err); err != nil {
+			if err := checkFunc(test.want, gotData, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1197,8 +1204,9 @@ func Test_gRPCClient_Do(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			g := &gRPCClient{
 				addrs:               test.fields.addrs,
@@ -1222,7 +1230,7 @@ func Test_gRPCClient_Do(t *testing.T) {
 			}
 
 			gotData, err := g.Do(test.args.ctx, test.args.addr, test.args.f)
-			if err := test.checkFunc(test.want, gotData, err); err != nil {
+			if err := checkFunc(test.want, gotData, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1367,8 +1375,9 @@ func Test_gRPCClient_do(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			g := &gRPCClient{
 				addrs:               test.fields.addrs,
@@ -1392,7 +1401,7 @@ func Test_gRPCClient_do(t *testing.T) {
 			}
 
 			gotData, err := g.do(test.args.ctx, test.args.p, test.args.addr, test.args.enableBackoff, test.args.f)
-			if err := test.checkFunc(test.want, gotData, err); err != nil {
+			if err := checkFunc(test.want, gotData, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1511,8 +1520,9 @@ func Test_gRPCClient_GetDialOption(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			g := &gRPCClient{
 				addrs:               test.fields.addrs,
@@ -1536,7 +1546,7 @@ func Test_gRPCClient_GetDialOption(t *testing.T) {
 			}
 
 			got := g.GetDialOption()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1655,8 +1665,9 @@ func Test_gRPCClient_GetCallOption(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			g := &gRPCClient{
 				addrs:               test.fields.addrs,
@@ -1680,7 +1691,7 @@ func Test_gRPCClient_GetCallOption(t *testing.T) {
 			}
 
 			got := g.GetCallOption()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1819,8 +1830,9 @@ func Test_gRPCClient_Connect(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			g := &gRPCClient{
 				addrs:               test.fields.addrs,
@@ -1844,7 +1856,7 @@ func Test_gRPCClient_Connect(t *testing.T) {
 			}
 
 			gotConn, err := g.Connect(test.args.ctx, test.args.addr, test.args.dopts...)
-			if err := test.checkFunc(test.want, gotConn, err); err != nil {
+			if err := checkFunc(test.want, gotConn, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1976,8 +1988,9 @@ func Test_gRPCClient_IsConnected(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			g := &gRPCClient{
 				addrs:               test.fields.addrs,
@@ -2001,7 +2014,7 @@ func Test_gRPCClient_IsConnected(t *testing.T) {
 			}
 
 			got := g.IsConnected(test.args.ctx, test.args.addr)
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -2133,8 +2146,9 @@ func Test_gRPCClient_Disconnect(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			g := &gRPCClient{
 				addrs:               test.fields.addrs,
@@ -2158,7 +2172,7 @@ func Test_gRPCClient_Disconnect(t *testing.T) {
 			}
 
 			err := g.Disconnect(test.args.ctx, test.args.addr)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -2277,8 +2291,9 @@ func Test_gRPCClient_ConnectedAddrs(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			g := &gRPCClient{
 				addrs:               test.fields.addrs,
@@ -2302,7 +2317,7 @@ func Test_gRPCClient_ConnectedAddrs(t *testing.T) {
 			}
 
 			got := g.ConnectedAddrs()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -2431,8 +2446,9 @@ func Test_gRPCClient_Close(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			g := &gRPCClient{
 				addrs:               test.fields.addrs,
@@ -2456,7 +2472,7 @@ func Test_gRPCClient_Close(t *testing.T) {
 			}
 
 			err := g.Close(test.args.ctx)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

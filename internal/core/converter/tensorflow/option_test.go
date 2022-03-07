@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -82,13 +82,14 @@ func TestWithSessionOptions(t *testing.T) {
 				defer test.afterFunc(test.args)
 			}
 
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			got := WithSessionOptions(test.args.opts)
 			obj := new(T)
 			got(obj)
-			if err := test.checkFunc(test.want, obj); err != nil {
+			if err := checkFunc(test.want, obj); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -151,13 +152,14 @@ func TestWithSessionTarget(t *testing.T) {
 				defer test.afterFunc(test.args)
 			}
 
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			got := WithSessionTarget(test.args.tgt)
 			obj := new(T)
 			got(obj)
-			if err := test.checkFunc(test.want, obj); err != nil {
+			if err := checkFunc(test.want, obj); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -220,13 +222,14 @@ func TestWithSessionConfig(t *testing.T) {
 				defer test.afterFunc(test.args)
 			}
 
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			got := WithSessionConfig(test.args.cfg)
 			obj := new(T)
 			got(obj)
-			if err := test.checkFunc(test.want, obj); err != nil {
+			if err := checkFunc(test.want, obj); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -305,15 +308,16 @@ func TestWithOperations(t *testing.T) {
 				defer test.afterFunc(test.args)
 			}
 
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			got := WithOperations(test.args.opes...)
 			obj := &T{
 				operations: test.fields.opes,
 			}
 			got(obj)
-			if err := test.checkFunc(test.want, obj); err != nil {
+			if err := checkFunc(test.want, obj); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -374,13 +378,14 @@ func TestWithExportPath(t *testing.T) {
 				defer test.afterFunc(test.args)
 			}
 
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			got := WithExportPath(test.args.path)
 			obj := new(T)
 			got(obj)
-			if err := test.checkFunc(test.want, obj); err != nil {
+			if err := checkFunc(test.want, obj); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -470,15 +475,16 @@ func TestWithTags(t *testing.T) {
 				defer test.afterFunc(test.args)
 			}
 
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			got := WithTags(test.args.tags...)
 			obj := &T{
 				tags: test.fields.tags,
 			}
 			got(obj)
-			if err := test.checkFunc(test.want, obj); err != nil {
+			if err := checkFunc(test.want, obj); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -555,13 +561,14 @@ func TestWithLoadFunc(t *testing.T) {
 				defer test.afterFunc(test.args)
 			}
 
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			got := withLoadFunc(test.args.loadFunc)
 			obj := new(T)
 			got(obj)
-			if err := test.checkFunc(test.want, obj); err != nil {
+			if err := checkFunc(test.want, obj); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -623,13 +630,14 @@ func TestWithFeed(t *testing.T) {
 				defer test.afterFunc(test.args)
 			}
 
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			got := WithFeed(test.args.operationName, test.args.outputIndex)
 			obj := new(T)
 			got(obj)
-			if err := test.checkFunc(test.want, obj); err != nil {
+			if err := checkFunc(test.want, obj); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -705,13 +713,14 @@ func TestWithFeeds(t *testing.T) {
 				defer test.afterFunc(test.args)
 			}
 
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			got := WithFeeds(test.args.feeds)
 			obj := new(T)
 			got(obj)
-			if err := test.checkFunc(test.want, obj); err != nil {
+			if err := checkFunc(test.want, obj); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -773,13 +782,14 @@ func TestWithFetch(t *testing.T) {
 				defer test.afterFunc(test.args)
 			}
 
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			got := WithFetch(test.args.operationName, test.args.outputIndex)
 			obj := new(T)
 			got(obj)
-			if err := test.checkFunc(test.want, obj); err != nil {
+			if err := checkFunc(test.want, obj); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -848,13 +858,14 @@ func TestWithFetches(t *testing.T) {
 				defer test.afterFunc(test.args)
 			}
 
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			got := WithFetches(test.args.fetches)
 			obj := new(T)
 			got(obj)
-			if err := test.checkFunc(test.want, obj); err != nil {
+			if err := checkFunc(test.want, obj); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -944,15 +955,16 @@ func TestWithWarmupInputs(t *testing.T) {
 				defer test.afterFunc(test.args)
 			}
 
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			got := WithWarmupInputs(test.args.warmupInputs...)
 			obj := &T{
 				warmupInputs: test.fields.warmupInputs,
 			}
 			got(obj)
-			if err := test.checkFunc(test.want, obj); err != nil {
+			if err := checkFunc(test.want, obj); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1007,13 +1019,14 @@ func TestWithNdim(t *testing.T) {
 				defer test.afterFunc(test.args)
 			}
 
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			got := WithNdim(test.args.ndim)
 			obj := new(T)
 			got(obj)
-			if err := test.checkFunc(test.want, obj); err != nil {
+			if err := checkFunc(test.want, obj); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1113,7 +1126,7 @@ func Test_withLoadFunc(t *testing.T) {
 
 			   got := withLoadFunc(test.args.loadFunc)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -1126,7 +1139,7 @@ func Test_withLoadFunc(t *testing.T) {
 			   got := withLoadFunc(test.args.loadFunc)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
+			   if err := checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/

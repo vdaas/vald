@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -21,8 +21,10 @@ import (
 	"go.opencensus.io/plugin/ocgrpc"
 )
 
+// ClientHandler is a type alias of ocgrpc.ClientHandler to record OpenCensus stats and traces.
 type ClientHandler = ocgrpc.ClientHandler
 
+// NewClientHandler returns the client handler of OpenCensus stats and traces.
 func NewClientHandler(opts ...ClientOption) *ClientHandler {
 	handler := new(ClientHandler)
 

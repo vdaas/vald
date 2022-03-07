@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -92,12 +92,13 @@ func TestNew(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got, err := New(test.args.opts...)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -212,8 +213,9 @@ func Test_vqueue_PushInsert(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			v := &vqueue{
 				uii:      test.fields.uii,
@@ -228,7 +230,7 @@ func Test_vqueue_PushInsert(t *testing.T) {
 			}
 
 			err := v.PushInsert(test.args.uuid, test.args.vector, test.args.date)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -340,8 +342,9 @@ func Test_vqueue_PushDelete(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			v := &vqueue{
 				uii:      test.fields.uii,
@@ -356,7 +359,7 @@ func Test_vqueue_PushDelete(t *testing.T) {
 			}
 
 			err := v.PushDelete(test.args.uuid, test.args.date)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -464,8 +467,9 @@ func Test_vqueue_RangePopInsert(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			v := &vqueue{
 				uii:      test.fields.uii,
@@ -480,7 +484,7 @@ func Test_vqueue_RangePopInsert(t *testing.T) {
 			}
 
 			v.RangePopInsert(test.args.ctx, test.args.now, test.args.f)
-			if err := test.checkFunc(test.want); err != nil {
+			if err := checkFunc(test.want); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -588,8 +592,9 @@ func Test_vqueue_RangePopDelete(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			v := &vqueue{
 				uii:      test.fields.uii,
@@ -604,7 +609,7 @@ func Test_vqueue_RangePopDelete(t *testing.T) {
 			}
 
 			v.RangePopDelete(test.args.ctx, test.args.now, test.args.f)
-			if err := test.checkFunc(test.want); err != nil {
+			if err := checkFunc(test.want); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -965,8 +970,9 @@ func Test_vqueue_GetVector(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			v := &vqueue{
 				uii:      test.fields.uii,
@@ -981,7 +987,7 @@ func Test_vqueue_GetVector(t *testing.T) {
 			}
 
 			got, got1 := v.GetVector(test.args.uuid)
-			if err := test.checkFunc(test.want, got, got1); err != nil {
+			if err := checkFunc(test.want, got, got1); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1330,8 +1336,9 @@ func Test_vqueue_IVExists(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			v := &vqueue{
 				uii:      test.fields.uii,
@@ -1346,7 +1353,7 @@ func Test_vqueue_IVExists(t *testing.T) {
 			}
 
 			got := v.IVExists(test.args.uuid)
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1693,8 +1700,9 @@ func Test_vqueue_DVExists(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			v := &vqueue{
 				uii:      test.fields.uii,
@@ -1709,7 +1717,7 @@ func Test_vqueue_DVExists(t *testing.T) {
 			}
 
 			got := v.DVExists(test.args.uuid)
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1813,8 +1821,9 @@ func Test_vqueue_addInsert(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			v := &vqueue{
 				uii:      test.fields.uii,
@@ -1829,7 +1838,7 @@ func Test_vqueue_addInsert(t *testing.T) {
 			}
 
 			v.addInsert(test.args.i)
-			if err := test.checkFunc(test.want); err != nil {
+			if err := checkFunc(test.want); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1933,8 +1942,9 @@ func Test_vqueue_addDelete(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			v := &vqueue{
 				uii:      test.fields.uii,
@@ -1949,7 +1959,7 @@ func Test_vqueue_addDelete(t *testing.T) {
 			}
 
 			v.addDelete(test.args.d)
-			if err := test.checkFunc(test.want); err != nil {
+			if err := checkFunc(test.want); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -2095,8 +2105,9 @@ func Test_vqueue_IVQLen(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			v := &vqueue{
 				uii:      test.fields.uii,
@@ -2111,7 +2122,7 @@ func Test_vqueue_IVQLen(t *testing.T) {
 			}
 
 			gotL := v.IVQLen()
-			if err := test.checkFunc(test.want, gotL); err != nil {
+			if err := checkFunc(test.want, gotL); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -2257,8 +2268,9 @@ func Test_vqueue_DVQLen(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			v := &vqueue{
 				uii:      test.fields.uii,
@@ -2273,7 +2285,7 @@ func Test_vqueue_DVQLen(t *testing.T) {
 			}
 
 			gotL := v.DVQLen()
-			if err := test.checkFunc(test.want, gotL); err != nil {
+			if err := checkFunc(test.want, gotL); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

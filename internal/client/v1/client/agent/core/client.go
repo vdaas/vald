@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -109,7 +109,8 @@ func (c *agentClient) CreateIndex(
 		}
 	}()
 	_, err := c.c.RoundRobin(ctx, func(ctx context.Context,
-		conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
+		conn *grpc.ClientConn, copts ...grpc.CallOption,
+	) (interface{}, error) {
 		return agent.NewAgentClient(conn).CreateIndex(ctx, req, copts...)
 	})
 	return nil, err
@@ -127,7 +128,8 @@ func (c *agentClient) SaveIndex(
 		}
 	}()
 	_, err := c.c.RoundRobin(ctx, func(ctx context.Context,
-		conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
+		conn *grpc.ClientConn, copts ...grpc.CallOption,
+	) (interface{}, error) {
 		return agent.NewAgentClient(conn).SaveIndex(ctx, new(client.Empty), copts...)
 	})
 	return nil, err
@@ -145,7 +147,8 @@ func (c *agentClient) CreateAndSaveIndex(
 		}
 	}()
 	_, err := c.c.RoundRobin(ctx, func(ctx context.Context,
-		conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
+		conn *grpc.ClientConn, copts ...grpc.CallOption,
+	) (interface{}, error) {
 		return agent.NewAgentClient(conn).CreateAndSaveIndex(ctx, req, copts...)
 	})
 	return nil, err
@@ -163,7 +166,8 @@ func (c *agentClient) IndexInfo(
 		}
 	}()
 	_, err = c.c.RoundRobin(ctx, func(ctx context.Context,
-		conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
+		conn *grpc.ClientConn, copts ...grpc.CallOption,
+	) (interface{}, error) {
 		res, err := agent.NewAgentClient(conn).IndexInfo(ctx, new(client.Empty), copts...)
 		if err != nil {
 			return nil, err

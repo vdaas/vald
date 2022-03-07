@@ -20,7 +20,7 @@ Vald is based on the following techologies.
 
 - [Helm](https://helm.sh/)
 
-    Helm helps you to deploy and configure Vald. 
+    Helm helps you to deploy and configure Vald.
     Vald contains multiple components and configurations.
     Helm helps us to manage those manifest and provides a better and easy way to deploy and configure Vald.
 

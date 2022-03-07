@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,9 +23,11 @@ spec:
   action: pod-failure
   mode: one
   value: ''
-  duration: {{ .Values.podChaos.failure.duration }}
   selector:
-    {{- toYaml .Values.podChaos.failure.selector | nindent 4 }}
-  scheduler:
-    cron: "{{ .Values.podChaos.failure.cron }}"
+    labelSelectors:
+      app.kubernetes.io/name: "{{ .Values.podChaos.failure.selector.labelSelectors.name }}"
+      app.kubernetes.io/component: "{{ .Values.podChaos.failure.selector.labelSelectors.component }}"
+    namespaces:
+      {{- toYaml .Values.podChaos.failure.selector.namespaces | nindent 6 }}
+  duration: "{{ .Values.podChaos.failure.duration }}"
 {{- end }}

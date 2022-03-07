@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ package config
 
 import (
 	"io/fs"
-	"os"
 	"reflect"
 	"syscall"
 	"testing"
@@ -192,28 +191,16 @@ func TestMySQL_Bind(t *testing.T) {
 				},
 			},
 			beforeFunc: func() {
-				_ = os.Setenv("MYSQL_BIND_DB", "db")
-				_ = os.Setenv("MYSQL_BIND_HOST", "host")
-				_ = os.Setenv("MYSQL_BIND_USER", "user")
-				_ = os.Setenv("MYSQL_BIND_PASS", "pass")
-				_ = os.Setenv("MYSQL_BIND_NAME", "name")
-				_ = os.Setenv("MYSQL_BIND_CHARSET", "charset")
-				_ = os.Setenv("MYSQL_BIND_TIMEZONE", "timezone")
-				_ = os.Setenv("MYSQL_BIND_INITIAL_PING_TIME_LIMIT", "initialPingTimeLimit")
-				_ = os.Setenv("MYSQL_BIND_INITIAL_PING_DURATION", "initialPingDuration")
-				_ = os.Setenv("MYSQL_BIND_CONN_MAX_LIFE_TIME", "connMaxLifeTime")
-			},
-			afterFunc: func() {
-				_ = os.Unsetenv("MYSQL_BIND_DB")
-				_ = os.Unsetenv("MYSQL_BIND_HOST")
-				_ = os.Unsetenv("MYSQL_BIND_USER")
-				_ = os.Unsetenv("MYSQL_BIND_PASS")
-				_ = os.Unsetenv("MYSQL_BIND_NAME")
-				_ = os.Unsetenv("MYSQL_BIND_CHARSET")
-				_ = os.Unsetenv("MYSQL_BIND_TIMEZONE")
-				_ = os.Unsetenv("MYSQL_BIND_INITIAL_PING_TIME_LIMIT")
-				_ = os.Unsetenv("MYSQL_BIND_INITIAL_PING_DURATION")
-				_ = os.Unsetenv("MYSQL_BIND_CONN_MAX_LIFE_TIME")
+				t.Setenv("MYSQL_BIND_DB", "db")
+				t.Setenv("MYSQL_BIND_HOST", "host")
+				t.Setenv("MYSQL_BIND_USER", "user")
+				t.Setenv("MYSQL_BIND_PASS", "pass")
+				t.Setenv("MYSQL_BIND_NAME", "name")
+				t.Setenv("MYSQL_BIND_CHARSET", "charset")
+				t.Setenv("MYSQL_BIND_TIMEZONE", "timezone")
+				t.Setenv("MYSQL_BIND_INITIAL_PING_TIME_LIMIT", "initialPingTimeLimit")
+				t.Setenv("MYSQL_BIND_INITIAL_PING_DURATION", "initialPingDuration")
+				t.Setenv("MYSQL_BIND_CONN_MAX_LIFE_TIME", "connMaxLifeTime")
 			},
 		},
 	}
@@ -226,8 +213,9 @@ func TestMySQL_Bind(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			m := &MySQL{
 				DB:                   test.fields.DB,
@@ -248,7 +236,7 @@ func TestMySQL_Bind(t *testing.T) {
 			}
 
 			got := m.Bind()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -501,8 +489,9 @@ func TestMySQL_Opts(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			m := &MySQL{
 				DB:                   test.fields.DB,
@@ -524,7 +513,7 @@ func TestMySQL_Opts(t *testing.T) {
 			}
 
 			got, err := m.Opts()
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

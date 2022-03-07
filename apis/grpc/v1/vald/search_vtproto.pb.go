@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -54,6 +54,18 @@ type SearchClient interface {
 	MultiSearch(ctx context.Context, in *payload.Search_MultiRequest, opts ...grpc.CallOption) (*payload.Search_Responses, error)
 	// A method to search indexed vectors by multiple IDs in a single request.
 	MultiSearchByID(ctx context.Context, in *payload.Search_MultiIDRequest, opts ...grpc.CallOption) (*payload.Search_Responses, error)
+	// A method to linear search indexed vectors by a raw vector.
+	LinearSearch(ctx context.Context, in *payload.Search_Request, opts ...grpc.CallOption) (*payload.Search_Response, error)
+	// A method to linear search indexed vectors by ID.
+	LinearSearchByID(ctx context.Context, in *payload.Search_IDRequest, opts ...grpc.CallOption) (*payload.Search_Response, error)
+	// A method to linear search indexed vectors by multiple vectors.
+	StreamLinearSearch(ctx context.Context, opts ...grpc.CallOption) (Search_StreamLinearSearchClient, error)
+	// A method to linear search indexed vectors by multiple IDs.
+	StreamLinearSearchByID(ctx context.Context, opts ...grpc.CallOption) (Search_StreamLinearSearchByIDClient, error)
+	// A method to linear search indexed vectors by multiple vectors in a single request.
+	MultiLinearSearch(ctx context.Context, in *payload.Search_MultiRequest, opts ...grpc.CallOption) (*payload.Search_Responses, error)
+	// A method to linear search indexed vectors by multiple IDs in a single request.
+	MultiLinearSearchByID(ctx context.Context, in *payload.Search_MultiIDRequest, opts ...grpc.CallOption) (*payload.Search_Responses, error)
 }
 
 type searchClient struct {
@@ -162,6 +174,104 @@ func (c *searchClient) MultiSearchByID(ctx context.Context, in *payload.Search_M
 	return out, nil
 }
 
+func (c *searchClient) LinearSearch(ctx context.Context, in *payload.Search_Request, opts ...grpc.CallOption) (*payload.Search_Response, error) {
+	out := new(payload.Search_Response)
+	err := c.cc.Invoke(ctx, "/vald.v1.Search/LinearSearch", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *searchClient) LinearSearchByID(ctx context.Context, in *payload.Search_IDRequest, opts ...grpc.CallOption) (*payload.Search_Response, error) {
+	out := new(payload.Search_Response)
+	err := c.cc.Invoke(ctx, "/vald.v1.Search/LinearSearchByID", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *searchClient) StreamLinearSearch(ctx context.Context, opts ...grpc.CallOption) (Search_StreamLinearSearchClient, error) {
+	stream, err := c.cc.NewStream(ctx, &Search_ServiceDesc.Streams[2], "/vald.v1.Search/StreamLinearSearch", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &searchStreamLinearSearchClient{stream}
+	return x, nil
+}
+
+type Search_StreamLinearSearchClient interface {
+	Send(*payload.Search_Request) error
+	Recv() (*payload.Search_StreamResponse, error)
+	grpc.ClientStream
+}
+
+type searchStreamLinearSearchClient struct {
+	grpc.ClientStream
+}
+
+func (x *searchStreamLinearSearchClient) Send(m *payload.Search_Request) error {
+	return x.ClientStream.SendMsg(m)
+}
+
+func (x *searchStreamLinearSearchClient) Recv() (*payload.Search_StreamResponse, error) {
+	m := new(payload.Search_StreamResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func (c *searchClient) StreamLinearSearchByID(ctx context.Context, opts ...grpc.CallOption) (Search_StreamLinearSearchByIDClient, error) {
+	stream, err := c.cc.NewStream(ctx, &Search_ServiceDesc.Streams[3], "/vald.v1.Search/StreamLinearSearchByID", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &searchStreamLinearSearchByIDClient{stream}
+	return x, nil
+}
+
+type Search_StreamLinearSearchByIDClient interface {
+	Send(*payload.Search_IDRequest) error
+	Recv() (*payload.Search_StreamResponse, error)
+	grpc.ClientStream
+}
+
+type searchStreamLinearSearchByIDClient struct {
+	grpc.ClientStream
+}
+
+func (x *searchStreamLinearSearchByIDClient) Send(m *payload.Search_IDRequest) error {
+	return x.ClientStream.SendMsg(m)
+}
+
+func (x *searchStreamLinearSearchByIDClient) Recv() (*payload.Search_StreamResponse, error) {
+	m := new(payload.Search_StreamResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func (c *searchClient) MultiLinearSearch(ctx context.Context, in *payload.Search_MultiRequest, opts ...grpc.CallOption) (*payload.Search_Responses, error) {
+	out := new(payload.Search_Responses)
+	err := c.cc.Invoke(ctx, "/vald.v1.Search/MultiLinearSearch", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *searchClient) MultiLinearSearchByID(ctx context.Context, in *payload.Search_MultiIDRequest, opts ...grpc.CallOption) (*payload.Search_Responses, error) {
+	out := new(payload.Search_Responses)
+	err := c.cc.Invoke(ctx, "/vald.v1.Search/MultiLinearSearchByID", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // SearchServer is the server API for Search service.
 // All implementations must embed UnimplementedSearchServer
 // for forward compatibility
@@ -178,6 +288,18 @@ type SearchServer interface {
 	MultiSearch(context.Context, *payload.Search_MultiRequest) (*payload.Search_Responses, error)
 	// A method to search indexed vectors by multiple IDs in a single request.
 	MultiSearchByID(context.Context, *payload.Search_MultiIDRequest) (*payload.Search_Responses, error)
+	// A method to linear search indexed vectors by a raw vector.
+	LinearSearch(context.Context, *payload.Search_Request) (*payload.Search_Response, error)
+	// A method to linear search indexed vectors by ID.
+	LinearSearchByID(context.Context, *payload.Search_IDRequest) (*payload.Search_Response, error)
+	// A method to linear search indexed vectors by multiple vectors.
+	StreamLinearSearch(Search_StreamLinearSearchServer) error
+	// A method to linear search indexed vectors by multiple IDs.
+	StreamLinearSearchByID(Search_StreamLinearSearchByIDServer) error
+	// A method to linear search indexed vectors by multiple vectors in a single request.
+	MultiLinearSearch(context.Context, *payload.Search_MultiRequest) (*payload.Search_Responses, error)
+	// A method to linear search indexed vectors by multiple IDs in a single request.
+	MultiLinearSearchByID(context.Context, *payload.Search_MultiIDRequest) (*payload.Search_Responses, error)
 	mustEmbedUnimplementedSearchServer()
 }
 
@@ -202,6 +324,24 @@ func (UnimplementedSearchServer) MultiSearch(context.Context, *payload.Search_Mu
 }
 func (UnimplementedSearchServer) MultiSearchByID(context.Context, *payload.Search_MultiIDRequest) (*payload.Search_Responses, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method MultiSearchByID not implemented")
+}
+func (UnimplementedSearchServer) LinearSearch(context.Context, *payload.Search_Request) (*payload.Search_Response, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method LinearSearch not implemented")
+}
+func (UnimplementedSearchServer) LinearSearchByID(context.Context, *payload.Search_IDRequest) (*payload.Search_Response, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method LinearSearchByID not implemented")
+}
+func (UnimplementedSearchServer) StreamLinearSearch(Search_StreamLinearSearchServer) error {
+	return status.Errorf(codes.Unimplemented, "method StreamLinearSearch not implemented")
+}
+func (UnimplementedSearchServer) StreamLinearSearchByID(Search_StreamLinearSearchByIDServer) error {
+	return status.Errorf(codes.Unimplemented, "method StreamLinearSearchByID not implemented")
+}
+func (UnimplementedSearchServer) MultiLinearSearch(context.Context, *payload.Search_MultiRequest) (*payload.Search_Responses, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method MultiLinearSearch not implemented")
+}
+func (UnimplementedSearchServer) MultiLinearSearchByID(context.Context, *payload.Search_MultiIDRequest) (*payload.Search_Responses, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method MultiLinearSearchByID not implemented")
 }
 func (UnimplementedSearchServer) mustEmbedUnimplementedSearchServer() {}
 
@@ -340,6 +480,130 @@ func _Search_MultiSearchByID_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Search_LinearSearch_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(payload.Search_Request)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SearchServer).LinearSearch(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/vald.v1.Search/LinearSearch",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SearchServer).LinearSearch(ctx, req.(*payload.Search_Request))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Search_LinearSearchByID_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(payload.Search_IDRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SearchServer).LinearSearchByID(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/vald.v1.Search/LinearSearchByID",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SearchServer).LinearSearchByID(ctx, req.(*payload.Search_IDRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Search_StreamLinearSearch_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(SearchServer).StreamLinearSearch(&searchStreamLinearSearchServer{stream})
+}
+
+type Search_StreamLinearSearchServer interface {
+	Send(*payload.Search_StreamResponse) error
+	Recv() (*payload.Search_Request, error)
+	grpc.ServerStream
+}
+
+type searchStreamLinearSearchServer struct {
+	grpc.ServerStream
+}
+
+func (x *searchStreamLinearSearchServer) Send(m *payload.Search_StreamResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func (x *searchStreamLinearSearchServer) Recv() (*payload.Search_Request, error) {
+	m := new(payload.Search_Request)
+	if err := x.ServerStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func _Search_StreamLinearSearchByID_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(SearchServer).StreamLinearSearchByID(&searchStreamLinearSearchByIDServer{stream})
+}
+
+type Search_StreamLinearSearchByIDServer interface {
+	Send(*payload.Search_StreamResponse) error
+	Recv() (*payload.Search_IDRequest, error)
+	grpc.ServerStream
+}
+
+type searchStreamLinearSearchByIDServer struct {
+	grpc.ServerStream
+}
+
+func (x *searchStreamLinearSearchByIDServer) Send(m *payload.Search_StreamResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func (x *searchStreamLinearSearchByIDServer) Recv() (*payload.Search_IDRequest, error) {
+	m := new(payload.Search_IDRequest)
+	if err := x.ServerStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func _Search_MultiLinearSearch_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(payload.Search_MultiRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SearchServer).MultiLinearSearch(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/vald.v1.Search/MultiLinearSearch",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SearchServer).MultiLinearSearch(ctx, req.(*payload.Search_MultiRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Search_MultiLinearSearchByID_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(payload.Search_MultiIDRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SearchServer).MultiLinearSearchByID(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/vald.v1.Search/MultiLinearSearchByID",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SearchServer).MultiLinearSearchByID(ctx, req.(*payload.Search_MultiIDRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Search_ServiceDesc is the grpc.ServiceDesc for Search service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -363,6 +627,22 @@ var Search_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "MultiSearchByID",
 			Handler:    _Search_MultiSearchByID_Handler,
 		},
+		{
+			MethodName: "LinearSearch",
+			Handler:    _Search_LinearSearch_Handler,
+		},
+		{
+			MethodName: "LinearSearchByID",
+			Handler:    _Search_LinearSearchByID_Handler,
+		},
+		{
+			MethodName: "MultiLinearSearch",
+			Handler:    _Search_MultiLinearSearch_Handler,
+		},
+		{
+			MethodName: "MultiLinearSearchByID",
+			Handler:    _Search_MultiLinearSearchByID_Handler,
+		},
 	},
 	Streams: []grpc.StreamDesc{
 		{
@@ -374,6 +654,18 @@ var Search_ServiceDesc = grpc.ServiceDesc{
 		{
 			StreamName:    "StreamSearchByID",
 			Handler:       _Search_StreamSearchByID_Handler,
+			ServerStreams: true,
+			ClientStreams: true,
+		},
+		{
+			StreamName:    "StreamLinearSearch",
+			Handler:       _Search_StreamLinearSearch_Handler,
+			ServerStreams: true,
+			ClientStreams: true,
+		},
+		{
+			StreamName:    "StreamLinearSearchByID",
+			Handler:       _Search_StreamLinearSearchByID_Handler,
 			ServerStreams: true,
 			ClientStreams: true,
 		},

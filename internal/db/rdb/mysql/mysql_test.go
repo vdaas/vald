@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -123,12 +123,13 @@ func TestNew(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got, err := New(test.args.opts...)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -410,8 +411,9 @@ func Test_mySQLClient_Open(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			m := &mySQLClient{
 				db:                   test.fields.db,
@@ -437,7 +439,7 @@ func Test_mySQLClient_Open(t *testing.T) {
 			}
 
 			err := m.Open(test.args.ctx)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -582,8 +584,9 @@ func Test_mySQLClient_Ping(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			m := &mySQLClient{
 				initialPingTimeLimit: test.fields.initialPingTimeLimit,
@@ -592,7 +595,7 @@ func Test_mySQLClient_Ping(t *testing.T) {
 			}
 
 			err := m.Ping(test.args.ctx)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -687,8 +690,9 @@ func Test_mySQLClient_Close(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			m := &mySQLClient{
 				session:   test.fields.session,
@@ -696,7 +700,7 @@ func Test_mySQLClient_Close(t *testing.T) {
 			}
 
 			err := m.Close(test.args.ctx)
-			if err := test.checkFunc(test.want, err, m); err != nil {
+			if err := checkFunc(test.want, err, m); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -993,8 +997,9 @@ func Test_mySQLClient_GetVector(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			m := &mySQLClient{
 				session:   test.fields.session,
@@ -1003,7 +1008,7 @@ func Test_mySQLClient_GetVector(t *testing.T) {
 			}
 
 			got, err := m.GetVector(test.args.ctx, test.args.uuid)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1314,8 +1319,9 @@ func Test_mySQLClient_GetIPs(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			m := &mySQLClient{
 				session:   test.fields.session,
@@ -1324,7 +1330,7 @@ func Test_mySQLClient_GetIPs(t *testing.T) {
 			}
 
 			got, err := m.GetIPs(test.args.ctx, test.args.uuid)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1387,12 +1393,13 @@ func Test_validateVector(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			err := validateVector(test.args.data)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -2062,8 +2069,9 @@ func Test_mySQLClient_SetVector(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			m := &mySQLClient{
 				session:   test.fields.session,
@@ -2072,7 +2080,7 @@ func Test_mySQLClient_SetVector(t *testing.T) {
 			}
 
 			err := m.SetVector(test.args.ctx, test.args.mv)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -2758,8 +2766,9 @@ func Test_mySQLClient_SetVectors(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			m := &mySQLClient{
 				session:   test.fields.session,
@@ -2768,7 +2777,7 @@ func Test_mySQLClient_SetVectors(t *testing.T) {
 			}
 
 			err := m.SetVectors(test.args.ctx, test.args.data...)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -3207,8 +3216,9 @@ func Test_mySQLClient_deleteVector(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			m := &mySQLClient{
 				session:   test.fields.session,
@@ -3217,7 +3227,7 @@ func Test_mySQLClient_deleteVector(t *testing.T) {
 			}
 
 			err := m.deleteVector(test.args.ctx, test.args.val)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -3392,8 +3402,9 @@ func Test_mySQLClient_DeleteVector(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			m := &mySQLClient{
 				session:   test.fields.session,
@@ -3402,7 +3413,7 @@ func Test_mySQLClient_DeleteVector(t *testing.T) {
 			}
 
 			err := m.DeleteVector(test.args.ctx, test.args.uuid)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -3580,8 +3591,9 @@ func Test_mySQLClient_DeleteVectors(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			m := &mySQLClient{
 				session:   test.fields.session,
@@ -3590,7 +3602,7 @@ func Test_mySQLClient_DeleteVectors(t *testing.T) {
 			}
 
 			err := m.DeleteVectors(test.args.ctx, test.args.uuids...)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -3972,8 +3984,9 @@ func Test_mySQLClient_SetIPs(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			m := &mySQLClient{
 				session:   test.fields.session,
@@ -3982,7 +3995,7 @@ func Test_mySQLClient_SetIPs(t *testing.T) {
 			}
 
 			err := m.SetIPs(test.args.ctx, test.args.uuid, test.args.ips...)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -4190,8 +4203,9 @@ func Test_mySQLClient_RemoveIPs(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			m := &mySQLClient{
 				session:   test.fields.session,
@@ -4200,7 +4214,7 @@ func Test_mySQLClient_RemoveIPs(t *testing.T) {
 			}
 
 			err := m.RemoveIPs(test.args.ctx, test.args.ips...)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -4336,8 +4350,9 @@ func Test_mySQLClient_errorLog(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			m := &mySQLClient{
 				db:                   test.fields.db,
@@ -4365,7 +4380,7 @@ func Test_mySQLClient_errorLog(t *testing.T) {
 			}
 
 			m.errorLog(test.args.err)
-			if err := test.checkFunc(test.want); err != nil {
+			if err := checkFunc(test.want); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

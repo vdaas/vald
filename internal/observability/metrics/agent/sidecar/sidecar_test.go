@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -83,12 +83,13 @@ func TestNew(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got, err := New()
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -190,8 +191,9 @@ func Test_sidecarMetrics_Measurement(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			sm := &sidecarMetrics{
 				uploadTotal:    test.fields.uploadTotal,
@@ -205,7 +207,7 @@ func Test_sidecarMetrics_Measurement(t *testing.T) {
 			}
 
 			got, err := sm.Measurement(test.args.ctx)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -307,8 +309,9 @@ func Test_sidecarMetrics_MeasurementWithTags(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			sm := &sidecarMetrics{
 				uploadTotal:    test.fields.uploadTotal,
@@ -322,7 +325,7 @@ func Test_sidecarMetrics_MeasurementWithTags(t *testing.T) {
 			}
 
 			got, err := sm.MeasurementWithTags(test.args.ctx)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -410,8 +413,9 @@ func Test_sidecarMetrics_View(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			sm := &sidecarMetrics{
 				uploadTotal:    test.fields.uploadTotal,
@@ -425,7 +429,7 @@ func Test_sidecarMetrics_View(t *testing.T) {
 			}
 
 			got := sm.View()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -530,8 +534,9 @@ func Test_sidecarMetrics_BeforeProcess(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			sm := &sidecarMetrics{
 				uploadTotal:    test.fields.uploadTotal,
@@ -545,7 +550,7 @@ func Test_sidecarMetrics_BeforeProcess(t *testing.T) {
 			}
 
 			got, err := sm.BeforeProcess(test.args.ctx, test.args.info)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -646,8 +651,9 @@ func Test_sidecarMetrics_AfterProcess(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			sm := &sidecarMetrics{
 				uploadTotal:    test.fields.uploadTotal,
@@ -661,7 +667,7 @@ func Test_sidecarMetrics_AfterProcess(t *testing.T) {
 			}
 
 			err := sm.AfterProcess(test.args.ctx, test.args.info)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

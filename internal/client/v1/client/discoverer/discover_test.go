@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -95,12 +95,13 @@ func TestNew(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			gotD, err := New(test.args.opts...)
-			if err := test.checkFunc(test.want, gotD, err); err != nil {
+			if err := checkFunc(test.want, gotD, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -224,8 +225,9 @@ func Test_client_Start(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			c := &client{
 				autoconn:     test.fields.autoconn,
@@ -246,7 +248,7 @@ func Test_client_Start(t *testing.T) {
 			}
 
 			got, err := c.Start(test.args.ctx)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -366,8 +368,9 @@ func Test_client_GetAddrs(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			c := &client{
 				autoconn:     test.fields.autoconn,
@@ -388,7 +391,7 @@ func Test_client_GetAddrs(t *testing.T) {
 			}
 
 			gotAddrs := c.GetAddrs(test.args.ctx)
-			if err := test.checkFunc(test.want, gotAddrs); err != nil {
+			if err := checkFunc(test.want, gotAddrs); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -498,8 +501,9 @@ func Test_client_GetClient(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			c := &client{
 				autoconn:     test.fields.autoconn,
@@ -520,7 +524,7 @@ func Test_client_GetClient(t *testing.T) {
 			}
 
 			got := c.GetClient()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -643,8 +647,9 @@ func Test_client_connect(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			c := &client{
 				autoconn:     test.fields.autoconn,
@@ -665,7 +670,7 @@ func Test_client_connect(t *testing.T) {
 			}
 
 			err := c.connect(test.args.ctx, test.args.addr)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -788,8 +793,9 @@ func Test_client_disconnect(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			c := &client{
 				autoconn:     test.fields.autoconn,
@@ -810,7 +816,7 @@ func Test_client_disconnect(t *testing.T) {
 			}
 
 			err := c.disconnect(test.args.ctx, test.args.addr)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -937,8 +943,9 @@ func Test_client_dnsDiscovery(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			c := &client{
 				autoconn:     test.fields.autoconn,
@@ -959,7 +966,7 @@ func Test_client_dnsDiscovery(t *testing.T) {
 			}
 
 			gotAddrs, err := c.dnsDiscovery(test.args.ctx, test.args.ech)
-			if err := test.checkFunc(test.want, gotAddrs, err); err != nil {
+			if err := checkFunc(test.want, gotAddrs, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1082,8 +1089,9 @@ func Test_client_discover(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			c := &client{
 				autoconn:     test.fields.autoconn,
@@ -1104,7 +1112,7 @@ func Test_client_discover(t *testing.T) {
 			}
 
 			err := c.discover(test.args.ctx, test.args.ech)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

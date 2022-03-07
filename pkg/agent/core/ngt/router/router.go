@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -72,6 +72,22 @@ func New(opts ...Option) http.Handler {
 				},
 				"/id/search",
 				h.SearchByID,
+			},
+			{
+				"LinearSearch",
+				[]string{
+					http.MethodPost,
+				},
+				"/linearsearch",
+				h.LinearSearch,
+			},
+			{
+				"LinearSearch By ID",
+				[]string{
+					http.MethodPost,
+				},
+				"/id/linearsearch",
+				h.LinearSearchByID,
 			},
 			{
 				"Insert",

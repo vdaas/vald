@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -304,7 +304,8 @@ func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) (<-chan error, 
 }
 
 func (g *gRPCClient) Range(ctx context.Context,
-	f func(ctx context.Context, addr string, conn *ClientConn, copts ...CallOption) error) (rerr error) {
+	f func(ctx context.Context, addr string, conn *ClientConn, copts ...CallOption) error,
+) (rerr error) {
 	sctx, span := trace.StartSpan(ctx, apiName+"/Client.Range")
 	defer func() {
 		if span != nil {
@@ -323,7 +324,8 @@ func (g *gRPCClient) Range(ctx context.Context,
 			return false
 		default:
 			g.do(ssctx, p, addr, true, func(ictx context.Context,
-				conn *ClientConn, copts ...CallOption) (interface{}, error) {
+				conn *ClientConn, copts ...CallOption,
+			) (interface{}, error) {
 				return nil, f(ictx, addr, conn, copts...)
 			})
 		}
@@ -333,7 +335,8 @@ func (g *gRPCClient) Range(ctx context.Context,
 }
 
 func (g *gRPCClient) RangeConcurrent(ctx context.Context,
-	concurrency int, f func(ctx context.Context, addr string, conn *ClientConn, copts ...CallOption) error) (rerr error) {
+	concurrency int, f func(ctx context.Context, addr string, conn *ClientConn, copts ...CallOption) error,
+) (rerr error) {
 	sctx, span := trace.StartSpan(ctx, apiName+"/Client.RangeConcurrent")
 	defer func() {
 		if span != nil {
@@ -355,7 +358,8 @@ func (g *gRPCClient) RangeConcurrent(ctx context.Context,
 				return nil
 			default:
 				g.do(ssctx, p, addr, true, func(ictx context.Context,
-					conn *ClientConn, copts ...CallOption) (interface{}, error) {
+					conn *ClientConn, copts ...CallOption,
+				) (interface{}, error) {
 					return nil, f(ictx, addr, conn, copts...)
 				})
 				return nil
@@ -367,7 +371,8 @@ func (g *gRPCClient) RangeConcurrent(ctx context.Context,
 }
 
 func (g *gRPCClient) OrderedRange(ctx context.Context,
-	orders []string, f func(ctx context.Context, addr string, conn *ClientConn, copts ...CallOption) error) (rerr error) {
+	orders []string, f func(ctx context.Context, addr string, conn *ClientConn, copts ...CallOption) error,
+) (rerr error) {
 	sctx, span := trace.StartSpan(ctx, apiName+"/Client.OrderedRange")
 	defer func() {
 		if span != nil {
@@ -396,7 +401,8 @@ func (g *gRPCClient) OrderedRange(ctx context.Context,
 				}
 			}()
 			g.do(ssctx, p, addr, true, func(ictx context.Context,
-				conn *ClientConn, copts ...CallOption) (interface{}, error) {
+				conn *ClientConn, copts ...CallOption,
+			) (interface{}, error) {
 				return nil, f(ictx, addr, conn, copts...)
 			})
 		}
@@ -405,7 +411,8 @@ func (g *gRPCClient) OrderedRange(ctx context.Context,
 }
 
 func (g *gRPCClient) OrderedRangeConcurrent(ctx context.Context,
-	orders []string, concurrency int, f func(ctx context.Context, addr string, conn *ClientConn, copts ...CallOption) error) (rerr error) {
+	orders []string, concurrency int, f func(ctx context.Context, addr string, conn *ClientConn, copts ...CallOption) error,
+) (rerr error) {
 	sctx, span := trace.StartSpan(ctx, apiName+"/Client.OrderedRangeConcurrent")
 	defer func() {
 		if span != nil {
@@ -438,7 +445,8 @@ func (g *gRPCClient) OrderedRangeConcurrent(ctx context.Context,
 				return nil
 			default:
 				g.do(ssctx, p, addr, true, func(ictx context.Context,
-					conn *ClientConn, copts ...CallOption) (interface{}, error) {
+					conn *ClientConn, copts ...CallOption,
+				) (interface{}, error) {
 					return nil, f(ictx, addr, conn, copts...)
 				})
 				return nil
@@ -449,7 +457,8 @@ func (g *gRPCClient) OrderedRangeConcurrent(ctx context.Context,
 }
 
 func (g *gRPCClient) RoundRobin(ctx context.Context, f func(ctx context.Context,
-	conn *ClientConn, copts ...CallOption) (interface{}, error)) (data interface{}, err error) {
+	conn *ClientConn, copts ...CallOption) (interface{}, error),
+) (data interface{}, err error) {
 	sctx, span := trace.StartSpan(ctx, apiName+"/Client.RoundRobin")
 	defer func() {
 		if span != nil {
@@ -506,7 +515,8 @@ func (g *gRPCClient) RoundRobin(ctx context.Context, f func(ctx context.Context,
 
 func (g *gRPCClient) Do(ctx context.Context, addr string,
 	f func(ctx context.Context,
-		conn *ClientConn, copts ...CallOption) (interface{}, error)) (data interface{}, err error) {
+		conn *ClientConn, copts ...CallOption) (interface{}, error),
+) (data interface{}, err error) {
 	sctx, span := trace.StartSpan(ctx, apiName+"/Client.Do/"+addr)
 	defer func() {
 		if span != nil {
@@ -525,7 +535,8 @@ func (g *gRPCClient) Do(ctx context.Context, addr string,
 
 func (g *gRPCClient) do(ctx context.Context, p pool.Conn, addr string, enableBackoff bool,
 	f func(ctx context.Context,
-		conn *ClientConn, copts ...CallOption) (interface{}, error)) (data interface{}, err error) {
+		conn *ClientConn, copts ...CallOption) (interface{}, error),
+) (data interface{}, err error) {
 	if p == nil {
 		g.crl.Store(addr, true)
 		err = errors.ErrGRPCClientConnNotFound(addr)

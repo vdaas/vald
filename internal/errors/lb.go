@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,6 +19,9 @@ package errors
 
 var (
 	ErrEmptySearchResult = New("search result is empty")
+
+	// ErrInsuffcientSearchResult represents an error that the search result is insufficient.
+	ErrInsuffcientSearchResult = New("search result is less than required")
 
 	// ErrIndexNotFound represents an error that the index not found.
 	ErrIndexNotFound = New("index not found")

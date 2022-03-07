@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -224,7 +224,8 @@ func (c *client) discover(ctx context.Context, ech chan<- error) (err error) {
 	connected := make([]string, 0, len(c.GetAddrs(ctx)))
 	var cur sync.Map
 	if _, err = c.dscClient.RoundRobin(ctx, func(ictx context.Context,
-		conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
+		conn *grpc.ClientConn, copts ...grpc.CallOption,
+	) (interface{}, error) {
 		nodes, err := discoverer.NewDiscovererClient(conn).
 			Nodes(ictx, &payload.Discoverer_Request{
 				Namespace: c.namespace,
@@ -323,7 +324,8 @@ func (c *client) discover(ctx context.Context, ech chan<- error) (err error) {
 		if err = c.client.RangeConcurrent(ctx, len(connected)/3, func(ctx context.Context,
 			addr string,
 			conn *grpc.ClientConn,
-			copts ...grpc.CallOption) (err error) {
+			copts ...grpc.CallOption,
+		) (err error) {
 			_, ok := cur.Load(addr)
 			if !ok {
 				err = c.disconnect(ctx, addr)

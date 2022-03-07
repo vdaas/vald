@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -84,12 +84,13 @@ func TestNew(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := New(WithErrGroup(errgroup.Get()))
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -328,12 +329,13 @@ func Test_bidi_Get(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args, b)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got, got1 := b.Get(test.args.key)
-			if err := test.checkFunc(test.want, got, got1, b); err != nil {
+			if err := checkFunc(test.want, got, got1, b); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -572,12 +574,13 @@ func Test_bidi_GetInverse(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args, b)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got, got1 := b.GetInverse(test.args.val)
-			if err := test.checkFunc(test.want, got, got1, b); err != nil {
+			if err := checkFunc(test.want, got, got1, b); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -832,12 +835,13 @@ func Test_bidi_Set(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			b.Set(test.args.key, test.args.val)
-			if err := test.checkFunc(test.want, test.args, b); err != nil {
+			if err := checkFunc(test.want, test.args, b); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1100,12 +1104,13 @@ func Test_bidi_Delete(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			gotVal, gotOk := b.Delete(test.args.key)
-			if err := test.checkFunc(test.want, test.args, b, gotVal, gotOk); err != nil {
+			if err := checkFunc(test.want, test.args, b, gotVal, gotOk); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1369,12 +1374,13 @@ func Test_bidi_DeleteInverse(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			gotKey, gotOk := b.DeleteInverse(test.args.val)
-			if err := test.checkFunc(test.want, test.args, b, gotKey, gotOk); err != nil {
+			if err := checkFunc(test.want, test.args, b, gotKey, gotOk); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1584,12 +1590,13 @@ func Test_bidi_Range(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			b.Range(test.args.ctx, test.args.f)
-			if err := test.checkFunc(test.want, b); err != nil {
+			if err := checkFunc(test.want, b); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1659,8 +1666,9 @@ func Test_bidi_Len(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			b := &bidi{
 				ou: test.fields.ou,
@@ -1669,7 +1677,7 @@ func Test_bidi_Len(t *testing.T) {
 			}
 
 			got := b.Len()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

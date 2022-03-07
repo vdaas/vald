@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -27,12 +27,6 @@ agent:
     requests:
       cpu: 100m
       memory: 50Mi
-  volumes:
-    - name: ngt-index
-      emptyDir: {}
-  volumeMounts:
-    - name: ngt-index
-      mountPath: /var/ngt
   ngt:
     auto_index_duration_limit: 3m
     auto_index_check_duration: 1m

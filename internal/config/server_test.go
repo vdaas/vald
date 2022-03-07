@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@
 package config
 
 import (
-	"os"
 	"reflect"
 	"testing"
 
@@ -279,8 +278,9 @@ func TestServers_Bind(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			s := &Servers{
 				Servers:              test.fields.Servers,
@@ -293,7 +293,7 @@ func TestServers_Bind(t *testing.T) {
 			}
 
 			got := s.Bind()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -471,8 +471,9 @@ func TestServers_GetGRPCStreamConcurrency(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			s := &Servers{
 				Servers:              test.fields.Servers,
@@ -485,7 +486,7 @@ func TestServers_GetGRPCStreamConcurrency(t *testing.T) {
 			}
 
 			gotC := s.GetGRPCStreamConcurrency()
-			if err := test.checkFunc(test.want, gotC); err != nil {
+			if err := checkFunc(test.want, gotC); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -571,17 +572,7 @@ func TestHTTP_Bind(t *testing.T) {
 				beforeFunc: func(t *testing.T) {
 					t.Helper()
 					for k, v := range p {
-						if err := os.Setenv(k, v); err != nil {
-							t.Fatal(err)
-						}
-					}
-				},
-				afterFunc: func(t *testing.T) {
-					t.Helper()
-					for k := range p {
-						if err := os.Unsetenv(k); err != nil {
-							t.Fatal(err)
-						}
+						t.Setenv(k, v)
 					}
 				},
 				want: want{
@@ -617,8 +608,9 @@ func TestHTTP_Bind(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(tt)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			h := &HTTP{
 				ShutdownDuration:  test.fields.ShutdownDuration,
@@ -630,7 +622,7 @@ func TestHTTP_Bind(t *testing.T) {
 			}
 
 			got := h.Bind()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -774,17 +766,7 @@ func TestGRPC_Bind(t *testing.T) {
 				beforeFunc: func(t *testing.T) {
 					t.Helper()
 					for k, v := range p {
-						if err := os.Setenv(k, v); err != nil {
-							t.Fatal(err)
-						}
-					}
-				},
-				afterFunc: func(t *testing.T) {
-					t.Helper()
-					for k := range p {
-						if err := os.Unsetenv(k); err != nil {
-							t.Fatal(err)
-						}
+						t.Setenv(k, v)
 					}
 				},
 				want: want{
@@ -829,8 +811,9 @@ func TestGRPC_Bind(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(tt)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			g := &GRPC{
 				BidirectionalStreamConcurrency: test.fields.BidirectionalStreamConcurrency,
@@ -849,7 +832,7 @@ func TestGRPC_Bind(t *testing.T) {
 			}
 
 			got := g.Bind()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -929,17 +912,7 @@ func TestGRPCKeepalive_Bind(t *testing.T) {
 				beforeFunc: func(t *testing.T) {
 					t.Helper()
 					for k, v := range p {
-						if err := os.Setenv(k, v); err != nil {
-							t.Fatal(err)
-						}
-					}
-				},
-				afterFunc: func(t *testing.T) {
-					t.Helper()
-					for k := range p {
-						if err := os.Unsetenv(k); err != nil {
-							t.Fatal(err)
-						}
+						t.Setenv(k, v)
 					}
 				},
 				want: want{
@@ -974,8 +947,9 @@ func TestGRPCKeepalive_Bind(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(tt)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			k := &GRPCKeepalive{
 				MaxConnIdle:     test.fields.MaxConnIdle,
@@ -986,7 +960,7 @@ func TestGRPCKeepalive_Bind(t *testing.T) {
 			}
 
 			got := k.Bind()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1178,17 +1152,7 @@ func TestServer_Bind(t *testing.T) {
 				beforeFunc: func(t *testing.T) {
 					t.Helper()
 					for k, v := range p {
-						if err := os.Setenv(k, v); err != nil {
-							t.Fatal(err)
-						}
-					}
-				},
-				afterFunc: func(t *testing.T) {
-					t.Helper()
-					for k := range p {
-						if err := os.Unsetenv(k); err != nil {
-							t.Fatal(err)
-						}
+						t.Setenv(k, v)
 					}
 				},
 				want: want{
@@ -1231,8 +1195,9 @@ func TestServer_Bind(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(tt)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			s := &Server{
 				Name:          test.fields.Name,
@@ -1249,7 +1214,7 @@ func TestServer_Bind(t *testing.T) {
 			}
 
 			got := s.Bind()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1474,8 +1439,9 @@ func TestServer_Opts(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			s := &Server{
 				Name:          test.fields.Name,
@@ -1492,7 +1458,7 @@ func TestServer_Opts(t *testing.T) {
 			}
 
 			got := s.Opts()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

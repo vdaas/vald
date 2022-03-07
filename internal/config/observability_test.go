@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@
 package config
 
 import (
-	"os"
 	"reflect"
 	"testing"
 
@@ -193,17 +192,7 @@ func TestObservability_Bind(t *testing.T) {
 				beforeFunc: func(t *testing.T) {
 					t.Helper()
 					for k, v := range m {
-						if err := os.Setenv(k, v); err != nil {
-							t.Fatal(err)
-						}
-					}
-				},
-				afterFunc: func(t *testing.T) {
-					t.Helper()
-					for k := range m {
-						if err := os.Unsetenv(k); err != nil {
-							t.Fatal(err)
-						}
+						t.Setenv(k, v)
 					}
 				},
 				want: want{
@@ -247,8 +236,9 @@ func TestObservability_Bind(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(tt)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			o := &Observability{
 				Enabled:     test.fields.Enabled,
@@ -260,7 +250,7 @@ func TestObservability_Bind(t *testing.T) {
 			}
 
 			got := o.Bind()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -341,17 +331,7 @@ func TestCollector_Bind(t *testing.T) {
 				beforeFunc: func(t *testing.T) {
 					t.Helper()
 					for k, v := range m {
-						if err := os.Setenv(k, v); err != nil {
-							t.Fatal(err)
-						}
-					}
-				},
-				afterFunc: func(t *testing.T) {
-					t.Helper()
-					for k := range m {
-						if err := os.Unsetenv(k); err != nil {
-							t.Fatal(err)
-						}
+						t.Setenv(k, v)
 					}
 				},
 				want: want{
@@ -378,8 +358,9 @@ func TestCollector_Bind(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(tt)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			c := &Collector{
 				Duration: test.fields.Duration,
@@ -387,7 +368,7 @@ func TestCollector_Bind(t *testing.T) {
 			}
 
 			got := c.Bind()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -486,17 +467,7 @@ func TestStackdriver_Bind(t *testing.T) {
 				beforeFunc: func(t *testing.T) {
 					t.Helper()
 					for k, v := range m {
-						if err := os.Setenv(k, v); err != nil {
-							t.Fatal(err)
-						}
-					}
-				},
-				afterFunc: func(t *testing.T) {
-					t.Helper()
-					for k := range m {
-						if err := os.Unsetenv(k); err != nil {
-							t.Fatal(err)
-						}
+						t.Setenv(k, v)
 					}
 				},
 				want: want{
@@ -527,8 +498,9 @@ func TestStackdriver_Bind(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(tt)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			sd := &Stackdriver{
 				ProjectID: test.fields.ProjectID,
@@ -538,7 +510,7 @@ func TestStackdriver_Bind(t *testing.T) {
 			}
 
 			got := sd.Bind()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

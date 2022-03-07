@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,15 +17,16 @@ package cloudstorage
 
 import (
 	"context"
-	"io"
 	"net/url"
 	"reflect"
 
-	"gocloud.dev/blob"
-	"gocloud.dev/blob/gcsblob"
-
 	iblob "github.com/vdaas/vald/internal/db/storage/blob"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/io"
+	"github.com/vdaas/vald/internal/log"
+	"gocloud.dev/blob"
+	"gocloud.dev/blob/gcsblob"
+	"gocloud.dev/gcerrors"
 )
 
 type client struct {
@@ -69,7 +70,14 @@ func (c *client) Reader(ctx context.Context, key string) (io.ReadCloser, error) 
 	if c.bucket == nil {
 		return nil, errors.ErrBucketNotOpened
 	}
-	return c.bucket.NewReader(ctx, key, c.readerOpts)
+	rc, err := c.bucket.NewReader(ctx, key, c.readerOpts)
+	if err != nil {
+		log.Warn(err)
+		if gcerrors.Code(err) == gcerrors.NotFound {
+			return io.NopCloser(io.NewEOFReader()), nil
+		}
+	}
+	return rc, nil
 }
 
 func (c *client) Writer(ctx context.Context, key string) (io.WriteCloser, error) {

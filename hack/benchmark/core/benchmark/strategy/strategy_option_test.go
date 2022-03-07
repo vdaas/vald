@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2021 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@ import (
 
 	"github.com/vdaas/vald/hack/benchmark/internal/assets"
 	"github.com/vdaas/vald/hack/benchmark/internal/core/algorithm"
-
 	"github.com/vdaas/vald/internal/test/goleak"
 )
 
@@ -119,7 +118,7 @@ func TestWithPreProp32(t *testing.T) {
 
 			   got := WithPreProp32(test.args.fn)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -132,7 +131,7 @@ func TestWithPreProp32(t *testing.T) {
 			   got := WithPreProp32(test.args.fn)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(tt.want, obj); err != nil {
+			   if err := checkFunc(tt.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -232,7 +231,7 @@ func TestWithProp32(t *testing.T) {
 
 			   got := WithProp32(test.args.fn)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -245,7 +244,7 @@ func TestWithProp32(t *testing.T) {
 			   got := WithProp32(test.args.fn)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(tt.want, obj); err != nil {
+			   if err := checkFunc(tt.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -345,7 +344,7 @@ func TestWithPreProp64(t *testing.T) {
 
 			   got := WithPreProp64(test.args.fn)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -358,7 +357,7 @@ func TestWithPreProp64(t *testing.T) {
 			   got := WithPreProp64(test.args.fn)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(tt.want, obj); err != nil {
+			   if err := checkFunc(tt.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -458,7 +457,7 @@ func TestWithProp64(t *testing.T) {
 
 			   got := WithProp64(test.args.fn)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -471,7 +470,7 @@ func TestWithProp64(t *testing.T) {
 			   got := WithProp64(test.args.fn)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(tt.want, obj); err != nil {
+			   if err := checkFunc(tt.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -571,7 +570,7 @@ func TestWithPropName(t *testing.T) {
 
 			   got := WithPropName(test.args.str)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -584,7 +583,7 @@ func TestWithPropName(t *testing.T) {
 			   got := WithPropName(test.args.str)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(tt.want, obj); err != nil {
+			   if err := checkFunc(tt.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -684,7 +683,7 @@ func TestWithBit32(t *testing.T) {
 
 			   got := WithBit32(test.args.fn)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -697,7 +696,7 @@ func TestWithBit32(t *testing.T) {
 			   got := WithBit32(test.args.fn)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(tt.want, obj); err != nil {
+			   if err := checkFunc(tt.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -797,7 +796,7 @@ func TestWithBit64(t *testing.T) {
 
 			   got := WithBit64(test.args.fn)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -810,7 +809,7 @@ func TestWithBit64(t *testing.T) {
 			   got := WithBit64(test.args.fn)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(tt.want, obj); err != nil {
+			   if err := checkFunc(tt.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -900,7 +899,7 @@ func TestWithParallel(t *testing.T) {
 
 			   got := WithParallel()
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -913,7 +912,7 @@ func TestWithParallel(t *testing.T) {
 			   got := WithParallel()
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(tt.want, obj); err != nil {
+			   if err := checkFunc(tt.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
