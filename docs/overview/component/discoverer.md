@@ -58,7 +58,7 @@ Vald Discoverer provides the internal client for another component.
 
 The component, which requires the metrics information, uses when it needs.
 
-In the Vald cluster, two components, Vald LB Gateway and Vald Manager Index, require for running their functions.
+Vald LB Gateway and Vald Manager Index in the Vald cluster require it to achieve its responsibility.
 
 For example, Vald LB Gateway creates the new `discoverer client` with config parameters and binds it to the new `gateway lb client` when Vald LB Gateway starts the container.
 
