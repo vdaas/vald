@@ -4,7 +4,7 @@ Vald Index Manager is the component that controls the indexing process of Vald A
 
 ## Responsibility
 
-Vald Index Manager has a unique and simple role in preventing stop-the-world.
+Vald Index Manager has a unique and simple role in controlling the indexing timing for all Vald Agent pods in the Vald cluster.
 
 It requires `Vald Discoverer` to fulfill its responsibility.
 
