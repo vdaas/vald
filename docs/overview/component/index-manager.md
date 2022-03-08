@@ -22,7 +22,7 @@ Vald Index Manager uses these for the controlling indexing process.
 
 ### Controlling Indexing process
 
-When Vald Agent Pod creates or saves indexes on its container memory, it can not run the search process with the request query.
+When Vald Agent Pod creates or saves indexes on its container memory, it blocks all searching requests from the user and returns an error instead of a search result.
 
 Stop-the-world happens when all Vald Agent pods run the function involved in the indexing operation, e.g., `createIndex`, simultaneously.
 
@@ -34,7 +34,7 @@ The control process is Vald Index Manager sends `createIndex` requests for concu
 
 At the end of each process, Vald Index Manager updates the index information from each Vald Agent pod.
 
-Vald Index Manager runs this process repeatedly at set time intervals.
+Vald Index Manager runs this process periodically by set time intervals.
 
 <div class="notice">
 Concurrency means the number of Vald Agent pods for simultaneously sending requests for the indexing operation.
