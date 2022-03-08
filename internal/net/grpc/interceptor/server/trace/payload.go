@@ -21,7 +21,9 @@ import (
 	"bytes"
 	"context"
 	"path"
+	"reflect"
 	"sync"
+	"unsafe"
 
 	"github.com/vdaas/vald/internal/encoding/json"
 	"github.com/vdaas/vald/internal/net/grpc"
@@ -162,5 +164,13 @@ func marshalJSON(pbMsg interface{}) string {
 		return ""
 	}
 
-	return b.String()
+	return toString(b.Bytes())
+}
+
+func toString(b []byte) string {
+	header := (*reflect.SliceHeader)(unsafe.Pointer(&b))
+	return *(*string)(unsafe.Pointer(&reflect.StringHeader{
+		Data: header.Data,
+		Len:  header.Len,
+	}))
 }
