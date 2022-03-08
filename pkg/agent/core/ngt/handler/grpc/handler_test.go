@@ -1222,8 +1222,11 @@ func Test_server_Insert(t *testing.T) {
 				- case 5: Insert vector with NaN value fail (vector type is float32)
 
 			- case 6: Insert nil insert request fail
+				* IncompatibleDimensionSize error will be returned.
 			- case 7: Insert nil vector fail
+				* IncompatibleDimensionSize error will be returned.
 			- case 8: Insert empty insert vector fail
+				* * IncompatibleDimensionSize error will be returned.
 
 		- Decision Table Testing
 			- duplicated ID, duplicated vector, duplicated ID & vector
@@ -1333,6 +1336,7 @@ func Test_server_Insert(t *testing.T) {
 					Vector: vec,
 				},
 			}
+
 			return test{
 				name: "Equivalence Class Testing case 2.1: Insert vector with different dimension (vector type is uint8)",
 				args: args{
@@ -1709,25 +1713,402 @@ func Test_server_Insert(t *testing.T) {
 				},
 			}
 		}(),
-		// {
-		// 	name: "Boundary Value Testing case 4.1: Insert with empty UUID fail (vector type is uint8)",
-		// },
-		// {
-		// 	name: "Boundary Value Testing case 4.2: Insert with empty UUID fail (vector type is float32)",
-		// },
-		// {
-		// 	name: "Boundary Value Testing case 5: Insert vector with NaN value fail (vector type is float32)",
-		// 	// not sure if it will success or fail
-		// },
-		// {
-		// 	name: "Boundary Value Testing case 6: Insert nil insert request fail",
-		// },
-		// {
-		// 	name: "Boundary Value Testing case 7: Insert nil vector fail",
-		// },
-		// {
-		// 	name: "Boundary Value Testing case 8: Insert empty insert vector fail",
-		// },
+		func() test {
+			name := "vald-agent-ngt-1"
+			id := ""
+			ip := "127.0.0.1"
+			req := &payload.Insert_Request{
+				Vector: &payload.Object_Vector{
+					Id:     id,
+					Vector: []float32{1, 2, 3},
+				},
+			}
+
+			return test{
+				name: "Boundary Value Testing case 4.1: Insert with empty UUID fail (vector type is uint8)",
+				args: args{
+					ctx: ctx,
+					req: req,
+				},
+				fields: fields{
+					name: name,
+					ip:   ip,
+					eg:   errgroup.Get(),
+					svcCfg: &config.NGT{
+						Dimension:    3,
+						DistanceType: ngt.Angle.String(),
+						ObjectType:   ngt.Uint8.String(),
+						KVSDB: &config.KVSDB{
+							Concurrency: 10,
+						},
+						VQueue: &config.VQueue{},
+					},
+					svcOpts: []service.Option{
+						service.WithErrGroup(errgroup.Get()),
+						service.WithEnableInMemoryMode(true),
+					},
+				},
+				want: want{
+					err: func() error {
+						err := errors.ErrUUIDNotFound(0)
+						err = status.WrapWithInvalidArgument(fmt.Sprintf("Insert API empty uuid \"%s\" was given", id), err,
+							&errdetails.RequestInfo{
+								RequestId:   req.GetVector().GetId(),
+								ServingData: errdetails.Serialize(req),
+							},
+							&errdetails.BadRequest{
+								FieldViolations: []*errdetails.BadRequestFieldViolation{
+									{
+										Field:       "uuid",
+										Description: err.Error(),
+									},
+								},
+							},
+							&errdetails.ResourceInfo{
+								ResourceType: ngtResourceType + "/ngt.Insert",
+								ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, name, ip),
+							})
+						return err
+					}(),
+				},
+			}
+		}(),
+		func() test {
+			name := "vald-agent-ngt-1"
+			id := ""
+			ip := "127.0.0.1"
+			req := &payload.Insert_Request{
+				Vector: &payload.Object_Vector{
+					Id:     id,
+					Vector: []float32{1.1, 2.2, 3.3},
+				},
+			}
+
+			return test{
+				name: "Boundary Value Testing case 4.2: Insert with empty UUID fail (vector type is float32)",
+				args: args{
+					ctx: ctx,
+					req: req,
+				},
+				fields: fields{
+					name: name,
+					ip:   ip,
+					eg:   errgroup.Get(),
+					svcCfg: &config.NGT{
+						Dimension:    3,
+						DistanceType: ngt.Angle.String(),
+						ObjectType:   ngt.Float.String(),
+						KVSDB: &config.KVSDB{
+							Concurrency: 10,
+						},
+						VQueue: &config.VQueue{},
+					},
+					svcOpts: []service.Option{
+						service.WithErrGroup(errgroup.Get()),
+						service.WithEnableInMemoryMode(true),
+					},
+				},
+				want: want{
+					err: func() error {
+						err := errors.ErrUUIDNotFound(0)
+						err = status.WrapWithInvalidArgument(fmt.Sprintf("Insert API empty uuid \"%s\" was given", id), err,
+							&errdetails.RequestInfo{
+								RequestId:   req.GetVector().GetId(),
+								ServingData: errdetails.Serialize(req),
+							},
+							&errdetails.BadRequest{
+								FieldViolations: []*errdetails.BadRequestFieldViolation{
+									{
+										Field:       "uuid",
+										Description: err.Error(),
+									},
+								},
+							},
+							&errdetails.ResourceInfo{
+								ResourceType: ngtResourceType + "/ngt.Insert",
+								ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, name, ip),
+							})
+						return err
+					}(),
+				},
+			}
+		}(),
+		func() test {
+			name := "vald-agent-ngt-1"
+			id := ""
+			ip := "127.0.0.1"
+			req := &payload.Insert_Request{
+				Vector: &payload.Object_Vector{
+					Id:     id,
+					Vector: []float32{1.1, 2.2, 3.3},
+				},
+			}
+
+			return test{
+				name: "Boundary Value Testing case 4.2: Insert with empty UUID fail (vector type is float32)",
+				args: args{
+					ctx: ctx,
+					req: req,
+				},
+				fields: fields{
+					name: name,
+					ip:   ip,
+					eg:   errgroup.Get(),
+					svcCfg: &config.NGT{
+						Dimension:    3,
+						DistanceType: ngt.Angle.String(),
+						ObjectType:   ngt.Float.String(),
+						KVSDB: &config.KVSDB{
+							Concurrency: 10,
+						},
+						VQueue: &config.VQueue{},
+					},
+					svcOpts: []service.Option{
+						service.WithErrGroup(errgroup.Get()),
+						service.WithEnableInMemoryMode(true),
+					},
+				},
+				want: want{
+					err: func() error {
+						err := errors.ErrUUIDNotFound(0)
+						err = status.WrapWithInvalidArgument(fmt.Sprintf("Insert API empty uuid \"%s\" was given", id), err,
+							&errdetails.RequestInfo{
+								RequestId:   req.GetVector().GetId(),
+								ServingData: errdetails.Serialize(req),
+							},
+							&errdetails.BadRequest{
+								FieldViolations: []*errdetails.BadRequestFieldViolation{
+									{
+										Field:       "uuid",
+										Description: err.Error(),
+									},
+								},
+							},
+							&errdetails.ResourceInfo{
+								ResourceType: ngtResourceType + "/ngt.Insert",
+								ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, name, ip),
+							})
+						return err
+					}(),
+				},
+			}
+		}(),
+		func() test {
+			name := "vald-agent-ngt-1"
+			id := "uuid1"
+			ip := "127.0.0.1"
+			nan := float32(math.NaN())
+
+			return test{
+				name: "Boundary Value Testing case 5: Insert vector with NaN value fail (vector type is float32)",
+				args: args{
+					ctx: ctx,
+					req: &payload.Insert_Request{
+						Vector: &payload.Object_Vector{
+							Id:     id,
+							Vector: []float32{nan, nan, nan},
+						},
+					},
+				},
+				fields: fields{
+					name: name,
+					ip:   ip,
+					eg:   errgroup.Get(),
+					svcCfg: &config.NGT{
+						Dimension:    3,
+						DistanceType: ngt.Angle.String(),
+						ObjectType:   ngt.Float.String(),
+						KVSDB: &config.KVSDB{
+							Concurrency: 10,
+						},
+						VQueue: &config.VQueue{},
+					},
+					svcOpts: []service.Option{
+						service.WithErrGroup(errgroup.Get()),
+						service.WithEnableInMemoryMode(true),
+					},
+				},
+				want: want{
+					wantRes: &payload.Object_Location{
+						Name: name,
+						Uuid: id,
+						Ips:  []string{ip},
+					},
+				},
+			}
+		}(),
+		func() test {
+			name := "vald-agent-ngt-1"
+			ip := "127.0.0.1"
+
+			return test{
+				name: "Boundary Value Testing case 6: Insert nil insert request fail",
+				args: args{
+					ctx: ctx,
+					req: nil,
+				},
+				fields: fields{
+					name: name,
+					ip:   ip,
+					eg:   errgroup.Get(),
+					svcCfg: &config.NGT{
+						Dimension:    3,
+						DistanceType: ngt.Angle.String(),
+						ObjectType:   ngt.Float.String(),
+						KVSDB: &config.KVSDB{
+							Concurrency: 10,
+						},
+						VQueue: &config.VQueue{},
+					},
+					svcOpts: []service.Option{
+						service.WithErrGroup(errgroup.Get()),
+						service.WithEnableInMemoryMode(true),
+					},
+				},
+				want: want{
+					// IncompatibleDimensionSize error will be returned
+					err: func() error {
+						err := errors.ErrIncompatibleDimensionSize(0, 3)
+						return status.WrapWithInvalidArgument("Insert API Incompatible Dimension Size detected",
+							err,
+							&errdetails.RequestInfo{
+								RequestId:   "",
+								ServingData: errdetails.Serialize(nil),
+							},
+							&errdetails.BadRequest{
+								FieldViolations: []*errdetails.BadRequestFieldViolation{
+									{
+										Field:       "vector dimension size",
+										Description: err.Error(),
+									},
+								},
+							},
+							&errdetails.ResourceInfo{
+								ResourceType: ngtResourceType + "/ngt.Insert",
+								ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, name, ip),
+							})
+					}(),
+				},
+			}
+		}(),
+		func() test {
+			name := "vald-agent-ngt-1"
+			ip := "127.0.0.1"
+
+			return test{
+				name: "Boundary Value Testing case 7: Insert nil vector fail",
+				args: args{
+					ctx: ctx,
+					req: &payload.Insert_Request{
+						Vector: &payload.Object_Vector{
+							Id:     "1",
+							Vector: nil,
+						},
+					},
+				},
+				fields: fields{
+					name: name,
+					ip:   ip,
+					eg:   errgroup.Get(),
+					svcCfg: &config.NGT{
+						Dimension:    3,
+						DistanceType: ngt.Angle.String(),
+						ObjectType:   ngt.Float.String(),
+						KVSDB: &config.KVSDB{
+							Concurrency: 10,
+						},
+						VQueue: &config.VQueue{},
+					},
+					svcOpts: []service.Option{
+						service.WithErrGroup(errgroup.Get()),
+						service.WithEnableInMemoryMode(true),
+					},
+				},
+				want: want{
+					// IncompatibleDimensionSize error will be returned
+					err: func() error {
+						err := errors.ErrIncompatibleDimensionSize(0, 3)
+						return status.WrapWithInvalidArgument("Insert API Incompatible Dimension Size detected",
+							err,
+							&errdetails.RequestInfo{
+								RequestId:   "1",
+								ServingData: errdetails.Serialize(nil),
+							},
+							&errdetails.BadRequest{
+								FieldViolations: []*errdetails.BadRequestFieldViolation{
+									{
+										Field:       "vector dimension size",
+										Description: err.Error(),
+									},
+								},
+							},
+							&errdetails.ResourceInfo{
+								ResourceType: ngtResourceType + "/ngt.Insert",
+								ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, name, ip),
+							})
+					}(),
+				},
+			}
+		}(),
+		func() test {
+			name := "vald-agent-ngt-1"
+			ip := "127.0.0.1"
+
+			return test{
+				name: "Boundary Value Testing case 8: Insert empty insert vector fail",
+				args: args{
+					ctx: ctx,
+					req: &payload.Insert_Request{
+						Vector: &payload.Object_Vector{
+							Id:     "1",
+							Vector: []float32{},
+						},
+					},
+				},
+				fields: fields{
+					name: name,
+					ip:   ip,
+					eg:   errgroup.Get(),
+					svcCfg: &config.NGT{
+						Dimension:    3,
+						DistanceType: ngt.Angle.String(),
+						ObjectType:   ngt.Float.String(),
+						KVSDB: &config.KVSDB{
+							Concurrency: 10,
+						},
+						VQueue: &config.VQueue{},
+					},
+					svcOpts: []service.Option{
+						service.WithErrGroup(errgroup.Get()),
+						service.WithEnableInMemoryMode(true),
+					},
+				},
+				want: want{
+					// IncompatibleDimensionSize error will be returned
+					err: func() error {
+						err := errors.ErrIncompatibleDimensionSize(0, 3)
+						return status.WrapWithInvalidArgument("Insert API Incompatible Dimension Size detected",
+							err,
+							&errdetails.RequestInfo{
+								RequestId:   "1",
+								ServingData: errdetails.Serialize(nil),
+							},
+							&errdetails.BadRequest{
+								FieldViolations: []*errdetails.BadRequestFieldViolation{
+									{
+										Field:       "vector dimension size",
+										Description: err.Error(),
+									},
+								},
+							},
+							&errdetails.ResourceInfo{
+								ResourceType: ngtResourceType + "/ngt.Insert",
+								ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, name, ip),
+							})
+					}(),
+				},
+			}
+		}(),
 
 		// // Decision Table Testing
 		// {
