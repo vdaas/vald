@@ -40,7 +40,7 @@ const (
 	traceAttrGRPCResponsePayload = "grpc.response.payload"
 )
 
-var bufferPool = sync.Pool{
+var builderPool = sync.Pool{
 	New: func() interface{} {
 		return &strings.Builder{}
 	},
@@ -153,8 +153,8 @@ func parseMethod(fullMethod string) (service, method string) {
 }
 
 func marshalJSON(pbMsg interface{}) string {
-	b := bufferPool.Get().(*strings.Builder)
-	defer bufferPool.Put(b)
+	b := builderPool.Get().(*strings.Builder)
+	defer builderPool.Put(b)
 	defer b.Reset()
 
 	err := json.Encode(b, pbMsg)
