@@ -18,12 +18,10 @@
 package trace
 
 import (
-	"bytes"
 	"context"
 	"path"
-	"reflect"
+	"strings"
 	"sync"
-	"unsafe"
 
 	"github.com/vdaas/vald/internal/encoding/json"
 	"github.com/vdaas/vald/internal/net/grpc"
@@ -44,7 +42,7 @@ const (
 
 var bufferPool = sync.Pool{
 	New: func() interface{} {
-		return &bytes.Buffer{}
+		return &strings.Builder{}
 	},
 }
 
@@ -155,7 +153,7 @@ func parseMethod(fullMethod string) (service, method string) {
 }
 
 func marshalJSON(pbMsg interface{}) string {
-	b := bufferPool.Get().(*bytes.Buffer)
+	b := bufferPool.Get().(*strings.Builder)
 	defer bufferPool.Put(b)
 	defer b.Reset()
 
@@ -164,13 +162,5 @@ func marshalJSON(pbMsg interface{}) string {
 		return ""
 	}
 
-	return toString(b.Bytes())
-}
-
-func toString(b []byte) string {
-	header := (*reflect.SliceHeader)(unsafe.Pointer(&b))
-	return *(*string)(unsafe.Pointer(&reflect.StringHeader{
-		Data: header.Data,
-		Len:  header.Len,
-	}))
+	return b.String()
 }
