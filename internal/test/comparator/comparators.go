@@ -27,7 +27,23 @@ var (
 		return reflect.DeepEqual(x, y)
 	})
 
+	MutexComparer = Comparer(func(x, y sync.Mutex) bool {
+		return reflect.DeepEqual(x, y)
+	})
+
+	CondComparer = Comparer(func(x, y *sync.Cond) bool {
+		return reflect.DeepEqual(x, y)
+	})
+
 	ErrorComparer = Comparer(func(x, y error) bool {
 		return errors.Is(x, y)
+	})
+
+	OnceComparer = Comparer(func(x, y sync.Once) bool {
+		return reflect.DeepEqual(x, y)
+	})
+
+	WaitGroupComparer = Comparer(func(x, y sync.WaitGroup) bool {
+		return reflect.DeepEqual(x, y)
 	})
 )
