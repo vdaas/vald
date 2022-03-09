@@ -29,15 +29,13 @@ import (
 	"google.golang.org/grpc/keepalive"
 )
 
-var (
-	serverComparer = []comparator.Option{
-		comparator.AllowUnexported(Server{}),
-		comparator.IgnoreFields(Server{}, "opts", "quit", "done", "channelzRemoveOnce", "czData"),
-		comparator.MutexComparer,
-		comparator.CondComparer,
-		comparator.WaitGroupComparer,
-	}
-)
+var serverComparer = []comparator.Option{
+	comparator.AllowUnexported(Server{}),
+	comparator.IgnoreFields(Server{}, "opts", "quit", "done", "channelzRemoveOnce", "czData"),
+	comparator.MutexComparer,
+	comparator.CondComparer,
+	comparator.WaitGroupComparer,
+}
 
 func TestNewServer(t *testing.T) {
 	t.Parallel()
