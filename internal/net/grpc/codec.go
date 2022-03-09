@@ -22,8 +22,10 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc/proto"
 )
 
+// Codec represents a gRPC codec.
 type Codec struct{}
 
+// Name represents the codec name.
 const Name = "proto"
 
 type vtprotoMessage interface {
@@ -31,6 +33,7 @@ type vtprotoMessage interface {
 	UnmarshalVT([]byte) error
 }
 
+// Marshal returns byte slice representing the proto message marshalling result.
 func (Codec) Marshal(v interface{}) ([]byte, error) {
 	vt, ok := v.(vtprotoMessage)
 	if ok {
@@ -43,6 +46,7 @@ func (Codec) Marshal(v interface{}) ([]byte, error) {
 	return nil, errors.ErrInvalidProtoMessageType(v)
 }
 
+// Unmarshal parses the byte stream data into v.
 func (Codec) Unmarshal(data []byte, v interface{}) error {
 	vt, ok := v.(vtprotoMessage)
 	if ok {

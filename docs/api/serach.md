@@ -85,6 +85,7 @@ Search RPC is the method to search vector(s) similar to request vector.
     |timeout|int64| | | Search timeout in nanoseconds (default value is `5s`) |
     |ingress_filters|Filter.Config| | | Ingress Filter configuration |
     |egress_filters|Filter.Config| | | Egress Filter configuration |
+    |min_num| uint32 | | the minimum number of result to be returned |
 
 ### Output
 
@@ -171,6 +172,7 @@ The vector with the same requested ID should be indexed into the `vald-agent` be
     |timeout|int64| | | Search timeout in nanoseconds (default value is `5s`) |
     |ingress_filters|Filter.Config| | | Ingress Filter configuration |
     |egress_filters|Filter.Config| | | Egress Filter configuration |
+    |min_num| uint32 | | the minimum number of result to be returned |
 
 ### Output
 
@@ -258,6 +260,7 @@ Each Search request and response are independent.
     |timeout|int64| | | Search timeout in nanoseconds (default value is `5s`) |
     |ingress_filters|Filter.Config| | | Ingress Filter configuration |
     |egress_filters|Filter.Config| | | Egress Filter configuration |
+    |min_num| uint32 | | the minimum number of result to be returned |
 
 ### Output
 
@@ -358,6 +361,7 @@ Each SearchByID request and response are independent.
     |timeout|int64| | | Search timeout in nanoseconds (default value is `5s`) |
     |ingress_filters|Filter.Config| | | Ingress Filter configuration |
     |egress_filters|Filter.Config| | | Egress Filter configuration |
+    |min_num| uint32 | | the minimum number of result to be returned |
 
 ### Output
 
@@ -470,6 +474,7 @@ Please be careful that the size of the request exceed the limit.
     |timeout|int64| | | Search timeout in nanoseconds (default value is `5s`) |
     |ingress_filters|Filter.Config| | | Ingress Filter configuration |
     |egress_filters|Filter.Config| | | Egress Filter configuration |
+    |min_num| uint32 | | the minimum number of result to be returned |
 
 ### Output
 
@@ -579,6 +584,7 @@ Please be careful that the size of the request exceed the limit.
     |timeout|int64| | | Search timeout in nanoseconds (default value is `5s`) |
     |ingress_filters|Filter.Config| | | Ingress Filter configuration |
     |egress_filters|Filter.Config| | | Egress Filter configuration |
+    |min_num| uint32 | | the minimum number of result to be returned |
 
 ### Output
 
@@ -669,6 +675,7 @@ LinearSearch RPC is the method to linear search vector(s) similar to request vec
     |timeout|int64| | | Search timeout in nanoseconds (default value is `5s`) |
     |ingress_filters|Filter.Config| | | Ingress Filter configuration |
     |egress_filters|Filter.Config| | | Egress Filter configuration |
+    |min_num| uint32 | | the minimum number of result to be returned |
 
 ### Output
 
@@ -752,6 +759,7 @@ If the vector doesn't be stored, you will get a `NOT_FOUND` error as a result.
     |timeout|int64| | | Search timeout in nanoseconds (default value is `5s`) |
     |ingress_filters|Filter.Config| | | Ingress Filter configuration |
     |egress_filters|Filter.Config| | | Egress Filter configuration |
+    |min_num| uint32 | | the minimum number of result to be returned |
 
 ### Output
 
@@ -835,6 +843,7 @@ Each LinearSearch request and response are independent.
     |timeout|int64| | | Search timeout in nanoseconds (default value is `5s`) |
     |ingress_filters|Filter.Config| | | Ingress Filter configuration |
     |egress_filters|Filter.Config| | | Egress Filter configuration |
+    |min_num| uint32 | | the minimum number of result to be returned |
 
 ### Output
 
@@ -931,6 +940,7 @@ Each LinearSearchByID request and response are independent.
     |timeout|int64| | | Search timeout in nanoseconds (default value is `5s`) |
     |ingress_filters|Filter.Config| | | Ingress Filter configuration |
     |egress_filters|Filter.Config| | | Egress Filter configuration |
+    |min_num| uint32 | | the minimum number of result to be returned |
 
 ### Output
 
@@ -1039,6 +1049,7 @@ Please be careful that the size of the request exceed the limit.
     |timeout|int64| | | Search timeout in nanoseconds (default value is `5s`) |
     |ingress_filters|Filter.Config| | | Ingress Filter configuration |
     |egress_filters|Filter.Config| | | Egress Filter configuration |
+    |min_num| uint32 | | the minimum number of result to be returned |
 
 ### Output
 
@@ -1144,6 +1155,7 @@ Please be careful that the size of the request exceed the limit.
     |timeout|int64| | | Search timeout in nanoseconds (default value is `5s`) |
     |ingress_filters|Filter.Config| | | Ingress Filter configuration |
     |egress_filters|Filter.Config| | | Egress Filter configuration |
+    |min_num| uint32 | | the minimum number of result to be returned |
 
 ### Output
 

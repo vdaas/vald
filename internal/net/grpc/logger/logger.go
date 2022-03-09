@@ -30,6 +30,11 @@ type logger struct {
 
 var once sync.Once
 
+const (
+	tag = "[gRPC Log]"
+)
+
+// Init initialize the logging level and the logger.
 func Init() {
 	once.Do(func() {
 		var v int
@@ -40,58 +45,67 @@ func Init() {
 	})
 }
 
-const (
-	tag = "[gRPC Log]"
-)
-
+// Info prints the debug log to the logger.
 func (l *logger) Info(args ...interface{}) {
 	log.Debug(append([]interface{}{tag}, args...)...)
 }
 
+// Infoln prints the debug log to the logger.
 func (l *logger) Infoln(args ...interface{}) {
 	log.Debug(append([]interface{}{tag}, args...)...)
 }
 
+// Infof prints the debug log to the logger.
 func (l *logger) Infof(format string, args ...interface{}) {
 	log.Debugf(tag+"\t"+format, args...)
 }
 
+// Warning prints the warning log to the logger.
 func (l *logger) Warning(args ...interface{}) {
 	log.Warn(append([]interface{}{tag}, args...)...)
 }
 
+// Warningln prints the warning log to the logger.
 func (l *logger) Warningln(args ...interface{}) {
 	log.Warn(append([]interface{}{tag}, args...)...)
 }
 
+// Warningf prints the warning log to the logger.
 func (l *logger) Warningf(format string, args ...interface{}) {
 	log.Warnf(tag+"\t"+format, args...)
 }
 
+// Error prints the error log to the logger.
 func (l *logger) Error(args ...interface{}) {
 	log.Error(append([]interface{}{tag}, args...)...)
 }
 
+// Errorln prints the error log to the logger.
 func (l *logger) Errorln(args ...interface{}) {
 	log.Error(append([]interface{}{tag}, args...)...)
 }
 
+// Errorf prints the error log to the logger.
 func (l *logger) Errorf(format string, args ...interface{}) {
 	log.Errorf(tag+"\t"+format, args...)
 }
 
+// Fatal prints the fatal log to the logger and exit the program.
 func (l *logger) Fatal(args ...interface{}) {
 	log.Fatal(append([]interface{}{tag}, args...)...)
 }
 
+// Fatalln prints the fatal log to the logger and exit the program.
 func (l *logger) Fatalln(args ...interface{}) {
 	log.Fatal(append([]interface{}{tag}, args...)...)
 }
 
+// Fatalf prints the fatal log to the logger and exit the program.
 func (l *logger) Fatalf(format string, args ...interface{}) {
 	log.Fatalf(tag+"\t"+format, args...)
 }
 
+// V returns if the v is less than the verbosity level.
 func (l *logger) V(v int) bool {
 	return v <= l.v
 }

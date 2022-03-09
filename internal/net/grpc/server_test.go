@@ -18,14 +18,25 @@
 package grpc
 
 import (
-	"reflect"
 	"testing"
 	"time"
 
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/test/comparator"
 	"github.com/vdaas/vald/internal/test/goleak"
+	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/keepalive"
+)
+
+var (
+	serverComparer = []comparator.Option{
+		comparator.AllowUnexported(Server{}),
+		comparator.IgnoreFields(Server{}, "opts", "quit", "done", "channelzRemoveOnce", "czData"),
+		comparator.MutexComparer,
+		comparator.CondComparer,
+		comparator.WaitGroupComparer,
+	}
 )
 
 func TestNewServer(t *testing.T) {
@@ -45,37 +56,30 @@ func TestNewServer(t *testing.T) {
 		afterFunc  func(args)
 	}
 	defaultCheckFunc := func(w want, got *Server) error {
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+		if diff := comparator.Diff(w.want, got, serverComparer...); diff != "" {
+			return errors.Errorf(diff)
 		}
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           opts: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           opts: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "returns gRPC server when no option is set",
+			args: args{
+				opts: nil,
+			},
+			want: want{
+				want: grpc.NewServer(),
+			},
+		},
+		{
+			name: "returns gRPC server when 1 option is set",
+			args: args{
+				opts: []ServerOption{MaxSendMsgSize(100)},
+			},
+			want: want{
+				want: grpc.NewServer(),
+			},
+		},
 	}
 
 	for _, tc := range tests {
@@ -119,37 +123,24 @@ func TestCreds(t *testing.T) {
 		afterFunc  func(args)
 	}
 	defaultCheckFunc := func(w want, got ServerOption) error {
-		if !reflect.DeepEqual(got, w.want) {
+		if got == nil {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           c: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           c: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "return server option when cred is nil",
+			args: args{
+				c: nil,
+			},
+		},
+		{
+			name: "return server option when cred is not nil",
+			args: args{
+				c: credentials.NewTLS(nil),
+			},
+		},
 	}
 
 	for _, tc := range tests {
@@ -193,37 +184,26 @@ func TestKeepaliveParams(t *testing.T) {
 		afterFunc  func(args)
 	}
 	defaultCheckFunc := func(w want, got ServerOption) error {
-		if !reflect.DeepEqual(got, w.want) {
+		if got == nil {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           kp: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           kp: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "return server option when keepalive is empty",
+			args: args{
+				kp: keepalive.ServerParameters{},
+			},
+		},
+		{
+			name: "return server option when keepalive is not empty",
+			args: args{
+				kp: keepalive.ServerParameters{
+					MaxConnectionIdle: time.Second,
+				},
+			},
+		},
 	}
 
 	for _, tc := range tests {
@@ -267,37 +247,24 @@ func TestMaxRecvMsgSize(t *testing.T) {
 		afterFunc  func(args)
 	}
 	defaultCheckFunc := func(w want, got ServerOption) error {
-		if !reflect.DeepEqual(got, w.want) {
+		if got == nil {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           size: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           size: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "return server option when size is 0",
+			args: args{
+				size: 0,
+			},
+		},
+		{
+			name: "return server option when size is not 0",
+			args: args{
+				size: 100,
+			},
+		},
 	}
 
 	for _, tc := range tests {
@@ -341,37 +308,24 @@ func TestMaxSendMsgSize(t *testing.T) {
 		afterFunc  func(args)
 	}
 	defaultCheckFunc := func(w want, got ServerOption) error {
-		if !reflect.DeepEqual(got, w.want) {
+		if got == nil {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           size: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           size: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "return server option when size is 0",
+			args: args{
+				size: 0,
+			},
+		},
+		{
+			name: "return server option when size is not 0",
+			args: args{
+				size: 100,
+			},
+		},
 	}
 
 	for _, tc := range tests {
@@ -415,37 +369,24 @@ func TestInitialWindowSize(t *testing.T) {
 		afterFunc  func(args)
 	}
 	defaultCheckFunc := func(w want, got ServerOption) error {
-		if !reflect.DeepEqual(got, w.want) {
+		if got == nil {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           size: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           size: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "return server option when size is 0",
+			args: args{
+				size: 0,
+			},
+		},
+		{
+			name: "return server option when size is not 0",
+			args: args{
+				size: 100,
+			},
+		},
 	}
 
 	for _, tc := range tests {
@@ -489,37 +430,24 @@ func TestInitialConnWindowSize(t *testing.T) {
 		afterFunc  func(args)
 	}
 	defaultCheckFunc := func(w want, got ServerOption) error {
-		if !reflect.DeepEqual(got, w.want) {
+		if got == nil {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           size: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           size: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "return server option when size is 0",
+			args: args{
+				size: 0,
+			},
+		},
+		{
+			name: "return server option when size is not 0",
+			args: args{
+				size: 100,
+			},
+		},
 	}
 
 	for _, tc := range tests {
@@ -563,37 +491,24 @@ func TestReadBufferSize(t *testing.T) {
 		afterFunc  func(args)
 	}
 	defaultCheckFunc := func(w want, got ServerOption) error {
-		if !reflect.DeepEqual(got, w.want) {
+		if got == nil {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           size: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           size: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "return server option when size is 0",
+			args: args{
+				size: 0,
+			},
+		},
+		{
+			name: "return server option when size is not 0",
+			args: args{
+				size: 100,
+			},
+		},
 	}
 
 	for _, tc := range tests {
@@ -637,37 +552,24 @@ func TestWriteBufferSize(t *testing.T) {
 		afterFunc  func(args)
 	}
 	defaultCheckFunc := func(w want, got ServerOption) error {
-		if !reflect.DeepEqual(got, w.want) {
+		if got == nil {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           size: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           size: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "return server option when size is 0",
+			args: args{
+				size: 0,
+			},
+		},
+		{
+			name: "return server option when size is not 0",
+			args: args{
+				size: 100,
+			},
+		},
 	}
 
 	for _, tc := range tests {
@@ -711,37 +613,24 @@ func TestConnectionTimeout(t *testing.T) {
 		afterFunc  func(args)
 	}
 	defaultCheckFunc := func(w want, got ServerOption) error {
-		if !reflect.DeepEqual(got, w.want) {
+		if got == nil {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           d: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           d: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "return server option when timeout is 0",
+			args: args{
+				d: 0,
+			},
+		},
+		{
+			name: "return server option when timeout is not 0",
+			args: args{
+				d: time.Second * 30,
+			},
+		},
 	}
 
 	for _, tc := range tests {
@@ -785,37 +674,24 @@ func TestMaxHeaderListSize(t *testing.T) {
 		afterFunc  func(args)
 	}
 	defaultCheckFunc := func(w want, got ServerOption) error {
-		if !reflect.DeepEqual(got, w.want) {
+		if got == nil {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           size: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           size: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "return server option when size is 0",
+			args: args{
+				size: 0,
+			},
+		},
+		{
+			name: "return server option when size is not 0",
+			args: args{
+				size: 100,
+			},
+		},
 	}
 
 	for _, tc := range tests {
@@ -859,37 +735,24 @@ func TestHeaderTableSize(t *testing.T) {
 		afterFunc  func(args)
 	}
 	defaultCheckFunc := func(w want, got ServerOption) error {
-		if !reflect.DeepEqual(got, w.want) {
+		if got == nil {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           size: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           size: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "return server option when size is 0",
+			args: args{
+				size: 0,
+			},
+		},
+		{
+			name: "return server option when size is not 0",
+			args: args{
+				size: 100,
+			},
+		},
 	}
 
 	for _, tc := range tests {
@@ -932,37 +795,26 @@ func TestKeepaliveEnforcementPolicy(t *testing.T) {
 		afterFunc  func(args)
 	}
 	defaultCheckFunc := func(w want, got ServerOption) error {
-		if !reflect.DeepEqual(got, w.want) {
+		if got == nil {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           kep: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           kep: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "return server option when policy is empty",
+			args: args{
+				kep: keepalive.EnforcementPolicy{},
+			},
+		},
+		{
+			name: "return server option when policy is not empty",
+			args: args{
+				kep: keepalive.EnforcementPolicy{
+					MinTime: time.Second,
+				},
+			},
+		},
 	}
 
 	for _, tc := range tests {
