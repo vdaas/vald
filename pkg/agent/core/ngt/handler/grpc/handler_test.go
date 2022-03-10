@@ -1202,7 +1202,7 @@ func Test_server_Insert(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotRes *payload.Object_Location, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err.Error(), w.err)
 		}
 		if !reflect.DeepEqual(gotRes, w.wantRes) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
@@ -1256,6 +1256,8 @@ func Test_server_Insert(t *testing.T) {
 			id := "uuid1"
 			ip := "127.0.0.1"
 
+			eg, _ := errgroup.New(ctx)
+
 			return test{
 				name: "Equivalence Class Testing case 1.1: Insert vector success (vector type is uint8)",
 				args: args{
@@ -1270,7 +1272,7 @@ func Test_server_Insert(t *testing.T) {
 				fields: fields{
 					name: name,
 					ip:   ip,
-					eg:   errgroup.Get(),
+					eg:   eg,
 					svcCfg: &config.NGT{
 						Dimension:    3,
 						DistanceType: ngt.Angle.String(),
@@ -1281,7 +1283,7 @@ func Test_server_Insert(t *testing.T) {
 						VQueue: &config.VQueue{},
 					},
 					svcOpts: []service.Option{
-						service.WithErrGroup(errgroup.Get()),
+						service.WithErrGroup(eg),
 						service.WithEnableInMemoryMode(true),
 					},
 				},
@@ -1299,6 +1301,8 @@ func Test_server_Insert(t *testing.T) {
 			id := "uuid1"
 			ip := "127.0.0.1"
 
+			eg, _ := errgroup.New(ctx)
+
 			return test{
 				name: "Equivalence Class Testing case 1.2: Insert vector success (vector type is float32)",
 				args: args{
@@ -1313,7 +1317,7 @@ func Test_server_Insert(t *testing.T) {
 				fields: fields{
 					name: name,
 					ip:   ip,
-					eg:   errgroup.Get(),
+					eg:   eg,
 					svcCfg: &config.NGT{
 						Dimension:    3,
 						DistanceType: ngt.Angle.String(),
@@ -1324,7 +1328,7 @@ func Test_server_Insert(t *testing.T) {
 						VQueue: &config.VQueue{},
 					},
 					svcOpts: []service.Option{
-						service.WithErrGroup(errgroup.Get()),
+						service.WithErrGroup(eg),
 						service.WithEnableInMemoryMode(true),
 					},
 				},
@@ -1349,6 +1353,8 @@ func Test_server_Insert(t *testing.T) {
 				},
 			}
 
+			eg, _ := errgroup.New(ctx)
+
 			return test{
 				name: "Equivalence Class Testing case 2.1: Insert vector with different dimension (vector type is uint8)",
 				args: args{
@@ -1358,7 +1364,7 @@ func Test_server_Insert(t *testing.T) {
 				fields: fields{
 					name: name,
 					ip:   ip,
-					eg:   errgroup.Get(),
+					eg:   eg,
 					svcCfg: &config.NGT{
 						Dimension:    3,
 						DistanceType: ngt.Angle.String(),
@@ -1413,6 +1419,8 @@ func Test_server_Insert(t *testing.T) {
 				},
 			}
 
+			eg, _ := errgroup.New(ctx)
+
 			return test{
 				name: "Equivalence Class Testing case 2.2: Insert vector with different dimension (vector type is float32)",
 				args: args{
@@ -1422,7 +1430,7 @@ func Test_server_Insert(t *testing.T) {
 				fields: fields{
 					name: name,
 					ip:   ip,
-					eg:   errgroup.Get(),
+					eg:   eg,
 					svcCfg: &config.NGT{
 						Dimension:    3,
 						DistanceType: ngt.Angle.String(),
@@ -1472,6 +1480,8 @@ func Test_server_Insert(t *testing.T) {
 			id := "uuid1"
 			ip := "127.0.0.1"
 
+			eg, _ := errgroup.New(ctx)
+
 			return test{
 				name: "Boundary Value Testing case 1.1: Insert vector with 0 value success (vector type is uint8)",
 				args: args{
@@ -1486,7 +1496,7 @@ func Test_server_Insert(t *testing.T) {
 				fields: fields{
 					name: name,
 					ip:   ip,
-					eg:   errgroup.Get(),
+					eg:   eg,
 					svcCfg: &config.NGT{
 						Dimension:    3,
 						DistanceType: ngt.Angle.String(),
@@ -1497,7 +1507,7 @@ func Test_server_Insert(t *testing.T) {
 						VQueue: &config.VQueue{},
 					},
 					svcOpts: []service.Option{
-						service.WithErrGroup(errgroup.Get()),
+						service.WithErrGroup(eg),
 						service.WithEnableInMemoryMode(true),
 					},
 				},
@@ -1514,6 +1524,8 @@ func Test_server_Insert(t *testing.T) {
 			name := "vald-agent-ngt-1"
 			id := "uuid1"
 			ip := "127.0.0.1"
+
+			eg, _ := errgroup.New(ctx)
 
 			return test{
 				name: "Boundary Value Testing case 1.2: Insert vector with 0 value success (vector type is float32)",
@@ -1529,7 +1541,7 @@ func Test_server_Insert(t *testing.T) {
 				fields: fields{
 					name: name,
 					ip:   ip,
-					eg:   errgroup.Get(),
+					eg:   eg,
 					svcCfg: &config.NGT{
 						Dimension:    3,
 						DistanceType: ngt.Angle.String(),
@@ -1540,7 +1552,7 @@ func Test_server_Insert(t *testing.T) {
 						VQueue: &config.VQueue{},
 					},
 					svcOpts: []service.Option{
-						service.WithErrGroup(errgroup.Get()),
+						service.WithErrGroup(eg),
 						service.WithEnableInMemoryMode(true),
 					},
 				},
@@ -1557,6 +1569,8 @@ func Test_server_Insert(t *testing.T) {
 			name := "vald-agent-ngt-1"
 			id := "uuid1"
 			ip := "127.0.0.1"
+
+			eg, _ := errgroup.New(ctx)
 
 			return test{
 				name: "Boundary Value Testing case 2.1: Insert vector with min value success (vector type is uint8)",
@@ -1572,7 +1586,7 @@ func Test_server_Insert(t *testing.T) {
 				fields: fields{
 					name: name,
 					ip:   ip,
-					eg:   errgroup.Get(),
+					eg:   eg,
 					svcCfg: &config.NGT{
 						Dimension:    3,
 						DistanceType: ngt.Angle.String(),
@@ -1583,7 +1597,7 @@ func Test_server_Insert(t *testing.T) {
 						VQueue: &config.VQueue{},
 					},
 					svcOpts: []service.Option{
-						service.WithErrGroup(errgroup.Get()),
+						service.WithErrGroup(eg),
 						service.WithEnableInMemoryMode(true),
 					},
 				},
@@ -1600,6 +1614,8 @@ func Test_server_Insert(t *testing.T) {
 			name := "vald-agent-ngt-1"
 			id := "uuid1"
 			ip := "127.0.0.1"
+
+			eg, _ := errgroup.New(ctx)
 
 			return test{
 				name: "Boundary Value Testing case 2.2: Insert vector with min value success (vector type is float32)",
@@ -1615,7 +1631,7 @@ func Test_server_Insert(t *testing.T) {
 				fields: fields{
 					name: name,
 					ip:   ip,
-					eg:   errgroup.Get(),
+					eg:   eg,
 					svcCfg: &config.NGT{
 						Dimension:    3,
 						DistanceType: ngt.Angle.String(),
@@ -1626,7 +1642,7 @@ func Test_server_Insert(t *testing.T) {
 						VQueue: &config.VQueue{},
 					},
 					svcOpts: []service.Option{
-						service.WithErrGroup(errgroup.Get()),
+						service.WithErrGroup(eg),
 						service.WithEnableInMemoryMode(true),
 					},
 				},
@@ -1643,6 +1659,8 @@ func Test_server_Insert(t *testing.T) {
 			name := "vald-agent-ngt-1"
 			id := "uuid1"
 			ip := "127.0.0.1"
+
+			eg, _ := errgroup.New(ctx)
 
 			return test{
 				name: "Boundary Value Testing case 3.1: Insert vector with max value success (vector type is uint8)",
@@ -1658,7 +1676,7 @@ func Test_server_Insert(t *testing.T) {
 				fields: fields{
 					name: name,
 					ip:   ip,
-					eg:   errgroup.Get(),
+					eg:   eg,
 					svcCfg: &config.NGT{
 						Dimension:    3,
 						DistanceType: ngt.Angle.String(),
@@ -1669,7 +1687,7 @@ func Test_server_Insert(t *testing.T) {
 						VQueue: &config.VQueue{},
 					},
 					svcOpts: []service.Option{
-						service.WithErrGroup(errgroup.Get()),
+						service.WithErrGroup(eg),
 						service.WithEnableInMemoryMode(true),
 					},
 				},
@@ -1687,6 +1705,8 @@ func Test_server_Insert(t *testing.T) {
 			id := "uuid1"
 			ip := "127.0.0.1"
 
+			eg, _ := errgroup.New(ctx)
+
 			return test{
 				name: "Boundary Value Testing case 3.2: Insert vector with max value success (vector type is float32)",
 				args: args{
@@ -1701,7 +1721,7 @@ func Test_server_Insert(t *testing.T) {
 				fields: fields{
 					name: name,
 					ip:   ip,
-					eg:   errgroup.Get(),
+					eg:   eg,
 					svcCfg: &config.NGT{
 						Dimension:    3,
 						DistanceType: ngt.Angle.String(),
@@ -1712,7 +1732,7 @@ func Test_server_Insert(t *testing.T) {
 						VQueue: &config.VQueue{},
 					},
 					svcOpts: []service.Option{
-						service.WithErrGroup(errgroup.Get()),
+						service.WithErrGroup(eg),
 						service.WithEnableInMemoryMode(true),
 					},
 				},
@@ -1736,6 +1756,8 @@ func Test_server_Insert(t *testing.T) {
 				},
 			}
 
+			eg, _ := errgroup.New(ctx)
+
 			return test{
 				name: "Boundary Value Testing case 4.1: Insert with empty UUID fail (vector type is uint8)",
 				args: args{
@@ -1745,7 +1767,7 @@ func Test_server_Insert(t *testing.T) {
 				fields: fields{
 					name: name,
 					ip:   ip,
-					eg:   errgroup.Get(),
+					eg:   eg,
 					svcCfg: &config.NGT{
 						Dimension:    3,
 						DistanceType: ngt.Angle.String(),
@@ -1756,7 +1778,7 @@ func Test_server_Insert(t *testing.T) {
 						VQueue: &config.VQueue{},
 					},
 					svcOpts: []service.Option{
-						service.WithErrGroup(errgroup.Get()),
+						service.WithErrGroup(eg),
 						service.WithEnableInMemoryMode(true),
 					},
 				},
@@ -1796,6 +1818,8 @@ func Test_server_Insert(t *testing.T) {
 				},
 			}
 
+			eg, _ := errgroup.New(ctx)
+
 			return test{
 				name: "Boundary Value Testing case 4.2: Insert with empty UUID fail (vector type is float32)",
 				args: args{
@@ -1805,7 +1829,7 @@ func Test_server_Insert(t *testing.T) {
 				fields: fields{
 					name: name,
 					ip:   ip,
-					eg:   errgroup.Get(),
+					eg:   eg,
 					svcCfg: &config.NGT{
 						Dimension:    3,
 						DistanceType: ngt.Angle.String(),
@@ -1816,7 +1840,7 @@ func Test_server_Insert(t *testing.T) {
 						VQueue: &config.VQueue{},
 					},
 					svcOpts: []service.Option{
-						service.WithErrGroup(errgroup.Get()),
+						service.WithErrGroup(eg),
 						service.WithEnableInMemoryMode(true),
 					},
 				},
@@ -1856,6 +1880,8 @@ func Test_server_Insert(t *testing.T) {
 				},
 			}
 
+			eg, _ := errgroup.New(ctx)
+
 			return test{
 				name: "Boundary Value Testing case 4.2: Insert with empty UUID fail (vector type is float32)",
 				args: args{
@@ -1865,7 +1891,7 @@ func Test_server_Insert(t *testing.T) {
 				fields: fields{
 					name: name,
 					ip:   ip,
-					eg:   errgroup.Get(),
+					eg:   eg,
 					svcCfg: &config.NGT{
 						Dimension:    3,
 						DistanceType: ngt.Angle.String(),
@@ -1876,7 +1902,7 @@ func Test_server_Insert(t *testing.T) {
 						VQueue: &config.VQueue{},
 					},
 					svcOpts: []service.Option{
-						service.WithErrGroup(errgroup.Get()),
+						service.WithErrGroup(eg),
 						service.WithEnableInMemoryMode(true),
 					},
 				},
@@ -1911,6 +1937,8 @@ func Test_server_Insert(t *testing.T) {
 			ip := "127.0.0.1"
 			nan := float32(math.NaN())
 
+			eg, _ := errgroup.New(ctx)
+
 			return test{
 				name: "Boundary Value Testing case 5: Insert vector with NaN value fail (vector type is float32)",
 				args: args{
@@ -1925,7 +1953,7 @@ func Test_server_Insert(t *testing.T) {
 				fields: fields{
 					name: name,
 					ip:   ip,
-					eg:   errgroup.Get(),
+					eg:   eg,
 					svcCfg: &config.NGT{
 						Dimension:    3,
 						DistanceType: ngt.Angle.String(),
@@ -1936,7 +1964,7 @@ func Test_server_Insert(t *testing.T) {
 						VQueue: &config.VQueue{},
 					},
 					svcOpts: []service.Option{
-						service.WithErrGroup(errgroup.Get()),
+						service.WithErrGroup(eg),
 						service.WithEnableInMemoryMode(true),
 					},
 				},
@@ -1953,6 +1981,8 @@ func Test_server_Insert(t *testing.T) {
 			name := "vald-agent-ngt-1"
 			ip := "127.0.0.1"
 
+			eg, _ := errgroup.New(ctx)
+
 			return test{
 				name: "Boundary Value Testing case 6: Insert nil insert request fail",
 				args: args{
@@ -1962,7 +1992,7 @@ func Test_server_Insert(t *testing.T) {
 				fields: fields{
 					name: name,
 					ip:   ip,
-					eg:   errgroup.Get(),
+					eg:   eg,
 					svcCfg: &config.NGT{
 						Dimension:    3,
 						DistanceType: ngt.Angle.String(),
@@ -1973,7 +2003,7 @@ func Test_server_Insert(t *testing.T) {
 						VQueue: &config.VQueue{},
 					},
 					svcOpts: []service.Option{
-						service.WithErrGroup(errgroup.Get()),
+						service.WithErrGroup(eg),
 						service.WithEnableInMemoryMode(true),
 					},
 				},
@@ -2007,6 +2037,8 @@ func Test_server_Insert(t *testing.T) {
 			name := "vald-agent-ngt-1"
 			ip := "127.0.0.1"
 
+			eg, _ := errgroup.New(ctx)
+
 			return test{
 				name: "Boundary Value Testing case 7: Insert nil vector fail",
 				args: args{
@@ -2021,7 +2053,7 @@ func Test_server_Insert(t *testing.T) {
 				fields: fields{
 					name: name,
 					ip:   ip,
-					eg:   errgroup.Get(),
+					eg:   eg,
 					svcCfg: &config.NGT{
 						Dimension:    3,
 						DistanceType: ngt.Angle.String(),
@@ -2032,7 +2064,7 @@ func Test_server_Insert(t *testing.T) {
 						VQueue: &config.VQueue{},
 					},
 					svcOpts: []service.Option{
-						service.WithErrGroup(errgroup.Get()),
+						service.WithErrGroup(eg),
 						service.WithEnableInMemoryMode(true),
 					},
 				},
@@ -2066,6 +2098,8 @@ func Test_server_Insert(t *testing.T) {
 			name := "vald-agent-ngt-1"
 			ip := "127.0.0.1"
 
+			eg, _ := errgroup.New(ctx)
+
 			return test{
 				name: "Boundary Value Testing case 8: Insert empty insert vector fail",
 				args: args{
@@ -2080,7 +2114,7 @@ func Test_server_Insert(t *testing.T) {
 				fields: fields{
 					name: name,
 					ip:   ip,
-					eg:   errgroup.Get(),
+					eg:   eg,
 					svcCfg: &config.NGT{
 						Dimension:    3,
 						DistanceType: ngt.Angle.String(),
@@ -2091,7 +2125,7 @@ func Test_server_Insert(t *testing.T) {
 						VQueue: &config.VQueue{},
 					},
 					svcOpts: []service.Option{
-						service.WithErrGroup(errgroup.Get()),
+						service.WithErrGroup(eg),
 						service.WithEnableInMemoryMode(true),
 					},
 				},
@@ -2137,6 +2171,8 @@ func Test_server_Insert(t *testing.T) {
 				},
 			}
 
+			eg, _ := errgroup.New(ctx)
+
 			return test{
 				name: "Decision Table Testing case 1.1: Insert duplicated request fail when SkipStrictExistCheck is off (duplicated ID)",
 				args: args{
@@ -2146,7 +2182,7 @@ func Test_server_Insert(t *testing.T) {
 				fields: fields{
 					name: name,
 					ip:   ip,
-					eg:   errgroup.Get(),
+					eg:   eg,
 					svcCfg: &config.NGT{
 						Dimension:    3,
 						DistanceType: ngt.Angle.String(),
@@ -2157,7 +2193,7 @@ func Test_server_Insert(t *testing.T) {
 						VQueue: &config.VQueue{},
 					},
 					svcOpts: []service.Option{
-						service.WithErrGroup(errgroup.Get()),
+						service.WithErrGroup(eg),
 						service.WithEnableInMemoryMode(true),
 					},
 				},
@@ -2188,6 +2224,8 @@ func Test_server_Insert(t *testing.T) {
 			id2 := "uuid2"             // use in beforeFunc
 			vec2 := []float32{3, 2, 1} // use in beforeFunc
 
+			eg, _ := errgroup.New(ctx)
+
 			return test{
 				name: "Decision Table Testing case 1.2: Insert duplicated request success when SkipStrictExistCheck is off (duplicated vector)",
 				args: args{
@@ -2205,7 +2243,7 @@ func Test_server_Insert(t *testing.T) {
 				fields: fields{
 					name: name,
 					ip:   ip,
-					eg:   errgroup.Get(),
+					eg:   eg,
 					svcCfg: &config.NGT{
 						Dimension:    3,
 						DistanceType: ngt.Angle.String(),
@@ -2216,7 +2254,7 @@ func Test_server_Insert(t *testing.T) {
 						VQueue: &config.VQueue{},
 					},
 					svcOpts: []service.Option{
-						service.WithErrGroup(errgroup.Get()),
+						service.WithErrGroup(eg),
 						service.WithEnableInMemoryMode(true),
 					},
 				},
@@ -2250,6 +2288,8 @@ func Test_server_Insert(t *testing.T) {
 				},
 			}
 
+			eg, _ := errgroup.New(ctx)
+
 			return test{
 				name: "Decision Table Testing case 1.3: Insert duplicated request fail when SkipStrictExistCheck is off (duplicated ID & vector)",
 				args: args{
@@ -2259,7 +2299,7 @@ func Test_server_Insert(t *testing.T) {
 				fields: fields{
 					name: name,
 					ip:   ip,
-					eg:   errgroup.Get(),
+					eg:   eg,
 					svcCfg: &config.NGT{
 						Dimension:    3,
 						DistanceType: ngt.Angle.String(),
@@ -2270,7 +2310,7 @@ func Test_server_Insert(t *testing.T) {
 						VQueue: &config.VQueue{},
 					},
 					svcOpts: []service.Option{
-						service.WithErrGroup(errgroup.Get()),
+						service.WithErrGroup(eg),
 						service.WithEnableInMemoryMode(true),
 					},
 				},
@@ -2293,66 +2333,70 @@ func Test_server_Insert(t *testing.T) {
 				},
 			}
 		}(),
-		// func() test {
-		// 	name := "vald-agent-ngt-1"
-		// 	id := "uuid1"
-		// 	ip := "127.0.0.1"
-		// 	vec := []float32{1, 2, 3}
-		// 	vec2 := []float32{3, 2, 1} // use in beforeFunc
+		func() test {
+			name := "vald-agent-ngt-1"
+			id := "uuid1"
+			ip := "127.0.0.1"
+			vec := []float32{1, 2, 3}
+			vec2 := []float32{3, 2, 1} // use in beforeFunc
 
-		// 	return test{
-		// 		name: "Decision Table Testing case 2.1: Insert duplicated request success when SkipStrictExistCheck is on (duplicated ID)",
-		// 		args: args{
-		// 			ctx: ctx,
-		// 			req: &payload.Insert_Request{
-		// 				Vector: &payload.Object_Vector{
-		// 					Id:     id,
-		// 					Vector: vec,
-		// 				},
-		// 				Config: &payload.Insert_Config{
-		// 					SkipStrictExistCheck: true,
-		// 				},
-		// 			},
-		// 		},
-		// 		fields: fields{
-		// 			name: name,
-		// 			ip:   ip,
-		// 			eg:   errgroup.Get(),
-		// 			svcCfg: &config.NGT{
-		// 				Dimension:    3,
-		// 				DistanceType: ngt.Angle.String(),
-		// 				ObjectType:   ngt.Uint8.String(),
-		// 				KVSDB: &config.KVSDB{
-		// 					Concurrency: 10,
-		// 				},
-		// 				VQueue: &config.VQueue{},
-		// 			},
-		// 			svcOpts: []service.Option{
-		// 				service.WithErrGroup(errgroup.Get()),
-		// 				service.WithEnableInMemoryMode(true),
-		// 			},
-		// 		},
-		// 		beforeFunc: func(t *testing.T, test *test) {
-		// 			t.Helper()
-		// 			defaultBeforeFunc(t, test)
+			eg, _ := errgroup.New(ctx)
 
-		// 			test.fields.ngt.Insert(id, vec2)
-		// 		},
-		// 		want: want{
-		// 			wantRes: &payload.Object_Location{
-		// 				Name: name,
-		// 				Uuid: id,
-		// 				Ips:  []string{ip},
-		// 			},
-		// 		},
-		// 	}
-		// }(),
+			return test{
+				name: "Decision Table Testing case 2.1: Insert duplicated request success when SkipStrictExistCheck is on (duplicated ID)",
+				args: args{
+					ctx: ctx,
+					req: &payload.Insert_Request{
+						Vector: &payload.Object_Vector{
+							Id:     id,
+							Vector: vec,
+						},
+						Config: &payload.Insert_Config{
+							SkipStrictExistCheck: true,
+						},
+					},
+				},
+				fields: fields{
+					name: name,
+					ip:   ip,
+					eg:   eg,
+					svcCfg: &config.NGT{
+						Dimension:    3,
+						DistanceType: ngt.Angle.String(),
+						ObjectType:   ngt.Uint8.String(),
+						KVSDB: &config.KVSDB{
+							Concurrency: 10,
+						},
+						VQueue: &config.VQueue{},
+					},
+					svcOpts: []service.Option{
+						service.WithErrGroup(eg),
+						service.WithEnableInMemoryMode(true),
+					},
+				},
+				beforeFunc: func(t *testing.T, test *test) {
+					t.Helper()
+					defaultBeforeFunc(t, test)
+
+					test.fields.ngt.Insert(id, vec2)
+				},
+				want: want{
+					wantRes: &payload.Object_Location{
+						Name: name,
+						Uuid: id,
+						Ips:  []string{ip},
+					},
+				},
+			}
+		}(),
 		func() test {
 			name := "vald-agent-ngt-1"
 			id := "uuid1"
 			id2 := "uuid2"
 			ip := "127.0.0.1"
 			vec := []float32{1, 2, 3}
+
+			eg, _ := errgroup.New(ctx)
 
 			return test{
 				name: "Decision Table Testing case 2.2: Insert duplicated request success when SkipStrictExistCheck is on (duplicated vector)",
@@ -2371,7 +2415,7 @@ func Test_server_Insert(t *testing.T) {
 				fields: fields{
 					name: name,
 					ip:   ip,
-					eg:   errgroup.Get(),
+					eg:   eg,
 					svcCfg: &config.NGT{
 						Dimension:    3,
 						DistanceType: ngt.Angle.String(),
@@ -2382,7 +2426,7 @@ func Test_server_Insert(t *testing.T) {
 						VQueue: &config.VQueue{},
 					},
 					svcOpts: []service.Option{
-						service.WithErrGroup(errgroup.Get()),
+						service.WithErrGroup(eg),
 						service.WithEnableInMemoryMode(true),
 					},
 				},
@@ -2407,6 +2451,8 @@ func Test_server_Insert(t *testing.T) {
 		// 	ip := "127.0.0.1"
 		// 	vec := []float32{1, 2, 3}
 
+		// eg, _ := errgroup.New(ctx)
+
 		// 	return test{
 		// 		name: "Decision Table Testing case 2.3: Insert duplicated request success when SkipStrictExistCheck is on (duplicated ID & vector)",
 		// 		args: args{
@@ -2424,7 +2470,7 @@ func Test_server_Insert(t *testing.T) {
 		// 		fields: fields{
 		// 			name: name,
 		// 			ip:   ip,
-		// 			eg:   errgroup.Get(),
+		// 			eg:   eg,
 		// 			svcCfg: &config.NGT{
 		// 				Dimension:    3,
 		// 				DistanceType: ngt.Angle.String(),
@@ -2435,7 +2481,7 @@ func Test_server_Insert(t *testing.T) {
 		// 				VQueue: &config.VQueue{},
 		// 			},
 		// 			svcOpts: []service.Option{
-		// 				service.WithErrGroup(errgroup.Get()),
+		// 				service.WithErrGroup(eg),
 		// 				service.WithEnableInMemoryMode(true),
 		// 			},
 		// 		},
