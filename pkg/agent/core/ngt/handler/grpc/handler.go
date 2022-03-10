@@ -1080,7 +1080,7 @@ func (s *server) MultiLinearSearchByID(ctx context.Context, reqs *payload.Search
 	return res, nil
 }
 
-// Insert insert a vector to the NGt.
+// Insert insert a vector to the NGT.
 func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (res *payload.Object_Location, err error) {
 	_, span := trace.StartSpan(ctx, apiName+".Insert")
 	defer func() {
