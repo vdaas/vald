@@ -1226,16 +1226,17 @@ func Test_server_Insert(t *testing.T) {
 			- case 7: Insert nil vector fail
 				* IncompatibleDimensionSize error will be returned.
 			- case 8: Insert empty insert vector fail
-				* * IncompatibleDimensionSize error will be returned.
+				* IncompatibleDimensionSize error will be returned.
 
 		- Decision Table Testing
 			- duplicated ID, duplicated vector, duplicated ID & vector
-				- case 1.1: Insert duplicated request success when SkipStrictExistCheck is off (duplicated ID)
+				- case 1.1: Insert duplicated request fail when SkipStrictExistCheck is off (duplicated ID)
+					* AlreadyExists error will be returned.
 				- case 1.2: Insert duplicated request success when SkipStrictExistCheck is off (duplicated vector)
-				- case 1.3: Insert duplicated request success when SkipStrictExistCheck is off (duplicated ID & vector)
-				- case 2.1: Insert duplicated request fail when SkipStrictExistCheck is on (duplicated ID)
-				- case 2.2: Insert duplicated request fail when SkipStrictExistCheck is on (duplicated vector)
-				- case 2.3: Insert duplicated request fail when SkipStrictExistCheck is on (duplicated ID & vector)
+				- case 1.3: Insert duplicated request fail when SkipStrictExistCheck is off (duplicated ID & vector)
+				- case 2.1: Insert duplicated request success when SkipStrictExistCheck is on (duplicated ID)
+				- case 2.2: Insert duplicated request success when SkipStrictExistCheck is on (duplicated vector)
+				- case 2.3: Insert duplicated request success when SkipStrictExistCheck is on (duplicated ID & vector)
 	*/
 	tests := []test{
 		// Equivalence Class Testing
@@ -2110,25 +2111,338 @@ func Test_server_Insert(t *testing.T) {
 			}
 		}(),
 
-		// // Decision Table Testing
-		// {
-		// 	name: "Decision Table Testing case 1.1: Insert duplicated request success when SkipStrictExistCheck is off (duplicated ID)",
-		// },
-		// {
-		// 	name: "Decision Table Testing case 1.2: Insert duplicated request success when SkipStrictExistCheck is off (duplicated vector)",
-		// },
-		// {
-		// 	name: "Decision Table Testing case 1.3: Insert duplicated request success when SkipStrictExistCheck is off (duplicated ID & vector)",
-		// },
-		// {
-		// 	name: "Decision Table Testing case 2.1: Insert duplicated request fail when SkipStrictExistCheck is on (duplicated ID)",
-		// },
-		// {
-		// 	name: "Decision Table Testing case 2.2: Insert duplicated request fail when SkipStrictExistCheck is on (duplicated vector)",
-		// },
-		// {
-		// 	name: "Decision Table Testing case 2.3: Insert duplicated request fail when SkipStrictExistCheck is on (duplicated ID & vector)",
-		// },
+		// Decision Table Testing
+		func() test {
+			name := "vald-agent-ngt-1"
+			id := "uuid1"
+			ip := "127.0.0.1"
+			req := &payload.Insert_Request{
+				Vector: &payload.Object_Vector{
+					Id:     id,
+					Vector: []float32{1, 2, 3},
+				},
+				Config: &payload.Insert_Config{
+					SkipStrictExistCheck: false,
+				},
+			}
+
+			return test{
+				name: "Decision Table Testing case 1.1: Insert duplicated request fail when SkipStrictExistCheck is off (duplicated ID)",
+				args: args{
+					ctx: ctx,
+					req: req,
+				},
+				fields: fields{
+					name: name,
+					ip:   ip,
+					eg:   errgroup.Get(),
+					svcCfg: &config.NGT{
+						Dimension:    3,
+						DistanceType: ngt.Angle.String(),
+						ObjectType:   ngt.Uint8.String(),
+						KVSDB: &config.KVSDB{
+							Concurrency: 10,
+						},
+						VQueue: &config.VQueue{},
+					},
+					svcOpts: []service.Option{
+						service.WithErrGroup(errgroup.Get()),
+						service.WithEnableInMemoryMode(true),
+					},
+				},
+				beforeFunc: func(t *testing.T, test *test) {
+					t.Helper()
+					defaultBeforeFunc(t, test)
+
+					test.fields.ngt.Insert(id, []float32{3, 2, 1})
+				},
+				want: want{
+					err: status.WrapWithAlreadyExists(fmt.Sprintf("Insert API uuid %s already exists", id), errors.ErrUUIDAlreadyExists(id),
+						&errdetails.RequestInfo{
+							RequestId:   req.GetVector().GetId(),
+							ServingData: errdetails.Serialize(req),
+						},
+						&errdetails.ResourceInfo{
+							ResourceType: ngtResourceType + "/ngt.Insert",
+							ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, name, ip),
+						}),
+				},
+			}
+		}(),
+		func() test {
+			name := "vald-agent-ngt-1"
+			ip := "127.0.0.1"
+			id := "uuid1"
+			vec := []float32{1, 2, 3}
+			id2 := "uuid2"             // use in beforeFunc
+			vec2 := []float32{3, 2, 1} // use in beforeFunc
+
+			return test{
+				name: "Decision Table Testing case 1.2: Insert duplicated request success when SkipStrictExistCheck is off (duplicated vector)",
+				args: args{
+					ctx: ctx,
+					req: &payload.Insert_Request{
+						Vector: &payload.Object_Vector{
+							Id:     id,
+							Vector: vec,
+						},
+						Config: &payload.Insert_Config{
+							SkipStrictExistCheck: false,
+						},
+					},
+				},
+				fields: fields{
+					name: name,
+					ip:   ip,
+					eg:   errgroup.Get(),
+					svcCfg: &config.NGT{
+						Dimension:    3,
+						DistanceType: ngt.Angle.String(),
+						ObjectType:   ngt.Uint8.String(),
+						KVSDB: &config.KVSDB{
+							Concurrency: 10,
+						},
+						VQueue: &config.VQueue{},
+					},
+					svcOpts: []service.Option{
+						service.WithErrGroup(errgroup.Get()),
+						service.WithEnableInMemoryMode(true),
+					},
+				},
+				beforeFunc: func(t *testing.T, test *test) {
+					t.Helper()
+					defaultBeforeFunc(t, test)
+
+					test.fields.ngt.Insert(id2, vec2)
+				},
+				want: want{
+					wantRes: &payload.Object_Location{
+						Name: name,
+						Uuid: id,
+						Ips:  []string{ip},
+					},
+				},
+			}
+		}(),
+		func() test {
+			name := "vald-agent-ngt-1"
+			id := "uuid1"
+			ip := "127.0.0.1"
+			vec := []float32{1, 2, 3}
+			req := &payload.Insert_Request{
+				Vector: &payload.Object_Vector{
+					Id:     id,
+					Vector: vec,
+				},
+				Config: &payload.Insert_Config{
+					SkipStrictExistCheck: false,
+				},
+			}
+
+			return test{
+				name: "Decision Table Testing case 1.3: Insert duplicated request fail when SkipStrictExistCheck is off (duplicated ID & vector)",
+				args: args{
+					ctx: ctx,
+					req: req,
+				},
+				fields: fields{
+					name: name,
+					ip:   ip,
+					eg:   errgroup.Get(),
+					svcCfg: &config.NGT{
+						Dimension:    3,
+						DistanceType: ngt.Angle.String(),
+						ObjectType:   ngt.Uint8.String(),
+						KVSDB: &config.KVSDB{
+							Concurrency: 10,
+						},
+						VQueue: &config.VQueue{},
+					},
+					svcOpts: []service.Option{
+						service.WithErrGroup(errgroup.Get()),
+						service.WithEnableInMemoryMode(true),
+					},
+				},
+				beforeFunc: func(t *testing.T, test *test) {
+					t.Helper()
+					defaultBeforeFunc(t, test)
+
+					test.fields.ngt.Insert(id, vec)
+				},
+				want: want{
+					err: status.WrapWithAlreadyExists(fmt.Sprintf("Insert API uuid %s already exists", id), errors.ErrUUIDAlreadyExists(id),
+						&errdetails.RequestInfo{
+							RequestId:   req.GetVector().GetId(),
+							ServingData: errdetails.Serialize(req),
+						},
+						&errdetails.ResourceInfo{
+							ResourceType: ngtResourceType + "/ngt.Insert",
+							ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, name, ip),
+						}),
+				},
+			}
+		}(),
+		// func() test {
+		// 	name := "vald-agent-ngt-1"
+		// 	id := "uuid1"
+		// 	ip := "127.0.0.1"
+		// 	vec := []float32{1, 2, 3}
+		// 	vec2 := []float32{3, 2, 1} // use in beforeFunc
+
+		// 	return test{
+		// 		name: "Decision Table Testing case 2.1: Insert duplicated request success when SkipStrictExistCheck is on (duplicated ID)",
+		// 		args: args{
+		// 			ctx: ctx,
+		// 			req: &payload.Insert_Request{
+		// 				Vector: &payload.Object_Vector{
+		// 					Id:     id,
+		// 					Vector: vec,
+		// 				},
+		// 				Config: &payload.Insert_Config{
+		// 					SkipStrictExistCheck: true,
+		// 				},
+		// 			},
+		// 		},
+		// 		fields: fields{
+		// 			name: name,
+		// 			ip:   ip,
+		// 			eg:   errgroup.Get(),
+		// 			svcCfg: &config.NGT{
+		// 				Dimension:    3,
+		// 				DistanceType: ngt.Angle.String(),
+		// 				ObjectType:   ngt.Uint8.String(),
+		// 				KVSDB: &config.KVSDB{
+		// 					Concurrency: 10,
+		// 				},
+		// 				VQueue: &config.VQueue{},
+		// 			},
+		// 			svcOpts: []service.Option{
+		// 				service.WithErrGroup(errgroup.Get()),
+		// 				service.WithEnableInMemoryMode(true),
+		// 			},
+		// 		},
+		// 		beforeFunc: func(t *testing.T, test *test) {
+		// 			t.Helper()
+		// 			defaultBeforeFunc(t, test)
+
+		// 			test.fields.ngt.Insert(id, vec2)
+		// 		},
+		// 		want: want{
+		// 			wantRes: &payload.Object_Location{
+		// 				Name: name,
+		// 				Uuid: id,
+		// 				Ips:  []string{ip},
+		// 			},
+		// 		},
+		// 	}
+		// }(),
+		func() test {
+			name := "vald-agent-ngt-1"
+			id := "uuid1"
+			id2 := "uuid2"
+			ip := "127.0.0.1"
+			vec := []float32{1, 2, 3}
+
+			return test{
+				name: "Decision Table Testing case 2.2: Insert duplicated request success when SkipStrictExistCheck is on (duplicated vector)",
+				args: args{
+					ctx: ctx,
+					req: &payload.Insert_Request{
+						Vector: &payload.Object_Vector{
+							Id:     id,
+							Vector: vec,
+						},
+						Config: &payload.Insert_Config{
+							SkipStrictExistCheck: true,
+						},
+					},
+				},
+				fields: fields{
+					name: name,
+					ip:   ip,
+					eg:   errgroup.Get(),
+					svcCfg: &config.NGT{
+						Dimension:    3,
+						DistanceType: ngt.Angle.String(),
+						ObjectType:   ngt.Uint8.String(),
+						KVSDB: &config.KVSDB{
+							Concurrency: 10,
+						},
+						VQueue: &config.VQueue{},
+					},
+					svcOpts: []service.Option{
+						service.WithErrGroup(errgroup.Get()),
+						service.WithEnableInMemoryMode(true),
+					},
+				},
+				beforeFunc: func(t *testing.T, test *test) {
+					t.Helper()
+					defaultBeforeFunc(t, test)
+
+					test.fields.ngt.Insert(id2, vec)
+				},
+				want: want{
+					wantRes: &payload.Object_Location{
+						Name: name,
+						Uuid: id,
+						Ips:  []string{ip},
+					},
+				},
+			}
+		}(),
+		// func() test {
+		// 	name := "vald-agent-ngt-1"
+		// 	id := "uuid1"
+		// 	ip := "127.0.0.1"
+		// 	vec := []float32{1, 2, 3}
+
+		// 	return test{
+		// 		name: "Decision Table Testing case 2.3: Insert duplicated request success when SkipStrictExistCheck is on (duplicated ID & vector)",
+		// 		args: args{
+		// 			ctx: ctx,
+		// 			req: &payload.Insert_Request{
+		// 				Vector: &payload.Object_Vector{
+		// 					Id:     id,
+		// 					Vector: vec,
+		// 				},
+		// 				Config: &payload.Insert_Config{
+		// 					SkipStrictExistCheck: true,
+		// 				},
+		// 			},
+		// 		},
+		// 		fields: fields{
+		// 			name: name,
+		// 			ip:   ip,
+		// 			eg:   errgroup.Get(),
+		// 			svcCfg: &config.NGT{
+		// 				Dimension:    3,
+		// 				DistanceType: ngt.Angle.String(),
+		// 				ObjectType:   ngt.Uint8.String(),
+		// 				KVSDB: &config.KVSDB{
+		// 					Concurrency: 10,
+		// 				},
+		// 				VQueue: &config.VQueue{},
+		// 			},
+		// 			svcOpts: []service.Option{
+		// 				service.WithErrGroup(errgroup.Get()),
+		// 				service.WithEnableInMemoryMode(true),
+		// 			},
+		// 		},
+		// 		beforeFunc: func(t *testing.T, test *test) {
+		// 			t.Helper()
+		// 			defaultBeforeFunc(t, test)
+
+		// 			test.fields.ngt.Insert(id, vec)
+		// 		},
+		// 		want: want{
+		// 			wantRes: &payload.Object_Location{
+		// 				Name: name,
+		// 				Uuid: id,
+		// 				Ips:  []string{ip},
+		// 			},
+		// 		},
+		// 	}
+		// }(),
 	}
 
 	for _, tc := range tests {
