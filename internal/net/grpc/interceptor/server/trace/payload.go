@@ -18,11 +18,12 @@
 package trace
 
 import (
+	"bytes"
 	"context"
 	"path"
-	"strings"
 	"sync"
 
+	"github.com/vdaas/vald/internal/conv"
 	"github.com/vdaas/vald/internal/encoding/json"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/observability/trace"
@@ -40,9 +41,9 @@ const (
 	traceAttrGRPCResponsePayload = "grpc.response.payload"
 )
 
-var builderPool = sync.Pool{
+var bufferPool = sync.Pool{
 	New: func() interface{} {
-		return &strings.Builder{}
+		return &bytes.Buffer{}
 	},
 }
 
@@ -153,8 +154,8 @@ func parseMethod(fullMethod string) (service, method string) {
 }
 
 func marshalJSON(pbMsg interface{}) string {
-	b := builderPool.Get().(*strings.Builder)
-	defer builderPool.Put(b)
+	b := bufferPool.Get().(*bytes.Buffer)
+	defer bufferPool.Put(b)
 	defer b.Reset()
 
 	err := json.Encode(b, pbMsg)
@@ -162,5 +163,5 @@ func marshalJSON(pbMsg interface{}) string {
 		return ""
 	}
 
-	return b.String()
+	return conv.Btoa(b.Bytes())
 }
