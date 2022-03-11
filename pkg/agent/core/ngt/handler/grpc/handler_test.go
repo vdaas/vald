@@ -473,133 +473,159 @@ func Test_server_Search(t *testing.T) {
 	/*
 		Search test cases:
 		- Equivalence Class Testing
-			- uint8, float32 common
-				- case 1: vector success
-				- case 2: different dimension fail
+			- case 1.1: success search vector from 1000 vectors (type: uint8)
+			- case 1.2: success search vector from 1000 vectors (type: float32)
+			- case 2.1: fail search with different dimension vector from 1000 vectors (type: uint8)
+			- case 2.2: fail search with different dimension vector from 1000 vectors (type: float32)
 		- Boundary Value Testing
-		  	- uint8, float32 common
-				- case 1: min value vector success
-				- case 2: max value vector success
-				- case 3: 0 length vector fail?
-				- case 4: max length vector fail?
-				- case 5: nil vector fail
-			- uint8
-			- float32
-				- case 6: +0 value vector success
-				- case 7: -0 value vector success
-				- case 8: NaN value vector fail?
-				- case 9: Inf value vector fail?
-				- case 10: -Inf value vector fail?
+			- case 1.1: success search with 0 value vector from 1000 vectors (type: uint8)
+			- case 1.2: success search with +0 value vector from 1000 vectors (type: float32)
+			- case 1.3: success search with -0 value vector from 1000 vectors (type: float32)
+			- case 2.1: success search with max value vector from 1000 vectors (type: uint8)
+			- case 2.2: success search with max value vector from 1000 vectors (type: float32)
+			- case 3.1: success search with min value vector from 1000 vectors (type: uint8) # NOTE: same as 0 value
+			- case 3.2: success search with min value vector from 1000 vectors (type: float32)
+			- case 4.1: fail search with NaN value vector from 1000 vectors (type: float32)
+			- case 5.1: fail search with Inf value vector from 1000 vectors (type: float32)
+			- case 6.1: fail search with -Inf value vector from 1000 vectors (type: float32)
+			- case 7.1: fail with 0 length vector from 1000 vectors (type: uint8) # NOTE: Can we create an index?
+			- case 7.2: fail with 0 length vector from 1000 vectors (type: float32) # NOTE: Can we create an index?
+			- case 8.1: fail with max length vector from 1000 vectors (type: uint8) # NOTE: Can we generate?
+			- case 8.2: fail with max length vector from 1000 vectors (type: float32) # NOTE: Can we generate?
+			- case 9.1: fail with nil vector from 1000 vectors (type: uint8)
+			- case 9.2: fail with nil vector from 1000 vectors (type: float32)
 		- Decision Table Testing
-			- uint8, float32 common
-		    | same vector       | false | false | false | true | true | true |
-			| inserted          |     5 |    10 |    20 |    5 |   10 |   20 |
-			| Search_Config.Num |    10 |    10 |    10 |   10 |   10 |   10 |
-				- case 1: inserted 5 different vector, Num is 10 success
-				- case 2: inserted 10 different vector, Num is 10 success
-				- case 3: inserted 20 different vector, Num is 10 success
-				- case 4: inserted 5 same vector, Num is 10 success?
-				- case 5: inserted 10 same vector, Num is 10 success?
-				- case 6: inserted 20 same vector, Num is 10 success?
+		    # | same vector       | false | false | false | true | true | true |
+			# | inserted          |     5 |    10 |    20 |    5 |   10 |   20 |
+			# | Search_Config.Num |    10 |    10 |    10 |   10 |   10 |   10 |
+			1. idea-1
+			- case 1.1: success with Search_Config.Num=10 from 5 different vectors (type: uint8)
+			- case 1.2: success with Search_Config.Num=10 from 5 different vectors (type: float32)
+			- case 2.1: success with Search_Config.Num=10 from 10 different vectors (type: uint8)
+			- case 2.2: success with Search_Config.Num=10 from 10 different vectors (type: float32)
+			- case 3.1: success with Search_Config.Num=10 from 20 different vectors (type: uint8)
+			- case 3.2: success with Search_Config.Num=10 from 20 different vectors (type: float32)
+			- case 4.1: success with Search_Config.Num=10 from 5 same vectors (type: uint8)
+			- case 4.2: success with Search_Config.Num=10 from 5 same vectors (type: float32)
+			- case 5.1: success with Search_Config.Num=10 from 10 same vectors (type: uint8)
+			- case 5.2: success with Search_Config.Num=10 from 10 same vectors (type: float32)
+			- case 6.1: success with Search_Config.Num=10 from 20 same vectors (type: uint8)
+			- case 6.2: success with Search_Config.Num=10 from 20 same vectors (type: float32)
+			2. idea-2
+			- case 1.1: success with Search_Config.Num=10 from 1000 different vectors (type: uint8)
+			- case 1.2: success with Search_Config.Num=10 from 1000 different vectors (type: float32)
+			- case 2.1: success with Search_Config.Num=10 from 10000 different vectors (type: uint8)
+			- case 2.2: success with Search_Config.Num=10 from 10000 different vectors (type: float32)
+			- case 3.1: success with Search_Config.Num=10 from 100000 different vectors (type: uint8)
+			- case 3.2: success with Search_Config.Num=10 from 100000 different vectors (type: float32)
+			- case 4.1: success with Search_Config.Num=10 from 1000 same vectors (type: uint8)
+			- case 4.2: success with Search_Config.Num=10 from 1000 same vectors (type: float32)
+			- case 5.1: success with Search_Config.Num=10 from 10000 same vectors (type: uint8)
+			- case 5.2: success with Search_Config.Num=10 from 10000 same vectors (type: float32)
+			- case 6.1: success with Search_Config.Num=10 from 100000 same vectors (type: uint8)
+			- case 6.2: success with Search_Config.Num=10 from 100000 same vectors (type: float32)
 	*/
 	tests := []test{
 		// Equivalence Class Testing
 		{
-			name: "Equivalence Class Testing uint8 case 1: vector success",
+			name: "Equivalence Class Testing case 1.1: success search vector (type: uint8)",
 		},
 		{
-			name: "Equivalence Class Testing uint8 case 2: different dimension fail",
+			name: "Equivalence Class Testing case 1.2: success search vector (type: float32)",
 		},
 		{
-			name: "Equivalence Class Testing float32 case 1: vector success",
+			name: "Equivalence Class Testing case 2.1: fail search vector with different dimension (type: uint8)",
 		},
 		{
-			name: "Equivalence Class Testing float32 case 2: different dimension fail",
+			name: "Equivalence Class Testing case 2.2: fail search vector with different dimension (type: float32)",
 		},
 
 		// Boundary Value Testing
 		{
-			name: "Boundary Value Testing uint8 case 1: min value vector success",
+			name: "Boundary Value Testing case 1.1: success search with 0 value vector (type: uint8)",
 		},
 		{
-			name: "Boundary Value Testing uint8 case 2: max value vector success",
+			name: "Boundary Value Testing case 1.2: success search with +0 value vector (type: float32)",
 		},
 		{
-			name: "Boundary Value Testing uint8 case 3: 0 length vector fail",
+			name: "Boundary Value Testing case 1.3: success search with -0 value vector (type: float32)",
 		},
 		{
-			name: "Boundary Value Testing uint8 case 4: max length fail",
+			name: "Boundary Value Testing case 2.1: success search with max value vector (type: uint8)",
 		},
 		{
-			name: "Boundary Value Testing uint8 case 5: nil fail",
+			name: "Boundary Value Testing case 2.2: success search with max value vector (type: float32)",
 		},
 		{
-			name: "Boundary Value Testing float32 case 1: min value vector success",
+			name: "Boundary Value Testing case 3.1: success search with min value vector (type: uint8)",
 		},
 		{
-			name: "Boundary Value Testing float32 case 2: max value vector success",
+			name: "Boundary Value Testing case 3.2: success search with min value vector (type: float32)",
 		},
 		{
-			name: "Boundary Value Testing float32 case 3: 0 length vector fail",
+			name: "Boundary Value Testing case 4.1: fail search with NaN value vector (type: float32)",
 		},
 		{
-			name: "Boundary Value Testing float32 case 4: max length fail",
+			name: "Boundary Value Testing case 5.1: fail search with Inf value vector (type: float32)",
 		},
 		{
-			name: "Boundary Value Testing float32 case 5: nil fail",
+			name: "Boundary Value Testing case 6.1: fail search with -Inf value vector (type: float32)",
 		},
 		{
-			name: "Boundary Value Testing float32 case 6: +0 value vector success",
+			name: "Boundary Value Testing case 7.1: fail with 0 length vector (type: uint8)",
 		},
 		{
-			name: "Boundary Value Testing float32 case 7: -0 value vector success",
+			name: "Boundary Value Testing case 7.2: fail with 0 length vector (type: float32)",
 		},
 		{
-			name: "Boundary Value Testing float32 case 8: NaN value fail",
+			name: "Boundary Value Testing case 8.1: fail with max length vector (type: uint8)",
 		},
 		{
-			name: "Boundary Value Testing float32 case 9: Inf value fail",
+			name: "Boundary Value Testing case 8.2: fail with max length vector (type: float32)",
 		},
 		{
-			name: "Boundary Value Testing float32 case 10: -Inf value fail",
+			name: "Boundary Value Testing case 9.1: fail with nil vector (type: uint8)",
+		},
+		{
+			name: "Boundary Value Testing case 9.2: fail with nil vector (type: float32)",
 		},
 
 		// Decision Table Testing
 		{
-			name: "Decision Table Testing uint8 case 1: inserted 5 different vector, Num is 10 success",
+			name: "Decision Table Testing case 1.1: success with Search_Config.Num=10 from 5 different vectors (type: uint8)",
 		},
 		{
-			name: "Decision Table Testing uint8 case 2: inserted 10 different vector, Num is 10 success",
+			name: "Decision Table Testing case 1.2: success with Search_Config.Num=10 from 5 different vectors (type: float32)",
 		},
 		{
-			name: "Decision Table Testing uint8 case 3: inserted 20 different vector, Num is 10 success",
+			name: "Decision Table Testing case 2.1: success with Search_Config.Num=10 from 10 different vectors (type: uint8)",
 		},
 		{
-			name: "Decision Table Testing uint8 case 4: inserted 5 same vector, Num is 10 success?",
+			name: "Decision Table Testing case 2.2: success with Search_Config.Num=10 from 10 different vectors (type: float32)",
 		},
 		{
-			name: "Decision Table Testing uint8 case 5: inserted 10 same vector, Num is 10 success?",
+			name: "Decision Table Testing case 3.1: success with Search_Config.Num=10 from 20 different vectors (type: uint8)",
 		},
 		{
-			name: "Decision Table Testing uint8 case 6: inserted 20 same vector, Num is 10 success?",
+			name: "Decision Table Testing case 3.2: success with Search_Config.Num=10 from 20 different vectors (type: float32)",
 		},
 		{
-			name: "Decision Table Testing float32 case 1: inserted 5 different vector, Num is 10 success",
+			name: "Decision Table Testing case 4.1: success with Search_Config.Num=10 from 5 same vectors (type: uint8)",
 		},
 		{
-			name: "Decision Table Testing float32 case 2: inserted 10 different vector, Num is 10 success",
+			name: "Decision Table Testing case 4.2: success with Search_Config.Num=10 from 5 same vectors (type: float32)",
 		},
 		{
-			name: "Decision Table Testing float32 case 3: inserted 20 different vector, Num is 10 success",
+			name: "Decision Table Testing case 5.1: success with Search_Config.Num=10 from 10 same vectors (type: uint8)",
 		},
 		{
-			name: "Decision Table Testing float32 case 4: inserted 5 same vector, Num is 10 success?",
+			name: "Decision Table Testing case 5.2: success with Search_Config.Num=10 from 10 same vectors (type: float32)",
 		},
 		{
-			name: "Decision Table Testing float32 case 5: inserted 10 same vector, Num is 10 success?",
+			name: "Decision Table Testing case 6.1: success with Search_Config.Num=10 from 20 same vectors (type: uint8)",
 		},
 		{
-			name: "Decision Table Testing float32 case 6: inserted 20 same vector, Num is 10 success?",
+			name: "Decision Table Testing case 6.2: success with Search_Config.Num=10 from 20 same vectors (type: float32)",
 		},
 		// TODO test cases
 		/*
