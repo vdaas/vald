@@ -29,9 +29,9 @@ import (
 	"sync"
 	"sync/atomic"
 	"time"
-	"unsafe"
 
 	"github.com/vdaas/vald/internal/config"
+	"github.com/vdaas/vald/internal/conv"
 	core "github.com/vdaas/vald/internal/core/algorithm/ngt"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
@@ -1003,7 +1003,7 @@ func (n *ngt) readyForUpdate(uuid string, vec []float32) (err error) {
 	ovec, err := n.GetObject(uuid)
 	if err != nil ||
 		len(vec) != len(ovec) ||
-		f32stos(vec) != f32stos(ovec) {
+		conv.F32stos(vec) != conv.F32stos(ovec) {
 		// if error (GetObject cannot find vector) or vector length is not equal or if difference exists let's try update
 		return nil
 	}
@@ -1089,13 +1089,4 @@ func (n *ngt) Close(ctx context.Context) (err error) {
 	}
 	n.core.Close()
 	return
-}
-
-func f32stos(fs []float32) string {
-	lf := 4 * len(fs)
-	buf := (*(*[1]byte)(unsafe.Pointer(&(fs[0]))))[:]
-	addr := unsafe.Pointer(&buf)
-	(*(*int)(unsafe.Pointer(uintptr(addr) + uintptr(8)))) = lf
-	(*(*int)(unsafe.Pointer(uintptr(addr) + uintptr(16)))) = lf
-	return *(*string)(unsafe.Pointer(&buf))
 }

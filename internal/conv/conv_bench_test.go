@@ -20,7 +20,7 @@ import (
 )
 
 func Benchmark_Btoa(b *testing.B) {
-	data := []byte(testJson)
+	data := []byte(testData)
 
 	b.ReportAllocs()
 	b.ResetTimer()
