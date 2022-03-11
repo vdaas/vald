@@ -22,8 +22,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"unsafe"
 
+	"github.com/vdaas/vald/internal/conv"
 	"github.com/vdaas/vald/internal/encoding/json"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/file"
@@ -100,7 +100,7 @@ func GetActualValue(val string) (res string) {
 		if err != nil {
 			return
 		}
-		res = *(*string)(unsafe.Pointer(&body))
+		res = conv.Btoa(body)
 	}
 	return
 }

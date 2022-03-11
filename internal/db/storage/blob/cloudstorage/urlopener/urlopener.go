@@ -20,9 +20,9 @@ import (
 	"io/ioutil"
 	"net/http"
 	"reflect"
-	"unsafe"
 
 	"cloud.google.com/go/storage"
+	"github.com/vdaas/vald/internal/conv"
 	"github.com/vdaas/vald/internal/errors"
 	"gocloud.dev/blob/gcsblob"
 	"gocloud.dev/gcp"
@@ -72,7 +72,7 @@ func (uo *urlOpener) URLOpener(ctx context.Context) (guo *gcsblob.URLOpener, err
 			return nil, err
 		}
 	case len(uo.credentialsJSON) != 0:
-		data := *(*[]byte)(unsafe.Pointer(&uo.credentialsJSON))
+		data := conv.Atob(uo.credentialsJSON)
 		creds, err = google.CredentialsFromJSON(ctx, data, scope)
 		if err != nil {
 			return nil, err

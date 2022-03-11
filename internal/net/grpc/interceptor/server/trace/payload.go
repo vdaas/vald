@@ -23,6 +23,7 @@ import (
 	"path"
 	"sync"
 
+	"github.com/vdaas/vald/internal/conv"
 	"github.com/vdaas/vald/internal/encoding/json"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/observability/trace"
@@ -162,5 +163,5 @@ func marshalJSON(pbMsg interface{}) string {
 		return ""
 	}
 
-	return b.String()
+	return conv.Btoa(b.Bytes())
 }

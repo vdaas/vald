@@ -26,10 +26,10 @@ import (
 	"sync"
 	"sync/atomic"
 	"time"
-	"unsafe"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
+	"github.com/vdaas/vald/internal/conv"
 	"github.com/vdaas/vald/internal/core/algorithm"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
@@ -1748,7 +1748,7 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (res *
 			}
 			return nil, err
 		}
-		if f32stos(vec.GetVector()) == f32stos(req.GetVector().GetVector()) {
+		if conv.F32stos(vec.GetVector()) == conv.F32stos(req.GetVector().GetVector()) {
 			if err == nil {
 				err = errors.ErrSameVectorAlreadyExists(uuid, vec.GetVector(), req.GetVector().GetVector())
 			}
@@ -1942,7 +1942,7 @@ func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequ
 				}
 				return nil, err
 			}
-			if f32stos(vec.GetVector()) == f32stos(req.GetVector().GetVector()) {
+			if conv.F32stos(vec.GetVector()) == conv.F32stos(req.GetVector().GetVector()) {
 				log.Warn(errors.ErrSameVectorAlreadyExists(uuid, vec.GetVector(), req.GetVector().GetVector()))
 				continue
 			}
@@ -2060,7 +2060,7 @@ func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *
 		})
 		if err != nil || vec == nil || len(vec.GetId()) == 0 {
 			shouldInsert = true
-		} else if f32stos(vec.GetVector()) == f32stos(req.GetVector().GetVector()) {
+		} else if conv.F32stos(vec.GetVector()) == conv.F32stos(req.GetVector().GetVector()) {
 			if err == nil {
 				err = errors.ErrSameVectorAlreadyExists(uuid, vec.GetVector(), req.GetVector().GetVector())
 			}
@@ -2219,7 +2219,7 @@ func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequ
 			})
 			if err != nil || vec == nil || len(vec.GetId()) == 0 {
 				shouldInsert = true
-			} else if f32stos(vec.GetVector()) == f32stos(req.GetVector().GetVector()) {
+			} else if conv.F32stos(vec.GetVector()) == conv.F32stos(req.GetVector().GetVector()) {
 				continue
 			}
 		} else {
@@ -2794,13 +2794,4 @@ func (s *server) StreamGetObject(stream vald.Object_StreamGetObjectServer) (err 
 		return err
 	}
 	return nil
-}
-
-func f32stos(fs []float32) string {
-	lf := 4 * len(fs)
-	buf := (*(*[1]byte)(unsafe.Pointer(&(fs[0]))))[:]
-	addr := unsafe.Pointer(&buf)
-	(*(*int)(unsafe.Pointer(uintptr(addr) + uintptr(8)))) = lf
-	(*(*int)(unsafe.Pointer(uintptr(addr) + uintptr(16)))) = lf
-	return *(*string)(unsafe.Pointer(&buf))
 }
