@@ -31,6 +31,7 @@ import (
 	"github.com/vdaas/vald/internal/core/algorithm/ngt"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/net/grpc/errdetails"
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/test/goleak"
@@ -1241,20 +1242,21 @@ func Test_server_Insert(t *testing.T) {
 
 		- Decision Table Testing
 			- duplicated ID, duplicated vector, duplicated ID & vector
-				- case 1.1: Insert duplicated request fail when SkipStrictExistCheck is off (duplicated ID)
+				- case 1.1: Insert duplicated request fail when SkipStrictExistCheck is false (duplicated ID)
 					* AlreadyExists error will be returned.
-				- case 1.2: Insert duplicated request success when SkipStrictExistCheck is off (duplicated vector)
-				- case 1.3: Insert duplicated request fail when SkipStrictExistCheck is off (duplicated ID & vector)
-				- case 2.1: Insert duplicated request success when SkipStrictExistCheck is on (duplicated ID)
-				- case 2.2: Insert duplicated request success when SkipStrictExistCheck is on (duplicated vector)
-				- case 2.3: Insert duplicated request success when SkipStrictExistCheck is on (duplicated ID & vector)
+				- case 1.2: Insert duplicated request success when SkipStrictExistCheck is false (duplicated vector)
+				- case 1.3: Insert duplicated request fail when SkipStrictExistCheck is false (duplicated ID & vector)
+				- case 2.1: Insert duplicated request fail when SkipStrictExistCheck is true (duplicated ID)
+					* SkipStrictExistCheck flag is not used in agent handler, so the result is same as case 1.
+				- case 2.2: Insert duplicated request success when SkipStrictExistCheck is true (duplicated vector)
+				- case 2.3: Insert duplicated request fail when SkipStrictExistCheck is true (duplicated ID & vector)
 	*/
 	tests := []test{
 		// Equivalence Class Testing
 		func() test {
 			name := "vald-agent-ngt-1"
 			id := "uuid1"
-			ip := "127.0.0.1"
+			ip := net.LoadLocalIP()
 
 			eg, _ := errgroup.New(ctx)
 
@@ -1299,7 +1301,7 @@ func Test_server_Insert(t *testing.T) {
 		func() test {
 			name := "vald-agent-ngt-1"
 			id := "uuid1"
-			ip := "127.0.0.1"
+			ip := net.LoadLocalIP()
 
 			eg, _ := errgroup.New(ctx)
 
@@ -1344,7 +1346,7 @@ func Test_server_Insert(t *testing.T) {
 		func() test {
 			name := "vald-agent-ngt-1"
 			id := "uuid1"
-			ip := "127.0.0.1"
+			ip := net.LoadLocalIP()
 			vec := []float32{1, 2, 3, 4, 5, 6, 7}
 			req := &payload.Insert_Request{
 				Vector: &payload.Object_Vector{
@@ -1410,7 +1412,7 @@ func Test_server_Insert(t *testing.T) {
 		func() test {
 			name := "vald-agent-ngt-1"
 			id := "uuid1"
-			ip := "127.0.0.1"
+			ip := net.LoadLocalIP()
 			vec := []float32{1.5, 2.3, 3.6, 4.5, 6.6, 7.7}
 			req := &payload.Insert_Request{
 				Vector: &payload.Object_Vector{
@@ -1478,7 +1480,7 @@ func Test_server_Insert(t *testing.T) {
 		func() test {
 			name := "vald-agent-ngt-1"
 			id := "uuid1"
-			ip := "127.0.0.1"
+			ip := net.LoadLocalIP()
 
 			eg, _ := errgroup.New(ctx)
 
@@ -1523,7 +1525,7 @@ func Test_server_Insert(t *testing.T) {
 		func() test {
 			name := "vald-agent-ngt-1"
 			id := "uuid1"
-			ip := "127.0.0.1"
+			ip := net.LoadLocalIP()
 
 			eg, _ := errgroup.New(ctx)
 
@@ -1568,7 +1570,7 @@ func Test_server_Insert(t *testing.T) {
 		func() test {
 			name := "vald-agent-ngt-1"
 			id := "uuid1"
-			ip := "127.0.0.1"
+			ip := net.LoadLocalIP()
 
 			eg, _ := errgroup.New(ctx)
 
@@ -1613,7 +1615,7 @@ func Test_server_Insert(t *testing.T) {
 		func() test {
 			name := "vald-agent-ngt-1"
 			id := "uuid1"
-			ip := "127.0.0.1"
+			ip := net.LoadLocalIP()
 
 			eg, _ := errgroup.New(ctx)
 
@@ -1658,7 +1660,7 @@ func Test_server_Insert(t *testing.T) {
 		func() test {
 			name := "vald-agent-ngt-1"
 			id := "uuid1"
-			ip := "127.0.0.1"
+			ip := net.LoadLocalIP()
 
 			eg, _ := errgroup.New(ctx)
 
@@ -1703,7 +1705,7 @@ func Test_server_Insert(t *testing.T) {
 		func() test {
 			name := "vald-agent-ngt-1"
 			id := "uuid1"
-			ip := "127.0.0.1"
+			ip := net.LoadLocalIP()
 
 			eg, _ := errgroup.New(ctx)
 
@@ -1748,7 +1750,7 @@ func Test_server_Insert(t *testing.T) {
 		func() test {
 			name := "vald-agent-ngt-1"
 			id := ""
-			ip := "127.0.0.1"
+			ip := net.LoadLocalIP()
 			req := &payload.Insert_Request{
 				Vector: &payload.Object_Vector{
 					Id:     id,
@@ -1810,7 +1812,7 @@ func Test_server_Insert(t *testing.T) {
 		func() test {
 			name := "vald-agent-ngt-1"
 			id := ""
-			ip := "127.0.0.1"
+			ip := net.LoadLocalIP()
 			req := &payload.Insert_Request{
 				Vector: &payload.Object_Vector{
 					Id:     id,
@@ -1872,7 +1874,7 @@ func Test_server_Insert(t *testing.T) {
 		func() test {
 			name := "vald-agent-ngt-1"
 			id := ""
-			ip := "127.0.0.1"
+			ip := net.LoadLocalIP()
 			req := &payload.Insert_Request{
 				Vector: &payload.Object_Vector{
 					Id:     id,
@@ -1934,7 +1936,7 @@ func Test_server_Insert(t *testing.T) {
 		func() test {
 			name := "vald-agent-ngt-1"
 			id := "uuid1"
-			ip := "127.0.0.1"
+			ip := net.LoadLocalIP()
 			nan := float32(math.NaN())
 
 			eg, _ := errgroup.New(ctx)
@@ -1979,7 +1981,7 @@ func Test_server_Insert(t *testing.T) {
 		}(),
 		func() test {
 			name := "vald-agent-ngt-1"
-			ip := "127.0.0.1"
+			ip := net.LoadLocalIP()
 
 			eg, _ := errgroup.New(ctx)
 
@@ -2035,7 +2037,7 @@ func Test_server_Insert(t *testing.T) {
 		}(),
 		func() test {
 			name := "vald-agent-ngt-1"
-			ip := "127.0.0.1"
+			ip := net.LoadLocalIP()
 
 			eg, _ := errgroup.New(ctx)
 
@@ -2096,7 +2098,7 @@ func Test_server_Insert(t *testing.T) {
 		}(),
 		func() test {
 			name := "vald-agent-ngt-1"
-			ip := "127.0.0.1"
+			ip := net.LoadLocalIP()
 
 			eg, _ := errgroup.New(ctx)
 
@@ -2160,7 +2162,7 @@ func Test_server_Insert(t *testing.T) {
 		func() test {
 			name := "vald-agent-ngt-1"
 			id := "uuid1"
-			ip := "127.0.0.1"
+			ip := net.LoadLocalIP()
 			req := &payload.Insert_Request{
 				Vector: &payload.Object_Vector{
 					Id:     id,
@@ -2174,7 +2176,7 @@ func Test_server_Insert(t *testing.T) {
 			eg, _ := errgroup.New(ctx)
 
 			return test{
-				name: "Decision Table Testing case 1.1: Insert duplicated request fail when SkipStrictExistCheck is off (duplicated ID)",
+				name: "Decision Table Testing case 1.1: Insert duplicated request fail when SkipStrictExistCheck is false (duplicated ID)",
 				args: args{
 					ctx: ctx,
 					req: req,
@@ -2218,7 +2220,7 @@ func Test_server_Insert(t *testing.T) {
 		}(),
 		func() test {
 			name := "vald-agent-ngt-1"
-			ip := "127.0.0.1"
+			ip := net.LoadLocalIP()
 			id := "uuid1"
 			vec := []float32{1, 2, 3}
 			id2 := "uuid2"             // use in beforeFunc
@@ -2227,7 +2229,7 @@ func Test_server_Insert(t *testing.T) {
 			eg, _ := errgroup.New(ctx)
 
 			return test{
-				name: "Decision Table Testing case 1.2: Insert duplicated request success when SkipStrictExistCheck is off (duplicated vector)",
+				name: "Decision Table Testing case 1.2: Insert duplicated request success when SkipStrictExistCheck is false (duplicated vector)",
 				args: args{
 					ctx: ctx,
 					req: &payload.Insert_Request{
@@ -2276,7 +2278,7 @@ func Test_server_Insert(t *testing.T) {
 		func() test {
 			name := "vald-agent-ngt-1"
 			id := "uuid1"
-			ip := "127.0.0.1"
+			ip := net.LoadLocalIP()
 			vec := []float32{1, 2, 3}
 			req := &payload.Insert_Request{
 				Vector: &payload.Object_Vector{
@@ -2291,7 +2293,7 @@ func Test_server_Insert(t *testing.T) {
 			eg, _ := errgroup.New(ctx)
 
 			return test{
-				name: "Decision Table Testing case 1.3: Insert duplicated request fail when SkipStrictExistCheck is off (duplicated ID & vector)",
+				name: "Decision Table Testing case 1.3: Insert duplicated request fail when SkipStrictExistCheck is false (duplicated ID & vector)",
 				args: args{
 					ctx: ctx,
 					req: req,
@@ -2336,25 +2338,26 @@ func Test_server_Insert(t *testing.T) {
 		func() test {
 			name := "vald-agent-ngt-1"
 			id := "uuid1"
-			ip := "127.0.0.1"
+			ip := net.LoadLocalIP()
 			vec := []float32{1, 2, 3}
 			vec2 := []float32{3, 2, 1} // use in beforeFunc
+			req := &payload.Insert_Request{
+				Vector: &payload.Object_Vector{
+					Id:     id,
+					Vector: vec,
+				},
+				Config: &payload.Insert_Config{
+					SkipStrictExistCheck: true,
+				},
+			}
 
 			eg, _ := errgroup.New(ctx)
 
 			return test{
-				name: "Decision Table Testing case 2.1: Insert duplicated request success when SkipStrictExistCheck is on (duplicated ID)",
+				name: "Decision Table Testing case 2.1: Insert duplicated request fail when SkipStrictExistCheck is true (duplicated ID)",
 				args: args{
 					ctx: ctx,
-					req: &payload.Insert_Request{
-						Vector: &payload.Object_Vector{
-							Id:     id,
-							Vector: vec,
-						},
-						Config: &payload.Insert_Config{
-							SkipStrictExistCheck: true,
-						},
-					},
+					req: req,
 				},
 				fields: fields{
 					name: name,
@@ -2381,11 +2384,15 @@ func Test_server_Insert(t *testing.T) {
 					test.fields.ngt.Insert(id, vec2)
 				},
 				want: want{
-					wantRes: &payload.Object_Location{
-						Name: name,
-						Uuid: id,
-						Ips:  []string{ip},
-					},
+					err: status.WrapWithAlreadyExists(fmt.Sprintf("Insert API uuid %s already exists", id), errors.ErrUUIDAlreadyExists(id),
+						&errdetails.RequestInfo{
+							RequestId:   req.GetVector().GetId(),
+							ServingData: errdetails.Serialize(req),
+						},
+						&errdetails.ResourceInfo{
+							ResourceType: ngtResourceType + "/ngt.Insert",
+							ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, name, ip),
+						}),
 				},
 			}
 		}(),
@@ -2393,13 +2400,13 @@ func Test_server_Insert(t *testing.T) {
 			name := "vald-agent-ngt-1"
 			id := "uuid1"
 			id2 := "uuid2"
-			ip := "127.0.0.1"
+			ip := net.LoadLocalIP()
 			vec := []float32{1, 2, 3}
 
 			eg, _ := errgroup.New(ctx)
 
 			return test{
-				name: "Decision Table Testing case 2.2: Insert duplicated request success when SkipStrictExistCheck is on (duplicated vector)",
+				name: "Decision Table Testing case 2.2: Insert duplicated request success when SkipStrictExistCheck is true (duplicated vector)",
 				args: args{
 					ctx: ctx,
 					req: &payload.Insert_Request{
@@ -2445,61 +2452,66 @@ func Test_server_Insert(t *testing.T) {
 				},
 			}
 		}(),
-		// func() test {
-		// 	name := "vald-agent-ngt-1"
-		// 	id := "uuid1"
-		// 	ip := "127.0.0.1"
-		// 	vec := []float32{1, 2, 3}
+		func() test {
+			name := "vald-agent-ngt-1"
+			id := "uuid1"
+			ip := net.LoadLocalIP()
+			vec := []float32{1, 2, 3}
+			req := &payload.Insert_Request{
+				Vector: &payload.Object_Vector{
+					Id:     id,
+					Vector: vec,
+				},
+				Config: &payload.Insert_Config{
+					SkipStrictExistCheck: true,
+				},
+			}
 
-		// eg, _ := errgroup.New(ctx)
+			eg, _ := errgroup.New(ctx)
 
-		// 	return test{
-		// 		name: "Decision Table Testing case 2.3: Insert duplicated request success when SkipStrictExistCheck is on (duplicated ID & vector)",
-		// 		args: args{
-		// 			ctx: ctx,
-		// 			req: &payload.Insert_Request{
-		// 				Vector: &payload.Object_Vector{
-		// 					Id:     id,
-		// 					Vector: vec,
-		// 				},
-		// 				Config: &payload.Insert_Config{
-		// 					SkipStrictExistCheck: true,
-		// 				},
-		// 			},
-		// 		},
-		// 		fields: fields{
-		// 			name: name,
-		// 			ip:   ip,
-		// 			eg:   eg,
-		// 			svcCfg: &config.NGT{
-		// 				Dimension:    3,
-		// 				DistanceType: ngt.Angle.String(),
-		// 				ObjectType:   ngt.Uint8.String(),
-		// 				KVSDB: &config.KVSDB{
-		// 					Concurrency: 10,
-		// 				},
-		// 				VQueue: &config.VQueue{},
-		// 			},
-		// 			svcOpts: []service.Option{
-		// 				service.WithErrGroup(eg),
-		// 				service.WithEnableInMemoryMode(true),
-		// 			},
-		// 		},
-		// 		beforeFunc: func(t *testing.T, test *test) {
-		// 			t.Helper()
-		// 			defaultBeforeFunc(t, test)
+			return test{
+				name: "Decision Table Testing case 2.3: Insert duplicated request fail when SkipStrictExistCheck is true (duplicated ID & vector)",
+				args: args{
+					ctx: ctx,
+					req: req,
+				},
+				fields: fields{
+					name: name,
+					ip:   ip,
+					eg:   eg,
+					svcCfg: &config.NGT{
+						Dimension:    3,
+						DistanceType: ngt.Angle.String(),
+						ObjectType:   ngt.Uint8.String(),
+						KVSDB: &config.KVSDB{
+							Concurrency: 10,
+						},
+						VQueue: &config.VQueue{},
+					},
+					svcOpts: []service.Option{
+						service.WithErrGroup(eg),
+						service.WithEnableInMemoryMode(true),
+					},
+				},
+				beforeFunc: func(t *testing.T, test *test) {
+					t.Helper()
+					defaultBeforeFunc(t, test)
 
-		// 			test.fields.ngt.Insert(id, vec)
-		// 		},
-		// 		want: want{
-		// 			wantRes: &payload.Object_Location{
-		// 				Name: name,
-		// 				Uuid: id,
-		// 				Ips:  []string{ip},
-		// 			},
-		// 		},
-		// 	}
-		// }(),
+					test.fields.ngt.Insert(id, vec)
+				},
+				want: want{
+					err: status.WrapWithAlreadyExists(fmt.Sprintf("Insert API uuid %s already exists", id), errors.ErrUUIDAlreadyExists(id),
+						&errdetails.RequestInfo{
+							RequestId:   req.GetVector().GetId(),
+							ServingData: errdetails.Serialize(req),
+						},
+						&errdetails.ResourceInfo{
+							ResourceType: ngtResourceType + "/ngt.Insert",
+							ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, name, ip),
+						}),
+				},
+			}
+		}(),
 	}
 
 	for _, tc := range tests {
