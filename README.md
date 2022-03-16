@@ -1,5 +1,7 @@
 <div align="center">
-<img src="./assets/image/readme.svg" width="50%">
+<a href="https://vald.vdaas.org/">
+    <img src="./assets/image/readme.svg" width="50%" />
+</a>
 </div>
 
 [![License: Apache 2.0](https://img.shields.io/github/license/vdaas/vald.svg?style=flat-square)](https://opensource.org/licenses/Apache-2.0)
@@ -14,58 +16,37 @@
 [![Artifact Hub](https://img.shields.io/badge/chart-ArtifactHub-informational?logo=helm&style=flat-square)](https://artifacthub.io/packages/chart/vald/vald)
 [![Slack](https://img.shields.io/badge/slack-join-brightgreen?logo=slack&style=flat-square)](https://join.slack.com/t/vald-community/shared_invite/zt-db2ky9o4-R_9p2sVp8xRwztVa8gfnPA)
 [![Twitter](https://img.shields.io/badge/twitter-follow-blue?logo=twitter&style=flat-square)](https://twitter.com/vdaas_vald)
+
 <!--[![codecov](https://img.shields.io/codecov/c/github/vdaas/vald.svg?style=flat-square&logo=codecov)](https://codecov.io/gh/vdaas/vald) -->
 
 ## What is Vald?
 
-Vald is a highly scalable distributed fast approximate nearest neighbor dense vector search engine.
+Vald is a highly scalable distributed fast approximate nearest neighbor (ANN) dense vector search engine.
 
 Vald is designed and implemented based on Cloud-Native architecture.
-
-It uses the fastest ANN Algorithm [NGT](https://github.com/yahoojapan/NGT) to search neighbors.
 
 Vald has automatic vector indexing and index backup, and horizontal scaling which made for searching from billions of feature vector data.
 
 Vald is easy to use, feature-rich and highly customizable as you needed.
 
-Go to [Get Started](./docs/tutorial/get-started.md) page to try out Vald :)
+It uses the fastest ANN Algorithm [NGT](https://github.com/yahoojapan/NGT) to search neighbors.
 
-(If you are interested in ANN benchmarks, please refer to [the official website](http://ann-benchmarks.com/).)<br>
+(If you are interested in ANN benchmarks, please refer to [ann-benchmarks.com](http://ann-benchmarks.com/).)
 
-### Main Features
+For more information, please refer to [Official Web Site](https://vald.vdaas.org).
 
-- Asynchronous Auto Indexing
-    - Usually the graph requires locking during indexing, which causes stop-the-world. But Vald uses distributed index graphs so it continues to work during indexing.
+<div align="center">
+  <img src="./assets/image/svg/vald_architecture_overview.svg" width="100%" />
+</div>
 
-- Customizable Ingress/Egress Filtering
-    - Vald implements it's own highly customizable Ingress/Egress filter.
-    - Which can be configured to fit the gRPC interface.
-        - Ingress Filter: Ability to Vectorize through filter on request.
-        - Egress Filter: rerank or filter the searching result with your own algorithm.
+Vald can handle any object data, image, audio processing, video, text, binary, or etc., if converting to the vector, and be used for:
 
-- Cloud-native based vector searching engine
-    - Horizontal scalable on memory and CPU for your demand.
-
-- Auto Backup for Index data
-    - Vald supports to backup Vald Agent index data using Object Storage or Persistent Volume.
-
-- Distributed Indexing
-    - Vald distribute vector index to multiple agents, each agent stores different index.
-
-- Index Replication
-    - Vald stores each index in multiple agents which enables index replicas.
-    - Automatically rebalance the replica when some Vald agent goes down.
-
-- Easy to use
-    - Vald can be easily installed in a few steps.
-
-- Highly customizable
-    - You can configure the number of vector dimensions, the number of replica and etc.
-
-- Multi language supported
-    - Go, Java, Clojure, Node.js, and Python client library are supported.
-    - gRPC APIs can be triggered by any programming languages which support gRPC.
-    - REST API is also supported.
+- Recognition
+- Recommendation
+- Detecting
+- Grammar checker
+- Real-time translator
+- also you want to do!
 
 ## Requirements
 
@@ -74,7 +55,7 @@ Go to [Get Started](./docs/tutorial/get-started.md) page to try out Vald :)
 
 ## Get Started
 
-Please refer to [Get Started](./docs/tutorial/get-started.md).
+Go to [Get Started](https://vdaas.vald.org/docs/tutorial/get-started) page to try out Vald !
 
 ## Installation
 
@@ -87,44 +68,18 @@ helm install vald-cluster vald/vald
 
 If you use the default values.yaml, the `nightly` images will be installed.
 
-#### Docker image tagging policy
-
-- `nightly` ... latest build of master branch
-- `vX.X.X` ... released versions
-- `latest` ... latest build of release versions
-- `stable` ... latest long-term supported version
-
 ### Using Helm-operator
 
-[vald-helm-operator](https://github.com/vdaas/vald/blob/master/charts/vald-helm-operator)
-
-## Example
-
-```shell
-Write example here
-```
-
-## Architecture Overview
-
-<div align="center">
-<img src="./assets/image/svg/vald_architecture_overview.svg" width="100%">
-</div>
-
-Please refer [here](./docs/overview/architecture.md) for more details of the architecture overview in the future.
-
-## Development
-
-Before your first commit to this repository, it is strongly recommended to run the commands below.
-
-```shell
-make init
-```
+Please refer to [vald-helm-operator](https://github.com/vdaas/vald/blob/master/charts/vald-helm-operator).
 
 ## Components
+
 <table>
   <tr>
     <th>Component</th>
     <th>Docker image</th>
+    <th>latest image</th>
+    <th>nightly image</th>
   </tr>
   <tr>
     <td>Agent NGT</td>
@@ -134,6 +89,16 @@ make init
       </a><br/>
       <a href="https://github.com/orgs/vdaas/packages/container/package/vald/vald-agent-ngt">
         <img src="https://img.shields.io/badge/ghcr.io-vdaas%2Fvald%2Fvald--agent--ngt-brightgreen?logo=docker&style=flat-square"/>
+      </a>
+    </td>
+    <td>
+      <a href="https://hub.docker.com/r/vdaas/vald-agent-ngt/tags?page=1&name=latest">
+        <img src="https://img.shields.io/docker/v/vdaas/vald-agent-ngt/latest?label=vald-agent-ngt" />
+      </a>
+    </td>
+    <td>
+      <a href="https://hub.docker.com/r/vdaas/vald-agent-ngt/tags?page=1&name=nightly">
+        <img src="https://img.shields.io/docker/v/vdaas/vald-agent-ngt/nightly?label=vald-agent-ngt" />
       </a>
     </td>
   </tr>
@@ -147,6 +112,16 @@ make init
         <img src="https://img.shields.io/badge/ghcr.io-vdaas%2Fvald%2Fvald--agent--sidecar-brightgreen?logo=docker&style=flat-square"/>
       </a>
     </td>
+    <td>
+      <a href="https://hub.docker.com/r/vdaas/vald-agent-sidecar/tags?page=1&name=latest">
+        <img src="https://img.shields.io/docker/v/vdaas/vald-agent-sidecar/latest?label=vald-agent-sidecar" />
+      </a>
+    </td>
+    <td>
+      <a href="https://hub.docker.com/r/vdaas/vald-agent-sidecar/tags?page=1&name=nightly">
+        <img src="https://img.shields.io/docker/v/vdaas/vald-agent-sidecar/nightly?label=vald-agent-sidecar" />
+      </a>
+    </td>
   </tr>
   <tr>
     <td>Discoverer</td>
@@ -156,6 +131,16 @@ make init
       </a><br/>
       <a href="https://github.com/orgs/vdaas/packages/container/package/vald/vald-discoverer-k8s">
         <img src="https://img.shields.io/badge/ghcr.io-vdaas%2Fvald%2Fvald--discoverer--k8s-brightgreen?logo=docker&style=flat-square"/>
+      </a>
+    </td>
+    <td>
+      <a href="https://hub.docker.com/r/vdaas/vald-discoverer-k8s/tags?page=1&name=latest">
+        <img src="https://img.shields.io/docker/v/vdaas/vald-discoverer-k8s/latest?label=vald-discoverer-k8s" />
+      </a>
+    </td>
+    <td>
+      <a href="https://hub.docker.com/r/vdaas/vald-discoverer-k8s/tags?page=1&name=nightly">
+        <img src="https://img.shields.io/docker/v/vdaas/vald-discoverer-k8s/nightly?label=vald-discoverer-k8s" />
       </a>
     </td>
   </tr>
@@ -175,6 +160,22 @@ make init
         <img src="https://img.shields.io/badge/ghcr.io-vdaas%2Fvald%2Fvald--filter--gateway-brightgreen?logo=docker&style=flat-square"/>
       </a><br/>
     </td>
+    <td>
+      <a href="https://hub.docker.com/r/vdaas/vald-lb-gateway/tags?page=1&name=latest">
+        <img src="https://img.shields.io/docker/v/vdaas/vald-lb-gateway/latest?label=vald-lb-gateway" />
+      </a><br />
+      <a href="https://hub.docker.com/r/vdaas/vald-filter-gateway/tags?page=1&name=latest">
+        <img src="https://img.shields.io/docker/v/vdaas/vald-filter-gateway/latest?label=vald-filter-gateway" />
+      </a>
+    </td>
+    <td>
+      <a href="https://hub.docker.com/r/vdaas/vald-lb-gateway/tags?page=1&name=nightly">
+        <img src="https://img.shields.io/docker/v/vdaas/vald-lb-gateway/nightly?label=vald-lb-gateway" />
+      </a><br>
+      <a href="https://hub.docker.com/r/vdaas/vald-filter-gateway/tags?page=1&name=nightly">
+        <img src="https://img.shields.io/docker/v/vdaas/vald-filter-gateway/nightly?label=vald-filter-gateway" />
+      </a><br />
+    </td>
   </tr>
   <tr>
     <td>Index Manager</td>
@@ -184,6 +185,16 @@ make init
       </a><br/>
       <a href="https://github.com/orgs/vdaas/packages/container/package/vald/vald-manager-index">
         <img src="https://img.shields.io/badge/ghcr.io-vdaas%2Fvald%2Fvald--manager--index-brightgreen?logo=docker&style=flat-square"/>
+      </a>
+    </td>
+    <td>
+      <a href="https://hub.docker.com/r/vdaas/vald-manager-index/tags?page=1&name=latest">
+        <img src="https://img.shields.io/docker/v/vdaas/vald-manager-index/latest?label=vald-index-manager" />
+      </a>
+    </td>
+    <td>
+      <a href="https://hub.docker.com/r/vdaas/vald-manager-index/tags?page=1&name=nightly">
+        <img src="https://img.shields.io/docker/v/vdaas/vald-manager-index/nightly?label=vald-index-manager" />
       </a>
     </td>
   </tr>
@@ -197,19 +208,52 @@ make init
         <img src="https://img.shields.io/badge/ghcr.io-vdaas%2Fvald%2Fvald--helm--operator-brightgreen?logo=docker&style=flat-square"/>
       </a>
     </td>
+    <td>
+      <a href="https://hub.docker.com/r/vdaas/vald-helm-operator/tags?page=1&name=latest">
+        <img src="https://img.shields.io/docker/v/vdaas/vald-helm-operator/latest?label=vald-helm-operator" />
+      </a>
+    </td>
+    <td>
+      <a href="https://hub.docker.com/r/vdaas/vald-helm-operator/tags?page=1&name=nightly">
+        <img src="https://img.shields.io/docker/v/vdaas/vald-helm-operator/nightly?label=vald-helm-operator" />
+      </a>
+    </td>
   </tr>
 </table>
 
+Docker images tagging policy:
+
+- `nightly` ... latest build of master branch
+- `vX.X.X` ... released versions
+- `latest` ... latest build of release versions
+- `stable` ... latest long-term supported version
+
+## Tools
+
+- [SDK](https://vald.vdaas.org/docs/user-guides/sdks/): Official client libraries
+- [Demo](https://github.com/vdaas/vald-demo): Demo repository using sample data
+
 ## Contribution
 
-Please read the [contribution guide](https://github.com/vdaas/vald/blob/master/CONTRIBUTING.md)
+Please read the [contribution guide](https://vald.vdaas.org/docs/contributing/contributing-guide).
+
+Before your first commit to this repository, it is strongly recommended to run the commands below.
+
+```shell
+git clone https://github.com/vdaas/vald && cd vald
+make init
+```
 
 ## Contributors
+
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
+
 [![All Contributors](https://img.shields.io/badge/all_contributors-12-orange.svg?style=flat-square)](#contributors)
+
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
+
 <!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
 <!-- prettier-ignore-start -->
 <!-- markdownlint-disable -->
