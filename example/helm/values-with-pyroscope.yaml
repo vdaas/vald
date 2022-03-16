@@ -7,7 +7,7 @@ defaults:
   server_config:
     metrics:
       pprof:
-        enabled: true
+        enabled: true # enable Pyroscope
     healths:
       liveness:
         livenessProbe:
