@@ -1171,10 +1171,10 @@ func Test_server_Insert(t *testing.T) {
 		req *payload.Insert_Request
 	}
 	type fields struct {
-		name              string
-		ip                string
-		ngt               service.NGT
-		eg                errgroup.Group
+		name string
+		ip   string
+		// ngt               service.NGT
+		// eg                errgroup.Group
 		streamConcurrency int
 
 		svcCfg  *config.NGT
@@ -1190,21 +1190,10 @@ func Test_server_Insert(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, *payload.Object_Location, error) error
-		beforeFunc func(*testing.T, *test)
+		beforeFunc func(*testing.T, *server)
 		afterFunc  func(args)
 	}
-	defaultBeforeFunc := func(t *testing.T, test *test) {
-		t.Helper()
-
-		eg, _ := errgroup.New(ctx)
-		test.fields.eg = eg
-		test.fields.svcOpts = append(test.fields.svcOpts, service.WithErrGroup(eg))
-
-		ngt, err := service.New(test.fields.svcCfg, test.fields.svcOpts...)
-		if err != nil {
-			t.Error(err)
-		}
-		test.fields.ngt = ngt
+	defaultBeforeFunc := func(t *testing.T, s *server) {
 	}
 	defaultCheckFunc := func(w want, gotRes *payload.Object_Location, err error) error {
 		if !errors.Is(err, w.err) {
@@ -2095,11 +2084,11 @@ func Test_server_Insert(t *testing.T) {
 						service.WithEnableInMemoryMode(true),
 					},
 				},
-				beforeFunc: func(t *testing.T, test *test) {
+				beforeFunc: func(t *testing.T, s *server) {
 					t.Helper()
-					defaultBeforeFunc(t, test)
+					defaultBeforeFunc(t, s)
 
-					test.fields.ngt.Insert(id, vec2)
+					s.ngt.Insert(id, vec2)
 				},
 				want: want{
 					err: status.WrapWithAlreadyExists(fmt.Sprintf("Insert API uuid %s already exists", id), errors.ErrUUIDAlreadyExists(id),
@@ -2148,11 +2137,11 @@ func Test_server_Insert(t *testing.T) {
 						service.WithEnableInMemoryMode(true),
 					},
 				},
-				beforeFunc: func(t *testing.T, test *test) {
+				beforeFunc: func(t *testing.T, s *server) {
 					t.Helper()
-					defaultBeforeFunc(t, test)
+					defaultBeforeFunc(t, s)
 
-					test.fields.ngt.Insert(id2, vec2)
+					s.ngt.Insert(id2, vec2)
 				},
 				want: want{
 					wantRes: &payload.Object_Location{
@@ -2196,11 +2185,11 @@ func Test_server_Insert(t *testing.T) {
 						service.WithEnableInMemoryMode(true),
 					},
 				},
-				beforeFunc: func(t *testing.T, test *test) {
+				beforeFunc: func(t *testing.T, s *server) {
 					t.Helper()
-					defaultBeforeFunc(t, test)
+					defaultBeforeFunc(t, s)
 
-					test.fields.ngt.Insert(id, intVec)
+					s.ngt.Insert(id, intVec)
 				},
 				want: want{
 					err: status.WrapWithAlreadyExists(fmt.Sprintf("Insert API uuid %s already exists", id), errors.ErrUUIDAlreadyExists(id),
@@ -2249,11 +2238,11 @@ func Test_server_Insert(t *testing.T) {
 						service.WithEnableInMemoryMode(true),
 					},
 				},
-				beforeFunc: func(t *testing.T, test *test) {
+				beforeFunc: func(t *testing.T, s *server) {
 					t.Helper()
-					defaultBeforeFunc(t, test)
+					defaultBeforeFunc(t, s)
 
-					test.fields.ngt.Insert(id, vec2)
+					s.ngt.Insert(id, vec2)
 				},
 				want: want{
 					err: status.WrapWithAlreadyExists(fmt.Sprintf("Insert API uuid %s already exists", id), errors.ErrUUIDAlreadyExists(id),
@@ -2301,11 +2290,11 @@ func Test_server_Insert(t *testing.T) {
 						service.WithEnableInMemoryMode(true),
 					},
 				},
-				beforeFunc: func(t *testing.T, test *test) {
+				beforeFunc: func(t *testing.T, s *server) {
 					t.Helper()
-					defaultBeforeFunc(t, test)
+					defaultBeforeFunc(t, s)
 
-					test.fields.ngt.Insert(id2, intVec)
+					s.ngt.Insert(id2, intVec)
 				},
 				want: want{
 					wantRes: &payload.Object_Location{
@@ -2349,11 +2338,11 @@ func Test_server_Insert(t *testing.T) {
 						service.WithEnableInMemoryMode(true),
 					},
 				},
-				beforeFunc: func(t *testing.T, test *test) {
+				beforeFunc: func(t *testing.T, s *server) {
 					t.Helper()
-					defaultBeforeFunc(t, test)
+					defaultBeforeFunc(t, s)
 
-					test.fields.ngt.Insert(id, intVec)
+					s.ngt.Insert(id, intVec)
 				},
 				want: want{
 					err: status.WrapWithAlreadyExists(fmt.Sprintf("Insert API uuid %s already exists", id), errors.ErrUUIDAlreadyExists(id),
@@ -2385,16 +2374,22 @@ func Test_server_Insert(t *testing.T) {
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
-			test.beforeFunc(tt, &test)
+
+			eg, _ := errgroup.New(ctx)
+			ngt, err := service.New(test.fields.svcCfg, append(test.fields.svcOpts, service.WithErrGroup(eg))...)
+			if err != nil {
+				t.Error(err)
+			}
 
 			s := &server{
 				name:              test.fields.name,
 				ip:                test.fields.ip,
-				ngt:               test.fields.ngt,
-				eg:                test.fields.eg,
+				ngt:               ngt,
+				eg:                eg,
 				streamConcurrency: test.fields.streamConcurrency,
 			}
 
+			test.beforeFunc(tt, s)
 			gotRes, err := s.Insert(test.args.ctx, test.args.req)
 			if err := checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
