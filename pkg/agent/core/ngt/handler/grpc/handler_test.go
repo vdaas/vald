@@ -34,6 +34,7 @@ import (
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/net/grpc/errdetails"
 	"github.com/vdaas/vald/internal/net/grpc/status"
+	"github.com/vdaas/vald/internal/test/data/vector"
 	"github.com/vdaas/vald/internal/test/goleak"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/model"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/service"
@@ -1218,6 +1219,10 @@ func Test_server_Insert(t *testing.T) {
 				- case 1.2: Insert vector success (vector type is float32)
 				- case 2.1: Insert vector with different dimension (vector type is uint8)
 				- case 2.2: Insert vector with different dimension (vector type is float32)
+				- case 3.1: Insert gaussian distributed vector success (vector type is uint8)
+				- case 3.2: Insert gaussian distributed vector success (vector type is float32)
+				- case 4.1: Insert uniform distributed vector success (vector type is uint8)
+				- case 4.2: Insert uniform distributed vector success (vector type is float32)
 
 		- Boundary Value Testing
 			- uint8, float32
@@ -1438,6 +1443,174 @@ func Test_server_Insert(t *testing.T) {
 								ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, name, ip),
 							})
 					}(),
+				},
+			}
+		}(),
+		func() test {
+			generator, _ := vector.Uint8VectorGenerator(vector.Gaussian)
+			ivec := generator(1, 128)[0]
+			vec := make([]float32, len(ivec))
+			for i := range ivec {
+				vec = append(vec, float32(i))
+			}
+
+			return test{
+				name: "Equivalence Class Testing case 3.1: Insert gaussian distributed vector success (vector type is uint8)",
+				args: args{
+					ctx: ctx,
+					req: &payload.Insert_Request{
+						Vector: &payload.Object_Vector{
+							Id:     id,
+							Vector: vec,
+						},
+					},
+				},
+				fields: fields{
+					name: name,
+					ip:   ip,
+					svcCfg: &config.NGT{
+						Dimension:    len(vec),
+						DistanceType: ngt.Angle.String(),
+						ObjectType:   ngt.Uint8.String(),
+						KVSDB: &config.KVSDB{
+							Concurrency: 10,
+						},
+						VQueue: &config.VQueue{},
+					},
+					svcOpts: []service.Option{
+						service.WithEnableInMemoryMode(true),
+					},
+				},
+				want: want{
+					wantRes: &payload.Object_Location{
+						Name: name,
+						Uuid: id,
+						Ips:  []string{ip},
+					},
+				},
+			}
+		}(),
+		func() test {
+			generator, _ := vector.Float32VectorGenerator(vector.Gaussian)
+			vec := generator(1, 128)[0]
+
+			return test{
+				name: "Equivalence Class Testing case 3.2: Insert gaussian distributed vector success (vector type is float32)",
+				args: args{
+					ctx: ctx,
+					req: &payload.Insert_Request{
+						Vector: &payload.Object_Vector{
+							Id:     id,
+							Vector: vec,
+						},
+					},
+				},
+				fields: fields{
+					name: name,
+					ip:   ip,
+					svcCfg: &config.NGT{
+						Dimension:    len(vec),
+						DistanceType: ngt.Angle.String(),
+						ObjectType:   ngt.Float.String(),
+						KVSDB: &config.KVSDB{
+							Concurrency: 10,
+						},
+						VQueue: &config.VQueue{},
+					},
+					svcOpts: []service.Option{
+						service.WithEnableInMemoryMode(true),
+					},
+				},
+				want: want{
+					wantRes: &payload.Object_Location{
+						Name: name,
+						Uuid: id,
+						Ips:  []string{ip},
+					},
+				},
+			}
+		}(),
+		func() test {
+			generator, _ := vector.Uint8VectorGenerator(vector.Uniform)
+			ivec := generator(1, 128)[0]
+			vec := make([]float32, len(ivec))
+			for i := range ivec {
+				vec = append(vec, float32(i))
+			}
+
+			return test{
+				name: "Equivalence Class Testing case 4.1: Insert uniform distributed vector success (vector type is uint8)",
+				args: args{
+					ctx: ctx,
+					req: &payload.Insert_Request{
+						Vector: &payload.Object_Vector{
+							Id:     id,
+							Vector: vec,
+						},
+					},
+				},
+				fields: fields{
+					name: name,
+					ip:   ip,
+					svcCfg: &config.NGT{
+						Dimension:    len(vec),
+						DistanceType: ngt.Angle.String(),
+						ObjectType:   ngt.Uint8.String(),
+						KVSDB: &config.KVSDB{
+							Concurrency: 10,
+						},
+						VQueue: &config.VQueue{},
+					},
+					svcOpts: []service.Option{
+						service.WithEnableInMemoryMode(true),
+					},
+				},
+				want: want{
+					wantRes: &payload.Object_Location{
+						Name: name,
+						Uuid: id,
+						Ips:  []string{ip},
+					},
+				},
+			}
+		}(),
+		func() test {
+			generator, _ := vector.Float32VectorGenerator(vector.Uniform)
+			vec := generator(1, 128)[0]
+
+			return test{
+				name: "Equivalence Class Testing case 4.2: Insert uniform distributed vector success (vector type is float32)",
+				args: args{
+					ctx: ctx,
+					req: &payload.Insert_Request{
+						Vector: &payload.Object_Vector{
+							Id:     id,
+							Vector: vec,
+						},
+					},
+				},
+				fields: fields{
+					name: name,
+					ip:   ip,
+					svcCfg: &config.NGT{
+						Dimension:    len(vec),
+						DistanceType: ngt.Angle.String(),
+						ObjectType:   ngt.Float.String(),
+						KVSDB: &config.KVSDB{
+							Concurrency: 10,
+						},
+						VQueue: &config.VQueue{},
+					},
+					svcOpts: []service.Option{
+						service.WithEnableInMemoryMode(true),
+					},
+				},
+				want: want{
+					wantRes: &payload.Object_Location{
+						Name: name,
+						Uuid: id,
+						Ips:  []string{ip},
+					},
 				},
 			}
 		}(),
