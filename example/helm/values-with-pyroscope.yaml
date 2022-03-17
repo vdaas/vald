@@ -1,0 +1,94 @@
+#
+# Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+defaults:
+  image:
+    tag: v1.4
+  time_zone: Asia/Tokyo
+  logging:
+    level: debug
+  server_config:
+    metrics:
+      pprof:
+        enabled: true # enable Pyroscope
+    healths:
+      liveness:
+        livenessProbe:
+          initialDelaySeconds: 60
+      readiness:
+        readinessProbe:
+          initialDelaySeconds: 60
+
+discoverer:
+  resources:
+    requests:
+      cpu: 150m
+      memory: 50Mi
+
+manager:
+  index:
+    resources:
+      requests:
+        cpu: 150m
+        memory: 30Mi
+
+gateway:
+  lb:
+    minReplicas: 2
+    maxReplicas: 2
+    resources:
+      requests:
+        cpu: 150m
+        memory: 150Mi
+    ingress:
+      enabled: true
+      annotations:
+        ingress.kubernetes.io/protocol: h2c
+        ingress.kubernetes.io/ssl-passthrough: "true"
+        traefik.protocol: h2c
+        kubernetes.io/ingress.class: traefik
+      host: localhost
+      servicePort: grpc
+    gateway_config:
+      index_replica: 2
+
+agent:
+  # /* These annotations will be set automatically when successful deployment */
+  # podAnnotations:
+  #   pyroscope.io/scrape: "true"
+  #   pyroscope.io/application-name: "vald-agent-ngt"
+  #   pyroscope.io/profile-cpu-enabled: "true"
+  #   pyroscope.io/profile-mem-enabled: "true"
+  #   pyroscope.io/port: "6060"
+  maxReplicas: 6
+  minReplicas: 6
+  name: vald-agent-ngt
+  ngt:
+    dimension: 784
+    distance_type: l2
+    object_type: float
+    auto_index_check_duration_limit: 1m
+    auto_index_duration_limit: 20s
+    auto_create_index_pool_size: 100
+    default_pool_size: 100
+    enable_in_memory_mode: true
+    search_edge_size: 10
+  podManagementPolicy: Parallel
+  resources:
+    limits:
+      cpu: 3000m
+    requests:
+      cpu: 300m
+      memory: 150Mi
