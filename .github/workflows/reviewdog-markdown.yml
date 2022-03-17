@@ -19,9 +19,7 @@ on:
   pull_request:
     paths-ignore:
       - "apis/docs/v1/docs.md"
-    paths:
-      - "**.md"
-      - "**.md.gotmpl"
+      - "CHANGELOG.md"
 
 jobs:
   languagetool:
@@ -34,7 +32,7 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           reporter: github-pr-review
-          patterns: "**/*.md **/*.md.gotmpl"
+          patterns: "**/*.md **/*.md.gotmpl !**/CHANGELOG.md"
           level: warning
           language: en-US
           disabled_rules: "DOUBLE_PUNCTUATION,WORD_CONTAINS_UNDERSCORE,ARROWS,CURRENCY,DASH_RULE,EN_QUOTES"
