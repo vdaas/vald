@@ -18,13 +18,12 @@
 package config
 
 import (
-	"strings"
-
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/grpc/health"
 	"github.com/vdaas/vald/internal/net/grpc/reflection"
 	"github.com/vdaas/vald/internal/servers/server"
+	"github.com/vdaas/vald/internal/strings"
 )
 
 // Servers represents the configuration of server list.

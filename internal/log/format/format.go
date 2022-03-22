@@ -16,7 +16,7 @@
 
 package format
 
-import "strings"
+import "github.com/vdaas/vald/internal/strings"
 
 type Format uint8
 

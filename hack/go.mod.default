@@ -1,6 +1,6 @@
 module github.com/vdaas/vald
 
-go 1.17
+go 1.18
 
 replace (
 	cloud.google.com/go => cloud.google.com/go latest
@@ -28,7 +28,6 @@ replace (
 	github.com/golang/protobuf => github.com/golang/protobuf latest
 	github.com/golang/snappy => github.com/golang/snappy latest
 	github.com/google/btree => github.com/google/btree latest
-	github.com/google/gnostic => github.com/google/gnostic latest
 	github.com/google/go-cmp => github.com/google/go-cmp latest
 	github.com/google/pprof => github.com/google/pprof master
 	github.com/google/uuid => github.com/google/uuid latest
@@ -98,7 +97,6 @@ replace (
 	k8s.io/component-base => k8s.io/component-base v0.23.4
 	k8s.io/gengo => k8s.io/gengo latest
 	k8s.io/klog/v2 => k8s.io/klog/v2 latest
-	k8s.io/kube-openapi => k8s.io/kube-openapi latest
 	k8s.io/metrics => k8s.io/metrics v0.23.4
 	k8s.io/utils => k8s.io/utils latest
 	sigs.k8s.io/apiserver-network-proxy/konnectivity-client => sigs.k8s.io/apiserver-network-proxy/konnectivity-client latest

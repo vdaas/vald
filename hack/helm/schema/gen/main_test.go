@@ -25,7 +25,6 @@ import (
 )
 
 func Test_main(t *testing.T) {
-	t.Parallel()
 	type want struct{}
 	type test struct {
 		name       string
@@ -84,7 +83,6 @@ func Test_main(t *testing.T) {
 }
 
 func Test_genJSONSchema(t *testing.T) {
-	t.Parallel()
 	type args struct {
 		path string
 	}
@@ -158,10 +156,9 @@ func Test_genJSONSchema(t *testing.T) {
 }
 
 func Test_objectProperties(t *testing.T) {
-	t.Parallel()
 	type args struct {
 		prefix []string
-		ls     []VSchema
+		ls     []*VSchema
 	}
 	type want struct {
 		want map[string]*Schema
@@ -239,10 +236,9 @@ func Test_objectProperties(t *testing.T) {
 }
 
 func Test_genNode(t *testing.T) {
-	t.Parallel()
 	type args struct {
 		prefix []string
-		ls     []VSchema
+		ls     []*VSchema
 	}
 	type want struct {
 		want *Schema
@@ -320,7 +316,6 @@ func Test_genNode(t *testing.T) {
 }
 
 func Test_newRoot(t *testing.T) {
-	t.Parallel()
 	type args struct {
 		schemas map[string]*Schema
 	}

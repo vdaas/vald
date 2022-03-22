@@ -20,7 +20,6 @@ package grpc
 import (
 	"context"
 	"math"
-	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -37,6 +36,7 @@ import (
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/singleflight"
+	"github.com/vdaas/vald/internal/strings"
 	"google.golang.org/grpc"
 	gbackoff "google.golang.org/grpc/backoff"
 )

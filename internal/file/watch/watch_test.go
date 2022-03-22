@@ -22,7 +22,6 @@ import (
 	"io/ioutil"
 	"os"
 	"reflect"
-	"strings"
 	"syscall"
 	"testing"
 
@@ -31,6 +30,7 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/log/logger"
+	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/test/goleak"
 )
 

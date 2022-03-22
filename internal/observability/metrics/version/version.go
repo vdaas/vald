@@ -21,10 +21,10 @@ import (
 	"context"
 	"fmt"
 	"reflect"
-	"strings"
 
 	"github.com/vdaas/vald/internal/info"
 	"github.com/vdaas/vald/internal/observability/metrics"
+	"github.com/vdaas/vald/internal/strings"
 )
 
 var reps = strings.NewReplacer("_", " ", ",omitempty", "")

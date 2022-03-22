@@ -21,7 +21,6 @@ import (
 	"context"
 	"math"
 	"sort"
-	"strings"
 	"sync/atomic"
 	"time"
 
@@ -31,6 +30,7 @@ import (
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/safety"
+	"github.com/vdaas/vald/internal/strings"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/connectivity"
 )

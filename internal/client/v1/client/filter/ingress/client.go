@@ -20,7 +20,6 @@ package ingress
 import (
 	"context"
 	"reflect"
-	"strings"
 	"sync"
 
 	"github.com/vdaas/vald/apis/grpc/v1/filter/ingress"
@@ -28,6 +27,7 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/observability/trace"
+	"github.com/vdaas/vald/internal/strings"
 )
 
 type Client interface {

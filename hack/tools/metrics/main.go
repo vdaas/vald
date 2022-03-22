@@ -20,6 +20,7 @@ import (
 	"flag"
 	"fmt"
 	"image/color"
+	"io/fs"
 	"os"
 	"sort"
 
@@ -41,9 +42,6 @@ var (
 	output = flag.String("output", "chart.svg", "output chart file path")
 	width  = flag.Int("width", 1280, "chart image width")
 	height = flag.Int("height", 960, "chart image height")
-
-	s = 0.8
-	l = 1.0
 )
 
 func main() {
@@ -57,7 +55,7 @@ func main() {
 }
 
 func run() error {
-	in, err := os.OpenFile(*input, os.O_RDONLY, os.ModeDevice)
+	in, err := os.OpenFile(*input, os.O_RDONLY, fs.ModeDevice)
 	if err != nil {
 		return err
 	}
@@ -111,7 +109,7 @@ func run() error {
 
 	canvas := vgsvg.New(vg.Length(*width), vg.Length(*height))
 	p.Draw(draw.New(canvas))
-	out, err := os.OpenFile(*output, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, os.ModePerm)
+	out, err := os.OpenFile(*output, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, fs.ModePerm)
 	if err != nil {
 		return err
 	}

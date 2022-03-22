@@ -25,8 +25,8 @@ import (
 	"net/http"
 	"net/url"
 	"os"
-	"strings"
 
+	"github.com/vdaas/vald/internal/strings"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/portforward"

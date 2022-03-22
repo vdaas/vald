@@ -23,10 +23,10 @@ package client
 import (
 	"context"
 	"os"
-	"path/filepath"
-	"strings"
 	"time"
 
+	"github.com/vdaas/vald/internal/file"
+	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/tests/e2e/kubernetes/portforward"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -71,7 +71,7 @@ func New(kubeConfig string) (Client, error) {
 		kubeConfig = os.Getenv("KUBECONFIG")
 		if kubeConfig == "" {
 			if home := os.Getenv("HOME"); home != "" {
-				kubeConfig = filepath.Join(home, ".kube", "config")
+				kubeConfig = file.Join(home, ".kube", "config")
 			}
 		}
 	}

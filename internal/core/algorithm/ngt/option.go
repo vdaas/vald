@@ -24,10 +24,11 @@ package ngt
 import "C"
 
 import (
-	"strings"
+	"strconv"
 
 	"github.com/kpango/fastime"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/strings"
 )
 
 // Option represents the functional option for NGT.
@@ -39,7 +40,7 @@ var (
 	DefaultEpsilon  = float32(0.1)
 
 	defaultOptions = []Option{
-		WithIndexPath("/tmp/ngt-" + string(fastime.FormattedNow())),
+		WithIndexPath("/tmp/ngt-" + strconv.FormatInt(fastime.UnixNanoNow(), 10)),
 		WithDimension(minimumDimensionSize),
 		WithDefaultRadius(DefaultRadius),
 		WithDefaultEpsilon(DefaultEpsilon),
@@ -134,42 +135,42 @@ func WithDistanceType(t distanceType) Option {
 		switch t {
 		case L1:
 			if C.ngt_set_property_distance_type_l1(n.prop, ebuf) == ErrorCode {
-				err := errors.ErrFailedToSetDistanceType(n.newGoError(ebuf), "L1")
+				err := errors.ErrFailedToSetDistanceType(n.newGoError(ebuf), t.String())
 				return errors.NewErrCriticalOption("distanceType", t, err)
 			}
 		case L2:
 			if C.ngt_set_property_distance_type_l2(n.prop, ebuf) == ErrorCode {
-				err := errors.ErrFailedToSetDistanceType(n.newGoError(ebuf), "L2")
+				err := errors.ErrFailedToSetDistanceType(n.newGoError(ebuf), t.String())
 				return errors.NewErrCriticalOption("distanceType", t, err)
 			}
 		case Angle:
 			if C.ngt_set_property_distance_type_angle(n.prop, ebuf) == ErrorCode {
-				err := errors.ErrFailedToSetDistanceType(n.newGoError(ebuf), "Angle")
+				err := errors.ErrFailedToSetDistanceType(n.newGoError(ebuf), t.String())
 				return errors.NewErrCriticalOption("distanceType", t, err)
 			}
 		case Hamming:
 			if C.ngt_set_property_distance_type_hamming(n.prop, ebuf) == ErrorCode {
-				err := errors.ErrFailedToSetDistanceType(n.newGoError(ebuf), "Hamming")
+				err := errors.ErrFailedToSetDistanceType(n.newGoError(ebuf), t.String())
 				return errors.NewErrCriticalOption("distanceType", t, err)
 			}
 		case Cosine:
 			if C.ngt_set_property_distance_type_cosine(n.prop, ebuf) == ErrorCode {
-				err := errors.ErrFailedToSetDistanceType(n.newGoError(ebuf), "Cosine")
+				err := errors.ErrFailedToSetDistanceType(n.newGoError(ebuf), t.String())
 				return errors.NewErrCriticalOption("distanceType", t, err)
 			}
 		case NormalizedAngle:
 			if C.ngt_set_property_distance_type_normalized_angle(n.prop, ebuf) == ErrorCode {
-				err := errors.ErrFailedToSetDistanceType(n.newGoError(ebuf), "NormalizedAngle")
+				err := errors.ErrFailedToSetDistanceType(n.newGoError(ebuf), t.String())
 				return errors.NewErrCriticalOption("distanceType", t, err)
 			}
 		case NormalizedCosine:
 			if C.ngt_set_property_distance_type_normalized_cosine(n.prop, ebuf) == ErrorCode {
-				err := errors.ErrFailedToSetDistanceType(n.newGoError(ebuf), "NormalizedCosine")
+				err := errors.ErrFailedToSetDistanceType(n.newGoError(ebuf), t.String())
 				return errors.NewErrCriticalOption("distanceType", t, err)
 			}
 		case Jaccard:
 			if C.ngt_set_property_distance_type_jaccard(n.prop, ebuf) == ErrorCode {
-				err := errors.ErrFailedToSetDistanceType(n.newGoError(ebuf), "Jaccard")
+				err := errors.ErrFailedToSetDistanceType(n.newGoError(ebuf), t.String())
 				return errors.NewErrCriticalOption("distanceType", t, err)
 			}
 		default:
@@ -203,17 +204,17 @@ func WithObjectType(t objectType) Option {
 		switch t {
 		case Uint8:
 			if C.ngt_set_property_object_type_integer(n.prop, ebuf) == ErrorCode {
-				err := errors.ErrFailedToSetObjectType(n.newGoError(ebuf), "Uint8")
+				err := errors.ErrFailedToSetObjectType(n.newGoError(ebuf), t.String())
 				return errors.NewErrCriticalOption("objectType", t, err)
 			}
 		case HalfFloat:
 			if C.ngt_set_property_object_type_float16(n.prop, ebuf) == ErrorCode {
-				err := errors.ErrFailedToSetObjectType(n.newGoError(ebuf), "HalfFloat")
+				err := errors.ErrFailedToSetObjectType(n.newGoError(ebuf), t.String())
 				return errors.NewErrCriticalOption("objectType", t, err)
 			}
 		case Float:
 			if C.ngt_set_property_object_type_float(n.prop, ebuf) == ErrorCode {
-				err := errors.ErrFailedToSetObjectType(n.newGoError(ebuf), "Float")
+				err := errors.ErrFailedToSetObjectType(n.newGoError(ebuf), t.String())
 				return errors.NewErrCriticalOption("objectType", t, err)
 			}
 		default:

@@ -20,13 +20,13 @@ import (
 	"math"
 	"math/big"
 	"os"
-	"path/filepath"
-	"strings"
 	"time"
 
 	core "github.com/vdaas/vald/internal/core/algorithm/ngt"
 	"github.com/vdaas/vald/internal/errgroup"
+	"github.com/vdaas/vald/internal/file"
 	"github.com/vdaas/vald/internal/rand"
+	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/timeutil"
 )
 
@@ -75,7 +75,7 @@ func WithIndexPath(path string) Option {
 		if path == "" {
 			return nil
 		}
-		n.path = filepath.Clean(strings.TrimSuffix(path, string(os.PathSeparator)))
+		n.path = file.Join(strings.TrimSuffix(path, string(os.PathSeparator)))
 		return nil
 	}
 }
@@ -288,6 +288,14 @@ func WithDefaultEpsilon(epsilon float32) Option {
 func WithProactiveGC(enabled bool) Option {
 	return func(n *ngt) error {
 		n.enableProactiveGC = enabled
+		return nil
+	}
+}
+
+// WithCopyOnWrite returns the functional option to set the CoW enable flag.
+func WithCopyOnWrite(enabled bool) Option {
+	return func(n *ngt) error {
+		n.enableCopyOnWrite = enabled
 		return nil
 	}
 }

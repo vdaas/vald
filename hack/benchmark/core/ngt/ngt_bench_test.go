@@ -20,7 +20,6 @@ package ngt
 import (
 	"context"
 	"flag"
-	"strings"
 	"testing"
 
 	"github.com/vdaas/vald/hack/benchmark/core/benchmark"
@@ -30,6 +29,7 @@ import (
 	"github.com/vdaas/vald/hack/benchmark/internal/core/algorithm/ngt"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/log/logger"
+	"github.com/vdaas/vald/internal/strings"
 )
 
 const (

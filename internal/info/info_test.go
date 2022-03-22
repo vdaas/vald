@@ -21,13 +21,13 @@ import (
 	"os"
 	"reflect"
 	"runtime"
-	"strings"
 	"sync"
 	"testing"
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/log/logger"
+	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/test/comparator"
 	"github.com/vdaas/vald/internal/test/goleak"
 )
@@ -601,7 +601,7 @@ func Test_info_String(t *testing.T) {
 				},
 			},
 			want: want{
-				want: "\nbuild cpu info flags ->\t[]\nbuild time           ->\tbt\ncgo enabled          ->\ttrue\ngit commit           ->\tcommit\ngo arch              ->\tgoarch\ngo os                ->\tgoos\ngo version           ->\t1.1\nngt version          ->\t1.2\nserver name          ->\tsrv\nstack trace-0        ->\turl\tfunc\nvald version         ->\t\x1b[1m1.0\x1b[22m",
+				want: "\nbuild cpu info flags ->\t[]\nbuild time           ->\tbt\ncgo enabled          ->\ttrue\ngit commit           ->\tcommit\ngo arch              ->\tgoarch\ngo os                ->\tgoos\ngo version           ->\t1.1\nngt version          ->\t1.2\nserver name          ->\tsrv\nstack trace-000      ->\turl\tfile#L10\tfunc\nvald version         ->\t\x1b[1m1.0\x1b[22m",
 			},
 		},
 		{
@@ -713,7 +713,7 @@ func TestDetail_String(t *testing.T) {
 				},
 			},
 			want: want{
-				want: "\nbuild cpu info flags ->\t[]\nbuild time           ->\tbt\ncgo enabled          ->\ttrue\ngit commit           ->\tcommit\ngo arch              ->\tgoarch\ngo os                ->\tgoos\ngo version           ->\t1.1\nngt version          ->\t1.2\nserver name          ->\tsrv\nstack trace-0        ->\turl\tfunc\nvald version         ->\t\x1b[1m1.0\x1b[22m",
+				want: "\nbuild cpu info flags ->\t[]\nbuild time           ->\tbt\ncgo enabled          ->\ttrue\ngit commit           ->\tcommit\ngo arch              ->\tgoarch\ngo os                ->\tgoos\ngo version           ->\t1.1\nngt version          ->\t1.2\nserver name          ->\tsrv\nstack trace-000      ->\turl\tfile#L10\tfunc\nvald version         ->\t\x1b[1m1.0\x1b[22m",
 			},
 		},
 		{

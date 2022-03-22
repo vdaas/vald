@@ -17,7 +17,7 @@
 // Package config providers configuration type and load configuration logic
 package config
 
-import "strings"
+import "github.com/vdaas/vald/internal/strings"
 
 // BlobStorageType represents blob storage type.
 type BlobStorageType uint8

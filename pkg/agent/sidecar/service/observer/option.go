@@ -18,9 +18,8 @@
 package observer
 
 import (
-	"path/filepath"
-
 	"github.com/vdaas/vald/internal/errgroup"
+	"github.com/vdaas/vald/internal/file"
 	"github.com/vdaas/vald/internal/timeutil"
 	"github.com/vdaas/vald/pkg/agent/internal/metadata"
 	"github.com/vdaas/vald/pkg/agent/sidecar/service/storage"
@@ -96,7 +95,7 @@ func WithDir(dir string) Option {
 		}
 
 		o.dir = dir
-		o.metadataPath = filepath.Join(dir, metadata.AgentMetadataFileName)
+		o.metadataPath = file.Join(dir, metadata.AgentMetadataFileName)
 
 		return nil
 	}

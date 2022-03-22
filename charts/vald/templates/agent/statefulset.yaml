@@ -106,6 +106,7 @@ spec:
             {{- if $agent.persistentVolume.enabled }}
             - name: {{ $agent.name }}-pvc
               mountPath: {{ dir $agent.ngt.index_path }}
+              mountPropagation: {{ $agent.persistentVolume.mountPropagation }}
             {{- else }}
             - name: {{ $agent.name }}-local
               mountPath: {{ dir $agent.ngt.index_path }}
@@ -149,6 +150,7 @@ spec:
             {{- if $agent.persistentVolume.enabled }}
             - name: {{ $agent.name }}-pvc
               mountPath: {{ dir $agent.ngt.index_path }}
+              mountPropagation: {{ $agent.persistentVolume.mountPropagation }}
             {{- else }}
             - name: {{ $agent.name }}-local
               mountPath: {{ dir $agent.ngt.index_path }}
@@ -186,6 +188,7 @@ spec:
             {{- if $agent.persistentVolume.enabled }}
             - name: {{ $agent.name }}-pvc
               mountPath: {{ dir $agent.ngt.index_path }}
+              mountPropagation: {{ $agent.persistentVolume.mountPropagation }}
             {{- else }}
             - name: {{ $agent.name }}-local
               mountPath: {{ dir $agent.ngt.index_path }}

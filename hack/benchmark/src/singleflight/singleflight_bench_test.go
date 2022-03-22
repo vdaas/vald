@@ -18,6 +18,7 @@ package singleflight
 import (
 	"context"
 	"fmt"
+	"io/fs"
 	"math"
 	"os"
 	"sync"
@@ -263,7 +264,7 @@ func Benchmark_group_Do_with_vald_internal_singleflight(b *testing.B) {
 }
 
 func toCSV(name string, r []Result) error {
-	f, err := os.OpenFile(name, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, os.ModePerm)
+	f, err := os.OpenFile(name, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, fs.ModePerm)
 	if err != nil {
 		return err
 	}

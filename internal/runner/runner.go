@@ -21,7 +21,6 @@ import (
 	"fmt"
 	"net/http"
 	"os/signal"
-	"strings"
 	"syscall"
 
 	"github.com/vdaas/vald/internal/config"
@@ -33,6 +32,7 @@ import (
 	"github.com/vdaas/vald/internal/log/level"
 	"github.com/vdaas/vald/internal/params"
 	"github.com/vdaas/vald/internal/safety"
+	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/timeutil/location"
 	ver "github.com/vdaas/vald/internal/version"
 	"go.uber.org/automaxprocs/maxprocs"
@@ -138,7 +138,12 @@ func Do(ctx context.Context, opts ...Option) error {
 }
 
 func Run(ctx context.Context, run Runner, name string) (err error) {
-	sctx, cancel := signal.NotifyContext(ctx, syscall.SIGINT, syscall.SIGTERM)
+	sctx, cancel := signal.NotifyContext(ctx,
+		syscall.SIGINT,
+		syscall.SIGQUIT,
+		syscall.SIGHUP,
+		syscall.SIGALRM,
+		syscall.SIGTERM)
 	defer cancel()
 	sctx = errgroup.Init(sctx)
 	log.Info("executing daemon pre-start function")
@@ -204,7 +209,9 @@ func Run(ctx context.Context, run Runner, name string) (err error) {
 			}
 
 			err = errgroup.Wait()
-			if err != nil && !errors.Is(err, context.Canceled) {
+			if err != nil &&
+				!errors.Is(err, context.DeadlineExceeded) &&
+				!errors.Is(err, context.Canceled) {
 				log.Error(errors.ErrRunnerWait(name, err))
 				if _, ok := emap[err.Error()]; !ok {
 					errs = append(errs, err)
@@ -218,6 +225,7 @@ func Run(ctx context.Context, run Runner, name string) (err error) {
 					msg := ierr.Error()
 					if msg != "" &&
 						!strings.Contains(msg, http.ErrServerClosed.Error()) &&
+						!strings.Contains(msg, context.DeadlineExceeded.Error()) &&
 						!strings.Contains(msg, context.Canceled.Error()) {
 						err = errors.Wrapf(err, "error:\t%s\tcount:\t%d", msg, emap[msg])
 					}

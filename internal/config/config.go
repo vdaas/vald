@@ -19,9 +19,9 @@ package config
 
 import (
 	"bytes"
+	"io/fs"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/vdaas/vald/internal/conv"
 	"github.com/vdaas/vald/internal/encoding/json"
@@ -29,6 +29,7 @@ import (
 	"github.com/vdaas/vald/internal/file"
 	"github.com/vdaas/vald/internal/io/ioutil"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/strings"
 	yaml "gopkg.in/yaml.v2"
 )
 
@@ -62,7 +63,7 @@ func (c *GlobalConfig) Bind() *GlobalConfig {
 
 // Read returns config struct or error when decoding the configuration file to actually *Config struct.
 func Read(path string, cfg interface{}) (err error) {
-	f, err := file.Open(path, os.O_RDONLY, 0o600)
+	f, err := file.Open(path, os.O_RDONLY, fs.ModePerm)
 	if err != nil {
 		return err
 	}
