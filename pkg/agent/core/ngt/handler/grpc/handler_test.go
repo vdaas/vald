@@ -1164,9 +1164,6 @@ func Test_server_MultiSearchByID(t *testing.T) {
 func Test_server_Insert(t *testing.T) {
 	t.Parallel()
 
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
 	type args struct {
 		ctx context.Context
 		req *payload.Insert_Request
@@ -1191,10 +1188,8 @@ func Test_server_Insert(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, *payload.Object_Location, error) error
-		beforeFunc func(*testing.T, *server)
+		beforeFunc func(*server)
 		afterFunc  func(args)
-	}
-	defaultBeforeFunc := func(t *testing.T, s *server) {
 	}
 	defaultCheckFunc := func(w want, gotRes *payload.Object_Location, err error) error {
 		if !errors.Is(err, w.err) {
@@ -1206,11 +1201,16 @@ func Test_server_Insert(t *testing.T) {
 		return nil
 	}
 
-	name := "vald-agent-ngt-1"
-	id := "uuid1"
-	ip := net.LoadLocalIP()
-	intVec := []float32{1, 2, 3}
-	f32Vec := []float32{1.5, 2.3, 3.6}
+	name := "vald-agent-ngt-1"         // agent name
+	id := "uuid1"                      // insert request id
+	ip := net.LoadLocalIP()            // agent ip address
+	intVec := []float32{1, 2, 3}       // int vector of the insert request
+	f32Vec := []float32{1.5, 2.3, 3.6} // float32 vector of the insert request
+	intVecDim := 3                     // int vector dimension
+	f32VecDim := 3                     // float32 vector dimension
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
 	/*
 		- Equivalence Class Testing
@@ -1274,13 +1274,11 @@ func Test_server_Insert(t *testing.T) {
 					name: name,
 					ip:   ip,
 					svcCfg: &config.NGT{
-						Dimension:    len(intVec),
+						Dimension:    intVecDim,
 						DistanceType: ngt.Angle.String(),
 						ObjectType:   ngt.Uint8.String(),
-						KVSDB: &config.KVSDB{
-							Concurrency: 10,
-						},
-						VQueue: &config.VQueue{},
+						KVSDB:        &config.KVSDB{},
+						VQueue:       &config.VQueue{},
 					},
 					svcOpts: []service.Option{
 						service.WithEnableInMemoryMode(true),
@@ -1311,13 +1309,11 @@ func Test_server_Insert(t *testing.T) {
 					name: name,
 					ip:   ip,
 					svcCfg: &config.NGT{
-						Dimension:    len(f32Vec),
+						Dimension:    f32VecDim,
 						DistanceType: ngt.Angle.String(),
 						ObjectType:   ngt.Float.String(),
-						KVSDB: &config.KVSDB{
-							Concurrency: 10,
-						},
-						VQueue: &config.VQueue{},
+						KVSDB:        &config.KVSDB{},
+						VQueue:       &config.VQueue{},
 					},
 					svcOpts: []service.Option{
 						service.WithEnableInMemoryMode(true),
@@ -1355,10 +1351,8 @@ func Test_server_Insert(t *testing.T) {
 						Dimension:    dim,
 						DistanceType: ngt.Angle.String(),
 						ObjectType:   ngt.Uint8.String(),
-						KVSDB: &config.KVSDB{
-							Concurrency: 10,
-						},
-						VQueue: &config.VQueue{},
+						KVSDB:        &config.KVSDB{},
+						VQueue:       &config.VQueue{},
 					},
 					svcOpts: []service.Option{
 						service.WithEnableInMemoryMode(true),
@@ -1412,10 +1406,8 @@ func Test_server_Insert(t *testing.T) {
 						Dimension:    dim,
 						DistanceType: ngt.Angle.String(),
 						ObjectType:   ngt.Float.String(),
-						KVSDB: &config.KVSDB{
-							Concurrency: 10,
-						},
-						VQueue: &config.VQueue{},
+						KVSDB:        &config.KVSDB{},
+						VQueue:       &config.VQueue{},
 					},
 					svcOpts: []service.Option{
 						service.WithEnableInMemoryMode(true),
@@ -1472,10 +1464,8 @@ func Test_server_Insert(t *testing.T) {
 						Dimension:    len(vec),
 						DistanceType: ngt.Angle.String(),
 						ObjectType:   ngt.Uint8.String(),
-						KVSDB: &config.KVSDB{
-							Concurrency: 10,
-						},
-						VQueue: &config.VQueue{},
+						KVSDB:        &config.KVSDB{},
+						VQueue:       &config.VQueue{},
 					},
 					svcOpts: []service.Option{
 						service.WithEnableInMemoryMode(true),
@@ -1512,10 +1502,8 @@ func Test_server_Insert(t *testing.T) {
 						Dimension:    len(vec),
 						DistanceType: ngt.Angle.String(),
 						ObjectType:   ngt.Float.String(),
-						KVSDB: &config.KVSDB{
-							Concurrency: 10,
-						},
-						VQueue: &config.VQueue{},
+						KVSDB:        &config.KVSDB{},
+						VQueue:       &config.VQueue{},
 					},
 					svcOpts: []service.Option{
 						service.WithEnableInMemoryMode(true),
@@ -1556,10 +1544,8 @@ func Test_server_Insert(t *testing.T) {
 						Dimension:    len(vec),
 						DistanceType: ngt.Angle.String(),
 						ObjectType:   ngt.Uint8.String(),
-						KVSDB: &config.KVSDB{
-							Concurrency: 10,
-						},
-						VQueue: &config.VQueue{},
+						KVSDB:        &config.KVSDB{},
+						VQueue:       &config.VQueue{},
 					},
 					svcOpts: []service.Option{
 						service.WithEnableInMemoryMode(true),
@@ -1596,10 +1582,8 @@ func Test_server_Insert(t *testing.T) {
 						Dimension:    len(vec),
 						DistanceType: ngt.Angle.String(),
 						ObjectType:   ngt.Float.String(),
-						KVSDB: &config.KVSDB{
-							Concurrency: 10,
-						},
-						VQueue: &config.VQueue{},
+						KVSDB:        &config.KVSDB{},
+						VQueue:       &config.VQueue{},
 					},
 					svcOpts: []service.Option{
 						service.WithEnableInMemoryMode(true),
@@ -1637,10 +1621,8 @@ func Test_server_Insert(t *testing.T) {
 						Dimension:    len(vec),
 						DistanceType: ngt.Angle.String(),
 						ObjectType:   ngt.Uint8.String(),
-						KVSDB: &config.KVSDB{
-							Concurrency: 10,
-						},
-						VQueue: &config.VQueue{},
+						KVSDB:        &config.KVSDB{},
+						VQueue:       &config.VQueue{},
 					},
 					svcOpts: []service.Option{
 						service.WithEnableInMemoryMode(true),
@@ -1676,10 +1658,8 @@ func Test_server_Insert(t *testing.T) {
 						Dimension:    len(vec),
 						DistanceType: ngt.Angle.String(),
 						ObjectType:   ngt.Float.String(),
-						KVSDB: &config.KVSDB{
-							Concurrency: 10,
-						},
-						VQueue: &config.VQueue{},
+						KVSDB:        &config.KVSDB{},
+						VQueue:       &config.VQueue{},
 					},
 					svcOpts: []service.Option{
 						service.WithEnableInMemoryMode(true),
@@ -1715,10 +1695,8 @@ func Test_server_Insert(t *testing.T) {
 						Dimension:    len(vec),
 						DistanceType: ngt.Angle.String(),
 						ObjectType:   ngt.Uint8.String(),
-						KVSDB: &config.KVSDB{
-							Concurrency: 10,
-						},
-						VQueue: &config.VQueue{},
+						KVSDB:        &config.KVSDB{},
+						VQueue:       &config.VQueue{},
 					},
 					svcOpts: []service.Option{
 						service.WithEnableInMemoryMode(true),
@@ -1754,10 +1732,8 @@ func Test_server_Insert(t *testing.T) {
 						Dimension:    len(vec),
 						DistanceType: ngt.Angle.String(),
 						ObjectType:   ngt.Float.String(),
-						KVSDB: &config.KVSDB{
-							Concurrency: 10,
-						},
-						VQueue: &config.VQueue{},
+						KVSDB:        &config.KVSDB{},
+						VQueue:       &config.VQueue{},
 					},
 					svcOpts: []service.Option{
 						service.WithEnableInMemoryMode(true),
@@ -1793,10 +1769,8 @@ func Test_server_Insert(t *testing.T) {
 						Dimension:    len(vec),
 						DistanceType: ngt.Angle.String(),
 						ObjectType:   ngt.Uint8.String(),
-						KVSDB: &config.KVSDB{
-							Concurrency: 10,
-						},
-						VQueue: &config.VQueue{},
+						KVSDB:        &config.KVSDB{},
+						VQueue:       &config.VQueue{},
 					},
 					svcOpts: []service.Option{
 						service.WithEnableInMemoryMode(true),
@@ -1832,10 +1806,8 @@ func Test_server_Insert(t *testing.T) {
 						Dimension:    len(vec),
 						DistanceType: ngt.Angle.String(),
 						ObjectType:   ngt.Float.String(),
-						KVSDB: &config.KVSDB{
-							Concurrency: 10,
-						},
-						VQueue: &config.VQueue{},
+						KVSDB:        &config.KVSDB{},
+						VQueue:       &config.VQueue{},
 					},
 					svcOpts: []service.Option{
 						service.WithEnableInMemoryMode(true),
@@ -1869,13 +1841,11 @@ func Test_server_Insert(t *testing.T) {
 					name: name,
 					ip:   ip,
 					svcCfg: &config.NGT{
-						Dimension:    len(intVec),
+						Dimension:    intVecDim,
 						DistanceType: ngt.Angle.String(),
 						ObjectType:   ngt.Uint8.String(),
-						KVSDB: &config.KVSDB{
-							Concurrency: 10,
-						},
-						VQueue: &config.VQueue{},
+						KVSDB:        &config.KVSDB{},
+						VQueue:       &config.VQueue{},
 					},
 					svcOpts: []service.Option{
 						service.WithEnableInMemoryMode(true),
@@ -1925,13 +1895,11 @@ func Test_server_Insert(t *testing.T) {
 					name: name,
 					ip:   ip,
 					svcCfg: &config.NGT{
-						Dimension:    len(f32Vec),
+						Dimension:    f32VecDim,
 						DistanceType: ngt.Angle.String(),
 						ObjectType:   ngt.Float.String(),
-						KVSDB: &config.KVSDB{
-							Concurrency: 10,
-						},
-						VQueue: &config.VQueue{},
+						KVSDB:        &config.KVSDB{},
+						VQueue:       &config.VQueue{},
 					},
 					svcOpts: []service.Option{
 						service.WithEnableInMemoryMode(true),
@@ -1981,13 +1949,11 @@ func Test_server_Insert(t *testing.T) {
 					name: name,
 					ip:   ip,
 					svcCfg: &config.NGT{
-						Dimension:    len(f32Vec),
+						Dimension:    f32VecDim,
 						DistanceType: ngt.Angle.String(),
 						ObjectType:   ngt.Float.String(),
-						KVSDB: &config.KVSDB{
-							Concurrency: 10,
-						},
-						VQueue: &config.VQueue{},
+						KVSDB:        &config.KVSDB{},
+						VQueue:       &config.VQueue{},
 					},
 					svcOpts: []service.Option{
 						service.WithEnableInMemoryMode(true),
@@ -2040,10 +2006,8 @@ func Test_server_Insert(t *testing.T) {
 						Dimension:    len(vec),
 						DistanceType: ngt.Angle.String(),
 						ObjectType:   ngt.Float.String(),
-						KVSDB: &config.KVSDB{
-							Concurrency: 10,
-						},
-						VQueue: &config.VQueue{},
+						KVSDB:        &config.KVSDB{},
+						VQueue:       &config.VQueue{},
 					},
 					svcOpts: []service.Option{
 						service.WithEnableInMemoryMode(true),
@@ -2074,10 +2038,8 @@ func Test_server_Insert(t *testing.T) {
 						Dimension:    dim,
 						DistanceType: ngt.Angle.String(),
 						ObjectType:   ngt.Float.String(),
-						KVSDB: &config.KVSDB{
-							Concurrency: 10,
-						},
-						VQueue: &config.VQueue{},
+						KVSDB:        &config.KVSDB{},
+						VQueue:       &config.VQueue{},
 					},
 					svcOpts: []service.Option{
 						service.WithEnableInMemoryMode(true),
@@ -2110,6 +2072,7 @@ func Test_server_Insert(t *testing.T) {
 			}
 		}(),
 		func() test {
+			id := "1"
 			dim := 3
 
 			return test{
@@ -2118,7 +2081,7 @@ func Test_server_Insert(t *testing.T) {
 					ctx: ctx,
 					req: &payload.Insert_Request{
 						Vector: &payload.Object_Vector{
-							Id:     "1",
+							Id:     id,
 							Vector: nil,
 						},
 					},
@@ -2130,10 +2093,8 @@ func Test_server_Insert(t *testing.T) {
 						Dimension:    dim,
 						DistanceType: ngt.Angle.String(),
 						ObjectType:   ngt.Float.String(),
-						KVSDB: &config.KVSDB{
-							Concurrency: 10,
-						},
-						VQueue: &config.VQueue{},
+						KVSDB:        &config.KVSDB{},
+						VQueue:       &config.VQueue{},
 					},
 					svcOpts: []service.Option{
 						service.WithEnableInMemoryMode(true),
@@ -2166,6 +2127,7 @@ func Test_server_Insert(t *testing.T) {
 			}
 		}(),
 		func() test {
+			id := "1"
 			dim := 3
 
 			return test{
@@ -2174,7 +2136,7 @@ func Test_server_Insert(t *testing.T) {
 					ctx: ctx,
 					req: &payload.Insert_Request{
 						Vector: &payload.Object_Vector{
-							Id:     "1",
+							Id:     id,
 							Vector: []float32{},
 						},
 					},
@@ -2186,10 +2148,8 @@ func Test_server_Insert(t *testing.T) {
 						Dimension:    dim,
 						DistanceType: ngt.Angle.String(),
 						ObjectType:   ngt.Float.String(),
-						KVSDB: &config.KVSDB{
-							Concurrency: 10,
-						},
-						VQueue: &config.VQueue{},
+						KVSDB:        &config.KVSDB{},
+						VQueue:       &config.VQueue{},
 					},
 					svcOpts: []service.Option{
 						service.WithEnableInMemoryMode(true),
@@ -2245,22 +2205,17 @@ func Test_server_Insert(t *testing.T) {
 					name: name,
 					ip:   ip,
 					svcCfg: &config.NGT{
-						Dimension:    len(intVec),
+						Dimension:    intVecDim,
 						DistanceType: ngt.Angle.String(),
 						ObjectType:   ngt.Uint8.String(),
-						KVSDB: &config.KVSDB{
-							Concurrency: 10,
-						},
-						VQueue: &config.VQueue{},
+						KVSDB:        &config.KVSDB{},
+						VQueue:       &config.VQueue{},
 					},
 					svcOpts: []service.Option{
 						service.WithEnableInMemoryMode(true),
 					},
 				},
-				beforeFunc: func(t *testing.T, s *server) {
-					t.Helper()
-					defaultBeforeFunc(t, s)
-
+				beforeFunc: func(s *server) {
 					s.ngt.Insert(id, vec2)
 				},
 				want: want{
@@ -2298,22 +2253,17 @@ func Test_server_Insert(t *testing.T) {
 					name: name,
 					ip:   ip,
 					svcCfg: &config.NGT{
-						Dimension:    len(intVec),
+						Dimension:    intVecDim,
 						DistanceType: ngt.Angle.String(),
 						ObjectType:   ngt.Uint8.String(),
-						KVSDB: &config.KVSDB{
-							Concurrency: 10,
-						},
-						VQueue: &config.VQueue{},
+						KVSDB:        &config.KVSDB{},
+						VQueue:       &config.VQueue{},
 					},
 					svcOpts: []service.Option{
 						service.WithEnableInMemoryMode(true),
 					},
 				},
-				beforeFunc: func(t *testing.T, s *server) {
-					t.Helper()
-					defaultBeforeFunc(t, s)
-
+				beforeFunc: func(s *server) {
 					s.ngt.Insert(id2, vec2)
 				},
 				want: want{
@@ -2346,22 +2296,17 @@ func Test_server_Insert(t *testing.T) {
 					name: name,
 					ip:   ip,
 					svcCfg: &config.NGT{
-						Dimension:    len(intVec),
+						Dimension:    intVecDim,
 						DistanceType: ngt.Angle.String(),
 						ObjectType:   ngt.Uint8.String(),
-						KVSDB: &config.KVSDB{
-							Concurrency: 10,
-						},
-						VQueue: &config.VQueue{},
+						KVSDB:        &config.KVSDB{},
+						VQueue:       &config.VQueue{},
 					},
 					svcOpts: []service.Option{
 						service.WithEnableInMemoryMode(true),
 					},
 				},
-				beforeFunc: func(t *testing.T, s *server) {
-					t.Helper()
-					defaultBeforeFunc(t, s)
-
+				beforeFunc: func(s *server) {
 					s.ngt.Insert(id, intVec)
 				},
 				want: want{
@@ -2399,22 +2344,17 @@ func Test_server_Insert(t *testing.T) {
 					name: name,
 					ip:   ip,
 					svcCfg: &config.NGT{
-						Dimension:    len(intVec),
+						Dimension:    intVecDim,
 						DistanceType: ngt.Angle.String(),
 						ObjectType:   ngt.Uint8.String(),
-						KVSDB: &config.KVSDB{
-							Concurrency: 10,
-						},
-						VQueue: &config.VQueue{},
+						KVSDB:        &config.KVSDB{},
+						VQueue:       &config.VQueue{},
 					},
 					svcOpts: []service.Option{
 						service.WithEnableInMemoryMode(true),
 					},
 				},
-				beforeFunc: func(t *testing.T, s *server) {
-					t.Helper()
-					defaultBeforeFunc(t, s)
-
+				beforeFunc: func(s *server) {
 					s.ngt.Insert(id, vec2)
 				},
 				want: want{
@@ -2451,22 +2391,17 @@ func Test_server_Insert(t *testing.T) {
 					name: name,
 					ip:   ip,
 					svcCfg: &config.NGT{
-						Dimension:    len(intVec),
+						Dimension:    intVecDim,
 						DistanceType: ngt.Angle.String(),
 						ObjectType:   ngt.Uint8.String(),
-						KVSDB: &config.KVSDB{
-							Concurrency: 10,
-						},
-						VQueue: &config.VQueue{},
+						KVSDB:        &config.KVSDB{},
+						VQueue:       &config.VQueue{},
 					},
 					svcOpts: []service.Option{
 						service.WithEnableInMemoryMode(true),
 					},
 				},
-				beforeFunc: func(t *testing.T, s *server) {
-					t.Helper()
-					defaultBeforeFunc(t, s)
-
+				beforeFunc: func(s *server) {
 					s.ngt.Insert(id2, intVec)
 				},
 				want: want{
@@ -2499,22 +2434,17 @@ func Test_server_Insert(t *testing.T) {
 					name: name,
 					ip:   ip,
 					svcCfg: &config.NGT{
-						Dimension:    len(intVec),
+						Dimension:    intVecDim,
 						DistanceType: ngt.Angle.String(),
 						ObjectType:   ngt.Uint8.String(),
-						KVSDB: &config.KVSDB{
-							Concurrency: 10,
-						},
-						VQueue: &config.VQueue{},
+						KVSDB:        &config.KVSDB{},
+						VQueue:       &config.VQueue{},
 					},
 					svcOpts: []service.Option{
 						service.WithEnableInMemoryMode(true),
 					},
 				},
-				beforeFunc: func(t *testing.T, s *server) {
-					t.Helper()
-					defaultBeforeFunc(t, s)
-
+				beforeFunc: func(s *server) {
 					s.ngt.Insert(id, intVec)
 				},
 				want: want{
@@ -2537,9 +2467,6 @@ func Test_server_Insert(t *testing.T) {
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-			if test.beforeFunc == nil {
-				test.beforeFunc = defaultBeforeFunc
-			}
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
@@ -2561,8 +2488,10 @@ func Test_server_Insert(t *testing.T) {
 				eg:                eg,
 				streamConcurrency: test.fields.streamConcurrency,
 			}
+			if test.beforeFunc != nil {
+				test.beforeFunc(s)
+			}
 
-			test.beforeFunc(tt, s)
 			gotRes, err := s.Insert(test.args.ctx, test.args.req)
 			if err := checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
