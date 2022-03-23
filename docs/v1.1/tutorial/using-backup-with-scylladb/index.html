@@ -1,423 +1,82 @@
-<!doctype html><html>
-<head>
-<script async src="https://www.googletagmanager.com/gtag/js?id=UA-164223416-1"></script>
-<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date),gtag('config','UA-164223416-1')</script>
-<link rel=canonical href=https://vald.vdaas.org>
-<meta charset=utf-8>
-<meta name=viewport content="width=device-width">
-<meta name=robots content="noindex">
-<title>Vald | Using Backup With Scylladb</title>
-<meta name=description content="Vald is high scalable distributed high-speed approximate nearest neighbor search engine" }>
-<meta name=format-detection content="telephone=no">
-<meta http-equiv=x-ua-compatible content="IE=edge">
-<meta property="og:type" content="article">
-<meta property="og:title" content="Vald | Using Backup With Scylladb">
-<meta property="og:description" content="Vald is high scalable distributed high-speed approximate nearest neighbor search engine">
-<meta property="og:url" content="https://vald.vdaas.org/docs/v1.1/tutorial/using-backup-with-scylladb/">
-<meta property="og:image" content="https://vald.vdaas.org/images/ogp_vald.png">
-<meta property="og:site_name" content="vald">
-<meta property="og:locale" content="en_US">
-<meta property="fb:app_id" content="615732422350002">
-<meta name=twitter:site content="@vdaas_vald">
-<meta name=twitter:card content="app">
-<link rel="shortcut icon" href=https://vald.vdaas.org/favicon.ico>
-<link rel=stylesheet type=text/css href=/css/style.min.css>
-<link rel=stylesheet type=text/css href=/css/header.min.css>
-<link rel=stylesheet type=text/css href=/css/footer.min.css>
-<link rel=stylesheet type=text/css href=/css/main.min.css>
-<script type=text/javascript src=/js/script.min.js defer></script>
-</head>
-<body>
-<header class=header id=header>
-<div class=header__content>
-<nav class="header__nav cf">
-<a href=https://vald.vdaas.org class=header-nav__link>
-<picture>
-<source srcset=https://vald.vdaas.org/images/vald_white.svg media="(prefers-color-scheme: dark)" class=header-nav__image>
-<img src=https://vald.vdaas.org/images/vald_color_1.svg alt class=header-nav__image>
-</picture>
-</a>
-<a class=header-nav__icon id=nav-btn><span class=header-nav__button></span></a>
-<ul class=header__list id=menu>
-<li class=header__item>
-<a href=/docs/v1.1/overview/about-vald class=header__link>About</a>
-</li>
-<li class=header__item>
-<a href=/docs/v1.1/tutorial/get-started class=header__link>Get Started</a>
-</li>
-<li class=header__item>
-<a href=/docs/v1.1/user-guides/sdks class=header__link>SDKs</a>
-</li>
-<li class=header__item>
-<a href=/docs/v1.1 class=header__link>Docs</a>
-</li>
-<li class=header__item>
-<a href=https://vdaas-vald.medium.com/ target=_blank class=header__link>Blog<br></a>
-</li>
-<li class=header__item>
-<details class=header__version id=version_details>
-<summary class=version__current id=current_version>
-v1.1
-</summary>
-<ul class=version__list>
-<il class=version__item><a href=javascript:void(0) class="version__link version__link--latest">v1.4.1</a></il>
+<!doctype html><html><head><script async src="https://www.googletagmanager.com/gtag/js?id=UA-164223416-1"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag("js",new Date),gtag("config","UA-164223416-1")</script><link rel=canonical href=https://vald.vdaas.org><meta charset=utf-8><meta name=viewport content="width=device-width"><meta name=robots content="noindex"><title>Vald | Using Backup With Scylladb</title><meta name=description content="Vald is high scalable distributed high-speed approximate nearest neighbor search engine" }><meta name=format-detection content="telephone=no"><meta http-equiv=x-ua-compatible content="IE=edge"><meta property="og:type" content="article"><meta property="og:title" content="Vald | Using Backup With Scylladb"><meta property="og:description" content="Vald is high scalable distributed high-speed approximate nearest neighbor search engine"><meta property="og:url" content="https://vald.vdaas.org/docs/v1.1/tutorial/using-backup-with-scylladb/"><meta property="og:image" content="https://vald.vdaas.org/images/ogp_vald.png"><meta property="og:site_name" content="vald"><meta property="og:locale" content="en_US"><meta property="fb:app_id" content="615732422350002"><meta name=twitter:site content="@vdaas_vald"><meta name=twitter:card content="app"><link rel="shortcut icon" href=https://vald.vdaas.org/favicon.ico><link rel=stylesheet type=text/css href=/css/style.min.css><link rel=stylesheet type=text/css href=/css/header.min.css><link rel=stylesheet type=text/css href=/css/footer.min.css><link rel=stylesheet type=text/css href=/css/main.min.css><script type=text/javascript src=/js/script.min.js defer></script></head><body><header class=header id=header><div class=header__content><nav class="header__nav cf"><a href=https://vald.vdaas.org class=header-nav__link><picture><source srcset=https://vald.vdaas.org/images/vald_white.svg media="(prefers-color-scheme: dark)" class=header-nav__image><img src=https://vald.vdaas.org/images/vald_color_1.svg alt class=header-nav__image></picture></a>
+<a class=header-nav__icon id=nav-btn><span class=header-nav__button></span></a><ul class=header__list id=menu><li class=header__item><a href=/docs/v1.1/overview/about-vald class=header__link>About</a></li><li class=header__item><a href=/docs/v1.1/tutorial/get-started class=header__link>Get Started</a></li><li class=header__item><a href=/docs/v1.1/user-guides/sdks class=header__link>SDKs</a></li><li class=header__item><a href=/docs/v1.1 class=header__link>Docs</a></li><li class=header__item><a href=https://vdaas-vald.medium.com/ target=_blank class=header__link>Blog<br></a></li><li class=header__item><details class=header__version id=version_details><summary class=version__current id=current_version>v1.1</summary><ul class=version__list><il class=version__item><a href=javascript:void(0) class="version__link version__link--latest">v1.4.1</a></il>
 <il class=version__item><a href=javascript:void(0) class=version__link>v1.4</a></il>
 <il class=version__item><a href=javascript:void(0) class=version__link>v1.3</a></il>
 <il class=version__item><a href=javascript:void(0) class=version__link>v1.2</a></il>
 <il class=version__item><a href=javascript:void(0) class=version__link>v1.1</a></il>
-<il class=version__item><a href=javascript:void(0) class=version__link>v1.0</a></il>
-</ul>
-</details>
-</li>
-<li class=header__item>
-<a class="header__item header__icon" href=https://github.com/vdaas/vald>
-<picture>
-<source srcset=https://vald.vdaas.org/images/logo_github_white.svg media="(prefers-color-scheme: dark)" width=24 height=24>
-<img src=https://vald.vdaas.org/images/logo_github_black.svg alt=github>
-</picture>
-</a>
-</li>
-</ul>
-</nav>
-</div>
-</header>
-<main role=main>
-<div class=single>
-<aside class=page>
-<nav>
-<button class="index open" id=list-button>Pages</button>
-<ul id=list-body>
-<li class=withchild id=cat_Overview>Overview
-<ul>
-<li class=index>
-<a href=/docs/v1.1/overview/about-vald/>About Vald</a>
-</li>
-<li class=index>
-<a href=/docs/v1.1/overview/architecture/>Architecture</a>
-</li>
-</ul>
-</li>
-<li class=withchild id=cat_Component>Component
-<ul>
-<li class=index>
-<a href=/docs/v1.1/overview/component/>Component</a>
-</li>
-</ul>
-</li>
-<li class=withchild id=cat_Tutorial>Tutorial
-<ul>
-<li class=index>
-<a href=/docs/v1.1/tutorial/get-started/>Get Started</a>
-</li>
-<li class=index>
-<a href=/docs/v1.1/tutorial/vald-agent-standalone-on-k8s/>Vald Agent Standalone on K8s</a>
-</li>
-<li class=index>
-<a href=/docs/v1.1/tutorial/vald-agent-standalone-on-docker/>Vald Agent Standalone on Docker</a>
-</li>
-<li class=view>
-<a href=/docs/v1.1/tutorial/using-backup-with-scylladb/>Using Backup With Scylladb</a>
-</li>
-</ul>
-</li>
-<li class=withchild id="cat_User Guides">User Guides
-<ul>
-<li class=index>
-<a href=/docs/v1.1/user-guides/configuration/>Configuration</a>
-</li>
-<li class=index>
-<a href=/docs/v1.1/user-guides/operations/>Operations</a>
-</li>
-<li class=index>
-<a href=/docs/v1.1/user-guides/sdks/>Sdks</a>
-</li>
-</ul>
-</li>
-<li class=withchild id=cat_Usecase>Usecase
-<ul>
-<li class=index>
-<a href=/docs/v1.1/usecase/usage-example/>Usage Example</a>
-</li>
-</ul>
-</li>
-<li class=withchild id=cat_Performance>Performance
-<ul>
-<li class=index>
-<a href=/docs/v1.1/performance/benchmark/>Benchmark</a>
-</li>
-<li class=index>
-<a href=/docs/v1.1/performance/loadtest/>Loadtest</a>
-</li>
-</ul>
-</li>
-<li class=withchild id=cat_Api>Api
-<ul>
-</ul>
-</li>
-<li class=withchild id=cat_Contributing>Contributing
-<ul>
-<li class=index>
-<a href=/docs/v1.1/contributing/contributing-guide/>Contributing Guide</a>
-</li>
-<li class=index>
-<a href=/docs/v1.1/contributing/coding-style/>Coding Style</a>
-</li>
-<li class=index>
-<a href=/docs/v1.1/contributing/unit-test-guideline/>Unit Test Guideline</a>
-</li>
-</ul>
-</li>
-<li class=withchild id=cat_Support>Support
-<ul>
-<li class=index>
-<a href=/docs/v1.1/support/contacts/>Contacts</a>
-</li>
-</ul>
-</li>
-<li class=withchild id=cat_Release>Release
-<ul>
-<li class=index>
-<a href=/docs/v1.1/release/changelog/>Changelog</a>
-</li>
-</ul>
-</li>
-</ul>
-<nav>
-</aside>
-<div class=content>
-<div class=markdown id=markdown>
-<h1 id=using-backup-with-scylladb>Using Backup with ScyllaDB</h1>
-<p>This article will show you how to deploy Vald with ScyllaDB as a backup database using Helm and run it on your Kubernetes cluster.</p>
-<h2 id=overview>Overview</h2>
-<p>This tutorial leads you to deploy Vald and the external database for backup.
-As one of the features, Vald can auto index backup using MySQL + Redis or Cassandra to enable disaster recovery.<br>
-In this tutorial, you will use ScyllaDB deployed to the Persistent Volume for backup.
+<il class=version__item><a href=javascript:void(0) class=version__link>v1.0</a></il></ul></details></li><li class=header__item><a class="header__item header__icon" href=https://github.com/vdaas/vald><picture><source srcset=https://vald.vdaas.org/images/logo_github_white.svg media="(prefers-color-scheme: dark)" width=24 height=24><img src=https://vald.vdaas.org/images/logo_github_black.svg alt=github></picture></a></li></ul></nav></div></header><main role=main><div class=single><aside class=page><nav><button class="index open" id=list-button>Pages</button><ul id=list-body><li class=withchild id=cat_Overview>Overview<ul><li class=index><a href=/docs/v1.1/overview/about-vald/>About Vald</a></li><li class=index><a href=/docs/v1.1/overview/architecture/>Architecture</a></li></ul></li><li class=withchild id=cat_Component>Component<ul><li class=index><a href=/docs/v1.1/overview/component/>Component</a></li></ul></li><li class=withchild id=cat_Tutorial>Tutorial<ul><li class=index><a href=/docs/v1.1/tutorial/get-started/>Get Started</a></li><li class=index><a href=/docs/v1.1/tutorial/vald-agent-standalone-on-k8s/>Vald Agent Standalone on K8s</a></li><li class=index><a href=/docs/v1.1/tutorial/vald-agent-standalone-on-docker/>Vald Agent Standalone on Docker</a></li><li class=view><a href=/docs/v1.1/tutorial/using-backup-with-scylladb/>Using Backup With Scylladb</a></li></ul></li><li class=withchild id="cat_User Guides">User Guides<ul><li class=index><a href=/docs/v1.1/user-guides/configuration/>Configuration</a></li><li class=index><a href=/docs/v1.1/user-guides/operations/>Operations</a></li><li class=index><a href=/docs/v1.1/user-guides/sdks/>Sdks</a></li></ul></li><li class=withchild id=cat_Usecase>Usecase<ul><li class=index><a href=/docs/v1.1/usecase/usage-example/>Usage Example</a></li></ul></li><li class=withchild id=cat_Performance>Performance<ul><li class=index><a href=/docs/v1.1/performance/benchmark/>Benchmark</a></li><li class=index><a href=/docs/v1.1/performance/loadtest/>Loadtest</a></li></ul></li><li class=withchild id=cat_Api>Api<ul></ul></li><li class=withchild id=cat_Contributing>Contributing<ul><li class=index><a href=/docs/v1.1/contributing/contributing-guide/>Contributing Guide</a></li><li class=index><a href=/docs/v1.1/contributing/coding-style/>Coding Style</a></li><li class=index><a href=/docs/v1.1/contributing/unit-test-guideline/>Unit Test Guideline</a></li></ul></li><li class=withchild id=cat_Support>Support<ul><li class=index><a href=/docs/v1.1/support/contacts/>Contacts</a></li></ul></li><li class=withchild id=cat_Release>Release<ul><li class=index><a href=/docs/v1.1/release/changelog/>Changelog</a></li></ul></li></ul><nav></aside><div class=content><div class=markdown id=markdown><h1 id=using-backup-with-scylladb>Using Backup with ScyllaDB</h1><p>This article will show you how to deploy Vald with ScyllaDB as a backup database using Helm and run it on your Kubernetes cluster.</p><h2 id=overview>Overview</h2><p>This tutorial leads you to deploy Vald and the external database for backup.
+As one of the features, Vald can auto index backup using MySQL + Redis or Cassandra to enable disaster recovery.<br>In this tutorial, you will use ScyllaDB deployed to the Persistent Volume for backup.
 And you will also deploy more microservices than <a href=/docs/v1.1/tutorial/get-started>Get Started</a>.
-If you haven&rsquo;t completed <a href=/docs/v1.1/tutorial/get-started>Get Started</a> yet, we recommend trying it out at first.</p>
-<p>The following image is the architecture image of this tutorial.</p>
-<img src=/images/v1.1/tutorial/vald-with-syclladb.png>
-<p>The 5 steps to Using Backup with ScyllaDB:</p>
-<ol>
-<li><a href=#requirements>Check and Satisfy the Requirements</a></li>
-<li><a href=#prepare-the-kubernetes-cluster>Prepare Kubernetes Cluster</a></li>
-<li><a href=#deploy-vald-on-kubernetes-cluster>Deploy Vald on Kubernetes Cluster</a></li>
-<li><a href=#run-example-code>Run Example Code</a></li>
-<li><a href=#cleanup>Cleanup</a></li>
-</ol>
-<h2 id=requirements>Requirements</h2>
-<ul>
-<li>Kubernetes: v1.19 ~</li>
-<li>Go: v1.15 ~</li>
-<li>Helm: v3 ~</li>
-<li>libhdf5 (<em>only required for this tutorial</em>)</li>
-</ul>
-<p>Helm is used to deploying Vald on your Kubernetes and Hdf5 is used to decode the sample data file to run the example.<br>
-If Helm or HDF5 is not installed, please install <a href=https://helm.sh/docs/intro/install>Helm</a> and <a href=https://www.hdfgroup.org/>HDF5</a>.</p>
-<details><summary>Installation command for Helm</summary><br>
-<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
-</code></pre></div></details>
-<details><summary>Installation command for HDF5</summary><br>
-<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=color:#75715e># yum</span>
-yum install -y hdf5-devel
-
-<span style=color:#75715e># apt</span>
-apt-get install libhdf5-serial-dev
-
-<span style=color:#75715e># homebrew</span>
-brew install hdf5
-</code></pre></div></details>
-<h2 id=prepare-the-kubernetes-cluster>Prepare the Kubernetes Cluster</h2>
-<ol>
-<li>
-<p>Prepare Kubernetes cluster</p>
-<p>To complete get started, the Kubernetes cluster is required.<br>
-Vald will run on Cloud Service such as GKE, AWS.
-In the sense of trying to &ldquo;Get-Started&rdquo;, <a href=https://k3d.io/>k3d</a> or <a href=https://kind.sigs.k8s.io/>kind</a> are easy Kubernetes tools to use.</p>
-</li>
-<li>
-<p>Prepare ScyllaDB and Kubernetes metrics-server</p>
-<p>Deploy ScyllaDB as a backup database.</p>
-<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>make k8s/external/scylla/deploy
-</code></pre></div><p>In this make command, we are deploying a lightweight Cassandra-compatible ScyllaDB using Operator.</p>
-<details><summary>If you're interested in this make command, take a look here for more detail of make command</summary><br>
-<ol>
-<li>Deploy cert-manager for ScyllaDB</li>
-</ol>
-<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>kubectl apply -f https://github.com/jetstack/cert-manager/releases/latest/download/cert-manager.yaml
-kubectl wait -n cert-manager --for<span style=color:#f92672>=</span>condition<span style=color:#f92672>=</span>ready pod -l app<span style=color:#f92672>=</span>cert-manager --timeout<span style=color:#f92672>=</span>60s
-kubectl wait -n cert-manager --for<span style=color:#f92672>=</span>condition<span style=color:#f92672>=</span>ready pod -l app<span style=color:#f92672>=</span>cainjector --timeout<span style=color:#f92672>=</span>60s
-kubectl wait -n cert-manager --for<span style=color:#f92672>=</span>condition<span style=color:#f92672>=</span>ready pod -l app<span style=color:#f92672>=</span>webhook --timeout<span style=color:#f92672>=</span>60s
-</code></pre></div><ol>
-<li>Deploy ScyllaDB Operator</li>
-</ol>
-<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>kubectl apply -f https://raw.githubusercontent.com/scylladb/scylla-operator/master/examples/common/operator.yaml
-kubectl wait -n scylla-operator-system --for<span style=color:#f92672>=</span>condition<span style=color:#f92672>=</span>ready pod -l statefulset.kubernetes.io/pod-name<span style=color:#f92672>=</span>scylla-operator-controller-manager-0 --timeout<span style=color:#f92672>=</span>600s
-</code></pre></div><ol>
-<li>Deploy ScyllaDB</li>
-</ol>
-<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>kubectl apply -f k8s/external/scylla/scyllacluster.yaml
-kubectl wait -n scylla --for<span style=color:#f92672>=</span>condition<span style=color:#f92672>=</span>ready pod -l statefulset.kubernetes.io/pod-name<span style=color:#f92672>=</span>vald-scylla-cluster-dc0-rack0-0 --timeout<span style=color:#f92672>=</span>600s
-kubectl -n scylla get pods
-</code></pre></div><ol>
-<li>Configure ScyllaDB</li>
-</ol>
-<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>
-kubectl apply -f example/manifest/scylla
-kubectl wait --for<span style=color:#f92672>=</span>condition<span style=color:#f92672>=</span>complete job/scylla-init --timeout<span style=color:#f92672>=</span>60s
-</code></pre></div> </details>
-<p>For documentation on ScyllaDB operator, please refer to <a href=http://operator.docs.scylladb.com/master/generic>here</a></p>
-</li>
-<li>
-<p>Apply Kubernetes metrics server</p>
-<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
-kubectl wait -n kube-system --for<span style=color:#f92672>=</span>condition<span style=color:#f92672>=</span>ready pod -l k8s-app<span style=color:#f92672>=</span>metrics-server --timeout<span style=color:#f92672>=</span>600s
-</code></pre></div></li>
-</ol>
-<h2 id=deploy-vald-on-kubernetes-cluster>Deploy Vald on Kubernetes Cluster</h2>
-<p>This chapter will show you how to deploy using Helm and run Vald on your Kubernetes cluster.<br>
-This chapter uses ScyllaDB as a backend data store for indexing and data backup.<br>
-If you want to learn about ScyllaDB, please refer to <a href=https://www.scylladb.com/>the official website</a>.</p>
-<ol>
-<li>
-<p>Clone the Repository</p>
-<p>To use the <code>deployment yaml</code> for deployment, let&rsquo;s clone <a href=https://github.com/vdaas/vald.git><code>vdaas/vald</code></a> repository.</p>
-<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>git clone https://github.com/vdaas/vald.git
-cd vald
-</code></pre></div></li>
-<li>
-<p>Confirm which Cluster to Deploy</p>
-<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>kubectl cluster-info
-</code></pre></div></li>
-<li>
-<p>Deploy Vald Using Helm</p>
-<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=color:#75715e># add vald repo into helm repo</span>
-helm repo add vald https://vald.vdaas.org/charts
-<span style=color:#75715e># deploy vald on your kubernetes cluster</span>
-helm install vald vald/vald --values example/helm/values-scylla.yaml
-</code></pre></div></li>
-<li>
-<p>Verify</p>
-<p>When finish deploying Vald, you can check the Vald&rsquo;s pods status following the command.</p>
-<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>kubectl get pods
-</code></pre></div> <details><summary>Example output</summary><br>
-If the deployment is successful, all Vald components should be running.
-<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>NAME                                       READY   STATUS      RESTARTS   AGE
-scylla-init-vhdp5                          0/1     Completed   <span style=color:#ae81ff>0</span>          7m12s
-vald-agent-ngt-0                           1/1     Running     <span style=color:#ae81ff>0</span>          7m12s
-vald-agent-ngt-1                           1/1     Running     <span style=color:#ae81ff>0</span>          7m12s
-vald-agent-ngt-2                           1/1     Running     <span style=color:#ae81ff>0</span>          7m12s
-vald-agent-ngt-3                           1/1     Running     <span style=color:#ae81ff>0</span>          7m12s
-vald-agent-ngt-4                           1/1     Running     <span style=color:#ae81ff>0</span>          7m12s
-vald-agent-ngt-5                           1/1     Running     <span style=color:#ae81ff>0</span>          7m12s
-vald-backup-gateway-68c8b4ffd4-df8zp       1/1     Running     <span style=color:#ae81ff>0</span>          6m56s
-vald-backup-gateway-68c8b4ffd4-dmwrd       1/1     Running     <span style=color:#ae81ff>0</span>          6m56s
-vald-backup-gateway-68c8b4ffd4-nm8f7       1/1     Running     <span style=color:#ae81ff>0</span>          7m12s
-vald-discoverer-7f9f697dbb-q44qh           1/1     Running     <span style=color:#ae81ff>0</span>          7m11s
-vald-lb-gateway-6b7b9f6948-4z5md           1/1     Running     <span style=color:#ae81ff>0</span>          7m12s
-vald-lb-gateway-6b7b9f6948-68g94           1/1     Running     <span style=color:#ae81ff>0</span>          6m56s
-vald-lb-gateway-6b7b9f6948-cvspq           1/1     Running     <span style=color:#ae81ff>0</span>          6m56s
-vald-manager-backup-5fb5f8dc7-h22sv        1/1     Running     <span style=color:#ae81ff>0</span>          7m12s
-vald-manager-backup-5fb5f8dc7-ncrw4        1/1     Running     <span style=color:#ae81ff>0</span>          6m56s
-vald-manager-backup-5fb5f8dc7-nzbkh        1/1     Running     <span style=color:#ae81ff>0</span>          6m56s
-vald-manager-compressor-78bf64459f-27ckg   1/1     Running     <span style=color:#ae81ff>0</span>          6m56s
-vald-manager-compressor-78bf64459f-9kl9b   1/1     Running     <span style=color:#ae81ff>0</span>          7m12s
-vald-manager-compressor-78bf64459f-dkx24   1/1     Running     <span style=color:#ae81ff>0</span>          6m56s
-vald-manager-index-74c7b5ddd6-jrnlw        1/1     Running     <span style=color:#ae81ff>0</span>          7m12s
-vald-meta-747f757bbb-9v5xz                 1/1     Running     <span style=color:#ae81ff>0</span>          7m12s
-vald-meta-747f757bbb-mpwqp                 1/1     Running     <span style=color:#ae81ff>0</span>          6m56s
-vald-meta-gateway-8c5f55dd-8fsch           1/1     Running     <span style=color:#ae81ff>0</span>          6m56s
-vald-meta-gateway-8c5f55dd-sdd5q           1/1     Running     <span style=color:#ae81ff>0</span>          7m12s
-vald-meta-gateway-8c5f55dd-vfkn6           1/1     Running     <span style=color:#ae81ff>0</span>          6m56s
-</code></pre></div> </details>
-</li>
-</ol>
-<h2 id=run-example-code>Run Example Code</h2>
-<p>This chapter shows how to perform a search action in Vald with fashion-mnist dataset.</p>
-<ol>
-<li>
-<p>Port Forward</p>
-<p>At first, port-forward is required to make request from your local environment possible.</p>
-<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>kubectl port-forward deployment/vald-meta-gateway 8081:8081
-</code></pre></div></li>
-<li>
-<p>Download Dataset</p>
-<p>Download <a href=https://github.com/zalandoresearch/fashion-mnist>fashion-mnist</a> that is used as dataset for indexing and search query.</p>
-<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=color:#75715e># move to the working directory</span>
-cd example/client
-
-<span style=color:#75715e># download fashion-mnist testing dataset</span>
-wget http://ann-benchmarks.com/fashion-mnist-784-euclidean.hdf5
-</code></pre></div></li>
-<li>
-<p>Run Example</p>
-<p>We use <a href=https://github.com/vdaas/vald/blob/master/example/client/main.go><code>example/client/main.go</code></a> to run the example.<br>
-This example will insert and index 400 vectors into the Vald from the fashion-mnist dataset via gRPC.
+If you haven&rsquo;t completed <a href=/docs/v1.1/tutorial/get-started>Get Started</a> yet, we recommend trying it out at first.</p><p>The following image is the architecture image of this tutorial.</p><img src=/images/v1.1/tutorial/vald-with-syclladb.png><p>The 5 steps to Using Backup with ScyllaDB:</p><ol><li><a href=#requirements>Check and Satisfy the Requirements</a></li><li><a href=#prepare-the-kubernetes-cluster>Prepare Kubernetes Cluster</a></li><li><a href=#deploy-vald-on-kubernetes-cluster>Deploy Vald on Kubernetes Cluster</a></li><li><a href=#run-example-code>Run Example Code</a></li><li><a href=#cleanup>Cleanup</a></li></ol><h2 id=requirements>Requirements</h2><ul><li>Kubernetes: v1.19 ~</li><li>Go: v1.15 ~</li><li>Helm: v3 ~</li><li>libhdf5 (<em>only required for this tutorial</em>)</li></ul><p>Helm is used to deploying Vald on your Kubernetes and Hdf5 is used to decode the sample data file to run the example.<br>If Helm or HDF5 is not installed, please install <a href=https://helm.sh/docs/intro/install>Helm</a> and <a href=https://www.hdfgroup.org/>HDF5</a>.</p><details><summary>Installation command for Helm</summary><br><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
+</span></span></code></pre></div></details><details><summary>Installation command for HDF5</summary><br><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span><span style=color:#75715e># yum</span>
+</span></span><span style=display:flex><span>yum install -y hdf5-devel
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e># apt</span>
+</span></span><span style=display:flex><span>apt-get install libhdf5-serial-dev
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e># homebrew</span>
+</span></span><span style=display:flex><span>brew install hdf5
+</span></span></code></pre></div></details><h2 id=prepare-the-kubernetes-cluster>Prepare the Kubernetes Cluster</h2><ol><li><p>Prepare Kubernetes cluster</p><p>To complete get started, the Kubernetes cluster is required.<br>Vald will run on Cloud Service such as GKE, AWS.
+In the sense of trying to &ldquo;Get-Started&rdquo;, <a href=https://k3d.io/>k3d</a> or <a href=https://kind.sigs.k8s.io/>kind</a> are easy Kubernetes tools to use.</p></li><li><p>Prepare ScyllaDB and Kubernetes metrics-server</p><p>Deploy ScyllaDB as a backup database.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>make k8s/external/scylla/deploy
+</span></span></code></pre></div><p>In this make command, we are deploying a lightweight Cassandra-compatible ScyllaDB using Operator.</p><details><summary>If you're interested in this make command, take a look here for more detail of make command</summary><br><ol><li>Deploy cert-manager for ScyllaDB</li></ol><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>kubectl apply -f https://github.com/jetstack/cert-manager/releases/latest/download/cert-manager.yaml
+</span></span><span style=display:flex><span>kubectl wait -n cert-manager --for<span style=color:#f92672>=</span>condition<span style=color:#f92672>=</span>ready pod -l app<span style=color:#f92672>=</span>cert-manager --timeout<span style=color:#f92672>=</span>60s
+</span></span><span style=display:flex><span>kubectl wait -n cert-manager --for<span style=color:#f92672>=</span>condition<span style=color:#f92672>=</span>ready pod -l app<span style=color:#f92672>=</span>cainjector --timeout<span style=color:#f92672>=</span>60s
+</span></span><span style=display:flex><span>kubectl wait -n cert-manager --for<span style=color:#f92672>=</span>condition<span style=color:#f92672>=</span>ready pod -l app<span style=color:#f92672>=</span>webhook --timeout<span style=color:#f92672>=</span>60s
+</span></span></code></pre></div><ol><li>Deploy ScyllaDB Operator</li></ol><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>kubectl apply -f https://raw.githubusercontent.com/scylladb/scylla-operator/master/examples/common/operator.yaml
+</span></span><span style=display:flex><span>kubectl wait -n scylla-operator-system --for<span style=color:#f92672>=</span>condition<span style=color:#f92672>=</span>ready pod -l statefulset.kubernetes.io/pod-name<span style=color:#f92672>=</span>scylla-operator-controller-manager-0 --timeout<span style=color:#f92672>=</span>600s
+</span></span></code></pre></div><ol><li>Deploy ScyllaDB</li></ol><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>kubectl apply -f k8s/external/scylla/scyllacluster.yaml
+</span></span><span style=display:flex><span>kubectl wait -n scylla --for<span style=color:#f92672>=</span>condition<span style=color:#f92672>=</span>ready pod -l statefulset.kubernetes.io/pod-name<span style=color:#f92672>=</span>vald-scylla-cluster-dc0-rack0-0 --timeout<span style=color:#f92672>=</span>600s
+</span></span><span style=display:flex><span>kubectl -n scylla get pods
+</span></span></code></pre></div><ol><li>Configure ScyllaDB</li></ol><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>
+</span></span><span style=display:flex><span>kubectl apply -f example/manifest/scylla
+</span></span><span style=display:flex><span>kubectl wait --for<span style=color:#f92672>=</span>condition<span style=color:#f92672>=</span>complete job/scylla-init --timeout<span style=color:#f92672>=</span>60s
+</span></span></code></pre></div></details><p>For documentation on ScyllaDB operator, please refer to <a href=http://operator.docs.scylladb.com/master/generic>here</a></p></li><li><p>Apply Kubernetes metrics server</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+</span></span><span style=display:flex><span>kubectl wait -n kube-system --for<span style=color:#f92672>=</span>condition<span style=color:#f92672>=</span>ready pod -l k8s-app<span style=color:#f92672>=</span>metrics-server --timeout<span style=color:#f92672>=</span>600s
+</span></span></code></pre></div></li></ol><h2 id=deploy-vald-on-kubernetes-cluster>Deploy Vald on Kubernetes Cluster</h2><p>This chapter will show you how to deploy using Helm and run Vald on your Kubernetes cluster.<br>This chapter uses ScyllaDB as a backend data store for indexing and data backup.<br>If you want to learn about ScyllaDB, please refer to <a href=https://www.scylladb.com/>the official website</a>.</p><ol><li><p>Clone the Repository</p><p>To use the <code>deployment yaml</code> for deployment, let&rsquo;s clone <a href=https://github.com/vdaas/vald.git><code>vdaas/vald</code></a> repository.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>git clone https://github.com/vdaas/vald.git
+</span></span><span style=display:flex><span>cd vald
+</span></span></code></pre></div></li><li><p>Confirm which Cluster to Deploy</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>kubectl cluster-info
+</span></span></code></pre></div></li><li><p>Deploy Vald Using Helm</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span><span style=color:#75715e># add vald repo into helm repo</span>
+</span></span><span style=display:flex><span>helm repo add vald https://vald.vdaas.org/charts
+</span></span><span style=display:flex><span><span style=color:#75715e># deploy vald on your kubernetes cluster</span>
+</span></span><span style=display:flex><span>helm install vald vald/vald --values example/helm/values-scylla.yaml
+</span></span></code></pre></div></li><li><p>Verify</p><p>When finish deploying Vald, you can check the Vald&rsquo;s pods status following the command.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>kubectl get pods
+</span></span></code></pre></div><details><summary>Example output</summary><br>If the deployment is successful, all Vald components should be running.<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>NAME                                       READY   STATUS      RESTARTS   AGE
+</span></span><span style=display:flex><span>scylla-init-vhdp5                          0/1     Completed   <span style=color:#ae81ff>0</span>          7m12s
+</span></span><span style=display:flex><span>vald-agent-ngt-0                           1/1     Running     <span style=color:#ae81ff>0</span>          7m12s
+</span></span><span style=display:flex><span>vald-agent-ngt-1                           1/1     Running     <span style=color:#ae81ff>0</span>          7m12s
+</span></span><span style=display:flex><span>vald-agent-ngt-2                           1/1     Running     <span style=color:#ae81ff>0</span>          7m12s
+</span></span><span style=display:flex><span>vald-agent-ngt-3                           1/1     Running     <span style=color:#ae81ff>0</span>          7m12s
+</span></span><span style=display:flex><span>vald-agent-ngt-4                           1/1     Running     <span style=color:#ae81ff>0</span>          7m12s
+</span></span><span style=display:flex><span>vald-agent-ngt-5                           1/1     Running     <span style=color:#ae81ff>0</span>          7m12s
+</span></span><span style=display:flex><span>vald-backup-gateway-68c8b4ffd4-df8zp       1/1     Running     <span style=color:#ae81ff>0</span>          6m56s
+</span></span><span style=display:flex><span>vald-backup-gateway-68c8b4ffd4-dmwrd       1/1     Running     <span style=color:#ae81ff>0</span>          6m56s
+</span></span><span style=display:flex><span>vald-backup-gateway-68c8b4ffd4-nm8f7       1/1     Running     <span style=color:#ae81ff>0</span>          7m12s
+</span></span><span style=display:flex><span>vald-discoverer-7f9f697dbb-q44qh           1/1     Running     <span style=color:#ae81ff>0</span>          7m11s
+</span></span><span style=display:flex><span>vald-lb-gateway-6b7b9f6948-4z5md           1/1     Running     <span style=color:#ae81ff>0</span>          7m12s
+</span></span><span style=display:flex><span>vald-lb-gateway-6b7b9f6948-68g94           1/1     Running     <span style=color:#ae81ff>0</span>          6m56s
+</span></span><span style=display:flex><span>vald-lb-gateway-6b7b9f6948-cvspq           1/1     Running     <span style=color:#ae81ff>0</span>          6m56s
+</span></span><span style=display:flex><span>vald-manager-backup-5fb5f8dc7-h22sv        1/1     Running     <span style=color:#ae81ff>0</span>          7m12s
+</span></span><span style=display:flex><span>vald-manager-backup-5fb5f8dc7-ncrw4        1/1     Running     <span style=color:#ae81ff>0</span>          6m56s
+</span></span><span style=display:flex><span>vald-manager-backup-5fb5f8dc7-nzbkh        1/1     Running     <span style=color:#ae81ff>0</span>          6m56s
+</span></span><span style=display:flex><span>vald-manager-compressor-78bf64459f-27ckg   1/1     Running     <span style=color:#ae81ff>0</span>          6m56s
+</span></span><span style=display:flex><span>vald-manager-compressor-78bf64459f-9kl9b   1/1     Running     <span style=color:#ae81ff>0</span>          7m12s
+</span></span><span style=display:flex><span>vald-manager-compressor-78bf64459f-dkx24   1/1     Running     <span style=color:#ae81ff>0</span>          6m56s
+</span></span><span style=display:flex><span>vald-manager-index-74c7b5ddd6-jrnlw        1/1     Running     <span style=color:#ae81ff>0</span>          7m12s
+</span></span><span style=display:flex><span>vald-meta-747f757bbb-9v5xz                 1/1     Running     <span style=color:#ae81ff>0</span>          7m12s
+</span></span><span style=display:flex><span>vald-meta-747f757bbb-mpwqp                 1/1     Running     <span style=color:#ae81ff>0</span>          6m56s
+</span></span><span style=display:flex><span>vald-meta-gateway-8c5f55dd-8fsch           1/1     Running     <span style=color:#ae81ff>0</span>          6m56s
+</span></span><span style=display:flex><span>vald-meta-gateway-8c5f55dd-sdd5q           1/1     Running     <span style=color:#ae81ff>0</span>          7m12s
+</span></span><span style=display:flex><span>vald-meta-gateway-8c5f55dd-vfkn6           1/1     Running     <span style=color:#ae81ff>0</span>          6m56s
+</span></span></code></pre></div></details></li></ol><h2 id=run-example-code>Run Example Code</h2><p>This chapter shows how to perform a search action in Vald with fashion-mnist dataset.</p><ol><li><p>Port Forward</p><p>At first, port-forward is required to make request from your local environment possible.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>kubectl port-forward deployment/vald-meta-gateway 8081:8081
+</span></span></code></pre></div></li><li><p>Download Dataset</p><p>Download <a href=https://github.com/zalandoresearch/fashion-mnist>fashion-mnist</a> that is used as dataset for indexing and search query.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span><span style=color:#75715e># move to the working directory</span>
+</span></span><span style=display:flex><span>cd example/client
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e># download fashion-mnist testing dataset</span>
+</span></span><span style=display:flex><span>wget http://ann-benchmarks.com/fashion-mnist-784-euclidean.hdf5
+</span></span></code></pre></div></li><li><p>Run Example</p><p>We use <a href=https://github.com/vdaas/vald/blob/master/example/client/main.go><code>example/client/main.go</code></a> to run the example.<br>This example will insert and index 400 vectors into the Vald from the fashion-mnist dataset via gRPC.
 And then after waiting for indexing, it will request for searching the nearest vector 10 times.
-You will get the 10 nearest neighbor vectors for each search query.<br>
-Run example codes by executing the below command.</p>
-<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=color:#75715e># run example</span>
-go run main.go
-</code></pre></div><p>The detailed explanation of example code is shown in <a href=/docs/v1.1/tutorial/get-started#running-example-code>Get Started</a></p>
-</li>
-</ol>
-<h2 id=cleanup>Cleanup</h2>
-<p>Remove the Vald pods by executing:</p>
-<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>helm uninstall vald
-</code></pre></div><h2 id=recommended-documents>Recommended Documents</h2>
-<p>Congratulation! You achieved this tutorial!</p>
-<p>For more information, we recommend you to check:</p>
-<ul>
-<li><a href=/docs/v1.1/overview/architecture>Architecture</a></li>
-<li><a href=/docs/v1.1/user-guides/configuration>Configuration</a></li>
-<li><a href=/docs/v1.1/user-guides/operations>Operations</a></li>
-</ul>
-</div>
-<aside class=current id=current>
-<button class=menu><span class=dot></span></button>
-<nav id=TableOfContents>
-<ul>
-<li><a href=#overview>Overview</a></li>
-<li><a href=#requirements>Requirements</a></li>
-<li><a href=#prepare-the-kubernetes-cluster>Prepare the Kubernetes Cluster</a></li>
-<li><a href=#deploy-vald-on-kubernetes-cluster>Deploy Vald on Kubernetes Cluster</a></li>
-<li><a href=#run-example-code>Run Example Code</a></li>
-<li><a href=#cleanup>Cleanup</a></li>
-<li><a href=#recommended-documents>Recommended Documents</a></li>
-</ul>
-</nav>
-</aside>
-</div>
-</div>
-</main>
-<footer class=footer>
-<div class="footer__content cf">
-<ul class=footer__list>
-<li class=footer__item>
-<a href=/docs/v1.1/overview/about-vald class=footer__link>About<br></a>
-</li>
-<li class=footer__item>
-<a href=/docs/v1.1/tutorial/get-started class=footer__link>Get Started<br></a>
-</li>
-<li class=footer__item>
-<a href=/docs/v1.1/user-guides/sdks class=footer__link>SDKs</a>
-</li>
-<li class=footer__item>
-<a href=/docs/v1.1 class=footer__link>Docs</a>
-</li>
-<li class=footer__item>
-<a href=https://vdaas-vald.medium.com/ target=_blank class=footer__link>Blog<br></a>
-</li>
-<li class=footer__item>
-<a class="footer__item footer__icon" href=https://github.com/vdaas/vald>
-<picture>
-<source srcset=https://vald.vdaas.org/images/logo_github_white.svg media="(prefers-color-scheme: dark)" class=icon__image width=24 height=24>
-<img src=https://vald.vdaas.org/images/logo_github_black.svg alt=github class=icon__image>
-</picture>
-</a>
-</li>
-</ul>
-</div>
-<p class=footer__copylight>©2019-2021 vald.vdaas.org Vald team</p>
-</footer>
-</body>
-</html>
+You will get the 10 nearest neighbor vectors for each search query.<br>Run example codes by executing the below command.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span><span style=color:#75715e># run example</span>
+</span></span><span style=display:flex><span>go run main.go
+</span></span></code></pre></div><p>The detailed explanation of example code is shown in <a href=/docs/v1.1/tutorial/get-started#running-example-code>Get Started</a></p></li></ol><h2 id=cleanup>Cleanup</h2><p>Remove the Vald pods by executing:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>helm uninstall vald
+</span></span></code></pre></div><h2 id=recommended-documents>Recommended Documents</h2><p>Congratulation! You achieved this tutorial!</p><p>For more information, we recommend you to check:</p><ul><li><a href=/docs/v1.1/overview/architecture>Architecture</a></li><li><a href=/docs/v1.1/user-guides/configuration>Configuration</a></li><li><a href=/docs/v1.1/user-guides/operations>Operations</a></li></ul></div><aside class=current id=current><button class=menu><span class=dot></span></button><nav id=TableOfContents><ul><li><a href=#overview>Overview</a></li><li><a href=#requirements>Requirements</a></li><li><a href=#prepare-the-kubernetes-cluster>Prepare the Kubernetes Cluster</a></li><li><a href=#deploy-vald-on-kubernetes-cluster>Deploy Vald on Kubernetes Cluster</a></li><li><a href=#run-example-code>Run Example Code</a></li><li><a href=#cleanup>Cleanup</a></li><li><a href=#recommended-documents>Recommended Documents</a></li></ul></nav></aside></div></div></main><footer class=footer><div class="footer__content cf"><ul class=footer__list><li class=footer__item><a href=/docs/v1.1/overview/about-vald class=footer__link>About<br></a></li><li class=footer__item><a href=/docs/v1.1/tutorial/get-started class=footer__link>Get Started<br></a></li><li class=footer__item><a href=/docs/v1.1/user-guides/sdks class=footer__link>SDKs</a></li><li class=footer__item><a href=/docs/v1.1 class=footer__link>Docs</a></li><li class=footer__item><a href=https://vdaas-vald.medium.com/ target=_blank class=footer__link>Blog<br></a></li><li class=footer__item><a class="footer__item footer__icon" href=https://github.com/vdaas/vald><picture><source srcset=https://vald.vdaas.org/images/logo_github_white.svg media="(prefers-color-scheme: dark)" class=icon__image width=24 height=24><img src=https://vald.vdaas.org/images/logo_github_black.svg alt=github class=icon__image></picture></a></li></ul></div><p class=footer__copylight>©2019-2021 vald.vdaas.org Vald team</p></footer></body></html>
