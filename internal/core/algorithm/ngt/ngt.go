@@ -71,6 +71,9 @@ type (
 		// SaveIndex stores NGT index to storage.
 		SaveIndex() error
 
+		// SaveIndexWithPath stores NGT index to specified storage.
+		SaveIndexWithPath(path string) error
+
 		// Remove removes from NGT index.
 		Remove(id uint) error
 
@@ -158,6 +161,40 @@ const (
 	// -------------------------------------------------------------.
 )
 
+func (o objectType) String() string {
+	switch o {
+	case Uint8:
+		return "Uint8"
+	case HalfFloat:
+		return "HalfFloat"
+	case Float:
+		return "Float"
+	}
+	return "Unknown"
+}
+
+func (d distanceType) String() string {
+	switch d {
+	case L1:
+		return "L1"
+	case L2:
+		return "L2"
+	case Angle:
+		return "Angle"
+	case Hamming:
+		return "Hamming"
+	case Cosine:
+		return "Cosine"
+	case NormalizedAngle:
+		return "NormalizedAngle"
+	case NormalizedCosine:
+		return "NormalizedCosine"
+	case Jaccard:
+		return "Jaccard"
+	}
+	return "Unknown"
+}
+
 // New returns NGT instance with recreating empty index file.
 func New(opts ...Option) (NGT, error) {
 	return gen(false, opts...)
@@ -183,6 +220,7 @@ func gen(isLoad bool, opts ...Option) (NGT, error) {
 
 	err = n.setup()
 	if err != nil {
+		log.Warnf("failed to setup ngt core index\terr: %v", err)
 		return nil, err
 	}
 
@@ -190,24 +228,27 @@ func gen(isLoad bool, opts ...Option) (NGT, error) {
 
 	err = n.loadOptions(opts...)
 	if err != nil {
+		log.Warnf("failed to load ngt core options\terr: %v", err)
 		return nil, err
 	}
 
 	if isLoad {
 		err = n.open()
 		if err != nil {
-			err = n.create()
+			log.Warnf("failed to load ngt core index\terr: %v", err)
+			return nil, err
 		}
 	} else {
 		err = n.create()
-	}
-
-	if err != nil {
-		return nil, err
+		if err != nil {
+			log.Warnf("failed to create new ngt core index\terr: %v", err)
+			return nil, err
+		}
 	}
 
 	err = n.loadObjectSpace()
 	if err != nil {
+		log.Warnf("failed to load ngt object space\terr: %v", err)
 		return nil, err
 	}
 
@@ -574,6 +615,24 @@ func (n *ngt) CreateIndex(poolSize uint32) error {
 func (n *ngt) SaveIndex() error {
 	if !n.inMemory {
 		path := C.CString(n.idxPath)
+		defer C.free(unsafe.Pointer(path))
+		ebuf := n.GetErrorBuffer()
+		n.mu.Lock()
+		ret := C.ngt_save_index(n.index, path, ebuf)
+		n.mu.Unlock()
+		if ret == ErrorCode {
+			return n.newGoError(ebuf)
+		}
+		n.PutErrorBuffer(ebuf)
+	}
+
+	return nil
+}
+
+// SaveIndexWithPath stores NGT index to specified storage.
+func (n *ngt) SaveIndexWithPath(idxPath string) error {
+	if !n.inMemory && len(idxPath) != 0 {
+		path := C.CString(idxPath)
 		defer C.free(unsafe.Pointer(path))
 		ebuf := n.GetErrorBuffer()
 		n.mu.Lock()

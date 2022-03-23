@@ -20,16 +20,18 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
+	"io/fs"
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"strings"
 	"sync"
 	"text/template"
 	"time"
 
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/file"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/strings"
 )
 
 var (
@@ -85,17 +87,17 @@ func dirwalk(dir string) []string {
 		panic(err)
 	}
 	var paths []string
-	for _, file := range files {
-		if file.IsDir() {
-			if !strings.Contains(file.Name(), "vendor") &&
-				!strings.Contains(file.Name(), "versions") &&
-				!strings.Contains(file.Name(), ".git") ||
-				strings.HasPrefix(file.Name(), ".github") {
-				paths = append(paths, dirwalk(filepath.Join(dir, file.Name()))...)
+	for _, f := range files {
+		if f.IsDir() {
+			if !strings.Contains(f.Name(), "vendor") &&
+				!strings.Contains(f.Name(), "versions") &&
+				!strings.Contains(f.Name(), ".git") ||
+				strings.HasPrefix(f.Name(), ".github") {
+				paths = append(paths, dirwalk(file.Join(dir, f.Name()))...)
 			}
 			continue
 		}
-		switch filepath.Ext(file.Name()) {
+		switch filepath.Ext(f.Name()) {
 		case
 			".ai",
 			".all-contributorsrc",
@@ -129,7 +131,7 @@ func dirwalk(dir string) []string {
 			"LICENSE",
 			"Pipefile":
 		default:
-			switch file.Name() {
+			switch f.Name() {
 			case
 				"AUTHORS",
 				"CONTRIBUTORS",
@@ -144,10 +146,8 @@ func dirwalk(dir string) []string {
 				"src",
 				"tre":
 			default:
-				path, err := filepath.Abs(filepath.Join(dir, file.Name()))
-				if err != nil {
-					log.Fatal(err)
-				}
+				path := file.Join(dir, f.Name())
+				log.Info(path)
 				paths = append(paths, path)
 			}
 		}
@@ -156,7 +156,7 @@ func dirwalk(dir string) []string {
 }
 
 func readAndRewrite(path string) error {
-	f, err := os.OpenFile(path, os.O_RDWR|os.O_SYNC, os.ModePerm)
+	f, err := os.OpenFile(path, os.O_RDWR|os.O_SYNC, fs.ModePerm)
 	if err != nil {
 		return errors.Errorf("filepath %s, could not open", path)
 	}

@@ -228,6 +228,8 @@ spec:
                             - normalizedangle
                             - normalizedcosine
                             - jaccard
+                        enable_copy_on_write:
+                          type: boolean
                         enable_in_memory_mode:
                           type: boolean
                         enable_proactive_gc:
@@ -431,6 +433,8 @@ spec:
                           type: string
                         enabled:
                           type: boolean
+                        mountPropagation:
+                          type: string
                         size:
                           type: string
                         storageClass:

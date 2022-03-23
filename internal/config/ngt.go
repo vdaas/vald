@@ -80,6 +80,9 @@ type NGT struct {
 	// EnableProactiveGC enables more proactive GC call for reducing heap memory allocation
 	EnableProactiveGC bool `yaml:"enable_proactive_gc" json:"enable_proactive_gc,omitempty"`
 
+	// EnableCopyOnWrite enables copy on write saving
+	EnableCopyOnWrite bool `yaml:"enable_copy_on_write" json:"enable_copy_on_write,omitempty"`
+
 	// VQueue represent the ngt vector queue buffer size
 	VQueue *VQueue `json:"vqueue,omitempty" yaml:"vqueue"`
 

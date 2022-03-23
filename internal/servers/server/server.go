@@ -23,7 +23,6 @@ import (
 	"net/http"
 	"os"
 	"strconv"
-	"strings"
 	"sync"
 	"syscall"
 	"time"
@@ -38,6 +37,7 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc/keepalive"
 	glog "github.com/vdaas/vald/internal/net/grpc/logger"
 	"github.com/vdaas/vald/internal/safety"
+	"github.com/vdaas/vald/internal/strings"
 )
 
 type Server interface {

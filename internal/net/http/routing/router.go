@@ -19,7 +19,6 @@ package routing
 
 import (
 	"net/http"
-	"strings"
 
 	"github.com/gorilla/mux"
 	"github.com/vdaas/vald/internal/errors"
@@ -27,6 +26,7 @@ import (
 	"github.com/vdaas/vald/internal/net/http/json"
 	"github.com/vdaas/vald/internal/net/http/middleware"
 	"github.com/vdaas/vald/internal/net/http/rest"
+	"github.com/vdaas/vald/internal/strings"
 )
 
 type router struct {

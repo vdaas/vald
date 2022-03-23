@@ -160,7 +160,7 @@ func Test_genSchema(t *testing.T) {
 
 func Test_objectProperties(t *testing.T) {
 	type args struct {
-		ls []VSchema
+		ls []*VSchema
 	}
 	type want struct {
 		want map[string]*Schema
@@ -237,7 +237,7 @@ func Test_objectProperties(t *testing.T) {
 
 func Test_genNode(t *testing.T) {
 	type args struct {
-		ls []VSchema
+		ls []*VSchema
 	}
 	type want struct {
 		want *Schema

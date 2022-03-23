@@ -1618,6 +1618,9 @@ agent:
     # @schema {"name": "agent.persistentVolume.accessMode", "type": "string"}
     # agent.persistentVolume.accessMode -- agent pod storage accessMode
     accessMode: ReadWriteOnce
+    # @schema {"name": "agent.persistentVolume.mountPropagation", "type": "string"}
+    # agent.persistentVolume.mountPropagation -- agent pod storage mountPropagation
+    mountPropagation: None
     # @schema {"name": "agent.persistentVolume.storageClass", "type": "string"}
     # agent.persistentVolume.storageClass -- storageClass name for agent pod volume
     storageClass: vald-sc
@@ -1820,6 +1823,9 @@ agent:
     # @schema {"name": "agent.ngt.enable_proactive_gc", "type": "boolean"}
     # agent.ngt.enable_proactive_gc -- enable proactive GC call for reducing heap memory allocation
     enable_proactive_gc: false
+    # @schema {"name": "agent.ngt.enable_copy_on_write", "type": "boolean"}
+    # agent.ngt.enable_copy_on_write -- enable copy on write saving for more stable backup
+    enable_copy_on_write: false
     # @schema {"name": "agent.ngt.vqueue", "type": "object"}
     vqueue:
       # @schema {"name": "agent.ngt.vqueue.insert_buffer_pool_size", "type": "integer"}

@@ -18,13 +18,14 @@ package test
 import (
 	"os"
 	"path/filepath"
-	"strings"
+
+	"github.com/vdaas/vald/internal/file"
+	"github.com/vdaas/vald/internal/strings"
 )
 
 // GetTestdataPath returns the test data file path under `internal/test/data`.
 func GetTestdataPath(filename string) string {
-	fp, _ := filepath.Abs(baseDir() + "/internal/test/data/" + filename)
-	return fp
+	return file.Join(baseDir(), "/internal/test/data/", filename)
 }
 
 func baseDir() string {

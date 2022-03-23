@@ -20,7 +20,6 @@ package grpc
 import (
 	"context"
 	"fmt"
-	"strings"
 
 	"github.com/vdaas/vald/apis/grpc/v1/discoverer"
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
@@ -31,6 +30,7 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/singleflight"
+	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/pkg/discoverer/k8s/service"
 )
 

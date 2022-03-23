@@ -19,13 +19,13 @@ package starter
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/net/http/metrics"
 	"github.com/vdaas/vald/internal/observability/exporter/prometheus"
 	"github.com/vdaas/vald/internal/servers"
 	"github.com/vdaas/vald/internal/servers/server"
+	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/tls"
 )
 

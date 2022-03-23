@@ -22,9 +22,7 @@ import (
 	"context"
 	"io/fs"
 	"os"
-	"path/filepath"
 	"reflect"
-	"strings"
 	"syscall"
 
 	"github.com/vdaas/vald/internal/backoff"
@@ -35,6 +33,7 @@ import (
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
+	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/pkg/agent/sidecar/service/storage"
 )
 
@@ -236,84 +235,29 @@ func (r *restorer) restore(ctx context.Context) (err error) {
 			return err
 		}
 
-		target := filepath.Join(r.dir, header.Name)
-
+		target := file.Join(r.dir, header.Name)
 		log.Debug("restoring: ", target)
-
-		if strings.Contains(target, "..") {
-			log.Warn(errors.ErrPathNotAllowed(target))
-			continue
-		}
-
-		switch header.Typeflag {
-		case tar.TypeDir:
-			exist, fi, err := file.ExistsWithDetail(target)
-			if !exist || err != nil || fi == nil || fi != nil && !fi.IsDir() {
-				if exist {
-					os.RemoveAll(target)
-				}
-				err = os.MkdirAll(target, 0o700)
+		if !strings.Contains(target, "..") {
+			switch header.Typeflag {
+			case tar.TypeDir:
+				err = file.MkdirAll(target, fs.ModePerm)
 				if err != nil {
 					return err
 				}
-			}
-		case tar.TypeReg:
-			err = copyFile(ctx, target, tr, fs.FileMode(header.Mode))
-			if err != nil {
-				if errors.Is(err, errors.ErrFileAlreadyExists(target)) {
-					log.Warn(err)
-					return nil
+			case tar.TypeReg:
+				_, err = file.WriteFile(ctx, target, tr, fs.FileMode(header.Mode))
+				if err != nil {
+					if errors.Is(err, errors.ErrFileAlreadyExists(target)) {
+						log.Warn(err)
+						return nil
+					}
+					return err
 				}
-				return err
 			}
 		}
 	}
 
 	log.Infof("finished to restore directory %s finished", r.dir)
 
-	return nil
-}
-
-func copyFile(ctx context.Context, target string, tr io.Reader, mode fs.FileMode) (err error) {
-	exist, fi, err := file.ExistsWithDetail(target)
-	switch {
-	case err == nil, exist:
-		return errors.ErrFileAlreadyExists(target)
-	case err != nil && !os.IsNotExist(err):
-		return err
-	case fi != nil && fi.Size() != 0:
-		return errors.ErrFileAlreadyExists(target)
-	}
-
-	f, err := file.Open(
-		target,
-		os.O_CREATE|os.O_RDWR,
-		os.FileMode(mode),
-	)
-	if err != nil {
-		return err
-	}
-	defer func() {
-		if f != nil {
-			derr := f.Close()
-			if derr != nil {
-				err = errors.Wrap(err, derr.Error())
-			}
-		}
-	}()
-
-	fw, err := io.NewWriterWithContext(ctx, f)
-	if err != nil {
-		return err
-	}
-
-	_, err = io.Copy(fw, tr)
-	if err != nil && !errors.Is(err, io.EOF) {
-		return err
-	}
-	err = f.Sync()
-	if err != nil {
-		return err
-	}
 	return nil
 }

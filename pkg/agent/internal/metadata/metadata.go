@@ -73,7 +73,7 @@ func Load(path string) (meta *Metadata, err error) {
 
 func Store(path string, meta *Metadata) (err error) {
 	var f *os.File
-	f, err = file.Open(path, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, os.ModePerm)
+	f, err = file.Open(path, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, fs.ModePerm)
 	if err != nil {
 		return err
 	}

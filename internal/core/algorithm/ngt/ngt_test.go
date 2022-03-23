@@ -18,10 +18,10 @@
 package ngt
 
 import (
+	"io/fs"
 	"math"
 	"os"
 	"reflect"
-	"strings"
 	"sync"
 	"testing"
 
@@ -29,6 +29,7 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/log/logger"
+	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/test/comparator"
 	"github.com/vdaas/vald/internal/test/goleak"
 )
@@ -593,7 +594,7 @@ func TestLoad(t *testing.T) {
 				beforeFunc: func(t *testing.T, a args) {
 					t.Helper()
 
-					if err := os.Mkdir(idxPath, 0o750); err != nil {
+					if err := os.Mkdir(idxPath, fs.ModePerm); err != nil {
 						t.Fatal(err)
 					}
 				},
@@ -1182,7 +1183,7 @@ func Test_ngt_open(t *testing.T) {
 			},
 			beforeFunc: func(*testing.T) {
 				t.Helper()
-				_ = os.Mkdir("/tmp/ngt-63", 0o750)
+				_ = os.Mkdir("/tmp/ngt-63", fs.ModePerm)
 			},
 			checkFunc: func(w want, e error) error {
 				if e == nil {

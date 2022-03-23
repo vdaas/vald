@@ -16,8 +16,9 @@
 package location
 
 import (
-	"strings"
 	"time"
+
+	"github.com/vdaas/vald/internal/strings"
 )
 
 func Set(loc string) {

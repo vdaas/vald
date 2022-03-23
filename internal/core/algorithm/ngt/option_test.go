@@ -938,7 +938,7 @@ func TestWithObjectTypeByString(t *testing.T) {
 			},
 			want: want{
 				obj: &T{},
-				err: errors.New("invalid critical option, name: objectType, val: 0: unsupported ObjectType"),
+				err: errors.New("invalid critical option, name: objectType, val: Unknown: unsupported ObjectType"),
 			},
 		},
 		{
@@ -948,7 +948,7 @@ func TestWithObjectTypeByString(t *testing.T) {
 			},
 			want: want{
 				obj: &T{},
-				err: errors.New("invalid critical option, name: objectType, val: 0: unsupported ObjectType"),
+				err: errors.New("invalid critical option, name: objectType, val: Unknown: unsupported ObjectType"),
 			},
 		},
 	}
@@ -1037,7 +1037,7 @@ func TestWithObjectType(t *testing.T) {
 			},
 			want: want{
 				obj: &T{},
-				err: errors.New("invalid critical option, name: objectType, val: -1: unsupported ObjectType"),
+				err: errors.New("invalid critical option, name: objectType, val: Unknown: unsupported ObjectType"),
 			},
 		},
 	}

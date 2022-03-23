@@ -19,10 +19,11 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
-	"strings"
 
 	"github.com/vdaas/vald/hack/benchmark/assets/x1b"
+	"github.com/vdaas/vald/internal/file"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/strings"
 )
 
 var ErrOutOfBounds = x1b.ErrOutOfBounds
@@ -84,7 +85,7 @@ func findDir(path string) (string, error) {
 			}
 		}
 	}(wd)
-	return filepath.Join(root, path) + string(os.PathSeparator), nil
+	return file.Join(root, path) + string(os.PathSeparator), nil
 }
 
 // Data loads specified dataset and returns it.
