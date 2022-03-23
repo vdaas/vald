@@ -12,7 +12,7 @@ replace (
 	github.com/Azure/go-autorest => github.com/Azure/go-autorest v14.2.1-0.20220131174551-b3899c105742+incompatible
 	github.com/Azure/go-autorest/autorest => github.com/Azure/go-autorest/autorest v0.11.25-0.20220131174551-b3899c105742
 	github.com/Azure/go-autorest/autorest/adal => github.com/Azure/go-autorest/autorest/adal v0.9.19-0.20220131174551-b3899c105742
-	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.43.22
+	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.43.23
 	github.com/chzyer/logex => github.com/chzyer/logex v1.2.0
 	github.com/coreos/etcd => go.etcd.io/etcd v3.3.27+incompatible
 	github.com/dgrijalva/jwt-go => github.com/golang-jwt/jwt/v4 v4.4.0
@@ -46,7 +46,7 @@ replace (
 	github.com/prometheus/client_model => github.com/prometheus/client_model v0.2.0
 	github.com/prometheus/common => github.com/prometheus/common v0.32.1
 	github.com/prometheus/procfs => github.com/prometheus/procfs v0.7.3
-	github.com/rs/xid => github.com/rs/xid v1.3.0
+	github.com/rs/xid => github.com/rs/xid v1.4.0
 	github.com/sirupsen/logrus => github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify => github.com/stretchr/testify v1.7.1
 	github.com/tensorflow/tensorflow => github.com/tensorflow/tensorflow v2.1.2+incompatible
@@ -134,7 +134,7 @@ require (
 	github.com/lucasb-eyer/go-colorful v1.2.0
 	github.com/pierrec/lz4/v3 v3.3.4
 	github.com/quasilyte/go-ruleguard v0.3.15
-	github.com/quasilyte/go-ruleguard/dsl v0.3.18
+	github.com/quasilyte/go-ruleguard/dsl v0.3.19
 	github.com/scylladb/gocqlx v1.5.0
 	github.com/tensorflow/tensorflow v0.0.0-00010101000000-000000000000
 	github.com/zeebo/xxh3 v1.0.1
