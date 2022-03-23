@@ -55,7 +55,7 @@ Vald can handle any object data, image, audio processing, video, text, binary, o
 
 ## Get Started
 
-Go to [Get Started](https://vdaas.vald.org/docs/tutorial/get-started) page to try out Vald !
+Go to [Get Started](https://vald.vdaas.org/docs/tutorial/get-started) page to try out Vald !
 
 ## Installation
 
