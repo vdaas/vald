@@ -74,7 +74,7 @@ You can run by following steps.
 1. Configure helm charts as your demand
 1. Deploy by helm command
 
-## Is Vald Index Manager a necessary component?
+## Is Vald Index Manager recommended using?
 
 We recommend to use it when you’d like to operate as a cluster.
 It helps you to manage indexing timing for each Vald Agent.
