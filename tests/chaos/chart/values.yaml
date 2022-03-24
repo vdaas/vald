@@ -46,8 +46,8 @@ networkChaos:
         app.kubernetes.io/component: agent
       namespaces:
         - default
-    duration: "10ms"
-    cron: "@every 5s"
+    duration: "100ms"
+    cron: "@every 3s"
   bandwidth:
     enabled: false
     name: vald-network-bandwidth
