@@ -59,7 +59,7 @@ jobs:
           version: latest
           name: vald
           agents: 3
-          options: "--image docker.io/rancher/k3s:latest"
+          options: "--image docker.io/rancher/k3s:v1.23.5-rc1-k3s1"
       - name: check k3d
         run: |
           kubectl cluster-info
@@ -151,7 +151,7 @@ jobs:
           version: latest
           name: vald
           agents: 3
-          options: "--image docker.io/rancher/k3s:latest"
+          options: "--image docker.io/rancher/k3s:v1.23.5-rc1-k3s1"
       - name: check k3d
         run: |
           kubectl cluster-info
@@ -244,7 +244,7 @@ jobs:
           version: latest
           name: vald
           agents: 3
-          options: "--image docker.io/rancher/k3s:latest"
+          options: "--image docker.io/rancher/k3s:v1.23.5-rc1-k3s1"
       - name: check k3d
         run: |
           kubectl cluster-info
@@ -336,7 +336,7 @@ jobs:
           version: latest
           name: vald
           agents: 3
-          options: "--image docker.io/rancher/k3s:latest"
+          options: "--image docker.io/rancher/k3s:v1.23.5-rc1-k3s1"
       - name: check k3d
         run: |
           kubectl cluster-info
