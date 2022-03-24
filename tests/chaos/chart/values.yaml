@@ -20,8 +20,8 @@ podChaos:
     name: vald-pod-failure
     selector:
       labelSelectors:
-        name: vald
-        component: agent
+        app.kubernetes.io/name: vald
+        app.kubernetes.io/component: agent
       namespaces:
         - default
     duration: "10s"
@@ -30,8 +30,8 @@ podChaos:
     name: vald-pod-kill
     selector:
       labelSelectors:
-        name: vald
-        component: agent
+        app.kubernetes.io/name: vald
+        app.kubernetes.io/component: agent
       namespaces:
         - default
     duration: "2m"
