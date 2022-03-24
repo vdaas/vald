@@ -19,6 +19,10 @@ defaults:
     client:
       dial_option:
         enable_backoff: true
+        net:
+          dialer:
+            timeout: 30s
+            keepalive: 120s
   server_config:
     healths:
       liveness:
