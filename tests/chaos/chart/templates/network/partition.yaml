@@ -25,6 +25,6 @@ spec:
   selector:
     {{- toYaml .Values.networkChaos.partition.selector | nindent 4 }}
   duration: {{ .Values.networkChaos.partition.duration }}
-  scheduler:
-    cron: {{- .Values.networkChaos.partition.cron }}
+  # scheduler:
+  #   cron: {{- .Values.networkChaos.partition.cron }}
 {{- end }}
