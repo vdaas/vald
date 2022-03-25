@@ -71,8 +71,6 @@ Each Vald Agent pod has its own vector data space because only several Vald Agen
 
 When searching a vector in Vald, each Vald Agent return different results of _k_-nearest neighbors depending on their index, and you'll get the merged result of them.
 
-<img src="../../../assets/docs/vector_data_space_explain.svg" />
-
 ### Vald Agent Scheduler
 
 Vald Agent Scheduler is the scheduler of the Vald Agent.
