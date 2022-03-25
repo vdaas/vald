@@ -22,13 +22,15 @@ metadata:
 spec:
   action: bandwidth
   mode: one
-  # duration: {{ .Values.networkChaos.bandwidth.duration }}
+  selector:
+    {{- toYaml .Values.networkChaos.bandwidth.selector | nindent 4 }}
   bandwidth:
     rate: {{ .Values.networkChaos.bandwidth.rate }}
     limit: {{ .Values.networkChaos.bandwidth.limit }}
     buffer: {{ .Values.networkChaos.bandwidth.buffer }}
     peakrate: {{ .Values.networkChaos.bandwidth.peakrate }}
     minburst: {{ .Values.networkChaos.bandwidth.minburst }}
-  selector:
-    {{- toYaml .Values.networkChaos.bandwidth.selector | nindent 4 }}
+  duration: {{ .Values.networkChaos.bandwidth.duration }}
+  scheduler:
+    cron: {{- .Values.networkChaos.bandwidth.cron }}
 {{- end }}
