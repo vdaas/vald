@@ -1,5 +1,96 @@
 # CHANGELOG
 
+## v1.5.0
+
+### Docker images
+
+<table>
+  <tr>
+    <th>component</th>
+    <th>Docker pull</th>
+  </tr>
+  <tr>
+    <td>Agent NGT</td>
+    <td>
+      <code>docker pull vdaas/vald-agent-ngt:v1.5.0</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-agent-ngt:v1.5.0</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Agent sidecar</td>
+    <td>
+      <code>docker pull vdaas/vald-agent-sidecar:v1.5.0</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-agent-sidecar:v1.5.0</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Discoverers</td>
+    <td>
+      <code>docker pull vdaas/vald-discoverer-k8s:v1.5.0</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-discoverer-k8s:v1.5.0</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Gateways</td>
+    <td>
+      <code>docker pull vdaas/vald-lb-gateway:v1.5.0</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-lb-gateway:v1.5.0</code><br/>
+      <code>docker pull vdaas/vald-filter-gateway:v1.5.0</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-filter-gateway:v1.5.0</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Index Manager</td>
+    <td>
+      <code>docker pull vdaas/vald-manager-index:v1.5.0</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-manager-index:v1.5.0</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Helm Operator</td>
+    <td>
+      <code>docker pull vdaas/vald-helm-operator:v1.5.0</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-helm-operator:v1.5.0</code>
+    </td>
+  </tr>
+</table>
+
+### Documents
+- [GoDoc](https://pkg.go.dev/github.com/vdaas/vald@v1.5.0)
+- [Helm Chart Reference](https://github.com/vdaas/vald/blob/v1.5.0/charts/vald/README.md)
+- [Helm Operator Chart Reference](https://github.com/vdaas/vald/blob/v1.5.0/charts/vald-helm-operator/README.md)
+
+### Changes
+:sparkles:  New features
+- Add values yaml for the back up the agent index data (#1566)
+- Implement uniform/gaussian distributed random float32/uint8 vector generator (#1573)
+- Add min_num in each search service api (#1576)
+- Add copy on write (#1578)
+- Add example values for using Pyroscope (#1582)
+
+:recycle: Refactor
+- Deleted resource limits of agent ngt and added in memory mode example (#1571)
+- Improve string conversion performace (#1577)
+- Update dependencies version (#1593)
+
+:pencil2: Documents
+- Add gateway component overview document (#1549)
+- Update API docs and fix format (#1568)
+- Update dataflow images (#1572)
+- Add discoverer component overview document (#1574)
+- Add index manager component overview document (#1575)
+- Update README (#1584)
+
+:bug: Bugfix
+- Add error handling when there is no data in google cloud storage.  (#1556)
+- Reviewdog markdown workflow (#1585)
+- Fix invalid URL (#1589)
+
+:white_check_mark: Test
+- Implement test for net/grpc codec,logger and server (#1530)
+- Update test for go1.17 update & -race test (#1431)
+
+
 ## v1.4.1
 
 ### Docker images
