@@ -844,8 +844,8 @@ func Test_server_Search(t *testing.T) {
 				ngtCfg: ngtConfig(defaultDimensionSize, ngt.Float.String()),
 			},
 			want: want{
-				resultSize: 0,
-				code:       codes.NotFound,
+				resultSize: 10,
+				// code:       codes.NotFound,
 			},
 		},
 		{
@@ -1010,50 +1010,276 @@ func Test_server_Search(t *testing.T) {
 		},
 
 		// Decision Table Testing
-		/*
-			{
-				name: "Decision Table Testing case 1.1: success with Search_Config.Num=10 from 5 different vectors (type: uint8)",
+		{
+			name: "Decision Table Testing case 1.1: success with Search_Config.Num=10 from 5 different vectors (type: uint8)",
+			args: args{
+				ctx: ctx,
+				num: 5,
+				req: &payload.Search_Request{
+					Vector: convertVectorUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, defaultDimensionSize)[0]),
+					Config: defaultSearch_Config,
+				},
 			},
-			{
-				name: "Decision Table Testing case 1.2: success with Search_Config.Num=10 from 5 different vectors (type: float32)",
+			fields: fields{
+				gen: func(n, dim int) [][]float32 {
+					return convertVectorsUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(n, dim))
+				},
+				ngtCfg: ngtConfig(defaultDimensionSize, ngt.Uint8.String()),
 			},
-			{
-				name: "Decision Table Testing case 2.1: success with Search_Config.Num=10 from 10 different vectors (type: uint8)",
+			want: want{
+				resultSize: 5,
 			},
-			{
-				name: "Decision Table Testing case 2.2: success with Search_Config.Num=10 from 10 different vectors (type: float32)",
+		},
+		{
+			name: "Decision Table Testing case 1.2: success with Search_Config.Num=10 from 5 different vectors (type: float32)",
+			args: args{
+				ctx: ctx,
+				num: 5,
+				req: &payload.Search_Request{
+					Vector: vector.GaussianDistributedFloat32VectorGenerator(1, defaultDimensionSize)[0],
+					Config: defaultSearch_Config,
+				},
 			},
-			{
-				name: "Decision Table Testing case 3.1: success with Search_Config.Num=10 from 20 different vectors (type: uint8)",
+			fields: fields{
+				gen:    vector.GaussianDistributedFloat32VectorGenerator,
+				ngtCfg: ngtConfig(defaultDimensionSize, ngt.Float.String()),
 			},
-			{
-				name: "Decision Table Testing case 3.2: success with Search_Config.Num=10 from 20 different vectors (type: float32)",
+			want: want{
+				resultSize: 5,
 			},
-			{
-				name: "Decision Table Testing case 4.1: success with Search_Config.Num=10 from 5 same vectors (type: uint8)",
+		},
+		{
+			name: "Decision Table Testing case 2.1: success with Search_Config.Num=10 from 10 different vectors (type: uint8)",
+			args: args{
+				ctx: ctx,
+				num: 10,
+				req: &payload.Search_Request{
+					Vector: convertVectorUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, defaultDimensionSize)[0]),
+					Config: defaultSearch_Config,
+				},
 			},
-			{
-				name: "Decision Table Testing case 4.2: success with Search_Config.Num=10 from 5 same vectors (type: float32)",
+			fields: fields{
+				gen: func(n, dim int) [][]float32 {
+					return convertVectorsUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(n, dim))
+				},
+				ngtCfg: ngtConfig(defaultDimensionSize, ngt.Uint8.String()),
 			},
-			{
-				name: "Decision Table Testing case 5.1: success with Search_Config.Num=10 from 10 same vectors (type: uint8)",
+			want: want{
+				resultSize: 10,
 			},
-			{
-				name: "Decision Table Testing case 5.2: success with Search_Config.Num=10 from 10 same vectors (type: float32)",
+		},
+		{
+			name: "Decision Table Testing case 2.2: success with Search_Config.Num=10 from 10 different vectors (type: float32)",
+			args: args{
+				ctx: ctx,
+				num: 10,
+				req: &payload.Search_Request{
+					Vector: vector.GaussianDistributedFloat32VectorGenerator(1, defaultDimensionSize)[0],
+					Config: defaultSearch_Config,
+				},
 			},
-			{
-				name: "Decision Table Testing case 6.1: success with Search_Config.Num=10 from 20 same vectors (type: uint8)",
+			fields: fields{
+				gen:    vector.GaussianDistributedFloat32VectorGenerator,
+				ngtCfg: ngtConfig(defaultDimensionSize, ngt.Float.String()),
 			},
-			{
-				name: "Decision Table Testing case 6.2: success with Search_Config.Num=10 from 20 same vectors (type: float32)",
+			want: want{
+				resultSize: 10,
 			},
-		*/
+		},
+		{
+			name: "Decision Table Testing case 3.1: success with Search_Config.Num=10 from 20 different vectors (type: uint8)",
+			args: args{
+				ctx: ctx,
+				num: 20,
+				req: &payload.Search_Request{
+					Vector: convertVectorUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, defaultDimensionSize)[0]),
+					Config: defaultSearch_Config,
+				},
+			},
+			fields: fields{
+				gen: func(n, dim int) [][]float32 {
+					return convertVectorsUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(n, dim))
+				},
+				ngtCfg: ngtConfig(defaultDimensionSize, ngt.Uint8.String()),
+			},
+			want: want{
+				resultSize: 10,
+			},
+		},
+		{
+			name: "Decision Table Testing case 3.2: success with Search_Config.Num=10 from 20 different vectors (type: float32)",
+			args: args{
+				ctx: ctx,
+				num: 20,
+				req: &payload.Search_Request{
+					Vector: vector.GaussianDistributedFloat32VectorGenerator(1, defaultDimensionSize)[0],
+					Config: defaultSearch_Config,
+				},
+			},
+			fields: fields{
+				gen:    vector.GaussianDistributedFloat32VectorGenerator,
+				ngtCfg: ngtConfig(defaultDimensionSize, ngt.Float.String()),
+			},
+			want: want{
+				resultSize: 10,
+			},
+		},
+		{
+			name: "Decision Table Testing case 4.1: success with Search_Config.Num=10 from 5 same vectors (type: uint8)",
+			args: args{
+				ctx: ctx,
+				num: 5,
+				req: &payload.Search_Request{
+					Vector: convertVectorUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, defaultDimensionSize)[0]),
+					Config: defaultSearch_Config,
+				},
+			},
+			fields: fields{
+				gen: func(n, dim int) [][]float32 {
+					v := convertVectorUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, dim)[0])
+					vectors := make([][]float32, n)
+					for i := range vectors {
+						vectors[i] = v
+					}
+					return vectors
+				},
+				ngtCfg: ngtConfig(defaultDimensionSize, ngt.Uint8.String()),
+			},
+			want: want{
+				resultSize: 5,
+			},
+		},
+		{
+			name: "Decision Table Testing case 4.2: success with Search_Config.Num=10 from 5 same vectors (type: float32)",
+			args: args{
+				ctx: ctx,
+				num: 5,
+				req: &payload.Search_Request{
+					Vector: vector.GaussianDistributedFloat32VectorGenerator(1, defaultDimensionSize)[0],
+					Config: defaultSearch_Config,
+				},
+			},
+			fields: fields{
+				gen: func(n, dim int) [][]float32 {
+					v := vector.GaussianDistributedFloat32VectorGenerator(1, dim)[0]
+					vectors := make([][]float32, n)
+					for i := range vectors {
+						vectors[i] = v
+					}
+					return vectors
+				},
+				ngtCfg: ngtConfig(defaultDimensionSize, ngt.Float.String()),
+			},
+			want: want{
+				resultSize: 5,
+			},
+		},
+		{
+			name: "Decision Table Testing case 5.1: success with Search_Config.Num=10 from 10 same vectors (type: uint8)",
+			args: args{
+				ctx: ctx,
+				num: 10,
+				req: &payload.Search_Request{
+					Vector: convertVectorUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, defaultDimensionSize)[0]),
+					Config: defaultSearch_Config,
+				},
+			},
+			fields: fields{
+				gen: func(n, dim int) [][]float32 {
+					v := convertVectorUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, dim)[0])
+					vectors := make([][]float32, n)
+					for i := range vectors {
+						vectors[i] = v
+					}
+					return vectors
+				},
+				ngtCfg: ngtConfig(defaultDimensionSize, ngt.Uint8.String()),
+			},
+			want: want{
+				resultSize: 10,
+			},
+		},
+		{
+			name: "Decision Table Testing case 5.2: success with Search_Config.Num=10 from 10 same vectors (type: float32)",
+			args: args{
+				ctx: ctx,
+				num: 10,
+				req: &payload.Search_Request{
+					Vector: vector.GaussianDistributedFloat32VectorGenerator(1, defaultDimensionSize)[0],
+					Config: defaultSearch_Config,
+				},
+			},
+			fields: fields{
+				gen: func(n, dim int) [][]float32 {
+					v := vector.GaussianDistributedFloat32VectorGenerator(1, dim)[0]
+					vectors := make([][]float32, n)
+					for i := range vectors {
+						vectors[i] = v
+					}
+					return vectors
+				},
+				ngtCfg: ngtConfig(defaultDimensionSize, ngt.Float.String()),
+			},
+			want: want{
+				resultSize: 10,
+			},
+		},
+		{
+			name: "Decision Table Testing case 6.1: success with Search_Config.Num=10 from 20 same vectors (type: uint8)",
+			args: args{
+				ctx: ctx,
+				num: 20,
+				req: &payload.Search_Request{
+					Vector: convertVectorUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, defaultDimensionSize)[0]),
+					Config: defaultSearch_Config,
+				},
+			},
+			fields: fields{
+				gen: func(n, dim int) [][]float32 {
+					v := convertVectorUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, dim)[0])
+					vectors := make([][]float32, n)
+					for i := range vectors {
+						vectors[i] = v
+					}
+					return vectors
+				},
+				ngtCfg: ngtConfig(defaultDimensionSize, ngt.Uint8.String()),
+			},
+			want: want{
+				resultSize: 10,
+			},
+		},
+		{
+			name: "Decision Table Testing case 6.2: success with Search_Config.Num=10 from 20 same vectors (type: float32)",
+			args: args{
+				ctx: ctx,
+				num: 20,
+				req: &payload.Search_Request{
+					Vector: vector.GaussianDistributedFloat32VectorGenerator(1, defaultDimensionSize)[0],
+					Config: defaultSearch_Config,
+				},
+			},
+			fields: fields{
+				gen: func(n, dim int) [][]float32 {
+					v := vector.GaussianDistributedFloat32VectorGenerator(1, dim)[0]
+					vectors := make([][]float32, n)
+					for i := range vectors {
+						vectors[i] = v
+					}
+					return vectors
+				},
+				ngtCfg: ngtConfig(defaultDimensionSize, ngt.Float.String()),
+			},
+			want: want{
+				resultSize: 10,
+			},
+		},
 	}
 
 	for _, tc := range tests {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			//tt.Parallel()
+			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc == nil {
 				test.beforeFunc = defaultBeforeFunc
