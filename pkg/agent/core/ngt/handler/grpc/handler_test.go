@@ -19,10 +19,7 @@ package grpc
 
 import (
 	"context"
-<<<<<<< HEAD
 	"fmt"
-=======
->>>>>>> 5fa2ca1b (add tests)
 	"math"
 	"reflect"
 	"strconv"
@@ -35,12 +32,9 @@ import (
 	"github.com/vdaas/vald/internal/core/algorithm/ngt"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
-<<<<<<< HEAD
 	"github.com/vdaas/vald/internal/net"
-	"github.com/vdaas/vald/internal/net/grpc/errdetails"
-=======
 	"github.com/vdaas/vald/internal/net/grpc/codes"
->>>>>>> 5fa2ca1b (add tests)
+	"github.com/vdaas/vald/internal/net/grpc/errdetails"
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/test/data/vector"
 	"github.com/vdaas/vald/internal/test/goleak"
@@ -926,48 +920,46 @@ func Test_server_Search(t *testing.T) {
 				code:       codes.InvalidArgument,
 			},
 		},
-		/*
-			{
-				name: "Boundary Value Testing case 8.1: fail with max length vector (type: uint8)",
-				args: args{
-					ctx: ctx,
-					num: 1000,
-					req: &payload.Search_Request{
-						Vector: convertVectorUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, math.MaxInt32>>3)[0]),
-						Config: defaultSearch_Config,
-					},
-				},
-				fields: fields{
-					gen: func(n, dim int) [][]float32 {
-						return convertVectorsUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(n, dim))
-					},
-					ngtCfg: ngtConfig(defaultDimensionSize, "uint8"),
-				},
-				want: want{
-					resultSize: 0,
-					code:       codes.InvalidArgument,
+		{
+			name: "Boundary Value Testing case 8.1: fail with max length vector (type: uint8)",
+			args: args{
+				ctx: ctx,
+				num: 1000,
+				req: &payload.Search_Request{
+					Vector: convertVectorUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, math.MaxInt32>>2)[0]),
+					Config: defaultSearch_Config,
 				},
 			},
-			{
-				name: "Boundary Value Testing case 8.2: fail with max length vector (type: float32)",
-				args: args{
-					ctx: ctx,
-					num: 1000,
-					req: &payload.Search_Request{
-						Vector: vector.GaussianDistributedFloat32VectorGenerator(1, math.MaxInt32>>3)[0],
-						Config: defaultSearch_Config,
-					},
+			fields: fields{
+				gen: func(n, dim int) [][]float32 {
+					return convertVectorsUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(n, dim))
 				},
-				fields: fields{
-					gen:    vector.GaussianDistributedFloat32VectorGenerator,
-					ngtCfg: ngtConfig(defaultDimensionSize, "float32"),
-				},
-				want: want{
-					resultSize: 0,
-					code:       codes.InvalidArgument,
+				ngtCfg: ngtConfig(defaultDimensionSize, "uint8"),
+			},
+			want: want{
+				resultSize: 0,
+				code:       codes.InvalidArgument,
+			},
+		},
+		{
+			name: "Boundary Value Testing case 8.2: fail with max length vector (type: float32)",
+			args: args{
+				ctx: ctx,
+				num: 1000,
+				req: &payload.Search_Request{
+					Vector: vector.GaussianDistributedFloat32VectorGenerator(1, math.MaxInt32>>2)[0],
+					Config: defaultSearch_Config,
 				},
 			},
-		*/
+			fields: fields{
+				gen:    vector.GaussianDistributedFloat32VectorGenerator,
+				ngtCfg: ngtConfig(defaultDimensionSize, "float32"),
+			},
+			want: want{
+				resultSize: 0,
+				code:       codes.InvalidArgument,
+			},
+		},
 		{
 			name: "Boundary Value Testing case 9.1: fail with nil vector (type: uint8)",
 			args: args{
