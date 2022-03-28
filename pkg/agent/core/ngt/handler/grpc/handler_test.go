@@ -4441,9 +4441,8 @@ func Test_server_LinearSearch(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
-			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
+				test.checkFunc = defaultCheckFunc
 			}
 			s := &server{
 				name:                     test.fields.name,
@@ -4456,7 +4455,7 @@ func Test_server_LinearSearch(t *testing.T) {
 			}
 
 			gotRes, err := s.LinearSearch(test.args.ctx, test.args.req)
-			if err := checkFunc(test.want, gotRes, err); err != nil {
+			if err := test.checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -4558,9 +4557,8 @@ func Test_server_LinearSearchByID(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
-			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
+				test.checkFunc = defaultCheckFunc
 			}
 			s := &server{
 				name:                     test.fields.name,
@@ -4573,7 +4571,7 @@ func Test_server_LinearSearchByID(t *testing.T) {
 			}
 
 			gotRes, err := s.LinearSearchByID(test.args.ctx, test.args.req)
-			if err := checkFunc(test.want, gotRes, err); err != nil {
+			if err := test.checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -4668,9 +4666,8 @@ func Test_server_StreamLinearSearch(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
-			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
+				test.checkFunc = defaultCheckFunc
 			}
 			s := &server{
 				name:                     test.fields.name,
@@ -4683,7 +4680,7 @@ func Test_server_StreamLinearSearch(t *testing.T) {
 			}
 
 			err := s.StreamLinearSearch(test.args.stream)
-			if err := checkFunc(test.want, err); err != nil {
+			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -4778,9 +4775,8 @@ func Test_server_StreamLinearSearchByID(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
-			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
+				test.checkFunc = defaultCheckFunc
 			}
 			s := &server{
 				name:                     test.fields.name,
@@ -4793,7 +4789,7 @@ func Test_server_StreamLinearSearchByID(t *testing.T) {
 			}
 
 			err := s.StreamLinearSearchByID(test.args.stream)
-			if err := checkFunc(test.want, err); err != nil {
+			if err := test.checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -4895,9 +4891,8 @@ func Test_server_MultiLinearSearch(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
-			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
+				test.checkFunc = defaultCheckFunc
 			}
 			s := &server{
 				name:                     test.fields.name,
@@ -4910,7 +4905,7 @@ func Test_server_MultiLinearSearch(t *testing.T) {
 			}
 
 			gotRes, err := s.MultiLinearSearch(test.args.ctx, test.args.reqs)
-			if err := checkFunc(test.want, gotRes, err); err != nil {
+			if err := test.checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -5012,9 +5007,8 @@ func Test_server_MultiLinearSearchByID(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
-			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
+				test.checkFunc = defaultCheckFunc
 			}
 			s := &server{
 				name:                     test.fields.name,
@@ -5027,7 +5021,7 @@ func Test_server_MultiLinearSearchByID(t *testing.T) {
 			}
 
 			gotRes, err := s.MultiLinearSearchByID(test.args.ctx, test.args.reqs)
-			if err := checkFunc(test.want, gotRes, err); err != nil {
+			if err := test.checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
