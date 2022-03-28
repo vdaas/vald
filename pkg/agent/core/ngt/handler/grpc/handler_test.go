@@ -1169,14 +1169,11 @@ func Test_server_Insert(t *testing.T) {
 		req *payload.Insert_Request
 	}
 	type fields struct {
-		name string
-		ip   string
-		// ngt               service.NGT
-		// eg                errgroup.Group
+		name              string
+		ip                string
 		streamConcurrency int
-
-		svcCfg  *config.NGT
-		svcOpts []service.Option
+		svcCfg            *config.NGT
+		svcOpts           []service.Option
 	}
 	type want struct {
 		wantRes *payload.Object_Location
@@ -1201,13 +1198,36 @@ func Test_server_Insert(t *testing.T) {
 		return nil
 	}
 
-	name := "vald-agent-ngt-1"         // agent name
-	id := "uuid1"                      // insert request id
-	ip := net.LoadLocalIP()            // agent ip address
-	intVec := []float32{1, 2, 3}       // int vector of the insert request
-	f32Vec := []float32{1.5, 2.3, 3.6} // float32 vector of the insert request
-	intVecDim := 3                     // int vector dimension
-	f32VecDim := 3                     // float32 vector dimension
+	// common variables for test
+	var (
+		name      = "vald-agent-ngt-1"       // agent name
+		id        = "uuid-1"                 // insert request id
+		ip        = net.LoadLocalIP()        // agent ip address
+		intVec    = []float32{1, 2, 3}       // int vector of the insert request
+		f32Vec    = []float32{1.5, 2.3, 3.6} // float32 vector of the insert request
+		intVecDim = 3                        // int vector dimension
+		f32VecDim = 3                        // float32 vector dimension
+
+		// default NGT configuration for test
+		kvsdbCfg  = &config.KVSDB{}
+		vqueueCfg = &config.VQueue{}
+	)
+
+	// functions to generator vectors for testing
+	genF32Vec := func(dist vector.Distribution, dim int) []float32 {
+		generator, _ := vector.Float32VectorGenerator(dist)
+		return generator(1, dim)[0]
+	}
+	genIntVec := func(dist vector.Distribution, dim int) []float32 {
+		generator, _ := vector.Uint8VectorGenerator(dist)
+		ivec := generator(1, dim)[0]
+
+		vec := make([]float32, dim)
+		for i := 0; i < dim; i++ {
+			vec[i] = float32(ivec[i])
+		}
+		return vec
+	}
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -1259,16 +1279,18 @@ func Test_server_Insert(t *testing.T) {
 	tests := []test{
 		// Equivalence Class Testing
 		func() test {
+			req := &payload.Insert_Request{
+				Vector: &payload.Object_Vector{
+					Id:     id,
+					Vector: intVec,
+				},
+			}
+
 			return test{
 				name: "Equivalence Class Testing case 1.1: Insert vector success (vector type is uint8)",
 				args: args{
 					ctx: ctx,
-					req: &payload.Insert_Request{
-						Vector: &payload.Object_Vector{
-							Id:     id,
-							Vector: intVec,
-						},
-					},
+					req: req,
 				},
 				fields: fields{
 					name: name,
@@ -1277,8 +1299,8 @@ func Test_server_Insert(t *testing.T) {
 						Dimension:    intVecDim,
 						DistanceType: ngt.Angle.String(),
 						ObjectType:   ngt.Uint8.String(),
-						KVSDB:        &config.KVSDB{},
-						VQueue:       &config.VQueue{},
+						KVSDB:        kvsdbCfg,
+						VQueue:       vqueueCfg,
 					},
 					svcOpts: []service.Option{
 						service.WithEnableInMemoryMode(true),
@@ -1294,16 +1316,18 @@ func Test_server_Insert(t *testing.T) {
 			}
 		}(),
 		func() test {
+			req := &payload.Insert_Request{
+				Vector: &payload.Object_Vector{
+					Id:     id,
+					Vector: f32Vec,
+				},
+			}
+
 			return test{
 				name: "Equivalence Class Testing case 1.2: Insert vector success (vector type is float32)",
 				args: args{
 					ctx: ctx,
-					req: &payload.Insert_Request{
-						Vector: &payload.Object_Vector{
-							Id:     id,
-							Vector: f32Vec,
-						},
-					},
+					req: req,
 				},
 				fields: fields{
 					name: name,
@@ -1312,8 +1336,8 @@ func Test_server_Insert(t *testing.T) {
 						Dimension:    f32VecDim,
 						DistanceType: ngt.Angle.String(),
 						ObjectType:   ngt.Float.String(),
-						KVSDB:        &config.KVSDB{},
-						VQueue:       &config.VQueue{},
+						KVSDB:        kvsdbCfg,
+						VQueue:       vqueueCfg,
 					},
 					svcOpts: []service.Option{
 						service.WithEnableInMemoryMode(true),
@@ -1329,12 +1353,11 @@ func Test_server_Insert(t *testing.T) {
 			}
 		}(),
 		func() test {
-			vec := []float32{1, 2, 3, 4, 5, 6, 7}
-			dim := 3
+			ivec := []float32{1, 2, 3, 4, 5, 6, 7}
 			req := &payload.Insert_Request{
 				Vector: &payload.Object_Vector{
 					Id:     id,
-					Vector: vec,
+					Vector: ivec,
 				},
 			}
 
@@ -1348,11 +1371,11 @@ func Test_server_Insert(t *testing.T) {
 					name: name,
 					ip:   ip,
 					svcCfg: &config.NGT{
-						Dimension:    dim,
+						Dimension:    intVecDim,
 						DistanceType: ngt.Angle.String(),
 						ObjectType:   ngt.Uint8.String(),
-						KVSDB:        &config.KVSDB{},
-						VQueue:       &config.VQueue{},
+						KVSDB:        kvsdbCfg,
+						VQueue:       vqueueCfg,
 					},
 					svcOpts: []service.Option{
 						service.WithEnableInMemoryMode(true),
@@ -1360,7 +1383,7 @@ func Test_server_Insert(t *testing.T) {
 				},
 				want: want{
 					err: func() error {
-						err := errors.ErrIncompatibleDimensionSize(len(vec), 3)
+						err := errors.ErrIncompatibleDimensionSize(len(ivec), 3)
 						return status.WrapWithInvalidArgument("Insert API Incompatible Dimension Size detected",
 							err,
 							&errdetails.RequestInfo{
@@ -1384,12 +1407,11 @@ func Test_server_Insert(t *testing.T) {
 			}
 		}(),
 		func() test {
-			vec := []float32{1.5, 2.3, 3.6, 4.5, 6.6, 7.7}
-			dim := 3
+			ivec := []float32{1.5, 2.3, 3.6, 4.5, 6.6, 7.7}
 			req := &payload.Insert_Request{
 				Vector: &payload.Object_Vector{
 					Id:     id,
-					Vector: vec,
+					Vector: ivec,
 				},
 			}
 
@@ -1403,11 +1425,11 @@ func Test_server_Insert(t *testing.T) {
 					name: name,
 					ip:   ip,
 					svcCfg: &config.NGT{
-						Dimension:    dim,
+						Dimension:    f32VecDim,
 						DistanceType: ngt.Angle.String(),
 						ObjectType:   ngt.Float.String(),
-						KVSDB:        &config.KVSDB{},
-						VQueue:       &config.VQueue{},
+						KVSDB:        kvsdbCfg,
+						VQueue:       vqueueCfg,
 					},
 					svcOpts: []service.Option{
 						service.WithEnableInMemoryMode(true),
@@ -1415,7 +1437,7 @@ func Test_server_Insert(t *testing.T) {
 				},
 				want: want{
 					err: func() error {
-						err := errors.ErrIncompatibleDimensionSize(len(vec), 3)
+						err := errors.ErrIncompatibleDimensionSize(len(ivec), 3)
 						return status.WrapWithInvalidArgument("Insert API Incompatible Dimension Size detected",
 							err,
 							&errdetails.RequestInfo{
@@ -1439,33 +1461,28 @@ func Test_server_Insert(t *testing.T) {
 			}
 		}(),
 		func() test {
-			generator, _ := vector.Uint8VectorGenerator(vector.Gaussian)
-			ivec := generator(1, 128)[0]
-			vec := make([]float32, len(ivec))
-			for i := range ivec {
-				vec = append(vec, float32(i))
+			req := &payload.Insert_Request{
+				Vector: &payload.Object_Vector{
+					Id:     id,
+					Vector: genIntVec(vector.Gaussian, intVecDim),
+				},
 			}
 
 			return test{
 				name: "Equivalence Class Testing case 3.1: Insert gaussian distributed vector success (vector type is uint8)",
 				args: args{
 					ctx: ctx,
-					req: &payload.Insert_Request{
-						Vector: &payload.Object_Vector{
-							Id:     id,
-							Vector: vec,
-						},
-					},
+					req: req,
 				},
 				fields: fields{
 					name: name,
 					ip:   ip,
 					svcCfg: &config.NGT{
-						Dimension:    len(vec),
+						Dimension:    intVecDim,
 						DistanceType: ngt.Angle.String(),
 						ObjectType:   ngt.Uint8.String(),
-						KVSDB:        &config.KVSDB{},
-						VQueue:       &config.VQueue{},
+						KVSDB:        kvsdbCfg,
+						VQueue:       vqueueCfg,
 					},
 					svcOpts: []service.Option{
 						service.WithEnableInMemoryMode(true),
@@ -1481,29 +1498,28 @@ func Test_server_Insert(t *testing.T) {
 			}
 		}(),
 		func() test {
-			generator, _ := vector.Float32VectorGenerator(vector.Gaussian)
-			vec := generator(1, 128)[0]
+			req := &payload.Insert_Request{
+				Vector: &payload.Object_Vector{
+					Id:     id,
+					Vector: genF32Vec(vector.Gaussian, f32VecDim),
+				},
+			}
 
 			return test{
 				name: "Equivalence Class Testing case 3.2: Insert gaussian distributed vector success (vector type is float32)",
 				args: args{
 					ctx: ctx,
-					req: &payload.Insert_Request{
-						Vector: &payload.Object_Vector{
-							Id:     id,
-							Vector: vec,
-						},
-					},
+					req: req,
 				},
 				fields: fields{
 					name: name,
 					ip:   ip,
 					svcCfg: &config.NGT{
-						Dimension:    len(vec),
+						Dimension:    f32VecDim,
 						DistanceType: ngt.Angle.String(),
 						ObjectType:   ngt.Float.String(),
-						KVSDB:        &config.KVSDB{},
-						VQueue:       &config.VQueue{},
+						KVSDB:        kvsdbCfg,
+						VQueue:       vqueueCfg,
 					},
 					svcOpts: []service.Option{
 						service.WithEnableInMemoryMode(true),
@@ -1519,33 +1535,28 @@ func Test_server_Insert(t *testing.T) {
 			}
 		}(),
 		func() test {
-			generator, _ := vector.Uint8VectorGenerator(vector.Uniform)
-			ivec := generator(1, 128)[0]
-			vec := make([]float32, len(ivec))
-			for i := range ivec {
-				vec = append(vec, float32(i))
+			req := &payload.Insert_Request{
+				Vector: &payload.Object_Vector{
+					Id:     id,
+					Vector: genIntVec(vector.Uniform, intVecDim),
+				},
 			}
 
 			return test{
 				name: "Equivalence Class Testing case 4.1: Insert uniform distributed vector success (vector type is uint8)",
 				args: args{
 					ctx: ctx,
-					req: &payload.Insert_Request{
-						Vector: &payload.Object_Vector{
-							Id:     id,
-							Vector: vec,
-						},
-					},
+					req: req,
 				},
 				fields: fields{
 					name: name,
 					ip:   ip,
 					svcCfg: &config.NGT{
-						Dimension:    len(vec),
+						Dimension:    intVecDim,
 						DistanceType: ngt.Angle.String(),
 						ObjectType:   ngt.Uint8.String(),
-						KVSDB:        &config.KVSDB{},
-						VQueue:       &config.VQueue{},
+						KVSDB:        kvsdbCfg,
+						VQueue:       vqueueCfg,
 					},
 					svcOpts: []service.Option{
 						service.WithEnableInMemoryMode(true),
@@ -1561,29 +1572,28 @@ func Test_server_Insert(t *testing.T) {
 			}
 		}(),
 		func() test {
-			generator, _ := vector.Float32VectorGenerator(vector.Uniform)
-			vec := generator(1, 128)[0]
+			req := &payload.Insert_Request{
+				Vector: &payload.Object_Vector{
+					Id:     id,
+					Vector: genF32Vec(vector.Uniform, f32VecDim),
+				},
+			}
 
 			return test{
 				name: "Equivalence Class Testing case 4.2: Insert uniform distributed vector success (vector type is float32)",
 				args: args{
 					ctx: ctx,
-					req: &payload.Insert_Request{
-						Vector: &payload.Object_Vector{
-							Id:     id,
-							Vector: vec,
-						},
-					},
+					req: req,
 				},
 				fields: fields{
 					name: name,
 					ip:   ip,
 					svcCfg: &config.NGT{
-						Dimension:    len(vec),
+						Dimension:    f32VecDim,
 						DistanceType: ngt.Angle.String(),
 						ObjectType:   ngt.Float.String(),
-						KVSDB:        &config.KVSDB{},
-						VQueue:       &config.VQueue{},
+						KVSDB:        kvsdbCfg,
+						VQueue:       vqueueCfg,
 					},
 					svcOpts: []service.Option{
 						service.WithEnableInMemoryMode(true),
@@ -1601,28 +1611,28 @@ func Test_server_Insert(t *testing.T) {
 
 		// Boundary Value Testing
 		func() test {
-			vec := []float32{0, 0, 0}
+			req := &payload.Insert_Request{
+				Vector: &payload.Object_Vector{
+					Id:     id,
+					Vector: []float32{0, 0, 0},
+				},
+			}
 
 			return test{
 				name: "Boundary Value Testing case 1.1: Insert vector with 0 value success (vector type is uint8)",
 				args: args{
 					ctx: ctx,
-					req: &payload.Insert_Request{
-						Vector: &payload.Object_Vector{
-							Id:     id,
-							Vector: vec,
-						},
-					},
+					req: req,
 				},
 				fields: fields{
 					name: name,
 					ip:   ip,
 					svcCfg: &config.NGT{
-						Dimension:    len(vec),
+						Dimension:    intVecDim,
 						DistanceType: ngt.Angle.String(),
 						ObjectType:   ngt.Uint8.String(),
-						KVSDB:        &config.KVSDB{},
-						VQueue:       &config.VQueue{},
+						KVSDB:        kvsdbCfg,
+						VQueue:       vqueueCfg,
 					},
 					svcOpts: []service.Option{
 						service.WithEnableInMemoryMode(true),
@@ -1638,28 +1648,28 @@ func Test_server_Insert(t *testing.T) {
 			}
 		}(),
 		func() test {
-			vec := []float32{0, 0, 0}
+			req := &payload.Insert_Request{
+				Vector: &payload.Object_Vector{
+					Id:     id,
+					Vector: []float32{0, 0, 0},
+				},
+			}
 
 			return test{
 				name: "Boundary Value Testing case 1.2: Insert vector with 0 value success (vector type is float32)",
 				args: args{
 					ctx: ctx,
-					req: &payload.Insert_Request{
-						Vector: &payload.Object_Vector{
-							Id:     id,
-							Vector: vec,
-						},
-					},
+					req: req,
 				},
 				fields: fields{
 					name: name,
 					ip:   ip,
 					svcCfg: &config.NGT{
-						Dimension:    len(vec),
+						Dimension:    f32VecDim,
 						DistanceType: ngt.Angle.String(),
 						ObjectType:   ngt.Float.String(),
-						KVSDB:        &config.KVSDB{},
-						VQueue:       &config.VQueue{},
+						KVSDB:        kvsdbCfg,
+						VQueue:       vqueueCfg,
 					},
 					svcOpts: []service.Option{
 						service.WithEnableInMemoryMode(true),
@@ -1675,28 +1685,28 @@ func Test_server_Insert(t *testing.T) {
 			}
 		}(),
 		func() test {
-			vec := []float32{math.MinInt, math.MinInt, math.MinInt}
+			req := &payload.Insert_Request{
+				Vector: &payload.Object_Vector{
+					Id:     id,
+					Vector: []float32{math.MinInt, math.MinInt, math.MinInt},
+				},
+			}
 
 			return test{
 				name: "Boundary Value Testing case 2.1: Insert vector with min value success (vector type is uint8)",
 				args: args{
 					ctx: ctx,
-					req: &payload.Insert_Request{
-						Vector: &payload.Object_Vector{
-							Id:     id,
-							Vector: vec,
-						},
-					},
+					req: req,
 				},
 				fields: fields{
 					name: name,
 					ip:   ip,
 					svcCfg: &config.NGT{
-						Dimension:    len(vec),
+						Dimension:    intVecDim,
 						DistanceType: ngt.Angle.String(),
 						ObjectType:   ngt.Uint8.String(),
-						KVSDB:        &config.KVSDB{},
-						VQueue:       &config.VQueue{},
+						KVSDB:        kvsdbCfg,
+						VQueue:       vqueueCfg,
 					},
 					svcOpts: []service.Option{
 						service.WithEnableInMemoryMode(true),
@@ -1712,28 +1722,28 @@ func Test_server_Insert(t *testing.T) {
 			}
 		}(),
 		func() test {
-			vec := []float32{math.SmallestNonzeroFloat32, math.SmallestNonzeroFloat32, math.SmallestNonzeroFloat32}
+			req := &payload.Insert_Request{
+				Vector: &payload.Object_Vector{
+					Id:     id,
+					Vector: []float32{math.SmallestNonzeroFloat32, math.SmallestNonzeroFloat32, math.SmallestNonzeroFloat32},
+				},
+			}
 
 			return test{
 				name: "Boundary Value Testing case 2.2: Insert vector with min value success (vector type is float32)",
 				args: args{
 					ctx: ctx,
-					req: &payload.Insert_Request{
-						Vector: &payload.Object_Vector{
-							Id:     id,
-							Vector: vec,
-						},
-					},
+					req: req,
 				},
 				fields: fields{
 					name: name,
 					ip:   ip,
 					svcCfg: &config.NGT{
-						Dimension:    len(vec),
+						Dimension:    f32VecDim,
 						DistanceType: ngt.Angle.String(),
 						ObjectType:   ngt.Float.String(),
-						KVSDB:        &config.KVSDB{},
-						VQueue:       &config.VQueue{},
+						KVSDB:        kvsdbCfg,
+						VQueue:       vqueueCfg,
 					},
 					svcOpts: []service.Option{
 						service.WithEnableInMemoryMode(true),
@@ -1749,28 +1759,28 @@ func Test_server_Insert(t *testing.T) {
 			}
 		}(),
 		func() test {
-			vec := []float32{math.MaxInt, math.MaxInt, math.MaxInt}
+			req := &payload.Insert_Request{
+				Vector: &payload.Object_Vector{
+					Id:     id,
+					Vector: []float32{math.MaxInt, math.MaxInt, math.MaxInt},
+				},
+			}
 
 			return test{
 				name: "Boundary Value Testing case 3.1: Insert vector with max value success (vector type is uint8)",
 				args: args{
 					ctx: ctx,
-					req: &payload.Insert_Request{
-						Vector: &payload.Object_Vector{
-							Id:     id,
-							Vector: vec,
-						},
-					},
+					req: req,
 				},
 				fields: fields{
 					name: name,
 					ip:   ip,
 					svcCfg: &config.NGT{
-						Dimension:    len(vec),
+						Dimension:    intVecDim,
 						DistanceType: ngt.Angle.String(),
 						ObjectType:   ngt.Uint8.String(),
-						KVSDB:        &config.KVSDB{},
-						VQueue:       &config.VQueue{},
+						KVSDB:        kvsdbCfg,
+						VQueue:       vqueueCfg,
 					},
 					svcOpts: []service.Option{
 						service.WithEnableInMemoryMode(true),
@@ -1786,28 +1796,28 @@ func Test_server_Insert(t *testing.T) {
 			}
 		}(),
 		func() test {
-			vec := []float32{math.MaxFloat32, math.MaxFloat32, math.MaxFloat32}
+			req := &payload.Insert_Request{
+				Vector: &payload.Object_Vector{
+					Id:     id,
+					Vector: []float32{math.MaxFloat32, math.MaxFloat32, math.MaxFloat32},
+				},
+			}
 
 			return test{
 				name: "Boundary Value Testing case 3.2: Insert vector with max value success (vector type is float32)",
 				args: args{
 					ctx: ctx,
-					req: &payload.Insert_Request{
-						Vector: &payload.Object_Vector{
-							Id:     id,
-							Vector: vec,
-						},
-					},
+					req: req,
 				},
 				fields: fields{
 					name: name,
 					ip:   ip,
 					svcCfg: &config.NGT{
-						Dimension:    len(vec),
+						Dimension:    f32VecDim,
 						DistanceType: ngt.Angle.String(),
 						ObjectType:   ngt.Float.String(),
-						KVSDB:        &config.KVSDB{},
-						VQueue:       &config.VQueue{},
+						KVSDB:        kvsdbCfg,
+						VQueue:       vqueueCfg,
 					},
 					svcOpts: []service.Option{
 						service.WithEnableInMemoryMode(true),
@@ -1844,8 +1854,8 @@ func Test_server_Insert(t *testing.T) {
 						Dimension:    intVecDim,
 						DistanceType: ngt.Angle.String(),
 						ObjectType:   ngt.Uint8.String(),
-						KVSDB:        &config.KVSDB{},
-						VQueue:       &config.VQueue{},
+						KVSDB:        kvsdbCfg,
+						VQueue:       vqueueCfg,
 					},
 					svcOpts: []service.Option{
 						service.WithEnableInMemoryMode(true),
@@ -1898,8 +1908,8 @@ func Test_server_Insert(t *testing.T) {
 						Dimension:    f32VecDim,
 						DistanceType: ngt.Angle.String(),
 						ObjectType:   ngt.Float.String(),
-						KVSDB:        &config.KVSDB{},
-						VQueue:       &config.VQueue{},
+						KVSDB:        kvsdbCfg,
+						VQueue:       vqueueCfg,
 					},
 					svcOpts: []service.Option{
 						service.WithEnableInMemoryMode(true),
@@ -1952,8 +1962,8 @@ func Test_server_Insert(t *testing.T) {
 						Dimension:    f32VecDim,
 						DistanceType: ngt.Angle.String(),
 						ObjectType:   ngt.Float.String(),
-						KVSDB:        &config.KVSDB{},
-						VQueue:       &config.VQueue{},
+						KVSDB:        kvsdbCfg,
+						VQueue:       vqueueCfg,
 					},
 					svcOpts: []service.Option{
 						service.WithEnableInMemoryMode(true),
@@ -1986,28 +1996,28 @@ func Test_server_Insert(t *testing.T) {
 		}(),
 		func() test {
 			nan := float32(math.NaN())
-			vec := []float32{nan, nan, nan}
+			req := &payload.Insert_Request{
+				Vector: &payload.Object_Vector{
+					Id:     id,
+					Vector: []float32{nan, nan, nan},
+				},
+			}
 
 			return test{
 				name: "Boundary Value Testing case 5: Insert vector with NaN value fail (vector type is float32)",
 				args: args{
 					ctx: ctx,
-					req: &payload.Insert_Request{
-						Vector: &payload.Object_Vector{
-							Id:     id,
-							Vector: vec,
-						},
-					},
+					req: req,
 				},
 				fields: fields{
 					name: name,
 					ip:   ip,
 					svcCfg: &config.NGT{
-						Dimension:    len(vec),
+						Dimension:    f32VecDim,
 						DistanceType: ngt.Angle.String(),
 						ObjectType:   ngt.Float.String(),
-						KVSDB:        &config.KVSDB{},
-						VQueue:       &config.VQueue{},
+						KVSDB:        kvsdbCfg,
+						VQueue:       vqueueCfg,
 					},
 					svcOpts: []service.Option{
 						service.WithEnableInMemoryMode(true),
@@ -2023,8 +2033,6 @@ func Test_server_Insert(t *testing.T) {
 			}
 		}(),
 		func() test {
-			dim := 3
-
 			return test{
 				name: "Boundary Value Testing case 6: Insert nil insert request fail",
 				args: args{
@@ -2035,11 +2043,11 @@ func Test_server_Insert(t *testing.T) {
 					name: name,
 					ip:   ip,
 					svcCfg: &config.NGT{
-						Dimension:    dim,
+						Dimension:    f32VecDim,
 						DistanceType: ngt.Angle.String(),
 						ObjectType:   ngt.Float.String(),
-						KVSDB:        &config.KVSDB{},
-						VQueue:       &config.VQueue{},
+						KVSDB:        kvsdbCfg,
+						VQueue:       vqueueCfg,
 					},
 					svcOpts: []service.Option{
 						service.WithEnableInMemoryMode(true),
@@ -2072,29 +2080,28 @@ func Test_server_Insert(t *testing.T) {
 			}
 		}(),
 		func() test {
-			id := "1"
-			dim := 3
+			req := &payload.Insert_Request{
+				Vector: &payload.Object_Vector{
+					Id:     id,
+					Vector: nil,
+				},
+			}
 
 			return test{
 				name: "Boundary Value Testing case 7: Insert nil vector fail",
 				args: args{
 					ctx: ctx,
-					req: &payload.Insert_Request{
-						Vector: &payload.Object_Vector{
-							Id:     id,
-							Vector: nil,
-						},
-					},
+					req: req,
 				},
 				fields: fields{
 					name: name,
 					ip:   ip,
 					svcCfg: &config.NGT{
-						Dimension:    dim,
+						Dimension:    f32VecDim,
 						DistanceType: ngt.Angle.String(),
 						ObjectType:   ngt.Float.String(),
-						KVSDB:        &config.KVSDB{},
-						VQueue:       &config.VQueue{},
+						KVSDB:        kvsdbCfg,
+						VQueue:       vqueueCfg,
 					},
 					svcOpts: []service.Option{
 						service.WithEnableInMemoryMode(true),
@@ -2107,7 +2114,7 @@ func Test_server_Insert(t *testing.T) {
 						return status.WrapWithInvalidArgument("Insert API Incompatible Dimension Size detected",
 							err,
 							&errdetails.RequestInfo{
-								RequestId:   "1",
+								RequestId:   id,
 								ServingData: errdetails.Serialize(nil),
 							},
 							&errdetails.BadRequest{
@@ -2127,29 +2134,28 @@ func Test_server_Insert(t *testing.T) {
 			}
 		}(),
 		func() test {
-			id := "1"
-			dim := 3
+			req := &payload.Insert_Request{
+				Vector: &payload.Object_Vector{
+					Id:     id,
+					Vector: []float32{},
+				},
+			}
 
 			return test{
 				name: "Boundary Value Testing case 8: Insert empty insert vector fail",
 				args: args{
 					ctx: ctx,
-					req: &payload.Insert_Request{
-						Vector: &payload.Object_Vector{
-							Id:     id,
-							Vector: []float32{},
-						},
-					},
+					req: req,
 				},
 				fields: fields{
 					name: name,
 					ip:   ip,
 					svcCfg: &config.NGT{
-						Dimension:    dim,
+						Dimension:    f32VecDim,
 						DistanceType: ngt.Angle.String(),
 						ObjectType:   ngt.Float.String(),
-						KVSDB:        &config.KVSDB{},
-						VQueue:       &config.VQueue{},
+						KVSDB:        kvsdbCfg,
+						VQueue:       vqueueCfg,
 					},
 					svcOpts: []service.Option{
 						service.WithEnableInMemoryMode(true),
@@ -2162,7 +2168,7 @@ func Test_server_Insert(t *testing.T) {
 						return status.WrapWithInvalidArgument("Insert API Incompatible Dimension Size detected",
 							err,
 							&errdetails.RequestInfo{
-								RequestId:   "1",
+								RequestId:   id,
 								ServingData: errdetails.Serialize(nil),
 							},
 							&errdetails.BadRequest{
@@ -2184,7 +2190,8 @@ func Test_server_Insert(t *testing.T) {
 
 		// Decision Table Testing
 		func() test {
-			vec2 := []float32{3, 2, 1} // used in beforeFunc
+			bVec := genIntVec(vector.Gaussian, intVecDim) // used in beforeFunc
+
 			req := &payload.Insert_Request{
 				Vector: &payload.Object_Vector{
 					Id:     id,
@@ -2208,15 +2215,15 @@ func Test_server_Insert(t *testing.T) {
 						Dimension:    intVecDim,
 						DistanceType: ngt.Angle.String(),
 						ObjectType:   ngt.Uint8.String(),
-						KVSDB:        &config.KVSDB{},
-						VQueue:       &config.VQueue{},
+						KVSDB:        kvsdbCfg,
+						VQueue:       vqueueCfg,
 					},
 					svcOpts: []service.Option{
 						service.WithEnableInMemoryMode(true),
 					},
 				},
 				beforeFunc: func(s *server) {
-					s.ngt.Insert(id, vec2)
+					s.ngt.Insert(id, bVec)
 				},
 				want: want{
 					err: status.WrapWithAlreadyExists(fmt.Sprintf("Insert API uuid %s already exists", id), errors.ErrUUIDAlreadyExists(id),
@@ -2232,22 +2239,23 @@ func Test_server_Insert(t *testing.T) {
 			}
 		}(),
 		func() test {
-			id2 := "uuid2"             // use in beforeFunc
-			vec2 := []float32{3, 2, 1} // use in beforeFunc
+			bId := "uuid-2" // use in beforeFunc
+
+			req := &payload.Insert_Request{
+				Vector: &payload.Object_Vector{
+					Id:     id,
+					Vector: intVec,
+				},
+				Config: &payload.Insert_Config{
+					SkipStrictExistCheck: false,
+				},
+			}
 
 			return test{
 				name: "Decision Table Testing case 1.2: Insert duplicated request success when SkipStrictExistCheck is false (duplicated vector)",
 				args: args{
 					ctx: ctx,
-					req: &payload.Insert_Request{
-						Vector: &payload.Object_Vector{
-							Id:     id,
-							Vector: intVec,
-						},
-						Config: &payload.Insert_Config{
-							SkipStrictExistCheck: false,
-						},
-					},
+					req: req,
 				},
 				fields: fields{
 					name: name,
@@ -2256,15 +2264,15 @@ func Test_server_Insert(t *testing.T) {
 						Dimension:    intVecDim,
 						DistanceType: ngt.Angle.String(),
 						ObjectType:   ngt.Uint8.String(),
-						KVSDB:        &config.KVSDB{},
-						VQueue:       &config.VQueue{},
+						KVSDB:        kvsdbCfg,
+						VQueue:       vqueueCfg,
 					},
 					svcOpts: []service.Option{
 						service.WithEnableInMemoryMode(true),
 					},
 				},
 				beforeFunc: func(s *server) {
-					s.ngt.Insert(id2, vec2)
+					s.ngt.Insert(bId, intVec)
 				},
 				want: want{
 					wantRes: &payload.Object_Location{
@@ -2299,8 +2307,8 @@ func Test_server_Insert(t *testing.T) {
 						Dimension:    intVecDim,
 						DistanceType: ngt.Angle.String(),
 						ObjectType:   ngt.Uint8.String(),
-						KVSDB:        &config.KVSDB{},
-						VQueue:       &config.VQueue{},
+						KVSDB:        kvsdbCfg,
+						VQueue:       vqueueCfg,
 					},
 					svcOpts: []service.Option{
 						service.WithEnableInMemoryMode(true),
@@ -2323,7 +2331,8 @@ func Test_server_Insert(t *testing.T) {
 			}
 		}(),
 		func() test {
-			vec2 := []float32{3, 2, 1} // use in beforeFunc
+			bVec := genIntVec(vector.Gaussian, intVecDim) // use in beforeFunc
+
 			req := &payload.Insert_Request{
 				Vector: &payload.Object_Vector{
 					Id:     id,
@@ -2347,15 +2356,15 @@ func Test_server_Insert(t *testing.T) {
 						Dimension:    intVecDim,
 						DistanceType: ngt.Angle.String(),
 						ObjectType:   ngt.Uint8.String(),
-						KVSDB:        &config.KVSDB{},
-						VQueue:       &config.VQueue{},
+						KVSDB:        kvsdbCfg,
+						VQueue:       vqueueCfg,
 					},
 					svcOpts: []service.Option{
 						service.WithEnableInMemoryMode(true),
 					},
 				},
 				beforeFunc: func(s *server) {
-					s.ngt.Insert(id, vec2)
+					s.ngt.Insert(id, bVec)
 				},
 				want: want{
 					err: status.WrapWithAlreadyExists(fmt.Sprintf("Insert API uuid %s already exists", id), errors.ErrUUIDAlreadyExists(id),
@@ -2371,21 +2380,23 @@ func Test_server_Insert(t *testing.T) {
 			}
 		}(),
 		func() test {
-			id2 := "uuid2"
+			bId := "uuid-2"
+
+			req := &payload.Insert_Request{
+				Vector: &payload.Object_Vector{
+					Id:     id,
+					Vector: intVec,
+				},
+				Config: &payload.Insert_Config{
+					SkipStrictExistCheck: true,
+				},
+			}
 
 			return test{
 				name: "Decision Table Testing case 2.2: Insert duplicated request success when SkipStrictExistCheck is true (duplicated vector)",
 				args: args{
 					ctx: ctx,
-					req: &payload.Insert_Request{
-						Vector: &payload.Object_Vector{
-							Id:     id,
-							Vector: intVec,
-						},
-						Config: &payload.Insert_Config{
-							SkipStrictExistCheck: true,
-						},
-					},
+					req: req,
 				},
 				fields: fields{
 					name: name,
@@ -2394,15 +2405,15 @@ func Test_server_Insert(t *testing.T) {
 						Dimension:    intVecDim,
 						DistanceType: ngt.Angle.String(),
 						ObjectType:   ngt.Uint8.String(),
-						KVSDB:        &config.KVSDB{},
-						VQueue:       &config.VQueue{},
+						KVSDB:        kvsdbCfg,
+						VQueue:       vqueueCfg,
 					},
 					svcOpts: []service.Option{
 						service.WithEnableInMemoryMode(true),
 					},
 				},
 				beforeFunc: func(s *server) {
-					s.ngt.Insert(id2, intVec)
+					s.ngt.Insert(bId, intVec)
 				},
 				want: want{
 					wantRes: &payload.Object_Location{
@@ -2437,8 +2448,8 @@ func Test_server_Insert(t *testing.T) {
 						Dimension:    intVecDim,
 						DistanceType: ngt.Angle.String(),
 						ObjectType:   ngt.Uint8.String(),
-						KVSDB:        &config.KVSDB{},
-						VQueue:       &config.VQueue{},
+						KVSDB:        kvsdbCfg,
+						VQueue:       vqueueCfg,
 					},
 					svcOpts: []service.Option{
 						service.WithEnableInMemoryMode(true),
@@ -2478,7 +2489,7 @@ func Test_server_Insert(t *testing.T) {
 			eg, _ := errgroup.New(ctx)
 			ngt, err := service.New(test.fields.svcCfg, append(test.fields.svcOpts, service.WithErrGroup(eg))...)
 			if err != nil {
-				t.Error(err)
+				tt.Errorf("failed to init ngt service, error = %v", err)
 			}
 
 			s := &server{
@@ -4430,8 +4441,9 @@ func Test_server_LinearSearch(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			s := &server{
 				name:                     test.fields.name,
@@ -4444,7 +4456,7 @@ func Test_server_LinearSearch(t *testing.T) {
 			}
 
 			gotRes, err := s.LinearSearch(test.args.ctx, test.args.req)
-			if err := test.checkFunc(test.want, gotRes, err); err != nil {
+			if err := checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -4546,8 +4558,9 @@ func Test_server_LinearSearchByID(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			s := &server{
 				name:                     test.fields.name,
@@ -4560,7 +4573,7 @@ func Test_server_LinearSearchByID(t *testing.T) {
 			}
 
 			gotRes, err := s.LinearSearchByID(test.args.ctx, test.args.req)
-			if err := test.checkFunc(test.want, gotRes, err); err != nil {
+			if err := checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -4655,8 +4668,9 @@ func Test_server_StreamLinearSearch(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			s := &server{
 				name:                     test.fields.name,
@@ -4669,7 +4683,7 @@ func Test_server_StreamLinearSearch(t *testing.T) {
 			}
 
 			err := s.StreamLinearSearch(test.args.stream)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -4764,8 +4778,9 @@ func Test_server_StreamLinearSearchByID(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			s := &server{
 				name:                     test.fields.name,
@@ -4778,7 +4793,7 @@ func Test_server_StreamLinearSearchByID(t *testing.T) {
 			}
 
 			err := s.StreamLinearSearchByID(test.args.stream)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -4880,8 +4895,9 @@ func Test_server_MultiLinearSearch(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			s := &server{
 				name:                     test.fields.name,
@@ -4894,7 +4910,7 @@ func Test_server_MultiLinearSearch(t *testing.T) {
 			}
 
 			gotRes, err := s.MultiLinearSearch(test.args.ctx, test.args.reqs)
-			if err := test.checkFunc(test.want, gotRes, err); err != nil {
+			if err := checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -4996,8 +5012,9 @@ func Test_server_MultiLinearSearchByID(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			s := &server{
 				name:                     test.fields.name,
@@ -5010,7 +5027,7 @@ func Test_server_MultiLinearSearchByID(t *testing.T) {
 			}
 
 			gotRes, err := s.MultiLinearSearchByID(test.args.ctx, test.args.reqs)
-			if err := test.checkFunc(test.want, gotRes, err); err != nil {
+			if err := checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
