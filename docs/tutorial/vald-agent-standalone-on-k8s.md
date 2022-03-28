@@ -9,7 +9,7 @@ In the [Get Started](../tutorial/get-started.md), you may use 4 kinds of compone
 In this case, you use only 1 component, `Vald Agent` that is the core component for Vald named `vald-agent-ngt`, to deploy.
 The below image shows the architecture image of this case.
 
-<img src="../../assets/docs/tutorial/vald-agent-standalone-on-k8s.png">
+<img src="../../assets/docs/tutorial/vald-agent-standalone-on-k8s.svg">
 
 Notice: Using only Vald Agent, the auto indexing function is not in use.
 
