@@ -24,8 +24,8 @@ podChaos:
         app.kubernetes.io/component: agent
       namespaces:
         - default
-    duration: "1s"
-    schedule: "*/60 * * * * *"
+    duration: "10s"
+    schedule: "*/2 * * * *"
   kill:
     enabled: false
     name: vald-pod-kill
