@@ -175,8 +175,8 @@ jobs:
           make kubectl/install
           curl -sSL https://mirrors.chaos-mesh.org/v2.1.3/install.sh | bash -s -- --k3s
           helm install \
-            --set podChaos.failure.enabled=true \
-            --set podChaos.failure.selector.labelSelectors."app\.kubernetes\.io/component"=null \
+            --set podChaos.kill.enabled=true \
+            --set podChaos.kill.selector.labelSelectors."app\.kubernetes\.io/component"=null \
             vald-chaos-test tests/chaos/chart
       - name: Fetch golang version
         run: |
