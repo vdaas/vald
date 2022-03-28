@@ -16,7 +16,7 @@
 
 podChaos:
   failure:
-    enabled: false
+    enabled: true
     name: vald-pod-failure
     selector:
       labelSelectors:
@@ -26,7 +26,7 @@ podChaos:
         - default
     duration: "10s"
   kill:
-    enabled: false
+    enabled: true
     name: vald-pod-kill
     selector:
       labelSelectors:
@@ -38,7 +38,7 @@ podChaos:
 
 networkChaos:
   partition:
-    enabled: false
+    enabled: true
     name: vald-network-partition
     selector:
       labelSelectors:
@@ -49,7 +49,7 @@ networkChaos:
     duration: "100ms"
     cron: "@every 3s"
   bandwidth:
-    enabled: false
+    enabled: true
     name: vald-network-bandwidth
     selector:
       labelSelectors:

@@ -15,18 +15,34 @@
 #
 {{- if .Values.podChaos.kill.enabled }}
 apiVersion: chaos-mesh.org/v1alpha1
-kind: PodChaos
+kind: Schedule
 metadata:
   name: {{ .Values.podChaos.kill.name }}-{{ .Release.Name }}
   namespace: {{ .Release.Namespace }}
 spec:
-  action: pod-kill
-  mode: one
-  selector:
-    labelSelectors:
-      app.kubernetes.io/name: "{{ .Values.podChaos.kill.selector.labelSelectors.name }}"
-      app.kubernetes.io/component: "{{ .Values.podChaos.kill.selector.labelSelectors.component }}"
-    namespaces:
-      {{- toYaml .Values.podChaos.kill.selector.namespaces | nindent 6 }}
-  duration: "{{ .Values.podChaos.kill.duration }}"
+  schedule: '*/2 * * * *'
+  historyLimit: 30
+  concurrencyPolicy: 'Forbid'
+  type: 'PodChaos'
+  podChaos:
+    action: pod-kill
+    mode: one
+    selector:
+      {{- toYaml .Values.podChaos.kill.selector | nindent 6 }}
+    duration: "{{ .Values.podChaos.kill.duration }}"
+{{/* apiVersion: chaos-mesh.org/v1alpha1                                                                */}}
+{{/* kind: PodChaos                                                                                     */}}
+{{/* metadata:                                                                                          */}}
+{{/*   name: {{ .Values.podChaos.kill.name }}-{{ .Release.Name }}                                       */}}
+{{/*   namespace: {{ .Release.Namespace }}                                                              */}}
+{{/* spec:                                                                                              */}}
+{{/*   action: pod-kill                                                                                 */}}
+{{/*   mode: one                                                                                        */}}
+{{/*   selector:                                                                                        */}}
+{{/*     labelSelectors:                                                                                */}}
+{{/*       app.kubernetes.io/name: "{{ .Values.podChaos.kill.selector.labelSelectors.name }}"           */}}
+{{/*       app.kubernetes.io/component: "{{ .Values.podChaos.kill.selector.labelSelectors.component }}" */}}
+{{/*     namespaces:                                                                                    */}}
+{{/*       {{- toYaml .Values.podChaos.kill.selector.namespaces | nindent 6 }}                          */}}
+{{/*   duration: "{{ .Values.podChaos.kill.duration }}"                                                 */}}
 {{- end }}

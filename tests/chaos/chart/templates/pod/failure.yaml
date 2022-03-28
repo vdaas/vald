@@ -15,19 +15,36 @@
 #
 {{- if .Values.podChaos.failure.enabled }}
 apiVersion: chaos-mesh.org/v1alpha1
-kind: PodChaos
+kind: Schedule
 metadata:
   name: {{ .Values.podChaos.failure.name }}-{{ .Release.Name }}
   namespace: {{ .Release.Namespace }}
 spec:
-  action: pod-failure
-  mode: one
-  value: ''
-  selector:
-    labelSelectors:
-      app.kubernetes.io/name: "{{ .Values.podChaos.failure.selector.labelSelectors.name }}"
-      app.kubernetes.io/component: "{{ .Values.podChaos.failure.selector.labelSelectors.component }}"
-    namespaces:
-      {{- toYaml .Values.podChaos.failure.selector.namespaces | nindent 6 }}
-  duration: "{{ .Values.podChaos.failure.duration }}"
+  schedule: '*/20 * * * * *'
+  historyLimit: 30
+  concurrencyPolicy: 'Forbid'
+  type: 'PodChaos'
+  podChaos:
+    action: pod-failure
+    mode: one
+    selector:
+      {{- toYaml .Values.podChaos.failure.selector | nindent 6 }}
+    duration: "{{ .Values.podChaos.failure.duration  }}"
+
+{{/* apiVersion: chaos-mesh.org/v1alpha1                                                                   */}}
+{{/* kind: PodChaos                                                                                        */}}
+{{/* metadata:                                                                                             */}}
+{{/*   name: {{ .Values.podChaos.failure.name }}-{{ .Release.Name }}                                       */}}
+{{/*   namespace: {{ .Release.Namespace }}                                                                 */}}
+{{/* spec:                                                                                                 */}}
+{{/*   action: pod-failure                                                                                 */}}
+{{/*   mode: one                                                                                           */}}
+{{/*   value: ''                                                                                           */}}
+{{/*   selector:                                                                                           */}}
+{{/*     labelSelectors:                                                                                   */}}
+{{/*       app.kubernetes.io/name: "{{ .Values.podChaos.failure.selector.labelSelectors.name }}"           */}}
+{{/*       app.kubernetes.io/component: "{{ .Values.podChaos.failure.selector.labelSelectors.component }}" */}}
+{{/*     namespaces:                                                                                       */}}
+{{/*       {{- toYaml .Values.podChaos.failure.selector.namespaces | nindent 6 }}                          */}}
+{{/*   duration: "{{ .Values.podChaos.failure.duration }}"                                                 */}}
 {{- end }}
