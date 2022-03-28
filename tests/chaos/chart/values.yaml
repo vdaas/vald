@@ -32,7 +32,6 @@ podChaos:
     selector:
       labelSelectors:
         app.kubernetes.io/name: vald
-        app.kubernetes.io/component: agent
       namespaces:
         - default
     schedule: "*/2 * * * *"
