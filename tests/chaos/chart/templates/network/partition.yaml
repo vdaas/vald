@@ -20,8 +20,7 @@ metadata:
   name: {{ .Values.networkChaos.partition.name }}-{{ .Release.Name }}
   namespace: {{ .Release.Namespace }}
 spec:
-  schedule: '*/3 * * * * *'
-  historyLimit: 20
+  schedule: "{{ .Values.networkChaos.partition.schedule }}"
   concurrencyPolicy: 'Forbid'
   type: 'NetworkChaos'
   networkChaos:
@@ -30,17 +29,4 @@ spec:
     selector:
       {{- toYaml .Values.networkChaos.partition.selector | nindent 6 }}
     duration: {{ .Values.networkChaos.partition.duration }}
-{{/* apiVersion: chaos-mesh.org/v1alpha1                                   */}}
-{{/* kind: NetworkChaos                                                    */}}
-{{/* metadata:                                                             */}}
-{{/*   name: {{ .Values.networkChaos.partition.name }}-{{ .Release.Name }} */}}
-{{/*   namespace: {{ .Release.Namespace }}                                 */}}
-{{/* spec:                                                                 */}}
-{{/*   action: partition                                                   */}}
-{{/*   mode: one                                                           */}}
-{{/*   selector:                                                           */}}
-{{/*     {{- toYaml .Values.networkChaos.partition.selector | nindent 4 }} */}}
-{{/*   duration: {{ .Values.networkChaos.partition.duration }}             */}}
-{{/*   # scheduler:                                                        */}}
-{{/*   #   cron: {{- .Values.networkChaos.partition.cron }}                */}}
 {{- end }}

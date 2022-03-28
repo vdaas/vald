@@ -20,8 +20,7 @@ metadata:
   name: {{ .Values.podChaos.failure.name }}-{{ .Release.Name }}
   namespace: {{ .Release.Namespace }}
 spec:
-  schedule: '*/20 * * * * *'
-  historyLimit: 30
+  schedule: "{{ .Values.podChaos.failure.schedule }}"
   concurrencyPolicy: 'Forbid'
   type: 'PodChaos'
   podChaos:
@@ -30,21 +29,4 @@ spec:
     selector:
       {{- toYaml .Values.podChaos.failure.selector | nindent 6 }}
     duration: "{{ .Values.podChaos.failure.duration  }}"
-
-{{/* apiVersion: chaos-mesh.org/v1alpha1                                                                   */}}
-{{/* kind: PodChaos                                                                                        */}}
-{{/* metadata:                                                                                             */}}
-{{/*   name: {{ .Values.podChaos.failure.name }}-{{ .Release.Name }}                                       */}}
-{{/*   namespace: {{ .Release.Namespace }}                                                                 */}}
-{{/* spec:                                                                                                 */}}
-{{/*   action: pod-failure                                                                                 */}}
-{{/*   mode: one                                                                                           */}}
-{{/*   value: ''                                                                                           */}}
-{{/*   selector:                                                                                           */}}
-{{/*     labelSelectors:                                                                                   */}}
-{{/*       app.kubernetes.io/name: "{{ .Values.podChaos.failure.selector.labelSelectors.name }}"           */}}
-{{/*       app.kubernetes.io/component: "{{ .Values.podChaos.failure.selector.labelSelectors.component }}" */}}
-{{/*     namespaces:                                                                                       */}}
-{{/*       {{- toYaml .Values.podChaos.failure.selector.namespaces | nindent 6 }}                          */}}
-{{/*   duration: "{{ .Values.podChaos.failure.duration }}"                                                 */}}
 {{- end }}

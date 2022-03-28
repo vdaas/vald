@@ -20,8 +20,7 @@ metadata:
   name: {{ .Values.networkChaos.bandwidth.name }}-{{ .Release.Name }}
   namespace: {{ .Release.Namespace }}
 spec:
-  schedule: '*/3 * * * * *'
-  historyLimit: 20
+  schedule: "{{ .Values.networkChaos.bandwidth.schedule }}"
   concurrencyPolicy: 'Forbid'
   type: 'NetworkChaos'
   networkChaos:
@@ -36,23 +35,4 @@ spec:
       peakrate: {{ .Values.networkChaos.bandwidth.peakrate }}
       minburst: {{ .Values.networkChaos.bandwidth.minburst }}
     duration: {{ .Values.networkChaos.bandwidth.duration }}
-{{/* apiVersion: chaos-mesh.org/v1alpha1                                   */}}
-{{/* kind: NetworkChaos                                                    */}}
-{{/* metadata:                                                             */}}
-{{/*   name: {{ .Values.networkChaos.bandwidth.name }}-{{ .Release.Name }} */}}
-{{/*   namespace: {{ .Release.Namespace }}                                 */}}
-{{/* spec:                                                                 */}}
-{{/*   action: bandwidth                                                   */}}
-{{/*   mode: one                                                           */}}
-{{/*   selector:                                                           */}}
-{{/*     {{- toYaml .Values.networkChaos.bandwidth.selector | nindent 4 }} */}}
-{{/*   bandwidth:                                                          */}}
-{{/*     rate: {{ .Values.networkChaos.bandwidth.rate }}                   */}}
-{{/*     limit: {{ .Values.networkChaos.bandwidth.limit }}                 */}}
-{{/*     buffer: {{ .Values.networkChaos.bandwidth.buffer }}               */}}
-{{/*     peakrate: {{ .Values.networkChaos.bandwidth.peakrate }}           */}}
-{{/*     minburst: {{ .Values.networkChaos.bandwidth.minburst }}           */}}
-{{/*   duration: {{ .Values.networkChaos.bandwidth.duration }}             */}}
-{{/*   # scheduler:                                                        */}}
-{{/*   #   cron: {{- .Values.networkChaos.bandwidth.cron }}                */}}
 {{- end }}
