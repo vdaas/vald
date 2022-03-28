@@ -24,7 +24,7 @@ podChaos:
         app.kubernetes.io/component: agent
       namespaces:
         - default
-    duration: "10s"
+    duration: "1s"
     schedule: "*/60 * * * * *"
   kill:
     enabled: false
