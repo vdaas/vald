@@ -1199,14 +1199,16 @@ func Test_server_Insert(t *testing.T) {
 	}
 
 	// common variables for test
+	const (
+		name      = "vald-agent-ngt-1" // agent name
+		id        = "uuid-1"           // insert request id
+		intVecDim = 3                  // int vector dimension
+		f32VecDim = 3                  // float32 vector dimension
+	)
 	var (
-		name      = "vald-agent-ngt-1"       // agent name
-		id        = "uuid-1"                 // insert request id
-		ip        = net.LoadLocalIP()        // agent ip address
-		intVec    = []float32{1, 2, 3}       // int vector of the insert request
-		f32Vec    = []float32{1.5, 2.3, 3.6} // float32 vector of the insert request
-		intVecDim = 3                        // int vector dimension
-		f32VecDim = 3                        // float32 vector dimension
+		ip     = net.LoadLocalIP()        // agent ip address
+		intVec = []float32{1, 2, 3}       // int vector of the insert request
+		f32Vec = []float32{1.5, 2.3, 3.6} // float32 vector of the insert request
 
 		// default NGT configuration for test
 		kvsdbCfg  = &config.KVSDB{}
@@ -1353,7 +1355,8 @@ func Test_server_Insert(t *testing.T) {
 			}
 		}(),
 		func() test {
-			ivec := []float32{1, 2, 3, 4, 5, 6, 7}
+			invalidDim := intVecDim + 1
+			ivec := genIntVec(vector.Gaussian, invalidDim)
 			req := &payload.Insert_Request{
 				Vector: &payload.Object_Vector{
 					Id:     id,
@@ -1407,7 +1410,8 @@ func Test_server_Insert(t *testing.T) {
 			}
 		}(),
 		func() test {
-			ivec := []float32{1.5, 2.3, 3.6, 4.5, 6.6, 7.7}
+			invalidDim := f32VecDim + 1
+			ivec := genF32Vec(vector.Gaussian, invalidDim)
 			req := &payload.Insert_Request{
 				Vector: &payload.Object_Vector{
 					Id:     id,
@@ -1833,10 +1837,9 @@ func Test_server_Insert(t *testing.T) {
 			}
 		}(),
 		func() test {
-			id := ""
 			req := &payload.Insert_Request{
 				Vector: &payload.Object_Vector{
-					Id:     id,
+					Id:     "",
 					Vector: intVec,
 				},
 			}
@@ -1864,7 +1867,7 @@ func Test_server_Insert(t *testing.T) {
 				want: want{
 					err: func() error {
 						err := errors.ErrUUIDNotFound(0)
-						err = status.WrapWithInvalidArgument(fmt.Sprintf("Insert API empty uuid \"%s\" was given", id), err,
+						err = status.WrapWithInvalidArgument(fmt.Sprintf("Insert API empty uuid \"%s\" was given", req.GetVector().GetId()), err,
 							&errdetails.RequestInfo{
 								RequestId:   req.GetVector().GetId(),
 								ServingData: errdetails.Serialize(req),
@@ -1887,10 +1890,9 @@ func Test_server_Insert(t *testing.T) {
 			}
 		}(),
 		func() test {
-			id := ""
 			req := &payload.Insert_Request{
 				Vector: &payload.Object_Vector{
-					Id:     id,
+					Id:     "",
 					Vector: f32Vec,
 				},
 			}
@@ -1918,7 +1920,7 @@ func Test_server_Insert(t *testing.T) {
 				want: want{
 					err: func() error {
 						err := errors.ErrUUIDNotFound(0)
-						err = status.WrapWithInvalidArgument(fmt.Sprintf("Insert API empty uuid \"%s\" was given", id), err,
+						err = status.WrapWithInvalidArgument(fmt.Sprintf("Insert API empty uuid \"%s\" was given", req.GetVector().GetId()), err,
 							&errdetails.RequestInfo{
 								RequestId:   req.GetVector().GetId(),
 								ServingData: errdetails.Serialize(req),
@@ -1941,10 +1943,9 @@ func Test_server_Insert(t *testing.T) {
 			}
 		}(),
 		func() test {
-			id := ""
 			req := &payload.Insert_Request{
 				Vector: &payload.Object_Vector{
-					Id:     id,
+					Id:     "",
 					Vector: f32Vec,
 				},
 			}
@@ -1972,7 +1973,7 @@ func Test_server_Insert(t *testing.T) {
 				want: want{
 					err: func() error {
 						err := errors.ErrUUIDNotFound(0)
-						err = status.WrapWithInvalidArgument(fmt.Sprintf("Insert API empty uuid \"%s\" was given", id), err,
+						err = status.WrapWithInvalidArgument(fmt.Sprintf("Insert API empty uuid \"%s\" was given", req.GetVector().GetId()), err,
 							&errdetails.RequestInfo{
 								RequestId:   req.GetVector().GetId(),
 								ServingData: errdetails.Serialize(req),
@@ -2380,7 +2381,7 @@ func Test_server_Insert(t *testing.T) {
 			}
 		}(),
 		func() test {
-			bId := "uuid-2"
+			bId := "uuid-2" // use in beforeFunc
 
 			req := &payload.Insert_Request{
 				Vector: &payload.Object_Vector{
