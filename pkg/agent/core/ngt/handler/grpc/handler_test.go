@@ -21,6 +21,7 @@ import (
 	"context"
 	"fmt"
 	"math"
+	"math/rand"
 	"reflect"
 	"strconv"
 	"testing"
@@ -474,6 +475,11 @@ func Test_server_Search(t *testing.T) {
 	)
 
 	defaultBeforeFunc := func(f fields, a args) (Server, error) {
+		eg, ctx := errgroup.New(a.ctx)
+		if f.ngtOpts == nil {
+			f.ngtOpts = []service.Option{}
+		}
+		f.ngtOpts = append(f.ngtOpts, service.WithErrGroup(eg), service.WithIndexPath("/tmp/ngt-"+strconv.Itoa(rand.Int())))
 		ngt, err := service.New(f.ngtCfg, f.ngtOpts...)
 		if err != nil {
 			return nil, err
@@ -481,7 +487,6 @@ func Test_server_Search(t *testing.T) {
 		if f.opts == nil {
 			f.opts = []Option{}
 		}
-		eg, ctx := errgroup.New(a.ctx)
 		f.opts = append(f.opts, WithErrGroup(eg), WithNGT(ngt))
 		s, err := New(f.opts...)
 		if err != nil {
