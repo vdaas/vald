@@ -25,7 +25,7 @@ podChaos:
       namespaces:
         - default
     duration: "10s"
-    schedule: "*/1 * * * *"
+    schedule: "*/30 * * * * *"
   kill:
     enabled: false
     name: vald-pod-kill
