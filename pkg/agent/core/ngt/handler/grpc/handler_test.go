@@ -581,13 +581,12 @@ func Test_server_Search(t *testing.T) {
 			- case 2.1: fail search with different dimension vector from 1000 vectors (type: uint8)
 			- case 2.2: fail search with different dimension vector from 1000 vectors (type: float32)
 		- Boundary Value Testing
-			- case 1.1: success search with 0 value vector from 1000 vectors (type: uint8)
+			- case 1.1: success search with 0 value (min value) vector from 1000 vectors (type: uint8)
 			- case 1.2: success search with +0 value vector from 1000 vectors (type: float32)
 			- case 1.3: success search with -0 value vector from 1000 vectors (type: float32)
 			- case 2.1: success search with max value vector from 1000 vectors (type: uint8)
 			- case 2.2: success search with max value vector from 1000 vectors (type: float32)
-			- case 3.1: success search with min value vector from 1000 vectors (type: uint8) # NOTE: same as 0 value
-			- case 3.2: success search with min value vector from 1000 vectors (type: float32)
+			- case 3.1: success search with min value vector from 1000 vectors (type: float32)
 			- case 4.1: fail search with NaN value vector from 1000 vectors (type: float32)
 			- case 5.1: fail search with Inf value vector from 1000 vectors (type: float32)
 			- case 6.1: fail search with -Inf value vector from 1000 vectors (type: float32)
@@ -598,10 +597,6 @@ func Test_server_Search(t *testing.T) {
 			- case 9.1: fail with nil vector from 1000 vectors (type: uint8)
 			- case 9.2: fail with nil vector from 1000 vectors (type: float32)
 		- Decision Table Testing
-		    # | same vector       | false | false | false | true | true | true |
-			# | inserted          |     5 |    10 |    20 |    5 |   10 |   20 |
-			# | Search_Config.Num |    10 |    10 |    10 |   10 |   10 |   10 |
-			1. idea-1
 			- case 1.1: success with Search_Config.Num=10 from 5 different vectors (type: uint8)
 			- case 1.2: success with Search_Config.Num=10 from 5 different vectors (type: float32)
 			- case 2.1: success with Search_Config.Num=10 from 10 different vectors (type: uint8)
@@ -614,19 +609,6 @@ func Test_server_Search(t *testing.T) {
 			- case 5.2: success with Search_Config.Num=10 from 10 same vectors (type: float32)
 			- case 6.1: success with Search_Config.Num=10 from 20 same vectors (type: uint8)
 			- case 6.2: success with Search_Config.Num=10 from 20 same vectors (type: float32)
-			2. idea-2
-			- case 1.1: success with Search_Config.Num=10 from 1000 different vectors (type: uint8)
-			- case 1.2: success with Search_Config.Num=10 from 1000 different vectors (type: float32)
-			- case 2.1: success with Search_Config.Num=10 from 10000 different vectors (type: uint8)
-			- case 2.2: success with Search_Config.Num=10 from 10000 different vectors (type: float32)
-			- case 3.1: success with Search_Config.Num=10 from 100000 different vectors (type: uint8)
-			- case 3.2: success with Search_Config.Num=10 from 100000 different vectors (type: float32)
-			- case 4.1: success with Search_Config.Num=10 from 1000 same vectors (type: uint8)
-			- case 4.2: success with Search_Config.Num=10 from 1000 same vectors (type: float32)
-			- case 5.1: success with Search_Config.Num=10 from 10000 same vectors (type: uint8)
-			- case 5.2: success with Search_Config.Num=10 from 10000 same vectors (type: float32)
-			- case 6.1: success with Search_Config.Num=10 from 100000 same vectors (type: uint8)
-			- case 6.2: success with Search_Config.Num=10 from 100000 same vectors (type: float32)
 	*/
 	tests := []test{
 		// Equivalence Class Testing
@@ -711,7 +693,7 @@ func Test_server_Search(t *testing.T) {
 
 		// Boundary Value Testing
 		{
-			name: "Boundary Value Testing case 1.1: success search with 0 value vector (type: uint8)",
+			name: "Boundary Value Testing case 1.1: success search with 0 value (min value) vector (type: uint8)",
 			args: args{
 				ctx: ctx,
 				num: 1000,
@@ -805,12 +787,8 @@ func Test_server_Search(t *testing.T) {
 				code:       codes.NotFound,
 			},
 		},
-		// This test is same as Boundary Value Testing case 1.1, and skip it.
-		//{
-		//	name: "Boundary Value Testing case 3.1: success search with min value vector (type: uint8)",
-		//},
 		{
-			name: "Boundary Value Testing case 3.2: success search with min value vector (type: float32)",
+			name: "Boundary Value Testing case 3.1: success search with min value vector (type: float32)",
 			args: args{
 				ctx: ctx,
 				num: 1000,
