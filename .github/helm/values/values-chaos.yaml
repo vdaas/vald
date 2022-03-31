@@ -73,6 +73,8 @@ discoverer:
     requests:
       cpu: 100m
       memory: 50Mi
+  discoverer:
+    discovery_duration: 300ms
 
 manager:
   compressor:

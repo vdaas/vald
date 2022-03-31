@@ -20,21 +20,21 @@ podChaos:
     name: vald-pod-failure
     selector:
       labelSelectors:
-        name: vald
-        component: agent
+        app.kubernetes.io/name: vald
+        app.kubernetes.io/component: agent
       namespaces:
         - default
     duration: "10s"
+    schedule: "*/1 * * * *"
   kill:
     enabled: false
     name: vald-pod-kill
     selector:
       labelSelectors:
-        name: vald
-        component: agent
+        app.kubernetes.io/name: vald
       namespaces:
         - default
-    duration: "2m"
+    schedule: "*/2 * * * *"
 
 networkChaos:
   partition:
@@ -47,7 +47,7 @@ networkChaos:
       namespaces:
         - default
     duration: "100ms"
-    cron: "@every 3s"
+    schedule: "*/3 * * * * *"
   bandwidth:
     enabled: false
     name: vald-network-bandwidth
@@ -57,7 +57,7 @@ networkChaos:
       namespaces:
         - default
     duration: "100ms"
-    cron: "@every 3s"
+    schedule: "*/3 * * * * *"
     rate: 100kbps
     limit: 100
     buffer: 10000

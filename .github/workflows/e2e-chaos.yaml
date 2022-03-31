@@ -59,7 +59,7 @@ jobs:
           version: latest
           name: vald
           agents: 3
-          options: "--image docker.io/rancher/k3s:latest"
+          options: "--image docker.io/rancher/k3s:v1.23.5-rc1-k3s1"
       - name: check k3d
         run: |
           kubectl cluster-info
@@ -151,7 +151,7 @@ jobs:
           version: latest
           name: vald
           agents: 3
-          options: "--image docker.io/rancher/k3s:latest"
+          options: "--image docker.io/rancher/k3s:v1.23.5-rc1-k3s1"
       - name: check k3d
         run: |
           kubectl cluster-info
@@ -175,8 +175,7 @@ jobs:
           make kubectl/install
           curl -sSL https://mirrors.chaos-mesh.org/v2.1.3/install.sh | bash -s -- --k3s
           helm install \
-            --set podChaos.failure.enabled=true \
-            --set podChaos.failure.selector.labelSelectors."app\.kubernetes\.io/component"=null \
+            --set podChaos.kill.enabled=true \
             vald-chaos-test tests/chaos/chart
       - name: Fetch golang version
         run: |
@@ -244,7 +243,7 @@ jobs:
           version: latest
           name: vald
           agents: 3
-          options: "--image docker.io/rancher/k3s:latest"
+          options: "--image docker.io/rancher/k3s:v1.23.5-rc1-k3s1"
       - name: check k3d
         run: |
           kubectl cluster-info
@@ -336,7 +335,7 @@ jobs:
           version: latest
           name: vald
           agents: 3
-          options: "--image docker.io/rancher/k3s:latest"
+          options: "--image docker.io/rancher/k3s:v1.23.5-rc1-k3s1"
       - name: check k3d
         run: |
           kubectl cluster-info
