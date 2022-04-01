@@ -284,9 +284,22 @@ const setVersion = (elem) => {
     let url = location.href;
     const nextVersion = elem.className.includes('latest') ? '' : elem.text + '/';
     if (url.includes('/docs/')) {
+      let vOfUrl = "";
+      if (url.split('/docs/').length > 1) {
+        vOfUrl = url.split('/docs/')[1].split('/')[0];
+      }
+      const regex = /v\d{1}\.\d{1}/;
+      const match = vOfUrl.match(regex);
       // move to new document url .
-      if (url.includes(beforeVersion)) {
-        url = url.replace(beforeVersion + '/', nextVersion);
+      if (vOfUrl.length > 0) {
+        if (vOfUrl === beforeVersion) {
+          url = url.replace(beforeVersion + '/', nextVersion);
+        } else if (match && match.length === 1) {
+          // when 404 page is show, this branch will run.
+          url = url.replace(vOfUrl + '/', nextVersion);
+        } else {
+          url = url.replace('/docs/', '/docs/' + nextVersion);
+        }
       } else {
         url = url.replace('/docs/', '/docs/' + nextVersion);
       }
