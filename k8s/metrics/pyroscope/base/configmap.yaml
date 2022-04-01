@@ -20,7 +20,6 @@ metadata:
   labels:
     app.kubernetes.io/name: pyroscope
     app.kubernetes.io/instance: pyroscope
-    app.kubernetes.io/version: "0.4.1"
 data:
   config.yaml: |
     log-level: debug
