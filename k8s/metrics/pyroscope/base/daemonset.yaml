@@ -19,6 +19,7 @@ metadata:
   labels:
     app.kubernetes.io/instance: pyroscope-agent
     app.kubernetes.io/name: pyroscope-agent
+    app.kubernetes.io/version: latest
   name: pyroscope-agent
 spec:
   selector:
@@ -30,6 +31,7 @@ spec:
       labels:
         app.kubernetes.io/instance: pyroscope-agent
         app.kubernetes.io/name: pyroscope-agent
+        app.kubernetes.io/version: latest
     spec:
       containers:
         - name: pyroscope-agent
