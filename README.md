@@ -233,6 +233,15 @@ Docker images tagging policy:
 - [SDK](https://vald.vdaas.org/docs/user-guides/sdks/): Official client libraries
 - [Demo](https://github.com/vdaas/vald-demo): Demo repository using sample data
 
+## Vald Users
+
+<p align="center">
+    <img src="./assets/image/vald-users/yahoojapan.svg" alt="yahoojapan" width="30%" />
+&nbsp; &nbsp; &nbsp; &nbsp;
+    <img src="./assets/image/vald-users/japansearch_color.png.webp" alt="jpsearch" />
+  </ul>
+</p>
+
 ## Contribution
 
 Please read the [contribution guide](https://vald.vdaas.org/docs/contributing/contributing-guide).
