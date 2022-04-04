@@ -115,7 +115,7 @@ func TestWithSamplingRate(t *testing.T) {
 
 			   got := WithSamplingRate(test.args.rate)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -128,7 +128,7 @@ func TestWithSamplingRate(t *testing.T) {
 			   got := WithSamplingRate(test.args.rate)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(tt.want, obj); err != nil {
+			   if err := checkFunc(tt.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/

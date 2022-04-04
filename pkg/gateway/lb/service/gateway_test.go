@@ -95,12 +95,13 @@ func TestNewGateway(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			gotGw, err := NewGateway(test.args.opts...)
-			if err := test.checkFunc(test.want, gotGw, err); err != nil {
+			if err := checkFunc(test.want, gotGw, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -185,8 +186,9 @@ func Test_gateway_Start(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			g := &gateway{
 				client: test.fields.client,
@@ -194,7 +196,7 @@ func Test_gateway_Start(t *testing.T) {
 			}
 
 			got, err := g.Start(test.args.ctx)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -278,8 +280,9 @@ func Test_gateway_BroadCast(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			g := &gateway{
 				client: test.fields.client,
@@ -287,7 +290,7 @@ func Test_gateway_BroadCast(t *testing.T) {
 			}
 
 			err := g.BroadCast(test.args.ctx, test.args.f)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -374,8 +377,9 @@ func Test_gateway_DoMulti(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			g := &gateway{
 				client: test.fields.client,
@@ -383,7 +387,7 @@ func Test_gateway_DoMulti(t *testing.T) {
 			}
 
 			err := g.DoMulti(test.args.ctx, test.args.num, test.args.f)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -464,8 +468,9 @@ func Test_gateway_GetAgentCount(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			g := &gateway{
 				client: test.fields.client,
@@ -473,7 +478,7 @@ func Test_gateway_GetAgentCount(t *testing.T) {
 			}
 
 			got := g.GetAgentCount(test.args.ctx)
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -554,8 +559,9 @@ func Test_gateway_Addrs(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			g := &gateway{
 				client: test.fields.client,
@@ -563,7 +569,7 @@ func Test_gateway_Addrs(t *testing.T) {
 			}
 
 			got := g.Addrs(test.args.ctx)
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

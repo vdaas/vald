@@ -22,7 +22,6 @@ import (
 	"fmt"
 	"reflect"
 	"strconv"
-	"strings"
 	"sync"
 
 	agent "github.com/vdaas/vald/apis/grpc/v1/agent/core"
@@ -38,6 +37,7 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
+	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/model"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/service"
 )
@@ -192,7 +192,8 @@ func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *
 			log.Debug(err)
 			stat = trace.StatusCodeAborted(err.Error())
 		case errors.Is(err, errors.ErrEmptySearchResult),
-			err == nil && res == nil:
+			err == nil && res == nil,
+			0 < req.GetConfig().GetMinNum() && len(res.GetResults()) < int(req.GetConfig().GetMinNum()):
 			err = status.WrapWithNotFound(fmt.Sprintf("Search API requestID %s's search result not found", req.GetConfig().GetRequestId()), err,
 				&errdetails.RequestInfo{
 					RequestId:   req.GetConfig().GetRequestId(),
@@ -288,7 +289,8 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 			log.Debug(err)
 			stat = trace.StatusCodeAborted(err.Error())
 		case errors.Is(err, errors.ErrEmptySearchResult),
-			err == nil && res == nil:
+			err == nil && res == nil,
+			0 < req.GetConfig().GetMinNum() && len(res.GetResults()) < int(req.GetConfig().GetMinNum()):
 			err = status.WrapWithNotFound(fmt.Sprintf("SearchByID API uuid %s's search result not found", req.GetId()), err,
 				&errdetails.RequestInfo{
 					RequestId:   req.GetConfig().GetRequestId(),
@@ -670,7 +672,8 @@ func (s *server) LinearSearch(ctx context.Context, req *payload.Search_Request) 
 			log.Debug(err)
 			stat = trace.StatusCodeAborted(err.Error())
 		case errors.Is(err, errors.ErrEmptySearchResult),
-			err == nil && res == nil:
+			err == nil && res == nil,
+			0 < req.GetConfig().GetMinNum() && len(res.GetResults()) < int(req.GetConfig().GetMinNum()):
 			err = status.WrapWithNotFound(fmt.Sprintf("LinearSearch API requestID %s's search result not found", req.GetConfig().GetRequestId()), err,
 				&errdetails.RequestInfo{
 					RequestId:   req.GetConfig().GetRequestId(),
@@ -764,7 +767,8 @@ func (s *server) LinearSearchByID(ctx context.Context, req *payload.Search_IDReq
 			log.Debug(err)
 			stat = trace.StatusCodeAborted(err.Error())
 		case errors.Is(err, errors.ErrEmptySearchResult),
-			err == nil && res == nil:
+			err == nil && res == nil,
+			0 < req.GetConfig().GetMinNum() && len(res.GetResults()) < int(req.GetConfig().GetMinNum()):
 			err = status.WrapWithNotFound(fmt.Sprintf("LinearSearchByID API uuid %s's search result not found", req.GetId()), err,
 				&errdetails.RequestInfo{
 					RequestId:   req.GetConfig().GetRequestId(),
@@ -1076,6 +1080,7 @@ func (s *server) MultiLinearSearchByID(ctx context.Context, reqs *payload.Search
 	return res, nil
 }
 
+// Insert inserts a vector to the NGT.
 func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (res *payload.Object_Location, err error) {
 	_, span := trace.StartSpan(ctx, apiName+".Insert")
 	defer func() {

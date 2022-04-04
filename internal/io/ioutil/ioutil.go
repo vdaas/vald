@@ -19,6 +19,7 @@ package ioutil
 
 import (
 	"bytes"
+	"io/fs"
 	"os"
 
 	"github.com/vdaas/vald/internal/file"
@@ -26,7 +27,7 @@ import (
 )
 
 func ReadFile(path string) ([]byte, error) {
-	f, err := file.Open(path, os.O_RDONLY, os.ModePerm)
+	f, err := file.Open(path, os.O_RDONLY, fs.ModePerm)
 	if err != nil {
 		return nil, err
 	}

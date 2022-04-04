@@ -41,6 +41,10 @@ data:
       {{- include "vald.observability" $observability | nindent 6 }}
     agent_sidecar:
       mode: _VALD_AGENT_SIDECAR_MODE_
+      {{- if .Values.agent.ngt.enable_copy_on_write }}
+      watch_dir: {{ printf "%s/%s" .Values.agent.ngt.index_path "origin" | quote | clean}}
+      {{- else }}
       watch_dir: {{ .Values.agent.ngt.index_path | quote }}
+      {{- end }}
       {{- toYaml .Values.agent.sidecar.config | nindent 6 }}
 {{- end }}

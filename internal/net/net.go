@@ -22,7 +22,6 @@ import (
 	"math"
 	"net"
 	"strconv"
-	"strings"
 	"sync"
 	"syscall"
 
@@ -30,6 +29,7 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/safety"
+	"github.com/vdaas/vald/internal/strings"
 	"inet.af/netaddr"
 )
 

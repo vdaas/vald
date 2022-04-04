@@ -26,6 +26,7 @@ var (
 	defaultGoleakOptions = []goleak.Option{
 		// ignore conflict with testing.T.Parallel()
 		goleak.IgnoreTopFunction("testing.(*testContext).waitParallel"),
+		goleak.IgnoreTopFunction("github.com/kpango/fastime.(*fastime).StartTimerD.func1"),
 	}
 
 	IgnoreTopFunction = goleak.IgnoreTopFunction

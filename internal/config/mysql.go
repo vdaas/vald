@@ -18,10 +18,9 @@
 package config
 
 import (
-	"strings"
-
 	"github.com/vdaas/vald/internal/db/rdb/mysql"
 	"github.com/vdaas/vald/internal/net"
+	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/tls"
 )
 

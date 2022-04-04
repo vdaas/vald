@@ -260,8 +260,9 @@ func Test_router_routing(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			rt := &router{
 				middlewares: test.fields.middlewares,
@@ -269,7 +270,7 @@ func Test_router_routing(t *testing.T) {
 			}
 
 			got := rt.routing(test.args.name, test.args.path, test.args.m, test.args.h)
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

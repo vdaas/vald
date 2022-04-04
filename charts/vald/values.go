@@ -128,7 +128,6 @@ type Annotations map[string]string
 
 // BlobStorage
 type BlobStorage struct {
-
 	// bucket name
 	Bucket       string        `json:"bucket,omitempty"`
 	CloudStorage *CloudStorage `json:"cloud_storage,omitempty"`
@@ -166,7 +165,6 @@ type CloudStorage struct {
 
 // ClusterRole
 type ClusterRole struct {
-
 	// creates clusterRole resource
 	Enabled bool `json:"enabled,omitempty"`
 
@@ -176,7 +174,6 @@ type ClusterRole struct {
 
 // ClusterRoleBinding
 type ClusterRoleBinding struct {
-
 	// creates clusterRoleBinding resource
 	Enabled bool `json:"enabled,omitempty"`
 
@@ -186,7 +183,6 @@ type ClusterRoleBinding struct {
 
 // Collector
 type Collector struct {
-
 	// metrics collect duration. if it is set as 5s, enabled metrics are collected every 5 seconds.
 	Duration string   `json:"duration,omitempty"`
 	Metrics  *Metrics `json:"metrics,omitempty"`
@@ -194,7 +190,6 @@ type Collector struct {
 
 // Compress
 type Compress struct {
-
 	// compression algorithm. must be `gob`, `gzip`, `lz4` or `zstd`
 	CompressAlgorithm string `json:"compress_algorithm,omitempty"`
 
@@ -204,7 +199,6 @@ type Compress struct {
 
 // Config
 type Config struct {
-
 	// auto backup duration
 	AutoBackupDuration string `json:"auto_backup_duration,omitempty"`
 
@@ -246,7 +240,6 @@ type Defaults struct {
 
 // Dialer
 type Dialer struct {
-
 	// gRPC client TCP dialer dual stack enabled
 	DualStackEnabled bool `json:"dual_stack_enabled,omitempty"`
 
@@ -268,7 +261,6 @@ type Discoverer struct {
 
 // Dns
 type Dns struct {
-
 	// gRPC client TCP DNS cache enabled
 	CacheEnabled bool `json:"cache_enabled,omitempty"`
 
@@ -295,7 +287,6 @@ type EnvItems struct{}
 
 // Exporter
 type Exporter struct {
-
 	// how many view data events or trace spans can be buffered.
 	BundleCountThreshold int `json:"bundle_count_threshold,omitempty"`
 
@@ -434,7 +425,6 @@ type Gateway struct {
 
 // GatewayConfig
 type GatewayConfig struct {
-
 	// gRPC client config for egress filter
 	EgressFilter  *EgressFilter      `json:"egress_filter,omitempty"`
 	GatewayClient *config.GRPCClient `json:"gateway_client,omitempty"`
@@ -445,7 +435,6 @@ type GatewayConfig struct {
 
 // Grpc
 type Grpc struct {
-
 	// gRPC server enabled
 	Enabled bool `json:"enabled,omitempty"`
 
@@ -469,7 +458,6 @@ type Healths struct {
 
 // Hpa
 type Hpa struct {
-
 	// HPA enabled
 	Enabled bool `json:"enabled,omitempty"`
 
@@ -479,7 +467,6 @@ type Hpa struct {
 
 // Http
 type Http struct {
-
 	// REST server handler timeout
 	HandlerTimeout string `json:"handler_timeout,omitempty"`
 
@@ -501,7 +488,6 @@ type Http struct {
 
 // HttpGet
 type HttpGet struct {
-
 	// startup probe path
 	Path string `json:"path,omitempty"`
 
@@ -514,7 +500,6 @@ type HttpGet struct {
 
 // Image
 type Image struct {
-
 	// image pull policy
 	PullPolicy string `json:"pullPolicy,omitempty"`
 
@@ -615,7 +600,6 @@ type Index struct {
 
 // Indexer
 type Indexer struct {
-
 	// namespace of agent pods to manage
 	AgentNamespace string `json:"agent_namespace,omitempty"`
 
@@ -647,7 +631,6 @@ type Indexer struct {
 
 // Ingress
 type Ingress struct {
-
 	// annotations for ingress
 	Annotations *Annotations `json:"annotations,omitempty"`
 
@@ -698,7 +681,6 @@ type Initializer struct{}
 
 // Jaeger
 type Jaeger struct {
-
 	// Jaeger agent endpoint
 	AgentEndpoint string `json:"agent_endpoint,omitempty"`
 
@@ -723,7 +705,6 @@ type Jaeger struct {
 
 // Keepalive
 type Keepalive struct {
-
 	// gRPC client keep alive permit without stream
 	PermitWithoutStream bool `json:"permit_without_stream,omitempty"`
 
@@ -736,7 +717,6 @@ type Keepalive struct {
 
 // Kvsdb
 type Kvsdb struct {
-
 	// kvsdb processing concurrency
 	Concurrency int `json:"concurrency,omitempty"`
 }
@@ -842,7 +822,6 @@ type Limits struct{}
 
 // Liveness
 type Liveness struct {
-
 	// liveness server enabled
 	Enabled bool `json:"enabled,omitempty"`
 
@@ -860,7 +839,6 @@ type Liveness struct {
 
 // LivenessProbe
 type LivenessProbe struct {
-
 	// liveness probe failure threshold
 	FailureThreshold int      `json:"failureThreshold,omitempty"`
 	HttpGet          *HttpGet `json:"httpGet,omitempty"`
@@ -880,7 +858,6 @@ type LivenessProbe struct {
 
 // Logging
 type Logging struct {
-
 	// logging format. logging format must be `raw` or `json`
 	Format string `json:"format,omitempty"`
 
@@ -898,7 +875,6 @@ type Manager struct {
 
 // Metrics
 type Metrics struct {
-
 	// CGO metrics enabled
 	EnableCgo bool `json:"enable_cgo,omitempty"`
 
@@ -932,7 +908,6 @@ type NodeAffinity struct {
 
 // NodeMetrics k8s resource selectors for node_metrics discovery
 type NodeMetrics struct {
-
 	// k8s field selectors for node_metrics discovery
 	Fields *Fields `json:"fields,omitempty"`
 
@@ -960,7 +935,6 @@ type Observability struct {
 
 // PersistentVolume
 type PersistentVolume struct {
-
 	// agent pod storage accessMode
 	AccessMode string `json:"accessMode,omitempty"`
 
@@ -976,7 +950,6 @@ type PersistentVolume struct {
 
 // Pod k8s resource selectors for pod discovery
 type Pod struct {
-
 	// k8s field selectors for pod discovery
 	Fields *Fields `json:"fields,omitempty"`
 
@@ -998,7 +971,6 @@ type PodAnnotations struct{}
 
 // PodAntiAffinity
 type PodAntiAffinity struct {
-
 	// pod anti-affinity preferred scheduling terms
 	PreferredDuringSchedulingIgnoredDuringExecution []*PreferredDuringSchedulingIgnoredDuringExecutionItems `json:"preferredDuringSchedulingIgnoredDuringExecution,omitempty"`
 
@@ -1008,7 +980,6 @@ type PodAntiAffinity struct {
 
 // PodMetrics k8s resource selectors for pod_metrics discovery
 type PodMetrics struct {
-
 	// k8s field selectors for pod_metrics discovery
 	Fields *Fields `json:"fields,omitempty"`
 
@@ -1018,7 +989,6 @@ type PodMetrics struct {
 
 // PodPriority
 type PodPriority struct {
-
 	// gateway pod PriorityClass enabled
 	Enabled bool `json:"enabled,omitempty"`
 
@@ -1031,7 +1001,6 @@ type PodSecurityContext struct{}
 
 // Pprof
 type Pprof struct {
-
 	// pprof server enabled
 	Enabled bool `json:"enabled,omitempty"`
 
@@ -1051,7 +1020,6 @@ type PreferredDuringSchedulingIgnoredDuringExecutionItems struct{}
 
 // Profiler
 type Profiler struct {
-
 	// forces GC before the collection of each heap profile.
 	AllocForceGc bool `json:"alloc_force_gc,omitempty"`
 
@@ -1094,7 +1062,6 @@ type Profiler struct {
 
 // Prometheus
 type Prometheus struct {
-
 	// Prometheus exporter enabled
 	Enabled bool `json:"enabled,omitempty"`
 
@@ -1107,7 +1074,6 @@ type Prometheus struct {
 
 // Readiness
 type Readiness struct {
-
 	// readiness server enabled
 	Enabled bool `json:"enabled,omitempty"`
 
@@ -1125,7 +1091,6 @@ type Readiness struct {
 
 // ReadinessProbe
 type ReadinessProbe struct {
-
 	// readiness probe failure threshold
 	FailureThreshold int      `json:"failureThreshold,omitempty"`
 	HttpGet          *HttpGet `json:"httpGet,omitempty"`
@@ -1148,7 +1113,6 @@ type Requests struct{}
 
 // RequiredDuringSchedulingIgnoredDuringExecution
 type RequiredDuringSchedulingIgnoredDuringExecution struct {
-
 	// node affinity required node selectors
 	NodeSelectorTerms []*NodeSelectorTermsItems `json:"nodeSelectorTerms,omitempty"`
 }
@@ -1164,7 +1128,6 @@ type Resources struct {
 
 // Rest
 type Rest struct {
-
 	// REST server enabled
 	Enabled bool `json:"enabled,omitempty"`
 
@@ -1181,7 +1144,6 @@ type Rest struct {
 
 // RollingUpdate
 type RollingUpdate struct {
-
 	// max surge of rolling update
 	MaxSurge string `json:"maxSurge,omitempty"`
 
@@ -1191,7 +1153,6 @@ type RollingUpdate struct {
 
 // S3
 type S3 struct {
-
 	// s3 access key
 	AccessKey string `json:"access_key,omitempty"`
 
@@ -1252,7 +1213,6 @@ type SecurityContext struct{}
 
 // Selectors k8s resource selectors
 type Selectors struct {
-
 	// k8s resource selectors for node discovery
 	Node *Node `json:"node,omitempty"`
 
@@ -1286,7 +1246,6 @@ type Server struct {
 
 // ServerConfig
 type ServerConfig struct {
-
 	// server full shutdown duration
 	FullShutdownDuration string   `json:"full_shutdown_duration,omitempty"`
 	Healths              *Healths `json:"healths,omitempty"`
@@ -1303,7 +1262,6 @@ type Servers struct {
 
 // Service
 type Service struct {
-
 	// service annotations
 	Annotations *Annotations `json:"annotations,omitempty"`
 
@@ -1313,7 +1271,6 @@ type Service struct {
 
 // ServiceAccount
 type ServiceAccount struct {
-
 	// creates service account
 	Enabled bool `json:"enabled,omitempty"`
 
@@ -1364,7 +1321,6 @@ type Stackdriver struct {
 
 // Startup
 type Startup struct {
-
 	// startup server enabled
 	Enabled bool `json:"enabled,omitempty"`
 
@@ -1375,7 +1331,6 @@ type Startup struct {
 
 // StartupProbe
 type StartupProbe struct {
-
 	// startup probe failure threshold
 	FailureThreshold int      `json:"failureThreshold,omitempty"`
 	HttpGet          *HttpGet `json:"httpGet,omitempty"`
@@ -1395,7 +1350,6 @@ type StartupProbe struct {
 
 // Tls
 type Tls struct {
-
 	// TLS ca path
 	Ca string `json:"ca,omitempty"`
 
@@ -1420,7 +1374,6 @@ type TopologySpreadConstraintsItems struct{}
 
 // Trace
 type Trace struct {
-
 	// trace enabled
 	Enabled bool `json:"enabled,omitempty"`
 

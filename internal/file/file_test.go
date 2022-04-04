@@ -18,6 +18,7 @@
 package file
 
 import (
+	"context"
 	"io/fs"
 	"os"
 	"reflect"
@@ -78,10 +79,10 @@ func TestOpen(t *testing.T) {
 			args: args{
 				path: "test/data",
 				flg:  os.O_CREATE,
-				perm: os.ModePerm,
+				perm: fs.ModePerm,
 			},
 			checkFunc: func(_ want, got *os.File, gotErr error) error {
-				file, err := os.OpenFile("test/data", os.O_CREATE, os.ModePerm)
+				file, err := os.OpenFile("test/data", os.O_CREATE, fs.ModePerm)
 				if err != nil {
 					return err
 				}
@@ -104,10 +105,10 @@ func TestOpen(t *testing.T) {
 			args: args{
 				path: "test/test/data",
 				flg:  os.O_CREATE,
-				perm: os.ModePerm,
+				perm: fs.ModePerm,
 			},
 			checkFunc: func(_ want, got *os.File, gotErr error) error {
-				file, err := os.OpenFile("test/test/data", os.O_CREATE, os.ModePerm)
+				file, err := os.OpenFile("test/test/data", os.O_CREATE, fs.ModePerm)
 				if err != nil {
 					return err
 				}
@@ -130,11 +131,11 @@ func TestOpen(t *testing.T) {
 			args: args{
 				path: "file.go",
 				flg:  os.O_RDONLY,
-				perm: os.ModePerm,
+				perm: fs.ModePerm,
 			},
 			want: want{
 				want: func() *os.File {
-					f, _ := os.OpenFile("file.go", os.O_RDONLY, os.ModePerm)
+					f, _ := os.OpenFile("file.go", os.O_RDONLY, fs.ModePerm)
 					return f
 				}(),
 				err: nil,
@@ -145,7 +146,7 @@ func TestOpen(t *testing.T) {
 			name: "returns (nil, error) when path is empty",
 			args: args{
 				flg:  os.O_CREATE,
-				perm: os.ModeDir,
+				perm: fs.ModeDir,
 			},
 			want: want{
 				want: nil,
@@ -158,7 +159,7 @@ func TestOpen(t *testing.T) {
 			args: args{
 				path: "dummy",
 				flg:  os.O_RDONLY,
-				perm: os.ModePerm,
+				perm: fs.ModePerm,
 			},
 			want: want{
 				want: nil,
@@ -178,7 +179,7 @@ func TestOpen(t *testing.T) {
 			args: args{
 				path: "dummy/dummy",
 				flg:  os.O_RDONLY,
-				perm: os.ModePerm,
+				perm: fs.ModePerm,
 			},
 			want: want{
 				want: nil,
@@ -207,8 +208,9 @@ func TestOpen(t *testing.T) {
 			if test.beforeFunc != nil {
 				test.beforeFunc(tt, test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			if test.afterFunc == nil {
 				test.afterFunc = defaultAfterFunc
@@ -217,7 +219,7 @@ func TestOpen(t *testing.T) {
 			got, err := Open(test.args.path, test.args.flg, test.args.perm)
 			defer test.afterFunc(tt, test.args, got)
 
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -274,7 +276,7 @@ func TestExists(t *testing.T) {
 			},
 			beforeFunc: func(t *testing.T, args args) {
 				t.Helper()
-				if err := os.MkdirAll(args.path, 0o750); err != nil {
+				if err := os.MkdirAll(args.path, fs.ModePerm); err != nil {
 					t.Fatal(err)
 				}
 			},
@@ -289,7 +291,7 @@ func TestExists(t *testing.T) {
 			},
 			beforeFunc: func(t *testing.T, args args) {
 				t.Helper()
-				if err := os.MkdirAll(testDirPath, 0o750); err != nil {
+				if err := os.MkdirAll(testDirPath, fs.ModePerm); err != nil {
 					t.Fatal(err)
 				}
 				if err := os.Symlink(testDirPath, testSym); err != nil {
@@ -307,7 +309,7 @@ func TestExists(t *testing.T) {
 			},
 			beforeFunc: func(t *testing.T, args args) {
 				t.Helper()
-				if err := os.MkdirAll(baseDir, 0o750); err != nil {
+				if err := os.MkdirAll(baseDir, fs.ModePerm); err != nil {
 					t.Fatal(err)
 				}
 
@@ -332,7 +334,7 @@ func TestExists(t *testing.T) {
 			},
 			beforeFunc: func(t *testing.T, args args) {
 				t.Helper()
-				if err := os.MkdirAll(baseDir, 0o750); err != nil {
+				if err := os.MkdirAll(baseDir, fs.ModePerm); err != nil {
 					t.Fatal(err)
 				}
 
@@ -385,13 +387,14 @@ func TestExists(t *testing.T) {
 			}
 			defer test.afterFunc(tt, test.args)
 
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			// TODO we have to check more patter about file or dir
 			got := Exists(test.args.path)
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -628,6 +631,714 @@ func TestListInDir(t *testing.T) {
 
 			got, err := ListInDir(test.args.path)
 			if err := test.checkFunc(test.want, got, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func TestCopyDir(t *testing.T) {
+	type args struct {
+		ctx context.Context
+		src string
+		dst string
+	}
+	type want struct {
+		err error
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           ctx: nil,
+		           src: "",
+		           dst: "",
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           ctx: nil,
+		           src: "",
+		           dst: "",
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			checkFunc := test.checkFunc
+			if test.checkFunc == nil {
+				checkFunc = defaultCheckFunc
+			}
+
+			err := CopyDir(test.args.ctx, test.args.src, test.args.dst)
+			if err := checkFunc(test.want, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func TestCopyFile(t *testing.T) {
+	type args struct {
+		ctx context.Context
+		src string
+		dst string
+	}
+	type want struct {
+		wantN int64
+		err   error
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, int64, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, gotN int64, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(gotN, w.wantN) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotN, w.wantN)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           ctx: nil,
+		           src: "",
+		           dst: "",
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           ctx: nil,
+		           src: "",
+		           dst: "",
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			checkFunc := test.checkFunc
+			if test.checkFunc == nil {
+				checkFunc = defaultCheckFunc
+			}
+
+			gotN, err := CopyFile(test.args.ctx, test.args.src, test.args.dst)
+			if err := checkFunc(test.want, gotN, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func TestMoveDir(t *testing.T) {
+	type args struct {
+		ctx context.Context
+		src string
+		dst string
+	}
+	type want struct {
+		err error
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           ctx: nil,
+		           src: "",
+		           dst: "",
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           ctx: nil,
+		           src: "",
+		           dst: "",
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			checkFunc := test.checkFunc
+			if test.checkFunc == nil {
+				checkFunc = defaultCheckFunc
+			}
+
+			err := MoveDir(test.args.ctx, test.args.src, test.args.dst)
+			if err := checkFunc(test.want, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func Test_moveDir(t *testing.T) {
+	type args struct {
+		ctx      context.Context
+		src      string
+		dst      string
+		rollback bool
+	}
+	type want struct {
+		err error
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           ctx: nil,
+		           src: "",
+		           dst: "",
+		           rollback: false,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           ctx: nil,
+		           src: "",
+		           dst: "",
+		           rollback: false,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			checkFunc := test.checkFunc
+			if test.checkFunc == nil {
+				checkFunc = defaultCheckFunc
+			}
+
+			err := moveDir(test.args.ctx, test.args.src, test.args.dst, test.args.rollback)
+			if err := checkFunc(test.want, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func TestCopyFileWithPerm(t *testing.T) {
+	type args struct {
+		ctx  context.Context
+		src  string
+		dst  string
+		perm fs.FileMode
+	}
+	type want struct {
+		wantN int64
+		err   error
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, int64, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, gotN int64, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(gotN, w.wantN) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotN, w.wantN)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           ctx: nil,
+		           src: "",
+		           dst: "",
+		           perm: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           ctx: nil,
+		           src: "",
+		           dst: "",
+		           perm: nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			checkFunc := test.checkFunc
+			if test.checkFunc == nil {
+				checkFunc = defaultCheckFunc
+			}
+
+			gotN, err := CopyFileWithPerm(test.args.ctx, test.args.src, test.args.dst, test.args.perm)
+			if err := checkFunc(test.want, gotN, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func TestJoin(t *testing.T) {
+	type args struct {
+		paths []string
+	}
+	type want struct {
+		wantPath string
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, string) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, gotPath string) error {
+		if !reflect.DeepEqual(gotPath, w.wantPath) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotPath, w.wantPath)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           paths: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           paths: nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			checkFunc := test.checkFunc
+			if test.checkFunc == nil {
+				checkFunc = defaultCheckFunc
+			}
+
+			gotPath := Join(test.args.paths...)
+			if err := checkFunc(test.want, gotPath); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func Test_join(t *testing.T) {
+	type args struct {
+		paths []string
+	}
+	type want struct {
+		wantPath string
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, string) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, gotPath string) error {
+		if !reflect.DeepEqual(gotPath, w.wantPath) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotPath, w.wantPath)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           paths: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           paths: nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			checkFunc := test.checkFunc
+			if test.checkFunc == nil {
+				checkFunc = defaultCheckFunc
+			}
+
+			gotPath := join(test.args.paths...)
+			if err := checkFunc(test.want, gotPath); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func TestMkdirAll(t *testing.T) {
+	type args struct {
+		path string
+		perm fs.FileMode
+	}
+	type want struct {
+		err error
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           path: "",
+		           perm: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           path: "",
+		           perm: nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			checkFunc := test.checkFunc
+			if test.checkFunc == nil {
+				checkFunc = defaultCheckFunc
+			}
+
+			err := MkdirAll(test.args.path, test.args.perm)
+			if err := checkFunc(test.want, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func TestMkdirTemp(t *testing.T) {
+	type args struct {
+		baseDir string
+	}
+	type want struct {
+		wantPath string
+		err      error
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, string, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, gotPath string, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(gotPath, w.wantPath) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotPath, w.wantPath)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           baseDir: "",
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           baseDir: "",
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			checkFunc := test.checkFunc
+			if test.checkFunc == nil {
+				checkFunc = defaultCheckFunc
+			}
+
+			gotPath, err := MkdirTemp(test.args.baseDir)
+			if err := checkFunc(test.want, gotPath, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

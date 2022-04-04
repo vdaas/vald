@@ -17,7 +17,7 @@
 // Package cacher provides implementation of cache type definition
 package cacher
 
-import "strings"
+import "github.com/vdaas/vald/internal/strings"
 
 // Type represents the cacher type. Currently it support GACHE only.
 type Type uint8

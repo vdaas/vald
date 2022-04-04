@@ -16,7 +16,7 @@
 
 package level
 
-import "strings"
+import "github.com/vdaas/vald/internal/strings"
 
 type Level uint8
 

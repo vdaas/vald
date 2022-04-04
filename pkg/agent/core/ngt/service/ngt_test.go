@@ -110,12 +110,13 @@ func TestNew(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			gotNn, err := New(test.args.cfg, test.args.opts...)
-			if err := test.checkFunc(test.want, gotNn, err); err != nil {
+			if err := checkFunc(test.want, gotNn, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -134,7 +135,7 @@ func Test_ngt_initNGT(t *testing.T) {
 		indexing          atomic.Value
 		saving            atomic.Value
 		cimu              sync.Mutex
-		lastNoice         uint64
+		lastNocie         uint64
 		nocie             uint64
 		nogce             uint64
 		inMem             bool
@@ -188,7 +189,7 @@ func Test_ngt_initNGT(t *testing.T) {
 		           indexing: nil,
 		           saving: nil,
 		           cimu: sync.Mutex{},
-		           lastNoice: 0,
+		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -229,7 +230,7 @@ func Test_ngt_initNGT(t *testing.T) {
 		           indexing: nil,
 		           saving: nil,
 		           cimu: sync.Mutex{},
-		           lastNoice: 0,
+		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -267,8 +268,9 @@ func Test_ngt_initNGT(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
 				core:              test.fields.core,
@@ -278,7 +280,7 @@ func Test_ngt_initNGT(t *testing.T) {
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
 				cimu:              test.fields.cimu,
-				lastNoice:         test.fields.lastNoice,
+				lastNocie:         test.fields.lastNocie,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				inMem:             test.fields.inMem,
@@ -300,182 +302,7 @@ func Test_ngt_initNGT(t *testing.T) {
 			}
 
 			err := n.initNGT(test.args.opts...)
-			if err := test.checkFunc(test.want, err); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
-
-func Test_ngt_loadKVS(t *testing.T) {
-	type fields struct {
-		core              core.NGT
-		eg                errgroup.Group
-		kvs               kvs.BidiMap
-		vq                vqueue.Queue
-		indexing          atomic.Value
-		saving            atomic.Value
-		cimu              sync.Mutex
-		lastNoice         uint64
-		nocie             uint64
-		nogce             uint64
-		inMem             bool
-		dim               int
-		alen              int
-		lim               time.Duration
-		dur               time.Duration
-		sdur              time.Duration
-		minLit            time.Duration
-		maxLit            time.Duration
-		litFactor         time.Duration
-		enableProactiveGC bool
-		path              string
-		poolSize          uint32
-		radius            float32
-		epsilon           float32
-		idelay            time.Duration
-		dcd               bool
-	}
-	type want struct {
-		err error
-	}
-	type test struct {
-		name       string
-		fields     fields
-		want       want
-		checkFunc  func(want, error) error
-		beforeFunc func()
-		afterFunc  func()
-	}
-	defaultCheckFunc := func(w want, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           core: nil,
-		           eg: nil,
-		           kvs: nil,
-		           vq: nil,
-		           indexing: nil,
-		           saving: nil,
-		           cimu: sync.Mutex{},
-		           lastNoice: 0,
-		           nocie: 0,
-		           nogce: 0,
-		           inMem: false,
-		           dim: 0,
-		           alen: 0,
-		           lim: nil,
-		           dur: nil,
-		           sdur: nil,
-		           minLit: nil,
-		           maxLit: nil,
-		           litFactor: nil,
-		           enableProactiveGC: false,
-		           path: "",
-		           poolSize: 0,
-		           radius: 0,
-		           epsilon: 0,
-		           idelay: nil,
-		           dcd: false,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           core: nil,
-		           eg: nil,
-		           kvs: nil,
-		           vq: nil,
-		           indexing: nil,
-		           saving: nil,
-		           cimu: sync.Mutex{},
-		           lastNoice: 0,
-		           nocie: 0,
-		           nogce: 0,
-		           inMem: false,
-		           dim: 0,
-		           alen: 0,
-		           lim: nil,
-		           dur: nil,
-		           sdur: nil,
-		           minLit: nil,
-		           maxLit: nil,
-		           litFactor: nil,
-		           enableProactiveGC: false,
-		           path: "",
-		           poolSize: 0,
-		           radius: 0,
-		           epsilon: 0,
-		           idelay: nil,
-		           dcd: false,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-			if test.beforeFunc != nil {
-				test.beforeFunc()
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc()
-			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
-			n := &ngt{
-				core:              test.fields.core,
-				eg:                test.fields.eg,
-				kvs:               test.fields.kvs,
-				vq:                test.fields.vq,
-				indexing:          test.fields.indexing,
-				saving:            test.fields.saving,
-				cimu:              test.fields.cimu,
-				lastNoice:         test.fields.lastNoice,
-				nocie:             test.fields.nocie,
-				nogce:             test.fields.nogce,
-				inMem:             test.fields.inMem,
-				dim:               test.fields.dim,
-				alen:              test.fields.alen,
-				lim:               test.fields.lim,
-				dur:               test.fields.dur,
-				sdur:              test.fields.sdur,
-				minLit:            test.fields.minLit,
-				maxLit:            test.fields.maxLit,
-				litFactor:         test.fields.litFactor,
-				enableProactiveGC: test.fields.enableProactiveGC,
-				path:              test.fields.path,
-				poolSize:          test.fields.poolSize,
-				radius:            test.fields.radius,
-				epsilon:           test.fields.epsilon,
-				idelay:            test.fields.idelay,
-				dcd:               test.fields.dcd,
-			}
-
-			err := n.loadKVS()
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -494,7 +321,7 @@ func Test_ngt_Start(t *testing.T) {
 		indexing          atomic.Value
 		saving            atomic.Value
 		cimu              sync.Mutex
-		lastNoice         uint64
+		lastNocie         uint64
 		nocie             uint64
 		nogce             uint64
 		inMem             bool
@@ -548,7 +375,7 @@ func Test_ngt_Start(t *testing.T) {
 		           indexing: nil,
 		           saving: nil,
 		           cimu: sync.Mutex{},
-		           lastNoice: 0,
+		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -589,7 +416,7 @@ func Test_ngt_Start(t *testing.T) {
 		           indexing: nil,
 		           saving: nil,
 		           cimu: sync.Mutex{},
-		           lastNoice: 0,
+		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -627,8 +454,9 @@ func Test_ngt_Start(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
 				core:              test.fields.core,
@@ -638,7 +466,7 @@ func Test_ngt_Start(t *testing.T) {
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
 				cimu:              test.fields.cimu,
-				lastNoice:         test.fields.lastNoice,
+				lastNocie:         test.fields.lastNocie,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				inMem:             test.fields.inMem,
@@ -660,7 +488,7 @@ func Test_ngt_Start(t *testing.T) {
 			}
 
 			got := n.Start(test.args.ctx)
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -682,7 +510,7 @@ func Test_ngt_Search(t *testing.T) {
 		indexing          atomic.Value
 		saving            atomic.Value
 		cimu              sync.Mutex
-		lastNoice         uint64
+		lastNocie         uint64
 		nocie             uint64
 		nogce             uint64
 		inMem             bool
@@ -743,7 +571,7 @@ func Test_ngt_Search(t *testing.T) {
 		           indexing: nil,
 		           saving: nil,
 		           cimu: sync.Mutex{},
-		           lastNoice: 0,
+		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -787,7 +615,7 @@ func Test_ngt_Search(t *testing.T) {
 		           indexing: nil,
 		           saving: nil,
 		           cimu: sync.Mutex{},
-		           lastNoice: 0,
+		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -825,8 +653,9 @@ func Test_ngt_Search(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
 				core:              test.fields.core,
@@ -836,7 +665,7 @@ func Test_ngt_Search(t *testing.T) {
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
 				cimu:              test.fields.cimu,
-				lastNoice:         test.fields.lastNoice,
+				lastNocie:         test.fields.lastNocie,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				inMem:             test.fields.inMem,
@@ -858,7 +687,7 @@ func Test_ngt_Search(t *testing.T) {
 			}
 
 			got, err := n.Search(test.args.vec, test.args.size, test.args.epsilon, test.args.radius)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -880,7 +709,7 @@ func Test_ngt_SearchByID(t *testing.T) {
 		indexing          atomic.Value
 		saving            atomic.Value
 		cimu              sync.Mutex
-		lastNoice         uint64
+		lastNocie         uint64
 		nocie             uint64
 		nogce             uint64
 		inMem             bool
@@ -941,7 +770,7 @@ func Test_ngt_SearchByID(t *testing.T) {
 		           indexing: nil,
 		           saving: nil,
 		           cimu: sync.Mutex{},
-		           lastNoice: 0,
+		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -985,7 +814,7 @@ func Test_ngt_SearchByID(t *testing.T) {
 		           indexing: nil,
 		           saving: nil,
 		           cimu: sync.Mutex{},
-		           lastNoice: 0,
+		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -1023,8 +852,9 @@ func Test_ngt_SearchByID(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
 				core:              test.fields.core,
@@ -1034,7 +864,7 @@ func Test_ngt_SearchByID(t *testing.T) {
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
 				cimu:              test.fields.cimu,
-				lastNoice:         test.fields.lastNoice,
+				lastNocie:         test.fields.lastNocie,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				inMem:             test.fields.inMem,
@@ -1056,7 +886,7 @@ func Test_ngt_SearchByID(t *testing.T) {
 			}
 
 			_, gotDst, err := n.SearchByID(test.args.uuid, test.args.size, test.args.epsilon, test.args.radius)
-			if err := test.checkFunc(test.want, gotDst, err); err != nil {
+			if err := checkFunc(test.want, gotDst, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1076,7 +906,7 @@ func Test_ngt_Insert(t *testing.T) {
 		indexing          atomic.Value
 		saving            atomic.Value
 		cimu              sync.Mutex
-		lastNoice         uint64
+		lastNocie         uint64
 		nocie             uint64
 		nogce             uint64
 		inMem             bool
@@ -1131,7 +961,7 @@ func Test_ngt_Insert(t *testing.T) {
 		           indexing: nil,
 		           saving: nil,
 		           cimu: sync.Mutex{},
-		           lastNoice: 0,
+		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -1173,7 +1003,7 @@ func Test_ngt_Insert(t *testing.T) {
 		           indexing: nil,
 		           saving: nil,
 		           cimu: sync.Mutex{},
-		           lastNoice: 0,
+		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -1211,8 +1041,9 @@ func Test_ngt_Insert(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
 				core:              test.fields.core,
@@ -1222,7 +1053,7 @@ func Test_ngt_Insert(t *testing.T) {
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
 				cimu:              test.fields.cimu,
-				lastNoice:         test.fields.lastNoice,
+				lastNocie:         test.fields.lastNocie,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				inMem:             test.fields.inMem,
@@ -1244,7 +1075,7 @@ func Test_ngt_Insert(t *testing.T) {
 			}
 
 			err := n.Insert(test.args.uuid, test.args.vec)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1265,7 +1096,7 @@ func Test_ngt_InsertWithTime(t *testing.T) {
 		indexing          atomic.Value
 		saving            atomic.Value
 		cimu              sync.Mutex
-		lastNoice         uint64
+		lastNocie         uint64
 		nocie             uint64
 		nogce             uint64
 		inMem             bool
@@ -1321,7 +1152,7 @@ func Test_ngt_InsertWithTime(t *testing.T) {
 		           indexing: nil,
 		           saving: nil,
 		           cimu: sync.Mutex{},
-		           lastNoice: 0,
+		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -1364,7 +1195,7 @@ func Test_ngt_InsertWithTime(t *testing.T) {
 		           indexing: nil,
 		           saving: nil,
 		           cimu: sync.Mutex{},
-		           lastNoice: 0,
+		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -1402,8 +1233,9 @@ func Test_ngt_InsertWithTime(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
 				core:              test.fields.core,
@@ -1413,7 +1245,7 @@ func Test_ngt_InsertWithTime(t *testing.T) {
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
 				cimu:              test.fields.cimu,
-				lastNoice:         test.fields.lastNoice,
+				lastNocie:         test.fields.lastNocie,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				inMem:             test.fields.inMem,
@@ -1435,7 +1267,7 @@ func Test_ngt_InsertWithTime(t *testing.T) {
 			}
 
 			err := n.InsertWithTime(test.args.uuid, test.args.vec, test.args.t)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1457,7 +1289,7 @@ func Test_ngt_insert(t *testing.T) {
 		indexing          atomic.Value
 		saving            atomic.Value
 		cimu              sync.Mutex
-		lastNoice         uint64
+		lastNocie         uint64
 		nocie             uint64
 		nogce             uint64
 		inMem             bool
@@ -1514,7 +1346,7 @@ func Test_ngt_insert(t *testing.T) {
 		           indexing: nil,
 		           saving: nil,
 		           cimu: sync.Mutex{},
-		           lastNoice: 0,
+		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -1558,7 +1390,7 @@ func Test_ngt_insert(t *testing.T) {
 		           indexing: nil,
 		           saving: nil,
 		           cimu: sync.Mutex{},
-		           lastNoice: 0,
+		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -1596,8 +1428,9 @@ func Test_ngt_insert(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
 				core:              test.fields.core,
@@ -1607,7 +1440,7 @@ func Test_ngt_insert(t *testing.T) {
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
 				cimu:              test.fields.cimu,
-				lastNoice:         test.fields.lastNoice,
+				lastNocie:         test.fields.lastNocie,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				inMem:             test.fields.inMem,
@@ -1629,7 +1462,7 @@ func Test_ngt_insert(t *testing.T) {
 			}
 
 			err := n.insert(test.args.uuid, test.args.vec, test.args.t, test.args.validation)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1648,7 +1481,7 @@ func Test_ngt_InsertMultiple(t *testing.T) {
 		indexing          atomic.Value
 		saving            atomic.Value
 		cimu              sync.Mutex
-		lastNoice         uint64
+		lastNocie         uint64
 		nocie             uint64
 		nogce             uint64
 		inMem             bool
@@ -1702,7 +1535,7 @@ func Test_ngt_InsertMultiple(t *testing.T) {
 		           indexing: nil,
 		           saving: nil,
 		           cimu: sync.Mutex{},
-		           lastNoice: 0,
+		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -1743,7 +1576,7 @@ func Test_ngt_InsertMultiple(t *testing.T) {
 		           indexing: nil,
 		           saving: nil,
 		           cimu: sync.Mutex{},
-		           lastNoice: 0,
+		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -1781,8 +1614,9 @@ func Test_ngt_InsertMultiple(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
 				core:              test.fields.core,
@@ -1792,7 +1626,7 @@ func Test_ngt_InsertMultiple(t *testing.T) {
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
 				cimu:              test.fields.cimu,
-				lastNoice:         test.fields.lastNoice,
+				lastNocie:         test.fields.lastNocie,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				inMem:             test.fields.inMem,
@@ -1814,7 +1648,7 @@ func Test_ngt_InsertMultiple(t *testing.T) {
 			}
 
 			err := n.InsertMultiple(test.args.vecs)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1834,7 +1668,7 @@ func Test_ngt_InsertMultipleWithTime(t *testing.T) {
 		indexing          atomic.Value
 		saving            atomic.Value
 		cimu              sync.Mutex
-		lastNoice         uint64
+		lastNocie         uint64
 		nocie             uint64
 		nogce             uint64
 		inMem             bool
@@ -1889,7 +1723,7 @@ func Test_ngt_InsertMultipleWithTime(t *testing.T) {
 		           indexing: nil,
 		           saving: nil,
 		           cimu: sync.Mutex{},
-		           lastNoice: 0,
+		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -1931,7 +1765,7 @@ func Test_ngt_InsertMultipleWithTime(t *testing.T) {
 		           indexing: nil,
 		           saving: nil,
 		           cimu: sync.Mutex{},
-		           lastNoice: 0,
+		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -1969,8 +1803,9 @@ func Test_ngt_InsertMultipleWithTime(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
 				core:              test.fields.core,
@@ -1980,7 +1815,7 @@ func Test_ngt_InsertMultipleWithTime(t *testing.T) {
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
 				cimu:              test.fields.cimu,
-				lastNoice:         test.fields.lastNoice,
+				lastNocie:         test.fields.lastNocie,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				inMem:             test.fields.inMem,
@@ -2002,7 +1837,7 @@ func Test_ngt_InsertMultipleWithTime(t *testing.T) {
 			}
 
 			err := n.InsertMultipleWithTime(test.args.vecs, test.args.t)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -2023,7 +1858,7 @@ func Test_ngt_insertMultiple(t *testing.T) {
 		indexing          atomic.Value
 		saving            atomic.Value
 		cimu              sync.Mutex
-		lastNoice         uint64
+		lastNocie         uint64
 		nocie             uint64
 		nogce             uint64
 		inMem             bool
@@ -2079,7 +1914,7 @@ func Test_ngt_insertMultiple(t *testing.T) {
 		           indexing: nil,
 		           saving: nil,
 		           cimu: sync.Mutex{},
-		           lastNoice: 0,
+		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -2122,7 +1957,7 @@ func Test_ngt_insertMultiple(t *testing.T) {
 		           indexing: nil,
 		           saving: nil,
 		           cimu: sync.Mutex{},
-		           lastNoice: 0,
+		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -2160,8 +1995,9 @@ func Test_ngt_insertMultiple(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
 				core:              test.fields.core,
@@ -2171,7 +2007,7 @@ func Test_ngt_insertMultiple(t *testing.T) {
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
 				cimu:              test.fields.cimu,
-				lastNoice:         test.fields.lastNoice,
+				lastNocie:         test.fields.lastNocie,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				inMem:             test.fields.inMem,
@@ -2193,7 +2029,7 @@ func Test_ngt_insertMultiple(t *testing.T) {
 			}
 
 			err := n.insertMultiple(test.args.vecs, test.args.now, test.args.validation)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -2213,7 +2049,7 @@ func Test_ngt_Update(t *testing.T) {
 		indexing          atomic.Value
 		saving            atomic.Value
 		cimu              sync.Mutex
-		lastNoice         uint64
+		lastNocie         uint64
 		nocie             uint64
 		nogce             uint64
 		inMem             bool
@@ -2268,7 +2104,7 @@ func Test_ngt_Update(t *testing.T) {
 		           indexing: nil,
 		           saving: nil,
 		           cimu: sync.Mutex{},
-		           lastNoice: 0,
+		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -2310,7 +2146,7 @@ func Test_ngt_Update(t *testing.T) {
 		           indexing: nil,
 		           saving: nil,
 		           cimu: sync.Mutex{},
-		           lastNoice: 0,
+		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -2348,8 +2184,9 @@ func Test_ngt_Update(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
 				core:              test.fields.core,
@@ -2359,7 +2196,7 @@ func Test_ngt_Update(t *testing.T) {
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
 				cimu:              test.fields.cimu,
-				lastNoice:         test.fields.lastNoice,
+				lastNocie:         test.fields.lastNocie,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				inMem:             test.fields.inMem,
@@ -2381,7 +2218,7 @@ func Test_ngt_Update(t *testing.T) {
 			}
 
 			err := n.Update(test.args.uuid, test.args.vec)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -2402,7 +2239,7 @@ func Test_ngt_UpdateWithTime(t *testing.T) {
 		indexing          atomic.Value
 		saving            atomic.Value
 		cimu              sync.Mutex
-		lastNoice         uint64
+		lastNocie         uint64
 		nocie             uint64
 		nogce             uint64
 		inMem             bool
@@ -2458,7 +2295,7 @@ func Test_ngt_UpdateWithTime(t *testing.T) {
 		           indexing: nil,
 		           saving: nil,
 		           cimu: sync.Mutex{},
-		           lastNoice: 0,
+		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -2501,7 +2338,7 @@ func Test_ngt_UpdateWithTime(t *testing.T) {
 		           indexing: nil,
 		           saving: nil,
 		           cimu: sync.Mutex{},
-		           lastNoice: 0,
+		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -2539,8 +2376,9 @@ func Test_ngt_UpdateWithTime(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
 				core:              test.fields.core,
@@ -2550,7 +2388,7 @@ func Test_ngt_UpdateWithTime(t *testing.T) {
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
 				cimu:              test.fields.cimu,
-				lastNoice:         test.fields.lastNoice,
+				lastNocie:         test.fields.lastNocie,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				inMem:             test.fields.inMem,
@@ -2572,7 +2410,7 @@ func Test_ngt_UpdateWithTime(t *testing.T) {
 			}
 
 			err := n.UpdateWithTime(test.args.uuid, test.args.vec, test.args.t)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -2593,7 +2431,7 @@ func Test_ngt_update(t *testing.T) {
 		indexing          atomic.Value
 		saving            atomic.Value
 		cimu              sync.Mutex
-		lastNoice         uint64
+		lastNocie         uint64
 		nocie             uint64
 		nogce             uint64
 		inMem             bool
@@ -2649,7 +2487,7 @@ func Test_ngt_update(t *testing.T) {
 		           indexing: nil,
 		           saving: nil,
 		           cimu: sync.Mutex{},
-		           lastNoice: 0,
+		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -2692,7 +2530,7 @@ func Test_ngt_update(t *testing.T) {
 		           indexing: nil,
 		           saving: nil,
 		           cimu: sync.Mutex{},
-		           lastNoice: 0,
+		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -2730,8 +2568,9 @@ func Test_ngt_update(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
 				core:              test.fields.core,
@@ -2741,7 +2580,7 @@ func Test_ngt_update(t *testing.T) {
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
 				cimu:              test.fields.cimu,
-				lastNoice:         test.fields.lastNoice,
+				lastNocie:         test.fields.lastNocie,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				inMem:             test.fields.inMem,
@@ -2763,7 +2602,7 @@ func Test_ngt_update(t *testing.T) {
 			}
 
 			err := n.update(test.args.uuid, test.args.vec, test.args.t)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -2782,7 +2621,7 @@ func Test_ngt_UpdateMultiple(t *testing.T) {
 		indexing          atomic.Value
 		saving            atomic.Value
 		cimu              sync.Mutex
-		lastNoice         uint64
+		lastNocie         uint64
 		nocie             uint64
 		nogce             uint64
 		inMem             bool
@@ -2836,7 +2675,7 @@ func Test_ngt_UpdateMultiple(t *testing.T) {
 		           indexing: nil,
 		           saving: nil,
 		           cimu: sync.Mutex{},
-		           lastNoice: 0,
+		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -2877,7 +2716,7 @@ func Test_ngt_UpdateMultiple(t *testing.T) {
 		           indexing: nil,
 		           saving: nil,
 		           cimu: sync.Mutex{},
-		           lastNoice: 0,
+		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -2915,8 +2754,9 @@ func Test_ngt_UpdateMultiple(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
 				core:              test.fields.core,
@@ -2926,7 +2766,7 @@ func Test_ngt_UpdateMultiple(t *testing.T) {
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
 				cimu:              test.fields.cimu,
-				lastNoice:         test.fields.lastNoice,
+				lastNocie:         test.fields.lastNocie,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				inMem:             test.fields.inMem,
@@ -2948,7 +2788,7 @@ func Test_ngt_UpdateMultiple(t *testing.T) {
 			}
 
 			err := n.UpdateMultiple(test.args.vecs)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -2968,7 +2808,7 @@ func Test_ngt_UpdateMultipleWithTime(t *testing.T) {
 		indexing          atomic.Value
 		saving            atomic.Value
 		cimu              sync.Mutex
-		lastNoice         uint64
+		lastNocie         uint64
 		nocie             uint64
 		nogce             uint64
 		inMem             bool
@@ -3023,7 +2863,7 @@ func Test_ngt_UpdateMultipleWithTime(t *testing.T) {
 		           indexing: nil,
 		           saving: nil,
 		           cimu: sync.Mutex{},
-		           lastNoice: 0,
+		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -3065,7 +2905,7 @@ func Test_ngt_UpdateMultipleWithTime(t *testing.T) {
 		           indexing: nil,
 		           saving: nil,
 		           cimu: sync.Mutex{},
-		           lastNoice: 0,
+		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -3103,8 +2943,9 @@ func Test_ngt_UpdateMultipleWithTime(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
 				core:              test.fields.core,
@@ -3114,7 +2955,7 @@ func Test_ngt_UpdateMultipleWithTime(t *testing.T) {
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
 				cimu:              test.fields.cimu,
-				lastNoice:         test.fields.lastNoice,
+				lastNocie:         test.fields.lastNocie,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				inMem:             test.fields.inMem,
@@ -3136,7 +2977,7 @@ func Test_ngt_UpdateMultipleWithTime(t *testing.T) {
 			}
 
 			err := n.UpdateMultipleWithTime(test.args.vecs, test.args.t)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -3156,7 +2997,7 @@ func Test_ngt_updateMultiple(t *testing.T) {
 		indexing          atomic.Value
 		saving            atomic.Value
 		cimu              sync.Mutex
-		lastNoice         uint64
+		lastNocie         uint64
 		nocie             uint64
 		nogce             uint64
 		inMem             bool
@@ -3211,7 +3052,7 @@ func Test_ngt_updateMultiple(t *testing.T) {
 		           indexing: nil,
 		           saving: nil,
 		           cimu: sync.Mutex{},
-		           lastNoice: 0,
+		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -3253,7 +3094,7 @@ func Test_ngt_updateMultiple(t *testing.T) {
 		           indexing: nil,
 		           saving: nil,
 		           cimu: sync.Mutex{},
-		           lastNoice: 0,
+		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -3291,8 +3132,9 @@ func Test_ngt_updateMultiple(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
 				core:              test.fields.core,
@@ -3302,7 +3144,7 @@ func Test_ngt_updateMultiple(t *testing.T) {
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
 				cimu:              test.fields.cimu,
-				lastNoice:         test.fields.lastNoice,
+				lastNocie:         test.fields.lastNocie,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				inMem:             test.fields.inMem,
@@ -3324,7 +3166,7 @@ func Test_ngt_updateMultiple(t *testing.T) {
 			}
 
 			err := n.updateMultiple(test.args.vecs, test.args.t)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -3343,7 +3185,7 @@ func Test_ngt_Delete(t *testing.T) {
 		indexing          atomic.Value
 		saving            atomic.Value
 		cimu              sync.Mutex
-		lastNoice         uint64
+		lastNocie         uint64
 		nocie             uint64
 		nogce             uint64
 		inMem             bool
@@ -3397,7 +3239,7 @@ func Test_ngt_Delete(t *testing.T) {
 		           indexing: nil,
 		           saving: nil,
 		           cimu: sync.Mutex{},
-		           lastNoice: 0,
+		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -3438,7 +3280,7 @@ func Test_ngt_Delete(t *testing.T) {
 		           indexing: nil,
 		           saving: nil,
 		           cimu: sync.Mutex{},
-		           lastNoice: 0,
+		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -3476,8 +3318,9 @@ func Test_ngt_Delete(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
 				core:              test.fields.core,
@@ -3487,7 +3330,7 @@ func Test_ngt_Delete(t *testing.T) {
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
 				cimu:              test.fields.cimu,
-				lastNoice:         test.fields.lastNoice,
+				lastNocie:         test.fields.lastNocie,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				inMem:             test.fields.inMem,
@@ -3509,7 +3352,7 @@ func Test_ngt_Delete(t *testing.T) {
 			}
 
 			err := n.Delete(test.args.uuid)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -3529,7 +3372,7 @@ func Test_ngt_DeleteWithTime(t *testing.T) {
 		indexing          atomic.Value
 		saving            atomic.Value
 		cimu              sync.Mutex
-		lastNoice         uint64
+		lastNocie         uint64
 		nocie             uint64
 		nogce             uint64
 		inMem             bool
@@ -3584,7 +3427,7 @@ func Test_ngt_DeleteWithTime(t *testing.T) {
 		           indexing: nil,
 		           saving: nil,
 		           cimu: sync.Mutex{},
-		           lastNoice: 0,
+		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -3626,7 +3469,7 @@ func Test_ngt_DeleteWithTime(t *testing.T) {
 		           indexing: nil,
 		           saving: nil,
 		           cimu: sync.Mutex{},
-		           lastNoice: 0,
+		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -3664,8 +3507,9 @@ func Test_ngt_DeleteWithTime(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
 				core:              test.fields.core,
@@ -3675,7 +3519,7 @@ func Test_ngt_DeleteWithTime(t *testing.T) {
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
 				cimu:              test.fields.cimu,
-				lastNoice:         test.fields.lastNoice,
+				lastNocie:         test.fields.lastNocie,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				inMem:             test.fields.inMem,
@@ -3697,7 +3541,7 @@ func Test_ngt_DeleteWithTime(t *testing.T) {
 			}
 
 			err := n.DeleteWithTime(test.args.uuid, test.args.t)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -3718,7 +3562,7 @@ func Test_ngt_delete(t *testing.T) {
 		indexing          atomic.Value
 		saving            atomic.Value
 		cimu              sync.Mutex
-		lastNoice         uint64
+		lastNocie         uint64
 		nocie             uint64
 		nogce             uint64
 		inMem             bool
@@ -3774,7 +3618,7 @@ func Test_ngt_delete(t *testing.T) {
 		           indexing: nil,
 		           saving: nil,
 		           cimu: sync.Mutex{},
-		           lastNoice: 0,
+		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -3817,7 +3661,7 @@ func Test_ngt_delete(t *testing.T) {
 		           indexing: nil,
 		           saving: nil,
 		           cimu: sync.Mutex{},
-		           lastNoice: 0,
+		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -3855,8 +3699,9 @@ func Test_ngt_delete(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
 				core:              test.fields.core,
@@ -3866,7 +3711,7 @@ func Test_ngt_delete(t *testing.T) {
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
 				cimu:              test.fields.cimu,
-				lastNoice:         test.fields.lastNoice,
+				lastNocie:         test.fields.lastNocie,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				inMem:             test.fields.inMem,
@@ -3888,7 +3733,7 @@ func Test_ngt_delete(t *testing.T) {
 			}
 
 			err := n.delete(test.args.uuid, test.args.t, test.args.validation)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -3907,7 +3752,7 @@ func Test_ngt_DeleteMultiple(t *testing.T) {
 		indexing          atomic.Value
 		saving            atomic.Value
 		cimu              sync.Mutex
-		lastNoice         uint64
+		lastNocie         uint64
 		nocie             uint64
 		nogce             uint64
 		inMem             bool
@@ -3961,7 +3806,7 @@ func Test_ngt_DeleteMultiple(t *testing.T) {
 		           indexing: nil,
 		           saving: nil,
 		           cimu: sync.Mutex{},
-		           lastNoice: 0,
+		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -4002,7 +3847,7 @@ func Test_ngt_DeleteMultiple(t *testing.T) {
 		           indexing: nil,
 		           saving: nil,
 		           cimu: sync.Mutex{},
-		           lastNoice: 0,
+		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -4040,8 +3885,9 @@ func Test_ngt_DeleteMultiple(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
 				core:              test.fields.core,
@@ -4051,7 +3897,7 @@ func Test_ngt_DeleteMultiple(t *testing.T) {
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
 				cimu:              test.fields.cimu,
-				lastNoice:         test.fields.lastNoice,
+				lastNocie:         test.fields.lastNocie,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				inMem:             test.fields.inMem,
@@ -4073,7 +3919,7 @@ func Test_ngt_DeleteMultiple(t *testing.T) {
 			}
 
 			err := n.DeleteMultiple(test.args.uuids...)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -4093,7 +3939,7 @@ func Test_ngt_DeleteMultipleWithTime(t *testing.T) {
 		indexing          atomic.Value
 		saving            atomic.Value
 		cimu              sync.Mutex
-		lastNoice         uint64
+		lastNocie         uint64
 		nocie             uint64
 		nogce             uint64
 		inMem             bool
@@ -4148,7 +3994,7 @@ func Test_ngt_DeleteMultipleWithTime(t *testing.T) {
 		           indexing: nil,
 		           saving: nil,
 		           cimu: sync.Mutex{},
-		           lastNoice: 0,
+		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -4190,7 +4036,7 @@ func Test_ngt_DeleteMultipleWithTime(t *testing.T) {
 		           indexing: nil,
 		           saving: nil,
 		           cimu: sync.Mutex{},
-		           lastNoice: 0,
+		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -4228,8 +4074,9 @@ func Test_ngt_DeleteMultipleWithTime(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
 				core:              test.fields.core,
@@ -4239,7 +4086,7 @@ func Test_ngt_DeleteMultipleWithTime(t *testing.T) {
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
 				cimu:              test.fields.cimu,
-				lastNoice:         test.fields.lastNoice,
+				lastNocie:         test.fields.lastNocie,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				inMem:             test.fields.inMem,
@@ -4261,7 +4108,7 @@ func Test_ngt_DeleteMultipleWithTime(t *testing.T) {
 			}
 
 			err := n.DeleteMultipleWithTime(test.args.uuids, test.args.t)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -4282,7 +4129,7 @@ func Test_ngt_deleteMultiple(t *testing.T) {
 		indexing          atomic.Value
 		saving            atomic.Value
 		cimu              sync.Mutex
-		lastNoice         uint64
+		lastNocie         uint64
 		nocie             uint64
 		nogce             uint64
 		inMem             bool
@@ -4338,7 +4185,7 @@ func Test_ngt_deleteMultiple(t *testing.T) {
 		           indexing: nil,
 		           saving: nil,
 		           cimu: sync.Mutex{},
-		           lastNoice: 0,
+		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -4381,7 +4228,7 @@ func Test_ngt_deleteMultiple(t *testing.T) {
 		           indexing: nil,
 		           saving: nil,
 		           cimu: sync.Mutex{},
-		           lastNoice: 0,
+		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -4419,8 +4266,9 @@ func Test_ngt_deleteMultiple(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
 				core:              test.fields.core,
@@ -4430,7 +4278,7 @@ func Test_ngt_deleteMultiple(t *testing.T) {
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
 				cimu:              test.fields.cimu,
-				lastNoice:         test.fields.lastNoice,
+				lastNocie:         test.fields.lastNocie,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				inMem:             test.fields.inMem,
@@ -4452,7 +4300,7 @@ func Test_ngt_deleteMultiple(t *testing.T) {
 			}
 
 			err := n.deleteMultiple(test.args.uuids, test.args.now, test.args.validation)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -4472,7 +4320,7 @@ func Test_ngt_CreateIndex(t *testing.T) {
 		indexing          atomic.Value
 		saving            atomic.Value
 		cimu              sync.Mutex
-		lastNoice         uint64
+		lastNocie         uint64
 		nocie             uint64
 		nogce             uint64
 		inMem             bool
@@ -4527,7 +4375,7 @@ func Test_ngt_CreateIndex(t *testing.T) {
 		           indexing: nil,
 		           saving: nil,
 		           cimu: sync.Mutex{},
-		           lastNoice: 0,
+		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -4569,7 +4417,7 @@ func Test_ngt_CreateIndex(t *testing.T) {
 		           indexing: nil,
 		           saving: nil,
 		           cimu: sync.Mutex{},
-		           lastNoice: 0,
+		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -4607,8 +4455,9 @@ func Test_ngt_CreateIndex(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
 				core:              test.fields.core,
@@ -4618,7 +4467,7 @@ func Test_ngt_CreateIndex(t *testing.T) {
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
 				cimu:              test.fields.cimu,
-				lastNoice:         test.fields.lastNoice,
+				lastNocie:         test.fields.lastNocie,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				inMem:             test.fields.inMem,
@@ -4640,7 +4489,7 @@ func Test_ngt_CreateIndex(t *testing.T) {
 			}
 
 			err := n.CreateIndex(test.args.ctx, test.args.poolSize)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -4659,7 +4508,7 @@ func Test_ngt_SaveIndex(t *testing.T) {
 		indexing          atomic.Value
 		saving            atomic.Value
 		cimu              sync.Mutex
-		lastNoice         uint64
+		lastNocie         uint64
 		nocie             uint64
 		nogce             uint64
 		inMem             bool
@@ -4713,7 +4562,7 @@ func Test_ngt_SaveIndex(t *testing.T) {
 		           indexing: nil,
 		           saving: nil,
 		           cimu: sync.Mutex{},
-		           lastNoice: 0,
+		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -4754,7 +4603,7 @@ func Test_ngt_SaveIndex(t *testing.T) {
 		           indexing: nil,
 		           saving: nil,
 		           cimu: sync.Mutex{},
-		           lastNoice: 0,
+		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -4792,8 +4641,9 @@ func Test_ngt_SaveIndex(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
 				core:              test.fields.core,
@@ -4803,7 +4653,7 @@ func Test_ngt_SaveIndex(t *testing.T) {
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
 				cimu:              test.fields.cimu,
-				lastNoice:         test.fields.lastNoice,
+				lastNocie:         test.fields.lastNocie,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				inMem:             test.fields.inMem,
@@ -4825,7 +4675,7 @@ func Test_ngt_SaveIndex(t *testing.T) {
 			}
 
 			err := n.SaveIndex(test.args.ctx)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -4844,7 +4694,7 @@ func Test_ngt_saveIndex(t *testing.T) {
 		indexing          atomic.Value
 		saving            atomic.Value
 		cimu              sync.Mutex
-		lastNoice         uint64
+		lastNocie         uint64
 		nocie             uint64
 		nogce             uint64
 		inMem             bool
@@ -4898,7 +4748,7 @@ func Test_ngt_saveIndex(t *testing.T) {
 		           indexing: nil,
 		           saving: nil,
 		           cimu: sync.Mutex{},
-		           lastNoice: 0,
+		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -4939,7 +4789,7 @@ func Test_ngt_saveIndex(t *testing.T) {
 		           indexing: nil,
 		           saving: nil,
 		           cimu: sync.Mutex{},
-		           lastNoice: 0,
+		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -4977,8 +4827,9 @@ func Test_ngt_saveIndex(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
 				core:              test.fields.core,
@@ -4988,7 +4839,7 @@ func Test_ngt_saveIndex(t *testing.T) {
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
 				cimu:              test.fields.cimu,
-				lastNoice:         test.fields.lastNoice,
+				lastNocie:         test.fields.lastNocie,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				inMem:             test.fields.inMem,
@@ -5010,7 +4861,7 @@ func Test_ngt_saveIndex(t *testing.T) {
 			}
 
 			err := n.saveIndex(test.args.ctx)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -5030,7 +4881,7 @@ func Test_ngt_CreateAndSaveIndex(t *testing.T) {
 		indexing          atomic.Value
 		saving            atomic.Value
 		cimu              sync.Mutex
-		lastNoice         uint64
+		lastNocie         uint64
 		nocie             uint64
 		nogce             uint64
 		inMem             bool
@@ -5085,7 +4936,7 @@ func Test_ngt_CreateAndSaveIndex(t *testing.T) {
 		           indexing: nil,
 		           saving: nil,
 		           cimu: sync.Mutex{},
-		           lastNoice: 0,
+		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -5127,7 +4978,7 @@ func Test_ngt_CreateAndSaveIndex(t *testing.T) {
 		           indexing: nil,
 		           saving: nil,
 		           cimu: sync.Mutex{},
-		           lastNoice: 0,
+		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -5165,8 +5016,9 @@ func Test_ngt_CreateAndSaveIndex(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
 				core:              test.fields.core,
@@ -5176,7 +5028,7 @@ func Test_ngt_CreateAndSaveIndex(t *testing.T) {
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
 				cimu:              test.fields.cimu,
-				lastNoice:         test.fields.lastNoice,
+				lastNocie:         test.fields.lastNocie,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				inMem:             test.fields.inMem,
@@ -5198,7 +5050,7 @@ func Test_ngt_CreateAndSaveIndex(t *testing.T) {
 			}
 
 			err := n.CreateAndSaveIndex(test.args.ctx, test.args.poolSize)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -5217,7 +5069,7 @@ func Test_ngt_Exists(t *testing.T) {
 		indexing          atomic.Value
 		saving            atomic.Value
 		cimu              sync.Mutex
-		lastNoice         uint64
+		lastNocie         uint64
 		nocie             uint64
 		nogce             uint64
 		inMem             bool
@@ -5275,7 +5127,7 @@ func Test_ngt_Exists(t *testing.T) {
 		           indexing: nil,
 		           saving: nil,
 		           cimu: sync.Mutex{},
-		           lastNoice: 0,
+		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -5316,7 +5168,7 @@ func Test_ngt_Exists(t *testing.T) {
 		           indexing: nil,
 		           saving: nil,
 		           cimu: sync.Mutex{},
-		           lastNoice: 0,
+		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -5354,8 +5206,9 @@ func Test_ngt_Exists(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
 				core:              test.fields.core,
@@ -5365,7 +5218,7 @@ func Test_ngt_Exists(t *testing.T) {
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
 				cimu:              test.fields.cimu,
-				lastNoice:         test.fields.lastNoice,
+				lastNocie:         test.fields.lastNocie,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				inMem:             test.fields.inMem,
@@ -5387,7 +5240,7 @@ func Test_ngt_Exists(t *testing.T) {
 			}
 
 			gotOid, gotOk := n.Exists(test.args.uuid)
-			if err := test.checkFunc(test.want, gotOid, gotOk); err != nil {
+			if err := checkFunc(test.want, gotOid, gotOk); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -5406,7 +5259,7 @@ func Test_ngt_GetObject(t *testing.T) {
 		indexing          atomic.Value
 		saving            atomic.Value
 		cimu              sync.Mutex
-		lastNoice         uint64
+		lastNocie         uint64
 		nocie             uint64
 		nogce             uint64
 		inMem             bool
@@ -5464,7 +5317,7 @@ func Test_ngt_GetObject(t *testing.T) {
 		           indexing: nil,
 		           saving: nil,
 		           cimu: sync.Mutex{},
-		           lastNoice: 0,
+		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -5505,7 +5358,7 @@ func Test_ngt_GetObject(t *testing.T) {
 		           indexing: nil,
 		           saving: nil,
 		           cimu: sync.Mutex{},
-		           lastNoice: 0,
+		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -5543,8 +5396,9 @@ func Test_ngt_GetObject(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
 				core:              test.fields.core,
@@ -5554,7 +5408,7 @@ func Test_ngt_GetObject(t *testing.T) {
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
 				cimu:              test.fields.cimu,
-				lastNoice:         test.fields.lastNoice,
+				lastNocie:         test.fields.lastNocie,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				inMem:             test.fields.inMem,
@@ -5576,7 +5430,7 @@ func Test_ngt_GetObject(t *testing.T) {
 			}
 
 			gotVec, err := n.GetObject(test.args.uuid)
-			if err := test.checkFunc(test.want, gotVec, err); err != nil {
+			if err := checkFunc(test.want, gotVec, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -5596,7 +5450,7 @@ func Test_ngt_readyForUpdate(t *testing.T) {
 		indexing          atomic.Value
 		saving            atomic.Value
 		cimu              sync.Mutex
-		lastNoice         uint64
+		lastNocie         uint64
 		nocie             uint64
 		nogce             uint64
 		inMem             bool
@@ -5651,7 +5505,7 @@ func Test_ngt_readyForUpdate(t *testing.T) {
 		           indexing: nil,
 		           saving: nil,
 		           cimu: sync.Mutex{},
-		           lastNoice: 0,
+		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -5693,7 +5547,7 @@ func Test_ngt_readyForUpdate(t *testing.T) {
 		           indexing: nil,
 		           saving: nil,
 		           cimu: sync.Mutex{},
-		           lastNoice: 0,
+		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -5731,8 +5585,9 @@ func Test_ngt_readyForUpdate(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
 				core:              test.fields.core,
@@ -5742,7 +5597,7 @@ func Test_ngt_readyForUpdate(t *testing.T) {
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
 				cimu:              test.fields.cimu,
-				lastNoice:         test.fields.lastNoice,
+				lastNocie:         test.fields.lastNocie,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				inMem:             test.fields.inMem,
@@ -5764,7 +5619,7 @@ func Test_ngt_readyForUpdate(t *testing.T) {
 			}
 
 			err := n.readyForUpdate(test.args.uuid, test.args.vec)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -5780,7 +5635,7 @@ func Test_ngt_IsSaving(t *testing.T) {
 		indexing          atomic.Value
 		saving            atomic.Value
 		cimu              sync.Mutex
-		lastNoice         uint64
+		lastNocie         uint64
 		nocie             uint64
 		nogce             uint64
 		inMem             bool
@@ -5830,7 +5685,7 @@ func Test_ngt_IsSaving(t *testing.T) {
 		           indexing: nil,
 		           saving: nil,
 		           cimu: sync.Mutex{},
-		           lastNoice: 0,
+		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -5868,7 +5723,7 @@ func Test_ngt_IsSaving(t *testing.T) {
 		           indexing: nil,
 		           saving: nil,
 		           cimu: sync.Mutex{},
-		           lastNoice: 0,
+		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -5906,8 +5761,9 @@ func Test_ngt_IsSaving(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
 				core:              test.fields.core,
@@ -5917,7 +5773,7 @@ func Test_ngt_IsSaving(t *testing.T) {
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
 				cimu:              test.fields.cimu,
-				lastNoice:         test.fields.lastNoice,
+				lastNocie:         test.fields.lastNocie,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				inMem:             test.fields.inMem,
@@ -5939,7 +5795,7 @@ func Test_ngt_IsSaving(t *testing.T) {
 			}
 
 			got := n.IsSaving()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -5955,7 +5811,7 @@ func Test_ngt_IsIndexing(t *testing.T) {
 		indexing          atomic.Value
 		saving            atomic.Value
 		cimu              sync.Mutex
-		lastNoice         uint64
+		lastNocie         uint64
 		nocie             uint64
 		nogce             uint64
 		inMem             bool
@@ -6005,7 +5861,7 @@ func Test_ngt_IsIndexing(t *testing.T) {
 		           indexing: nil,
 		           saving: nil,
 		           cimu: sync.Mutex{},
-		           lastNoice: 0,
+		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -6043,7 +5899,7 @@ func Test_ngt_IsIndexing(t *testing.T) {
 		           indexing: nil,
 		           saving: nil,
 		           cimu: sync.Mutex{},
-		           lastNoice: 0,
+		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -6081,8 +5937,9 @@ func Test_ngt_IsIndexing(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
 				core:              test.fields.core,
@@ -6092,7 +5949,7 @@ func Test_ngt_IsIndexing(t *testing.T) {
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
 				cimu:              test.fields.cimu,
-				lastNoice:         test.fields.lastNoice,
+				lastNocie:         test.fields.lastNocie,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				inMem:             test.fields.inMem,
@@ -6114,7 +5971,7 @@ func Test_ngt_IsIndexing(t *testing.T) {
 			}
 
 			got := n.IsIndexing()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -6133,7 +5990,7 @@ func Test_ngt_UUIDs(t *testing.T) {
 		indexing          atomic.Value
 		saving            atomic.Value
 		cimu              sync.Mutex
-		lastNoice         uint64
+		lastNocie         uint64
 		nocie             uint64
 		nogce             uint64
 		inMem             bool
@@ -6187,7 +6044,7 @@ func Test_ngt_UUIDs(t *testing.T) {
 		           indexing: nil,
 		           saving: nil,
 		           cimu: sync.Mutex{},
-		           lastNoice: 0,
+		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -6228,7 +6085,7 @@ func Test_ngt_UUIDs(t *testing.T) {
 		           indexing: nil,
 		           saving: nil,
 		           cimu: sync.Mutex{},
-		           lastNoice: 0,
+		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -6266,8 +6123,9 @@ func Test_ngt_UUIDs(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
 				core:              test.fields.core,
@@ -6277,7 +6135,7 @@ func Test_ngt_UUIDs(t *testing.T) {
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
 				cimu:              test.fields.cimu,
-				lastNoice:         test.fields.lastNoice,
+				lastNocie:         test.fields.lastNocie,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				inMem:             test.fields.inMem,
@@ -6299,7 +6157,7 @@ func Test_ngt_UUIDs(t *testing.T) {
 			}
 
 			gotUuids := n.UUIDs(test.args.ctx)
-			if err := test.checkFunc(test.want, gotUuids); err != nil {
+			if err := checkFunc(test.want, gotUuids); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -6315,7 +6173,7 @@ func Test_ngt_NumberOfCreateIndexExecution(t *testing.T) {
 		indexing          atomic.Value
 		saving            atomic.Value
 		cimu              sync.Mutex
-		lastNoice         uint64
+		lastNocie         uint64
 		nocie             uint64
 		nogce             uint64
 		inMem             bool
@@ -6365,7 +6223,7 @@ func Test_ngt_NumberOfCreateIndexExecution(t *testing.T) {
 		           indexing: nil,
 		           saving: nil,
 		           cimu: sync.Mutex{},
-		           lastNoice: 0,
+		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -6403,7 +6261,7 @@ func Test_ngt_NumberOfCreateIndexExecution(t *testing.T) {
 		           indexing: nil,
 		           saving: nil,
 		           cimu: sync.Mutex{},
-		           lastNoice: 0,
+		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -6441,8 +6299,9 @@ func Test_ngt_NumberOfCreateIndexExecution(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
 				core:              test.fields.core,
@@ -6452,7 +6311,7 @@ func Test_ngt_NumberOfCreateIndexExecution(t *testing.T) {
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
 				cimu:              test.fields.cimu,
-				lastNoice:         test.fields.lastNoice,
+				lastNocie:         test.fields.lastNocie,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				inMem:             test.fields.inMem,
@@ -6474,7 +6333,7 @@ func Test_ngt_NumberOfCreateIndexExecution(t *testing.T) {
 			}
 
 			got := n.NumberOfCreateIndexExecution()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -6490,7 +6349,7 @@ func Test_ngt_NumberOfProactiveGCExecution(t *testing.T) {
 		indexing          atomic.Value
 		saving            atomic.Value
 		cimu              sync.Mutex
-		lastNoice         uint64
+		lastNocie         uint64
 		nocie             uint64
 		nogce             uint64
 		inMem             bool
@@ -6540,7 +6399,7 @@ func Test_ngt_NumberOfProactiveGCExecution(t *testing.T) {
 		           indexing: nil,
 		           saving: nil,
 		           cimu: sync.Mutex{},
-		           lastNoice: 0,
+		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -6578,7 +6437,7 @@ func Test_ngt_NumberOfProactiveGCExecution(t *testing.T) {
 		           indexing: nil,
 		           saving: nil,
 		           cimu: sync.Mutex{},
-		           lastNoice: 0,
+		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -6616,8 +6475,9 @@ func Test_ngt_NumberOfProactiveGCExecution(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
 				core:              test.fields.core,
@@ -6627,7 +6487,7 @@ func Test_ngt_NumberOfProactiveGCExecution(t *testing.T) {
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
 				cimu:              test.fields.cimu,
-				lastNoice:         test.fields.lastNoice,
+				lastNocie:         test.fields.lastNocie,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				inMem:             test.fields.inMem,
@@ -6649,7 +6509,7 @@ func Test_ngt_NumberOfProactiveGCExecution(t *testing.T) {
 			}
 
 			got := n.NumberOfProactiveGCExecution()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -6665,7 +6525,7 @@ func Test_ngt_gc(t *testing.T) {
 		indexing          atomic.Value
 		saving            atomic.Value
 		cimu              sync.Mutex
-		lastNoice         uint64
+		lastNocie         uint64
 		nocie             uint64
 		nogce             uint64
 		inMem             bool
@@ -6710,7 +6570,7 @@ func Test_ngt_gc(t *testing.T) {
 		           indexing: nil,
 		           saving: nil,
 		           cimu: sync.Mutex{},
-		           lastNoice: 0,
+		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -6748,7 +6608,7 @@ func Test_ngt_gc(t *testing.T) {
 		           indexing: nil,
 		           saving: nil,
 		           cimu: sync.Mutex{},
-		           lastNoice: 0,
+		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -6786,8 +6646,9 @@ func Test_ngt_gc(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
 				core:              test.fields.core,
@@ -6797,7 +6658,7 @@ func Test_ngt_gc(t *testing.T) {
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
 				cimu:              test.fields.cimu,
-				lastNoice:         test.fields.lastNoice,
+				lastNocie:         test.fields.lastNocie,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				inMem:             test.fields.inMem,
@@ -6819,7 +6680,7 @@ func Test_ngt_gc(t *testing.T) {
 			}
 
 			n.gc()
-			if err := test.checkFunc(test.want); err != nil {
+			if err := checkFunc(test.want); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -6835,7 +6696,7 @@ func Test_ngt_Len(t *testing.T) {
 		indexing          atomic.Value
 		saving            atomic.Value
 		cimu              sync.Mutex
-		lastNoice         uint64
+		lastNocie         uint64
 		nocie             uint64
 		nogce             uint64
 		inMem             bool
@@ -6885,7 +6746,7 @@ func Test_ngt_Len(t *testing.T) {
 		           indexing: nil,
 		           saving: nil,
 		           cimu: sync.Mutex{},
-		           lastNoice: 0,
+		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -6923,7 +6784,7 @@ func Test_ngt_Len(t *testing.T) {
 		           indexing: nil,
 		           saving: nil,
 		           cimu: sync.Mutex{},
-		           lastNoice: 0,
+		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -6961,8 +6822,9 @@ func Test_ngt_Len(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
 				core:              test.fields.core,
@@ -6972,7 +6834,7 @@ func Test_ngt_Len(t *testing.T) {
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
 				cimu:              test.fields.cimu,
-				lastNoice:         test.fields.lastNoice,
+				lastNocie:         test.fields.lastNocie,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				inMem:             test.fields.inMem,
@@ -6994,7 +6856,7 @@ func Test_ngt_Len(t *testing.T) {
 			}
 
 			got := n.Len()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -7010,7 +6872,7 @@ func Test_ngt_InsertVQueueBufferLen(t *testing.T) {
 		indexing          atomic.Value
 		saving            atomic.Value
 		cimu              sync.Mutex
-		lastNoice         uint64
+		lastNocie         uint64
 		nocie             uint64
 		nogce             uint64
 		inMem             bool
@@ -7060,7 +6922,7 @@ func Test_ngt_InsertVQueueBufferLen(t *testing.T) {
 		           indexing: nil,
 		           saving: nil,
 		           cimu: sync.Mutex{},
-		           lastNoice: 0,
+		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -7098,7 +6960,7 @@ func Test_ngt_InsertVQueueBufferLen(t *testing.T) {
 		           indexing: nil,
 		           saving: nil,
 		           cimu: sync.Mutex{},
-		           lastNoice: 0,
+		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -7136,8 +6998,9 @@ func Test_ngt_InsertVQueueBufferLen(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
 				core:              test.fields.core,
@@ -7147,7 +7010,7 @@ func Test_ngt_InsertVQueueBufferLen(t *testing.T) {
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
 				cimu:              test.fields.cimu,
-				lastNoice:         test.fields.lastNoice,
+				lastNocie:         test.fields.lastNocie,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				inMem:             test.fields.inMem,
@@ -7169,7 +7032,7 @@ func Test_ngt_InsertVQueueBufferLen(t *testing.T) {
 			}
 
 			got := n.InsertVQueueBufferLen()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -7185,7 +7048,7 @@ func Test_ngt_DeleteVQueueBufferLen(t *testing.T) {
 		indexing          atomic.Value
 		saving            atomic.Value
 		cimu              sync.Mutex
-		lastNoice         uint64
+		lastNocie         uint64
 		nocie             uint64
 		nogce             uint64
 		inMem             bool
@@ -7235,7 +7098,7 @@ func Test_ngt_DeleteVQueueBufferLen(t *testing.T) {
 		           indexing: nil,
 		           saving: nil,
 		           cimu: sync.Mutex{},
-		           lastNoice: 0,
+		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -7273,7 +7136,7 @@ func Test_ngt_DeleteVQueueBufferLen(t *testing.T) {
 		           indexing: nil,
 		           saving: nil,
 		           cimu: sync.Mutex{},
-		           lastNoice: 0,
+		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -7311,8 +7174,9 @@ func Test_ngt_DeleteVQueueBufferLen(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
 				core:              test.fields.core,
@@ -7322,7 +7186,7 @@ func Test_ngt_DeleteVQueueBufferLen(t *testing.T) {
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
 				cimu:              test.fields.cimu,
-				lastNoice:         test.fields.lastNoice,
+				lastNocie:         test.fields.lastNocie,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				inMem:             test.fields.inMem,
@@ -7344,7 +7208,7 @@ func Test_ngt_DeleteVQueueBufferLen(t *testing.T) {
 			}
 
 			got := n.DeleteVQueueBufferLen()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -7360,7 +7224,7 @@ func Test_ngt_GetDimensionSize(t *testing.T) {
 		indexing          atomic.Value
 		saving            atomic.Value
 		cimu              sync.Mutex
-		lastNoice         uint64
+		lastNocie         uint64
 		nocie             uint64
 		nogce             uint64
 		inMem             bool
@@ -7410,7 +7274,7 @@ func Test_ngt_GetDimensionSize(t *testing.T) {
 		           indexing: nil,
 		           saving: nil,
 		           cimu: sync.Mutex{},
-		           lastNoice: 0,
+		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -7448,7 +7312,7 @@ func Test_ngt_GetDimensionSize(t *testing.T) {
 		           indexing: nil,
 		           saving: nil,
 		           cimu: sync.Mutex{},
-		           lastNoice: 0,
+		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -7486,8 +7350,9 @@ func Test_ngt_GetDimensionSize(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
 				core:              test.fields.core,
@@ -7497,7 +7362,7 @@ func Test_ngt_GetDimensionSize(t *testing.T) {
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
 				cimu:              test.fields.cimu,
-				lastNoice:         test.fields.lastNoice,
+				lastNocie:         test.fields.lastNocie,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				inMem:             test.fields.inMem,
@@ -7519,7 +7384,7 @@ func Test_ngt_GetDimensionSize(t *testing.T) {
 			}
 
 			got := n.GetDimensionSize()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -7538,7 +7403,7 @@ func Test_ngt_Close(t *testing.T) {
 		indexing          atomic.Value
 		saving            atomic.Value
 		cimu              sync.Mutex
-		lastNoice         uint64
+		lastNocie         uint64
 		nocie             uint64
 		nogce             uint64
 		inMem             bool
@@ -7592,7 +7457,7 @@ func Test_ngt_Close(t *testing.T) {
 		           indexing: nil,
 		           saving: nil,
 		           cimu: sync.Mutex{},
-		           lastNoice: 0,
+		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -7633,7 +7498,7 @@ func Test_ngt_Close(t *testing.T) {
 		           indexing: nil,
 		           saving: nil,
 		           cimu: sync.Mutex{},
-		           lastNoice: 0,
+		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -7671,8 +7536,9 @@ func Test_ngt_Close(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			n := &ngt{
 				core:              test.fields.core,
@@ -7682,7 +7548,7 @@ func Test_ngt_Close(t *testing.T) {
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
 				cimu:              test.fields.cimu,
-				lastNoice:         test.fields.lastNoice,
+				lastNocie:         test.fields.lastNocie,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				inMem:             test.fields.inMem,
@@ -7704,79 +7570,7 @@ func Test_ngt_Close(t *testing.T) {
 			}
 
 			err := n.Close(test.args.ctx)
-			if err := test.checkFunc(test.want, err); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
-
-func Test_f32stos(t *testing.T) {
-	type args struct {
-		fs []float32
-	}
-	type want struct {
-		want string
-	}
-	type test struct {
-		name       string
-		args       args
-		want       want
-		checkFunc  func(want, string) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-	defaultCheckFunc := func(w want, got string) error {
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           fs: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           fs: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
-
-			got := f32stos(test.args.fs)
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -7797,7 +7591,7 @@ func Test_ngt_removeInvalidIndex(t *testing.T) {
 		indexing          atomic.Value
 		saving            atomic.Value
 		cimu              sync.Mutex
-		lastNoice         uint64
+		lastNocie         uint64
 		nocie             uint64
 		nogce             uint64
 		inMem             bool
@@ -7848,7 +7642,7 @@ func Test_ngt_removeInvalidIndex(t *testing.T) {
 		           indexing: nil,
 		           saving: nil,
 		           cimu: sync.Mutex{},
-		           lastNoice: 0,
+		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -7891,7 +7685,7 @@ func Test_ngt_removeInvalidIndex(t *testing.T) {
 		           indexing: nil,
 		           saving: nil,
 		           cimu: sync.Mutex{},
-		           lastNoice: 0,
+		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -7942,7 +7736,7 @@ func Test_ngt_removeInvalidIndex(t *testing.T) {
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
 				cimu:              test.fields.cimu,
-				lastNoice:         test.fields.lastNoice,
+				lastNocie:         test.fields.lastNocie,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				inMem:             test.fields.inMem,
@@ -7986,7 +7780,7 @@ func Test_ngt_LinearSearch(t *testing.T) {
 		indexing          atomic.Value
 		saving            atomic.Value
 		cimu              sync.Mutex
-		lastNoice         uint64
+		lastNocie         uint64
 		nocie             uint64
 		nogce             uint64
 		inMem             bool
@@ -8047,7 +7841,7 @@ func Test_ngt_LinearSearch(t *testing.T) {
 		           indexing: nil,
 		           saving: nil,
 		           cimu: sync.Mutex{},
-		           lastNoice: 0,
+		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -8091,7 +7885,7 @@ func Test_ngt_LinearSearch(t *testing.T) {
 		           indexing: nil,
 		           saving: nil,
 		           cimu: sync.Mutex{},
-		           lastNoice: 0,
+		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -8142,7 +7936,7 @@ func Test_ngt_LinearSearch(t *testing.T) {
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
 				cimu:              test.fields.cimu,
-				lastNoice:         test.fields.lastNoice,
+				lastNocie:         test.fields.lastNocie,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				inMem:             test.fields.inMem,
@@ -8186,7 +7980,7 @@ func Test_ngt_LinearSearchByID(t *testing.T) {
 		indexing          atomic.Value
 		saving            atomic.Value
 		cimu              sync.Mutex
-		lastNoice         uint64
+		lastNocie         uint64
 		nocie             uint64
 		nogce             uint64
 		inMem             bool
@@ -8251,7 +8045,7 @@ func Test_ngt_LinearSearchByID(t *testing.T) {
 		           indexing: nil,
 		           saving: nil,
 		           cimu: sync.Mutex{},
-		           lastNoice: 0,
+		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -8295,7 +8089,7 @@ func Test_ngt_LinearSearchByID(t *testing.T) {
 		           indexing: nil,
 		           saving: nil,
 		           cimu: sync.Mutex{},
-		           lastNoice: 0,
+		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
 		           inMem: false,
@@ -8346,7 +8140,7 @@ func Test_ngt_LinearSearchByID(t *testing.T) {
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
 				cimu:              test.fields.cimu,
-				lastNoice:         test.fields.lastNoice,
+				lastNocie:         test.fields.lastNocie,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				inMem:             test.fields.inMem,
@@ -8369,6 +8163,618 @@ func Test_ngt_LinearSearchByID(t *testing.T) {
 
 			gotVec, gotDst, err := n.LinearSearchByID(test.args.uuid, test.args.size)
 			if err := test.checkFunc(test.want, gotVec, gotDst, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func Test_ngt_moveAndSwitchSavedData(t *testing.T) {
+	type args struct {
+		ctx context.Context
+	}
+	type fields struct {
+		core              core.NGT
+		eg                errgroup.Group
+		kvs               kvs.BidiMap
+		fmu               sync.Mutex
+		fmap              map[string]uint32
+		vq                vqueue.Queue
+		indexing          atomic.Value
+		saving            atomic.Value
+		cimu              sync.Mutex
+		lastNocie         uint64
+		nocie             uint64
+		nogce             uint64
+		inMem             bool
+		dim               int
+		alen              int
+		lim               time.Duration
+		dur               time.Duration
+		sdur              time.Duration
+		minLit            time.Duration
+		maxLit            time.Duration
+		litFactor         time.Duration
+		enableProactiveGC bool
+		enableCopyOnWrite bool
+		path              string
+		tmpPath           atomic.Value
+		oldPath           string
+		poolSize          uint32
+		radius            float32
+		epsilon           float32
+		idelay            time.Duration
+		dcd               bool
+	}
+	type want struct {
+		err error
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           ctx: nil,
+		       },
+		       fields: fields {
+		           core: nil,
+		           eg: nil,
+		           kvs: nil,
+		           fmu: sync.Mutex{},
+		           fmap: nil,
+		           vq: nil,
+		           indexing: nil,
+		           saving: nil,
+		           cimu: sync.Mutex{},
+		           lastNocie: 0,
+		           nocie: 0,
+		           nogce: 0,
+		           inMem: false,
+		           dim: 0,
+		           alen: 0,
+		           lim: nil,
+		           dur: nil,
+		           sdur: nil,
+		           minLit: nil,
+		           maxLit: nil,
+		           litFactor: nil,
+		           enableProactiveGC: false,
+		           enableCopyOnWrite: false,
+		           path: "",
+		           tmpPath: nil,
+		           oldPath: "",
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
+		           idelay: nil,
+		           dcd: false,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           ctx: nil,
+		           },
+		           fields: fields {
+		           core: nil,
+		           eg: nil,
+		           kvs: nil,
+		           fmu: sync.Mutex{},
+		           fmap: nil,
+		           vq: nil,
+		           indexing: nil,
+		           saving: nil,
+		           cimu: sync.Mutex{},
+		           lastNocie: 0,
+		           nocie: 0,
+		           nogce: 0,
+		           inMem: false,
+		           dim: 0,
+		           alen: 0,
+		           lim: nil,
+		           dur: nil,
+		           sdur: nil,
+		           minLit: nil,
+		           maxLit: nil,
+		           litFactor: nil,
+		           enableProactiveGC: false,
+		           enableCopyOnWrite: false,
+		           path: "",
+		           tmpPath: nil,
+		           oldPath: "",
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
+		           idelay: nil,
+		           dcd: false,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			checkFunc := test.checkFunc
+			if test.checkFunc == nil {
+				checkFunc = defaultCheckFunc
+			}
+			n := &ngt{
+				core:              test.fields.core,
+				eg:                test.fields.eg,
+				kvs:               test.fields.kvs,
+				fmu:               test.fields.fmu,
+				fmap:              test.fields.fmap,
+				vq:                test.fields.vq,
+				indexing:          test.fields.indexing,
+				saving:            test.fields.saving,
+				cimu:              test.fields.cimu,
+				lastNocie:         test.fields.lastNocie,
+				nocie:             test.fields.nocie,
+				nogce:             test.fields.nogce,
+				inMem:             test.fields.inMem,
+				dim:               test.fields.dim,
+				alen:              test.fields.alen,
+				lim:               test.fields.lim,
+				dur:               test.fields.dur,
+				sdur:              test.fields.sdur,
+				minLit:            test.fields.minLit,
+				maxLit:            test.fields.maxLit,
+				litFactor:         test.fields.litFactor,
+				enableProactiveGC: test.fields.enableProactiveGC,
+				enableCopyOnWrite: test.fields.enableCopyOnWrite,
+				path:              test.fields.path,
+				tmpPath:           test.fields.tmpPath,
+				oldPath:           test.fields.oldPath,
+				poolSize:          test.fields.poolSize,
+				radius:            test.fields.radius,
+				epsilon:           test.fields.epsilon,
+				idelay:            test.fields.idelay,
+				dcd:               test.fields.dcd,
+			}
+
+			err := n.moveAndSwitchSavedData(test.args.ctx)
+			if err := checkFunc(test.want, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func Test_ngt_mktmp(t *testing.T) {
+	type fields struct {
+		core              core.NGT
+		eg                errgroup.Group
+		kvs               kvs.BidiMap
+		fmu               sync.Mutex
+		fmap              map[string]uint32
+		vq                vqueue.Queue
+		indexing          atomic.Value
+		saving            atomic.Value
+		cimu              sync.Mutex
+		lastNocie         uint64
+		nocie             uint64
+		nogce             uint64
+		inMem             bool
+		dim               int
+		alen              int
+		lim               time.Duration
+		dur               time.Duration
+		sdur              time.Duration
+		minLit            time.Duration
+		maxLit            time.Duration
+		litFactor         time.Duration
+		enableProactiveGC bool
+		enableCopyOnWrite bool
+		path              string
+		tmpPath           atomic.Value
+		oldPath           string
+		poolSize          uint32
+		radius            float32
+		epsilon           float32
+		idelay            time.Duration
+		dcd               bool
+	}
+	type want struct {
+		err error
+	}
+	type test struct {
+		name       string
+		fields     fields
+		want       want
+		checkFunc  func(want, error) error
+		beforeFunc func()
+		afterFunc  func()
+	}
+	defaultCheckFunc := func(w want, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       fields: fields {
+		           core: nil,
+		           eg: nil,
+		           kvs: nil,
+		           fmu: sync.Mutex{},
+		           fmap: nil,
+		           vq: nil,
+		           indexing: nil,
+		           saving: nil,
+		           cimu: sync.Mutex{},
+		           lastNocie: 0,
+		           nocie: 0,
+		           nogce: 0,
+		           inMem: false,
+		           dim: 0,
+		           alen: 0,
+		           lim: nil,
+		           dur: nil,
+		           sdur: nil,
+		           minLit: nil,
+		           maxLit: nil,
+		           litFactor: nil,
+		           enableProactiveGC: false,
+		           enableCopyOnWrite: false,
+		           path: "",
+		           tmpPath: nil,
+		           oldPath: "",
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
+		           idelay: nil,
+		           dcd: false,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           fields: fields {
+		           core: nil,
+		           eg: nil,
+		           kvs: nil,
+		           fmu: sync.Mutex{},
+		           fmap: nil,
+		           vq: nil,
+		           indexing: nil,
+		           saving: nil,
+		           cimu: sync.Mutex{},
+		           lastNocie: 0,
+		           nocie: 0,
+		           nogce: 0,
+		           inMem: false,
+		           dim: 0,
+		           alen: 0,
+		           lim: nil,
+		           dur: nil,
+		           sdur: nil,
+		           minLit: nil,
+		           maxLit: nil,
+		           litFactor: nil,
+		           enableProactiveGC: false,
+		           enableCopyOnWrite: false,
+		           path: "",
+		           tmpPath: nil,
+		           oldPath: "",
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
+		           idelay: nil,
+		           dcd: false,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc()
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc()
+			}
+			checkFunc := test.checkFunc
+			if test.checkFunc == nil {
+				checkFunc = defaultCheckFunc
+			}
+			n := &ngt{
+				core:              test.fields.core,
+				eg:                test.fields.eg,
+				kvs:               test.fields.kvs,
+				fmu:               test.fields.fmu,
+				fmap:              test.fields.fmap,
+				vq:                test.fields.vq,
+				indexing:          test.fields.indexing,
+				saving:            test.fields.saving,
+				cimu:              test.fields.cimu,
+				lastNocie:         test.fields.lastNocie,
+				nocie:             test.fields.nocie,
+				nogce:             test.fields.nogce,
+				inMem:             test.fields.inMem,
+				dim:               test.fields.dim,
+				alen:              test.fields.alen,
+				lim:               test.fields.lim,
+				dur:               test.fields.dur,
+				sdur:              test.fields.sdur,
+				minLit:            test.fields.minLit,
+				maxLit:            test.fields.maxLit,
+				litFactor:         test.fields.litFactor,
+				enableProactiveGC: test.fields.enableProactiveGC,
+				enableCopyOnWrite: test.fields.enableCopyOnWrite,
+				path:              test.fields.path,
+				tmpPath:           test.fields.tmpPath,
+				oldPath:           test.fields.oldPath,
+				poolSize:          test.fields.poolSize,
+				radius:            test.fields.radius,
+				epsilon:           test.fields.epsilon,
+				idelay:            test.fields.idelay,
+				dcd:               test.fields.dcd,
+			}
+
+			err := n.mktmp()
+			if err := checkFunc(test.want, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func Test_ngt_loadKVS(t *testing.T) {
+	type args struct {
+		path string
+	}
+	type fields struct {
+		core              core.NGT
+		eg                errgroup.Group
+		kvs               kvs.BidiMap
+		fmu               sync.Mutex
+		fmap              map[string]uint32
+		vq                vqueue.Queue
+		indexing          atomic.Value
+		saving            atomic.Value
+		cimu              sync.Mutex
+		lastNocie         uint64
+		nocie             uint64
+		nogce             uint64
+		inMem             bool
+		dim               int
+		alen              int
+		lim               time.Duration
+		dur               time.Duration
+		sdur              time.Duration
+		minLit            time.Duration
+		maxLit            time.Duration
+		litFactor         time.Duration
+		enableProactiveGC bool
+		enableCopyOnWrite bool
+		path              string
+		tmpPath           atomic.Value
+		oldPath           string
+		basePath          string
+		poolSize          uint32
+		radius            float32
+		epsilon           float32
+		idelay            time.Duration
+		dcd               bool
+	}
+	type want struct {
+		err error
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           path: "",
+		       },
+		       fields: fields {
+		           core: nil,
+		           eg: nil,
+		           kvs: nil,
+		           fmu: sync.Mutex{},
+		           fmap: nil,
+		           vq: nil,
+		           indexing: nil,
+		           saving: nil,
+		           cimu: sync.Mutex{},
+		           lastNocie: 0,
+		           nocie: 0,
+		           nogce: 0,
+		           inMem: false,
+		           dim: 0,
+		           alen: 0,
+		           lim: nil,
+		           dur: nil,
+		           sdur: nil,
+		           minLit: nil,
+		           maxLit: nil,
+		           litFactor: nil,
+		           enableProactiveGC: false,
+		           enableCopyOnWrite: false,
+		           path: "",
+		           tmpPath: nil,
+		           oldPath: "",
+		           basePath: "",
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
+		           idelay: nil,
+		           dcd: false,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           path: "",
+		           },
+		           fields: fields {
+		           core: nil,
+		           eg: nil,
+		           kvs: nil,
+		           fmu: sync.Mutex{},
+		           fmap: nil,
+		           vq: nil,
+		           indexing: nil,
+		           saving: nil,
+		           cimu: sync.Mutex{},
+		           lastNocie: 0,
+		           nocie: 0,
+		           nogce: 0,
+		           inMem: false,
+		           dim: 0,
+		           alen: 0,
+		           lim: nil,
+		           dur: nil,
+		           sdur: nil,
+		           minLit: nil,
+		           maxLit: nil,
+		           litFactor: nil,
+		           enableProactiveGC: false,
+		           enableCopyOnWrite: false,
+		           path: "",
+		           tmpPath: nil,
+		           oldPath: "",
+		           basePath: "",
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
+		           idelay: nil,
+		           dcd: false,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			checkFunc := test.checkFunc
+			if test.checkFunc == nil {
+				checkFunc = defaultCheckFunc
+			}
+			n := &ngt{
+				core:              test.fields.core,
+				eg:                test.fields.eg,
+				kvs:               test.fields.kvs,
+				fmu:               test.fields.fmu,
+				fmap:              test.fields.fmap,
+				vq:                test.fields.vq,
+				indexing:          test.fields.indexing,
+				saving:            test.fields.saving,
+				cimu:              test.fields.cimu,
+				lastNocie:         test.fields.lastNocie,
+				nocie:             test.fields.nocie,
+				nogce:             test.fields.nogce,
+				inMem:             test.fields.inMem,
+				dim:               test.fields.dim,
+				alen:              test.fields.alen,
+				lim:               test.fields.lim,
+				dur:               test.fields.dur,
+				sdur:              test.fields.sdur,
+				minLit:            test.fields.minLit,
+				maxLit:            test.fields.maxLit,
+				litFactor:         test.fields.litFactor,
+				enableProactiveGC: test.fields.enableProactiveGC,
+				enableCopyOnWrite: test.fields.enableCopyOnWrite,
+				path:              test.fields.path,
+				tmpPath:           test.fields.tmpPath,
+				oldPath:           test.fields.oldPath,
+				basePath:          test.fields.basePath,
+				poolSize:          test.fields.poolSize,
+				radius:            test.fields.radius,
+				epsilon:           test.fields.epsilon,
+				idelay:            test.fields.idelay,
+				dcd:               test.fields.dcd,
+			}
+
+			err := n.loadKVS(test.args.path)
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

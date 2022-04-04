@@ -233,12 +233,7 @@ func TestGlobalConfig_Bind(t *testing.T) {
 				},
 				beforeFunc: func() {
 					for key, val := range env {
-						os.Setenv(key, val)
-					}
-				},
-				afterFunc: func() {
-					for key := range env {
-						os.Unsetenv(key)
+						t.Setenv(key, val)
 					}
 				},
 			}
@@ -254,8 +249,9 @@ func TestGlobalConfig_Bind(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			c := &GlobalConfig{
 				Version: test.fields.Version,
@@ -264,7 +260,7 @@ func TestGlobalConfig_Bind(t *testing.T) {
 			}
 
 			got := c.Bind()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -881,12 +877,13 @@ func TestRead(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(tt, test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			err := Read(test.args.path, test.args.cfg)
-			if err := test.checkFunc(test.want, test.args.cfg, err); err != nil {
+			if err := checkFunc(test.want, test.args.cfg, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -923,15 +920,7 @@ func TestGetActualValue(t *testing.T) {
 				},
 				beforeFunc: func(t *testing.T, _ args) {
 					t.Helper()
-					if err := os.Setenv("GETACTUALVALUE_VERSION", "v1.0.0"); err != nil {
-						t.Error(err)
-					}
-				},
-				afterFunc: func(t *testing.T, _ args) {
-					t.Helper()
-					if err := os.Unsetenv("GETACTUALVALUE_VERSION"); err != nil {
-						t.Error(err)
-					}
+					t.Setenv("GETACTUALVALUE_VERSION", "v1.0.0")
 				},
 				want: want{
 					wantRes: "v1.0.0",
@@ -946,15 +935,7 @@ func TestGetActualValue(t *testing.T) {
 				},
 				beforeFunc: func(t *testing.T, _ args) {
 					t.Helper()
-					if err := os.Setenv("GETACTUALVALUE_1_VERSION", "v1.0.0"); err != nil {
-						t.Error(err)
-					}
-				},
-				afterFunc: func(t *testing.T, _ args) {
-					t.Helper()
-					if err := os.Unsetenv("GETACTUALVALUE_1_VERSION"); err != nil {
-						t.Error(err)
-					}
+					t.Setenv("GETACTUALVALUE_1_VERSION", "v1.0.0")
 				},
 				want: want{
 					wantRes: "v1.0.0",
@@ -1031,12 +1012,13 @@ func TestGetActualValue(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(tt, test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			gotRes := GetActualValue(test.args.val)
-			if err := test.checkFunc(test.want, gotRes); err != nil {
+			if err := checkFunc(test.want, gotRes); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1083,17 +1065,7 @@ func TestGetActualValues(t *testing.T) {
 				beforeFunc: func(t *testing.T, _ args) {
 					t.Helper()
 					for key, val := range env {
-						if err := os.Setenv(key, val); err != nil {
-							t.Error(err)
-						}
-					}
-				},
-				afterFunc: func(t *testing.T, _ args) {
-					t.Helper()
-					for key := range env {
-						if err := os.Unsetenv(key); err != nil {
-							t.Error(err)
-						}
+						t.Setenv(key, val)
 					}
 				},
 				want: want{
@@ -1115,15 +1087,7 @@ func TestGetActualValues(t *testing.T) {
 				},
 				beforeFunc: func(t *testing.T, _ args) {
 					t.Helper()
-					if err := os.Setenv("GETACTUALVALUES_1_VERSION", "v1.0.0"); err != nil {
-						t.Error(err)
-					}
-				},
-				afterFunc: func(t *testing.T, _ args) {
-					t.Helper()
-					if err := os.Unsetenv("GETACTUALVALUES_1_VERSION"); err != nil {
-						t.Error(err)
-					}
+					t.Setenv("GETACTUALVALUES_1_VERSION", "v1.0.0")
 				},
 				want: want{
 					want: []string{
@@ -1155,12 +1119,13 @@ func TestGetActualValues(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(tt, test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := GetActualValues(test.args.vals)
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1323,12 +1288,13 @@ func Test_checkPrefixAndSuffix(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := checkPrefixAndSuffix(test.args.str, test.args.pref, test.args.suf)
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1445,12 +1411,13 @@ func TestToRawYaml(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := ToRawYaml(test.args.data)
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

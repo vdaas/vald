@@ -20,10 +20,10 @@ metadata:
   name: vald-agent-ngt-config
   labels:
     app.kubernetes.io/name: vald
-    helm.sh/chart: vald-v1.3.1
+    helm.sh/chart: vald-v1.5.0
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: release-name
-    app.kubernetes.io/version: v1.3.1
+    app.kubernetes.io/version: v1.5.0
     app.kubernetes.io/component: agent
 data:
   config.yaml: |
@@ -248,6 +248,7 @@ data:
       default_radius: -1
       dimension: 784
       distance_type: l2
+      enable_copy_on_write: false
       enable_in_memory_mode: true
       enable_proactive_gc: false
       index_path: ""

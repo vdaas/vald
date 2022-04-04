@@ -18,10 +18,9 @@
 package config
 
 import (
-	"strings"
-
 	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/strings"
 )
 
 // GlobalConfig is type alias of config.GlobalConfig.

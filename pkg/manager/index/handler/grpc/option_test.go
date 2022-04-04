@@ -119,7 +119,7 @@ func TestWithIndexer(t *testing.T) {
 
 			   got := WithIndexer(test.args.i)
 			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
+			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/
@@ -132,7 +132,7 @@ func TestWithIndexer(t *testing.T) {
 			   got := WithIndexer(test.args.i)
 			   obj := new(T)
 			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
+			   if err := checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/

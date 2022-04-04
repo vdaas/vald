@@ -31,6 +31,15 @@ jobs:
       - name: Helm version
         run: |
           helm version
+      - name: Fetch golang version
+        run: |
+          GO_VERSION=`make version/go`
+          echo "::set-output name=version::${GO_VERSION}"
+        id: golang_version
+      - uses: actions/setup-go@v2
+        with:
+          go-version: ${{ steps.golang_version.outputs.version }}
+
       - name: Generate schema for charts/vald
         run: |
           make helm/schema/vald
@@ -48,6 +57,15 @@ jobs:
       - name: Helm version
         run: |
           helm version
+      - name: Fetch golang version
+        run: |
+          GO_VERSION=`make version/go`
+          echo "::set-output name=version::${GO_VERSION}"
+        id: golang_version
+      - uses: actions/setup-go@v2
+        with:
+          go-version: ${{ steps.golang_version.outputs.version }}
+
       - name: Generate schema for charts/vald-helm-operator
         run: |
           make helm/schema/vald-helm-operator
@@ -66,6 +84,14 @@ jobs:
       - name: install YQ
         run: |
           sudo make yq/install
+      - name: Fetch golang version
+        run: |
+          GO_VERSION=`make version/go`
+          echo "::set-output name=version::${GO_VERSION}"
+        id: golang_version
+      - uses: actions/setup-go@v2
+        with:
+          go-version: ${{ steps.golang_version.outputs.version }}
       - name: Generate ValdRelease schema
         run: |
           make helm/schema/crd/vald

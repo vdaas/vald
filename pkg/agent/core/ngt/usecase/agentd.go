@@ -65,6 +65,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		service.WithDefaultRadius(cfg.NGT.DefaultRadius),
 		service.WithDefaultEpsilon(cfg.NGT.DefaultEpsilon),
 		service.WithProactiveGC(cfg.NGT.EnableProactiveGC),
+		service.WithCopyOnWrite(cfg.NGT.EnableCopyOnWrite),
 	)
 	if err != nil {
 		return nil, err

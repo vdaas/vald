@@ -77,12 +77,13 @@ func TestTracePayloadInterceptor(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := TracePayloadInterceptor()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -140,12 +141,13 @@ func TestTracePayloadStreamInterceptor(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := TracePayloadStreamInterceptor()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -229,8 +231,9 @@ func Test_tracingServerStream_RecvMsg(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			tss := &tracingServerStream{
 				ServerStream: test.fields.ServerStream,
@@ -239,7 +242,7 @@ func Test_tracingServerStream_RecvMsg(t *testing.T) {
 			}
 
 			err := tss.RecvMsg(test.args.m)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -323,8 +326,9 @@ func Test_tracingServerStream_SendMsg(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			tss := &tracingServerStream{
 				ServerStream: test.fields.ServerStream,
@@ -333,7 +337,7 @@ func Test_tracingServerStream_SendMsg(t *testing.T) {
 			}
 
 			err := tss.SendMsg(test.args.m)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -405,12 +409,13 @@ func Test_parseMethod(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			gotService, gotMethod := parseMethod(test.args.fullMethod)
-			if err := test.checkFunc(test.want, gotService, gotMethod); err != nil {
+			if err := checkFunc(test.want, gotService, gotMethod); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -478,12 +483,13 @@ func Test_marshalJSON(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := marshalJSON(test.args.pbMsg)
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

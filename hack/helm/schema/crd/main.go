@@ -20,12 +20,13 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
+	"io/fs"
 	"os"
 	"strconv"
-	"strings"
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/strings"
 	yaml "gopkg.in/yaml.v2"
 )
 
@@ -111,7 +112,7 @@ func main() {
 }
 
 func genSchema(path string, nindent int) error {
-	f, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE|os.O_SYNC, os.ModePerm)
+	f, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE|os.O_SYNC, fs.ModePerm)
 	if err != nil {
 		return errors.Errorf("cannot open %s", path)
 	}
@@ -125,7 +126,7 @@ func genSchema(path string, nindent int) error {
 
 	aliases = make(map[string]Schema)
 
-	ls := make([]VSchema, 0)
+	ls := make([]*VSchema, 0)
 
 	var line uint64
 	sc := bufio.NewScanner(f)
@@ -133,7 +134,7 @@ func genSchema(path string, nindent int) error {
 		line++
 		tx := strings.TrimLeft(sc.Text(), " ")
 		if strings.HasPrefix(tx, prefix) {
-			var l VSchema
+			l := new(VSchema)
 			err = json.Unmarshal([]byte(strings.TrimPrefix(tx, prefix)), &l)
 			if err != nil {
 				log.Errorf("error occurred line %d, data %s, error %v", line, tx, err)
@@ -157,12 +158,12 @@ func genSchema(path string, nindent int) error {
 	return nil
 }
 
-func objectProperties(ls []VSchema) (map[string]*Schema, error) {
+func objectProperties(ls []*VSchema) (map[string]*Schema, error) {
 	if len(ls) == 0 {
 		return nil, errors.New("empty list")
 	}
 
-	groups := make(map[string][]VSchema)
+	groups := make(map[string][]*VSchema)
 	gOrder := make([]string, 0, len(ls))
 	for _, l := range ls {
 		root := strings.Split(l.Name, ".")
@@ -184,7 +185,7 @@ func objectProperties(ls []VSchema) (map[string]*Schema, error) {
 	return schemas, nil
 }
 
-func genNode(ls []VSchema) (*Schema, error) {
+func genNode(ls []*VSchema) (*Schema, error) {
 	if len(ls) == 0 {
 		return nil, errors.New("empty list")
 	}
@@ -210,7 +211,7 @@ func genNode(ls []VSchema) (*Schema, error) {
 			break
 		}
 
-		nls := make([]VSchema, 0, len(ls[1:]))
+		nls := make([]*VSchema, 0, len(ls[1:]))
 		for _, nl := range ls[1:] {
 			nl.Name = strings.TrimLeft(strings.TrimPrefix(nl.Name, l.Name), ".")
 			nls = append(nls, nl)

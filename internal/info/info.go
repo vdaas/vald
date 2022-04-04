@@ -23,11 +23,11 @@ import (
 	"runtime"
 	"sort"
 	"strconv"
-	"strings"
 	"sync"
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/strings"
 )
 
 // Info represents an interface to get the runtime information.
@@ -197,15 +197,20 @@ func (d Detail) String() string {
 					maxlen = l
 				}
 				urlMaxLen := 0
+				fileMaxLen := 0
 				for _, st := range sts {
 					ul := len(st.URL)
+					fl := len(fmt.Sprintf("%s#L%d", st.File, st.Line))
 					if urlMaxLen < ul {
 						urlMaxLen = ul
 					}
+					if fileMaxLen < fl {
+						fileMaxLen = fl
+					}
 				}
-				urlFormat := fmt.Sprintf("%%-%ds\t%%s", urlMaxLen)
+				urlFormat := fmt.Sprintf("%%-%ds\t%%-%ds\t%%s", urlMaxLen, fileMaxLen)
 				for i, st := range sts {
-					info[fmt.Sprintf("%s-%d", tag, i)] = fmt.Sprintf(urlFormat, st.URL, st.FuncName)
+					info[fmt.Sprintf("%s-%03d", tag, i)] = fmt.Sprintf(urlFormat, st.URL, fmt.Sprintf("%s#L%d", st.File, st.Line), st.FuncName)
 				}
 			} else {
 				strs, ok := v.([]string)

@@ -260,12 +260,13 @@ func TestNewCopier(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := NewCopier(test.args.size)
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -319,8 +320,9 @@ func Test_copier_Copy(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			c := &copier{
 				bufSize: test.fields.bufSize,
@@ -329,7 +331,7 @@ func Test_copier_Copy(t *testing.T) {
 			dst := &bytes.Buffer{}
 
 			gotWritten, err := c.Copy(dst, test.args.src)
-			if err := test.checkFunc(test.want, gotWritten, dst.String(), err); err != nil {
+			if err := checkFunc(test.want, gotWritten, dst.String(), err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

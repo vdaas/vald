@@ -59,6 +59,9 @@ COPY internal/errors .
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/internal/log
 COPY internal/log .
 
+WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/internal/strings
+COPY internal/strings .
+
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/versions
 COPY versions .
 

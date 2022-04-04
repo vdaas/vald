@@ -83,12 +83,13 @@ func TestNew(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			gotO, err := New()
-			if err := test.checkFunc(test.want, gotO, err); err != nil {
+			if err := checkFunc(test.want, gotO, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -190,8 +191,9 @@ func Test_redisMetrics_Measurement(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			rm := &redisMetrics{
 				queryTotal:      test.fields.queryTotal,
@@ -205,7 +207,7 @@ func Test_redisMetrics_Measurement(t *testing.T) {
 			}
 
 			got, err := rm.Measurement(test.args.ctx)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -307,8 +309,9 @@ func Test_redisMetrics_MeasurementWithTags(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			rm := &redisMetrics{
 				queryTotal:      test.fields.queryTotal,
@@ -322,7 +325,7 @@ func Test_redisMetrics_MeasurementWithTags(t *testing.T) {
 			}
 
 			got, err := rm.MeasurementWithTags(test.args.ctx)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -410,8 +413,9 @@ func Test_redisMetrics_View(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			rm := &redisMetrics{
 				queryTotal:      test.fields.queryTotal,
@@ -425,7 +429,7 @@ func Test_redisMetrics_View(t *testing.T) {
 			}
 
 			got := rm.View()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -530,8 +534,9 @@ func Test_redisMetrics_BeforeProcess(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			rm := &redisMetrics{
 				queryTotal:      test.fields.queryTotal,
@@ -545,7 +550,7 @@ func Test_redisMetrics_BeforeProcess(t *testing.T) {
 			}
 
 			got, err := rm.BeforeProcess(test.args.ctx, test.args.cmd)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -646,8 +651,9 @@ func Test_redisMetrics_AfterProcess(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			rm := &redisMetrics{
 				queryTotal:      test.fields.queryTotal,
@@ -661,7 +667,7 @@ func Test_redisMetrics_AfterProcess(t *testing.T) {
 			}
 
 			err := rm.AfterProcess(test.args.ctx, test.args.cmd)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -766,8 +772,9 @@ func Test_redisMetrics_BeforeProcessPipeline(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			rm := &redisMetrics{
 				queryTotal:      test.fields.queryTotal,
@@ -781,7 +788,7 @@ func Test_redisMetrics_BeforeProcessPipeline(t *testing.T) {
 			}
 
 			got, err := rm.BeforeProcessPipeline(test.args.ctx, test.args.cmds)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -882,8 +889,9 @@ func Test_redisMetrics_AfterProcessPipeline(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			rm := &redisMetrics{
 				queryTotal:      test.fields.queryTotal,
@@ -897,7 +905,7 @@ func Test_redisMetrics_AfterProcessPipeline(t *testing.T) {
 			}
 
 			err := rm.AfterProcessPipeline(test.args.ctx, test.args.cmds)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

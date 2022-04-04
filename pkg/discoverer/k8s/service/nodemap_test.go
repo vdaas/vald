@@ -89,12 +89,13 @@ func Test_newEntryNodeMap(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := newEntryNodeMap(test.args.i)
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -185,8 +186,9 @@ func Test_nodeMap_Load(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			m := &nodeMap{
 				mu:     test.fields.mu,
@@ -196,7 +198,7 @@ func Test_nodeMap_Load(t *testing.T) {
 			}
 
 			gotValue, gotOk := m.Load(test.args.key)
-			if err := test.checkFunc(test.want, gotValue, gotOk); err != nil {
+			if err := checkFunc(test.want, gotValue, gotOk); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -268,15 +270,16 @@ func Test_entryNodeMap_load(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			e := &entryNodeMap{
 				p: test.fields.p,
 			}
 
 			gotValue, gotOk := e.load()
-			if err := test.checkFunc(test.want, gotValue, gotOk); err != nil {
+			if err := checkFunc(test.want, gotValue, gotOk); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -361,8 +364,9 @@ func Test_nodeMap_Store(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			m := &nodeMap{
 				mu:     test.fields.mu,
@@ -372,7 +376,7 @@ func Test_nodeMap_Store(t *testing.T) {
 			}
 
 			m.Store(test.args.key, test.args.value)
-			if err := test.checkFunc(test.want); err != nil {
+			if err := checkFunc(test.want); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -450,15 +454,16 @@ func Test_entryNodeMap_tryStore(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			e := &entryNodeMap{
 				p: test.fields.p,
 			}
 
 			got := e.tryStore(test.args.i)
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -526,15 +531,16 @@ func Test_entryNodeMap_unexpungeLocked(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			e := &entryNodeMap{
 				p: test.fields.p,
 			}
 
 			gotWasExpunged := e.unexpungeLocked()
-			if err := test.checkFunc(test.want, gotWasExpunged); err != nil {
+			if err := checkFunc(test.want, gotWasExpunged); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -607,15 +613,16 @@ func Test_entryNodeMap_storeLocked(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			e := &entryNodeMap{
 				p: test.fields.p,
 			}
 
 			e.storeLocked(test.args.i)
-			if err := test.checkFunc(test.want); err != nil {
+			if err := checkFunc(test.want); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -709,8 +716,9 @@ func Test_nodeMap_LoadOrStore(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			m := &nodeMap{
 				mu:     test.fields.mu,
@@ -720,7 +728,7 @@ func Test_nodeMap_LoadOrStore(t *testing.T) {
 			}
 
 			gotActual, gotLoaded := m.LoadOrStore(test.args.key, test.args.value)
-			if err := test.checkFunc(test.want, gotActual, gotLoaded); err != nil {
+			if err := checkFunc(test.want, gotActual, gotLoaded); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -806,15 +814,16 @@ func Test_entryNodeMap_tryLoadOrStore(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			e := &entryNodeMap{
 				p: test.fields.p,
 			}
 
 			gotActual, gotLoaded, gotOk := e.tryLoadOrStore(test.args.i)
-			if err := test.checkFunc(test.want, gotActual, gotLoaded, gotOk); err != nil {
+			if err := checkFunc(test.want, gotActual, gotLoaded, gotOk); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -905,8 +914,9 @@ func Test_nodeMap_LoadAndDelete(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			m := &nodeMap{
 				mu:     test.fields.mu,
@@ -916,7 +926,7 @@ func Test_nodeMap_LoadAndDelete(t *testing.T) {
 			}
 
 			gotValue, gotLoaded := m.LoadAndDelete(test.args.key)
-			if err := test.checkFunc(test.want, gotValue, gotLoaded); err != nil {
+			if err := checkFunc(test.want, gotValue, gotLoaded); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -998,8 +1008,9 @@ func Test_nodeMap_Delete(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			m := &nodeMap{
 				mu:     test.fields.mu,
@@ -1009,7 +1020,7 @@ func Test_nodeMap_Delete(t *testing.T) {
 			}
 
 			m.Delete(test.args.key)
-			if err := test.checkFunc(test.want); err != nil {
+			if err := checkFunc(test.want); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1081,15 +1092,16 @@ func Test_entryNodeMap_delete(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			e := &entryNodeMap{
 				p: test.fields.p,
 			}
 
 			gotValue, gotOk := e.delete()
-			if err := test.checkFunc(test.want, gotValue, gotOk); err != nil {
+			if err := checkFunc(test.want, gotValue, gotOk); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1171,8 +1183,9 @@ func Test_nodeMap_Range(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			m := &nodeMap{
 				mu:     test.fields.mu,
@@ -1182,7 +1195,7 @@ func Test_nodeMap_Range(t *testing.T) {
 			}
 
 			m.Range(test.args.f)
-			if err := test.checkFunc(test.want); err != nil {
+			if err := checkFunc(test.want); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1254,8 +1267,9 @@ func Test_nodeMap_missLocked(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			m := &nodeMap{
 				mu:     test.fields.mu,
@@ -1265,7 +1279,7 @@ func Test_nodeMap_missLocked(t *testing.T) {
 			}
 
 			m.missLocked()
-			if err := test.checkFunc(test.want); err != nil {
+			if err := checkFunc(test.want); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1337,8 +1351,9 @@ func Test_nodeMap_dirtyLocked(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			m := &nodeMap{
 				mu:     test.fields.mu,
@@ -1348,7 +1363,7 @@ func Test_nodeMap_dirtyLocked(t *testing.T) {
 			}
 
 			m.dirtyLocked()
-			if err := test.checkFunc(test.want); err != nil {
+			if err := checkFunc(test.want); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1416,15 +1431,16 @@ func Test_entryNodeMap_tryExpungeLocked(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			e := &entryNodeMap{
 				p: test.fields.p,
 			}
 
 			gotIsExpunged := e.tryExpungeLocked()
-			if err := test.checkFunc(test.want, gotIsExpunged); err != nil {
+			if err := checkFunc(test.want, gotIsExpunged); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

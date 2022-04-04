@@ -228,6 +228,8 @@ spec:
                             - normalizedangle
                             - normalizedcosine
                             - jaccard
+                        enable_copy_on_write:
+                          type: boolean
                         enable_in_memory_mode:
                           type: boolean
                         enable_proactive_gc:
@@ -251,6 +253,7 @@ spec:
                           type: string
                           enum:
                             - float
+                            - float16
                             - uint8
                         search_edge_size:
                           type: integer
@@ -430,6 +433,8 @@ spec:
                           type: string
                         enabled:
                           type: boolean
+                        mountPropagation:
+                          type: string
                         size:
                           type: string
                         storageClass:
@@ -2284,11 +2289,6 @@ spec:
                       properties:
                         tag:
                           type: string
-                    ingress:
-                      type: object
-                      properties:
-                        usev1beta1:
-                          type: boolean
                     logging:
                       type: object
                       properties:

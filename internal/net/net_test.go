@@ -27,12 +27,12 @@ import (
 	"os"
 	"reflect"
 	"strconv"
-	"strings"
 	"testing"
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/log/logger"
+	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/test/goleak"
 )
 
@@ -126,12 +126,13 @@ func TestIsLocal(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := IsLocal(test.args.host)
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -213,12 +214,13 @@ func TestDialContext(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			gotConn, err := DialContext(test.args.ctx, test.args.network, test.args.addr)
-			if err := test.checkFunc(test.want, gotConn, err); err != nil {
+			if err := checkFunc(test.want, gotConn, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -381,12 +383,13 @@ func TestParse(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			gotHost, gotPort, gotIsLocal, gotIsV4, gotIsV6, err := Parse(test.args.addr)
-			if err := test.checkFunc(test.want, gotHost, gotPort, gotIsLocal, gotIsV4, gotIsV6, err); err != nil {
+			if err := checkFunc(test.want, gotHost, gotPort, gotIsLocal, gotIsV4, gotIsV6, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -461,7 +464,11 @@ func TestSplitHostPort(t *testing.T) {
 			want: want{
 				wantHost: "dummy",
 				wantPort: uint16(80),
-				err:      &strconv.NumError{"ParseUint", "", strconv.ErrSyntax},
+				err: &strconv.NumError{
+					Func: "ParseUint",
+					Num:  "",
+					Err:  strconv.ErrSyntax,
+				},
 			},
 		},
 		{
@@ -472,7 +479,11 @@ func TestSplitHostPort(t *testing.T) {
 			want: want{
 				wantHost: "192.168.1.1",
 				wantPort: uint16(80),
-				err:      &strconv.NumError{"ParseUint", "", strconv.ErrSyntax},
+				err: &strconv.NumError{
+					Func: "ParseUint",
+					Num:  "",
+					Err:  strconv.ErrSyntax,
+				},
 			},
 		},
 		{
@@ -483,7 +494,11 @@ func TestSplitHostPort(t *testing.T) {
 			want: want{
 				wantHost: "2001:db8::1",
 				wantPort: uint16(80),
-				err:      &strconv.NumError{"ParseUint", "", strconv.ErrSyntax},
+				err: &strconv.NumError{
+					Func: "ParseUint",
+					Num:  "",
+					Err:  strconv.ErrSyntax,
+				},
 			},
 		},
 		{
@@ -507,12 +522,13 @@ func TestSplitHostPort(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			gotHost, gotPort, err := SplitHostPort(test.args.hostport)
-			if err := test.checkFunc(test.want, gotHost, gotPort, err); err != nil {
+			if err := checkFunc(test.want, gotHost, gotPort, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -710,12 +726,13 @@ func TestScanPorts(t *testing.T) {
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			gotPorts, err := ScanPorts(test.args.ctx, test.args.start, test.args.end, test.args.host)
-			if err := test.checkFunc(test.want, gotPorts, err); err != nil {
+			if err := checkFunc(test.want, gotPorts, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 
@@ -762,12 +779,13 @@ func TestLoadLocalIP(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := LoadLocalIP()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -927,12 +945,13 @@ func TestNetworkTypeFromString(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := NetworkTypeFromString(test.args.str)
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1063,12 +1082,13 @@ func TestNetworkType_String(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := test.n.String()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1142,12 +1162,13 @@ func TestJoinHostPort(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := JoinHostPort(test.args.host, test.args.port)
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

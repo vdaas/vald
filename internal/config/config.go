@@ -19,16 +19,17 @@ package config
 
 import (
 	"bytes"
+	"io/fs"
 	"os"
 	"path/filepath"
-	"strings"
-	"unsafe"
 
+	"github.com/vdaas/vald/internal/conv"
 	"github.com/vdaas/vald/internal/encoding/json"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/file"
 	"github.com/vdaas/vald/internal/io/ioutil"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/strings"
 	yaml "gopkg.in/yaml.v2"
 )
 
@@ -62,7 +63,7 @@ func (c *GlobalConfig) Bind() *GlobalConfig {
 
 // Read returns config struct or error when decoding the configuration file to actually *Config struct.
 func Read(path string, cfg interface{}) (err error) {
-	f, err := file.Open(path, os.O_RDONLY, 0o600)
+	f, err := file.Open(path, os.O_RDONLY, fs.ModePerm)
 	if err != nil {
 		return err
 	}
@@ -100,7 +101,7 @@ func GetActualValue(val string) (res string) {
 		if err != nil {
 			return
 		}
-		res = *(*string)(unsafe.Pointer(&body))
+		res = conv.Btoa(body)
 	}
 	return
 }

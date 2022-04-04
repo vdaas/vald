@@ -25,7 +25,6 @@ import (
 )
 
 func Test_main(t *testing.T) {
-	t.Parallel()
 	type want struct{}
 	type test struct {
 		name       string
@@ -70,12 +69,13 @@ func Test_main(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			main()
-			if err := test.checkFunc(test.want); err != nil {
+			if err := checkFunc(test.want); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -83,7 +83,6 @@ func Test_main(t *testing.T) {
 }
 
 func Test_genJSONSchema(t *testing.T) {
-	t.Parallel()
 	type args struct {
 		path string
 	}
@@ -143,12 +142,13 @@ func Test_genJSONSchema(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			err := genJSONSchema(test.args.path)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -156,10 +156,9 @@ func Test_genJSONSchema(t *testing.T) {
 }
 
 func Test_objectProperties(t *testing.T) {
-	t.Parallel()
 	type args struct {
 		prefix []string
-		ls     []VSchema
+		ls     []*VSchema
 	}
 	type want struct {
 		want map[string]*Schema
@@ -223,12 +222,13 @@ func Test_objectProperties(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got, err := objectProperties(test.args.prefix, test.args.ls)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -236,10 +236,9 @@ func Test_objectProperties(t *testing.T) {
 }
 
 func Test_genNode(t *testing.T) {
-	t.Parallel()
 	type args struct {
 		prefix []string
-		ls     []VSchema
+		ls     []*VSchema
 	}
 	type want struct {
 		want *Schema
@@ -303,12 +302,13 @@ func Test_genNode(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got, err := genNode(test.args.prefix, test.args.ls)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -316,7 +316,6 @@ func Test_genNode(t *testing.T) {
 }
 
 func Test_newRoot(t *testing.T) {
-	t.Parallel()
 	type args struct {
 		schemas map[string]*Schema
 	}
@@ -376,12 +375,13 @@ func Test_newRoot(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := newRoot(test.args.schemas)
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

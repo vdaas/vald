@@ -18,7 +18,6 @@ package ngt
 import (
 	"context"
 	"flag"
-	"strings"
 	"testing"
 
 	"github.com/vdaas/vald/hack/benchmark/internal/assets"
@@ -28,6 +27,7 @@ import (
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/log/logger"
 	"github.com/vdaas/vald/internal/net/grpc"
+	"github.com/vdaas/vald/internal/strings"
 )
 
 var (

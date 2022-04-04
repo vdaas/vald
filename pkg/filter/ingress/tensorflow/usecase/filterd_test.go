@@ -95,12 +95,13 @@ func TestNew(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			gotR, err := New(test.args.cfg)
-			if err := test.checkFunc(test.want, gotR, err); err != nil {
+			if err := checkFunc(test.want, gotR, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -187,8 +188,9 @@ func Test_run_PreStart(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			r := &run{
 				eg:            test.fields.eg,
@@ -198,7 +200,7 @@ func Test_run_PreStart(t *testing.T) {
 			}
 
 			err := r.PreStart(test.args.ctx)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -289,8 +291,9 @@ func Test_run_Start(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			r := &run{
 				eg:            test.fields.eg,
@@ -300,7 +303,7 @@ func Test_run_Start(t *testing.T) {
 			}
 
 			got, err := r.Start(test.args.ctx)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -387,8 +390,9 @@ func Test_run_PreStop(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			r := &run{
 				eg:            test.fields.eg,
@@ -398,7 +402,7 @@ func Test_run_PreStop(t *testing.T) {
 			}
 
 			err := r.PreStop(test.args.ctx)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -485,8 +489,9 @@ func Test_run_Stop(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			r := &run{
 				eg:            test.fields.eg,
@@ -496,7 +501,7 @@ func Test_run_Stop(t *testing.T) {
 			}
 
 			err := r.Stop(test.args.ctx)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -583,8 +588,9 @@ func Test_run_PostStop(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			r := &run{
 				eg:            test.fields.eg,
@@ -594,7 +600,7 @@ func Test_run_PostStop(t *testing.T) {
 			}
 
 			err := r.PostStop(test.args.ctx)
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

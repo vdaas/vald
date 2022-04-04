@@ -18,7 +18,8 @@ package assets
 import (
 	"fmt"
 	"math/rand"
-	"path/filepath"
+
+	"github.com/vdaas/vald/internal/file"
 )
 
 const (
@@ -39,7 +40,7 @@ func loadSmallData(fileName, datasetName, distanceType, objectType string) func(
 		if err != nil {
 			return nil, err
 		}
-		t, q, d, n, dim, err := Load(filepath.Join(dir, fileName))
+		t, q, d, n, dim, err := Load(file.Join(dir, fileName))
 		if err != nil {
 			return nil, err
 		}

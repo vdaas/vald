@@ -112,12 +112,13 @@ func TestNewLZ4(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got, err := NewLZ4(test.args.opts...)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -306,8 +307,9 @@ func Test_lz4Compressor_CompressVector(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			l := &lz4Compressor{
 				gobc:             test.fields.gobc,
@@ -316,7 +318,7 @@ func Test_lz4Compressor_CompressVector(t *testing.T) {
 			}
 
 			got, err := l.CompressVector(test.args.vector)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -373,8 +375,9 @@ func Test_E2E_lz4Compressor_CompressVector(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			l, err := NewLZ4()
@@ -383,7 +386,7 @@ func Test_E2E_lz4Compressor_CompressVector(t *testing.T) {
 			}
 
 			got, err := l.CompressVector(test.args.vector)
-			if err := test.checkFunc(test.want, got, err, l); err != nil {
+			if err := checkFunc(test.want, got, err, l); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -509,8 +512,9 @@ func Test_lz4Compressor_DecompressVector(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			l := &lz4Compressor{
 				gobc:             test.fields.gobc,
@@ -519,7 +523,7 @@ func Test_lz4Compressor_DecompressVector(t *testing.T) {
 			}
 
 			got, err := l.DecompressVector(test.args.bs)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -594,8 +598,9 @@ func Test_lz4Compressor_Reader(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			l := &lz4Compressor{
 				gobc:             test.fields.gobc,
@@ -604,7 +609,7 @@ func Test_lz4Compressor_Reader(t *testing.T) {
 			}
 
 			got, err := l.Reader(test.args.src)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -679,8 +684,9 @@ func Test_lz4Compressor_Writer(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			l := &lz4Compressor{
 				gobc:             test.fields.gobc,
@@ -689,7 +695,7 @@ func Test_lz4Compressor_Writer(t *testing.T) {
 			}
 
 			got, err := l.Writer(test.args.dst)
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -755,8 +761,9 @@ func Test_lz4Reader_Read(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			l := &lz4Reader{
 				src: test.fields.src,
@@ -764,7 +771,7 @@ func Test_lz4Reader_Read(t *testing.T) {
 			}
 
 			gotN, err := l.Read(test.args.p)
-			if err := test.checkFunc(test.want, gotN, err); err != nil {
+			if err := checkFunc(test.want, gotN, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -823,8 +830,9 @@ func Test_lz4Reader_Close(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			l := &lz4Reader{
 				src: test.fields.src,
@@ -832,7 +840,7 @@ func Test_lz4Reader_Close(t *testing.T) {
 			}
 
 			err := l.Close()
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -898,8 +906,9 @@ func Test_lz4Writer_Write(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			l := &lz4Writer{
 				dst: test.fields.dst,
@@ -907,7 +916,7 @@ func Test_lz4Writer_Write(t *testing.T) {
 			}
 
 			gotN, err := l.Write(test.args.p)
-			if err := test.checkFunc(test.want, gotN, err); err != nil {
+			if err := checkFunc(test.want, gotN, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -984,8 +993,9 @@ func Test_lz4Writer_Close(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			l := &lz4Writer{
 				dst: test.fields.dst,
@@ -993,7 +1003,7 @@ func Test_lz4Writer_Close(t *testing.T) {
 			}
 
 			err := l.Close()
-			if err := test.checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

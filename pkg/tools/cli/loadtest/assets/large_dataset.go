@@ -16,10 +16,9 @@
 package assets
 
 import (
-	"path/filepath"
-
 	"github.com/vdaas/vald/hack/benchmark/assets/x1b"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/file"
 )
 
 const (
@@ -40,11 +39,11 @@ func loadLargeData(trainFileName, queryFileName, groundTruthFileName, distanceFi
 		if err != nil {
 			return nil, err
 		}
-		train, err := x1b.Open(filepath.Join(dir, trainFileName))
+		train, err := x1b.Open(file.Join(dir, trainFileName))
 		if err != nil {
 			return nil, err
 		}
-		query, err := x1b.Open(filepath.Join(dir, queryFileName))
+		query, err := x1b.Open(file.Join(dir, queryFileName))
 		if err != nil {
 			return nil, err
 		}
@@ -53,7 +52,7 @@ func loadLargeData(trainFileName, queryFileName, groundTruthFileName, distanceFi
 		if tdim != qdim {
 			return nil, errors.New("dimension must be same train and query.")
 		}
-		iv, err := x1b.NewInt32Vectors(filepath.Join(dir, groundTruthFileName))
+		iv, err := x1b.NewInt32Vectors(file.Join(dir, groundTruthFileName))
 		if err != nil {
 			return nil, err
 		}
@@ -70,7 +69,7 @@ func loadLargeData(trainFileName, queryFileName, groundTruthFileName, distanceFi
 			groundTruth = append(groundTruth, gt)
 		}
 
-		distances, err := x1b.NewFloatVectors(filepath.Join(dir, distanceFileName))
+		distances, err := x1b.NewFloatVectors(file.Join(dir, distanceFileName))
 		if err != nil {
 			return nil, err
 		}

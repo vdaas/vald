@@ -18,7 +18,6 @@
 package config
 
 import (
-	"os"
 	"reflect"
 	"testing"
 	"time"
@@ -306,17 +305,7 @@ func TestRedis_Bind(t *testing.T) {
 				beforeFunc: func(t *testing.T) {
 					t.Helper()
 					for k, v := range p {
-						if err := os.Setenv(k, v); err != nil {
-							t.Fatal(err)
-						}
-					}
-				},
-				afterFunc: func(t *testing.T) {
-					t.Helper()
-					for k := range p {
-						if err := os.Unsetenv(k); err != nil {
-							t.Fatal(err)
-						}
+						t.Setenv(k, v)
 					}
 				},
 				want: want{
@@ -382,8 +371,9 @@ func TestRedis_Bind(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(tt)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			r := &Redis{
 				Addrs:                test.fields.Addrs,
@@ -420,7 +410,7 @@ func TestRedis_Bind(t *testing.T) {
 			}
 
 			got := r.Bind()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -906,8 +896,9 @@ func TestRedis_Opts(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			r := &Redis{
 				Addrs:                test.fields.Addrs,
@@ -944,7 +935,7 @@ func TestRedis_Opts(t *testing.T) {
 			}
 
 			gotOpts, err := r.Opts()
-			if err := test.checkFunc(test.want, gotOpts, err); err != nil {
+			if err := checkFunc(test.want, gotOpts, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

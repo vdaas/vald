@@ -1224,3 +1224,78 @@ func TestWithProactiveGC(t *testing.T) {
 		})
 	}
 }
+
+func TestWithCopyOnWrite(t *testing.T) {
+	type T = ngt
+	type args struct {
+		enabled bool
+	}
+	type want struct {
+		obj *T
+		err error
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, *T, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, obj *T, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(obj, w.obj) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
+		}
+		return nil
+	}
+	tests := []test{
+		{
+			name: "set CoW success",
+			args: args{
+				enabled: true,
+			},
+			want: want{
+				obj: &T{
+					enableCopyOnWrite: true,
+				},
+			},
+		},
+		{
+			name: "set CoW when it is false",
+			args: args{
+				enabled: false,
+			},
+			want: want{
+				obj: &T{
+					enableCopyOnWrite: false,
+				},
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			checkFunc := defaultCheckFunc
+			if test.checkFunc != nil {
+				checkFunc = test.checkFunc
+			}
+
+			got := WithCopyOnWrite(test.args.enabled)
+			obj := new(T)
+			if err := checkFunc(test.want, obj, got(obj)); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}

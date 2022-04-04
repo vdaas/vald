@@ -61,7 +61,8 @@ func (g *gateway) Start(ctx context.Context) (<-chan error, error) {
 }
 
 func (g *gateway) BroadCast(ctx context.Context,
-	f func(ctx context.Context, target string, ac vald.Client, copts ...grpc.CallOption) error) (err error) {
+	f func(ctx context.Context, target string, ac vald.Client, copts ...grpc.CallOption) error,
+) (err error) {
 	fctx, span := trace.StartSpan(ctx, "vald/gateway-lb/service/Gateway.BroadCast")
 	defer func() {
 		if span != nil {
@@ -69,7 +70,8 @@ func (g *gateway) BroadCast(ctx context.Context,
 		}
 	}()
 	return g.client.GetClient().RangeConcurrent(fctx, -1, func(ictx context.Context,
-		addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) (err error) {
+		addr string, conn *grpc.ClientConn, copts ...grpc.CallOption,
+	) (err error) {
 		select {
 		case <-ictx.Done():
 			return nil
@@ -84,7 +86,8 @@ func (g *gateway) BroadCast(ctx context.Context,
 }
 
 func (g *gateway) DoMulti(ctx context.Context, num int,
-	f func(ctx context.Context, target string, ac vald.Client, copts ...grpc.CallOption) error) (err error) {
+	f func(ctx context.Context, target string, ac vald.Client, copts ...grpc.CallOption) error,
+) (err error) {
 	sctx, span := trace.StartSpan(ctx, "vald/gateway-lb/service/Gateway.DoMulti")
 	defer func() {
 		if span != nil {
@@ -103,7 +106,8 @@ func (g *gateway) DoMulti(ctx context.Context, num int,
 	err = g.client.GetClient().OrderedRange(sctx, addrs, func(ictx context.Context,
 		addr string,
 		conn *grpc.ClientConn,
-		copts ...grpc.CallOption) (err error) {
+		copts ...grpc.CallOption,
+	) (err error) {
 		if atomic.LoadUint32(&cur) < limit {
 			err = f(ictx, addr, vald.NewValdClient(conn), copts...)
 			if err != nil {
@@ -118,7 +122,8 @@ func (g *gateway) DoMulti(ctx context.Context, num int,
 		err = g.client.GetClient().OrderedRange(sctx, addrs, func(ictx context.Context,
 			addr string,
 			conn *grpc.ClientConn,
-			copts ...grpc.CallOption) (err error) {
+			copts ...grpc.CallOption,
+		) (err error) {
 			if atomic.LoadUint32(&cur) < limit {
 				_, ok := visited.Load(addr)
 				if !ok {

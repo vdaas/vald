@@ -19,7 +19,6 @@ package config
 
 import (
 	"io/fs"
-	"os"
 	"reflect"
 	"syscall"
 	"testing"
@@ -71,12 +70,13 @@ func Test_newGRPCClientConfig(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			got := newGRPCClientConfig()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -235,15 +235,7 @@ func TestGRPCClient_Bind(t *testing.T) {
 				},
 				beforeFunc: func(t *testing.T) {
 					t.Helper()
-					if err := os.Setenv(key, value); err != nil {
-						t.Fatal(err)
-					}
-				},
-				afterFunc: func(t *testing.T) {
-					t.Helper()
-					if err := os.Unsetenv(key); err != nil {
-						t.Fatal(err)
-					}
+					t.Setenv(key, value)
 				},
 				want: want{
 					want: &GRPCClient{
@@ -289,8 +281,9 @@ func TestGRPCClient_Bind(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(tt)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			g := &GRPCClient{
 				Addrs:               test.fields.Addrs,
@@ -303,7 +296,7 @@ func TestGRPCClient_Bind(t *testing.T) {
 			}
 
 			got := g.Bind()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -369,17 +362,7 @@ func TestGRPCClientKeepalive_Bind(t *testing.T) {
 				beforeFunc: func(t *testing.T) {
 					t.Helper()
 					for key, value := range p {
-						if err := os.Setenv(key, value); err != nil {
-							t.Fatal(err)
-						}
-					}
-				},
-				afterFunc: func(t *testing.T) {
-					t.Helper()
-					for key := range p {
-						if err := os.Unsetenv(key); err != nil {
-							t.Fatal(err)
-						}
+						t.Setenv(key, value)
 					}
 				},
 				want: want{
@@ -411,8 +394,9 @@ func TestGRPCClientKeepalive_Bind(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(tt)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			g := &GRPCClientKeepalive{
 				Time:                test.fields.Time,
@@ -421,7 +405,7 @@ func TestGRPCClientKeepalive_Bind(t *testing.T) {
 			}
 
 			got := g.Bind()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -497,8 +481,9 @@ func TestCallOption_Bind(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			c := &CallOption{
 				WaitForReady:          test.fields.WaitForReady,
@@ -508,7 +493,7 @@ func TestCallOption_Bind(t *testing.T) {
 			}
 
 			got := c.Bind()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -626,17 +611,7 @@ func TestDialOption_Bind(t *testing.T) {
 				beforeFunc: func(t *testing.T) {
 					t.Helper()
 					for key, value := range p {
-						if err := os.Setenv(key, value); err != nil {
-							t.Fatal(err)
-						}
-					}
-				},
-				afterFunc: func(t *testing.T) {
-					t.Helper()
-					for key := range p {
-						if err := os.Unsetenv(key); err != nil {
-							t.Fatal(err)
-						}
+						t.Setenv(key, value)
 					}
 				},
 				want: want{
@@ -668,8 +643,9 @@ func TestDialOption_Bind(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(tt)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			d := &DialOption{
 				WriteBufferSize:             test.fields.WriteBufferSize,
@@ -690,7 +666,7 @@ func TestDialOption_Bind(t *testing.T) {
 			}
 
 			got := d.Bind()
-			if err := test.checkFunc(test.want, got); err != nil {
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1059,8 +1035,9 @@ func TestGRPCClient_Opts(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 			g := &GRPCClient{
 				Addrs:               test.fields.Addrs,
@@ -1073,7 +1050,7 @@ func TestGRPCClient_Opts(t *testing.T) {
 			}
 
 			got, err := g.Opts()
-			if err := test.checkFunc(test.want, got, err); err != nil {
+			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
