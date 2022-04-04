@@ -444,9 +444,9 @@ func Test_server_Search(t *testing.T) {
 	defer cancel()
 
 	type args struct {
-		ctx context.Context
-		num int
-		req *payload.Search_Request
+		ctx       context.Context
+		insertNum int
+		req       *payload.Search_Request
 	}
 	type fields struct {
 		gen func(int, int) [][]float32
@@ -493,8 +493,8 @@ func Test_server_Search(t *testing.T) {
 			return nil, err
 		}
 
-		reqs := make([]*payload.Insert_Request, a.num)
-		for i, v := range f.gen(a.num, f.ngtCfg.Dimension) {
+		reqs := make([]*payload.Insert_Request, a.insertNum)
+		for i, v := range f.gen(a.insertNum, f.ngtCfg.Dimension) {
 			reqs[i] = &payload.Insert_Request{
 				Vector: &payload.Object_Vector{
 					Id:     strconv.Itoa(i),
@@ -615,8 +615,8 @@ func Test_server_Search(t *testing.T) {
 		{
 			name: "Equivalence Class Testing case 1.1: success search vector (type: uint8)",
 			args: args{
-				ctx: ctx,
-				num: 1000,
+				ctx:       ctx,
+				insertNum: 1000,
 				req: &payload.Search_Request{
 					Vector: convertVectorUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, defaultDimensionSize)[0]),
 					Config: defaultSearch_Config,
@@ -635,8 +635,8 @@ func Test_server_Search(t *testing.T) {
 		{
 			name: "Equivalence Class Testing case 1.2: success search vector (type: float32)",
 			args: args{
-				ctx: ctx,
-				num: 1000,
+				ctx:       ctx,
+				insertNum: 1000,
 				req: &payload.Search_Request{
 					Vector: vector.GaussianDistributedFloat32VectorGenerator(1, defaultDimensionSize)[0],
 					Config: defaultSearch_Config,
@@ -653,8 +653,8 @@ func Test_server_Search(t *testing.T) {
 		{
 			name: "Equivalence Class Testing case 2.1: fail search vector with different dimension (type: uint8)",
 			args: args{
-				ctx: ctx,
-				num: 1000,
+				ctx:       ctx,
+				insertNum: 1000,
 				req: &payload.Search_Request{
 					Vector: convertVectorUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, defaultDimensionSize+1)[0]),
 					Config: defaultSearch_Config,
@@ -674,8 +674,8 @@ func Test_server_Search(t *testing.T) {
 		{
 			name: "Equivalence Class Testing case 2.2: fail search vector with different dimension (type: float32)",
 			args: args{
-				ctx: ctx,
-				num: 1000,
+				ctx:       ctx,
+				insertNum: 1000,
 				req: &payload.Search_Request{
 					Vector: vector.GaussianDistributedFloat32VectorGenerator(1, defaultDimensionSize+1)[0],
 					Config: defaultSearch_Config,
@@ -695,8 +695,8 @@ func Test_server_Search(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 1.1: success search with 0 value (min value) vector (type: uint8)",
 			args: args{
-				ctx: ctx,
-				num: 1000,
+				ctx:       ctx,
+				insertNum: 1000,
 				req: &payload.Search_Request{
 					Vector: fill(float32(uint8(0))),
 					Config: defaultSearch_Config,
@@ -715,8 +715,8 @@ func Test_server_Search(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 1.2: success search with +0 value vector (type: float32)",
 			args: args{
-				ctx: ctx,
-				num: 1000,
+				ctx:       ctx,
+				insertNum: 1000,
 				req: &payload.Search_Request{
 					Vector: fill(+0.0),
 					Config: defaultSearch_Config,
@@ -733,8 +733,8 @@ func Test_server_Search(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 1.3: success search with -0 value vector (type: float32)",
 			args: args{
-				ctx: ctx,
-				num: 1000,
+				ctx:       ctx,
+				insertNum: 1000,
 				req: &payload.Search_Request{
 					Vector: fill(float32(math.Copysign(0, -1.0))),
 					Config: defaultSearch_Config,
@@ -751,8 +751,8 @@ func Test_server_Search(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 2.1: success search with max value vector (type: uint8)",
 			args: args{
-				ctx: ctx,
-				num: 1000,
+				ctx:       ctx,
+				insertNum: 1000,
 				req: &payload.Search_Request{
 					Vector: fill(float32(uint8(math.MaxUint8))),
 					Config: defaultSearch_Config,
@@ -771,8 +771,8 @@ func Test_server_Search(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 2.2: success search with max value vector (type: float32)",
 			args: args{
-				ctx: ctx,
-				num: 1000,
+				ctx:       ctx,
+				insertNum: 1000,
 				req: &payload.Search_Request{
 					Vector: fill(math.MaxFloat32),
 					Config: defaultSearch_Config,
@@ -790,8 +790,8 @@ func Test_server_Search(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 3.1: success search with min value vector (type: float32)",
 			args: args{
-				ctx: ctx,
-				num: 1000,
+				ctx:       ctx,
+				insertNum: 1000,
 				req: &payload.Search_Request{
 					Vector: fill(-math.MaxFloat32),
 					Config: defaultSearch_Config,
@@ -809,8 +809,8 @@ func Test_server_Search(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 4.1: fail search with NaN value vector (type: float32)",
 			args: args{
-				ctx: ctx,
-				num: 1000,
+				ctx:       ctx,
+				insertNum: 1000,
 				req: &payload.Search_Request{
 					Vector: fill(float32(math.NaN())),
 					Config: defaultSearch_Config,
@@ -828,8 +828,8 @@ func Test_server_Search(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 5.1: fail search with Inf value vector (type: float32)",
 			args: args{
-				ctx: ctx,
-				num: 1000,
+				ctx:       ctx,
+				insertNum: 1000,
 				req: &payload.Search_Request{
 					Vector: fill(float32(math.Inf(+1.0))),
 					Config: defaultSearch_Config,
@@ -847,8 +847,8 @@ func Test_server_Search(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 6.1: fail search with -Inf value vector (type: float32)",
 			args: args{
-				ctx: ctx,
-				num: 1000,
+				ctx:       ctx,
+				insertNum: 1000,
 				req: &payload.Search_Request{
 					Vector: fill(float32(math.Inf(-1.0))),
 					Config: defaultSearch_Config,
@@ -866,8 +866,8 @@ func Test_server_Search(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 7.1: fail with 0 length vector (type: uint8)",
 			args: args{
-				ctx: ctx,
-				num: 1000,
+				ctx:       ctx,
+				insertNum: 1000,
 				req: &payload.Search_Request{
 					Vector: []float32{},
 					Config: defaultSearch_Config,
@@ -887,8 +887,8 @@ func Test_server_Search(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 7.2: fail with 0 length vector (type: float32)",
 			args: args{
-				ctx: ctx,
-				num: 1000,
+				ctx:       ctx,
+				insertNum: 1000,
 				req: &payload.Search_Request{
 					Vector: []float32{},
 					Config: defaultSearch_Config,
@@ -906,8 +906,8 @@ func Test_server_Search(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 8.1: fail with max length vector (type: uint8)",
 			args: args{
-				ctx: ctx,
-				num: 1000,
+				ctx:       ctx,
+				insertNum: 1000,
 				req: &payload.Search_Request{
 					Vector: convertVectorUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, math.MaxInt32>>2)[0]),
 					Config: defaultSearch_Config,
@@ -927,8 +927,8 @@ func Test_server_Search(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 8.2: fail with max length vector (type: float32)",
 			args: args{
-				ctx: ctx,
-				num: 1000,
+				ctx:       ctx,
+				insertNum: 1000,
 				req: &payload.Search_Request{
 					Vector: vector.GaussianDistributedFloat32VectorGenerator(1, math.MaxInt32>>2)[0],
 					Config: defaultSearch_Config,
@@ -946,8 +946,8 @@ func Test_server_Search(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 9.1: fail with nil vector (type: uint8)",
 			args: args{
-				ctx: ctx,
-				num: 1000,
+				ctx:       ctx,
+				insertNum: 1000,
 				req: &payload.Search_Request{
 					Vector: nil,
 					Config: defaultSearch_Config,
@@ -967,8 +967,8 @@ func Test_server_Search(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 9.2: fail with nil vector (type: float32)",
 			args: args{
-				ctx: ctx,
-				num: 1000,
+				ctx:       ctx,
+				insertNum: 1000,
 				req: &payload.Search_Request{
 					Vector: nil,
 					Config: defaultSearch_Config,
@@ -988,8 +988,8 @@ func Test_server_Search(t *testing.T) {
 		{
 			name: "Decision Table Testing case 1.1: success with Search_Config.Num=10 from 5 different vectors (type: uint8)",
 			args: args{
-				ctx: ctx,
-				num: 5,
+				ctx:       ctx,
+				insertNum: 5,
 				req: &payload.Search_Request{
 					Vector: convertVectorUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, defaultDimensionSize)[0]),
 					Config: defaultSearch_Config,
@@ -1008,8 +1008,8 @@ func Test_server_Search(t *testing.T) {
 		{
 			name: "Decision Table Testing case 1.2: success with Search_Config.Num=10 from 5 different vectors (type: float32)",
 			args: args{
-				ctx: ctx,
-				num: 5,
+				ctx:       ctx,
+				insertNum: 5,
 				req: &payload.Search_Request{
 					Vector: vector.GaussianDistributedFloat32VectorGenerator(1, defaultDimensionSize)[0],
 					Config: defaultSearch_Config,
@@ -1026,8 +1026,8 @@ func Test_server_Search(t *testing.T) {
 		{
 			name: "Decision Table Testing case 2.1: success with Search_Config.Num=10 from 10 different vectors (type: uint8)",
 			args: args{
-				ctx: ctx,
-				num: 10,
+				ctx:       ctx,
+				insertNum: 10,
 				req: &payload.Search_Request{
 					Vector: convertVectorUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, defaultDimensionSize)[0]),
 					Config: defaultSearch_Config,
@@ -1046,8 +1046,8 @@ func Test_server_Search(t *testing.T) {
 		{
 			name: "Decision Table Testing case 2.2: success with Search_Config.Num=10 from 10 different vectors (type: float32)",
 			args: args{
-				ctx: ctx,
-				num: 10,
+				ctx:       ctx,
+				insertNum: 10,
 				req: &payload.Search_Request{
 					Vector: vector.GaussianDistributedFloat32VectorGenerator(1, defaultDimensionSize)[0],
 					Config: defaultSearch_Config,
@@ -1064,8 +1064,8 @@ func Test_server_Search(t *testing.T) {
 		{
 			name: "Decision Table Testing case 3.1: success with Search_Config.Num=10 from 20 different vectors (type: uint8)",
 			args: args{
-				ctx: ctx,
-				num: 20,
+				ctx:       ctx,
+				insertNum: 20,
 				req: &payload.Search_Request{
 					Vector: convertVectorUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, defaultDimensionSize)[0]),
 					Config: defaultSearch_Config,
@@ -1084,8 +1084,8 @@ func Test_server_Search(t *testing.T) {
 		{
 			name: "Decision Table Testing case 3.2: success with Search_Config.Num=10 from 20 different vectors (type: float32)",
 			args: args{
-				ctx: ctx,
-				num: 20,
+				ctx:       ctx,
+				insertNum: 20,
 				req: &payload.Search_Request{
 					Vector: vector.GaussianDistributedFloat32VectorGenerator(1, defaultDimensionSize)[0],
 					Config: defaultSearch_Config,
@@ -1102,8 +1102,8 @@ func Test_server_Search(t *testing.T) {
 		{
 			name: "Decision Table Testing case 4.1: success with Search_Config.Num=10 from 5 same vectors (type: uint8)",
 			args: args{
-				ctx: ctx,
-				num: 5,
+				ctx:       ctx,
+				insertNum: 5,
 				req: &payload.Search_Request{
 					Vector: convertVectorUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, defaultDimensionSize)[0]),
 					Config: defaultSearch_Config,
@@ -1127,8 +1127,8 @@ func Test_server_Search(t *testing.T) {
 		{
 			name: "Decision Table Testing case 4.2: success with Search_Config.Num=10 from 5 same vectors (type: float32)",
 			args: args{
-				ctx: ctx,
-				num: 5,
+				ctx:       ctx,
+				insertNum: 5,
 				req: &payload.Search_Request{
 					Vector: vector.GaussianDistributedFloat32VectorGenerator(1, defaultDimensionSize)[0],
 					Config: defaultSearch_Config,
@@ -1152,8 +1152,8 @@ func Test_server_Search(t *testing.T) {
 		{
 			name: "Decision Table Testing case 5.1: success with Search_Config.Num=10 from 10 same vectors (type: uint8)",
 			args: args{
-				ctx: ctx,
-				num: 10,
+				ctx:       ctx,
+				insertNum: 10,
 				req: &payload.Search_Request{
 					Vector: convertVectorUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, defaultDimensionSize)[0]),
 					Config: defaultSearch_Config,
@@ -1177,8 +1177,8 @@ func Test_server_Search(t *testing.T) {
 		{
 			name: "Decision Table Testing case 5.2: success with Search_Config.Num=10 from 10 same vectors (type: float32)",
 			args: args{
-				ctx: ctx,
-				num: 10,
+				ctx:       ctx,
+				insertNum: 10,
 				req: &payload.Search_Request{
 					Vector: vector.GaussianDistributedFloat32VectorGenerator(1, defaultDimensionSize)[0],
 					Config: defaultSearch_Config,
@@ -1202,8 +1202,8 @@ func Test_server_Search(t *testing.T) {
 		{
 			name: "Decision Table Testing case 6.1: success with Search_Config.Num=10 from 20 same vectors (type: uint8)",
 			args: args{
-				ctx: ctx,
-				num: 20,
+				ctx:       ctx,
+				insertNum: 20,
 				req: &payload.Search_Request{
 					Vector: convertVectorUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, defaultDimensionSize)[0]),
 					Config: defaultSearch_Config,
@@ -1227,8 +1227,8 @@ func Test_server_Search(t *testing.T) {
 		{
 			name: "Decision Table Testing case 6.2: success with Search_Config.Num=10 from 20 same vectors (type: float32)",
 			args: args{
-				ctx: ctx,
-				num: 20,
+				ctx:       ctx,
+				insertNum: 20,
 				req: &payload.Search_Request{
 					Vector: vector.GaussianDistributedFloat32VectorGenerator(1, defaultDimensionSize)[0],
 					Config: defaultSearch_Config,
