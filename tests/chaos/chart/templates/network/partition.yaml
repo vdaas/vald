@@ -15,14 +15,18 @@
 #
 {{- if .Values.networkChaos.partition.enabled }}
 apiVersion: chaos-mesh.org/v1alpha1
-kind: NetworkChaos
+kind: Schedule
 metadata:
   name: {{ .Values.networkChaos.partition.name }}-{{ .Release.Name }}
   namespace: {{ .Release.Namespace }}
 spec:
-  action: partition
-  mode: one
-  # duration: {{ .Values.networkChaos.partition.duration }}
-  selector:
-    {{- toYaml .Values.networkChaos.partition.selector | nindent 4 }}
+  schedule: "{{ .Values.networkChaos.partition.schedule }}"
+  concurrencyPolicy: 'Forbid'
+  type: 'NetworkChaos'
+  networkChaos:
+    action: partition
+    mode: one
+    selector:
+      {{- toYaml .Values.networkChaos.partition.selector | nindent 6 }}
+    duration: {{ .Values.networkChaos.partition.duration }}
 {{- end }}
