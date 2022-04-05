@@ -19,7 +19,7 @@ metadata:
   labels:
     app.kubernetes.io/instance: pyroscope-agent
     app.kubernetes.io/name: pyroscope-agent
-    app.kubernetes.io/version: "0.2.3"
+    app.kubernetes.io/version: latest
   name: pyroscope-agent
 spec:
   selector:
@@ -31,7 +31,7 @@ spec:
       labels:
         app.kubernetes.io/instance: pyroscope-agent
         app.kubernetes.io/name: pyroscope-agent
-        app.kubernetes.io/version: "0.2.3"
+        app.kubernetes.io/version: latest
     spec:
       containers:
         - name: pyroscope-agent
@@ -45,11 +45,13 @@ spec:
             - "http://pyroscope:4040"
             - "--log-level"
             - "info"
+            - "--upstream-request-timeout"
+            - "60s"
           securityContext:
             privileged: true
             runAsGroup: 0
             runAsUser: 0
-          image: pyroscope/pyroscope:0.2.3
+          image: pyroscope/pyroscope:latest
           resources: {}
           volumeMounts:
             - mountPath: /lib/modules
