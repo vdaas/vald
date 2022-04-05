@@ -20,7 +20,7 @@ metadata:
   labels:
     app.kubernetes.io/name: pyroscope
     app.kubernetes.io/instance: pyroscope
-    app.kubernetes.io/version: "0.4.1"
+    app.kubernetes.io/version: latest
 spec:
   selector:
     matchLabels:
@@ -35,6 +35,7 @@ spec:
       labels:
         app.kubernetes.io/name: pyroscope
         app.kubernetes.io/instance: pyroscope
+        app.kubernetes.io/version: latest
     spec:
       serviceAccountName: pyroscope
       securityContext:
@@ -46,7 +47,7 @@ spec:
             - "-config"
             - "/tmp/config.yaml"
           securityContext: {}
-          image: "pyroscope/pyroscope:0.4.1"
+          image: "pyroscope/pyroscope:latest"
           imagePullPolicy: IfNotPresent
           ports:
             - name: api
