@@ -15,20 +15,24 @@
 #
 {{- if .Values.networkChaos.bandwidth.enabled }}
 apiVersion: chaos-mesh.org/v1alpha1
-kind: NetworkChaos
+kind: Schedule
 metadata:
   name: {{ .Values.networkChaos.bandwidth.name }}-{{ .Release.Name }}
   namespace: {{ .Release.Namespace }}
 spec:
-  action: bandwidth
-  mode: one
-  # duration: {{ .Values.networkChaos.bandwidth.duration }}
-  bandwidth:
-    rate: {{ .Values.networkChaos.bandwidth.rate }}
-    limit: {{ .Values.networkChaos.bandwidth.limit }}
-    buffer: {{ .Values.networkChaos.bandwidth.buffer }}
-    peakrate: {{ .Values.networkChaos.bandwidth.peakrate }}
-    minburst: {{ .Values.networkChaos.bandwidth.minburst }}
-  selector:
-    {{- toYaml .Values.networkChaos.bandwidth.selector | nindent 4 }}
+  schedule: "{{ .Values.networkChaos.bandwidth.schedule }}"
+  concurrencyPolicy: 'Forbid'
+  type: 'NetworkChaos'
+  networkChaos:
+    action: bandwidth
+    mode: one
+    selector:
+      {{- toYaml .Values.networkChaos.bandwidth.selector | nindent 6 }}
+    bandwidth:
+      rate: {{ .Values.networkChaos.bandwidth.rate }}
+      limit: {{ .Values.networkChaos.bandwidth.limit }}
+      buffer: {{ .Values.networkChaos.bandwidth.buffer }}
+      peakrate: {{ .Values.networkChaos.bandwidth.peakrate }}
+      minburst: {{ .Values.networkChaos.bandwidth.minburst }}
+    duration: {{ .Values.networkChaos.bandwidth.duration }}
 {{- end }}
