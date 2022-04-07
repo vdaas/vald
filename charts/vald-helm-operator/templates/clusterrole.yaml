@@ -50,6 +50,7 @@ rules:
   - apiGroups:
       - ""
     resources:
+      - secrets
       - configmaps
       - serviceaccounts
       - services
