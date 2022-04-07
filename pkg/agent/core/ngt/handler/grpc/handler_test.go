@@ -438,7 +438,7 @@ func Test_server_Exists(t *testing.T) {
 }
 
 func Test_server_Search(t *testing.T) {
-	t.Parallel()
+	// t.Parallel()
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -1254,7 +1254,7 @@ func Test_server_Search(t *testing.T) {
 	for _, tc := range tests {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
+			// tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc == nil {
 				test.beforeFunc = defaultBeforeFunc
