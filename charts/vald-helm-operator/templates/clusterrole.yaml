@@ -30,13 +30,6 @@ rules:
   - apiGroups:
       - ""
     resources:
-      - configmaps
-      - secrets
-    verbs:
-      - "*"
-  - apiGroups:
-      - ""
-    resources:
       - events
     verbs:
       - create
@@ -47,7 +40,13 @@ rules:
       - clusterrolebindings
       - clusterroles
     verbs:
-      - "*"
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
   - apiGroups:
       - ""
     resources:
@@ -55,7 +54,13 @@ rules:
       - serviceaccounts
       - services
     verbs:
-      - "*"
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
   - apiGroups:
       - apps
     resources:
@@ -63,38 +68,61 @@ rules:
       - deployments
       - statefulsets
     verbs:
-      - "*"
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
   - apiGroups:
       - autoscaling
     resources:
       - horizontalpodautoscalers
     verbs:
-      - "*"
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
   - apiGroups:
       - networking.k8s.io
     resources:
       - ingresses
     verbs:
-      - "*"
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
   - apiGroups:
       - policy
     resources:
       - poddisruptionbudgets
     verbs:
-      - "*"
-  - apiGroups:
-      - monitoring.coreos.com
-    resources:
-      - servicemonitors
-    verbs:
-      - get
       - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
   - apiGroups:
       - scheduling.k8s.io
     resources:
       - priorityclasses
     verbs:
-      - "*"
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
   - apiGroups:
       - apps
     resourceNames:
@@ -112,7 +140,8 @@ rules:
   - apiGroups:
       - vald.vdaas.org
     resources:
-      - "*"
+      - "valdhelmoperatorreleases"
+      - "valdreleases"
     verbs:
       - create
       - delete
