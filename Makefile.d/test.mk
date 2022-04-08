@@ -47,7 +47,7 @@ test/internal/tparse:
 .PHONY: test/pkg
 ## run tests for pkg
 test/pkg:
-	go test -shuffle=on -race -mod=readonly -cover ./pkg/...
+	go test -shuffle=on -race -mod=readonly -cover -v ./pkg/...
 
 .PHONY: test/pkg/tparse
 ## run tests for pkg and who table
