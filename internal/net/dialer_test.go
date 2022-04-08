@@ -22,7 +22,6 @@ import (
 	ctls "crypto/tls"
 	stderrors "errors"
 	"fmt"
-	"io/ioutil"
 	"math"
 	"net"
 	"net/http"
@@ -39,6 +38,7 @@ import (
 	"github.com/vdaas/vald/internal/cache"
 	"github.com/vdaas/vald/internal/cache/gache"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/io"
 	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/test/goleak"
 	"github.com/vdaas/vald/internal/tls"
@@ -1278,7 +1278,7 @@ func Test_dialer_cachedDialer(t *testing.T) {
 
 						// read the output from the server and check if it is equals to the count
 						fmt.Fprintf(gotConn, "GET / HTTP/1.0\r\n\r\n")
-						buf, _ := ioutil.ReadAll(gotConn)
+						buf, _ := io.ReadAll(gotConn)
 						content := strings.Split(string(buf), "\n")[5] // skip HTTP header
 						if content != srvContent {
 							return errors.Errorf("excepted output from server, got: %v, want: %v", content, fmt.Sprint(cnt))

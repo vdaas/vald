@@ -18,7 +18,6 @@ package s3
 
 import (
 	"context"
-	"io"
 	"reflect"
 
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -29,6 +28,7 @@ import (
 	"github.com/vdaas/vald/internal/db/storage/blob/s3/writer"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/io"
 )
 
 type client struct {
@@ -89,12 +89,12 @@ func New(opts ...Option) (b blob.Bucket, err error) {
 }
 
 // Open does nothing. Always returns nil.
-func (c *client) Open(ctx context.Context) (err error) {
+func (*client) Open(ctx context.Context) (err error) {
 	return nil
 }
 
 // Close does nothing. Always returns nil.
-func (c *client) Close() error {
+func (*client) Close() error {
 	return nil
 }
 

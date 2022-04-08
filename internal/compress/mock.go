@@ -15,7 +15,7 @@
 //
 package compress
 
-import "io"
+import "github.com/vdaas/vald/internal/io"
 
 // MockCompressor represents mock of Compressor.
 type MockCompressor struct {

@@ -18,7 +18,8 @@ package blob
 
 import (
 	"context"
-	"io"
+
+	"github.com/vdaas/vald/internal/io"
 )
 
 type Bucket interface {
