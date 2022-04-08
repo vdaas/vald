@@ -900,7 +900,6 @@ func Test_server_Search(t *testing.T) {
 				code:       codes.InvalidArgument,
 			},
 		},
-		//*
 		{
 			name: "Boundary Value Testing case 8.1: fail search with max dimension vector (type: uint8)",
 			args: args{
