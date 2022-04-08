@@ -17,13 +17,13 @@ package operation
 
 import (
 	"context"
-	"io"
 	"strconv"
 	"sync"
 	"testing"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/hack/benchmark/internal/assets"
+	"github.com/vdaas/vald/internal/io"
 )
 
 func (o *operation) Search(ctx context.Context, b *testing.B, ds assets.Dataset) {

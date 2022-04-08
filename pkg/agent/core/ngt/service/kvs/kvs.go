@@ -152,9 +152,15 @@ func (b *bidi) Range(ctx context.Context, f func(string, uint32) bool) {
 
 // Len returns the length of the cache that is set in the bidi.
 func (b *bidi) Len() uint64 {
+	if b == nil {
+		return 0
+	}
 	return atomic.LoadUint64(&b.l)
 }
 
 func (b *bidi) Close() error {
+	if b == nil {
+		return nil
+	}
 	return b.eg.Wait()
 }

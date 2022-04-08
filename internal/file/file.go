@@ -22,6 +22,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"sort"
 	"strconv"
 	"time"
 
@@ -60,7 +61,7 @@ func Open(path string, flg int, perm fs.FileMode) (file *os.File, err error) {
 		}
 
 		if flg&(os.O_CREATE|os.O_APPEND) > 0 {
-			file, err = os.OpenFile(path, os.O_RDWR|os.O_CREATE|os.O_TRUNC, perm)
+			file, err = os.OpenFile(path, os.O_RDWR|os.O_CREATE|os.O_EXCL|os.O_TRUNC, perm)
 			if err != nil {
 				log.Debug(errors.ErrFailedToCreateFile(err, path, ffi))
 			}
@@ -161,8 +162,19 @@ func CopyDir(ctx context.Context, src, dst string) (err error) {
 	if len(src) == 0 || len(dst) == 0 || src == dst {
 		return nil
 	}
+	src, err = filepath.Abs(src)
+	if err != nil {
+		return err
+	}
+	dst, err = filepath.Abs(dst)
+	if err != nil {
+		return err
+	}
 	eg, _ := errgroup.New(ctx)
 	err = filepath.WalkDir(src, func(childPath string, info fs.DirEntry, err error) error {
+		if childPath == src || childPath == dst || strings.HasPrefix(childPath, dst) {
+			return nil
+		}
 		if err != nil {
 			fi, ierr := info.Info()
 			if ierr != nil {
@@ -171,9 +183,6 @@ func CopyDir(ctx context.Context, src, dst string) (err error) {
 			err = errors.ErrFailedToWalkDir(err, src, childPath, nil, fi)
 			log.Warn(err)
 			return err
-		}
-		if src == childPath {
-			return nil
 		}
 		dstPath := Join(dst, filepath.Base(childPath))
 		if info.IsDir() {
@@ -214,11 +223,14 @@ func CopyFileWithPerm(ctx context.Context, src, dst string, perm fs.FileMode) (n
 
 	exist, fi, err := exists(src)
 	switch {
-	case !exist || fi == nil || fi.Size() == 0:
+	case !exist, fi == nil, fi.Size() == 0, fi.IsDir():
 		return 0, errors.Wrap(err, errors.ErrFileNotFound(src).Error())
-	case err != nil && !os.IsExist(err):
+	case err != nil && (!errors.Is(err, fs.ErrExist) || errors.Is(err, fs.ErrNotExist)):
 		return 0, errors.Wrap(errors.ErrFileNotFound(src), err.Error())
+	case err != nil:
+		log.Warn(err)
 	}
+
 	flg := os.O_RDONLY | os.O_SYNC
 	sf, err := Open(src, flg, perm)
 	if err != nil || sf == nil {
@@ -264,14 +276,17 @@ func writeFile(ctx context.Context, target string, r io.Reader, flg int, perm fs
 
 	exist, fi, err := exists(target)
 	switch {
-	case err == nil, exist, fi != nil && fi.Size() != 0:
+	case err == nil, exist, fi != nil && fi.Size() != 0, fi != nil && fi.IsDir():
 		err = errors.ErrFileAlreadyExists(target)
-	case err != nil && !os.IsNotExist(err):
+	case err != nil && !errors.Is(err, fs.ErrNotExist), err != nil && errors.Is(err, fs.ErrExist):
 		err = errors.Wrap(errors.ErrFileAlreadyExists(target), err.Error())
+	case err != nil && !errors.Is(err, fs.ErrNotExist):
+		log.Warn(err)
 	}
 
 	// open flag is not O_TRUNC or O_APPEND this function returns AlreadyExists error
-	if err != nil && flg&(os.O_TRUNC|os.O_APPEND) <= 0 {
+	if err != nil && flg&(os.O_TRUNC|os.O_APPEND) <= 0 &&
+		errors.Is(err, errors.ErrFileAlreadyExists(target)) {
 		return 0, err
 	}
 
@@ -301,6 +316,27 @@ func writeFile(ctx context.Context, target string, r io.Reader, flg int, perm fs
 		return 0, err
 	}
 	return n, nil
+}
+
+func ReadDir(name string) (dirs []fs.DirEntry, err error) {
+	f, err := Open(name, os.O_RDONLY, 0)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+
+	dirs, err = f.ReadDir(-1)
+	sort.Slice(dirs, func(i, j int) bool { return dirs[i].Name() < dirs[j].Name() })
+	return dirs, err
+}
+
+func ReadFile(path string) ([]byte, error) {
+	f, err := Open(path, os.O_RDONLY, fs.ModePerm)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+	return io.ReadAll(f)
 }
 
 // Exists returns file existence
@@ -340,7 +376,7 @@ func MkdirAll(path string, perm fs.FileMode) (err error) {
 	}
 	err = errors.Wrap(merr, err.Error())
 	if err != nil {
-		if os.IsPermission(err) {
+		if errors.Is(err, fs.ErrPermission) {
 			rerr = os.RemoveAll(path)
 			if rerr != nil {
 				err = errors.Wrap(err, errors.ErrFailedToRemoveDir(rerr, path, fi).Error())
@@ -370,6 +406,24 @@ func MkdirTemp(baseDir string) (path string, err error) {
 		return "", err
 	}
 	return path, nil
+}
+
+// CreateTemp create temporary file from given base path
+// if base path is nil temporary directory will create from Go's standard library
+func CreateTemp(baseDir string) (f *os.File, err error) {
+	dir, err := MkdirTemp(baseDir)
+	if err != nil {
+		return nil, err
+	}
+	var path string
+	for try := 0; try < 10000; try++ {
+		path = Join(dir, strconv.FormatInt(time.Now().UnixNano(), 10))
+		f, err = Open(path, os.O_CREATE|os.O_EXCL|os.O_RDWR|os.O_TRUNC, os.ModePerm)
+		if err == nil && f != nil {
+			return f, nil
+		}
+	}
+	return nil, errors.ErrFailedToCreateFile(err, path, nil)
 }
 
 // exists returns file existence with detailed information
@@ -411,7 +465,7 @@ func Join(paths ...string) (path string) {
 	if len(paths) > 1 {
 		path = join(paths...)
 	} else {
-		path = paths[0]
+		path = replacer.Replace(paths[0])
 	}
 	if filepath.IsAbs(path) {
 		return filepath.Clean(path)
@@ -426,10 +480,17 @@ func Join(paths ...string) (path string) {
 	return filepath.Clean(join(root, path))
 }
 
+var replacer = strings.NewReplacer(
+	string(os.PathSeparator)+string(os.PathSeparator)+string(os.PathSeparator),
+	string(os.PathSeparator),
+	string(os.PathSeparator)+string(os.PathSeparator),
+	string(os.PathSeparator),
+)
+
 func join(paths ...string) (path string) {
 	for i, path := range paths {
 		if path != "" {
-			return strings.Join(paths[i:], string(os.PathSeparator))
+			return replacer.Replace(strings.Join(paths[i:], string(os.PathSeparator)))
 		}
 	}
 	return ""

@@ -17,13 +17,13 @@ package urlopener
 
 import (
 	"context"
-	"io/ioutil"
 	"net/http"
 	"reflect"
 
 	"cloud.google.com/go/storage"
 	"github.com/vdaas/vald/internal/conv"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/file"
 	"gocloud.dev/blob/gcsblob"
 	"gocloud.dev/gcp"
 	"golang.org/x/oauth2/google"
@@ -63,7 +63,7 @@ func (uo *urlOpener) URLOpener(ctx context.Context) (guo *gcsblob.URLOpener, err
 
 	switch {
 	case len(uo.credentialsFilePath) != 0:
-		data, err := ioutil.ReadFile(uo.credentialsFilePath)
+		data, err := file.ReadFile(uo.credentialsFilePath)
 		if err != nil {
 			return nil, err
 		}

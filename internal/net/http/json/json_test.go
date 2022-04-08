@@ -18,7 +18,6 @@ package json
 import (
 	"bytes"
 	"context"
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -27,6 +26,7 @@ import (
 	"testing"
 
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/io"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/log/logger"
 	"github.com/vdaas/vald/internal/net/http/rest"
@@ -470,7 +470,7 @@ func TestDecodeResponse(t *testing.T) {
 				name: "returns nil when the data to be decoded is nil",
 				args: args{
 					res: &http.Response{
-						Body: ioutil.NopCloser(new(bytes.Buffer)),
+						Body: io.NopCloser(new(bytes.Buffer)),
 					},
 					data: nil,
 				},
@@ -484,7 +484,7 @@ func TestDecodeResponse(t *testing.T) {
 				name: "returns nil when the contents length is 0",
 				args: args{
 					res: &http.Response{
-						Body:          ioutil.NopCloser(new(bytes.Buffer)),
+						Body:          io.NopCloser(new(bytes.Buffer)),
 						ContentLength: 0,
 					},
 					data: new(interface{}),
@@ -499,7 +499,7 @@ func TestDecodeResponse(t *testing.T) {
 				name: "returns json decode error when the response body is invalid",
 				args: args{
 					res: &http.Response{
-						Body:          ioutil.NopCloser(strings.NewReader("1+3i")),
+						Body:          io.NopCloser(strings.NewReader("1+3i")),
 						ContentLength: 2,
 					},
 					data: new(interface{}),
@@ -519,7 +519,7 @@ func TestDecodeResponse(t *testing.T) {
 				name: "returns nil when the decode success",
 				args: args{
 					res: &http.Response{
-						Body:          ioutil.NopCloser(strings.NewReader("1")),
+						Body:          io.NopCloser(strings.NewReader("1")),
 						ContentLength: 1,
 					},
 					data: &data,

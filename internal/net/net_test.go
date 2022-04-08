@@ -20,7 +20,6 @@ package net
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
 	"math"
 	"net/http"
 	"net/http/httptest"
@@ -30,6 +29,7 @@ import (
 	"testing"
 
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/io"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/log/logger"
 	"github.com/vdaas/vald/internal/strings"
@@ -189,7 +189,7 @@ func TestDialContext(t *testing.T) {
 
 					// read the output from the server and check if it is equals to the count
 					fmt.Fprintf(gotConn, "GET / HTTP/1.0\r\n\r\n")
-					buf, _ := ioutil.ReadAll(gotConn)
+					buf, _ := io.ReadAll(gotConn)
 					content := strings.Split(string(buf), "\n")[5] // skip HTTP header
 					if content != srvContent {
 						return errors.Errorf("invalid content, got: %v, want: %v", content, srvContent)

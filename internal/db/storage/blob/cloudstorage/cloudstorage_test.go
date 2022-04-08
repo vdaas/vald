@@ -17,13 +17,13 @@ package cloudstorage
 
 import (
 	"context"
-	"io"
 	"net/url"
 	"reflect"
 	"testing"
 
 	iblob "github.com/vdaas/vald/internal/db/storage/blob"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/io"
 	"github.com/vdaas/vald/internal/test/goleak"
 	"gocloud.dev/blob"
 	"gocloud.dev/blob/gcsblob"

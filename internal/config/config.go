@@ -27,7 +27,6 @@ import (
 	"github.com/vdaas/vald/internal/encoding/json"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/file"
-	"github.com/vdaas/vald/internal/io/ioutil"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/strings"
 	yaml "gopkg.in/yaml.v2"
@@ -97,7 +96,7 @@ func GetActualValue(val string) (res string) {
 	}
 	res = os.ExpandEnv(val)
 	if strings.HasPrefix(res, fileValuePrefix) {
-		body, err := ioutil.ReadFile(strings.TrimPrefix(res, fileValuePrefix))
+		body, err := file.ReadFile(strings.TrimPrefix(res, fileValuePrefix))
 		if err != nil {
 			return
 		}

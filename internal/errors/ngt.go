@@ -29,6 +29,9 @@ var (
 	// ErrIndexFileNotFound represents an error that the index file is not found.
 	ErrIndexFileNotFound = New("index file not found")
 
+	// ErrIndicesAreTooFewComparedToMetadata represents an error that the index count is not enough to be compared by metadata.
+	ErrIndicesAreTooFewComparedToMetadata = New("indices are too few compared to Metadata")
+
 	// ErrIndexLoadTimeout represents an error that the index loading timeout.
 	ErrIndexLoadTimeout = New("index load timeout")
 

@@ -16,9 +16,8 @@
 package lz4
 
 import (
-	"io"
-
 	lz4 "github.com/pierrec/lz4/v3"
+	"github.com/vdaas/vald/internal/io"
 )
 
 // Header is type alias of lz4.Header.
