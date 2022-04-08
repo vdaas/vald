@@ -819,7 +819,8 @@ func Test_server_Search(t *testing.T) {
 				ngtCfg: ngtConfig(defaultDimensionSize, ngt.Float.String()),
 			},
 			want: want{
-				resultSize: 10,
+				resultSize: 0,
+				code:       codes.NotFound,
 			},
 		},
 		{
@@ -888,46 +889,6 @@ func Test_server_Search(t *testing.T) {
 				insertNum: 1000,
 				req: &payload.Search_Request{
 					Vector: []float32{},
-					Config: defaultSearch_Config,
-				},
-			},
-			fields: fields{
-				gen:    vector.GaussianDistributedFloat32VectorGenerator,
-				ngtCfg: ngtConfig(defaultDimensionSize, ngt.Float.String()),
-			},
-			want: want{
-				resultSize: 0,
-				code:       codes.InvalidArgument,
-			},
-		},
-		{
-			name: "Boundary Value Testing case 8.1: fail search with max dimension vector (type: uint8)",
-			args: args{
-				ctx:       ctx,
-				insertNum: 1000,
-				req: &payload.Search_Request{
-					Vector: convertVectorUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, math.MaxInt32>>6)[0]),
-					Config: defaultSearch_Config,
-				},
-			},
-			fields: fields{
-				gen: func(n, dim int) [][]float32 {
-					return convertVectorsUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(n, dim))
-				},
-				ngtCfg: ngtConfig(defaultDimensionSize, ngt.Uint8.String()),
-			},
-			want: want{
-				resultSize: 0,
-				code:       codes.InvalidArgument,
-			},
-		},
-		{
-			name: "Boundary Value Testing case 8.2: fail search with max dimension vector (type: float32)",
-			args: args{
-				ctx:       ctx,
-				insertNum: 1000,
-				req: &payload.Search_Request{
-					Vector: vector.GaussianDistributedFloat32VectorGenerator(1, math.MaxInt32>>6)[0],
 					Config: defaultSearch_Config,
 				},
 			},
