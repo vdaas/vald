@@ -906,7 +906,7 @@ func Test_server_Search(t *testing.T) {
 				ctx:       ctx,
 				insertNum: 1000,
 				req: &payload.Search_Request{
-					Vector: convertVectorUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, math.MaxInt32>>4)[0]),
+					Vector: convertVectorUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, math.MaxInt32>>8)[0]),
 					Config: defaultSearch_Config,
 				},
 			},
@@ -927,7 +927,7 @@ func Test_server_Search(t *testing.T) {
 				ctx:       ctx,
 				insertNum: 1000,
 				req: &payload.Search_Request{
-					Vector: vector.GaussianDistributedFloat32VectorGenerator(1, math.MaxInt32>>4)[0],
+					Vector: vector.GaussianDistributedFloat32VectorGenerator(1, math.MaxInt32>>8)[0],
 					Config: defaultSearch_Config,
 				},
 			},
