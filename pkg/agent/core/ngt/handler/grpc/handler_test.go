@@ -941,7 +941,6 @@ func Test_server_Search(t *testing.T) {
 				code:       codes.InvalidArgument,
 			},
 		},
-		//*/
 		{
 			name: "Boundary Value Testing case 9.1: fail search with nil vector (type: uint8)",
 			args: args{
