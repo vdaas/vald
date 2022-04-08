@@ -21,7 +21,6 @@ import (
 	"context"
 	"fmt"
 	"math"
-	"math/rand"
 	"reflect"
 	"strconv"
 	"testing"
@@ -479,7 +478,7 @@ func Test_server_Search(t *testing.T) {
 		if f.ngtOpts == nil {
 			f.ngtOpts = []service.Option{}
 		}
-		f.ngtOpts = append(f.ngtOpts, service.WithErrGroup(eg), service.WithIndexPath("/tmp/ngt-"+strconv.Itoa(rand.Int())))
+		f.ngtOpts = append(f.ngtOpts, service.WithErrGroup(eg), service.WithEnableInMemoryMode(true))
 		ngt, err := service.New(f.ngtCfg, f.ngtOpts...)
 		if err != nil {
 			return nil, err
@@ -508,7 +507,7 @@ func Test_server_Search(t *testing.T) {
 		if _, err := s.MultiInsert(ctx, &payload.Insert_MultiRequest{Requests: reqs}); err != nil {
 			return nil, err
 		}
-		if _, err := s.CreateIndex(ctx, &payload.Control_CreateIndexRequest{PoolSize: 10000}); err != nil {
+		if _, err := s.CreateIndex(ctx, &payload.Control_CreateIndexRequest{PoolSize: 100}); err != nil {
 			return nil, err
 		}
 		return s, nil
@@ -544,12 +543,11 @@ func Test_server_Search(t *testing.T) {
 	}
 	ngtConfig := func(dim int, objectType string) *config.NGT {
 		return &config.NGT{
-			Dimension:          dim,
-			DistanceType:       ngt.L2.String(),
-			ObjectType:         objectType,
-			EnableInMemoryMode: true,
-			CreationEdgeSize:   60,
-			SearchEdgeSize:     20,
+			Dimension:        dim,
+			DistanceType:     ngt.L2.String(),
+			ObjectType:       objectType,
+			CreationEdgeSize: 60,
+			SearchEdgeSize:   20,
 			KVSDB: &config.KVSDB{
 				Concurrency: 10,
 			},
@@ -590,25 +588,25 @@ func Test_server_Search(t *testing.T) {
 			- case 4.1: fail search with NaN value vector from 1000 vectors (type: float32)
 			- case 5.1: fail search with Inf value vector from 1000 vectors (type: float32)
 			- case 6.1: fail search with -Inf value vector from 1000 vectors (type: float32)
-			- case 7.1: fail with 0 length vector from 1000 vectors (type: uint8) # NOTE: Can we create an index?
-			- case 7.2: fail with 0 length vector from 1000 vectors (type: float32) # NOTE: Can we create an index?
-			- case 8.1: fail with max length vector from 1000 vectors (type: uint8) # NOTE: Can we generate?
-			- case 8.2: fail with max length vector from 1000 vectors (type: float32) # NOTE: Can we generate?
-			- case 9.1: fail with nil vector from 1000 vectors (type: uint8)
-			- case 9.2: fail with nil vector from 1000 vectors (type: float32)
+			- case 7.1: fail search with 0 length vector from 1000 vectors (type: uint8)
+			- case 7.2: fail search with 0 length vector from 1000 vectors (type: float32)
+			- case 8.1: fail search with max dimension vector from 1000 vectors (type: uint8)
+			- case 8.2: fail search with max dimension vector from 1000 vectors (type: float32)
+			- case 9.1: fail search with nil vector from 1000 vectors (type: uint8)
+			- case 9.2: fail search with nil vector from 1000 vectors (type: float32)
 		- Decision Table Testing
-			- case 1.1: success with Search_Config.Num=10 from 5 different vectors (type: uint8)
-			- case 1.2: success with Search_Config.Num=10 from 5 different vectors (type: float32)
-			- case 2.1: success with Search_Config.Num=10 from 10 different vectors (type: uint8)
-			- case 2.2: success with Search_Config.Num=10 from 10 different vectors (type: float32)
-			- case 3.1: success with Search_Config.Num=10 from 20 different vectors (type: uint8)
-			- case 3.2: success with Search_Config.Num=10 from 20 different vectors (type: float32)
-			- case 4.1: success with Search_Config.Num=10 from 5 same vectors (type: uint8)
-			- case 4.2: success with Search_Config.Num=10 from 5 same vectors (type: float32)
-			- case 5.1: success with Search_Config.Num=10 from 10 same vectors (type: uint8)
-			- case 5.2: success with Search_Config.Num=10 from 10 same vectors (type: float32)
-			- case 6.1: success with Search_Config.Num=10 from 20 same vectors (type: uint8)
-			- case 6.2: success with Search_Config.Num=10 from 20 same vectors (type: float32)
+			- case 1.1: success search with Search_Config.Num=10 from 5 different vectors (type: uint8)
+			- case 1.2: success search with Search_Config.Num=10 from 5 different vectors (type: float32)
+			- case 2.1: success search with Search_Config.Num=10 from 10 different vectors (type: uint8)
+			- case 2.2: success search with Search_Config.Num=10 from 10 different vectors (type: float32)
+			- case 3.1: success search with Search_Config.Num=10 from 20 different vectors (type: uint8)
+			- case 3.2: success search with Search_Config.Num=10 from 20 different vectors (type: float32)
+			- case 4.1: success search with Search_Config.Num=10 from 5 same vectors (type: uint8)
+			- case 4.2: success search with Search_Config.Num=10 from 5 same vectors (type: float32)
+			- case 5.1: success search with Search_Config.Num=10 from 10 same vectors (type: uint8)
+			- case 5.2: success search with Search_Config.Num=10 from 10 same vectors (type: float32)
+			- case 6.1: success search with Search_Config.Num=10 from 20 same vectors (type: uint8)
+			- case 6.2: success search with Search_Config.Num=10 from 20 same vectors (type: float32)
 	*/
 	tests := []test{
 		// Equivalence Class Testing
@@ -822,7 +820,6 @@ func Test_server_Search(t *testing.T) {
 			},
 			want: want{
 				resultSize: 10,
-				// code:       codes.NotFound,
 			},
 		},
 		{
@@ -864,7 +861,7 @@ func Test_server_Search(t *testing.T) {
 			},
 		},
 		{
-			name: "Boundary Value Testing case 7.1: fail with 0 length vector (type: uint8)",
+			name: "Boundary Value Testing case 7.1: fail search with 0 length vector (type: uint8)",
 			args: args{
 				ctx:       ctx,
 				insertNum: 1000,
@@ -885,7 +882,7 @@ func Test_server_Search(t *testing.T) {
 			},
 		},
 		{
-			name: "Boundary Value Testing case 7.2: fail with 0 length vector (type: float32)",
+			name: "Boundary Value Testing case 7.2: fail search with 0 length vector (type: float32)",
 			args: args{
 				ctx:       ctx,
 				insertNum: 1000,
@@ -903,13 +900,14 @@ func Test_server_Search(t *testing.T) {
 				code:       codes.InvalidArgument,
 			},
 		},
+		//*
 		{
-			name: "Boundary Value Testing case 8.1: fail with max length vector (type: uint8)",
+			name: "Boundary Value Testing case 8.1: fail search with max dimension vector (type: uint8)",
 			args: args{
 				ctx:       ctx,
 				insertNum: 1000,
 				req: &payload.Search_Request{
-					Vector: convertVectorUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, math.MaxInt32>>2)[0]),
+					Vector: convertVectorUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, math.MaxInt32>>4)[0]),
 					Config: defaultSearch_Config,
 				},
 			},
@@ -917,7 +915,7 @@ func Test_server_Search(t *testing.T) {
 				gen: func(n, dim int) [][]float32 {
 					return convertVectorsUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(n, dim))
 				},
-				ngtCfg: ngtConfig(defaultDimensionSize, "uint8"),
+				ngtCfg: ngtConfig(defaultDimensionSize, ngt.Uint8.String()),
 			},
 			want: want{
 				resultSize: 0,
@@ -925,26 +923,27 @@ func Test_server_Search(t *testing.T) {
 			},
 		},
 		{
-			name: "Boundary Value Testing case 8.2: fail with max length vector (type: float32)",
+			name: "Boundary Value Testing case 8.2: fail search with max dimension vector (type: float32)",
 			args: args{
 				ctx:       ctx,
 				insertNum: 1000,
 				req: &payload.Search_Request{
-					Vector: vector.GaussianDistributedFloat32VectorGenerator(1, math.MaxInt32>>2)[0],
+					Vector: vector.GaussianDistributedFloat32VectorGenerator(1, math.MaxInt32>>4)[0],
 					Config: defaultSearch_Config,
 				},
 			},
 			fields: fields{
 				gen:    vector.GaussianDistributedFloat32VectorGenerator,
-				ngtCfg: ngtConfig(defaultDimensionSize, "float32"),
+				ngtCfg: ngtConfig(defaultDimensionSize, ngt.Float.String()),
 			},
 			want: want{
 				resultSize: 0,
 				code:       codes.InvalidArgument,
 			},
 		},
+		//*/
 		{
-			name: "Boundary Value Testing case 9.1: fail with nil vector (type: uint8)",
+			name: "Boundary Value Testing case 9.1: fail search with nil vector (type: uint8)",
 			args: args{
 				ctx:       ctx,
 				insertNum: 1000,
@@ -965,7 +964,7 @@ func Test_server_Search(t *testing.T) {
 			},
 		},
 		{
-			name: "Boundary Value Testing case 9.2: fail with nil vector (type: float32)",
+			name: "Boundary Value Testing case 9.2: fail search with nil vector (type: float32)",
 			args: args{
 				ctx:       ctx,
 				insertNum: 1000,
@@ -986,7 +985,7 @@ func Test_server_Search(t *testing.T) {
 
 		// Decision Table Testing
 		{
-			name: "Decision Table Testing case 1.1: success with Search_Config.Num=10 from 5 different vectors (type: uint8)",
+			name: "Decision Table Testing case 1.1: success search with Search_Config.Num=10 from 5 different vectors (type: uint8)",
 			args: args{
 				ctx:       ctx,
 				insertNum: 5,
@@ -1006,7 +1005,7 @@ func Test_server_Search(t *testing.T) {
 			},
 		},
 		{
-			name: "Decision Table Testing case 1.2: success with Search_Config.Num=10 from 5 different vectors (type: float32)",
+			name: "Decision Table Testing case 1.2: success search with Search_Config.Num=10 from 5 different vectors (type: float32)",
 			args: args{
 				ctx:       ctx,
 				insertNum: 5,
@@ -1024,7 +1023,7 @@ func Test_server_Search(t *testing.T) {
 			},
 		},
 		{
-			name: "Decision Table Testing case 2.1: success with Search_Config.Num=10 from 10 different vectors (type: uint8)",
+			name: "Decision Table Testing case 2.1: success search with Search_Config.Num=10 from 10 different vectors (type: uint8)",
 			args: args{
 				ctx:       ctx,
 				insertNum: 10,
@@ -1044,7 +1043,7 @@ func Test_server_Search(t *testing.T) {
 			},
 		},
 		{
-			name: "Decision Table Testing case 2.2: success with Search_Config.Num=10 from 10 different vectors (type: float32)",
+			name: "Decision Table Testing case 2.2: success search with Search_Config.Num=10 from 10 different vectors (type: float32)",
 			args: args{
 				ctx:       ctx,
 				insertNum: 10,
@@ -1062,7 +1061,7 @@ func Test_server_Search(t *testing.T) {
 			},
 		},
 		{
-			name: "Decision Table Testing case 3.1: success with Search_Config.Num=10 from 20 different vectors (type: uint8)",
+			name: "Decision Table Testing case 3.1: success search with Search_Config.Num=10 from 20 different vectors (type: uint8)",
 			args: args{
 				ctx:       ctx,
 				insertNum: 20,
@@ -1082,7 +1081,7 @@ func Test_server_Search(t *testing.T) {
 			},
 		},
 		{
-			name: "Decision Table Testing case 3.2: success with Search_Config.Num=10 from 20 different vectors (type: float32)",
+			name: "Decision Table Testing case 3.2: success search with Search_Config.Num=10 from 20 different vectors (type: float32)",
 			args: args{
 				ctx:       ctx,
 				insertNum: 20,
@@ -1100,7 +1099,7 @@ func Test_server_Search(t *testing.T) {
 			},
 		},
 		{
-			name: "Decision Table Testing case 4.1: success with Search_Config.Num=10 from 5 same vectors (type: uint8)",
+			name: "Decision Table Testing case 4.1: success search with Search_Config.Num=10 from 5 same vectors (type: uint8)",
 			args: args{
 				ctx:       ctx,
 				insertNum: 5,
@@ -1125,7 +1124,7 @@ func Test_server_Search(t *testing.T) {
 			},
 		},
 		{
-			name: "Decision Table Testing case 4.2: success with Search_Config.Num=10 from 5 same vectors (type: float32)",
+			name: "Decision Table Testing case 4.2: success search with Search_Config.Num=10 from 5 same vectors (type: float32)",
 			args: args{
 				ctx:       ctx,
 				insertNum: 5,
@@ -1150,7 +1149,7 @@ func Test_server_Search(t *testing.T) {
 			},
 		},
 		{
-			name: "Decision Table Testing case 5.1: success with Search_Config.Num=10 from 10 same vectors (type: uint8)",
+			name: "Decision Table Testing case 5.1: success search with Search_Config.Num=10 from 10 same vectors (type: uint8)",
 			args: args{
 				ctx:       ctx,
 				insertNum: 10,
@@ -1175,7 +1174,7 @@ func Test_server_Search(t *testing.T) {
 			},
 		},
 		{
-			name: "Decision Table Testing case 5.2: success with Search_Config.Num=10 from 10 same vectors (type: float32)",
+			name: "Decision Table Testing case 5.2: success search with Search_Config.Num=10 from 10 same vectors (type: float32)",
 			args: args{
 				ctx:       ctx,
 				insertNum: 10,
@@ -1200,7 +1199,7 @@ func Test_server_Search(t *testing.T) {
 			},
 		},
 		{
-			name: "Decision Table Testing case 6.1: success with Search_Config.Num=10 from 20 same vectors (type: uint8)",
+			name: "Decision Table Testing case 6.1: success search with Search_Config.Num=10 from 20 same vectors (type: uint8)",
 			args: args{
 				ctx:       ctx,
 				insertNum: 20,
@@ -1225,7 +1224,7 @@ func Test_server_Search(t *testing.T) {
 			},
 		},
 		{
-			name: "Decision Table Testing case 6.2: success with Search_Config.Num=10 from 20 same vectors (type: float32)",
+			name: "Decision Table Testing case 6.2: success search with Search_Config.Num=10 from 20 same vectors (type: float32)",
 			args: args{
 				ctx:       ctx,
 				insertNum: 20,
