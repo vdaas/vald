@@ -22,7 +22,7 @@ jobs:
   agent-ngt:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Build the Docker image
         id: build_image
         run: |
@@ -52,7 +52,7 @@ jobs:
   agent-sidecar:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Build the Docker image
         id: build_image
         run: |
@@ -82,7 +82,7 @@ jobs:
   discoverer-k8s:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Build the Docker image
         id: build_image
         run: |
@@ -112,7 +112,7 @@ jobs:
   manager-index:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Build the Docker image
         id: build_image
         run: |
@@ -142,7 +142,7 @@ jobs:
   operator-helm:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Build the Docker image
         id: build_image
         run: |
@@ -172,7 +172,7 @@ jobs:
   loadtest:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Build the Docker image
         id: build_image
         run: |
@@ -202,7 +202,7 @@ jobs:
   gateway-lb:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Build the Docker image
         id: build_image
         run: |
@@ -232,7 +232,7 @@ jobs:
   gateway-filter:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Build the Docker image
         id: build_image
         run: |
@@ -262,7 +262,7 @@ jobs:
   filter-ingress-tensorflow:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Build the Docker image
         id: build_image
         run: |

@@ -1,0 +1,515 @@
+#
+# Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+on:
+  issue_comment:
+    types: [created]
+env:
+  YQ_VERSION: 3.2.1
+name: ChatOps
+jobs:
+  label:
+    name: Add labels
+    runs-on: ubuntu-latest
+    if: github.event.comment.user.login != 'vdaas-ci'
+    steps:
+      - name: check PR Comments
+        id: check_comments_label
+        uses: machine-learning-apps/actions-chatops@master
+        with:
+          TRIGGER_PHRASE: "/label"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: install yq
+        if: steps.check_comments_label.outputs.BOOL_TRIGGERED == 'true'
+        run: |
+          sudo curl -Lo /usr/local/bin/yq https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64
+          sudo chmod a+x /usr/local/bin/yq
+      - name: check permissions
+        if: steps.check_comments_label.outputs.BOOL_TRIGGERED == 'true'
+        id: check_permissions
+        run: |
+          curl -o chatops_permissions.yaml https://raw.githubusercontent.com/vdaas/vald/master/.github/chatops_permissions.yaml
+          roles=`yq r chatops_permissions.yaml "users.${USERNAME}.role.*"`
+          if [ "$roles" = "" ]; then
+            roles=`yq r chatops_permissions.yaml "default-roles.*"`
+          fi
+          for role in `echo $roles`
+          do
+              if yq r chatops_permissions.yaml "roles.${role}.policies.*" | grep "^${REQUIRED_POLICY}$" > /dev/null 2>&1 ; then
+                echo "[OK] label requested by ${USERNAME}"
+                echo "::set-output name=EXECUTABLE::true"
+                break
+              fi
+          done
+        env:
+          USERNAME: ${{ steps.check_comments_label.outputs.COMMENTER_USERNAME }}
+          REQUIRED_POLICY: label
+      - name: add label
+        if: steps.check_comments_label.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
+        run: |
+          labels=`echo "${TRAILING_LINE}" | jq -cMR 'split(" ")'`
+          curl --include --verbose --fail \
+          -H "Accept: application/json" \
+          -H "Content-Type:application/json" \
+          -H "Authorization: token ${GITHUB_TOKEN}" \
+          --request POST \
+          --data "{\"labels\": ${labels}}" \
+          `echo "${ISSUE_URL}" | sed -e 's/{\/name}//'`
+        env:
+          GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
+          ISSUE_URL: ${{ github.event.issue.labels_url }}
+          USERNAME: ${{ steps.check_comments_label.outputs.COMMENTER_USERNAME }}
+          TRAILING_LINE: ${{ steps.check_comments_label.outputs.TRAILING_LINE }}
+  changelog:
+    name: Add draft comment for a new CHANGELOG entry
+    runs-on: ubuntu-latest
+    if: github.event.comment.user.login != 'vdaas-ci'
+    steps:
+      - name: check PR Comments
+        id: check_comments_changelog
+        uses: machine-learning-apps/actions-chatops@master
+        with:
+          TRIGGER_PHRASE: "/changelog"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: install yq
+        if: steps.check_comments_changelog.outputs.BOOL_TRIGGERED == 'true'
+        run: |
+          sudo curl -Lo /usr/local/bin/yq https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64
+          sudo chmod a+x /usr/local/bin/yq
+      - name: check permissions
+        if: steps.check_comments_changelog.outputs.BOOL_TRIGGERED == 'true'
+        id: check_permissions
+        run: |
+          curl -o chatops_permissions.yaml https://raw.githubusercontent.com/vdaas/vald/master/.github/chatops_permissions.yaml
+          roles=`yq r chatops_permissions.yaml "users.${USERNAME}.role.*"`
+          if [ "$roles" = "" ]; then
+            roles=`yq r chatops_permissions.yaml "default-roles.*"`
+          fi
+          for role in `echo $roles`
+          do
+              if yq r chatops_permissions.yaml "roles.${role}.policies.*" | grep "^${REQUIRED_POLICY}$" > /dev/null 2>&1 ; then
+                echo "[OK] changelog requested by ${USERNAME}"
+                echo "::set-output name=EXECUTABLE::true"
+                break
+              fi
+          done
+        env:
+          USERNAME: ${{ steps.check_comments_changelog.outputs.COMMENTER_USERNAME }}
+          REQUIRED_POLICY: changelog
+      - uses: actions/checkout@v2
+        if: steps.check_comments_changelog.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
+        with:
+          fetch-depth: 0
+      - name: comment to PR
+        if: steps.check_comments_changelog.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
+        run: |
+          git checkout master
+          PREVIOUS_VERSION=$(git describe --tags $(git rev-list --tags --max-count=1))
+          BODY=`git log --pretty=format:'- %s' ${PREVIOUS_VERSION}..master | grep "#[[:digit:]]\+" | sed -e "s/\[\(patch\|minor\|major\)\] *//g" | sed -e "s%#\([[:digit:]]\+\)%[&](https://github.com/vdaas/vald/pull/\1)%g" | sed ':a;N;$!ba;s/\n/\\\\n/g'`
+          CURRENT="- ${PR_TITLE} ([#${PR_NUM}](https://github.com/vdaas/vald/pull/${PR_NUM}))"
+
+          curl --include --verbose --fail \
+          -H "Accept: application/json" \
+          -H "Content-Type:application/json" \
+          -H "Authorization: token ${GITHUB_TOKEN}" \
+          --request PATCH \
+          --data "{\"body\": \"${CURRENT}\\n${BODY}\"}" \
+          https://api.github.com/repos/vdaas/vald/pulls/${PR_NUM}
+
+          curl --include --verbose --fail \
+          -H "Accept: application/json" \
+          -H "Content-Type:application/json" \
+          -H "Authorization: token ${GITHUB_TOKEN}" \
+          --request POST \
+          --data "{\"body\": \"**[CHANGELOG]** The description of this PR is updated. Please edit it.\"}" \
+          $API_URL
+        env:
+          GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
+          API_URL: ${{ github.event.issue.comments_url }}
+          PR_TITLE: ${{ github.event.issue.title }}
+          PR_NUM: ${{ github.event.issue.number }}
+  rebase:
+    name: Rebase
+    runs-on: ubuntu-latest
+    if: github.event.comment.user.login != 'vdaas-ci'
+    steps:
+      - name: check PR Comments
+        id: check_comments_rebase
+        uses: machine-learning-apps/actions-chatops@master
+        with:
+          TRIGGER_PHRASE: "/rebase"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: install yq
+        if: steps.check_comments_rebase.outputs.BOOL_TRIGGERED == 'true'
+        run: |
+          sudo curl -Lo /usr/local/bin/yq https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64
+          sudo chmod a+x /usr/local/bin/yq
+      - name: check permissions
+        if: steps.check_comments_rebase.outputs.BOOL_TRIGGERED == 'true'
+        id: check_permissions
+        run: |
+          curl -o chatops_permissions.yaml https://raw.githubusercontent.com/vdaas/vald/master/.github/chatops_permissions.yaml
+          roles=`yq r chatops_permissions.yaml "users.${USERNAME}.role.*"`
+          if [ "$roles" = "" ]; then
+            roles=`yq r chatops_permissions.yaml "default-roles.*"`
+          fi
+          for role in `echo $roles`
+          do
+              if yq r chatops_permissions.yaml "roles.${role}.policies.*" | grep "^${REQUIRED_POLICY}$" > /dev/null 2>&1 ; then
+                echo "[OK] rebase requested by ${USERNAME}"
+                echo "::set-output name=EXECUTABLE::true"
+                break
+              fi
+          done
+        env:
+          USERNAME: ${{ steps.check_comments_rebase.outputs.COMMENTER_USERNAME }}
+          REQUIRED_POLICY: rebase
+      - name: comment back to PR
+        if: steps.check_comments_rebase.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
+        run: |
+          curl --include --verbose --fail \
+          -H "Accept: application/json" \
+          -H "Content-Type:application/json" \
+          -H "Authorization: token ${GITHUB_TOKEN}" \
+          --request POST \
+          --data "{\"body\": \"**[REBASE]** Rebase triggered by ${USERNAME} for branch: ${BRANCH}\"}" \
+          $API_URL
+        env:
+          GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
+          API_URL: ${{ github.event.issue.comments_url }}
+          BRANCH: ${{ steps.check_comments_rebase.outputs.BRANCH_NAME }}
+          USERNAME: ${{ steps.check_comments_rebase.outputs.COMMENTER_USERNAME }}
+      - uses: actions/checkout@v2
+        if: steps.check_comments_rebase.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.DISPATCH_TOKEN }}
+      - name: Automatic Rebase
+        if: steps.check_comments_rebase.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
+        uses: cirrus-actions/rebase@1.4
+        env:
+          GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
+      - name: failure comment
+        if: failure()
+        run: |
+          curl --include --verbose --fail \
+          -H "Accept: application/json" \
+          -H "Content-Type:application/json" \
+          -H "Authorization: token ${GITHUB_TOKEN}" \
+          --request POST \
+          --data "{\"body\": \"**[REBASE]** Failed to rebase.\"}" \
+          $API_URL
+        env:
+          GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
+          API_URL: ${{ github.event.issue.comments_url }}
+  gentest:
+    name: Add tests
+    needs:
+      - rebase
+    runs-on: ubuntu-latest
+    if: github.event.comment.user.login != 'vdaas-ci'
+    steps:
+      - name: check PR Comments
+        id: check_comments_gen_test
+        uses: machine-learning-apps/actions-chatops@master
+        with:
+          TRIGGER_PHRASE: "/gen-test"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: install yq
+        if: steps.check_comments_gen_test.outputs.BOOL_TRIGGERED == 'true'
+        run: |
+          sudo curl -Lo /usr/local/bin/yq https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64
+          sudo chmod a+x /usr/local/bin/yq
+      - name: check permissions
+        if: steps.check_comments_gen_test.outputs.BOOL_TRIGGERED == 'true'
+        id: check_permissions
+        run: |
+          curl -o chatops_permissions.yaml https://raw.githubusercontent.com/vdaas/vald/master/.github/chatops_permissions.yaml
+          roles=`yq r chatops_permissions.yaml "users.${USERNAME}.role.*"`
+          if [ "$roles" = "" ]; then
+            roles=`yq r chatops_permissions.yaml "default-roles.*"`
+          fi
+          for role in `echo $roles`
+          do
+              if yq r chatops_permissions.yaml "roles.${role}.policies.*" | grep "^${REQUIRED_POLICY}$" > /dev/null 2>&1 ; then
+                echo "[OK] add-contributor requested by ${USERNAME}"
+                echo "::set-output name=EXECUTABLE::true"
+                break
+              fi
+          done
+        env:
+          USERNAME: ${{ steps.check_comments_gen_test.outputs.COMMENTER_USERNAME }}
+          REQUIRED_POLICY: gen-test
+      - name: check executable
+        if: steps.check_comments_gen_test.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
+        run: |
+          curl --include --verbose --fail \
+          -H "Accept: application/json" \
+          -H "Content-Type:application/json" \
+          -H "Authorization: token ${GITHUB_TOKEN}" \
+          --request POST \
+          --data "{\"body\": \"**[GEN TEST]** Generating missing test files triggered by ${USERNAME}.\"}" \
+          $API_URL
+        env:
+          GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
+          USERNAME: ${{ steps.check_comments_gen_test.outputs.COMMENTER_USERNAME }}
+          PR_AUTHOR: ${{ github.event.issue.user.login }}
+          API_URL: ${{ github.event.issue.comments_url }}
+      - uses: actions/checkout@v2
+        if: steps.check_comments_gen_test.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
+        with:
+          fetch-depth: 0
+      - uses: crazy-max/ghaction-import-gpg@v3
+        if: steps.check_comments_gen_test.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
+        with:
+          gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
+          git-user-signingkey: true
+          git-commit-gpgsign: true
+      - name: Generate tests and push
+        if: steps.check_comments_gen_test.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
+        run: |
+          curl -s ${PR_INFO_URL} > /tmp/pr_info.json
+          PR_RESP=`cat /tmp/pr_info.json`
+          HEAD_BRANCH=$(cat /tmp/pr_info.json | jq -r .head.ref)
+          if [[ -z "$HEAD_BRANCH" ]]; then
+            echo "Cannot get head branch information for PR #${PR_NUM}!"
+            echo "API response: $PR_RESP"
+            exit 1
+          fi
+          echo "Head branch for PR #${PR_NUM} is ${HEAD_BRANCH}"
+
+          git checkout ${HEAD_BRANCH}
+
+          make gotests/install
+          make -j 4 gotests/gen
+
+          git add cmd hack internal pkg
+          git commit -S --signoff -m ":robot: Add automatically generated tests"
+
+          git pull --rebase
+
+          git remote set-url origin "https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+
+          git push origin ${HEAD_BRANCH}
+        env:
+          GITHUB_USER: ${{ secrets.DISPATCH_USER }}
+          GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
+          PR_INFO_URL: ${{ github.event.issue.pull_request.url }}
+          PR_AUTHOR: ${{ github.event.issue.user.login }}
+          PR_NUM: ${{ github.event.issue.number }}
+      - name: failure comment
+        if: failure()
+        run: |
+          curl --include --verbose --fail \
+          -H "Accept: application/json" \
+          -H "Content-Type:application/json" \
+          -H "Authorization: token ${GITHUB_TOKEN}" \
+          --request POST \
+          --data "{\"body\": \"**[GEN TEST]** Failed to generate tests.\"}" \
+          $API_URL
+        env:
+          GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
+          API_URL: ${{ github.event.issue.comments_url }}
+  format:
+    name: Add license and run golines + gofumpt + goimports
+    needs:
+      - rebase
+      - gentest
+    runs-on: ubuntu-latest
+    if: github.event.comment.user.login != 'vdaas-ci'
+    steps:
+      - name: check PR Comments
+        id: check_comments_format
+        uses: machine-learning-apps/actions-chatops@master
+        with:
+          TRIGGER_PHRASE: "/format"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: install yq
+        if: steps.check_comments_format.outputs.BOOL_TRIGGERED == 'true'
+        run: |
+          sudo curl -Lo /usr/local/bin/yq https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64
+          sudo chmod a+x /usr/local/bin/yq
+      - name: check permissions
+        if: steps.check_comments_format.outputs.BOOL_TRIGGERED == 'true'
+        id: check_permissions
+        run: |
+          curl -o chatops_permissions.yaml https://raw.githubusercontent.com/vdaas/vald/master/.github/chatops_permissions.yaml
+          roles=`yq r chatops_permissions.yaml "users.${USERNAME}.role.*"`
+          if [ "$roles" = "" ]; then
+            roles=`yq r chatops_permissions.yaml "default-roles.*"`
+          fi
+          for role in `echo $roles`
+          do
+              if yq r chatops_permissions.yaml "roles.${role}.policies.*" | grep "^${REQUIRED_POLICY}$" > /dev/null 2>&1 ; then
+                echo "[OK] format requested by ${USERNAME}"
+                echo "::set-output name=EXECUTABLE::true"
+                break
+              fi
+          done
+        env:
+          USERNAME: ${{ steps.check_comments_format.outputs.COMMENTER_USERNAME }}
+          REQUIRED_POLICY: format
+      - name: check executable
+        if: steps.check_comments_format.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
+        run: |
+          curl --include --verbose --fail \
+          -H "Accept: application/json" \
+          -H "Content-Type:application/json" \
+          -H "Authorization: token ${GITHUB_TOKEN}" \
+          --request POST \
+          --data "{\"body\": \"**[FORMAT]** Updating license headers and formatting go codes triggered by ${USERNAME}.\"}" \
+          $API_URL
+        env:
+          GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
+          USERNAME: ${{ steps.check_comments_format.outputs.COMMENTER_USERNAME }}
+          API_URL: ${{ github.event.issue.comments_url }}
+      - uses: actions/checkout@v2
+        if: steps.check_comments_format.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.DISPATCH_TOKEN }}
+      - uses: crazy-max/ghaction-import-gpg@v3
+        if: steps.check_comments_format.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
+        with:
+          gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
+          git-user-signingkey: true
+          git-commit-gpgsign: true
+      - name: Fetch golang version
+        if: steps.check_comments_format.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
+        run: |
+          GO_VERSION=`make version/go`
+          echo "::set-output name=version::${GO_VERSION}"
+        id: golang_version
+      - uses: actions/setup-go@v2
+        if: steps.check_comments_format.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
+        with:
+          go-version: ${{ steps.golang_version.outputs.version }}
+      - name: update and push
+        if: steps.check_comments_format.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
+        run: |
+          export PATH=$(go env GOPATH)/bin:$PATH
+
+          curl -s ${PR_INFO_URL} > /tmp/pr_info.json
+          PR_RESP=`cat /tmp/pr_info.json`
+          HEAD_BRANCH=$(cat /tmp/pr_info.json | jq -r .head.ref)
+          if [[ -z "$HEAD_BRANCH" ]]; then
+            echo "Cannot get head branch information for PR #${PR_NUM}!"
+            echo "API response: $PR_RESP"
+            exit 1
+          fi
+          echo "Head branch for PR #${PR_NUM} is ${HEAD_BRANCH}"
+
+          git checkout ${HEAD_BRANCH}
+
+          echo "Install format dependencies"
+
+          make golines/install gofumpt/install goimports/install strictgoimports/install
+          sudo make prettier/install
+
+          echo "Update license headers and format go codes/yaml"
+
+          make format/go
+          make format/yaml
+          make license
+
+          git checkout go.mod go.sum
+
+          if git diff --quiet --exit-code; then
+            echo "Nothing updated"
+          else
+            git add .
+            git commit -S --signoff -m ":robot: Update license headers / Format go codes and yaml files"
+
+            git remote set-url origin "https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+
+            git push origin ${HEAD_BRANCH}
+          fi
+        env:
+          GITHUB_USER: ${{ secrets.DISPATCH_USER }}
+          GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
+          PR_INFO_URL: ${{ github.event.issue.pull_request.url }}
+          PR_NUM: ${{ github.event.issue.number }}
+      - name: failure comment
+        if: failure()
+        run: |
+          curl --include --verbose --fail \
+          -H "Accept: application/json" \
+          -H "Content-Type:application/json" \
+          -H "Authorization: token ${GITHUB_TOKEN}" \
+          --request POST \
+          --data "{\"body\": \"**[FORMAT]** Failed to format.\"}" \
+          $API_URL
+        env:
+          GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
+          API_URL: ${{ github.event.issue.comments_url }}
+  approve:
+    name: Approve
+    needs:
+      - rebase
+      - format
+    runs-on: ubuntu-latest
+    if: github.event.comment.user.login != 'vdaas-ci'
+    steps:
+      - name: check PR Comments
+        id: check_comments_approve
+        uses: machine-learning-apps/actions-chatops@master
+        with:
+          TRIGGER_PHRASE: "/approve"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: install yq
+        if: steps.check_comments_approve.outputs.BOOL_TRIGGERED == 'true'
+        run: |
+          sudo curl -Lo /usr/local/bin/yq https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64
+          sudo chmod a+x /usr/local/bin/yq
+      - name: check permissions
+        if: steps.check_comments_approve.outputs.BOOL_TRIGGERED == 'true'
+        id: check_permissions
+        run: |
+          curl -o chatops_permissions.yaml https://raw.githubusercontent.com/vdaas/vald/master/.github/chatops_permissions.yaml
+          roles=`yq r chatops_permissions.yaml "users.${USERNAME}.role.*"`
+          if [ "$roles" = "" ]; then
+            roles=`yq r chatops_permissions.yaml "default-roles.*"`
+          fi
+          for role in `echo $roles`
+          do
+              if yq r chatops_permissions.yaml "roles.${role}.policies.*" | grep "^${REQUIRED_POLICY}$" > /dev/null 2>&1 ; then
+                echo "[OK] approved requested by ${USERNAME}"
+                echo "::set-output name=EXECUTABLE::true"
+                break
+              fi
+          done
+        env:
+          USERNAME: ${{ steps.check_comments_approve.outputs.COMMENTER_USERNAME }}
+          REQUIRED_POLICY: approve
+      - name: approve
+        if: steps.check_comments_approve.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
+        run: |
+          curl --include --verbose --fail \
+          -H "Accept: application/json" \
+          -H "Content-Type:application/json" \
+          -H "Authorization: token ${GITHUB_TOKEN}" \
+          --request POST \
+          --data "{\"body\": \"**[APPROVED]** This PR is approved by ${USERNAME}.\", \"event\": \"APPROVE\"}" \
+          "${PR_URL}/reviews"
+        env:
+          GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
+          PR_URL: ${{ github.event.issue.pull_request.url }}
+          USERNAME: ${{ steps.check_comments_approve.outputs.COMMENTER_USERNAME }}

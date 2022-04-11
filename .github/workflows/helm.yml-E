@@ -1,0 +1,118 @@
+#
+# Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+name: "Update Helm charts"
+on:
+  push:
+    tags:
+      - "*.*.*"
+      - "v*.*.*"
+      - "*.*.*-*"
+      - "v*.*.*-*"
+
+jobs:
+  update-k8s-manifest:
+    name: Update k8s manifest
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/vdaas/vald/vald-ci-container:nightly
+    steps:
+      - name: Check out code.
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - uses: crazy-max/ghaction-import-gpg@v3
+        with:
+          gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
+          git-user-signingkey: true
+          git-commit-gpgsign: true
+      - name: Helm version
+        run: |
+          helm version
+      - name: switch new branch
+        id: switch_to_new_branch
+        run: |
+          TIMESTAMP=$(date +%Y%m%d_%H%M%S_%3N)
+          BRANCH_NAME="documentation/k8s-manifests/update_k8s_manifests_${TIMESTAMP}"
+          git checkout master
+          git checkout -b ${BRANCH_NAME}
+          echo "::set-output name=BRANCH_NAME::${BRANCH_NAME}"
+      - name: Update k8s-dir
+        run: |
+          make k8s/manifest/update
+          make k8s/manifest/helm-operator/update
+      - name: Run formatter and license.go
+        run: |
+          make format/yaml
+          make license
+      - name: Push to master
+        continue-on-error: true
+        run: |
+          git add k8s
+          git commit -S --signoff -m ":robot: Automatically update k8s manifests"
+
+          git remote set-url origin "https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git push -u origin ${BRANCH_NAME}
+
+          curl --include --verbose --fail \
+          -H "Accept: application/json" \
+          -H "Content-Type:application/json" \
+          -H "Authorization: token ${GITHUB_TOKEN}" \
+          --request POST \
+          --data "{\"title\": \"Update K8s manifests\", \"head\": \"${BRANCH_NAME}\", \"base\": \"master\", \"body\": \"K8s manifests are updated.\", \"maintainer_can_modify\": true}" \
+          $API_URL
+        env:
+          GITHUB_USER: ${{ secrets.DISPATCH_USER }}
+          GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
+          API_URL: https://api.github.com/repos/vdaas/vald/pulls
+          BRANCH_NAME: ${{ steps.switch_to_new_branch.outputs.BRANCH_NAME }}
+  update-helm-chart:
+    name: Update Helm chart
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/vdaas/vald/vald-ci-container:nightly
+    steps:
+      - name: Check out code.
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.DISPATCH_TOKEN }}
+      - uses: crazy-max/ghaction-import-gpg@v3
+        with:
+          gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
+          git-user-signingkey: true
+          git-commit-gpgsign: true
+      - name: Helm version
+        run: |
+          helm version
+      - name: Packaging
+        run: |
+          make helm/package/vald
+          make helm/package/vald-helm-operator
+      - name: Push to gh-pages
+        run: |
+          git checkout .
+          git checkout gh-pages
+          mv -f vald-*.tgz charts/
+          helm repo index --url https://vald.vdaas.org/charts charts/
+
+          git add charts
+          git commit -S --signoff -m ":robot: Automatically update Helm charts"
+
+          git remote set-url origin "https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git push origin gh-pages
+        env:
+          GITHUB_USER: ${{ secrets.DISPATCH_USER }}
+          GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
