@@ -380,10 +380,10 @@ jobs:
     runs-on: ubuntu-latest
     if: startsWith( github.ref, 'refs/tags/')
     steps:
-      - uses: technote-space/workflow-conclusion-action@v1
+      - uses: technote-space/workflow-conclusion-action@v2
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - uses: 8398a7/action-slack@v2
+      - uses: 8398a7/action-slack@v3
         with:
           author_name: "E2E deploy test"
           status: ${{ env.WORKFLOW_CONCLUSION }}

@@ -201,7 +201,7 @@ jobs:
           token: ${{ secrets.DISPATCH_TOKEN }}
       - name: Automatic Rebase
         if: steps.check_comments_rebase.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
-        uses: cirrus-actions/rebase@1.4
+        uses: cirrus-actions/rebase@1.5
         env:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
       - name: failure comment

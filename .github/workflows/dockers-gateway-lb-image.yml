@@ -92,7 +92,7 @@ jobs:
           builder: ${{ steps.buildx.outputs.name }}
       - name: Initialize CodeQL
         if: startsWith( github.ref, 'refs/tags/')
-        uses: github/codeql-action/init@v1
+        uses: github/codeql-action/init@v2
       - name: Run vulnerability scanner (table)
         if: startsWith( github.ref, 'refs/tags/')
         uses: aquasecurity/trivy-action@master
@@ -118,10 +118,10 @@ jobs:
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/master' || startsWith( github.ref, 'refs/tags/')
     steps:
-      - uses: technote-space/workflow-conclusion-action@v1
+      - uses: technote-space/workflow-conclusion-action@v2
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - uses: 8398a7/action-slack@v2
+      - uses: 8398a7/action-slack@v3
         with:
           author_name: vald-lb-gateway image build
           status: ${{ env.WORKFLOW_CONCLUSION }}
