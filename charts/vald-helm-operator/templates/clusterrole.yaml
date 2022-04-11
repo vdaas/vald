@@ -25,6 +25,7 @@ rules:
       - ""
     resources:
       - namespaces
+      - pods
     verbs:
       - get
   - apiGroups:
@@ -139,12 +140,6 @@ rules:
       - deployments/finalizers
     verbs:
       - update
-  - apiGroups:
-      - ""
-    resources:
-      - pods
-    verbs:
-      - get
   - apiGroups:
       - vald.vdaas.org
     resources:
