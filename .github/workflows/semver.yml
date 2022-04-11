@@ -124,7 +124,8 @@ jobs:
       - name: Create release
         if: steps.semver.outputs.RELEASE == 'true'
         id: create_release
-        uses: actions/create-release@v1.1.1
+        # TODO: This actions has been deplicated. So Please use https://github.com/softprops/action-gh-release later.
+        uses: actions/create-release@v1.1.4
         env:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
         with:
