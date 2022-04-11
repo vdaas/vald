@@ -105,7 +105,7 @@ jobs:
           output: "trivy-results.sarif"
       - name: Upload Trivy scan results to Security tab
         if: startsWith( github.ref, 'refs/tags/')
-        uses: github/codeql-action/upload-sarif@v1
+        uses: github/codeql-action/upload-sarif@v2
         with:
           sarif_file: "trivy-results.sarif"
   slack:

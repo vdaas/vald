@@ -131,7 +131,7 @@ jobs:
                 --output profiles/${svc}-${t}.pb
             done
           done
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: profiles
           path: profiles/*
@@ -167,7 +167,7 @@ jobs:
               fi
             done
           done
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: graphs
           path: graphs/*

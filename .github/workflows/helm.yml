@@ -33,7 +33,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
-      - uses: crazy-max/ghaction-import-gpg@v3
+      - uses: crazy-max/ghaction-import-gpg@v4
         with:
           gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
           git-user-signingkey: true
@@ -89,7 +89,7 @@ jobs:
         with:
           fetch-depth: 0
           token: ${{ secrets.DISPATCH_TOKEN }}
-      - uses: crazy-max/ghaction-import-gpg@v3
+      - uses: crazy-max/ghaction-import-gpg@v4
         with:
           gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
           git-user-signingkey: true

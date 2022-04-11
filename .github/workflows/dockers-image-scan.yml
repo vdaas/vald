@@ -46,7 +46,7 @@ jobs:
           output: "trivy-results.sarif"
           severity: "HIGH,CRITICAL"
       - name: Upload Trivy scan results to Security tab
-        uses: github/codeql-action/upload-sarif@v1
+        uses: github/codeql-action/upload-sarif@v2
         with:
           sarif_file: "trivy-results.sarif"
   agent-sidecar:
@@ -76,7 +76,7 @@ jobs:
           output: "trivy-results.sarif"
           severity: "HIGH,CRITICAL"
       - name: Upload Trivy scan results to Security tab
-        uses: github/codeql-action/upload-sarif@v1
+        uses: github/codeql-action/upload-sarif@v2
         with:
           sarif_file: "trivy-results.sarif"
   discoverer-k8s:
@@ -106,7 +106,7 @@ jobs:
           output: "trivy-results.sarif"
           severity: "HIGH,CRITICAL"
       - name: Upload Trivy scan results to Security tab
-        uses: github/codeql-action/upload-sarif@v1
+        uses: github/codeql-action/upload-sarif@v2
         with:
           sarif_file: "trivy-results.sarif"
   manager-index:
@@ -136,7 +136,7 @@ jobs:
           output: "trivy-results.sarif"
           severity: "HIGH,CRITICAL"
       - name: Upload Trivy scan results to Security tab
-        uses: github/codeql-action/upload-sarif@v1
+        uses: github/codeql-action/upload-sarif@v2
         with:
           sarif_file: "trivy-results.sarif"
   operator-helm:
@@ -166,7 +166,7 @@ jobs:
           output: "trivy-results.sarif"
           severity: "HIGH,CRITICAL"
       - name: Upload Trivy scan results to Security tab
-        uses: github/codeql-action/upload-sarif@v1
+        uses: github/codeql-action/upload-sarif@v2
         with:
           sarif_file: "trivy-results.sarif"
   loadtest:
@@ -196,7 +196,7 @@ jobs:
           output: "trivy-results.sarif"
           severity: "HIGH,CRITICAL"
       - name: Upload Trivy scan results to Security tab
-        uses: github/codeql-action/upload-sarif@v1
+        uses: github/codeql-action/upload-sarif@v2
         with:
           sarif_file: "trivy-results.sarif"
   gateway-lb:
@@ -226,7 +226,7 @@ jobs:
           output: "trivy-results.sarif"
           severity: "HIGH,CRITICAL"
       - name: Upload Trivy scan results to Security tab
-        uses: github/codeql-action/upload-sarif@v1
+        uses: github/codeql-action/upload-sarif@v2
         with:
           sarif_file: "trivy-results.sarif"
   gateway-filter:
@@ -256,7 +256,7 @@ jobs:
           output: "trivy-results.sarif"
           severity: "HIGH,CRITICAL"
       - name: Upload Trivy scan results to Security tab
-        uses: github/codeql-action/upload-sarif@v1
+        uses: github/codeql-action/upload-sarif@v2
         with:
           sarif_file: "trivy-results.sarif"
   filter-ingress-tensorflow:
@@ -286,6 +286,6 @@ jobs:
           output: "trivy-results.sarif"
           severity: "HIGH,CRITICAL"
       - name: Upload Trivy scan results to Security tab
-        uses: github/codeql-action/upload-sarif@v1
+        uses: github/codeql-action/upload-sarif@v2
         with:
           sarif_file: "trivy-results.sarif"

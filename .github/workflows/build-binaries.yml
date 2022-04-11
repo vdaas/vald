@@ -40,7 +40,7 @@ jobs:
         run: |
           make binary/build/zip
       - name: Upload artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: artifacts-linux
           path: ./artifacts/
@@ -64,7 +64,7 @@ jobs:
   #         brew install llvm libomp protobuf ngt
   #         make CXXFLAGS="-I/usr/local/opt/llvm/include -mno-avx512f -mno-avx512dq -mno-avx512cd -mno-avx512bw -mno-avx512vl" binary/build/zip
   #     - name: Upload artifact
-  #       uses: actions/upload-artifact@v2
+  #       uses: actions/upload-artifact@v3
   #       with:
   #         name: artifacts-macos
   #         path: ./artifacts

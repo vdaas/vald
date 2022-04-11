@@ -59,7 +59,7 @@ jobs:
           DATASET: fashion-mnist-784-euclidean.hdf5
           DATASET_ARGS: fashion-mnist
       - name: Upload artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: agent-sequential-grpc
           path: |
@@ -86,7 +86,7 @@ jobs:
           DATASET: fashion-mnist-784-euclidean.hdf5
           DATASET_ARGS: fashion-mnist
       - name: Upload artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: agent-stream
           path: |
