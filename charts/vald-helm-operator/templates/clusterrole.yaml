@@ -37,8 +37,8 @@ rules:
   - apiGroups:
       - rbac.authorization.k8s.io
     resources:
-      - clusterrolebindings
       - clusterroles
+      - clusterrolebindings
     verbs:
       - create
       - delete
@@ -47,6 +47,8 @@ rules:
       - patch
       - update
       - watch
+      - bind
+      - escalate
   - apiGroups:
       - ""
     resources:
@@ -141,8 +143,8 @@ rules:
   - apiGroups:
       - vald.vdaas.org
     resources:
-      - "valdhelmoperatorreleases"
-      - "valdreleases"
+      - valdhelmoperatorreleases
+      - valdreleases
     verbs:
       - create
       - delete
@@ -151,4 +153,13 @@ rules:
       - patch
       - update
       - watch
+  - apiGroups:
+      - vald.vdaas.org
+    resources:
+      - valdhelmoperatorreleases/status
+      - valdreleases/status
+    verbs:
+      - get
+      - patch
+      - update
 {{- end }}
