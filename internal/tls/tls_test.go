@@ -26,7 +26,7 @@ import (
 	"testing"
 
 	"github.com/vdaas/vald/internal/errors"
-	"github.com/vdaas/vald/internal/io/ioutil"
+	"github.com/vdaas/vald/internal/file"
 	testdata "github.com/vdaas/vald/internal/test"
 	"github.com/vdaas/vald/internal/test/goleak"
 )
@@ -344,7 +344,7 @@ func TestNewX509CertPool(t *testing.T) {
 			want: want{
 				want: func() *x509.CertPool {
 					pool := x509.NewCertPool()
-					b, _ := ioutil.ReadFile(testdata.GetTestdataPath("tls/dummyServer.crt"))
+					b, _ := file.ReadFile(testdata.GetTestdataPath("tls/dummyServer.crt"))
 					pool.AppendCertsFromPEM(b)
 					return pool
 				}(),

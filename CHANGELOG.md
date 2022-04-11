@@ -1,5 +1,90 @@
 # CHANGELOG
 
+## v1.5.1
+
+### Docker images
+
+<table>
+  <tr>
+    <th>component</th>
+    <th>Docker pull</th>
+  </tr>
+  <tr>
+    <td>Agent NGT</td>
+    <td>
+      <code>docker pull vdaas/vald-agent-ngt:v1.5.1</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-agent-ngt:v1.5.1</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Agent sidecar</td>
+    <td>
+      <code>docker pull vdaas/vald-agent-sidecar:v1.5.1</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-agent-sidecar:v1.5.1</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Discoverers</td>
+    <td>
+      <code>docker pull vdaas/vald-discoverer-k8s:v1.5.1</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-discoverer-k8s:v1.5.1</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Gateways</td>
+    <td>
+      <code>docker pull vdaas/vald-lb-gateway:v1.5.1</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-lb-gateway:v1.5.1</code><br/>
+      <code>docker pull vdaas/vald-filter-gateway:v1.5.1</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-filter-gateway:v1.5.1</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Index Manager</td>
+    <td>
+      <code>docker pull vdaas/vald-manager-index:v1.5.1</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-manager-index:v1.5.1</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Helm Operator</td>
+    <td>
+      <code>docker pull vdaas/vald-helm-operator:v1.5.1</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-helm-operator:v1.5.1</code>
+    </td>
+  </tr>
+</table>
+
+### Documents
+- [GoDoc](https://pkg.go.dev/github.com/vdaas/vald@v1.5.1)
+- [Helm Chart Reference](https://github.com/vdaas/vald/blob/v1.5.1/charts/vald/README.md)
+- [Helm Operator Chart Reference](https://github.com/vdaas/vald/blob/v1.5.1/charts/vald-helm-operator/README.md)
+
+### Changes
+:arrow_up: update dependencies
+
+- Upgrade pyroscope version (#1605)
+
+:bug: bugfix
+
+- bugfix internal/file and add CreateTemp function and resolve go module failure (#1608)
+
+:white_check_mark: Test
+
+- fix search handler test (#1613)
+- fix fails test of e2e chaos (#1603)
+- Implement pkg ngt handler insert test (#1552)
+- implement agent ngt handler search test (#1557)
+
+:memo: document
+
+- add vald users (#1601)
+- update brand guidelines pdf (#1600)
+- fix file name of search api (#1599)
+- [ImgBot] Optimize images (#1598)
+- cleanup document images (#1595)
+
+
 ## v1.5.0
 
 ### Docker images

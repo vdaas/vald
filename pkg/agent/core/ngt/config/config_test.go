@@ -20,8 +20,10 @@ package config
 import (
 	"io/fs"
 	"os"
+	"strconv"
 	"syscall"
 	"testing"
+	"time"
 
 	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errors"
@@ -394,7 +396,12 @@ func TestNewConfig(t *testing.T) {
 			}
 		}(),
 		func() test {
-			path := "unreadable.txt"
+			name := "unreadable.txt"
+			dir, err := file.MkdirTemp("")
+			if err != nil {
+				dir = file.Join("/tmp", strconv.FormatInt(time.Now().Unix(), 10))
+			}
+			path := file.Join(dir, name)
 			return test{
 				name: "return error when can't read file",
 				args: args{
@@ -404,14 +411,17 @@ func TestNewConfig(t *testing.T) {
 					t.Helper()
 					f, err := file.Open(a.path, os.O_CREATE, fs.ModeIrregular)
 					if err != nil {
-						t.Fatal(err)
+						if errors.Is(err, fs.ErrPermission) {
+							return
+						}
+						t.Error(err)
 					}
 					if err := f.Close(); err != nil {
-						t.Fatal(err)
+						t.Error(err)
 					}
 				},
 				checkFunc: func(w want, gotCfg *Data, err error) error {
-					if os.IsPermission(err) {
+					if errors.Is(err, fs.ErrPermission) {
 						return nil
 					}
 					if !errors.Is(err, w.err) {

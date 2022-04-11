@@ -17,7 +17,6 @@ package operation
 
 import (
 	"context"
-	"io"
 	"strconv"
 	"sync"
 	"sync/atomic"
@@ -25,6 +24,7 @@ import (
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/hack/benchmark/internal/assets"
+	"github.com/vdaas/vald/internal/io"
 	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/net/grpc/status"
 )

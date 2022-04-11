@@ -21,29 +21,30 @@ import (
 )
 
 // Btoa converts from byte slice to string.
-func Btoa(b []byte) string {
-	header := (*reflect.SliceHeader)(unsafe.Pointer(&b))
-	return *(*string)(unsafe.Pointer(&reflect.StringHeader{
-		Data: header.Data,
-		Len:  header.Len,
-	}))
+func Btoa(b []byte) (s string) {
+	slh := (*reflect.SliceHeader)(unsafe.Pointer(&b))
+	sh := (*reflect.StringHeader)(unsafe.Pointer(&s))
+	sh.Data = slh.Data
+	sh.Len = slh.Len
+	return s
 }
 
 // Atobs converts from string to byte slice.
-func Atob(s string) []byte {
-	return *(*[]byte)(unsafe.Pointer(&reflect.SliceHeader{
-		Data: (*(*reflect.StringHeader)(unsafe.Pointer(&s))).Data,
-		Len:  len(s),
-		Cap:  len(s),
-	}))
+func Atob(s string) (b []byte) {
+	sh := (*reflect.StringHeader)(unsafe.Pointer(&s))
+	slh := (*reflect.SliceHeader)(unsafe.Pointer(&b))
+	slh.Data = sh.Data
+	slh.Len = sh.Len
+	slh.Cap = sh.Len
+	return b
 }
 
 // F32stos converts from float32 slice to type string.
-func F32stos(fs []float32) string {
+func F32stos(fs []float32) (s string) {
 	lf := 4 * len(fs)
 	buf := (*(*[1]byte)(unsafe.Pointer(&(fs[0]))))[:]
 	addr := unsafe.Pointer(&buf)
 	(*(*int)(unsafe.Pointer(uintptr(addr) + uintptr(8)))) = lf
 	(*(*int)(unsafe.Pointer(uintptr(addr) + uintptr(16)))) = lf
-	return *(*string)(unsafe.Pointer(&buf))
+	return Btoa(buf)
 }

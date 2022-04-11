@@ -182,12 +182,24 @@ func (r *restorer) restore(ctx context.Context) (err error) {
 
 	log.Infof("started to restore directory %s", r.dir)
 
-	pr, pw := io.Pipe()
+	var (
+		pr io.ReadCloser
+		pw io.WriteCloser
+	)
+	pr, pw = io.Pipe()
+	pr, err = io.NewReadCloserWithContext(ctx, pr)
+	if err != nil {
+		log.Warn(err)
+		return err
+	}
 	defer pr.Close()
-
+	pw, err = io.NewWriteCloserWithContext(ctx, pw)
+	if err != nil {
+		log.Warn(err)
+		return err
+	}
 	r.eg.Go(safety.RecoverFunc(func() (err error) {
 		defer pw.Close()
-
 		sr, err := r.storage.Reader(ctx)
 		if err != nil {
 			if errors.Is(err, io.EOF) {
@@ -209,8 +221,12 @@ func (r *restorer) restore(ctx context.Context) (err error) {
 		}()
 
 		_, err = io.Copy(pw, sr)
-		if err != nil && !errors.Is(err, io.EOF) {
+		if err != nil {
 			log.Warn(err)
+			if errors.Is(err, io.EOF) {
+				log.Infof("finished to read and copy data from storage to io pipe by returning io.EOF error: %v", err)
+				return nil
+			}
 			return err
 		}
 
@@ -228,10 +244,11 @@ func (r *restorer) restore(ctx context.Context) (err error) {
 
 		header, err := tr.Next()
 		if err != nil {
+			log.Warn(err)
 			if errors.Is(err, io.EOF) {
-				break
+				log.Infof("finished to restore directory %s finished by returning io.EOF error: %v", r.dir, err)
+				return nil
 			}
-
 			return err
 		}
 
@@ -242,13 +259,14 @@ func (r *restorer) restore(ctx context.Context) (err error) {
 			case tar.TypeDir:
 				err = file.MkdirAll(target, fs.ModePerm)
 				if err != nil {
+					log.Warn(err)
 					return err
 				}
 			case tar.TypeReg:
 				_, err = file.WriteFile(ctx, target, tr, fs.FileMode(header.Mode))
 				if err != nil {
+					log.Warn(err)
 					if errors.Is(err, errors.ErrFileAlreadyExists(target)) {
-						log.Warn(err)
 						return nil
 					}
 					return err
@@ -258,6 +276,5 @@ func (r *restorer) restore(ctx context.Context) (err error) {
 	}
 
 	log.Infof("finished to restore directory %s finished", r.dir)
-
 	return nil
 }

@@ -18,10 +18,14 @@
 package io
 
 import (
+	"bytes"
 	"context"
 	"io"
+	"sync"
 
+	"github.com/vdaas/vald/internal/conv"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/safety"
 )
 
 type (
@@ -33,9 +37,21 @@ type (
 )
 
 var (
-	Pipe      = io.Pipe
-	EOF       = io.EOF
-	NopCloser = io.NopCloser
+	Pipe             = io.Pipe
+	EOF              = io.EOF
+	NopCloser        = io.NopCloser
+	Discard          = io.Discard
+	ErrUnexpectedEOF = io.ErrUnexpectedEOF
+	ErrClosedPipe    = io.ErrClosedPipe
+	ErrNoProgress    = io.ErrNoProgress
+	ErrShortWrite    = io.ErrShortWrite
+	ErrShortBuffer   = io.ErrShortBuffer
+
+	bufferPool = sync.Pool{
+		New: func() interface{} {
+			return bytes.NewBuffer(make([]byte, 0, bytes.MinRead*2))
+		},
+	}
 )
 
 type ctxReader struct {
@@ -160,6 +176,20 @@ func NewEOFReader() Reader {
 	return &eofReader{}
 }
 
-func (_ *eofReader) Read(_ []byte) (n int, err error) {
+func (*eofReader) Read(_ []byte) (n int, err error) {
 	return 0, EOF
+}
+
+func ReadAll(r Reader) (b []byte, err error) {
+	buf := bufferPool.Get().(*bytes.Buffer)
+	defer bufferPool.Put(buf)
+	defer buf.Reset()
+	err = safety.RecoverFunc(func() (err error) {
+		_, err = buf.ReadFrom(r)
+		return err
+	})()
+	if err != nil {
+		return nil, err
+	}
+	return conv.Atob(buf.String()), nil
 }

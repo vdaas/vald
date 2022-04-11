@@ -16,9 +16,8 @@
 package gzip
 
 import (
-	"io"
-
 	"github.com/klauspost/compress/gzip"
+	"github.com/vdaas/vald/internal/io"
 )
 
 // These constants are copied from the gzip package.

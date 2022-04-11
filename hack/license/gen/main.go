@@ -21,7 +21,6 @@ import (
 	"bytes"
 	"fmt"
 	"io/fs"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"sync"
@@ -82,7 +81,7 @@ func main() {
 }
 
 func dirwalk(dir string) []string {
-	files, err := ioutil.ReadDir(dir)
+	files, err := file.ReadDir(dir)
 	if err != nil {
 		panic(err)
 	}
@@ -119,6 +118,7 @@ func dirwalk(dir string) []string {
 			".md",
 			".md5",
 			".mod",
+			".pdf",
 			".pem",
 			".png",
 			".ssv",
@@ -127,6 +127,7 @@ func dirwalk(dir string) []string {
 			".tmpl",
 			".tpl",
 			".txt",
+			".webp",
 			".whitesource",
 			"LICENSE",
 			"Pipefile":
