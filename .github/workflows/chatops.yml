@@ -397,7 +397,7 @@ jobs:
           GO_VERSION=`make version/go`
           echo "::set-output name=version::${GO_VERSION}"
         id: golang_version
-      - uses: actions/setup-go@v2
+      - uses: actions/setup-go@v3
         if: steps.check_comments_format.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         with:
           go-version: ${{ steps.golang_version.outputs.version }}
