@@ -44,7 +44,7 @@ jobs:
       image: ghcr.io/vdaas/vald/vald-ci-container:nightly
     steps:
       - name: Check out code.
-        uses: actions/checkout@v3
+        uses: actions/checkout@v2
       - name: dependencies
         run: |
           make proto/deps

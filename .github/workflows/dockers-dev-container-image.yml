@@ -38,7 +38,7 @@ jobs:
       max-parallel: 4
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v2
       - name: Setup QEMU
         uses: docker/setup-qemu-action@v1
         with:

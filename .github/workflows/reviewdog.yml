@@ -27,7 +27,7 @@ jobs:
     container:
       image: ghcr.io/vdaas/vald/vald-ci-container:nightly
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v2
       - name: go build
         run: |
           go build -mod=readonly ./...
