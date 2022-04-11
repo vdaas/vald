@@ -71,7 +71,7 @@ This chapter uses [NGT](https://github.com/yahoojapan/ngt) as Vald Agent to perf
     To use the `deployment yaml` for deploy, let's clone [`vdaas/vald`](https://github.com/vdaas/vald.git) repository.
 
     ```bash
-    git clone https://github.com/vdaas/vald.git
+    git clone https://github.com/vdaas/vald.git && \
     cd vald
     ```
 
@@ -82,7 +82,7 @@ This chapter uses [NGT](https://github.com/yahoojapan/ngt) as Vald Agent to perf
     This is useful for deploying standalone Vald Agent NGT pods.
 
     ```bash
-    helm repo add vald https://vald.vdaas.org/charts
+    helm repo add vald https://vald.vdaas.org/charts && \
     helm install vald-agent-ngt vald/vald --values example/helm/values-standalone-agent-ngt.yaml
     ```
 
@@ -122,7 +122,9 @@ This chapter uses [NGT](https://github.com/yahoojapan/ngt) as Vald Agent to perf
     ```bash
     # move to working directory
     cd example/client/agent
+    ```
 
+    ```bash
     # download fashion-mnist testing dataset
     wget http://ann-benchmarks.com/fashion-mnist-784-euclidean.hdf5
     ```

@@ -3,7 +3,7 @@
 This page shows how to build gRPC proto file for calling API to your Vald Cluster.
 
 <div class="notice">
-Vald provides [the official client libraries](../user-guides/sdks.md), if you can use one of SDKs we recommend to use it.
+Vald provides the official client libraries (see: https://vald.vdaas.org/docs/user-guides/sdks ), if you can use one of SDKs we recommend to use it.
 </div>
 
 ## Target proto files
@@ -72,14 +72,14 @@ There are many tools for building proto in Rust, we use [tonic](https://github.c
 1.  Create project
 
     ```bash
-    $ cargo new --lib vald-grpc
+    cargo new --lib vald-grpc
     ```
 
 1.  Edit `Cargo.toml`
 
     ```bash
-    $ cd vald-grpc
-    $ vim Cargo.toml
+    cd vald-grpc && \
+    vim Cargo.toml
     ---
     [package]
     name = "vald-grpc"
@@ -108,31 +108,37 @@ There are many tools for building proto in Rust, we use [tonic](https://github.c
 
     ```bash
     // create proto file root dir
-    $ mkdir -p proto
+    mkdir -p proto
+    ```
 
+    ```bash
     // download vald proto files
-    $ git clone https://github.com/vdaas/vald \
+    git clone https://github.com/vdaas/vald \
     && cp -R vald/apis/proto/v1/vald proto/vald \
     && cp -R vald/apis/proto/v1/payload proto/payload \
     && rm -rf vald
+    ```
 
+    ```bash
     // download googleapis
-    $ git clone https://github.com/googleapis/googleapis \
+    git clone https://github.com/googleapis/googleapis \
     && cp -R googleapis/google proto/google \
     && rm -rf googleapis
+    ```
 
+    ```bash
     // download protoc-gen-validate
-    $ git clone https://github.com/envoyproxy/protoc-gen-validate \
+    git clone https://github.com/envoyproxy/protoc-gen-validate \
     && mv protoc-gen-validate proto/protoc-gen-validate
     ```
 
 1.  Fixing import path
 
     ```bash
-    $ find proto/vald -type f -name "*.proto" | xargs sed -i "s/apis\/proto\/v1\///g"
-    $ find proto/vald -type f -name "*.proto" | xargs sed -i "s/github\.com\/googleapis\/googleapis\///g"
-    $ find proto/payload -type f -name "*.proto" | xargs sed -i "s/github\.com\/googleapis\/googleapis\///g"
-    $ find proto/payload -type f -name "*.proto" | xargs sed -i "s/github\.com\/envoyproxy\///g"
+    find proto/vald -type f -name "*.proto" | xargs sed -i "s/apis\/proto\/v1\///g" && \
+    find proto/vald -type f -name "*.proto" | xargs sed -i "s/github\.com\/googleapis\/googleapis\///g" && \
+    find proto/payload -type f -name "*.proto" | xargs sed -i "s/github\.com\/googleapis\/googleapis\///g" && \
+    find proto/payload -type f -name "*.proto" | xargs sed -i "s/github\.com\/envoyproxy\///g"
     ```
 
 1.  Implement `build.rs` and Build proto
@@ -170,14 +176,14 @@ There are many tools for building proto in Rust, we use [tonic](https://github.c
     1. build proto
 
        ```bash
-       $ cargo build
+       cargo build
        ```
 
 1.  Edit `Cargo.toml`
 
     ```bash
-    $ cd vald-grpc
-    $ vim Cargo.toml
+    cd vald-grpc && \
+    vim Cargo.toml
     ---
     [package]
     ...
@@ -358,7 +364,7 @@ There are many tools for building proto in Rust, we use [tonic](https://github.c
     Build implemented codes before running example code.
 
     ```bash
-    $ cargo build
+    cargo build
     ```
 
 1.  Running example
@@ -366,5 +372,5 @@ There are many tools for building proto in Rust, we use [tonic](https://github.c
     After creating Vald cluster, you can run an example code by following command.
 
     ```bash
-    $ cargo run src/client.rs
+    cargo run src/client.rs
     ```
