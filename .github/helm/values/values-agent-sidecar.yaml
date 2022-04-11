@@ -58,27 +58,12 @@ agent:
           force_path_style: true
 
 gateway:
-  vald:
-    enabled: false
   lb:
-    enabled: false
-  backup:
-    enabled: false
-  meta:
     enabled: false
 
 discoverer:
   enabled: false
 
 manager:
-  compressor:
-    enabled: false
-
-  backup:
-    enabled: false
-
   index:
     enabled: false
-
-meta:
-  enabled: false
