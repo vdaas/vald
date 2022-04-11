@@ -38,7 +38,7 @@ jobs:
       image: ghcr.io/vdaas/vald/vald-ci-container:nightly
     steps:
       - name: Check out code.
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           fetch-depth: 10
       - name: Run coverage
