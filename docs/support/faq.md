@@ -86,4 +86,4 @@ Please refer to the sample configuration.
 
 ## Related Document
 
-- [Trouble Shooting](../user-guides/trouble-shooting.md)
+- [Troubleshooting](../user-guides/troubleshooting.md)
