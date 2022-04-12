@@ -1,6 +1,6 @@
 # FAQ
 
-This pages answers the common questions.
+This page answers the common questions.
 
 Please refer to [trouble shooting page](../user-guides/trouble-shooting.md) when you encounter operation problem.
 
@@ -18,7 +18,7 @@ It is used for filtering search results, e.g. when you’d like to get a white T
 
 ### Is Vald Index Manager recommended using?
 
-We recommend to use it when you’d like to operate as a cluster.
+We recommend using it when you’d like to operate as a cluster.
 It helps you to manage indexing timing for each Vald Agent.
 
 ## Custom options
