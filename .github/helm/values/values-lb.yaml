@@ -19,8 +19,6 @@ defaults:
     level: info
 
 gateway:
-  vald:
-    enabled: false
   lb:
     enabled: true
     minReplicas: 1
@@ -32,10 +30,6 @@ gateway:
         memory: 50Mi
     gateway_config:
       index_replica: 3
-  backup:
-    enabled: false
-  meta:
-    enabled: false
 
 agent:
   minReplicas: 3
@@ -63,12 +57,6 @@ discoverer:
       memory: 50Mi
 
 manager:
-  compressor:
-    enabled: false
-
-  backup:
-    enabled: false
-
   index:
     replicas: 1
     resources:
@@ -79,6 +67,3 @@ manager:
       auto_index_duration_limit: 2m
       auto_index_check_duration: 30s
       auto_index_length: 1000
-
-meta:
-  enabled: false

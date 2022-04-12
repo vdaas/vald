@@ -22,7 +22,7 @@ jobs:
   agent-ngt:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Build the Docker image
         id: build_image
         run: |
@@ -46,13 +46,13 @@ jobs:
           output: "trivy-results.sarif"
           severity: "HIGH,CRITICAL"
       - name: Upload Trivy scan results to Security tab
-        uses: github/codeql-action/upload-sarif@v1
+        uses: github/codeql-action/upload-sarif@v2
         with:
           sarif_file: "trivy-results.sarif"
   agent-sidecar:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Build the Docker image
         id: build_image
         run: |
@@ -76,13 +76,13 @@ jobs:
           output: "trivy-results.sarif"
           severity: "HIGH,CRITICAL"
       - name: Upload Trivy scan results to Security tab
-        uses: github/codeql-action/upload-sarif@v1
+        uses: github/codeql-action/upload-sarif@v2
         with:
           sarif_file: "trivy-results.sarif"
   discoverer-k8s:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Build the Docker image
         id: build_image
         run: |
@@ -106,13 +106,13 @@ jobs:
           output: "trivy-results.sarif"
           severity: "HIGH,CRITICAL"
       - name: Upload Trivy scan results to Security tab
-        uses: github/codeql-action/upload-sarif@v1
+        uses: github/codeql-action/upload-sarif@v2
         with:
           sarif_file: "trivy-results.sarif"
   manager-index:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Build the Docker image
         id: build_image
         run: |
@@ -136,13 +136,13 @@ jobs:
           output: "trivy-results.sarif"
           severity: "HIGH,CRITICAL"
       - name: Upload Trivy scan results to Security tab
-        uses: github/codeql-action/upload-sarif@v1
+        uses: github/codeql-action/upload-sarif@v2
         with:
           sarif_file: "trivy-results.sarif"
   operator-helm:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Build the Docker image
         id: build_image
         run: |
@@ -166,13 +166,13 @@ jobs:
           output: "trivy-results.sarif"
           severity: "HIGH,CRITICAL"
       - name: Upload Trivy scan results to Security tab
-        uses: github/codeql-action/upload-sarif@v1
+        uses: github/codeql-action/upload-sarif@v2
         with:
           sarif_file: "trivy-results.sarif"
   loadtest:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Build the Docker image
         id: build_image
         run: |
@@ -196,13 +196,13 @@ jobs:
           output: "trivy-results.sarif"
           severity: "HIGH,CRITICAL"
       - name: Upload Trivy scan results to Security tab
-        uses: github/codeql-action/upload-sarif@v1
+        uses: github/codeql-action/upload-sarif@v2
         with:
           sarif_file: "trivy-results.sarif"
   gateway-lb:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Build the Docker image
         id: build_image
         run: |
@@ -226,13 +226,13 @@ jobs:
           output: "trivy-results.sarif"
           severity: "HIGH,CRITICAL"
       - name: Upload Trivy scan results to Security tab
-        uses: github/codeql-action/upload-sarif@v1
+        uses: github/codeql-action/upload-sarif@v2
         with:
           sarif_file: "trivy-results.sarif"
   gateway-filter:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Build the Docker image
         id: build_image
         run: |
@@ -256,13 +256,13 @@ jobs:
           output: "trivy-results.sarif"
           severity: "HIGH,CRITICAL"
       - name: Upload Trivy scan results to Security tab
-        uses: github/codeql-action/upload-sarif@v1
+        uses: github/codeql-action/upload-sarif@v2
         with:
           sarif_file: "trivy-results.sarif"
   filter-ingress-tensorflow:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Build the Docker image
         id: build_image
         run: |
@@ -286,6 +286,6 @@ jobs:
           output: "trivy-results.sarif"
           severity: "HIGH,CRITICAL"
       - name: Upload Trivy scan results to Security tab
-        uses: github/codeql-action/upload-sarif@v1
+        uses: github/codeql-action/upload-sarif@v2
         with:
           sarif_file: "trivy-results.sarif"

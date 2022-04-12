@@ -32,7 +32,7 @@ jobs:
     timeout-minutes: 60
     if: startsWith( github.ref, 'refs/tags/') || github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-chaos'
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Wait for Docker images
         if: startsWith( github.ref, 'refs/tags/')
         id: wait_for_docker_images
@@ -90,7 +90,7 @@ jobs:
           GO_VERSION=`make version/go`
           echo "::set-output name=version::${GO_VERSION}"
         id: golang_version
-      - uses: actions/setup-go@v2
+      - uses: actions/setup-go@v3
         with:
           go-version: ${{ steps.golang_version.outputs.version }}
       - name: run Insert and Search jobs
@@ -124,7 +124,7 @@ jobs:
     timeout-minutes: 60
     if: startsWith( github.ref, 'refs/tags/') || github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-chaos'
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Wait for Docker images
         if: startsWith( github.ref, 'refs/tags/')
         id: wait_for_docker_images
@@ -182,7 +182,7 @@ jobs:
           GO_VERSION=`make version/go`
           echo "::set-output name=version::${GO_VERSION}"
         id: golang_version
-      - uses: actions/setup-go@v2
+      - uses: actions/setup-go@v3
         with:
           go-version: ${{ steps.golang_version.outputs.version }}
       - name: run Insert and Search jobs
@@ -216,7 +216,7 @@ jobs:
     timeout-minutes: 60
     if: startsWith( github.ref, 'refs/tags/') || github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-chaos'
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Wait for Docker images
         if: startsWith( github.ref, 'refs/tags/')
         id: wait_for_docker_images
@@ -274,7 +274,7 @@ jobs:
           GO_VERSION=`make version/go`
           echo "::set-output name=version::${GO_VERSION}"
         id: golang_version
-      - uses: actions/setup-go@v2
+      - uses: actions/setup-go@v3
         with:
           go-version: ${{ steps.golang_version.outputs.version }}
       - name: run Insert and Search jobs
@@ -308,7 +308,7 @@ jobs:
     timeout-minutes: 60
     if: startsWith( github.ref, 'refs/tags/') || github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-chaos'
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Wait for Docker images
         if: startsWith( github.ref, 'refs/tags/')
         id: wait_for_docker_images
@@ -365,7 +365,7 @@ jobs:
           GO_VERSION=`make version/go`
           echo "::set-output name=version::${GO_VERSION}"
         id: golang_version
-      - uses: actions/setup-go@v2
+      - uses: actions/setup-go@v3
         with:
           go-version: ${{ steps.golang_version.outputs.version }}
       - name: run Insert jobs
@@ -425,10 +425,10 @@ jobs:
     runs-on: ubuntu-latest
     if: startsWith( github.ref, 'refs/tags/')
     steps:
-      - uses: technote-space/workflow-conclusion-action@v1
+      - uses: technote-space/workflow-conclusion-action@v2
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - uses: 8398a7/action-slack@v2
+      - uses: 8398a7/action-slack@v3
         with:
           author_name: "E2E chaos test"
           status: ${{ env.WORKFLOW_CONCLUSION }}

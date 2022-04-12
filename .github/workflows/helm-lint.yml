@@ -27,7 +27,7 @@ jobs:
       image: ghcr.io/vdaas/vald/vald-ci-container:nightly
     steps:
       - name: Check out code.
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Helm version
         run: |
           helm version
@@ -36,7 +36,7 @@ jobs:
           GO_VERSION=`make version/go`
           echo "::set-output name=version::${GO_VERSION}"
         id: golang_version
-      - uses: actions/setup-go@v2
+      - uses: actions/setup-go@v3
         with:
           go-version: ${{ steps.golang_version.outputs.version }}
 
@@ -53,7 +53,7 @@ jobs:
       image: ghcr.io/vdaas/vald/vald-ci-container:nightly
     steps:
       - name: Check out code.
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Helm version
         run: |
           helm version
@@ -62,7 +62,7 @@ jobs:
           GO_VERSION=`make version/go`
           echo "::set-output name=version::${GO_VERSION}"
         id: golang_version
-      - uses: actions/setup-go@v2
+      - uses: actions/setup-go@v3
         with:
           go-version: ${{ steps.golang_version.outputs.version }}
 
@@ -77,7 +77,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out code.
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Helm version
         run: |
           helm version
@@ -89,7 +89,7 @@ jobs:
           GO_VERSION=`make version/go`
           echo "::set-output name=version::${GO_VERSION}"
         id: golang_version
-      - uses: actions/setup-go@v2
+      - uses: actions/setup-go@v3
         with:
           go-version: ${{ steps.golang_version.outputs.version }}
       - name: Generate ValdRelease schema
