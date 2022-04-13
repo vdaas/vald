@@ -10,7 +10,7 @@ And, Fashion-mnist is used as an example of a dataset.
 
 The below image shows the architecture image about the deployment result of `Get Started`.<br>
 The 4 kinds of components, `Vald LB Gateway`, `Vald Discoverer`, `Vald Agent`, and `Vald Index Manager` will be deployed to the Kubernetes.
-For more information about Vald's architecture, please refer to [Architecture](../../docs/overview/architecture.md).
+For more information about Vald's architecture, please refer to [Architecture](../overview/architecture.md).
 
 <img src="../../assets/docs/tutorial/getstarted.svg" />
 
