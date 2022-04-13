@@ -3899,54 +3899,55 @@ func Test_server_MultiInsert(t *testing.T) {
 	/*
 		- Equivalence Class Testing
 			- uint8, float32
-				- case 1.1: MultiInsert 1 vector success (vector type is uint8)
-				- case 1.2: MultiInsert 1 vector success (vector type is float32)
-				- case 1.3: MultiInsert 100 vector success (vector type is uint8)
-				- case 1.4: MultiInsert 100 vector success (vector type is float32)
-				- case 1.5: MultiInsert 0 vector success (vector type is uint8)
-				- case 1.6: MultiInsert 0 vector success (vector type is float32)
-				- case 2.1: MultiInsert 1 vector with different dimension fail (vector type is uint8)
-				- case 2.2: MultiInsert 1 vector with different dimension fail (vector type is float32)
-				- case 3.1: MultiInsert 100 vector with 1 vector with different dimension fail (vector type is uint8)
-				- case 3.2: MultiInsert 100 vector with 1 vector with different dimension fail (vector type is float32)
-				- case 3.3: MultiInsert 100 vector with 50 vector with different dimension fail (vector type is uint8)
-				- case 3.4: MultiInsert 100 vector with 50 vector with different dimension fail (vector type is float32)
-				- case 3.5: MultiInsert 100 vector with all vector with different dimension fail (vector type is uint8)
-				- case 3.6: MultiInsert 100 vector with all vector with different dimension fail (vector type is float32)
+				- case 1.1: Success to MultiInsert 1 vector (vector type is uint8)
+				- case 1.2: Success to MultiInsert 1 vector (vector type is float32)
+				- case 1.3: Success to MultiInsert 100 vector (vector type is uint8)
+				- case 1.4: Success to MultiInsert 100 vector (vector type is float32)
+				- case 1.5: Success to MultiInsert 0 vector (vector type is uint8)
+				- case 1.6: Success to MultiInsert 0 vector (vector type is float32)
+				- case 2.1: Fail to MultiInsert 1 vector with different dimension (vector type is uint8)
+				- case 2.2: Fail to MultiInsert 1 vector with different dimension (vector type is float32)
+				- case 3.1: Fail to MultiInsert 100 vector with 1 vector with different dimension (vector type is uint8)
+				- case 3.2: Fail to MultiInsert 100 vector with 1 vector with different dimension (vector type is float32)
+				- case 3.3: Fail to MultiInsert 100 vector with 50 vector with different dimension (vector type is uint8)
+				- case 3.4: Fail to MultiInsert 100 vector with 50 vector with different dimension (vector type is float32)
+				- case 3.5: Fail to MultiInsert 100 vector with all vector with different dimension (vector type is uint8)
+				- case 3.6: Fail to MultiInsert 100 vector with all vector with different dimension (vector type is float32)
 
 		- Boundary Value Testing
-			- uint8, float32
-				- case 1.1: MultiInsert 100 vector with 0 value success (vector type is uint8)
-				- case 1.2: MultiInsert 100 vector with 0 value success (vector type is float32)
-				- case 2.1: MultiInsert 100 vector with min value success (vector type is uint8)
-				- case 2.2: MultiInsert 100 vector with min value success (vector type is float32)
-				- case 3.1: MultiInsert 100 vector with max value success (vector type is uint8)
-				- case 3.2: MultiInsert 100 vector with max value success (vector type is float32)
-				- case 4.1: MultiInsert 100 vector with 1 request with empty UUID fail (vector type is uint8)
-				- case 4.2: MultiInsert 100 vector with 1 request with empty UUID fail (vector type is float32)
-				- case 4.3: MultiInsert 100 vector with 50 request with empty UUID fail (vector type is uint8)
-				- case 4.4: MultiInsert 100 vector with 50 request with empty UUID fail (vector type is float32)
-				- case 4.5: MultiInsert 100 vector with all request with empty UUID fail (vector type is uint8)
-				- case 4.6: MultiInsert 100 vector with all request with empty UUID fail (vector type is float32)
-				- case 5.1: MultiInsert 100 vector with 1 vector with maximum dimension fail (vector type is uint8)
-				- case 5.2: MultiInsert 100 vector with 1 vector with maximum dimension fail (vector type is float32)
-				- case 5.3: MultiInsert 100 vector with 50 vector with maximum dimension fail (vector type is uint8)
-				- case 5.4: MultiInsert 100 vector with 50 vector with maximum dimension fail (vector type is float32)
-				- case 5.5: MultiInsert 100 vector with all vector with maximum dimension fail (vector type is uint8)
-				- case 5.6: MultiInsert 100 vector with all vector with maximum dimension fail (vector type is float32)
+			- uint8, float32 (with 100 insert request in a single MultiInsert request)
+				- case 1.1: Success to MultiInsert with 0 value vector (vector type is uint8)
+				- case 1.2: Success to MultiInsert with 0 value vector (vector type is float32)
+				- case 2.1: Success to MultiInsert with min value vector (vector type is uint8)
+				- case 2.2: Success to MultiInsert with min value vector (vector type is float32)
+				- case 3.1: Success to MultiInsert with max value vector (vector type is uint8)
+				- case 3.2: Success to MultiInsert with max value vector (vector type is float32)
+				- case 4.1: Fail to MultiInsert with 1 request with empty UUID (vector type is uint8)
+				- case 4.2: Fail to MultiInsert with 1 request with empty UUID (vector type is float32)
+				- case 4.3: Fail to MultiInsert with 50 request with empty UUID (vector type is uint8)
+				- case 4.4: Fail to MultiInsert with 50 request with empty UUID (vector type is float32)
+				- case 4.5: Fail to MultiInsert with all request with empty UUID (vector type is uint8)
+				- case 4.6: Fail to MultiInsert with all request with empty UUID (vector type is float32)
+				- case 5.1: Fail to MultiInsert with 1 vector with maximum dimension (vector type is uint8)
+				- case 5.2: Fail to MultiInsert with 1 vector with maximum dimension (vector type is float32)
+				- case 5.3: Fail to MultiInsert with 50 vector with maximum dimension (vector type is uint8)
+				- case 5.4: Fail to MultiInsert with 50 vector with maximum dimension (vector type is float32)
+				- case 5.5: Fail to MultiInsert with all vector with maximum dimension (vector type is uint8)
+				- case 5.6: Fail to MultiInsert with all vector with maximum dimension (vector type is float32)
 
-			- float32
-				- case 6: MultiInsert 100 vector with NaN value success (vector type is float32)
+			- float32 (with 100 insert request in a single MultiInsert request)
+				- case 6: Success to MultiInsert with NaN value (vector type is float32)
 
-			- case 7.1: MultiInsert 100 vector with 1 vector with nil insert request fail
-			- case 7.2: MultiInsert 100 vector with 50 vector with nil insert request fail
-			- case 7.3: MultiInsert 100 vector with all vector with nil insert request fail
-			- case 8.1: MultiInsert 100 vector with 1 vector with nil vector fail
-			- case 8.2: MultiInsert 100 vector with 50 vector with nil vector fail
-			- case 8.3: MultiInsert 100 vector with all vector with nil vector fail
-			- case 9.1: MultiInsert 100 vector with 1 vector with empty insert vector fail
-			- case 9.2: MultiInsert 100 vector with 50 vector with empty insert vector fail
-			- case 9.3: MultiInsert 100 vector with all vector with empty insert vector fail
+			- others  (with 100 insert request in a single MultiInsert request)
+				- case 7.1: Fail to MultiInsert with 1 vector with nil insert request
+				- case 7.2: Fail to MultiInsert with 50 vector with nil insert request
+				- case 7.3: Fail to MultiInsert with all vector with nil insert request
+				- case 8.1: Fail to MultiInsert with 1 vector with nil vector
+				- case 8.2: Fail to MultiInsert with 50 vector with nil vector
+				- case 8.3: Fail to MultiInsert with all vector with nil vector
+				- case 9.1: Fail to MultiInsert with 1 vector with empty insert vector
+				- case 9.2: Fail to MultiInsert with 50 vector with empty insert vector
+				- case 9.3: Fail to MultiInsert with all vector with empty insert vector
 
 		- Decision Table Testing
 			- duplicated ID (with 100 insert request in a single MultiInsert request)
