@@ -278,9 +278,9 @@ jobs:
       - uses: crazy-max/ghaction-import-gpg@v4
         if: steps.check_comments_gen_test.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         with:
-          gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
-          git-user-signingkey: true
-          git-commit-gpgsign: true
+          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
+          git_user_signingkey: true
+          git_commit_gpgsign: true
       - name: Generate tests and push
         if: steps.check_comments_gen_test.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         run: |
@@ -388,9 +388,9 @@ jobs:
       - uses: crazy-max/ghaction-import-gpg@v4
         if: steps.check_comments_format.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         with:
-          gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
-          git-user-signingkey: true
-          git-commit-gpgsign: true
+          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
+          git_user_signingkey: true
+          git_commit_gpgsign: true
       - name: Fetch golang version
         if: steps.check_comments_format.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         run: |
