@@ -3936,7 +3936,10 @@ func Test_server_MultiInsert(t *testing.T) {
 				- case 5.6: Fail to MultiInsert with all vector with maximum dimension (vector type is float32)
 
 			- float32 (with 100 insert request in a single MultiInsert request)
-				- case 6: Success to MultiInsert with NaN value (vector type is float32)
+				- case 6.1: Success to MultiInsert with NaN value (vector type is float32)
+				- case 6.2: Success to MultiInsert with +Inf value (vector type is float32)
+				- case 6.3: Success to MultiInsert with -Inf value (vector type is float32)
+				- case 6.4: Success to MultiInsert with -0 value (vector type is float32)
 
 			- others  (with 100 insert request in a single MultiInsert request)
 				- case 7.1: Fail to MultiInsert with 1 vector with nil insert request
