@@ -1312,6 +1312,46 @@ func Test_server_SearchByID(t *testing.T) {
 		}
 		return nil
 	}
+
+	/*
+		SearchByID test cases:
+		- Equivalence Class Testing
+			- case 1.1: success search vector from 1000 vectors (type: uint8)
+			- case 1.2: success search vector from 1000 vectors (type: float32)
+			- case 2.1: fail search with non-existent ID form 1000 vectors (type: uint8)
+			- case 2.2: fail search with non-existent ID form 1000 vectors (type: float32)
+		- Boundary Value Testing
+			- case 1.1: success search with "" from 1000 vectors (type: uint8)
+			- case 1.2: success search with "" from 1000 vectors (type: float32)
+			- case 2.1: fail search with ^@ from 1000 vectors (type: uint8)
+			- case 2.2: fail search with ^@ from 1000 vectors (type: float32)
+			- case 2.3: success search with ^I from 1000 vectors (type: uint8)
+			- case 2.4: success search with ^I from 1000 vectors (type: float32)
+			- case 2.5: success search with ^J from 1000 vectors (type: uint8)
+			- case 2.6: success search with ^J from 1000 vectors (type: float32)
+			- case 2.7: success search with ^M from 1000 vectors (type: uint8)
+			- case 2.8: success search with ^M from 1000 vectors (type: float32)
+			- case 2.9: fail search with ^[ from 1000 vectors (type: uint8)
+			- case 2.10: fail search with ^[ from 1000 vectors (type: float32)
+			- case 2.11: fail search with ^? from 1000 vectors (type: uint8)
+			- case 2.12: fail search with ^? from 1000 vectors (type: float32)
+			- case 3.1: fail search with the key s-jis from utf-8 id (type: uint8)
+			- case 3.2: fail search with the key s-jis from utf-8 id (type: float32)
+			- case 3.3: fail search with the key euc-jp from utf-8 id (type: uint8)
+			- case 3.4: fail search with the key euc-jp from utf-8 id (type: float32)
+			- case 3.5: fail search with the key utf-8 from euc-jp id (type: uint8)
+			- case 3.6: fail search with the key utf-8 from euc-jp id (type: float32)
+			- case 3.7: fail search with the key s-jis from euc-jp id (type: uint8)
+			- case 3.8: fail search with the key s-jis from euc-jp id (type: float32)
+			- case 3.9: fail search with the key euc-jp from s-jis id (type: uint8)
+			- case 3.10: fail search with the key euc-jp from s-jis id (type: float32)
+			- case 3.11: fail search with the key utf-8 from s-jis id (type: uint8)
+			- case 3.12: fail search with the key utf-8 from s-jis id (type: float32)
+			- case 4.1: success search with 😀 from 1000 vectors(type: uint8)
+			- case 4.2: success search with 😀 from 1000 vectors(type: float32)
+		- Decision Table Testing
+		    - NONE
+	*/
 	tests := []test{
 		// TODO test cases
 		/*
