@@ -32,4 +32,4 @@ Please check your CPU information.
 
 ## Related Document
 
-- [FAQ](../../docs/support/faq.md)
+- [FAQ](../support/faq.md)

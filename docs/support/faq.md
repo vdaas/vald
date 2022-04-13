@@ -2,7 +2,7 @@
 
 This page answers the common questions.
 
-Please refer to [the troubleshooting page](../../docs/user-guides/troubleshooting.md) when you encounter operation problems.
+Please refer to [the troubleshooting page](../user-guides/troubleshooting.md) when you encounter operation problems.
 
 ## Component
 
@@ -86,4 +86,4 @@ Please refer to the sample configuration.
 
 ## Related Document
 
-- [Troubleshooting](../../docs/user-guides/troubleshooting.md)
+- [Troubleshooting](../user-guides/troubleshooting.md)
