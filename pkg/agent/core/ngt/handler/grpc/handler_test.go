@@ -3949,50 +3949,38 @@ func Test_server_MultiInsert(t *testing.T) {
 			- case 9.3: MultiInsert 100 vector with all vector with empty insert vector fail
 
 		- Decision Table Testing
-			- duplicated ID
-				- case 1.1: MultiInsert 100 request with no duplicated ID success when SkipStrictExistCheck is false
-				- case 1.2: MultiInsert 100 request with 2 duplicated ID success when SkipStrictExistCheck is false
-				- case 1.3: MultiInsert 100 request with all duplicated vector success when SkipStrictExistCheck is false
-				- case 1.4: MultiInsert 100 request with no duplicated ID success when SkipStrictExistCheck is true
-				- case 1.5: MultiInsert 100 request with 2 duplicated ID success when SkipStrictExistCheck is true
-				- case 1.6: MultiInsert 100 request with all duplicated vector success when SkipStrictExistCheck is true
-			- duplicated vector
-				- case 2.1: MultiInsert 100 request with no duplicated vector success when SkipStrictExistCheck is false
-				- case 2.2: MultiInsert 100 request with 2 duplicated vector success when SkipStrictExistCheck is false
-				- case 2.3: MultiInsert 100 request with all duplicated vector success when SkipStrictExistCheck is false
-				- case 2.4: MultiInsert 100 request with no duplicated vector success when SkipStrictExistCheck is true
-				- case 2.5: MultiInsert 100 request with 2 duplicated vector success when SkipStrictExistCheck is true
-				- case 2.6: MultiInsert 100 request with all duplicated vector success when SkipStrictExistCheck is true
-			- duplicated ID & vector
-				- case 3.1: MultiInsert 100 request with no duplicated ID & vector success when SkipStrictExistCheck is false
-				- case 3.2: MultiInsert 100 request with 2 duplicated ID & vector success when SkipStrictExistCheck is false
-				- case 3.3: MultiInsert 100 request with all duplicated ID & vector success when SkipStrictExistCheck is false
-				- case 3.4: MultiInsert 100 request with no duplicated ID & vector success when SkipStrictExistCheck is true
-				- case 3.5: MultiInsert 100 request with 2 duplicated ID & vector success when SkipStrictExistCheck is true
-				- case 3.6: MultiInsert 100 request with all duplicated ID & vector success when SkipStrictExistCheck is true
+			- duplicated ID (with 100 insert request in a single MultiInsert request)
+				- case 1.1: Success to MultiInsert with 2 duplicated ID when SkipStrictExistCheck is false
+				- case 1.2: Success to MultiInsert with all duplicated vector when SkipStrictExistCheck is false
+				- case 1.3: Success to MultiInsert with 2 duplicated ID when SkipStrictExistCheck is true
+				- case 1.4: Success to MultiInsert with all duplicated vector when SkipStrictExistCheck is true
+			- duplicated vector (with 100 insert request in a single MultiInsert request)
+				- case 2.1: Success to MultiInsert with 2 duplicated vector when SkipStrictExistCheck is false
+				- case 2.2: Success to MultiInsert with all duplicated vector when SkipStrictExistCheck is false
+				- case 2.3: Success to MultiInsert with 2 duplicated vector when SkipStrictExistCheck is true
+				- case 2.4: Success to MultiInsert with all duplicated vector when SkipStrictExistCheck is true
+			- duplicated ID & duplicated vector (with 100 insert request in a single MultiInsert request)
+				- case 3.1: Success to MultiInsert with 2 duplicated ID & vector when SkipStrictExistCheck is false
+				- case 3.2: Success to MultiInsert with all duplicated ID & vector when SkipStrictExistCheck is false
+				- case 3.3: Success to MultiInsert with 2 duplicated ID & vector when SkipStrictExistCheck is true
+				- case 3.4: Success to MultiInsert with all duplicated ID & vector when SkipStrictExistCheck is true
 
 			// existed in NGT test cases
-			- existed ID
-				- case 4.1: MultiInsert 100 request with no existed ID success when SkipStrictExistCheck is false
-				- case 4.2: MultiInsert 100 request with 2 existed ID fail when SkipStrictExistCheck is false
-				- case 4.3: MultiInsert 100 request with all existed vector fail when SkipStrictExistCheck is false
-				- case 4.4: MultiInsert 100 request with no existed ID success when SkipStrictExistCheck is true
-				- case 4.5: MultiInsert 100 request with 2 existed ID fail when SkipStrictExistCheck is true
-				- case 4.6: MultiInsert 100 request with all existed vector fail when SkipStrictExistCheck is true
-			- existed vector
-				- case 4.1: MultiInsert 100 request with no existed vector success when SkipStrictExistCheck is false
-				- case 4.2: MultiInsert 100 request with 2 existed vector success when SkipStrictExistCheck is false
-				- case 4.3: MultiInsert 100 request with all existed vector success when SkipStrictExistCheck is false
-				- case 4.4: MultiInsert 100 request with no existed vector success when SkipStrictExistCheck is true
-				- case 4.5: MultiInsert 100 request with 2 existed vector success when SkipStrictExistCheck is true
-				- case 4.6: MultiInsert 100 request with all existed vector success when SkipStrictExistCheck is true
-			- existed ID & vector
-				- case 4.1: MultiInsert 100 request with no existed ID & vector success when SkipStrictExistCheck is false
-				- case 4.2: MultiInsert 100 request with 2 existed ID & vector fail when SkipStrictExistCheck is false
-				- case 4.3: MultiInsert 100 request with all existed ID & vector fail when SkipStrictExistCheck is false
-				- case 4.4: MultiInsert 100 request with no existed ID & vector success when SkipStrictExistCheck is true
-				- case 4.5: MultiInsert 100 request with 2 existed ID & vector fail when SkipStrictExistCheck is true
-				- case 4.6: MultiInsert 100 request with all existed ID & vector fail when SkipStrictExistCheck is true
+			- existed ID (with 100 insert request in a single MultiInsert request)
+				- case 4.1: Fail to MultiInsert with 2 existed ID when SkipStrictExistCheck is false
+				- case 4.2: Fail to MultiInsert with all existed vector when SkipStrictExistCheck is false
+				- case 4.3: Fail to MultiInsert with 2 existed ID when SkipStrictExistCheck is true
+				- case 4.4: Fail to MultiInsert with all existed vector when SkipStrictExistCheck is true
+			- existed vector (with 100 insert request in a single MultiInsert request)
+				- case 4.1: Success to MultiInsert with 2 existed vector when SkipStrictExistCheck is false
+				- case 4.2: Success to MultiInsert with all existed vector when SkipStrictExistCheck is false
+				- case 4.3: Success to MultiInsert with 2 existed vector when SkipStrictExistCheck is true
+				- case 4.4: Success to MultiInsert with all existed vector when SkipStrictExistCheck is true
+			- existed ID & existed vector (with 100 insert request in a single MultiInsert request)
+				- case 4.1: Fail to MultiInsert with 2 existed ID & vector when SkipStrictExistCheck is false
+				- case 4.2: Fail to MultiInsert with all existed ID & vector when SkipStrictExistCheck is false
+				- case 4.3: Fail to MultiInsert with 2 existed ID & vector when SkipStrictExistCheck is true
+				- case 4.4: Fail to MultiInsert with all existed ID & vector when SkipStrictExistCheck is true
 
 	*/
 	tests := []test{
