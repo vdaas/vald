@@ -37,21 +37,24 @@ Vald has three pluggable options:
 
 ## Deployment
 
-### How to run the Vald cluster?
+### How to deploy the Vald cluster?
 
-We recommend using helm for running the Vald cluster.
-You can run by following steps.
+We recommend using [Helm](https://helm.sh/) for deployment the Vald cluster.
+You can deploy by following steps.
 
-1. Install helm(v3~) and prepare Kubernetes cluster
-1. Configure helm charts as your demand
-1. Deploy by helm command
+1. Install Helm(v3~) and prepare the Kubernetes cluster
+1. Configure `helm chart` as your demand
+1. Deploy by Helm command
 
 ## API
 
 ### Is there any support for bulk insert?
 
 Vald provides `MultiInsert` and `StreamInsert` for bulk insert.
-Please refer to [the API documentation](../api/insert.md) for more detail.
+Please refer to [the insert API documentation](../api/insert.md) for more detail.
+
+Vald also provides `MultiXXX` and `StreamXXX` as bulk operation for each service.
+For more detail, please refer to [the API document overview](https://vald.vdaas.org/docs/api/)
 
 ## Data
 
@@ -65,13 +68,14 @@ For handling the multi-embedding vectors in Vald, you have to do from 2 options.
 
 ### How to backup index data?
 
-There are three for backup:
+There are three ways for backup index data:
 
 1. Using external storage (S3, GCS)
 1. Using Persistent Volume
 1. Using the external storage and Persistent Volume
 
-Please refer to the sample configuration.
+<!-- TODO: change link when publish the backup configuration page -->
+Please refer to [the sample configurations](https://github.com/vdaas/vald/tree/master/charts/vald/values).
 
 ---
 
