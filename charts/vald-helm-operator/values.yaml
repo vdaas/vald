@@ -105,10 +105,10 @@ podSecurityContext:
 resources:
   limits:
     cpu: 300m
-    memory: 200Mi
+    memory: 300Mi
   requests:
     cpu: 200m
-    memory: 100Mi
+    memory: 200Mi
 
 # @schema {"name": "nodeSelector", "type": "object"}
 # nodeSelector -- node labels for pod assignment
