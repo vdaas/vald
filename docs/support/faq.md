@@ -35,15 +35,6 @@ Vald has three pluggable options:
    - you can filter the search results by own defined filter component by connecting to the filter gateway before returning the search result
    - you can convert object data to vector by own defined ingress filter component by connection to filter gateway before inserting
 
-Vald has three pluggable options:
-1. Backup with the external storage for Vald Agent
-    - You can connect the external storage like S3, GCS, etc., to the Vald Agent Sidecar component for backup.
-1. Algorithm of the core engine for Vald Agent
-    - We're going to add another algorithm soon.
-1. Filtering with the filter gateway
-    - You can filter the search results by your own defined filter component by connecting to the filter gateway before returning the search result
-    - You can convert object data to vector by own defined ingress filter component by connection to filter gateway before inserting
-
 ## Deployment
 
 ### How to run the Vald cluster?
