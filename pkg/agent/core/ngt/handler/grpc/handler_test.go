@@ -1320,7 +1320,7 @@ func Test_server_SearchByID(t *testing.T) {
 			- case 1.2: success search vector from 1000 vectors (type: float32)
 			- case 2.1: fail search with non-existent ID form 1000 vectors (type: uint8)
 			- case 2.2: fail search with non-existent ID form 1000 vectors (type: float32)
-		- Boundary Value Testing
+		- Boundary Value Testing ( 1000 vectors inserted before a search )
 			- case 1.1: success search with "" from 1000 vectors (type: uint8)
 			- case 1.2: success search with "" from 1000 vectors (type: float32)
 			- case 2.1: fail search with ^@ from 1000 vectors (type: uint8)
