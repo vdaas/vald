@@ -1316,39 +1316,23 @@ func Test_server_SearchByID(t *testing.T) {
 	/*
 		SearchByID test cases:
 		- Equivalence Class Testing ( 1000 vectors inserted before a search )
-			- case 1.1: success search vector (type: uint8)
-			- case 1.2: success search vector (type: float32)
-			- case 2.1: fail search with non-existent ID (type: uint8)
-			- case 2.2: fail search with non-existent ID (type: float32)
+			- case 1.1: success search vector
+			- case 2.1: fail search with non-existent ID
 		- Boundary Value Testing ( 1000 vectors inserted before a search )
-			- case 1.1: success search with "" (type: uint8)
-			- case 1.2: success search with "" (type: float32)
-			- case 2.1: fail search with ^@ (type: uint8)
-			- case 2.2: fail search with ^@ (type: float32)
-			- case 2.3: success search with ^I (type: uint8)
-			- case 2.4: success search with ^I (type: float32)
-			- case 2.5: success search with ^J (type: uint8)
-			- case 2.6: success search with ^J (type: float32)
-			- case 2.7: success search with ^M (type: uint8)
-			- case 2.8: success search with ^M (type: float32)
-			- case 2.9: fail search with ^[ (type: uint8)
-			- case 2.10: fail search with ^[ (type: float32)
-			- case 2.11: fail search with ^? (type: uint8)
-			- case 2.12: fail search with ^? (type: float32)
-			- case 3.1: fail search with the id s-jis from utf-8 (type: uint8)
-			- case 3.2: fail search with the id s-jis from utf-8 (type: float32)
-			- case 3.3: fail search with the id euc-jp from utf-8 (type: uint8)
-			- case 3.4: fail search with the id euc-jp from utf-8 (type: float32)
-			- case 3.5: fail search with the id utf-8 from euc-jp (type: uint8)
-			- case 3.6: fail search with the id utf-8 from euc-jp (type: float32)
-			- case 3.7: fail search with the id s-jis from euc-jp (type: uint8)
-			- case 3.8: fail search with the id s-jis from euc-jp (type: float32)
-			- case 3.9: fail search with the id euc-jp from s-jis (type: uint8)
-			- case 3.10: fail search with the id euc-jp from s-jis (type: float32)
-			- case 3.11: fail search with the id utf-8 from s-jis (type: uint8)
-			- case 3.12: fail search with the id utf-8 from s-jis (type: float32)
-			- case 4.1: success search with 😀 (type: uint8)
-			- case 4.2: success search with 😀 (type: float32)
+			- case 1.1: success search with ""
+			- case 2.1: fail search with ^@
+			- case 2.2: success search with ^I
+			- case 2.3: success search with ^J
+			- case 2.4: success search with ^M
+			- case 2.5: fail search with ^[
+			- case 2.6: fail search with ^?
+			- case 3.1: fail search with the id converting s-jis from utf-8
+			- case 3.2: fail search with the id converting euc-jp from utf-8
+			- case 3.3: fail search with the id converting utf-8 from euc-jp
+			- case 3.4: fail search with the id converting s-jis from euc-jp
+			- case 3.5: fail search with the id converting euc-jp from s-jis
+			- case 3.6: fail search with the id converting utf-8 from s-jis
+			- case 4.1: success search with 😀
 		- Decision Table Testing
 		    - NONE
 	*/
