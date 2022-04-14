@@ -1314,7 +1314,7 @@ func Test_server_SearchByID(t *testing.T) {
 	}
 
 	/*
-		SearchByID test cases:
+		SearchByID test cases ( focus on ID(string), only test float32 ):
 		- Equivalence Class Testing ( 1000 vectors inserted before a search )
 			- case 1.1: success search vector
 			- case 2.1: fail search with non-existent ID
