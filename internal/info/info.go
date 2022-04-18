@@ -200,7 +200,7 @@ func (d Detail) String() string {
 				fileMaxLen := 0
 				for _, st := range sts {
 					ul := len(st.URL)
-					fl := len(fmt.Sprintf("%s#L%d", st.File, st.Line))
+					fl := len(st.File + "#L" + strconv.Itoa(st.Line))
 					if urlMaxLen < ul {
 						urlMaxLen = ul
 					}
@@ -233,11 +233,11 @@ func (d Detail) String() string {
 		info[tag] = value
 	}
 
-	infoFormat := fmt.Sprintf("%%-%ds ->\t%%s", maxlen)
+	infoFormat := "%-" + strconv.Itoa(maxlen) + "s ->\t"
 	strs := make([]string, 0, rtNumField)
 	for tag, value := range info {
 		if len(tag) != 0 && len(value) != 0 {
-			strs = append(strs, fmt.Sprintf(infoFormat, tag, value))
+			strs = append(strs, fmt.Sprintf(infoFormat, tag)+value)
 		}
 	}
 	sort.Strings(strs)
