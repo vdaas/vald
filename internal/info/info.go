@@ -210,7 +210,7 @@ func (d Detail) String() string {
 				}
 				urlFormat := fmt.Sprintf("%%-%ds\t%%-%ds\t", urlMaxLen, fileMaxLen)
 				for i, st := range sts {
-					info[fmt.Sprintf("%s-%03d", tag, i)] = fmt.Sprintf(urlFormat, st.URL, (st.File+"#L"+strconv.Itoa(st.Line))) + st.FuncName
+					info[fmt.Sprintf("%s-%03d", tag, i)] = fmt.Sprintf(urlFormat, st.URL, st.File+"#L"+strconv.Itoa(st.Line)) + st.FuncName
 				}
 			} else {
 				strs, ok := v.([]string)
