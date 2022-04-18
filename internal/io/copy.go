@@ -91,12 +91,10 @@ func (c *copier) Copy(dst io.Writer, src io.Reader) (written int64, err error) {
 		buf = bytes.NewBuffer(make([]byte, size))
 	}
 	defer func() {
-		// NOTE: Because the Grow method dynamically expands by size, it may use a lot of memory.
-		//       Therefore, this code was commented out for verification purposes.
-		// if atomic.LoadInt64(&c.bufSize) < size {
-		// 	atomic.StoreInt64(&c.bufSize, size)
-		// 	buf.Grow(int(size))
-		// }
+		if atomic.LoadInt64(&c.bufSize) < size {
+			atomic.StoreInt64(&c.bufSize, size)
+			buf.Grow(int(size))
+		}
 		buf.Reset()
 		c.pool.Put(buf)
 	}()
@@ -107,15 +105,13 @@ func (c *copier) Copy(dst io.Writer, src io.Reader) (written int64, err error) {
 	for err != io.EOF {
 		nr, err = src.Read(buf.Bytes()[:size])
 		if nr > 0 {
-			// NOTE: Because the Grow method dynamically expands by size, it may use a lot of memory.
-			//       Therefore, this code was commented out for verification purposes.
-			// if int64(nr) > size {
-			// 	if int64(nr) >= limit {
-			// 		size = limit
-			// 	} else {
-			// 		size = int64(nr)
-			// 	}
-			// }
+			if int64(nr) > size {
+				if int64(nr) >= limit {
+					size = limit
+				} else {
+					size = int64(nr)
+				}
+			}
 			nw, err = dst.Write(buf.Bytes()[0:nr])
 			if nw < 0 || nr < int(nw) {
 				if err == nil {
