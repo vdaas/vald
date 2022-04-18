@@ -135,6 +135,15 @@
         "a11y",
         "example"
       ]
+    },
+    {
+      "login": "dotdc",
+      "name": "David Calvert",
+      "avatar_url": "https://avatars.githubusercontent.com/u/12827900?v=4",
+      "profile": "https://github.com/dotdc",
+      "contributions": [
+        "doc"
+      ]
     }
   ],
   "contributorsPerLine": 7,
