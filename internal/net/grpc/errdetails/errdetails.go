@@ -276,18 +276,16 @@ func AnyToErrorDetail(a *types.Any) proto.Message {
 
 func DebugInfoFromInfoDetail(v *info.Detail) *DebugInfo {
 	debug := &DebugInfo{
-		Detail: fmt.Sprintf("Version: %s,Name: %s, GitCommit: %s, BuildTime: %s, NGT_Version: %s ,Go_Version: %s, GOARCH: %s, GOOS: %s, CGO_Enabled: %s, BuildCPUInfo: [%s]",
-			v.Version,
-			v.ServerName,
-			v.GitCommit,
-			v.BuildTime,
-			v.NGTVersion,
-			v.GoVersion,
-			v.GoArch,
-			v.GoOS,
-			v.CGOEnabled,
-			strings.Join(v.BuildCPUInfoFlags, ", "),
-		),
+		Detail: "Version: " + v.Version + ", " +
+			"Name: " + v.ServerName + ", " +
+			"GitCommit: " + v.GitCommit + ", " +
+			"BuildTime: " + v.BuildTime + ", " +
+			"NGT_Version: " + v.NGTVersion + ", " +
+			"Go_Version: " + v.GoVersion + ", " +
+			"GOARCH: " + v.GoArch + ", " +
+			"GOOS: " + v.GoOS + ", " +
+			"CGO_Enabled: " + v.CGOEnabled + ", " +
+			"BuildCPUInfo: [" + strings.Join(v.BuildCPUInfoFlags, ", ") + "]",
 	}
 	if debug.GetStackEntries() == nil {
 		debug.StackEntries = make([]string, 0, len(v.StackTrace))
