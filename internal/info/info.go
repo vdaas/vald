@@ -247,7 +247,7 @@ func (d Detail) String() string {
 // Get returns parased Detail object.
 func (i info) Get() Detail {
 	i.prepare()
-	defaultURL := fmt.Sprintf("https://%s/tree/%s", valdRepo, i.detail.GitCommit)
+	defaultURL := "https://" + valdRepo + "/tree/" + i.detail.GitCommit
 
 	i.detail.StackTrace = make([]StackTrace, 0, 10)
 	for j := 2; ; j++ {
@@ -262,7 +262,7 @@ func (i info) Get() Detail {
 		url := defaultURL
 		switch {
 		case strings.HasPrefix(file, runtime.GOROOT()+"/src"):
-			url = fmt.Sprintf("https://github.com/golang/go/blob/%s%s#L%d", i.detail.GoVersion, strings.TrimPrefix(file, runtime.GOROOT()), line)
+			url = "https://github.com/golang/go/blob/" + i.detail.GoVersion + strings.TrimPrefix(file, runtime.GOROOT()) + "#L" + strconv.Itoa(line)
 		case strings.Contains(file, "go/pkg/mod/"):
 			url = "https:/"
 			for _, path := range strings.Split(strings.SplitN(file, "go/pkg/mod/", 2)[1], "/") {
@@ -323,5 +323,5 @@ func (i *info) prepare() {
 }
 
 func (s StackTrace) String() string {
-	return fmt.Sprintf("URL: %s\tFile: %s\tLine: #%d\tFuncName: %s", s.URL, s.File, s.Line, s.FuncName)
+	return "URL: " + s.URL + "\tFile: " + s.File + "\tLine: #" + strconv.Itoa(s.Line) + "\tFuncName: " + s.FuncName
 }
