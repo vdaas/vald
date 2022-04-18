@@ -20,6 +20,7 @@ package errdetails
 import (
 	"fmt"
 	"reflect"
+	"strconv"
 
 	"github.com/vdaas/vald/internal/encoding/json"
 	"github.com/vdaas/vald/internal/info"
@@ -291,7 +292,7 @@ func DebugInfoFromInfoDetail(v *info.Detail) *DebugInfo {
 		debug.StackEntries = make([]string, 0, len(v.StackTrace))
 	}
 	for i, stack := range v.StackTrace {
-		debug.StackEntries = append(debug.GetStackEntries(), fmt.Sprintf("id: %d stack_trace: %s", i, stack.String()))
+		debug.StackEntries = append(debug.GetStackEntries(), "id: "+strconv.Itoa(i)+" stack_trace: "+stack.String())
 	}
 	return debug
 }
