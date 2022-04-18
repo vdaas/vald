@@ -31,8 +31,6 @@ defaults:
           failureThreshold: 5
 
 gateway:
-  vald:
-    enabled: false
   lb:
     enabled: true
     minReplicas: 2
@@ -44,10 +42,6 @@ gateway:
         memory: 50Mi
     gateway_config:
       index_replica: 2
-  backup:
-    enabled: false
-  meta:
-    enabled: false
 
 agent:
   minReplicas: 5
@@ -77,18 +71,9 @@ discoverer:
     discovery_duration: 300ms
 
 manager:
-  compressor:
-    enabled: false
-
-  backup:
-    enabled: false
-
   index:
     replicas: 2
     resources:
       requests:
         cpu: 100m
         memory: 30Mi
-
-meta:
-  enabled: false

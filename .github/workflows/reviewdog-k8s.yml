@@ -28,7 +28,7 @@ jobs:
     container:
       image: mumoshu/conflint:latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: kubeval-conflint
         run: |
           set -vx
@@ -44,7 +44,7 @@ jobs:
     container:
       image: ghcr.io/vdaas/vald/vald-ci-container:nightly
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: kubelinter for k8s directory
         run: |
           kube-linter lint \
@@ -59,7 +59,7 @@ jobs:
     container:
       image: ghcr.io/vdaas/vald/vald-ci-container:nightly
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: kubelinter for generated manifests
         run: |
           kube-linter lint \
