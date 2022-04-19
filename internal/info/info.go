@@ -38,7 +38,6 @@ type Info interface {
 
 type info struct {
 	baseURL  string // e.g https://github.com/vdaas/vald/tree/master
-	goRoot   string
 	detail   Detail
 	prepOnce sync.Once
 
@@ -56,6 +55,7 @@ type Detail struct {
 	GoVersion         string       `json:"go_version,omitempty"           yaml:"go_version,omitempty"`
 	GoOS              string       `json:"go_os,omitempty"                yaml:"go_os,omitempty"`
 	GoArch            string       `json:"go_arch,omitempty"              yaml:"go_arch,omitempty"`
+	GoRoot            string       `json:"go_root,omitempty"              yaml:"go_root,omitempty"`
 	CGOEnabled        string       `json:"cgo_enabled,omitempty"          yaml:"cgo_enabled,omitempty"`
 	NGTVersion        string       `json:"ngt_version,omitempty"          yaml:"ngt_version,omitempty"`
 	BuildCPUInfoFlags []string     `json:"build_cpu_info_flags,omitempty" yaml:"build_cpu_info_flags,omitempty"`
@@ -85,6 +85,8 @@ var (
 	GoOS string
 	// GoArch represent the architecture target to build Vald.
 	GoArch string
+	// GoRoot represent the root of the Go tree.
+	GoRoot = runtime.GOROOT()
 	// CGOEnabled represent the cgo is enable or not to build Vald.
 	CGOEnabled string
 	// NGTVersion represent the NGT version in Vald.
@@ -131,6 +133,7 @@ func New(opts ...Option) (Info, error) {
 			GoVersion:         GoVersion,
 			GoOS:              GoOS,
 			GoArch:            GoArch,
+			GoRoot:            GoRoot,
 			CGOEnabled:        CGOEnabled,
 			NGTVersion:        NGTVersion,
 			BuildCPUInfoFlags: strings.Split(strings.TrimSpace(BuildCPUInfoFlags), " "),
@@ -262,8 +265,8 @@ func (i info) Get() Detail {
 		}
 		url := i.baseURL
 		switch {
-		case strings.HasPrefix(file, i.goRoot+"/src"):
-			url = "https://github.com/golang/go/blob/" + i.detail.GoVersion + strings.TrimPrefix(file, i.goRoot) + "#L" + strconv.Itoa(line)
+		case strings.HasPrefix(file, i.detail.GoRoot+"/src"):
+			url = "https://github.com/golang/go/blob/" + i.detail.GoVersion + strings.TrimPrefix(file, i.detail.GoRoot) + "#L" + strconv.Itoa(line)
 		case strings.Contains(file, "go/pkg/mod/"):
 			url = "https:/"
 			for _, path := range strings.Split(strings.SplitN(file, "go/pkg/mod/", 2)[1], "/") {
@@ -311,6 +314,9 @@ func (i *info) prepare() {
 		if len(i.detail.GoArch) == 0 {
 			i.detail.GoArch = runtime.GOARCH
 		}
+		if len(i.detail.GoRoot) == 0 {
+			i.detail.GoRoot = GoRoot
+		}
 		if len(i.detail.CGOEnabled) == 0 && len(CGOEnabled) != 0 {
 			i.detail.CGOEnabled = CGOEnabled
 		}
@@ -320,8 +326,9 @@ func (i *info) prepare() {
 		if len(i.detail.BuildCPUInfoFlags) == 0 && len(BuildCPUInfoFlags) != 0 {
 			i.detail.BuildCPUInfoFlags = strings.Split(strings.TrimSpace(BuildCPUInfoFlags), " ")
 		}
-		i.baseURL = "https://" + valdRepo + "/tree/" + i.detail.GitCommit
-		i.goRoot = runtime.GOROOT()
+		if len(i.baseURL) == 0 {
+			i.baseURL = "https://" + valdRepo + "/tree/" + i.detail.GitCommit
+		}
 	})
 }
 
