@@ -86,7 +86,7 @@ var (
 	// GoArch represent the architecture target to build Vald.
 	GoArch string
 	// GoRoot represent the root of the Go tree.
-	GoRoot = runtime.GOROOT()
+	GoRoot string
 	// CGOEnabled represent the cgo is enable or not to build Vald.
 	CGOEnabled string
 	// NGTVersion represent the NGT version in Vald.
@@ -315,7 +315,7 @@ func (i *info) prepare() {
 			i.detail.GoArch = runtime.GOARCH
 		}
 		if len(i.detail.GoRoot) == 0 {
-			i.detail.GoRoot = GoRoot
+			i.detail.GoRoot = runtime.GOROOT()
 		}
 		if len(i.detail.CGOEnabled) == 0 && len(CGOEnabled) != 0 {
 			i.detail.CGOEnabled = CGOEnabled
