@@ -1394,7 +1394,7 @@ func Test_server_SearchByID(t *testing.T) {
 			- case 1.1: success search vector
 			- case 2.1: fail search with non-existent ID
 		- Boundary Value Testing ( 1000 vectors inserted before a search )
-			- case 1.1: success search with ""
+			- case 1.1: fail search with ""
 			- case 2.1: success search with ^@
 			- case 2.2: success search with ^I
 			- case 2.3: success search with ^J
@@ -1439,7 +1439,7 @@ func Test_server_SearchByID(t *testing.T) {
 			},
 		},
 		{
-			name: "Boundary Value Testing case 1.1: success search with \"\"",
+			name: "Boundary Value Testing case 1.1: fail search with \"\"",
 			args: args{
 				ctx:      ctx,
 				indexId:  "test",
@@ -1458,7 +1458,7 @@ func Test_server_SearchByID(t *testing.T) {
 				searchId: string([]byte{0}),
 			},
 			want: want{
-				resultSize: 10,
+				resultSize: int(defaultSearch_Config.GetNum()),
 			},
 		},
 		{
@@ -1469,7 +1469,7 @@ func Test_server_SearchByID(t *testing.T) {
 				searchId: "\t",
 			},
 			want: want{
-				resultSize: 10,
+				resultSize: int(defaultSearch_Config.GetNum()),
 			},
 		},
 		{
@@ -1480,7 +1480,7 @@ func Test_server_SearchByID(t *testing.T) {
 				searchId: "\n",
 			},
 			want: want{
-				resultSize: 10,
+				resultSize: int(defaultSearch_Config.GetNum()),
 			},
 		},
 		{
@@ -1491,7 +1491,7 @@ func Test_server_SearchByID(t *testing.T) {
 				searchId: "\r",
 			},
 			want: want{
-				resultSize: 10,
+				resultSize: int(defaultSearch_Config.GetNum()),
 			},
 		},
 		{
@@ -1502,7 +1502,7 @@ func Test_server_SearchByID(t *testing.T) {
 				searchId: string([]byte{27}),
 			},
 			want: want{
-				resultSize: 10,
+				resultSize: int(defaultSearch_Config.GetNum()),
 			},
 		},
 		{
@@ -1513,7 +1513,7 @@ func Test_server_SearchByID(t *testing.T) {
 				searchId: string([]byte{127}),
 			},
 			want: want{
-				resultSize: 10,
+				resultSize: int(defaultSearch_Config.GetNum()),
 			},
 		},
 		{
@@ -1524,7 +1524,7 @@ func Test_server_SearchByID(t *testing.T) {
 				searchId: "こんにちは",
 			},
 			want: want{
-				resultSize: 10,
+				resultSize: int(defaultSearch_Config.GetNum()),
 			},
 		},
 		{
@@ -1571,7 +1571,7 @@ func Test_server_SearchByID(t *testing.T) {
 				searchId: utf8ToSjis("こんにちは"),
 			},
 			want: want{
-				resultSize: 10,
+				resultSize: int(defaultSearch_Config.GetNum()),
 			},
 		},
 		{
@@ -1618,7 +1618,7 @@ func Test_server_SearchByID(t *testing.T) {
 				searchId: utf8ToEucjp("こんにちは"),
 			},
 			want: want{
-				resultSize: 10,
+				resultSize: int(defaultSearch_Config.GetNum()),
 			},
 		},
 		{
