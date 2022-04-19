@@ -1,6 +1,3 @@
-//go:build !race
-// +build !race
-
 //
 // Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
 //
