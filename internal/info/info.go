@@ -37,6 +37,7 @@ type Info interface {
 }
 
 type info struct {
+	baseURL  string // e.g https://github.com/vdaas/vald/tree/master
 	detail   Detail
 	prepOnce sync.Once
 
@@ -247,7 +248,6 @@ func (d Detail) String() string {
 // Get returns parased Detail object.
 func (i info) Get() Detail {
 	i.prepare()
-	defaultURL := "https://" + valdRepo + "/tree/" + i.detail.GitCommit
 
 	i.detail.StackTrace = make([]StackTrace, 0, 10)
 	for j := 2; ; j++ {
@@ -259,7 +259,7 @@ func (i info) Get() Detail {
 		if funcName == "runtime.main" {
 			break
 		}
-		url := defaultURL
+		url := i.baseURL
 		switch {
 		case strings.HasPrefix(file, runtime.GOROOT()+"/src"):
 			url = "https://github.com/golang/go/blob/" + i.detail.GoVersion + strings.TrimPrefix(file, runtime.GOROOT()) + "#L" + strconv.Itoa(line)
@@ -319,6 +319,7 @@ func (i *info) prepare() {
 		if len(i.detail.BuildCPUInfoFlags) == 0 && len(BuildCPUInfoFlags) != 0 {
 			i.detail.BuildCPUInfoFlags = strings.Split(strings.TrimSpace(BuildCPUInfoFlags), " ")
 		}
+		i.baseURL = "https://" + valdRepo + "/tree/" + i.detail.GitCommit
 	})
 }
 

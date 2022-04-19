@@ -233,6 +233,7 @@ func TestInit(t *testing.T) {
 			},
 			want: want{
 				want: &info{
+					baseURL: "https://github.com/vdaas/vald/tree/gitcommit",
 					detail: Detail{
 						GitCommit:  "gitcommit",
 						ServerName: "gateway",
@@ -283,6 +284,7 @@ func TestInit(t *testing.T) {
 			},
 			want: want{
 				want: &info{
+					baseURL: "https://github.com/vdaas/vald/tree/gitcommit",
 					detail: Detail{
 						GitCommit:  "gitcommit",
 						ServerName: "",
@@ -394,6 +396,7 @@ func TestNew(t *testing.T) {
 			},
 			want: want{
 				want: &info{
+					baseURL: "https://github.com/vdaas/vald/tree/master",
 					detail: Detail{
 						ServerName:        "",
 						Version:           Version,
@@ -425,6 +428,7 @@ func TestNew(t *testing.T) {
 			},
 			want: want{
 				want: &info{
+					baseURL: "https://github.com/vdaas/vald/tree/master",
 					detail: Detail{
 						ServerName:        "gateway",
 						Version:           Version,
@@ -459,6 +463,7 @@ func TestNew(t *testing.T) {
 			},
 			want: want{
 				want: &info{
+					baseURL: "https://github.com/vdaas/vald/tree/master",
 					detail: Detail{
 						ServerName:        "vald",
 						Version:           "v1.0.0",
@@ -492,6 +497,7 @@ func TestNew(t *testing.T) {
 			},
 			want: want{
 				want: &info{
+					baseURL: "https://github.com/vdaas/vald/tree/master",
 					detail: Detail{
 						ServerName:        "",
 						Version:           Version,
@@ -1154,6 +1160,7 @@ func Test_info_prepare(t *testing.T) {
 			name: "set success with all fields are empty",
 			want: want{
 				want: info{
+					baseURL: "https://github.com/vdaas/vald/tree/master",
 					detail: Detail{
 						GitCommit:  "master",
 						Version:    "",
@@ -1182,6 +1189,7 @@ func Test_info_prepare(t *testing.T) {
 			},
 			want: want{
 				want: info{
+					baseURL: "https://github.com/vdaas/vald/tree/internal",
 					detail: Detail{
 						GitCommit:  "internal",
 						Version:    "",
@@ -1210,6 +1218,7 @@ func Test_info_prepare(t *testing.T) {
 			},
 			want: want{
 				want: info{
+					baseURL: "https://github.com/vdaas/vald/tree/master",
 					detail: Detail{
 						GitCommit:  "master",
 						Version:    "v1.0.0",
@@ -1238,6 +1247,7 @@ func Test_info_prepare(t *testing.T) {
 			},
 			want: want{
 				want: info{
+					baseURL: "https://github.com/vdaas/vald/tree/master",
 					detail: Detail{
 						GitCommit:  "master",
 						Version:    "",
@@ -1266,6 +1276,7 @@ func Test_info_prepare(t *testing.T) {
 			},
 			want: want{
 				want: info{
+					baseURL: "https://github.com/vdaas/vald/tree/master",
 					detail: Detail{
 						GitCommit:  "master",
 						Version:    "",
@@ -1294,6 +1305,7 @@ func Test_info_prepare(t *testing.T) {
 			},
 			want: want{
 				want: info{
+					baseURL: "https://github.com/vdaas/vald/tree/master",
 					detail: Detail{
 						GitCommit:  "master",
 						Version:    "",
@@ -1322,6 +1334,7 @@ func Test_info_prepare(t *testing.T) {
 			},
 			want: want{
 				want: info{
+					baseURL: "https://github.com/vdaas/vald/tree/master",
 					detail: Detail{
 						GitCommit:  "master",
 						Version:    "",
@@ -1350,6 +1363,7 @@ func Test_info_prepare(t *testing.T) {
 			},
 			want: want{
 				want: info{
+					baseURL: "https://github.com/vdaas/vald/tree/master",
 					detail: Detail{
 						GitCommit:  "master",
 						Version:    "",
@@ -1378,6 +1392,7 @@ func Test_info_prepare(t *testing.T) {
 			},
 			want: want{
 				want: info{
+					baseURL: "https://github.com/vdaas/vald/tree/master",
 					detail: Detail{
 						GitCommit:  "master",
 						Version:    "",
@@ -1406,6 +1421,7 @@ func Test_info_prepare(t *testing.T) {
 			},
 			want: want{
 				want: info{
+					baseURL: "https://github.com/vdaas/vald/tree/master",
 					detail: Detail{
 						GitCommit:         "master",
 						Version:           "",
