@@ -38,6 +38,7 @@ type Info interface {
 
 type info struct {
 	baseURL  string // e.g https://github.com/vdaas/vald/tree/master
+	goRoot   string
 	detail   Detail
 	prepOnce sync.Once
 
@@ -261,8 +262,8 @@ func (i info) Get() Detail {
 		}
 		url := i.baseURL
 		switch {
-		case strings.HasPrefix(file, runtime.GOROOT()+"/src"):
-			url = "https://github.com/golang/go/blob/" + i.detail.GoVersion + strings.TrimPrefix(file, runtime.GOROOT()) + "#L" + strconv.Itoa(line)
+		case strings.HasPrefix(file, i.goRoot+"/src"):
+			url = "https://github.com/golang/go/blob/" + i.detail.GoVersion + strings.TrimPrefix(file, i.goRoot) + "#L" + strconv.Itoa(line)
 		case strings.Contains(file, "go/pkg/mod/"):
 			url = "https:/"
 			for _, path := range strings.Split(strings.SplitN(file, "go/pkg/mod/", 2)[1], "/") {
@@ -320,6 +321,7 @@ func (i *info) prepare() {
 			i.detail.BuildCPUInfoFlags = strings.Split(strings.TrimSpace(BuildCPUInfoFlags), " ")
 		}
 		i.baseURL = "https://" + valdRepo + "/tree/" + i.detail.GitCommit
+		i.goRoot = runtime.GOROOT()
 	})
 }
 
