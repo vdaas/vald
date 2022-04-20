@@ -34,6 +34,8 @@ on:
 jobs:
   CodeQL-Build:
     runs-on: ubuntu-latest
+    env:
+      CODEQL_EXTRACTOR_GO_BUILD_TRACING: "true"
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
