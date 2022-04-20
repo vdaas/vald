@@ -95,6 +95,10 @@ var (
 	ErrFailedToWalkDir = func(err error, root, dir string, rfi, cfi os.FileInfo) error {
 		return Wrapf(err, "failed to walk directory %s in %s using filepath.WalkDir operation,\tfile info: {root: %s, current: %s}", dir, root, fitos(root, rfi), fitos(dir, cfi))
 	}
+
+	ErrNonRegularFile = func(path string, fi os.FileInfo) error {
+		return Errorf("error file is not a regular file %s", fitos(path, fi))
+	}
 )
 
 func fitos(path string, fi os.FileInfo) string {

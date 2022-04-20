@@ -227,6 +227,8 @@ func CopyFileWithPerm(ctx context.Context, src, dst string, perm fs.FileMode) (n
 		return 0, errors.Wrap(err, errors.ErrFileNotFound(src).Error())
 	case err != nil && (!errors.Is(err, fs.ErrExist) || errors.Is(err, fs.ErrNotExist)):
 		return 0, errors.Wrap(errors.ErrFileNotFound(src), err.Error())
+	case fi != nil && !fi.Mode().IsRegular():
+		return 0, errors.ErrNonRegularFile(src, fi)
 	case err != nil:
 		log.Warn(err)
 	}
@@ -318,24 +320,38 @@ func writeFile(ctx context.Context, target string, r io.Reader, flg int, perm fs
 	return n, nil
 }
 
-func ReadDir(name string) (dirs []fs.DirEntry, err error) {
-	f, err := Open(name, os.O_RDONLY, 0)
+func ReadDir(path string) (dirs []fs.DirEntry, err error) {
+	f, err := Open(path, os.O_RDONLY, 0)
 	if err != nil {
 		return nil, err
 	}
-	defer f.Close()
+	defer func() {
+		if f != nil {
+			derr := f.Close()
+			if derr != nil {
+				err = errors.Wrap(err, errors.ErrFailedToCloseFile(derr, path, nil).Error())
+			}
+		}
+	}()
 
 	dirs, err = f.ReadDir(-1)
 	sort.Slice(dirs, func(i, j int) bool { return dirs[i].Name() < dirs[j].Name() })
 	return dirs, err
 }
 
-func ReadFile(path string) ([]byte, error) {
+func ReadFile(path string) (n []byte, err error) {
 	f, err := Open(path, os.O_RDONLY, fs.ModePerm)
 	if err != nil {
 		return nil, err
 	}
-	defer f.Close()
+	defer func() {
+		if f != nil {
+			derr := f.Close()
+			if derr != nil {
+				err = errors.Wrap(err, errors.ErrFailedToCloseFile(derr, path, nil).Error())
+			}
+		}
+	}()
 	return io.ReadAll(f)
 }
 
@@ -421,6 +437,9 @@ func CreateTemp(baseDir string) (f *os.File, err error) {
 		f, err = Open(path, os.O_CREATE|os.O_EXCL|os.O_RDWR|os.O_TRUNC, os.ModePerm)
 		if err == nil && f != nil {
 			return f, nil
+		}
+		if f != nil {
+			f.Close()
 		}
 	}
 	return nil, errors.ErrFailedToCreateFile(err, path, nil)

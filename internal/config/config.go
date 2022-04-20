@@ -67,11 +67,13 @@ func Read(path string, cfg interface{}) (err error) {
 		return err
 	}
 	defer func() {
-		if err != nil {
-			err = errors.Wrap(f.Close(), err.Error())
-			return
+		if f != nil {
+			if err != nil {
+				err = errors.Wrap(f.Close(), err.Error())
+				return
+			}
+			err = f.Close()
 		}
-		err = f.Close()
 	}()
 	switch ext := filepath.Ext(path); ext {
 	case ".yaml", ".yml":
