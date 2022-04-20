@@ -18,10 +18,8 @@ queries:
   - uses: security-and-quality
   # - uses: github/codeql-go/ql/src@lgtm.com
 
-languages: go
-
-paths:
-  - "/cmd"
-  - "/hack"
-  - "/internal"
-  - "/pkg"
+# paths:
+#   - "/cmd"
+#   - "/hack"
+#   - "/internal"
+#   - "/pkg"
