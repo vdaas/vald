@@ -149,6 +149,9 @@ spec:
                 podAnnotations:
                   type: object
                   x-kubernetes-preserve-unknown-fields: true
+                podSecurityContext:
+                  type: object
+                  x-kubernetes-preserve-unknown-fields: true
                 rbac:
                   type: object
                   properties:
@@ -185,6 +188,9 @@ spec:
                 replicas:
                   type: integer
                 resources:
+                  type: object
+                  x-kubernetes-preserve-unknown-fields: true
+                securityContext:
                   type: object
                   x-kubernetes-preserve-unknown-fields: true
                 service:

@@ -37,9 +37,10 @@ spec:
     matchLabels:
       app: {{ $index.name }}
   updateStrategy:
-    rollingUpdate:
-      maxUnavailable: {{ $index.rollingUpdate.maxUnavailable }}
     type: RollingUpdate
+    rollingUpdate:
+      maxSurge: {{ $index.rollingUpdate.maxSurge }}
+      maxUnavailable: {{ $index.rollingUpdate.maxUnavailable }}
   template:
     metadata:
       creationTimestamp: null
