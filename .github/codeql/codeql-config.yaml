@@ -18,8 +18,7 @@ queries:
   - uses: security-and-quality
   # - uses: github/codeql-go/ql/src@lgtm.com
 
-languages:
-  - go
+languages: go
 
 paths:
   - "/cmd"
