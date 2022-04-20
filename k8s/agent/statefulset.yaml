@@ -35,9 +35,9 @@ spec:
     matchLabels:
       app: vald-agent-ngt
   updateStrategy:
+    type: RollingUpdate
     rollingUpdate:
       partition: 0
-    type: RollingUpdate
   template:
     metadata:
       creationTimestamp: null

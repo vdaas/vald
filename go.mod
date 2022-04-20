@@ -5,14 +5,14 @@ go 1.18
 replace (
 	cloud.google.com/go => cloud.google.com/go v0.100.2
 	cloud.google.com/go/iam => cloud.google.com/go/iam v0.3.0
-	cloud.google.com/go/monitoring => cloud.google.com/go/monitoring v1.4.0
+	cloud.google.com/go/monitoring => cloud.google.com/go/monitoring v1.5.0
 	cloud.google.com/go/profiler => cloud.google.com/go/profiler v0.2.0
 	cloud.google.com/go/storage => cloud.google.com/go/storage v1.22.0
 	cloud.google.com/go/trace => cloud.google.com/go/trace v1.2.0
-	github.com/Azure/go-autorest => github.com/Azure/go-autorest v14.2.1-0.20220331191732-bad3b7cbb013+incompatible
-	github.com/Azure/go-autorest/autorest => github.com/Azure/go-autorest/autorest v0.11.25
-	github.com/Azure/go-autorest/autorest/adal => github.com/Azure/go-autorest/autorest/adal v0.9.19-0.20220331191732-bad3b7cbb013
-	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.43.35
+	github.com/Azure/go-autorest => github.com/Azure/go-autorest v14.2.1-0.20220418163519-f9a841b5dffe+incompatible
+	github.com/Azure/go-autorest/autorest => github.com/Azure/go-autorest/autorest v0.11.26
+	github.com/Azure/go-autorest/autorest/adal => github.com/Azure/go-autorest/autorest/adal v0.9.19-0.20220418163519-f9a841b5dffe
+	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.43.42
 	github.com/chzyer/logex => github.com/chzyer/logex v1.2.0
 	github.com/coreos/etcd => go.etcd.io/etcd v3.3.27+incompatible
 	github.com/docker/docker => github.com/moby/moby v20.10.14+incompatible
@@ -29,7 +29,7 @@ replace (
 	github.com/golang/snappy => github.com/golang/snappy v0.0.4
 	github.com/google/btree => github.com/google/btree v1.0.1
 	github.com/google/go-cmp => github.com/google/go-cmp v0.5.7
-	github.com/google/pprof => github.com/google/pprof v0.0.0-20220401020641-b5a4dc8f4f2a
+	github.com/google/pprof => github.com/google/pprof v0.0.0-20220412212628-83db2b799d1f
 	github.com/google/uuid => github.com/google/uuid v1.3.0
 	github.com/gorilla/mux => github.com/gorilla/mux v1.8.0
 	github.com/gorilla/websocket => github.com/gorilla/websocket v1.5.0
@@ -53,6 +53,7 @@ replace (
 	github.com/prometheus/client_model => github.com/prometheus/client_model v0.2.0
 	github.com/prometheus/common => github.com/prometheus/common v0.33.0
 	github.com/prometheus/procfs => github.com/prometheus/procfs v0.7.3
+	github.com/prometheus/prometheus/v2 => github.com/prometheus/prometheus/v2 v2.35.0-retract
 	github.com/rs/xid => github.com/rs/xid v1.4.0
 	github.com/sirupsen/logrus => github.com/sirupsen/logrus v1.8.1
 	github.com/spf13/cobra => github.com/spf13/cobra v1.4.0
@@ -61,36 +62,36 @@ replace (
 	github.com/tensorflow/tensorflow => github.com/tensorflow/tensorflow v2.1.2+incompatible
 	github.com/zeebo/xxh3 => github.com/zeebo/xxh3 v1.0.2
 	go.etcd.io/bbolt => go.etcd.io/bbolt v1.3.6
-	go.etcd.io/etcd/pkg/v3 => go.etcd.io/etcd/pkg/v3 v3.5.2
-	go.etcd.io/etcd/server/v3 => go.etcd.io/etcd/server/v3 v3.5.2
+	go.etcd.io/etcd/pkg/v3 => go.etcd.io/etcd/pkg/v3 v3.5.3
+	go.etcd.io/etcd/server/v3 => go.etcd.io/etcd/server/v3 v3.5.3
 	go.opencensus.io => go.opencensus.io v0.23.0
 	go.opentelemetry.io/otel => go.opentelemetry.io/otel v1.6.3
-	go.opentelemetry.io/otel/metric => go.opentelemetry.io/otel/metric v0.28.0
+	go.opentelemetry.io/otel/metric => go.opentelemetry.io/otel/metric v0.29.0
 	go.opentelemetry.io/otel/sdk => go.opentelemetry.io/otel/sdk v1.6.3
 	go.opentelemetry.io/otel/trace => go.opentelemetry.io/otel/trace v1.6.3
 	go.uber.org/atomic => go.uber.org/atomic v1.9.0
 	go.uber.org/goleak => go.uber.org/goleak v1.1.12
 	go.uber.org/multierr => go.uber.org/multierr v1.8.0
 	go.uber.org/zap => go.uber.org/zap v1.21.0
-	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20220331220935-ae2d96664a29
-	golang.org/x/exp => golang.org/x/exp v0.0.0-20220407100705-7b9b53b0aca4
-	golang.org/x/image => golang.org/x/image v0.0.0-20220321031419-a8550c1d254a
+	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20220411220226-7b82a4e95df4
+	golang.org/x/exp => golang.org/x/exp v0.0.0-20220414153411-bcd21879b8fd
+	golang.org/x/image => golang.org/x/image v0.0.0-20220413100746-70e8d0d3baa9
 	golang.org/x/lint => golang.org/x/lint v0.0.0-20210508222113-6edffad5e616
 	golang.org/x/mod => golang.org/x/mod v0.5.1
-	golang.org/x/net => golang.org/x/net v0.0.0-20220407224826-aac1ed45d8e3
-	golang.org/x/oauth2 => golang.org/x/oauth2 v0.0.0-20220309155454-6242fa91716a
+	golang.org/x/net => golang.org/x/net v0.0.0-20220418201149-a630d4f3e7a2
+	golang.org/x/oauth2 => golang.org/x/oauth2 v0.0.0-20220411215720-9780585627b5
 	golang.org/x/sync => golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
-	golang.org/x/sys => golang.org/x/sys v0.0.0-20220406163625-3f8b81556e12
-	golang.org/x/term => golang.org/x/term v0.0.0-20210927222741-03fcf44c2211
+	golang.org/x/sys => golang.org/x/sys v0.0.0-20220412211240-33da011f77ad
+	golang.org/x/term => golang.org/x/term v0.0.0-20220411215600-e5f449aeb171
 	golang.org/x/text => golang.org/x/text v0.3.7
-	golang.org/x/time => golang.org/x/time v0.0.0-20220224211638-0e9765cccd65
+	golang.org/x/time => golang.org/x/time v0.0.0-20220411224347-583f2d630306
 	golang.org/x/tools => golang.org/x/tools v0.1.10
-	golang.org/x/xerrors => golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1
+	golang.org/x/xerrors => golang.org/x/xerrors v0.0.0-20220411194840-2f41105eb62f
 	gonum.org/v1/gonum => gonum.org/v1/gonum v0.11.0
 	gonum.org/v1/plot => gonum.org/v1/plot v0.11.0
 	google.golang.org/api => google.golang.org/api v0.74.0
 	google.golang.org/appengine => google.golang.org/appengine v1.6.7
-	google.golang.org/genproto => google.golang.org/genproto v0.0.0-20220407144326-9054f6ed7bac
+	google.golang.org/genproto => google.golang.org/genproto v0.0.0-20220414192740-2d67ff6cf2b4
 	google.golang.org/grpc => google.golang.org/grpc v1.45.0
 	google.golang.org/grpc/cmd/protoc-gen-go-grpc => google.golang.org/grpc/cmd/protoc-gen-go-grpc v1.2.0
 	google.golang.org/protobuf => google.golang.org/protobuf v1.28.0
@@ -123,7 +124,7 @@ require (
 	code.cloudfoundry.org/bytefmt v0.0.0-20211005130812-5bb3c17173e5
 	contrib.go.opencensus.io/exporter/jaeger v0.2.1
 	contrib.go.opencensus.io/exporter/prometheus v0.4.1
-	contrib.go.opencensus.io/exporter/stackdriver v0.13.11
+	contrib.go.opencensus.io/exporter/stackdriver v0.13.12
 	github.com/aws/aws-sdk-go v1.43.31
 	github.com/envoyproxy/protoc-gen-validate v0.1.0
 	github.com/fsnotify/fsnotify v1.5.1
@@ -157,11 +158,12 @@ require (
 	golang.org/x/oauth2 v0.0.0-20220309155454-6242fa91716a
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 	golang.org/x/sys v0.0.0-20220330033206-e17cdc41300f
+	golang.org/x/text v0.3.7
 	golang.org/x/tools v0.1.6-0.20210820212750-d4cc65f0b2ff
 	gonum.org/v1/hdf5 v0.0.0-20210714002203-8c5d23bc6946
 	gonum.org/v1/plot v0.0.0-00010101000000-000000000000
 	google.golang.org/api v0.74.0
-	google.golang.org/genproto v0.0.0-20220405205423-9d709892a2bf
+	google.golang.org/genproto v0.0.0-20220413183235-5e96e2839df9
 	google.golang.org/grpc v1.45.0
 	google.golang.org/protobuf v1.28.0
 	gopkg.in/yaml.v2 v2.4.0
@@ -213,7 +215,7 @@ require (
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510 // indirect
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/google/wire v0.5.0 // indirect
-	github.com/googleapis/gax-go/v2 v2.2.0 // indirect
+	github.com/googleapis/gax-go/v2 v2.3.0 // indirect
 	github.com/googleapis/gnostic v0.5.5 // indirect
 	github.com/googleapis/go-type-adapters v1.0.0 // indirect
 	github.com/gregjones/httpcache v0.0.0-20180305231024-9cad4c3443a7 // indirect
@@ -238,6 +240,7 @@ require (
 	github.com/prometheus/client_model v0.2.0 // indirect
 	github.com/prometheus/common v0.32.1 // indirect
 	github.com/prometheus/procfs v0.7.3 // indirect
+	github.com/prometheus/prometheus v2.5.0+incompatible // indirect
 	github.com/prometheus/statsd_exporter v0.21.0 // indirect
 	github.com/quasilyte/gogrep v0.0.0-20220103110004-ffaa07af02e3 // indirect
 	github.com/scylladb/go-reflectx v1.0.1 // indirect
@@ -254,7 +257,6 @@ require (
 	golang.org/x/image v0.0.0-20220302094943-723b81ca9867 // indirect
 	golang.org/x/mod v0.6.0-dev.0.20220106191415-9b9b3d81d5e3 // indirect
 	golang.org/x/term v0.0.0-20210927222741-03fcf44c2211 // indirect
-	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/time v0.0.0-20220224211638-0e9765cccd65 // indirect
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
 	gomodules.xyz/jsonpatch/v2 v2.2.0 // indirect

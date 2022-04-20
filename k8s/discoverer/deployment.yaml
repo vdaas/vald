@@ -34,10 +34,10 @@ spec:
     matchLabels:
       app: vald-discoverer
   strategy:
+    type: RollingUpdate
     rollingUpdate:
       maxSurge: 25%
       maxUnavailable: 25%
-    type: RollingUpdate
   template:
     metadata:
       creationTimestamp: null
