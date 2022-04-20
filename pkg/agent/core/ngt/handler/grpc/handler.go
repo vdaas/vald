@@ -127,7 +127,7 @@ func (s *server) Exists(ctx context.Context, uid *payload.Object_ID) (res *paylo
 				ResourceType: ngtResourceType + "/ngt.Exists",
 				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
 			},
-			uid.GetId(), info.Get())
+			uid.GetId())
 		if span != nil {
 			span.SetStatus(trace.StatusCodeNotFound(err.Error()))
 		}

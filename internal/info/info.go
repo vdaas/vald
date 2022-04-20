@@ -37,6 +37,7 @@ type Info interface {
 }
 
 type info struct {
+	baseURL  string // e.g https://github.com/vdaas/vald/tree/master
 	detail   Detail
 	prepOnce sync.Once
 
@@ -54,6 +55,7 @@ type Detail struct {
 	GoVersion         string       `json:"go_version,omitempty"           yaml:"go_version,omitempty"`
 	GoOS              string       `json:"go_os,omitempty"                yaml:"go_os,omitempty"`
 	GoArch            string       `json:"go_arch,omitempty"              yaml:"go_arch,omitempty"`
+	GoRoot            string       `json:"go_root,omitempty"              yaml:"go_root,omitempty"`
 	CGOEnabled        string       `json:"cgo_enabled,omitempty"          yaml:"cgo_enabled,omitempty"`
 	NGTVersion        string       `json:"ngt_version,omitempty"          yaml:"ngt_version,omitempty"`
 	BuildCPUInfoFlags []string     `json:"build_cpu_info_flags,omitempty" yaml:"build_cpu_info_flags,omitempty"`
@@ -83,6 +85,8 @@ var (
 	GoOS string
 	// GoArch represent the architecture target to build Vald.
 	GoArch string
+	// GoRoot represent the root of the Go tree.
+	GoRoot string
 	// CGOEnabled represent the cgo is enable or not to build Vald.
 	CGOEnabled string
 	// NGTVersion represent the NGT version in Vald.
@@ -129,6 +133,7 @@ func New(opts ...Option) (Info, error) {
 			GoVersion:         GoVersion,
 			GoOS:              GoOS,
 			GoArch:            GoArch,
+			GoRoot:            GoRoot,
 			CGOEnabled:        CGOEnabled,
 			NGTVersion:        NGTVersion,
 			BuildCPUInfoFlags: strings.Split(strings.TrimSpace(BuildCPUInfoFlags), " "),
@@ -170,7 +175,7 @@ func Get() Detail {
 
 // String returns summary of Detail object.
 // The stacktrace will be initialized when the stacktrace is not initialized yet.
-func (i info) String() string {
+func (i *info) String() string {
 	if len(i.detail.StackTrace) == 0 {
 		i.detail = i.Get()
 	}
@@ -200,7 +205,7 @@ func (d Detail) String() string {
 				fileMaxLen := 0
 				for _, st := range sts {
 					ul := len(st.URL)
-					fl := len(fmt.Sprintf("%s#L%d", st.File, st.Line))
+					fl := len(st.File + "#L" + strconv.Itoa(st.Line))
 					if urlMaxLen < ul {
 						urlMaxLen = ul
 					}
@@ -208,9 +213,9 @@ func (d Detail) String() string {
 						fileMaxLen = fl
 					}
 				}
-				urlFormat := fmt.Sprintf("%%-%ds\t%%-%ds\t%%s", urlMaxLen, fileMaxLen)
+				urlFormat := fmt.Sprintf("%%-%ds\t%%-%ds\t", urlMaxLen, fileMaxLen)
 				for i, st := range sts {
-					info[fmt.Sprintf("%s-%03d", tag, i)] = fmt.Sprintf(urlFormat, st.URL, fmt.Sprintf("%s#L%d", st.File, st.Line), st.FuncName)
+					info[fmt.Sprintf("%s-%03d", tag, i)] = fmt.Sprintf(urlFormat, st.URL, st.File+"#L"+strconv.Itoa(st.Line)) + st.FuncName
 				}
 			} else {
 				strs, ok := v.([]string)
@@ -233,11 +238,11 @@ func (d Detail) String() string {
 		info[tag] = value
 	}
 
-	infoFormat := fmt.Sprintf("%%-%ds ->\t%%s", maxlen)
+	infoFormat := "%-" + strconv.Itoa(maxlen) + "s ->\t"
 	strs := make([]string, 0, rtNumField)
 	for tag, value := range info {
 		if len(tag) != 0 && len(value) != 0 {
-			strs = append(strs, fmt.Sprintf(infoFormat, tag, value))
+			strs = append(strs, fmt.Sprintf(infoFormat, tag)+value)
 		}
 	}
 	sort.Strings(strs)
@@ -245,9 +250,8 @@ func (d Detail) String() string {
 }
 
 // Get returns parased Detail object.
-func (i info) Get() Detail {
+func (i *info) Get() Detail {
 	i.prepare()
-	defaultURL := fmt.Sprintf("https://%s/tree/%s", valdRepo, i.detail.GitCommit)
 
 	i.detail.StackTrace = make([]StackTrace, 0, 10)
 	for j := 2; ; j++ {
@@ -259,10 +263,10 @@ func (i info) Get() Detail {
 		if funcName == "runtime.main" {
 			break
 		}
-		url := defaultURL
+		url := i.baseURL
 		switch {
-		case strings.HasPrefix(file, runtime.GOROOT()+"/src"):
-			url = fmt.Sprintf("https://github.com/golang/go/blob/%s%s#L%d", i.detail.GoVersion, strings.TrimPrefix(file, runtime.GOROOT()), line)
+		case strings.HasPrefix(file, i.detail.GoRoot+"/src"):
+			url = "https://github.com/golang/go/blob/" + i.detail.GoVersion + strings.TrimPrefix(file, i.detail.GoRoot) + "#L" + strconv.Itoa(line)
 		case strings.Contains(file, "go/pkg/mod/"):
 			url = "https:/"
 			for _, path := range strings.Split(strings.SplitN(file, "go/pkg/mod/", 2)[1], "/") {
@@ -310,6 +314,9 @@ func (i *info) prepare() {
 		if len(i.detail.GoArch) == 0 {
 			i.detail.GoArch = runtime.GOARCH
 		}
+		if len(i.detail.GoRoot) == 0 {
+			i.detail.GoRoot = runtime.GOROOT()
+		}
 		if len(i.detail.CGOEnabled) == 0 && len(CGOEnabled) != 0 {
 			i.detail.CGOEnabled = CGOEnabled
 		}
@@ -319,9 +326,12 @@ func (i *info) prepare() {
 		if len(i.detail.BuildCPUInfoFlags) == 0 && len(BuildCPUInfoFlags) != 0 {
 			i.detail.BuildCPUInfoFlags = strings.Split(strings.TrimSpace(BuildCPUInfoFlags), " ")
 		}
+		if len(i.baseURL) == 0 {
+			i.baseURL = "https://" + valdRepo + "/tree/" + i.detail.GitCommit
+		}
 	})
 }
 
 func (s StackTrace) String() string {
-	return fmt.Sprintf("URL: %s\tFile: %s\tLine: #%d\tFuncName: %s", s.URL, s.File, s.Line, s.FuncName)
+	return "URL: " + s.URL + "\tFile: " + s.File + "\tLine: #" + strconv.Itoa(s.Line) + "\tFuncName: " + s.FuncName
 }
