@@ -175,7 +175,7 @@ func Get() Detail {
 
 // String returns summary of Detail object.
 // The stacktrace will be initialized when the stacktrace is not initialized yet.
-func (i info) String() string {
+func (i *info) String() string {
 	if len(i.detail.StackTrace) == 0 {
 		i.detail = i.Get()
 	}
@@ -250,7 +250,7 @@ func (d Detail) String() string {
 }
 
 // Get returns parased Detail object.
-func (i info) Get() Detail {
+func (i *info) Get() Detail {
 	i.prepare()
 
 	i.detail.StackTrace = make([]StackTrace, 0, 10)
