@@ -25,6 +25,8 @@ on:
       - "*.*.*-*"
       - "v*.*.*-*"
   pull_request:
+    branches:
+      - master
     paths:
       - ".github/workflows/codeql-analysis.yml"
       - "**.go"
