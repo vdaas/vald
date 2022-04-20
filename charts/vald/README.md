@@ -100,7 +100,7 @@ Configuration
 | agent.nodeName | string | `""` | node name |
 | agent.nodeSelector | object | `{}` | node selector |
 | agent.observability | object | `{"jaeger":{"service_name":"vald-agent-ngt"},"stackdriver":{"profiler":{"service":"vald-agent-ngt"}}}` | observability config (overrides defaults.observability) |
-| agent.persistentVolume.accessMode | string | `"ReadWriteOnce"` | agent pod storage accessMode |
+| agent.persistentVolume.accessMode | string | `"ReadWriteOncePod"` | agent pod storage accessMode |
 | agent.persistentVolume.enabled | bool | `false` | enables PVC. It is required to enable if agent pod's file store functionality is enabled with non in-memory mode |
 | agent.persistentVolume.mountPropagation | string | `"None"` | agent pod storage mountPropagation |
 | agent.persistentVolume.size | string | `"100Gi"` | size of agent pod volume |
@@ -588,6 +588,7 @@ Configuration
 | discoverer.image.repository | string | `"vdaas/vald-discoverer-k8s"` | image repository |
 | discoverer.image.tag | string | `""` | image tag (overrides defaults.image.tag) |
 | discoverer.initContainers | list | `[]` | init containers |
+| discoverer.internalTrafficPolicy | string | `""` | internal traffic policy : Cluster or Local |
 | discoverer.kind | string | `"Deployment"` | deployment kind: Deployment or DaemonSet |
 | discoverer.logging | object | `{}` | logging config (overrides defaults.logging) |
 | discoverer.maxReplicas | int | `2` | maximum number of replicas. if HPA is disabled, this value will be ignored. |
@@ -653,6 +654,7 @@ Configuration
 | gateway.filter.ingress.pathType | string | `"ImplementationSpecific"` | gateway ingress pathType |
 | gateway.filter.ingress.servicePort | string | `"grpc"` | service port to be exposed by ingress |
 | gateway.filter.initContainers | list | `[{"image":"busybox","name":"wait-for-gateway-lb","sleepDuration":2,"target":"gateway-lb","type":"wait-for"}]` | init containers |
+| gateway.filter.internalTrafficPolicy | string | `""` | internal traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local |
 | gateway.filter.kind | string | `"Deployment"` | deployment kind: Deployment or DaemonSet |
 | gateway.filter.logging | object | `{}` | logging config (overrides defaults.logging) |
 | gateway.filter.maxReplicas | int | `9` | maximum number of replicas. if HPA is disabled, this value will be ignored. |
@@ -710,6 +712,7 @@ Configuration
 | gateway.lb.ingress.pathType | string | `"ImplementationSpecific"` | gateway ingress pathType |
 | gateway.lb.ingress.servicePort | string | `"grpc"` | service port to be exposed by ingress |
 | gateway.lb.initContainers | list | `[{"image":"busybox","name":"wait-for-discoverer","sleepDuration":2,"target":"discoverer","type":"wait-for"},{"image":"busybox","name":"wait-for-agent","sleepDuration":2,"target":"agent","type":"wait-for"}]` | init containers |
+| gateway.lb.internalTrafficPolicy | string | `""` | internal traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local |
 | gateway.lb.kind | string | `"Deployment"` | deployment kind: Deployment or DaemonSet |
 | gateway.lb.logging | object | `{}` | logging config (overrides defaults.logging) |
 | gateway.lb.maxReplicas | int | `9` | maximum number of replicas. if HPA is disabled, this value will be ignored. |
@@ -740,53 +743,6 @@ Configuration
 | gateway.lb.version | string | `"v0.0.0"` | version of gateway config |
 | gateway.lb.volumeMounts | list | `[]` | volume mounts |
 | gateway.lb.volumes | list | `[]` | volumes |
-| initializer.cassandra.configmap.backup.enabled | bool | `true` | backup table enabled |
-| initializer.cassandra.configmap.backup.name | string | `"backup_vector"` | name of backup table |
-| initializer.cassandra.configmap.enabled | bool | `false` | cassandra schema configmap will be created |
-| initializer.cassandra.configmap.filename | string | `"init.cql"` | cassandra schema filename |
-| initializer.cassandra.configmap.keyspace | string | `"vald"` | cassandra keyspace |
-| initializer.cassandra.configmap.meta | object | `{"enabled":true,"name":{"kv":"kv","vk":"vk"}}` | cassandra settings for metadata store |
-| initializer.cassandra.configmap.meta.enabled | bool | `true` | meta table enabled |
-| initializer.cassandra.configmap.meta.name.kv | string | `"kv"` | name of KV table |
-| initializer.cassandra.configmap.meta.name.vk | string | `"vk"` | name of VK table |
-| initializer.cassandra.configmap.name | string | `"cassandra-initdb"` | cassandra schema configmap name |
-| initializer.cassandra.configmap.replication_class | string | `"SimpleStrategy"` | cassandra replication class |
-| initializer.cassandra.configmap.replication_factor | int | `3` | cassandra replication factor |
-| initializer.cassandra.configmap.user | string | `"root"` | cassandra user |
-| initializer.cassandra.enabled | bool | `false` | cassandra initializer job enabled |
-| initializer.cassandra.env | list | `[{"name":"CASSANDRA_HOST","value":"cassandra.default.svc.cluster.local"}]` | environment variables |
-| initializer.cassandra.image.pullPolicy | string | `"Always"` | image pull policy |
-| initializer.cassandra.image.repository | string | `"cassandra"` | image repository |
-| initializer.cassandra.image.tag | string | `"latest"` | image tag |
-| initializer.cassandra.name | string | `"cassandra-init"` | cassandra initializer job name |
-| initializer.cassandra.restartPolicy | string | `"Never"` | restart policy |
-| initializer.cassandra.secret.data | object | `{"password":"cGFzc3dvcmQ="}` | cassandra secret data |
-| initializer.cassandra.secret.enabled | bool | `false` | cassandra secret will be created |
-| initializer.cassandra.secret.name | string | `"cassandra-secret"` | cassandra secret name |
-| initializer.mysql.configmap.enabled | bool | `false` | mysql schema configmap will be created |
-| initializer.mysql.configmap.filename | string | `"ddl.sql"` | mysql schema filename |
-| initializer.mysql.configmap.name | string | `"mysql-config"` | mysql schema configmap name |
-| initializer.mysql.configmap.schema | string | `"vald"` | mysql schema name |
-| initializer.mysql.enabled | bool | `false` | mysql initializer job enabled |
-| initializer.mysql.env | list | `[{"name":"MYSQL_HOST","value":"mysql.default.svc.cluster.local"},{"name":"MYSQL_USER","value":"root"},{"name":"MYSQL_PASSWORD","valueFrom":{"secretKeyRef":{"key":"password","name":"mysql-secret"}}}]` | environment variables |
-| initializer.mysql.image.pullPolicy | string | `"Always"` | image pull policy |
-| initializer.mysql.image.repository | string | `"mysql"` | image repository |
-| initializer.mysql.image.tag | string | `"latest"` | image tag |
-| initializer.mysql.name | string | `"mysql-init"` | mysql initializer job name |
-| initializer.mysql.restartPolicy | string | `"Never"` | restart policy |
-| initializer.mysql.secret.data | object | `{"password":"cGFzc3dvcmQ="}` | mysql secret data |
-| initializer.mysql.secret.enabled | bool | `false` | mysql secret will be created |
-| initializer.mysql.secret.name | string | `"mysql-secret"` | mysql secret name |
-| initializer.redis.enabled | bool | `false` | redis initializer job enabled |
-| initializer.redis.env | list | `[{"name":"REDIS_HOST","value":"redis.default.svc.cluster.local"},{"name":"REDIS_PASSWORD","valueFrom":{"secretKeyRef":{"key":"password","name":"redis-secret"}}}]` | environment variables |
-| initializer.redis.image.pullPolicy | string | `"Always"` | image pull policy |
-| initializer.redis.image.repository | string | `"redis"` | image repository |
-| initializer.redis.image.tag | string | `"latest"` | image tag |
-| initializer.redis.name | string | `"redis-init"` | redis initializer job name |
-| initializer.redis.restartPolicy | string | `"Never"` | restart policy |
-| initializer.redis.secret.data | object | `{"password":"cGFzc3dvcmQ="}` | redis secret data |
-| initializer.redis.secret.enabled | bool | `false` | redis secret will be created |
-| initializer.redis.secret.name | string | `"redis-secret"` | redis secret name |
 | manager.index.affinity.nodeAffinity.preferredDuringSchedulingIgnoredDuringExecution | list | `[]` | node affinity preferred scheduling terms |
 | manager.index.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms | list | `[]` | node affinity required node selectors |
 | manager.index.affinity.podAffinity.preferredDuringSchedulingIgnoredDuringExecution | list | `[]` | pod affinity preferred scheduling terms |
