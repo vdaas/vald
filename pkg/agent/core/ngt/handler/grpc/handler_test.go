@@ -371,7 +371,7 @@ func Test_server_Exists(t *testing.T) {
 			- case 1.1: success exists vector
 			- case 2.1: fail exists with non-existent ID
 		- Boundary Value Testing ( 1000 vectors inserted before a search )
-			- case 1.1: fail search with ""
+			- case 1.1: fail exists with ""
 			- case 2.1: success exists with ^@
 			- case 2.2: success exists with ^I
 			- case 2.3: success exists with ^J
