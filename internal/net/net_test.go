@@ -170,8 +170,8 @@ func TestDialContext(t *testing.T) {
 		func() test {
 			srvContent := "test"
 			handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				fmt.Fprint(w, srvContent)
 				w.WriteHeader(200)
+				fmt.Fprint(w, srvContent)
 			})
 			testSrv := httptest.NewServer(handler)
 

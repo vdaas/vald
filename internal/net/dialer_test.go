@@ -1217,8 +1217,8 @@ func Test_dialer_cachedDialer(t *testing.T) {
 			for i := 0; i < srvNums; i++ {
 				content := fmt.Sprint(i)
 				hf := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-					fmt.Fprint(w, content)
 					w.WriteHeader(200)
+					fmt.Fprint(w, content)
 				})
 				srvs = append(srvs, httptest.NewServer(hf))
 				h, p, _ := SplitHostPort(strings.TrimPrefix(strings.TrimPrefix(srvs[i].URL, "https://"), "http://"))
