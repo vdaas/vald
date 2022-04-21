@@ -3,7 +3,7 @@ module github.com/vdaas/vald
 go 1.18
 
 replace (
-	cloud.google.com/go => cloud.google.com/go v0.100.2
+	cloud.google.com/go => cloud.google.com/go v0.101.0
 	cloud.google.com/go/iam => cloud.google.com/go/iam v0.3.0
 	cloud.google.com/go/monitoring => cloud.google.com/go/monitoring v1.5.0
 	cloud.google.com/go/profiler => cloud.google.com/go/profiler v0.2.0
@@ -12,12 +12,12 @@ replace (
 	github.com/Azure/go-autorest => github.com/Azure/go-autorest v14.2.1-0.20220418163519-f9a841b5dffe+incompatible
 	github.com/Azure/go-autorest/autorest => github.com/Azure/go-autorest/autorest v0.11.26
 	github.com/Azure/go-autorest/autorest/adal => github.com/Azure/go-autorest/autorest/adal v0.9.19-0.20220418163519-f9a841b5dffe
-	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.43.42
+	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.43.43
 	github.com/chzyer/logex => github.com/chzyer/logex v1.2.0
 	github.com/coreos/etcd => go.etcd.io/etcd v3.3.27+incompatible
 	github.com/docker/docker => github.com/moby/moby v20.10.14+incompatible
 	github.com/envoyproxy/protoc-gen-validate => github.com/envoyproxy/protoc-gen-validate v0.6.7
-	github.com/fsnotify/fsnotify => github.com/fsnotify/fsnotify v1.5.1
+	github.com/fsnotify/fsnotify => github.com/fsnotify/fsnotify v1.5.2
 	github.com/gin-gonic/gin => github.com/gin-gonic/gin v1.7.7
 	github.com/go-logr/logr => github.com/go-logr/logr v1.2.3
 	github.com/go-sql-driver/mysql => github.com/go-sql-driver/mysql v1.6.0
@@ -51,7 +51,7 @@ replace (
 	github.com/pkg/sftp => github.com/pkg/sftp v1.13.4
 	github.com/prometheus/client_golang => github.com/prometheus/client_golang v1.12.1
 	github.com/prometheus/client_model => github.com/prometheus/client_model v0.2.0
-	github.com/prometheus/common => github.com/prometheus/common v0.33.0
+	github.com/prometheus/common => github.com/prometheus/common v0.34.0
 	github.com/prometheus/procfs => github.com/prometheus/procfs v0.7.3
 	github.com/prometheus/prometheus/v2 => github.com/prometheus/prometheus/v2 v2.35.0-retract
 	github.com/rs/xid => github.com/rs/xid v1.4.0
@@ -78,7 +78,7 @@ replace (
 	golang.org/x/image => golang.org/x/image v0.0.0-20220413100746-70e8d0d3baa9
 	golang.org/x/lint => golang.org/x/lint v0.0.0-20210508222113-6edffad5e616
 	golang.org/x/mod => golang.org/x/mod v0.5.1
-	golang.org/x/net => golang.org/x/net v0.0.0-20220418201149-a630d4f3e7a2
+	golang.org/x/net => golang.org/x/net v0.0.0-20220420153159-1850ba15e1be
 	golang.org/x/oauth2 => golang.org/x/oauth2 v0.0.0-20220411215720-9780585627b5
 	golang.org/x/sync => golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 	golang.org/x/sys => golang.org/x/sys v0.0.0-20220412211240-33da011f77ad
@@ -89,9 +89,9 @@ replace (
 	golang.org/x/xerrors => golang.org/x/xerrors v0.0.0-20220411194840-2f41105eb62f
 	gonum.org/v1/gonum => gonum.org/v1/gonum v0.11.0
 	gonum.org/v1/plot => gonum.org/v1/plot v0.11.0
-	google.golang.org/api => google.golang.org/api v0.74.0
+	google.golang.org/api => google.golang.org/api v0.75.0
 	google.golang.org/appengine => google.golang.org/appengine v1.6.7
-	google.golang.org/genproto => google.golang.org/genproto v0.0.0-20220414192740-2d67ff6cf2b4
+	google.golang.org/genproto => google.golang.org/genproto v0.0.0-20220420195807-44278fea765b
 	google.golang.org/grpc => google.golang.org/grpc v1.45.0
 	google.golang.org/grpc/cmd/protoc-gen-go-grpc => google.golang.org/grpc/cmd/protoc-gen-go-grpc v1.2.0
 	google.golang.org/protobuf => google.golang.org/protobuf v1.28.0
@@ -120,7 +120,7 @@ replace (
 
 require (
 	cloud.google.com/go/profiler v0.0.0-00010101000000-000000000000
-	cloud.google.com/go/storage v1.21.0
+	cloud.google.com/go/storage v1.22.0
 	code.cloudfoundry.org/bytefmt v0.0.0-20211005130812-5bb3c17173e5
 	contrib.go.opencensus.io/exporter/jaeger v0.2.1
 	contrib.go.opencensus.io/exporter/prometheus v0.4.1
@@ -154,16 +154,16 @@ require (
 	go.uber.org/goleak v1.1.12
 	go.uber.org/zap v1.21.0
 	gocloud.dev v0.25.0
-	golang.org/x/net v0.0.0-20220401154927-543a649e0bdd
-	golang.org/x/oauth2 v0.0.0-20220309155454-6242fa91716a
+	golang.org/x/net v0.0.0-20220412020605-290c469a71a5
+	golang.org/x/oauth2 v0.0.0-20220411215720-9780585627b5
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
-	golang.org/x/sys v0.0.0-20220330033206-e17cdc41300f
+	golang.org/x/sys v0.0.0-20220412211240-33da011f77ad
 	golang.org/x/text v0.3.7
 	golang.org/x/tools v0.1.6-0.20210820212750-d4cc65f0b2ff
 	gonum.org/v1/hdf5 v0.0.0-20210714002203-8c5d23bc6946
 	gonum.org/v1/plot v0.0.0-00010101000000-000000000000
 	google.golang.org/api v0.74.0
-	google.golang.org/genproto v0.0.0-20220413183235-5e96e2839df9
+	google.golang.org/genproto v0.0.0-20220414192740-2d67ff6cf2b4
 	google.golang.org/grpc v1.45.0
 	google.golang.org/protobuf v1.28.0
 	gopkg.in/yaml.v2 v2.4.0
@@ -178,7 +178,7 @@ require (
 
 require (
 	cloud.google.com/go v0.100.2 // indirect
-	cloud.google.com/go/compute v1.5.0 // indirect
+	cloud.google.com/go/compute v1.6.0 // indirect
 	cloud.google.com/go/iam v0.3.0 // indirect
 	cloud.google.com/go/monitoring v1.4.0 // indirect
 	cloud.google.com/go/trace v1.2.0 // indirect
@@ -258,7 +258,7 @@ require (
 	golang.org/x/mod v0.6.0-dev.0.20220106191415-9b9b3d81d5e3 // indirect
 	golang.org/x/term v0.0.0-20210927222741-03fcf44c2211 // indirect
 	golang.org/x/time v0.0.0-20220224211638-0e9765cccd65 // indirect
-	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
+	golang.org/x/xerrors v0.0.0-20220411194840-2f41105eb62f // indirect
 	gomodules.xyz/jsonpatch/v2 v2.2.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
