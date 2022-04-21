@@ -25,6 +25,8 @@ on:
       - "*.*.*-*"
       - "v*.*.*-*"
   pull_request:
+    branches:
+      - master
     paths:
       - ".github/workflows/codeql-analysis.yml"
       - "**.go"
@@ -47,10 +49,6 @@ jobs:
           sudo apt-get install -y --no-install-recommends libhdf5-dev
           sudo make ngt/install
           sudo make tensorflow/install
-      # If this run was triggered by a pull request event, then checkout
-      # the head of the pull request instead of the merge commit.
-      - run: git checkout HEAD^2
-        if: ${{ github.event_name == 'pull_request' }}
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v2
         with:
