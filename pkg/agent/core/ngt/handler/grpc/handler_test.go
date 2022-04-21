@@ -3629,16 +3629,19 @@ func Test_server_StreamInsert(t *testing.T) {
 
 func Test_server_MultiInsert(t *testing.T) {
 	t.Parallel()
+
 	type args struct {
 		ctx  context.Context
 		reqs *payload.Insert_MultiRequest
 	}
 	type fields struct {
-		name              string
-		ip                string
-		ngt               service.NGT
-		eg                errgroup.Group
+		name string
+		ip   string
+		// ngt               service.NGT
+		//eg                errgroup.Group
 		streamConcurrency int
+		svcCfg            *config.NGT
+		svcOpts           []service.Option
 	}
 	type want struct {
 		wantRes *payload.Object_Locations
@@ -3653,9 +3656,113 @@ func Test_server_MultiInsert(t *testing.T) {
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	// common variables for test
+	const (
+		name      = "vald-agent-ngt-1" // agent name
+		id        = "uuid-1"           // insert request id
+		intVecDim = 3                  // int vector dimension
+		f32VecDim = 3                  // float32 vector dimension
+	)
+	var (
+		ip     = net.LoadLocalIP()        // agent ip address
+		intVec = []float32{1, 2, 3}       // int vector of the insert request
+		f32Vec = []float32{1.5, 2.3, 3.6} // float32 vector of the insert request
+
+		// default NGT configuration for test
+		kvsdbCfg  = &config.KVSDB{}
+		vqueueCfg = &config.VQueue{}
+
+		defaultIntSvcCfg = &config.NGT{
+			Dimension:    intVecDim,
+			DistanceType: ngt.Angle.String(),
+			ObjectType:   ngt.Uint8.String(),
+			KVSDB:        kvsdbCfg,
+			VQueue:       vqueueCfg,
+		}
+		defaultF32SvcCfg = &config.NGT{
+			Dimension:    f32VecDim,
+			DistanceType: ngt.Angle.String(),
+			ObjectType:   ngt.Uint8.String(),
+			KVSDB:        kvsdbCfg,
+			VQueue:       vqueueCfg,
+		}
+		defaultSvcOpts = []service.Option{
+			service.WithEnableInMemoryMode(true),
+		}
+	)
+
+	genF32Vec := func(dist vector.Distribution, num int, dim int) [][]float32 {
+		generator, _ := vector.Float32VectorGenerator(dist)
+		return generator(num, dim)
+	}
+	genIntVec := func(dist vector.Distribution, num int, dim int) [][]float32 {
+		generator, _ := vector.Uint8VectorGenerator(dist)
+		ivecs := generator(num, dim)
+		result := make([][]float32, num)
+
+		for j, ivec := range ivecs {
+			vec := make([]float32, dim)
+			for i := 0; i < dim; i++ {
+				vec[i] = float32(ivec[i])
+			}
+			result[j] = vec
+		}
+		return result
+	}
+
+	genF32Req := func(dist vector.Distribution, num int, dim int) *payload.Insert_MultiRequest {
+		vecs := genF32Vec(dist, num, dim)
+
+		req := &payload.Insert_MultiRequest{}
+		for i, vec := range vecs {
+			req.Requests = append(req.Requests, &payload.Insert_Request{
+				Vector: &payload.Object_Vector{
+					Id:     "uuid-" + strconv.Itoa(i+1),
+					Vector: vec,
+				},
+			})
+		}
+
+		return req
+	}
+	genIntReq := func(dist vector.Distribution, num int, dim int) *payload.Insert_MultiRequest {
+		vecs := genIntVec(dist, num, dim)
+
+		req := &payload.Insert_MultiRequest{}
+		for i, vec := range vecs {
+			req.Requests = append(req.Requests, &payload.Insert_Request{
+				Vector: &payload.Object_Vector{
+					Id:     "uuid-" + strconv.Itoa(i+1),
+					Vector: vec,
+				},
+			})
+		}
+
+		return req
+	}
+
+	genObjectLocations := func(num int, name string, ip string) *payload.Object_Locations {
+		result := &payload.Object_Locations{
+			Locations: make([]*payload.Object_Location, num),
+		}
+
+		for i := 0; i < num; i++ {
+			result.Locations[i] = &payload.Object_Location{
+				Name: name,
+				Uuid: "uuid-" + strconv.Itoa(i+1),
+				Ips:  []string{ip},
+			}
+		}
+		return result
+	}
+
 	defaultCheckFunc := func(w want, gotRes *payload.Object_Locations, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+			return errors.Errorf("got_error: \"%v\",\n\t\t\t\twant: \"%v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(gotRes, w.wantRes) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
@@ -3755,47 +3862,464 @@ func Test_server_MultiInsert(t *testing.T) {
 
 	*/
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx: nil,
-		           reqs: nil,
-		       },
-		       fields: fields {
-		           name: "",
-		           ip: "",
-		           ngt: nil,
-		           eg: nil,
-		           streamConcurrency: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+		{
+			name: "Equivalence Class Testing case 1.1: Success to MultiInsert 1 vector (vector type is uint8)",
+			args: args{
+				ctx: ctx,
+				reqs: &payload.Insert_MultiRequest{
+					Requests: []*payload.Insert_Request{
+						{
+							Vector: &payload.Object_Vector{
+								Id:     id,
+								Vector: intVec,
+							},
+						},
+					},
+				},
+			},
+			fields: fields{
+				name:              name,
+				ip:                ip,
+				svcCfg:            defaultIntSvcCfg,
+				svcOpts:           defaultSvcOpts,
+				streamConcurrency: 0,
+			},
+			want: want{
+				wantRes: genObjectLocations(1, name, ip),
+			},
+		},
+		{
+			name: "Equivalence Class Testing case 1.2: Success to MultiInsert 1 vector (vector type is float32)",
+			args: args{
+				ctx: ctx,
+				reqs: &payload.Insert_MultiRequest{
+					Requests: []*payload.Insert_Request{
+						{
+							Vector: &payload.Object_Vector{
+								Id:     id,
+								Vector: f32Vec,
+							},
+						},
+					},
+				},
+			},
+			fields: fields{
+				name:              name,
+				ip:                ip,
+				svcCfg:            defaultF32SvcCfg,
+				svcOpts:           defaultSvcOpts,
+				streamConcurrency: 0,
+			},
+			want: want{
+				wantRes: genObjectLocations(1, name, ip),
+			},
+		},
+		{
+			name: "Equivalence Class Testing case 1.3: Success to MultiInsert 100 vector (vector type is uint8)",
+			args: args{
+				ctx:  ctx,
+				reqs: genIntReq(vector.Gaussian, 100, intVecDim),
+			},
+			fields: fields{
+				name:              name,
+				ip:                ip,
+				svcCfg:            defaultIntSvcCfg,
+				svcOpts:           defaultSvcOpts,
+				streamConcurrency: 0,
+			},
+			want: want{
+				wantRes: genObjectLocations(100, name, ip),
+			},
+		},
+		{
+			name: "Equivalence Class Testing case 1.4: Success to MultiInsert 100 vector (vector type is float32)",
+			args: args{
+				ctx:  ctx,
+				reqs: genF32Req(vector.Gaussian, 100, f32VecDim),
+			},
+			fields: fields{
+				name:              name,
+				ip:                ip,
+				svcCfg:            defaultF32SvcCfg,
+				svcOpts:           defaultSvcOpts,
+				streamConcurrency: 0,
+			},
+			want: want{
+				wantRes: genObjectLocations(100, name, ip),
+			},
+		},
+		{
+			name: "Equivalence Class Testing case 1.5: Success to MultiInsert 0 vector (vector type is uint8)",
+			args: args{
+				ctx: ctx,
+				reqs: &payload.Insert_MultiRequest{
+					Requests: []*payload.Insert_Request{},
+				},
+			},
+			fields: fields{
+				name:              name,
+				ip:                ip,
+				svcCfg:            defaultIntSvcCfg,
+				svcOpts:           defaultSvcOpts,
+				streamConcurrency: 0,
+			},
+			want: want{
+				// wantRes: &payload.Object_Locations{},
+			},
+		},
+		{
+			name: "Equivalence Class Testing case 1.6: Success to MultiInsert 0 vector (vector type is float32)",
+			args: args{
+				ctx: ctx,
+				reqs: &payload.Insert_MultiRequest{
+					Requests: []*payload.Insert_Request{},
+				},
+			},
+			fields: fields{
+				name:              name,
+				ip:                ip,
+				svcCfg:            defaultF32SvcCfg,
+				svcOpts:           defaultSvcOpts,
+				streamConcurrency: 0,
+			},
+			want: want{
+				// wantRes: &payload.Object_Locations{},
+			},
+		},
+		func() test {
+			req := genIntReq(vector.Gaussian, 1, intVecDim+1)
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ctx: nil,
-		           reqs: nil,
-		           },
-		           fields: fields {
-		           name: "",
-		           ip: "",
-		           ngt: nil,
-		           eg: nil,
-		           streamConcurrency: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+			return test{
+				name: "Equivalence Class Testing case 2.1: Fail to MultiInsert 1 vector with different dimension (vector type is uint8)",
+				args: args{
+					ctx:  ctx,
+					reqs: req,
+				},
+				fields: fields{
+					name:    name,
+					ip:      ip,
+					svcCfg:  defaultIntSvcCfg,
+					svcOpts: defaultSvcOpts,
+				},
+				want: want{
+					err: func() error {
+						err := errors.ErrIncompatibleDimensionSize(len(req.Requests[0].Vector.Vector), intVecDim)
+						err = status.WrapWithInvalidArgument("MultiInsert API Incompatible Dimension Size detected",
+							err,
+							&errdetails.RequestInfo{
+								RequestId:   req.Requests[0].Vector.Id,
+								ServingData: errdetails.Serialize(req),
+							},
+							&errdetails.BadRequest{
+								FieldViolations: []*errdetails.BadRequestFieldViolation{
+									{
+										Field:       "vector dimension size",
+										Description: err.Error(),
+									},
+								},
+							},
+							&errdetails.ResourceInfo{
+								ResourceType: ngtResourceType + "/ngt.MultiInsert",
+								ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, name, ip),
+							})
+						return err
+					}(),
+				},
+			}
+		}(),
+		func() test {
+			req := genF32Req(vector.Gaussian, 1, f32VecDim+1)
+
+			return test{
+				name: "Equivalence Class Testing case 2.2: Fail to MultiInsert 1 vector with different dimension (vector type is float32)",
+				args: args{
+					ctx:  ctx,
+					reqs: req,
+				},
+				fields: fields{
+					name:    name,
+					ip:      ip,
+					svcCfg:  defaultF32SvcCfg,
+					svcOpts: defaultSvcOpts,
+				},
+				want: want{
+					err: func() error {
+						err := errors.ErrIncompatibleDimensionSize(len(req.Requests[0].Vector.Vector), intVecDim)
+						err = status.WrapWithInvalidArgument("MultiInsert API Incompatible Dimension Size detected",
+							err,
+							&errdetails.RequestInfo{
+								RequestId:   req.Requests[0].Vector.Id,
+								ServingData: errdetails.Serialize(req),
+							},
+							&errdetails.BadRequest{
+								FieldViolations: []*errdetails.BadRequestFieldViolation{
+									{
+										Field:       "vector dimension size",
+										Description: err.Error(),
+									},
+								},
+							},
+							&errdetails.ResourceInfo{
+								ResourceType: ngtResourceType + "/ngt.MultiInsert",
+								ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, name, ip),
+							})
+						return err
+					}(),
+				},
+			}
+		}(),
+		func() test {
+			req := genIntReq(vector.Gaussian, 100, intVecDim)
+			req.Requests[99].Vector.Vector = genIntVec(vector.Gaussian, 1, intVecDim+1)[0]
+
+			return test{
+				name: "Equivalence Class Testing case 3.1: Fail to MultiInsert 100 vector with 1 vector with different dimension (vector type is uint8)",
+				args: args{
+					ctx:  ctx,
+					reqs: req,
+				},
+				fields: fields{
+					name:    name,
+					ip:      ip,
+					svcCfg:  defaultIntSvcCfg,
+					svcOpts: defaultSvcOpts,
+				},
+				want: want{
+					err: func() error {
+						err := errors.ErrIncompatibleDimensionSize(len(req.Requests[99].Vector.Vector), intVecDim)
+						err = status.WrapWithInvalidArgument("MultiInsert API Incompatible Dimension Size detected",
+							err,
+							&errdetails.RequestInfo{
+								RequestId:   req.Requests[99].Vector.Id,
+								ServingData: errdetails.Serialize(req),
+							},
+							&errdetails.BadRequest{
+								FieldViolations: []*errdetails.BadRequestFieldViolation{
+									{
+										Field:       "vector dimension size",
+										Description: err.Error(),
+									},
+								},
+							},
+							&errdetails.ResourceInfo{
+								ResourceType: ngtResourceType + "/ngt.MultiInsert",
+								ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, name, ip),
+							})
+						return err
+					}(),
+				},
+			}
+		}(),
+		func() test {
+			req := genF32Req(vector.Gaussian, 100, f32VecDim)
+			req.Requests[99].Vector.Vector = genF32Vec(vector.Gaussian, 1, f32VecDim+1)[0]
+			return test{
+				name: "Equivalence Class Testing case 3.2: Fail to MultiInsert 100 vector with 1 vector with different dimension (vector type is float32)",
+				args: args{
+					ctx:  ctx,
+					reqs: req,
+				},
+				fields: fields{
+					name:    name,
+					ip:      ip,
+					svcCfg:  defaultF32SvcCfg,
+					svcOpts: defaultSvcOpts,
+				},
+				want: want{
+					err: func() error {
+						err := errors.ErrIncompatibleDimensionSize(len(req.Requests[99].Vector.Vector), intVecDim)
+						err = status.WrapWithInvalidArgument("MultiInsert API Incompatible Dimension Size detected",
+							err,
+							&errdetails.RequestInfo{
+								RequestId:   req.Requests[99].Vector.Id,
+								ServingData: errdetails.Serialize(req),
+							},
+							&errdetails.BadRequest{
+								FieldViolations: []*errdetails.BadRequestFieldViolation{
+									{
+										Field:       "vector dimension size",
+										Description: err.Error(),
+									},
+								},
+							},
+							&errdetails.ResourceInfo{
+								ResourceType: ngtResourceType + "/ngt.MultiInsert",
+								ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, name, ip),
+							})
+						return err
+					}(),
+				},
+			}
+		}(),
+
+		func() test {
+			req := genIntReq(vector.Gaussian, 100, intVecDim)
+			for i := 0; i < 100; i += 2 {
+				req.Requests[i].Vector.Vector = genIntVec(vector.Gaussian, 1, intVecDim+1)[0]
+			}
+
+			return test{
+				name: "Equivalence Class Testing case 3.3: Fail to MultiInsert 100 vector with 50 vector with different dimension (vector type is uint8)",
+				args: args{
+					ctx:  ctx,
+					reqs: req,
+				},
+				fields: fields{
+					name:    name,
+					ip:      ip,
+					svcCfg:  defaultIntSvcCfg,
+					svcOpts: defaultSvcOpts,
+				},
+				want: want{
+					err: func() error {
+						err := errors.ErrIncompatibleDimensionSize(len(req.Requests[0].Vector.Vector), intVecDim)
+						err = status.WrapWithInvalidArgument("MultiInsert API Incompatible Dimension Size detected",
+							err,
+							&errdetails.RequestInfo{
+								RequestId:   req.Requests[0].Vector.Id,
+								ServingData: errdetails.Serialize(req),
+							},
+							&errdetails.BadRequest{
+								FieldViolations: []*errdetails.BadRequestFieldViolation{
+									{
+										Field:       "vector dimension size",
+										Description: err.Error(),
+									},
+								},
+							},
+							&errdetails.ResourceInfo{
+								ResourceType: ngtResourceType + "/ngt.MultiInsert",
+								ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, name, ip),
+							})
+						return err
+					}(),
+				},
+			}
+		}(),
+		func() test {
+			req := genF32Req(vector.Gaussian, 100, f32VecDim)
+			for i := 0; i < 100; i += 2 {
+				req.Requests[i].Vector.Vector = genF32Vec(vector.Gaussian, 1, f32VecDim+1)[0]
+			}
+
+			return test{
+				name: "Equivalence Class Testing case 3.4: Fail to MultiInsert 100 vector with 50 vector with different dimension (vector type is float32)",
+				args: args{
+					ctx:  ctx,
+					reqs: req,
+				},
+				fields: fields{
+					name:    name,
+					ip:      ip,
+					svcCfg:  defaultF32SvcCfg,
+					svcOpts: defaultSvcOpts,
+				},
+				want: want{
+					err: func() error {
+						err := errors.ErrIncompatibleDimensionSize(len(req.Requests[0].Vector.Vector), intVecDim)
+						err = status.WrapWithInvalidArgument("MultiInsert API Incompatible Dimension Size detected",
+							err,
+							&errdetails.RequestInfo{
+								RequestId:   req.Requests[0].Vector.Id,
+								ServingData: errdetails.Serialize(req),
+							},
+							&errdetails.BadRequest{
+								FieldViolations: []*errdetails.BadRequestFieldViolation{
+									{
+										Field:       "vector dimension size",
+										Description: err.Error(),
+									},
+								},
+							},
+							&errdetails.ResourceInfo{
+								ResourceType: ngtResourceType + "/ngt.MultiInsert",
+								ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, name, ip),
+							})
+						return err
+					}(),
+				},
+			}
+		}(),
+		func() test {
+			req := genF32Req(vector.Gaussian, 100, f32VecDim+1)
+
+			return test{
+				name: "Equivalence Class Testing case 3.5: Fail to MultiInsert 100 vector with all vector with different dimension (vector type is uint8)",
+				args: args{
+					ctx:  ctx,
+					reqs: req,
+				},
+				fields: fields{
+					name:    name,
+					ip:      ip,
+					svcCfg:  defaultF32SvcCfg,
+					svcOpts: defaultSvcOpts,
+				},
+				want: want{
+					err: func() error {
+						err := errors.ErrIncompatibleDimensionSize(len(req.Requests[0].Vector.Vector), intVecDim)
+						err = status.WrapWithInvalidArgument("MultiInsert API Incompatible Dimension Size detected",
+							err,
+							&errdetails.RequestInfo{
+								RequestId:   req.Requests[0].Vector.Id,
+								ServingData: errdetails.Serialize(req),
+							},
+							&errdetails.BadRequest{
+								FieldViolations: []*errdetails.BadRequestFieldViolation{
+									{
+										Field:       "vector dimension size",
+										Description: err.Error(),
+									},
+								},
+							},
+							&errdetails.ResourceInfo{
+								ResourceType: ngtResourceType + "/ngt.MultiInsert",
+								ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, name, ip),
+							})
+						return err
+					}()},
+			}
+		}(),
+		func() test {
+			req := genF32Req(vector.Gaussian, 100, f32VecDim+1)
+
+			return test{
+				name: "Equivalence Class Testing case 3.6: Fail to MultiInsert 100 vector with all vector with different dimension (vector type is float32)",
+				args: args{
+					ctx:  ctx,
+					reqs: req,
+				},
+				fields: fields{
+					name:    name,
+					ip:      ip,
+					svcCfg:  defaultF32SvcCfg,
+					svcOpts: defaultSvcOpts,
+				},
+				want: want{
+					err: func() error {
+						err := errors.ErrIncompatibleDimensionSize(len(req.Requests[0].Vector.Vector), intVecDim)
+						err = status.WrapWithInvalidArgument("MultiInsert API Incompatible Dimension Size detected",
+							err,
+							&errdetails.RequestInfo{
+								RequestId:   req.Requests[0].Vector.Id,
+								ServingData: errdetails.Serialize(req),
+							},
+							&errdetails.BadRequest{
+								FieldViolations: []*errdetails.BadRequestFieldViolation{
+									{
+										Field:       "vector dimension size",
+										Description: err.Error(),
+									},
+								},
+							},
+							&errdetails.ResourceInfo{
+								ResourceType: ngtResourceType + "/ngt.MultiInsert",
+								ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, name, ip),
+							})
+						return err
+					}()},
+			}
+		}(),
 	}
 
 	for _, tc := range tests {
@@ -3813,11 +4337,18 @@ func Test_server_MultiInsert(t *testing.T) {
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
+
+			eg, _ := errgroup.New(ctx)
+			ngt, err := service.New(test.fields.svcCfg, append(test.fields.svcOpts, service.WithErrGroup(eg))...)
+			if err != nil {
+				tt.Errorf("failed to init ngt service, error = %v", err)
+			}
+
 			s := &server{
 				name:              test.fields.name,
 				ip:                test.fields.ip,
-				ngt:               test.fields.ngt,
-				eg:                test.fields.eg,
+				ngt:               ngt,
+				eg:                eg,
 				streamConcurrency: test.fields.streamConcurrency,
 			}
 
