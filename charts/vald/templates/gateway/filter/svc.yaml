@@ -46,4 +46,7 @@ spec:
   {{- if $gateway.externalTrafficPolicy }}
   externalTrafficPolicy: {{ $gateway.externalTrafficPolicy }}
   {{- end }}
+  {{- if $gateway.internalTrafficPolicy }}
+  internalTrafficPolicy: {{ $gateway.internalTrafficPolicy }}
+  {{- end }}
 {{- end }}

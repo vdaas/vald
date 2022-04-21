@@ -105,6 +105,7 @@ Configuration
 | namespaced | bool | `true` | if it is true, operator will behave as a namespace-scoped operator, if it is false, it will behave as a cluster-scoped operator. |
 | nodeSelector | object | `{}` | node labels for pod assignment |
 | podAnnotations | object | `{}` | pod annotations |
+| podSecurityContext | object | `{"fsGroup":65532,"fsGroupChangePolicy":"OnRootMismatch","runAsGroup":65532,"runAsNonRoot":true,"runAsUser":65532}` | security context for pod |
 | rbac.create | bool | `true` | required roles and rolebindings will be created |
 | rbac.name | string | `"vald-helm-operator"` | name of roles and rolebindings |
 | readinessProbe.enabled | bool | `true` | enable readiness probe. |
@@ -118,7 +119,8 @@ Configuration
 | readinessProbe.timeoutSeconds | int | `5` | liveness probe timeout seconds |
 | reconcilePeriod | string | `"1m"` | reconcile duration of operator |
 | replicas | int | `2` | number of replicas |
-| resources | object | `{}` | kubernetes resources of pod |
+| resources | object | `{"limits":{"cpu":"300m","memory":"300Mi"},"requests":{"cpu":"200m","memory":"200Mi"}}` | kubernetes resources of pod |
+| securityContext | object | `{"allowPrivilegeEscalation":false,"capabilities":{"drop":["ALL"]},"privileged":false,"readOnlyRootFilesystem":true,"runAsGroup":65532,"runAsNonRoot":true,"runAsUser":65532}` | security context for container |
 | service.annotations | object | `{}` | service annotations |
 | service.enabled | bool | `true` | service enabled |
 | service.externalTrafficPolicy | string | `""` | external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local |

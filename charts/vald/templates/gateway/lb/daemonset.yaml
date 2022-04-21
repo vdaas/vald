@@ -37,9 +37,10 @@ spec:
     matchLabels:
       app: {{ $gateway.name }}
   updateStrategy:
-    rollingUpdate:
-      maxUnavailable: {{ $gateway.rollingUpdate.maxUnavailable }}
     type: RollingUpdate
+    rollingUpdate:
+      maxSurge: {{ $gateway.rollingUpdate.maxSurge }}
+      maxUnavailable: {{ $gateway.rollingUpdate.maxUnavailable }}
   template:
     metadata:
       creationTimestamp: null

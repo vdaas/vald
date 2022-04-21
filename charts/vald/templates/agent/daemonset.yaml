@@ -37,9 +37,10 @@ spec:
     matchLabels:
       app: {{ $agent.name }}
   updateStrategy:
+    type: RollingUpdate
     rollingUpdate:
       maxUnavailable: {{ $agent.rollingUpdate.maxUnavailable }}
-    type: RollingUpdate
+      maxSurge: {{ $agent.rollingUpdate.maxSurge }}
   template:
     metadata:
       creationTimestamp: null
