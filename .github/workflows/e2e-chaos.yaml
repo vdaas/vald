@@ -74,7 +74,6 @@ jobs:
         uses: ./.github/actions/e2e-deploy-vald
         with:
           require_libhdf5: "true"
-          require_scylla: "true"
           helm_extra_options: ${{ steps.specify_container_versions.outputs.HELM_EXTRA_OPTIONS }}
           values: .github/helm/values/values-chaos.yaml
           wait_for_selector: app=vald-lb-gateway
@@ -166,7 +165,6 @@ jobs:
         uses: ./.github/actions/e2e-deploy-vald
         with:
           require_libhdf5: "true"
-          require_scylla: "true"
           helm_extra_options: ${{ steps.specify_container_versions.outputs.HELM_EXTRA_OPTIONS }}
           values: .github/helm/values/values-chaos.yaml
           wait_for_selector: app=vald-lb-gateway
@@ -258,7 +256,6 @@ jobs:
         uses: ./.github/actions/e2e-deploy-vald
         with:
           require_libhdf5: "true"
-          require_scylla: "true"
           helm_extra_options: ${{ steps.specify_container_versions.outputs.HELM_EXTRA_OPTIONS }}
           values: .github/helm/values/values-chaos.yaml
           wait_for_selector: app=vald-lb-gateway
