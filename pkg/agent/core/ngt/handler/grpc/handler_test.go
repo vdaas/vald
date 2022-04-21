@@ -3635,10 +3635,8 @@ func Test_server_MultiInsert(t *testing.T) {
 		reqs *payload.Insert_MultiRequest
 	}
 	type fields struct {
-		name string
-		ip   string
-		// ngt               service.NGT
-		//eg                errgroup.Group
+		name              string
+		ip                string
 		streamConcurrency int
 		svcCfg            *config.NGT
 		svcOpts           []service.Option
@@ -3964,7 +3962,7 @@ func Test_server_MultiInsert(t *testing.T) {
 				streamConcurrency: 0,
 			},
 			want: want{
-				// wantRes: &payload.Object_Locations{},
+				wantRes: nil,
 			},
 		},
 		{
@@ -3983,7 +3981,7 @@ func Test_server_MultiInsert(t *testing.T) {
 				streamConcurrency: 0,
 			},
 			want: want{
-				// wantRes: &payload.Object_Locations{},
+				wantRes: nil,
 			},
 		},
 		func() test {
