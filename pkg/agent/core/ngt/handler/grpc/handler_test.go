@@ -3666,27 +3666,22 @@ func Test_server_MultiInsert(t *testing.T) {
 		f32VecDim = 3                  // float32 vector dimension
 	)
 	var (
-		ip     = net.LoadLocalIP()        // agent ip address
-		intVec = []float32{1, 2, 3}       // int vector of the insert request
-		f32Vec = []float32{1.5, 2.3, 3.6} // float32 vector of the insert request
+		ip = net.LoadLocalIP() // agent ip address
 
 		// default NGT configuration for test
-		kvsdbCfg  = &config.KVSDB{}
-		vqueueCfg = &config.VQueue{}
-
 		defaultIntSvcCfg = &config.NGT{
 			Dimension:    intVecDim,
 			DistanceType: ngt.Angle.String(),
 			ObjectType:   ngt.Uint8.String(),
-			KVSDB:        kvsdbCfg,
-			VQueue:       vqueueCfg,
+			KVSDB:        &config.KVSDB{},
+			VQueue:       &config.VQueue{},
 		}
 		defaultF32SvcCfg = &config.NGT{
 			Dimension:    f32VecDim,
 			DistanceType: ngt.Angle.String(),
-			ObjectType:   ngt.Uint8.String(),
-			KVSDB:        kvsdbCfg,
-			VQueue:       vqueueCfg,
+			ObjectType:   ngt.Float.String(),
+			KVSDB:        &config.KVSDB{},
+			VQueue:       &config.VQueue{},
 		}
 		defaultSvcOpts = []service.Option{
 			service.WithEnableInMemoryMode(true),
@@ -3715,14 +3710,16 @@ func Test_server_MultiInsert(t *testing.T) {
 	genF32Req := func(dist vector.Distribution, num int, dim int) *payload.Insert_MultiRequest {
 		vecs := genF32Vec(dist, num, dim)
 
-		req := &payload.Insert_MultiRequest{}
+		req := &payload.Insert_MultiRequest{
+			Requests: make([]*payload.Insert_Request, num),
+		}
 		for i, vec := range vecs {
-			req.Requests = append(req.Requests, &payload.Insert_Request{
+			req.Requests[i] = &payload.Insert_Request{
 				Vector: &payload.Object_Vector{
 					Id:     "uuid-" + strconv.Itoa(i+1),
 					Vector: vec,
 				},
-			})
+			}
 		}
 
 		return req
@@ -3730,14 +3727,16 @@ func Test_server_MultiInsert(t *testing.T) {
 	genIntReq := func(dist vector.Distribution, num int, dim int) *payload.Insert_MultiRequest {
 		vecs := genIntVec(dist, num, dim)
 
-		req := &payload.Insert_MultiRequest{}
+		req := &payload.Insert_MultiRequest{
+			Requests: make([]*payload.Insert_Request, num),
+		}
 		for i, vec := range vecs {
-			req.Requests = append(req.Requests, &payload.Insert_Request{
+			req.Requests[i] = &payload.Insert_Request{
 				Vector: &payload.Object_Vector{
 					Id:     "uuid-" + strconv.Itoa(i+1),
 					Vector: vec,
 				},
-			})
+			}
 		}
 
 		return req
@@ -3863,17 +3862,8 @@ func Test_server_MultiInsert(t *testing.T) {
 		{
 			name: "Equivalence Class Testing case 1.1: Success to MultiInsert 1 vector (vector type is uint8)",
 			args: args{
-				ctx: ctx,
-				reqs: &payload.Insert_MultiRequest{
-					Requests: []*payload.Insert_Request{
-						{
-							Vector: &payload.Object_Vector{
-								Id:     id,
-								Vector: intVec,
-							},
-						},
-					},
-				},
+				ctx:  ctx,
+				reqs: genIntReq(vector.Gaussian, 1, intVecDim),
 			},
 			fields: fields{
 				name:              name,
@@ -3889,17 +3879,8 @@ func Test_server_MultiInsert(t *testing.T) {
 		{
 			name: "Equivalence Class Testing case 1.2: Success to MultiInsert 1 vector (vector type is float32)",
 			args: args{
-				ctx: ctx,
-				reqs: &payload.Insert_MultiRequest{
-					Requests: []*payload.Insert_Request{
-						{
-							Vector: &payload.Object_Vector{
-								Id:     id,
-								Vector: f32Vec,
-							},
-						},
-					},
-				},
+				ctx:  ctx,
+				reqs: genF32Req(vector.Gaussian, 1, f32VecDim),
 			},
 			fields: fields{
 				name:              name,
@@ -4111,6 +4092,7 @@ func Test_server_MultiInsert(t *testing.T) {
 		func() test {
 			req := genF32Req(vector.Gaussian, 100, f32VecDim)
 			req.Requests[99].Vector.Vector = genF32Vec(vector.Gaussian, 1, f32VecDim+1)[0]
+
 			return test{
 				name: "Equivalence Class Testing case 3.2: Fail to MultiInsert 100 vector with 1 vector with different dimension (vector type is float32)",
 				args: args{
@@ -4275,7 +4257,8 @@ func Test_server_MultiInsert(t *testing.T) {
 								ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, name, ip),
 							})
 						return err
-					}()},
+					}(),
+				},
 			}
 		}(),
 		func() test {
@@ -4315,7 +4298,8 @@ func Test_server_MultiInsert(t *testing.T) {
 								ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, name, ip),
 							})
 						return err
-					}()},
+					}(),
+				},
 			}
 		}(),
 	}
