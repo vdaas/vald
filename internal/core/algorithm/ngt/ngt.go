@@ -156,7 +156,7 @@ const (
 	// -------------------------------------------------------------
 	// dimension constraints
 	// -------------------------------------------------------------.
-	ngtVectorDimensionSizeLimit = 1 << 16
+	ngtVectorDimensionSizeLimit = 1<<32 - 1
 	minimumDimensionSize        = algorithm.MinimumVectorDimensionSize
 	// -------------------------------------------------------------.
 )

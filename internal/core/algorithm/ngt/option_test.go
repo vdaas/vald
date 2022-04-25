@@ -20,6 +20,7 @@ package ngt
 import (
 	"math"
 	"reflect"
+	"strconv"
 	"testing"
 
 	"github.com/vdaas/vald/internal/errors"
@@ -309,6 +310,7 @@ func TestWithDimension(t *testing.T) {
 		}
 		return nil
 	}
+	const maxDim = 1<<32 - 1
 
 	tests := []test{
 		{
@@ -329,13 +331,13 @@ func TestWithDimension(t *testing.T) {
 			},
 		},
 		{
-			name: "set success when the size is 0",
+			name: "return error when the size is 0",
 			args: args{
 				size: 0,
 			},
 			want: want{
 				obj: &T{},
-				err: errors.New("invalid critical option, name: dimension, val: 0: dimension size 0 is invalid, the supporting dimension size must be between 2 ~ 65536"),
+				err: errors.New("invalid critical option, name: dimension, val: 0: dimension size 0 is invalid, the supporting dimension size must be between 2 ~ " + strconv.Itoa(maxDim)),
 			},
 		},
 		{
@@ -348,9 +350,9 @@ func TestWithDimension(t *testing.T) {
 			},
 		},
 		{
-			name: "set success when the size is 65536",
+			name: "set success when the size is maxDim",
 			args: args{
-				size: 65536,
+				size: 1<<32 - 1,
 			},
 			want: want{
 				obj: &T{},
@@ -363,7 +365,7 @@ func TestWithDimension(t *testing.T) {
 			},
 			want: want{
 				obj: &T{},
-				err: errors.New("invalid critical option, name: dimension, val: 1: dimension size 1 is invalid, the supporting dimension size must be between 2 ~ 65536"),
+				err: errors.New("invalid critical option, name: dimension, val: 1: dimension size 1 is invalid, the supporting dimension size must be between 2 ~ " + strconv.Itoa(maxDim)),
 			},
 		},
 		{
@@ -373,27 +375,34 @@ func TestWithDimension(t *testing.T) {
 			},
 			want: want{
 				obj: &T{},
-				err: errors.New("invalid critical option, name: dimension, val: -100: dimension size -100 is invalid, the supporting dimension size must be between 2 ~ 65536"),
+				err: errors.New("invalid critical option, name: dimension, val: -100: dimension size -100 is invalid, the supporting dimension size must be between 2 ~ " + strconv.Itoa(maxDim)),
 			},
 		},
 		{
-			name: "return error when the size is 65537",
+			name: "return error when the size is larger than maxDim",
 			args: args{
-				size: 65537,
+				size: 1 << 32,
 			},
 			want: want{
 				obj: &T{},
-				err: errors.New("invalid critical option, name: dimension, val: 65537: dimension size 65537 is invalid, the supporting dimension size must be between 2 ~ 65536"),
+				err: errors.New("invalid critical option, name: dimension, val: 4294967296: dimension size 4294967296 is invalid, the supporting dimension size must be between 2 ~ " + strconv.Itoa(maxDim)),
 			},
 		},
 		{
-			name: "return error when the size is MaxInt32",
+			name: "set success when the size is MaxInt32",
 			args: args{
 				size: math.MaxInt32,
 			},
 			want: want{
-				obj: &T{},
-				err: errors.New("invalid critical option, name: dimension, val: 2147483647: dimension size 2147483647 is invalid, the supporting dimension size must be between 2 ~ 65536"),
+				obj: func() *T {
+					t := &T{
+						dimension: math.MaxInt32,
+					}
+					if err := t.setup(); err != nil {
+						return nil
+					}
+					return t
+				}(),
 			},
 		},
 		{
@@ -403,7 +412,7 @@ func TestWithDimension(t *testing.T) {
 			},
 			want: want{
 				obj: &T{},
-				err: errors.New("invalid critical option, name: dimension, val: -2147483648: dimension size -2147483648 is invalid, the supporting dimension size must be between 2 ~ 65536"),
+				err: errors.New("invalid critical option, name: dimension, val: -2147483648: dimension size -2147483648 is invalid, the supporting dimension size must be between 2 ~ " + strconv.Itoa(maxDim)),
 			},
 		},
 	}
