@@ -425,6 +425,16 @@ go/deps:
 	GOPRIVATE=$(GOPRIVATE) go mod tidy
 	go get -u all 2>/dev/null || true
 
+.PHONY: go/example/deps
+## install Go package dependencies
+go/example/deps:
+	rm -rf vendor \
+		$(GOCACHE) \
+	        ./example/client/go.mod \
+	        ./example/client/go.sum
+	cp ./example/client/go.mod.default ./example/client/go.mod
+	cd ./example/client && GOPRIVATE=$(GOPRIVATE) go mod tidy && cd -
+
 .PHONY: version
 ## print vald version
 version: \
