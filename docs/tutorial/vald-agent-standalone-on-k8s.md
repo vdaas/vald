@@ -367,6 +367,17 @@ This chapter uses [NGT](https://github.com/yahoojapan/ngt) as Vald Agent to perf
             </details>
     </details>
 
+    <div class="caution">
+    It requires you to run `CreateIndex()` after `Insert()` without waiting for auto indexing in your client code.
+    You can wait for finishing auto createIndex function, but it sometimes takes a time.
+    When finish indexing completely, the backup files (e.g., ngt-meta.kvsdb) can be confirmed in your mount directory.
+    </div>
+      
+    <div class="warning">
+    If you use Go(v1.16~) and catch the error like `missing go.sum entry to add it` when running `go run main.go`, please run `go mod tidy` and retry.
+    This error comes from Go Command Changes of Go 1.16 Release Notes.(Please refer to https://golang.org/doc/go1.16#go-command for more details).
+    </div>
+
 ## Cleanup
 
 In the last, you can remove all deployed Vald pods by executing the below command.

@@ -181,9 +181,10 @@ This chapter will use NGT for the core engine of Vald Agent.
     go run main.go
     ```
 
-    <div class="notice">
-    We recommend you to run `CreateIndex()` after `Insert()` without waiting for auto indexing.
-    When finish indexing completely, the backup files (metadata.json and ngt-meta.kvsdb) can be confirmed in your mount directory.
+    <div class="caution">
+    It requires you to run `CreateIndex()` after `Insert()` without waiting for auto indexing in your client code.
+    You can wait for finishing auto createIndex function, but it sometimes takes a time.
+    When finish indexing completely, the backup files (e.g., ngt-meta.kvsdb) can be confirmed in your mount directory.
     </div>
       
     <div class="warning">
