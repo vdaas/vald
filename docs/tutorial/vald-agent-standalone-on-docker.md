@@ -158,7 +158,9 @@ This chapter will use NGT for the core engine of Vald Agent.
     ```bash
     # move to the working directory
     cd example/client/agent
-    
+    ```
+
+    ```bash
     # download fashion-mnist testing dataset
     wget http://ann-benchmarks.com/fashion-mnist-784-euclidean.hdf5
     ```
@@ -178,13 +180,16 @@ This chapter will use NGT for the core engine of Vald Agent.
     # run example
     go run main.go
     ```
-    Note:
-      - We recommend you to run `CreateIndex()` after `Insert()` without waiting for auto indexing.
-      - When finish indexing completely, the backup files (metadata.json and ngt-meta.kvsdb) can be confirmed in your mount directory.
 
-    Warning:
-      - If you use Go(v1.16~) and catch the error like `missing go.sum entry to add it` when running `go run main.go`, please run `go mod tidy` and retry.
-          - This error comes from [Go Command Changes of Go 1.16 Release Notes](https://golang.org/doc/go1.16#go-command).
+    <div class="caution">
+    It would be best to run `CreateIndex()` after `Insert()` without waiting for auto-indexing in your client code, even you can wait for the finishing auto createIndex function, which sometimes takes a long time.
+    The backup files (e.g., ngt-meta.kvsdb) will be in your mount directory when vald-agent-ngt finishes indexing.
+    </div>
+      
+    <div class="warning">
+    If you use Go(v1.16~) and catch the error like `missing go.sum entry to add it` when running `go run main.go`, please run `go mod tidy` and retry.
+    This error comes from Go Command Changes of Go 1.16 Release Notes.(Please refer to https://golang.org/doc/go1.16#go-command for more details).
+    </div>
 
 1. Clean Up
 

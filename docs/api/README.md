@@ -18,6 +18,8 @@ The APIs overview tables is here:
 | Remove Service | Remove the exists vector(s) from the Vald Agent Pods.                                                                                             | [Remove](../api/remove.md#remove-rpc)<br>[StreamRemove](../api/remove.md#streamremove-rpc)<br>[MultiRemove](../api/remove.md#multiremove-rpc)                                                                                                                                                                                                                                                  | [Vald Remove APIs](../api/remove.md) |
 | Object Service | Get information of vector(s) indexed into the Vald Agent Pods.                                                                                    | [Exists](../api/object.md#exists-rpc)<br>[GetObject](../api/object.md#getobject-rpc)<br>[StreamGetObject](../api/object.md#streamgetobject-rpc)                                                                                                                                                                                                                                                | [Vald Object APIs](../api/object.md) |
 
+<br>
+<br>
 <div class="notice">
 linear search services are available in v1.4.0 and later version.
 </div>

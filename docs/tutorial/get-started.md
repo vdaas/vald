@@ -70,7 +70,7 @@ Please refer to on yourself.
 The way to deploy Kubernetes Metrics Service is here:
 
 ```bash
-kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml && \
 kubectl wait -n kube-system --for=condition=ready pod -l k8s-app=metrics-server --timeout=600s
 ```
 
@@ -82,7 +82,7 @@ In this tutorial, you will deploy the basic configuration of Vald that is consis
 1. Clone the repository
 
    ```bash
-   git clone https://github.com/vdaas/vald.git
+   git clone https://github.com/vdaas/vald.git && \
    cd vald
    ```
 
