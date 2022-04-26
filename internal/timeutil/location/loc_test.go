@@ -34,23 +34,21 @@ func TestSet(t *testing.T) {
 			loc:  locationUTC,
 			checkFunc: func(got *time.Location) error {
 				if !reflect.DeepEqual(got, time.UTC) {
-					return errors.Errorf("not equals. want: %v, but got: %v", time.UTC, got)
+					return errors.Errorf("not equals. want: %#v, but got: %#v", time.UTC, got)
 				}
 				return nil
 			},
 		},
-
 		{
 			name: "returns UTC location when loc is Utc",
 			loc:  "UTc",
 			checkFunc: func(got *time.Location) error {
 				if !reflect.DeepEqual(got, time.UTC) {
-					return errors.Errorf("not equals. want: %v, but got: %v", time.UTC, got)
+					return errors.Errorf("not equals. want: %#v, but got: %#v", time.UTC, got)
 				}
 				return nil
 			},
 		},
-
 		{
 			name: "returns GMT location when loc is GMT",
 			loc:  locationGMT,
@@ -58,12 +56,11 @@ func TestSet(t *testing.T) {
 				if got == nil {
 					return errors.New("got is nil")
 				} else if got, want := got.String(), locationGMT; got != want {
-					return errors.Errorf("String() not equals. want: %v, but got: %v", want, got)
+					return errors.Errorf("String() not equals. want: %#v, but got: %#v", want, got)
 				}
 				return nil
 			},
 		},
-
 		{
 			name: "returns GMT location when loc is Gmt",
 			loc:  "Gmt",
@@ -71,12 +68,11 @@ func TestSet(t *testing.T) {
 				if got == nil {
 					return errors.New("got is nil")
 				} else if got, want := got.String(), locationGMT; got != want {
-					return errors.Errorf("String() not equals. want: %v, but got: %v", want, got)
+					return errors.Errorf("String() not equals. want: %#v, but got: %#v", want, got)
 				}
 				return nil
 			},
 		},
-
 		{
 			name: "returns JST location when loc is JST",
 			loc:  locationJST,
@@ -84,12 +80,11 @@ func TestSet(t *testing.T) {
 				if got == nil {
 					return errors.New("got is nil")
 				} else if got, want := got.String(), locationJST; got != want {
-					return errors.Errorf("String() not equals. want: %v, but got: %v", want, got)
+					return errors.Errorf("String() not equals. want: %#v, but got: %#v", want, got)
 				}
 				return nil
 			},
 		},
-
 		{
 			name: "returns JST location when loc is Jst",
 			loc:  "Jst",
@@ -97,12 +92,11 @@ func TestSet(t *testing.T) {
 				if got == nil {
 					return errors.New("got is nil")
 				} else if got, want := got.String(), locationJST; got != want {
-					return errors.Errorf("String() not equals. want: %v, but got: %v", want, got)
+					return errors.Errorf("String() not equals. want: %#v, but got: %#v", want, got)
 				}
 				return nil
 			},
 		},
-
 		{
 			name: "returns JST location when loc is Asia/Tokyo",
 			loc:  locationTokyo,
@@ -110,12 +104,11 @@ func TestSet(t *testing.T) {
 				if got == nil {
 					return errors.New("got is nil")
 				} else if got, want := got.String(), locationJST; got != want {
-					return errors.Errorf("String() not equals. want: %v, but got: %v", want, got)
+					return errors.Errorf("String() not equals. want: %#v, but got: %#v", want, got)
 				}
 				return nil
 			},
 		},
-
 		{
 			name: "returns JST location when loc is ASIA/Tokyo",
 			loc:  "ASIA/Tokyo",
@@ -123,12 +116,11 @@ func TestSet(t *testing.T) {
 				if got == nil {
 					return errors.New("got is nil")
 				} else if got, want := got.String(), locationJST; got != want {
-					return errors.Errorf("String() not equals. want: %v, but got: %v", want, got)
+					return errors.Errorf("String() not equals. want: %#v, but got: %#v", want, got)
 				}
 				return nil
 			},
 		},
-
 		{
 			name: "returns invalid location when loc is invalid",
 			loc:  "invalid",
@@ -136,7 +128,7 @@ func TestSet(t *testing.T) {
 				if got == nil {
 					return errors.New("got is nil")
 				} else if got, want := got.String(), "invalid"; got != want {
-					return errors.Errorf("String() not equals. want: %v, but got: %v", want, got)
+					return errors.Errorf("String() not equals. want: %#v, but got: %#v", want, got)
 				}
 				return nil
 			},
@@ -173,7 +165,7 @@ func TestGMT(t *testing.T) {
 			if got == nil {
 				t.Error("got is nil")
 			} else if got, want := got.String(), locationGMT; got != want {
-				t.Errorf("String() not equals. want: %v, but got: %v", want, got)
+				t.Errorf("String() not equals. want: %#v, but got: %#v", want, got)
 			}
 		})
 	}
@@ -192,7 +184,7 @@ func TestUTC(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got := UTC()
 			if !reflect.DeepEqual(got, time.UTC) {
-				t.Errorf("not equals. want: %v, but got: %v", time.UTC, got)
+				t.Errorf("not equals. want: %#v, but got: %#v", time.UTC, got)
 			}
 		})
 	}
@@ -213,7 +205,7 @@ func TestJST(t *testing.T) {
 			if got == nil {
 				t.Error("got is nil")
 			} else if got, want := got.String(), locationJST; got != want {
-				t.Errorf("String() not equals. want: %v, but got: %v", want, got)
+				t.Errorf("String() not equals. want: %#v, but got: %#v", want, got)
 			}
 		})
 	}
@@ -240,7 +232,7 @@ func Test_location(t *testing.T) {
 			},
 			checkFunc: func(got *time.Location) error {
 				if !reflect.DeepEqual(got, time.UTC) {
-					return errors.Errorf("not equals. want: %v, but got: %v", time.UTC, got)
+					return errors.Errorf("not equals. want: %#v, but got: %#v", time.UTC, got)
 				}
 				return nil
 			},
@@ -256,7 +248,7 @@ func Test_location(t *testing.T) {
 				if got == nil {
 					return errors.New("got is nil")
 				} else if got, want := got.String(), "invalid"; got != want {
-					return errors.Errorf("String() not equals. want: %v, but got: %v", want, got)
+					return errors.Errorf("String() not equals. want: %#v, but got: %#v", want, got)
 				}
 				return nil
 			},
@@ -270,7 +262,7 @@ func Test_location(t *testing.T) {
 			},
 			checkFunc: func(got *time.Location) error {
 				if !reflect.DeepEqual(got, time.UTC) {
-					return errors.Errorf("not equals. want: %v, but got: %v", time.UTC, got)
+					return errors.Errorf("not equals. want: %#v, but got: %#v", time.UTC, got)
 				}
 				return nil
 			},

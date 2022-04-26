@@ -48,10 +48,11 @@ func Set(loc string) {
 		local = location(loc, 0)
 	}
 
-	old := unsafe.Pointer(&time.Local)
-	new := unsafe.Pointer(&local)
-	for !atomic.CompareAndSwapPointer(&old, old, new) {
-		old = unsafe.Pointer(&time.Local)
+	new := atomic.LoadPointer((*unsafe.Pointer)(unsafe.Pointer(&local)))
+	old := atomic.LoadPointer((*unsafe.Pointer)(unsafe.Pointer(&time.Local)))
+
+	for !atomic.CompareAndSwapPointer((*unsafe.Pointer)(unsafe.Pointer(&time.Local)), old, new) {
+		old = atomic.LoadPointer((*unsafe.Pointer)(unsafe.Pointer(&time.Local)))
 	}
 }
 
