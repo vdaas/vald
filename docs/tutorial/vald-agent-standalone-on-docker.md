@@ -182,9 +182,8 @@ This chapter will use NGT for the core engine of Vald Agent.
     ```
 
     <div class="caution">
-    It requires you to run `CreateIndex()` after `Insert()` without waiting for auto indexing in your client code.
-    You can wait for finishing auto createIndex function, but it sometimes takes a time.
-    When finish indexing completely, the backup files (e.g., ngt-meta.kvsdb) can be confirmed in your mount directory.
+    It would be best to run `CreateIndex()` after `Insert()` without waiting for auto-indexing in your client code, even you can wait for the finishing auto createIndex function, which sometimes takes a long time.
+    The backup files (e.g., ngt-meta.kvsdb) will be in your mount directory when vald-agent-ngt finishes indexing.
     </div>
       
     <div class="warning">
