@@ -1128,12 +1128,12 @@ gateway:
       - type: wait-for
         name: wait-for-discoverer
         target: discoverer
-        image: busybox
+        image: busybox:stable
         sleepDuration: 2
       - type: wait-for
         name: wait-for-agent
         target: agent
-        image: busybox
+        image: busybox:stable
         sleepDuration: 2
     # @schema {"name": "gateway.lb.env", "type": "array", "items": {"type": "object"}, "anchor": "env"}
     # gateway.lb.env -- environment variables
@@ -1397,7 +1397,7 @@ gateway:
       - type: wait-for
         name: wait-for-gateway-lb
         target: gateway-lb
-        image: busybox
+        image: busybox:stable
         sleepDuration: 2
     # @schema {"name": "gateway.filter.env", "type": "array", "items": {"type": "object"}, "anchor": "env"}
     # gateway.filter.env -- environment variables
@@ -2618,12 +2618,12 @@ manager:
       - type: wait-for
         name: wait-for-agent
         target: agent
-        image: busybox
+        image: busybox:stable
         sleepDuration: 2
       - type: wait-for
         name: wait-for-discoverer
         target: discoverer
-        image: busybox
+        image: busybox:stable
         sleepDuration: 2
     # @schema {"name": "manager.index.env", "alias": "env"}
     # manager.index.env -- environment variables

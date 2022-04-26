@@ -20,9 +20,7 @@ k8s/manifest/clean:
 	    k8s/agent \
 	    k8s/discoverer \
 	    k8s/gateway \
-	    k8s/manager \
-	    k8s/meta \
-	    k8s/jobs
+	    k8s/manager
 
 .PHONY: k8s/manifest/update
 ## update k8s manifests using helm templates
@@ -38,7 +36,6 @@ k8s/manifest/update: \
 	mv $(TEMP_DIR)/vald/templates/discoverer k8s/discoverer
 	mv $(TEMP_DIR)/vald/templates/gateway/lb k8s/gateway/lb
 	mv $(TEMP_DIR)/vald/templates/manager/index k8s/manager/index
-	mv $(TEMP_DIR)/vald/templates/jobs k8s/jobs
 	rm -rf $(TEMP_DIR)
 
 .PHONY: k8s/manifest/helm-operator/clean
