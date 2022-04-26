@@ -1,5 +1,97 @@
 # CHANGELOG
 
+## v1.5.2
+
+### Docker images
+
+<table>
+  <tr>
+    <th>component</th>
+    <th>Docker pull</th>
+  </tr>
+  <tr>
+    <td>Agent NGT</td>
+    <td>
+      <code>docker pull vdaas/vald-agent-ngt:v1.5.2</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-agent-ngt:v1.5.2</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Agent sidecar</td>
+    <td>
+      <code>docker pull vdaas/vald-agent-sidecar:v1.5.2</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-agent-sidecar:v1.5.2</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Discoverers</td>
+    <td>
+      <code>docker pull vdaas/vald-discoverer-k8s:v1.5.2</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-discoverer-k8s:v1.5.2</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Gateways</td>
+    <td>
+      <code>docker pull vdaas/vald-lb-gateway:v1.5.2</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-lb-gateway:v1.5.2</code><br/>
+      <code>docker pull vdaas/vald-filter-gateway:v1.5.2</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-filter-gateway:v1.5.2</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Index Manager</td>
+    <td>
+      <code>docker pull vdaas/vald-manager-index:v1.5.2</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-manager-index:v1.5.2</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Helm Operator</td>
+    <td>
+      <code>docker pull vdaas/vald-helm-operator:v1.5.2</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-helm-operator:v1.5.2</code>
+    </td>
+  </tr>
+</table>
+
+### Documents
+- [GoDoc](https://pkg.go.dev/github.com/vdaas/vald@v1.5.2)
+- [Helm Chart Reference](https://github.com/vdaas/vald/blob/v1.5.2/charts/vald/README.md)
+- [Helm Operator Chart Reference](https://github.com/vdaas/vald/blob/v1.5.2/charts/vald-helm-operator/README.md)
+
+### Changes
+:arrow_up: update dependencies
+- update libs version (#1636)
+- update libs version (#1632)
+
+:sparkles: feature
+- use ReadWriteOncePod instead of ReadWriteOnce and remove initializer (#1627)
+
+:recycle: refactor
+- refactor: improve memory high usage of vald-agent (#1617)
+
+:lock: security
+- security: fix vulnerability problem of helm operator (#1625)
+- [Security] Fix vulnerability problem of helm operator (#1611)
+- security fix Vulnerability due to usage of old golang.org/x:net in example depentency (#1641)
+
+:green_heart: ci
+- ci: Fix CodeQL warning (#1629)
+- fix fails actions job & update version (#1620)
+- [CI] Allow e2e deploy action jobs to run in parallel (#1616)
+
+:white_check_mark: test
+- fix superfluous response.WriteHeader call (#1631)
+- implement search-by-id pkg test (#1624)
+
+:memo: document
+- document: update formats (#1634)
+- docs: add dotdc as a contributor for doc (#1623)
+- doc: fixed architecture link in get-started.md (#1619)
+- add FAQ and Troubleshooting document (#1591)
+
+
 ## v1.5.1
 
 ### Docker images
