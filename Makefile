@@ -412,17 +412,25 @@ go/deps:
 		/go/pkg \
 		$(GOCACHE) \
 		./go.sum \
-		./go.mod
+		./go.mod \
+	        ./example/client/go.mod \
+	        ./example/client/go.sum
 	cp ./hack/go.mod.default ./go.mod
+	cp ./example/client/go.mod.default ./example/client/go.mod
 	GOPRIVATE=$(GOPRIVATE) go mod tidy
+	cd ./example/client && GOPRIVATE=$(GOPRIVATE) go mod tidy && cd -
 	go clean -cache -modcache -testcache -i -r
 	rm -rf vendor \
 		/go/pkg \
 		$(GOCACHE) \
 		./go.sum \
-		./go.mod
+		./go.mod \
+	        ./example/client/go.mod \
+	        ./example/client/go.sum
 	cp ./hack/go.mod.default ./go.mod
+	cp ./example/client/go.mod.default ./example/client/go.mod
 	GOPRIVATE=$(GOPRIVATE) go mod tidy
+	cd ./example/client && GOPRIVATE=$(GOPRIVATE) go mod tidy && cd -
 	go get -u all 2>/dev/null || true
 
 .PHONY: version
