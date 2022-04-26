@@ -16,7 +16,11 @@
 package location
 
 import (
+	"sync/atomic"
 	"time"
+	"unsafe"
+
+	"github.com/vdaas/vald/internal/strings"
 )
 
 const (
@@ -31,6 +35,27 @@ var (
 	utc = location(locationUTC, 0)
 	jst = location(locationJST, 9*60*60)
 )
+
+func Set(loc string) {
+	var local *time.Location
+
+	switch strings.ToLower(loc) {
+	case strings.ToLower(locationUTC):
+		local = UTC()
+	case strings.ToLower(locationGMT):
+		local = GMT()
+	case strings.ToLower(locationJST), strings.ToLower(locationTokyo):
+		local = JST()
+	default:
+		local = location(loc, 0)
+	}
+
+	old := unsafe.Pointer(&time.Local)
+	new := unsafe.Pointer(&local)
+	for !atomic.CompareAndSwapPointer(&old, old, new) {
+		old = unsafe.Pointer(&time.Local)
+	}
+}
 
 func GMT() *time.Location {
 	return gmt
