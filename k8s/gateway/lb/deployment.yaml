@@ -58,7 +58,7 @@ spec:
     spec:
       initContainers:
         - name: wait-for-discoverer
-          image: busybox
+          image: busybox:stable
           command:
             - /bin/sh
             - -e
@@ -69,7 +69,7 @@ spec:
                 sleep 2;
               done
         - name: wait-for-agent
-          image: busybox
+          image: busybox:stable
           command:
             - /bin/sh
             - -e
