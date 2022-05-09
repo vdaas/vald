@@ -332,81 +332,314 @@ func Test_server_newLocation(t *testing.T) {
 
 func Test_server_Exists(t *testing.T) {
 	t.Parallel()
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
 	type args struct {
-		ctx context.Context
-		uid *payload.Object_ID
-	}
-	type fields struct {
-		name              string
-		ip                string
-		ngt               service.NGT
-		eg                errgroup.Group
-		streamConcurrency int
+		ctx      context.Context
+		indexId  string
+		searchId string
 	}
 	type want struct {
-		wantRes *payload.Object_ID
-		err     error
+		code codes.Code
 	}
 	type test struct {
 		name       string
 		args       args
-		fields     fields
 		want       want
 		checkFunc  func(want, *payload.Object_ID, error) error
-		beforeFunc func(args)
+		beforeFunc func(args) (Server, error)
 		afterFunc  func(args)
 	}
 	defaultCheckFunc := func(w want, gotRes *payload.Object_ID, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-		}
-		if !reflect.DeepEqual(gotRes, w.wantRes) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
+		if err != nil {
+			st, ok := status.FromError(err)
+			if !ok {
+				errors.Errorf("got error cannot convert to Status: \"%#v\"", err)
+			}
+			if st.Code() != w.code {
+				return errors.Errorf("got code: \"%#v\",\n\t\t\t\twant code: \"%#v\"", st.Code(), w.code)
+			}
 		}
 		return nil
 	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx: nil,
-		           uid: nil,
-		       },
-		       fields: fields {
-		           name: "",
-		           ip: "",
-		           ngt: nil,
-		           eg: nil,
-		           streamConcurrency: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ctx: nil,
-		           uid: nil,
-		           },
-		           fields: fields {
-		           name: "",
-		           ip: "",
-		           ngt: nil,
-		           eg: nil,
-		           streamConcurrency: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+	const (
+		insertNum = 1000
+	)
+
+	defaultNgtConfig := &config.NGT{
+		Dimension:        128,
+		DistanceType:     ngt.L2.String(),
+		ObjectType:       ngt.Float.String(),
+		CreationEdgeSize: 60,
+		SearchEdgeSize:   20,
+		KVSDB: &config.KVSDB{
+			Concurrency: 10,
+		},
+		VQueue: &config.VQueue{
+			InsertBufferPoolSize: 1000,
+			DeleteBufferPoolSize: 1000,
+		},
+	}
+	defaultBeforeFunc := func(a args) (Server, error) {
+		eg, ctx := errgroup.New(a.ctx)
+		ngt, err := service.New(defaultNgtConfig, service.WithErrGroup(eg), service.WithEnableInMemoryMode(true))
+		if err != nil {
+			return nil, err
+		}
+
+		s, err := New(WithErrGroup(eg), WithNGT(ngt))
+		if err != nil {
+			return nil, err
+		}
+
+		reqs := make([]*payload.Insert_Request, insertNum)
+		for i, v := range vector.GaussianDistributedFloat32VectorGenerator(insertNum, defaultNgtConfig.Dimension) {
+			reqs[i] = &payload.Insert_Request{
+				Vector: &payload.Object_Vector{
+					Id:     strconv.Itoa(i),
+					Vector: v,
+				},
+				Config: &payload.Insert_Config{
+					SkipStrictExistCheck: true,
+				},
+			}
+		}
+		reqs[0].Vector.Id = a.indexId
+		if _, err := s.MultiInsert(ctx, &payload.Insert_MultiRequest{Requests: reqs}); err != nil {
+			return nil, err
+		}
+		if _, err := s.CreateIndex(ctx, &payload.Control_CreateIndexRequest{PoolSize: 100}); err != nil {
+			return nil, err
+		}
+		return s, nil
+	}
+
+	utf8ToSjis := func(s string) string {
+		b, _ := ioutil.ReadAll(transform.NewReader(strings.NewReader(s), japanese.ShiftJIS.NewEncoder()))
+		return string(b)
+	}
+
+	utf8ToEucjp := func(s string) string {
+		b, _ := ioutil.ReadAll(transform.NewReader(strings.NewReader(s), japanese.EUCJP.NewEncoder()))
+		return string(b)
+	}
+	/*
+		Exists test cases (focus on ID(string), only test float32):
+		- Equivalence Class Testing ( 1000 vectors inserted before a search )
+			- case 1.1: success exists vector
+			- case 2.1: fail exists with non-existent ID
+		- Boundary Value Testing ( 1000 vectors inserted before a search )
+			- case 1.1: fail exists with ""
+			- case 2.1: success exists with ^@
+			- case 2.2: success exists with ^I
+			- case 2.3: success exists with ^J
+			- case 2.4: success exists with ^M
+			- case 2.5: success exists with ^[
+			- case 2.6: success exists with ^?
+			- case 3.1: success exists with utf-8 ID from utf-8 index
+			- case 3.2: fail exists with utf-8 ID from s-jis index
+			- case 3.3: fail exists with utf-8 ID from euc-jp index
+			- case 3.4: fail exists with s-jis ID from utf-8 index
+			- case 3.5: success exists with s-jis ID from s-jis index
+			- case 3.6: fail exists with s-jis ID from euc-jp index
+			- case 3.4: fail exists with euc-jp ID from utf-8 index
+			- case 3.5: fail exists with euc-jp ID from s-jis index
+			- case 3.6: success exists with euc-jp ID from euc-jp index
+			- case 4.1: success exists with 😀
+		- Decision Table Testing
+		    - NONE
+	*/
+	tests := []test{
+		{
+			name: "Equivalence Class Testing case 1.1: success exists vector",
+			args: args{
+				ctx:      ctx,
+				indexId:  "test",
+				searchId: "test",
+			},
+			want: want{},
+		},
+		{
+			name: "Equivalence Class Testing case 2.1: fail exists with non-existent ID",
+			args: args{
+				ctx:      ctx,
+				indexId:  "test",
+				searchId: "non-existent",
+			},
+			want: want{
+				code: codes.NotFound,
+			},
+		},
+		{
+			name: "Boundary Value Testing case 1.1: fail exists with \"\"",
+			args: args{
+				ctx:      ctx,
+				indexId:  "test",
+				searchId: "",
+			},
+			want: want{
+				code: codes.NotFound,
+			},
+		},
+		{
+			name: "Boundary Value Testing case 2.1: success exists with ^@",
+			args: args{
+				ctx:      ctx,
+				indexId:  string([]byte{0}),
+				searchId: string([]byte{0}),
+			},
+			want: want{},
+		},
+		{
+			name: "Boundary Value Testing case 2.2: success exists with ^I",
+			args: args{
+				ctx:      ctx,
+				indexId:  "\t",
+				searchId: "\t",
+			},
+			want: want{},
+		},
+		{
+			name: "Boundary Value Testing case 2.3: success exists with ^J",
+			args: args{
+				ctx:      ctx,
+				indexId:  "\n",
+				searchId: "\n",
+			},
+			want: want{},
+		},
+		{
+			name: "Boundary Value Testing case 2.4: success exists with ^M",
+			args: args{
+				ctx:      ctx,
+				indexId:  "\r",
+				searchId: "\r",
+			},
+			want: want{},
+		},
+		{
+			name: "Boundary Value Testing case 2.5: success exists with ^[",
+			args: args{
+				ctx:      ctx,
+				indexId:  string([]byte{27}),
+				searchId: string([]byte{27}),
+			},
+			want: want{},
+		},
+		{
+			name: "Boundary Value Testing case 2.6: success exists with ^?",
+			args: args{
+				ctx:      ctx,
+				indexId:  string([]byte{127}),
+				searchId: string([]byte{127}),
+			},
+			want: want{},
+		},
+		{
+			name: "Boundary Value Testing case 3.1: success exists with utf-8 ID from utf-8 index",
+			args: args{
+				ctx:      ctx,
+				indexId:  "こんにちは",
+				searchId: "こんにちは",
+			},
+			want: want{},
+		},
+		{
+			name: "Boundary Value Testing case 3.2: fail exists with utf-8 ID from s-jis index",
+			args: args{
+				ctx:      ctx,
+				indexId:  utf8ToSjis("こんにちは"),
+				searchId: "こんにちは",
+			},
+			want: want{
+				code: codes.NotFound,
+			},
+		},
+		{
+			name: "Boundary Value Testing case 3.3: fail exists with utf-8 ID from euc-jp index",
+			args: args{
+				ctx:      ctx,
+				indexId:  utf8ToEucjp("こんにちは"),
+				searchId: "こんにちは",
+			},
+			want: want{
+				code: codes.NotFound,
+			},
+		},
+		{
+			name: "Boundary Value Testing case 3.4: fail exists with s-jis ID from utf-8 index",
+			args: args{
+				ctx:      ctx,
+				indexId:  "こんにちは",
+				searchId: utf8ToSjis("こんにちは"),
+			},
+			want: want{
+				code: codes.NotFound,
+			},
+		},
+		{
+			name: "Boundary Value Testing case 3.5: success exists with s-jis ID from s-jis index",
+			args: args{
+				ctx:      ctx,
+				indexId:  utf8ToSjis("こんにちは"),
+				searchId: utf8ToSjis("こんにちは"),
+			},
+			want: want{},
+		},
+		{
+			name: "Boundary Value Testing case 3.6: fail exists with s-jis ID from euc-jp index",
+			args: args{
+				ctx:      ctx,
+				indexId:  utf8ToEucjp("こんにちは"),
+				searchId: utf8ToSjis("こんにちは"),
+			},
+			want: want{
+				code: codes.NotFound,
+			},
+		},
+		{
+			name: "Boundary Value Testing case 3.7: fail exists with euc-jp ID from utf-8 index",
+			args: args{
+				ctx:      ctx,
+				indexId:  "こんにちは",
+				searchId: utf8ToEucjp("こんにちは"),
+			},
+			want: want{
+				code: codes.NotFound,
+			},
+		},
+		{
+			name: "Boundary Value Testing case 3.8: fail exists with euc-jp ID from s-jis index",
+			args: args{
+				ctx:      ctx,
+				indexId:  utf8ToSjis("こんにちは"),
+				searchId: utf8ToEucjp("こんにちは"),
+			},
+			want: want{
+				code: codes.NotFound,
+			},
+		},
+		{
+			name: "Boundary Value Testing case 3.9: success exists with euc-jp ID from euc-jp index",
+			args: args{
+				ctx:      ctx,
+				indexId:  utf8ToEucjp("こんにちは"),
+				searchId: utf8ToEucjp("こんにちは"),
+			},
+			want: want{},
+		},
+		{
+			name: "Boundary Value Testing case 4.1: success exists with 😀",
+			args: args{
+				ctx:      ctx,
+				indexId:  "😀",
+				searchId: "😀",
+			},
+			want: want{},
+		},
 	}
 
 	for _, tc := range tests {
@@ -414,8 +647,12 @@ func Test_server_Exists(t *testing.T) {
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+			if test.beforeFunc == nil {
+				test.beforeFunc = defaultBeforeFunc
+			}
+			s, err := test.beforeFunc(test.args)
+			if err != nil {
+				tt.Errorf("error = %v", err)
 			}
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
@@ -424,15 +661,11 @@ func Test_server_Exists(t *testing.T) {
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
-			s := &server{
-				name:              test.fields.name,
-				ip:                test.fields.ip,
-				ngt:               test.fields.ngt,
-				eg:                test.fields.eg,
-				streamConcurrency: test.fields.streamConcurrency,
-			}
 
-			gotRes, err := s.Exists(test.args.ctx, test.args.uid)
+			req := &payload.Object_ID{
+				Id: test.args.searchId,
+			}
+			gotRes, err := s.Exists(test.args.ctx, req)
 			if err := checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -1462,7 +1695,7 @@ func Test_server_SearchByID(t *testing.T) {
 			},
 		},
 		{
-			name: "Boundary Value Testing case 2.2: succsess search with ^I",
+			name: "Boundary Value Testing case 2.2: success search with ^I",
 			args: args{
 				ctx:      ctx,
 				indexId:  "\t",
@@ -1473,7 +1706,7 @@ func Test_server_SearchByID(t *testing.T) {
 			},
 		},
 		{
-			name: "Boundary Value Testing case 2.3: succsess search with ^J",
+			name: "Boundary Value Testing case 2.3: success search with ^J",
 			args: args{
 				ctx:      ctx,
 				indexId:  "\n",
@@ -1484,7 +1717,7 @@ func Test_server_SearchByID(t *testing.T) {
 			},
 		},
 		{
-			name: "Boundary Value Testing case 2.4: succsess search with ^M",
+			name: "Boundary Value Testing case 2.4: success search with ^M",
 			args: args{
 				ctx:      ctx,
 				indexId:  "\r",
