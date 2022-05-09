@@ -4651,6 +4651,33 @@ func Test_server_Remove(t *testing.T) {
 		}
 		return nil
 	}
+
+	/*
+		Remove test cases ( focus on ID(string), only test float32 ):
+		- Equivalence Class Testing ( 1000 vectors inserted before a search )
+			- case 1.1: success remove vector
+			- case 2.1: fail remove with non-existent ID
+		- Boundary Value Testing ( 1000 vectors inserted before a search )
+			- case 1.1: fail remove with ""
+			- case 2.1: success remove with ^@
+			- case 2.2: success remove with ^I
+			- case 2.3: success remove with ^J
+			- case 2.4: success remove with ^M
+			- case 2.5: success remove with ^[
+			- case 2.6: success remove with ^?
+			- case 3.1: success remove with utf-8 ID from utf-8 index
+			- case 3.2: fail remove with utf-8 ID from s-jis index
+			- case 3.3: fail remove with utf-8 ID from euc-jp index
+			- case 3.4: fail remove with s-jis ID from utf-8 index
+			- case 3.5: success remove with s-jis ID from s-jis index
+			- case 3.6: fail remove with s-jis ID from euc-jp index
+			- case 3.4: fail remove with euc-jp ID from utf-8 index
+			- case 3.5: fail remove with euc-jp ID from s-jis index
+			- case 3.6: success remove with euc-jp ID from euc-jp index
+			- case 4.1: success remove with 😀
+		- Decision Table Testing
+		    - NONE
+	*/
 	tests := []test{
 		// TODO test cases
 		/*
