@@ -494,7 +494,7 @@ func Test_server_Exists(t *testing.T) {
 			want: want{},
 		},
 		{
-			name: "Boundary Value Testing case 2.2: succsess exists with ^I",
+			name: "Boundary Value Testing case 2.2: success exists with ^I",
 			args: args{
 				ctx:      ctx,
 				indexId:  "\t",
@@ -503,7 +503,7 @@ func Test_server_Exists(t *testing.T) {
 			want: want{},
 		},
 		{
-			name: "Boundary Value Testing case 2.3: succsess exists with ^J",
+			name: "Boundary Value Testing case 2.3: success exists with ^J",
 			args: args{
 				ctx:      ctx,
 				indexId:  "\n",
@@ -512,7 +512,7 @@ func Test_server_Exists(t *testing.T) {
 			want: want{},
 		},
 		{
-			name: "Boundary Value Testing case 2.4: succsess exists with ^M",
+			name: "Boundary Value Testing case 2.4: success exists with ^M",
 			args: args{
 				ctx:      ctx,
 				indexId:  "\r",
@@ -1695,7 +1695,7 @@ func Test_server_SearchByID(t *testing.T) {
 			},
 		},
 		{
-			name: "Boundary Value Testing case 2.2: succsess search with ^I",
+			name: "Boundary Value Testing case 2.2: success search with ^I",
 			args: args{
 				ctx:      ctx,
 				indexId:  "\t",
@@ -1706,7 +1706,7 @@ func Test_server_SearchByID(t *testing.T) {
 			},
 		},
 		{
-			name: "Boundary Value Testing case 2.3: succsess search with ^J",
+			name: "Boundary Value Testing case 2.3: success search with ^J",
 			args: args{
 				ctx:      ctx,
 				indexId:  "\n",
@@ -1717,7 +1717,7 @@ func Test_server_SearchByID(t *testing.T) {
 			},
 		},
 		{
-			name: "Boundary Value Testing case 2.4: succsess search with ^M",
+			name: "Boundary Value Testing case 2.4: success search with ^M",
 			args: args{
 				ctx:      ctx,
 				indexId:  "\r",
