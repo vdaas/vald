@@ -352,7 +352,7 @@ func TestWithDimension(t *testing.T) {
 		{
 			name: "set success when the size is maxDim",
 			args: args{
-				size: 1<<32 - 1,
+				size: maxDim,
 			},
 			want: want{
 				obj: &T{},
@@ -381,7 +381,7 @@ func TestWithDimension(t *testing.T) {
 		{
 			name: "return error when the size is larger than maxDim",
 			args: args{
-				size: 1 << 32,
+				size: maxDim + 1,
 			},
 			want: want{
 				obj: &T{},
