@@ -3742,6 +3742,22 @@ func Test_server_MultiInsert(t *testing.T) {
 		return req
 	}
 
+	genSameReq := func(num int, vec []float32) *payload.Insert_MultiRequest {
+		req := &payload.Insert_MultiRequest{
+			Requests: make([]*payload.Insert_Request, num),
+		}
+		for i := 0; i < num; i++ {
+			req.Requests[i] = &payload.Insert_Request{
+				Vector: &payload.Object_Vector{
+					Id:     "uuid-" + strconv.Itoa(i+1),
+					Vector: vec,
+				},
+			}
+		}
+
+		return req
+	}
+
 	genObjectLocations := func(num int, name string, ip string) *payload.Object_Locations {
 		result := &payload.Object_Locations{
 			Locations: make([]*payload.Object_Location, num),
@@ -4299,6 +4315,184 @@ func Test_server_MultiInsert(t *testing.T) {
 							})
 						return err
 					}(),
+				},
+			}
+		}(),
+		{
+			name: "Boundary Value Testing case 1.1: Success to MultiInsert with 0 value vector (vector type is uint8)",
+			args: args{
+				ctx:  ctx,
+				reqs: genSameReq(100, []float32{0, 0, 0}),
+			},
+			fields: fields{
+				name:              name,
+				ip:                ip,
+				svcCfg:            defaultIntSvcCfg,
+				svcOpts:           defaultSvcOpts,
+				streamConcurrency: 0,
+			},
+			want: want{
+				wantRes: genObjectLocations(100, name, ip),
+			},
+		},
+		{
+			name: "Boundary Value Testing case 1.2: Success to MultiInsert with 0 value vector (vector type is float32)",
+			args: args{
+				ctx:  ctx,
+				reqs: genSameReq(100, []float32{0, 0, 0}),
+			},
+			fields: fields{
+				name:              name,
+				ip:                ip,
+				svcCfg:            defaultF32SvcCfg,
+				svcOpts:           defaultSvcOpts,
+				streamConcurrency: 0,
+			},
+			want: want{
+				wantRes: genObjectLocations(100, name, ip),
+			},
+		},
+		{
+			name: "Boundary Value Testing case 2.1: Success to MultiInsert with min value vector (vector type is uint8)",
+			args: args{
+				ctx:  ctx,
+				reqs: genSameReq(100, []float32{math.MinInt, math.MinInt, math.MinInt}),
+			},
+			fields: fields{
+				name:              name,
+				ip:                ip,
+				svcCfg:            defaultIntSvcCfg,
+				svcOpts:           defaultSvcOpts,
+				streamConcurrency: 0,
+			},
+			want: want{
+				wantRes: genObjectLocations(100, name, ip),
+			},
+		},
+		{
+			name: "Boundary Value Testing case 2.2: Success to MultiInsert with min value vector (vector type is float32)",
+			args: args{
+				ctx:  ctx,
+				reqs: genSameReq(100, []float32{math.SmallestNonzeroFloat32, math.SmallestNonzeroFloat32, math.SmallestNonzeroFloat32}),
+			},
+			fields: fields{
+				name:              name,
+				ip:                ip,
+				svcCfg:            defaultF32SvcCfg,
+				svcOpts:           defaultSvcOpts,
+				streamConcurrency: 0,
+			},
+			want: want{
+				wantRes: genObjectLocations(100, name, ip),
+			},
+		},
+		{
+			name: "Boundary Value Testing case 3.1: Success to MultiInsert with max value vector (vector type is uint8)",
+			args: args{
+				ctx:  ctx,
+				reqs: genSameReq(100, []float32{math.MaxUint8, math.MaxUint8, math.MaxUint8}),
+			},
+			fields: fields{
+				name:              name,
+				ip:                ip,
+				svcCfg:            defaultIntSvcCfg,
+				svcOpts:           defaultSvcOpts,
+				streamConcurrency: 0,
+			},
+			want: want{
+				wantRes: genObjectLocations(100, name, ip),
+			},
+		},
+		{
+			name: "Boundary Value Testing case 3.2: Success to MultiInsert with max value vector (vector type is float32)",
+			args: args{
+				ctx:  ctx,
+				reqs: genSameReq(100, []float32{math.MaxFloat32, math.MaxFloat32, math.MaxFloat32}),
+			},
+			fields: fields{
+				name:              name,
+				ip:                ip,
+				svcCfg:            defaultF32SvcCfg,
+				svcOpts:           defaultSvcOpts,
+				streamConcurrency: 0,
+			},
+			want: want{
+				wantRes: genObjectLocations(100, name, ip),
+			},
+		},
+		func() test {
+			req := genIntReq(vector.Gaussian, 1, intVecDim)
+			req.Requests[0].Vector.Id = ""
+
+			return test{
+				name: "case 4.1: Fail to MultiInsert with 1 request with empty UUID (vector type is uint8)",
+				args: args{
+					ctx:  ctx,
+					reqs: req,
+				},
+				fields: fields{
+					name:              name,
+					ip:                ip,
+					svcCfg:            defaultIntSvcCfg,
+					svcOpts:           defaultSvcOpts,
+					streamConcurrency: 0,
+				},
+				want: want{
+					err: status.WrapWithInvalidArgument(fmt.Sprintf("MultiInsert API invalid uuids \"%v\" detected", "[]"), errors.ErrUUIDNotFound(0),
+						&errdetails.RequestInfo{
+							RequestId:   "",
+							ServingData: errdetails.Serialize(req),
+						},
+						&errdetails.BadRequest{
+							FieldViolations: []*errdetails.BadRequestFieldViolation{
+								{
+									Field:       "uuid",
+									Description: errors.ErrUUIDNotFound(0).Error(),
+								},
+							},
+						},
+						&errdetails.ResourceInfo{
+							ResourceType: ngtResourceType + "/ngt.MultiInsert",
+							ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, name, ip),
+						}),
+				},
+			}
+		}(),
+		func() test {
+			req := genF32Req(vector.Gaussian, 1, f32VecDim)
+			req.Requests[0].Vector.Id = ""
+
+			return test{
+				name: "case 4.2: Fail to MultiInsert with 1 request with empty UUID (vector type is float32)",
+				args: args{
+					ctx:  ctx,
+					reqs: req,
+				},
+				fields: fields{
+					name:              name,
+					ip:                ip,
+					svcCfg:            defaultF32SvcCfg,
+					svcOpts:           defaultSvcOpts,
+					streamConcurrency: 0,
+				},
+				want: want{
+					err: status.WrapWithInvalidArgument(fmt.Sprintf("MultiInsert API invalid uuids \"%v\" detected", "[]"), errors.ErrUUIDNotFound(0),
+						&errdetails.RequestInfo{
+							RequestId:   "",
+							ServingData: errdetails.Serialize(req),
+						},
+						&errdetails.BadRequest{
+							FieldViolations: []*errdetails.BadRequestFieldViolation{
+								{
+									Field:       "uuid",
+									Description: errors.ErrUUIDNotFound(0).Error(),
+								},
+							},
+						},
+						&errdetails.ResourceInfo{
+							ResourceType: ngtResourceType + "/ngt.MultiInsert",
+							ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, name, ip),
+						}),
 				},
 			}
 		}(),
