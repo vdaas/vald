@@ -3664,7 +3664,7 @@ func Test_server_MultiInsert(t *testing.T) {
 		id        = "uuid-1"           // insert request id
 		intVecDim = 3                  // int vector dimension
 		f32VecDim = 3                  // float32 vector dimension
-		maxVecDim = 1 >> 22            // reference value for testing
+		maxVecDim = 1 << 18            // reference value for testing
 	)
 	var (
 		ip = net.LoadLocalIP() // agent ip address
