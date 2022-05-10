@@ -3664,6 +3664,7 @@ func Test_server_MultiInsert(t *testing.T) {
 		id        = "uuid-1"           // insert request id
 		intVecDim = 3                  // int vector dimension
 		f32VecDim = 3                  // float32 vector dimension
+		maxVecDim = math.MaxInt32 >> 7
 	)
 	var (
 		ip = net.LoadLocalIP() // agent ip address
@@ -4421,11 +4422,16 @@ func Test_server_MultiInsert(t *testing.T) {
 			},
 		},
 		func() test {
-			req := genIntReq(vector.Gaussian, 1, intVecDim)
+			req := genIntReq(vector.Gaussian, 100, intVecDim)
 			req.Requests[0].Vector.Id = ""
 
+			uuids := make([]string, 0, len(req.Requests))
+			for _, r := range req.Requests {
+				uuids = append(uuids, r.Vector.Id)
+			}
+
 			return test{
-				name: "case 4.1: Fail to MultiInsert with 1 request with empty UUID (vector type is uint8)",
+				name: "Boundary Value Testing case 4.1: Fail to MultiInsert with 1 request with empty UUID (vector type is uint8)",
 				args: args{
 					ctx:  ctx,
 					reqs: req,
@@ -4438,9 +4444,9 @@ func Test_server_MultiInsert(t *testing.T) {
 					streamConcurrency: 0,
 				},
 				want: want{
-					err: status.WrapWithInvalidArgument(fmt.Sprintf("MultiInsert API invalid uuids \"%v\" detected", "[]"), errors.ErrUUIDNotFound(0),
+					err: status.WrapWithInvalidArgument(fmt.Sprintf("MultiInsert API invalid uuids \"%v\" detected", uuids), errors.ErrUUIDNotFound(0),
 						&errdetails.RequestInfo{
-							RequestId:   "",
+							RequestId:   strings.Join(uuids, ", "),
 							ServingData: errdetails.Serialize(req),
 						},
 						&errdetails.BadRequest{
@@ -4459,11 +4465,16 @@ func Test_server_MultiInsert(t *testing.T) {
 			}
 		}(),
 		func() test {
-			req := genF32Req(vector.Gaussian, 1, f32VecDim)
+			req := genF32Req(vector.Gaussian, 100, f32VecDim)
 			req.Requests[0].Vector.Id = ""
 
+			uuids := make([]string, 0, len(req.Requests))
+			for _, r := range req.Requests {
+				uuids = append(uuids, r.Vector.Id)
+			}
+
 			return test{
-				name: "case 4.2: Fail to MultiInsert with 1 request with empty UUID (vector type is float32)",
+				name: "Boundary Value Testing case 4.2: Fail to MultiInsert with 1 request with empty UUID (vector type is float32)",
 				args: args{
 					ctx:  ctx,
 					reqs: req,
@@ -4476,9 +4487,9 @@ func Test_server_MultiInsert(t *testing.T) {
 					streamConcurrency: 0,
 				},
 				want: want{
-					err: status.WrapWithInvalidArgument(fmt.Sprintf("MultiInsert API invalid uuids \"%v\" detected", "[]"), errors.ErrUUIDNotFound(0),
+					err: status.WrapWithInvalidArgument(fmt.Sprintf("MultiInsert API invalid uuids \"%v\" detected", uuids), errors.ErrUUIDNotFound(0),
 						&errdetails.RequestInfo{
-							RequestId:   "",
+							RequestId:   strings.Join(uuids, ", "),
 							ServingData: errdetails.Serialize(req),
 						},
 						&errdetails.BadRequest{
@@ -4496,6 +4507,514 @@ func Test_server_MultiInsert(t *testing.T) {
 				},
 			}
 		}(),
+		func() test {
+			req := genIntReq(vector.Gaussian, 100, intVecDim)
+			for i := 0; i < 100; i += 2 {
+				req.Requests[i].Vector.Id = ""
+			}
+
+			uuids := make([]string, 0, len(req.Requests))
+			for _, r := range req.Requests {
+				uuids = append(uuids, r.Vector.Id)
+			}
+
+			return test{
+				name: "Boundary Value Testing case 4.3: Fail to MultiInsert with 50 request with empty UUID (vector type is uint8)",
+				args: args{
+					ctx:  ctx,
+					reqs: req,
+				},
+				fields: fields{
+					name:              name,
+					ip:                ip,
+					svcCfg:            defaultIntSvcCfg,
+					svcOpts:           defaultSvcOpts,
+					streamConcurrency: 0,
+				},
+				want: want{
+					err: status.WrapWithInvalidArgument(fmt.Sprintf("MultiInsert API invalid uuids \"%v\" detected", uuids), errors.ErrUUIDNotFound(0),
+						&errdetails.RequestInfo{
+							RequestId:   strings.Join(uuids, ", "),
+							ServingData: errdetails.Serialize(req),
+						},
+						&errdetails.BadRequest{
+							FieldViolations: []*errdetails.BadRequestFieldViolation{
+								{
+									Field:       "uuid",
+									Description: errors.ErrUUIDNotFound(0).Error(),
+								},
+							},
+						},
+						&errdetails.ResourceInfo{
+							ResourceType: ngtResourceType + "/ngt.MultiInsert",
+							ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, name, ip),
+						}),
+				},
+			}
+		}(),
+		func() test {
+			req := genIntReq(vector.Gaussian, 100, f32VecDim)
+			for i := 0; i < 100; i += 2 {
+				req.Requests[i].Vector.Id = ""
+			}
+
+			uuids := make([]string, 0, len(req.Requests))
+			for _, r := range req.Requests {
+				uuids = append(uuids, r.Vector.Id)
+			}
+
+			return test{
+				name: "Boundary Value Testing case 4.4: Fail to MultiInsert with 50 request with empty UUID (vector type is float32)",
+				args: args{
+					ctx:  ctx,
+					reqs: req,
+				},
+				fields: fields{
+					name:              name,
+					ip:                ip,
+					svcCfg:            defaultF32SvcCfg,
+					svcOpts:           defaultSvcOpts,
+					streamConcurrency: 0,
+				},
+				want: want{
+					err: status.WrapWithInvalidArgument(fmt.Sprintf("MultiInsert API invalid uuids \"%v\" detected", uuids), errors.ErrUUIDNotFound(0),
+						&errdetails.RequestInfo{
+							RequestId:   strings.Join(uuids, ", "),
+							ServingData: errdetails.Serialize(req),
+						},
+						&errdetails.BadRequest{
+							FieldViolations: []*errdetails.BadRequestFieldViolation{
+								{
+									Field:       "uuid",
+									Description: errors.ErrUUIDNotFound(0).Error(),
+								},
+							},
+						},
+						&errdetails.ResourceInfo{
+							ResourceType: ngtResourceType + "/ngt.MultiInsert",
+							ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, name, ip),
+						}),
+				},
+			}
+		}(),
+		func() test {
+			req := genIntReq(vector.Gaussian, 100, intVecDim)
+			for i := 0; i < 100; i++ {
+				req.Requests[i].Vector.Id = ""
+			}
+
+			uuids := make([]string, 0, len(req.Requests))
+			for _, r := range req.Requests {
+				uuids = append(uuids, r.Vector.Id)
+			}
+
+			return test{
+				name: "Boundary Value Testing case 4.5: Fail to MultiInsert with all request with empty UUID (vector type is uint8)",
+				args: args{
+					ctx:  ctx,
+					reqs: req,
+				},
+				fields: fields{
+					name:              name,
+					ip:                ip,
+					svcCfg:            defaultIntSvcCfg,
+					svcOpts:           defaultSvcOpts,
+					streamConcurrency: 0,
+				},
+				want: want{
+					err: status.WrapWithInvalidArgument(fmt.Sprintf("MultiInsert API invalid uuids \"%v\" detected", uuids), errors.ErrUUIDNotFound(0),
+						&errdetails.RequestInfo{
+							RequestId:   strings.Join(uuids, ", "),
+							ServingData: errdetails.Serialize(req),
+						},
+						&errdetails.BadRequest{
+							FieldViolations: []*errdetails.BadRequestFieldViolation{
+								{
+									Field:       "uuid",
+									Description: errors.ErrUUIDNotFound(0).Error(),
+								},
+							},
+						},
+						&errdetails.ResourceInfo{
+							ResourceType: ngtResourceType + "/ngt.MultiInsert",
+							ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, name, ip),
+						}),
+				},
+			}
+		}(),
+		func() test {
+			req := genIntReq(vector.Gaussian, 100, f32VecDim)
+			for i := 0; i < 100; i++ {
+				req.Requests[i].Vector.Id = ""
+			}
+
+			uuids := make([]string, 0, len(req.Requests))
+			for _, r := range req.Requests {
+				uuids = append(uuids, r.Vector.Id)
+			}
+
+			return test{
+				name: "Boundary Value Testing case 4.6: Fail to MultiInsert with all request with empty UUID (vector type is float32)",
+				args: args{
+					ctx:  ctx,
+					reqs: req,
+				},
+				fields: fields{
+					name:              name,
+					ip:                ip,
+					svcCfg:            defaultF32SvcCfg,
+					svcOpts:           defaultSvcOpts,
+					streamConcurrency: 0,
+				},
+				want: want{
+					err: status.WrapWithInvalidArgument(fmt.Sprintf("MultiInsert API invalid uuids \"%v\" detected", uuids), errors.ErrUUIDNotFound(0),
+						&errdetails.RequestInfo{
+							RequestId:   strings.Join(uuids, ", "),
+							ServingData: errdetails.Serialize(req),
+						},
+						&errdetails.BadRequest{
+							FieldViolations: []*errdetails.BadRequestFieldViolation{
+								{
+									Field:       "uuid",
+									Description: errors.ErrUUIDNotFound(0).Error(),
+								},
+							},
+						},
+						&errdetails.ResourceInfo{
+							ResourceType: ngtResourceType + "/ngt.MultiInsert",
+							ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, name, ip),
+						}),
+				},
+			}
+		}(),
+		func() test {
+			req := genIntReq(vector.Gaussian, 100, intVecDim)
+			req.Requests[0].Vector.Vector = make([]float32, maxVecDim)
+
+			return test{
+				name: "Boundary Value Testing case 5.1: Fail to MultiInsert with 1 vector with maximum dimension (vector type is uint8)",
+				args: args{
+					ctx:  ctx,
+					reqs: req,
+				},
+				fields: fields{
+					name:              name,
+					ip:                ip,
+					svcCfg:            defaultIntSvcCfg,
+					svcOpts:           defaultSvcOpts,
+					streamConcurrency: 0,
+				},
+				want: want{
+					err: func() error {
+						err := errors.ErrIncompatibleDimensionSize(len(req.Requests[0].Vector.Vector), intVecDim)
+						err = status.WrapWithInvalidArgument("MultiInsert API Incompatible Dimension Size detected",
+							err,
+							&errdetails.RequestInfo{
+								RequestId:   req.Requests[0].Vector.Id,
+								ServingData: errdetails.Serialize(req),
+							},
+							&errdetails.BadRequest{
+								FieldViolations: []*errdetails.BadRequestFieldViolation{
+									{
+										Field:       "vector dimension size",
+										Description: err.Error(),
+									},
+								},
+							},
+							&errdetails.ResourceInfo{
+								ResourceType: ngtResourceType + "/ngt.MultiInsert",
+								ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, name, ip),
+							})
+						return err
+					}(),
+				},
+			}
+		}(),
+		func() test {
+			req := genIntReq(vector.Gaussian, 100, f32VecDim)
+			req.Requests[0].Vector.Vector = make([]float32, maxVecDim)
+
+			return test{
+				name: "Boundary Value Testing case 5.1: Fail to MultiInsert with 1 vector with maximum dimension (vector type is float32)",
+				args: args{
+					ctx:  ctx,
+					reqs: req,
+				},
+				fields: fields{
+					name:              name,
+					ip:                ip,
+					svcCfg:            defaultF32SvcCfg,
+					svcOpts:           defaultSvcOpts,
+					streamConcurrency: 0,
+				},
+				want: want{
+					err: func() error {
+						err := errors.ErrIncompatibleDimensionSize(len(req.Requests[0].Vector.Vector), intVecDim)
+						err = status.WrapWithInvalidArgument("MultiInsert API Incompatible Dimension Size detected",
+							err,
+							&errdetails.RequestInfo{
+								RequestId:   req.Requests[0].Vector.Id,
+								ServingData: errdetails.Serialize(req),
+							},
+							&errdetails.BadRequest{
+								FieldViolations: []*errdetails.BadRequestFieldViolation{
+									{
+										Field:       "vector dimension size",
+										Description: err.Error(),
+									},
+								},
+							},
+							&errdetails.ResourceInfo{
+								ResourceType: ngtResourceType + "/ngt.MultiInsert",
+								ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, name, ip),
+							})
+						return err
+					}(),
+				},
+			}
+		}(),
+		func() test {
+			req := genIntReq(vector.Gaussian, 100, intVecDim)
+			for i := 0; i < len(req.Requests); i += 2 {
+				req.Requests[i].Vector.Vector = make([]float32, maxVecDim)
+			}
+
+			return test{
+				name: "Boundary Value Testing case 5.3: Fail to MultiInsert with 50 vector with maximum dimension (vector type is uint8)",
+				args: args{
+					ctx:  ctx,
+					reqs: req,
+				},
+				fields: fields{
+					name:              name,
+					ip:                ip,
+					svcCfg:            defaultIntSvcCfg,
+					svcOpts:           defaultSvcOpts,
+					streamConcurrency: 0,
+				},
+				want: want{
+					err: func() error {
+						err := errors.ErrIncompatibleDimensionSize(len(req.Requests[0].Vector.Vector), intVecDim)
+						err = status.WrapWithInvalidArgument("MultiInsert API Incompatible Dimension Size detected",
+							err,
+							&errdetails.RequestInfo{
+								RequestId:   req.Requests[0].Vector.Id,
+								ServingData: errdetails.Serialize(req),
+							},
+							&errdetails.BadRequest{
+								FieldViolations: []*errdetails.BadRequestFieldViolation{
+									{
+										Field:       "vector dimension size",
+										Description: err.Error(),
+									},
+								},
+							},
+							&errdetails.ResourceInfo{
+								ResourceType: ngtResourceType + "/ngt.MultiInsert",
+								ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, name, ip),
+							})
+						return err
+					}(),
+				},
+			}
+		}(),
+		func() test {
+			req := genIntReq(vector.Gaussian, 100, f32VecDim)
+			for i := 0; i < len(req.Requests); i += 2 {
+				req.Requests[i].Vector.Vector = make([]float32, maxVecDim)
+			}
+
+			return test{
+				name: "Boundary Value Testing case 5.4: Fail to MultiInsert with 50 vector with maximum dimension (vector type is float32)",
+				args: args{
+					ctx:  ctx,
+					reqs: req,
+				},
+				fields: fields{
+					name:              name,
+					ip:                ip,
+					svcCfg:            defaultF32SvcCfg,
+					svcOpts:           defaultSvcOpts,
+					streamConcurrency: 0,
+				},
+				want: want{
+					err: func() error {
+						err := errors.ErrIncompatibleDimensionSize(len(req.Requests[0].Vector.Vector), intVecDim)
+						err = status.WrapWithInvalidArgument("MultiInsert API Incompatible Dimension Size detected",
+							err,
+							&errdetails.RequestInfo{
+								RequestId:   req.Requests[0].Vector.Id,
+								ServingData: errdetails.Serialize(req),
+							},
+							&errdetails.BadRequest{
+								FieldViolations: []*errdetails.BadRequestFieldViolation{
+									{
+										Field:       "vector dimension size",
+										Description: err.Error(),
+									},
+								},
+							},
+							&errdetails.ResourceInfo{
+								ResourceType: ngtResourceType + "/ngt.MultiInsert",
+								ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, name, ip),
+							})
+						return err
+					}(),
+				},
+			}
+		}(),
+		func() test {
+			req := genSameReq(100, make([]float32, maxVecDim))
+
+			return test{
+				name: "Boundary Value Testing case 5.5: Fail to MultiInsert with all vector with maximum dimension (vector type is uint8)",
+				args: args{
+					ctx:  ctx,
+					reqs: req,
+				},
+				fields: fields{
+					name:              name,
+					ip:                ip,
+					svcCfg:            defaultIntSvcCfg,
+					svcOpts:           defaultSvcOpts,
+					streamConcurrency: 0,
+				},
+				want: want{
+					err: func() error {
+						err := errors.ErrIncompatibleDimensionSize(len(req.Requests[0].Vector.Vector), intVecDim)
+						err = status.WrapWithInvalidArgument("MultiInsert API Incompatible Dimension Size detected",
+							err,
+							&errdetails.RequestInfo{
+								RequestId:   req.Requests[0].Vector.Id,
+								ServingData: errdetails.Serialize(req),
+							},
+							&errdetails.BadRequest{
+								FieldViolations: []*errdetails.BadRequestFieldViolation{
+									{
+										Field:       "vector dimension size",
+										Description: err.Error(),
+									},
+								},
+							},
+							&errdetails.ResourceInfo{
+								ResourceType: ngtResourceType + "/ngt.MultiInsert",
+								ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, name, ip),
+							})
+						return err
+					}(),
+				},
+			}
+		}(),
+		func() test {
+			req := genSameReq(100, make([]float32, maxVecDim))
+
+			return test{
+				name: "Boundary Value Testing case 5.6: Fail to MultiInsert with all vector with maximum dimension (vector type is float32)",
+				args: args{
+					ctx:  ctx,
+					reqs: req,
+				},
+				fields: fields{
+					name:              name,
+					ip:                ip,
+					svcCfg:            defaultF32SvcCfg,
+					svcOpts:           defaultSvcOpts,
+					streamConcurrency: 0,
+				},
+				want: want{
+					err: func() error {
+						err := errors.ErrIncompatibleDimensionSize(len(req.Requests[0].Vector.Vector), intVecDim)
+						err = status.WrapWithInvalidArgument("MultiInsert API Incompatible Dimension Size detected",
+							err,
+							&errdetails.RequestInfo{
+								RequestId:   req.Requests[0].Vector.Id,
+								ServingData: errdetails.Serialize(req),
+							},
+							&errdetails.BadRequest{
+								FieldViolations: []*errdetails.BadRequestFieldViolation{
+									{
+										Field:       "vector dimension size",
+										Description: err.Error(),
+									},
+								},
+							},
+							&errdetails.ResourceInfo{
+								ResourceType: ngtResourceType + "/ngt.MultiInsert",
+								ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, name, ip),
+							})
+						return err
+					}(),
+				},
+			}
+		}(),
+		{
+			name: "Boundary Value Testing case 6.1: Success to MultiInsert with NaN value (vector type is float32)",
+			args: args{
+				ctx:  ctx,
+				reqs: genSameReq(100, []float32{float32(math.NaN()), float32(math.NaN()), float32(math.NaN())}),
+			},
+			fields: fields{
+				name:              name,
+				ip:                ip,
+				svcCfg:            defaultF32SvcCfg,
+				svcOpts:           defaultSvcOpts,
+				streamConcurrency: 0,
+			},
+			want: want{
+				wantRes: genObjectLocations(100, name, ip),
+			},
+		},
+		{
+			name: "Boundary Value Testing case 6.2: Success to MultiInsert with +Inf value (vector type is float32)",
+			args: args{
+				ctx:  ctx,
+				reqs: genSameReq(100, []float32{float32(math.Inf(+1.0)), float32(math.Inf(+1.0)), float32(math.Inf(+1.0))}),
+			},
+			fields: fields{
+				name:              name,
+				ip:                ip,
+				svcCfg:            defaultF32SvcCfg,
+				svcOpts:           defaultSvcOpts,
+				streamConcurrency: 0,
+			},
+			want: want{
+				wantRes: genObjectLocations(100, name, ip),
+			},
+		},
+		{
+			name: "Boundary Value Testing case 6.3: Success to MultiInsert with -Inf value (vector type is float32)",
+			args: args{
+				ctx:  ctx,
+				reqs: genSameReq(100, []float32{float32(math.Inf(-1.0)), float32(math.Inf(-1.0)), float32(math.Inf(-1.0))}),
+			},
+			fields: fields{
+				name:              name,
+				ip:                ip,
+				svcCfg:            defaultF32SvcCfg,
+				svcOpts:           defaultSvcOpts,
+				streamConcurrency: 0,
+			},
+			want: want{
+				wantRes: genObjectLocations(100, name, ip),
+			},
+		},
+		{
+			name: "Boundary Value Testing case 6.4: Success to MultiInsert with -0 value (vector type is float32)",
+			args: args{
+				ctx:  ctx,
+				reqs: genSameReq(100, []float32{float32(math.Copysign(0, -1.0)), float32(math.Copysign(0, -1.0)), float32(math.Copysign(0, -1.0))}),
+			},
+			fields: fields{
+				name:              name,
+				ip:                ip,
+				svcCfg:            defaultF32SvcCfg,
+				svcOpts:           defaultSvcOpts,
+				streamConcurrency: 0,
+			},
+			want: want{
+				wantRes: genObjectLocations(100, name, ip),
+			},
+		},
 	}
 
 	for _, tc := range tests {
