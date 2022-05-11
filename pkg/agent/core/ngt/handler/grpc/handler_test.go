@@ -481,7 +481,7 @@ func Test_server_Exists(t *testing.T) {
 				searchId: "",
 			},
 			want: want{
-				code: codes.NotFound,
+				code: codes.InvalidArgument,
 			},
 		},
 		{
@@ -1680,7 +1680,7 @@ func Test_server_SearchByID(t *testing.T) {
 			},
 			want: want{
 				resultSize: 0,
-				code:       codes.NotFound,
+				code:       codes.InvalidArgument,
 			},
 		},
 		{
