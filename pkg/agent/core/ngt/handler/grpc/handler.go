@@ -2209,6 +2209,28 @@ func (s *server) GetObject(ctx context.Context, id *payload.Object_VectorRequest
 		}
 	}()
 	uuid := id.GetId().GetId()
+	if len(uuid) == 0 {
+		err = errors.ErrInvalidUUID(uuid)
+		err = status.WrapWithInvalidArgument(fmt.Sprintf("GetObject API invalid argument for uuid \"%s\" detected", uuid), err,
+			&errdetails.RequestInfo{
+				RequestId:   uuid,
+				ServingData: errdetails.Serialize(id),
+			},
+			&errdetails.BadRequest{
+				FieldViolations: []*errdetails.BadRequestFieldViolation{
+					{
+						Field:       "uuid",
+						Description: err.Error(),
+					},
+				},
+			},
+			&errdetails.ResourceInfo{
+				ResourceType: ngtResourceType + "/ngt.GetObject",
+				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+			})
+		log.Warn(err)
+		return nil, err
+	}
 	vec, err := s.ngt.GetObject(uuid)
 	if err != nil || vec == nil {
 		err = errors.ErrObjectNotFound(err, uuid)
