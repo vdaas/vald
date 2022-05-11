@@ -2741,7 +2741,7 @@ func Test_server_Insert(t *testing.T) {
 			req := &payload.Insert_Request{
 				Vector: &payload.Object_Vector{
 					Id:     id,
-					Vector: []float32{math.SmallestNonzeroFloat32, math.SmallestNonzeroFloat32, math.SmallestNonzeroFloat32},
+					Vector: []float32{-math.MaxFloat32, -math.MaxFloat32, -math.MaxFloat32},
 				},
 			}
 
@@ -3664,7 +3664,7 @@ func Test_server_MultiInsert(t *testing.T) {
 		id        = "uuid-1"           // insert request id
 		intVecDim = 3                  // int vector dimension
 		f32VecDim = 3                  // float32 vector dimension
-		maxVecDim = 1 << 18            // reference value for testing
+		maxVecDim = 1 << 18            // reference value for testing, this value is temporary
 	)
 	var (
 		ip = net.LoadLocalIP() // agent ip address
@@ -3743,7 +3743,7 @@ func Test_server_MultiInsert(t *testing.T) {
 		return req
 	}
 
-	genSameReq := func(num int, vec []float32) *payload.Insert_MultiRequest {
+	genNInsertReq := func(num int, vec []float32) *payload.Insert_MultiRequest {
 		req := &payload.Insert_MultiRequest{
 			Requests: make([]*payload.Insert_Request, num),
 		}
@@ -4323,7 +4323,7 @@ func Test_server_MultiInsert(t *testing.T) {
 			name: "Boundary Value Testing case 1.1: Success to MultiInsert with 0 value vector (vector type is uint8)",
 			args: args{
 				ctx:  ctx,
-				reqs: genSameReq(100, []float32{0, 0, 0}),
+				reqs: genNInsertReq(100, []float32{0, 0, 0}),
 			},
 			fields: fields{
 				name:              name,
@@ -4340,7 +4340,7 @@ func Test_server_MultiInsert(t *testing.T) {
 			name: "Boundary Value Testing case 1.2: Success to MultiInsert with 0 value vector (vector type is float32)",
 			args: args{
 				ctx:  ctx,
-				reqs: genSameReq(100, []float32{0, 0, 0}),
+				reqs: genNInsertReq(100, []float32{0, 0, 0}),
 			},
 			fields: fields{
 				name:              name,
@@ -4357,7 +4357,7 @@ func Test_server_MultiInsert(t *testing.T) {
 			name: "Boundary Value Testing case 2.1: Success to MultiInsert with min value vector (vector type is uint8)",
 			args: args{
 				ctx:  ctx,
-				reqs: genSameReq(100, []float32{math.MinInt, math.MinInt, math.MinInt}),
+				reqs: genNInsertReq(100, []float32{math.MinInt, math.MinInt, math.MinInt}),
 			},
 			fields: fields{
 				name:              name,
@@ -4374,7 +4374,7 @@ func Test_server_MultiInsert(t *testing.T) {
 			name: "Boundary Value Testing case 2.2: Success to MultiInsert with min value vector (vector type is float32)",
 			args: args{
 				ctx:  ctx,
-				reqs: genSameReq(100, []float32{math.SmallestNonzeroFloat32, math.SmallestNonzeroFloat32, math.SmallestNonzeroFloat32}),
+				reqs: genNInsertReq(100, []float32{-math.MaxFloat32, -math.MaxFloat32, -math.MaxFloat32}),
 			},
 			fields: fields{
 				name:              name,
@@ -4391,7 +4391,7 @@ func Test_server_MultiInsert(t *testing.T) {
 			name: "Boundary Value Testing case 3.1: Success to MultiInsert with max value vector (vector type is uint8)",
 			args: args{
 				ctx:  ctx,
-				reqs: genSameReq(100, []float32{math.MaxUint8, math.MaxUint8, math.MaxUint8}),
+				reqs: genNInsertReq(100, []float32{math.MaxUint8, math.MaxUint8, math.MaxUint8}),
 			},
 			fields: fields{
 				name:              name,
@@ -4408,7 +4408,7 @@ func Test_server_MultiInsert(t *testing.T) {
 			name: "Boundary Value Testing case 3.2: Success to MultiInsert with max value vector (vector type is float32)",
 			args: args{
 				ctx:  ctx,
-				reqs: genSameReq(100, []float32{math.MaxFloat32, math.MaxFloat32, math.MaxFloat32}),
+				reqs: genNInsertReq(100, []float32{math.MaxFloat32, math.MaxFloat32, math.MaxFloat32}),
 			},
 			fields: fields{
 				name:              name,
@@ -4864,7 +4864,7 @@ func Test_server_MultiInsert(t *testing.T) {
 			}
 		}(),
 		func() test {
-			req := genSameReq(100, make([]float32, maxVecDim))
+			req := genNInsertReq(100, make([]float32, maxVecDim))
 
 			return test{
 				name: "Boundary Value Testing case 5.5: Fail to MultiInsert with all vector with maximum dimension (vector type is uint8)",
@@ -4906,7 +4906,7 @@ func Test_server_MultiInsert(t *testing.T) {
 			}
 		}(),
 		func() test {
-			req := genSameReq(100, make([]float32, maxVecDim))
+			req := genNInsertReq(100, make([]float32, maxVecDim))
 
 			return test{
 				name: "Boundary Value Testing case 5.6: Fail to MultiInsert with all vector with maximum dimension (vector type is float32)",
@@ -4951,7 +4951,7 @@ func Test_server_MultiInsert(t *testing.T) {
 			name: "Boundary Value Testing case 6.1: Success to MultiInsert with NaN value (vector type is float32)",
 			args: args{
 				ctx:  ctx,
-				reqs: genSameReq(100, []float32{float32(math.NaN()), float32(math.NaN()), float32(math.NaN())}),
+				reqs: genNInsertReq(100, []float32{float32(math.NaN()), float32(math.NaN()), float32(math.NaN())}),
 			},
 			fields: fields{
 				name:              name,
@@ -4968,7 +4968,7 @@ func Test_server_MultiInsert(t *testing.T) {
 			name: "Boundary Value Testing case 6.2: Success to MultiInsert with +Inf value (vector type is float32)",
 			args: args{
 				ctx:  ctx,
-				reqs: genSameReq(100, []float32{float32(math.Inf(+1.0)), float32(math.Inf(+1.0)), float32(math.Inf(+1.0))}),
+				reqs: genNInsertReq(100, []float32{float32(math.Inf(+1.0)), float32(math.Inf(+1.0)), float32(math.Inf(+1.0))}),
 			},
 			fields: fields{
 				name:              name,
@@ -4985,7 +4985,7 @@ func Test_server_MultiInsert(t *testing.T) {
 			name: "Boundary Value Testing case 6.3: Success to MultiInsert with -Inf value (vector type is float32)",
 			args: args{
 				ctx:  ctx,
-				reqs: genSameReq(100, []float32{float32(math.Inf(-1.0)), float32(math.Inf(-1.0)), float32(math.Inf(-1.0))}),
+				reqs: genNInsertReq(100, []float32{float32(math.Inf(-1.0)), float32(math.Inf(-1.0)), float32(math.Inf(-1.0))}),
 			},
 			fields: fields{
 				name:              name,
@@ -5002,7 +5002,7 @@ func Test_server_MultiInsert(t *testing.T) {
 			name: "Boundary Value Testing case 6.4: Success to MultiInsert with -0 value (vector type is float32)",
 			args: args{
 				ctx:  ctx,
-				reqs: genSameReq(100, []float32{float32(math.Copysign(0, -1.0)), float32(math.Copysign(0, -1.0)), float32(math.Copysign(0, -1.0))}),
+				reqs: genNInsertReq(100, []float32{float32(math.Copysign(0, -1.0)), float32(math.Copysign(0, -1.0)), float32(math.Copysign(0, -1.0))}),
 			},
 			fields: fields{
 				name:              name,
