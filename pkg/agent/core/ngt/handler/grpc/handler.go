@@ -313,7 +313,7 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 		return nil, err
 	}
 	vec, dst, err := s.ngt.SearchByID(
-		req.GetId(),
+		uuid,
 		req.GetConfig().GetNum(),
 		req.GetConfig().GetEpsilon(),
 		req.GetConfig().GetRadius())
