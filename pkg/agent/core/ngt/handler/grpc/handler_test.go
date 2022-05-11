@@ -4966,6 +4966,9 @@ func Test_server_Remove(t *testing.T) {
 				test.beforeFunc = defaultBeforeFunc
 			}
 			s, err := test.beforeFunc(test.args)
+			if err != nil {
+				tt.Errorf("error = %v", err)
+			}
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
