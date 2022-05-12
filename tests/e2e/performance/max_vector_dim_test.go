@@ -51,10 +51,10 @@ const (
 
 var (
 	host       string
+	port       int
 	namespace  string
 	bit        int
 	dim        int
-	port       int
 	kubeClient client.Client
 	forwarder  *portforward.Portforward
 )
@@ -115,7 +115,7 @@ func TestE2EInsertOnlyWithOneVector(t *testing.T) {
 	ctx := context.Background()
 	conn, err := grpc.DialContext(
 		ctx,
-		host,
+		host+":"+strconv.Itoa(port),
 		grpc.WithInsecure(),
 		grpc.WithKeepaliveParams(
 			keepalive.ClientParameters{
