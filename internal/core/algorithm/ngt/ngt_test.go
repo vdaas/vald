@@ -183,7 +183,7 @@ func TestNew(t *testing.T) {
 				},
 			},
 			want: want{
-				err: errors.NewErrCriticalOption("dimension", 1, errors.ErrInvalidDimensionSize(1, NgtVectorDimensionSizeLimit)),
+				err: errors.NewErrCriticalOption("dimension", 1, errors.ErrInvalidDimensionSize(1, VectorDimensionSizeLimit)),
 			},
 		},
 	}
@@ -761,7 +761,7 @@ func Test_gen(t *testing.T) {
 				},
 			},
 			want: want{
-				err: errors.NewErrCriticalOption("dimension", 1, errors.ErrInvalidDimensionSize(1, NgtVectorDimensionSizeLimit)),
+				err: errors.NewErrCriticalOption("dimension", 1, errors.ErrInvalidDimensionSize(1, VectorDimensionSizeLimit)),
 			},
 		},
 	}
