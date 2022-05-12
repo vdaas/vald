@@ -3643,6 +3643,7 @@ func Test_server_MultiInsert(t *testing.T) {
 	}
 	type want struct {
 		wantRes *payload.Object_Locations
+		haveErr bool // skip checking error detail
 		err     error
 	}
 	type test struct {
@@ -3771,8 +3772,13 @@ func Test_server_MultiInsert(t *testing.T) {
 	}
 
 	defaultCheckFunc := func(w want, gotRes *payload.Object_Locations, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%v\",\n\t\t\t\twant: \"%v\"", err, w.err)
+		if !w.haveErr {
+			if !errors.Is(err, w.err) {
+				return errors.Errorf("got_error: \"%v\",\n\t\t\t\twant: \"%v\"", err, w.err)
+			}
+
+		} else if err == nil {
+			return errors.Errorf("got_error: nil, want non-nil error")
 		}
 		if !reflect.DeepEqual(gotRes, w.wantRes) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
@@ -3856,19 +3862,19 @@ func Test_server_MultiInsert(t *testing.T) {
 			// existed in NGT test cases
 			- existed ID (with 100 insert request in a single MultiInsert request)
 				- case 4.1: Fail to MultiInsert with 2 existed ID when SkipStrictExistCheck is false
-				- case 4.2: Fail to MultiInsert with all existed vector when SkipStrictExistCheck is false
+				- case 4.2: Fail to MultiInsert with all existed ID when SkipStrictExistCheck is false
 				- case 4.3: Fail to MultiInsert with 2 existed ID when SkipStrictExistCheck is true
-				- case 4.4: Fail to MultiInsert with all existed vector when SkipStrictExistCheck is true
+				- case 4.4: Fail to MultiInsert with all existed ID when SkipStrictExistCheck is true
 			- existed vector (with 100 insert request in a single MultiInsert request)
-				- case 4.1: Success to MultiInsert with 2 existed vector when SkipStrictExistCheck is false
-				- case 4.2: Success to MultiInsert with all existed vector when SkipStrictExistCheck is false
-				- case 4.3: Success to MultiInsert with 2 existed vector when SkipStrictExistCheck is true
-				- case 4.4: Success to MultiInsert with all existed vector when SkipStrictExistCheck is true
+				- case 5.1: Success to MultiInsert with 2 existed vector when SkipStrictExistCheck is false
+				- case 5.2: Success to MultiInsert with all existed vector when SkipStrictExistCheck is false
+				- case 5.3: Success to MultiInsert with 2 existed vector when SkipStrictExistCheck is true
+				- case 5.4: Success to MultiInsert with all existed vector when SkipStrictExistCheck is true
 			- existed ID & existed vector (with 100 insert request in a single MultiInsert request)
-				- case 4.1: Fail to MultiInsert with 2 existed ID & vector when SkipStrictExistCheck is false
-				- case 4.2: Fail to MultiInsert with all existed ID & vector when SkipStrictExistCheck is false
-				- case 4.3: Fail to MultiInsert with 2 existed ID & vector when SkipStrictExistCheck is true
-				- case 4.4: Fail to MultiInsert with all existed ID & vector when SkipStrictExistCheck is true
+				- case 6.1: Fail to MultiInsert with 2 existed ID & vector when SkipStrictExistCheck is false
+				- case 6.2: Fail to MultiInsert with all existed ID & vector when SkipStrictExistCheck is false
+				- case 6.3: Fail to MultiInsert with 2 existed ID & vector when SkipStrictExistCheck is true
+				- case 6.4: Fail to MultiInsert with all existed ID & vector when SkipStrictExistCheck is true
 
 	*/
 	tests := []test{
@@ -6333,7 +6339,7 @@ func Test_server_MultiInsert(t *testing.T) {
 			}
 
 			if test.beforeFunc != nil {
-				test.beforeFunc(t, s)
+				test.beforeFunc(tt, s)
 			}
 
 			gotRes, err := s.MultiInsert(test.args.ctx, test.args.reqs)
