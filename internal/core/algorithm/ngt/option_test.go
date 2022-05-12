@@ -336,7 +336,9 @@ func TestWithDimension(t *testing.T) {
 			},
 			want: want{
 				obj: &T{},
-				err: errors.New("invalid critical option, name: dimension, val: 0: dimension size 0 is invalid, the supporting dimension size must be between 2 ~ " + strconv.Itoa(VectorDimensionSizeLimit)),
+				err: errors.New(
+					"invalid critical option, name: dimension, val: 0: dimension size 0 is invalid, the supporting dimension size must be between 2 ~ " + strconv.Itoa(VectorDimensionSizeLimit),
+				),
 			},
 		},
 		{
@@ -364,7 +366,9 @@ func TestWithDimension(t *testing.T) {
 			},
 			want: want{
 				obj: &T{},
-				err: errors.New("invalid critical option, name: dimension, val: 1: dimension size 1 is invalid, the supporting dimension size must be between 2 ~ " + strconv.Itoa(VectorDimensionSizeLimit)),
+				err: errors.New(
+					"invalid critical option, name: dimension, val: 1: dimension size 1 is invalid, the supporting dimension size must be between 2 ~ " + strconv.Itoa(VectorDimensionSizeLimit),
+				),
 			},
 		},
 		{
@@ -374,7 +378,9 @@ func TestWithDimension(t *testing.T) {
 			},
 			want: want{
 				obj: &T{},
-				err: errors.New("invalid critical option, name: dimension, val: -100: dimension size -100 is invalid, the supporting dimension size must be between 2 ~ " + strconv.Itoa(VectorDimensionSizeLimit)),
+				err: errors.New(
+					"invalid critical option, name: dimension, val: -100: dimension size -100 is invalid, the supporting dimension size must be between 2 ~ " + strconv.Itoa(VectorDimensionSizeLimit),
+				),
 			},
 		},
 		{
@@ -384,7 +390,11 @@ func TestWithDimension(t *testing.T) {
 			},
 			want: want{
 				obj: &T{},
-				err: errors.New("invalid critical option, name: dimension, val: 4294967296: dimension size 4294967296 is invalid, the supporting dimension size must be between 2 ~ " + strconv.Itoa(VectorDimensionSizeLimit)),
+				err: errors.New(
+					"invalid critical option, name: dimension, val: 4294967296: dimension size 4294967296 is invalid, the supporting dimension size must be between 2 ~ " + strconv.Itoa(
+						VectorDimensionSizeLimit,
+					),
+				),
 			},
 		},
 		{
@@ -411,7 +421,11 @@ func TestWithDimension(t *testing.T) {
 			},
 			want: want{
 				obj: &T{},
-				err: errors.New("invalid critical option, name: dimension, val: -2147483648: dimension size -2147483648 is invalid, the supporting dimension size must be between 2 ~ " + strconv.Itoa(VectorDimensionSizeLimit)),
+				err: errors.New(
+					"invalid critical option, name: dimension, val: -2147483648: dimension size -2147483648 is invalid, the supporting dimension size must be between 2 ~ " + strconv.Itoa(
+						VectorDimensionSizeLimit,
+					),
+				),
 			},
 		},
 	}
