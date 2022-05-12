@@ -1,4 +1,3 @@
-//go:build darwin && !linux && !windows && !wasm && !js
 // +build darwin,!linux,!windows,!wasm,!js
 
 //
