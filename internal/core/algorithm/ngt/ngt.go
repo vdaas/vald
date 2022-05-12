@@ -156,7 +156,7 @@ const (
 	// -------------------------------------------------------------
 	// dimension constraints
 	// -------------------------------------------------------------.
-	NgtVectorDimensionSizeLimit = 1<<32 - 1
+	VectorDimensionSizeLimit = 1<<32 - 1
 	minimumDimensionSize        = algorithm.MinimumVectorDimensionSize
 	// -------------------------------------------------------------.
 )
@@ -685,8 +685,8 @@ func (n *ngt) GetVector(id uint) ([]float32, error) {
 		if results == nil {
 			return nil, n.newGoError(ebuf)
 		}
-		ret = (*[NgtVectorDimensionSizeLimit]float32)(unsafe.Pointer(results))[:dimension:dimension]
-		// for _, elem := range (*[NgtVectorDimensionSizeLimit]C.float)(unsafe.Pointer(results))[:dimension:dimension]{
+		ret = (*[VectorDimensionSizeLimit]float32)(unsafe.Pointer(results))[:dimension:dimension]
+		// for _, elem := range (*[VectorDimensionSizeLimit]C.float)(unsafe.Pointer(results))[:dimension:dimension]{
 		// 	ret = append(ret, float32(elem))
 		// }
 	case Uint8:
@@ -697,7 +697,7 @@ func (n *ngt) GetVector(id uint) ([]float32, error) {
 			return nil, n.newGoError(ebuf)
 		}
 		ret = make([]float32, 0, dimension)
-		for _, elem := range (*[NgtVectorDimensionSizeLimit]C.uint8_t)(unsafe.Pointer(results))[:dimension:dimension] {
+		for _, elem := range (*[VectorDimensionSizeLimit]C.uint8_t)(unsafe.Pointer(results))[:dimension:dimension] {
 			ret = append(ret, float32(elem))
 		}
 	default:

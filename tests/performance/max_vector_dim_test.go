@@ -117,8 +117,8 @@ func TestMaxDimInsert(t *testing.T) {
 				if bit == maxBit {
 					dim--
 				}
-				if dim > ngt.NgtVectorDimensionSizeLimit {
-					t.Fatal(errors.ErrInvalidDimensionSize(dim, ngt.NgtVectorDimensionSizeLimit))
+				if dim > ngt.VectorDimensionSizeLimit {
+					t.Fatal(errors.ErrInvalidDimensionSize(dim, ngt.VectorDimensionSizeLimit))
 				}
 				t.Logf("Start test: dimension = %d (bit = %d)", dim, bit)
 				ngt, err := init_ngt_service(dim)
@@ -220,8 +220,8 @@ func TestMaxDimInsertGRPC(t *testing.T) {
 				if bit == maxBit {
 					dim--
 				}
-				if dim > ngt.NgtVectorDimensionSizeLimit {
-					t.Fatal(errors.ErrInvalidDimensionSize(dim, ngt.NgtVectorDimensionSizeLimit))
+				if dim > ngt.VectorDimensionSizeLimit {
+					t.Fatal(errors.ErrInvalidDimensionSize(dim, ngt.VectorDimensionSizeLimit))
 				}
 				t.Logf("Start test: dimension = %d (bit = %d)", dim, bit)
 				ngt, err := init_ngt_service(dim)
