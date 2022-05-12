@@ -5687,7 +5687,6 @@ func Test_server_MultiInsert(t *testing.T) {
 			// set want
 			w := genObjectLocations(100, name, ip)
 			w.Locations[0].Uuid = req.Requests[0].Vector.Id
-			//w.Locations[1].Uuid = dupID
 
 			return test{
 				name: "Decision Table Testing case 3.1: Success to MultiInsert with 2 duplicated ID & vector when SkipStrictExistCheck is false",
@@ -5760,7 +5759,6 @@ func Test_server_MultiInsert(t *testing.T) {
 			// set want
 			w := genObjectLocations(100, name, ip)
 			w.Locations[0].Uuid = req.Requests[0].Vector.Id
-			// w.Locations[1].Uuid = req.Requests[1].Vector.Id
 
 			return test{
 				name: "Decision Table Testing case 3.3: Success to MultiInsert with 2 duplicated ID & vector when SkipStrictExistCheck is true",
