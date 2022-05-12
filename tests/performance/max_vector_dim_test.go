@@ -21,9 +21,8 @@ import (
 )
 
 const (
-	maxBit               = 32
-	ngtMaxDimensionLimit = 1<<32 - 1 // internal/core/algorithm/ngt/ngt.go#ngtVectorDimensionLimit
-	freeMemLimit         = 500       // Limit of free memory remaining(MB)
+	maxBit       = 32
+	freeMemLimit = 500 // Limit of free memory remaining(MB)
 )
 
 func init_ngt_service(dim int) (service.NGT, error) {
@@ -117,6 +116,9 @@ func TestMaxDimInsert(t *testing.T) {
 				dim := 1 << bit
 				if bit == maxBit {
 					dim--
+				}
+				if dim > ngt.NgtVectorDimensionSizeLimit {
+					t.Fatal(errors.ErrInvalidDimensionSize(dim, ngt.NgtVectorDimensionSizeLimit))
 				}
 				t.Logf("Start test: dimension = %d (bit = %d)", dim, bit)
 				ngt, err := init_ngt_service(dim)
@@ -217,6 +219,9 @@ func TestMaxDimInsertGRPC(t *testing.T) {
 				dim := 1 << bit
 				if bit == maxBit {
 					dim--
+				}
+				if dim > ngt.NgtVectorDimensionSizeLimit {
+					t.Fatal(errors.ErrInvalidDimensionSize(dim, ngt.NgtVectorDimensionSizeLimit))
 				}
 				t.Logf("Start test: dimension = %d (bit = %d)", dim, bit)
 				ngt, err := init_ngt_service(dim)
