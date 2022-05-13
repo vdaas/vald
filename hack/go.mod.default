@@ -16,6 +16,7 @@ replace (
 	github.com/chzyer/logex => github.com/chzyer/logex master
 	github.com/coreos/etcd =>  go.etcd.io/etcd latest
 	github.com/docker/docker => github.com/moby/moby latest
+	github.com/emicklei/go-restful => github.com/emicklei/go-restful master
 	github.com/envoyproxy/protoc-gen-validate => github.com/envoyproxy/protoc-gen-validate latest
 	github.com/fsnotify/fsnotify => github.com/fsnotify/fsnotify latest
 	github.com/gin-gonic/gin => github.com/gin-gonic/gin latest

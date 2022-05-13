@@ -12,10 +12,11 @@ replace (
 	github.com/Azure/go-autorest => github.com/Azure/go-autorest v14.2.1-0.20220504154517-49906996bd99+incompatible
 	github.com/Azure/go-autorest/autorest => github.com/Azure/go-autorest/autorest v0.11.28-0.20220504154517-49906996bd99
 	github.com/Azure/go-autorest/autorest/adal => github.com/Azure/go-autorest/autorest/adal v0.9.19
-	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.44.12
+	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.44.13
 	github.com/chzyer/logex => github.com/chzyer/logex v1.2.1
 	github.com/coreos/etcd => go.etcd.io/etcd v3.3.27+incompatible
-	github.com/docker/docker => github.com/moby/moby v20.10.15+incompatible
+	github.com/docker/docker => github.com/moby/moby v20.10.16+incompatible
+	github.com/emicklei/go-restful => github.com/emicklei/go-restful v2.15.1-0.20210410130218-1e8c63ce7906+incompatible
 	github.com/envoyproxy/protoc-gen-validate => github.com/envoyproxy/protoc-gen-validate v0.6.7
 	github.com/fsnotify/fsnotify => github.com/fsnotify/fsnotify v1.5.4
 	github.com/gin-gonic/gin => github.com/gin-gonic/gin v1.7.7
@@ -43,7 +44,7 @@ replace (
 	github.com/jackc/pgtype => github.com/jackc/pgtype v1.11.0
 	github.com/jackc/puddle => github.com/jackc/puddle v1.2.1
 	github.com/json-iterator/go => github.com/json-iterator/go v1.1.12
-	github.com/klauspost/compress => github.com/klauspost/compress v1.15.5-0.20220512062731-fbaccdc0896a
+	github.com/klauspost/compress => github.com/klauspost/compress v1.15.5-0.20220512161851-3909335c441d
 	github.com/kpango/glg => github.com/kpango/glg v1.6.10
 	github.com/onsi/ginkgo => github.com/onsi/ginkgo v1.16.5
 	github.com/onsi/gomega => github.com/onsi/gomega v1.19.0
@@ -97,7 +98,7 @@ replace (
 	google.golang.org/protobuf => google.golang.org/protobuf v1.28.0
 	gopkg.in/check.v1 => gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c
 	gopkg.in/yaml.v2 => gopkg.in/yaml.v2 v2.4.0
-	gopkg.in/yaml.v3 => gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
+	gopkg.in/yaml.v3 => gopkg.in/yaml.v3 v3.0.0-20220512140231-539c8e751b99
 	k8s.io/api => k8s.io/api v0.24.0
 	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.24.0
 	k8s.io/apimachinery => k8s.io/apimachinery v0.24.0
