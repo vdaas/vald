@@ -92,7 +92,7 @@ coverage:
 .PHONY: tparse/install
 ## install tparse
 tparse/install:
-	go install github.com/mfridman/tparse@latest
+	$(call go-get, github.com/mfridman/tparse)
 
 .PHONY: gotests/install
 ## install gotests
