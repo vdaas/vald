@@ -97,7 +97,7 @@ tparse/install:
 .PHONY: gotests/install
 ## install gotests
 gotests/install:
-	go install github.com/cweill/gotests/gotests@latest
+	$(call go-get, github.com/cweill/gotests/gotests)
 
 .PHONY: gotests/gen
 ## generate missing go test files
