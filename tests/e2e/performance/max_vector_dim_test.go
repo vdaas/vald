@@ -32,7 +32,6 @@ import (
 	"github.com/vdaas/vald-client-go/v1/payload"
 	"github.com/vdaas/vald-client-go/v1/vald"
 
-	"github.com/vdaas/vald/internal/core/algorithm/ngt"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/file"
 	"github.com/vdaas/vald/internal/net/grpc/codes"
@@ -46,8 +45,9 @@ import (
 )
 
 const (
-	maxBit       = 32
-	freeMemLimit = 500 // Limit of free memory remaining(MB)
+	maxBit                   = 32
+	vectorDimensionSizeLimit = 1<<32 - 1
+	freeMemLimit             = 500 // Limit of free memory remaining(MB)
 )
 
 var (
@@ -109,8 +109,8 @@ func TestE2EInsertOnlyWithOneVector(t *testing.T) {
 	if bit == maxBit {
 		dim--
 	}
-	if dim > ngt.VectorDimensionSizeLimit {
-		t.Fatalf("Invalid argument: dimension should be equal or under than " + strconv.Itoa(ngt.VectorDimensionSizeLimit) + ". set dim was " + strconv.Itoa(dim))
+	if dim > vectorDimensionSizeLimit {
+		t.Fatalf("Invalid argument: dimension should be equal or under than " + strconv.Itoa(vectorDimensionSizeLimit) + ". set dim was " + strconv.Itoa(dim))
 	}
 	ctx := context.Background()
 	conn, err := grpc.DialContext(

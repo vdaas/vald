@@ -86,13 +86,17 @@ jobs:
       - name: run E2E MaxDimension
         run: |
           go version
+          go get github.com/vdaas/vald-client-go/v1/payload
+          go get github.com/vdaas/vald-client-go/v1/vald
           BIT=2
+          RELEASE=`helm list | grep vald | awk '{print $1}'`
           while [ $BIT -ne 32 ]; do
+            echo "Start: Bit=${BIT}"
             DIM=$((1<<$BIT))
             if [ $BIT = "32" ]; then
               DIM=$(($DIM-1))
             fi
-            helm upgrade \
+            helm upgrade ${RELEASE} charts/vald \
               --values ${VALUES} \
               --set defaults.image.tag=nightly \
               --set agent.ngt.dimension=${DIM}
@@ -102,7 +106,7 @@ jobs:
             sleep 10
             kubectl wait --for=condition=ready pod -l ${WAIT_FOR_SELECTOR} --timeout=${WAIT_FOR_TIMEOUT}
             POD_NAME=`kubectl get pods | grep vald-lb-gateway | awk '{print $1}'`
-            CODE=`go test \
+            RES=`go test \
               -race \
               -v tests/e2e/performance/max_vector_dim_test.go \
               -tags "e2e" \
@@ -113,21 +117,26 @@ jobs:
               -portforward \
               -portforward-pod-name=${POD_NAME} \
               -kubeconfig=${KUBECONFIG} \
-              -namespace=default
-              -v it | grep "Code"`
-            if [ (${CODE//,/ })[1] = "ResourceExhausted" ]; then
+              -namespace=default | grep "Code"`
+            CODE=(${RES//,/ })
+            if [ ${CODE[1]} = "ResourceExhausted" ]; then
+              echo "Finish: Bit=${BIT} with ${CODE[1]}"
               break;
             fi
-            if [ (${CODE//,/ })[1] != "OK" ]; then
+            if [ ${CODE[1]} != "OK" ]; then
+              echo "Finish: Bit=${BIT} with Error"
               break;
             fi
+            echo "Finish: Bit=${BIT}"
             BIT=$(($BIT+1))
           done
           echo "::set-output name=MAX_BIT::${BIT}"
+          echo "MAX_BIT=${BIT}"
         env:
           WAIT_FOR_SELECTOR: app=vald-agent-ngt
           WAIT_FOR_TIMEOUT: 29m
           VALUES: .github/helm/values/values-max-dim.yaml
+        timeout-minutes: 30
   slack-notification:
     name: "Slack notification"
     needs:
