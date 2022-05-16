@@ -92,12 +92,12 @@ coverage:
 .PHONY: tparse/install
 ## install tparse
 tparse/install:
-	go get -u github.com/mfridman/tparse
+	$(call go-install, github.com/mfridman/tparse)
 
 .PHONY: gotests/install
 ## install gotests
 gotests/install:
-	go get -u github.com/cweill/gotests/...
+	$(call go-install, github.com/cweill/gotests/gotests)
 
 .PHONY: gotests/gen
 ## generate missing go test files
