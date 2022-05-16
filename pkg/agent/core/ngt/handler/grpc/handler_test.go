@@ -4005,6 +4005,50 @@ func Test_server_Update(t *testing.T) {
 		}
 		return nil
 	}
+
+	/*
+		Update test cases (only test float32 unless otherwise specified):
+		- Equivalence Class Testing ( 1000 vectors inserted before a update )
+			- case 1.1: success update vector
+			- case 2.1: fail update with non-existent ID
+			- case 3.1: fail update with different dimension vector (type: uint8)
+			- case 3.2: fail update with different dimension vector (type: float32)
+		- Boundary Value Testing ( 1000 vectors inserted before a update )
+			- case 1.1: fail update with ""
+			- case 2.1: success update with ^@
+			- case 2.2: success update with ^I
+			- case 2.3: success update with ^J
+			- case 2.4: success update with ^M
+			- case 2.5: success update with ^[
+			- case 2.6: success update with ^?
+			- case 3.1: success update with utf-8 ID from utf-8 index
+			- case 3.2: fail update with utf-8 ID from s-jis index
+			- case 3.3: fail update with utf-8 ID from euc-jp index
+			- case 3.4: fail update with s-jis ID from utf-8 index
+			- case 3.5: success update with s-jis ID from s-jis index
+			- case 3.6: fail update with s-jis ID from euc-jp index
+			- case 3.4: fail update with euc-jp ID from utf-8 index
+			- case 3.5: fail update with euc-jp ID from s-jis index
+			- case 3.6: success update with euc-jp ID from euc-jp index
+			- case 4.1: success update with 😀
+			- case 5.1: success update with 0 value vector (type: uint8)
+			- case 5.2: success update with +0 value vector (type: float32)
+			- case 5.3: success update with -0 value vector (type: float32)
+			- case 6.1: success update with min value vector (type: uint8)
+			- case 6.2: success update with min value vector (type: float32)
+			- case 7.1: success update with max value vector (type: uint8)
+			- case 7.2: success update with max value vector (type: float32)
+			- case 8.1: fail update with NaN value vector (type: float32)
+			- case 9.1: success update with +inf value vector (type: float32)
+			- case 9.2: success update with -inf value vector (type: float32)
+			- case 5.1: fail update with nil vector
+			= case 6.1: fail update with empty vector
+		- Decision Table Testing
+		    - case 1.1: success update with duplicated vector and SkipStrictExistCheck is false
+			- case 1.2: success update with different vector and SkipStrictExistsCheck is false
+		    - case 2.1: fail update with duplicated vector and SkipStrictExistCheck is true
+			- case 2.2: success update with different vector and SkipStrictExistsCheck is true
+	*/
 	tests := []test{
 		// TODO test cases
 		/*
