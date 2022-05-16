@@ -23,6 +23,7 @@ package performance
 import (
 	"context"
 	"flag"
+	"fmt"
 	"os"
 	"strconv"
 	"testing"
@@ -62,7 +63,7 @@ var (
 func init() {
 	testing.Init()
 
-	flag.StringVar(&host, "host", "localhost:8081", "hostname")
+	flag.StringVar(&host, "host", "localhost", "hostname")
 	flag.IntVar(&port, "port", 8081, "gRPC port")
 	flag.StringVar(&namespace, "namespace", "default", "namespace")
 	flag.IntVar(&bit, "bit", 2, "bit")
@@ -104,7 +105,6 @@ func teardown() {
 func TestE2EInsertOnlyWithOneVector(t *testing.T) {
 	t.Helper()
 	t.Cleanup(teardown)
-	t.Log(bit)
 	dim := 1 << bit
 	if bit == maxBit {
 		dim--
@@ -133,7 +133,9 @@ func TestE2EInsertOnlyWithOneVector(t *testing.T) {
 	vec := vector.GaussianDistributedFloat32VectorGenerator(1, dim)[0]
 	req := &payload.Insert_Request{
 		Vector: &payload.Object_Vector{
-			Id:     strconv.Itoa(dim),
+			// Id should be named the unique name in the production environment.
+			// In this case, it is the simple value because the main purpose of this test is checking the max vector dimension.
+			Id:     "1",
 			Vector: vec,
 		},
 		Config: &payload.Insert_Config{
@@ -144,9 +146,14 @@ func TestE2EInsertOnlyWithOneVector(t *testing.T) {
 	if err != nil {
 		st, _ := status.FromError(err)
 		if st.Code() == codes.Code(code.Code_RESOURCE_EXHAUSTED) {
-			t.Log(st.Code())
+			// For checking code in the step of the github actions
+			fmt.Println("Code: " + st.Code().String())
+			// Output: Code: ResourceExhausted
 			return
 		}
 		t.Fatal(err)
 	}
+	// For checking code in the step of the github actions
+	fmt.Println("Code: OK")
+	// Output: Code: OK
 }
