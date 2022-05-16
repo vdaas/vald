@@ -4042,11 +4042,11 @@ func Test_server_Update(t *testing.T) {
 			- case 9.1: success update with +inf value vector (type: float32)
 			- case 9.2: success update with -inf value vector (type: float32)
 			- case 5.1: fail update with nil vector
-			= case 6.1: fail update with empty vector
+			- case 6.1: fail update with empty vector
 		- Decision Table Testing
-		    - case 1.1: success update with duplicated vector and SkipStrictExistCheck is false
+			- case 1.1: success update with duplicated vector and SkipStrictExistCheck is false
 			- case 1.2: success update with different vector and SkipStrictExistsCheck is false
-		    - case 2.1: fail update with duplicated vector and SkipStrictExistCheck is true
+			- case 2.1: fail update with duplicated vector and SkipStrictExistCheck is true
 			- case 2.2: success update with different vector and SkipStrictExistsCheck is true
 	*/
 	tests := []test{
