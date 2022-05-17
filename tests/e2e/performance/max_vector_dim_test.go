@@ -48,7 +48,6 @@ import (
 const (
 	maxBit                   = 32
 	vectorDimensionSizeLimit = 1<<32 - 1
-	freeMemLimit             = 500 // Limit of free memory remaining(MB)
 )
 
 var (
