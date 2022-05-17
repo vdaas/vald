@@ -22,6 +22,7 @@ package performance
 
 import (
 	"context"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"os"
@@ -51,13 +52,14 @@ const (
 )
 
 var (
-	host       string
-	port       int
-	namespace  string
-	bit        int
-	dim        int
-	kubeClient client.Client
-	forwarder  *portforward.Portforward
+	host                string
+	port                int
+	namespace           string
+	bit                 int
+	dim                 int
+	kubeClient          client.Client
+	forwarder           *portforward.Portforward
+	indexingWaitSeconds uint
 )
 
 func init() {
@@ -67,6 +69,7 @@ func init() {
 	flag.IntVar(&port, "port", 8081, "gRPC port")
 	flag.StringVar(&namespace, "namespace", "default", "namespace")
 	flag.IntVar(&bit, "bit", 2, "bit")
+	flag.UintVar(&indexingWaitSeconds, "wait", 60, "indexing wait seconds")
 	pf := flag.Bool("portforward", false, "enable port forwarding")
 	pfPodName := flag.String("portforward-pod-name", "vald-lb-gateway", "pod name (only for port forward)")
 	pfPodPort := flag.Int("portforward-pod-port", port, "pod gRPC port (only for port forward)")
@@ -102,7 +105,7 @@ func teardown() {
 	}
 }
 
-func TestE2EInsertOnlyWithOneVector(t *testing.T) {
+func TestE2EInsertOnlyWithOneVectorAndSearch(t *testing.T) {
 	t.Helper()
 	t.Cleanup(teardown)
 	dim := 1 << bit
@@ -131,11 +134,12 @@ func TestE2EInsertOnlyWithOneVector(t *testing.T) {
 
 	cli := vald.NewValdClient(conn)
 	vec := vector.GaussianDistributedFloat32VectorGenerator(1, dim)[0]
+	id := "1"
 	req := &payload.Insert_Request{
 		Vector: &payload.Object_Vector{
 			// Id should be named the unique name in the production environment.
 			// In this case, it is the simple value because the main purpose of this test is checking the max vector dimension.
-			Id:     "1",
+			Id:     id,
 			Vector: vec,
 		},
 		Config: &payload.Insert_Config{
@@ -153,7 +157,29 @@ func TestE2EInsertOnlyWithOneVector(t *testing.T) {
 		}
 		t.Fatal(err)
 	}
-	// For checking code in the step of the github actions
-	fmt.Println("Code: OK")
-	// Output: Code: OK
+	wt := time.Duration(indexingWaitSeconds) * time.Second
+	time.Sleep(wt)
+	res, err := cli.SearchByID(
+		ctx,
+		&payload.Search_IDRequest{
+			Id: id,
+			Config: &payload.Search_Config{
+				Num: 1,
+			},
+		},
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	b, err := json.MarshalIndent(res.GetResults(), "", " ")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if string(b) != "" {
+		// For checking code in the step of the github actions
+		fmt.Println("Code: OK")
+		// Output: Code: OK
+		return
+	}
+	t.Fatal("No result")
 }
