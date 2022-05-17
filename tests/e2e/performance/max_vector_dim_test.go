@@ -156,6 +156,7 @@ func TestE2EInsertOnlyWithOneVectorAndSearch(t *testing.T) {
 		}
 		t.Fatalf("TestE2EInsertOnlyWithOneVectorAndSearch\tError: %#v", err)
 	}
+	t.Logf("[Pass] Insert process (Bit = %d)", bit)
 	wt := time.Duration(indexingWaitSeconds) * time.Second
 	time.Sleep(wt)
 	res, err := cli.SearchByID(
@@ -174,6 +175,7 @@ func TestE2EInsertOnlyWithOneVectorAndSearch(t *testing.T) {
 	if err != nil {
 		t.Fatalf("TestE2EInsertOnlyWithOneVectorAndSearch\tError: %#v", err)
 	}
+	t.Logf("[Pass] SearchByID process (Bit = %d)", bit)
 	if string(b) != "" {
 		// For checking code in the step of the github actions
 		fmt.Println("Code: OK")

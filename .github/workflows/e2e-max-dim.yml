@@ -124,7 +124,7 @@ jobs:
               break;
             fi
             if [ ${CODE[1]} != "OK" ]; then
-              echo "Finish: Bit=${BIT} with Error"
+              echo "Finish: Bit=${BIT} with Error: ${RES}"
               break;
             fi
             echo "Finish: Bit=${BIT}"
