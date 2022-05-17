@@ -103,8 +103,8 @@ jobs:
 
             sleep 3
             kubectl get pods | grep vald-agent-ngt | awk '{print $1}' | xargs kubectl delete pod
-            sleep 10
             kubectl wait --for=condition=ready pod -l ${WAIT_FOR_SELECTOR} --timeout=${WAIT_FOR_TIMEOUT}
+            sleep 30
             POD_NAME=`kubectl get pods | grep vald-lb-gateway | awk '{print $1}'`
             RES=`go test \
               -race \
