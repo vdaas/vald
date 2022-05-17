@@ -3839,9 +3839,9 @@ func Test_server_MultiInsert(t *testing.T) {
 		- Decision Table Testing
 			- duplicated ID (with 100 insert request in a single MultiInsert request)
 				- case 1.1: Success to MultiInsert with 2 duplicated ID when SkipStrictExistCheck is false
-				- case 1.2: Success to MultiInsert with all duplicated vector when SkipStrictExistCheck is false
+				- case 1.2: Success to MultiInsert with all duplicated ID when SkipStrictExistCheck is false
 				- case 1.3: Success to MultiInsert with 2 duplicated ID when SkipStrictExistCheck is true
-				- case 1.4: Success to MultiInsert with all duplicated vector when SkipStrictExistCheck is true
+				- case 1.4: Success to MultiInsert with all duplicated ID when SkipStrictExistCheck is true
 			- duplicated vector (with 100 insert request in a single MultiInsert request)
 				- case 2.1: Success to MultiInsert with 2 duplicated vector when SkipStrictExistCheck is false
 				- case 2.2: Success to MultiInsert with all duplicated vector when SkipStrictExistCheck is false
@@ -5011,6 +5011,810 @@ func Test_server_MultiInsert(t *testing.T) {
 				wantRes: genObjectLocations(100, name, ip),
 			},
 		},
+		func() test {
+			req := genMultiInsertReq(Float, vector.Gaussian, 100, f32VecDim)
+			vid := req.Requests[0].Vector.Id
+			req.Requests[0] = nil
+
+			return test{
+				name: "Boundary Value Testing case 7.1: Fail to MultiInsert with 1 vector with nil insert request",
+				args: args{
+					ctx:  ctx,
+					reqs: req,
+				},
+				fields: fields{
+					name:    name,
+					ip:      ip,
+					svcCfg:  defaultF32SvcCfg,
+					svcOpts: defaultSvcOpts,
+				},
+				want: want{
+					err: func() error {
+						err := errors.ErrIncompatibleDimensionSize(0, intVecDim)
+						err = status.WrapWithInvalidArgument("MultiInsert API Incompatible Dimension Size detected",
+							err,
+							&errdetails.RequestInfo{
+								RequestId:   vid,
+								ServingData: errdetails.Serialize(req),
+							},
+							&errdetails.BadRequest{
+								FieldViolations: []*errdetails.BadRequestFieldViolation{
+									{
+										Field:       "vector dimension size",
+										Description: err.Error(),
+									},
+								},
+							},
+							&errdetails.ResourceInfo{
+								ResourceType: ngtResourceType + "/ngt.MultiInsert",
+								ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, name, ip),
+							})
+						return err
+					}(),
+				},
+			}
+		}(),
+		func() test {
+			req := genMultiInsertReq(Float, vector.Gaussian, 100, f32VecDim)
+			vid := req.Requests[0].Vector.Id
+			for i := 0; i < len(req.Requests); i += 2 {
+				req.Requests[i] = nil
+			}
+
+			return test{
+				name: "Boundary Value Testing case 7.2: Fail to MultiInsert with 50 vector with nil insert request",
+				args: args{
+					ctx:  ctx,
+					reqs: req,
+				},
+				fields: fields{
+					name:    name,
+					ip:      ip,
+					svcCfg:  defaultF32SvcCfg,
+					svcOpts: defaultSvcOpts,
+				},
+				want: want{
+					err: func() error {
+						err := errors.ErrIncompatibleDimensionSize(0, intVecDim)
+						err = status.WrapWithInvalidArgument("MultiInsert API Incompatible Dimension Size detected",
+							err,
+							&errdetails.RequestInfo{
+								RequestId:   vid,
+								ServingData: errdetails.Serialize(req),
+							},
+							&errdetails.BadRequest{
+								FieldViolations: []*errdetails.BadRequestFieldViolation{
+									{
+										Field:       "vector dimension size",
+										Description: err.Error(),
+									},
+								},
+							},
+							&errdetails.ResourceInfo{
+								ResourceType: ngtResourceType + "/ngt.MultiInsert",
+								ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, name, ip),
+							})
+						return err
+					}(),
+				},
+			}
+		}(),
+		func() test {
+			req := genMultiInsertReq(Float, vector.Gaussian, 100, f32VecDim)
+			vid := req.Requests[0].Vector.Id
+			for i := 0; i < len(req.Requests); i++ {
+				req.Requests[i] = nil
+			}
+
+			return test{
+				name: "Boundary Value Testing case 7.3: Fail to MultiInsert with all vector with nil insert request",
+				args: args{
+					ctx:  ctx,
+					reqs: req,
+				},
+				fields: fields{
+					name:    name,
+					ip:      ip,
+					svcCfg:  defaultF32SvcCfg,
+					svcOpts: defaultSvcOpts,
+				},
+				want: want{
+					err: func() error {
+						err := errors.ErrIncompatibleDimensionSize(0, intVecDim)
+						err = status.WrapWithInvalidArgument("MultiInsert API Incompatible Dimension Size detected",
+							err,
+							&errdetails.RequestInfo{
+								RequestId:   vid,
+								ServingData: errdetails.Serialize(req),
+							},
+							&errdetails.BadRequest{
+								FieldViolations: []*errdetails.BadRequestFieldViolation{
+									{
+										Field:       "vector dimension size",
+										Description: err.Error(),
+									},
+								},
+							},
+							&errdetails.ResourceInfo{
+								ResourceType: ngtResourceType + "/ngt.MultiInsert",
+								ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, name, ip),
+							})
+						return err
+					}(),
+				},
+			}
+		}(),
+		func() test {
+			req := genMultiInsertReq(Float, vector.Gaussian, 100, f32VecDim)
+			vid := req.Requests[0].Vector.Id
+			req.Requests[0].Vector.Vector = nil
+
+			return test{
+				name: "Boundary Value Testing case 8.1: Fail to MultiInsert with 1 vector with nil vector",
+				args: args{
+					ctx:  ctx,
+					reqs: req,
+				},
+				fields: fields{
+					name:    name,
+					ip:      ip,
+					svcCfg:  defaultF32SvcCfg,
+					svcOpts: defaultSvcOpts,
+				},
+				want: want{
+					err: func() error {
+						err := errors.ErrIncompatibleDimensionSize(0, intVecDim)
+						err = status.WrapWithInvalidArgument("MultiInsert API Incompatible Dimension Size detected",
+							err,
+							&errdetails.RequestInfo{
+								RequestId:   vid,
+								ServingData: errdetails.Serialize(req),
+							},
+							&errdetails.BadRequest{
+								FieldViolations: []*errdetails.BadRequestFieldViolation{
+									{
+										Field:       "vector dimension size",
+										Description: err.Error(),
+									},
+								},
+							},
+							&errdetails.ResourceInfo{
+								ResourceType: ngtResourceType + "/ngt.MultiInsert",
+								ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, name, ip),
+							})
+						return err
+					}(),
+				},
+			}
+		}(),
+		func() test {
+			req := genMultiInsertReq(Float, vector.Gaussian, 100, f32VecDim)
+			vid := req.Requests[0].Vector.Id
+			for i := 0; i < len(req.Requests); i += 2 {
+				req.Requests[i].Vector.Vector = nil
+			}
+
+			return test{
+				name: "Boundary Value Testing case 8.2: Fail to MultiInsert with 50 vector with nil vector",
+				args: args{
+					ctx:  ctx,
+					reqs: req,
+				},
+				fields: fields{
+					name:    name,
+					ip:      ip,
+					svcCfg:  defaultF32SvcCfg,
+					svcOpts: defaultSvcOpts,
+				},
+				want: want{
+					err: func() error {
+						err := errors.ErrIncompatibleDimensionSize(0, intVecDim)
+						err = status.WrapWithInvalidArgument("MultiInsert API Incompatible Dimension Size detected",
+							err,
+							&errdetails.RequestInfo{
+								RequestId:   vid,
+								ServingData: errdetails.Serialize(req),
+							},
+							&errdetails.BadRequest{
+								FieldViolations: []*errdetails.BadRequestFieldViolation{
+									{
+										Field:       "vector dimension size",
+										Description: err.Error(),
+									},
+								},
+							},
+							&errdetails.ResourceInfo{
+								ResourceType: ngtResourceType + "/ngt.MultiInsert",
+								ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, name, ip),
+							})
+						return err
+					}(),
+				},
+			}
+		}(),
+		func() test {
+			req := genMultiInsertReq(Float, vector.Gaussian, 100, f32VecDim)
+			vid := req.Requests[0].Vector.Id
+			for i := 0; i < len(req.Requests); i++ {
+				req.Requests[i].Vector.Vector = nil
+			}
+
+			return test{
+				name: "Boundary Value Testing case 8.3: Fail to MultiInsert with all vector with nil vector",
+				args: args{
+					ctx:  ctx,
+					reqs: req,
+				},
+				fields: fields{
+					name:    name,
+					ip:      ip,
+					svcCfg:  defaultF32SvcCfg,
+					svcOpts: defaultSvcOpts,
+				},
+				want: want{
+					err: func() error {
+						err := errors.ErrIncompatibleDimensionSize(0, intVecDim)
+						err = status.WrapWithInvalidArgument("MultiInsert API Incompatible Dimension Size detected",
+							err,
+							&errdetails.RequestInfo{
+								RequestId:   vid,
+								ServingData: errdetails.Serialize(req),
+							},
+							&errdetails.BadRequest{
+								FieldViolations: []*errdetails.BadRequestFieldViolation{
+									{
+										Field:       "vector dimension size",
+										Description: err.Error(),
+									},
+								},
+							},
+							&errdetails.ResourceInfo{
+								ResourceType: ngtResourceType + "/ngt.MultiInsert",
+								ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, name, ip),
+							})
+						return err
+					}(),
+				},
+			}
+		}(),
+		func() test {
+			req := genMultiInsertReq(Float, vector.Gaussian, 100, f32VecDim)
+			vid := req.Requests[0].Vector.Id
+			req.Requests[0].Vector.Vector = []float32{}
+
+			return test{
+				name: "Boundary Value Testing case 9.1: Fail to MultiInsert with 1 vector with empty insert vector",
+				args: args{
+					ctx:  ctx,
+					reqs: req,
+				},
+				fields: fields{
+					name:    name,
+					ip:      ip,
+					svcCfg:  defaultF32SvcCfg,
+					svcOpts: defaultSvcOpts,
+				},
+				want: want{
+					err: func() error {
+						err := errors.ErrIncompatibleDimensionSize(0, intVecDim)
+						err = status.WrapWithInvalidArgument("MultiInsert API Incompatible Dimension Size detected",
+							err,
+							&errdetails.RequestInfo{
+								RequestId:   vid,
+								ServingData: errdetails.Serialize(req),
+							},
+							&errdetails.BadRequest{
+								FieldViolations: []*errdetails.BadRequestFieldViolation{
+									{
+										Field:       "vector dimension size",
+										Description: err.Error(),
+									},
+								},
+							},
+							&errdetails.ResourceInfo{
+								ResourceType: ngtResourceType + "/ngt.MultiInsert",
+								ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, name, ip),
+							})
+						return err
+					}(),
+				},
+			}
+		}(),
+		func() test {
+			req := genMultiInsertReq(Float, vector.Gaussian, 100, f32VecDim)
+			vid := req.Requests[0].Vector.Id
+			for i := 0; i < len(req.Requests); i += 2 {
+				req.Requests[i].Vector.Vector = []float32{}
+			}
+
+			return test{
+				name: "Boundary Value Testing case 9.2: Fail to MultiInsert with 50 vector with empty insert vector",
+				args: args{
+					ctx:  ctx,
+					reqs: req,
+				},
+				fields: fields{
+					name:    name,
+					ip:      ip,
+					svcCfg:  defaultF32SvcCfg,
+					svcOpts: defaultSvcOpts,
+				},
+				want: want{
+					err: func() error {
+						err := errors.ErrIncompatibleDimensionSize(0, intVecDim)
+						err = status.WrapWithInvalidArgument("MultiInsert API Incompatible Dimension Size detected",
+							err,
+							&errdetails.RequestInfo{
+								RequestId:   vid,
+								ServingData: errdetails.Serialize(req),
+							},
+							&errdetails.BadRequest{
+								FieldViolations: []*errdetails.BadRequestFieldViolation{
+									{
+										Field:       "vector dimension size",
+										Description: err.Error(),
+									},
+								},
+							},
+							&errdetails.ResourceInfo{
+								ResourceType: ngtResourceType + "/ngt.MultiInsert",
+								ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, name, ip),
+							})
+						return err
+					}(),
+				},
+			}
+		}(),
+		func() test {
+			req := genMultiInsertReq(Float, vector.Gaussian, 100, f32VecDim)
+			vid := req.Requests[0].Vector.Id
+			for i := 0; i < len(req.Requests); i++ {
+				req.Requests[i].Vector.Vector = []float32{}
+			}
+
+			return test{
+				name: "Boundary Value Testing case 9.3: Fail to MultiInsert with all vector with empty insert vector",
+				args: args{
+					ctx:  ctx,
+					reqs: req,
+				},
+				fields: fields{
+					name:    name,
+					ip:      ip,
+					svcCfg:  defaultF32SvcCfg,
+					svcOpts: defaultSvcOpts,
+				},
+				want: want{
+					err: func() error {
+						err := errors.ErrIncompatibleDimensionSize(0, intVecDim)
+						err = status.WrapWithInvalidArgument("MultiInsert API Incompatible Dimension Size detected",
+							err,
+							&errdetails.RequestInfo{
+								RequestId:   vid,
+								ServingData: errdetails.Serialize(req),
+							},
+							&errdetails.BadRequest{
+								FieldViolations: []*errdetails.BadRequestFieldViolation{
+									{
+										Field:       "vector dimension size",
+										Description: err.Error(),
+									},
+								},
+							},
+							&errdetails.ResourceInfo{
+								ResourceType: ngtResourceType + "/ngt.MultiInsert",
+								ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, name, ip),
+							})
+						return err
+					}(),
+				},
+			}
+		}(),
+		func() test {
+			req := genMultiInsertReq(Float, vector.Gaussian, 100, f32VecDim)
+			req.Requests[0].Vector.Id = req.Requests[1].Vector.Id
+
+			// set insert request config
+			cfg := &payload.Insert_Config{
+				SkipStrictExistCheck: false,
+			}
+			for i := 0; i < len(req.Requests); i++ {
+				req.Requests[i].Config = cfg
+			}
+
+			// set want
+			w := genObjectLocations(100, name, ip)
+			w.Locations[0].Uuid = req.Requests[0].Vector.Id
+
+			return test{
+				name: "Decision Table Testing case 1.1: Success to MultiInsert with 2 duplicated ID when SkipStrictExistCheck is false",
+				args: args{
+					ctx:  ctx,
+					reqs: req,
+				},
+				fields: fields{
+					name:    name,
+					ip:      ip,
+					svcCfg:  defaultF32SvcCfg,
+					svcOpts: defaultSvcOpts,
+				},
+				want: want{
+					wantRes: w,
+				},
+			}
+		}(),
+		func() test {
+			req := genMultiInsertReq(Float, vector.Gaussian, 100, f32VecDim)
+			for i := 1; i < len(req.Requests); i++ {
+				req.Requests[i].Vector.Id = req.Requests[0].Vector.Id
+			}
+
+			// set insert request config
+			cfg := &payload.Insert_Config{
+				SkipStrictExistCheck: false,
+			}
+			for i := 0; i < len(req.Requests); i++ {
+				req.Requests[i].Config = cfg
+			}
+
+			// set want
+			w := genObjectLocations(100, name, ip)
+			for _, l := range w.Locations {
+				l.Uuid = req.Requests[0].Vector.Id
+			}
+
+			return test{
+				name: "Decision Table Testing case 1.2: Success to MultiInsert with all duplicated ID when SkipStrictExistCheck is false",
+				args: args{
+					ctx:  ctx,
+					reqs: req,
+				},
+				fields: fields{
+					name:    name,
+					ip:      ip,
+					svcCfg:  defaultF32SvcCfg,
+					svcOpts: defaultSvcOpts,
+				},
+				want: want{
+					wantRes: w,
+				},
+			}
+		}(),
+		func() test {
+			req := genMultiInsertReq(Float, vector.Gaussian, 100, f32VecDim)
+			req.Requests[0].Vector.Id = req.Requests[1].Vector.Id
+
+			// set insert request config
+			cfg := &payload.Insert_Config{
+				SkipStrictExistCheck: true,
+			}
+			for i := 0; i < len(req.Requests); i++ {
+				req.Requests[i].Config = cfg
+			}
+
+			// set want
+			w := genObjectLocations(100, name, ip)
+			w.Locations[0].Uuid = req.Requests[0].Vector.Id
+			// w.Locations[1].Uuid = dupID
+
+			return test{
+				name: "Decision Table Testing case 1.3: Success to MultiInsert with 2 duplicated ID when SkipStrictExistCheck is true",
+				args: args{
+					ctx:  ctx,
+					reqs: req,
+				},
+				fields: fields{
+					name:    name,
+					ip:      ip,
+					svcCfg:  defaultF32SvcCfg,
+					svcOpts: defaultSvcOpts,
+				},
+				want: want{
+					wantRes: w,
+				},
+			}
+		}(),
+		func() test {
+			req := genMultiInsertReq(Float, vector.Gaussian, 100, f32VecDim)
+			for i := 1; i < len(req.Requests); i++ {
+				req.Requests[i].Vector.Id = req.Requests[0].Vector.Id
+			}
+
+			// set insert request config
+			cfg := &payload.Insert_Config{
+				SkipStrictExistCheck: true,
+			}
+			for i := 0; i < len(req.Requests); i++ {
+				req.Requests[i].Config = cfg
+			}
+
+			// set want
+			w := genObjectLocations(100, name, ip)
+			for _, l := range w.Locations {
+				l.Uuid = req.Requests[0].Vector.Id
+			}
+
+			return test{
+				name: "Decision Table Testing case 1.4: Success to MultiInsert with all duplicated ID when SkipStrictExistCheck is true",
+				args: args{
+					ctx:  ctx,
+					reqs: req,
+				},
+				fields: fields{
+					name:    name,
+					ip:      ip,
+					svcCfg:  defaultF32SvcCfg,
+					svcOpts: defaultSvcOpts,
+				},
+				want: want{
+					wantRes: w,
+				},
+			}
+		}(),
+		func() test {
+			req := genMultiInsertReq(Float, vector.Gaussian, 100, f32VecDim)
+			req.Requests[0].Vector.Vector = req.Requests[1].Vector.Vector
+
+			// set insert request config
+			cfg := &payload.Insert_Config{
+				SkipStrictExistCheck: false,
+			}
+			for i := 0; i < len(req.Requests); i++ {
+				req.Requests[i].Config = cfg
+			}
+
+			return test{
+				name: "Decision Table Testing case 2.1: Success to MultiInsert with 2 duplicated vector when SkipStrictExistCheck is false",
+				args: args{
+					ctx:  ctx,
+					reqs: req,
+				},
+				fields: fields{
+					name:    name,
+					ip:      ip,
+					svcCfg:  defaultF32SvcCfg,
+					svcOpts: defaultSvcOpts,
+				},
+				want: want{
+					wantRes: genObjectLocations(100, name, ip),
+				},
+			}
+		}(),
+		func() test {
+			req := genMultiInsertReq(Float, vector.Gaussian, 100, f32VecDim)
+			for i := 1; i < len(req.Requests); i++ {
+				req.Requests[i].Vector.Vector = req.Requests[0].Vector.Vector
+			}
+
+			// set insert request config
+			cfg := &payload.Insert_Config{
+				SkipStrictExistCheck: false,
+			}
+			for i := 0; i < len(req.Requests); i++ {
+				req.Requests[i].Config = cfg
+			}
+
+			return test{
+				name: "Decision Table Testing case 2.2: Success to MultiInsert with all duplicated vector when SkipStrictExistCheck is false",
+				args: args{
+					ctx:  ctx,
+					reqs: req,
+				},
+				fields: fields{
+					name:    name,
+					ip:      ip,
+					svcCfg:  defaultF32SvcCfg,
+					svcOpts: defaultSvcOpts,
+				},
+				want: want{
+					wantRes: genObjectLocations(100, name, ip),
+				},
+			}
+		}(),
+		func() test {
+			req := genMultiInsertReq(Float, vector.Gaussian, 100, f32VecDim)
+			req.Requests[0].Vector.Vector = req.Requests[1].Vector.Vector
+
+			// set insert request config
+			cfg := &payload.Insert_Config{
+				SkipStrictExistCheck: true,
+			}
+			for i := 0; i < len(req.Requests); i++ {
+				req.Requests[i].Config = cfg
+			}
+
+			return test{
+				name: "Decision Table Testing case 2.3: Success to MultiInsert with 2 duplicated vector when SkipStrictExistCheck is true",
+				args: args{
+					ctx:  ctx,
+					reqs: req,
+				},
+				fields: fields{
+					name:    name,
+					ip:      ip,
+					svcCfg:  defaultF32SvcCfg,
+					svcOpts: defaultSvcOpts,
+				},
+				want: want{
+					wantRes: genObjectLocations(100, name, ip),
+				},
+			}
+		}(),
+		func() test {
+			req := genMultiInsertReq(Float, vector.Gaussian, 100, f32VecDim)
+			for i := 1; i < len(req.Requests); i++ {
+				req.Requests[i].Vector.Vector = req.Requests[0].Vector.Vector
+			}
+
+			// set insert request config
+			cfg := &payload.Insert_Config{
+				SkipStrictExistCheck: true,
+			}
+			for i := 0; i < len(req.Requests); i++ {
+				req.Requests[i].Config = cfg
+			}
+
+			return test{
+				name: "Decision Table Testing case 2.4: Success to MultiInsert with all duplicated vector when SkipStrictExistCheck is true",
+				args: args{
+					ctx:  ctx,
+					reqs: req,
+				},
+				fields: fields{
+					name:    name,
+					ip:      ip,
+					svcCfg:  defaultF32SvcCfg,
+					svcOpts: defaultSvcOpts,
+				},
+				want: want{
+					wantRes: genObjectLocations(100, name, ip),
+				},
+			}
+		}(),
+		func() test {
+			req := genMultiInsertReq(Float, vector.Gaussian, 100, f32VecDim)
+			req.Requests[0].Vector.Vector = req.Requests[1].Vector.Vector
+			req.Requests[0].Vector.Id = req.Requests[1].Vector.Id
+
+			// set insert request config
+			cfg := &payload.Insert_Config{
+				SkipStrictExistCheck: false,
+			}
+			for i := 0; i < len(req.Requests); i++ {
+				req.Requests[i].Config = cfg
+			}
+
+			// set want
+			w := genObjectLocations(100, name, ip)
+			w.Locations[0].Uuid = req.Requests[0].Vector.Id
+
+			return test{
+				name: "Decision Table Testing case 3.1: Success to MultiInsert with 2 duplicated ID & vector when SkipStrictExistCheck is false",
+				args: args{
+					ctx:  ctx,
+					reqs: req,
+				},
+				fields: fields{
+					name:    name,
+					ip:      ip,
+					svcCfg:  defaultF32SvcCfg,
+					svcOpts: defaultSvcOpts,
+				},
+				want: want{
+					wantRes: w,
+				},
+			}
+		}(),
+		func() test {
+			req := genMultiInsertReq(Float, vector.Gaussian, 100, f32VecDim)
+			for i := 1; i < len(req.Requests); i++ {
+				req.Requests[i].Vector.Id = req.Requests[0].Vector.Id
+				req.Requests[i].Vector.Vector = req.Requests[0].Vector.Vector
+			}
+
+			// set insert request config
+			cfg := &payload.Insert_Config{
+				SkipStrictExistCheck: false,
+			}
+			for i := 0; i < len(req.Requests); i++ {
+				req.Requests[i].Config = cfg
+			}
+
+			// set want
+			w := genObjectLocations(100, name, ip)
+			for _, l := range w.Locations {
+				l.Uuid = req.Requests[0].Vector.Id
+			}
+
+			return test{
+				name: "Decision Table Testing case 3.2: Success to MultiInsert with all duplicated ID & vector when SkipStrictExistCheck is false",
+				args: args{
+					ctx:  ctx,
+					reqs: req,
+				},
+				fields: fields{
+					name:    name,
+					ip:      ip,
+					svcCfg:  defaultF32SvcCfg,
+					svcOpts: defaultSvcOpts,
+				},
+				want: want{
+					wantRes: w,
+				},
+			}
+		}(),
+		func() test {
+			req := genMultiInsertReq(Float, vector.Gaussian, 100, f32VecDim)
+			req.Requests[0].Vector.Vector = req.Requests[1].Vector.Vector
+			req.Requests[0].Vector.Id = req.Requests[1].Vector.Id
+
+			// set insert request config
+			cfg := &payload.Insert_Config{
+				SkipStrictExistCheck: true,
+			}
+			for i := 0; i < len(req.Requests); i++ {
+				req.Requests[i].Config = cfg
+			}
+
+			// set want
+			w := genObjectLocations(100, name, ip)
+			w.Locations[0].Uuid = req.Requests[0].Vector.Id
+
+			return test{
+				name: "Decision Table Testing case 3.3: Success to MultiInsert with 2 duplicated ID & vector when SkipStrictExistCheck is true",
+				args: args{
+					ctx:  ctx,
+					reqs: req,
+				},
+				fields: fields{
+					name:    name,
+					ip:      ip,
+					svcCfg:  defaultF32SvcCfg,
+					svcOpts: defaultSvcOpts,
+				},
+				want: want{
+					wantRes: w,
+				},
+			}
+		}(),
+		func() test {
+			req := genMultiInsertReq(Float, vector.Gaussian, 100, f32VecDim)
+			for i := 1; i < len(req.Requests); i++ {
+				req.Requests[i].Vector.Id = req.Requests[0].Vector.Id
+				req.Requests[i].Vector.Vector = req.Requests[0].Vector.Vector
+			}
+
+			// set insert request config
+			cfg := &payload.Insert_Config{
+				SkipStrictExistCheck: true,
+			}
+			for i := 0; i < len(req.Requests); i++ {
+				req.Requests[i].Config = cfg
+			}
+
+			// set want
+			w := genObjectLocations(100, name, ip)
+			for _, l := range w.Locations {
+				l.Uuid = req.Requests[0].Vector.Id
+			}
+
+			return test{
+				name: "Decision Table Testing case 3.4: Success to MultiInsert with all duplicated ID & vector when SkipStrictExistCheck is true",
+				args: args{
+					ctx:  ctx,
+					reqs: req,
+				},
+				fields: fields{
+					name:    name,
+					ip:      ip,
+					svcCfg:  defaultF32SvcCfg,
+					svcOpts: defaultSvcOpts,
+				},
+				want: want{
+					wantRes: w,
+				},
+			}
+		}(),
 	}
 
 	for _, tc := range tests {
