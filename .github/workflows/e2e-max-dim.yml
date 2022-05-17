@@ -117,9 +117,10 @@ jobs:
               -portforward \
               -portforward-pod-name=${POD_NAME} \
               -kubeconfig=${KUBECONFIG} \
-              -namespace=default | grep "Code"`
+              -namespace=default`
             echo "RES: ${RES}"
-            CODE=(${RES//,/ })
+            CODES=`echo ${RES} | grep "Code"`
+            CODE=(${CODES//,/ })
             if [ ${CODE[1]} = "ResourceExhausted" ]; then
               echo "Finish: Bit=${BIT} with ${CODE[1]}"
               break;

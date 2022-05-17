@@ -158,6 +158,7 @@ func TestE2EInsertOnlyWithOneVectorAndSearch(t *testing.T) {
 	}
 	t.Logf("[Pass] Insert process (Bit = %d)", bit)
 	wt := time.Duration(indexingWaitSeconds) * time.Second
+	t.Logf("[Pause] Wait %#v s for Finish createIndex process (Bit = %d)", wt.Seconds() , bit)
 	time.Sleep(wt)
 	res, err := cli.SearchByID(
 		ctx,
