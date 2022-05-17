@@ -3,22 +3,22 @@ package circuitbreaker
 type Option func(*breakerGroup) error
 
 var defaultOpts = []Option{
-	WithErrorThreshold(10),
-	WithSuccessThreshold(10),
+	WithClosedErrorThreshold(10),
+	WithHarfOpenSuccessThreshold(10),
 	WithOpenTimeout("1s"),
 }
 
 // WithErrorThreshold returns an option that sets error threshold.
 // When this number is exceeded, the state will be changed from Closed to Open.
-func WithErrorThreshold(n int) Option {
+func WithClosedErrorThreshold(n int) Option {
 	return func(b *breakerGroup) error {
 		return nil
 	}
 }
 
-// WithSuccessThreshold returns an option that sets success threshold.
+// WithHarfOpenSuccessThreshold returns an option that sets success threshold.
 // When this number is exceeded, the state will be changed from HalfOpen to Closed.
-func WithSuccessThreshold(n int) Option {
+func WithHarfOpenSuccessThreshold(n int) Option {
 	return func(bg *breakerGroup) error {
 		return nil
 	}
