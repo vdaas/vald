@@ -5013,8 +5013,8 @@ func Test_server_MultiInsert(t *testing.T) {
 		},
 		func() test {
 			req := genMultiInsertReq(Float, vector.Gaussian, 100, f32VecDim)
-			vid := req.Requests[50].Vector.Id
-			req.Requests[50] = nil
+			vid := req.Requests[0].Vector.Id
+			req.Requests[0] = nil
 
 			return test{
 				name: "Boundary Value Testing case 7.1: Fail to MultiInsert with 1 vector with nil insert request",
