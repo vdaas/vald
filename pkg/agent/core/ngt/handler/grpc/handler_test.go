@@ -3776,7 +3776,6 @@ func Test_server_MultiInsert(t *testing.T) {
 			if !errors.Is(err, w.err) {
 				return errors.Errorf("got_error: \"%v\",\n\t\t\t\twant: \"%v\"", err, w.err)
 			}
-
 		} else if err == nil {
 			return errors.Errorf("got_error: nil, want non-nil error")
 		}
