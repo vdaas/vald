@@ -154,7 +154,7 @@ func TestE2EInsertOnlyWithOneVectorAndSearch(t *testing.T) {
 			// Output: Code: ResourceExhausted
 			return
 		}
-		t.Fatal(err)
+		t.Fatalf("TestE2EInsertOnlyWithOneVectorAndSearch\tError: %#v", err)
 	}
 	wt := time.Duration(indexingWaitSeconds) * time.Second
 	time.Sleep(wt)
@@ -168,11 +168,11 @@ func TestE2EInsertOnlyWithOneVectorAndSearch(t *testing.T) {
 		},
 	)
 	if err != nil {
-		t.Fatal(err)
+		t.Fatalf("TestE2EInsertOnlyWithOneVectorAndSearch\tError: %#v", err)
 	}
 	b, err := json.MarshalIndent(res.GetResults(), "", " ")
 	if err != nil {
-		t.Fatal(err)
+		t.Fatalf("TestE2EInsertOnlyWithOneVectorAndSearch\tError: %#v", err)
 	}
 	if string(b) != "" {
 		// For checking code in the step of the github actions
@@ -180,5 +180,5 @@ func TestE2EInsertOnlyWithOneVectorAndSearch(t *testing.T) {
 		// Output: Code: OK
 		return
 	}
-	t.Fatal("No result")
+	t.Fatal("TestE2EInsertOnlyWithOneVectorAndSearch\tError: No Result")
 }
