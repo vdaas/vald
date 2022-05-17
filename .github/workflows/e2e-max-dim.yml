@@ -127,11 +127,11 @@ jobs:
               CODE=$code
               fi
             done
-            if [ ${CODE} = "ResourceExhausted" ]; then
+            if [ ${CODE} = "Code=ResourceExhausted" ]; then
               echo "Finish: Bit=${BIT} with ${CODE[1]}"
               break;
             fi
-            if [ ${CODE} != "OK" ]; then
+            if [ ${CODE} != "Code=OK" ]; then
               echo "Finish: Bit=${BIT} with Error: ${RES}"
               break;
             fi
