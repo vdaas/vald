@@ -43,6 +43,11 @@ var (
 		return Errorf("dimension size %d is invalid, the supporting dimension size must be between 2 ~ %d", current, limit)
 	}
 
+	// ErrInvalidUUID represents a function to generate an error that the uuid is invalid.
+	ErrInvalidUUID = func(uuid string) error {
+		return Errorf("uuid \"%s\" is invalid", uuid)
+	}
+
 	// ErrDimensionLimitExceed represents a function to generate an error that the supported dimension limit exceeded.
 	ErrDimensionLimitExceed = func(current, limit int) error {
 		return Errorf("supported dimension limit exceed:\trequired = %d,\tlimit = %d", current, limit)

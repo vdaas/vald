@@ -288,6 +288,69 @@ func TestErrInvalidDimensionSize(t *testing.T) {
 	}
 }
 
+func TestErrInvalidUUID(t *testing.T) {
+	type args struct {
+		uuid string
+	}
+	type want struct {
+		want error
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, got error) error {
+		if !Is(got, w.want) {
+			return Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		{
+			name: "return an ErrInvalidUUID error when uuid is empty string",
+			args: args{
+				uuid: "",
+			},
+			want: want{
+				want: New("uuid \"\" is invalid"),
+			},
+		},
+		{
+			name: "return an ErrInvalidUUID error when uuid is foo",
+			args: args{
+				uuid: "foo",
+			},
+			want: want{
+				want: New("uuid \"foo\" is invalid"),
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			checkFunc := test.checkFunc
+			if test.checkFunc == nil {
+				checkFunc = defaultCheckFunc
+			}
+
+			got := ErrInvalidUUID(test.args.uuid)
+			if err := checkFunc(test.want, got); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
 func TestErrDimensionLimitExceed(t *testing.T) {
 	type args struct {
 		current int
