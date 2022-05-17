@@ -119,13 +119,19 @@ jobs:
               -kubeconfig=${KUBECONFIG} \
               -namespace=default`
             echo "RES: ${RES}"
-            CODES=`echo ${RES} | grep "Code"`
-            CODE=(${CODES//,/ })
-            if [ ${CODE[1]} = "ResourceExhausted" ]; then
+            CODES=`echo ${RES} | tr " " "\n"`
+            CODE=""
+            for code in $CODES
+            do
+              if [[ $code == *"Code="* ]]; then
+              CODE=$code
+              fi
+            done
+            if [ ${CODE} = "ResourceExhausted" ]; then
               echo "Finish: Bit=${BIT} with ${CODE[1]}"
               break;
             fi
-            if [ ${CODE[1]} != "OK" ]; then
+            if [ ${CODE} != "OK" ]; then
               echo "Finish: Bit=${BIT} with Error: ${RES}"
               break;
             fi

@@ -150,15 +150,15 @@ func TestE2EInsertOnlyWithOneVectorAndSearch(t *testing.T) {
 		st, _ := status.FromError(err)
 		if st.Code() == codes.Code(code.Code_RESOURCE_EXHAUSTED) {
 			// For checking code in the step of the github actions
-			fmt.Println("Code: " + st.Code().String())
-			// Output: Code: ResourceExhausted
+			fmt.Println("Code=" + st.Code().String())
+			// Output: Code=ResourceExhausted
 			return
 		}
 		t.Fatalf("TestE2EInsertOnlyWithOneVectorAndSearch\tError: %#v", err)
 	}
 	t.Logf("[Pass] Insert process (Bit = %d)", bit)
 	wt := time.Duration(indexingWaitSeconds) * time.Second
-	t.Logf("[Pause] Wait %#v s for Finish createIndex process (Bit = %d)", wt.Seconds() , bit)
+	t.Logf("[Pause] Wait %#v s for Finish createIndex process (Bit = %d)", wt.Seconds(), bit)
 	time.Sleep(wt)
 	res, err := cli.SearchByID(
 		ctx,
@@ -179,8 +179,8 @@ func TestE2EInsertOnlyWithOneVectorAndSearch(t *testing.T) {
 	t.Logf("[Pass] SearchByID process (Bit = %d)", bit)
 	if string(b) != "" {
 		// For checking code in the step of the github actions
-		fmt.Println("Code: OK")
-		// Output: Code: OK
+		fmt.Println("Code=OK")
+		// Output: Code=OK
 		return
 	}
 	t.Fatal("TestE2EInsertOnlyWithOneVectorAndSearch\tError: No Result")
