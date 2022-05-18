@@ -23,8 +23,9 @@ func (c *counts) clear() {
 }
 
 type breaker struct {
-	st    atomic.Value // type: *stater
-	count atomic.Value // type: *count
+	st      atomic.Value // type: *stater
+	count   atomic.Value // type: *count
+	tripped int32
 
 	// or mu sync.Mutex
 }
@@ -42,14 +43,18 @@ func (b *breaker) do(ctx context.Context, fn func(ctx context.Context) (val inte
 	return nil, nil
 }
 
-func (b *breaker) currentStatus() (st state) {
-	// 1. Returns current state
-	return stateOpen
-}
-
 func (b *breaker) ready() (ok bool) {
 	// 1. Ready will return true if the circuit breaker is ready(closed or half-open) to call the function.
 	return true
+}
+
+func (b *breaker) currentState() (st state) {
+	// 1. Returns current state
+	if atomic.LoadInt32(&b.tripped) == 1 {
+
+		return stateHalfOpen // or return stateOpen
+	}
+	return stateClosed
 }
 
 func (b *breaker) success() {
@@ -64,9 +69,4 @@ func (b *breaker) fail() {
 
 func (b *breaker) setState(st stater) {
 	// 1. Change current state with given state.
-}
-
-func (b *breaker) isReachedSuccessThreshold() (ok bool) {
-	// 1. Check whether success thresholds have been reached
-	return
 }
