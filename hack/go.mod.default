@@ -13,6 +13,7 @@ replace (
 	github.com/Azure/go-autorest/autorest => github.com/Azure/go-autorest/autorest master
 	github.com/Azure/go-autorest/autorest/adal => github.com/Azure/go-autorest/autorest/adal master
 	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go latest
+	github.com/buger/jsonparser => github.com/buger/jsonparser latest
 	github.com/chzyer/logex => github.com/chzyer/logex master
 	github.com/coreos/etcd =>  go.etcd.io/etcd latest
 	github.com/docker/docker => github.com/moby/moby latest
@@ -46,6 +47,7 @@ replace (
 	github.com/json-iterator/go => github.com/json-iterator/go latest
 	github.com/klauspost/compress => github.com/klauspost/compress master
 	github.com/kpango/glg => github.com/kpango/glg latest
+	github.com/lucas-clemente/quic-go => github.com/lucas-clemente/quic-go latest
 	github.com/onsi/ginkgo => github.com/onsi/ginkgo latest
 	github.com/onsi/gomega => github.com/onsi/gomega latest
 	github.com/opentracing/opentracing-go => github.com/opentracing/opentracing-go latest

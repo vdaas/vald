@@ -221,7 +221,7 @@ func (g *GRPCClient) Opts() ([]grpc.Option, error) {
 				return nil, err
 			}
 			opts = append(opts,
-				grpc.WithDialer(der),
+				grpc.WithDialer(g.DialOption.Net.Network, der),
 			)
 		}
 

@@ -25,6 +25,7 @@ import (
 
 // Net represents the network configuration tcp, udp, unix domain socket.
 type Net struct {
+	Network      string        `yaml:"network"       json:"network,omitempty"`
 	DNS          *DNS          `yaml:"dns"           json:"dns,omitempty"`
 	Dialer       *Dialer       `yaml:"dialer"        json:"dialer,omitempty"`
 	SocketOption *SocketOption `yaml:"socket_option" json:"socket_option,omitempty"`

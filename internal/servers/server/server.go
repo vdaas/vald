@@ -36,6 +36,7 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc/credentials"
 	"github.com/vdaas/vald/internal/net/grpc/keepalive"
 	glog "github.com/vdaas/vald/internal/net/grpc/logger"
+	"github.com/vdaas/vald/internal/net/quic"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/strings"
 )
@@ -257,13 +258,14 @@ func (s *server) ListenAndServe(ctx context.Context, ech chan<- error) (err erro
 				return err
 			}
 		}
-
-		l, err := s.lc.Listen(ctx, func() string {
+		network := func() string {
 			if s.network == 0 || s.network == net.Unknown || strings.EqualFold(s.network.String(), net.Unknown.String()) {
 				return net.TCP.String()
 			}
 			return s.network.String()
-		}(), func() string {
+		}()
+
+		addr := func() string {
 			if s.network == net.UNIX {
 				if len(s.socketPath) == 0 {
 					s.socketPath = os.TempDir() + string(os.PathSeparator) + s.name + "." + strconv.Itoa(os.Getpid()) + ".sock"
@@ -271,17 +273,48 @@ func (s *server) ListenAndServe(ctx context.Context, ech chan<- error) (err erro
 				return s.socketPath
 			}
 			return net.JoinHostPort(s.host, s.port)
-		}())
-		if err != nil {
-			log.Errorf("failed to listen socket %v", err)
-			return err
-		}
+		}()
 
-		if s.tcfg != nil &&
-			(len(s.tcfg.Certificates) != 0 ||
-				s.tcfg.GetCertificate != nil ||
-				s.tcfg.GetConfigForClient != nil) {
-			l = tls.NewListener(l, s.tcfg)
+		var l net.Listener
+		if net.IsUDP(network) {
+			l, err = quic.Listen(ctx, addr, s.tcfg)
+			if err != nil {
+				log.Errorf("failed to listen udp socket for quic:\terror %v ", err)
+				return err
+			}
+		} else {
+			l, err = s.lc.Listen(ctx, network, addr)
+			if err != nil {
+				log.Errorf("failed to listen socket %v", err)
+				return err
+			}
+			var file *os.File
+			switch lt := l.(type) {
+			case *net.TCPListener:
+				file, err = lt.File()
+				if err != nil {
+					log.Errorf("failed to listen tcp socket %v", err)
+					return err
+				}
+			case *net.UnixListener:
+				file, err = lt.File()
+				if err != nil {
+					log.Errorf("failed to listen unix socket %v", err)
+					return err
+				}
+			}
+			if file != nil {
+				err = syscall.SetNonblock(int(file.Fd()), true)
+				if err != nil {
+					return err
+				}
+			}
+			if s.tcfg != nil &&
+				(len(s.tcfg.Certificates) != 0 ||
+					s.tcfg.GetCertificate != nil ||
+					s.tcfg.GetConfigForClient != nil) {
+				l = tls.NewListener(l, s.tcfg)
+			}
 		}
 
 		if l == nil {
@@ -302,14 +335,28 @@ func (s *server) ListenAndServe(ctx context.Context, ech chan<- error) (err erro
 				switch s.mode {
 				case REST, GQL:
 					err = s.http.starter(l)
-					if err != nil && err != http.ErrServerClosed {
-						ech <- err
+					if err != nil &&
+						!errors.Is(err, http.ErrServerClosed) &&
+						!errors.Is(err, context.Canceled) &&
+						!errors.Is(err, context.DeadlineExceeded) {
+						select {
+						case <-ctx.Done():
+							log.Error(errors.Wrap(ctx.Err(), err.Error()))
+						case ech <- err:
+						}
 					}
 				case GRPC:
 					glog.Init()
 					err = s.grpc.srv.Serve(l)
-					if err != nil && err != grpc.ErrServerStopped {
-						ech <- err
+					if err != nil &&
+						!errors.Is(err, grpc.ErrServerStopped) &&
+						!errors.Is(err, context.Canceled) &&
+						!errors.Is(err, context.DeadlineExceeded) {
+						select {
+						case <-ctx.Done():
+							log.Error(errors.Wrap(ctx.Err(), err.Error()))
+						case ech <- err:
+						}
 					}
 				}
 				err = nil
@@ -325,7 +372,6 @@ func (s *server) ListenAndServe(ctx context.Context, ech chan<- error) (err erro
 				s.mu.RUnlock()
 				log.Infof("%s server %s stopped", s.mode.String(), s.name)
 			}
-			return nil
 		}))
 	}
 	return nil
@@ -393,12 +439,17 @@ func (s *server) Shutdown(ctx context.Context) (rerr error) {
 		defer scancel()
 		s.http.srv.SetKeepAlivesEnabled(false)
 		err := s.http.srv.Shutdown(sctx)
-		if err != nil && err != http.ErrServerClosed && err != grpc.ErrServerStopped {
+		if err != nil &&
+			!errors.Is(err, http.ErrServerClosed) &&
+			!errors.Is(err, grpc.ErrServerStopped) &&
+			!errors.Is(err, context.Canceled) &&
+			!errors.Is(err, context.DeadlineExceeded) {
 			rerr = errors.Wrap(rerr, err.Error())
 		}
-
 		err = sctx.Err()
-		if err != nil && err != context.Canceled {
+		if err != nil &&
+			!errors.Is(err, context.Canceled) &&
+			!errors.Is(err, context.DeadlineExceeded) {
 			rerr = errors.Wrap(rerr, err.Error())
 		}
 

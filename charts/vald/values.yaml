@@ -728,27 +728,30 @@ defaults:
         timeout: ""
         # @schema {"name": "defaults.grpc.client.dial_option.net", "type": "object", "anchor": "net"}
         net:
+          # @schema {"name": "defaults.grpc.client.dial_option.net.network", "type": "string", "enum": ["tcp", "udp", "unix"]}
+          # defaults.grpc.client.dial_option.net.network -- gRPC client dialer network type
+          network: tcp
           # @schema {"name": "defaults.grpc.client.dial_option.net.dns", "type": "object"}
           dns:
             # @schema {"name": "defaults.grpc.client.dial_option.net.dns.cache_enabled", "type": "boolean"}
-            # defaults.grpc.client.dial_option.net.dns.cache_enabled -- gRPC client TCP DNS cache enabled
+            # defaults.grpc.client.dial_option.net.dns.cache_enabled -- gRPC client DNS cache enabled
             cache_enabled: true
             # @schema {"name": "defaults.grpc.client.dial_option.net.dns.refresh_duration", "type": "string"}
-            # defaults.grpc.client.dial_option.net.dns.refresh_duration -- gRPC client TCP DNS cache refresh duration
+            # defaults.grpc.client.dial_option.net.dns.refresh_duration -- gRPC client DNS cache refresh duration
             refresh_duration: 30m
             # @schema {"name": "defaults.grpc.client.dial_option.net.dns.cache_expiration", "type": "string"}
-            # defaults.grpc.client.dial_option.net.dns.cache_expiration -- gRPC client TCP DNS cache expiration
+            # defaults.grpc.client.dial_option.net.dns.cache_expiration -- gRPC client DNS cache expiration
             cache_expiration: 1h
           # @schema {"name": "defaults.grpc.client.dial_option.net.dialer", "type": "object"}
           dialer:
             # @schema {"name": "defaults.grpc.client.dial_option.net.dialer.timeout", "type": "string"}
-            # defaults.grpc.client.dial_option.net.dialer.timeout -- gRPC client TCP dialer timeout
+            # defaults.grpc.client.dial_option.net.dialer.timeout -- gRPC client dialer timeout
             timeout: ""
             # @schema {"name": "defaults.grpc.client.dial_option.net.dialer.keepalive", "type": "string"}
             # defaults.grpc.client.dial_option.net.dialer.keepalive -- gRPC client TCP dialer keep alive
             keepalive: ""
             # @schema {"name": "defaults.grpc.client.dial_option.net.dialer.dual_stack_enabled", "type": "boolean"}
-            # defaults.grpc.client.dial_option.net.dialer.dual_stack_enabled -- gRPC client TCP dialer dual stack enabled
+            # defaults.grpc.client.dial_option.net.dialer.dual_stack_enabled -- gRPC client dialer dual stack enabled
             dual_stack_enabled: true
           # @schema {"name": "defaults.grpc.client.dial_option.net.tls", "alias": "tls"}
           tls:
@@ -2085,6 +2088,8 @@ agent:
       client:
         # @schema {"name": "agent.sidecar.config.client.net", "alias": "net"}
         net:
+          # agent.sidecar.config.client.net.network -- gRPC client dialer network type
+          network: tcp
           dns:
             # agent.sidecar.config.client.net.dns.cache_enabled -- HTTP client TCP DNS cache enabled
             cache_enabled: true
@@ -2447,6 +2452,8 @@ discoverer:
         fields: {}
     # @schema {"name": "discoverer.discoverer.net", "alias": "net"}
     net:
+      # discoverer.discoverer.net.network -- gRPC client dialer network type
+      network: tcp
       dns:
         # discoverer.discoverer.net.dns.cache_enabled -- TCP DNS cache enabled
         cache_enabled: true
