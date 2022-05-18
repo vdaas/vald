@@ -48,6 +48,7 @@ import (
 const (
 	maxBit                   = 32
 	vectorDimensionSizeLimit = 1<<32 - 1
+	id                       = "1"
 )
 
 var (
@@ -59,6 +60,7 @@ var (
 	kubeClient          client.Client
 	forwarder           *portforward.Portforward
 	indexingWaitSeconds uint
+	kubeConfig          string
 )
 
 func init() {
@@ -68,7 +70,8 @@ func init() {
 	flag.IntVar(&port, "port", 8081, "gRPC port")
 	flag.StringVar(&namespace, "namespace", "default", "namespace")
 	flag.IntVar(&bit, "bit", 2, "bit")
-	flag.UintVar(&indexingWaitSeconds, "wait", 60, "indexing wait seconds")
+	flag.UintVar(&indexingWaitSeconds, "wait", 30, "indexing wait seconds")
+
 	pf := flag.Bool("portforward", false, "enable port forwarding")
 	pfPodName := flag.String("portforward-pod-name", "vald-lb-gateway", "pod name (only for port forward)")
 	pfPodPort := flag.Int("portforward-pod-port", port, "pod gRPC port (only for port forward)")
@@ -76,7 +79,6 @@ func init() {
 	kubeConfig := flag.String("kubeconfig", file.Join(os.Getenv("HOME"), ".kube", "config"), "kubeconfig path")
 
 	flag.Parse()
-
 	var err error
 	if *pf {
 		kubeClient, err = client.New(*kubeConfig)
@@ -122,18 +124,17 @@ func TestE2EInsertOnlyWithOneVectorAndSearch(t *testing.T) {
 		grpc.WithKeepaliveParams(
 			keepalive.ClientParameters{
 				Time:                time.Second,
-				Timeout:             5 * time.Second,
+				Timeout:             5 * time.Minute,
 				PermitWithoutStream: true,
 			},
 		),
 	)
 	if err != nil {
-		t.Fatalf("Failed to create grpc conn interface: %#v", err)
+		t.Fatalf("Failed to create grpc conn interface: %v", err)
 	}
 
 	cli := vald.NewValdClient(conn)
 	vec := vector.GaussianDistributedFloat32VectorGenerator(1, dim)[0]
-	id := "1"
 	req := &payload.Insert_Request{
 		Vector: &payload.Object_Vector{
 			// Id should be named the unique name in the production environment.
@@ -154,34 +155,40 @@ func TestE2EInsertOnlyWithOneVectorAndSearch(t *testing.T) {
 			// Output: Code=ResourceExhausted
 			return
 		}
-		t.Fatalf("TestE2EInsertOnlyWithOneVectorAndSearch\tError: %#v", err)
+		t.Fatalf("TestE2EInsertOnlyWithOneVectorAndSearch\t Insert Error: %v", err)
 	}
 	t.Logf("[Pass] Insert process (Bit = %d)", bit)
 	wt := time.Duration(indexingWaitSeconds) * time.Second
-	t.Logf("[Pause] Wait %#v s for Finish createIndex process (Bit = %d)", wt.Seconds(), bit)
-	time.Sleep(wt)
-	res, err := cli.SearchByID(
-		ctx,
-		&payload.Search_IDRequest{
-			Id: id,
-			Config: &payload.Search_Config{
-				Num: 1,
+	for cnt := 0; cnt < 10; cnt++ {
+		t.Logf("[Pause] Wait %#vs for Finish createIndex process (Bit = %d, cnt = %d)", wt.Seconds(), bit, cnt+1)
+		time.Sleep(wt)
+		res, err := cli.SearchByID(
+			ctx,
+			&payload.Search_IDRequest{
+				Id: id,
+				Config: &payload.Search_Config{
+					Num: 1,
+				},
 			},
-		},
-	)
-	if err != nil {
-		t.Fatalf("TestE2EInsertOnlyWithOneVectorAndSearch\tError: %#v", err)
-	}
-	b, err := json.MarshalIndent(res.GetResults(), "", " ")
-	if err != nil {
-		t.Fatalf("TestE2EInsertOnlyWithOneVectorAndSearch\tError: %#v", err)
-	}
-	t.Logf("[Pass] SearchByID process (Bit = %d)", bit)
-	if string(b) != "" {
-		// For checking code in the step of the github actions
-		fmt.Println("Code=OK")
-		// Output: Code=OK
-		return
+		)
+		if errors.Is(nil, err) {
+			b, err := json.MarshalIndent(res.GetResults(), "", " ")
+			if err != nil {
+				t.Fatalf("TestE2EInsertOnlyWithOneVectorAndSearch\tMarshalIndent Error: %v", err)
+			}
+			t.Logf("[Pass] SearchByID process (Bit = %d)", bit)
+			if string(b) != "" {
+				// For checking code in the step of the github actions
+				fmt.Println("Code=OK")
+				// Output: Code=OK
+				return
+			}
+		}
+		st, _ := status.FromError(err)
+		if st.Code() != codes.Code(code.Code_NOT_FOUND) {
+			t.Fatalf("TestE2EInsertOnlyWithOneVectorAndSearch\t SearchById Error: %v", err)
+			break
+		}
 	}
 	t.Fatal("TestE2EInsertOnlyWithOneVectorAndSearch\tError: No Result")
 }

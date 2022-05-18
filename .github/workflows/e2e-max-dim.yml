@@ -100,11 +100,10 @@ jobs:
               --values ${VALUES} \
               --set defaults.image.tag=nightly \
               --set agent.ngt.dimension=${DIM}
-
             sleep 3
-            kubectl get pods | grep vald-agent-ngt | awk '{print $1}' | xargs kubectl delete pod
+            kubectl rollout restart statefulset vald-agent-ngt
             sleep 30
-            kubectl wait --for=condition=ready pod -l ${WAIT_FOR_SELECTOR} --timeout=${WAIT_FOR_TIMEOUT}
+            kubectl wait --for=condition=Ready pod -l ${WAIT_FOR_SELECTOR} --timeout=${WAIT_FOR_TIMEOUT}
             POD_NAME=`kubectl get pods | grep vald-lb-gateway | awk '{print $1}'`
             RES=`go test \
               -race \
@@ -122,17 +121,18 @@ jobs:
             CODES=`echo ${RES} | tr " " "\n"`
             CODE=""
             for code in $CODES
-            do
-              if [[ $code == *"Code="* ]]; then
-              CODE=$code
-              fi
-            done
+              do
+                if [[ $code == *"Code="* ]]; then
+                  CODE=$code
+                fi
+              done
             if [ ${CODE} = "Code=ResourceExhausted" ]; then
               echo "Finish: Bit=${BIT} with ${CODE[1]}"
               break;
             fi
             if [ ${CODE} != "Code=OK" ]; then
               echo "Finish: Bit=${BIT} with Error: ${RES}"
+              BIT=$(($BIT-1))
               break;
             fi
             echo "Finish: Bit=${BIT}"
@@ -144,7 +144,7 @@ jobs:
           WAIT_FOR_SELECTOR: app=vald-agent-ngt
           WAIT_FOR_TIMEOUT: 29m
           VALUES: .github/helm/values/values-max-dim.yaml
-        timeout-minutes: 30
+        timeout-minutes: 60
   slack-notification:
     name: "Slack notification"
     needs:

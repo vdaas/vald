@@ -30,7 +30,7 @@ gateway:
         cpu: 100m
         memory: 50Mi
     gateway_config:
-      index_replica: 3
+      index_replica: 1
 
 agent:
   minReplicas: 1
@@ -44,9 +44,9 @@ agent:
       memory: 50Mi
   ngt:
     auto_index_duration_limit: 1m
-    auto_index_check_duration: 20s
+    auto_index_check_duration: 40s
     auto_index_length: 100
-    dimension: 784
+    dimension: 2
 
 discoverer:
   minReplicas: 1
@@ -66,6 +66,6 @@ manager:
         cpu: 100m
         memory: 30Mi
     indexer:
-      auto_index_duration_limit: 1m
-      auto_index_check_duration: 40s
-      auto_index_length: 1
+      auto_index_duration_limit: 40s
+      auto_index_check_duration: 20s
+      auto_index_length: 100
