@@ -732,7 +732,7 @@ func (n *ngt) update(uuid string, vec []float32, t int64) (err error) {
 	if err = n.readyForUpdate(uuid, vec); err != nil {
 		return err
 	}
-	err = n.delete(uuid, t, true)
+	err = n.delete(uuid, t, true) // true is to return NotFound error with non-existent ID
 	if err != nil {
 		return err
 	}
