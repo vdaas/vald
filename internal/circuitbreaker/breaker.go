@@ -52,7 +52,7 @@ func (b *breaker) currentState() (st state) {
 	// 1. Returns current state
 	if atomic.LoadInt32(&b.tripped) == 1 {
 
-		return stateHalfOpen // or return stateOpen
+		return stateHalfOpen // or return stateHalfOpen
 	}
 	return stateClosed
 }
