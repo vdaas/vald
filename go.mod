@@ -144,7 +144,7 @@ require (
 	github.com/kpango/glg v1.6.10
 	github.com/leanovate/gopter v0.2.9
 	github.com/lucasb-eyer/go-colorful v1.2.0
-	github.com/pierrec/lz4/v3 v3.3.4
+	github.com/pierrec/lz4/v3 v3.3.5
 	github.com/quasilyte/go-ruleguard v0.3.15
 	github.com/quasilyte/go-ruleguard/dsl v0.3.19
 	github.com/scylladb/gocqlx v1.5.0
