@@ -23,11 +23,9 @@ func (c *counts) clear() {
 }
 
 type breaker struct {
-	st      atomic.Value // type: *stater
+	st      atomic.Value // type: state
 	count   atomic.Value // type: *count
 	tripped int32
-
-	// or mu sync.Mutex
 }
 
 func (b *breaker) do(ctx context.Context, fn func(ctx context.Context) (val interface{}, err error)) (val interface{}, err error) {
