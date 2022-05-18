@@ -27,17 +27,17 @@ func (s state) String() string {
 
 type stater interface {
 	state() state
+	onEntry()
 	onSuccess()
 	onFailuer()
 }
 
-type closedState struct {
-	invalDur time.Duration
-}
+type closedState struct{}
 
 func (cs *closedState) state() state {
 	return stateClosed
 }
+func (cs *closedState) onEntry()   {}
 func (cs *closedState) onSuccess() {}
 func (cs *closedState) onFailuer() {}
 
@@ -46,6 +46,7 @@ type openState struct{}
 func (cs *openState) state() state {
 	return stateClosed
 }
+func (cs *openState) onEntry()   {}
 func (cs *openState) onSuccess() {}
 func (cs *openState) onFailuer() {}
 
@@ -56,6 +57,7 @@ type halfOpenState struct {
 func (cs *halfOpenState) state() state {
 	return stateClosed
 }
+func (cs *halfOpenState) onEntry()   {}
 func (cs *halfOpenState) onSuccess() {}
 func (cs *halfOpenState) onFailuer() {}
 

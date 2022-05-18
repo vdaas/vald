@@ -35,10 +35,10 @@ type breaker struct {
 
 func (b *breaker) do(ctx context.Context, fn func(ctx context.Context) (val interface{}, err error)) (val interface{}, err error) {
 	// This function is a main flow of breaker.
-	// When The current state is "Closed" or "Half-Open", this function executes the given user defined function variable.
+	// When the current state is "Closed" or "Half-Open", this function executes the given user defined function variable.
 	// If no error occurs, above function is treated as successful.
 
-	// 1. Check current state. If current state is open, this function returns an error.
+	// 1. Check current state. If current state is "Open", this function returns an error.
 
 	// 2. Execute the given user defined function variable fn.
 
@@ -92,9 +92,9 @@ func (b *breaker) success() {
 	// e.g. the following is an example flow code.
 	/**
 		if st := b.currentState(); st == stateHalfOpen {
-	        cnt := b.count.Load().(*counts).onSuccess()
+		    cnt := b.count.Load().(*counts).onSuccess()
 		    if cnt >= b.halfOpenSuccessThreshold {
-			    b.unTrip()
+	            b.unTrip() // to "Closed"
 		    }
 		}
 	**/
@@ -103,17 +103,26 @@ func (b *breaker) success() {
 func (b *breaker) fail() {
 	// This function focus on the "Closed" and "Half-Open" state.
 	// When current state is "Closed" state, this function records the number of failuer attempts.
+	// And the circuit breaker changes to the "Open" state if a specified number of consecutive operation invocations have been failed.
+	// When current state is "Half-Open" state, the circuit breaker changes to the "Open" state.
 
 	// 1. Increment the consecutiveFailures and clear consecutiveSuccesses by using count.onFailuer function
 	// 2. Call b.trip function
 
 	// e.g. the following is an example flow code.
 	/**
-		if st := b.currentState(); st == stateClosed {
-			cnt := b.count.Load().(*counts).onFailure()
-			if cnt >= b.halfClosedFailureThreshold {
-				b.trip()
-			}
+		switch st := b.currentState(); st {
+		case stateClosed:
+		    cnt := b.count.Load().(*counts).onFailure()
+		    if cnt >= b.halfClosedFailureThreshold {
+			    b.trip() // to "Open"
+		    }
+		case stateHalfOpen:
+		    if b.st.CompareAndSwap(from, stateOpen) {
+		        b.reset()
+		    } else {
+	            // The has been changed to "Closed" during this operation.
+	        }
 		}
 	**/
 }
