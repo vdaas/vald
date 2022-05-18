@@ -29,7 +29,7 @@ type breaker struct {
 	// or mu sync.Mutex
 }
 
-func (bg *breaker) do(ctx context.Context, fn func(ctx context.Context) (val interface{}, err error)) (val interface{}, err error) {
+func (b *breaker) do(ctx context.Context, fn func(ctx context.Context) (val interface{}, err error)) (val interface{}, err error) {
 	// 1. Check current state. If current state is open, returns an error.
 
 	// 2. Execute the given function variable fn.
@@ -38,25 +38,25 @@ func (bg *breaker) do(ctx context.Context, fn func(ctx context.Context) (val int
 
 	// 4. Call success or failuer function based on above error.
 	//    - if error is nil or error is ErrCircuitBreakerIgnorable, calls success function.
-	//    - if error is not nil, call failuer function.
+	//    - if error is not nil, call fail function.
 	return nil, nil
 }
 
-func (bg *breaker) success() {
+func (b *breaker) success() {
 	// 1. Increment the consecutiveSuccesses and clear consecutiveFailures. (Call count.onSuccess function)
 	// 2. Call onSuccess function (Notify success event to current state) of st object.
 }
 
-func (bg *breaker) failuer() {
+func (b *breaker) fail() {
 	// 1. Increment the consecutiveFailures and clear consecutiveSuccesses. (Call count.onFailuer function)
 	// 2. Call onFailuer function (Notify failuer event to current state) of st object.
 }
 
-func (bg *breaker) setState(st stater) {
+func (b *breaker) setState(st stater) {
 	// 1. Change current state with given state.
 }
 
-func (bg *breaker) isReachedSuccessThreshold() (ok bool) {
+func (b *breaker) isReachedSuccessThreshold() (ok bool) {
 	// 1. Check whether success thresholds have been reached
 	return
 }
