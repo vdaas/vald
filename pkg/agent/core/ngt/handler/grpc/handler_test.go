@@ -5837,11 +5837,11 @@ func Test_server_MultiInsert(t *testing.T) {
 				},
 				beforeFunc: func(t *testing.T, s *server) {
 					vecs := genF32Vec(vector.Gaussian, 2, f32VecDim)
-					for i, j := 49, 0; i < 51; i, j = i+1, j+1 { // start from the middle of insert request
+					for i := 0; i < 2; i++ {
 						ir := &payload.Insert_Request{
 							Vector: &payload.Object_Vector{
 								Id:     req.Requests[i].Vector.Id,
-								Vector: vecs[j],
+								Vector: vecs[i],
 							},
 							Config: &payload.Insert_Config{
 								SkipStrictExistCheck: false,
@@ -5851,6 +5851,7 @@ func Test_server_MultiInsert(t *testing.T) {
 							t.Fatal(err)
 						}
 					}
+
 					if _, err := s.CreateIndex(ctx, &payload.Control_CreateIndexRequest{
 						PoolSize: 2,
 					}); err != nil {
@@ -5921,11 +5922,11 @@ func Test_server_MultiInsert(t *testing.T) {
 				},
 				beforeFunc: func(t *testing.T, s *server) {
 					vecs := genF32Vec(vector.Gaussian, 2, f32VecDim)
-					for i, j := 49, 0; i < 51; i, j = i+1, j+1 { // start from the middle of insert request
+					for i := 0; i < 2; i++ {
 						ir := &payload.Insert_Request{
 							Vector: &payload.Object_Vector{
 								Id:     req.Requests[i].Vector.Id,
-								Vector: vecs[j],
+								Vector: vecs[i],
 							},
 							Config: &payload.Insert_Config{
 								SkipStrictExistCheck: true,
@@ -5935,6 +5936,7 @@ func Test_server_MultiInsert(t *testing.T) {
 							t.Fatal(err)
 						}
 					}
+
 					if _, err := s.CreateIndex(ctx, &payload.Control_CreateIndexRequest{
 						PoolSize: 2,
 					}); err != nil {
@@ -6005,7 +6007,7 @@ func Test_server_MultiInsert(t *testing.T) {
 				},
 				beforeFunc: func(t *testing.T, s *server) {
 					// insert same request with different ID
-					for i := 49; i < 51; i++ { // start from the middle of insert request
+					for i := 0; i < 2; i++ {
 						ir := &payload.Insert_Request{
 							Vector: &payload.Object_Vector{
 								Id:     fmt.Sprintf("nonexistid%d", i),
@@ -6089,7 +6091,7 @@ func Test_server_MultiInsert(t *testing.T) {
 				},
 				beforeFunc: func(t *testing.T, s *server) {
 					// insert same request with different ID
-					for i := 49; i < 51; i++ { // start from the middle of insert request
+					for i := 0; i < 2; i++ {
 						ir := &payload.Insert_Request{
 							Vector: &payload.Object_Vector{
 								Id:     fmt.Sprintf("nonexistid%d", i),
@@ -6172,7 +6174,7 @@ func Test_server_MultiInsert(t *testing.T) {
 					svcOpts: defaultSvcOpts,
 				},
 				beforeFunc: func(t *testing.T, s *server) {
-					for i := 49; i < 51; i++ { // start from the middle of insert request
+					for i := 0; i < 2; i++ {
 						ir := &payload.Insert_Request{
 							Vector: req.Requests[i].Vector,
 							Config: &payload.Insert_Config{
@@ -6183,6 +6185,7 @@ func Test_server_MultiInsert(t *testing.T) {
 							t.Fatal(err)
 						}
 					}
+
 					if _, err := s.CreateIndex(ctx, &payload.Control_CreateIndexRequest{
 						PoolSize: 2,
 					}); err != nil {
@@ -6248,7 +6251,7 @@ func Test_server_MultiInsert(t *testing.T) {
 					svcOpts: defaultSvcOpts,
 				},
 				beforeFunc: func(t *testing.T, s *server) {
-					for i := 49; i < 51; i++ { // start from the middle of insert request
+					for i := 0; i < 2; i++ {
 						ir := &payload.Insert_Request{
 							Vector: req.Requests[i].Vector,
 							Config: &payload.Insert_Config{
@@ -6259,6 +6262,7 @@ func Test_server_MultiInsert(t *testing.T) {
 							t.Fatal(err)
 						}
 					}
+
 					if _, err := s.CreateIndex(ctx, &payload.Control_CreateIndexRequest{
 						PoolSize: 2,
 					}); err != nil {
