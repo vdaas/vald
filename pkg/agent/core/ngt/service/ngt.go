@@ -732,7 +732,7 @@ func (n *ngt) update(uuid string, vec []float32, t int64) (err error) {
 	if err = n.readyForUpdate(uuid, vec); err != nil {
 		return err
 	}
-	err = n.delete(uuid, t, false)
+	err = n.delete(uuid, t, true)
 	if err != nil {
 		return err
 	}
