@@ -21,17 +21,17 @@ func (c *counts) onFailure() (n uint32) {
 	// 2. Clear consecutiveFailures by using atomic.
 	return n
 }
-func (c *counts) reset() {
+func (c *counts) clear() {
 	// 1. Clear consecutiveSuccesses and consecutiveFailures by using atomic
 }
 
 type breaker struct {
-	st      atomic.Value // type: state
-	count   atomic.Value // type: *count
-	tripped int32
+	st         atomic.Value // type: state
+	count      atomic.Value // type: *count
+	lastFilure int32
+	tripped    int32
 
-	halfOpenTimeout time.Duration
-	openTimeout     time.Duration
+	halfOpenTimeout int64
 	expire          time.Time
 }
 
@@ -133,72 +133,38 @@ func (b *breaker) fail() {
 }
 
 func (b *breaker) currentState() (st state) {
-	// This function returns current state.
-
 	// 1. Returns current state
+	// if atomic.LoadInt32(&b.tripped) == 1 {
+	// 	now := time.Now().UnixNano()
+	// 	if now-int64(b.lastFilure) > b.halfOpenTimeout {
+	// 		if b.st.CompareAndSwap(stateOpen, stateHalfOpen) {
+	// 			b.reset()
+	// 		}
+	// 		return stateHalfOpen
+	// 	}
+	// 	return stateOpen // or return stateOpen
+	// }
+	// return stateClosed
 
-	// e.g. the following is an example flow.
-	/**
-		if atomic.LoadInt32(&b.tripped) == 1 {
-			now := time.Now()
-
-			switch b.st.Load().(state) {
-			case stateOpen:
-				if b.expire.Before(now) && b.unTrip() {
-					b.reset(now)
-					return stateClosed
-				}
-				return stateOpen
-			case stateHalfOpen:
-				return stateHalfOpen
-
-			// case stateClosed:
-				// When the unTrip method is called immediately after atomic.LoadInt32(&b.tripped)
-			}
+	if atomic.LoadInt32(&b.tripped) == 1 {
+		switch b.st.Load().(state) {
+		case stateOpen:
+		case stateHalfOpen:
 		}
-		return stateClosed
-	**/
-	return
+	}
+	return stateClosed
 }
 
-func (b *breaker) reset(now time.Time) {
-	// This function resets all counter and expire time.
-	/**
-		b.count.(*count).reset()
-	    b.expire.Store(now)
-	**/
+func (b *breaker) reset() {}
+
+func (b *breaker) trip() {
+	if atomic.CompareAndSwapInt32(&b.tripped, 0, 1) {
+		b.st.Store(stateOpen)
+	}
 }
 
-func (b *breaker) trip() (ok bool) {
-	// This function change from untrip state to trip state.
-
-	// 1. change tripped state by using cas operation
-	// 2. Force change to "Open" state
-
-	// e.g. the following is an example flow.
-	/**
-		if atomic.CompareAndSwapInt32(&b.tripped, 0, 1) {
-			b.st.Store(stateOpen)
-	        return true
-		}
-	    return false
-	**/
-	return
-}
-
-func (b *breaker) unTrip() (ok bool) {
-	// This function change from trip state to untrip state.
-
-	// 1. change tripped state by using cas operation
-	// 2. Force change to "Close" state
-
-	// e.g. the following is an example flow.
-	/**
-		if atomic.CompareAndSwapInt32(&b.tripped, 1, 0) {
-			b.st.Store(stateClosed)
-	        return true
-		}
-	    return false
-	**/
-	return
+func (b *breaker) unTrip() {
+	if atomic.CompareAndSwapInt32(&b.tripped, 1, 0) {
+		b.st.Store(stateClosed)
+	}
 }
