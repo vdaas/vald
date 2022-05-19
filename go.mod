@@ -146,7 +146,7 @@ require (
 	github.com/lucasb-eyer/go-colorful v1.2.0
 	github.com/pierrec/lz4/v3 v3.3.4
 	github.com/quasilyte/go-ruleguard v0.3.15
-	github.com/quasilyte/go-ruleguard/dsl v0.3.19
+	github.com/quasilyte/go-ruleguard/dsl v0.3.21
 	github.com/scylladb/gocqlx v1.5.0
 	github.com/tensorflow/tensorflow v0.0.0-00010101000000-000000000000
 	github.com/zeebo/xxh3 v1.0.1
