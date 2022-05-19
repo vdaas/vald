@@ -20,7 +20,7 @@ blue   = printf "\x1b[34m\#\# %s\x1b[0m\n" $1
 pink   = printf "\x1b[35m\#\# %s\x1b[0m\n" $1
 cyan   = printf "\x1b[36m\#\# %s\x1b[0m\n" $1
 
-define go-get
+define go-install
 	GO111MODULE=on go install $1@latest
 endef
 

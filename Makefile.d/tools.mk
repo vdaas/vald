@@ -26,25 +26,25 @@ $(BINDIR)/golangci-lint:
 goimports/install: $(GOPATH)/bin/goimports
 
 $(GOPATH)/bin/goimports:
-	go install golang.org/x/tools/cmd/goimports@latest
+	$(call go-install, golang.org/x/tools/cmd/goimports)
 
 .PHONY: strictgoimports/install
 strictgoimports/install: $(GOPATH)/bin/strictgoimports
 
 $(GOPATH)/bin/strictgoimports:
-	go install github.com/momotaro98/strictgoimports/cmd/strictgoimports@latest
+	$(call go-install, github.com/momotaro98/strictgoimports/cmd/strictgoimports)
 
 .PHONY: gofumpt/install
 gofumpt/install: $(GOPATH)/bin/gofumpt
 
 $(GOPATH)/bin/gofumpt:
-	go install mvdan.cc/gofumpt@latest
+	$(call go-install, mvdan.cc/gofumpt)
 
 .PHONY: golines/install
 golines/install: $(GOPATH)/bin/golines
 
 $(GOPATH)/bin/golines:
-	go install github.com/segmentio/golines@latest
+	$(call go-install, github.com/segmentio/golines)
 
 .PHONY: prettier/install
 prettier/install: $(BINDIR)/prettier
