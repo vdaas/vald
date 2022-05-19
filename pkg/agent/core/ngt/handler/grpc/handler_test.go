@@ -4644,7 +4644,7 @@ func Test_server_Update(t *testing.T) {
 			},
 		},
 		{
-			name: "Boundary Value Testing case 8.1: success update with one NaN value vector (type: float32)",
+			name: "Boundary Value Testing case 8.1: fail update with one NaN value vector (type: float32)",
 			args: args{
 				ctx:     ctx,
 				indexId: "test",
