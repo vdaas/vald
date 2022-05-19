@@ -5972,7 +5972,7 @@ func Test_server_MultiInsert(t *testing.T) {
 								Vector: vecs[i],
 							},
 							Config: &payload.Insert_Config{
-								SkipStrictExistCheck: false,
+								SkipStrictExistCheck: true,
 							},
 						}
 						if _, err := s.Insert(ctx, ir); err != nil {
