@@ -3860,6 +3860,26 @@ func Test_server_StreamInsert(t *testing.T) {
 	}
 }
 
+func genF32Vec(dist vector.Distribution, num int, dim int) [][]float32 {
+	generator, _ := vector.Float32VectorGenerator(dist)
+	return generator(num, dim)
+}
+
+func genIntVec(dist vector.Distribution, num int, dim int) [][]float32 {
+	generator, _ := vector.Uint8VectorGenerator(dist)
+	ivecs := generator(num, dim)
+	result := make([][]float32, num)
+
+	for j, ivec := range ivecs {
+		vec := make([]float32, dim)
+		for i := 0; i < dim; i++ {
+			vec[i] = float32(ivec[i])
+		}
+		result[j] = vec
+	}
+	return result
+}
+
 func Test_server_MultiInsert(t *testing.T) {
 	t.Parallel()
 
@@ -3929,25 +3949,6 @@ func Test_server_MultiInsert(t *testing.T) {
 		}
 	)
 
-	genF32Vec := func(dist vector.Distribution, num int, dim int) [][]float32 {
-		generator, _ := vector.Float32VectorGenerator(dist)
-		return generator(num, dim)
-	}
-	genIntVec := func(dist vector.Distribution, num int, dim int) [][]float32 {
-		generator, _ := vector.Uint8VectorGenerator(dist)
-		ivecs := generator(num, dim)
-		result := make([][]float32, num)
-
-		for j, ivec := range ivecs {
-			vec := make([]float32, dim)
-			for i := 0; i < dim; i++ {
-				vec[i] = float32(ivec[i])
-			}
-			result[j] = vec
-		}
-		return result
-	}
-
 	genMultiInsertReq := func(t objectType, dist vector.Distribution, num int, dim int) *payload.Insert_MultiRequest {
 		var vecs [][]float32
 		switch t {
@@ -4003,7 +4004,6 @@ func Test_server_MultiInsert(t *testing.T) {
 		}
 		return result
 	}
-
 	defaultCheckFunc := func(w want, gotRes *payload.Object_Locations, err error) error {
 		if !w.haveErr {
 			if !errors.Is(err, w.err) {
@@ -4300,7 +4300,7 @@ func Test_server_MultiInsert(t *testing.T) {
 		}(),
 		func() test {
 			req := genMultiInsertReq(Uint8, vector.Gaussian, 100, intVecDim)
-			req.Requests[99].Vector.Vector = genIntVec(vector.Gaussian, 1, intVecDim+1)[0]
+			req.Requests[0].Vector.Vector = genIntVec(vector.Gaussian, 1, intVecDim+1)[0]
 
 			return test{
 				name: "Equivalence Class Testing case 3.1: Fail to MultiInsert 100 vector with 1 vector with different dimension (vector type is uint8)",
@@ -4316,11 +4316,11 @@ func Test_server_MultiInsert(t *testing.T) {
 				},
 				want: want{
 					err: func() error {
-						err := errors.ErrIncompatibleDimensionSize(len(req.Requests[99].Vector.Vector), intVecDim)
+						err := errors.ErrIncompatibleDimensionSize(len(req.Requests[0].Vector.Vector), intVecDim)
 						err = status.WrapWithInvalidArgument("MultiInsert API Incompatible Dimension Size detected",
 							err,
 							&errdetails.RequestInfo{
-								RequestId:   req.Requests[99].Vector.Id,
+								RequestId:   req.Requests[0].Vector.Id,
 								ServingData: errdetails.Serialize(req),
 							},
 							&errdetails.BadRequest{
@@ -4342,7 +4342,7 @@ func Test_server_MultiInsert(t *testing.T) {
 		}(),
 		func() test {
 			req := genMultiInsertReq(Float, vector.Gaussian, 100, f32VecDim)
-			req.Requests[99].Vector.Vector = genF32Vec(vector.Gaussian, 1, f32VecDim+1)[0]
+			req.Requests[0].Vector.Vector = genF32Vec(vector.Gaussian, 1, f32VecDim+1)[0]
 
 			return test{
 				name: "Equivalence Class Testing case 3.2: Fail to MultiInsert 100 vector with 1 vector with different dimension (vector type is float32)",
@@ -4358,11 +4358,11 @@ func Test_server_MultiInsert(t *testing.T) {
 				},
 				want: want{
 					err: func() error {
-						err := errors.ErrIncompatibleDimensionSize(len(req.Requests[99].Vector.Vector), intVecDim)
+						err := errors.ErrIncompatibleDimensionSize(len(req.Requests[0].Vector.Vector), intVecDim)
 						err = status.WrapWithInvalidArgument("MultiInsert API Incompatible Dimension Size detected",
 							err,
 							&errdetails.RequestInfo{
-								RequestId:   req.Requests[99].Vector.Id,
+								RequestId:   req.Requests[0].Vector.Id,
 								ServingData: errdetails.Serialize(req),
 							},
 							&errdetails.BadRequest{
@@ -4385,7 +4385,7 @@ func Test_server_MultiInsert(t *testing.T) {
 
 		func() test {
 			req := genMultiInsertReq(Uint8, vector.Gaussian, 100, intVecDim)
-			for i := 0; i < 100; i += 2 {
+			for i := 0; i < len(req.Requests)/2; i++ {
 				req.Requests[i].Vector.Vector = genIntVec(vector.Gaussian, 1, intVecDim+1)[0]
 			}
 
@@ -4833,7 +4833,7 @@ func Test_server_MultiInsert(t *testing.T) {
 		}(),
 		func() test {
 			req := genMultiInsertReq(Uint8, vector.Gaussian, 100, intVecDim)
-			for i := 0; i < len(req.Requests) ; i++ {
+			for i := 0; i < len(req.Requests); i++ {
 				req.Requests[i].Vector.Id = ""
 			}
 
@@ -4878,7 +4878,7 @@ func Test_server_MultiInsert(t *testing.T) {
 		}(),
 		func() test {
 			req := genMultiInsertReq(Uint8, vector.Gaussian, 100, f32VecDim)
-			for i := 0; i < len(req.Requests) ; i++ {
+			for i := 0; i < len(req.Requests); i++ {
 				req.Requests[i].Vector.Id = ""
 			}
 
