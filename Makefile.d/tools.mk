@@ -65,7 +65,7 @@ kubectl/install: $(BINDIR)/kubectl
 .PHONY: kubectl/install/linux/v1.23.6
 kubectl/install/linux/v1.23.6:
 	curl -L "https://storage.googleapis.com/kubernetes-release/release/v1.23.6/bin/linux/amd64/kubectl" -o $(BINDIR)/kubectl
-	chmod a+x $(BINDIR)/kubectl
+	chmod u+x $(BINDIR)/kubectl
 
 ifeq ($(UNAME),Darwin)
 $(BINDIR)/kubectl:
