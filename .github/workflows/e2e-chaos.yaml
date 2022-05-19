@@ -261,7 +261,7 @@ jobs:
           wait_for_selector: app=vald-lb-gateway
       - name: deploy Chaos Mesh
         run: |
-          make kubectl/install
+          make kubectl/install/linux/v1.23.6
           curl -sSL https://mirrors.chaos-mesh.org/v2.1.3/install.sh | bash -s -- --k3s
           helm install \
             --set networkChaos.partition.enabled=true \

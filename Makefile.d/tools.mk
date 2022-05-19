@@ -62,6 +62,11 @@ $(BINDIR)/reviewdog:
 .PHONY: kubectl/install
 kubectl/install: $(BINDIR)/kubectl
 
+.PHONY: kubectl/install/linux/v1.23.6
+kubectl/install/linux/v1.23.6:
+	curl -LO "https://storage.googleapis.com/kubernetes-release/release/v1.23.6/bin/linux/amd64/kubectl" -o $(BINDIR)/kubectl
+	chmod a+x $(BINDIR)/kubectl
+
 ifeq ($(UNAME),Darwin)
 $(BINDIR)/kubectl:
 	curl -L "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/darwin/amd64/kubectl" -o $(BINDIR)/kubectl
