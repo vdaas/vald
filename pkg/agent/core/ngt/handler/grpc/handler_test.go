@@ -4151,7 +4151,7 @@ func Test_server_Update(t *testing.T) {
 			- case 6.2: success update with one min value vector (type: float32)
 			- case 7.1: success update with one max value vector (type: uint8)
 			- case 7.2: success update with one max value vector (type: float32)
-			- case 8.1: fail update with one NaN value vector (type: float32)
+			- case 8.1: success update with one NaN value vector (type: float32) // NOTE: To fix it, it is necessarry to check all of vector value
 			- case 9.1: success update with one +inf value vector (type: float32)
 			- case 9.2: success update with one -inf value vector (type: float32)
 			- case 10.1: fail update with one nil vector
@@ -4162,7 +4162,7 @@ func Test_server_Update(t *testing.T) {
 			- case 1.3: success update with one duplicated vector, different ID and SkipStrictExistCheck is true
 			- case 2.1: fail update with one duplicated vector, duplicated ID and SkipStrictExistCheck is false
 			- case 2.2: success update with one different vector, duplicated ID and SkipStrictExistsCheck is false
-			- case 2.3: fail update with one duplicated vector, different ID and SkipStrictExistCheck is false
+			- case 2.3: success update with one duplicated vector, different ID and SkipStrictExistCheck is false
 	*/
 	tests := []test{
 		{
@@ -4831,7 +4831,7 @@ func Test_server_Update(t *testing.T) {
 			},
 		},
 		{
-			name: "Decision Table Testing case 2.3: fail update with one duplicated vector, different ID and SkipStrictExistCheck is false",
+			name: "Decision Table Testing case 2.3: success update with one duplicated vector, different ID and SkipStrictExistCheck is false",
 			args: func() args {
 				vector := vector.GaussianDistributedFloat32VectorGenerator(1, dimension)[0]
 				return args{
