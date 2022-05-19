@@ -3876,6 +3876,7 @@ func Test_server_MultiInsert(t *testing.T) {
 	}
 	type want struct {
 		wantRes *payload.Object_Locations
+		haveErr bool // skip checking error detail
 		err     error
 	}
 	type test struct {
@@ -3884,7 +3885,7 @@ func Test_server_MultiInsert(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, *payload.Object_Locations, error) error
-		beforeFunc func(args)
+		beforeFunc func(*testing.T, *server)
 		afterFunc  func(args)
 	}
 
@@ -4004,8 +4005,12 @@ func Test_server_MultiInsert(t *testing.T) {
 	}
 
 	defaultCheckFunc := func(w want, gotRes *payload.Object_Locations, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%v\",\n\t\t\t\twant: \"%v\"", err, w.err)
+		if !w.haveErr {
+			if !errors.Is(err, w.err) {
+				return errors.Errorf("got_error: \"%v\",\n\t\t\t\twant: \"%v\"", err, w.err)
+			}
+		} else if err == nil {
+			return errors.Errorf("got_error: nil, want non-nil error")
 		}
 		if !reflect.DeepEqual(gotRes, w.wantRes) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
@@ -4089,19 +4094,19 @@ func Test_server_MultiInsert(t *testing.T) {
 			// existed in NGT test cases
 			- existed ID (with 100 insert request in a single MultiInsert request)
 				- case 4.1: Fail to MultiInsert with 2 existed ID when SkipStrictExistCheck is false
-				- case 4.2: Fail to MultiInsert with all existed vector when SkipStrictExistCheck is false
+				- case 4.2: Fail to MultiInsert with all existed ID when SkipStrictExistCheck is false
 				- case 4.3: Fail to MultiInsert with 2 existed ID when SkipStrictExistCheck is true
-				- case 4.4: Fail to MultiInsert with all existed vector when SkipStrictExistCheck is true
+				- case 4.4: Fail to MultiInsert with all existed ID when SkipStrictExistCheck is true
 			- existed vector (with 100 insert request in a single MultiInsert request)
-				- case 4.1: Success to MultiInsert with 2 existed vector when SkipStrictExistCheck is false
-				- case 4.2: Success to MultiInsert with all existed vector when SkipStrictExistCheck is false
-				- case 4.3: Success to MultiInsert with 2 existed vector when SkipStrictExistCheck is true
-				- case 4.4: Success to MultiInsert with all existed vector when SkipStrictExistCheck is true
+				- case 5.1: Success to MultiInsert with 2 existed vector when SkipStrictExistCheck is false
+				- case 5.2: Success to MultiInsert with all existed vector when SkipStrictExistCheck is false
+				- case 5.3: Success to MultiInsert with 2 existed vector when SkipStrictExistCheck is true
+				- case 5.4: Success to MultiInsert with all existed vector when SkipStrictExistCheck is true
 			- existed ID & existed vector (with 100 insert request in a single MultiInsert request)
-				- case 4.1: Fail to MultiInsert with 2 existed ID & vector when SkipStrictExistCheck is false
-				- case 4.2: Fail to MultiInsert with all existed ID & vector when SkipStrictExistCheck is false
-				- case 4.3: Fail to MultiInsert with 2 existed ID & vector when SkipStrictExistCheck is true
-				- case 4.4: Fail to MultiInsert with all existed ID & vector when SkipStrictExistCheck is true
+				- case 6.1: Fail to MultiInsert with 2 existed ID & vector when SkipStrictExistCheck is false
+				- case 6.2: Fail to MultiInsert with all existed ID & vector when SkipStrictExistCheck is false
+				- case 6.3: Fail to MultiInsert with 2 existed ID & vector when SkipStrictExistCheck is true
+				- case 6.4: Fail to MultiInsert with all existed ID & vector when SkipStrictExistCheck is true
 
 	*/
 	tests := []test{
@@ -6048,6 +6053,498 @@ func Test_server_MultiInsert(t *testing.T) {
 				},
 			}
 		}(),
+		func() test {
+			req := genMultiInsertReq(Float, vector.Gaussian, 100, f32VecDim)
+
+			return test{
+				name: "Decision Table Testing case 4.1: Fail to MultiInsert with 2 existed ID when SkipStrictExistCheck is false",
+				args: args{
+					ctx:  ctx,
+					reqs: req,
+				},
+				fields: fields{
+					name:    name,
+					ip:      ip,
+					svcCfg:  defaultF32SvcCfg,
+					svcOpts: defaultSvcOpts,
+				},
+				beforeFunc: func(t *testing.T, s *server) {
+					vecs := genF32Vec(vector.Gaussian, 2, f32VecDim)
+					for i := 0; i < 2; i++ {
+						ir := &payload.Insert_Request{
+							Vector: &payload.Object_Vector{
+								Id:     req.Requests[i].Vector.Id,
+								Vector: vecs[i],
+							},
+							Config: &payload.Insert_Config{
+								SkipStrictExistCheck: false,
+							},
+						}
+						if _, err := s.Insert(ctx, ir); err != nil {
+							t.Fatal(err)
+						}
+					}
+
+					if _, err := s.CreateIndex(ctx, &payload.Control_CreateIndexRequest{
+						PoolSize: 2,
+					}); err != nil {
+						t.Fatal(err)
+					}
+				},
+				want: want{
+					haveErr: true,
+				},
+			}
+		}(),
+		func() test {
+			req := genMultiInsertReq(Float, vector.Gaussian, 100, f32VecDim)
+
+			return test{
+				name: "Decision Table Testing case 4.2: Fail to MultiInsert with all existed ID when SkipStrictExistCheck is false",
+				args: args{
+					ctx:  ctx,
+					reqs: req,
+				},
+				fields: fields{
+					name:    name,
+					ip:      ip,
+					svcCfg:  defaultF32SvcCfg,
+					svcOpts: defaultSvcOpts,
+				},
+				beforeFunc: func(t *testing.T, s *server) {
+					vecs := genF32Vec(vector.Gaussian, 100, f32VecDim)
+					for i, r := range req.Requests {
+						ir := &payload.Insert_Request{
+							Vector: &payload.Object_Vector{
+								Id:     r.Vector.Id,
+								Vector: vecs[i],
+							},
+							Config: &payload.Insert_Config{
+								SkipStrictExistCheck: false,
+							},
+						}
+						if _, err := s.Insert(ctx, ir); err != nil {
+							t.Fatal(err)
+						}
+					}
+					if _, err := s.CreateIndex(ctx, &payload.Control_CreateIndexRequest{
+						PoolSize: uint32(len(req.Requests)),
+					}); err != nil {
+						t.Fatal(err)
+					}
+				},
+				want: want{
+					haveErr: true,
+				},
+			}
+		}(),
+		func() test {
+			req := genMultiInsertReq(Float, vector.Gaussian, 100, f32VecDim)
+
+			return test{
+				name: "Decision Table Testing case 4.3: Fail to MultiInsert with 2 existed ID when SkipStrictExistCheck is true",
+				args: args{
+					ctx:  ctx,
+					reqs: req,
+				},
+				fields: fields{
+					name:    name,
+					ip:      ip,
+					svcCfg:  defaultF32SvcCfg,
+					svcOpts: defaultSvcOpts,
+				},
+				beforeFunc: func(t *testing.T, s *server) {
+					vecs := genF32Vec(vector.Gaussian, 2, f32VecDim)
+					for i := 0; i < 2; i++ {
+						ir := &payload.Insert_Request{
+							Vector: &payload.Object_Vector{
+								Id:     req.Requests[i].Vector.Id,
+								Vector: vecs[i],
+							},
+							Config: &payload.Insert_Config{
+								SkipStrictExistCheck: true,
+							},
+						}
+						if _, err := s.Insert(ctx, ir); err != nil {
+							t.Fatal(err)
+						}
+					}
+
+					if _, err := s.CreateIndex(ctx, &payload.Control_CreateIndexRequest{
+						PoolSize: 2,
+					}); err != nil {
+						t.Fatal(err)
+					}
+				},
+				want: want{
+					haveErr: true,
+				},
+			}
+		}(),
+		func() test {
+			req := genMultiInsertReq(Float, vector.Gaussian, 100, f32VecDim)
+
+			return test{
+				name: "Decision Table Testing case 4.4: Fail to MultiInsert with all existed ID when SkipStrictExistCheck is true",
+				args: args{
+					ctx:  ctx,
+					reqs: req,
+				},
+				fields: fields{
+					name:    name,
+					ip:      ip,
+					svcCfg:  defaultF32SvcCfg,
+					svcOpts: defaultSvcOpts,
+				},
+				beforeFunc: func(t *testing.T, s *server) {
+					vecs := genF32Vec(vector.Gaussian, 100, f32VecDim)
+					for i, r := range req.Requests {
+						ir := &payload.Insert_Request{
+							Vector: &payload.Object_Vector{
+								Id:     r.Vector.Id,
+								Vector: vecs[i],
+							},
+							Config: &payload.Insert_Config{
+								SkipStrictExistCheck: true,
+							},
+						}
+						if _, err := s.Insert(ctx, ir); err != nil {
+							t.Fatal(err)
+						}
+					}
+					if _, err := s.CreateIndex(ctx, &payload.Control_CreateIndexRequest{
+						PoolSize: uint32(len(req.Requests)),
+					}); err != nil {
+						t.Fatal(err)
+					}
+				},
+				want: want{
+					haveErr: true,
+				},
+			}
+		}(),
+		func() test {
+			req := genMultiInsertReq(Float, vector.Gaussian, 100, f32VecDim)
+
+			return test{
+				name: "Decision Table Testing case 5.1: Success to MultiInsert with 2 existed vector when SkipStrictExistCheck is false",
+				args: args{
+					ctx:  ctx,
+					reqs: req,
+				},
+				fields: fields{
+					name:    name,
+					ip:      ip,
+					svcCfg:  defaultF32SvcCfg,
+					svcOpts: defaultSvcOpts,
+				},
+				beforeFunc: func(t *testing.T, s *server) {
+					// insert same request with different ID
+					for i := 0; i < 2; i++ {
+						ir := &payload.Insert_Request{
+							Vector: &payload.Object_Vector{
+								Id:     fmt.Sprintf("nonexistid%d", i),
+								Vector: req.Requests[i].Vector.Vector,
+							},
+							Config: &payload.Insert_Config{
+								SkipStrictExistCheck: false,
+							},
+						}
+						if _, err := s.Insert(ctx, ir); err != nil {
+							t.Fatal(err)
+						}
+					}
+					if _, err := s.CreateIndex(ctx, &payload.Control_CreateIndexRequest{
+						PoolSize: uint32(len(req.Requests)),
+					}); err != nil {
+						t.Fatal(err)
+					}
+				},
+				want: want{
+					wantRes: genObjectLocations(100, name, ip),
+				},
+			}
+		}(),
+		func() test {
+			req := genMultiInsertReq(Float, vector.Gaussian, 100, f32VecDim)
+
+			return test{
+				name: "Decision Table Testing case 5.2: Success to MultiInsert with all existed vector when SkipStrictExistCheck is false",
+				args: args{
+					ctx:  ctx,
+					reqs: req,
+				},
+				fields: fields{
+					name:    name,
+					ip:      ip,
+					svcCfg:  defaultF32SvcCfg,
+					svcOpts: defaultSvcOpts,
+				},
+				beforeFunc: func(t *testing.T, s *server) {
+					// insert same request with different ID
+					for i := range req.Requests {
+						ir := &payload.Insert_Request{
+							Vector: &payload.Object_Vector{
+								Id:     fmt.Sprintf("nonexistid%d", i),
+								Vector: req.Requests[i].Vector.Vector,
+							},
+							Config: &payload.Insert_Config{
+								SkipStrictExistCheck: false,
+							},
+						}
+						if _, err := s.Insert(ctx, ir); err != nil {
+							t.Fatal(err)
+						}
+					}
+					if _, err := s.CreateIndex(ctx, &payload.Control_CreateIndexRequest{
+						PoolSize: uint32(len(req.Requests)),
+					}); err != nil {
+						t.Fatal(err)
+					}
+				},
+				want: want{
+					wantRes: genObjectLocations(100, name, ip),
+				},
+			}
+		}(),
+		func() test {
+			req := genMultiInsertReq(Float, vector.Gaussian, 100, f32VecDim)
+
+			return test{
+				name: "Decision Table Testing case 5.3: Success to MultiInsert with 2 existed vector when SkipStrictExistCheck is true",
+				args: args{
+					ctx:  ctx,
+					reqs: req,
+				},
+				fields: fields{
+					name:    name,
+					ip:      ip,
+					svcCfg:  defaultF32SvcCfg,
+					svcOpts: defaultSvcOpts,
+				},
+				beforeFunc: func(t *testing.T, s *server) {
+					// insert same request with different ID
+					for i := 0; i < 2; i++ {
+						ir := &payload.Insert_Request{
+							Vector: &payload.Object_Vector{
+								Id:     fmt.Sprintf("nonexistid%d", i),
+								Vector: req.Requests[i].Vector.Vector,
+							},
+							Config: &payload.Insert_Config{
+								SkipStrictExistCheck: true,
+							},
+						}
+						if _, err := s.Insert(ctx, ir); err != nil {
+							t.Fatal(err)
+						}
+					}
+					if _, err := s.CreateIndex(ctx, &payload.Control_CreateIndexRequest{
+						PoolSize: uint32(len(req.Requests)),
+					}); err != nil {
+						t.Fatal(err)
+					}
+				},
+				want: want{
+					wantRes: genObjectLocations(100, name, ip),
+				},
+			}
+		}(),
+		func() test {
+			req := genMultiInsertReq(Float, vector.Gaussian, 100, f32VecDim)
+
+			return test{
+				name: "Decision Table Testing case 5.4: Success to MultiInsert with all existed vector when SkipStrictExistCheck is true",
+				args: args{
+					ctx:  ctx,
+					reqs: req,
+				},
+				fields: fields{
+					name:    name,
+					ip:      ip,
+					svcCfg:  defaultF32SvcCfg,
+					svcOpts: defaultSvcOpts,
+				},
+				beforeFunc: func(t *testing.T, s *server) {
+					// insert same request with different ID
+					for i := range req.Requests {
+						ir := &payload.Insert_Request{
+							Vector: &payload.Object_Vector{
+								Id:     fmt.Sprintf("nonexistid%d", i),
+								Vector: req.Requests[i].Vector.Vector,
+							},
+							Config: &payload.Insert_Config{
+								SkipStrictExistCheck: true,
+							},
+						}
+						if _, err := s.Insert(ctx, ir); err != nil {
+							t.Fatal(err)
+						}
+					}
+					if _, err := s.CreateIndex(ctx, &payload.Control_CreateIndexRequest{
+						PoolSize: uint32(len(req.Requests)),
+					}); err != nil {
+						t.Fatal(err)
+					}
+				},
+				want: want{
+					wantRes: genObjectLocations(100, name, ip),
+				},
+			}
+		}(),
+		func() test {
+			req := genMultiInsertReq(Float, vector.Gaussian, 100, f32VecDim)
+
+			return test{
+				name: "Decision Table Testing case 6.1: Fail to MultiInsert with 2 existed ID & vector when SkipStrictExistCheck is false",
+				args: args{
+					ctx:  ctx,
+					reqs: req,
+				},
+				fields: fields{
+					name:    name,
+					ip:      ip,
+					svcCfg:  defaultF32SvcCfg,
+					svcOpts: defaultSvcOpts,
+				},
+				beforeFunc: func(t *testing.T, s *server) {
+					for i := 0; i < 2; i++ {
+						ir := &payload.Insert_Request{
+							Vector: req.Requests[i].Vector,
+							Config: &payload.Insert_Config{
+								SkipStrictExistCheck: false,
+							},
+						}
+						if _, err := s.Insert(ctx, ir); err != nil {
+							t.Fatal(err)
+						}
+					}
+
+					if _, err := s.CreateIndex(ctx, &payload.Control_CreateIndexRequest{
+						PoolSize: 2,
+					}); err != nil {
+						t.Fatal(err)
+					}
+				},
+				want: want{
+					haveErr: true,
+				},
+			}
+		}(),
+		func() test {
+			req := genMultiInsertReq(Float, vector.Gaussian, 100, f32VecDim)
+
+			return test{
+				name: "Decision Table Testingcase 6.2: Fail to MultiInsert with all existed ID & vector when SkipStrictExistCheck is false",
+				args: args{
+					ctx:  ctx,
+					reqs: req,
+				},
+				fields: fields{
+					name:    name,
+					ip:      ip,
+					svcCfg:  defaultF32SvcCfg,
+					svcOpts: defaultSvcOpts,
+				},
+				beforeFunc: func(t *testing.T, s *server) {
+					for _, r := range req.Requests {
+						ir := &payload.Insert_Request{
+							Vector: r.Vector,
+							Config: &payload.Insert_Config{
+								SkipStrictExistCheck: false,
+							},
+						}
+						if _, err := s.Insert(ctx, ir); err != nil {
+							t.Fatal(err)
+						}
+					}
+					if _, err := s.CreateIndex(ctx, &payload.Control_CreateIndexRequest{
+						PoolSize: uint32(len(req.Requests)),
+					}); err != nil {
+						t.Fatal(err)
+					}
+				},
+				want: want{
+					haveErr: true,
+				},
+			}
+		}(),
+		func() test {
+			req := genMultiInsertReq(Float, vector.Gaussian, 100, f32VecDim)
+
+			return test{
+				name: "Decision Table Testing case 6.3: Fail to MultiInsert with 2 existed ID & vector when SkipStrictExistCheck is true",
+				args: args{
+					ctx:  ctx,
+					reqs: req,
+				},
+				fields: fields{
+					name:    name,
+					ip:      ip,
+					svcCfg:  defaultF32SvcCfg,
+					svcOpts: defaultSvcOpts,
+				},
+				beforeFunc: func(t *testing.T, s *server) {
+					for i := 0; i < 2; i++ {
+						ir := &payload.Insert_Request{
+							Vector: req.Requests[i].Vector,
+							Config: &payload.Insert_Config{
+								SkipStrictExistCheck: true,
+							},
+						}
+						if _, err := s.Insert(ctx, ir); err != nil {
+							t.Fatal(err)
+						}
+					}
+
+					if _, err := s.CreateIndex(ctx, &payload.Control_CreateIndexRequest{
+						PoolSize: 2,
+					}); err != nil {
+						t.Fatal(err)
+					}
+				},
+				want: want{
+					haveErr: true,
+				},
+			}
+		}(),
+		func() test {
+			req := genMultiInsertReq(Float, vector.Gaussian, 100, f32VecDim)
+
+			return test{
+				name: "Decision Table Testing case 6.4: Fail to MultiInsert with all existed ID & vector when SkipStrictExistCheck is true",
+				args: args{
+					ctx:  ctx,
+					reqs: req,
+				},
+				fields: fields{
+					name:    name,
+					ip:      ip,
+					svcCfg:  defaultF32SvcCfg,
+					svcOpts: defaultSvcOpts,
+				},
+				beforeFunc: func(t *testing.T, s *server) {
+					for _, r := range req.Requests {
+						ir := &payload.Insert_Request{
+							Vector: r.Vector,
+							Config: &payload.Insert_Config{
+								SkipStrictExistCheck: true,
+							},
+						}
+						if _, err := s.Insert(ctx, ir); err != nil {
+							t.Fatal(err)
+						}
+					}
+					if _, err := s.CreateIndex(ctx, &payload.Control_CreateIndexRequest{
+						PoolSize: uint32(len(req.Requests)),
+					}); err != nil {
+						t.Fatal(err)
+					}
+				},
+				want: want{
+					haveErr: true,
+				},
+			}
+		}(),
 	}
 
 	for _, tc := range tests {
@@ -6055,9 +6552,6 @@ func Test_server_MultiInsert(t *testing.T) {
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
@@ -6078,6 +6572,10 @@ func Test_server_MultiInsert(t *testing.T) {
 				ngt:               ngt,
 				eg:                eg,
 				streamConcurrency: test.fields.streamConcurrency,
+			}
+
+			if test.beforeFunc != nil {
+				test.beforeFunc(tt, s)
 			}
 
 			gotRes, err := s.MultiInsert(test.args.ctx, test.args.reqs)
