@@ -115,6 +115,28 @@ func (s *server) Exists(ctx context.Context, uid *payload.Object_ID) (res *paylo
 		}
 	}()
 	uuid := uid.GetId()
+	if len(uuid) == 0 {
+		err = errors.ErrInvalidUUID(uuid)
+		err = status.WrapWithInvalidArgument(fmt.Sprintf("Exists API invalid argument for uuid \"%s\" detected", uuid), err,
+			&errdetails.RequestInfo{
+				RequestId:   uuid,
+				ServingData: errdetails.Serialize(uid),
+			},
+			&errdetails.BadRequest{
+				FieldViolations: []*errdetails.BadRequestFieldViolation{
+					{
+						Field:       "uuid",
+						Description: err.Error(),
+					},
+				},
+			},
+			&errdetails.ResourceInfo{
+				ResourceType: ngtResourceType + "/ngt.Exists",
+				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+			})
+		log.Warn(err)
+		return nil, err
+	}
 	oid, ok := s.ngt.Exists(uuid)
 	if !ok {
 		err = errors.ErrObjectIDNotFound(uid.GetId())
@@ -267,8 +289,31 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 			span.End()
 		}
 	}()
+	uuid := req.GetId()
+	if len(uuid) == 0 {
+		err = errors.ErrInvalidUUID(uuid)
+		err = status.WrapWithInvalidArgument(fmt.Sprintf("SearchByID API invalid argument for uuid \"%s\" detected", uuid), err,
+			&errdetails.RequestInfo{
+				RequestId:   uuid,
+				ServingData: errdetails.Serialize(req),
+			},
+			&errdetails.BadRequest{
+				FieldViolations: []*errdetails.BadRequestFieldViolation{
+					{
+						Field:       "uuid",
+						Description: err.Error(),
+					},
+				},
+			},
+			&errdetails.ResourceInfo{
+				ResourceType: ngtResourceType + "/ngt.SearchByID",
+				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+			})
+		log.Warn(err)
+		return nil, err
+	}
 	vec, dst, err := s.ngt.SearchByID(
-		req.GetId(),
+		uuid,
 		req.GetConfig().GetNum(),
 		req.GetConfig().GetEpsilon(),
 		req.GetConfig().GetRadius())
@@ -747,8 +792,31 @@ func (s *server) LinearSearchByID(ctx context.Context, req *payload.Search_IDReq
 			span.End()
 		}
 	}()
+	uuid := req.GetId()
+	if len(uuid) == 0 {
+		err = errors.ErrInvalidUUID(uuid)
+		err = status.WrapWithInvalidArgument(fmt.Sprintf("LinearSearchByID API invalid argument for uuid \"%s\" detected", uuid), err,
+			&errdetails.RequestInfo{
+				RequestId:   uuid,
+				ServingData: errdetails.Serialize(req),
+			},
+			&errdetails.BadRequest{
+				FieldViolations: []*errdetails.BadRequestFieldViolation{
+					{
+						Field:       "uuid",
+						Description: err.Error(),
+					},
+				},
+			},
+			&errdetails.ResourceInfo{
+				ResourceType: ngtResourceType + "/ngt.LinearSearchByID",
+				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+			})
+		log.Warn(err)
+		return nil, err
+	}
 	vec, dst, err := s.ngt.LinearSearchByID(
-		req.GetId(),
+		uuid,
 		req.GetConfig().GetNum())
 	res, err = toSearchResponse(dst, err)
 	if err != nil || res == nil {
@@ -1361,7 +1429,30 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (res *
 		}
 		return nil, err
 	}
-	err = s.ngt.UpdateWithTime(vec.GetId(), vec.GetVector(), req.GetConfig().GetTimestamp())
+	uuid := vec.GetId()
+	if len(uuid) == 0 {
+		err = errors.ErrInvalidUUID(uuid)
+		err = status.WrapWithInvalidArgument(fmt.Sprintf("Update API invalid argument for uuid \"%s\" detected", uuid), err,
+			&errdetails.RequestInfo{
+				RequestId:   uuid,
+				ServingData: errdetails.Serialize(req),
+			},
+			&errdetails.BadRequest{
+				FieldViolations: []*errdetails.BadRequestFieldViolation{
+					{
+						Field:       "uuid",
+						Description: err.Error(),
+					},
+				},
+			},
+			&errdetails.ResourceInfo{
+				ResourceType: ngtResourceType + "/ngt.Update",
+				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+			})
+		log.Warn(err)
+		return nil, err
+	}
+	err = s.ngt.UpdateWithTime(uuid, vec.GetVector(), req.GetConfig().GetTimestamp())
 	if err != nil {
 		var code trace.Status
 		if errors.Is(err, errors.ErrObjectIDNotFound(vec.GetId())) {
@@ -1643,6 +1734,29 @@ func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *
 		}
 		return nil, err
 	}
+	uuid := vec.GetId()
+	if len(uuid) == 0 {
+		err = errors.ErrInvalidUUID(uuid)
+		err = status.WrapWithInvalidArgument(fmt.Sprintf("Upsert API invalid argument for uuid \"%s\" detected", uuid), err,
+			&errdetails.RequestInfo{
+				RequestId:   uuid,
+				ServingData: errdetails.Serialize(req),
+			},
+			&errdetails.BadRequest{
+				FieldViolations: []*errdetails.BadRequestFieldViolation{
+					{
+						Field:       "uuid",
+						Description: err.Error(),
+					},
+				},
+			},
+			&errdetails.ResourceInfo{
+				ResourceType: ngtResourceType + "/ngt.Upsert",
+				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+			})
+		log.Warn(err)
+		return nil, err
+	}
 
 	rtName := "/ngt.Upsert"
 	_, exists := s.ngt.Exists(req.GetVector().GetId())
@@ -1888,6 +2002,28 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (res *
 	}()
 	id := req.GetId()
 	uuid := id.GetId()
+	if len(uuid) == 0 {
+		err = errors.ErrInvalidUUID(uuid)
+		err = status.WrapWithInvalidArgument(fmt.Sprintf("Remove API invalid argument for uuid \"%s\" detected", uuid), err,
+			&errdetails.RequestInfo{
+				RequestId:   uuid,
+				ServingData: errdetails.Serialize(req),
+			},
+			&errdetails.BadRequest{
+				FieldViolations: []*errdetails.BadRequestFieldViolation{
+					{
+						Field:       "uuid",
+						Description: err.Error(),
+					},
+				},
+			},
+			&errdetails.ResourceInfo{
+				ResourceType: ngtResourceType + "/ngt.Remove",
+				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+			})
+		log.Warn(err)
+		return nil, err
+	}
 	err = s.ngt.DeleteWithTime(uuid, req.GetConfig().GetTimestamp())
 	if err != nil {
 		var code trace.Status
@@ -2073,6 +2209,28 @@ func (s *server) GetObject(ctx context.Context, id *payload.Object_VectorRequest
 		}
 	}()
 	uuid := id.GetId().GetId()
+	if len(uuid) == 0 {
+		err = errors.ErrInvalidUUID(uuid)
+		err = status.WrapWithInvalidArgument(fmt.Sprintf("GetObject API invalid argument for uuid \"%s\" detected", uuid), err,
+			&errdetails.RequestInfo{
+				RequestId:   uuid,
+				ServingData: errdetails.Serialize(id),
+			},
+			&errdetails.BadRequest{
+				FieldViolations: []*errdetails.BadRequestFieldViolation{
+					{
+						Field:       "uuid",
+						Description: err.Error(),
+					},
+				},
+			},
+			&errdetails.ResourceInfo{
+				ResourceType: ngtResourceType + "/ngt.GetObject",
+				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+			})
+		log.Warn(err)
+		return nil, err
+	}
 	vec, err := s.ngt.GetObject(uuid)
 	if err != nil || vec == nil {
 		err = errors.ErrObjectNotFound(err, uuid)
