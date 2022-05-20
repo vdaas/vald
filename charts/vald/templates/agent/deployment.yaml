@@ -41,10 +41,10 @@ spec:
     matchLabels:
       app: {{ $agent.name }}
   strategy:
+    type: RollingUpdate
     rollingUpdate:
       maxSurge: {{ $agent.rollingUpdate.maxSurge }}
       maxUnavailable: {{ $agent.rollingUpdate.maxUnavailable }}
-    type: RollingUpdate
   template:
     metadata:
       creationTimestamp: null

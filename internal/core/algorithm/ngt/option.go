@@ -86,8 +86,8 @@ func WithBulkInsertChunkSize(size int) Option {
 // WithDimension represents the option to set the dimension for NGT.
 func WithDimension(size int) Option {
 	return func(n *ngt) error {
-		if size > ngtVectorDimensionSizeLimit || size < minimumDimensionSize {
-			err := errors.ErrInvalidDimensionSize(size, ngtVectorDimensionSizeLimit)
+		if size > VectorDimensionSizeLimit || size < minimumDimensionSize {
+			err := errors.ErrInvalidDimensionSize(size, VectorDimensionSizeLimit)
 			return errors.NewErrCriticalOption("dimension", size, err)
 		}
 

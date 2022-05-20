@@ -23,6 +23,7 @@ import (
 	"io/fs"
 	"math"
 	"os"
+	"path/filepath"
 	"reflect"
 	"runtime"
 	"sync"
@@ -38,6 +39,7 @@ import (
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
+	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/model"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/service/kvs"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/service/vqueue"
@@ -128,6 +130,8 @@ type ngt struct {
 
 	idelay time.Duration // initial delay duration
 	dcd    bool          // disable commit daemon
+
+	kvsdbConcurrency int // kvsdb concurrency
 }
 
 const (
@@ -143,6 +147,7 @@ func New(cfg *config.NGT, opts ...Option) (nn NGT, err error) {
 		dim:               cfg.Dimension,
 		enableProactiveGC: cfg.EnableProactiveGC,
 		enableCopyOnWrite: cfg.EnableCopyOnWrite,
+		kvsdbConcurrency:  cfg.KVSDB.Concurrency,
 	}
 
 	for _, opt := range append(defaultOptions, opts...) {
@@ -151,9 +156,15 @@ func New(cfg *config.NGT, opts ...Option) (nn NGT, err error) {
 		}
 	}
 
-	n.kvs = kvs.New(kvs.WithConcurrency(cfg.KVSDB.Concurrency))
+	if len(n.path) == 0 {
+		n.inMem = true
+	}
 
-	if n.enableCopyOnWrite && len(n.path) != 0 {
+	if n.enableCopyOnWrite && !n.inMem && len(n.path) != 0 {
+		n.path, err = filepath.Abs(strings.ReplaceAll(n.path, string(os.PathSeparator)+string(os.PathSeparator), string(os.PathSeparator)))
+		if err != nil {
+			log.Warn(err)
+		}
 		n.basePath = n.path
 		n.oldPath = file.Join(n.basePath, oldIndexDirName)
 		n.path = file.Join(n.basePath, originIndexDirName)
@@ -206,98 +217,64 @@ func New(cfg *config.NGT, opts ...Option) (nn NGT, err error) {
 	return n, nil
 }
 
-func (n *ngt) initNGT(opts ...core.Option) (err error) {
-	if n.inMem {
-		log.Debug("vald agent starts with in-memory mode")
-		n.core, err = core.New(opts...)
+func (n *ngt) load(ctx context.Context, path string, opts ...core.Option) (err error) {
+	exist, fi, err := file.ExistsWithDetail(path)
+	switch {
+	case !exist, fi == nil, fi != nil && fi.Size() == 0, err != nil && errors.Is(err, fs.ErrNotExist):
+		err = errors.Wrapf(errors.ErrIndexFileNotFound, "index file does not exists,\tpath: %s,\terr: %v", path, err)
+		return err
+	case err != nil && errors.Is(err, fs.ErrPermission):
+		if fi != nil {
+			err = errors.Wrap(errors.ErrFailedToOpenFile(err, path, 0, fi.Mode()), "invalid permission for loading index path")
+		}
+		return err
+	case exist && fi != nil && fi.IsDir():
+		if fi.Mode().IsDir() && !strings.HasSuffix(path, string(os.PathSeparator)) {
+			path += string(os.PathSeparator)
+		}
+		files, err := filepath.Glob(file.Join(filepath.Dir(path), "*"))
+		if err != nil || len(files) == 0 {
+			err = errors.Wrapf(errors.ErrIndexFileNotFound, "index path exists but no file does not exists in the directory,\tpath: %s,\tfiles: %v\terr: %v", path, files, err)
+			return err
+		}
+		if strings.HasSuffix(path, string(os.PathSeparator)) {
+			path = strings.TrimSuffix(path, string(os.PathSeparator))
+		}
+	}
+	metadataPath := file.Join(path, metadata.AgentMetadataFileName)
+	log.Debugf("index path: %s exists, now starting to check metadata from %s", path, metadataPath)
+	exist, fi, err = file.ExistsWithDetail(metadataPath)
+	switch {
+	case !exist, fi == nil, fi != nil && fi.Size() == 0, err != nil && errors.Is(err, fs.ErrNotExist):
+		err = errors.Wrapf(errors.ErrIndexFileNotFound, "metadata file does not exists,\tpath: %s,\terr: %v", metadataPath, err)
+		return err
+	case err != nil && errors.Is(err, fs.ErrPermission):
+		if fi != nil {
+			err = errors.Wrap(errors.ErrFailedToOpenFile(err, metadataPath, 0, fi.Mode()), "invalid permission for loading metadata")
+		}
 		return err
 	}
 
-	var (
-		path  = n.path
-		exist bool
-	)
-	if exist, _, err = file.ExistsWithDetail(path); !exist {
-		log.Debugf("index file not exists,\tpath: %s,\terr: %v", path, err)
-		if !n.enableCopyOnWrite {
-			n.core, err = core.New(append(opts, core.WithIndexPath(path))...)
-			return err
-		}
-		log.Debugf("trying to load from old backup data from path: %s", n.oldPath)
-		exist, _, err = file.ExistsWithDetail(n.oldPath)
-		if !exist || os.IsPermission(err) {
-			log.Debugf("trying to check permissions from non copy on write impl backup data path: %s", n.basePath)
-			// for backwards compatibility
-			exist, _, err = file.ExistsWithDetail(n.basePath)
-			if !exist || os.IsPermission(err) {
-				tpath := n.tmpPath.Load().(string)
-				log.Debugf("failed to find any index from %s and %s and %s now start with temporary directory as a new index path: %s", n.basePath, n.path, n.oldPath, tpath)
-				n.core, err = core.New(append(opts, core.WithIndexPath(tpath))...)
-				return err
-			}
-			path = n.basePath
-		} else {
-			path = n.oldPath
-		}
+	log.Debugf("index path: %s and metadata: %s exists, now starting to load metadata", path, metadataPath)
+	agentMetadata, err := metadata.Load(metadataPath)
+	if err != nil && errors.Is(err, fs.ErrNotExist) || agentMetadata == nil || agentMetadata.NGT == nil || agentMetadata.NGT.IndexCount == 0 {
+		err = errors.Wrapf(err, "cannot read metadata from path: %s\tmetadata: %s", path, agentMetadata)
+		return err
 	}
-	if os.IsPermission(err) {
-		log.Errorf("no permission for index path,\tpath: %s,\terr: %v", path, err)
-		if !n.enableCopyOnWrite {
-			n.core, err = core.New(append(opts, core.WithIndexPath(path))...)
-			return err
+	kvsFilePath := file.Join(path, kvsFileName)
+	log.Debugf("index path: %s and metadata: %s exists and successfully load metadata, now starting to load kvs data from %s", path, metadataPath, kvsFilePath)
+	exist, fi, err = file.ExistsWithDetail(kvsFilePath)
+	switch {
+	case !exist, fi == nil, fi != nil && fi.Size() == 0, err != nil && errors.Is(err, fs.ErrNotExist):
+		err = errors.Wrapf(errors.ErrIndexFileNotFound, "kvsdb file does not exists,\tpath: %s,\terr: %v", kvsFilePath, err)
+		return err
+	case err != nil && errors.Is(err, fs.ErrPermission):
+		if fi != nil {
+			err = errors.ErrFailedToOpenFile(err, kvsFilePath, 0, fi.Mode())
 		}
-		log.Debugf("trying to check permissions from old backup data path: %s", n.oldPath)
-		exist, _, err = file.ExistsWithDetail(n.oldPath)
-		if !exist || os.IsPermission(err) {
-			log.Debugf("trying to check permissions from non copy on write impl backup data path: %s", n.basePath)
-			// for backwards compatibility
-			exist, _, err = file.ExistsWithDetail(n.basePath)
-			if !exist || os.IsPermission(err) {
-				tpath := n.tmpPath.Load().(string)
-				log.Debugf("failed to find any index from %s and %s and %s now start with temporary directory as a new index path: %s", n.basePath, n.path, n.oldPath, tpath)
-				n.core, err = core.New(append(opts, core.WithIndexPath(tpath))...)
-				return err
-			}
-			path = n.basePath
-		} else {
-			path = n.oldPath
-		}
+		err = errors.Wrapf(err, "invalid permission for loading kvsdb file from %s", kvsFilePath)
+		return err
 	}
-
-	log.Debugf("starting to load index from %s", path)
-	agentMetadata, err := metadata.Load(file.Join(path, metadata.AgentMetadataFileName))
-	if os.IsNotExist(err) || agentMetadata == nil || agentMetadata.NGT == nil || agentMetadata.NGT.IndexCount == 0 {
-		log.Warnf("cannot read metadata from path: %s\tmetadata: %v\terr: %v", metadata.AgentMetadataFileName, agentMetadata, err)
-		exist, fi, err := file.ExistsWithDetail(file.Join(path, kvsFileName))
-		if !exist || fi != nil && fi.Size() == 0 {
-			log.Warn("kvsdb file is not exist")
-			if !n.enableCopyOnWrite {
-				n.core, err = core.New(append(opts, core.WithIndexPath(path))...)
-				return err
-			}
-			if path == n.path {
-				exist, fi, err := file.ExistsWithDetail(file.Join(n.oldPath, kvsFileName))
-				if !exist || fi != nil && fi.Size() == 0 {
-					n.core, err = core.New(append(opts, core.WithIndexPath(n.tmpPath.Load().(string)))...)
-					return err
-				}
-				path = n.oldPath
-				agentMetadata, err = metadata.Load(file.Join(path, metadata.AgentMetadataFileName))
-				if os.IsNotExist(err) || agentMetadata == nil || agentMetadata.NGT == nil || agentMetadata.NGT.IndexCount == 0 {
-					n.core, err = core.New(append(opts, core.WithIndexPath(n.tmpPath.Load().(string)))...)
-					return err
-				}
-			} else {
-				n.core, err = core.New(append(opts, core.WithIndexPath(n.tmpPath.Load().(string)))...)
-				return err
-			}
-		}
-		if !exist && err != nil && os.IsPermission(err) {
-			log.Errorf("no permission for kvsdb file,\tpath: %s,\terr: %v", file.Join(path, kvsFileName), err)
-			return err
-		}
-	}
-
 	var timeout time.Duration
 	if agentMetadata != nil && agentMetadata.NGT != nil {
 		log.Debugf("the backup index size is %d. starting to load...", agentMetadata.NGT.IndexCount)
@@ -315,60 +292,36 @@ func (n *ngt) initNGT(opts ...core.Option) (err error) {
 		timeout = time.Duration(math.Min(float64(n.minLit), float64(n.maxLit)))
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	log.Debugf("index path: %s and metadata: %s and kvsdb file: %s exists and successfully load metadata, now starting to load full index and kvs data in concurrent", path, metadataPath, kvsFilePath)
+	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
-
 	eg, _ := errgroup.New(ctx)
 	eg.Go(safety.RecoverFunc(func() (err error) {
+		if n.core != nil {
+			n.core.Close()
+			n.core = nil
+		}
 		n.core, err = core.Load(append(opts, core.WithIndexPath(path))...)
 		if err != nil {
-			if !n.enableCopyOnWrite {
-				log.Debugf("failed to load index from %s now start as a new index path: %s", path)
-				n.core, err = core.New(append(opts, core.WithIndexPath(n.path))...)
-				return err
-			}
-			n.core, err = core.Load(append(opts, core.WithIndexPath(n.oldPath))...)
-			if err != nil {
-				log.Debugf(
-					"failed to load index from path: %s and %s, now trying to load index from %s for backwards compatibility (non copy on write version vald backup data)",
-					path,
-					n.oldPath,
-					n.basePath,
-				)
-				// for backwards compatibility
-				n.core, err = core.Load(append(opts, core.WithIndexPath(n.basePath))...)
-				if err != nil {
-					tpath := n.tmpPath.Load().(string)
-					log.Debugf("failed to load any index from %s and %s and %s now start with temporary directory as a new index path: %s", n.path, n.oldPath, n.basePath, tpath)
-					n.core, err = core.New(append(opts, core.WithIndexPath(tpath))...)
-					return err
-				}
-				return n.loadKVS(n.basePath)
-			}
-			return n.loadKVS(n.oldPath)
+			err = errors.Wrapf(err, "failed to load ngt index from path: %s", path)
+			return err
 		}
-		err = n.loadKVS(path)
-		if n.enableCopyOnWrite && (err != nil || float64(agentMetadata.NGT.IndexCount/2) > float64(n.kvs.Len())) {
-			n.core, err = core.Load(append(opts, core.WithIndexPath(n.oldPath))...)
-			if err != nil {
-				log.Debugf("failed to load index from path: %s, now trying to load index from %s for backwards compatibility (non copy on write version vald backup data)", n.oldPath, n.basePath)
-				// for backwards compatibility
-				n.core, err = core.Load(append(opts, core.WithIndexPath(n.basePath))...)
-				if err != nil {
-					tpath := n.tmpPath.Load().(string)
-					log.Debugf("failed to load any index from %s and %s and %s now start with temporary directory as a new index path: %s", n.path, n.oldPath, n.basePath, tpath)
-					n.core, err = core.New(append(opts, core.WithIndexPath(tpath))...)
-					return err
-				}
-				return n.loadKVS(n.basePath)
-			}
-			return n.loadKVS(n.oldPath)
+		return nil
+	}))
+
+	eg.Go(safety.RecoverFunc(func() (err error) {
+		err = n.loadKVS(kvsFilePath)
+		if err != nil {
+			err = errors.Wrapf(err, "failed to load kvsdb data from path: %s", kvsFilePath)
+			return err
 		}
-		return err
+		if n.kvs != nil && float64(agentMetadata.NGT.IndexCount/2) > float64(n.kvs.Len()) {
+			return errors.ErrIndicesAreTooFewComparedToMetadata
+		}
+		return nil
 	}))
 
 	ech := make(chan error, 1)
-
 	// NOTE: when it exceeds the timeout while loading,
 	// it should exit this function and leave this goroutine running.
 	n.eg.Go(safety.RecoverFunc(func() error {
@@ -376,13 +329,7 @@ func (n *ngt) initNGT(opts ...core.Option) (err error) {
 		ech <- safety.RecoverFunc(func() (err error) {
 			err = eg.Wait()
 			if err != nil {
-				if !n.enableCopyOnWrite {
-					log.Warnf("failed to Load index from %s:\terr: %v, will start as new empty index", n.path, err)
-					n.core, err = core.New(append(opts, core.WithIndexPath(n.path))...)
-					return err
-				}
-				log.Warnf("failed to Load index from %s or %s or %s:\terr: %v, will start as new empty index", n.path, n.oldPath, n.tmpPath.Load().(string), err)
-				n.core, err = core.New(append(opts, core.WithIndexPath(n.tmpPath.Load().(string)))...)
+				log.Error(err)
 				return err
 			}
 			cancel()
@@ -395,10 +342,9 @@ func (n *ngt) initNGT(opts ...core.Option) (err error) {
 	case err := <-ech:
 		return err
 	case <-ctx.Done():
-		if ctx.Err() == context.DeadlineExceeded {
-			log.Errorf("cannot load index backup data within the timeout %s. the process is going to be killed.", timeout)
-			err := metadata.Store(
-				file.Join(n.path, metadata.AgentMetadataFileName),
+		if errors.Is(ctx.Err(), context.DeadlineExceeded) {
+			log.Errorf("cannot load index backup data from %s within the timeout %s. the process is going to be killed.", path, timeout)
+			err := metadata.Store(metadataPath,
 				&metadata.Metadata{
 					IsInvalid: true,
 					NGT: &metadata.NGT{
@@ -407,23 +353,107 @@ func (n *ngt) initNGT(opts ...core.Option) (err error) {
 				},
 			)
 			if err != nil {
-				err = metadata.Store(
-					file.Join(n.tmpPath.Load().(string), metadata.AgentMetadataFileName),
-					&metadata.Metadata{
-						IsInvalid: true,
-						NGT: &metadata.NGT{
-							IndexCount: 0,
-						},
-					},
-				)
-				if err != nil {
-					return err
-				}
+				return err
 			}
 			return errors.ErrIndexLoadTimeout
 		}
 	}
 
+	return nil
+}
+
+func (n *ngt) initNGT(opts ...core.Option) (err error) {
+	if n.kvs == nil {
+		n.kvs = kvs.New(kvs.WithConcurrency(n.kvsdbConcurrency))
+	}
+	if n.inMem {
+		log.Debug("vald agent starts with in-memory mode")
+		n.core, err = core.New(opts...)
+		return err
+	}
+
+	ctx := context.Background()
+	err = n.load(ctx, n.path, opts...)
+	var current uint64
+	if err != nil {
+		if !n.enableCopyOnWrite {
+			log.Debug("failed to load vald index from %s\t error: %v", n.path, err)
+			if n.kvs == nil {
+				n.kvs = kvs.New(kvs.WithConcurrency(n.kvsdbConcurrency))
+			} else if n.kvs.Len() > 0 {
+				n.kvs.Close()
+				n.kvs = kvs.New(kvs.WithConcurrency(n.kvsdbConcurrency))
+			}
+			if n.core != nil {
+				n.core.Close()
+				n.core = nil
+			}
+			n.core, err = core.New(append(opts, core.WithIndexPath(n.path))...)
+			return err
+		}
+		if errors.Is(err, errors.ErrIndicesAreTooFewComparedToMetadata) && n.kvs != nil {
+			current = n.kvs.Len()
+			log.Warnf(
+				"load vald primary index success from %s\t error: %v\tbut index data are too few %d compared to metadata count now trying to load from old copied index data from %s and compare them",
+				n.path,
+				err,
+				current,
+				n.oldPath,
+			)
+		} else {
+			log.Warnf("failed to load vald primary index from %s\t error: %v\ttrying to load from old copied index data from %s", n.path, err, n.oldPath)
+		}
+	} else {
+		return nil
+	}
+	err = n.load(ctx, n.oldPath, opts...)
+	if err == nil {
+		if current != 0 && n.kvs.Len() < current {
+			log.Warnf(
+				"load vald secondary index success from %s\t error: %v\tbut index data are too few %d compared to primary data now trying to load from primary index data again from %s and start up with them",
+				n.oldPath,
+				err,
+				n.kvs.Len(),
+				n.oldPath,
+			)
+			err = n.load(ctx, n.path, opts...)
+			if err == nil {
+				return nil
+			}
+		} else {
+			return nil
+		}
+	}
+	log.Warnf("failed to load vald secondary index from %s and %s\t error: %v\ttrying to load from non-CoW index data from %s for backwards compatibility", n.path, n.oldPath, err, n.basePath)
+	err = n.load(ctx, n.basePath, opts...)
+	if err == nil {
+		file.CopyDir(ctx, n.basePath, n.path)
+		return nil
+	}
+	tpath := n.tmpPath.Load().(string)
+	log.Warnf(
+		"failed to load vald backwards index from %s and %s and %s\t error: %v\tvald agent couldn't find any index from agent volume in %s trying to start as new index from %s",
+		n.path,
+		n.oldPath,
+		n.basePath,
+		err,
+		n.basePath,
+		tpath,
+	)
+	if n.core != nil {
+		n.core.Close()
+		n.core = nil
+	}
+	n.core, err = core.New(append(opts, core.WithIndexPath(tpath))...)
+	if err != nil {
+		return err
+	}
+	if n.kvs == nil {
+		n.kvs = kvs.New(kvs.WithConcurrency(n.kvsdbConcurrency))
+	} else if n.kvs.Len() > 0 {
+		n.kvs.Close()
+		n.kvs = kvs.New(kvs.WithConcurrency(n.kvsdbConcurrency))
+	}
 	return nil
 }
 
@@ -433,7 +463,7 @@ func (n *ngt) loadKVS(path string) (err error) {
 	var f *os.File
 
 	f, err = file.Open(
-		file.Join(path, kvsFileName),
+		path,
 		os.O_RDONLY|os.O_SYNC,
 		fs.ModePerm,
 	)
@@ -456,6 +486,12 @@ func (n *ngt) loadKVS(path string) (err error) {
 		return err
 	}
 
+	if n.kvs == nil {
+		n.kvs = kvs.New(kvs.WithConcurrency(n.kvsdbConcurrency))
+	} else if n.kvs.Len() > 0 {
+		n.kvs.Close()
+		n.kvs = kvs.New(kvs.WithConcurrency(n.kvsdbConcurrency))
+	}
 	for k, id := range m {
 		n.kvs.Set(k, id)
 	}
@@ -696,7 +732,7 @@ func (n *ngt) update(uuid string, vec []float32, t int64) (err error) {
 	if err = n.readyForUpdate(uuid, vec); err != nil {
 		return err
 	}
-	err = n.delete(uuid, t, false)
+	err = n.delete(uuid, t, true) // true is to return NotFound error with non-existent ID
 	if err != nil {
 		return err
 	}
@@ -887,6 +923,9 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 }
 
 func (n *ngt) removeInvalidIndex(ctx context.Context) {
+	if n.kvs.Len() == 0 {
+		return
+	}
 	var dcnt uint32
 	n.kvs.Range(ctx, func(uuid string, oid uint32) bool {
 		vec, err := n.core.GetVector(uint(oid))

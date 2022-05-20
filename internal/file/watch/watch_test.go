@@ -17,9 +17,9 @@
 package watch
 
 import (
+	"bytes"
 	"context"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"reflect"
 	"syscall"
@@ -28,6 +28,7 @@ import (
 	"github.com/fsnotify/fsnotify"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/file"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/log/logger"
 	"github.com/vdaas/vald/internal/strings"
@@ -380,7 +381,10 @@ func Test_watch_Start(t *testing.T) {
 					},
 				},
 				checkFunc: func(w want, c <-chan error, e error) error {
-					ioutil.WriteFile(tmpDir+"/watch.go", []byte{0}, 0o777)
+					_, err := file.OverWriteFile(context.Background(), tmpDir+"/watch.go", bytes.NewBuffer(nil), 0o777)
+					if err != nil {
+						return err
+					}
 					return defaultCheckFunc(w, c, e)
 				},
 				want: want{
@@ -422,7 +426,10 @@ func Test_watch_Start(t *testing.T) {
 					},
 				},
 				checkFunc: func(w want, c <-chan error, e error) error {
-					ioutil.WriteFile(tmpDir+"/watch.go", []byte{0}, 0o777)
+					_, err := file.OverWriteFile(context.Background(), tmpDir+"/watch.go", bytes.NewBuffer(nil), 0o777)
+					if err != nil {
+						return err
+					}
 					return defaultCheckFunc(w, c, e)
 				},
 				want: want{
@@ -472,7 +479,10 @@ func Test_watch_Start(t *testing.T) {
 					err: nil,
 				},
 				checkFunc: func(w want, c <-chan error, e error) error {
-					ioutil.WriteFile(tmpDir+"/watch.go", []byte{0}, 0o777)
+					_, err := file.OverWriteFile(context.Background(), tmpDir+"/watch.go", bytes.NewBuffer(nil), 0o777)
+					if err != nil {
+						return err
+					}
 					return defaultCheckFunc(w, c, e)
 				},
 				afterFunc: func(t *testing.T, args args, w Watcher) {

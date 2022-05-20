@@ -20,9 +20,7 @@ k8s/manifest/clean:
 	    k8s/agent \
 	    k8s/discoverer \
 	    k8s/gateway \
-	    k8s/manager \
-	    k8s/meta \
-	    k8s/jobs
+	    k8s/manager
 
 .PHONY: k8s/manifest/update
 ## update k8s manifests using helm templates
@@ -30,14 +28,6 @@ k8s/manifest/update: \
 	k8s/manifest/clean
 	helm template \
 	    --values charts/vald/values/dev.yaml \
-	    --set initializer.mysql.enabled=true \
-	    --set initializer.mysql.configmap.enabled=true \
-	    --set initializer.mysql.secret.enabled=true \
-	    --set initializer.redis.enabled=true \
-	    --set initializer.redis.secret.enabled=true \
-	    --set initializer.cassandra.enabled=true \
-	    --set initializer.cassandra.configmap.enabled=true \
-	    --set initializer.cassandra.secret.enabled=true \
 	    --output-dir $(TEMP_DIR) \
 	    charts/vald
 	mkdir -p k8s/gateway
@@ -46,7 +36,6 @@ k8s/manifest/update: \
 	mv $(TEMP_DIR)/vald/templates/discoverer k8s/discoverer
 	mv $(TEMP_DIR)/vald/templates/gateway/lb k8s/gateway/lb
 	mv $(TEMP_DIR)/vald/templates/manager/index k8s/manager/index
-	mv $(TEMP_DIR)/vald/templates/jobs k8s/jobs
 	rm -rf $(TEMP_DIR)
 
 .PHONY: k8s/manifest/helm-operator/clean
@@ -151,111 +140,6 @@ k8s/vr/deploy: \
 k8s/vr/delete: \
 	k8s/metrics/metrics-server/delete
 	kubectl delete vr vald-cluster
-
-.PHONY: k8s/vr/deploy/scylla
-## deploy ValdRelease resource with scylla to k8s
-k8s/vr/deploy/scylla: \
-	yq/install \
-	k8s/external/scylla/deploy \
-	k8s/metrics/metrics-server/deploy
-	yq eval \
-	    '{"apiVersion": "vald.vdaas.org/v1", "kind": "ValdRelease", "metadata":{"name":"vald-cluster"}, "spec": .}' \
-	    charts/vald/values/scylla.yaml \
-	    | kubectl apply -f -
-
-.PHONY: k8s/vr/delete/scylla
-k8s/vr/delete/scylla: \
-	k8s/vr/delete \
-	k8s/external/scylla/delete
-
-.PHONY: k8s/external/mysql/deploy
-## deploy mysql to k8s
-k8s/external/mysql/deploy:
-	kubectl apply -f k8s/jobs/db/initialize/mysql/configmap.yaml
-	kubectl apply -f k8s/external/mysql
-	sleep $(K8S_SLEEP_DURATION_FOR_WAIT_COMMAND)
-	kubectl wait --for=condition=ready pod -l app=mysql --timeout=600s
-
-.PHONY: k8s/external/mysql/delete
-## delete mysql from k8s
-k8s/external/mysql/delete:
-	kubectl delete -f k8s/external/mysql
-	kubectl delete configmap mysql-config
-
-.PHONY: k8s/external/mysql/initialize
-## initialize mysql on k8s
-k8s/external/mysql/initialize:
-	kubectl delete -f k8s/jobs/db/initialize/mysql
-	kubectl apply -f k8s/external/mysql/secret.yaml
-	kubectl apply -f k8s/jobs/db/initialize/mysql
-
-.PHONY: k8s/external/redis/deploy
-## deploy redis to k8s
-k8s/external/redis/deploy:
-	kubectl apply -f k8s/external/redis
-	sleep $(K8S_SLEEP_DURATION_FOR_WAIT_COMMAND)
-	kubectl wait --for=condition=ready pod -l app=redis --timeout=600s
-
-.PHONY: k8s/external/redis/delete
-## delete redis from k8s
-k8s/external/redis/delete:
-	kubectl delete -f k8s/external/redis
-
-.PHONY: k8s/external/redis/initialize
-## initialize redis on k8s
-k8s/external/redis/initialize:
-	kubectl delete -f k8s/jobs/db/initialize/redis
-	kubectl apply -f k8s/external/redis/secret.yaml
-	kubectl apply -f k8s/jobs/db/initialize/redis
-
-.PHONY: k8s/external/cassandra/deploy
-## deploy cassandra to k8s
-k8s/external/cassandra/deploy:
-	kubectl apply -f https://raw.githubusercontent.com/datastax/cass-operator/master/docs/user/cass-operator-manifests-$(K8S_SERVER_VERSION).yaml
-	sleep $(K8S_SLEEP_DURATION_FOR_WAIT_COMMAND)
-	kubectl apply -n cass-operator -f k8s/jobs/db/initialize/cassandra/secret.yaml
-	kubectl wait -n cass-operator --for=condition=ready pod -l name=cass-operator --timeout=600s
-	kubectl apply -f k8s/external/cassandra
-	sleep 20
-	kubectl wait -n cass-operator --for=condition=ready pod -l statefulset.kubernetes.io/pod-name=cluster0-dc0-default-sts-0 --timeout=600s
-
-.PHONY: k8s/external/cassandra/delete
-## delete cassandra from k8s
-k8s/external/cassandra/delete:
-	kubectl delete -n cass-operator -f k8s/jobs/db/initialize/cassandra/secret.yaml
-	kubectl delete -f k8s/external/cassandra
-	kubectl delete -f https://raw.githubusercontent.com/datastax/cass-operator/master/docs/user/cass-operator-manifests-$(K8S_SERVER_VERSION).yaml
-
-.PHONY: k8s/external/cassandra/initialize
-## initialize cassandra on k8s
-k8s/external/cassandra/initialize:
-	kubectl delete -f k8s/jobs/db/initialize/cassandra
-	kubectl delete configmap cassandra-initdb
-	kubectl apply -f k8s/jobs/db/initialize/cassandra
-
-.PHONY: k8s/external/scylla/deploy
-## deploy scylla to k8s
-k8s/external/scylla/deploy: \
-	k8s/external/cert-manager/deploy
-	kubectl apply -f https://raw.githubusercontent.com/scylladb/scylla-operator/master/examples/common/operator.yaml
-	sleep $(K8S_SLEEP_DURATION_FOR_WAIT_COMMAND)
-	kubectl wait -n scylla-operator --for=condition=ready pod -l app.kubernetes.io/name=scylla-operator --timeout=600s
-	kubectl -n scylla-operator get pod
-	kubectl apply -f $(K8S_EXTERNAL_SCYLLA_MANIFEST)
-	sleep $(K8S_SLEEP_DURATION_FOR_WAIT_COMMAND)
-	kubectl -n scylla get ScyllaCluster
-	kubectl -n scylla get pods
-	sleep 1
-	kubectl wait -n scylla --for=condition=ready pod -l statefulset.kubernetes.io/pod-name=vald-scylla-cluster-dc0-rack0-0 --timeout=600s
-	kubectl -n scylla get ScyllaCluster
-	kubectl -n scylla get pods
-
-.PHONY: k8s/external/scylla/delete
-## delete scylla from k8s
-k8s/external/scylla/delete: \
-	k8s/external/cert-manager/delete
-	kubectl delete -f $(K8S_EXTERNAL_SCYLLA_MANIFEST)
-	kubectl delete -f https://raw.githubusercontent.com/scylladb/scylla-operator/master/examples/common/operator.yaml
 
 .PHONY: k8s/external/cert-manager/deploy
 ## deploy cert-manager

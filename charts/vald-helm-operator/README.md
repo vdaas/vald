@@ -3,7 +3,7 @@ vald-helm-operator
 
 This is a Helm chart to install vald-helm-operator.
 
-Current chart version is `v1.5.0`
+Current chart version is `v1.5.2`
 
 Table of Contents
 ---
@@ -30,13 +30,13 @@ Upgrading the version
 
 Please upgrade the CRDs first because Helm doesn't have a support to upgrade CRDs.
 
-    $ kubectl replace -f https://raw.githubusercontent.com/vdaas/vald/v1.5.0/charts/vald-helm-operator/crds/valdrelease.yaml
-    $ kubectl replace -f https://raw.githubusercontent.com/vdaas/vald/v1.5.0/charts/vald-helm-operator/crds/valdhelmoperatorrelease.yaml
+    $ kubectl replace -f https://raw.githubusercontent.com/vdaas/vald/v1.5.2/charts/vald-helm-operator/crds/valdrelease.yaml
+    $ kubectl replace -f https://raw.githubusercontent.com/vdaas/vald/v1.5.2/charts/vald-helm-operator/crds/valdhelmoperatorrelease.yaml
 
 After upgrading CRDs, you can upgrade the operator.
 If you're using `valdhelmoperatorrelease` (or `vhor`) resource, please update the `spec.image.tag` field of it.
 
-    $ kubectl patch vhor vhor-release -p '{"spec":{"image":{"tag":"v1.5.0"}}}'
+    $ kubectl patch vhor vhor-release -p '{"spec":{"image":{"tag":"v1.5.2"}}}'
 
 On the other hand, please update the operator's deployment manually.
 
@@ -85,7 +85,7 @@ Configuration
 | healthPort | int | `8081` | port of health endpoint |
 | image.pullPolicy | string | `"Always"` | image pull policy |
 | image.repository | string | `"vdaas/vald-helm-operator"` | image repository |
-| image.tag | string | `"v1.5.0"` | image tag |
+| image.tag | string | `"v1.5.2"` | image tag |
 | leaderElectionID | string | `"vald-helm-operator"` | name of the configmap that is used for holding the leader lock. |
 | livenessProbe.enabled | bool | `true` | enable liveness probe. |
 | livenessProbe.failureThreshold | int | `2` | liveness probe failure threshold |
@@ -105,6 +105,7 @@ Configuration
 | namespaced | bool | `true` | if it is true, operator will behave as a namespace-scoped operator, if it is false, it will behave as a cluster-scoped operator. |
 | nodeSelector | object | `{}` | node labels for pod assignment |
 | podAnnotations | object | `{}` | pod annotations |
+| podSecurityContext | object | `{"fsGroup":65532,"fsGroupChangePolicy":"OnRootMismatch","runAsGroup":65532,"runAsNonRoot":true,"runAsUser":65532}` | security context for pod |
 | rbac.create | bool | `true` | required roles and rolebindings will be created |
 | rbac.name | string | `"vald-helm-operator"` | name of roles and rolebindings |
 | readinessProbe.enabled | bool | `true` | enable readiness probe. |
@@ -118,7 +119,8 @@ Configuration
 | readinessProbe.timeoutSeconds | int | `5` | liveness probe timeout seconds |
 | reconcilePeriod | string | `"1m"` | reconcile duration of operator |
 | replicas | int | `2` | number of replicas |
-| resources | object | `{}` | kubernetes resources of pod |
+| resources | object | `{"limits":{"cpu":"300m","memory":"300Mi"},"requests":{"cpu":"200m","memory":"200Mi"}}` | kubernetes resources of pod |
+| securityContext | object | `{"allowPrivilegeEscalation":false,"capabilities":{"drop":["ALL"]},"privileged":false,"readOnlyRootFilesystem":true,"runAsGroup":65532,"runAsNonRoot":true,"runAsUser":65532}` | security context for container |
 | service.annotations | object | `{}` | service annotations |
 | service.enabled | bool | `true` | service enabled |
 | service.externalTrafficPolicy | string | `""` | external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local |

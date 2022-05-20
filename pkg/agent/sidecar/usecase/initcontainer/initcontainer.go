@@ -19,7 +19,6 @@ package initcontainer
 import (
 	"context"
 	"errors"
-	"io"
 
 	"github.com/vdaas/vald/apis/grpc/v1/agent/sidecar"
 	iconf "github.com/vdaas/vald/internal/config"
@@ -27,6 +26,7 @@ import (
 	"github.com/vdaas/vald/internal/db/storage/blob/cloudstorage/urlopener"
 	"github.com/vdaas/vald/internal/db/storage/blob/v3/s3"
 	"github.com/vdaas/vald/internal/errgroup"
+	"github.com/vdaas/vald/internal/io"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/net/grpc"
@@ -271,6 +271,6 @@ func (r *run) Stop(ctx context.Context) error {
 	return r.server.Shutdown(ctx)
 }
 
-func (r *run) PostStop(ctx context.Context) error {
+func (*run) PostStop(ctx context.Context) error {
 	return nil
 }

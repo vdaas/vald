@@ -59,7 +59,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Setup QEMU
         uses: docker/setup-qemu-action@v1
         with:
@@ -89,7 +89,7 @@ jobs:
           platforms: linux/amd64
       - name: Initialize CodeQL
         if: startsWith( github.ref, 'refs/tags/')
-        uses: github/codeql-action/init@v1
+        uses: github/codeql-action/init@v2
       - name: Run vulnerability scanner (table)
         if: startsWith( github.ref, 'refs/tags/')
         uses: aquasecurity/trivy-action@master
@@ -106,7 +106,7 @@ jobs:
           output: "trivy-results.sarif"
       - name: Upload Trivy scan results to Security tab
         if: startsWith( github.ref, 'refs/tags/')
-        uses: github/codeql-action/upload-sarif@v1
+        uses: github/codeql-action/upload-sarif@v2
         with:
           sarif_file: "trivy-results.sarif"
   slack:
@@ -115,10 +115,10 @@ jobs:
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/master' || startsWith( github.ref, 'refs/tags/')
     steps:
-      - uses: technote-space/workflow-conclusion-action@v1
+      - uses: technote-space/workflow-conclusion-action@v2
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - uses: 8398a7/action-slack@v2
+      - uses: 8398a7/action-slack@v3
         with:
           author_name: vald-filter-ingress-tensorflow image build
           status: ${{ env.WORKFLOW_CONCLUSION }}

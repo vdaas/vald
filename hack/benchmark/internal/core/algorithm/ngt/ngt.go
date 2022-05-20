@@ -18,11 +18,11 @@
 package ngt
 
 import (
-	"io/ioutil"
 	"os"
 
 	c "github.com/vdaas/vald/hack/benchmark/internal/core/algorithm"
 	"github.com/vdaas/vald/internal/core/algorithm/ngt"
+	"github.com/vdaas/vald/internal/file"
 )
 
 type ObjectType int
@@ -47,7 +47,7 @@ func New(opts ...Option) (c.Bit32, error) {
 		opt(c)
 	}
 
-	tmpdir, err := ioutil.TempDir("", c.idxPath)
+	tmpdir, err := file.MkdirTemp(c.idxPath)
 	if err != nil {
 		return nil, err
 	}

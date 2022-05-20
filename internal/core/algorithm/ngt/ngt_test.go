@@ -27,6 +27,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/file"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/log/logger"
 	"github.com/vdaas/vald/internal/strings"
@@ -109,7 +110,7 @@ func TestNew(t *testing.T) {
 
 		// check file is created in idxPath
 		if ngt, ok := got.(*ngt); ok {
-			if _, err := os.Stat(ngt.idxPath); errors.Is(err, os.ErrNotExist) {
+			if _, err := os.Stat(ngt.idxPath); errors.Is(err, fs.ErrNotExist) {
 				return errors.Errorf("index file not exists, path: %s", ngt.idxPath)
 			}
 		}
@@ -182,7 +183,7 @@ func TestNew(t *testing.T) {
 				},
 			},
 			want: want{
-				err: errors.NewErrCriticalOption("dimension", 1, errors.ErrInvalidDimensionSize(1, ngtVectorDimensionSizeLimit)),
+				err: errors.NewErrCriticalOption("dimension", 1, errors.ErrInvalidDimensionSize(1, VectorDimensionSizeLimit)),
 			},
 		},
 	}
@@ -248,7 +249,7 @@ func TestLoad(t *testing.T) {
 
 		// check file is created in idxPath
 		if ngt, ok := got.(*ngt); ok {
-			if _, err := os.Stat(ngt.idxPath); errors.Is(err, os.ErrNotExist) {
+			if _, err := os.Stat(ngt.idxPath); errors.Is(err, fs.ErrNotExist) {
 				return errors.Errorf("index file not exists, path: %s", ngt.idxPath)
 			}
 		}
@@ -527,39 +528,35 @@ func TestLoad(t *testing.T) {
 			}
 
 			return test{
-				name: "Load failed if the index path is not exists",
+				name: "Load failed with ErrIndexFileNotFound if the index path is not exists",
 				args: args{
 					opts: opts,
 				},
 				want: want{
-					want: &ngt{
-						idxPath:             idxPath,
-						radius:              DefaultRadius,
-						epsilon:             DefaultEpsilon,
-						poolSize:            DefaultPoolSize,
-						bulkInsertChunkSize: 100,
-						objectType:          Float,
-						mu:                  &sync.RWMutex{},
-					},
+					want: nil,
+					err:  errors.ErrIndexFileNotFound,
 				},
 				checkFunc: func(w want, n NGT, e error) error {
 					if err := defaultCheckFunc(w, n, e); err != nil {
 						return err
 					}
 
-					// check no vector exists
-					v, err := n.GetVector(1)
-					if err == nil || len(v) > 0 {
-						return errors.Errorf("vector exists but not inserted, vec: %s", v)
-					}
+					// check no object returned
+					if n != nil {
+						// check no vector exists
+						v, err := n.GetVector(1)
+						if err == nil || len(v) > 0 {
+							return errors.Errorf("vector exists but not inserted, vec: %s", v)
+						}
 
-					// check no vector can be searched
-					vs, err := n.Search(vec, 10, 0, 0)
-					if err != nil && !errors.Is(err, errors.ErrEmptySearchResult) {
-						return err
-					}
-					if len(vs) != 0 {
-						t.Errorf("got vec is not the same as inserted vec, got: %v", vs)
+						// check no vector can be searched
+						vs, err := n.Search(vec, 10, 0, 0)
+						if err != nil && !errors.Is(err, errors.ErrEmptySearchResult) {
+							return err
+						}
+						if len(vs) != 0 {
+							t.Errorf("got vec is not the same as inserted vec, got: %v", vs)
+						}
 					}
 
 					return nil
@@ -568,7 +565,6 @@ func TestLoad(t *testing.T) {
 		}(),
 		func() test {
 			idxPath := "/tmp/ngt-16"
-			vec := []float32{0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8}
 			opts := []Option{
 				WithDimension(9),
 				WithIndexPath(idxPath),
@@ -576,48 +572,25 @@ func TestLoad(t *testing.T) {
 			}
 
 			return test{
-				name: "Load success if the index path exists",
+				name: "Load failed if the index path dir exists but no index file found which returns NGTError",
 				args: args{
 					opts: opts,
 				},
 				want: want{
-					want: &ngt{
-						idxPath:             idxPath,
-						radius:              DefaultRadius,
-						epsilon:             DefaultEpsilon,
-						poolSize:            DefaultPoolSize,
-						bulkInsertChunkSize: 100,
-						objectType:          Float,
-						mu:                  &sync.RWMutex{},
-					},
+					want: nil,
+					err:  new(errors.NGTError),
 				},
 				beforeFunc: func(t *testing.T, a args) {
 					t.Helper()
-
-					if err := os.Mkdir(idxPath, fs.ModePerm); err != nil {
-						t.Fatal(err)
+					if err := file.MkdirAll(idxPath, fs.ModePerm); err != nil {
+						t.Error(err)
 					}
 				},
 				checkFunc: func(w want, n NGT, e error) error {
-					if err := defaultCheckFunc(w, n, e); err != nil {
-						return err
+					if e != nil && !errors.As(e, w.err) {
+						t.Error(e)
+						return e
 					}
-
-					// check no vector exists
-					v, err := n.GetVector(1)
-					if err == nil || len(v) > 0 {
-						return errors.Errorf("vector exists but not inserted, vec: %s", v)
-					}
-
-					// check no vector can be searched
-					vs, err := n.Search(vec, 10, 0, 0)
-					if err != nil && !errors.Is(err, errors.ErrEmptySearchResult) {
-						return err
-					}
-					if len(vs) != 0 {
-						t.Errorf("got vec is not the same as inserted vec, got: %v", vs)
-					}
-
 					return nil
 				},
 			}
@@ -686,7 +659,7 @@ func Test_gen(t *testing.T) {
 
 		// check file is created in idxPath
 		if ngt, ok := got.(*ngt); ok {
-			if _, err := os.Stat(ngt.idxPath); errors.Is(err, os.ErrNotExist) {
+			if _, err := os.Stat(ngt.idxPath); errors.Is(err, fs.ErrNotExist) {
 				return errors.Errorf("index file not exists, path: %s", ngt.idxPath)
 			}
 		}
@@ -788,7 +761,7 @@ func Test_gen(t *testing.T) {
 				},
 			},
 			want: want{
-				err: errors.NewErrCriticalOption("dimension", 1, errors.ErrInvalidDimensionSize(1, ngtVectorDimensionSizeLimit)),
+				err: errors.NewErrCriticalOption("dimension", 1, errors.ErrInvalidDimensionSize(1, VectorDimensionSizeLimit)),
 			},
 		},
 	}
@@ -1183,7 +1156,7 @@ func Test_ngt_open(t *testing.T) {
 			},
 			beforeFunc: func(*testing.T) {
 				t.Helper()
-				_ = os.Mkdir("/tmp/ngt-63", fs.ModePerm)
+				_ = file.MkdirAll("/tmp/ngt-63", fs.ModePerm)
 			},
 			checkFunc: func(w want, e error) error {
 				if e == nil {
@@ -3033,7 +3006,7 @@ func Test_ngt_CreateAndSaveIndex(t *testing.T) {
 			_, err := os.Stat(ngt.idxPath)
 			// if ngt is in-memory mode, the index file should not be created
 			if ngt.inMemory {
-				if !errors.Is(err, os.ErrNotExist) {
+				if !errors.Is(err, fs.ErrNotExist) {
 					return errors.Errorf("NGT index file created, err: %s", err)
 				}
 			} else { // if ngt is not in-memory mode, the file should be created
@@ -3290,7 +3263,7 @@ func Test_ngt_CreateIndex(t *testing.T) {
 			_, err := os.Stat(ngt.idxPath)
 			// if ngt is in-memory mode, the index file should not be created
 			if ngt.inMemory {
-				if !errors.Is(err, os.ErrNotExist) {
+				if !errors.Is(err, fs.ErrNotExist) {
 					return errors.Errorf("NGT index file created, err: %s", err)
 				}
 			} else { // if ngt is not in-memory mode, the file should be created
@@ -3544,7 +3517,7 @@ func Test_ngt_SaveIndex(t *testing.T) {
 			_, err := os.Stat(ngt.idxPath)
 			// if ngt is in-memory mode, the index file should not be created
 			if ngt.inMemory {
-				if !errors.Is(err, os.ErrNotExist) {
+				if !errors.Is(err, fs.ErrNotExist) {
 					return errors.Errorf("NGT index file created, err: %s", err)
 				}
 			} else { // if ngt is not in-memory mode, the file should be created

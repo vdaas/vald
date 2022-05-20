@@ -92,9 +92,6 @@
     - [Upsert.ObjectRequest](#payload-v1-Upsert-ObjectRequest)
     - [Upsert.Request](#payload-v1-Upsert-Request)
   
-- [apis/proto/v1/vald/upsert.proto](#apis_proto_v1_vald_upsert-proto)
-    - [Upsert](#vald-v1-Upsert)
-  
 - [apis/proto/v1/vald/filter.proto](#apis_proto_v1_vald_filter-proto)
     - [Filter](#vald-v1-Filter)
   
@@ -112,6 +109,9 @@
   
 - [apis/proto/v1/vald/update.proto](#apis_proto_v1_vald_update-proto)
     - [Update](#vald-v1-Update)
+  
+- [apis/proto/v1/vald/upsert.proto](#apis_proto_v1_vald_upsert-proto)
+    - [Upsert](#vald-v1-Upsert)
   
 - [Scalar Value Types](#scalar-value-types)
 
@@ -1326,34 +1326,6 @@ Represent the upsert request.
 
 
 
-<a name="apis_proto_v1_vald_upsert-proto"></a>
-<p align="right"><a href="#top">Top</a></p>
-
-## apis/proto/v1/vald/upsert.proto
-
-
- 
-
- 
-
- 
-
-
-<a name="vald-v1-Upsert"></a>
-
-### Upsert
-Upsert service provides ways to insert/update vectors.
-
-| Method Name | Request Type | Response Type | Description |
-| ----------- | ------------ | ------------- | ------------|
-| Upsert | [.payload.v1.Upsert.Request](#payload-v1-Upsert-Request) | [.payload.v1.Object.Location](#payload-v1-Object-Location) | A method to insert/update a vector. |
-| StreamUpsert | [.payload.v1.Upsert.Request](#payload-v1-Upsert-Request) stream | [.payload.v1.Object.StreamLocation](#payload-v1-Object-StreamLocation) stream | A method to insert/update multiple vectors by bidirectional streaming. |
-| MultiUpsert | [.payload.v1.Upsert.MultiRequest](#payload-v1-Upsert-MultiRequest) | [.payload.v1.Object.Locations](#payload-v1-Object-Locations) | A method to insert/update multiple vectors in a single request. |
-
- 
-
-
-
 <a name="apis_proto_v1_vald_filter-proto"></a>
 <p align="right"><a href="#top">Top</a></p>
 
@@ -1535,6 +1507,34 @@ Update service provides ways to update indexed vectors.
 | Update | [.payload.v1.Update.Request](#payload-v1-Update-Request) | [.payload.v1.Object.Location](#payload-v1-Object-Location) | A method to update an indexed vector. |
 | StreamUpdate | [.payload.v1.Update.Request](#payload-v1-Update-Request) stream | [.payload.v1.Object.StreamLocation](#payload-v1-Object-StreamLocation) stream | A method to update multiple indexed vectors by bidirectional streaming. |
 | MultiUpdate | [.payload.v1.Update.MultiRequest](#payload-v1-Update-MultiRequest) | [.payload.v1.Object.Locations](#payload-v1-Object-Locations) | A method to update multiple indexed vectors in a single request. |
+
+ 
+
+
+
+<a name="apis_proto_v1_vald_upsert-proto"></a>
+<p align="right"><a href="#top">Top</a></p>
+
+## apis/proto/v1/vald/upsert.proto
+
+
+ 
+
+ 
+
+ 
+
+
+<a name="vald-v1-Upsert"></a>
+
+### Upsert
+Upsert service provides ways to insert/update vectors.
+
+| Method Name | Request Type | Response Type | Description |
+| ----------- | ------------ | ------------- | ------------|
+| Upsert | [.payload.v1.Upsert.Request](#payload-v1-Upsert-Request) | [.payload.v1.Object.Location](#payload-v1-Object-Location) | A method to insert/update a vector. |
+| StreamUpsert | [.payload.v1.Upsert.Request](#payload-v1-Upsert-Request) stream | [.payload.v1.Object.StreamLocation](#payload-v1-Object-StreamLocation) stream | A method to insert/update multiple vectors by bidirectional streaming. |
+| MultiUpsert | [.payload.v1.Upsert.MultiRequest](#payload-v1-Upsert-MultiRequest) | [.payload.v1.Object.Locations](#payload-v1-Object-Locations) | A method to insert/update multiple vectors in a single request. |
 
  
 

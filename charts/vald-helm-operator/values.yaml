@@ -29,7 +29,7 @@ image:
   repository: vdaas/vald-helm-operator
   # @schema {"name": "image.tag", "type": "string"}
   # image.tag -- image tag
-  tag: v1.5.0
+  tag: v1.5.2
   # @schema {"name": "image.pullPolicy", "type": "string", "enum": ["Always", "Never", "IfNotPresent"]}
   # image.pullPolicy -- image pull policy
   pullPolicy: Always
@@ -78,9 +78,37 @@ annotations: {}
 # podAnnotations -- pod annotations
 podAnnotations: {}
 
+# @schema {"name": "securityContext", "type": "object"}
+# securityContext -- security context for container
+securityContext:
+  runAsUser: 65532
+  runAsNonRoot: true
+  runAsGroup: 65532
+  privileged: false
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop:
+      - ALL
+
+# @schema {"name": "podSecurityContext", "type": "object"}
+# podSecurityContext -- security context for pod
+podSecurityContext:
+  runAsUser: 65532
+  runAsNonRoot: true
+  runAsGroup: 65532
+  fsGroup: 65532
+  fsGroupChangePolicy: "OnRootMismatch"
+
 # @schema {"name": "resources", "type": "object"}
 # resources -- kubernetes resources of pod
-resources: {}
+resources:
+  limits:
+    cpu: 300m
+    memory: 300Mi
+  requests:
+    cpu: 200m
+    memory: 200Mi
 
 # @schema {"name": "nodeSelector", "type": "object"}
 # nodeSelector -- node labels for pod assignment

@@ -165,3 +165,4 @@ ngt:
   min_load_index_timeout: 3m
   object_type: float
   search_edge_size: 10
+  enable_copy_on_write: false

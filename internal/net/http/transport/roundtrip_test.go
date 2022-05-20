@@ -20,7 +20,6 @@ package transport
 import (
 	"bytes"
 	"context"
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -405,7 +404,7 @@ func Test_ert_roundTrip(t *testing.T) {
 					RoundTripFunc: func(*http.Request) (*http.Response, error) {
 						return &http.Response{
 							StatusCode: http.StatusBadGateway,
-							Body:       ioutil.NopCloser(bytes.NewBuffer([]byte("abc"))),
+							Body:       io.NopCloser(bytes.NewBuffer([]byte("abc"))),
 						}, nil
 					},
 				},
@@ -424,7 +423,7 @@ func Test_ert_roundTrip(t *testing.T) {
 					RoundTripFunc: func(*http.Request) (*http.Response, error) {
 						return &http.Response{
 							StatusCode: http.StatusBadGateway,
-							Body:       ioutil.NopCloser(bytes.NewBuffer([]byte("abc"))),
+							Body:       io.NopCloser(bytes.NewBuffer([]byte("abc"))),
 						}, errors.New("dummy")
 					},
 				},

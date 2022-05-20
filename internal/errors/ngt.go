@@ -29,6 +29,9 @@ var (
 	// ErrIndexFileNotFound represents an error that the index file is not found.
 	ErrIndexFileNotFound = New("index file not found")
 
+	// ErrIndicesAreTooFewComparedToMetadata represents an error that the index count is not enough to be compared by metadata.
+	ErrIndicesAreTooFewComparedToMetadata = New("indices are too few compared to Metadata")
+
 	// ErrIndexLoadTimeout represents an error that the index loading timeout.
 	ErrIndexLoadTimeout = New("index load timeout")
 
@@ -38,6 +41,11 @@ var (
 			return Errorf("dimension size %d is invalid, the supporting dimension size must be bigger than 2", current)
 		}
 		return Errorf("dimension size %d is invalid, the supporting dimension size must be between 2 ~ %d", current, limit)
+	}
+
+	// ErrInvalidUUID represents a function to generate an error that the uuid is invalid.
+	ErrInvalidUUID = func(uuid string) error {
+		return Errorf("uuid \"%s\" is invalid", uuid)
 	}
 
 	// ErrDimensionLimitExceed represents a function to generate an error that the supported dimension limit exceeded.

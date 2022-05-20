@@ -19,7 +19,6 @@ package json
 import (
 	"bytes"
 	"context"
-	"io/ioutil"
 	"net/http"
 	"os"
 
@@ -60,7 +59,7 @@ func DecodeResponse(res *http.Response, data interface{}) (err error) {
 			return err
 		}
 
-		_, err := io.Copy(ioutil.Discard, res.Body)
+		_, err := io.Copy(io.Discard, res.Body)
 		if err != nil {
 			return errors.ErrRequestBodyFlush(err)
 		}
@@ -87,7 +86,7 @@ func EncodeRequest(req *http.Request,
 	}
 
 	req.ContentLength = int64(buf.Len())
-	req.Body = ioutil.NopCloser(buf)
+	req.Body = io.NopCloser(buf)
 
 	return nil
 }
@@ -99,7 +98,7 @@ func DecodeRequest(r *http.Request, data interface{}) (err error) {
 		if err != nil {
 			return err
 		}
-		_, err := io.Copy(ioutil.Discard, r.Body)
+		_, err := io.Copy(io.Discard, r.Body)
 		if err != nil {
 			return errors.ErrRequestBodyFlush(err)
 		}

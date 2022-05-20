@@ -41,7 +41,7 @@ agent:
   # Please change it according to your environment.
   persistentVolume:
     enabled: true
-    accessMode: ReadWriteOnce
+    accessMode: ReadWriteOncePod
     storageClass: local-path
     size: 2Gi
   ngt:

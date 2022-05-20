@@ -16,9 +16,8 @@
 package zstd
 
 import (
-	"io"
-
 	"github.com/klauspost/compress/zstd"
+	"github.com/vdaas/vald/internal/io"
 )
 
 type (

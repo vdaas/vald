@@ -21,10 +21,10 @@ metadata:
   labels:
     app: vald-lb-gateway
     app.kubernetes.io/name: vald
-    helm.sh/chart: vald-v1.5.0
+    helm.sh/chart: vald-v1.5.2
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: release-name
-    app.kubernetes.io/version: v1.5.0
+    app.kubernetes.io/version: v1.5.2
     app.kubernetes.io/component: gateway-lb
 spec:
   progressDeadlineSeconds: 600
@@ -46,7 +46,7 @@ spec:
         app.kubernetes.io/instance: release-name
         app.kubernetes.io/component: gateway-lb
       annotations:
-        checksum/configmap: 64091592a6f61486f9f3fc91b99f93736dabc29fcc03723f14aa4e3acb001496
+        checksum/configmap: 1653d65259a3b79353da5f550b33417bc0df99ea11a233575c20ffaf43af8955
         profefe.com/enable: "true"
         profefe.com/port: "6060"
         profefe.com/service: vald-lb-gateway
@@ -58,7 +58,7 @@ spec:
     spec:
       initContainers:
         - name: wait-for-discoverer
-          image: busybox
+          image: busybox:stable
           command:
             - /bin/sh
             - -e
@@ -69,7 +69,7 @@ spec:
                 sleep 2;
               done
         - name: wait-for-agent
-          image: busybox
+          image: busybox:stable
           command:
             - /bin/sh
             - -e

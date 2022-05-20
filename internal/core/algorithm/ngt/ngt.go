@@ -156,8 +156,8 @@ const (
 	// -------------------------------------------------------------
 	// dimension constraints
 	// -------------------------------------------------------------.
-	ngtVectorDimensionSizeLimit = 1 << 16
-	minimumDimensionSize        = algorithm.MinimumVectorDimensionSize
+	VectorDimensionSizeLimit = 1<<32 - 1
+	minimumDimensionSize     = algorithm.MinimumVectorDimensionSize
 	// -------------------------------------------------------------.
 )
 
@@ -298,7 +298,7 @@ func (n *ngt) loadOptions(opts ...Option) (err error) {
 
 func (n *ngt) create() (err error) {
 	files, err := file.ListInDir(n.idxPath)
-	if err == nil {
+	if err == nil && len(files) != 0 {
 		log.Warnf("index path exists, will remove the directories: %v", files)
 		for _, f := range files {
 			err = os.RemoveAll(f)
@@ -306,7 +306,7 @@ func (n *ngt) create() (err error) {
 				return err
 			}
 		}
-	} else {
+	} else if err != nil {
 		log.Debug(err)
 	}
 	path := C.CString(n.idxPath)
@@ -685,8 +685,8 @@ func (n *ngt) GetVector(id uint) ([]float32, error) {
 		if results == nil {
 			return nil, n.newGoError(ebuf)
 		}
-		ret = (*[ngtVectorDimensionSizeLimit]float32)(unsafe.Pointer(results))[:dimension:dimension]
-		// for _, elem := range (*[ngtVectorDimensionSizeLimit]C.float)(unsafe.Pointer(results))[:dimension:dimension]{
+		ret = (*[VectorDimensionSizeLimit]float32)(unsafe.Pointer(results))[:dimension:dimension]
+		// for _, elem := range (*[VectorDimensionSizeLimit]C.float)(unsafe.Pointer(results))[:dimension:dimension]{
 		// 	ret = append(ret, float32(elem))
 		// }
 	case Uint8:
@@ -697,7 +697,7 @@ func (n *ngt) GetVector(id uint) ([]float32, error) {
 			return nil, n.newGoError(ebuf)
 		}
 		ret = make([]float32, 0, dimension)
-		for _, elem := range (*[ngtVectorDimensionSizeLimit]C.uint8_t)(unsafe.Pointer(results))[:dimension:dimension] {
+		for _, elem := range (*[VectorDimensionSizeLimit]C.uint8_t)(unsafe.Pointer(results))[:dimension:dimension] {
 			ret = append(ret, float32(elem))
 		}
 	default:

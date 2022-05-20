@@ -105,34 +105,34 @@ $(GOPATH)/src/google.golang.org/genproto:
 		$(GOPATH)/src/google.golang.org/genproto
 
 $(GOPATH)/bin/google.golang.org/genproto:
-	$(call go-get, google.golang.org/genproto/...)
+	$(call go-get-no-mod, google.golang.org/genproto/...)
 
 $(GOPATH)/bin/protoc-gen-go:
-	$(call go-get, google.golang.org/protobuf/cmd/protoc-gen-go)
+	$(call go-install, google.golang.org/protobuf/cmd/protoc-gen-go)
 
 $(GOPATH)/bin/protoc-gen-go-grpc:
-	$(call go-get-no-mod, google.golang.org/grpc/cmd/protoc-gen-go-grpc)
+	$(call go-install, google.golang.org/grpc/cmd/protoc-gen-go-grpc)
 
 $(GOPATH)/bin/protoc-gen-grpc-gateway:
-	$(call go-get, github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway)
+	$(call go-install, github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway)
 
 $(GOPATH)/bin/protoc-gen-swagger:
-	$(call go-get, github.com/grpc-ecosystem/grpc-gateway/protoc-gen-swagger)
+	$(call go-install, github.com/grpc-ecosystem/grpc-gateway/protoc-gen-swagger)
 
 $(GOPATH)/bin/protoc-gen-validate:
-	$(call go-get, github.com/envoyproxy/protoc-gen-validate)
+	$(call go-install, github.com/envoyproxy/protoc-gen-validate)
 
 $(GOPATH)/bin/prototool:
-	$(call go-get, github.com/uber/prototool/cmd/prototool)
+	$(call go-install, github.com/uber/prototool/cmd/prototool)
 
 $(GOPATH)/bin/protoc-gen-doc:
-	$(call go-get, github.com/pseudomuto/protoc-gen-doc/cmd/protoc-gen-doc)
+	$(call go-install, github.com/pseudomuto/protoc-gen-doc/cmd/protoc-gen-doc)
 
 $(GOPATH)/bin/protoc-gen-go-vtproto:
-	$(call go-get, github.com/planetscale/vtprotobuf/cmd/protoc-gen-go-vtproto)
+	$(call go-install, github.com/planetscale/vtprotobuf/cmd/protoc-gen-go-vtproto)
 
 $(GOPATH)/bin/swagger:
-	$(call go-get, github.com/go-swagger/go-swagger/cmd/swagger)
+	$(call go-install, github.com/go-swagger/go-swagger/cmd/swagger)
 
 $(PBGOS): \
 	$(PROTOS) \
@@ -142,6 +142,7 @@ $(PBGOS): \
 	$(call proto-code-gen, $(patsubst apis/grpc/%.pb.go,apis/proto/%.proto,$@))
 	find $(ROOTDIR)/apis/grpc/* -name '*.go' | xargs sed -i -E "s%google.golang.org/grpc/codes%github.com/vdaas/vald/internal/net/grpc/codes%g"
 	find $(ROOTDIR)/apis/grpc/* -name '*.go' | xargs sed -i -E "s%google.golang.org/grpc/status%github.com/vdaas/vald/internal/net/grpc/status%g"
+	find $(ROOTDIR)/apis/grpc/* -name '*.go' | xargs sed -i -E "s%\"io\"%\"github.com/vdaas/vald/internal/io\"%g"
 
 $(SWAGGERS): \
 	$(PROTOS) \

@@ -26,25 +26,25 @@ $(BINDIR)/golangci-lint:
 goimports/install: $(GOPATH)/bin/goimports
 
 $(GOPATH)/bin/goimports:
-	go install golang.org/x/tools/cmd/goimports@latest
+	$(call go-install, golang.org/x/tools/cmd/goimports)
 
 .PHONY: strictgoimports/install
 strictgoimports/install: $(GOPATH)/bin/strictgoimports
 
 $(GOPATH)/bin/strictgoimports:
-	go install github.com/momotaro98/strictgoimports/cmd/strictgoimports@latest
+	$(call go-install, github.com/momotaro98/strictgoimports/cmd/strictgoimports)
 
 .PHONY: gofumpt/install
 gofumpt/install: $(GOPATH)/bin/gofumpt
 
 $(GOPATH)/bin/gofumpt:
-	go install mvdan.cc/gofumpt@latest
+	$(call go-install, mvdan.cc/gofumpt)
 
 .PHONY: golines/install
 golines/install: $(GOPATH)/bin/golines
 
 $(GOPATH)/bin/golines:
-	go install github.com/segmentio/golines@latest
+	$(call go-install, github.com/segmentio/golines)
 
 .PHONY: prettier/install
 prettier/install: $(BINDIR)/prettier
@@ -61,6 +61,15 @@ $(BINDIR)/reviewdog:
 
 .PHONY: kubectl/install
 kubectl/install: $(BINDIR)/kubectl
+
+## WARNING: choas-mesh install.sh check_kubernetes()
+## This version information is deprecated and will be replaced with the output from kubectl version --short.
+## https://github.com/chaos-mesh/chaos-mesh/blob/master/install.sh#L291
+.PHONY: kubectl/install/linux/v1.23.6
+kubectl/install/linux/v1.23.6:
+	curl -L "https://storage.googleapis.com/kubernetes-release/release/v1.23.6/bin/linux/amd64/kubectl" -o ./kubectl
+	chmod a+x ./kubectl
+	mv ./kubectl $(BINDIR)/kubectl
 
 ifeq ($(UNAME),Darwin)
 $(BINDIR)/kubectl:

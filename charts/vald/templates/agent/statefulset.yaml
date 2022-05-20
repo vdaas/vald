@@ -42,9 +42,9 @@ spec:
     matchLabels:
       app: {{ $agent.name }}
   updateStrategy:
+    type: RollingUpdate
     rollingUpdate:
       partition: {{ $agent.rollingUpdate.partition }}
-    type: RollingUpdate
   template:
     metadata:
       creationTimestamp: null

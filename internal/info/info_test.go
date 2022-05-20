@@ -73,7 +73,7 @@ func TestString(t *testing.T) {
 				infoProvider = nil
 			},
 			want: want{
-				want: "\nbuild cpu info flags ->\t[]\ngit commit           ->\tmaster\ngo arch              ->\t" + runtime.GOARCH + "\ngo os                ->\t" + runtime.GOOS + "\ngo version           ->\t" + runtime.Version() + "\nvald version         ->\t\x1b[1mv0.0.1\x1b[22m",
+				want: "\nbuild cpu info flags ->\t[]\ngit commit           ->\tmaster\ngo arch              ->\t" + runtime.GOARCH + "\ngo os                ->\t" + runtime.GOOS + "\ngo root              ->\t" + runtime.GOROOT() + "\ngo version           ->\t" + runtime.Version() + "\nvald version         ->\t\x1b[1mv0.0.1\x1b[22m",
 			},
 		},
 
@@ -91,7 +91,7 @@ func TestString(t *testing.T) {
 				infoProvider = nil
 			},
 			want: want{
-				want: "\nbuild cpu info flags ->\t[]\ngit commit           ->\tmaster\ngo arch              ->\t" + runtime.GOARCH + "\ngo os                ->\t" + runtime.GOOS + "\ngo version           ->\t" + runtime.Version() + "\nvald version         ->\t\x1b[1m\x1b[22m",
+				want: "\nbuild cpu info flags ->\t[]\ngit commit           ->\tmaster\ngo arch              ->\t" + runtime.GOARCH + "\ngo os                ->\t" + runtime.GOOS + "\ngo root              ->\t" + runtime.GOROOT() + "\ngo version           ->\t" + runtime.Version() + "\nvald version         ->\t\x1b[1m\x1b[22m",
 			},
 		},
 	}
@@ -155,6 +155,7 @@ func TestGet(t *testing.T) {
 					GoVersion:         runtime.Version(),
 					GoOS:              runtime.GOOS,
 					GoArch:            runtime.GOARCH,
+					GoRoot:            runtime.GOROOT(),
 					CGOEnabled:        "",
 					NGTVersion:        "",
 					BuildCPUInfoFlags: []string{""},
@@ -233,6 +234,7 @@ func TestInit(t *testing.T) {
 			},
 			want: want{
 				want: &info{
+					baseURL: "https://github.com/vdaas/vald/tree/gitcommit",
 					detail: Detail{
 						GitCommit:  "gitcommit",
 						ServerName: "gateway",
@@ -241,6 +243,7 @@ func TestInit(t *testing.T) {
 						GoVersion:  runtime.Version(),
 						GoOS:       runtime.GOOS,
 						GoArch:     runtime.GOARCH,
+						GoRoot:     runtime.GOROOT(),
 						CGOEnabled: "true",
 						NGTVersion: "v1.11.6",
 						BuildCPUInfoFlags: []string{
@@ -283,6 +286,7 @@ func TestInit(t *testing.T) {
 			},
 			want: want{
 				want: &info{
+					baseURL: "https://github.com/vdaas/vald/tree/gitcommit",
 					detail: Detail{
 						GitCommit:  "gitcommit",
 						ServerName: "",
@@ -291,6 +295,7 @@ func TestInit(t *testing.T) {
 						GoVersion:  runtime.Version(),
 						GoOS:       runtime.GOOS,
 						GoArch:     runtime.GOARCH,
+						GoRoot:     runtime.GOROOT(),
 						CGOEnabled: "true",
 						NGTVersion: "v1.11.6",
 						BuildCPUInfoFlags: []string{
@@ -394,6 +399,7 @@ func TestNew(t *testing.T) {
 			},
 			want: want{
 				want: &info{
+					baseURL: "https://github.com/vdaas/vald/tree/master",
 					detail: Detail{
 						ServerName:        "",
 						Version:           Version,
@@ -402,6 +408,7 @@ func TestNew(t *testing.T) {
 						GoVersion:         runtime.Version(),
 						GoOS:              runtime.GOOS,
 						GoArch:            runtime.GOARCH,
+						GoRoot:            runtime.GOROOT(),
 						CGOEnabled:        CGOEnabled,
 						NGTVersion:        NGTVersion,
 						BuildCPUInfoFlags: strings.Split(strings.TrimSpace(BuildCPUInfoFlags), " "),
@@ -425,6 +432,7 @@ func TestNew(t *testing.T) {
 			},
 			want: want{
 				want: &info{
+					baseURL: "https://github.com/vdaas/vald/tree/master",
 					detail: Detail{
 						ServerName:        "gateway",
 						Version:           Version,
@@ -433,6 +441,7 @@ func TestNew(t *testing.T) {
 						GoVersion:         runtime.Version(),
 						GoOS:              runtime.GOOS,
 						GoArch:            runtime.GOARCH,
+						GoRoot:            runtime.GOROOT(),
 						CGOEnabled:        CGOEnabled,
 						NGTVersion:        NGTVersion,
 						BuildCPUInfoFlags: strings.Split(strings.TrimSpace(BuildCPUInfoFlags), " "),
@@ -459,6 +468,7 @@ func TestNew(t *testing.T) {
 			},
 			want: want{
 				want: &info{
+					baseURL: "https://github.com/vdaas/vald/tree/master",
 					detail: Detail{
 						ServerName:        "vald",
 						Version:           "v1.0.0",
@@ -467,6 +477,7 @@ func TestNew(t *testing.T) {
 						GoVersion:         runtime.Version(),
 						GoOS:              runtime.GOOS,
 						GoArch:            runtime.GOARCH,
+						GoRoot:            runtime.GOROOT(),
 						CGOEnabled:        CGOEnabled,
 						NGTVersion:        NGTVersion,
 						BuildCPUInfoFlags: strings.Split(strings.TrimSpace(BuildCPUInfoFlags), " "),
@@ -492,6 +503,7 @@ func TestNew(t *testing.T) {
 			},
 			want: want{
 				want: &info{
+					baseURL: "https://github.com/vdaas/vald/tree/master",
 					detail: Detail{
 						ServerName:        "",
 						Version:           Version,
@@ -500,6 +512,7 @@ func TestNew(t *testing.T) {
 						GoVersion:         runtime.Version(),
 						GoOS:              runtime.GOOS,
 						GoArch:            runtime.GOARCH,
+						GoRoot:            runtime.GOROOT(),
 						CGOEnabled:        CGOEnabled,
 						NGTVersion:        NGTVersion,
 						BuildCPUInfoFlags: strings.Split(strings.TrimSpace(BuildCPUInfoFlags), " "),
@@ -587,6 +600,7 @@ func Test_info_String(t *testing.T) {
 					GoVersion:         "1.1",
 					GoOS:              "goos",
 					GoArch:            "goarch",
+					GoRoot:            "/usr/local/go",
 					CGOEnabled:        "true",
 					NGTVersion:        "1.2",
 					BuildCPUInfoFlags: nil,
@@ -601,7 +615,7 @@ func Test_info_String(t *testing.T) {
 				},
 			},
 			want: want{
-				want: "\nbuild cpu info flags ->\t[]\nbuild time           ->\tbt\ncgo enabled          ->\ttrue\ngit commit           ->\tcommit\ngo arch              ->\tgoarch\ngo os                ->\tgoos\ngo version           ->\t1.1\nngt version          ->\t1.2\nserver name          ->\tsrv\nstack trace-000      ->\turl\tfile#L10\tfunc\nvald version         ->\t\x1b[1m1.0\x1b[22m",
+				want: "\nbuild cpu info flags ->\t[]\nbuild time           ->\tbt\ncgo enabled          ->\ttrue\ngit commit           ->\tcommit\ngo arch              ->\tgoarch\ngo os                ->\tgoos\ngo root              ->\t/usr/local/go\ngo version           ->\t1.1\nngt version          ->\t1.2\nserver name          ->\tsrv\nstack trace-000      ->\turl\tfile#L10\tfunc\nvald version         ->\t\x1b[1m1.0\x1b[22m",
 			},
 		},
 		{
@@ -615,6 +629,7 @@ func Test_info_String(t *testing.T) {
 					GoVersion:         "1.1",
 					GoOS:              "goos",
 					GoArch:            "goarch",
+					GoRoot:            "/usr/local/go",
 					CGOEnabled:        "true",
 					NGTVersion:        "1.2",
 					BuildCPUInfoFlags: nil,
@@ -625,7 +640,7 @@ func Test_info_String(t *testing.T) {
 				},
 			},
 			want: want{
-				want: "\nbuild cpu info flags ->\t[]\nbuild time           ->\tbt\ncgo enabled          ->\ttrue\ngit commit           ->\tcommit\ngo arch              ->\tgoarch\ngo os                ->\tgoos\ngo version           ->\t1.1\nngt version          ->\t1.2\nserver name          ->\tsrv\nvald version         ->\t\x1b[1m1.0\x1b[22m",
+				want: "\nbuild cpu info flags ->\t[]\nbuild time           ->\tbt\ncgo enabled          ->\ttrue\ngit commit           ->\tcommit\ngo arch              ->\tgoarch\ngo os                ->\tgoos\ngo root              ->\t/usr/local/go\ngo version           ->\t1.1\nngt version          ->\t1.2\nserver name          ->\tsrv\nvald version         ->\t\x1b[1m1.0\x1b[22m",
 			},
 		},
 	}
@@ -812,6 +827,7 @@ func Test_info_Get(t *testing.T) {
 					GoVersion:  runtime.Version(),
 					GoOS:       runtime.GOOS,
 					GoArch:     runtime.GOARCH,
+					GoRoot:     runtime.GOROOT(),
 					CGOEnabled: CGOEnabled,
 					StackTrace: []StackTrace{},
 					NGTVersion: NGTVersion,
@@ -850,6 +866,7 @@ func Test_info_Get(t *testing.T) {
 					GoVersion:  runtime.Version(),
 					GoOS:       runtime.GOOS,
 					GoArch:     runtime.GOARCH,
+					GoRoot:     runtime.GOROOT(),
 					CGOEnabled: CGOEnabled,
 					StackTrace: []StackTrace{
 						{
@@ -895,6 +912,7 @@ func Test_info_Get(t *testing.T) {
 					GoVersion:  runtime.Version(),
 					GoOS:       runtime.GOOS,
 					GoArch:     runtime.GOARCH,
+					GoRoot:     runtime.GOROOT(),
 					CGOEnabled: CGOEnabled,
 					StackTrace: []StackTrace{
 						{
@@ -939,6 +957,7 @@ func Test_info_Get(t *testing.T) {
 					GoVersion:  runtime.Version(),
 					GoOS:       runtime.GOOS,
 					GoArch:     runtime.GOARCH,
+					GoRoot:     runtime.GOROOT(),
 					CGOEnabled: CGOEnabled,
 					StackTrace: []StackTrace{
 						{
@@ -983,6 +1002,7 @@ func Test_info_Get(t *testing.T) {
 					GoVersion:  runtime.Version(),
 					GoOS:       runtime.GOOS,
 					GoArch:     runtime.GOARCH,
+					GoRoot:     runtime.GOROOT(),
 					CGOEnabled: CGOEnabled,
 					StackTrace: []StackTrace{
 						{
@@ -1027,6 +1047,7 @@ func Test_info_Get(t *testing.T) {
 					GoVersion:  runtime.Version(),
 					GoOS:       runtime.GOOS,
 					GoArch:     runtime.GOARCH,
+					GoRoot:     runtime.GOROOT(),
 					CGOEnabled: CGOEnabled,
 					StackTrace: []StackTrace{
 						{
@@ -1071,6 +1092,7 @@ func Test_info_Get(t *testing.T) {
 					GoVersion:  runtime.Version(),
 					GoOS:       runtime.GOOS,
 					GoArch:     runtime.GOARCH,
+					GoRoot:     runtime.GOROOT(),
 					CGOEnabled: CGOEnabled,
 					StackTrace: []StackTrace{
 						{
@@ -1154,6 +1176,7 @@ func Test_info_prepare(t *testing.T) {
 			name: "set success with all fields are empty",
 			want: want{
 				want: info{
+					baseURL: "https://github.com/vdaas/vald/tree/master",
 					detail: Detail{
 						GitCommit:  "master",
 						Version:    "",
@@ -1161,6 +1184,7 @@ func Test_info_prepare(t *testing.T) {
 						GoVersion:  runtime.Version(),
 						GoOS:       runtime.GOOS,
 						GoArch:     runtime.GOARCH,
+						GoRoot:     runtime.GOROOT(),
 						CGOEnabled: CGOEnabled,
 						NGTVersion: NGTVersion,
 						BuildCPUInfoFlags: func() []string {
@@ -1182,6 +1206,7 @@ func Test_info_prepare(t *testing.T) {
 			},
 			want: want{
 				want: info{
+					baseURL: "https://github.com/vdaas/vald/tree/internal",
 					detail: Detail{
 						GitCommit:  "internal",
 						Version:    "",
@@ -1189,6 +1214,7 @@ func Test_info_prepare(t *testing.T) {
 						GoVersion:  runtime.Version(),
 						GoOS:       runtime.GOOS,
 						GoArch:     runtime.GOARCH,
+						GoRoot:     runtime.GOROOT(),
 						CGOEnabled: CGOEnabled,
 						NGTVersion: NGTVersion,
 						BuildCPUInfoFlags: func() []string {
@@ -1210,6 +1236,7 @@ func Test_info_prepare(t *testing.T) {
 			},
 			want: want{
 				want: info{
+					baseURL: "https://github.com/vdaas/vald/tree/master",
 					detail: Detail{
 						GitCommit:  "master",
 						Version:    "v1.0.0",
@@ -1217,6 +1244,7 @@ func Test_info_prepare(t *testing.T) {
 						GoVersion:  runtime.Version(),
 						GoOS:       runtime.GOOS,
 						GoArch:     runtime.GOARCH,
+						GoRoot:     runtime.GOROOT(),
 						CGOEnabled: CGOEnabled,
 						NGTVersion: NGTVersion,
 						BuildCPUInfoFlags: func() []string {
@@ -1238,6 +1266,7 @@ func Test_info_prepare(t *testing.T) {
 			},
 			want: want{
 				want: info{
+					baseURL: "https://github.com/vdaas/vald/tree/master",
 					detail: Detail{
 						GitCommit:  "master",
 						Version:    "",
@@ -1245,6 +1274,7 @@ func Test_info_prepare(t *testing.T) {
 						GoVersion:  runtime.Version(),
 						GoOS:       runtime.GOOS,
 						GoArch:     runtime.GOARCH,
+						GoRoot:     runtime.GOROOT(),
 						CGOEnabled: CGOEnabled,
 						NGTVersion: NGTVersion,
 						BuildCPUInfoFlags: func() []string {
@@ -1266,6 +1296,7 @@ func Test_info_prepare(t *testing.T) {
 			},
 			want: want{
 				want: info{
+					baseURL: "https://github.com/vdaas/vald/tree/master",
 					detail: Detail{
 						GitCommit:  "master",
 						Version:    "",
@@ -1273,6 +1304,7 @@ func Test_info_prepare(t *testing.T) {
 						GoVersion:  "1.14",
 						GoOS:       runtime.GOOS,
 						GoArch:     runtime.GOARCH,
+						GoRoot:     runtime.GOROOT(),
 						CGOEnabled: CGOEnabled,
 						NGTVersion: NGTVersion,
 						BuildCPUInfoFlags: func() []string {
@@ -1294,6 +1326,7 @@ func Test_info_prepare(t *testing.T) {
 			},
 			want: want{
 				want: info{
+					baseURL: "https://github.com/vdaas/vald/tree/master",
 					detail: Detail{
 						GitCommit:  "master",
 						Version:    "",
@@ -1301,6 +1334,7 @@ func Test_info_prepare(t *testing.T) {
 						GoVersion:  runtime.Version(),
 						GoOS:       "linux",
 						GoArch:     runtime.GOARCH,
+						GoRoot:     runtime.GOROOT(),
 						CGOEnabled: CGOEnabled,
 						NGTVersion: NGTVersion,
 						BuildCPUInfoFlags: func() []string {
@@ -1322,6 +1356,7 @@ func Test_info_prepare(t *testing.T) {
 			},
 			want: want{
 				want: info{
+					baseURL: "https://github.com/vdaas/vald/tree/master",
 					detail: Detail{
 						GitCommit:  "master",
 						Version:    "",
@@ -1329,6 +1364,7 @@ func Test_info_prepare(t *testing.T) {
 						GoVersion:  runtime.Version(),
 						GoOS:       runtime.GOOS,
 						GoArch:     "amd",
+						GoRoot:     runtime.GOROOT(),
 						CGOEnabled: CGOEnabled,
 						NGTVersion: NGTVersion,
 						BuildCPUInfoFlags: func() []string {
@@ -1350,6 +1386,7 @@ func Test_info_prepare(t *testing.T) {
 			},
 			want: want{
 				want: info{
+					baseURL: "https://github.com/vdaas/vald/tree/master",
 					detail: Detail{
 						GitCommit:  "master",
 						Version:    "",
@@ -1357,6 +1394,7 @@ func Test_info_prepare(t *testing.T) {
 						GoVersion:  runtime.Version(),
 						GoOS:       runtime.GOOS,
 						GoArch:     runtime.GOARCH,
+						GoRoot:     runtime.GOROOT(),
 						CGOEnabled: "1",
 						NGTVersion: NGTVersion,
 						BuildCPUInfoFlags: func() []string {
@@ -1378,6 +1416,7 @@ func Test_info_prepare(t *testing.T) {
 			},
 			want: want{
 				want: info{
+					baseURL: "https://github.com/vdaas/vald/tree/master",
 					detail: Detail{
 						GitCommit:  "master",
 						Version:    "",
@@ -1385,6 +1424,7 @@ func Test_info_prepare(t *testing.T) {
 						GoVersion:  runtime.Version(),
 						GoOS:       runtime.GOOS,
 						GoArch:     runtime.GOARCH,
+						GoRoot:     runtime.GOROOT(),
 						CGOEnabled: CGOEnabled,
 						NGTVersion: "v1.11.5",
 						BuildCPUInfoFlags: func() []string {
@@ -1406,6 +1446,7 @@ func Test_info_prepare(t *testing.T) {
 			},
 			want: want{
 				want: info{
+					baseURL: "https://github.com/vdaas/vald/tree/master",
 					detail: Detail{
 						GitCommit:         "master",
 						Version:           "",
@@ -1413,6 +1454,7 @@ func Test_info_prepare(t *testing.T) {
 						GoVersion:         runtime.Version(),
 						GoOS:              runtime.GOOS,
 						GoArch:            runtime.GOARCH,
+						GoRoot:            runtime.GOROOT(),
 						CGOEnabled:        CGOEnabled,
 						NGTVersion:        NGTVersion,
 						BuildCPUInfoFlags: []string{"avx512f"},

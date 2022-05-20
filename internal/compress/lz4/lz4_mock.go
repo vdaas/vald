@@ -15,7 +15,7 @@
 //
 package lz4
 
-import "io"
+import "github.com/vdaas/vald/internal/io"
 
 // MockReader represents mock struct of Reader.
 type MockReader struct {

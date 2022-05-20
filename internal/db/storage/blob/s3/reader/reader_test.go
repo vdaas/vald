@@ -19,7 +19,6 @@ package reader
 import (
 	"bytes"
 	"context"
-	"io"
 	"os"
 	"reflect"
 	"sync"
@@ -35,6 +34,7 @@ import (
 	"github.com/vdaas/vald/internal/db/storage/blob/s3/sdk/s3/s3iface"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/io"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/log/logger"
 	"github.com/vdaas/vald/internal/test/goleak"

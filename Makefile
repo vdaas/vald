@@ -54,16 +54,16 @@ TENSORFLOW_C_VERSION := $(eval TENSORFLOW_C_VERSION := $(shell cat versions/TENS
 
 OPERATOR_SDK_VERSION := $(eval OPERATOR_SDK_VERSION := $(shell cat versions/OPERATOR_SDK_VERSION))$(OPERATOR_SDK_VERSION)
 
-KIND_VERSION         ?= v0.11.1
-HELM_VERSION         ?= v3.8.0
-HELM_DOCS_VERSION    ?= 1.7.0
-YQ_VERSION           ?= v4.19.1
-VALDCLI_VERSION      ?= v1.3.1
-TELEPRESENCE_VERSION ?= 2.4.10
-KUBELINTER_VERSION   ?= 0.2.5
-GOLANGCILINT_VERSION ?= v1.44.0
-REVIEWDOG_VERSION    ?= v0.13.1
-PROTOBUF_VERSION     ?= 3.19.4
+KIND_VERSION         ?= v0.13.0
+HELM_VERSION         ?= v3.8.2
+HELM_DOCS_VERSION    ?= 1.10.0
+YQ_VERSION           ?= v4.25.1
+VALDCLI_VERSION      ?= v1.5.2
+TELEPRESENCE_VERSION ?= 2.5.8
+KUBELINTER_VERSION   ?= 0.2.6
+GOLANGCILINT_VERSION ?= v1.46.0
+REVIEWDOG_VERSION    ?= v0.14.1
+PROTOBUF_VERSION     ?= 3.20.1
 
 SWAP_DEPLOYMENT_TYPE ?= deployment
 SWAP_IMAGE           ?= ""
@@ -254,7 +254,6 @@ DISTROLESS_IMAGE_TAG  ?= nonroot
 UPX_OPTIONS           ?= -9
 GOLINES_MAX_WIDTH     ?= 200
 
-K8S_EXTERNAL_SCYLLA_MANIFEST        ?= k8s/external/scylla/scyllacluster.yaml
 K8S_SLEEP_DURATION_FOR_WAIT_COMMAND ?= 5
 
 K8S_KUBECTL_VERSION ?= $(eval K8S_KUBECTL_VERSION := $(shell kubectl version --short))$(K8S_KUBECTL_VERSION)
@@ -425,6 +424,16 @@ go/deps:
 	cp ./hack/go.mod.default ./go.mod
 	GOPRIVATE=$(GOPRIVATE) go mod tidy
 	go get -u all 2>/dev/null || true
+
+.PHONY: go/example/deps
+## install Go package dependencies
+go/example/deps:
+	rm -rf vendor \
+		$(GOCACHE) \
+	        ./example/client/go.mod \
+	        ./example/client/go.sum
+	cp ./example/client/go.mod.default ./example/client/go.mod
+	cd ./example/client && GOPRIVATE=$(GOPRIVATE) go mod tidy && cd -
 
 .PHONY: version
 ## print vald version

@@ -3242,6 +3242,8 @@ spec:
                       items:
                         type: object
                         x-kubernetes-preserve-unknown-fields: true
+                    internalTrafficPolicy:
+                      type: string
                     kind:
                       type: string
                       enum:
@@ -4703,6 +4705,8 @@ spec:
                           items:
                             type: object
                             x-kubernetes-preserve-unknown-fields: true
+                        internalTrafficPolicy:
+                          type: string
                         kind:
                           type: string
                           enum:
@@ -5978,6 +5982,8 @@ spec:
                           items:
                             type: object
                             x-kubernetes-preserve-unknown-fields: true
+                        internalTrafficPolicy:
+                          type: string
                         kind:
                           type: string
                           enum:
@@ -6827,9 +6833,6 @@ spec:
                           items:
                             type: object
                             x-kubernetes-preserve-unknown-fields: true
-                initializer:
-                  type: object
-                  x-kubernetes-preserve-unknown-fields: true
                 manager:
                   type: object
                   properties:
