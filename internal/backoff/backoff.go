@@ -41,11 +41,14 @@ type backoff struct {
 	maxRetryCount         int
 	backoffTimeLimit      time.Duration
 	errLog                bool
+
+	metrics sync.Map
 }
 
 // Backoff represents an interface to handle backoff operation.
 type Backoff interface {
 	Do(context.Context, func(ctx context.Context) (interface{}, bool, error)) (interface{}, error)
+	Metrics(ctx context.Context) map[string]uint32
 	Close()
 }
 
@@ -110,6 +113,8 @@ func (b *backoff) Do(ctx context.Context, f func(ctx context.Context) (val inter
 				}()
 				return f(ssctx)
 			}()
+			b.metrics.Store("", cnt+1) // TODO: add rpc name
+
 			if !ret {
 				return res, err
 			}
@@ -147,6 +152,15 @@ func (b *backoff) Do(ctx context.Context, f func(ctx context.Context) (val inter
 func (b *backoff) addJitter(dur float64) float64 {
 	hd := math.Min(dur/10, b.jitterLimit)
 	return dur + float64(rand.LimitedUint32(uint64(hd))) - hd
+}
+
+func (b *backoff) Metrics(ctx context.Context) (m map[string]uint32) {
+	b.metrics.Range(func(key, value any) bool {
+		b.metrics.Delete(key)
+		m[key.(string)] = value.(uint32)
+		return true
+	})
+	return m
 }
 
 // Close wait for the backoff process to complete.
