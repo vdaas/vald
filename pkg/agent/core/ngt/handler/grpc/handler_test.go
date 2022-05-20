@@ -4068,6 +4068,7 @@ func Test_server_Update(t *testing.T) {
 				return nil, err
 			}
 
+                        // TODO: use genMultiInsertReq()
 			reqs := make([]*payload.Insert_Request, insertNum)
 			for i, v := range gen(insertNum, cfg.Dimension) {
 				reqs[i] = &payload.Insert_Request{
