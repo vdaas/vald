@@ -5745,16 +5745,12 @@ func Test_server_MultiInsert(t *testing.T) {
 		}(),
 		func() test {
 			insertNum := 100
-			req := genMultiInsertReq(Float, vector.Gaussian, insertNum, f32VecDim, nil)
-			req.Requests[0].Vector.Id = req.Requests[1].Vector.Id
-
-			// set insert request config
 			cfg := &payload.Insert_Config{
 				SkipStrictExistCheck: false,
 			}
-			for i := 0; i < len(req.Requests); i++ {
-				req.Requests[i].Config = cfg
-			}
+
+			req := genMultiInsertReq(Float, vector.Gaussian, insertNum, f32VecDim, cfg)
+			req.Requests[0].Vector.Id = req.Requests[1].Vector.Id
 
 			// set want
 			w := genObjectLocations(insertNum, name, ip)
@@ -5779,17 +5775,13 @@ func Test_server_MultiInsert(t *testing.T) {
 		}(),
 		func() test {
 			insertNum := 100
-			req := genMultiInsertReq(Float, vector.Gaussian, insertNum, f32VecDim, nil)
-			for i := 1; i < len(req.Requests); i++ {
-				req.Requests[i].Vector.Id = req.Requests[0].Vector.Id
-			}
-
-			// set insert request config
 			cfg := &payload.Insert_Config{
 				SkipStrictExistCheck: false,
 			}
-			for i := 0; i < len(req.Requests); i++ {
-				req.Requests[i].Config = cfg
+
+			req := genMultiInsertReq(Float, vector.Gaussian, insertNum, f32VecDim, cfg)
+			for i := 1; i < len(req.Requests); i++ {
+				req.Requests[i].Vector.Id = req.Requests[0].Vector.Id
 			}
 
 			// set want
