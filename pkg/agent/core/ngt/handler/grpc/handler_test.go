@@ -417,15 +417,6 @@ func Test_server_Exists(t *testing.T) {
 		return s, nil
 	}
 
-	utf8ToSjis := func(s string) string {
-		b, _ := ioutil.ReadAll(transform.NewReader(strings.NewReader(s), japanese.ShiftJIS.NewEncoder()))
-		return string(b)
-	}
-
-	utf8ToEucjp := func(s string) string {
-		b, _ := ioutil.ReadAll(transform.NewReader(strings.NewReader(s), japanese.EUCJP.NewEncoder()))
-		return string(b)
-	}
 	/*
 		Exists test cases (focus on ID(string), only test float32):
 		- Equivalence Class Testing ( 1000 vectors inserted before a search )
@@ -673,6 +664,30 @@ func Test_server_Exists(t *testing.T) {
 	}
 }
 
+func convertVectorUint8ToFloat32(vector []uint8) (ret []float32) {
+	ret = make([]float32, len(vector))
+	for i, e := range vector {
+		ret[i] = float32(e)
+	}
+	return
+}
+
+func convertVectorsUint8ToFloat32(vectors [][]uint8) (ret [][]float32) {
+	ret = make([][]float32, 0, len(vectors))
+	for _, v := range vectors {
+		ret = append(ret, convertVectorUint8ToFloat32(v))
+	}
+	return
+}
+
+func fill(f float32, dim int) (v []float32) {
+	v = make([]float32, dim)
+	for i := range v {
+		v[i] = f
+	}
+	return
+}
+
 func Test_server_Search(t *testing.T) {
 	t.Parallel()
 
@@ -764,20 +779,7 @@ func Test_server_Search(t *testing.T) {
 		}
 		return nil
 	}
-	convertVectorUint8ToFloat32 := func(vector []uint8) (ret []float32) {
-		ret = make([]float32, len(vector))
-		for i, e := range vector {
-			ret[i] = float32(e)
-		}
-		return
-	}
-	convertVectorsUint8ToFloat32 := func(vectors [][]uint8) (ret [][]float32) {
-		ret = make([][]float32, 0, len(vectors))
-		for _, v := range vectors {
-			ret = append(ret, convertVectorUint8ToFloat32(v))
-		}
-		return
-	}
+
 	ngtConfig := func(dim int, objectType string) *config.NGT {
 		return &config.NGT{
 			Dimension:        dim,
@@ -799,13 +801,6 @@ func Test_server_Search(t *testing.T) {
 		Radius:  -1,
 		Epsilon: 0.1,
 		Timeout: 1000000000,
-	}
-	fill := func(f float32) (v []float32) {
-		v = make([]float32, defaultDimensionSize)
-		for i := range v {
-			v[i] = f
-		}
-		return
 	}
 
 	/*
@@ -933,7 +928,7 @@ func Test_server_Search(t *testing.T) {
 				ctx:       ctx,
 				insertNum: 1000,
 				req: &payload.Search_Request{
-					Vector: fill(float32(uint8(0))),
+					Vector: fill(float32(uint8(0)), defaultDimensionSize),
 					Config: defaultSearch_Config,
 				},
 			},
@@ -953,7 +948,7 @@ func Test_server_Search(t *testing.T) {
 				ctx:       ctx,
 				insertNum: 1000,
 				req: &payload.Search_Request{
-					Vector: fill(+0.0),
+					Vector: fill(+0.0, defaultDimensionSize),
 					Config: defaultSearch_Config,
 				},
 			},
@@ -971,7 +966,7 @@ func Test_server_Search(t *testing.T) {
 				ctx:       ctx,
 				insertNum: 1000,
 				req: &payload.Search_Request{
-					Vector: fill(float32(math.Copysign(0, -1.0))),
+					Vector: fill(float32(math.Copysign(0, -1.0)), defaultDimensionSize),
 					Config: defaultSearch_Config,
 				},
 			},
@@ -989,7 +984,7 @@ func Test_server_Search(t *testing.T) {
 				ctx:       ctx,
 				insertNum: 1000,
 				req: &payload.Search_Request{
-					Vector: fill(float32(uint8(math.MaxUint8))),
+					Vector: fill(float32(math.MaxUint8), defaultDimensionSize),
 					Config: defaultSearch_Config,
 				},
 			},
@@ -1009,7 +1004,7 @@ func Test_server_Search(t *testing.T) {
 				ctx:       ctx,
 				insertNum: 1000,
 				req: &payload.Search_Request{
-					Vector: fill(math.MaxFloat32),
+					Vector: fill(math.MaxFloat32, defaultDimensionSize),
 					Config: defaultSearch_Config,
 				},
 			},
@@ -1028,7 +1023,7 @@ func Test_server_Search(t *testing.T) {
 				ctx:       ctx,
 				insertNum: 1000,
 				req: &payload.Search_Request{
-					Vector: fill(-math.MaxFloat32),
+					Vector: fill(-math.MaxFloat32, defaultDimensionSize),
 					Config: defaultSearch_Config,
 				},
 			},
@@ -1047,7 +1042,7 @@ func Test_server_Search(t *testing.T) {
 				ctx:       ctx,
 				insertNum: 1000,
 				req: &payload.Search_Request{
-					Vector: fill(float32(math.NaN())),
+					Vector: fill(float32(math.NaN()), defaultDimensionSize),
 					Config: defaultSearch_Config,
 				},
 			},
@@ -1066,7 +1061,7 @@ func Test_server_Search(t *testing.T) {
 				ctx:       ctx,
 				insertNum: 1000,
 				req: &payload.Search_Request{
-					Vector: fill(float32(math.Inf(+1.0))),
+					Vector: fill(float32(math.Inf(+1.0)), defaultDimensionSize),
 					Config: defaultSearch_Config,
 				},
 			},
@@ -1085,7 +1080,7 @@ func Test_server_Search(t *testing.T) {
 				ctx:       ctx,
 				insertNum: 1000,
 				req: &payload.Search_Request{
-					Vector: fill(float32(math.Inf(-1.0))),
+					Vector: fill(float32(math.Inf(-1.0)), defaultDimensionSize),
 					Config: defaultSearch_Config,
 				},
 			},
@@ -1514,6 +1509,16 @@ func Test_server_Search(t *testing.T) {
 	}
 }
 
+func utf8ToSjis(s string) string {
+	b, _ := ioutil.ReadAll(transform.NewReader(strings.NewReader(s), japanese.ShiftJIS.NewEncoder()))
+	return string(b)
+}
+
+func utf8ToEucjp(s string) string {
+	b, _ := ioutil.ReadAll(transform.NewReader(strings.NewReader(s), japanese.EUCJP.NewEncoder()))
+	return string(b)
+}
+
 func Test_server_SearchByID(t *testing.T) {
 	t.Parallel()
 
@@ -1609,16 +1614,6 @@ func Test_server_SearchByID(t *testing.T) {
 		Radius:  -1,
 		Epsilon: 0.1,
 		Timeout: 1000000000,
-	}
-
-	utf8ToSjis := func(s string) string {
-		b, _ := ioutil.ReadAll(transform.NewReader(strings.NewReader(s), japanese.ShiftJIS.NewEncoder()))
-		return string(b)
-	}
-
-	utf8ToEucjp := func(s string) string {
-		b, _ := ioutil.ReadAll(transform.NewReader(strings.NewReader(s), japanese.EUCJP.NewEncoder()))
-		return string(b)
 	}
 
 	/*
@@ -4019,13 +4014,6 @@ func Test_server_Update(t *testing.T) {
 	defaultUpdateConfig := &payload.Update_Config{
 		SkipStrictExistCheck: true,
 	}
-	toFloat32Vector := func(v []uint8) (ret []float32) {
-		ret = make([]float32, 0, len(v))
-		for _, e := range v {
-			ret = append(ret, float32(e))
-		}
-		return
-	}
 	beforeFunc := func(objectType string) func(args) (Server, error) {
 		cfg := &config.NGT{
 			Dimension:        dimension,
@@ -4046,13 +4034,8 @@ func Test_server_Update(t *testing.T) {
 		case ngt.Float.String():
 			gen = vector.GaussianDistributedFloat32VectorGenerator
 		case ngt.Uint8.String():
-			gen = func(n, dim int) (ret [][]float32) {
-				vectors := vector.GaussianDistributedUint8VectorGenerator(n, dim)
-				ret = make([][]float32, 0, len(vectors))
-				for _, vector := range vectors {
-					ret = append(ret, toFloat32Vector(vector))
-				}
-				return
+			gen = func(n, dim int) [][]float32 {
+				return convertVectorsUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(n, dim))
 			}
 		}
 
@@ -4068,7 +4051,7 @@ func Test_server_Update(t *testing.T) {
 				return nil, err
 			}
 
-                        // TODO: use genMultiInsertReq()
+			// TODO: use genMultiInsertReq()
 			reqs := make([]*payload.Insert_Request, insertNum)
 			for i, v := range gen(insertNum, cfg.Dimension) {
 				reqs[i] = &payload.Insert_Request{
@@ -4093,31 +4076,6 @@ func Test_server_Update(t *testing.T) {
 			}
 			return s, nil
 		}
-	}
-
-	utf8ToSjis := func(s string) string {
-		b, _ := ioutil.ReadAll(transform.NewReader(strings.NewReader(s), japanese.ShiftJIS.NewEncoder()))
-		return string(b)
-	}
-
-	utf8ToEucjp := func(s string) string {
-		b, _ := ioutil.ReadAll(transform.NewReader(strings.NewReader(s), japanese.EUCJP.NewEncoder()))
-		return string(b)
-	}
-
-	fillFloat32 := func(val float32, size int) (ret []float32) {
-		ret = make([]float32, size)
-		for i := range ret {
-			ret[i] = val
-		}
-		return
-	}
-	fillUint8 := func(val uint8, size int) (ret []uint8) {
-		ret = make([]uint8, size)
-		for i := range ret {
-			ret[i] = val
-		}
-		return
 	}
 
 	/*
@@ -4208,7 +4166,7 @@ func Test_server_Update(t *testing.T) {
 				req: &payload.Update_Request{
 					Vector: &payload.Object_Vector{
 						Id:     "test",
-						Vector: toFloat32Vector(vector.GaussianDistributedUint8VectorGenerator(1, dimension+1)[0]),
+						Vector: convertVectorUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, dimension+1)[0]),
 					},
 					Config: defaultUpdateConfig,
 				},
@@ -4533,7 +4491,7 @@ func Test_server_Update(t *testing.T) {
 				req: &payload.Update_Request{
 					Vector: &payload.Object_Vector{
 						Id:     "test",
-						Vector: toFloat32Vector(fillUint8(0, dimension)),
+						Vector: fill(float32(uint8(0)), dimension),
 					},
 					Config: defaultUpdateConfig,
 				},
@@ -4550,7 +4508,7 @@ func Test_server_Update(t *testing.T) {
 				req: &payload.Update_Request{
 					Vector: &payload.Object_Vector{
 						Id:     "test",
-						Vector: fillFloat32(0, dimension),
+						Vector: fill(0, dimension),
 					},
 					Config: defaultUpdateConfig,
 				},
@@ -4567,7 +4525,7 @@ func Test_server_Update(t *testing.T) {
 				req: &payload.Update_Request{
 					Vector: &payload.Object_Vector{
 						Id:     "test",
-						Vector: fillFloat32(float32(math.Copysign(0, -1.0)), dimension),
+						Vector: fill(float32(math.Copysign(0, -1.0)), dimension),
 					},
 					Config: defaultUpdateConfig,
 				},
@@ -4584,7 +4542,7 @@ func Test_server_Update(t *testing.T) {
 				req: &payload.Update_Request{
 					Vector: &payload.Object_Vector{
 						Id:     "test",
-						Vector: toFloat32Vector(fillUint8(0, dimension)),
+						Vector: fill(float32(uint8(0)), dimension),
 					},
 					Config: defaultUpdateConfig,
 				},
@@ -4601,7 +4559,7 @@ func Test_server_Update(t *testing.T) {
 				req: &payload.Update_Request{
 					Vector: &payload.Object_Vector{
 						Id:     "test",
-						Vector: fillFloat32(-math.MaxFloat32, dimension),
+						Vector: fill(-math.MaxFloat32, dimension),
 					},
 					Config: defaultUpdateConfig,
 				},
@@ -4618,7 +4576,7 @@ func Test_server_Update(t *testing.T) {
 				req: &payload.Update_Request{
 					Vector: &payload.Object_Vector{
 						Id:     "test",
-						Vector: toFloat32Vector(fillUint8(math.MaxUint8, dimension)),
+						Vector: fill(float32(math.MaxUint8), dimension),
 					},
 					Config: defaultUpdateConfig,
 				},
@@ -4635,7 +4593,7 @@ func Test_server_Update(t *testing.T) {
 				req: &payload.Update_Request{
 					Vector: &payload.Object_Vector{
 						Id:     "test",
-						Vector: fillFloat32(math.MaxFloat32, dimension),
+						Vector: fill(math.MaxFloat32, dimension),
 					},
 					Config: defaultUpdateConfig,
 				},
@@ -4652,7 +4610,7 @@ func Test_server_Update(t *testing.T) {
 				req: &payload.Update_Request{
 					Vector: &payload.Object_Vector{
 						Id:     "test",
-						Vector: fillFloat32(float32(math.NaN()), dimension),
+						Vector: fill(float32(math.NaN()), dimension),
 					},
 					Config: defaultUpdateConfig,
 				},
@@ -4669,7 +4627,7 @@ func Test_server_Update(t *testing.T) {
 				req: &payload.Update_Request{
 					Vector: &payload.Object_Vector{
 						Id:     "test",
-						Vector: fillFloat32(float32(math.Inf(1.0)), dimension),
+						Vector: fill(float32(math.Inf(1.0)), dimension),
 					},
 					Config: defaultUpdateConfig,
 				},
@@ -4686,7 +4644,7 @@ func Test_server_Update(t *testing.T) {
 				req: &payload.Update_Request{
 					Vector: &payload.Object_Vector{
 						Id:     "test",
-						Vector: fillFloat32(float32(math.Inf(-1.0)), dimension),
+						Vector: fill(float32(math.Inf(-1.0)), dimension),
 					},
 					Config: defaultUpdateConfig,
 				},
