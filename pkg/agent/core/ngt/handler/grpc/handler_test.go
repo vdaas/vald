@@ -4110,74 +4110,86 @@ func Test_server_MultiInsert(t *testing.T) {
 
 	*/
 	tests := []test{
-		{
-			name: "Equivalence Class Testing case 1.1: Success to MultiInsert 1 vector (vector type is uint8)",
-			args: args{
-				ctx:  ctx,
-				reqs: genMultiInsertReq(Uint8, vector.Gaussian, 1, intVecDim),
-			},
-			fields: fields{
-				name:              name,
-				ip:                ip,
-				svcCfg:            defaultIntSvcCfg,
-				svcOpts:           defaultSvcOpts,
-				streamConcurrency: 0,
-			},
-			want: want{
-				wantRes: genObjectLocations(1, name, ip),
-			},
-		},
-		{
-			name: "Equivalence Class Testing case 1.2: Success to MultiInsert 1 vector (vector type is float32)",
-			args: args{
-				ctx:  ctx,
-				reqs: genMultiInsertReq(Float, vector.Gaussian, 1, f32VecDim),
-			},
-			fields: fields{
-				name:              name,
-				ip:                ip,
-				svcCfg:            defaultF32SvcCfg,
-				svcOpts:           defaultSvcOpts,
-				streamConcurrency: 0,
-			},
-			want: want{
-				wantRes: genObjectLocations(1, name, ip),
-			},
-		},
-		{
-			name: "Equivalence Class Testing case 1.3: Success to MultiInsert 100 vector (vector type is uint8)",
-			args: args{
-				ctx:  ctx,
-				reqs: genMultiInsertReq(Uint8, vector.Gaussian, 100, intVecDim),
-			},
-			fields: fields{
-				name:              name,
-				ip:                ip,
-				svcCfg:            defaultIntSvcCfg,
-				svcOpts:           defaultSvcOpts,
-				streamConcurrency: 0,
-			},
-			want: want{
-				wantRes: genObjectLocations(100, name, ip),
-			},
-		},
-		{
-			name: "Equivalence Class Testing case 1.4: Success to MultiInsert 100 vector (vector type is float32)",
-			args: args{
-				ctx:  ctx,
-				reqs: genMultiInsertReq(Float, vector.Gaussian, 100, f32VecDim),
-			},
-			fields: fields{
-				name:              name,
-				ip:                ip,
-				svcCfg:            defaultF32SvcCfg,
-				svcOpts:           defaultSvcOpts,
-				streamConcurrency: 0,
-			},
-			want: want{
-				wantRes: genObjectLocations(100, name, ip),
-			},
-		},
+		func() test {
+			insertNum := 1
+			return test{
+				name: "Equivalence Class Testing case 1.1: Success to MultiInsert 1 vector (vector type is uint8)",
+				args: args{
+					ctx:  ctx,
+					reqs: genMultiInsertReq(Uint8, vector.Gaussian, insertNum, intVecDim),
+				},
+				fields: fields{
+					name:              name,
+					ip:                ip,
+					svcCfg:            defaultIntSvcCfg,
+					svcOpts:           defaultSvcOpts,
+					streamConcurrency: 0,
+				},
+				want: want{
+					wantRes: genObjectLocations(insertNum, name, ip),
+				},
+			}
+		}(),
+		func() test {
+			insertNum := 1
+			return test{
+				name: "Equivalence Class Testing case 1.2: Success to MultiInsert 1 vector (vector type is float32)",
+				args: args{
+					ctx:  ctx,
+					reqs: genMultiInsertReq(Float, vector.Gaussian, insertNum, f32VecDim),
+				},
+				fields: fields{
+					name:              name,
+					ip:                ip,
+					svcCfg:            defaultF32SvcCfg,
+					svcOpts:           defaultSvcOpts,
+					streamConcurrency: 0,
+				},
+				want: want{
+					wantRes: genObjectLocations(insertNum, name, ip),
+				},
+			}
+		}(),
+		func() test {
+			insertNum := 100
+			return test{
+				name: "Equivalence Class Testing case 1.3: Success to MultiInsert 100 vector (vector type is uint8)",
+				args: args{
+					ctx:  ctx,
+					reqs: genMultiInsertReq(Uint8, vector.Gaussian, insertNum, intVecDim),
+				},
+				fields: fields{
+					name:              name,
+					ip:                ip,
+					svcCfg:            defaultIntSvcCfg,
+					svcOpts:           defaultSvcOpts,
+					streamConcurrency: 0,
+				},
+				want: want{
+					wantRes: genObjectLocations(insertNum, name, ip),
+				},
+			}
+		}(),
+		func() test {
+			insertNum := 100
+			return test{
+				name: "Equivalence Class Testing case 1.4: Success to MultiInsert 100 vector (vector type is float32)",
+				args: args{
+					ctx:  ctx,
+					reqs: genMultiInsertReq(Float, vector.Gaussian, insertNum, f32VecDim),
+				},
+				fields: fields{
+					name:              name,
+					ip:                ip,
+					svcCfg:            defaultF32SvcCfg,
+					svcOpts:           defaultSvcOpts,
+					streamConcurrency: 0,
+				},
+				want: want{
+					wantRes: genObjectLocations(insertNum, name, ip),
+				},
+			}
+		}(),
 		{
 			name: "Equivalence Class Testing case 1.5: Success to MultiInsert 0 vector (vector type is uint8)",
 			args: args{
@@ -4217,7 +4229,8 @@ func Test_server_MultiInsert(t *testing.T) {
 			},
 		},
 		func() test {
-			req := genMultiInsertReq(Uint8, vector.Gaussian, 1, intVecDim+1)
+			insertNum := 1
+			req := genMultiInsertReq(Uint8, vector.Gaussian, insertNum, intVecDim+1)
 
 			return test{
 				name: "Equivalence Class Testing case 2.1: Fail to MultiInsert 1 vector with different dimension (vector type is uint8)",
@@ -4258,7 +4271,8 @@ func Test_server_MultiInsert(t *testing.T) {
 			}
 		}(),
 		func() test {
-			req := genMultiInsertReq(Float, vector.Gaussian, 1, f32VecDim+1)
+			insertNum := 1
+			req := genMultiInsertReq(Float, vector.Gaussian, insertNum, f32VecDim+1)
 
 			return test{
 				name: "Equivalence Class Testing case 2.2: Fail to MultiInsert 1 vector with different dimension (vector type is float32)",
@@ -4299,7 +4313,8 @@ func Test_server_MultiInsert(t *testing.T) {
 			}
 		}(),
 		func() test {
-			req := genMultiInsertReq(Uint8, vector.Gaussian, 100, intVecDim)
+			insertNum := 100
+			req := genMultiInsertReq(Uint8, vector.Gaussian, insertNum, intVecDim)
 			req.Requests[0].Vector.Vector = genIntVec(vector.Gaussian, 1, intVecDim+1)[0]
 
 			return test{
@@ -4341,7 +4356,8 @@ func Test_server_MultiInsert(t *testing.T) {
 			}
 		}(),
 		func() test {
-			req := genMultiInsertReq(Float, vector.Gaussian, 100, f32VecDim)
+			insertNum := 100
+			req := genMultiInsertReq(Float, vector.Gaussian, insertNum, f32VecDim)
 			req.Requests[0].Vector.Vector = genF32Vec(vector.Gaussian, 1, f32VecDim+1)[0]
 
 			return test{
@@ -4384,7 +4400,8 @@ func Test_server_MultiInsert(t *testing.T) {
 		}(),
 
 		func() test {
-			req := genMultiInsertReq(Uint8, vector.Gaussian, 100, intVecDim)
+			insertNum := 100
+			req := genMultiInsertReq(Uint8, vector.Gaussian, insertNum, intVecDim)
 			for i := 0; i < len(req.Requests)/2; i++ {
 				req.Requests[i].Vector.Vector = genIntVec(vector.Gaussian, 1, intVecDim+1)[0]
 			}
@@ -4428,7 +4445,8 @@ func Test_server_MultiInsert(t *testing.T) {
 			}
 		}(),
 		func() test {
-			req := genMultiInsertReq(Float, vector.Gaussian, 100, f32VecDim)
+			insertNum := 100
+			req := genMultiInsertReq(Float, vector.Gaussian, insertNum, f32VecDim)
 			for i := 0; i < len(req.Requests)/2; i++ {
 				req.Requests[i].Vector.Vector = genF32Vec(vector.Gaussian, 1, f32VecDim+1)[0]
 			}
@@ -4472,7 +4490,8 @@ func Test_server_MultiInsert(t *testing.T) {
 			}
 		}(),
 		func() test {
-			req := genMultiInsertReq(Float, vector.Gaussian, 100, f32VecDim+1)
+			insertNum := 100
+			req := genMultiInsertReq(Float, vector.Gaussian, insertNum, f32VecDim+1)
 
 			return test{
 				name: "Equivalence Class Testing case 3.5: Fail to MultiInsert 100 vector with all vector with different dimension (vector type is uint8)",
@@ -4513,7 +4532,8 @@ func Test_server_MultiInsert(t *testing.T) {
 			}
 		}(),
 		func() test {
-			req := genMultiInsertReq(Float, vector.Gaussian, 100, f32VecDim+1)
+			insertNum := 100
+			req := genMultiInsertReq(Float, vector.Gaussian, insertNum, f32VecDim+1)
 
 			return test{
 				name: "Equivalence Class Testing case 3.6: Fail to MultiInsert 100 vector with all vector with different dimension (vector type is float32)",
@@ -4553,110 +4573,129 @@ func Test_server_MultiInsert(t *testing.T) {
 				},
 			}
 		}(),
-		{
-			name: "Boundary Value Testing case 1.1: Success to MultiInsert with 0 value vector (vector type is uint8)",
-			args: args{
-				ctx:  ctx,
-				reqs: genSameVecMultiInsertReq(100, []float32{0, 0, 0}),
-			},
-			fields: fields{
-				name:              name,
-				ip:                ip,
-				svcCfg:            defaultIntSvcCfg,
-				svcOpts:           defaultSvcOpts,
-				streamConcurrency: 0,
-			},
-			want: want{
-				wantRes: genObjectLocations(100, name, ip),
-			},
-		},
-		{
-			name: "Boundary Value Testing case 1.2: Success to MultiInsert with 0 value vector (vector type is float32)",
-			args: args{
-				ctx:  ctx,
-				reqs: genSameVecMultiInsertReq(100, []float32{0, 0, 0}),
-			},
-			fields: fields{
-				name:              name,
-				ip:                ip,
-				svcCfg:            defaultF32SvcCfg,
-				svcOpts:           defaultSvcOpts,
-				streamConcurrency: 0,
-			},
-			want: want{
-				wantRes: genObjectLocations(100, name, ip),
-			},
-		},
-		{
-			name: "Boundary Value Testing case 2.1: Success to MultiInsert with min value vector (vector type is uint8)",
-			args: args{
-				ctx:  ctx,
-				reqs: genSameVecMultiInsertReq(100, []float32{math.MinInt, math.MinInt, math.MinInt}),
-			},
-			fields: fields{
-				name:              name,
-				ip:                ip,
-				svcCfg:            defaultIntSvcCfg,
-				svcOpts:           defaultSvcOpts,
-				streamConcurrency: 0,
-			},
-			want: want{
-				wantRes: genObjectLocations(100, name, ip),
-			},
-		},
-		{
-			name: "Boundary Value Testing case 2.2: Success to MultiInsert with min value vector (vector type is float32)",
-			args: args{
-				ctx:  ctx,
-				reqs: genSameVecMultiInsertReq(100, []float32{-math.MaxFloat32, -math.MaxFloat32, -math.MaxFloat32}),
-			},
-			fields: fields{
-				name:              name,
-				ip:                ip,
-				svcCfg:            defaultF32SvcCfg,
-				svcOpts:           defaultSvcOpts,
-				streamConcurrency: 0,
-			},
-			want: want{
-				wantRes: genObjectLocations(100, name, ip),
-			},
-		},
-		{
-			name: "Boundary Value Testing case 3.1: Success to MultiInsert with max value vector (vector type is uint8)",
-			args: args{
-				ctx:  ctx,
-				reqs: genSameVecMultiInsertReq(100, []float32{math.MaxUint8, math.MaxUint8, math.MaxUint8}),
-			},
-			fields: fields{
-				name:              name,
-				ip:                ip,
-				svcCfg:            defaultIntSvcCfg,
-				svcOpts:           defaultSvcOpts,
-				streamConcurrency: 0,
-			},
-			want: want{
-				wantRes: genObjectLocations(100, name, ip),
-			},
-		},
-		{
-			name: "Boundary Value Testing case 3.2: Success to MultiInsert with max value vector (vector type is float32)",
-			args: args{
-				ctx:  ctx,
-				reqs: genSameVecMultiInsertReq(100, []float32{math.MaxFloat32, math.MaxFloat32, math.MaxFloat32}),
-			},
-			fields: fields{
-				name:              name,
-				ip:                ip,
-				svcCfg:            defaultF32SvcCfg,
-				svcOpts:           defaultSvcOpts,
-				streamConcurrency: 0,
-			},
-			want: want{
-				wantRes: genObjectLocations(100, name, ip),
-			},
-		},
 		func() test {
-			req := genMultiInsertReq(Uint8, vector.Gaussian, 100, intVecDim)
+			insertNum := 100
+			return test{
+				name: "Boundary Value Testing case 1.1: Success to MultiInsert with 0 value vector (vector type is uint8)",
+				args: args{
+					ctx:  ctx,
+					reqs: genSameVecMultiInsertReq(insertNum, []float32{0, 0, 0}),
+				},
+				fields: fields{
+					name:              name,
+					ip:                ip,
+					svcCfg:            defaultIntSvcCfg,
+					svcOpts:           defaultSvcOpts,
+					streamConcurrency: 0,
+				},
+				want: want{
+					wantRes: genObjectLocations(insertNum, name, ip),
+				},
+			}
+		}(),
+		func() test {
+			insertNum := 100
+			return test{
+				name: "Boundary Value Testing case 1.2: Success to MultiInsert with 0 value vector (vector type is float32)",
+				args: args{
+					ctx:  ctx,
+					reqs: genSameVecMultiInsertReq(insertNum, []float32{0, 0, 0}),
+				},
+				fields: fields{
+					name:              name,
+					ip:                ip,
+					svcCfg:            defaultF32SvcCfg,
+					svcOpts:           defaultSvcOpts,
+					streamConcurrency: 0,
+				},
+				want: want{
+					wantRes: genObjectLocations(insertNum, name, ip),
+				},
+			}
+		}(),
+		func() test {
+			insertNum := 100
+			return test{
+				name: "Boundary Value Testing case 2.1: Success to MultiInsert with min value vector (vector type is uint8)",
+				args: args{
+					ctx:  ctx,
+					reqs: genSameVecMultiInsertReq(insertNum, []float32{math.MinInt, math.MinInt, math.MinInt}),
+				},
+				fields: fields{
+					name:              name,
+					ip:                ip,
+					svcCfg:            defaultIntSvcCfg,
+					svcOpts:           defaultSvcOpts,
+					streamConcurrency: 0,
+				},
+				want: want{
+					wantRes: genObjectLocations(insertNum, name, ip),
+				},
+			}
+		}(),
+		func() test {
+			insertNum := 100
+			return test{
+				name: "Boundary Value Testing case 2.2: Success to MultiInsert with min value vector (vector type is float32)",
+				args: args{
+					ctx:  ctx,
+					reqs: genSameVecMultiInsertReq(insertNum, []float32{-math.MaxFloat32, -math.MaxFloat32, -math.MaxFloat32}),
+				},
+				fields: fields{
+					name:              name,
+					ip:                ip,
+					svcCfg:            defaultF32SvcCfg,
+					svcOpts:           defaultSvcOpts,
+					streamConcurrency: 0,
+				},
+				want: want{
+					wantRes: genObjectLocations(insertNum, name, ip),
+				},
+			}
+		}(),
+		func() test {
+			insertNum := 100
+			return test{
+				name: "Boundary Value Testing case 3.1: Success to MultiInsert with max value vector (vector type is uint8)",
+				args: args{
+					ctx:  ctx,
+					reqs: genSameVecMultiInsertReq(insertNum, []float32{math.MaxUint8, math.MaxUint8, math.MaxUint8}),
+				},
+				fields: fields{
+					name:              name,
+					ip:                ip,
+					svcCfg:            defaultIntSvcCfg,
+					svcOpts:           defaultSvcOpts,
+					streamConcurrency: 0,
+				},
+				want: want{
+					wantRes: genObjectLocations(insertNum, name, ip),
+				},
+			}
+		}(),
+		func() test {
+			insertNum := 100
+			return test{
+				name: "Boundary Value Testing case 3.2: Success to MultiInsert with max value vector (vector type is float32)",
+				args: args{
+					ctx:  ctx,
+					reqs: genSameVecMultiInsertReq(insertNum, []float32{math.MaxFloat32, math.MaxFloat32, math.MaxFloat32}),
+				},
+				fields: fields{
+					name:              name,
+					ip:                ip,
+					svcCfg:            defaultF32SvcCfg,
+					svcOpts:           defaultSvcOpts,
+					streamConcurrency: 0,
+				},
+				want: want{
+					wantRes: genObjectLocations(insertNum, name, ip),
+				},
+			}
+		}(),
+		func() test {
+			insertNum := 100
+			req := genMultiInsertReq(Uint8, vector.Gaussian, insertNum, intVecDim)
 			req.Requests[0].Vector.Id = ""
 
 			uuids := make([]string, 0, len(req.Requests))
@@ -4699,7 +4738,8 @@ func Test_server_MultiInsert(t *testing.T) {
 			}
 		}(),
 		func() test {
-			req := genMultiInsertReq(Float, vector.Gaussian, 100, f32VecDim)
+			insertNum := 100
+			req := genMultiInsertReq(Float, vector.Gaussian, insertNum, f32VecDim)
 			req.Requests[0].Vector.Id = ""
 
 			uuids := make([]string, 0, len(req.Requests))
@@ -4742,7 +4782,8 @@ func Test_server_MultiInsert(t *testing.T) {
 			}
 		}(),
 		func() test {
-			req := genMultiInsertReq(Uint8, vector.Gaussian, 100, intVecDim)
+			insertNum := 100
+			req := genMultiInsertReq(Uint8, vector.Gaussian, insertNum, intVecDim)
 			for i := 0; i < len(req.Requests)/2; i++ {
 				req.Requests[i].Vector.Id = ""
 			}
@@ -4787,7 +4828,8 @@ func Test_server_MultiInsert(t *testing.T) {
 			}
 		}(),
 		func() test {
-			req := genMultiInsertReq(Uint8, vector.Gaussian, 100, f32VecDim)
+			insertNum := 100
+			req := genMultiInsertReq(Uint8, vector.Gaussian, insertNum, f32VecDim)
 			for i := 0; i < len(req.Requests)/2; i++ {
 				req.Requests[i].Vector.Id = ""
 			}
@@ -4832,7 +4874,8 @@ func Test_server_MultiInsert(t *testing.T) {
 			}
 		}(),
 		func() test {
-			req := genMultiInsertReq(Uint8, vector.Gaussian, 100, intVecDim)
+			insertNum := 100
+			req := genMultiInsertReq(Uint8, vector.Gaussian, insertNum, intVecDim)
 			for i := 0; i < len(req.Requests); i++ {
 				req.Requests[i].Vector.Id = ""
 			}
@@ -4877,7 +4920,8 @@ func Test_server_MultiInsert(t *testing.T) {
 			}
 		}(),
 		func() test {
-			req := genMultiInsertReq(Uint8, vector.Gaussian, 100, f32VecDim)
+			insertNum := 100
+			req := genMultiInsertReq(Uint8, vector.Gaussian, insertNum, f32VecDim)
 			for i := 0; i < len(req.Requests); i++ {
 				req.Requests[i].Vector.Id = ""
 			}
@@ -4922,7 +4966,8 @@ func Test_server_MultiInsert(t *testing.T) {
 			}
 		}(),
 		func() test {
-			req := genMultiInsertReq(Uint8, vector.Gaussian, 100, intVecDim)
+			insertNum := 100
+			req := genMultiInsertReq(Uint8, vector.Gaussian, insertNum, intVecDim)
 			req.Requests[0].Vector.Vector = make([]float32, maxVecDim)
 
 			return test{
@@ -4965,7 +5010,8 @@ func Test_server_MultiInsert(t *testing.T) {
 			}
 		}(),
 		func() test {
-			req := genMultiInsertReq(Uint8, vector.Gaussian, 100, f32VecDim)
+			insertNum := 100
+			req := genMultiInsertReq(Uint8, vector.Gaussian, insertNum, f32VecDim)
 			req.Requests[0].Vector.Vector = make([]float32, maxVecDim)
 
 			return test{
@@ -5008,7 +5054,8 @@ func Test_server_MultiInsert(t *testing.T) {
 			}
 		}(),
 		func() test {
-			req := genMultiInsertReq(Uint8, vector.Gaussian, 100, intVecDim)
+			insertNum := 100
+			req := genMultiInsertReq(Uint8, vector.Gaussian, insertNum, intVecDim)
 			for i := 0; i < len(req.Requests)/2; i++ {
 				req.Requests[i].Vector.Vector = make([]float32, maxVecDim)
 			}
@@ -5053,7 +5100,8 @@ func Test_server_MultiInsert(t *testing.T) {
 			}
 		}(),
 		func() test {
-			req := genMultiInsertReq(Uint8, vector.Gaussian, 100, f32VecDim)
+			insertNum := 100
+			req := genMultiInsertReq(Uint8, vector.Gaussian, insertNum, f32VecDim)
 			for i := 0; i < len(req.Requests)/2; i++ {
 				req.Requests[i].Vector.Vector = make([]float32, maxVecDim)
 			}
@@ -5098,7 +5146,8 @@ func Test_server_MultiInsert(t *testing.T) {
 			}
 		}(),
 		func() test {
-			req := genSameVecMultiInsertReq(100, make([]float32, maxVecDim))
+			insertNum := 100
+			req := genSameVecMultiInsertReq(insertNum, make([]float32, maxVecDim))
 
 			return test{
 				name: "Boundary Value Testing case 5.5: Fail to MultiInsert with all vector with maximum dimension (vector type is uint8)",
@@ -5140,7 +5189,8 @@ func Test_server_MultiInsert(t *testing.T) {
 			}
 		}(),
 		func() test {
-			req := genSameVecMultiInsertReq(100, make([]float32, maxVecDim))
+			insertNum := 100
+			req := genSameVecMultiInsertReq(insertNum, make([]float32, maxVecDim))
 
 			return test{
 				name: "Boundary Value Testing case 5.6: Fail to MultiInsert with all vector with maximum dimension (vector type is float32)",
@@ -5181,76 +5231,89 @@ func Test_server_MultiInsert(t *testing.T) {
 				},
 			}
 		}(),
-		{
-			name: "Boundary Value Testing case 6.1: Success to MultiInsert with NaN value (vector type is float32)",
-			args: args{
-				ctx:  ctx,
-				reqs: genSameVecMultiInsertReq(100, []float32{float32(math.NaN()), float32(math.NaN()), float32(math.NaN())}),
-			},
-			fields: fields{
-				name:              name,
-				ip:                ip,
-				svcCfg:            defaultF32SvcCfg,
-				svcOpts:           defaultSvcOpts,
-				streamConcurrency: 0,
-			},
-			want: want{
-				wantRes: genObjectLocations(100, name, ip),
-			},
-		},
-		{
-			name: "Boundary Value Testing case 6.2: Success to MultiInsert with +Inf value (vector type is float32)",
-			args: args{
-				ctx:  ctx,
-				reqs: genSameVecMultiInsertReq(100, []float32{float32(math.Inf(+1.0)), float32(math.Inf(+1.0)), float32(math.Inf(+1.0))}),
-			},
-			fields: fields{
-				name:              name,
-				ip:                ip,
-				svcCfg:            defaultF32SvcCfg,
-				svcOpts:           defaultSvcOpts,
-				streamConcurrency: 0,
-			},
-			want: want{
-				wantRes: genObjectLocations(100, name, ip),
-			},
-		},
-		{
-			name: "Boundary Value Testing case 6.3: Success to MultiInsert with -Inf value (vector type is float32)",
-			args: args{
-				ctx:  ctx,
-				reqs: genSameVecMultiInsertReq(100, []float32{float32(math.Inf(-1.0)), float32(math.Inf(-1.0)), float32(math.Inf(-1.0))}),
-			},
-			fields: fields{
-				name:              name,
-				ip:                ip,
-				svcCfg:            defaultF32SvcCfg,
-				svcOpts:           defaultSvcOpts,
-				streamConcurrency: 0,
-			},
-			want: want{
-				wantRes: genObjectLocations(100, name, ip),
-			},
-		},
-		{
-			name: "Boundary Value Testing case 6.4: Success to MultiInsert with -0 value (vector type is float32)",
-			args: args{
-				ctx:  ctx,
-				reqs: genSameVecMultiInsertReq(100, []float32{float32(math.Copysign(0, -1.0)), float32(math.Copysign(0, -1.0)), float32(math.Copysign(0, -1.0))}),
-			},
-			fields: fields{
-				name:              name,
-				ip:                ip,
-				svcCfg:            defaultF32SvcCfg,
-				svcOpts:           defaultSvcOpts,
-				streamConcurrency: 0,
-			},
-			want: want{
-				wantRes: genObjectLocations(100, name, ip),
-			},
-		},
 		func() test {
-			req := genMultiInsertReq(Float, vector.Gaussian, 100, f32VecDim)
+			insertNum := 100
+			return test{
+				name: "Boundary Value Testing case 6.1: Success to MultiInsert with NaN value (vector type is float32)",
+				args: args{
+					ctx:  ctx,
+					reqs: genSameVecMultiInsertReq(insertNum, []float32{float32(math.NaN()), float32(math.NaN()), float32(math.NaN())}),
+				},
+				fields: fields{
+					name:              name,
+					ip:                ip,
+					svcCfg:            defaultF32SvcCfg,
+					svcOpts:           defaultSvcOpts,
+					streamConcurrency: 0,
+				},
+				want: want{
+					wantRes: genObjectLocations(insertNum, name, ip),
+				},
+			}
+		}(),
+		func() test {
+			insertNum := 100
+			return test{
+				name: "Boundary Value Testing case 6.2: Success to MultiInsert with +Inf value (vector type is float32)",
+				args: args{
+					ctx:  ctx,
+					reqs: genSameVecMultiInsertReq(insertNum, []float32{float32(math.Inf(+1.0)), float32(math.Inf(+1.0)), float32(math.Inf(+1.0))}),
+				},
+				fields: fields{
+					name:              name,
+					ip:                ip,
+					svcCfg:            defaultF32SvcCfg,
+					svcOpts:           defaultSvcOpts,
+					streamConcurrency: 0,
+				},
+				want: want{
+					wantRes: genObjectLocations(insertNum, name, ip),
+				},
+			}
+		}(),
+		func() test {
+			insertNum := 100
+			return test{
+				name: "Boundary Value Testing case 6.3: Success to MultiInsert with -Inf value (vector type is float32)",
+				args: args{
+					ctx:  ctx,
+					reqs: genSameVecMultiInsertReq(insertNum, []float32{float32(math.Inf(-1.0)), float32(math.Inf(-1.0)), float32(math.Inf(-1.0))}),
+				},
+				fields: fields{
+					name:              name,
+					ip:                ip,
+					svcCfg:            defaultF32SvcCfg,
+					svcOpts:           defaultSvcOpts,
+					streamConcurrency: 0,
+				},
+				want: want{
+					wantRes: genObjectLocations(insertNum, name, ip),
+				},
+			}
+		}(),
+		func() test {
+			insertNum := 100
+			return test{
+				name: "Boundary Value Testing case 6.4: Success to MultiInsert with -0 value (vector type is float32)",
+				args: args{
+					ctx:  ctx,
+					reqs: genSameVecMultiInsertReq(insertNum, []float32{float32(math.Copysign(0, -1.0)), float32(math.Copysign(0, -1.0)), float32(math.Copysign(0, -1.0))}),
+				},
+				fields: fields{
+					name:              name,
+					ip:                ip,
+					svcCfg:            defaultF32SvcCfg,
+					svcOpts:           defaultSvcOpts,
+					streamConcurrency: 0,
+				},
+				want: want{
+					wantRes: genObjectLocations(insertNum, name, ip),
+				},
+			}
+		}(),
+		func() test {
+			insertNum := 100
+			req := genMultiInsertReq(Float, vector.Gaussian, insertNum, f32VecDim)
 			vid := req.Requests[0].Vector.Id
 			req.Requests[0] = nil
 
@@ -5293,7 +5356,8 @@ func Test_server_MultiInsert(t *testing.T) {
 			}
 		}(),
 		func() test {
-			req := genMultiInsertReq(Float, vector.Gaussian, 100, f32VecDim)
+			insertNum := 100
+			req := genMultiInsertReq(Float, vector.Gaussian, insertNum, f32VecDim)
 			vid := req.Requests[0].Vector.Id
 			for i := 0; i < len(req.Requests)/2; i++ {
 				req.Requests[i] = nil
@@ -5338,7 +5402,8 @@ func Test_server_MultiInsert(t *testing.T) {
 			}
 		}(),
 		func() test {
-			req := genMultiInsertReq(Float, vector.Gaussian, 100, f32VecDim)
+			insertNum := 100
+			req := genMultiInsertReq(Float, vector.Gaussian, insertNum, f32VecDim)
 			vid := req.Requests[0].Vector.Id
 			for i := 0; i < len(req.Requests); i++ {
 				req.Requests[i] = nil
@@ -5383,7 +5448,8 @@ func Test_server_MultiInsert(t *testing.T) {
 			}
 		}(),
 		func() test {
-			req := genMultiInsertReq(Float, vector.Gaussian, 100, f32VecDim)
+			insertNum := 100
+			req := genMultiInsertReq(Float, vector.Gaussian, insertNum, f32VecDim)
 			vid := req.Requests[0].Vector.Id
 			req.Requests[0].Vector.Vector = nil
 
@@ -5426,7 +5492,8 @@ func Test_server_MultiInsert(t *testing.T) {
 			}
 		}(),
 		func() test {
-			req := genMultiInsertReq(Float, vector.Gaussian, 100, f32VecDim)
+			insertNum := 100
+			req := genMultiInsertReq(Float, vector.Gaussian, insertNum, f32VecDim)
 			vid := req.Requests[0].Vector.Id
 			for i := 0; i < len(req.Requests)/2; i++ {
 				req.Requests[i].Vector.Vector = nil
@@ -5471,7 +5538,8 @@ func Test_server_MultiInsert(t *testing.T) {
 			}
 		}(),
 		func() test {
-			req := genMultiInsertReq(Float, vector.Gaussian, 100, f32VecDim)
+			insertNum := 100
+			req := genMultiInsertReq(Float, vector.Gaussian, insertNum, f32VecDim)
 			vid := req.Requests[0].Vector.Id
 			for i := 0; i < len(req.Requests); i++ {
 				req.Requests[i].Vector.Vector = nil
@@ -5516,7 +5584,8 @@ func Test_server_MultiInsert(t *testing.T) {
 			}
 		}(),
 		func() test {
-			req := genMultiInsertReq(Float, vector.Gaussian, 100, f32VecDim)
+			insertNum := 100
+			req := genMultiInsertReq(Float, vector.Gaussian, insertNum, f32VecDim)
 			vid := req.Requests[0].Vector.Id
 			req.Requests[0].Vector.Vector = []float32{}
 
@@ -5559,7 +5628,8 @@ func Test_server_MultiInsert(t *testing.T) {
 			}
 		}(),
 		func() test {
-			req := genMultiInsertReq(Float, vector.Gaussian, 100, f32VecDim)
+			insertNum := 100
+			req := genMultiInsertReq(Float, vector.Gaussian, insertNum, f32VecDim)
 			vid := req.Requests[0].Vector.Id
 			for i := 0; i < len(req.Requests)/2; i++ {
 				req.Requests[i].Vector.Vector = []float32{}
@@ -5604,7 +5674,8 @@ func Test_server_MultiInsert(t *testing.T) {
 			}
 		}(),
 		func() test {
-			req := genMultiInsertReq(Float, vector.Gaussian, 100, f32VecDim)
+			insertNum := 100
+			req := genMultiInsertReq(Float, vector.Gaussian, insertNum, f32VecDim)
 			vid := req.Requests[0].Vector.Id
 			for i := 0; i < len(req.Requests); i++ {
 				req.Requests[i].Vector.Vector = []float32{}
@@ -5649,7 +5720,8 @@ func Test_server_MultiInsert(t *testing.T) {
 			}
 		}(),
 		func() test {
-			req := genMultiInsertReq(Float, vector.Gaussian, 100, f32VecDim)
+			insertNum := 100
+			req := genMultiInsertReq(Float, vector.Gaussian, insertNum, f32VecDim)
 			req.Requests[0].Vector.Id = req.Requests[1].Vector.Id
 
 			// set insert request config
@@ -5661,7 +5733,7 @@ func Test_server_MultiInsert(t *testing.T) {
 			}
 
 			// set want
-			w := genObjectLocations(100, name, ip)
+			w := genObjectLocations(insertNum, name, ip)
 			w.Locations[0].Uuid = req.Requests[0].Vector.Id
 
 			return test{
@@ -5682,7 +5754,8 @@ func Test_server_MultiInsert(t *testing.T) {
 			}
 		}(),
 		func() test {
-			req := genMultiInsertReq(Float, vector.Gaussian, 100, f32VecDim)
+			insertNum := 100
+			req := genMultiInsertReq(Float, vector.Gaussian, insertNum, f32VecDim)
 			for i := 1; i < len(req.Requests); i++ {
 				req.Requests[i].Vector.Id = req.Requests[0].Vector.Id
 			}
@@ -5696,7 +5769,7 @@ func Test_server_MultiInsert(t *testing.T) {
 			}
 
 			// set want
-			w := genObjectLocations(100, name, ip)
+			w := genObjectLocations(insertNum, name, ip)
 			for _, l := range w.Locations {
 				l.Uuid = req.Requests[0].Vector.Id
 			}
@@ -5719,7 +5792,8 @@ func Test_server_MultiInsert(t *testing.T) {
 			}
 		}(),
 		func() test {
-			req := genMultiInsertReq(Float, vector.Gaussian, 100, f32VecDim)
+			insertNum := 100
+			req := genMultiInsertReq(Float, vector.Gaussian, insertNum, f32VecDim)
 			req.Requests[0].Vector.Id = req.Requests[1].Vector.Id
 
 			// set insert request config
@@ -5731,7 +5805,7 @@ func Test_server_MultiInsert(t *testing.T) {
 			}
 
 			// set want
-			w := genObjectLocations(100, name, ip)
+			w := genObjectLocations(insertNum, name, ip)
 			w.Locations[0].Uuid = req.Requests[0].Vector.Id
 			// w.Locations[1].Uuid = dupID
 
@@ -5753,7 +5827,8 @@ func Test_server_MultiInsert(t *testing.T) {
 			}
 		}(),
 		func() test {
-			req := genMultiInsertReq(Float, vector.Gaussian, 100, f32VecDim)
+			insertNum := 100
+			req := genMultiInsertReq(Float, vector.Gaussian, insertNum, f32VecDim)
 			for i := 1; i < len(req.Requests); i++ {
 				req.Requests[i].Vector.Id = req.Requests[0].Vector.Id
 			}
@@ -5767,7 +5842,7 @@ func Test_server_MultiInsert(t *testing.T) {
 			}
 
 			// set want
-			w := genObjectLocations(100, name, ip)
+			w := genObjectLocations(insertNum, name, ip)
 			for _, l := range w.Locations {
 				l.Uuid = req.Requests[0].Vector.Id
 			}
@@ -5790,7 +5865,8 @@ func Test_server_MultiInsert(t *testing.T) {
 			}
 		}(),
 		func() test {
-			req := genMultiInsertReq(Float, vector.Gaussian, 100, f32VecDim)
+			insertNum := 100
+			req := genMultiInsertReq(Float, vector.Gaussian, insertNum, f32VecDim)
 			req.Requests[0].Vector.Vector = req.Requests[1].Vector.Vector
 
 			// set insert request config
@@ -5814,12 +5890,13 @@ func Test_server_MultiInsert(t *testing.T) {
 					svcOpts: defaultSvcOpts,
 				},
 				want: want{
-					wantRes: genObjectLocations(100, name, ip),
+					wantRes: genObjectLocations(insertNum, name, ip),
 				},
 			}
 		}(),
 		func() test {
-			req := genMultiInsertReq(Float, vector.Gaussian, 100, f32VecDim)
+			insertNum := 100
+			req := genMultiInsertReq(Float, vector.Gaussian, insertNum, f32VecDim)
 			for i := 1; i < len(req.Requests); i++ {
 				req.Requests[i].Vector.Vector = req.Requests[0].Vector.Vector
 			}
@@ -5845,12 +5922,13 @@ func Test_server_MultiInsert(t *testing.T) {
 					svcOpts: defaultSvcOpts,
 				},
 				want: want{
-					wantRes: genObjectLocations(100, name, ip),
+					wantRes: genObjectLocations(insertNum, name, ip),
 				},
 			}
 		}(),
 		func() test {
-			req := genMultiInsertReq(Float, vector.Gaussian, 100, f32VecDim)
+			insertNum := 100
+			req := genMultiInsertReq(Float, vector.Gaussian, insertNum, f32VecDim)
 			req.Requests[0].Vector.Vector = req.Requests[1].Vector.Vector
 
 			// set insert request config
@@ -5874,12 +5952,13 @@ func Test_server_MultiInsert(t *testing.T) {
 					svcOpts: defaultSvcOpts,
 				},
 				want: want{
-					wantRes: genObjectLocations(100, name, ip),
+					wantRes: genObjectLocations(insertNum, name, ip),
 				},
 			}
 		}(),
 		func() test {
-			req := genMultiInsertReq(Float, vector.Gaussian, 100, f32VecDim)
+			insertNum := 100
+			req := genMultiInsertReq(Float, vector.Gaussian, insertNum, f32VecDim)
 			for i := 1; i < len(req.Requests); i++ {
 				req.Requests[i].Vector.Vector = req.Requests[0].Vector.Vector
 			}
@@ -5905,12 +5984,13 @@ func Test_server_MultiInsert(t *testing.T) {
 					svcOpts: defaultSvcOpts,
 				},
 				want: want{
-					wantRes: genObjectLocations(100, name, ip),
+					wantRes: genObjectLocations(insertNum, name, ip),
 				},
 			}
 		}(),
 		func() test {
-			req := genMultiInsertReq(Float, vector.Gaussian, 100, f32VecDim)
+			insertNum := 100
+			req := genMultiInsertReq(Float, vector.Gaussian, insertNum, f32VecDim)
 			req.Requests[0].Vector.Vector = req.Requests[1].Vector.Vector
 			req.Requests[0].Vector.Id = req.Requests[1].Vector.Id
 
@@ -5923,7 +6003,7 @@ func Test_server_MultiInsert(t *testing.T) {
 			}
 
 			// set want
-			w := genObjectLocations(100, name, ip)
+			w := genObjectLocations(insertNum, name, ip)
 			w.Locations[0].Uuid = req.Requests[0].Vector.Id
 
 			return test{
@@ -5944,7 +6024,8 @@ func Test_server_MultiInsert(t *testing.T) {
 			}
 		}(),
 		func() test {
-			req := genMultiInsertReq(Float, vector.Gaussian, 100, f32VecDim)
+			insertNum := 100
+			req := genMultiInsertReq(Float, vector.Gaussian, insertNum, f32VecDim)
 			for i := 1; i < len(req.Requests); i++ {
 				req.Requests[i].Vector.Id = req.Requests[0].Vector.Id
 				req.Requests[i].Vector.Vector = req.Requests[0].Vector.Vector
@@ -5959,7 +6040,7 @@ func Test_server_MultiInsert(t *testing.T) {
 			}
 
 			// set want
-			w := genObjectLocations(100, name, ip)
+			w := genObjectLocations(insertNum, name, ip)
 			for _, l := range w.Locations {
 				l.Uuid = req.Requests[0].Vector.Id
 			}
@@ -5982,7 +6063,8 @@ func Test_server_MultiInsert(t *testing.T) {
 			}
 		}(),
 		func() test {
-			req := genMultiInsertReq(Float, vector.Gaussian, 100, f32VecDim)
+			insertNum := 100
+			req := genMultiInsertReq(Float, vector.Gaussian, insertNum, f32VecDim)
 			req.Requests[0].Vector.Vector = req.Requests[1].Vector.Vector
 			req.Requests[0].Vector.Id = req.Requests[1].Vector.Id
 
@@ -5995,7 +6077,7 @@ func Test_server_MultiInsert(t *testing.T) {
 			}
 
 			// set want
-			w := genObjectLocations(100, name, ip)
+			w := genObjectLocations(insertNum, name, ip)
 			w.Locations[0].Uuid = req.Requests[0].Vector.Id
 
 			return test{
@@ -6016,7 +6098,8 @@ func Test_server_MultiInsert(t *testing.T) {
 			}
 		}(),
 		func() test {
-			req := genMultiInsertReq(Float, vector.Gaussian, 100, f32VecDim)
+			insertNum := 100
+			req := genMultiInsertReq(Float, vector.Gaussian, insertNum, f32VecDim)
 			for i := 1; i < len(req.Requests); i++ {
 				req.Requests[i].Vector.Id = req.Requests[0].Vector.Id
 				req.Requests[i].Vector.Vector = req.Requests[0].Vector.Vector
@@ -6031,7 +6114,7 @@ func Test_server_MultiInsert(t *testing.T) {
 			}
 
 			// set want
-			w := genObjectLocations(100, name, ip)
+			w := genObjectLocations(insertNum, name, ip)
 			for _, l := range w.Locations {
 				l.Uuid = req.Requests[0].Vector.Id
 			}
@@ -6054,7 +6137,8 @@ func Test_server_MultiInsert(t *testing.T) {
 			}
 		}(),
 		func() test {
-			req := genMultiInsertReq(Float, vector.Gaussian, 100, f32VecDim)
+			insertNum := 100
+			req := genMultiInsertReq(Float, vector.Gaussian, insertNum, f32VecDim)
 
 			return test{
 				name: "Decision Table Testing case 4.1: Fail to MultiInsert with 2 existed ID when SkipStrictExistCheck is false",
@@ -6097,7 +6181,8 @@ func Test_server_MultiInsert(t *testing.T) {
 			}
 		}(),
 		func() test {
-			req := genMultiInsertReq(Float, vector.Gaussian, 100, f32VecDim)
+			insertNum := 100
+			req := genMultiInsertReq(Float, vector.Gaussian, insertNum, f32VecDim)
 
 			return test{
 				name: "Decision Table Testing case 4.2: Fail to MultiInsert with all existed ID when SkipStrictExistCheck is false",
@@ -6112,7 +6197,7 @@ func Test_server_MultiInsert(t *testing.T) {
 					svcOpts: defaultSvcOpts,
 				},
 				beforeFunc: func(t *testing.T, s *server) {
-					vecs := genF32Vec(vector.Gaussian, 100, f32VecDim)
+					vecs := genF32Vec(vector.Gaussian, insertNum, f32VecDim)
 					for i, r := range req.Requests {
 						ir := &payload.Insert_Request{
 							Vector: &payload.Object_Vector{
@@ -6139,7 +6224,8 @@ func Test_server_MultiInsert(t *testing.T) {
 			}
 		}(),
 		func() test {
-			req := genMultiInsertReq(Float, vector.Gaussian, 100, f32VecDim)
+			insertNum := 100
+			req := genMultiInsertReq(Float, vector.Gaussian, insertNum, f32VecDim)
 
 			return test{
 				name: "Decision Table Testing case 4.3: Fail to MultiInsert with 2 existed ID when SkipStrictExistCheck is true",
@@ -6182,7 +6268,8 @@ func Test_server_MultiInsert(t *testing.T) {
 			}
 		}(),
 		func() test {
-			req := genMultiInsertReq(Float, vector.Gaussian, 100, f32VecDim)
+			insertNum := 100
+			req := genMultiInsertReq(Float, vector.Gaussian, insertNum, f32VecDim)
 
 			return test{
 				name: "Decision Table Testing case 4.4: Fail to MultiInsert with all existed ID when SkipStrictExistCheck is true",
@@ -6197,7 +6284,7 @@ func Test_server_MultiInsert(t *testing.T) {
 					svcOpts: defaultSvcOpts,
 				},
 				beforeFunc: func(t *testing.T, s *server) {
-					vecs := genF32Vec(vector.Gaussian, 100, f32VecDim)
+					vecs := genF32Vec(vector.Gaussian, insertNum, f32VecDim)
 					for i, r := range req.Requests {
 						ir := &payload.Insert_Request{
 							Vector: &payload.Object_Vector{
@@ -6224,7 +6311,8 @@ func Test_server_MultiInsert(t *testing.T) {
 			}
 		}(),
 		func() test {
-			req := genMultiInsertReq(Float, vector.Gaussian, 100, f32VecDim)
+			insertNum := 100
+			req := genMultiInsertReq(Float, vector.Gaussian, insertNum, f32VecDim)
 
 			return test{
 				name: "Decision Table Testing case 5.1: Success to MultiInsert with 2 existed vector when SkipStrictExistCheck is false",
@@ -6266,7 +6354,8 @@ func Test_server_MultiInsert(t *testing.T) {
 			}
 		}(),
 		func() test {
-			req := genMultiInsertReq(Float, vector.Gaussian, 100, f32VecDim)
+			insertNum := 100
+			req := genMultiInsertReq(Float, vector.Gaussian, insertNum, f32VecDim)
 
 			return test{
 				name: "Decision Table Testing case 5.2: Success to MultiInsert with all existed vector when SkipStrictExistCheck is false",
@@ -6303,12 +6392,13 @@ func Test_server_MultiInsert(t *testing.T) {
 					}
 				},
 				want: want{
-					wantRes: genObjectLocations(100, name, ip),
+					wantRes: genObjectLocations(insertNum, name, ip),
 				},
 			}
 		}(),
 		func() test {
-			req := genMultiInsertReq(Float, vector.Gaussian, 100, f32VecDim)
+			insertNum := 100
+			req := genMultiInsertReq(Float, vector.Gaussian, insertNum, f32VecDim)
 
 			return test{
 				name: "Decision Table Testing case 5.3: Success to MultiInsert with 2 existed vector when SkipStrictExistCheck is true",
@@ -6345,12 +6435,13 @@ func Test_server_MultiInsert(t *testing.T) {
 					}
 				},
 				want: want{
-					wantRes: genObjectLocations(100, name, ip),
+					wantRes: genObjectLocations(insertNum, name, ip),
 				},
 			}
 		}(),
 		func() test {
-			req := genMultiInsertReq(Float, vector.Gaussian, 100, f32VecDim)
+			insertNum := 100
+			req := genMultiInsertReq(Float, vector.Gaussian, insertNum, f32VecDim)
 
 			return test{
 				name: "Decision Table Testing case 5.4: Success to MultiInsert with all existed vector when SkipStrictExistCheck is true",
@@ -6387,12 +6478,13 @@ func Test_server_MultiInsert(t *testing.T) {
 					}
 				},
 				want: want{
-					wantRes: genObjectLocations(100, name, ip),
+					wantRes: genObjectLocations(insertNum, name, ip),
 				},
 			}
 		}(),
 		func() test {
-			req := genMultiInsertReq(Float, vector.Gaussian, 100, f32VecDim)
+			insertNum := 100
+			req := genMultiInsertReq(Float, vector.Gaussian, insertNum, f32VecDim)
 
 			return test{
 				name: "Decision Table Testing case 6.1: Fail to MultiInsert with 2 existed ID & vector when SkipStrictExistCheck is false",
@@ -6431,7 +6523,8 @@ func Test_server_MultiInsert(t *testing.T) {
 			}
 		}(),
 		func() test {
-			req := genMultiInsertReq(Float, vector.Gaussian, 100, f32VecDim)
+			insertNum := 100
+			req := genMultiInsertReq(Float, vector.Gaussian, insertNum, f32VecDim)
 
 			return test{
 				name: "Decision Table Testingcase 6.2: Fail to MultiInsert with all existed ID & vector when SkipStrictExistCheck is false",
@@ -6469,7 +6562,8 @@ func Test_server_MultiInsert(t *testing.T) {
 			}
 		}(),
 		func() test {
-			req := genMultiInsertReq(Float, vector.Gaussian, 100, f32VecDim)
+			insertNum := 100
+			req := genMultiInsertReq(Float, vector.Gaussian, insertNum, f32VecDim)
 
 			return test{
 				name: "Decision Table Testing case 6.3: Fail to MultiInsert with 2 existed ID & vector when SkipStrictExistCheck is true",
@@ -6508,7 +6602,8 @@ func Test_server_MultiInsert(t *testing.T) {
 			}
 		}(),
 		func() test {
-			req := genMultiInsertReq(Float, vector.Gaussian, 100, f32VecDim)
+			insertNum := 100
+			req := genMultiInsertReq(Float, vector.Gaussian, insertNum, f32VecDim)
 
 			return test{
 				name: "Decision Table Testing case 6.4: Fail to MultiInsert with all existed ID & vector when SkipStrictExistCheck is true",
