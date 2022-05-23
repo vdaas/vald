@@ -26,7 +26,7 @@ func New(bo backoff.Backoff) metrics.Metric {
 	}
 }
 
-func (bm *backoffMetrics) Measurement(ctx context.Context) ([]metrics.Measurement, error) {
+func (*backoffMetrics) Measurement(_ context.Context) ([]metrics.Measurement, error) {
 	return []metrics.Measurement{}, nil
 }
 
