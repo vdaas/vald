@@ -23,7 +23,6 @@ import (
 	"context"
 	"encoding/json"
 	"flag"
-	"fmt"
 	"os"
 	"strconv"
 	"testing"
@@ -32,8 +31,11 @@ import (
 	"github.com/vdaas/vald-client-go/v1/payload"
 	"github.com/vdaas/vald-client-go/v1/vald"
 
+	"github.com/vdaas/vald/internal/core/algorithm"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/file"
+	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/log/logger"
 	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/test/data/vector"
@@ -42,12 +44,12 @@ import (
 	"google.golang.org/genproto/googleapis/rpc/code"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/keepalive"
+	"google.golang.org/grpc/status"
 )
 
 const (
-	maxBit                   = 32
-	vectorDimensionSizeLimit = 1<<32 - 1
-	id                       = "1"
+	maxBit = 32
+	id     = "1"
 )
 
 var (
@@ -60,6 +62,10 @@ var (
 	forwarder           *portforward.Portforward
 	indexingWaitSeconds uint
 	kubeConfig          string
+	pf                  bool
+	pfPodName           string
+	pfPodPort           int
+	fileName            string
 )
 
 func init() {
@@ -68,52 +74,60 @@ func init() {
 	flag.StringVar(&host, "host", "localhost", "hostname")
 	flag.IntVar(&port, "port", 8081, "gRPC port")
 	flag.StringVar(&namespace, "namespace", "default", "namespace")
-	flag.IntVar(&bit, "bit", 2, "bit")
+	flag.IntVar(&bit, "bit", 1, "bit")
 	flag.UintVar(&indexingWaitSeconds, "wait", 30, "indexing wait seconds")
 
-	pf := flag.Bool("portforward", false, "enable port forwarding")
-	pfPodName := flag.String("portforward-pod-name", "vald-lb-gateway", "pod name (only for port forward)")
-	pfPodPort := flag.Int("portforward-pod-port", port, "pod gRPC port (only for port forward)")
+	flag.BoolVar(&pf, "portforward", false, "enable port forwarding")
+	flag.StringVar(&pfPodName, "portforward-pod-name", "vald-lb-gateway", "pod name (only for port forward)")
+	flag.IntVar(&pfPodPort, "portforward-pod-port", port, "pod gRPC port (only for port forward)")
 
-	kubeConfig := flag.String("kubeconfig", file.Join(os.Getenv("HOME"), ".kube", "config"), "kubeconfig path")
+	flag.StringVar(&kubeConfig, "kubeconfig", file.Join(os.Getenv("HOME"), ".kube", "config"), "kubeconfig path")
 
 	flag.Parse()
-	var err error
-	if *pf {
-		kubeClient, err = client.New(*kubeConfig)
+}
+
+func TestMain(m *testing.M) {
+	log.Init(log.WithLoggerType(logger.NOP.String()))
+	var d []byte
+	err := os.WriteFile("./tmp.log", d, os.ModePerm)
+	if err != nil {
+		os.Exit(1)
+	}
+
+	if pf {
+		kubeClient, err = client.New(kubeConfig)
 		if err != nil {
-			panic(err)
+			os.WriteFile("./tmp.log", []byte(err.Error()), os.ModePerm)
+			os.Exit(1)
 		}
-
-		forwarder = kubeClient.Portforward(namespace, *pfPodName, port, *pfPodPort)
-
+		forwarder = kubeClient.Portforward(namespace, pfPodName, port, pfPodPort)
 		err = forwarder.Start()
 		if err != nil {
-			panic(err)
+			os.WriteFile("./tmp.log", []byte(err.Error()), os.ModePerm)
+			os.Exit(1)
 		}
 	}
 
 	if bit < 2 || maxBit < bit {
-		err := errors.New("Invalid argument: bit should be 2 ~ 32. set bit was " + strconv.Itoa(bit))
-		panic(err)
+		err = errors.New("Invalid argument: bit should be 0 ~ 32. set bit was " + strconv.Itoa(bit))
+		os.WriteFile("./tmp.log", []byte(err.Error()), os.ModePerm)
+		os.Exit(1)
 	}
-}
-
-func teardown() {
+	_ = m.Run()
 	if forwarder != nil {
 		forwarder.Close()
 	}
+	os.Exit(0)
 }
 
 func TestE2EInsertOnlyWithOneVectorAndSearch(t *testing.T) {
 	t.Helper()
-	t.Cleanup(teardown)
 	dim := 1 << bit
 	if bit == maxBit {
 		dim--
 	}
-	if dim > vectorDimensionSizeLimit {
-		t.Fatalf("Invalid argument: dimension should be equal or under than " + strconv.Itoa(vectorDimensionSizeLimit) + ". set dim was " + strconv.Itoa(dim))
+	if dim > algorithm.MaximumVectorDimensionSize {
+		t.Fatalf("Invalid argument: dimension should be equal or under than " + strconv.Itoa(algorithm.MaximumVectorDimensionSize) + ". set dim was " + strconv.Itoa(dim))
 	}
 	ctx := context.Background()
 	conn, err := grpc.DialContext(
@@ -149,9 +163,7 @@ func TestE2EInsertOnlyWithOneVectorAndSearch(t *testing.T) {
 	if err != nil {
 		st, _ := status.FromError(err)
 		if st.Code() == codes.Code(code.Code_RESOURCE_EXHAUSTED) {
-			// For checking code in the step of the github actions
-			fmt.Println("Code=" + st.Code().String())
-			// Output: Code=ResourceExhausted
+			os.WriteFile("./tmp.log", []byte(st.Code().String()), os.ModePerm)
 			return
 		}
 		t.Fatalf("TestE2EInsertOnlyWithOneVectorAndSearch\t Insert Error: %v", err)
@@ -177,9 +189,7 @@ func TestE2EInsertOnlyWithOneVectorAndSearch(t *testing.T) {
 			}
 			t.Logf("[Pass] SearchByID process (Bit = %d)", bit)
 			if string(b) != "" {
-				// For checking code in the step of the github actions
-				fmt.Println("Code=OK")
-				// Output: Code=OK
+				os.WriteFile("./tmp.log", []byte("OK"), os.ModePerm)
 				return
 			}
 		}

@@ -92,6 +92,8 @@ jobs:
           RELEASE=`helm list | grep vald | awk '{print $1}'`
           while [ $BIT -ne 32 ]; do
             echo "Start: Bit=${BIT}"
+            FILE="tmp.log"
+            touch ${FILE}
             DIM=$((1<<$BIT))
             if [ $BIT = "32" ]; then
               DIM=$(($DIM-1))
@@ -105,10 +107,11 @@ jobs:
             sleep 30
             kubectl wait --for=condition=Ready pod -l ${WAIT_FOR_SELECTOR} --timeout=${WAIT_FOR_TIMEOUT}
             POD_NAME=`kubectl get pods | grep vald-lb-gateway | awk '{print $1}'`
-            RES=`go test \
+            go test \
               -race \
               -v tests/e2e/performance/max_vector_dim_test.go \
               -tags "e2e" \
+              -file ${FILE} \
               -timeout 30m \
               -bit=${BIT} \
               -host=localhost \
@@ -116,23 +119,17 @@ jobs:
               -portforward \
               -portforward-pod-name=${POD_NAME} \
               -kubeconfig=${KUBECONFIG} \
-              -namespace=default`
-            echo "RES: ${RES}"
-            CODES=`echo ${RES} | tr " " "\n"`
-            CODE=""
-            for code in $CODES
-              do
-                if [[ $code == *"Code="* ]]; then
-                  CODE=$code
-                fi
-              done
-            if [ ${CODE} = "Code=ResourceExhausted" ]; then
+              -namespace=default
+            CODE=`cat ${FILE}`
+            if [ ${CODE} = "ResourceExhausted" ]; then
               echo "Finish: Bit=${BIT} with ${CODE[1]}"
               BIT=$(($BIT-1))
+              rm ${FILE}
               break;
             fi
-            if [ ${CODE} != "Code=OK" ]; then
-              echo "Finish: Bit=${BIT} with Error: ${RES}"
+            if [ ${CODE} != "OK" ]; then
+              echo "Finish: Bit=${BIT} with Error (please check log)"
+              rm ${FILE}
               break;
             fi
             echo "Finish: Bit=${BIT}"
