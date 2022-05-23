@@ -54,7 +54,7 @@ TENSORFLOW_C_VERSION := $(eval TENSORFLOW_C_VERSION := $(shell cat versions/TENS
 
 OPERATOR_SDK_VERSION := $(eval OPERATOR_SDK_VERSION := $(shell cat versions/OPERATOR_SDK_VERSION))$(OPERATOR_SDK_VERSION)
 
-KIND_VERSION         ?= v0.13.0
+KIND_VERSION         ?= v0.14.0
 HELM_VERSION         ?= v3.8.2
 HELM_DOCS_VERSION    ?= 1.10.0
 YQ_VERSION           ?= v4.25.1
