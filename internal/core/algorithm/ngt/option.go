@@ -27,6 +27,8 @@ import (
 	"strconv"
 
 	"github.com/kpango/fastime"
+	"github.com/vdaas/vald/hack/benchmark/internal/core/algorithm"
+	"github.com/vdaas/vald/internal/core/algorithm"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/strings"
 )
@@ -86,8 +88,8 @@ func WithBulkInsertChunkSize(size int) Option {
 // WithDimension represents the option to set the dimension for NGT.
 func WithDimension(size int) Option {
 	return func(n *ngt) error {
-		if size > VectorDimensionSizeLimit || size < minimumDimensionSize {
-			err := errors.ErrInvalidDimensionSize(size, VectorDimensionSizeLimit)
+		if size > algorithm.MaximumVectorDimensionSize || size < algorithm.MinimumVectorDimensionSize {
+			err := errors.ErrInvalidDimensionSize(size, algorithm.MaximumVectorDimensionSize)
 			return errors.NewErrCriticalOption("dimension", size, err)
 		}
 
