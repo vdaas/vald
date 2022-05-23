@@ -48,7 +48,7 @@ type backoff struct {
 // Backoff represents an interface to handle backoff operation.
 type Backoff interface {
 	Do(context.Context, func(ctx context.Context) (interface{}, bool, error)) (interface{}, error)
-	Metrics(ctx context.Context) map[string]uint32
+	Metrics(ctx context.Context) map[string]int
 	Close()
 }
 
@@ -154,10 +154,10 @@ func (b *backoff) addJitter(dur float64) float64 {
 	return dur + float64(rand.LimitedUint32(uint64(hd))) - hd
 }
 
-func (b *backoff) Metrics(ctx context.Context) (m map[string]uint32) {
+func (b *backoff) Metrics(ctx context.Context) (m map[string]int) {
 	b.metrics.Range(func(key, value any) bool {
 		b.metrics.Delete(key)
-		m[key.(string)] = value.(uint32)
+		m[key.(string)] = value.(int)
 		return true
 	})
 	return m
