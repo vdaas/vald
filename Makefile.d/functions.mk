@@ -24,10 +24,6 @@ define go-install
 	GO111MODULE=on go install $1@latest
 endef
 
-define go-get-no-mod
-	GO111MODULE=off go get -u $1
-endef
-
 define mkdir
 	mkdir -p $1
 endef
