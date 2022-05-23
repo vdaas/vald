@@ -34,6 +34,7 @@ var defaultOptions = []Option{
 	WithBackOffFactor(1.5),
 	WithRetryCount(50),
 	WithEnableErrorLog(),
+	WithDisableMetrics(),
 }
 
 // WithInitialDuration returns the option to set the initial duration of backoff.
@@ -111,5 +112,19 @@ func WithEnableErrorLog() Option {
 func WithDisableErrorLog() Option {
 	return func(b *backoff) {
 		b.errLog = false
+	}
+}
+
+// WithEnableMetrics returns the option to set the enable for backoff metrics.
+func WithEnableMetrics() Option {
+	return func(b *backoff) {
+		b.metricsEnabled = true
+	}
+}
+
+// WithDisableMetrics returns the option to set the disable for backoff metrics.
+func WithDisableMetrics() Option {
+	return func(b *backoff) {
+		b.metricsEnabled = false
 	}
 }

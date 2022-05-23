@@ -41,8 +41,8 @@ type backoff struct {
 	maxRetryCount         int
 	backoffTimeLimit      time.Duration
 	errLog                bool
-
-	metrics sync.Map
+	metricsEnabled        bool
+	metrics               sync.Map
 }
 
 // Backoff represents an interface to handle backoff operation.
@@ -125,7 +125,7 @@ func (b *backoff) Do(ctx context.Context, f func(ctx context.Context) (val inter
 				return f(ssctx)
 			}()
 
-			if svc := ctx.Value(serviceContextKey); svc != nil {
+			if svc := ctx.Value(serviceContextKey); svc != nil && b.metricsEnabled {
 				b.metrics.Store(svc.(string), cnt+1)
 			}
 
