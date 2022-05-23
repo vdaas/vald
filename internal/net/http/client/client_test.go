@@ -49,7 +49,7 @@ var (
 		comparator.AllowUnexported(http.Transport{}),
 		comparator.IgnoreFields(http.Transport{}, "idleLRU", "altProto", "TLSNextProto"),
 		comparator.Exporter(func(t reflect.Type) bool {
-			if t.Name() == "ert" || t.Name() == "backoff" {
+			if t.Name() == "ert" || t.Name() == "backoff" || t.Name() == "Map" {
 				return true
 			}
 			return false

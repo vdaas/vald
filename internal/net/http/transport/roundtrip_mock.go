@@ -29,12 +29,17 @@ func (rm *roundTripMock) RoundTrip(req *http.Request) (*http.Response, error) {
 }
 
 type backoffMock struct {
-	DoFunc    func(context.Context, func(context.Context) (interface{}, bool, error)) (interface{}, error)
-	CloseFunc func()
+	DoFunc      func(context.Context, func(context.Context) (interface{}, bool, error)) (interface{}, error)
+	MetricsFunc func(ctx context.Context) map[string]int
+	CloseFunc   func()
 }
 
 func (bm *backoffMock) Do(ctx context.Context, fn func(context.Context) (interface{}, bool, error)) (interface{}, error) {
 	return bm.DoFunc(ctx, fn)
+}
+
+func (bm *backoffMock) Metrics(ctx context.Context) map[string]int {
+	return bm.MetricsFunc(ctx)
 }
 
 func (bm *backoffMock) Close() {
