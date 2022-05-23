@@ -33,9 +33,9 @@ func (bm *backoffMetrics) Measurement(ctx context.Context) ([]metrics.Measuremen
 func (bm *backoffMetrics) MeasurementWithTags(ctx context.Context) (mts []metrics.MeasurementWithTags, err error) {
 	ms := bm.bo.Metrics(ctx)
 	mts = make([]metrics.MeasurementWithTags, 0, len(ms))
-	for svc, val := range ms {
+	for svc, cnt := range ms {
 		mts = append(mts, metrics.MeasurementWithTags{
-			Measurement: bm.retryCount.M(int64(val)),
+			Measurement: bm.retryCount.M(int64(cnt)),
 			Tags: map[metrics.Key]string{
 				serviceNameKey: svc,
 			},
