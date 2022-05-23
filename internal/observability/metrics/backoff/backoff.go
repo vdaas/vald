@@ -53,7 +53,7 @@ func (bm *backoffMetrics) View() []*metrics.View {
 			TagKeys: []metrics.Key{
 				serviceNameKey,
 			},
-			Aggregation: metrics.Count(),
+			Aggregation: metrics.LastValue(),
 		},
 	}
 }

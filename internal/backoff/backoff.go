@@ -54,6 +54,13 @@ type Backoff interface {
 
 const traceTag = "vald/internal/backoff/Backoff.Do/retry"
 
+var contextKey = struct{}{}
+
+// BackoffContextValue returns a copy of parent in which the value associated with key is svc.
+func BackoffContextValue(ctx context.Context, svc string) context.Context {
+	return context.WithValue(ctx, contextKey, svc)
+}
+
 // New creates the new backoff with option.
 func New(opts ...Option) Backoff {
 	b := new(backoff)
@@ -113,7 +120,10 @@ func (b *backoff) Do(ctx context.Context, f func(ctx context.Context) (val inter
 				}()
 				return f(ssctx)
 			}()
-			b.metrics.Store("", cnt+1) // TODO: add rpc name
+
+			if svc := ctx.Value(contextKey); svc != nil {
+				b.metrics.Store(svc.(string), cnt+1)
+			}
 
 			if !ret {
 				return res, err
