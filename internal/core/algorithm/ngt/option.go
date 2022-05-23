@@ -27,7 +27,6 @@ import (
 	"strconv"
 
 	"github.com/kpango/fastime"
-	"github.com/vdaas/vald/hack/benchmark/internal/core/algorithm"
 	"github.com/vdaas/vald/internal/core/algorithm"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/strings"
@@ -43,7 +42,7 @@ var (
 
 	defaultOptions = []Option{
 		WithIndexPath("/tmp/ngt-" + strconv.FormatInt(fastime.UnixNanoNow(), 10)),
-		WithDimension(minimumDimensionSize),
+		WithDimension(algorithm.MinimumVectorDimensionSize),
 		WithDefaultRadius(DefaultRadius),
 		WithDefaultEpsilon(DefaultEpsilon),
 		WithDefaultPoolSize(DefaultPoolSize),
