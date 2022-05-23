@@ -156,7 +156,7 @@ const (
 	// -------------------------------------------------------------
 	// dimension constraints
 	// -------------------------------------------------------------.
-	VectorDimensionSizeLimit = 1<<32 - 1
+	VectorDimensionSizeLimit = algorithm.MaximumVectorDimensionSize
 	minimumDimensionSize     = algorithm.MinimumVectorDimensionSize
 	// -------------------------------------------------------------.
 )
