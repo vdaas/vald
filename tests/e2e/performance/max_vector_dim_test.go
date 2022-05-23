@@ -75,6 +75,7 @@ func init() {
 	flag.StringVar(&namespace, "namespace", "default", "namespace")
 	flag.IntVar(&bit, "bit", 1, "bit")
 	flag.UintVar(&indexingWaitSeconds, "wait", 30, "indexing wait seconds")
+	flag.StringVar(&fileName, "file", "tmp.log", "output file name")
 
 	flag.BoolVar(&pf, "portforward", false, "enable port forwarding")
 	flag.StringVar(&pfPodName, "portforward-pod-name", "vald-lb-gateway", "pod name (only for port forward)")
@@ -88,7 +89,7 @@ func init() {
 func TestMain(m *testing.M) {
 	log.Init(log.WithLoggerType(logger.NOP.String()))
 	var d []byte
-	err := os.WriteFile("./tmp.log", d, os.ModePerm)
+	err := os.WriteFile(fileName, d, os.ModePerm)
 	if err != nil {
 		os.Exit(1)
 	}
@@ -96,20 +97,20 @@ func TestMain(m *testing.M) {
 	if pf {
 		kubeClient, err = client.New(kubeConfig)
 		if err != nil {
-			os.WriteFile("./tmp.log", []byte(err.Error()), os.ModePerm)
+			os.WriteFile(fileName, []byte(err.Error()), os.ModePerm)
 			os.Exit(1)
 		}
 		forwarder = kubeClient.Portforward(namespace, pfPodName, port, pfPodPort)
 		err = forwarder.Start()
 		if err != nil {
-			os.WriteFile("./tmp.log", []byte(err.Error()), os.ModePerm)
+			os.WriteFile(fileName, []byte(err.Error()), os.ModePerm)
 			os.Exit(1)
 		}
 	}
 
 	if bit < 2 || maxBit < bit {
 		err = errors.New("Invalid argument: bit should be 0 ~ 32. set bit was " + strconv.Itoa(bit))
-		os.WriteFile("./tmp.log", []byte(err.Error()), os.ModePerm)
+		os.WriteFile(fileName, []byte(err.Error()), os.ModePerm)
 		os.Exit(1)
 	}
 	_ = m.Run()
@@ -162,7 +163,7 @@ func TestE2EInsertOnlyWithOneVectorAndSearch(t *testing.T) {
 	if err != nil {
 		st, _ := status.FromError(err)
 		if st.Code() == codes.Code(code.Code_RESOURCE_EXHAUSTED) {
-			os.WriteFile("./tmp.log", []byte(st.Code().String()), os.ModePerm)
+			os.WriteFile(fileName, []byte(st.Code().String()), os.ModePerm)
 			return
 		}
 		t.Fatalf("TestE2EInsertOnlyWithOneVectorAndSearch\t Insert Error: %v", err)
@@ -188,7 +189,7 @@ func TestE2EInsertOnlyWithOneVectorAndSearch(t *testing.T) {
 			}
 			t.Logf("[Pass] SearchByID process (Bit = %d)", bit)
 			if string(b) != "" {
-				os.WriteFile("./tmp.log", []byte("OK"), os.ModePerm)
+				os.WriteFile(fileName, []byte("OK"), os.ModePerm)
 				return
 			}
 		}

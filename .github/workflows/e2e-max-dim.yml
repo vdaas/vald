@@ -121,13 +121,13 @@ jobs:
               -kubeconfig=${KUBECONFIG} \
               -namespace=default
             CODE=`cat ${FILE}`
-            if [ ${CODE} = "ResourceExhausted" ]; then
+            if [[ ${CODE} = *"ResourceExhausted"* ]]; then
               echo "Finish: Bit=${BIT} with ${CODE[1]}"
               BIT=$(($BIT-1))
               rm ${FILE}
               break;
             fi
-            if [ ${CODE} != "OK" ]; then
+            if [[ ${CODE} != "OK" ]]; then
               echo "Finish: Bit=${BIT} with Error (please check log)"
               rm ${FILE}
               break;
