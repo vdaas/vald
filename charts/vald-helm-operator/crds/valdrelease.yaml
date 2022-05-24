@@ -1224,6 +1224,8 @@ spec:
                                           type: string
                                         enable_error_log:
                                           type: boolean
+                                        enable_metrics:
+                                          type: boolean
                                         initial_duration:
                                           type: string
                                         jitter_limit:
@@ -1283,6 +1285,8 @@ spec:
                                 backoff_time_limit:
                                   type: string
                                 enable_error_log:
+                                  type: boolean
+                                enable_metrics:
                                   type: boolean
                                 initial_duration:
                                   type: string
@@ -2151,6 +2155,8 @@ spec:
                                 backoff_time_limit:
                                   type: string
                                 enable_error_log:
+                                  type: boolean
+                                enable_metrics:
                                   type: boolean
                                 initial_duration:
                                   type: string
@@ -4193,6 +4199,8 @@ spec:
                                           type: string
                                         enable_error_log:
                                           type: boolean
+                                        enable_metrics:
+                                          type: boolean
                                         initial_duration:
                                           type: string
                                         jitter_limit:
@@ -4357,6 +4365,8 @@ spec:
                                       type: string
                                     enable_error_log:
                                       type: boolean
+                                    enable_metrics:
+                                      type: boolean
                                     initial_duration:
                                       type: string
                                     jitter_limit:
@@ -4515,6 +4525,8 @@ spec:
                                         backoff_time_limit:
                                           type: string
                                         enable_error_log:
+                                          type: boolean
+                                        enable_metrics:
                                           type: boolean
                                         initial_duration:
                                           type: string
@@ -5648,6 +5660,8 @@ spec:
                                           type: string
                                         enable_error_log:
                                           type: boolean
+                                        enable_metrics:
+                                          type: boolean
                                         initial_duration:
                                           type: string
                                         jitter_limit:
@@ -5803,6 +5817,8 @@ spec:
                                         backoff_time_limit:
                                           type: string
                                         enable_error_log:
+                                          type: boolean
+                                        enable_metrics:
                                           type: boolean
                                         initial_duration:
                                           type: string
@@ -6956,6 +6972,8 @@ spec:
                                           type: string
                                         enable_error_log:
                                           type: boolean
+                                        enable_metrics:
+                                          type: boolean
                                         initial_duration:
                                           type: string
                                         jitter_limit:
@@ -7111,6 +7129,8 @@ spec:
                                         backoff_time_limit:
                                           type: string
                                         enable_error_log:
+                                          type: boolean
+                                        enable_metrics:
                                           type: boolean
                                         initial_duration:
                                           type: string
