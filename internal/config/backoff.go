@@ -28,6 +28,7 @@ type Backoff struct {
 	BackoffFactor    float64 `json:"backoff_factor"     yaml:"backoff_factor"`
 	RetryCount       int     `json:"retry_count"        yaml:"retry_count"`
 	EnableErrorLog   bool    `json:"enable_error_log"   yaml:"enable_error_log"`
+	EnableMetrics    bool    `json:"enable_metrics"     yaml:"enable_metrics"`
 }
 
 // Bind binds the actual data from the Backoff receiver fields.
@@ -54,6 +55,12 @@ func (b *Backoff) Opts() []backoff.Option {
 	if b.EnableErrorLog {
 		opts = append(opts,
 			backoff.WithEnableErrorLog(),
+		)
+	}
+
+	if b.EnableMetrics {
+		opts = append(opts,
+			backoff.WithEnableMetrics(),
 		)
 	}
 
