@@ -88,12 +88,7 @@ func init() {
 
 func TestMain(m *testing.M) {
 	log.Init(log.WithLoggerType(logger.NOP.String()))
-	var d []byte
-	err := os.WriteFile(fileName, d, os.ModePerm)
-	if err != nil {
-		os.Exit(1)
-	}
-
+	var err error
 	if pf {
 		kubeClient, err = client.New(kubeConfig)
 		if err != nil {
@@ -108,7 +103,7 @@ func TestMain(m *testing.M) {
 		}
 	}
 
-	if bit < 2 || maxBit < bit {
+	if bit < 1 || maxBit < bit {
 		err = errors.New("Invalid argument: bit should be 0 ~ 32. set bit was " + strconv.Itoa(bit))
 		os.WriteFile(fileName, []byte(err.Error()), os.ModePerm)
 		os.Exit(1)

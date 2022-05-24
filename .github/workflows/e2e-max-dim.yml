@@ -88,12 +88,13 @@ jobs:
           go version
           go get github.com/vdaas/vald-client-go/v1/payload
           go get github.com/vdaas/vald-client-go/v1/vald
-          BIT=2
+          BIT=1
           RELEASE=`helm list | grep vald | awk '{print $1}'`
           while [ $BIT -ne 32 ]; do
             echo "Start: Bit=${BIT}"
             FILE="tmp.log"
             touch ${FILE}
+            FILEPATH=`readlink -f ${FILE}`
             DIM=$((1<<$BIT))
             if [ $BIT = "32" ]; then
               DIM=$(($DIM-1))
@@ -111,7 +112,7 @@ jobs:
               -race \
               -v tests/e2e/performance/max_vector_dim_test.go \
               -tags "e2e" \
-              -file ${FILE} \
+              -file ${FILEPATH} \
               -timeout 30m \
               -bit=${BIT} \
               -host=localhost \
@@ -120,20 +121,21 @@ jobs:
               -portforward-pod-name=${POD_NAME} \
               -kubeconfig=${KUBECONFIG} \
               -namespace=default
-            CODE=`cat ${FILE}`
+            CODE=`sed -n 1P ${FILEPATH}`
             if [ ${CODE} = "ResourceExhausted" ]; then
-              echo "Finish: Bit=${BIT} with ${CODE[1]}"
+              echo "Finish: Bit=${BIT} with ${CODE}"
               BIT=$(($BIT-1))
-              rm ${FILE}
+              rm ${FILEPATH}
               break;
             fi
             if [ ${CODE} != "OK" ]; then
-              echo "Finish: Bit=${BIT} with Error (please check log)"
-              rm ${FILE}
+              echo "Finish: Bit=${BIT} with Error: ${CODE}"
+              rm ${FILEPATH}
               break;
             fi
             echo "Finish: Bit=${BIT}"
             BIT=$(($BIT+1))
+            rm ${FILEPATH}
           done
           echo "::set-output name=MAX_BIT::${BIT}"
           echo "MAX_BIT=${BIT}"
