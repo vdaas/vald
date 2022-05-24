@@ -671,6 +671,9 @@ defaults:
         # @schema {"name": "defaults.grpc.client.backoff.enable_error_log", "type": "boolean"}
         # defaults.grpc.client.backoff.enable_error_log -- gRPC client backoff log enabled
         enable_error_log: true
+        # @schema {"name": "defaults.grpc.client.backoff.enable_metrics", "type": "boolean"}
+        # defaults.grpc.client.backoff.enable_metrics -- gRPC client backoff metrics enabled
+        enable_metrics: false
       # @schema {"name": "defaults.grpc.client.call_option", "type": "object"}
       call_option:
         # @schema {"name": "defaults.grpc.client.wait_for_ready", "type": "boolean"}
