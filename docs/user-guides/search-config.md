@@ -78,13 +78,13 @@ Users can use it for, e.g., the error handling process.
 
 ### radius
 
-`radius`, the specific parameter for NGT, specifies the search range centered on the query vector in terms of the radius of a circle.
+`radius`, the specific parameter for NGT, specifies the search range centered on the query vector in terms of the radius of a sphere.
 The number of search target vectors increases along with the radius is large.
 There is a trade-off between accuracy and search speed.
-In many cases, it is hard to set it depending on dataset.
+It is hard to set it depending on the dataset in many cases.
 
-The default value is the infinite circle.
-When setting a negative number as `radius`, `NGT` applies the radius as an infinite circle.
+The default value is infinity.
+When setting a negative number as `radius`, `NGT` applies the radius as infinity.
 
 <div class="notice">
 NGT will self-update the radius during the search process.
@@ -96,8 +96,8 @@ NGT will self-update the radius during the search process.
 NGT will use `(1+epsilon)*radius` as the search range.
 The number of search target vectors increases along with the epsilon being large.
 
-
-The default value (recommend value) is 0.1.
+The default value is 0.1, and it may work in most cases.
+However, the appropriate value may vary depending on the dataset.
 While it is desirable to adjust this value within 0 - 0.3, it can also set a negative value (over than -1).
 
 ### ingress_filters
@@ -113,5 +113,5 @@ It requires the egress filter component's hostname and port.
 ### min_num
 
 `min_num` is the minimum number of search result you'd like to get at least.
-It helps you avoid getting the timeout error when the search process requires more time.
+It helps you avoid the timeout error when the search process requires more time.
 `min_num` should be a positive integer and smaller than `num`.
