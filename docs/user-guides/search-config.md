@@ -93,7 +93,7 @@ NGT will self-update the radius during the search process.
 ### epsilon
 
 `epsilon`, the specific parameter for NGT, specifies the search range's magnification coefficient (epsilon).
-NGT will use `(1+epsilon)*radius` as the search range.
+NGT will use `radius*(1+epsilon)` as the search range.
 The number of search target vectors increases along with the epsilon being large.
 
 The default value is 0.1, and it may work in most cases.
