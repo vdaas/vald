@@ -417,15 +417,6 @@ func Test_server_Exists(t *testing.T) {
 		return s, nil
 	}
 
-	utf8ToSjis := func(s string) string {
-		b, _ := ioutil.ReadAll(transform.NewReader(strings.NewReader(s), japanese.ShiftJIS.NewEncoder()))
-		return string(b)
-	}
-
-	utf8ToEucjp := func(s string) string {
-		b, _ := ioutil.ReadAll(transform.NewReader(strings.NewReader(s), japanese.EUCJP.NewEncoder()))
-		return string(b)
-	}
 	/*
 		Exists test cases (focus on ID(string), only test float32):
 		- Equivalence Class Testing ( 1000 vectors inserted before a search )
@@ -673,6 +664,30 @@ func Test_server_Exists(t *testing.T) {
 	}
 }
 
+func convertVectorUint8ToFloat32(vector []uint8) (ret []float32) {
+	ret = make([]float32, len(vector))
+	for i, e := range vector {
+		ret[i] = float32(e)
+	}
+	return
+}
+
+func convertVectorsUint8ToFloat32(vectors [][]uint8) (ret [][]float32) {
+	ret = make([][]float32, 0, len(vectors))
+	for _, v := range vectors {
+		ret = append(ret, convertVectorUint8ToFloat32(v))
+	}
+	return
+}
+
+func fill(f float32, dim int) (v []float32) {
+	v = make([]float32, dim)
+	for i := range v {
+		v[i] = f
+	}
+	return
+}
+
 func Test_server_Search(t *testing.T) {
 	t.Parallel()
 
@@ -764,20 +779,7 @@ func Test_server_Search(t *testing.T) {
 		}
 		return nil
 	}
-	convertVectorUint8ToFloat32 := func(vector []uint8) (ret []float32) {
-		ret = make([]float32, len(vector))
-		for i, e := range vector {
-			ret[i] = float32(e)
-		}
-		return
-	}
-	convertVectorsUint8ToFloat32 := func(vectors [][]uint8) (ret [][]float32) {
-		ret = make([][]float32, 0, len(vectors))
-		for _, v := range vectors {
-			ret = append(ret, convertVectorUint8ToFloat32(v))
-		}
-		return
-	}
+
 	ngtConfig := func(dim int, objectType string) *config.NGT {
 		return &config.NGT{
 			Dimension:        dim,
@@ -799,13 +801,6 @@ func Test_server_Search(t *testing.T) {
 		Radius:  -1,
 		Epsilon: 0.1,
 		Timeout: 1000000000,
-	}
-	fill := func(f float32) (v []float32) {
-		v = make([]float32, defaultDimensionSize)
-		for i := range v {
-			v[i] = f
-		}
-		return
 	}
 
 	/*
@@ -933,7 +928,7 @@ func Test_server_Search(t *testing.T) {
 				ctx:       ctx,
 				insertNum: 1000,
 				req: &payload.Search_Request{
-					Vector: fill(float32(uint8(0))),
+					Vector: fill(float32(uint8(0)), defaultDimensionSize),
 					Config: defaultSearch_Config,
 				},
 			},
@@ -953,7 +948,7 @@ func Test_server_Search(t *testing.T) {
 				ctx:       ctx,
 				insertNum: 1000,
 				req: &payload.Search_Request{
-					Vector: fill(+0.0),
+					Vector: fill(+0.0, defaultDimensionSize),
 					Config: defaultSearch_Config,
 				},
 			},
@@ -971,7 +966,7 @@ func Test_server_Search(t *testing.T) {
 				ctx:       ctx,
 				insertNum: 1000,
 				req: &payload.Search_Request{
-					Vector: fill(float32(math.Copysign(0, -1.0))),
+					Vector: fill(float32(math.Copysign(0, -1.0)), defaultDimensionSize),
 					Config: defaultSearch_Config,
 				},
 			},
@@ -989,7 +984,7 @@ func Test_server_Search(t *testing.T) {
 				ctx:       ctx,
 				insertNum: 1000,
 				req: &payload.Search_Request{
-					Vector: fill(float32(uint8(math.MaxUint8))),
+					Vector: fill(float32(math.MaxUint8), defaultDimensionSize),
 					Config: defaultSearch_Config,
 				},
 			},
@@ -1009,7 +1004,7 @@ func Test_server_Search(t *testing.T) {
 				ctx:       ctx,
 				insertNum: 1000,
 				req: &payload.Search_Request{
-					Vector: fill(math.MaxFloat32),
+					Vector: fill(math.MaxFloat32, defaultDimensionSize),
 					Config: defaultSearch_Config,
 				},
 			},
@@ -1028,7 +1023,7 @@ func Test_server_Search(t *testing.T) {
 				ctx:       ctx,
 				insertNum: 1000,
 				req: &payload.Search_Request{
-					Vector: fill(-math.MaxFloat32),
+					Vector: fill(-math.MaxFloat32, defaultDimensionSize),
 					Config: defaultSearch_Config,
 				},
 			},
@@ -1047,7 +1042,7 @@ func Test_server_Search(t *testing.T) {
 				ctx:       ctx,
 				insertNum: 1000,
 				req: &payload.Search_Request{
-					Vector: fill(float32(math.NaN())),
+					Vector: fill(float32(math.NaN()), defaultDimensionSize),
 					Config: defaultSearch_Config,
 				},
 			},
@@ -1066,7 +1061,7 @@ func Test_server_Search(t *testing.T) {
 				ctx:       ctx,
 				insertNum: 1000,
 				req: &payload.Search_Request{
-					Vector: fill(float32(math.Inf(+1.0))),
+					Vector: fill(float32(math.Inf(+1.0)), defaultDimensionSize),
 					Config: defaultSearch_Config,
 				},
 			},
@@ -1085,7 +1080,7 @@ func Test_server_Search(t *testing.T) {
 				ctx:       ctx,
 				insertNum: 1000,
 				req: &payload.Search_Request{
-					Vector: fill(float32(math.Inf(-1.0))),
+					Vector: fill(float32(math.Inf(-1.0)), defaultDimensionSize),
 					Config: defaultSearch_Config,
 				},
 			},
@@ -1514,6 +1509,16 @@ func Test_server_Search(t *testing.T) {
 	}
 }
 
+func utf8ToSjis(s string) string {
+	b, _ := ioutil.ReadAll(transform.NewReader(strings.NewReader(s), japanese.ShiftJIS.NewEncoder()))
+	return string(b)
+}
+
+func utf8ToEucjp(s string) string {
+	b, _ := ioutil.ReadAll(transform.NewReader(strings.NewReader(s), japanese.EUCJP.NewEncoder()))
+	return string(b)
+}
+
 func Test_server_SearchByID(t *testing.T) {
 	t.Parallel()
 
@@ -1609,16 +1614,6 @@ func Test_server_SearchByID(t *testing.T) {
 		Radius:  -1,
 		Epsilon: 0.1,
 		Timeout: 1000000000,
-	}
-
-	utf8ToSjis := func(s string) string {
-		b, _ := ioutil.ReadAll(transform.NewReader(strings.NewReader(s), japanese.ShiftJIS.NewEncoder()))
-		return string(b)
-	}
-
-	utf8ToEucjp := func(s string) string {
-		b, _ := ioutil.ReadAll(transform.NewReader(strings.NewReader(s), japanese.EUCJP.NewEncoder()))
-		return string(b)
 	}
 
 	/*
@@ -6699,81 +6694,851 @@ func Test_server_MultiInsert(t *testing.T) {
 
 func Test_server_Update(t *testing.T) {
 	t.Parallel()
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
 	type args struct {
-		ctx context.Context
-		req *payload.Update_Request
-	}
-	type fields struct {
-		name              string
-		ip                string
-		ngt               service.NGT
-		eg                errgroup.Group
-		streamConcurrency int
+		ctx         context.Context
+		indexId     string
+		indexVector []float32
+		req         *payload.Update_Request
 	}
 	type want struct {
-		wantRes *payload.Object_Location
-		err     error
+		code     codes.Code
+		wantUuid string
 	}
 	type test struct {
 		name       string
 		args       args
-		fields     fields
 		want       want
 		checkFunc  func(want, *payload.Object_Location, error) error
-		beforeFunc func(args)
+		beforeFunc func(args) (Server, error)
 		afterFunc  func(args)
 	}
 	defaultCheckFunc := func(w want, gotRes *payload.Object_Location, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-		}
-		if !reflect.DeepEqual(gotRes, w.wantRes) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
+		if err != nil {
+			st, ok := status.FromError(err)
+			if !ok {
+				errors.Errorf("got error cannot convert to Status: \"%#v\"", err)
+			}
+			if st.Code() != w.code {
+				return errors.Errorf("got code: \"%#v\",\n\t\t\t\twant code: \"%#v\"", st.Code(), w.code)
+			}
+		} else {
+			if uuid := gotRes.GetUuid(); w.wantUuid != uuid {
+				return errors.Errorf("got uuid: \"%#v\",\n\t\t\t\twant uuid: \"%#v\"", uuid, w.wantUuid)
+			}
 		}
 		return nil
 	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx: nil,
-		           req: nil,
-		       },
-		       fields: fields {
-		           name: "",
-		           ip: "",
-		           ngt: nil,
-		           eg: nil,
-		           streamConcurrency: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ctx: nil,
-		           req: nil,
-		           },
-		           fields: fields {
-		           name: "",
-		           ip: "",
-		           ngt: nil,
-		           eg: nil,
-		           streamConcurrency: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+	const (
+		insertNum = 1000
+		dimension = 128
+	)
+
+	defaultUpdateConfig := &payload.Update_Config{
+		SkipStrictExistCheck: true,
+	}
+	beforeFunc := func(objectType string) func(args) (Server, error) {
+		cfg := &config.NGT{
+			Dimension:        dimension,
+			DistanceType:     ngt.L2.String(),
+			ObjectType:       objectType,
+			CreationEdgeSize: 60,
+			SearchEdgeSize:   20,
+			KVSDB: &config.KVSDB{
+				Concurrency: 10,
+			},
+			VQueue: &config.VQueue{
+				InsertBufferPoolSize: 1000,
+				DeleteBufferPoolSize: 1000,
+			},
+		}
+		var gen func(int, int) [][]float32
+		switch objectType {
+		case ngt.Float.String():
+			gen = vector.GaussianDistributedFloat32VectorGenerator
+		case ngt.Uint8.String():
+			gen = func(n, dim int) [][]float32 {
+				return convertVectorsUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(n, dim))
+			}
+		}
+
+		return func(a args) (Server, error) {
+			eg, ctx := errgroup.New(a.ctx)
+			ngt, err := service.New(cfg, service.WithErrGroup(eg), service.WithEnableInMemoryMode(true))
+			if err != nil {
+				return nil, err
+			}
+
+			s, err := New(WithErrGroup(eg), WithNGT(ngt))
+			if err != nil {
+				return nil, err
+			}
+
+			// TODO: use genMultiInsertReq()
+			reqs := make([]*payload.Insert_Request, insertNum)
+			for i, v := range gen(insertNum, cfg.Dimension) {
+				reqs[i] = &payload.Insert_Request{
+					Vector: &payload.Object_Vector{
+						Id:     strconv.Itoa(i),
+						Vector: v,
+					},
+					Config: &payload.Insert_Config{
+						SkipStrictExistCheck: true,
+					},
+				}
+			}
+			reqs[0].Vector.Id = a.indexId
+			if a.indexVector != nil {
+				reqs[0].Vector.Vector = a.indexVector
+			}
+			if _, err := s.MultiInsert(ctx, &payload.Insert_MultiRequest{Requests: reqs}); err != nil {
+				return nil, err
+			}
+			if _, err := s.CreateIndex(ctx, &payload.Control_CreateIndexRequest{PoolSize: 100}); err != nil {
+				return nil, err
+			}
+			return s, nil
+		}
+	}
+
+	/*
+		Update test cases (only test float32 unless otherwise specified):
+		- Equivalence Class Testing ( 1000 vectors inserted before a update )
+			- case 1.1: success update one vector
+			- case 2.1: fail update with non-existent ID
+			- case 3.1: fail update with one different dimension vector (type: uint8)
+			- case 3.2: fail update with one different dimension vector (type: float32)
+		- Boundary Value Testing ( 1000 vectors inserted before a update )
+			- case 1.1: fail update with "" as ID
+			- case 2.1: success update with ^@ as ID
+			- case 2.2: success update with ^I as ID
+			- case 2.3: success update with ^J as ID
+			- case 2.4: success update with ^M as ID
+			- case 2.5: success update with ^[ as ID
+			- case 2.6: success update with ^? as ID
+			- case 3.1: success update with utf-8 ID from utf-8 index
+			- case 3.2: fail update with utf-8 ID from s-jis index
+			- case 3.3: fail update with utf-8 ID from euc-jp index
+			- case 3.4: fail update with s-jis ID from utf-8 index
+			- case 3.5: success update with s-jis ID from s-jis index
+			- case 3.6: fail update with s-jis ID from euc-jp index
+			- case 3.4: fail update with euc-jp ID from utf-8 index
+			- case 3.5: fail update with euc-jp ID from s-jis index
+			- case 3.6: success update with euc-jp ID from euc-jp index
+			- case 4.1: success update with 😀 as ID
+			- case 5.1: success update with one 0 value vector (type: uint8)
+			- case 5.2: success update with one +0 value vector (type: float32)
+			- case 5.3: success update with one -0 value vector (type: float32)
+			- case 6.1: success update with one min value vector (type: uint8)
+			- case 6.2: success update with one min value vector (type: float32)
+			- case 7.1: success update with one max value vector (type: uint8)
+			- case 7.2: success update with one max value vector (type: float32)
+			- case 8.1: success update with one NaN value vector (type: float32) // NOTE: To fix it, it is necessarry to check all of vector value
+			- case 9.1: success update with one +inf value vector (type: float32)
+			- case 9.2: success update with one -inf value vector (type: float32)
+			- case 10.1: fail update with one nil vector
+			- case 11.1: fail update with one empty vector
+		- Decision Table Testing
+			- case 1.1: fail update with one duplicated vector, duplicated ID and SkipStrictExistCheck is true
+			- case 1.2: success update with one different vector, duplicated ID and SkipStrictExistsCheck is true
+			- case 1.3: success update with one duplicated vector, different ID and SkipStrictExistCheck is true
+			- case 2.1: fail update with one duplicated vector, duplicated ID and SkipStrictExistCheck is false
+			- case 2.2: success update with one different vector, duplicated ID and SkipStrictExistsCheck is false
+			- case 2.3: success update with one duplicated vector, different ID and SkipStrictExistCheck is false
+	*/
+	tests := []test{
+		{
+			name: "Equivalent Class Testing case 1.1: success update one vector",
+			args: args{
+				ctx:     ctx,
+				indexId: "test",
+				req: &payload.Update_Request{
+					Vector: &payload.Object_Vector{
+						Id:     "test",
+						Vector: vector.GaussianDistributedFloat32VectorGenerator(1, dimension)[0],
+					},
+					Config: defaultUpdateConfig,
+				},
+			},
+			want: want{
+				wantUuid: "test",
+			},
+		},
+		{
+			name: "Equivalent Class Testing case 2.1: fail update with non-existent ID",
+			args: args{
+				ctx:     ctx,
+				indexId: "test",
+				req: &payload.Update_Request{
+					Vector: &payload.Object_Vector{
+						Id:     "non-existent",
+						Vector: vector.GaussianDistributedFloat32VectorGenerator(1, dimension)[0],
+					},
+					Config: defaultUpdateConfig,
+				},
+			},
+			want: want{
+				code: codes.NotFound,
+			},
+		},
+		{
+			name: "Equivalent Class Testing case 3.1: fail update with one different dimension vector (type: uint8)",
+			args: args{
+				ctx:     ctx,
+				indexId: "test",
+				req: &payload.Update_Request{
+					Vector: &payload.Object_Vector{
+						Id:     "test",
+						Vector: convertVectorUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, dimension+1)[0]),
+					},
+					Config: defaultUpdateConfig,
+				},
+			},
+			want: want{
+				code: codes.InvalidArgument,
+			},
+			beforeFunc: beforeFunc(ngt.Uint8.String()),
+		},
+		{
+			name: "Equivalent Class Testint case 3.2: fail update with one different dimension vector (type: float32)",
+			args: args{
+				ctx:     ctx,
+				indexId: "test",
+				req: &payload.Update_Request{
+					Vector: &payload.Object_Vector{
+						Id:     "test",
+						Vector: vector.GaussianDistributedFloat32VectorGenerator(1, dimension+1)[0],
+					},
+					Config: defaultUpdateConfig,
+				},
+			},
+			want: want{
+				code: codes.InvalidArgument,
+			},
+		},
+
+		{
+			name: "Boundary Value Testing case 1.1: fail update with \"\" as ID",
+			args: args{
+				ctx:     ctx,
+				indexId: "test",
+				req: &payload.Update_Request{
+					Vector: &payload.Object_Vector{
+						Id:     "",
+						Vector: vector.GaussianDistributedFloat32VectorGenerator(1, dimension)[0],
+					},
+					Config: defaultUpdateConfig,
+				},
+			},
+			want: want{
+				code: codes.InvalidArgument,
+			},
+		},
+		{
+			name: "Boundary Value Testing case 2.1: success update with ^@ as ID",
+			args: args{
+				ctx:     ctx,
+				indexId: string([]byte{0}),
+				req: &payload.Update_Request{
+					Vector: &payload.Object_Vector{
+						Id:     string([]byte{0}),
+						Vector: vector.GaussianDistributedFloat32VectorGenerator(1, dimension)[0],
+					},
+					Config: defaultUpdateConfig,
+				},
+			},
+			want: want{
+				wantUuid: string([]byte{0}),
+			},
+		},
+		{
+			name: "Boundary Value Testing case 2.2: success update with ^I as ID",
+			args: args{
+				ctx:     ctx,
+				indexId: "\t",
+				req: &payload.Update_Request{
+					Vector: &payload.Object_Vector{
+						Id:     "\t",
+						Vector: vector.GaussianDistributedFloat32VectorGenerator(1, dimension)[0],
+					},
+					Config: defaultUpdateConfig,
+				},
+			},
+			want: want{
+				wantUuid: "\t",
+			},
+		},
+		{
+			name: "Boundary Value Testing case 2.3: success update with ^J as ID",
+			args: args{
+				ctx:     ctx,
+				indexId: "\n",
+				req: &payload.Update_Request{
+					Vector: &payload.Object_Vector{
+						Id:     "\n",
+						Vector: vector.GaussianDistributedFloat32VectorGenerator(1, dimension)[0],
+					},
+					Config: defaultUpdateConfig,
+				},
+			},
+			want: want{
+				wantUuid: "\n",
+			},
+		},
+		{
+			name: "Boundary Value Testing case 2.4: success update with ^M as ID",
+			args: args{
+				ctx:     ctx,
+				indexId: "\r",
+				req: &payload.Update_Request{
+					Vector: &payload.Object_Vector{
+						Id:     "\r",
+						Vector: vector.GaussianDistributedFloat32VectorGenerator(1, dimension)[0],
+					},
+					Config: defaultUpdateConfig,
+				},
+			},
+			want: want{
+				wantUuid: "\r",
+			},
+		},
+		{
+			name: "Boundary Value Testing case 2.5: success update with ^[ as ID",
+			args: args{
+				ctx:     ctx,
+				indexId: string([]byte{27}),
+				req: &payload.Update_Request{
+					Vector: &payload.Object_Vector{
+						Id:     string([]byte{27}),
+						Vector: vector.GaussianDistributedFloat32VectorGenerator(1, dimension)[0],
+					},
+					Config: defaultUpdateConfig,
+				},
+			},
+			want: want{
+				wantUuid: string([]byte{27}),
+			},
+		},
+		{
+			name: "Boundary Value Testing case 2.6: success update with ^? as ID",
+			args: args{
+				ctx:     ctx,
+				indexId: string([]byte{127}),
+				req: &payload.Update_Request{
+					Vector: &payload.Object_Vector{
+						Id:     string([]byte{127}),
+						Vector: vector.GaussianDistributedFloat32VectorGenerator(1, dimension)[0],
+					},
+					Config: defaultUpdateConfig,
+				},
+			},
+			want: want{
+				wantUuid: string([]byte{127}),
+			},
+		},
+		{
+			name: "Boundary Value Testing case 3.1: success update with utf-8 ID from utf-8 index",
+			args: args{
+				ctx:     ctx,
+				indexId: "こんにちは",
+				req: &payload.Update_Request{
+					Vector: &payload.Object_Vector{
+						Id:     "こんにちは",
+						Vector: vector.GaussianDistributedFloat32VectorGenerator(1, dimension)[0],
+					},
+					Config: defaultUpdateConfig,
+				},
+			},
+			want: want{
+				wantUuid: "こんにちは",
+			},
+		},
+		{
+			name: "Boundary Value Testing case 3.2: success update with utf-8 ID from s-jis index",
+			args: args{
+				ctx:     ctx,
+				indexId: utf8ToSjis("こんにちは"),
+				req: &payload.Update_Request{
+					Vector: &payload.Object_Vector{
+						Id:     "こんにちは",
+						Vector: vector.GaussianDistributedFloat32VectorGenerator(1, dimension)[0],
+					},
+					Config: defaultUpdateConfig,
+				},
+			},
+			want: want{
+				code: codes.NotFound,
+			},
+		},
+		{
+			name: "Boundary Value Testing case 3.3: success update with utf-8 ID from euc-jp index",
+			args: args{
+				ctx:     ctx,
+				indexId: utf8ToEucjp("こんにちは"),
+				req: &payload.Update_Request{
+					Vector: &payload.Object_Vector{
+						Id:     "こんにちは",
+						Vector: vector.GaussianDistributedFloat32VectorGenerator(1, dimension)[0],
+					},
+					Config: defaultUpdateConfig,
+				},
+			},
+			want: want{
+				code: codes.NotFound,
+			},
+		},
+		{
+			name: "Boundary Value Testing case 3.4: fail update with s-jis ID from utf-8 index",
+			args: args{
+				ctx:     ctx,
+				indexId: "こんにちは",
+				req: &payload.Update_Request{
+					Vector: &payload.Object_Vector{
+						Id:     utf8ToSjis("こんにちは"),
+						Vector: vector.GaussianDistributedFloat32VectorGenerator(1, dimension)[0],
+					},
+					Config: defaultUpdateConfig,
+				},
+			},
+			want: want{
+				code: codes.NotFound,
+			},
+		},
+		{
+			name: "Boundary Value Testing case 3.5: success update with s-jis ID from s-jis index",
+			args: args{
+				ctx:     ctx,
+				indexId: utf8ToSjis("こんにちは"),
+				req: &payload.Update_Request{
+					Vector: &payload.Object_Vector{
+						Id:     utf8ToSjis("こんにちは"),
+						Vector: vector.GaussianDistributedFloat32VectorGenerator(1, dimension)[0],
+					},
+					Config: defaultUpdateConfig,
+				},
+			},
+			want: want{
+				wantUuid: utf8ToSjis("こんにちは"),
+			},
+		},
+		{
+			name: "Boundary Value Testing case 3.6: fail update with s-jis ID from euc-jp index",
+			args: args{
+				ctx:     ctx,
+				indexId: utf8ToEucjp("こんにちは"),
+				req: &payload.Update_Request{
+					Vector: &payload.Object_Vector{
+						Id:     utf8ToSjis("こんにちは"),
+						Vector: vector.GaussianDistributedFloat32VectorGenerator(1, dimension)[0],
+					},
+					Config: defaultUpdateConfig,
+				},
+			},
+			want: want{
+				code: codes.NotFound,
+			},
+		},
+		{
+			name: "Boundary Value Testing case 3.7: fail update with euc-jp ID from utf-8 index",
+			args: args{
+				ctx:     ctx,
+				indexId: "こんにちは",
+				req: &payload.Update_Request{
+					Vector: &payload.Object_Vector{
+						Id:     utf8ToEucjp("こんにちは"),
+						Vector: vector.GaussianDistributedFloat32VectorGenerator(1, dimension)[0],
+					},
+					Config: defaultUpdateConfig,
+				},
+			},
+			want: want{
+				code: codes.NotFound,
+			},
+		},
+		{
+			name: "Boundary Value Testing case 3.8: fail update with euc-jp ID from s-jis index",
+			args: args{
+				ctx:     ctx,
+				indexId: utf8ToSjis("こんにちは"),
+				req: &payload.Update_Request{
+					Vector: &payload.Object_Vector{
+						Id:     utf8ToEucjp("こんにちは"),
+						Vector: vector.GaussianDistributedFloat32VectorGenerator(1, dimension)[0],
+					},
+					Config: defaultUpdateConfig,
+				},
+			},
+			want: want{
+				code: codes.NotFound,
+			},
+		},
+		{
+			name: "Boundary Value Testing case 3.9: success update with euc-jp ID from euc-jp index",
+			args: args{
+				ctx:     ctx,
+				indexId: utf8ToEucjp("こんにちは"),
+				req: &payload.Update_Request{
+					Vector: &payload.Object_Vector{
+						Id:     utf8ToEucjp("こんにちは"),
+						Vector: vector.GaussianDistributedFloat32VectorGenerator(1, dimension)[0],
+					},
+					Config: defaultUpdateConfig,
+				},
+			},
+			want: want{
+				wantUuid: utf8ToEucjp("こんにちは"),
+			},
+		},
+		{
+			name: "Boundary Value Testing case 4.1: success update with 😀 as ID",
+			args: args{
+				ctx:     ctx,
+				indexId: "😀",
+				req: &payload.Update_Request{
+					Vector: &payload.Object_Vector{
+						Id:     "😀",
+						Vector: vector.GaussianDistributedFloat32VectorGenerator(1, dimension)[0],
+					},
+					Config: defaultUpdateConfig,
+				},
+			},
+			want: want{
+				wantUuid: "😀",
+			},
+		},
+		{
+			name: "Boundary Value Testing case 5.1: success update with one 0 value vector (type: uint8)",
+			args: args{
+				ctx:     ctx,
+				indexId: "test",
+				req: &payload.Update_Request{
+					Vector: &payload.Object_Vector{
+						Id:     "test",
+						Vector: fill(float32(uint8(0)), dimension),
+					},
+					Config: defaultUpdateConfig,
+				},
+			},
+			want: want{
+				wantUuid: "test",
+			},
+		},
+		{
+			name: "Boundary Value Testing case 5.2: success update with one +0 value vector (type: float32)",
+			args: args{
+				ctx:     ctx,
+				indexId: "test",
+				req: &payload.Update_Request{
+					Vector: &payload.Object_Vector{
+						Id:     "test",
+						Vector: fill(0, dimension),
+					},
+					Config: defaultUpdateConfig,
+				},
+			},
+			want: want{
+				wantUuid: "test",
+			},
+		},
+		{
+			name: "Boundary Value Testing case 5.3: success update with one -0 value vector (type: float32)",
+			args: args{
+				ctx:     ctx,
+				indexId: "test",
+				req: &payload.Update_Request{
+					Vector: &payload.Object_Vector{
+						Id:     "test",
+						Vector: fill(float32(math.Copysign(0, -1.0)), dimension),
+					},
+					Config: defaultUpdateConfig,
+				},
+			},
+			want: want{
+				wantUuid: "test",
+			},
+		},
+		{
+			name: "Boundary Value Testing case 6.1: success update with one min value vector (type: uint8)",
+			args: args{
+				ctx:     ctx,
+				indexId: "test",
+				req: &payload.Update_Request{
+					Vector: &payload.Object_Vector{
+						Id:     "test",
+						Vector: fill(float32(uint8(0)), dimension),
+					},
+					Config: defaultUpdateConfig,
+				},
+			},
+			want: want{
+				wantUuid: "test",
+			},
+		},
+		{
+			name: "Boundary Value Testing case 6.2: success update with one min value vector (type: float32)",
+			args: args{
+				ctx:     ctx,
+				indexId: "test",
+				req: &payload.Update_Request{
+					Vector: &payload.Object_Vector{
+						Id:     "test",
+						Vector: fill(-math.MaxFloat32, dimension),
+					},
+					Config: defaultUpdateConfig,
+				},
+			},
+			want: want{
+				wantUuid: "test",
+			},
+		},
+		{
+			name: "Boundary Value Testing case 7.1: success update with one max value vector (type: uint8)",
+			args: args{
+				ctx:     ctx,
+				indexId: "test",
+				req: &payload.Update_Request{
+					Vector: &payload.Object_Vector{
+						Id:     "test",
+						Vector: fill(float32(math.MaxUint8), dimension),
+					},
+					Config: defaultUpdateConfig,
+				},
+			},
+			want: want{
+				wantUuid: "test",
+			},
+		},
+		{
+			name: "Boundary Value Testing case 7.2: success update with one max value vector (type: float32)",
+			args: args{
+				ctx:     ctx,
+				indexId: "test",
+				req: &payload.Update_Request{
+					Vector: &payload.Object_Vector{
+						Id:     "test",
+						Vector: fill(math.MaxFloat32, dimension),
+					},
+					Config: defaultUpdateConfig,
+				},
+			},
+			want: want{
+				wantUuid: "test",
+			},
+		},
+		{
+			name: "Boundary Value Testing case 8.1: success update with one NaN value vector (type: float32)",
+			args: args{
+				ctx:     ctx,
+				indexId: "test",
+				req: &payload.Update_Request{
+					Vector: &payload.Object_Vector{
+						Id:     "test",
+						Vector: fill(float32(math.NaN()), dimension),
+					},
+					Config: defaultUpdateConfig,
+				},
+			},
+			want: want{
+				wantUuid: "test",
+			},
+		},
+		{
+			name: "Boundary Value Testing case 9.1: success update with one +inf value vector (type: float32)",
+			args: args{
+				ctx:     ctx,
+				indexId: "test",
+				req: &payload.Update_Request{
+					Vector: &payload.Object_Vector{
+						Id:     "test",
+						Vector: fill(float32(math.Inf(1.0)), dimension),
+					},
+					Config: defaultUpdateConfig,
+				},
+			},
+			want: want{
+				wantUuid: "test",
+			},
+		},
+		{
+			name: "Boundary Value Testing case 9.2: success update with one -inf value vector (type: float32)",
+			args: args{
+				ctx:     ctx,
+				indexId: "test",
+				req: &payload.Update_Request{
+					Vector: &payload.Object_Vector{
+						Id:     "test",
+						Vector: fill(float32(math.Inf(-1.0)), dimension),
+					},
+					Config: defaultUpdateConfig,
+				},
+			},
+			want: want{
+				wantUuid: "test",
+			},
+		},
+		{
+			name: "Boundary Value Testing case 10.1: fail update with one nil vector",
+			args: args{
+				ctx:     ctx,
+				indexId: "test",
+				req: &payload.Update_Request{
+					Vector: &payload.Object_Vector{
+						Id:     "test",
+						Vector: nil,
+					},
+					Config: defaultUpdateConfig,
+				},
+			},
+			want: want{
+				code: codes.InvalidArgument,
+			},
+		},
+		{
+			name: "Boundary Value Testing case 11.1: fail update with one empty vector",
+			args: args{
+				ctx:     ctx,
+				indexId: "test",
+				req: &payload.Update_Request{
+					Vector: &payload.Object_Vector{
+						Id:     "test",
+						Vector: []float32{},
+					},
+					Config: defaultUpdateConfig,
+				},
+			},
+			want: want{
+				code: codes.InvalidArgument,
+			},
+		},
+
+		{
+			name: "Decision Table Testing case 1.1: fail update with one duplicated vector, duplicated ID and SkipStrictExistCheck is true",
+			args: func() args {
+				vector := vector.GaussianDistributedFloat32VectorGenerator(1, dimension)[0]
+				return args{
+					ctx:         ctx,
+					indexId:     "test",
+					indexVector: vector,
+					req: &payload.Update_Request{
+						Vector: &payload.Object_Vector{
+							Id:     "test",
+							Vector: vector,
+						},
+						Config: defaultUpdateConfig,
+					},
+				}
+			}(),
+			want: want{
+				code: codes.AlreadyExists,
+			},
+		},
+		{
+			name: "Decision Table Testing case 1.2: success update with one different vector, duplicated ID and SkipStrictExistCheck is true",
+			args: args{
+				ctx:     ctx,
+				indexId: "test",
+				req: &payload.Update_Request{
+					Vector: &payload.Object_Vector{
+						Id:     "test",
+						Vector: vector.GaussianDistributedFloat32VectorGenerator(1, dimension)[0],
+					},
+					Config: defaultUpdateConfig,
+				},
+			},
+			want: want{
+				wantUuid: "test",
+			},
+		},
+		{
+			name: "Decision Table Testing case 1.3: success update with one duplicated vector, different ID and SkipStrictExistCheck is true",
+			args: func() args {
+				vector := vector.GaussianDistributedFloat32VectorGenerator(1, dimension)[0]
+				return args{
+					ctx:         ctx,
+					indexId:     "test",
+					indexVector: vector,
+					req: &payload.Update_Request{
+						Vector: &payload.Object_Vector{
+							Id:     "1",
+							Vector: vector,
+						},
+						Config: defaultUpdateConfig,
+					},
+				}
+			}(),
+			want: want{
+				wantUuid: "1",
+			},
+		},
+		{
+			name: "Decision Table Testing case 2.1: fail update with one duplicated vector, duplicated ID and SkipStrictExistCheck is false",
+			args: func() args {
+				vector := vector.GaussianDistributedFloat32VectorGenerator(1, dimension)[0]
+				return args{
+					ctx:         ctx,
+					indexId:     "test",
+					indexVector: vector,
+					req: &payload.Update_Request{
+						Vector: &payload.Object_Vector{
+							Id:     "test",
+							Vector: vector,
+						},
+						Config: &payload.Update_Config{
+							SkipStrictExistCheck: false,
+						},
+					},
+				}
+			}(),
+			want: want{
+				code: codes.AlreadyExists,
+			},
+		},
+		{
+			name: "Decision Table Testing case 2.2: success update with one duplicated vector, duplicated ID and SkipStrictExistCheck is false",
+			args: args{
+				ctx:     ctx,
+				indexId: "test",
+				req: &payload.Update_Request{
+					Vector: &payload.Object_Vector{
+						Id:     "test",
+						Vector: vector.GaussianDistributedFloat32VectorGenerator(1, dimension)[0],
+					},
+					Config: &payload.Update_Config{
+						SkipStrictExistCheck: false,
+					},
+				},
+			},
+			want: want{
+				wantUuid: "test",
+			},
+		},
+		{
+			name: "Decision Table Testing case 2.3: success update with one duplicated vector, different ID and SkipStrictExistCheck is false",
+			args: func() args {
+				vector := vector.GaussianDistributedFloat32VectorGenerator(1, dimension)[0]
+				return args{
+					ctx:         ctx,
+					indexId:     "test",
+					indexVector: vector,
+					req: &payload.Update_Request{
+						Vector: &payload.Object_Vector{
+							Id:     "1",
+							Vector: vector,
+						},
+						Config: &payload.Update_Config{
+							SkipStrictExistCheck: false,
+						},
+					},
+				}
+			}(),
+			want: want{
+				wantUuid: "1",
+			},
+		},
 	}
 
 	for _, tc := range tests {
@@ -6781,8 +7546,12 @@ func Test_server_Update(t *testing.T) {
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+			if test.beforeFunc == nil {
+				test.beforeFunc = beforeFunc(ngt.Float.String())
+			}
+			s, err := test.beforeFunc(test.args)
+			if err != nil {
+				tt.Errorf("error = %v", err)
 			}
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
@@ -6790,13 +7559,6 @@ func Test_server_Update(t *testing.T) {
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
-			}
-			s := &server{
-				name:              test.fields.name,
-				ip:                test.fields.ip,
-				ngt:               test.fields.ngt,
-				eg:                test.fields.eg,
-				streamConcurrency: test.fields.streamConcurrency,
 			}
 
 			gotRes, err := s.Update(test.args.ctx, test.args.req)
