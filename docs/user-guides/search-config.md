@@ -8,7 +8,7 @@ Vald provides the two types of search services.
 
 1. Search
 
-   - `Search` is just the `ANN(Approximate Nearest Neighbor)` search with query vector.
+   - `Search` is the `ANN(Approximate Nearest Neighbor)` search with query vector.
      It is a fast search even though the vector consists large dimension.
      The search duration is quick but less accurate than `LinearSearch`.
      The search algorithm depends on each core algorithm.
