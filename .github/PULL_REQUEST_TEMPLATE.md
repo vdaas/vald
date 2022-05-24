@@ -24,7 +24,7 @@
 - Go Version: 1.18.2
 - Docker Version: 20.10.8
 - Kubernetes Version: 1.22.0
-- NGT Version: 1.14.3
+- NGT Version: 1.14.5
 
 ### Types of changes:
 
