@@ -26,6 +26,7 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/vdaas/vald/internal/core/algorithm"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/file"
 	"github.com/vdaas/vald/internal/log"
@@ -183,7 +184,7 @@ func TestNew(t *testing.T) {
 				},
 			},
 			want: want{
-				err: errors.NewErrCriticalOption("dimension", 1, errors.ErrInvalidDimensionSize(1, VectorDimensionSizeLimit)),
+				err: errors.NewErrCriticalOption("dimension", 1, errors.ErrInvalidDimensionSize(1, algorithm.MaximumVectorDimensionSize)),
 			},
 		},
 	}
@@ -761,7 +762,7 @@ func Test_gen(t *testing.T) {
 				},
 			},
 			want: want{
-				err: errors.NewErrCriticalOption("dimension", 1, errors.ErrInvalidDimensionSize(1, VectorDimensionSizeLimit)),
+				err: errors.NewErrCriticalOption("dimension", 1, errors.ErrInvalidDimensionSize(1, algorithm.MaximumVectorDimensionSize)),
 			},
 		},
 	}
