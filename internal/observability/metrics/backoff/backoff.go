@@ -7,9 +7,7 @@ import (
 	"github.com/vdaas/vald/internal/observability/metrics"
 )
 
-var (
-	serviceNameKey = metrics.MustNewKey("grpc_service")
-)
+var serviceNameKey = metrics.MustNewKey("grpc_service")
 
 type backoffMetrics struct {
 	bo         backoff.Backoff
@@ -30,9 +28,9 @@ func (*backoffMetrics) Measurement(_ context.Context) ([]metrics.Measurement, er
 	return []metrics.Measurement{}, nil
 }
 
-func (bm *backoffMetrics) MeasurementWithTags(ctx context.Context) (mts []metrics.MeasurementWithTags, err error) {
+func (bm *backoffMetrics) MeasurementWithTags(ctx context.Context) ([]metrics.MeasurementWithTags, error) {
 	ms := bm.bo.Metrics(ctx)
-	mts = make([]metrics.MeasurementWithTags, 0, len(ms))
+	mts := make([]metrics.MeasurementWithTags, 0, len(ms))
 	for svc, cnt := range ms {
 		mts = append(mts, metrics.MeasurementWithTags{
 			Measurement: bm.retryCount.M(int64(cnt)),
