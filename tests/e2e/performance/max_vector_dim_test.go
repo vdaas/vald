@@ -1,6 +1,7 @@
 //go:build e2e
 // +build e2e
 
+//
 // Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -30,7 +31,6 @@ import (
 
 	"github.com/vdaas/vald-client-go/v1/payload"
 	"github.com/vdaas/vald-client-go/v1/vald"
-
 	"github.com/vdaas/vald/internal/core/algorithm"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/file"
