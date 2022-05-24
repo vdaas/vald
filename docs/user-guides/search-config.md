@@ -4,7 +4,7 @@
 
 <!-- Describe vald search service: search, searchbyid, linearsearch, lineasearchbyid ... -->
 
-Vald provides the two types of search services.
+Vald provides the four types of search services.
 
 1. Search
 
@@ -15,7 +15,7 @@ Vald provides the two types of search services.
 
 1. SearchById
 
-   - `SearchById` is just the `ANN(Approximate Nearest Neighbor)` search with the vector's id.
+   - `SearchById` is just the `ANN(Approximate Nearest Neighbor)` search with the stored vector's id.
      The id should already exist in the NGT indexes before the search process.
      The search algorithm is the same as `Search`.
 
