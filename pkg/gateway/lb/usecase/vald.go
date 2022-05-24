@@ -26,6 +26,7 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/grpc/metric"
 	"github.com/vdaas/vald/internal/observability"
+	backoffmetrics "github.com/vdaas/vald/internal/observability/metrics/backoff"
 	"github.com/vdaas/vald/internal/runner"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/servers/server"
@@ -67,7 +68,19 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 
 	var obs observability.Observability
 	if cfg.Observability.Enabled {
-		obs, err = observability.NewWithConfig(cfg.Observability)
+		cBoMetrics, err := backoffmetrics.New(nil) // TODO: add backoff object
+		if err != nil {
+			return nil, err
+		}
+		acBoMetrics, err := backoffmetrics.New(nil) // TODO: add backoff object
+		if err != nil {
+			return nil, err
+		}
+		obs, err = observability.NewWithConfig(
+			cfg.Observability,
+			cBoMetrics,
+			acBoMetrics,
+		)
 		if err != nil {
 			return nil, err
 		}

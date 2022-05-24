@@ -57,12 +57,12 @@ type contextKey string
 const (
 	traceTag = "vald/internal/backoff/Backoff.Do/retry"
 
-	serviceContextKey contextKey = "service"
+	nameContextKey contextKey = "backoff_name"
 )
 
-// WithServiceContext returns a copy of parent in which the value associated with key (serviceContextKey).
-func WithServiceContext(ctx context.Context, svc string) context.Context {
-	return context.WithValue(ctx, serviceContextKey, svc)
+// NameContext returns a copy of parent in which the name associated with key (nameContextKey).
+func NameContext(ctx context.Context, name string) context.Context {
+	return context.WithValue(ctx, nameContextKey, name)
 }
 
 // New creates the new backoff with option.
@@ -125,8 +125,8 @@ func (b *backoff) Do(ctx context.Context, f func(ctx context.Context) (val inter
 				return f(ssctx)
 			}()
 
-			if svc := ctx.Value(serviceContextKey); svc != nil && b.metricsEnabled {
-				b.metrics.Store(svc.(string), cnt+1)
+			if name := ctx.Value(nameContextKey); name != nil && b.metricsEnabled {
+				b.metrics.Store(name.(string), cnt+1)
 			}
 
 			if !ret {
@@ -169,6 +169,7 @@ func (b *backoff) addJitter(dur float64) float64 {
 }
 
 func (b *backoff) Metrics(_ context.Context) (m map[string]int) {
+	m = make(map[string]int)
 	b.metrics.Range(func(key, value any) bool {
 		b.metrics.Delete(key)
 		m[key.(string)] = value.(int)
