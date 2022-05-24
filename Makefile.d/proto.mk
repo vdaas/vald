@@ -43,7 +43,6 @@ proto/paths/print:
 .PHONY: proto/deps
 ## install protobuf dependencies
 proto/deps: \
-	$(GOPATH)/bin/google.golang.org/genproto \
 	$(GOPATH)/bin/protoc-gen-doc \
 	$(GOPATH)/bin/protoc-gen-go \
 	$(GOPATH)/bin/protoc-gen-go-grpc \
@@ -103,9 +102,6 @@ $(GOPATH)/src/google.golang.org/genproto:
 		--depth 1 \
 		https://github.com/googleapis/go-genproto \
 		$(GOPATH)/src/google.golang.org/genproto
-
-$(GOPATH)/bin/google.golang.org/genproto:
-	$(call go-get-no-mod, google.golang.org/genproto/...)
 
 $(GOPATH)/bin/protoc-gen-go:
 	$(call go-install, google.golang.org/protobuf/cmd/protoc-gen-go)

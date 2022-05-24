@@ -74,6 +74,33 @@ func (s *server) Exists(ctx context.Context, meta *payload.Object_ID) (id *paylo
 			span.End()
 		}
 	}()
+
+	uuid := meta.GetId()
+	if len(uuid) == 0 {
+		err = errors.ErrInvalidUUID(uuid)
+		err = status.WrapWithInvalidArgument(fmt.Sprintf("Exists API invalid argument for uuid \"%s\" detected", uuid), err,
+			&errdetails.RequestInfo{
+				RequestId:   uuid,
+				ServingData: errdetails.Serialize(meta),
+			},
+			&errdetails.BadRequest{
+				FieldViolations: []*errdetails.BadRequestFieldViolation{
+					{
+						Field:       "uuid",
+						Description: err.Error(),
+					},
+				},
+			},
+			&errdetails.ResourceInfo{
+				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.Exists",
+				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+			})
+		log.Warn(err)
+		if span != nil {
+			span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
+		}
+		return nil, err
+	}
 	ich := make(chan *payload.Object_ID, 1)
 	ech := make(chan error, 1)
 	s.eg.Go(func() error {
@@ -90,7 +117,7 @@ func (s *server) Exists(ctx context.Context, meta *payload.Object_ID) (id *paylo
 				}
 			}()
 			oid, err := vc.Exists(sctx, &payload.Object_ID{
-				Id: meta.GetId(),
+				Id: uuid,
 			}, copts...)
 			if err != nil {
 				switch {
@@ -117,9 +144,9 @@ func (s *server) Exists(ctx context.Context, meta *payload.Object_ID) (id *paylo
 					st  *status.Status
 					msg string
 				)
-				st, msg, err = status.ParseError(err, codes.NotFound, fmt.Sprintf("error Exists API meta %s's uuid not found", meta.GetId()),
+				st, msg, err = status.ParseError(err, codes.NotFound, fmt.Sprintf("error Exists API meta %s's uuid not found", uuid),
 					&errdetails.RequestInfo{
-						RequestId:   meta.GetId(),
+						RequestId:   uuid,
 						ServingData: errdetails.Serialize(meta),
 					},
 					&errdetails.ResourceInfo{
@@ -152,11 +179,11 @@ func (s *server) Exists(ctx context.Context, meta *payload.Object_ID) (id *paylo
 	}
 	if err != nil || id == nil || id.GetId() == "" {
 		if err == nil {
-			err = errors.ErrObjectIDNotFound(meta.GetId())
+			err = errors.ErrObjectIDNotFound(uuid)
 		}
-		st, msg, err := status.ParseError(err, codes.NotFound, fmt.Sprintf("error Exists API meta %s's uuid not found", meta.GetId()),
+		st, msg, err := status.ParseError(err, codes.NotFound, fmt.Sprintf("error Exists API meta %s's uuid not found", uuid),
 			&errdetails.RequestInfo{
-				RequestId:   meta.GetId(),
+				RequestId:   uuid,
 				ServingData: errdetails.Serialize(meta),
 			},
 			&errdetails.ResourceInfo{
@@ -244,7 +271,8 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 			span.End()
 		}
 	}()
-	if len(req.GetId()) == 0 {
+	uuid := req.GetId()
+	if len(uuid) == 0 {
 		err = errors.ErrInvalidMetaDataConfig
 		err = status.WrapWithInvalidArgument("SearchByID API invalid uuid", err,
 			&errdetails.RequestInfo{
@@ -258,6 +286,10 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 						Description: err.Error(),
 					},
 				},
+			},
+			&errdetails.ResourceInfo{
+				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.SearchByID",
+				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
 			})
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
@@ -266,7 +298,7 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 	}
 	oreq := &payload.Object_VectorRequest{
 		Id: &payload.Object_ID{
-			Id: req.GetId(),
+			Id: uuid,
 		},
 		Filters: req.GetConfig().GetEgressFilters(),
 	}
@@ -1321,8 +1353,31 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 			span.End()
 		}
 	}()
-	vec := req.GetVector().GetVector()
 	uuid := req.GetVector().GetId()
+	if len(uuid) == 0 {
+		err = errors.ErrInvalidMetaDataConfig
+		err = status.WrapWithInvalidArgument("Insert API invalid uuid", err,
+			&errdetails.RequestInfo{
+				ServingData: errdetails.Serialize(req),
+			},
+			&errdetails.BadRequest{
+				FieldViolations: []*errdetails.BadRequestFieldViolation{
+					{
+						Field:       "invalid id",
+						Description: err.Error(),
+					},
+				},
+			},
+			&errdetails.ResourceInfo{
+				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.Insert",
+				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+			})
+		if span != nil {
+			span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
+		}
+		return nil, err
+	}
+	vec := req.GetVector().GetVector()
 	vl := len(vec)
 	if vl < algorithm.MinimumVectorDimensionSize {
 		err = errors.ErrInvalidDimensionSize(vl, 0)
@@ -1699,8 +1754,31 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (res *
 			span.End()
 		}
 	}()
-	vec := req.GetVector().GetVector()
 	uuid := req.GetVector().GetId()
+	if len(uuid) == 0 {
+		err = errors.ErrInvalidMetaDataConfig
+		err = status.WrapWithInvalidArgument("Update API invalid uuid", err,
+			&errdetails.RequestInfo{
+				ServingData: errdetails.Serialize(req),
+			},
+			&errdetails.BadRequest{
+				FieldViolations: []*errdetails.BadRequestFieldViolation{
+					{
+						Field:       "invalid id",
+						Description: err.Error(),
+					},
+				},
+			},
+			&errdetails.ResourceInfo{
+				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.Update",
+				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+			})
+		if span != nil {
+			span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
+		}
+		return nil, err
+	}
+	vec := req.GetVector().GetVector()
 	vl := len(vec)
 	if vl < algorithm.MinimumVectorDimensionSize {
 		err = errors.ErrInvalidDimensionSize(vl, 0)
@@ -2030,6 +2108,30 @@ func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *
 
 	vec := req.GetVector()
 	uuid := vec.GetId()
+	if len(uuid) == 0 {
+		err = errors.ErrInvalidMetaDataConfig
+		err = status.WrapWithInvalidArgument("Upsert API invalid uuid", err,
+			&errdetails.RequestInfo{
+				ServingData: errdetails.Serialize(req),
+			},
+			&errdetails.BadRequest{
+				FieldViolations: []*errdetails.BadRequestFieldViolation{
+					{
+						Field:       "invalid id",
+						Description: err.Error(),
+					},
+				},
+			},
+			&errdetails.ResourceInfo{
+				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.Upsert",
+				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+			})
+		if span != nil {
+			span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
+		}
+		return nil, err
+	}
+
 	vl := len(vec.GetVector())
 	if vl < algorithm.MinimumVectorDimensionSize {
 		err = errors.ErrInvalidDimensionSize(vl, 0)

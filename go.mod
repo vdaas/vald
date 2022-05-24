@@ -4,15 +4,16 @@ go 1.18
 
 replace (
 	cloud.google.com/go => cloud.google.com/go v0.101.1
+	cloud.google.com/go/compute => cloud.google.com/go/compute v1.6.1
 	cloud.google.com/go/iam => cloud.google.com/go/iam v0.3.0
 	cloud.google.com/go/monitoring => cloud.google.com/go/monitoring v1.5.0
-	cloud.google.com/go/profiler => cloud.google.com/go/profiler v0.2.0
-	cloud.google.com/go/storage => cloud.google.com/go/storage v1.22.0
+	cloud.google.com/go/profiler => cloud.google.com/go/profiler v0.3.0
+	cloud.google.com/go/storage => cloud.google.com/go/storage v1.22.1
 	cloud.google.com/go/trace => cloud.google.com/go/trace v1.2.0
-	github.com/Azure/go-autorest => github.com/Azure/go-autorest v14.2.1-0.20220504154517-49906996bd99+incompatible
-	github.com/Azure/go-autorest/autorest => github.com/Azure/go-autorest/autorest v0.11.28-0.20220504154517-49906996bd99
-	github.com/Azure/go-autorest/autorest/adal => github.com/Azure/go-autorest/autorest/adal v0.9.19
-	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.44.13
+	github.com/Azure/go-autorest => github.com/Azure/go-autorest v14.2.1-0.20220519225546-7dd32b67be4e+incompatible
+	github.com/Azure/go-autorest/autorest => github.com/Azure/go-autorest/autorest v0.11.28-0.20220519225546-7dd32b67be4e
+	github.com/Azure/go-autorest/autorest/adal => github.com/Azure/go-autorest/autorest/adal v0.9.20
+	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.44.19
 	github.com/chzyer/logex => github.com/chzyer/logex v1.2.1
 	github.com/coreos/etcd => go.etcd.io/etcd v3.3.27+incompatible
 	github.com/docker/docker => github.com/moby/moby v20.10.16+incompatible
@@ -20,6 +21,7 @@ replace (
 	github.com/envoyproxy/protoc-gen-validate => github.com/envoyproxy/protoc-gen-validate v0.6.7
 	github.com/fsnotify/fsnotify => github.com/fsnotify/fsnotify v1.5.4
 	github.com/gin-gonic/gin => github.com/gin-gonic/gin v1.7.7
+	github.com/go-logfmt/logfmt => github.com/go-logfmt/logfmt v0.5.1
 	github.com/go-logr/logr => github.com/go-logr/logr v1.2.3
 	github.com/go-sql-driver/mysql => github.com/go-sql-driver/mysql v1.6.0
 	github.com/goccy/go-json => github.com/goccy/go-json v0.9.7
@@ -30,12 +32,13 @@ replace (
 	github.com/golang/snappy => github.com/golang/snappy v0.0.4
 	github.com/google/btree => github.com/google/btree v1.0.1
 	github.com/google/go-cmp => github.com/google/go-cmp v0.5.8
-	github.com/google/pprof => github.com/google/pprof v0.0.0-20220509035851-59ca7ad80af3
+	github.com/google/pprof => github.com/google/pprof v0.0.0-20220520215854-d04f2422c8a1
 	github.com/google/uuid => github.com/google/uuid v1.3.0
+	github.com/googleapis/gax-go/v2 => github.com/googleapis/gax-go/v2 v2.4.0
 	github.com/gorilla/mux => github.com/gorilla/mux v1.8.0
 	github.com/gorilla/websocket => github.com/gorilla/websocket v1.5.0
 	github.com/hailocab/go-hostpool => github.com/kpango/go-hostpool v0.0.0-20210303030322-aab80263dcd0
-	github.com/hashicorp/go-version => github.com/hashicorp/go-version v1.4.0
+	github.com/hashicorp/go-version => github.com/hashicorp/go-version v1.5.0
 	github.com/jackc/chunkreader => github.com/jackc/chunkreader v1.0.0
 	github.com/jackc/pgconn => github.com/jackc/pgconn v1.12.1
 	github.com/jackc/pgmock => github.com/jackc/pgmock v0.0.0-20210724152146-4ad1a8207f65
@@ -46,17 +49,19 @@ replace (
 	github.com/json-iterator/go => github.com/json-iterator/go v1.1.12
 	github.com/klauspost/compress => github.com/klauspost/compress v1.15.5-0.20220512161851-3909335c441d
 	github.com/kpango/glg => github.com/kpango/glg v1.6.10
+	github.com/mailru/easyjson => github.com/mailru/easyjson v0.7.7
 	github.com/onsi/ginkgo => github.com/onsi/ginkgo v1.16.5
 	github.com/onsi/gomega => github.com/onsi/gomega v1.19.0
 	github.com/opentracing/opentracing-go => github.com/opentracing/opentracing-go v1.2.0
 	github.com/pkg/sftp => github.com/pkg/sftp v1.13.4
-	github.com/prometheus/client_golang => github.com/prometheus/client_golang v1.12.1
+	github.com/prometheus/client_golang => github.com/prometheus/client_golang v1.12.2
 	github.com/prometheus/client_model => github.com/prometheus/client_model v0.2.0
 	github.com/prometheus/common => github.com/prometheus/common v0.34.0
 	github.com/prometheus/procfs => github.com/prometheus/procfs v0.7.3
 	github.com/prometheus/prometheus/v2 => github.com/prometheus/prometheus/v2 v2.35.0-retract
 	github.com/rs/xid => github.com/rs/xid v1.4.0
 	github.com/sirupsen/logrus => github.com/sirupsen/logrus v1.8.1
+	github.com/spf13/afero => github.com/spf13/afero v1.8.2
 	github.com/spf13/cobra => github.com/spf13/cobra v1.4.0
 	github.com/spf13/pflag => github.com/spf13/pflag v1.0.5
 	github.com/stretchr/testify => github.com/stretchr/testify v1.7.1
@@ -74,31 +79,31 @@ replace (
 	go.uber.org/goleak => go.uber.org/goleak v1.1.12
 	go.uber.org/multierr => go.uber.org/multierr v1.8.0
 	go.uber.org/zap => go.uber.org/zap v1.21.0
-	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20220511200225-c6db032c6c88
-	golang.org/x/exp => golang.org/x/exp v0.0.0-20220428152302-39d4317da171
+	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20220518034528-6f7dac969898
+	golang.org/x/exp => golang.org/x/exp v0.0.0-20220518171630-0b5c67f07fdf
 	golang.org/x/image => golang.org/x/image v0.0.0-20220413100746-70e8d0d3baa9
 	golang.org/x/lint => golang.org/x/lint v0.0.0-20210508222113-6edffad5e616
 	golang.org/x/mod => golang.org/x/mod v0.5.1
-	golang.org/x/net => golang.org/x/net v0.0.0-20220425223048-2871e0cb64e4
+	golang.org/x/net => golang.org/x/net v0.0.0-20220520000938-2e3eb7b945c2
 	golang.org/x/oauth2 => golang.org/x/oauth2 v0.0.0-20220411215720-9780585627b5
-	golang.org/x/sync => golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
-	golang.org/x/sys => golang.org/x/sys v0.0.0-20220503163025-988cb79eb6c6
+	golang.org/x/sync => golang.org/x/sync v0.0.0-20220513210516-0976fa681c29
+	golang.org/x/sys => golang.org/x/sys v0.0.0-20220520151302-bc2c85ada10a
 	golang.org/x/term => golang.org/x/term v0.0.0-20220411215600-e5f449aeb171
 	golang.org/x/text => golang.org/x/text v0.3.7
 	golang.org/x/time => golang.org/x/time v0.0.0-20220411224347-583f2d630306
 	golang.org/x/tools => golang.org/x/tools v0.1.10
-	golang.org/x/xerrors => golang.org/x/xerrors v0.0.0-20220411194840-2f41105eb62f
+	golang.org/x/xerrors => golang.org/x/xerrors v0.0.0-20220517211312-f3a8303e98df
 	gonum.org/v1/gonum => gonum.org/v1/gonum v0.11.0
 	gonum.org/v1/plot => gonum.org/v1/plot v0.11.0
-	google.golang.org/api => google.golang.org/api v0.79.0
+	google.golang.org/api => google.golang.org/api v0.80.0
 	google.golang.org/appengine => google.golang.org/appengine v1.6.7
-	google.golang.org/genproto => google.golang.org/genproto v0.0.0-20220505152158-f39f71e6c8f3
-	google.golang.org/grpc => google.golang.org/grpc v1.46.0
+	google.golang.org/genproto => google.golang.org/genproto v0.0.0-20220519153652-3a47de7e79bd
+	google.golang.org/grpc => google.golang.org/grpc v1.46.2
 	google.golang.org/grpc/cmd/protoc-gen-go-grpc => google.golang.org/grpc/cmd/protoc-gen-go-grpc v1.2.0
 	google.golang.org/protobuf => google.golang.org/protobuf v1.28.0
 	gopkg.in/check.v1 => gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c
 	gopkg.in/yaml.v2 => gopkg.in/yaml.v2 v2.4.0
-	gopkg.in/yaml.v3 => gopkg.in/yaml.v3 v3.0.0-20220512140231-539c8e751b99
+	gopkg.in/yaml.v3 => gopkg.in/yaml.v3 v3.0.0
 	k8s.io/api => k8s.io/api v0.24.0
 	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.24.0
 	k8s.io/apimachinery => k8s.io/apimachinery v0.24.0
@@ -112,16 +117,16 @@ replace (
 	k8s.io/metrics => k8s.io/metrics v0.24.0
 	k8s.io/utils => k8s.io/utils v0.0.0-20220210201930-3a6ce19ff2f9
 	sigs.k8s.io/apiserver-network-proxy/konnectivity-client => sigs.k8s.io/apiserver-network-proxy/konnectivity-client v0.0.31
-	sigs.k8s.io/controller-runtime => sigs.k8s.io/controller-runtime v0.12.0
-	sigs.k8s.io/kustomize/api => sigs.k8s.io/kustomize/api v0.11.4
-	sigs.k8s.io/kustomize/kyaml => sigs.k8s.io/kustomize/kyaml v0.13.6
+	sigs.k8s.io/controller-runtime => sigs.k8s.io/controller-runtime v0.12.1
+	sigs.k8s.io/kustomize/api => sigs.k8s.io/kustomize/api v0.11.5
+	sigs.k8s.io/kustomize/kyaml => sigs.k8s.io/kustomize/kyaml v0.13.7
 	sigs.k8s.io/structured-merge-diff/v4 => sigs.k8s.io/structured-merge-diff/v4 v4.2.1
 	sigs.k8s.io/yaml => sigs.k8s.io/yaml v1.3.0
 )
 
 require (
 	cloud.google.com/go/profiler v0.0.0-00010101000000-000000000000
-	cloud.google.com/go/storage v1.22.0
+	cloud.google.com/go/storage v1.22.1
 	code.cloudfoundry.org/bytefmt v0.0.0-20211005130812-5bb3c17173e5
 	contrib.go.opencensus.io/exporter/jaeger v0.2.1
 	contrib.go.opencensus.io/exporter/prometheus v0.4.1
@@ -144,9 +149,9 @@ require (
 	github.com/kpango/glg v1.6.10
 	github.com/leanovate/gopter v0.2.9
 	github.com/lucasb-eyer/go-colorful v1.2.0
-	github.com/pierrec/lz4/v3 v3.3.4
-	github.com/quasilyte/go-ruleguard v0.3.15
-	github.com/quasilyte/go-ruleguard/dsl v0.3.19
+	github.com/pierrec/lz4/v3 v3.3.5
+	github.com/quasilyte/go-ruleguard v0.3.16
+	github.com/quasilyte/go-ruleguard/dsl v0.3.21
 	github.com/scylladb/gocqlx v1.5.0
 	github.com/tensorflow/tensorflow v0.0.0-00010101000000-000000000000
 	github.com/zeebo/xxh3 v1.0.1
@@ -160,11 +165,11 @@ require (
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 	golang.org/x/sys v0.0.0-20220503163025-988cb79eb6c6
 	golang.org/x/text v0.3.7
-	golang.org/x/tools v0.1.10-0.20220218145154-897bd77cd717
+	golang.org/x/tools v0.1.10
 	gonum.org/v1/hdf5 v0.0.0-20210714002203-8c5d23bc6946
 	gonum.org/v1/plot v0.0.0-00010101000000-000000000000
-	google.golang.org/api v0.77.0
-	google.golang.org/genproto v0.0.0-20220505152158-f39f71e6c8f3
+	google.golang.org/api v0.78.0
+	google.golang.org/genproto v0.0.0-20220518221133-4f43b3371335
 	google.golang.org/grpc v1.46.0
 	google.golang.org/protobuf v1.28.0
 	gopkg.in/yaml.v2 v2.4.0
@@ -232,11 +237,11 @@ require (
 	github.com/google/btree v1.0.1 // indirect
 	github.com/google/gnostic v0.5.7-v3refs // indirect
 	github.com/google/gofuzz v1.1.0 // indirect
-	github.com/google/pprof v0.0.0-20220113144219-d25a53d42d00 // indirect
+	github.com/google/pprof v0.0.0-20220412212628-83db2b799d1f // indirect
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510 // indirect
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/google/wire v0.5.0 // indirect
-	github.com/googleapis/gax-go/v2 v2.3.0 // indirect
+	github.com/googleapis/gax-go/v2 v2.4.0 // indirect
 	github.com/googleapis/go-type-adapters v1.0.0 // indirect
 	github.com/gregjones/httpcache v0.0.0-20180305231024-9cad4c3443a7 // indirect
 	github.com/hailocab/go-hostpool v0.0.0-20160125115350-e80d13ce29ed // indirect
@@ -256,18 +261,17 @@ require (
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/peterbourgon/diskv v2.0.1+incompatible // indirect
 	github.com/pkg/errors v0.9.1 // indirect
-	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/prometheus/client_golang v1.12.1 // indirect
 	github.com/prometheus/client_model v0.2.0 // indirect
 	github.com/prometheus/common v0.32.1 // indirect
 	github.com/prometheus/procfs v0.7.3 // indirect
 	github.com/prometheus/prometheus v2.5.0+incompatible // indirect
 	github.com/prometheus/statsd_exporter v0.21.0 // indirect
-	github.com/quasilyte/gogrep v0.0.0-20220103110004-ffaa07af02e3 // indirect
+	github.com/quasilyte/gogrep v0.0.0-20220120141003-628d8b3623b5 // indirect
+	github.com/quasilyte/stdinfo v0.0.0-20220114132959-f7386bf02567 // indirect
 	github.com/scylladb/go-reflectx v1.0.1 // indirect
 	github.com/spf13/cobra v1.4.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
-	github.com/stretchr/testify v1.7.1 // indirect
 	github.com/uber/jaeger-client-go v2.25.0+incompatible // indirect
 	github.com/xlab/treeprint v0.0.0-20181112141820-a009c3971eca // indirect
 	go.starlark.net v0.0.0-20200306205701-8dd3e2ee1dd5 // indirect
@@ -287,11 +291,11 @@ require (
 	k8s.io/apiextensions-apiserver v0.24.0 // indirect
 	k8s.io/component-base v0.24.0 // indirect
 	k8s.io/klog/v2 v2.60.1 // indirect
-	k8s.io/kube-openapi v0.0.0-20220328201542-3ee0da9b0b42 // indirect
+	k8s.io/kube-openapi v0.0.0-20220401212409-b28bf2818661 // indirect
 	k8s.io/utils v0.0.0-20220210201930-3a6ce19ff2f9 // indirect
 	sigs.k8s.io/json v0.0.0-20211208200746-9f7c6b3444d2 // indirect
 	sigs.k8s.io/kustomize/api v0.11.4 // indirect
-	sigs.k8s.io/kustomize/kyaml v0.13.6 // indirect
+	sigs.k8s.io/kustomize/kyaml v0.13.7 // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.1 // indirect
 	sigs.k8s.io/yaml v1.3.0 // indirect
 )
