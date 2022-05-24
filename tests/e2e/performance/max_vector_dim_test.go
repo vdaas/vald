@@ -36,6 +36,7 @@ import (
 	"github.com/vdaas/vald/internal/file"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/log/logger"
+	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/test/data/vector"
@@ -127,7 +128,7 @@ func TestE2EInsertOnlyWithOneVectorAndSearch(t *testing.T) {
 	ctx := context.Background()
 	conn, err := grpc.DialContext(
 		ctx,
-		host+":"+strconv.Itoa(port),
+		net.JoinHostPort(host, uint16(port)),
 		grpc.WithInsecure(),
 		grpc.WithKeepaliveParams(
 			keepalive.ClientParameters{
