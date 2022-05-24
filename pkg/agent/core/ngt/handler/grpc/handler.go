@@ -134,6 +134,10 @@ func (s *server) Exists(ctx context.Context, uid *payload.Object_ID) (res *paylo
 				ResourceType: ngtResourceType + "/ngt.Exists",
 				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
 			})
+
+		if span != nil {
+			span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
+		}
 		log.Warn(err)
 		return nil, err
 	}
@@ -310,6 +314,9 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
 			})
 		log.Warn(err)
+		if span != nil {
+			span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
+		}
 		return nil, err
 	}
 	vec, dst, err := s.ngt.SearchByID(
@@ -813,6 +820,9 @@ func (s *server) LinearSearchByID(ctx context.Context, req *payload.Search_IDReq
 				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
 			})
 		log.Warn(err)
+		if span != nil {
+			span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
+		}
 		return nil, err
 	}
 	vec, dst, err := s.ngt.LinearSearchByID(
@@ -2021,6 +2031,9 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (res *
 				ResourceType: ngtResourceType + "/ngt.Remove",
 				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
 			})
+		if span != nil {
+			span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
+		}
 		log.Warn(err)
 		return nil, err
 	}
@@ -2229,6 +2242,9 @@ func (s *server) GetObject(ctx context.Context, id *payload.Object_VectorRequest
 				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
 			})
 		log.Warn(err)
+		if span != nil {
+			span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
+		}
 		return nil, err
 	}
 	vec, err := s.ngt.GetObject(uuid)

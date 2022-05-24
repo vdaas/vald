@@ -62,6 +62,15 @@ $(BINDIR)/reviewdog:
 .PHONY: kubectl/install
 kubectl/install: $(BINDIR)/kubectl
 
+## WARNING: choas-mesh install.sh check_kubernetes()
+## This version information is deprecated and will be replaced with the output from kubectl version --short.
+## https://github.com/chaos-mesh/chaos-mesh/blob/master/install.sh#L291
+.PHONY: kubectl/install/linux/v1.23.6
+kubectl/install/linux/v1.23.6:
+	curl -L "https://storage.googleapis.com/kubernetes-release/release/v1.23.6/bin/linux/amd64/kubectl" -o ./kubectl
+	chmod a+x ./kubectl
+	mv ./kubectl $(BINDIR)/kubectl
+
 ifeq ($(UNAME),Darwin)
 $(BINDIR)/kubectl:
 	curl -L "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/darwin/amd64/kubectl" -o $(BINDIR)/kubectl
