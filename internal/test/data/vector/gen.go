@@ -131,3 +131,31 @@ func gaussianDistributedUint8VectorGenerator(n, dim int, mean, sigma float64) []
 		}
 	})
 }
+
+func GenF32Vec(dist Distribution, num int, dim int) [][]float32 {
+	generator, _ := Float32VectorGenerator(dist)
+	return generator(num, dim)
+}
+
+func GenIntVec(dist Distribution, num int, dim int) [][]float32 {
+	generator, _ := Uint8VectorGenerator(dist)
+	ivecs := generator(num, dim)
+	result := make([][]float32, num)
+
+	for j, ivec := range ivecs {
+		vec := make([]float32, dim)
+		for i := 0; i < dim; i++ {
+			vec[i] = float32(ivec[i])
+		}
+		result[j] = vec
+	}
+	return result
+}
+
+func GenSameValueVec(size int, val float32) []float32 {
+	v := make([]float32, size)
+	for i := 0; i < size; i++ {
+		v[i] = val
+	}
+	return v
+}
