@@ -24,6 +24,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/vdaas/vald/internal/ctxkey"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/observability/trace"
@@ -52,18 +53,7 @@ type Backoff interface {
 	Close()
 }
 
-type contextKey string
-
-const (
-	traceTag = "vald/internal/backoff/Backoff.Do/retry"
-
-	nameContextKey contextKey = "backoff_name"
-)
-
-// NameContext returns a copy of parent in which the name associated with key (nameContextKey).
-func NameContext(ctx context.Context, name string) context.Context {
-	return context.WithValue(ctx, nameContextKey, name)
-}
+const traceTag = "vald/internal/backoff/Backoff.Do/retry"
 
 // New creates the new backoff with option.
 func New(opts ...Option) Backoff {
@@ -125,8 +115,8 @@ func (b *backoff) Do(ctx context.Context, f func(ctx context.Context) (val inter
 				return f(ssctx)
 			}()
 
-			if name := ctx.Value(nameContextKey); name != nil && b.metricsEnabled {
-				b.metrics.Store(name.(string), cnt+1)
+			if name := ctxkey.FromBackoffName(ctx); len(name) != 0 && b.metricsEnabled {
+				b.metrics.Store(name, cnt+1)
 			}
 
 			if !ret {

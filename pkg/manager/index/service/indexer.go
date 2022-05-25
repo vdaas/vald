@@ -28,6 +28,7 @@ import (
 	agent "github.com/vdaas/vald/apis/grpc/v1/agent/core"
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/client/v1/client/discoverer"
+	"github.com/vdaas/vald/internal/ctxkey"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
@@ -118,7 +119,7 @@ func (idx *index) Start(ctx context.Context) (<-chan error, error) {
 				return finalize()
 			case err = <-dech:
 			case <-it.C:
-				err = idx.execute(ctx, true, false)
+				err = idx.execute(ctxkey.WithGRPCMethod(ctx, "v1.vald.CreateIndex"), true, false)
 				if err != nil {
 					ech <- err
 					log.Error("an error occurred during indexing", err)
@@ -126,7 +127,7 @@ func (idx *index) Start(ctx context.Context) (<-chan error, error) {
 				}
 				it.Reset(idx.indexDuration)
 			case <-itl.C:
-				err = idx.execute(ctx, false, false)
+				err = idx.execute(ctxkey.WithGRPCMethod(ctx, "v1.vald.CreateIndex"), false, false)
 				if err != nil {
 					ech <- err
 					log.Error("an error occurred during indexing", err)
@@ -134,7 +135,7 @@ func (idx *index) Start(ctx context.Context) (<-chan error, error) {
 				}
 				itl.Reset(idx.indexDurationLimit)
 			case <-stl.C:
-				err = idx.execute(ctx, false, true)
+				err = idx.execute(ctxkey.WithGRPCMethod(ctx, "v1.vald.CreateAndSaveIndex"), false, true)
 				if err != nil {
 					ech <- err
 					log.Error("an error occurred during indexing and saving", err)
@@ -159,9 +160,11 @@ func (idx *index) Start(ctx context.Context) (<-chan error, error) {
 				return
 			case addr := <-idx.saveIndexTargetAddrCh:
 				idx.schMap.Delete(addr)
-				_, err = idx.client.GetClient().Do(ctx, addr, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (_ interface{}, err error) {
-					return agent.NewAgentClient(conn).SaveIndex(ctx, &payload.Empty{}, copts...)
-				})
+				_, err = idx.client.GetClient().Do(ctxkey.WithGRPCMethod(ctx, "v1.vald.SaveIndex"), addr,
+					func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (_ interface{}, err error) {
+						return agent.NewAgentClient(conn).SaveIndex(ctx, &payload.Empty{}, copts...)
+					},
+				)
 				if err != nil {
 					log.Warnf("an error occurred while calling SaveIndex of %s: %s", addr, err)
 					select {
@@ -262,7 +265,7 @@ func (idx *index) waitForNextSaving(ctx context.Context) {
 }
 
 func (idx *index) loadInfos(ctx context.Context) (err error) {
-	ctx, span := trace.StartSpan(ctx, "vald/manager-index/service/Indexer.loadInfos")
+	ctx, span := trace.StartSpan(ctxkey.WithBackoffName(ctx, "v1.vald.IndexInfo"), "vald/manager-index/service/Indexer.loadInfos")
 	defer func() {
 		if span != nil {
 			span.End()
