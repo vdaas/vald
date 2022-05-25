@@ -66,3 +66,13 @@ func (b *Backoff) Opts() []backoff.Option {
 
 	return opts
 }
+
+func (b *Backoff) CreateBackoff() backoff.Backoff {
+	if len(b.InitialDuration) != 0 &&
+		b.RetryCount > 2 {
+		return backoff.New(
+			b.Opts()...,
+		)
+	}
+	return nil
+}

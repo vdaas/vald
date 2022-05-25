@@ -26,6 +26,7 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/grpc/metric"
 	"github.com/vdaas/vald/internal/observability"
+	"github.com/vdaas/vald/internal/observability/metrics"
 	backoffmetrics "github.com/vdaas/vald/internal/observability/metrics/backoff"
 	"github.com/vdaas/vald/internal/runner"
 	"github.com/vdaas/vald/internal/safety"
@@ -68,14 +69,31 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 
 	var obs observability.Observability
 	if cfg.Observability.Enabled {
-		cBoMetrics, err := backoffmetrics.New(nil) // TODO: add backoff object
-		if err != nil {
-			return nil, err
+		var (
+			cBoMetrics  metrics.Metric
+			acBoMetrics metrics.Metric
+		)
+
+		if cfg := cfg.Gateway.Discoverer.Client.Backoff; cfg != nil {
+			if bo := cfg.CreateBackoff(); bo != nil {
+				cBoMetrics, err = backoffmetrics.New(bo)
+				if err != nil {
+					return nil, err
+				}
+				aopts = append(aopts, grpc.WithBackoff(bo))
+			}
 		}
-		acBoMetrics, err := backoffmetrics.New(nil) // TODO: add backoff object
-		if err != nil {
-			return nil, err
+
+		if cfg := cfg.Gateway.Discoverer.AgentClientOptions.Backoff; cfg != nil {
+			if bo := cfg.CreateBackoff(); bo != nil {
+				acBoMetrics, err = backoffmetrics.New(bo)
+				if err != nil {
+					return nil, err
+				}
+				aopts = append(aopts, grpc.WithBackoff(bo))
+			}
 		}
+
 		obs, err = observability.NewWithConfig(
 			cfg.Observability,
 			cBoMetrics,
