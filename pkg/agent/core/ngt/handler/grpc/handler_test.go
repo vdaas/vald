@@ -2443,22 +2443,6 @@ func Test_server_Insert(t *testing.T) {
 		vqueueCfg = &config.VQueue{}
 	)
 
-	// functions to generator vectors for testing
-	genF32Vec := func(dist vector.Distribution, dim int) []float32 {
-		generator, _ := vector.Float32VectorGenerator(dist)
-		return generator(1, dim)[0]
-	}
-	genIntVec := func(dist vector.Distribution, dim int) []float32 {
-		generator, _ := vector.Uint8VectorGenerator(dist)
-		ivec := generator(1, dim)[0]
-
-		vec := make([]float32, dim)
-		for i := 0; i < dim; i++ {
-			vec[i] = float32(ivec[i])
-		}
-		return vec
-	}
-
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -2584,7 +2568,7 @@ func Test_server_Insert(t *testing.T) {
 		}(),
 		func() test {
 			invalidDim := intVecDim + 1
-			ivec := genIntVec(vector.Gaussian, invalidDim)
+			ivec := vector.GenIntVec(vector.Gaussian, 1, invalidDim)[0]
 			req := &payload.Insert_Request{
 				Vector: &payload.Object_Vector{
 					Id:     id,
@@ -2639,7 +2623,7 @@ func Test_server_Insert(t *testing.T) {
 		}(),
 		func() test {
 			invalidDim := f32VecDim + 1
-			ivec := genF32Vec(vector.Gaussian, invalidDim)
+			ivec := vector.GenF32Vec(vector.Gaussian, 1, invalidDim)[0]
 			req := &payload.Insert_Request{
 				Vector: &payload.Object_Vector{
 					Id:     id,
@@ -2696,7 +2680,7 @@ func Test_server_Insert(t *testing.T) {
 			req := &payload.Insert_Request{
 				Vector: &payload.Object_Vector{
 					Id:     id,
-					Vector: genIntVec(vector.Gaussian, intVecDim),
+					Vector: vector.GenIntVec(vector.Gaussian, 1, intVecDim)[0],
 				},
 			}
 
@@ -2733,7 +2717,7 @@ func Test_server_Insert(t *testing.T) {
 			req := &payload.Insert_Request{
 				Vector: &payload.Object_Vector{
 					Id:     id,
-					Vector: genF32Vec(vector.Gaussian, f32VecDim),
+					Vector: vector.GenF32Vec(vector.Gaussian, 1, f32VecDim)[0],
 				},
 			}
 
@@ -2770,7 +2754,7 @@ func Test_server_Insert(t *testing.T) {
 			req := &payload.Insert_Request{
 				Vector: &payload.Object_Vector{
 					Id:     id,
-					Vector: genIntVec(vector.Uniform, intVecDim),
+					Vector: vector.GenIntVec(vector.Uniform, 1, intVecDim)[0],
 				},
 			}
 
@@ -2807,7 +2791,7 @@ func Test_server_Insert(t *testing.T) {
 			req := &payload.Insert_Request{
 				Vector: &payload.Object_Vector{
 					Id:     id,
-					Vector: genF32Vec(vector.Uniform, f32VecDim),
+					Vector: vector.GenF32Vec(vector.Uniform, 1, f32VecDim)[0],
 				},
 			}
 
@@ -2846,7 +2830,7 @@ func Test_server_Insert(t *testing.T) {
 			req := &payload.Insert_Request{
 				Vector: &payload.Object_Vector{
 					Id:     id,
-					Vector: genSameValueVec(intVecDim, 0),
+					Vector: vector.GenSameValueVec(intVecDim, 0),
 				},
 			}
 
@@ -2883,7 +2867,7 @@ func Test_server_Insert(t *testing.T) {
 			req := &payload.Insert_Request{
 				Vector: &payload.Object_Vector{
 					Id:     id,
-					Vector: genSameValueVec(f32VecDim, 0),
+					Vector: vector.GenSameValueVec(f32VecDim, 0),
 				},
 			}
 
@@ -2920,7 +2904,7 @@ func Test_server_Insert(t *testing.T) {
 			req := &payload.Insert_Request{
 				Vector: &payload.Object_Vector{
 					Id:     id,
-					Vector: genSameValueVec(intVecDim, math.MinInt),
+					Vector: vector.GenSameValueVec(intVecDim, math.MinInt),
 				},
 			}
 
@@ -2957,7 +2941,7 @@ func Test_server_Insert(t *testing.T) {
 			req := &payload.Insert_Request{
 				Vector: &payload.Object_Vector{
 					Id:     id,
-					Vector: genSameValueVec(f32VecDim, -math.MaxFloat32),
+					Vector: vector.GenSameValueVec(f32VecDim, -math.MaxFloat32),
 				},
 			}
 
@@ -2994,7 +2978,7 @@ func Test_server_Insert(t *testing.T) {
 			req := &payload.Insert_Request{
 				Vector: &payload.Object_Vector{
 					Id:     id,
-					Vector: genSameValueVec(intVecDim, math.MaxInt),
+					Vector: vector.GenSameValueVec(intVecDim, math.MaxInt),
 				},
 			}
 
@@ -3031,7 +3015,7 @@ func Test_server_Insert(t *testing.T) {
 			req := &payload.Insert_Request{
 				Vector: &payload.Object_Vector{
 					Id:     id,
-					Vector: genSameValueVec(f32VecDim, math.MaxFloat32),
+					Vector: vector.GenSameValueVec(f32VecDim, math.MaxFloat32),
 				},
 			}
 
@@ -3228,7 +3212,7 @@ func Test_server_Insert(t *testing.T) {
 			req := &payload.Insert_Request{
 				Vector: &payload.Object_Vector{
 					Id:     id,
-					Vector: genSameValueVec(f32VecDim, nan),
+					Vector: vector.GenSameValueVec(f32VecDim, nan),
 				},
 			}
 
@@ -3419,7 +3403,7 @@ func Test_server_Insert(t *testing.T) {
 
 		// Decision Table Testing
 		func() test {
-			bVec := genIntVec(vector.Gaussian, intVecDim) // used in beforeFunc
+			bVec := vector.GenIntVec(vector.Gaussian, 1, intVecDim)[0] // used in beforeFunc
 
 			req := &payload.Insert_Request{
 				Vector: &payload.Object_Vector{
@@ -3560,7 +3544,7 @@ func Test_server_Insert(t *testing.T) {
 			}
 		}(),
 		func() test {
-			bVec := genIntVec(vector.Gaussian, intVecDim) // use in beforeFunc
+			bVec := vector.GenIntVec(vector.Gaussian, 1, intVecDim)[0] // use in beforeFunc
 
 			req := &payload.Insert_Request{
 				Vector: &payload.Object_Vector{
@@ -3843,34 +3827,6 @@ func Test_server_StreamInsert(t *testing.T) {
 	}
 }
 
-func genF32Vec(dist vector.Distribution, num int, dim int) [][]float32 {
-	generator, _ := vector.Float32VectorGenerator(dist)
-	return generator(num, dim)
-}
-
-func genIntVec(dist vector.Distribution, num int, dim int) [][]float32 {
-	generator, _ := vector.Uint8VectorGenerator(dist)
-	ivecs := generator(num, dim)
-	result := make([][]float32, num)
-
-	for j, ivec := range ivecs {
-		vec := make([]float32, dim)
-		for i := 0; i < dim; i++ {
-			vec[i] = float32(ivec[i])
-		}
-		result[j] = vec
-	}
-	return result
-}
-
-func genSameValueVec(size int, val float32) []float32 {
-	v := make([]float32, size)
-	for i := 0; i < size; i++ {
-		v[i] = val
-	}
-	return v
-}
-
 type objectType int
 
 const (
@@ -3882,9 +3838,9 @@ func genMultiInsertReq(t objectType, dist vector.Distribution, num int, dim int,
 	var vecs [][]float32
 	switch t {
 	case Float:
-		vecs = genF32Vec(dist, num, dim)
+		vecs = vector.GenF32Vec(dist, num, dim)
 	case Uint8:
-		vecs = genIntVec(dist, num, dim)
+		vecs = vector.GenIntVec(dist, num, dim)
 	}
 
 	req := &payload.Insert_MultiRequest{
@@ -4331,7 +4287,7 @@ func Test_server_MultiInsert(t *testing.T) {
 		func() test {
 			insertNum := 100
 			req := genMultiInsertReq(Uint8, vector.Gaussian, insertNum, intVecDim, nil)
-			req.Requests[0].Vector.Vector = genIntVec(vector.Gaussian, 1, intVecDim+1)[0]
+			req.Requests[0].Vector.Vector = vector.GenIntVec(vector.Gaussian, 1, intVecDim+1)[0]
 
 			return test{
 				name: "Equivalence Class Testing case 3.1: Fail to MultiInsert 100 vector with 1 vector with different dimension (vector type is uint8)",
@@ -4374,7 +4330,7 @@ func Test_server_MultiInsert(t *testing.T) {
 		func() test {
 			insertNum := 100
 			req := genMultiInsertReq(Float, vector.Gaussian, insertNum, f32VecDim, nil)
-			req.Requests[0].Vector.Vector = genF32Vec(vector.Gaussian, 1, f32VecDim+1)[0]
+			req.Requests[0].Vector.Vector = vector.GenF32Vec(vector.Gaussian, 1, f32VecDim+1)[0]
 
 			return test{
 				name: "Equivalence Class Testing case 3.2: Fail to MultiInsert 100 vector with 1 vector with different dimension (vector type is float32)",
@@ -4419,7 +4375,7 @@ func Test_server_MultiInsert(t *testing.T) {
 			insertNum := 100
 			req := genMultiInsertReq(Uint8, vector.Gaussian, insertNum, intVecDim, nil)
 			for i := 0; i < len(req.Requests)/2; i++ {
-				req.Requests[i].Vector.Vector = genIntVec(vector.Gaussian, 1, intVecDim+1)[0]
+				req.Requests[i].Vector.Vector = vector.GenIntVec(vector.Gaussian, 1, intVecDim+1)[0]
 			}
 
 			return test{
@@ -4464,7 +4420,7 @@ func Test_server_MultiInsert(t *testing.T) {
 			insertNum := 100
 			req := genMultiInsertReq(Float, vector.Gaussian, insertNum, f32VecDim, nil)
 			for i := 0; i < len(req.Requests)/2; i++ {
-				req.Requests[i].Vector.Vector = genF32Vec(vector.Gaussian, 1, f32VecDim+1)[0]
+				req.Requests[i].Vector.Vector = vector.GenF32Vec(vector.Gaussian, 1, f32VecDim+1)[0]
 			}
 
 			return test{
@@ -4595,7 +4551,7 @@ func Test_server_MultiInsert(t *testing.T) {
 				name: "Boundary Value Testing case 1.1: Success to MultiInsert with 0 value vector (vector type is uint8)",
 				args: args{
 					ctx:  ctx,
-					reqs: genSameVecMultiInsertReq(insertNum, genSameValueVec(intVecDim, 0), nil),
+					reqs: genSameVecMultiInsertReq(insertNum, vector.GenSameValueVec(intVecDim, 0), nil),
 				},
 				fields: fields{
 					name:              name,
@@ -4615,7 +4571,7 @@ func Test_server_MultiInsert(t *testing.T) {
 				name: "Boundary Value Testing case 1.2: Success to MultiInsert with 0 value vector (vector type is float32)",
 				args: args{
 					ctx:  ctx,
-					reqs: genSameVecMultiInsertReq(insertNum, genSameValueVec(f32VecDim, 0), nil),
+					reqs: genSameVecMultiInsertReq(insertNum, vector.GenSameValueVec(f32VecDim, 0), nil),
 				},
 				fields: fields{
 					name:              name,
@@ -4635,7 +4591,7 @@ func Test_server_MultiInsert(t *testing.T) {
 				name: "Boundary Value Testing case 2.1: Success to MultiInsert with min value vector (vector type is uint8)",
 				args: args{
 					ctx:  ctx,
-					reqs: genSameVecMultiInsertReq(insertNum, genSameValueVec(intVecDim, math.MinInt), nil),
+					reqs: genSameVecMultiInsertReq(insertNum, vector.GenSameValueVec(intVecDim, math.MinInt), nil),
 				},
 				fields: fields{
 					name:              name,
@@ -4655,7 +4611,7 @@ func Test_server_MultiInsert(t *testing.T) {
 				name: "Boundary Value Testing case 2.2: Success to MultiInsert with min value vector (vector type is float32)",
 				args: args{
 					ctx:  ctx,
-					reqs: genSameVecMultiInsertReq(insertNum, genSameValueVec(f32VecDim, -math.MaxFloat32), nil),
+					reqs: genSameVecMultiInsertReq(insertNum, vector.GenSameValueVec(f32VecDim, -math.MaxFloat32), nil),
 				},
 				fields: fields{
 					name:              name,
@@ -4675,7 +4631,7 @@ func Test_server_MultiInsert(t *testing.T) {
 				name: "Boundary Value Testing case 3.1: Success to MultiInsert with max value vector (vector type is uint8)",
 				args: args{
 					ctx:  ctx,
-					reqs: genSameVecMultiInsertReq(insertNum, genSameValueVec(intVecDim, math.MaxUint8), nil),
+					reqs: genSameVecMultiInsertReq(insertNum, vector.GenSameValueVec(intVecDim, math.MaxUint8), nil),
 				},
 				fields: fields{
 					name:              name,
@@ -4695,7 +4651,7 @@ func Test_server_MultiInsert(t *testing.T) {
 				name: "Boundary Value Testing case 3.2: Success to MultiInsert with max value vector (vector type is float32)",
 				args: args{
 					ctx:  ctx,
-					reqs: genSameVecMultiInsertReq(insertNum, genSameValueVec(f32VecDim, math.MaxFloat32), nil),
+					reqs: genSameVecMultiInsertReq(insertNum, vector.GenSameValueVec(f32VecDim, math.MaxFloat32), nil),
 				},
 				fields: fields{
 					name:              name,
@@ -5253,7 +5209,7 @@ func Test_server_MultiInsert(t *testing.T) {
 				name: "Boundary Value Testing case 6.1: Success to MultiInsert with NaN value (vector type is float32)",
 				args: args{
 					ctx:  ctx,
-					reqs: genSameVecMultiInsertReq(insertNum, genSameValueVec(f32VecDim, float32(math.NaN())), nil),
+					reqs: genSameVecMultiInsertReq(insertNum, vector.GenSameValueVec(f32VecDim, float32(math.NaN())), nil),
 				},
 				fields: fields{
 					name:              name,
@@ -5273,7 +5229,7 @@ func Test_server_MultiInsert(t *testing.T) {
 				name: "Boundary Value Testing case 6.2: Success to MultiInsert with +Inf value (vector type is float32)",
 				args: args{
 					ctx:  ctx,
-					reqs: genSameVecMultiInsertReq(insertNum, genSameValueVec(f32VecDim, float32(math.Inf(+1.0))), nil),
+					reqs: genSameVecMultiInsertReq(insertNum, vector.GenSameValueVec(f32VecDim, float32(math.Inf(+1.0))), nil),
 				},
 				fields: fields{
 					name:              name,
@@ -5293,7 +5249,7 @@ func Test_server_MultiInsert(t *testing.T) {
 				name: "Boundary Value Testing case 6.3: Success to MultiInsert with -Inf value (vector type is float32)",
 				args: args{
 					ctx:  ctx,
-					reqs: genSameVecMultiInsertReq(insertNum, genSameValueVec(f32VecDim, float32(math.Inf(-1.0))), nil),
+					reqs: genSameVecMultiInsertReq(insertNum, vector.GenSameValueVec(f32VecDim, float32(math.Inf(-1.0))), nil),
 				},
 				fields: fields{
 					name:              name,
@@ -5313,7 +5269,7 @@ func Test_server_MultiInsert(t *testing.T) {
 				name: "Boundary Value Testing case 6.4: Success to MultiInsert with -0 value (vector type is float32)",
 				args: args{
 					ctx:  ctx,
-					reqs: genSameVecMultiInsertReq(insertNum, genSameValueVec(f32VecDim, float32(math.Copysign(0, -1.0))), nil),
+					reqs: genSameVecMultiInsertReq(insertNum, vector.GenSameValueVec(f32VecDim, float32(math.Copysign(0, -1.0))), nil),
 				},
 				fields: fields{
 					name:              name,
@@ -6120,7 +6076,7 @@ func Test_server_MultiInsert(t *testing.T) {
 					svcOpts: defaultSvcOpts,
 				},
 				beforeFunc: func(t *testing.T, s *server) {
-					vecs := genF32Vec(vector.Gaussian, 2, f32VecDim)
+					vecs := vector.GenF32Vec(vector.Gaussian, 2, f32VecDim)
 					for i := 0; i < 2; i++ {
 						ir := &payload.Insert_Request{
 							Vector: &payload.Object_Vector{
@@ -6172,7 +6128,7 @@ func Test_server_MultiInsert(t *testing.T) {
 					svcOpts: defaultSvcOpts,
 				},
 				beforeFunc: func(t *testing.T, s *server) {
-					vecs := genF32Vec(vector.Gaussian, insertNum, f32VecDim)
+					vecs := vector.GenF32Vec(vector.Gaussian, insertNum, f32VecDim)
 					for i, r := range req.Requests {
 						ir := &payload.Insert_Request{
 							Vector: &payload.Object_Vector{
@@ -6215,7 +6171,7 @@ func Test_server_MultiInsert(t *testing.T) {
 					svcOpts: defaultSvcOpts,
 				},
 				beforeFunc: func(t *testing.T, s *server) {
-					vecs := genF32Vec(vector.Gaussian, 2, f32VecDim)
+					vecs := vector.GenF32Vec(vector.Gaussian, 2, f32VecDim)
 					for i := 0; i < 2; i++ {
 						ir := &payload.Insert_Request{
 							Vector: &payload.Object_Vector{
@@ -6267,7 +6223,7 @@ func Test_server_MultiInsert(t *testing.T) {
 					svcOpts: defaultSvcOpts,
 				},
 				beforeFunc: func(t *testing.T, s *server) {
-					vecs := genF32Vec(vector.Gaussian, insertNum, f32VecDim)
+					vecs := vector.GenF32Vec(vector.Gaussian, insertNum, f32VecDim)
 					for i, r := range req.Requests {
 						ir := &payload.Insert_Request{
 							Vector: &payload.Object_Vector{
