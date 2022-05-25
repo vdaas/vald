@@ -13,7 +13,10 @@ func WithGRPCMethod(ctx context.Context, method string) context.Context {
 
 // FromGRPCMethod returns the value associated with this context for key (grpcMethodContextKey)
 func FromGRPCMethod(ctx context.Context) string {
-	return ctx.Value(grpcMethodContextKey).(string)
+	if v := ctx.Value(grpcMethodContextKey); v != nil {
+		return v.(string)
+	}
+	return ""
 }
 
 const backoffNameContextKey contextKey = "backoff_name"
@@ -25,5 +28,8 @@ func WithBackoffName(ctx context.Context, name string) context.Context {
 
 // FromBackoffName returns the value associated with this context for key (backoffNameContextKey)
 func FromBackoffName(ctx context.Context) string {
-	return ctx.Value(backoffNameContextKey).(string)
+	if val := ctx.Value(backoffNameContextKey); val != nil {
+		return val.(string)
+	}
+	return ""
 }
