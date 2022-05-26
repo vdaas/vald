@@ -158,8 +158,8 @@ func (b *backoff) addJitter(dur float64) float64 {
 	return dur + float64(rand.LimitedUint32(uint64(hd))) - hd
 }
 
-func (b *backoff) Metrics(_ context.Context) (m map[string]int) {
-	m = make(map[string]int)
+func (b *backoff) Metrics(_ context.Context) map[string]int {
+	m := make(map[string]int)
 	b.metrics.Range(func(key, value any) bool {
 		b.metrics.Delete(key)
 		m[key.(string)] = value.(int)
