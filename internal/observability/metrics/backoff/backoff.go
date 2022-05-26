@@ -2,6 +2,7 @@ package backoff
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/vdaas/vald/internal/backoff"
 	"github.com/vdaas/vald/internal/observability/metrics"
@@ -47,8 +48,10 @@ func (bm *backoffMetrics) MeasurementWithTags(ctx context.Context) ([]metrics.Me
 					bm.nameKey: name,
 				},
 			})
+			fmt.Printf("BACKOFF_DEBUG: name: %v, count: %v\n", name, cnt)
 		}
 	}
+	fmt.Printf("BACKOFF_DEBUG: measurement: %v", mts)
 	return mts, nil
 }
 
