@@ -161,7 +161,7 @@ func (b *backoff) addJitter(dur float64) float64 {
 func (b *backoff) Metrics(_ context.Context) map[string]int {
 	m := make(map[string]int)
 	b.metrics.Range(func(key, value any) bool {
-		b.metrics.Delete(key)
+		b.metrics.Store(key.(string), 0)
 		m[key.(string)] = value.(int)
 		return true
 	})
