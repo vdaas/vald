@@ -1,3 +1,4 @@
+// Package backoff provides context key function
 package ctxkey
 
 import "context"
@@ -11,7 +12,7 @@ func WithGRPCMethod(ctx context.Context, method string) context.Context {
 	return context.WithValue(ctx, grpcMethodContextKey, method)
 }
 
-// FromGRPCMethod returns the value associated with this context for key (grpcMethodContextKey)
+// FromGRPCMethod returns the value associated with this context for key (grpcMethodContextKey).
 func FromGRPCMethod(ctx context.Context) string {
 	if v := ctx.Value(grpcMethodContextKey); v != nil {
 		return v.(string)
@@ -26,7 +27,7 @@ func WithBackoffName(ctx context.Context, name string) context.Context {
 	return context.WithValue(ctx, backoffNameContextKey, name)
 }
 
-// FromBackoffName returns the value associated with this context for key (backoffNameContextKey)
+// FromBackoffName returns the value associated with this context for key (backoffNameContextKey).
 func FromBackoffName(ctx context.Context) string {
 	if val := ctx.Value(backoffNameContextKey); val != nil {
 		return val.(string)
