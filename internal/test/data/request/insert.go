@@ -14,13 +14,17 @@ const (
 	Float
 )
 
-func GenMultiInsertReq(t ObjectType, dist vector.Distribution, num int, dim int, cfg *payload.Insert_Config) *payload.Insert_MultiRequest {
+func GenMultiInsertReq(t ObjectType, dist vector.Distribution, num int, dim int, cfg *payload.Insert_Config) (*payload.Insert_MultiRequest, error) {
 	var vecs [][]float32
+	var err error
 	switch t {
 	case Float:
-		vecs = vector.GenF32Vec(dist, num, dim)
+		vecs, err = vector.GenF32Vec(dist, num, dim)
 	case Uint8:
-		vecs = vector.GenIntVec(dist, num, dim)
+		vecs, err = vector.GenIntVec(dist, num, dim)
+	}
+	if err != nil {
+		return nil, err
 	}
 
 	req := &payload.Insert_MultiRequest{
@@ -36,7 +40,7 @@ func GenMultiInsertReq(t ObjectType, dist vector.Distribution, num int, dim int,
 		}
 	}
 
-	return req
+	return req, nil
 }
 
 // generate MultiInsert request with the same vector
