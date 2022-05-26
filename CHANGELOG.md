@@ -1,5 +1,100 @@
 # CHANGELOG
 
+## v1.5.3
+
+### Docker images
+
+<table>
+  <tr>
+    <th>component</th>
+    <th>Docker pull</th>
+  </tr>
+  <tr>
+    <td>Agent NGT</td>
+    <td>
+      <code>docker pull vdaas/vald-agent-ngt:v1.5.3</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-agent-ngt:v1.5.3</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Agent sidecar</td>
+    <td>
+      <code>docker pull vdaas/vald-agent-sidecar:v1.5.3</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-agent-sidecar:v1.5.3</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Discoverers</td>
+    <td>
+      <code>docker pull vdaas/vald-discoverer-k8s:v1.5.3</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-discoverer-k8s:v1.5.3</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Gateways</td>
+    <td>
+      <code>docker pull vdaas/vald-lb-gateway:v1.5.3</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-lb-gateway:v1.5.3</code><br/>
+      <code>docker pull vdaas/vald-filter-gateway:v1.5.3</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-filter-gateway:v1.5.3</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Index Manager</td>
+    <td>
+      <code>docker pull vdaas/vald-manager-index:v1.5.3</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-manager-index:v1.5.3</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Helm Operator</td>
+    <td>
+      <code>docker pull vdaas/vald-helm-operator:v1.5.3</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-helm-operator:v1.5.3</code>
+    </td>
+  </tr>
+</table>
+
+### Documents
+- [GoDoc](https://pkg.go.dev/github.com/vdaas/vald@v1.5.3)
+- [Helm Chart Reference](https://github.com/vdaas/vald/blob/v1.5.3/charts/vald/README.md)
+- [Helm Operator Chart Reference](https://github.com/vdaas/vald/blob/v1.5.3/charts/vald-helm-operator/README.md)
+
+### Changes
+:sparkles: Feature
+- add invalid id argument handling [#1667](https://github.com/vdaas/vald/pull/1667)
+
+:bug: Bugfix
+- fix update bug [#1660](https://github.com/vdaas/vald/pull/1660)
+- fix typo argument in Makefile and Makefile.d/function.mk [#1673](https://github.com/vdaas/vald/pull/1673)
+
+:green_heart: CI
+- fix chaos test temporarily [#1665](https://github.com/vdaas/vald/pull/1665)
+
+:memo: Document
+- add search config details document [#1661](https://github.com/vdaas/vald/pull/1661)
+
+:white_check_mark: Test 
+- implement pkg handler exists test cases [#1628](https://github.com/vdaas/vald/pull/1628)
+- implement multi insert test case for pkg agent handler [#1612](https://github.com/vdaas/vald/pull/1612)
+- create investigation test of max dim for NGT [#1633](https://github.com/vdaas/vald/pull/1633)
+- implement pkg handler remove test cases [#1644](https://github.com/vdaas/vald/pull/1644)
+- add e2e test for maxDimensionTest [#1650](https://github.com/vdaas/vald/pull/1650)
+- implement update handler test cases [#1657](https://github.com/vdaas/vald/pull/1657)
+
+:arrow_up: Update dependencies
+- update manifests version [#1642](https://github.com/vdaas/vald/pull/1642)
+- update go module [#1643](https://github.com/vdaas/vald/pull/1643)
+- fix go tool installation [#1649](https://github.com/vdaas/vald/pull/1649)
+- update kind version [#1668](https://github.com/vdaas/vald/pull/1668)
+
+:art: Design
+- update dataflow image [#1647](https://github.com/vdaas/vald/pull/1647)
+
+:lock: Security
+- fix CWE-285 [#1654](https://github.com/vdaas/vald/pull/1654)
+
+
 ## v1.5.2
 
 ### Docker images

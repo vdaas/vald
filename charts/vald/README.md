@@ -3,7 +3,7 @@ Vald
 
 This is a Helm chart to install Vald components.
 
-Current chart version is `v1.5.2`
+Current chart version is `v1.5.3`
 
 Table of Contents
 ---
@@ -288,7 +288,7 @@ Configuration
 | defaults.grpc.client.tls.enabled | bool | `false` | TLS enabled |
 | defaults.grpc.client.tls.insecure_skip_verify | bool | `false` | enable/disable skip SSL certificate verification |
 | defaults.grpc.client.tls.key | string | `"/path/to/key"` | TLS key path |
-| defaults.image.tag | string | `"v1.5.2"` | docker image tag |
+| defaults.image.tag | string | `"v1.5.3"` | docker image tag |
 | defaults.logging.format | string | `"raw"` | logging format. logging format must be `raw` or `json` |
 | defaults.logging.level | string | `"debug"` | logging level. logging level must be `debug`, `info`, `warn`, `error` or `fatal`. |
 | defaults.logging.logger | string | `"glg"` | logger name. currently logger must be `glg` or `zap`. |
@@ -653,7 +653,7 @@ Configuration
 | gateway.filter.ingress.host | string | `"filter.gateway.vald.vdaas.org"` | ingress hostname |
 | gateway.filter.ingress.pathType | string | `"ImplementationSpecific"` | gateway ingress pathType |
 | gateway.filter.ingress.servicePort | string | `"grpc"` | service port to be exposed by ingress |
-| gateway.filter.initContainers | list | `[{"image":"busybox","name":"wait-for-gateway-lb","sleepDuration":2,"target":"gateway-lb","type":"wait-for"}]` | init containers |
+| gateway.filter.initContainers | list | `[{"image":"busybox:stable","name":"wait-for-gateway-lb","sleepDuration":2,"target":"gateway-lb","type":"wait-for"}]` | init containers |
 | gateway.filter.internalTrafficPolicy | string | `""` | internal traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local |
 | gateway.filter.kind | string | `"Deployment"` | deployment kind: Deployment or DaemonSet |
 | gateway.filter.logging | object | `{}` | logging config (overrides defaults.logging) |
@@ -711,7 +711,7 @@ Configuration
 | gateway.lb.ingress.host | string | `"lb.gateway.vald.vdaas.org"` | ingress hostname |
 | gateway.lb.ingress.pathType | string | `"ImplementationSpecific"` | gateway ingress pathType |
 | gateway.lb.ingress.servicePort | string | `"grpc"` | service port to be exposed by ingress |
-| gateway.lb.initContainers | list | `[{"image":"busybox","name":"wait-for-discoverer","sleepDuration":2,"target":"discoverer","type":"wait-for"},{"image":"busybox","name":"wait-for-agent","sleepDuration":2,"target":"agent","type":"wait-for"}]` | init containers |
+| gateway.lb.initContainers | list | `[{"image":"busybox:stable","name":"wait-for-discoverer","sleepDuration":2,"target":"discoverer","type":"wait-for"},{"image":"busybox:stable","name":"wait-for-agent","sleepDuration":2,"target":"agent","type":"wait-for"}]` | init containers |
 | gateway.lb.internalTrafficPolicy | string | `""` | internal traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local |
 | gateway.lb.kind | string | `"Deployment"` | deployment kind: Deployment or DaemonSet |
 | gateway.lb.logging | object | `{}` | logging config (overrides defaults.logging) |
@@ -768,7 +768,7 @@ Configuration
 | manager.index.indexer.discoverer.client | object | `{}` | gRPC client for discoverer (overrides defaults.grpc.client) |
 | manager.index.indexer.discoverer.duration | string | `"500ms"` | refresh duration to discover |
 | manager.index.indexer.node_name | string | `""` | node name |
-| manager.index.initContainers | list | `[{"image":"busybox","name":"wait-for-agent","sleepDuration":2,"target":"agent","type":"wait-for"},{"image":"busybox","name":"wait-for-discoverer","sleepDuration":2,"target":"discoverer","type":"wait-for"}]` | init containers |
+| manager.index.initContainers | list | `[{"image":"busybox:stable","name":"wait-for-agent","sleepDuration":2,"target":"agent","type":"wait-for"},{"image":"busybox:stable","name":"wait-for-discoverer","sleepDuration":2,"target":"discoverer","type":"wait-for"}]` | init containers |
 | manager.index.kind | string | `"Deployment"` | deployment kind: Deployment or DaemonSet |
 | manager.index.logging | object | `{}` | logging config (overrides defaults.logging) |
 | manager.index.maxUnavailable | string | `"50%"` | maximum number of unavailable replicas |
