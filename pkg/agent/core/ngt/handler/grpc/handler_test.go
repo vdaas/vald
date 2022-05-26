@@ -30,6 +30,7 @@ import (
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
 	"github.com/vdaas/vald/internal/config"
+	"github.com/vdaas/vald/internal/conv"
 	"github.com/vdaas/vald/internal/core/algorithm/ngt"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
@@ -37,7 +38,6 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/net/grpc/errdetails"
 	"github.com/vdaas/vald/internal/net/grpc/status"
-	"github.com/vdaas/vald/internal/test/data/charset"
 	"github.com/vdaas/vald/internal/test/data/request"
 	"github.com/vdaas/vald/internal/test/data/vector"
 	"github.com/vdaas/vald/internal/test/goleak"
@@ -541,7 +541,7 @@ func Test_server_Exists(t *testing.T) {
 			name: "Boundary Value Testing case 3.2: fail exists with utf-8 ID from s-jis index",
 			args: args{
 				ctx:      ctx,
-				indexId:  charset.Utf8ToSjis("こんにちは"),
+				indexId:  conv.Utf8ToSjis("こんにちは"),
 				searchId: "こんにちは",
 			},
 			want: want{
@@ -552,7 +552,7 @@ func Test_server_Exists(t *testing.T) {
 			name: "Boundary Value Testing case 3.3: fail exists with utf-8 ID from euc-jp index",
 			args: args{
 				ctx:      ctx,
-				indexId:  charset.Utf8ToEucjp("こんにちは"),
+				indexId:  conv.Utf8ToEucjp("こんにちは"),
 				searchId: "こんにちは",
 			},
 			want: want{
@@ -564,7 +564,7 @@ func Test_server_Exists(t *testing.T) {
 			args: args{
 				ctx:      ctx,
 				indexId:  "こんにちは",
-				searchId: charset.Utf8ToSjis("こんにちは"),
+				searchId: conv.Utf8ToSjis("こんにちは"),
 			},
 			want: want{
 				code: codes.NotFound,
@@ -574,8 +574,8 @@ func Test_server_Exists(t *testing.T) {
 			name: "Boundary Value Testing case 3.5: success exists with s-jis ID from s-jis index",
 			args: args{
 				ctx:      ctx,
-				indexId:  charset.Utf8ToSjis("こんにちは"),
-				searchId: charset.Utf8ToSjis("こんにちは"),
+				indexId:  conv.Utf8ToSjis("こんにちは"),
+				searchId: conv.Utf8ToSjis("こんにちは"),
 			},
 			want: want{},
 		},
@@ -583,8 +583,8 @@ func Test_server_Exists(t *testing.T) {
 			name: "Boundary Value Testing case 3.6: fail exists with s-jis ID from euc-jp index",
 			args: args{
 				ctx:      ctx,
-				indexId:  charset.Utf8ToEucjp("こんにちは"),
-				searchId: charset.Utf8ToSjis("こんにちは"),
+				indexId:  conv.Utf8ToEucjp("こんにちは"),
+				searchId: conv.Utf8ToSjis("こんにちは"),
 			},
 			want: want{
 				code: codes.NotFound,
@@ -595,7 +595,7 @@ func Test_server_Exists(t *testing.T) {
 			args: args{
 				ctx:      ctx,
 				indexId:  "こんにちは",
-				searchId: charset.Utf8ToEucjp("こんにちは"),
+				searchId: conv.Utf8ToEucjp("こんにちは"),
 			},
 			want: want{
 				code: codes.NotFound,
@@ -605,8 +605,8 @@ func Test_server_Exists(t *testing.T) {
 			name: "Boundary Value Testing case 3.8: fail exists with euc-jp ID from s-jis index",
 			args: args{
 				ctx:      ctx,
-				indexId:  charset.Utf8ToSjis("こんにちは"),
-				searchId: charset.Utf8ToEucjp("こんにちは"),
+				indexId:  conv.Utf8ToSjis("こんにちは"),
+				searchId: conv.Utf8ToEucjp("こんにちは"),
 			},
 			want: want{
 				code: codes.NotFound,
@@ -616,8 +616,8 @@ func Test_server_Exists(t *testing.T) {
 			name: "Boundary Value Testing case 3.9: success exists with euc-jp ID from euc-jp index",
 			args: args{
 				ctx:      ctx,
-				indexId:  charset.Utf8ToEucjp("こんにちは"),
-				searchId: charset.Utf8ToEucjp("こんにちは"),
+				indexId:  conv.Utf8ToEucjp("こんにちは"),
+				searchId: conv.Utf8ToEucjp("こんにちは"),
 			},
 			want: want{},
 		},
@@ -1748,7 +1748,7 @@ func Test_server_SearchByID(t *testing.T) {
 			name: "Boundary Value Testing case 3.2: fail search with utf-8 ID from s-jis index",
 			args: args{
 				ctx:      ctx,
-				indexId:  charset.Utf8ToSjis("こんにちは"),
+				indexId:  conv.Utf8ToSjis("こんにちは"),
 				searchId: "こんにちは",
 			},
 			want: want{
@@ -1760,7 +1760,7 @@ func Test_server_SearchByID(t *testing.T) {
 			name: "Boundary Value Testing case 3.3: fail search with utf-8 ID from euc-jp index",
 			args: args{
 				ctx:      ctx,
-				indexId:  charset.Utf8ToEucjp("こんにちは"),
+				indexId:  conv.Utf8ToEucjp("こんにちは"),
 				searchId: "こんにちは",
 			},
 			want: want{
@@ -1773,7 +1773,7 @@ func Test_server_SearchByID(t *testing.T) {
 			args: args{
 				ctx:      ctx,
 				indexId:  "こんにちは",
-				searchId: charset.Utf8ToSjis("こんにちは"),
+				searchId: conv.Utf8ToSjis("こんにちは"),
 			},
 			want: want{
 				resultSize: 0,
@@ -1784,8 +1784,8 @@ func Test_server_SearchByID(t *testing.T) {
 			name: "Boundary Value Testing case 3.5: success search with s-jis ID from s-jis index",
 			args: args{
 				ctx:      ctx,
-				indexId:  charset.Utf8ToSjis("こんにちは"),
-				searchId: charset.Utf8ToSjis("こんにちは"),
+				indexId:  conv.Utf8ToSjis("こんにちは"),
+				searchId: conv.Utf8ToSjis("こんにちは"),
 			},
 			want: want{
 				resultSize: int(defaultSearch_Config.GetNum()),
@@ -1795,8 +1795,8 @@ func Test_server_SearchByID(t *testing.T) {
 			name: "Boundary Value Testing case 3.6: fail search with s-jis ID from euc-jp index",
 			args: args{
 				ctx:      ctx,
-				indexId:  charset.Utf8ToEucjp("こんにちは"),
-				searchId: charset.Utf8ToSjis("こんにちは"),
+				indexId:  conv.Utf8ToEucjp("こんにちは"),
+				searchId: conv.Utf8ToSjis("こんにちは"),
 			},
 			want: want{
 				resultSize: 0,
@@ -1808,7 +1808,7 @@ func Test_server_SearchByID(t *testing.T) {
 			args: args{
 				ctx:      ctx,
 				indexId:  "こんにちは",
-				searchId: charset.Utf8ToEucjp("こんにちは"),
+				searchId: conv.Utf8ToEucjp("こんにちは"),
 			},
 			want: want{
 				resultSize: 0,
@@ -1819,8 +1819,8 @@ func Test_server_SearchByID(t *testing.T) {
 			name: "Boundary Value Testing case 3.8: fail search with euc-jp ID from s-jis index",
 			args: args{
 				ctx:      ctx,
-				indexId:  charset.Utf8ToSjis("こんにちは"),
-				searchId: charset.Utf8ToEucjp("こんにちは"),
+				indexId:  conv.Utf8ToSjis("こんにちは"),
+				searchId: conv.Utf8ToEucjp("こんにちは"),
 			},
 			want: want{
 				resultSize: 0,
@@ -1831,8 +1831,8 @@ func Test_server_SearchByID(t *testing.T) {
 			name: "Boundary Value Testing case 3.9: success search with euc-jp ID from euc-jp index",
 			args: args{
 				ctx:      ctx,
-				indexId:  charset.Utf8ToEucjp("こんにちは"),
-				searchId: charset.Utf8ToEucjp("こんにちは"),
+				indexId:  conv.Utf8ToEucjp("こんにちは"),
+				searchId: conv.Utf8ToEucjp("こんにちは"),
 			},
 			want: want{
 				resultSize: int(defaultSearch_Config.GetNum()),
@@ -6942,7 +6942,7 @@ func Test_server_Update(t *testing.T) {
 			name: "Boundary Value Testing case 3.2: success update with utf-8 ID from s-jis index",
 			args: args{
 				ctx:     ctx,
-				indexId: charset.Utf8ToSjis("こんにちは"),
+				indexId: conv.Utf8ToSjis("こんにちは"),
 				req: &payload.Update_Request{
 					Vector: &payload.Object_Vector{
 						Id:     "こんにちは",
@@ -6959,7 +6959,7 @@ func Test_server_Update(t *testing.T) {
 			name: "Boundary Value Testing case 3.3: success update with utf-8 ID from euc-jp index",
 			args: args{
 				ctx:     ctx,
-				indexId: charset.Utf8ToEucjp("こんにちは"),
+				indexId: conv.Utf8ToEucjp("こんにちは"),
 				req: &payload.Update_Request{
 					Vector: &payload.Object_Vector{
 						Id:     "こんにちは",
@@ -6979,7 +6979,7 @@ func Test_server_Update(t *testing.T) {
 				indexId: "こんにちは",
 				req: &payload.Update_Request{
 					Vector: &payload.Object_Vector{
-						Id:     charset.Utf8ToSjis("こんにちは"),
+						Id:     conv.Utf8ToSjis("こんにちは"),
 						Vector: vector.GaussianDistributedFloat32VectorGenerator(1, dimension)[0],
 					},
 					Config: defaultUpdateConfig,
@@ -6993,27 +6993,27 @@ func Test_server_Update(t *testing.T) {
 			name: "Boundary Value Testing case 3.5: success update with s-jis ID from s-jis index",
 			args: args{
 				ctx:     ctx,
-				indexId: charset.Utf8ToSjis("こんにちは"),
+				indexId: conv.Utf8ToSjis("こんにちは"),
 				req: &payload.Update_Request{
 					Vector: &payload.Object_Vector{
-						Id:     charset.Utf8ToSjis("こんにちは"),
+						Id:     conv.Utf8ToSjis("こんにちは"),
 						Vector: vector.GaussianDistributedFloat32VectorGenerator(1, dimension)[0],
 					},
 					Config: defaultUpdateConfig,
 				},
 			},
 			want: want{
-				wantUuid: charset.Utf8ToSjis("こんにちは"),
+				wantUuid: conv.Utf8ToSjis("こんにちは"),
 			},
 		},
 		{
 			name: "Boundary Value Testing case 3.6: fail update with s-jis ID from euc-jp index",
 			args: args{
 				ctx:     ctx,
-				indexId: charset.Utf8ToEucjp("こんにちは"),
+				indexId: conv.Utf8ToEucjp("こんにちは"),
 				req: &payload.Update_Request{
 					Vector: &payload.Object_Vector{
-						Id:     charset.Utf8ToSjis("こんにちは"),
+						Id:     conv.Utf8ToSjis("こんにちは"),
 						Vector: vector.GaussianDistributedFloat32VectorGenerator(1, dimension)[0],
 					},
 					Config: defaultUpdateConfig,
@@ -7030,7 +7030,7 @@ func Test_server_Update(t *testing.T) {
 				indexId: "こんにちは",
 				req: &payload.Update_Request{
 					Vector: &payload.Object_Vector{
-						Id:     charset.Utf8ToEucjp("こんにちは"),
+						Id:     conv.Utf8ToEucjp("こんにちは"),
 						Vector: vector.GaussianDistributedFloat32VectorGenerator(1, dimension)[0],
 					},
 					Config: defaultUpdateConfig,
@@ -7044,10 +7044,10 @@ func Test_server_Update(t *testing.T) {
 			name: "Boundary Value Testing case 3.8: fail update with euc-jp ID from s-jis index",
 			args: args{
 				ctx:     ctx,
-				indexId: charset.Utf8ToSjis("こんにちは"),
+				indexId: conv.Utf8ToSjis("こんにちは"),
 				req: &payload.Update_Request{
 					Vector: &payload.Object_Vector{
-						Id:     charset.Utf8ToEucjp("こんにちは"),
+						Id:     conv.Utf8ToEucjp("こんにちは"),
 						Vector: vector.GaussianDistributedFloat32VectorGenerator(1, dimension)[0],
 					},
 					Config: defaultUpdateConfig,
@@ -7061,17 +7061,17 @@ func Test_server_Update(t *testing.T) {
 			name: "Boundary Value Testing case 3.9: success update with euc-jp ID from euc-jp index",
 			args: args{
 				ctx:     ctx,
-				indexId: charset.Utf8ToEucjp("こんにちは"),
+				indexId: conv.Utf8ToEucjp("こんにちは"),
 				req: &payload.Update_Request{
 					Vector: &payload.Object_Vector{
-						Id:     charset.Utf8ToEucjp("こんにちは"),
+						Id:     conv.Utf8ToEucjp("こんにちは"),
 						Vector: vector.GaussianDistributedFloat32VectorGenerator(1, dimension)[0],
 					},
 					Config: defaultUpdateConfig,
 				},
 			},
 			want: want{
-				wantUuid: charset.Utf8ToEucjp("こんにちは"),
+				wantUuid: conv.Utf8ToEucjp("こんにちは"),
 			},
 		},
 		{
@@ -8220,7 +8220,7 @@ func Test_server_Remove(t *testing.T) {
 			name: "Boundary Value Testing case 3.2: fail exists with utf-8 ID from s-jis index",
 			args: args{
 				ctx:      ctx,
-				indexId:  charset.Utf8ToSjis("こんにちは"),
+				indexId:  conv.Utf8ToSjis("こんにちは"),
 				removeId: "こんにちは",
 			},
 			want: want{
@@ -8231,7 +8231,7 @@ func Test_server_Remove(t *testing.T) {
 			name: "Boundary Value Testing case 3.3: fail exists with utf-8 ID from euc-jp index",
 			args: args{
 				ctx:      ctx,
-				indexId:  charset.Utf8ToEucjp("こんにちは"),
+				indexId:  conv.Utf8ToEucjp("こんにちは"),
 				removeId: "こんにちは",
 			},
 			want: want{
@@ -8243,7 +8243,7 @@ func Test_server_Remove(t *testing.T) {
 			args: args{
 				ctx:      ctx,
 				indexId:  "こんにちは",
-				removeId: charset.Utf8ToSjis("こんにちは"),
+				removeId: conv.Utf8ToSjis("こんにちは"),
 			},
 			want: want{
 				code: codes.NotFound,
@@ -8253,19 +8253,19 @@ func Test_server_Remove(t *testing.T) {
 			name: "Boundary Value Testing case 3.5: success exists with s-jis ID from s-jis index",
 			args: args{
 				ctx:      ctx,
-				indexId:  charset.Utf8ToSjis("こんにちは"),
-				removeId: charset.Utf8ToSjis("こんにちは"),
+				indexId:  conv.Utf8ToSjis("こんにちは"),
+				removeId: conv.Utf8ToSjis("こんにちは"),
 			},
 			want: want{
-				wantUuid: charset.Utf8ToSjis("こんにちは"),
+				wantUuid: conv.Utf8ToSjis("こんにちは"),
 			},
 		},
 		{
 			name: "Boundary Value Testing case 3.6: fail exists with s-jis ID from euc-jp index",
 			args: args{
 				ctx:      ctx,
-				indexId:  charset.Utf8ToEucjp("こんにちは"),
-				removeId: charset.Utf8ToSjis("こんにちは"),
+				indexId:  conv.Utf8ToEucjp("こんにちは"),
+				removeId: conv.Utf8ToSjis("こんにちは"),
 			},
 			want: want{
 				code: codes.NotFound,
@@ -8276,7 +8276,7 @@ func Test_server_Remove(t *testing.T) {
 			args: args{
 				ctx:      ctx,
 				indexId:  "こんにちは",
-				removeId: charset.Utf8ToEucjp("こんにちは"),
+				removeId: conv.Utf8ToEucjp("こんにちは"),
 			},
 			want: want{
 				code: codes.NotFound,
@@ -8286,8 +8286,8 @@ func Test_server_Remove(t *testing.T) {
 			name: "Boundary Value Testing case 3.8: fail exists with euc-jp ID from s-jis index",
 			args: args{
 				ctx:      ctx,
-				indexId:  charset.Utf8ToSjis("こんにちは"),
-				removeId: charset.Utf8ToEucjp("こんにちは"),
+				indexId:  conv.Utf8ToSjis("こんにちは"),
+				removeId: conv.Utf8ToEucjp("こんにちは"),
 			},
 			want: want{
 				code: codes.NotFound,
@@ -8297,11 +8297,11 @@ func Test_server_Remove(t *testing.T) {
 			name: "Boundary Value Testing case 3.9: success exists with euc-jp ID from euc-jp index",
 			args: args{
 				ctx:      ctx,
-				indexId:  charset.Utf8ToEucjp("こんにちは"),
-				removeId: charset.Utf8ToEucjp("こんにちは"),
+				indexId:  conv.Utf8ToEucjp("こんにちは"),
+				removeId: conv.Utf8ToEucjp("こんにちは"),
 			},
 			want: want{
-				wantUuid: charset.Utf8ToEucjp("こんにちは"),
+				wantUuid: conv.Utf8ToEucjp("こんにちは"),
 			},
 		},
 		{

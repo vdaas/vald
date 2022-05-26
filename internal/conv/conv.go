@@ -16,8 +16,13 @@
 package conv
 
 import (
+	"io/ioutil"
 	"reflect"
+	"strings"
 	"unsafe"
+
+	"golang.org/x/text/encoding/japanese"
+	"golang.org/x/text/transform"
 )
 
 // Btoa converts from byte slice to string.
@@ -47,4 +52,14 @@ func F32stos(fs []float32) (s string) {
 	(*(*int)(unsafe.Pointer(uintptr(addr) + uintptr(8)))) = lf
 	(*(*int)(unsafe.Pointer(uintptr(addr) + uintptr(16)))) = lf
 	return Btoa(buf)
+}
+
+func Utf8ToSjis(s string) string {
+	b, _ := ioutil.ReadAll(transform.NewReader(strings.NewReader(s), japanese.ShiftJIS.NewEncoder()))
+	return string(b)
+}
+
+func Utf8ToEucjp(s string) string {
+	b, _ := ioutil.ReadAll(transform.NewReader(strings.NewReader(s), japanese.EUCJP.NewEncoder()))
+	return string(b)
 }
