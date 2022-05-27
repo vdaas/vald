@@ -1,11 +1,11 @@
 # Response Status Code
 
-This page describes each status code from API response.
+This page describes each status code from the API response.
 
 ## Status Codes
 
 This table shows the main status code and its name using Vald.
-Below sections describes the meaning of each code and the reason why API returns.
+The sections below describe the meaning of each code and why API returns.
 
 | code | name                                      |
 | :--: | :---------------------------------------- |
@@ -26,7 +26,7 @@ Services that return this code are all services.
 
 ## INVALID_ARGUMENT
 
-`INVALID_ARGUMENT` means the something wrong in the request configuration.
+`INVALID_ARGUMENT` means something wrong in the request configuration.
 
 Services that return status are all services.
 If you get this code, please verify your request is correct.
@@ -35,7 +35,8 @@ If you get this code, please verify your request is correct.
 
 `DEADLINE_EXCEEDED` returns when the process ends due to timeout.
 
-Services that returns status are:
+Services that return status are:
+
 - [Object Service(only Exists RPC)](../api/object.md#Exists-RPC)
 - [Insert Service](../api/insert.md)
 - [Remove Service](../api/insert.md)
@@ -43,7 +44,7 @@ Services that returns status are:
 
 The timeout configuration is on the Vald cluster side.
 If it appears constantly, you need to review the cluster settings.
-However, it appears only when using search service, you can overwrite timeout configuration by lengthening the time setting in the search config.
+However, only when using a search service can you overwrite the timeout configuration by lengthening the time setting in the search config.
 
 ## NOT_FOUND
 
@@ -51,48 +52,51 @@ However, it appears only when using search service, you can overwrite timeout co
 
 The example cases are:
 
-    - No search result when using SearchById api
-    - No index data corresponding to the request vector when using Update/Exists/GetObject api
+- No search result when using SearchById RPC.
+- No index data corresponding to the request vector when using Update/Exists/GetObject RPC
 
-Services that returns status are:
+Services that return status are:
+
 - [Object Service](../api/object.md)
 - [Update Service](../api/update.md)
 - [Remove Service](../api/insert.md)
 - [Search Service](../api/search.md)
 
-There are two reasons.
-One is there is no index data in Vald Agent components or index process is running in.
-When Vald Agent component runs the index process (createIndex/saveIndex), the any process won't run and it will return with no result.
+The possible reasons are:
 
-The other one, which occurs using search / update / remove service, is the request query vector or id is wrong.
-Especially, both of update service and remove service requires the ID of vector Vald Agent component already indexed.
+- There is no index data in Vald Agent components or running the indexing process in the Vald Agent components.
+  When the Vald Agent component runs the indexing process (createIndex/saveIndex), any process won't run, and it will return with no result.
+- The request query vector or id is wrong when using the search/update/remove service.
+  Notably, both update service and remove service require the ID of vector Vald Agent component already indexed.
 
 ## ALREADY_EXISTS
 
-`ALREADY_EXISTS` means that Vald Agent component already index the vector same as the query vector when set `skip_strict_exist_check` as `true` in request config.
+`ALREADY_EXISTS` means that the Vald Agent component already stores the vector index same as the query vector when set `skip_strict_exist_check` as `true` in request config.
 
-Services that returns status are:
+Services that return status are:
+
 - [Insert Service](../api/insert.md)
 - [Update Service](../api/update.md)
 
-The way to avoid it, you have to change the query vector with `skip_strict_exist_check` is `true` or set `skip_strict_exist_check` as `false` instead of change the query vector.
+You have to change the query vector with `skip_strict_exist_check` as `true` or set `skip_strict_exist_check` as `false` instead of changing the query vector.
 
 ## RESOURCE_EXHAUSTED
 
-`RESOURCE_EXHAUSTED` means the gRPC message size is bigger than limit (default is 4MB).
+`RESOURCE_EXHAUSTED` means the gRPC message size is more extensive than the limit (default is 4MB).
 
-Services that returns status are all services.
-The most case in the Vald is the query vector is too large in other word setting vector dimension size it too large.
+Services that return status are all services.
+The most case in the Vald is that the query vector is too large.
+In other words, the vector dimension size in configuration is too large.
 
 ## INTERNAL
 
 `INTERNAL` appears when some wrong happens in the Vald cluster.
 
-Services that returns status are all services.
-If you get it, please verify the state of Vald cluster.
+Services that return status are all services.
+If you get it, please verify the state of the Vald cluster.
 
 ## UNAVAILABLE
 
-`UNAVAILABLE` means the gRPC message cannot reach to the Vald cluster.
+`UNAVAILABLE` means the gRPC message cannot reach the Vald cluster.
 
-You need to verify whether the Vald cluster is running and host and port is correct.
+It would be best to verify whether the Vald cluster is running and the host and port are correct.
