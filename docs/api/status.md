@@ -66,7 +66,7 @@ The possible reasons are:
 
 - There is no index data in Vald Agent components or running the indexing process in the Vald Agent components.
   When the Vald Agent component runs the indexing process (createIndex/saveIndex), any process won't run, and it will return with no result.
-- The request query vector or id is wrong when using the search/update/remove service.
+- The request query vector or ID is wrong when using the search/update/remove service.
   Notably, both update service and remove service require the ID of vector Vald Agent component already indexed.
 
 ## ALREADY_EXISTS
@@ -82,7 +82,7 @@ You have to change the query vector with `skip_strict_exist_check` as `true` or 
 
 ## RESOURCE_EXHAUSTED
 
-`RESOURCE_EXHAUSTED` means the gRPC message size is more extensive than the limit (default is 4MB).
+`RESOURCE_EXHAUSTED` means the gRPC message size is more extensive than the limit (default is 4 MB).
 
 Services that return status are all services.
 The most case in the Vald is that the query vector is too large.
