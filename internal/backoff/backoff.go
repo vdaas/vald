@@ -24,7 +24,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/vdaas/vald/internal/ctxkey"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/observability/trace"
@@ -150,7 +149,7 @@ func (b *backoff) Do(ctx context.Context, f func(ctx context.Context) (val inter
 			}
 
 			// e.g. name = v1.vald.Exists/10.0.0.0 ...etc
-			if name := ctxkey.FromBackoffName(ctx); len(name) != 0 && b.metricsEnabled {
+			if name := FromBackoffName(ctx); len(name) != 0 && b.metricsEnabled {
 				b.mu.Lock()
 				b.metrics[name] += 1
 				b.mu.Unlock()
