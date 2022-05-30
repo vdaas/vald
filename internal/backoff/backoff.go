@@ -43,13 +43,15 @@ type backoff struct {
 	backoffTimeLimit      time.Duration
 	errLog                bool
 	metricsEnabled        bool
-	metrics               sync.Map
+
+	mu      sync.RWMutex
+	metrics map[string]int64
 }
 
 // Backoff represents an interface to handle backoff operation.
 type Backoff interface {
 	Do(context.Context, func(ctx context.Context) (interface{}, bool, error)) (interface{}, error)
-	Metrics(ctx context.Context) map[string]int
+	Metrics(ctx context.Context) map[string]int64
 	Close()
 }
 
@@ -66,6 +68,7 @@ func New(opts ...Option) Backoff {
 	}
 	b.durationLimit = b.maxDuration / b.backoffFactor
 	b.jittedInitialDuration = b.addJitter(b.initialDuration)
+	b.metrics = make(map[string]int64)
 
 	return b
 }
@@ -115,8 +118,15 @@ func (b *backoff) Do(ctx context.Context, f func(ctx context.Context) (val inter
 				return f(ssctx)
 			}()
 
+			// e.g. name = v1.vald.Exists/10.0.0.0 ...etc
 			if name := ctxkey.FromBackoffName(ctx); len(name) != 0 && b.metricsEnabled {
-				b.metrics.Store(name, cnt+1)
+				b.mu.Lock()
+				if v, ok := b.metrics[name]; !ok || v >= math.MaxInt64 {
+					b.metrics[name] = 0
+				} else {
+					b.metrics[name] += 1
+				}
+				b.mu.Unlock()
 			}
 
 			if !ret {
@@ -158,13 +168,17 @@ func (b *backoff) addJitter(dur float64) float64 {
 	return dur + float64(rand.LimitedUint32(uint64(hd))) - hd
 }
 
-func (b *backoff) Metrics(_ context.Context) map[string]int {
-	m := make(map[string]int)
-	b.metrics.Range(func(key, value any) bool {
-		b.metrics.Delete(key)
-		m[key.(string)] = value.(int)
-		return true
-	})
+func (b *backoff) Metrics(_ context.Context) map[string]int64 {
+	b.mu.RLock()
+	defer b.mu.RUnlock()
+	if len(b.metrics) == 0 {
+		return nil
+	}
+
+	m := make(map[string]int64, len(b.metrics))
+	for name, cnt := range b.metrics {
+		m[name] = cnt
+	}
 	return m
 }
 

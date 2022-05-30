@@ -30,7 +30,7 @@ func (rm *roundTripMock) RoundTrip(req *http.Request) (*http.Response, error) {
 
 type backoffMock struct {
 	DoFunc      func(context.Context, func(context.Context) (interface{}, bool, error)) (interface{}, error)
-	MetricsFunc func(ctx context.Context) map[string]int
+	MetricsFunc func(ctx context.Context) map[string]int64
 	CloseFunc   func()
 }
 
@@ -38,7 +38,7 @@ func (bm *backoffMock) Do(ctx context.Context, fn func(context.Context) (interfa
 	return bm.DoFunc(ctx, fn)
 }
 
-func (bm *backoffMock) Metrics(ctx context.Context) map[string]int {
+func (bm *backoffMock) Metrics(ctx context.Context) map[string]int64 {
 	return bm.MetricsFunc(ctx)
 }
 

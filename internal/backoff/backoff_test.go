@@ -61,6 +61,7 @@ func TestNew(t *testing.T) {
 				maxRetryCount:    50,
 				errLog:           true,
 				durationLimit:    float64(time.Hour) / 1.1,
+				metrics:          make(map[string]int64),
 			},
 			checkFunc: func(got *backoff, want *backoff) error {
 				got.jittedInitialDuration, want.jittedInitialDuration = 1, 1
