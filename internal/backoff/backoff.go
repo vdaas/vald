@@ -116,7 +116,6 @@ func (b *backoff) Do(ctx context.Context, f func(ctx context.Context) (val inter
 				}()
 				return f(ssctx)
 			}()
-
 			if !ret {
 				return res, err
 			}
@@ -126,7 +125,6 @@ func (b *backoff) Do(ctx context.Context, f func(ctx context.Context) (val inter
 			if b.errLog {
 				log.Error(err)
 			}
-
 			timer.Reset(time.Duration(jdur))
 			select {
 			case <-dctx.Done():
