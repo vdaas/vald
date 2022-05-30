@@ -42,7 +42,7 @@ func (bm *backoffMetrics) MeasurementWithTags(ctx context.Context) ([]metrics.Me
 		ms := bo.Metrics(ctx)
 		for name, cnt := range ms {
 			mts = append(mts, metrics.MeasurementWithTags{
-				Measurement: bm.retryCount.M(int64(cnt)),
+				Measurement: bm.retryCount.M(cnt),
 				Tags: map[metrics.Key]string{
 					bm.nameKey: name,
 				},
