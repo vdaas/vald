@@ -2,7 +2,6 @@ package backoff
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/vdaas/vald/internal/backoff"
 	"github.com/vdaas/vald/internal/observability/metrics"
