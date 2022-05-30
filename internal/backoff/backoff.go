@@ -92,6 +92,7 @@ func (b *backoff) Do(ctx context.Context, f func(ctx context.Context) (val inter
 
 	dur := b.initialDuration
 	jdur := b.jittedInitialDuration
+	name := FromBackoffName(ctx)
 
 	dctx, cancel := context.WithDeadline(sctx, time.Now().Add(b.backoffTimeLimit))
 	defer cancel()
@@ -125,6 +126,12 @@ func (b *backoff) Do(ctx context.Context, f func(ctx context.Context) (val inter
 			if b.errLog {
 				log.Error(err)
 			}
+			// e.g. name = v1.vald.Exists/10.0.0.0 ...etc
+			if len(name) != 0 && b.metricsEnabled {
+				b.mu.Lock()
+				b.metrics[name] += 1
+				b.mu.Unlock()
+			}
 			timer.Reset(time.Duration(jdur))
 			select {
 			case <-dctx.Done():
@@ -144,13 +151,6 @@ func (b *backoff) Do(ctx context.Context, f func(ctx context.Context) (val inter
 					dur *= b.backoffFactor
 					jdur = b.addJitter(dur)
 				}
-			}
-
-			// e.g. name = v1.vald.Exists/10.0.0.0 ...etc
-			if name := FromBackoffName(ctx); len(name) != 0 && b.metricsEnabled {
-				b.mu.Lock()
-				b.metrics[name] += 1
-				b.mu.Unlock()
 			}
 		}
 	}
