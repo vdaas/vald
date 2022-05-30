@@ -118,7 +118,7 @@ func (idx *index) Start(ctx context.Context) (<-chan error, error) {
 				return finalize()
 			case err = <-dech:
 			case <-it.C:
-				err = idx.execute(grpc.WithGRPCMethod(ctx, "v1.vald.CreateIndex"), true, false)
+				err = idx.execute(grpc.WithGRPCMethod(ctx, "core.v1.Agent/CreateIndex"), true, false)
 				if err != nil {
 					ech <- err
 					log.Error("an error occurred during indexing", err)
@@ -126,7 +126,7 @@ func (idx *index) Start(ctx context.Context) (<-chan error, error) {
 				}
 				it.Reset(idx.indexDuration)
 			case <-itl.C:
-				err = idx.execute(grpc.WithGRPCMethod(ctx, "v1.vald.CreateIndex"), false, false)
+				err = idx.execute(grpc.WithGRPCMethod(ctx, "core.v1.Agent/CreateIndex"), false, false)
 				if err != nil {
 					ech <- err
 					log.Error("an error occurred during indexing", err)
@@ -134,7 +134,7 @@ func (idx *index) Start(ctx context.Context) (<-chan error, error) {
 				}
 				itl.Reset(idx.indexDurationLimit)
 			case <-stl.C:
-				err = idx.execute(grpc.WithGRPCMethod(ctx, "v1.vald.CreateAndSaveIndex"), false, true)
+				err = idx.execute(grpc.WithGRPCMethod(ctx, "core.v1.Agent/CreateAndSaveIndex"), false, true)
 				if err != nil {
 					ech <- err
 					log.Error("an error occurred during indexing and saving", err)
@@ -264,7 +264,7 @@ func (idx *index) waitForNextSaving(ctx context.Context) {
 }
 
 func (idx *index) loadInfos(ctx context.Context) (err error) {
-	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, "v1.vald.IndexInfo"), "vald/manager-index/service/Indexer.loadInfos")
+	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, "core.v1.Agent/IndexInfo"), "vald/manager-index/service/Indexer.loadInfos")
 	defer func() {
 		if span != nil {
 			span.End()
