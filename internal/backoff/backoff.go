@@ -118,17 +118,6 @@ func (b *backoff) Do(ctx context.Context, f func(ctx context.Context) (val inter
 				return f(ssctx)
 			}()
 
-			// e.g. name = v1.vald.Exists/10.0.0.0 ...etc
-			if name := ctxkey.FromBackoffName(ctx); len(name) != 0 && b.metricsEnabled {
-				b.mu.Lock()
-				if v, ok := b.metrics[name]; !ok || v >= math.MaxInt64 {
-					b.metrics[name] = 0
-				} else {
-					b.metrics[name] += 1
-				}
-				b.mu.Unlock()
-			}
-
 			if !ret {
 				return res, err
 			}
@@ -138,6 +127,7 @@ func (b *backoff) Do(ctx context.Context, f func(ctx context.Context) (val inter
 			if b.errLog {
 				log.Error(err)
 			}
+
 			timer.Reset(time.Duration(jdur))
 			select {
 			case <-dctx.Done():
@@ -157,6 +147,13 @@ func (b *backoff) Do(ctx context.Context, f func(ctx context.Context) (val inter
 					dur *= b.backoffFactor
 					jdur = b.addJitter(dur)
 				}
+			}
+
+			// e.g. name = v1.vald.Exists/10.0.0.0 ...etc
+			if name := ctxkey.FromBackoffName(ctx); len(name) != 0 && b.metricsEnabled {
+				b.mu.Lock()
+				b.metrics[name] += 1
+				b.mu.Unlock()
 			}
 		}
 	}
