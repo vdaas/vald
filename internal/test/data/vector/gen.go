@@ -145,18 +145,7 @@ func GenUint8Vec(dist Distribution, num int, dim int) ([][]float32, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	ivecs := generator(num, dim)
-	result := make([][]float32, num)
-
-	for j, ivec := range ivecs {
-		vec := make([]float32, dim)
-		for i := 0; i < dim; i++ {
-			vec[i] = float32(ivec[i])
-		}
-		result[j] = vec
-	}
-	return result, nil
+	return ConvertVectorsUint8ToFloat32(generator(num, dim)), nil
 }
 
 func GenSameValueVec(size int, val float32) []float32 {
@@ -165,4 +154,20 @@ func GenSameValueVec(size int, val float32) []float32 {
 		v[i] = val
 	}
 	return v
+}
+
+func ConvertVectorUint8ToFloat32(vector []uint8) (ret []float32) {
+	ret = make([]float32, len(vector))
+	for i, e := range vector {
+		ret[i] = float32(e)
+	}
+	return
+}
+
+func ConvertVectorsUint8ToFloat32(vectors [][]uint8) (ret [][]float32) {
+	ret = make([][]float32, 0, len(vectors))
+	for _, v := range vectors {
+		ret = append(ret, ConvertVectorUint8ToFloat32(v))
+	}
+	return
 }

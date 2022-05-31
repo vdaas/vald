@@ -692,22 +692,6 @@ func Test_server_Exists(t *testing.T) {
 	}
 }
 
-func convertVectorUint8ToFloat32(vector []uint8) (ret []float32) {
-	ret = make([]float32, len(vector))
-	for i, e := range vector {
-		ret[i] = float32(e)
-	}
-	return
-}
-
-func convertVectorsUint8ToFloat32(vectors [][]uint8) (ret [][]float32) {
-	ret = make([][]float32, 0, len(vectors))
-	for _, v := range vectors {
-		ret = append(ret, convertVectorUint8ToFloat32(v))
-	}
-	return
-}
-
 func Test_server_Search(t *testing.T) {
 	t.Parallel()
 
@@ -868,13 +852,13 @@ func Test_server_Search(t *testing.T) {
 				ctx:       ctx,
 				insertNum: 1000,
 				req: &payload.Search_Request{
-					Vector: convertVectorUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, defaultDimensionSize)[0]),
+					Vector: vector.ConvertVectorUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, defaultDimensionSize)[0]),
 					Config: defaultSearch_Config,
 				},
 			},
 			fields: fields{
 				gen: func(n, dim int) [][]float32 {
-					return convertVectorsUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(n, dim))
+					return vector.ConvertVectorsUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(n, dim))
 				},
 				ngtCfg: ngtConfig(defaultDimensionSize, ngt.Uint8.String()),
 			},
@@ -906,13 +890,13 @@ func Test_server_Search(t *testing.T) {
 				ctx:       ctx,
 				insertNum: 1000,
 				req: &payload.Search_Request{
-					Vector: convertVectorUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, defaultDimensionSize+1)[0]),
+					Vector: vector.ConvertVectorUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, defaultDimensionSize+1)[0]),
 					Config: defaultSearch_Config,
 				},
 			},
 			fields: fields{
 				gen: func(n, dim int) [][]float32 {
-					return convertVectorsUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(n, dim))
+					return vector.ConvertVectorsUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(n, dim))
 				},
 				ngtCfg: ngtConfig(defaultDimensionSize, ngt.Uint8.String()),
 			},
@@ -954,7 +938,7 @@ func Test_server_Search(t *testing.T) {
 			},
 			fields: fields{
 				gen: func(n, dim int) [][]float32 {
-					return convertVectorsUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(n, dim))
+					return vector.ConvertVectorsUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(n, dim))
 				},
 				ngtCfg: ngtConfig(defaultDimensionSize, ngt.Uint8.String()),
 			},
@@ -1010,7 +994,7 @@ func Test_server_Search(t *testing.T) {
 			},
 			fields: fields{
 				gen: func(n, dim int) [][]float32 {
-					return convertVectorsUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(n, dim))
+					return vector.ConvertVectorsUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(n, dim))
 				},
 				ngtCfg: ngtConfig(defaultDimensionSize, ngt.Uint8.String()),
 			},
@@ -1125,7 +1109,7 @@ func Test_server_Search(t *testing.T) {
 			},
 			fields: fields{
 				gen: func(n, dim int) [][]float32 {
-					return convertVectorsUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(n, dim))
+					return vector.ConvertVectorsUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(n, dim))
 				},
 				ngtCfg: ngtConfig(defaultDimensionSize, "uint8"),
 			},
@@ -1159,13 +1143,13 @@ func Test_server_Search(t *testing.T) {
 				ctx:       ctx,
 				insertNum: 1000,
 				req: &payload.Search_Request{
-					Vector: convertVectorUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, math.MaxInt32>>7)[0]),
+					Vector: vector.ConvertVectorUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, math.MaxInt32>>7)[0]),
 					Config: defaultSearch_Config,
 				},
 			},
 			fields: fields{
 				gen: func(n, dim int) [][]float32 {
-					return convertVectorsUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(n, dim))
+					return vector.ConvertVectorsUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(n, dim))
 				},
 				ngtCfg: ngtConfig(defaultDimensionSize, ngt.Uint8.String()),
 			},
@@ -1205,7 +1189,7 @@ func Test_server_Search(t *testing.T) {
 			},
 			fields: fields{
 				gen: func(n, dim int) [][]float32 {
-					return convertVectorsUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(n, dim))
+					return vector.ConvertVectorsUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(n, dim))
 				},
 				ngtCfg: ngtConfig(defaultDimensionSize, ngt.Uint8.String()),
 			},
@@ -1241,13 +1225,13 @@ func Test_server_Search(t *testing.T) {
 				ctx:       ctx,
 				insertNum: 5,
 				req: &payload.Search_Request{
-					Vector: convertVectorUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, defaultDimensionSize)[0]),
+					Vector: vector.ConvertVectorUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, defaultDimensionSize)[0]),
 					Config: defaultSearch_Config,
 				},
 			},
 			fields: fields{
 				gen: func(n, dim int) [][]float32 {
-					return convertVectorsUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(n, dim))
+					return vector.ConvertVectorsUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(n, dim))
 				},
 				ngtCfg: ngtConfig(defaultDimensionSize, ngt.Uint8.String()),
 			},
@@ -1279,13 +1263,13 @@ func Test_server_Search(t *testing.T) {
 				ctx:       ctx,
 				insertNum: 10,
 				req: &payload.Search_Request{
-					Vector: convertVectorUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, defaultDimensionSize)[0]),
+					Vector: vector.ConvertVectorUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, defaultDimensionSize)[0]),
 					Config: defaultSearch_Config,
 				},
 			},
 			fields: fields{
 				gen: func(n, dim int) [][]float32 {
-					return convertVectorsUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(n, dim))
+					return vector.ConvertVectorsUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(n, dim))
 				},
 				ngtCfg: ngtConfig(defaultDimensionSize, ngt.Uint8.String()),
 			},
@@ -1317,13 +1301,13 @@ func Test_server_Search(t *testing.T) {
 				ctx:       ctx,
 				insertNum: 20,
 				req: &payload.Search_Request{
-					Vector: convertVectorUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, defaultDimensionSize)[0]),
+					Vector: vector.ConvertVectorUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, defaultDimensionSize)[0]),
 					Config: defaultSearch_Config,
 				},
 			},
 			fields: fields{
 				gen: func(n, dim int) [][]float32 {
-					return convertVectorsUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(n, dim))
+					return vector.ConvertVectorsUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(n, dim))
 				},
 				ngtCfg: ngtConfig(defaultDimensionSize, ngt.Uint8.String()),
 			},
@@ -1355,13 +1339,13 @@ func Test_server_Search(t *testing.T) {
 				ctx:       ctx,
 				insertNum: 5,
 				req: &payload.Search_Request{
-					Vector: convertVectorUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, defaultDimensionSize)[0]),
+					Vector: vector.ConvertVectorUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, defaultDimensionSize)[0]),
 					Config: defaultSearch_Config,
 				},
 			},
 			fields: fields{
 				gen: func(n, dim int) [][]float32 {
-					v := convertVectorUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, dim)[0])
+					v := vector.ConvertVectorUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, dim)[0])
 					vectors := make([][]float32, n)
 					for i := range vectors {
 						vectors[i] = v
@@ -1405,13 +1389,13 @@ func Test_server_Search(t *testing.T) {
 				ctx:       ctx,
 				insertNum: 10,
 				req: &payload.Search_Request{
-					Vector: convertVectorUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, defaultDimensionSize)[0]),
+					Vector: vector.ConvertVectorUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, defaultDimensionSize)[0]),
 					Config: defaultSearch_Config,
 				},
 			},
 			fields: fields{
 				gen: func(n, dim int) [][]float32 {
-					v := convertVectorUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, dim)[0])
+					v := vector.ConvertVectorUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, dim)[0])
 					vectors := make([][]float32, n)
 					for i := range vectors {
 						vectors[i] = v
@@ -1455,13 +1439,13 @@ func Test_server_Search(t *testing.T) {
 				ctx:       ctx,
 				insertNum: 20,
 				req: &payload.Search_Request{
-					Vector: convertVectorUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, defaultDimensionSize)[0]),
+					Vector: vector.ConvertVectorUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, defaultDimensionSize)[0]),
 					Config: defaultSearch_Config,
 				},
 			},
 			fields: fields{
 				gen: func(n, dim int) [][]float32 {
-					v := convertVectorUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, dim)[0])
+					v := vector.ConvertVectorUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, dim)[0])
 					vectors := make([][]float32, n)
 					for i := range vectors {
 						vectors[i] = v
@@ -6923,7 +6907,7 @@ func Test_server_Update(t *testing.T) {
 			gen = vector.GaussianDistributedFloat32VectorGenerator
 		case ngt.Uint8.String():
 			gen = func(n, dim int) [][]float32 {
-				return convertVectorsUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(n, dim))
+				return vector.ConvertVectorsUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(n, dim))
 			}
 		}
 
@@ -7054,7 +7038,7 @@ func Test_server_Update(t *testing.T) {
 				req: &payload.Update_Request{
 					Vector: &payload.Object_Vector{
 						Id:     "test",
-						Vector: convertVectorUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, dimension+1)[0]),
+						Vector: vector.ConvertVectorUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, dimension+1)[0]),
 					},
 					Config: defaultUpdateConfig,
 				},
