@@ -45,6 +45,51 @@ import (
 	"github.com/vdaas/vald/pkg/agent/core/ngt/service"
 )
 
+func buildIndex(ctx context.Context, t request.ObjectType, dist vector.Distribution, num int, insertCfg *payload.Insert_Config,
+	ngtCfg *config.NGT, ngtOpts []service.Option, overwriteIDs []string, overwriteVectors [][]float32) (Server, error) {
+
+	eg, ctx := errgroup.New(ctx)
+	ngt, err := service.New(ngtCfg, append(ngtOpts, service.WithErrGroup(eg), service.WithEnableInMemoryMode(true))...)
+	if err != nil {
+		return nil, err
+	}
+
+	s, err := New(WithErrGroup(eg), WithNGT(ngt))
+	if err != nil {
+		return nil, err
+	}
+
+	if num > 0 {
+		// gen insert request
+		reqs, err := request.GenMultiInsertReq(t, dist, num, ngtCfg.Dimension, insertCfg)
+		if err != nil {
+			return nil, err
+		}
+
+		// overwrite ID if needed
+		for i, id := range overwriteIDs {
+			reqs.Requests[i].Vector.Id = id
+		}
+
+		// overwrite Vectors if needed
+		for i, v := range overwriteVectors {
+			reqs.Requests[i].Vector.Vector = v
+		}
+
+		// insert and create index
+		if _, err := s.MultiInsert(ctx, reqs); err != nil {
+			return nil, err
+		}
+		if _, err := s.CreateIndex(ctx, &payload.Control_CreateIndexRequest{
+			PoolSize: 100,
+		}); err != nil {
+			return nil, err
+		}
+	}
+
+	return s, nil
+}
+
 func TestNew(t *testing.T) {
 	t.Parallel()
 	type args struct {
@@ -366,6 +411,7 @@ func Test_server_Exists(t *testing.T) {
 
 	const (
 		insertNum = 1000
+		dim       = 128
 	)
 
 	jpStr := "こんにちは"
@@ -379,7 +425,7 @@ func Test_server_Exists(t *testing.T) {
 	}
 
 	defaultNgtConfig := &config.NGT{
-		Dimension:        128,
+		Dimension:        dim,
 		DistanceType:     ngt.L2.String(),
 		ObjectType:       ngt.Float.String(),
 		CreationEdgeSize: 60,
@@ -392,38 +438,11 @@ func Test_server_Exists(t *testing.T) {
 			DeleteBufferPoolSize: 1000,
 		},
 	}
+	defaultInsertConfig := &payload.Insert_Config{
+		SkipStrictExistCheck: true,
+	}
 	defaultBeforeFunc := func(a args) (Server, error) {
-		eg, ctx := errgroup.New(a.ctx)
-		ngt, err := service.New(defaultNgtConfig, service.WithErrGroup(eg), service.WithEnableInMemoryMode(true))
-		if err != nil {
-			return nil, err
-		}
-
-		s, err := New(WithErrGroup(eg), WithNGT(ngt))
-		if err != nil {
-			return nil, err
-		}
-
-		reqs := make([]*payload.Insert_Request, insertNum)
-		for i, v := range vector.GaussianDistributedFloat32VectorGenerator(insertNum, defaultNgtConfig.Dimension) {
-			reqs[i] = &payload.Insert_Request{
-				Vector: &payload.Object_Vector{
-					Id:     strconv.Itoa(i),
-					Vector: v,
-				},
-				Config: &payload.Insert_Config{
-					SkipStrictExistCheck: true,
-				},
-			}
-		}
-		reqs[0].Vector.Id = a.indexId
-		if _, err := s.MultiInsert(ctx, &payload.Insert_MultiRequest{Requests: reqs}); err != nil {
-			return nil, err
-		}
-		if _, err := s.CreateIndex(ctx, &payload.Control_CreateIndexRequest{PoolSize: 100}); err != nil {
-			return nil, err
-		}
-		return s, nil
+		return buildIndex(a.ctx, request.Float, vector.Gaussian, insertNum, defaultInsertConfig, defaultNgtConfig, nil, []string{a.indexId}, nil)
 	}
 
 	/*
@@ -689,14 +708,6 @@ func convertVectorsUint8ToFloat32(vectors [][]uint8) (ret [][]float32) {
 	return
 }
 
-func fill(f float32, dim int) (v []float32) {
-	v = make([]float32, dim)
-	for i := range v {
-		v[i] = f
-	}
-	return
-}
-
 func Test_server_Search(t *testing.T) {
 	t.Parallel()
 
@@ -937,7 +948,7 @@ func Test_server_Search(t *testing.T) {
 				ctx:       ctx,
 				insertNum: 1000,
 				req: &payload.Search_Request{
-					Vector: fill(float32(uint8(0)), defaultDimensionSize),
+					Vector: vector.GenSameValueVec(defaultDimensionSize, float32(uint8(0))),
 					Config: defaultSearch_Config,
 				},
 			},
@@ -957,7 +968,7 @@ func Test_server_Search(t *testing.T) {
 				ctx:       ctx,
 				insertNum: 1000,
 				req: &payload.Search_Request{
-					Vector: fill(+0.0, defaultDimensionSize),
+					Vector: vector.GenSameValueVec(defaultDimensionSize, +0.0),
 					Config: defaultSearch_Config,
 				},
 			},
@@ -975,7 +986,7 @@ func Test_server_Search(t *testing.T) {
 				ctx:       ctx,
 				insertNum: 1000,
 				req: &payload.Search_Request{
-					Vector: fill(float32(math.Copysign(0, -1.0)), defaultDimensionSize),
+					Vector: vector.GenSameValueVec(defaultDimensionSize, float32(math.Copysign(0, -1.0))),
 					Config: defaultSearch_Config,
 				},
 			},
@@ -993,7 +1004,7 @@ func Test_server_Search(t *testing.T) {
 				ctx:       ctx,
 				insertNum: 1000,
 				req: &payload.Search_Request{
-					Vector: fill(float32(math.MaxUint8), defaultDimensionSize),
+					Vector: vector.GenSameValueVec(defaultDimensionSize, float32(math.MaxUint8)),
 					Config: defaultSearch_Config,
 				},
 			},
@@ -1013,7 +1024,7 @@ func Test_server_Search(t *testing.T) {
 				ctx:       ctx,
 				insertNum: 1000,
 				req: &payload.Search_Request{
-					Vector: fill(math.MaxFloat32, defaultDimensionSize),
+					Vector: vector.GenSameValueVec(defaultDimensionSize, math.MaxFloat32),
 					Config: defaultSearch_Config,
 				},
 			},
@@ -1032,7 +1043,7 @@ func Test_server_Search(t *testing.T) {
 				ctx:       ctx,
 				insertNum: 1000,
 				req: &payload.Search_Request{
-					Vector: fill(-math.MaxFloat32, defaultDimensionSize),
+					Vector: vector.GenSameValueVec(defaultDimensionSize, -math.MaxFloat32),
 					Config: defaultSearch_Config,
 				},
 			},
@@ -1051,7 +1062,7 @@ func Test_server_Search(t *testing.T) {
 				ctx:       ctx,
 				insertNum: 1000,
 				req: &payload.Search_Request{
-					Vector: fill(float32(math.NaN()), defaultDimensionSize),
+					Vector: vector.GenSameValueVec(defaultDimensionSize, float32(math.NaN())),
 					Config: defaultSearch_Config,
 				},
 			},
@@ -1070,7 +1081,7 @@ func Test_server_Search(t *testing.T) {
 				ctx:       ctx,
 				insertNum: 1000,
 				req: &payload.Search_Request{
-					Vector: fill(float32(math.Inf(+1.0)), defaultDimensionSize),
+					Vector: vector.GenSameValueVec(defaultDimensionSize, float32(math.Inf(+1.0))),
 					Config: defaultSearch_Config,
 				},
 			},
@@ -1089,7 +1100,7 @@ func Test_server_Search(t *testing.T) {
 				ctx:       ctx,
 				insertNum: 1000,
 				req: &payload.Search_Request{
-					Vector: fill(float32(math.Inf(-1.0)), defaultDimensionSize),
+					Vector: vector.GenSameValueVec(defaultDimensionSize, float32(math.Inf(-1.0))),
 					Config: defaultSearch_Config,
 				},
 			},
@@ -7368,7 +7379,7 @@ func Test_server_Update(t *testing.T) {
 				req: &payload.Update_Request{
 					Vector: &payload.Object_Vector{
 						Id:     "test",
-						Vector: fill(float32(uint8(0)), dimension),
+						Vector: vector.GenSameValueVec(dimension, float32(uint8(0))),
 					},
 					Config: defaultUpdateConfig,
 				},
@@ -7385,7 +7396,7 @@ func Test_server_Update(t *testing.T) {
 				req: &payload.Update_Request{
 					Vector: &payload.Object_Vector{
 						Id:     "test",
-						Vector: fill(0, dimension),
+						Vector: vector.GenSameValueVec(dimension, 0),
 					},
 					Config: defaultUpdateConfig,
 				},
@@ -7402,7 +7413,7 @@ func Test_server_Update(t *testing.T) {
 				req: &payload.Update_Request{
 					Vector: &payload.Object_Vector{
 						Id:     "test",
-						Vector: fill(float32(math.Copysign(0, -1.0)), dimension),
+						Vector: vector.GenSameValueVec(dimension, float32(math.Copysign(0, -1.0))),
 					},
 					Config: defaultUpdateConfig,
 				},
@@ -7419,7 +7430,7 @@ func Test_server_Update(t *testing.T) {
 				req: &payload.Update_Request{
 					Vector: &payload.Object_Vector{
 						Id:     "test",
-						Vector: fill(float32(uint8(0)), dimension),
+						Vector: vector.GenSameValueVec(dimension, float32(uint8(0))),
 					},
 					Config: defaultUpdateConfig,
 				},
@@ -7436,7 +7447,7 @@ func Test_server_Update(t *testing.T) {
 				req: &payload.Update_Request{
 					Vector: &payload.Object_Vector{
 						Id:     "test",
-						Vector: fill(-math.MaxFloat32, dimension),
+						Vector: vector.GenSameValueVec(dimension, -math.MaxFloat32),
 					},
 					Config: defaultUpdateConfig,
 				},
@@ -7453,7 +7464,7 @@ func Test_server_Update(t *testing.T) {
 				req: &payload.Update_Request{
 					Vector: &payload.Object_Vector{
 						Id:     "test",
-						Vector: fill(float32(math.MaxUint8), dimension),
+						Vector: vector.GenSameValueVec(dimension, float32(math.MaxUint8)),
 					},
 					Config: defaultUpdateConfig,
 				},
@@ -7470,7 +7481,7 @@ func Test_server_Update(t *testing.T) {
 				req: &payload.Update_Request{
 					Vector: &payload.Object_Vector{
 						Id:     "test",
-						Vector: fill(math.MaxFloat32, dimension),
+						Vector: vector.GenSameValueVec(dimension, math.MaxFloat32),
 					},
 					Config: defaultUpdateConfig,
 				},
@@ -7487,7 +7498,7 @@ func Test_server_Update(t *testing.T) {
 				req: &payload.Update_Request{
 					Vector: &payload.Object_Vector{
 						Id:     "test",
-						Vector: fill(float32(math.NaN()), dimension),
+						Vector: vector.GenSameValueVec(dimension, float32(math.NaN())),
 					},
 					Config: defaultUpdateConfig,
 				},
@@ -7504,7 +7515,7 @@ func Test_server_Update(t *testing.T) {
 				req: &payload.Update_Request{
 					Vector: &payload.Object_Vector{
 						Id:     "test",
-						Vector: fill(float32(math.Inf(1.0)), dimension),
+						Vector: vector.GenSameValueVec(dimension, float32(math.Inf(1.0))),
 					},
 					Config: defaultUpdateConfig,
 				},
@@ -7521,7 +7532,7 @@ func Test_server_Update(t *testing.T) {
 				req: &payload.Update_Request{
 					Vector: &payload.Object_Vector{
 						Id:     "test",
-						Vector: fill(float32(math.Inf(-1.0)), dimension),
+						Vector: vector.GenSameValueVec(dimension, float32(math.Inf(-1.0))),
 					},
 					Config: defaultUpdateConfig,
 				},
