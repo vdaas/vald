@@ -760,7 +760,7 @@ func (n *ngt) updateMultiple(vecs map[string][]float32, t int64) (err error) {
 			uuids = append(uuids, uuid)
 		}
 	}
-	err = n.deleteMultiple(uuids, t, false)
+	err = n.deleteMultiple(uuids, t, true) // `true` is to return NotFound error with non-existent ID
 	if err != nil {
 		return err
 	}
