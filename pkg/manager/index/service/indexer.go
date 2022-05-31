@@ -159,7 +159,7 @@ func (idx *index) Start(ctx context.Context) (<-chan error, error) {
 				return
 			case addr := <-idx.saveIndexTargetAddrCh:
 				idx.schMap.Delete(addr)
-				_, err = idx.client.GetClient().Do(grpc.WithGRPCMethod(ctx, "v1.vald.SaveIndex"), addr,
+				_, err = idx.client.GetClient().Do(grpc.WithGRPCMethod(ctx, "vald.v1.SaveIndex"), addr,
 					func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (_ interface{}, err error) {
 						return agent.NewAgentClient(conn).SaveIndex(ctx, &payload.Empty{}, copts...)
 					},
