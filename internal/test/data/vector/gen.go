@@ -140,7 +140,7 @@ func GenF32Vec(dist Distribution, num int, dim int) ([][]float32, error) {
 	return generator(num, dim), nil
 }
 
-func GenIntVec(dist Distribution, num int, dim int) ([][]float32, error) {
+func GenUint8Vec(dist Distribution, num int, dim int) ([][]float32, error) {
 	generator, err := Uint8VectorGenerator(dist)
 	if err != nil {
 		return nil, err

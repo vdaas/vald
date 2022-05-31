@@ -21,7 +21,7 @@ func GenMultiInsertReq(t ObjectType, dist vector.Distribution, num int, dim int,
 	case Float:
 		vecs, err = vector.GenF32Vec(dist, num, dim)
 	case Uint8:
-		vecs, err = vector.GenIntVec(dist, num, dim)
+		vecs, err = vector.GenUint8Vec(dist, num, dim)
 	}
 	if err != nil {
 		return nil, err
