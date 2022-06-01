@@ -760,7 +760,7 @@ func (n *ngt) updateMultiple(vecs map[string][]float32, t int64) (err error) {
 			uuids = append(uuids, uuid)
 		}
 	}
-	err = n.deleteMultiple(uuids, t, false)
+	err = n.deleteMultiple(uuids, t, true) // `true` is to return NotFound error with non-existent ID
 	if err != nil {
 		return err
 	}
@@ -1226,10 +1226,12 @@ func (n *ngt) readyForUpdate(uuid string, vec []float32) (err error) {
 		return errors.ErrInvalidDimensionSize(len(vec), n.GetDimensionSize())
 	}
 	ovec, err := n.GetObject(uuid)
-	if err != nil ||
-		len(vec) != len(ovec) ||
-		conv.F32stos(vec) != conv.F32stos(ovec) {
-		// if error (GetObject cannot find vector) or vector length is not equal or if difference exists let's try update
+	// if error (GetObject cannot find vector) return error
+	if err != nil {
+		return err
+	}
+	// if vector length is not equal or if some difference exists let's try update
+	if len(vec) != len(ovec) || conv.F32stos(vec) != conv.F32stos(ovec) {
 		return nil
 	}
 	// if no difference exists (same vector already exists) return error for skip update
