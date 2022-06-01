@@ -212,7 +212,6 @@ func TestGenMultiInsertReq(t *testing.T) {
 			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -341,7 +340,6 @@ func TestGenSameVecMultiInsertReq(t *testing.T) {
 			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }

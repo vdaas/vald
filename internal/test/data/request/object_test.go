@@ -136,7 +136,6 @@ func TestGenObjectLocations(t *testing.T) {
 			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }

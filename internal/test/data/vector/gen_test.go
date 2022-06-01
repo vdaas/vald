@@ -834,7 +834,6 @@ func TestGenF32Vec(t *testing.T) {
 			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -919,7 +918,6 @@ func TestGenUint8Vec(t *testing.T) {
 			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -1001,7 +999,6 @@ func TestGenSameValueVec(t *testing.T) {
 			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }

@@ -294,7 +294,6 @@ func TestUtf8ToSjis(t *testing.T) {
 			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -356,7 +355,6 @@ func TestUtf8ToEucjp(t *testing.T) {
 			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
