@@ -1230,8 +1230,8 @@ func (n *ngt) readyForUpdate(uuid string, vec []float32) (err error) {
 	if err != nil {
 		return err
 	}
+	// if vector length is not equal or if some difference exists let's try update
 	if len(vec) != len(ovec) || conv.F32stos(vec) != conv.F32stos(ovec) {
-	// if vector length is not equal or if difference exists let's try update
 		return nil
 	}
 	// if no difference exists (same vector already exists) return error for skip update
