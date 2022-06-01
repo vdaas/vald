@@ -26,13 +26,11 @@ import (
 	"github.com/vdaas/vald/internal/test/goleak"
 )
 
-var (
-	defaultMultiInsertReqComparators = []cmp.Option{
-		comparator.IgnoreUnexported(payload.Insert_Request{}),
-		comparator.IgnoreUnexported(payload.Insert_MultiRequest{}),
-		comparator.IgnoreUnexported(payload.Object_Vector{}),
-	}
-)
+var defaultMultiInsertReqComparators = []cmp.Option{
+	comparator.IgnoreUnexported(payload.Insert_Request{}),
+	comparator.IgnoreUnexported(payload.Insert_MultiRequest{}),
+	comparator.IgnoreUnexported(payload.Object_Vector{}),
+}
 
 func TestGenMultiInsertReq(t *testing.T) {
 	type args struct {

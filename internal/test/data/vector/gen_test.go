@@ -16,7 +16,6 @@
 package vector
 
 import (
-	"math"
 	"reflect"
 	"testing"
 
@@ -1093,95 +1092,6 @@ func TestConvertVectorsUint8ToFloat32(t *testing.T) {
 			if err := checkFunc(test.want, gotRet); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
-		})
-	}
-}
-
-func Test_convertVectorUint8ToFloat32(t *testing.T) {
-	type args struct {
-		vector []uint8
-	}
-	type want struct {
-		wantRet []float32
-	}
-	type test struct {
-		name       string
-		args       args
-		want       want
-		checkFunc  func(want, []float32) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-	defaultCheckFunc := func(w want, gotRet []float32) error {
-		if !reflect.DeepEqual(gotRet, w.wantRet) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRet, w.wantRet)
-		}
-		return nil
-	}
-	tests := []test{
-		{
-			name: "return float32 vector from uint8 vector",
-			args: args{
-				vector: []uint8{
-					1, 2, 3,
-				},
-			},
-			want: want{
-				wantRet: []float32{
-					1, 2, 3,
-				},
-			},
-		},
-		{
-			name: "return float32 vector from uint8 vector with min value",
-			args: args{
-				vector: []uint8{
-					0, 0, 0,
-				},
-			},
-			want: want{
-				wantRet: []float32{
-					0, 0, 0,
-				},
-			},
-		},
-		{
-			name: "return float32 vector from uint8 vector with max value",
-			args: args{
-				vector: []uint8{
-					math.MaxUint8, math.MaxUint8, math.MaxUint8,
-				},
-			},
-			want: want{
-				wantRet: []float32{
-					math.MaxUint8, math.MaxUint8, math.MaxUint8,
-				},
-			},
-		},
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-			checkFunc := test.checkFunc
-			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
-			}
-
-			gotRet := convertVectorUint8ToFloat32(test.args.vector)
-			if err := checkFunc(test.want, gotRet); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-
 		})
 	}
 }

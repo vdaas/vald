@@ -272,6 +272,15 @@ func TestUtf8ToSjis(t *testing.T) {
 				want: "\x82\xb1\x82\xf1\x82ɂ\xbf\x82\xcd",
 			},
 		},
+		{
+			name: "return empty string when the UTF8 string is empty",
+			args: args{
+				s: "",
+			},
+			want: want{
+				want: "",
+			},
+		},
 	}
 
 	for _, tc := range tests {
@@ -331,6 +340,15 @@ func TestUtf8ToEucjp(t *testing.T) {
 			},
 			want: want{
 				want: "\xa4\xb3\xa4\xf3\xa4ˤ\xc1\xa4\xcf",
+			},
+		},
+		{
+			name: "return empty string when the UTF8 string is empty",
+			args: args{
+				s: "",
+			},
+			want: want{
+				want: "",
 			},
 		},
 	}
