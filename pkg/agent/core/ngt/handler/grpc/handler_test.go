@@ -45,8 +45,8 @@ import (
 )
 
 func buildIndex(ctx context.Context, t request.ObjectType, dist vector.Distribution, num int, insertCfg *payload.Insert_Config,
-	ngtCfg *config.NGT, ngtOpts []service.Option, overwriteIDs []string, overwriteVectors [][]float32,
-) (Server, error) {
+	ngtCfg *config.NGT, ngtOpts []service.Option, overwriteIDs []string, overwriteVectors [][]float32) (Server, error) {
+
 	eg, ctx := errgroup.New(ctx)
 	ngt, err := service.New(ngtCfg, append(ngtOpts, service.WithErrGroup(eg), service.WithEnableInMemoryMode(true))...)
 	if err != nil {
