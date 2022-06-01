@@ -22,7 +22,6 @@ import (
 	"fmt"
 	"math"
 	"reflect"
-	"strconv"
 	"strings"
 	"testing"
 
@@ -1542,38 +1541,11 @@ func Test_server_SearchByID(t *testing.T) {
 			DeleteBufferPoolSize: 1000,
 		},
 	}
+	defaultInsertConfig := &payload.Insert_Config{
+		SkipStrictExistCheck: true,
+	}
 	defaultBeforeFunc := func(a args) (Server, error) {
-		eg, ctx := errgroup.New(a.ctx)
-		ngt, err := service.New(defaultNgtConfig, service.WithErrGroup(eg), service.WithEnableInMemoryMode(true))
-		if err != nil {
-			return nil, err
-		}
-
-		s, err := New(WithErrGroup(eg), WithNGT(ngt))
-		if err != nil {
-			return nil, err
-		}
-
-		reqs := make([]*payload.Insert_Request, insertNum)
-		for i, v := range vector.GaussianDistributedFloat32VectorGenerator(insertNum, defaultNgtConfig.Dimension) {
-			reqs[i] = &payload.Insert_Request{
-				Vector: &payload.Object_Vector{
-					Id:     strconv.Itoa(i),
-					Vector: v,
-				},
-				Config: &payload.Insert_Config{
-					SkipStrictExistCheck: true,
-				},
-			}
-		}
-		reqs[0].Vector.Id = a.indexId
-		if _, err := s.MultiInsert(ctx, &payload.Insert_MultiRequest{Requests: reqs}); err != nil {
-			return nil, err
-		}
-		if _, err := s.CreateIndex(ctx, &payload.Control_CreateIndexRequest{PoolSize: 100}); err != nil {
-			return nil, err
-		}
-		return s, nil
+		return buildIndex(a.ctx, request.Float, vector.Gaussian, insertNum, defaultInsertConfig, defaultNgtConfig, nil, []string{a.indexId}, nil)
 	}
 	defaultSearch_Config := &payload.Search_Config{
 		Num:     10,
@@ -6848,6 +6820,9 @@ func Test_server_Update(t *testing.T) {
 	defaultUpdateConfig := &payload.Update_Config{
 		SkipStrictExistCheck: true,
 	}
+	defaultInsertConfig := &payload.Insert_Config{
+		SkipStrictExistCheck: true,
+	}
 	beforeFunc := func(objectType string) func(args) (Server, error) {
 		cfg := &config.NGT{
 			Dimension:        dimension,
@@ -6863,52 +6838,15 @@ func Test_server_Update(t *testing.T) {
 				DeleteBufferPoolSize: 1000,
 			},
 		}
-		var gen func(int, int) [][]float32
-		switch objectType {
-		case ngt.Float.String():
-			gen = vector.GaussianDistributedFloat32VectorGenerator
-		case ngt.Uint8.String():
-			gen = func(n, dim int) [][]float32 {
-				return vector.ConvertVectorsUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(n, dim))
-			}
-		}
 
 		return func(a args) (Server, error) {
-			eg, ctx := errgroup.New(a.ctx)
-			ngt, err := service.New(cfg, service.WithErrGroup(eg), service.WithEnableInMemoryMode(true))
-			if err != nil {
-				return nil, err
-			}
-
-			s, err := New(WithErrGroup(eg), WithNGT(ngt))
-			if err != nil {
-				return nil, err
-			}
-
-			// TODO: use request.GenMultiInsertReq()
-			reqs := make([]*payload.Insert_Request, insertNum)
-			for i, v := range gen(insertNum, cfg.Dimension) {
-				reqs[i] = &payload.Insert_Request{
-					Vector: &payload.Object_Vector{
-						Id:     strconv.Itoa(i),
-						Vector: v,
-					},
-					Config: &payload.Insert_Config{
-						SkipStrictExistCheck: true,
-					},
+			var overwriteVec [][]float32
+			if a.indexVector != nil {
+				overwriteVec = [][]float32{
+					a.indexVector,
 				}
 			}
-			reqs[0].Vector.Id = a.indexId
-			if a.indexVector != nil {
-				reqs[0].Vector.Vector = a.indexVector
-			}
-			if _, err := s.MultiInsert(ctx, &payload.Insert_MultiRequest{Requests: reqs}); err != nil {
-				return nil, err
-			}
-			if _, err := s.CreateIndex(ctx, &payload.Control_CreateIndexRequest{PoolSize: 100}); err != nil {
-				return nil, err
-			}
-			return s, nil
+			return buildIndex(a.ctx, request.Float, vector.Gaussian, insertNum, defaultInsertConfig, cfg, nil, []string{a.indexId}, overwriteVec)
 		}
 	}
 
@@ -7570,7 +7508,7 @@ func Test_server_Update(t *testing.T) {
 					indexVector: vector,
 					req: &payload.Update_Request{
 						Vector: &payload.Object_Vector{
-							Id:     "1",
+							Id:     "uuid-2", // the first uuid is overwritten, so use the second one
 							Vector: vector,
 						},
 						Config: defaultUpdateConfig,
@@ -7578,7 +7516,7 @@ func Test_server_Update(t *testing.T) {
 				}
 			}(),
 			want: want{
-				wantUuid: "1",
+				wantUuid: "uuid-2",
 			},
 		},
 		{
@@ -7633,7 +7571,7 @@ func Test_server_Update(t *testing.T) {
 					indexVector: vector,
 					req: &payload.Update_Request{
 						Vector: &payload.Object_Vector{
-							Id:     "1",
+							Id:     "uuid-2", // the first uuid is overwritten, so use the second one
 							Vector: vector,
 						},
 						Config: &payload.Update_Config{
@@ -7643,7 +7581,7 @@ func Test_server_Update(t *testing.T) {
 				}
 			}(),
 			want: want{
-				wantUuid: "1",
+				wantUuid: "uuid-2",
 			},
 		},
 	}
@@ -8281,38 +8219,11 @@ func Test_server_Remove(t *testing.T) {
 			DeleteBufferPoolSize: 1000,
 		},
 	}
+	defaultInsertConfig := &payload.Insert_Config{
+		SkipStrictExistCheck: true,
+	}
 	defaultBeforeFunc := func(a args) (Server, error) {
-		eg, ctx := errgroup.New(a.ctx)
-		ngt, err := service.New(defaultNgtConfig, service.WithErrGroup(eg), service.WithEnableInMemoryMode(true))
-		if err != nil {
-			return nil, err
-		}
-
-		s, err := New(WithErrGroup(eg), WithNGT(ngt))
-		if err != nil {
-			return nil, err
-		}
-
-		reqs := make([]*payload.Insert_Request, insertNum)
-		for i, v := range vector.GaussianDistributedFloat32VectorGenerator(insertNum, defaultNgtConfig.Dimension) {
-			reqs[i] = &payload.Insert_Request{
-				Vector: &payload.Object_Vector{
-					Id:     strconv.Itoa(i),
-					Vector: v,
-				},
-				Config: &payload.Insert_Config{
-					SkipStrictExistCheck: true,
-				},
-			}
-		}
-		reqs[0].Vector.Id = a.indexId
-		if _, err := s.MultiInsert(ctx, &payload.Insert_MultiRequest{Requests: reqs}); err != nil {
-			return nil, err
-		}
-		if _, err := s.CreateIndex(ctx, &payload.Control_CreateIndexRequest{PoolSize: 100}); err != nil {
-			return nil, err
-		}
-		return s, nil
+		return buildIndex(a.ctx, request.Float, vector.Gaussian, insertNum, defaultInsertConfig, defaultNgtConfig, nil, []string{a.indexId}, nil)
 	}
 
 	/*
