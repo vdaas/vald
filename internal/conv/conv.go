@@ -54,6 +54,7 @@ func F32stos(fs []float32) (s string) {
 	return Btoa(buf)
 }
 
+// Utf8ToSjis converts a UTF8 string to sjis string.
 func Utf8ToSjis(s string) (string, error) {
 	b, err := ioutil.ReadAll(transform.NewReader(strings.NewReader(s), japanese.ShiftJIS.NewEncoder()))
 	if err != nil {
@@ -62,6 +63,7 @@ func Utf8ToSjis(s string) (string, error) {
 	return string(b), nil
 }
 
+// Utf8ToEucjp converts a UTF8 string to eucjp string.
 func Utf8ToEucjp(s string) (string, error) {
 	b, err := ioutil.ReadAll(transform.NewReader(strings.NewReader(s), japanese.EUCJP.NewEncoder()))
 	if err != nil {

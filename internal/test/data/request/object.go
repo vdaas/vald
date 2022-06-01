@@ -21,6 +21,7 @@ import (
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 )
 
+// GenObjectLocations generate ObjectLocations payload with multiple name and ip with generated uuid.
 func GenObjectLocations(num int, name string, ipAddr string) *payload.Object_Locations {
 	result := &payload.Object_Locations{
 		Locations: make([]*payload.Object_Location, num),
