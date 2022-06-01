@@ -156,18 +156,18 @@ func GenSameValueVec(size int, val float32) []float32 {
 	return v
 }
 
-func convertVectorUint8ToFloat32(vector []uint8) (ret []float32) {
-	ret = make([]float32, len(vector))
-	for i, e := range vector {
-		ret[i] = float32(e)
-	}
-	return
-}
-
 func ConvertVectorsUint8ToFloat32(vectors [][]uint8) (ret [][]float32) {
 	ret = make([][]float32, 0, len(vectors))
 	for _, v := range vectors {
 		ret = append(ret, convertVectorUint8ToFloat32(v))
+	}
+	return
+}
+
+func convertVectorUint8ToFloat32(vector []uint8) (ret []float32) {
+	ret = make([]float32, len(vector))
+	for i, e := range vector {
+		ret[i] = float32(e)
 	}
 	return
 }

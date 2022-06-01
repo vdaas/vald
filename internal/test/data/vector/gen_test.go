@@ -16,6 +16,7 @@
 package vector
 
 import (
+	"math"
 	"reflect"
 	"testing"
 
@@ -749,6 +750,441 @@ func Test_gaussianDistributedUint8VectorGenerator(t *testing.T) {
 			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+		})
+	}
+}
+
+func TestGenF32Vec(t *testing.T) {
+	type args struct {
+		dist Distribution
+		num  int
+		dim  int
+	}
+	type want struct {
+		wantLen int
+		wantDim int
+		err     error
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, [][]float32, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, got [][]float32, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if len(got) != w.wantLen {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twantLen: \"%#v\"", got, w.wantLen)
+		}
+		for _, vec := range got {
+			if len(vec) != w.wantDim {
+				return errors.Errorf("got: \"%#v\",\n\t\t\t\twantDim: \"%#v\"", got, w.wantDim)
+			}
+		}
+		return nil
+	}
+	tests := []test{
+		{
+			name: "return 1 generated float32 vector",
+			args: args{
+				dist: Gaussian,
+				num:  1,
+				dim:  5,
+			},
+			want: want{
+				wantLen: 1,
+				wantDim: 5,
+			},
+		},
+		{
+			name: "return 5 generated float32 vector",
+			args: args{
+				dist: Gaussian,
+				num:  5,
+				dim:  5,
+			},
+			want: want{
+				wantLen: 5,
+				wantDim: 5,
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			checkFunc := test.checkFunc
+			if test.checkFunc == nil {
+				checkFunc = defaultCheckFunc
+			}
+
+			got, err := GenF32Vec(test.args.dist, test.args.num, test.args.dim)
+			if err := checkFunc(test.want, got, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
+
+func TestGenUint8Vec(t *testing.T) {
+	type args struct {
+		dist Distribution
+		num  int
+		dim  int
+	}
+	type want struct {
+		wantLen int
+		wantDim int
+		err     error
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, [][]float32, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, got [][]float32, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if len(got) != w.wantLen {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twantLen: \"%#v\"", got, w.wantLen)
+		}
+		for _, vec := range got {
+			if len(vec) != w.wantDim {
+				return errors.Errorf("got: \"%#v\",\n\t\t\t\twantDim: \"%#v\"", got, w.wantDim)
+			}
+		}
+		return nil
+	}
+	tests := []test{
+		{
+			name: "return 1 generated float32 vector",
+			args: args{
+				dist: Gaussian,
+				num:  1,
+				dim:  5,
+			},
+			want: want{
+				wantLen: 1,
+				wantDim: 5,
+			},
+		},
+		{
+			name: "return 5 generated float32 vector",
+			args: args{
+				dist: Gaussian,
+				num:  5,
+				dim:  5,
+			},
+			want: want{
+				wantLen: 5,
+				wantDim: 5,
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			checkFunc := test.checkFunc
+			if test.checkFunc == nil {
+				checkFunc = defaultCheckFunc
+			}
+
+			got, err := GenUint8Vec(test.args.dist, test.args.num, test.args.dim)
+			if err := checkFunc(test.want, got, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
+
+func TestGenSameValueVec(t *testing.T) {
+	type args struct {
+		size int
+		val  float32
+	}
+	type want struct {
+		want []float32
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, []float32) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, got []float32) error {
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		func() test {
+			val := float32(1)
+			return test{
+				name: "return same value vector with size 1",
+				args: args{
+					size: 1,
+					val:  val,
+				},
+				want: want{
+					want: []float32{
+						val,
+					},
+				},
+				checkFunc: defaultCheckFunc,
+			}
+		}(),
+		func() test {
+			val := float32(1)
+			return test{
+				name: "return same value vector with size 5",
+				args: args{
+					size: 5,
+					val:  val,
+				},
+				want: want{
+					want: []float32{
+						val, val, val, val, val,
+					},
+				},
+				checkFunc: defaultCheckFunc,
+			}
+		}(),
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			checkFunc := test.checkFunc
+			if test.checkFunc == nil {
+				checkFunc = defaultCheckFunc
+			}
+
+			got := GenSameValueVec(test.args.size, test.args.val)
+			if err := checkFunc(test.want, got); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
+
+func TestConvertVectorsUint8ToFloat32(t *testing.T) {
+	type args struct {
+		vectors [][]uint8
+	}
+	type want struct {
+		wantRet [][]float32
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, [][]float32) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, gotRet [][]float32) error {
+		if !reflect.DeepEqual(gotRet, w.wantRet) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRet, w.wantRet)
+		}
+		return nil
+	}
+	tests := []test{
+		{
+			name: "return 1 float32 vector from uint8 vector",
+			args: args{
+				vectors: [][]uint8{
+					{
+						1, 2, 3,
+					},
+				},
+			},
+			want: want{
+				wantRet: [][]float32{
+					{
+						1, 2, 3,
+					},
+				},
+			},
+		},
+		{
+			name: "return 3 float32 vector from uint8 vector",
+			args: args{
+				vectors: [][]uint8{
+					{
+						1, 2, 3,
+					},
+					{
+						4, 5, 6,
+					},
+					{
+						7, 8, 9,
+					},
+				},
+			},
+			want: want{
+				wantRet: [][]float32{
+					{
+						1, 2, 3,
+					},
+					{
+						4, 5, 6,
+					},
+					{
+						7, 8, 9,
+					},
+				},
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			checkFunc := test.checkFunc
+			if test.checkFunc == nil {
+				checkFunc = defaultCheckFunc
+			}
+
+			gotRet := ConvertVectorsUint8ToFloat32(test.args.vectors)
+			if err := checkFunc(test.want, gotRet); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
+
+func Test_convertVectorUint8ToFloat32(t *testing.T) {
+	type args struct {
+		vector []uint8
+	}
+	type want struct {
+		wantRet []float32
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, []float32) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, gotRet []float32) error {
+		if !reflect.DeepEqual(gotRet, w.wantRet) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRet, w.wantRet)
+		}
+		return nil
+	}
+	tests := []test{
+		{
+			name: "return float32 vector from uint8 vector",
+			args: args{
+				vector: []uint8{
+					1, 2, 3,
+				},
+			},
+			want: want{
+				wantRet: []float32{
+					1, 2, 3,
+				},
+			},
+		},
+		{
+			name: "return float32 vector from uint8 vector with min value",
+			args: args{
+				vector: []uint8{
+					0, 0, 0,
+				},
+			},
+			want: want{
+				wantRet: []float32{
+					0, 0, 0,
+				},
+			},
+		},
+		{
+			name: "return float32 vector from uint8 vector with max value",
+			args: args{
+				vector: []uint8{
+					math.MaxUint8, math.MaxUint8, math.MaxUint8,
+				},
+			},
+			want: want{
+				wantRet: []float32{
+					math.MaxUint8, math.MaxUint8, math.MaxUint8,
+				},
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			checkFunc := test.checkFunc
+			if test.checkFunc == nil {
+				checkFunc = defaultCheckFunc
+			}
+
+			gotRet := convertVectorUint8ToFloat32(test.args.vector)
+			if err := checkFunc(test.want, gotRet); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
 		})
 	}
 }
