@@ -263,31 +263,15 @@ func TestUtf8ToSjis(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           s: "",
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           s: "",
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "return sjis string from UTF8 string",
+			args: args{
+				s: "こんにちは",
+			},
+			want: want{
+				want: "\x82\xb1\x82\xf1\x82ɂ\xbf\x82\xcd",
+			},
+		},
 	}
 
 	for _, tc := range tests {
@@ -341,31 +325,15 @@ func TestUtf8ToEucjp(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           s: "",
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           s: "",
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "return eucjp string from UTF8 string",
+			args: args{
+				s: "こんにちは",
+			},
+			want: want{
+				want: "\xa4\xb3\xa4\xf3\xa4ˤ\xc1\xa4\xcf",
+			},
+		},
 	}
 
 	for _, tc := range tests {
