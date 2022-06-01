@@ -838,7 +838,7 @@ func Test_server_Search(t *testing.T) {
 				ctx:       ctx,
 				insertNum: 1000,
 				req: &payload.Search_Request{
-					Vector: vector.ConvertVectorUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, defaultDimensionSize)[0]),
+					Vector: vector.ConvertVectorsUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, defaultDimensionSize))[0],
 					Config: defaultSearch_Config,
 				},
 			},
@@ -876,7 +876,7 @@ func Test_server_Search(t *testing.T) {
 				ctx:       ctx,
 				insertNum: 1000,
 				req: &payload.Search_Request{
-					Vector: vector.ConvertVectorUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, defaultDimensionSize+1)[0]),
+					Vector: vector.ConvertVectorsUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, defaultDimensionSize+1))[0],
 					Config: defaultSearch_Config,
 				},
 			},
@@ -1134,7 +1134,7 @@ func Test_server_Search(t *testing.T) {
 				ctx:       ctx,
 				insertNum: 1000,
 				req: &payload.Search_Request{
-					Vector: vector.ConvertVectorUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, math.MaxInt32>>7)[0]),
+					Vector: vector.ConvertVectorsUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, math.MaxInt32>>7))[0],
 					Config: defaultSearch_Config,
 				},
 			},
@@ -1216,7 +1216,7 @@ func Test_server_Search(t *testing.T) {
 				ctx:       ctx,
 				insertNum: 5,
 				req: &payload.Search_Request{
-					Vector: vector.ConvertVectorUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, defaultDimensionSize)[0]),
+					Vector: vector.ConvertVectorsUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, defaultDimensionSize))[0],
 					Config: defaultSearch_Config,
 				},
 			},
@@ -1254,7 +1254,7 @@ func Test_server_Search(t *testing.T) {
 				ctx:       ctx,
 				insertNum: 10,
 				req: &payload.Search_Request{
-					Vector: vector.ConvertVectorUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, defaultDimensionSize)[0]),
+					Vector: vector.ConvertVectorsUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, defaultDimensionSize))[0],
 					Config: defaultSearch_Config,
 				},
 			},
@@ -1292,7 +1292,7 @@ func Test_server_Search(t *testing.T) {
 				ctx:       ctx,
 				insertNum: 20,
 				req: &payload.Search_Request{
-					Vector: vector.ConvertVectorUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, defaultDimensionSize)[0]),
+					Vector: vector.ConvertVectorsUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, defaultDimensionSize))[0],
 					Config: defaultSearch_Config,
 				},
 			},
@@ -1330,7 +1330,7 @@ func Test_server_Search(t *testing.T) {
 				ctx:       ctx,
 				insertNum: 5,
 				req: &payload.Search_Request{
-					Vector: vector.ConvertVectorUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, defaultDimensionSize)[0]),
+					Vector: vector.ConvertVectorsUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, defaultDimensionSize))[0],
 					Config: defaultSearch_Config,
 				},
 			},
@@ -1370,7 +1370,7 @@ func Test_server_Search(t *testing.T) {
 				ctx:       ctx,
 				insertNum: 10,
 				req: &payload.Search_Request{
-					Vector: vector.ConvertVectorUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, defaultDimensionSize)[0]),
+					Vector: vector.ConvertVectorsUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, defaultDimensionSize))[0],
 					Config: defaultSearch_Config,
 				},
 			},
@@ -1410,7 +1410,7 @@ func Test_server_Search(t *testing.T) {
 				ctx:       ctx,
 				insertNum: 20,
 				req: &payload.Search_Request{
-					Vector: vector.ConvertVectorUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, defaultDimensionSize)[0]),
+					Vector: vector.ConvertVectorsUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, defaultDimensionSize))[0],
 					Config: defaultSearch_Config,
 				},
 			},
@@ -6938,7 +6938,7 @@ func Test_server_Update(t *testing.T) {
 				req: &payload.Update_Request{
 					Vector: &payload.Object_Vector{
 						Id:     "test",
-						Vector: vector.ConvertVectorUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, dimension+1)[0]),
+						Vector: vector.ConvertVectorsUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, dimension+1))[0],
 					},
 					Config: defaultUpdateConfig,
 				},
