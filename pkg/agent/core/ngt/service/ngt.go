@@ -1226,10 +1226,11 @@ func (n *ngt) readyForUpdate(uuid string, vec []float32) (err error) {
 		return errors.ErrInvalidDimensionSize(len(vec), n.GetDimensionSize())
 	}
 	ovec, err := n.GetObject(uuid)
-	if err != nil ||
-		len(vec) != len(ovec) ||
-		conv.F32stos(vec) != conv.F32stos(ovec) {
-		// if error (GetObject cannot find vector) or vector length is not equal or if difference exists let's try update
+	// if error (GetObject cannot find vector) return error
+	if err != nil {
+		return err
+	}
+	if len(vec) != len(ovec) || conv.F32stos(vec) != conv.F32stos(ovec) {
 		return nil
 	}
 	// if no difference exists (same vector already exists) return error for skip update
