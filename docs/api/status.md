@@ -26,10 +26,10 @@ Services that return this code are all services.
 
 ## INVALID_ARGUMENT
 
-`INVALID_ARGUMENT` means something wrong in the request configuration.
+`INVALID_ARGUMENT` means something wrong in the request argument.
 
 Services that return status are all services.
-If you get this code, please verify your request is correct.
+If you get this code, please verify your request payload is correct.
 
 ## DEADLINE_EXCEEDED
 
@@ -44,7 +44,7 @@ Services that return status are:
 
 The timeout configuration is on the Vald cluster side.
 If it appears constantly, you need to review the cluster settings.
-However, only when using a search service can you overwrite the timeout configuration by lengthening the time setting in the search config.
+However, only when using a search service can you overwrite the timeout configuration by lengthening the time setting in the search request config.
 
 ## NOT_FOUND
 
