@@ -20,10 +20,8 @@ package grpc
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
 	"math"
 	"reflect"
-	"strconv"
 	"strings"
 	"testing"
 
@@ -31,6 +29,7 @@ import (
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
 	"github.com/vdaas/vald/internal/config"
+	"github.com/vdaas/vald/internal/conv"
 	"github.com/vdaas/vald/internal/core/algorithm/ngt"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
@@ -38,13 +37,57 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/net/grpc/errdetails"
 	"github.com/vdaas/vald/internal/net/grpc/status"
+	"github.com/vdaas/vald/internal/test/data/request"
 	"github.com/vdaas/vald/internal/test/data/vector"
 	"github.com/vdaas/vald/internal/test/goleak"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/model"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/service"
-	"golang.org/x/text/encoding/japanese"
-	"golang.org/x/text/transform"
 )
+
+func buildIndex(ctx context.Context, t request.ObjectType, dist vector.Distribution, num int, insertCfg *payload.Insert_Config,
+	ngtCfg *config.NGT, ngtOpts []service.Option, overwriteIDs []string, overwriteVectors [][]float32,
+) (Server, error) {
+	eg, ctx := errgroup.New(ctx)
+	ngt, err := service.New(ngtCfg, append(ngtOpts, service.WithErrGroup(eg), service.WithEnableInMemoryMode(true))...)
+	if err != nil {
+		return nil, err
+	}
+
+	s, err := New(WithErrGroup(eg), WithNGT(ngt))
+	if err != nil {
+		return nil, err
+	}
+
+	if num > 0 {
+		// gen insert request
+		reqs, err := request.GenMultiInsertReq(t, dist, num, ngtCfg.Dimension, insertCfg)
+		if err != nil {
+			return nil, err
+		}
+
+		// overwrite ID if needed
+		for i, id := range overwriteIDs {
+			reqs.Requests[i].Vector.Id = id
+		}
+
+		// overwrite Vectors if needed
+		for i, v := range overwriteVectors {
+			reqs.Requests[i].Vector.Vector = v
+		}
+
+		// insert and create index
+		if _, err := s.MultiInsert(ctx, reqs); err != nil {
+			return nil, err
+		}
+		if _, err := s.CreateIndex(ctx, &payload.Control_CreateIndexRequest{
+			PoolSize: 100,
+		}); err != nil {
+			return nil, err
+		}
+	}
+
+	return s, nil
+}
 
 func TestNew(t *testing.T) {
 	t.Parallel()
@@ -367,10 +410,21 @@ func Test_server_Exists(t *testing.T) {
 
 	const (
 		insertNum = 1000
+		dim       = 128
 	)
 
+	utf8Str := "こんにちは"
+	eucjpStr, err := conv.Utf8ToEucjp(utf8Str)
+	if err != nil {
+		t.Error(err)
+	}
+	sjisStr, err := conv.Utf8ToSjis(utf8Str)
+	if err != nil {
+		t.Error(err)
+	}
+
 	defaultNgtConfig := &config.NGT{
-		Dimension:        128,
+		Dimension:        dim,
 		DistanceType:     ngt.L2.String(),
 		ObjectType:       ngt.Float.String(),
 		CreationEdgeSize: 60,
@@ -383,38 +437,11 @@ func Test_server_Exists(t *testing.T) {
 			DeleteBufferPoolSize: 1000,
 		},
 	}
+	defaultInsertConfig := &payload.Insert_Config{
+		SkipStrictExistCheck: true,
+	}
 	defaultBeforeFunc := func(a args) (Server, error) {
-		eg, ctx := errgroup.New(a.ctx)
-		ngt, err := service.New(defaultNgtConfig, service.WithErrGroup(eg), service.WithEnableInMemoryMode(true))
-		if err != nil {
-			return nil, err
-		}
-
-		s, err := New(WithErrGroup(eg), WithNGT(ngt))
-		if err != nil {
-			return nil, err
-		}
-
-		reqs := make([]*payload.Insert_Request, insertNum)
-		for i, v := range vector.GaussianDistributedFloat32VectorGenerator(insertNum, defaultNgtConfig.Dimension) {
-			reqs[i] = &payload.Insert_Request{
-				Vector: &payload.Object_Vector{
-					Id:     strconv.Itoa(i),
-					Vector: v,
-				},
-				Config: &payload.Insert_Config{
-					SkipStrictExistCheck: true,
-				},
-			}
-		}
-		reqs[0].Vector.Id = a.indexId
-		if _, err := s.MultiInsert(ctx, &payload.Insert_MultiRequest{Requests: reqs}); err != nil {
-			return nil, err
-		}
-		if _, err := s.CreateIndex(ctx, &payload.Control_CreateIndexRequest{PoolSize: 100}); err != nil {
-			return nil, err
-		}
-		return s, nil
+		return buildIndex(a.ctx, request.Float, vector.Gaussian, insertNum, defaultInsertConfig, defaultNgtConfig, nil, []string{a.indexId}, nil)
 	}
 
 	/*
@@ -533,8 +560,8 @@ func Test_server_Exists(t *testing.T) {
 			name: "Boundary Value Testing case 3.1: success exists with utf-8 ID from utf-8 index",
 			args: args{
 				ctx:      ctx,
-				indexId:  "こんにちは",
-				searchId: "こんにちは",
+				indexId:  utf8Str,
+				searchId: utf8Str,
 			},
 			want: want{},
 		},
@@ -542,8 +569,8 @@ func Test_server_Exists(t *testing.T) {
 			name: "Boundary Value Testing case 3.2: fail exists with utf-8 ID from s-jis index",
 			args: args{
 				ctx:      ctx,
-				indexId:  utf8ToSjis("こんにちは"),
-				searchId: "こんにちは",
+				indexId:  sjisStr,
+				searchId: utf8Str,
 			},
 			want: want{
 				code: codes.NotFound,
@@ -553,8 +580,8 @@ func Test_server_Exists(t *testing.T) {
 			name: "Boundary Value Testing case 3.3: fail exists with utf-8 ID from euc-jp index",
 			args: args{
 				ctx:      ctx,
-				indexId:  utf8ToEucjp("こんにちは"),
-				searchId: "こんにちは",
+				indexId:  eucjpStr,
+				searchId: utf8Str,
 			},
 			want: want{
 				code: codes.NotFound,
@@ -564,8 +591,8 @@ func Test_server_Exists(t *testing.T) {
 			name: "Boundary Value Testing case 3.4: fail exists with s-jis ID from utf-8 index",
 			args: args{
 				ctx:      ctx,
-				indexId:  "こんにちは",
-				searchId: utf8ToSjis("こんにちは"),
+				indexId:  utf8Str,
+				searchId: sjisStr,
 			},
 			want: want{
 				code: codes.NotFound,
@@ -575,8 +602,8 @@ func Test_server_Exists(t *testing.T) {
 			name: "Boundary Value Testing case 3.5: success exists with s-jis ID from s-jis index",
 			args: args{
 				ctx:      ctx,
-				indexId:  utf8ToSjis("こんにちは"),
-				searchId: utf8ToSjis("こんにちは"),
+				indexId:  sjisStr,
+				searchId: sjisStr,
 			},
 			want: want{},
 		},
@@ -584,8 +611,8 @@ func Test_server_Exists(t *testing.T) {
 			name: "Boundary Value Testing case 3.6: fail exists with s-jis ID from euc-jp index",
 			args: args{
 				ctx:      ctx,
-				indexId:  utf8ToEucjp("こんにちは"),
-				searchId: utf8ToSjis("こんにちは"),
+				indexId:  eucjpStr,
+				searchId: sjisStr,
 			},
 			want: want{
 				code: codes.NotFound,
@@ -595,8 +622,8 @@ func Test_server_Exists(t *testing.T) {
 			name: "Boundary Value Testing case 3.7: fail exists with euc-jp ID from utf-8 index",
 			args: args{
 				ctx:      ctx,
-				indexId:  "こんにちは",
-				searchId: utf8ToEucjp("こんにちは"),
+				indexId:  utf8Str,
+				searchId: eucjpStr,
 			},
 			want: want{
 				code: codes.NotFound,
@@ -606,8 +633,8 @@ func Test_server_Exists(t *testing.T) {
 			name: "Boundary Value Testing case 3.8: fail exists with euc-jp ID from s-jis index",
 			args: args{
 				ctx:      ctx,
-				indexId:  utf8ToSjis("こんにちは"),
-				searchId: utf8ToEucjp("こんにちは"),
+				indexId:  sjisStr,
+				searchId: eucjpStr,
 			},
 			want: want{
 				code: codes.NotFound,
@@ -617,8 +644,8 @@ func Test_server_Exists(t *testing.T) {
 			name: "Boundary Value Testing case 3.9: success exists with euc-jp ID from euc-jp index",
 			args: args{
 				ctx:      ctx,
-				indexId:  utf8ToEucjp("こんにちは"),
-				searchId: utf8ToEucjp("こんにちは"),
+				indexId:  eucjpStr,
+				searchId: eucjpStr,
 			},
 			want: want{},
 		},
@@ -664,30 +691,6 @@ func Test_server_Exists(t *testing.T) {
 	}
 }
 
-func convertVectorUint8ToFloat32(vector []uint8) (ret []float32) {
-	ret = make([]float32, len(vector))
-	for i, e := range vector {
-		ret[i] = float32(e)
-	}
-	return
-}
-
-func convertVectorsUint8ToFloat32(vectors [][]uint8) (ret [][]float32) {
-	ret = make([][]float32, 0, len(vectors))
-	for _, v := range vectors {
-		ret = append(ret, convertVectorUint8ToFloat32(v))
-	}
-	return
-}
-
-func fill(f float32, dim int) (v []float32) {
-	v = make([]float32, dim)
-	for i := range v {
-		v[i] = f
-	}
-	return
-}
-
 func Test_server_Search(t *testing.T) {
 	t.Parallel()
 
@@ -700,9 +703,9 @@ func Test_server_Search(t *testing.T) {
 		req       *payload.Search_Request
 	}
 	type fields struct {
-		gen func(int, int) [][]float32
-
-		opts []Option
+		objectType   request.ObjectType
+		distribution vector.Distribution
+		overwriteVec [][]float32
 
 		ngtCfg  *config.NGT
 		ngtOpts []service.Option
@@ -725,44 +728,11 @@ func Test_server_Search(t *testing.T) {
 		defaultDimensionSize = 32
 	)
 
+	defaultInsertConfig := &payload.Insert_Config{
+		SkipStrictExistCheck: true,
+	}
 	defaultBeforeFunc := func(f fields, a args) (Server, error) {
-		eg, ctx := errgroup.New(a.ctx)
-		if f.ngtOpts == nil {
-			f.ngtOpts = []service.Option{}
-		}
-		f.ngtOpts = append(f.ngtOpts, service.WithErrGroup(eg), service.WithEnableInMemoryMode(true))
-		ngt, err := service.New(f.ngtCfg, f.ngtOpts...)
-		if err != nil {
-			return nil, err
-		}
-		if f.opts == nil {
-			f.opts = []Option{}
-		}
-		f.opts = append(f.opts, WithErrGroup(eg), WithNGT(ngt))
-		s, err := New(f.opts...)
-		if err != nil {
-			return nil, err
-		}
-
-		reqs := make([]*payload.Insert_Request, a.insertNum)
-		for i, v := range f.gen(a.insertNum, f.ngtCfg.Dimension) {
-			reqs[i] = &payload.Insert_Request{
-				Vector: &payload.Object_Vector{
-					Id:     strconv.Itoa(i),
-					Vector: v,
-				},
-				Config: &payload.Insert_Config{
-					SkipStrictExistCheck: true,
-				},
-			}
-		}
-		if _, err := s.MultiInsert(ctx, &payload.Insert_MultiRequest{Requests: reqs}); err != nil {
-			return nil, err
-		}
-		if _, err := s.CreateIndex(ctx, &payload.Control_CreateIndexRequest{PoolSize: 100}); err != nil {
-			return nil, err
-		}
-		return s, nil
+		return buildIndex(a.ctx, f.objectType, f.distribution, a.insertNum, defaultInsertConfig, f.ngtCfg, f.ngtOpts, nil, f.overwriteVec)
 	}
 	defaultCheckFunc := func(w want, gotRes *payload.Search_Response, err error) error {
 		if err != nil {
@@ -801,6 +771,26 @@ func Test_server_Search(t *testing.T) {
 		Radius:  -1,
 		Epsilon: 0.1,
 		Timeout: 1000000000,
+	}
+	genSameVecs := func(ot request.ObjectType, n int, dim int) [][]float32 {
+		var vecs [][]float32
+		var err error
+		switch ot {
+		case request.Float:
+			vecs, err = vector.GenF32Vec(vector.Gaussian, 1, dim)
+		case request.Uint8:
+			vecs, err = vector.GenUint8Vec(vector.Gaussian, 1, dim)
+		}
+		if err != nil {
+			t.Error(err)
+		}
+
+		res := make([][]float32, n)
+		for i := 0; i < n; i++ {
+			res[i] = vecs[0]
+		}
+
+		return res
 	}
 
 	/*
@@ -848,15 +838,14 @@ func Test_server_Search(t *testing.T) {
 				ctx:       ctx,
 				insertNum: 1000,
 				req: &payload.Search_Request{
-					Vector: convertVectorUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, defaultDimensionSize)[0]),
+					Vector: vector.ConvertVectorsUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, defaultDimensionSize))[0],
 					Config: defaultSearch_Config,
 				},
 			},
 			fields: fields{
-				gen: func(n, dim int) [][]float32 {
-					return convertVectorsUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(n, dim))
-				},
-				ngtCfg: ngtConfig(defaultDimensionSize, ngt.Uint8.String()),
+				distribution: vector.Gaussian,
+				objectType:   request.Uint8,
+				ngtCfg:       ngtConfig(defaultDimensionSize, ngt.Uint8.String()),
 			},
 			want: want{
 				resultSize: int(defaultSearch_Config.GetNum()),
@@ -873,8 +862,9 @@ func Test_server_Search(t *testing.T) {
 				},
 			},
 			fields: fields{
-				gen:    vector.GaussianDistributedFloat32VectorGenerator,
-				ngtCfg: ngtConfig(defaultDimensionSize, ngt.Float.String()),
+				distribution: vector.Gaussian,
+				objectType:   request.Float,
+				ngtCfg:       ngtConfig(defaultDimensionSize, ngt.Float.String()),
 			},
 			want: want{
 				resultSize: int(defaultSearch_Config.GetNum()),
@@ -886,15 +876,14 @@ func Test_server_Search(t *testing.T) {
 				ctx:       ctx,
 				insertNum: 1000,
 				req: &payload.Search_Request{
-					Vector: convertVectorUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, defaultDimensionSize+1)[0]),
+					Vector: vector.ConvertVectorsUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, defaultDimensionSize+1))[0],
 					Config: defaultSearch_Config,
 				},
 			},
 			fields: fields{
-				gen: func(n, dim int) [][]float32 {
-					return convertVectorsUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(n, dim))
-				},
-				ngtCfg: ngtConfig(defaultDimensionSize, ngt.Uint8.String()),
+				distribution: vector.Gaussian,
+				objectType:   request.Uint8,
+				ngtCfg:       ngtConfig(defaultDimensionSize, ngt.Uint8.String()),
 			},
 			want: want{
 				resultSize: 0,
@@ -912,8 +901,9 @@ func Test_server_Search(t *testing.T) {
 				},
 			},
 			fields: fields{
-				gen:    vector.GaussianDistributedFloat32VectorGenerator,
-				ngtCfg: ngtConfig(defaultDimensionSize, ngt.Float.String()),
+				distribution: vector.Gaussian,
+				objectType:   request.Float,
+				ngtCfg:       ngtConfig(defaultDimensionSize, ngt.Float.String()),
 			},
 			want: want{
 				resultSize: 0,
@@ -928,15 +918,14 @@ func Test_server_Search(t *testing.T) {
 				ctx:       ctx,
 				insertNum: 1000,
 				req: &payload.Search_Request{
-					Vector: fill(float32(uint8(0)), defaultDimensionSize),
+					Vector: vector.GenSameValueVec(defaultDimensionSize, float32(uint8(0))),
 					Config: defaultSearch_Config,
 				},
 			},
 			fields: fields{
-				gen: func(n, dim int) [][]float32 {
-					return convertVectorsUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(n, dim))
-				},
-				ngtCfg: ngtConfig(defaultDimensionSize, ngt.Uint8.String()),
+				distribution: vector.Gaussian,
+				objectType:   request.Uint8,
+				ngtCfg:       ngtConfig(defaultDimensionSize, ngt.Uint8.String()),
 			},
 			want: want{
 				resultSize: int(defaultSearch_Config.GetNum()),
@@ -948,13 +937,14 @@ func Test_server_Search(t *testing.T) {
 				ctx:       ctx,
 				insertNum: 1000,
 				req: &payload.Search_Request{
-					Vector: fill(+0.0, defaultDimensionSize),
+					Vector: vector.GenSameValueVec(defaultDimensionSize, +0.0),
 					Config: defaultSearch_Config,
 				},
 			},
 			fields: fields{
-				gen:    vector.GaussianDistributedFloat32VectorGenerator,
-				ngtCfg: ngtConfig(defaultDimensionSize, ngt.Float.String()),
+				distribution: vector.Gaussian,
+				objectType:   request.Float,
+				ngtCfg:       ngtConfig(defaultDimensionSize, ngt.Float.String()),
 			},
 			want: want{
 				resultSize: int(defaultSearch_Config.GetNum()),
@@ -966,13 +956,14 @@ func Test_server_Search(t *testing.T) {
 				ctx:       ctx,
 				insertNum: 1000,
 				req: &payload.Search_Request{
-					Vector: fill(float32(math.Copysign(0, -1.0)), defaultDimensionSize),
+					Vector: vector.GenSameValueVec(defaultDimensionSize, float32(math.Copysign(0, -1.0))),
 					Config: defaultSearch_Config,
 				},
 			},
 			fields: fields{
-				gen:    vector.GaussianDistributedFloat32VectorGenerator,
-				ngtCfg: ngtConfig(defaultDimensionSize, ngt.Float.String()),
+				distribution: vector.Gaussian,
+				objectType:   request.Float,
+				ngtCfg:       ngtConfig(defaultDimensionSize, ngt.Float.String()),
 			},
 			want: want{
 				resultSize: int(defaultSearch_Config.GetNum()),
@@ -984,15 +975,14 @@ func Test_server_Search(t *testing.T) {
 				ctx:       ctx,
 				insertNum: 1000,
 				req: &payload.Search_Request{
-					Vector: fill(float32(math.MaxUint8), defaultDimensionSize),
+					Vector: vector.GenSameValueVec(defaultDimensionSize, float32(math.MaxUint8)),
 					Config: defaultSearch_Config,
 				},
 			},
 			fields: fields{
-				gen: func(n, dim int) [][]float32 {
-					return convertVectorsUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(n, dim))
-				},
-				ngtCfg: ngtConfig(defaultDimensionSize, ngt.Uint8.String()),
+				distribution: vector.Gaussian,
+				objectType:   request.Float,
+				ngtCfg:       ngtConfig(defaultDimensionSize, ngt.Uint8.String()),
 			},
 			want: want{
 				resultSize: int(defaultSearch_Config.GetNum()),
@@ -1004,13 +994,14 @@ func Test_server_Search(t *testing.T) {
 				ctx:       ctx,
 				insertNum: 1000,
 				req: &payload.Search_Request{
-					Vector: fill(math.MaxFloat32, defaultDimensionSize),
+					Vector: vector.GenSameValueVec(defaultDimensionSize, math.MaxFloat32),
 					Config: defaultSearch_Config,
 				},
 			},
 			fields: fields{
-				gen:    vector.GaussianDistributedFloat32VectorGenerator,
-				ngtCfg: ngtConfig(defaultDimensionSize, ngt.Float.String()),
+				distribution: vector.Gaussian,
+				objectType:   request.Float,
+				ngtCfg:       ngtConfig(defaultDimensionSize, ngt.Float.String()),
 			},
 			want: want{
 				resultSize: 0,
@@ -1023,13 +1014,14 @@ func Test_server_Search(t *testing.T) {
 				ctx:       ctx,
 				insertNum: 1000,
 				req: &payload.Search_Request{
-					Vector: fill(-math.MaxFloat32, defaultDimensionSize),
+					Vector: vector.GenSameValueVec(defaultDimensionSize, -math.MaxFloat32),
 					Config: defaultSearch_Config,
 				},
 			},
 			fields: fields{
-				gen:    vector.GaussianDistributedFloat32VectorGenerator,
-				ngtCfg: ngtConfig(defaultDimensionSize, ngt.Float.String()),
+				distribution: vector.Gaussian,
+				objectType:   request.Float,
+				ngtCfg:       ngtConfig(defaultDimensionSize, ngt.Float.String()),
 			},
 			want: want{
 				resultSize: 0,
@@ -1042,13 +1034,14 @@ func Test_server_Search(t *testing.T) {
 				ctx:       ctx,
 				insertNum: 1000,
 				req: &payload.Search_Request{
-					Vector: fill(float32(math.NaN()), defaultDimensionSize),
+					Vector: vector.GenSameValueVec(defaultDimensionSize, float32(math.NaN())),
 					Config: defaultSearch_Config,
 				},
 			},
 			fields: fields{
-				gen:    vector.GaussianDistributedFloat32VectorGenerator,
-				ngtCfg: ngtConfig(defaultDimensionSize, ngt.Float.String()),
+				distribution: vector.Gaussian,
+				objectType:   request.Float,
+				ngtCfg:       ngtConfig(defaultDimensionSize, ngt.Float.String()),
 			},
 			want: want{
 				resultSize: 0,
@@ -1061,13 +1054,14 @@ func Test_server_Search(t *testing.T) {
 				ctx:       ctx,
 				insertNum: 1000,
 				req: &payload.Search_Request{
-					Vector: fill(float32(math.Inf(+1.0)), defaultDimensionSize),
+					Vector: vector.GenSameValueVec(defaultDimensionSize, float32(math.Inf(+1.0))),
 					Config: defaultSearch_Config,
 				},
 			},
 			fields: fields{
-				gen:    vector.GaussianDistributedFloat32VectorGenerator,
-				ngtCfg: ngtConfig(defaultDimensionSize, ngt.Float.String()),
+				distribution: vector.Gaussian,
+				objectType:   request.Float,
+				ngtCfg:       ngtConfig(defaultDimensionSize, ngt.Float.String()),
 			},
 			want: want{
 				resultSize: 0,
@@ -1080,13 +1074,14 @@ func Test_server_Search(t *testing.T) {
 				ctx:       ctx,
 				insertNum: 1000,
 				req: &payload.Search_Request{
-					Vector: fill(float32(math.Inf(-1.0)), defaultDimensionSize),
+					Vector: vector.GenSameValueVec(defaultDimensionSize, float32(math.Inf(-1.0))),
 					Config: defaultSearch_Config,
 				},
 			},
 			fields: fields{
-				gen:    vector.GaussianDistributedFloat32VectorGenerator,
-				ngtCfg: ngtConfig(defaultDimensionSize, ngt.Float.String()),
+				distribution: vector.Gaussian,
+				objectType:   request.Float,
+				ngtCfg:       ngtConfig(defaultDimensionSize, ngt.Float.String()),
 			},
 			want: want{
 				resultSize: 0,
@@ -1104,10 +1099,9 @@ func Test_server_Search(t *testing.T) {
 				},
 			},
 			fields: fields{
-				gen: func(n, dim int) [][]float32 {
-					return convertVectorsUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(n, dim))
-				},
-				ngtCfg: ngtConfig(defaultDimensionSize, "uint8"),
+				distribution: vector.Gaussian,
+				objectType:   request.Uint8,
+				ngtCfg:       ngtConfig(defaultDimensionSize, "uint8"),
 			},
 			want: want{
 				resultSize: 0,
@@ -1125,8 +1119,9 @@ func Test_server_Search(t *testing.T) {
 				},
 			},
 			fields: fields{
-				gen:    vector.GaussianDistributedFloat32VectorGenerator,
-				ngtCfg: ngtConfig(defaultDimensionSize, ngt.Float.String()),
+				distribution: vector.Gaussian,
+				objectType:   request.Float,
+				ngtCfg:       ngtConfig(defaultDimensionSize, ngt.Float.String()),
 			},
 			want: want{
 				resultSize: 0,
@@ -1139,15 +1134,14 @@ func Test_server_Search(t *testing.T) {
 				ctx:       ctx,
 				insertNum: 1000,
 				req: &payload.Search_Request{
-					Vector: convertVectorUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, math.MaxInt32>>7)[0]),
+					Vector: vector.ConvertVectorsUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, math.MaxInt32>>7))[0],
 					Config: defaultSearch_Config,
 				},
 			},
 			fields: fields{
-				gen: func(n, dim int) [][]float32 {
-					return convertVectorsUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(n, dim))
-				},
-				ngtCfg: ngtConfig(defaultDimensionSize, ngt.Uint8.String()),
+				distribution: vector.Gaussian,
+				objectType:   request.Uint8,
+				ngtCfg:       ngtConfig(defaultDimensionSize, ngt.Uint8.String()),
 			},
 			want: want{
 				resultSize: 0,
@@ -1165,8 +1159,9 @@ func Test_server_Search(t *testing.T) {
 				},
 			},
 			fields: fields{
-				gen:    vector.GaussianDistributedFloat32VectorGenerator,
-				ngtCfg: ngtConfig(defaultDimensionSize, ngt.Float.String()),
+				distribution: vector.Gaussian,
+				objectType:   request.Float,
+				ngtCfg:       ngtConfig(defaultDimensionSize, ngt.Float.String()),
 			},
 			want: want{
 				resultSize: 0,
@@ -1184,10 +1179,9 @@ func Test_server_Search(t *testing.T) {
 				},
 			},
 			fields: fields{
-				gen: func(n, dim int) [][]float32 {
-					return convertVectorsUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(n, dim))
-				},
-				ngtCfg: ngtConfig(defaultDimensionSize, ngt.Uint8.String()),
+				distribution: vector.Gaussian,
+				objectType:   request.Uint8,
+				ngtCfg:       ngtConfig(defaultDimensionSize, ngt.Uint8.String()),
 			},
 			want: want{
 				resultSize: 0,
@@ -1205,8 +1199,9 @@ func Test_server_Search(t *testing.T) {
 				},
 			},
 			fields: fields{
-				gen:    vector.GaussianDistributedFloat32VectorGenerator,
-				ngtCfg: ngtConfig(defaultDimensionSize, ngt.Float.String()),
+				distribution: vector.Gaussian,
+				objectType:   request.Float,
+				ngtCfg:       ngtConfig(defaultDimensionSize, ngt.Float.String()),
 			},
 			want: want{
 				resultSize: 0,
@@ -1221,15 +1216,14 @@ func Test_server_Search(t *testing.T) {
 				ctx:       ctx,
 				insertNum: 5,
 				req: &payload.Search_Request{
-					Vector: convertVectorUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, defaultDimensionSize)[0]),
+					Vector: vector.ConvertVectorsUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, defaultDimensionSize))[0],
 					Config: defaultSearch_Config,
 				},
 			},
 			fields: fields{
-				gen: func(n, dim int) [][]float32 {
-					return convertVectorsUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(n, dim))
-				},
-				ngtCfg: ngtConfig(defaultDimensionSize, ngt.Uint8.String()),
+				distribution: vector.Gaussian,
+				objectType:   request.Uint8,
+				ngtCfg:       ngtConfig(defaultDimensionSize, ngt.Uint8.String()),
 			},
 			want: want{
 				resultSize: 5,
@@ -1246,8 +1240,9 @@ func Test_server_Search(t *testing.T) {
 				},
 			},
 			fields: fields{
-				gen:    vector.GaussianDistributedFloat32VectorGenerator,
-				ngtCfg: ngtConfig(defaultDimensionSize, ngt.Float.String()),
+				distribution: vector.Gaussian,
+				objectType:   request.Float,
+				ngtCfg:       ngtConfig(defaultDimensionSize, ngt.Float.String()),
 			},
 			want: want{
 				resultSize: 5,
@@ -1259,15 +1254,14 @@ func Test_server_Search(t *testing.T) {
 				ctx:       ctx,
 				insertNum: 10,
 				req: &payload.Search_Request{
-					Vector: convertVectorUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, defaultDimensionSize)[0]),
+					Vector: vector.ConvertVectorsUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, defaultDimensionSize))[0],
 					Config: defaultSearch_Config,
 				},
 			},
 			fields: fields{
-				gen: func(n, dim int) [][]float32 {
-					return convertVectorsUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(n, dim))
-				},
-				ngtCfg: ngtConfig(defaultDimensionSize, ngt.Uint8.String()),
+				distribution: vector.Gaussian,
+				objectType:   request.Uint8,
+				ngtCfg:       ngtConfig(defaultDimensionSize, ngt.Uint8.String()),
 			},
 			want: want{
 				resultSize: 10,
@@ -1284,8 +1278,9 @@ func Test_server_Search(t *testing.T) {
 				},
 			},
 			fields: fields{
-				gen:    vector.GaussianDistributedFloat32VectorGenerator,
-				ngtCfg: ngtConfig(defaultDimensionSize, ngt.Float.String()),
+				distribution: vector.Gaussian,
+				objectType:   request.Float,
+				ngtCfg:       ngtConfig(defaultDimensionSize, ngt.Float.String()),
 			},
 			want: want{
 				resultSize: 10,
@@ -1297,15 +1292,14 @@ func Test_server_Search(t *testing.T) {
 				ctx:       ctx,
 				insertNum: 20,
 				req: &payload.Search_Request{
-					Vector: convertVectorUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, defaultDimensionSize)[0]),
+					Vector: vector.ConvertVectorsUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, defaultDimensionSize))[0],
 					Config: defaultSearch_Config,
 				},
 			},
 			fields: fields{
-				gen: func(n, dim int) [][]float32 {
-					return convertVectorsUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(n, dim))
-				},
-				ngtCfg: ngtConfig(defaultDimensionSize, ngt.Uint8.String()),
+				distribution: vector.Gaussian,
+				objectType:   request.Uint8,
+				ngtCfg:       ngtConfig(defaultDimensionSize, ngt.Uint8.String()),
 			},
 			want: want{
 				resultSize: 10,
@@ -1322,8 +1316,9 @@ func Test_server_Search(t *testing.T) {
 				},
 			},
 			fields: fields{
-				gen:    vector.GaussianDistributedFloat32VectorGenerator,
-				ngtCfg: ngtConfig(defaultDimensionSize, ngt.Float.String()),
+				distribution: vector.Gaussian,
+				objectType:   request.Float,
+				ngtCfg:       ngtConfig(defaultDimensionSize, ngt.Float.String()),
 			},
 			want: want{
 				resultSize: 10,
@@ -1335,20 +1330,15 @@ func Test_server_Search(t *testing.T) {
 				ctx:       ctx,
 				insertNum: 5,
 				req: &payload.Search_Request{
-					Vector: convertVectorUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, defaultDimensionSize)[0]),
+					Vector: vector.ConvertVectorsUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, defaultDimensionSize))[0],
 					Config: defaultSearch_Config,
 				},
 			},
 			fields: fields{
-				gen: func(n, dim int) [][]float32 {
-					v := convertVectorUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, dim)[0])
-					vectors := make([][]float32, n)
-					for i := range vectors {
-						vectors[i] = v
-					}
-					return vectors
-				},
-				ngtCfg: ngtConfig(defaultDimensionSize, ngt.Uint8.String()),
+				distribution: vector.Gaussian,
+				objectType:   request.Uint8,
+				overwriteVec: genSameVecs(request.Uint8, 5, defaultDimensionSize),
+				ngtCfg:       ngtConfig(defaultDimensionSize, ngt.Uint8.String()),
 			},
 			want: want{
 				resultSize: 5,
@@ -1365,15 +1355,10 @@ func Test_server_Search(t *testing.T) {
 				},
 			},
 			fields: fields{
-				gen: func(n, dim int) [][]float32 {
-					v := vector.GaussianDistributedFloat32VectorGenerator(1, dim)[0]
-					vectors := make([][]float32, n)
-					for i := range vectors {
-						vectors[i] = v
-					}
-					return vectors
-				},
-				ngtCfg: ngtConfig(defaultDimensionSize, ngt.Float.String()),
+				distribution: vector.Gaussian,
+				objectType:   request.Uint8,
+				overwriteVec: genSameVecs(request.Float, 5, defaultDimensionSize),
+				ngtCfg:       ngtConfig(defaultDimensionSize, ngt.Float.String()),
 			},
 			want: want{
 				resultSize: 5,
@@ -1385,20 +1370,15 @@ func Test_server_Search(t *testing.T) {
 				ctx:       ctx,
 				insertNum: 10,
 				req: &payload.Search_Request{
-					Vector: convertVectorUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, defaultDimensionSize)[0]),
+					Vector: vector.ConvertVectorsUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, defaultDimensionSize))[0],
 					Config: defaultSearch_Config,
 				},
 			},
 			fields: fields{
-				gen: func(n, dim int) [][]float32 {
-					v := convertVectorUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, dim)[0])
-					vectors := make([][]float32, n)
-					for i := range vectors {
-						vectors[i] = v
-					}
-					return vectors
-				},
-				ngtCfg: ngtConfig(defaultDimensionSize, ngt.Uint8.String()),
+				distribution: vector.Gaussian,
+				objectType:   request.Uint8,
+				overwriteVec: genSameVecs(request.Uint8, 10, defaultDimensionSize),
+				ngtCfg:       ngtConfig(defaultDimensionSize, ngt.Uint8.String()),
 			},
 			want: want{
 				resultSize: 10,
@@ -1415,15 +1395,10 @@ func Test_server_Search(t *testing.T) {
 				},
 			},
 			fields: fields{
-				gen: func(n, dim int) [][]float32 {
-					v := vector.GaussianDistributedFloat32VectorGenerator(1, dim)[0]
-					vectors := make([][]float32, n)
-					for i := range vectors {
-						vectors[i] = v
-					}
-					return vectors
-				},
-				ngtCfg: ngtConfig(defaultDimensionSize, ngt.Float.String()),
+				distribution: vector.Gaussian,
+				objectType:   request.Uint8,
+				overwriteVec: genSameVecs(request.Float, 10, defaultDimensionSize),
+				ngtCfg:       ngtConfig(defaultDimensionSize, ngt.Float.String()),
 			},
 			want: want{
 				resultSize: 10,
@@ -1435,20 +1410,15 @@ func Test_server_Search(t *testing.T) {
 				ctx:       ctx,
 				insertNum: 20,
 				req: &payload.Search_Request{
-					Vector: convertVectorUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, defaultDimensionSize)[0]),
+					Vector: vector.ConvertVectorsUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, defaultDimensionSize))[0],
 					Config: defaultSearch_Config,
 				},
 			},
 			fields: fields{
-				gen: func(n, dim int) [][]float32 {
-					v := convertVectorUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, dim)[0])
-					vectors := make([][]float32, n)
-					for i := range vectors {
-						vectors[i] = v
-					}
-					return vectors
-				},
-				ngtCfg: ngtConfig(defaultDimensionSize, ngt.Uint8.String()),
+				distribution: vector.Gaussian,
+				objectType:   request.Uint8,
+				overwriteVec: genSameVecs(request.Uint8, 20, defaultDimensionSize),
+				ngtCfg:       ngtConfig(defaultDimensionSize, ngt.Uint8.String()),
 			},
 			want: want{
 				resultSize: 10,
@@ -1465,15 +1435,10 @@ func Test_server_Search(t *testing.T) {
 				},
 			},
 			fields: fields{
-				gen: func(n, dim int) [][]float32 {
-					v := vector.GaussianDistributedFloat32VectorGenerator(1, dim)[0]
-					vectors := make([][]float32, n)
-					for i := range vectors {
-						vectors[i] = v
-					}
-					return vectors
-				},
-				ngtCfg: ngtConfig(defaultDimensionSize, ngt.Float.String()),
+				distribution: vector.Gaussian,
+				objectType:   request.Uint8,
+				overwriteVec: genSameVecs(request.Float, 20, defaultDimensionSize),
+				ngtCfg:       ngtConfig(defaultDimensionSize, ngt.Float.String()),
 			},
 			want: want{
 				resultSize: 10,
@@ -1507,16 +1472,6 @@ func Test_server_Search(t *testing.T) {
 			}
 		})
 	}
-}
-
-func utf8ToSjis(s string) string {
-	b, _ := ioutil.ReadAll(transform.NewReader(strings.NewReader(s), japanese.ShiftJIS.NewEncoder()))
-	return string(b)
-}
-
-func utf8ToEucjp(s string) string {
-	b, _ := ioutil.ReadAll(transform.NewReader(strings.NewReader(s), japanese.EUCJP.NewEncoder()))
-	return string(b)
 }
 
 func Test_server_SearchByID(t *testing.T) {
@@ -1562,6 +1517,16 @@ func Test_server_SearchByID(t *testing.T) {
 		insertNum = 1000
 	)
 
+	utf8Str := "こんにちは"
+	eucjpStr, err := conv.Utf8ToEucjp(utf8Str)
+	if err != nil {
+		t.Error(err)
+	}
+	sjisStr, err := conv.Utf8ToSjis(utf8Str)
+	if err != nil {
+		t.Error(err)
+	}
+
 	defaultNgtConfig := &config.NGT{
 		Dimension:        128,
 		DistanceType:     ngt.L2.String(),
@@ -1576,38 +1541,11 @@ func Test_server_SearchByID(t *testing.T) {
 			DeleteBufferPoolSize: 1000,
 		},
 	}
+	defaultInsertConfig := &payload.Insert_Config{
+		SkipStrictExistCheck: true,
+	}
 	defaultBeforeFunc := func(a args) (Server, error) {
-		eg, ctx := errgroup.New(a.ctx)
-		ngt, err := service.New(defaultNgtConfig, service.WithErrGroup(eg), service.WithEnableInMemoryMode(true))
-		if err != nil {
-			return nil, err
-		}
-
-		s, err := New(WithErrGroup(eg), WithNGT(ngt))
-		if err != nil {
-			return nil, err
-		}
-
-		reqs := make([]*payload.Insert_Request, insertNum)
-		for i, v := range vector.GaussianDistributedFloat32VectorGenerator(insertNum, defaultNgtConfig.Dimension) {
-			reqs[i] = &payload.Insert_Request{
-				Vector: &payload.Object_Vector{
-					Id:     strconv.Itoa(i),
-					Vector: v,
-				},
-				Config: &payload.Insert_Config{
-					SkipStrictExistCheck: true,
-				},
-			}
-		}
-		reqs[0].Vector.Id = a.indexId
-		if _, err := s.MultiInsert(ctx, &payload.Insert_MultiRequest{Requests: reqs}); err != nil {
-			return nil, err
-		}
-		if _, err := s.CreateIndex(ctx, &payload.Control_CreateIndexRequest{PoolSize: 100}); err != nil {
-			return nil, err
-		}
-		return s, nil
+		return buildIndex(a.ctx, request.Float, vector.Gaussian, insertNum, defaultInsertConfig, defaultNgtConfig, nil, []string{a.indexId}, nil)
 	}
 	defaultSearch_Config := &payload.Search_Config{
 		Num:     10,
@@ -1748,8 +1686,8 @@ func Test_server_SearchByID(t *testing.T) {
 			name: "Boundary Value Testing case 3.1: success search with utf-8 ID from utf-8 index",
 			args: args{
 				ctx:      ctx,
-				indexId:  "こんにちは",
-				searchId: "こんにちは",
+				indexId:  utf8Str,
+				searchId: utf8Str,
 			},
 			want: want{
 				resultSize: int(defaultSearch_Config.GetNum()),
@@ -1759,8 +1697,8 @@ func Test_server_SearchByID(t *testing.T) {
 			name: "Boundary Value Testing case 3.2: fail search with utf-8 ID from s-jis index",
 			args: args{
 				ctx:      ctx,
-				indexId:  utf8ToSjis("こんにちは"),
-				searchId: "こんにちは",
+				indexId:  sjisStr,
+				searchId: utf8Str,
 			},
 			want: want{
 				resultSize: 0,
@@ -1771,8 +1709,8 @@ func Test_server_SearchByID(t *testing.T) {
 			name: "Boundary Value Testing case 3.3: fail search with utf-8 ID from euc-jp index",
 			args: args{
 				ctx:      ctx,
-				indexId:  utf8ToEucjp("こんにちは"),
-				searchId: "こんにちは",
+				indexId:  eucjpStr,
+				searchId: utf8Str,
 			},
 			want: want{
 				resultSize: 0,
@@ -1783,8 +1721,8 @@ func Test_server_SearchByID(t *testing.T) {
 			name: "Boundary Value Testing case 3.4: fail search with s-jis ID from utf-8 index",
 			args: args{
 				ctx:      ctx,
-				indexId:  "こんにちは",
-				searchId: utf8ToSjis("こんにちは"),
+				indexId:  utf8Str,
+				searchId: sjisStr,
 			},
 			want: want{
 				resultSize: 0,
@@ -1795,8 +1733,8 @@ func Test_server_SearchByID(t *testing.T) {
 			name: "Boundary Value Testing case 3.5: success search with s-jis ID from s-jis index",
 			args: args{
 				ctx:      ctx,
-				indexId:  utf8ToSjis("こんにちは"),
-				searchId: utf8ToSjis("こんにちは"),
+				indexId:  sjisStr,
+				searchId: sjisStr,
 			},
 			want: want{
 				resultSize: int(defaultSearch_Config.GetNum()),
@@ -1806,8 +1744,8 @@ func Test_server_SearchByID(t *testing.T) {
 			name: "Boundary Value Testing case 3.6: fail search with s-jis ID from euc-jp index",
 			args: args{
 				ctx:      ctx,
-				indexId:  utf8ToEucjp("こんにちは"),
-				searchId: utf8ToSjis("こんにちは"),
+				indexId:  eucjpStr,
+				searchId: sjisStr,
 			},
 			want: want{
 				resultSize: 0,
@@ -1818,8 +1756,8 @@ func Test_server_SearchByID(t *testing.T) {
 			name: "Boundary Value Testing case 3.7: fail search with euc-jp ID from utf-8 index",
 			args: args{
 				ctx:      ctx,
-				indexId:  "こんにちは",
-				searchId: utf8ToEucjp("こんにちは"),
+				indexId:  utf8Str,
+				searchId: eucjpStr,
 			},
 			want: want{
 				resultSize: 0,
@@ -1830,8 +1768,8 @@ func Test_server_SearchByID(t *testing.T) {
 			name: "Boundary Value Testing case 3.8: fail search with euc-jp ID from s-jis index",
 			args: args{
 				ctx:      ctx,
-				indexId:  utf8ToSjis("こんにちは"),
-				searchId: utf8ToEucjp("こんにちは"),
+				indexId:  sjisStr,
+				searchId: eucjpStr,
 			},
 			want: want{
 				resultSize: 0,
@@ -1842,8 +1780,8 @@ func Test_server_SearchByID(t *testing.T) {
 			name: "Boundary Value Testing case 3.9: success search with euc-jp ID from euc-jp index",
 			args: args{
 				ctx:      ctx,
-				indexId:  utf8ToEucjp("こんにちは"),
-				searchId: utf8ToEucjp("こんにちは"),
+				indexId:  eucjpStr,
+				searchId: eucjpStr,
 			},
 			want: want{
 				resultSize: int(defaultSearch_Config.GetNum()),
@@ -2455,22 +2393,6 @@ func Test_server_Insert(t *testing.T) {
 		vqueueCfg = &config.VQueue{}
 	)
 
-	// functions to generator vectors for testing
-	genF32Vec := func(dist vector.Distribution, dim int) []float32 {
-		generator, _ := vector.Float32VectorGenerator(dist)
-		return generator(1, dim)[0]
-	}
-	genIntVec := func(dist vector.Distribution, dim int) []float32 {
-		generator, _ := vector.Uint8VectorGenerator(dist)
-		ivec := generator(1, dim)[0]
-
-		vec := make([]float32, dim)
-		for i := 0; i < dim; i++ {
-			vec[i] = float32(ivec[i])
-		}
-		return vec
-	}
-
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -2596,11 +2518,14 @@ func Test_server_Insert(t *testing.T) {
 		}(),
 		func() test {
 			invalidDim := intVecDim + 1
-			ivec := genIntVec(vector.Gaussian, invalidDim)
+			ivec, err := vector.GenUint8Vec(vector.Gaussian, 1, invalidDim)
+			if err != nil {
+				t.Error(err)
+			}
 			req := &payload.Insert_Request{
 				Vector: &payload.Object_Vector{
 					Id:     id,
-					Vector: ivec,
+					Vector: ivec[0],
 				},
 			}
 
@@ -2651,11 +2576,14 @@ func Test_server_Insert(t *testing.T) {
 		}(),
 		func() test {
 			invalidDim := f32VecDim + 1
-			ivec := genF32Vec(vector.Gaussian, invalidDim)
+			ivec, err := vector.GenF32Vec(vector.Gaussian, 1, invalidDim)
+			if err != nil {
+				t.Error(err)
+			}
 			req := &payload.Insert_Request{
 				Vector: &payload.Object_Vector{
 					Id:     id,
-					Vector: ivec,
+					Vector: ivec[0],
 				},
 			}
 
@@ -2705,10 +2633,15 @@ func Test_server_Insert(t *testing.T) {
 			}
 		}(),
 		func() test {
+			ivec, err := vector.GenUint8Vec(vector.Gaussian, 1, intVecDim)
+			if err != nil {
+				t.Error(err)
+			}
+
 			req := &payload.Insert_Request{
 				Vector: &payload.Object_Vector{
 					Id:     id,
-					Vector: genIntVec(vector.Gaussian, intVecDim),
+					Vector: ivec[0],
 				},
 			}
 
@@ -2742,10 +2675,15 @@ func Test_server_Insert(t *testing.T) {
 			}
 		}(),
 		func() test {
+			ivec, err := vector.GenF32Vec(vector.Gaussian, 1, f32VecDim)
+			if err != nil {
+				t.Error(err)
+			}
+
 			req := &payload.Insert_Request{
 				Vector: &payload.Object_Vector{
 					Id:     id,
-					Vector: genF32Vec(vector.Gaussian, f32VecDim),
+					Vector: ivec[0],
 				},
 			}
 
@@ -2779,10 +2717,15 @@ func Test_server_Insert(t *testing.T) {
 			}
 		}(),
 		func() test {
+			ivec, err := vector.GenUint8Vec(vector.Uniform, 1, intVecDim)
+			if err != nil {
+				t.Error(err)
+			}
+
 			req := &payload.Insert_Request{
 				Vector: &payload.Object_Vector{
 					Id:     id,
-					Vector: genIntVec(vector.Uniform, intVecDim),
+					Vector: ivec[0],
 				},
 			}
 
@@ -2816,10 +2759,15 @@ func Test_server_Insert(t *testing.T) {
 			}
 		}(),
 		func() test {
+			ivec, err := vector.GenF32Vec(vector.Uniform, 1, f32VecDim)
+			if err != nil {
+				t.Error(err)
+			}
+
 			req := &payload.Insert_Request{
 				Vector: &payload.Object_Vector{
 					Id:     id,
-					Vector: genF32Vec(vector.Uniform, f32VecDim),
+					Vector: ivec[0],
 				},
 			}
 
@@ -2858,7 +2806,7 @@ func Test_server_Insert(t *testing.T) {
 			req := &payload.Insert_Request{
 				Vector: &payload.Object_Vector{
 					Id:     id,
-					Vector: genSameValueVec(intVecDim, 0),
+					Vector: vector.GenSameValueVec(intVecDim, 0),
 				},
 			}
 
@@ -2895,7 +2843,7 @@ func Test_server_Insert(t *testing.T) {
 			req := &payload.Insert_Request{
 				Vector: &payload.Object_Vector{
 					Id:     id,
-					Vector: genSameValueVec(f32VecDim, 0),
+					Vector: vector.GenSameValueVec(f32VecDim, 0),
 				},
 			}
 
@@ -2932,7 +2880,7 @@ func Test_server_Insert(t *testing.T) {
 			req := &payload.Insert_Request{
 				Vector: &payload.Object_Vector{
 					Id:     id,
-					Vector: genSameValueVec(intVecDim, math.MinInt),
+					Vector: vector.GenSameValueVec(intVecDim, math.MinInt),
 				},
 			}
 
@@ -2969,7 +2917,7 @@ func Test_server_Insert(t *testing.T) {
 			req := &payload.Insert_Request{
 				Vector: &payload.Object_Vector{
 					Id:     id,
-					Vector: genSameValueVec(f32VecDim, -math.MaxFloat32),
+					Vector: vector.GenSameValueVec(f32VecDim, -math.MaxFloat32),
 				},
 			}
 
@@ -3006,7 +2954,7 @@ func Test_server_Insert(t *testing.T) {
 			req := &payload.Insert_Request{
 				Vector: &payload.Object_Vector{
 					Id:     id,
-					Vector: genSameValueVec(intVecDim, math.MaxInt),
+					Vector: vector.GenSameValueVec(intVecDim, math.MaxInt),
 				},
 			}
 
@@ -3043,7 +2991,7 @@ func Test_server_Insert(t *testing.T) {
 			req := &payload.Insert_Request{
 				Vector: &payload.Object_Vector{
 					Id:     id,
-					Vector: genSameValueVec(f32VecDim, math.MaxFloat32),
+					Vector: vector.GenSameValueVec(f32VecDim, math.MaxFloat32),
 				},
 			}
 
@@ -3240,7 +3188,7 @@ func Test_server_Insert(t *testing.T) {
 			req := &payload.Insert_Request{
 				Vector: &payload.Object_Vector{
 					Id:     id,
-					Vector: genSameValueVec(f32VecDim, nan),
+					Vector: vector.GenSameValueVec(f32VecDim, nan),
 				},
 			}
 
@@ -3431,7 +3379,10 @@ func Test_server_Insert(t *testing.T) {
 
 		// Decision Table Testing
 		func() test {
-			bVec := genIntVec(vector.Gaussian, intVecDim) // used in beforeFunc
+			bVecs, err := vector.GenUint8Vec(vector.Gaussian, 1, intVecDim) // used in beforeFunc
+			if err != nil {
+				t.Error(err)
+			}
 
 			req := &payload.Insert_Request{
 				Vector: &payload.Object_Vector{
@@ -3464,7 +3415,7 @@ func Test_server_Insert(t *testing.T) {
 					},
 				},
 				beforeFunc: func(s *server) {
-					s.ngt.Insert(id, bVec)
+					s.ngt.Insert(id, bVecs[0])
 				},
 				want: want{
 					err: status.WrapWithAlreadyExists(fmt.Sprintf("Insert API uuid %s already exists", id), errors.ErrUUIDAlreadyExists(id),
@@ -3572,7 +3523,10 @@ func Test_server_Insert(t *testing.T) {
 			}
 		}(),
 		func() test {
-			bVec := genIntVec(vector.Gaussian, intVecDim) // use in beforeFunc
+			bVec, err := vector.GenUint8Vec(vector.Gaussian, 1, intVecDim) // use in beforeFunc
+			if err != nil {
+				t.Error(err)
+			}
 
 			req := &payload.Insert_Request{
 				Vector: &payload.Object_Vector{
@@ -3605,7 +3559,7 @@ func Test_server_Insert(t *testing.T) {
 					},
 				},
 				beforeFunc: func(s *server) {
-					s.ngt.Insert(id, bVec)
+					s.ngt.Insert(id, bVec[0])
 				},
 				want: want{
 					err: status.WrapWithAlreadyExists(fmt.Sprintf("Insert API uuid %s already exists", id), errors.ErrUUIDAlreadyExists(id),
@@ -3855,66 +3809,6 @@ func Test_server_StreamInsert(t *testing.T) {
 	}
 }
 
-func genF32Vec(dist vector.Distribution, num int, dim int) [][]float32 {
-	generator, _ := vector.Float32VectorGenerator(dist)
-	return generator(num, dim)
-}
-
-func genIntVec(dist vector.Distribution, num int, dim int) [][]float32 {
-	generator, _ := vector.Uint8VectorGenerator(dist)
-	ivecs := generator(num, dim)
-	result := make([][]float32, num)
-
-	for j, ivec := range ivecs {
-		vec := make([]float32, dim)
-		for i := 0; i < dim; i++ {
-			vec[i] = float32(ivec[i])
-		}
-		result[j] = vec
-	}
-	return result
-}
-
-func genSameValueVec(size int, val float32) []float32 {
-	v := make([]float32, size)
-	for i := 0; i < size; i++ {
-		v[i] = val
-	}
-	return v
-}
-
-type objectType int
-
-const (
-	Uint8 objectType = iota
-	Float
-)
-
-func genMultiInsertReq(t objectType, dist vector.Distribution, num int, dim int, cfg *payload.Insert_Config) *payload.Insert_MultiRequest {
-	var vecs [][]float32
-	switch t {
-	case Float:
-		vecs = genF32Vec(dist, num, dim)
-	case Uint8:
-		vecs = genIntVec(dist, num, dim)
-	}
-
-	req := &payload.Insert_MultiRequest{
-		Requests: make([]*payload.Insert_Request, num),
-	}
-	for i, vec := range vecs {
-		req.Requests[i] = &payload.Insert_Request{
-			Vector: &payload.Object_Vector{
-				Id:     "uuid-" + strconv.Itoa(i+1),
-				Vector: vec,
-			},
-			Config: cfg,
-		}
-	}
-
-	return req
-}
-
 func Test_server_MultiInsert(t *testing.T) {
 	t.Parallel()
 
@@ -3978,24 +3872,6 @@ func Test_server_MultiInsert(t *testing.T) {
 		}
 	)
 
-	// generate MultiInsert request with the same vector
-	genSameVecMultiInsertReq := func(num int, vec []float32, cfg *payload.Insert_Config) *payload.Insert_MultiRequest {
-		req := &payload.Insert_MultiRequest{
-			Requests: make([]*payload.Insert_Request, num),
-		}
-		for i := 0; i < num; i++ {
-			req.Requests[i] = &payload.Insert_Request{
-				Vector: &payload.Object_Vector{
-					Id:     "uuid-" + strconv.Itoa(i+1),
-					Vector: vec,
-				},
-				Config: cfg,
-			}
-		}
-
-		return req
-	}
-
 	genAlreadyExistsErr := func(uuid string, req *payload.Insert_MultiRequest, name, ip string) error {
 		return status.WrapWithAlreadyExists(fmt.Sprintf("MultiInsert API uuids [%v] already exists", uuid),
 			errors.ErrUUIDAlreadyExists(uuid),
@@ -4009,20 +3885,6 @@ func Test_server_MultiInsert(t *testing.T) {
 			})
 	}
 
-	genObjectLocations := func(num int, name string, ip string) *payload.Object_Locations {
-		result := &payload.Object_Locations{
-			Locations: make([]*payload.Object_Location, num),
-		}
-
-		for i := 0; i < num; i++ {
-			result.Locations[i] = &payload.Object_Location{
-				Name: name,
-				Uuid: "uuid-" + strconv.Itoa(i+1),
-				Ips:  []string{ip},
-			}
-		}
-		return result
-	}
 	defaultCheckFunc := func(w want, gotRes *payload.Object_Locations, err error) error {
 		if w.containErr == nil {
 			if !errors.Is(err, w.err) {
@@ -4140,11 +4002,16 @@ func Test_server_MultiInsert(t *testing.T) {
 	tests := []test{
 		func() test {
 			insertNum := 1
+			req, err := request.GenMultiInsertReq(request.Uint8, vector.Gaussian, insertNum, intVecDim, nil)
+			if err != nil {
+				t.Error(err)
+			}
+
 			return test{
 				name: "Equivalence Class Testing case 1.1: Success to MultiInsert 1 vector (vector type is uint8)",
 				args: args{
 					ctx:  ctx,
-					reqs: genMultiInsertReq(Uint8, vector.Gaussian, insertNum, intVecDim, nil),
+					reqs: req,
 				},
 				fields: fields{
 					name:              name,
@@ -4154,17 +4021,22 @@ func Test_server_MultiInsert(t *testing.T) {
 					streamConcurrency: 0,
 				},
 				want: want{
-					wantRes: genObjectLocations(insertNum, name, ip),
+					wantRes: request.GenObjectLocations(insertNum, name, ip),
 				},
 			}
 		}(),
 		func() test {
 			insertNum := 1
+			req, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, insertNum, f32VecDim, nil)
+			if err != nil {
+				t.Error(err)
+			}
+
 			return test{
 				name: "Equivalence Class Testing case 1.2: Success to MultiInsert 1 vector (vector type is float32)",
 				args: args{
 					ctx:  ctx,
-					reqs: genMultiInsertReq(Float, vector.Gaussian, insertNum, f32VecDim, nil),
+					reqs: req,
 				},
 				fields: fields{
 					name:              name,
@@ -4174,17 +4046,22 @@ func Test_server_MultiInsert(t *testing.T) {
 					streamConcurrency: 0,
 				},
 				want: want{
-					wantRes: genObjectLocations(insertNum, name, ip),
+					wantRes: request.GenObjectLocations(insertNum, name, ip),
 				},
 			}
 		}(),
 		func() test {
 			insertNum := 100
+			req, err := request.GenMultiInsertReq(request.Uint8, vector.Gaussian, insertNum, intVecDim, nil)
+			if err != nil {
+				t.Error(err)
+			}
+
 			return test{
 				name: "Equivalence Class Testing case 1.3: Success to MultiInsert 100 vector (vector type is uint8)",
 				args: args{
 					ctx:  ctx,
-					reqs: genMultiInsertReq(Uint8, vector.Gaussian, insertNum, intVecDim, nil),
+					reqs: req,
 				},
 				fields: fields{
 					name:              name,
@@ -4194,17 +4071,22 @@ func Test_server_MultiInsert(t *testing.T) {
 					streamConcurrency: 0,
 				},
 				want: want{
-					wantRes: genObjectLocations(insertNum, name, ip),
+					wantRes: request.GenObjectLocations(insertNum, name, ip),
 				},
 			}
 		}(),
 		func() test {
 			insertNum := 100
+			req, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, insertNum, f32VecDim, nil)
+			if err != nil {
+				t.Error(err)
+			}
+
 			return test{
 				name: "Equivalence Class Testing case 1.4: Success to MultiInsert 100 vector (vector type is float32)",
 				args: args{
 					ctx:  ctx,
-					reqs: genMultiInsertReq(Float, vector.Gaussian, insertNum, f32VecDim, nil),
+					reqs: req,
 				},
 				fields: fields{
 					name:              name,
@@ -4214,7 +4096,7 @@ func Test_server_MultiInsert(t *testing.T) {
 					streamConcurrency: 0,
 				},
 				want: want{
-					wantRes: genObjectLocations(insertNum, name, ip),
+					wantRes: request.GenObjectLocations(insertNum, name, ip),
 				},
 			}
 		}(),
@@ -4258,7 +4140,10 @@ func Test_server_MultiInsert(t *testing.T) {
 		},
 		func() test {
 			insertNum := 1
-			req := genMultiInsertReq(Uint8, vector.Gaussian, insertNum, intVecDim+1, nil)
+			req, err := request.GenMultiInsertReq(request.Uint8, vector.Gaussian, insertNum, intVecDim+1, nil)
+			if err != nil {
+				t.Error(err)
+			}
 
 			return test{
 				name: "Equivalence Class Testing case 2.1: Fail to MultiInsert 1 vector with different dimension (vector type is uint8)",
@@ -4300,7 +4185,10 @@ func Test_server_MultiInsert(t *testing.T) {
 		}(),
 		func() test {
 			insertNum := 1
-			req := genMultiInsertReq(Float, vector.Gaussian, insertNum, f32VecDim+1, nil)
+			req, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, insertNum, f32VecDim+1, nil)
+			if err != nil {
+				t.Error(err)
+			}
 
 			return test{
 				name: "Equivalence Class Testing case 2.2: Fail to MultiInsert 1 vector with different dimension (vector type is float32)",
@@ -4342,8 +4230,16 @@ func Test_server_MultiInsert(t *testing.T) {
 		}(),
 		func() test {
 			insertNum := 100
-			req := genMultiInsertReq(Uint8, vector.Gaussian, insertNum, intVecDim, nil)
-			req.Requests[0].Vector.Vector = genIntVec(vector.Gaussian, 1, intVecDim+1)[0]
+			req, err := request.GenMultiInsertReq(request.Uint8, vector.Gaussian, insertNum, intVecDim, nil)
+			if err != nil {
+				t.Error(err)
+			}
+
+			invalidVecs, err := vector.GenUint8Vec(vector.Gaussian, 1, intVecDim+1)
+			if err != nil {
+				t.Error(err)
+			}
+			req.Requests[0].Vector.Vector = invalidVecs[0]
 
 			return test{
 				name: "Equivalence Class Testing case 3.1: Fail to MultiInsert 100 vector with 1 vector with different dimension (vector type is uint8)",
@@ -4385,8 +4281,16 @@ func Test_server_MultiInsert(t *testing.T) {
 		}(),
 		func() test {
 			insertNum := 100
-			req := genMultiInsertReq(Float, vector.Gaussian, insertNum, f32VecDim, nil)
-			req.Requests[0].Vector.Vector = genF32Vec(vector.Gaussian, 1, f32VecDim+1)[0]
+			req, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, insertNum, f32VecDim, nil)
+			if err != nil {
+				t.Error(err)
+			}
+
+			invalidVecs, err := vector.GenF32Vec(vector.Gaussian, 1, f32VecDim+1)
+			if err != nil {
+				t.Error(err)
+			}
+			req.Requests[0].Vector.Vector = invalidVecs[0]
 
 			return test{
 				name: "Equivalence Class Testing case 3.2: Fail to MultiInsert 100 vector with 1 vector with different dimension (vector type is float32)",
@@ -4429,9 +4333,18 @@ func Test_server_MultiInsert(t *testing.T) {
 
 		func() test {
 			insertNum := 100
-			req := genMultiInsertReq(Uint8, vector.Gaussian, insertNum, intVecDim, nil)
-			for i := 0; i < len(req.Requests)/2; i++ {
-				req.Requests[i].Vector.Vector = genIntVec(vector.Gaussian, 1, intVecDim+1)[0]
+			req, err := request.GenMultiInsertReq(request.Uint8, vector.Gaussian, insertNum, intVecDim, nil)
+			if err != nil {
+				t.Error(err)
+			}
+
+			invalidCnt := len(req.Requests) / 2
+			invalidVec, err := vector.GenUint8Vec(vector.Gaussian, invalidCnt, intVecDim+1)
+			if err != nil {
+				t.Error(err)
+			}
+			for i := 0; i < invalidCnt; i++ {
+				req.Requests[i].Vector.Vector = invalidVec[i]
 			}
 
 			return test{
@@ -4474,9 +4387,18 @@ func Test_server_MultiInsert(t *testing.T) {
 		}(),
 		func() test {
 			insertNum := 100
-			req := genMultiInsertReq(Float, vector.Gaussian, insertNum, f32VecDim, nil)
-			for i := 0; i < len(req.Requests)/2; i++ {
-				req.Requests[i].Vector.Vector = genF32Vec(vector.Gaussian, 1, f32VecDim+1)[0]
+			req, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, insertNum, f32VecDim, nil)
+			if err != nil {
+				t.Error(err)
+			}
+
+			invalidCnt := len(req.Requests) / 2
+			invalidVec, err := vector.GenF32Vec(vector.Gaussian, invalidCnt, f32VecDim+1)
+			if err != nil {
+				t.Error(err)
+			}
+			for i := 0; i < invalidCnt; i++ {
+				req.Requests[i].Vector.Vector = invalidVec[i]
 			}
 
 			return test{
@@ -4519,7 +4441,10 @@ func Test_server_MultiInsert(t *testing.T) {
 		}(),
 		func() test {
 			insertNum := 100
-			req := genMultiInsertReq(Float, vector.Gaussian, insertNum, f32VecDim+1, nil)
+			req, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, insertNum, f32VecDim+1, nil)
+			if err != nil {
+				t.Error(err)
+			}
 
 			return test{
 				name: "Equivalence Class Testing case 3.5: Fail to MultiInsert 100 vector with all vector with different dimension (vector type is uint8)",
@@ -4561,7 +4486,10 @@ func Test_server_MultiInsert(t *testing.T) {
 		}(),
 		func() test {
 			insertNum := 100
-			req := genMultiInsertReq(Float, vector.Gaussian, insertNum, f32VecDim+1, nil)
+			req, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, insertNum, f32VecDim+1, nil)
+			if err != nil {
+				t.Error(err)
+			}
 
 			return test{
 				name: "Equivalence Class Testing case 3.6: Fail to MultiInsert 100 vector with all vector with different dimension (vector type is float32)",
@@ -4607,7 +4535,7 @@ func Test_server_MultiInsert(t *testing.T) {
 				name: "Boundary Value Testing case 1.1: Success to MultiInsert with 0 value vector (vector type is uint8)",
 				args: args{
 					ctx:  ctx,
-					reqs: genSameVecMultiInsertReq(insertNum, genSameValueVec(intVecDim, 0), nil),
+					reqs: request.GenSameVecMultiInsertReq(insertNum, vector.GenSameValueVec(intVecDim, 0), nil),
 				},
 				fields: fields{
 					name:              name,
@@ -4617,7 +4545,7 @@ func Test_server_MultiInsert(t *testing.T) {
 					streamConcurrency: 0,
 				},
 				want: want{
-					wantRes: genObjectLocations(insertNum, name, ip),
+					wantRes: request.GenObjectLocations(insertNum, name, ip),
 				},
 			}
 		}(),
@@ -4627,7 +4555,7 @@ func Test_server_MultiInsert(t *testing.T) {
 				name: "Boundary Value Testing case 1.2: Success to MultiInsert with 0 value vector (vector type is float32)",
 				args: args{
 					ctx:  ctx,
-					reqs: genSameVecMultiInsertReq(insertNum, genSameValueVec(f32VecDim, 0), nil),
+					reqs: request.GenSameVecMultiInsertReq(insertNum, vector.GenSameValueVec(f32VecDim, 0), nil),
 				},
 				fields: fields{
 					name:              name,
@@ -4637,7 +4565,7 @@ func Test_server_MultiInsert(t *testing.T) {
 					streamConcurrency: 0,
 				},
 				want: want{
-					wantRes: genObjectLocations(insertNum, name, ip),
+					wantRes: request.GenObjectLocations(insertNum, name, ip),
 				},
 			}
 		}(),
@@ -4647,7 +4575,7 @@ func Test_server_MultiInsert(t *testing.T) {
 				name: "Boundary Value Testing case 2.1: Success to MultiInsert with min value vector (vector type is uint8)",
 				args: args{
 					ctx:  ctx,
-					reqs: genSameVecMultiInsertReq(insertNum, genSameValueVec(intVecDim, math.MinInt), nil),
+					reqs: request.GenSameVecMultiInsertReq(insertNum, vector.GenSameValueVec(intVecDim, math.MinInt), nil),
 				},
 				fields: fields{
 					name:              name,
@@ -4657,7 +4585,7 @@ func Test_server_MultiInsert(t *testing.T) {
 					streamConcurrency: 0,
 				},
 				want: want{
-					wantRes: genObjectLocations(insertNum, name, ip),
+					wantRes: request.GenObjectLocations(insertNum, name, ip),
 				},
 			}
 		}(),
@@ -4667,7 +4595,7 @@ func Test_server_MultiInsert(t *testing.T) {
 				name: "Boundary Value Testing case 2.2: Success to MultiInsert with min value vector (vector type is float32)",
 				args: args{
 					ctx:  ctx,
-					reqs: genSameVecMultiInsertReq(insertNum, genSameValueVec(f32VecDim, -math.MaxFloat32), nil),
+					reqs: request.GenSameVecMultiInsertReq(insertNum, vector.GenSameValueVec(f32VecDim, -math.MaxFloat32), nil),
 				},
 				fields: fields{
 					name:              name,
@@ -4677,7 +4605,7 @@ func Test_server_MultiInsert(t *testing.T) {
 					streamConcurrency: 0,
 				},
 				want: want{
-					wantRes: genObjectLocations(insertNum, name, ip),
+					wantRes: request.GenObjectLocations(insertNum, name, ip),
 				},
 			}
 		}(),
@@ -4687,7 +4615,7 @@ func Test_server_MultiInsert(t *testing.T) {
 				name: "Boundary Value Testing case 3.1: Success to MultiInsert with max value vector (vector type is uint8)",
 				args: args{
 					ctx:  ctx,
-					reqs: genSameVecMultiInsertReq(insertNum, genSameValueVec(intVecDim, math.MaxUint8), nil),
+					reqs: request.GenSameVecMultiInsertReq(insertNum, vector.GenSameValueVec(intVecDim, math.MaxUint8), nil),
 				},
 				fields: fields{
 					name:              name,
@@ -4697,7 +4625,7 @@ func Test_server_MultiInsert(t *testing.T) {
 					streamConcurrency: 0,
 				},
 				want: want{
-					wantRes: genObjectLocations(insertNum, name, ip),
+					wantRes: request.GenObjectLocations(insertNum, name, ip),
 				},
 			}
 		}(),
@@ -4707,7 +4635,7 @@ func Test_server_MultiInsert(t *testing.T) {
 				name: "Boundary Value Testing case 3.2: Success to MultiInsert with max value vector (vector type is float32)",
 				args: args{
 					ctx:  ctx,
-					reqs: genSameVecMultiInsertReq(insertNum, genSameValueVec(f32VecDim, math.MaxFloat32), nil),
+					reqs: request.GenSameVecMultiInsertReq(insertNum, vector.GenSameValueVec(f32VecDim, math.MaxFloat32), nil),
 				},
 				fields: fields{
 					name:              name,
@@ -4717,13 +4645,16 @@ func Test_server_MultiInsert(t *testing.T) {
 					streamConcurrency: 0,
 				},
 				want: want{
-					wantRes: genObjectLocations(insertNum, name, ip),
+					wantRes: request.GenObjectLocations(insertNum, name, ip),
 				},
 			}
 		}(),
 		func() test {
 			insertNum := 100
-			req := genMultiInsertReq(Uint8, vector.Gaussian, insertNum, intVecDim, nil)
+			req, err := request.GenMultiInsertReq(request.Uint8, vector.Gaussian, insertNum, intVecDim, nil)
+			if err != nil {
+				t.Error(err)
+			}
 			req.Requests[0].Vector.Id = ""
 
 			uuids := make([]string, 0, len(req.Requests))
@@ -4767,7 +4698,10 @@ func Test_server_MultiInsert(t *testing.T) {
 		}(),
 		func() test {
 			insertNum := 100
-			req := genMultiInsertReq(Float, vector.Gaussian, insertNum, f32VecDim, nil)
+			req, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, insertNum, f32VecDim, nil)
+			if err != nil {
+				t.Error(err)
+			}
 			req.Requests[0].Vector.Id = ""
 
 			uuids := make([]string, 0, len(req.Requests))
@@ -4811,7 +4745,10 @@ func Test_server_MultiInsert(t *testing.T) {
 		}(),
 		func() test {
 			insertNum := 100
-			req := genMultiInsertReq(Uint8, vector.Gaussian, insertNum, intVecDim, nil)
+			req, err := request.GenMultiInsertReq(request.Uint8, vector.Gaussian, insertNum, intVecDim, nil)
+			if err != nil {
+				t.Error(err)
+			}
 			for i := 0; i < len(req.Requests)/2; i++ {
 				req.Requests[i].Vector.Id = ""
 			}
@@ -4857,7 +4794,10 @@ func Test_server_MultiInsert(t *testing.T) {
 		}(),
 		func() test {
 			insertNum := 100
-			req := genMultiInsertReq(Uint8, vector.Gaussian, insertNum, f32VecDim, nil)
+			req, err := request.GenMultiInsertReq(request.Uint8, vector.Gaussian, insertNum, f32VecDim, nil)
+			if err != nil {
+				t.Error(err)
+			}
 			for i := 0; i < len(req.Requests)/2; i++ {
 				req.Requests[i].Vector.Id = ""
 			}
@@ -4903,7 +4843,10 @@ func Test_server_MultiInsert(t *testing.T) {
 		}(),
 		func() test {
 			insertNum := 100
-			req := genMultiInsertReq(Uint8, vector.Gaussian, insertNum, intVecDim, nil)
+			req, err := request.GenMultiInsertReq(request.Uint8, vector.Gaussian, insertNum, intVecDim, nil)
+			if err != nil {
+				t.Error(err)
+			}
 			for i := 0; i < len(req.Requests); i++ {
 				req.Requests[i].Vector.Id = ""
 			}
@@ -4949,7 +4892,10 @@ func Test_server_MultiInsert(t *testing.T) {
 		}(),
 		func() test {
 			insertNum := 100
-			req := genMultiInsertReq(Uint8, vector.Gaussian, insertNum, f32VecDim, nil)
+			req, err := request.GenMultiInsertReq(request.Uint8, vector.Gaussian, insertNum, f32VecDim, nil)
+			if err != nil {
+				t.Error(err)
+			}
 			for i := 0; i < len(req.Requests); i++ {
 				req.Requests[i].Vector.Id = ""
 			}
@@ -4995,7 +4941,10 @@ func Test_server_MultiInsert(t *testing.T) {
 		}(),
 		func() test {
 			insertNum := 100
-			req := genMultiInsertReq(Uint8, vector.Gaussian, insertNum, intVecDim, nil)
+			req, err := request.GenMultiInsertReq(request.Uint8, vector.Gaussian, insertNum, intVecDim, nil)
+			if err != nil {
+				t.Error(err)
+			}
 			req.Requests[0].Vector.Vector = make([]float32, maxVecDim)
 
 			return test{
@@ -5039,7 +4988,10 @@ func Test_server_MultiInsert(t *testing.T) {
 		}(),
 		func() test {
 			insertNum := 100
-			req := genMultiInsertReq(Uint8, vector.Gaussian, insertNum, f32VecDim, nil)
+			req, err := request.GenMultiInsertReq(request.Uint8, vector.Gaussian, insertNum, f32VecDim, nil)
+			if err != nil {
+				t.Error(err)
+			}
 			req.Requests[0].Vector.Vector = make([]float32, maxVecDim)
 
 			return test{
@@ -5083,7 +5035,10 @@ func Test_server_MultiInsert(t *testing.T) {
 		}(),
 		func() test {
 			insertNum := 100
-			req := genMultiInsertReq(Uint8, vector.Gaussian, insertNum, intVecDim, nil)
+			req, err := request.GenMultiInsertReq(request.Uint8, vector.Gaussian, insertNum, intVecDim, nil)
+			if err != nil {
+				t.Error(err)
+			}
 			for i := 0; i < len(req.Requests)/2; i++ {
 				req.Requests[i].Vector.Vector = make([]float32, maxVecDim)
 			}
@@ -5129,7 +5084,10 @@ func Test_server_MultiInsert(t *testing.T) {
 		}(),
 		func() test {
 			insertNum := 100
-			req := genMultiInsertReq(Uint8, vector.Gaussian, insertNum, f32VecDim, nil)
+			req, err := request.GenMultiInsertReq(request.Uint8, vector.Gaussian, insertNum, f32VecDim, nil)
+			if err != nil {
+				t.Error(err)
+			}
 			for i := 0; i < len(req.Requests)/2; i++ {
 				req.Requests[i].Vector.Vector = make([]float32, maxVecDim)
 			}
@@ -5175,7 +5133,7 @@ func Test_server_MultiInsert(t *testing.T) {
 		}(),
 		func() test {
 			insertNum := 100
-			req := genSameVecMultiInsertReq(insertNum, make([]float32, maxVecDim), nil)
+			req := request.GenSameVecMultiInsertReq(insertNum, make([]float32, maxVecDim), nil)
 
 			return test{
 				name: "Boundary Value Testing case 5.5: Fail to MultiInsert with all vector with maximum dimension (vector type is uint8)",
@@ -5218,7 +5176,7 @@ func Test_server_MultiInsert(t *testing.T) {
 		}(),
 		func() test {
 			insertNum := 100
-			req := genSameVecMultiInsertReq(insertNum, make([]float32, maxVecDim), nil)
+			req := request.GenSameVecMultiInsertReq(insertNum, make([]float32, maxVecDim), nil)
 
 			return test{
 				name: "Boundary Value Testing case 5.6: Fail to MultiInsert with all vector with maximum dimension (vector type is float32)",
@@ -5265,7 +5223,7 @@ func Test_server_MultiInsert(t *testing.T) {
 				name: "Boundary Value Testing case 6.1: Success to MultiInsert with NaN value (vector type is float32)",
 				args: args{
 					ctx:  ctx,
-					reqs: genSameVecMultiInsertReq(insertNum, genSameValueVec(f32VecDim, float32(math.NaN())), nil),
+					reqs: request.GenSameVecMultiInsertReq(insertNum, vector.GenSameValueVec(f32VecDim, float32(math.NaN())), nil),
 				},
 				fields: fields{
 					name:              name,
@@ -5275,7 +5233,7 @@ func Test_server_MultiInsert(t *testing.T) {
 					streamConcurrency: 0,
 				},
 				want: want{
-					wantRes: genObjectLocations(insertNum, name, ip),
+					wantRes: request.GenObjectLocations(insertNum, name, ip),
 				},
 			}
 		}(),
@@ -5285,7 +5243,7 @@ func Test_server_MultiInsert(t *testing.T) {
 				name: "Boundary Value Testing case 6.2: Success to MultiInsert with +Inf value (vector type is float32)",
 				args: args{
 					ctx:  ctx,
-					reqs: genSameVecMultiInsertReq(insertNum, genSameValueVec(f32VecDim, float32(math.Inf(+1.0))), nil),
+					reqs: request.GenSameVecMultiInsertReq(insertNum, vector.GenSameValueVec(f32VecDim, float32(math.Inf(+1.0))), nil),
 				},
 				fields: fields{
 					name:              name,
@@ -5295,7 +5253,7 @@ func Test_server_MultiInsert(t *testing.T) {
 					streamConcurrency: 0,
 				},
 				want: want{
-					wantRes: genObjectLocations(insertNum, name, ip),
+					wantRes: request.GenObjectLocations(insertNum, name, ip),
 				},
 			}
 		}(),
@@ -5305,7 +5263,7 @@ func Test_server_MultiInsert(t *testing.T) {
 				name: "Boundary Value Testing case 6.3: Success to MultiInsert with -Inf value (vector type is float32)",
 				args: args{
 					ctx:  ctx,
-					reqs: genSameVecMultiInsertReq(insertNum, genSameValueVec(f32VecDim, float32(math.Inf(-1.0))), nil),
+					reqs: request.GenSameVecMultiInsertReq(insertNum, vector.GenSameValueVec(f32VecDim, float32(math.Inf(-1.0))), nil),
 				},
 				fields: fields{
 					name:              name,
@@ -5315,7 +5273,7 @@ func Test_server_MultiInsert(t *testing.T) {
 					streamConcurrency: 0,
 				},
 				want: want{
-					wantRes: genObjectLocations(insertNum, name, ip),
+					wantRes: request.GenObjectLocations(insertNum, name, ip),
 				},
 			}
 		}(),
@@ -5325,7 +5283,7 @@ func Test_server_MultiInsert(t *testing.T) {
 				name: "Boundary Value Testing case 6.4: Success to MultiInsert with -0 value (vector type is float32)",
 				args: args{
 					ctx:  ctx,
-					reqs: genSameVecMultiInsertReq(insertNum, genSameValueVec(f32VecDim, float32(math.Copysign(0, -1.0))), nil),
+					reqs: request.GenSameVecMultiInsertReq(insertNum, vector.GenSameValueVec(f32VecDim, float32(math.Copysign(0, -1.0))), nil),
 				},
 				fields: fields{
 					name:              name,
@@ -5335,13 +5293,16 @@ func Test_server_MultiInsert(t *testing.T) {
 					streamConcurrency: 0,
 				},
 				want: want{
-					wantRes: genObjectLocations(insertNum, name, ip),
+					wantRes: request.GenObjectLocations(insertNum, name, ip),
 				},
 			}
 		}(),
 		func() test {
 			insertNum := 100
-			req := genMultiInsertReq(Float, vector.Gaussian, insertNum, f32VecDim, nil)
+			req, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, insertNum, f32VecDim, nil)
+			if err != nil {
+				t.Error(err)
+			}
 			vid := req.Requests[0].Vector.Id
 			req.Requests[0] = nil
 
@@ -5385,7 +5346,10 @@ func Test_server_MultiInsert(t *testing.T) {
 		}(),
 		func() test {
 			insertNum := 100
-			req := genMultiInsertReq(Float, vector.Gaussian, insertNum, f32VecDim, nil)
+			req, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, insertNum, f32VecDim, nil)
+			if err != nil {
+				t.Error(err)
+			}
 			vid := req.Requests[0].Vector.Id
 			for i := 0; i < len(req.Requests)/2; i++ {
 				req.Requests[i] = nil
@@ -5431,7 +5395,10 @@ func Test_server_MultiInsert(t *testing.T) {
 		}(),
 		func() test {
 			insertNum := 100
-			req := genMultiInsertReq(Float, vector.Gaussian, insertNum, f32VecDim, nil)
+			req, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, insertNum, f32VecDim, nil)
+			if err != nil {
+				t.Error(err)
+			}
 			vid := req.Requests[0].Vector.Id
 			for i := 0; i < len(req.Requests); i++ {
 				req.Requests[i] = nil
@@ -5477,7 +5444,10 @@ func Test_server_MultiInsert(t *testing.T) {
 		}(),
 		func() test {
 			insertNum := 100
-			req := genMultiInsertReq(Float, vector.Gaussian, insertNum, f32VecDim, nil)
+			req, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, insertNum, f32VecDim, nil)
+			if err != nil {
+				t.Error(err)
+			}
 			vid := req.Requests[0].Vector.Id
 			req.Requests[0].Vector.Vector = nil
 
@@ -5521,7 +5491,10 @@ func Test_server_MultiInsert(t *testing.T) {
 		}(),
 		func() test {
 			insertNum := 100
-			req := genMultiInsertReq(Float, vector.Gaussian, insertNum, f32VecDim, nil)
+			req, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, insertNum, f32VecDim, nil)
+			if err != nil {
+				t.Error(err)
+			}
 			vid := req.Requests[0].Vector.Id
 			for i := 0; i < len(req.Requests)/2; i++ {
 				req.Requests[i].Vector.Vector = nil
@@ -5567,7 +5540,10 @@ func Test_server_MultiInsert(t *testing.T) {
 		}(),
 		func() test {
 			insertNum := 100
-			req := genMultiInsertReq(Float, vector.Gaussian, insertNum, f32VecDim, nil)
+			req, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, insertNum, f32VecDim, nil)
+			if err != nil {
+				t.Error(err)
+			}
 			vid := req.Requests[0].Vector.Id
 			for i := 0; i < len(req.Requests); i++ {
 				req.Requests[i].Vector.Vector = nil
@@ -5613,7 +5589,10 @@ func Test_server_MultiInsert(t *testing.T) {
 		}(),
 		func() test {
 			insertNum := 100
-			req := genMultiInsertReq(Float, vector.Gaussian, insertNum, f32VecDim, nil)
+			req, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, insertNum, f32VecDim, nil)
+			if err != nil {
+				t.Error(err)
+			}
 			vid := req.Requests[0].Vector.Id
 			req.Requests[0].Vector.Vector = []float32{}
 
@@ -5657,7 +5636,10 @@ func Test_server_MultiInsert(t *testing.T) {
 		}(),
 		func() test {
 			insertNum := 100
-			req := genMultiInsertReq(Float, vector.Gaussian, insertNum, f32VecDim, nil)
+			req, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, insertNum, f32VecDim, nil)
+			if err != nil {
+				t.Error(err)
+			}
 			vid := req.Requests[0].Vector.Id
 			for i := 0; i < len(req.Requests)/2; i++ {
 				req.Requests[i].Vector.Vector = []float32{}
@@ -5703,7 +5685,10 @@ func Test_server_MultiInsert(t *testing.T) {
 		}(),
 		func() test {
 			insertNum := 100
-			req := genMultiInsertReq(Float, vector.Gaussian, insertNum, f32VecDim, nil)
+			req, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, insertNum, f32VecDim, nil)
+			if err != nil {
+				t.Error(err)
+			}
 			vid := req.Requests[0].Vector.Id
 			for i := 0; i < len(req.Requests); i++ {
 				req.Requests[i].Vector.Vector = []float32{}
@@ -5753,11 +5738,14 @@ func Test_server_MultiInsert(t *testing.T) {
 				SkipStrictExistCheck: false,
 			}
 
-			req := genMultiInsertReq(Float, vector.Gaussian, insertNum, f32VecDim, cfg)
+			req, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, insertNum, f32VecDim, cfg)
+			if err != nil {
+				t.Error(err)
+			}
 			req.Requests[0].Vector.Id = req.Requests[1].Vector.Id
 
 			// set want
-			w := genObjectLocations(insertNum, name, ip)
+			w := request.GenObjectLocations(insertNum, name, ip)
 			w.Locations[0].Uuid = req.Requests[0].Vector.Id
 
 			return test{
@@ -5783,13 +5771,16 @@ func Test_server_MultiInsert(t *testing.T) {
 				SkipStrictExistCheck: false,
 			}
 
-			req := genMultiInsertReq(Float, vector.Gaussian, insertNum, f32VecDim, cfg)
+			req, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, insertNum, f32VecDim, cfg)
+			if err != nil {
+				t.Error(err)
+			}
 			for i := 1; i < len(req.Requests); i++ {
 				req.Requests[i].Vector.Id = req.Requests[0].Vector.Id
 			}
 
 			// set want
-			w := genObjectLocations(insertNum, name, ip)
+			w := request.GenObjectLocations(insertNum, name, ip)
 			for _, l := range w.Locations {
 				l.Uuid = req.Requests[0].Vector.Id
 			}
@@ -5817,11 +5808,14 @@ func Test_server_MultiInsert(t *testing.T) {
 				SkipStrictExistCheck: true,
 			}
 
-			req := genMultiInsertReq(Float, vector.Gaussian, insertNum, f32VecDim, cfg)
+			req, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, insertNum, f32VecDim, cfg)
+			if err != nil {
+				t.Error(err)
+			}
 			req.Requests[0].Vector.Id = req.Requests[1].Vector.Id
 
 			// set want
-			w := genObjectLocations(insertNum, name, ip)
+			w := request.GenObjectLocations(insertNum, name, ip)
 			w.Locations[0].Uuid = req.Requests[0].Vector.Id
 			// w.Locations[1].Uuid = dupID
 
@@ -5848,13 +5842,16 @@ func Test_server_MultiInsert(t *testing.T) {
 				SkipStrictExistCheck: true,
 			}
 
-			req := genMultiInsertReq(Float, vector.Gaussian, insertNum, f32VecDim, cfg)
+			req, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, insertNum, f32VecDim, cfg)
+			if err != nil {
+				t.Error(err)
+			}
 			for i := 1; i < len(req.Requests); i++ {
 				req.Requests[i].Vector.Id = req.Requests[0].Vector.Id
 			}
 
 			// set want
-			w := genObjectLocations(insertNum, name, ip)
+			w := request.GenObjectLocations(insertNum, name, ip)
 			for _, l := range w.Locations {
 				l.Uuid = req.Requests[0].Vector.Id
 			}
@@ -5882,7 +5879,10 @@ func Test_server_MultiInsert(t *testing.T) {
 				SkipStrictExistCheck: false,
 			}
 
-			req := genMultiInsertReq(Float, vector.Gaussian, insertNum, f32VecDim, cfg)
+			req, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, insertNum, f32VecDim, cfg)
+			if err != nil {
+				t.Error(err)
+			}
 			req.Requests[0].Vector.Vector = req.Requests[1].Vector.Vector
 
 			return test{
@@ -5898,7 +5898,7 @@ func Test_server_MultiInsert(t *testing.T) {
 					svcOpts: defaultSvcOpts,
 				},
 				want: want{
-					wantRes: genObjectLocations(insertNum, name, ip),
+					wantRes: request.GenObjectLocations(insertNum, name, ip),
 				},
 			}
 		}(),
@@ -5908,7 +5908,10 @@ func Test_server_MultiInsert(t *testing.T) {
 				SkipStrictExistCheck: false,
 			}
 
-			req := genMultiInsertReq(Float, vector.Gaussian, insertNum, f32VecDim, cfg)
+			req, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, insertNum, f32VecDim, cfg)
+			if err != nil {
+				t.Error(err)
+			}
 			for i := 1; i < len(req.Requests); i++ {
 				req.Requests[i].Vector.Vector = req.Requests[0].Vector.Vector
 			}
@@ -5926,7 +5929,7 @@ func Test_server_MultiInsert(t *testing.T) {
 					svcOpts: defaultSvcOpts,
 				},
 				want: want{
-					wantRes: genObjectLocations(insertNum, name, ip),
+					wantRes: request.GenObjectLocations(insertNum, name, ip),
 				},
 			}
 		}(),
@@ -5936,7 +5939,10 @@ func Test_server_MultiInsert(t *testing.T) {
 				SkipStrictExistCheck: true,
 			}
 
-			req := genMultiInsertReq(Float, vector.Gaussian, insertNum, f32VecDim, cfg)
+			req, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, insertNum, f32VecDim, cfg)
+			if err != nil {
+				t.Error(err)
+			}
 			req.Requests[0].Vector.Vector = req.Requests[1].Vector.Vector
 
 			return test{
@@ -5952,7 +5958,7 @@ func Test_server_MultiInsert(t *testing.T) {
 					svcOpts: defaultSvcOpts,
 				},
 				want: want{
-					wantRes: genObjectLocations(insertNum, name, ip),
+					wantRes: request.GenObjectLocations(insertNum, name, ip),
 				},
 			}
 		}(),
@@ -5962,7 +5968,10 @@ func Test_server_MultiInsert(t *testing.T) {
 				SkipStrictExistCheck: true,
 			}
 
-			req := genMultiInsertReq(Float, vector.Gaussian, insertNum, f32VecDim, cfg)
+			req, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, insertNum, f32VecDim, cfg)
+			if err != nil {
+				t.Error(err)
+			}
 			for i := 1; i < len(req.Requests); i++ {
 				req.Requests[i].Vector.Vector = req.Requests[0].Vector.Vector
 			}
@@ -5980,7 +5989,7 @@ func Test_server_MultiInsert(t *testing.T) {
 					svcOpts: defaultSvcOpts,
 				},
 				want: want{
-					wantRes: genObjectLocations(insertNum, name, ip),
+					wantRes: request.GenObjectLocations(insertNum, name, ip),
 				},
 			}
 		}(),
@@ -5989,12 +5998,15 @@ func Test_server_MultiInsert(t *testing.T) {
 			cfg := &payload.Insert_Config{
 				SkipStrictExistCheck: false,
 			}
-			req := genMultiInsertReq(Float, vector.Gaussian, insertNum, f32VecDim, cfg)
+			req, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, insertNum, f32VecDim, cfg)
+			if err != nil {
+				t.Error(err)
+			}
 			req.Requests[0].Vector.Vector = req.Requests[1].Vector.Vector
 			req.Requests[0].Vector.Id = req.Requests[1].Vector.Id
 
 			// set want
-			w := genObjectLocations(insertNum, name, ip)
+			w := request.GenObjectLocations(insertNum, name, ip)
 			w.Locations[0].Uuid = req.Requests[0].Vector.Id
 
 			return test{
@@ -6020,14 +6032,17 @@ func Test_server_MultiInsert(t *testing.T) {
 				SkipStrictExistCheck: false,
 			}
 
-			req := genMultiInsertReq(Float, vector.Gaussian, insertNum, f32VecDim, cfg)
+			req, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, insertNum, f32VecDim, cfg)
+			if err != nil {
+				t.Error(err)
+			}
 			for i := 1; i < len(req.Requests); i++ {
 				req.Requests[i].Vector.Id = req.Requests[0].Vector.Id
 				req.Requests[i].Vector.Vector = req.Requests[0].Vector.Vector
 			}
 
 			// set want
-			w := genObjectLocations(insertNum, name, ip)
+			w := request.GenObjectLocations(insertNum, name, ip)
 			for _, l := range w.Locations {
 				l.Uuid = req.Requests[0].Vector.Id
 			}
@@ -6055,12 +6070,15 @@ func Test_server_MultiInsert(t *testing.T) {
 				SkipStrictExistCheck: true,
 			}
 
-			req := genMultiInsertReq(Float, vector.Gaussian, insertNum, f32VecDim, cfg)
+			req, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, insertNum, f32VecDim, cfg)
+			if err != nil {
+				t.Error(err)
+			}
 			req.Requests[0].Vector.Vector = req.Requests[1].Vector.Vector
 			req.Requests[0].Vector.Id = req.Requests[1].Vector.Id
 
 			// set want
-			w := genObjectLocations(insertNum, name, ip)
+			w := request.GenObjectLocations(insertNum, name, ip)
 			w.Locations[0].Uuid = req.Requests[0].Vector.Id
 
 			return test{
@@ -6086,14 +6104,17 @@ func Test_server_MultiInsert(t *testing.T) {
 				SkipStrictExistCheck: true,
 			}
 
-			req := genMultiInsertReq(Float, vector.Gaussian, insertNum, f32VecDim, cfg)
+			req, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, insertNum, f32VecDim, cfg)
+			if err != nil {
+				t.Error(err)
+			}
 			for i := 1; i < len(req.Requests); i++ {
 				req.Requests[i].Vector.Id = req.Requests[0].Vector.Id
 				req.Requests[i].Vector.Vector = req.Requests[0].Vector.Vector
 			}
 
 			// set want
-			w := genObjectLocations(insertNum, name, ip)
+			w := request.GenObjectLocations(insertNum, name, ip)
 			for _, l := range w.Locations {
 				l.Uuid = req.Requests[0].Vector.Id
 			}
@@ -6117,7 +6138,10 @@ func Test_server_MultiInsert(t *testing.T) {
 		}(),
 		func() test {
 			insertNum := 100
-			req := genMultiInsertReq(Float, vector.Gaussian, insertNum, f32VecDim, nil)
+			req, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, insertNum, f32VecDim, nil)
+			if err != nil {
+				t.Error(err)
+			}
 
 			return test{
 				name: "Decision Table Testing case 4.1: Fail to MultiInsert with 2 existed ID when SkipStrictExistCheck is false",
@@ -6132,7 +6156,10 @@ func Test_server_MultiInsert(t *testing.T) {
 					svcOpts: defaultSvcOpts,
 				},
 				beforeFunc: func(t *testing.T, s *server) {
-					vecs := genF32Vec(vector.Gaussian, 2, f32VecDim)
+					vecs, err := vector.GenF32Vec(vector.Gaussian, 2, f32VecDim)
+					if err != nil {
+						t.Error(err)
+					}
 					for i := 0; i < 2; i++ {
 						ir := &payload.Insert_Request{
 							Vector: &payload.Object_Vector{
@@ -6164,7 +6191,10 @@ func Test_server_MultiInsert(t *testing.T) {
 		}(),
 		func() test {
 			insertNum := 100
-			req := genMultiInsertReq(Float, vector.Gaussian, insertNum, f32VecDim, nil)
+			req, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, insertNum, f32VecDim, nil)
+			if err != nil {
+				t.Error(err)
+			}
 
 			wantErrs := make([]error, 100)
 			for i := 0; i < len(req.Requests); i++ {
@@ -6184,7 +6214,10 @@ func Test_server_MultiInsert(t *testing.T) {
 					svcOpts: defaultSvcOpts,
 				},
 				beforeFunc: func(t *testing.T, s *server) {
-					vecs := genF32Vec(vector.Gaussian, insertNum, f32VecDim)
+					vecs, err := vector.GenF32Vec(vector.Gaussian, insertNum, f32VecDim)
+					if err != nil {
+						t.Error(err)
+					}
 					for i, r := range req.Requests {
 						ir := &payload.Insert_Request{
 							Vector: &payload.Object_Vector{
@@ -6212,7 +6245,10 @@ func Test_server_MultiInsert(t *testing.T) {
 		}(),
 		func() test {
 			insertNum := 100
-			req := genMultiInsertReq(Float, vector.Gaussian, insertNum, f32VecDim, nil)
+			req, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, insertNum, f32VecDim, nil)
+			if err != nil {
+				t.Error(err)
+			}
 
 			return test{
 				name: "Decision Table Testing case 4.3: Fail to MultiInsert with 2 existed ID when SkipStrictExistCheck is true",
@@ -6227,7 +6263,10 @@ func Test_server_MultiInsert(t *testing.T) {
 					svcOpts: defaultSvcOpts,
 				},
 				beforeFunc: func(t *testing.T, s *server) {
-					vecs := genF32Vec(vector.Gaussian, 2, f32VecDim)
+					vecs, err := vector.GenF32Vec(vector.Gaussian, 2, f32VecDim)
+					if err != nil {
+						t.Error(err)
+					}
 					for i := 0; i < 2; i++ {
 						ir := &payload.Insert_Request{
 							Vector: &payload.Object_Vector{
@@ -6259,7 +6298,10 @@ func Test_server_MultiInsert(t *testing.T) {
 		}(),
 		func() test {
 			insertNum := 100
-			req := genMultiInsertReq(Float, vector.Gaussian, insertNum, f32VecDim, nil)
+			req, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, insertNum, f32VecDim, nil)
+			if err != nil {
+				t.Error(err)
+			}
 
 			wantErrs := make([]error, 100)
 			for i := 0; i < len(req.Requests); i++ {
@@ -6279,7 +6321,10 @@ func Test_server_MultiInsert(t *testing.T) {
 					svcOpts: defaultSvcOpts,
 				},
 				beforeFunc: func(t *testing.T, s *server) {
-					vecs := genF32Vec(vector.Gaussian, insertNum, f32VecDim)
+					vecs, err := vector.GenF32Vec(vector.Gaussian, insertNum, f32VecDim)
+					if err != nil {
+						t.Error(err)
+					}
 					for i, r := range req.Requests {
 						ir := &payload.Insert_Request{
 							Vector: &payload.Object_Vector{
@@ -6307,7 +6352,10 @@ func Test_server_MultiInsert(t *testing.T) {
 		}(),
 		func() test {
 			insertNum := 100
-			req := genMultiInsertReq(Float, vector.Gaussian, insertNum, f32VecDim, nil)
+			req, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, insertNum, f32VecDim, nil)
+			if err != nil {
+				t.Error(err)
+			}
 
 			return test{
 				name: "Decision Table Testing case 5.1: Success to MultiInsert with 2 existed vector when SkipStrictExistCheck is false",
@@ -6344,13 +6392,16 @@ func Test_server_MultiInsert(t *testing.T) {
 					}
 				},
 				want: want{
-					wantRes: genObjectLocations(100, name, ip),
+					wantRes: request.GenObjectLocations(100, name, ip),
 				},
 			}
 		}(),
 		func() test {
 			insertNum := 100
-			req := genMultiInsertReq(Float, vector.Gaussian, insertNum, f32VecDim, nil)
+			req, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, insertNum, f32VecDim, nil)
+			if err != nil {
+				t.Error(err)
+			}
 
 			return test{
 				name: "Decision Table Testing case 5.2: Success to MultiInsert with all existed vector when SkipStrictExistCheck is false",
@@ -6387,13 +6438,16 @@ func Test_server_MultiInsert(t *testing.T) {
 					}
 				},
 				want: want{
-					wantRes: genObjectLocations(insertNum, name, ip),
+					wantRes: request.GenObjectLocations(insertNum, name, ip),
 				},
 			}
 		}(),
 		func() test {
 			insertNum := 100
-			req := genMultiInsertReq(Float, vector.Gaussian, insertNum, f32VecDim, nil)
+			req, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, insertNum, f32VecDim, nil)
+			if err != nil {
+				t.Error(err)
+			}
 
 			return test{
 				name: "Decision Table Testing case 5.3: Success to MultiInsert with 2 existed vector when SkipStrictExistCheck is true",
@@ -6430,13 +6484,16 @@ func Test_server_MultiInsert(t *testing.T) {
 					}
 				},
 				want: want{
-					wantRes: genObjectLocations(insertNum, name, ip),
+					wantRes: request.GenObjectLocations(insertNum, name, ip),
 				},
 			}
 		}(),
 		func() test {
 			insertNum := 100
-			req := genMultiInsertReq(Float, vector.Gaussian, insertNum, f32VecDim, nil)
+			req, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, insertNum, f32VecDim, nil)
+			if err != nil {
+				t.Error(err)
+			}
 
 			return test{
 				name: "Decision Table Testing case 5.4: Success to MultiInsert with all existed vector when SkipStrictExistCheck is true",
@@ -6473,13 +6530,16 @@ func Test_server_MultiInsert(t *testing.T) {
 					}
 				},
 				want: want{
-					wantRes: genObjectLocations(insertNum, name, ip),
+					wantRes: request.GenObjectLocations(insertNum, name, ip),
 				},
 			}
 		}(),
 		func() test {
 			insertNum := 100
-			req := genMultiInsertReq(Float, vector.Gaussian, insertNum, f32VecDim, nil)
+			req, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, insertNum, f32VecDim, nil)
+			if err != nil {
+				t.Error(err)
+			}
 
 			return test{
 				name: "Decision Table Testing case 6.1: Fail to MultiInsert with 2 existed ID & vector when SkipStrictExistCheck is false",
@@ -6522,7 +6582,10 @@ func Test_server_MultiInsert(t *testing.T) {
 		}(),
 		func() test {
 			insertNum := 100
-			req := genMultiInsertReq(Float, vector.Gaussian, insertNum, f32VecDim, nil)
+			req, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, insertNum, f32VecDim, nil)
+			if err != nil {
+				t.Error(err)
+			}
 
 			wantErrs := make([]error, 100)
 			for i := 0; i < len(req.Requests); i++ {
@@ -6566,7 +6629,10 @@ func Test_server_MultiInsert(t *testing.T) {
 		}(),
 		func() test {
 			insertNum := 100
-			req := genMultiInsertReq(Float, vector.Gaussian, insertNum, f32VecDim, nil)
+			req, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, insertNum, f32VecDim, nil)
+			if err != nil {
+				t.Error(err)
+			}
 
 			return test{
 				name: "Decision Table Testing case 6.3: Fail to MultiInsert with 2 existed ID & vector when SkipStrictExistCheck is true",
@@ -6609,7 +6675,10 @@ func Test_server_MultiInsert(t *testing.T) {
 		}(),
 		func() test {
 			insertNum := 100
-			req := genMultiInsertReq(Float, vector.Gaussian, insertNum, f32VecDim, nil)
+			req, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, insertNum, f32VecDim, nil)
+			if err != nil {
+				t.Error(err)
+			}
 
 			wantErrs := make([]error, 100)
 			for i := 0; i < len(req.Requests); i++ {
@@ -6738,7 +6807,20 @@ func Test_server_Update(t *testing.T) {
 		dimension = 128
 	)
 
+	utf8Str := "こんにちは"
+	eucjpStr, err := conv.Utf8ToEucjp(utf8Str)
+	if err != nil {
+		t.Error(err)
+	}
+	sjisStr, err := conv.Utf8ToSjis(utf8Str)
+	if err != nil {
+		t.Error(err)
+	}
+
 	defaultUpdateConfig := &payload.Update_Config{
+		SkipStrictExistCheck: true,
+	}
+	defaultInsertConfig := &payload.Insert_Config{
 		SkipStrictExistCheck: true,
 	}
 	beforeFunc := func(objectType string) func(args) (Server, error) {
@@ -6756,52 +6838,15 @@ func Test_server_Update(t *testing.T) {
 				DeleteBufferPoolSize: 1000,
 			},
 		}
-		var gen func(int, int) [][]float32
-		switch objectType {
-		case ngt.Float.String():
-			gen = vector.GaussianDistributedFloat32VectorGenerator
-		case ngt.Uint8.String():
-			gen = func(n, dim int) [][]float32 {
-				return convertVectorsUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(n, dim))
-			}
-		}
 
 		return func(a args) (Server, error) {
-			eg, ctx := errgroup.New(a.ctx)
-			ngt, err := service.New(cfg, service.WithErrGroup(eg), service.WithEnableInMemoryMode(true))
-			if err != nil {
-				return nil, err
-			}
-
-			s, err := New(WithErrGroup(eg), WithNGT(ngt))
-			if err != nil {
-				return nil, err
-			}
-
-			// TODO: use genMultiInsertReq()
-			reqs := make([]*payload.Insert_Request, insertNum)
-			for i, v := range gen(insertNum, cfg.Dimension) {
-				reqs[i] = &payload.Insert_Request{
-					Vector: &payload.Object_Vector{
-						Id:     strconv.Itoa(i),
-						Vector: v,
-					},
-					Config: &payload.Insert_Config{
-						SkipStrictExistCheck: true,
-					},
+			var overwriteVec [][]float32
+			if a.indexVector != nil {
+				overwriteVec = [][]float32{
+					a.indexVector,
 				}
 			}
-			reqs[0].Vector.Id = a.indexId
-			if a.indexVector != nil {
-				reqs[0].Vector.Vector = a.indexVector
-			}
-			if _, err := s.MultiInsert(ctx, &payload.Insert_MultiRequest{Requests: reqs}); err != nil {
-				return nil, err
-			}
-			if _, err := s.CreateIndex(ctx, &payload.Control_CreateIndexRequest{PoolSize: 100}); err != nil {
-				return nil, err
-			}
-			return s, nil
+			return buildIndex(a.ctx, request.Float, vector.Gaussian, insertNum, defaultInsertConfig, cfg, nil, []string{a.indexId}, overwriteVec)
 		}
 	}
 
@@ -6893,7 +6938,7 @@ func Test_server_Update(t *testing.T) {
 				req: &payload.Update_Request{
 					Vector: &payload.Object_Vector{
 						Id:     "test",
-						Vector: convertVectorUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, dimension+1)[0]),
+						Vector: vector.ConvertVectorsUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, dimension+1))[0],
 					},
 					Config: defaultUpdateConfig,
 				},
@@ -7044,27 +7089,27 @@ func Test_server_Update(t *testing.T) {
 			name: "Boundary Value Testing case 3.1: success update with utf-8 ID from utf-8 index",
 			args: args{
 				ctx:     ctx,
-				indexId: "こんにちは",
+				indexId: utf8Str,
 				req: &payload.Update_Request{
 					Vector: &payload.Object_Vector{
-						Id:     "こんにちは",
+						Id:     utf8Str,
 						Vector: vector.GaussianDistributedFloat32VectorGenerator(1, dimension)[0],
 					},
 					Config: defaultUpdateConfig,
 				},
 			},
 			want: want{
-				wantUuid: "こんにちは",
+				wantUuid: utf8Str,
 			},
 		},
 		{
 			name: "Boundary Value Testing case 3.2: success update with utf-8 ID from s-jis index",
 			args: args{
 				ctx:     ctx,
-				indexId: utf8ToSjis("こんにちは"),
+				indexId: sjisStr,
 				req: &payload.Update_Request{
 					Vector: &payload.Object_Vector{
-						Id:     "こんにちは",
+						Id:     utf8Str,
 						Vector: vector.GaussianDistributedFloat32VectorGenerator(1, dimension)[0],
 					},
 					Config: defaultUpdateConfig,
@@ -7078,10 +7123,10 @@ func Test_server_Update(t *testing.T) {
 			name: "Boundary Value Testing case 3.3: success update with utf-8 ID from euc-jp index",
 			args: args{
 				ctx:     ctx,
-				indexId: utf8ToEucjp("こんにちは"),
+				indexId: eucjpStr,
 				req: &payload.Update_Request{
 					Vector: &payload.Object_Vector{
-						Id:     "こんにちは",
+						Id:     utf8Str,
 						Vector: vector.GaussianDistributedFloat32VectorGenerator(1, dimension)[0],
 					},
 					Config: defaultUpdateConfig,
@@ -7095,10 +7140,10 @@ func Test_server_Update(t *testing.T) {
 			name: "Boundary Value Testing case 3.4: fail update with s-jis ID from utf-8 index",
 			args: args{
 				ctx:     ctx,
-				indexId: "こんにちは",
+				indexId: utf8Str,
 				req: &payload.Update_Request{
 					Vector: &payload.Object_Vector{
-						Id:     utf8ToSjis("こんにちは"),
+						Id:     sjisStr,
 						Vector: vector.GaussianDistributedFloat32VectorGenerator(1, dimension)[0],
 					},
 					Config: defaultUpdateConfig,
@@ -7112,27 +7157,27 @@ func Test_server_Update(t *testing.T) {
 			name: "Boundary Value Testing case 3.5: success update with s-jis ID from s-jis index",
 			args: args{
 				ctx:     ctx,
-				indexId: utf8ToSjis("こんにちは"),
+				indexId: sjisStr,
 				req: &payload.Update_Request{
 					Vector: &payload.Object_Vector{
-						Id:     utf8ToSjis("こんにちは"),
+						Id:     sjisStr,
 						Vector: vector.GaussianDistributedFloat32VectorGenerator(1, dimension)[0],
 					},
 					Config: defaultUpdateConfig,
 				},
 			},
 			want: want{
-				wantUuid: utf8ToSjis("こんにちは"),
+				wantUuid: sjisStr,
 			},
 		},
 		{
 			name: "Boundary Value Testing case 3.6: fail update with s-jis ID from euc-jp index",
 			args: args{
 				ctx:     ctx,
-				indexId: utf8ToEucjp("こんにちは"),
+				indexId: eucjpStr,
 				req: &payload.Update_Request{
 					Vector: &payload.Object_Vector{
-						Id:     utf8ToSjis("こんにちは"),
+						Id:     sjisStr,
 						Vector: vector.GaussianDistributedFloat32VectorGenerator(1, dimension)[0],
 					},
 					Config: defaultUpdateConfig,
@@ -7146,10 +7191,10 @@ func Test_server_Update(t *testing.T) {
 			name: "Boundary Value Testing case 3.7: fail update with euc-jp ID from utf-8 index",
 			args: args{
 				ctx:     ctx,
-				indexId: "こんにちは",
+				indexId: utf8Str,
 				req: &payload.Update_Request{
 					Vector: &payload.Object_Vector{
-						Id:     utf8ToEucjp("こんにちは"),
+						Id:     eucjpStr,
 						Vector: vector.GaussianDistributedFloat32VectorGenerator(1, dimension)[0],
 					},
 					Config: defaultUpdateConfig,
@@ -7163,10 +7208,10 @@ func Test_server_Update(t *testing.T) {
 			name: "Boundary Value Testing case 3.8: fail update with euc-jp ID from s-jis index",
 			args: args{
 				ctx:     ctx,
-				indexId: utf8ToSjis("こんにちは"),
+				indexId: sjisStr,
 				req: &payload.Update_Request{
 					Vector: &payload.Object_Vector{
-						Id:     utf8ToEucjp("こんにちは"),
+						Id:     eucjpStr,
 						Vector: vector.GaussianDistributedFloat32VectorGenerator(1, dimension)[0],
 					},
 					Config: defaultUpdateConfig,
@@ -7180,17 +7225,17 @@ func Test_server_Update(t *testing.T) {
 			name: "Boundary Value Testing case 3.9: success update with euc-jp ID from euc-jp index",
 			args: args{
 				ctx:     ctx,
-				indexId: utf8ToEucjp("こんにちは"),
+				indexId: eucjpStr,
 				req: &payload.Update_Request{
 					Vector: &payload.Object_Vector{
-						Id:     utf8ToEucjp("こんにちは"),
+						Id:     eucjpStr,
 						Vector: vector.GaussianDistributedFloat32VectorGenerator(1, dimension)[0],
 					},
 					Config: defaultUpdateConfig,
 				},
 			},
 			want: want{
-				wantUuid: utf8ToEucjp("こんにちは"),
+				wantUuid: eucjpStr,
 			},
 		},
 		{
@@ -7218,7 +7263,7 @@ func Test_server_Update(t *testing.T) {
 				req: &payload.Update_Request{
 					Vector: &payload.Object_Vector{
 						Id:     "test",
-						Vector: fill(float32(uint8(0)), dimension),
+						Vector: vector.GenSameValueVec(dimension, float32(uint8(0))),
 					},
 					Config: defaultUpdateConfig,
 				},
@@ -7235,7 +7280,7 @@ func Test_server_Update(t *testing.T) {
 				req: &payload.Update_Request{
 					Vector: &payload.Object_Vector{
 						Id:     "test",
-						Vector: fill(0, dimension),
+						Vector: vector.GenSameValueVec(dimension, 0),
 					},
 					Config: defaultUpdateConfig,
 				},
@@ -7252,7 +7297,7 @@ func Test_server_Update(t *testing.T) {
 				req: &payload.Update_Request{
 					Vector: &payload.Object_Vector{
 						Id:     "test",
-						Vector: fill(float32(math.Copysign(0, -1.0)), dimension),
+						Vector: vector.GenSameValueVec(dimension, float32(math.Copysign(0, -1.0))),
 					},
 					Config: defaultUpdateConfig,
 				},
@@ -7269,7 +7314,7 @@ func Test_server_Update(t *testing.T) {
 				req: &payload.Update_Request{
 					Vector: &payload.Object_Vector{
 						Id:     "test",
-						Vector: fill(float32(uint8(0)), dimension),
+						Vector: vector.GenSameValueVec(dimension, float32(uint8(0))),
 					},
 					Config: defaultUpdateConfig,
 				},
@@ -7286,7 +7331,7 @@ func Test_server_Update(t *testing.T) {
 				req: &payload.Update_Request{
 					Vector: &payload.Object_Vector{
 						Id:     "test",
-						Vector: fill(-math.MaxFloat32, dimension),
+						Vector: vector.GenSameValueVec(dimension, -math.MaxFloat32),
 					},
 					Config: defaultUpdateConfig,
 				},
@@ -7303,7 +7348,7 @@ func Test_server_Update(t *testing.T) {
 				req: &payload.Update_Request{
 					Vector: &payload.Object_Vector{
 						Id:     "test",
-						Vector: fill(float32(math.MaxUint8), dimension),
+						Vector: vector.GenSameValueVec(dimension, float32(math.MaxUint8)),
 					},
 					Config: defaultUpdateConfig,
 				},
@@ -7320,7 +7365,7 @@ func Test_server_Update(t *testing.T) {
 				req: &payload.Update_Request{
 					Vector: &payload.Object_Vector{
 						Id:     "test",
-						Vector: fill(math.MaxFloat32, dimension),
+						Vector: vector.GenSameValueVec(dimension, math.MaxFloat32),
 					},
 					Config: defaultUpdateConfig,
 				},
@@ -7337,7 +7382,7 @@ func Test_server_Update(t *testing.T) {
 				req: &payload.Update_Request{
 					Vector: &payload.Object_Vector{
 						Id:     "test",
-						Vector: fill(float32(math.NaN()), dimension),
+						Vector: vector.GenSameValueVec(dimension, float32(math.NaN())),
 					},
 					Config: defaultUpdateConfig,
 				},
@@ -7354,7 +7399,7 @@ func Test_server_Update(t *testing.T) {
 				req: &payload.Update_Request{
 					Vector: &payload.Object_Vector{
 						Id:     "test",
-						Vector: fill(float32(math.Inf(1.0)), dimension),
+						Vector: vector.GenSameValueVec(dimension, float32(math.Inf(1.0))),
 					},
 					Config: defaultUpdateConfig,
 				},
@@ -7371,7 +7416,7 @@ func Test_server_Update(t *testing.T) {
 				req: &payload.Update_Request{
 					Vector: &payload.Object_Vector{
 						Id:     "test",
-						Vector: fill(float32(math.Inf(-1.0)), dimension),
+						Vector: vector.GenSameValueVec(dimension, float32(math.Inf(-1.0))),
 					},
 					Config: defaultUpdateConfig,
 				},
@@ -7463,7 +7508,7 @@ func Test_server_Update(t *testing.T) {
 					indexVector: vector,
 					req: &payload.Update_Request{
 						Vector: &payload.Object_Vector{
-							Id:     "1",
+							Id:     "uuid-2", // the first uuid is overwritten, so use the second one
 							Vector: vector,
 						},
 						Config: defaultUpdateConfig,
@@ -7471,7 +7516,7 @@ func Test_server_Update(t *testing.T) {
 				}
 			}(),
 			want: want{
-				wantUuid: "1",
+				wantUuid: "uuid-2",
 			},
 		},
 		{
@@ -7526,7 +7571,7 @@ func Test_server_Update(t *testing.T) {
 					indexVector: vector,
 					req: &payload.Update_Request{
 						Vector: &payload.Object_Vector{
-							Id:     "1",
+							Id:     "uuid-2", // the first uuid is overwritten, so use the second one
 							Vector: vector,
 						},
 						Config: &payload.Update_Config{
@@ -7536,7 +7581,7 @@ func Test_server_Update(t *testing.T) {
 				}
 			}(),
 			want: want{
-				wantUuid: "1",
+				wantUuid: "uuid-2",
 			},
 		},
 	}
@@ -8150,6 +8195,16 @@ func Test_server_Remove(t *testing.T) {
 		insertNum = 1000
 	)
 
+	utf8Str := "こんにちは"
+	eucjpStr, err := conv.Utf8ToEucjp(utf8Str)
+	if err != nil {
+		t.Error(err)
+	}
+	sjisStr, err := conv.Utf8ToSjis(utf8Str)
+	if err != nil {
+		t.Error(err)
+	}
+
 	defaultNgtConfig := &config.NGT{
 		Dimension:        128,
 		DistanceType:     ngt.L2.String(),
@@ -8164,48 +8219,11 @@ func Test_server_Remove(t *testing.T) {
 			DeleteBufferPoolSize: 1000,
 		},
 	}
+	defaultInsertConfig := &payload.Insert_Config{
+		SkipStrictExistCheck: true,
+	}
 	defaultBeforeFunc := func(a args) (Server, error) {
-		eg, ctx := errgroup.New(a.ctx)
-		ngt, err := service.New(defaultNgtConfig, service.WithErrGroup(eg), service.WithEnableInMemoryMode(true))
-		if err != nil {
-			return nil, err
-		}
-
-		s, err := New(WithErrGroup(eg), WithNGT(ngt))
-		if err != nil {
-			return nil, err
-		}
-
-		reqs := make([]*payload.Insert_Request, insertNum)
-		for i, v := range vector.GaussianDistributedFloat32VectorGenerator(insertNum, defaultNgtConfig.Dimension) {
-			reqs[i] = &payload.Insert_Request{
-				Vector: &payload.Object_Vector{
-					Id:     strconv.Itoa(i),
-					Vector: v,
-				},
-				Config: &payload.Insert_Config{
-					SkipStrictExistCheck: true,
-				},
-			}
-		}
-		reqs[0].Vector.Id = a.indexId
-		if _, err := s.MultiInsert(ctx, &payload.Insert_MultiRequest{Requests: reqs}); err != nil {
-			return nil, err
-		}
-		if _, err := s.CreateIndex(ctx, &payload.Control_CreateIndexRequest{PoolSize: 100}); err != nil {
-			return nil, err
-		}
-		return s, nil
-	}
-
-	utf8ToSjis := func(s string) string {
-		b, _ := ioutil.ReadAll(transform.NewReader(strings.NewReader(s), japanese.ShiftJIS.NewEncoder()))
-		return string(b)
-	}
-
-	utf8ToEucjp := func(s string) string {
-		b, _ := ioutil.ReadAll(transform.NewReader(strings.NewReader(s), japanese.EUCJP.NewEncoder()))
-		return string(b)
+		return buildIndex(a.ctx, request.Float, vector.Gaussian, insertNum, defaultInsertConfig, defaultNgtConfig, nil, []string{a.indexId}, nil)
 	}
 
 	/*
@@ -8338,19 +8356,19 @@ func Test_server_Remove(t *testing.T) {
 			name: "Boundary Value Testing case 3.1: success exists with utf-8 ID from utf-8 index",
 			args: args{
 				ctx:      ctx,
-				indexId:  "こんにちは",
-				removeId: "こんにちは",
+				indexId:  utf8Str,
+				removeId: utf8Str,
 			},
 			want: want{
-				wantUuid: "こんにちは",
+				wantUuid: utf8Str,
 			},
 		},
 		{
 			name: "Boundary Value Testing case 3.2: fail exists with utf-8 ID from s-jis index",
 			args: args{
 				ctx:      ctx,
-				indexId:  utf8ToSjis("こんにちは"),
-				removeId: "こんにちは",
+				indexId:  sjisStr,
+				removeId: utf8Str,
 			},
 			want: want{
 				code: codes.NotFound,
@@ -8360,8 +8378,8 @@ func Test_server_Remove(t *testing.T) {
 			name: "Boundary Value Testing case 3.3: fail exists with utf-8 ID from euc-jp index",
 			args: args{
 				ctx:      ctx,
-				indexId:  utf8ToEucjp("こんにちは"),
-				removeId: "こんにちは",
+				indexId:  eucjpStr,
+				removeId: utf8Str,
 			},
 			want: want{
 				code: codes.NotFound,
@@ -8371,8 +8389,8 @@ func Test_server_Remove(t *testing.T) {
 			name: "Boundary Value Testing case 3.4: fail exists with s-jis ID from utf-8 index",
 			args: args{
 				ctx:      ctx,
-				indexId:  "こんにちは",
-				removeId: utf8ToSjis("こんにちは"),
+				indexId:  utf8Str,
+				removeId: sjisStr,
 			},
 			want: want{
 				code: codes.NotFound,
@@ -8382,19 +8400,19 @@ func Test_server_Remove(t *testing.T) {
 			name: "Boundary Value Testing case 3.5: success exists with s-jis ID from s-jis index",
 			args: args{
 				ctx:      ctx,
-				indexId:  utf8ToSjis("こんにちは"),
-				removeId: utf8ToSjis("こんにちは"),
+				indexId:  sjisStr,
+				removeId: sjisStr,
 			},
 			want: want{
-				wantUuid: utf8ToSjis("こんにちは"),
+				wantUuid: sjisStr,
 			},
 		},
 		{
 			name: "Boundary Value Testing case 3.6: fail exists with s-jis ID from euc-jp index",
 			args: args{
 				ctx:      ctx,
-				indexId:  utf8ToEucjp("こんにちは"),
-				removeId: utf8ToSjis("こんにちは"),
+				indexId:  eucjpStr,
+				removeId: sjisStr,
 			},
 			want: want{
 				code: codes.NotFound,
@@ -8404,8 +8422,8 @@ func Test_server_Remove(t *testing.T) {
 			name: "Boundary Value Testing case 3.7: fail exists with euc-jp ID from utf-8 index",
 			args: args{
 				ctx:      ctx,
-				indexId:  "こんにちは",
-				removeId: utf8ToEucjp("こんにちは"),
+				indexId:  utf8Str,
+				removeId: eucjpStr,
 			},
 			want: want{
 				code: codes.NotFound,
@@ -8415,8 +8433,8 @@ func Test_server_Remove(t *testing.T) {
 			name: "Boundary Value Testing case 3.8: fail exists with euc-jp ID from s-jis index",
 			args: args{
 				ctx:      ctx,
-				indexId:  utf8ToSjis("こんにちは"),
-				removeId: utf8ToEucjp("こんにちは"),
+				indexId:  sjisStr,
+				removeId: eucjpStr,
 			},
 			want: want{
 				code: codes.NotFound,
@@ -8426,11 +8444,11 @@ func Test_server_Remove(t *testing.T) {
 			name: "Boundary Value Testing case 3.9: success exists with euc-jp ID from euc-jp index",
 			args: args{
 				ctx:      ctx,
-				indexId:  utf8ToEucjp("こんにちは"),
-				removeId: utf8ToEucjp("こんにちは"),
+				indexId:  eucjpStr,
+				removeId: eucjpStr,
 			},
 			want: want{
-				wantUuid: utf8ToEucjp("こんにちは"),
+				wantUuid: eucjpStr,
 			},
 		},
 		{
