@@ -159,9 +159,10 @@ func (idx *index) Start(ctx context.Context) (<-chan error, error) {
 				return
 			case addr := <-idx.saveIndexTargetAddrCh:
 				idx.schMap.Delete(addr)
-				_, err = idx.client.GetClient().Do(grpc.WithGRPCMethod(ctx, "core.v1.Agent/SaveIndex"), addr, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (_ interface{}, err error) {
-					return agent.NewAgentClient(conn).SaveIndex(ctx, &payload.Empty{}, copts...)
-				})
+				_, err = idx.client.GetClient().
+					Do(grpc.WithGRPCMethod(ctx, "core.v1.Agent/SaveIndex"), addr, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (_ interface{}, err error) {
+						return agent.NewAgentClient(conn).SaveIndex(ctx, &payload.Empty{}, copts...)
+					})
 				if err != nil {
 					log.Warnf("an error occurred while calling SaveIndex of %s: %s", addr, err)
 					select {
