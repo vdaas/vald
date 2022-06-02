@@ -112,6 +112,19 @@ func TestGenObjectLocations(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "success to generate 0 object location",
+			args: args{
+				num:    0,
+				name:   "vald-agent-01",
+				ipAddr: "127.0.0.1",
+			},
+			want: want{
+				want: &payload.Object_Locations{
+					Locations: []*payload.Object_Location{},
+				},
+			},
+		},
 	}
 
 	for _, tc := range tests {

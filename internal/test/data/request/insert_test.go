@@ -188,6 +188,34 @@ func TestGenMultiInsertReq(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "success to generate 0 float request",
+			args: args{
+				t:    Float,
+				dist: vector.Gaussian,
+				num:  0,
+				dim:  dim,
+			},
+			want: want{
+				want: &payload.Insert_MultiRequest{
+					Requests: []*payload.Insert_Request{},
+				},
+			},
+		},
+		{
+			name: "success to generate 0 uint8 request",
+			args: args{
+				t:    Uint8,
+				dist: vector.Gaussian,
+				num:  0,
+				dim:  dim,
+			},
+			want: want{
+				want: &payload.Insert_MultiRequest{
+					Requests: []*payload.Insert_Request{},
+				},
+			},
+		},
 	}
 
 	for _, tc := range tests {
@@ -316,6 +344,19 @@ func TestGenSameVecMultiInsertReq(t *testing.T) {
 				},
 			}
 		}(),
+		{
+			name: "success to generate 0 same vector request",
+			args: args{
+				num: 0,
+				vec: []float32{1, 2, 3},
+				cfg: nil,
+			},
+			want: want{
+				want: &payload.Insert_MultiRequest{
+					Requests: []*payload.Insert_Request{},
+				},
+			},
+		},
 	}
 
 	for _, tc := range tests {
