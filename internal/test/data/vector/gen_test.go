@@ -16,6 +16,7 @@
 package vector
 
 import (
+	"math"
 	"reflect"
 	"testing"
 
@@ -1025,7 +1026,7 @@ func TestConvertVectorsUint8ToFloat32(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "return 1 float32 vector from uint8 vector",
+			name: "convert 1 float32 vector from uint8 vector",
 			args: args{
 				vectors: [][]uint8{
 					{
@@ -1042,7 +1043,7 @@ func TestConvertVectorsUint8ToFloat32(t *testing.T) {
 			},
 		},
 		{
-			name: "return 3 float32 vector from uint8 vector",
+			name: "convert 3 float32 vector from uint8 vector",
 			args: args{
 				vectors: [][]uint8{
 					{
@@ -1066,6 +1067,40 @@ func TestConvertVectorsUint8ToFloat32(t *testing.T) {
 					},
 					{
 						7, 8, 9,
+					},
+				},
+			},
+		},
+		{
+			name: "convert 0 value vector",
+			args: args{
+				vectors: [][]uint8{
+					{
+						0, 0, 0,
+					},
+				},
+			},
+			want: want{
+				wantRet: [][]float32{
+					{
+						0, 0, 0,
+					},
+				},
+			},
+		},
+		{
+			name: "convert max value vector",
+			args: args{
+				vectors: [][]uint8{
+					{
+						math.MaxUint8, math.MaxUint8, math.MaxUint8,
+					},
+				},
+			},
+			want: want{
+				wantRet: [][]float32{
+					{
+						math.MaxUint8, math.MaxUint8, math.MaxUint8,
 					},
 				},
 			},
