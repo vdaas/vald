@@ -25,12 +25,10 @@ import (
 	"github.com/vdaas/vald/internal/test/goleak"
 )
 
-var (
-	defaultOvjectLocationComparators = []cmp.Option{
-		comparator.IgnoreUnexported(payload.Object_Locations{}),
-		comparator.IgnoreUnexported(payload.Object_Location{}),
-	}
-)
+var defaultObjectLocationComparators = []cmp.Option{
+	comparator.IgnoreUnexported(payload.Object_Locations{}),
+	comparator.IgnoreUnexported(payload.Object_Location{}),
+}
 
 func TestGenObjectLocations(t *testing.T) {
 	type args struct {
@@ -50,7 +48,7 @@ func TestGenObjectLocations(t *testing.T) {
 		afterFunc  func(args)
 	}
 	defaultCheckFunc := func(w want, got *payload.Object_Locations) error {
-		if diff := comparator.Diff(got, w.want, defaultOvjectLocationComparators...); diff != "" {
+		if diff := comparator.Diff(got, w.want, defaultObjectLocationComparators...); diff != "" {
 			return errors.Errorf("diff: %v", diff)
 		}
 		return nil
