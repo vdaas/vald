@@ -62,7 +62,7 @@ func TestGenMultiInsertReq(t *testing.T) {
 		if diff := comparator.Diff(got, w.want, comparators...); diff != "" {
 			return errors.Errorf("diff: %v", diff)
 		}
-		if len(got.Requests[0].Vector.Vector) != dim {
+		if len(got.Requests) != 0 && len(got.Requests[0].Vector.Vector) != dim {
 			return errors.New("vector length not match")
 		}
 		return nil
