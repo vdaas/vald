@@ -30,6 +30,7 @@ var defaultMultiInsertReqComparators = []cmp.Option{
 	comparator.IgnoreUnexported(payload.Insert_Request{}),
 	comparator.IgnoreUnexported(payload.Insert_MultiRequest{}),
 	comparator.IgnoreUnexported(payload.Object_Vector{}),
+	comparator.IgnoreUnexported(payload.Insert_Config{}),
 }
 
 func TestGenMultiInsertReq(t *testing.T) {
@@ -216,6 +217,7 @@ func TestGenMultiInsertReq(t *testing.T) {
 				},
 			},
 		},
+		// max num and max dim test is ignored due to test timeout
 	}
 
 	for _, tc := range tests {
@@ -271,13 +273,16 @@ func TestGenSameVecMultiInsertReq(t *testing.T) {
 			if err != nil {
 				t.Error(err)
 			}
+			cfg := &payload.Insert_Config{
+				SkipStrictExistCheck: true,
+			}
 
 			return test{
 				name: "success to generate 1 same vector request",
 				args: args{
 					num: 1,
 					vec: vecs[0],
-					cfg: nil,
+					cfg: cfg,
 				},
 				want: want{
 					want: &payload.Insert_MultiRequest{
@@ -287,6 +292,7 @@ func TestGenSameVecMultiInsertReq(t *testing.T) {
 									Id:     "uuid-1",
 									Vector: vecs[0],
 								},
+								Config: cfg,
 							},
 						},
 					},
@@ -298,13 +304,16 @@ func TestGenSameVecMultiInsertReq(t *testing.T) {
 			if err != nil {
 				t.Error(err)
 			}
+			cfg := &payload.Insert_Config{
+				SkipStrictExistCheck: true,
+			}
 
 			return test{
 				name: "success to generate 5 same vector request",
 				args: args{
 					num: 5,
 					vec: vecs[0],
-					cfg: nil,
+					cfg: cfg,
 				},
 				want: want{
 					want: &payload.Insert_MultiRequest{
@@ -314,30 +323,64 @@ func TestGenSameVecMultiInsertReq(t *testing.T) {
 									Id:     "uuid-1",
 									Vector: vecs[0],
 								},
+								Config: cfg,
 							},
 							{
 								Vector: &payload.Object_Vector{
 									Id:     "uuid-2",
 									Vector: vecs[0],
 								},
+								Config: cfg,
 							},
 							{
 								Vector: &payload.Object_Vector{
 									Id:     "uuid-3",
 									Vector: vecs[0],
 								},
+								Config: cfg,
 							},
 							{
 								Vector: &payload.Object_Vector{
 									Id:     "uuid-4",
 									Vector: vecs[0],
 								},
+								Config: cfg,
 							},
 							{
 								Vector: &payload.Object_Vector{
 									Id:     "uuid-5",
 									Vector: vecs[0],
 								},
+								Config: cfg,
+							},
+						},
+					},
+				},
+			}
+		}(),
+		func() test {
+			vecs, err := vector.GenF32Vec(vector.Gaussian, 1, 10)
+			if err != nil {
+				t.Error(err)
+			}
+			var cfg *payload.Insert_Config
+
+			return test{
+				name: "success to generate 1 same vector request when cfg is nil",
+				args: args{
+					num: 1,
+					vec: vecs[0],
+					cfg: cfg,
+				},
+				want: want{
+					want: &payload.Insert_MultiRequest{
+						Requests: []*payload.Insert_Request{
+							{
+								Vector: &payload.Object_Vector{
+									Id:     "uuid-1",
+									Vector: vecs[0],
+								},
+								Config: cfg,
 							},
 						},
 					},
@@ -357,6 +400,71 @@ func TestGenSameVecMultiInsertReq(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "success to generate empty vector request",
+			args: args{
+				num: 1,
+				vec: []float32{},
+				cfg: nil,
+			},
+			want: want{
+				want: &payload.Insert_MultiRequest{
+					Requests: []*payload.Insert_Request{
+						{
+							Vector: &payload.Object_Vector{
+								Id:     "uuid-1",
+								Vector: []float32{},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "success to generate multiple empty vector request",
+			args: args{
+				num: 5,
+				vec: []float32{},
+				cfg: nil,
+			},
+			want: want{
+				want: &payload.Insert_MultiRequest{
+					Requests: []*payload.Insert_Request{
+						{
+							Vector: &payload.Object_Vector{
+								Id:     "uuid-1",
+								Vector: []float32{},
+							},
+						},
+						{
+							Vector: &payload.Object_Vector{
+								Id:     "uuid-2",
+								Vector: []float32{},
+							},
+						},
+						{
+							Vector: &payload.Object_Vector{
+								Id:     "uuid-3",
+								Vector: []float32{},
+							},
+						},
+						{
+							Vector: &payload.Object_Vector{
+								Id:     "uuid-4",
+								Vector: []float32{},
+							},
+						},
+						{
+							Vector: &payload.Object_Vector{
+								Id:     "uuid-5",
+								Vector: []float32{},
+							},
+						},
+					},
+				},
+			},
+		},
+		// max num test is ignored due to test timeout
 	}
 
 	for _, tc := range tests {

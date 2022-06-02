@@ -125,6 +125,7 @@ func TestGenObjectLocations(t *testing.T) {
 				},
 			},
 		},
+		// max num test is ignored due to test timeout
 	}
 
 	for _, tc := range tests {

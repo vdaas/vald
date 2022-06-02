@@ -812,6 +812,30 @@ func TestGenF32Vec(t *testing.T) {
 				wantDim: 5,
 			},
 		},
+		{
+			name: "return no generated float32 vector with num 0",
+			args: args{
+				dist: Gaussian,
+				num:  0,
+				dim:  5,
+			},
+			want: want{
+				wantLen: 0,
+			},
+		},
+		{
+			name: "return generated float32 vector with dim 0",
+			args: args{
+				dist: Gaussian,
+				num:  1,
+				dim:  0,
+			},
+			want: want{
+				wantLen: 1,
+				wantDim: 0,
+			},
+		},
+		// max dim and max num test is ignored due to test timeout
 	}
 
 	for _, tc := range tests {
@@ -873,7 +897,7 @@ func TestGenUint8Vec(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "return 1 generated float32 vector",
+			name: "return 1 generated uint8 vector",
 			args: args{
 				dist: Gaussian,
 				num:  1,
@@ -885,7 +909,7 @@ func TestGenUint8Vec(t *testing.T) {
 			},
 		},
 		{
-			name: "return 5 generated float32 vector",
+			name: "return 5 generated uint8 vector",
 			args: args{
 				dist: Gaussian,
 				num:  5,
@@ -896,6 +920,30 @@ func TestGenUint8Vec(t *testing.T) {
 				wantDim: 5,
 			},
 		},
+		{
+			name: "return no generated uint8 vector with num 0",
+			args: args{
+				dist: Gaussian,
+				num:  0,
+				dim:  5,
+			},
+			want: want{
+				wantLen: 0,
+			},
+		},
+		{
+			name: "return generated uint8 vector with dim 0",
+			args: args{
+				dist: Gaussian,
+				num:  1,
+				dim:  0,
+			},
+			want: want{
+				wantLen: 1,
+				wantDim: 0,
+			},
+		},
+		// max dim and max num test is ignored due to test timeout
 	}
 
 	for _, tc := range tests {
@@ -958,7 +1006,6 @@ func TestGenSameValueVec(t *testing.T) {
 						val,
 					},
 				},
-				checkFunc: defaultCheckFunc,
 			}
 		}(),
 		func() test {
@@ -974,9 +1021,52 @@ func TestGenSameValueVec(t *testing.T) {
 						val, val, val, val, val,
 					},
 				},
-				checkFunc: defaultCheckFunc,
 			}
 		}(),
+		func() test {
+			val := float32(1)
+			return test{
+				name: "return same value vector with size 0",
+				args: args{
+					size: 0,
+					val:  val,
+				},
+				want: want{
+					want: []float32{},
+				},
+			}
+		}(),
+		func() test {
+			val := float32(math.SmallestNonzeroFloat32)
+			return test{
+				name: "return same value vector with min value",
+				args: args{
+					size: 1,
+					val:  val,
+				},
+				want: want{
+					want: []float32{
+						val,
+					},
+				},
+			}
+		}(),
+		func() test {
+			val := float32(math.MaxFloat32)
+			return test{
+				name: "return same value vector with max value",
+				args: args{
+					size: 1,
+					val:  val,
+				},
+				want: want{
+					want: []float32{
+						val,
+					},
+				},
+			}
+		}(),
+		// max size test is ignored due to test timeout
 	}
 
 	for _, tc := range tests {
@@ -1102,6 +1192,37 @@ func TestConvertVectorsUint8ToFloat32(t *testing.T) {
 					{
 						math.MaxUint8, math.MaxUint8, math.MaxUint8,
 					},
+				},
+			},
+		},
+		{
+			name: "return empty slice when vectors is empty",
+			args: args{
+				vectors: [][]uint8{},
+			},
+			want: want{
+				wantRet: [][]float32{},
+			},
+		},
+		{
+			name: "return empty slice when vectors is nil",
+			args: args{
+				vectors: nil,
+			},
+			want: want{
+				wantRet: [][]float32{},
+			},
+		},
+		{
+			name: "return empty vector when vector is empty",
+			args: args{
+				vectors: [][]uint8{
+					{},
+				},
+			},
+			want: want{
+				wantRet: [][]float32{
+					{},
 				},
 			},
 		},
