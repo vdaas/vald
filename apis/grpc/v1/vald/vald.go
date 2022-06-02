@@ -58,10 +58,72 @@ type Client interface {
 	ObjectClient
 }
 
+const (
+	PackageName = "vald.v1"
+
+	InsertRPCServiceName = "Insert"
+	InsertRPCName        = "Insert"
+	StreamInsertRPCName  = "StreamInsert"
+	MultiInsertRPCName   = "MultiInsert"
+
+	UpdateRPCServiceName = "Update"
+	UpdateRPCName        = "Update"
+	StreamUpdateRPCName  = "StreamUpdate"
+	MultiUpdateRPCName   = "MultiUpdate"
+
+	UpsertRPCServiceName = "Upsert"
+	UpsertRPCName        = "Upsert"
+	StreamUpsertRPCName  = "StreamUpsert"
+	MultiUpsertRPCName   = "MultiUpsert"
+
+	SearchRPCServiceName          = "Search"
+	SearchRPCName                 = "Search"
+	SearchByIDRPCName             = "SearchByID"
+	StreamSearchRPCName           = "StreamSearch"
+	StreamSearchByIDRPCName       = "StreamSearchByID"
+	MultiSearchRPCName            = "MultiSearch"
+	MultiSearchByIDRPCName        = "MultiSearchByID"
+	LinearSearchRPCName           = "LinearSearch"
+	LinearSearchByIDRPCName       = "LinearSearchByID"
+	StreamLinearSearchRPCName     = "StreamLinearSearch"
+	StreamLinearSearchByIDRPCName = "StreamLinearSearchByID"
+	MultiLinearSearchRPCName      = "MultiLinearSearch"
+	MultiLinearSearchByIDRPCName  = "MultiLinearSearchByID"
+
+	RemoveRPCServiceName = "Remove"
+	RemoveRPCName        = "Remove"
+	StreamRemoveRPCName  = "StreamRemove"
+	MultiRemoveRPCName   = "MultiRemove"
+
+	ObjectRPCServiceName   = "Object"
+	ExistsRPCName          = "Exists"
+	GetObjectRPCName       = "GetObject"
+	StreamGetObjectRPCName = "StreamGetObject"
+)
+
 type ClientWithFilter interface {
 	Client
 	FilterClient
 }
+
+const (
+	FilterRPCServiceName            = "Filter"
+	SearchObjectRPCName             = "SearchObject"
+	MultiSearchObjectRPCName        = "MultiSearchObject"
+	LinearSearchObjectRPCName       = "LinearSearchObject"
+	MultiLinearSearchObjectRPCName  = "MultiLinearSearchObject"
+	StreamLinearSearchObjectRPCName = "StreamLinearSearchObject"
+	StreamSearchObjectRPCName       = "StreamSearchObject"
+	InsertObjectRPCName             = "InsertObject"
+	StreamInsertObjectRPCName       = "StreamInsertObject"
+	MultiInsertObjectRPCName        = "MultiInsertObject"
+	UpdateObjectRPCName             = "UpdateObject"
+	StreamUpdateObjectRPCName       = "StreamUpdateObject"
+	MultiUpdateObjectRPCName        = "MultiUpdateObject"
+	UpsertObjectRPCName             = "UpsertObject"
+	StreamUpsertObjectRPCName       = "StreamUpsertObject"
+	MultiUpsertObjectRPCName        = "MultiUpsertObject"
+)
 
 type client struct {
 	InsertClient
