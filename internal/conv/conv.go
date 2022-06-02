@@ -16,6 +16,7 @@
 package conv
 
 import (
+	"io"
 	"io/ioutil"
 	"reflect"
 	"strings"
@@ -56,16 +57,16 @@ func F32stos(fs []float32) (s string) {
 
 // Utf8ToSjis converts a UTF8 string to sjis string.
 func Utf8ToSjis(s string) (string, error) {
-	b, err := ioutil.ReadAll(transform.NewReader(strings.NewReader(s), japanese.ShiftJIS.NewEncoder()))
-	if err != nil {
-		return "", err
-	}
-	return string(b), nil
+	return encode(strings.NewReader(s), japanese.ShiftJIS.NewEncoder())
 }
 
 // Utf8ToEucjp converts a UTF8 string to eucjp string.
 func Utf8ToEucjp(s string) (string, error) {
-	b, err := ioutil.ReadAll(transform.NewReader(strings.NewReader(s), japanese.EUCJP.NewEncoder()))
+	return encode(strings.NewReader(s), japanese.EUCJP.NewEncoder())
+}
+
+func encode(r io.Reader, t transform.Transformer) (string, error) {
+	b, err := ioutil.ReadAll(transform.NewReader(r, t))
 	if err != nil {
 		return "", err
 	}

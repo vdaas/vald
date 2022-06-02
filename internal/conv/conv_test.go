@@ -16,11 +16,16 @@
 package conv
 
 import (
+	"io"
 	"reflect"
+	"strings"
 	"testing"
+	"testing/iotest"
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/test/goleak"
+	"golang.org/x/text/encoding/japanese"
+	"golang.org/x/text/transform"
 )
 
 var testData = "!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
@@ -373,6 +378,83 @@ func TestUtf8ToEucjp(t *testing.T) {
 			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+		})
+	}
+}
+
+func Test_encode(t *testing.T) {
+	type args struct {
+		r io.Reader
+		t transform.Transformer
+	}
+	type want struct {
+		want string
+		err  error
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, string, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, got string, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		{
+			name: "success to encode string",
+			args: args{
+				r: strings.NewReader("こんにちは"),
+				t: japanese.EUCJP.NewEncoder(),
+			},
+			want: want{
+				want: "\xa4\xb3\xa4\xf3\xa4ˤ\xc1\xa4\xcf",
+			},
+		},
+		func() test {
+			err := errors.New("invalid reader")
+			return test{
+				name: "fail to encode string",
+				args: args{
+					r: iotest.ErrReader(err),
+					t: japanese.EUCJP.NewEncoder(),
+				},
+				want: want{
+					err: err,
+				},
+			}
+		}(),
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			checkFunc := test.checkFunc
+			if test.checkFunc == nil {
+				checkFunc = defaultCheckFunc
+			}
+
+			got, err := encode(test.args.r, test.args.t)
+			if err := checkFunc(test.want, got, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
 		})
 	}
 }
