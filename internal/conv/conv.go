@@ -17,7 +17,6 @@ package conv
 
 import (
 	"io"
-	"io/ioutil"
 	"reflect"
 	"strings"
 	"unsafe"
@@ -66,7 +65,7 @@ func Utf8ToEucjp(s string) (string, error) {
 }
 
 func encode(r io.Reader, t transform.Transformer) (string, error) {
-	b, err := ioutil.ReadAll(transform.NewReader(r, t))
+	b, err := io.ReadAll(transform.NewReader(r, t))
 	if err != nil {
 		return "", err
 	}
