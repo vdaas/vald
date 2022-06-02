@@ -68,7 +68,7 @@ func New(opts ...Option) vald.Server {
 }
 
 func (s *server) Exists(ctx context.Context, meta *payload.Object_ID) (id *payload.Object_ID, err error) {
-	ctx, span := trace.StartSpan(ctx, apiName+".Exists")
+	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, "vald.v1.Object/Exists"), apiName+".Exists")
 	defer func() {
 		if span != nil {
 			span.End()
@@ -200,7 +200,7 @@ func (s *server) Exists(ctx context.Context, meta *payload.Object_ID) (id *paylo
 }
 
 func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *payload.Search_Response, err error) {
-	ctx, span := trace.StartSpan(ctx, apiName+".Search")
+	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, "vald.v1.Search/Search"), apiName+".Search")
 	defer func() {
 		if span != nil {
 			span.End()
@@ -265,7 +265,7 @@ func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *
 func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) (
 	res *payload.Search_Response, err error,
 ) {
-	ctx, span := trace.StartSpan(ctx, apiName+".SearchByID")
+	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, "vald.v1.Search/SearchByID"), apiName+".SearchByID")
 	defer func() {
 		if span != nil {
 			span.End()
@@ -915,7 +915,7 @@ func (s *server) MultiSearchByID(ctx context.Context, reqs *payload.Search_Multi
 }
 
 func (s *server) LinearSearch(ctx context.Context, req *payload.Search_Request) (res *payload.Search_Response, err error) {
-	ctx, span := trace.StartSpan(ctx, apiName+".LinearSearch")
+	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, "vald.v1.Search/LinearSearch"), apiName+".LinearSearch")
 	defer func() {
 		if span != nil {
 			span.End()
@@ -978,7 +978,7 @@ func (s *server) LinearSearch(ctx context.Context, req *payload.Search_Request) 
 func (s *server) LinearSearchByID(ctx context.Context, req *payload.Search_IDRequest) (
 	res *payload.Search_Response, err error,
 ) {
-	ctx, span := trace.StartSpan(ctx, apiName+".LinearSearchByID")
+	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, "vald.v1.Search/LinearSearchByID"), apiName+".LinearSearchByID")
 	defer func() {
 		if span != nil {
 			span.End()
@@ -1347,7 +1347,7 @@ func (s *server) MultiLinearSearchByID(ctx context.Context, reqs *payload.Search
 }
 
 func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *payload.Object_Location, err error) {
-	ctx, span := trace.StartSpan(ctx, apiName+".Insert")
+	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, "vald.v1.Insert/Insert"), apiName+".Insert")
 	defer func() {
 		if span != nil {
 			span.End()
@@ -1580,7 +1580,7 @@ func (s *server) StreamInsert(stream vald.Insert_StreamInsertServer) (err error)
 }
 
 func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequest) (locs *payload.Object_Locations, err error) {
-	ctx, span := trace.StartSpan(ctx, apiName+".MultiInsert")
+	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, "vald.v1.Insert/MultiInsert"), apiName+".MultiInsert")
 	defer func() {
 		if span != nil {
 			span.End()
@@ -2444,7 +2444,7 @@ func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequ
 }
 
 func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (locs *payload.Object_Location, err error) {
-	ctx, span := trace.StartSpan(ctx, apiName+".Remove")
+	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, "vald.v1.Remove/Remove"), apiName+".Remove")
 	defer func() {
 		if span != nil {
 			span.End()
@@ -2610,7 +2610,7 @@ func (s *server) StreamRemove(stream vald.Remove_StreamRemoveServer) (err error)
 }
 
 func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequest) (locs *payload.Object_Locations, err error) {
-	ctx, span := trace.StartSpan(ctx, apiName+".MultiRemove")
+	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, "vald.v1.Remove/MultiRemove"), apiName+".MultiRemove")
 	defer func() {
 		if span != nil {
 			span.End()
@@ -2754,7 +2754,7 @@ func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequ
 }
 
 func (s *server) GetObject(ctx context.Context, req *payload.Object_VectorRequest) (vec *payload.Object_Vector, err error) {
-	ctx, span := trace.StartSpan(ctx, apiName+".GetObject")
+	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, "vald.v1.Object/GetObject"), apiName+".GetObject")
 	defer func() {
 		if span != nil {
 			span.End()
