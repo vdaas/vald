@@ -32,4 +32,5 @@ Please check your CPU information.
 
 ## Related Document
 
+- [Flow Chart](../troubleshooting/chart.md)
 - [FAQ](../support/faq.md)
