@@ -24,7 +24,6 @@ import (
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/servers/server"
-	"github.com/vdaas/vald/internal/test/goleak"
 )
 
 func TestNew(t *testing.T) {
@@ -90,7 +89,7 @@ func TestNew(t *testing.T) {
 	}
 }
 
-func TestListenAndServe(t *testing.T) {
+func Test_listener_ListenAndServe(t *testing.T) {
 	type args struct {
 		ctx context.Context
 	}
@@ -106,11 +105,15 @@ func TestListenAndServe(t *testing.T) {
 		args      args
 		field     field
 		checkFunc func(got, want <-chan error) error
+		afterFunc func()
 		want      <-chan error
 	}
 
 	tests := []test{
 		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			eg, ctx := errgroup.New(ctx)
+
 			srv1 := &mockServer{
 				IsRunningFunc: func() bool {
 					return false
@@ -151,13 +154,13 @@ func TestListenAndServe(t *testing.T) {
 				name: "ListenAndServe is success",
 				args: args{
 					ctx: func() context.Context {
-						ctx, cancel := context.WithCancel(context.Background())
+						ctx, cancel := context.WithCancel(ctx)
 						defer cancel()
 						return ctx
 					}(),
 				},
 				field: field{
-					eg:      errgroup.Get(),
+					eg:      eg,
 					servers: servers,
 					sus:     sus,
 				},
@@ -184,6 +187,10 @@ func TestListenAndServe(t *testing.T) {
 					}
 					return nil
 				},
+				afterFunc: func() {
+					cancel()
+					eg.Wait()
+				},
 			}
 		}(),
 	}
@@ -192,6 +199,11 @@ func TestListenAndServe(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx, cancel := context.WithCancel(tt.args.ctx)
 			defer cancel()
+			defer func() {
+				if tt.afterFunc != nil {
+					tt.afterFunc()
+				}
+			}()
 
 			l := &listener{
 				eg:      tt.field.eg,
@@ -207,7 +219,7 @@ func TestListenAndServe(t *testing.T) {
 	}
 }
 
-func TestShutdown(t *testing.T) {
+func Test_listener_Shutdown(t *testing.T) {
 	type args struct {
 		ctx context.Context
 	}
@@ -224,11 +236,15 @@ func TestShutdown(t *testing.T) {
 		args      args
 		field     field
 		checkFunc func(got, want error) error
+		afterFunc func()
 		want      error
 	}
 
 	tests := []test{
 		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			eg, ctx := errgroup.New(ctx)
+
 			srv1 := &mockServer{
 				IsRunningFunc: func() bool {
 					return true
@@ -263,7 +279,7 @@ func TestShutdown(t *testing.T) {
 					ctx: context.Background(),
 				},
 				field: field{
-					eg:      errgroup.Get(),
+					eg:      eg,
 					servers: servers,
 					sds:     sds,
 				},
@@ -274,30 +290,46 @@ func TestShutdown(t *testing.T) {
 					}
 					return nil
 				},
+				afterFunc: func() {
+					cancel()
+					eg.Wait()
+				},
 				want: nil,
 			}
 		}(),
-		{
-			name: "server not found error",
-			args: args{
-				ctx: context.Background(),
-			},
-			field: field{
-				eg:      errgroup.Get(),
-				servers: map[string]server.Server{},
-				sds: []string{
-					"srv1",
-				},
-			},
-			checkFunc: func(got, want error) error {
-				if !errors.Is(want, got) {
-					return errors.Errorf("not equals. want: %v, got: %v", want, got)
-				}
-				return nil
-			},
-			want: errors.ErrServerNotFound("srv1"),
-		},
 		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			eg, ctx := errgroup.New(ctx)
+
+			return test{
+				name: "server not found error",
+				args: args{
+					ctx: ctx,
+				},
+				field: field{
+					eg:      eg,
+					servers: map[string]server.Server{},
+					sds: []string{
+						"srv1",
+					},
+				},
+				checkFunc: func(got, want error) error {
+					if !errors.Is(want, got) {
+						return errors.Errorf("not equals. want: %v, got: %v", want, got)
+					}
+					return nil
+				},
+				afterFunc: func() {
+					cancel()
+					eg.Wait()
+				},
+				want: errors.ErrServerNotFound("srv1"),
+			}
+		}(),
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			eg, ctx := errgroup.New(ctx)
+
 			want := errors.Wrap(errors.Errorf("unexpected error"), "faild to shutdown")
 
 			srv1 := &mockServer{
@@ -320,10 +352,10 @@ func TestShutdown(t *testing.T) {
 			return test{
 				name: "unexpected error",
 				args: args{
-					ctx: context.Background(),
+					ctx: ctx,
 				},
 				field: field{
-					eg:      errgroup.Get(),
+					eg:      eg,
 					servers: servers,
 					sds:     sds,
 				},
@@ -332,6 +364,10 @@ func TestShutdown(t *testing.T) {
 						return errors.Errorf("not equals. want: %v, got: %v", want, got)
 					}
 					return nil
+				},
+				afterFunc: func() {
+					cancel()
+					eg.Wait()
 				},
 				want: want,
 			}
@@ -342,6 +378,11 @@ func TestShutdown(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx, cancel := context.WithCancel(tt.args.ctx)
 			defer cancel()
+			defer func() {
+				if tt.afterFunc != nil {
+					tt.afterFunc()
+				}
+			}()
 
 			l := &listener{
 				eg:      tt.field.eg,
@@ -353,206 +394,6 @@ func TestShutdown(t *testing.T) {
 			err := l.Shutdown(ctx)
 			if err := tt.checkFunc(err, tt.want); err != nil {
 				t.Error(err)
-			}
-		})
-	}
-}
-
-func Test_listener_ListenAndServe(t *testing.T) {
-	type args struct {
-		ctx context.Context
-	}
-	type fields struct {
-		servers map[string]server.Server
-		eg      errgroup.Group
-		sus     []string
-		sds     []string
-		sddur   time.Duration
-	}
-	type want struct {
-		want <-chan error
-	}
-	type test struct {
-		name       string
-		args       args
-		fields     fields
-		want       want
-		checkFunc  func(want, <-chan error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-	defaultCheckFunc := func(w want, got <-chan error) error {
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx: nil,
-		       },
-		       fields: fields {
-		           servers: nil,
-		           eg: nil,
-		           sus: nil,
-		           sds: nil,
-		           sddur: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ctx: nil,
-		           },
-		           fields: fields {
-		           servers: nil,
-		           eg: nil,
-		           sus: nil,
-		           sds: nil,
-		           sddur: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-			checkFunc := test.checkFunc
-			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
-			}
-			l := &listener{
-				servers: test.fields.servers,
-				eg:      test.fields.eg,
-				sus:     test.fields.sus,
-				sds:     test.fields.sds,
-				sddur:   test.fields.sddur,
-			}
-
-			got := l.ListenAndServe(test.args.ctx)
-			if err := checkFunc(test.want, got); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
-
-func Test_listener_Shutdown(t *testing.T) {
-	type args struct {
-		ctx context.Context
-	}
-	type fields struct {
-		servers map[string]server.Server
-		eg      errgroup.Group
-		sus     []string
-		sds     []string
-		sddur   time.Duration
-	}
-	type want struct {
-		err error
-	}
-	type test struct {
-		name       string
-		args       args
-		fields     fields
-		want       want
-		checkFunc  func(want, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-	defaultCheckFunc := func(w want, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx: nil,
-		       },
-		       fields: fields {
-		           servers: nil,
-		           eg: nil,
-		           sus: nil,
-		           sds: nil,
-		           sddur: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ctx: nil,
-		           },
-		           fields: fields {
-		           servers: nil,
-		           eg: nil,
-		           sus: nil,
-		           sds: nil,
-		           sddur: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-			checkFunc := test.checkFunc
-			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
-			}
-			l := &listener{
-				servers: test.fields.servers,
-				eg:      test.fields.eg,
-				sus:     test.fields.sus,
-				sds:     test.fields.sds,
-				sddur:   test.fields.sddur,
-			}
-
-			err := l.Shutdown(test.args.ctx)
-			if err := checkFunc(test.want, err); err != nil {
-				tt.Errorf("error = %v", err)
 			}
 		})
 	}
