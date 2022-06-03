@@ -58,25 +58,36 @@ type Client interface {
 	ObjectClient
 }
 
+type ClientWithFilter interface {
+	Client
+	FilterClient
+}
+
+const PackageName = "vald.v1"
+
 const (
-	PackageName = "vald.v1"
-
 	InsertRPCServiceName = "Insert"
-	InsertRPCName        = "Insert"
-	StreamInsertRPCName  = "StreamInsert"
-	MultiInsertRPCName   = "MultiInsert"
-
 	UpdateRPCServiceName = "Update"
-	UpdateRPCName        = "Update"
-	StreamUpdateRPCName  = "StreamUpdate"
-	MultiUpdateRPCName   = "MultiUpdate"
-
 	UpsertRPCServiceName = "Upsert"
-	UpsertRPCName        = "Upsert"
-	StreamUpsertRPCName  = "StreamUpsert"
-	MultiUpsertRPCName   = "MultiUpsert"
+	SearchRPCServiceName = "Search"
+	RemoveRPCServiceName = "Remove"
+	ObjectRPCServiceName = "Object"
+	FilterRPCServiceName = "Filter"
+)
 
-	SearchRPCServiceName          = "Search"
+const (
+	InsertRPCName       = "Insert"
+	StreamInsertRPCName = "StreamInsert"
+	MultiInsertRPCName  = "MultiInsert"
+
+	UpdateRPCName       = "Update"
+	StreamUpdateRPCName = "StreamUpdate"
+	MultiUpdateRPCName  = "MultiUpdate"
+
+	UpsertRPCName       = "Upsert"
+	StreamUpsertRPCName = "StreamUpsert"
+	MultiUpsertRPCName  = "MultiUpsert"
+
 	SearchRPCName                 = "Search"
 	SearchByIDRPCName             = "SearchByID"
 	StreamSearchRPCName           = "StreamSearch"
@@ -90,24 +101,14 @@ const (
 	MultiLinearSearchRPCName      = "MultiLinearSearch"
 	MultiLinearSearchByIDRPCName  = "MultiLinearSearchByID"
 
-	RemoveRPCServiceName = "Remove"
-	RemoveRPCName        = "Remove"
-	StreamRemoveRPCName  = "StreamRemove"
-	MultiRemoveRPCName   = "MultiRemove"
+	RemoveRPCName       = "Remove"
+	StreamRemoveRPCName = "StreamRemove"
+	MultiRemoveRPCName  = "MultiRemove"
 
-	ObjectRPCServiceName   = "Object"
 	ExistsRPCName          = "Exists"
 	GetObjectRPCName       = "GetObject"
 	StreamGetObjectRPCName = "StreamGetObject"
-)
 
-type ClientWithFilter interface {
-	Client
-	FilterClient
-}
-
-const (
-	FilterRPCServiceName            = "Filter"
 	SearchObjectRPCName             = "SearchObject"
 	MultiSearchObjectRPCName        = "MultiSearchObject"
 	LinearSearchObjectRPCName       = "LinearSearchObject"
