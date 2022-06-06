@@ -1130,7 +1130,7 @@ func Test_server_Insert(t *testing.T) {
 			}
 		}(),
 		func() test {
-			bId := "uuid-2" // use in beforeFunc
+			bID := "uuid-2" // use in beforeFunc
 
 			req := &payload.Insert_Request{
 				Vector: &payload.Object_Vector{
@@ -1163,7 +1163,7 @@ func Test_server_Insert(t *testing.T) {
 					},
 				},
 				beforeFunc: func(s *server) {
-					s.ngt.Insert(bId, intVec)
+					s.ngt.Insert(bID, intVec)
 				},
 				want: want{
 					wantRes: &payload.Object_Location{
@@ -1274,7 +1274,7 @@ func Test_server_Insert(t *testing.T) {
 			}
 		}(),
 		func() test {
-			bId := "uuid-2" // use in beforeFunc
+			bID := "uuid-2" // use in beforeFunc
 
 			req := &payload.Insert_Request{
 				Vector: &payload.Object_Vector{
@@ -1307,7 +1307,7 @@ func Test_server_Insert(t *testing.T) {
 					},
 				},
 				beforeFunc: func(s *server) {
-					s.ngt.Insert(bId, intVec)
+					s.ngt.Insert(bID, intVec)
 				},
 				want: want{
 					wantRes: &payload.Object_Location{

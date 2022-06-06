@@ -43,8 +43,8 @@ func Test_server_Exists(t *testing.T) {
 
 	type args struct {
 		ctx      context.Context
-		indexId  string
-		searchId string
+		indexID  string
+		searchID string
 	}
 	type want struct {
 		code codes.Code
@@ -103,7 +103,7 @@ func Test_server_Exists(t *testing.T) {
 		SkipStrictExistCheck: true,
 	}
 	defaultBeforeFunc := func(a args) (Server, error) {
-		return buildIndex(a.ctx, request.Float, vector.Gaussian, insertNum, defaultInsertConfig, defaultNgtConfig, nil, []string{a.indexId}, nil)
+		return buildIndex(a.ctx, request.Float, vector.Gaussian, insertNum, defaultInsertConfig, defaultNgtConfig, nil, []string{a.indexID}, nil)
 	}
 
 	/*
@@ -137,8 +137,8 @@ func Test_server_Exists(t *testing.T) {
 			name: "Equivalence Class Testing case 1.1: success exists vector",
 			args: args{
 				ctx:      ctx,
-				indexId:  "test",
-				searchId: "test",
+				indexID:  "test",
+				searchID: "test",
 			},
 			want: want{},
 		},
@@ -146,8 +146,8 @@ func Test_server_Exists(t *testing.T) {
 			name: "Equivalence Class Testing case 2.1: fail exists with non-existent ID",
 			args: args{
 				ctx:      ctx,
-				indexId:  "test",
-				searchId: "non-existent",
+				indexID:  "test",
+				searchID: "non-existent",
 			},
 			want: want{
 				code: codes.NotFound,
@@ -157,8 +157,8 @@ func Test_server_Exists(t *testing.T) {
 			name: "Boundary Value Testing case 1.1: fail exists with \"\"",
 			args: args{
 				ctx:      ctx,
-				indexId:  "test",
-				searchId: "",
+				indexID:  "test",
+				searchID: "",
 			},
 			want: want{
 				code: codes.InvalidArgument,
@@ -168,8 +168,8 @@ func Test_server_Exists(t *testing.T) {
 			name: "Boundary Value Testing case 2.1: success exists with ^@",
 			args: args{
 				ctx:      ctx,
-				indexId:  string([]byte{0}),
-				searchId: string([]byte{0}),
+				indexID:  string([]byte{0}),
+				searchID: string([]byte{0}),
 			},
 			want: want{},
 		},
@@ -177,8 +177,8 @@ func Test_server_Exists(t *testing.T) {
 			name: "Boundary Value Testing case 2.2: success exists with ^I",
 			args: args{
 				ctx:      ctx,
-				indexId:  "\t",
-				searchId: "\t",
+				indexID:  "\t",
+				searchID: "\t",
 			},
 			want: want{},
 		},
@@ -186,8 +186,8 @@ func Test_server_Exists(t *testing.T) {
 			name: "Boundary Value Testing case 2.3: success exists with ^J",
 			args: args{
 				ctx:      ctx,
-				indexId:  "\n",
-				searchId: "\n",
+				indexID:  "\n",
+				searchID: "\n",
 			},
 			want: want{},
 		},
@@ -195,8 +195,8 @@ func Test_server_Exists(t *testing.T) {
 			name: "Boundary Value Testing case 2.4: success exists with ^M",
 			args: args{
 				ctx:      ctx,
-				indexId:  "\r",
-				searchId: "\r",
+				indexID:  "\r",
+				searchID: "\r",
 			},
 			want: want{},
 		},
@@ -204,8 +204,8 @@ func Test_server_Exists(t *testing.T) {
 			name: "Boundary Value Testing case 2.5: success exists with ^[",
 			args: args{
 				ctx:      ctx,
-				indexId:  string([]byte{27}),
-				searchId: string([]byte{27}),
+				indexID:  string([]byte{27}),
+				searchID: string([]byte{27}),
 			},
 			want: want{},
 		},
@@ -213,8 +213,8 @@ func Test_server_Exists(t *testing.T) {
 			name: "Boundary Value Testing case 2.6: success exists with ^?",
 			args: args{
 				ctx:      ctx,
-				indexId:  string([]byte{127}),
-				searchId: string([]byte{127}),
+				indexID:  string([]byte{127}),
+				searchID: string([]byte{127}),
 			},
 			want: want{},
 		},
@@ -222,8 +222,8 @@ func Test_server_Exists(t *testing.T) {
 			name: "Boundary Value Testing case 3.1: success exists with utf-8 ID from utf-8 index",
 			args: args{
 				ctx:      ctx,
-				indexId:  utf8Str,
-				searchId: utf8Str,
+				indexID:  utf8Str,
+				searchID: utf8Str,
 			},
 			want: want{},
 		},
@@ -231,8 +231,8 @@ func Test_server_Exists(t *testing.T) {
 			name: "Boundary Value Testing case 3.2: fail exists with utf-8 ID from s-jis index",
 			args: args{
 				ctx:      ctx,
-				indexId:  sjisStr,
-				searchId: utf8Str,
+				indexID:  sjisStr,
+				searchID: utf8Str,
 			},
 			want: want{
 				code: codes.NotFound,
@@ -242,8 +242,8 @@ func Test_server_Exists(t *testing.T) {
 			name: "Boundary Value Testing case 3.3: fail exists with utf-8 ID from euc-jp index",
 			args: args{
 				ctx:      ctx,
-				indexId:  eucjpStr,
-				searchId: utf8Str,
+				indexID:  eucjpStr,
+				searchID: utf8Str,
 			},
 			want: want{
 				code: codes.NotFound,
@@ -253,8 +253,8 @@ func Test_server_Exists(t *testing.T) {
 			name: "Boundary Value Testing case 3.4: fail exists with s-jis ID from utf-8 index",
 			args: args{
 				ctx:      ctx,
-				indexId:  utf8Str,
-				searchId: sjisStr,
+				indexID:  utf8Str,
+				searchID: sjisStr,
 			},
 			want: want{
 				code: codes.NotFound,
@@ -264,8 +264,8 @@ func Test_server_Exists(t *testing.T) {
 			name: "Boundary Value Testing case 3.5: success exists with s-jis ID from s-jis index",
 			args: args{
 				ctx:      ctx,
-				indexId:  sjisStr,
-				searchId: sjisStr,
+				indexID:  sjisStr,
+				searchID: sjisStr,
 			},
 			want: want{},
 		},
@@ -273,8 +273,8 @@ func Test_server_Exists(t *testing.T) {
 			name: "Boundary Value Testing case 3.6: fail exists with s-jis ID from euc-jp index",
 			args: args{
 				ctx:      ctx,
-				indexId:  eucjpStr,
-				searchId: sjisStr,
+				indexID:  eucjpStr,
+				searchID: sjisStr,
 			},
 			want: want{
 				code: codes.NotFound,
@@ -284,8 +284,8 @@ func Test_server_Exists(t *testing.T) {
 			name: "Boundary Value Testing case 3.7: fail exists with euc-jp ID from utf-8 index",
 			args: args{
 				ctx:      ctx,
-				indexId:  utf8Str,
-				searchId: eucjpStr,
+				indexID:  utf8Str,
+				searchID: eucjpStr,
 			},
 			want: want{
 				code: codes.NotFound,
@@ -295,8 +295,8 @@ func Test_server_Exists(t *testing.T) {
 			name: "Boundary Value Testing case 3.8: fail exists with euc-jp ID from s-jis index",
 			args: args{
 				ctx:      ctx,
-				indexId:  sjisStr,
-				searchId: eucjpStr,
+				indexID:  sjisStr,
+				searchID: eucjpStr,
 			},
 			want: want{
 				code: codes.NotFound,
@@ -306,8 +306,8 @@ func Test_server_Exists(t *testing.T) {
 			name: "Boundary Value Testing case 3.9: success exists with euc-jp ID from euc-jp index",
 			args: args{
 				ctx:      ctx,
-				indexId:  eucjpStr,
-				searchId: eucjpStr,
+				indexID:  eucjpStr,
+				searchID: eucjpStr,
 			},
 			want: want{},
 		},
@@ -315,8 +315,8 @@ func Test_server_Exists(t *testing.T) {
 			name: "Boundary Value Testing case 4.1: success exists with 😀",
 			args: args{
 				ctx:      ctx,
-				indexId:  "😀",
-				searchId: "😀",
+				indexID:  "😀",
+				searchID: "😀",
 			},
 			want: want{},
 		},
@@ -343,7 +343,7 @@ func Test_server_Exists(t *testing.T) {
 			}
 
 			req := &payload.Object_ID{
-				Id: test.args.searchId,
+				Id: test.args.searchID,
 			}
 			gotRes, err := s.Exists(test.args.ctx, req)
 			if err := checkFunc(test.want, gotRes, err); err != nil {

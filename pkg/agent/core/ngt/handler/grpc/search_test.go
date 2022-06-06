@@ -828,8 +828,8 @@ func Test_server_SearchByID(t *testing.T) {
 
 	type args struct {
 		ctx      context.Context
-		indexId  string
-		searchId string
+		indexID  string
+		searchID string
 	}
 	type want struct {
 		resultSize int
@@ -891,7 +891,7 @@ func Test_server_SearchByID(t *testing.T) {
 		SkipStrictExistCheck: true,
 	}
 	defaultBeforeFunc := func(a args) (Server, error) {
-		return buildIndex(a.ctx, request.Float, vector.Gaussian, insertNum, defaultInsertConfig, defaultNgtConfig, nil, []string{a.indexId}, nil)
+		return buildIndex(a.ctx, request.Float, vector.Gaussian, insertNum, defaultInsertConfig, defaultNgtConfig, nil, []string{a.indexID}, nil)
 	}
 	defaultSearch_Config := &payload.Search_Config{
 		Num:     10,
@@ -931,8 +931,8 @@ func Test_server_SearchByID(t *testing.T) {
 			name: "Equivalence Class Testing case 1.1: success search vector",
 			args: args{
 				ctx:      ctx,
-				indexId:  "test",
-				searchId: "test",
+				indexID:  "test",
+				searchID: "test",
 			},
 			want: want{
 				resultSize: int(defaultSearch_Config.GetNum()),
@@ -942,8 +942,8 @@ func Test_server_SearchByID(t *testing.T) {
 			name: "Equivalence Class Testing case 2.1: fail search with non-existent ID",
 			args: args{
 				ctx:      ctx,
-				indexId:  "test",
-				searchId: "non-existent",
+				indexID:  "test",
+				searchID: "non-existent",
 			},
 			want: want{
 				resultSize: 0,
@@ -954,8 +954,8 @@ func Test_server_SearchByID(t *testing.T) {
 			name: "Boundary Value Testing case 1.1: fail search with \"\"",
 			args: args{
 				ctx:      ctx,
-				indexId:  "test",
-				searchId: "",
+				indexID:  "test",
+				searchID: "",
 			},
 			want: want{
 				resultSize: 0,
@@ -966,8 +966,8 @@ func Test_server_SearchByID(t *testing.T) {
 			name: "Boundary Value Testing case 2.1: success search with ^@",
 			args: args{
 				ctx:      ctx,
-				indexId:  string([]byte{0}),
-				searchId: string([]byte{0}),
+				indexID:  string([]byte{0}),
+				searchID: string([]byte{0}),
 			},
 			want: want{
 				resultSize: int(defaultSearch_Config.GetNum()),
@@ -977,8 +977,8 @@ func Test_server_SearchByID(t *testing.T) {
 			name: "Boundary Value Testing case 2.2: success search with ^I",
 			args: args{
 				ctx:      ctx,
-				indexId:  "\t",
-				searchId: "\t",
+				indexID:  "\t",
+				searchID: "\t",
 			},
 			want: want{
 				resultSize: int(defaultSearch_Config.GetNum()),
@@ -988,8 +988,8 @@ func Test_server_SearchByID(t *testing.T) {
 			name: "Boundary Value Testing case 2.3: success search with ^J",
 			args: args{
 				ctx:      ctx,
-				indexId:  "\n",
-				searchId: "\n",
+				indexID:  "\n",
+				searchID: "\n",
 			},
 			want: want{
 				resultSize: int(defaultSearch_Config.GetNum()),
@@ -999,8 +999,8 @@ func Test_server_SearchByID(t *testing.T) {
 			name: "Boundary Value Testing case 2.4: success search with ^M",
 			args: args{
 				ctx:      ctx,
-				indexId:  "\r",
-				searchId: "\r",
+				indexID:  "\r",
+				searchID: "\r",
 			},
 			want: want{
 				resultSize: int(defaultSearch_Config.GetNum()),
@@ -1010,8 +1010,8 @@ func Test_server_SearchByID(t *testing.T) {
 			name: "Boundary Value Testing case 2.5: success search with ^[",
 			args: args{
 				ctx:      ctx,
-				indexId:  string([]byte{27}),
-				searchId: string([]byte{27}),
+				indexID:  string([]byte{27}),
+				searchID: string([]byte{27}),
 			},
 			want: want{
 				resultSize: int(defaultSearch_Config.GetNum()),
@@ -1021,8 +1021,8 @@ func Test_server_SearchByID(t *testing.T) {
 			name: "Boundary Value Testing case 2.6: success search with ^?",
 			args: args{
 				ctx:      ctx,
-				indexId:  string([]byte{127}),
-				searchId: string([]byte{127}),
+				indexID:  string([]byte{127}),
+				searchID: string([]byte{127}),
 			},
 			want: want{
 				resultSize: int(defaultSearch_Config.GetNum()),
@@ -1032,8 +1032,8 @@ func Test_server_SearchByID(t *testing.T) {
 			name: "Boundary Value Testing case 3.1: success search with utf-8 ID from utf-8 index",
 			args: args{
 				ctx:      ctx,
-				indexId:  utf8Str,
-				searchId: utf8Str,
+				indexID:  utf8Str,
+				searchID: utf8Str,
 			},
 			want: want{
 				resultSize: int(defaultSearch_Config.GetNum()),
@@ -1043,8 +1043,8 @@ func Test_server_SearchByID(t *testing.T) {
 			name: "Boundary Value Testing case 3.2: fail search with utf-8 ID from s-jis index",
 			args: args{
 				ctx:      ctx,
-				indexId:  sjisStr,
-				searchId: utf8Str,
+				indexID:  sjisStr,
+				searchID: utf8Str,
 			},
 			want: want{
 				resultSize: 0,
@@ -1055,8 +1055,8 @@ func Test_server_SearchByID(t *testing.T) {
 			name: "Boundary Value Testing case 3.3: fail search with utf-8 ID from euc-jp index",
 			args: args{
 				ctx:      ctx,
-				indexId:  eucjpStr,
-				searchId: utf8Str,
+				indexID:  eucjpStr,
+				searchID: utf8Str,
 			},
 			want: want{
 				resultSize: 0,
@@ -1067,8 +1067,8 @@ func Test_server_SearchByID(t *testing.T) {
 			name: "Boundary Value Testing case 3.4: fail search with s-jis ID from utf-8 index",
 			args: args{
 				ctx:      ctx,
-				indexId:  utf8Str,
-				searchId: sjisStr,
+				indexID:  utf8Str,
+				searchID: sjisStr,
 			},
 			want: want{
 				resultSize: 0,
@@ -1079,8 +1079,8 @@ func Test_server_SearchByID(t *testing.T) {
 			name: "Boundary Value Testing case 3.5: success search with s-jis ID from s-jis index",
 			args: args{
 				ctx:      ctx,
-				indexId:  sjisStr,
-				searchId: sjisStr,
+				indexID:  sjisStr,
+				searchID: sjisStr,
 			},
 			want: want{
 				resultSize: int(defaultSearch_Config.GetNum()),
@@ -1090,8 +1090,8 @@ func Test_server_SearchByID(t *testing.T) {
 			name: "Boundary Value Testing case 3.6: fail search with s-jis ID from euc-jp index",
 			args: args{
 				ctx:      ctx,
-				indexId:  eucjpStr,
-				searchId: sjisStr,
+				indexID:  eucjpStr,
+				searchID: sjisStr,
 			},
 			want: want{
 				resultSize: 0,
@@ -1102,8 +1102,8 @@ func Test_server_SearchByID(t *testing.T) {
 			name: "Boundary Value Testing case 3.7: fail search with euc-jp ID from utf-8 index",
 			args: args{
 				ctx:      ctx,
-				indexId:  utf8Str,
-				searchId: eucjpStr,
+				indexID:  utf8Str,
+				searchID: eucjpStr,
 			},
 			want: want{
 				resultSize: 0,
@@ -1114,8 +1114,8 @@ func Test_server_SearchByID(t *testing.T) {
 			name: "Boundary Value Testing case 3.8: fail search with euc-jp ID from s-jis index",
 			args: args{
 				ctx:      ctx,
-				indexId:  sjisStr,
-				searchId: eucjpStr,
+				indexID:  sjisStr,
+				searchID: eucjpStr,
 			},
 			want: want{
 				resultSize: 0,
@@ -1126,8 +1126,8 @@ func Test_server_SearchByID(t *testing.T) {
 			name: "Boundary Value Testing case 3.9: success search with euc-jp ID from euc-jp index",
 			args: args{
 				ctx:      ctx,
-				indexId:  eucjpStr,
-				searchId: eucjpStr,
+				indexID:  eucjpStr,
+				searchID: eucjpStr,
 			},
 			want: want{
 				resultSize: int(defaultSearch_Config.GetNum()),
@@ -1137,8 +1137,8 @@ func Test_server_SearchByID(t *testing.T) {
 			name: "Boundary Value Testing case 4.1: success search with 😀",
 			args: args{
 				ctx:      ctx,
-				indexId:  "😀",
-				searchId: "😀",
+				indexID:  "😀",
+				searchID: "😀",
 			},
 			want: want{
 				resultSize: 10,
@@ -1167,7 +1167,7 @@ func Test_server_SearchByID(t *testing.T) {
 			}
 
 			req := &payload.Search_IDRequest{
-				Id:     test.args.searchId,
+				Id:     test.args.searchID,
 				Config: defaultSearch_Config,
 			}
 			gotRes, err := s.SearchByID(test.args.ctx, req)

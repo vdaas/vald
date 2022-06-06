@@ -43,13 +43,12 @@ func Test_server_Remove(t *testing.T) {
 
 	type args struct {
 		ctx      context.Context
-		indexId  string
-		removeId string
+		indexID  string
+		removeID string
 	}
 	type want struct {
 		code     codes.Code
-		wantUuid string
-		err      error
+		wantUUID string
 	}
 	type test struct {
 		name       string
@@ -69,8 +68,8 @@ func Test_server_Remove(t *testing.T) {
 				return errors.Errorf("got code: \"%#v\",\n\t\t\t\twant code: \"%#v\"", st.Code(), w.code)
 			}
 		} else {
-			if !reflect.DeepEqual(gotRes.Uuid, w.wantUuid) {
-				return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantUuid)
+			if !reflect.DeepEqual(gotRes.Uuid, w.wantUUID) {
+				return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantUUID)
 			}
 		}
 		return nil
@@ -108,7 +107,7 @@ func Test_server_Remove(t *testing.T) {
 		SkipStrictExistCheck: true,
 	}
 	defaultBeforeFunc := func(a args) (Server, error) {
-		return buildIndex(a.ctx, request.Float, vector.Gaussian, insertNum, defaultInsertConfig, defaultNgtConfig, nil, []string{a.indexId}, nil)
+		return buildIndex(a.ctx, request.Float, vector.Gaussian, insertNum, defaultInsertConfig, defaultNgtConfig, nil, []string{a.indexID}, nil)
 	}
 
 	/*
@@ -142,19 +141,19 @@ func Test_server_Remove(t *testing.T) {
 			name: "Equivalence Class Testing case 1.1: success exists vector",
 			args: args{
 				ctx:      ctx,
-				indexId:  "test",
-				removeId: "test",
+				indexID:  "test",
+				removeID: "test",
 			},
 			want: want{
-				wantUuid: "test",
+				wantUUID: "test",
 			},
 		},
 		{
 			name: "Equivalence Class Testing case 2.1: fail exists with non-existent ID",
 			args: args{
 				ctx:      ctx,
-				indexId:  "test",
-				removeId: "non-existent",
+				indexID:  "test",
+				removeID: "non-existent",
 			},
 			want: want{
 				code: codes.NotFound,
@@ -164,8 +163,8 @@ func Test_server_Remove(t *testing.T) {
 			name: "Boundary Value Testing case 1.1: fail exists with \"\"",
 			args: args{
 				ctx:      ctx,
-				indexId:  "test",
-				removeId: "",
+				indexID:  "test",
+				removeID: "",
 			},
 			want: want{
 				code: codes.InvalidArgument,
@@ -175,85 +174,85 @@ func Test_server_Remove(t *testing.T) {
 			name: "Boundary Value Testing case 2.1: success exists with ^@",
 			args: args{
 				ctx:      ctx,
-				indexId:  string([]byte{0}),
-				removeId: string([]byte{0}),
+				indexID:  string([]byte{0}),
+				removeID: string([]byte{0}),
 			},
 			want: want{
-				wantUuid: string([]byte{0}),
+				wantUUID: string([]byte{0}),
 			},
 		},
 		{
 			name: "Boundary Value Testing case 2.2: success exists with ^I",
 			args: args{
 				ctx:      ctx,
-				indexId:  "\t",
-				removeId: "\t",
+				indexID:  "\t",
+				removeID: "\t",
 			},
 			want: want{
-				wantUuid: "\t",
+				wantUUID: "\t",
 			},
 		},
 		{
 			name: "Boundary Value Testing case 2.3: success exists with ^J",
 			args: args{
 				ctx:      ctx,
-				indexId:  "\n",
-				removeId: "\n",
+				indexID:  "\n",
+				removeID: "\n",
 			},
 			want: want{
-				wantUuid: "\n",
+				wantUUID: "\n",
 			},
 		},
 		{
 			name: "Boundary Value Testing case 2.4: success exists with ^M",
 			args: args{
 				ctx:      ctx,
-				indexId:  "\r",
-				removeId: "\r",
+				indexID:  "\r",
+				removeID: "\r",
 			},
 			want: want{
-				wantUuid: "\r",
+				wantUUID: "\r",
 			},
 		},
 		{
 			name: "Boundary Value Testing case 2.5: success exists with ^[",
 			args: args{
 				ctx:      ctx,
-				indexId:  string([]byte{27}),
-				removeId: string([]byte{27}),
+				indexID:  string([]byte{27}),
+				removeID: string([]byte{27}),
 			},
 			want: want{
-				wantUuid: string([]byte{27}),
+				wantUUID: string([]byte{27}),
 			},
 		},
 		{
 			name: "Boundary Value Testing case 2.6: success exists with ^?",
 			args: args{
 				ctx:      ctx,
-				indexId:  string([]byte{127}),
-				removeId: string([]byte{127}),
+				indexID:  string([]byte{127}),
+				removeID: string([]byte{127}),
 			},
 			want: want{
-				wantUuid: string([]byte{127}),
+				wantUUID: string([]byte{127}),
 			},
 		},
 		{
 			name: "Boundary Value Testing case 3.1: success exists with utf-8 ID from utf-8 index",
 			args: args{
 				ctx:      ctx,
-				indexId:  utf8Str,
-				removeId: utf8Str,
+				indexID:  utf8Str,
+				removeID: utf8Str,
 			},
 			want: want{
-				wantUuid: utf8Str,
+				wantUUID: utf8Str,
 			},
 		},
 		{
 			name: "Boundary Value Testing case 3.2: fail exists with utf-8 ID from s-jis index",
 			args: args{
 				ctx:      ctx,
-				indexId:  sjisStr,
-				removeId: utf8Str,
+				indexID:  sjisStr,
+				removeID: utf8Str,
 			},
 			want: want{
 				code: codes.NotFound,
@@ -263,8 +262,8 @@ func Test_server_Remove(t *testing.T) {
 			name: "Boundary Value Testing case 3.3: fail exists with utf-8 ID from euc-jp index",
 			args: args{
 				ctx:      ctx,
-				indexId:  eucjpStr,
-				removeId: utf8Str,
+				indexID:  eucjpStr,
+				removeID: utf8Str,
 			},
 			want: want{
 				code: codes.NotFound,
@@ -274,8 +273,8 @@ func Test_server_Remove(t *testing.T) {
 			name: "Boundary Value Testing case 3.4: fail exists with s-jis ID from utf-8 index",
 			args: args{
 				ctx:      ctx,
-				indexId:  utf8Str,
-				removeId: sjisStr,
+				indexID:  utf8Str,
+				removeID: sjisStr,
 			},
 			want: want{
 				code: codes.NotFound,
@@ -285,19 +284,19 @@ func Test_server_Remove(t *testing.T) {
 			name: "Boundary Value Testing case 3.5: success exists with s-jis ID from s-jis index",
 			args: args{
 				ctx:      ctx,
-				indexId:  sjisStr,
-				removeId: sjisStr,
+				indexID:  sjisStr,
+				removeID: sjisStr,
 			},
 			want: want{
-				wantUuid: sjisStr,
+				wantUUID: sjisStr,
 			},
 		},
 		{
 			name: "Boundary Value Testing case 3.6: fail exists with s-jis ID from euc-jp index",
 			args: args{
 				ctx:      ctx,
-				indexId:  eucjpStr,
-				removeId: sjisStr,
+				indexID:  eucjpStr,
+				removeID: sjisStr,
 			},
 			want: want{
 				code: codes.NotFound,
@@ -307,8 +306,8 @@ func Test_server_Remove(t *testing.T) {
 			name: "Boundary Value Testing case 3.7: fail exists with euc-jp ID from utf-8 index",
 			args: args{
 				ctx:      ctx,
-				indexId:  utf8Str,
-				removeId: eucjpStr,
+				indexID:  utf8Str,
+				removeID: eucjpStr,
 			},
 			want: want{
 				code: codes.NotFound,
@@ -318,8 +317,8 @@ func Test_server_Remove(t *testing.T) {
 			name: "Boundary Value Testing case 3.8: fail exists with euc-jp ID from s-jis index",
 			args: args{
 				ctx:      ctx,
-				indexId:  sjisStr,
-				removeId: eucjpStr,
+				indexID:  sjisStr,
+				removeID: eucjpStr,
 			},
 			want: want{
 				code: codes.NotFound,
@@ -329,22 +328,22 @@ func Test_server_Remove(t *testing.T) {
 			name: "Boundary Value Testing case 3.9: success exists with euc-jp ID from euc-jp index",
 			args: args{
 				ctx:      ctx,
-				indexId:  eucjpStr,
-				removeId: eucjpStr,
+				indexID:  eucjpStr,
+				removeID: eucjpStr,
 			},
 			want: want{
-				wantUuid: eucjpStr,
+				wantUUID: eucjpStr,
 			},
 		},
 		{
 			name: "Boundary Value Testing case 4.1: success exists with 😀",
 			args: args{
 				ctx:      ctx,
-				indexId:  "😀",
-				removeId: "😀",
+				indexID:  "😀",
+				removeID: "😀",
 			},
 			want: want{
-				wantUuid: "😀",
+				wantUUID: "😀",
 			},
 		},
 	}
@@ -371,7 +370,7 @@ func Test_server_Remove(t *testing.T) {
 
 			req := &payload.Remove_Request{
 				Id: &payload.Object_ID{
-					Id: test.args.removeId,
+					Id: test.args.removeID,
 				},
 			}
 			gotRes, err := s.Remove(test.args.ctx, req)
