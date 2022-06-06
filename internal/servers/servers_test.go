@@ -199,11 +199,9 @@ func Test_listener_ListenAndServe(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx, cancel := context.WithCancel(tt.args.ctx)
 			defer cancel()
-			defer func() {
-				if tt.afterFunc != nil {
-					tt.afterFunc()
-				}
-			}()
+			if tt.afterFunc != nil {
+				defer tt.afterFunc()
+			}
 
 			l := &listener{
 				eg:      tt.field.eg,
@@ -366,11 +364,9 @@ func Test_listener_Shutdown(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx, cancel := context.WithCancel(tt.args.ctx)
 			defer cancel()
-			defer func() {
-				if tt.afterFunc != nil {
-					tt.afterFunc()
-				}
-			}()
+			if tt.afterFunc != nil {
+				defer tt.afterFunc()
+			}
 
 			if tt.checkFunc == nil {
 				tt.checkFunc = defaultCheckFunc
