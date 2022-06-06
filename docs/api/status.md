@@ -88,7 +88,7 @@ It appears when:
 
 - There is out-of-memory in gRPC payload, or networks, or etc.
 - There are some server overload situations.
-- The Sent or received message is larger than configured limit (default is 4MB).
+- The Sent or received message is larger than the configured limit (default is 4 MB).
 
 Services that return status are all services.
 The most case in the Vald is that the query vector is too large.
