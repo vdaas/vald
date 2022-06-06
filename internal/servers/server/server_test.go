@@ -553,16 +553,25 @@ func Test_server_Shutdown(t *testing.T) {
 		want      error
 	}
 
+	defaultCheckFunc := func(s *server, got, want error) error {
+		if want != got {
+			return errors.Errorf("Shutdown returns error: %v", got)
+		}
+		var running bool
+		s.mu.RLock()
+		running = s.running
+		s.mu.RUnlock()
+
+		if running {
+			return errors.New("server is running")
+		}
+		return nil
+	}
+
 	tests := []test{
 		func() test {
 			return test{
 				name: "returns nil when server is not running",
-				checkFunc: func(s *server, got, want error) error {
-					if want != got {
-						return errors.Errorf("Shutdown returns error: %v", got)
-					}
-					return nil
-				},
 				want: nil,
 			}
 		}(),
@@ -590,12 +599,6 @@ func Test_server_Shutdown(t *testing.T) {
 					preStopFunc: func() error {
 						return nil
 					},
-				},
-				checkFunc: func(s *server, got, want error) error {
-					if want != got {
-						return errors.Errorf("Shutdown returns error: %v", got)
-					}
-					return nil
 				},
 				afterFunc: func() {
 					testSrv.Close()
@@ -627,12 +630,6 @@ func Test_server_Shutdown(t *testing.T) {
 						return nil
 					},
 				},
-				checkFunc: func(s *server, got, want error) error {
-					if want != got {
-						return errors.Errorf("Shutdown returns error: %v", got)
-					}
-					return nil
-				},
 				afterFunc: func() {
 					cancel()
 					eg.Wait()
@@ -650,6 +647,9 @@ func Test_server_Shutdown(t *testing.T) {
 					defer tt.afterFunc()
 				}
 			}()
+			if tt.checkFunc == nil {
+				tt.checkFunc = defaultCheckFunc
+			}
 
 			s := &server{
 				mode: tt.field.mode,
