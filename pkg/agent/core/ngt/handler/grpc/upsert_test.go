@@ -1,20 +1,3 @@
-//
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//    https://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
-
-// Package grpc provides grpc server logic
 package grpc
 
 import (
@@ -23,165 +6,45 @@ import (
 	"testing"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
-	"github.com/vdaas/vald/internal/config"
+	"github.com/vdaas/vald/apis/grpc/v1/vald"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
-	"github.com/vdaas/vald/internal/test/data/request"
-	"github.com/vdaas/vald/internal/test/data/vector"
 	"github.com/vdaas/vald/internal/test/goleak"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/service"
 )
 
-func buildIndex(ctx context.Context, t request.ObjectType, dist vector.Distribution, num int, insertCfg *payload.Insert_Config,
-	ngtCfg *config.NGT, ngtOpts []service.Option, overwriteIDs []string, overwriteVectors [][]float32,
-) (Server, error) {
-	eg, ctx := errgroup.New(ctx)
-	ngt, err := service.New(ngtCfg, append(ngtOpts, service.WithErrGroup(eg), service.WithEnableInMemoryMode(true))...)
-	if err != nil {
-		return nil, err
-	}
-
-	s, err := New(WithErrGroup(eg), WithNGT(ngt))
-	if err != nil {
-		return nil, err
-	}
-
-	if num > 0 {
-		// gen insert request
-		reqs, err := request.GenMultiInsertReq(t, dist, num, ngtCfg.Dimension, insertCfg)
-		if err != nil {
-			return nil, err
-		}
-
-		// overwrite ID if needed
-		for i, id := range overwriteIDs {
-			reqs.Requests[i].Vector.Id = id
-		}
-
-		// overwrite Vectors if needed
-		for i, v := range overwriteVectors {
-			reqs.Requests[i].Vector.Vector = v
-		}
-
-		// insert and create index
-		if _, err := s.MultiInsert(ctx, reqs); err != nil {
-			return nil, err
-		}
-		if _, err := s.CreateIndex(ctx, &payload.Control_CreateIndexRequest{
-			PoolSize: 100,
-		}); err != nil {
-			return nil, err
-		}
-	}
-
-	return s, nil
-}
-
-func TestNew(t *testing.T) {
+func Test_server_Upsert(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		opts []Option
+		ctx context.Context
+		req *payload.Upsert_Request
+	}
+	type fields struct {
+		name              string
+		ip                string
+		ngt               service.NGT
+		eg                errgroup.Group
+		streamConcurrency int
 	}
 	type want struct {
-		want Server
-		err  error
+		wantLoc *payload.Object_Location
+		err     error
 	}
 	type test struct {
 		name       string
 		args       args
+		fields     fields
 		want       want
-		checkFunc  func(want, Server, error) error
+		checkFunc  func(want, *payload.Object_Location, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, got Server, err error) error {
+	defaultCheckFunc := func(w want, gotLoc *payload.Object_Location, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant_error: \"%#v\"", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           opts: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           opts: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-			checkFunc := test.checkFunc
-			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
-			}
-
-			got, err := New(test.args.opts...)
-			if err := checkFunc(test.want, got, err); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
-
-func Test_server_newLocations(t *testing.T) {
-	t.Parallel()
-	type args struct {
-		uuids []string
-	}
-	type fields struct {
-		name              string
-		ip                string
-		ngt               service.NGT
-		eg                errgroup.Group
-		streamConcurrency int
-	}
-	type want struct {
-		wantLocs *payload.Object_Locations
-	}
-	type test struct {
-		name       string
-		args       args
-		fields     fields
-		want       want
-		checkFunc  func(want, *payload.Object_Locations) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-	defaultCheckFunc := func(w want, gotLocs *payload.Object_Locations) error {
-		if !reflect.DeepEqual(gotLocs, w.wantLocs) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotLocs, w.wantLocs)
+		if !reflect.DeepEqual(gotLoc, w.wantLoc) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotLoc, w.wantLoc)
 		}
 		return nil
 	}
@@ -191,7 +54,8 @@ func Test_server_newLocations(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
-		           uuids: nil,
+		           ctx: nil,
+		           req: nil,
 		       },
 		       fields: fields {
 		           name: "",
@@ -211,7 +75,8 @@ func Test_server_newLocations(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
-		           uuids: nil,
+		           ctx: nil,
+		           req: nil,
 		           },
 		           fields: fields {
 		           name: "",
@@ -250,18 +115,18 @@ func Test_server_newLocations(t *testing.T) {
 				streamConcurrency: test.fields.streamConcurrency,
 			}
 
-			gotLocs := s.newLocations(test.args.uuids...)
-			if err := checkFunc(test.want, gotLocs); err != nil {
+			gotLoc, err := s.Upsert(test.args.ctx, test.args.req)
+			if err := checkFunc(test.want, gotLoc, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
 	}
 }
 
-func Test_server_newLocation(t *testing.T) {
+func Test_server_StreamUpsert(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		uuid string
+		stream vald.Upsert_StreamUpsertServer
 	}
 	type fields struct {
 		name              string
@@ -271,20 +136,20 @@ func Test_server_newLocation(t *testing.T) {
 		streamConcurrency int
 	}
 	type want struct {
-		want *payload.Object_Location
+		err error
 	}
 	type test struct {
 		name       string
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, *payload.Object_Location) error
+		checkFunc  func(want, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, got *payload.Object_Location) error {
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+	defaultCheckFunc := func(w want, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		return nil
 	}
@@ -294,7 +159,7 @@ func Test_server_newLocation(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
-		           uuid: "",
+		           stream: nil,
 		       },
 		       fields: fields {
 		           name: "",
@@ -314,7 +179,7 @@ func Test_server_newLocation(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
-		           uuid: "",
+		           stream: nil,
 		           },
 		           fields: fields {
 		           name: "",
@@ -353,8 +218,118 @@ func Test_server_newLocation(t *testing.T) {
 				streamConcurrency: test.fields.streamConcurrency,
 			}
 
-			got := s.newLocation(test.args.uuid)
-			if err := checkFunc(test.want, got); err != nil {
+			err := s.StreamUpsert(test.args.stream)
+			if err := checkFunc(test.want, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func Test_server_MultiUpsert(t *testing.T) {
+	t.Parallel()
+	type args struct {
+		ctx  context.Context
+		reqs *payload.Upsert_MultiRequest
+	}
+	type fields struct {
+		name              string
+		ip                string
+		ngt               service.NGT
+		eg                errgroup.Group
+		streamConcurrency int
+	}
+	type want struct {
+		wantRes *payload.Object_Locations
+		err     error
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, *payload.Object_Locations, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, gotRes *payload.Object_Locations, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(gotRes, w.wantRes) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           ctx: nil,
+		           reqs: nil,
+		       },
+		       fields: fields {
+		           name: "",
+		           ip: "",
+		           ngt: nil,
+		           eg: nil,
+		           streamConcurrency: 0,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           ctx: nil,
+		           reqs: nil,
+		           },
+		           fields: fields {
+		           name: "",
+		           ip: "",
+		           ngt: nil,
+		           eg: nil,
+		           streamConcurrency: 0,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			checkFunc := test.checkFunc
+			if test.checkFunc == nil {
+				checkFunc = defaultCheckFunc
+			}
+			s := &server{
+				name:              test.fields.name,
+				ip:                test.fields.ip,
+				ngt:               test.fields.ngt,
+				eg:                test.fields.eg,
+				streamConcurrency: test.fields.streamConcurrency,
+			}
+
+			gotRes, err := s.MultiUpsert(test.args.ctx, test.args.reqs)
+			if err := checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
