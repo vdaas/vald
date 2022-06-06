@@ -281,7 +281,7 @@ func Test_listener_Shutdown(t *testing.T) {
 			return test{
 				name: "Shutdown is success",
 				args: args{
-					ctx: context.Background(),
+					ctx: ctx,
 				},
 				field: field{
 					eg:      eg,

@@ -458,7 +458,7 @@ func Test_server_ListenAndServe(t *testing.T) {
 		}(),
 		func() test {
 			ctx, cancel := context.WithCancel(context.Background())
-			eg, ctx := errgroup.New(ctx)
+			eg, _ := errgroup.New(ctx)
 
 			srv := new(grpc.Server)
 
