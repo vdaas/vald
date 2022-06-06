@@ -14,11 +14,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-kind: Role
+kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: jaeger-operator
-  namespace: default
   labels:
     app.kubernetes.io/name: jaeger-operator
     app.kubernetes.io/instance: jaeger-operator
@@ -218,20 +217,6 @@ rules:
     resources:
       - deployments
     verbs:
-      - get
-      - list
-      - patch
-      - update
-      - watch
-
-  ## needed only when .Spec.Ingress.Openshift.DelegateUrls is used
-  - apiGroups:
-      - rbac.authorization.k8s.io
-    resources:
-      - clusterrolebindings
-    verbs:
-      - create
-      - delete
       - get
       - list
       - patch
