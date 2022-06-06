@@ -240,6 +240,13 @@ func Test_listener_Shutdown(t *testing.T) {
 		want      error
 	}
 
+	defaultCheckFunc := func(got, want error) error {
+		if !errors.Is(want, got) {
+			return errors.Errorf("not equals. want: %v, got: %v", want, got)
+		}
+		return nil
+	}
+
 	tests := []test{
 		func() test {
 			ctx, cancel := context.WithCancel(context.Background())
@@ -283,13 +290,6 @@ func Test_listener_Shutdown(t *testing.T) {
 					servers: servers,
 					sds:     sds,
 				},
-
-				checkFunc: func(got, want error) error {
-					if got != nil {
-						return errors.Errorf("return error: %v", got)
-					}
-					return nil
-				},
 				afterFunc: func() {
 					cancel()
 					eg.Wait()
@@ -312,12 +312,6 @@ func Test_listener_Shutdown(t *testing.T) {
 					sds: []string{
 						"srv1",
 					},
-				},
-				checkFunc: func(got, want error) error {
-					if !errors.Is(want, got) {
-						return errors.Errorf("not equals. want: %v, got: %v", want, got)
-					}
-					return nil
 				},
 				afterFunc: func() {
 					cancel()
@@ -359,12 +353,6 @@ func Test_listener_Shutdown(t *testing.T) {
 					servers: servers,
 					sds:     sds,
 				},
-				checkFunc: func(got, want error) error {
-					if got.Error() != want.Error() {
-						return errors.Errorf("not equals. want: %v, got: %v", want, got)
-					}
-					return nil
-				},
 				afterFunc: func() {
 					cancel()
 					eg.Wait()
@@ -383,6 +371,10 @@ func Test_listener_Shutdown(t *testing.T) {
 					tt.afterFunc()
 				}
 			}()
+
+			if tt.checkFunc == nil {
+				tt.checkFunc = defaultCheckFunc
+			}
 
 			l := &listener{
 				eg:      tt.field.eg,
