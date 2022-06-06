@@ -157,7 +157,7 @@ func Test_server_Update(t *testing.T) {
 			- case 6.2: success update with one min value vector (type: float32)
 			- case 7.1: success update with one max value vector (type: uint8)
 			- case 7.2: success update with one max value vector (type: float32)
-			- case 8.1: success update with one NaN value vector (type: float32) // NOTE: To fix it, it is necessarry to check all of vector value
+			- case 8.1: success update with one NaN value vector (type: float32) // NOTE: To fix it, it is necessary to check all of vector value
 			- case 9.1: success update with one +inf value vector (type: float32)
 			- case 9.2: success update with one -inf value vector (type: float32)
 			- case 10.1: fail update with one nil vector

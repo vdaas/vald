@@ -33,7 +33,7 @@ import (
 )
 
 func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (res *payload.Object_Location, err error) {
-	ctx, span := trace.StartSpan(ctx, apiName+"/"+vald.RemoveRPCName)
+	_, span := trace.StartSpan(ctx, apiName+"/"+vald.RemoveRPCName)
 	defer func() {
 		if span != nil {
 			span.End()
@@ -169,7 +169,7 @@ func (s *server) StreamRemove(stream vald.Remove_StreamRemoveServer) (err error)
 }
 
 func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequest) (res *payload.Object_Locations, err error) {
-	ctx, span := trace.StartSpan(ctx, apiName+"/"+vald.MultiRemoveRPCName)
+	_, span := trace.StartSpan(ctx, apiName+"/"+vald.MultiRemoveRPCName)
 	defer func() {
 		if span != nil {
 			span.End()

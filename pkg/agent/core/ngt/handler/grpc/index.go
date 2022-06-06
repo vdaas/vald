@@ -50,8 +50,8 @@ func (s *server) CreateIndex(ctx context.Context, c *payload.Control_CreateIndex
 				&errdetails.PreconditionFailure{
 					Violations: []*errdetails.PreconditionFailureViolation{
 						{
-							Type:    "uncommited index is empty",
-							Subject: "failed to CreateIndex operation caused by empty uncommited indices",
+							Type:    "uncommitted index is empty",
+							Subject: "failed to CreateIndex operation caused by empty uncommitted indices",
 						},
 					},
 				}, info.Get())
@@ -125,8 +125,8 @@ func (s *server) CreateAndSaveIndex(ctx context.Context, c *payload.Control_Crea
 				&errdetails.PreconditionFailure{
 					Violations: []*errdetails.PreconditionFailureViolation{
 						{
-							Type:    "uncommited index is empty",
-							Subject: "failed to CreateAndSaveIndex operation caused by empty uncommited indices",
+							Type:    "uncommitted index is empty",
+							Subject: "failed to CreateAndSaveIndex operation caused by empty uncommitted indices",
 						},
 					},
 				}, info.Get())
@@ -153,7 +153,7 @@ func (s *server) CreateAndSaveIndex(ctx context.Context, c *payload.Control_Crea
 }
 
 func (s *server) IndexInfo(ctx context.Context, _ *payload.Empty) (res *payload.Info_Index_Count, err error) {
-	ctx, span := trace.StartSpan(ctx, apiName+".IndexInfo")
+	_, span := trace.StartSpan(ctx, apiName+".IndexInfo")
 	defer func() {
 		if span != nil {
 			span.End()
