@@ -53,6 +53,6 @@ Please check your CPU information.
 
 ## Related Document
 
-- [Flow Chart](../troubleshooting/chart.md)
+- [Flow Chart](../troubleshooting/flow-chart.md)
 - [API Status](../api/status.md)
 - [FAQ](../support/faq.md)

@@ -1,4 +1,4 @@
-# Troubleshooting Chart
+# Troubleshooting Flow Chart
 
 This page shows the troubleshooting flow chart.
 
