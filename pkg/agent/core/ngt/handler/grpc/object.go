@@ -157,7 +157,7 @@ func (s *server) StreamGetObject(stream vald.Object_StreamGetObjectServer) (err 
 		func() interface{} { return new(payload.Object_VectorRequest) },
 		func(ctx context.Context, data interface{}) (interface{}, error) {
 			req := data.(*payload.Object_VectorRequest)
-			ctx, sspan := trace.StartSpan(ctx, apiName+".StreamGetObject/id-"+req.GetId().GetId())
+			ctx, sspan := trace.StartSpan(ctx, apiName+"/"+vald.StreamGetObjectRPCName+"/id-"+req.GetId().GetId())
 			defer func() {
 				if sspan != nil {
 					sspan.End()

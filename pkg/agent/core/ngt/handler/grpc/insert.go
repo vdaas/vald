@@ -140,7 +140,7 @@ func (s *server) StreamInsert(stream vald.Insert_StreamInsertServer) (err error)
 		func() interface{} { return new(payload.Insert_Request) },
 		func(ctx context.Context, data interface{}) (interface{}, error) {
 			req := data.(*payload.Insert_Request)
-			ctx, sspan := trace.StartSpan(ctx, apiName+".StreamInsert/id-"+req.GetVector().GetId())
+			ctx, sspan := trace.StartSpan(ctx, apiName+"/"+vald.StreamInsertRPCName+"/id-"+req.GetVector().GetId())
 			defer func() {
 				if sspan != nil {
 					sspan.End()
