@@ -4,7 +4,7 @@
 
 Remove Service is responsible for removing vectors which is indexed in the `vald-agent`.
 
-```bash
+```rpc
 service Remove {
 
   rpc Remove(payload.v1.Remove.Request) returns (payload.v1.Object.Location) {}
@@ -25,7 +25,7 @@ Remove RPC is the method to remove a single vector.
 
 - the scheme of `payload.v1.Remove.Request`
 
-  ```bash
+  ```rpc
   message Remove {
       message Request {
           Object.ID id = 1;
@@ -46,27 +46,30 @@ Remove RPC is the method to remove a single vector.
   ```
 
   - Remove.Request
-    |field|type|label|required|desc.|
-    |:---:|:---|:---|:---:|:---|
-    |id|Object.ID| | \* | the id of vector |
-    |config|Config| | \* | the configuration of the remove request |
+
+    | field  | type      | label | required | desc.                                   |
+    | :----: | :-------- | :---- | :------: | :-------------------------------------- |
+    |   id   | Object.ID |       |    \*    | the id of vector                        |
+    | config | Config    |       |    \*    | the configuration of the remove request |
 
   - Remove.Config
-    |field|type|label|required|desc.|
-    |:---:|:---|:---|:---:|:---|
-    |skip_strict_exist_check|bool| | | check the same vector is already inserted or not.<br>the ID should be unique if the value is `true`. |
-    |timestamp|int64| | | the timestamp of the vector removed.<br>if it is N/A, the current time will be used. |
+
+    |          field          | type  | label | required | desc.                                                                                                |
+    | :---------------------: | :---- | :---- | :------: | :--------------------------------------------------------------------------------------------------- |
+    | skip_strict_exist_check | bool  |       |          | check the same vector is already inserted or not.<br>the ID should be unique if the value is `true`. |
+    |        timestamp        | int64 |       |          | the timestamp of the vector removed.<br>if it is N/A, the current time will be used.                 |
 
   - Object.ID
-    |field|type|label|required|desc.|
-    |:---:|:---|:---|:---:|:---|
-    |id|string| | \* | the ID of a vector. ID should consist of 1 or more characters. |
+
+    | field | type   | label | required | desc.                                                          |
+    | :---: | :----- | :---- | :------: | :------------------------------------------------------------- |
+    |  id   | string |       |    \*    | the ID of a vector. ID should consist of 1 or more characters. |
 
 ### Output
 
 - the scheme of `payload.v1.Object.Location`
 
-  ```bash
+  ```rpc
   message Object {
       message Location {
         string name = 1;
@@ -77,20 +80,22 @@ Remove RPC is the method to remove a single vector.
   ```
 
   - Object.Location
-    |field|type|label|desc.|
-    |:---:|:---|:---|:---|
-    |name|string| | the name of vald agent pod where the request vector is removed. |
-    |uuid|string| | the ID of the removed vector. It is the same as an `Object.ID`. |
-    |ips|string| repeated(Array[string]) | the IP list of `vald-agent` pods where the request vector is removed. |
+
+    | field | type   | label                   | desc.                                                                 |
+    | :---: | :----- | :---------------------- | :-------------------------------------------------------------------- |
+    | name  | string |                         | the name of vald agent pod where the request vector is removed.       |
+    | uuid  | string |                         | the ID of the removed vector. It is the same as an `Object.ID`.       |
+    |  ips  | string | repeated(Array[string]) | the IP list of `vald-agent` pods where the request vector is removed. |
 
 ### Status Code
 
-| code | desc.            |
-| :--: | :--------------- |
-|  0   | OK               |
-|  3   | INVALID_ARGUMENT |
-|  5   | NOT_FOUND        |
-|  13  | INTERNAL         |
+| code | desc.             |
+| :--: | :---------------- |
+|  0   | OK                |
+|  3   | INVALID_ARGUMENT  |
+|  4   | DEADLINE_EXCEEDED |
+|  5   | NOT_FOUND         |
+|  13  | INTERNAL          |
 
 ## StreamRemove RPC
 
@@ -103,7 +108,7 @@ It's the recommended method to remove the large amount of vectors.
 
 - the scheme of `payload.v1.Remove.Request stream`
 
-  ```bash
+  ```rpc
   message Remove {
       message Request {
           Object.ID id = 1;
@@ -124,27 +129,30 @@ It's the recommended method to remove the large amount of vectors.
   ```
 
   - Remove.Request
-    |field|type|label|required|desc.|
-    |:---:|:---|:---|:---:|:---|
-    |id|Object.ID| | \* | the id of vector |
-    |config|Config| | \* | the configuration of the insert request |
+
+    | field  | type      | label | required | desc.                                   |
+    | :----: | :-------- | :---- | :------: | :-------------------------------------- |
+    |   id   | Object.ID |       |    \*    | the id of vector                        |
+    | config | Config    |       |    \*    | the configuration of the insert request |
 
   - Remove.Config
-    |field|type|label|required|desc.|
-    |:---:|:---|:---|:---:|:---|
-    |skip_strict_exist_check|bool| | | check the same vector is already inserted or not.<br>the ID should be unique if the value is `true`. |
-    |timestamp|int64| | | the timestamp of the vector removed.<br>if it is N/A, the current time will be used. |
+
+    |          field          | type  | label | required | desc.                                                                                                |
+    | :---------------------: | :---- | :---- | :------: | :--------------------------------------------------------------------------------------------------- |
+    | skip_strict_exist_check | bool  |       |          | check the same vector is already inserted or not.<br>the ID should be unique if the value is `true`. |
+    |        timestamp        | int64 |       |          | the timestamp of the vector removed.<br>if it is N/A, the current time will be used.                 |
 
   - Object.ID
-    |field|type|label|required|desc.|
-    |:---:|:---|:---|:---:|:---|
-    |id|string| | \* | the ID of a vector. ID should consist of 1 or more characters. |
+
+    | field | type   | label | required | desc.                                                          |
+    | :---: | :----- | :---- | :------: | :------------------------------------------------------------- |
+    |  id   | string |       |    \*    | the ID of a vector. ID should consist of 1 or more characters. |
 
 ### Output
 
 - the scheme of `payload.v1.Object.StreamLocation`
 
-  ```bash
+  ```rpc
   message Object {
       message StreamLocation {
         oneof payload {
@@ -162,33 +170,37 @@ It's the recommended method to remove the large amount of vectors.
   ```
 
   - Object.StreamLocation
-    |field|type|label|desc.|
-    |:---:|:---|:---|:---|
-    |location|Object.Location| | the information of `Object.Location` data. |
-    |status|google.rpc.Status| | the status of google RPC |
+
+    |  field   | type              | label | desc.                                      |
+    | :------: | :---------------- | :---- | :----------------------------------------- |
+    | location | Object.Location   |       | the information of `Object.Location` data. |
+    |  status  | google.rpc.Status |       | the status of google RPC                   |
 
   - Object.Location
-    |field|type|label|desc.|
-    |:---:|:---|:---|:---|
-    |name|string| | the name of vald agent pod where the request vector is removed. |
-    |uuid|string| | the ID of the removed vector. It is the same as an `Object.ID`. |
-    |ips|string| repeated(Array[string]) | the IP list of `vald-agent` pods where the request vector is removed. |
+
+    | field | type   | label                   | desc.                                                                 |
+    | :---: | :----- | :---------------------- | :-------------------------------------------------------------------- |
+    | name  | string |                         | the name of vald agent pod where the request vector is removed.       |
+    | uuid  | string |                         | the ID of the removed vector. It is the same as an `Object.ID`.       |
+    |  ips  | string | repeated(Array[string]) | the IP list of `vald-agent` pods where the request vector is removed. |
 
   - [google.rpc.Status](https://github.com/googleapis/googleapis/blob/master/google/rpc/status.proto)
-    |field|type|label|desc.|
-    |:---:|:---|:---|:---|
-    |code|int32| | status code (code list is next section) |
-    |message|string| | error message |
-    |details|google.protobuf.Any| repeated(Array[any]) | the details error message list |
+
+    |  field  | type                | label                | desc.                                   |
+    | :-----: | :------------------ | :------------------- | :-------------------------------------- |
+    |  code   | int32               |                      | status code (code list is next section) |
+    | message | string              |                      | error message                           |
+    | details | google.protobuf.Any | repeated(Array[any]) | the details error message list          |
 
 ### Status Code
 
-| code | desc.            |
-| :--: | :--------------- |
-|  0   | OK               |
-|  3   | INVALID_ARGUMENT |
-|  5   | NOT_FOUND        |
-|  13  | INTERNAL         |
+| code | desc.             |
+| :--: | :---------------- |
+|  0   | OK                |
+|  3   | INVALID_ARGUMENT  |
+|  4   | DEADLINE_EXCEEDED |
+|  5   | NOT_FOUND         |
+|  13  | INTERNAL          |
 
 ## MultiRemove RPC
 
@@ -203,7 +215,7 @@ Please be careful that the size of the request exceed the limit.
 
 - the scheme of `payload.v1.Remove.MultiRequest`
 
-  ```bash
+  ```rpc
   message Remove {
       message MultiRequest {
         repeated Request requests = 1;
@@ -228,32 +240,36 @@ Please be careful that the size of the request exceed the limit.
   ```
 
   - Remove.MultiRequest
-    |field|type|label|required|desc.|
-    |:---:|:---|:---|:---:|:---|
-    |requests|Remove.Request| repeated(Array[Insert.Request]) | \* | the request list |
+
+    |  field   | type           | label                           | required | desc.            |
+    | :------: | :------------- | :------------------------------ | :------: | :--------------- |
+    | requests | Remove.Request | repeated(Array[Insert.Request]) |    \*    | the request list |
 
   - Remove.Request
-    |field|type|label|required|desc.|
-    |:---:|:---|:---|:---:|:---|
-    |id|Object.ID| | \* | the id of vector |
-    |config|Config| | \* | the configuration of the remove request |
+
+    | field  | type      | label | required | desc.                                   |
+    | :----: | :-------- | :---- | :------: | :-------------------------------------- |
+    |   id   | Object.ID |       |    \*    | the id of vector                        |
+    | config | Config    |       |    \*    | the configuration of the remove request |
 
   - Remove.Config
-    |field|type|label|required|desc.|
-    |:---:|:---|:---|:---:|:---|
-    |skip_strict_exist_check|bool| | | check the same vector is already inserted or not.<br>the ID should be unique if the value is `true`. |
-    |timestamp|int64| | | the timestamp of the vector removed.<br>if it is N/A, the current time will be used. |
+
+    |          field          | type  | label | required | desc.                                                                                                |
+    | :---------------------: | :---- | :---- | :------: | :--------------------------------------------------------------------------------------------------- |
+    | skip_strict_exist_check | bool  |       |          | check the same vector is already inserted or not.<br>the ID should be unique if the value is `true`. |
+    |        timestamp        | int64 |       |          | the timestamp of the vector removed.<br>if it is N/A, the current time will be used.                 |
 
   - Object.ID
-    |field|type|label|required|desc.|
-    |:---:|:---|:---|:---:|:---|
-    |id|string| | \* | the ID of a vector. ID should consist of 1 or more characters. |
+
+    | field | type   | label | required | desc.                                                          |
+    | :---: | :----- | :---- | :------: | :------------------------------------------------------------- |
+    |  id   | string |       |    \*    | the ID of a vector. ID should consist of 1 or more characters. |
 
 ### Output
 
 - the scheme of `payload.v1.Object.Locations`.
 
-  ```bash
+  ```rpc
   message Object {
       message Locations { repeated Location locations = 1; }
 
@@ -266,22 +282,25 @@ Please be careful that the size of the request exceed the limit.
   ```
 
   - Object.Locations
-    |field|type|label|desc.|
-    |:---:|:---|:---|:---|
-    |location|Object.Location| repeated(Array[Object.Location]) | the list of `Object.Location`. |
+
+    |  field   | type            | label                            | desc.                          |
+    | :------: | :-------------- | :------------------------------- | :----------------------------- |
+    | location | Object.Location | repeated(Array[Object.Location]) | the list of `Object.Location`. |
 
   - Object.Location
-    |field|type|label|desc.|
-    |:---:|:---|:---|:---|
-    |name|string| | the name of vald agent pod where the request vector is removed. |
-    |uuid|string| | the ID of the removed vector. It is the same as an `Object.Vector`. |
-    |ips|string| repeated(Array[string]) | the IP list of `vald-agent` pods where the request vector is removed. |
+
+    | field | type   | label                   | desc.                                                                 |
+    | :---: | :----- | :---------------------- | :-------------------------------------------------------------------- |
+    | name  | string |                         | the name of vald agent pod where the request vector is removed.       |
+    | uuid  | string |                         | the ID of the removed vector. It is the same as an `Object.Vector`.   |
+    |  ips  | string | repeated(Array[string]) | the IP list of `vald-agent` pods where the request vector is removed. |
 
 ### Status Code
 
-| code | desc.            |
-| :--: | :--------------- |
-|  0   | OK               |
-|  3   | INVALID_ARGUMENT |
-|  5   | NOT_FOUND        |
-|  13  | INTERNAL         |
+| code | desc.             |
+| :--: | :---------------- |
+|  0   | OK                |
+|  3   | INVALID_ARGUMENT  |
+|  4   | DEADLINE_EXCEEDED |
+|  5   | NOT_FOUND         |
+|  13  | INTERNAL          |

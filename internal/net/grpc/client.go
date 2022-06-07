@@ -550,6 +550,9 @@ func (g *gRPCClient) do(ctx context.Context, p pool.Conn, addr string, enableBac
 		}
 	}()
 	if g.bo != nil && enableBackoff {
+		if method := FromGRPCMethod(sctx); len(method) != 0 {
+			sctx = backoff.WithBackoffName(ctx, method+"/"+addr)
+		}
 		data, err = g.bo.Do(sctx, func(ictx context.Context) (r interface{}, ret bool, err error) {
 			err = p.Do(func(conn *ClientConn) (err error) {
 				if conn == nil {
