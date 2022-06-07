@@ -12,5 +12,5 @@ If any components output the `INTERNAL` error log, let us know the detail.
 
 ## Related Document
 
-- [Troubleshooting](../troubleshooting/troubleshooting.md)
+- [Operation Troubleshooting](../troubleshooting/operation-troubleshooting.md)
 
