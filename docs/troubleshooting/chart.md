@@ -2,7 +2,7 @@
 
 This page shows the troubleshooting flow chart.
 
-If you encounter the trouble, please confirm below chart and try to fix it.
+If you encounter the trouble, please confirm the below chart and try to fix it.
 
 <img src="../../assets/docs/troubleshooting/troubleshooting_chart.svg" />
 
