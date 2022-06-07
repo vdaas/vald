@@ -25,24 +25,36 @@ data:
         "list": [
           {
             "builtIn": 1,
-            "datasource": "-- Grafana --",
+            "datasource": {
+              "type": "datasource",
+              "uid": "grafana"
+            },
             "enable": true,
             "hide": true,
             "iconColor": "rgba(0, 211, 255, 1)",
             "name": "Annotations & Alerts",
+            "target": {
+              "limit": 100,
+              "matchAny": false,
+              "tags": [],
+              "type": "dashboard"
+            },
             "type": "dashboard"
           }
         ]
       },
       "editable": true,
-      "gnetId": null,
+      "fiscalYearStartMonth": 0,
       "graphTooltip": 0,
-      "iteration": 1623652517578,
+      "iteration": 1654536166801,
       "links": [],
+      "liveNow": false,
       "panels": [
         {
-          "cacheTimeout": null,
-          "datasource": null,
+          "datasource": {
+            "type": "prometheus",
+            "uid": "vald_prometheus"
+          },
           "fieldConfig": {
             "defaults": {
               "mappings": [
@@ -80,7 +92,6 @@ data:
             "y": 0
           },
           "id": 14,
-          "interval": null,
           "links": [],
           "maxDataPoints": 100,
           "options": {
@@ -98,7 +109,7 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "8.0.1",
+          "pluginVersion": "9.0.0-beta2",
           "targets": [
             {
               "expr": "vald_app_version_info{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"}",
@@ -109,14 +120,14 @@ data:
               "refId": "A"
             }
           ],
-          "timeFrom": null,
-          "timeShift": null,
           "title": "Vald Version",
           "type": "stat"
         },
         {
-          "cacheTimeout": null,
-          "datasource": null,
+          "datasource": {
+            "type": "prometheus",
+            "uid": "vald_prometheus"
+          },
           "fieldConfig": {
             "defaults": {
               "mappings": [
@@ -154,7 +165,6 @@ data:
             "y": 0
           },
           "id": 16,
-          "interval": null,
           "links": [],
           "maxDataPoints": 100,
           "options": {
@@ -172,7 +182,7 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "8.0.1",
+          "pluginVersion": "9.0.0-beta2",
           "targets": [
             {
               "expr": "label_replace(vald_app_version_info{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"}, \"go_version\", \"v$1\", \"go_version\", \"([^v].*)\")",
@@ -183,14 +193,14 @@ data:
               "refId": "A"
             }
           ],
-          "timeFrom": null,
-          "timeShift": null,
           "title": "Go Version",
           "type": "stat"
         },
         {
-          "cacheTimeout": null,
-          "datasource": null,
+          "datasource": {
+            "type": "prometheus",
+            "uid": "vald_prometheus"
+          },
           "fieldConfig": {
             "defaults": {
               "mappings": [
@@ -228,7 +238,6 @@ data:
             "y": 0
           },
           "id": 34,
-          "interval": null,
           "links": [],
           "maxDataPoints": 100,
           "options": {
@@ -246,7 +255,7 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "8.0.1",
+          "pluginVersion": "9.0.0-beta2",
           "targets": [
             {
               "expr": "vald_app_version_info{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"}",
@@ -257,14 +266,14 @@ data:
               "refId": "A"
             }
           ],
-          "timeFrom": null,
-          "timeShift": null,
           "title": "Go OS",
           "type": "stat"
         },
         {
-          "cacheTimeout": null,
-          "datasource": null,
+          "datasource": {
+            "type": "prometheus",
+            "uid": "vald_prometheus"
+          },
           "fieldConfig": {
             "defaults": {
               "mappings": [
@@ -306,7 +315,6 @@ data:
             "y": 0
           },
           "id": 19,
-          "interval": null,
           "links": [],
           "maxDataPoints": 100,
           "options": {
@@ -324,7 +332,7 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "8.0.1",
+          "pluginVersion": "9.0.0-beta2",
           "targets": [
             {
               "expr": "count(up{namespace=\"$Namespace\", app=~\"$ReplicaSet\", app!=\"\"})",
@@ -336,14 +344,14 @@ data:
               "refId": "A"
             }
           ],
-          "timeFrom": null,
-          "timeShift": null,
           "title": "Pods ($ReplicaSet)",
           "type": "stat"
         },
         {
-          "cacheTimeout": null,
-          "datasource": null,
+          "datasource": {
+            "type": "prometheus",
+            "uid": "vald_prometheus"
+          },
           "fieldConfig": {
             "defaults": {
               "decimals": 2,
@@ -386,7 +394,6 @@ data:
             "y": 0
           },
           "id": 20,
-          "interval": null,
           "links": [],
           "maxDataPoints": 100,
           "options": {
@@ -404,7 +411,7 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "8.0.1",
+          "pluginVersion": "9.0.0-beta2",
           "targets": [
             {
               "exemplar": true,
@@ -415,14 +422,14 @@ data:
               "refId": "A"
             }
           ],
-          "timeFrom": null,
-          "timeShift": null,
           "title": "Total memory working set ($ReplicaSet)",
           "type": "stat"
         },
         {
-          "cacheTimeout": null,
-          "datasource": null,
+          "datasource": {
+            "type": "prometheus",
+            "uid": "vald_prometheus"
+          },
           "fieldConfig": {
             "defaults": {
               "mappings": [
@@ -460,7 +467,6 @@ data:
             "y": 3
           },
           "id": 17,
-          "interval": null,
           "links": [],
           "maxDataPoints": 100,
           "options": {
@@ -478,7 +484,7 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "8.0.1",
+          "pluginVersion": "9.0.0-beta2",
           "targets": [
             {
               "expr": "vald_app_version_info{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"}",
@@ -489,14 +495,14 @@ data:
               "refId": "A"
             }
           ],
-          "timeFrom": null,
-          "timeShift": null,
           "title": "Git Commit",
           "type": "stat"
         },
         {
-          "cacheTimeout": null,
-          "datasource": null,
+          "datasource": {
+            "type": "prometheus",
+            "uid": "vald_prometheus"
+          },
           "fieldConfig": {
             "defaults": {
               "mappings": [
@@ -534,7 +540,6 @@ data:
             "y": 3
           },
           "id": 18,
-          "interval": null,
           "links": [],
           "maxDataPoints": 100,
           "options": {
@@ -552,7 +557,7 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "8.0.1",
+          "pluginVersion": "9.0.0-beta2",
           "targets": [
             {
               "expr": "vald_app_version_info{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"}",
@@ -563,8 +568,6 @@ data:
               "refId": "A"
             }
           ],
-          "timeFrom": null,
-          "timeShift": null,
           "title": "Build at",
           "type": "stat"
         },
@@ -573,7 +576,10 @@ data:
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": null,
+          "datasource": {
+            "type": "prometheus",
+            "uid": "vald_prometheus"
+          },
           "fieldConfig": {
             "defaults": {
               "links": []
@@ -606,7 +612,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "8.0.1",
+          "pluginVersion": "9.0.0-beta2",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -624,9 +630,7 @@ data:
             }
           ],
           "thresholds": [],
-          "timeFrom": null,
           "timeRegions": [],
-          "timeShift": null,
           "title": "CPU",
           "tooltip": {
             "shared": true,
@@ -635,9 +639,7 @@ data:
           },
           "type": "graph",
           "xaxis": {
-            "buckets": null,
             "mode": "time",
-            "name": null,
             "show": true,
             "values": []
           },
@@ -645,25 +647,19 @@ data:
             {
               "$$hashKey": "object:256",
               "format": "short",
-              "label": null,
               "logBase": 1,
-              "max": null,
               "min": "0",
               "show": true
             },
             {
               "$$hashKey": "object:257",
               "format": "short",
-              "label": null,
               "logBase": 1,
-              "max": null,
-              "min": null,
               "show": true
             }
           ],
           "yaxis": {
-            "align": false,
-            "alignLevel": null
+            "align": false
           }
         },
         {
@@ -671,7 +667,10 @@ data:
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": null,
+          "datasource": {
+            "type": "prometheus",
+            "uid": "vald_prometheus"
+          },
           "fieldConfig": {
             "defaults": {
               "links": []
@@ -704,7 +703,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "8.0.1",
+          "pluginVersion": "9.0.0-beta2",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -722,9 +721,7 @@ data:
             }
           ],
           "thresholds": [],
-          "timeFrom": null,
           "timeRegions": [],
-          "timeShift": null,
           "title": "Memory working set",
           "tooltip": {
             "shared": true,
@@ -733,9 +730,7 @@ data:
           },
           "type": "graph",
           "xaxis": {
-            "buckets": null,
             "mode": "time",
-            "name": null,
             "show": true,
             "values": []
           },
@@ -743,25 +738,19 @@ data:
             {
               "$$hashKey": "object:334",
               "format": "decbytes",
-              "label": null,
               "logBase": 1,
-              "max": null,
               "min": "0",
               "show": true
             },
             {
               "$$hashKey": "object:335",
               "format": "short",
-              "label": null,
               "logBase": 1,
-              "max": null,
-              "min": null,
               "show": true
             }
           ],
           "yaxis": {
-            "align": false,
-            "alignLevel": null
+            "align": false
           }
         },
         {
@@ -769,7 +758,10 @@ data:
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": null,
+          "datasource": {
+            "type": "prometheus",
+            "uid": "vald_prometheus"
+          },
           "fieldConfig": {
             "defaults": {
               "links": []
@@ -803,7 +795,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "8.0.1",
+          "pluginVersion": "9.0.0-beta2",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -828,9 +820,7 @@ data:
             }
           ],
           "thresholds": [],
-          "timeFrom": null,
           "timeRegions": [],
-          "timeShift": null,
           "title": "Completed RPCs /s",
           "tooltip": {
             "shared": true,
@@ -839,9 +829,7 @@ data:
           },
           "type": "graph",
           "xaxis": {
-            "buckets": null,
             "mode": "time",
-            "name": null,
             "show": true,
             "values": []
           },
@@ -849,25 +837,19 @@ data:
             {
               "$$hashKey": "object:488",
               "format": "short",
-              "label": null,
               "logBase": 1,
-              "max": null,
               "min": "0",
               "show": true
             },
             {
               "$$hashKey": "object:489",
               "format": "short",
-              "label": null,
               "logBase": 1,
-              "max": null,
-              "min": null,
               "show": true
             }
           ],
           "yaxis": {
-            "align": false,
-            "alignLevel": null
+            "align": false
           }
         },
         {
@@ -875,7 +857,10 @@ data:
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": null,
+          "datasource": {
+            "type": "prometheus",
+            "uid": "vald_prometheus"
+          },
           "fieldConfig": {
             "defaults": {
               "links": []
@@ -909,7 +894,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "8.0.1",
+          "pluginVersion": "9.0.0-beta2",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -941,9 +926,7 @@ data:
             }
           ],
           "thresholds": [],
-          "timeFrom": null,
           "timeRegions": [],
-          "timeShift": null,
           "title": "Latency",
           "tooltip": {
             "shared": true,
@@ -952,33 +935,25 @@ data:
           },
           "type": "graph",
           "xaxis": {
-            "buckets": null,
             "mode": "time",
-            "name": null,
             "show": true,
             "values": []
           },
           "yaxes": [
             {
               "format": "ms",
-              "label": null,
               "logBase": 1,
-              "max": null,
               "min": "0",
               "show": true
             },
             {
               "format": "short",
-              "label": null,
               "logBase": 1,
-              "max": null,
-              "min": null,
               "show": true
             }
           ],
           "yaxis": {
-            "align": false,
-            "alignLevel": null
+            "align": false
           }
         },
         {
@@ -986,7 +961,10 @@ data:
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": null,
+          "datasource": {
+            "type": "prometheus",
+            "uid": "vald_prometheus"
+          },
           "fieldConfig": {
             "defaults": {
               "links": []
@@ -1019,7 +997,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "8.0.1",
+          "pluginVersion": "9.0.0-beta2",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -1037,9 +1015,7 @@ data:
             }
           ],
           "thresholds": [],
-          "timeFrom": null,
           "timeRegions": [],
-          "timeShift": null,
           "title": "goroutine count",
           "tooltip": {
             "shared": true,
@@ -1048,33 +1024,25 @@ data:
           },
           "type": "graph",
           "xaxis": {
-            "buckets": null,
             "mode": "time",
-            "name": null,
             "show": true,
             "values": []
           },
           "yaxes": [
             {
               "format": "short",
-              "label": null,
               "logBase": 1,
-              "max": null,
               "min": "0",
               "show": true
             },
             {
               "format": "short",
-              "label": null,
               "logBase": 1,
-              "max": null,
-              "min": null,
               "show": true
             }
           ],
           "yaxis": {
-            "align": false,
-            "alignLevel": null
+            "align": false
           }
         },
         {
@@ -1082,7 +1050,10 @@ data:
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": null,
+          "datasource": {
+            "type": "prometheus",
+            "uid": "vald_prometheus"
+          },
           "fieldConfig": {
             "defaults": {
               "links": []
@@ -1116,7 +1087,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "8.0.1",
+          "pluginVersion": "9.0.0-beta2",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -1126,7 +1097,11 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "irate(vald_gc_count{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\".+\"}[$interval])",
+              "datasource": {
+                "type": "prometheus",
+                "uid": "vald_prometheus"
+              },
+              "expr": "increase(vald_gc_count{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\".+\"}[$interval])",
               "format": "time_series",
               "instant": false,
               "interval": "",
@@ -1136,9 +1111,7 @@ data:
             }
           ],
           "thresholds": [],
-          "timeFrom": null,
           "timeRegions": [],
-          "timeShift": null,
           "title": "GC count /s",
           "tooltip": {
             "shared": true,
@@ -1147,53 +1120,44 @@ data:
           },
           "type": "graph",
           "xaxis": {
-            "buckets": null,
             "mode": "time",
-            "name": null,
             "show": true,
             "values": []
           },
           "yaxes": [
             {
               "format": "short",
-              "label": null,
               "logBase": 1,
-              "max": null,
-              "min": null,
               "show": true
             },
             {
               "format": "short",
-              "label": null,
               "logBase": 1,
-              "max": null,
-              "min": null,
               "show": true
             }
           ],
           "yaxis": {
-            "align": false,
-            "alignLevel": null
+            "align": false
           }
         }
       ],
       "refresh": "",
-      "schemaVersion": 30,
+      "schemaVersion": 36,
       "style": "dark",
       "tags": [],
       "templating": {
         "list": [
           {
-            "allValue": null,
             "current": {
               "selected": false,
               "text": "default",
               "value": "default"
             },
-            "datasource": "Prometheus",
+            "datasource": {
+              "type": "prometheus",
+              "uid": "vald_prometheus"
+            },
             "definition": "label_values(up, namespace)",
-            "description": null,
-            "error": null,
             "hide": 0,
             "includeAll": false,
             "label": "namespace",
@@ -1214,16 +1178,16 @@ data:
             "useTags": false
           },
           {
-            "allValue": null,
             "current": {
               "selected": false,
               "text": "vald-manager-index",
               "value": "vald-manager-index"
             },
-            "datasource": "Prometheus",
+            "datasource": {
+              "type": "prometheus",
+              "uid": "vald_prometheus"
+            },
             "definition": "label_values(vald_app_version_info{server_name=\"index manager\", namespace=~\"$Namespace\"}, app)",
-            "description": null,
-            "error": null,
             "hide": 0,
             "includeAll": false,
             "label": "name",
@@ -1250,10 +1214,11 @@ data:
               "text": "All",
               "value": "$__all"
             },
-            "datasource": "Prometheus",
+            "datasource": {
+              "type": "prometheus",
+              "uid": "vald_prometheus"
+            },
             "definition": "label_values(vald_app_version_info{server_name=\"index manager\", namespace=~\"$Namespace\", app=~\"$ReplicaSet\"}, instance)",
-            "description": null,
-            "error": null,
             "hide": 0,
             "includeAll": true,
             "label": "pod",
@@ -1282,8 +1247,6 @@ data:
               "text": "5m",
               "value": "5m"
             },
-            "description": null,
-            "error": null,
             "hide": 0,
             "label": "interval",
             "name": "interval",
@@ -1362,5 +1325,6 @@ data:
       "timezone": "",
       "title": "Vald Index Manager",
       "uid": "joweKBeLz",
-      "version": 1
+      "version": 1,
+      "weekStart": ""
     }
