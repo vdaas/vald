@@ -46,7 +46,7 @@ data:
       "editable": true,
       "fiscalYearStartMonth": 0,
       "graphTooltip": 0,
-      "iteration": 1654534659349,
+      "iteration": 1654571608909,
       "links": [],
       "liveNow": false,
       "panels": [
@@ -1246,10 +1246,12 @@ data:
                 "type": "prometheus",
                 "uid": "vald_prometheus"
               },
+              "editorMode": "code",
               "expr": "increase(sum(label_replace(vald_backoff_retry_count{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$ValdGatewayPodName\"}, \"rpc\", \"$1\",  \"backoff_name\", \"(.*/.*)/.*\")) by (rpc) [$interval:])",
               "interval": "",
               "intervalFactor": 1,
-              "legendFormat": "{{grpc_server_method}} ({{grpc_server_status}})",
+              "legendFormat": "{{rpc}}",
+              "range": true,
               "refId": "A"
             }
           ],
@@ -1833,7 +1835,7 @@ data:
         "list": [
           {
             "current": {
-              "selected": true,
+              "selected": false,
               "text": "default",
               "value": "default"
             },
@@ -2157,6 +2159,6 @@ data:
       "timezone": "",
       "title": "Vald Cluster Overview",
       "uid": "ZQxyaOlWk",
-      "version": 2,
+      "version": 1,
       "weekStart": ""
     }
