@@ -62,7 +62,7 @@ replace (
 	github.com/golang/groupcache => github.com/golang/groupcache latest
 	github.com/golang/protobuf => github.com/golang/protobuf latest
 	github.com/golang/snappy => github.com/golang/snappy latest
-	github.com/google/btree => github.com/google/btree latest
+	github.com/google/btree => github.com/google/btree v1.0.1
 	github.com/google/go-cmp => github.com/google/go-cmp latest
 	github.com/google/pprof => github.com/google/pprof master
 	github.com/google/uuid => github.com/google/uuid latest
