@@ -1435,6 +1435,91 @@ func Test_server_StreamInsert(t *testing.T) {
 		}
 		return nil
 	}
+	/*
+		- Equivalence Class Testing
+			- uint8, float32
+				- case 1.1: Success to StreamInsert 1 vector (vector type is uint8)
+				- case 1.2: Success to StreamInsert 1 vector (vector type is float32)
+				- case 1.3: Success to StreamInsert 100 vector (vector type is uint8)
+				- case 1.4: Success to StreamInsert 100 vector (vector type is float32)
+				- case 1.5: Success to StreamInsert 0 vector (vector type is uint8)
+				- case 1.6: Success to StreamInsert 0 vector (vector type is float32)
+				- case 2.1: Fail to StreamInsert 1 vector with different dimension (vector type is uint8)
+				- case 2.2: Fail to StreamInsert 1 vector with different dimension (vector type is float32)
+				- case 3.1: Fail to StreamInsert 100 vector with 1 vector with different dimension (vector type is uint8)
+				- case 3.2: Fail to StreamInsert 100 vector with 1 vector with different dimension (vector type is float32)
+				- case 3.3: Fail to StreamInsert 100 vector with 50 vector with different dimension (vector type is uint8)
+				- case 3.4: Fail to StreamInsert 100 vector with 50 vector with different dimension (vector type is float32)
+				- case 3.5: Fail to StreamInsert 100 vector with all vector with different dimension (vector type is uint8)
+				- case 3.6: Fail to StreamInsert 100 vector with all vector with different dimension (vector type is float32)
+		- Boundary Value Testing
+			- uint8, float32 (with 100 insert request in a single StreamInsert request)
+				- case 1.1: Success to StreamInsert with 0 value vector (vector type is uint8)
+				- case 1.2: Success to StreamInsert with 0 value vector (vector type is float32)
+				- case 2.1: Success to StreamInsert with min value vector (vector type is uint8)
+				- case 2.2: Success to StreamInsert with min value vector (vector type is float32)
+				- case 3.1: Success to StreamInsert with max value vector (vector type is uint8)
+				- case 3.2: Success to StreamInsert with max value vector (vector type is float32)
+				- case 4.1: Fail to StreamInsert with 1 request with empty UUID (vector type is uint8)
+				- case 4.2: Fail to StreamInsert with 1 request with empty UUID (vector type is float32)
+				- case 4.3: Fail to StreamInsert with 50 request with empty UUID (vector type is uint8)
+				- case 4.4: Fail to StreamInsert with 50 request with empty UUID (vector type is float32)
+				- case 4.5: Fail to StreamInsert with all request with empty UUID (vector type is uint8)
+				- case 4.6: Fail to StreamInsert with all request with empty UUID (vector type is float32)
+				- case 5.1: Fail to StreamInsert with 1 vector with maximum dimension (vector type is uint8)
+				- case 5.2: Fail to StreamInsert with 1 vector with maximum dimension (vector type is float32)
+				- case 5.3: Fail to StreamInsert with 50 vector with maximum dimension (vector type is uint8)
+				- case 5.4: Fail to StreamInsert with 50 vector with maximum dimension (vector type is float32)
+				- case 5.5: Fail to StreamInsert with all vector with maximum dimension (vector type is uint8)
+				- case 5.6: Fail to StreamInsert with all vector with maximum dimension (vector type is float32)
+			- float32 (with 100 insert request in a single StreamInsert request)
+				- case 6.1: Success to StreamInsert with NaN value (vector type is float32)
+				- case 6.2: Success to StreamInsert with +Inf value (vector type is float32)
+				- case 6.3: Success to StreamInsert with -Inf value (vector type is float32)
+				- case 6.4: Success to StreamInsert with -0 value (vector type is float32)
+			- others  (with 100 insert request in a single StreamInsert request)
+				- case 7.1: Fail to StreamInsert with 1 vector with nil insert request
+				- case 7.2: Fail to StreamInsert with 50 vector with nil insert request
+				- case 7.3: Fail to StreamInsert with all vector with nil insert request
+				- case 8.1: Fail to StreamInsert with 1 vector with nil vector
+				- case 8.2: Fail to StreamInsert with 50 vector with nil vector
+				- case 8.3: Fail to StreamInsert with all vector with nil vector
+				- case 9.1: Fail to StreamInsert with 1 vector with empty insert vector
+				- case 9.2: Fail to StreamInsert with 50 vector with empty insert vector
+				- case 9.3: Fail to StreamInsert with all vector with empty insert vector
+		- Decision Table Testing
+			- duplicated ID (with 100 insert request in a single StreamInsert request)
+				- case 1.1: Success to StreamInsert with 2 duplicated ID when SkipStrictExistCheck is false
+				- case 1.2: Success to StreamInsert with all duplicated ID when SkipStrictExistCheck is false
+				- case 1.3: Success to StreamInsert with 2 duplicated ID when SkipStrictExistCheck is true
+				- case 1.4: Success to StreamInsert with all duplicated ID when SkipStrictExistCheck is true
+			- duplicated vector (with 100 insert request in a single StreamInsert request)
+				- case 2.1: Success to StreamInsert with 2 duplicated vector when SkipStrictExistCheck is false
+				- case 2.2: Success to StreamInsert with all duplicated vector when SkipStrictExistCheck is false
+				- case 2.3: Success to StreamInsert with 2 duplicated vector when SkipStrictExistCheck is true
+				- case 2.4: Success to StreamInsert with all duplicated vector when SkipStrictExistCheck is true
+			- duplicated ID & duplicated vector (with 100 insert request in a single StreamInsert request)
+				- case 3.1: Success to StreamInsert with 2 duplicated ID & vector when SkipStrictExistCheck is false
+				- case 3.2: Success to StreamInsert with all duplicated ID & vector when SkipStrictExistCheck is false
+				- case 3.3: Success to StreamInsert with 2 duplicated ID & vector when SkipStrictExistCheck is true
+				- case 3.4: Success to StreamInsert with all duplicated ID & vector when SkipStrictExistCheck is true
+			// existed in NGT test cases
+			- existed ID (with 100 insert request in a single StreamInsert request)
+				- case 4.1: Fail to StreamInsert with 2 existed ID when SkipStrictExistCheck is false
+				- case 4.2: Fail to StreamInsert with all existed vector when SkipStrictExistCheck is false
+				- case 4.3: Fail to StreamInsert with 2 existed ID when SkipStrictExistCheck is true
+				- case 4.4: Fail to StreamInsert with all existed vector when SkipStrictExistCheck is true
+			- existed vector (with 100 insert request in a single StreamInsert request)
+				- case 4.1: Success to StreamInsert with 2 existed vector when SkipStrictExistCheck is false
+				- case 4.2: Success to StreamInsert with all existed vector when SkipStrictExistCheck is false
+				- case 4.3: Success to StreamInsert with 2 existed vector when SkipStrictExistCheck is true
+				- case 4.4: Success to StreamInsert with all existed vector when SkipStrictExistCheck is true
+			- existed ID & existed vector (with 100 insert request in a single StreamInsert request)
+				- case 4.1: Fail to StreamInsert with 2 existed ID & vector when SkipStrictExistCheck is false
+				- case 4.2: Fail to StreamInsert with all existed ID & vector when SkipStrictExistCheck is false
+				- case 4.3: Fail to StreamInsert with 2 existed ID & vector when SkipStrictExistCheck is true
+				- case 4.4: Fail to StreamInsert with all existed ID & vector when SkipStrictExistCheck is true
+	*/
 	tests := []test{
 		// TODO test cases
 		/*
