@@ -62,7 +62,7 @@ replace (
 	github.com/golang/groupcache => github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da
 	github.com/golang/protobuf => github.com/golang/protobuf v1.5.2
 	github.com/golang/snappy => github.com/golang/snappy v0.0.4
-	github.com/google/btree => github.com/google/btree v1.1.1
+	github.com/google/btree => github.com/google/btree v1.0.1
 	github.com/google/go-cmp => github.com/google/go-cmp v0.5.8
 	github.com/google/pprof => github.com/google/pprof v0.0.0-20220520215854-d04f2422c8a1
 	github.com/google/uuid => github.com/google/uuid v1.3.0
