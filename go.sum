@@ -712,8 +712,8 @@ github.com/ugorji/go v1.2.7/go.mod h1:nF9osbDWLy6bDVv/Rtoh6QgnvNDpmCalQV5urGCCS6
 github.com/ugorji/go/codec v1.2.7/go.mod h1:WGN1fab3R1fzQlVQTkfxVtIBhWDRqOviHU95kRgeqEY=
 github.com/urfave/cli v1.22.1/go.mod h1:Gos4lmkARVdJ6EkW0WaNv/tZAAMe9V7XWyB60NtXRu0=
 github.com/urfave/cli v1.22.2/go.mod h1:Gos4lmkARVdJ6EkW0WaNv/tZAAMe9V7XWyB60NtXRu0=
-github.com/vdaas/vald-client-go v1.5.3 h1:IStfYCthdTY8y7OgbsYM4YWCvuYEVGd9Eu0BwYoUHsU=
-github.com/vdaas/vald-client-go v1.5.3/go.mod h1:j7proDxoGN/KoxEWWz9UMxTJd3HklyJnqabz9BmbPtg=
+github.com/vdaas/vald-client-go v1.5.4 h1:KfEQu/ITCOIo0GQyGp/Zjah2hKQ+ugFDd2S7WTBfdgs=
+github.com/vdaas/vald-client-go v1.5.4/go.mod h1:Pix3iSVKf7Ml6oaVtk9CXHNyJDQEWZaTLeQJGSxtTrc=
 github.com/vishvananda/netlink v1.1.0/go.mod h1:cTgwzPIzzgDAYoQrMm0EdrjRUBkTqKYppBueQtXaqoE=
 github.com/vishvananda/netlink v1.1.1-0.20201029203352-d40f9887b852/go.mod h1:twkDnbuQxJYemMlGd4JFIcuhgX83tXhKS2B/PRMpOho=
 github.com/vishvananda/netlink v1.1.1-0.20210330154013-f5de75959ad5/go.mod h1:twkDnbuQxJYemMlGd4JFIcuhgX83tXhKS2B/PRMpOho=

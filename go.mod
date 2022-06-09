@@ -188,7 +188,7 @@ require (
 	github.com/quasilyte/go-ruleguard/dsl v0.3.21
 	github.com/scylladb/gocqlx v1.5.0
 	github.com/tensorflow/tensorflow v0.0.0-00010101000000-000000000000
-	github.com/vdaas/vald-client-go v1.5.3
+	github.com/vdaas/vald-client-go v1.5.4
 	github.com/zeebo/xxh3 v1.0.1
 	go.opencensus.io v0.23.0
 	go.uber.org/automaxprocs v1.5.1
@@ -205,7 +205,7 @@ require (
 	gonum.org/v1/plot v0.0.0-00010101000000-000000000000
 	google.golang.org/api v0.80.0
 	google.golang.org/genproto v0.0.0-20220527130721-00d5c0f3be58
-	google.golang.org/grpc v1.46.2
+	google.golang.org/grpc v1.47.0
 	google.golang.org/protobuf v1.28.0
 	gopkg.in/yaml.v2 v2.4.0
 	inet.af/netaddr v0.0.0-20211027220019-c74959edd3b6
