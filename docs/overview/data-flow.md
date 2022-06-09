@@ -14,7 +14,7 @@ We will explain using this image in the following sections.
   - [Search](#search)
   - [Update](#update)
   - [Upsert](#upsert)
-  - [Delete](#delete)
+  - [Remove](#remove)
 
 ## Insert
 
@@ -65,8 +65,8 @@ Vald will execute deleting and inserting instructions to perform a single update
 When the user updates a vector from Vald:
 
 1. Vald LB Gateway receives the request from the user. The request includes the existing vector ID(s) and the new vector(s) to be updated.
-2. Vald LB Gateway will generate the UUID(s) for each vector and broadcast the delete request with the generated UUID(s) to the Vald Agents. Each Vald Agent will delete the vector data and the metadata if the corresponding UUID(s) exist on the in-memory graph index.
-3. Each Vald Agent will return the result to the Vald LB Gateway if completed to delete the requested data successfully.
+2. Vald LB Gateway will generate the UUID(s) for each vector and broadcast the remove request with the generated UUID(s) to the Vald Agents. Each Vald Agent will remove the vector data and the metadata if the corresponding UUID(s) exist on the in-memory graph index.
+3. Each Vald Agent will return the result to the Vald LB Gateway if completed to remove the requested data successfully.
 4. The insertion step will start after the deletion steps. It is the same as insert flow; please refer to the [Insert](#insert) section.
 5. If Vald Agent successfully inserts the request data, it will return success (e.g., IP address of pod) to the Vald LB Gateway.
 6. Vald LB Gateway will return the result to the user.
@@ -86,17 +86,17 @@ When the user upserts a vector to Vald:
 5. Vald Agent(s) return the result to Vald LB Gateway.
 6. Vald Filter Gateway will return the result to the user.
 
-## Delete
+## Remove
 
-Delete request will delete the vector in the Vald cluster.
-Vald will broadcast the delete request to all Vald Agents to delete the vector inside the cluster.
-It requires the `CreateIndex` instruction to Vald Agent by the Vald Index Manager or self-updating the index by Vald Agent because the delete command is not responsible for deleting indexes.
+Remove request will remove the vector in the Vald cluster.
+Vald will broadcast the remove request to all Vald Agents to remove the vector inside the cluster.
+It requires the `CreateIndex` instruction to Vald Agent by the Vald Index Manager or self-updating the index by Vald Agent because the remove command is not responsible for deleting indexes.
 
-<img src="../../assets/docs/overview/delete_flow.svg" />
+<img src="../../assets/docs/overview/remove_flow.svg" />
 
-When the user deletes a vector that exists in the in-memory graph index in Vald Agent:
+When the user removes a vector that exists in the in-memory graph index in Vald Agent:
 
-1. Vald LB Gateway receives the delete request from the user. The request includes the vector ID(s), which the user specifies.
-2. Vald LB Gateway will broadcast the delete request with UUID(s) to the Vald Agents. Each Vald Agent will delete the vector data and the metadata if the corresponding UUID(s) exists in the in-memory graph index.
-3. If Vald Agent successfully deletes the request data, it will return success to the Vald LB Gateway.
+1. Vald LB Gateway receives the remove request from the user. The request includes the vector ID(s), which the user specifies.
+2. Vald LB Gateway will broadcast the remove request with UUID(s) to the Vald Agents. Each Vald Agent will remove the vector data and the metadata if the corresponding UUID(s) exists in the in-memory graph index.
+3. If Vald Agent successfully removes the request data, it will return success to the Vald LB Gateway.
 4. Vald LB Gateway will return the result to the user.
