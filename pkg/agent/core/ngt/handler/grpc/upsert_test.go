@@ -98,7 +98,7 @@ func Test_server_Upsert(t *testing.T) {
 	defaultInsertConfig := &payload.Insert_Config{
 		SkipStrictExistCheck: true,
 	}
-	beforeFunc := func(objectType string, insertNum int) func(args) (Server, error) {
+	defaultBeforeFunc := func(objectType string, insertNum int) func(args) (Server, error) {
 		cfg := &config.NGT{
 			Dimension:        dimension,
 			DistanceType:     ngt.L2.String(),
