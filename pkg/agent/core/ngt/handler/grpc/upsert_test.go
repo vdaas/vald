@@ -42,11 +42,16 @@ func Test_server_Upsert(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
+	// optIdx is used for additional vector before upsert test.
+	type optIdx struct {
+		id  string
+		vec []float32
+	}
+
 	type args struct {
-		ctx         context.Context
-		indexID     string
-		indexVector []float32
-		req         *payload.Upsert_Request
+		ctx    context.Context
+		optIdx optIdx
+		req    *payload.Upsert_Request
 	}
 	type want struct {
 		code     codes.Code
@@ -57,7 +62,7 @@ func Test_server_Upsert(t *testing.T) {
 		args       args
 		want       want
 		checkFunc  func(want, *payload.Object_Location, error) error
-		beforeFunc func(args) (Server, error)
+		beforeFunc func(context.Context, optIdx) (Server, error)
 		afterFunc  func(args)
 	}
 	defaultCheckFunc := func(w want, gotRes *payload.Object_Location, err error) error {
@@ -98,7 +103,7 @@ func Test_server_Upsert(t *testing.T) {
 	defaultInsertConfig := &payload.Insert_Config{
 		SkipStrictExistCheck: true,
 	}
-	defaultBeforeFunc := func(objectType string, insertNum int) func(args) (Server, error) {
+	defaultBeforeFunc := func(objectType string, insertNum int) func(context.Context, optIdx) (Server, error) {
 		cfg := &config.NGT{
 			Dimension:        dimension,
 			DistanceType:     ngt.L2.String(),
@@ -114,20 +119,20 @@ func Test_server_Upsert(t *testing.T) {
 			},
 		}
 
-		return func(a args) (Server, error) {
+		return func(ctx context.Context, opt optIdx) (Server, error) {
 			var overwriteID []string
-			if a.indexID != "" {
+			if opt.id != "" {
 				overwriteID = []string{
-					a.indexID,
+					opt.id,
 				}
 			}
 			var overwriteVec [][]float32
-			if a.indexVector != nil {
+			if opt.vec != nil {
 				overwriteVec = [][]float32{
-					a.indexVector,
+					opt.vec,
 				}
 			}
-			return buildIndex(a.ctx, request.Float, vector.Gaussian, insertNum, defaultInsertConfig, cfg, nil, overwriteID, overwriteVec)
+			return buildIndex(ctx, request.Float, vector.Gaussian, insertNum, defaultInsertConfig, cfg, nil, overwriteID, overwriteVec)
 		}
 	}
 
@@ -235,8 +240,10 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Equivalent Class Testing case 1.2: success upsert with existent ID",
 			args: args{
-				ctx:     ctx,
-				indexID: "test",
+				ctx: ctx,
+				optIdx: optIdx{
+					id: "test",
+				},
 				req: &payload.Upsert_Request{
 					Vector: &payload.Object_Vector{
 						Id:     "test",
@@ -252,8 +259,10 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Equivalent Class Testing case 2.1: fail upsert with one different dimension vector (type: uint8)",
 			args: args{
-				ctx:     ctx,
-				indexID: "test",
+				ctx: ctx,
+				optIdx: optIdx{
+					id: "test",
+				},
 				req: &payload.Upsert_Request{
 					Vector: &payload.Object_Vector{
 						Id:     "test",
@@ -265,13 +274,15 @@ func Test_server_Upsert(t *testing.T) {
 			want: want{
 				code: codes.InvalidArgument,
 			},
-			beforeFunc: beforeFunc(ngt.Uint8.String(), defaultInsertNum),
+			beforeFunc: defaultBeforeFunc(ngt.Uint8.String(), defaultInsertNum),
 		},
 		{
 			name: "Equivalent Class Testint case 2.2: fail upsert with one different dimension vector (type: float32)",
 			args: args{
-				ctx:     ctx,
-				indexID: "test",
+				ctx: ctx,
+				optIdx: optIdx{
+					id: "test",
+				},
 				req: &payload.Upsert_Request{
 					Vector: &payload.Object_Vector{
 						Id:     "test",
@@ -313,7 +324,7 @@ func Test_server_Upsert(t *testing.T) {
 					Config: defaultUpsertConfig,
 				},
 			},
-			beforeFunc: beforeFunc(ngt.Float.String(), 0),
+			beforeFunc: defaultBeforeFunc(ngt.Float.String(), 0),
 			want: want{
 				code: codes.InvalidArgument,
 			},
@@ -321,8 +332,10 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 2.1: success upsert with ^@ as duplicated ID",
 			args: args{
-				ctx:     ctx,
-				indexID: string([]byte{0}),
+				ctx: ctx,
+				optIdx: optIdx{
+					id: string([]byte{0}),
+				},
 				req: &payload.Upsert_Request{
 					Vector: &payload.Object_Vector{
 						Id:     string([]byte{0}),
@@ -363,7 +376,7 @@ func Test_server_Upsert(t *testing.T) {
 					Config: defaultUpsertConfig,
 				},
 			},
-			beforeFunc: beforeFunc(ngt.Float.String(), 0),
+			beforeFunc: defaultBeforeFunc(ngt.Float.String(), 0),
 			want: want{
 				wantUUID: string([]byte{0}),
 			},
@@ -371,8 +384,10 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 2.4: success upsert with ^I as duplicated ID",
 			args: args{
-				ctx:     ctx,
-				indexID: "\t",
+				ctx: ctx,
+				optIdx: optIdx{
+					id: "\t",
+				},
 				req: &payload.Upsert_Request{
 					Vector: &payload.Object_Vector{
 						Id:     "\t",
@@ -413,7 +428,7 @@ func Test_server_Upsert(t *testing.T) {
 					Config: defaultUpsertConfig,
 				},
 			},
-			beforeFunc: beforeFunc(ngt.Float.String(), 0),
+			beforeFunc: defaultBeforeFunc(ngt.Float.String(), 0),
 			want: want{
 				wantUUID: "\t",
 			},
@@ -421,8 +436,10 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 2.7: success upsert with ^J as duplicated ID",
 			args: args{
-				ctx:     ctx,
-				indexID: "\n",
+				ctx: ctx,
+				optIdx: optIdx{
+					id: "\n",
+				},
 				req: &payload.Upsert_Request{
 					Vector: &payload.Object_Vector{
 						Id:     "\n",
@@ -463,7 +480,7 @@ func Test_server_Upsert(t *testing.T) {
 					Config: defaultUpsertConfig,
 				},
 			},
-			beforeFunc: beforeFunc(ngt.Float.String(), 0),
+			beforeFunc: defaultBeforeFunc(ngt.Float.String(), 0),
 			want: want{
 				wantUUID: "\n",
 			},
@@ -471,8 +488,10 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 2.10: success upsert with ^M as duplicated ID",
 			args: args{
-				ctx:     ctx,
-				indexID: "\r",
+				ctx: ctx,
+				optIdx: optIdx{
+					id: "\r",
+				},
 				req: &payload.Upsert_Request{
 					Vector: &payload.Object_Vector{
 						Id:     "\r",
@@ -513,7 +532,7 @@ func Test_server_Upsert(t *testing.T) {
 					Config: defaultUpsertConfig,
 				},
 			},
-			beforeFunc: beforeFunc(ngt.Float.String(), 0),
+			beforeFunc: defaultBeforeFunc(ngt.Float.String(), 0),
 			want: want{
 				wantUUID: "\r",
 			},
@@ -521,8 +540,10 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 2.13: success upsert with ^[ as duplicated ID",
 			args: args{
-				ctx:     ctx,
-				indexID: string([]byte{27}),
+				ctx: ctx,
+				optIdx: optIdx{
+					id: string([]byte{27}),
+				},
 				req: &payload.Upsert_Request{
 					Vector: &payload.Object_Vector{
 						Id:     string([]byte{27}),
@@ -563,7 +584,7 @@ func Test_server_Upsert(t *testing.T) {
 					Config: defaultUpsertConfig,
 				},
 			},
-			beforeFunc: beforeFunc(ngt.Float.String(), 0),
+			beforeFunc: defaultBeforeFunc(ngt.Float.String(), 0),
 			want: want{
 				wantUUID: string([]byte{27}),
 			},
@@ -571,8 +592,10 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 2.16: success upsert with ^? as duplicated ID",
 			args: args{
-				ctx:     ctx,
-				indexID: string([]byte{127}),
+				ctx: ctx,
+				optIdx: optIdx{
+					id: string([]byte{127}),
+				},
 				req: &payload.Upsert_Request{
 					Vector: &payload.Object_Vector{
 						Id:     string([]byte{127}),
@@ -613,7 +636,7 @@ func Test_server_Upsert(t *testing.T) {
 					Config: defaultUpsertConfig,
 				},
 			},
-			beforeFunc: beforeFunc(ngt.Float.String(), 0),
+			beforeFunc: defaultBeforeFunc(ngt.Float.String(), 0),
 			want: want{
 				wantUUID: string([]byte{127}),
 			},
@@ -621,8 +644,10 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 3.1: success upsert with utf-8 ID from utf-8 index",
 			args: args{
-				ctx:     ctx,
-				indexID: utf8Str,
+				ctx: ctx,
+				optIdx: optIdx{
+					id: utf8Str,
+				},
 				req: &payload.Upsert_Request{
 					Vector: &payload.Object_Vector{
 						Id:     utf8Str,
@@ -638,8 +663,10 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 3.2: success upsert with utf-8 ID from s-jis index",
 			args: args{
-				ctx:     ctx,
-				indexID: sjisStr,
+				ctx: ctx,
+				optIdx: optIdx{
+					id: sjisStr,
+				},
 				req: &payload.Upsert_Request{
 					Vector: &payload.Object_Vector{
 						Id:     utf8Str,
@@ -655,8 +682,10 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 3.3: success upsert with utf-8 ID from euc-jp index",
 			args: args{
-				ctx:     ctx,
-				indexID: eucjpStr,
+				ctx: ctx,
+				optIdx: optIdx{
+					id: eucjpStr,
+				},
 				req: &payload.Upsert_Request{
 					Vector: &payload.Object_Vector{
 						Id:     utf8Str,
@@ -672,8 +701,10 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 3.4: success upsert with s-jis ID from utf-8 index",
 			args: args{
-				ctx:     ctx,
-				indexID: utf8Str,
+				ctx: ctx,
+				optIdx: optIdx{
+					id: utf8Str,
+				},
 				req: &payload.Upsert_Request{
 					Vector: &payload.Object_Vector{
 						Id:     sjisStr,
@@ -689,8 +720,10 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 3.5: success upsert with s-jis ID from s-jis index",
 			args: args{
-				ctx:     ctx,
-				indexID: sjisStr,
+				ctx: ctx,
+				optIdx: optIdx{
+					id: sjisStr,
+				},
 				req: &payload.Upsert_Request{
 					Vector: &payload.Object_Vector{
 						Id:     sjisStr,
@@ -706,8 +739,10 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 3.6: success upsert with s-jis ID from euc-jp index",
 			args: args{
-				ctx:     ctx,
-				indexID: eucjpStr,
+				ctx: ctx,
+				optIdx: optIdx{
+					id: eucjpStr,
+				},
 				req: &payload.Upsert_Request{
 					Vector: &payload.Object_Vector{
 						Id:     sjisStr,
@@ -723,8 +758,10 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 3.7: success upsert with euc-jp ID from utf-8 index",
 			args: args{
-				ctx:     ctx,
-				indexID: utf8Str,
+				ctx: ctx,
+				optIdx: optIdx{
+					id: utf8Str,
+				},
 				req: &payload.Upsert_Request{
 					Vector: &payload.Object_Vector{
 						Id:     eucjpStr,
@@ -740,8 +777,10 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 3.8: success upsert with euc-jp ID from s-jis index",
 			args: args{
-				ctx:     ctx,
-				indexID: sjisStr,
+				ctx: ctx,
+				optIdx: optIdx{
+					id: sjisStr,
+				},
 				req: &payload.Upsert_Request{
 					Vector: &payload.Object_Vector{
 						Id:     eucjpStr,
@@ -757,8 +796,10 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 3.9: success upsert with euc-jp ID from euc-jp index",
 			args: args{
-				ctx:     ctx,
-				indexID: eucjpStr,
+				ctx: ctx,
+				optIdx: optIdx{
+					id: eucjpStr,
+				},
 				req: &payload.Upsert_Request{
 					Vector: &payload.Object_Vector{
 						Id:     eucjpStr,
@@ -774,8 +815,10 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 4.1: success upsert with 😀 as duplicated ID",
 			args: args{
-				ctx:     ctx,
-				indexID: "😀",
+				ctx: ctx,
+				optIdx: optIdx{
+					id: "😀",
+				},
 				req: &payload.Upsert_Request{
 					Vector: &payload.Object_Vector{
 						Id:     "😀",
@@ -816,7 +859,7 @@ func Test_server_Upsert(t *testing.T) {
 					Config: defaultUpsertConfig,
 				},
 			},
-			beforeFunc: beforeFunc(ngt.Float.String(), 0),
+			beforeFunc: defaultBeforeFunc(ngt.Float.String(), 0),
 			want: want{
 				wantUUID: "😀",
 			},
@@ -824,8 +867,10 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 5.1: success upsert with one 0 value vector with duplicated ID (type: uint8)",
 			args: args{
-				ctx:     ctx,
-				indexID: "test",
+				ctx: ctx,
+				optIdx: optIdx{
+					id: "test",
+				},
 				req: &payload.Upsert_Request{
 					Vector: &payload.Object_Vector{
 						Id:     "test",
@@ -834,7 +879,7 @@ func Test_server_Upsert(t *testing.T) {
 					Config: defaultUpsertConfig,
 				},
 			},
-			beforeFunc: beforeFunc(ngt.Uint8.String(), 1000),
+			beforeFunc: defaultBeforeFunc(ngt.Uint8.String(), 1000),
 			want: want{
 				wantUUID: "test",
 			},
@@ -851,7 +896,7 @@ func Test_server_Upsert(t *testing.T) {
 					Config: defaultUpsertConfig,
 				},
 			},
-			beforeFunc: beforeFunc(ngt.Uint8.String(), 1000),
+			beforeFunc: defaultBeforeFunc(ngt.Uint8.String(), 1000),
 			want: want{
 				wantUUID: "test",
 			},
@@ -868,7 +913,7 @@ func Test_server_Upsert(t *testing.T) {
 					Config: defaultUpsertConfig,
 				},
 			},
-			beforeFunc: beforeFunc(ngt.Uint8.String(), 0),
+			beforeFunc: defaultBeforeFunc(ngt.Uint8.String(), 0),
 			want: want{
 				wantUUID: "test",
 			},
@@ -876,8 +921,10 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 5.4: success upsert with one +0 value vector with duplicated ID (type: float32)",
 			args: args{
-				ctx:     ctx,
-				indexID: "test",
+				ctx: ctx,
+				optIdx: optIdx{
+					id: "test",
+				},
 				req: &payload.Upsert_Request{
 					Vector: &payload.Object_Vector{
 						Id:     "test",
@@ -918,7 +965,7 @@ func Test_server_Upsert(t *testing.T) {
 					Config: defaultUpsertConfig,
 				},
 			},
-			beforeFunc: beforeFunc(ngt.Float.String(), 0),
+			beforeFunc: defaultBeforeFunc(ngt.Float.String(), 0),
 			want: want{
 				wantUUID: "test",
 			},
@@ -926,8 +973,10 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 5.7: success upsert with one -0 value vector with duplicated ID (type: float32)",
 			args: args{
-				ctx:     ctx,
-				indexID: "test",
+				ctx: ctx,
+				optIdx: optIdx{
+					id: "test",
+				},
 				req: &payload.Upsert_Request{
 					Vector: &payload.Object_Vector{
 						Id:     "test",
@@ -968,7 +1017,7 @@ func Test_server_Upsert(t *testing.T) {
 					Config: defaultUpsertConfig,
 				},
 			},
-			beforeFunc: beforeFunc(ngt.Float.String(), 0),
+			beforeFunc: defaultBeforeFunc(ngt.Float.String(), 0),
 			want: want{
 				wantUUID: "test",
 			},
@@ -976,8 +1025,10 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 6.1: success upsert with one min value vector with duplicated ID (type: uint8)",
 			args: args{
-				ctx:     ctx,
-				indexID: "test",
+				ctx: ctx,
+				optIdx: optIdx{
+					id: "test",
+				},
 				req: &payload.Upsert_Request{
 					Vector: &payload.Object_Vector{
 						Id:     "test",
@@ -986,7 +1037,7 @@ func Test_server_Upsert(t *testing.T) {
 					Config: defaultUpsertConfig,
 				},
 			},
-			beforeFunc: beforeFunc(ngt.Uint8.String(), 1000),
+			beforeFunc: defaultBeforeFunc(ngt.Uint8.String(), 1000),
 			want: want{
 				wantUUID: "test",
 			},
@@ -1003,7 +1054,7 @@ func Test_server_Upsert(t *testing.T) {
 					Config: defaultUpsertConfig,
 				},
 			},
-			beforeFunc: beforeFunc(ngt.Uint8.String(), 1000),
+			beforeFunc: defaultBeforeFunc(ngt.Uint8.String(), 1000),
 			want: want{
 				wantUUID: "test",
 			},
@@ -1020,7 +1071,7 @@ func Test_server_Upsert(t *testing.T) {
 					Config: defaultUpsertConfig,
 				},
 			},
-			beforeFunc: beforeFunc(ngt.Uint8.String(), 0),
+			beforeFunc: defaultBeforeFunc(ngt.Uint8.String(), 0),
 			want: want{
 				wantUUID: "test",
 			},
@@ -1028,8 +1079,10 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 6.4: success upsert with one min value vector with duplicated ID (type: float32)",
 			args: args{
-				ctx:     ctx,
-				indexID: "test",
+				ctx: ctx,
+				optIdx: optIdx{
+					id: "test",
+				},
 				req: &payload.Upsert_Request{
 					Vector: &payload.Object_Vector{
 						Id:     "test",
@@ -1070,7 +1123,7 @@ func Test_server_Upsert(t *testing.T) {
 					Config: defaultUpsertConfig,
 				},
 			},
-			beforeFunc: beforeFunc(ngt.Float.String(), 0),
+			beforeFunc: defaultBeforeFunc(ngt.Float.String(), 0),
 			want: want{
 				wantUUID: "test",
 			},
@@ -1078,8 +1131,10 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 7.1: success upsert with one max value vector with  ID (type: uint8)",
 			args: args{
-				ctx:     ctx,
-				indexID: "test",
+				ctx: ctx,
+				optIdx: optIdx{
+					id: "test",
+				},
 				req: &payload.Upsert_Request{
 					Vector: &payload.Object_Vector{
 						Id:     "test",
@@ -1088,7 +1143,7 @@ func Test_server_Upsert(t *testing.T) {
 					Config: defaultUpsertConfig,
 				},
 			},
-			beforeFunc: beforeFunc(ngt.Uint8.String(), 1000),
+			beforeFunc: defaultBeforeFunc(ngt.Uint8.String(), 1000),
 			want: want{
 				wantUUID: "test",
 			},
@@ -1105,7 +1160,7 @@ func Test_server_Upsert(t *testing.T) {
 					Config: defaultUpsertConfig,
 				},
 			},
-			beforeFunc: beforeFunc(ngt.Uint8.String(), 1000),
+			beforeFunc: defaultBeforeFunc(ngt.Uint8.String(), 1000),
 			want: want{
 				wantUUID: "test",
 			},
@@ -1122,7 +1177,7 @@ func Test_server_Upsert(t *testing.T) {
 					Config: defaultUpsertConfig,
 				},
 			},
-			beforeFunc: beforeFunc(ngt.Uint8.String(), 0),
+			beforeFunc: defaultBeforeFunc(ngt.Uint8.String(), 0),
 			want: want{
 				wantUUID: "test",
 			},
@@ -1130,8 +1185,10 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 7.4: success upsert with one max value vector with duplicated ID (type: float32)",
 			args: args{
-				ctx:     ctx,
-				indexID: "test",
+				ctx: ctx,
+				optIdx: optIdx{
+					id: "test",
+				},
 				req: &payload.Upsert_Request{
 					Vector: &payload.Object_Vector{
 						Id:     "test",
@@ -1172,7 +1229,7 @@ func Test_server_Upsert(t *testing.T) {
 					Config: defaultUpsertConfig,
 				},
 			},
-			beforeFunc: beforeFunc(ngt.Float.String(), 0),
+			beforeFunc: defaultBeforeFunc(ngt.Float.String(), 0),
 			want: want{
 				wantUUID: "test",
 			},
@@ -1180,8 +1237,10 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 8.1: success upsert with one NaN value vector with duplicated ID (type: float32)",
 			args: args{
-				ctx:     ctx,
-				indexID: "test",
+				ctx: ctx,
+				optIdx: optIdx{
+					id: "test",
+				},
 				req: &payload.Upsert_Request{
 					Vector: &payload.Object_Vector{
 						Id:     "test",
@@ -1222,7 +1281,7 @@ func Test_server_Upsert(t *testing.T) {
 					Config: defaultUpsertConfig,
 				},
 			},
-			beforeFunc: beforeFunc(ngt.Float.String(), 0),
+			beforeFunc: defaultBeforeFunc(ngt.Float.String(), 0),
 			want: want{
 				wantUUID: "test",
 			},
@@ -1230,8 +1289,10 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 9.1: success upsert with one +inf value vector with duplicated ID (type: float32)",
 			args: args{
-				ctx:     ctx,
-				indexID: "test",
+				ctx: ctx,
+				optIdx: optIdx{
+					id: "test",
+				},
 				req: &payload.Upsert_Request{
 					Vector: &payload.Object_Vector{
 						Id:     "test",
@@ -1272,7 +1333,7 @@ func Test_server_Upsert(t *testing.T) {
 					Config: defaultUpsertConfig,
 				},
 			},
-			beforeFunc: beforeFunc(ngt.Float.String(), 0),
+			beforeFunc: defaultBeforeFunc(ngt.Float.String(), 0),
 			want: want{
 				wantUUID: "test",
 			},
@@ -1280,8 +1341,10 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 9.4: success upsert with one -inf value vector with duplicated ID (type: float32)",
 			args: args{
-				ctx:     ctx,
-				indexID: "test",
+				ctx: ctx,
+				optIdx: optIdx{
+					id: "test",
+				},
 				req: &payload.Upsert_Request{
 					Vector: &payload.Object_Vector{
 						Id:     "test",
@@ -1316,13 +1379,12 @@ func Test_server_Upsert(t *testing.T) {
 				ctx: ctx,
 				req: &payload.Upsert_Request{
 					Vector: &payload.Object_Vector{
-						Id:     "test",
-						Vector: vector.GenSameValueVec(dimension, float32(math.Inf(-1.0))),
+						Id: "test",
 					},
 					Config: defaultUpsertConfig,
 				},
 			},
-			beforeFunc: beforeFunc(ngt.Float.String(), 0),
+			beforeFunc: defaultBeforeFunc(ngt.Float.String(), 0),
 			want: want{
 				wantUUID: "test",
 			},
@@ -1330,8 +1392,10 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 10.1: fail upsert with one nil vector",
 			args: args{
-				ctx:     ctx,
-				indexID: "test",
+				ctx: ctx,
+				optIdx: optIdx{
+					id: "test",
+				},
 				req: &payload.Upsert_Request{
 					Vector: &payload.Object_Vector{
 						Id:     "test",
@@ -1356,7 +1420,7 @@ func Test_server_Upsert(t *testing.T) {
 					Config: defaultUpsertConfig,
 				},
 			},
-			beforeFunc: beforeFunc(ngt.Float.String(), 0),
+			beforeFunc: defaultBeforeFunc(ngt.Float.String(), 0),
 			want: want{
 				code: codes.InvalidArgument,
 			},
@@ -1364,8 +1428,10 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 11.1: fail upsert with one empty vector",
 			args: args{
-				ctx:     ctx,
-				indexID: "test",
+				ctx: ctx,
+				optIdx: optIdx{
+					id: "test",
+				},
 				req: &payload.Upsert_Request{
 					Vector: &payload.Object_Vector{
 						Id:     "test",
@@ -1381,8 +1447,10 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 11.2: fail upsert to empty index with one empty vector",
 			args: args{
-				ctx:     ctx,
-				indexID: "test",
+				ctx: ctx,
+				optIdx: optIdx{
+					id: "test",
+				},
 				req: &payload.Upsert_Request{
 					Vector: &payload.Object_Vector{
 						Id:     "test",
@@ -1391,7 +1459,7 @@ func Test_server_Upsert(t *testing.T) {
 					Config: defaultUpsertConfig,
 				},
 			},
-			beforeFunc: beforeFunc(ngt.Float.String(), 0),
+			beforeFunc: defaultBeforeFunc(ngt.Float.String(), 0),
 			want: want{
 				code: codes.InvalidArgument,
 			},
@@ -1402,9 +1470,11 @@ func Test_server_Upsert(t *testing.T) {
 			args: func() args {
 				vector := vector.GaussianDistributedFloat32VectorGenerator(1, dimension)[0]
 				return args{
-					ctx:         ctx,
-					indexID:     "test",
-					indexVector: vector,
+					ctx: ctx,
+					optIdx: optIdx{
+						id:  "test",
+						vec: vector,
+					},
 					req: &payload.Upsert_Request{
 						Vector: &payload.Object_Vector{
 							Id:     "test",
@@ -1421,8 +1491,10 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Decision Table Testing case 1.2: success upsert with one different vector, duplicated ID and SkipStrictExistCheck is true",
 			args: args{
-				ctx:     ctx,
-				indexID: "test",
+				ctx: ctx,
+				optIdx: optIdx{
+					id: "test",
+				},
 				req: &payload.Upsert_Request{
 					Vector: &payload.Object_Vector{
 						Id:     "test",
@@ -1440,9 +1512,11 @@ func Test_server_Upsert(t *testing.T) {
 			args: func() args {
 				vector := vector.GaussianDistributedFloat32VectorGenerator(1, dimension)[0]
 				return args{
-					ctx:         ctx,
-					indexID:     "test",
-					indexVector: vector,
+					ctx: ctx,
+					optIdx: optIdx{
+						id:  "test",
+						vec: vector,
+					},
 					req: &payload.Upsert_Request{
 						Vector: &payload.Object_Vector{
 							Id:     "uuid-2", // the first uuid is overwritten, so use the second one
@@ -1477,9 +1551,11 @@ func Test_server_Upsert(t *testing.T) {
 			args: func() args {
 				vector := vector.GaussianDistributedFloat32VectorGenerator(1, dimension)[0]
 				return args{
-					ctx:         ctx,
-					indexID:     "test",
-					indexVector: vector,
+					ctx: ctx,
+					optIdx: optIdx{
+						id:  "test",
+						vec: vector,
+					},
 					req: &payload.Upsert_Request{
 						Vector: &payload.Object_Vector{
 							Id:     "test",
@@ -1498,8 +1574,10 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Decision Table Testing case 2.2: success upsert with one duplicated vector, duplicated ID and SkipStrictExistCheck is false",
 			args: args{
-				ctx:     ctx,
-				indexID: "test",
+				ctx: ctx,
+				optIdx: optIdx{
+					id: "test",
+				},
 				req: &payload.Upsert_Request{
 					Vector: &payload.Object_Vector{
 						Id:     "test",
@@ -1519,9 +1597,11 @@ func Test_server_Upsert(t *testing.T) {
 			args: func() args {
 				vector := vector.GaussianDistributedFloat32VectorGenerator(1, dimension)[0]
 				return args{
-					ctx:         ctx,
-					indexID:     "test",
-					indexVector: vector,
+					ctx: ctx,
+					optIdx: optIdx{
+						id:  "test",
+						vec: vector,
+					},
 					req: &payload.Upsert_Request{
 						Vector: &payload.Object_Vector{
 							Id:     "uuid-2", // the first uuid is overwritten, so use the second one
@@ -1563,9 +1643,9 @@ func Test_server_Upsert(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc == nil {
-				test.beforeFunc = beforeFunc(ngt.Float.String(), defaultInsertNum)
+				test.beforeFunc = defaultBeforeFunc(ngt.Float.String(), defaultInsertNum)
 			}
-			s, err := test.beforeFunc(test.args)
+			s, err := test.beforeFunc(test.args.ctx, test.args.optIdx)
 			if err != nil {
 				tt.Errorf("error = %v", err)
 			}
