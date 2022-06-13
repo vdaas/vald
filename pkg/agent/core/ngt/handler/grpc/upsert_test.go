@@ -39,9 +39,6 @@ import (
 func Test_server_Upsert(t *testing.T) {
 	t.Parallel()
 
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
 	// optIdx is used for additional vector before upsert test.
 	type optIdx struct {
 		id  string
@@ -49,7 +46,6 @@ func Test_server_Upsert(t *testing.T) {
 	}
 
 	type args struct {
-		ctx    context.Context
 		optIdx optIdx
 		req    *payload.Upsert_Request
 	}
@@ -63,7 +59,7 @@ func Test_server_Upsert(t *testing.T) {
 		want       want
 		checkFunc  func(want, *payload.Object_Location, error) error
 		beforeFunc func(context.Context, optIdx) (Server, error)
-		afterFunc  func(args)
+		afterFunc  func()
 	}
 	defaultCheckFunc := func(w want, gotRes *payload.Object_Location, err error) error {
 		if err != nil {
@@ -224,7 +220,6 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Equivalent Class Testing case 1.1: success upsert with new ID",
 			args: args{
-				ctx: ctx,
 				req: &payload.Upsert_Request{
 					Vector: &payload.Object_Vector{
 						Id:     "test",
@@ -240,7 +235,6 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Equivalent Class Testing case 1.2: success upsert with existent ID",
 			args: args{
-				ctx: ctx,
 				optIdx: optIdx{
 					id: "test",
 				},
@@ -259,7 +253,6 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Equivalent Class Testing case 2.1: fail upsert with one different dimension vector (type: uint8)",
 			args: args{
-				ctx: ctx,
 				optIdx: optIdx{
 					id: "test",
 				},
@@ -277,9 +270,8 @@ func Test_server_Upsert(t *testing.T) {
 			beforeFunc: defaultBeforeFunc(ngt.Uint8.String(), defaultInsertNum),
 		},
 		{
-			name: "Equivalent Class Testint case 2.2: fail upsert with one different dimension vector (type: float32)",
+			name: "Equivalent Class Testing case 2.2: fail upsert with one different dimension vector (type: float32)",
 			args: args{
-				ctx: ctx,
 				optIdx: optIdx{
 					id: "test",
 				},
@@ -295,11 +287,9 @@ func Test_server_Upsert(t *testing.T) {
 				code: codes.InvalidArgument,
 			},
 		},
-
 		{
 			name: "Boundary Value Testing case 1.1: fail upsert with \"\" as ID",
 			args: args{
-				ctx: ctx,
 				req: &payload.Upsert_Request{
 					Vector: &payload.Object_Vector{
 						Id:     "",
@@ -315,7 +305,6 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 1.2: fail upsert to empty index with \"\" as ID",
 			args: args{
-				ctx: ctx,
 				req: &payload.Upsert_Request{
 					Vector: &payload.Object_Vector{
 						Id:     "",
@@ -332,7 +321,6 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 2.1: success upsert with ^@ as duplicated ID",
 			args: args{
-				ctx: ctx,
 				optIdx: optIdx{
 					id: string([]byte{0}),
 				},
@@ -351,7 +339,6 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 2.2: success upsert with ^@ as new ID",
 			args: args{
-				ctx: ctx,
 				req: &payload.Upsert_Request{
 					Vector: &payload.Object_Vector{
 						Id:     string([]byte{0}),
@@ -367,7 +354,6 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 2.3: success upsert to empty index with ^@ as new ID",
 			args: args{
-				ctx: ctx,
 				req: &payload.Upsert_Request{
 					Vector: &payload.Object_Vector{
 						Id:     string([]byte{0}),
@@ -384,7 +370,6 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 2.4: success upsert with ^I as duplicated ID",
 			args: args{
-				ctx: ctx,
 				optIdx: optIdx{
 					id: "\t",
 				},
@@ -403,7 +388,6 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 2.5: success upsert with ^I as new ID",
 			args: args{
-				ctx: ctx,
 				req: &payload.Upsert_Request{
 					Vector: &payload.Object_Vector{
 						Id:     "\t",
@@ -419,7 +403,6 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 2.6: success upsert to empty index with ^I as new ID",
 			args: args{
-				ctx: ctx,
 				req: &payload.Upsert_Request{
 					Vector: &payload.Object_Vector{
 						Id:     "\t",
@@ -436,7 +419,6 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 2.7: success upsert with ^J as duplicated ID",
 			args: args{
-				ctx: ctx,
 				optIdx: optIdx{
 					id: "\n",
 				},
@@ -455,7 +437,6 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 2.8: success upsert with ^J as new ID",
 			args: args{
-				ctx: ctx,
 				req: &payload.Upsert_Request{
 					Vector: &payload.Object_Vector{
 						Id:     "\n",
@@ -471,7 +452,6 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 2.9: success upsert to empty index with ^J as new ID",
 			args: args{
-				ctx: ctx,
 				req: &payload.Upsert_Request{
 					Vector: &payload.Object_Vector{
 						Id:     "\n",
@@ -488,7 +468,6 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 2.10: success upsert with ^M as duplicated ID",
 			args: args{
-				ctx: ctx,
 				optIdx: optIdx{
 					id: "\r",
 				},
@@ -507,7 +486,6 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 2.11: success upsert with ^M as new ID",
 			args: args{
-				ctx: ctx,
 				req: &payload.Upsert_Request{
 					Vector: &payload.Object_Vector{
 						Id:     "\r",
@@ -523,7 +501,6 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 2.12: success upsert to empty index with ^M as new ID",
 			args: args{
-				ctx: ctx,
 				req: &payload.Upsert_Request{
 					Vector: &payload.Object_Vector{
 						Id:     "\r",
@@ -540,7 +517,6 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 2.13: success upsert with ^[ as duplicated ID",
 			args: args{
-				ctx: ctx,
 				optIdx: optIdx{
 					id: string([]byte{27}),
 				},
@@ -559,7 +535,6 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 2.14: success upsert with ^[ as new ID",
 			args: args{
-				ctx: ctx,
 				req: &payload.Upsert_Request{
 					Vector: &payload.Object_Vector{
 						Id:     string([]byte{27}),
@@ -575,7 +550,6 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 2.15: success upsert to empty index with ^[ as new ID",
 			args: args{
-				ctx: ctx,
 				req: &payload.Upsert_Request{
 					Vector: &payload.Object_Vector{
 						Id:     string([]byte{27}),
@@ -592,7 +566,6 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 2.16: success upsert with ^? as duplicated ID",
 			args: args{
-				ctx: ctx,
 				optIdx: optIdx{
 					id: string([]byte{127}),
 				},
@@ -611,7 +584,6 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 2.17: success upsert with ^? as new ID",
 			args: args{
-				ctx: ctx,
 				req: &payload.Upsert_Request{
 					Vector: &payload.Object_Vector{
 						Id:     string([]byte{127}),
@@ -627,7 +599,6 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 2.18: success upsert to empty index with ^? as new ID",
 			args: args{
-				ctx: ctx,
 				req: &payload.Upsert_Request{
 					Vector: &payload.Object_Vector{
 						Id:     string([]byte{127}),
@@ -644,7 +615,6 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 3.1: success upsert with utf-8 ID from utf-8 index",
 			args: args{
-				ctx: ctx,
 				optIdx: optIdx{
 					id: utf8Str,
 				},
@@ -663,7 +633,6 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 3.2: success upsert with utf-8 ID from s-jis index",
 			args: args{
-				ctx: ctx,
 				optIdx: optIdx{
 					id: sjisStr,
 				},
@@ -682,7 +651,6 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 3.3: success upsert with utf-8 ID from euc-jp index",
 			args: args{
-				ctx: ctx,
 				optIdx: optIdx{
 					id: eucjpStr,
 				},
@@ -701,7 +669,6 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 3.4: success upsert with s-jis ID from utf-8 index",
 			args: args{
-				ctx: ctx,
 				optIdx: optIdx{
 					id: utf8Str,
 				},
@@ -720,7 +687,6 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 3.5: success upsert with s-jis ID from s-jis index",
 			args: args{
-				ctx: ctx,
 				optIdx: optIdx{
 					id: sjisStr,
 				},
@@ -739,7 +705,6 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 3.6: success upsert with s-jis ID from euc-jp index",
 			args: args{
-				ctx: ctx,
 				optIdx: optIdx{
 					id: eucjpStr,
 				},
@@ -758,7 +723,6 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 3.7: success upsert with euc-jp ID from utf-8 index",
 			args: args{
-				ctx: ctx,
 				optIdx: optIdx{
 					id: utf8Str,
 				},
@@ -777,7 +741,6 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 3.8: success upsert with euc-jp ID from s-jis index",
 			args: args{
-				ctx: ctx,
 				optIdx: optIdx{
 					id: sjisStr,
 				},
@@ -796,7 +759,6 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 3.9: success upsert with euc-jp ID from euc-jp index",
 			args: args{
-				ctx: ctx,
 				optIdx: optIdx{
 					id: eucjpStr,
 				},
@@ -815,7 +777,6 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 4.1: success upsert with 😀 as duplicated ID",
 			args: args{
-				ctx: ctx,
 				optIdx: optIdx{
 					id: "😀",
 				},
@@ -834,7 +795,6 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 4.2: success upsert with 😀 as new ID",
 			args: args{
-				ctx: ctx,
 				req: &payload.Upsert_Request{
 					Vector: &payload.Object_Vector{
 						Id:     "😀",
@@ -850,7 +810,6 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 4.3: success upsert to empty index with 😀 as new ID",
 			args: args{
-				ctx: ctx,
 				req: &payload.Upsert_Request{
 					Vector: &payload.Object_Vector{
 						Id:     "😀",
@@ -867,7 +826,6 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 5.1: success upsert with one 0 value vector with duplicated ID (type: uint8)",
 			args: args{
-				ctx: ctx,
 				optIdx: optIdx{
 					id: "test",
 				},
@@ -887,7 +845,6 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 5.2: success upsert with one 0 value vector with new ID (type: uint8)",
 			args: args{
-				ctx: ctx,
 				req: &payload.Upsert_Request{
 					Vector: &payload.Object_Vector{
 						Id:     "test",
@@ -904,7 +861,6 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 5.3: success upsert to empty index with one 0 value vector with new ID (type: uint8)",
 			args: args{
-				ctx: ctx,
 				req: &payload.Upsert_Request{
 					Vector: &payload.Object_Vector{
 						Id:     "test",
@@ -921,7 +877,6 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 5.4: success upsert with one +0 value vector with duplicated ID (type: float32)",
 			args: args{
-				ctx: ctx,
 				optIdx: optIdx{
 					id: "test",
 				},
@@ -940,7 +895,6 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 5.5: success upsert with one +0 value vector with new ID (type: float32)",
 			args: args{
-				ctx: ctx,
 				req: &payload.Upsert_Request{
 					Vector: &payload.Object_Vector{
 						Id:     "test",
@@ -956,7 +910,6 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 5.6: success upsert to empty index with one +0 value vector with new ID (type: float32)",
 			args: args{
-				ctx: ctx,
 				req: &payload.Upsert_Request{
 					Vector: &payload.Object_Vector{
 						Id:     "test",
@@ -973,7 +926,6 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 5.7: success upsert with one -0 value vector with duplicated ID (type: float32)",
 			args: args{
-				ctx: ctx,
 				optIdx: optIdx{
 					id: "test",
 				},
@@ -992,7 +944,6 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 5.8: success upsert with one -0 value vector with new ID (type: float32)",
 			args: args{
-				ctx: ctx,
 				req: &payload.Upsert_Request{
 					Vector: &payload.Object_Vector{
 						Id:     "test",
@@ -1008,7 +959,6 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 5.9: success upsert to empty index with one -0 value vector with new ID (type: float32)",
 			args: args{
-				ctx: ctx,
 				req: &payload.Upsert_Request{
 					Vector: &payload.Object_Vector{
 						Id:     "test",
@@ -1025,7 +975,6 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 6.1: success upsert with one min value vector with duplicated ID (type: uint8)",
 			args: args{
-				ctx: ctx,
 				optIdx: optIdx{
 					id: "test",
 				},
@@ -1045,7 +994,6 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 6.2: success upsert with one min value vector with new ID (type: uint8)",
 			args: args{
-				ctx: ctx,
 				req: &payload.Upsert_Request{
 					Vector: &payload.Object_Vector{
 						Id:     "test",
@@ -1062,7 +1010,6 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 6.3: success upsert to empty index with one min value vector with new ID (type: uint8)",
 			args: args{
-				ctx: ctx,
 				req: &payload.Upsert_Request{
 					Vector: &payload.Object_Vector{
 						Id:     "test",
@@ -1079,7 +1026,6 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 6.4: success upsert with one min value vector with duplicated ID (type: float32)",
 			args: args{
-				ctx: ctx,
 				optIdx: optIdx{
 					id: "test",
 				},
@@ -1098,7 +1044,6 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 6.5: success upsert with one min value vector with new ID (type: float32)",
 			args: args{
-				ctx: ctx,
 				req: &payload.Upsert_Request{
 					Vector: &payload.Object_Vector{
 						Id:     "test",
@@ -1114,7 +1059,6 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 6.6: success upsert with one min value vector with new ID (type: float32)",
 			args: args{
-				ctx: ctx,
 				req: &payload.Upsert_Request{
 					Vector: &payload.Object_Vector{
 						Id:     "test",
@@ -1131,7 +1075,6 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 7.1: success upsert with one max value vector with  ID (type: uint8)",
 			args: args{
-				ctx: ctx,
 				optIdx: optIdx{
 					id: "test",
 				},
@@ -1151,7 +1094,6 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 7.2: success upsert with one max value vector with new ID (type: uint8)",
 			args: args{
-				ctx: ctx,
 				req: &payload.Upsert_Request{
 					Vector: &payload.Object_Vector{
 						Id:     "test",
@@ -1168,7 +1110,6 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 7.3: success upsert to empty index with one max value vector with new ID (type: uint8)",
 			args: args{
-				ctx: ctx,
 				req: &payload.Upsert_Request{
 					Vector: &payload.Object_Vector{
 						Id:     "test",
@@ -1185,7 +1126,6 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 7.4: success upsert with one max value vector with duplicated ID (type: float32)",
 			args: args{
-				ctx: ctx,
 				optIdx: optIdx{
 					id: "test",
 				},
@@ -1204,7 +1144,6 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 7.5: success upsert with one max value vector with new ID (type: float32)",
 			args: args{
-				ctx: ctx,
 				req: &payload.Upsert_Request{
 					Vector: &payload.Object_Vector{
 						Id:     "test",
@@ -1220,7 +1159,6 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 7.6: success upsert to empty index with one max value vector with new ID (type: float32)",
 			args: args{
-				ctx: ctx,
 				req: &payload.Upsert_Request{
 					Vector: &payload.Object_Vector{
 						Id:     "test",
@@ -1237,7 +1175,6 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 8.1: success upsert with one NaN value vector with duplicated ID (type: float32)",
 			args: args{
-				ctx: ctx,
 				optIdx: optIdx{
 					id: "test",
 				},
@@ -1256,7 +1193,6 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 8.2: success upsert with one NaN value vector with new ID (type: float32)",
 			args: args{
-				ctx: ctx,
 				req: &payload.Upsert_Request{
 					Vector: &payload.Object_Vector{
 						Id:     "test",
@@ -1272,7 +1208,6 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 8.3: success upsert to empty index with one NaN value vector with new ID (type: float32)",
 			args: args{
-				ctx: ctx,
 				req: &payload.Upsert_Request{
 					Vector: &payload.Object_Vector{
 						Id:     "test",
@@ -1289,7 +1224,6 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 9.1: success upsert with one +inf value vector with duplicated ID (type: float32)",
 			args: args{
-				ctx: ctx,
 				optIdx: optIdx{
 					id: "test",
 				},
@@ -1308,7 +1242,6 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 9.2: success upsert with one +inf value vector with new ID (type: float32)",
 			args: args{
-				ctx: ctx,
 				req: &payload.Upsert_Request{
 					Vector: &payload.Object_Vector{
 						Id:     "test",
@@ -1324,7 +1257,6 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 9.3: success upsert to empty index with one +inf value vector with new ID (type: float32)",
 			args: args{
-				ctx: ctx,
 				req: &payload.Upsert_Request{
 					Vector: &payload.Object_Vector{
 						Id:     "test",
@@ -1341,7 +1273,6 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 9.4: success upsert with one -inf value vector with duplicated ID (type: float32)",
 			args: args{
-				ctx: ctx,
 				optIdx: optIdx{
 					id: "test",
 				},
@@ -1360,7 +1291,6 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 9.5: success upsert with one -inf value vector with new ID (type: float32)",
 			args: args{
-				ctx: ctx,
 				req: &payload.Upsert_Request{
 					Vector: &payload.Object_Vector{
 						Id:     "test",
@@ -1376,7 +1306,6 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 9.6: success upsert to empty index with one -inf value vector with new ID (type: float32)",
 			args: args{
-				ctx: ctx,
 				req: &payload.Upsert_Request{
 					Vector: &payload.Object_Vector{
 						Id:     "test",
@@ -1393,7 +1322,6 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 10.1: fail upsert with one nil vector",
 			args: args{
-				ctx: ctx,
 				optIdx: optIdx{
 					id: "test",
 				},
@@ -1412,7 +1340,6 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 10.2: fail upsert to empty with one nil vector",
 			args: args{
-				ctx: ctx,
 				req: &payload.Upsert_Request{
 					Vector: &payload.Object_Vector{
 						Id:     "test",
@@ -1429,7 +1356,6 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 11.1: fail upsert with one empty vector",
 			args: args{
-				ctx: ctx,
 				optIdx: optIdx{
 					id: "test",
 				},
@@ -1448,7 +1374,6 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 11.2: fail upsert to empty index with one empty vector",
 			args: args{
-				ctx: ctx,
 				optIdx: optIdx{
 					id: "test",
 				},
@@ -1465,13 +1390,11 @@ func Test_server_Upsert(t *testing.T) {
 				code: codes.InvalidArgument,
 			},
 		},
-
 		{
 			name: "Decision Table Testing case 1.1: fail upsert with one duplicated vector, duplicated ID and SkipStrictExistCheck is true",
 			args: func() args {
 				vector := vector.GaussianDistributedFloat32VectorGenerator(1, dimension)[0]
 				return args{
-					ctx: ctx,
 					optIdx: optIdx{
 						id:  "test",
 						vec: vector,
@@ -1492,7 +1415,6 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Decision Table Testing case 1.2: success upsert with one different vector, duplicated ID and SkipStrictExistCheck is true",
 			args: args{
-				ctx: ctx,
 				optIdx: optIdx{
 					id: "test",
 				},
@@ -1513,7 +1435,6 @@ func Test_server_Upsert(t *testing.T) {
 			args: func() args {
 				vector := vector.GaussianDistributedFloat32VectorGenerator(1, dimension)[0]
 				return args{
-					ctx: ctx,
 					optIdx: optIdx{
 						id:  "test",
 						vec: vector,
@@ -1534,7 +1455,6 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Decision Table Testing case 1.4: success upsert with one different vector, different ID and SkipStrictExistCheck is true",
 			args: args{
-				ctx: ctx,
 				req: &payload.Upsert_Request{
 					Vector: &payload.Object_Vector{
 						Id:     "test",
@@ -1552,7 +1472,6 @@ func Test_server_Upsert(t *testing.T) {
 			args: func() args {
 				vector := vector.GaussianDistributedFloat32VectorGenerator(1, dimension)[0]
 				return args{
-					ctx: ctx,
 					optIdx: optIdx{
 						id:  "test",
 						vec: vector,
@@ -1575,7 +1494,6 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Decision Table Testing case 2.2: success upsert with one duplicated vector, duplicated ID and SkipStrictExistCheck is false",
 			args: args{
-				ctx: ctx,
 				optIdx: optIdx{
 					id: "test",
 				},
@@ -1598,7 +1516,6 @@ func Test_server_Upsert(t *testing.T) {
 			args: func() args {
 				vector := vector.GaussianDistributedFloat32VectorGenerator(1, dimension)[0]
 				return args{
-					ctx: ctx,
 					optIdx: optIdx{
 						id:  "test",
 						vec: vector,
@@ -1621,7 +1538,6 @@ func Test_server_Upsert(t *testing.T) {
 		{
 			name: "Decision Table Testing case 2.4: success upsert with one different vector, different ID and SkipStrictExistCheck is false",
 			args: args{
-				ctx: ctx,
 				req: &payload.Upsert_Request{
 					Vector: &payload.Object_Vector{
 						Id:     "test",
@@ -1642,23 +1558,24 @@ func Test_server_Upsert(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
+			ctx, cancel := context.WithCancel(context.Background())
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			defer cancel()
 			if test.beforeFunc == nil {
 				test.beforeFunc = defaultBeforeFunc(ngt.Float.String(), defaultInsertNum)
 			}
-			s, err := test.beforeFunc(test.args.ctx, test.args.optIdx)
+			s, err := test.beforeFunc(ctx, test.args.optIdx)
 			if err != nil {
 				tt.Errorf("error = %v", err)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc()
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
-
-			gotLoc, err := s.Upsert(test.args.ctx, test.args.req)
+			gotLoc, err := s.Upsert(ctx, test.args.req)
 			if err := checkFunc(test.want, gotLoc, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
