@@ -1,5 +1,96 @@
 # CHANGELOG
 
+## v1.5.4
+
+### Docker images
+
+<table>
+  <tr>
+    <th>component</th>
+    <th>Docker pull</th>
+  </tr>
+  <tr>
+    <td>Agent NGT</td>
+    <td>
+      <code>docker pull vdaas/vald-agent-ngt:v1.5.4</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-agent-ngt:v1.5.4</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Agent sidecar</td>
+    <td>
+      <code>docker pull vdaas/vald-agent-sidecar:v1.5.4</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-agent-sidecar:v1.5.4</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Discoverers</td>
+    <td>
+      <code>docker pull vdaas/vald-discoverer-k8s:v1.5.4</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-discoverer-k8s:v1.5.4</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Gateways</td>
+    <td>
+      <code>docker pull vdaas/vald-lb-gateway:v1.5.4</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-lb-gateway:v1.5.4</code><br/>
+      <code>docker pull vdaas/vald-filter-gateway:v1.5.4</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-filter-gateway:v1.5.4</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Index Manager</td>
+    <td>
+      <code>docker pull vdaas/vald-manager-index:v1.5.4</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-manager-index:v1.5.4</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Helm Operator</td>
+    <td>
+      <code>docker pull vdaas/vald-helm-operator:v1.5.4</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-helm-operator:v1.5.4</code>
+    </td>
+  </tr>
+</table>
+
+### Documents
+- [GoDoc](https://pkg.go.dev/github.com/vdaas/vald@v1.5.4)
+- [Helm Chart Reference](https://github.com/vdaas/vald/blob/v1.5.4/charts/vald/README.md)
+- [Helm Operator Chart Reference](https://github.com/vdaas/vald/blob/v1.5.4/charts/vald-helm-operator/README.md)
+
+### Changes
+✨ New features
+
+- Add backoff metrics panel  [#1694](https://github.com/vdaas/vald/pull/1694)
+- Add backoff metrics for grpc [#1684](https://github.com/vdaas/vald/pull/1684)
+- Setup jaeger operator [#1682](https://github.com/vdaas/vald/pull/1682)
+
+
+⬆️ update dependencies
+
+- Update deps [#1695](https://github.com/vdaas/vald/pull/1695)
+- Update deps [#1699](https://github.com/vdaas/vald/pull/1699)
+
+♻️ Refactor
+
+- Split agent pkg handler implementation [#1690](https://github.com/vdaas/vald/pull/1690)
+- Refactor pkg test helper functions [#1678](https://github.com/vdaas/vald/pull/1678)
+
+🐛 Bugfix
+
+- Fix error handling in readyForUpdate and return NotFound error when delete fails in multiUpdate  [#1681](https://github.com/vdaas/vald/pull/1681)
+- Fix race error of server package  [#1689](https://github.com/vdaas/vald/pull/1689)
+
+✏️ Documents
+
+- Add API status code description  [#1679](https://github.com/vdaas/vald/pull/1679)
+- Modified  data flow images  [#1687](https://github.com/vdaas/vald/pull/1687)
+- Correspond to update omission  [#1686](https://github.com/vdaas/vald/pull/1686)
+- Renew basic architecture image  [#1680](https://github.com/vdaas/vald/pull/1680)
+
+
 ## v1.5.3
 
 ### Docker images
