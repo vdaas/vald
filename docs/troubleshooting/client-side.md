@@ -1,6 +1,6 @@
-# Operation troubleshooting
+# Client Side Troubleshooting
 
-This page introduces the popular troubleshooting for operating a Vald cluster.
+This page introduces the popular troubleshooting for client side.
 
 The [flow chart](../troubleshooting/chart.md) helps you find the root reason for your problem.
 
@@ -53,6 +53,6 @@ Please check your CPU information.
 
 ## Related Document
 
-- [Flow Chart](../troubleshooting/flow-chart.md)
+- [Provisioning Troubleshooting](../troubleshooting/provisioning.md)
 - [API Status](../api/status.md)
 - [FAQ](../support/faq.md)
