@@ -1379,7 +1379,8 @@ func Test_server_Upsert(t *testing.T) {
 				ctx: ctx,
 				req: &payload.Upsert_Request{
 					Vector: &payload.Object_Vector{
-						Id: "test",
+						Id:     "test",
+						Vector: vector.GenSameValueVec(dimension, float32(math.Inf(-1.0))),
 					},
 					Config: defaultUpsertConfig,
 				},
