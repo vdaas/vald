@@ -1,6 +1,6 @@
 # FAQ
 
-This page answers the common questions.
+This page shows the answers for the common questions.
 
 Please refer to [the troubleshooting page](../user-guides/troubleshooting.md) when you encounter operation problems.
 
