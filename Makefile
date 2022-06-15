@@ -54,16 +54,17 @@ TENSORFLOW_C_VERSION := $(eval TENSORFLOW_C_VERSION := $(shell cat versions/TENS
 
 OPERATOR_SDK_VERSION := $(eval OPERATOR_SDK_VERSION := $(shell cat versions/OPERATOR_SDK_VERSION))$(OPERATOR_SDK_VERSION)
 
-KIND_VERSION         ?= v0.14.0
-HELM_VERSION         ?= v3.9.0
-HELM_DOCS_VERSION    ?= 1.10.0
-YQ_VERSION           ?= v4.25.1
-VALDCLI_VERSION      ?= v1.5.2
-TELEPRESENCE_VERSION ?= 2.6.3
-KUBELINTER_VERSION   ?= 0.3.0
-GOLANGCILINT_VERSION ?= v1.46.2
-REVIEWDOG_VERSION    ?= v0.14.1
-PROTOBUF_VERSION     ?= 3.20.1
+KIND_VERSION            ?= v0.14.0
+HELM_VERSION            ?= v3.9.0
+HELM_DOCS_VERSION       ?= 1.10.0
+YQ_VERSION              ?= v4.25.2
+VALDCLI_VERSION         ?= v1.5.4
+TELEPRESENCE_VERSION    ?= 2.6.6
+KUBELINTER_VERSION      ?= 0.3.0
+GOLANGCILINT_VERSION    ?= v1.46.2
+REVIEWDOG_VERSION       ?= v0.14.1
+PROTOBUF_VERSION        ?= 21.1
+JAEGER_OPERATOR_VERSION ?= 2.30.0
 
 SWAP_DEPLOYMENT_TYPE ?= deployment
 SWAP_IMAGE           ?= ""
@@ -278,7 +279,7 @@ E2E_TARGET_NAME                    ?= vald-lb-gateway
 E2E_TARGET_POD_NAME                ?= $(eval E2E_TARGET_POD_NAME := $(shell kubectl get pods --selector=app=$(E2E_TARGET_NAME) | tail -1 | cut -f1 -d " "))$(E2E_TARGET_POD_NAME)
 E2E_TARGET_NAMESPACE               ?= default
 E2E_TARGET_PORT                    ?= 8081
-E2E_PORTFORWARD_ENEBLED            ?= true
+E2E_PORTFORWARD_ENABLED            ?= true
 
 include Makefile.d/functions.mk
 

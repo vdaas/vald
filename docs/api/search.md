@@ -4,7 +4,7 @@
 
 Search Service is responsible for searching vectors from `vald-agent` which are similar to user request vector.
 
-```bash
+```rpc
 service Search {
   rpc Search(payload.v1.Search.Request) returns (payload.v1.Search.Response) {}
 
@@ -50,7 +50,7 @@ Search RPC is the method to search vector(s) similar to request vector.
 
 - the scheme of `payload.v1.Search.Request`
 
-  ```bash
+  ```rpc
   message Search {
     message Request {
       repeated float vector = 1 [ (validate.rules).repeated .min_items = 2 ];
@@ -70,28 +70,30 @@ Search RPC is the method to search vector(s) similar to request vector.
   ```
 
   - Search.Request
-    |field|type|label|required|desc.|
-    |:---:|:---|:---|:---:|:---|
-    |vector|float| repeated(Array[float]) | \* | the vector data. its dimension is between 2 and 65,536.|
-    |config|Config| | \* | the configuration of the search request |
+
+    | field  | type   | label                  | required | desc.                                                   |
+    | :----: | :----- | :--------------------- | :------: | :------------------------------------------------------ |
+    | vector | float  | repeated(Array[float]) |    \*    | the vector data. its dimension is between 2 and 65,536. |
+    | config | Config |                        |    \*    | the configuration of the search request                 |
 
   - Search.Config
-    |field|type|label|required|desc.|
-    |:---:|:---|:---|:---:|:---|
-    |request_id|string| | | unique request ID |
-    |num|uint32| | \* | the maximum number of result to be returned |
-    |radius|float| | \* | the search radius |
-    |epsilon|float| | \* | the search coefficient (default value is `0.1`) |
-    |timeout|int64| | | Search timeout in nanoseconds (default value is `5s`) |
-    |ingress_filters|Filter.Config| | | Ingress Filter configuration |
-    |egress_filters|Filter.Config| | | Egress Filter configuration |
-    |min_num| uint32 | | the minimum number of result to be returned |
+
+    |      field      | type          | label |                  required                   | desc.                                                 |
+    | :-------------: | :------------ | :---- | :-----------------------------------------: | :---------------------------------------------------- |
+    |   request_id    | string        |       |                                             | unique request ID                                     |
+    |       num       | uint32        |       |                     \*                      | the maximum number of result to be returned           |
+    |     radius      | float         |       |                     \*                      | the search radius                                     |
+    |     epsilon     | float         |       |                     \*                      | the search coefficient (default value is `0.1`)       |
+    |     timeout     | int64         |       |                                             | Search timeout in nanoseconds (default value is `5s`) |
+    | ingress_filters | Filter.Config |       |                                             | Ingress Filter configuration                          |
+    | egress_filters  | Filter.Config |       |                                             | Egress Filter configuration                           |
+    |     min_num     | uint32        |       | the minimum number of result to be returned |
 
 ### Output
 
 - the scheme of `payload.v1.Search.Response`.
 
-  ```bash
+  ```rpc
   message Search {
     message Response {
       string request_id = 1;
@@ -108,16 +110,18 @@ Search RPC is the method to search vector(s) similar to request vector.
   ```
 
   - Search.Response
-    |field|type|label|desc.|
-    |:---:|:---|:---|:---|
-    |request_id|string| | the unique request ID |
-    |results|Object.Distance| repeated(Array[Object.Distance]) | search results |
+
+    |   field    | type            | label                            | desc.                 |
+    | :--------: | :-------------- | :------------------------------- | :-------------------- |
+    | request_id | string          |                                  | the unique request ID |
+    |  results   | Object.Distance | repeated(Array[Object.Distance]) | search results        |
 
   - Object.Distance
-    |field|type|label|desc.|
-    |:---:|:---|:---|:---|
-    |id|string| | the vector ID |
-    |distance|float| | the distance between result vector and request vector |
+
+    |  field   | type   | label | desc.                                                 |
+    | :------: | :----- | :---- | :---------------------------------------------------- |
+    |    id    | string |       | the vector ID                                         |
+    | distance | float  |       | the distance between result vector and request vector |
 
 ### Status Code
 
@@ -137,7 +141,7 @@ The vector with the same requested ID should be indexed into the `vald-agent` be
 
 - the scheme of `payload.v1.Search.IDRequest`
 
-  ```bash
+  ```rpc
   message Search {
     message IDRequest {
       string id = 1;
@@ -157,28 +161,30 @@ The vector with the same requested ID should be indexed into the `vald-agent` be
   ```
 
   - Search.IDRequest
-    |field|type|label|required|desc.|
-    |:---:|:---|:---|:---:|:---|
-    |id|string| | \* | the vector ID to be searched |
-    |config|Config| | \* | the configuration of the search request |
+
+    | field  | type   | label | required | desc.                                   |
+    | :----: | :----- | :---- | :------: | :-------------------------------------- |
+    |   id   | string |       |    \*    | the vector ID to be searched            |
+    | config | Config |       |    \*    | the configuration of the search request |
 
   - Search.Config
-    |field|type|label|required|desc.|
-    |:---:|:---|:---|:---:|:---|
-    |request_id|string| | | unique request ID |
-    |num|uint32| | \* | the maximum number of result to be returned |
-    |radius|float| | \* | the search radius |
-    |epsilon|float| | \* | the search coefficient (default value is `0.1`) |
-    |timeout|int64| | | Search timeout in nanoseconds (default value is `5s`) |
-    |ingress_filters|Filter.Config| | | Ingress Filter configuration |
-    |egress_filters|Filter.Config| | | Egress Filter configuration |
-    |min_num| uint32 | | the minimum number of result to be returned |
+
+    |      field      | type          | label |                  required                   | desc.                                                 |
+    | :-------------: | :------------ | :---- | :-----------------------------------------: | :---------------------------------------------------- |
+    |   request_id    | string        |       |                                             | unique request ID                                     |
+    |       num       | uint32        |       |                     \*                      | the maximum number of result to be returned           |
+    |     radius      | float         |       |                     \*                      | the search radius                                     |
+    |     epsilon     | float         |       |                     \*                      | the search coefficient (default value is `0.1`)       |
+    |     timeout     | int64         |       |                                             | Search timeout in nanoseconds (default value is `5s`) |
+    | ingress_filters | Filter.Config |       |                                             | Ingress Filter configuration                          |
+    | egress_filters  | Filter.Config |       |                                             | Egress Filter configuration                           |
+    |     min_num     | uint32        |       | the minimum number of result to be returned |
 
 ### Output
 
 - the scheme of `payload.v1.Search.Response`.
 
-  ```bash
+  ```rpc
   message Search {
     message Response {
       string request_id = 1;
@@ -195,16 +201,18 @@ The vector with the same requested ID should be indexed into the `vald-agent` be
   ```
 
   - Search.Response
-    |field|type|label|desc.|
-    |:---:|:---|:---|:---|
-    |request_id|string| | the unique request ID |
-    |results|Object.Distance| repeated(Array[Object.Distance]) | search results |
+
+    |   field    | type            | label                            | desc.                 |
+    | :--------: | :-------------- | :------------------------------- | :-------------------- |
+    | request_id | string          |                                  | the unique request ID |
+    |  results   | Object.Distance | repeated(Array[Object.Distance]) | search results        |
 
   - Object.Distance
-    |field|type|label|desc.|
-    |:---:|:---|:---|:---|
-    |id|string| | the vector ID |
-    |distance|float| | the distance between result vector and request vector |
+
+    |  field   | type   | label | desc.                                                 |
+    | :------: | :----- | :---- | :---------------------------------------------------- |
+    |    id    | string |       | the vector ID                                         |
+    | distance | float  |       | the distance between result vector and request vector |
 
 ### Status Code
 
@@ -225,7 +233,7 @@ Each Search request and response are independent.
 
 - the scheme of `payload.v1.Search.Request stream`
 
-  ```bash
+  ```rpc
   message Search {
       message Request {
         repeated float vector = 1 [ (validate.rules).repeated .min_items = 2 ];
@@ -245,28 +253,30 @@ Each Search request and response are independent.
   ```
 
   - Search.Request
-    |field|type|label|required|desc.|
-    |:---:|:---|:---|:---:|:---|
-    |vector|float| repeated(Array[float]) | \* | the vector data. its dimension is between 2 and 65,536.|
-    |config|Config| | \* | the configuration of the search request |
+
+    | field  | type   | label                  | required | desc.                                                   |
+    | :----: | :----- | :--------------------- | :------: | :------------------------------------------------------ |
+    | vector | float  | repeated(Array[float]) |    \*    | the vector data. its dimension is between 2 and 65,536. |
+    | config | Config |                        |    \*    | the configuration of the search request                 |
 
   - Search.Config
-    |field|type|label|required|desc.|
-    |:---:|:---|:---|:---:|:---|
-    |request_id|string| | | unique request ID |
-    |num|uint32| | \* | the maximum number of result to be returned |
-    |radius|float| | \* | the search radius |
-    |epsilon|float| | \* | the search coefficient (default value is `0.1`) |
-    |timeout|int64| | | Search timeout in nanoseconds (default value is `5s`) |
-    |ingress_filters|Filter.Config| | | Ingress Filter configuration |
-    |egress_filters|Filter.Config| | | Egress Filter configuration |
-    |min_num| uint32 | | the minimum number of result to be returned |
+
+    |      field      | type          | label |                  required                   | desc.                                                 |
+    | :-------------: | :------------ | :---- | :-----------------------------------------: | :---------------------------------------------------- |
+    |   request_id    | string        |       |                                             | unique request ID                                     |
+    |       num       | uint32        |       |                     \*                      | the maximum number of result to be returned           |
+    |     radius      | float         |       |                     \*                      | the search radius                                     |
+    |     epsilon     | float         |       |                     \*                      | the search coefficient (default value is `0.1`)       |
+    |     timeout     | int64         |       |                                             | Search timeout in nanoseconds (default value is `5s`) |
+    | ingress_filters | Filter.Config |       |                                             | Ingress Filter configuration                          |
+    | egress_filters  | Filter.Config |       |                                             | Egress Filter configuration                           |
+    |     min_num     | uint32        |       | the minimum number of result to be returned |
 
 ### Output
 
 - the scheme of `payload.v1.Search.StreamResponse`.
 
-  ```bash
+  ```rpc
   message Search {
     message StreamResponse {
       oneof payload {
@@ -290,22 +300,25 @@ Each Search request and response are independent.
   ```
 
   - Search.StreamResponse
-    |field|type|label|desc.|
-    |:---:|:---|:---|:---|
-    |response|Response| | the search result response |
-    |status|google.rpc.Status| | the status of google RPC |
+
+    |  field   | type              | label | desc.                      |
+    | :------: | :---------------- | :---- | :------------------------- |
+    | response | Response          |       | the search result response |
+    |  status  | google.rpc.Status |       | the status of google RPC   |
 
   - Search.Response
-    |field|type|label|desc.|
-    |:---:|:---|:---|:---|
-    |request_id|string| | the unique request ID |
-    |results|Object.Distance| repeated(Array[Object.Distance]) | search results |
+
+    |   field    | type            | label                            | desc.                 |
+    | :--------: | :-------------- | :------------------------------- | :-------------------- |
+    | request_id | string          |                                  | the unique request ID |
+    |  results   | Object.Distance | repeated(Array[Object.Distance]) | search results        |
 
   - Object.Distance
-    |field|type|label|desc.|
-    |:---:|:---|:---|:---|
-    |id|string| | the vector ID |
-    |distance|float| | the distance between result vector and request vector |
+
+    |  field   | type   | label | desc.                                                 |
+    | :------: | :----- | :---- | :---------------------------------------------------- |
+    |    id    | string |       | the vector ID                                         |
+    | distance | float  |       | the distance between result vector and request vector |
 
 ### Status Code
 
@@ -326,7 +339,7 @@ Each SearchByID request and response are independent.
 
 - the scheme of `payload.v1.Search.IDRequest stream`
 
-  ```bash
+  ```rpc
   message Search {
     message IDRequest {
       string id = 1;
@@ -346,28 +359,30 @@ Each SearchByID request and response are independent.
   ```
 
   - Search.IDRequest
-    |field|type|label|required|desc.|
-    |:---:|:---|:---|:---:|:---|
-    |id|string| | \* | the vector ID to be searched |
-    |config|Config| | \* | the configuration of the search request |
+
+    | field  | type   | label | required | desc.                                   |
+    | :----: | :----- | :---- | :------: | :-------------------------------------- |
+    |   id   | string |       |    \*    | the vector ID to be searched            |
+    | config | Config |       |    \*    | the configuration of the search request |
 
   - Search.Config
-    |field|type|label|required|desc.|
-    |:---:|:---|:---|:---:|:---|
-    |request_id|string| | | unique request ID |
-    |num|uint32| | \* | the maximum number of result to be returned |
-    |radius|float| | \* | the search radius |
-    |epsilon|float| | \* | the search coefficient (default value is `0.1`) |
-    |timeout|int64| | | Search timeout in nanoseconds (default value is `5s`) |
-    |ingress_filters|Filter.Config| | | Ingress Filter configuration |
-    |egress_filters|Filter.Config| | | Egress Filter configuration |
-    |min_num| uint32 | | the minimum number of result to be returned |
+
+    |      field      | type          | label |                  required                   | desc.                                                 |
+    | :-------------: | :------------ | :---- | :-----------------------------------------: | :---------------------------------------------------- |
+    |   request_id    | string        |       |                                             | unique request ID                                     |
+    |       num       | uint32        |       |                     \*                      | the maximum number of result to be returned           |
+    |     radius      | float         |       |                     \*                      | the search radius                                     |
+    |     epsilon     | float         |       |                     \*                      | the search coefficient (default value is `0.1`)       |
+    |     timeout     | int64         |       |                                             | Search timeout in nanoseconds (default value is `5s`) |
+    | ingress_filters | Filter.Config |       |                                             | Ingress Filter configuration                          |
+    | egress_filters  | Filter.Config |       |                                             | Egress Filter configuration                           |
+    |     min_num     | uint32        |       | the minimum number of result to be returned |
 
 ### Output
 
 - the scheme of `payload.v1.Search.StreamResponse`.
 
-  ```bash
+  ```rpc
   message Search {
     message StreamResponse {
       oneof payload {
@@ -391,22 +406,25 @@ Each SearchByID request and response are independent.
   ```
 
   - Search.StreamResponse
-    |field|type|label|desc.|
-    |:---:|:---|:---|:---|
-    |response|Response| | the search result response |
-    |status|google.rpc.Status| | the status of google RPC |
+
+    |  field   | type              | label | desc.                      |
+    | :------: | :---------------- | :---- | :------------------------- |
+    | response | Response          |       | the search result response |
+    |  status  | google.rpc.Status |       | the status of google RPC   |
 
   - Search.Response
-    |field|type|label|desc.|
-    |:---:|:---|:---|:---|
-    |request_id|string| | the unique request ID |
-    |results|Object.Distance| repeated(Array[Object.Distance]) | search results |
+
+    |   field    | type            | label                            | desc.                 |
+    | :--------: | :-------------- | :------------------------------- | :-------------------- |
+    | request_id | string          |                                  | the unique request ID |
+    |  results   | Object.Distance | repeated(Array[Object.Distance]) | search results        |
 
   - Object.Distance
-    |field|type|label|desc.|
-    |:---:|:---|:---|:---|
-    |id|string| | the vector ID |
-    |distance|float| | the distance between result vector and request vector |
+
+    |  field   | type   | label | desc.                                                 |
+    | :------: | :----- | :---- | :---------------------------------------------------- |
+    |    id    | string |       | the vector ID                                         |
+    | distance | float  |       | the distance between result vector and request vector |
 
 ### Status Code
 
@@ -430,7 +448,7 @@ Please be careful that the size of the request exceed the limit.
 
 - the scheme of `payload.v1.Search.MultiRequest`
 
-  ```bash
+  ```rpc
   message Search {
     message MultiRequest {
       repeated Request requests = 1;
@@ -454,33 +472,36 @@ Please be careful that the size of the request exceed the limit.
   ```
 
   - Search.MultiRequest
-    |field|type|label|required|desc.|
-    |:---:|:---|:---|:---:|:---|
-    |requests| repeated(Array[Request]) | | \* | the search request list |
+
+    |  field   | type                     | label | required | desc.                   |
+    | :------: | :----------------------- | :---- | :------: | :---------------------- |
+    | requests | repeated(Array[Request]) |       |    \*    | the search request list |
 
   - Search.Request
-    |field|type|label|required|desc.|
-    |:---:|:---|:---|:---:|:---|
-    |vector|float| repeated(Array[float]) | \* | the vector data. its dimension is between 2 and 65,536.|
-    |config|Config| | \* | the configuration of the search request |
+
+    | field  | type   | label                  | required | desc.                                                   |
+    | :----: | :----- | :--------------------- | :------: | :------------------------------------------------------ |
+    | vector | float  | repeated(Array[float]) |    \*    | the vector data. its dimension is between 2 and 65,536. |
+    | config | Config |                        |    \*    | the configuration of the search request                 |
 
   - Search.Config
-    |field|type|label|required|desc.|
-    |:---:|:---|:---|:---:|:---|
-    |request_id|string| | | unique request ID |
-    |num|uint32| | \* | the maximum number of result to be returned |
-    |radius|float| | \* | the search radius |
-    |epsilon|float| | \* | the search coefficient (default value is `0.1`) |
-    |timeout|int64| | | Search timeout in nanoseconds (default value is `5s`) |
-    |ingress_filters|Filter.Config| | | Ingress Filter configuration |
-    |egress_filters|Filter.Config| | | Egress Filter configuration |
-    |min_num| uint32 | | the minimum number of result to be returned |
+
+    |      field      | type          | label |                  required                   | desc.                                                 |
+    | :-------------: | :------------ | :---- | :-----------------------------------------: | :---------------------------------------------------- |
+    |   request_id    | string        |       |                                             | unique request ID                                     |
+    |       num       | uint32        |       |                     \*                      | the maximum number of result to be returned           |
+    |     radius      | float         |       |                     \*                      | the search radius                                     |
+    |     epsilon     | float         |       |                     \*                      | the search coefficient (default value is `0.1`)       |
+    |     timeout     | int64         |       |                                             | Search timeout in nanoseconds (default value is `5s`) |
+    | ingress_filters | Filter.Config |       |                                             | Ingress Filter configuration                          |
+    | egress_filters  | Filter.Config |       |                                             | Egress Filter configuration                           |
+    |     min_num     | uint32        |       | the minimum number of result to be returned |
 
 ### Output
 
 - the scheme of `payload.v1.Search.Responses`.
 
-  ```bash
+  ```rpc
   message Search {
     message Responses {
       repeated Response responses = 1;
@@ -501,21 +522,24 @@ Please be careful that the size of the request exceed the limit.
   ```
 
   - Search.Responses
-    |field|type|label|desc.|
-    |:---:|:---|:---|:---|
-    |responses| Response | repeated(Array[Response]) | the list of search results response |
+
+    |   field   | type     | label                     | desc.                               |
+    | :-------: | :------- | :------------------------ | :---------------------------------- |
+    | responses | Response | repeated(Array[Response]) | the list of search results response |
 
   - Search.Response
-    |field|type|label|desc.|
-    |:---:|:---|:---|:---|
-    |request_id|string| | the unique request ID |
-    |results|Object.Distance| repeated(Array[Object.Distance]) | search results |
+
+    |   field    | type            | label                            | desc.                 |
+    | :--------: | :-------------- | :------------------------------- | :-------------------- |
+    | request_id | string          |                                  | the unique request ID |
+    |  results   | Object.Distance | repeated(Array[Object.Distance]) | search results        |
 
   - Object.Distance
-    |field|type|label|desc.|
-    |:---:|:---|:---|:---|
-    |id|string| | the vector ID |
-    |distance|float| | the distance between result vector and request vector |
+
+    |  field   | type   | label | desc.                                                 |
+    | :------: | :----- | :---- | :---------------------------------------------------- |
+    |    id    | string |       | the vector ID                                         |
+    | distance | float  |       | the distance between result vector and request vector |
 
 ### Status Code
 
@@ -539,7 +563,7 @@ Please be careful that the size of the request exceed the limit.
 
 - the scheme of `payload.v1.Search.MultiIDRequest stream`
 
-  ```bash
+  ```rpc
   message Search {
 
     message MultiIDRequest {
@@ -564,33 +588,36 @@ Please be careful that the size of the request exceed the limit.
   ```
 
   - Search.MultiIDRequest
-    |field|type|label|required|desc.|
-    |:---:|:---|:---|:---:|:---|
-    |requests|IDRequest| repeated(Array[IDRequest]) | \* | the searchByID request list |
+
+    |  field   | type      | label                      | required | desc.                       |
+    | :------: | :-------- | :------------------------- | :------: | :-------------------------- |
+    | requests | IDRequest | repeated(Array[IDRequest]) |    \*    | the searchByID request list |
 
   - Search.IDRequest
-    |field|type|label|required|desc.|
-    |:---:|:---|:---|:---:|:---|
-    |id|string| | \* | the vector ID to be searched |
-    |config|Config| | \* | the configuration of the search request |
+
+    | field  | type   | label | required | desc.                                   |
+    | :----: | :----- | :---- | :------: | :-------------------------------------- |
+    |   id   | string |       |    \*    | the vector ID to be searched            |
+    | config | Config |       |    \*    | the configuration of the search request |
 
   - Search.Config
-    |field|type|label|required|desc.|
-    |:---:|:---|:---|:---:|:---|
-    |request_id|string| | | unique request ID |
-    |num|uint32| | \* | the maximum number of result to be returned |
-    |radius|float| | \* | the search radius |
-    |epsilon|float| | \* | the search coefficient (default value is `0.1`) |
-    |timeout|int64| | | Search timeout in nanoseconds (default value is `5s`) |
-    |ingress_filters|Filter.Config| | | Ingress Filter configuration |
-    |egress_filters|Filter.Config| | | Egress Filter configuration |
-    |min_num| uint32 | | the minimum number of result to be returned |
+
+    |      field      | type          | label |                  required                   | desc.                                                 |
+    | :-------------: | :------------ | :---- | :-----------------------------------------: | :---------------------------------------------------- |
+    |   request_id    | string        |       |                                             | unique request ID                                     |
+    |       num       | uint32        |       |                     \*                      | the maximum number of result to be returned           |
+    |     radius      | float         |       |                     \*                      | the search radius                                     |
+    |     epsilon     | float         |       |                     \*                      | the search coefficient (default value is `0.1`)       |
+    |     timeout     | int64         |       |                                             | Search timeout in nanoseconds (default value is `5s`) |
+    | ingress_filters | Filter.Config |       |                                             | Ingress Filter configuration                          |
+    | egress_filters  | Filter.Config |       |                                             | Egress Filter configuration                           |
+    |     min_num     | uint32        |       | the minimum number of result to be returned |
 
 ### Output
 
 - the scheme of `payload.v1.Search.Responses`.
 
-  ```bash
+  ```rpc
   message Search {
     message Responses {
       repeated Response responses = 1;
@@ -611,21 +638,24 @@ Please be careful that the size of the request exceed the limit.
   ```
 
   - Search.Responses
-    |field|type|label|desc.|
-    |:---:|:---|:---|:---|
-    |responses| Response | repeated(Array[Response]) | the list of search results response |
+
+    |   field   | type     | label                     | desc.                               |
+    | :-------: | :------- | :------------------------ | :---------------------------------- |
+    | responses | Response | repeated(Array[Response]) | the list of search results response |
 
   - Search.Response
-    |field|type|label|desc.|
-    |:---:|:---|:---|:---|
-    |request_id|string| | the unique request ID |
-    |results|Object.Distance| repeated(Array[Object.Distance]) | search results |
+
+    |   field    | type            | label                            | desc.                 |
+    | :--------: | :-------------- | :------------------------------- | :-------------------- |
+    | request_id | string          |                                  | the unique request ID |
+    |  results   | Object.Distance | repeated(Array[Object.Distance]) | search results        |
 
   - Object.Distance
-    |field|type|label|desc.|
-    |:---:|:---|:---|:---|
-    |id|string| | the vector ID |
-    |distance|float| | the distance between result vector and request vector |
+
+    |  field   | type   | label | desc.                                                 |
+    | :------: | :----- | :---- | :---------------------------------------------------- |
+    |    id    | string |       | the vector ID                                         |
+    | distance | float  |       | the distance between result vector and request vector |
 
 ### Status Code
 
@@ -644,7 +674,7 @@ LinearSearch RPC is the method to linear search vector(s) similar to request vec
 
 - the scheme of `payload.v1.Search.Request`
 
-  ```bash
+  ```rpc
   message Search {
     message Request {
       repeated float vector = 1 [ (validate.rules).repeated .min_items = 2 ];
@@ -662,26 +692,28 @@ LinearSearch RPC is the method to linear search vector(s) similar to request vec
   ```
 
   - Search.Request
-    |field|type|label|required|desc.|
-    |:---:|:---|:---|:---:|:---|
-    |vector|float| repeated(Array[float]) | \* | the vector data. its dimension is between 2 and 65,536.|
-    |config|Config| | \* | the configuration of the search request |
+
+    | field  | type   | label                  | required | desc.                                                   |
+    | :----: | :----- | :--------------------- | :------: | :------------------------------------------------------ |
+    | vector | float  | repeated(Array[float]) |    \*    | the vector data. its dimension is between 2 and 65,536. |
+    | config | Config |                        |    \*    | the configuration of the search request                 |
 
   - Search.Config
-    |field|type|label|required|desc.|
-    |:---:|:---|:---|:---:|:---|
-    |request_id|string| | | unique request ID |
-    |num|uint32| | \* | the maximum number of result to be returned |
-    |timeout|int64| | | Search timeout in nanoseconds (default value is `5s`) |
-    |ingress_filters|Filter.Config| | | Ingress Filter configuration |
-    |egress_filters|Filter.Config| | | Egress Filter configuration |
-    |min_num| uint32 | | the minimum number of result to be returned |
+
+    |      field      | type          | label |                  required                   | desc.                                                 |
+    | :-------------: | :------------ | :---- | :-----------------------------------------: | :---------------------------------------------------- |
+    |   request_id    | string        |       |                                             | unique request ID                                     |
+    |       num       | uint32        |       |                     \*                      | the maximum number of result to be returned           |
+    |     timeout     | int64         |       |                                             | Search timeout in nanoseconds (default value is `5s`) |
+    | ingress_filters | Filter.Config |       |                                             | Ingress Filter configuration                          |
+    | egress_filters  | Filter.Config |       |                                             | Egress Filter configuration                           |
+    |     min_num     | uint32        |       | the minimum number of result to be returned |
 
 ### Output
 
 - the scheme of `payload.v1.Search.Response`.
 
-  ```bash
+  ```rpc
   message Search {
     message Response {
       string request_id = 1;
@@ -698,16 +730,18 @@ LinearSearch RPC is the method to linear search vector(s) similar to request vec
   ```
 
   - Search.Response
-    |field|type|label|desc.|
-    |:---:|:---|:---|:---|
-    |request_id|string| | the unique request ID |
-    |results|Object.Distance| repeated(Array[Object.Distance]) | search results |
+
+    |   field    | type            | label                            | desc.                 |
+    | :--------: | :-------------- | :------------------------------- | :-------------------- |
+    | request_id | string          |                                  | the unique request ID |
+    |  results   | Object.Distance | repeated(Array[Object.Distance]) | search results        |
 
   - Object.Distance
-    |field|type|label|desc.|
-    |:---:|:---|:---|:---|
-    |id|string| | the vector ID |
-    |distance|float| | the distance between result vector and request vector |
+
+    |  field   | type   | label | desc.                                                 |
+    | :------: | :----- | :---- | :---------------------------------------------------- |
+    |    id    | string |       | the vector ID                                         |
+    | distance | float  |       | the distance between result vector and request vector |
 
 ### Status Code
 
@@ -728,7 +762,7 @@ If the vector doesn't be stored, you will get a `NOT_FOUND` error as a result.
 
 - the scheme of `payload.v1.Search.IDRequest`
 
-  ```bash
+  ```rpc
   message Search {
     message IDRequest {
       string id = 1;
@@ -746,26 +780,28 @@ If the vector doesn't be stored, you will get a `NOT_FOUND` error as a result.
   ```
 
   - Search.IDRequest
-    |field|type|label|required|desc.|
-    |:---:|:---|:---|:---:|:---|
-    |id|string| | \* | the vector ID to be searched |
-    |config|Config| | \* | the configuration of the search request |
+
+    | field  | type   | label | required | desc.                                   |
+    | :----: | :----- | :---- | :------: | :-------------------------------------- |
+    |   id   | string |       |    \*    | the vector ID to be searched            |
+    | config | Config |       |    \*    | the configuration of the search request |
 
   - Search.Config
-    |field|type|label|required|desc.|
-    |:---:|:---|:---|:---:|:---|
-    |request_id|string| | | unique request ID |
-    |num|uint32| | \* | the maximum number of result to be returned |
-    |timeout|int64| | | Search timeout in nanoseconds (default value is `5s`) |
-    |ingress_filters|Filter.Config| | | Ingress Filter configuration |
-    |egress_filters|Filter.Config| | | Egress Filter configuration |
-    |min_num| uint32 | | the minimum number of result to be returned |
+
+    |      field      | type          | label |                  required                   | desc.                                                 |
+    | :-------------: | :------------ | :---- | :-----------------------------------------: | :---------------------------------------------------- |
+    |   request_id    | string        |       |                                             | unique request ID                                     |
+    |       num       | uint32        |       |                     \*                      | the maximum number of result to be returned           |
+    |     timeout     | int64         |       |                                             | Search timeout in nanoseconds (default value is `5s`) |
+    | ingress_filters | Filter.Config |       |                                             | Ingress Filter configuration                          |
+    | egress_filters  | Filter.Config |       |                                             | Egress Filter configuration                           |
+    |     min_num     | uint32        |       | the minimum number of result to be returned |
 
 ### Output
 
 - the scheme of `payload.v1.Search.Response`.
 
-  ```bash
+  ```rpc
   message Search {
     message Response {
       string request_id = 1;
@@ -782,16 +818,18 @@ If the vector doesn't be stored, you will get a `NOT_FOUND` error as a result.
   ```
 
   - Search.Response
-    |field|type|label|desc.|
-    |:---:|:---|:---|:---|
-    |request_id|string| | the unique request ID |
-    |results|Object.Distance| repeated(Array[Object.Distance]) | search results |
+
+    |   field    | type            | label                            | desc.                 |
+    | :--------: | :-------------- | :------------------------------- | :-------------------- |
+    | request_id | string          |                                  | the unique request ID |
+    |  results   | Object.Distance | repeated(Array[Object.Distance]) | search results        |
 
   - Object.Distance
-    |field|type|label|desc.|
-    |:---:|:---|:---|:---|
-    |id|string| | the vector ID |
-    |distance|float| | the distance between result vector and request vector |
+
+    |  field   | type   | label | desc.                                                 |
+    | :------: | :----- | :---- | :---------------------------------------------------- |
+    |    id    | string |       | the vector ID                                         |
+    | distance | float  |       | the distance between result vector and request vector |
 
 ### Status Code
 
@@ -812,7 +850,7 @@ Each LinearSearch request and response are independent.
 
 - the scheme of `payload.v1.Search.Request stream`
 
-  ```bash
+  ```rpc
   message Search {
       message Request {
         repeated float vector = 1 [ (validate.rules).repeated .min_items = 2 ];
@@ -830,26 +868,28 @@ Each LinearSearch request and response are independent.
   ```
 
   - Search.Request
-    |field|type|label|required|desc.|
-    |:---:|:---|:---|:---:|:---|
-    |vector|float| repeated(Array[float]) | \* | the vector data. its dimension is between 2 and 65,536.|
-    |config|Config| | \* | the configuration of the search request |
+
+    | field  | type   | label                  | required | desc.                                                   |
+    | :----: | :----- | :--------------------- | :------: | :------------------------------------------------------ |
+    | vector | float  | repeated(Array[float]) |    \*    | the vector data. its dimension is between 2 and 65,536. |
+    | config | Config |                        |    \*    | the configuration of the search request                 |
 
   - Search.Config
-    |field|type|label|required|desc.|
-    |:---:|:---|:---|:---:|:---|
-    |request_id|string| | | unique request ID |
-    |num|uint32| | \* | the maximum number of result to be returned |
-    |timeout|int64| | | Search timeout in nanoseconds (default value is `5s`) |
-    |ingress_filters|Filter.Config| | | Ingress Filter configuration |
-    |egress_filters|Filter.Config| | | Egress Filter configuration |
-    |min_num| uint32 | | the minimum number of result to be returned |
+
+    |      field      | type          | label |                  required                   | desc.                                                 |
+    | :-------------: | :------------ | :---- | :-----------------------------------------: | :---------------------------------------------------- |
+    |   request_id    | string        |       |                                             | unique request ID                                     |
+    |       num       | uint32        |       |                     \*                      | the maximum number of result to be returned           |
+    |     timeout     | int64         |       |                                             | Search timeout in nanoseconds (default value is `5s`) |
+    | ingress_filters | Filter.Config |       |                                             | Ingress Filter configuration                          |
+    | egress_filters  | Filter.Config |       |                                             | Egress Filter configuration                           |
+    |     min_num     | uint32        |       | the minimum number of result to be returned |
 
 ### Output
 
 - the scheme of `payload.v1.Search.StreamResponse`.
 
-  ```bash
+  ```rpc
   message Search {
     message StreamResponse {
       oneof payload {
@@ -873,22 +913,25 @@ Each LinearSearch request and response are independent.
   ```
 
   - Search.StreamResponse
-    |field|type|label|desc.|
-    |:---:|:---|:---|:---|
-    |response|Response| | the search result response |
-    |status|google.rpc.Status| | the status of google RPC |
+
+    |  field   | type              | label | desc.                      |
+    | :------: | :---------------- | :---- | :------------------------- |
+    | response | Response          |       | the search result response |
+    |  status  | google.rpc.Status |       | the status of google RPC   |
 
   - Search.Response
-    |field|type|label|desc.|
-    |:---:|:---|:---|:---|
-    |request_id|string| | the unique request ID |
-    |results|Object.Distance| repeated(Array[Object.Distance]) | search results |
+
+    |   field    | type            | label                            | desc.                 |
+    | :--------: | :-------------- | :------------------------------- | :-------------------- |
+    | request_id | string          |                                  | the unique request ID |
+    |  results   | Object.Distance | repeated(Array[Object.Distance]) | search results        |
 
   - Object.Distance
-    |field|type|label|desc.|
-    |:---:|:---|:---|:---|
-    |id|string| | the vector ID |
-    |distance|float| | the distance between result vector and request vector |
+
+    |  field   | type   | label | desc.                                                 |
+    | :------: | :----- | :---- | :---------------------------------------------------- |
+    |    id    | string |       | the vector ID                                         |
+    | distance | float  |       | the distance between result vector and request vector |
 
 ### Status Code
 
@@ -909,7 +952,7 @@ Each LinearSearchByID request and response are independent.
 
 - the scheme of `payload.v1.Search.IDRequest stream`
 
-  ```bash
+  ```rpc
   message Search {
     message IDRequest {
       string id = 1;
@@ -927,26 +970,28 @@ Each LinearSearchByID request and response are independent.
   ```
 
   - Search.IDRequest
-    |field|type|label|required|desc.|
-    |:---:|:---|:---|:---:|:---|
-    |id|string| | \* | the vector ID to be searched |
-    |config|Config| | \* | the configuration of the search request |
+
+    | field  | type   | label | required | desc.                                   |
+    | :----: | :----- | :---- | :------: | :-------------------------------------- |
+    |   id   | string |       |    \*    | the vector ID to be searched            |
+    | config | Config |       |    \*    | the configuration of the search request |
 
   - Search.Config
-    |field|type|label|required|desc.|
-    |:---:|:---|:---|:---:|:---|
-    |request_id|string| | | unique request ID |
-    |num|uint32| | \* | the maximum number of result to be returned |
-    |timeout|int64| | | Search timeout in nanoseconds (default value is `5s`) |
-    |ingress_filters|Filter.Config| | | Ingress Filter configuration |
-    |egress_filters|Filter.Config| | | Egress Filter configuration |
-    |min_num| uint32 | | the minimum number of result to be returned |
+
+    |      field      | type          | label |                  required                   | desc.                                                 |
+    | :-------------: | :------------ | :---- | :-----------------------------------------: | :---------------------------------------------------- |
+    |   request_id    | string        |       |                                             | unique request ID                                     |
+    |       num       | uint32        |       |                     \*                      | the maximum number of result to be returned           |
+    |     timeout     | int64         |       |                                             | Search timeout in nanoseconds (default value is `5s`) |
+    | ingress_filters | Filter.Config |       |                                             | Ingress Filter configuration                          |
+    | egress_filters  | Filter.Config |       |                                             | Egress Filter configuration                           |
+    |     min_num     | uint32        |       | the minimum number of result to be returned |
 
 ### Output
 
 - the scheme of `payload.v1.Search.StreamResponse`.
 
-  ```bash
+  ```rpc
   message Search {
     message StreamResponse {
       oneof payload {
@@ -970,22 +1015,25 @@ Each LinearSearchByID request and response are independent.
   ```
 
   - Search.StreamResponse
-    |field|type|label|desc.|
-    |:---:|:---|:---|:---|
-    |response|Response| | the search result response |
-    |status|google.rpc.Status| | the status of google RPC |
+
+    |  field   | type              | label | desc.                      |
+    | :------: | :---------------- | :---- | :------------------------- |
+    | response | Response          |       | the search result response |
+    |  status  | google.rpc.Status |       | the status of google RPC   |
 
   - Search.Response
-    |field|type|label|desc.|
-    |:---:|:---|:---|:---|
-    |request_id|string| | the unique request ID |
-    |results|Object.Distance| repeated(Array[Object.Distance]) | search results |
+
+    |   field    | type            | label                            | desc.                 |
+    | :--------: | :-------------- | :------------------------------- | :-------------------- |
+    | request_id | string          |                                  | the unique request ID |
+    |  results   | Object.Distance | repeated(Array[Object.Distance]) | search results        |
 
   - Object.Distance
-    |field|type|label|desc.|
-    |:---:|:---|:---|:---|
-    |id|string| | the vector ID |
-    |distance|float| | the distance between result vector and request vector |
+
+    |  field   | type   | label | desc.                                                 |
+    | :------: | :----- | :---- | :---------------------------------------------------- |
+    |    id    | string |       | the vector ID                                         |
+    | distance | float  |       | the distance between result vector and request vector |
 
 ### Status Code
 
@@ -1009,7 +1057,7 @@ Please be careful that the size of the request exceed the limit.
 
 - the scheme of `payload.v1.Search.MultiRequest`
 
-  ```bash
+  ```rpc
   message Search {
     message MultiRequest {
       repeated Request requests = 1;
@@ -1031,31 +1079,34 @@ Please be careful that the size of the request exceed the limit.
   ```
 
   - Search.MultiRequest
-    |field|type|label|required|desc.|
-    |:---:|:---|:---|:---:|:---|
-    |requests| repeated(Array[Request]) | | \* | the search request list |
+
+    |  field   | type                     | label | required | desc.                   |
+    | :------: | :----------------------- | :---- | :------: | :---------------------- |
+    | requests | repeated(Array[Request]) |       |    \*    | the search request list |
 
   - Search.Request
-    |field|type|label|required|desc.|
-    |:---:|:---|:---|:---:|:---|
-    |vector|float| repeated(Array[float]) | \* | the vector data. its dimension is between 2 and 65,536.|
-    |config|Config| | \* | the configuration of the search request |
+
+    | field  | type   | label                  | required | desc.                                                   |
+    | :----: | :----- | :--------------------- | :------: | :------------------------------------------------------ |
+    | vector | float  | repeated(Array[float]) |    \*    | the vector data. its dimension is between 2 and 65,536. |
+    | config | Config |                        |    \*    | the configuration of the search request                 |
 
   - Search.Config
-    |field|type|label|required|desc.|
-    |:---:|:---|:---|:---:|:---|
-    |request_id|string| | | unique request ID |
-    |num|uint32| | \* | the maximum number of result to be returned |
-    |timeout|int64| | | Search timeout in nanoseconds (default value is `5s`) |
-    |ingress_filters|Filter.Config| | | Ingress Filter configuration |
-    |egress_filters|Filter.Config| | | Egress Filter configuration |
-    |min_num| uint32 | | the minimum number of result to be returned |
+
+    |      field      | type          | label |                  required                   | desc.                                                 |
+    | :-------------: | :------------ | :---- | :-----------------------------------------: | :---------------------------------------------------- |
+    |   request_id    | string        |       |                                             | unique request ID                                     |
+    |       num       | uint32        |       |                     \*                      | the maximum number of result to be returned           |
+    |     timeout     | int64         |       |                                             | Search timeout in nanoseconds (default value is `5s`) |
+    | ingress_filters | Filter.Config |       |                                             | Ingress Filter configuration                          |
+    | egress_filters  | Filter.Config |       |                                             | Egress Filter configuration                           |
+    |     min_num     | uint32        |       | the minimum number of result to be returned |
 
 ### Output
 
 - the scheme of `payload.v1.Search.Responses`.
 
-  ```bash
+  ```rpc
   message Search {
     message Responses {
       repeated Response responses = 1;
@@ -1076,21 +1127,24 @@ Please be careful that the size of the request exceed the limit.
   ```
 
   - Search.Responses
-    |field|type|label|desc.|
-    |:---:|:---|:---|:---|
-    |responses| Response | repeated(Array[Response]) | the list of search results response |
+
+    |   field   | type     | label                     | desc.                               |
+    | :-------: | :------- | :------------------------ | :---------------------------------- |
+    | responses | Response | repeated(Array[Response]) | the list of search results response |
 
   - Search.Response
-    |field|type|label|desc.|
-    |:---:|:---|:---|:---|
-    |request_id|string| | the unique request ID |
-    |results|Object.Distance| repeated(Array[Object.Distance]) | search results |
+
+    |   field    | type            | label                            | desc.                 |
+    | :--------: | :-------------- | :------------------------------- | :-------------------- |
+    | request_id | string          |                                  | the unique request ID |
+    |  results   | Object.Distance | repeated(Array[Object.Distance]) | search results        |
 
   - Object.Distance
-    |field|type|label|desc.|
-    |:---:|:---|:---|:---|
-    |id|string| | the vector ID |
-    |distance|float| | the distance between result vector and request vector |
+
+    |  field   | type   | label | desc.                                                 |
+    | :------: | :----- | :---- | :---------------------------------------------------- |
+    |    id    | string |       | the vector ID                                         |
+    | distance | float  |       | the distance between result vector and request vector |
 
 ### Status Code
 
@@ -1114,7 +1168,7 @@ Please be careful that the size of the request exceed the limit.
 
 - the scheme of `payload.v1.Search.MultiIDRequest stream`
 
-  ```bash
+  ```rpc
   message Search {
 
     message MultiIDRequest {
@@ -1137,31 +1191,34 @@ Please be careful that the size of the request exceed the limit.
   ```
 
   - Search.MultiIDRequest
-    |field|type|label|required|desc.|
-    |:---:|:---|:---|:---:|:---|
-    |requests|IDRequest| repeated(Array[IDRequest]) | \* | the searchByID request list |
+
+    |  field   | type      | label                      | required | desc.                       |
+    | :------: | :-------- | :------------------------- | :------: | :-------------------------- |
+    | requests | IDRequest | repeated(Array[IDRequest]) |    \*    | the searchByID request list |
 
   - Search.IDRequest
-    |field|type|label|required|desc.|
-    |:---:|:---|:---|:---:|:---|
-    |id|string| | \* | the vector ID to be searched.|
-    |config|Config| | \* | the configuration of the search request |
+
+    | field  | type   | label | required | desc.                                   |
+    | :----: | :----- | :---- | :------: | :-------------------------------------- |
+    |   id   | string |       |    \*    | the vector ID to be searched.           |
+    | config | Config |       |    \*    | the configuration of the search request |
 
   - Search.Config
-    |field|type|label|required|desc.|
-    |:---:|:---|:---|:---:|:---|
-    |request_id|string| | | unique request ID |
-    |num|uint32| | \* | the maximum number of result to be returned |
-    |timeout|int64| | | Search timeout in nanoseconds (default value is `5s`) |
-    |ingress_filters|Filter.Config| | | Ingress Filter configuration |
-    |egress_filters|Filter.Config| | | Egress Filter configuration |
-    |min_num| uint32 | | the minimum number of result to be returned |
+
+    |      field      | type          | label |                  required                   | desc.                                                 |
+    | :-------------: | :------------ | :---- | :-----------------------------------------: | :---------------------------------------------------- |
+    |   request_id    | string        |       |                                             | unique request ID                                     |
+    |       num       | uint32        |       |                     \*                      | the maximum number of result to be returned           |
+    |     timeout     | int64         |       |                                             | Search timeout in nanoseconds (default value is `5s`) |
+    | ingress_filters | Filter.Config |       |                                             | Ingress Filter configuration                          |
+    | egress_filters  | Filter.Config |       |                                             | Egress Filter configuration                           |
+    |     min_num     | uint32        |       | the minimum number of result to be returned |
 
 ### Output
 
 - the scheme of `payload.v1.Search.Responses`.
 
-  ```bash
+  ```rpc
   message Search {
     message Responses {
       repeated Response responses = 1;
@@ -1182,21 +1239,24 @@ Please be careful that the size of the request exceed the limit.
   ```
 
   - Search.Responses
-    |field|type|label|desc.|
-    |:---:|:---|:---|:---|
-    |responses| Response | repeated(Array[Response]) | the list of search results response |
+
+    |   field   | type     | label                     | desc.                               |
+    | :-------: | :------- | :------------------------ | :---------------------------------- |
+    | responses | Response | repeated(Array[Response]) | the list of search results response |
 
   - Search.Response
-    |field|type|label|desc.|
-    |:---:|:---|:---|:---|
-    |request_id|string| | the unique request ID |
-    |results|Object.Distance| repeated(Array[Object.Distance]) | search results |
+
+    |   field    | type            | label                            | desc.                 |
+    | :--------: | :-------------- | :------------------------------- | :-------------------- |
+    | request_id | string          |                                  | the unique request ID |
+    |  results   | Object.Distance | repeated(Array[Object.Distance]) | search results        |
 
   - Object.Distance
-    |field|type|label|desc.|
-    |:---:|:---|:---|:---|
-    |id|string| | the vector ID |
-    |distance|float| | the distance between result vector and request vector |
+
+    |  field   | type   | label | desc.                                                 |
+    | :------: | :----- | :---- | :---------------------------------------------------- |
+    |    id    | string |       | the vector ID                                         |
+    | distance | float  |       | the distance between result vector and request vector |
 
 ### Status Code
 

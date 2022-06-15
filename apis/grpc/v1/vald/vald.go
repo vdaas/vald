@@ -63,6 +63,68 @@ type ClientWithFilter interface {
 	FilterClient
 }
 
+const PackageName = "vald.v1"
+
+const (
+	InsertRPCServiceName = "Insert"
+	UpdateRPCServiceName = "Update"
+	UpsertRPCServiceName = "Upsert"
+	SearchRPCServiceName = "Search"
+	RemoveRPCServiceName = "Remove"
+	ObjectRPCServiceName = "Object"
+	FilterRPCServiceName = "Filter"
+)
+
+const (
+	InsertRPCName             = "Insert"
+	StreamInsertRPCName       = "StreamInsert"
+	MultiInsertRPCName        = "MultiInsert"
+	InsertObjectRPCName       = "InsertObject"
+	StreamInsertObjectRPCName = "StreamInsertObject"
+	MultiInsertObjectRPCName  = "MultiInsertObject"
+
+	UpdateRPCName             = "Update"
+	StreamUpdateRPCName       = "StreamUpdate"
+	MultiUpdateRPCName        = "MultiUpdate"
+	UpdateObjectRPCName       = "UpdateObject"
+	StreamUpdateObjectRPCName = "StreamUpdateObject"
+	MultiUpdateObjectRPCName  = "MultiUpdateObject"
+
+	UpsertRPCName             = "Upsert"
+	StreamUpsertRPCName       = "StreamUpsert"
+	MultiUpsertRPCName        = "MultiUpsert"
+	UpsertObjectRPCName       = "UpsertObject"
+	StreamUpsertObjectRPCName = "StreamUpsertObject"
+	MultiUpsertObjectRPCName  = "MultiUpsertObject"
+
+	SearchRPCName                   = "Search"
+	SearchByIDRPCName               = "SearchByID"
+	StreamSearchRPCName             = "StreamSearch"
+	StreamSearchByIDRPCName         = "StreamSearchByID"
+	MultiSearchRPCName              = "MultiSearch"
+	MultiSearchByIDRPCName          = "MultiSearchByID"
+	LinearSearchRPCName             = "LinearSearch"
+	LinearSearchByIDRPCName         = "LinearSearchByID"
+	StreamLinearSearchRPCName       = "StreamLinearSearch"
+	StreamLinearSearchByIDRPCName   = "StreamLinearSearchByID"
+	MultiLinearSearchRPCName        = "MultiLinearSearch"
+	MultiLinearSearchByIDRPCName    = "MultiLinearSearchByID"
+	SearchObjectRPCName             = "SearchObject"
+	MultiSearchObjectRPCName        = "MultiSearchObject"
+	LinearSearchObjectRPCName       = "LinearSearchObject"
+	MultiLinearSearchObjectRPCName  = "MultiLinearSearchObject"
+	StreamLinearSearchObjectRPCName = "StreamLinearSearchObject"
+	StreamSearchObjectRPCName       = "StreamSearchObject"
+
+	RemoveRPCName       = "Remove"
+	StreamRemoveRPCName = "StreamRemove"
+	MultiRemoveRPCName  = "MultiRemove"
+
+	ExistsRPCName          = "Exists"
+	GetObjectRPCName       = "GetObject"
+	StreamGetObjectRPCName = "StreamGetObject"
+)
+
 type client struct {
 	InsertClient
 	UpdateClient

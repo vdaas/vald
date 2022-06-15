@@ -2,8 +2,6 @@
 
 This page introduces best practices for operating a Vald cluster.
 
-
-
 ## Deployment
 
 ### Kubernetes cluster

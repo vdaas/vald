@@ -218,6 +218,7 @@ func (c *client) dnsDiscovery(ctx context.Context, ech chan<- error) (addrs []st
 }
 
 func (c *client) discover(ctx context.Context, ech chan<- error) (err error) {
+	ctx = grpc.WithGRPCMethod(ctx, "discoverer.v1.Discoverer/Nodes")
 	if c.dscClient == nil || (c.autoconn && c.client == nil) {
 		return errors.ErrGRPCClientNotFound
 	}
