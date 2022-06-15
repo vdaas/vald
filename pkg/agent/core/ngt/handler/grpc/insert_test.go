@@ -35,6 +35,7 @@ import (
 	"github.com/vdaas/vald/internal/test/data/request"
 	"github.com/vdaas/vald/internal/test/data/vector"
 	"github.com/vdaas/vald/internal/test/goleak"
+	"github.com/vdaas/vald/internal/test/mock"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/service"
 )
 
@@ -1435,10 +1436,32 @@ func Test_server_StreamInsert(t *testing.T) {
 		}
 		return nil
 	}
+
+	const (
+		intVecDim = 3
+		f32VecDim = 3
+	)
+	var (
+		// default NGT configuration for test
+		// defaultIntSvcCfg = &config.NGT{
+		// 	Dimension:    intVecDim,
+		// 	DistanceType: ngt.Angle.String(),
+		// 	ObjectType:   ngt.Uint8.String(),
+		// 	KVSDB:        &config.KVSDB{},
+		// 	VQueue:       &config.VQueue{},
+		// }
+		defaultF32SvcCfg = &config.NGT{
+			Dimension:    f32VecDim,
+			DistanceType: ngt.Angle.String(),
+			ObjectType:   ngt.Float.String(),
+			KVSDB:        &config.KVSDB{},
+			VQueue:       &config.VQueue{},
+		}
+	)
 	/*
 		- Equivalence Class Testing
 			- float32
-				- case 1.1: Success to StreamInsert 1 vector (vector type is float32)
+				- case 1.1: Success to StreamInsert 1 vector
 				- case 1.2: Success to StreamInsert 100 vector
 				- case 1.3: Success to StreamInsert 0 vector
 				- case 2.1: Fail to StreamInsert 1 vector with different dimension
@@ -1446,7 +1469,7 @@ func Test_server_StreamInsert(t *testing.T) {
 				- case 3.2: Fail to StreamInsert 100 vector with 50 vector with different dimension
 				- case 3.3: Fail to StreamInsert 100 vector with all vector with different dimension
 			- uint8
-				- case 4.1: Success to StreamInsert 1 vector (vector type is uint8)
+				- case 4.1: Success to StreamInsert 1 vector
 		- Boundary Value Testing
 			- case 1.1: Success to StreamInsert with 0 value vector (vector type is uint8)
 			- case 1.2: Success to StreamInsert with 0 value vector (vector type is float32)
@@ -1489,45 +1512,57 @@ func Test_server_StreamInsert(t *testing.T) {
 				- case 6.2: Fail to StreamInsert with existed ID & vector when SkipStrictExistCheck is true
 	*/
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           stream: nil,
-		       },
-		       fields: fields {
-		           name: "",
-		           ip: "",
-		           ngt: nil,
-		           eg: nil,
-		           streamConcurrency: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+		func() test {
+			ngt, err := service.New(defaultF32SvcCfg,
+				service.WithErrGroup(errgroup.Get()),
+			)
+			if err != nil {
+				t.Error(err)
+			}
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           stream: nil,
-		           },
-		           fields: fields {
-		           name: "",
-		           ip: "",
-		           ngt: nil,
-		           eg: nil,
-		           streamConcurrency: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+			// h, err := New(
+			// 	WithNGT(ngt),
+			// )
+			// if err != nil {
+			// 	t.Error(err)
+			// }
+
+			// s := grpc.NewServer()
+			// core.RegisterAgentServer(s, h)
+			// vald.RegisterValdServer(s, h)
+
+			stream := &mock.StreamInsertServerMock{
+				ServerStream: &mock.ServerStreamMock{
+					ContextFunc: func() context.Context {
+						return context.Background()
+					},
+					RecvMsgFunc: func(i interface{}) error {
+						return nil
+					},
+					SendMsgFunc: func(i interface{}) error {
+						return nil
+					},
+				},
+			}
+
+			return test{
+				name: "Equivalence Class Testing case 1.1: Success to StreamInsert 1 vector",
+				args: args{
+					stream: stream,
+				},
+				fields: fields{
+					name:              "",
+					ip:                "",
+					ngt:               ngt,
+					eg:                errgroup.Get(),
+					streamConcurrency: 1,
+				},
+				want: want{},
+				afterFunc: func(a args) {
+					// s.Stop()
+				},
+			}
+		}(),
 	}
 
 	for _, tc := range tests {
