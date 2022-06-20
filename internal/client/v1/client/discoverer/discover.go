@@ -218,13 +218,12 @@ func (c *client) dnsDiscovery(ctx context.Context, ech chan<- error) (addrs []st
 }
 
 func (c *client) discover(ctx context.Context, ech chan<- error) (err error) {
-	ctx = grpc.WithGRPCMethod(ctx, "discoverer.v1.Discoverer/Nodes")
 	if c.dscClient == nil || (c.autoconn && c.client == nil) {
 		return errors.ErrGRPCClientNotFound
 	}
 	connected := make([]string, 0, len(c.GetAddrs(ctx)))
 	var cur sync.Map
-	if _, err = c.dscClient.RoundRobin(ctx, func(ictx context.Context,
+	if _, err = c.dscClient.RoundRobin(grpc.WithGRPCMethod(ctx, "discoverer.v1.Discoverer/Nodes"), func(ictx context.Context,
 		conn *grpc.ClientConn, copts ...grpc.CallOption,
 	) (interface{}, error) {
 		nodes, err := discoverer.NewDiscovererClient(conn).
