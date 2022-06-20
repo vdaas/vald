@@ -44,16 +44,14 @@ import (
 	grpcStatus "google.golang.org/genproto/googleapis/rpc/status"
 )
 
-var (
-	objectStreamLocationComparators = []comparator.Option{
-		comparator.IgnoreUnexported(payload.Object_StreamLocation{}),
-		comparator.IgnoreUnexported(payload.Object_Location{}),
-		comparator.Comparer(func(x, y grpcStatus.Status) bool {
-			// ignore checking the detail of status
-			return x.Code == y.Code
-		}),
-	}
-)
+var objectStreamLocationComparators = []comparator.Option{
+	comparator.IgnoreUnexported(payload.Object_StreamLocation{}),
+	comparator.IgnoreUnexported(payload.Object_Location{}),
+	comparator.Comparer(func(x, y grpcStatus.Status) bool {
+		// ignore checking the detail of status
+		return x.Code == y.Code
+	}),
+}
 
 func Test_server_Insert(t *testing.T) {
 	t.Parallel()
@@ -2109,7 +2107,8 @@ func Test_server_StreamInsert(t *testing.T) {
 						l := request.GenObjectStreamLocation(insertCnt, name, ip)
 						l[0] = genObjectStreamLoc(codes.InvalidArgument)
 						return l
-					}()},
+					}(),
+				},
 			}
 		}(),
 		func() test {
