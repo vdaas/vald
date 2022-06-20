@@ -18,25 +18,41 @@ package grpc
 import (
 	"context"
 	"fmt"
+	"io"
 	"math"
 	"reflect"
+	"sort"
 	"strings"
 	"testing"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
-	"github.com/vdaas/vald/apis/grpc/v1/vald"
 	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/core/algorithm/ngt"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net"
+	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/net/grpc/errdetails"
 	"github.com/vdaas/vald/internal/net/grpc/status"
+	"github.com/vdaas/vald/internal/test/comparator"
 	"github.com/vdaas/vald/internal/test/data/request"
 	"github.com/vdaas/vald/internal/test/data/vector"
 	"github.com/vdaas/vald/internal/test/goleak"
 	"github.com/vdaas/vald/internal/test/mock"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/service"
+
+	grpcStatus "google.golang.org/genproto/googleapis/rpc/status"
+)
+
+var (
+	objectStreamLocationComparators = []comparator.Option{
+		comparator.IgnoreUnexported(payload.Object_StreamLocation{}),
+		comparator.IgnoreUnexported(payload.Object_Location{}),
+		comparator.Comparer(func(x, y grpcStatus.Status) bool {
+			// ignore checking the detail of status
+			return x.Code == y.Code
+		}),
+	}
 )
 
 func Test_server_Insert(t *testing.T) {
@@ -1409,47 +1425,78 @@ func Test_server_Insert(t *testing.T) {
 func Test_server_StreamInsert(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		stream vald.Insert_StreamInsertServer
+		insertReqs []*payload.Insert_Request
 	}
 	type fields struct {
 		name              string
 		ip                string
-		ngt               service.NGT
-		eg                errgroup.Group
 		streamConcurrency int
+		ngtCfg            *config.NGT
+		ngtOpts           []service.Option
 	}
 	type want struct {
-		err error
+		errCode codes.Code
+		rpcResp []*payload.Object_StreamLocation
 	}
 	type test struct {
 		name       string
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, error) error
+		checkFunc  func(want, []*payload.Object_StreamLocation, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+	sortObjectStreamLocation := func(l []*payload.Object_StreamLocation) {
+		if l == nil {
+			return
+		}
+		sort.Slice(l, func(i, j int) bool {
+			if l[i] == nil || l[i].GetLocation() == nil {
+				return true
+			}
+			if l[j] == nil || l[j].GetLocation() == nil {
+				return false
+			}
+			return l[i].GetLocation().Uuid < l[j].GetLocation().Uuid
+		})
+	}
+	defaultCheckFunc := func(w want, rpcResp []*payload.Object_StreamLocation, err error) error {
+		if err != nil {
+			st, ok := status.FromError(err)
+			if !ok {
+				return errors.Errorf("got error cannot convert to Status: \"%#v\"", err)
+			}
+			if st.Code() != w.errCode {
+				return errors.Errorf("got code: \"%#v\",\n\t\t\t\twant code: \"%#v\"", st.Code(), w.errCode)
+			}
+		}
+
+		// sort the response by the uuid before checking
+		sortObjectStreamLocation(rpcResp)
+		sortObjectStreamLocation(w.rpcResp)
+
+		if diff := comparator.Diff(rpcResp, w.rpcResp, objectStreamLocationComparators...); diff != "" {
+			return errors.Errorf(diff)
 		}
 		return nil
 	}
 
 	const (
-		intVecDim = 3
-		f32VecDim = 3
+		name              = "vald-agent-ngt-1" // agent name
+		intVecDim         = 3                  // int vector dimension
+		f32VecDim         = 3                  // float32 vector dimension
+		streamConcurrency = 10                 // default stream concurrency
 	)
 	var (
 		// default NGT configuration for test
-		// defaultIntSvcCfg = &config.NGT{
-		// 	Dimension:    intVecDim,
-		// 	DistanceType: ngt.Angle.String(),
-		// 	ObjectType:   ngt.Uint8.String(),
-		// 	KVSDB:        &config.KVSDB{},
-		// 	VQueue:       &config.VQueue{},
-		// }
+		defaultIntSvcCfg = &config.NGT{
+			Dimension:    intVecDim,
+			DistanceType: ngt.Angle.String(),
+			ObjectType:   ngt.Uint8.String(),
+			KVSDB:        &config.KVSDB{},
+			VQueue:       &config.VQueue{},
+		}
 		defaultF32SvcCfg = &config.NGT{
 			Dimension:    f32VecDim,
 			DistanceType: ngt.Angle.String(),
@@ -1457,6 +1504,8 @@ func Test_server_StreamInsert(t *testing.T) {
 			KVSDB:        &config.KVSDB{},
 			VQueue:       &config.VQueue{},
 		}
+
+		ip = net.LoadLocalIP() // agent ip address
 	)
 	/*
 		- Equivalence Class Testing
@@ -1513,53 +1562,254 @@ func Test_server_StreamInsert(t *testing.T) {
 	*/
 	tests := []test{
 		func() test {
-			ngt, err := service.New(defaultF32SvcCfg,
-				service.WithErrGroup(errgroup.Get()),
-			)
+			insertCnt := 1
+			reqs, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, insertCnt, f32VecDim, nil)
 			if err != nil {
-				t.Error(err)
-			}
-
-			// h, err := New(
-			// 	WithNGT(ngt),
-			// )
-			// if err != nil {
-			// 	t.Error(err)
-			// }
-
-			// s := grpc.NewServer()
-			// core.RegisterAgentServer(s, h)
-			// vald.RegisterValdServer(s, h)
-
-			stream := &mock.StreamInsertServerMock{
-				ServerStream: &mock.ServerStreamMock{
-					ContextFunc: func() context.Context {
-						return context.Background()
-					},
-					RecvMsgFunc: func(i interface{}) error {
-						return nil
-					},
-					SendMsgFunc: func(i interface{}) error {
-						return nil
-					},
-				},
+				t.Fatal(err)
 			}
 
 			return test{
 				name: "Equivalence Class Testing case 1.1: Success to StreamInsert 1 vector",
 				args: args{
-					stream: stream,
+					insertReqs: reqs.Requests,
 				},
 				fields: fields{
-					name:              "",
-					ip:                "",
-					ngt:               ngt,
-					eg:                errgroup.Get(),
-					streamConcurrency: 1,
+					name:              name,
+					ip:                ip,
+					streamConcurrency: streamConcurrency,
+					ngtCfg:            defaultF32SvcCfg,
 				},
-				want: want{},
-				afterFunc: func(a args) {
-					// s.Stop()
+				want: want{
+					rpcResp: request.GenObjectStreamLocation(insertCnt, name, ip),
+				},
+			}
+		}(),
+		func() test {
+			insertCnt := 100
+			reqs, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, insertCnt, f32VecDim, nil)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			return test{
+				name: "Equivalence Class Testing case 1.2: Success to StreamInsert 100 vector",
+				args: args{
+					insertReqs: reqs.Requests,
+				},
+				fields: fields{
+					name:              name,
+					ip:                ip,
+					streamConcurrency: streamConcurrency,
+					ngtCfg:            defaultF32SvcCfg,
+				},
+				want: want{
+					rpcResp: request.GenObjectStreamLocation(insertCnt, name, ip),
+				},
+			}
+		}(),
+		func() test {
+			return test{
+				name: "Equivalence Class Testing case 1.3: Success to StreamInsert 0 vector",
+				args: args{
+					insertReqs: nil,
+				},
+				fields: fields{
+					name:              name,
+					ip:                ip,
+					streamConcurrency: streamConcurrency,
+					ngtCfg:            defaultF32SvcCfg,
+				},
+				want: want{
+					rpcResp: []*payload.Object_StreamLocation{},
+				},
+			}
+		}(),
+		func() test {
+			insertCnt := 1
+			invalidDim := f32VecDim + 1
+			reqs, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, insertCnt, invalidDim, nil)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			return test{
+				name: "Equivalence Class Testing case 2.1: Fail to StreamInsert 1 vector with different dimension",
+				args: args{
+					insertReqs: reqs.Requests,
+				},
+				fields: fields{
+					name:              name,
+					ip:                ip,
+					streamConcurrency: streamConcurrency,
+					ngtCfg:            defaultF32SvcCfg,
+				},
+				want: want{
+					errCode: codes.InvalidArgument,
+					rpcResp: []*payload.Object_StreamLocation{
+						{
+							Payload: &payload.Object_StreamLocation_Status{
+								Status: &grpcStatus.Status{
+									Code: int32(codes.InvalidArgument),
+								},
+							},
+						},
+					},
+				},
+			}
+		}(),
+		func() test {
+			insertCnt := 100
+			reqs, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, insertCnt, f32VecDim, nil)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			invalidDim := f32VecDim + 1
+			invalidReqs, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, 1, invalidDim, nil)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			reqs.Requests[0] = invalidReqs.Requests[0]
+
+			return test{
+				name: "Equivalence Class Testing case 3.1: Fail to StreamInsert 100 vector with 1 vector with different dimension",
+				args: args{
+					insertReqs: reqs.Requests,
+				},
+				fields: fields{
+					name:              name,
+					ip:                ip,
+					streamConcurrency: streamConcurrency,
+					ngtCfg:            defaultF32SvcCfg,
+				},
+				want: want{
+					errCode: codes.InvalidArgument,
+					rpcResp: func() []*payload.Object_StreamLocation {
+						l := request.GenObjectStreamLocation(insertCnt, name, ip)
+
+						l[0] = &payload.Object_StreamLocation{
+							Payload: &payload.Object_StreamLocation_Status{
+								Status: &grpcStatus.Status{
+									Code: int32(codes.InvalidArgument),
+								},
+							},
+						}
+
+						return l
+					}(),
+				},
+			}
+		}(),
+		func() test {
+			insertCnt := 100
+			reqs, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, insertCnt, f32VecDim, nil)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			invalidDim := f32VecDim + 1
+			invalidReqs, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, 50, invalidDim, nil)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			for i := 0; i < 50; i++ {
+				reqs.Requests[i] = invalidReqs.Requests[i]
+			}
+
+			return test{
+				name: "Equivalence Class Testing case 3.2: Fail to StreamInsert 100 vector with 50 vector with different dimension",
+				args: args{
+					insertReqs: reqs.Requests,
+				},
+				fields: fields{
+					name:              name,
+					ip:                ip,
+					streamConcurrency: streamConcurrency,
+					ngtCfg:            defaultF32SvcCfg,
+				},
+				want: want{
+					errCode: codes.InvalidArgument,
+					rpcResp: func() []*payload.Object_StreamLocation {
+						l := request.GenObjectStreamLocation(insertCnt, name, ip)
+
+						invalidStatus := &payload.Object_StreamLocation_Status{
+							Status: &grpcStatus.Status{
+								Code: int32(codes.InvalidArgument),
+							},
+						}
+						for i := 0; i < 50; i++ {
+							l[i] = &payload.Object_StreamLocation{
+								Payload: invalidStatus,
+							}
+						}
+
+						return l
+					}(),
+				},
+			}
+		}(),
+		func() test {
+			insertCnt := 100
+			invalidDim := f32VecDim + 1
+			reqs, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, insertCnt, invalidDim, nil)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			return test{
+				name: "Equivalence Class Testing case 3.3: Fail to StreamInsert 100 vector with all vector with different dimension",
+				args: args{
+					insertReqs: reqs.Requests,
+				},
+				fields: fields{
+					name:              name,
+					ip:                ip,
+					streamConcurrency: streamConcurrency,
+					ngtCfg:            defaultF32SvcCfg,
+				},
+				want: want{
+					errCode: codes.InvalidArgument,
+					rpcResp: func() []*payload.Object_StreamLocation {
+						l := make([]*payload.Object_StreamLocation, insertCnt)
+
+						invalidStatus := &payload.Object_StreamLocation_Status{
+							Status: &grpcStatus.Status{
+								Code: int32(codes.InvalidArgument),
+							},
+						}
+						for i := 0; i < insertCnt; i++ {
+							l[i] = &payload.Object_StreamLocation{
+								Payload: invalidStatus,
+							}
+						}
+
+						return l
+					}(),
+				},
+			}
+		}(),
+		func() test {
+			insertCnt := 1
+			reqs, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, insertCnt, intVecDim, nil)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			return test{
+				name: "Equivalence Class Testing case 4.1: Success to StreamInsert 1 vector",
+				args: args{
+					insertReqs: reqs.Requests,
+				},
+				fields: fields{
+					name:              name,
+					ip:                ip,
+					streamConcurrency: streamConcurrency,
+					ngtCfg:            defaultIntSvcCfg,
+				},
+				want: want{
+					rpcResp: request.GenObjectStreamLocation(insertCnt, name, ip),
 				},
 			}
 		}(),
@@ -1580,16 +1830,55 @@ func Test_server_StreamInsert(t *testing.T) {
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
+
+			ctx, cancel := context.WithCancel(context.Background())
+			defer cancel()
+
+			eg, _ := errgroup.New(ctx)
+			ngt, err := service.New(test.fields.ngtCfg,
+				append(test.fields.ngtOpts, service.WithErrGroup(eg))...,
+			)
+			if err != nil {
+				tt.Fatal(err)
+			}
+
+			recvIdx := 0
+			rpcResp := make([]*payload.Object_StreamLocation, 0)
+			stream := &mock.StreamInsertServerMock{
+				ServerStream: &mock.ServerStreamMock{
+					ContextFunc: func() context.Context {
+						return ctx
+					},
+					RecvMsgFunc: func(i interface{}) error {
+						insertReqs := test.args.insertReqs
+						if recvIdx >= len(insertReqs) {
+							return io.EOF
+						}
+
+						obj := i.(*payload.Insert_Request)
+						obj.Vector = insertReqs[recvIdx].Vector
+						obj.Config = insertReqs[recvIdx].Config
+						recvIdx++
+
+						return nil
+					},
+					SendMsgFunc: func(i interface{}) error {
+						rpcResp = append(rpcResp, i.(*payload.Object_StreamLocation))
+						return nil
+					},
+				},
+			}
+
 			s := &server{
 				name:              test.fields.name,
 				ip:                test.fields.ip,
-				ngt:               test.fields.ngt,
-				eg:                test.fields.eg,
+				ngt:               ngt,
+				eg:                eg,
 				streamConcurrency: test.fields.streamConcurrency,
 			}
 
-			err := s.StreamInsert(test.args.stream)
-			if err := checkFunc(test.want, err); err != nil {
+			err = s.StreamInsert(stream)
+			if err := checkFunc(test.want, rpcResp, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
