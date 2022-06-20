@@ -220,52 +220,55 @@ func (c *client) dnsDiscovery(ctx context.Context, ech chan<- error) (addrs []st
 }
 
 func (c *client) discover(ctx context.Context, ech chan<- error) (err error) {
-	connected := make([]string, 0, len(c.GetAddrs(ctx)))
-	cur := new(sync.Map)
-	_, err = c.bo.Do(ctx, func(ctx context.Context) (interface{}, bool, error) {
-		nodes, err := c.discoverNodes(ctx)
-		if err != nil {
-			return nil, true, err
-		}
-		connected, err = c.discoverAddrs(ctx, nodes, ech)
-		if err != nil {
-			return nil, true, err
-		}
-		if len(connected) == 0 {
-			log.Warn("connected addr is zero")
-			cur = new(sync.Map)
-			return nil, true, errors.ErrAddrCouldNotDiscover(err, c.dns)
-		}
-		if c.onDiscover != nil {
-			err = c.onDiscover(ctx, c, connected)
+	if c.dscClient == nil || (c.autoconn && c.client == nil) {
+		return errors.ErrGRPCClientNotFound
+	}
+
+	var connected []string
+	if c.bo != nil {
+		_, err = c.bo.Do(ctx, func(ctx context.Context) (interface{}, bool, error) {
+			connected, err = c.updateDiscoveryInfo(ctx, ech)
 			if err != nil {
-				cur = new(sync.Map)
 				return nil, true, err
 			}
-		}
-		if c.autoconn {
-			for _, addr := range connected {
-				cur.Store(addr, struct{}{})
-			}
-		}
-		return nil, false, nil
-	})
+			return nil, false, nil
+		})
+	} else {
+		connected, err = c.updateDiscoveryInfo(ctx, ech)
+	}
 	if err != nil {
 		log.Warn("failed to discover addrs from discoverer API, trying to discover from dns...\t" + err.Error())
 		connected, err = c.dnsDiscovery(ctx, ech)
 		if err != nil {
 			return err
 		}
-		if c.autoconn {
-			cur = new(sync.Map)
-			for _, addr := range connected {
-				cur.Store(addr, struct{}{})
-			}
-		}
 	}
+
 	oldAddrs := c.GetAddrs(ctx)
 	c.addrs.Store(connected)
-	return c.disconnectOldAddrs(ctx, oldAddrs, cur, len(connected)/3, ech)
+	return c.disconnectOldAddrs(ctx, oldAddrs, connected, ech)
+}
+
+func (c *client) updateDiscoveryInfo(ctx context.Context, ech chan<- error) (connected []string, err error) {
+	nodes, err := c.discoverNodes(ctx)
+	if err != nil {
+		return nil, err
+	}
+	connected, err = c.discoverAddrs(ctx, nodes, ech)
+	if err != nil {
+		return nil, err
+	}
+	if len(connected) == 0 {
+		log.Warn("connected addr is zero")
+		return nil, errors.ErrAddrCouldNotDiscover(err, c.dns)
+	}
+	if c.onDiscover != nil {
+		err = c.onDiscover(ctx, c, connected)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return connected, nil
 }
 
 func (c *client) discoverNodes(ctx context.Context) (nodes *payload.Info_Nodes, err error) {
@@ -327,7 +330,12 @@ func (c *client) discoverAddrs(ctx context.Context, nodes *payload.Info_Nodes, e
 	return addrs, nil
 }
 
-func (c *client) disconnectOldAddrs(ctx context.Context, oldAddrs []string, cur *sync.Map, concurrency int, ech chan<- error) (err error) {
+func (c *client) disconnectOldAddrs(ctx context.Context, oldAddrs, connectedAddrs []string, ech chan<- error) (err error) {
+	var cur *sync.Map
+	for _, addr := range connectedAddrs {
+		cur.Store(addr, struct{}{})
+	}
+
 	for _, old := range oldAddrs {
 		_, ok := cur.Load(old)
 		if !ok {
@@ -341,7 +349,7 @@ func (c *client) disconnectOldAddrs(ctx context.Context, oldAddrs []string, cur 
 		}
 	}
 	if c.autoconn && c.client != nil {
-		if err = c.client.RangeConcurrent(ctx, concurrency, func(ctx context.Context,
+		if err = c.client.RangeConcurrent(ctx, len(connectedAddrs)/3, func(ctx context.Context,
 			addr string,
 			conn *grpc.ClientConn,
 			copts ...grpc.CallOption,

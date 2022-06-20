@@ -21,6 +21,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/vdaas/vald/internal/backoff"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/timeutil"
@@ -138,6 +139,15 @@ func WithErrGroup(eg errgroup.Group) Option {
 	return func(c *client) error {
 		if eg != nil {
 			c.eg = eg
+		}
+		return nil
+	}
+}
+
+func WithBackoff(bo backoff.Backoff) Option {
+	return func(c *client) error {
+		if bo != nil {
+			c.bo = bo
 		}
 		return nil
 	}
