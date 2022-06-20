@@ -37,6 +37,7 @@ func GenObjectLocations(num int, name string, ipAddr string) *payload.Object_Loc
 	return result
 }
 
+// GenObjectStreamLocation generate ObjectStreamLocations payload with multiple name and ip with generated uuid.
 func GenObjectStreamLocation(num int, name string, ipAddr string) []*payload.Object_StreamLocation {
 	result := make([]*payload.Object_StreamLocation, num)
 
