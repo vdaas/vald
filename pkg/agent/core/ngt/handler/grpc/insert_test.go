@@ -1447,6 +1447,35 @@ func Test_server_StreamInsert(t *testing.T) {
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
+
+	const (
+		name              = "vald-agent-ngt-1" // agent name
+		intVecDim         = 3                  // int vector dimension
+		f32VecDim         = 3                  // float32 vector dimension
+		streamConcurrency = 10                 // default stream concurrency
+		maxVecDim         = 1 << 18            // reference value for testing, this value is temporary
+	)
+
+	var (
+		// default NGT configuration for test
+		defaultIntSvcCfg = &config.NGT{
+			Dimension:    intVecDim,
+			DistanceType: ngt.Angle.String(),
+			ObjectType:   ngt.Uint8.String(),
+			KVSDB:        &config.KVSDB{},
+			VQueue:       &config.VQueue{},
+		}
+		defaultF32SvcCfg = &config.NGT{
+			Dimension:    f32VecDim,
+			DistanceType: ngt.Angle.String(),
+			ObjectType:   ngt.Float.String(),
+			KVSDB:        &config.KVSDB{},
+			VQueue:       &config.VQueue{},
+		}
+
+		ip = net.LoadLocalIP() // agent ip address
+	)
+
 	sortObjectStreamLocation := func(l []*payload.Object_StreamLocation) {
 		if l == nil {
 			return
@@ -1482,31 +1511,6 @@ func Test_server_StreamInsert(t *testing.T) {
 		return nil
 	}
 
-	const (
-		name              = "vald-agent-ngt-1" // agent name
-		intVecDim         = 3                  // int vector dimension
-		f32VecDim         = 3                  // float32 vector dimension
-		streamConcurrency = 10                 // default stream concurrency
-	)
-	var (
-		// default NGT configuration for test
-		defaultIntSvcCfg = &config.NGT{
-			Dimension:    intVecDim,
-			DistanceType: ngt.Angle.String(),
-			ObjectType:   ngt.Uint8.String(),
-			KVSDB:        &config.KVSDB{},
-			VQueue:       &config.VQueue{},
-		}
-		defaultF32SvcCfg = &config.NGT{
-			Dimension:    f32VecDim,
-			DistanceType: ngt.Angle.String(),
-			ObjectType:   ngt.Float.String(),
-			KVSDB:        &config.KVSDB{},
-			VQueue:       &config.VQueue{},
-		}
-
-		ip = net.LoadLocalIP() // agent ip address
-	)
 	/*
 		- Equivalence Class Testing
 			- float32
@@ -1665,12 +1669,11 @@ func Test_server_StreamInsert(t *testing.T) {
 			}
 
 			invalidDim := f32VecDim + 1
-			invalidReqs, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, 1, invalidDim, nil)
+			invalidVecs, err := vector.GenF32Vec(vector.Gaussian, 1, invalidDim)
 			if err != nil {
 				t.Fatal(err)
 			}
-
-			reqs.Requests[0] = invalidReqs.Requests[0]
+			reqs.Requests[0].Vector.Vector = invalidVecs[0]
 
 			return test{
 				name: "Equivalence Class Testing case 3.1: Fail to StreamInsert 100 vector with 1 vector with different dimension",
@@ -1708,13 +1711,14 @@ func Test_server_StreamInsert(t *testing.T) {
 				t.Fatal(err)
 			}
 
+			invalidInsertCnt := 50
 			invalidDim := f32VecDim + 1
-			invalidReqs, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, 50, invalidDim, nil)
+			invalidReqs, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, invalidInsertCnt, invalidDim, nil)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			for i := 0; i < 50; i++ {
+			for i := 0; i < invalidInsertCnt; i++ {
 				reqs.Requests[i] = invalidReqs.Requests[i]
 			}
 
@@ -1813,6 +1817,422 @@ func Test_server_StreamInsert(t *testing.T) {
 				},
 			}
 		}(),
+		func() test {
+			reqs := []*payload.Insert_Request{
+				{
+					Vector: &payload.Object_Vector{
+						Id:     "uuid-1",
+						Vector: vector.GenSameValueVec(intVecDim, 0),
+					},
+				},
+			}
+
+			return test{
+				name: "Boundary Value Testing case 1.1: Success to StreamInsert with 0 value vector (vector type is uint8)",
+				args: args{
+					insertReqs: reqs,
+				},
+				fields: fields{
+					name:              name,
+					ip:                ip,
+					streamConcurrency: streamConcurrency,
+					ngtCfg:            defaultIntSvcCfg,
+				},
+				want: want{
+					rpcResp: request.GenObjectStreamLocation(1, name, ip),
+				},
+			}
+		}(),
+		func() test {
+			reqs := []*payload.Insert_Request{
+				{
+					Vector: &payload.Object_Vector{
+						Id:     "uuid-1",
+						Vector: vector.GenSameValueVec(f32VecDim, 0),
+					},
+				},
+			}
+
+			return test{
+				name: "Boundary Value Testing case 1.2: Success to StreamInsert with 0 value vector (vector type is float32)",
+				args: args{
+					insertReqs: reqs,
+				},
+				fields: fields{
+					name:              name,
+					ip:                ip,
+					streamConcurrency: streamConcurrency,
+					ngtCfg:            defaultF32SvcCfg,
+				},
+				want: want{
+					rpcResp: request.GenObjectStreamLocation(1, name, ip),
+				},
+			}
+		}(),
+		func() test {
+			reqs := []*payload.Insert_Request{
+				{
+					Vector: &payload.Object_Vector{
+						Id:     "uuid-1",
+						Vector: vector.GenSameValueVec(intVecDim, math.MinInt),
+					},
+				},
+			}
+
+			return test{
+				name: "Boundary Value Testing case 2.1: Success to StreamInsert with min value vector (vector type is uint8)",
+				args: args{
+					insertReqs: reqs,
+				},
+				fields: fields{
+					name:              name,
+					ip:                ip,
+					streamConcurrency: streamConcurrency,
+					ngtCfg:            defaultIntSvcCfg,
+				},
+				want: want{
+					rpcResp: request.GenObjectStreamLocation(1, name, ip),
+				},
+			}
+		}(),
+		func() test {
+			reqs := []*payload.Insert_Request{
+				{
+					Vector: &payload.Object_Vector{
+						Id:     "uuid-1",
+						Vector: vector.GenSameValueVec(f32VecDim, -math.MaxFloat32),
+					},
+				},
+			}
+
+			return test{
+				name: "Boundary Value Testing case 2.2: Success to StreamInsert with min value vector (vector type is float32)",
+				args: args{
+					insertReqs: reqs,
+				},
+				fields: fields{
+					name:              name,
+					ip:                ip,
+					streamConcurrency: streamConcurrency,
+					ngtCfg:            defaultF32SvcCfg,
+				},
+				want: want{
+					rpcResp: request.GenObjectStreamLocation(1, name, ip),
+				},
+			}
+		}(),
+		func() test {
+			reqs := []*payload.Insert_Request{
+				{
+					Vector: &payload.Object_Vector{
+						Id:     "uuid-1",
+						Vector: vector.GenSameValueVec(intVecDim, math.MaxUint8),
+					},
+				},
+			}
+
+			return test{
+				name: "Boundary Value Testing case 3.1: Success to StreamInsert with max value vector (vector type is uint8)",
+				args: args{
+					insertReqs: reqs,
+				},
+				fields: fields{
+					name:              name,
+					ip:                ip,
+					streamConcurrency: streamConcurrency,
+					ngtCfg:            defaultIntSvcCfg,
+				},
+				want: want{
+					rpcResp: request.GenObjectStreamLocation(1, name, ip),
+				},
+			}
+		}(),
+		func() test {
+			reqs := []*payload.Insert_Request{
+				{
+					Vector: &payload.Object_Vector{
+						Id:     "uuid-1",
+						Vector: vector.GenSameValueVec(intVecDim, math.MaxFloat32),
+					},
+				},
+			}
+
+			return test{
+				name: "Boundary Value Testing case 3.2: Success to StreamInsert with max value vector (vector type is float32)",
+				args: args{
+					insertReqs: reqs,
+				},
+				fields: fields{
+					name:              name,
+					ip:                ip,
+					streamConcurrency: streamConcurrency,
+					ngtCfg:            defaultF32SvcCfg,
+				},
+				want: want{
+					rpcResp: request.GenObjectStreamLocation(1, name, ip),
+				},
+			}
+		}(),
+		func() test {
+			insertCnt := 100
+			reqs, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, insertCnt, f32VecDim, nil)
+			if err != nil {
+				t.Fatal(err)
+			}
+			reqs.Requests[0].Vector.Vector = vector.GenSameValueVec(intVecDim, float32(math.NaN()))
+
+			return test{
+				name: "Boundary Value Testing case 4.1: Success to StreamInsert with NaN value (vector type is float32)",
+				args: args{
+					insertReqs: reqs.Requests,
+				},
+				fields: fields{
+					name:              name,
+					ip:                ip,
+					streamConcurrency: streamConcurrency,
+					ngtCfg:            defaultF32SvcCfg,
+				},
+				want: want{
+					rpcResp: request.GenObjectStreamLocation(insertCnt, name, ip),
+				},
+			}
+		}(),
+		func() test {
+			insertCnt := 100
+			reqs, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, insertCnt, f32VecDim, nil)
+			if err != nil {
+				t.Fatal(err)
+			}
+			reqs.Requests[0].Vector.Vector = vector.GenSameValueVec(intVecDim, float32(math.Inf(+1.0)))
+
+			return test{
+				name: "Boundary Value Testing case 4.2: Success to StreamInsert with +Inf value (vector type is float32)",
+				args: args{
+					insertReqs: reqs.Requests,
+				},
+				fields: fields{
+					name:              name,
+					ip:                ip,
+					streamConcurrency: streamConcurrency,
+					ngtCfg:            defaultF32SvcCfg,
+				},
+				want: want{
+					rpcResp: request.GenObjectStreamLocation(insertCnt, name, ip),
+				},
+			}
+		}(),
+		func() test {
+			insertCnt := 100
+			reqs, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, insertCnt, f32VecDim, nil)
+			if err != nil {
+				t.Fatal(err)
+			}
+			reqs.Requests[0].Vector.Vector = vector.GenSameValueVec(intVecDim, float32(math.Inf(-1.0)))
+
+			return test{
+				name: "Boundary Value Testing case 4.3: Success to StreamInsert with -Inf value (vector type is float32)",
+				args: args{
+					insertReqs: reqs.Requests,
+				},
+				fields: fields{
+					name:              name,
+					ip:                ip,
+					streamConcurrency: streamConcurrency,
+					ngtCfg:            defaultF32SvcCfg,
+				},
+				want: want{
+					rpcResp: request.GenObjectStreamLocation(insertCnt, name, ip),
+				},
+			}
+		}(),
+		func() test {
+			insertCnt := 100
+			reqs, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, insertCnt, f32VecDim, nil)
+			if err != nil {
+				t.Fatal(err)
+			}
+			reqs.Requests[0].Vector.Vector = vector.GenSameValueVec(intVecDim, float32(math.Copysign(0, -1.0)))
+
+			return test{
+				name: "Boundary Value Testing case 4.4: Success to StreamInsert with -0 value (vector type is float32)",
+				args: args{
+					insertReqs: reqs.Requests,
+				},
+				fields: fields{
+					name:              name,
+					ip:                ip,
+					streamConcurrency: streamConcurrency,
+					ngtCfg:            defaultF32SvcCfg,
+				},
+				want: want{
+					rpcResp: request.GenObjectStreamLocation(insertCnt, name, ip),
+				},
+			}
+		}(),
+		func() test {
+			insertCnt := 100
+			reqs, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, insertCnt, f32VecDim, nil)
+			if err != nil {
+				t.Fatal(err)
+			}
+			reqs.Requests[0] = nil
+
+			return test{
+				name: "Boundary Value Testing case 5.1: Fail to StreamInsert with nil insert request",
+				args: args{
+					insertReqs: reqs.Requests,
+				},
+				fields: fields{
+					name:              name,
+					ip:                ip,
+					streamConcurrency: streamConcurrency,
+					ngtCfg:            defaultF32SvcCfg,
+				},
+				want: want{
+					errCode: codes.InvalidArgument,
+					rpcResp: func() []*payload.Object_StreamLocation {
+						l := request.GenObjectStreamLocation(insertCnt, name, ip)
+						l[0].Payload = &payload.Object_StreamLocation_Status{
+							Status: &grpcStatus.Status{
+								Code: int32(codes.InvalidArgument),
+							},
+						}
+						return l
+					}(),
+				},
+			}
+		}(),
+		func() test {
+			insertCnt := 100
+			reqs, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, insertCnt, f32VecDim, nil)
+			if err != nil {
+				t.Fatal(err)
+			}
+			reqs.Requests[0].Vector.Vector = nil
+
+			return test{
+				name: "Boundary Value Testing case 6.1: Fail to StreamInsert with nil vector",
+				args: args{
+					insertReqs: reqs.Requests,
+				},
+				fields: fields{
+					name:              name,
+					ip:                ip,
+					streamConcurrency: streamConcurrency,
+					ngtCfg:            defaultF32SvcCfg,
+				},
+				want: want{
+					errCode: codes.InvalidArgument,
+					rpcResp: func() []*payload.Object_StreamLocation {
+						l := request.GenObjectStreamLocation(insertCnt, name, ip)
+						l[0].Payload = &payload.Object_StreamLocation_Status{
+							Status: &grpcStatus.Status{
+								Code: int32(codes.InvalidArgument),
+							},
+						}
+						return l
+					}()},
+			}
+		}(),
+		func() test {
+			insertCnt := 100
+			reqs, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, insertCnt, f32VecDim, nil)
+			if err != nil {
+				t.Fatal(err)
+			}
+			reqs.Requests[0].Vector.Vector = []float32{}
+
+			return test{
+				name: "Boundary Value Testing case 7.1: Fail to StreamInsert with empty insert vector",
+				args: args{
+					insertReqs: reqs.Requests,
+				},
+				fields: fields{
+					name:              name,
+					ip:                ip,
+					streamConcurrency: streamConcurrency,
+					ngtCfg:            defaultF32SvcCfg,
+				},
+				want: want{
+					errCode: codes.InvalidArgument,
+					rpcResp: func() []*payload.Object_StreamLocation {
+						l := request.GenObjectStreamLocation(insertCnt, name, ip)
+						l[0].Payload = &payload.Object_StreamLocation_Status{
+							Status: &grpcStatus.Status{
+								Code: int32(codes.InvalidArgument),
+							},
+						}
+						return l
+					}(),
+				},
+			}
+		}(),
+		func() test {
+			insertCnt := 100
+			reqs, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, insertCnt, f32VecDim, nil)
+			if err != nil {
+				t.Fatal(err)
+			}
+			reqs.Requests[0].Vector.Id = ""
+
+			return test{
+				name: "Boundary Value Testing case 8.1: Fail to StreamInsert with empty UUID",
+				args: args{
+					insertReqs: reqs.Requests,
+				},
+				fields: fields{
+					name:              name,
+					ip:                ip,
+					streamConcurrency: streamConcurrency,
+					ngtCfg:            defaultF32SvcCfg,
+				},
+				want: want{
+					errCode: codes.InvalidArgument,
+					rpcResp: func() []*payload.Object_StreamLocation {
+						l := request.GenObjectStreamLocation(insertCnt, name, ip)
+						l[0].Payload = &payload.Object_StreamLocation_Status{
+							Status: &grpcStatus.Status{
+								Code: int32(codes.InvalidArgument),
+							},
+						}
+						return l
+					}(),
+				},
+			}
+		}(),
+		func() test {
+			insertCnt := 100
+			reqs, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, insertCnt, f32VecDim, nil)
+			if err != nil {
+				t.Fatal(err)
+			}
+			reqs.Requests[0].Vector.Vector = make([]float32, maxVecDim)
+
+			return test{
+				name: "Boundary Value Testing case 9.1: Fail to StreamInsert with maximum dimension",
+				args: args{
+					insertReqs: reqs.Requests,
+				},
+				fields: fields{
+					name:              name,
+					ip:                ip,
+					streamConcurrency: streamConcurrency,
+					ngtCfg:            defaultF32SvcCfg,
+				},
+				want: want{
+					errCode: codes.InvalidArgument,
+					rpcResp: func() []*payload.Object_StreamLocation {
+						l := request.GenObjectStreamLocation(insertCnt, name, ip)
+						l[0].Payload = &payload.Object_StreamLocation_Status{
+							Status: &grpcStatus.Status{
+								Code: int32(codes.InvalidArgument),
+							},
+						}
+						return l
+					}(),
+				},
+			}
+		}(),
 	}
 
 	for _, tc := range tests {
@@ -1856,8 +2276,10 @@ func Test_server_StreamInsert(t *testing.T) {
 						}
 
 						obj := i.(*payload.Insert_Request)
-						obj.Vector = insertReqs[recvIdx].Vector
-						obj.Config = insertReqs[recvIdx].Config
+						if insertReqs[recvIdx] != nil {
+							obj.Vector = insertReqs[recvIdx].Vector
+							obj.Config = insertReqs[recvIdx].Config
+						}
 						recvIdx++
 
 						return nil
