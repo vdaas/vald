@@ -329,7 +329,10 @@ func (c *client) discoverAddrs(ctx context.Context, nodes *payload.Info_Nodes, e
 }
 
 func (c *client) disconnectOldAddrs(ctx context.Context, oldAddrs, connectedAddrs []string, ech chan<- error) (err error) {
-	var cur *sync.Map
+	if !c.autoconn {
+		return nil
+	}
+	var cur sync.Map
 	for _, addr := range connectedAddrs {
 		cur.Store(addr, struct{}{})
 	}
@@ -346,7 +349,7 @@ func (c *client) disconnectOldAddrs(ctx context.Context, oldAddrs, connectedAddr
 			}))
 		}
 	}
-	if c.autoconn && c.client != nil {
+	if c.client != nil {
 		if err = c.client.RangeConcurrent(ctx, len(connectedAddrs)/3, func(ctx context.Context,
 			addr string,
 			conn *grpc.ClientConn,
