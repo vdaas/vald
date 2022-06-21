@@ -388,6 +388,31 @@ func Test_server_GetObject(t *testing.T) {
 		}
 		return nil
 	}
+	/*
+		- Equivalence Class Testing (1000 vectors inserted)
+			- case 1.1: success to get object (type: uint8)
+			- case 2.1: success to get object (type: float32)
+		- Boundary Value Testing (1000 vectors inserted)
+			- case 1.1: fail to get object with ""
+			- case 2.1: success to get object with ^@
+			- case 2.2: success to get object with ^I
+			- case 2.3: success to get object with ^J
+			- case 2.4: success to get object with ^M
+			- case 2.5: success to get object with ^[
+			- case 2.6: success to get object with ^?
+			- case 3.1: success to get object with utf-8 ID from utf-8 index
+			- case 3.2: fail to get object with utf-8 ID from s-jis index
+			- case 3.3: fail to get object with utf-8 ID from euc-jp index
+			- case 3.4: fail to get object with s-jis ID from utf-8 index
+			- case 3.5: success to get object with s-jis ID from s-jis index
+			- case 3.6: fail to get object with s-jis ID from euc-jp index
+			- case 3.4: fail to get object with euc-jp ID from utf-8 index
+			- case 3.5: fail to get object with euc-jp ID from s-jis index
+			- case 3.6: success to get object with euc-jp ID from euc-jp index
+			- case 4.1: success to get object with 😀
+		- Decision Table Testing
+		    - NONE
+	*/
 	tests := []test{
 		// TODO test cases
 		/*
