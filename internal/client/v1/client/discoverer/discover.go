@@ -26,7 +26,6 @@ import (
 
 	"github.com/vdaas/vald/apis/grpc/v1/discoverer"
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
-	"github.com/vdaas/vald/internal/backoff"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
@@ -49,7 +48,6 @@ type client struct {
 	client       grpc.Client
 	dns          string
 	opts         []grpc.Option
-	bo           backoff.Backoff
 	port         int
 	addrs        atomic.Value
 	dscClient    grpc.Client
@@ -225,8 +223,8 @@ func (c *client) discover(ctx context.Context, ech chan<- error) (err error) {
 	}
 
 	var connected []string
-	if c.bo != nil {
-		_, err = c.bo.Do(ctx, func(ctx context.Context) (interface{}, bool, error) {
+	if bo := c.client.GetBackoff(); bo != nil {
+		_, err = bo.Do(ctx, func(ctx context.Context) (interface{}, bool, error) {
 			connected, err = c.updateDiscoveryInfo(ctx, ech)
 			if err != nil {
 				return nil, true, err

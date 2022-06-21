@@ -85,6 +85,7 @@ type Client interface {
 		copts ...CallOption) (interface{}, error)) (interface{}, error)
 	GetDialOption() []DialOption
 	GetCallOption() []CallOption
+	GetBackoff() backoff.Backoff
 	ConnectedAddrs() []string
 	Close(ctx context.Context) error
 }
@@ -608,6 +609,10 @@ func (g *gRPCClient) GetDialOption() []DialOption {
 
 func (g *gRPCClient) GetCallOption() []CallOption {
 	return g.copts
+}
+
+func (g *gRPCClient) GetBackoff() backoff.Backoff {
+	return g.bo
 }
 
 func (g *gRPCClient) Connect(ctx context.Context, addr string, dopts ...DialOption) (conn pool.Conn, err error) {
