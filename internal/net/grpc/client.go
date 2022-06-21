@@ -467,6 +467,9 @@ func (g *gRPCClient) RoundRobin(ctx context.Context, f func(ctx context.Context,
 		}
 	}()
 	if g.bo != nil && g.atomicAddrs.Len() > 1 {
+		if method := FromGRPCMethod(sctx); len(method) != 0 {
+			sctx = backoff.WithBackoffName(ctx, method)
+		}
 		return g.bo.Do(sctx, func(ictx context.Context) (r interface{}, ret bool, err error) {
 			addr, ok := g.atomicAddrs.Next()
 			if !ok {
