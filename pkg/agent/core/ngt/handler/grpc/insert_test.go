@@ -40,17 +40,14 @@ import (
 	"github.com/vdaas/vald/internal/test/goleak"
 	"github.com/vdaas/vald/internal/test/mock"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/service"
-
-	grpcStatus "google.golang.org/genproto/googleapis/rpc/status"
 )
 
 var objectStreamLocationComparators = []comparator.Option{
 	comparator.IgnoreUnexported(payload.Object_StreamLocation{}),
 	comparator.IgnoreUnexported(payload.Object_Location{}),
-	comparator.Comparer(func(x, y grpcStatus.Status) bool {
-		// ignore checking the detail of status
-		return x.Code == y.Code
-	}),
+
+	// ignore checking status, will validate it on Test_server_StreamInsert defaultCheckFunc
+	comparator.IgnoreFields(payload.Object_StreamLocation_Status{}, "Status"),
 }
 
 func Test_server_Insert(t *testing.T) {
@@ -1485,9 +1482,7 @@ func Test_server_StreamInsert(t *testing.T) {
 	genObjectStreamLoc := func(code codes.Code) *payload.Object_StreamLocation {
 		return &payload.Object_StreamLocation{
 			Payload: &payload.Object_StreamLocation_Status{
-				Status: &grpcStatus.Status{
-					Code: int32(code),
-				},
+				Status: status.New(code, "").Proto(),
 			},
 		}
 	}
@@ -1522,6 +1517,19 @@ func Test_server_StreamInsert(t *testing.T) {
 
 		if diff := comparator.Diff(rpcResp, w.rpcResp, objectStreamLocationComparators...); diff != "" {
 			return errors.Errorf(diff)
+		}
+
+		// check status
+		for i := 0; i < len(rpcResp); i++ {
+			gotSt, ok1 := rpcResp[i].Payload.(*payload.Object_StreamLocation_Status)
+			wantSt, ok2 := w.rpcResp[i].Payload.(*payload.Object_StreamLocation_Status)
+			if ok1 != ok2 {
+				return errors.New("not excepted payload")
+			}
+
+			if ok1 && gotSt.Status.Code != wantSt.Status.Code {
+				return errors.Errorf("status code not match, got status: %#v, want status: %#v", gotSt, wantSt)
+			}
 		}
 		return nil
 	}
