@@ -306,19 +306,18 @@ func (c *client) discoverAddrs(ctx context.Context, nodes *payload.Info_Nodes, e
 			default:
 				if node != nil && node.GetPods() != nil && len(node.GetPods().GetPods()) > i {
 					addr := net.JoinHostPort(node.GetPods().GetPods()[i].GetIp(), uint16(c.port))
-						if err = c.connect(ctx, addr); err != nil {
-							err = errors.ErrAddrCouldNotDiscover(err, addr)
-							select {
-							case <-ctx.Done():
-								return nil, ctx.Err()
-							case ech <- err:
-							}
-							err = nil
-						} else {
-							addrs = append(addrs, addr)
+					if err = c.connect(ctx, addr); err != nil {
+						err = errors.ErrAddrCouldNotDiscover(err, addr)
+						select {
+						case <-ctx.Done():
+							return nil, ctx.Err()
+						case ech <- err:
 						}
-						break
+						err = nil
+					} else {
+						addrs = append(addrs, addr)
 					}
+					break
 				}
 			}
 		}
@@ -339,7 +338,7 @@ func (c *client) disconnectOldAddrs(ctx context.Context, oldAddrs, connectedAddr
 		_, ok := cur.Load(old)
 		if !ok {
 			c.eg.Go(safety.RecoverFunc(func() error {
-				err := c.disconnect(ctx, old)
+				err = c.disconnect(ctx, old)
 				if err != nil {
 					ech <- err
 				}
