@@ -304,10 +304,8 @@ func (c *client) discoverAddrs(ctx context.Context, nodes *payload.Info_Nodes, e
 			case <-ctx.Done():
 				return nil, ctx.Err()
 			default:
-				if node != nil && node.GetPods() != nil {
-					pods := node.GetPods().GetPods()
-					if i < len(pods) {
-						addr := net.JoinHostPort(pods[i].GetIp(), uint16(c.port))
+				if node != nil && node.GetPods() != nil && len(node.GetPods().GetPods()) > i {
+					addr := net.JoinHostPort(node.GetPods().GetPods()[i].GetIp(), uint16(c.port))
 						if err = c.connect(ctx, addr); err != nil {
 							err = errors.ErrAddrCouldNotDiscover(err, addr)
 							select {
