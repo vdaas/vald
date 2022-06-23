@@ -69,8 +69,8 @@ func Test_server_CreateIndex(t *testing.T) {
 			- case 1.2: success to create index with 100 uncommitted insert index
 			- case 2.1: success to create index with 1 uncommitted delete index
 			- case 2.2: success to create index with 100 uncommitted delete index
-			- case 3.1: success to create index with 1 uncommitted insert + delete index
-			- case 3.2: success to create index with 100 uncommitted insert + delete index
+			- case 3.1: success to create index with 1 uncommitted insert & delete index
+			- case 3.2: success to create index with 100 uncommitted insert & delete index
 
 		- Boundary Value Testing
 			- case 1.1: success to create index with 0 uncommitted index
