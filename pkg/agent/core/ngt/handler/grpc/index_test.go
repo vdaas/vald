@@ -62,6 +62,26 @@ func Test_server_CreateIndex(t *testing.T) {
 		}
 		return nil
 	}
+
+	/*
+		- Equivalence Class Testing
+			- case 1.1: success to create index with 1 uncommitted insert index
+			- case 1.2: success to create index with 100 uncommitted insert index
+			- case 2.1: success to create index with 1 uncommitted delete index
+			- case 2.2: success to create index with 100 uncommitted delete index
+			- case 3.1: success to create index with 1 uncommitted insert + delete index
+			- case 3.2: success to create index with 100 uncommitted insert + delete index
+
+		- Boundary Value Testing
+			- case 1.1: success to create index with 0 uncommitted index
+
+		- Decision Table Testing
+		    // with uncommitted index count 100
+			- case 1.1: success to create index with poolSize > uncommitted index count
+			- case 1.2: success to create index with poolSize < uncommitted index count
+			- case 1.3: success to create index with poolSize = uncommitted index count
+			- case 1.4: success to create index with poolSize = 0
+	*/
 	tests := []test{
 		// TODO test cases
 		/*
