@@ -74,9 +74,10 @@ func Test_server_CreateIndex(t *testing.T) {
 
 		- Boundary Value Testing
 			- case 1.1: success to create index with 0 uncommitted index
+			- case 2.1: fail to create index with invalid dimension
 
 		- Decision Table Testing
-		    // with uncommitted index count 100
+			// with uncommitted index count 100
 			- case 1.1: success to create index with poolSize > uncommitted index count
 			- case 1.2: success to create index with poolSize < uncommitted index count
 			- case 1.3: success to create index with poolSize = uncommitted index count
