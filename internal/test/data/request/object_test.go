@@ -16,6 +16,7 @@
 package request
 
 import (
+	"reflect"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -145,6 +146,145 @@ func TestGenObjectLocations(t *testing.T) {
 			}
 
 			got := GenObjectLocations(test.args.num, test.args.name, test.args.ipAddr)
+			if err := checkFunc(test.want, got); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func TestGenObjectStreamLocation(t *testing.T) {
+	type args struct {
+		num    int
+		name   string
+		ipAddr string
+	}
+	type want struct {
+		want []*payload.Object_StreamLocation
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, []*payload.Object_StreamLocation) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, got []*payload.Object_StreamLocation) error {
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		{
+			name: "success to generate 1 object stream location",
+			args: args{
+				num:    1,
+				name:   "vald-agent-01",
+				ipAddr: "127.0.0.1",
+			},
+			want: want{
+				want: []*payload.Object_StreamLocation{
+					{
+						Payload: &payload.Object_StreamLocation_Location{
+							Location: &payload.Object_Location{
+								Name: "vald-agent-01",
+								Uuid: "uuid-1",
+								Ips:  []string{"127.0.0.1"},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "success to generate 5 object stream location",
+			args: args{
+				num:    5,
+				name:   "vald-agent-01",
+				ipAddr: "127.0.0.1",
+			},
+			want: want{
+				want: []*payload.Object_StreamLocation{
+					{
+						Payload: &payload.Object_StreamLocation_Location{
+							Location: &payload.Object_Location{
+								Name: "vald-agent-01",
+								Uuid: "uuid-1",
+								Ips:  []string{"127.0.0.1"},
+							},
+						},
+					},
+					{
+						Payload: &payload.Object_StreamLocation_Location{
+							Location: &payload.Object_Location{
+								Name: "vald-agent-01",
+								Uuid: "uuid-2",
+								Ips:  []string{"127.0.0.1"},
+							},
+						},
+					},
+					{
+						Payload: &payload.Object_StreamLocation_Location{
+							Location: &payload.Object_Location{
+								Name: "vald-agent-01",
+								Uuid: "uuid-3",
+								Ips:  []string{"127.0.0.1"},
+							},
+						},
+					},
+					{
+						Payload: &payload.Object_StreamLocation_Location{
+							Location: &payload.Object_Location{
+								Name: "vald-agent-01",
+								Uuid: "uuid-4",
+								Ips:  []string{"127.0.0.1"},
+							},
+						},
+					},
+					{
+						Payload: &payload.Object_StreamLocation_Location{
+							Location: &payload.Object_Location{
+								Name: "vald-agent-01",
+								Uuid: "uuid-5",
+								Ips:  []string{"127.0.0.1"},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "success to generate 0 object stream location",
+			args: args{
+				num:    0,
+				name:   "vald-agent-01",
+				ipAddr: "127.0.0.1",
+			},
+			want: want{
+				want: []*payload.Object_StreamLocation{},
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			checkFunc := test.checkFunc
+			if test.checkFunc == nil {
+				checkFunc = defaultCheckFunc
+			}
+
+			got := GenObjectStreamLocation(test.args.num, test.args.name, test.args.ipAddr)
 			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
