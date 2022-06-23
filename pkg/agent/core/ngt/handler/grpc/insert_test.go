@@ -42,14 +42,6 @@ import (
 	"github.com/vdaas/vald/pkg/agent/core/ngt/service"
 )
 
-var objectStreamLocationComparators = []comparator.Option{
-	comparator.IgnoreUnexported(payload.Object_StreamLocation{}),
-	comparator.IgnoreUnexported(payload.Object_Location{}),
-
-	// ignore checking status, will validate it on Test_server_StreamInsert defaultCheckFunc
-	comparator.IgnoreFields(payload.Object_StreamLocation_Status{}, "Status"),
-}
-
 func Test_server_Insert(t *testing.T) {
 	t.Parallel()
 
@@ -1477,6 +1469,18 @@ func Test_server_StreamInsert(t *testing.T) {
 		strictExistCheckCfg = &payload.Insert_Config{
 			SkipStrictExistCheck: false,
 		}
+
+		objectStreamLocationComparators = []comparator.Option{
+			comparator.IgnoreUnexported(payload.Object_StreamLocation{}),
+			comparator.IgnoreUnexported(payload.Object_Location{}),
+
+			// ignore checking status, will validate it on Test_server_StreamInsert defaultCheckFunc
+			comparator.IgnoreFields(payload.Object_StreamLocation_Status{}, "Status"),
+		}
+
+		objectLocationComparators = []comparator.Option{
+			comparator.IgnoreUnexported(payload.Object_Location{}),
+		}
 	)
 
 	genObjectStreamLoc := func(code codes.Code) *payload.Object_StreamLocation {
@@ -1516,19 +1520,20 @@ func Test_server_StreamInsert(t *testing.T) {
 		sortObjectStreamLocation(w.rpcResp)
 
 		if diff := comparator.Diff(rpcResp, w.rpcResp, objectStreamLocationComparators...); diff != "" {
-			return errors.Errorf(diff)
+			return errors.New(diff)
 		}
 
 		// check status
-		for i := 0; i < len(rpcResp); i++ {
-			gotSt, ok1 := rpcResp[i].Payload.(*payload.Object_StreamLocation_Status)
-			wantSt, ok2 := w.rpcResp[i].Payload.(*payload.Object_StreamLocation_Status)
-			if ok1 != ok2 {
-				return errors.New("not excepted payload")
+		if len(rpcResp) != len(w.rpcResp) {
+			return errors.Errorf("gotResp length not match with wantResp, got: %#v, want: %#v", rpcResp, w.rpcResp)
+		}
+		for i, gotResp := range rpcResp {
+			wantResp := w.rpcResp[i]
+			if diff := comparator.Diff(gotResp.GetStatus().GetCode(), wantResp.GetStatus().GetCode()); diff != "" {
+				return errors.New(diff)
 			}
-
-			if ok1 && gotSt.Status.Code != wantSt.Status.Code {
-				return errors.Errorf("status code not match, got status: %#v, want status: %#v", gotSt, wantSt)
+			if diff := comparator.Diff(gotResp.GetLocation(), wantResp.GetLocation(), objectLocationComparators...); diff != "" {
+				return errors.New(diff)
 			}
 		}
 		return nil
