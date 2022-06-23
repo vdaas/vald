@@ -18,7 +18,6 @@ package grpc
 import (
 	"context"
 	"fmt"
-	"strconv"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
@@ -66,8 +65,7 @@ func (s *server) Exists(ctx context.Context, uid *payload.Object_ID) (res *paylo
 		log.Warn(err)
 		return nil, err
 	}
-	oid, ok := s.ngt.Exists(uuid)
-	if !ok {
+	if _, ok := s.ngt.Exists(uuid); !ok {
 		err = errors.ErrObjectIDNotFound(uid.GetId())
 		err = status.WrapWithNotFound(fmt.Sprintf("Exists API meta %s's uuid not found", uid.GetId()), err,
 			&errdetails.RequestInfo{
@@ -84,9 +82,7 @@ func (s *server) Exists(ctx context.Context, uid *payload.Object_ID) (res *paylo
 		}
 		return nil, err
 	}
-	return &payload.Object_ID{
-		Id: strconv.Itoa(int(oid)),
-	}, nil
+	return uid, nil
 }
 
 func (s *server) GetObject(ctx context.Context, id *payload.Object_VectorRequest) (res *payload.Object_Vector, err error) {
