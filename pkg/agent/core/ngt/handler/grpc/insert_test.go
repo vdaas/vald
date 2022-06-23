@@ -1452,6 +1452,7 @@ func Test_server_StreamInsert(t *testing.T) {
 		f32VecDim         = 3                  // float32 vector dimension
 		streamConcurrency = 10                 // default stream concurrency
 		maxVecDim         = 1 << 18            // reference value for testing, this value is temporary
+		uuid              = "uuid-1"           // default uuid
 	)
 
 	var (
@@ -1805,7 +1806,7 @@ func Test_server_StreamInsert(t *testing.T) {
 			reqs := []*payload.Insert_Request{
 				{
 					Vector: &payload.Object_Vector{
-						Id:     "uuid-1",
+						Id:     uuid,
 						Vector: vector.GenSameValueVec(intVecDim, 0),
 					},
 				},
@@ -1831,7 +1832,7 @@ func Test_server_StreamInsert(t *testing.T) {
 			reqs := []*payload.Insert_Request{
 				{
 					Vector: &payload.Object_Vector{
-						Id:     "uuid-1",
+						Id:     uuid,
 						Vector: vector.GenSameValueVec(f32VecDim, 0),
 					},
 				},
@@ -1857,7 +1858,7 @@ func Test_server_StreamInsert(t *testing.T) {
 			reqs := []*payload.Insert_Request{
 				{
 					Vector: &payload.Object_Vector{
-						Id:     "uuid-1",
+						Id:     uuid,
 						Vector: vector.GenSameValueVec(intVecDim, math.MinInt),
 					},
 				},
@@ -1883,7 +1884,7 @@ func Test_server_StreamInsert(t *testing.T) {
 			reqs := []*payload.Insert_Request{
 				{
 					Vector: &payload.Object_Vector{
-						Id:     "uuid-1",
+						Id:     uuid,
 						Vector: vector.GenSameValueVec(f32VecDim, -math.MaxFloat32),
 					},
 				},
@@ -1909,7 +1910,7 @@ func Test_server_StreamInsert(t *testing.T) {
 			reqs := []*payload.Insert_Request{
 				{
 					Vector: &payload.Object_Vector{
-						Id:     "uuid-1",
+						Id:     uuid,
 						Vector: vector.GenSameValueVec(intVecDim, math.MaxUint8),
 					},
 				},
@@ -1935,7 +1936,7 @@ func Test_server_StreamInsert(t *testing.T) {
 			reqs := []*payload.Insert_Request{
 				{
 					Vector: &payload.Object_Vector{
-						Id:     "uuid-1",
+						Id:     uuid,
 						Vector: vector.GenSameValueVec(intVecDim, math.MaxFloat32),
 					},
 				},
