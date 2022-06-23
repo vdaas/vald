@@ -40,7 +40,6 @@ import (
 	"github.com/vdaas/vald/internal/test/goleak"
 	"github.com/vdaas/vald/internal/test/mock"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/service"
-
 	grpcStatus "google.golang.org/genproto/googleapis/rpc/status"
 )
 
