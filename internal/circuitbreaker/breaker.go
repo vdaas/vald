@@ -107,7 +107,7 @@ func (b *breaker) fail() {
 func (b *breaker) currentState() (st state) {
 	if b.isTripped() {
 		now := time.Now().UnixNano()
-		if expire := atomic.LoadInt64(&b.expire); expire > 0 && now >= expire {
+		if expire := atomic.LoadInt64(&b.expire); expire > 0 && expire >= now {
 			return stateOpen
 		}
 		return stateHalfOpen
