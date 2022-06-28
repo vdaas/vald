@@ -12,11 +12,11 @@ import (
 
 type breaker struct {
 	count   atomic.Value // type: *count
-	tripped int32        // breaker is active or not.
+	tripped int32        // tripped flag. when flag value is 1, breaker state is "Open" or "HalfOpen".
 
 	closedErrRate float64
 	openTimeout   time.Duration
-	openExpire    int64 // Unix time
+	openExpire    int64 // unix time
 }
 
 func newBreaker(opts ...BreakerOption) (*breaker, error) {
@@ -132,8 +132,4 @@ func (b *breaker) isTripped() (ok bool) {
 func (b *breaker) trip() {
 	atomic.StoreInt32(&b.tripped, 1)
 	atomic.StoreInt64(&b.openExpire, time.Now().Add(b.openTimeout).UnixNano())
-}
-
-func (b *breaker) unTrip() {
-	atomic.StoreInt32(&b.tripped, 0)
 }
