@@ -2,26 +2,34 @@ package circuitbreaker
 
 import (
 	"context"
+	"reflect"
 	"sync/atomic"
 	"time"
 
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/log"
 )
 
 type breaker struct {
 	count   atomic.Value // type: *count
-	tripped int32
+	tripped int32        // breaker is active or not.
 
-	halfOpenTimeout time.Duration
-	openTimeout     time.Duration
-	expire          int64
+	closedErrRate float64
+	openTimeout   time.Duration
+	openExpire    int64 // Unix time
 }
 
 func newBreaker(opts ...BreakerOption) (*breaker, error) {
 	b := &breaker{}
 	for _, opt := range append(defaultBreakerOpts, opts...) {
 		if err := opt(b); err != nil {
-			return nil, err
+			oerr := errors.ErrOptionFailed(err, reflect.ValueOf(opt))
+			e := &errors.ErrCriticalOption{}
+			if errors.As(oerr, &e) {
+				log.Error(oerr)
+				return nil, oerr
+			}
+			log.Warn(oerr)
 		}
 	}
 	return b, nil
@@ -53,27 +61,24 @@ func (b *breaker) ready() (ok bool) {
 }
 
 func (b *breaker) success() {
+	switch st := b.currentState(); st {
+	// In most cases, an "Open" state will not occur, but reset in that case to be safe.
+	case stateHalfOpen, stateOpen:
+		b.reset()
+		return
+	}
+
+	b.count.Load().(*counts).onSuccess()
+	// WIP:
 	// This function focus on the "Half-Open" state.
 	// When current state is "Half-Open" state, this function records the number of successful attempts.
 	// And the circuit breaker changes to the "Closed" state after a specified number of consecutive operation invocations have been successful.
-
-	// 1. Increment the consecutiveSuccesses and clear consecutiveFailures by using count.onSuccess function
-	// 2. Call b.unTrip function
-
-	// e.g. the following is an example flow.
-	/**
-		switch b.currentState() {
-	    case stateHalfOpen:
-		    cnt := b.count.Load().(*counts).onSuccess()
-
-		    if cnt >= b.halfOpenSuccessThreshold {
-		        b.unTrip() // To "Closed"
-		    }
-		}
-	**/
 }
 
 func (b *breaker) fail() {
+	b.count.Load().(*counts).onFailure()
+
+	// WIP:
 	// This function focus on the "Closed" and "Half-Open" state.
 	// When current state is "Closed" state, this function records the number of failuer attempts.
 	// And the circuit breaker changes to the "Open" state if a specified number of consecutive operation invocations have been failed.
@@ -107,7 +112,7 @@ func (b *breaker) fail() {
 func (b *breaker) currentState() (st state) {
 	if b.isTripped() {
 		now := time.Now().UnixNano()
-		if expire := atomic.LoadInt64(&b.expire); expire > 0 && expire >= now {
+		if expire := atomic.LoadInt64(&b.openExpire); expire > 0 && expire >= now {
 			return stateOpen
 		}
 		return stateHalfOpen
@@ -115,12 +120,9 @@ func (b *breaker) currentState() (st state) {
 	return stateClosed
 }
 
-func (b *breaker) reset(now time.Time) {
-	// This function resets all counter and expire time.
-	/**
-		b.count.(*count).reset()
-	    b.expire.Store(now)
-	**/
+func (b *breaker) reset() {
+	atomic.StoreInt32(&b.tripped, 0)
+	atomic.StoreInt64(&b.openExpire, 0)
 }
 
 func (b *breaker) isTripped() (ok bool) {
@@ -129,6 +131,7 @@ func (b *breaker) isTripped() (ok bool) {
 
 func (b *breaker) trip() {
 	atomic.StoreInt32(&b.tripped, 1)
+	atomic.StoreInt64(&b.openExpire, time.Now().Add(b.openTimeout).UnixNano())
 }
 
 func (b *breaker) unTrip() {
