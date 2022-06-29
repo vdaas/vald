@@ -879,14 +879,14 @@ func Test_server_GetObject(t *testing.T) {
 				t.Fatal(err)
 			}
 			reqVec := ir.Requests[0].Vector
-			reqVec.Id = sjisStr
+			reqVec.Id = utf8Str
 
 			return test{
 				name: "Boundary Value Testing case 3.3: fail to get object with s-jis ID from utf-8 index",
 				args: args{
 					id: &payload.Object_VectorRequest{
 						Id: &payload.Object_ID{
-							Id: utf8Str,
+							Id: sjisStr,
 						},
 					},
 				},
@@ -944,14 +944,14 @@ func Test_server_GetObject(t *testing.T) {
 				t.Fatal(err)
 			}
 			reqVec := ir.Requests[0].Vector
-			reqVec.Id = sjisStr
+			reqVec.Id = eucjpStr
 
 			return test{
 				name: "Boundary Value Testing case 4.1: fail to get object with s-jis ID from euc-jp index",
 				args: args{
 					id: &payload.Object_VectorRequest{
 						Id: &payload.Object_ID{
-							Id: eucjpStr,
+							Id: sjisStr,
 						},
 					},
 				},
