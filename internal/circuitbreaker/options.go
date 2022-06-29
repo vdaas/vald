@@ -30,7 +30,7 @@ var defaultBreakerOpts = []BreakerOption{
 // WithClosedErrorRate returns an option that sets error rate.
 // The rate is expected to be between 0 and 1.0.
 // When the rate is exceeded, the breaker state will be changed from "Closed" to "Open".
-func WithClosedErrorRate(f float64) BreakerOption {
+func WithClosedErrorRate(f float32) BreakerOption {
 	return func(b *breaker) error {
 		if f < 0 || f > 1.0 {
 			return errors.NewErrInvalidOption("closedErrorRate", f)

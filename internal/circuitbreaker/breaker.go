@@ -14,7 +14,7 @@ type breaker struct {
 	count   atomic.Value // type: *count
 	tripped int32        // tripped flag. when flag value is 1, breaker state is "Open" or "HalfOpen".
 
-	closedErrRate float64
+	closedErrRate float32
 	openTimeout   time.Duration
 	openExpire    int64 // unix time
 }
@@ -69,10 +69,6 @@ func (b *breaker) success() {
 	}
 
 	b.count.Load().(*counts).onSuccess()
-	// WIP:
-	// This function focus on the "Half-Open" state.
-	// When current state is "Half-Open" state, this function records the number of successful attempts.
-	// And the circuit breaker changes to the "Closed" state after a specified number of consecutive operation invocations have been successful.
 }
 
 func (b *breaker) fail() {

@@ -25,6 +25,7 @@ import (
 	"time"
 
 	"github.com/vdaas/vald/internal/backoff"
+	"github.com/vdaas/vald/internal/circuitbreaker"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
@@ -106,6 +107,7 @@ type gRPCClient struct {
 	roccd               string // reconnection old connection closing duration
 	eg                  errgroup.Group
 	bo                  backoff.Backoff
+	cb                  circuitbreaker.CircuitBreaker
 	gbo                 gbackoff.Config // grpc's original backoff configuration
 	mcd                 time.Duration   // minimum connection timeout duration
 	group               singleflight.Group
