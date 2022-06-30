@@ -115,3 +115,15 @@ rules:
       - onnx
       - ONNX
     expected: ONNX
+  - pattern: jaeger
+    expected: Jaeger
+    options:
+      wordBoundary: true
+  - pattern: grafana
+    expected: Grafana
+    options:
+      wordBoundary: true
+  - pattern: sdk
+    expected: SDK
+    options:
+      wordBoundary: true
