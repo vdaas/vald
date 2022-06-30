@@ -44,9 +44,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Setup node/npm
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v3
         with:
-          node-version: '15'
+          node-version: '16'
       - name: Install textlint
         run: |
           make textlint/ci/install
