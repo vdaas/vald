@@ -3,7 +3,6 @@
     "en-spell": {
         "personalDictionary": [
           "changelog",
-          "changelog",
           "clj",
           "config",
           "crd",
@@ -20,6 +19,7 @@
           "helm",
           "homebrew",
           "http",
+          "https",
           "idrequest",
           "int32",
           "jaeger",
