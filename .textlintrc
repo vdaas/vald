@@ -1,0 +1,41 @@
+{
+  "rules": {
+    "en-spell": {
+        "personalDictionary": [
+          "clj",
+          "crd",
+          "docker",
+          "github",
+          "golang",
+          "helm",
+          "homebrew",
+          "k3d",
+          "k3s",
+          "k8s",
+          "kubernetes",
+          "ngt",
+          "ngtd",
+          "onnx",
+          "operator",
+          "scalable",
+          "spotify",
+          "sptag",
+          "vald",
+          "vektor",
+          "wald",
+          "mevie",
+          "upsert",
+          "vectorize"
+        ]
+    },
+    "prh": {
+      "rulePaths": [
+        "prh.yaml"
+      ]
+    },
+    "write-good": {
+      "passive": false,
+      "thereIs": false
+    }
+  }
+}

@@ -1,0 +1,121 @@
+version: 1
+rules:
+  - pattern: vald
+    expected: Vald
+    options:
+      wordBoundary: true
+    specs:
+      - from: vald
+        to: Vald
+      - from: valdcli
+        to: valdcli
+  - pattern: helm
+    expected: Helm
+    options:
+      wordBoundary: true
+  - pattern:
+      - Golang
+      - golang
+      - /go(?! to)/
+    expected: Go
+    options:
+      wordBoundary: true
+    specs:
+      - from: go
+        to: Go
+      - from: going
+        to: going
+      - from: go to
+        to: go to
+      - from: golang
+        to: Go
+      - from: algorithm
+        to: algorithm
+  - pattern: python
+    expected: Python
+    options:
+      wordBoundary: true
+  - pattern: clojure
+    expected: Clojure
+    options:
+      wordBoundary: true
+  - pattern: java
+    expected: Java
+    options:
+      wordBoundary: true
+  - pattern:
+      - node.js
+      - nodejs
+    expected: Node.js
+  - pattern:
+      - Yahoo Japan!
+      - Yahoo! Japan
+      - YJ
+    expected: Yahoo Japan
+  - pattern: ngt
+    expected: NGT
+    options:
+      wordBoundary: true
+    specs:
+      - from: length
+        to: length
+      - from: ngt
+        to: NGT
+  - pattern: ngtd
+    expected: NGTD
+    options:
+      wordBoundary: true
+  - pattern: kubernetes
+    expected: Kubernetes
+    options:
+      wordBoundary: true
+  - pattern: docker
+    expected: Docker
+    options:
+      wordBoundary: true
+  - pattern:
+      - github
+      - Github
+    expected: GitHub
+    options:
+      wordBoundary: true
+  - pattern: ann
+    expected: ANN
+    options:
+      wordBoundary: true
+    specs:
+      - from: planning
+        to: planning
+      - from: ann
+        to: ANN
+  - pattern:
+      - knn
+      - KNN
+      - kNN
+    expected: _k_-NN
+    options:
+      wordBoundary: true
+  - pattern: uuid
+    options:
+      wordBoundary: true
+    expected: UUID
+  - pattern:
+      - jupyter
+      - Jupyter
+    expected: Jupyter
+  - pattern:
+      - pyroscope
+      - Pyroscope
+    expected: Pyroscope
+  - pattern:
+      - flamegraph
+      - Flamegraph
+    expected: Flamegraph
+  - pattern:
+      - onnx
+      - ONNX
+    expected: ONNX
+  - pattern:
+      - vald-onnx
+      - Vald-ONNX
+    expected: vald-onnx
