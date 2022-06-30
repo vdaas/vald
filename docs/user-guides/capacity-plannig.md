@@ -2,14 +2,14 @@
 
 ## What is capacity planning for the Vald cluster?
 
-Capacity planning is essential when deploying the Vald cluster using the Cloud Computing service.
+Capacity planning is essential before deploying the Vald cluster to the cloud service.
 There are three viewpoints: Vald cluster view, Kubernetes view, and Component view.
 Let's see each view.
 
 ## Vald cluster view
 
 The essential point at the Vald cluster view is the hardware specification, especially RAM.
-The Vald cluster, almost Vald Agent component, requires much RAM capacity because the vector index is on memory.
+The Vald cluster, especially Vald Agent components, requires much RAM capacity because the vector index is stored in memory.
 
 It is easy to figure out the minimum required RAM capacity by the following formula.
 
@@ -119,7 +119,7 @@ If it needs to set the resource limit, it would be better to set `podAntiAffinit
 The CPU throttling affects the pod performance.
 
 If it occurs, the Vald cluster operator must consider each component's CPU resource request and limit.
-It is easy to change by editing your values yaml file and applying it. 
+It is easy to change by editing the `values.yaml` file and applying it.
 
 ```yaml
 # e.g. LB Gateway resources settings.
@@ -147,6 +147,6 @@ Depending on the customization of each component for each user, there are some p
 
 **Index Manager**
 
-If saveIndex is frequent, backup data per unit time will increase, which consumes bandwidth.
+If the `saveIndex` is executed frequently, the backup data per unit time will increase, which consumes bandwidth.
 
 Similarly, as the saveIndex concurrency increases, the backup data per unit time increases.
