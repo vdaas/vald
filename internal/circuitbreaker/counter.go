@@ -2,41 +2,37 @@ package circuitbreaker
 
 import "sync/atomic"
 
-// counts holds the number of successes/failures.
-type counts struct {
-	total                int64
-	consecutiveSuccesses int64
-	consecutiveFailures  int64
+type Counter interface {
+	Successes() int64
+	Fails() int64
 }
 
-func (c *counts) onSuccess() (n uint32) {
-	// This function is called when user defined function succeds.
+type count struct {
+	successes int64
+	failures  int64
+}
 
-	// 1. Increment consecutiveSuccesses by using atomic.
-	// 2. Clear consecutiveFailures by using atomic.
+func (c *count) Successes() (n int64) {
+	return atomic.LoadInt64(&c.successes)
+}
 
-	// e.g. the following is an example flow.
-	/**
-		n = atomic.AddUint32(&c.consecutiveSuccesses, 1)
-		atomic.StoreUint32(&c.consecutiveFailures, 0)
-	**/
+func (c *count) Fails() (n int64) {
+	return atomic.LoadInt64(&c.failures)
+}
+
+func (c *count) onSuccess() (n int64) {
+	n = atomic.AddInt64(&c.successes, 1)
 	return n
 }
 
-func (c *counts) onFailure() (n uint32) {
-	// This function is called when user defined function fails.
-
-	// 1. Increment consecutiveFailures by using atomic.
-	// 2. Clear consecutiveFailures by using atomic.
-
-	// e.g. the following is an example flow.
-	/**
-		n = atomic.AddUint32(&c.consecutiveFailures, 1)
-		atomic.StoreUint32(&c.consecutiveSuccesses, 0)
-	**/
+func (c *count) onFail() (n int64) {
+	n = atomic.AddInt64(&c.failures, 1)
 	return n
 }
-func (c *counts) reset() {
-	atomic.StoreInt64(&c.consecutiveFailures, 0)
-	atomic.StoreInt64(&c.consecutiveSuccesses, 0)
+
+func (c *count) reset() {
+	atomic.StoreInt64(&c.failures, 0)
+	atomic.StoreInt64(&c.successes, 0)
 }
+
+var _ Counter = (*count)(nil)

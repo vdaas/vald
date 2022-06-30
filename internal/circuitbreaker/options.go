@@ -24,6 +24,7 @@ type BreakerOption func(*breaker) error
 
 var defaultBreakerOpts = []BreakerOption{
 	WithClosedErrorRate(0.7),
+	WithHalfOpenErrorRate(0.5),
 	WithOpenTimeout("1s"),
 }
 
@@ -36,6 +37,7 @@ func WithClosedErrorRate(f float32) BreakerOption {
 			return errors.NewErrInvalidOption("closedErrorRate", f)
 		}
 		b.closedErrRate = f
+		b.closedErrShouldTrip = NewRateTripper(f)
 		return nil
 	}
 }
@@ -49,6 +51,7 @@ func WithHalfOpenErrorRate(f float32) BreakerOption {
 			return errors.NewErrInvalidOption("halfOpenErrorRate", f)
 		}
 		b.halfOpenErrRate = f
+		b.halfOpenErrShouldTrip = NewRateTripper(f)
 		return nil
 	}
 }

@@ -14,10 +14,12 @@ type breaker struct {
 	count   atomic.Value // type: *count
 	tripped int32        // tripped flag. when flag value is 1, breaker state is "Open" or "HalfOpen".
 
-	halfOpenErrRate float32
-	closedErrRate   float32
-	openTimeout     time.Duration
-	openExpire      int64 // unix time
+	halfOpenErrRate       float32
+	halfOpenErrShouldTrip Tripper
+	closedErrRate         float32
+	closedErrShouldTrip   Tripper
+	openTimeout           time.Duration
+	openExpire            int64 // unix time
 }
 
 func newBreaker(opts ...BreakerOption) (*breaker, error) {
@@ -39,68 +41,59 @@ func newBreaker(opts ...BreakerOption) (*breaker, error) {
 // do executes the function given argument when the current breaker state is "Closed" or "Half-Open".
 // If the current breaker state is "Open", this function returns ErrCircuitBreakerOpenState.
 func (b *breaker) do(ctx context.Context, fn func(ctx context.Context) (val interface{}, err error)) (val interface{}, err error) {
-	if !b.ready() {
+	if !b.isReady() {
 		return nil, errors.ErrCircuitBreakerOpenState
 	}
-
-	// count up
-
 	val, err = fn(ctx)
 	if err != nil {
-		b.fail()
-	}
+		igerr := &errors.ErrCircuitBreakerIgnorable{}
+		if errors.As(err, &igerr) {
+			return nil, igerr.Unwrap()
+		}
 
+		serr := &errors.ErrCircuitBreakerMarkWithSuccess{}
+		if errors.As(err, &serr) {
+			b.success()
+			return nil, serr.Unwrap()
+		}
+
+		b.fail()
+		return nil, err
+	}
 	b.success()
 	return val, nil
 }
 
-// ready determines the breaker is ready or not.
+// isReady determines the breaker is ready or not.
 // If the current breaker state is "Closed" or "Half-Open", this function returns true.
-func (b *breaker) ready() (ok bool) {
+func (b *breaker) isReady() (ok bool) {
 	st := b.currentState()
 	return st == stateClosed || st == stateHalfOpen
 }
 
 func (b *breaker) success() {
-	switch st := b.currentState(); st {
-	// In most cases, an "Open" state will not occur, but reset in that case to be safe.
-	case stateHalfOpen, stateOpen:
+	b.count.Load().(*count).onSuccess()
+	if st := b.currentState(); st != stateHalfOpen {
 		b.reset()
-		return
 	}
-
-	b.count.Load().(*counts).onSuccess()
 }
 
 func (b *breaker) fail() {
-	b.count.Load().(*counts).onFailure()
+	cnt := b.count.Load().(*count)
+	cnt.onFail()
 
-	// WIP:
-	// This function focus on the "Closed" and "Half-Open" state.
-	// When current state is "Closed" state, this function records the number of failuer attempts.
-	// And the circuit breaker changes to the "Open" state if a specified number of consecutive operation invocations have been failed.
-	// When current state is "Half-Open" state, the circuit breaker changes to the "Open" state.
-
-	// 1. Increment the consecutiveFailures and clear consecutiveSuccesses by using count.onFailuer function
-	// 2. Call b.trip function
-
-	// e.g. the following is an example flow.
-	/**
-		switch b.currentState() {
-		case stateClosed:
-		    cnt := b.count.Load().(*counts).onFailure()
-
-		    if cnt >= b.halfClosedFailureThreshold {
-			    b.trip() // To "Open"
-		    }
-		case stateHalfOpen:
-	        if b.st.CompareAndSwap(stateHalfOpen, stateOpen) {
-		        b.reset(time.Now()) // Reset all counter
-		    } else {
-		        // The state has been changed to "Closed" during this function calling.
-		    }
-		}
-	**/
+	var ok bool
+	switch st := b.currentState(); st {
+	case stateHalfOpen:
+		ok = b.halfOpenErrShouldTrip.ShouldTrip(cnt)
+	case stateClosed:
+		ok = b.closedErrShouldTrip.ShouldTrip(cnt)
+	default:
+		return
+	}
+	if ok {
+		b.trip()
+	}
 }
 
 // currentState returns current breaker state.
@@ -120,13 +113,15 @@ func (b *breaker) currentState() (st state) {
 func (b *breaker) reset() {
 	atomic.StoreInt32(&b.tripped, 0)
 	atomic.StoreInt64(&b.openExpire, 0)
-}
-
-func (b *breaker) isTripped() (ok bool) {
-	return atomic.LoadInt32(&b.tripped) == 1
+	b.count.Load().(*count).reset()
 }
 
 func (b *breaker) trip() {
 	atomic.StoreInt32(&b.tripped, 1)
 	atomic.StoreInt64(&b.openExpire, time.Now().Add(b.openTimeout).UnixNano())
+	b.count.Load().(*count).reset()
+}
+
+func (b *breaker) isTripped() (ok bool) {
+	return atomic.LoadInt32(&b.tripped) == 1
 }
