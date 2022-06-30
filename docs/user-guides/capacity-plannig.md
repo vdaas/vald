@@ -14,22 +14,22 @@ The Vald cluster, almost Vald Agent component, requires much RAM capacity becaus
 It is easy to figure out the minimum required RAM capacity by the following formula.
 
 ```bash
-( the dimension vector ) × ( bit number ) × ( the maximum number of the vector ) × ( the index replica )
+( { the dimension vector } × { bit number of vector } + { the bit of vectors ID string } ) × { the maximum number of the vector } × { the index replica }
 ```
 
-For example, if you want to insert 1 million vectors with 900 dimensions and the object type is 32-bit, and the index replica is 3, the minimum required RAM capacity is:
+For example, if you want to insert 1 million vectors with 900 dimensions and the object type is 32-bit with 32 byte (256 bit) ID, and the index replica is 3, the minimum required RAM capacity is:
 
 ```bash
-900 × 32 × 1,000,000 × 3 = 86,400,000,000 (bit) = 10.0583 (GB)
+(900 × 32 + 256 ) × 1,000,000 × 3 = 8,7168,000,000 (bit) = 10.896 (GB)
 ```
 
 
 It is just the minimum required RAM.
-Considering the margin of RAM capacity, the minimum RAM capacity should be less than 80% of the actual RAM capacity. 
+Considering the margin of RAM capacity, the minimum RAM capacity should be less than 60% of the actual RAM capacity. 
 Therefore, the actual minimum RAM capacity will be:
 
 ```bash
-86,400,000,000 (bit) / 0.8 = 108,000,000,000 (bit) = 12.5729 (GB)
+8,7168,000,000 (bit) / 0.6 = 145,280,000,000 (bit) = 18.16 (GB)
 ```
 
 ## Kubernetes cluster view
