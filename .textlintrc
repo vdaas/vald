@@ -30,7 +30,7 @@
     },
     "prh": {
       "rulePaths": [
-        "prh.yaml"
+        ".prh.yaml"
       ]
     },
     "write-good": {
