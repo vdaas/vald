@@ -1,6 +1,6 @@
 # Capacity Planning
 
-## How is capacity planning for the Vald cluster?
+## What is capacity planning for the Vald cluster?
 
 Capacity planning is essential when deploying the Vald cluster using the Cloud Computing service.
 There are three viewpoints: Vald cluster view, Kubernetes view, and Component view.
@@ -8,7 +8,7 @@ Let's see each view.
 
 ## Vald cluster view
 
-The essential point at the Vald cluster view is the Hardware spec, especially RAM.
+The essential point at the Vald cluster view is the hardware specification, especially RAM.
 The Vald cluster, almost Vald Agent component, requires much RAM capacity because the vector index is on memory.
 
 It is easy to figure out the minimum required RAM capacity by the following formula.
@@ -17,7 +17,7 @@ It is easy to figure out the minimum required RAM capacity by the following form
 ( the dimension vector ) × ( bit number ) × ( the maximum number of the vector ) × ( the index replica )
 ```
 
-For example, when you want to insert 1,000,000 million vectors with 900 dimensions whose object type is 32-bit and the index replica is 3, the minimum required RAM capacity is:
+For example, if you want to insert 1 million vectors with 900 dimensions and the object type is 32-bit, and the index replica is 3, the minimum required RAM capacity is:
 
 ```bash
 900 × 32 × 1,000,000 × 3 = 86,400,000,000 (bit) = 10.0583 (GB)
@@ -43,7 +43,7 @@ Kubernetes performs pod scheduling with pods Priority Class as the priority and 
 
 Pod priority has the integer value, and the higher value, the higher priority.
 
-Each vald component has the default priority value:
+Each Vald component has the default priority value:
 
 - Agent: 1000000000
 - Discoverer: 1000000
@@ -82,7 +82,7 @@ Resource request and limit determine QoS.
 Vald requires many RAM resources because of on-memory indexing, so we highly recommend that you do not specify a limit, especially for the Vald Agent.
 In this case, QoS will be Burstable.
 
-In addition, when other components coexist with Vald Agent, it is preferable to set resource requests and limits considering QoS. 
+In addition, when other components coexist with Vald Agent, it is preferred to set resource requests and limits considering QoS. 
 
 If it needs to set the resource limit, it would be better to set `podAntiAffinity` like below.
 
