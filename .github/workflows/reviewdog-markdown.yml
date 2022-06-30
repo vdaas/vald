@@ -47,6 +47,9 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: '15'
+      - name: Install textlint
+        run: |
+          make textlint/ci/install
       - name: textlint-github-pr-review
         uses: tsuyoshicho/action-textlint@v3
         with:
