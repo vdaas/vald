@@ -50,6 +50,6 @@ jobs:
       - name: textlint-github-pr-review
         uses: tsuyoshicho/action-textlint@v3
         with:
-          github_token: ${{ secrets.github_token }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           reporter: github-pr-review
           textlint_flags: "docs/**"
