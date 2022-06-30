@@ -115,7 +115,3 @@ rules:
       - onnx
       - ONNX
     expected: ONNX
-  # - pattern:
-  #     - vald-onnx
-  #     - Vald-ONNX
-  #   expected: vald-onnx
