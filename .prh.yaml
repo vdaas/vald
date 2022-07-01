@@ -92,7 +92,9 @@ rules:
     options:
       wordBoundary: true
     expected: UUID
-  - pattern: jupyter
+  - pattern:
+      - jupyter
+      - jupiter
     expected: Jupyter
     options:
       wordBoundary: true
