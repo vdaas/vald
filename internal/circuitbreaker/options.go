@@ -42,6 +42,17 @@ func WithClosedErrorRate(f float32) BreakerOption {
 	}
 }
 
+// WithClosedErrorTripper returns an option that sets whether it should trip when in "Closed" state.
+func WithClosedErrorTripper(tp Tripper) BreakerOption {
+	return func(b *breaker) error {
+		if tp == nil {
+			return errors.NewErrInvalidOption("closedErrTripper", tp)
+		}
+		b.closedErrShouldTrip = tp
+		return nil
+	}
+}
+
 // WithHalfOpenErrorRate returns an option that sets error rate when breaker state is "HalfOpen".
 // The rate is expected to be between 0 and 1.0.
 // When the rate is exceeded, the breaker state will be changed from "HalfOpen" to "Open".
@@ -52,6 +63,17 @@ func WithHalfOpenErrorRate(f float32) BreakerOption {
 		}
 		b.halfOpenErrRate = f
 		b.halfOpenErrShouldTrip = NewRateTripper(f)
+		return nil
+	}
+}
+
+// WithHalfOpenErrorTripper returns an option that sets whether it should trip when in "Half-Open" state.
+func WithHalfOpenTripper(tp Tripper) BreakerOption {
+	return func(b *breaker) error {
+		if tp == nil {
+			return errors.NewErrInvalidOption("halfOpenErrTripper", tp)
+		}
+		b.halfOpenErrShouldTrip = tp
 		return nil
 	}
 }

@@ -73,7 +73,7 @@ func (b *breaker) isReady() (ok bool) {
 
 func (b *breaker) success() {
 	b.count.Load().(*count).onSuccess()
-	if st := b.currentState(); st != stateHalfOpen {
+	if st := b.currentState(); st == stateHalfOpen {
 		b.reset()
 	}
 }
