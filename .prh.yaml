@@ -54,6 +54,11 @@ rules:
     expected: Yahoo! Japan
   - pattern: ngt
     expected: NGT
+    specs:
+      - from: length
+        to: length
+      - from: ngt
+        to: NGT
     options:
       wordBoundary: true
   - pattern: ngtd
@@ -79,6 +84,11 @@ rules:
       wordBoundary: true
   - pattern: ann
     expected: ANN
+    specs:
+      - from: planning
+        to: planning
+      - from: ann
+        to: ANN
     options:
       wordBoundary: true
   - pattern:
