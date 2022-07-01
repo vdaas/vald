@@ -92,22 +92,24 @@ rules:
     options:
       wordBoundary: true
     expected: UUID
-  - pattern:
-      - jupyter
-      - Jupyter
+  - pattern: jupyter
     expected: Jupyter
-  - pattern:
-      - pyroscope
-      - Pyroscope
+    options:
+      wordBoundary: true
+  - pattern: pyroscope
     expected: Pyroscope
-  - pattern:
-      - flamegraph
-      - Flamegraph
+    options:
+      wordBoundary: true
+  - pattern: flamegraph
     expected: Flamegraph
+    options:
+      wordBoundary: true
   - pattern:
       - onnx
       - ONNX
     expected: ONNX
+    options:
+      wordBoundary: true
   - pattern: jaeger
     expected: Jaeger
     options:
