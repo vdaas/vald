@@ -1,0 +1,151 @@
+version: 1
+# index: ann
+# index: clojure
+# index: docker
+# index: flamegraph
+# index: go
+# index: grafana
+# index: helm
+# index: jaeger
+# index: java
+# index: jupyter
+# index: knn
+# index: kubernetes
+# index: ngt
+# index: ngtd
+# index: node.js
+# index: onnx
+# index: pyroscope
+# index: python
+# index: qbg
+# index: sdk
+# index: uuid
+# index: vald
+rules:
+  - pattern: ann
+    expected: ANN
+    specs:
+      - from: planning
+        to: planning
+      - from: ann
+        to: ANN
+    options:
+      wordBoundary: true
+  - pattern: clojure
+    expected: Clojure
+    options:
+      wordBoundary: true
+  - pattern: docker
+    expected: Docker
+    options:
+      wordBoundary: true
+  - pattern: flamegraph
+    expected: Flamegraph
+    options:
+      wordBoundary: true
+  - pattern:
+      - Golang
+      - golang
+      - /go(?! to)/
+    expected: Go
+    options:
+      wordBoundary: true
+    specs:
+      - from: go
+        to: Go
+      - from: going
+        to: going
+      - from: go to
+        to: go to
+      - from: golang
+        to: Go
+      - from: algorithm
+        to: algorithm
+  - pattern: grafana
+    expected: Grafana
+    options:
+      wordBoundary: true
+  - pattern: helm
+    expected: Helm
+    options:
+      wordBoundary: true
+  - pattern: jaeger
+    expected: Jaeger
+    options:
+      wordBoundary: true
+  - pattern: java
+    expected: Java
+    options:
+      wordBoundary: true
+  - pattern:
+      - jupyter
+      - jupiter
+    expected: Jupyter
+    options:
+      wordBoundary: true
+  - pattern:
+      - knn
+      - KNN
+      - kNN
+    expected: _k_-NN
+    options:
+      wordBoundary: true
+  - pattern: 
+      - kubernetes
+      - k8s
+      - K8s
+    expected: Kubernetes
+    options:
+      wordBoundary: true
+  - pattern: ngt
+    expected: NGT
+    specs:
+      - from: length
+        to: length
+      - from: ngt
+        to: NGT
+    options:
+      wordBoundary: true
+  - pattern: ngtd
+    expected: NGTD
+    options:
+      wordBoundary: true
+  - pattern:
+      - node.js
+      - nodejs
+    expected: Node.js
+  - pattern:
+      - onnx
+      - ONNX
+    expected: ONNX
+    options:
+      wordBoundary: true
+  - pattern: pyroscope
+    expected: Pyroscope
+    options:
+      wordBoundary: true
+  - pattern: python
+    expected: Python
+    options:
+      wordBoundary: true
+  - pattern: qbg
+    expected: QBG
+    options:
+      wordBoundary: true
+  - pattern: sdk
+    expected: SDK
+    options:
+      wordBoundary: true
+  - pattern: uuid
+    options:
+      wordBoundary: true
+    expected: UUID
+  - pattern: vald
+    expected: Vald
+    options:
+      wordBoundary: true
+    specs:
+      - from: vald
+        to: Vald
+      - from: valdcli
+        to: valdcli

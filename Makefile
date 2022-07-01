@@ -356,7 +356,8 @@ tools/install: \
 	helm/install \
 	kind/install \
 	valdcli/install \
-	telepresence/install
+	telepresence/install \
+	textlint/install
 
 .PHONY: update
 ## update deps, license, and run golines, gofumpt, goimports
@@ -509,6 +510,11 @@ lint: vet
 ## run go vet
 vet:
 	$(call go-vet)
+
+.PHONY: docs/lint
+## run lint for document
+docs/lint:
+	textlint docs/**/*.md
 
 .PHONY: changelog/update
 ## update changelog
