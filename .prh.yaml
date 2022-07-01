@@ -56,11 +56,6 @@ rules:
     expected: NGT
     options:
       wordBoundary: true
-    specs:
-      - from: length
-        to: length
-      - from: ngt
-        to: NGT
   - pattern: ngtd
     expected: NGTD
     options:
@@ -86,11 +81,6 @@ rules:
     expected: ANN
     options:
       wordBoundary: true
-    specs:
-      - from: planning
-        to: planning
-      - from: ann
-        to: ANN
   - pattern:
       - knn
       - KNN
