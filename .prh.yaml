@@ -1,18 +1,31 @@
 version: 1
 rules:
-  - pattern: vald
-    expected: Vald
-    options:
-      wordBoundary: true
+  # index: ann
+  - pattern: ann
+    expected: ANN
     specs:
-      - from: vald
-        to: Vald
-      - from: valdcli
-        to: valdcli
-  - pattern: helm
-    expected: Helm
+      - from: planning
+        to: planning
+      - from: ann
+        to: ANN
     options:
       wordBoundary: true
+  # index: clojure
+  - pattern: clojure
+    expected: Clojure
+    options:
+      wordBoundary: true
+  # index: docker
+  - pattern: docker
+    expected: Docker
+    options:
+      wordBoundary: true
+  # index: flamegraph
+  - pattern: flamegraph
+    expected: Flamegraph
+    options:
+      wordBoundary: true
+  # index: go
   - pattern:
       - Golang
       - golang
@@ -31,27 +44,50 @@ rules:
         to: Go
       - from: algorithm
         to: algorithm
-  - pattern: python
-    expected: Python
+  # index: grafana
+  - pattern: grafana
+    expected: Grafana
     options:
       wordBoundary: true
-  - pattern: clojure
-    expected: Clojure
+  # index: helm
+  - pattern: helm
+    expected: Helm
     options:
       wordBoundary: true
+  # index: jaeger
+  - pattern: jaeger
+    expected: Jaeger
+    options:
+      wordBoundary: true
+  # index: jave
   - pattern: java
     expected: Java
     options:
       wordBoundary: true
+  # index: jupyter
   - pattern:
-      - node.js
-      - nodejs
-    expected: Node.js
+      - jupyter
+      - jupiter
+    expected: Jupyter
+    options:
+      wordBoundary: true
+  # index: knn
   - pattern:
-      - Yahoo Japan!
-      - Yahoo Japan
-      - YJ
-    expected: Yahoo! Japan
+      - knn
+      - KNN
+      - kNN
+    expected: _k_-NN
+    options:
+      wordBoundary: true
+  # index: kubernetes
+  - pattern: 
+      - kubernetes
+      - k8s
+      - K8s
+    expected: Kubernetes
+    options:
+      wordBoundary: true
+  # index: ngt
   - pattern: ngt
     expected: NGT
     specs:
@@ -61,76 +97,56 @@ rules:
         to: NGT
     options:
       wordBoundary: true
+  # index: ngtd
   - pattern: ngtd
     expected: NGTD
     options:
       wordBoundary: true
-  - pattern: 
-      - kubernetes
-      - k8s
-      - K8s
-    expected: Kubernetes
-    options:
-      wordBoundary: true
-  - pattern: docker
-    expected: Docker
-    options:
-      wordBoundary: true
+  # index: node.js
   - pattern:
-      - github
-      - Github
-    expected: GitHub
-    options:
-      wordBoundary: true
-  - pattern: ann
-    expected: ANN
-    specs:
-      - from: planning
-        to: planning
-      - from: ann
-        to: ANN
-    options:
-      wordBoundary: true
-  - pattern:
-      - knn
-      - KNN
-      - kNN
-    expected: _k_-NN
-    options:
-      wordBoundary: true
-  - pattern: uuid
-    options:
-      wordBoundary: true
-    expected: UUID
-  - pattern:
-      - jupyter
-      - jupiter
-    expected: Jupyter
-    options:
-      wordBoundary: true
-  - pattern: pyroscope
-    expected: Pyroscope
-    options:
-      wordBoundary: true
-  - pattern: flamegraph
-    expected: Flamegraph
-    options:
-      wordBoundary: true
+      - node.js
+      - nodejs
+    expected: Node.js
+  # index: onnx
   - pattern:
       - onnx
       - ONNX
     expected: ONNX
     options:
       wordBoundary: true
-  - pattern: jaeger
-    expected: Jaeger
+  # index: pyroscope
+  - pattern: pyroscope
+    expected: Pyroscope
     options:
       wordBoundary: true
-  - pattern: grafana
-    expected: Grafana
+  # index: python
+  - pattern: python
+    expected: Python
     options:
       wordBoundary: true
+  # index: sdk
   - pattern: sdk
     expected: SDK
     options:
       wordBoundary: true
+  # index: uuid
+  - pattern: uuid
+    options:
+      wordBoundary: true
+    expected: UUID
+  # index: vald
+  - pattern: vald
+    expected: Vald
+    options:
+      wordBoundary: true
+    specs:
+      - from: vald
+        to: Vald
+      - from: valdcli
+        to: valdcli
+  # index: yahoo! japan
+  - pattern:
+      - Yahoo Japan!
+      - Yahoo Japan
+      - YJ
+    expected: Yahoo! Japan
