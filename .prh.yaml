@@ -49,9 +49,9 @@ rules:
     expected: Node.js
   - pattern:
       - Yahoo Japan!
-      - Yahoo! Japan
+      - Yahoo Japan
       - YJ
-    expected: Yahoo Japan
+    expected: Yahoo! Japan
   - pattern: ngt
     expected: NGT
     options:
@@ -65,7 +65,10 @@ rules:
     expected: NGTD
     options:
       wordBoundary: true
-  - pattern: kubernetes
+  - pattern: 
+      - kubernetes
+      - k8s
+      - K8s
     expected: Kubernetes
     options:
       wordBoundary: true
