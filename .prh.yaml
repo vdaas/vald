@@ -1,6 +1,27 @@
 version: 1
+# index: ann
+# index: clojure
+# index: docker
+# index: flamegraph
+# index: go
+# index: grafana
+# index: helm
+# index: jaeger
+# index: jave
+# index: jupyter
+# index: knn
+# index: kubernetes
+# index: ngt
+# index: ngtd
+# index: node.js
+# index: onnx
+# index: pyroscope
+# index: python
+# index: qbg
+# index: sdk
+# index: uuid
+# index: vald
 rules:
-  # index: ann
   - pattern: ann
     expected: ANN
     specs:
@@ -10,22 +31,18 @@ rules:
         to: ANN
     options:
       wordBoundary: true
-  # index: clojure
   - pattern: clojure
     expected: Clojure
     options:
       wordBoundary: true
-  # index: docker
   - pattern: docker
     expected: Docker
     options:
       wordBoundary: true
-  # index: flamegraph
   - pattern: flamegraph
     expected: Flamegraph
     options:
       wordBoundary: true
-  # index: go
   - pattern:
       - Golang
       - golang
@@ -44,34 +61,28 @@ rules:
         to: Go
       - from: algorithm
         to: algorithm
-  # index: grafana
   - pattern: grafana
     expected: Grafana
     options:
       wordBoundary: true
-  # index: helm
   - pattern: helm
     expected: Helm
     options:
       wordBoundary: true
-  # index: jaeger
   - pattern: jaeger
     expected: Jaeger
     options:
       wordBoundary: true
-  # index: jave
   - pattern: java
     expected: Java
     options:
       wordBoundary: true
-  # index: jupyter
   - pattern:
       - jupyter
       - jupiter
     expected: Jupyter
     options:
       wordBoundary: true
-  # index: knn
   - pattern:
       - knn
       - KNN
@@ -79,7 +90,6 @@ rules:
     expected: _k_-NN
     options:
       wordBoundary: true
-  # index: kubernetes
   - pattern: 
       - kubernetes
       - k8s
@@ -87,7 +97,6 @@ rules:
     expected: Kubernetes
     options:
       wordBoundary: true
-  # index: ngt
   - pattern: ngt
     expected: NGT
     specs:
@@ -97,44 +106,40 @@ rules:
         to: NGT
     options:
       wordBoundary: true
-  # index: ngtd
   - pattern: ngtd
     expected: NGTD
     options:
       wordBoundary: true
-  # index: node.js
   - pattern:
       - node.js
       - nodejs
     expected: Node.js
-  # index: onnx
   - pattern:
       - onnx
       - ONNX
     expected: ONNX
     options:
       wordBoundary: true
-  # index: pyroscope
   - pattern: pyroscope
     expected: Pyroscope
     options:
       wordBoundary: true
-  # index: python
   - pattern: python
     expected: Python
     options:
       wordBoundary: true
-  # index: sdk
+  - pattern: qbg
+    expected: QBG
+    options:
+      wordBoundary: true
   - pattern: sdk
     expected: SDK
     options:
       wordBoundary: true
-  # index: uuid
   - pattern: uuid
     options:
       wordBoundary: true
     expected: UUID
-  # index: vald
   - pattern: vald
     expected: Vald
     options:
@@ -144,9 +149,3 @@ rules:
         to: Vald
       - from: valdcli
         to: valdcli
-  # index: yahoo! japan
-  - pattern:
-      - Yahoo Japan!
-      - Yahoo Japan
-      - YJ
-    expected: Yahoo! Japan
