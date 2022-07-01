@@ -25,7 +25,11 @@ func NewErrCircuitBreakerIgnorable(err error) error {
 }
 
 func (e *ErrCircuitBreakerIgnorable) Error() string {
-	return "circuit breaker ignorable error: " + e.Error()
+	var errstr string
+	if e.err != nil {
+		errstr = ": " + e.err.Error()
+	}
+	return "circuit breaker ignorable error" + errstr
 }
 
 func (e *ErrCircuitBreakerIgnorable) Unwrap() error {
@@ -46,7 +50,11 @@ func NewErrCircuitBreakerMarkWithSuccess(err error) error {
 }
 
 func (e *ErrCircuitBreakerMarkWithSuccess) Error() string {
-	return "circuit breaker mark with success: " + e.Error()
+	var errstr string
+	if e.err != nil {
+		errstr = ": " + e.err.Error()
+	}
+	return "circuit breaker mark with success" + errstr
 }
 
 func (e *ErrCircuitBreakerMarkWithSuccess) Unwrap() error {
