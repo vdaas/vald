@@ -46,7 +46,7 @@ jobs:
       - name: Setup node/npm
         uses: actions/setup-node@v3
         with:
-          node-version: '16'
+          node-version: "16"
       - name: Install textlint
         run: |
           make textlint/ci/install
