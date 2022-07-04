@@ -493,7 +493,7 @@ func (g *gRPCClient) RoundRobin(ctx context.Context, f func(ctx context.Context,
 				return nil, true, err
 			}
 
-			if g.cb != nil && len(boName) != 0 {
+			if g.cb != nil && len(boName) > 0 {
 				r, err = g.cb.Do(sctx, boName, func(ctx context.Context) (interface{}, error) {
 					r, err = g.do(ictx, p, addr, false, f)
 					return r, err
