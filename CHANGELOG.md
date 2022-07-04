@@ -1,5 +1,97 @@
 # CHANGELOG
 
+## v1.5.5
+
+### Docker images
+
+<table>
+  <tr>
+    <th>component</th>
+    <th>Docker pull</th>
+  </tr>
+  <tr>
+    <td>Agent NGT</td>
+    <td>
+      <code>docker pull vdaas/vald-agent-ngt:v1.5.5</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-agent-ngt:v1.5.5</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Agent sidecar</td>
+    <td>
+      <code>docker pull vdaas/vald-agent-sidecar:v1.5.5</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-agent-sidecar:v1.5.5</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Discoverers</td>
+    <td>
+      <code>docker pull vdaas/vald-discoverer-k8s:v1.5.5</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-discoverer-k8s:v1.5.5</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Gateways</td>
+    <td>
+      <code>docker pull vdaas/vald-lb-gateway:v1.5.5</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-lb-gateway:v1.5.5</code><br/>
+      <code>docker pull vdaas/vald-filter-gateway:v1.5.5</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-filter-gateway:v1.5.5</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Index Manager</td>
+    <td>
+      <code>docker pull vdaas/vald-manager-index:v1.5.5</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-manager-index:v1.5.5</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Helm Operator</td>
+    <td>
+      <code>docker pull vdaas/vald-helm-operator:v1.5.5</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-helm-operator:v1.5.5</code>
+    </td>
+  </tr>
+</table>
+
+### Documents
+- [GoDoc](https://pkg.go.dev/github.com/vdaas/vald@v1.5.5)
+- [Helm Chart Reference](https://github.com/vdaas/vald/blob/v1.5.5/charts/vald/README.md)
+- [Helm Operator Chart Reference](https://github.com/vdaas/vald/blob/v1.5.5/charts/vald-helm-operator/README.md)
+
+### Changes
+♻️ Refactor
+
+- Make format [#1717](https://github.com/vdaas/vald/pull/1717)
+- Remove unnecessary import path on pkg test [#1712](https://github.com/vdaas/vald/pull/1712)
+- Fix to get only backoff metrics of discover RPC [#1706](https://github.com/vdaas/vald/pull/1706)
+
+🐛 Bugfix
+
+- Return uuid when exits rpc called [#1709](https://github.com/vdaas/vald/pull/1709)
+ 
+✏️ Documents
+
+- Add textlint for document [#1715](https://github.com/vdaas/vald/pull/1715)
+- Modified design of troubleshooting image [#1705](https://github.com/vdaas/vald/pull/1705)
+- Update tutorial images [#1704](https://github.com/vdaas/vald/pull/1704)
+- Add troubleshooting flow chart document [#1688](https://github.com/vdaas/vald/pull/1688)
+- Update data-flow docs for new images and using remove instead of delete [#1693](https://github.com/vdaas/vald/pull/1693)
+
+:white_check_mark: Test 
+
+- Implement agent handler getObject test case [#1707](https://github.com/vdaas/vald/pull/1707)
+- Implement stream insert test case [#1697](https://github.com/vdaas/vald/pull/1697)
+- Implement upsert test cases [#1685](https://github.com/vdaas/vald/pull/1685)
+
+⬆️ Update dependencies
+
+- Update deps [#1719](https://github.com/vdaas/vald/pull/1719)
+- Update deps [#1702](https://github.com/vdaas/vald/pull/1702)
+- Automatically update k8s manifests [#1701](https://github.com/vdaas/vald/pull/1701)
+
+
 ## v1.5.4
 
 ### Docker images
