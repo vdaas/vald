@@ -188,9 +188,7 @@ func WithBackoff(bo backoff.Backoff) Option {
 func WithCircuitBreaker(cb circuitbreaker.CircuitBreaker) Option {
 	return func(gr *gRPCClient) {
 		if cb != nil {
-			if cb != nil {
-				gr.cb = cb
-			}
+			gr.cb = cb
 		}
 	}
 }
