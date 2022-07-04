@@ -54,17 +54,17 @@ TENSORFLOW_C_VERSION := $(eval TENSORFLOW_C_VERSION := $(shell cat versions/TENS
 
 OPERATOR_SDK_VERSION := $(eval OPERATOR_SDK_VERSION := $(shell cat versions/OPERATOR_SDK_VERSION))$(OPERATOR_SDK_VERSION)
 
-KIND_VERSION            ?= v0.14.0
-HELM_VERSION            ?= v3.9.0
-HELM_DOCS_VERSION       ?= 1.11.0
-YQ_VERSION              ?= v4.25.3
-VALDCLI_VERSION         ?= v1.5.4
-TELEPRESENCE_VERSION    ?= 2.6.8
-KUBELINTER_VERSION      ?= 0.3.0
 GOLANGCILINT_VERSION    ?= v1.46.2
-REVIEWDOG_VERSION       ?= v0.14.1
-PROTOBUF_VERSION        ?= 21.2
+HELM_DOCS_VERSION       ?= 1.11.0
+HELM_VERSION            ?= v3.9.0
 JAEGER_OPERATOR_VERSION ?= 2.30.0
+KIND_VERSION            ?= v0.14.0
+KUBELINTER_VERSION      ?= 0.3.0
+PROTOBUF_VERSION        ?= 21.2
+REVIEWDOG_VERSION       ?= v0.14.1
+TELEPRESENCE_VERSION    ?= 2.6.8
+VALDCLI_VERSION         ?= v1.5.4
+YQ_VERSION              ?= v4.25.3
 
 SWAP_DEPLOYMENT_TYPE ?= deployment
 SWAP_IMAGE           ?= ""
@@ -96,7 +96,8 @@ BENCH_DATASET_HDF5_DIR = $(BENCH_DATASET_BASE_DIR)/$(BENCH_DATASET_HDF5_DIR_NAME
 PROTOS := $(eval PROTOS := $(shell find apis/proto -type f -regex ".*\.proto"))$(PROTOS)
 PROTOS_V1 := $(eval PROTOS_V1 := $(filter apis/proto/v1/%.proto,$(PROTOS)))$(PROTOS_V1)
 PBGOS = $(PROTOS:apis/proto/%.proto=apis/grpc/%.pb.go)
-SWAGGERS = $(PROTOS:apis/proto/%.proto=apis/swagger/%.swagger.json)
+OPENAPISPECS = $(PROTOS:apis/proto/%.proto=apis/openapi/%.openapi.json)
+OPENAPIJSONSCHEMAS = $(PROTOS:apis/proto/%.proto=apis/jsonschema/%.schema.json)
 PBDOCS = apis/docs/v1/docs.md
 
 ifeq ($(GOARCH),amd64)
@@ -197,7 +198,7 @@ GO_SOURCES = $(eval GO_SOURCES := $(shell find \
 		-not -path './hack/benchmark/internal/starter/gateway/*' \
 		-not -path './hack/gorules/*' \
 		-not -path './hack/license/*' \
-		-not -path './hack/swagger/*' \
+		-not -path './hack/openapi/*' \
 		-not -path './hack/tools/*' \
 		-not -path './tests/*' \
 		-type f \
@@ -227,7 +228,7 @@ GO_OPTION_SOURCES = $(eval GO_OPTION_SOURCES := $(shell find \
 		-not -path './hack/benchmark/internal/starter/gateway/*' \
 		-not -path './hack/gorules/*' \
 		-not -path './hack/license/*' \
-		-not -path './hack/swagger/*' \
+		-not -path './hack/openapi/*' \
 		-not -path './hack/tools/*' \
 		-not -path './tests/*' \
 		-type f \
@@ -320,7 +321,9 @@ clean:
 		./*.log \
 		./*.svg \
 		./apis/docs \
+		./apis/openapi \
 		./apis/swagger \
+		./apis/jsonschema \
 		./apis/grpc \
 		./bench \
 		./pprof \

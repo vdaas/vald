@@ -1,0 +1,97 @@
+{
+  "title": "Upsert",
+  "$id": "Upsert.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "description": "Upsert related messages.",
+  "properties": {
+  },
+  "definitions": {
+    "Upsert_Request": {
+      "title": "Request",
+      "type": "object",
+      "description": "Represent the upsert request.",
+      "properties": {
+        "vector": {
+          "description": "The vector to be upserted.",
+          "$ref": "Object_Vector.json"
+        },
+        "config": {
+          "description": "The configuration of the upsert request.",
+          "$ref": "Upsert_Config.json"
+        }
+      }
+    },
+    "Upsert_MultiRequest": {
+      "title": "MultiRequest",
+      "type": "object",
+      "description": "Represent mthe ultiple upsert request.",
+      "properties": {
+        "requests": {
+          "title": "requests",
+          "type": "array",
+          "items": {
+            "$ref": "Upsert_Request.json"
+          },
+          "description": "Represent the multiple upsert request content."
+        }
+      }
+    },
+    "Upsert_ObjectRequest": {
+      "title": "ObjectRequest",
+      "type": "object",
+      "description": "Represent the upsert binary object request.",
+      "properties": {
+        "object": {
+          "description": "The binary object to be upserted.",
+          "$ref": "Object_Blob.json"
+        },
+        "config": {
+          "description": "The configuration of the upsert request.",
+          "$ref": "Upsert_Config.json"
+        },
+        "vectorizer": {
+          "description": "Filter target.",
+          "$ref": "Filter_Target.json"
+        }
+      }
+    },
+    "Upsert_MultiObjectRequest": {
+      "title": "MultiObjectRequest",
+      "type": "object",
+      "description": "Represent the multiple upsert binary object request.",
+      "properties": {
+        "requests": {
+          "title": "requests",
+          "type": "array",
+          "items": {
+            "$ref": "Upsert_ObjectRequest.json"
+          },
+          "description": "Represent the multiple upsert object request content."
+        }
+      }
+    },
+    "Upsert_Config": {
+      "title": "Config",
+      "type": "object",
+      "description": "Represent the upsert configuration.",
+      "properties": {
+        "skipStrictExistCheck": {
+          "title": "skipStrictExistCheck",
+          "type": "boolean",
+          "description": "A flag to skip exist check during upsert operation."
+        },
+        "filters": {
+          "description": "Filter configuration.",
+          "$ref": "Filter_Config.json"
+        },
+        "timestamp": {
+          "title": "timestamp",
+          "type": "integer",
+          "description": "Upsert timestamp.",
+          "format": "int64"
+        }
+      }
+    }
+  }
+}

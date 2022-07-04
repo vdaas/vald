@@ -95,7 +95,7 @@ The API specs are placed in [apis/docs][vald-apis-docs].
 ##### REST server
 
 REST server is optional.
-The swagger specs are placed in [apis/swagger][vald-swagger-specs].
+The openapi specs are placed in [apis/openapi][vald-openapi-specs].
 
 ##### Health check servers
 
@@ -275,7 +275,7 @@ For further details, there are references of Helm values in GitHub Vald reposito
 [vald-helm-operator-chart]: https://github.com/vdaas/vald/tree/master/charts/vald-helm-operator
 
 [vald-apis-docs]: https://github.com/vdaas/vald/tree/master/apis/docs
-[vald-swagger-specs]: https://github.com/vdaas/vald/tree/master/apis/swagger
+[vald-openapi-specs]: https://github.com/vdaas/vald/tree/master/apis/openapi
 [google-pprof]: https://github.com/google/pprof
 [prometheus-io]: https://prometheus.io/
 [kubernetes-liveness-readiness]: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/

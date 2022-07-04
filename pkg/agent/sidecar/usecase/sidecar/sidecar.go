@@ -74,7 +74,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	}
 
 	client, err := client.New(
-		client.WithDialContext(dialer.DialContext),
+		client.WithDialContext(dialer.GetDialer()),
 		client.WithTLSHandshakeTimeout(cfg.AgentSidecar.Client.Transport.RoundTripper.TLSHandshakeTimeout),
 		client.WithMaxIdleConns(cfg.AgentSidecar.Client.Transport.RoundTripper.MaxIdleConns),
 		client.WithMaxIdleConnsPerHost(cfg.AgentSidecar.Client.Transport.RoundTripper.MaxIdleConnsPerHost),

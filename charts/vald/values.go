@@ -17,14 +17,14 @@ package vald
 
 import (
 	"github.com/vdaas/vald/internal/config"
+	corev1 "k8s.io/api/core/v1"
 )
 
 // Affinity
-type Affinity struct {
-	NodeAffinity    *NodeAffinity    `json:"nodeAffinity,omitempty"`
-	PodAffinity     *PodAffinity     `json:"podAffinity,omitempty"`
-	PodAntiAffinity *PodAntiAffinity `json:"podAntiAffinity,omitempty"`
-}
+type Affinity corev1.Affinity
+
+// Annotations deployment annotations
+type Annotations map[string]string
 
 // Agent
 type Agent struct {
@@ -37,12 +37,12 @@ type Agent struct {
 	Enabled bool `json:"enabled,omitempty"`
 
 	// environment variables
-	Env []*EnvItems `json:"env,omitempty"`
+	Env []corev1.EnvVar `json:"env,omitempty"`
 
 	// external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local
-	ExternalTrafficPolicy string `json:"externalTrafficPolicy,omitempty"`
-	Hpa                   *Hpa   `json:"hpa,omitempty"`
-	Image                 *Image `json:"image,omitempty"`
+	ExternalTrafficPolicy corev1.ServiceExternalTrafficPolicyType `json:"externalTrafficPolicy,omitempty"`
+	Hpa                   *Hpa                                    `json:"hpa,omitempty"`
+	Image                 *Image                                  `json:"image,omitempty"`
 
 	// init containers
 	InitContainers []*InitContainersItems `json:"initContainers,omitempty"`
@@ -73,7 +73,7 @@ type Agent struct {
 	PersistentVolume *PersistentVolume `json:"persistentVolume,omitempty"`
 
 	// pod annotations
-	PodAnnotations *PodAnnotations `json:"podAnnotations,omitempty"`
+	PodAnnotations *Annotations `json:"podAnnotations,omitempty"`
 
 	// pod management policy: OrderedReady or Parallel
 	PodManagementPolicy string       `json:"podManagementPolicy,omitempty"`
@@ -121,20 +121,6 @@ type Agent struct {
 
 	// volumes
 	Volumes []*VolumesItems `json:"volumes,omitempty"`
-}
-
-// Annotations deployment annotations
-type Annotations map[string]string
-
-// BlobStorage
-type BlobStorage struct {
-	// bucket name
-	Bucket       string        `json:"bucket,omitempty"`
-	CloudStorage *CloudStorage `json:"cloud_storage,omitempty"`
-	S3           *S3           `json:"s3,omitempty"`
-
-	// storage type
-	StorageType string `json:"storage_type,omitempty"`
 }
 
 // CloudStorage
@@ -189,13 +175,7 @@ type Collector struct {
 }
 
 // Compress
-type Compress struct {
-	// compression algorithm. must be `gob`, `gzip`, `lz4` or `zstd`
-	CompressAlgorithm string `json:"compress_algorithm,omitempty"`
-
-	// compression level. value range relies on which algorithm is used. `gob`: level will be ignored. `gzip`: -1 (default compression), 0 (no compression), or 1 (best speed) to 9 (best compression). `lz4`: >= 0, higher is better compression. `zstd`: 1 (fastest) to 22 (best), however implementation relies on klauspost/compress.
-	CompressionLevel int `json:"compression_level,omitempty"`
-}
+type Compress config.CompressCore
 
 // Config
 type Config struct {
@@ -204,7 +184,7 @@ type Config struct {
 
 	// auto backup triggered by timer is enabled
 	AutoBackupEnabled bool               `json:"auto_backup_enabled,omitempty"`
-	BlobStorage       *BlobStorage       `json:"blob_storage,omitempty"`
+	BlobStorage       *config.Blob       `json:"blob_storage,omitempty"`
 	Client            *config.GRPCClient `json:"client,omitempty"`
 	Compress          *Compress          `json:"compress,omitempty"`
 
@@ -282,9 +262,6 @@ type EgressFilter struct {
 	ObjectFilters []string `json:"object_filters,omitempty"`
 }
 
-// EnvItems
-type EnvItems struct{}
-
 // Exporter
 type Exporter struct {
 	// how many view data events or trace spans can be buffered.
@@ -326,6 +303,8 @@ type Fields struct{}
 
 // Filter
 type Filter struct {
+	config.GlobalConfig
+
 	Affinity *Affinity `json:"affinity,omitempty"`
 
 	// deployment annotations
@@ -335,7 +314,7 @@ type Filter struct {
 	Enabled bool `json:"enabled,omitempty"`
 
 	// environment variables
-	Env []*EnvItems `json:"env,omitempty"`
+	Env []corev1.EnvVar `json:"env,omitempty"`
 
 	// external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local
 	ExternalTrafficPolicy string         `json:"externalTrafficPolicy,omitempty"`
@@ -348,8 +327,7 @@ type Filter struct {
 	InitContainers []*InitContainersItems `json:"initContainers,omitempty"`
 
 	// deployment kind: Deployment or DaemonSet
-	Kind    string   `json:"kind,omitempty"`
-	Logging *Logging `json:"logging,omitempty"`
+	Kind string `json:"kind,omitempty"`
 
 	// maximum number of replicas. if HPA is disabled, this value will be ignored.
 	MaxReplicas int `json:"maxReplicas,omitempty"`
@@ -397,9 +375,6 @@ type Filter struct {
 
 	// duration in seconds pod needs to terminate gracefully
 	TerminationGracePeriodSeconds int `json:"terminationGracePeriodSeconds,omitempty"`
-
-	// Time zone
-	TimeZone string `json:"time_zone,omitempty"`
 
 	// tolerations
 	Tolerations []*TolerationsItems `json:"tolerations,omitempty"`
@@ -521,7 +496,7 @@ type Index struct {
 	Enabled bool `json:"enabled,omitempty"`
 
 	// environment variables
-	Env []*EnvItems `json:"env,omitempty"`
+	Env []corev1.EnvVar `json:"env,omitempty"`
 
 	// external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local
 	ExternalTrafficPolicy string   `json:"externalTrafficPolicy,omitempty"`
@@ -735,7 +710,7 @@ type Lb struct {
 	Enabled bool `json:"enabled,omitempty"`
 
 	// environment variables
-	Env []*EnvItems `json:"env,omitempty"`
+	Env []corev1.EnvVar `json:"env,omitempty"`
 
 	// external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local
 	ExternalTrafficPolicy string         `json:"externalTrafficPolicy,omitempty"`
@@ -771,8 +746,8 @@ type Lb struct {
 	Observability *Observability `json:"observability,omitempty"`
 
 	// pod annotations
-	PodAnnotations *PodAnnotations `json:"podAnnotations,omitempty"`
-	PodPriority    *PodPriority    `json:"podPriority,omitempty"`
+	PodAnnotations *Annotations `json:"podAnnotations,omitempty"`
+	PodPriority    *PodPriority `json:"podPriority,omitempty"`
 
 	// security context for pod
 	PodSecurityContext *PodSecurityContext `json:"podSecurityContext,omitempty"`
@@ -826,8 +801,8 @@ type Liveness struct {
 	Enabled bool `json:"enabled,omitempty"`
 
 	// liveness server host
-	Host          string         `json:"host,omitempty"`
-	LivenessProbe *LivenessProbe `json:"livenessProbe,omitempty"`
+	Host          string        `json:"host,omitempty"`
+	LivenessProbe *corev1.Probe `json:"livenessProbe,omitempty"`
 
 	// liveness server port
 	Port   int     `json:"port,omitempty"`
@@ -835,25 +810,6 @@ type Liveness struct {
 
 	// liveness server service port
 	ServicePort int `json:"servicePort,omitempty"`
-}
-
-// LivenessProbe
-type LivenessProbe struct {
-	// liveness probe failure threshold
-	FailureThreshold int      `json:"failureThreshold,omitempty"`
-	HttpGet          *HttpGet `json:"httpGet,omitempty"`
-
-	// liveness probe initial delay seconds
-	InitialDelaySeconds int `json:"initialDelaySeconds,omitempty"`
-
-	// liveness probe period seconds
-	PeriodSeconds int `json:"periodSeconds,omitempty"`
-
-	// liveness probe success threshold
-	SuccessThreshold int `json:"successThreshold,omitempty"`
-
-	// liveness probe timeout seconds
-	TimeoutSeconds int `json:"timeoutSeconds,omitempty"`
 }
 
 // Logging
@@ -897,13 +853,6 @@ type Node struct {
 	Fields *Fields `json:"fields,omitempty"`
 	// k8s label selectors for node discovery
 	Labels *Labels `json:"labels,omitempty"`
-}
-
-// NodeAffinity
-type NodeAffinity struct {
-	// node affinity preferred scheduling terms
-	PreferredDuringSchedulingIgnoredDuringExecution []*PreferredDuringSchedulingIgnoredDuringExecutionItems `json:"preferredDuringSchedulingIgnoredDuringExecution,omitempty"`
-	RequiredDuringSchedulingIgnoredDuringExecution  *RequiredDuringSchedulingIgnoredDuringExecution         `json:"requiredDuringSchedulingIgnoredDuringExecution,omitempty"`
 }
 
 // NodeMetrics k8s resource selectors for node_metrics discovery
@@ -957,26 +906,8 @@ type Pod struct {
 	Labels *Labels `json:"labels,omitempty"`
 }
 
-// PodAffinity
-type PodAffinity struct {
-	// pod affinity preferred scheduling terms
-	PreferredDuringSchedulingIgnoredDuringExecution []*PreferredDuringSchedulingIgnoredDuringExecutionItems `json:"preferredDuringSchedulingIgnoredDuringExecution,omitempty"`
-
-	// pod affinity required scheduling terms
-	RequiredDuringSchedulingIgnoredDuringExecution []*RequiredDuringSchedulingIgnoredDuringExecutionItems `json:"requiredDuringSchedulingIgnoredDuringExecution,omitempty"`
-}
-
 // PodAnnotations pod annotations
 type PodAnnotations struct{}
-
-// PodAntiAffinity
-type PodAntiAffinity struct {
-	// pod anti-affinity preferred scheduling terms
-	PreferredDuringSchedulingIgnoredDuringExecution []*PreferredDuringSchedulingIgnoredDuringExecutionItems `json:"preferredDuringSchedulingIgnoredDuringExecution,omitempty"`
-
-	// pod anti-affinity required scheduling terms
-	RequiredDuringSchedulingIgnoredDuringExecution []*RequiredDuringSchedulingIgnoredDuringExecutionItems `json:"requiredDuringSchedulingIgnoredDuringExecution,omitempty"`
-}
 
 // PodMetrics k8s resource selectors for pod_metrics discovery
 type PodMetrics struct {
@@ -1081,31 +1012,12 @@ type Readiness struct {
 	Host string `json:"host,omitempty"`
 
 	// readiness server port
-	Port           int             `json:"port,omitempty"`
-	ReadinessProbe *ReadinessProbe `json:"readinessProbe,omitempty"`
-	Server         *Server         `json:"server,omitempty"`
+	Port           int           `json:"port,omitempty"`
+	ReadinessProbe *corev1.Probe `json:"readinessProbe,omitempty"`
+	Server         *Server       `json:"server,omitempty"`
 
 	// readiness server service port
 	ServicePort int `json:"servicePort,omitempty"`
-}
-
-// ReadinessProbe
-type ReadinessProbe struct {
-	// readiness probe failure threshold
-	FailureThreshold int      `json:"failureThreshold,omitempty"`
-	HttpGet          *HttpGet `json:"httpGet,omitempty"`
-
-	// readiness probe initial delay seconds
-	InitialDelaySeconds int `json:"initialDelaySeconds,omitempty"`
-
-	// readiness probe period seconds
-	PeriodSeconds int `json:"periodSeconds,omitempty"`
-
-	// readiness probe success threshold
-	SuccessThreshold int `json:"successThreshold,omitempty"`
-
-	// readiness probe timeout seconds
-	TimeoutSeconds int `json:"timeoutSeconds,omitempty"`
 }
 
 // Requests
@@ -1286,8 +1198,8 @@ type Sidecar struct {
 	Enabled bool `json:"enabled,omitempty"`
 
 	// environment variables
-	Env   []*EnvItems `json:"env,omitempty"`
-	Image *Image      `json:"image,omitempty"`
+	Env   []corev1.EnvVar `json:"env,omitempty"`
+	Image *Image          `json:"image,omitempty"`
 
 	// sidecar on initContainer mode enabled.
 	InitContainerEnabled bool     `json:"initContainerEnabled,omitempty"`

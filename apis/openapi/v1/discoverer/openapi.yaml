@@ -1,0 +1,204 @@
+#
+# Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+openapi: 3.0.3
+info:
+    title: Discoverer API
+    description: Represent the discoverer service.
+    version: 0.0.1
+paths:
+    /discover/nodes:
+        post:
+            tags:
+                - Discoverer
+            description: Represent the RPC to get the node information.
+            operationId: Discoverer_Nodes
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/Discoverer_Request'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Info_Nodes'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /discover/pods:
+        post:
+            tags:
+                - Discoverer
+            description: Represent the RPC to get the agent pods information.
+            operationId: Discoverer_Pods
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/Discoverer_Request'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Info_Pods'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+components:
+    schemas:
+        Discoverer_Request:
+            type: object
+            properties:
+                name:
+                    type: string
+                    description: The agent name to be discover.
+                namespace:
+                    type: string
+                    description: The namespace to be discover.
+                node:
+                    type: string
+                    description: The node to be discover.
+            description: Represent the dicoverer request.
+        GoogleProtobufAny:
+            type: object
+            properties:
+                '@type':
+                    type: string
+                    description: The type of the serialized message.
+            additionalProperties: true
+            description: Contains an arbitrary serialized message along with a @type that describes the type of the serialized message.
+        Info_CPU:
+            type: object
+            properties:
+                limit:
+                    type: number
+                    description: The CPU resource limit.
+                    format: double
+                request:
+                    type: number
+                    description: The CPU resource requested.
+                    format: double
+                usage:
+                    type: number
+                    description: The CPU usage.
+                    format: double
+            description: Represent the CPU information message.
+        Info_Memory:
+            type: object
+            properties:
+                limit:
+                    type: number
+                    description: The memory limit.
+                    format: double
+                request:
+                    type: number
+                    description: The memory requested.
+                    format: double
+                usage:
+                    type: number
+                    description: The memory usage.
+                    format: double
+            description: Represent the memory information message.
+        Info_Node:
+            type: object
+            properties:
+                name:
+                    type: string
+                    description: The name of the node.
+                internalAddr:
+                    type: string
+                    description: The internal IP address of the node.
+                externalAddr:
+                    type: string
+                    description: The external IP address of the node.
+                cpu:
+                    $ref: '#/components/schemas/Info_CPU'
+                memory:
+                    $ref: '#/components/schemas/Info_Memory'
+                Pods:
+                    $ref: '#/components/schemas/Info_Pods'
+            description: Represent the node information message.
+        Info_Nodes:
+            type: object
+            properties:
+                nodes:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Info_Node'
+                    description: The multiple node information.
+            description: Represent the multiple node information message.
+        Info_Pod:
+            type: object
+            properties:
+                appName:
+                    type: string
+                    description: The app name of the pod on the label.
+                name:
+                    type: string
+                    description: The name of the pod.
+                namespace:
+                    type: string
+                    description: The namespace of the pod.
+                ip:
+                    type: string
+                    description: The IP of the pod.
+                cpu:
+                    $ref: '#/components/schemas/Info_CPU'
+                memory:
+                    $ref: '#/components/schemas/Info_Memory'
+                node:
+                    $ref: '#/components/schemas/Info_Node'
+            description: Represent the pod information message.
+        Info_Pods:
+            type: object
+            properties:
+                pods:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Info_Pod'
+                    description: The multiple pod information.
+            description: Represent the multiple pod information message.
+        Status:
+            type: object
+            properties:
+                code:
+                    type: integer
+                    description: The status code, which should be an enum value of [google.rpc.Code][google.rpc.Code].
+                    format: int32
+                message:
+                    type: string
+                    description: A developer-facing error message, which should be in English. Any user-facing error message should be localized and sent in the [google.rpc.Status.details][google.rpc.Status.details] field, or localized by the client.
+                details:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/GoogleProtobufAny'
+                    description: A list of messages that carry the error details.  There is a common set of message types for APIs to use.
+            description: 'The `Status` type defines a logical error model that is suitable for different programming environments, including REST APIs and RPC APIs. It is used by [gRPC](https://github.com/grpc). Each `Status` message contains three pieces of data: error code, error message, and error details. You can find out more about this error model and how to work with it in the [API Design Guide](https://cloud.google.com/apis/design/errors).'
+tags:
+    - name: Discoverer

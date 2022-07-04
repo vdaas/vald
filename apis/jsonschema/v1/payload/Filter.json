@@ -1,0 +1,44 @@
+{
+  "title": "Filter",
+  "$id": "Filter.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "description": "Filter related messages.",
+  "properties": {
+  },
+  "definitions": {
+    "Filter_Target": {
+      "title": "Target",
+      "type": "object",
+      "description": "Represent the target filter server.",
+      "properties": {
+        "host": {
+          "title": "host",
+          "type": "string",
+          "description": "The target hostname."
+        },
+        "port": {
+          "title": "port",
+          "type": "integer",
+          "description": "The target port.",
+          "format": "uint32"
+        }
+      }
+    },
+    "Filter_Config": {
+      "title": "Config",
+      "type": "object",
+      "description": "Represent filter configuration.",
+      "properties": {
+        "targets": {
+          "title": "targets",
+          "type": "array",
+          "items": {
+            "$ref": "Filter_Target.json"
+          },
+          "description": "Represent the filter target configuration."
+        }
+      }
+    }
+  }
+}

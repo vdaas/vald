@@ -316,7 +316,7 @@ replace (
 	github.com/julienschmidt/httprouter => github.com/julienschmidt/httprouter v1.3.0
 	github.com/kisielk/errcheck => github.com/kisielk/errcheck v1.6.1
 	github.com/kisielk/gotool => github.com/kisielk/gotool v1.0.0
-	github.com/klauspost/compress => github.com/klauspost/compress v1.15.8-0.20220629100200-fa9e24a4d761
+	github.com/klauspost/compress => github.com/klauspost/compress v1.15.8-0.20220704071608-bf3f0fddbe56
 	github.com/klauspost/cpuid/v2 => github.com/klauspost/cpuid/v2 v2.0.14
 	github.com/kolo/xmlrpc => github.com/kolo/xmlrpc v0.0.0-20201022064351-38db28db192b
 	github.com/kpango/fastime => github.com/kpango/fastime v1.1.4
@@ -449,7 +449,7 @@ replace (
 	github.com/ugorji/go => github.com/ugorji/go v1.2.7
 	github.com/ugorji/go/codec => github.com/ugorji/go/codec v1.2.7
 	github.com/urfave/cli => github.com/urfave/cli v1.22.9
-	github.com/vdaas/vald-client-go => github.com/vdaas/vald-client-go v1.5.4
+	github.com/vdaas/vald-client-go => github.com/vdaas/vald-client-go v1.5.5
 	github.com/vishvananda/netlink => github.com/vishvananda/netlink v1.1.0
 	github.com/vishvananda/netns => github.com/vishvananda/netns v0.0.0-20211101163701-50045581ed74
 	github.com/xdg-go/pbkdf2 => github.com/xdg-go/pbkdf2 v1.0.0
@@ -507,7 +507,7 @@ replace (
 	golang.org/x/net => golang.org/x/net v0.0.0-20220630215102-69896b714898
 	golang.org/x/oauth2 => golang.org/x/oauth2 v0.0.0-20220630143837-2104d58473e0
 	golang.org/x/sync => golang.org/x/sync v0.0.0-20220601150217-0de741cfad7f
-	golang.org/x/sys => golang.org/x/sys v0.0.0-20220702020025-31831981b65f
+	golang.org/x/sys => golang.org/x/sys v0.0.0-20220704084225-05e143d24a9e
 	golang.org/x/term => golang.org/x/term v0.0.0-20220526004731-065cf7ba2467
 	golang.org/x/text => golang.org/x/text v0.3.7
 	golang.org/x/time => golang.org/x/time v0.0.0-20220609170525-579cf78fd858

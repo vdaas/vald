@@ -1,0 +1,243 @@
+{
+  "title": "Info",
+  "$id": "Info.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "description": "Info related messages.",
+  "properties": {
+  },
+  "definitions": {
+    "Info_Index_Count": {
+      "title": "Count",
+      "type": "object",
+      "description": "Represent the index count message.",
+      "properties": {
+        "stored": {
+          "title": "stored",
+          "type": "integer",
+          "description": "The stored index count.",
+          "format": "uint32"
+        },
+        "uncommitted": {
+          "title": "uncommitted",
+          "type": "integer",
+          "description": "The uncommitted index count.",
+          "format": "uint32"
+        },
+        "indexing": {
+          "title": "indexing",
+          "type": "boolean",
+          "description": "The indexing index count."
+        },
+        "saving": {
+          "title": "saving",
+          "type": "boolean",
+          "description": "The saving index count."
+        }
+      }
+    },
+    "Info_Index_UUID_Committed": {
+      "title": "Committed",
+      "type": "object",
+      "description": "The committed UUID.",
+      "properties": {
+        "uuid": {
+          "title": "uuid",
+          "type": "string"
+        }
+      }
+    },
+    "Info_Index_UUID_Uncommitted": {
+      "title": "Uncommitted",
+      "type": "object",
+      "description": "The uncommitted UUID.",
+      "properties": {
+        "uuid": {
+          "title": "uuid",
+          "type": "string"
+        }
+      }
+    },
+    "Info_Index_UUID": {
+      "title": "UUID",
+      "type": "object",
+      "description": "Represent the UUID message.",
+      "properties": {
+      }
+    },
+    "Info_Index": {
+      "title": "Index",
+      "type": "object",
+      "description": "Represent the index information messages.",
+      "properties": {
+      }
+    },
+    "Info_Pod": {
+      "title": "Pod",
+      "type": "object",
+      "description": "Represent the pod information message.",
+      "properties": {
+        "appName": {
+          "title": "appName",
+          "type": "string",
+          "description": "The app name of the pod on the label."
+        },
+        "name": {
+          "title": "name",
+          "type": "string",
+          "description": "The name of the pod."
+        },
+        "namespace": {
+          "title": "namespace",
+          "type": "string",
+          "description": "The namespace of the pod."
+        },
+        "ip": {
+          "title": "ip",
+          "type": "string",
+          "description": "The IP of the pod."
+        },
+        "cpu": {
+          "description": "The CPU information of the pod.",
+          "$ref": "Info_CPU.json"
+        },
+        "memory": {
+          "description": "The memory information of the pod.",
+          "$ref": "Info_Memory.json"
+        },
+        "node": {
+          "description": "The node information of the pod.",
+          "$ref": "Info_Node.json"
+        }
+      }
+    },
+    "Info_Node": {
+      "title": "Node",
+      "type": "object",
+      "description": "Represent the node information message.",
+      "properties": {
+        "name": {
+          "title": "name",
+          "type": "string",
+          "description": "The name of the node."
+        },
+        "internalAddr": {
+          "title": "internalAddr",
+          "type": "string",
+          "description": "The internal IP address of the node."
+        },
+        "externalAddr": {
+          "title": "externalAddr",
+          "type": "string",
+          "description": "The external IP address of the node."
+        },
+        "cpu": {
+          "description": "The CPU information of the node.",
+          "$ref": "Info_CPU.json"
+        },
+        "memory": {
+          "description": "The memory information of the node.",
+          "$ref": "Info_Memory.json"
+        },
+        "Pods": {
+          "description": "The pod information of the node.",
+          "$ref": "Info_Pods.json"
+        }
+      }
+    },
+    "Info_CPU": {
+      "title": "CPU",
+      "type": "object",
+      "description": "Represent the CPU information message.",
+      "properties": {
+        "limit": {
+          "title": "limit",
+          "type": "number",
+          "description": "The CPU resource limit.",
+          "format": "double"
+        },
+        "request": {
+          "title": "request",
+          "type": "number",
+          "description": "The CPU resource requested.",
+          "format": "double"
+        },
+        "usage": {
+          "title": "usage",
+          "type": "number",
+          "description": "The CPU usage.",
+          "format": "double"
+        }
+      }
+    },
+    "Info_Memory": {
+      "title": "Memory",
+      "type": "object",
+      "description": "Represent the memory information message.",
+      "properties": {
+        "limit": {
+          "title": "limit",
+          "type": "number",
+          "description": "The memory limit.",
+          "format": "double"
+        },
+        "request": {
+          "title": "request",
+          "type": "number",
+          "description": "The memory requested.",
+          "format": "double"
+        },
+        "usage": {
+          "title": "usage",
+          "type": "number",
+          "description": "The memory usage.",
+          "format": "double"
+        }
+      }
+    },
+    "Info_Pods": {
+      "title": "Pods",
+      "type": "object",
+      "description": "Represent the multiple pod information message.",
+      "properties": {
+        "pods": {
+          "title": "pods",
+          "type": "array",
+          "items": {
+            "$ref": "Info_Pod.json"
+          },
+          "description": "The multiple pod information."
+        }
+      }
+    },
+    "Info_Nodes": {
+      "title": "Nodes",
+      "type": "object",
+      "description": "Represent the multiple node information message.",
+      "properties": {
+        "nodes": {
+          "title": "nodes",
+          "type": "array",
+          "items": {
+            "$ref": "Info_Node.json"
+          },
+          "description": "The multiple node information."
+        }
+      }
+    },
+    "Info_IPs": {
+      "title": "IPs",
+      "type": "object",
+      "description": "Represent the multiple IP message.",
+      "properties": {
+        "ip": {
+          "title": "ip",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}
