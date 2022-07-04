@@ -18,25 +18,15 @@
 package grpc
 
 import (
-	"os"
 	"reflect"
 	"testing"
 
 	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
-	"github.com/vdaas/vald/internal/info"
-	"github.com/vdaas/vald/internal/log"
-	"github.com/vdaas/vald/internal/log/logger"
 	"github.com/vdaas/vald/internal/test/goleak"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/service"
 )
-
-func TestMain(m *testing.M) {
-	log.Init(log.WithLoggerType(logger.NOP.String()))
-	info.Init("")
-	os.Exit(m.Run())
-}
 
 func TestWithIP(t *testing.T) {
 	t.Parallel()
