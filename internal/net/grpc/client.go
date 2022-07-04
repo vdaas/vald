@@ -469,8 +469,10 @@ func (g *gRPCClient) RoundRobin(ctx context.Context, f func(ctx context.Context,
 		}
 	}()
 	if g.bo != nil && g.atomicAddrs.Len() > 1 {
+		var boName string
 		if method := FromGRPCMethod(sctx); len(method) != 0 {
-			sctx = backoff.WithBackoffName(ctx, method)
+			boName = method
+			sctx = backoff.WithBackoffName(ctx, boName)
 		}
 		return g.bo.Do(sctx, func(ictx context.Context) (r interface{}, ret bool, err error) {
 			addr, ok := g.atomicAddrs.Next()
@@ -490,8 +492,20 @@ func (g *gRPCClient) RoundRobin(ctx context.Context, f func(ctx context.Context,
 				log.Warn(err)
 				return nil, true, err
 			}
-			r, err = g.do(ictx, p, addr, false, f)
+
+			if g.cb != nil && len(boName) != 0 {
+				r, err = g.cb.Do(sctx, boName, func(ctx context.Context) (interface{}, error) {
+					r, err = g.do(ictx, p, addr, false, f)
+					return r, err
+				})
+			} else {
+				r, err = g.do(ictx, p, addr, false, f)
+			}
 			if err != nil {
+				if errors.Is(err, errors.ErrCircuitBreakerOpenState) {
+					return nil, false, err
+				}
+
 				st, ok := status.FromError(err)
 				if !ok || st == nil {
 					if errors.Is(err, context.Canceled) ||
@@ -556,18 +570,37 @@ func (g *gRPCClient) do(ctx context.Context, p pool.Conn, addr string, enableBac
 		}
 	}()
 	if g.bo != nil && enableBackoff {
+		var boName string
 		if method := FromGRPCMethod(sctx); len(method) != 0 {
-			sctx = backoff.WithBackoffName(ctx, method+"/"+addr)
+			boName = method + "/" + addr
+			sctx = backoff.WithBackoffName(ctx, boName)
 		}
 		data, err = g.bo.Do(sctx, func(ictx context.Context) (r interface{}, ret bool, err error) {
-			err = p.Do(func(conn *ClientConn) (err error) {
-				if conn == nil {
-					return errors.ErrGRPCClientConnNotFound(addr)
-				}
-				r, err = f(ictx, conn, g.copts...)
-				return err
-			})
+			if g.cb != nil && len(boName) > 0 {
+				r, err = g.cb.Do(sctx, boName, func(ctx context.Context) (interface{}, error) {
+					err = p.Do(func(conn *ClientConn) (err error) {
+						if conn == nil {
+							return errors.ErrGRPCClientConnNotFound(addr)
+						}
+						r, err = f(ictx, conn, g.copts...)
+						return err
+					})
+					return r, err
+				})
+			} else {
+				err = p.Do(func(conn *ClientConn) (err error) {
+					if conn == nil {
+						return errors.ErrGRPCClientConnNotFound(addr)
+					}
+					r, err = f(ictx, conn, g.copts...)
+					return err
+				})
+			}
 			if err != nil {
+				if errors.Is(err, errors.ErrCircuitBreakerOpenState) {
+					return nil, false, err
+				}
+
 				st, ok := status.FromError(err)
 				if !ok || st == nil {
 					if errors.Is(err, context.Canceled) ||
