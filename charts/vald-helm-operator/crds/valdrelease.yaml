@@ -2163,6 +2163,15 @@ spec:
                             call_option:
                               type: object
                               x-kubernetes-preserve-unknown-fields: true
+                            circuit_breaker:
+                              type: object
+                              properties:
+                                closed_error_rate:
+                                  type: number
+                                half_open_error_rate:
+                                  type: number
+                                open_timeout:
+                                  type: string
                             connection_pool:
                               type: object
                               properties:
@@ -4204,6 +4213,15 @@ spec:
                                     call_option:
                                       type: object
                                       x-kubernetes-preserve-unknown-fields: true
+                                    circuit_breaker:
+                                      type: object
+                                      properties:
+                                        closed_error_rate:
+                                          type: number
+                                        half_open_error_rate:
+                                          type: number
+                                        open_timeout:
+                                          type: string
                                     connection_pool:
                                       type: object
                                       properties:
@@ -4368,6 +4386,15 @@ spec:
                                 call_option:
                                   type: object
                                   x-kubernetes-preserve-unknown-fields: true
+                                circuit_breaker:
+                                  type: object
+                                  properties:
+                                    closed_error_rate:
+                                      type: number
+                                    half_open_error_rate:
+                                      type: number
+                                    open_timeout:
+                                      type: string
                                 connection_pool:
                                   type: object
                                   properties:
@@ -4527,6 +4554,15 @@ spec:
                                     call_option:
                                       type: object
                                       x-kubernetes-preserve-unknown-fields: true
+                                    circuit_breaker:
+                                      type: object
+                                      properties:
+                                        closed_error_rate:
+                                          type: number
+                                        half_open_error_rate:
+                                          type: number
+                                        open_timeout:
+                                          type: string
                                     connection_pool:
                                       type: object
                                       properties:
@@ -5659,6 +5695,15 @@ spec:
                                     call_option:
                                       type: object
                                       x-kubernetes-preserve-unknown-fields: true
+                                    circuit_breaker:
+                                      type: object
+                                      properties:
+                                        closed_error_rate:
+                                          type: number
+                                        half_open_error_rate:
+                                          type: number
+                                        open_timeout:
+                                          type: string
                                     connection_pool:
                                       type: object
                                       properties:
@@ -5815,6 +5860,15 @@ spec:
                                     call_option:
                                       type: object
                                       x-kubernetes-preserve-unknown-fields: true
+                                    circuit_breaker:
+                                      type: object
+                                      properties:
+                                        closed_error_rate:
+                                          type: number
+                                        half_open_error_rate:
+                                          type: number
+                                        open_timeout:
+                                          type: string
                                     connection_pool:
                                       type: object
                                       properties:
@@ -6967,6 +7021,15 @@ spec:
                                     call_option:
                                       type: object
                                       x-kubernetes-preserve-unknown-fields: true
+                                    circuit_breaker:
+                                      type: object
+                                      properties:
+                                        closed_error_rate:
+                                          type: number
+                                        half_open_error_rate:
+                                          type: number
+                                        open_timeout:
+                                          type: string
                                     connection_pool:
                                       type: object
                                       properties:
@@ -7123,6 +7186,15 @@ spec:
                                     call_option:
                                       type: object
                                       x-kubernetes-preserve-unknown-fields: true
+                                    circuit_breaker:
+                                      type: object
+                                      properties:
+                                        closed_error_rate:
+                                          type: number
+                                        half_open_error_rate:
+                                          type: number
+                                        open_timeout:
+                                          type: string
                                     connection_pool:
                                       type: object
                                       properties:
