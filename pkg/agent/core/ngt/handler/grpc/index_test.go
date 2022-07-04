@@ -19,6 +19,7 @@ import (
 	"context"
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/config"
@@ -670,22 +671,22 @@ func Test_server_IndexInfo(t *testing.T) {
 						Concurrency: 1,
 					},
 					VQueue: &config.VQueue{
-						InsertBufferPoolSize: 1000000000,
-						DeleteBufferPoolSize: 1000000000,
+						InsertBufferPoolSize: 10000,
+						DeleteBufferPoolSize: 10000,
 					},
 				},
 				svcOpts: append(defaultSvcOpts,
-					service.WithAutoIndexLength(1000000000),
+					service.WithAutoIndexLength(10000),
 					service.WithAutoIndexCheckDuration("10m"),
 					service.WithAutoSaveIndexDuration("10m"),
 					service.WithAutoIndexDurationLimit("10m"),
-					service.WithDefaultPoolSize(1000000000),
+					service.WithDefaultPoolSize(10000),
 				),
 			},
 			beforeFunc: func(t *testing.T, a args, s *server) {
 				ctx := context.Background()
 
-				insertCnt := 50
+				insertCnt := 5000
 				req, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, insertCnt, dim, defaultInsertConfig)
 				if err != nil {
 					t.Fatal(err)
@@ -694,15 +695,20 @@ func Test_server_IndexInfo(t *testing.T) {
 				if _, err := s.MultiInsert(ctx, req); err != nil {
 					t.Fatal(err)
 				}
+				i, _ := s.IndexInfo(ctx, &payload.Empty{})
+				t.Log(i)
 
 				t.Log("inserted")
-				// go func() {
-				if _, err := s.CreateIndex(ctx, &payload.Control_CreateIndexRequest{
-					PoolSize: uint32(insertCnt),
-				}); err != nil {
-					// t.Fatal(err)
-				}
-				// }()
+				go func() {
+					if _, err := s.CreateIndex(ctx, &payload.Control_CreateIndexRequest{
+						PoolSize: uint32(insertCnt),
+					}); err != nil {
+						t.Fatal(err)
+					}
+				}()
+				i, _ = s.IndexInfo(ctx, &payload.Empty{})
+				t.Log(i)
+				time.Sleep(900 * time.Millisecond)
 			},
 			want: want{
 				wantRes: &payload.Info_Index_Count{
