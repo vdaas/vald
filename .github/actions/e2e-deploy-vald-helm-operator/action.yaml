@@ -89,7 +89,7 @@ runs:
       shell: bash
       id: deploy_vald
       run: |
-        kubectl apply -f ${VALDRELEAS}
+        kubectl apply -f ${VALDRELEASE}
 
         sleep 3
 
@@ -100,6 +100,6 @@ runs:
         podname=`kubectl get pods --selector=${WAIT_FOR_SELECTOR} | tail -1 | awk '{print $1}'`
         echo "::set-output name=POD_NAME::${podname}"
       env:
-        VALDRELEAS: ${{ inputs.valdrelease }}
+        VALDRELEASE: ${{ inputs.valdrelease }}
         WAIT_FOR_SELECTOR: ${{ inputs.wait_for_selector }}
         WAIT_FOR_TIMEOUT: ${{ inputs.wait_for_timeout }}
