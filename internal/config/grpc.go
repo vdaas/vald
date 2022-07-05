@@ -31,7 +31,7 @@ type GRPCClient struct {
 	HealthCheckDuration string          `json:"health_check_duration" yaml:"health_check_duration"`
 	ConnectionPool      *ConnectionPool `json:"connection_pool"       yaml:"connection_pool"`
 	Backoff             *Backoff        `json:"backoff"               yaml:"backoff"`
-	CircuitBreaker      *CircuitBreaker `json:"circuitbreaker"        yaml:"circuitbreaker"`
+	CircuitBreaker      *CircuitBreaker `json:"circuit_breaker"       yaml:"circuit_breaker"`
 	CallOption          *CallOption     `json:"call_option"           yaml:"call_option"`
 	DialOption          *DialOption     `json:"dial_option"           yaml:"dial_option"`
 	TLS                 *TLS            `json:"tls"                   yaml:"tls"`
