@@ -80,7 +80,7 @@ runs:
       shell: bash
       id: deploy_vald_helm_operator
       run: |
-        helm vald-helm-operator install \
+        helm install vald-helm-operator \
           --set image.tag=nightly \
           charts/vald-helm-operator/.
 
