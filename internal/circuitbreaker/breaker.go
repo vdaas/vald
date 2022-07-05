@@ -35,6 +35,7 @@ func newBreaker(opts ...BreakerOption) (*breaker, error) {
 			log.Warn(oerr)
 		}
 	}
+	b.count.Store(&count{})
 	return b, nil
 }
 
