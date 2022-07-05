@@ -24,10 +24,10 @@ inputs:
     description: "If Minio is required, set this to true."
     required: false
     default: "false"
-  values:
-    description: "path to the values.yaml that passed to Helm command."
-    required: false
-    default: "false"
+  valdrelease:
+    description: "path to the valdrelease.yaml that apply to cluster."
+    required: true
+    default: "true"
   wait_for_selector:
     description: "label selector used for specifying a pod waited for"
     required: false
@@ -89,7 +89,7 @@ runs:
       shell: bash
       id: deploy_vald
       run: |
-        kubectl apply -f ${VALUES}
+        kubectl apply -f ${VALDRELEAS}
 
         sleep 3
 
@@ -100,7 +100,6 @@ runs:
         podname=`kubectl get pods --selector=${WAIT_FOR_SELECTOR} | tail -1 | awk '{print $1}'`
         echo "::set-output name=POD_NAME::${podname}"
       env:
-        VALUES: ${{ inputs.values }}
-        HELM_EXTRA_OPTIONS: ${{ inputs.helm_extra_options }}
+        VALDRELEAS: ${{ inputs.valdrelease }}
         WAIT_FOR_SELECTOR: ${{ inputs.wait_for_selector }}
         WAIT_FOR_TIMEOUT: ${{ inputs.wait_for_timeout }}

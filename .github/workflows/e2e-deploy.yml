@@ -170,7 +170,7 @@ jobs:
         uses: ./.github/actions/e2e-deploy-vald-helm-operator
         with:
           require_libhdf5: "true"
-          values: ./.github/valdrelease/valdrelease.yaml
+          valdrelease: ./.github/valdrelease/valdrelease.yaml
           wait_for_selector: app=vald-lb-gateway
       - name: Fetch golang version
         run: |
