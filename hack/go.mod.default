@@ -236,7 +236,7 @@ replace (
 	github.com/golang/mock => github.com/golang/mock latest
 	github.com/golang/protobuf => github.com/golang/protobuf latest
 	github.com/golang/snappy => github.com/golang/snappy latest
-	github.com/google/btree => github.com/google/btree v1.0.1
+	github.com/google/btree => github.com/google/btree master
 	github.com/google/cel-go => github.com/google/cel-go latest
 	github.com/google/gnostic => github.com/google/gnostic latest
 	github.com/google/go-cmp => github.com/google/go-cmp latest
