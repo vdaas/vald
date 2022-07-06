@@ -37,7 +37,6 @@ func WithClosedErrorRate(f float32) BreakerOption {
 			return errors.NewErrInvalidOption("closedErrorRate", f)
 		}
 		b.closedErrRate = f
-		b.closedErrShouldTrip = NewRateTripper(f)
 		return nil
 	}
 }

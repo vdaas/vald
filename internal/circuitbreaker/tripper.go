@@ -14,6 +14,9 @@ func (f TripperFunc) ShouldTrip(c Counter) bool {
 func NewRateTripper(rate float32) Tripper {
 	return TripperFunc(func(c Counter) bool {
 		successes, fails := c.Successes(), c.Fails()
-		return float32(fails/successes+fails) > rate
+		if fails+successes <= 0 {
+			return false
+		}
+		return float32(fails/successes+fails) >= rate
 	})
 }

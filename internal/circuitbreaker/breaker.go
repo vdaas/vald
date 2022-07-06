@@ -36,6 +36,13 @@ func newBreaker(opts ...BreakerOption) (*breaker, error) {
 		}
 	}
 	b.count.Store(&count{})
+
+	if b.closedErrShouldTrip == nil {
+		b.closedErrShouldTrip = NewRateTripper(b.closedErrRate)
+	}
+	if b.halfOpenErrShouldTrip == nil {
+		b.halfOpenErrShouldTrip = NewRateTripper(b.halfOpenErrRate)
+	}
 	return b, nil
 }
 
