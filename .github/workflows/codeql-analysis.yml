@@ -48,7 +48,6 @@ jobs:
           sudo apt-get update && \
           sudo apt-get install -y --no-install-recommends libhdf5-dev
           sudo make ngt/install
-          sudo make tensorflow/install
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v2
         with:

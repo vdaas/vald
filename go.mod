@@ -442,7 +442,6 @@ replace (
 	github.com/stretchr/testify => github.com/stretchr/testify v1.8.0
 	github.com/syndtr/gocapability => github.com/syndtr/gocapability v0.0.0-20200815063812-42c35b437635
 	github.com/tchap/go-patricia => github.com/tchap/go-patricia v2.3.0+incompatible
-	github.com/tensorflow/tensorflow => github.com/tensorflow/tensorflow v2.1.2+incompatible
 	github.com/tidwall/pretty => github.com/tidwall/pretty v1.2.0
 	github.com/tmc/grpc-websocket-proxy => github.com/tmc/grpc-websocket-proxy v0.0.0-20220101234140-673ab2c3ae75
 	github.com/tv42/httpunix => github.com/tv42/httpunix v0.0.0-20191220191345-2ba4b9c3382c
@@ -593,7 +592,6 @@ require (
 	github.com/quasilyte/go-ruleguard v0.0.0-00010101000000-000000000000
 	github.com/quasilyte/go-ruleguard/dsl v0.3.19
 	github.com/scylladb/gocqlx v0.0.0-00010101000000-000000000000
-	github.com/tensorflow/tensorflow v0.0.0-00010101000000-000000000000
 	github.com/vdaas/vald-client-go v0.0.0-00010101000000-000000000000
 	github.com/zeebo/xxh3 v1.0.2
 	go.opencensus.io v0.23.0

@@ -442,7 +442,6 @@ replace (
 	github.com/stretchr/testify => github.com/stretchr/testify latest
 	github.com/syndtr/gocapability => github.com/syndtr/gocapability latest
 	github.com/tchap/go-patricia => github.com/tchap/go-patricia latest
-	github.com/tensorflow/tensorflow => github.com/tensorflow/tensorflow v2.1.2+incompatible
 	github.com/tidwall/pretty => github.com/tidwall/pretty latest
 	github.com/tmc/grpc-websocket-proxy => github.com/tmc/grpc-websocket-proxy latest
 	github.com/tv42/httpunix => github.com/tv42/httpunix latest

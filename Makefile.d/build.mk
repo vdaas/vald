@@ -22,7 +22,6 @@ binary/build: \
 	cmd/discoverer/k8s/discoverer \
 	cmd/gateway/lb/lb \
 	cmd/gateway/filter/filter \
-	cmd/filter/ingress/tensorflow/tensorflow \
 	cmd/manager/index/index
 
 cmd/agent/core/ngt/ngt: \
@@ -201,39 +200,6 @@ cmd/manager/index/index: \
 		$(dir $@)main.go
 	$@ -version
 
-cmd/filter/ingress/tensorflow/tensorflow: \
-	tensorflow/install \
-	$(GO_SOURCES_INTERNAL) \
-	$(PBGOS) \
-	$(shell find ./cmd/filter/ingress/tensorflow -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go') \
-	$(shell find ./pkg/filter/ingress/tensorflow -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
-	CFLAGS="$(CFLAGS)" \
-	CXXFLAGS="$(CXXFLAGS)" \
-	CGO_ENABLED=1 \
-	CGO_CXXFLAGS="-g -Ofast -march=native" \
-	CGO_FFLAGS="-g -Ofast -march=native" \
-	CGO_LDFLAGS="-g -Ofast -march=native" \
-	GO111MODULE=on \
-	GOPRIVATE=$(GOPRIVATE) \
-	go build \
-		--ldflags "-w \
-		-extldflags '-pthread -fopenmp -std=gnu++2a -lstdc++ -lm $(EXTLDFLAGS)' \
-		-X '$(GOPKG)/internal/info.Version=$(VERSION)' \
-		-X '$(GOPKG)/internal/info.GitCommit=$(GIT_COMMIT)' \
-		-X '$(GOPKG)/internal/info.BuildTime=$(DATETIME)' \
-		-X '$(GOPKG)/internal/info.GoVersion=$(GO_VERSION)' \
-		-X '$(GOPKG)/internal/info.GoOS=$(GOOS)' \
-		-X '$(GOPKG)/internal/info.GoArch=$(GOARCH)' \
-		-X '$(GOPKG)/internal/info.CGOEnabled=$${CGO_ENABLED}' \
-		-X '$(GOPKG)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)' \
-		-buildid=" \
-		-a \
-		-tags "cgo osusergo netgo static_build" \
-		-trimpath \
-		-o $@ \
-		$(dir $@)main.go
-	$@ -version
-
 .PHONY: binary/build/zip
 ## build all binaries and zip them
 binary/build/zip: \
@@ -242,7 +208,6 @@ binary/build/zip: \
 	artifacts/vald-discoverer-k8s-$(GOOS)-$(GOARCH).zip \
 	artifacts/vald-lb-gateway-$(GOOS)-$(GOARCH).zip \
 	artifacts/vald-filter-gateway-$(GOOS)-$(GOARCH).zip \
-	artifacts/vald-filter-ingress-tensorflow-$(GOOS)-$(GOARCH).zip \
 	artifacts/vald-manager-index-$(GOOS)-$(GOARCH).zip
 
 artifacts/vald-agent-ngt-$(GOOS)-$(GOARCH).zip: cmd/agent/core/ngt/ngt
@@ -266,10 +231,6 @@ artifacts/vald-filter-gateway-$(GOOS)-$(GOARCH).zip: cmd/gateway/filter/filter
 	zip --junk-paths $@ $<
 
 artifacts/vald-manager-index-$(GOOS)-$(GOARCH).zip: cmd/manager/index/index
-	$(call mkdir, $(dir $@))
-	zip --junk-paths $@ $<
-
-artifacts/vald-filter-ingress-tensorflow-$(GOOS)-$(GOARCH).zip: cmd/filter/ingress/tensorflow/tensorflow
 	$(call mkdir, $(dir $@))
 	zip --junk-paths $@ $<
 
