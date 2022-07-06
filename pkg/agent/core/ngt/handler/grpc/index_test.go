@@ -681,28 +681,9 @@ func Test_server_IndexInfo(t *testing.T) {
 					service.WithAutoSaveIndexDuration("10m"),
 					service.WithAutoIndexDurationLimit("10m"),
 					service.WithDefaultPoolSize(10000),
+					service.WithEnableInMemoryMode(false),
+					service.WithIndexPath("../../../../../../assets/test/data"),
 				),
-			},
-			beforeFunc: func(t *testing.T, a args, s *server) {
-				ctx := context.Background()
-
-				insertCnt := 5000
-				req, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, insertCnt, dim, defaultInsertConfig)
-				if err != nil {
-					t.Fatal(err)
-				}
-				go func() {
-					if _, err := s.MultiInsert(ctx, req); err != nil {
-						t.Fatal(err)
-					}
-
-					if _, err := s.CreateAndSaveIndex(ctx, &payload.Control_CreateIndexRequest{
-						PoolSize: uint32(insertCnt),
-					}); err != nil {
-						t.Fatal(err)
-					}
-				}()
-				time.Sleep(100 * time.Millisecond)
 			},
 			checkFunc: func(w want, i *payload.Info_Index_Count, err error) error {
 				if err != nil {
@@ -790,7 +771,7 @@ func Test_server_IndexInfo(t *testing.T) {
 					return errors.Errorf("expected no error, got error: %v", err)
 				}
 				if i == nil || !i.GetSaving() {
-					return errors.Errorf("expected indexing, got: %#v", i)
+					return errors.Errorf("expected saving, got: %#v", i)
 				}
 				return nil
 			},
