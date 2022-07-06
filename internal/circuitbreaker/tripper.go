@@ -1,5 +1,7 @@
 package circuitbreaker
 
+import "github.com/vdaas/vald/internal/log"
+
 // Tripper is a function type to determine if the CircuitBreaker should trip.
 type Tripper interface {
 	ShouldTrip(Counter) bool
@@ -18,6 +20,8 @@ func NewRateTripper(rate float32) Tripper {
 		if fails+successes <= 0 {
 			return false
 		}
-		return float32(fails/successes+fails) >= rate
+		log.Infof("[CIRCUIT_BREAKER] fails: %d, successes: %d\n", fails, successes)
+		log.Infof("[CIRCUIT_BREAKER] rate: %v\n", float32(fails)/float32(successes+fails))
+		return float32(fails)/float32(successes+fails) >= rate
 	})
 }
