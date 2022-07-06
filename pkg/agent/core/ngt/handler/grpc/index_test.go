@@ -17,6 +17,7 @@ package grpc
 
 import (
 	"context"
+	"os"
 	"reflect"
 	"testing"
 	"time"
@@ -26,6 +27,7 @@ import (
 	"github.com/vdaas/vald/internal/core/algorithm/ngt"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/file"
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/test/comparator"
 	"github.com/vdaas/vald/internal/test/data/request"
@@ -426,9 +428,6 @@ func Test_server_IndexInfo(t *testing.T) {
 		if diff := comparator.Diff(gotRes, w.wantRes, comparator.IgnoreUnexported(payload.Info_Index_Count{})); diff != "" {
 			return errors.New(diff)
 		}
-		// if !reflect.DeepEqual(gotRes, w.wantRes) {
-		// 	return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
-		// }
 		return nil
 	}
 
@@ -677,13 +676,31 @@ func Test_server_IndexInfo(t *testing.T) {
 				},
 				svcOpts: append(defaultSvcOpts,
 					service.WithAutoIndexLength(10000),
-					service.WithAutoIndexCheckDuration("10m"),
-					service.WithAutoSaveIndexDuration("10m"),
-					service.WithAutoIndexDurationLimit("10m"),
-					service.WithDefaultPoolSize(10000),
-					service.WithEnableInMemoryMode(false),
-					service.WithIndexPath("../../../../../../assets/test/data"),
+					service.WithAutoIndexCheckDuration("10s"),
+					service.WithAutoSaveIndexDuration("10s"),
+					service.WithAutoIndexDurationLimit("1s"),
+					service.WithDefaultPoolSize(100),
 				),
+			},
+			beforeFunc: func(t *testing.T, a args, s *server) {
+				ctx := context.Background()
+
+				insertCnt := 5000
+				req, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, insertCnt, dim, defaultInsertConfig)
+				if err != nil {
+					t.Fatal(err)
+				}
+
+				if _, err := s.MultiInsert(ctx, req); err != nil {
+					t.Fatal(err)
+				}
+				go func() {
+					if _, err := s.CreateIndex(ctx, &payload.Control_CreateIndexRequest{
+						PoolSize: uint32(insertCnt),
+					}); err != nil {
+						t.Fatal(err)
+					}
+				}()
 			},
 			checkFunc: func(w want, i *payload.Info_Index_Count, err error) error {
 				if err != nil {
@@ -715,67 +732,76 @@ func Test_server_IndexInfo(t *testing.T) {
 				},
 			},
 		},
-		{
-			name: "Equivalence Class Testing case 4.1: return when NGT is saving index",
-			args: args{
-				in1: &payload.Empty{},
-			},
-			fields: fields{
-				name: name,
-				ip:   ip,
-				svcCfg: &config.NGT{
-					Dimension:    dim,
-					DistanceType: ngt.Angle.String(),
-					ObjectType:   ngt.Float.String(),
-					KVSDB: &config.KVSDB{
-						Concurrency: 1,
-					},
-					VQueue: &config.VQueue{
-						InsertBufferPoolSize: 10000,
-						DeleteBufferPoolSize: 10000,
-					},
+		func() test {
+			tmpDir, err := file.MkdirTemp("")
+			if err != nil {
+				t.Fatal(err)
+			}
+			return test{
+				name: "Equivalence Class Testing case 4.1: return when NGT is saving index",
+				args: args{
+					in1: &payload.Empty{},
 				},
-				svcOpts: append(defaultSvcOpts,
-					service.WithAutoIndexLength(10000),
-					service.WithAutoIndexCheckDuration("10m"),
-					service.WithAutoSaveIndexDuration("10m"),
-					service.WithAutoIndexDurationLimit("10m"),
-					service.WithDefaultPoolSize(10000),
-					service.WithEnableInMemoryMode(false),
-					// service.WithIndexPath(),
-				),
-			},
-			beforeFunc: func(t *testing.T, a args, s *server) {
-				ctx := context.Background()
+				fields: fields{
+					name: name,
+					ip:   ip,
+					svcCfg: &config.NGT{
+						Dimension:    dim,
+						DistanceType: ngt.Angle.String(),
+						ObjectType:   ngt.Float.String(),
+						KVSDB: &config.KVSDB{
+							Concurrency: 1,
+						},
+						VQueue: &config.VQueue{
+							InsertBufferPoolSize: 10000,
+							DeleteBufferPoolSize: 10000,
+						},
+					},
+					svcOpts: append(defaultSvcOpts,
+						service.WithAutoIndexLength(10000),
+						service.WithAutoIndexCheckDuration("10m"),
+						service.WithAutoSaveIndexDuration("10m"),
+						service.WithAutoIndexDurationLimit("10m"),
+						service.WithDefaultPoolSize(10000),
+						service.WithEnableInMemoryMode(false),
+						service.WithIndexPath(tmpDir),
+					),
+				},
+				beforeFunc: func(t *testing.T, a args, s *server) {
+					ctx := context.Background()
 
-				insertCnt := 5000
-				req, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, insertCnt, dim, defaultInsertConfig)
-				if err != nil {
-					t.Fatal(err)
-				}
-				go func() {
+					insertCnt := 5000
+					req, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, insertCnt, dim, defaultInsertConfig)
+					if err != nil {
+						t.Fatal(err)
+					}
+
 					if _, err := s.MultiInsert(ctx, req); err != nil {
 						t.Fatal(err)
 					}
 
-					if _, err := s.CreateAndSaveIndex(ctx, &payload.Control_CreateIndexRequest{
-						PoolSize: uint32(insertCnt),
-					}); err != nil {
-						t.Fatal(err)
+					go func() {
+						if _, err := s.CreateAndSaveIndex(ctx, &payload.Control_CreateIndexRequest{
+							PoolSize: uint32(insertCnt),
+						}); err != nil {
+							t.Fatal(err)
+						}
+					}()
+				},
+				checkFunc: func(w want, i *payload.Info_Index_Count, err error) error {
+					if err != nil {
+						return errors.Errorf("expected no error, got error: %v", err)
 					}
-				}()
-				time.Sleep(150 * time.Millisecond)
-			},
-			checkFunc: func(w want, i *payload.Info_Index_Count, err error) error {
-				if err != nil {
-					return errors.Errorf("expected no error, got error: %v", err)
-				}
-				if i == nil || !i.GetSaving() {
-					return errors.Errorf("expected saving, got: %#v", i)
-				}
-				return nil
-			},
-		},
+					if i == nil || !i.GetSaving() {
+						return errors.Errorf("expected saving, got: %#v", i)
+					}
+					return nil
+				},
+				afterFunc: func(a args) {
+					os.RemoveAll(tmpDir)
+				},
+			}
+		}(),
 		{
 			name: "Equivalence Class Testing case 4.2: return when NGT is not saving index",
 			args: args{
@@ -832,9 +858,33 @@ func Test_server_IndexInfo(t *testing.T) {
 				test.beforeFunc(tt, test.args, s)
 			}
 
-			gotRes, err := s.IndexInfo(ctx, test.args.in1)
-			if err := checkFunc(test.want, gotRes, err); err != nil {
-				tt.Errorf("error = %v", err)
+			// we cannot guarantee the index info returned is in specific state, so retrieve
+			// the index info and check the result periodically until timeout
+			timeout := time.After(5 * time.Second)
+			ticker := time.Tick(10 * time.Millisecond)
+			for {
+				finished := false
+
+				select {
+				case <-timeout:
+					gotRes, err := s.IndexInfo(ctx, test.args.in1)
+
+					if err := checkFunc(test.want, gotRes, err); err != nil {
+						tt.Errorf("error = %v", err)
+					}
+					finished = true
+
+				case <-ticker:
+					gotRes, err := s.IndexInfo(ctx, test.args.in1)
+
+					if err := checkFunc(test.want, gotRes, err); err == nil {
+						finished = true
+					}
+				}
+
+				if finished {
+					break
+				}
 			}
 		})
 	}
