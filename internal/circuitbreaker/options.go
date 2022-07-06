@@ -61,7 +61,6 @@ func WithHalfOpenErrorRate(f float32) BreakerOption {
 			return errors.NewErrInvalidOption("halfOpenErrorRate", f)
 		}
 		b.halfOpenErrRate = f
-		b.halfOpenErrShouldTrip = NewRateTripper(f)
 		return nil
 	}
 }
