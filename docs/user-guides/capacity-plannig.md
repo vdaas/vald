@@ -82,37 +82,6 @@ Resource request and limit determine QoS.
 Vald requires many RAM resources because of on-memory indexing, so we highly recommend that you do not specify a limit, especially for the Vald Agent.
 In this case, QoS will be Burstable.
 
-In addition, when other components coexist with Vald Agent, it is preferred to set resource requests and limits considering QoS. 
-
-If it needs to set the resource limit, it would be better to set `podAntiAffinity` like below.
-
-```yaml
-# e.g. Agent podAntiAffinity settings
-...
-  agent:
-  ...
-    affinity:
-      nodeAffinity:
-        preferredDuringSchedulingIgnoredDuringExecution: []
-        requiredDuringSchedulingIgnoredDuringExecution:
-          nodeSelectorTerms: []
-      podAffinity:
-        preferredDuringSchedulingIgnoredDuringExecution: []
-        requiredDuringSchedulingIgnoredDuringExecution: []
-      podAntiAffinity:
-        preferredDuringSchedulingIgnoredDuringExecution:
-          - weight: 100
-            podAffinityTerm:
-              topologyKey: kubernetes.io/hostname
-              labelSelector:
-              matchExpressions:
-                - key: app
-                  operator: In
-                  values:
-                    - vald-agent-ngt
-        requiredDuringSchedulingIgnoredDuringExecution: []
-  ...
-```
 
 **Throttling**
 
