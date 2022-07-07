@@ -23,18 +23,24 @@ import (
 )
 
 type breakerMetrics struct {
-	nameKey metrics.Key
-	state   metrics.Int64Measure
+	nameKey  metrics.Key
+	stateKey metrics.Key
+	state    metrics.Int64Measure
 }
 
 func New() (metrics.Metric, error) {
-	key, err := metrics.NewKey("name")
+	nameKey, err := metrics.NewKey("name")
+	if err != nil {
+		return nil, err
+	}
+	stateKey, err := metrics.NewKey("state")
 	if err != nil {
 		return nil, err
 	}
 
 	return &breakerMetrics{
-		nameKey: key,
+		nameKey:  nameKey,
+		stateKey: stateKey,
 		state: *metrics.Int64(
 			metrics.ValdOrg+"/circuitbreaker/state",
 			"current circuit breaker state",
@@ -56,9 +62,10 @@ func (bm *breakerMetrics) MeasurementWithTags(ctx context.Context) ([]metrics.Me
 	mts := make([]metrics.MeasurementWithTags, 0, len(ms))
 	for name, st := range ms {
 		mts = append(mts, metrics.MeasurementWithTags{
-			Measurement: bm.state.M(int64(st)),
+			Measurement: bm.state.M(1),
 			Tags: map[metrics.Key]string{
-				bm.nameKey: name,
+				bm.nameKey:  name,
+				bm.stateKey: st.String(),
 			},
 		})
 	}
