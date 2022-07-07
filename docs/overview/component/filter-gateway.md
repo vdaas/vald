@@ -1,11 +1,10 @@
 # Vald Filter Gateway
 
-Vald Filter Gateway is an optional component in the Vald cluster allowing the user to run user-defined custom logic with ingress/egress filter components.
+Vald Filter Gateway is the component to communicate user-defined ingress/egress filter components with requests.
 
 ## Responsibility
 
-Vald Filter Gateway is the optional component in the Vald cluster implemented for available user-defined filtering.
-
+Vald Filter Gateway is an optional component in the Vald cluster allowing the user to run user-defined custom logic with ingress/egress filter components.
 The responsibility is to bypass the user request or response between the Vald cluster and the user-defined ingress filter (or egress filter) component.
 
 ## Features
@@ -26,7 +25,9 @@ Here are the steps of pre-processing with the ingress filter:
 <img src="../../../assets/docs/overview/component/filter-gateway/ingress_filtering_vector.svg" alt="example data flow of ingress filtering with vector" />
 
 There are two types of ingress filtering methods: generating the vector and the vector filtering.
+
 In generating the vector, for example, you can vectorize object data using your favorite model.
+
 The filtering vector allows you to filter out vectors that contain outliers so that they are not indexed.
 
 Vald officially offers two types of ingress filter components.
@@ -58,7 +59,9 @@ Here are the steps of pre-processing with the egress filter:
 <img src="../../../assets/docs/overview/component/filter-gateway/egress_filtering.svg" alt="search data flow with egress filtering" />
 
 There are two types of egress filtering methods: distance filtering and vector filtering.
+
 In distance filtering, for example, you can add a process to exclude vectors that exceed the upper limit of distance from the search results.
+
 Vector filtering allows you to add the process: for example, to remove different categories' vectors from the search results. (e.g., excluding kid's T-shirts from the search for adult's T-shirts.)
 
 If you want to use this feature, please deploy your own egress filter component, which meets the following interface.
