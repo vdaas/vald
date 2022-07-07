@@ -51,7 +51,7 @@ func TestGenMultiRemoveReq(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "sucess to generate 1 remove request",
+			name: "success to generate 1 remove request",
 			args: args{
 				num: 1,
 				cfg: defaultRemoveCfg,
@@ -70,7 +70,7 @@ func TestGenMultiRemoveReq(t *testing.T) {
 			},
 		},
 		{
-			name: "sucess to generate 5 remove request",
+			name: "success to generate 5 remove request",
 			args: args{
 				num: 5,
 				cfg: defaultRemoveCfg,
@@ -113,7 +113,7 @@ func TestGenMultiRemoveReq(t *testing.T) {
 			},
 		},
 		{
-			name: "sucess to generate 1 remove request with cfg is nil",
+			name: "success to generate 1 remove request with cfg is nil",
 			args: args{
 				num: 1,
 				cfg: nil,
@@ -165,7 +165,6 @@ func TestGenMultiRemoveReq(t *testing.T) {
 			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
