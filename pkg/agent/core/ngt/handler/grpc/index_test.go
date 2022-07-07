@@ -29,6 +29,7 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/file"
 	"github.com/vdaas/vald/internal/net"
+	itest "github.com/vdaas/vald/internal/test"
 	"github.com/vdaas/vald/internal/test/comparator"
 	"github.com/vdaas/vald/internal/test/data/request"
 	"github.com/vdaas/vald/internal/test/data/vector"
@@ -475,27 +476,13 @@ func Test_server_IndexInfo(t *testing.T) {
 				in1: &payload.Empty{},
 			},
 			fields: fields{
-				name:    name,
-				ip:      ip,
-				svcCfg:  defaultSvcCfg,
-				svcOpts: defaultSvcOpts,
-			},
-			beforeFunc: func(t *testing.T, a args, s *server) {
-				ctx := context.Background()
-
-				req, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, insertCnt, dim, defaultInsertConfig)
-				if err != nil {
-					t.Fatal(err)
-				}
-
-				if _, err := s.MultiInsert(ctx, req); err != nil {
-					t.Fatal(err)
-				}
-				if _, err := s.CreateIndex(ctx, &payload.Control_CreateIndexRequest{
-					PoolSize: uint32(len(req.Requests)),
-				}); err != nil {
-					t.Fatal(err)
-				}
+				name:   name,
+				ip:     ip,
+				svcCfg: defaultSvcCfg,
+				svcOpts: append(defaultSvcOpts,
+					service.WithIndexPath(itest.GetTestdataPath("backup/100index")),
+					service.WithEnableInMemoryMode(false),
+				),
 			},
 			want: want{
 				wantRes: &payload.Info_Index_Count{
@@ -737,6 +724,7 @@ func Test_server_IndexInfo(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
+
 			return test{
 				name: "Equivalence Class Testing case 4.1: return when NGT is saving index",
 				args: args{
