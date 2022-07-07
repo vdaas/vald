@@ -5,6 +5,13 @@ import (
 	"sync"
 )
 
+// NOTE: This variable is for observability package.
+//       This will be fixed when refactoring the observability package.
+var (
+	mu      sync.RWMutex
+	metrics map[string]State = make(map[string]State)
+)
+
 // CircuitBreaker is a state machine to prevent doing processes that are likely to fail.
 type CircuitBreaker interface {
 	Do(ctx context.Context, key string, fn func(ctx context.Context) (interface{}, error)) (val interface{}, err error)
@@ -28,16 +35,40 @@ func NewCircuitBreaker(opts ...Option) (CircuitBreaker, error) {
 
 // Do invokes the breaker matching the given key.
 func (bm *breakerManager) Do(ctx context.Context, key string, fn func(ctx context.Context) (interface{}, error)) (val interface{}, err error) {
+	var st State
+	defer func() {
+		mu.Lock()
+		metrics[key] = st
+		mu.Unlock()
+	}()
+
 	// Pre-loading to prevent a lot of object generation.
-	val, ok := bm.m.Load(key)
+	obj, ok := bm.m.Load(key)
 	if ok {
-		return val.(*breaker).do(ctx, fn)
+		val, st, err = obj.(*breaker).do(ctx, fn)
+		return val, err
 	}
 
 	b, err := newBreaker(bm.opts...)
 	if err != nil {
 		return nil, err
 	}
-	val, _ = bm.m.LoadOrStore(key, b)
-	return val.(*breaker).do(ctx, fn)
+	obj, _ = bm.m.LoadOrStore(key, b)
+	val, st, err = obj.(*breaker).do(ctx, fn)
+	return val, err
+}
+
+func Metrics(_ context.Context) map[string]State {
+	mu.RLock()
+	defer mu.RUnlock()
+
+	if len(metrics) == 0 {
+		return nil
+	}
+
+	m := make(map[string]State, len(metrics))
+	for name, st := range metrics {
+		m[name] = st
+	}
+	return m
 }

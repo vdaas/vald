@@ -20,14 +20,12 @@ func (c *count) Fails() (n int64) {
 	return atomic.LoadInt64(&c.failures)
 }
 
-func (c *count) onSuccess() (n int64) {
-	n = atomic.AddInt64(&c.successes, 1)
-	return n
+func (c *count) onSuccess() {
+	atomic.AddInt64(&c.successes, 1)
 }
 
-func (c *count) onFail() (n int64) {
-	n = atomic.AddInt64(&c.failures, 1)
-	return n
+func (c *count) onFail() {
+	atomic.AddInt64(&c.failures, 1)
 }
 
 func (c *count) reset() {

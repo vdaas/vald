@@ -1,21 +1,21 @@
 package circuitbreaker
 
-type state uint32
+type State uint32
 
 const (
-	stateUnknown state = iota
-	stateClosed
-	stateOpen
-	stateHalfOpen
+	StateUnknown State = iota
+	StateClosed
+	StateOpen
+	StateHalfOpen
 )
 
-func (s state) String() string {
+func (s State) String() string {
 	switch s {
-	case stateClosed:
+	case StateClosed:
 		return "closed"
-	case stateOpen:
+	case StateOpen:
 		return "open"
-	case stateHalfOpen:
+	case StateHalfOpen:
 		return "half-open"
 	default:
 		return "unknown"

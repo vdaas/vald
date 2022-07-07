@@ -48,40 +48,40 @@ func newBreaker(opts ...BreakerOption) (*breaker, error) {
 
 // do executes the function given argument when the current breaker state is "Closed" or "Half-Open".
 // If the current breaker state is "Open", this function returns ErrCircuitBreakerOpenState.
-func (b *breaker) do(ctx context.Context, fn func(ctx context.Context) (val interface{}, err error)) (val interface{}, err error) {
+func (b *breaker) do(ctx context.Context, fn func(ctx context.Context) (val interface{}, err error)) (val interface{}, st State, err error) {
 	if !b.isReady() {
-		return nil, errors.ErrCircuitBreakerOpenState
+		return nil, StateOpen, errors.ErrCircuitBreakerOpenState
 	}
 	val, err = fn(ctx)
 	if err != nil {
 		igerr := &errors.ErrCircuitBreakerIgnorable{}
 		if errors.As(err, &igerr) {
-			return nil, igerr.Unwrap()
+			return nil, b.currentState(), igerr.Unwrap()
 		}
 
 		serr := &errors.ErrCircuitBreakerMarkWithSuccess{}
 		if errors.As(err, &serr) {
 			b.success()
-			return nil, serr.Unwrap()
+			return nil, b.currentState(), serr.Unwrap()
 		}
 
 		b.fail()
-		return nil, err
+		return nil, b.currentState(), err
 	}
 	b.success()
-	return val, nil
+	return val, b.currentState(), nil
 }
 
 // isReady determines the breaker is ready or not.
 // If the current breaker state is "Closed" or "Half-Open", this function returns true.
 func (b *breaker) isReady() (ok bool) {
 	st := b.currentState()
-	return st == stateClosed || st == stateHalfOpen
+	return st == StateClosed || st == StateHalfOpen
 }
 
 func (b *breaker) success() {
 	b.count.Load().(*count).onSuccess()
-	if st := b.currentState(); st == stateHalfOpen {
+	if st := b.currentState(); st == StateHalfOpen {
 		b.reset()
 	}
 }
@@ -92,9 +92,9 @@ func (b *breaker) fail() {
 
 	var ok bool
 	switch st := b.currentState(); st {
-	case stateHalfOpen:
+	case StateHalfOpen:
 		ok = b.halfOpenErrShouldTrip.ShouldTrip(cnt)
-	case stateClosed:
+	case StateClosed:
 		ok = b.closedErrShouldTrip.ShouldTrip(cnt)
 	default:
 		return
@@ -107,15 +107,15 @@ func (b *breaker) fail() {
 // currentState returns current breaker state.
 // If the tripped flag is not active, this function returns "Closed" state.
 // On the other hand, if the tripped flag is active and the expiration date is not reached, returns "Open" state, otherwise returns "Half-Open" state.
-func (b *breaker) currentState() (st state) {
+func (b *breaker) currentState() (st State) {
 	if b.isTripped() {
 		now := time.Now().UnixNano()
 		if expire := atomic.LoadInt64(&b.openExpire); expire > 0 && expire >= now {
-			return stateOpen
+			return StateOpen
 		}
-		return stateHalfOpen
+		return StateHalfOpen
 	}
-	return stateClosed
+	return StateClosed
 }
 
 func (b *breaker) reset() {
