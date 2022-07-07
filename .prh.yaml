@@ -15,6 +15,7 @@
 #
 version: 1
 # index: ann
+# index: burstable
 # index: clojure
 # index: docker
 # index: flamegraph
@@ -46,6 +47,13 @@ rules:
         to: ANN
     options:
       wordBoundary: true
+  - pattern: burstable
+    expected: Burstable
+    specs:
+      - from: burstable
+        to: burstable
+      - from: Burstable
+        to: Burstable
   - pattern: clojure
     expected: Clojure
     options:
@@ -105,7 +113,7 @@ rules:
     expected: _k_-NN
     options:
       wordBoundary: true
-  - pattern: 
+  - pattern:
       - kubernetes
       - k8s
       - K8s

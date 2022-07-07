@@ -23,21 +23,27 @@ For example, if you want to insert 1 million vectors with 900 dimensions and the
 (900 × 32 + 256 ) × 1,000,000 × 3 = 8,7168,000,000 (bit) = 10.896 (GB)
 ```
 
-
 It is just the minimum required RAM.
-Considering the margin of RAM capacity, the minimum RAM capacity should be less than 60% of the actual RAM capacity. 
+Considering the margin of RAM capacity, the minimum RAM capacity should be less than 60% of the actual RAM capacity.
 Therefore, the actual minimum RAM capacity will be:
 
 ```bash
 8,7168,000,000 (bit) / 0.6 = 145,280,000,000 (bit) = 18.16 (GB)
 ```
 
+<div class="warn">
+Memory usage is not enough in the minimum required RAM.<BR>
+E.g., there is a noisy problem, high memory usage for createIndex, high traffic needs more memory, etc...
+There may be A noisy neighbor problem, High memory usage, 
+</div>
+
+
 ## Kubernetes cluster view
 
 ### Pod priority & QoS
 
 When the Node capacity (e.g., RAM, CPU) reaches the limit, Kubernetes will decide to kill some Pods according to QoS and Pod priority.
-Kubernetes performs pod scheduling with pods Priority Class as the priority and QoS as the second priority. 
+Kubernetes performs pod scheduling with pods Priority Class as the priority and QoS as the second priority.
 
 **Pod priority**
 
@@ -59,7 +65,7 @@ Agent > Discoverer = Filter Gateway = LB Gateway = Index Manger
 
 Those values will be helpful when the Pods other than the Vald component are in the same Node.
 
-It is easy to change by editing your Vald helm chart yaml.
+It is easy to change by editing your `values.yaml`.
 
 ```yaml
 # e.g. LB Gateway podPriority settings.
@@ -79,9 +85,17 @@ QoS value can be either Guaranteed, Burstable, or BestEffort.
 And, QoS priority is higher in the order of Guaranteed, Burstable, BestEffort, and Kubernetes will kill Pods in ascending order of importance.
 
 Resource request and limit determine QoS.
+
+The below table shows the condition for each QoS.
+
+|    QoS     |   request CPU   | request Memory |    limit CPU    | request Memory  | Sup.                                |
+| :--------: | :-------------: | :------------: | :-------------: | :-------------: | :---------------------------------- |
+| Guaranteed |       :o:       |      :o:       |       :o:       |       :o:       | All settings are required.          |
+| Guaranteed | :o: (:warning:) | :o: (:warning) | :o: (:warning:) | :o: (:warning:) | One to three settings are required. |
+| BestEffort |       :x:       |      :x:       |       :x:       |       :x:       | No setting is required.             |
+
 Vald requires many RAM resources because of on-memory indexing, so we highly recommend that you do not specify a limit, especially for the Vald Agent.
 In this case, QoS will be Burstable.
-
 
 **Throttling**
 
