@@ -28,7 +28,6 @@ CI_CONTAINER_IMAGE              = $(NAME)-ci-container
 DEV_CONTAINER_IMAGE             = $(NAME)-dev-container
 DISCOVERER_IMAGE                = $(NAME)-discoverer-k8s
 FILTER_GATEWAY_IMAGE            = $(NAME)-filter-gateway
-FILTER_INGRESS_TF_IMAGE         = $(NAME)-filter-ingress-tensorflow
 HELM_OPERATOR_IMAGE             = $(NAME)-helm-operator
 LB_GATEWAY_IMAGE                = $(NAME)-lb-gateway
 LOADTEST_IMAGE                  = $(NAME)-loadtest
@@ -50,20 +49,18 @@ GOPATH := $(eval GOPATH := $(shell go env GOPATH))$(GOPATH)
 
 TEMP_DIR := $(eval TEMP_DIR := $(shell mktemp -d))$(TEMP_DIR)
 
-TENSORFLOW_C_VERSION := $(eval TENSORFLOW_C_VERSION := $(shell cat versions/TENSORFLOW_C_VERSION))$(TENSORFLOW_C_VERSION)
-
 OPERATOR_SDK_VERSION := $(eval OPERATOR_SDK_VERSION := $(shell cat versions/OPERATOR_SDK_VERSION))$(OPERATOR_SDK_VERSION)
 
 KIND_VERSION            ?= v0.14.0
 HELM_VERSION            ?= v3.9.0
-HELM_DOCS_VERSION       ?= 1.10.0
-YQ_VERSION              ?= v4.25.2
+HELM_DOCS_VERSION       ?= 1.11.0
+YQ_VERSION              ?= v4.25.3
 VALDCLI_VERSION         ?= v1.5.4
-TELEPRESENCE_VERSION    ?= 2.6.6
+TELEPRESENCE_VERSION    ?= 2.6.8
 KUBELINTER_VERSION      ?= 0.3.0
 GOLANGCILINT_VERSION    ?= v1.46.2
 REVIEWDOG_VERSION       ?= v0.14.1
-PROTOBUF_VERSION        ?= 21.1
+PROTOBUF_VERSION        ?= 21.2
 JAEGER_OPERATOR_VERSION ?= 2.30.0
 
 SWAP_DEPLOYMENT_TYPE ?= deployment
@@ -347,8 +344,7 @@ init: \
 	git/config/init \
 	git/hooks/init \
 	deps \
-	ngt/install \
-	tensorflow/install
+	ngt/install
 
 .PHONY: tools/install
 ## install development tools
@@ -356,7 +352,8 @@ tools/install: \
 	helm/install \
 	kind/install \
 	valdcli/install \
-	telepresence/install
+	telepresence/install \
+	textlint/install
 
 .PHONY: update
 ## update deps, license, and run golines, gofumpt, goimports
@@ -486,20 +483,6 @@ ngt/install: /usr/local/include/NGT/Capi.h
 	rm -rf $(TEMP_DIR)/NGT-$(NGT_VERSION)
 	ldconfig
 
-.PHONY: tensorflow/install
-## install TensorFlow for C
-tensorflow/install: /usr/local/lib/libtensorflow.so
-ifeq ($(UNAME),Darwin)
-/usr/local/lib/libtensorflow.so:
-	brew install libtensorflow@1
-else
-/usr/local/lib/libtensorflow.so:
-	curl -LO https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow-cpu-linux-x86_64-$(TENSORFLOW_C_VERSION).tar.gz
-	tar -C /usr/local -xzf libtensorflow-cpu-linux-x86_64-$(TENSORFLOW_C_VERSION).tar.gz
-	rm -f libtensorflow-cpu-linux-x86_64-$(TENSORFLOW_C_VERSION).tar.gz
-	ldconfig
-endif
-
 .PHONY: lint
 ## run lints
 lint: vet
@@ -509,6 +492,11 @@ lint: vet
 ## run go vet
 vet:
 	$(call go-vet)
+
+.PHONY: docs/lint
+## run lint for document
+docs/lint:
+	textlint docs/**/*.md
 
 .PHONY: changelog/update
 ## update changelog
@@ -537,7 +525,6 @@ include Makefile.d/k3d.mk
 include Makefile.d/k8s.mk
 include Makefile.d/kind.mk
 include Makefile.d/client.mk
-include Makefile.d/ml.mk
 include Makefile.d/test.mk
 include Makefile.d/tools.mk
 include Makefile.d/e2e.mk

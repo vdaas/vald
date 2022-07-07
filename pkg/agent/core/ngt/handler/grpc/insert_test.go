@@ -40,18 +40,7 @@ import (
 	"github.com/vdaas/vald/internal/test/goleak"
 	"github.com/vdaas/vald/internal/test/mock"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/service"
-
-	grpcStatus "google.golang.org/genproto/googleapis/rpc/status"
 )
-
-var objectStreamLocationComparators = []comparator.Option{
-	comparator.IgnoreUnexported(payload.Object_StreamLocation{}),
-	comparator.IgnoreUnexported(payload.Object_Location{}),
-	comparator.Comparer(func(x, y grpcStatus.Status) bool {
-		// ignore checking the detail of status
-		return x.Code == y.Code
-	}),
-}
 
 func Test_server_Insert(t *testing.T) {
 	t.Parallel()
@@ -1480,14 +1469,24 @@ func Test_server_StreamInsert(t *testing.T) {
 		strictExistCheckCfg = &payload.Insert_Config{
 			SkipStrictExistCheck: false,
 		}
+
+		objectStreamLocationComparators = []comparator.Option{
+			comparator.IgnoreUnexported(payload.Object_StreamLocation{}),
+			comparator.IgnoreUnexported(payload.Object_Location{}),
+
+			// ignore checking status, will validate it on Test_server_StreamInsert defaultCheckFunc
+			comparator.IgnoreFields(payload.Object_StreamLocation_Status{}, "Status"),
+		}
+
+		objectLocationComparators = []comparator.Option{
+			comparator.IgnoreUnexported(payload.Object_Location{}),
+		}
 	)
 
 	genObjectStreamLoc := func(code codes.Code) *payload.Object_StreamLocation {
 		return &payload.Object_StreamLocation{
 			Payload: &payload.Object_StreamLocation_Status{
-				Status: &grpcStatus.Status{
-					Code: int32(code),
-				},
+				Status: status.New(code, "").Proto(),
 			},
 		}
 	}
@@ -1521,7 +1520,21 @@ func Test_server_StreamInsert(t *testing.T) {
 		sortObjectStreamLocation(w.rpcResp)
 
 		if diff := comparator.Diff(rpcResp, w.rpcResp, objectStreamLocationComparators...); diff != "" {
-			return errors.Errorf(diff)
+			return errors.New(diff)
+		}
+
+		// check status
+		if len(rpcResp) != len(w.rpcResp) {
+			return errors.Errorf("gotResp length not match with wantResp, got: %#v, want: %#v", rpcResp, w.rpcResp)
+		}
+		for i, gotResp := range rpcResp {
+			wantResp := w.rpcResp[i]
+			if diff := comparator.Diff(gotResp.GetStatus().GetCode(), wantResp.GetStatus().GetCode()); diff != "" {
+				return errors.New(diff)
+			}
+			if diff := comparator.Diff(gotResp.GetLocation(), wantResp.GetLocation(), objectLocationComparators...); diff != "" {
+				return errors.New(diff)
+			}
 		}
 		return nil
 	}
