@@ -58,7 +58,7 @@ func GenMultiInsertReq(t ObjectType, dist vector.Distribution, num int, dim int,
 	return req, nil
 }
 
-// generate MultiInsert request with the same vector
+// GenSameVecMultiInsertReq generates Insert_MultiRequest with the same vector.
 func GenSameVecMultiInsertReq(num int, vec []float32, cfg *payload.Insert_Config) *payload.Insert_MultiRequest {
 	req := &payload.Insert_MultiRequest{
 		Requests: make([]*payload.Insert_Request, num),

@@ -21,6 +21,7 @@ import (
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 )
 
+// GenMultiRemoveReq generates Remove_MultiRequest request.
 func GenMultiRemoveReq(num int, cfg *payload.Remove_Config) *payload.Remove_MultiRequest {
 	req := &payload.Remove_MultiRequest{
 		Requests: make([]*payload.Remove_Request, num),

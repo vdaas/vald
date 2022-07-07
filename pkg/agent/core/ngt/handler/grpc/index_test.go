@@ -435,7 +435,7 @@ func Test_server_IndexInfo(t *testing.T) {
 		- Equivalence Class Testing
 			- case 1.1: return stored count when NGT is empty
 			- case 1.2: return stored count with 100 number of indexes
-			- case 2.1: return uncommitted count when NGT is empty
+			- case 2.1: return uncommitted count 0 when NGT is empty
 			- case 2.2: return uncommitted count with 100 uncommitted insert index
 			- case 2.3: return uncommitted count with 100 uncommitted delete index
 			- case 2.4: return uncommitted count with 100 uncommitted insert+delete index
@@ -507,7 +507,7 @@ func Test_server_IndexInfo(t *testing.T) {
 			},
 		},
 		{
-			name: "Equivalence Class Testing case 2.1: return uncommitted count when NGT is empty",
+			name: "Equivalence Class Testing case 2.1: return uncommitted count 0 when NGT is empty",
 			args: args{
 				in1: &payload.Empty{},
 			},
