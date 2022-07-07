@@ -21,8 +21,15 @@ import (
 	"testing"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
+	"github.com/vdaas/vald/internal/config"
+	"github.com/vdaas/vald/internal/core/algorithm/ngt"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/net"
+	"github.com/vdaas/vald/internal/net/grpc/codes"
+	"github.com/vdaas/vald/internal/net/grpc/status"
+	"github.com/vdaas/vald/internal/test/data/request"
+	"github.com/vdaas/vald/internal/test/data/vector"
 	"github.com/vdaas/vald/internal/test/goleak"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/service"
 )
@@ -30,19 +37,18 @@ import (
 func Test_server_CreateIndex(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		ctx context.Context
-		c   *payload.Control_CreateIndexRequest
+		c *payload.Control_CreateIndexRequest
 	}
 	type fields struct {
 		name              string
 		ip                string
-		ngt               service.NGT
-		eg                errgroup.Group
 		streamConcurrency int
+		svcCfg            *config.NGT
+		svcOpts           []service.Option
 	}
 	type want struct {
 		wantRes *payload.Empty
-		err     error
+		errCode status.Code
 	}
 	type test struct {
 		name       string
@@ -50,13 +56,64 @@ func Test_server_CreateIndex(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, *payload.Empty, error) error
-		beforeFunc func(args)
+		beforeFunc func(*testing.T, args, *server)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, gotRes *payload.Empty, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+
+	// common variables for test
+	const (
+		name = "vald-agent-ngt-1" // agent name
+		dim  = 3                  //  vector dimension
+		id   = "uuid-1"           // id for getObject request
+	)
+	var (
+		ip = net.LoadLocalIP() // agent ip address
+
+		// default NGT configuration for test
+		kvsdbCfg  = &config.KVSDB{}
+		vqueueCfg = &config.VQueue{}
+
+		defaultSvcCfg = &config.NGT{
+			Dimension:    dim,
+			DistanceType: ngt.Angle.String(),
+			ObjectType:   ngt.Float.String(),
+			KVSDB:        kvsdbCfg,
+			VQueue:       vqueueCfg,
 		}
+		defaultSvcOpts = []service.Option{
+			service.WithEnableInMemoryMode(true),
+		}
+
+		defaultInsertConfig = &payload.Insert_Config{}
+		defaultRemoveConfig = &payload.Remove_Config{}
+	)
+
+	genAndInsertReq := func(ctx context.Context, s *server, cnt int) error {
+		req, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, cnt, dim, defaultInsertConfig)
+		if err != nil {
+			return err
+		}
+		if _, err := s.MultiInsert(ctx, req); err != nil {
+			return err
+		}
+
+		return nil
+	}
+	genAndRemoveReq := func(ctx context.Context, s *server, cnt int) error {
+		_, err := s.MultiRemove(ctx, request.GenMultiRemoveReq(cnt, defaultRemoveConfig))
+		return err
+	}
+	defaultCheckFunc := func(w want, gotRes *payload.Empty, err error) error {
+		if err != nil {
+			st, ok := status.FromError(err)
+			if !ok {
+				return errors.Errorf("got error cannot convert to Status: \"%#v\"", err)
+			}
+			if st.Code() != w.errCode {
+				return errors.Errorf("got code: \"%#v\",\n\t\t\t\twant code: \"%#v\"", st.Code(), w.errCode)
+			}
+		}
+
 		if !reflect.DeepEqual(gotRes, w.wantRes) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
 		}
@@ -84,47 +141,300 @@ func Test_server_CreateIndex(t *testing.T) {
 			- case 1.4: success to create index with poolSize = 0
 	*/
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx: nil,
-		           c: nil,
-		       },
-		       fields: fields {
-		           name: "",
-		           ip: "",
-		           ngt: nil,
-		           eg: nil,
-		           streamConcurrency: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ctx: nil,
-		           c: nil,
-		           },
-		           fields: fields {
-		           name: "",
-		           ip: "",
-		           ngt: nil,
-		           eg: nil,
-		           streamConcurrency: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "Equivalence Class Testing case 1.1: success to create index with 1 uncommitted insert index",
+			args: args{
+				c: &payload.Control_CreateIndexRequest{
+					PoolSize: 1,
+				},
+			},
+			fields: fields{
+				name:    name,
+				ip:      ip,
+				svcCfg:  defaultSvcCfg,
+				svcOpts: defaultSvcOpts,
+			},
+			beforeFunc: func(t *testing.T, a args, s *server) {
+				ctx := context.Background()
+				if err := genAndInsertReq(ctx, s, 1); err != nil {
+					t.Fatal(err)
+				}
+			},
+			want: want{
+				wantRes: &payload.Empty{},
+			},
+		},
+		{
+			name: "Equivalence Class Testing case 1.2: success to create index with 100 uncommitted insert index",
+			args: args{
+				c: &payload.Control_CreateIndexRequest{
+					PoolSize: 100,
+				},
+			},
+			fields: fields{
+				name:    name,
+				ip:      ip,
+				svcCfg:  defaultSvcCfg,
+				svcOpts: defaultSvcOpts,
+			},
+			beforeFunc: func(t *testing.T, a args, s *server) {
+				ctx := context.Background()
+				if err := genAndInsertReq(ctx, s, 100); err != nil {
+					t.Fatal(err)
+				}
+			},
+			want: want{
+				wantRes: &payload.Empty{},
+			},
+		},
+		{
+			name: "Equivalence Class Testing case 2.1: success to create index with 1 uncommitted delete index",
+			args: args{
+				c: &payload.Control_CreateIndexRequest{
+					PoolSize: 1,
+				},
+			},
+			fields: fields{
+				name:    name,
+				ip:      ip,
+				svcCfg:  defaultSvcCfg,
+				svcOpts: defaultSvcOpts,
+			},
+			beforeFunc: func(t *testing.T, a args, s *server) {
+				ctx := context.Background()
+				if err := genAndInsertReq(ctx, s, 1); err != nil {
+					t.Fatal(err)
+				}
+				if _, err := s.CreateIndex(ctx, &payload.Control_CreateIndexRequest{
+					PoolSize: 1,
+				}); err != nil {
+					t.Fatal(err)
+				}
+				if err := genAndRemoveReq(ctx, s, 1); err != nil {
+					t.Fatal(err)
+				}
+			},
+			want: want{
+				wantRes: &payload.Empty{},
+			},
+		},
+		{
+			name: "Equivalence Class Testing case 2.2: success to create index with 100 uncommitted delete index",
+			args: args{
+				c: &payload.Control_CreateIndexRequest{
+					PoolSize: 1,
+				},
+			},
+			fields: fields{
+				name:    name,
+				ip:      ip,
+				svcCfg:  defaultSvcCfg,
+				svcOpts: defaultSvcOpts,
+			},
+			beforeFunc: func(t *testing.T, a args, s *server) {
+				ctx := context.Background()
+				cnt := 100
+				if err := genAndInsertReq(ctx, s, cnt); err != nil {
+					t.Fatal(err)
+				}
+				if _, err := s.CreateIndex(ctx, &payload.Control_CreateIndexRequest{
+					PoolSize: 1,
+				}); err != nil {
+					t.Fatal(err)
+				}
+				if err := genAndRemoveReq(ctx, s, cnt); err != nil {
+					t.Fatal(err)
+				}
+			},
+			want: want{
+				wantRes: &payload.Empty{},
+			},
+		},
+		{
+			name: "Equivalence Class Testing case 3.1: success to create index with 1 uncommitted insert & delete index",
+			args: args{
+				c: &payload.Control_CreateIndexRequest{
+					PoolSize: 1,
+				},
+			},
+			fields: fields{
+				name:    name,
+				ip:      ip,
+				svcCfg:  defaultSvcCfg,
+				svcOpts: defaultSvcOpts,
+			},
+			beforeFunc: func(t *testing.T, a args, s *server) {
+				ctx := context.Background()
+				insertCnt := 1
+				removeCnt := 1
+				if err := genAndInsertReq(ctx, s, insertCnt); err != nil {
+					t.Fatal(err)
+				}
+				if err := genAndRemoveReq(ctx, s, removeCnt); err != nil {
+					t.Fatal(err)
+				}
+			},
+			want: want{
+				wantRes: &payload.Empty{},
+			},
+		},
+		{
+			name: "Equivalence Class Testing case 3.2: success to create index with 100 uncommitted insert & delete index",
+			args: args{
+				c: &payload.Control_CreateIndexRequest{
+					PoolSize: 100,
+				},
+			},
+			fields: fields{
+				name:    name,
+				ip:      ip,
+				svcCfg:  defaultSvcCfg,
+				svcOpts: defaultSvcOpts,
+			},
+			beforeFunc: func(t *testing.T, a args, s *server) {
+				ctx := context.Background()
+				insertCnt := 100
+				removeCnt := 100
+				if err := genAndInsertReq(ctx, s, insertCnt); err != nil {
+					t.Fatal(err)
+				}
+				if err := genAndRemoveReq(ctx, s, removeCnt); err != nil {
+					t.Fatal(err)
+				}
+			},
+			want: want{
+				wantRes: &payload.Empty{},
+			},
+		},
+		{
+			name: "Boundary Value Testing case 1.1: success to create index with 0 uncommitted index",
+			args: args{
+				c: &payload.Control_CreateIndexRequest{
+					PoolSize: 0,
+				},
+			},
+			fields: fields{
+				name:    name,
+				ip:      ip,
+				svcCfg:  defaultSvcCfg,
+				svcOpts: defaultSvcOpts,
+			},
+			want: want{
+				errCode: codes.FailedPrecondition,
+			},
+		},
+		// {
+		// 	name: "Boundary Value Testing case 2.1: fail to create index with invalid dimension",
+		// 	args: args{
+		// 		ctx: nil,
+		// 		c:   nil,
+		// 	},
+		// 	fields: fields{
+		// 		name:              "",
+		// 		ip:                "",
+		// 		ngt:               nil,
+		// 		eg:                nil,
+		// 		streamConcurrency: 0,
+		// 	},
+		// 	want:      want{},
+		// 	checkFunc: defaultCheckFunc,
+		// },
+		{
+			name: "Decision Table Testing case 1.1: success to create index with poolSize > uncommitted index count",
+			args: args{
+				c: &payload.Control_CreateIndexRequest{
+					PoolSize: 10000,
+				},
+			},
+			fields: fields{
+				name:    name,
+				ip:      ip,
+				svcCfg:  defaultSvcCfg,
+				svcOpts: defaultSvcOpts,
+			},
+			beforeFunc: func(t *testing.T, a args, s *server) {
+				ctx := context.Background()
+				insertCnt := 100
+				if err := genAndInsertReq(ctx, s, insertCnt); err != nil {
+					t.Fatal(err)
+				}
+			},
+			want: want{
+				wantRes: &payload.Empty{},
+			},
+		},
+		{
+			name: "Decision Table Testing case 1.2: success to create index with poolSize < uncommitted index count",
+			args: args{
+				c: &payload.Control_CreateIndexRequest{
+					PoolSize: 1,
+				},
+			},
+			fields: fields{
+				name:    name,
+				ip:      ip,
+				svcCfg:  defaultSvcCfg,
+				svcOpts: defaultSvcOpts,
+			},
+			beforeFunc: func(t *testing.T, a args, s *server) {
+				ctx := context.Background()
+				insertCnt := 100
+				if err := genAndInsertReq(ctx, s, insertCnt); err != nil {
+					t.Fatal(err)
+				}
+			},
+			want: want{
+				wantRes: &payload.Empty{},
+			},
+		},
+		{
+			name: "Decision Table Testing case 1.3: success to create index with poolSize = uncommitted index count",
+			args: args{
+				c: &payload.Control_CreateIndexRequest{
+					PoolSize: 100,
+				},
+			},
+			fields: fields{
+				name:    name,
+				ip:      ip,
+				svcCfg:  defaultSvcCfg,
+				svcOpts: defaultSvcOpts,
+			},
+			beforeFunc: func(t *testing.T, a args, s *server) {
+				ctx := context.Background()
+				insertCnt := 100
+				if err := genAndInsertReq(ctx, s, insertCnt); err != nil {
+					t.Fatal(err)
+				}
+			},
+			want: want{
+				wantRes: &payload.Empty{},
+			},
+		},
+		{
+			name: "Decision Table Testing case 1.4: success to create index with poolSize = 0",
+			args: args{
+				c: &payload.Control_CreateIndexRequest{
+					PoolSize: 0,
+				},
+			},
+			fields: fields{
+				name:    name,
+				ip:      ip,
+				svcCfg:  defaultSvcCfg,
+				svcOpts: defaultSvcOpts,
+			},
+			beforeFunc: func(t *testing.T, a args, s *server) {
+				ctx := context.Background()
+				insertCnt := 100
+				if err := genAndInsertReq(ctx, s, insertCnt); err != nil {
+					t.Fatal(err)
+				}
+			},
+			want: want{
+				wantRes: &payload.Empty{},
+			},
+		},
 	}
 
 	for _, tc := range tests {
@@ -132,9 +442,10 @@ func Test_server_CreateIndex(t *testing.T) {
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
+
+			ctx, cancel := context.WithCancel(context.Background())
+			defer cancel()
+
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
@@ -142,15 +453,26 @@ func Test_server_CreateIndex(t *testing.T) {
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
+
+			eg, _ := errgroup.New(ctx)
+			ngt, err := service.New(test.fields.svcCfg, append(test.fields.svcOpts, service.WithErrGroup(eg))...)
+			if err != nil {
+				tt.Errorf("failed to init ngt service, error = %v", err)
+			}
+
 			s := &server{
 				name:              test.fields.name,
 				ip:                test.fields.ip,
-				ngt:               test.fields.ngt,
-				eg:                test.fields.eg,
+				ngt:               ngt,
+				eg:                eg,
 				streamConcurrency: test.fields.streamConcurrency,
 			}
 
-			gotRes, err := s.CreateIndex(test.args.ctx, test.args.c)
+			if test.beforeFunc != nil {
+				test.beforeFunc(tt, test.args, s)
+			}
+
+			gotRes, err := s.CreateIndex(ctx, test.args.c)
 			if err := checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
