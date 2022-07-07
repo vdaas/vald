@@ -80,6 +80,7 @@ func (bm *breakerMetrics) View() []*metrics.View {
 			Measure:     &bm.state,
 			TagKeys: []metrics.Key{
 				bm.nameKey,
+				bm.stateKey,
 			},
 			Aggregation: metrics.LastValue(),
 		},
