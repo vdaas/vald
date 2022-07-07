@@ -132,7 +132,7 @@ func TestGenMultiRemoveReq(t *testing.T) {
 			},
 		},
 		{
-			name: "sucess to generate 0 remove request",
+			name: "success to generate 0 remove request",
 			args: args{
 				num: 0,
 				cfg: nil,
