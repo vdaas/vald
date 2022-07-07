@@ -23,21 +23,21 @@ import (
 )
 
 type breakerMetrics struct {
-	nameKey   metrics.Key
-	isOpening metrics.Int64Measure
+	nameKey metrics.Key
+	state   metrics.Int64Measure
 }
 
 func New() (metrics.Metric, error) {
-	key, err := metrics.NewKey("breaker_name")
+	key, err := metrics.NewKey("name")
 	if err != nil {
 		return nil, err
 	}
 
 	return &breakerMetrics{
 		nameKey: key,
-		isOpening: *metrics.Int64(
-			metrics.ValdOrg+"/circuitbreaker/is_opening",
-			"currently breaker state is open or not",
+		state: *metrics.Int64(
+			metrics.ValdOrg+"/circuitbreaker/state",
+			"current circuit breaker state",
 			metrics.UnitDimensionless,
 		),
 	}, nil
@@ -55,12 +55,8 @@ func (bm *breakerMetrics) MeasurementWithTags(ctx context.Context) ([]metrics.Me
 
 	mts := make([]metrics.MeasurementWithTags, 0, len(ms))
 	for name, st := range ms {
-		opening := 0
-		if st == circuitbreaker.StateOpen {
-			opening = 1
-		}
 		mts = append(mts, metrics.MeasurementWithTags{
-			Measurement: bm.isOpening.M(int64(opening)),
+			Measurement: bm.state.M(int64(st)),
 			Tags: map[metrics.Key]string{
 				bm.nameKey: name,
 			},
@@ -72,9 +68,9 @@ func (bm *breakerMetrics) MeasurementWithTags(ctx context.Context) ([]metrics.Me
 func (bm *breakerMetrics) View() []*metrics.View {
 	return []*metrics.View{
 		{
-			Name:        "breaker_is_opening",
-			Description: bm.isOpening.Description(),
-			Measure:     &bm.isOpening,
+			Name:        "circuit_breaker_state",
+			Description: bm.state.Description(),
+			Measure:     &bm.state,
 			TagKeys: []metrics.Key{
 				bm.nameKey,
 			},
