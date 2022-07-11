@@ -550,6 +550,7 @@ circuit_breaker:
   closed_error_rate: {{ default .default.circuit_breaker.closed_error_rate .Values.circuit_breaker.closed_error_rate }}
   half_open_error_rate: {{ default .default.circuit_breaker.half_open_error_rate .Values.circuit_breaker.half_open_error_rate }}
   open_timeout: {{ default .default.circuit_breaker.open_timeout .Values.circuit_breaker.open_timeout | quote }}
+  min_samples: {{ default .default.circuit_breaker.min_samples .Values.circuit_breaker.min_samples | quote }}
   {{- else }}
   {{- toYaml .default.circuit_breaker | nindent 2 }}
   {{- end }}

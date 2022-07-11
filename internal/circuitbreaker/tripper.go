@@ -11,11 +11,11 @@ func (f TripperFunc) ShouldTrip(c Counter) bool {
 	return f(c)
 }
 
-func NewRateTripper(rate float32) Tripper {
+func NewRateTripper(rate float32, min int64) Tripper {
 	return TripperFunc(func(c Counter) bool {
 		successes, fails := c.Successes(), c.Fails()
 
-		if fails+successes < 100 { // TODO: get min value from config
+		if fails+successes <= min {
 			return false
 		}
 		return float32(fails)/float32(successes+fails) >= rate

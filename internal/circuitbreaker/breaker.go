@@ -14,10 +14,11 @@ type breaker struct {
 	count   atomic.Value // type: *count
 	tripped int32        // tripped flag. when flag value is 1, breaker state is "Open" or "HalfOpen".
 
-	halfOpenErrRate       float32
-	halfOpenErrShouldTrip Tripper
 	closedErrRate         float32
 	closedErrShouldTrip   Tripper
+	halfOpenErrRate       float32
+	halfOpenErrShouldTrip Tripper
+	minSamples            int64
 	openTimeout           time.Duration
 	openExpire            int64 // unix time
 }
@@ -38,10 +39,10 @@ func newBreaker(opts ...BreakerOption) (*breaker, error) {
 	b.count.Store(&count{})
 
 	if b.closedErrShouldTrip == nil {
-		b.closedErrShouldTrip = NewRateTripper(b.closedErrRate)
+		b.closedErrShouldTrip = NewRateTripper(b.closedErrRate, b.minSamples)
 	}
 	if b.halfOpenErrShouldTrip == nil {
-		b.halfOpenErrShouldTrip = NewRateTripper(b.halfOpenErrRate)
+		b.halfOpenErrShouldTrip = NewRateTripper(b.halfOpenErrRate, b.minSamples)
 	}
 	return b, nil
 }

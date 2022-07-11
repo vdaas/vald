@@ -25,6 +25,7 @@ type BreakerOption func(*breaker) error
 var defaultBreakerOpts = []BreakerOption{
 	WithClosedErrorRate(0.7),
 	WithHalfOpenErrorRate(0.5),
+	WithMinSamples(1000),
 	WithOpenTimeout("1s"),
 }
 
@@ -72,6 +73,17 @@ func WithHalfOpenTripper(tp Tripper) BreakerOption {
 			return errors.NewErrInvalidOption("halfOpenErrTripper", tp)
 		}
 		b.halfOpenErrShouldTrip = tp
+		return nil
+	}
+}
+
+// WithSamples returns an option that sets minimum sample count.
+func WithMinSamples(min int64) BreakerOption {
+	return func(b *breaker) error {
+		if min < 1 {
+			return errors.NewErrInvalidOption("minSamples", min)
+		}
+		b.minSamples = min
 		return nil
 	}
 }
