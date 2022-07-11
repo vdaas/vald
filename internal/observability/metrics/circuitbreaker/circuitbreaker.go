@@ -60,14 +60,16 @@ func (bm *breakerMetrics) MeasurementWithTags(ctx context.Context) ([]metrics.Me
 	}
 
 	mts := make([]metrics.MeasurementWithTags, 0, len(ms))
-	for name, st := range ms {
-		mts = append(mts, metrics.MeasurementWithTags{
-			Measurement: bm.state.M(1),
-			Tags: map[metrics.Key]string{
-				bm.nameKey:  name,
-				bm.stateKey: st.String(),
-			},
-		})
+	for name, sts := range ms {
+		for st, count := range sts {
+			mts = append(mts, metrics.MeasurementWithTags{
+				Measurement: bm.state.M(count),
+				Tags: map[metrics.Key]string{
+					bm.nameKey:  name,
+					bm.stateKey: st.String(),
+				},
+			})
+		}
 	}
 	return mts, nil
 }

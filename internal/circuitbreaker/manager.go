@@ -9,7 +9,7 @@ import (
 //       This will be fixed when refactoring the observability package.
 var (
 	mu      sync.RWMutex
-	metrics map[string]State = make(map[string]State)
+	metrics = make(map[string]map[State]int64) // map[breaker_name]map[state]count
 )
 
 // CircuitBreaker is a state machine to prevent doing processes that are likely to fail.
@@ -38,7 +38,13 @@ func (bm *breakerManager) Do(ctx context.Context, key string, fn func(ctx contex
 	var st State
 	defer func() {
 		mu.Lock()
-		metrics[key] = st
+		if _, ok := metrics[key]; !ok {
+			metrics[key] = map[State]int64{
+				st: 1,
+			}
+		} else {
+			metrics[key][st]++
+		}
 		mu.Unlock()
 	}()
 
@@ -58,17 +64,16 @@ func (bm *breakerManager) Do(ctx context.Context, key string, fn func(ctx contex
 	return val, err
 }
 
-func Metrics(_ context.Context) map[string]State {
+func Metrics(_ context.Context) map[string]map[State]int64 {
 	mu.RLock()
 	defer mu.RUnlock()
 
 	if len(metrics) == 0 {
 		return nil
 	}
-
-	m := make(map[string]State, len(metrics))
-	for name, st := range metrics {
-		m[name] = st
+	m := make(map[string]map[State]int64, len(metrics))
+	for name, sts := range metrics {
+		m[name] = sts
 	}
 	return m
 }
