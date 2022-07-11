@@ -130,7 +130,12 @@ In production usage, other components sometimes work on the Kubernetes cluster w
 Depending on the situation, you may want to deploy to a different Node: e.g., when running a machine learning component that requires high memory on an independent Node.
 
 In this situation, we recommend you to set the affinity/anti-affinity configuration for each Vald component.
-It is easy to change by editing your `values.yaml`.
+It is easy to change by editing each component setting on your `values.yaml`.
+
+<div class="warn">
+The affinity setting for Vald Agent is the significant for the Vald cluster.<BR>
+Please DO NOT remove the default settings.
+</div>
 
 ```yaml
 # e.g. Agent's affinity settings
