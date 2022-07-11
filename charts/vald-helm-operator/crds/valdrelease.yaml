@@ -2170,6 +2170,8 @@ spec:
                                   type: number
                                 half_open_error_rate:
                                   type: number
+                                min_samples:
+                                  type: integer
                                 open_timeout:
                                   type: string
                             connection_pool:
@@ -4220,6 +4222,8 @@ spec:
                                           type: number
                                         half_open_error_rate:
                                           type: number
+                                        min_samples:
+                                          type: integer
                                         open_timeout:
                                           type: string
                                     connection_pool:
@@ -4393,6 +4397,8 @@ spec:
                                       type: number
                                     half_open_error_rate:
                                       type: number
+                                    min_samples:
+                                      type: integer
                                     open_timeout:
                                       type: string
                                 connection_pool:
@@ -4561,6 +4567,8 @@ spec:
                                           type: number
                                         half_open_error_rate:
                                           type: number
+                                        min_samples:
+                                          type: integer
                                         open_timeout:
                                           type: string
                                     connection_pool:
@@ -5702,6 +5710,8 @@ spec:
                                           type: number
                                         half_open_error_rate:
                                           type: number
+                                        min_samples:
+                                          type: integer
                                         open_timeout:
                                           type: string
                                     connection_pool:
@@ -5867,6 +5877,8 @@ spec:
                                           type: number
                                         half_open_error_rate:
                                           type: number
+                                        min_samples:
+                                          type: integer
                                         open_timeout:
                                           type: string
                                     connection_pool:
@@ -7028,6 +7040,8 @@ spec:
                                           type: number
                                         half_open_error_rate:
                                           type: number
+                                        min_samples:
+                                          type: integer
                                         open_timeout:
                                           type: string
                                     connection_pool:
@@ -7193,6 +7207,8 @@ spec:
                                           type: number
                                         half_open_error_rate:
                                           type: number
+                                        min_samples:
+                                          type: integer
                                         open_timeout:
                                           type: string
                                     connection_pool:
