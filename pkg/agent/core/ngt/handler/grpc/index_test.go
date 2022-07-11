@@ -63,7 +63,7 @@ func Test_server_CreateIndex(t *testing.T) {
 	// common variables for test
 	const (
 		name = "vald-agent-ngt-1" // agent name
-		dim  = 3                  //  vector dimension
+		dim  = 3                  // vector dimension
 		id   = "uuid-1"           // id for getObject request
 	)
 	var (
@@ -131,7 +131,7 @@ func Test_server_CreateIndex(t *testing.T) {
 
 		- Boundary Value Testing
 			- case 1.1: success to create index with 0 uncommitted index
-			- case 2.1: fail to create index with invalid dimension
+			- case 2.1: success to create index with invalid dimension
 
 		- Decision Table Testing
 			// with uncommitted index count 100
@@ -323,22 +323,36 @@ func Test_server_CreateIndex(t *testing.T) {
 				errCode: codes.FailedPrecondition,
 			},
 		},
-		// {
-		// 	name: "Boundary Value Testing case 2.1: fail to create index with invalid dimension",
-		// 	args: args{
-		// 		ctx: nil,
-		// 		c:   nil,
-		// 	},
-		// 	fields: fields{
-		// 		name:              "",
-		// 		ip:                "",
-		// 		ngt:               nil,
-		// 		eg:                nil,
-		// 		streamConcurrency: 0,
-		// 	},
-		// 	want:      want{},
-		// 	checkFunc: defaultCheckFunc,
-		// },
+		{
+			name: "Boundary Value Testing case 2.1: success to create index with invalid dimension",
+			args: args{
+				c: &payload.Control_CreateIndexRequest{
+					PoolSize: 100,
+				},
+			},
+			fields: fields{
+				name:    name,
+				ip:      ip,
+				svcCfg:  defaultSvcCfg,
+				svcOpts: defaultSvcOpts,
+			},
+			beforeFunc: func(t *testing.T, a args, s *server) {
+				insertCnt := 100
+				invalidDim := dim + 1
+				req, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, insertCnt, invalidDim, defaultInsertConfig)
+				if err != nil {
+					t.Fatal(err)
+				}
+				for _, r := range req.Requests {
+					if err := s.ngt.Insert(r.Vector.Id, r.Vector.Vector); err != nil {
+						t.Fatal(err)
+					}
+				}
+			},
+			want: want{
+				wantRes: &payload.Empty{},
+			},
+		},
 		{
 			name: "Decision Table Testing case 1.1: success to create index with poolSize > uncommitted index count",
 			args: args{
