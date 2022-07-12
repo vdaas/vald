@@ -2,7 +2,11 @@ package circuitbreaker
 
 import (
 	"context"
+	"reflect"
 	"sync"
+
+	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/log"
 )
 
 // NOTE: This variable is for observability package.
@@ -27,7 +31,13 @@ func NewCircuitBreaker(opts ...Option) (CircuitBreaker, error) {
 	bm := &breakerManager{}
 	for _, opt := range append(defaultOpts, opts...) {
 		if err := opt(bm); err != nil {
-			return nil, err
+			oerr := errors.ErrOptionFailed(err, reflect.ValueOf(opt))
+			e := &errors.ErrCriticalOption{}
+			if errors.As(oerr, &e) {
+				log.Error(oerr)
+				return nil, oerr
+			}
+			log.Warn(oerr)
 		}
 	}
 	return bm, nil

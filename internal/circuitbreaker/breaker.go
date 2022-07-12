@@ -111,12 +111,12 @@ func (b *breaker) fail() (st State) {
 func (b *breaker) currentState() State {
 	now := time.Now().UnixNano()
 	if b.isTripped() {
-		if expire := atomic.LoadInt64(&b.openExp); expire > 0 && now > expire {
-			return StateHalfOpen
+		if expire := atomic.LoadInt64(&b.openExp); expire > 0 && expire > now {
+			return StateOpen
 		}
-		return StateOpen
+		return StateHalfOpen
 	}
-	if expire := atomic.LoadInt64(&b.closedRefreshExp); expire > 0 && now > expire {
+	if expire := atomic.LoadInt64(&b.closedRefreshExp); expire == 0 || now > expire {
 		b.reset()
 	}
 	return StateClosed
