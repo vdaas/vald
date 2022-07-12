@@ -15,11 +15,14 @@
 #
 version: 1
 # index: ann
+# index: besteffort
+# index: burstable
 # index: clojure
 # index: docker
 # index: flamegraph
 # index: go
 # index: grafana
+# index: guaranteed
 # index: helm
 # index: jaeger
 # index: java
@@ -33,6 +36,7 @@ version: 1
 # index: pyroscope
 # index: python
 # index: qbg
+# index: QoS
 # index: sdk
 # index: uuid
 # index: vald
@@ -46,6 +50,20 @@ rules:
         to: ANN
     options:
       wordBoundary: true
+  - pattern: besteffort
+    expected: BestEffort
+    specs:
+      - from: besteffort
+        to: besteffort
+      - from: BestEffort
+        to: BestEffort
+  - pattern: burstable
+    expected: Burstable
+    specs:
+      - from: burstable
+        to: burstable
+      - from: Burstable
+        to: Burstable
   - pattern: clojure
     expected: Clojure
     options:
@@ -80,6 +98,13 @@ rules:
     expected: Grafana
     options:
       wordBoundary: true
+  - pattern: guaranteed
+    expected: Guaranteed
+    specs:
+      - from: guaranteed
+        to: guaranteed
+      - from: Guaranteed
+        to: Guaranteed
   - pattern: helm
     expected: Helm
     options:
@@ -105,7 +130,7 @@ rules:
     expected: _k_-NN
     options:
       wordBoundary: true
-  - pattern: 
+  - pattern:
       - kubernetes
       - k8s
       - K8s
@@ -145,6 +170,10 @@ rules:
       wordBoundary: true
   - pattern: qbg
     expected: QBG
+    options:
+      wordBoundary: true
+  - pattern: qos
+    expected: QoS
     options:
       wordBoundary: true
   - pattern: sdk
