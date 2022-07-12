@@ -2168,6 +2168,8 @@ spec:
                               properties:
                                 closed_error_rate:
                                   type: number
+                                closed_refresh_timeout:
+                                  type: string
                                 half_open_error_rate:
                                   type: number
                                 min_samples:
@@ -4220,6 +4222,8 @@ spec:
                                       properties:
                                         closed_error_rate:
                                           type: number
+                                        closed_refresh_timeout:
+                                          type: string
                                         half_open_error_rate:
                                           type: number
                                         min_samples:
@@ -4395,6 +4399,8 @@ spec:
                                   properties:
                                     closed_error_rate:
                                       type: number
+                                    closed_refresh_timeout:
+                                      type: string
                                     half_open_error_rate:
                                       type: number
                                     min_samples:
@@ -4565,6 +4571,8 @@ spec:
                                       properties:
                                         closed_error_rate:
                                           type: number
+                                        closed_refresh_timeout:
+                                          type: string
                                         half_open_error_rate:
                                           type: number
                                         min_samples:
@@ -5708,6 +5716,8 @@ spec:
                                       properties:
                                         closed_error_rate:
                                           type: number
+                                        closed_refresh_timeout:
+                                          type: string
                                         half_open_error_rate:
                                           type: number
                                         min_samples:
@@ -5875,6 +5885,8 @@ spec:
                                       properties:
                                         closed_error_rate:
                                           type: number
+                                        closed_refresh_timeout:
+                                          type: string
                                         half_open_error_rate:
                                           type: number
                                         min_samples:
@@ -7038,6 +7050,8 @@ spec:
                                       properties:
                                         closed_error_rate:
                                           type: number
+                                        closed_refresh_timeout:
+                                          type: string
                                         half_open_error_rate:
                                           type: number
                                         min_samples:
@@ -7205,6 +7219,8 @@ spec:
                                       properties:
                                         closed_error_rate:
                                           type: number
+                                        closed_refresh_timeout:
+                                          type: string
                                         half_open_error_rate:
                                           type: number
                                         min_samples:

@@ -27,6 +27,7 @@ var defaultBreakerOpts = []BreakerOption{
 	WithHalfOpenErrorRate(0.5),
 	WithMinSamples(1000),
 	WithOpenTimeout("1s"),
+	WithClosedRefreshTimeout("10s"),
 }
 
 // WithClosedErrorRate returns an option that sets error rate when breaker state is "Closed".
@@ -101,6 +102,23 @@ func WithOpenTimeout(timeout string) BreakerOption {
 			return errors.NewErrInvalidOption("openTimeout", timeout, err)
 		}
 		b.openTimeout = d
+		return nil
+	}
+}
+
+// WithClosedRefreshTimeout returns an option that sets the timeout of "Closed" state.
+// After this period, the counter will be refreshed.
+func WithClosedRefreshTimeout(timeout string) BreakerOption {
+	return func(b *breaker) error {
+		if len(timeout) == 0 {
+			return errors.NewErrInvalidOption("closedRefreshTimeout", timeout)
+		}
+
+		d, err := timeutil.Parse(timeout)
+		if err != nil {
+			return errors.NewErrInvalidOption("closedRefreshTimeout", timeout, err)
+		}
+		b.cloedRefreshTimeout = d
 		return nil
 	}
 }

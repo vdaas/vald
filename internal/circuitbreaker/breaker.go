@@ -20,7 +20,9 @@ type breaker struct {
 	halfOpenErrShouldTrip Tripper
 	minSamples            int64
 	openTimeout           time.Duration
-	openExpire            int64 // unix time
+	openExp               int64 // unix time
+	cloedRefreshTimeout   time.Duration
+	closedRefreshExp      int64 // unix time
 }
 
 func newBreaker(opts ...BreakerOption) (*breaker, error) {
@@ -109,25 +111,31 @@ func (b *breaker) fail() {
 // If the tripped flag is not active, this function returns "Closed" state.
 // On the other hand, if the tripped flag is active and the expiration date is not reached, returns "Open" state, otherwise returns "Half-Open" state.
 func (b *breaker) currentState() (st State) {
+	now := time.Now().UnixNano()
 	if b.isTripped() {
-		now := time.Now().UnixNano()
-		if expire := atomic.LoadInt64(&b.openExpire); expire > 0 && expire >= now {
+		if expire := atomic.LoadInt64(&b.openExp); expire > 0 && expire >= now {
 			return StateOpen
 		}
 		return StateHalfOpen
+	}
+
+	if expire := atomic.LoadInt64(&b.closedRefreshExp); expire > 0 && expire >= now {
+		b.reset()
 	}
 	return StateClosed
 }
 
 func (b *breaker) reset() {
 	atomic.StoreInt32(&b.tripped, 0)
-	atomic.StoreInt64(&b.openExpire, 0)
+	atomic.StoreInt64(&b.openExp, 0)
+	atomic.StoreInt64(&b.closedRefreshExp, time.Now().Add(b.cloedRefreshTimeout).UnixNano())
 	b.count.Load().(*count).reset()
 }
 
 func (b *breaker) trip() {
 	atomic.StoreInt32(&b.tripped, 1)
-	atomic.StoreInt64(&b.openExpire, time.Now().Add(b.openTimeout).UnixNano())
+	atomic.StoreInt64(&b.openExp, time.Now().Add(b.openTimeout).UnixNano())
+	atomic.StoreInt64(&b.closedRefreshExp, 0)
 	b.count.Load().(*count).reset()
 }
 

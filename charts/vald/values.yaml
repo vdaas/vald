@@ -685,6 +685,9 @@ defaults:
         # @schema {"name": "defaults.grpc.client.circuit_breaker.open_timeout", "type": "string"}
         # defaults.grpc.client.circuit_breaker.open_timeout -- gRPC client circuitbreaker open timeout
         open_timeout: "1s"
+        # @schema {"name": "defaults.grpc.client.circuit_breaker.closed_refresh_timeout", "type": "string"}
+        # defaults.grpc.client.circuit_breaker.closed_refresh_timeout -- gRPC client circuitbreaker closed refresh timeout
+        closed_refresh_timeout: "10s"
       # @schema {"name": "defaults.grpc.client.call_option", "type": "object"}
       call_option:
         # @schema {"name": "defaults.grpc.client.wait_for_ready", "type": "boolean"}

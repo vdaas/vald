@@ -197,6 +197,7 @@ func (g *GRPCClient) Opts() ([]grpc.Option, error) {
 				circuitbreaker.WithHalfOpenErrorRate(g.CircuitBreaker.HalfOpenErrorRate),
 				circuitbreaker.WithMinSamples(g.CircuitBreaker.MinSamples),
 				circuitbreaker.WithOpenTimeout(g.CircuitBreaker.OpenTimeout),
+				circuitbreaker.WithClosedRefreshTimeout(g.CircuitBreaker.ClosedRefreshTimeout),
 			),
 		)
 		if err != nil {
