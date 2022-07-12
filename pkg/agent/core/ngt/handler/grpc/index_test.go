@@ -56,7 +56,7 @@ func Test_server_CreateIndex(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, *payload.Empty, error) error
-		beforeFunc func(*testing.T, args, *server)
+		beforeFunc func(*testing.T, context.Context, args, *server)
 		afterFunc  func(args)
 	}
 
@@ -70,15 +70,12 @@ func Test_server_CreateIndex(t *testing.T) {
 		ip = net.LoadLocalIP() // agent ip address
 
 		// default NGT configuration for test
-		kvsdbCfg  = &config.KVSDB{}
-		vqueueCfg = &config.VQueue{}
-
 		defaultSvcCfg = &config.NGT{
 			Dimension:    dim,
 			DistanceType: ngt.Angle.String(),
 			ObjectType:   ngt.Float.String(),
-			KVSDB:        kvsdbCfg,
-			VQueue:       vqueueCfg,
+			KVSDB:        &config.KVSDB{},
+			VQueue:       &config.VQueue{},
 		}
 		defaultSvcOpts = []service.Option{
 			service.WithEnableInMemoryMode(true),
@@ -130,7 +127,7 @@ func Test_server_CreateIndex(t *testing.T) {
 			- case 3.2: success to create index with 100 uncommitted insert & delete index
 
 		- Boundary Value Testing
-			- case 1.1: success to create index with 0 uncommitted index
+			- case 1.1: fail to create index with 0 uncommitted index
 			- case 2.1: success to create index with invalid dimension
 
 		- Decision Table Testing
@@ -154,8 +151,7 @@ func Test_server_CreateIndex(t *testing.T) {
 				svcCfg:  defaultSvcCfg,
 				svcOpts: defaultSvcOpts,
 			},
-			beforeFunc: func(t *testing.T, a args, s *server) {
-				ctx := context.Background()
+			beforeFunc: func(t *testing.T, ctx context.Context, a args, s *server) {
 				if err := genAndInsertReq(ctx, s, 1); err != nil {
 					t.Fatal(err)
 				}
@@ -177,8 +173,7 @@ func Test_server_CreateIndex(t *testing.T) {
 				svcCfg:  defaultSvcCfg,
 				svcOpts: defaultSvcOpts,
 			},
-			beforeFunc: func(t *testing.T, a args, s *server) {
-				ctx := context.Background()
+			beforeFunc: func(t *testing.T, ctx context.Context, a args, s *server) {
 				if err := genAndInsertReq(ctx, s, 100); err != nil {
 					t.Fatal(err)
 				}
@@ -200,8 +195,7 @@ func Test_server_CreateIndex(t *testing.T) {
 				svcCfg:  defaultSvcCfg,
 				svcOpts: defaultSvcOpts,
 			},
-			beforeFunc: func(t *testing.T, a args, s *server) {
-				ctx := context.Background()
+			beforeFunc: func(t *testing.T, ctx context.Context, a args, s *server) {
 				if err := genAndInsertReq(ctx, s, 1); err != nil {
 					t.Fatal(err)
 				}
@@ -231,8 +225,7 @@ func Test_server_CreateIndex(t *testing.T) {
 				svcCfg:  defaultSvcCfg,
 				svcOpts: defaultSvcOpts,
 			},
-			beforeFunc: func(t *testing.T, a args, s *server) {
-				ctx := context.Background()
+			beforeFunc: func(t *testing.T, ctx context.Context, a args, s *server) {
 				cnt := 100
 				if err := genAndInsertReq(ctx, s, cnt); err != nil {
 					t.Fatal(err)
@@ -263,8 +256,7 @@ func Test_server_CreateIndex(t *testing.T) {
 				svcCfg:  defaultSvcCfg,
 				svcOpts: defaultSvcOpts,
 			},
-			beforeFunc: func(t *testing.T, a args, s *server) {
-				ctx := context.Background()
+			beforeFunc: func(t *testing.T, ctx context.Context, a args, s *server) {
 				insertCnt := 1
 				removeCnt := 1
 				if err := genAndInsertReq(ctx, s, insertCnt); err != nil {
@@ -291,8 +283,7 @@ func Test_server_CreateIndex(t *testing.T) {
 				svcCfg:  defaultSvcCfg,
 				svcOpts: defaultSvcOpts,
 			},
-			beforeFunc: func(t *testing.T, a args, s *server) {
-				ctx := context.Background()
+			beforeFunc: func(t *testing.T, ctx context.Context, a args, s *server) {
 				insertCnt := 100
 				removeCnt := 100
 				if err := genAndInsertReq(ctx, s, insertCnt); err != nil {
@@ -307,7 +298,7 @@ func Test_server_CreateIndex(t *testing.T) {
 			},
 		},
 		{
-			name: "Boundary Value Testing case 1.1: success to create index with 0 uncommitted index",
+			name: "Boundary Value Testing case 1.1: fail to create index with 0 uncommitted index",
 			args: args{
 				c: &payload.Control_CreateIndexRequest{
 					PoolSize: 0,
@@ -336,7 +327,7 @@ func Test_server_CreateIndex(t *testing.T) {
 				svcCfg:  defaultSvcCfg,
 				svcOpts: defaultSvcOpts,
 			},
-			beforeFunc: func(t *testing.T, a args, s *server) {
+			beforeFunc: func(t *testing.T, ctx context.Context, a args, s *server) {
 				insertCnt := 100
 				invalidDim := dim + 1
 				req, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, insertCnt, invalidDim, defaultInsertConfig)
@@ -366,8 +357,7 @@ func Test_server_CreateIndex(t *testing.T) {
 				svcCfg:  defaultSvcCfg,
 				svcOpts: defaultSvcOpts,
 			},
-			beforeFunc: func(t *testing.T, a args, s *server) {
-				ctx := context.Background()
+			beforeFunc: func(t *testing.T, ctx context.Context, a args, s *server) {
 				insertCnt := 100
 				if err := genAndInsertReq(ctx, s, insertCnt); err != nil {
 					t.Fatal(err)
@@ -390,8 +380,7 @@ func Test_server_CreateIndex(t *testing.T) {
 				svcCfg:  defaultSvcCfg,
 				svcOpts: defaultSvcOpts,
 			},
-			beforeFunc: func(t *testing.T, a args, s *server) {
-				ctx := context.Background()
+			beforeFunc: func(t *testing.T, ctx context.Context, a args, s *server) {
 				insertCnt := 100
 				if err := genAndInsertReq(ctx, s, insertCnt); err != nil {
 					t.Fatal(err)
@@ -414,8 +403,7 @@ func Test_server_CreateIndex(t *testing.T) {
 				svcCfg:  defaultSvcCfg,
 				svcOpts: defaultSvcOpts,
 			},
-			beforeFunc: func(t *testing.T, a args, s *server) {
-				ctx := context.Background()
+			beforeFunc: func(t *testing.T, ctx context.Context, a args, s *server) {
 				insertCnt := 100
 				if err := genAndInsertReq(ctx, s, insertCnt); err != nil {
 					t.Fatal(err)
@@ -438,8 +426,7 @@ func Test_server_CreateIndex(t *testing.T) {
 				svcCfg:  defaultSvcCfg,
 				svcOpts: defaultSvcOpts,
 			},
-			beforeFunc: func(t *testing.T, a args, s *server) {
-				ctx := context.Background()
+			beforeFunc: func(t *testing.T, ctx context.Context, a args, s *server) {
 				insertCnt := 100
 				if err := genAndInsertReq(ctx, s, insertCnt); err != nil {
 					t.Fatal(err)
@@ -483,7 +470,7 @@ func Test_server_CreateIndex(t *testing.T) {
 			}
 
 			if test.beforeFunc != nil {
-				test.beforeFunc(tt, test.args, s)
+				test.beforeFunc(tt, ctx, test.args, s)
 			}
 
 			gotRes, err := s.CreateIndex(ctx, test.args.c)
