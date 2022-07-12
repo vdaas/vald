@@ -540,6 +540,22 @@ func Test_server_SaveIndex(t *testing.T) {
 		}
 		return nil
 	}
+
+	/*
+		- Equivalence Class Testing (with copy on write disable)
+			- case 1.1: success to save 1 inserted index
+			- case 1.2: success to save 100 inserted index
+			- case 2.1: fail to save index with no write access on backup folder
+		- Boundary Value Testing
+			- case 1.1: successs to save index with no index
+			- case 2.1: success to save index with invalid dimension
+				- the invalid index will be removed from NGT and the index file
+		- Decision Table Testing
+			- case 1.1: success to save index with in-memory mode
+				- do nothing and no file will be created
+			- case 2.1: success to save 1 inserted index with copy-on-write enabled
+			- case 2.2: success to save 100 inserted index with copy-on-write enabled
+	*/
 	tests := []test{
 		// TODO test cases
 		/*
