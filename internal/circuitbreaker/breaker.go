@@ -116,7 +116,7 @@ func (b *breaker) currentState() State {
 		}
 		return StateHalfOpen
 	}
-	if expire := atomic.LoadInt64(&b.closedRefreshExp); expire > 0 && expire >= now {
+	if expire := atomic.LoadInt64(&b.closedRefreshExp); expire > 0 && now >= expire {
 		b.reset()
 	}
 	return StateClosed
