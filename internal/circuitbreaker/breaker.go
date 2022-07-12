@@ -64,15 +64,11 @@ func (b *breaker) do(ctx context.Context, fn func(ctx context.Context) (val inte
 
 		serr := &errors.ErrCircuitBreakerMarkWithSuccess{}
 		if errors.As(err, &serr) {
-			b.success()
-			return nil, b.currentState(), serr.Unwrap()
+			return nil, b.success(), serr.Unwrap()
 		}
-
-		b.fail()
-		return nil, b.currentState(), err
+		return nil, b.fail(), err
 	}
-	b.success()
-	return val, b.currentState(), nil
+	return val, b.success(), nil
 }
 
 // isReady determines the breaker is ready or not.
@@ -82,19 +78,20 @@ func (b *breaker) isReady() (ok bool) {
 	return st == StateClosed || st == StateHalfOpen
 }
 
-func (b *breaker) success() {
+func (b *breaker) success() (st State) {
 	b.count.Load().(*count).onSuccess()
-	if st := b.currentState(); st == StateHalfOpen {
+	if st = b.currentState(); st == StateHalfOpen {
 		b.reset()
 	}
+	return st
 }
 
-func (b *breaker) fail() {
+func (b *breaker) fail() (st State) {
 	cnt := b.count.Load().(*count)
 	cnt.onFail()
 
 	var ok bool
-	switch st := b.currentState(); st {
+	switch st = b.currentState(); st {
 	case StateHalfOpen:
 		ok = b.halfOpenErrShouldTrip.ShouldTrip(cnt)
 	case StateClosed:
@@ -105,12 +102,13 @@ func (b *breaker) fail() {
 	if ok {
 		b.trip()
 	}
+	return st
 }
 
 // currentState returns current breaker state.
 // If the tripped flag is not active, this function returns "Closed" state.
 // On the other hand, if the tripped flag is active and the expiration date is not reached, returns "Open" state, otherwise returns "Half-Open" state.
-func (b *breaker) currentState() (st State) {
+func (b *breaker) currentState() State {
 	now := time.Now().UnixNano()
 	if b.isTripped() {
 		if expire := atomic.LoadInt64(&b.openExp); expire > 0 && expire >= now {
@@ -118,7 +116,6 @@ func (b *breaker) currentState() (st State) {
 		}
 		return StateHalfOpen
 	}
-
 	if expire := atomic.LoadInt64(&b.closedRefreshExp); expire > 0 && expire >= now {
 		b.reset()
 	}
