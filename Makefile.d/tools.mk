@@ -97,3 +97,12 @@ $(BINDIR)/protoc:
 	unzip -o /tmp/protoc.zip -d /usr/local 'include/*'
 	rm -f /tmp/protoc.zip
 endif
+
+.PHONY: textlint/install
+textlint/install:
+	npm install -g textlint textlint-rule-en-spell textlint-rule-prh textlint-rule-write-good
+
+.PHONY: textlint/ci/install
+textlint/ci/install:
+	npm init -y
+	npm install --save-dev textlint textlint-rule-en-spell textlint-rule-prh textlint-rule-write-good
