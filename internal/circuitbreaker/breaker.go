@@ -58,16 +58,22 @@ func (b *breaker) do(ctx context.Context, fn func(ctx context.Context) (val inte
 	val, err = fn(ctx)
 	if err != nil {
 		log.Error("[Circuit Breaker]: %s", err.Error())
-		igerr := &errors.ErrCircuitBreakerIgnorable{}
-		if errors.As(err, &igerr) {
-			return nil, b.currentState(), igerr.Unwrap()
-		}
-
 		serr := &errors.ErrCircuitBreakerMarkWithSuccess{}
 		if errors.As(err, &serr) {
 			b.success()
 			return nil, b.currentState(), serr.Unwrap()
 		}
+
+		igerr := &errors.ErrCircuitBreakerIgnorable{}
+		if errors.As(err, &igerr) {
+			return nil, b.currentState(), igerr.Unwrap()
+		}
+
+		if errors.Is(err, context.Canceled) ||
+			errors.Is(err, context.DeadlineExceeded) {
+			return nil, b.currentState(), err
+		}
+
 		b.fail()
 		return nil, b.currentState(), err
 	}
