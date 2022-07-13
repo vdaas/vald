@@ -612,7 +612,7 @@ func (g *gRPCClient) do(ctx context.Context, p pool.Conn, addr string, enableBac
 			if g.cb != nil && len(boName) > 0 {
 				r, err = g.cb.Do(ictx, boName, func(ictx context.Context) (interface{}, error) {
 					r, ret, err = do(ictx)
-					if err != nil && ret {
+					if err != nil && !ret {
 						return r, errors.NewErrCircuitBreakerIgnorable(err)
 					}
 					return r, err
