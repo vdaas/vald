@@ -477,10 +477,6 @@ func (g *gRPCClient) RoundRobin(ctx context.Context, f func(ctx context.Context,
 		do := func(ctx context.Context, p pool.Conn, addr string, f func(ctx context.Context, conn *ClientConn, copts ...CallOption) (interface{}, error)) (r interface{}, ret bool, err error) {
 			r, err = g.do(ctx, p, addr, false, f)
 			if err != nil {
-				if errors.Is(err, errors.ErrCircuitBreakerOpenState) {
-					return nil, false, err
-				}
-
 				st, ok := status.FromError(err)
 				if !ok || st == nil {
 					if errors.Is(err, context.Canceled) ||
@@ -527,6 +523,9 @@ func (g *gRPCClient) RoundRobin(ctx context.Context, f func(ctx context.Context,
 					}
 					return r, err
 				})
+				if errors.Is(err, errors.ErrCircuitBreakerOpenState) {
+					return r, false, err
+				}
 				return r, ret, err
 			}
 			return do(ictx, p, addr, f)
@@ -621,6 +620,7 @@ func (g *gRPCClient) do(ctx context.Context, p pool.Conn, addr string, enableBac
 				if errors.Is(err, errors.ErrCircuitBreakerOpenState) {
 					return r, false, err
 				}
+				return r, ret, err
 			}
 			return do(ictx)
 		})
