@@ -57,6 +57,7 @@ func (b *breaker) do(ctx context.Context, fn func(ctx context.Context) (val inte
 	}
 	val, err = fn(ctx)
 	if err != nil {
+		log.Error("[Circuit Breaker]: %s", err.Error())
 		igerr := &errors.ErrCircuitBreakerIgnorable{}
 		if errors.As(err, &igerr) {
 			return nil, b.currentState(), igerr.Unwrap()
@@ -64,11 +65,14 @@ func (b *breaker) do(ctx context.Context, fn func(ctx context.Context) (val inte
 
 		serr := &errors.ErrCircuitBreakerMarkWithSuccess{}
 		if errors.As(err, &serr) {
-			return nil, b.success(), serr.Unwrap()
+			b.success()
+			return nil, b.currentState(), serr.Unwrap()
 		}
-		return nil, b.fail(), err
+		b.fail()
+		return nil, b.currentState(), err
 	}
-	return val, b.success(), nil
+	b.success()
+	return val, b.currentState(), nil
 }
 
 // isReady determines the breaker is ready or not.
@@ -78,20 +82,19 @@ func (b *breaker) isReady() (ok bool) {
 	return st == StateClosed || st == StateHalfOpen
 }
 
-func (b *breaker) success() (st State) {
+func (b *breaker) success() {
 	b.count.Load().(*count).onSuccess()
-	if st = b.currentState(); st == StateHalfOpen {
+	if st := b.currentState(); st == StateHalfOpen {
 		b.reset()
 	}
-	return st
 }
 
-func (b *breaker) fail() (st State) {
+func (b *breaker) fail() {
 	cnt := b.count.Load().(*count)
 	cnt.onFail()
 
 	var ok bool
-	switch st = b.currentState(); st {
+	switch st := b.currentState(); st {
 	case StateHalfOpen:
 		ok = b.halfOpenErrShouldTrip.ShouldTrip(cnt)
 	case StateClosed:
@@ -102,7 +105,6 @@ func (b *breaker) fail() (st State) {
 	if ok {
 		b.trip()
 	}
-	return st
 }
 
 // currentState returns current breaker state.
