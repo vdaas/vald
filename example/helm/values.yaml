@@ -17,7 +17,7 @@ defaults:
   logging:
     level: debug
   image:
-    tag: "latest"
+    tag: "nightly"
   server_config:
     healths:
       liveness:
