@@ -11,6 +11,7 @@ import (
 )
 
 type breaker struct {
+	key     string       // breaker key for logging
 	count   atomic.Value // type: *count
 	tripped int32        // tripped flag. when flag value is 1, breaker state is "Open" or "HalfOpen".
 
@@ -25,8 +26,10 @@ type breaker struct {
 	closedRefreshExp      int64 // unix time
 }
 
-func newBreaker(opts ...BreakerOption) (*breaker, error) {
-	b := &breaker{}
+func newBreaker(key string, opts ...BreakerOption) (*breaker, error) {
+	b := &breaker{
+		key: key,
+	}
 	for _, opt := range append(defaultBreakerOpts, opts...) {
 		if err := opt(b); err != nil {
 			oerr := errors.ErrOptionFailed(err, reflect.ValueOf(opt))
@@ -57,7 +60,6 @@ func (b *breaker) do(ctx context.Context, fn func(ctx context.Context) (val inte
 	}
 	val, err = fn(ctx)
 	if err != nil {
-		log.Error("[Circuit Breaker]: %s", err.Error())
 		serr := &errors.ErrCircuitBreakerMarkWithSuccess{}
 		if errors.As(err, &serr) {
 			b.success()
@@ -91,6 +93,7 @@ func (b *breaker) isReady() (ok bool) {
 func (b *breaker) success() {
 	b.count.Load().(*count).onSuccess()
 	if st := b.currentState(); st == StateHalfOpen {
+		log.Infof("the operation succeeded, circuit breaker state for '%s' changed,\tfrom: %s, to: %s", b.key, st.String(), StateClosed.String())
 		b.reset()
 	}
 }
@@ -100,7 +103,8 @@ func (b *breaker) fail() {
 	cnt.onFail()
 
 	var ok bool
-	switch st := b.currentState(); st {
+	var st State
+	switch st = b.currentState(); st {
 	case StateHalfOpen:
 		ok = b.halfOpenErrShouldTrip.ShouldTrip(cnt)
 	case StateClosed:
@@ -109,6 +113,7 @@ func (b *breaker) fail() {
 		return
 	}
 	if ok {
+		log.Infof("the operation failed, circuit breaker state for '%s' changed,\nfrom: %s, to: %s", b.key, st.String(), StateOpen.String())
 		b.trip()
 	}
 }
@@ -125,6 +130,7 @@ func (b *breaker) currentState() State {
 		return StateHalfOpen
 	}
 	if expire := atomic.LoadInt64(&b.closedRefreshExp); expire == 0 || now > expire {
+		log.Infof("the closed state expired, circuit breaker state for '%s' refleshed,\nto: %s", b.key, StateClosed.String())
 		b.reset()
 	}
 	return StateClosed

@@ -65,7 +65,7 @@ func (bm *breakerManager) Do(ctx context.Context, key string, fn func(ctx contex
 		return val, err
 	}
 
-	b, err := newBreaker(bm.opts...)
+	b, err := newBreaker(key, bm.opts...)
 	if err != nil {
 		return nil, err
 	}
