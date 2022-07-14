@@ -620,39 +620,44 @@ func Test_server_IndexInfo(t *testing.T) {
 				svcOpts: defaultSvcOpts,
 			},
 			beforeFunc: func(t *testing.T, ctx context.Context, a args, s *server) {
-				// we need to insert request first before remove
-				totalInsertCnt := insertCnt + removeCnt
-				req, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, totalInsertCnt, dim, defaultInsertConfig)
+				// we need vectors inserted before removal
+				rreq, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, removeCnt, dim, defaultInsertConfig)
 				if err != nil {
 					t.Fatal(err)
 				}
-
-				if _, err := s.MultiInsert(ctx, req); err != nil {
+				if _, err := s.MultiInsert(ctx, rreq); err != nil {
 					t.Fatal(err)
 				}
 				if _, err := s.CreateIndex(ctx, &payload.Control_CreateIndexRequest{
-					PoolSize: uint32(len(req.Requests)),
+					PoolSize: uint32(len(rreq.Requests)),
 				}); err != nil {
 					t.Fatal(err)
 				}
 
-				// remove
-				if _, err := s.MultiRemove(ctx, request.GenMultiRemoveReq(removeCnt, defaultRemoveConfig)); err != nil {
-					t.Fatal(err)
+				// remove requests inserted above for the uncommitted remove count
+				for _, r := range rreq.Requests {
+					if _, err := s.Remove(ctx, &payload.Remove_Request{
+						Id: &payload.Object_ID{
+							Id: r.GetVector().GetId(),
+						},
+						Config: defaultRemoveConfig,
+					}); err != nil {
+						t.Fatal(err)
+					}
 				}
-				// insert again
-				req, err = request.GenMultiInsertReq(request.Float, vector.Gaussian, insertCnt, dim, defaultInsertConfig)
+
+				// insert requests for the uncommitted insert count
+				ireq, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, insertCnt, dim, defaultInsertConfig)
 				if err != nil {
 					t.Fatal(err)
 				}
-
-				if _, err := s.MultiInsert(ctx, req); err != nil {
+				if _, err := s.MultiInsert(ctx, ireq); err != nil {
 					t.Fatal(err)
 				}
 			},
 			want: want{
 				wantRes: &payload.Info_Index_Count{
-					Stored:      insertCnt + removeCnt,
+					Stored:      insertCnt,
 					Uncommitted: insertCnt + removeCnt,
 					Indexing:    false,
 					Saving:      false,
