@@ -188,3 +188,18 @@ docker/build/loadtest:
 	    -t $(ORG)/$(LOADTEST_IMAGE):$(TAG) . \
 	    --build-arg MAINTAINER=$(MAINTAINER) \
 	    --build-arg GO_VERSION=$(GO_VERSION)
+
+.PHONY: docker/name/benchmark/search/job
+docker/name/benchmark/job/search:
+	@echo "$(ORG)/$(BENCHMARK_SEARCH_JOB_IMAGE)"
+
+.PHONY: docker/build/benchmark/job/search
+## build benchmark search job
+docker/build/benchmark/job/search:
+	$(DOCKER) build \
+	    $(DOCKER_OPTS) \
+	    -f dockers/benchmark/job/search/Dockerfile \
+	    -t $(ORG)/$(BENCHMARK_SEARCH_JOB_IMAGE):$(TAG) . \
+	    --build-arg GO_VERSION=$(GO_VERSION) \
+	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
+	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG)

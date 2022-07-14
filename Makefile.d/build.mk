@@ -22,7 +22,8 @@ binary/build: \
 	cmd/discoverer/k8s/discoverer \
 	cmd/gateway/lb/lb \
 	cmd/gateway/filter/filter \
-	cmd/manager/index/index
+	cmd/manager/index/index \
+	cmd/benchmark/job/search
 
 cmd/agent/core/ngt/ngt: \
 	ngt/install \
@@ -177,6 +178,34 @@ cmd/manager/index/index: \
 	$(PBGOS) \
 	$(shell find ./cmd/manager/index -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go') \
 	$(shell find ./pkg/manager/index -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
+	CGO_ENABLED=0 \
+	GO111MODULE=on \
+	GOPRIVATE=$(GOPRIVATE) \
+	go build \
+		--ldflags "-w -extldflags=-static \
+		-X '$(GOPKG)/internal/info.Version=$(VERSION)' \
+		-X '$(GOPKG)/internal/info.GitCommit=$(GIT_COMMIT)' \
+		-X '$(GOPKG)/internal/info.BuildTime=$(DATETIME)' \
+		-X '$(GOPKG)/internal/info.GoVersion=$(GO_VERSION)' \
+		-X '$(GOPKG)/internal/info.GoOS=$(GOOS)' \
+		-X '$(GOPKG)/internal/info.GoArch=$(GOARCH)' \
+		-X '$(GOPKG)/internal/info.CGOEnabled=$${CGO_ENABLED}' \
+		-X '$(GOPKG)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)' \
+		-buildid=" \
+		-mod=readonly \
+		-modcacherw \
+		-a \
+		-tags "osusergo netgo static_build" \
+		-trimpath \
+		-o $@ \
+		$(dir $@)main.go
+	$@ -version
+
+cmd/benchmark/job/search/search: \
+	$(GO_SOURCES_INTERNAL) \
+	$(PBGOS) \
+	$(shell find ./cmd/benchmark/job/search -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go') \
+	$(shell find ./pkg/benchmark/job/search -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
 	CGO_ENABLED=0 \
 	GO111MODULE=on \
 	GOPRIVATE=$(GOPRIVATE) \

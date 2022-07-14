@@ -31,6 +31,7 @@ FILTER_GATEWAY_IMAGE            = $(NAME)-filter-gateway
 HELM_OPERATOR_IMAGE             = $(NAME)-helm-operator
 LB_GATEWAY_IMAGE                = $(NAME)-lb-gateway
 LOADTEST_IMAGE                  = $(NAME)-loadtest
+BENCHMARK_SEARCH_JOB_IMAGE      = $(NAME)-benchmark-job-search
 MANAGER_INDEX_IMAGE             = $(NAME)-manager-index
 MAINTAINER                      = "$(ORG).org $(NAME) team <$(NAME)@$(ORG).org>"
 
