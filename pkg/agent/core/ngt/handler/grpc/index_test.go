@@ -422,6 +422,25 @@ func Test_server_IndexInfo(t *testing.T) {
 		defaultInsertConfig = &payload.Insert_Config{}
 		defaultRemoveConfig = &payload.Remove_Config{}
 	)
+	genReqAndInsert := func(s *server, ctx context.Context, cnt int, createIdx bool) (*payload.Insert_MultiRequest, error) {
+		req, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, cnt, dim, defaultInsertConfig)
+		if err != nil {
+			return nil, err
+		}
+
+		if _, err := s.MultiInsert(ctx, req); err != nil {
+			return nil, err
+		}
+
+		if createIdx {
+			if _, err := s.CreateIndex(ctx, &payload.Control_CreateIndexRequest{
+				PoolSize: uint32(len(req.Requests)),
+			}); err != nil {
+				return nil, err
+			}
+		}
+		return req, nil
+	}
 	defaultCheckFunc := func(s *server, ctx context.Context, args args, w want, gotRes *payload.Info_Index_Count, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
@@ -549,12 +568,7 @@ func Test_server_IndexInfo(t *testing.T) {
 				svcOpts: defaultSvcOpts,
 			},
 			beforeFunc: func(t *testing.T, ctx context.Context, a args, s *server) {
-				req, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, insertCnt, dim, defaultInsertConfig)
-				if err != nil {
-					t.Fatal(err)
-				}
-
-				if _, err := s.MultiInsert(ctx, req); err != nil {
+				if _, err := genReqAndInsert(s, ctx, insertCnt, false); err != nil {
 					t.Fatal(err)
 				}
 			},
@@ -580,17 +594,8 @@ func Test_server_IndexInfo(t *testing.T) {
 			},
 			beforeFunc: func(t *testing.T, ctx context.Context, a args, s *server) {
 				// we need to insert request first before remove
-				req, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, removeCnt, dim, defaultInsertConfig)
+				req, err := genReqAndInsert(s, ctx, removeCnt, true)
 				if err != nil {
-					t.Fatal(err)
-				}
-
-				if _, err := s.MultiInsert(ctx, req); err != nil {
-					t.Fatal(err)
-				}
-				if _, err := s.CreateIndex(ctx, &payload.Control_CreateIndexRequest{
-					PoolSize: uint32(len(req.Requests)),
-				}); err != nil {
 					t.Fatal(err)
 				}
 
@@ -628,16 +633,8 @@ func Test_server_IndexInfo(t *testing.T) {
 			},
 			beforeFunc: func(t *testing.T, ctx context.Context, a args, s *server) {
 				// we need vectors inserted before removal
-				rreq, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, removeCnt, dim, defaultInsertConfig)
+				rreq, err := genReqAndInsert(s, ctx, removeCnt, true)
 				if err != nil {
-					t.Fatal(err)
-				}
-				if _, err := s.MultiInsert(ctx, rreq); err != nil {
-					t.Fatal(err)
-				}
-				if _, err := s.CreateIndex(ctx, &payload.Control_CreateIndexRequest{
-					PoolSize: uint32(len(rreq.Requests)),
-				}); err != nil {
 					t.Fatal(err)
 				}
 
@@ -654,11 +651,7 @@ func Test_server_IndexInfo(t *testing.T) {
 				}
 
 				// insert requests for the uncommitted insert count
-				ireq, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, insertCnt, dim, defaultInsertConfig)
-				if err != nil {
-					t.Fatal(err)
-				}
-				if _, err := s.MultiInsert(ctx, ireq); err != nil {
+				if _, err := genReqAndInsert(s, ctx, insertCnt, false); err != nil {
 					t.Fatal(err)
 				}
 			},
@@ -687,17 +680,12 @@ func Test_server_IndexInfo(t *testing.T) {
 			},
 			beforeFunc: func(t *testing.T, ctx context.Context, a args, s *server) {
 				insertCnt := 10000
-				req, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, insertCnt, dim, defaultInsertConfig)
-				if err != nil {
-					t.Fatal(err)
-				}
-
-				if _, err := s.MultiInsert(ctx, req); err != nil {
+				if _, err := genReqAndInsert(s, ctx, insertCnt, false); err != nil {
 					t.Fatal(err)
 				}
 				go func() {
 					if _, err := s.CreateIndex(ctx, &payload.Control_CreateIndexRequest{
-						PoolSize: uint32(len(req.Requests)),
+						PoolSize: uint32(insertCnt),
 					}); err != nil {
 						t.Error(err)
 					}
@@ -765,17 +753,7 @@ func Test_server_IndexInfo(t *testing.T) {
 				},
 				beforeFunc: func(t *testing.T, ctx context.Context, a args, s *server) {
 					insertCnt := 10000
-					req, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, insertCnt, dim, defaultInsertConfig)
-					if err != nil {
-						t.Fatal(err)
-					}
-
-					if _, err := s.MultiInsert(ctx, req); err != nil {
-						t.Fatal(err)
-					}
-					if _, err := s.CreateIndex(ctx, &payload.Control_CreateIndexRequest{
-						PoolSize: uint32(len(req.Requests)),
-					}); err != nil {
+					if _, err := genReqAndInsert(s, ctx, insertCnt, true); err != nil {
 						t.Fatal(err)
 					}
 
