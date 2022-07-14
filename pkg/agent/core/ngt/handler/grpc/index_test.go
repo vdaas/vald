@@ -580,7 +580,7 @@ func Test_server_IndexInfo(t *testing.T) {
 			},
 			beforeFunc: func(t *testing.T, ctx context.Context, a args, s *server) {
 				// we need to insert request first before remove
-				req, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, insertCnt, dim, defaultInsertConfig)
+				req, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, removeCnt, dim, defaultInsertConfig)
 				if err != nil {
 					t.Fatal(err)
 				}
@@ -594,14 +594,21 @@ func Test_server_IndexInfo(t *testing.T) {
 					t.Fatal(err)
 				}
 
-				// remove
-				if _, err := s.MultiRemove(ctx, request.GenMultiRemoveReq(removeCnt, defaultRemoveConfig)); err != nil {
-					t.Fatal(err)
+				// remove the inserted indexes above for the uncommitted count
+				for _, r := range req.Requests {
+					if _, err := s.Remove(ctx, &payload.Remove_Request{
+						Id: &payload.Object_ID{
+							Id: r.GetVector().GetId(),
+						},
+						Config: defaultRemoveConfig,
+					}); err != nil {
+						t.Fatal(err)
+					}
 				}
 			},
 			want: want{
 				wantRes: &payload.Info_Index_Count{
-					Stored:      insertCnt,
+					Stored:      removeCnt,
 					Uncommitted: removeCnt,
 					Indexing:    false,
 					Saving:      false,
