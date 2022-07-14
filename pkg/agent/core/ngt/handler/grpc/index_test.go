@@ -388,8 +388,8 @@ func Test_server_IndexInfo(t *testing.T) {
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(*server, context.Context, args, want, *payload.Info_Index_Count, error) error
-		beforeFunc func(*testing.T, context.Context, args, *server)
+		checkFunc  func(Server, context.Context, args, want, *payload.Info_Index_Count, error) error
+		beforeFunc func(*testing.T, context.Context, args, Server)
 		afterFunc  func(args)
 	}
 
@@ -422,7 +422,7 @@ func Test_server_IndexInfo(t *testing.T) {
 		defaultInsertConfig = &payload.Insert_Config{}
 		defaultRemoveConfig = &payload.Remove_Config{}
 	)
-	genReqAndInsert := func(s *server, ctx context.Context, cnt int, createIdx bool) (*payload.Insert_MultiRequest, error) {
+	insertAndCreateIndex := func(s Server, ctx context.Context, cnt int, createIdx bool) (*payload.Insert_MultiRequest, error) {
 		req, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, cnt, dim, defaultInsertConfig)
 		if err != nil {
 			return nil, err
@@ -441,7 +441,7 @@ func Test_server_IndexInfo(t *testing.T) {
 		}
 		return req, nil
 	}
-	defaultCheckFunc := func(s *server, ctx context.Context, args args, w want, gotRes *payload.Info_Index_Count, err error) error {
+	defaultCheckFunc := func(s Server, ctx context.Context, args args, w want, gotRes *payload.Info_Index_Count, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
@@ -450,7 +450,7 @@ func Test_server_IndexInfo(t *testing.T) {
 		}
 		return nil
 	}
-	periodicallyCheckIndexInfoFunc := func(s *server, ctx context.Context, args args, w want, chkFunc func(want, *payload.Info_Index_Count, error) error) error {
+	periodicallyCheckIndexInfoFunc := func(s Server, ctx context.Context, args args, w want, chkFunc func(want, *payload.Info_Index_Count, error) error) error {
 		timeout := time.After(5 * time.Second)
 		ticker := time.Tick(10 * time.Millisecond)
 		for {
@@ -567,8 +567,8 @@ func Test_server_IndexInfo(t *testing.T) {
 				svcCfg:  defaultSvcCfg,
 				svcOpts: defaultSvcOpts,
 			},
-			beforeFunc: func(t *testing.T, ctx context.Context, a args, s *server) {
-				if _, err := genReqAndInsert(s, ctx, insertCnt, false); err != nil {
+			beforeFunc: func(t *testing.T, ctx context.Context, a args, s Server) {
+				if _, err := insertAndCreateIndex(s, ctx, insertCnt, false); err != nil {
 					t.Fatal(err)
 				}
 			},
@@ -592,9 +592,9 @@ func Test_server_IndexInfo(t *testing.T) {
 				svcCfg:  defaultSvcCfg,
 				svcOpts: defaultSvcOpts,
 			},
-			beforeFunc: func(t *testing.T, ctx context.Context, a args, s *server) {
+			beforeFunc: func(t *testing.T, ctx context.Context, a args, s Server) {
 				// we need to insert request first before remove
-				req, err := genReqAndInsert(s, ctx, removeCnt, true)
+				req, err := insertAndCreateIndex(s, ctx, removeCnt, true)
 				if err != nil {
 					t.Fatal(err)
 				}
@@ -631,9 +631,9 @@ func Test_server_IndexInfo(t *testing.T) {
 				svcCfg:  defaultSvcCfg,
 				svcOpts: defaultSvcOpts,
 			},
-			beforeFunc: func(t *testing.T, ctx context.Context, a args, s *server) {
+			beforeFunc: func(t *testing.T, ctx context.Context, a args, s Server) {
 				// we need vectors inserted before removal
-				rreq, err := genReqAndInsert(s, ctx, removeCnt, true)
+				rreq, err := insertAndCreateIndex(s, ctx, removeCnt, true)
 				if err != nil {
 					t.Fatal(err)
 				}
@@ -651,7 +651,7 @@ func Test_server_IndexInfo(t *testing.T) {
 				}
 
 				// insert requests for the uncommitted insert count
-				if _, err := genReqAndInsert(s, ctx, insertCnt, false); err != nil {
+				if _, err := insertAndCreateIndex(s, ctx, insertCnt, false); err != nil {
 					t.Fatal(err)
 				}
 			},
@@ -678,9 +678,9 @@ func Test_server_IndexInfo(t *testing.T) {
 					service.WithEnableInMemoryMode(true),
 				),
 			},
-			beforeFunc: func(t *testing.T, ctx context.Context, a args, s *server) {
+			beforeFunc: func(t *testing.T, ctx context.Context, a args, s Server) {
 				insertCnt := 10000
-				if _, err := genReqAndInsert(s, ctx, insertCnt, false); err != nil {
+				if _, err := insertAndCreateIndex(s, ctx, insertCnt, false); err != nil {
 					t.Fatal(err)
 				}
 				go func() {
@@ -696,7 +696,7 @@ func Test_server_IndexInfo(t *testing.T) {
 					Indexing: true,
 				},
 			},
-			checkFunc: func(s *server, ctx context.Context, args args, w want, i *payload.Info_Index_Count, err error) error {
+			checkFunc: func(s Server, ctx context.Context, args args, w want, i *payload.Info_Index_Count, err error) error {
 				chk := func(w want, i *payload.Info_Index_Count, err error) error {
 					if err != nil {
 						return errors.Errorf("expected no error, got error: %v", err)
@@ -751,9 +751,9 @@ func Test_server_IndexInfo(t *testing.T) {
 						service.WithIndexPath(tmpDir),
 					),
 				},
-				beforeFunc: func(t *testing.T, ctx context.Context, a args, s *server) {
+				beforeFunc: func(t *testing.T, ctx context.Context, a args, s Server) {
 					insertCnt := 10000
-					if _, err := genReqAndInsert(s, ctx, insertCnt, true); err != nil {
+					if _, err := insertAndCreateIndex(s, ctx, insertCnt, true); err != nil {
 						t.Fatal(err)
 					}
 
@@ -768,7 +768,7 @@ func Test_server_IndexInfo(t *testing.T) {
 						Saving: true,
 					},
 				},
-				checkFunc: func(s *server, ctx context.Context, args args, w want, _ *payload.Info_Index_Count, _ error) error {
+				checkFunc: func(s Server, ctx context.Context, args args, w want, _ *payload.Info_Index_Count, _ error) error {
 					chk := func(w want, i *payload.Info_Index_Count, err error) error {
 						if err != nil {
 							return errors.Errorf("expected no error, got error: %v", err)
@@ -831,13 +831,16 @@ func Test_server_IndexInfo(t *testing.T) {
 				tt.Errorf("failed to init ngt service, error = %v", err)
 			}
 
-			s := &server{
-				name:              test.fields.name,
-				ip:                test.fields.ip,
-				ngt:               ngt,
-				eg:                eg,
-				streamConcurrency: test.fields.streamConcurrency,
+			s, err := New(WithErrGroup(eg),
+				WithNGT(ngt),
+				WithName(test.fields.name),
+				WithIP(test.fields.ip),
+				WithStreamConcurrency(test.fields.streamConcurrency),
+			)
+			if err != nil {
+				tt.Error(err)
 			}
+
 			if test.beforeFunc != nil {
 				test.beforeFunc(tt, ctx, test.args, s)
 			}
