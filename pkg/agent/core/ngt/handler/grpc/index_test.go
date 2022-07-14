@@ -547,7 +547,7 @@ func Test_server_SaveIndex(t *testing.T) {
 			- case 1.2: success to save 100 inserted index
 			- case 2.1: fail to save index with no write access on backup folder
 		- Boundary Value Testing
-			- case 1.1: successs to save index with no index
+			- case 1.1: success to save index with no index
 			- case 2.1: success to save index with invalid dimension
 				- the invalid index will be removed from NGT and the index file
 		- Decision Table Testing
