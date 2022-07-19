@@ -171,7 +171,7 @@ For more information about Kubernetes affinity, please refer to [here](https://k
 
 Depending on the customization of each component for each user, there are some points to be aware of.
 
-**Index Manager**
+### Index Manager
 
 If the `saveIndex` is executed frequently, the backup data per unit time will increase, which consumes bandwidth.
 
