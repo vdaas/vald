@@ -502,6 +502,9 @@ table::-webkit-scrollbar-thumb{
 }*/
 
 @media (prefers-color-scheme: dark) {
+  pre {
+    background-color: #272822;
+  }
   pre::-webkit-scrollbar-track{
     background:#777777;
   }
