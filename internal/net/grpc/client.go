@@ -25,6 +25,7 @@ import (
 	"time"
 
 	"github.com/vdaas/vald/internal/backoff"
+	"github.com/vdaas/vald/internal/circuitbreaker"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
@@ -106,6 +107,7 @@ type gRPCClient struct {
 	roccd               string // reconnection old connection closing duration
 	eg                  errgroup.Group
 	bo                  backoff.Backoff
+	cb                  circuitbreaker.CircuitBreaker
 	gbo                 gbackoff.Config // grpc's original backoff configuration
 	mcd                 time.Duration   // minimum connection timeout duration
 	group               singleflight.Group
@@ -467,28 +469,13 @@ func (g *gRPCClient) RoundRobin(ctx context.Context, f func(ctx context.Context,
 		}
 	}()
 	if g.bo != nil && g.atomicAddrs.Len() > 1 {
+		var boName string
 		if method := FromGRPCMethod(sctx); len(method) != 0 {
-			sctx = backoff.WithBackoffName(ctx, method)
+			boName = method
+			sctx = backoff.WithBackoffName(ctx, boName)
 		}
-		return g.bo.Do(sctx, func(ictx context.Context) (r interface{}, ret bool, err error) {
-			addr, ok := g.atomicAddrs.Next()
-			if !ok {
-				return nil, false, errors.ErrGRPCClientNotFound
-			}
-			ictx, span := trace.StartSpan(ictx, apiName+"/Client.RoundRobin/"+addr)
-			defer func() {
-				if span != nil {
-					span.End()
-				}
-			}()
-			p, ok := g.conns.Load(addr)
-			if !ok || p == nil {
-				g.crl.Store(addr, true)
-				err = errors.ErrGRPCClientConnNotFound(addr)
-				log.Warn(err)
-				return nil, true, err
-			}
-			r, err = g.do(ictx, p, addr, false, f)
+		do := func(ctx context.Context, p pool.Conn, addr string, f func(ctx context.Context, conn *ClientConn, copts ...CallOption) (interface{}, error)) (r interface{}, ret bool, err error) {
+			r, err = g.do(ctx, p, addr, false, f)
 			if err != nil {
 				st, ok := status.FromError(err)
 				if !ok || st == nil {
@@ -508,6 +495,40 @@ func (g *gRPCClient) RoundRobin(ctx context.Context, f func(ctx context.Context,
 				return nil, false, err
 			}
 			return r, false, nil
+		}
+		return g.bo.Do(sctx, func(ictx context.Context) (r interface{}, ret bool, err error) {
+			addr, ok := g.atomicAddrs.Next()
+			if !ok {
+				return nil, false, errors.ErrGRPCClientNotFound
+			}
+			ictx, span := trace.StartSpan(ictx, apiName+"/Client.RoundRobin/"+addr)
+			defer func() {
+				if span != nil {
+					span.End()
+				}
+			}()
+			p, ok := g.conns.Load(addr)
+			if !ok || p == nil {
+				g.crl.Store(addr, true)
+				err = errors.ErrGRPCClientConnNotFound(addr)
+				log.Warn(err)
+				return nil, true, err
+			}
+
+			if g.cb != nil && len(boName) > 0 {
+				r, err = g.cb.Do(ictx, boName, func(ictx context.Context) (interface{}, error) {
+					r, ret, err = do(ictx, p, addr, f)
+					if err != nil && !ret {
+						return r, errors.NewErrCircuitBreakerIgnorable(err)
+					}
+					return r, err
+				})
+				if errors.Is(err, errors.ErrCircuitBreakerOpenState) {
+					return r, false, err
+				}
+				return r, ret, err
+			}
+			return do(ictx, p, addr, f)
 		})
 	}
 	addr, ok := g.atomicAddrs.Next()
@@ -554,15 +575,17 @@ func (g *gRPCClient) do(ctx context.Context, p pool.Conn, addr string, enableBac
 		}
 	}()
 	if g.bo != nil && enableBackoff {
+		var boName string
 		if method := FromGRPCMethod(sctx); len(method) != 0 {
-			sctx = backoff.WithBackoffName(ctx, method+"/"+addr)
+			boName = method + "/" + addr
+			sctx = backoff.WithBackoffName(ctx, boName)
 		}
-		data, err = g.bo.Do(sctx, func(ictx context.Context) (r interface{}, ret bool, err error) {
+		do := func(ctx context.Context) (r interface{}, ret bool, err error) {
 			err = p.Do(func(conn *ClientConn) (err error) {
 				if conn == nil {
 					return errors.ErrGRPCClientConnNotFound(addr)
 				}
-				r, err = f(ictx, conn, g.copts...)
+				r, err = f(ctx, conn, g.copts...)
 				return err
 			})
 			if err != nil {
@@ -584,6 +607,22 @@ func (g *gRPCClient) do(ctx context.Context, p pool.Conn, addr string, enableBac
 				return nil, false, err
 			}
 			return r, false, nil
+		}
+		data, err = g.bo.Do(sctx, func(ictx context.Context) (r interface{}, ret bool, err error) {
+			if g.cb != nil && len(boName) > 0 {
+				r, err = g.cb.Do(ictx, boName, func(ictx context.Context) (interface{}, error) {
+					r, ret, err = do(ictx)
+					if err != nil && !ret {
+						return r, errors.NewErrCircuitBreakerIgnorable(err)
+					}
+					return r, err
+				})
+				if errors.Is(err, errors.ErrCircuitBreakerOpenState) {
+					return r, false, err
+				}
+				return r, ret, err
+			}
+			return do(ictx)
 		})
 	} else {
 		err = p.Do(func(conn *ClientConn) (err error) {

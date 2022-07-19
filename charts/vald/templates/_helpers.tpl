@@ -545,6 +545,16 @@ backoff:
   {{- else }}
   {{- toYaml .default.backoff | nindent 2 }}
   {{- end }}
+circuit_breaker:
+  {{- if .Values.circuit_breaker }}
+  closed_error_rate: {{ default .default.circuit_breaker.closed_error_rate .Values.circuit_breaker.closed_error_rate }}
+  half_open_error_rate: {{ default .default.circuit_breaker.half_open_error_rate .Values.circuit_breaker.half_open_error_rate }}
+  min_samples: {{ default .default.circuit_breaker.min_samples .Values.circuit_breaker.min_samples | quote }}
+  open_timeout: {{ default .default.circuit_breaker.open_timeout .Values.circuit_breaker.open_timeout | quote }}
+  closed_refresh_timeout: {{ default .default.circuit_breaker.closed_refresh_timeout .Values.circuit_breaker.closed_refresh_timeout | quote }}
+  {{- else }}
+  {{- toYaml .default.circuit_breaker | nindent 2 }}
+  {{- end }}
 call_option:
   {{- if .Values.call_option }}
   wait_for_ready: {{ default .default.call_option.wait_for_ready .Values.call_option.wait_for_ready }}

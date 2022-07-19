@@ -23,6 +23,7 @@ import (
 	"time"
 
 	"github.com/vdaas/vald/internal/backoff"
+	"github.com/vdaas/vald/internal/circuitbreaker"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net"
@@ -180,6 +181,14 @@ func WithBackoff(bo backoff.Backoff) Option {
 	return func(g *gRPCClient) {
 		if bo != nil {
 			g.bo = bo
+		}
+	}
+}
+
+func WithCircuitBreaker(cb circuitbreaker.CircuitBreaker) Option {
+	return func(gr *gRPCClient) {
+		if cb != nil {
+			gr.cb = cb
 		}
 	}
 }
