@@ -86,11 +86,11 @@ Resource request and limit determine QoS.
 
 The below table shows the condition for each QoS.
 
-|    QoS     |   request CPU   | request Memory |    limit CPU    | request Memory  | Sup.                                |
-| :--------: | :-------------: | :------------: | :-------------: | :-------------: | :---------------------------------- |
-| Guaranteed |       :o:       |      :o:       |       :o:       |       :o:       | All settings are required.          |
-| Burstable  | :o: (:warning:) | :o: (:warning) | :o: (:warning:) | :o: (:warning:) | One to three settings are required. |
-| BestEffort |       :x:       |      :x:       |       :x:       |       :x:       | No setting is required.             |
+|    QoS     |   request CPU   | request Memory  |    limit CPU    | request Memory  | Sup.                                |
+| :--------: | :-------------: | :-------------: | :-------------: | :-------------: | :---------------------------------- |
+| Guaranteed |       :o:       |       :o:       |       :o:       |       :o:       | All settings are required.          |
+| Burstable  | :o: (:warning:) | :o: (:warning:) | :o: (:warning:) | :o: (:warning:) | One to three settings are required. |
+| BestEffort |       :x:       |       :x:       |       :x:       |       :x:       | No setting is required.             |
 
 Vald requires many RAM resources because of on-memory indexing, so we highly recommend that you do not specify a limit, especially for the Vald Agent.
 In this case, QoS will be Burstable.
