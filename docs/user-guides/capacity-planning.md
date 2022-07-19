@@ -132,7 +132,7 @@ Depending on the situation, you may want to deploy to a different Node: e.g., wh
 In this situation, we recommend you to set the affinity/anti-affinity configuration for each Vald component.
 It is easy to change by editing each component setting on your `values.yaml`.
 
-<div class="warn">
+<div class="warning">
 The affinity setting for Vald Agent is the significant for the Vald cluster.<BR>
 Please DO NOT remove the default settings.
 </div>
