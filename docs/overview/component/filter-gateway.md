@@ -39,42 +39,50 @@ Vald officially offers two types of ingress filter components.
 Of course, you can use your own implemented ingress filter component.
 When using it, please make sure to meet the following interface.
 
-```rpc
-service Filter {
-  // Represent the RPC to generate the vector.
-  rpc GenVector(payload.v1.Object.Blob) returns (payload.v1.Object.Vector) {
-    option (google.api.http) = {
-      post : "/filter/ingress/object"
-      body : "*"
-    };
+- The scheme of ingress filter service
+
+  ```rpc
+  // https://github.com/vdaas/vald/blob/master/apis/proto/v1/filter/ingress/ingress_filter.proto
+  service Filter {
+    // Represent the RPC to generate the vector.
+    rpc GenVector(payload.v1.Object.Blob) returns (payload.v1.Object.Vector) {
+      option (google.api.http) = {
+        post : "/filter/ingress/object"
+        body : "*"
+      };
+    }
+
+    // Represent the RPC to filter the vector.
+    rpc FilterVector(payload.v1.Object.Vector)
+        returns (payload.v1.Object.Vector) {
+      option (google.api.http) = {
+        post : "/filter/ingress/vector"
+        body : "*"
+      };
+    }
+  }
+  ```
+
+- The scheme of `payload.v1.Object.Blob` and `payload.v1.Object.Vector`
+
+  ```rpc
+  // https://github.com/vdaas/vald/blob/master/apis/proto/v1/payload/payload.proto
+  // Represent the binary object.
+  message Blob {
+    // The object ID.
+    string id = 1 [ (validate.rules).string.min_len = 1 ];
+    // The binary object.
+    bytes object = 2;
   }
 
-  // Represent the RPC to filter the vector.
-  rpc FilterVector(payload.v1.Object.Vector)
-      returns (payload.v1.Object.Vector) {
-    option (google.api.http) = {
-      post : "/filter/ingress/vector"
-      body : "*"
-    };
+  // Represent a vector.
+  message Vector {
+    // The vector ID.
+    string id = 1 [ (validate.rules).string.min_len = 1 ];
+    // The vector.
+    repeated float vector = 2 [ (validate.rules).repeated .min_items = 2 ];
   }
-}
-
-// Represent the binary object.
-message Blob {
-  // The object ID.
-  string id = 1 [ (validate.rules).string.min_len = 1 ];
-  // The binary object.
-  bytes object = 2;
-}
-
-// Represent a vector.
-message Vector {
-  // The vector ID.
-  string id = 1 [ (validate.rules).string.min_len = 1 ];
-  // The vector.
-  repeated float vector = 2 [ (validate.rules).repeated .min_items = 2 ];
-}
-```
+  ```
 
 ### Egress Filtering
 
@@ -97,41 +105,50 @@ Vector filtering allows you to add the process: for example, to remove different
 
 If you want to use this feature, please deploy your own egress filter component, which meets the following interface.
 
-```rpc
-service Filter {
 
-  // Represent the RPC to filter the distance.
-  rpc FilterDistance(payload.v1.Object.Distance)
-      returns (payload.v1.Object.Distance) {
-    option (google.api.http) = {
-      post : "/filter/egress/distance"
-      body : "*"
-    };
+- The scheme of egress filter service
+
+  ```rpc
+  // https://github.com/vdaas/vald/blob/master/apis/proto/v1/filter/ingress/egress_filter.proto
+  service Filter {
+  
+    // Represent the RPC to filter the distance.
+    rpc FilterDistance(payload.v1.Object.Distance)
+        returns (payload.v1.Object.Distance) {
+      option (google.api.http) = {
+        post : "/filter/egress/distance"
+        body : "*"
+      };
+    }
+  
+    // Represent the RPC to filter the vector.
+    rpc FilterVector(payload.v1.Object.Vector)
+        returns (payload.v1.Object.Vector) {
+      option (google.api.http) = {
+        post : "/filter/egress/vector"
+        body : "*"
+      };
+    }
   }
+  ```
 
-  // Represent the RPC to filter the vector.
-  rpc FilterVector(payload.v1.Object.Vector)
-      returns (payload.v1.Object.Vector) {
-    option (google.api.http) = {
-      post : "/filter/egress/vector"
-      body : "*"
-    };
+- The scheme of `payload.v1.Object.Distance` and `payload.v1.Object.Vector`
+
+  ```rpc
+  // https://github.com/vdaas/vald/blob/master/apis/proto/v1/payload/payload.proto
+  // Represent the ID and distance pair.
+  message Distance {
+    // The vector ID.
+    string id = 1;
+    // The distance.
+    float distance = 2;
   }
-}
-
-// Represent the ID and distance pair.
-message Distance {
-  // The vector ID.
-  string id = 1;
-  // The distance.
-  float distance = 2;
-}
-
-// Represent a vector.
-message Vector {
-  // The vector ID.
-  string id = 1 [ (validate.rules).string.min_len = 1 ];
-  // The vector.
-  repeated float vector = 2 [ (validate.rules).repeated .min_items = 2 ];
-}
-```
+  
+  // Represent a vector.
+  message Vector {
+    // The vector ID.
+    string id = 1 [ (validate.rules).string.min_len = 1 ];
+    // The vector.
+    repeated float vector = 2 [ (validate.rules).repeated .min_items = 2 ];
+  }
+  ```
