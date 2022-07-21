@@ -1265,7 +1265,6 @@ func Test_client_updateDiscoveryInfo(t *testing.T) {
 			if err := checkFunc(test.want, gotConnected, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -1412,7 +1411,6 @@ func Test_client_discoverNodes(t *testing.T) {
 			if err := checkFunc(test.want, gotNodes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -1565,7 +1563,6 @@ func Test_client_discoverAddrs(t *testing.T) {
 			if err := checkFunc(test.want, gotAddrs, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -1717,7 +1714,6 @@ func Test_client_disconnectOldAddrs(t *testing.T) {
 			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
