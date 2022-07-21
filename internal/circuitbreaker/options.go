@@ -83,7 +83,7 @@ func WithHalfOpenErrorRate(f float32) BreakerOption {
 }
 
 // WithHalfOpenErrorTripper returns an option that sets whether it should trip when in "Half-Open" state.
-func WithHalfOpenTripper(tp Tripper) BreakerOption {
+func WithHalfOpenErrorTripper(tp Tripper) BreakerOption {
 	return func(b *breaker) error {
 		if tp == nil {
 			return errors.NewErrInvalidOption("halfOpenErrTripper", tp)
@@ -93,7 +93,7 @@ func WithHalfOpenTripper(tp Tripper) BreakerOption {
 	}
 }
 
-// WithSamples returns an option that sets minimum sample count.
+// WithMinSamples returns an option that sets minimum sample count.
 func WithMinSamples(min int64) BreakerOption {
 	return func(b *breaker) error {
 		if min < 1 {
