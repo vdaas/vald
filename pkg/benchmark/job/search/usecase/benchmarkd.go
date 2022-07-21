@@ -142,7 +142,6 @@ func New(cfg *config.Config) (r runner.Runner, err error) {
 		starter.WithGRPC(func(sc *iconf.Server) []server.Option {
 			return grpcServerOptions
 		}),
-		// TODO add GraphQL handler
 	)
 	if err != nil {
 		return nil, err

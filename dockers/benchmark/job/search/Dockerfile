@@ -38,7 +38,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-RUN mkdir -p $GOPATH/src
+RUN mkdir -p ${GOPATH}/src
 
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}
 
