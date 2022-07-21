@@ -20,8 +20,6 @@ import (
 	"sync"
 	"sync/atomic"
 	"testing"
-
-	"github.com/gobwas/pool"
 )
 
 func clearPool() {
