@@ -22,6 +22,7 @@ import (
 	"github.com/vdaas/vald/internal/client/v1/client/vald"
 	iconf "github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errgroup"
+	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/grpc/interceptor/server/recover"
 	"github.com/vdaas/vald/internal/net/grpc/metric"
@@ -30,6 +31,7 @@ import (
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/servers/server"
 	"github.com/vdaas/vald/internal/servers/starter"
+	"github.com/vdaas/vald/internal/test/data/hdf5"
 	"github.com/vdaas/vald/pkg/benchmark/job/search/config"
 	handler "github.com/vdaas/vald/pkg/benchmark/job/search/handler/grpc"
 	"github.com/vdaas/vald/pkg/benchmark/job/search/handler/rest"
@@ -47,6 +49,7 @@ type run struct {
 }
 
 func New(cfg *config.Config) (r runner.Runner, err error) {
+	log.Info("pkg/benchmark/job/search/cmd start")
 	eg := errgroup.Get()
 	copts, err := cfg.SearchJob.GatewayClient.Opts()
 	if err != nil {
@@ -61,6 +64,13 @@ func New(cfg *config.Config) (r runner.Runner, err error) {
 		return nil, err
 	}
 
+	// TODO: impl bind config
+	d, err := hdf5.New()
+	if err != nil {
+		return nil, err
+	}
+	log.Info("pkg/benchmark/job/search/cmd success d")
+
 	sj, err := search.New(
 		search.WithErrGroup(eg),
 		search.WithValdClient(c),
@@ -70,6 +80,7 @@ func New(cfg *config.Config) (r runner.Runner, err error) {
 		search.WithRadius(cfg.SearchJob.Radius),
 		search.WithEpsilon(cfg.SearchJob.Epsilon),
 		search.WithTimeout(cfg.SearchJob.Timeout),
+		search.WithHdf5(d),
 	)
 	if err != nil {
 		return nil, err
@@ -136,6 +147,7 @@ func New(cfg *config.Config) (r runner.Runner, err error) {
 	if err != nil {
 		return nil, err
 	}
+	log.Info("pkg/benchmark/job/search/cmd end")
 
 	return &run{
 		eg:            eg,
@@ -149,7 +161,12 @@ func New(cfg *config.Config) (r runner.Runner, err error) {
 
 func (r *run) PreStart(ctx context.Context) error {
 	if r.observability != nil {
-		return r.observability.PreStart(ctx)
+		if err := r.observability.PreStart(ctx); err != nil {
+			return err
+		}
+	}
+	if r.sj != nil {
+		return r.sj.PreStart(ctx)
 	}
 	return nil
 }

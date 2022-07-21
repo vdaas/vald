@@ -33,6 +33,8 @@ ENV APP_NAME search
 RUN apt-get update && apt-get install -y --no-install-recommends \
     upx \
     git \
+    libhdf5-dev \
+    && ldconfig \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -77,7 +79,9 @@ RUN cp sample.yaml /tmp/config.yaml
 FROM ${DISTROLESS_IMAGE}:${DISTROLESS_IMAGE_TAG}
 LABEL maintainer "Vald team <vald@vdaas.org>"
 
-ENV APP_NAME search
+COPY --from=builder /usr/lib/x86_64-linux-gnu/libaec*  /usr/lib/x86_64-linux-gnu/
+COPY --from=builder /usr/lib/x86_64-linux-gnu/libhdf5*  /usr/lib/x86_64-linux-gnu/
+COPY --from=builder /usr/lib/x86_64-linux-gnu/libsz*  /usr/lib/x86_64-linux-gnu/
 
 COPY --from=builder /usr/bin/${APP_NAME} /go/bin/${APP_NAME}
 COPY --from=builder /tmp/config.yaml /etc/server/config.yaml

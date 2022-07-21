@@ -28,9 +28,11 @@ import (
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/test/data/hdf5"
 )
 
 type SearchJob interface {
+	PreStart(context.Context) error
 	Start(context.Context) (<-chan error, error)
 }
 
@@ -43,6 +45,7 @@ type searchJob struct {
 	epsilon   float64
 	timeout   string
 	client    vald.Client
+	hdf5      hdf5.Data
 }
 
 func New(opts ...Option) (SearchJob, error) {
@@ -53,6 +56,15 @@ func New(opts ...Option) (SearchJob, error) {
 		}
 	}
 	return s, nil
+}
+
+func (s *searchJob) PreStart(ctx context.Context) error {
+	log.Infof("[bench: pre start search job] start download dataset of %#v", s.hdf5.GetName())
+	if err := s.hdf5.Download(); err != nil {
+		return err
+	}
+	log.Infof("[bench: pre start search job] success download dataset of %#v", s.hdf5.GetName())
+	return nil
 }
 
 func (s *searchJob) Start(ctx context.Context) (<-chan error, error) {

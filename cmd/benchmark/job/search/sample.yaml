@@ -43,7 +43,7 @@ server_config:
         read_buffer_size: 0
         write_buffer_size: 0
       mode: GRPC
-      probe_wait_time: 3s
+      probe_wait_time: 60s
       restart: true
   health_check_servers:
     - name: liveness
@@ -57,7 +57,7 @@ server_config:
         shutdown_duration: 5s
         write_timeout: ""
       mode: ""
-      probe_wait_time: 3s
+      probe_wait_time: 60s
     - name: readiness
       host: 0.0.0.0
       port: 3001
@@ -69,7 +69,7 @@ server_config:
         shutdown_duration: 0s
         write_timeout: ""
       mode: ""
-      probe_wait_time: 3s
+      probe_wait_time: 60s
   metrics_servers:
   startup_strategy:
     - liveness
@@ -162,4 +162,4 @@ bench_search_job:
   epsilon: 0.1
   timeout: 5s
   gateway_client:
-    addrs: ["vald-lb-gateway:8081"]
+    addrs: ["vald-lb-gateway-ingress:8081"]

@@ -206,11 +206,14 @@ cmd/benchmark/job/search/search: \
 	$(PBGOS) \
 	$(shell find ./cmd/benchmark/job/search -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go') \
 	$(shell find ./pkg/benchmark/job/search -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
-	CGO_ENABLED=0 \
+	CGO_ENABLED=1 \
+	CGO_CXXFLAGS="-g -Ofast -march=native" \
+	CGO_FFLAGS="-g -Ofast -march=native" \
+	CGO_LDFLAGS="-g -Ofast -march=native" \
 	GO111MODULE=on \
 	GOPRIVATE=$(GOPRIVATE) \
 	go build \
-		--ldflags "-w -extldflags=-static \
+		--ldflags "-s -w \
 		-X '$(GOPKG)/internal/info.Version=$(VERSION)' \
 		-X '$(GOPKG)/internal/info.GitCommit=$(GIT_COMMIT)' \
 		-X '$(GOPKG)/internal/info.BuildTime=$(DATETIME)' \
@@ -223,7 +226,7 @@ cmd/benchmark/job/search/search: \
 		-mod=readonly \
 		-modcacherw \
 		-a \
-		-tags "osusergo netgo static_build" \
+		-tags "cgo osusergo netgo static_build" \
 		-trimpath \
 		-o $@ \
 		$(dir $@)main.go

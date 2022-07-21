@@ -20,6 +20,7 @@ package search
 import (
 	"github.com/vdaas/vald/internal/client/v1/client/vald"
 	"github.com/vdaas/vald/internal/errgroup"
+	"github.com/vdaas/vald/internal/test/data/hdf5"
 )
 
 type Option func(s *searchJob) error
@@ -85,6 +86,13 @@ func WithValdClient(c vald.Client) Option {
 func WithErrGroup(eg errgroup.Group) Option {
 	return func(s *searchJob) error {
 		s.eg = eg
+		return nil
+	}
+}
+
+func WithHdf5(d hdf5.Data) Option {
+	return func(s *searchJob) error {
+		s.hdf5 = d
 		return nil
 	}
 }
