@@ -1,5 +1,85 @@
 # CHANGELOG
 
+## v1.5.6
+
+### Docker images
+
+<table>
+  <tr>
+    <th>component</th>
+    <th>Docker pull</th>
+  </tr>
+  <tr>
+    <td>Agent NGT</td>
+    <td>
+      <code>docker pull vdaas/vald-agent-ngt:v1.5.6</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-agent-ngt:v1.5.6</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Agent sidecar</td>
+    <td>
+      <code>docker pull vdaas/vald-agent-sidecar:v1.5.6</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-agent-sidecar:v1.5.6</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Discoverers</td>
+    <td>
+      <code>docker pull vdaas/vald-discoverer-k8s:v1.5.6</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-discoverer-k8s:v1.5.6</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Gateways</td>
+    <td>
+      <code>docker pull vdaas/vald-lb-gateway:v1.5.6</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-lb-gateway:v1.5.6</code><br/>
+      <code>docker pull vdaas/vald-filter-gateway:v1.5.6</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-filter-gateway:v1.5.6</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Index Manager</td>
+    <td>
+      <code>docker pull vdaas/vald-manager-index:v1.5.6</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-manager-index:v1.5.6</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Helm Operator</td>
+    <td>
+      <code>docker pull vdaas/vald-helm-operator:v1.5.6</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-helm-operator:v1.5.6</code>
+    </td>
+  </tr>
+</table>
+
+### Documents
+- [GoDoc](https://pkg.go.dev/github.com/vdaas/vald@v1.5.6)
+- [Helm Chart Reference](https://github.com/vdaas/vald/blob/v1.5.6/charts/vald/README.md)
+- [Helm Operator Chart Reference](https://github.com/vdaas/vald/blob/v1.5.6/charts/vald-helm-operator/README.md)
+
+### Changes
+✨ Feature
+
+- Add distance type [#1732](https://github.com/vdaas/vald/pull/1732)
+- Add vald-helm-operator E2E [#1722](https://github.com/vdaas/vald/pull/1722)
+
+
+⬆️ update dependencies
+- Delete tensorflow [#1723](https://github.com/vdaas/vald/pull/1723)
+- Update deps [#1724](https://github.com/vdaas/vald/pull/1724)
+
+✏️ Documents
+
+- Add capacity planning document [#1714](https://github.com/vdaas/vald/pull/1714)
+- Update filter gateway document [#1721](https://github.com/vdaas/vald/pull/1721)
+- Fix capacity planning doc [#1736](https://github.com/vdaas/vald/pull/1736)
+- Fix file name of capacity planning document [#1737](https://github.com/vdaas/vald/pull/1737)
+
+
+
 ## v1.5.5
 
 ### Docker images
