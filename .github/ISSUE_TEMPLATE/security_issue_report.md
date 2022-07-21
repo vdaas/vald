@@ -20,4 +20,4 @@ assignees: ""
 - Go Version: 1.18.3
 - Docker Version: 20.10.8
 - Kubernetes Version: 1.22.0
-- NGT Version: 1.14.6
+- NGT Version: 1.14.7
