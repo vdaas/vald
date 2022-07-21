@@ -139,12 +139,21 @@ const (
 	Hamming
 	// Cosine is cosine distance.
 	Cosine
+	// Poincare is poincare distance.
+	Poincare
+	// Lorentz is lorenz distance.
+	Lorentz
+	// Jaccard is jaccard distance.
+	Jaccard
+	// SparseJaccard is sparse jaccard distance.
+	SparseJaccard
+	// NormalizedL2 is l2 distance with normalization.
+	NormalizedL2
 	// NormalizedAngle is angle distance with normalization.
 	NormalizedAngle
 	// NormalizedCosine is cosine distance with normalization.
 	NormalizedCosine
-	// Jaccard is jaccard distance.
-	Jaccard
+
 	// -------------------------------------------------------------.
 
 	// -------------------------------------------------------------
@@ -178,12 +187,20 @@ func (d distanceType) String() string {
 		return "Hamming"
 	case Cosine:
 		return "Cosine"
+	case Poincare:
+		return "Poincare"
+	case Lorentz:
+		return "Lorentz"
+	case Jaccard:
+		return "Jaccard"
+	case SparseJaccard:
+		return "SparseJaccard"
+	case NormalizedL2:
+		return "NormalizedL2"
 	case NormalizedAngle:
 		return "NormalizedAngle"
 	case NormalizedCosine:
 		return "NormalizedCosine"
-	case Jaccard:
-		return "Jaccard"
 	}
 	return "Unknown"
 }

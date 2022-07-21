@@ -17,17 +17,22 @@ package grpc
 
 import (
 	"context"
+	"os"
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/core/algorithm/ngt"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
-	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/net/grpc/status"
+	"github.com/vdaas/vald/internal/file"
+	"github.com/vdaas/vald/internal/net"
+	itest "github.com/vdaas/vald/internal/test"
+	"github.com/vdaas/vald/internal/test/comparator"
 	"github.com/vdaas/vald/internal/test/data/request"
 	"github.com/vdaas/vald/internal/test/data/vector"
 	"github.com/vdaas/vald/internal/test/goleak"
@@ -704,15 +709,14 @@ func Test_server_CreateAndSaveIndex(t *testing.T) {
 func Test_server_IndexInfo(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		ctx context.Context
 		in1 *payload.Empty
 	}
 	type fields struct {
 		name              string
 		ip                string
-		ngt               service.NGT
-		eg                errgroup.Group
 		streamConcurrency int
+		svcCfg            *config.NGT
+		svcOpts           []service.Option
 	}
 	type want struct {
 		wantRes *payload.Info_Index_Count
@@ -723,61 +727,424 @@ func Test_server_IndexInfo(t *testing.T) {
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, *payload.Info_Index_Count, error) error
-		beforeFunc func(args)
+		checkFunc  func(Server, context.Context, args, want, *payload.Info_Index_Count, error) error
+		beforeFunc func(*testing.T, context.Context, args, Server)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, gotRes *payload.Info_Index_Count, err error) error {
+
+	// common variables for test
+	const (
+		name      = "vald-agent-ngt-1" // agent name
+		dim       = 3                  //  vector dimension
+		id        = "uuid-1"           // id for getObject request
+		insertCnt = 100                // default insert count
+		removeCnt = 100                // default remove count
+	)
+	var (
+		ip = net.LoadLocalIP() // agent ip address
+
+		// default NGT configuration for test
+		kvsdbCfg  = &config.KVSDB{}
+		vqueueCfg = &config.VQueue{}
+
+		defaultSvcCfg = &config.NGT{
+			Dimension:    dim,
+			DistanceType: ngt.Angle.String(),
+			ObjectType:   ngt.Float.String(),
+			KVSDB:        kvsdbCfg,
+			VQueue:       vqueueCfg,
+		}
+		defaultSvcOpts = []service.Option{
+			service.WithEnableInMemoryMode(true),
+		}
+
+		defaultInsertConfig = &payload.Insert_Config{}
+		defaultRemoveConfig = &payload.Remove_Config{}
+	)
+	insertAndCreateIndex := func(s Server, ctx context.Context, cnt int, createIdx bool) (*payload.Insert_MultiRequest, error) {
+		req, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, cnt, dim, defaultInsertConfig)
+		if err != nil {
+			return nil, err
+		}
+
+		if _, err := s.MultiInsert(ctx, req); err != nil {
+			return nil, err
+		}
+
+		if createIdx {
+			if _, err := s.CreateIndex(ctx, &payload.Control_CreateIndexRequest{
+				PoolSize: uint32(len(req.Requests)),
+			}); err != nil {
+				return nil, err
+			}
+		}
+		return req, nil
+	}
+	defaultCheckFunc := func(s Server, ctx context.Context, args args, w want, gotRes *payload.Info_Index_Count, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
-		if !reflect.DeepEqual(gotRes, w.wantRes) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
+		if diff := comparator.Diff(gotRes, w.wantRes, comparator.IgnoreUnexported(payload.Info_Index_Count{})); diff != "" {
+			return errors.New(diff)
 		}
 		return nil
 	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx: nil,
-		           in1: nil,
-		       },
-		       fields: fields {
-		           name: "",
-		           ip: "",
-		           ngt: nil,
-		           eg: nil,
-		           streamConcurrency: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+	periodicallyCheckIndexInfoFunc := func(s Server, ctx context.Context, args args, w want, chkFunc func(want, *payload.Info_Index_Count, error) error) error {
+		timeout := time.After(5 * time.Second)
+		ticker := time.Tick(10 * time.Millisecond)
+		for {
+			select {
+			case <-timeout:
+				gotRes, err := s.IndexInfo(ctx, args.in1)
+				if err := chkFunc(w, gotRes, err); err != nil {
+					return err
+				}
+			case <-ticker:
+				gotRes, err := s.IndexInfo(ctx, args.in1)
+				if err := chkFunc(w, gotRes, err); err == nil {
+					return nil
+				}
+			}
+		}
+	}
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ctx: nil,
-		           in1: nil,
-		           },
-		           fields: fields {
-		           name: "",
-		           ip: "",
-		           ngt: nil,
-		           eg: nil,
-		           streamConcurrency: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+	/*
+		- Equivalence Class Testing
+			- case 1.1: return stored count when NGT is empty
+			- case 1.2: return stored count with 100 number of indexes
+			- case 2.1: return uncommitted count 0 when NGT is empty
+			- case 2.2: return uncommitted count with 100 uncommitted insert index
+			- case 2.3: return uncommitted count with 100 uncommitted delete index
+			- case 2.4: return uncommitted count with 100 uncommitted insert+delete index
+			- case 3.1: return when NGT is indexing
+			- case 3.2: return when NGT is not indexing
+			- case 4.1: return when NGT is saving index
+			- case 4.2: return when NGT is not saving index
+		- Boundary Value Testing
+			- NONE
+		- Decision Table Testing
+			- NONE
+	*/
+	tests := []test{
+		{
+			name: "Equivalence Class Testing case 1.1: return stored count when NGT is empty",
+			args: args{
+				in1: &payload.Empty{},
+			},
+			fields: fields{
+				name:    name,
+				ip:      ip,
+				svcCfg:  defaultSvcCfg,
+				svcOpts: defaultSvcOpts,
+			},
+			want: want{
+				wantRes: &payload.Info_Index_Count{
+					Stored:      0,
+					Uncommitted: 0,
+					Indexing:    false,
+					Saving:      false,
+				},
+			},
+		},
+		{
+			name: "Equivalence Class Testing case 1.2: return stored count with 100 number of indexes",
+			args: args{
+				in1: &payload.Empty{},
+			},
+			fields: fields{
+				name: name,
+				ip:   ip,
+				svcCfg: &config.NGT{
+					Dimension:    784,
+					DistanceType: ngt.Angle.String(),
+					ObjectType:   ngt.Float.String(),
+					KVSDB:        kvsdbCfg,
+					VQueue:       vqueueCfg,
+				},
+				svcOpts: append(defaultSvcOpts,
+					service.WithIndexPath(itest.GetTestdataPath("backup/100index")),
+					service.WithEnableInMemoryMode(false),
+				),
+			},
+			want: want{
+				wantRes: &payload.Info_Index_Count{
+					Stored:      insertCnt,
+					Uncommitted: 0,
+					Indexing:    false,
+					Saving:      false,
+				},
+			},
+		},
+		{
+			name: "Equivalence Class Testing case 2.1: return uncommitted count 0 when NGT is empty",
+			args: args{
+				in1: &payload.Empty{},
+			},
+			fields: fields{
+				name:    name,
+				ip:      ip,
+				svcCfg:  defaultSvcCfg,
+				svcOpts: defaultSvcOpts,
+			},
+			want: want{
+				wantRes: &payload.Info_Index_Count{
+					Stored:      0,
+					Uncommitted: 0,
+					Indexing:    false,
+					Saving:      false,
+				},
+			},
+		},
+		{
+			name: "Equivalence Class Testing case 2.2: return uncommitted count with 100 uncommitted insert index",
+			args: args{
+				in1: &payload.Empty{},
+			},
+			fields: fields{
+				name:    name,
+				ip:      ip,
+				svcCfg:  defaultSvcCfg,
+				svcOpts: defaultSvcOpts,
+			},
+			beforeFunc: func(t *testing.T, ctx context.Context, a args, s Server) {
+				if _, err := insertAndCreateIndex(s, ctx, insertCnt, false); err != nil {
+					t.Fatal(err)
+				}
+			},
+			want: want{
+				wantRes: &payload.Info_Index_Count{
+					Stored:      0,
+					Uncommitted: insertCnt,
+					Indexing:    false,
+					Saving:      false,
+				},
+			},
+		},
+		{
+			name: "Equivalence Class Testing case 2.3: return uncommitted count with 100 uncommitted delete index",
+			args: args{
+				in1: &payload.Empty{},
+			},
+			fields: fields{
+				name:    name,
+				ip:      ip,
+				svcCfg:  defaultSvcCfg,
+				svcOpts: defaultSvcOpts,
+			},
+			beforeFunc: func(t *testing.T, ctx context.Context, a args, s Server) {
+				// we need to insert request first before remove
+				req, err := insertAndCreateIndex(s, ctx, removeCnt, true)
+				if err != nil {
+					t.Fatal(err)
+				}
+
+				// remove the inserted indexes above for the uncommitted count
+				for _, r := range req.Requests {
+					if _, err := s.Remove(ctx, &payload.Remove_Request{
+						Id: &payload.Object_ID{
+							Id: r.GetVector().GetId(),
+						},
+						Config: defaultRemoveConfig,
+					}); err != nil {
+						t.Fatal(err)
+					}
+				}
+			},
+			want: want{
+				wantRes: &payload.Info_Index_Count{
+					Stored:      removeCnt,
+					Uncommitted: removeCnt,
+					Indexing:    false,
+					Saving:      false,
+				},
+			},
+		},
+		{
+			name: "Equivalence Class Testing case 2.4: return uncommitted count with 100 uncommitted insert+delete index",
+			args: args{
+				in1: &payload.Empty{},
+			},
+			fields: fields{
+				name:    name,
+				ip:      ip,
+				svcCfg:  defaultSvcCfg,
+				svcOpts: defaultSvcOpts,
+			},
+			beforeFunc: func(t *testing.T, ctx context.Context, a args, s Server) {
+				// we need vectors inserted before removal
+				rreq, err := insertAndCreateIndex(s, ctx, removeCnt, true)
+				if err != nil {
+					t.Fatal(err)
+				}
+
+				// remove requests inserted above for the uncommitted remove count
+				for _, r := range rreq.Requests {
+					if _, err := s.Remove(ctx, &payload.Remove_Request{
+						Id: &payload.Object_ID{
+							Id: r.GetVector().GetId(),
+						},
+						Config: defaultRemoveConfig,
+					}); err != nil {
+						t.Fatal(err)
+					}
+				}
+
+				// insert requests for the uncommitted insert count
+				if _, err := insertAndCreateIndex(s, ctx, insertCnt, false); err != nil {
+					t.Fatal(err)
+				}
+			},
+			want: want{
+				wantRes: &payload.Info_Index_Count{
+					Stored:      insertCnt,
+					Uncommitted: insertCnt + removeCnt,
+					Indexing:    false,
+					Saving:      false,
+				},
+			},
+		},
+		{
+			name: "Equivalence Class Testing case 3.1: return when NGT is indexing",
+			args: args{
+				in1: &payload.Empty{},
+			},
+			fields: fields{
+				name:   name,
+				ip:     ip,
+				svcCfg: defaultSvcCfg,
+				svcOpts: append(defaultSvcOpts,
+					service.WithDefaultPoolSize(100),
+					service.WithEnableInMemoryMode(true),
+				),
+			},
+			beforeFunc: func(t *testing.T, ctx context.Context, a args, s Server) {
+				insertCnt := 10000
+				if _, err := insertAndCreateIndex(s, ctx, insertCnt, false); err != nil {
+					t.Fatal(err)
+				}
+				go func() {
+					if _, err := s.CreateIndex(ctx, &payload.Control_CreateIndexRequest{
+						PoolSize: uint32(insertCnt),
+					}); err != nil {
+						t.Error(err)
+					}
+				}()
+			},
+			want: want{
+				wantRes: &payload.Info_Index_Count{
+					Indexing: true,
+				},
+			},
+			checkFunc: func(s Server, ctx context.Context, args args, w want, i *payload.Info_Index_Count, err error) error {
+				chk := func(w want, i *payload.Info_Index_Count, err error) error {
+					if err != nil {
+						return errors.Errorf("expected no error, got error: %v", err)
+					}
+					if i == nil || i.GetIndexing() != w.wantRes.GetIndexing() {
+						return errors.Errorf("expected indexing, got: %#v", i)
+					}
+					return nil
+				}
+
+				return periodicallyCheckIndexInfoFunc(s, ctx, args, w, chk)
+			},
+		},
+		{
+			name: "Equivalence Class Testing case 3.2: return when NGT is not indexing",
+			args: args{
+				in1: &payload.Empty{},
+			},
+			fields: fields{
+				name:    name,
+				ip:      ip,
+				svcCfg:  defaultSvcCfg,
+				svcOpts: defaultSvcOpts,
+			},
+			want: want{
+				wantRes: &payload.Info_Index_Count{
+					Stored:      0,
+					Uncommitted: 0,
+					Indexing:    false,
+					Saving:      false,
+				},
+			},
+		},
+		func() test {
+			tmpDir, err := file.MkdirTemp("")
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			return test{
+				name: "Equivalence Class Testing case 4.1: return when NGT is saving index",
+				args: args{
+					in1: &payload.Empty{},
+				},
+				fields: fields{
+					name:   name,
+					ip:     ip,
+					svcCfg: defaultSvcCfg,
+					svcOpts: append(defaultSvcOpts,
+						service.WithDefaultPoolSize(100),
+						service.WithEnableInMemoryMode(false),
+						service.WithIndexPath(tmpDir),
+					),
+				},
+				beforeFunc: func(t *testing.T, ctx context.Context, a args, s Server) {
+					insertCnt := 10000
+					if _, err := insertAndCreateIndex(s, ctx, insertCnt, true); err != nil {
+						t.Fatal(err)
+					}
+
+					go func() {
+						if _, err := s.SaveIndex(ctx, &payload.Empty{}); err != nil {
+							t.Error(err)
+						}
+					}()
+				},
+				want: want{
+					wantRes: &payload.Info_Index_Count{
+						Saving: true,
+					},
+				},
+				checkFunc: func(s Server, ctx context.Context, args args, w want, _ *payload.Info_Index_Count, _ error) error {
+					chk := func(w want, i *payload.Info_Index_Count, err error) error {
+						if err != nil {
+							return errors.Errorf("expected no error, got error: %v", err)
+						}
+						if i == nil || i.GetSaving() != w.wantRes.GetSaving() {
+							return errors.Errorf("expected indexing, got: %#v", i)
+						}
+						return nil
+					}
+
+					return periodicallyCheckIndexInfoFunc(s, ctx, args, w, chk)
+				},
+				afterFunc: func(a args) {
+					os.RemoveAll(tmpDir)
+				},
+			}
+		}(),
+		{
+			name: "Equivalence Class Testing case 4.2: return when NGT is not saving index",
+			args: args{
+				in1: &payload.Empty{},
+			},
+			fields: fields{
+				name:    name,
+				ip:      ip,
+				svcCfg:  defaultSvcCfg,
+				svcOpts: defaultSvcOpts,
+			},
+			want: want{
+				wantRes: &payload.Info_Index_Count{
+					Stored:      0,
+					Uncommitted: 0,
+					Indexing:    false,
+					Saving:      false,
+				},
+			},
+		},
 	}
 
 	for _, tc := range tests {
@@ -785,9 +1152,10 @@ func Test_server_IndexInfo(t *testing.T) {
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
+
+			ctx, cancel := context.WithCancel(context.Background())
+			defer cancel()
+
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
@@ -795,16 +1163,30 @@ func Test_server_IndexInfo(t *testing.T) {
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
-			s := &server{
-				name:              test.fields.name,
-				ip:                test.fields.ip,
-				ngt:               test.fields.ngt,
-				eg:                test.fields.eg,
-				streamConcurrency: test.fields.streamConcurrency,
+
+			eg, _ := errgroup.New(ctx)
+			ngt, err := service.New(test.fields.svcCfg, append(test.fields.svcOpts, service.WithErrGroup(eg))...)
+			if err != nil {
+				tt.Errorf("failed to init ngt service, error = %v", err)
 			}
 
-			gotRes, err := s.IndexInfo(test.args.ctx, test.args.in1)
-			if err := checkFunc(test.want, gotRes, err); err != nil {
+			s, err := New(WithErrGroup(eg),
+				WithNGT(ngt),
+				WithName(test.fields.name),
+				WithIP(test.fields.ip),
+				WithStreamConcurrency(test.fields.streamConcurrency),
+			)
+			if err != nil {
+				tt.Error(err)
+			}
+
+			if test.beforeFunc != nil {
+				test.beforeFunc(tt, ctx, test.args, s)
+			}
+
+			gotRes, err := s.IndexInfo(ctx, test.args.in1)
+
+			if err := checkFunc(s, ctx, test.args, test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
