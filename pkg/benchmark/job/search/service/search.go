@@ -39,6 +39,7 @@ type SearchJob interface {
 type searchJob struct {
 	eg        errgroup.Group
 	dimension int
+	iter      uint32
 	num       uint32
 	minNum    uint32
 	radius    float64
@@ -90,44 +91,27 @@ func (s *searchJob) Start(ctx context.Context) (<-chan error, error) {
 		}
 	})
 
-	// TODO: gen search query
-	var vec []float32
-	for i := 0; i < s.dimension; i++ {
-		vec = append(vec, float32(i)*0.1)
+	vecs := s.hdf5.GetTest()
+	if len(vecs) > int(s.iter) {
+		log.Infof("[bench] change search iteration from %d to %d\n", s.iter, len(vecs))
+		s.iter = uint32(len(vecs))
 	}
-	scfg := &payload.Search_Config{
-		Num:     s.num,
-		MinNum:  s.minNum,
-		Radius:  float32(s.radius),
-		Epsilon: float32(s.epsilon),
-		Timeout: dur.Microseconds(),
-	}
-	s.eg.Go(func() (err error) {
-		log.Infof("[bench: search job] Start search bench")
-		lres, err := s.client.LinearSearch(ctx, &payload.Search_Request{
-			Vector: vec,
-			Config: scfg,
-		})
-		log.Infof("LinearSearch Result:\n %#v\n", lres)
-		if err != nil {
-			select {
-			case <-ctx.Done():
-				if err != context.Canceled {
-					ech <- errors.Wrap(err, ctx.Err().Error())
-				} else {
-					ech <- err
-				}
-			case ech <- err:
-			}
-			return err
+	for i := 0; i < int(s.iter); i++ {
+		vec := vecs[i]
+		scfg := &payload.Search_Config{
+			Num:     s.num,
+			MinNum:  s.minNum,
+			Radius:  float32(s.radius),
+			Epsilon: float32(s.epsilon),
+			Timeout: dur.Microseconds(),
 		}
-		bres := testing.Benchmark(func(b *testing.B) {
-			b.ResetTimer()
-			start := time.Now()
-			sres, err := s.client.Search(ctx, &payload.Search_Request{
+		s.eg.Go(func() (err error) {
+			log.Infof("[bench: search job] Start search bench")
+			lres, err := s.client.LinearSearch(ctx, &payload.Search_Request{
 				Vector: vec,
 				Config: scfg,
 			})
+			log.Infof("LinearSearch Result:\n %#v\n", lres)
 			if err != nil {
 				select {
 				case <-ctx.Done():
@@ -138,16 +122,36 @@ func (s *searchJob) Start(ctx context.Context) (<-chan error, error) {
 					}
 				case ech <- err:
 				}
+				return err
 			}
-			latency := time.Since(start)
-			recall := calcRecall(lres.Results, sres.Results)
-			b.ReportMetric(recall, "recall")
-			b.ReportMetric(float64(latency.Microseconds()), "latency")
+			bres := testing.Benchmark(func(b *testing.B) {
+				b.ResetTimer()
+				start := time.Now()
+				sres, err := s.client.Search(ctx, &payload.Search_Request{
+					Vector: vec,
+					Config: scfg,
+				})
+				if err != nil {
+					select {
+					case <-ctx.Done():
+						if err != context.Canceled {
+							ech <- errors.Wrap(err, ctx.Err().Error())
+						} else {
+							ech <- err
+						}
+					case ech <- err:
+					}
+				}
+				latency := time.Since(start)
+				recall := calcRecall(lres.Results, sres.Results)
+				b.ReportMetric(recall, "recall")
+				b.ReportMetric(float64(latency.Microseconds()), "latency")
+			})
+			// TODO: send metrics to the Prometeus
+			log.Infof("[bench: search job] Finish search bench: \n%#v\n", bres)
+			return nil
 		})
-		// TODO: send metrics to the Prometeus
-		log.Infof("[bench: search job] Finish search bench: \n%#v\n", bres)
-		return nil
-	})
+	}
 	return ech, nil
 }
 

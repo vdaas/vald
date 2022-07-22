@@ -41,6 +41,13 @@ func WithDimension(dim int) Option {
 	}
 }
 
+func WithIter(iter uint32) Option {
+	return func(s *searchJob) error {
+		s.iter = iter
+		return nil
+	}
+}
+
 func WithNum(num uint32) Option {
 	return func(s *searchJob) error {
 		s.num = num

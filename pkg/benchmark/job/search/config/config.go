@@ -142,6 +142,7 @@ func NewConfig(path string) (cfg *Config, err error) {
 // 			},
 // 		},
 // 		SearchJob: &config.SearchJob{
+//			Iter:    100,
 //			Num:     10,
 //			MinNum:  5,
 //			Radius:  -1,

@@ -75,6 +75,7 @@ func New(cfg *config.Config) (r runner.Runner, err error) {
 		search.WithErrGroup(eg),
 		search.WithValdClient(c),
 		search.WithDimension(cfg.SearchJob.Dimension),
+		search.WithIter(cfg.SearchJob.Iter),
 		search.WithNum(cfg.SearchJob.Num),
 		search.WithMinNum(cfg.SearchJob.MinNum),
 		search.WithRadius(cfg.SearchJob.Radius),
