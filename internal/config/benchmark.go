@@ -20,7 +20,7 @@ package config
 // SearchJob represents the configuration for the internal benchmark search job.
 type SearchJob struct {
 	Dimension     int         `json:"dimension" yaml: "dimension"`
-	Iter          uint32      `json:"iter" yaml: "iter"`
+	Iter          int         `json:"iter" yaml: "iter"`
 	Num           uint32      `json:"num" yaml: "num"`
 	MinNum        uint32      `json:"min_num" yaml:"min_num"`
 	Radius        float64     `json:"radius" yaml:"radius"`

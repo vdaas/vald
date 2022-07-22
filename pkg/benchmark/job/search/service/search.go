@@ -39,7 +39,7 @@ type SearchJob interface {
 type searchJob struct {
 	eg        errgroup.Group
 	dimension int
-	iter      uint32
+	iter      int
 	num       uint32
 	minNum    uint32
 	radius    float64
@@ -65,6 +65,11 @@ func (s *searchJob) PreStart(ctx context.Context) error {
 		return err
 	}
 	log.Infof("[bench: pre start search job] success download dataset of %#v", s.hdf5.GetName())
+	log.Infof("[bench: pre start search job] start load dataset of %#v", s.hdf5.GetName())
+	if err := s.hdf5.Read(); err != nil {
+		return err
+	}
+	log.Infof("[bench: pre start search job] success load dataset of %#v", s.hdf5.GetName())
 	return nil
 }
 
@@ -92,26 +97,24 @@ func (s *searchJob) Start(ctx context.Context) (<-chan error, error) {
 	})
 
 	vecs := s.hdf5.GetTest()
-	if len(vecs) > int(s.iter) {
+	if len(vecs) < s.iter {
 		log.Infof("[bench] change search iteration from %d to %d\n", s.iter, len(vecs))
-		s.iter = uint32(len(vecs))
+		s.iter = len(vecs)
 	}
-	for i := 0; i < int(s.iter); i++ {
-		vec := vecs[i]
-		scfg := &payload.Search_Config{
-			Num:     s.num,
-			MinNum:  s.minNum,
-			Radius:  float32(s.radius),
-			Epsilon: float32(s.epsilon),
-			Timeout: dur.Microseconds(),
-		}
-		s.eg.Go(func() (err error) {
-			log.Infof("[bench: search job] Start search bench")
+	scfg := &payload.Search_Config{
+		Num:     s.num,
+		MinNum:  s.minNum,
+		Radius:  float32(s.radius),
+		Epsilon: float32(s.epsilon),
+		Timeout: dur.Microseconds(),
+	}
+	s.eg.Go(func() (err error) {
+		for i := 0; i < s.iter; i++ {
+			log.Infof("[bench: search job] Start search bench: iter = %d\n", i)
 			lres, err := s.client.LinearSearch(ctx, &payload.Search_Request{
-				Vector: vec,
+				Vector: vecs[i],
 				Config: scfg,
 			})
-			log.Infof("LinearSearch Result:\n %#v\n", lres)
 			if err != nil {
 				select {
 				case <-ctx.Done():
@@ -128,7 +131,7 @@ func (s *searchJob) Start(ctx context.Context) (<-chan error, error) {
 				b.ResetTimer()
 				start := time.Now()
 				sres, err := s.client.Search(ctx, &payload.Search_Request{
-					Vector: vec,
+					Vector: vecs[i],
 					Config: scfg,
 				})
 				if err != nil {
@@ -140,6 +143,7 @@ func (s *searchJob) Start(ctx context.Context) (<-chan error, error) {
 							ech <- err
 						}
 					case ech <- err:
+						break
 					}
 				}
 				latency := time.Since(start)
@@ -148,33 +152,33 @@ func (s *searchJob) Start(ctx context.Context) (<-chan error, error) {
 				b.ReportMetric(float64(latency.Microseconds()), "latency")
 			})
 			// TODO: send metrics to the Prometeus
-			log.Infof("[bench: search job] Finish search bench: \n%#v\n", bres)
-			return nil
-		})
-	}
+			log.Infof("[bench: search job] Finish search bench: iter= %d \n%#v\n", i, bres)
+		}
+		return nil
+	})
 	return ech, nil
 }
 
-func calcRecall(lres, sres []*payload.Object_Distance) (recall float64) {
-	if len(lres) == 0 || len(sres) == 0 {
-		return
+func calcRecall(linearRes, searchRes []*payload.Object_Distance) float64 {
+	if len(linearRes) == 0 || len(searchRes) == 0 {
+		return 0
 	}
-	sIds := make([]string, len(sres))
-	for i, v := range sres {
-		sIds[i] = v.Id
+	linearIds := make([]string, len(linearRes))
+	for i, v := range linearRes {
+		linearIds[i] = v.Id
 	}
 	cnt := 0
-	for _, v := range lres {
-		if contains(v.Id, sIds) {
+	for _, v := range searchRes {
+		if contains(v.Id, linearIds) {
 			cnt++
 		}
 	}
-	return float64(cnt / len(lres))
+	return float64(cnt / len(linearRes))
 }
 
-func contains(tgt string, arr []string) bool {
+func contains(target string, arr []string) bool {
 	for _, v := range arr {
-		if v == tgt {
+		if v == target {
 			return true
 		}
 	}
