@@ -13,99 +13,37 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-
-// Package grpc provides grpc server logic
-package grpc
+package circuitbreaker
 
 import (
 	"context"
-	"os"
 	"reflect"
+	"sync"
 	"testing"
 
-	"github.com/vdaas/vald/apis/grpc/v1/payload"
-	"github.com/vdaas/vald/internal/config"
-	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
-	"github.com/vdaas/vald/internal/info"
-	"github.com/vdaas/vald/internal/log"
-	"github.com/vdaas/vald/internal/log/logger"
-	"github.com/vdaas/vald/internal/test/data/request"
-	"github.com/vdaas/vald/internal/test/data/vector"
 	"github.com/vdaas/vald/internal/test/goleak"
-	"github.com/vdaas/vald/pkg/agent/core/ngt/service"
 )
-func TestMain(m *testing.M) {
-	log.Init(log.WithLoggerType(logger.NOP.String()))
-	info.Init("")
-	os.Exit(m.Run())
-}
 
-func buildIndex(ctx context.Context, t request.ObjectType, dist vector.Distribution, num int, insertCfg *payload.Insert_Config,
-	ngtCfg *config.NGT, ngtOpts []service.Option, overwriteIDs []string, overwriteVectors [][]float32,
-) (Server, error) {
-	eg, ctx := errgroup.New(ctx)
-	ngt, err := service.New(ngtCfg, append(ngtOpts, service.WithErrGroup(eg), service.WithEnableInMemoryMode(true))...)
-	if err != nil {
-		return nil, err
-	}
-
-	s, err := New(WithErrGroup(eg), WithNGT(ngt))
-	if err != nil {
-		return nil, err
-	}
-
-	if num > 0 {
-		// gen insert request
-		reqs, err := request.GenMultiInsertReq(t, dist, num, ngtCfg.Dimension, insertCfg)
-		if err != nil {
-			return nil, err
-		}
-
-		// overwrite ID if needed
-		for i, id := range overwriteIDs {
-			reqs.Requests[i].Vector.Id = id
-		}
-
-		// overwrite Vectors if needed
-		for i, v := range overwriteVectors {
-			reqs.Requests[i].Vector.Vector = v
-		}
-
-		// insert and create index
-		if _, err := s.MultiInsert(ctx, reqs); err != nil {
-			return nil, err
-		}
-		if _, err := s.CreateIndex(ctx, &payload.Control_CreateIndexRequest{
-			PoolSize: 100,
-		}); err != nil {
-			return nil, err
-		}
-	}
-
-	return s, nil
-}
-
-func TestNew(t *testing.T) {
-	t.Parallel()
+func TestNewCircuitBreaker(t *testing.T) {
 	type args struct {
 		opts []Option
 	}
 	type want struct {
-		want Server
+		want CircuitBreaker
 		err  error
 	}
 	type test struct {
 		name       string
 		args       args
 		want       want
-		checkFunc  func(want, Server, error) error
+		checkFunc  func(want, CircuitBreaker, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, got Server, err error) error {
+	defaultCheckFunc := func(w want, got CircuitBreaker, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant_error: \"%#v\"", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(got, w.want) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
@@ -156,7 +94,7 @@ func TestNew(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 
-			got, err := New(test.args.opts...)
+			got, err := NewCircuitBreaker(test.args.opts...)
 			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -164,33 +102,35 @@ func TestNew(t *testing.T) {
 	}
 }
 
-func Test_server_newLocations(t *testing.T) {
-	t.Parallel()
+func Test_breakerManager_Do(t *testing.T) {
 	type args struct {
-		uuids []string
+		ctx context.Context
+		key string
+		fn  func(ctx context.Context) (interface{}, error)
 	}
 	type fields struct {
-		name              string
-		ip                string
-		ngt               service.NGT
-		eg                errgroup.Group
-		streamConcurrency int
+		m    sync.Map
+		opts []BreakerOption
 	}
 	type want struct {
-		wantLocs *payload.Object_Locations
+		wantVal interface{}
+		err     error
 	}
 	type test struct {
 		name       string
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, *payload.Object_Locations) error
+		checkFunc  func(want, interface{}, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, gotLocs *payload.Object_Locations) error {
-		if !reflect.DeepEqual(gotLocs, w.wantLocs) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotLocs, w.wantLocs)
+	defaultCheckFunc := func(w want, gotVal interface{}, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(gotVal, w.wantVal) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotVal, w.wantVal)
 		}
 		return nil
 	}
@@ -200,14 +140,13 @@ func Test_server_newLocations(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
-		           uuids: nil,
+		           ctx: nil,
+		           key: "",
+		           fn: nil,
 		       },
 		       fields: fields {
-		           name: "",
-		           ip: "",
-		           ngt: nil,
-		           eg: nil,
-		           streamConcurrency: 0,
+		           m: nil,
+		           opts: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -220,14 +159,13 @@ func Test_server_newLocations(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
-		           uuids: nil,
+		           ctx: nil,
+		           key: "",
+		           fn: nil,
 		           },
 		           fields: fields {
-		           name: "",
-		           ip: "",
-		           ngt: nil,
-		           eg: nil,
-		           streamConcurrency: 0,
+		           m: nil,
+		           opts: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -251,47 +189,35 @@ func Test_server_newLocations(t *testing.T) {
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
-			s := &server{
-				name:              test.fields.name,
-				ip:                test.fields.ip,
-				ngt:               test.fields.ngt,
-				eg:                test.fields.eg,
-				streamConcurrency: test.fields.streamConcurrency,
+			bm := &breakerManager{
+				m:    test.fields.m,
+				opts: test.fields.opts,
 			}
 
-			gotLocs := s.newLocations(test.args.uuids...)
-			if err := checkFunc(test.want, gotLocs); err != nil {
+			gotVal, err := bm.Do(test.args.ctx, test.args.key, test.args.fn)
+			if err := checkFunc(test.want, gotVal, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
 	}
 }
 
-func Test_server_newLocation(t *testing.T) {
-	t.Parallel()
+func TestMetrics(t *testing.T) {
 	type args struct {
-		uuid string
-	}
-	type fields struct {
-		name              string
-		ip                string
-		ngt               service.NGT
-		eg                errgroup.Group
-		streamConcurrency int
+		in0 context.Context
 	}
 	type want struct {
-		want *payload.Object_Location
+		want map[string]map[State]int64
 	}
 	type test struct {
 		name       string
 		args       args
-		fields     fields
 		want       want
-		checkFunc  func(want, *payload.Object_Location) error
+		checkFunc  func(want, map[string]map[State]int64) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, got *payload.Object_Location) error {
+	defaultCheckFunc := func(w want, got map[string]map[State]int64) error {
 		if !reflect.DeepEqual(got, w.want) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
@@ -303,14 +229,7 @@ func Test_server_newLocation(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
-		           uuid: "",
-		       },
-		       fields: fields {
-		           name: "",
-		           ip: "",
-		           ngt: nil,
-		           eg: nil,
-		           streamConcurrency: 0,
+		           in0: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -323,14 +242,7 @@ func Test_server_newLocation(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
-		           uuid: "",
-		           },
-		           fields: fields {
-		           name: "",
-		           ip: "",
-		           ngt: nil,
-		           eg: nil,
-		           streamConcurrency: 0,
+		           in0: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -354,15 +266,8 @@ func Test_server_newLocation(t *testing.T) {
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
-			s := &server{
-				name:              test.fields.name,
-				ip:                test.fields.ip,
-				ngt:               test.fields.ngt,
-				eg:                test.fields.eg,
-				streamConcurrency: test.fields.streamConcurrency,
-			}
 
-			got := s.newLocation(test.args.uuid)
+			got := Metrics(test.args.in0)
 			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}

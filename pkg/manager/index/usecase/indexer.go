@@ -27,6 +27,7 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc/metric"
 	"github.com/vdaas/vald/internal/observability"
 	backoffmetrics "github.com/vdaas/vald/internal/observability/metrics/backoff"
+	cbmetrics "github.com/vdaas/vald/internal/observability/metrics/circuitbreaker"
 	indexmetrics "github.com/vdaas/vald/internal/observability/metrics/manager/index"
 	"github.com/vdaas/vald/internal/runner"
 	"github.com/vdaas/vald/internal/safety"
@@ -74,7 +75,11 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		if err != nil {
 			return nil, err
 		}
-		obs, err = observability.NewWithConfig(cfg.Observability, bom)
+		cbm, err := cbmetrics.New()
+		if err != nil {
+			return nil, err
+		}
+		obs, err = observability.NewWithConfig(cfg.Observability, bom, cbm)
 		if err != nil {
 			return nil, err
 		}
