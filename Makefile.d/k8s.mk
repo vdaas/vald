@@ -211,12 +211,17 @@ k8s/metrics/grafana/delete:
 .PHONY: k8s/metrics/jaeger/deploy
 ## deploy jaeger
 k8s/metrics/jaeger/deploy:
-	kubectl apply -f k8s/metrics/jaeger
+	kubectl apply -f https://raw.githubusercontent.com/jaegertracing/helm-charts/jaeger-operator-$(JAEGER_OPERATOR_VERSION)/charts/jaeger-operator/crds/crd.yaml
+	kubectl apply -f k8s/metrics/jaeger/jaeger-operator
+	kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=jaeger-operator --timeout=60s
+	kubectl apply -f k8s/metrics/jaeger/jaeger
 
 .PHONY: k8s/metrics/jaeger/delete
 ## delete jaeger
 k8s/metrics/jaeger/delete:
-	kubectl delete -f k8s/metrics/jaeger
+	kubectl delete -f k8s/metrics/jaeger/jaeger
+	kubectl delete -f k8s/metrics/jaeger/jaeger-operator
+	kubectl delete -f https://raw.githubusercontent.com/jaegertracing/helm-charts/jaeger-operator-$(JAEGER_OPERATOR_VERSION)/charts/jaeger-operator/crds/crd.yaml
 
 .PHONY: k8s/metrics/loki/deploy
 ## deploy loki and promtail

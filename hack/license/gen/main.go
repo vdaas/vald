@@ -139,7 +139,6 @@ func dirwalk(dir string) []string {
 				"GO_VERSION",
 				"NGT_VERSION",
 				"Pipefile",
-				"TENSORFLOW_C_VERSION",
 				"VALD_VERSION",
 				"grp",
 				"obj",

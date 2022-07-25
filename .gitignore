@@ -39,6 +39,8 @@ hack/**/*
 !hack/**/*.*
 !hack/**/*/
 hack/**/*.hdf5
+hack/go.mod.default2
+hack/go.mod.default3
 
 !Makefile
 !LICENSE

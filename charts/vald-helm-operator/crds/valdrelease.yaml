@@ -221,13 +221,26 @@ spec:
                           enum:
                             - l1
                             - l2
+                            - ang
                             - angle
+                            - ham
                             - hamming
                             - cos
                             - cosine
-                            - normalizedangle
-                            - normalizedcosine
+                            - poincare
+                            - poinc
+                            - lorentz
+                            - loren
+                            - jac
                             - jaccard
+                            - spjac
+                            - sparsejaccard
+                            - norml2
+                            - normalizedl2
+                            - normang
+                            - normalizedangle
+                            - normcos
+                            - normalizedcosine
                         enable_copy_on_write:
                           type: boolean
                         enable_in_memory_mode:

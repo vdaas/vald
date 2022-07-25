@@ -31,6 +31,9 @@ outputs:
   HELM_EXTRA_OPTIONS:
     description: "helm extra options that specifies image tags"
     value: ${{ steps.specify_container_versions.outputs.HELM_EXTRA_OPTIONS }}
+  IMAGE_TAGS:
+    description: "specifies image tags"
+    value: ${{ steps.specify_container_versions.outputs.IMAGE_TAGS }}
 runs:
   using: "composite"
   steps:
@@ -53,11 +56,14 @@ runs:
           if curl -s "https://registry.hub.docker.com/v2/repositories/${image}/tags/${TAG_NAME}" | jq '.name' | grep -v "null"; then
             echo "${image}:${TAG_NAME} exists. adding a helm option '--set ${m[${image}]}=${TAG_NAME}'."
             export HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIONS} --set ${m[${image}]}=${TAG_NAME}"
+            export IMAGE_TAGS="${IMAGE_TAGS} ${m[${image}]}=\"${TAG_NAME}\""
           fi
         done
 
         echo "HELM_EXTRA_OPTIONS=${HELM_EXTRA_OPTIONS}"
         echo "::set-output name=HELM_EXTRA_OPTIONS::${HELM_EXTRA_OPTIONS}"
+        echo "IMAGE_TAGS=${IMAGE_TAGS}"
+        echo "::set-output name=IMAGE_TAGS::${IMAGE_TAGS}"
       env:
         IMAGES: ${{ inputs.images }}
         TAG_NAME: ${{ inputs.tag_name }}

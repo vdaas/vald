@@ -22,7 +22,6 @@ docker/build: \
 	docker/build/gateway-lb \
 	docker/build/gateway-filter \
 	docker/build/manager-index \
-	docker/build/filter-ingress-tensorflow \
 	docker/build/helm-operator
 
 .PHONY: docker/name/org
@@ -128,21 +127,6 @@ docker/build/manager-index:
 	    -t $(ORG)/$(MANAGER_INDEX_IMAGE):$(TAG) . \
 	    --build-arg GO_VERSION=$(GO_VERSION) \
 	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
-	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
-	    --build-arg MAINTAINER=$(MAINTAINER)
-
-.PHONY: docker/name/filter-ingress-tensorflow
-docker/name/filter-ingress-tensorflow:
-	@echo "$(ORG)/$(FILTER_INGRESS_TF_IMAGE)"
-
-.PHONY: docker/build/filter-ingress-tensorflow
-## build filter-ingress-tensorflow image
-docker/build/filter-ingress-tensorflow:
-	$(DOCKER) build \
-	    $(DOCKER_OPTS) \
-	    -f dockers/filter/ingress/tensorflow/Dockerfile \
-	    -t $(ORG)/$(FILTER_INGRESS_TF_IMAGE):$(TAG) . \
-	    --build-arg GO_VERSION=$(GO_VERSION) \
 	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
 	    --build-arg MAINTAINER=$(MAINTAINER)
 

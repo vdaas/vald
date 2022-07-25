@@ -1,0 +1,105 @@
+#
+# Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+name: "Setting E2E test environment"
+description: "A workflow to set E2E test environment"
+inputs:
+  require_libhdf5:
+    description: "If libhdf5 is required, set this to true."
+    required: false
+    default: "false"
+  require_minio:
+    description: "If Minio is required, set this to true."
+    required: false
+    default: "false"
+  valdrelease:
+    description: "path to the valdrelease.yaml that apply to cluster."
+    required: true
+    default: "true"
+  wait_for_selector:
+    description: "label selector used for specifying a pod waited for"
+    required: false
+    default: "app=vald-lb-gateway"
+  wait_for_timeout:
+    description: "timeout used for waiting for pods"
+    required: false
+    default: "600s"
+outputs:
+  POD_NAME:
+    description: "a pod name that waited for"
+    value: ${{ steps.deploy_vald.outputs.POD_NAME }}
+runs:
+  using: "composite"
+  steps:
+    - name: Install libhdf5
+      id: install_libhdf5
+      shell: bash
+      run: |
+        if [[ "${REQUIRE_LIBHDF5}" == "true" ]]; then
+          sudo apt-get update
+          sudo apt-get install -y libhdf5-dev
+        else
+          echo "skipped."
+        fi
+      env:
+        REQUIRE_LIBHDF5: ${{ inputs.require_libhdf5 }}
+    - name: check k3d
+      shell: bash
+      id: check_k3d
+      run: |
+        kubectl cluster-info
+    - name: Helm version
+      shell: bash
+      id: helm_version
+      run: |
+        helm version
+    - name: deploy Minio
+      id: deploy_minio
+      shell: bash
+      run: |
+        if [[ "${REQUIRE_MINIO}" == "true" ]]; then
+          make K8S_SLEEP_DURATION_FOR_WAIT_COMMAND=10 k8s/external/minio/deploy
+        else
+          echo "skipped."
+        fi
+      env:
+        REQUIRE_MINIO: ${{ inputs.require_minio }}
+    - name: deploy vald helm operator
+      shell: bash
+      id: deploy_vald_helm_operator
+      run: |
+        helm install vald-helm-operator \
+          --set image.tag=nightly \
+          charts/vald-helm-operator/.
+
+        sleep 3
+    - name: deploy vald
+      shell: bash
+      id: deploy_vald
+      run: |
+        kubectl apply -f ${VALDRELEASE}
+
+        sleep 3
+
+        kubectl wait --for=condition=ready pod -l ${WAIT_FOR_SELECTOR} --timeout=${WAIT_FOR_TIMEOUT}
+
+        kubectl get pods
+
+        podname=`kubectl get pods --selector=${WAIT_FOR_SELECTOR} | tail -1 | awk '{print $1}'`
+        echo "::set-output name=POD_NAME::${podname}"
+      env:
+        VALDRELEASE: ${{ inputs.valdrelease }}
+        WAIT_FOR_SELECTOR: ${{ inputs.wait_for_selector }}
+        WAIT_FOR_TIMEOUT: ${{ inputs.wait_for_timeout }}

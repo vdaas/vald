@@ -30,6 +30,13 @@ import (
 	"github.com/vdaas/vald/internal/rand"
 )
 
+// NOTE: This variable is for observability package.
+//       This will be fixed when refactoring the observability package.
+var (
+	mu      sync.RWMutex
+	metrics map[string]int64 = make(map[string]int64)
+)
+
 type backoff struct {
 	wg                    sync.WaitGroup
 	backoffFactor         float64
@@ -86,6 +93,7 @@ func (b *backoff) Do(ctx context.Context, f func(ctx context.Context) (val inter
 
 	dur := b.initialDuration
 	jdur := b.jittedInitialDuration
+	name := FromBackoffName(ctx)
 
 	dctx, cancel := context.WithDeadline(sctx, time.Now().Add(b.backoffTimeLimit))
 	defer cancel()
@@ -119,6 +127,13 @@ func (b *backoff) Do(ctx context.Context, f func(ctx context.Context) (val inter
 			if b.errLog {
 				log.Error(err)
 			}
+			// e.g. name = vald.v1.Exists/ip ...etc
+			if len(name) != 0 {
+				mu.Lock()
+				metrics[name] += 1
+				mu.Unlock()
+			}
+
 			timer.Reset(time.Duration(jdur))
 			select {
 			case <-dctx.Done():
@@ -152,4 +167,19 @@ func (b *backoff) addJitter(dur float64) float64 {
 // Close wait for the backoff process to complete.
 func (b *backoff) Close() {
 	b.wg.Wait()
+}
+
+func Metrics(_ context.Context) map[string]int64 {
+	mu.RLock()
+	defer mu.RUnlock()
+
+	if len(metrics) == 0 {
+		return nil
+	}
+
+	m := make(map[string]int64, len(metrics))
+	for name, cnt := range metrics {
+		m[name] = cnt
+	}
+	return m
 }

@@ -38,7 +38,7 @@ defaults:
   image:
     # @schema {"name": "defaults.image.tag", "type": "string"}
     # defaults.image.tag -- docker image tag
-    tag: v1.5.2
+    tag: v1.5.6
   # @schema {"name": "defaults.server_config", "type": "object", "anchor": "server_config"}
   server_config:
     # @schema {"name": "defaults.server_config.servers", "type": "object"}
@@ -1787,9 +1787,9 @@ agent:
     # @schema {"name": "agent.ngt.bulk_insert_chunk_size", "type": "integer"}
     # agent.ngt.bulk_insert_chunk_size -- bulk insert chunk size
     bulk_insert_chunk_size: 10
-    # @schema {"name": "agent.ngt.distance_type", "type": "string", "enum": ["l1", "l2", "angle", "hamming", "cos", "cosine", "normalizedangle", "normalizedcosine", "jaccard"]}
+    # @schema {"name": "agent.ngt.distance_type", "type": "string", "enum": ["l1", "l2", "ang", "angle", "ham", "hamming", "cos", "cosine", "poincare", "poinc", "lorentz", "loren", "jac", "jaccard", "spjac", "sparsejaccard", "norml2", "normalizedl2", "normang", "normalizedangle", "normcos", "normalizedcosine"]}
     # agent.ngt.distance_type -- distance type.
-    # it should be `l1`, `l2`, `angle`, `hamming`, `cosine`, `normalizedangle`, `normalizedcosine` or `jaccard`.
+    # it should be `l1`, `l2`, `angle`, `hamming`, `cosine`,`poincare`, `lorentz`, `jaccard`, `sparsejaccard`, `normalizedangle` or `normalizedcosine`.
     # for further details about NGT libraries supported distance is https://github.com/yahoojapan/NGT/wiki/Command-Quick-Reference
     # and vald agent's supported NGT distance type is https://pkg.go.dev/github.com/vdaas/vald/internal/core/algorithm/ngt#pkg-constants
     distance_type: l2

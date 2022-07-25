@@ -221,13 +221,60 @@ func (c *client) discover(ctx context.Context, ech chan<- error) (err error) {
 	if c.dscClient == nil || (c.autoconn && c.client == nil) {
 		return errors.ErrGRPCClientNotFound
 	}
-	connected := make([]string, 0, len(c.GetAddrs(ctx)))
-	var cur sync.Map
-	if _, err = c.dscClient.RoundRobin(ctx, func(ictx context.Context,
+
+	var connected []string
+	if bo := c.client.GetBackoff(); bo != nil {
+		_, err = bo.Do(ctx, func(ctx context.Context) (interface{}, bool, error) {
+			connected, err = c.updateDiscoveryInfo(ctx, ech)
+			if err != nil {
+				return nil, true, err
+			}
+			return nil, false, nil
+		})
+	} else {
+		connected, err = c.updateDiscoveryInfo(ctx, ech)
+	}
+	if err != nil {
+		log.Warn("failed to discover addrs from discoverer API, trying to discover from dns...\t" + err.Error())
+		connected, err = c.dnsDiscovery(ctx, ech)
+		if err != nil {
+			return err
+		}
+	}
+
+	oldAddrs := c.GetAddrs(ctx)
+	c.addrs.Store(connected)
+	return c.disconnectOldAddrs(ctx, oldAddrs, connected, ech)
+}
+
+func (c *client) updateDiscoveryInfo(ctx context.Context, ech chan<- error) (connected []string, err error) {
+	nodes, err := c.discoverNodes(ctx)
+	if err != nil {
+		return nil, err
+	}
+	connected, err = c.discoverAddrs(ctx, nodes, ech)
+	if err != nil {
+		return nil, err
+	}
+	if len(connected) == 0 {
+		log.Warn("connected addr is zero")
+		return nil, errors.ErrAddrCouldNotDiscover(err, c.dns)
+	}
+	if c.onDiscover != nil {
+		err = c.onDiscover(ctx, c, connected)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return connected, nil
+}
+
+func (c *client) discoverNodes(ctx context.Context) (nodes *payload.Info_Nodes, err error) {
+	_, err = c.dscClient.RoundRobin(grpc.WithGRPCMethod(ctx, "discoverer.v1.Discoverer/Nodes"), func(ctx context.Context,
 		conn *grpc.ClientConn, copts ...grpc.CallOption,
 	) (interface{}, error) {
-		nodes, err := discoverer.NewDiscovererClient(conn).
-			Nodes(ictx, &payload.Discoverer_Request{
+		nodes, err = discoverer.NewDiscovererClient(conn).
+			Nodes(ctx, &payload.Discoverer_Request{
 				Namespace: c.namespace,
 				Name:      c.name,
 				Node:      c.nodeName,
@@ -235,77 +282,57 @@ func (c *client) discover(ctx context.Context, ech chan<- error) (err error) {
 		if err != nil {
 			return nil, err
 		}
-		maxPodLen := 0
-		podLength := 0
-		for _, node := range nodes.GetNodes() {
-			l := len(node.GetPods().GetPods())
-			podLength += l
-			if l > maxPodLen {
-				maxPodLen = l
-			}
+		return nodes, nil
+	})
+	return nodes, err
+}
+
+func (c *client) discoverAddrs(ctx context.Context, nodes *payload.Info_Nodes, ech chan<- error) (addrs []string, err error) {
+	maxPodLen := 0
+	podLength := 0
+	for _, node := range nodes.GetNodes() {
+		l := len(node.GetPods().GetPods())
+		podLength += l
+		if l > maxPodLen {
+			maxPodLen = l
 		}
-		addrs := make([]string, 0, podLength)
-		for i := 0; i < maxPodLen; i++ {
-			for _, node := range nodes.GetNodes() {
-				select {
-				case <-ictx.Done():
-					return nil, ictx.Err()
-				default:
-					if node != nil && node.GetPods() != nil {
-						pods := node.GetPods().GetPods()
-						if i < len(pods) {
-							addr := net.JoinHostPort(pods[i].GetIp(), uint16(c.port))
-							if err = c.connect(ctx, addr); err != nil {
-								err = errors.ErrAddrCouldNotDiscover(err, addr)
-								select {
-								case <-ictx.Done():
-									return nil, ictx.Err()
-								case ech <- err:
-								}
-								err = nil
-							} else {
-								if c.autoconn {
-									cur.Store(addr, struct{}{})
-								}
-								addrs = append(addrs, addr)
-							}
-							break
+	}
+	addrs = make([]string, 0, podLength)
+	for i := 0; i < maxPodLen; i++ {
+		for _, node := range nodes.GetNodes() {
+			select {
+			case <-ctx.Done():
+				return nil, ctx.Err()
+			default:
+				if node != nil && node.GetPods() != nil && len(node.GetPods().GetPods()) > i {
+					addr := net.JoinHostPort(node.GetPods().GetPods()[i].GetIp(), uint16(c.port))
+					if err = c.connect(ctx, addr); err != nil {
+						err = errors.ErrAddrCouldNotDiscover(err, addr)
+						select {
+						case <-ctx.Done():
+							return nil, ctx.Err()
+						case ech <- err:
 						}
+						err = nil
+					} else {
+						addrs = append(addrs, addr)
 					}
+					break
 				}
 			}
 		}
-		connected = addrs
-		if len(connected) == 0 {
-			log.Warn("connected addr is zero")
-			cur = sync.Map{}
-			return nil, errors.ErrAddrCouldNotDiscover(err, c.dns)
-		}
-		if c.onDiscover != nil {
-			err = c.onDiscover(ctx, c, connected)
-			if err != nil {
-				cur = sync.Map{}
-				return nil, err
-			}
-		}
-		return nil, nil
-	}); err != nil {
-		log.Warn("failed to discover addrs from discoverer API, trying to discover from dns...\t" + err.Error())
-		connected, err = c.dnsDiscovery(ctx, ech)
-		if err != nil {
-			return err
-		}
-		if c.autoconn {
-			cur = sync.Map{}
-			for _, addr := range connected {
-				cur.Store(addr, struct{}{})
-			}
-		}
 	}
+	return addrs, nil
+}
 
-	oldAddrs := c.GetAddrs(ctx)
-
-	c.addrs.Store(connected)
+func (c *client) disconnectOldAddrs(ctx context.Context, oldAddrs, connectedAddrs []string, ech chan<- error) (err error) {
+	if !c.autoconn {
+		return nil
+	}
+	var cur sync.Map
+	for _, addr := range connectedAddrs {
+		cur.Store(addr, struct{}{})
+	}
 
 	for _, old := range oldAddrs {
 		_, ok := cur.Load(old)
@@ -319,9 +346,8 @@ func (c *client) discover(ctx context.Context, ech chan<- error) (err error) {
 			}))
 		}
 	}
-
-	if c.autoconn && c.client != nil {
-		if err = c.client.RangeConcurrent(ctx, len(connected)/3, func(ctx context.Context,
+	if c.client != nil {
+		if err = c.client.RangeConcurrent(ctx, len(connectedAddrs)/3, func(ctx context.Context,
 			addr string,
 			conn *grpc.ClientConn,
 			copts ...grpc.CallOption,

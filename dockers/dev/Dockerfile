@@ -56,7 +56,6 @@ COPY Makefile.d Makefile.d
 COPY versions versions
 
 RUN make ngt/install \
-    && make tensorflow/install \
     && make helm/install \
     && make helm-docs/install \
     && make kind/install \

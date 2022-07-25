@@ -69,7 +69,7 @@ func New(opts ...Option) vald.ServerWithFilter {
 }
 
 func (s *server) SearchObject(ctx context.Context, req *payload.Search_ObjectRequest) (*payload.Search_Response, error) {
-	ctx, span := trace.StartSpan(ctx, apiName+".SearchObject")
+	ctx, span := trace.StartSpan(ctx, apiName+"/"+vald.SearchObjectRPCName)
 	defer func() {
 		if span != nil {
 			span.End()
@@ -106,7 +106,7 @@ func (s *server) SearchObject(ctx context.Context, req *payload.Search_ObjectReq
 }
 
 func (s *server) MultiSearchObject(ctx context.Context, reqs *payload.Search_MultiObjectRequest) (res *payload.Search_Responses, errs error) {
-	ctx, span := trace.StartSpan(ctx, apiName+".MultiInsertObject")
+	ctx, span := trace.StartSpan(ctx, apiName+"/"+vald.MultiSearchObjectRPCName)
 	defer func() {
 		if span != nil {
 			span.End()
@@ -151,7 +151,7 @@ func (s *server) MultiSearchObject(ctx context.Context, reqs *payload.Search_Mul
 }
 
 func (s *server) StreamSearchObject(stream vald.Filter_StreamSearchObjectServer) error {
-	ctx, span := trace.StartSpan(stream.Context(), apiName+".StreamSearchObject")
+	ctx, span := trace.StartSpan(stream.Context(), apiName+"/"+vald.StreamSearchObjectRPCName)
 	defer func() {
 		if span != nil {
 			span.End()
@@ -182,7 +182,7 @@ func (s *server) StreamSearchObject(stream vald.Filter_StreamSearchObjectServer)
 }
 
 func (s *server) LinearSearchObject(ctx context.Context, req *payload.Search_ObjectRequest) (*payload.Search_Response, error) {
-	ctx, span := trace.StartSpan(ctx, apiName+".LinearSearchObject")
+	ctx, span := trace.StartSpan(ctx, apiName+"/"+vald.LinearSearchObjectRPCName)
 	defer func() {
 		if span != nil {
 			span.End()
@@ -219,7 +219,7 @@ func (s *server) LinearSearchObject(ctx context.Context, req *payload.Search_Obj
 }
 
 func (s *server) MultiLinearSearchObject(ctx context.Context, reqs *payload.Search_MultiObjectRequest) (res *payload.Search_Responses, errs error) {
-	ctx, span := trace.StartSpan(ctx, apiName+".MultiLinearSearchObject")
+	ctx, span := trace.StartSpan(ctx, apiName+"/"+vald.MultiLinearSearchObjectRPCName)
 	defer func() {
 		if span != nil {
 			span.End()
@@ -264,7 +264,7 @@ func (s *server) MultiLinearSearchObject(ctx context.Context, reqs *payload.Sear
 }
 
 func (s *server) StreamLinearSearchObject(stream vald.Filter_StreamSearchObjectServer) error {
-	ctx, span := trace.StartSpan(stream.Context(), apiName+".StreamLinearSearchObject")
+	ctx, span := trace.StartSpan(stream.Context(), apiName+"/"+vald.StreamLinearSearchObjectRPCName)
 	defer func() {
 		if span != nil {
 			span.End()
@@ -295,7 +295,7 @@ func (s *server) StreamLinearSearchObject(stream vald.Filter_StreamSearchObjectS
 }
 
 func (s *server) InsertObject(ctx context.Context, req *payload.Insert_ObjectRequest) (*payload.Object_Location, error) {
-	ctx, span := trace.StartSpan(ctx, apiName+".InsertObject")
+	ctx, span := trace.StartSpan(ctx, apiName+"/"+vald.InsertObjectRPCName)
 	defer func() {
 		if span != nil {
 			span.End()
@@ -333,7 +333,7 @@ func (s *server) InsertObject(ctx context.Context, req *payload.Insert_ObjectReq
 }
 
 func (s *server) StreamInsertObject(stream vald.Filter_StreamInsertObjectServer) error {
-	ctx, span := trace.StartSpan(stream.Context(), apiName+".StreamInsertObject")
+	ctx, span := trace.StartSpan(stream.Context(), apiName+"/"+vald.StreamInsertObjectRPCName)
 	defer func() {
 		if span != nil {
 			span.End()
@@ -365,7 +365,7 @@ func (s *server) StreamInsertObject(stream vald.Filter_StreamInsertObjectServer)
 }
 
 func (s *server) MultiInsertObject(ctx context.Context, reqs *payload.Insert_MultiObjectRequest) (locs *payload.Object_Locations, errs error) {
-	ctx, span := trace.StartSpan(ctx, apiName+".MultiInsertObject")
+	ctx, span := trace.StartSpan(ctx, apiName+"/"+vald.MultiInsertObjectRPCName)
 	defer func() {
 		if span != nil {
 			span.End()
@@ -410,7 +410,7 @@ func (s *server) MultiInsertObject(ctx context.Context, reqs *payload.Insert_Mul
 }
 
 func (s *server) UpdateObject(ctx context.Context, req *payload.Update_ObjectRequest) (*payload.Object_Location, error) {
-	ctx, span := trace.StartSpan(ctx, apiName+".UpdateObject")
+	ctx, span := trace.StartSpan(ctx, apiName+"/"+vald.UpdateObjectRPCName)
 	defer func() {
 		if span != nil {
 			span.End()
@@ -449,7 +449,7 @@ func (s *server) UpdateObject(ctx context.Context, req *payload.Update_ObjectReq
 }
 
 func (s *server) StreamUpdateObject(stream vald.Filter_StreamUpdateObjectServer) error {
-	ctx, span := trace.StartSpan(stream.Context(), apiName+".StreamUpdateObject")
+	ctx, span := trace.StartSpan(stream.Context(), apiName+"/"+vald.StreamUpdateObjectRPCName)
 	defer func() {
 		if span != nil {
 			span.End()
@@ -480,7 +480,7 @@ func (s *server) StreamUpdateObject(stream vald.Filter_StreamUpdateObjectServer)
 }
 
 func (s *server) MultiUpdateObject(ctx context.Context, reqs *payload.Update_MultiObjectRequest) (locs *payload.Object_Locations, errs error) {
-	ctx, span := trace.StartSpan(ctx, apiName+".MultiUpdateObject")
+	ctx, span := trace.StartSpan(ctx, apiName+"/"+vald.MultiUpdateObjectRPCName)
 	defer func() {
 		if span != nil {
 			span.End()
@@ -525,7 +525,7 @@ func (s *server) MultiUpdateObject(ctx context.Context, reqs *payload.Update_Mul
 }
 
 func (s *server) UpsertObject(ctx context.Context, req *payload.Upsert_ObjectRequest) (*payload.Object_Location, error) {
-	ctx, span := trace.StartSpan(ctx, apiName+".UpsertObject")
+	ctx, span := trace.StartSpan(ctx, apiName+"/"+vald.UpsertObjectRPCName)
 	defer func() {
 		if span != nil {
 			span.End()
@@ -563,7 +563,7 @@ func (s *server) UpsertObject(ctx context.Context, req *payload.Upsert_ObjectReq
 }
 
 func (s *server) StreamUpsertObject(stream vald.Filter_StreamUpsertObjectServer) error {
-	ctx, span := trace.StartSpan(stream.Context(), apiName+".StreamUpsertObject")
+	ctx, span := trace.StartSpan(stream.Context(), apiName+"/"+vald.StreamUpsertObjectRPCName)
 	defer func() {
 		if span != nil {
 			span.End()
@@ -594,7 +594,7 @@ func (s *server) StreamUpsertObject(stream vald.Filter_StreamUpsertObjectServer)
 }
 
 func (s *server) MultiUpsertObject(ctx context.Context, reqs *payload.Upsert_MultiObjectRequest) (locs *payload.Object_Locations, errs error) {
-	ctx, span := trace.StartSpan(ctx, apiName+".MultiUpsertObject")
+	ctx, span := trace.StartSpan(ctx, apiName+"/"+vald.MultiUpsertObjectRPCName)
 	defer func() {
 		if span != nil {
 			span.End()
@@ -639,7 +639,7 @@ func (s *server) MultiUpsertObject(ctx context.Context, reqs *payload.Upsert_Mul
 }
 
 func (s *server) Exists(ctx context.Context, meta *payload.Object_ID) (*payload.Object_ID, error) {
-	ctx, span := trace.StartSpan(ctx, apiName+".Exists")
+	ctx, span := trace.StartSpan(ctx, apiName+"/"+vald.ExistsRPCName)
 	defer func() {
 		if span != nil {
 			span.End()
@@ -649,7 +649,7 @@ func (s *server) Exists(ctx context.Context, meta *payload.Object_ID) (*payload.
 }
 
 func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *payload.Search_Response, err error) {
-	ctx, span := trace.StartSpan(ctx, apiName+".Search")
+	ctx, span := trace.StartSpan(ctx, apiName+"/"+vald.SearchRPCName)
 	defer func() {
 		if span != nil {
 			span.End()
@@ -701,7 +701,7 @@ func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *
 }
 
 func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) (res *payload.Search_Response, err error) {
-	ctx, span := trace.StartSpan(ctx, apiName+".SearchByID")
+	ctx, span := trace.StartSpan(ctx, apiName+"/"+vald.SearchByIDRPCName)
 	defer func() {
 		if span != nil {
 			span.End()
@@ -734,7 +734,7 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 }
 
 func (s *server) StreamSearch(stream vald.Search_StreamSearchServer) (err error) {
-	ctx, span := trace.StartSpan(stream.Context(), apiName+".StreamSearch")
+	ctx, span := trace.StartSpan(stream.Context(), apiName+"/"+vald.StreamSearchRPCName)
 	defer func() {
 		if span != nil {
 			span.End()
@@ -774,7 +774,7 @@ func (s *server) StreamSearch(stream vald.Search_StreamSearchServer) (err error)
 }
 
 func (s *server) StreamSearchByID(stream vald.Search_StreamSearchByIDServer) (err error) {
-	ctx, span := trace.StartSpan(stream.Context(), apiName+".StreamSearchByID")
+	ctx, span := trace.StartSpan(stream.Context(), apiName+"/"+vald.StreamSearchByIDRPCName)
 	defer func() {
 		if span != nil {
 			span.End()
@@ -823,7 +823,7 @@ func (s *server) StreamSearchByID(stream vald.Search_StreamSearchByIDServer) (er
 }
 
 func (s *server) MultiSearch(ctx context.Context, reqs *payload.Search_MultiRequest) (res *payload.Search_Responses, errs error) {
-	ctx, span := trace.StartSpan(ctx, apiName+".MultiSearch")
+	ctx, span := trace.StartSpan(ctx, apiName+"/"+vald.MultiSearchRPCName)
 	defer func() {
 		if span != nil {
 			span.End()
@@ -867,7 +867,7 @@ func (s *server) MultiSearch(ctx context.Context, reqs *payload.Search_MultiRequ
 }
 
 func (s *server) MultiSearchByID(ctx context.Context, reqs *payload.Search_MultiIDRequest) (res *payload.Search_Responses, errs error) {
-	ctx, span := trace.StartSpan(ctx, apiName+".MultiSearchByID")
+	ctx, span := trace.StartSpan(ctx, apiName+"/"+vald.MultiSearchByIDRPCName)
 	defer func() {
 		if span != nil {
 			span.End()
@@ -911,7 +911,7 @@ func (s *server) MultiSearchByID(ctx context.Context, reqs *payload.Search_Multi
 }
 
 func (s *server) LinearSearch(ctx context.Context, req *payload.Search_Request) (res *payload.Search_Response, err error) {
-	ctx, span := trace.StartSpan(ctx, apiName+".LinearSearch")
+	ctx, span := trace.StartSpan(ctx, apiName+"/"+vald.LinearSearchRPCName)
 	defer func() {
 		if span != nil {
 			span.End()
@@ -963,7 +963,7 @@ func (s *server) LinearSearch(ctx context.Context, req *payload.Search_Request) 
 }
 
 func (s *server) LinearSearchByID(ctx context.Context, req *payload.Search_IDRequest) (res *payload.Search_Response, err error) {
-	ctx, span := trace.StartSpan(ctx, apiName+".LinearSearchByID")
+	ctx, span := trace.StartSpan(ctx, apiName+"/"+vald.LinearSearchByIDRPCName)
 	defer func() {
 		if span != nil {
 			span.End()
@@ -996,7 +996,7 @@ func (s *server) LinearSearchByID(ctx context.Context, req *payload.Search_IDReq
 }
 
 func (s *server) StreamLinearSearch(stream vald.Search_StreamLinearSearchServer) (err error) {
-	ctx, span := trace.StartSpan(stream.Context(), apiName+".StreamLinearSearch")
+	ctx, span := trace.StartSpan(stream.Context(), apiName+"/"+vald.StreamLinearSearchRPCName)
 	defer func() {
 		if span != nil {
 			span.End()
@@ -1036,7 +1036,7 @@ func (s *server) StreamLinearSearch(stream vald.Search_StreamLinearSearchServer)
 }
 
 func (s *server) StreamLinearSearchByID(stream vald.Search_StreamLinearSearchByIDServer) (err error) {
-	ctx, span := trace.StartSpan(stream.Context(), apiName+".StreamLinearSearchByID")
+	ctx, span := trace.StartSpan(stream.Context(), apiName+"/"+vald.StreamLinearSearchByIDRPCName)
 	defer func() {
 		if span != nil {
 			span.End()
@@ -1085,7 +1085,7 @@ func (s *server) StreamLinearSearchByID(stream vald.Search_StreamLinearSearchByI
 }
 
 func (s *server) MultiLinearSearch(ctx context.Context, reqs *payload.Search_MultiRequest) (res *payload.Search_Responses, errs error) {
-	ctx, span := trace.StartSpan(ctx, apiName+".MultiLinearSearch")
+	ctx, span := trace.StartSpan(ctx, apiName+"/"+vald.MultiLinearSearchRPCName)
 	defer func() {
 		if span != nil {
 			span.End()
@@ -1129,7 +1129,7 @@ func (s *server) MultiLinearSearch(ctx context.Context, reqs *payload.Search_Mul
 }
 
 func (s *server) MultiLinearSearchByID(ctx context.Context, reqs *payload.Search_MultiIDRequest) (res *payload.Search_Responses, errs error) {
-	ctx, span := trace.StartSpan(ctx, apiName+".MultiLinearSearchByID")
+	ctx, span := trace.StartSpan(ctx, apiName+"/"+vald.MultiLinearSearchByIDRPCName)
 	defer func() {
 		if span != nil {
 			span.End()
@@ -1173,7 +1173,7 @@ func (s *server) MultiLinearSearchByID(ctx context.Context, reqs *payload.Search
 }
 
 func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (loc *payload.Object_Location, err error) {
-	ctx, span := trace.StartSpan(ctx, apiName+".Insert")
+	ctx, span := trace.StartSpan(ctx, apiName+"/"+vald.InsertRPCName)
 	defer func() {
 		if span != nil {
 			span.End()
@@ -1243,7 +1243,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (loc *
 }
 
 func (s *server) StreamInsert(stream vald.Insert_StreamInsertServer) (err error) {
-	ctx, span := trace.StartSpan(stream.Context(), apiName+".StreamInsert")
+	ctx, span := trace.StartSpan(stream.Context(), apiName+"/"+vald.StreamInsertRPCName)
 	defer func() {
 		if span != nil {
 			span.End()
@@ -1293,7 +1293,7 @@ func (s *server) StreamInsert(stream vald.Insert_StreamInsertServer) (err error)
 }
 
 func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequest) (locs *payload.Object_Locations, errs error) {
-	ctx, span := trace.StartSpan(ctx, apiName+".MultiInsert")
+	ctx, span := trace.StartSpan(ctx, apiName+"/"+vald.MultiInsertRPCName)
 	defer func() {
 		if span != nil {
 			span.End()
@@ -1337,7 +1337,7 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 }
 
 func (s *server) Update(ctx context.Context, req *payload.Update_Request) (loc *payload.Object_Location, err error) {
-	ctx, span := trace.StartSpan(ctx, apiName+".Update")
+	ctx, span := trace.StartSpan(ctx, apiName+"/"+vald.UpdateRPCName)
 	defer func() {
 		if span != nil {
 			span.End()
@@ -1407,7 +1407,7 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (loc *
 }
 
 func (s *server) StreamUpdate(stream vald.Update_StreamUpdateServer) (err error) {
-	ctx, span := trace.StartSpan(stream.Context(), apiName+".StreamUpdate")
+	ctx, span := trace.StartSpan(stream.Context(), apiName+"/"+vald.StreamUpdateRPCName)
 	defer func() {
 		if span != nil {
 			span.End()
@@ -1457,7 +1457,7 @@ func (s *server) StreamUpdate(stream vald.Update_StreamUpdateServer) (err error)
 }
 
 func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequest) (locs *payload.Object_Locations, errs error) {
-	ctx, span := trace.StartSpan(ctx, apiName+".MultiUpdate")
+	ctx, span := trace.StartSpan(ctx, apiName+"/"+vald.MultiUpdateRPCName)
 	defer func() {
 		if span != nil {
 			span.End()
@@ -1501,7 +1501,7 @@ func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequ
 }
 
 func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *payload.Object_Location, err error) {
-	ctx, span := trace.StartSpan(ctx, apiName+".Upsert")
+	ctx, span := trace.StartSpan(ctx, apiName+"/"+vald.UpsertRPCName)
 	defer func() {
 		if span != nil {
 			span.End()
@@ -1571,7 +1571,7 @@ func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *
 }
 
 func (s *server) StreamUpsert(stream vald.Upsert_StreamUpsertServer) (err error) {
-	ctx, span := trace.StartSpan(stream.Context(), apiName+".StreamUpsert")
+	ctx, span := trace.StartSpan(stream.Context(), apiName+"/"+vald.StreamUpsertRPCName)
 	defer func() {
 		if span != nil {
 			span.End()
@@ -1621,7 +1621,7 @@ func (s *server) StreamUpsert(stream vald.Upsert_StreamUpsertServer) (err error)
 }
 
 func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequest) (locs *payload.Object_Locations, errs error) {
-	ctx, span := trace.StartSpan(ctx, apiName+".MultiUpsert")
+	ctx, span := trace.StartSpan(ctx, apiName+"/"+vald.MultiUpsertRPCName)
 	defer func() {
 		if span != nil {
 			span.End()
@@ -1665,7 +1665,7 @@ func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequ
 }
 
 func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (loc *payload.Object_Location, err error) {
-	ctx, span := trace.StartSpan(ctx, apiName+".Remove")
+	ctx, span := trace.StartSpan(ctx, apiName+"/"+vald.RemoveRPCName)
 	defer func() {
 		if span != nil {
 			span.End()
@@ -1675,7 +1675,7 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (loc *
 }
 
 func (s *server) StreamRemove(stream vald.Remove_StreamRemoveServer) (err error) {
-	ctx, span := trace.StartSpan(stream.Context(), apiName+".StreamRemove")
+	ctx, span := trace.StartSpan(stream.Context(), apiName+"/"+vald.StreamRemoveRPCName)
 	defer func() {
 		if span != nil {
 			span.End()
@@ -1725,7 +1725,7 @@ func (s *server) StreamRemove(stream vald.Remove_StreamRemoveServer) (err error)
 }
 
 func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequest) (locs *payload.Object_Locations, errs error) {
-	ctx, span := trace.StartSpan(ctx, apiName+".MultiRemove")
+	ctx, span := trace.StartSpan(ctx, apiName+"/"+vald.MultiRemoveRPCName)
 	defer func() {
 		if span != nil {
 			span.End()
@@ -1769,7 +1769,7 @@ func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequ
 }
 
 func (s *server) GetObject(ctx context.Context, req *payload.Object_VectorRequest) (vec *payload.Object_Vector, err error) {
-	ctx, span := trace.StartSpan(ctx, apiName+".GetObject")
+	ctx, span := trace.StartSpan(ctx, apiName+"/"+vald.GetObjectRPCName)
 	defer func() {
 		if span != nil {
 			span.End()
@@ -1802,7 +1802,7 @@ func (s *server) GetObject(ctx context.Context, req *payload.Object_VectorReques
 }
 
 func (s *server) StreamGetObject(stream vald.Object_StreamGetObjectServer) (err error) {
-	ctx, span := trace.StartSpan(stream.Context(), apiName+".StreamGetObject")
+	ctx, span := trace.StartSpan(stream.Context(), apiName+"/"+vald.StreamGetObjectRPCName)
 	defer func() {
 		if span != nil {
 			span.End()

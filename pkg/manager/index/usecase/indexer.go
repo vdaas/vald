@@ -26,7 +26,8 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/grpc/metric"
 	"github.com/vdaas/vald/internal/observability"
-	metrics "github.com/vdaas/vald/internal/observability/metrics/manager/index"
+	backoffmetrics "github.com/vdaas/vald/internal/observability/metrics/backoff"
+	indexmetrics "github.com/vdaas/vald/internal/observability/metrics/manager/index"
 	"github.com/vdaas/vald/internal/runner"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/servers/server"
@@ -69,7 +70,11 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 
 	var obs observability.Observability
 	if cfg.Observability.Enabled {
-		obs, err = observability.NewWithConfig(cfg.Observability)
+		bom, err := backoffmetrics.New()
+		if err != nil {
+			return nil, err
+		}
+		obs, err = observability.NewWithConfig(cfg.Observability, bom)
 		if err != nil {
 			return nil, err
 		}
@@ -126,7 +131,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	if cfg.Observability.Enabled {
 		obs, err = observability.NewWithConfig(
 			cfg.Observability,
-			metrics.New(indexer),
+			indexmetrics.New(indexer),
 		)
 		if err != nil {
 			return nil, err

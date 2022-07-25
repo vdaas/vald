@@ -31,7 +31,7 @@ import (
 	"github.com/vdaas/vald/internal/test/goleak"
 )
 
-func TestDo(t *testing.T) {
+func TestDo_for_race(t *testing.T) {
 	type args struct {
 		ctx  context.Context
 		opts []Option

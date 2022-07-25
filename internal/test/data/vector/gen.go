@@ -131,3 +131,43 @@ func gaussianDistributedUint8VectorGenerator(n, dim int, mean, sigma float64) []
 		}
 	})
 }
+
+// GenF32Vec returns multiple float32 vectors.
+func GenF32Vec(dist Distribution, num int, dim int) ([][]float32, error) {
+	generator, err := Float32VectorGenerator(dist)
+	if err != nil {
+		return nil, err
+	}
+	return generator(num, dim), nil
+}
+
+// GenUint8Vec returns multiple uint8 vectors.
+func GenUint8Vec(dist Distribution, num int, dim int) ([][]float32, error) {
+	generator, err := Uint8VectorGenerator(dist)
+	if err != nil {
+		return nil, err
+	}
+	return ConvertVectorsUint8ToFloat32(generator(num, dim)), nil
+}
+
+// GenSameValueVec returns a float32 vector filled with value.
+func GenSameValueVec(size int, val float32) []float32 {
+	v := make([]float32, size)
+	for i := 0; i < size; i++ {
+		v[i] = val
+	}
+	return v
+}
+
+// ConvertVectorsUint8ToFloat32 converts uint8 vectors and return float32 vectors
+func ConvertVectorsUint8ToFloat32(vectors [][]uint8) (ret [][]float32) {
+	ret = make([][]float32, 0, len(vectors))
+	for _, vec := range vectors {
+		fvec := make([]float32, len(vec))
+		for i, v := range vec {
+			fvec[i] = float32(v)
+		}
+		ret = append(ret, fvec)
+	}
+	return
+}

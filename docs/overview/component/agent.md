@@ -46,7 +46,7 @@ The main functions are following:
 - Update
   - Create a request to update the specific vectors to the new vectors.
   - Requested vectors are stored in the `vqueue`.
-- Delete
+- Remove
   - Create a request to remove the specific vectors from NGT indexes.
   - Requested vectors are stored in the `vqueue`.
 - GetObject

@@ -68,7 +68,6 @@ COPY hack/go.mod.default hack/go.mod.default
 RUN make deps
 
 RUN make ngt/install \
-    && make tensorflow/install \
     && make helm/install \
     && make helm-docs/install \
     && make kind/install \

@@ -16,6 +16,7 @@
 package servers
 
 import (
+	"context"
 	"reflect"
 	"testing"
 	"time"
@@ -97,7 +98,7 @@ func TestWithErrorGroup(t *testing.T) {
 
 	tests := []test{
 		func() test {
-			eg := errgroup.Get()
+			eg, _ := errgroup.New(context.Background())
 
 			return test{
 				name: "set success",

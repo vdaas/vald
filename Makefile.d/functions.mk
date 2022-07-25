@@ -100,7 +100,7 @@ define run-e2e-crud-test
 	    -upsert-num=$(E2E_UPSERT_COUNT) \
 	    -remove-num=$(E2E_REMOVE_COUNT) \
 	    -wait-after-insert=$(E2E_WAIT_FOR_CREATE_INDEX_DURATION) \
-	    -portforward=$(E2E_PORTFORWARD_ENEBLEDT) \
+	    -portforward=$(E2E_PORTFORWARD_ENABLED) \
 	    -portforward-pod-name=$(E2E_TARGET_POD_NAME) \
 	    -portforward-pod-port=$(E2E_TARGET_PORT) \
 	    -namespace=$(E2E_TARGET_NAMESPACE)
