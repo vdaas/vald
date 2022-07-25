@@ -35,8 +35,8 @@ type Config struct {
 	// Observability represent observability configurations
 	Observability *config.Observability `json:"observability" yaml:"observability"`
 
-	// SearchJob represents rebalance job configurations
-	SearchJob *config.SearchJob `json:"bench_search_job" yaml:"bench_search_job"`
+	// Job represents benchmark job configurations
+	Job *config.BenchmarkJob `json:"job" yaml:"job"`
 }
 
 // NewConfig represents the set config from the given setting file path.
@@ -58,10 +58,10 @@ func NewConfig(path string) (cfg *Config, err error) {
 		cfg.Observability = cfg.Observability.Bind()
 	}
 
-	if cfg.SearchJob != nil {
-		cfg.SearchJob = cfg.SearchJob.Bind()
+	if cfg.Job != nil {
+		cfg.Job = cfg.Job.Bind()
 	} else {
-		cfg.SearchJob = new(config.SearchJob)
+		cfg.Job = new(config.BenchmarkJob)
 	}
 
 	return cfg, nil
@@ -141,13 +141,16 @@ func NewConfig(path string) (cfg *Config, err error) {
 // 				CA:      "/path/to/ca",
 // 			},
 // 		},
-// 		SearchJob: &config.SearchJob{
-//			Iter:    100,
-//			Num:     10,
-//			MinNum:  5,
-//			Radius:  -1,
-//			Epsilon: 0.1,
-//			Timeout: "5s",
+// 		Job: &config.BenchmarkJob{
+//			JobType:   "search",
+//			Dataset:   "fashion-mnist-784-euc",
+//			Dimension: 784,
+//			Iter:      100,
+//			Num:       10,
+//			MinNum:    5,
+//			Radius:    -1,
+//			Epsilon:   0.1,
+//			Timeout:   "5s",
 // 		},
 // 	}
 // 	fmt.Println(config.ToRawYaml(d))

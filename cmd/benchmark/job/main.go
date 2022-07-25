@@ -24,14 +24,14 @@ import (
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/runner"
 	"github.com/vdaas/vald/internal/safety"
-	"github.com/vdaas/vald/pkg/benchmark/job/search/config"
-	"github.com/vdaas/vald/pkg/benchmark/job/search/usecase"
+	"github.com/vdaas/vald/pkg/benchmark/job/config"
+	"github.com/vdaas/vald/pkg/benchmark/job/usecase"
 )
 
 const (
 	maxVersion = "v0.0.10"
 	minVersion = "v0.0.0"
-	name       = "benchmark search job"
+	name       = "benchmark job"
 )
 
 func main() {

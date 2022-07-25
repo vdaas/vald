@@ -14,25 +14,34 @@
 // limitations under the License.
 //
 
-// Package rest provides rest api logic
-package rest
+// Package router provides implementation of Go API for routing http Handler wrapped by rest.Func
+package router
 
 import (
-	"github.com/vdaas/vald/apis/grpc/v1/benchmark"
+	"github.com/vdaas/vald/internal/errgroup"
+	"github.com/vdaas/vald/pkg/benchmark/job/handler/rest"
 )
 
-type Handler interface{}
+type Option func(*router)
 
-type handler struct {
-	sj benchmark.SearchJobServer
+var defaultOpts = []Option{
+	WithTimeout("3s"),
 }
 
-func New(opts ...Option) Handler {
-	h := new(handler)
-
-	for _, opt := range append(defaultOpts, opts...) {
-		opt(h)
+func WithHandler(h rest.Handler) Option {
+	return func(r *router) {
+		r.handler = h
 	}
+}
 
-	return h
+func WithTimeout(timeout string) Option {
+	return func(r *router) {
+		r.timeout = timeout
+	}
+}
+
+func WithErrGroup(eg errgroup.Group) Option {
+	return func(r *router) {
+		r.eg = eg
+	}
 }

@@ -115,7 +115,7 @@
   
 - [apis/proto/v1/benchmark/benchmark.proto](#apis_proto_v1_benchmark_benchmark-proto)
     - [Controller](#benchmark-v1-Controller)
-    - [SearchJob](#benchmark-v1-SearchJob)
+    - [Job](#benchmark-v1-Job)
   
 - [Scalar Value Types](#scalar-value-types)
 
@@ -1566,9 +1566,9 @@ TODO define API spec here
 | ----------- | ------------ | ------------- | ------------|
 
 
-<a name="benchmark-v1-SearchJob"></a>
+<a name="benchmark-v1-Job"></a>
 
-### SearchJob
+### Job
 TODO define API spec here
 
 | Method Name | Request Type | Response Type | Description |

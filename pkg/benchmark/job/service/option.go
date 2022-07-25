@@ -14,16 +14,17 @@
 // limitations under the License.
 //
 
-// Package search manages the main logic of search job.
-package search
+// Package service manages the main logic of benchmark job.
+package service
 
 import (
 	"github.com/vdaas/vald/internal/client/v1/client/vald"
 	"github.com/vdaas/vald/internal/errgroup"
+	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/test/data/hdf5"
 )
 
-type Option func(s *searchJob) error
+type Option func(j *job) error
 
 var defaultOpts = []Option{
 	WithDimension(748),
@@ -35,71 +36,92 @@ var defaultOpts = []Option{
 }
 
 func WithDimension(dim int) Option {
-	return func(s *searchJob) error {
-		s.dimension = dim
+	return func(j *job) error {
+		j.dimension = dim
 		return nil
 	}
 }
 
 func WithIter(iter int) Option {
-	return func(s *searchJob) error {
-		s.iter = iter
+	return func(j *job) error {
+		j.iter = iter
 		return nil
 	}
 }
 
 func WithNum(num uint32) Option {
-	return func(s *searchJob) error {
-		s.num = num
+	return func(j *job) error {
+		j.num = num
 		return nil
 	}
 }
 
 func WithMinNum(minNum uint32) Option {
-	return func(s *searchJob) error {
-		s.minNum = minNum
+	return func(j *job) error {
+		j.minNum = minNum
 		return nil
 	}
 }
 
 func WithRadius(radius float64) Option {
-	return func(s *searchJob) error {
-		s.radius = radius
+	return func(j *job) error {
+		j.radius = radius
 		return nil
 	}
 }
 
 func WithEpsilon(epsilon float64) Option {
-	return func(s *searchJob) error {
-		s.epsilon = epsilon
+	return func(j *job) error {
+		j.epsilon = epsilon
 		return nil
 	}
 }
 
 func WithTimeout(timeout string) Option {
-	return func(s *searchJob) error {
-		s.timeout = timeout
+	return func(j *job) error {
+		j.timeout = timeout
 		return nil
 	}
 }
 
 func WithValdClient(c vald.Client) Option {
-	return func(s *searchJob) error {
-		s.client = c
+	return func(j *job) error {
+		j.client = c
 		return nil
 	}
 }
 
 func WithErrGroup(eg errgroup.Group) Option {
-	return func(s *searchJob) error {
-		s.eg = eg
+	return func(j *job) error {
+		j.eg = eg
 		return nil
 	}
 }
 
 func WithHdf5(d hdf5.Data) Option {
-	return func(s *searchJob) error {
-		s.hdf5 = d
+	return func(j *job) error {
+		j.hdf5 = d
+		return nil
+	}
+}
+
+func WithJobTypeByString(t string) Option {
+	var jt jobType
+	switch t {
+	case "search":
+		jt = SEARCH
+	}
+	return WithJobType(jt)
+}
+
+func WithJobType(jt jobType) Option {
+	return func(j *job) error {
+		switch jt {
+		case SEARCH:
+			j.jobType = jt
+		default:
+			return errors.NewErrInvalidOption("jobType", jt)
+		}
 		return nil
 	}
 }

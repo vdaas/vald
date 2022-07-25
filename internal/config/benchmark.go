@@ -17,8 +17,10 @@
 // Package config providers configuration type and load configuration logic
 package config
 
-// SearchJob represents the configuration for the internal benchmark search job.
-type SearchJob struct {
+// Job represents the configuration for the internal benchmark search job.
+type BenchmarkJob struct {
+	JobType       string      `json:"job_type" yaml:"job_type"`
+	Dataset       string      `json:"dataset" yaml:"dataset"`
 	Dimension     int         `json:"dimension" yaml: "dimension"`
 	Iter          int         `json:"iter" yaml: "iter"`
 	Num           uint32      `json:"num" yaml: "num"`
@@ -29,12 +31,14 @@ type SearchJob struct {
 	GatewayClient *GRPCClient `json:"gateway_client" yaml:"gateway_client"`
 }
 
-// Bind binds the actual data from the Job search receiver fields.
-func (s *SearchJob) Bind() *SearchJob {
-	s.Timeout = GetActualValue(s.Timeout)
+// Bind binds the actual data from the Job receiver fields.
+func (b *BenchmarkJob) Bind() *BenchmarkJob {
+	b.Timeout = GetActualValue(b.Timeout)
+	b.Dataset = GetActualValue(b.Dataset)
+	b.JobType = GetActualValue(b.JobType)
 
-	if s.GatewayClient != nil {
-		s.GatewayClient = s.GatewayClient.Bind()
+	if b.GatewayClient != nil {
+		b.GatewayClient = b.GatewayClient.Bind()
 	}
-	return s
+	return b
 }

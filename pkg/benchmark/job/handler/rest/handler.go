@@ -14,21 +14,25 @@
 // limitations under the License.
 //
 
-syntax = "proto3";
+// Package rest provides rest api logic
+package rest
 
-package benchmark.v1;
+import (
+	"github.com/vdaas/vald/apis/grpc/v1/benchmark"
+)
 
-option go_package = "github.com/vdaas/vald/apis/grpc/v1/benchmark";
-option java_multiple_files = true;
-option java_package = "org.vdaas.vald.api.v1.benchmark";
-option java_outer_classname = "Benchmark";
+type Handler interface{}
 
-import "apis/proto/v1/payload/payload.proto";
-
-service Controller {
-    // TODO define API spec here
+type handler struct {
+	js benchmark.JobServer
 }
 
-service Job {
-    // TODO define API spec here
+func New(opts ...Option) Handler {
+	h := new(handler)
+
+	for _, opt := range append(defaultOpts, opts...) {
+		opt(h)
+	}
+
+	return h
 }

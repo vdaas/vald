@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package search manages the main logic of search job.
-package search
+// Package service manages the main logic of benchmark job.
+package service

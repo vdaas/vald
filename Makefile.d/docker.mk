@@ -22,6 +22,7 @@ docker/build: \
 	docker/build/gateway-lb \
 	docker/build/gateway-filter \
 	docker/build/manager-index \
+	docker/build/benchmark-job \
 	docker/build/helm-operator
 
 .PHONY: docker/name/org
@@ -189,17 +190,17 @@ docker/build/loadtest:
 	    --build-arg MAINTAINER=$(MAINTAINER) \
 	    --build-arg GO_VERSION=$(GO_VERSION)
 
-.PHONY: docker/name/benchmark/search/job
-docker/name/benchmark/job/search:
-	@echo "$(ORG)/$(BENCHMARK_SEARCH_JOB_IMAGE)"
+.PHONY: docker/name/benchmark-job
+docker/name/benchmark-job:
+	@echo "$(ORG)/$(BENCHMARK_JOB_IMAGE)"
 
-.PHONY: docker/build/benchmark/job/search
-## build benchmark search job
-docker/build/benchmark/job/search:
+.PHONY: docker/build/benchmark-job
+## build benchmark job
+docker/build/benchmark-job:
 	$(DOCKER) build \
 	    $(DOCKER_OPTS) \
-	    -f dockers/benchmark/job/search/Dockerfile \
-	    -t $(ORG)/$(BENCHMARK_SEARCH_JOB_IMAGE):$(TAG) . \
+	    -f dockers/benchmark/job/Dockerfile \
+	    -t $(ORG)/$(BENCHMARK_JOB_IMAGE):$(TAG) . \
 	    --build-arg GO_VERSION=$(GO_VERSION) \
 	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
 	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG)

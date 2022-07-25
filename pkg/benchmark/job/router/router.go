@@ -18,30 +18,37 @@
 package router
 
 import (
+	"net/http"
+
 	"github.com/vdaas/vald/internal/errgroup"
-	"github.com/vdaas/vald/pkg/benchmark/job/search/handler/rest"
+	"github.com/vdaas/vald/internal/net/http/middleware"
+	"github.com/vdaas/vald/internal/net/http/routing"
+	"github.com/vdaas/vald/pkg/benchmark/job/handler/rest"
 )
 
-type Option func(*router)
-
-var defaultOpts = []Option{
-	WithTimeout("3s"),
+type router struct {
+	handler rest.Handler
+	eg      errgroup.Group
+	timeout string
 }
 
-func WithHandler(h rest.Handler) Option {
-	return func(r *router) {
-		r.handler = h
-	}
-}
+// New returns REST route&method information from handler interface
+func New(opts ...Option) http.Handler {
+	r := new(router)
 
-func WithTimeout(timeout string) Option {
-	return func(r *router) {
-		r.timeout = timeout
+	for _, opt := range append(defaultOpts, opts...) {
+		opt(r)
 	}
-}
 
-func WithErrGroup(eg errgroup.Group) Option {
-	return func(r *router) {
-		r.eg = eg
-	}
+	// h := r.handler
+
+	return routing.New(
+		routing.WithMiddleware(
+			middleware.NewTimeout(
+				middleware.WithTimeout(r.timeout),
+				middleware.WithErrorGroup(r.eg),
+			)),
+		routing.WithRoutes([]routing.Route{
+			// TODO add REST API interface here
+		}...))
 }

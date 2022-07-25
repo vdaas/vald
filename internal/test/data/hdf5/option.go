@@ -17,7 +17,9 @@
 // package hdf5 is load hdf5 file
 package hdf5
 
-import "github.com/vdaas/vald/internal/errors"
+import (
+	"github.com/vdaas/vald/internal/errors"
+)
 
 type Option func(d *data) error
 
@@ -26,13 +28,22 @@ var defaultOptions = []Option{
 	WithFilePath(""),
 }
 
-func WithName(n DataName) Option {
+func WithNameByString(n string) Option {
+	var name DatasetName
+	switch n {
+	case "fashion-mnist-784-euc":
+		name = FASHION_MNIST_784_EUC
+	}
+	return WithName(name)
+}
+
+func WithName(dn DatasetName) Option {
 	return func(d *data) error {
-		switch n {
+		switch dn {
 		case FASHION_MNIST_784_EUC:
-			d.name = n
+			d.name = dn
 		default:
-			return errors.New("unknown data name")
+			return errors.NewErrInvalidOption("dataname", dn)
 		}
 		return nil
 	}

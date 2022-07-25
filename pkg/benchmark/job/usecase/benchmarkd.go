@@ -32,56 +32,58 @@ import (
 	"github.com/vdaas/vald/internal/servers/server"
 	"github.com/vdaas/vald/internal/servers/starter"
 	"github.com/vdaas/vald/internal/test/data/hdf5"
-	"github.com/vdaas/vald/pkg/benchmark/job/search/config"
-	handler "github.com/vdaas/vald/pkg/benchmark/job/search/handler/grpc"
-	"github.com/vdaas/vald/pkg/benchmark/job/search/handler/rest"
-	"github.com/vdaas/vald/pkg/benchmark/job/search/router"
-	search "github.com/vdaas/vald/pkg/benchmark/job/search/service"
+	"github.com/vdaas/vald/pkg/benchmark/job/config"
+	handler "github.com/vdaas/vald/pkg/benchmark/job/handler/grpc"
+	"github.com/vdaas/vald/pkg/benchmark/job/handler/rest"
+	"github.com/vdaas/vald/pkg/benchmark/job/router"
+	"github.com/vdaas/vald/pkg/benchmark/job/service"
 )
 
 type run struct {
 	eg            errgroup.Group
 	cfg           *config.Config
-	sj            search.SearchJob
+	job           service.Job
 	h             handler.Benchmark
 	server        starter.Server
 	observability observability.Observability
 }
 
 func New(cfg *config.Config) (r runner.Runner, err error) {
-	log.Info("pkg/benchmark/job/search/cmd start")
+	log.Info("pkg/benchmark/job/cmd start")
 	eg := errgroup.Get()
-	copts, err := cfg.SearchJob.GatewayClient.Opts()
+	copts, err := cfg.Job.GatewayClient.Opts()
 	if err != nil {
 		return nil, err
 	}
 
 	c, err := vald.New(
-		vald.WithAddrs(cfg.SearchJob.GatewayClient.Addrs...),
+		vald.WithAddrs(cfg.Job.GatewayClient.Addrs...),
 		vald.WithClient(grpc.New(copts...)),
 	)
 	if err != nil {
 		return nil, err
 	}
 
-	// TODO: impl bind config
-	d, err := hdf5.New()
+	d, err := hdf5.New(
+		hdf5.WithNameByString(cfg.Job.Dataset),
+	)
 	if err != nil {
 		return nil, err
 	}
-	log.Info("pkg/benchmark/job/search/cmd success d")
+	log.Info("pkg/benchmark/job/cmd success d")
 
-	sj, err := search.New(
-		search.WithErrGroup(eg),
-		search.WithValdClient(c),
-		search.WithDimension(cfg.SearchJob.Dimension),
-		search.WithIter(cfg.SearchJob.Iter),
-		search.WithNum(cfg.SearchJob.Num),
-		search.WithMinNum(cfg.SearchJob.MinNum),
-		search.WithRadius(cfg.SearchJob.Radius),
-		search.WithEpsilon(cfg.SearchJob.Epsilon),
-		search.WithTimeout(cfg.SearchJob.Timeout),
-		search.WithHdf5(d),
+	job, err := service.New(
+		service.WithErrGroup(eg),
+		service.WithValdClient(c),
+		service.WithJobTypeByString(cfg.Job.JobType),
+		service.WithDimension(cfg.Job.Dimension),
+		service.WithIter(cfg.Job.Iter),
+		service.WithNum(cfg.Job.Num),
+		service.WithMinNum(cfg.Job.MinNum),
+		service.WithRadius(cfg.Job.Radius),
+		service.WithEpsilon(cfg.Job.Epsilon),
+		service.WithTimeout(cfg.Job.Timeout),
+		service.WithHdf5(d),
 	)
 	if err != nil {
 		return nil, err
@@ -147,12 +149,12 @@ func New(cfg *config.Config) (r runner.Runner, err error) {
 	if err != nil {
 		return nil, err
 	}
-	log.Info("pkg/benchmark/job/search/cmd end")
+	log.Info("pkg/benchmark/job/cmd end")
 
 	return &run{
 		eg:            eg,
 		cfg:           cfg,
-		sj:            sj,
+		job:           job,
 		h:             h,
 		server:        srv,
 		observability: obs,
@@ -165,8 +167,8 @@ func (r *run) PreStart(ctx context.Context) error {
 			return err
 		}
 	}
-	if r.sj != nil {
-		return r.sj.PreStart(ctx)
+	if r.job != nil {
+		return r.job.PreStart(ctx)
 	}
 	return nil
 }
@@ -179,7 +181,7 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 		if r.observability != nil {
 			oech = r.observability.Start(ctx)
 		}
-		dech, err = r.sj.Start(ctx)
+		dech, err = r.job.Start(ctx)
 
 		if err != nil {
 			ech <- err

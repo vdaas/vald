@@ -32,21 +32,30 @@ import (
 type Data interface {
 	Download() error
 	Read() error
-	GetName() DataName
+	GetName() DatasetName
 	GetPath() string
 	GetTrain() [][]float32
 	GetTest() [][]float32
 	GetNeighbors() [][]int
 }
 
-type DataName int
+type DatasetName int
 
 const (
-	FASHION_MNIST_784_EUC DataName = iota
+	FASHION_MNIST_784_EUC DatasetName = iota
 )
 
+func (d DatasetName) String() string {
+	switch d {
+	case FASHION_MNIST_784_EUC:
+		return "fashion-mnist-784-euc"
+	default:
+		return ""
+	}
+}
+
 type data struct {
-	name      DataName
+	name      DatasetName
 	path      string
 	train     [][]float32
 	test      [][]float32
@@ -114,7 +123,7 @@ func (d *data) Read() error {
 	return nil
 }
 
-func (d *data) GetName() DataName {
+func (d *data) GetName() DatasetName {
 	return d.name
 }
 

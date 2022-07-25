@@ -22,18 +22,18 @@ import (
 
 	"github.com/vdaas/vald/apis/grpc/v1/benchmark"
 	"github.com/vdaas/vald/internal/singleflight"
-	searchJob "github.com/vdaas/vald/pkg/benchmark/job/search/service"
+	"github.com/vdaas/vald/pkg/benchmark/job/service"
 )
 
 type Benchmark interface {
-	benchmark.SearchJobServer
+	benchmark.JobServer
 	Start(context.Context)
 }
 
 type server struct {
-	benchmark.UnimplementedSearchJobServer
+	benchmark.UnimplementedJobServer
 
-	sj    searchJob.SearchJob
+	job   service.Job
 	group singleflight.Group
 }
 

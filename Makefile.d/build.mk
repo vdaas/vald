@@ -23,7 +23,7 @@ binary/build: \
 	cmd/gateway/lb/lb \
 	cmd/gateway/filter/filter \
 	cmd/manager/index/index \
-	cmd/benchmark/job/search
+	cmd/benchmark/job/job
 
 cmd/agent/core/ngt/ngt: \
 	ngt/install \
@@ -201,11 +201,11 @@ cmd/manager/index/index: \
 		$(dir $@)main.go
 	$@ -version
 
-cmd/benchmark/job/search/search: \
+cmd/benchmark/job/job: \
 	$(GO_SOURCES_INTERNAL) \
 	$(PBGOS) \
-	$(shell find ./cmd/benchmark/job/search -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go') \
-	$(shell find ./pkg/benchmark/job/search -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
+	$(shell find ./cmd/benchmark/job -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go') \
+	$(shell find ./pkg/benchmark/job -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
 	CFLAGS="$(CFLAGS)" \
 	CXXFLAGS="$(CXXFLAGS)" \
 	CGO_ENABLED=1 \

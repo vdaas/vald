@@ -27,8 +27,8 @@ ENV GO111MODULE on
 ENV LANG en_US.UTF-8
 ENV ORG vdaas
 ENV REPO vald
-ENV PKG benchmark/job/search
-ENV APP_NAME search
+ENV PKG benchmark/job
+ENV APP_NAME job
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     upx \
@@ -72,14 +72,13 @@ COPY .git .
 
 RUN make REPO=${ORG} NAME=${REPO} cmd/${PKG}/${APP_NAME} \
     && upx ${UPX_OPTIONS} -o "/usr/bin/${APP_NAME}" "cmd/${PKG}/${APP_NAME}"
-    # && mv cmd/${PKG}/${APP_NAME} /usr/bin/${APP_NAME}
 
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/cmd/${PKG}
 RUN cp sample.yaml /tmp/config.yaml
 
 FROM ${DISTROLESS_IMAGE}:${DISTROLESS_IMAGE_TAG}
 LABEL maintainer "Vald team <vald@vdaas.org>"
-ENV APP_NAME search
+ENV APP_NAME job
 
 COPY --from=builder /usr/lib/x86_64-linux-gnu/libaec*  /usr/lib/x86_64-linux-gnu/
 COPY --from=builder /usr/lib/x86_64-linux-gnu/libhdf5*  /usr/lib/x86_64-linux-gnu/
@@ -100,4 +99,4 @@ COPY --from=builder /tmp/config.yaml /etc/server/config.yaml
 
 USER nonroot:nonroot
 
-ENTRYPOINT ["/go/bin/search"]
+ENTRYPOINT ["/go/bin/job"]

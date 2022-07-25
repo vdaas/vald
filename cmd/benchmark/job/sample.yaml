@@ -112,7 +112,7 @@ observability:
     agent_endpoint: "jaeger-agent.default.svc.cluster.local:6831"
     username: ""
     password: ""
-    service_name: "vald-benchmark-job-search"
+    service_name: "vald-benchmark-job"
     buffer_max_count: 10
   stackdriver:
     project_id: ""
@@ -142,7 +142,7 @@ observability:
       tracing_enabled: false
     profiler:
       enabled: false
-      service: "vald-benchmark-job-search"
+      service: "vald-benchmark-job"
       service_version: ""
       debug_logging: false
       mutex_profiling: true
@@ -154,14 +154,15 @@ observability:
       api_addr: ""
       instance: ""
       zone: ""
-bench_search_job:
-  dimension: 784
-  iter: 100
-  num: 10
-  minNum: 10
-  radius: -1
-  epsilon: 0.1
-  timeout: 5s
-  gateway_client:
-    addrs:
-      - vald-lb-gateway.default.svc.cluster.local:8081
+  job:
+    job_type: "search"
+    dimension: 784
+    iter: 100
+    num: 10
+    minNum: 10
+    radius: -1
+    epsilon: 0.1
+    timeout: 5s
+    gateway_client:
+      addrs:
+        - vald-lb-gateway.default.svc.cluster.local:8081
