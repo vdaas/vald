@@ -23,8 +23,6 @@ option java_multiple_files = true;
 option java_package = "org.vdaas.vald.api.v1.benchmark";
 option java_outer_classname = "Benchmark";
 
-import "apis/proto/v1/payload/payload.proto";
-
 service Controller {
     // TODO define API spec here
 }
