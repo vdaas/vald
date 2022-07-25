@@ -28,6 +28,7 @@ type (
 var (
 	Contains       = strings.Contains
 	Count          = strings.Count
+	Cut            = strings.Cut
 	EqualFold      = strings.EqualFold
 	HasPrefix      = strings.HasPrefix
 	HasSuffix      = strings.HasSuffix

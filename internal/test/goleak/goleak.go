@@ -27,6 +27,8 @@ var (
 		// ignore conflict with testing.T.Parallel()
 		goleak.IgnoreTopFunction("testing.(*testContext).waitParallel"),
 		goleak.IgnoreTopFunction("github.com/kpango/fastime.(*fastime).StartTimerD.func1"),
+		goleak.IgnoreTopFunction("internal/poll.runtime_pollWait"),
+		goleak.IgnoreTopFunction("net._C2func_getaddrinfo"),
 	}
 
 	IgnoreTopFunction = goleak.IgnoreTopFunction

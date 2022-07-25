@@ -17,12 +17,12 @@
 .PHONY: test
 ## run tests for cmd, internal, pkg
 test:
-	go test -shuffle=on -race -mod=readonly -cover ./cmd/... ./internal/... ./pkg/...
+	go test -shuffle=on -race -mod=readonly -cover -timeout=30m ./cmd/... ./internal/... ./pkg/...
 
 .PHONY: test/tparse
 ## run tests for cmd, internal, pkg and show table
 test/tparse:
-	go test -shuffle=on -race -mod=readonly -json -cover ./cmd/... ./internal/... ./pkg/... | tparse -notests
+	go test -shuffle=on -race -mod=readonly -json -cover -timeout=30m ./cmd/... ./internal/... ./pkg/... | tparse -notests
 
 .PHONY: test/cmd
 ## run tests for cmd

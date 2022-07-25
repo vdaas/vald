@@ -27,4 +27,8 @@ var (
 	ErrTLSCertOrKeyNotFound = New("cert or key file path not found")
 
 	ErrCertificationFailed = New("certification failed")
+
+	ErrFailedToHandshakeTLSConnection = func(network, addr string) error {
+		return Errorf("failed to handshake connection to %s:%s", network, addr)
+	}
 )
