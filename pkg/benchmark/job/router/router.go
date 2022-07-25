@@ -40,8 +40,6 @@ func New(opts ...Option) http.Handler {
 		opt(r)
 	}
 
-	// h := r.handler
-
 	return routing.New(
 		routing.WithMiddleware(
 			middleware.NewTimeout(

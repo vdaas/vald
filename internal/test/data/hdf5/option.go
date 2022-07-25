@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-// package hdf5 is load hdf5 file
+// Package hdf5 is load hdf5 file
 package hdf5
 
 import (

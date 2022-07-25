@@ -14,6 +14,7 @@
 // limitations under the License.
 //
 
+// Package usecase provides usecases
 package usecase
 
 import (
