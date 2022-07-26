@@ -35,10 +35,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
-          persist-credentials: false
-      - name: set git config
-        run: |
-          git config --global --add safe.directory ${GITHUB_WORKSPACE}
+          set-safe-directory: true
       - name: build protobuf
         run: |
           make proto/all
