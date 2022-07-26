@@ -27,10 +27,10 @@ import (
 	"github.com/vdaas/vald/internal/core/algorithm/ngt"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
-	"github.com/vdaas/vald/internal/net/grpc/codes"
-	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/file"
 	"github.com/vdaas/vald/internal/net"
+	"github.com/vdaas/vald/internal/net/grpc/codes"
+	"github.com/vdaas/vald/internal/net/grpc/status"
 	itest "github.com/vdaas/vald/internal/test"
 	"github.com/vdaas/vald/internal/test/comparator"
 	"github.com/vdaas/vald/internal/test/data/request"
@@ -45,11 +45,9 @@ func Test_server_CreateIndex(t *testing.T) {
 		c *payload.Control_CreateIndexRequest
 	}
 	type fields struct {
-		name              string
-		ip                string
-		streamConcurrency int
-		svcCfg            *config.NGT
-		svcOpts           []service.Option
+		srvOpts []Option
+		svcCfg  *config.NGT
+		svcOpts []service.Option
 	}
 	type want struct {
 		wantRes *payload.Empty
@@ -61,7 +59,7 @@ func Test_server_CreateIndex(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, *payload.Empty, error) error
-		beforeFunc func(*testing.T, context.Context, args, *server)
+		beforeFunc func(*testing.T, context.Context, args, Server)
 		afterFunc  func(args)
 	}
 
@@ -90,7 +88,7 @@ func Test_server_CreateIndex(t *testing.T) {
 		defaultRemoveConfig = &payload.Remove_Config{}
 	)
 
-	genAndInsertReq := func(ctx context.Context, s *server, cnt int) error {
+	insert := func(ctx context.Context, s Server, cnt int) error {
 		req, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, cnt, dim, defaultInsertConfig)
 		if err != nil {
 			return err
@@ -101,7 +99,7 @@ func Test_server_CreateIndex(t *testing.T) {
 
 		return nil
 	}
-	genAndRemoveReq := func(ctx context.Context, s *server, cnt int) error {
+	remove := func(ctx context.Context, s Server, cnt int) error {
 		_, err := s.MultiRemove(ctx, request.GenMultiRemoveReq(cnt, defaultRemoveConfig))
 		return err
 	}
@@ -151,13 +149,15 @@ func Test_server_CreateIndex(t *testing.T) {
 				},
 			},
 			fields: fields{
-				name:    name,
-				ip:      ip,
+				srvOpts: []Option{
+					WithName(name),
+					WithIP(ip),
+				},
 				svcCfg:  defaultSvcCfg,
 				svcOpts: defaultSvcOpts,
 			},
-			beforeFunc: func(t *testing.T, ctx context.Context, a args, s *server) {
-				if err := genAndInsertReq(ctx, s, 1); err != nil {
+			beforeFunc: func(t *testing.T, ctx context.Context, a args, s Server) {
+				if err := insert(ctx, s, 1); err != nil {
 					t.Fatal(err)
 				}
 			},
@@ -173,13 +173,15 @@ func Test_server_CreateIndex(t *testing.T) {
 				},
 			},
 			fields: fields{
-				name:    name,
-				ip:      ip,
+				srvOpts: []Option{
+					WithName(name),
+					WithIP(ip),
+				},
 				svcCfg:  defaultSvcCfg,
 				svcOpts: defaultSvcOpts,
 			},
-			beforeFunc: func(t *testing.T, ctx context.Context, a args, s *server) {
-				if err := genAndInsertReq(ctx, s, 100); err != nil {
+			beforeFunc: func(t *testing.T, ctx context.Context, a args, s Server) {
+				if err := insert(ctx, s, 100); err != nil {
 					t.Fatal(err)
 				}
 			},
@@ -195,13 +197,15 @@ func Test_server_CreateIndex(t *testing.T) {
 				},
 			},
 			fields: fields{
-				name:    name,
-				ip:      ip,
+				srvOpts: []Option{
+					WithName(name),
+					WithIP(ip),
+				},
 				svcCfg:  defaultSvcCfg,
 				svcOpts: defaultSvcOpts,
 			},
-			beforeFunc: func(t *testing.T, ctx context.Context, a args, s *server) {
-				if err := genAndInsertReq(ctx, s, 1); err != nil {
+			beforeFunc: func(t *testing.T, ctx context.Context, a args, s Server) {
+				if err := insert(ctx, s, 1); err != nil {
 					t.Fatal(err)
 				}
 				if _, err := s.CreateIndex(ctx, &payload.Control_CreateIndexRequest{
@@ -209,7 +213,7 @@ func Test_server_CreateIndex(t *testing.T) {
 				}); err != nil {
 					t.Fatal(err)
 				}
-				if err := genAndRemoveReq(ctx, s, 1); err != nil {
+				if err := remove(ctx, s, 1); err != nil {
 					t.Fatal(err)
 				}
 			},
@@ -225,14 +229,16 @@ func Test_server_CreateIndex(t *testing.T) {
 				},
 			},
 			fields: fields{
-				name:    name,
-				ip:      ip,
+				srvOpts: []Option{
+					WithName(name),
+					WithIP(ip),
+				},
 				svcCfg:  defaultSvcCfg,
 				svcOpts: defaultSvcOpts,
 			},
-			beforeFunc: func(t *testing.T, ctx context.Context, a args, s *server) {
+			beforeFunc: func(t *testing.T, ctx context.Context, a args, s Server) {
 				cnt := 100
-				if err := genAndInsertReq(ctx, s, cnt); err != nil {
+				if err := insert(ctx, s, cnt); err != nil {
 					t.Fatal(err)
 				}
 				if _, err := s.CreateIndex(ctx, &payload.Control_CreateIndexRequest{
@@ -240,7 +246,7 @@ func Test_server_CreateIndex(t *testing.T) {
 				}); err != nil {
 					t.Fatal(err)
 				}
-				if err := genAndRemoveReq(ctx, s, cnt); err != nil {
+				if err := remove(ctx, s, cnt); err != nil {
 					t.Fatal(err)
 				}
 			},
@@ -256,18 +262,20 @@ func Test_server_CreateIndex(t *testing.T) {
 				},
 			},
 			fields: fields{
-				name:    name,
-				ip:      ip,
+				srvOpts: []Option{
+					WithName(name),
+					WithIP(ip),
+				},
 				svcCfg:  defaultSvcCfg,
 				svcOpts: defaultSvcOpts,
 			},
-			beforeFunc: func(t *testing.T, ctx context.Context, a args, s *server) {
+			beforeFunc: func(t *testing.T, ctx context.Context, a args, s Server) {
 				insertCnt := 1
 				removeCnt := 1
-				if err := genAndInsertReq(ctx, s, insertCnt); err != nil {
+				if err := insert(ctx, s, insertCnt); err != nil {
 					t.Fatal(err)
 				}
-				if err := genAndRemoveReq(ctx, s, removeCnt); err != nil {
+				if err := remove(ctx, s, removeCnt); err != nil {
 					t.Fatal(err)
 				}
 			},
@@ -283,18 +291,20 @@ func Test_server_CreateIndex(t *testing.T) {
 				},
 			},
 			fields: fields{
-				name:    name,
-				ip:      ip,
+				srvOpts: []Option{
+					WithName(name),
+					WithIP(ip),
+				},
 				svcCfg:  defaultSvcCfg,
 				svcOpts: defaultSvcOpts,
 			},
-			beforeFunc: func(t *testing.T, ctx context.Context, a args, s *server) {
+			beforeFunc: func(t *testing.T, ctx context.Context, a args, s Server) {
 				insertCnt := 100
 				removeCnt := 100
-				if err := genAndInsertReq(ctx, s, insertCnt); err != nil {
+				if err := insert(ctx, s, insertCnt); err != nil {
 					t.Fatal(err)
 				}
-				if err := genAndRemoveReq(ctx, s, removeCnt); err != nil {
+				if err := remove(ctx, s, removeCnt); err != nil {
 					t.Fatal(err)
 				}
 			},
@@ -310,8 +320,10 @@ func Test_server_CreateIndex(t *testing.T) {
 				},
 			},
 			fields: fields{
-				name:    name,
-				ip:      ip,
+				srvOpts: []Option{
+					WithName(name),
+					WithIP(ip),
+				},
 				svcCfg:  defaultSvcCfg,
 				svcOpts: defaultSvcOpts,
 			},
@@ -327,20 +339,28 @@ func Test_server_CreateIndex(t *testing.T) {
 				},
 			},
 			fields: fields{
-				name:    name,
-				ip:      ip,
+				srvOpts: []Option{
+					WithName(name),
+					WithIP(ip),
+				},
 				svcCfg:  defaultSvcCfg,
 				svcOpts: defaultSvcOpts,
 			},
-			beforeFunc: func(t *testing.T, ctx context.Context, a args, s *server) {
+			beforeFunc: func(t *testing.T, ctx context.Context, a args, s Server) {
+				srv, ok := s.(*server)
+				if !ok {
+					t.Error("Server cannot convert to *server")
+				}
+
 				insertCnt := 100
 				invalidDim := dim + 1
 				req, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, insertCnt, invalidDim, defaultInsertConfig)
 				if err != nil {
 					t.Fatal(err)
 				}
+
 				for _, r := range req.Requests {
-					if err := s.ngt.Insert(r.Vector.Id, r.Vector.Vector); err != nil {
+					if err := srv.ngt.Insert(r.Vector.Id, r.Vector.Vector); err != nil {
 						t.Fatal(err)
 					}
 				}
@@ -357,14 +377,16 @@ func Test_server_CreateIndex(t *testing.T) {
 				},
 			},
 			fields: fields{
-				name:    name,
-				ip:      ip,
+				srvOpts: []Option{
+					WithName(name),
+					WithIP(ip),
+				},
 				svcCfg:  defaultSvcCfg,
 				svcOpts: defaultSvcOpts,
 			},
-			beforeFunc: func(t *testing.T, ctx context.Context, a args, s *server) {
+			beforeFunc: func(t *testing.T, ctx context.Context, a args, s Server) {
 				insertCnt := 100
-				if err := genAndInsertReq(ctx, s, insertCnt); err != nil {
+				if err := insert(ctx, s, insertCnt); err != nil {
 					t.Fatal(err)
 				}
 			},
@@ -380,14 +402,16 @@ func Test_server_CreateIndex(t *testing.T) {
 				},
 			},
 			fields: fields{
-				name:    name,
-				ip:      ip,
+				srvOpts: []Option{
+					WithName(name),
+					WithIP(ip),
+				},
 				svcCfg:  defaultSvcCfg,
 				svcOpts: defaultSvcOpts,
 			},
-			beforeFunc: func(t *testing.T, ctx context.Context, a args, s *server) {
+			beforeFunc: func(t *testing.T, ctx context.Context, a args, s Server) {
 				insertCnt := 100
-				if err := genAndInsertReq(ctx, s, insertCnt); err != nil {
+				if err := insert(ctx, s, insertCnt); err != nil {
 					t.Fatal(err)
 				}
 			},
@@ -403,14 +427,16 @@ func Test_server_CreateIndex(t *testing.T) {
 				},
 			},
 			fields: fields{
-				name:    name,
-				ip:      ip,
+				srvOpts: []Option{
+					WithName(name),
+					WithIP(ip),
+				},
 				svcCfg:  defaultSvcCfg,
 				svcOpts: defaultSvcOpts,
 			},
-			beforeFunc: func(t *testing.T, ctx context.Context, a args, s *server) {
+			beforeFunc: func(t *testing.T, ctx context.Context, a args, s Server) {
 				insertCnt := 100
-				if err := genAndInsertReq(ctx, s, insertCnt); err != nil {
+				if err := insert(ctx, s, insertCnt); err != nil {
 					t.Fatal(err)
 				}
 			},
@@ -426,14 +452,16 @@ func Test_server_CreateIndex(t *testing.T) {
 				},
 			},
 			fields: fields{
-				name:    name,
-				ip:      ip,
+				srvOpts: []Option{
+					WithName(name),
+					WithIP(ip),
+				},
 				svcCfg:  defaultSvcCfg,
 				svcOpts: defaultSvcOpts,
 			},
-			beforeFunc: func(t *testing.T, ctx context.Context, a args, s *server) {
+			beforeFunc: func(t *testing.T, ctx context.Context, a args, s Server) {
 				insertCnt := 100
-				if err := genAndInsertReq(ctx, s, insertCnt); err != nil {
+				if err := insert(ctx, s, insertCnt); err != nil {
 					t.Fatal(err)
 				}
 			},
@@ -466,12 +494,9 @@ func Test_server_CreateIndex(t *testing.T) {
 				tt.Errorf("failed to init ngt service, error = %v", err)
 			}
 
-			s := &server{
-				name:              test.fields.name,
-				ip:                test.fields.ip,
-				ngt:               ngt,
-				eg:                eg,
-				streamConcurrency: test.fields.streamConcurrency,
+			s, err := New(append(test.fields.srvOpts, WithNGT(ngt), WithErrGroup(eg))...)
+			if err != nil {
+				tt.Errorf("failed to init server, error= %v", err)
 			}
 
 			if test.beforeFunc != nil {
