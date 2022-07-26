@@ -38,7 +38,7 @@ defaults:
   image:
     # @schema {"name": "defaults.image.tag", "type": "string"}
     # defaults.image.tag -- docker image tag
-    tag: v1.5.5
+    tag: v1.5.6
   # @schema {"name": "defaults.server_config", "type": "object", "anchor": "server_config"}
   server_config:
     # @schema {"name": "defaults.server_config.servers", "type": "object"}
@@ -671,6 +671,23 @@ defaults:
         # @schema {"name": "defaults.grpc.client.backoff.enable_error_log", "type": "boolean"}
         # defaults.grpc.client.backoff.enable_error_log -- gRPC client backoff log enabled
         enable_error_log: true
+      # @schema {"name": "defaults.grpc.client.circuit_breaker", "type": "object"}
+      circuit_breaker:
+        # @schema {"name": "defaults.grpc.client.circuit_breaker.closed_error_rate", "type": "number"}
+        # defaults.grpc.client.circuit_breaker.closed_error_rate -- gRPC client circuitbreaker closed error rate
+        closed_error_rate: 0.7
+        # @schema {"name": "defaults.grpc.client.circuit_breaker.half_open_error_rate", "type": "number"}
+        # defaults.grpc.client.circuit_breaker.half_open_error_rate -- gRPC client circuitbreaker half-open error rate
+        half_open_error_rate: 0.5
+        # @schema {"name": "defaults.grpc.client.circuit_breaker.min_samples", "type": "integer"}
+        # defaults.grpc.client.circuit_breaker.min_samples -- gRPC client circuitbreaker minimum sampling count
+        min_samples: 1000
+        # @schema {"name": "defaults.grpc.client.circuit_breaker.open_timeout", "type": "string"}
+        # defaults.grpc.client.circuit_breaker.open_timeout -- gRPC client circuitbreaker open timeout
+        open_timeout: "1s"
+        # @schema {"name": "defaults.grpc.client.circuit_breaker.closed_refresh_timeout", "type": "string"}
+        # defaults.grpc.client.circuit_breaker.closed_refresh_timeout -- gRPC client circuitbreaker closed refresh timeout
+        closed_refresh_timeout: "10s"
       # @schema {"name": "defaults.grpc.client.call_option", "type": "object"}
       call_option:
         # @schema {"name": "defaults.grpc.client.wait_for_ready", "type": "boolean"}
