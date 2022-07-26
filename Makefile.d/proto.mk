@@ -133,7 +133,6 @@ $(GOPATH)/bin/swagger:
 $(PBGOS): \
 	$(PROTOS) \
 	proto/deps
-	@echo $(ROOTDIR)
 	@$(call green, "generating pb.go files...")
 	$(call mkdir, $(dir $@))
 	$(call proto-code-gen, $(patsubst apis/grpc/%.pb.go,apis/proto/%.proto,$@))

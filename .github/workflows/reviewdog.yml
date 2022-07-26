@@ -28,11 +28,6 @@ jobs:
       image: ghcr.io/vdaas/vald/vald-ci-container:nightly
     steps:
       - uses: actions/checkout@v3
-        with:
-          persist-credentials: false
-      - name: set git config
-        run: |
-          git config --global --add safe.directory ${GITHUB_WORKSPACE}
       - name: go build
         run: |
           go build -mod=readonly ./...
