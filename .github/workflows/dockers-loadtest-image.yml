@@ -60,8 +60,6 @@ jobs:
       max-parallel: 4
     steps:
       - uses: actions/checkout@v3
-        with:
-          set-safe-directory: true
       - name: Setup QEMU
         uses: docker/setup-qemu-action@v1
         with:

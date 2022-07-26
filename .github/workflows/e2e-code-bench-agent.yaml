@@ -52,7 +52,10 @@ jobs:
       - name: Check out code.
         uses: actions/checkout@v3
         with:
-          set-safe-directory: true
+          persist-credentials: false
+      - name: set git config
+        run: |
+          git config --global --add safe.directory ${GITHUB_WORKSPACE}
       - name: Run grpc-sequential
         run: |
           make hack/benchmark/assets/dataset/${DATASET}
@@ -80,8 +83,6 @@ jobs:
     steps:
       - name: Check out code.
         uses: actions/checkout@v3
-        with:
-          set-safe-directory: true
       - name: Run grpc-stream
         run: |
           make hack/benchmark/assets/dataset/${DATASET}

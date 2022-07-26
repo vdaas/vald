@@ -33,8 +33,6 @@ jobs:
     if: startsWith( github.ref, 'refs/tags/') || github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-deploy'
     steps:
       - uses: actions/checkout@v3
-        with:
-          set-safe-directory: true
       - name: Wait for Docker images
         if: startsWith( github.ref, 'refs/tags/')
         id: wait_for_docker_images
@@ -123,8 +121,6 @@ jobs:
     if: startsWith( github.ref, 'refs/tags/') || github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-deploy'
     steps:
       - uses: actions/checkout@v3
-        with:
-          set-safe-directory: true
       - name: Wait for Docker images
         if: startsWith( github.ref, 'refs/tags/')
         id: wait_for_docker_images
@@ -222,8 +218,6 @@ jobs:
     if: startsWith( github.ref, 'refs/tags/') || github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-deploy'
     steps:
       - uses: actions/checkout@v3
-        with:
-          set-safe-directory: true
       - name: Wait for Docker images
         if: startsWith( github.ref, 'refs/tags/')
         id: wait_for_docker_images
@@ -308,8 +302,6 @@ jobs:
     if: startsWith( github.ref, 'refs/tags/') || github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-deploy'
     steps:
       - uses: actions/checkout@v3
-        with:
-          set-safe-directory: true
       - name: Wait for Docker images
         if: startsWith( github.ref, 'refs/tags/')
         id: wait_for_docker_images
@@ -391,8 +383,6 @@ jobs:
     if: startsWith( github.ref, 'refs/tags/') || github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-deploy'
     steps:
       - uses: actions/checkout@v3
-        with:
-          set-safe-directory: true
       - name: Wait for Docker images
         if: startsWith( github.ref, 'refs/tags/')
         id: wait_for_docker_images

@@ -29,8 +29,6 @@ jobs:
       image: mumoshu/conflint:latest
     steps:
       - uses: actions/checkout@v3
-        with:
-          set-safe-directory: true
       - name: kubeval-conflint
         run: |
           set -vx
@@ -47,8 +45,6 @@ jobs:
       image: ghcr.io/vdaas/vald/vald-ci-container:nightly
     steps:
       - uses: actions/checkout@v3
-        with:
-          set-safe-directory: true
       - name: kubelinter for k8s directory
         run: |
           kube-linter lint \
@@ -64,8 +60,6 @@ jobs:
       image: ghcr.io/vdaas/vald/vald-ci-container:nightly
     steps:
       - uses: actions/checkout@v3
-        with:
-          set-safe-directory: true
       - name: kubelinter for generated manifests
         run: |
           kube-linter lint \

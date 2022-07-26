@@ -30,7 +30,6 @@ jobs:
         with:
           ref: ${{ github.head_ref }}
           fetch-depth: 0
-          set-safe-directory: true
       - name: Add labels
         run: |
           pr_num=`cat $GITHUB_EVENT_PATH | jq -r ".number"`

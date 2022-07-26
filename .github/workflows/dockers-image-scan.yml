@@ -23,8 +23,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-        with:
-          set-safe-directory: true
       - name: Build the Docker image
         id: build_image
         run: |
@@ -55,8 +53,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-        with:
-          set-safe-directory: true
       - name: Build the Docker image
         id: build_image
         run: |
@@ -87,8 +83,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-        with:
-          set-safe-directory: true
       - name: Build the Docker image
         id: build_image
         run: |
@@ -119,8 +113,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-        with:
-          set-safe-directory: true
       - name: Build the Docker image
         id: build_image
         run: |
@@ -151,8 +143,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-        with:
-          set-safe-directory: true
       - name: Build the Docker image
         id: build_image
         run: |
@@ -183,8 +173,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-        with:
-          set-safe-directory: true
       - name: Build the Docker image
         id: build_image
         run: |
@@ -215,8 +203,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-        with:
-          set-safe-directory: true
       - name: Build the Docker image
         id: build_image
         run: |
@@ -247,8 +233,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-        with:
-          set-safe-directory: true
       - name: Build the Docker image
         id: build_image
         run: |

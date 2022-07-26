@@ -28,8 +28,6 @@ jobs:
     steps:
       - name: Check out code.
         uses: actions/checkout@v3
-        with:
-          set-safe-directory: true
       - name: Helm version
         run: |
           helm version
@@ -56,8 +54,6 @@ jobs:
     steps:
       - name: Check out code.
         uses: actions/checkout@v3
-        with:
-          set-safe-directory: true
       - name: Helm version
         run: |
           helm version
@@ -82,8 +78,6 @@ jobs:
     steps:
       - name: Check out code.
         uses: actions/checkout@v3
-        with:
-          set-safe-directory: true
       - name: Helm version
         run: |
           helm version
