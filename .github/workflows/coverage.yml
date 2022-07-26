@@ -41,7 +41,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           fetch-depth: 10
-          set-safe-directory: true
+          set-safe-directory: false
       - name: Run coverage
         continue-on-error: true
         run: |
