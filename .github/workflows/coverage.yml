@@ -41,7 +41,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           fetch-depth: 10
-          path: '/'
+          path: './*'
       - name: Run coverage
         continue-on-error: true
         run: |
@@ -58,3 +58,4 @@ jobs:
           ./bin/deepsource report --analyzer test-coverage --key go --value-file ./cover.out
         env:
           DEEPSOURCE_DSN: ${{ secrets.DEEPSOURCE_DSN }}
+
