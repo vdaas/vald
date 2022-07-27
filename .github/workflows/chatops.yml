@@ -114,6 +114,9 @@ jobs:
         if: steps.check_comments_changelog.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         with:
           fetch-depth: 0
+      - name: set git config
+        run: |
+          git config --global --add safe.directory ${GITHUB_WORKSPACE}
       - name: comment to PR
         if: steps.check_comments_changelog.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         run: |
@@ -199,6 +202,9 @@ jobs:
         with:
           fetch-depth: 0
           token: ${{ secrets.DISPATCH_TOKEN }}
+      - name: set git config
+        run: |
+          git config --global --add safe.directory ${GITHUB_WORKSPACE}
       - name: Automatic Rebase
         if: steps.check_comments_rebase.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         uses: cirrus-actions/rebase@1.5
@@ -275,6 +281,9 @@ jobs:
         if: steps.check_comments_gen_test.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         with:
           fetch-depth: 0
+      - name: set git config
+        run: |
+          git config --global --add safe.directory ${GITHUB_WORKSPACE}
       - uses: crazy-max/ghaction-import-gpg@v4
         if: steps.check_comments_gen_test.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         with:
@@ -385,6 +394,9 @@ jobs:
         with:
           fetch-depth: 0
           token: ${{ secrets.DISPATCH_TOKEN }}
+      - name: set git config
+        run: |
+          git config --global --add safe.directory ${GITHUB_WORKSPACE}
       - uses: crazy-max/ghaction-import-gpg@v4
         if: steps.check_comments_format.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         with:

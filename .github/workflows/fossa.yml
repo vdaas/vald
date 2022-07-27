@@ -31,6 +31,9 @@ jobs:
     if: github.ref == 'refs/heads/master' || github.event.action == 'labeled' && github.event.label.name == 'actions/fossa'
     steps:
       - uses: actions/checkout@v3
+      - name: set git config
+        run: |
+          git config --global --add safe.directory ${GITHUB_WORKSPACE}
       - name: "Install fossa-cli"
         run: |
           curl -H 'Cache-Control: no-cache' https://raw.githubusercontent.com/fossas/fossa-cli/master/install.sh | bash
