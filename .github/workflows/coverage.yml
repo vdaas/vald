@@ -35,7 +35,8 @@ jobs:
     name: Coverage
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/vdaas/vald/vald-ci-container:nightly
+      # image: ghcr.io/vdaas/vald/vald-ci-container:nightly
+      image: ghcr.io/vdaas/vald/vald-ci-container:pr-1747
     steps:
       - name: Check out code.
         uses: actions/checkout@v3
