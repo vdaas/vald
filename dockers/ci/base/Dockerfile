@@ -19,7 +19,7 @@ ARG MAINTAINER="vdaas.org vald team <vald@vdaas.org>"
 
 FROM golang:${GO_VERSION} AS golang
 
-FROM ubuntu:hirsute AS builder
+FROM ubuntu:impish AS builder
 
 LABEL maintainer "${MAINTAINER}"
 
