@@ -48,6 +48,7 @@ jobs:
           which git
           ls -la ${GITHUB_WORKSPACE}
           echo ${HOME}
+          git config --global --add safe.directory ${GITHUB_WORKSPACE}
           git config --global --list
       - name: Run coverage
         continue-on-error: true
