@@ -546,6 +546,7 @@ func Test_server_SaveIndex(t *testing.T) {
 			- case 1.1: success to save 1 inserted index
 			- case 1.2: success to save 100 inserted index
 			- case 2.1: fail to save index with no write access on backup folder
+			- case 3.1: fail to save index when other save index process is running
 		- Boundary Value Testing
 			- case 1.1: success to save index with no index
 			- case 2.1: success to save index with invalid dimension
