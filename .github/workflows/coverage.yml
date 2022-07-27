@@ -45,8 +45,10 @@ jobs:
         run: |
           id -a
           cat /etc/group
-          git config --global --list
+          which git
           ls -la ${GITHUB_WORKSPACE}
+          echo ${HOME}
+          git config --global --list
       - name: Run coverage
         continue-on-error: true
         run: |
