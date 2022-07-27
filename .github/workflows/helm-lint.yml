@@ -28,6 +28,9 @@ jobs:
     steps:
       - name: Check out code.
         uses: actions/checkout@v3
+      - name: set git config
+        run: |
+          git config --global --add safe.directory ${GITHUB_WORKSPACE}
       - name: Helm version
         run: |
           helm version
@@ -54,6 +57,9 @@ jobs:
     steps:
       - name: Check out code.
         uses: actions/checkout@v3
+      - name: set git config
+        run: |
+          git config --global --add safe.directory ${GITHUB_WORKSPACE}
       - name: Helm version
         run: |
           helm version
@@ -78,6 +84,9 @@ jobs:
     steps:
       - name: Check out code.
         uses: actions/checkout@v3
+      - name: set git config
+        run: |
+          git config --global --add safe.directory ${GITHUB_WORKSPACE}
       - name: Helm version
         run: |
           helm version

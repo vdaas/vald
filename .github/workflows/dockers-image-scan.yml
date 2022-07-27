@@ -23,6 +23,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - name: set git config
+        run: |
+          git config --global --add safe.directory ${GITHUB_WORKSPACE}
       - name: Build the Docker image
         id: build_image
         run: |
@@ -53,6 +56,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - name: set git config
+        run: |
+          git config --global --add safe.directory ${GITHUB_WORKSPACE}
       - name: Build the Docker image
         id: build_image
         run: |
@@ -83,6 +89,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - name: set git config
+        run: |
+          git config --global --add safe.directory ${GITHUB_WORKSPACE}
       - name: Build the Docker image
         id: build_image
         run: |
@@ -113,6 +122,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - name: set git config
+        run: |
+          git config --global --add safe.directory ${GITHUB_WORKSPACE}
       - name: Build the Docker image
         id: build_image
         run: |
@@ -143,6 +155,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - name: set git config
+        run: |
+          git config --global --add safe.directory ${GITHUB_WORKSPACE}
       - name: Build the Docker image
         id: build_image
         run: |
@@ -173,6 +188,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - name: set git config
+        run: |
+          git config --global --add safe.directory ${GITHUB_WORKSPACE}
       - name: Build the Docker image
         id: build_image
         run: |
@@ -203,6 +221,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - name: set git config
+        run: |
+          git config --global --add safe.directory ${GITHUB_WORKSPACE}
       - name: Build the Docker image
         id: build_image
         run: |
@@ -233,6 +254,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - name: set git config
+        run: |
+          git config --global --add safe.directory ${GITHUB_WORKSPACE}
       - name: Build the Docker image
         id: build_image
         run: |

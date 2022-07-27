@@ -29,6 +29,9 @@ jobs:
       image: mumoshu/conflint:latest
     steps:
       - uses: actions/checkout@v3
+      - name: set git config
+        run: |
+          git config --global --add safe.directory ${GITHUB_WORKSPACE}
       - name: kubeval-conflint
         run: |
           set -vx
@@ -45,6 +48,9 @@ jobs:
       image: ghcr.io/vdaas/vald/vald-ci-container:nightly
     steps:
       - uses: actions/checkout@v3
+      - name: set git config
+        run: |
+          git config --global --add safe.directory ${GITHUB_WORKSPACE}
       - name: kubelinter for k8s directory
         run: |
           kube-linter lint \
@@ -60,6 +66,9 @@ jobs:
       image: ghcr.io/vdaas/vald/vald-ci-container:nightly
     steps:
       - uses: actions/checkout@v3
+      - name: set git config
+        run: |
+          git config --global --add safe.directory ${GITHUB_WORKSPACE}
       - name: kubelinter for generated manifests
         run: |
           kube-linter lint \
