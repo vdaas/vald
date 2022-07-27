@@ -43,7 +43,7 @@ jobs:
           fetch-depth: 10
           path: ${GITHUB_WORKSPACE}
         env:
-          GITHUB_WORKSPACE: ${{ GITHUB_WORKSPACE }}
+          GITHUB_WORKSPACE: ${GITHUB_WORKSPACE}
       - name: Run coverage
         continue-on-error: true
         run: |
