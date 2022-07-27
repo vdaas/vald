@@ -43,7 +43,9 @@ jobs:
           fetch-depth: 10
       - name: check
         run: |
-          whoami
+          id -a
+          cat /etc/group
+          git config --global --list
           ls -la ${GITHUB_WORKSPACE}
       - name: Run coverage
         continue-on-error: true
@@ -56,9 +58,13 @@ jobs:
           file: ./coverage.out
       - name: Upload coverage report to deepsource
         run: |
+          git config --global user.name 'VDaaS org'
+          git config --global user.email 'ci@vdaas.org'
+          git remote set-url origin https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/$GITHUB_REPOSITORY
           mv ./coverage.out ./cover.out
           curl https://deepsource.io/cli | sh
           ./bin/deepsource report --analyzer test-coverage --key go --value-file ./cover.out
         env:
           DEEPSOURCE_DSN: ${{ secrets.DEEPSOURCE_DSN }}
-
+          GITHUB_USER: ${{ secrets.CI_USER }}
+          GITHUB_TOKEN: ${{ secrets.CI_TOKEN }}
