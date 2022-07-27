@@ -41,9 +41,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           fetch-depth: 10
-          path: ${GITHUB_WORKSPACE}
-        env:
-          GITHUB_WORKSPACE: ${GITHUB_WORKSPACE}
+          path: '/'
       - name: Run coverage
         continue-on-error: true
         run: |
