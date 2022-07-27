@@ -269,8 +269,8 @@ gateway:
 
 #### Cluster Role
 
-Vald Discoverer gets the Node and Por metrics from [kube-apiserver](https://kubernetes.io/ja/docs/reference/command-line-tools-reference/kube-apiserver/) as described in [Vald Discoverer Overview](../overview/component/discoverer.md).
-Basically, Vald's Helm deployment supports `RBAC` and default configuration is following.
+Vald Discoverer gets the Node and Por metrics from [kube-apiserver](https://kubernetes.io/ja/docs/reference/command-line-tools-reference/kube-apiserver/) as described in [Vald Discoverer](../overview/component/discoverer.md).
+Vald's Helm deployment supports RBAC as default, and the default configuration is the following.
 
 ```yaml
 discoverer:
@@ -285,8 +285,8 @@ discoverer:
     name: vald
 ```
 
-When `RBAC` is not available in your environment or you would like to put some restrictions, please modify it and grant the permissions to the user executing the discoverer.
-Each configuration file are following:
+When `RBAC` is unavailable in your environment, or you would like to put some restrictions, please modify it and grant the permissions to the user executing the discoverer.
+Each configuration file is the following:
 
 - [clusterRole](https://github.com/vdaas/vald/blob/master/k8s/discoverer/clusterrole.yaml)
 - [clusterRoleBinding](https://github.com/vdaas/vald/blob/master/k8s/discoverer/clusterrolebinding.yaml)
