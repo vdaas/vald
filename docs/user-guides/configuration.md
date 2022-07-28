@@ -251,7 +251,7 @@ gateway:
 #### Index replica
 
 `gateway.lb.gateway_config.index_replica` represents how many Vald Agent pods a vector will be inserted into.
-We recommend setting it as one-third of the number of Vald Agent pods.
+The maximum value of the index replica should be one-third of the Vald Agent pods deployed.
 
 ```yaml
 gateway:
