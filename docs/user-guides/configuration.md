@@ -5,7 +5,7 @@ Before reading, please read the overview of Vald Helm Chart in [its README][vald
 
 <div class="notice">
 This page shows the notable fields in Vald Helm Chart.<BR>
-It is highly recommended before deployment.
+It is highly recommended to verify before deployment.
 </div>
 
 ## General
@@ -155,12 +155,23 @@ Users should configure these parameters first to fit to their use case.
 
 For further details, please read [NGT wiki][yj-ngt-wiki].
 
-Agent-NGT has a feature to start indexing automatically.
+Vald Agent NGT has a feature to start indexing automatically.
 The behavior of this feature can be configured with these parameters:
 
 - `agent.ngt.auto_index_duration_limit`
 - `agent.ngt.auto_index_check_duration`
 - `agent.ngt.auto_index_length`
+
+<div class="notice">
+When Vald Agent NGT is indexing, all search requests to the target pod will be cancelled.
+</div>
+
+<div class="warning">
+When deploying Vald Index Manager, the above parameters should be set long enough than the Vald Index Manager settings.
+(Please see Vald Index Manager section)<BR>
+This is because Vald Index Manager accurately grasps the index information of each Vald Agent NGT and controls the execution timing of indexing.
+If the setting parameter of Vald Agent NGT is shorter than the setting value of Vald Index Manager, Vald Agent NGT may start indexing by itself without the execution command from Vald Index Manager.
+</div>
 
 #### Resource requests and limits, Pod priorities
 
@@ -299,6 +310,33 @@ The number of discoverer pods and resource limits can be estimated by the config
 Discoverer CPU loads almost depend on API request traffic = (the number of LB gateways x its request frequency) + (the number of index managers x its request frequency).
 
 ### Index Manager
+
+#### Execution index command to Vald Agent
+
+Vald Index Manager controls the indexing timing for all Vald Agent pods in the Vald cluster.
+These parameters relate control process.
+
+```yaml
+manager:
+  index:
+    indexer:
+      # namespace of agent pods to manage
+      agent_namespace: vald # namespace of agent pods to manage
+      # check duration of automatic indexing
+      auto_index_check_duration: "1m"
+      # limit duration of automatic indexing
+      auto_index_duration_limit: "30m"
+      # number of cache to trigger automatic indexing
+      auto_index_length: 100
+      # limit duration of automatic index saving
+      auto_save_index_duration_limit: "3h"
+      # duration of automatic index saving wait duration for next saving
+      auto_save_index_wait_duration: "10m"
+      # the number of Agent Pods indexing at the same time
+      concurrency: 1
+      # number of pool size of create index processing
+      creation_pool_size: 10000
+```
 
 #### Discoverer request duration
 
