@@ -117,7 +117,7 @@ agent:
 
 ### Metrics servers
 
-Metrics servers help debug and monitor Vald components.
+Metrics servers help to debug and monitor Vald components.
 There are two types of metrics servers: pprof and Prometheus.
 
 pprof server is implemented using Go's `net/http/pprof` package.
@@ -170,7 +170,7 @@ When Vald Agent NGT is indexing, all search requests to the target pod will be c
 <div class="warning">
 When deploying Vald Index Manager, the above parameters should be set much longer than the Vald Index Manager settings.
 (Please see Vald Index Manager section)<BR>
-This is because Vald Index Manager accurately grasps the index information of each Vald Agent NGT and controls the execution timing of indexing.<BR><BR>
+This is because the Vald Index Manager accurately grasps the index information of each Vald Agent NGT and controls the execution timing of indexing.<BR><BR>
 When the setting parameter of Vald Agent NGT is shorter than the setting value of Vald Index Manager, Vald Agent NGT may start indexing by itself without the execution command from Vald Index Manager.
 If this happens, the Index Manager may not function properly.
 </div>
@@ -257,7 +257,7 @@ We recommend setting it as one-third of the number of Vald Agent pods.
 gateway:
   lb:
     gateway_config:
-      index_replica: 3 // The number of Vald Agent pods should be larger than 9.
+      index_replica: 3 // By setting the index replica to 3, the number of Vald Agent pods deployed should be more than 9.
 ```
 
 #### Resource requests and limits
@@ -282,7 +282,7 @@ gateway:
 
 #### Cluster Role
 
-Vald Discoverer gets the Node and Por metrics from [kube-apiserver](https://kubernetes.io/ja/docs/reference/command-line-tools-reference/kube-apiserver/) as described in [Vald Discoverer](../overview/component/discoverer.md).
+Vald Discoverer gets the Node and Pod metrics from [kube-apiserver](https://kubernetes.io/ja/docs/reference/command-line-tools-reference/kube-apiserver/) as described in [Vald Discoverer](../overview/component/discoverer.md).
 Vald's Helm deployment supports RBAC as default, and the default configuration is the following.
 
 ```yaml
@@ -304,9 +304,9 @@ discoverer:
 When `RBAC` is unavailable in your environment, or you would like to put some restrictions, please modify it and grant the permissions to the user executing the discoverer.
 Each configuration file is the following:
 
-- [cluster role](https://github.com/vdaas/vald/blob/master/k8s/discoverer/clusterrole.yaml)
-- [cluster role binding](https://github.com/vdaas/vald/blob/master/k8s/discoverer/clusterrolebinding.yaml)
-- [service account](https://github.com/vdaas/vald/blob/master/k8s/discoverer/serviceaccount.yaml)
+- [Cluster role](https://github.com/vdaas/vald/blob/master/k8s/discoverer/clusterrole.yaml)
+- [Cluster role binding](https://github.com/vdaas/vald/blob/master/k8s/discoverer/clusterrolebinding.yaml)
+- [Service account](https://github.com/vdaas/vald/blob/master/k8s/discoverer/serviceaccount.yaml)
 
 
 #### Resource requests and limits
@@ -319,7 +319,7 @@ Discoverer CPU loads almost depend on API request traffic = (the number of LB ga
 #### Execution index command to Vald Agent
 
 Vald Index Manager controls the indexing timing for all Vald Agent pods in the Vald cluster.
-These parameters relate control process.
+These parameters are related to the control process.
 
 ```yaml
 manager:
@@ -349,7 +349,7 @@ Same as LB gateway, `manager.index.indexer.discoverer.duration` represents the f
 
 ## References
 
-For further details, there are references to Helm values in the GitHub Vald repository.
+For further details, there are references to the Helm values in the Vald GitHub repository.
 
 - [README of Vald Helm Chart][vald-helm-chart]
 - [README of Vald-Helm-Operator Chart][vald-helm-operator-chart]
