@@ -346,7 +346,7 @@ manager:
 
 #### Discoverer request duration
 
-Same as LB gateway, manager.index.indexer.discoverer.duration represents the frequency of sending requests to the discoverer.
+Same as LB gateway, `manager.index.indexer.discoverer.duration` represents the frequency of sending requests to the discoverer.
 
 ## References
 
