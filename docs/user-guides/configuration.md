@@ -57,7 +57,6 @@ The logging level is defined in [the Coding Style Guide](../contributing/coding-
 
 Each Vald component has several types of servers.
 They can be configured by specifying the values in `defaults.server_config`.
-In addThey can be overwritten by specifying `[component].server_config`.
 
 Examples:
 
@@ -178,11 +177,11 @@ If this happens, the Index Manager may not function properly.
 
 #### Resource requests and limits, Pod priorities
 
-Because the agent places indices on memory, termination of agent pods causes loss of indices.
-It is important to set resource requests and limits appropriately not to terminate agent pods.
+Because the Vald Agent pod places indexes on memory, termination of agent pods causes loss of indexes.
+It is important to set the resource requests and limits appropriately to avoid terminating the Vald Agent pods.
 
 Requesting 40% of cluster memory for agent pods is highly recommended.
-And also, it is highly recommended not to set resource limits to agent pods.
+Also, it is highly recommended not to set the resource limits for the Vald Agent pods.
 
 Pod priorities are also useful for saving agent pods from eviction.
 By default, very high priority is set to agent pods in the Chart.
