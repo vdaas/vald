@@ -21,7 +21,7 @@ ARG MAINTAINER="vdaas.org vald team <vald@vdaas.org>"
 
 FROM golang:${GO_VERSION} AS golang
 
-FROM ubuntu:hirsute AS builder
+FROM ubuntu:devel AS builder
 
 ENV GO111MODULE on
 ENV DEBIAN_FRONTEND noninteractive

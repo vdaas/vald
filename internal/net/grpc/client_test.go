@@ -21,12 +21,15 @@ import (
 	"context"
 	"reflect"
 	"sync"
+	"sync/atomic"
 	"testing"
 	"time"
 
 	"github.com/vdaas/vald/internal/backoff"
+	"github.com/vdaas/vald/internal/circuitbreaker"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/net/grpc/pool"
 	"github.com/vdaas/vald/internal/singleflight"
 	"github.com/vdaas/vald/internal/test/goleak"
@@ -2473,6 +2476,170 @@ func Test_gRPCClient_Close(t *testing.T) {
 
 			err := g.Close(test.args.ctx)
 			if err := checkFunc(test.want, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func Test_gRPCClient_GetBackoff(t *testing.T) {
+	type fields struct {
+		addrs               map[string]struct{}
+		atomicAddrs         AtomicAddrs
+		poolSize            uint64
+		clientCount         uint64
+		conns               grpcConns
+		hcDur               time.Duration
+		prDur               time.Duration
+		dialer              net.Dialer
+		enablePoolRebalance bool
+		resolveDNS          bool
+		dopts               []DialOption
+		copts               []CallOption
+		roccd               string
+		eg                  errgroup.Group
+		bo                  backoff.Backoff
+		cb                  circuitbreaker.CircuitBreaker
+		gbo                 gbackoff.Config
+		mcd                 time.Duration
+		group               singleflight.Group
+		crl                 sync.Map
+		ech                 <-chan error
+		monitorRunning      atomic.Value
+		stopMonitor         context.CancelFunc
+	}
+	type want struct {
+		want backoff.Backoff
+	}
+	type test struct {
+		name       string
+		fields     fields
+		want       want
+		checkFunc  func(want, backoff.Backoff) error
+		beforeFunc func()
+		afterFunc  func()
+	}
+	defaultCheckFunc := func(w want, got backoff.Backoff) error {
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       fields: fields {
+		           addrs: nil,
+		           atomicAddrs: nil,
+		           poolSize: 0,
+		           clientCount: 0,
+		           conns: grpcConns{},
+		           hcDur: nil,
+		           prDur: nil,
+		           dialer: nil,
+		           enablePoolRebalance: false,
+		           resolveDNS: false,
+		           dopts: nil,
+		           copts: nil,
+		           roccd: "",
+		           eg: nil,
+		           bo: nil,
+		           cb: nil,
+		           gbo: nil,
+		           mcd: nil,
+		           group: nil,
+		           crl: nil,
+		           ech: nil,
+		           monitorRunning: nil,
+		           stopMonitor: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           fields: fields {
+		           addrs: nil,
+		           atomicAddrs: nil,
+		           poolSize: 0,
+		           clientCount: 0,
+		           conns: grpcConns{},
+		           hcDur: nil,
+		           prDur: nil,
+		           dialer: nil,
+		           enablePoolRebalance: false,
+		           resolveDNS: false,
+		           dopts: nil,
+		           copts: nil,
+		           roccd: "",
+		           eg: nil,
+		           bo: nil,
+		           cb: nil,
+		           gbo: nil,
+		           mcd: nil,
+		           group: nil,
+		           crl: nil,
+		           ech: nil,
+		           monitorRunning: nil,
+		           stopMonitor: nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc()
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc()
+			}
+			checkFunc := test.checkFunc
+			if test.checkFunc == nil {
+				checkFunc = defaultCheckFunc
+			}
+			g := &gRPCClient{
+				addrs:               test.fields.addrs,
+				atomicAddrs:         test.fields.atomicAddrs,
+				poolSize:            test.fields.poolSize,
+				clientCount:         test.fields.clientCount,
+				conns:               test.fields.conns,
+				hcDur:               test.fields.hcDur,
+				prDur:               test.fields.prDur,
+				dialer:              test.fields.dialer,
+				enablePoolRebalance: test.fields.enablePoolRebalance,
+				resolveDNS:          test.fields.resolveDNS,
+				dopts:               test.fields.dopts,
+				copts:               test.fields.copts,
+				roccd:               test.fields.roccd,
+				eg:                  test.fields.eg,
+				bo:                  test.fields.bo,
+				cb:                  test.fields.cb,
+				gbo:                 test.fields.gbo,
+				mcd:                 test.fields.mcd,
+				group:               test.fields.group,
+				crl:                 test.fields.crl,
+				ech:                 test.fields.ech,
+				monitorRunning:      test.fields.monitorRunning,
+				stopMonitor:         test.fields.stopMonitor,
+			}
+
+			got := g.GetBackoff()
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
