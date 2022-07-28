@@ -133,7 +133,7 @@ In this situation, we recommend you to set the affinity/anti-affinity configurat
 It is easy to change by editing each component setting on your `values.yaml`.
 
 <div class="warning">
-The affinity setting for Vald Agent is the significant for the Vald cluster.<BR>
+The affinity setting for Vald Agent is significant for the Vald cluster.<BR>
 Please DO NOT remove the default settings.
 </div>
 
