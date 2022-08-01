@@ -105,7 +105,7 @@ The swagger specs are placed in [Vald APIs Swagger][vald-swagger-specs].
 
 There are two built-in health check servers: liveness and readiness.
 They are used as servers for [Kubernetes liveness and readiness probe][kubernetes-liveness-readiness].
-The liveness health server is disabled by default due to the liveness probe may accidentally kill the Agent component.
+The liveness health server is disabled by default due to the liveness probe may accidentally kill the Vald Agent component.
 
 ```yaml
 agent:
@@ -168,7 +168,7 @@ While the Vald Agent NGT is in the process of creating indexes, it will ignore a
 </div>
 
 <div class="warning">
-When deploying Vald Index Manager, the above parameters should be set much longer than the Vald Index Manager settings.
+When deploying Vald Index Manager, the above parameters should be set much longer than the Vald Index Manager settings, e.g., set agent.ngt.auto_index_duration_limit to "720h" and agent.ngt.auto_index_check_duration to "24h".
 (Please see Vald Index Manager section)<BR>
 This is because the Vald Index Manager accurately grasps the index information of each Vald Agent NGT and controls the execution timing of indexing.<BR><BR>
 When the setting parameter of Vald Agent NGT is shorter than the setting value of Vald Index Manager, Vald Agent NGT may start indexing by itself without the execution command from Vald Index Manager.
@@ -251,13 +251,13 @@ gateway:
 #### Index replica
 
 `gateway.lb.gateway_config.index_replica` represents how many Vald Agent pods a vector will be inserted into.
-The maximum value of the index replica should be one-third of the Vald Agent pods deployed.
+The maximum value of the index replica should be 30% of the Vald Agent pods deployed.
 
 ```yaml
 gateway:
   lb:
     gateway_config:
-      index_replica: 3 // By setting the index replica to 3, the number of Vald Agent pods deployed should be more than 9.
+      index_replica: 3 // By setting the index replica to 3, the number of Vald Agent pods deployed should be more than 9 (3 / 0.3).
 ```
 
 #### Resource requests and limits
