@@ -105,7 +105,7 @@ The swagger specs are placed in [Vald APIs Swagger][vald-swagger-specs].
 
 There are two built-in health check servers: liveness and readiness.
 They are used as servers for [Kubernetes liveness and readiness probe][kubernetes-liveness-readiness].
-Liveness servers are default disabled for the agent because the liveness probes may accidentally kill it.
+The liveness health server is disabled by default due to the liveness probe may accidentally kill the Agent component.
 
 ```yaml
 agent:
@@ -117,11 +117,11 @@ agent:
 
 ### Metrics servers
 
-Metrics servers help to debug and monitor Vald components.
+The metrics server enables easier debugging and monitoring of Vald components.
 There are two types of metrics servers: pprof and Prometheus.
 
 pprof server is implemented using Go's `net/http/pprof` package.
-You can use [google's pprof][google-pprof] to analyze the exported profiling data.
+You can use [google's pprof][google-pprof] to analyze the exported profile result.
 
 Prometheus server is a [Prometheus][prometheus-io] exporter.
 It is required to set the `observability` section on each Vald component to enable the monitoring using Prometheus.
@@ -130,7 +130,7 @@ Please refer to the next section.
 ### Observability
 
 The observability features are useful for monitoring Vald components.
-They can be enabled by setting the value `true` on the `defaults.observability.enabled` field or overriding it in each component (`[component].observability.enabled`).
+These settings can be enabled by setting the `defaults.observability.enabled` field to the value `true` or by overriding it in each component (`[component].observability.enabled`).
 And also, enable each feature by setting the value `true` on its `enabled` field.
 
 If observability features are enabled, the metrics will be collected periodically.
@@ -164,7 +164,7 @@ The behavior of this feature can be configured with these parameters:
 - `agent.ngt.auto_index_length`
 
 <div class="notice">
-When Vald Agent NGT is indexing, all search requests to the target pod will be canceled.
+While the Vald Agent NGT is in the process of creating indexes, it will ignore all search requests to the target pods.
 </div>
 
 <div class="warning">
