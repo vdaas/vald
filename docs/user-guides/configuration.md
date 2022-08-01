@@ -168,7 +168,7 @@ While the Vald Agent NGT is in the process of creating indexes, it will ignore a
 </div>
 
 <div class="warning">
-When deploying Vald Index Manager, the above parameters should be set much longer than the Vald Index Manager settings, e.g., set agent.ngt.auto_index_duration_limit to "720h" and agent.ngt.auto_index_check_duration to "24h".
+When deploying Vald Index Manager, the above parameters should be set much longer than the Vald Index Manager settings, e.g., designated agent.ngt.auto_index_duration_limit to "720h" and agent.ngt.auto_index_check_duration to "24h".
 (Please see Vald Index Manager section)<BR>
 This is because the Vald Index Manager accurately grasps the index information of each Vald Agent NGT and controls the execution timing of indexing.<BR><BR>
 When the setting parameter of Vald Agent NGT is shorter than the setting value of Vald Index Manager, Vald Agent NGT may start indexing by itself without the execution command from Vald Index Manager.
