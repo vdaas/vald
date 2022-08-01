@@ -19,6 +19,7 @@ package config
 
 import (
 	"github.com/vdaas/vald/internal/backoff"
+	"github.com/vdaas/vald/internal/circuitbreaker"
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/tls"
@@ -30,6 +31,7 @@ type GRPCClient struct {
 	HealthCheckDuration string          `json:"health_check_duration" yaml:"health_check_duration"`
 	ConnectionPool      *ConnectionPool `json:"connection_pool"       yaml:"connection_pool"`
 	Backoff             *Backoff        `json:"backoff"               yaml:"backoff"`
+	CircuitBreaker      *CircuitBreaker `json:"circuit_breaker"       yaml:"circuit_breaker"`
 	CallOption          *CallOption     `json:"call_option"           yaml:"call_option"`
 	DialOption          *DialOption     `json:"dial_option"           yaml:"dial_option"`
 	TLS                 *TLS            `json:"tls"                   yaml:"tls"`
@@ -101,6 +103,10 @@ func (g *GRPCClient) Bind() *GRPCClient {
 
 	if g.Backoff != nil {
 		g.Backoff.Bind()
+	}
+
+	if g.CircuitBreaker != nil {
+		g.CircuitBreaker.Bind()
 	}
 
 	if g.CallOption != nil {
@@ -183,6 +189,25 @@ func (g *GRPCClient) Opts() ([]grpc.Option, error) {
 			),
 		)
 	}
+
+	if g.CircuitBreaker != nil {
+		cb, err := circuitbreaker.NewCircuitBreaker(
+			circuitbreaker.WithBreakerOpts(
+				circuitbreaker.WithClosedErrorRate(g.CircuitBreaker.ClosedErrorRate),
+				circuitbreaker.WithHalfOpenErrorRate(g.CircuitBreaker.HalfOpenErrorRate),
+				circuitbreaker.WithMinSamples(g.CircuitBreaker.MinSamples),
+				circuitbreaker.WithOpenTimeout(g.CircuitBreaker.OpenTimeout),
+				circuitbreaker.WithClosedRefreshTimeout(g.CircuitBreaker.ClosedRefreshTimeout),
+			),
+		)
+		if err != nil {
+			return nil, err
+		}
+		opts = append(opts,
+			grpc.WithCircuitBreaker(cb),
+		)
+	}
+
 	if g.CallOption != nil {
 		opts = append(opts,
 			grpc.WithWaitForReady(g.CallOption.WaitForReady),

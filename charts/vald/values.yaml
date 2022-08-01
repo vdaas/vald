@@ -38,7 +38,7 @@ defaults:
   image:
     # @schema {"name": "defaults.image.tag", "type": "string"}
     # defaults.image.tag -- docker image tag
-    tag: v1.5.5
+    tag: v1.5.6
   # @schema {"name": "defaults.server_config", "type": "object", "anchor": "server_config"}
   server_config:
     # @schema {"name": "defaults.server_config.servers", "type": "object"}
@@ -671,6 +671,23 @@ defaults:
         # @schema {"name": "defaults.grpc.client.backoff.enable_error_log", "type": "boolean"}
         # defaults.grpc.client.backoff.enable_error_log -- gRPC client backoff log enabled
         enable_error_log: true
+      # @schema {"name": "defaults.grpc.client.circuit_breaker", "type": "object"}
+      circuit_breaker:
+        # @schema {"name": "defaults.grpc.client.circuit_breaker.closed_error_rate", "type": "number"}
+        # defaults.grpc.client.circuit_breaker.closed_error_rate -- gRPC client circuitbreaker closed error rate
+        closed_error_rate: 0.7
+        # @schema {"name": "defaults.grpc.client.circuit_breaker.half_open_error_rate", "type": "number"}
+        # defaults.grpc.client.circuit_breaker.half_open_error_rate -- gRPC client circuitbreaker half-open error rate
+        half_open_error_rate: 0.5
+        # @schema {"name": "defaults.grpc.client.circuit_breaker.min_samples", "type": "integer"}
+        # defaults.grpc.client.circuit_breaker.min_samples -- gRPC client circuitbreaker minimum sampling count
+        min_samples: 1000
+        # @schema {"name": "defaults.grpc.client.circuit_breaker.open_timeout", "type": "string"}
+        # defaults.grpc.client.circuit_breaker.open_timeout -- gRPC client circuitbreaker open timeout
+        open_timeout: "1s"
+        # @schema {"name": "defaults.grpc.client.circuit_breaker.closed_refresh_timeout", "type": "string"}
+        # defaults.grpc.client.circuit_breaker.closed_refresh_timeout -- gRPC client circuitbreaker closed refresh timeout
+        closed_refresh_timeout: "10s"
       # @schema {"name": "defaults.grpc.client.call_option", "type": "object"}
       call_option:
         # @schema {"name": "defaults.grpc.client.wait_for_ready", "type": "boolean"}
@@ -1787,9 +1804,9 @@ agent:
     # @schema {"name": "agent.ngt.bulk_insert_chunk_size", "type": "integer"}
     # agent.ngt.bulk_insert_chunk_size -- bulk insert chunk size
     bulk_insert_chunk_size: 10
-    # @schema {"name": "agent.ngt.distance_type", "type": "string", "enum": ["l1", "l2", "angle", "hamming", "cos", "cosine", "normalizedangle", "normalizedcosine", "jaccard"]}
+    # @schema {"name": "agent.ngt.distance_type", "type": "string", "enum": ["l1", "l2", "ang", "angle", "ham", "hamming", "cos", "cosine", "poincare", "poinc", "lorentz", "loren", "jac", "jaccard", "spjac", "sparsejaccard", "norml2", "normalizedl2", "normang", "normalizedangle", "normcos", "normalizedcosine"]}
     # agent.ngt.distance_type -- distance type.
-    # it should be `l1`, `l2`, `angle`, `hamming`, `cosine`, `normalizedangle`, `normalizedcosine` or `jaccard`.
+    # it should be `l1`, `l2`, `angle`, `hamming`, `cosine`,`poincare`, `lorentz`, `jaccard`, `sparsejaccard`, `normalizedangle` or `normalizedcosine`.
     # for further details about NGT libraries supported distance is https://github.com/yahoojapan/NGT/wiki/Command-Quick-Reference
     # and vald agent's supported NGT distance type is https://pkg.go.dev/github.com/vdaas/vald/internal/core/algorithm/ngt#pkg-constants
     distance_type: l2

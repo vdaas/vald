@@ -43,6 +43,9 @@ jobs:
     steps:
       - name: Check out code.
         uses: actions/checkout@v3
+      - name: set git config
+        run: |
+          git config --global --add safe.directory ${GITHUB_WORKSPACE}
       - name: Run tests for cmd packages / tparse
         run: |
           make test/cmd/tparse | tee tparse.txt || cat tparse.txt
@@ -57,6 +60,9 @@ jobs:
     steps:
       - name: Check out code.
         uses: actions/checkout@v3
+      - name: set git config
+        run: |
+          git config --global --add safe.directory ${GITHUB_WORKSPACE}
       - name: Run tests for internal packages / tparse
         run: |
           make test/internal/tparse | tee tparse.txt || cat tparse.txt
@@ -71,6 +77,9 @@ jobs:
     steps:
       - name: Check out code.
         uses: actions/checkout@v3
+      - name: set git config
+        run: |
+          git config --global --add safe.directory ${GITHUB_WORKSPACE}
       - name: Run tests for pkg packages / tparse
         run: |
           make test/pkg/tparse | tee tparse.txt || cat tparse.txt

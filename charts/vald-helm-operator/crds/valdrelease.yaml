@@ -221,13 +221,26 @@ spec:
                           enum:
                             - l1
                             - l2
+                            - ang
                             - angle
+                            - ham
                             - hamming
                             - cos
                             - cosine
-                            - normalizedangle
-                            - normalizedcosine
+                            - poincare
+                            - poinc
+                            - lorentz
+                            - loren
+                            - jac
                             - jaccard
+                            - spjac
+                            - sparsejaccard
+                            - norml2
+                            - normalizedl2
+                            - normang
+                            - normalizedangle
+                            - normcos
+                            - normalizedcosine
                         enable_copy_on_write:
                           type: boolean
                         enable_in_memory_mode:
@@ -2163,6 +2176,19 @@ spec:
                             call_option:
                               type: object
                               x-kubernetes-preserve-unknown-fields: true
+                            circuit_breaker:
+                              type: object
+                              properties:
+                                closed_error_rate:
+                                  type: number
+                                closed_refresh_timeout:
+                                  type: string
+                                half_open_error_rate:
+                                  type: number
+                                min_samples:
+                                  type: integer
+                                open_timeout:
+                                  type: string
                             connection_pool:
                               type: object
                               properties:
@@ -4204,6 +4230,19 @@ spec:
                                     call_option:
                                       type: object
                                       x-kubernetes-preserve-unknown-fields: true
+                                    circuit_breaker:
+                                      type: object
+                                      properties:
+                                        closed_error_rate:
+                                          type: number
+                                        closed_refresh_timeout:
+                                          type: string
+                                        half_open_error_rate:
+                                          type: number
+                                        min_samples:
+                                          type: integer
+                                        open_timeout:
+                                          type: string
                                     connection_pool:
                                       type: object
                                       properties:
@@ -4368,6 +4407,19 @@ spec:
                                 call_option:
                                   type: object
                                   x-kubernetes-preserve-unknown-fields: true
+                                circuit_breaker:
+                                  type: object
+                                  properties:
+                                    closed_error_rate:
+                                      type: number
+                                    closed_refresh_timeout:
+                                      type: string
+                                    half_open_error_rate:
+                                      type: number
+                                    min_samples:
+                                      type: integer
+                                    open_timeout:
+                                      type: string
                                 connection_pool:
                                   type: object
                                   properties:
@@ -4527,6 +4579,19 @@ spec:
                                     call_option:
                                       type: object
                                       x-kubernetes-preserve-unknown-fields: true
+                                    circuit_breaker:
+                                      type: object
+                                      properties:
+                                        closed_error_rate:
+                                          type: number
+                                        closed_refresh_timeout:
+                                          type: string
+                                        half_open_error_rate:
+                                          type: number
+                                        min_samples:
+                                          type: integer
+                                        open_timeout:
+                                          type: string
                                     connection_pool:
                                       type: object
                                       properties:
@@ -5659,6 +5724,19 @@ spec:
                                     call_option:
                                       type: object
                                       x-kubernetes-preserve-unknown-fields: true
+                                    circuit_breaker:
+                                      type: object
+                                      properties:
+                                        closed_error_rate:
+                                          type: number
+                                        closed_refresh_timeout:
+                                          type: string
+                                        half_open_error_rate:
+                                          type: number
+                                        min_samples:
+                                          type: integer
+                                        open_timeout:
+                                          type: string
                                     connection_pool:
                                       type: object
                                       properties:
@@ -5815,6 +5893,19 @@ spec:
                                     call_option:
                                       type: object
                                       x-kubernetes-preserve-unknown-fields: true
+                                    circuit_breaker:
+                                      type: object
+                                      properties:
+                                        closed_error_rate:
+                                          type: number
+                                        closed_refresh_timeout:
+                                          type: string
+                                        half_open_error_rate:
+                                          type: number
+                                        min_samples:
+                                          type: integer
+                                        open_timeout:
+                                          type: string
                                     connection_pool:
                                       type: object
                                       properties:
@@ -6967,6 +7058,19 @@ spec:
                                     call_option:
                                       type: object
                                       x-kubernetes-preserve-unknown-fields: true
+                                    circuit_breaker:
+                                      type: object
+                                      properties:
+                                        closed_error_rate:
+                                          type: number
+                                        closed_refresh_timeout:
+                                          type: string
+                                        half_open_error_rate:
+                                          type: number
+                                        min_samples:
+                                          type: integer
+                                        open_timeout:
+                                          type: string
                                     connection_pool:
                                       type: object
                                       properties:
@@ -7123,6 +7227,19 @@ spec:
                                     call_option:
                                       type: object
                                       x-kubernetes-preserve-unknown-fields: true
+                                    circuit_breaker:
+                                      type: object
+                                      properties:
+                                        closed_error_rate:
+                                          type: number
+                                        closed_refresh_timeout:
+                                          type: string
+                                        half_open_error_rate:
+                                          type: number
+                                        min_samples:
+                                          type: integer
+                                        open_timeout:
+                                          type: string
                                     connection_pool:
                                       type: object
                                       properties:
