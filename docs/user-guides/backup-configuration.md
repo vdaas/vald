@@ -6,7 +6,7 @@ This page describes how enabled backup features for your Vald cluster.
 
 ## What is the backup
 
-Vald's backup function is to save the index information indexed in each Vald Agent pod as file data in Persistent Volume or S3.
+Vald's backup function is to save the index data in each Vald Agent pod as a data file to the Persistent Volume or S3.
 When the Vald Agent pod is restarted for some reason, the index state is restored from the saved index data.
 
 ## Backup configuration
@@ -19,7 +19,7 @@ Please try to reference.
 ### General
 
 Regardless of the backup destination, the following Vald Agent settings must be set to enable backup.
-- `index_path` is the location where those files are stored.
+- `index_path` is the backup file location.
 - `in-memory-mode=false` means storing index files in the local volume.
 
 In addition, `agent.terminationGracePeriodSeconds` value should be long enough to ensure the backup speed.
