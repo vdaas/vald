@@ -1,32 +1,36 @@
 # Configurations
 
-This page introduces best practices for setting up values for Vald Helm Chart.
+This page introduces best practices for setting up values for the Vald Helm Chart.
+
 Before reading, please read the overview of Vald Helm Chart in [its README][vald-helm-chart].
 
-## Notable fields in Vald Helm Chart
+<div class="notice">
+This page shows the notable fields in Vald Helm Chart.<BR>
+It is highly recommended to verify before deployment.
+</div>
 
-### Basics
+## General
 
-#### Specify image tag
+### Specify image tag
 
-It is highly recommended to specify Vald version.
-You can specify image version by set `image.tag` field in each component (`[component].image.tag`) or `defaults` section.
+It is highly recommended to specify the Vald version.
+You can specify the image version by setting `image.tag` field in each component (`[component].image.tag`) or `defaults` section.
 
 ```yaml
 defaults:
   image:
-    tag: v1.1.1
+    tag: v1.5.6
 ```
 
-or you can use the older image only for agent,
+or you can use the older image only for a target component, e.g., the agent,
 
 ```yaml
 agent:
   image:
-    tag: v1.1.0
+    tag: v1.5.5
 ```
 
-#### Specify appropriate logging level and format
+### Specify appropriate logging level and format
 
 The default logging levels and formats are configured in `defaults.logging.level` and `defaults.logging.format`.
 You can also specify them in each component section (`[component].logging`).
@@ -38,7 +42,7 @@ defaults:
     format: raw
 ```
 
-you can specify log level `debug` and JSON format for lb-gateway by the followings:
+You can specify log level `debug` and JSON format for lb-gateway by the followings:
 
 ```yaml
 gateway:
@@ -50,11 +54,10 @@ gateway:
 
 The logging level is defined in [the Coding Style Guide](../contributing/coding-style.md#logging).
 
-#### Servers
+### Servers
 
 Each Vald component has several types of servers.
 They can be configured by specifying the values in `defaults.server_config`.
-They can be overwritten by specifying `[component].server_config`.
 
 Examples:
 
@@ -72,6 +75,8 @@ defaults:
           ...
 ```
 
+In addition, they can be overwritten by setting each `[component].server_config`, e.g., `gateway.lb.server_config` is following.
+
 ```yaml
 gateway:
   lb:
@@ -87,21 +92,21 @@ gateway:
             ...
 ```
 
-##### gRPC server
+#### gRPC server
 
-gRPC server should be enabled, because all Vald components use gRPC to communicate with others.
-The API specs are placed in [apis/docs][vald-apis-docs].
+gRPC server should be enabled because all Vald components use gRPC to communicate with others.
+The API specs are placed in [Vald APIs](../api).
 
-##### REST server
+#### REST server
 
 REST server is optional.
-The swagger specs are placed in [apis/swagger][vald-swagger-specs].
+The swagger specs are placed in [Vald APIs Swagger][vald-swagger-specs].
 
-##### Health check servers
+#### Health check servers
 
-There are two types of built-in health check servers, liveness and readiness.
+There are two built-in health check servers: liveness and readiness.
 They are used as servers for [Kubernetes liveness and readiness probe][kubernetes-liveness-readiness].
-By default, liveness servers are disabled for agent, because the liveness probes may accidentally kill it.
+The liveness health server is disabled by default due to the liveness probe may accidentally kill the Vald Agent component.
 
 ```yaml
 agent:
@@ -111,32 +116,35 @@ agent:
         enabled: false
 ```
 
-##### Metrics servers
+### Metrics servers
 
-Metrics servers are useful for debugging and monitoring Vald components.
-There are two types of metrics servers, pprof and Prometheus.
+The metrics server enables easier debugging and monitoring of Vald components.
+There are two types of metrics servers: pprof and Prometheus.
 
-pprof server is implemented using Go's net/http/pprof package.
-You can use [google's pprof][google-pprof] to analyze the profiling data exported from it.
+pprof server is implemented using Go's `net/http/pprof` package.
+You can use [google's pprof][google-pprof] to analyze the exported profile result.
 
 Prometheus server is a [Prometheus][prometheus-io] exporter.
-It is required to set the `observability` section on each Vald component to enable the monitoring using Prometheus. Plese refer to the next section.
+It is required to set the `observability` section on each Vald component to enable the monitoring using Prometheus.
+Please refer to the next section.
 
-#### Observability
+### Observability
 
 The observability features are useful for monitoring Vald components.
-They can be enabled by setting the value `true` on the `defaults.observability.enabled` field or override it in each component (`[component].observability.enabled`).
+These settings can be enabled by setting the `defaults.observability.enabled` field to the value `true` or by overriding it in each component (`[component].observability.enabled`).
 And also, enable each feature by setting the value `true` on its `enabled` field.
 
 If observability features are enabled, the metrics will be collected periodically.
 The duration can be set on `observability.collector.duration`.
-Please refer to [Vald operation guide](../user-guides/configuration.md) for more detail.
+Please refer to [the Vald operation guide](../user-guides/configuration.md) for more detail.
+
+## Component basic configuration
 
 ### Agents
 
 #### NGT
 
-Agent-NGT uses [yahoojapan/NGT][yj-ngt] as a core library for searching vector.
+Vald Agent NGT uses [yahoojapan/NGT][yj-ngt] as a core library for searching vectors.
 The behaviors of NGT can be configured by setting `agent.ngt` field object.
 
 The important parameters are the followings:
@@ -145,31 +153,50 @@ The important parameters are the followings:
 - `agent.ngt.distance_type`
 - `agent.ngt.object_type`
 
-Users should configure these parameters first to fit to their use case.
+Users should configure these parameters first to fit their use case.
+For further details, please read [the NGT wiki][yj-ngt-wiki].
 
-For further details, please read [NGT wiki][yj-ngt-wiki].
-
-Agent-NGT has a feature to start indexing automatically.
+Vald Agent NGT has a feature to start indexing automatically.
 The behavior of this feature can be configured with these parameters:
 
 - `agent.ngt.auto_index_duration_limit`
 - `agent.ngt.auto_index_check_duration`
 - `agent.ngt.auto_index_length`
 
+<div class="notice">
+While the Vald Agent NGT is in the process of creating indexes, it will ignore all search requests to the target pods.
+</div>
+
+<div class="warning">
+When deploying Vald Index Manager, the above parameters should be set much longer than the Vald Index Manager settings (Please refer to the Vald Index Manager section).<BR>
+E.g., set agent.ngt.auto_index_duration_limit to "720h" and agent.ngt.auto_index_check_duration to "24h".<BR>
+This is because the Vald Index Manager accurately grasps the index information of each Vald Agent NGT and controls the execution timing of indexing.<BR><BR>
+When the setting parameter of Vald Agent NGT is shorter than the setting value of Vald Index Manager, Vald Agent NGT may start indexing by itself without the execution command from Vald Index Manager.
+If this happens, the Index Manager may not function properly.
+</div>
+
 #### Resource requests and limits, Pod priorities
 
-Because agent places indices on memory, termination of agent pods causes loss of indices.
-It is important to set resource requests and limits appropriately not to terminate agent pods.
+Because the Vald Agent pod places indexes on memory, termination of agent pods causes loss of indexes.
+It is important to set the resource requests and limits appropriately to avoid terminating the Vald Agent pods.
 
-It is highly recommended to request a totally 40% of cluster memory for agent pods.
-And also it is highly recommended not to set resource limits to agent pods.
+Requesting 40% of cluster memory for agent pods is highly recommended.
+Also, it is highly recommended not to set the resource limits for the Vald Agent pods.
 
 Pod priorities are also useful for saving agent pods from eviction.
 By default, very high priority is set to agent pods in the Chart.
 
+[The capacity planning page](../user-guides/capacity-planning.md) helps to estimate the resources.
+
 #### Pod scheduling
 
 It is recommended to schedule agent pods on different nodes as much as possible.
+
+<div class="warning">
+The affinity setting for Vald Agent is significant for the Vald cluster.<BR>
+Please DO NOT remove the default settings.
+</div>
+
 To achieve this, the following [podAntiAffinity][kubernetes-affinity-antiaffinity] is set by default.
 
 ```yaml
@@ -188,7 +215,7 @@ agent:
                     - vald-agent-ngt
 ```
 
-It can be also achieved by using [pod topology spread constraints][kubernetes-topology-spread-constraints].
+It can also be achieved by using [pod topology spread constraints][kubernetes-topology-spread-constraints].
 
 ```yaml
 agent:
@@ -204,7 +231,7 @@ agent:
       preferredDuringSchedulingIgnoredDuringExecution: [] # to disable default settings
 ```
 
-### Gateways
+### Gateway LB
 
 #### Ingress
 
@@ -223,24 +250,25 @@ gateway:
 
 #### Index replica
 
-`gateway.lb.gateway_config.index_replica` represents how many agent pods that a vector will be inserted into.
+`gateway.lb.gateway_config.index_replica` represents how many Vald Agent pods a vector will be inserted into.
+The maximum value of the index replica should be 30% of the Vald Agent pods deployed.
 
 ```yaml
 gateway:
   lb:
     gateway_config:
-      index_replica: 3
+      index_replica: 3 // By setting the index replica to 3, the number of Vald Agent pods deployed should be more than 9 (3 / 0.3).
 ```
 
 #### Resource requests and limits
 
-Gateway's resource requests and limits depend on the request traffic and available resources.
-If the request traffic varies largely, it is recommended to enable HPA for gateway and adjust the resource requests.
+The gateway's resource requests and limits depend on the request traffic and available resources.
+If the request traffic varies largely, enabling HPA for the gateway and adjusting the resource requests is recommended.
 
 #### Discoverer request duration
 
-`gateway.lb.gateway_config.discoverer.duration` represents a frequency to send requests to discoverer.
-If discoverer's CPU utilization is too high, make this value longer or reduce the number of LB gateway pods.
+`gateway.lb.gateway_config.discoverer.duration` represents the frequency of sending requests to the discoverer.
+If the discoverer's CPU utilization is too high, make this value longer or reduce the number of LB gateway pods.
 
 ```yaml
 gateway:
@@ -252,6 +280,35 @@ gateway:
 
 ### Discoverer
 
+#### Cluster Role
+
+Vald Discoverer gets the Node and Pod metrics from [kube-apiserver](https://kubernetes.io/ja/docs/reference/command-line-tools-reference/kube-apiserver/) as described in [Vald Discoverer](../overview/component/discoverer.md).
+Vald's Helm deployment supports RBAC as default, and the default configuration is the following.
+
+```yaml
+discoverer:
+  clusterRole:
+    # if true, the clusterRole configuration will be created.
+    enabled: true
+    name: discoverer
+  clusterRoleBinding:
+    # if true, the clusterRoleBinding configuration will be created.
+    enabled: true
+    name: discoverer
+  serviceAccount:
+    # if true, the serviceAccount configuration will be created.
+    enabled: true
+    name: vald
+```
+
+When `RBAC` is unavailable in your environment, or you would like to put some restrictions, please modify it and grant the permissions to the user executing the discoverer.
+Each configuration file is the following:
+
+- [Cluster role](https://github.com/vdaas/vald/blob/master/k8s/discoverer/clusterrole.yaml)
+- [Cluster role binding](https://github.com/vdaas/vald/blob/master/k8s/discoverer/clusterrolebinding.yaml)
+- [Service account](https://github.com/vdaas/vald/blob/master/k8s/discoverer/serviceaccount.yaml)
+
+
 #### Resource requests and limits
 
 The number of discoverer pods and resource limits can be estimated by the configurations of your LB gateways and index managers because its APIs are called by them.
@@ -259,22 +316,50 @@ Discoverer CPU loads almost depend on API request traffic = (the number of LB ga
 
 ### Index Manager
 
+#### Execution index command to Vald Agent
+
+Vald Index Manager controls the indexing timing for all Vald Agent pods in the Vald cluster.
+These parameters are related to the control process.
+
+```yaml
+manager:
+  index:
+    indexer:
+      # namespace of agent pods to manage
+      agent_namespace: vald # namespace of agent pods to manage
+      # check duration of automatic indexing
+      auto_index_check_duration: "1m"
+      # limit duration of automatic indexing
+      auto_index_duration_limit: "30m"
+      # number of caches to trigger automatic indexing
+      auto_index_length: 100
+      # limit duration of automatic index saving
+      auto_save_index_duration_limit: "3h"
+      # duration of automatic index saving wait duration for next saving
+      auto_save_index_wait_duration: "10m"
+      # the number of Agent Pods indexing at the same time
+      concurrency: 1
+      # number of pool size of creating index processing
+      creation_pool_size: 10000
+```
+
 #### Discoverer request duration
 
-Same as LB gateway, `manager.index.indexer.discoverer.duration` represents a frequency to send requests to discoverer.
+Same as LB gateway, `manager.index.indexer.discoverer.duration` represents the frequency of sending requests to the discoverer.
 
 ## References
 
-For further details, there are references of Helm values in GitHub Vald repository.
+For further details, there are references to the Helm values in the Vald GitHub repository.
 
 - [README of Vald Helm Chart][vald-helm-chart]
 - [README of Vald-Helm-Operator Chart][vald-helm-operator-chart]
+
+<!-- TODO: add related document(pullugable options) -->
 
 
 [vald-helm-chart]: https://github.com/vdaas/vald/tree/master/charts/vald
 [vald-helm-operator-chart]: https://github.com/vdaas/vald/tree/master/charts/vald-helm-operator
 
-[vald-apis-docs]: https://github.com/vdaas/vald/tree/master/apis/docs
 [vald-swagger-specs]: https://github.com/vdaas/vald/tree/master/apis/swagger
 [google-pprof]: https://github.com/google/pprof
 [prometheus-io]: https://prometheus.io/
