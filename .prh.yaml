@@ -24,6 +24,7 @@ version: 1
 # index: grafana
 # index: guaranteed
 # index: helm
+# index: indexes
 # index: jaeger
 # index: java
 # index: jupyter
@@ -107,6 +108,10 @@ rules:
         to: Guaranteed
   - pattern: helm
     expected: Helm
+    options:
+      wordBoundary: true
+  - pattern: indices
+    expected: indexes
     options:
       wordBoundary: true
   - pattern: jaeger
