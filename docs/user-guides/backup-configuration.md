@@ -2,7 +2,7 @@
 
 There are three types of options for the Vald cluster: backup, filtering, and core algorithms.
 
-This page describes how enabled backup features for your Vald cluster.
+This page describes how to enable the backup feature on your Vald cluster.
 
 ## What is the backup
 
@@ -11,10 +11,10 @@ When the Vald Agent pod is restarted for some reason, the index state is restore
 
 ## Backup configuration
 
-This section shows the best practice backup configuration with PV, S3, or PV + S3.
+This section shows the best practice for configuring backup features with PV, S3, or PV + S3.
 
 Each sample configuration yaml is published on [here](https://github.com/vdaas/vald/tree/master/charts/vald/values).
-Please try to reference.
+Please refer it for more details.
 
 ### General
 
@@ -72,7 +72,7 @@ It is highly recommended to set `copy_on_write` (CoW) as `true`.
 
 <div class="notice">
 The CoW is an option to update the backup file safely.<BR>
-The backup file may be corrupted, and the Vald Agent pod may not restore from backup files when the Vald Agent pod terminates during saveIndex without CoW is not be enabled.<BR>
+The backup file may be corrupted, and the Vald Agent pod may not be able to restore from backup files when the Vald Agent pod terminates during the save index function without CoW is not be enabled.<BR>
 On the other hand, when CoW is enabled, the Vald Agent pod can restore the data from one generation ago.
 </div>
 
