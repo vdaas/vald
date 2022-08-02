@@ -1,6 +1,7 @@
 # Configurations
 
 This page introduces best practices for setting up values for the Vald Helm Chart.
+
 Before reading, please read the overview of Vald Helm Chart in [its README][vald-helm-chart].
 
 <div class="notice">
@@ -153,7 +154,6 @@ The important parameters are the followings:
 - `agent.ngt.object_type`
 
 Users should configure these parameters first to fit their use case.
-
 For further details, please read [the NGT wiki][yj-ngt-wiki].
 
 Vald Agent NGT has a feature to start indexing automatically.
@@ -168,8 +168,8 @@ While the Vald Agent NGT is in the process of creating indexes, it will ignore a
 </div>
 
 <div class="warning">
-When deploying Vald Index Manager, the above parameters should be set much longer than the Vald Index Manager settings, e.g., designated agent.ngt.auto_index_duration_limit to "720h" and agent.ngt.auto_index_check_duration to "24h".
-(Please see Vald Index Manager section)<BR>
+When deploying Vald Index Manager, the above parameters should be set much longer than the Vald Index Manager settings (Please refer to the Vald Index Manager section).<BR>
+E.g., set agent.ngt.auto_index_duration_limit to "720h" and agent.ngt.auto_index_check_duration to "24h".<BR>
 This is because the Vald Index Manager accurately grasps the index information of each Vald Agent NGT and controls the execution timing of indexing.<BR><BR>
 When the setting parameter of Vald Agent NGT is shorter than the setting value of Vald Index Manager, Vald Agent NGT may start indexing by itself without the execution command from Vald Index Manager.
 If this happens, the Index Manager may not function properly.
