@@ -31,7 +31,7 @@ var defaultOptions = []Option{
 func WithNameByString(n string) Option {
 	var name DatasetName
 	switch n {
-	case "fashion-mnist-784-euc":
+	case FashionMNIST784Euclidean.String():
 		name = FASHION_MNIST_784_EUC
 	}
 	return WithName(name)

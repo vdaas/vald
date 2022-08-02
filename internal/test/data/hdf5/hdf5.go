@@ -42,12 +42,12 @@ type Data interface {
 type DatasetName int
 
 const (
-	FASHION_MNIST_784_EUC DatasetName = iota
+	FashionMNIST784Euclidean DatasetName = iota
 )
 
 func (d DatasetName) String() string {
 	switch d {
-	case FASHION_MNIST_784_EUC:
+	case FashionMNIST784Euclidean:
 		return "fashion-mnist-784-euc"
 	default:
 		return ""
