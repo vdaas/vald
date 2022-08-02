@@ -20,7 +20,6 @@ Every filter component which you'd like to use as the Vald filter component must
           body : "*"
         };
       }
-    
       // Represent the RPC to filter the vector.
       rpc FilterVector(payload.v1.Object.Vector)
           returns (payload.v1.Object.Vector) {
@@ -36,7 +35,6 @@ Every filter component which you'd like to use as the Vald filter component must
 
     ```rpc
     service Filter {
-    
       // Represent the RPC to filter the distance.
       rpc FilterDistance(payload.v1.Object.Distance)
           returns (payload.v1.Object.Distance) {
@@ -45,7 +43,6 @@ Every filter component which you'd like to use as the Vald filter component must
           body : "*"
         };
       }
-    
       // Represent the RPC to filter the vector.
       rpc FilterVector(payload.v1.Object.Vector)
           returns (payload.v1.Object.Vector) {
@@ -85,46 +82,33 @@ It is because the Vald Filter gateway connects the filter component specified in
 
 If you want to make more detailed settings, please set the following parameters.
 
-<!-- TODO: parameter list -->
-
 ```yaml
 gateway:
   filter:
   ...
     gateway_config:
     ...
-      # @schema {"name": "gateway.filter.gateway_config.ingress_filter", "type": "object"}
-      # gateway.filter.gateway_config.ingress_filter -- gRPC client config for ingress filter
+      # gRPC client config for ingress filter
       ingress_filter:
-        # @schema {"name": "gateway.filter.gateway_config.ingress_filter.client", "alias": "grpc.client"}
-        # gateway.filter.gateway_config.ingress_filter.client -- gRPC client for ingress filter (overrides defaults.grpc.client)
+        # gRPC client for ingress filter (overrides defaults.grpc.client)
         client: {}
-        # @schema {"name": "gateway.filter.gateway_config.ingress_filter.vectorizer", "type": "string"}
-        # gateway.filter.gateway_config.ingress_filter.vectorizer -- object ingress vectorize filter targets
+        # object ingress vectorize filter targets
         vectorizer: ""
-        # @schema {"name": "gateway.filter.gateway_config.ingress_filter.search_filters", "type": "array", "items": {"type": "string"}}
-        # gateway.filter.gateway_config.ingress_filter.search_filters -- search ingress vector filter targets
+        # search ingress vector filter targets
         search_filters: []
-        # @schema {"name": "gateway.filter.gateway_config.ingress_filter.insert_filters", "type": "array", "items": {"type": "string"}}
-        # gateway.filter.gateway_config.ingress_filter.insert_filters -- insert ingress vector filter targets
+        # insert ingress vector filter targets
         insert_filters: []
-        # @schema {"name": "gateway.filter.gateway_config.ingress_filter.update_filters", "type": "array", "items": {"type": "string"}}
-        # gateway.filter.gateway_config.ingress_filter.update_filters -- update ingress vector filter targets
+        # update ingress vector filter targets
         update_filters: []
-        # @schema {"name": "gateway.filter.gateway_config.ingress_filter.upsert_filters", "type": "array", "items": {"type": "string"}}
-        # gateway.filter.gateway_config.ingress_filter.upsert_filters -- upsert ingress vector filter targets
+        # upsert ingress vector filter targets
         upsert_filters: []
-      # @schema {"name": "gateway.filter.gateway_config.egress_filter", "type": "object"}
-      # gateway.filter.gateway_config.egress_filter -- gRPC client config for egress filter
+      # gRPC client config for egress filter
       egress_filter:
-        # @schema {"name": "gateway.filter.gateway_config.egress_filter.client", "alias": "grpc.client"}
-        # gateway.filter.gateway_config.egress_filter.client -- gRPC client config for egress filter (overrides defaults.grpc.client)
+        # gRPC client config for egress filter (overrides defaults.grpc.client)
         client: {}
-        # @schema {"name": "gateway.filter.gateway_config.egress_filter.object_filters", "type": "array", "items": {"type": "string"}}
-        # gateway.filter.gateway_config.egress_filter.object_filters -- object egress vector filter targets
+        # object egress vector filter targets
         object_filters: []
-        # @schema {"name": "gateway.filter.gateway_config.egress_filter.distance_filters", "type": "array", "items": {"type": "string"}}
-        # gateway.filter.gateway_config.egress_filter.distance_filters -- distance egress vector filter targets
+        # distance egress vector filter targets
         distance_filters: []
 ```
 
@@ -134,46 +118,68 @@ Those parameters help the Vald filter gateway connect the filter component befor
 
 To use the filter function, you must make settings on the client side because the Vald Filter gateway does not automatically create a connection with the filter component.
 
-For example, when you send the request with the blob data and want to convert it to a vector using the filter component, the client configuration should be:
+These sample code describes how to use in client-side when you send the request with the blob data and want to convert it to a vector using the filter component.
 
-```python
-import grpc
-import numpy as np
-import tensorflow_hub as hub
-import tensorflow_text as text
-from vald.v1.payload import payload_pb2
-from vald.v1.vald import (
-    filter_pb2_grpc,
-    search_pb2_grpc,
+```go
+package main
+
+import (
+	"context"
+
+	"github.com/vdaas/vald-client-go/v1/payload"
+	"github.com/vdaas/vald-client-go/v1/vald"
+	"github.com/vdaas/vald/internal/log"
+	"google.golang.org/grpc"
 )
 
-# preprocess
-preprocess = hub.load('https://tfhub.dev/tensorflow/bert_en_uncased_preprocess/1')
-token = preprocess(["TF Hub makes BERT easy!"])
-sample = np.vstack([i for i in token.values()])
+func main() {
+	// address of the Vald cluster ingress.
+	grpcServerAddr := "vald-ingress-host"
 
-channel = grpc.insecure_channel("localhost:8081")
+	// ingress filter host and port.
+	const ingressHost = "vald-onnx-ingress-filter"
+	const ingressPort = 8081
 
-# Insert
-stub = filter_pb2_grpc.FilterStub(channel)
-resize_vector = payload_pb2.Object.ReshapeVector(
-    object=sample.tobytes(),
-    shape=[3, 128],
-)
-resize_vector = resize_vector.SerializeToString()
+	// object data and its id.
+	const id = "object-id"
+	var object []byte
 
-req = payload_pb2.Insert.ObjectRequest(
-    object=payload_pb2.Object.Blob(
-        id="0",
-        object=resize_vector
-    ),
-    config=payload_pb2.Insert.Config(skip_strict_exist_check=False),
-    vectorizer=payload_pb2.Filter.Target(
-        host="vald-tensorflow-ingress-filter",
-        port=8081,
-    )
-)
-stub.InsertObject(req)
+	// connect to the Vald cluster
+	ctx := context.Background()
+	conn, err := grpc.DialContext(ctx, grpcServerAddr, grpc.WithInsecure())
+	if err != nil {
+		log.Error(err)
+		return
+	}
+
+	// create client
+	client := vald.NewFilterClient(conn)
+	// config for insert request
+	icfg := &payload.Insert_ObjectRequest{
+		// object data you'd like to insert into the Vald cluster
+		Object: &payload.Object_Blob{
+			Id: id,
+			Object: object,
+		},
+		// insert config
+		Config: &payload.Insert_Config{
+			SkipStrictExistCheck: false,
+		},
+		// specify vectorizer component location
+		Vectorizer: &payload.Filter_Target{
+			Host: ingressHost,
+			Port: ingressPort,
+		},
+	}
+
+	// send insertObject request
+	res, err := client.InsertObject(ctx, icfg)
+	if err != nil {
+		log.Error(err)
+		return
+	}
+	log.Infof("location: %#v", res.Ips)
+}
 ```
 
 If you are the Vald cluster operator and not a client user, please share this information with client users.
