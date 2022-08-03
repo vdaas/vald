@@ -18,6 +18,8 @@
 package service
 
 import (
+	"time"
+
 	"github.com/vdaas/vald/internal/client/v1/client/vald"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
@@ -37,28 +39,36 @@ var defaultOpts = []Option{
 
 func WithDimension(dim int) Option {
 	return func(j *job) error {
-		j.dimension = dim
+		if dim > 0 {
+			j.dimension = dim
+		}
 		return nil
 	}
 }
 
 func WithIter(iter int) Option {
 	return func(j *job) error {
-		j.iter = iter
+		if iter > 0 {
+			j.iter = iter
+		}
 		return nil
 	}
 }
 
 func WithNum(num uint32) Option {
 	return func(j *job) error {
-		j.num = num
+		if num > 0 {
+			j.num = num
+		}
 		return nil
 	}
 }
 
 func WithMinNum(minNum uint32) Option {
 	return func(j *job) error {
-		j.minNum = minNum
+		if minNum > 0 {
+			j.minNum = minNum
+		}
 		return nil
 	}
 }
@@ -79,6 +89,10 @@ func WithEpsilon(epsilon float64) Option {
 
 func WithTimeout(timeout string) Option {
 	return func(j *job) error {
+		_, err := time.ParseDuration(timeout)
+		if err != nil {
+			return errors.NewErrInvalidOption("timeout", timeout, err)
+		}
 		j.timeout = timeout
 		return nil
 	}
@@ -86,6 +100,9 @@ func WithTimeout(timeout string) Option {
 
 func WithValdClient(c vald.Client) Option {
 	return func(j *job) error {
+		if c == nil {
+			return errors.NewErrInvalidOption("client", c)
+		}
 		j.client = c
 		return nil
 	}
@@ -93,6 +110,9 @@ func WithValdClient(c vald.Client) Option {
 
 func WithErrGroup(eg errgroup.Group) Option {
 	return func(j *job) error {
+		if eg == nil {
+			return errors.NewErrInvalidOption("client", eg)
+		}
 		j.eg = eg
 		return nil
 	}
@@ -100,6 +120,9 @@ func WithErrGroup(eg errgroup.Group) Option {
 
 func WithHdf5(d hdf5.Data) Option {
 	return func(j *job) error {
+		if d == nil {
+			return errors.NewErrInvalidOption("hdf5", d)
+		}
 		j.hdf5 = d
 		return nil
 	}
