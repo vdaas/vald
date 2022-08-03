@@ -262,6 +262,12 @@ data:
             jitter_limit: 100ms
             maximum_duration: 5s
             retry_count: 100
+          circuit_breaker:
+            closed_error_rate: 0.7
+            closed_refresh_timeout: 10s
+            half_open_error_rate: 0.5
+            min_samples: 1000
+            open_timeout: 1s
           call_option:
             max_recv_msg_size: 0
             max_retry_rpc_buffer_size: 0
@@ -333,6 +339,12 @@ data:
             jitter_limit: 100ms
             maximum_duration: 5s
             retry_count: 100
+          circuit_breaker:
+            closed_error_rate: 0.7
+            closed_refresh_timeout: 10s
+            half_open_error_rate: 0.5
+            min_samples: 1000
+            open_timeout: 1s
           call_option:
             max_recv_msg_size: 0
             max_retry_rpc_buffer_size: 0
