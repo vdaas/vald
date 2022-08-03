@@ -1,6 +1,6 @@
 # Filter Configuration
 
-This page describes how enabled filtering features for your Vald cluster.
+This page describes how to enable filtering features on the Vald cluster.
 
 ## Requirement
 
@@ -9,7 +9,7 @@ To use any filtering functions with the Vald cluster, you must deploy the ingres
 The filter component can be deployed anywhere, but it must be able to communicate with the Vald Filter gateway.
 Every filter component which you'd like to use as the Vald filter component must apply Vald's filter gRPC interface.
 
-- The ingress rpc definition
+- The ingress RPC definition
 
     ```rpc
     service Filter {
@@ -31,7 +31,7 @@ Every filter component which you'd like to use as the Vald filter component must
     }
     ```
 
-- The egress rpc definition
+- The egress RPC definition
 
     ```rpc
     service Filter {
