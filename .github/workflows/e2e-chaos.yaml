@@ -83,7 +83,7 @@ jobs:
       - name: deploy Chaos Mesh
         run: |
           make kubectl/install
-          curl -sSL https://mirrors.chaos-mesh.org/v2.1.3/install.sh | bash -s -- --k3s
+          curl -sSL https://mirrors.chaos-mesh.org/v2.3.0/install.sh | bash -s -- --k3s
           helm install \
             --set podChaos.failure.enabled=true \
             vald-chaos-test tests/chaos/chart
@@ -177,7 +177,7 @@ jobs:
       - name: deploy Chaos Mesh
         run: |
           make kubectl/install
-          curl -sSL https://mirrors.chaos-mesh.org/v2.1.3/install.sh | bash -s -- --k3s
+          curl -sSL https://mirrors.chaos-mesh.org/v2.3.0/install.sh | bash -s -- --k3s
           helm install \
             --set podChaos.kill.enabled=true \
             vald-chaos-test tests/chaos/chart
@@ -271,7 +271,7 @@ jobs:
       - name: deploy Chaos Mesh
         run: |
           make kubectl/install
-          curl -sSL https://mirrors.chaos-mesh.org/v2.1.3/install.sh | bash -s -- --k3s
+          curl -sSL https://mirrors.chaos-mesh.org/v2.3.0/install.sh | bash -s -- --k3s
           helm install \
             --set networkChaos.partition.enabled=true \
             vald-chaos-test tests/chaos/chart
@@ -365,7 +365,7 @@ jobs:
       - name: deploy Chaos Mesh
         run: |
           make kubectl/install
-          curl -sSL https://mirrors.chaos-mesh.org/v2.1.3/install.sh | bash -s -- --k3s
+          curl -sSL https://mirrors.chaos-mesh.org/v2.3.0/install.sh | bash -s -- --k3s
           helm install \
             --set networkChaos.bandwidth.enabled=true \
             vald-chaos-test tests/chaos/chart
