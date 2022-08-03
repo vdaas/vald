@@ -4,10 +4,10 @@ This page describes how to enable filtering features on the Vald cluster.
 
 ## Requirement
 
-To use any filtering functions with the Vald cluster, you must deploy the ingress or egress filter component before deploying the Vald cluster.
+To use any filtering functions with the Vald cluster, you must deploy the ingress and/or egress filter component before deploying the Vald cluster.
 
 The filter component can be deployed anywhere, but it must be able to communicate with the Vald Filter gateway.
-Every filter component which you'd like to use as the Vald filter component must apply Vald's filter gRPC interface.
+Every filter component should meet Vald's filter gRPC interface.
 
 - The ingress RPC definition
 
@@ -78,7 +78,8 @@ gateway:
 ...
 ```
 
-It is because the Vald Filter gateway connects the filter component specified in the users' request.
+The Vald Filter gateway connects to the filter component specified in the users' request.
+So, you can use the filtering function only by setting `gateway.filter.enabled=true` in your Helm chart.
 
 If you want to make more detailed settings, please set the following parameters.
 
