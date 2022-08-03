@@ -1,16 +1,15 @@
 # Deployment
 
-There are two major ways for the deployment of the Vald cluster ways: using the helm command with `values.yaml` or vald-helm-operator.
+There are two major ways for the deployment of the Vald cluster ways: Using the Helm command with `values.yaml` or `vald-helm-operator`.
 
+- Using Helm command
+    - Easy to deploy
+    - Need to Helm command when updating configuration
 
-
-using helm command
-easy to deploy
-need to helm command when upgrade configuration
-vald-helm-operator
-monitoring the Vald deployments and Vald custom resource
-Use `kubectl` command to upgrade the Vald cluster configuration
-Automate manage the Vald cluster based on CRD (Custom Resource Definitions) 
+- Using `vald-helm-operator`
+    - Monitoring the Vald deployments and Vald custom resource by `vald-helm-operator`
+    - Use `kubectl` command to set or update of the Vald cluster configuration
+    - Automate manage the Vald cluster based on CRD (Custom Resource Definitions)
 
 ## Requirement
 
@@ -36,11 +35,13 @@ In addition, as you need, please refer to the followings:
 - [Backup Configuration](../user-guides/backup-configuration.md)
 - [Filter Configuration](../user-guides/filter-configuration.md)
 
-## Deploy with Helm command
+## Use Helm command
+
+### Deployment
 
 When deploying with Helm command, it requires `value.yaml` to override the default values.
 
-<details><summary>Sample `values.yaml`</summary><br>
+<details><summary>Sample values YAML</summary><br>
 
 ```yaml
 defaults:
@@ -112,12 +113,22 @@ After create `values.yaml`, you can deploy by the following steps.
     helm install vald vald/vald --values <YOUR VALUES YAML FILE PATH>
     ```
 
-## Deploy with vald-helm-operator
+### Update Configuration
+
+When you need to update the configuration, you can update by following command with your new `values.yaml`.
+
+```bash
+helm upgrate vald vald/vald --values <YOUR NEW VALUES FILE PATH>
+```
+
+## Using with vald-helm-operator
+
+### Deployment
 
 When deploying with vald-helm-operator, it requires `vr.yaml` file for applying `ValdRelease`.
 `vald-helm-operator` manages the Vald cluster based on configuration of `vr.yaml`.
 
-<details><summary>Sample `vr.yaml`</summary><br>
+<details><summary>Sample ValdRelease YAML</summary><br>
 
 ```yaml
 apiVersion: vald.vdaas.org/v1
@@ -179,6 +190,7 @@ spec:
          auto_index_check_duration: 40s
 ```
 
+</details>
 
 After create `vr.yaml`, you can deploy by the following steps.
 
@@ -202,7 +214,7 @@ After create `vr.yaml`, you can deploy by the following steps.
 
 If you need to auto managing to vald-helm-operator, you must apply `vhor.yaml` for applying `ValdHelmOpearterRelease`.
 
-<details><summary>Sample `vhor.yaml`</summary><br>
+<details><summary>Sample ValdHelmOperatorRelease YAML</summary><br>
 
 ```yaml
 apiVersion: vald.vdaas.org/v1
@@ -221,5 +233,13 @@ For more details of the configuration of vald-helm-operator-release, please refe
 1. Apply `vhor.yaml`
 
     ```bash
-    kubectl apply -f valdHelmOperatorRelease yaml
+    kubectl apply -f vhor.yaml
     ```
+
+### Update Configuration
+
+When you need to update the configuration, you can update by following command with your new `vr.yaml` or `vhor.yaml`.
+
+```bash
+kubectl apply -f <new vr.yaml or new vhor.yaml>
+```
