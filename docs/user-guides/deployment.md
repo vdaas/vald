@@ -1,6 +1,6 @@
 # Deployment
 
-There are two major ways for the deployment of the Vald cluster ways: Using the Helm command with `values.yaml` or `vald-helm-operator`.
+There are two major ways for the deployment of the Vald cluster ways: Using the Helm command with `values.yaml` or without Helm command using operator called `vald-helm-operator`.
 
 - Using Helm command
     - Easy to deploy
@@ -15,7 +15,7 @@ There are two major ways for the deployment of the Vald cluster ways: Using the 
 
 - Helm: v3 ~
 
-If Helm or HDF5 is not installed, please install [Helm](https://helm.sh/docs/intro/install).
+If Helm is not installed, please install [Helm](https://helm.sh/docs/intro/install).
 
 <details><summary>Installation command for Helm</summary><br>
 
@@ -212,7 +212,7 @@ After create `vr.yaml`, you can deploy by the following steps.
     kubectl apply -f vr.yaml
     ```
 
-If you need to auto managing to vald-helm-operator, you must apply `vhor.yaml` for applying `ValdHelmOpearterRelease`.
+If you need to auto managing to vald-helm-operator, you must apply `vhor.yaml` for applying `ValdHelmOperatorRelease`.
 
 <details><summary>Sample ValdHelmOperatorRelease YAML</summary><br>
 
