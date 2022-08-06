@@ -48,7 +48,7 @@ This chapter will use NGT for the core engine of Vald Agent.
 1. Create `config.yaml`
 
     The configuration of Vald agent for docker is set using `config.yaml`<br>
-    You can also check [the sample configuration](https://github.com/vdaas/vald/blob/master/cmd/agent/core/ngt/sample.yaml).
+    You can also check [the sample configuration](https://github.com/vdaas/vald/blob/main/cmd/agent/core/ngt/sample.yaml).
 
     ```bash
     cat << EOF > config.yaml
@@ -172,7 +172,7 @@ This chapter will use NGT for the core engine of Vald Agent.
     And then after waiting for indexing, it will request for searching the nearest vector 10 times.
     You will get the 10 nearest neighbor vectors for each search query.<br>
     
-    We use [`example/client/agent/main.go`](https://github.com/vdaas/vald/blob/master/example/client/agent/main.go) to run the example.
+    We use [`example/client/agent/main.go`](https://github.com/vdaas/vald/blob/main/example/client/agent/main.go) to run the example.
     The example code is the same as running an example only Vald agent on Kubernetes.
     If you want to learn the detail of running an example, please refer to the tutorial of [Vald Agent Standalone on kubernetes](../tutorial/get-started.md/#run-using-example-code).
 
