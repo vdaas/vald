@@ -30,7 +30,7 @@ curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 
 ## Before Deployment
 
-Both ways need the configuration file when you need to overwrite the default configurations.
+Both ways need the configuration file when you need to overwrite the default configurations before the deployment.
 
 Please refer to [the basic configuration document](../user-guides/configuration.md).
 
