@@ -132,6 +132,18 @@ When you need to update the configuration, you can update by following command w
 helm upgrate vald vald/vald --values <YOUR NEW VALUES FILE PATH>
 ```
 
+### Cleanup
+
+The Vald cluster can be removed by the following command.
+
+```bash
+helm uninstall vald
+```
+
+<div class="notice">
+If using PV for the backup, PV won't delete automatically.
+</div>
+
 ## Using with vald-helm-operator
 
 ### Deployment
@@ -208,27 +220,8 @@ spec:
 
 </details>
 
-After create `vr.yaml`, you can deploy by the following steps.
-
-1. Add vald repo into the helm repo
-
-    ```bash
-    helm repo add vald https://vdaas.vald.org
-     ```
-
-1. Deploy `vald-helm-operator`
-
-    ```bash
-    helm install vald-helm-operator-release vald/vald-helm-operator
-    ```
-
-1. Apply `vr.yaml`
-
-    ```bash
-    kubectl apply -f vr.yaml
-    ```
-
-If you need to auto managing to vald-helm-operator, you must apply `vhor.yaml` for applying `ValdHelmOperatorRelease`.
+In addition, you can use the operator for the `vald-helm-operator` by applying `vhor.yaml` for `ValdHelmOperatorRelease`.
+It is possible to auto-managing vald-helm-operator.
 
 <details><summary>Sample ValdHelmOperatorRelease YAML</summary><br>
 
@@ -246,10 +239,37 @@ spec:
 
 For more details of the configuration of vald-helm-operator-release, please refer to [here](https://github.com/vdaas/vald/tree/main/charts/vald-helm-operator#configuration).
 
-1. Apply `vhor.yaml`
+
+After setting `vr.yaml` (and `vhor.yaml`), you can deploy by the following steps.
+
+<div class="warning">
+If you need to deploy ValdHelmOperatorRelease, you should apply vhor.yaml before applying vr.yaml.
+</div>
+
+1. Add vald repo into the helm repo
+
+    ```bash
+    helm repo add vald https://vdaas.vald.org
+     ```
+
+1. Deploy `vald-helm-operator`
+
+    ```bash
+    helm install vald-helm-operator-release vald/vald-helm-operator
+    ```
+
+1. Apply `vhor.yaml` (optional)
 
     ```bash
     kubectl apply -f vhor.yaml
+    ```
+
+    After deployment success, the Kubernetes cluster runs the rolling update for vald-helm-operator components.
+
+1. Apply `vr.yaml`
+
+    ```bash
+    kubectl apply -f vr.yaml
     ```
 
 ### Update Configuration
@@ -259,3 +279,30 @@ When you need to update the configuration, you can update by following command w
 ```bash
 kubectl apply -f <new vr.yaml or new vhor.yaml>
 ```
+
+### Cleanup
+
+The Vald cluster can be removed by the following steps.
+
+1. Delete the `ValdRelease`
+
+    ```bash
+    kubectl delete -f vr.yaml
+    ```
+
+1. Delete the `ValdHelmOperatorReleases`
+
+    ```bash
+    kubectl delete -f vhor.yaml
+    ```
+
+1. Delete crd
+
+    ```bash
+    kubectl patch crd/valdhelmopratorreleases.vald.vdaas.org -p '{"metadata":{"finalizers":[]}}' -type=merge
+    ```
+
+<div class="notice">
+If using PV for the backup, PV won't delete automatically.
+</div>
+
