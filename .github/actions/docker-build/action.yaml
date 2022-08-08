@@ -67,7 +67,7 @@ runs:
         if [[ "$GITHUB_REF" =~ ^refs/tags/.* ]]; then
           tag_name=`echo $GITHUB_REF | sed -e 's:^refs/tags/::'`
           primary_tag="${tag_name}"
-        elif [ "$GITHUB_REF" = "refs/heads/master" ]; then
+        elif [ "$GITHUB_REF" = "refs/heads/main" ]; then
           echo "nightly" > versions/VALD_VERSION
           primary_tag="nightly"
         elif [ "${{ github.event_name }}" = "pull_request" ]; then

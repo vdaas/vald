@@ -73,7 +73,7 @@ func TestString(t *testing.T) {
 				infoProvider = nil
 			},
 			want: want{
-				want: "\nbuild cpu info flags ->\t[]\ngit commit           ->\tmaster\ngo arch              ->\t" + runtime.GOARCH + "\ngo os                ->\t" + runtime.GOOS + "\ngo root              ->\t" + runtime.GOROOT() + "\ngo version           ->\t" + runtime.Version() + "\nvald version         ->\t\x1b[1mv0.0.1\x1b[22m",
+				want: "\nbuild cpu info flags ->\t[]\ngit commit           ->\tmain\ngo arch              ->\t" + runtime.GOARCH + "\ngo os                ->\t" + runtime.GOOS + "\ngo root              ->\t" + runtime.GOROOT() + "\ngo version           ->\t" + runtime.Version() + "\nvald version         ->\t\x1b[1mv0.0.1\x1b[22m",
 			},
 		},
 
@@ -91,7 +91,7 @@ func TestString(t *testing.T) {
 				infoProvider = nil
 			},
 			want: want{
-				want: "\nbuild cpu info flags ->\t[]\ngit commit           ->\tmaster\ngo arch              ->\t" + runtime.GOARCH + "\ngo os                ->\t" + runtime.GOOS + "\ngo root              ->\t" + runtime.GOROOT() + "\ngo version           ->\t" + runtime.Version() + "\nvald version         ->\t\x1b[1m\x1b[22m",
+				want: "\nbuild cpu info flags ->\t[]\ngit commit           ->\tmain\ngo arch              ->\t" + runtime.GOARCH + "\ngo os                ->\t" + runtime.GOOS + "\ngo root              ->\t" + runtime.GOROOT() + "\ngo version           ->\t" + runtime.Version() + "\nvald version         ->\t\x1b[1m\x1b[22m",
 			},
 		},
 	}
@@ -151,7 +151,7 @@ func TestGet(t *testing.T) {
 					ServerName:        "",
 					Version:           "v0.0.1",
 					BuildTime:         "",
-					GitCommit:         "master",
+					GitCommit:         "main",
 					GoVersion:         runtime.Version(),
 					GoOS:              runtime.GOOS,
 					GoArch:            runtime.GOARCH,
@@ -399,7 +399,7 @@ func TestNew(t *testing.T) {
 			},
 			want: want{
 				want: &info{
-					baseURL: "https://github.com/vdaas/vald/tree/master",
+					baseURL: "https://github.com/vdaas/vald/tree/main",
 					detail: Detail{
 						ServerName:        "",
 						Version:           Version,
@@ -432,7 +432,7 @@ func TestNew(t *testing.T) {
 			},
 			want: want{
 				want: &info{
-					baseURL: "https://github.com/vdaas/vald/tree/master",
+					baseURL: "https://github.com/vdaas/vald/tree/main",
 					detail: Detail{
 						ServerName:        "gateway",
 						Version:           Version,
@@ -468,7 +468,7 @@ func TestNew(t *testing.T) {
 			},
 			want: want{
 				want: &info{
-					baseURL: "https://github.com/vdaas/vald/tree/master",
+					baseURL: "https://github.com/vdaas/vald/tree/main",
 					detail: Detail{
 						ServerName:        "vald",
 						Version:           "v1.0.0",
@@ -503,7 +503,7 @@ func TestNew(t *testing.T) {
 			},
 			want: want{
 				want: &info{
-					baseURL: "https://github.com/vdaas/vald/tree/master",
+					baseURL: "https://github.com/vdaas/vald/tree/main",
 					detail: Detail{
 						ServerName:        "",
 						Version:           Version,
@@ -823,7 +823,7 @@ func Test_info_Get(t *testing.T) {
 				want: Detail{
 					ServerName: "",
 					Version:    "",
-					GitCommit:  "master",
+					GitCommit:  "main",
 					GoVersion:  runtime.Version(),
 					GoOS:       runtime.GOOS,
 					GoArch:     runtime.GOARCH,
@@ -862,7 +862,7 @@ func Test_info_Get(t *testing.T) {
 				want: Detail{
 					ServerName: "",
 					Version:    "",
-					GitCommit:  "master",
+					GitCommit:  "main",
 					GoVersion:  runtime.Version(),
 					GoOS:       runtime.GOOS,
 					GoArch:     runtime.GOARCH,
@@ -870,7 +870,7 @@ func Test_info_Get(t *testing.T) {
 					CGOEnabled: CGOEnabled,
 					StackTrace: []StackTrace{
 						{
-							URL:      "https://github.com/vdaas/vald/tree/master",
+							URL:      "https://github.com/vdaas/vald/tree/main",
 							FuncName: "github.com/vdaas/vald/internal/info.Test_info_Get",
 							File:     "info_test.go",
 							Line:     100,
@@ -908,7 +908,7 @@ func Test_info_Get(t *testing.T) {
 				want: Detail{
 					ServerName: "",
 					Version:    "",
-					GitCommit:  "master",
+					GitCommit:  "main",
 					GoVersion:  runtime.Version(),
 					GoOS:       runtime.GOOS,
 					GoArch:     runtime.GOARCH,
@@ -953,7 +953,7 @@ func Test_info_Get(t *testing.T) {
 			want: want{
 				want: Detail{
 					Version:    "",
-					GitCommit:  "master",
+					GitCommit:  "main",
 					GoVersion:  runtime.Version(),
 					GoOS:       runtime.GOOS,
 					GoArch:     runtime.GOARCH,
@@ -998,7 +998,7 @@ func Test_info_Get(t *testing.T) {
 			want: want{
 				want: Detail{
 					Version:    "",
-					GitCommit:  "master",
+					GitCommit:  "main",
 					GoVersion:  runtime.Version(),
 					GoOS:       runtime.GOOS,
 					GoArch:     runtime.GOARCH,
@@ -1043,7 +1043,7 @@ func Test_info_Get(t *testing.T) {
 			want: want{
 				want: Detail{
 					Version:    "",
-					GitCommit:  "master",
+					GitCommit:  "main",
 					GoVersion:  runtime.Version(),
 					GoOS:       runtime.GOOS,
 					GoArch:     runtime.GOARCH,
@@ -1051,7 +1051,7 @@ func Test_info_Get(t *testing.T) {
 					CGOEnabled: CGOEnabled,
 					StackTrace: []StackTrace{
 						{
-							URL:      "https://github.com/vdaas/blob/master/vald/internal/info_test.go#L100",
+							URL:      "https://github.com/vdaas/blob/main/vald/internal/info_test.go#L100",
 							FuncName: "github.com/vdaas/vald/internal/info.Test_info_Get",
 							File:     "/tmp/go/pkg/mod/github.com/vdaas@v0.0.0-20171023180738-a3a6125de932-a843423387/vald/internal/info_test.go",
 							Line:     100,
@@ -1088,7 +1088,7 @@ func Test_info_Get(t *testing.T) {
 			want: want{
 				want: Detail{
 					Version:    "",
-					GitCommit:  "master",
+					GitCommit:  "main",
 					GoVersion:  runtime.Version(),
 					GoOS:       runtime.GOOS,
 					GoArch:     runtime.GOARCH,
@@ -1096,7 +1096,7 @@ func Test_info_Get(t *testing.T) {
 					CGOEnabled: CGOEnabled,
 					StackTrace: []StackTrace{
 						{
-							URL:      "https://github.com/vdaas/vald/blob/master/internal/info_test.go#L100",
+							URL:      "https://github.com/vdaas/vald/blob/main/internal/info_test.go#L100",
 							FuncName: "github.com/vdaas/vald/internal/info.Test_info_Get",
 							File:     "/tmp/go/src/github.com/vdaas/vald/internal/info_test.go",
 							Line:     100,
@@ -1176,9 +1176,9 @@ func Test_info_prepare(t *testing.T) {
 			name: "set success with all fields are empty",
 			want: want{
 				want: info{
-					baseURL: "https://github.com/vdaas/vald/tree/master",
+					baseURL: "https://github.com/vdaas/vald/tree/main",
 					detail: Detail{
-						GitCommit:  "master",
+						GitCommit:  "main",
 						Version:    "",
 						BuildTime:  BuildTime,
 						GoVersion:  runtime.Version(),
@@ -1236,9 +1236,9 @@ func Test_info_prepare(t *testing.T) {
 			},
 			want: want{
 				want: info{
-					baseURL: "https://github.com/vdaas/vald/tree/master",
+					baseURL: "https://github.com/vdaas/vald/tree/main",
 					detail: Detail{
-						GitCommit:  "master",
+						GitCommit:  "main",
 						Version:    "v1.0.0",
 						BuildTime:  BuildTime,
 						GoVersion:  runtime.Version(),
@@ -1266,9 +1266,9 @@ func Test_info_prepare(t *testing.T) {
 			},
 			want: want{
 				want: info{
-					baseURL: "https://github.com/vdaas/vald/tree/master",
+					baseURL: "https://github.com/vdaas/vald/tree/main",
 					detail: Detail{
-						GitCommit:  "master",
+						GitCommit:  "main",
 						Version:    "",
 						BuildTime:  "10s",
 						GoVersion:  runtime.Version(),
@@ -1296,9 +1296,9 @@ func Test_info_prepare(t *testing.T) {
 			},
 			want: want{
 				want: info{
-					baseURL: "https://github.com/vdaas/vald/tree/master",
+					baseURL: "https://github.com/vdaas/vald/tree/main",
 					detail: Detail{
-						GitCommit:  "master",
+						GitCommit:  "main",
 						Version:    "",
 						BuildTime:  BuildTime,
 						GoVersion:  "1.14",
@@ -1326,9 +1326,9 @@ func Test_info_prepare(t *testing.T) {
 			},
 			want: want{
 				want: info{
-					baseURL: "https://github.com/vdaas/vald/tree/master",
+					baseURL: "https://github.com/vdaas/vald/tree/main",
 					detail: Detail{
-						GitCommit:  "master",
+						GitCommit:  "main",
 						Version:    "",
 						BuildTime:  BuildTime,
 						GoVersion:  runtime.Version(),
@@ -1356,9 +1356,9 @@ func Test_info_prepare(t *testing.T) {
 			},
 			want: want{
 				want: info{
-					baseURL: "https://github.com/vdaas/vald/tree/master",
+					baseURL: "https://github.com/vdaas/vald/tree/main",
 					detail: Detail{
-						GitCommit:  "master",
+						GitCommit:  "main",
 						Version:    "",
 						BuildTime:  BuildTime,
 						GoVersion:  runtime.Version(),
@@ -1386,9 +1386,9 @@ func Test_info_prepare(t *testing.T) {
 			},
 			want: want{
 				want: info{
-					baseURL: "https://github.com/vdaas/vald/tree/master",
+					baseURL: "https://github.com/vdaas/vald/tree/main",
 					detail: Detail{
-						GitCommit:  "master",
+						GitCommit:  "main",
 						Version:    "",
 						BuildTime:  BuildTime,
 						GoVersion:  runtime.Version(),
@@ -1416,9 +1416,9 @@ func Test_info_prepare(t *testing.T) {
 			},
 			want: want{
 				want: info{
-					baseURL: "https://github.com/vdaas/vald/tree/master",
+					baseURL: "https://github.com/vdaas/vald/tree/main",
 					detail: Detail{
-						GitCommit:  "master",
+						GitCommit:  "main",
 						Version:    "",
 						BuildTime:  BuildTime,
 						GoVersion:  runtime.Version(),
@@ -1446,9 +1446,9 @@ func Test_info_prepare(t *testing.T) {
 			},
 			want: want{
 				want: info{
-					baseURL: "https://github.com/vdaas/vald/tree/master",
+					baseURL: "https://github.com/vdaas/vald/tree/main",
 					detail: Detail{
-						GitCommit:         "master",
+						GitCommit:         "main",
 						Version:           "",
 						BuildTime:         BuildTime,
 						GoVersion:         runtime.Version(),

@@ -304,9 +304,9 @@ discoverer:
 When `RBAC` is unavailable in your environment, or you would like to put some restrictions, please modify it and grant the permissions to the user executing the discoverer.
 Each configuration file is the following:
 
-- [Cluster role](https://github.com/vdaas/vald/blob/master/k8s/discoverer/clusterrole.yaml)
-- [Cluster role binding](https://github.com/vdaas/vald/blob/master/k8s/discoverer/clusterrolebinding.yaml)
-- [Service account](https://github.com/vdaas/vald/blob/master/k8s/discoverer/serviceaccount.yaml)
+- [Cluster role](https://github.com/vdaas/vald/blob/main/k8s/discoverer/clusterrole.yaml)
+- [Cluster role binding](https://github.com/vdaas/vald/blob/main/k8s/discoverer/clusterrolebinding.yaml)
+- [Service account](https://github.com/vdaas/vald/blob/main/k8s/discoverer/serviceaccount.yaml)
 
 
 #### Resource requests and limits
@@ -357,10 +357,10 @@ For further details, there are references to the Helm values in the Vald GitHub 
 <!-- TODO: add related document(pullugable options) -->
 
 
-[vald-helm-chart]: https://github.com/vdaas/vald/tree/master/charts/vald
-[vald-helm-operator-chart]: https://github.com/vdaas/vald/tree/master/charts/vald-helm-operator
-
-[vald-swagger-specs]: https://github.com/vdaas/vald/tree/master/apis/swagger
+[vald-helm-chart]: https://github.com/vdaas/vald/tree/main/charts/vald
+[vald-helm-operator-chart]: https://github.com/vdaas/vald/tree/main/charts/vald-helm-operator
+[vald-apis-docs]: https://github.com/vdaas/vald/tree/main/apis/docs
+[vald-swagger-specs]: https://github.com/vdaas/vald/tree/main/apis/swagger
 [google-pprof]: https://github.com/google/pprof
 [prometheus-io]: https://prometheus.io/
 [kubernetes-liveness-readiness]: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
