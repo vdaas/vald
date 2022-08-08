@@ -12,7 +12,11 @@ There are two major ways for the deployment of the Vald cluster ways: Using the 
     - Use `kubectl` command to set or update of the Vald cluster configuration
     - Automate manage the Vald cluster based on CRD (Custom Resource Definitions)
 
-<!-- TODO: Benefit vald-helm-operator -->
+
+<div class="notice">
+The benefit of using vald-helm-operator, it eliminates the need to check the status of the Vald cluster from the Vald cluster operator.
+It manages the Vald cluster based on the designed configuration instead of you.
+</div>
 
 ## Requirement
 
@@ -140,7 +144,7 @@ The Vald cluster can be removed by the following command.
 helm uninstall vald
 ```
 
-<div class="notice">
+<div class="caution">
 If using PV for the backup, PV won't delete automatically.
 </div>
 
