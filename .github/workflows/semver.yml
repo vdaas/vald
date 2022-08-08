@@ -17,7 +17,7 @@ name: Run semver
 on:
   push:
     branches:
-      - master
+      - main
 
 jobs:
   semver-auto:
@@ -67,7 +67,7 @@ jobs:
           fi
           echo "version updated: ${GITWERK_RESULT}"
 
-          git checkout master
+          git checkout main
 
           LAST_COMMIT_MESSAGE=`git log --pretty=format:%s -1`
           PR_NUM=`echo "$LAST_COMMIT_MESSAGE" | grep -o "#[[:digit:]]\+" | sed -e 's/#//' | head -1`
@@ -93,7 +93,7 @@ jobs:
           fi
 
           if [ -z "$BODY" ]; then
-            BODY=`git log --pretty=format:'- %s' ${PREVIOUS_VERSION}..master | grep "#[[:digit:]]\+" | sed -e "s/\[\(patch\|minor\|major\)\] *//g" | sed -e "s%#\([[:digit:]]\+\)%[&](https://github.com/vdaas/vald/pull/\1)%"`
+            BODY=`git log --pretty=format:'- %s' ${PREVIOUS_VERSION}..main | grep "#[[:digit:]]\+" | sed -e "s/\[\(patch\|minor\|major\)\] *//g" | sed -e "s%#\([[:digit:]]\+\)%[&](https://github.com/vdaas/vald/pull/\1)%"`
           fi
 
           CHANGELOG=`make changelog/next/print BODY="$BODY"`
@@ -116,7 +116,7 @@ jobs:
 
           git remote set-url origin "https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
 
-          git push origin master
+          git push origin main
           git push origin ${GITWERK_RESULT}
 
           echo "::set-output name=RELEASE::true"
