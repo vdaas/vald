@@ -37,7 +37,7 @@ type Info interface {
 }
 
 type info struct {
-	baseURL  string // e.g https://github.com/vdaas/vald/tree/master
+	baseURL  string // e.g https://github.com/vdaas/vald/tree/main
 	detail   Detail
 	prepOnce sync.Once
 
@@ -76,7 +76,7 @@ var (
 	// Version represent Vald version.
 	Version = "v0.0.1"
 	// GitCommit represent the Vald GitCommit
-	GitCommit = "master"
+	GitCommit = "main"
 	// BuildTime represent the Vald Build time.
 	BuildTime = ""
 	// GoVersion represent the golang version to build Vald.
@@ -273,7 +273,7 @@ func (i *info) Get() Detail {
 				if strings.Contains(path, "@") {
 					sv := strings.SplitN(path, "@", 2)
 					if strings.Count(sv[1], "-") > 2 {
-						path = sv[0] + "/blob/master"
+						path = sv[0] + "/blob/main"
 					} else {
 						path = sv[0] + "/blob/" + sv[1]
 					}
@@ -297,7 +297,7 @@ func (i *info) Get() Detail {
 func (i *info) prepare() {
 	i.prepOnce.Do(func() {
 		if len(i.detail.GitCommit) == 0 {
-			i.detail.GitCommit = "master"
+			i.detail.GitCommit = "main"
 		}
 		if len(Version) == 0 && len(i.detail.Version) == 0 {
 			i.detail.Version = GitCommit

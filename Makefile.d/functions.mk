@@ -75,7 +75,7 @@ define telepresence
 	&& telepresence \
 	    --swap-deployment $1 \
 	    --docker-run --rm -it $${IMAGE}:$(SWAP_TAG)
-	    ## will be available after merge this commit into telepresence master branch
+	    ## will be available after merge this commit into telepresence head branch
 	    ## https://github.com/telepresenceio/telepresence/commit/bb7473fbf19ed4f61796a5e32747e23de6ab03da
 	    ## --deployment-type "$(SWAP_DEPLOYMENT_TYPE)"
 endef

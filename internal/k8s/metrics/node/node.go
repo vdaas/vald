@@ -130,7 +130,7 @@ func (r *reconciler) NewReconciler(ctx context.Context, mgr manager.Manager) rec
 
 func (r *reconciler) For() (client.Object, []builder.ForOption) {
 	// WARN: metrics should be renew
-	// https://github.com/kubernetes/community/blob/master/contributors/design-proposals/instrumentation/resource-metrics-api.md#further-improvements
+	// https://github.com/kubernetes/community/blob/main/contributors/design-proposals/instrumentation/resource-metrics-api.md#further-improvements
 	return new(metrics.NodeMetrics), nil
 }
 

@@ -49,7 +49,7 @@ jobs:
         run: |
           TIMESTAMP=$(date +%Y%m%d_%H%M%S_%3N)
           BRANCH_NAME="documentation/k8s-manifests/update_k8s_manifests_${TIMESTAMP}"
-          git checkout master
+          git checkout main
           git checkout -b ${BRANCH_NAME}
           echo "::set-output name=BRANCH_NAME::${BRANCH_NAME}"
       - name: Update k8s-dir
@@ -60,7 +60,7 @@ jobs:
         run: |
           make format/yaml
           make license
-      - name: Push to master
+      - name: Push to main
         continue-on-error: true
         run: |
           git add k8s
@@ -74,7 +74,7 @@ jobs:
           -H "Content-Type:application/json" \
           -H "Authorization: token ${GITHUB_TOKEN}" \
           --request POST \
-          --data "{\"title\": \"Update K8s manifests\", \"head\": \"${BRANCH_NAME}\", \"base\": \"master\", \"body\": \"K8s manifests are updated.\", \"maintainer_can_modify\": true}" \
+          --data "{\"title\": \"Update K8s manifests\", \"head\": \"${BRANCH_NAME}\", \"base\": \"main\", \"body\": \"K8s manifests are updated.\", \"maintainer_can_modify\": true}" \
           $API_URL
         env:
           GITHUB_USER: ${{ secrets.DISPATCH_USER }}

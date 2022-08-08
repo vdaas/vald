@@ -70,7 +70,7 @@ If you use the default values.yaml, the `nightly` images will be installed.
 
 ### Using Helm-operator
 
-Please refer to [vald-helm-operator](https://github.com/vdaas/vald/blob/master/charts/vald-helm-operator).
+Please refer to [vald-helm-operator](https://github.com/vdaas/vald/blob/main/charts/vald-helm-operator).
 
 ## Components
 
@@ -223,7 +223,7 @@ Please refer to [vald-helm-operator](https://github.com/vdaas/vald/blob/master/c
 
 Docker images tagging policy:
 
-- `nightly` ... latest build of master branch
+- `nightly` ... latest build of main branch
 - `vX.X.X` ... released versions
 - `latest` ... latest build of release versions
 - `stable` ... latest long-term supported version
@@ -291,6 +291,6 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
 
 ## LICENSE
 
-vald released under Apache 2.0 license, refer [LICENSE](https://github.com/vdaas/vald/blob/master/LICENSE) file.
+vald released under Apache 2.0 license, refer [LICENSE](https://github.com/vdaas/vald/blob/main/LICENSE) file.
 
 [![FOSSA Status](https://app.fossa.com/api/projects/custom%2B21465%2Fvald.svg?type=large)](https://app.fossa.com/projects/custom%2B21465%2Fvald?ref=badge_large)

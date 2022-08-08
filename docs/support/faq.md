@@ -75,7 +75,7 @@ There are three ways for backup index data:
 1. Using the external storage and Persistent Volume
 
 <!-- TODO: change link when publish the backup configuration page -->
-Please refer to [the sample configurations](https://github.com/vdaas/vald/tree/master/charts/vald/values).
+Please refer to [the sample configurations](https://github.com/vdaas/vald/tree/main/charts/vald/values).
 
 ---
 

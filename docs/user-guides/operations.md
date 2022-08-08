@@ -139,8 +139,8 @@ The operator will automatically detect the changes and update the deployed Vald 
 - [CHANGELOG](CHANGELOG)
 
 
-[vald-helm-chart]: https://github.com/vdaas/vald/tree/master/charts/vald
-[vald-helm-operator-chart]: https://github.com/vdaas/vald/tree/master/charts/vald-helm-operator
+[vald-helm-chart]: https://github.com/vdaas/vald/tree/main/charts/vald
+[vald-helm-operator-chart]: https://github.com/vdaas/vald/tree/main/charts/vald-helm-operator
 [CHANGELOG]: https://vald.vdaas.org/docs/release/changelog/
 
 [pod-priority-preemption]: https://kubernetes.io/docs/concepts/configuration/pod-priority-preemption/
@@ -148,10 +148,10 @@ The operator will automatically detect the changes and update the deployed Vald 
 
 [prometheus-io]: https://prometheus.io/
 [grafana]: https://grafana.com
-[vald-prometheus]: https://github.com/vdaas/vald/tree/master/k8s/metrics/prometheus
+[vald-prometheus]: https://github.com/vdaas/vald/tree/main/k8s/metrics/prometheus
 [prometheus-operator]: https://github.com/coreos/prometheus-operator
 [prometheus-configuration]: https://prometheus.io/docs/prometheus/latest/configuration/configuration/
-[vald-grafana]: https://github.com/vdaas/vald/tree/master/k8s/metrics/grafana
-[vald-grafana-dashboards]: https://github.com/vdaas/vald/tree/master/k8s/metrics/grafana/dashboards
+[vald-grafana]: https://github.com/vdaas/vald/tree/main/k8s/metrics/grafana
+[vald-grafana-dashboards]: https://github.com/vdaas/vald/tree/main/k8s/metrics/grafana/dashboards
 [grafana-operator]: https://operatorhub.io/operator/grafana-operator
 [semver]: https://semver.org/
