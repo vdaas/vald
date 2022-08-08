@@ -17,7 +17,7 @@ name: "Coverage"
 on:
   push:
     branches:
-      - master
+      - main
     paths:
       - ".github/workflows/coverage.yml"
       - "internal/**"

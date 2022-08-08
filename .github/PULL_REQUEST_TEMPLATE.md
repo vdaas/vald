@@ -51,7 +51,7 @@
 <!-- For completed items, change [ ] to [x]. -->
 <!-- NOTE: these things are not required to open a PR and can be done afterwards / while the PR is open. -->
 
-- [ ] I have read the [CONTRIBUTING](https://github.com/vdaas/vald/blob/master/CONTRIBUTING.md) document.
+- [ ] I have read the [CONTRIBUTING](https://github.com/vdaas/vald/blob/main/CONTRIBUTING.md) document.
 - [ ] I have checked open [Pull Requests](https://github.com/vdaas/vald/pulls) for the similar feature or fixes?
 - [ ] I have added tests and benchmarks to cover my changes.
 - [ ] I have ensured all new and existing tests passed.

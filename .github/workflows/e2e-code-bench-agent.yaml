@@ -17,7 +17,7 @@ name: "Run e2e code bench: bench-agent"
 on:
   push:
     branches:
-      - master
+      - main
     paths:
       - ".github/workflows/e2e-bench-agent.yml"
       - "internal/core/**"
