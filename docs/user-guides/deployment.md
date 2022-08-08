@@ -2,14 +2,17 @@
 
 There are two major ways for the deployment of the Vald cluster ways: Using the Helm command with `values.yaml` or without Helm command using operator called `vald-helm-operator`.
 
-- Using Helm command
+- Using Helm command with `values.yaml`
     - Easy to deploy
-    - Need to Helm command when updating configuration
+    - Allow editing Vald configuration values when the user executes Helm command with inlining.
+    - Need Helm command when applying configuration
 
 - Using `vald-helm-operator`
     - Monitoring the Vald deployments and Vald custom resource by `vald-helm-operator`
     - Use `kubectl` command to set or update of the Vald cluster configuration
     - Automate manage the Vald cluster based on CRD (Custom Resource Definitions)
+
+<!-- TODO: Benefit vald-helm-operator -->
 
 ## Requirement
 
@@ -20,7 +23,7 @@ If Helm is not installed, please install [Helm](https://helm.sh/docs/intro/insta
 <details><summary>Installation command for Helm</summary><br>
 
 ```bash
-curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
+curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 ```
 
 </details>
@@ -35,6 +38,9 @@ In addition, as you need, please refer to the followings:
 - [Backup Configuration](../user-guides/backup-configuration.md)
 - [Filter Configuration](../user-guides/filter-configuration.md)
 
+Moreover, we publish the example configuration files for each use case.
+Please also refer to [here](https://github.com/vdaas/vald/tree/main/charts/vald/values).
+
 ## Use Helm command
 
 ### Deployment
@@ -48,7 +54,8 @@ defaults:
   logging:
     level: debug
   image:
-    tag: "v1.5.6"
+    # Please set the specified version, e.g., v1.5.6, instead of latest
+    tag: "latest"
   server_config:
     healths:
       liveness:
@@ -63,28 +70,32 @@ defaults:
     lb:
       minReplicas: 2
       maxReplicas: 2
-  
+      gateway_config:
+        index_replica: 2
+
   ## vald-agent settings
   agent:
-    minReplicas: 3
-    maxReplicas: 3
+    minReplicas: 6
+    maxReplicas: 6
     podManagementPolicy: Parallel
     ngt:
       dimension: 784
       distance_type: l2
       object_type: float
-      auto_index_check_duration_limit: 720h
-      auto_index_duration_limit: 24h
+      # When auto_index_check_duration_limit is minus value, the agent auto indexing is effectively disabled.
+      auto_index_check_duration_limit: "-1s"
+      # When auto_index_duration_limit is minus value, the agent auto indexing is effectively disabled.
+      auto_index_duration_limit: "-1s"
       auto_create_index_pool_size: 10000
       default_pool_size: 10000
-  
+
   ## vald-discoverer settings
   discoverer:
     resources:
       requests:
         cpu: 150m
         memory: 50Mi
-  
+
   ## vald-manager settings
   manager:
     index:
@@ -137,57 +148,62 @@ metadata:
   name: vald-cluster
 # the values of Helm chart for Vald can be placed under the `spec` field.
 spec:
- defaults:
-   logging:
-     level: debug
-   image:
-     tag: "v1.5.6"
-   server_config:
-     healths:
-       liveness:
-         livenessProbe:
-           initialDelaySeconds: 60
-       readiness:
-         readinessProbe:
-           initialDelaySeconds: 60
- 
-   ## vald-lb-gateway settings
-   gateway:
-     lb:
-       minReplicas: 2
-       maxReplicas: 2
-   
-   ## vald-agent settings
-   agent:
-     minReplicas: 3
-     maxReplicas: 3
-     podManagementPolicy: Parallel
-     ngt:
-       dimension: 784
-       distance_type: l2
-       object_type: float
-       auto_index_check_duration_limit: 720h
-       auto_index_duration_limit: 24h
-       auto_create_index_pool_size: 10000
-       default_pool_size: 10000
-   
-   ## vald-discoverer settings
-   discoverer:
-     resources:
-       requests:
-         cpu: 150m
-         memory: 50Mi
-   
-   ## vald-manager settings
-   manager:
-     index:
-       resources:
-         requests:
-           cpu: 150m
-           memory: 30Mi
-       indexer:
-         auto_index_duration_limit: 1m
-         auto_index_check_duration: 40s
+  defaults:
+    logging:
+      level: debug
+    image:
+      # Please set the specified version, e.g., v1.5.6, instead of latest
+      tag: "latest"
+    server_config:
+      healths:
+        liveness:
+          livenessProbe:
+            initialDelaySeconds: 60
+        readiness:
+          readinessProbe:
+            initialDelaySeconds: 60
+
+    ## vald-lb-gateway settings
+    gateway:
+      lb:
+        minReplicas: 2
+        maxReplicas: 2
+        gateway_config:
+         index_replica: 2
+
+    ## vald-agent settings
+    agent:
+      minReplicas: 6
+      maxReplicas: 6
+      podManagementPolicy: Parallel
+      ngt:
+        dimension: 784
+        distance_type: l2
+        object_type: float
+        # When auto_index_check_duration_limit is minus value, the agent auto indexing is effectively disabled.
+        auto_index_check_duration_limit: "-1s"
+        # When auto_index_duration_limit is minus value, the agent auto indexing is effectively disabled.
+        auto_index_duration_limit: "-1s"
+        auto_create_index_pool_size: 10000
+        default_pool_size: 10000
+
+    ## vald-discoverer settings
+    discoverer:
+      resources:
+        requests:
+          cpu: 150m
+          memory: 50Mi
+
+    ## vald-manager settings
+    manager:
+      index:
+        resources:
+          requests:
+            cpu: 150m
+            memory: 30Mi
+        indexer:
+          auto_index_duration_limit: 1m
+          auto_index_check_duration: 40s
 ```
 
 </details>
@@ -228,7 +244,7 @@ spec:
 
 </details>
 
-For more details of the configuration of vald-helm-operator-release, please refer to [here](https://github.com/vdaas/vald/tree/master/charts/vald-helm-operator#configuration).
+For more details of the configuration of vald-helm-operator-release, please refer to [here](https://github.com/vdaas/vald/tree/main/charts/vald-helm-operator#configuration).
 
 1. Apply `vhor.yaml`
 
