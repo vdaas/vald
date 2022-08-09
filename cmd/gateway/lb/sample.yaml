@@ -114,46 +114,6 @@ observability:
     password: ""
     service_name: "vald-lb-gateway"
     buffer_max_count: 10
-  stackdriver:
-    project_id: ""
-    client:
-      api_key: ""
-      audiences: []
-      authentication_enabled: true
-      credentials_file: ""
-      credentials_json: ""
-      endpoint: ""
-      quota_project: ""
-      request_reason: ""
-      scopes: []
-      telemetry_enabled: true
-      user_agent: ""
-    exporter:
-      bundle_count_threshold: 0
-      bundle_delay_threshold: "0"
-      location: ""
-      metric_prefix: vald.vdaas.org
-      monitoring_enabled: false
-      number_of_workers: 1
-      reporting_interval: 1m
-      skip_cmd: false
-      timeout: 5s
-      trace_spans_buffer_max_bytes: 0
-      tracing_enabled: false
-    profiler:
-      enabled: false
-      service: "vald-lb-gateway"
-      service_version: ""
-      debug_logging: false
-      mutex_profiling: true
-      cpu_profiling: true
-      alloc_profiling: true
-      heap_profiling: true
-      goroutine_profiling: true
-      alloc_force_gc: false
-      api_addr: ""
-      instance: ""
-      zone: ""
 gateway:
   agent_port: 8081
   agent_name: "vald-agent-ngt"

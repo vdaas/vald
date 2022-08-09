@@ -21,7 +21,6 @@ import (
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/observability/collector"
 	"github.com/vdaas/vald/internal/observability/exporter"
-	"github.com/vdaas/vald/internal/observability/profiler"
 	"github.com/vdaas/vald/internal/observability/trace"
 )
 
@@ -66,19 +65,6 @@ func WithExporters(exps ...exporter.Exporter) Option {
 		}
 
 		o.exporters = append(o.exporters, exps...)
-
-		return nil
-	}
-}
-
-func WithProfilers(profs ...profiler.Profiler) Option {
-	return func(o *observability) error {
-		if o.profilers == nil {
-			o.profilers = profs
-			return nil
-		}
-
-		o.profilers = append(o.profilers, profs...)
 
 		return nil
 	}
