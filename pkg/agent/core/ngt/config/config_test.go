@@ -119,11 +119,6 @@ func TestNewConfig(t *testing.T) {
 							Trace:      new(config.Trace),
 							Prometheus: new(config.Prometheus),
 							Jaeger:     new(config.Jaeger),
-							Stackdriver: &config.Stackdriver{
-								Client:   new(config.StackdriverClient),
-								Exporter: new(config.StackdriverExporter),
-								Profiler: new(config.StackdriverProfiler),
-							},
 						},
 						NGT: &config.NGT{
 							IndexPath: "/var/index",
@@ -248,11 +243,6 @@ func TestNewConfig(t *testing.T) {
 							Trace:      new(config.Trace),
 							Prometheus: new(config.Prometheus),
 							Jaeger:     new(config.Jaeger),
-							Stackdriver: &config.Stackdriver{
-								Client:   new(config.StackdriverClient),
-								Exporter: new(config.StackdriverExporter),
-								Profiler: new(config.StackdriverProfiler),
-							},
 						},
 						NGT: &config.NGT{
 							IndexPath: "/var/index",
