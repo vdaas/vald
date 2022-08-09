@@ -2,9 +2,15 @@
 
 This page describes how to enable filtering features on the Vald cluster.
 
+Before using the filtering functions, please check [the Vald Filter Gateway document](../overview/component/filter-gatewya.md) at first.
+
 ## Requirement
 
 To use any filtering functions with the Vald cluster, you must deploy the ingress and/or egress filter component before deploying the Vald cluster.
+
+The ingress filter can be used for, e.g., convert the object data to the vector, some filtering query vector as pre-processing.
+
+The egress filter can be used for, e.g., filtering search result from `vald-lb-gateway` by the distance, categories, or any others condition as post-processing.
 
 The filter component can be deployed anywhere, but it must be able to communicate with the Vald Filter gateway.
 Every filter component should meet Vald's filter gRPC interface.
