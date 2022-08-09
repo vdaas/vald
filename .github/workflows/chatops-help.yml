@@ -24,7 +24,7 @@ jobs:
     steps:
       - name: comment to PR
         run: |
-          curl -o chatops_commands.md https://raw.githubusercontent.com/vdaas/vald/master/.github/chatops_commands.md
+          curl -o chatops_commands.md https://raw.githubusercontent.com/vdaas/vald/main/.github/chatops_commands.md
           BODY=`cat chatops_commands.md | sed ':a;N;$!ba;s/\n/\\\\n/g'`
           curl --include --verbose --fail \
           -H "Accept: application/json" \

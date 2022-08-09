@@ -252,7 +252,7 @@ c := &Something{
 }
 ```
 
-To initialize complex structs, we can use [functional option pattern](https://dave.cheney.net/2014/10/17/functional-options-for-friendly-apis). Please read [server.go](https://github.com/vdaas/vald/blob/master/internal/servers/servers.go) and [option.go](https://github.com/vdaas/vald/blob/master/internal/servers/option.go) for the reference implementation.
+To initialize complex structs, we can use [functional option pattern](https://dave.cheney.net/2014/10/17/functional-options-for-friendly-apis). Please read [server.go](https://github.com/vdaas/vald/blob/main/internal/servers/servers.go) and [option.go](https://github.com/vdaas/vald/blob/main/internal/servers/option.go) for the reference implementation.
 The options implementation should be separated as another file called `option.go` to improve the readability of the source code, and the method name should start with `With` word to differentiate with other methods.
 
 ### Variables and Constant
@@ -372,9 +372,9 @@ if err := srv.Run(); err != nil {
 
 ### Error handling
 
-All errors should define in [internal/errors package](https://github.com/vdaas/vald/blob/master/internal/errors). All errors should be start with `Err` prefix, and all errors should be handle if possible.
+All errors should define in [internal/errors package](https://github.com/vdaas/vald/blob/main/internal/errors). All errors should be start with `Err` prefix, and all errors should be handle if possible.
 
-Please use [internal/errgroup](https://github.com/vdaas/vald/blob/master/internal/errgroup) for synchronized error handling on multi-goroutine processing.
+Please use [internal/errgroup](https://github.com/vdaas/vald/blob/main/internal/errgroup) for synchronized error handling on multi-goroutine processing.
 
 ### Error checking
 
@@ -430,7 +430,7 @@ if err != nil {
 
 ### Logging
 
-We define our own logging interface in [internal/log package](https://github.com/vdaas/vald/blob/master/internal/log). By default we use [glg](https://github.com/kpango/glg) to do the logging internally.
+We define our own logging interface in [internal/log package](https://github.com/vdaas/vald/blob/main/internal/log). By default we use [glg](https://github.com/kpango/glg) to do the logging internally.
 We defined the following logging levels.
 
 | Log level | Description                                                                                                                                                                                                                                    | Example situation                                                                                                                                  | Example message                                                                                                                                                                                                        |
@@ -461,7 +461,7 @@ We provide the following errors to describe the error to apply the option.
 
 We strongly recommend the following implementation to set the value using functional option.
 
-If an invalid value is set to the functional option, the `ErrInvalidOption` error defined in the [internal/errors/option.go](https://github.com/vdaas/vald/blob/master/internal/errors/option.go) should be returned.
+If an invalid value is set to the functional option, the `ErrInvalidOption` error defined in the [internal/errors/option.go](https://github.com/vdaas/vald/blob/main/internal/errors/option.go) should be returned.
 
 The name argument (the first argument) of the `ErrInvalidOption` error should be the same as the functional option name without the `With` prefix.
 
@@ -537,7 +537,7 @@ func WithConnectTimeout(dur string) Option {
 
 In the caller side, we need to handle the error returned from the functional option.
 
-If the option failed to apply, an error wrapped with `ErrOptionFailed` defined in the [internal/errors/errors.go](https://github.com/vdaas/vald/blob/master/internal/errors/errors.go) should be returned.
+If the option failed to apply, an error wrapped with `ErrOptionFailed` defined in the [internal/errors/errors.go](https://github.com/vdaas/vald/blob/main/internal/errors/errors.go) should be returned.
 
 We recommend the following implementation to apply the options.
 

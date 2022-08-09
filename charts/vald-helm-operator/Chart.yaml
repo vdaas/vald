@@ -35,7 +35,7 @@ keywords:
   - AI
   - artificial-intelligence
 home: https://vald.vdaas.org
-icon: https://raw.githubusercontent.com/vdaas/vald/master/assets/image/svg/symbol.svg
+icon: https://raw.githubusercontent.com/vdaas/vald/main/assets/image/svg/symbol.svg
 sources:
   - https://github.com/vdaas/vald
 maintainers:

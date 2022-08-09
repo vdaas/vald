@@ -33,7 +33,7 @@ If Helm or HDF5 is not installed, please install [Helm](https://helm.sh/docs/int
 <details><summary>Installation command for Helm</summary><br>
 
 ```bash
-curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
+curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 ```
 
 </details>
@@ -77,7 +77,7 @@ This chapter uses [NGT](https://github.com/yahoojapan/ngt) as Vald Agent to perf
 
 1. Deploy Vald Agent Standalone using Helm
 
-    There is the [values.yaml](https://github.com/vdaas/vald/blob/master/example/helm/values-standalone-agent-ngt.yaml) to deploy standalone Vald Agent.
+    There is the [values.yaml](https://github.com/vdaas/vald/blob/main/example/helm/values-standalone-agent-ngt.yaml) to deploy standalone Vald Agent.
     Each component can be disabled by setting the value `false` to the `[component].enabled` field.
     This is useful for deploying standalone Vald Agent NGT pods.
 
@@ -131,7 +131,7 @@ This chapter uses [NGT](https://github.com/yahoojapan/ngt) as Vald Agent to perf
 
 1. Run Example
 
-    We use [`example/client/agent/main.go`](https://github.com/vdaas/vald/blob/master/example/client/agent/main.go) to run the example.<br>
+    We use [`example/client/agent/main.go`](https://github.com/vdaas/vald/blob/main/example/client/agent/main.go) to run the example.<br>
     This example will insert and index 400 vectors into the Vald from the fashion-mnist dataset via gRPC.
     And then after waiting for indexing, it will request for searching the nearest vector 10 times.
     You will get the 10 nearest neighbor vectors for each search query.<br>

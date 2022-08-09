@@ -17,7 +17,7 @@ name: "Build docker image: agent-ngt"
 on:
   push:
     branches:
-      - master
+      - main
     tags:
       - "*.*.*"
       - "v*.*.*"
@@ -117,7 +117,7 @@ jobs:
     name: Slack notification
     needs: build
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/master' || startsWith( github.ref, 'refs/tags/')
+    if: github.ref == 'refs/heads/main' || startsWith( github.ref, 'refs/tags/')
     steps:
       - uses: technote-space/workflow-conclusion-action@v2
         with:
