@@ -22,7 +22,7 @@ import (
 
 	"github.com/vdaas/vald/apis/grpc/v1/benchmark"
 	"github.com/vdaas/vald/internal/singleflight"
-	"github.com/vdaas/vald/pkg/benchmark/job/service"
+	"github.com/vdaas/vald/pkg/tools/benchmark/job/service"
 )
 
 type Benchmark interface {

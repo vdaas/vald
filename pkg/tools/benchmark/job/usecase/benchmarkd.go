@@ -34,11 +34,11 @@ import (
 	"github.com/vdaas/vald/internal/servers/server"
 	"github.com/vdaas/vald/internal/servers/starter"
 	"github.com/vdaas/vald/internal/test/data/hdf5"
-	"github.com/vdaas/vald/pkg/benchmark/job/config"
-	handler "github.com/vdaas/vald/pkg/benchmark/job/handler/grpc"
-	"github.com/vdaas/vald/pkg/benchmark/job/handler/rest"
-	"github.com/vdaas/vald/pkg/benchmark/job/router"
-	"github.com/vdaas/vald/pkg/benchmark/job/service"
+	"github.com/vdaas/vald/pkg/tools/benchmark/job/config"
+	handler "github.com/vdaas/vald/pkg/tools/benchmark/job/handler/grpc"
+	"github.com/vdaas/vald/pkg/tools/benchmark/job/handler/rest"
+	"github.com/vdaas/vald/pkg/tools/benchmark/job/router"
+	"github.com/vdaas/vald/pkg/tools/benchmark/job/service"
 )
 
 type run struct {
@@ -51,7 +51,7 @@ type run struct {
 }
 
 func New(cfg *config.Config) (r runner.Runner, err error) {
-	log.Info("pkg/benchmark/job/cmd start")
+	log.Info("pkg/tools/benchmark/job/cmd start")
 	eg := errgroup.Get()
 	copts, err := cfg.Job.GatewayClient.Opts()
 	if err != nil {
@@ -72,7 +72,7 @@ func New(cfg *config.Config) (r runner.Runner, err error) {
 	if err != nil {
 		return nil, err
 	}
-	log.Info("pkg/benchmark/job/cmd success d")
+	log.Info("pkg/tools/benchmark/job/cmd success d")
 
 	job, err := service.New(
 		service.WithErrGroup(eg),
@@ -151,7 +151,7 @@ func New(cfg *config.Config) (r runner.Runner, err error) {
 	if err != nil {
 		return nil, err
 	}
-	log.Info("pkg/benchmark/job/cmd end")
+	log.Info("pkg/tools/benchmark/job/cmd end")
 
 	return &run{
 		eg:            eg,

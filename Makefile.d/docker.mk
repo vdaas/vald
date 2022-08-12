@@ -199,7 +199,7 @@ docker/name/benchmark-job:
 docker/build/benchmark-job:
 	$(DOCKER) build \
 	    $(DOCKER_OPTS) \
-	    -f dockers/benchmark/job/Dockerfile \
+	    -f dockers/tools/benchmark/job/Dockerfile \
 	    -t $(ORG)/$(BENCHMARK_JOB_IMAGE):$(TAG) . \
 	    --build-arg GO_VERSION=$(GO_VERSION) \
 	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \

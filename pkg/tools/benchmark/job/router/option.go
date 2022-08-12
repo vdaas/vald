@@ -19,7 +19,7 @@ package router
 
 import (
 	"github.com/vdaas/vald/internal/errgroup"
-	"github.com/vdaas/vald/pkg/benchmark/job/handler/rest"
+	"github.com/vdaas/vald/pkg/tools/benchmark/job/handler/rest"
 )
 
 type Option func(*router)

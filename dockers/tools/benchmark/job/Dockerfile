@@ -27,8 +27,8 @@ ENV GO111MODULE on
 ENV LANG en_US.UTF-8
 ENV ORG vdaas
 ENV REPO vald
-ENV PKG benchmark/job
 ENV APP_NAME job
+ENV PKG tools/benchmark/${APP_NAME}
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     upx \
@@ -87,11 +87,9 @@ COPY --from=builder /usr/lib/x86_64-linux-gnu/libhdf5_serial.so /usr/lib/x86_64-
 COPY --from=builder /usr/lib/x86_64-linux-gnu/libhdf5_serial_hl.so /usr/lib/x86_64-linux-gnu/
 COPY --from=builder /lib/x86_64-linux-gnu/libpthread.so.0 /lib/x86_64-linux-gnu/
 COPY --from=builder /lib/x86_64-linux-gnu/libc.so.6 /lib/x86_64-linux-gnu/
-# COPY --from=builder /usr/lib/x86_64-linux-gnu/libsz.so.2 /usr/lib/x86_64-linux-gnu/
 COPY --from=builder /lib/x86_64-linux-gnu/libz.so.1 /lib/x86_64-linux-gnu/
 COPY --from=builder /lib/x86_64-linux-gnu/libdl.so.2 /lib/x86_64-linux-gnu/
 COPY --from=builder /lib/x86_64-linux-gnu/libm.so.6 /lib/x86_64-linux-gnu/
-# COPY --from=builder /usr/lib/x86_64-linux-gnu/libaec.so.0 /usr/lib/x86_64-linux-gnu/
 COPY --from=builder /lib64/ld-linux-x86-64.so.2 /lib64/
 
 COPY --from=builder /usr/bin/${APP_NAME} /go/bin/${APP_NAME}

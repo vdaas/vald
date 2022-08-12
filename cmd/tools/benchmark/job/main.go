@@ -25,8 +25,8 @@ import (
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/runner"
 	"github.com/vdaas/vald/internal/safety"
-	"github.com/vdaas/vald/pkg/benchmark/job/config"
-	"github.com/vdaas/vald/pkg/benchmark/job/usecase"
+	"github.com/vdaas/vald/pkg/tools/benchmark/job/config"
+	"github.com/vdaas/vald/pkg/tools/benchmark/job/usecase"
 )
 
 const (
