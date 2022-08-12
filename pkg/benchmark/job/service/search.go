@@ -29,13 +29,7 @@ import (
 
 func search(ctx context.Context, j *job, ech chan error) error {
 	log.Info("[benchmark job] Start benchmarking search")
-
 	j.eg.Go(func() (err error) {
-		dur, err := time.ParseDuration(j.timeout)
-		if err != nil {
-			log.Error("[benchmark search job] failed to timeout setting")
-			return err
-		}
 		vecs := j.hdf5.GetTest()
 		if len(vecs) < j.iter {
 			log.Infof("[benchmark job] update search iteration from %d to %d", j.iter, len(vecs))
@@ -46,7 +40,7 @@ func search(ctx context.Context, j *job, ech chan error) error {
 			MinNum:  j.minNum,
 			Radius:  float32(j.radius),
 			Epsilon: float32(j.epsilon),
-			Timeout: dur.Microseconds(),
+			Timeout: j.timeout.Microseconds(),
 		}
 		for i := 0; i < j.iter; i++ {
 			log.Infof("[benchmark job] Start search: iter = %d\n", i)
@@ -67,6 +61,7 @@ func search(ctx context.Context, j *job, ech chan error) error {
 				return err
 			}
 			bres := testing.Benchmark(func(b *testing.B) {
+				b.Helper()
 				b.ResetTimer()
 				start := time.Now()
 				sres, err := j.client.Search(ctx, &payload.Search_Request{
@@ -76,7 +71,7 @@ func search(ctx context.Context, j *job, ech chan error) error {
 				if err != nil {
 					select {
 					case <-ctx.Done():
-						if err != context.Canceled {
+						if errors.Is(err, context.Canceled) {
 							ech <- errors.Wrap(err, ctx.Err().Error())
 						} else {
 							ech <- err

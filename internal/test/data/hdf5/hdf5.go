@@ -20,7 +20,6 @@ package hdf5
 import (
 	"os"
 	"reflect"
-	"strconv"
 
 	"gonum.org/v1/hdf5"
 
@@ -54,6 +53,42 @@ func (d DatasetName) String() string {
 	}
 }
 
+type DatasetUrl int
+
+const (
+	FashionMNIST784EuclideanUrl DatasetUrl = iota
+)
+
+func (d DatasetUrl) String() string {
+	switch d {
+	case FashionMNIST784EuclideanUrl:
+		return "http://ann-benchmarks.com/fashion-mnist-784-euclidean.hdf5"
+	default:
+		return ""
+	}
+}
+
+type hdf5Key int
+
+const (
+	Train hdf5Key = iota
+	Test
+	Neighors
+)
+
+func (h hdf5Key) String() string {
+	switch h {
+	case Train:
+		return "train"
+	case Test:
+		return "test"
+	case Neighors:
+		return "neighbors"
+	default:
+		return ""
+	}
+}
+
 type data struct {
 	name      DatasetName
 	path      string
@@ -75,11 +110,9 @@ func New(opts ...Option) (Data, error) {
 // Get downloads the hdf5 file.
 // https://github.com/erikbern/ann-benchmarks/#data-sets
 func (d *data) Download() error {
-	var url string
 	switch d.name {
-	case FASHION_MNIST_784_EUC:
-		url = "http://ann-benchmarks.com/fashion-mnist-784-euclidean.hdf5"
-		return downloadFile(url, d.path)
+	case FashionMNIST784Euclidean:
+		return downloadFile(FashionMNIST784EuclideanUrl.String(), d.path)
 	default:
 		return errors.NewErrInvalidOption("name", d.name)
 	}
@@ -93,21 +126,21 @@ func (d *data) Read() error {
 	defer f.Close()
 
 	// load training data
-	train, err := ReadDatasetF32(f, "train")
+	train, err := ReadDatasetF32(f, Train)
 	if err != nil {
 		return err
 	}
 	d.train = train
 
 	// load test data
-	test, err := ReadDatasetF32(f, "test")
+	test, err := ReadDatasetF32(f, Test)
 	if err != nil {
 		return err
 	}
 	d.test = test
 
 	// load neighbors
-	neighbors32, err := ReadDatasetI32(f, "neighbors")
+	neighbors32, err := ReadDatasetI32(f, Neighors)
 	if err != nil {
 		return err
 	}
@@ -159,7 +192,7 @@ func downloadFile(url, path string) error {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != 200 {
-		return errors.New("invalid code: " + strconv.Itoa(resp.StatusCode))
+		return errors.ErrInvalidStatusCode(resp.StatusCode)
 	}
 
 	file, err := os.Create(path)
@@ -176,8 +209,8 @@ func downloadFile(url, path string) error {
 	return nil
 }
 
-func ReadDatasetF32(file *hdf5.File, name string) ([][]float32, error) {
-	data, err := file.OpenDataset(name)
+func ReadDatasetF32(file *hdf5.File, key hdf5Key) ([][]float32, error) {
+	data, err := file.OpenDataset(key.String())
 	if err != nil {
 		return nil, err
 	}
@@ -205,8 +238,8 @@ func ReadDatasetF32(file *hdf5.File, name string) ([][]float32, error) {
 	return vecs, nil
 }
 
-func ReadDatasetI32(file *hdf5.File, name string) ([][]int32, error) {
-	data, err := file.OpenDataset(name)
+func ReadDatasetI32(file *hdf5.File, key hdf5Key) ([][]int32, error) {
+	data, err := file.OpenDataset(key.String())
 	if err != nil {
 		return nil, err
 	}

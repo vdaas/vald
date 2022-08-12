@@ -89,11 +89,11 @@ func WithEpsilon(epsilon float64) Option {
 
 func WithTimeout(timeout string) Option {
 	return func(j *job) error {
-		_, err := time.ParseDuration(timeout)
+		dur, err := time.ParseDuration(timeout)
 		if err != nil {
 			return errors.NewErrInvalidOption("timeout", timeout, err)
 		}
-		j.timeout = timeout
+		j.timeout = dur
 		return nil
 	}
 }

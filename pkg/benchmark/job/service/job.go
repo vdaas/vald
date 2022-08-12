@@ -20,6 +20,7 @@ package service
 import (
 	"context"
 	"reflect"
+	"time"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/client/v1/client/vald"
@@ -49,13 +50,12 @@ type job struct {
 	minNum    uint32
 	radius    float64
 	epsilon   float64
-	timeout   string
+	timeout   time.Duration
 	client    vald.Client
 	hdf5      hdf5.Data
 }
 
-func New(opts ...Option) (Job, error) {
-	j := new(job)
+func New(opts ...Option) (Job, error) { j := new(job)
 	for _, opt := range append(defaultOpts, opts...) {
 		if err := opt(j); err != nil {
 			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))

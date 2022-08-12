@@ -23,6 +23,7 @@ import (
 	"github.com/vdaas/vald/internal/client/v1/client/vald"
 	iconf "github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errgroup"
+	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/grpc/interceptor/server/recover"
@@ -204,7 +205,8 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 			if err != nil {
 				select {
 				case <-ctx.Done():
-					return ctx.Err()
+					log.Error(err)
+					return errors.Wrap(ctx.Err(), err.Error())
 				case ech <- err:
 				}
 			}

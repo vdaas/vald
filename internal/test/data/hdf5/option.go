@@ -24,15 +24,15 @@ import (
 type Option func(d *data) error
 
 var defaultOptions = []Option{
-	WithName(FASHION_MNIST_784_EUC),
-	WithFilePath(""),
+	WithName(FashionMNIST784Euclidean),
+	WithFilePath("./data"),
 }
 
 func WithNameByString(n string) Option {
 	var name DatasetName
 	switch n {
 	case FashionMNIST784Euclidean.String():
-		name = FASHION_MNIST_784_EUC
+		name = FashionMNIST784Euclidean
 	}
 	return WithName(name)
 }
@@ -40,7 +40,7 @@ func WithNameByString(n string) Option {
 func WithName(dn DatasetName) Option {
 	return func(d *data) error {
 		switch dn {
-		case FASHION_MNIST_784_EUC:
+		case FashionMNIST784Euclidean:
 			d.name = dn
 		default:
 			return errors.NewErrInvalidOption("dataname", dn)
@@ -51,9 +51,7 @@ func WithName(dn DatasetName) Option {
 
 func WithFilePath(f string) Option {
 	return func(d *data) error {
-		if len(f) == 0 {
-			d.path = "./data"
-		} else {
+		if len(f) != 0 {
 			d.path = f
 		}
 		return nil
