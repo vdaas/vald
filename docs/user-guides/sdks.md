@@ -6,7 +6,7 @@ This page shows the introduction about the Vald SDKs.
 
 Vald provides the official SDKs as you know as client libraries.
 You can use Vald SDKs to request something to Vald, e.g. `Insert`, `Update`, `Upsert`, `Search`, `Remove`, and so on.
-Also, Vald publishes [the gRPC protobuf](https://github.com/vdaas/vald/tree/master/apis/proto/v1), you can use any languages you want even if Vald does not provide as SDK.
+Also, Vald publishes [the gRPC protobuf](https://github.com/vdaas/vald/tree/main/apis/proto/v1), you can use any languages you want even if Vald does not provide as SDK.
 
 ## Official SDKs
 

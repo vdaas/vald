@@ -20,7 +20,7 @@ helm/install: $(BINDIR)/helm
 
 $(BINDIR)/helm:
 	mkdir -p $(BINDIR)
-	curl "https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3" | HELM_INSTALL_DIR=$(BINDIR) bash
+	curl "https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3" | HELM_INSTALL_DIR=$(BINDIR) bash
 
 .PHONY: helm-docs/install
 ## install helm-docs

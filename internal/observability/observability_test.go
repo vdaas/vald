@@ -28,7 +28,6 @@ import (
 	"github.com/vdaas/vald/internal/observability/collector"
 	"github.com/vdaas/vald/internal/observability/exporter"
 	"github.com/vdaas/vald/internal/observability/metrics"
-	"github.com/vdaas/vald/internal/observability/profiler"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/test/goleak"
 )
@@ -195,7 +194,6 @@ func Test_observability_PreStart(t *testing.T) {
 		collector collector.Collector
 		tracer    trace.Tracer
 		exporters []exporter.Exporter
-		profilers []profiler.Profiler
 	}
 	type want struct {
 		err error
@@ -228,7 +226,6 @@ func Test_observability_PreStart(t *testing.T) {
 		           collector: nil,
 		           tracer: nil,
 		           exporters: nil,
-		           profilers: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -248,7 +245,6 @@ func Test_observability_PreStart(t *testing.T) {
 		           collector: nil,
 		           tracer: nil,
 		           exporters: nil,
-		           profilers: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -275,7 +271,6 @@ func Test_observability_PreStart(t *testing.T) {
 				collector: test.fields.collector,
 				tracer:    test.fields.tracer,
 				exporters: test.fields.exporters,
-				profilers: test.fields.profilers,
 			}
 
 			err := o.PreStart(test.args.ctx)
@@ -295,7 +290,6 @@ func Test_observability_Start(t *testing.T) {
 		collector collector.Collector
 		tracer    trace.Tracer
 		exporters []exporter.Exporter
-		profilers []profiler.Profiler
 	}
 	type want struct {
 		want <-chan error
@@ -328,7 +322,6 @@ func Test_observability_Start(t *testing.T) {
 		           collector: nil,
 		           tracer: nil,
 		           exporters: nil,
-		           profilers: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -348,7 +341,6 @@ func Test_observability_Start(t *testing.T) {
 		           collector: nil,
 		           tracer: nil,
 		           exporters: nil,
-		           profilers: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -375,7 +367,6 @@ func Test_observability_Start(t *testing.T) {
 				collector: test.fields.collector,
 				tracer:    test.fields.tracer,
 				exporters: test.fields.exporters,
-				profilers: test.fields.profilers,
 			}
 
 			got := o.Start(test.args.ctx)
@@ -395,7 +386,6 @@ func Test_observability_Stop(t *testing.T) {
 		collector collector.Collector
 		tracer    trace.Tracer
 		exporters []exporter.Exporter
-		profilers []profiler.Profiler
 	}
 	type want struct{}
 	type test struct {
@@ -423,7 +413,6 @@ func Test_observability_Stop(t *testing.T) {
 		           collector: nil,
 		           tracer: nil,
 		           exporters: nil,
-		           profilers: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -443,7 +432,6 @@ func Test_observability_Stop(t *testing.T) {
 		           collector: nil,
 		           tracer: nil,
 		           exporters: nil,
-		           profilers: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -470,7 +458,6 @@ func Test_observability_Stop(t *testing.T) {
 				collector: test.fields.collector,
 				tracer:    test.fields.tracer,
 				exporters: test.fields.exporters,
-				profilers: test.fields.profilers,
 			}
 
 			o.Stop(test.args.ctx)
