@@ -36,7 +36,6 @@ const (
 )
 
 func main() {
-	log.Info("[cmd] start")
 	if err := safety.RecoverFunc(func() error {
 		return runner.Do(
 			context.Background(),
