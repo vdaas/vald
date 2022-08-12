@@ -21,9 +21,9 @@ package config
 type BenchmarkJob struct {
 	JobType       string      `json:"job_type" yaml:"job_type"`
 	Dataset       string      `json:"dataset" yaml:"dataset"`
-	Dimension     int         `json:"dimension" yaml: "dimension"`
-	Iter          int         `json:"iter" yaml: "iter"`
-	Num           uint32      `json:"num" yaml: "num"`
+	Dimension     int         `json:"dimension" yaml:"dimension"`
+	Iter          int         `json:"iter" yaml:"iter"`
+	Num           uint32      `json:"num" yaml:"num"`
 	MinNum        uint32      `json:"min_num" yaml:"min_num"`
 	Radius        float64     `json:"radius" yaml:"radius"`
 	Epsilon       float64     `json:"epsilon" yaml:"epsilon"`
