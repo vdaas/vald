@@ -13,6 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
+default:
+  logging:
+    level: debug
+  image:
+    tag: latest
+
 agent:
   minReplicas: 4
   maxReplicas: 8

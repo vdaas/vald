@@ -14,6 +14,10 @@
 # limitations under the License.
 #
 
+defaults:
+  image:
+    tag: latest
+
 agent:
   ngt:
     auto_index_duration_limit: 30m
