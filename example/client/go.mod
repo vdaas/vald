@@ -9,9 +9,9 @@ replace (
 	github.com/kpango/glg => github.com/kpango/glg v1.6.12
 	github.com/pkg/sftp => github.com/pkg/sftp v1.13.5
 	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20220722155217-630584e8d5aa
-	golang.org/x/net => golang.org/x/net v0.0.0-20220805013720-a33c5aa5df48
+	golang.org/x/net => golang.org/x/net v0.0.0-20220812174116-3211cb980234
 	golang.org/x/text => golang.org/x/text v0.3.7
-	google.golang.org/genproto => google.golang.org/genproto v0.0.0-20220805133916-01dd62135a58
+	google.golang.org/genproto => google.golang.org/genproto v0.0.0-20220815135757-37a418bb8959
 	google.golang.org/grpc => google.golang.org/grpc v1.48.0
 	google.golang.org/protobuf => google.golang.org/protobuf v1.28.1
 	gopkg.in/yaml.v2 => gopkg.in/yaml.v2 v2.4.0
@@ -35,5 +35,5 @@ require (
 	golang.org/x/sys v0.0.0-20220728004956-3c1f35247d10 // indirect
 	golang.org/x/text v0.3.7 // indirect
 	google.golang.org/genproto v0.0.0-20220616135557-88e70c0c3a90 // indirect
-	google.golang.org/protobuf v1.28.0 // indirect
+	google.golang.org/protobuf v1.28.1 // indirect
 )
