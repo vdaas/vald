@@ -17,7 +17,7 @@ name: "Update PULL_REQUEST_TEMPLATE and ISSUE_TEMPLATE"
 on:
   push:
     branches:
-      - master
+      - main
     paths:
       - "versions/GO_VERSION"
       - "versions/NGT_VERSION"
@@ -31,16 +31,19 @@ jobs:
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
+      - name: set git config
+        run: |
+          git config --global --add safe.directory ${GITHUB_WORKSPACE}
       - uses: crazy-max/ghaction-import-gpg@v4
         with:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           git_user_signingkey: true
           git_commit_gpgsign: true
-      - name: Push to master
+      - name: Push to main
         run: |
           TIMESTAMP=$(date +%Y%m%d_%H%M%S_%3N)
           BRANCH_NAME="documentation/pull_request_and_issue_template/update_versions_${TIMESTAMP}"
-          git checkout master
+          git checkout main
           git checkout -b ${BRANCH_NAME}
 
           GO_VERSION=$(make version/go)
@@ -65,7 +68,7 @@ jobs:
           -H "Content-Type:application/json" \
           -H "Authorization: token ${GITHUB_TOKEN}" \
           --request POST \
-          --data "{\"title\": \"Update PULL_REQUEST_TEMPLATE and ISSUE_TEMPLATE\", \"head\": \"${BRANCH_NAME}\", \"base\": \"master\", \"body\": \"PULL_REQUEST_TEMPLATE and ISSUE_TEMPLATE are updated.\", \"maintainer_can_modify\": true}" \
+          --data "{\"title\": \"Update PULL_REQUEST_TEMPLATE and ISSUE_TEMPLATE\", \"head\": \"${BRANCH_NAME}\", \"base\": \"main\", \"body\": \"PULL_REQUEST_TEMPLATE and ISSUE_TEMPLATE are updated.\", \"maintainer_can_modify\": true}" \
           $API_URL
         env:
           GITHUB_USER: ${{ secrets.DISPATCH_USER }}

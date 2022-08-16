@@ -30,6 +30,9 @@ jobs:
         with:
           ref: ${{ github.head_ref }}
           fetch-depth: 0
+      - name: set git config
+        run: |
+          git config --global --add safe.directory ${GITHUB_WORKSPACE}
       - name: Add labels
         run: |
           pr_num=`cat $GITHUB_EVENT_PATH | jq -r ".number"`
@@ -37,7 +40,7 @@ jobs:
           type_labels=($(curl -s "https://api.github.com/repos/${REPOSITORY}/labels?per_page=5000" | jq -r ".[].name" | grep -e "^type/"))
           send_labels=()
 
-          git fetch origin master
+          git fetch origin main
 
           echo "branch name: " $branch_name
           for label in ${type_labels[@]}
@@ -48,7 +51,7 @@ jobs:
           done
 
           size=0
-          diff=`git diff --shortstat origin/master...${branch_name} ':!./*\.yaml' ':!./*\.yml' ':!./*\.svg' ':!./apis/*' ':!./design/*'`
+          diff=`git diff --shortstat origin/main...${branch_name} ':!./*\.yaml' ':!./*\.yml' ':!./*\.svg' ':!./apis/*' ':!./design/*'`
           if [ -n "$diff" ]; then
             echo $diff
             size=`echo $diff | awk '{print $4+$6}'`

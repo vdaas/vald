@@ -17,8 +17,7 @@ name: Run formatter
 on:
   push:
     branches:
-      - master
-
+      - main
 jobs:
   format:
     name: Run formatter
@@ -31,6 +30,9 @@ jobs:
         with:
           fetch-depth: 0
           token: ${{ secrets.DISPATCH_TOKEN }}
+      - name: set git config
+        run: |
+          git config --global --add safe.directory ${GITHUB_WORKSPACE}
       - uses: crazy-max/ghaction-import-gpg@v4
         with:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
@@ -41,7 +43,7 @@ jobs:
         run: |
           TIMESTAMP=$(date +%Y%m%d_%H%M%S_%3N)
           BRANCH_NAME="formatter/go_and_yaml/format_at_${TIMESTAMP}"
-          git checkout master
+          git checkout main
           git checkout -b ${BRANCH_NAME}
           echo "::set-output name=BRANCH_NAME::${BRANCH_NAME}"
       - name: Fetch golang version
@@ -57,7 +59,7 @@ jobs:
           make deps/install
           make format
           git checkout go.mod go.sum
-      - name: Check and Push to master
+      - name: Check and Push to main branch
         continue-on-error: true
         run: |
           if git diff --quiet --exit-code; then
@@ -74,7 +76,7 @@ jobs:
             -H "Content-Type:application/json" \
             -H "Authorization: token ${GITHUB_TOKEN}" \
             --request POST \
-            --data "{\"title\": \"Update license headers / Format codes\", \"head\": \"${BRANCH_NAME}\", \"base\": \"master\", \"body\": \"Update license headers / Format Go codes and YAML files.\", \"maintainer_can_modify\": true}" \
+            --data "{\"title\": \"Update license headers / Format codes\", \"head\": \"${BRANCH_NAME}\", \"base\": \"main\", \"body\": \"Update license headers / Format Go codes and YAML files.\", \"maintainer_can_modify\": true}" \
             $API_URL
           fi
         env:

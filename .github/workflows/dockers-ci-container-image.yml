@@ -17,7 +17,7 @@ name: "Build docker image: ci-container"
 on:
   push:
     branches:
-      - master
+      - main
     paths:
       - ".github/actions/docker-build/actions.yaml"
       - ".github/workflows/dockers-ci-container-image.yml"
@@ -43,6 +43,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - name: set git config
+        run: |
+          git config --global --add safe.directory ${GITHUB_WORKSPACE}
       - name: Setup QEMU
         uses: docker/setup-qemu-action@v1
         with:

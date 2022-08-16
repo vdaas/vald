@@ -17,7 +17,7 @@ name: "Coverage"
 on:
   push:
     branches:
-      - master
+      - main
     paths:
       - ".github/workflows/coverage.yml"
       - "internal/**"
@@ -41,6 +41,9 @@ jobs:
         uses: actions/checkout@v3
         with:
           fetch-depth: 10
+      - name: set git config
+        run: |
+          git config --global --add safe.directory ${GITHUB_WORKSPACE}
       - name: Run coverage
         continue-on-error: true
         run: |

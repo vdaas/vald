@@ -17,7 +17,7 @@ name: "Run FOSSA scan"
 on:
   push:
     branches:
-      - master
+      - main
   pull_request:
     types:
       - "labeled"
@@ -28,16 +28,19 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/vdaas/vald/vald-ci-container:nightly
-    if: github.ref == 'refs/heads/master' || github.event.action == 'labeled' && github.event.label.name == 'actions/fossa'
+    if: github.ref == 'refs/heads/main' || github.event.action == 'labeled' && github.event.label.name == 'actions/fossa'
     steps:
       - uses: actions/checkout@v3
+      - name: set git config
+        run: |
+          git config --global --add safe.directory ${GITHUB_WORKSPACE}
       - name: "Install fossa-cli"
         run: |
-          curl -H 'Cache-Control: no-cache' https://raw.githubusercontent.com/fossas/fossa-cli/master/install.sh | bash
-      - name: "Run for master branch"
-        if: github.ref == 'refs/heads/master'
+          curl -H 'Cache-Control: no-cache' https://raw.githubusercontent.com/fossas/fossa-cli/main/install.sh | bash
+      - name: "Run for main branch"
+        if: github.ref == 'refs/heads/main'
         run: |
-          fossa analyze --branch master --revision ${GITHUB_SHA}
+          fossa analyze --branch main --revision ${GITHUB_SHA}
         env:
           FOSSA_API_KEY: ${{ secrets.FOSSA_API_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

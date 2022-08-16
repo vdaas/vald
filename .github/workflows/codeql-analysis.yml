@@ -18,7 +18,7 @@ name: "Code scanning - action"
 on:
   push:
     branches:
-      - master
+      - main
     tags:
       - "*.*.*"
       - "v*.*.*"
@@ -26,7 +26,7 @@ on:
       - "v*.*.*-*"
   pull_request:
     branches:
-      - master
+      - main
     paths:
       - ".github/workflows/codeql-analysis.yml"
       - "**.go"
@@ -43,6 +43,9 @@ jobs:
           # We must fetch at least the immediate parents so that if this is
           # a pull request then we can checkout the head.
           fetch-depth: 2
+      - name: set git config
+        run: |
+          git config --global --add safe.directory ${GITHUB_WORKSPACE}
       - name: Install dependencies
         run: |
           sudo apt-get update && \

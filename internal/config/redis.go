@@ -53,8 +53,8 @@ type Redis struct {
 	ReadTimeout          string   `json:"read_timeout,omitempty"            yaml:"read_timeout"`
 	RouteByLatency       bool     `json:"route_by_latency,omitempty"        yaml:"route_by_latency"`
 	RouteRandomly        bool     `json:"route_randomly,omitempty"          yaml:"route_randomly"`
-	SentinelPassword     string   `json:"sentinel_password,omitempty"`
-	SentinelMasterName   string   `json:"sentinel_master_name,omitempty"`
+	SentinelPassword     string   `json:"sentinel_password,omitempty"       yaml:"sentinel_password"`
+	SentinelMasterName   string   `json:"sentinel_main_name,omitempty"      yaml:"sentinel_main_name"`
 	Net                  *Net     `json:"tcp,omitempty"                     yaml:"net"`
 	TLS                  *TLS     `json:"tls,omitempty"                     yaml:"tls"`
 	Username             string   `json:"username,omitempty"                yaml:"username"`

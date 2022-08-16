@@ -41,7 +41,7 @@ jobs:
         if: steps.check_comments_label.outputs.BOOL_TRIGGERED == 'true'
         id: check_permissions
         run: |
-          curl -o chatops_permissions.yaml https://raw.githubusercontent.com/vdaas/vald/master/.github/chatops_permissions.yaml
+          curl -o chatops_permissions.yaml https://raw.githubusercontent.com/vdaas/vald/main/.github/chatops_permissions.yaml
           roles=`yq r chatops_permissions.yaml "users.${USERNAME}.role.*"`
           if [ "$roles" = "" ]; then
             roles=`yq r chatops_permissions.yaml "default-roles.*"`
@@ -94,7 +94,7 @@ jobs:
         if: steps.check_comments_changelog.outputs.BOOL_TRIGGERED == 'true'
         id: check_permissions
         run: |
-          curl -o chatops_permissions.yaml https://raw.githubusercontent.com/vdaas/vald/master/.github/chatops_permissions.yaml
+          curl -o chatops_permissions.yaml https://raw.githubusercontent.com/vdaas/vald/main/.github/chatops_permissions.yaml
           roles=`yq r chatops_permissions.yaml "users.${USERNAME}.role.*"`
           if [ "$roles" = "" ]; then
             roles=`yq r chatops_permissions.yaml "default-roles.*"`
@@ -114,12 +114,15 @@ jobs:
         if: steps.check_comments_changelog.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         with:
           fetch-depth: 0
+      - name: set git config
+        run: |
+          git config --global --add safe.directory ${GITHUB_WORKSPACE}
       - name: comment to PR
         if: steps.check_comments_changelog.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         run: |
-          git checkout master
+          git checkout main
           PREVIOUS_VERSION=$(git describe --tags $(git rev-list --tags --max-count=1))
-          BODY=`git log --pretty=format:'- %s' ${PREVIOUS_VERSION}..master | grep "#[[:digit:]]\+" | sed -e "s/\[\(patch\|minor\|major\)\] *//g" | sed -e "s%#\([[:digit:]]\+\)%[&](https://github.com/vdaas/vald/pull/\1)%g" | sed ':a;N;$!ba;s/\n/\\\\n/g'`
+          BODY=`git log --pretty=format:'- %s' ${PREVIOUS_VERSION}..main | grep "#[[:digit:]]\+" | sed -e "s/\[\(patch\|minor\|major\)\] *//g" | sed -e "s%#\([[:digit:]]\+\)%[&](https://github.com/vdaas/vald/pull/\1)%g" | sed ':a;N;$!ba;s/\n/\\\\n/g'`
           CURRENT="- ${PR_TITLE} ([#${PR_NUM}](https://github.com/vdaas/vald/pull/${PR_NUM}))"
 
           curl --include --verbose --fail \
@@ -163,7 +166,7 @@ jobs:
         if: steps.check_comments_rebase.outputs.BOOL_TRIGGERED == 'true'
         id: check_permissions
         run: |
-          curl -o chatops_permissions.yaml https://raw.githubusercontent.com/vdaas/vald/master/.github/chatops_permissions.yaml
+          curl -o chatops_permissions.yaml https://raw.githubusercontent.com/vdaas/vald/main/.github/chatops_permissions.yaml
           roles=`yq r chatops_permissions.yaml "users.${USERNAME}.role.*"`
           if [ "$roles" = "" ]; then
             roles=`yq r chatops_permissions.yaml "default-roles.*"`
@@ -199,6 +202,9 @@ jobs:
         with:
           fetch-depth: 0
           token: ${{ secrets.DISPATCH_TOKEN }}
+      - name: set git config
+        run: |
+          git config --global --add safe.directory ${GITHUB_WORKSPACE}
       - name: Automatic Rebase
         if: steps.check_comments_rebase.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         uses: cirrus-actions/rebase@1.5
@@ -240,7 +246,7 @@ jobs:
         if: steps.check_comments_gen_test.outputs.BOOL_TRIGGERED == 'true'
         id: check_permissions
         run: |
-          curl -o chatops_permissions.yaml https://raw.githubusercontent.com/vdaas/vald/master/.github/chatops_permissions.yaml
+          curl -o chatops_permissions.yaml https://raw.githubusercontent.com/vdaas/vald/main/.github/chatops_permissions.yaml
           roles=`yq r chatops_permissions.yaml "users.${USERNAME}.role.*"`
           if [ "$roles" = "" ]; then
             roles=`yq r chatops_permissions.yaml "default-roles.*"`
@@ -275,6 +281,9 @@ jobs:
         if: steps.check_comments_gen_test.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         with:
           fetch-depth: 0
+      - name: set git config
+        run: |
+          git config --global --add safe.directory ${GITHUB_WORKSPACE}
       - uses: crazy-max/ghaction-import-gpg@v4
         if: steps.check_comments_gen_test.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         with:
@@ -350,7 +359,7 @@ jobs:
         if: steps.check_comments_format.outputs.BOOL_TRIGGERED == 'true'
         id: check_permissions
         run: |
-          curl -o chatops_permissions.yaml https://raw.githubusercontent.com/vdaas/vald/master/.github/chatops_permissions.yaml
+          curl -o chatops_permissions.yaml https://raw.githubusercontent.com/vdaas/vald/main/.github/chatops_permissions.yaml
           roles=`yq r chatops_permissions.yaml "users.${USERNAME}.role.*"`
           if [ "$roles" = "" ]; then
             roles=`yq r chatops_permissions.yaml "default-roles.*"`
@@ -385,6 +394,9 @@ jobs:
         with:
           fetch-depth: 0
           token: ${{ secrets.DISPATCH_TOKEN }}
+      - name: set git config
+        run: |
+          git config --global --add safe.directory ${GITHUB_WORKSPACE}
       - uses: crazy-max/ghaction-import-gpg@v4
         if: steps.check_comments_format.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         with:
@@ -483,7 +495,7 @@ jobs:
         if: steps.check_comments_approve.outputs.BOOL_TRIGGERED == 'true'
         id: check_permissions
         run: |
-          curl -o chatops_permissions.yaml https://raw.githubusercontent.com/vdaas/vald/master/.github/chatops_permissions.yaml
+          curl -o chatops_permissions.yaml https://raw.githubusercontent.com/vdaas/vald/main/.github/chatops_permissions.yaml
           roles=`yq r chatops_permissions.yaml "users.${USERNAME}.role.*"`
           if [ "$roles" = "" ]; then
             roles=`yq r chatops_permissions.yaml "default-roles.*"`

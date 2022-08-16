@@ -27,12 +27,11 @@ import (
 
 func TestObservability_Bind(t *testing.T) {
 	type fields struct {
-		Enabled     bool
-		Collector   *Collector
-		Trace       *Trace
-		Prometheus  *Prometheus
-		Jaeger      *Jaeger
-		Stackdriver *Stackdriver
+		Enabled    bool
+		Collector  *Collector
+		Trace      *Trace
+		Prometheus *Prometheus
+		Jaeger     *Jaeger
 	}
 	type want struct {
 		want *Observability
@@ -67,11 +66,6 @@ func TestObservability_Bind(t *testing.T) {
 						Trace:      new(Trace),
 						Prometheus: new(Prometheus),
 						Jaeger:     new(Jaeger),
-						Stackdriver: &Stackdriver{
-							Client:   new(StackdriverClient),
-							Exporter: new(StackdriverExporter),
-							Profiler: new(StackdriverProfiler),
-						},
 					},
 				},
 			}
@@ -85,7 +79,6 @@ func TestObservability_Bind(t *testing.T) {
 			jaegerUsername := "username"
 			jaegerPassword := "pass"
 			jaegerServiceName := "jaeger"
-			stackdriverProjectID := "vald"
 			return test{
 				name: "return Observability when all object parameters are not nil",
 				fields: fields{
@@ -104,12 +97,6 @@ func TestObservability_Bind(t *testing.T) {
 						Username:          jaegerUsername,
 						Password:          jaegerPassword,
 						ServiceName:       jaegerServiceName,
-					},
-					Stackdriver: &Stackdriver{
-						ProjectID: stackdriverProjectID,
-						Client:    new(StackdriverClient),
-						Exporter:  new(StackdriverExporter),
-						Profiler:  new(StackdriverProfiler),
 					},
 				},
 				want: want{
@@ -131,12 +118,6 @@ func TestObservability_Bind(t *testing.T) {
 							Password:          jaegerPassword,
 							ServiceName:       jaegerServiceName,
 						},
-						Stackdriver: &Stackdriver{
-							ProjectID: stackdriverProjectID,
-							Client:    new(StackdriverClient),
-							Exporter:  new(StackdriverExporter),
-							Profiler:  new(StackdriverProfiler),
-						},
 					},
 				},
 			}
@@ -150,7 +131,6 @@ func TestObservability_Bind(t *testing.T) {
 			jaegerUsername := "username"
 			jaegerPassword := "pass"
 			jaegerServiceName := "jaeger"
-			stackdriverProjectID := "vald"
 
 			envPrefix := "OBSERVABILITY_BIND_"
 			m := map[string]string{
@@ -161,7 +141,6 @@ func TestObservability_Bind(t *testing.T) {
 				envPrefix + "JAEGER_USERNAME":           jaegerUsername,
 				envPrefix + "JAEGER_PASSWORD":           jaegerPassword,
 				envPrefix + "JAEGER_SERVICE_NAME":       jaegerServiceName,
-				envPrefix + "STACKDRIVER_PROJECT_ID":    stackdriverProjectID,
 			}
 			return test{
 				name: "return Observability when the data is loaded environment variable",
@@ -181,12 +160,6 @@ func TestObservability_Bind(t *testing.T) {
 						Username:          "_" + envPrefix + "JAEGER_USERNAME_",
 						Password:          "_" + envPrefix + "JAEGER_PASSWORD_",
 						ServiceName:       "_" + envPrefix + "JAEGER_SERVICE_NAME_",
-					},
-					Stackdriver: &Stackdriver{
-						ProjectID: "_" + envPrefix + "STACKDRIVER_PROJECT_ID_",
-						Client:    new(StackdriverClient),
-						Exporter:  new(StackdriverExporter),
-						Profiler:  new(StackdriverProfiler),
 					},
 				},
 				beforeFunc: func(t *testing.T) {
@@ -214,12 +187,6 @@ func TestObservability_Bind(t *testing.T) {
 							Password:          jaegerPassword,
 							ServiceName:       jaegerServiceName,
 						},
-						Stackdriver: &Stackdriver{
-							ProjectID: stackdriverProjectID,
-							Client:    new(StackdriverClient),
-							Exporter:  new(StackdriverExporter),
-							Profiler:  new(StackdriverProfiler),
-						},
 					},
 				},
 			}
@@ -241,12 +208,11 @@ func TestObservability_Bind(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 			o := &Observability{
-				Enabled:     test.fields.Enabled,
-				Collector:   test.fields.Collector,
-				Trace:       test.fields.Trace,
-				Prometheus:  test.fields.Prometheus,
-				Jaeger:      test.fields.Jaeger,
-				Stackdriver: test.fields.Stackdriver,
+				Enabled:    test.fields.Enabled,
+				Collector:  test.fields.Collector,
+				Trace:      test.fields.Trace,
+				Prometheus: test.fields.Prometheus,
+				Jaeger:     test.fields.Jaeger,
 			}
 
 			got := o.Bind()
@@ -368,148 +334,6 @@ func TestCollector_Bind(t *testing.T) {
 			}
 
 			got := c.Bind()
-			if err := checkFunc(test.want, got); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
-
-func TestStackdriver_Bind(t *testing.T) {
-	type fields struct {
-		ProjectID string
-		Client    *StackdriverClient
-		Exporter  *StackdriverExporter
-		Profiler  *StackdriverProfiler
-	}
-	type want struct {
-		want *Stackdriver
-	}
-	type test struct {
-		name       string
-		fields     fields
-		want       want
-		checkFunc  func(want, *Stackdriver) error
-		beforeFunc func(*testing.T)
-		afterFunc  func(*testing.T)
-	}
-	defaultCheckFunc := func(w want, got *Stackdriver) error {
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-		}
-		return nil
-	}
-	tests := []test{
-		func() test {
-			projectID := "vald"
-			return test{
-				name: "return Stackdriver when the Client and the Exporter and the Profiler is nil",
-				fields: fields{
-					ProjectID: projectID,
-				},
-				want: want{
-					want: &Stackdriver{
-						ProjectID: projectID,
-						Client:    new(StackdriverClient),
-						Exporter:  new(StackdriverExporter),
-						Profiler:  new(StackdriverProfiler),
-					},
-				},
-			}
-		}(),
-		func() test {
-			projectID := "vald"
-			return test{
-				name: "return Stackdriver when the Client and the Exporter and the Profiler is not nil",
-				fields: fields{
-					ProjectID: projectID,
-					Client:    new(StackdriverClient),
-					Exporter:  new(StackdriverExporter),
-					Profiler:  new(StackdriverProfiler),
-				},
-				want: want{
-					want: &Stackdriver{
-						ProjectID: projectID,
-						Client:    new(StackdriverClient),
-						Exporter:  new(StackdriverExporter),
-						Profiler:  new(StackdriverProfiler),
-					},
-				},
-			}
-		}(),
-		func() test {
-			projectID := "vdaas/vald"
-			clientAPIKey := "api_key"
-			exporterLocation := "asia-northeast1-a"
-			profileService := "vald-service"
-
-			envPrefix := "STACKDRIVER_BIND_"
-			m := map[string]string{
-				envPrefix + "PROJECT_ID":        projectID,
-				envPrefix + "CLIENT_API_KEY":    clientAPIKey,
-				envPrefix + "EXPORTER_LOCATION": exporterLocation,
-				envPrefix + "PROFILER_SERVICE":  profileService,
-			}
-			return test{
-				name: "return Stackdriver when the data is loaded from the environment variable",
-				fields: fields{
-					ProjectID: "_" + envPrefix + "PROJECT_ID_",
-					Client: &StackdriverClient{
-						APIKey: "_" + envPrefix + "CLIENT_API_KEY_",
-					},
-					Exporter: &StackdriverExporter{
-						Location: "_" + envPrefix + "EXPORTER_LOCATION_",
-					},
-					Profiler: &StackdriverProfiler{
-						Service: "_" + envPrefix + "PROFILER_SERVICE_",
-					},
-				},
-				beforeFunc: func(t *testing.T) {
-					t.Helper()
-					for k, v := range m {
-						t.Setenv(k, v)
-					}
-				},
-				want: want{
-					want: &Stackdriver{
-						ProjectID: projectID,
-						Client: &StackdriverClient{
-							APIKey: clientAPIKey,
-						},
-						Exporter: &StackdriverExporter{
-							Location: exporterLocation,
-						},
-						Profiler: &StackdriverProfiler{
-							Service: profileService,
-						},
-					},
-				},
-			}
-		}(),
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-			if test.beforeFunc != nil {
-				test.beforeFunc(tt)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(tt)
-			}
-			checkFunc := test.checkFunc
-			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
-			}
-			sd := &Stackdriver{
-				ProjectID: test.fields.ProjectID,
-				Client:    test.fields.Client,
-				Exporter:  test.fields.Exporter,
-				Profiler:  test.fields.Profiler,
-			}
-
-			got := sd.Bind()
 			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
