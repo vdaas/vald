@@ -19,12 +19,19 @@ package trace
 
 import (
 	"github.com/vdaas/vald/internal/net/grpc/codes"
-	"go.opencensus.io/trace"
+	"go.opentelemetry.io/otel/attribute"
+	ocodes "go.opentelemetry.io/otel/codes"
+	semconv "go.opentelemetry.io/otel/semconv/v1.12.0"
 )
 
-type Status = trace.Status
+const (
+	msgAttributeKey = attribute.Key("rpc.grpc.message")
 
-func FromGRPCStatus(code codes.Code, msg string) Status {
+	StatusOK    = ocodes.Ok
+	StatusError = ocodes.Error
+)
+
+func FromGRPCStatus(code codes.Code, msg string) []attribute.KeyValue {
 	switch code {
 	case codes.OK:
 		return StatusCodeOK(msg)
@@ -62,121 +69,121 @@ func FromGRPCStatus(code codes.Code, msg string) Status {
 	return StatusCodeUnknown(msg)
 }
 
-func StatusCodeOK(msg string) Status {
-	return trace.Status{
-		Code:    trace.StatusCodeOK,
-		Message: msg,
+func StatusCodeOK(msg string) []attribute.KeyValue {
+	return []attribute.KeyValue{
+		semconv.RPCGRPCStatusCodeOk,
+		msgAttributeKey.String(msg),
 	}
 }
 
-func StatusCodeCancelled(msg string) Status {
-	return trace.Status{
-		Code:    trace.StatusCodeCancelled,
-		Message: msg,
+func StatusCodeCancelled(msg string) []attribute.KeyValue {
+	return []attribute.KeyValue{
+		semconv.RPCGRPCStatusCodeCancelled,
+		msgAttributeKey.String(msg),
 	}
 }
 
-func StatusCodeUnknown(msg string) Status {
-	return trace.Status{
-		Code:    trace.StatusCodeUnknown,
-		Message: msg,
+func StatusCodeUnknown(msg string) []attribute.KeyValue {
+	return []attribute.KeyValue{
+		semconv.RPCGRPCStatusCodeUnknown,
+		msgAttributeKey.String(msg),
 	}
 }
 
-func StatusCodeInvalidArgument(msg string) Status {
-	return trace.Status{
-		Code:    trace.StatusCodeInvalidArgument,
-		Message: msg,
+func StatusCodeInvalidArgument(msg string) []attribute.KeyValue {
+	return []attribute.KeyValue{
+		semconv.RPCGRPCStatusCodeInvalidArgument,
+		msgAttributeKey.String(msg),
 	}
 }
 
-func StatusCodeDeadlineExceeded(msg string) Status {
-	return trace.Status{
-		Code:    trace.StatusCodeDeadlineExceeded,
-		Message: msg,
+func StatusCodeDeadlineExceeded(msg string) []attribute.KeyValue {
+	return []attribute.KeyValue{
+		semconv.RPCGRPCStatusCodeDeadlineExceeded,
+		msgAttributeKey.String(msg),
 	}
 }
 
-func StatusCodeNotFound(msg string) Status {
-	return trace.Status{
-		Code:    trace.StatusCodeNotFound,
-		Message: msg,
+func StatusCodeNotFound(msg string) []attribute.KeyValue {
+	return []attribute.KeyValue{
+		semconv.RPCGRPCStatusCodeNotFound,
+		msgAttributeKey.String(msg),
 	}
 }
 
-func StatusCodeAlreadyExists(msg string) Status {
-	return trace.Status{
-		Code:    trace.StatusCodeAlreadyExists,
-		Message: msg,
+func StatusCodeAlreadyExists(msg string) []attribute.KeyValue {
+	return []attribute.KeyValue{
+		semconv.RPCGRPCStatusCodeAlreadyExists,
+		msgAttributeKey.String(msg),
 	}
 }
 
-func StatusCodePermissionDenied(msg string) Status {
-	return trace.Status{
-		Code:    trace.StatusCodePermissionDenied,
-		Message: msg,
+func StatusCodePermissionDenied(msg string) []attribute.KeyValue {
+	return []attribute.KeyValue{
+		semconv.RPCGRPCStatusCodePermissionDenied,
+		msgAttributeKey.String(msg),
 	}
 }
 
-func StatusCodeResourceExhausted(msg string) Status {
-	return trace.Status{
-		Code:    trace.StatusCodeResourceExhausted,
-		Message: msg,
+func StatusCodeResourceExhausted(msg string) []attribute.KeyValue {
+	return []attribute.KeyValue{
+		semconv.RPCGRPCStatusCodeResourceExhausted,
+		msgAttributeKey.String(msg),
 	}
 }
 
-func StatusCodeFailedPrecondition(msg string) Status {
-	return trace.Status{
-		Code:    trace.StatusCodeFailedPrecondition,
-		Message: msg,
+func StatusCodeFailedPrecondition(msg string) []attribute.KeyValue {
+	return []attribute.KeyValue{
+		semconv.RPCGRPCStatusCodeFailedPrecondition,
+		msgAttributeKey.String(msg),
 	}
 }
 
-func StatusCodeAborted(msg string) Status {
-	return trace.Status{
-		Code:    trace.StatusCodeAborted,
-		Message: msg,
+func StatusCodeAborted(msg string) []attribute.KeyValue {
+	return []attribute.KeyValue{
+		semconv.RPCGRPCStatusCodeAborted,
+		msgAttributeKey.String(msg),
 	}
 }
 
-func StatusCodeOutOfRange(msg string) Status {
-	return trace.Status{
-		Code:    trace.StatusCodeOutOfRange,
-		Message: msg,
+func StatusCodeOutOfRange(msg string) []attribute.KeyValue {
+	return []attribute.KeyValue{
+		semconv.RPCGRPCStatusCodeOutOfRange,
+		msgAttributeKey.String(msg),
 	}
 }
 
-func StatusCodeUnimplemented(msg string) Status {
-	return trace.Status{
-		Code:    trace.StatusCodeUnimplemented,
-		Message: msg,
+func StatusCodeUnimplemented(msg string) []attribute.KeyValue {
+	return []attribute.KeyValue{
+		semconv.RPCGRPCStatusCodeUnimplemented,
+		msgAttributeKey.String(msg),
 	}
 }
 
-func StatusCodeInternal(msg string) Status {
-	return trace.Status{
-		Code:    trace.StatusCodeInternal,
-		Message: msg,
+func StatusCodeInternal(msg string) []attribute.KeyValue {
+	return []attribute.KeyValue{
+		semconv.RPCGRPCStatusCodeInternal,
+		msgAttributeKey.String(msg),
 	}
 }
 
-func StatusCodeUnavailable(msg string) Status {
-	return trace.Status{
-		Code:    trace.StatusCodeUnavailable,
-		Message: msg,
+func StatusCodeUnavailable(msg string) []attribute.KeyValue {
+	return []attribute.KeyValue{
+		semconv.RPCGRPCStatusCodeUnavailable,
+		msgAttributeKey.String(msg),
 	}
 }
 
-func StatusCodeDataLoss(msg string) Status {
-	return trace.Status{
-		Code:    trace.StatusCodeDataLoss,
-		Message: msg,
+func StatusCodeDataLoss(msg string) []attribute.KeyValue {
+	return []attribute.KeyValue{
+		semconv.RPCGRPCStatusCodeDataLoss,
+		msgAttributeKey.String(msg),
 	}
 }
 
-func StatusCodeUnauthenticated(msg string) Status {
-	return trace.Status{
-		Code:    trace.StatusCodeUnauthenticated,
-		Message: msg,
+func StatusCodeUnauthenticated(msg string) []attribute.KeyValue {
+	return []attribute.KeyValue{
+		semconv.RPCGRPCStatusCodeUnauthenticated,
+		msgAttributeKey.String(msg),
 	}
 }

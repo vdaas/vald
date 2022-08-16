@@ -98,6 +98,7 @@ func (s *server) Exists(ctx context.Context, meta *payload.Object_ID) (id *paylo
 		log.Warn(err)
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
+			span.RecordError(err)
 		}
 		return nil, err
 	}
@@ -128,6 +129,7 @@ func (s *server) Exists(ctx context.Context, meta *payload.Object_ID) (id *paylo
 							errdetails.ValdGRPCResourceTypePrefix +
 								"/vald.v1.Exists.BroadCast/" +
 								target + " canceled: " + err.Error()))
+						sspan.RecordError(err)
 					}
 					return nil
 				case errors.Is(err, context.DeadlineExceeded),
@@ -137,6 +139,7 @@ func (s *server) Exists(ctx context.Context, meta *payload.Object_ID) (id *paylo
 							errdetails.ValdGRPCResourceTypePrefix +
 								"/vald.v1.Exists.BroadCast/" +
 								target + " deadline_exceeded: " + err.Error()))
+						sspan.RecordError(err)
 					}
 					return nil
 				}
@@ -155,6 +158,7 @@ func (s *server) Exists(ctx context.Context, meta *payload.Object_ID) (id *paylo
 					})
 				if sspan != nil {
 					sspan.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
+					sspan.RecordError(err)
 				}
 				if err != nil && st.Code() != codes.NotFound {
 					return err
@@ -192,6 +196,7 @@ func (s *server) Exists(ctx context.Context, meta *payload.Object_ID) (id *paylo
 			})
 		if span != nil {
 			span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
+			span.RecordError(err)
 		}
 
 		return nil, err
@@ -224,6 +229,7 @@ func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *
 			})
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
+			span.RecordError(err)
 		}
 		return nil, err
 	}
@@ -256,6 +262,7 @@ func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *
 			}, info.Get())
 		if span != nil {
 			span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
+			span.RecordError(err)
 		}
 		return nil, err
 	}
@@ -293,6 +300,7 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 			})
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
+			span.RecordError(err)
 		}
 		return nil, err
 	}
@@ -346,6 +354,7 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 			})
 		if span != nil {
 			span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
+			span.RecordError(err)
 		}
 		return nil, errors.Wrap(err, serr.Error())
 	}
@@ -380,6 +389,7 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 		err = errors.Wrap(err, serr.Error())
 		if span != nil {
 			span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
+			span.RecordError(err)
 		}
 		return nil, err
 	}
@@ -438,6 +448,7 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 						errdetails.ValdGRPCResourceTypePrefix +
 							"/vald.v1.search.BroadCast/" +
 							target + " canceled: " + err.Error()))
+					sspan.RecordError(err)
 				}
 			case errors.Is(err, context.DeadlineExceeded),
 				errors.Is(err, errors.ErrRPCCallFailed(target, context.DeadlineExceeded)):
@@ -446,6 +457,7 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 						errdetails.ValdGRPCResourceTypePrefix +
 							"/vald.v1.search.BroadCast/" +
 							target + " deadline_exceeded: " + err.Error()))
+					sspan.RecordError(err)
 				}
 			case err != nil:
 				st, msg, err := status.ParseError(err, codes.Internal, "failed to parse search gRPC error response",
@@ -455,6 +467,7 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 					})
 				if sspan != nil {
 					sspan.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
+					sspan.RecordError(err)
 				}
 				switch st.Code() {
 				case codes.Internal,
@@ -470,6 +483,7 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 					})
 				if sspan != nil {
 					sspan.SetStatus(trace.StatusCodeNotFound(err.Error()))
+					sspan.RecordError(err)
 				}
 			}
 			for _, dist := range r.GetResults() {
@@ -568,6 +582,7 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 					)
 					if span != nil {
 						span.SetStatus(trace.StatusCodeDeadlineExceeded(err.Error()))
+						span.RecordError(err)
 					}
 					return nil, err
 				}
@@ -586,6 +601,7 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 					)
 					if span != nil {
 						span.SetStatus(trace.StatusCodeDeadlineExceeded(err.Error()))
+						span.RecordError(err)
 					}
 					return nil, err
 				}
@@ -604,6 +620,7 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 					}, info.Get())
 				if span != nil {
 					span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
+					span.RecordError(err)
 				}
 				log.Warn(err)
 				if len(res.GetResults()) == 0 {
@@ -625,6 +642,7 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 					}, info.Get())
 				if span != nil {
 					span.SetStatus(trace.StatusCodeNotFound(err.Error()))
+					span.RecordError(err)
 				}
 				return nil, err
 			}
@@ -635,6 +653,7 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 				}
 				if span != nil {
 					span.SetStatus(trace.StatusCodeNotFound(err.Error()))
+					span.RecordError(err)
 				}
 				err = status.WrapWithNotFound(
 					fmt.Sprintf("error search result length is not enough required: %d, found: %d", min, len(res.GetResults())),
@@ -650,6 +669,7 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 				)
 				if span != nil {
 					span.SetStatus(trace.StatusCodeNotFound(err.Error()))
+					span.RecordError(err)
 				}
 				return nil, err
 			}
@@ -683,6 +703,7 @@ func (s *server) StreamSearch(stream vald.Search_StreamSearchServer) (err error)
 				st, msg, err := status.ParseError(err, codes.Internal, "failed to parse Search gRPC error response")
 				if sspan != nil {
 					sspan.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
+					sspan.RecordError(err)
 				}
 				return &payload.Search_StreamResponse{
 					Payload: &payload.Search_StreamResponse_Status{
@@ -702,6 +723,7 @@ func (s *server) StreamSearch(stream vald.Search_StreamSearchServer) (err error)
 			"failed to parse StreamSearch gRPC error response")
 		if span != nil {
 			span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
+			span.RecordError(err)
 		}
 		return err
 	}
@@ -730,6 +752,7 @@ func (s *server) StreamSearchByID(stream vald.Search_StreamSearchByIDServer) (er
 				st, msg, err := status.ParseError(err, codes.Internal, "failed to parse SearchByID gRPC error response")
 				if sspan != nil {
 					sspan.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
+					sspan.RecordError(err)
 				}
 				return &payload.Search_StreamResponse{
 					Payload: &payload.Search_StreamResponse_Status{
@@ -749,6 +772,7 @@ func (s *server) StreamSearchByID(stream vald.Search_StreamSearchByIDServer) (er
 			"failed to parse StreamSearchByID gRPC error response")
 		if span != nil {
 			span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
+			span.RecordError(err)
 		}
 		return err
 	}
@@ -790,6 +814,7 @@ func (s *server) MultiSearch(ctx context.Context, reqs *payload.Search_MultiRequ
 				}, info.Get())
 			if span != nil {
 				span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
+				span.RecordError(err)
 			}
 			return nil, err
 		}
@@ -811,6 +836,7 @@ func (s *server) MultiSearch(ctx context.Context, reqs *payload.Search_MultiRequ
 					})
 				if sspan != nil {
 					sspan.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
+					sspan.RecordError(err)
 				}
 				mu.Lock()
 				if errs == nil {
@@ -838,6 +864,7 @@ func (s *server) MultiSearch(ctx context.Context, reqs *payload.Search_MultiRequ
 			})
 		if span != nil {
 			span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
+			span.RecordError(err)
 		}
 		return nil, err
 	}
@@ -880,6 +907,7 @@ func (s *server) MultiSearchByID(ctx context.Context, reqs *payload.Search_Multi
 					})
 				if sspan != nil {
 					sspan.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
+					sspan.RecordError(err)
 				}
 				mu.Lock()
 				if errs == nil {
@@ -908,6 +936,7 @@ func (s *server) MultiSearchByID(ctx context.Context, reqs *payload.Search_Multi
 			})
 		if span != nil {
 			span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
+			span.RecordError(err)
 		}
 		return nil, err
 	}
@@ -939,6 +968,7 @@ func (s *server) LinearSearch(ctx context.Context, req *payload.Search_Request) 
 			})
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
+			span.RecordError(err)
 		}
 		return nil, err
 	}
@@ -969,6 +999,7 @@ func (s *server) LinearSearch(ctx context.Context, req *payload.Search_Request) 
 			}, info.Get())
 		if span != nil {
 			span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
+			span.RecordError(err)
 		}
 		return nil, err
 	}
@@ -1001,6 +1032,7 @@ func (s *server) LinearSearchByID(ctx context.Context, req *payload.Search_IDReq
 			})
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
+			span.RecordError(err)
 		}
 		return nil, err
 	}
@@ -1052,6 +1084,7 @@ func (s *server) LinearSearchByID(ctx context.Context, req *payload.Search_IDReq
 			})
 		if span != nil {
 			span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
+			span.RecordError(err)
 		}
 		return nil, errors.Wrap(err, serr.Error())
 	}
@@ -1087,6 +1120,7 @@ func (s *server) LinearSearchByID(ctx context.Context, req *payload.Search_IDReq
 		err = errors.Wrap(err, serr.Error())
 		if span != nil {
 			span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
+			span.RecordError(err)
 		}
 		return nil, err
 	}
@@ -1115,6 +1149,7 @@ func (s *server) StreamLinearSearch(stream vald.Search_StreamLinearSearchServer)
 				st, msg, err := status.ParseError(err, codes.Internal, "failed to parse LinearSearch gRPC error response")
 				if sspan != nil {
 					sspan.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
+					sspan.RecordError(err)
 				}
 				return &payload.Search_StreamResponse{
 					Payload: &payload.Search_StreamResponse_Status{
@@ -1134,6 +1169,7 @@ func (s *server) StreamLinearSearch(stream vald.Search_StreamLinearSearchServer)
 			"failed to parse StreamLinearSearch gRPC error response")
 		if span != nil {
 			span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
+			span.RecordError(err)
 		}
 		return err
 	}
@@ -1162,6 +1198,7 @@ func (s *server) StreamLinearSearchByID(stream vald.Search_StreamLinearSearchByI
 				st, msg, err := status.ParseError(err, codes.Internal, "failed to parse LinearSearchByID gRPC error response")
 				if sspan != nil {
 					sspan.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
+					sspan.RecordError(err)
 				}
 				return &payload.Search_StreamResponse{
 					Payload: &payload.Search_StreamResponse_Status{
@@ -1181,6 +1218,7 @@ func (s *server) StreamLinearSearchByID(stream vald.Search_StreamLinearSearchByI
 			"failed to parse StreamLinearSearchByID gRPC error response")
 		if span != nil {
 			span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
+			span.RecordError(err)
 		}
 		return err
 	}
@@ -1222,6 +1260,7 @@ func (s *server) MultiLinearSearch(ctx context.Context, reqs *payload.Search_Mul
 				}, info.Get())
 			if span != nil {
 				span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
+				span.RecordError(err)
 			}
 			return nil, err
 		}
@@ -1243,6 +1282,7 @@ func (s *server) MultiLinearSearch(ctx context.Context, reqs *payload.Search_Mul
 					})
 				if sspan != nil {
 					sspan.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
+					sspan.RecordError(err)
 				}
 				mu.Lock()
 				if errs == nil {
@@ -1270,6 +1310,7 @@ func (s *server) MultiLinearSearch(ctx context.Context, reqs *payload.Search_Mul
 			})
 		if span != nil {
 			span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
+			span.RecordError(err)
 		}
 		return nil, err
 	}
@@ -1312,6 +1353,7 @@ func (s *server) MultiLinearSearchByID(ctx context.Context, reqs *payload.Search
 					})
 				if sspan != nil {
 					sspan.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
+					sspan.RecordError(err)
 				}
 				mu.Lock()
 				if errs == nil {
@@ -1340,6 +1382,7 @@ func (s *server) MultiLinearSearchByID(ctx context.Context, reqs *payload.Search
 			})
 		if span != nil {
 			span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
+			span.RecordError(err)
 		}
 		return nil, err
 	}
@@ -1374,6 +1417,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 			})
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
+			span.RecordError(err)
 		}
 		return nil, err
 	}
@@ -1396,6 +1440,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 			}, info.Get())
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
+			span.RecordError(err)
 		}
 		return nil, err
 	}
@@ -1419,6 +1464,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 				}, info.Get())
 			if span != nil {
 				span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
+				span.RecordError(err)
 			}
 			return nil, err
 		}
@@ -1463,6 +1509,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 						errdetails.ValdGRPCResourceTypePrefix +
 							"/vald.v1.Insert.DoMulti/" +
 							target + " canceled: " + err.Error()))
+					span.RecordError(err)
 				}
 				return nil
 			case errors.Is(err, context.DeadlineExceeded),
@@ -1472,6 +1519,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 						errdetails.ValdGRPCResourceTypePrefix +
 							"/vald.v1.Insert.DoMulti/" +
 							target + " deadline_exceeded: " + err.Error()))
+					span.RecordError(err)
 				}
 				return nil
 			}
@@ -1487,6 +1535,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 				})
 			if span != nil {
 				span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
+				span.RecordError(err)
 			}
 			if err != nil && st.Code() != codes.AlreadyExists {
 				emu.Lock()
@@ -1526,6 +1575,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 			}, info.Get())
 		if span != nil {
 			span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
+			span.RecordError(err)
 		}
 		return nil, err
 	}
@@ -1555,6 +1605,7 @@ func (s *server) StreamInsert(stream vald.Insert_StreamInsertServer) (err error)
 				st, msg, err := status.ParseError(err, codes.Internal, "failed to parse Insert gRPC error response")
 				if sspan != nil {
 					sspan.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
+					sspan.RecordError(err)
 				}
 				return &payload.Object_StreamLocation{
 					Payload: &payload.Object_StreamLocation_Status{
@@ -1573,6 +1624,7 @@ func (s *server) StreamInsert(stream vald.Insert_StreamInsertServer) (err error)
 		st, msg, err := status.ParseError(err, codes.Internal, "failed to parse StreamInsert gRPC error response")
 		if span != nil {
 			span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
+			span.RecordError(err)
 		}
 		return err
 	}
@@ -1610,6 +1662,7 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 				}, info.Get())
 			if span != nil {
 				span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
+				span.RecordError(err)
 			}
 			return nil, err
 		}
@@ -1633,6 +1686,7 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 					}, info.Get())
 				if span != nil {
 					span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
+					span.RecordError(err)
 				}
 				return nil, err
 			}
@@ -1678,6 +1732,7 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 						errdetails.ValdGRPCResourceTypePrefix +
 							"/vald.v1.MultiInsert.DoMulti/" +
 							target + " canceled: " + err.Error()))
+					span.RecordError(err)
 				}
 				return nil
 			case errors.Is(err, context.DeadlineExceeded),
@@ -1687,6 +1742,7 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 						errdetails.ValdGRPCResourceTypePrefix +
 							"/vald.v1.MultiInsert.DoMulti/" +
 							target + " deadline_exceeded: " + err.Error()))
+					span.RecordError(err)
 				}
 				return nil
 			}
@@ -1702,6 +1758,7 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 				})
 			if span != nil {
 				span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
+				span.RecordError(err)
 			}
 
 			if err != nil {
@@ -1741,6 +1798,7 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 			}, info.Get())
 		if span != nil {
 			span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
+			span.RecordError(err)
 		}
 		return nil, err
 	}
@@ -1775,6 +1833,7 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (res *
 			})
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
+			span.RecordError(err)
 		}
 		return nil, err
 	}
@@ -1797,6 +1856,7 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (res *
 			}, info.Get())
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
+			span.RecordError(err)
 		}
 		return nil, err
 	}
@@ -1823,6 +1883,7 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (res *
 				}, info.Get())
 			if span != nil {
 				span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
+				span.RecordError(err)
 			}
 			return nil, err
 		}
@@ -1842,6 +1903,7 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (res *
 				}, info.Get())
 			if span != nil {
 				span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
+				span.RecordError(err)
 			}
 			return nil, err
 		}
@@ -1881,6 +1943,7 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (res *
 			}, info.Get())
 		if span != nil {
 			span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
+			span.RecordError(err)
 		}
 		return nil, err
 	}
@@ -1907,6 +1970,7 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (res *
 			}, info.Get())
 		if span != nil {
 			span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
+			span.RecordError(err)
 		}
 
 		return nil, err
@@ -1936,6 +2000,7 @@ func (s *server) StreamUpdate(stream vald.Update_StreamUpdateServer) (err error)
 				st, msg, err := status.ParseError(err, codes.Internal, "failed to parse Update gRPC error response")
 				if sspan != nil {
 					sspan.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
+					sspan.RecordError(err)
 				}
 				return &payload.Object_StreamLocation{
 					Payload: &payload.Object_StreamLocation_Status{
@@ -1954,6 +2019,7 @@ func (s *server) StreamUpdate(stream vald.Update_StreamUpdateServer) (err error)
 		st, msg, err := status.ParseError(err, codes.Internal, "failed to parse StreamUpdate gRPC error response")
 		if span != nil {
 			span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
+			span.RecordError(err)
 		}
 		return err
 	}
@@ -1991,6 +2057,7 @@ func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequ
 				}, info.Get())
 			if span != nil {
 				span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
+				span.RecordError(err)
 			}
 			return nil, err
 		}
@@ -2017,6 +2084,7 @@ func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequ
 					}, info.Get())
 				if span != nil {
 					span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
+					span.RecordError(err)
 				}
 				return nil, err
 			}
@@ -2072,6 +2140,7 @@ func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequ
 			}, info.Get())
 		if span != nil {
 			span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
+			span.RecordError(err)
 		}
 		return nil, err
 	}
@@ -2092,6 +2161,7 @@ func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequ
 			}, info.Get())
 		if span != nil {
 			span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
+			span.RecordError(err)
 		}
 		return nil, err
 	}
@@ -2128,6 +2198,7 @@ func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *
 			})
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
+			span.RecordError(err)
 		}
 		return nil, err
 	}
@@ -2150,6 +2221,7 @@ func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *
 			}, info.Get())
 		if span != nil {
 			span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
+			span.RecordError(err)
 		}
 		return nil, err
 	}
@@ -2178,6 +2250,7 @@ func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *
 				}, info.Get())
 			if span != nil {
 				span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
+				span.RecordError(err)
 			}
 			return nil, err
 		}
@@ -2224,6 +2297,7 @@ func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *
 			}, info.Get())
 		if span != nil {
 			span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
+			span.RecordError(err)
 		}
 		return nil, err
 	}
@@ -2252,6 +2326,7 @@ func (s *server) StreamUpsert(stream vald.Upsert_StreamUpsertServer) (err error)
 				st, msg, err := status.ParseError(err, codes.Internal, "failed to parse Upsert gRPC error response")
 				if sspan != nil {
 					sspan.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
+					sspan.RecordError(err)
 				}
 				return &payload.Object_StreamLocation{
 					Payload: &payload.Object_StreamLocation_Status{
@@ -2270,6 +2345,7 @@ func (s *server) StreamUpsert(stream vald.Upsert_StreamUpsertServer) (err error)
 		st, msg, err := status.ParseError(err, codes.Internal, "failed to parse StreamUpdate gRPC error response")
 		if span != nil {
 			span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
+			span.RecordError(err)
 		}
 		return err
 	}
@@ -2309,6 +2385,7 @@ func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequ
 				}, info.Get())
 			if span != nil {
 				span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
+				span.RecordError(err)
 			}
 			return nil, err
 		}
@@ -2437,6 +2514,7 @@ func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequ
 			}, info.Get())
 		if span != nil {
 			span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
+			span.RecordError(err)
 		}
 		return nil, err
 	}
@@ -2470,6 +2548,7 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (locs 
 				}, info.Get())
 			if span != nil {
 				span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
+				span.RecordError(err)
 			}
 			return nil, err
 		}
@@ -2515,6 +2594,7 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (locs 
 				})
 			if span != nil {
 				span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
+				span.RecordError(err)
 			}
 			if err != nil && st.Code() != codes.NotFound {
 				log.Error(err)
@@ -2541,6 +2621,7 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (locs 
 			}, info.Get())
 		if span != nil {
 			span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
+			span.RecordError(err)
 		}
 		return nil, err
 	}
@@ -2557,6 +2638,7 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (locs 
 			})
 		if span != nil {
 			span.SetStatus(trace.StatusCodeNotFound(err.Error()))
+			span.RecordError(err)
 		}
 		return nil, err
 	}
@@ -2585,6 +2667,7 @@ func (s *server) StreamRemove(stream vald.Remove_StreamRemoveServer) (err error)
 				st, msg, err := status.ParseError(err, codes.Internal, "failed to parse Remove gRPC error response")
 				if sspan != nil {
 					sspan.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
+					sspan.RecordError(err)
 				}
 				return &payload.Object_StreamLocation{
 					Payload: &payload.Object_StreamLocation_Status{
@@ -2603,6 +2686,7 @@ func (s *server) StreamRemove(stream vald.Remove_StreamRemoveServer) (err error)
 		st, msg, err := status.ParseError(err, codes.Internal, "failed to parse StreamRemove gRPC error response")
 		if span != nil {
 			span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
+			span.RecordError(err)
 		}
 		return err
 	}
@@ -2640,6 +2724,7 @@ func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequ
 					}, info.Get())
 				if span != nil {
 					span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
+					span.RecordError(err)
 				}
 				return nil, err
 			}
@@ -2681,6 +2766,7 @@ func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequ
 						errdetails.ValdGRPCResourceTypePrefix +
 							"/vald.v1.MultiRemove.BroadCast/" +
 							target + " canceled: " + err.Error()))
+					span.RecordError(err)
 				}
 				return nil
 			case errors.Is(err, context.DeadlineExceeded),
@@ -2690,6 +2776,7 @@ func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequ
 						errdetails.ValdGRPCResourceTypePrefix +
 							"/vald.v1.MultiRemove.BroadCast/" +
 							target + " deadline_exceeded: " + err.Error()))
+					span.RecordError(err)
 				}
 				return nil
 			}
@@ -2705,6 +2792,7 @@ func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequ
 				})
 			if span != nil {
 				span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
+				span.RecordError(err)
 			}
 
 			if err != nil && st.Code() != codes.NotFound {
@@ -2731,6 +2819,7 @@ func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequ
 			}, info.Get())
 		if span != nil {
 			span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
+			span.RecordError(err)
 		}
 		return nil, err
 	}
@@ -2747,6 +2836,7 @@ func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequ
 			})
 		if span != nil {
 			span.SetStatus(trace.StatusCodeNotFound(err.Error()))
+			span.RecordError(err)
 		}
 		return nil, err
 	}
@@ -2785,6 +2875,7 @@ func (s *server) GetObject(ctx context.Context, req *payload.Object_VectorReques
 							errdetails.ValdGRPCResourceTypePrefix +
 								"/vald.v1.GetObject.BroadCast/" +
 								target + " canceled: " + err.Error()))
+						sspan.RecordError(err)
 					}
 					return nil
 				case errors.Is(err, context.DeadlineExceeded),
@@ -2794,6 +2885,7 @@ func (s *server) GetObject(ctx context.Context, req *payload.Object_VectorReques
 							errdetails.ValdGRPCResourceTypePrefix +
 								"/vald.v1.GetObject.BroadCast/" +
 								target + " deadline_exceeded: " + err.Error()))
+						sspan.RecordError(err)
 					}
 					return nil
 				}
@@ -2810,6 +2902,7 @@ func (s *server) GetObject(ctx context.Context, req *payload.Object_VectorReques
 					}, info.Get())
 				if span != nil {
 					span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
+					span.RecordError(err)
 				}
 				if err != nil && st.Code() != codes.NotFound {
 					return err
@@ -2846,6 +2939,7 @@ func (s *server) GetObject(ctx context.Context, req *payload.Object_VectorReques
 			}, info.Get())
 		if span != nil {
 			span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
+			span.RecordError(err)
 		}
 		return nil, err
 	}
@@ -2874,6 +2968,7 @@ func (s *server) StreamGetObject(stream vald.Object_StreamGetObjectServer) (err 
 				st, msg, err := status.ParseError(err, codes.Internal, "failed to parse GetObject gRPC error response")
 				if sspan != nil {
 					sspan.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
+					sspan.RecordError(err)
 				}
 				return &payload.Object_StreamVector{
 					Payload: &payload.Object_StreamVector_Status{
@@ -2892,6 +2987,7 @@ func (s *server) StreamGetObject(stream vald.Object_StreamGetObjectServer) (err 
 		st, msg, err := status.ParseError(err, codes.Internal, "failed to parse StreamGetObject gRPC error response")
 		if span != nil {
 			span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
+			span.RecordError(err)
 		}
 		return err
 	}
