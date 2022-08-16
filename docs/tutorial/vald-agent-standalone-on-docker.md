@@ -152,7 +152,7 @@ This chapter will use NGT for the core engine of Vald Agent.
 
 1. Download dataset
 
-    In this tutorial. we use [Fashion-MNIST](https://github.com/zalandoresearch/fashion-mnist) as a dataset for indexing and search query.
+    This tutorial uses [Fashion-MNIST](https://github.com/zalandoresearch/fashion-mnist) as a dataset for indexing and search query.
 
     ```bash
     # move to the working directory
