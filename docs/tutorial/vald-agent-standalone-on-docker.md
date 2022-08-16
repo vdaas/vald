@@ -4,7 +4,7 @@ Vald is designed and implemented based on Cloud-Native architecture.
 However, there may be cases that want to use only Vald Agent without Kubernetes.
 
 This article will show you how to deploy and run the Vald Agent on Docker.
-Fashion-mnist is used as an example dataset, same as [Get Started](../tutorial/get-started.md).
+Fashion-MNIST is used as an example dataset, same as [Get Started](../tutorial/get-started.md).
 
 ## Requirements
 
@@ -38,14 +38,13 @@ This chapter will use NGT for the core engine of Vald Agent.
     git clone https://github.com/vdaas/vald.git
     ```
 
-1. Create directory for setting deploy vald-agent-ngt
+1. Create a directory for setting deploy vald-agent-ngt
 
     ```bash
-    cd vald
-    mkdir -p tutorial && cd tutorial
+    cd vald && mkdir -p tutorial && cd tutorial
     ```
 
-1. Create `config.yaml`
+1. Create the `config.yaml`
 
     The configuration of Vald agent for docker is set using `config.yaml`<br>
     You can also check [the sample configuration](https://github.com/vdaas/vald/blob/main/cmd/agent/core/ngt/sample.yaml).
@@ -153,7 +152,7 @@ This chapter will use NGT for the core engine of Vald Agent.
 
 1. Download dataset
 
-    In this tutorial. we use [fashion-mnist](https://github.com/zalandoresearch/fashion-mnist) as a dataset for indexing and search query.
+    In this tutorial. we use [Fashion-MNIST](https://github.com/zalandoresearch/fashion-mnist) as a dataset for indexing and search query.
 
     ```bash
     # move to the working directory
@@ -161,19 +160,19 @@ This chapter will use NGT for the core engine of Vald Agent.
     ```
 
     ```bash
-    # download fashion-mnist testing dataset
+    # download Fashion-mnist testing dataset
     wget http://ann-benchmarks.com/fashion-mnist-784-euclidean.hdf5
     ```
 
 1. Running example
 
-    Vald provides multiple language client libraries such as Go, Java, Node.js, Python, and so on.<br>
-    This example will insert and index 400 vectors into the Vald from the fashion-mnist dataset via gRPC.
-    And then after waiting for indexing, it will request for searching the nearest vector 10 times.
+    Vald provides multiple language client libraries such as Go, Java, Node.js, Python, etc.<br>
+    This example will insert and index 400 vectors into the Vald from the Fashion-MNIST dataset via gRPC.
+    And then, after waiting for indexing, it will request to search the nearest vector 10 times.
     You will get the 10 nearest neighbor vectors for each search query.<br>
-    
+
     We use [`example/client/agent/main.go`](https://github.com/vdaas/vald/blob/main/example/client/agent/main.go) to run the example.
-    The example code is the same as running an example only Vald agent on Kubernetes.
+    The example code is the same as running an example-only Vald agent on Kubernetes.
     If you want to learn the detail of running an example, please refer to the tutorial of [Vald Agent Standalone on kubernetes](../tutorial/get-started.md/#run-using-example-code).
 
     ```bash
@@ -182,10 +181,10 @@ This chapter will use NGT for the core engine of Vald Agent.
     ```
 
     <div class="caution">
-    It would be best to run `CreateIndex()` after `Insert()` without waiting for auto-indexing in your client code, even you can wait for the finishing auto createIndex function, which sometimes takes a long time.
+    It would be best to run CreateIndex() after Insert() without waiting for auto-indexing in your client code, even if you can wait for the finishing auto createIndex function, which sometimes takes a long time.
     The backup files (e.g., ngt-meta.kvsdb) will be in your mount directory when vald-agent-ngt finishes indexing.
     </div>
-      
+
     <div class="warning">
     If you use Go(v1.16~) and catch the error like `missing go.sum entry to add it` when running `go run main.go`, please run `go mod tidy` and retry.
     This error comes from Go Command Changes of Go 1.16 Release Notes.(Please refer to https://golang.org/doc/go1.16#go-command for more details).

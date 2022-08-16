@@ -82,11 +82,11 @@ You have to change the query vector with `skip_strict_exist_check` as `true` or 
 
 ## RESOURCE_EXHAUSTED
 
-`RESOURCE_EXHAUSTED` means the some resources has been exhausted.
+`RESOURCE_EXHAUSTED` means that some resources have been exhausted.
 
 It appears when:
 
-- There is out-of-memory in gRPC payload, or networks, or etc.
+- There is out-of-memory in gRPC payload, in networks, etc.
 - There are some server overload situations.
 - The sent or received message is larger than the configured limit (default is 4 MB).
 
@@ -97,13 +97,13 @@ In other words, the vector dimension size in configuration is too large.
 ## INTERNAL
 
 `INTERNAL` appears when some wrong happens in the Vald cluster.
-It is there is the serious problems about the Vald cluster.
+It is there are the serious problems with the Vald cluster.
 
 Services that return status are all services.
 If you get it, please verify the state of the Vald cluster.
 
 <div class="warning">
-If the internal server error appears, it should be care and research about logs metrics.
+If an internal server error appears, it should have cared and researched logs metrics.
 </div>
 
 ## UNAVAILABLE

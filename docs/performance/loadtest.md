@@ -1,17 +1,17 @@
 # Load Testing
 
-This document describes how to perform the load testing in Vald cluster or Vald agent using Vald Load Testing Tools.
+This document describes how to perform the load testing in the Vald cluster or Vald Agent using Vald Load Testing Tools.
 
 ## Overview
 
-We develop our own Load Testing Tools to perform the load testing in Vald cluster or Vald agent.
-You can perform the load test on Vald to test the insert and search performance in Vald.
+We develop our Load Testing Tools to perform the load testing in the Vald cluster or the Vald Agent.
+You can perform the load test on the Vald cluster to test the insert and search performance in Vald.
 
 ## Prerequisite
 
 - Vald Cluster or Vald Agent
 
-    Please refer to [here](https://vald.vdaas.org/docs/tutorial/get-started/) for the installation guide of Vald Cluster or Vald Agent.
+  Please refer to [here](https://vald.vdaas.org/docs/tutorial/get-started/) for the installation guide of Vald Cluster or Vald Agent.
 
 - Docker: v19.03 ~
 
@@ -30,14 +30,14 @@ Please refer to the [Sample configuration file](https://github.com/vdaas/vald/bl
 
 Here are the important configurations and following the explanation.
 
-| Name | Description | Example |
-|:---|:---|:---|
-| service     | By setting the value to gateway, you can test the Vald cluster though the Vald gateway. <br />By setting the value to agent, you can test the Vald agent directly. | gateway or agent                                |
-| operation   | To perform the specific load test action to the Vald cluster.                                                                                                    | insert, streaminsert, search or steamsearch |
-| dataset     | The dataset used in insert and streaminsert operation.                                                                                                       |                                                     |
-| concurrency | The number of concurrent execution of the load test.                                                                                                             |                                                     |
-| batch_size  | The batch size of the dataset.                                                                                                                                   |                                                     |
-| addr        | The cluster you want to test                                                                                                                                     |                                                     |
+| Name        | Description                                                                                                                                                             | Example                                     |
+| :---------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------ |
+| service     | By setting the value to the gateway, you can test the Vald cluster through the Vald gateway. <br />By setting the value to agent, you can test the Vald agent directly. | gateway or agent                            |
+| operation   | To perform the specific load test action to the Vald cluster.                                                                                                           | insert, streaminsert, search or steamsearch |
+| dataset     | The dataset is used in insert and stream insert operation.                                                                                                              |                                             |
+| concurrency | The number of concurrent execution of the load test.                                                                                                                    |                                             |
+| batch_size  | The batch size of the dataset.                                                                                                                                          |                                             |
+| addr        | The cluster you want to test                                                                                                                                            |                                             |
 
 ## Execute load test
 
@@ -97,8 +97,8 @@ These lines show the result of the load test.
 
 This means that the `Insert Gateway` mode is used, which means the dataset `random-786-100000` will insert into the Vald Cluster.
 
-The line `result:Gateway  32  100 6060.743248` means that the Gateway mode is used, with `32` concurrent execution and `100` batch size, with the VPS (Vector Per Sec.) of `6060.743248`.
+The line `result:Gateway 32 100 6060.743248` means that the Gateway mode is used, with `32` concurrent execution and `100` batch size, with the VPS (Vector Per Sec.) of `6060.743248`.
 
-Which means that is performed the insertion of 6060 vectors into the Vald Cluster per second from the Vald Load Testing tools.
+It means that is performed the insertion of 6060 vectors into the Vald Cluster per second from the Vald Load Testing tools.
 
 The result includes all the network latency and filtering latency.

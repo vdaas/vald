@@ -312,7 +312,12 @@ Each configuration file is the following:
 #### Resource requests and limits
 
 The number of discoverer pods and resource limits can be estimated by the configurations of your LB gateways and index managers because its APIs are called by them.
-Discoverer CPU loads almost depend on API request traffic = (the number of LB gateways x its request frequency) + (the number of index managers x its request frequency).
+Discoverer CPU loads almost depend on API request traffic.
+
+```bash
+# The API traffic formula
+(the number of LB gateways x its request frequency) + (the number of index managers x its request frequency).
+```
 
 ### Index Manager
 
