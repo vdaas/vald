@@ -262,7 +262,7 @@ c := &Something{
 }
 ```
 
-To initialize complex structs, we can use [a functional option pattern](https://dave.cheney.net/2014/10/17/functional-options-for-friendly-apis). Please read [server.go](https://github.com/vdaas/vald/blob/main/internal/servers/servers.go) and [option.go](https://github.com/vdaas/vald/blob/main/internal/servers/option.go) for the reference implementation.
+To initialize complex structs, we can use a [functional option pattern](https://dave.cheney.net/2014/10/17/functional-options-for-friendly-apis). Please read [server.go](https://github.com/vdaas/vald/blob/main/internal/servers/servers.go) and [option.go](https://github.com/vdaas/vald/blob/main/internal/servers/option.go) for the reference implementation.
 The options implementation should be separated as another file called `option.go` to improve the readability of the source code, and the method name should start with `With` word to differentiate it from other methods.
 
 ### Variables and Constant
