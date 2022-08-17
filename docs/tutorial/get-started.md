@@ -4,7 +4,7 @@ Vald is a highly scalable distributed fast approximate nearest neighbor dense ve
 Vald is designed and implemented based on Cloud-Native architecture.
 
 This tutorial shows how to deploy and run the Vald components on your Kubernetes cluster.
-And, fashion-MNIST is used as an example of a dataset.
+And, Fashion-MNIST is used as an example of a dataset.
 
 ## Overview
 
@@ -190,7 +190,7 @@ In this tutorial, you will deploy the basic configuration of Vald that is consis
 ## Run Example Code
 
 In this chapter, you will execute insert, search, and delete vectors to your Vald cluster using the example code.<br>
-The [fashion-MNIST](https://github.com/zalandoresearch/fashion-MNIST) is used as a dataset for indexing and search query.
+The [Fashion-MNIST](https://github.com/zalandoresearch/fashion-mnist) is used as a dataset for indexing and search query.
 
 The example code is implemented in Go and using [vald-client-go](https://github.com/vdaas/vald-client-go), one of the official Vald client libraries, for requesting to Vald cluster.
 Vald provides multiple language client libraries such as Go, Java, Node.js, Python, etc.
@@ -206,7 +206,7 @@ If you are interested, please refer to [SDKs](../user-guides/sdks.md).<br>
 
 1.  Download dataset
 
-    Download [fashion-MNIST](https://github.com/zalandoresearch/fashion-MNIST) that is used as a dataset for indexing and search query.
+    Download [Fashion-MNIST](https://github.com/zalandoresearch/fashion-mnist) that is used as a dataset for indexing and search query.
 
     Move to the working directory
 
@@ -214,7 +214,7 @@ If you are interested, please refer to [SDKs](../user-guides/sdks.md).<br>
     cd example/client
     ```
 
-    Download fashion-MNIST testing dataset
+    Download Fashion-MNIST testing dataset
 
     ```bash
     wget http://ann-benchmarks.com/fashion-mnist-784-euclidean.hdf5
@@ -223,7 +223,7 @@ If you are interested, please refer to [SDKs](../user-guides/sdks.md).<br>
 1.  Run Example
 
     We use [`example/client/main.go`](https://github.com/vdaas/vald/blob/main/example/client/main.go) to run the example.<br>
-    This example will insert and index 400 vectors into the Vald from the fashion-MNIST dataset via [gRPC](https://grpc.io/).
+    This example will insert and index 400 vectors into the Vald from the Fashion-MNIST dataset via [gRPC](https://grpc.io/).
     And then after waiting for indexing, it will request for searching the nearest vector 10 times.
     You will get the 10 nearest neighbor vectors for each search query.<br>
     Run example codes by executing the below command.
@@ -304,7 +304,7 @@ If you are interested, please refer to [SDKs](../user-guides/sdks.md).<br>
 
     1.  load
 
-        - Loading from fashion-MNIST dataset and set id for each vector that is loaded. This step will return the training dataset, test dataset, and ids list of ids when loading is completed with success.
+        - Loading from Fashion-MNIST dataset and set id for each vector that is loaded. This step will return the training dataset, test dataset, and ids list of ids when loading is completed with success.
             <details><summary>example code</summary><br>
 
           ```go
