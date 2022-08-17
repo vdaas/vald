@@ -32,6 +32,7 @@ HELM_OPERATOR_IMAGE             = $(NAME)-helm-operator
 LB_GATEWAY_IMAGE                = $(NAME)-lb-gateway
 LOADTEST_IMAGE                  = $(NAME)-loadtest
 MANAGER_INDEX_IMAGE             = $(NAME)-manager-index
+BENCHMARK_JOB_IMAGE             = $(NAME)-benchmark-job
 MAINTAINER                      = "$(ORG).org $(NAME) team <$(NAME)@$(ORG).org>"
 
 VERSION ?= $(eval VERSION := $(shell cat versions/VALD_VERSION))$(VERSION)
