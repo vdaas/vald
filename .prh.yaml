@@ -38,6 +38,7 @@ version: 1
 # index: python
 # index: qbg
 # index: QoS
+# index: RPC
 # index: sdk
 # index: uuid
 # index: vald
@@ -179,6 +180,10 @@ rules:
       wordBoundary: true
   - pattern: qos
     expected: QoS
+    options:
+      wordBoundary: true
+  - pattern: rpc
+    expected: RPC
     options:
       wordBoundary: true
   - pattern: sdk
