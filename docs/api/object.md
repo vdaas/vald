@@ -131,7 +131,7 @@ GetObject RPC is the method to get the metadata of a vector inserted into the `v
 
 ## StreamGetObject RPC
 
-StreamGetObject RPC is the method to get the metadata of multiple exist vectors using the [bidirectional streaming RPC](https://grpc.io/docs/what-is-grpc/core-concepts/#bidirectional-streaming-rpc).<br>
+StreamGetObject RPC is the method to get the metadata of multiple existing vectors using the [bidirectional streaming RPC](https://grpc.io/docs/what-is-grpc/core-concepts/#bidirectional-streaming-rpc).<br>
 By using the bidirectional streaming RPC, the GetObject request can be communicated in any order between client and server.
 Each Upsert request and response are independent.
 

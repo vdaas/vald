@@ -2,7 +2,7 @@
 
 ## Overview
 
-Remove Service is responsible for removing vectors which is indexed in the `vald-agent`.
+Remove Service is responsible for removing vectors that are indexed in the `vald-agent`.
 
 ```rpc
 service Remove {
@@ -102,7 +102,7 @@ Remove RPC is the method to remove a single vector.
 StreamRemove RPC is the method to remove multiple vectors using the [bidirectional streaming RPC](https://grpc.io/docs/what-is-grpc/core-concepts/#bidirectional-streaming-rpc).<br>
 By using the bidirectional streaming RPC, the remove request can be communicated in any order between client and server.
 Each Remove request and response are independent.
-It's the recommended method to remove the large amount of vectors.
+It's the recommended method to remove a large number of vectors.
 
 ### Input
 
@@ -206,9 +206,9 @@ It's the recommended method to remove the large amount of vectors.
 
 MultiRemove is the method to remove multiple vectors in **1** request.
 
-<div class="card-note">
-gRPC has the message size limitation.<br>
-Please be careful that the size of the request exceed the limit.
+<div class="notice">
+gRPC has a message size limitation.<br>
+Please be careful that the size of the request exceeds the limit.
 </div>
 
 ## Input

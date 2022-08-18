@@ -12,10 +12,10 @@ If you need to prevent low accuracy effects caused by indices loss, it is better
 
 However, to maximize the efficiency of search operations, it is better to have a certain amount of vectors in each NGT vector space.
 
-We recommend to have more than 3 worker nodes with enough memory for the workload.
-It is better to deploy 2 or 3 Vald agent pods to each worker node.
-If you want to store 100 million vectors with 128 dimensions, `8 bytes (64bit float) x 128 (dimension) x 100 million x N replicas`, so a total of 100 GB x N memory space is needed.
-If the number of replicas of the index is three, which means N=3, the total amount of memory space for the whole cluster will be 300 GB at least.
+We recommend having more than 3 worker nodes with enough memory for the workload.
+Deploying 2 or 3 Vald agent pods to each worker node is better.
+If you want to store 100 million vectors with 128 dimensions, `8 bytes (64bit float) x 128 (dimension) x 100 million x N replicas`, 100 GB x N memory space is needed.
+If the number of index replicas is three, which means N=3, the total amount of memory space for the whole cluster will be 300 GB at least.
 
 For example:
 
@@ -24,28 +24,28 @@ For example:
 
 ### On multi-tenant cluster
 
-If you're going to deploy Vald on multi-tenant cluster, please take care about the followings.
+If you’re going to deploy Vald on the multi-tenant cluster, please take care of the followings.
 
 - It is recommended to define PriorityClasses for agents not to be evicted.
     - For more info, please visit the page [Pod Priority and Preemption][pod-priority-preemption].
     - If you are using [the Vald chart][vald-helm-chart], PriorityClasses are defined by default.
-- It is recommended to define unique namespaces for each Vald and the other apps.
-- Then, please define ResourceQuotas for the namespace for the other apps to limit the memory usage of them.
-    - For more info, please visit this page [Resource Quotas][resource-quota].
+- Defining unique namespaces for each Vald and the other apps are recommended.
+- Then, please define ResourceQuotas for the namespace for the other apps to limit their memory usage.
+    - For more info, please visit this page, [Resource Quotas][resource-quota].
 
 ## Monitoring
 
 ### Logging
 
-The logging level of Vald components can be configured by using `defaults.logging.level` (or `[component].logging.level`) field in Helm Chart values.
-The level must be a one of "debug", "info", "warn", "error" and "fatal".
+The logging level of Vald components can be configured by `defaults.logging.level` (or `[component].logging.level`) field in Helm Chart values.
+The level must be a one of `debug`, `info`, `warn`, `error`, and `fatal`.
 The levels are defined in [the Coding Style document](../contributing/coding-style.md#logging).
 
 ### Observability features of Vald
 
 The observability features are useful for monitoring Vald components.
-Vald has various types of exporters, such as Prometheus, Jaeger, or Stackdriver.
-Using this feature, you can observe and visualize the internal stats or the events like the number of NGT index, when to create index, or the number of RPCs.
+Vald has various exporters, such as Prometheus, Jaeger, etc.
+Using this feature, you can observe and visualize the internal stats or the events, like the number of NGT indexes, when to createIndex, or the number of RPCs.
 
 ### Enabling observability feature
 
@@ -97,12 +97,12 @@ This is an example of a custom dashboard. It is based on [our standard dashboard
 ## Upgrading
 
 Our versioning strategy is based on [Semantic Versioning][semver].
-Upgrading to new vesion such as minor or major may require you to change your configurations.
+Upgrading to a new version, such as minor or major, may require changing your configurations.
 Please read the [CHANGELOG][CHANGELOG] before upgrading.
 
 ### In case of manual deploy
 
-In case of manual deploy, generally, it is required to update your configmaps first.
+In manual deployments, it is generally required to update your ConfigMaps first.
 After that, please update the image tags of Vald components in your deployments.
 
 ### In case of using Helm
@@ -111,7 +111,7 @@ In case of using Helm and Vald's chart, please update `defaults.image.tag` field
 
 ### In case of using Vald-Helm-Operator
 
-In case of using Vald-Helm-Operator, please upgrade the CRDs first because Helm doesn't have a support to upgrade CRDs.
+If using Vald-Helm-Operator, please upgrade the CRDs first because Helm doesn’t have support to upgrade CRDs.
 
 ```bash
 VERSION=v1.4.1

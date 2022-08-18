@@ -4,7 +4,7 @@
 
 <!-- Describe vald search service: search, searchbyid, linearsearch, lineasearchbyid ... -->
 
-Vald provides the four types of search services.
+Vald provides four types of search services.
 
 1. Search
 
@@ -112,6 +112,6 @@ It requires the egress filter component's hostname and port.
 
 ### min_num
 
-`min_num` is the minimum number of search result you'd like to get at least.
+`min_num` is the minimum number of search results you'd like to get at least.
 It helps you avoid the timeout error when the search process requires more time.
 `min_num` should be a positive integer and smaller than `num`.

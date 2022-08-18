@@ -2,15 +2,22 @@
 
 ## Introduction
 
-This guideline includes the coding style for all Vald contributors and reviewers. Everyone should follow this guideline to keep the style consistent so everyone can understand and contribute to Vald easier once they learn this guideline. You should have the basic knowledge of how to write Go before contributing to Vald. If you found any bug please create [a GitHub issue](https://github.com/vdaas/vald/issues/new?assignees=&labels=type%2Fbug%2C+priority%2Fmedium%2C+team%2Fcore&template=bug_report.md&title=) and we will work on it.
+This guideline includes the coding style for all Vald contributors and reviewers.
+Everyone should follow this guideline to keep the style consistent, so everyone can understand and contribute to Vald easier once they learn it.
+You should have the basic knowledge of how to write Go before contributing to Vald.
+If you find any bugs, please create [a GitHub issue](https://github.com/vdaas/vald/issues/new?assignees=&labels=type%2Fbug%2C+priority%2Fmedium%2C+team%2Fcore&template=bug_report.md&title=), and we will work on it.
 
 Please also read the [Contribution guideline](../contributing/contributing-guide.md) before you start contributing to Vald.
 
-## Code Formatting and Naming Convension
+## Code Formatting and Naming Convention
 
-Code formatting and naming conventions affect coding readability and maintainability. Every developer has a different coding style, luckily Go provides tools to format source code and checking for the potential issue in the source code. We recommend using [golines](https://github.com/segmentio/golines) and [gofumpt](https://github.com/mvdan/gofumpt) and [goimports](https://github.com/golang/tools/tree/master/cmd/goimports) to format the source code in Vald, and [golangci-lint](https://github.com/golangci/golangci-lint) with `--enable-all` option. We suggest everyone install the plugin for your editor to format the code once you edit the code automatically, and  we suggest using `make format/go` command if you want to format the source code manually.
+Code formatting and naming conventions affect coding readability and maintainability.
+Every developer has a different coding style.
+Luckily Go provides tools to format source code and check for potential issues in the source code.
+We recommend using [golines](https://github.com/segmentio/golines), [gofumpt](https://github.com/mvdan/gofumpt), and [goimports](https://github.com/golang/tools/tree/master/cmd/goimports) to format the source code in Vald and [golangci-lint](https://github.com/golangci/golangci-lint) with the `--enable-all` option.
+We suggest everyone install the plugin for your editor to format the code once you edit the code automatically and use `make format/go` command if you want to format the source code manually.
 
-But having tools to format source code doesn't mean you do not need to care the formatting of the code, for example:
+But having tools to format source code does not mean you do not need to care about the formatting of the code, for example:
 
 <table>
 <thead><tr><th>Bad</th><th>Good</th></tr></thead>
@@ -53,50 +60,52 @@ The project layout includes the folder and the file structure in the project. We
 
 ### Packages
 
-The package defines the context of the objects in the package, for example, the corresponding methods and structs belong to the corresponding package. Unlike other languages like Java, in Go we use the package name to declare which context of the object we are going to use. For example in [time](https://golang.org/pkg/time/) package, it defines all the objects about time like `time.Now()` method to get the current time.
+The package defines the context of the objects in the package; for example, the corresponding methods and structs belong to the corresponding package.
+Unlike other languages like Java, in Go, we use the package name to declare which context of the object we are going to use.
+For example, the [time package](https://golang.org/pkg/time/) defines all the objects about time, like `time.Now()` method to get the current time.
 
-Here is the naming conventions of the package:
+Here are the naming conventions of the package:
 
 - All lower case.
 
-```go
-// bad
-package ioUtil
+  ```go
+  // bad
+  package ioUtil
 
-// good
-package ioutil
-```
+  // good
+  package ioutil
+  ```
 
 - No plurals.
 
-```go
-// bad
-package times
+  ```go
+  // bad
+  package times
 
-// good
-package time
-
-```
+  // good
+  package time
+  ```
 
 - Should be the same as the folder name.
-- Should keep as simple as it should, and should contain only one specific context in the package.
+- Should keep as simple as it should and contain only one specific context in the package.
 
-```go
-// bad
-package encodebase64
+  ```go
+  // bad
+  package encodebase64
 
-// good
-package base64 // inside the encoding/base64 folder
-```
+  // good
+  package base64 // inside the encoding/base64 folder
+  ```
 
-- Should not be too general, for example `util` or `helper`, which will cause all the objects from different contexts to be store in one package. If you want to name the package as `util`,  please define the more specific package name more  `ioutil` or `httputil`.
+- Should not be too general, for example, `util` or `helper`, which will cause all the objects from different contexts to be stored in one package.
+  If you want to name the package as `util`, please define the more specific package name more `ioutil` or `httputil`.
 
-All packages should contain `doc.go` file under the package to describe what is the package is. For example, under the folder name called `cache`, should contains a file named `doc.go`, which contains the package documentation. Here is the example `doc.go` of the cache package.
+All packages should contain a `doc.go` file under the package to describe what is the package is. For example, under the folder name called `cache`, should contain a file named `doc.go`, which contains the package documentation. Here is the example `doc.go` of the cache package.
 
-```go
-// Package cache provides implementation of cache
-package cache
-````
+    ```go
+    // Package cache provides an implementation of cache
+    package cache
+    ````
 
 ### General style
 
@@ -104,10 +113,10 @@ This section describes the general guideline for the Vald programming style, eve
 
 #### Order of declaration
 
-Put the higher priority or frequently used declaration on the top of other declaration.
-It makes Vald easier to read and search the target source code in Vald.
+Put the higher priority or frequently used declaration on top of other declarations.
+It makes it easier for Vald to read and search its target source code in Vald.
 
-For example, the interface declaration should have higher priority than struct or function declaration, hence it should be put above other declaration.
+For example, the interface declaration should have higher priority than the struct or function declaration; hence it should be put above other declarations.
 
 <table>
 <thead><tr><th>Bad</th><th>Good</th></tr></thead>
@@ -135,8 +144,8 @@ func (s *S) fn() {}
 
 #### Group similar definition
 
-Group similar definitions such as struct or interface declaration.
-We should not group interface and struct declaration in the same block, for example:
+Group similar definitions such as a struct or an interface declaration.
+We should not group an interface and a struct declaration in the same block, for example:
 
 <table>
 <thead><tr><th>Bad</th><th>Good</th></tr></thead>
@@ -171,46 +180,47 @@ type (
 ### Interfaces
 
 The interface defines the program interface for usability and future extendability.
-Unlike other languages like Java, Go supports implicit interface implementation. The type implements do not need to specify the interface name; to "implements" the interface the structs only need to defined the methods the same as the interface, so please be careful to define the method name inside the interface.
+Unlike other languages like Java, Go supports implicit interface implementation.
+The type implements do not need to specify the interface name; to "implement" the interface, the structs only need to define the methods the same as the interface, so please be careful to define the method name inside the interface.
 
 The interface should be named as:
 
 - Use MixedCaps
 
-```go
-// bad
-type Roundtripper interface {
-  // interface definition
-}
+  ```go
+  // bad
+  type Roundtripper interface {
+    // interface definition
+  }
 
-// good
-type RoundTripper interface {
-  // interface definition
-}
-```
+  // good
+  type RoundTripper interface {
+    // interface definition
+  }
+  ```
 
 - Use understandable common short form.
 
-```go
-// bad
-type ATSigner interface {
-  // interface definition
-}
+  ```go
+  // bad
+  type ATSigner interface {
+    // interface definition
+  }
 
-// good
-type AccessTokenSigner interface {
-  // interface definition
-}
+  // good
+  type AccessTokenSigner interface {
+    // interface definition
+  }
 
-// good
-type HTTPServer interface {
-  // interface definition
-}
-```
+  // good
+  type HTTPServer interface {
+    // interface definition
+  }
+  ```
 
 ### Structs
 
-Structs in Go is the object definition, we can attach any fields and methods to the struct. The naming convention is the same as the interface one.
+Structs in Go is the object definition; we can attach any fields and methods to the struct. The naming convention is the same as the interface one.
 If the structs are implementing the interface, the structs name should be related to the interface, for example:
 
 ```go
@@ -231,7 +241,7 @@ type HTTPListener struct {
 
 #### Struct initialization
 
-There are many ways to initialize structs in Go, base on the use case we can decide which way to initialize structs in Go.
+There are many ways to initialize structs in Go; based on the use case, we can decide which way to initialize structs in Go.
 To initialize struct, it is suggested to use `new(T)` instead of `&T{}` unless you need to initialize with values. For example:
 
 ```go
@@ -252,8 +262,8 @@ c := &Something{
 }
 ```
 
-To initialize complex structs, we can use [functional option pattern](https://dave.cheney.net/2014/10/17/functional-options-for-friendly-apis). Please read [server.go](https://github.com/vdaas/vald/blob/main/internal/servers/servers.go) and [option.go](https://github.com/vdaas/vald/blob/main/internal/servers/option.go) for the reference implementation.
-The options implementation should be separated as another file called `option.go` to improve the readability of the source code, and the method name should start with `With` word to differentiate with other methods.
+To initialize complex structs, we can use a [functional option pattern](https://dave.cheney.net/2014/10/17/functional-options-for-friendly-apis). Please read [server.go](https://github.com/vdaas/vald/blob/main/internal/servers/servers.go) and [option.go](https://github.com/vdaas/vald/blob/main/internal/servers/option.go) for the reference implementation.
+The options implementation should be separated as another file called `option.go` to improve the readability of the source code, and the method name should start with `With` word to differentiate it from other methods.
 
 ### Variables and Constant
 
@@ -261,28 +271,28 @@ The variable and the constant should be named as:
 
 - Use MixedCaps
 
-```go
-// bad
-yamlprocessor := new(something)
+  ```go
+  // bad
+  yamlprocessor := new(something)
 
-// good
-yamlProcessor := new(something)
-```
+  // good
+  yamlProcessor := new(something)
+  ```
 
 - Use short form.
 
-```go
-// bad
-yamlString := "something"
+  ```go
+  // bad
+  yamlString := "something"
 
-// good
-yamlStr := "something"
+  // good
+  yamlStr := "something"
 
-// in some case it is acceptable and actually if it is easier to read
-s := new(something)
-```
+  // in some case it is acceptable and actually if it is easier to read
+  s := new(something)
+  ```
 
-The variable and the constant name may lead to misunderstanding or confusion, so if the variable and constant name are different to understand, please write some comment even if it is a private member.
+The variable and the constant name may lead to misunderstanding or confusion, so if the variable and constant name are different to understand, please write some comments, even if it is a private member.
 
 ```go
 // somebody may not understand this variable, so write a simple comment to the variable definition
@@ -303,33 +313,33 @@ In this section, rules also apply to the `function` (without receiver). The meth
 
 - Use MixedCaps.
 
-```go
-// bad
-func (s *something) somemethod() {}
+  ```go
+  // bad
+  func (s *something) somemethod() {}
 
-// bad
-func (s *something) some_method() {}
+  // bad
+  func (s *something) some_method() {}
 
-// good
-func (s *something) someMethod() {}
-```
+  // good
+  func (s *something) someMethod() {}
+  ```
 
 - Avoid using long function name.
 - Do not use short form unless the function name is too long.
 
-```go
-// bad
-func (s *something) genereateRandomNumber() int {}
+  ```go
+  // bad
+  func (s *something) genereateRandomNumber() int {}
 
-// good
-func (s *something) genRandNum() int {}
-```
+  // good
+  func (s *something) genRandNum() int {}
+  ```
 
 - It should be understandable for everyone even if it is a private method.
 
 #### Getter and Setter
 
-The Getter and Setter are almost the same as other languages, but the naming convention of the Getter method is different from other languages. Instead of `GetVar1()`, the getter of `Var1` should be the same as the variable name itself `Var1()`.
+The Getter and Setter are almost the same as other languages, but the naming convention of the Getter method is different from other languages. Instead of `GetVar1()`, the getter of `Var1` should be the same as the variable named `Var1()`.
 
 ```go
 // getter of the `signedTok`
@@ -345,11 +355,12 @@ func (s *something) SetSignedTok(st string) {
 
 ### Unused Variables
 
-An unused variable may increase the complexity of the source code, it may confuse the developer hence introduce a new bug.
+An unused variable may increase the complexity of the source code.
+It may confuse the developer hence introducing a new bug.
 So please delete the unused variable.
 
 Generally, the unused variable should be reported during compilation, but in some cases, the compiler may not report an error.
-This is an example of the unused variable declaration that does not cause a compilation error.
+This is an example of an unused variable declaration that does not cause a compilation error.
 
 ```go
 // In this case, this example are not using `port` field, but dose not cause a compilation error.
@@ -378,8 +389,9 @@ Please use [internal/errgroup](https://github.com/vdaas/vald/blob/main/internal/
 
 ### Error checking
 
-All functions return `error` if the function can fail. It is very important to ensure the error checking is performed.
-To reduce human mistake that missing the error checking, please check the error using the following style:
+All functions return an `error` if the function can fail.
+It is very important to ensure that error checking is performed.
+To reduce human mistakes that miss the error checking, please check the error using the following style:
 
 <table>
 <thead><tr><th>Bad</th><th>Good</th></tr></thead>
@@ -430,41 +442,41 @@ if err != nil {
 
 ### Logging
 
-We define our own logging interface in [internal/log package](https://github.com/vdaas/vald/blob/main/internal/log). By default we use [glg](https://github.com/kpango/glg) to do the logging internally.
+We define our own logging interface in [internal/log package](https://github.com/vdaas/vald/blob/main/internal/log).
+By default, we use [glg](https://github.com/kpango/glg) to do the logging internally.
 We defined the following logging levels.
 
-| Log level | Description                                                                                                                                                                                                                                    | Example situation                                                                                                                                  | Example message                                                                                                                                                                                                        |
-|-----------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| DEBUG     | Fine-grained information for debugging and diagnostic the application.<br>Enable this logging level in production environment may cause performance issue.                                                                                     | An entry that will insert into the database with details.<br>An HTTP request and response that will send and receive from the server with details. | User 1 will insert into the database, name: Mary, Age: 19.<br>An HTTP request will send to http://example.com, with the body:<br>key1:value1, key2:value2.<br>The response of the HTTP request: body: HTTPResponseBody |
-| INFO      | Normal application behavior, to trace what is happening inside the application.                                                                                                                                                                | Inserted entry into the database without details. <br>HTTP requests sent to the server without details. <br>The server is started or stopped.      | User 1 is inserted into the database.<br>The HTTP request is sent to XXX server successfully.                                                                                                                          |
-| WARN      | The message that indicates the application may having the issue or occurring unusual situation,<br>but does not affect the application behavior.<br>Someone should investigate the warning later.                                              | Failed to insert entry into the the database, but success with the retry.<br>Failed to update the cache, and the cache is not important.           | User 1 is successfully inserted into the database with retry,<br>retry count: 1, error: ErrMsg1, retry count: 2, error: ErrMsg2                                                                                        |
-| ERROR     | The message that indicates the application is having a serious issue or,<br>represent the failure of some important going on in the application.<br>It does not cause the application to go down.<br>Someone must investigate the error later. | Failed to insert an entry into the database, with retry count exceeded.<br>Failed to update the cache, and the cache is not important.             | User 1 is failed to insert in the database, errors:<br>retry count: 1, error: ErrMsg1, retry count: 2, error: ErrMsg2, ....                                                                                            |
-| FATAL     | Message that indicate the application is corrupting or having serious issue.<br>The application will go down after logging the fatal error. <br>Someone must investigate and resolve the fatal as soon as possible.                            | Failed to init the required cache during the application start.                                                                                    |                                                                                                                                                                                                                        |
+| Log level | Description                                                                                                                                                                                                                                | Example situation                                                                                                                                 | Example message                                                                                                                                                                                                        |
+| --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| DEBUG     | Fine-grained information for debugging and diagnosing the application.<br>Enabling this logging level in the production environment may cause performance issues.                                                                          | An entry that will insert into the database with details.<br>An HTTP request and response will send and receive from the server with details.     | User 1 will insert into the database, name: Mary, Age: 19.<br>An HTTP request will send to http://example.com, with the body:<br>key1:value1, key2:value2.<br>The response of the HTTP request: body: HTTPResponseBody |
+| INFO      | Normal application behavior to trace what is happening inside the application.                                                                                                                                                             | Inserted entry into the database without details. <br>HTTP requests are sent to the server without details. <br>The server is started or stopped. | User 1 is inserted into the database.<br>The HTTP request is sent to XXX server successfully.                                                                                                                          |
+| WARN      | The message that indicates the application may have an issue or occurring unusual situation,<br>but does not affect the application behavior.<br>Someone should investigate the warning later.                                             | Failed to insert an entry into the database, but successful with the retry.<br>Failed to update the cache, and the cache is not important.        | User 1 is successfully inserted into the database with retry,<br>retry count: 1, error: ErrMsg1, retry count: 2, error: ErrMsg2                                                                                        |
+| ERROR     | The message indicates the application has a serious issue or,<br>represents the failure of some important thing going on in the application.<br>It does not cause the application to go down.<br>Someone must investigate the error later. | Failed to insert an entry into the database, with retry count exceeded.<br>Failed to update the cache, and the cache is not important.            | User 1 is failed to insert in the database with errors:<br>retry count: 1, error: ErrMsg1, retry count: 2, error: ErrMsg2, ....                                                                                        |
+| FATAL     | The message indicates the application is corrupting or has a serious issue.<br>The application will go down after logging the fatal error. <br>Someone must investigate and resolve the fatality as soon as possible.                      | Failed to init the required cache during the application start.                                                                                   |                                                                                                                                                                                                                        |
 
 ## Implementation
 
-This section includes some examples of general implementation which is widely used in Vald.
+This section includes some examples of general implementation widely used in Vald.
 The implementation may differ based on your use case.
 
 ### Functional Option
 
-In Vald, the functional option pattern is widely used in Vald.
+The functional option pattern is widely used in Vald.
 You can refer to [this section](#Struct-initialization) for more details of the use case of this pattern.
 
 We provide the following errors to describe the error to apply the option.
 
-| Error | Description |
-|----|----|
-| errors.ErrInvalidOption | Error to apply the option, and the error is ignorable and the warning log will be printed |
-| errors.ErrCriticalOption | Critical error to apply the option, the error cannot be ignored and should be handled |
-| errors.ErrIgnoredOption | The option is ignored, and the debug log will be printed |
+| Error                    | Description                                                                               |
+| ------------------------ | ----------------------------------------------------------------------------------------- |
+| errors.ErrInvalidOption  | Error to apply the option, and the error is ignorable and the warning log will be printed |
+| errors.ErrCriticalOption | Critical error to apply the option, the error cannot be ignored and should be handled     |
+| errors.ErrIgnoredOption  | The option is ignored, and the debug log will be printed                                  |
 
-We strongly recommend the following implementation to set the value using functional option.
+We strongly recommend the following implementation to set the value using the functional option.
 
 If an invalid value is set to the functional option, the `ErrInvalidOption` error defined in the [internal/errors/option.go](https://github.com/vdaas/vald/blob/main/internal/errors/option.go) should be returned.
 
 The name argument (the first argument) of the `ErrInvalidOption` error should be the same as the functional option name without the `With` prefix.
-
 
 For example, the functional option name `WithVersion` should return the error with the argument `name` as `version`.
 
@@ -516,7 +528,7 @@ func WithHosts(hosts ...string) Option {
 }
 ```
 
-If the functional option error is a critical error, we should return `ErrCriticalOption` error instead of `ErrInvalidOption`.
+If the functional option error is critical, we should return `ErrCriticalOption` error instead of `ErrInvalidOption`.
 
 ```go
 func WithConnectTimeout(dur string) Option {
@@ -535,9 +547,9 @@ func WithConnectTimeout(dur string) Option {
 }
 ```
 
-In the caller side, we need to handle the error returned from the functional option.
+We need to handle the error returned from the functional option on the caller side.
 
-If the option failed to apply, an error wrapped with `ErrOptionFailed` defined in the [internal/errors/errors.go](https://github.com/vdaas/vald/blob/main/internal/errors/errors.go) should be returned.
+If the option fails to apply, an error wrapped with `ErrOptionFailed` defined in the [internal/errors/errors.go](https://github.com/vdaas/vald/blob/main/internal/errors/errors.go) should be returned.
 
 We recommend the following implementation to apply the options.
 
@@ -565,10 +577,10 @@ In Vald, the functional option pattern is widely used when we create an object.
 
 When setting the value with the functional option, the value is validated inside the option method.
 
-However, we may forget to set the required fields when creating the object, hence the target object will remain nil.
-Therefore, we strongly suggest to validate the object during initialization.
+However, we may forget to set the required fields when creating the object; hence the target object will remain nil.
+Therefore, we strongly suggest validating the object during initialization.
 
-If we forgot to set the option method, an error will be returned so we can handle it properly.
+If we forget to set the options method, an error will be returned so we can handle it properly.
 
 ```go
 func func New(opts ...Option) (Server, error) {
@@ -597,10 +609,9 @@ func func New(opts ...Option) (Server, error) {
 
     return srv, nil
 }
-
 ```
 
-We also recommend that you use the default options and the unexported functional option to set the objects so that we cannot use it externally.
+We also recommend that you use the default options and the unexported functional option to set the objects so that we cannot use them externally.
 
 ```go
 var defaultOptions = []Option {
@@ -613,9 +624,11 @@ var defaultOptions = []Option {
 
 ## Program comments
 
-Program comments make easier to understand the source code. We suggest not to write many comments inside the source code unless the source code is very complicated and confusing; otherwise we should divide the source code into methods to keep the readability and usability of the source code.
+Program comments make it easier to understand the source code.
+We suggest not writing many comments inside the source code unless the source code is very complicated and confusing; otherwise, we should divide the source code into methods to keep readability and usability of the source code.
 
-Everyone should write the comments to all the public objects on your source code, like public packages, interface, structs, methods, and even public constant and variable. The godoc will be generated base on the comment of source code.
+Everyone should comment on all the public objects on your source code, like public packages, interfaces, structs, methods, and even public constants and variables.
+The `Godoc` will be generated based on the comment of the source code.
 
 ## Documentation
 
@@ -623,9 +636,9 @@ Documentation is generated from the program comments. Please refer to [Godoc](ht
 
 ## Internal packages
 
-Vald implements its internal package to extend and customize the functionality of the standard library and third-party library.
-We should use the internal package instead of standard libray to implement Vald.
-Please refer to [godoc](https://pkg.go.dev/github.com/vdaas/vald/internal) for the internal package document.
+Vald implements its internal package to extend and customize the standard library and third-party library functionality.
+We should use the internal package instead of the standard library to implement Vald.
+Please refer to [Godoc](https://pkg.go.dev/github.com/vdaas/vald/internal) for the internal package document.
 
 ## Dependency management and Build
 
@@ -633,7 +646,7 @@ We should use `go mod tidy` to manage the `go.mod` file in the project.
 
 ## Test
 
-The testing guideline has 3 important rules for the coding quality and readability:
+The testing guideline has three essential rules for coding quality and readability:
 
 1. Use Table-Driven-Test
 1. Keep code coverage over 85%
@@ -727,7 +740,7 @@ for _, tt := range tests {
 
 Table-Driven-Test makes it easy to add a new test case.
 
-We define the test case table as `map[string]func(*testing.T)test`, which is referred to the test case name and the test case implementation `tt`.
+We define the test case table as `map[string]func(*testing.T)test`, which is referred to as the test case name and the test case implementation `tt`.
 
 ```go
 tests := map[string]func(t *testing.T) test {
@@ -751,66 +764,67 @@ tests := map[string]func(t *testing.T) test {
 
 1. `args` structure
 
-    If there are two or more arguments to be passed to the method, create a `args` structure. If there is only one argument, do not create an `args` structure.
+   If two or more arguments are passed to the method, create an `args` structure. If there is only one argument, do not create an `args` structure.
 
-    ```go
-    type args struct {
-        host string
-        port string
-    }
-    ```
+   ```go
+   type args struct {
+       host string
+       port string
+   }
+   ```
 
 1. `field` structure
 
-    If you create an object and test its methods, create a `field` struct if the object has two or more fields to initialize. If there is only one field, do not create `field` structure.
+   If you create an object and test its methods, create a `field` struct if the object has two or more fields to initialize. If there is only one field, do not create a `field` structure.
 
-    ```go
-    type field struct {
-        host string
-        port string
-    }
-    ```
+   ```go
+   type field struct {
+       host string
+       port string
+   }
+   ```
 
 1. `test` structure
 
-    `test` structure has `args` and `field` structure and `checkFunc` function. If you need one of `args` and `field` structure, create `field` and `args` structure.
-    The `checkFunc` function is used to check the return value of the function being tested.
+   `test` structure has `args` and `field` structure and `checkFunc` function.
+   Create a field or an args structure if you need it.
+   The `checkFunc` function is used to check the return value of the function being tested.
 
-    ```go
-    type test struct {
-        args args
-        field field
-        checkFunc func(t *testing.T, err error)
-    }
-    ```
+   ```go
+   type test struct {
+       args args
+       field field
+       checkFunc func(t *testing.T, err error)
+   }
+   ```
 
 #### Inputs
 
 1. test case name
 
-    Test case name should be readable, meaningful and understandable easily. 
-    If you create a new test, the test name should be named based on the below naming templates.
+   Test case names should be readable, meaningful, and understandable easily.
+   If you create a new test, the test name should be named based on the below-naming templates
 
-    - Success cases:
-        - Start with `success` or `{verb} success` or `success {verb}`
-        - End with the condition `when {condition}` or `with {condition}
-        - e.g.: `set success when the value is default value`
-    - Fail/Error cases:
-        - Start with `fail` or `{verb} fail` or `fail {verb}`
-        - End with the condition `when {condition}` or `with {condition}
-        - e.g.: `fail option setting when value is invalid value(string)`
-    - Return cases:
-        - If the test case do not match with `Success` or `Fails`, please use `Return` pattern.
-        - Start with `Returns {Object}`
-        - End with the condition `when {condition}` or `with {condition}
-        - e.g.: `return invalid error when the input is invalid`
+   - Success cases:
+     - Start with `success` or `{verb} success` or `success {verb}`
+     - End with the condition `when {condition}` or `with {condition}
+     - e.g.: `set success when the value is default value`
+   - Fail/Error cases:
+     - Start with `fail` or `{verb} fail` or `fail {verb}`
+     - End with the condition `when {condition}` or `with {condition}
+     - e.g.: `fail option setting when value is invalid value(string)`
+   - Return cases:
+     - If the test case do not match with `Success` or `Fails`, please use `Return` pattern.
+     - Start with `Returns {Object}`
+     - End with the condition `when {condition}` or `with {condition}
+     - e.g.: `return invalid error when the input is invalid`
 
 1. testing arguments
 
-    Input arguments for testing should be a meaningful value.
-    We should test with more realistic value as user use, to produce more realistic testing result.
+   Input arguments for testing should be a meaningful value.
+   We should test with more realistic values to produce a more realistic testing result.
 
-    For example, to test the function with `host` argument, you should set your hostname (e.g. `vald.vdaas.com`) as the input value to the `host` argument.
+   For example, to test the function with `host` argument, you should set your hostname (e.g., `vald.vdaas.com`) as the input value to the `host` argument.
 
 Example:
 
@@ -883,129 +897,132 @@ If you use the following command to generate the missing test code.
 make gotests/gen
 ```
 
-After the command above executed, the file `*target*_test.go` will be generated for each Go source file.
+After executing the command above, the file `*target*_test.go` will be generated for each Go source file.
 The test code generated follows the table-driven test format.
 You can implement your test code under the `tests` variable generated following the table-driven test format.
 
 ### Customize test case
 
-We do not suggest to modify the generated code other than the `tests` variable, but in some cases, you may need to modify the generated code to meet your requirement, for example:
+We do not suggest modifying the generated code other than the `tests` variable
+Still, in some cases, you may need to change the generated code to meet your requirement, for example:
 
 1. init() function
 
-    init() function is executed automatically before the test is started.
-    You may need to initialize some singleton before your test cases are executed.
-    For example, Vald uses [glg](https://github.com/kpango/glg) library for logging by default, if the logger is not initialized before the test, the nil pointer error may be thrown during the test is running.
-    You may need to implement `init()` function like:
+   init() function is executed automatically before the test is started.
+   You may need to initialize some singleton before running your test cases.
+   For example, Vald uses [glg](https://github.com/kpango/glg) library for logging by default; if the logger is not initialized before the test, the nil pointer error may be thrown during the test is running.
+   You may need to implement `init()` function like:
 
-    ```go
-    func init() {
-        log.Init()
-    }
-    ```
+   ```go
+   func init() {
+       log.Init()
+   }
+   ```
 
-    And place it on the header of the test file.
+   And place it on the header of the test file.
 
 1. goleak option
 
-    By default, the generated test code will use [goleak](https://github.com/uber-go/goleak) library to test if there is any Goroutine leak.
-    Sometimes you may want to skip the detection, for example, Vald uses [fastime](https://github.com/kpango/fastime) library but the internal Goroutine is not closed due to the needs of the library. 
-    To skip the goleak detection we need to create the following variable to store the ignore function.
+   The generated test code will default use [goleak](https://github.com/uber-go/goleak) library to test if there is any Goroutine leak.
+   Sometimes you may want to skip the detection; for example, Vald uses [fastime](https://github.com/kpango/fastime) library, but the internal Goroutine is not closed due to the needs of the library.
+   To skip the goleak detection, we need to create the following variable to store the ignore function.
 
-    ```go
-    var (
-        // Goroutine leak is detected by `fastime`, but it should be ignored in the test because it is an external package.
-        goleakIgnoreOptions = []goleak.Option{
-            goleak.IgnoreTopFunction("github.com/kpango/fastime.(*fastime).StartTimerD.func1"),
-        }
-    )
-    ```
+   ```go
+   var (
+       // Goroutine leak is detected by `fastime`, but it should be ignored in the test because it is an external package.
+       goleakIgnoreOptions = []goleak.Option{
+           goleak.IgnoreTopFunction("github.com/kpango/fastime.(*fastime).StartTimerD.func1"),
+       }
+   )
+   ```
 
-    And modify the generated test code.
+   And modify the generated test code.
 
-    ```go
-    // before
-    for _, test := range tests {
-        t.Run(test.name, func(tt *testing.T) {
-            defer goleak.VerifyNone(tt)
+   ```go
+   // before
+   for _, test := range tests {
+       t.Run(test.name, func(tt *testing.T) {
+           defer goleak.VerifyNone(tt)
 
-    // after
-    for _, test := range tests {
-        t.Run(test.name, func(tt *testing.T) {
-            // modify the following line
-            defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
-    ```
+   // after
+   for _, test := range tests {
+       t.Run(test.name, func(tt *testing.T) {
+           // modify the following line
+           defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+   ```
 
 1. Defer function
 
-    By default the template provides `beforeFunc()` and `afterFunc()` to initialize and finalize the test case, but in some case, it may not support your use case.
-    For example `recover()` function only works in `defer()` function, if you need to use `recover()` function to handle the panic in your test code, you may need to implement your custom `defer()` function and change the generated test code.
+   By default, the template provides `beforeFunc()` and `afterFunc()` to initialize and finalize the test case, but in some cases, it may not support your use case.
+   For example, `recover()` function only works in `defer()` function.
+   If you need to use the `recover()` function to handle the panic in your test code, you may need to implement your custom `defer()` function and change the generated test code.
 
-    For example:
+   For example:
 
-    ```go
-    for _, test := range tests {
-      t.Run(test.name, func(tt *testing.T) {
-        defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+   ```go
+   for _, test := range tests {
+     t.Run(test.name, func(tt *testing.T) {
+       defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 
-        // insert your defer function here
-        defer func(w want, tt *testing.T) {
-            // implement your defer func logic
-            if err:= recover(); err != nil {
-                // check the panic
-            }
-        }(test.want, tt)
+       // insert your defer function here
+       defer func(w want, tt *testing.T) {
+           // implement your defer func logic
+           if err:= recover(); err != nil {
+               // check the panic
+           }
+       }(test.want, tt)
 
-        if test.beforeFunc != nil {
-            test.beforeFunc(test.args)
-        }
-        // generated test code
-    ```
+       if test.beforeFunc != nil {
+           test.beforeFunc(test.args)
+       }
+       // generated test code
+   ```
 
 1. Unused fields
 
-    By default, the template provides `fields` structure to initialize object of the test target.
-    But in some cases, not all `fields` are needed, so please delete the unnecessary fields.
-    For example, the following struct and the corresponding function:
+   By default, the template provides the `fields` structure to initialize an object of the test target.
+   But in some cases, not all `fields` are needed, so please delete the unnecessary fields.
+   For example, the following struct and the corresponding function:
 
-    ```go
-    type server struct {
-        addr string
-        port int
-    }
-    func (s *server) Addr() string {
-        return s.addr
-    }
-    ```
+   ```go
+   type server struct {
+       addr string
+       port int
+   }
+   func (s *server) Addr() string {
+       return s.addr
+   }
+   ```
 
-    And the generated test code is:
+   And the generated test code is:
 
-    ```go
-    func Test_server_Addr(t *testing.T) {
-        type fields struct {
-            addr string
-            port int
-        }
-        type want struct {
-            // generated test code
-    ```
+   ```go
+   func Test_server_Addr(t *testing.T) {
+       type fields struct {
+           addr string
+           port int
+       }
+       type want struct {
+           // generated test code
+   ```
 
-    Since the `port` variable is not used in this test case, you can delete the `port` definition in the test case.
+   Since the `port` variable is not used in this test case, you can delete the `port` definition in the test case.
 
-    ```go
-    func Test_server_Addr(t *testing.T) {
-        type fields struct {
-            addr string
-            // port int   <-- this line should be deleted
-        }
-        type want struct {
-            // generated test code
-    ```
+   ```go
+   func Test_server_Addr(t *testing.T) {
+       type fields struct {
+           addr string
+           // port int   <-- this line should be deleted
+       }
+       type want struct {
+           // generated test code
+   ```
+
 ### Using Mock
 
-In Vald, we use a lot of external libraries, there are a lot of dependencies between libraries.
+In Vald, we use a lot of external libraries, and there are a lot of dependencies between libraries.
 
-As a result, due to the more complexity of the test, it has become more difficult to determine whether or not to mock dependencies.
+As a result, due to the complexity, it has become hard to determine whether or not to mock dependencies.
 
 #### Condition
 
@@ -1013,18 +1030,18 @@ When dependencies have the following factor, you can decide to mock the dependen
 
 - Incomplete implementation
 - I/O
-  - e.g. Network access, disk operation, etc.
+  - e.g., Network access, disk operation, etc.
 - Hardware dependent
-  - e.g. CPU, Memory usage, disk I/O, etc.
-- Difficult to create error of dependencies
+  - e.g., CPU, Memory usage, disk I/O, etc.
+- Hard to create the error of dependencies
 - Difficult to initialize
-  - e.g. Random number and time, file I/O initialization, environment dependent, etc.
-- Test result may change in each runtime
-  - e.g. Only test result may change in each runtime, System call inside implementation, etc.
+  - e.g., Random number and time, file I/O initialization, environment dependent, etc.
+- The test result may change in each runtime
+  - e.g., the only test result may change in each runtime, System call inside implementation, etc.
 
 #### Risk
 
-Before applying mock to the object, you should be aware of the following risks.
+Before applying mock to the object, you should understand the following risks.
 
 - We **do not** know whether the dependencies are correctly implemented or not.
 - We cannot notice the changes in dependencies.
@@ -1043,7 +1060,7 @@ For example, we decided to mock the following implementation `Encoder`.
 package json
 
 type Encoder interface {
-    Encode(interface{}) ([]byte, error) 
+    Encode(interface{}) ([]byte, error)
 }
 ```
 

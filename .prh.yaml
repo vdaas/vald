@@ -18,9 +18,12 @@ version: 1
 # index: besteffort
 # index: burstable
 # index: clojure
+# index: configmap
 # index: docker
+# index: fashion-mnist
 # index: flamegraph
 # index: go
+# index: godoc
 # index: grafana
 # index: guaranteed
 # index: helm
@@ -66,6 +69,10 @@ rules:
         to: burstable
       - from: Burstable
         to: Burstable
+  - pattern: configMap
+    expected: ConfigMap
+    options:
+      wordBoundary: true
   - pattern: clojure
     expected: Clojure
     options:
@@ -74,6 +81,15 @@ rules:
     expected: Docker
     options:
       wordBoundary: true
+  - pattern: fashion-mnist
+    expected: Fashion-MNIST
+    options:
+      wordBoundary: true
+    specs:
+      - from: fashion-mnist-784
+        to: fashion-mnist-784
+      - from: fashion-mnist
+        to: Fashion-MNIST
   - pattern: flamegraph
     expected: Flamegraph
     options:
@@ -96,6 +112,10 @@ rules:
         to: Go
       - from: algorithm
         to: algorithm
+  - pattern: godoc
+    expected: Godoc
+    options:
+      wordBoundary: true
   - pattern: grafana
     expected: Grafana
     options:
