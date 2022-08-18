@@ -82,9 +82,7 @@ Using the `Helm` command for the deployment of the Vald cluster, the upgrading s
 1. Edit `values.yaml`
     - We recommend setting a specific version as an image tag.
 
-        ```bash
-        vim values.yaml
-        ---
+        ```yaml
         defaults:
         ...
           image:
@@ -121,9 +119,7 @@ The upgrading steps are below if you use `vald-helm-operator` for the deployment
 1. Edit `vr.yaml`
     - We recommend setting a specific version as an image tag.
 
-        ```bash
-        vim vr.yaml
-        ---
+        ```yaml
         ...
         spec:
           defaults:
