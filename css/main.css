@@ -761,37 +761,49 @@ details > summary  {
   overflow-wrap: break-word;
 }
 
+
 .markdown pre code{
   padding:0;
   font-size: 100%;
 }
 
-.markdown table{
-  display: block;
-  overflow: auto;
-  white-space: nowrap;
-  background: #f8f8f8;
-  margin-top: 32px;
-  border-spacing: 0 30px 0 0;
+.markdown code.language-rpc{
+  background-color: rgba(0, 0, 0, 0);
 }
+
+
+.markdown table{
+  width: 100%;
+  margin-bottom: 32px;
+  white-space: nowrap;
+  overflow: auto;
+  background: #f8f8f8;
+  text-align: left;
+  border-spacing: 0 30px 0 0;
+  display: block;
+}
+
 
 .markdown tbody {
   border-collapse: collapse;
 }
+
 .markdown tr:hover {
   background: #eee;
 }
 .markdown tr:not(:first-child) {
+
   th, td {
     border-top: solid 1px #ddd;
   }
+
 }
 
 .markdown th, .markdown td {
-  text-align: left;
   padding: 10px 45px 10px 10px;
 }
 .markdown thead th {
+  padding: 10px;
   border-bottom: solid 1px #ccc;
 }
 
@@ -980,6 +992,7 @@ details > summary  {
   .page p.index {
     display: none;
   }
+
 }
 
 @media screen and (min-width: 1440px) {
@@ -1139,6 +1152,9 @@ details > summary  {
   }
   .markdown tr:hover {
     background: #222222;
+  }
+  .markdown code {
+    background-color: rgba(40, 40, 40, 1);
   }
 
   @media screen and (min-width: 768px) {

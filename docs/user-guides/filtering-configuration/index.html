@@ -1,0 +1,139 @@
+<!doctype html><html><head><script async src="https://www.googletagmanager.com/gtag/js?id=UA-164223416-1"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag("js",new Date),gtag("config","UA-164223416-1")</script><link rel=canonical href=https://vald.vdaas.org><meta charset=utf-8><meta name=viewport content="width=device-width"><meta name=robots content="index, follow"><title>Vald | Filtering Configuration</title><meta name=description content="Vald is high scalable distributed high-speed approximate nearest neighbor search engine" }><meta name=format-detection content="telephone=no"><meta http-equiv=x-ua-compatible content="IE=edge"><meta property="og:type" content="article"><meta property="og:title" content="Vald | Filtering Configuration"><meta property="og:description" content="Vald is high scalable distributed high-speed approximate nearest neighbor search engine"><meta property="og:url" content="https://vald.vdaas.org/docs/user-guides/filtering-configuration/"><meta property="og:image" content="https://vald.vdaas.org/images/ogp_vald.png"><meta property="og:site_name" content="vald"><meta property="og:locale" content="en_US"><meta property="fb:app_id" content="615732422350002"><meta name=twitter:site content="@vdaas_vald"><meta name=twitter:card content="app"><link rel="shortcut icon" href=https://vald.vdaas.org/favicon.ico><link rel=stylesheet type=text/css href=/css/style.min.css><link rel=stylesheet type=text/css href=/css/header.min.css><link rel=stylesheet type=text/css href=/css/footer.min.css><link rel=stylesheet type=text/css href=/css/main.min.css><script type=text/javascript src=/js/script.min.js defer></script></head><body><header class=header id=header><div class=header__content><nav class="header__nav cf"><a href=https://vald.vdaas.org class=header-nav__link><picture><source srcset=https://vald.vdaas.org/images/vald_white.svg media="(prefers-color-scheme: dark)" class=header-nav__image><img src=https://vald.vdaas.org/images/vald_color_1.svg alt class=header-nav__image></picture></a>
+<a class=header-nav__icon id=nav-btn><span class=header-nav__button></span></a><ul class=header__list id=menu><li class=header__item><a href=/docs/overview/about-vald class=header__link>About</a></li><li class=header__item><a href=/docs/tutorial/get-started class=header__link>Get Started</a></li><li class=header__item><a href=/docs/user-guides/sdks class=header__link>SDKs</a></li><li class=header__item><a href=/docs class=header__link>Docs</a></li><li class=header__item><a href=https://vdaas-vald.medium.com/ target=_blank class=header__link>Blog<br></a></li><li class=header__item><details class=header__version id=version_details><summary class=version__current id=current_version>v1.5.6</summary><ul class=version__list><il class=version__item><a href=javascript:void(0) class="version__link version__link--latest">v1.5.6</a></il>
+<il class=version__item><a href=javascript:void(0) class=version__link>v1.5</a></il>
+<il class=version__item><a href=javascript:void(0) class=version__link>v1.4</a></il>
+<il class=version__item><a href=javascript:void(0) class=version__link>v1.3</a></il>
+<il class=version__item><a href=javascript:void(0) class=version__link>v1.2</a></il>
+<il class=version__item><a href=javascript:void(0) class=version__link>v1.1</a></il>
+<il class=version__item><a href=javascript:void(0) class=version__link>v1.0</a></il></ul></details></li><li class=header__item><a class="header__item header__icon" href=https://github.com/vdaas/vald><picture><source srcset=https://vald.vdaas.org/images/logo_github_white.svg media="(prefers-color-scheme: dark)" width=24 height=24><img src=https://vald.vdaas.org/images/logo_github_black.svg alt=github></picture></a></li></ul></nav></div></header><main role=main><div class=single><aside class=page><nav><ul id=list-body><li class=withchild id=cat_Overview>Overview<ul><li class=index><a href=/docs/overview/about-vald/>About Vald</a></li><li class=index><a href=/docs/overview/architecture/>Architecture</a></li><li class=index><a href=/docs/overview/data-flow/>Data Flow</a></li></ul></li><li class=withchild id=cat_Component>Component<ul><li class=index><a href=/docs/overview/component/agent/>Agent</a></li><li class=index><a href=/docs/overview/component/lb-gateway/>Lb Gateway</a></li><li class=index><a href=/docs/overview/component/filter-gateway/>Filter Gateway</a></li><li class=index><a href=/docs/overview/component/discoverer/>Discoverer</a></li><li class=index><a href=/docs/overview/component/index-manager/>Index Manager</a></li></ul></li><li class=withchild id=cat_Tutorial>Tutorial<ul><li class=index><a href=/docs/tutorial/get-started/>Get Started</a></li><li class=index><a href=/docs/tutorial/vald-agent-standalone-on-k8s/>Vald Agent Standalone on K8s</a></li><li class=index><a href=/docs/tutorial/vald-agent-standalone-on-docker/>Vald Agent Standalone on Docker</a></li></ul></li><li class=withchild id=cat_Usecase>Usecase<ul><li class=index><a href=/docs/usecase/usage-example/>Usage Example</a></li></ul></li><li class=withchild id="cat_User Guides">User Guides<ul><li class=index><a href=/docs/user-guides/configuration/>Configuration</a></li><li class=view><a href=/docs/user-guides/filtering-configuration/>Filtering Configuration</a></li><li class=index><a href=/docs/user-guides/deployment/>Deployment</a></li><li class=index><a href=/docs/user-guides/operations/>Operations</a></li><li class=index><a href=/docs/user-guides/sdks/>Sdks</a></li><li class=index><a href=/docs/user-guides/search-config/>Search Config</a></li></ul></li><li class=withchild id=cat_Performance>Performance<ul><li class=index><a href=/docs/performance/benchmark/>Benchmark</a></li><li class=index><a href=/docs/performance/loadtest/>Loadtest</a></li></ul></li><li class=withchild id=cat_Api>API<ul><li class=index><a href=/docs/api/insert/>Insert</a></li><li class=index><a href=/docs/api/update/>Update</a></li><li class=index><a href=/docs/api/upsert/>Upsert</a></li><li class=index><a href=/docs/api/search/>Search</a></li><li class=index><a href=/docs/api/remove/>Remove</a></li><li class=index><a href=/docs/api/object/>Object</a></li><li class=index><a href=/docs/api/build_proto/>Build Proto</a></li><li class=index><a href=/docs/api/status/>Status Code</a></li></ul></li><li class=withchild id=cat_Troubleshooting>Troubleshooting<ul><li class=index><a href=/docs/troubleshooting/provisioning/>Provisioning</a></li><li class=index><a href=/docs/troubleshooting/client-side/>Client Side</a></li></ul></li><li class=withchild id=cat_Contributing>Contributing<ul><li class=index><a href=/docs/contributing/contributing-guide/>Contributing Guide</a></li><li class=index><a href=/docs/contributing/coding-style/>Coding Style</a></li><li class=index><a href=/docs/contributing/unit-test-guideline/>Unit Test Guideline</a></li></ul></li><li class=withchild id=cat_Support>Support<ul><li class=index><a href=/docs/support/contacts/>Contacts</a></li><li class=index><a href=/docs/support/faq/>FAQ</a></li></ul></li><li class=withchild id=cat_Release>Release<ul></ul></li></ul></nav></aside><div class=content><div class=markdown id=markdown><h1 id=filter-configuration>Filter Configuration</h1><p>This page describes how to enable filtering features on the Vald cluster.</p><p>Before using the filtering functions, please check <a href=/docs/overview/component/filter-gatewya>the Vald Filter Gateway document</a> first for what you can do.</p><h2 id=requirement>Requirement</h2><p>To use any filtering functions with the Vald cluster, you must deploy the ingress and/or egress filter component before deploying the Vald cluster.</p><p>The ingress filter can be used for, e.g., converting the object data to the vector, some filtering query vector, as pre-processing.</p><p>The egress filter can be used for, e.g., filtering search result from <code>vald-lb-gateway</code> by the distance, categories, or any other condition, as post-processing.</p><p>The filter component can be deployed anywhere, but it must be able to communicate with the Vald Filter gateway.
+Every filter component should meet Vald&rsquo;s filter gRPC interface.</p><ul><li><p>The ingress RPC definition</p><pre tabindex=0><code class=language-rpc data-lang=rpc>service Filter {
+  // Represent the RPC to generate the vector.
+  rpc GenVector(payload.v1.Object.Blob) returns (payload.v1.Object.Vector) {
+    option (google.api.http) = {
+      post : &#34;/filter/ingress/object&#34;
+      body : &#34;*&#34;
+    };
+  }
+  // Represent the RPC to filter the vector.
+  rpc FilterVector(payload.v1.Object.Vector)
+      returns (payload.v1.Object.Vector) {
+    option (google.api.http) = {
+      post : &#34;/filter/ingress/vector&#34;
+      body : &#34;*&#34;
+    };
+  }
+}
+</code></pre></li><li><p>The egress RPC definition</p><pre tabindex=0><code class=language-rpc data-lang=rpc>service Filter {
+  // Represent the RPC to filter the distance.
+  rpc FilterDistance(payload.v1.Object.Distance)
+      returns (payload.v1.Object.Distance) {
+    option (google.api.http) = {
+      post : &#34;/filter/egress/distance&#34;
+      body : &#34;*&#34;
+    };
+  }
+  // Represent the RPC to filter the vector.
+  rpc FilterVector(payload.v1.Object.Vector)
+      returns (payload.v1.Object.Vector) {
+    option (google.api.http) = {
+      post : &#34;/filter/egress/vector&#34;
+      body : &#34;*&#34;
+    };
+  }
+}
+</code></pre></li></ul><p>For more details, please refer to <a href=/docs/overview/component/filter-gatewya>the Vald Filter Gateway document</a></p><h3 id=official-filter-components>Official filter components</h3><p>Vald provides the two types of ingress filter components.
+These will help you to implement your original filter component.</p><p>Please refer to:</p><ul><li><a href=https://github.com/vdaas/vald-onnx-ingress-filter>Vald ONNX Ingress Filter</a></li><li><a href=https://github.com/vdaas/vald-tensorflow-ingress-filter>Vald Tensorflow Ingress Filter</a></li></ul><h2 id=configuration>Configuration</h2><p>It is easy to enable the filtering feature.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-yaml data-lang=yaml><span style=display:flex><span>...
+</span></span><span style=display:flex><span><span style=color:#f92672>gateway</span>:
+</span></span><span style=display:flex><span>...
+</span></span><span style=display:flex><span>    <span style=color:#f92672>filter</span>:
+</span></span><span style=display:flex><span>        <span style=color:#f92672>enabled</span>: <span style=color:#66d9ef>true</span>
+</span></span><span style=display:flex><span>...
+</span></span></code></pre></div><p>The Vald Filter gateway connects to the filter component specified in the users&rsquo; request.
+So, you can use the filtering function only by setting <code>gateway.filter.enabled=true</code> in your Helm chart.</p><p>If you want to make more detailed settings, please set the following parameters.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-yaml data-lang=yaml><span style=display:flex><span><span style=color:#f92672>gateway</span>:
+</span></span><span style=display:flex><span>  <span style=color:#f92672>filter</span>:
+</span></span><span style=display:flex><span>  <span style=color:#ae81ff>...</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>gateway_config</span>:
+</span></span><span style=display:flex><span>    <span style=color:#ae81ff>...</span>
+</span></span><span style=display:flex><span>      <span style=color:#75715e># gRPC client config for ingress filter</span>
+</span></span><span style=display:flex><span>      <span style=color:#f92672>ingress_filter</span>:
+</span></span><span style=display:flex><span>        <span style=color:#75715e># gRPC client for ingress filter (overrides defaults.grpc.client)</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>client</span>: {}
+</span></span><span style=display:flex><span>        <span style=color:#75715e># object ingress vectorize filter targets</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>vectorizer</span>: <span style=color:#e6db74>&#34;&#34;</span>
+</span></span><span style=display:flex><span>        <span style=color:#75715e># search ingress vector filter targets</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>search_filters</span>: []
+</span></span><span style=display:flex><span>        <span style=color:#75715e># insert ingress vector filter targets</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>insert_filters</span>: []
+</span></span><span style=display:flex><span>        <span style=color:#75715e># update ingress vector filter targets</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>update_filters</span>: []
+</span></span><span style=display:flex><span>        <span style=color:#75715e># upsert ingress vector filter targets</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>upsert_filters</span>: []
+</span></span><span style=display:flex><span>      <span style=color:#75715e># gRPC client config for egress filter</span>
+</span></span><span style=display:flex><span>      <span style=color:#f92672>egress_filter</span>:
+</span></span><span style=display:flex><span>        <span style=color:#75715e># gRPC client config for egress filter (overrides defaults.grpc.client)</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>client</span>: {}
+</span></span><span style=display:flex><span>        <span style=color:#75715e># object egress vector filter targets</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>object_filters</span>: []
+</span></span><span style=display:flex><span>        <span style=color:#75715e># distance egress vector filter targets</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>distance_filters</span>: []
+</span></span></code></pre></div><p>Those parameters help the Vald filter gateway connect the filter component before getting the users&rsquo; requests.</p><h2 id=client-configuration>Client configuration</h2><p>To use the filter function, you must make settings on the client side because the Vald Filter gateway does not automatically create a connection with the filter component.</p><p>These sample code describes how to use in client-side when you send the request with the blob data and want to convert it to a vector using the filter component.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-go data-lang=go><span style=display:flex><span><span style=color:#f92672>package</span> <span style=color:#a6e22e>main</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#f92672>import</span> (
+</span></span><span style=display:flex><span>	<span style=color:#e6db74>&#34;context&#34;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>	<span style=color:#e6db74>&#34;github.com/vdaas/vald-client-go/v1/payload&#34;</span>
+</span></span><span style=display:flex><span>	<span style=color:#e6db74>&#34;github.com/vdaas/vald-client-go/v1/vald&#34;</span>
+</span></span><span style=display:flex><span>	<span style=color:#e6db74>&#34;github.com/vdaas/vald/internal/log&#34;</span>
+</span></span><span style=display:flex><span>	<span style=color:#e6db74>&#34;google.golang.org/grpc&#34;</span>
+</span></span><span style=display:flex><span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> <span style=color:#a6e22e>main</span>() {
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// address of the Vald cluster ingress.
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#a6e22e>grpcServerAddr</span> <span style=color:#f92672>:=</span> <span style=color:#e6db74>&#34;vald-ingress-host&#34;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// ingress filter host and port.
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#66d9ef>const</span> <span style=color:#a6e22e>ingressHost</span> = <span style=color:#e6db74>&#34;vald-onnx-ingress-filter&#34;</span>
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>const</span> <span style=color:#a6e22e>ingressPort</span> = <span style=color:#ae81ff>8081</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// object data and its id.
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#66d9ef>const</span> <span style=color:#a6e22e>id</span> = <span style=color:#e6db74>&#34;object-id&#34;</span>
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>var</span> <span style=color:#a6e22e>object</span> []<span style=color:#66d9ef>byte</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// connect to the Vald cluster
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#a6e22e>ctx</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>context</span>.<span style=color:#a6e22e>Background</span>()
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>conn</span>, <span style=color:#a6e22e>err</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>grpc</span>.<span style=color:#a6e22e>DialContext</span>(<span style=color:#a6e22e>ctx</span>, <span style=color:#a6e22e>grpcServerAddr</span>, <span style=color:#a6e22e>grpc</span>.<span style=color:#a6e22e>WithInsecure</span>())
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>if</span> <span style=color:#a6e22e>err</span> <span style=color:#f92672>!=</span> <span style=color:#66d9ef>nil</span> {
+</span></span><span style=display:flex><span>		<span style=color:#a6e22e>log</span>.<span style=color:#a6e22e>Error</span>(<span style=color:#a6e22e>err</span>)
+</span></span><span style=display:flex><span>		<span style=color:#66d9ef>return</span>
+</span></span><span style=display:flex><span>	}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// create client
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#a6e22e>client</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>vald</span>.<span style=color:#a6e22e>NewFilterClient</span>(<span style=color:#a6e22e>conn</span>)
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// config for insert request
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#a6e22e>icfg</span> <span style=color:#f92672>:=</span> <span style=color:#f92672>&amp;</span><span style=color:#a6e22e>payload</span>.<span style=color:#a6e22e>Insert_ObjectRequest</span>{
+</span></span><span style=display:flex><span>		<span style=color:#75715e>// object data you&#39;d like to insert into the Vald cluster
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>		<span style=color:#a6e22e>Object</span>: <span style=color:#f92672>&amp;</span><span style=color:#a6e22e>payload</span>.<span style=color:#a6e22e>Object_Blob</span>{
+</span></span><span style=display:flex><span>			<span style=color:#a6e22e>Id</span>: <span style=color:#a6e22e>id</span>,
+</span></span><span style=display:flex><span>			<span style=color:#a6e22e>Object</span>: <span style=color:#a6e22e>object</span>,
+</span></span><span style=display:flex><span>		},
+</span></span><span style=display:flex><span>		<span style=color:#75715e>// insert config
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>		<span style=color:#a6e22e>Config</span>: <span style=color:#f92672>&amp;</span><span style=color:#a6e22e>payload</span>.<span style=color:#a6e22e>Insert_Config</span>{
+</span></span><span style=display:flex><span>			<span style=color:#a6e22e>SkipStrictExistCheck</span>: <span style=color:#66d9ef>false</span>,
+</span></span><span style=display:flex><span>		},
+</span></span><span style=display:flex><span>		<span style=color:#75715e>// specify vectorizer component location
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>		<span style=color:#a6e22e>Vectorizer</span>: <span style=color:#f92672>&amp;</span><span style=color:#a6e22e>payload</span>.<span style=color:#a6e22e>Filter_Target</span>{
+</span></span><span style=display:flex><span>			<span style=color:#a6e22e>Host</span>: <span style=color:#a6e22e>ingressHost</span>,
+</span></span><span style=display:flex><span>			<span style=color:#a6e22e>Port</span>: <span style=color:#a6e22e>ingressPort</span>,
+</span></span><span style=display:flex><span>		},
+</span></span><span style=display:flex><span>	}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// send insertObject request
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#a6e22e>res</span>, <span style=color:#a6e22e>err</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>client</span>.<span style=color:#a6e22e>InsertObject</span>(<span style=color:#a6e22e>ctx</span>, <span style=color:#a6e22e>icfg</span>)
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>if</span> <span style=color:#a6e22e>err</span> <span style=color:#f92672>!=</span> <span style=color:#66d9ef>nil</span> {
+</span></span><span style=display:flex><span>		<span style=color:#a6e22e>log</span>.<span style=color:#a6e22e>Error</span>(<span style=color:#a6e22e>err</span>)
+</span></span><span style=display:flex><span>		<span style=color:#66d9ef>return</span>
+</span></span><span style=display:flex><span>	}
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>log</span>.<span style=color:#a6e22e>Infof</span>(<span style=color:#e6db74>&#34;location: %#v&#34;</span>, <span style=color:#a6e22e>res</span>.<span style=color:#a6e22e>Ips</span>)
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><p>If you are the Vald cluster operator and not a client user, please share this information with client users.</p></div><aside class=current id=current><button class=menu><span class=dot></span></button><nav id=TableOfContents><ul><li><a href=#requirement>Requirement</a><ul><li><a href=#official-filter-components>Official filter components</a></li></ul></li><li><a href=#configuration>Configuration</a></li><li><a href=#client-configuration>Client configuration</a></li></ul></nav></aside></div></div></main><footer class=footer><div class="footer__content cf"><ul class=footer__list><li class=footer__item><a href=/docs/overview/about-vald class=footer__link>About<br></a></li><li class=footer__item><a href=/docs/tutorial/get-started class=footer__link>Get Started<br></a></li><li class=footer__item><a href=/docs/user-guides/sdks class=footer__link>SDKs</a></li><li class=footer__item><a href=/docs class=footer__link>Docs</a></li><li class=footer__item><a href=https://vdaas-vald.medium.com/ target=_blank class=footer__link>Blog<br></a></li><li class=footer__item><a class="footer__item footer__icon" href=https://github.com/vdaas/vald><picture><source srcset=https://vald.vdaas.org/images/logo_github_white.svg media="(prefers-color-scheme: dark)" class=icon__image width=24 height=24><img src=https://vald.vdaas.org/images/logo_github_black.svg alt=github class=icon__image></picture></a></li></ul></div><p class=footer__copylight>©2019-2022 vald.vdaas.org Vald team</p></footer></body></html>
