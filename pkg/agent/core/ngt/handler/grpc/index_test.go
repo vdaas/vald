@@ -32,6 +32,7 @@ import (
 	"github.com/vdaas/vald/internal/test/comparator"
 	"github.com/vdaas/vald/internal/test/data/request"
 	"github.com/vdaas/vald/internal/test/data/vector"
+	"github.com/vdaas/vald/internal/test/goleak"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/service"
 )
 
@@ -508,39 +509,125 @@ func Test_server_CreateIndex(t *testing.T) {
 func Test_server_SaveIndex(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		ctx context.Context
 		in1 *payload.Empty
 	}
 	type fields struct {
-		name              string
-		ip                string
-		ngt               service.NGT
-		eg                errgroup.Group
-		streamConcurrency int
+		srvOpts   []Option
+		svcCfg    *config.NGT
+		svcOpts   []service.Option
+		indexPath string // index path for svcOpts
 	}
 	type want struct {
 		wantRes *payload.Empty
-		err     error
+		errCode codes.Code
 	}
 	type test struct {
 		name       string
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, *payload.Empty, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		checkFunc  func(test, context.Context, Server, service.NGT, want, *payload.Empty, error) error
+		beforeFunc func(*testing.T, context.Context, Server, service.NGT)
+		afterFunc  func(test)
 	}
-	defaultCheckFunc := func(w want, gotRes *payload.Empty, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+	defaultCheckFunc := func(test test, ctx context.Context, s Server, n service.NGT, w want, gotRes *payload.Empty, err error) error {
+		if err != nil {
+			st, ok := status.FromError(err)
+			if !ok {
+				return errors.Errorf("got error cannot convert to Status: \"%#v\"", err)
+			}
+			if st.Code() != w.errCode {
+				return errors.Errorf("got code: \"%#v\",\n\t\t\t\twant code: \"%#v\"", st.Code(), w.errCode)
+			}
 		}
+
 		if !reflect.DeepEqual(gotRes, w.wantRes) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
 		}
 		return nil
 	}
 
+	// common variables for test
+	const (
+		name = "vald-agent-ngt-1" // agent name
+		dim  = 3                  // vector dimension
+		id   = "uuid-1"           // id for getObject request
+	)
+	var (
+		ip = net.LoadLocalIP() // agent ip address
+
+		// default NGT configuration for test
+		defaultSvcCfg = &config.NGT{
+			Dimension:    dim,
+			DistanceType: ngt.Angle.String(),
+			ObjectType:   ngt.Float.String(),
+			KVSDB:        &config.KVSDB{},
+			VQueue:       &config.VQueue{},
+		}
+		defaultSrvOpts = []Option{
+			WithName(name),
+			WithIP(ip),
+		}
+		defaultSvcOpts = []service.Option{
+			service.WithEnableInMemoryMode(false),
+		}
+
+		emptyPayload = &payload.Empty{}
+	)
+
+	mkdirTemp := func() string {
+		d, err := os.MkdirTemp("", "")
+		if err != nil {
+			t.Error(err)
+		}
+		return d
+	}
+	defaultAfterFunc := func(test test) {
+		os.RemoveAll(test.fields.indexPath)
+	}
+	checkBackupFolder := func(fields fields, ctx context.Context, wantVecs []*payload.Insert_Request) error {
+		// create another server instance to check if any vector is inserted and saved to the backup dir
+		eg, _ := errgroup.New(ctx)
+		ngt, err := service.New(fields.svcCfg, append(fields.svcOpts,
+			service.WithErrGroup(eg),
+			service.WithIndexPath(fields.indexPath))...)
+		if err != nil {
+			return errors.Errorf("failed to init ngt service, error = %v", err)
+		}
+		srv, err := New(append(fields.srvOpts, WithNGT(ngt), WithErrGroup(eg))...)
+		if err != nil {
+			return errors.Errorf("failed to init server, error= %v", err)
+		}
+
+		// get object and check if the vector is equals to inserted one
+		for _, ir := range wantVecs {
+			obj, err := srv.GetObject(ctx, &payload.Object_VectorRequest{
+				Id: &payload.Object_ID{
+					Id: ir.GetVector().GetId(),
+				},
+			})
+			if err != nil {
+				return err
+			}
+			if !reflect.DeepEqual(obj, ir.GetVector()) {
+				return errors.Errorf("vector is not match, got: %v, want: %v", obj, ir)
+			}
+		}
+
+		// check total index count is same
+		ii, err := srv.IndexInfo(ctx, emptyPayload)
+		if err != nil {
+			return err
+		}
+
+		if !reflect.DeepEqual(ii, &payload.Info_Index_Count{
+			Stored: uint32(len(wantVecs)),
+		}) {
+			return errors.Errorf("stored index count not correct, got: %v", ii)
+		}
+
+		return nil
+	}
 	/*
 		- Equivalence Class Testing (with copy on write disable)
 			- case 1.1: success to save 1 inserted index
@@ -558,73 +645,428 @@ func Test_server_SaveIndex(t *testing.T) {
 			- case 2.2: success to save 100 inserted index with copy-on-write enabled
 	*/
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx: nil,
-		           in1: nil,
-		       },
-		       fields: fields {
-		           name: "",
-		           ip: "",
-		           ngt: nil,
-		           eg: nil,
-		           streamConcurrency: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
+		func() test {
+			irs, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, 1, dim, nil)
+			if err != nil {
+				t.Error(err)
+			}
+			ir := irs.Requests[0]
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ctx: nil,
-		           in1: nil,
-		           },
-		           fields: fields {
-		           name: "",
-		           ip: "",
-		           ngt: nil,
-		           eg: nil,
-		           streamConcurrency: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+			return test{
+				name: "Equivalence Class Testing case 1.1: success to save 1 inserted index",
+				args: args{
+					in1: emptyPayload,
+				},
+				fields: fields{
+					srvOpts:   defaultSrvOpts,
+					svcCfg:    defaultSvcCfg,
+					svcOpts:   defaultSvcOpts,
+					indexPath: mkdirTemp(),
+				},
+				beforeFunc: func(t *testing.T, ctx context.Context, s Server, n service.NGT) {
+					if _, err := s.Insert(ctx, ir); err != nil {
+						t.Error(err)
+					}
+					// we need to create index before saving to store the indexed vector
+					if _, err := s.CreateIndex(ctx, &payload.Control_CreateIndexRequest{
+						PoolSize: 1,
+					}); err != nil {
+						t.Error(err)
+					}
+				},
+				want: want{
+					wantRes: emptyPayload,
+				},
+				checkFunc: func(test test, ctx context.Context, s Server, n service.NGT, w want, e *payload.Empty, err error) error {
+					if err := defaultCheckFunc(test, ctx, s, n, w, e, err); err != nil {
+						return err
+					}
+					if err := checkBackupFolder(test.fields, ctx, irs.Requests); err != nil {
+						return err
+					}
+
+					return nil
+				},
+			}
+		}(),
+		func() test {
+			irs, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, 100, dim, nil)
+			if err != nil {
+				t.Error(err)
+			}
+
+			return test{
+				name: "Equivalence Class Testing case 1.2: success to save 100 inserted index",
+				args: args{
+					in1: emptyPayload,
+				},
+				fields: fields{
+					srvOpts:   defaultSrvOpts,
+					svcCfg:    defaultSvcCfg,
+					svcOpts:   defaultSvcOpts,
+					indexPath: mkdirTemp(),
+				},
+				beforeFunc: func(t *testing.T, ctx context.Context, s Server, n service.NGT) {
+					if _, err := s.MultiInsert(ctx, irs); err != nil {
+						t.Error(err)
+					}
+					// we need to create index before saving to store the indexed vector
+					if _, err := s.CreateIndex(ctx, &payload.Control_CreateIndexRequest{
+						PoolSize: 1,
+					}); err != nil {
+						t.Error(err)
+					}
+				},
+				want: want{
+					wantRes: emptyPayload,
+				},
+				checkFunc: func(test test, ctx context.Context, s Server, n service.NGT, w want, e *payload.Empty, err error) error {
+					if err := defaultCheckFunc(test, ctx, s, n, w, e, err); err != nil {
+						return err
+					}
+					if err := checkBackupFolder(test.fields, ctx, irs.Requests); err != nil {
+						return err
+					}
+
+					return nil
+				},
+			}
+		}(),
+		func() test {
+			irs, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, 1, dim, nil)
+			if err != nil {
+				t.Error(err)
+			}
+			ir := irs.Requests[0]
+			indexPath := mkdirTemp()
+
+			return test{
+				name: "Equivalence Class Testing case 2.1: fail to save index with no write access on backup folder",
+				args: args{
+					in1: emptyPayload,
+				},
+				fields: fields{
+					srvOpts:   defaultSrvOpts,
+					svcCfg:    defaultSvcCfg,
+					svcOpts:   defaultSvcOpts,
+					indexPath: indexPath,
+				},
+				beforeFunc: func(t *testing.T, ctx context.Context, s Server, n service.NGT) {
+					// remove write access
+					if err := os.Chmod(indexPath, 0o555); err != nil {
+						t.Error(err)
+					}
+
+					if _, err := s.Insert(ctx, ir); err != nil {
+						t.Error(err)
+					}
+					// we need to create index before saving to store the indexed vector
+					if _, err := s.CreateIndex(ctx, &payload.Control_CreateIndexRequest{
+						PoolSize: 1,
+					}); err != nil {
+						t.Error(err)
+					}
+				},
+				want: want{
+					wantRes: nil,
+					errCode: codes.Internal,
+				},
+			}
+		}(),
+		func() test {
+			// bulk insert request to make saveIndex cost time
+			insertNum := 100000
+			irs, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, insertNum, dim, nil)
+			if err != nil {
+				t.Error(err)
+			}
+
+			return test{
+				name: "Equivalence Class Testing case 3.1: fail to save index when other save index process is running",
+				args: args{
+					in1: emptyPayload,
+				},
+				fields: fields{
+					srvOpts:   defaultSrvOpts,
+					svcCfg:    defaultSvcCfg,
+					svcOpts:   defaultSvcOpts,
+					indexPath: mkdirTemp(),
+				},
+				beforeFunc: func(t *testing.T, ctx context.Context, s Server, n service.NGT) {
+					if _, err := s.MultiInsert(ctx, irs); err != nil {
+						t.Error(err)
+					}
+					// we need to create index before saving to store the indexed vector
+					if _, err := s.CreateIndex(ctx, &payload.Control_CreateIndexRequest{
+						PoolSize: uint32(insertNum),
+					}); err != nil {
+						t.Error(err)
+					}
+
+					// execute save index twice
+					go s.SaveIndex(ctx, emptyPayload)
+				},
+				checkFunc: func(t test, ctx context.Context, s Server, n service.NGT, w want, e *payload.Empty, err error) error {
+					timeout := time.After(5 * time.Second)
+					ticker := time.Tick(10 * time.Millisecond)
+					for {
+						select {
+						case <-timeout:
+							// execute save index twice
+							go s.SaveIndex(ctx, emptyPayload)
+
+							gotRes, err := s.SaveIndex(ctx, emptyPayload)
+							if err := defaultCheckFunc(t, ctx, s, n, w, gotRes, err); err != nil {
+								return err
+							}
+						case <-ticker:
+							// execute save index twice
+							go s.SaveIndex(ctx, emptyPayload)
+
+							gotRes, err := s.SaveIndex(ctx, emptyPayload)
+							if err := defaultCheckFunc(t, ctx, s, n, w, gotRes, err); err == nil {
+								return nil
+							}
+						}
+					}
+				},
+				want: want{
+					wantRes: emptyPayload,
+					errCode: codes.Internal,
+				},
+			}
+		}(),
+		{
+			name: "Boundary Value Testing case 1.1: success to save index with no index",
+			args: args{
+				in1: emptyPayload,
+			},
+			fields: fields{
+				srvOpts:   defaultSrvOpts,
+				svcCfg:    defaultSvcCfg,
+				svcOpts:   defaultSvcOpts,
+				indexPath: mkdirTemp(),
+			},
+			want: want{
+				wantRes: emptyPayload,
+			},
+			checkFunc: func(test test, ctx context.Context, s Server, n service.NGT, w want, e *payload.Empty, err error) error {
+				if err := defaultCheckFunc(test, ctx, s, n, w, e, err); err != nil {
+					return err
+				}
+				if err := checkBackupFolder(test.fields, ctx, nil); err != nil {
+					return err
+				}
+
+				return nil
+			},
+		},
+		{
+			name: "Boundary Value Testing case 2.1: success to save index with invalid dimension",
+			args: args{
+				in1: emptyPayload,
+			},
+			fields: fields{
+				srvOpts:   defaultSrvOpts,
+				svcCfg:    defaultSvcCfg,
+				svcOpts:   defaultSvcOpts,
+				indexPath: mkdirTemp(),
+			},
+			beforeFunc: func(t *testing.T, ctx context.Context, s Server, n service.NGT) {
+				invalidDim := dim + 1
+				vecs, err := vector.GenF32Vec(vector.Gaussian, 1, invalidDim)
+				if err != nil {
+					t.Error(err)
+				}
+
+				// insert invalid vector to ngt directly
+				if err := n.Insert("uuid-1", vecs[0]); err != nil {
+					t.Error(err)
+				}
+				// we need to create index before saving to store the indexed vector
+				if _, err := s.CreateIndex(ctx, &payload.Control_CreateIndexRequest{
+					PoolSize: 1,
+				}); err != nil {
+					t.Error(err)
+				}
+			},
+			want: want{
+				wantRes: emptyPayload,
+			},
+			checkFunc: func(test test, ctx context.Context, s Server, n service.NGT, w want, e *payload.Empty, err error) error {
+				if err := defaultCheckFunc(test, ctx, s, n, w, e, err); err != nil {
+					return err
+				}
+				// the invalid index will be removed inside ngt
+				if err := checkBackupFolder(test.fields, ctx, nil); err != nil {
+					return err
+				}
+
+				return nil
+			},
+		},
+		{
+			name: "Decision Table Testing case 1.1: success to save index with in-memory mode",
+			args: args{
+				in1: emptyPayload,
+			},
+			fields: fields{
+				srvOpts: defaultSrvOpts,
+				svcCfg:  defaultSvcCfg,
+				svcOpts: []service.Option{
+					service.WithEnableInMemoryMode(true),
+				},
+				indexPath: mkdirTemp(),
+			},
+			want: want{
+				wantRes: emptyPayload,
+			},
+			checkFunc: func(test test, ctx context.Context, s Server, n service.NGT, w want, e *payload.Empty, err error) error {
+				if err := defaultCheckFunc(test, ctx, s, n, w, e, err); err != nil {
+					return err
+				}
+
+				files, err := file.ListInDir(test.fields.indexPath)
+				if err != nil {
+					return err
+				}
+
+				// check any file is generated in backup directory
+				if len(files) > 0 {
+					return errors.New("no file should be created when in memory mode is enabled")
+				}
+
+				return nil
+			},
+		},
+		func() test {
+			irs, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, 1, dim, nil)
+			if err != nil {
+				t.Error(err)
+			}
+			ir := irs.Requests[0]
+
+			return test{
+				name: "Decision Table Testing case 2.1: success to save 1 inserted index with copy-on-write enabled",
+				args: args{
+					in1: emptyPayload,
+				},
+				fields: fields{
+					srvOpts:   defaultSrvOpts,
+					svcCfg:    defaultSvcCfg,
+					svcOpts:   append(defaultSvcOpts, service.WithCopyOnWrite(true)),
+					indexPath: mkdirTemp(),
+				},
+				beforeFunc: func(t *testing.T, ctx context.Context, s Server, n service.NGT) {
+					if _, err := s.Insert(ctx, ir); err != nil {
+						t.Error(err)
+					}
+					// we need to create index before saving to store the indexed vector
+					if _, err := s.CreateIndex(ctx, &payload.Control_CreateIndexRequest{
+						PoolSize: 1,
+					}); err != nil {
+						t.Error(err)
+					}
+				},
+				want: want{
+					wantRes: emptyPayload,
+				},
+				checkFunc: func(test test, ctx context.Context, s Server, n service.NGT, w want, e *payload.Empty, err error) error {
+					if err := defaultCheckFunc(test, ctx, s, n, w, e, err); err != nil {
+						return err
+					}
+					if err := checkBackupFolder(test.fields, ctx, irs.Requests); err != nil {
+						return err
+					}
+
+					return nil
+				},
+			}
+		}(),
+		func() test {
+			irs, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, 100, dim, nil)
+			if err != nil {
+				t.Error(err)
+			}
+
+			return test{
+				name: "Decision Table Testing case 2.1: success to save 100 inserted index with copy-on-write enabled",
+				args: args{
+					in1: emptyPayload,
+				},
+				fields: fields{
+					srvOpts:   defaultSrvOpts,
+					svcCfg:    defaultSvcCfg,
+					svcOpts:   append(defaultSvcOpts, service.WithCopyOnWrite(true)),
+					indexPath: mkdirTemp(),
+				},
+				beforeFunc: func(t *testing.T, ctx context.Context, s Server, n service.NGT) {
+					if _, err := s.MultiInsert(ctx, irs); err != nil {
+						t.Error(err)
+					}
+					// we need to create index before saving to store the indexed vector
+					if _, err := s.CreateIndex(ctx, &payload.Control_CreateIndexRequest{
+						PoolSize: 1,
+					}); err != nil {
+						t.Error(err)
+					}
+				},
+				want: want{
+					wantRes: emptyPayload,
+				},
+				checkFunc: func(test test, ctx context.Context, s Server, n service.NGT, w want, e *payload.Empty, err error) error {
+					if err := defaultCheckFunc(test, ctx, s, n, w, e, err); err != nil {
+						return err
+					}
+					if err := checkBackupFolder(test.fields, ctx, irs.Requests); err != nil {
+						return err
+					}
+
+					return nil
+				},
+			}
+		}(),
 	}
 
 	for _, tc := range tests {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+
+			ctx, cancel := context.WithCancel(context.Background())
+			defer cancel()
+
+			afterFunc := test.afterFunc
+			if test.afterFunc == nil {
+				afterFunc = defaultAfterFunc
 			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
+			defer afterFunc(test)
+
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
-			s := &server{
-				name:              test.fields.name,
-				ip:                test.fields.ip,
-				ngt:               test.fields.ngt,
-				eg:                test.fields.eg,
-				streamConcurrency: test.fields.streamConcurrency,
+
+			eg, _ := errgroup.New(ctx)
+			ngt, err := service.New(test.fields.svcCfg, append(test.fields.svcOpts,
+				service.WithErrGroup(eg),
+				service.WithIndexPath(test.fields.indexPath))...)
+			if err != nil {
+				tt.Errorf("failed to init ngt service, error = %v", err)
 			}
 
-			gotRes, err := s.SaveIndex(test.args.ctx, test.args.in1)
-			if err := checkFunc(test.want, gotRes, err); err != nil {
+			s, err := New(append(test.fields.srvOpts, WithNGT(ngt), WithErrGroup(eg))...)
+			if err != nil {
+				tt.Errorf("failed to init server, error= %v", err)
+			}
+
+			if test.beforeFunc != nil {
+				test.beforeFunc(tt, ctx, s, ngt)
+			}
+
+			gotRes, err := s.SaveIndex(ctx, test.args.in1)
+			if err := checkFunc(test, ctx, s, ngt, test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
