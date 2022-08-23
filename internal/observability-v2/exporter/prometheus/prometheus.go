@@ -53,9 +53,7 @@ func New(opts ...Option) (Exporter, error) {
 	// Create controller for prometheus exporter.
 	controller := basic.New(
 		processor.NewFactory(
-			simple.NewWithHistogramDistribution(
-				e.histogramBoundarie,
-			),
+			simple.NewWithHistogramDistribution(),
 			aggregation.CumulativeTemporalitySelector(),
 			processor.WithMemory(e.inmemoryEnabled),
 		),
