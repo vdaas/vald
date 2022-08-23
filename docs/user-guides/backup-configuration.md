@@ -9,6 +9,22 @@ This page describes how to enable the backup feature on your Vald cluster.
 Vald's backup function is to save the index data in each Vald Agent pod as a data file to the Persistent Volume or S3.
 When the Vald Agent pod is restarted for some reason, the index state is restored from the saved index data.
 
+## Backup methods
+
+You can choose one of three types of backup methods.
+
+- PV (recommended)
+- S3
+- PV + S3
+
+Please refer to the following tables and decide which method fit for your case.
+
+|             | PV                                                                                                                                                          | S3                                                                                                    | PV+S3                                                                                                                                            |
+| :---------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------- |
+| usecase     | Want to use backup with low cost<BR>Would not like to use some external storage for backup<BR>Want to backup with highly compatible storage with Kubernetes | Want to use the same backup file with several Vald clusters<BR>Want to access the backup files easily | Want to use backup with PV basically and access the backup files easily<BR>Want to prevent backup file failure due to Kubernetes cluster failure |
+| merit :+1:  | Easy to use<BR>Highly compatible with Kubernetes<BR>Complete with internal network<BR>Safety backup if applying CoW                                         | Easy to access backup files                                                                           | It fan be shared and used by multiple clusters                                                                                                   | The safest of these methods |
+| demerit :x: | A bit hard to check backup files<BR>Can not share backup files for several Vald clusters                                                                    | Need to communicate with external network                                                             | Need to operate both storages<BR>The most expensive way                                                                                          |
+
 ## Backup configuration
 
 This section shows the best practice for configuring backup features with PV, S3, or PV + S3.
@@ -19,8 +35,9 @@ Please refer it for more details.
 ### General
 
 Regardless of the backup destination, the following Vald Agent settings must be set to enable backup.
-- `index_path` is the backup file location.
-- `in-memory-mode=false` means storing index files in the local volume.
+
+- `agent.ngt.index_path` is the location where those files are stored.
+- `agent.ngt.in-memory-mode=false` means storing index files in the local volume.
 
 In addition, `agent.terminationGracePeriodSeconds` value should be long enough to ensure the backup speed.
 
@@ -44,6 +61,7 @@ You must prepare PV before deployment when using Kubernetes Persistent Volume (P
 Please refer to the setup guide of the usage environment for the provisioning PV.
 
 For example:
+
 - [GKE setup PV document](https://cloud.google.com/kubernetes-engine/docs/concepts/persistent-volumes)
 - [EKS storage document](https://docs.aws.amazon.com/eks/latest/userguide/storage.html)
 
@@ -64,16 +82,29 @@ agent:
     # set enough size for backup
     size: 2Gi
   ...
+  terminationGracePeriodSeconds: 3600
+  ...
+  ngt:
+    ...
+    index_path: "/var/ngt/index"
+    enable_in_memory_mode: false
+    # copy on write function flag
+    enable_copy_on_write: true
+    ...
 ```
 
 Each PV will be mounted on each Vald Agent Pod's `index_path`.
 
-It is highly recommended to set `copy_on_write` (CoW) as `true`. 
+You can choose `copy_on_write` (CoW) function.
 
-<div class="notice">
-The CoW is an option to update the backup file safely.<BR>
-The backup file may be corrupted, and the Vald Agent pod may not be able to restore from backup files when the Vald Agent pod terminates during the save index function without CoW is not be enabled.<BR>
-On the other hand, when CoW is enabled, the Vald Agent pod can restore the data from one generation ago.
+The CoW is an option to update the backup file safely.
+
+The backup file may be corrupted, and the Vald Agent pod may not restore from backup files when the Vald Agent pod terminates during saveIndex without CoW is not be enabled.
+On the other hand, if CoW is enabled, the Vald Agent pod can restore the data from one generation ago.
+
+<div class="caution">
+When CoW is enabled, PV temporarily has two backup files; new and old versions.<BR>
+So, A double storage capacity is required if CoW is enabled, e.g., when set 2Gi as size without CoW, the size should be more than 4Gi with CoW.
 </div>
 
 ### S3
@@ -84,6 +115,7 @@ Before deployment, you must provision the S3 object storage.
 You can use any S3-compatible object storage.
 
 For example:
+
 - [AWS S3](https://aws.amazon.com/s3/)
 - [Google Cloud Storage](https://cloud.google.com/storage/docs/)
 
@@ -95,8 +127,16 @@ To enable the backup function with S3, the Vald Agent Sidecar should be enabled.
 ```yaml
 agent:
   ...
+  terminationGracePeriodSeconds: 3600
+  ...
+  ngt:
+    ...
+    index_path: "/var/ngt/index"
+    enable_in_memory_mode: false
+    ...
   sidecar:
     enabled: true
+    # run sidecar with initContainerMode or not
     initContainerEnabled: true
     # This is the Amazon S3 settings.
     # Please change it according to your environment.
@@ -133,37 +173,39 @@ kubectl create secret -n <Vald cluster namespace> aws-secret --access-key=<ACCES
 ### Persistent Volume and S3
 
 You can use both PV and S3 at the same time.
+Please refer to the before sections for provisioning storages.
 
 ```yaml
 agent:
-  minReplicas: 9
-  maxReplicas: 9
-  podManagementPolicy: Parallel
-  resources:
-    requests:
-      cpu: 100m
-      memory: 50Mi
+  ...
   terminationGracePeriodSeconds: 3600
+  ...
   persistentVolume:
+    # use PV flag
     enabled: true
+    # accessMode for PV (please verify your environment)
     accessMode: ReadWriteOncePod
+    # storage class for PV (please verify your environment)
     storageClass: local-path
+    # set enough size for backup
     size: 2Gi
   ngt:
-    dimension: 784
-    index_path: "/var/ngt/index"
+    ...
     enable_in_memory_mode: false
-    auto_index_duration_limit: 730h
-    auto_index_check_duration: 24h
-    auto_index_length: 1000
-    auto_save_index_duration: 365h
-    auto_create_index_pool_size: 1000
+    # copy on write function flag
+    enable_copy_on_write: true
+    ...
   sidecar:
     enabled: true
+    # run sidecar with initContainerMode or not. If true, it allows restoration.
     initContainerEnabled: true
+    # This is the Amazon S3 settings.
+    # Please change it according to your environment.
     config:
       blob_storage:
+        # storage type (default: s3)
         storage_type: "s3"
+        # your bucket name
         bucket: "vald"
         s3:
           region: "us-central1"
@@ -180,11 +222,27 @@ agent:
     #       secretKeyRef:
     #         name: aws-secret
     #         key: secret-access-key
+    ...
 ```
 
 ## Restore
 
-Restoring from the backup file runs on initContainer when the config is set correctly and the backup file exists.
+Restoring from the backup file runs on start Pod when the config is set correctly, and the backup file exists.
 
-If you use both PV and S3, the backup file used for restoration will prioritize the file on PV.
+### PV
+
+In using the PV case, restoration starts when Pod starts.
+
+If the configuration is correct, the backup file will be automatically mounted, loaded, and indexed when the Pod starts.
+
+### S3
+
+In using the S3 case, restoration runs only `initContainerMode`.
+To enable restoration, you have to set `sidecar.initContainerMode` as `true`.
+
+Agent Sidecar tries to get the backup file from S3, unpacks it, and starts indexing.
+
+### PV + S3
+
+In using both the PV and S3 case, the backup file used for restoration will prioritize the file on PV.
 If the backup file does not exist on the PV, the backup file will be retrieved from S3 via the Vald Agent Sidecar and restored.
