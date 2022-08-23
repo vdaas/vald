@@ -9,7 +9,7 @@ Please refer to one of the sections below according to your deployment method.
 
 <div class="caution">
 If each Vald Agent already has the indexes and uses the backup feature, please DO NOT edit the dimension and the distance type to avoid initContainer error.<BR>
-(Each Vald Agent will restore from backup data when backup when performing a rolling update)
+(Each Vald Agent will restore from backup data when performing a rolling update)
 </div>
 
 <div class="warn">
