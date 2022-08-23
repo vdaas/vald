@@ -7,8 +7,7 @@ import (
 )
 
 const (
-	ValdOrg             = "vald.vdaas.org"
-	InstrumentationName = "vdaas/vald"
+	ValdOrg = "vald.vdaas.org"
 )
 
 // Meter is type alias of metrics.Meter.
@@ -16,7 +15,7 @@ type Meter = metric.Meter
 
 // GetMeter returns the Meter object to record metrics.
 func GetMeter() Meter {
-	return global.MeterProvider().Meter(InstrumentationName)
+	return global.MeterProvider().Meter(ValdOrg)
 }
 
 // Unit is type alias of unit.Unit.
@@ -27,10 +26,6 @@ const (
 	Dimensionless = unit.Dimensionless
 	Bytes         = unit.Bytes
 	Milliseconds  = unit.Milliseconds
-)
-
-type (
-// String = attribute.Bool
 )
 
 // Metric represents an interface for metric.

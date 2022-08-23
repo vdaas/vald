@@ -9,36 +9,17 @@ import (
 )
 
 type goroutine struct {
-	name        string
-	description string
-	unit        metrics.Unit
 }
 
 func New() metrics.Metric {
-	return &goroutine{
-		name:        metrics.ValdOrg + "/runtime/goroutine_count",
-		description: "number of goroutines",
-		unit:        metrics.Dimensionless,
-	}
-}
-
-func (g *goroutine) Name() string {
-	return g.name
-}
-
-func (g *goroutine) Description() string {
-	return g.description
-}
-
-func (g *goroutine) Unit() metrics.Unit {
-	return g.unit
+	return &goroutine{}
 }
 
 func (g *goroutine) Register(m metrics.Meter) error {
-	conter, err := m.AsyncInt64().UpDownCounter(
-		g.Name(),
-		instrument.WithDescription(g.Description()),
-		instrument.WithUnit(g.Unit()),
+	conter, err := m.AsyncInt64().Gauge(
+		"goroutine_count",
+		instrument.WithDescription("number of goroutines"),
+		instrument.WithUnit(metrics.Dimensionless),
 	)
 	if err != nil {
 		return err

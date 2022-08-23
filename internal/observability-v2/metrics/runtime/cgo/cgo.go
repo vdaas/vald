@@ -9,23 +9,16 @@ import (
 )
 
 type cgo struct {
-	name        string
-	description string
-	unit        metrics.Unit
 }
 
 func New() metrics.Metric {
-	return &cgo{
-		name:        metrics.ValdOrg + "/runtime/cgo_call_count",
-		description: "number of cgo call",
-		unit:        metrics.Dimensionless,
-	}
+	return &cgo{}
 }
 
 func (c *cgo) Register(m metrics.Meter) error {
 	conter, err := m.AsyncInt64().UpDownCounter(
-		"",
-		instrument.WithDescription(""),
+		"cgo_call_count",
+		instrument.WithDescription("number of cgo call"),
 		instrument.WithUnit(metrics.Dimensionless),
 	)
 	if err != nil {
