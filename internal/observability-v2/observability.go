@@ -9,6 +9,8 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/observability-v2/exporter"
+	"github.com/vdaas/vald/internal/observability-v2/metrics"
+	"github.com/vdaas/vald/internal/observability-v2/trace"
 )
 
 type Observability interface {
@@ -20,6 +22,8 @@ type Observability interface {
 type observability struct {
 	eg        errgroup.Group
 	exporters []exporter.Exporter
+	tracer    trace.Tracer
+	metrics   []metrics.Metric
 }
 
 func NewObservability(opts ...Option) (Observability, error) {
@@ -48,6 +52,17 @@ func (o *observability) PreStart(ctx context.Context) error {
 			}
 			return err
 		}
+	}
+
+	meter := metrics.GetMeter()
+	for _, m := range o.metrics {
+		if err := m.Register(meter); err != nil {
+			return err
+		}
+	}
+
+	if err := o.tracer.Start(ctx); err != nil {
+		return err
 	}
 	return nil
 }
