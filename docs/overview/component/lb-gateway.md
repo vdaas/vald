@@ -11,7 +11,7 @@ This page introduces the overview and features of Vald Gateway.
 Vald LB Gateway is responsible for:
 
 - Pass and load balancing requests to other Vald components
-- Control processing with timeout setting
+- Control processing with a timeout setting
 - Aggregate search results from each Vald Agent
 - Sort and combine into one search result
 

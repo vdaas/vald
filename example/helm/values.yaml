@@ -13,11 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
 defaults:
   logging:
     level: debug
   image:
-    tag: "nightly"
+    tag: latest
   server_config:
     healths:
       liveness:
@@ -40,7 +41,7 @@ gateway:
       enabled: false
     ingress:
       # if enabled is true, vald-lb-gateway can be connected through Kubernetes ingress from the external network.
-      enabled: true
+      enabled: false
       # TODO: Set your ingress host.
       host: localhost
       annotations:
@@ -63,15 +64,15 @@ agent:
       memory: 150Mi
   ngt:
     # The number of dimensions for feature vector of fashion-mnist dataset.
-    dimension: 784
+    dimension: 300
     # We use L2-Norm for distance_type.
-    distance_type: l2
+    distance_type: cos
     # The type of fashion-mnist's feature vectors.
     object_type: float
     # Check duration of automatic indexing.
-    auto_index_check_duration_limit: 1m
+    auto_index_check_duration_limit: "-1m"
     # The limit duration of automatic indexing.
-    auto_index_duration_limit: 20s
+    auto_index_duration_limit: "-20s"
     # The batch process pool size of automatic create index operation
     auto_create_index_pool_size: 100
     # The default create index batch pool size

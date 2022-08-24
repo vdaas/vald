@@ -34,11 +34,11 @@ Vald is easy to use, feature-rich and highly customizable as you needed.
     - Vald supports to backup Vald Agent index data using Object Storage or Persistent Volume.
 
 - Distributed Indexing
-    - Vald distribute vector index to multiple agents, each agent stores different index.
+    - Vald distributes vector index to multiple agents, and each agent stores different index.
 
 - Index Replication
     - Vald stores each index in multiple agents which enables index replicas.
-    - Automatically rebalance the replica when some Vald agent goes down.
+    - Automatically rebalancing the replica when some Vald agent goes down.
 
 - Easy to use
     - Vald can be easily installed in a few steps.
