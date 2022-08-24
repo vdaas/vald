@@ -128,7 +128,7 @@ func (mm *memoryMetrics) Register(m metrics.Meter) error {
 	pauseTotalMs, err := m.AsyncInt64().Gauge( // TODO
 		"pause_ms_total",
 		instrument.WithDescription("the cumulative milliseconds in GC"),
-		instrument.WithUnit(metrics.Bytes),
+		instrument.WithUnit(metrics.Milliseconds),
 	)
 	if err != nil {
 		return err
