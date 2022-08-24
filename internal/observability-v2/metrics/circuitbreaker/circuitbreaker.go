@@ -6,7 +6,6 @@ import (
 	"github.com/vdaas/vald/internal/circuitbreaker"
 	"github.com/vdaas/vald/internal/observability-v2/metrics"
 	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/metric/instrument"
 )
 
 type breakerMetrics struct {
@@ -24,15 +23,15 @@ func New() metrics.Metric {
 func (bm *breakerMetrics) Register(m metrics.Meter) error {
 	breakerState, err := m.AsyncInt64().Gauge(
 		"circuit_breaker_state",
-		instrument.WithDescription("current circuit breaker state"),
-		instrument.WithUnit(metrics.Dimensionless),
+		metrics.WithDescription("current circuit breaker state"),
+		metrics.WithUnit(metrics.Dimensionless),
 	)
 	if err != nil {
 		return err
 	}
 
 	return m.RegisterCallback(
-		[]instrument.Asynchronous{
+		[]metrics.AsynchronousInstrument{
 			breakerState,
 		},
 		func(ctx context.Context) {

@@ -5,7 +5,6 @@ import (
 
 	"github.com/vdaas/vald/internal/observability-v2/metrics"
 	"github.com/vdaas/vald/pkg/manager/index/service"
-	"go.opentelemetry.io/otel/metric/instrument"
 )
 
 type indexerMetrics struct {
@@ -21,8 +20,8 @@ func New(i service.Indexer) metrics.Metric {
 func (im *indexerMetrics) Register(m metrics.Meter) error {
 	uuidCount, err := m.AsyncInt64().Gauge(
 		"indexer_uuid_count",
-		instrument.WithDescription("UUID count"),
-		instrument.WithUnit(metrics.Dimensionless),
+		metrics.WithDescription("UUID count"),
+		metrics.WithUnit(metrics.Dimensionless),
 	)
 	if err != nil {
 		return err
@@ -30,8 +29,8 @@ func (im *indexerMetrics) Register(m metrics.Meter) error {
 
 	uncommittedUUIDCount, err := m.AsyncInt64().Gauge(
 		"indexer_uncommitted_uuid_count",
-		instrument.WithDescription("uncommitted UUID count"),
-		instrument.WithUnit(metrics.Dimensionless),
+		metrics.WithDescription("uncommitted UUID count"),
+		metrics.WithUnit(metrics.Dimensionless),
 	)
 	if err != nil {
 		return err
@@ -39,15 +38,15 @@ func (im *indexerMetrics) Register(m metrics.Meter) error {
 
 	isIndexing, err := m.AsyncInt64().Gauge(
 		"indexer_is_indexing",
-		instrument.WithDescription("currently indexing or not"),
-		instrument.WithUnit(metrics.Dimensionless),
+		metrics.WithDescription("currently indexing or not"),
+		metrics.WithUnit(metrics.Dimensionless),
 	)
 	if err != nil {
 		return err
 	}
 
 	return m.RegisterCallback(
-		[]instrument.Asynchronous{
+		[]metrics.AsynchronousInstrument{
 			uuidCount,
 			uncommittedUUIDCount,
 			isIndexing,

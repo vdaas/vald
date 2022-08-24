@@ -5,7 +5,6 @@ import (
 
 	"github.com/vdaas/vald/internal/observability-v2/metrics"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/service"
-	"go.opentelemetry.io/otel/metric/instrument"
 )
 
 type ngtMetrics struct {
@@ -21,8 +20,8 @@ func New(n service.NGT) metrics.Metric {
 func (n *ngtMetrics) Register(m metrics.Meter) error {
 	indexCount, err := m.AsyncInt64().UpDownCounter(
 		"agent_core_ngt_index_count",
-		instrument.WithDescription("Agent NGT index count"),
-		instrument.WithUnit(metrics.Dimensionless),
+		metrics.WithDescription("Agent NGT index count"),
+		metrics.WithUnit(metrics.Dimensionless),
 	)
 	if err != nil {
 		return err
@@ -30,8 +29,8 @@ func (n *ngtMetrics) Register(m metrics.Meter) error {
 
 	uncommittedIndexCount, err := m.AsyncInt64().UpDownCounter(
 		"agent_core_ngt_uncommitted_index_count",
-		instrument.WithDescription("Agent NGT uncommitted index count"),
-		instrument.WithUnit(metrics.Dimensionless),
+		metrics.WithDescription("Agent NGT uncommitted index count"),
+		metrics.WithUnit(metrics.Dimensionless),
 	)
 	if err != nil {
 		return err
@@ -39,8 +38,8 @@ func (n *ngtMetrics) Register(m metrics.Meter) error {
 
 	insertVQueueCount, err := m.AsyncInt64().UpDownCounter(
 		"agent_core_ngt_insert_vqueue_count",
-		instrument.WithDescription("Agent NGT insert vqueue count"),
-		instrument.WithUnit(metrics.Dimensionless),
+		metrics.WithDescription("Agent NGT insert vqueue count"),
+		metrics.WithUnit(metrics.Dimensionless),
 	)
 	if err != nil {
 		return err
@@ -48,8 +47,8 @@ func (n *ngtMetrics) Register(m metrics.Meter) error {
 
 	deleteVQueueCount, err := m.AsyncInt64().UpDownCounter(
 		"agent_core_ngt_delete_vqueue_count",
-		instrument.WithDescription("Agent NGT delete vqueue count"),
-		instrument.WithUnit(metrics.Dimensionless),
+		metrics.WithDescription("Agent NGT delete vqueue count"),
+		metrics.WithUnit(metrics.Dimensionless),
 	)
 	if err != nil {
 		return err
@@ -57,8 +56,8 @@ func (n *ngtMetrics) Register(m metrics.Meter) error {
 
 	completedCreateIndexTotal, err := m.AsyncInt64().UpDownCounter(
 		"agent_core_ngt_completed_create_index_total",
-		instrument.WithDescription("the cumulative count of completed create index execution"),
-		instrument.WithUnit(metrics.Dimensionless),
+		metrics.WithDescription("the cumulative count of completed create index execution"),
+		metrics.WithUnit(metrics.Dimensionless),
 	)
 	if err != nil {
 		return err
@@ -66,8 +65,8 @@ func (n *ngtMetrics) Register(m metrics.Meter) error {
 
 	executedProactiveGCTotal, err := m.AsyncInt64().UpDownCounter(
 		"agent_core_ngt_executed_proactive_gc_total",
-		instrument.WithDescription("the cumulative count of proactive GC execution"),
-		instrument.WithUnit(metrics.Dimensionless),
+		metrics.WithDescription("the cumulative count of proactive GC execution"),
+		metrics.WithUnit(metrics.Dimensionless),
 	)
 	if err != nil {
 		return err
@@ -75,8 +74,8 @@ func (n *ngtMetrics) Register(m metrics.Meter) error {
 
 	isIndexing, err := m.AsyncInt64().UpDownCounter(
 		"agent_core_ngt_is_indexing",
-		instrument.WithDescription("currently indexing or no"),
-		instrument.WithUnit(metrics.Dimensionless),
+		metrics.WithDescription("currently indexing or no"),
+		metrics.WithUnit(metrics.Dimensionless),
 	)
 	if err != nil {
 		return err
@@ -84,15 +83,15 @@ func (n *ngtMetrics) Register(m metrics.Meter) error {
 
 	isSaving, err := m.AsyncInt64().UpDownCounter(
 		"agent_core_ngt_is_saving",
-		instrument.WithDescription("currently saving or not"),
-		instrument.WithUnit(metrics.Dimensionless),
+		metrics.WithDescription("currently saving or not"),
+		metrics.WithUnit(metrics.Dimensionless),
 	)
 	if err != nil {
 		return err
 	}
 
 	return m.RegisterCallback(
-		[]instrument.Asynchronous{
+		[]metrics.AsynchronousInstrument{
 			indexCount,
 			uncommittedIndexCount,
 			insertVQueueCount,

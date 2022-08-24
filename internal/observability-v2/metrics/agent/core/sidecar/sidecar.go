@@ -8,8 +8,6 @@ import (
 	"github.com/vdaas/vald/internal/observability-v2/metrics"
 	"github.com/vdaas/vald/pkg/agent/sidecar/service/observer"
 	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/metric/instrument"
-	"go.opentelemetry.io/otel/metric/unit"
 )
 
 type MetricsHook interface {
@@ -37,31 +35,31 @@ func New() (MetricsHook, error) {
 func (sm *sidecarMetrics) Register(m metrics.Meter) error {
 	uploadTotal, err := m.AsyncInt64().Counter(
 		"agent_sidecar_completed_upload_total",
-		instrument.WithDescription("cumulative count of completed upload execution"),
-		instrument.WithUnit(unit.Dimensionless),
+		metrics.WithDescription("cumulative count of completed upload execution"),
+		metrics.WithUnit(metrics.Dimensionless),
 	)
 	if err != nil {
 		return err
 	}
 	uploadBytes, err := m.AsyncInt64().Gauge(
 		"agent_sidecar_upload_bytes",
-		instrument.WithDescription("uploaded bytes at the last backup execution"),
-		instrument.WithUnit(unit.Bytes),
+		metrics.WithDescription("uploaded bytes at the last backup execution"),
+		metrics.WithUnit(metrics.Bytes),
 	)
 	if err != nil {
 		return err
 	}
 	uploadLatency, err := m.AsyncFloat64().UpDownCounter( // TODO:
 		"agent_sidecar_upload_latency",
-		instrument.WithDescription("upload latency"),
-		instrument.WithUnit(unit.Milliseconds),
+		metrics.WithDescription("upload latency"),
+		metrics.WithUnit(metrics.Milliseconds),
 	)
 	if err != nil {
 		return err
 	}
 
 	return m.RegisterCallback(
-		[]instrument.Asynchronous{
+		[]metrics.AsynchronousInstrument{
 			uploadTotal,
 			uploadBytes,
 			uploadLatency,

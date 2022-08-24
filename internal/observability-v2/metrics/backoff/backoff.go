@@ -6,7 +6,6 @@ import (
 	"github.com/vdaas/vald/internal/backoff"
 	"github.com/vdaas/vald/internal/observability-v2/metrics"
 	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/metric/instrument"
 )
 
 type backoffMetrics struct {
@@ -22,14 +21,14 @@ func New() metrics.Metric {
 func (bm *backoffMetrics) Register(m metrics.Meter) error {
 	retryCount, err := m.AsyncInt64().Gauge(
 		"backoff_retry_count",
-		instrument.WithDescription("Backoff retry count"),
-		instrument.WithUnit(metrics.Dimensionless),
+		metrics.WithDescription("Backoff retry count"),
+		metrics.WithUnit(metrics.Dimensionless),
 	)
 	if err != nil {
 		return err
 	}
 	return m.RegisterCallback(
-		[]instrument.Asynchronous{
+		[]metrics.AsynchronousInstrument{
 			retryCount,
 		},
 		func(ctx context.Context) {

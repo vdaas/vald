@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/metric/instrument"
 
 	"github.com/vdaas/vald/internal/info"
 	"github.com/vdaas/vald/internal/observability-v2/metrics"
@@ -61,14 +60,14 @@ func labelKVs(labels ...string) map[string]string {
 func (v *version) Register(m metrics.Meter) error {
 	info, err := m.AsyncInt64().Gauge(
 		"app_version_info",
-		instrument.WithDescription("app version info"),
-		instrument.WithUnit(metrics.Dimensionless),
+		metrics.WithDescription("app version info"),
+		metrics.WithUnit(metrics.Dimensionless),
 	)
 	if err != nil {
 		return err
 	}
 	return m.RegisterCallback(
-		[]instrument.Asynchronous{
+		[]metrics.AsynchronousInstrument{
 			info,
 		},
 		func(ctx context.Context) {

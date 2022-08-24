@@ -5,7 +5,6 @@ import (
 	"runtime"
 
 	"github.com/vdaas/vald/internal/observability-v2/metrics"
-	"go.opentelemetry.io/otel/metric/instrument"
 )
 
 type goroutine struct {
@@ -18,14 +17,14 @@ func New() metrics.Metric {
 func (g *goroutine) Register(m metrics.Meter) error {
 	conter, err := m.AsyncInt64().Gauge(
 		"goroutine_count",
-		instrument.WithDescription("number of goroutines"),
-		instrument.WithUnit(metrics.Dimensionless),
+		metrics.WithDescription("number of goroutines"),
+		metrics.WithUnit(metrics.Dimensionless),
 	)
 	if err != nil {
 		return err
 	}
 	return m.RegisterCallback(
-		[]instrument.Asynchronous{
+		[]metrics.AsynchronousInstrument{
 			conter,
 		},
 		func(ctx context.Context) {

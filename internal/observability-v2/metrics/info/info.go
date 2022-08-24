@@ -8,7 +8,6 @@ import (
 
 	"github.com/vdaas/vald/internal/observability-v2/metrics"
 	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/metric/instrument"
 )
 
 type info struct {
@@ -71,14 +70,14 @@ func labelKVs(i interface{}) map[string]string {
 func (i *info) Register(m metrics.Meter) error {
 	info, err := m.AsyncInt64().Gauge(
 		i.name,
-		instrument.WithDescription(i.description),
-		instrument.WithUnit(metrics.Dimensionless),
+		metrics.WithDescription(i.description),
+		metrics.WithUnit(metrics.Dimensionless),
 	)
 	if err != nil {
 		return err
 	}
 	return m.RegisterCallback(
-		[]instrument.Asynchronous{
+		[]metrics.AsynchronousInstrument{
 			info,
 		},
 		func(ctx context.Context) {

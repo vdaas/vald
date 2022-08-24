@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/vdaas/vald/internal/observability-v2/metrics"
-	"go.opentelemetry.io/otel/metric/instrument"
 )
 
 type memoryMetrics struct {
@@ -19,8 +18,8 @@ func New() metrics.Metric {
 func (mm *memoryMetrics) Register(m metrics.Meter) error {
 	alloc, err := m.AsyncInt64().Gauge(
 		"alloc_bytes",
-		instrument.WithDescription("currently allocated number of bytes on the heap"),
-		instrument.WithUnit(metrics.Bytes),
+		metrics.WithDescription("currently allocated number of bytes on the heap"),
+		metrics.WithUnit(metrics.Bytes),
 	)
 	if err != nil {
 		return err
@@ -28,8 +27,8 @@ func (mm *memoryMetrics) Register(m metrics.Meter) error {
 
 	totalAlloc, err := m.AsyncInt64().Gauge(
 		"alloc_bytes_total",
-		instrument.WithDescription("cumulative bytes allocated for heap objects"),
-		instrument.WithUnit(metrics.Bytes),
+		metrics.WithDescription("cumulative bytes allocated for heap objects"),
+		metrics.WithUnit(metrics.Bytes),
 	)
 	if err != nil {
 		return err
@@ -37,8 +36,8 @@ func (mm *memoryMetrics) Register(m metrics.Meter) error {
 
 	sys, err := m.AsyncInt64().Gauge(
 		"sys_bytes",
-		instrument.WithDescription("total bytes of memory obtained from the OS"),
-		instrument.WithUnit(metrics.Bytes),
+		metrics.WithDescription("total bytes of memory obtained from the OS"),
+		metrics.WithUnit(metrics.Bytes),
 	)
 	if err != nil {
 		return err
@@ -46,8 +45,8 @@ func (mm *memoryMetrics) Register(m metrics.Meter) error {
 
 	mallocs, err := m.AsyncInt64().Gauge(
 		"mallocs_total",
-		instrument.WithDescription("the cumulative count of heap objects allocated"),
-		instrument.WithUnit(metrics.Dimensionless),
+		metrics.WithDescription("the cumulative count of heap objects allocated"),
+		metrics.WithUnit(metrics.Dimensionless),
 	)
 	if err != nil {
 		return err
@@ -55,8 +54,8 @@ func (mm *memoryMetrics) Register(m metrics.Meter) error {
 
 	frees, err := m.AsyncInt64().Gauge(
 		"frees_total",
-		instrument.WithDescription("the cumulative count of heap objects freed"),
-		instrument.WithUnit(metrics.Dimensionless),
+		metrics.WithDescription("the cumulative count of heap objects freed"),
+		metrics.WithUnit(metrics.Dimensionless),
 	)
 	if err != nil {
 		return err
@@ -64,8 +63,8 @@ func (mm *memoryMetrics) Register(m metrics.Meter) error {
 
 	heapAlloc, err := m.AsyncInt64().Gauge(
 		"heap_alloc_bytes",
-		instrument.WithDescription("bytes of allocated heap object"),
-		instrument.WithUnit(metrics.Bytes),
+		metrics.WithDescription("bytes of allocated heap object"),
+		metrics.WithUnit(metrics.Bytes),
 	)
 	if err != nil {
 		return err
@@ -73,8 +72,8 @@ func (mm *memoryMetrics) Register(m metrics.Meter) error {
 
 	heapSys, err := m.AsyncInt64().Gauge(
 		"heap_sys_bytes",
-		instrument.WithDescription("bytes of heap memory obtained from the OS"),
-		instrument.WithUnit(metrics.Bytes),
+		metrics.WithDescription("bytes of heap memory obtained from the OS"),
+		metrics.WithUnit(metrics.Bytes),
 	)
 	if err != nil {
 		return err
@@ -82,8 +81,8 @@ func (mm *memoryMetrics) Register(m metrics.Meter) error {
 
 	heapIdle, err := m.AsyncInt64().Gauge(
 		"heap_idle_bytes",
-		instrument.WithDescription("bytes in idle (unused) spans"),
-		instrument.WithUnit(metrics.Bytes),
+		metrics.WithDescription("bytes in idle (unused) spans"),
+		metrics.WithUnit(metrics.Bytes),
 	)
 	if err != nil {
 		return err
@@ -91,8 +90,8 @@ func (mm *memoryMetrics) Register(m metrics.Meter) error {
 
 	heapInuse, err := m.AsyncInt64().Gauge(
 		"heap_inuse_bytes",
-		instrument.WithDescription("bytes in in-use spans"),
-		instrument.WithUnit(metrics.Bytes),
+		metrics.WithDescription("bytes in in-use spans"),
+		metrics.WithUnit(metrics.Bytes),
 	)
 	if err != nil {
 		return err
@@ -100,8 +99,8 @@ func (mm *memoryMetrics) Register(m metrics.Meter) error {
 
 	heapReleased, err := m.AsyncInt64().Gauge(
 		"heap_released_bytes",
-		instrument.WithDescription("bytes of physical memory returned to the OS"),
-		instrument.WithUnit(metrics.Bytes),
+		metrics.WithDescription("bytes of physical memory returned to the OS"),
+		metrics.WithUnit(metrics.Bytes),
 	)
 	if err != nil {
 		return err
@@ -109,8 +108,8 @@ func (mm *memoryMetrics) Register(m metrics.Meter) error {
 
 	stackInuse, err := m.AsyncInt64().Gauge(
 		"stack_inuse_bytes",
-		instrument.WithDescription("bytes in stack spans"),
-		instrument.WithUnit(metrics.Bytes),
+		metrics.WithDescription("bytes in stack spans"),
+		metrics.WithUnit(metrics.Bytes),
 	)
 	if err != nil {
 		return err
@@ -118,8 +117,8 @@ func (mm *memoryMetrics) Register(m metrics.Meter) error {
 
 	stackSys, err := m.AsyncInt64().Gauge(
 		"stack_sys_bytes",
-		instrument.WithDescription("bytes of stack memory obtained from the OS"),
-		instrument.WithUnit(metrics.Bytes),
+		metrics.WithDescription("bytes of stack memory obtained from the OS"),
+		metrics.WithUnit(metrics.Bytes),
 	)
 	if err != nil {
 		return err
@@ -127,8 +126,8 @@ func (mm *memoryMetrics) Register(m metrics.Meter) error {
 
 	pauseTotalMs, err := m.AsyncInt64().Gauge( // TODO
 		"pause_ms_total",
-		instrument.WithDescription("the cumulative milliseconds in GC"),
-		instrument.WithUnit(metrics.Milliseconds),
+		metrics.WithDescription("the cumulative milliseconds in GC"),
+		metrics.WithUnit(metrics.Milliseconds),
 	)
 	if err != nil {
 		return err
@@ -136,15 +135,15 @@ func (mm *memoryMetrics) Register(m metrics.Meter) error {
 
 	numGC, err := m.AsyncInt64().Gauge(
 		"gc_count",
-		instrument.WithDescription("the number of completed GC cycles"),
-		instrument.WithUnit(metrics.Bytes),
+		metrics.WithDescription("the number of completed GC cycles"),
+		metrics.WithUnit(metrics.Bytes),
 	)
 	if err != nil {
 		return err
 	}
 
 	return m.RegisterCallback(
-		[]instrument.Asynchronous{
+		[]metrics.AsynchronousInstrument{
 			alloc,
 			totalAlloc,
 			sys,
