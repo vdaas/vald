@@ -19,10 +19,10 @@ You can choose one of three types of backup methods.
 
 Please refer to the following tables and decide which method fit for your case.
 
-|             | PV                                                                                                                                                          | S3                                                                                                    | PV+S3                                                                                                                                            |
-| :---------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------- |
-| usecase     | Want to use backup with low cost<BR>Would not like to use some external storage for backup<BR>Want to backup with highly compatible storage with Kubernetes | Want to use the same backup file with several Vald clusters<BR>Want to access the backup files easily | Want to use backup with PV basically and access the backup files easily<BR>Want to prevent backup file failure due to Kubernetes cluster failure |
-| pros :+1:  | Easy to use<BR>Highly compatible with Kubernetes<BR>Low latency using in-cluster network<BR>Safety backup using Copy on Write option                                         | Easy to access backup files<BR>It can be shared and used by multiple clusters                         | The safest of these methods                                                                                                                      |
+|           | PV                                                                                                                                                          | S3                                                                                                    | PV+S3                                                                                                                                            |
+| :-------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------- |
+| usecase   | Want to use backup with low cost<BR>Would not like to use some external storage for backup<BR>Want to backup with highly compatible storage with Kubernetes | Want to use the same backup file with several Vald clusters<BR>Want to access the backup files easily | Want to use backup with PV basically and access the backup files easily<BR>Want to prevent backup file failure due to Kubernetes cluster failure |
+| pros :+1: | Easy to use<BR>Highly compatible with Kubernetes<BR>Low latency using in-cluster network<BR>Safety backup using Copy on Write option                        | Easy to access backup files<BR>It can be shared and used by multiple clusters                         | The safest of these methods                                                                                                                      |
 | cons :-1: | A bit hard to check backup files<BR>Can not share backup files for several Vald clusters                                                                    | Need to communicate with external network                                                             | Need to operate both storages<BR>The most expensive way                                                                                          |
 
 ## Backup configuration
@@ -68,6 +68,7 @@ For example:
 #### configuration
 
 After provisioning PV, the following parameters are needed to be set.
+It shows the example for using GKE.
 
 ```yaml
 agent:
@@ -75,10 +76,10 @@ agent:
   persistentVolume:
     # use PV flag
     enabled: true
-    # accessMode for PV (please verify your environment)
-    accessMode: ReadWriteOncePod
+    # accessMode for PV (please verify your environment).
+    accessMode: ReadWriteOnce
     # storage class for PV (please verify your environment)
-    storageClass: local-path
+    storageClass: standard
     # set enough size for backup
     size: 2Gi
   ...
@@ -184,9 +185,9 @@ agent:
     # use PV flag
     enabled: true
     # accessMode for PV (please verify your environment)
-    accessMode: ReadWriteOncePod
+    accessMode: ReadWriteOnce
     # storage class for PV (please verify your environment)
-    storageClass: local-path
+    storageClass: standard
     # set enough size for backup
     size: 2Gi
   ngt:
