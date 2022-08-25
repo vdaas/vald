@@ -1,0 +1,321 @@
+#
+# Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: valdbenchmarkjobs.vald.vdaas.org
+spec:
+  group: vald.vdaas.org
+  names:
+    kind: ValdBenchmarkJob
+    listKind: ValdBenchmarkJobList
+    plural: valdbenchmarkjobs
+    singular: valdbenchmarkjob
+    shortNames:
+      - vbj
+      - vbjs
+  scope: Namespaced
+  versions:
+    - name: v1
+      served: true
+      storage: true
+      subresources:
+        status: {}
+      additionalPrinterColumns:
+      - jsonPath: .spec.replica
+        name: REPLICAS
+        type: integer
+      - jsonPath: .status
+        name: STATUS
+        type: string
+      schema:
+        openAPIV3Schema:
+          description: ValdBenchmarkJob is the Schema for the valdbenchmarkjobs API
+          type: object
+          properties:
+            apiVersion:
+              description: 'APIVersion defines the versioned schema of this representation
+                of an object. Servers should convert recognized schemas to the latest
+                internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+              type: string
+            kind:
+              description: 'Kind is a string value representing the REST resource this
+                object represents. Servers may infer this from the endpoint the client
+                submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+              type: string
+            metadata:
+              type: object
+            status:
+              description: ValdBenchmarkJobStatus defines the observed state of ValdBenchmarkJob
+              enum:
+              - NotReady
+              - Available
+              - Healthy
+              type: string
+            spec:
+              description: ValdBenchmarkJobSpec defines the desired state of ValdBenchmarkJob
+              type: object
+              properties:
+                dataset:
+                  description: BenchmarkDatasetSpec defines the desired state of the dataset used for benchmark job
+                  properties:
+                    group:
+                      type: string
+                    indexes:
+                      type: integer
+                    name:
+                      type: string
+                    range:
+                      description: BenchmarkDatasetRangeSpec defines the desired state of range of dataset
+                      properties:
+                        end:
+                          type: integer
+                        start:
+                          type: integer
+                      required:
+                      - end
+                      - start
+                      type: object
+                  required:
+                  - group
+                  - name
+                  type: object
+                dimension:
+                  type: integer
+                epsilon:
+                  type: number
+                iter:
+                  type: integer
+                job_type:
+                  type: string
+                min_num:
+                  format: int32
+                  type: integer
+                num:
+                  format: int32
+                  type: integer
+                radius:
+                  type: number
+                repetition:
+                  default: 1
+                  type: integer
+                replica:
+                  default: 1
+                  type: integer
+                rules:
+                  items:
+                    description: BenchmarkOperatorJobRuleSpec defines the desired state of rule of running benchmark job
+                    properties:
+                      name:
+                        type: string
+                      type:
+                        type: string
+                    required:
+                    - name
+                    - type
+                    type: object
+                  type: array
+                target:
+                  description: BenchmarkTargetSpec defines the desired state of target the Vald cluster
+                  properties:
+                    host:
+                      type: string
+                    port:
+                      type: integer
+                  required:
+                  - host
+                  - port
+                  type: object
+                timeout:
+                  type: string
+                gateway_client:
+                  type: object
+                  properties:
+                    addrs:
+                      type: array
+                      items:
+                        type: string
+                    backoff:
+                      type: object
+                      properties:
+                        backoff_factor:
+                          type: number
+                        backoff_time_limit:
+                          type: string
+                        enable_error_log:
+                          type: boolean
+                        initial_duration:
+                          type: string
+                        jitter_limit:
+                          type: string
+                        maximum_duration:
+                          type: string
+                        retry_count:
+                          type: integer
+                    call_option:
+                      type: object
+                      x-kubernetes-preserve-unknown-fields: true
+                    circuit_breaker:
+                      type: object
+                      properties:
+                        closed_error_rate:
+                          type: number
+                        closed_refresh_timeout:
+                          type: string
+                        half_open_error_rate:
+                          type: number
+                        min_samples:
+                          type: integer
+                        open_timeout:
+                          type: string
+                    connection_pool:
+                      type: object
+                      properties:
+                        enable_dns_resolver:
+                          type: boolean
+                        enable_rebalance:
+                          type: boolean
+                        old_conn_close_duration:
+                          type: string
+                        rebalance_duration:
+                          type: string
+                        size:
+                          type: integer
+                    dial_option:
+                      type: object
+                      properties:
+                        backoff_base_delay:
+                          type: string
+                        backoff_jitter:
+                          type: number
+                        backoff_max_delay:
+                          type: string
+                        backoff_multiplier:
+                          type: number
+                        enable_backoff:
+                          type: boolean
+                        initial_connection_window_size:
+                          type: integer
+                        initial_window_size:
+                          type: integer
+                        insecure:
+                          type: boolean
+                        keepalive:
+                          type: object
+                          properties:
+                            permit_without_stream:
+                              type: boolean
+                            time:
+                              type: string
+                            timeout:
+                              type: string
+                        max_msg_size:
+                          type: integer
+                        min_connection_timeout:
+                          type: string
+                        net:
+                          type: object
+                          properties:
+                            dialer:
+                              type: object
+                              properties:
+                                dual_stack_enabled:
+                                  type: boolean
+                                keepalive:
+                                  type: string
+                                timeout:
+                                  type: string
+                            dns:
+                              type: object
+                              properties:
+                                cache_enabled:
+                                  type: boolean
+                                cache_expiration:
+                                  type: string
+                                refresh_duration:
+                                  type: string
+                            socket_option:
+                              type: object
+                              properties:
+                                ip_recover_destination_addr:
+                                  type: boolean
+                                ip_transparent:
+                                  type: boolean
+                                reuse_addr:
+                                  type: boolean
+                                reuse_port:
+                                  type: boolean
+                                tcp_cork:
+                                  type: boolean
+                                tcp_defer_accept:
+                                  type: boolean
+                                tcp_fast_open:
+                                  type: boolean
+                                tcp_no_delay:
+                                  type: boolean
+                                tcp_quick_ack:
+                                  type: boolean
+                            tls:
+                              type: object
+                              properties:
+                                ca:
+                                  type: string
+                                cert:
+                                  type: string
+                                enabled:
+                                  type: boolean
+                                insecure_skip_verify:
+                                  type: boolean
+                                key:
+                                  type: string
+                        read_buffer_size:
+                          type: integer
+                        timeout:
+                          type: string
+                        write_buffer_size:
+                          type: integer
+                    health_check_duration:
+                      type: string
+                    max_recv_msg_size:
+                      type: integer
+                    max_retry_rpc_buffer_size:
+                      type: integer
+                    max_send_msg_size:
+                      type: integer
+                    tls:
+                      type: object
+                      properties:
+                        ca:
+                          type: string
+                        cert:
+                          type: string
+                        enabled:
+                          type: boolean
+                        insecure_skip_verify:
+                          type: boolean
+                        key:
+                          type: string
+                    wait_for_ready:
+                      type: boolean
+              required:
+              - dimension
+              - epsilon
+              - iter
+              - job_type
+              - min_num
+              - num
+              - radius
+              - timeout
