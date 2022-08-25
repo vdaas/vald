@@ -114,6 +114,7 @@ func dirwalk(dir string) []string {
 			".html",
 			".json",
 			".key",
+			".kvsdb",
 			".lock",
 			".md",
 			".md5",

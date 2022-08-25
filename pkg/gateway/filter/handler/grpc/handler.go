@@ -34,6 +34,7 @@ import (
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/grpc/codes"
+	"github.com/vdaas/vald/internal/net/grpc/errdetails"
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/observability/trace"
 )
@@ -42,6 +43,8 @@ type server struct {
 	eg                errgroup.Group
 	defaultVectorizer string
 	defaultFilters    []string
+	name              string
+	ip                string
 	ingress           ingress.Client
 	egress            egress.Client
 	gateway           client.Client
@@ -68,7 +71,7 @@ func New(opts ...Option) vald.ServerWithFilter {
 	return s
 }
 
-func (s *server) SearchObject(ctx context.Context, req *payload.Search_ObjectRequest) (*payload.Search_Response, error) {
+func (s *server) SearchObject(ctx context.Context, req *payload.Search_ObjectRequest) (res *payload.Search_Response, err error) {
 	ctx, span := trace.StartSpan(ctx, apiName+"/"+vald.SearchObjectRPCName)
 	defer func() {
 		if span != nil {
@@ -77,7 +80,30 @@ func (s *server) SearchObject(ctx context.Context, req *payload.Search_ObjectReq
 	}()
 	vr := req.GetVectorizer()
 	if vr == nil || vr.GetPort() == 0 {
-		return nil, status.WrapWithInvalidArgument("SearchObject API vectorizer configuration is invalid", errors.ErrFilterNotFound, info.Get())
+		err = status.WrapWithInvalidArgument(vald.SearchObjectRPCName+" API vectorizer configuration is invalid", errors.ErrFilterNotFound,
+			&errdetails.RequestInfo{
+				RequestId:   req.GetConfig().GetRequestId(),
+				ServingData: errdetails.Serialize(req),
+			},
+			&errdetails.BadRequest{
+				FieldViolations: []*errdetails.BadRequestFieldViolation{
+					{
+						Field:       "vectorizer port",
+						Description: err.Error(),
+					},
+				},
+			},
+			&errdetails.ResourceInfo{
+				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.SearchObjectRPCName,
+				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+			})
+		log.Warn(err)
+		if span != nil {
+			span.RecordError(err)
+			span.SetAttributes(trace.StatusCodeInvalidArgument(err.Error())...)
+			span.SetStatus(trace.StatusError, err.Error())
+		}
+		return nil, err
 	}
 	if vr.GetHost() == "" {
 		vr.Host = "localhost"
@@ -85,19 +111,88 @@ func (s *server) SearchObject(ctx context.Context, req *payload.Search_ObjectReq
 	target := fmt.Sprintf("%s:%d", vr.GetHost(), vr.GetPort())
 	if len(target) == 0 {
 		if len(s.Vectorizer) == 0 {
-			return nil, status.WrapWithInvalidArgument("SearchObject API vectorizer configuration is invalid", errors.ErrFilterNotFound, info.Get())
+			err = status.WrapWithInvalidArgument(vald.SearchObjectRPCName+" API vectorizer configuration is invalid", errors.ErrFilterNotFound,
+				&errdetails.RequestInfo{
+					RequestId:   req.GetConfig().GetRequestId(),
+					ServingData: errdetails.Serialize(req),
+				},
+				&errdetails.BadRequest{
+					FieldViolations: []*errdetails.BadRequestFieldViolation{
+						{
+							Field:       "vectorizer targets",
+							Description: err.Error(),
+						},
+					},
+				},
+				&errdetails.ResourceInfo{
+					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.SearchObjectRPCName,
+					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+				})
+			log.Warn(err)
+			if span != nil {
+				span.RecordError(err)
+				span.SetAttributes(trace.StatusCodeInvalidArgument(err.Error())...)
+				span.SetStatus(trace.StatusError, err.Error())
+			}
+			return nil, err
 		}
 		target = s.Vectorizer
 	}
 	c, err := s.ingress.Target(ctx, target)
 	if err != nil {
-		return nil, status.WrapWithUnavailable("SearchObject API target filter API unavailable", err, req, info.Get())
+		err = status.WrapWithUnavailable("SearchObject API target filter API unavailable", err,
+			&errdetails.RequestInfo{
+				RequestId:   req.GetConfig().GetRequestId(),
+				ServingData: errdetails.Serialize(req),
+			},
+			&errdetails.BadRequest{
+				FieldViolations: []*errdetails.BadRequestFieldViolation{
+					{
+						Field:       "vectorizer targets",
+						Description: err.Error(),
+					},
+				},
+			},
+			&errdetails.ResourceInfo{
+				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.SearchObject",
+				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+			}, info.Get())
+		log.Warn(err)
+		if span != nil {
+			span.RecordError(err)
+			span.SetAttributes(trace.StatusCodeUnavailable(err.Error())...)
+			span.SetStatus(trace.StatusError, err.Error())
+		}
+		return nil, err
 	}
 	vec, err := c.GenVector(ctx, &payload.Object_Blob{
 		Object: req.GetObject(),
 	})
 	if err != nil {
-		return nil, status.WrapWithInternal("SearchObject API failed to extract vector from filter", err, req, info.Get())
+		err = status.WrapWithInternal("SearchObject API failed to extract vector from filter", err,
+			&errdetails.RequestInfo{
+				RequestId:   req.GetConfig().GetRequestId(),
+				ServingData: errdetails.Serialize(req),
+			},
+			&errdetails.BadRequest{
+				FieldViolations: []*errdetails.BadRequestFieldViolation{
+					{
+						Field:       "vectorizer targets",
+						Description: err.Error(),
+					},
+				},
+			},
+			&errdetails.ResourceInfo{
+				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.SearchObject",
+				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+			}, info.Get())
+		log.Warn(err)
+		if span != nil {
+			span.RecordError(err)
+			span.SetAttributes(trace.StatusCodeInternal(err.Error())...)
+			span.SetStatus(trace.StatusError, err.Error())
+		}
+		return nil, err
 	}
 	return s.Search(ctx, &payload.Search_Request{
 		Vector: vec.GetVector(),
@@ -123,10 +218,36 @@ func (s *server) MultiSearchObject(ctx context.Context, reqs *payload.Search_Mul
 		wg.Add(1)
 		s.eg.Go(func() error {
 			defer wg.Done()
+			ctx, sspan := trace.StartSpan(ctx, fmt.Sprintf("%s.%s/errgroup.Go/id-%d", apiName, vald.MultiSearchObjectRPCName, idx))
+			defer func() {
+				if sspan != nil {
+					sspan.End()
+				}
+			}()
 			r, err := s.SearchObject(ctx, query)
 			if err != nil {
-				if span != nil {
-					span.SetStatus(trace.StatusCodeNotFound(err.Error()))
+				err = status.WrapWithNotFound(vald.MultiSearchObjectRPCName+" API object "+string(query.GetObject())+"'s search request result not found", err,
+					&errdetails.RequestInfo{
+						RequestId:   req.GetConfig().GetRequestId(),
+						ServingData: errdetails.Serialize(req),
+					},
+					&errdetails.BadRequest{
+						FieldViolations: []*errdetails.BadRequestFieldViolation{
+							{
+								Field:       "vectorizer targets",
+								Description: err.Error(),
+							},
+						},
+					},
+					&errdetails.ResourceInfo{
+						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.SearchObject",
+						ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+					}, info.Get())
+				log.Warn(err)
+				if sspan != nil {
+					sspan.RecordError(err)
+					sspan.SetAttributes(trace.StatusCodeInternal(err.Error())...)
+					sspan.SetStatus(trace.StatusError, err.Error())
 				}
 				mu.Lock()
 				if errs == nil {

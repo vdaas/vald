@@ -56,7 +56,9 @@ func (s *server) CreateIndex(ctx context.Context, c *payload.Control_CreateIndex
 					},
 				}, info.Get())
 			if span != nil {
-				span.SetStatus(trace.StatusCodeFailedPrecondition(err.Error()))
+				span.RecordError(err)
+				span.SetAttributes(trace.StatusCodeFailedPrecondition(err.Error())...)
+				span.SetStatus(trace.StatusError, err.Error())
 			}
 			return nil, err
 		}
@@ -71,7 +73,9 @@ func (s *server) CreateIndex(ctx context.Context, c *payload.Control_CreateIndex
 			}, info.Get())
 		log.Error(err)
 		if span != nil {
-			span.SetStatus(trace.StatusCodeInternal(err.Error()))
+			span.RecordError(err)
+			span.SetAttributes(trace.StatusCodeInternal(err.Error())...)
+			span.SetStatus(trace.StatusError, err.Error())
 		}
 		return nil, err
 	}
@@ -96,7 +100,9 @@ func (s *server) SaveIndex(ctx context.Context, _ *payload.Empty) (res *payload.
 			}, info.Get())
 		log.Error(err)
 		if span != nil {
-			span.SetStatus(trace.StatusCodeInternal(err.Error()))
+			span.RecordError(err)
+			span.SetAttributes(trace.StatusCodeInternal(err.Error())...)
+			span.SetStatus(trace.StatusError, err.Error())
 		}
 		return nil, err
 	}
@@ -131,7 +137,9 @@ func (s *server) CreateAndSaveIndex(ctx context.Context, c *payload.Control_Crea
 					},
 				}, info.Get())
 			if span != nil {
-				span.SetStatus(trace.StatusCodeFailedPrecondition(err.Error()))
+				span.RecordError(err)
+				span.SetAttributes(trace.StatusCodeFailedPrecondition(err.Error())...)
+				span.SetStatus(trace.StatusError, err.Error())
 			}
 			return nil, err
 		}
@@ -145,7 +153,9 @@ func (s *server) CreateAndSaveIndex(ctx context.Context, c *payload.Control_Crea
 			}, info.Get())
 		log.Error(err)
 		if span != nil {
-			span.SetStatus(trace.StatusCodeInternal(err.Error()))
+			span.RecordError(err)
+			span.SetAttributes(trace.StatusCodeInternal(err.Error())...)
+			span.SetStatus(trace.StatusError, err.Error())
 		}
 		return nil, err
 	}

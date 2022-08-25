@@ -60,7 +60,9 @@ func (s *server) Exists(ctx context.Context, uid *payload.Object_ID) (res *paylo
 			})
 
 		if span != nil {
-			span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
+			span.RecordError(err)
+			span.SetAttributes(trace.StatusCodeInvalidArgument(err.Error())...)
+			span.SetStatus(trace.StatusError, err.Error())
 		}
 		log.Warn(err)
 		return nil, err
@@ -78,7 +80,9 @@ func (s *server) Exists(ctx context.Context, uid *payload.Object_ID) (res *paylo
 			},
 			uid.GetId())
 		if span != nil {
-			span.SetStatus(trace.StatusCodeNotFound(err.Error()))
+			span.RecordError(err)
+			span.SetAttributes(trace.StatusCodeNotFound(err.Error())...)
+			span.SetStatus(trace.StatusError, err.Error())
 		}
 		return nil, err
 	}
@@ -114,7 +118,9 @@ func (s *server) GetObject(ctx context.Context, id *payload.Object_VectorRequest
 			})
 		log.Warn(err)
 		if span != nil {
-			span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
+			span.RecordError(err)
+			span.SetAttributes(trace.StatusCodeInvalidArgument(err.Error())...)
+			span.SetStatus(trace.StatusError, err.Error())
 		}
 		return nil, err
 	}
@@ -131,7 +137,9 @@ func (s *server) GetObject(ctx context.Context, id *payload.Object_VectorRequest
 				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
 			}, info.Get())
 		if span != nil {
-			span.SetStatus(trace.StatusCodeNotFound(err.Error()))
+			span.RecordError(err)
+			span.SetAttributes(trace.StatusCodeNotFound(err.Error())...)
+			span.SetStatus(trace.StatusError, err.Error())
 		}
 		return nil, err
 	}
@@ -163,7 +171,9 @@ func (s *server) StreamGetObject(stream vald.Object_StreamGetObjectServer) (err 
 			if err != nil {
 				st, msg, err := status.ParseError(err, codes.Internal, "failed to parse GetObject gRPC error response")
 				if sspan != nil {
-					sspan.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
+					sspan.RecordError(err)
+					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+					sspan.SetStatus(trace.StatusError, err.Error())
 				}
 				return &payload.Object_StreamVector{
 					Payload: &payload.Object_StreamVector_Status{
@@ -181,7 +191,9 @@ func (s *server) StreamGetObject(stream vald.Object_StreamGetObjectServer) (err 
 	if err != nil {
 		st, msg, err := status.ParseError(err, codes.Internal, "failed to parse StreamGetObject gRPC error response")
 		if span != nil {
-			span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
+			span.RecordError(err)
+			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+			span.SetStatus(trace.StatusError, err.Error())
 		}
 
 		log.Error(err)

@@ -20,18 +20,28 @@ package trace
 import (
 	"context"
 
-	"go.opencensus.io/trace"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 )
 
 var (
 	enabled bool
 
-	BoolAttribute    = trace.BoolAttribute
-	Float64Attribute = trace.Float64Attribute
-	Int64Attribute   = trace.Int64Attribute
-	StringAttribute  = trace.StringAttribute
+	BoolAttribute = func(key string, val bool) attribute.KeyValue {
+		return attribute.Key(key).Bool(val)
+	}
+	Float64Attribute = func(key string, val float64) attribute.KeyValue {
+		return attribute.Key(key).Float64(val)
+	}
+	Int64Attribute = func(key string, val int64) attribute.KeyValue {
+		return attribute.Key(key).Int64(val)
+	}
+	StringAttribute = func(key, val string) attribute.KeyValue {
+		return attribute.Key(key).String(val)
+	}
 
-	FromContext = trace.FromContext
+	FromContext = trace.SpanFromContext
 )
 
 type Span = trace.Span
@@ -44,12 +54,12 @@ type tracer struct {
 	samplingRate float64
 }
 
-func StartSpan(ctx context.Context, name string, opts ...trace.StartOption) (context.Context, *Span) {
+func StartSpan(ctx context.Context, name string, opts ...trace.SpanStartOption) (context.Context, Span) {
 	if !enabled {
 		return ctx, nil
 	}
 
-	return trace.StartSpan(ctx, name, opts...)
+	return otel.Tracer("component-main").Start(ctx, name, opts...)
 }
 
 func New(opts ...TraceOption) Tracer {
@@ -61,13 +71,16 @@ func New(opts ...TraceOption) Tracer {
 
 	enabled = true
 
+	tr := otel.Tracer("component-main")
+
+	_ = tr
 	return t
 }
 
 func (t *tracer) Start(ctx context.Context) {
-	trace.ApplyConfig(
-		trace.Config{
-			DefaultSampler: trace.ProbabilitySampler(t.samplingRate),
-		},
-	)
+	// trace.ApplyConfig(
+	// 	trace.Config{
+	// 		DefaultSampler: trace.ProbabilitySampler(t.samplingRate),
+	// 	},
+	// )
 }

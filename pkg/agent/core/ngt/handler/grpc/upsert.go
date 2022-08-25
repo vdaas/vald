@@ -64,7 +64,9 @@ func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *
 			})
 		log.Warn(err)
 		if span != nil {
-			span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
+			span.RecordError(err)
+			span.SetAttributes(trace.StatusCodeInvalidArgument(err.Error())...)
+			span.SetStatus(trace.StatusError, err.Error())
 		}
 		return nil, err
 	}
@@ -124,7 +126,9 @@ func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *
 				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
 			})
 		if span != nil {
-			span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
+			span.RecordError(err)
+			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+			span.SetStatus(trace.StatusError, err.Error())
 		}
 		return nil, err
 	}
@@ -152,7 +156,9 @@ func (s *server) StreamUpsert(stream vald.Upsert_StreamUpsertServer) (err error)
 			if err != nil {
 				st, msg, err := status.ParseError(err, codes.Internal, "failed to parse Upsert gRPC error response")
 				if sspan != nil {
-					sspan.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
+					sspan.RecordError(err)
+					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+					sspan.SetStatus(trace.StatusError, err.Error())
 				}
 				return &payload.Object_StreamLocation{
 					Payload: &payload.Object_StreamLocation_Status{
@@ -170,7 +176,9 @@ func (s *server) StreamUpsert(stream vald.Upsert_StreamUpsertServer) (err error)
 	if err != nil {
 		st, msg, err := status.ParseError(err, codes.Internal, "failed to parse StreamUpsert gRPC error response")
 		if span != nil {
-			span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
+			span.RecordError(err)
+			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+			span.SetStatus(trace.StatusError, err.Error())
 		}
 		return err
 	}
@@ -213,7 +221,9 @@ func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequ
 				})
 			log.Warn(err)
 			if span != nil {
-				span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
+				span.RecordError(err)
+				span.SetAttributes(trace.StatusCodeInvalidArgument(err.Error())...)
+				span.SetStatus(trace.StatusError, err.Error())
 			}
 			return nil, err
 		}
@@ -320,7 +330,9 @@ func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequ
 				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
 			}, info.Get())
 		if span != nil {
-			span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
+			span.RecordError(err)
+			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+			span.SetStatus(trace.StatusError, err.Error())
 		}
 		return nil, err
 	}

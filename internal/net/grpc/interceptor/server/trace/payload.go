@@ -60,14 +60,14 @@ func TracePayloadInterceptor() grpc.UnaryServerInterceptor {
 		}
 
 		service, method := parseMethod(info.FullMethod)
-		span.AddAttributes(
+		span.SetAttributes(
 			trace.StringAttribute(traceAttrGRPCKind, grpcKindUnary),
 			trace.StringAttribute(traceAttrGRPCService, service),
 			trace.StringAttribute(traceAttrGRPCMethod, method),
 		)
 
 		if reqj := marshalJSON(req); reqj != "" {
-			span.AddAttributes(
+			span.SetAttributes(
 				trace.StringAttribute(traceAttrGRPCRequestPayload, reqj),
 			)
 		}
@@ -75,7 +75,7 @@ func TracePayloadInterceptor() grpc.UnaryServerInterceptor {
 		resp, err = handler(ctx, req)
 
 		if resj := marshalJSON(resp); resj != "" {
-			span.AddAttributes(
+			span.SetAttributes(
 				trace.StringAttribute(traceAttrGRPCResponsePayload, resj),
 			)
 		}
@@ -97,7 +97,7 @@ func TracePayloadStreamInterceptor() grpc.StreamServerInterceptor {
 		}
 
 		service, method := parseMethod(info.FullMethod)
-		span.AddAttributes(
+		span.SetAttributes(
 			trace.StringAttribute(traceAttrGRPCKind, grpcKindStream),
 			trace.StringAttribute(traceAttrGRPCService, service),
 			trace.StringAttribute(traceAttrGRPCMethod, method),
@@ -109,7 +109,7 @@ func TracePayloadStreamInterceptor() grpc.StreamServerInterceptor {
 
 		err := handler(srv, tss)
 
-		span.AddAttributes(
+		span.SetAttributes(
 			trace.StringAttribute(traceAttrGRPCRequestPayload, tss.request),
 			trace.StringAttribute(traceAttrGRPCResponsePayload, tss.response),
 		)

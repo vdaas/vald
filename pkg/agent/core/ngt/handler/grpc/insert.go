@@ -30,6 +30,7 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/strings"
+	"go.opentelemetry.io/otel/attribute"
 )
 
 // Insert inserts a vector to the NGT.
@@ -63,14 +64,16 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (res *
 			})
 		log.Warn(err)
 		if span != nil {
-			span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
+			span.RecordError(err)
+			span.SetAttributes(trace.StatusCodeInvalidArgument(err.Error())...)
+			span.SetStatus(trace.StatusError, err.Error())
 		}
 		return nil, err
 	}
 
 	err = s.ngt.InsertWithTime(vec.GetId(), vec.GetVector(), req.GetConfig().GetTimestamp())
 	if err != nil {
-		var code trace.Status
+		var attrs []attribute.KeyValue
 
 		if errors.Is(err, errors.ErrUUIDAlreadyExists(vec.GetId())) {
 			err = status.WrapWithAlreadyExists(fmt.Sprintf("Insert API uuid %s already exists", vec.GetId()), err,
@@ -83,7 +86,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (res *
 					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
 				})
 			log.Warn(err)
-			code = trace.StatusCodeAlreadyExists(err.Error())
+			attrs = trace.StatusCodeAlreadyExists(err.Error())
 		} else if errors.Is(err, errors.ErrUUIDNotFound(0)) {
 			err = status.WrapWithInvalidArgument(fmt.Sprintf("Insert API empty uuid \"%s\" was given", vec.GetId()), err,
 				&errdetails.RequestInfo{
@@ -103,7 +106,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (res *
 					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
 				})
 			log.Warn(err)
-			code = trace.StatusCodeInvalidArgument(err.Error())
+			attrs = trace.StatusCodeInvalidArgument(err.Error())
 		} else {
 			var (
 				st  *status.Status
@@ -119,10 +122,12 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (res *
 					ResourceType: ngtResourceType + "/ngt.Insert",
 					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
 				}, info.Get())
-			code = trace.FromGRPCStatus(st.Code(), msg)
+			attrs = trace.FromGRPCStatus(st.Code(), msg)
 		}
 		if span != nil {
-			span.SetStatus(code)
+			span.RecordError(err)
+			span.SetAttributes(attrs...)
+			span.SetStatus(trace.StatusError, err.Error())
 		}
 		return nil, err
 	}
@@ -150,7 +155,9 @@ func (s *server) StreamInsert(stream vald.Insert_StreamInsertServer) (err error)
 			if err != nil {
 				st, msg, err := status.ParseError(err, codes.Internal, "failed to parse Insert gRPC error response")
 				if sspan != nil {
-					sspan.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
+					sspan.RecordError(err)
+					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+					sspan.SetStatus(trace.StatusError, err.Error())
 				}
 				return &payload.Object_StreamLocation{
 					Payload: &payload.Object_StreamLocation_Status{
@@ -168,7 +175,9 @@ func (s *server) StreamInsert(stream vald.Insert_StreamInsertServer) (err error)
 	if err != nil {
 		st, msg, err := status.ParseError(err, codes.Internal, "failed to parse StreamInsert gRPC error response")
 		if span != nil {
-			span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
+			span.RecordError(err)
+			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+			span.SetStatus(trace.StatusError, err.Error())
 		}
 		return err
 	}
@@ -208,7 +217,9 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 				})
 			log.Warn(err)
 			if span != nil {
-				span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
+				span.RecordError(err)
+				span.SetAttributes(trace.StatusCodeInvalidArgument(err.Error())...)
+				span.SetStatus(trace.StatusError, err.Error())
 			}
 			return nil, err
 		}
@@ -217,7 +228,7 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 	}
 	err = s.ngt.InsertMultiple(vmap)
 	if err != nil {
-		var code trace.Status
+		var attrs []attribute.KeyValue
 		if alreadyExistsIDs := func() []string {
 			aids := make([]string, 0, len(uuids))
 			for _, id := range uuids {
@@ -237,7 +248,7 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
 				})
 			log.Warn(err)
-			code = trace.StatusCodeAlreadyExists(err.Error())
+			attrs = trace.StatusCodeAlreadyExists(err.Error())
 		} else if errors.Is(err, errors.ErrUUIDNotFound(0)) {
 			err = status.WrapWithInvalidArgument(fmt.Sprintf("MultiInsert API invalid uuids \"%v\" detected", uuids), err,
 				&errdetails.RequestInfo{
@@ -257,7 +268,7 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
 				})
 			log.Warn(err)
-			code = trace.StatusCodeInvalidArgument(err.Error())
+			attrs = trace.StatusCodeInvalidArgument(err.Error())
 		} else {
 			err = status.WrapWithInternal("MultiInsert API failed", err,
 				&errdetails.RequestInfo{
@@ -269,10 +280,13 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
 				}, info.Get())
 			log.Error(err)
-			code = trace.StatusCodeInternal(err.Error())
+			attrs = trace.StatusCodeInternal(err.Error())
 		}
 		if span != nil {
-			span.SetStatus(code)
+			span.RecordError(err)
+			span.SetAttributes(attrs...)
+			span.SetStatus(trace.StatusError, err.Error())
+
 		}
 		return nil, err
 	}

@@ -19,11 +19,11 @@ package config
 
 // Observability represents the configuration for the observability.
 type Observability struct {
-	Enabled    bool        `json:"enabled"     yaml:"enabled"`
-	Collector  *Collector  `json:"collector"   yaml:"collector"`
-	Trace      *Trace      `json:"trace"       yaml:"trace"`
-	Prometheus *Prometheus `json:"prometheus"  yaml:"prometheus"`
-	Jaeger     *Jaeger     `json:"jaeger"      yaml:"jaeger"`
+	Enabled    bool        `json:"enabled"    yaml:"enabled"`
+	Collector  *Collector  `json:"collector"  yaml:"collector"`
+	Trace      *Trace      `json:"trace"      yaml:"trace"`
+	Prometheus *Prometheus `json:"prometheus" yaml:"prometheus"`
+	Jaeger     *Jaeger     `json:"jaeger"     yaml:"jaeger"`
 }
 
 // Collector represents the configuration for the collector.
