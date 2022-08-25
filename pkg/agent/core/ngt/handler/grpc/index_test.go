@@ -755,7 +755,11 @@ func Test_server_SaveIndex(t *testing.T) {
 				},
 				beforeFunc: func(t *testing.T, ctx context.Context, s Server, n service.NGT) {
 					// remove write access
+<<<<<<< HEAD
 					if err := os.Chmod(indexPath, 0o555); err != nil {
+=======
+					if err := os.Chmod(indexPath, 0000); err != nil {
+>>>>>>> 0aceb20c5 (try to fix error)
 						t.Error(err)
 					}
 
