@@ -1432,15 +1432,10 @@ func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *
 	}
 	res, err = s.gateway.Search(ctx, req, s.copts...)
 	if err != nil {
-		// TODO:
-		st, ok := status.FromError(err)
-		if !ok {
-			st = status.New(codes.Internal, errors.Wrap(err, "failed to parse grpc status from error").Error())
-			err = errors.Wrap(st.Err(), err.Error())
-		}
+		st, msg, err := status.ParseError(err, codes.Internal, "failed to parse "+vald.SearchRPCName+" gRPC error response")
 		if span != nil {
 			span.RecordError(err)
-			span.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
+			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
 			span.SetStatus(trace.StatusError, err.Error())
 		}
 		return nil, err
@@ -2435,15 +2430,25 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (loc *
 	req.Vector = vec
 	loc, err = s.gateway.Insert(ctx, req, s.copts...)
 	if err != nil {
-		// TODO:
 		err = errors.Wrapf(err, "Insert API failed to Insert uuid = %s\tinfo = %#v", uuid, info.Get())
+		err = status.WrapWithInternal(
+			fmt.Sprintf("Insert API failed to Execute DoMulti error = %s", err.Error()), err,
+			&errdetails.RequestInfo{
+				RequestId:   req.GetVector().GetId(),
+				ServingData: errdetails.Serialize(req),
+			},
+			&errdetails.ResourceInfo{
+				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.InsertRPCName,
+				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+			}, info.Get(),
+		)
 		log.Error(err)
 		if span != nil {
 			span.RecordError(err)
 			span.SetAttributes(trace.StatusCodeInternal(err.Error())...)
 			span.SetStatus(trace.StatusError, err.Error())
 		}
-		return nil, status.WrapWithInternal(fmt.Sprintf("Insert API failed to Execute DoMulti error = %s", err.Error()), err, info.Get())
+		return nil, err
 	}
 	return loc, nil
 }
@@ -2959,15 +2964,25 @@ func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *
 	req.Vector = vec
 	loc, err = s.gateway.Upsert(ctx, req, s.copts...)
 	if err != nil {
-		// TODO:
-		err = errors.Wrapf(err, "Upsert API failed to Upsert uuid = %s\tinfo = %#v", uuid, info.Get())
+		err = errors.Wrapf(err, vald.UpsertRPCName+" API failed to Upsert uuid = %s\tinfo = %#v", uuid, info.Get())
+		err = status.WrapWithInternal(fmt.Sprintf(vald.UpsertRPCName+" API failed to Execute DoMulti error = %s", err.Error()), err,
+			&errdetails.RequestInfo{
+				RequestId:   req.GetVector().GetId(),
+				ServingData: errdetails.Serialize(req),
+			},
+			&errdetails.ResourceInfo{
+				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.UpsertObjectRPCName,
+				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+			}, info.Get(),
+		)
+
 		log.Error(err)
 		if span != nil {
 			span.RecordError(err)
 			span.SetAttributes(trace.StatusCodeInternal(err.Error())...)
 			span.SetStatus(trace.StatusError, err.Error())
 		}
-		return nil, status.WrapWithInternal(fmt.Sprintf("Upsert API failed to Execute DoMulti error = %s", err.Error()), err, info.Get())
+		return nil, err
 	}
 	return loc, nil
 }
