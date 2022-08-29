@@ -143,7 +143,9 @@ func (s *server) SearchObject(ctx context.Context, req *payload.Search_ObjectReq
 	}
 	c, err := s.ingress.Target(ctx, target)
 	if err != nil {
-		err = status.WrapWithUnavailable(vald.SearchObjectRPCName+" API target filter API unavailable", err,
+		err = status.WrapWithUnavailable(
+			fmt.Sprintf(vald.SearchRPCName+" API ingress filter targets %v not found", target),
+			err,
 			&errdetails.RequestInfo{
 				RequestId:   req.GetConfig().GetRequestId(),
 				ServingData: errdetails.Serialize(req),
@@ -229,7 +231,8 @@ func (s *server) MultiSearchObject(ctx context.Context, reqs *payload.Search_Mul
 			}()
 			r, err := s.SearchObject(ctx, query)
 			if err != nil {
-				err = status.WrapWithNotFound(vald.MultiSearchObjectRPCName+" API object "+string(query.GetObject())+"'s search request result not found", err,
+				st, msg, err := status.ParseError(err, codes.NotFound,
+					vald.MultiSearchObjectRPCName+" API object "+string(query.GetObject())+"'s search request result not found",
 					&errdetails.RequestInfo{
 						RequestId:   req.GetConfig().GetRequestId(),
 						ServingData: errdetails.Serialize(req),
@@ -246,10 +249,9 @@ func (s *server) MultiSearchObject(ctx context.Context, reqs *payload.Search_Mul
 						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.SearchObjectRPCName,
 						ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
 					}, info.Get())
-				log.Warn(err)
 				if sspan != nil {
 					sspan.RecordError(err)
-					sspan.SetAttributes(trace.StatusCodeInternal(err.Error())...)
+					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
 					sspan.SetStatus(trace.StatusError, err.Error())
 				}
 				mu.Lock()
@@ -294,7 +296,16 @@ func (s *server) StreamSearchObject(stream vald.Filter_StreamSearchObjectServer)
 
 			res, err := s.SearchObject(ctx, req)
 			if err != nil {
-				st, msg, err := status.ParseError(err, codes.Internal, "failed to parse "+vald.SearchObjectRPCName+" gRPC error response")
+				st, msg, err := status.ParseError(err, codes.Internal, "failed to parse "+vald.SearchObjectRPCName+" gRPC error response",
+					&errdetails.RequestInfo{
+						RequestId:   req.GetConfig().GetRequestId(),
+						ServingData: errdetails.Serialize(req),
+					},
+					&errdetails.ResourceInfo{
+						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.SearchObjectRPCName,
+						ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+					}, info.Get(),
+				)
 				if sspan != nil {
 					sspan.RecordError(err)
 					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
@@ -324,7 +335,7 @@ func (s *server) LinearSearchObject(ctx context.Context, req *payload.Search_Obj
 	vr := req.GetVectorizer()
 	if vr == nil || vr.GetPort() == 0 {
 		err := errors.ErrInvalidAPIConfig
-		err = status.WrapWithInvalidArgument(vald.LinearSearchObjectRPCName+" API vectorizer configuration is invalid", errors.ErrFilterNotFound,
+		err = status.WrapWithInvalidArgument(vald.LinearSearchObjectRPCName+" API vectorizer configuration is invalid", err,
 			&errdetails.RequestInfo{
 				RequestId:   req.GetConfig().GetRequestId(),
 				ServingData: errdetails.Serialize(req),
@@ -356,7 +367,7 @@ func (s *server) LinearSearchObject(ctx context.Context, req *payload.Search_Obj
 	if len(target) == 0 {
 		if len(s.Vectorizer) == 0 {
 			err := errors.ErrFilterNotFound
-			err = status.WrapWithInvalidArgument(vald.LinearSearchObjectRPCName+" API vectorizer configuration is invalid", errors.ErrFilterNotFound,
+			err = status.WrapWithInvalidArgument(vald.LinearSearchObjectRPCName+" API vectorizer configuration is invalid", err,
 				&errdetails.RequestInfo{
 					RequestId:   req.GetConfig().GetRequestId(),
 					ServingData: errdetails.Serialize(req),
@@ -472,27 +483,19 @@ func (s *server) MultiLinearSearchObject(ctx context.Context, reqs *payload.Sear
 
 			r, err := s.LinearSearchObject(ctx, query)
 			if err != nil {
-				err = status.WrapWithNotFound(vald.MultiLinearSearchObjectRPCName+" API object "+string(query.GetObject())+"'s search request result not found", err,
+				st, msg, err := status.ParseError(err, codes.NotFound,
+					vald.MultiLinearSearchObjectRPCName+" API object "+string(query.GetObject())+"'s search request result not found",
 					&errdetails.RequestInfo{
 						RequestId:   req.GetConfig().GetRequestId(),
 						ServingData: errdetails.Serialize(req),
-					},
-					&errdetails.BadRequest{
-						FieldViolations: []*errdetails.BadRequestFieldViolation{
-							{
-								Field:       "vectorizer targets",
-								Description: err.Error(),
-							},
-						},
 					},
 					&errdetails.ResourceInfo{
 						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.LinearSearchObjectRPCName,
 						ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
 					}, info.Get())
-				log.Warn(err)
 				if sspan != nil {
 					sspan.RecordError(err)
-					sspan.SetAttributes(trace.StatusCodeInternal(err.Error())...)
+					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
 					sspan.SetStatus(trace.StatusError, err.Error())
 				}
 
@@ -515,15 +518,6 @@ func (s *server) MultiLinearSearchObject(ctx context.Context, reqs *payload.Sear
 		})
 	}
 	wg.Wait()
-
-	if errs != nil {
-		// TODO:
-		if span != nil {
-			span.RecordError(errs)
-			span.SetAttributes(trace.StatusCodeNotFound(errs.Error())...)
-			span.SetStatus(trace.StatusError, errs.Error())
-		}
-	}
 	return res, errs
 }
 
@@ -534,7 +528,7 @@ func (s *server) StreamLinearSearchObject(stream vald.Filter_StreamSearchObjectS
 			span.End()
 		}
 	}()
-	return grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
+	err := grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
 		func() interface{} { return new(payload.Search_ObjectRequest) },
 		func(ctx context.Context, data interface{}) (interface{}, error) {
 			req := data.(*payload.Search_ObjectRequest)
@@ -547,7 +541,16 @@ func (s *server) StreamLinearSearchObject(stream vald.Filter_StreamSearchObjectS
 
 			res, err := s.LinearSearchObject(ctx, req)
 			if err != nil {
-				st, msg, err := status.ParseError(err, codes.Internal, "failed to parse "+vald.StreamLinearSearchObjectRPCName+" gRPC error response")
+				st, msg, err := status.ParseError(err, codes.Internal, "failed to parse "+vald.LinearSearchObjectRPCName+" gRPC error response",
+					&errdetails.RequestInfo{
+						RequestId:   req.GetConfig().GetRequestId(),
+						ServingData: errdetails.Serialize(req),
+					},
+					&errdetails.ResourceInfo{
+						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.LinearSearchObjectRPCName,
+						ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+					}, info.Get(),
+				)
 				if sspan != nil {
 					sspan.RecordError(err)
 					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
@@ -565,6 +568,16 @@ func (s *server) StreamLinearSearchObject(stream vald.Filter_StreamSearchObjectS
 				},
 			}, nil
 		})
+	if err != nil {
+		if span != nil {
+			span.RecordError(err)
+			span.SetAttributes(trace.StatusCodeInternal(err.Error())...)
+			span.SetStatus(trace.StatusError, err.Error())
+		}
+		log.Error(err)
+		return err
+	}
+	return err
 }
 
 func (s *server) InsertObject(ctx context.Context, req *payload.Insert_ObjectRequest) (*payload.Object_Location, error) {
@@ -577,7 +590,7 @@ func (s *server) InsertObject(ctx context.Context, req *payload.Insert_ObjectReq
 	vr := req.GetVectorizer()
 	if vr == nil || vr.GetPort() == 0 {
 		err := errors.ErrInvalidAPIConfig
-		err = status.WrapWithInvalidArgument(vald.InsertObjectRPCName+" API vectorizer configuration is invalid", errors.ErrFilterNotFound,
+		err = status.WrapWithInvalidArgument(vald.InsertObjectRPCName+" API vectorizer configuration is invalid", err,
 			&errdetails.RequestInfo{
 				RequestId:   req.GetObject().GetId(),
 				ServingData: errdetails.Serialize(req),
@@ -609,7 +622,7 @@ func (s *server) InsertObject(ctx context.Context, req *payload.Insert_ObjectReq
 	if len(target) == 0 {
 		if len(s.Vectorizer) == 0 {
 			err := errors.ErrFilterNotFound
-			err = status.WrapWithInvalidArgument(vald.InsertObjectRPCName+" API vectorizer configuration is invalid", errors.ErrFilterNotFound,
+			err = status.WrapWithInvalidArgument(vald.InsertObjectRPCName+" API vectorizer configuration is invalid", err,
 				&errdetails.RequestInfo{
 					RequestId:   req.GetObject().GetId(),
 					ServingData: errdetails.Serialize(req),
@@ -706,7 +719,7 @@ func (s *server) StreamInsertObject(stream vald.Filter_StreamInsertObjectServer)
 			span.End()
 		}
 	}()
-	return grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
+	err := grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
 		func() interface{} { return new(payload.Insert_ObjectRequest) },
 		func(ctx context.Context, data interface{}) (interface{}, error) {
 			req := data.(*payload.Insert_ObjectRequest)
@@ -719,7 +732,16 @@ func (s *server) StreamInsertObject(stream vald.Filter_StreamInsertObjectServer)
 
 			loc, err := s.InsertObject(ctx, req)
 			if err != nil {
-				st, msg, err := status.ParseError(err, codes.Internal, "failed to parse "+vald.StreamInsertObjectRPCName+" gRPC error response")
+				st, msg, err := status.ParseError(err, codes.Internal, "failed to parse "+vald.InsertObjectRPCName+" gRPC error response",
+					&errdetails.RequestInfo{
+						RequestId:   req.GetObject().GetId(),
+						ServingData: errdetails.Serialize(req),
+					},
+					&errdetails.ResourceInfo{
+						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.InsertObjectRPCName,
+						ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+					}, info.Get(),
+				)
 				if sspan != nil {
 					sspan.RecordError(err)
 					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
@@ -737,6 +759,16 @@ func (s *server) StreamInsertObject(stream vald.Filter_StreamInsertObjectServer)
 				},
 			}, nil
 		})
+	if err != nil {
+		if span != nil {
+			span.RecordError(err)
+			span.SetAttributes(trace.StatusCodeInternal(err.Error())...)
+			span.SetStatus(trace.StatusError, err.Error())
+		}
+		log.Error(err)
+		return err
+	}
+	return nil
 }
 
 func (s *server) MultiInsertObject(ctx context.Context, reqs *payload.Insert_MultiObjectRequest) (locs *payload.Object_Locations, errs error) {
@@ -766,39 +798,30 @@ func (s *server) MultiInsertObject(ctx context.Context, reqs *payload.Insert_Mul
 
 			loc, err := s.InsertObject(ctx, query)
 			if err != nil {
-				err = status.WrapWithNotFound(vald.MultiInsertObjectRPCName+" API object "+query.GetObject().GetId()+"'s search request result not found", err,
+				st, msg, err := status.ParseError(err, codes.Internal, "failed to parse "+vald.InsertObjectRPCName+" gRPC error response",
 					&errdetails.RequestInfo{
 						RequestId:   req.GetObject().GetId(),
 						ServingData: errdetails.Serialize(req),
 					},
-					&errdetails.BadRequest{
-						FieldViolations: []*errdetails.BadRequestFieldViolation{
-							{
-								Field:       "vectorizer targets",
-								Description: err.Error(),
-							},
-						},
-					},
 					&errdetails.ResourceInfo{
-						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.MultiInsertObjectRPCName,
+						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.InsertObjectRPCName,
 						ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
 					}, info.Get())
-				log.Warn(err)
 				if sspan != nil {
 					sspan.RecordError(err)
-					sspan.SetAttributes(trace.StatusCodeInternal(err.Error())...)
+					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
 					sspan.SetStatus(trace.StatusError, err.Error())
 				}
 
 				mu.Lock()
 				if errs == nil {
 					errs = status.WrapWithNotFound(
-						fmt.Sprintf("MultiInsertObject API object id: %s's insert failed",
+						fmt.Sprintf(vald.MultiInsertObjectRPCName+" API object id: %s's insert failed",
 							query.GetObject().GetId()), err, info.Get())
 				} else {
 					errs = errors.Wrap(errs,
 						status.WrapWithNotFound(
-							fmt.Sprintf("MultiInsertObject API object id: %s's insert failed",
+							fmt.Sprintf(vald.MultiInsertObjectRPCName+" API object id: %s's insert failed",
 								query.GetObject().GetId()), err, info.Get()).Error())
 				}
 				mu.Unlock()
@@ -822,7 +845,7 @@ func (s *server) UpdateObject(ctx context.Context, req *payload.Update_ObjectReq
 	vr := req.GetVectorizer()
 	if vr == nil || vr.GetPort() == 0 {
 		err := errors.ErrInvalidAPIConfig
-		err = status.WrapWithInvalidArgument(vald.UpdateObjectRPCName+" API vectorizer configuration is invalid", errors.ErrFilterNotFound,
+		err = status.WrapWithInvalidArgument(vald.UpdateObjectRPCName+" API vectorizer configuration is invalid", err,
 			&errdetails.RequestInfo{
 				RequestId:   req.GetObject().GetId(),
 				ServingData: errdetails.Serialize(req),
@@ -855,7 +878,7 @@ func (s *server) UpdateObject(ctx context.Context, req *payload.Update_ObjectReq
 	if len(target) == 0 {
 		if len(s.Vectorizer) == 0 {
 			err := errors.ErrFilterNotFound
-			err = status.WrapWithInvalidArgument(vald.UpdateObjectRPCName+" API vectorizer configuration is invalid", errors.ErrFilterNotFound,
+			err = status.WrapWithInvalidArgument(vald.UpdateObjectRPCName+" API vectorizer configuration is invalid", err,
 				&errdetails.RequestInfo{
 					RequestId:   req.GetObject().GetId(),
 					ServingData: errdetails.Serialize(req),
@@ -952,7 +975,7 @@ func (s *server) StreamUpdateObject(stream vald.Filter_StreamUpdateObjectServer)
 			span.End()
 		}
 	}()
-	return grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
+	err := grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
 		func() interface{} { return new(payload.Update_ObjectRequest) },
 		func(ctx context.Context, data interface{}) (interface{}, error) {
 			req := data.(*payload.Update_ObjectRequest)
@@ -964,7 +987,16 @@ func (s *server) StreamUpdateObject(stream vald.Filter_StreamUpdateObjectServer)
 			}()
 			loc, err := s.UpdateObject(ctx, data.(*payload.Update_ObjectRequest))
 			if err != nil {
-				st, msg, err := status.ParseError(err, codes.Internal, "failed to parse "+vald.MultiUpdateObjectRPCName+" gRPC error response")
+				st, msg, err := status.ParseError(err, codes.Internal, "failed to parse "+vald.UpdateObjectRPCName+" gRPC error response",
+					&errdetails.RequestInfo{
+						RequestId:   req.GetObject().GetId(),
+						ServingData: errdetails.Serialize(req),
+					},
+					&errdetails.ResourceInfo{
+						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.UpdateObjectRPCName,
+						ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+					}, info.Get(),
+				)
 				if sspan != nil {
 					sspan.RecordError(err)
 					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
@@ -982,6 +1014,16 @@ func (s *server) StreamUpdateObject(stream vald.Filter_StreamUpdateObjectServer)
 				},
 			}, nil
 		})
+	if err != nil {
+		if span != nil {
+			span.RecordError(err)
+			span.SetAttributes(trace.StatusCodeInternal(err.Error())...)
+			span.SetStatus(trace.StatusError, err.Error())
+		}
+		log.Error(err)
+		return err
+	}
+	return nil
 }
 
 func (s *server) MultiUpdateObject(ctx context.Context, reqs *payload.Update_MultiObjectRequest) (locs *payload.Object_Locations, errs error) {
@@ -1010,29 +1052,22 @@ func (s *server) MultiUpdateObject(ctx context.Context, reqs *payload.Update_Mul
 			}()
 			loc, err := s.UpdateObject(ctx, query)
 			if err != nil {
-				err = status.WrapWithNotFound(vald.MultiUpdateObjectRPCName+" API object "+query.GetObject().GetId()+"'s search request result not found", err,
+				st, msg, err := status.ParseError(err, codes.NotFound, "failed to parse "+vald.UpdateObjectRPCName+" gRPC error response",
 					&errdetails.RequestInfo{
 						RequestId:   req.GetObject().GetId(),
 						ServingData: errdetails.Serialize(req),
 					},
-					&errdetails.BadRequest{
-						FieldViolations: []*errdetails.BadRequestFieldViolation{
-							{
-								Field:       "vectorizer targets",
-								Description: err.Error(),
-							},
-						},
-					},
 					&errdetails.ResourceInfo{
-						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.MultiUpdateObjectRPCName,
+						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.UpdateObjectRPCName,
 						ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-					}, info.Get())
-				log.Warn(err)
+					}, info.Get(),
+				)
 				if sspan != nil {
 					sspan.RecordError(err)
-					sspan.SetAttributes(trace.StatusCodeNotFound(err.Error())...)
+					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
 					sspan.SetStatus(trace.StatusError, err.Error())
 				}
+				log.Warn(err)
 				mu.Lock()
 				if errs == nil {
 					errs = status.WrapWithNotFound(
@@ -1065,9 +1100,7 @@ func (s *server) UpsertObject(ctx context.Context, req *payload.Upsert_ObjectReq
 	vr := req.GetVectorizer()
 	if vr == nil || vr.GetPort() == 0 {
 		err := errors.ErrInvalidAPIConfig
-		err = status.WrapWithInvalidArgument(
-			vald.UpsertObjectRPCName+" API vectorizer configuration is invalid",
-			errors.ErrFilterNotFound,
+		err = status.WrapWithInvalidArgument(vald.UpsertObjectRPCName+" API vectorizer configuration is invalid", err,
 			&errdetails.RequestInfo{
 				RequestId:   req.GetObject().GetId(),
 				ServingData: errdetails.Serialize(req),
@@ -1099,7 +1132,7 @@ func (s *server) UpsertObject(ctx context.Context, req *payload.Upsert_ObjectReq
 	if len(target) == 0 {
 		if len(s.Vectorizer) == 0 {
 			err := errors.ErrFilterNotFound
-			err = status.WrapWithInvalidArgument(vald.UpsertObjectRPCName+" API vectorizer configuration is invalid", errors.ErrFilterNotFound,
+			err = status.WrapWithInvalidArgument(vald.UpsertObjectRPCName+" API vectorizer configuration is invalid", err,
 				&errdetails.RequestInfo{
 					RequestId:   req.GetObject().GetId(),
 					ServingData: errdetails.Serialize(req),
@@ -1128,10 +1161,18 @@ func (s *server) UpsertObject(ctx context.Context, req *payload.Upsert_ObjectReq
 	}
 	c, err := s.ingress.Target(ctx, target)
 	if err != nil {
-		err = status.WrapWithUnavailable(vald.SearchObjectRPCName+" API target filter API unavailable", err,
+		err = status.WrapWithUnavailable(vald.UpsertObjectRPCName+" API target filter API unavailable", err,
 			&errdetails.RequestInfo{
 				RequestId:   req.GetObject().GetId(),
 				ServingData: errdetails.Serialize(req),
+			},
+			&errdetails.BadRequest{
+				FieldViolations: []*errdetails.BadRequestFieldViolation{
+					{
+						Field:       "vectorizer targets",
+						Description: err.Error(),
+					},
+				},
 			},
 			&errdetails.BadRequest{
 				FieldViolations: []*errdetails.BadRequestFieldViolation{
@@ -1169,7 +1210,7 @@ func (s *server) UpsertObject(ctx context.Context, req *payload.Upsert_ObjectReq
 				},
 			},
 			&errdetails.ResourceInfo{
-				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.SearchObjectRPCName,
+				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.UpsertObjectRPCName,
 				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
 			}, info.Get())
 		log.Warn(err)
@@ -1196,7 +1237,7 @@ func (s *server) StreamUpsertObject(stream vald.Filter_StreamUpsertObjectServer)
 			span.End()
 		}
 	}()
-	return grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
+	err := grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
 		func() interface{} { return new(payload.Upsert_ObjectRequest) },
 		func(ctx context.Context, data interface{}) (interface{}, error) {
 			req := data.(*payload.Upsert_ObjectRequest)
@@ -1209,7 +1250,16 @@ func (s *server) StreamUpsertObject(stream vald.Filter_StreamUpsertObjectServer)
 
 			loc, err := s.UpsertObject(ctx, data.(*payload.Upsert_ObjectRequest))
 			if err != nil {
-				st, msg, err := status.ParseError(err, codes.Internal, "failed to parse "+vald.StreamUpsertObjectRPCName+" gRPC error response")
+				st, msg, err := status.ParseError(err, codes.Internal, "failed to parse "+vald.UpsertObjectRPCName+" gRPC error response",
+					&errdetails.RequestInfo{
+						RequestId:   req.GetObject().GetId(),
+						ServingData: errdetails.Serialize(req),
+					},
+					&errdetails.ResourceInfo{
+						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.UpsertObjectRPCName,
+						ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+					}, info.Get(),
+				)
 				if sspan != nil {
 					sspan.RecordError(err)
 					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
@@ -1227,6 +1277,16 @@ func (s *server) StreamUpsertObject(stream vald.Filter_StreamUpsertObjectServer)
 				},
 			}, nil
 		})
+	if err != nil {
+		if span != nil {
+			span.RecordError(err)
+			span.SetAttributes(trace.StatusCodeInternal(err.Error())...)
+			span.SetStatus(trace.StatusError, err.Error())
+		}
+		log.Error(err)
+		return err
+	}
+	return err
 }
 
 func (s *server) MultiUpsertObject(ctx context.Context, reqs *payload.Upsert_MultiObjectRequest) (locs *payload.Object_Locations, errs error) {
@@ -1255,7 +1315,16 @@ func (s *server) MultiUpsertObject(ctx context.Context, reqs *payload.Upsert_Mul
 			}()
 			loc, err := s.UpsertObject(ctx, query)
 			if err != nil {
-				st, msg, err := status.ParseError(err, codes.Internal, "failed to parse "+vald.MultiLinearSearchRPCName+" gRPC error response")
+				st, msg, err := status.ParseError(err, codes.Internal, "failed to parse "+vald.UpsertObjectRPCName+" gRPC error response",
+					&errdetails.RequestInfo{
+						RequestId:   req.GetObject().GetId(),
+						ServingData: errdetails.Serialize(req),
+					},
+					&errdetails.ResourceInfo{
+						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.UpsertObjectRPCName,
+						ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+					}, info.Get(),
+				)
 				if sspan != nil {
 					sspan.RecordError(err)
 					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
@@ -1363,6 +1432,7 @@ func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *
 	}
 	res, err = s.gateway.Search(ctx, req, s.copts...)
 	if err != nil {
+		// TODO:
 		st, ok := status.FromError(err)
 		if !ok {
 			st = status.New(codes.Internal, errors.Wrap(err, "failed to parse grpc status from error").Error())
@@ -1539,7 +1609,16 @@ func (s *server) StreamSearch(stream vald.Search_StreamSearchServer) (err error)
 			}()
 			res, err := s.Search(ctx, req)
 			if err != nil {
-				st, msg, err := status.ParseError(err, codes.Internal, "failed to parse "+vald.StreamSearchRPCName+" gRPC error response")
+				st, msg, err := status.ParseError(err, codes.Internal, "failed to parse "+vald.StreamSearchRPCName+" gRPC error response",
+					&errdetails.RequestInfo{
+						RequestId:   req.GetConfig().GetRequestId(),
+						ServingData: errdetails.Serialize(req),
+					},
+					&errdetails.ResourceInfo{
+						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.SearchRPCName,
+						ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+					}, info.Get(),
+				)
 				if sspan != nil {
 					sspan.RecordError(err)
 					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
@@ -1589,7 +1668,24 @@ func (s *server) StreamSearchByID(stream vald.Search_StreamSearchByIDServer) (er
 			}()
 			res, err := s.SearchByID(ctx, req)
 			if err != nil {
-				st, msg, err := status.ParseError(err, codes.Internal, "failed to parse "+vald.StreamSearchByIDRPCName+" gRPC error response")
+				st, msg, err := status.ParseError(err, codes.Internal, "failed to parse "+vald.SearchByIDRPCName+" gRPC error response",
+					&errdetails.RequestInfo{
+						RequestId:   req.GetConfig().GetRequestId(),
+						ServingData: errdetails.Serialize(req),
+					},
+					&errdetails.BadRequest{
+						FieldViolations: []*errdetails.BadRequestFieldViolation{
+							{
+								Field:       "vectorizer targets",
+								Description: err.Error(),
+							},
+						},
+					},
+					&errdetails.ResourceInfo{
+						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.SearchByIDRPCName,
+						ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+					}, info.Get(),
+				)
 				if sspan != nil {
 					sspan.RecordError(err)
 					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
@@ -1644,7 +1740,24 @@ func (s *server) MultiSearch(ctx context.Context, reqs *payload.Search_MultiRequ
 			}()
 			r, err := s.Search(ctx, query)
 			if err != nil {
-				st, msg, err := status.ParseError(err, codes.Internal, "failed to parse "+vald.MultiSearchRPCName+" gRPC error response")
+				st, msg, err := status.ParseError(err, codes.NotFound, "failed to parse "+vald.SearchRPCName+" gRPC error response",
+					&errdetails.RequestInfo{
+						RequestId:   req.GetConfig().GetRequestId(),
+						ServingData: errdetails.Serialize(req),
+					},
+					&errdetails.BadRequest{
+						FieldViolations: []*errdetails.BadRequestFieldViolation{
+							{
+								Field:       "vectorizer targets",
+								Description: err.Error(),
+							},
+						},
+					},
+					&errdetails.ResourceInfo{
+						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.SearchRPCName,
+						ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+					}, info.Get(),
+				)
 				if sspan != nil {
 					sspan.RecordError(err)
 					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
@@ -1697,7 +1810,24 @@ func (s *server) MultiSearchByID(ctx context.Context, reqs *payload.Search_Multi
 			}()
 			r, err := s.SearchByID(ctx, query)
 			if err != nil {
-				st, msg, err := status.ParseError(err, codes.Internal, "failed to parse "+vald.MultiSearchByIDRPCName+" gRPC error response")
+				st, msg, err := status.ParseError(err, codes.NotFound, "failed to parse "+vald.SearchByIDRPCName+" gRPC error response",
+					&errdetails.RequestInfo{
+						RequestId:   req.GetConfig().GetRequestId(),
+						ServingData: errdetails.Serialize(req),
+					},
+					&errdetails.BadRequest{
+						FieldViolations: []*errdetails.BadRequestFieldViolation{
+							{
+								Field:       "vectorizer targets",
+								Description: err.Error(),
+							},
+						},
+					},
+					&errdetails.ResourceInfo{
+						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.SearchByIDRPCName,
+						ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+					}, info.Get(),
+				)
 				if sspan != nil {
 					sspan.RecordError(err)
 					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
@@ -1955,7 +2085,24 @@ func (s *server) StreamLinearSearch(stream vald.Search_StreamLinearSearchServer)
 			}()
 			res, err := s.LinearSearch(ctx, data.(*payload.Search_Request))
 			if err != nil {
-				st, msg, err := status.ParseError(err, codes.Internal, "failed to parse "+vald.LinearSearchRPCName+" gRPC error response")
+				st, msg, err := status.ParseError(err, codes.Internal, "failed to parse "+vald.LinearSearchRPCName+" gRPC error response",
+					&errdetails.RequestInfo{
+						RequestId:   req.GetConfig().GetRequestId(),
+						ServingData: errdetails.Serialize(req),
+					},
+					&errdetails.BadRequest{
+						FieldViolations: []*errdetails.BadRequestFieldViolation{
+							{
+								Field:       "vectorizer targets",
+								Description: err.Error(),
+							},
+						},
+					},
+					&errdetails.ResourceInfo{
+						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.LinearSearchRPCName,
+						ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+					}, info.Get(),
+				)
 				if sspan != nil {
 					sspan.RecordError(err)
 					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
@@ -2005,7 +2152,16 @@ func (s *server) StreamLinearSearchByID(stream vald.Search_StreamLinearSearchByI
 			}()
 			res, err := s.LinearSearchByID(ctx, req)
 			if err != nil {
-				st, msg, err := status.ParseError(err, codes.Internal, "failed to parse "+vald.LinearSearchByIDRPCName+" gRPC error response")
+				st, msg, err := status.ParseError(err, codes.Internal, "failed to parse "+vald.LinearSearchByIDRPCName+" gRPC error response",
+					&errdetails.RequestInfo{
+						RequestId:   req.GetConfig().GetRequestId(),
+						ServingData: errdetails.Serialize(req),
+					},
+					&errdetails.ResourceInfo{
+						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.LinearSearchByIDRPCName,
+						ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+					}, info.Get(),
+				)
 				if sspan != nil {
 					sspan.RecordError(err)
 					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
@@ -2062,7 +2218,16 @@ func (s *server) MultiLinearSearch(ctx context.Context, reqs *payload.Search_Mul
 			}()
 			r, err := s.LinearSearch(ctx, query)
 			if err != nil {
-				st, msg, err := status.ParseError(err, codes.Internal, "failed to parse "+vald.LinearSearchByIDRPCName+" gRPC error response")
+				st, msg, err := status.ParseError(err, codes.Internal, "failed to parse "+vald.LinearSearchByIDRPCName+" gRPC error response",
+					&errdetails.RequestInfo{
+						RequestId:   req.GetConfig().GetRequestId(),
+						ServingData: errdetails.Serialize(req),
+					},
+					&errdetails.ResourceInfo{
+						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.LinearSearchRPCName,
+						ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+					}, info.Get(),
+				)
 				if sspan != nil {
 					sspan.RecordError(err)
 					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
@@ -2115,7 +2280,16 @@ func (s *server) MultiLinearSearchByID(ctx context.Context, reqs *payload.Search
 			}()
 			r, err := s.LinearSearchByID(ctx, query)
 			if err != nil {
-				st, msg, err := status.ParseError(err, codes.Internal, "failed to parse "+vald.LinearSearchByIDRPCName+" gRPC error response")
+				st, msg, err := status.ParseError(err, codes.Internal, "failed to parse "+vald.LinearSearchByIDRPCName+" gRPC error response",
+					&errdetails.RequestInfo{
+						RequestId:   req.GetConfig().GetRequestId(),
+						ServingData: errdetails.Serialize(req),
+					},
+					&errdetails.ResourceInfo{
+						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.LinearSearchByIDRPCName,
+						ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+					}, info.Get(),
+				)
 				if sspan != nil {
 					sspan.RecordError(err)
 					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
@@ -2166,7 +2340,12 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (loc *
 						Description: err.Error(),
 					},
 				},
-			}, info.Get())
+			},
+			&errdetails.ResourceInfo{
+				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.InsertRPCName,
+				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+			},
+		)
 		if span != nil {
 			span.RecordError(err)
 			span.SetAttributes(trace.StatusCodeInvalidArgument(err.Error())...)
@@ -2256,6 +2435,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (loc *
 	req.Vector = vec
 	loc, err = s.gateway.Insert(ctx, req, s.copts...)
 	if err != nil {
+		// TODO:
 		err = errors.Wrapf(err, "Insert API failed to Insert uuid = %s\tinfo = %#v", uuid, info.Get())
 		log.Error(err)
 		if span != nil {
@@ -2287,7 +2467,25 @@ func (s *server) StreamInsert(stream vald.Insert_StreamInsertServer) (err error)
 			}()
 			res, err := s.Insert(ctx, req)
 			if err != nil {
-				st, msg, err := status.ParseError(err, codes.Internal, "failed to parse "+vald.StreamInsertRPCName+" gRPC error response")
+				st, msg, err := status.ParseError(err, codes.Internal, "failed to parse "+vald.InsertRPCName+" gRPC error response",
+					&errdetails.RequestInfo{
+						RequestId:   req.GetVector().GetId(),
+						ServingData: errdetails.Serialize(req),
+					},
+					&errdetails.BadRequest{
+						FieldViolations: []*errdetails.BadRequestFieldViolation{
+							{
+								Field:       "vectorizer targets",
+								Description: err.Error(),
+							},
+						},
+					},
+					&errdetails.ResourceInfo{
+						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.InsertObjectRPCName,
+						ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+					}, info.Get(),
+				)
+
 				if sspan != nil {
 					sspan.RecordError(err)
 					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
@@ -2343,7 +2541,24 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 			}()
 			r, err := s.Insert(ctx, query)
 			if err != nil {
-				st, msg, err := status.ParseError(err, codes.Internal, "failed to parse "+vald.MultiInsertRPCName+" gRPC error response")
+				st, msg, err := status.ParseError(err, codes.Internal, "failed to parse "+vald.InsertRPCName+" gRPC error response",
+					&errdetails.RequestInfo{
+						RequestId:   req.GetVector().GetId(),
+						ServingData: errdetails.Serialize(req),
+					},
+					&errdetails.BadRequest{
+						FieldViolations: []*errdetails.BadRequestFieldViolation{
+							{
+								Field:       "vectorizer targets",
+								Description: err.Error(),
+							},
+						},
+					},
+					&errdetails.ResourceInfo{
+						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.InsertRPCName,
+						ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+					}, info.Get(),
+				)
 				if sspan != nil {
 					sspan.RecordError(err)
 					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
@@ -2448,7 +2663,7 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (loc *
 				ServingData: errdetails.Serialize(req),
 			},
 			&errdetails.ResourceInfo{
-				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.UpdateObjectRPCName,
+				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.UpdateRPCName,
 				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
 			}, info.Get())
 		log.Warn(err)
@@ -2468,7 +2683,7 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (loc *
 				ServingData: errdetails.Serialize(req),
 			},
 			&errdetails.ResourceInfo{
-				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.UpdateObjectRPCName,
+				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.UpdateRPCName,
 				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
 			}, info.Get())
 		log.Warn(err)
@@ -2493,7 +2708,7 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (loc *
 				ServingData: errdetails.Serialize(req),
 			},
 			&errdetails.ResourceInfo{
-				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.UpdateObjectRPCName,
+				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.UpdateRPCName,
 				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
 			}, info.Get())
 		log.Warn(err)
@@ -2518,7 +2733,7 @@ func (s *server) StreamUpdate(stream vald.Update_StreamUpdateServer) (err error)
 		func() interface{} { return new(payload.Update_Request) },
 		func(ctx context.Context, data interface{}) (interface{}, error) {
 			req := data.(*payload.Update_Request)
-			ctx, sspan := trace.StartSpan(ctx, apiName+".StreamUpdate/id-"+req.GetVector().GetId())
+			ctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.StreamUpdateRPCName+"/id-"+req.GetVector().GetId())
 			defer func() {
 				if sspan != nil {
 					sspan.End()
@@ -2526,7 +2741,16 @@ func (s *server) StreamUpdate(stream vald.Update_StreamUpdateServer) (err error)
 			}()
 			res, err := s.Update(ctx, req)
 			if err != nil {
-				st, msg, err := status.ParseError(err, codes.Internal, "failed to parse "+vald.MultiUpdateRPCName+" gRPC error response")
+				st, msg, err := status.ParseError(err, codes.Internal, "failed to parse "+vald.UpdateRPCName+" gRPC error response",
+					&errdetails.RequestInfo{
+						RequestId:   req.GetVector().GetId(),
+						ServingData: errdetails.Serialize(req),
+					},
+					&errdetails.ResourceInfo{
+						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.UpdateRPCName,
+						ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+					}, info.Get(),
+				)
 				if sspan != nil {
 					sspan.RecordError(err)
 					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
@@ -2576,7 +2800,24 @@ func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequ
 			}()
 			r, err := s.Update(ctx, query)
 			if err != nil {
-				st, msg, err := status.ParseError(err, codes.Internal, "failed to parse "+vald.MultiUpdateRPCName+" gRPC error response")
+				st, msg, err := status.ParseError(err, codes.Internal, "failed to parse "+vald.UpdateRPCName+" gRPC error response",
+					&errdetails.RequestInfo{
+						RequestId:   req.GetVector().GetId(),
+						ServingData: errdetails.Serialize(req),
+					},
+					&errdetails.BadRequest{
+						FieldViolations: []*errdetails.BadRequestFieldViolation{
+							{
+								Field:       "vectorizer targets",
+								Description: err.Error(),
+							},
+						},
+					},
+					&errdetails.ResourceInfo{
+						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.UpdateRPCName,
+						ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+					}, info.Get(),
+				)
 				if sspan != nil {
 					sspan.RecordError(err)
 					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
@@ -2718,6 +2959,7 @@ func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *
 	req.Vector = vec
 	loc, err = s.gateway.Upsert(ctx, req, s.copts...)
 	if err != nil {
+		// TODO:
 		err = errors.Wrapf(err, "Upsert API failed to Upsert uuid = %s\tinfo = %#v", uuid, info.Get())
 		log.Error(err)
 		if span != nil {
@@ -2749,7 +2991,16 @@ func (s *server) StreamUpsert(stream vald.Upsert_StreamUpsertServer) (err error)
 			}()
 			res, err := s.Upsert(ctx, req)
 			if err != nil {
-				st, msg, err := status.ParseError(err, codes.Internal, "failed to parse "+vald.StreamUpsertRPCName+" gRPC error response")
+				st, msg, err := status.ParseError(err, codes.Internal, "failed to parse "+vald.UpsertRPCName+" gRPC error response",
+					&errdetails.RequestInfo{
+						RequestId:   req.GetVector().GetId(),
+						ServingData: errdetails.Serialize(req),
+					},
+					&errdetails.ResourceInfo{
+						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.UpsertRPCName,
+						ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+					}, info.Get(),
+				)
 				if sspan != nil {
 					sspan.RecordError(err)
 					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
@@ -2807,7 +3058,16 @@ func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequ
 
 			r, err := s.Upsert(ctx, query)
 			if err != nil {
-				st, msg, err := status.ParseError(err, codes.Internal, "failed to parse "+vald.RemoveRPCName+" gRPC error response")
+				st, msg, err := status.ParseError(err, codes.Internal, "failed to parse "+vald.UpsertRPCName+" gRPC error response",
+					&errdetails.RequestInfo{
+						RequestId:   req.GetVector().GetId(),
+						ServingData: errdetails.Serialize(req),
+					},
+					&errdetails.ResourceInfo{
+						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.UpsertRPCName,
+						ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+					}, info.Get(),
+				)
 				if sspan != nil {
 					sspan.RecordError(err)
 					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
@@ -2864,7 +3124,16 @@ func (s *server) StreamRemove(stream vald.Remove_StreamRemoveServer) (err error)
 			}()
 			res, err := s.Remove(ctx, req)
 			if err != nil {
-				st, msg, err := status.ParseError(err, codes.Internal, "failed to parse "+vald.RemoveRPCName+" gRPC error response")
+				st, msg, err := status.ParseError(err, codes.Internal, "failed to parse "+vald.RemoveRPCName+" gRPC error response",
+					&errdetails.RequestInfo{
+						RequestId:   req.GetId().GetId(),
+						ServingData: errdetails.Serialize(req),
+					},
+					&errdetails.ResourceInfo{
+						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.RemoveRPCName,
+						ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+					}, info.Get(),
+				)
 				if sspan != nil {
 					sspan.RecordError(err)
 					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
@@ -2928,7 +3197,7 @@ func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequ
 						ServingData: errdetails.Serialize(reqs),
 					},
 					&errdetails.ResourceInfo{
-						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.MultiRemoveRPCName,
+						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.RemoveRPCName,
 						ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
 					}, info.Get())
 				if sspan != nil {
@@ -3008,7 +3277,7 @@ func (s *server) GetObject(ctx context.Context, req *payload.Object_VectorReques
 					},
 				},
 				&errdetails.ResourceInfo{
-					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.SearchObjectRPCName,
+					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.GetObjectRPCName,
 					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
 				}, info.Get())
 			log.Warn(err)
@@ -3021,13 +3290,13 @@ func (s *server) GetObject(ctx context.Context, req *payload.Object_VectorReques
 		}
 		vec, err = c.FilterVector(ctx, vec)
 		if err != nil {
-			err = status.WrapWithInternal(vald.SearchObjectRPCName+" API egress filter API failed", err,
+			err = status.WrapWithInternal(vald.GetObjectRPCName+" API egress filter API failed", err,
 				&errdetails.RequestInfo{
 					RequestId:   req.GetId().GetId(),
 					ServingData: errdetails.Serialize(req),
 				},
 				&errdetails.ResourceInfo{
-					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.SearchObjectRPCName,
+					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.GetObjectRPCName,
 					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
 				}, info.Get())
 			log.Warn(err)
@@ -3061,7 +3330,16 @@ func (s *server) StreamGetObject(stream vald.Object_StreamGetObjectServer) (err 
 			}()
 			res, err := s.GetObject(ctx, req)
 			if err != nil {
-				st, msg, err := status.ParseError(err, codes.Internal, "failed to parse "+vald.GetObjectRPCName+" gRPC error response")
+				st, msg, err := status.ParseError(err, codes.Internal, "failed to parse "+vald.GetObjectRPCName+" gRPC error response",
+					&errdetails.RequestInfo{
+						RequestId:   req.GetId().GetId(),
+						ServingData: errdetails.Serialize(req),
+					},
+					&errdetails.ResourceInfo{
+						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.GetObjectRPCName,
+						ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+					}, info.Get(),
+				)
 				if sspan != nil {
 					sspan.RecordError(err)
 					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
@@ -3081,10 +3359,9 @@ func (s *server) StreamGetObject(stream vald.Object_StreamGetObjectServer) (err 
 		})
 
 	if err != nil {
-		st, msg, err := status.ParseError(err, codes.Internal, "failed to parse "+vald.StreamGetObjectRPCName+" gRPC error response")
 		if span != nil {
 			span.RecordError(err)
-			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+			span.SetAttributes(trace.StatusCodeInternal(err.Error())...)
 			span.SetStatus(trace.StatusError, err.Error())
 		}
 		log.Error(err)
