@@ -81,8 +81,8 @@ func (s *server) SearchObject(ctx context.Context, req *payload.Search_ObjectReq
 	}()
 	vr := req.GetVectorizer()
 	if vr == nil || vr.GetPort() == 0 {
-		err := errors.ErrInvalidAPIConfig
-		err = status.WrapWithInvalidArgument(vald.SearchObjectRPCName+" API vectorizer configuration is invalid", errors.ErrFilterNotFound,
+		err = errors.ErrFilterNotFound
+		err = status.WrapWithInvalidArgument(vald.SearchObjectRPCName+" API vectorizer configuration is invalid", err,
 			&errdetails.RequestInfo{
 				RequestId:   req.GetConfig().GetRequestId(),
 				ServingData: errdetails.Serialize(req),
@@ -114,7 +114,7 @@ func (s *server) SearchObject(ctx context.Context, req *payload.Search_ObjectReq
 	if len(target) == 0 {
 		if len(s.Vectorizer) == 0 {
 			err := errors.ErrFilterNotFound
-			err = status.WrapWithInvalidArgument(vald.SearchObjectRPCName+" API vectorizer configuration is invalid", errors.ErrFilterNotFound,
+			err = status.WrapWithInvalidArgument(vald.SearchObjectRPCName+" API vectorizer configuration is invalid", err,
 				&errdetails.RequestInfo{
 					RequestId:   req.GetConfig().GetRequestId(),
 					ServingData: errdetails.Serialize(req),
@@ -589,7 +589,7 @@ func (s *server) InsertObject(ctx context.Context, req *payload.Insert_ObjectReq
 	}()
 	vr := req.GetVectorizer()
 	if vr == nil || vr.GetPort() == 0 {
-		err := errors.ErrInvalidAPIConfig
+		err := errors.ErrFilterNotFound
 		err = status.WrapWithInvalidArgument(vald.InsertObjectRPCName+" API vectorizer configuration is invalid", err,
 			&errdetails.RequestInfo{
 				RequestId:   req.GetObject().GetId(),
@@ -844,7 +844,7 @@ func (s *server) UpdateObject(ctx context.Context, req *payload.Update_ObjectReq
 	}()
 	vr := req.GetVectorizer()
 	if vr == nil || vr.GetPort() == 0 {
-		err := errors.ErrInvalidAPIConfig
+		err := errors.ErrFilterNotFound
 		err = status.WrapWithInvalidArgument(vald.UpdateObjectRPCName+" API vectorizer configuration is invalid", err,
 			&errdetails.RequestInfo{
 				RequestId:   req.GetObject().GetId(),
@@ -1099,7 +1099,7 @@ func (s *server) UpsertObject(ctx context.Context, req *payload.Upsert_ObjectReq
 	}()
 	vr := req.GetVectorizer()
 	if vr == nil || vr.GetPort() == 0 {
-		err := errors.ErrInvalidAPIConfig
+		err := errors.ErrFilterNotFound
 		err = status.WrapWithInvalidArgument(vald.UpsertObjectRPCName+" API vectorizer configuration is invalid", err,
 			&errdetails.RequestInfo{
 				RequestId:   req.GetObject().GetId(),
@@ -2353,7 +2353,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (loc *
 			Id: uuid,
 		})
 		if id != nil || len(id.GetId()) > 0 {
-			err = errors.Wrap(err, errors.ErrMetaDataAlreadyExists(uuid).Error())
+			err = errors.ErrMetaDataAlreadyExists(uuid)
 			err = status.WrapWithAlreadyExists(vald.InsertRPCName+" API ID = "+uuid+" already exists", err,
 				&errdetails.RequestInfo{
 					RequestId:   uuid,
@@ -2430,9 +2430,8 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (loc *
 	req.Vector = vec
 	loc, err = s.gateway.Insert(ctx, req, s.copts...)
 	if err != nil {
-		err = errors.Wrapf(err, "Insert API failed to Insert uuid = %s\tinfo = %#v", uuid, info.Get())
 		err = status.WrapWithInternal(
-			fmt.Sprintf("Insert API failed to Execute DoMulti error = %s", err.Error()), err,
+			vald.InsertRPCName+" API failed to Execute DoMulti ID = "+uuid, err,
 			&errdetails.RequestInfo{
 				RequestId:   req.GetVector().GetId(),
 				ServingData: errdetails.Serialize(req),
@@ -2627,7 +2626,6 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (loc *
 			Id: uuid,
 		})
 		if id != nil || len(id.GetId()) > 0 {
-			err = errors.Wrap(err, errors.ErrMetaDataAlreadyExists(uuid).Error())
 			err = status.WrapWithAlreadyExists(vald.UpdateRPCName+" API ID = "+uuid+"'s same vector data already exists", err,
 				&errdetails.RequestInfo{
 					RequestId:   uuid,
@@ -2705,9 +2703,8 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (loc *
 	req.Vector = vec
 	loc, err = s.gateway.Update(ctx, req, s.copts...)
 	if err != nil {
-		err = errors.Wrapf(err, vald.UpdateRPCName+" API failed to Update uuid = %s\tinfo = %#v", uuid, info.Get())
 		err = status.WrapWithInternal(
-			fmt.Sprintf(vald.UpdateRPCName+" API failed to Execute DoMulti error = %s", err.Error()), err,
+			vald.UpdateRPCName+" API failed to Execute DoMulti ID = "+uuid, err,
 			&errdetails.RequestInfo{
 				RequestId:   req.GetVector().GetId(),
 				ServingData: errdetails.Serialize(req),
@@ -2886,7 +2883,6 @@ func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *
 			Id: uuid,
 		})
 		if id != nil || len(id.GetId()) > 0 {
-			err = errors.Wrap(err, errors.ErrMetaDataAlreadyExists(uuid).Error())
 			err = status.WrapWithAlreadyExists(vald.UpsertRPCName+" API ID = "+uuid+"'s same vector data already exists", err,
 				&errdetails.RequestInfo{
 					RequestId:   uuid,
@@ -2964,8 +2960,7 @@ func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *
 	req.Vector = vec
 	loc, err = s.gateway.Upsert(ctx, req, s.copts...)
 	if err != nil {
-		err = errors.Wrapf(err, vald.UpsertRPCName+" API failed to Upsert uuid = %s\tinfo = %#v", uuid, info.Get())
-		err = status.WrapWithInternal(fmt.Sprintf(vald.UpsertRPCName+" API failed to Execute DoMulti error = %s", err.Error()), err,
+		err = status.WrapWithInternal(vald.UpsertRPCName+" API failed to Execute DoMulti ID = "+uuid, err,
 			&errdetails.RequestInfo{
 				RequestId:   req.GetVector().GetId(),
 				ServingData: errdetails.Serialize(req),
