@@ -155,13 +155,13 @@ func New(cfg *config.NGT, opts ...Option) (nn NGT, err error) {
 			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 		}
 	}
-
 	if len(n.path) == 0 {
 		n.inMem = true
 	}
 
 	if n.enableCopyOnWrite && !n.inMem && len(n.path) != 0 {
-		n.path, err = filepath.Abs(strings.ReplaceAll(n.path, string(os.PathSeparator)+string(os.PathSeparator), string(os.PathSeparator)))
+		sep := string(os.PathSeparator)
+		n.path, err = filepath.Abs(strings.ReplaceAll(n.path, sep+sep, sep))
 		if err != nil {
 			log.Warn(err)
 		}
@@ -213,7 +213,6 @@ func New(cfg *config.NGT, opts ...Option) (nn NGT, err error) {
 	}
 	n.indexing.Store(false)
 	n.saving.Store(false)
-
 	return n, nil
 }
 
@@ -461,7 +460,6 @@ func (n *ngt) loadKVS(path string) (err error) {
 	gob.Register(map[string]uint32{})
 
 	var f *os.File
-
 	f, err = file.Open(
 		path,
 		os.O_RDONLY|os.O_SYNC,

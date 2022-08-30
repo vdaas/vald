@@ -18,9 +18,7 @@ replace (
 	cloud.google.com/go/trace => cloud.google.com/go/trace latest
 	code.cloudfoundry.org/bytefmt => code.cloudfoundry.org/bytefmt latest
 	contrib.go.opencensus.io/exporter/aws => contrib.go.opencensus.io/exporter/aws latest
-	contrib.go.opencensus.io/exporter/jaeger => contrib.go.opencensus.io/exporter/jaeger latest
 	contrib.go.opencensus.io/exporter/prometheus => contrib.go.opencensus.io/exporter/prometheus latest
-	contrib.go.opencensus.io/exporter/stackdriver => contrib.go.opencensus.io/exporter/stackdriver latest
 	contrib.go.opencensus.io/integrations/ocsql => contrib.go.opencensus.io/integrations/ocsql latest
 	git.sr.ht/~sbinet/gg => git.sr.ht/~sbinet/gg latest
 	github.com/AdaLogics/go-fuzz-headers => github.com/AdaLogics/go-fuzz-headers latest
@@ -477,6 +475,7 @@ replace (
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc => go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc latest
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp => go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp latest
 	go.opentelemetry.io/otel => go.opentelemetry.io/otel latest
+	go.opentelemetry.io/otel/exporters/jaeger => go.opentelemetry.io/otel/exporters/jaeger latest
 	go.opentelemetry.io/otel/exporters/otlp => go.opentelemetry.io/otel/exporters/otlp latest
 	go.opentelemetry.io/otel/exporters/otlp/internal/retry => go.opentelemetry.io/otel/exporters/otlp/internal/retry latest
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace => go.opentelemetry.io/otel/exporters/otlp/otlptrace latest

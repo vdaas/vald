@@ -173,7 +173,7 @@ func WithExpectContinueTimeout(dur string) Option {
 	}
 }
 
-//  WithProxyConnectHeader returns the option to set the proxy connect header.
+// WithProxyConnectHeader returns the option to set the proxy connect header.
 func WithProxyConnectHeader(header http.Header) Option {
 	return func(tr *transport) error {
 		if header == nil {
@@ -185,7 +185,7 @@ func WithProxyConnectHeader(header http.Header) Option {
 	}
 }
 
-//  WithMaxResponseHeaderBytes returns the option to set the max response header bytes.
+// WithMaxResponseHeaderBytes returns the option to set the max response header bytes.
 func WithMaxResponseHeaderBytes(bs int64) Option {
 	return func(tr *transport) error {
 		tr.MaxResponseHeaderBytes = bs
@@ -193,7 +193,7 @@ func WithMaxResponseHeaderBytes(bs int64) Option {
 	}
 }
 
-//  WithWriteBufferSize returns the option to set the write buffer size.
+// WithWriteBufferSize returns the option to set the write buffer size.
 func WithWriteBufferSize(bs int64) Option {
 	return func(tr *transport) error {
 		tr.WriteBufferSize = int(bs)
@@ -201,7 +201,7 @@ func WithWriteBufferSize(bs int64) Option {
 	}
 }
 
-//  WithReadBufferSize returns the option to set the read buffer size.
+// WithReadBufferSize returns the option to set the read buffer size.
 func WithReadBufferSize(bs int64) Option {
 	return func(tr *transport) error {
 		tr.ReadBufferSize = int(bs)
@@ -209,7 +209,7 @@ func WithReadBufferSize(bs int64) Option {
 	}
 }
 
-//  WithForceAttemptHTTP2 returns the option to force attempt HTTP2 for the HTTP transport.
+// WithForceAttemptHTTP2 returns the option to force attempt HTTP2 for the HTTP transport.
 func WithForceAttemptHTTP2(force bool) Option {
 	return func(tr *transport) error {
 		tr.ForceAttemptHTTP2 = force
@@ -217,7 +217,7 @@ func WithForceAttemptHTTP2(force bool) Option {
 	}
 }
 
-//  WithBackoffOpts returns the option to set the options to initialize backoff.
+// WithBackoffOpts returns the option to set the options to initialize backoff.
 func WithBackoffOpts(opts ...backoff.Option) Option {
 	return func(tr *transport) error {
 		if len(opts) == 0 {

@@ -4,15 +4,15 @@ go 1.18
 
 replace (
 	github.com/envoyproxy/protoc-gen-validate => github.com/envoyproxy/protoc-gen-validate v0.6.7
-	github.com/goccy/go-json => github.com/goccy/go-json v0.9.10
+	github.com/goccy/go-json => github.com/goccy/go-json v0.9.11
 	github.com/golang/protobuf => github.com/golang/protobuf v1.5.2
 	github.com/kpango/glg => github.com/kpango/glg v1.6.12
 	github.com/pkg/sftp => github.com/pkg/sftp v1.13.5
-	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20220722155217-630584e8d5aa
-	golang.org/x/net => golang.org/x/net v0.0.0-20220805013720-a33c5aa5df48
+	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20220829220503-c86fa9a7ed90
+	golang.org/x/net => golang.org/x/net v0.0.0-20220826154423-83b083e8dc8b
 	golang.org/x/text => golang.org/x/text v0.3.7
-	google.golang.org/genproto => google.golang.org/genproto v0.0.0-20220805133916-01dd62135a58
-	google.golang.org/grpc => google.golang.org/grpc v1.48.0
+	google.golang.org/genproto => google.golang.org/genproto v0.0.0-20220829175752-36a9c930ecbf
+	google.golang.org/grpc => google.golang.org/grpc v1.49.0
 	google.golang.org/protobuf => google.golang.org/protobuf v1.28.1
 	gopkg.in/yaml.v2 => gopkg.in/yaml.v2 v2.4.0
 	gopkg.in/yaml.v3 => gopkg.in/yaml.v3 v3.0.1
@@ -35,5 +35,5 @@ require (
 	golang.org/x/sys v0.0.0-20220728004956-3c1f35247d10 // indirect
 	golang.org/x/text v0.3.7 // indirect
 	google.golang.org/genproto v0.0.0-20220616135557-88e70c0c3a90 // indirect
-	google.golang.org/protobuf v1.28.0 // indirect
+	google.golang.org/protobuf v1.28.1 // indirect
 )

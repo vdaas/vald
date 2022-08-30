@@ -386,7 +386,6 @@ func (n *ngt) Search(vec []float32, size int, epsilon, radius float32) (result [
 
 	ebuf := n.GetErrorBuffer()
 	results := C.ngt_create_empty_results(ebuf)
-	// defer C.free(unsafe.Pointer(results))
 	defer C.ngt_destroy_results(results)
 	if results == nil {
 		return nil, n.newGoError(ebuf)
@@ -405,12 +404,9 @@ func (n *ngt) Search(vec []float32, size int, epsilon, radius float32) (result [
 		n.index,
 		(*C.float)(&vec[0]),
 		n.dimension,
-		// C.size_t(size),
 		*(*C.size_t)(unsafe.Pointer(&size)),
-		// C.float(epsilon),
 		*(*C.float)(unsafe.Pointer(&epsilon)),
 		*(*C.float)(unsafe.Pointer(&radius)),
-		// C.float(radius),
 		results,
 		ebuf)
 
