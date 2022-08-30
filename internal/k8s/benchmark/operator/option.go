@@ -16,7 +16,6 @@
 
 package benchmark
 
-// TODO: Fix
-type Option func() error
+type Option func(*reconciler) error
 
 var defaultOpts = []Option{}

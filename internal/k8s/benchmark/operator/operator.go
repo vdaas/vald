@@ -19,44 +19,67 @@ package benchmark
 import (
 	"context"
 
-	"k8s.io/apimachinery/pkg/runtime"
-	ctrl "sigs.k8s.io/controller-runtime"
+	"github.com/vdaas/vald/internal/k8s"
+	job "github.com/vdaas/vald/internal/k8s/benchmark/job"
+	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/log"
-
-	valdvdaasorgv1 "valdbenchmarkoperator/api/v1"
+	"sigs.k8s.io/controller-runtime/pkg/handler"
+	"sigs.k8s.io/controller-runtime/pkg/manager"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
+	"sigs.k8s.io/controller-runtime/pkg/source"
 )
 
-// ValdBenchmarkOperatorReconciler reconciles a ValdBenchmarkOperator object
-type ValdBenchmarkOperatorReconciler struct {
-	client.Client
-	Scheme *runtime.Scheme
+type BenchmarkOperatorWatcher k8s.ResourceController
+
+type BenchmarkOperator struct {
+	Target  *job.BenchmarkTarget
+	Dataset *job.BenchmarkDataset
+	Jobs    []*job.BenchmarkJob
 }
+
+type reconciler struct {
+	mgr         manager.Manager
+	name        string
+	namespace   string
+	onError     func(err error)
+	onReconcile func(operatorList map[string][]BenchmarkOperator)
+	lopts       []client.ListOption
+}
+
+func New(opts ...Option) BenchmarkOperatorWatcher {
+	r := new(reconciler)
+	for _, opt := range append(defaultOpts, opts...) {
+		opt(r)
+	}
+	return r
+}
+
+func (r *reconciler) AddListOpts(opt client.ListOption) {}
 
 //+kubebuilder:rbac:groups=vald.vdaas.org.vald.vdaas.org,resources=valdbenchmarkoperators,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=vald.vdaas.org.vald.vdaas.org,resources=valdbenchmarkoperators/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=vald.vdaas.org.vald.vdaas.org,resources=valdbenchmarkoperators/finalizers,verbs=update
-
-// Reconcile is part of the main kubernetes reconciliation loop which aims to
-// move the current state of the cluster closer to the desired state.
-// TODO(user): Modify the Reconcile function to compare the state specified by
-// the ValdBenchmarkOperator object against the actual cluster state, and then
-// perform operations to make the cluster state reflect the state specified by
-// the user.
-//
-// For more details, check Reconcile and its Result here:
-// - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.12.1/pkg/reconcile
-func (r *ValdBenchmarkOperatorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	_ = log.FromContext(ctx)
-
-	// TODO(user): your logic here
-
-	return ctrl.Result{}, nil
+func (r *reconciler) Reconcile(ctx context.Context, req reconcile.Request) (res reconcile.Result, err error) {
+	return
 }
 
-// SetupWithManager sets up the controller with the Manager.
-func (r *ValdBenchmarkOperatorReconciler) SetupWithManager(mgr ctrl.Manager) error {
-	return ctrl.NewControllerManagedBy(mgr).
-		For(&valdvdaasorgv1.ValdBenchmarkOperator{}).
-		Complete(r)
+func (r *reconciler) GetName() string {
+	return r.name
+}
+
+func (r *reconciler) NewReconciler(ctx context.Context, mgr manager.Manager) reconcile.Reconciler {
+	return r
+}
+
+func (r *reconciler) For() (client.Object, []builder.ForOption) {
+	return nil, nil
+}
+
+func (r *reconciler) Owns() (client.Object, []builder.OwnsOption) {
+	return nil, nil
+}
+
+func (r *reconciler) Watches() (*source.Kind, handler.EventHandler, []builder.WatchesOption) {
+	// return &source.Kind{Type: new(corev1.Pod)}, &handler.EnqueueRequestForObject{}
+	return nil, nil, nil
 }
