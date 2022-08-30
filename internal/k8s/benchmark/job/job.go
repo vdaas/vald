@@ -19,44 +19,98 @@ package benchmark
 import (
 	"context"
 
-	"k8s.io/apimachinery/pkg/runtime"
-	ctrl "sigs.k8s.io/controller-runtime"
+	"github.com/vdaas/vald/internal/k8s"
+	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/log"
-
-	valdvdaasorgv1 "vald.vdaas.org/api/v1"
+	"sigs.k8s.io/controller-runtime/pkg/handler"
+	"sigs.k8s.io/controller-runtime/pkg/manager"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
+	"sigs.k8s.io/controller-runtime/pkg/source"
 )
 
-// ValdBenchmarkJobReconciler reconciles a ValdBenchmarkJob object
-type ValdBenchmarkJobReconciler struct {
-	client.Client
-	Scheme *runtime.Scheme
+type BenchmarkJobWatcher k8s.ResourceController
+
+type reconciler struct {
+	mgr         manager.Manager
+	name        string
+	namespace   string
+	onError     func(err error)
+	onReconcile func(jobList map[string][]BenchmarkJob)
+	lopts       []client.ListOption
 }
+
+type BenchmarkJob struct {
+	Target     *BenchmarkTarget
+	Dataset    *BenchmarkDataset
+	Replica    int
+	Repetition int
+	JobType    string
+	Dimension  int
+	Epsilon    float32
+	Radius     float32
+	Iter       int
+	Num        int32
+	MinNUm     int32
+	Timeout    string
+	Rules      []*BenchmarkJobRule
+}
+
+type BenchmarkTarget struct {
+	Host string
+	Port int
+}
+
+type BenchmarkDataset struct {
+	Name    string
+	Group   string
+	Indexes int
+	Range   *BenchmarkDatasetRange
+}
+
+type BenchmarkDatasetRange struct {
+	Start int
+	End   int
+}
+
+type BenchmarkJobRule struct {
+	Name string
+	Type string
+}
+
+func New(opts ...Option) BenchmarkJobWatcher {
+	r := new(reconciler)
+	for _, opt := range append(defaultOpts, opts...) {
+		opt(r)
+	}
+	return r
+}
+
+func (r *reconciler) AddListOpts(opt client.ListOption) {}
 
 //+kubebuilder:rbac:groups=vald.vdaas.org.vald.vdaas.org,resources=valdbenchmarkjobs,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=vald.vdaas.org.vald.vdaas.org,resources=valdbenchmarkjobs/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=vald.vdaas.org.vald.vdaas.org,resources=valdbenchmarkjobs/finalizers,verbs=update
-
-// Reconcile is part of the main kubernetes reconciliation loop which aims to
-// move the current state of the cluster closer to the desired state.
-// TODO(user): Modify the Reconcile function to compare the state specified by
-// the ValdBenchmarkJob object against the actual cluster state, and then
-// perform operations to make the cluster state reflect the state specified by
-// the user.
-//
-// For more details, check Reconcile and its Result here:
-// - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.12.1/pkg/reconcile
-func (r *ValdBenchmarkJobReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	_ = log.FromContext(ctx)
-
-	// TODO(user): your logic here
-
-	return ctrl.Result{}, nil
+func (r *reconciler) Reconcile(ctx context.Context, req reconcile.Request) (res reconcile.Result, err error) {
+	return
 }
 
-// SetupWithManager sets up the controller with the Manager.
-func (r *ValdBenchmarkJobReconciler) SetupWithManager(mgr ctrl.Manager) error {
-	return ctrl.NewControllerManagedBy(mgr).
-		For(&valdvdaasorgv1.ValdBenchmarkJobRelease{}).
-		Complete(r)
+func (r *reconciler) GetName() string {
+	return r.name
+}
+
+func (r *reconciler) NewReconciler(ctx context.Context, mgr manager.Manager) reconcile.Reconciler {
+	return r
+}
+
+func (r *reconciler) For() (client.Object, []builder.ForOption) {
+	return nil, nil
+}
+
+func (r *reconciler) Owns() (client.Object, []builder.OwnsOption) {
+	return nil, nil
+}
+
+func (r *reconciler) Watches() (*source.Kind, handler.EventHandler, []builder.WatchesOption) {
+	// return &source.Kind{Type: new(corev1.Pod)}, &handler.EnqueueRequestForObject{}
+	return nil, nil, nil
 }
