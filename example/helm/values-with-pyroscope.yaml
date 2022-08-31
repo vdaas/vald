@@ -13,12 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
 defaults:
-  image:
-    tag: v1.4
-  time_zone: Asia/Tokyo
   logging:
     level: debug
+  image:
+    tag: latest
+  time_zone: Asia/Tokyo
   server_config:
     metrics:
       pprof:
