@@ -3,19 +3,19 @@
   This document will introduce you to the example of what Vald can do.
   Vald is a highly scalable distributed fast approximate nearest neighbor dense vector search engine, which uses [NGT](https://github.com/yahoojapan/NGT) as the core engine of Vald, and Vald manages to integrate with Kubernetes.
 
-  In general, you cannot search your unstructured data using the inverted index, like images and videos.
-  By applying the model like BERT or VGG, you can convert your unstructured data into vectors.
-  After converting them into vectors, you can insert it to Vald and process them in Vald.
+  You cannot generally search your unstructured data using the inverted index, like images and videos.
+  Applying a model like BERT or VGG can convert your unstructured data into vectors.
+  After converting them into vectors, you can insert them into the Vald cluster and process them in the Vald cluster.
 
-  Here are some general use cases of Vald or vector search engine.
+  Here are some general use cases of Vald or vector search engines.
 
 ## Image and video processing
 
   <img src="../../assets/docs/usecase/usecase_image.png" />
 
-  You can use Vald as the image/video processing engine to search the similar image/video or analyze the image/video for your use case.
+  You can use Vald as the image/video processing engine to search the similar images/videos or analyze the image/video for your use case.
 
-  Vald is capable to process a huge number of images at the same time so it case fit with your use case.
+  Vald is capable of processing a huge number of images at the same time, so its case fits with your use case.
 
   Here are some examples of what you can do with images and videos using Vald.
 
@@ -31,7 +31,7 @@
 
   Audio processing is important for personal assistant implementation.
 
-  Vald can act as a brain of the personal assistant function, conversation interpreter and the natural language generation.
+  Vald can act as a brain of the personal assistant function, conversation interpreter, and natural language generation.
 
   Here are some examples of what you can process using Vald.
 
@@ -62,9 +62,9 @@
 
 - AI malware detection
 
-  To detect the malware using Vald, you need to vectorize the malware binary file and insert into Vald first.
-  You can analyze your binary by performing a search to find a similar binary in Vald.
-  If your binary is similar to the malware binary, you can trigger the alert for users.
+  To detect the malware using Vald, you need to vectorize the binary file and insert it into Vald first.
+  You can analyze your binary by searching for a similar binary in Vald.
+  If your binary closely resembles the malware binary, you can trigger the alert for users.
 
 - Price optimization
 
@@ -73,8 +73,8 @@
 
 - Social analysis
 
-  To analyze the social relationship of users, you can suggest them their related friends, page recommendation, or other use cases.
-  You can apply different models to analyze the social data, and use Vald as a recommendation engine for your business.
+  To analyze the social relationship of users, you can suggest to them their related friends, page recommendations, or other use cases.
+  You can apply different models to analyze social data and use Vald as a recommendation engine for your business.
 
 ## Advanced use cases
 

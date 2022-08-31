@@ -210,7 +210,7 @@ It's the recommended method to update the large amount of vectors.
 
 MultiUpdate is the method to update multiple vectors in **1** request.
 
-<div class="card-note">
+<div class="notice">
 gRPC has the message size limitation.<br>
 Please be careful that the size of the request exceed the limit.
 </div>
