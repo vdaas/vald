@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-package benchmark
+package job
 
 import (
 	"context"
