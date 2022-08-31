@@ -14,8 +14,5 @@
 // limitations under the License.
 //
 
-package job
-
-type Option func(*reconciler) error
-
-var defaultOpts = []Option{}
+// Package operator provides benchmark operator crd information and preriodically update
+package operator
