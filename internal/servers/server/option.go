@@ -24,6 +24,7 @@ import (
 	"time"
 
 	"github.com/vdaas/vald/internal/errgroup"
+	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/info"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net"
@@ -548,11 +549,11 @@ func WithGRPCInterceptors(names ...string) Option {
 			case "metricinterceptor", "metric":
 				mi, err := metric.MetricInterceptor()
 				if err != nil {
-					return err
+					return errors.NewErrCriticalOption("gRPCInterceptors", "metric", errors.Wrap(err, "failed to create UnaryInterceptor"))
 				}
 				msi, err := metric.MetricStreamInterceptor()
 				if err != nil {
-					return err
+					return errors.NewErrCriticalOption("gRPCInterceptors", "metric", errors.Wrap(err, "failed to create StreamInterceptor"))
 				}
 				s.grpc.opts = append(
 					s.grpc.opts,
