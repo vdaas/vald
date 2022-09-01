@@ -5,9 +5,9 @@ import (
 	"sync"
 	"time"
 
+	"github.com/vdaas/vald/internal/observability-v2/attribute"
 	"github.com/vdaas/vald/internal/observability-v2/metrics"
 	"github.com/vdaas/vald/pkg/agent/sidecar/service/observer"
-	"go.opentelemetry.io/otel/attribute"
 )
 
 type MetricsHook interface {

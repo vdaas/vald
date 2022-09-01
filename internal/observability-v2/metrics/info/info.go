@@ -6,8 +6,8 @@ import (
 	"reflect"
 	"strconv"
 
+	"github.com/vdaas/vald/internal/observability-v2/attribute"
 	"github.com/vdaas/vald/internal/observability-v2/metrics"
-	"go.opentelemetry.io/otel/attribute"
 )
 
 type info struct {

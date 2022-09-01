@@ -8,10 +8,8 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/net/grpc/status"
+	"github.com/vdaas/vald/internal/observability-v2/attribute"
 	"github.com/vdaas/vald/internal/observability-v2/metrics"
-
-	// TODO: Change import path from external to vald internal (e.g. internal/observability/attribute).
-	"go.opentelemetry.io/otel/attribute"
 )
 
 const (

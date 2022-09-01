@@ -4,8 +4,8 @@ import (
 	"context"
 
 	"github.com/vdaas/vald/internal/backoff"
+	"github.com/vdaas/vald/internal/observability-v2/attribute"
 	"github.com/vdaas/vald/internal/observability-v2/metrics"
-	"go.opentelemetry.io/otel/attribute"
 )
 
 type backoffMetrics struct {

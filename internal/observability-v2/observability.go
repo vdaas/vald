@@ -26,7 +26,7 @@ type observability struct {
 	metrics   []metrics.Metric
 }
 
-func NewObservability(opts ...Option) (Observability, error) {
+func New(opts ...Option) (Observability, error) {
 	o := &observability{}
 	for _, opt := range append(defaultOpts, opts...) {
 		if err := opt(o); err != nil {

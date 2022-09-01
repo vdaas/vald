@@ -6,9 +6,8 @@ import (
 	"reflect"
 	"strings"
 
-	"go.opentelemetry.io/otel/attribute"
-
 	"github.com/vdaas/vald/internal/info"
+	"github.com/vdaas/vald/internal/observability-v2/attribute"
 	"github.com/vdaas/vald/internal/observability-v2/metrics"
 )
 
