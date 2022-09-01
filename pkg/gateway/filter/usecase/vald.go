@@ -26,7 +26,6 @@ import (
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc"
-	"github.com/vdaas/vald/internal/net/grpc/metric"
 	"github.com/vdaas/vald/internal/observability"
 	"github.com/vdaas/vald/internal/runner"
 	"github.com/vdaas/vald/internal/safety"
@@ -71,24 +70,6 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		if err != nil {
 			return nil, err
 		}
-		copts = append(
-			copts,
-			grpc.WithDialOptions(
-				grpc.WithStatsHandler(metric.NewClientHandler()),
-			),
-		)
-		icopts = append(
-			icopts,
-			grpc.WithDialOptions(
-				grpc.WithStatsHandler(metric.NewClientHandler()),
-			),
-		)
-		ecopts = append(
-			ecopts,
-			grpc.WithDialOptions(
-				grpc.WithStatsHandler(metric.NewClientHandler()),
-			),
-		)
 	}
 
 	c, err := client.New(
@@ -144,15 +125,6 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		server.WithPreStopFunction(func() error {
 			return nil
 		}),
-	}
-
-	if cfg.Observability.Enabled {
-		grpcServerOptions = append(
-			grpcServerOptions,
-			server.WithGRPCOption(
-				grpc.StatsHandler(metric.NewServerHandler()),
-			),
-		)
 	}
 
 	srv, err := starter.New(

@@ -24,7 +24,6 @@ import (
 	iconf "github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/net/grpc"
-	"github.com/vdaas/vald/internal/net/grpc/metric"
 	"github.com/vdaas/vald/internal/observability"
 	backoffmetrics "github.com/vdaas/vald/internal/observability/metrics/backoff"
 	cbmetrics "github.com/vdaas/vald/internal/observability/metrics/circuitbreaker"
@@ -83,18 +82,6 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		if err != nil {
 			return nil, err
 		}
-		aopts = append(
-			aopts,
-			grpc.WithDialOptions(
-				grpc.WithStatsHandler(metric.NewClientHandler()),
-			),
-		)
-		dopts = append(
-			dopts,
-			grpc.WithDialOptions(
-				grpc.WithStatsHandler(metric.NewClientHandler()),
-			),
-		)
 	}
 
 	client, err := discoverer.New(
@@ -153,15 +140,6 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 			// TODO notify another gateway and scheduler
 			return nil
 		}),
-	}
-
-	if cfg.Observability.Enabled {
-		grpcServerOptions = append(
-			grpcServerOptions,
-			server.WithGRPCOption(
-				grpc.StatsHandler(metric.NewServerHandler()),
-			),
-		)
 	}
 
 	srv, err := starter.New(

@@ -31,7 +31,6 @@ import (
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/net/grpc"
-	"github.com/vdaas/vald/internal/net/grpc/metric"
 	"github.com/vdaas/vald/internal/net/http/client"
 	"github.com/vdaas/vald/internal/observability"
 	"github.com/vdaas/vald/internal/runner"
@@ -175,15 +174,6 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 			// TODO notify another gateway and scheduler
 			return nil
 		}),
-	}
-
-	if cfg.Observability.Enabled {
-		grpcServerOptions = append(
-			grpcServerOptions,
-			server.WithGRPCOption(
-				grpc.StatsHandler(metric.NewServerHandler()),
-			),
-		)
 	}
 
 	srv, err := starter.New(

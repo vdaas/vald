@@ -24,7 +24,6 @@ import (
 	iconf "github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/net/grpc"
-	"github.com/vdaas/vald/internal/net/grpc/metric"
 	"github.com/vdaas/vald/internal/observability"
 	ngtmetrics "github.com/vdaas/vald/internal/observability/metrics/agent/core/ngt"
 	infometrics "github.com/vdaas/vald/internal/observability/metrics/info"
@@ -107,12 +106,6 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		if err != nil {
 			return nil, err
 		}
-		grpcServerOptions = append(
-			grpcServerOptions,
-			server.WithGRPCOption(
-				grpc.StatsHandler(metric.NewServerHandler()),
-			),
-		)
 	}
 
 	srv, err := starter.New(
