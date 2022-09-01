@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/observability-v2/exporter"
 )
 
 type Option func(e *exp) error
@@ -15,9 +16,8 @@ var (
 		WithCollectInterval("500ms"),
 		WithCollectTimeout("5s"),
 		WithInMemoty(true),
-		WithHistogramBoundaries(
-			// https://github.com/open-telemetry/opentelemetry-go/blob/main/example/prometheus/main.go#L44
-			[]float64{1, 2, 5, 10, 20, 50},
+		WithHistogramDistribution(
+			exporter.DefaultMillisecondsHistogramDistribution,
 		),
 	}
 )
@@ -79,7 +79,7 @@ func WithInMemoty(ok bool) Option {
 	}
 }
 
-func WithHistogramBoundaries(fs []float64) Option {
+func WithHistogramDistribution(fs []float64) Option {
 	return func(e *exp) error {
 		if len(fs) == 0 {
 			return errors.NewErrInvalidOption("histogramBoundarie", fs)
