@@ -38,12 +38,9 @@ For more details, please refer to [the Search API document](../api/search.md).
 
 ## Configuration
 
-<!-- Describe Search parameters: ../../apis/proto/v1/payload -->
-<!-- TODO: divide search configuration for each agent algorithm -->
-
 Here is the current search config parameters.
 
-```bash
+```rpc
 // Represent search configuration.
 message Config {
   // Unique request ID.
