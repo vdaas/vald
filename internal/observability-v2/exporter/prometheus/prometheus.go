@@ -8,6 +8,7 @@ import (
 
 	"go.opentelemetry.io/otel/exporters/prometheus"
 	"go.opentelemetry.io/otel/metric/global"
+	"go.opentelemetry.io/otel/sdk/metric/aggregator/histogram"
 	"go.opentelemetry.io/otel/sdk/metric/controller/basic"
 	"go.opentelemetry.io/otel/sdk/metric/export/aggregation"
 	processor "go.opentelemetry.io/otel/sdk/metric/processor/basic"
@@ -53,7 +54,9 @@ func New(opts ...Option) (Exporter, error) {
 	// Create controller for prometheus exporter.
 	controller := basic.New(
 		processor.NewFactory(
-			simple.NewWithHistogramDistribution(e.histogramBoundarie),
+			simple.NewWithHistogramDistribution(
+				histogram.WithExplicitBoundaries(e.histogramBoundarie),
+			),
 			aggregation.CumulativeTemporalitySelector(),
 			processor.WithMemory(e.inmemoryEnabled),
 		),
