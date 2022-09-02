@@ -20,7 +20,6 @@ import (
 	"context"
 
 	"github.com/vdaas/vald/internal/k8s"
-	job "github.com/vdaas/vald/internal/k8s/benchmark/job"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
@@ -31,18 +30,12 @@ import (
 
 type BenchmarkOperatorWatcher k8s.ResourceController
 
-type BenchmarkOperator struct {
-	Target  *job.BenchmarkTarget
-	Dataset *job.BenchmarkDataset
-	Jobs    []*job.BenchmarkJob
-}
-
 type reconciler struct {
 	mgr         manager.Manager
 	name        string
 	namespace   string
 	onError     func(err error)
-	onReconcile func(operatorList map[string][]BenchmarkOperator)
+	onReconcile func(operatorList map[string][]BenchmarkOperatorSpec)
 	lopts       []client.ListOption
 }
 

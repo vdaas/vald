@@ -35,46 +35,8 @@ type reconciler struct {
 	name        string
 	namespace   string
 	onError     func(err error)
-	onReconcile func(jobList map[string][]BenchmarkJob)
+	onReconcile func(jobList map[string][]BenchmarkJobSpec)
 	lopts       []client.ListOption
-}
-
-type BenchmarkJob struct {
-	Target     *BenchmarkTarget
-	Dataset    *BenchmarkDataset
-	Replica    int
-	Repetition int
-	JobType    string
-	Dimension  int
-	Epsilon    float32
-	Radius     float32
-	Iter       int
-	Num        int32
-	MinNUm     int32
-	Timeout    string
-	Rules      []*BenchmarkJobRule
-}
-
-type BenchmarkTarget struct {
-	Host string
-	Port int
-}
-
-type BenchmarkDataset struct {
-	Name    string
-	Group   string
-	Indexes int
-	Range   *BenchmarkDatasetRange
-}
-
-type BenchmarkDatasetRange struct {
-	Start int
-	End   int
-}
-
-type BenchmarkJobRule struct {
-	Name string
-	Type string
 }
 
 func New(opts ...Option) BenchmarkJobWatcher {
