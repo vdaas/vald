@@ -26,6 +26,7 @@ import (
 	"github.com/vdaas/vald/internal/observability/exporter"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/jaeger"
+	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/sdk/resource"
 	"go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.12.0"
@@ -106,6 +107,7 @@ func New(opts ...Option) (j Jaeger, err error) {
 
 func (e *export) Start(ctx context.Context) (err error) {
 	otel.SetTracerProvider(e.tp)
+	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(propagation.TraceContext{}, propagation.Baggage{}))
 	return nil
 }
 
