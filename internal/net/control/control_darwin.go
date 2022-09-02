@@ -1,5 +1,4 @@
 //go:build darwin && !linux && !windows && !wasm && !js
-// +build darwin,!linux,!windows,!wasm,!js
 
 //
 // Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>

@@ -19,17 +19,20 @@ package jaeger
 
 import (
 	"context"
+	"net/http"
 	"reflect"
 	"testing"
+	"time"
 
-	"contrib.go.opencensus.io/exporter/jaeger"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/test/goleak"
+	"go.opentelemetry.io/otel/exporters/jaeger"
+	"go.opentelemetry.io/otel/sdk/trace"
 )
 
 func TestNew(t *testing.T) {
 	type args struct {
-		opts []JaegerOption
+		opts []Option
 	}
 	type want struct {
 		wantJ Jaeger
@@ -80,9 +83,11 @@ func TestNew(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -102,13 +107,22 @@ func TestNew(t *testing.T) {
 	}
 }
 
-func Test_exp_Start(t *testing.T) {
+func Test_export_Start(t *testing.T) {
 	type args struct {
 		ctx context.Context
 	}
 	type fields struct {
-		exporter *jaeger.Exporter
-		options  jaegerOptions
+		tp                  *trace.TracerProvider
+		exp                 *jaeger.Exporter
+		collectorEndpoint   string
+		client              *http.Client
+		collectorPassword   string
+		collectorUserName   string
+		agentHost           string
+		agentPort           string
+		agentReconnInterval time.Duration
+		agentMaxPacketSize  int
+		serviceName         string
 	}
 	type want struct {
 		err error
@@ -137,8 +151,17 @@ func Test_exp_Start(t *testing.T) {
 		           ctx: nil,
 		       },
 		       fields: fields {
-		           exporter: nil,
-		           options: nil,
+		           tp: nil,
+		           exp: nil,
+		           collectorEndpoint: "",
+		           client: nil,
+		           collectorPassword: "",
+		           collectorUserName: "",
+		           agentHost: "",
+		           agentPort: "",
+		           agentReconnInterval: nil,
+		           agentMaxPacketSize: 0,
+		           serviceName: "",
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -154,8 +177,17 @@ func Test_exp_Start(t *testing.T) {
 		           ctx: nil,
 		           },
 		           fields: fields {
-		           exporter: nil,
-		           options: nil,
+		           tp: nil,
+		           exp: nil,
+		           collectorEndpoint: "",
+		           client: nil,
+		           collectorPassword: "",
+		           collectorUserName: "",
+		           agentHost: "",
+		           agentPort: "",
+		           agentReconnInterval: nil,
+		           agentMaxPacketSize: 0,
+		           serviceName: "",
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -164,9 +196,11 @@ func Test_exp_Start(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -177,9 +211,18 @@ func Test_exp_Start(t *testing.T) {
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
-			e := &exp{
-				exporter: test.fields.exporter,
-				options:  test.fields.options,
+			e := &export{
+				tp:                  test.fields.tp,
+				exp:                 test.fields.exp,
+				collectorEndpoint:   test.fields.collectorEndpoint,
+				client:              test.fields.client,
+				collectorPassword:   test.fields.collectorPassword,
+				collectorUserName:   test.fields.collectorUserName,
+				agentHost:           test.fields.agentHost,
+				agentPort:           test.fields.agentPort,
+				agentReconnInterval: test.fields.agentReconnInterval,
+				agentMaxPacketSize:  test.fields.agentMaxPacketSize,
+				serviceName:         test.fields.serviceName,
 			}
 
 			err := e.Start(test.args.ctx)
@@ -190,13 +233,22 @@ func Test_exp_Start(t *testing.T) {
 	}
 }
 
-func Test_exp_Stop(t *testing.T) {
+func Test_export_Stop(t *testing.T) {
 	type args struct {
 		ctx context.Context
 	}
 	type fields struct {
-		exporter *jaeger.Exporter
-		options  jaegerOptions
+		tp                  *trace.TracerProvider
+		exp                 *jaeger.Exporter
+		collectorEndpoint   string
+		client              *http.Client
+		collectorPassword   string
+		collectorUserName   string
+		agentHost           string
+		agentPort           string
+		agentReconnInterval time.Duration
+		agentMaxPacketSize  int
+		serviceName         string
 	}
 	type want struct{}
 	type test struct {
@@ -220,8 +272,17 @@ func Test_exp_Stop(t *testing.T) {
 		           ctx: nil,
 		       },
 		       fields: fields {
-		           exporter: nil,
-		           options: nil,
+		           tp: nil,
+		           exp: nil,
+		           collectorEndpoint: "",
+		           client: nil,
+		           collectorPassword: "",
+		           collectorUserName: "",
+		           agentHost: "",
+		           agentPort: "",
+		           agentReconnInterval: nil,
+		           agentMaxPacketSize: 0,
+		           serviceName: "",
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -237,8 +298,17 @@ func Test_exp_Stop(t *testing.T) {
 		           ctx: nil,
 		           },
 		           fields: fields {
-		           exporter: nil,
-		           options: nil,
+		           tp: nil,
+		           exp: nil,
+		           collectorEndpoint: "",
+		           client: nil,
+		           collectorPassword: "",
+		           collectorUserName: "",
+		           agentHost: "",
+		           agentPort: "",
+		           agentReconnInterval: nil,
+		           agentMaxPacketSize: 0,
+		           serviceName: "",
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -247,9 +317,11 @@ func Test_exp_Stop(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -260,9 +332,18 @@ func Test_exp_Stop(t *testing.T) {
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
-			e := &exp{
-				exporter: test.fields.exporter,
-				options:  test.fields.options,
+			e := &export{
+				tp:                  test.fields.tp,
+				exp:                 test.fields.exp,
+				collectorEndpoint:   test.fields.collectorEndpoint,
+				client:              test.fields.client,
+				collectorPassword:   test.fields.collectorPassword,
+				collectorUserName:   test.fields.collectorUserName,
+				agentHost:           test.fields.agentHost,
+				agentPort:           test.fields.agentPort,
+				agentReconnInterval: test.fields.agentReconnInterval,
+				agentMaxPacketSize:  test.fields.agentMaxPacketSize,
+				serviceName:         test.fields.serviceName,
 			}
 
 			e.Stop(test.args.ctx)
