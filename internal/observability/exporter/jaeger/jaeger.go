@@ -60,28 +60,22 @@ func New(opts ...Option) (j Jaeger, err error) {
 		}
 	}
 
-	eop := jaeger.WithCollectorEndpoint(
-		jaeger.WithEndpoint(e.collectorEndpoint),
-		jaeger.WithHTTPClient(http.DefaultClient),
-		// jaeger.WithDisableAttemptReconnecting(),
-		jaeger.WithPassword(e.collectorPassword),
-		jaeger.WithUsername(e.collectorUserName))
-
-	// var eop jaeger.EndpointOption
-	// if len(e.agentHost) != 0 && len(e.agentPort) != 0 {
-	// 	eop = jaeger.WithAgentEndpoint(
-	// 		jaeger.WithAgentHost(e.agentHost),
-	// 		jaeger.WithAgentPort(e.agentPort),
-	// 		jaeger.WithAttemptReconnectingInterval(e.agentReconnInterval),
-	// 		jaeger.WithMaxPacketSize(e.agentMaxPacketSize))
-	// } else {
-	// 	eop = jaeger.WithCollectorEndpoint(
-	// 		jaeger.WithEndpoint(e.collectorEndpoint),
-	// 		jaeger.WithHTTPClient(http.DefaultClient),
-	// 		// jaeger.WithDisableAttemptReconnecting(),
-	// 		jaeger.WithPassword(e.collectorPassword),
-	// 		jaeger.WithUsername(e.collectorUserName))
-	// }
+	var eop jaeger.EndpointOption
+	if len(e.agentHost) != 0 && len(e.agentPort) != 0 {
+		// TODO: we can not get trace data, so we need to fix it later.
+		eop = jaeger.WithAgentEndpoint(
+			jaeger.WithAgentHost(e.agentHost),
+			jaeger.WithAgentPort(e.agentPort),
+			jaeger.WithAttemptReconnectingInterval(e.agentReconnInterval),
+			jaeger.WithMaxPacketSize(e.agentMaxPacketSize))
+	} else {
+		eop = jaeger.WithCollectorEndpoint(
+			jaeger.WithEndpoint(e.collectorEndpoint),
+			jaeger.WithHTTPClient(http.DefaultClient),
+			// jaeger.WithDisableAttemptReconnecting(),
+			jaeger.WithPassword(e.collectorPassword),
+			jaeger.WithUsername(e.collectorUserName))
+	}
 	e.exp, err = jaeger.New(eop)
 	if err != nil {
 		return nil, err
