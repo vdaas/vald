@@ -594,7 +594,10 @@ require (
 	go.opencensus.io v0.23.0
 	go.opentelemetry.io/otel v1.9.0
 	go.opentelemetry.io/otel/exporters/jaeger v0.0.0-00010101000000-000000000000
+	go.opentelemetry.io/otel/exporters/prometheus v0.0.0-00010101000000-000000000000
+	go.opentelemetry.io/otel/metric v0.31.0
 	go.opentelemetry.io/otel/sdk v1.9.0
+	go.opentelemetry.io/otel/sdk/metric v0.31.0
 	go.opentelemetry.io/otel/trace v1.9.0
 	go.uber.org/automaxprocs v0.0.0-00010101000000-000000000000
 	go.uber.org/goleak v1.1.12
@@ -688,11 +691,6 @@ require (
 	github.com/spf13/cobra v1.4.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/xlab/treeprint v1.1.0 // indirect
-	go.opentelemetry.io/otel v1.9.0 // indirect
-	go.opentelemetry.io/otel/metric v0.31.0 // indirect
-	go.opentelemetry.io/otel/sdk v1.9.0 // indirect
-	go.opentelemetry.io/otel/sdk/metric v0.31.0 // indirect
-	go.opentelemetry.io/otel/trace v1.9.0 // indirect
 	go.starlark.net v0.0.0-20200306205701-8dd3e2ee1dd5 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/multierr v1.8.0 // indirect
