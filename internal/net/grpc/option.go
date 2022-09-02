@@ -27,6 +27,7 @@ import (
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net"
+	"github.com/vdaas/vald/internal/net/grpc/interceptor/client/trace"
 	"github.com/vdaas/vald/internal/timeutil"
 	"google.golang.org/grpc"
 	gbackoff "google.golang.org/grpc/backoff"
@@ -350,6 +351,15 @@ func WithTLSConfig(cfg *tls.Config) Option {
 				grpc.WithTransportCredentials(credentials.NewTLS(cfg)),
 			)
 		}
+	}
+}
+
+func WithClientInterceptor(names ...string) Option {
+	return func(g *gRPCClient) {
+		g.dopts = append(g.dopts,
+			grpc.WithUnaryInterceptor(trace.UnaryClientInterceptor()),
+			grpc.WithStreamInterceptor(trace.StreamClientInterceptor()),
+		)
 	}
 }
 

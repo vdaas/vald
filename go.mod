@@ -592,6 +592,7 @@ require (
 	github.com/vdaas/vald-client-go v0.0.0-00010101000000-000000000000
 	github.com/zeebo/xxh3 v1.0.2
 	go.opencensus.io v0.23.0
+	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.20.0
 	go.opentelemetry.io/otel v1.9.0
 	go.opentelemetry.io/otel/exporters/jaeger v0.0.0-00010101000000-000000000000
 	go.opentelemetry.io/otel/exporters/prometheus v0.0.0-00010101000000-000000000000

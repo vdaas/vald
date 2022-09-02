@@ -34,6 +34,7 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc/interceptor/server/metric"
 	"github.com/vdaas/vald/internal/net/grpc/interceptor/server/recover"
 	"github.com/vdaas/vald/internal/net/grpc/interceptor/server/trace"
+	tracev2 "github.com/vdaas/vald/internal/net/grpc/interceptor/server/trace-v2"
 	"github.com/vdaas/vald/internal/net/http/rest"
 	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/timeutil"
@@ -545,6 +546,9 @@ func WithGRPCInterceptors(names ...string) Option {
 					s.grpc.opts,
 					grpc.ChainUnaryInterceptor(trace.TracePayloadInterceptor()),
 					grpc.ChainStreamInterceptor(trace.TracePayloadStreamInterceptor()),
+					// TODO: we should delete this interceptor. Add new switch statement.
+					grpc.ChainUnaryInterceptor(tracev2.UnaryServerInterceptor()),
+					grpc.ChainStreamInterceptor(tracev2.StreamServerInterceptor()),
 				)
 			case "metricinterceptor", "metric":
 				mi, err := metric.MetricInterceptor()
