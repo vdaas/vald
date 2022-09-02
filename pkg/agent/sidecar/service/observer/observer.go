@@ -412,7 +412,7 @@ func (o *observer) backup(ctx context.Context) (err error) {
 
 	ctx, span := trace.StartSpan(ctx, "vald/agent-sidecar/service/observer/StorageObserver.backup")
 	if span != nil {
-		span.AddAttributes(
+		span.SetAttributes(
 			trace.StringAttribute("storage_type", bi.StorageInfo.Type),
 			trace.StringAttribute("bucket_name", bi.BucketName),
 			trace.StringAttribute("filename", bi.Filename),

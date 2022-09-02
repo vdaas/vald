@@ -888,7 +888,7 @@ defaults:
       collector_endpoint: "" # http://jaeger-collector.default.svc.cluster.local:14268/api/traces
       # @schema {"name": "defaults.observability.jaeger.agent_endpoint", "type": "string"}
       # defaults.observability.jaeger.agent_endpoint -- Jaeger agent endpoint
-      agent_endpoint: jaeger-agent.default.svc.cluster.local:6831
+      agent_endpoint: ""
       # @schema {"name": "defaults.observability.jaeger.username", "type": "string"}
       # defaults.observability.jaeger.username -- Jaeger username
       username: ""
@@ -900,7 +900,7 @@ defaults:
       service_name: vald
       # @schema {"name": "defaults.observability.jaeger.buffer_max_count", "type": "integer"}
       # defaults.observability.jaeger.buffer_max_count -- Jaeger buffer max count
-      buffer_max_count: 10
+      buffer_max_count: 65000
 # @schema {"name": "gateway", "type": "object"}
 gateway:
   # @schema {"name": "gateway.lb", "type": "object"}

@@ -1,18 +1,16 @@
-//
 // Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//    https://www.apache.org/licenses/LICENSE-2.0
+//	https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 package grpc
 
 import (
@@ -64,7 +62,9 @@ func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *
 			})
 		log.Warn(err)
 		if span != nil {
-			span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
+			span.RecordError(err)
+			span.SetAttributes(trace.StatusCodeInvalidArgument(err.Error())...)
+			span.SetStatus(trace.StatusError, err.Error())
 		}
 		return nil, err
 	}
@@ -124,7 +124,9 @@ func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *
 				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
 			})
 		if span != nil {
-			span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
+			span.RecordError(err)
+			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+			span.SetStatus(trace.StatusError, err.Error())
 		}
 		return nil, err
 	}
@@ -152,7 +154,9 @@ func (s *server) StreamUpsert(stream vald.Upsert_StreamUpsertServer) (err error)
 			if err != nil {
 				st, msg, err := status.ParseError(err, codes.Internal, "failed to parse Upsert gRPC error response")
 				if sspan != nil {
-					sspan.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
+					sspan.RecordError(err)
+					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+					sspan.SetStatus(trace.StatusError, err.Error())
 				}
 				return &payload.Object_StreamLocation{
 					Payload: &payload.Object_StreamLocation_Status{
@@ -170,7 +174,9 @@ func (s *server) StreamUpsert(stream vald.Upsert_StreamUpsertServer) (err error)
 	if err != nil {
 		st, msg, err := status.ParseError(err, codes.Internal, "failed to parse StreamUpsert gRPC error response")
 		if span != nil {
-			span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
+			span.RecordError(err)
+			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+			span.SetStatus(trace.StatusError, err.Error())
 		}
 		return err
 	}
@@ -213,7 +219,9 @@ func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequ
 				})
 			log.Warn(err)
 			if span != nil {
-				span.SetStatus(trace.StatusCodeInvalidArgument(err.Error()))
+				span.RecordError(err)
+				span.SetAttributes(trace.StatusCodeInvalidArgument(err.Error())...)
+				span.SetStatus(trace.StatusError, err.Error())
 			}
 			return nil, err
 		}
@@ -320,7 +328,9 @@ func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequ
 				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
 			}, info.Get())
 		if span != nil {
-			span.SetStatus(trace.FromGRPCStatus(st.Code(), msg))
+			span.RecordError(err)
+			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+			span.SetStatus(trace.StatusError, err.Error())
 		}
 		return nil, err
 	}

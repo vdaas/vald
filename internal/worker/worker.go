@@ -232,7 +232,9 @@ func (w *worker) Dispatch(ctx context.Context, f JobFunc) error {
 	if !w.IsRunning() {
 		err := errors.ErrWorkerIsNotRunning(w.Name())
 		if span != nil {
-			span.SetStatus(trace.StatusCodeUnavailable(err.Error()))
+			span.RecordError(err)
+			span.SetAttributes(trace.StatusCodeUnavailable(err.Error())...)
+			span.SetStatus(trace.StatusError, err.Error())
 		}
 
 		return err

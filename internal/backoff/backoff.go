@@ -31,7 +31,8 @@ import (
 )
 
 // NOTE: This variable is for observability package.
-//       This will be fixed when refactoring the observability package.
+//
+//	This will be fixed when refactoring the observability package.
 var (
 	mu      sync.RWMutex
 	metrics map[string]int64 = make(map[string]int64)
