@@ -25,10 +25,6 @@ type Option func(*export) error
 
 var jaegerDefaultOpts = []Option{
 	WithServiceName("vald"),
-	// For tracing over network, packets must fit in MTU 1500, which has a
-	// payload size of 1472. But if network is local, we can use default packet size (MTU: 65000)
-	// TODO: Implement the handling appropriately later.
-	WithMaxPacketSize(1472),
 }
 
 func WithCollectorEndpoint(cep string) Option {
@@ -84,13 +80,6 @@ func WithServiceName(serviceName string) Option {
 func WithBufferMaxCount(cnt int) Option {
 	return func(exp *export) error {
 		exp.agentMaxPacketSize = cnt
-		return nil
-	}
-}
-
-func WithMaxPacketSize(size int) Option {
-	return func(exp *export) error {
-		exp.agentMaxPacketSize = size
 		return nil
 	}
 }
