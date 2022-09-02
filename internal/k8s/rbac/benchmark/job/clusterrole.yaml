@@ -21,6 +21,18 @@ metadata:
   namespace: default # TODO: fix
 rules:
   - apiGroups:
+      - apps
+    resources:
+      - deployments
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
       - vald.vdaas.org
     resources:
       - valdbenchmarkjobs
@@ -41,52 +53,40 @@ rules:
   - apiGroups:
       - vald.vdaas.org
     resources:
-      - valdbenchmarkojobs/status
+      - valdbenchmarkjobs/status
     verbs:
       - get
       - patch
       - update
   - apiGroups:
-    - apps
+      - ""
     resources:
-    - deployments
+      - configmaps
     verbs:
-    - create
-    - delete
-    - get
-    - list
-    - patch
-    - update
-    - watch
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
   - apiGroups:
-    - ""
+      - ""
     resources:
-    - configmaps
+      - events
     verbs:
-    - create
-    - delete
-    - get
-    - list
-    - patch
-    - update
-    - watch
+      - create
+      - patch
+      - update
   - apiGroups:
-    - ""
+      - ""
     resources:
-    - events
+      - services
     verbs:
-    - create
-    - patch
-    - update
-  - apiGroups:
-    - ""
-    resources:
-    - services
-    verbs:
-    - create
-    - delete
-    - get
-    - list
-    - patch
-    - update
-    - watch
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
