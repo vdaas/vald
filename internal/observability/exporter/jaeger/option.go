@@ -26,7 +26,7 @@ type Option func(*export) error
 var jaegerDefaultOpts = []Option{
 	WithServiceName("vald"),
 	// For tracing over network, packets must fit in MTU 1500, which has a
-	// payload size of 1472. But if network is local, we can use default package size (MTU: 65000)
+	// payload size of 1472. But if network is local, we can use default packet size (MTU: 65000)
 	// TODO: Implement the handling appropriately later.
 	WithMaxPacketSize(1472),
 }
