@@ -101,8 +101,7 @@ func New(opts ...Option) (j Jaeger, err error) {
 
 func (e *export) Start(ctx context.Context) (err error) {
 	otel.SetTracerProvider(e.tp)
-	// otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(propagation.TraceContext{}, propagation.Baggage{}))
-	otel.SetTextMapPropagator(propagation.TraceContext{})
+	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(propagation.TraceContext{}, propagation.Baggage{}))
 	return nil
 }
 
