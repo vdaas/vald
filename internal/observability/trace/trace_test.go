@@ -23,28 +23,29 @@ import (
 	"testing"
 
 	"github.com/vdaas/vald/internal/errors"
-	"go.opencensus.io/trace"
+	"github.com/vdaas/vald/internal/test/goleak"
+	"go.opentelemetry.io/otel/trace"
 )
 
 func TestStartSpan(t *testing.T) {
 	type args struct {
 		ctx  context.Context
 		name string
-		opts []trace.StartOption
+		opts []trace.SpanStartOption
 	}
 	type want struct {
 		want  context.Context
-		want1 *Span
+		want1 Span
 	}
 	type test struct {
 		name       string
 		args       args
 		want       want
-		checkFunc  func(want, context.Context, *Span) error
+		checkFunc  func(want, context.Context, Span) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, got context.Context, got1 *Span) error {
+	defaultCheckFunc := func(w want, got context.Context, got1 Span) error {
 		if !reflect.DeepEqual(got, w.want) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
@@ -85,8 +86,11 @@ func TestStartSpan(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -155,8 +159,11 @@ func TestNew(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -230,8 +237,11 @@ func Test_tracer_Start(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -242,11 +252,11 @@ func Test_tracer_Start(t *testing.T) {
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
-			t := &tracer{
+			tr := &tracer{
 				samplingRate: test.fields.samplingRate,
 			}
 
-			t.Start(test.args.ctx)
+			tr.Start(test.args.ctx)
 			if err := checkFunc(test.want); err != nil {
 				tt.Errorf("error = %v", err)
 			}

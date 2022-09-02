@@ -211,10 +211,10 @@ func withDetails(st *Status, err error, details ...interface{}) *Status {
 			for _, d := range v.Proto().Details {
 				msgs = append(msgs, proto.ToMessageV1(errdetails.AnyToErrorDetail(d)))
 			}
-		case *info.Detail:
-			msgs = append(msgs, errdetails.DebugInfoFromInfoDetail(v))
 		case info.Detail:
 			msgs = append(msgs, errdetails.DebugInfoFromInfoDetail(&v))
+		case *info.Detail:
+			msgs = append(msgs, errdetails.DebugInfoFromInfoDetail(v))
 		case proto.Message:
 			msgs = append(msgs, proto.ToMessageV1(v))
 		case *proto.Message:

@@ -1,5 +1,4 @@
 //go:build windows
-// +build windows
 
 //
 // Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
