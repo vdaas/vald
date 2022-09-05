@@ -63,7 +63,7 @@ func main() {
 		},
 		// Insert configuration (optional)
 		Config: &payload.Insert_Config{
-			SkipStrictExistCheck: true,
+			SkipStrictExistCheck: false,
 			Filters: &payload.Filter_Config{
 				Targets: []*payload.Filter_Target{
 					{
@@ -87,7 +87,7 @@ func main() {
 #### skip_strict_exist_check
 
 `skip_strict_exist_check` is the flag for checking whether the same set of the vector and ID is already inserted or not.
-If it is set as `true`, the checking function is available.<BR>
+If it is set as `true`, the checking function will be skipped.<BR>
 The default value is `false`.
 
 #### filters
@@ -179,7 +179,7 @@ func example() {
 		},
 		// Insert configuration (optional)
 		Config: &payload.Update_Config{
-			SkipStrictExistCheck: true,
+			SkipStrictExistCheck: false,
 			Filters: &payload.Filter_Config{
 				Targets: []*payload.Filter_Target{
 					{
@@ -202,9 +202,17 @@ func example() {
 
 #### skip_strict_exist_check
 
-`skip_strict_exist_check` is the flag for checking whether the same set of the vector and ID is already inserted or not.
-If it is set as `true`, the checking function is available.<BR>
-The default value is `false`.
+`skip_strict_exist_check` (default value is `false`) is the flag for checking whether the same set of the vector and ID is already inserted or not.
+If it is set as `true`, the checking function will be skipped.<BR>
+
+When `skip_strict_exist_check` is `false`, the following checking steps will run in the update process:
+
+1. Whether the set of (ID and vector) is already inserted or not.
+   If there is no data, the update process ends with returning the `NOT_FOUND` error.
+1. When pass the Step.1, checking whether request vector is same as the indexed vector or not.
+   It it is same, the update process ends with returning the `ALREADY_EXIST` error.
+
+If all of above steps have been passed, the update process wil continue.
 
 #### filters
 
@@ -283,7 +291,7 @@ func example() {
 	// Init vald client
 	client := vald.NewValdClient(conn)
 
-	// Update sample
+	// Upsert sample
 	location, err := client.Upsert(ctx, &payload.Upsert_Request{
 		// Vector information (mandatory)
 		Vector: &payload.Object_Vector{
@@ -294,7 +302,7 @@ func example() {
 		},
 		// Insert configuration (optional)
 		Config: &payload.Upsert_Config{
-			SkipStrictExistCheck: true,
+			SkipStrictExistCheck: false,
 			Filters: &payload.Filter_Config{
 				Targets: []*payload.Filter_Target{
 					{
@@ -314,6 +322,52 @@ func example() {
 ```
 
 </details>
+
+#### skip_strict_exist_check
+
+`skip_strict_exist_check` (default value is `false`) is the flag for checking whether the same set of the vector and ID is already inserted or not.
+If it is set as `false`, the checking function will be skipped.<BR>
+
+When `skip_strict_exist_check` is `false`, the following checking steps will run in the upsert process:
+
+1. Whether the set of (ID and vector) is already inserted or not.
+   If there is no data, the request ID and vector will be inserted.
+1. When pass the Step.1, checking whether request vector is same as the indexed vector or not.
+   It it is same, the upsert process ends with returning the `ALREADY_EXIST` error.
+
+If all of above steps have been passed, the upsert process wil continue.
+
+#### filters
+
+`filters` is the configuration when using filter functions.
+In the `Insert` section, it is popular for using ingress filtering.
+
+The detail configuration is following.
+
+```rpc
+// Filter related messages.
+message Filter {
+
+  // Represent the target filter server.
+  message Target {
+    // The target filter component hostname.
+    string host = 1;
+    // The target filter component port.
+    uint32 port = 2;
+  }
+
+  // Represent filter configuration.
+  message Config {
+    // Represent the filter target configuration.
+    repeated Target targets = 1;
+  }
+}
+```
+
+#### timestamp
+
+`timestamp` is the timestamp when vector inserted.
+When `timestamp` is not set, the current time will be used.
 
 
 ## Search Service
@@ -591,7 +645,7 @@ func example() {
 		},
 		// Insert configuration (optional)
 		Config: &payload.Remove_Config{
-			SkipStrictExistCheck: true,
+			SkipStrictExistCheck: false,
 			Timestamp: time.Now().UnixMilli(),
 		},
 	})
@@ -606,9 +660,15 @@ func example() {
 
 ### skip_strict_exist_check
 
-`skip_strict_exist_check` is the flag for checking whether the same set of the vector and ID is already inserted or not.
-If it is set as `true`, the checking function is available.<BR>
-The default value is `false`.
+`skip_strict_exist_check` (default value is `false`) is the flag for checking whether the same set of the vector and ID is already inserted or not.
+If it is set as `true`, the checking function will be skipped.<BR>
+
+When `skip_strict_exist_check` is `false`, the following checking step will run in the remove process:
+
+1. Whether the set of (ID and vector) is already inserted or not.
+   If there is no data, the remove process ends with returning the `NOT_FOUND` error.
+
+If all of above steps have been passed, the update process wil continue.
 
 ### timestamp
 
