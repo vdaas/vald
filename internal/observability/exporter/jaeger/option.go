@@ -22,8 +22,9 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/vdaas/vald/internal/errors"
 	"go.opentelemetry.io/otel/sdk/trace"
+
+	"github.com/vdaas/vald/internal/errors"
 )
 
 type Option func(*export) error

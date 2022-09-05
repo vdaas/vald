@@ -21,10 +21,11 @@ import (
 	"reflect"
 	"testing"
 
+	"go.opentelemetry.io/otel/attribute"
+
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/test/goleak"
-	"go.opentelemetry.io/otel/attribute"
 )
 
 func TestFromGRPCStatus(t *testing.T) {
