@@ -69,8 +69,6 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		if err != nil {
 			return nil, err
 		}
-		// TODO observe something
-		_ = obs
 	}
 
 	netOpts, err := cfg.AgentSidecar.Client.Net.Opts()

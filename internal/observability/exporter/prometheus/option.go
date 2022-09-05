@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/vdaas/vald/internal/errors"
-	"github.com/vdaas/vald/internal/observability-v2/exporter"
+	"github.com/vdaas/vald/internal/observability/exporter"
 )
 
 type Option func(e *exp) error
@@ -14,7 +14,7 @@ var (
 		WithEndpoint("/metrics"),
 		WithNamespace("vald"),
 		WithCollectInterval("500ms"),
-		WithCollectTimeout("5s"),
+		WithCollectTimeout("10s"),
 		WithInMemoty(true),
 		WithHistogramDistribution(
 			exporter.DefaultMillisecondsHistogramDistribution,

@@ -824,40 +824,31 @@ defaults:
         insecure_skip_verify: false
   # @schema {"name": "defaults.observability", "type": "object", "anchor": "observability"}
   observability:
-    # @schema {"name": "defaults.observability.enabled", "type": "boolean"}
-    # defaults.observability.enabled -- observability features enabled
-    enabled: false
-    # @schema {"name": "defaults.observability.collector", "type": "object"}
-    collector:
-      # @schema {"name": "defaults.observability.collector.duration", "type": "string"}
-      # defaults.observability.collector.duration -- metrics collect duration.
-      # if it is set as 5s, enabled metrics are collected every 5 seconds.
-      duration: 5s
-      # @schema {"name": "defaults.observability.collector.metrics", "type": "object"}
-      metrics:
-        # @schema {"name": "defaults.observability.collector.metrics.enable_version_info", "type": "boolean"}
-        # defaults.observability.collector.metrics.enable_version_info -- version info metrics enabled
-        enable_version_info: true
-        # @schema {"name": "defaults.observability.collector.metrics.version_info_labels", "type": "array", "items": {"type": "string", "enum": ["vald_version", "server_name", "git_commit", "build_time", "go_version", "go_os", "go_arch", "cgo_enabled", "ngt_version", "build_cpu_info_flags"]}}
-        # defaults.observability.collector.metrics.version_info_labels -- enabled label names of version info
-        version_info_labels:
-          - "vald_version"
-          - "server_name"
-          - "git_commit"
-          - "build_time"
-          - "go_version"
-          - "go_os"
-          - "go_arch"
-          - "ngt_version"
-        # @schema {"name": "defaults.observability.collector.metrics.enable_memory", "type": "boolean"}
-        # defaults.observability.collector.metrics.enable_memory -- memory metrics enabled
-        enable_memory: true
-        # @schema {"name": "defaults.observability.collector.metrics.enable_goroutine", "type": "boolean"}
-        # defaults.observability.collector.metrics.enable_goroutine -- goroutine metrics enabled
-        enable_goroutine: true
-        # @schema {"name": "defaults.observability.collector.metrics.enable_cgo", "type": "boolean"}
-        # defaults.observability.collector.metrics.enable_cgo -- CGO metrics enabled
-        enable_cgo: true
+    # @schema {"name": "defaults.observability.metrics", "type": "object"}
+    metrics:
+      # @schema {"name": "defaults.observability.metrics.enable_version_info", "type": "boolean"}
+      # defaults.observability.metrics.enable_version_info -- version info metrics enabled
+      enable_version_info: true
+      # @schema {"name": "defaults.observability.metrics.version_info_labels", "type": "array", "items": {"type": "string", "enum": ["vald_version", "server_name", "git_commit", "build_time", "go_version", "go_os", "go_arch", "cgo_enabled", "ngt_version", "build_cpu_info_flags"]}}
+      # defaults.observability.metrics.version_info_labels -- enabled label names of version info
+      version_info_labels:
+        - "vald_version"
+        - "server_name"
+        - "git_commit"
+        - "build_time"
+        - "go_version"
+        - "go_os"
+        - "go_arch"
+        - "ngt_version"
+      # @schema {"name": "defaults.observability.metrics.enable_memory", "type": "boolean"}
+      # defaults.observability.metrics.enable_memory -- memory metrics enabled
+      enable_memory: true
+      # @schema {"name": "defaults.observability.metrics.enable_goroutine", "type": "boolean"}
+      # defaults.observability.metrics.enable_goroutine -- goroutine metrics enabled
+      enable_goroutine: true
+      # @schema {"name": "defaults.observability.metrics.enable_cgo", "type": "boolean"}
+      # defaults.observability.metrics.enable_cgo -- CGO metrics enabled
+      enable_cgo: true
     # @schema {"name": "defaults.observability.trace", "type": "object"}
     trace:
       # @schema {"name": "defaults.observability.trace.enabled", "type": "boolean"}
@@ -878,6 +869,15 @@ defaults:
       # @schema {"name": "defaults.observability.prometheus.namespace", "type": "string"}
       # defaults.observability.prometheus.namespace -- prefix of exported metrics name
       namespace: vald
+      # @schema {"name": "defaults.observability.prometheus.collect_interval", "type": "string"}
+      # defaults.observability.prometheus.collect_interval -- Prometheus collect interval
+      collect_interval: 500ms
+      # @schema {"name": "defaults.observability.prometheus.collect_timeout", "type": "string"}
+      # defaults.observability.prometheus.collect_timeout -- Prometheus collect timeout
+      collect_timeout: 10s
+      # @schema {"name": "defaults.observability.prometheus.enable_in_memory_mode", "type": "string"}
+      # defaults.observability.prometheus.enable_in_memory_mode -- Prometheus collect with in memory
+      enable_in_memory_mode: true
     # @schema {"name": "defaults.observability.jaeger", "type": "object"}
     jaeger:
       # @schema {"name": "defaults.observability.jaeger.enabled", "type": "boolean"}
@@ -898,9 +898,21 @@ defaults:
       # @schema {"name": "defaults.observability.jaeger.service_name", "type": "string"}
       # defaults.observability.jaeger.service_name -- Jaeger service name
       service_name: vald
-      # @schema {"name": "defaults.observability.jaeger.buffer_max_count", "type": "integer"}
-      # defaults.observability.jaeger.buffer_max_count -- Jaeger buffer max count
-      buffer_max_count: 65000
+      # @schema {"name": "defaults.observability.jaeger.agent_max_packet_size", "type": "integer"}
+      # defaults.observability.jaeger.agent_max_packet_size -- Jaeger Agent max packet size
+      agent_max_packet_size: 65000
+      # @schema {"name": "defaults.observability.jaeger.batch_timeout", "type": "string"}
+      # defaults.observability.jaeger.batch_timeout -- Jaeger export batch timeout
+      batch_timeout: 5s
+      # @schema {"name": "defaults.observability.jaeger.export_timeout", "type": "string"}
+      # defaults.observability.jaeger.export_timeout -- Jaeger export timeout
+      export_timeout: 5s
+      # @schema {"name": "defaults.observability.jaeger.max_export_batch_size", "type": "integer"}
+      # defaults.observability.jaeger.max_export_batch_size -- Jaeger max export batch size
+      max_export_batch_size: 512
+      # @schema {"name": "defaults.observability.jaeger.max_queue_size", "type": "integer"}
+      # defaults.observability.jaeger.max_queue_size -- Jaeger max queue size
+      max_queue_size: 2048
 # @schema {"name": "gateway", "type": "object"}
 gateway:
   # @schema {"name": "gateway.lb", "type": "object"}

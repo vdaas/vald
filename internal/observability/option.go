@@ -3,8 +3,9 @@ package observability
 // TODO: Fix observability-v2 to observability
 import (
 	"github.com/vdaas/vald/internal/errgroup"
-	"github.com/vdaas/vald/internal/observability-v2/exporter"
-	"github.com/vdaas/vald/internal/observability-v2/trace"
+	"github.com/vdaas/vald/internal/observability/exporter"
+	"github.com/vdaas/vald/internal/observability/metrics"
+	"github.com/vdaas/vald/internal/observability/trace"
 )
 
 type Option func(*observability) error
@@ -20,6 +21,20 @@ func WithErrGroup(eg errgroup.Group) Option {
 	return func(o *observability) error {
 		if eg != nil {
 			o.eg = eg
+		}
+		return nil
+	}
+}
+
+// WithMetrics returns an option that sets the metrics.
+func WithMetrics(ms ...metrics.Metric) Option {
+	return func(o *observability) error {
+		if len(ms) != 0 {
+			if o.metrics == nil {
+				o.metrics = ms
+			} else {
+				o.metrics = append(o.metrics, ms...)
+			}
 		}
 		return nil
 	}

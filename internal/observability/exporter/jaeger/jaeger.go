@@ -23,7 +23,7 @@ import (
 	"time"
 
 	"github.com/vdaas/vald/internal/log"
-	"github.com/vdaas/vald/internal/observability-v2/exporter"
+	"github.com/vdaas/vald/internal/observability/exporter"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/jaeger"
 	"go.opentelemetry.io/otel/sdk/resource"
@@ -61,7 +61,6 @@ func New(opts ...Option) (j Jaeger, err error) {
 
 	var eop jaeger.EndpointOption
 	if len(e.agentHost) != 0 && len(e.agentPort) != 0 {
-		// TODO: we can not get trace data, so we need to fix it later.
 		eop = jaeger.WithAgentEndpoint(
 			jaeger.WithAgentHost(e.agentHost),
 			jaeger.WithAgentPort(e.agentPort),

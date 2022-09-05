@@ -9,11 +9,15 @@ import (
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
-	"github.com/vdaas/vald/internal/observability-v2/exporter"
-	"github.com/vdaas/vald/internal/observability-v2/exporter/jaeger"
-	"github.com/vdaas/vald/internal/observability-v2/exporter/prometheus"
-	"github.com/vdaas/vald/internal/observability-v2/metrics"
-	"github.com/vdaas/vald/internal/observability-v2/trace"
+	"github.com/vdaas/vald/internal/observability/exporter"
+	"github.com/vdaas/vald/internal/observability/exporter/jaeger"
+	"github.com/vdaas/vald/internal/observability/exporter/prometheus"
+	"github.com/vdaas/vald/internal/observability/metrics"
+	"github.com/vdaas/vald/internal/observability/metrics/mem/index"
+	"github.com/vdaas/vald/internal/observability/metrics/runtime/cgo"
+	"github.com/vdaas/vald/internal/observability/metrics/runtime/goroutine"
+	"github.com/vdaas/vald/internal/observability/metrics/version"
+	"github.com/vdaas/vald/internal/observability/trace"
 )
 
 type Observability interface {
@@ -33,6 +37,21 @@ func NewWithConfig(cfg *config.Observability, metrics ...metrics.Metric) (Observ
 	opts := make([]Option, 0)
 	exps := make([]exporter.Exporter, 0)
 
+	if cfg.Metrics != nil {
+		if cfg.Metrics.EnableCGO {
+			metrics = append(metrics, cgo.New())
+		}
+		if cfg.Metrics.EnableGoroutine {
+			metrics = append(metrics, goroutine.New())
+		}
+		if cfg.Metrics.EnableMemory {
+			metrics = append(metrics, index.New())
+		}
+		if cfg.Metrics.EnableVersionInfo {
+			metrics = append(metrics, version.New(cfg.Metrics.VersionInfoLabels...))
+		}
+	}
+
 	if cfg.Trace.Enabled {
 		tr, err := trace.New()
 		if err != nil {
@@ -45,6 +64,9 @@ func NewWithConfig(cfg *config.Observability, metrics ...metrics.Metric) (Observ
 		prom, err := prometheus.New(
 			prometheus.WithEndpoint(cfg.Prometheus.Endpoint),
 			prometheus.WithNamespace(cfg.Prometheus.Namespace),
+			prometheus.WithCollectInterval(cfg.Prometheus.CollectInterval),
+			prometheus.WithCollectTimeout(cfg.Prometheus.CollectTimeout),
+			prometheus.WithInMemoty(cfg.Prometheus.EnableInMemoryMode),
 		)
 		if err != nil {
 			return nil, err
@@ -56,11 +78,15 @@ func NewWithConfig(cfg *config.Observability, metrics ...metrics.Metric) (Observ
 	if cfg.Jaeger.Enabled {
 		jae, err := jaeger.New(
 			jaeger.WithAgentEndpoint(cfg.Jaeger.AgentEndpoint),
-			jaeger.WithAgentMaxPacketSize(cfg.Jaeger.BufferMaxCount),
+			jaeger.WithAgentMaxPacketSize(cfg.Jaeger.AgentMaxPacketSize),
 			jaeger.WithCollectorEndpoint(cfg.Jaeger.CollectorEndpoint),
 			jaeger.WithUsername(cfg.Jaeger.Username),
 			jaeger.WithPassword(cfg.Jaeger.Password),
 			jaeger.WithServiceName(cfg.Jaeger.ServiceName),
+			jaeger.WithBatchTimeout(cfg.Jaeger.BatchTimeout),
+			jaeger.WithExportTimeout(cfg.Jaeger.ExportTimeout),
+			jaeger.WithMaxExportBatchSize(cfg.Jaeger.MaxExportBatchSize),
+			jaeger.WithMaxQueueSize(cfg.Jaeger.MaxQueueSize),
 		)
 		if err != nil {
 			return nil, err
@@ -71,6 +97,7 @@ func NewWithConfig(cfg *config.Observability, metrics ...metrics.Metric) (Observ
 	opts = append(
 		opts,
 		WithExporters(exps...),
+		WithMetrics(metrics...),
 	)
 
 	return New(opts...)

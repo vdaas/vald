@@ -16,7 +16,7 @@ import (
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
-	"github.com/vdaas/vald/internal/observability-v2/exporter"
+	"github.com/vdaas/vald/internal/observability/exporter"
 )
 
 type Exporter interface {

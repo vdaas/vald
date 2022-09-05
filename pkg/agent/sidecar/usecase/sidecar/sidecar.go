@@ -155,14 +155,9 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 
 	var metricsHook metrics.MetricsHook
 	if cfg.Observability.Enabled {
-		metricsHook, err = metrics.New()
-		if err != nil {
-			return nil, err
-		}
-
 		observerOpts = append(
 			observerOpts,
-			observer.WithHooks(metricsHook),
+			observer.WithHooks(metrics.New()),
 		)
 	}
 

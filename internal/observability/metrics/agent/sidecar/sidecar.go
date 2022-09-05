@@ -5,8 +5,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/vdaas/vald/internal/observability-v2/attribute"
-	"github.com/vdaas/vald/internal/observability-v2/metrics"
+	"github.com/vdaas/vald/internal/observability/attribute"
+	"github.com/vdaas/vald/internal/observability/metrics"
 	"github.com/vdaas/vald/pkg/agent/sidecar/service/observer"
 )
 
@@ -24,12 +24,12 @@ type sidecarMetrics struct {
 	info *observer.BackupInfo
 }
 
-func New() (MetricsHook, error) {
+func New() MetricsHook {
 	return &sidecarMetrics{
 		storageTypeKey: "agent_sidecar_storage_type",
 		bucketNameKey:  "agent_sidecar_bucket_name",
 		filenameKey:    "agent_sidecar_filename",
-	}, nil
+	}
 }
 
 func (sm *sidecarMetrics) Register(m metrics.Meter) error {

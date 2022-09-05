@@ -4,8 +4,8 @@ import (
 	"context"
 
 	"github.com/vdaas/vald/internal/circuitbreaker"
-	"github.com/vdaas/vald/internal/observability-v2/attribute"
-	"github.com/vdaas/vald/internal/observability-v2/metrics"
+	"github.com/vdaas/vald/internal/observability/attribute"
+	"github.com/vdaas/vald/internal/observability/metrics"
 )
 
 type breakerMetrics struct {

@@ -3,7 +3,7 @@ package ngt
 import (
 	"context"
 
-	"github.com/vdaas/vald/internal/observability-v2/metrics"
+	"github.com/vdaas/vald/internal/observability/metrics"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/service"
 )
 

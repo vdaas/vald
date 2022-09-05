@@ -70,15 +70,10 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 
 	var obs observability.Observability
 	if cfg.Observability.Enabled {
-		bom, err := backoffmetrics.New()
-		if err != nil {
-			return nil, err
-		}
-		cbm, err := cbmetrics.New()
-		if err != nil {
-			return nil, err
-		}
-		obs, err = observability.NewWithConfig(cfg.Observability, bom, cbm)
+		obs, err = observability.NewWithConfig(cfg.Observability,
+			backoffmetrics.New(),
+			cbmetrics.New(),
+		)
 		if err != nil {
 			return nil, err
 		}

@@ -3,7 +3,7 @@ package index
 import (
 	"context"
 
-	"github.com/vdaas/vald/internal/observability-v2/metrics"
+	"github.com/vdaas/vald/internal/observability/metrics"
 	"github.com/vdaas/vald/pkg/manager/index/service"
 )
 

@@ -6,8 +6,8 @@ import (
 	"reflect"
 	"strconv"
 
-	"github.com/vdaas/vald/internal/observability-v2/attribute"
-	"github.com/vdaas/vald/internal/observability-v2/metrics"
+	"github.com/vdaas/vald/internal/observability/attribute"
+	"github.com/vdaas/vald/internal/observability/metrics"
 )
 
 type info struct {
@@ -19,8 +19,9 @@ type info struct {
 // New creates new general info metric according to the provided struct.
 func New(name, description string, i interface{}) metrics.Metric {
 	return &info{
-		name: name,
-		kvs:  labelKVs(i),
+		name:        name,
+		description: description,
+		kvs:         labelKVs(i),
 	}
 }
 

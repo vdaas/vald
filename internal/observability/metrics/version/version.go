@@ -7,8 +7,8 @@ import (
 	"strings"
 
 	"github.com/vdaas/vald/internal/info"
-	"github.com/vdaas/vald/internal/observability-v2/attribute"
-	"github.com/vdaas/vald/internal/observability-v2/metrics"
+	"github.com/vdaas/vald/internal/observability/attribute"
+	"github.com/vdaas/vald/internal/observability/metrics"
 )
 
 var reps = strings.NewReplacer("_", " ", ",omitempty", "")

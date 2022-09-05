@@ -5,7 +5,7 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/vdaas/vald/internal/observability-v2/metrics"
+	"github.com/vdaas/vald/internal/observability/metrics"
 )
 
 type memoryMetrics struct {
