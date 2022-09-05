@@ -16,8 +16,6 @@ import (
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
-
-	// TODO: change observability-v2 to observability
 	"github.com/vdaas/vald/internal/observability-v2/exporter"
 )
 
@@ -44,7 +42,7 @@ func New(opts ...Option) (Exporter, error) {
 			oerr := errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 			e := &errors.ErrCriticalOption{}
 			if errors.As(oerr, &e) {
-				log.Error(err)
+				log.Error(oerr)
 				return nil, oerr
 			}
 			log.Warn(oerr)

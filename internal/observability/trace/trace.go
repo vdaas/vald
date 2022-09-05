@@ -47,7 +47,7 @@ var (
 type Span = trace.Span
 
 type Tracer interface {
-	Start(ctx context.Context)
+	Start(ctx context.Context) error
 }
 
 type tracer struct {
@@ -77,10 +77,6 @@ func New(opts ...TraceOption) Tracer {
 	return t
 }
 
-func (t *tracer) Start(ctx context.Context) {
-	// trace.ApplyConfig(
-	// 	trace.Config{
-	// 		DefaultSampler: trace.ProbabilitySampler(t.samplingRate),
-	// 	},
-	// )
+func (t *tracer) Start(ctx context.Context) error {
+	return nil
 }

@@ -4,6 +4,7 @@ package observability
 import (
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/observability-v2/exporter"
+	"github.com/vdaas/vald/internal/observability-v2/trace"
 )
 
 type Option func(*observability) error
@@ -33,6 +34,16 @@ func WithExporters(exps ...exporter.Exporter) Option {
 			} else {
 				o.exporters = append(o.exporters, exps...)
 			}
+		}
+		return nil
+	}
+}
+
+// WithTracer returns an option that sets the tracer.
+func WithTracer(tr trace.Tracer) Option {
+	return func(o *observability) error {
+		if tr != nil {
+			o.tracer = tr
 		}
 		return nil
 	}
