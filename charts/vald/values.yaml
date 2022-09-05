@@ -871,7 +871,7 @@ defaults:
       # @schema {"name": "defaults.observability.prometheus.collect_timeout", "type": "string"}
       # defaults.observability.prometheus.collect_timeout -- Prometheus collect timeout
       collect_timeout: 10s
-      # @schema {"name": "defaults.observability.prometheus.enable_in_memory_mode", "type": "string"}
+      # @schema {"name": "defaults.observability.prometheus.enable_in_memory_mode", "type": "boolean"}
       # defaults.observability.prometheus.enable_in_memory_mode -- Prometheus collect with in memory
       enable_in_memory_mode: true
     # @schema {"name": "defaults.observability.jaeger", "type": "object"}
