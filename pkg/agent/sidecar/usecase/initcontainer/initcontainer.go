@@ -63,14 +63,6 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		bs storage.Storage
 	)
 
-	var obs observability.Observability
-	if cfg.Observability.Enabled {
-		obs, err = observability.NewWithConfig(cfg.Observability)
-		if err != nil {
-			return nil, err
-		}
-	}
-
 	netOpts, err := cfg.AgentSidecar.Client.Net.Opts()
 	if err != nil {
 		return nil, err
@@ -172,6 +164,14 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 			// TODO notify another gateway and scheduler
 			return nil
 		}),
+	}
+
+	var obs observability.Observability
+	if cfg.Observability.Enabled {
+		obs, err = observability.NewWithConfig(cfg.Observability)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	srv, err := starter.New(

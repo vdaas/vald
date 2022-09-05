@@ -66,18 +66,6 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		acOpts,
 		grpc.WithErrGroup(eg))
 
-	var obs observability.Observability
-	if cfg.Observability.Enabled {
-		obs, err = observability.NewWithConfig(
-			cfg.Observability,
-			backoffmetrics.New(),
-			cbmetrics.New(),
-		)
-		if err != nil {
-			return nil, err
-		}
-	}
-
 	client, err := discoverer.New(
 		discoverer.WithAutoConnect(true),
 		discoverer.WithName(cfg.Gateway.AgentName),
@@ -117,8 +105,16 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		}),
 	}
 
+	var obs observability.Observability
 	if cfg.Observability.Enabled {
-		// TODO:
+		obs, err = observability.NewWithConfig(
+			cfg.Observability,
+			backoffmetrics.New(),
+			cbmetrics.New(),
+		)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	srv, err := starter.New(

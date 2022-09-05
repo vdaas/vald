@@ -19,7 +19,7 @@ import (
 	"github.com/vdaas/vald/internal/observability/exporter"
 )
 
-type Exporter interface {
+type Prometheus interface {
 	exporter.Exporter
 	NewHTTPHandler() http.Handler
 }
@@ -35,7 +35,7 @@ type exp struct {
 	histogramBoundarie []float64
 }
 
-func New(opts ...Option) (Exporter, error) {
+func New(opts ...Option) (Prometheus, error) {
 	e := &exp{}
 	for _, opt := range append(defaultOpts, opts...) {
 		if err := opt(e); err != nil {
@@ -88,4 +88,8 @@ func (e *exp) NewHTTPHandler() http.Handler {
 	mux := http.NewServeMux()
 	mux.Handle(e.endpoint, e.exporter)
 	return mux
+}
+
+func Exporter() (Prometheus, error) {
+	return nil, nil
 }

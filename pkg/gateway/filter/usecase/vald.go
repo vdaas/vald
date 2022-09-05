@@ -27,6 +27,8 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/observability"
+	backoffmetrics "github.com/vdaas/vald/internal/observability/metrics/backoff"
+	cbmetrics "github.com/vdaas/vald/internal/observability/metrics/circuitbreaker"
 	"github.com/vdaas/vald/internal/runner"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/servers/server"
@@ -52,7 +54,6 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		return nil, errors.ErrGRPCTargetAddrNotFound
 	}
 	eg := errgroup.Get()
-	var obs observability.Observability
 	copts, err := cfg.Client.Opts()
 	if err != nil {
 		return nil, err
@@ -64,12 +65,6 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	ecopts, err := cfg.EgressFilters.Client.Opts()
 	if err != nil {
 		return nil, err
-	}
-	if cfg.Observability.Enabled {
-		obs, err = observability.NewWithConfig(cfg.Observability)
-		if err != nil {
-			return nil, err
-		}
 	}
 
 	c, err := client.New(
@@ -125,6 +120,18 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		server.WithPreStopFunction(func() error {
 			return nil
 		}),
+	}
+
+	var obs observability.Observability
+	if cfg.Observability.Enabled {
+		obs, err = observability.NewWithConfig(
+			cfg.Observability,
+			backoffmetrics.New(),
+			cbmetrics.New(),
+		)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	srv, err := starter.New(

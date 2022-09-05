@@ -68,17 +68,6 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		acOpts,
 		grpc.WithErrGroup(eg))
 
-	var obs observability.Observability
-	if cfg.Observability.Enabled {
-		obs, err = observability.NewWithConfig(cfg.Observability,
-			backoffmetrics.New(),
-			cbmetrics.New(),
-		)
-		if err != nil {
-			return nil, err
-		}
-	}
-
 	client, err := discoverer.New(
 		discoverer.WithAutoConnect(true),
 		discoverer.WithName(cfg.Indexer.AgentName),
@@ -115,16 +104,6 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		return nil, err
 	}
 
-	if cfg.Observability.Enabled {
-		obs, err = observability.NewWithConfig(
-			cfg.Observability,
-			indexmetrics.New(indexer),
-		)
-		if err != nil {
-			return nil, err
-		}
-	}
-
 	idx := handler.New(handler.WithIndexer(indexer))
 
 	grpcServerOptions := []server.Option{
@@ -135,6 +114,19 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 			// TODO notify another gateway and scheduler
 			return nil
 		}),
+	}
+
+	var obs observability.Observability
+	if cfg.Observability.Enabled {
+		obs, err = observability.NewWithConfig(
+			cfg.Observability,
+			indexmetrics.New(indexer),
+			backoffmetrics.New(),
+			cbmetrics.New(),
+		)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	srv, err := starter.New(
