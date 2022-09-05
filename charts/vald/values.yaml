@@ -854,10 +854,6 @@ defaults:
       # @schema {"name": "defaults.observability.trace.enabled", "type": "boolean"}
       # defaults.observability.trace.enabled -- trace enabled
       enabled: false
-      # @schema {"name": "defaults.observability.trace.sampling_rate", "type": "number"}
-      # defaults.observability.trace.sampling_rate -- trace sampling rate.
-      # must be between 0.0 to 1.0.
-      sampling_rate: 1.0
     # @schema {"name": "defaults.observability.prometheus", "type": "object"}
     prometheus:
       # @schema {"name": "defaults.observability.prometheus.enabled", "type": "boolean"}

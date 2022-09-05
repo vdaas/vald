@@ -20,7 +20,6 @@ package config
 // Observability represents the configuration for the observability.
 type Observability struct {
 	Enabled    bool        `json:"enabled"    yaml:"enabled"`
-	Collector  *Collector  `json:"collector"  yaml:"collector"`
 	Metrics    *Metrics    `json:"metrics"    yaml:"metrics"`
 	Trace      *Trace      `json:"trace"      yaml:"trace"`
 	Prometheus *Prometheus `json:"prometheus" yaml:"prometheus"`
@@ -35,8 +34,7 @@ type Collector struct {
 
 // Trace represents the configuration for the trace.
 type Trace struct {
-	Enabled      bool    `json:"enabled"       yaml:"enabled"`
-	SamplingRate float64 `json:"sampling_rate" yaml:"sampling_rate"`
+	Enabled bool `json:"enabled" yaml:"enabled"`
 }
 
 // Metrics represents the configuration for the metrics.
@@ -79,13 +77,6 @@ type Jaeger struct {
 
 // Bind binds the actual data from the Observability receiver fields.
 func (o *Observability) Bind() *Observability {
-	if o.Collector != nil {
-		o.Collector = o.Collector.Bind()
-	} else {
-		o.Collector = new(Collector)
-		o.Collector.Metrics = new(Metrics)
-	}
-
 	if o.Metrics != nil {
 		o.Metrics.VersionInfoLabels = GetActualValues(o.Metrics.VersionInfoLabels)
 	} else {
