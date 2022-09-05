@@ -114,6 +114,7 @@ func dirwalk(dir string) []string {
 			".html",
 			".json",
 			".key",
+			".kvsdb",
 			".lock",
 			".md",
 			".md5",
@@ -194,7 +195,7 @@ func readAndRewrite(path string) error {
 		once := sync.Once{}
 		for sc.Scan() {
 			line := sc.Text()
-			if filepath.Ext(path) == ".go" && strings.HasPrefix(line, "// +build") ||
+			if filepath.Ext(path) == ".go" && strings.HasPrefix(line, "//go:") ||
 				filepath.Ext(path) == ".py" && strings.HasPrefix(line, "# -*-") {
 				bf = true
 				_, err = buf.WriteString(line)

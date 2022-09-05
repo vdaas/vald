@@ -95,7 +95,9 @@ func (s *server) Pods(ctx context.Context, req *payload.Discoverer_Request) (*pa
 			},
 			info.Get())
 		if span != nil {
-			span.SetStatus(trace.StatusCodeInternal(err.Error()))
+			span.RecordError(err)
+			span.SetAttributes(trace.StatusCodeInternal(err.Error())...)
+			span.SetStatus(trace.StatusError, err.Error())
 		}
 		log.Warnf("GetPods returned error: %v", err)
 		return nil, err
@@ -112,7 +114,9 @@ func (s *server) Pods(ctx context.Context, req *payload.Discoverer_Request) (*pa
 			},
 			info.Get())
 		if span != nil {
-			span.SetStatus(trace.StatusCodeNotFound(err.Error()))
+			span.RecordError(err)
+			span.SetAttributes(trace.StatusCodeNotFound(err.Error())...)
+			span.SetStatus(trace.StatusError, err.Error())
 		}
 		log.Warnf("Pods not found: %#v, error: %v", res, err)
 		return nil, err
@@ -130,7 +134,9 @@ func (s *server) Pods(ctx context.Context, req *payload.Discoverer_Request) (*pa
 			},
 			info.Get())
 		if span != nil {
-			span.SetStatus(trace.StatusCodeNotFound(err.Error()))
+			span.RecordError(err)
+			span.SetAttributes(trace.StatusCodeNotFound(err.Error())...)
+			span.SetStatus(trace.StatusError, err.Error())
 		}
 		log.Warnf("Pods not found: %#v, error: %v", res, err)
 		return nil, err
@@ -148,7 +154,9 @@ func (s *server) Pods(ctx context.Context, req *payload.Discoverer_Request) (*pa
 			},
 			info.Get())
 		if span != nil {
-			span.SetStatus(trace.StatusCodeNotFound(err.Error()))
+			span.RecordError(err)
+			span.SetAttributes(trace.StatusCodeNotFound(err.Error())...)
+			span.SetStatus(trace.StatusError, err.Error())
 		}
 		log.Warnf("Pods not found: %#v, error: %v", res, err)
 		return nil, err
@@ -180,7 +188,9 @@ func (s *server) Nodes(ctx context.Context, req *payload.Discoverer_Request) (*p
 			},
 			info.Get())
 		if span != nil {
-			span.SetStatus(trace.StatusCodeInternal(err.Error()))
+			span.RecordError(err)
+			span.SetAttributes(trace.StatusCodeInternal(err.Error())...)
+			span.SetStatus(trace.StatusError, err.Error())
 		}
 		log.Warnf("GetNodes returned error: %v", err)
 		return nil, err
@@ -197,7 +207,9 @@ func (s *server) Nodes(ctx context.Context, req *payload.Discoverer_Request) (*p
 			},
 			info.Get())
 		if span != nil {
-			span.SetStatus(trace.StatusCodeNotFound(err.Error()))
+			span.RecordError(err)
+			span.SetAttributes(trace.StatusCodeNotFound(err.Error())...)
+			span.SetStatus(trace.StatusError, err.Error())
 		}
 		log.Warnf("Nodes not found: %#v, error: %v", res, err)
 		return nil, err
@@ -218,7 +230,9 @@ func (s *server) Nodes(ctx context.Context, req *payload.Discoverer_Request) (*p
 			info.Get(),
 		)
 		if span != nil {
-			span.SetStatus(trace.StatusCodeNotFound(err.Error()))
+			span.RecordError(err)
+			span.SetAttributes(trace.StatusCodeNotFound(err.Error())...)
+			span.SetStatus(trace.StatusError, err.Error())
 		}
 		log.Warnf("Nodes not found: %#v, error: %v", res, err)
 		return nil, err
@@ -239,7 +253,9 @@ func (s *server) Nodes(ctx context.Context, req *payload.Discoverer_Request) (*p
 			info.Get(),
 		)
 		if span != nil {
-			span.SetStatus(trace.StatusCodeNotFound(err.Error()))
+			span.RecordError(err)
+			span.SetAttributes(trace.StatusCodeNotFound(err.Error())...)
+			span.SetStatus(trace.StatusError, err.Error())
 		}
 		log.Warnf("Nodes not found: %#v, error: %v", res, err)
 		return nil, err

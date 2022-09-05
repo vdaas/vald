@@ -60,7 +60,7 @@ func AccessLogInterceptor() grpc.UnaryServerInterceptor {
 
 		span := trace.FromContext(ctx)
 		if span != nil {
-			traceID = span.SpanContext().TraceID.String()
+			traceID = span.SpanContext().TraceID().String()
 		}
 
 		start := time.Now()
@@ -108,7 +108,7 @@ func AccessLogStreamInterceptor() grpc.StreamServerInterceptor {
 
 		span := trace.FromContext(ss.Context())
 		if span != nil {
-			traceID = span.SpanContext().TraceID.String()
+			traceID = span.SpanContext().TraceID().String()
 		}
 
 		start := time.Now()

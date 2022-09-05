@@ -23,6 +23,7 @@ import (
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/test/comparator"
 	"github.com/vdaas/vald/internal/test/goleak"
 )
 
@@ -213,7 +214,10 @@ func TestClone(t *testing.T) {
 		afterFunc  func(args)
 	}
 	defaultCheckFunc := func(w want, got Message) error {
-		if !reflect.DeepEqual(got, w.want) {
+		diff := comparator.Diff(got, w.want, comparator.IgnoreUnexported(
+			payload.Object_Vector{},
+		))
+		if diff != "" {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil

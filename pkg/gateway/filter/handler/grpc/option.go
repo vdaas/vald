@@ -18,12 +18,15 @@
 package grpc
 
 import (
+	"os"
 	"runtime"
 
 	"github.com/vdaas/vald/internal/client/v1/client/filter/egress"
 	"github.com/vdaas/vald/internal/client/v1/client/filter/ingress"
 	"github.com/vdaas/vald/internal/client/v1/client/vald"
 	"github.com/vdaas/vald/internal/errgroup"
+	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/net"
 )
 
 type Option func(*server)
@@ -31,6 +34,32 @@ type Option func(*server)
 var defaultOptions = []Option{
 	WithErrGroup(errgroup.Get()),
 	WithStreamConcurrency(runtime.GOMAXPROCS(-1) * 10),
+	WithName(func() string {
+		name, err := os.Hostname()
+		if err != nil {
+			log.Warn(err)
+		}
+		return name
+	}()),
+	WithIP(net.LoadLocalIP()),
+}
+
+// WithIP returns the option to set the IP for server.
+func WithIP(ip string) Option {
+	return func(s *server) {
+		if len(ip) != 0 {
+			s.ip = ip
+		}
+	}
+}
+
+// WithName returns the option to set the name for server.
+func WithName(name string) Option {
+	return func(s *server) {
+		if len(name) != 0 {
+			s.name = name
+		}
+	}
 }
 
 func WithIngressFilterClient(c ingress.Client) Option {
