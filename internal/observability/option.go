@@ -1,8 +1,8 @@
 package observability
 
-// TODO: Fix observability-v2 to observability
 import (
 	"github.com/vdaas/vald/internal/errgroup"
+	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/observability/exporter"
 	"github.com/vdaas/vald/internal/observability/metrics"
 	"github.com/vdaas/vald/internal/observability/trace"
@@ -19,9 +19,10 @@ var (
 // WithErrGroup returns an option that sets the errgroup.
 func WithErrGroup(eg errgroup.Group) Option {
 	return func(o *observability) error {
-		if eg != nil {
-			o.eg = eg
+		if eg == nil {
+			return errors.NewErrInvalidOption("errgroup", eg)
 		}
+		o.eg = eg
 		return nil
 	}
 }
@@ -57,9 +58,10 @@ func WithExporters(exps ...exporter.Exporter) Option {
 // WithTracer returns an option that sets the tracer.
 func WithTracer(tr trace.Tracer) Option {
 	return func(o *observability) error {
-		if tr != nil {
-			o.tracer = tr
+		if tr == nil {
+			return errors.NewErrInvalidOption("tracer", tr)
 		}
+		o.tracer = tr
 		return nil
 	}
 }

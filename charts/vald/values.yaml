@@ -885,6 +885,9 @@ defaults:
       # @schema {"name": "defaults.observability.jaeger.agent_endpoint", "type": "string"}
       # defaults.observability.jaeger.agent_endpoint -- Jaeger agent endpoint
       agent_endpoint: ""
+      # @schema {"name": "defaults.observability.jaeger.agent_reconnect_interval", "type": "string"}
+      # defaults.observability.jaeger.agent_reconnect_interval -- Jaeger Agent reconnect interval
+      agent_reconnect_interval: 30s
       # @schema {"name": "defaults.observability.jaeger.username", "type": "string"}
       # defaults.observability.jaeger.username -- Jaeger username
       username: ""

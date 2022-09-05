@@ -79,6 +79,7 @@ func NewWithConfig(cfg *config.Observability, metrics ...metrics.Metric) (Observ
 		jae, err := jaeger.New(
 			jaeger.WithAgentEndpoint(cfg.Jaeger.AgentEndpoint),
 			jaeger.WithAgentMaxPacketSize(cfg.Jaeger.AgentMaxPacketSize),
+			jaeger.WithAgentReconnectInterval(cfg.Jaeger.AgentReconnectInterval),
 			jaeger.WithCollectorEndpoint(cfg.Jaeger.CollectorEndpoint),
 			jaeger.WithUsername(cfg.Jaeger.Username),
 			jaeger.WithPassword(cfg.Jaeger.Password),
@@ -155,5 +156,5 @@ func (o *observability) Stop(ctx context.Context) (werr error) {
 			werr = errors.Wrap(werr, err.Error())
 		}
 	}
-	return
+	return werr
 }

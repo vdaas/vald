@@ -63,16 +63,17 @@ type Jaeger struct {
 	CollectorEndpoint string `json:"collector_endpoint" yaml:"collector_endpoint"`
 	AgentEndpoint     string `json:"agent_endpoint"     yaml:"agent_endpoint"`
 
-	AgentMaxPacketSize int `json:"agent_max_packet_size" yaml:"agent_max_packet_size"`
+	AgentMaxPacketSize     int    `json:"agent_max_packet_size"    yaml:"agent_max_packet_size"`
+	AgentReconnectInterval string `json:"agent_reconnect_interval" yaml:"agent_reconnect_interval"`
 
 	Username string `json:"username" yaml:"username"`
 	Password string `json:"password" yaml:"password"`
 
-	ServiceName        string `json:"service_name" yaml:"service_name"`
-	BatchTimeout       string `json:"batch_timeout" yaml:"batch_timeout"`
-	ExportTimeout      string `json:"export_timeout" yaml:"export_timeout"`
+	ServiceName        string `json:"service_name"          yaml:"service_name"`
+	BatchTimeout       string `json:"batch_timeout"         yaml:"batch_timeout"`
+	ExportTimeout      string `json:"export_timeout"        yaml:"export_timeout"`
 	MaxExportBatchSize int    `json:"max_export_batch_size" yaml:"max_export_batch_size"`
-	MaxQueueSize       int    `json:"max_queue_size" yaml:"max_queue_size"`
+	MaxQueueSize       int    `json:"max_queue_size"        yaml:"max_queue_size"`
 }
 
 // Bind binds the actual data from the Observability receiver fields.
@@ -97,8 +98,9 @@ func (o *Observability) Bind() *Observability {
 	}
 
 	if o.Jaeger != nil {
-		o.Jaeger.CollectorEndpoint = GetActualValue(o.Jaeger.CollectorEndpoint)
 		o.Jaeger.AgentEndpoint = GetActualValue(o.Jaeger.AgentEndpoint)
+		o.Jaeger.AgentReconnectInterval = GetActualValue(o.Jaeger.AgentReconnectInterval)
+		o.Jaeger.CollectorEndpoint = GetActualValue(o.Jaeger.CollectorEndpoint)
 		o.Jaeger.Username = GetActualValue(o.Jaeger.Username)
 		o.Jaeger.Password = GetActualValue(o.Jaeger.Password)
 		o.Jaeger.ServiceName = GetActualValue(o.Jaeger.ServiceName)

@@ -20,8 +20,10 @@ package jaeger
 import (
 	"context"
 	"net/http"
+	"reflect"
 	"time"
 
+	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/observability/exporter"
 	"go.opentelemetry.io/otel"
@@ -46,16 +48,26 @@ type export struct {
 	agentPort           string
 	agentReconnInterval time.Duration
 	agentMaxPacketSize  int
-	serviceName         string
+
+	serviceName        string
+	batchTimeout       time.Duration
+	exportTimeout      time.Duration
+	maxExportBatchSize int
+	maxQueueSize       int
 }
 
 func New(opts ...Option) (j Jaeger, err error) {
-	e := new(export)
+	e := &export{}
 
 	for _, opt := range append(jaegerDefaultOpts, opts...) {
-		err = opt(e)
-		if err != nil {
-			return nil, err
+		if err = opt(e); err != nil {
+			oerr := errors.ErrOptionFailed(err, reflect.ValueOf(opt))
+			e := &errors.ErrCriticalOption{}
+			if errors.As(oerr, &e) {
+				log.Error(oerr)
+				return nil, oerr
+			}
+			log.Warn(oerr)
 		}
 	}
 

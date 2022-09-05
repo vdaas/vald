@@ -20,13 +20,17 @@ package jaeger
 import (
 	"net"
 	"net/http"
+	"time"
 
+	"github.com/vdaas/vald/internal/errors"
 	"go.opentelemetry.io/otel/sdk/trace"
 )
 
 type Option func(*export) error
 
 var jaegerDefaultOpts = []Option{
+	WithAgentMaxPacketSize(65000),
+	WithAgentReconnectInterval("30s"),
 	WithServiceName("vald"),
 	WithHTTPClient(http.DefaultClient),
 	WithBatchTimeout("5s"),
@@ -37,26 +41,38 @@ var jaegerDefaultOpts = []Option{
 
 func WithAgentEndpoint(aep string) Option {
 	return func(exp *export) error {
-		if aep != "" {
-			host, port, err := net.SplitHostPort(aep)
-			if err != nil {
-				return err
-			}
-			exp.agentHost = host
-			exp.agentPort = port
+		if len(aep) == 0 {
+			return errors.NewErrInvalidOption("agentEndpoint", aep)
 		}
+		host, port, err := net.SplitHostPort(aep)
+		if err != nil {
+			return errors.NewErrCriticalOption("agentEndpoint", aep, err)
+		}
+		exp.agentHost = host
+		exp.agentPort = port
 		return nil
 	}
 }
 
 func WithAgentReconnectInterval(dur string) Option {
 	return func(e *export) error {
+		if len(dur) == 0 {
+			return errors.NewErrInvalidOption("agentReconnectInterval", dur)
+		}
+		d, err := time.ParseDuration(dur)
+		if err != nil {
+			return errors.NewErrInvalidOption("agentReconnectInterval", dur, err)
+		}
+		e.agentReconnInterval = d
 		return nil
 	}
 }
 
 func WithAgentMaxPacketSize(cnt int) Option {
 	return func(exp *export) error {
+		if cnt <= 0 {
+			return errors.NewErrInvalidOption("agentMaxPacketSize", cnt)
+		}
 		exp.agentMaxPacketSize = cnt
 		return nil
 	}
@@ -64,18 +80,20 @@ func WithAgentMaxPacketSize(cnt int) Option {
 
 func WithCollectorEndpoint(cep string) Option {
 	return func(exp *export) error {
-		if cep != "" {
-			exp.collectorEndpoint = cep
+		if len(cep) == 0 {
+			return errors.NewErrInvalidOption("collectorEndpoint", cep)
 		}
+		exp.collectorEndpoint = cep
 		return nil
 	}
 }
 
 func WithHTTPClient(c *http.Client) Option {
 	return func(exp *export) error {
-		if c != nil {
-			exp.client = c
+		if c == nil {
+			return errors.NewErrInvalidOption("httpClient", c)
 		}
+		exp.client = c
 		return nil
 	}
 }
@@ -91,42 +109,68 @@ func WithUsername(username string) Option {
 
 func WithPassword(password string) Option {
 	return func(exp *export) error {
-		if password != "" {
-			exp.collectorPassword = password
+		if len(password) == 0 {
+			return errors.NewErrInvalidOption("password", password)
 		}
+		exp.collectorPassword = password
 		return nil
 	}
 }
 
 func WithServiceName(serviceName string) Option {
 	return func(exp *export) error {
-		if serviceName != "" {
-			exp.serviceName = serviceName
+		if len(serviceName) == 0 {
+			return errors.NewErrInvalidOption("serviceName", serviceName)
 		}
+		exp.serviceName = serviceName
 		return nil
 	}
 }
 
 func WithBatchTimeout(dur string) Option {
 	return func(e *export) error {
+		if len(dur) == 0 {
+			return errors.NewErrInvalidOption("batchTimeout", dur)
+		}
+		d, err := time.ParseDuration(dur)
+		if err != nil {
+			return errors.NewErrInvalidOption("batchTimeout", dur, err)
+		}
+		e.batchTimeout = d
 		return nil
 	}
 }
 
 func WithExportTimeout(dur string) Option {
 	return func(e *export) error {
+		if len(dur) == 0 {
+			return errors.NewErrInvalidOption("exportTimeout", dur)
+		}
+		d, err := time.ParseDuration(dur)
+		if err != nil {
+			return errors.NewErrInvalidOption("exportTimeout", dur, err)
+		}
+		e.exportTimeout = d
 		return nil
 	}
 }
 
 func WithMaxExportBatchSize(size int) Option {
 	return func(e *export) error {
+		if size <= 0 {
+			return errors.NewErrInvalidOption("maxExportBatchSize", size)
+		}
+		e.maxExportBatchSize = size
 		return nil
 	}
 }
 
 func WithMaxQueueSize(size int) Option {
 	return func(e *export) error {
+		if size <= 0 {
+			return errors.NewErrInvalidOption("maxQueueSize", size)
+		}
+		e.maxQueueSize = size
 		return nil
 	}
 }
