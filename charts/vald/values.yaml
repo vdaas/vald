@@ -203,7 +203,7 @@ defaults:
             # @schema {"name": "defaults.server_config.servers.grpc.server.grpc.header_table_size", "type": "integer"}
             # defaults.server_config.servers.grpc.server.grpc.header_table_size -- gRPC server header table size
             header_table_size: 0
-            # @schema {"name": "defaults.server_config.servers.grpc.server.grpc.interceptors", "type": "array", "items": {"type": "string", "enum": ["RecoverInterceptor", "AccessLogInterceptor", "TracePayloadInterceptor"]}}
+            # @schema {"name": "defaults.server_config.servers.grpc.server.grpc.interceptors", "type": "array", "items": {"type": "string", "enum": ["RecoverInterceptor", "AccessLogInterceptor", "TraceInterceptor"]}}
             # defaults.server_config.servers.grpc.server.grpc.interceptors -- gRPC server interceptors
             interceptors:
               - "RecoverInterceptor"

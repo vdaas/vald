@@ -20,6 +20,7 @@ package grpc
 import (
 	"context"
 	"crypto/tls"
+	"strings"
 	"time"
 
 	"github.com/vdaas/vald/internal/backoff"
@@ -354,12 +355,18 @@ func WithTLSConfig(cfg *tls.Config) Option {
 	}
 }
 
-func WithClientInterceptor(names ...string) Option {
+func WithClientInterceptors(names ...string) Option {
 	return func(g *gRPCClient) {
-		g.dopts = append(g.dopts,
-			grpc.WithUnaryInterceptor(trace.UnaryClientInterceptor()),
-			grpc.WithStreamInterceptor(trace.StreamClientInterceptor()),
-		)
+		for _, name := range names {
+			switch strings.ToLower(name) {
+			case "traceinterceptor", "trace":
+				g.dopts = append(g.dopts,
+					grpc.WithUnaryInterceptor(trace.UnaryClientInterceptor()),
+					grpc.WithStreamInterceptor(trace.StreamClientInterceptor()),
+				)
+			default:
+			}
+		}
 	}
 }
 
