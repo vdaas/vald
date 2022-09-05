@@ -19,21 +19,20 @@ package jaeger
 
 import (
 	"net"
+	"net/http"
+
+	"go.opentelemetry.io/otel/sdk/trace"
 )
 
 type Option func(*export) error
 
 var jaegerDefaultOpts = []Option{
 	WithServiceName("vald"),
-}
-
-func WithCollectorEndpoint(cep string) Option {
-	return func(exp *export) error {
-		if cep != "" {
-			exp.collectorEndpoint = cep
-		}
-		return nil
-	}
+	WithHTTPClient(http.DefaultClient),
+	WithBatchTimeout("5s"),
+	WithExportTimeout("30s"),
+	WithMaxExportBatchSize(trace.DefaultMaxExportBatchSize),
+	WithMaxQueueSize(trace.DefaultMaxQueueSize),
 }
 
 func WithAgentEndpoint(aep string) Option {
@@ -45,6 +44,37 @@ func WithAgentEndpoint(aep string) Option {
 			}
 			exp.agentHost = host
 			exp.agentPort = port
+		}
+		return nil
+	}
+}
+
+func WithAgentReconnectInterval(dur string) Option {
+	return func(e *export) error {
+		return nil
+	}
+}
+
+func WithAgentMaxPacketSize(cnt int) Option {
+	return func(exp *export) error {
+		exp.agentMaxPacketSize = cnt
+		return nil
+	}
+}
+
+func WithCollectorEndpoint(cep string) Option {
+	return func(exp *export) error {
+		if cep != "" {
+			exp.collectorEndpoint = cep
+		}
+		return nil
+	}
+}
+
+func WithHTTPClient(c *http.Client) Option {
+	return func(exp *export) error {
+		if c != nil {
+			exp.client = c
 		}
 		return nil
 	}
@@ -77,9 +107,26 @@ func WithServiceName(serviceName string) Option {
 	}
 }
 
-func WithBufferMaxCount(cnt int) Option {
-	return func(exp *export) error {
-		exp.agentMaxPacketSize = cnt
+func WithBatchTimeout(dur string) Option {
+	return func(e *export) error {
+		return nil
+	}
+}
+
+func WithExportTimeout(dur string) Option {
+	return func(e *export) error {
+		return nil
+	}
+}
+
+func WithMaxExportBatchSize(size int) Option {
+	return func(e *export) error {
+		return nil
+	}
+}
+
+func WithMaxQueueSize(size int) Option {
+	return func(e *export) error {
 		return nil
 	}
 }

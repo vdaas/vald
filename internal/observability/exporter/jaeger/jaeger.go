@@ -23,10 +23,9 @@ import (
 	"time"
 
 	"github.com/vdaas/vald/internal/log"
-	"github.com/vdaas/vald/internal/observability/exporter"
+	"github.com/vdaas/vald/internal/observability-v2/exporter"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/jaeger"
-	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/sdk/resource"
 	"go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.12.0"
@@ -38,9 +37,9 @@ type Jaeger interface {
 
 type export struct {
 	tp                  *trace.TracerProvider
+	client              *http.Client
 	exp                 *jaeger.Exporter
 	collectorEndpoint   string
-	client              *http.Client
 	collectorPassword   string
 	collectorUserName   string
 	agentHost           string
@@ -82,14 +81,13 @@ func New(opts ...Option) (j Jaeger, err error) {
 	}
 	e.tp = trace.NewTracerProvider(
 		// Always be sure to batch in production.
-		trace.WithBatcher(e.exp), // TODO we should set batch option here. like below and get configuration from yaml
-		// trace.WithBatcher(e.exp,
-		// 	trace.WithBatchTimeout(time.Second*5),
-		// 	trace.WithExportTimeout(time.Minute),
-		// 	trace.WithMaxExportBatchSize(1024),
-		// 	trace.WithMaxQueueSize(256),
-		// 	// trace.WithBlocking(),
-		// ),
+		trace.WithBatcher(e.exp,
+			trace.WithBatchTimeout(time.Second*5),
+			trace.WithExportTimeout(time.Minute),
+			trace.WithMaxExportBatchSize(1024),
+			trace.WithMaxQueueSize(256),
+			// trace.WithBlocking(),
+		),
 		// Record information about this application in a Resource.
 		trace.WithResource(resource.NewWithAttributes(
 			semconv.SchemaURL,
@@ -101,11 +99,10 @@ func New(opts ...Option) (j Jaeger, err error) {
 
 func (e *export) Start(ctx context.Context) (err error) {
 	otel.SetTracerProvider(e.tp)
-	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(propagation.TraceContext{}, propagation.Baggage{}))
 	return nil
 }
 
-func (e *export) Stop(ctx context.Context) {
+func (e *export) Stop(ctx context.Context) error {
 	var err error
 	if e.tp != nil {
 		err = e.tp.ForceFlush(ctx)
@@ -123,4 +120,5 @@ func (e *export) Stop(ctx context.Context) {
 			log.Error(err)
 		}
 	}
+	return nil
 }

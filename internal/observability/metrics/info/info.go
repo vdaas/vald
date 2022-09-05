@@ -1,20 +1,3 @@
-//
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//    https://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
-
-// Package info provides general info metrics functions
 package info
 
 import (
@@ -23,34 +6,27 @@ import (
 	"reflect"
 	"strconv"
 
-	"github.com/vdaas/vald/internal/observability/metrics"
+	"github.com/vdaas/vald/internal/observability-v2/attribute"
+	"github.com/vdaas/vald/internal/observability-v2/metrics"
 )
 
 type info struct {
-	name     string
-	fullname string
-	info     metrics.Int64Measure
-	kvs      map[metrics.Key]string
+	name        string
+	description string
+	kvs         map[string]string
 }
 
 // New creates new general info metric according to the provided struct.
-func New(name, fullname, description string, i interface{}) (metrics.Metric, error) {
-	kvs, err := labelKVs(i)
-	if err != nil {
-		return nil, err
-	}
-
+func New(name, description string, i interface{}) metrics.Metric {
 	return &info{
-		name:     name,
-		fullname: fullname,
-		info:     *metrics.Int64(metrics.ValdOrg+"/"+name, description, metrics.UnitDimensionless),
-		kvs:      kvs,
-	}, nil
+		name: name,
+		kvs:  labelKVs(i),
+	}
 }
 
-func labelKVs(i interface{}) (map[metrics.Key]string, error) {
+func labelKVs(i interface{}) map[string]string {
 	rt, rv := reflect.TypeOf(i), reflect.ValueOf(i)
-	kvs := make(map[metrics.Key]string, rt.NumField())
+	kvs := make(map[string]string, rt.NumField())
 	for k := 0; k < rt.NumField(); k++ {
 		keyName := rt.Field(k).Tag.Get("info")
 		if keyName == "" {
@@ -85,43 +61,31 @@ func labelKVs(i interface{}) (map[metrics.Key]string, error) {
 			continue
 		}
 
-		mk, err := metrics.NewKey(keyName)
-		if err != nil {
-			return nil, err
-		}
-
-		kvs[mk] = value
+		kvs[keyName] = value
 	}
 
-	return kvs, nil
+	return kvs
 }
 
-func (i *info) Measurement(ctx context.Context) ([]metrics.Measurement, error) {
-	return []metrics.Measurement{}, nil
-}
-
-func (i *info) MeasurementWithTags(ctx context.Context) ([]metrics.MeasurementWithTags, error) {
-	return []metrics.MeasurementWithTags{
-		{
-			Measurement: i.info.M(int64(1)),
-			Tags:        i.kvs,
+func (i *info) Register(m metrics.Meter) error {
+	info, err := m.AsyncInt64().Gauge(
+		i.name,
+		metrics.WithDescription(i.description),
+		metrics.WithUnit(metrics.Dimensionless),
+	)
+	if err != nil {
+		return err
+	}
+	return m.RegisterCallback(
+		[]metrics.AsynchronousInstrument{
+			info,
 		},
-	}, nil
-}
-
-func (i *info) View() []*metrics.View {
-	keys := make([]metrics.Key, 0, len(i.kvs))
-	for k := range i.kvs {
-		keys = append(keys, k)
-	}
-
-	return []*metrics.View{
-		{
-			Name:        i.fullname,
-			Description: i.info.Description(),
-			TagKeys:     keys,
-			Measure:     &i.info,
-			Aggregation: metrics.LastValue(),
+		func(ctx context.Context) {
+			attrs := make([]attribute.KeyValue, 0, len(i.kvs))
+			for key, val := range i.kvs {
+				attrs = append(attrs, attribute.String(key, val))
+			}
+			info.Observe(ctx, 1, attrs...)
 		},
-	}
+	)
 }
