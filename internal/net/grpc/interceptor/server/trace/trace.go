@@ -5,10 +5,10 @@ import (
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 )
 
-func UnaryServerInterceptor() grpc.UnaryServerInterceptor {
+func TraceInterceptor() grpc.UnaryServerInterceptor {
 	return otelgrpc.UnaryServerInterceptor()
 }
 
-func StreamServerInterceptor() grpc.StreamServerInterceptor {
+func TraceStreamInterceptor() grpc.StreamServerInterceptor {
 	return otelgrpc.StreamServerInterceptor()
 }
