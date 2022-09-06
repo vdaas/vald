@@ -1,8 +1,8 @@
 # Client API Config
 
 Vald provides client libraries for indexing vectors, searching approximate nearest neighbor vectors, and removing indexing vectors.
-Each request allows setting configuration for user demands.
-Please select the section which you need.
+Each request allows setting request configuration for user demands.
+Please select the section you need.
 
 Please also see each API document.
 
@@ -86,7 +86,7 @@ func main() {
 
 #### skip_strict_exist_check
 
-`skip_strict_exist_check` is the flag for checking whether the same set of the vector and ID is already inserted or not.
+`skip_strict_exist_check` is a flag to skip checking whether the same set of the vector and ID is already inserted or not.
 If it is set as `true`, the checking function will be skipped.<BR>
 The default value is `false`.
 
@@ -202,7 +202,7 @@ func example() {
 
 #### skip_strict_exist_check
 
-`skip_strict_exist_check` (default value is `false`) is the flag for checking whether the same set of the vector and ID is already inserted or not.
+`skip_strict_exist_check` (default value is `false`) is a flag to skip checking whether the same set of the vector and ID is already inserted or not.
 If it is set as `true`, the checking function will be skipped.<BR>
 
 When `skip_strict_exist_check` is `false`, the following checking steps will run in the update process:
@@ -325,12 +325,12 @@ func example() {
 
 #### skip_strict_exist_check
 
-`skip_strict_exist_check` (default value is `false`) is the flag for checking whether the same set of the vector and ID is already inserted or not.
+`skip_strict_exist_check` (default value is `false`) is a flag to skip checking whether the same set of the vector and ID is already inserted or not.
 If it is set as `false`, the checking function will be skipped.<BR>
 
 When `skip_strict_exist_check` is `false`, the following checking steps will run in the upsert process:
 
-1. Whether the set of (ID and vector) is already inserted or not.
+1. Check whether the set of (ID and vector) is already inserted or not.
    The request ID and vector will be inserted if there is no data.
 1. After passing the step.1, check whether the request vector is the same as the indexed vector.
    If it is the same, the upsert process ends with returning the `ALREADY_EXIST` error.
@@ -660,7 +660,7 @@ func example() {
 
 ### skip_strict_exist_check
 
-`skip_strict_exist_check` (default value is `false`) is the flag for checking whether the same set of the vector and ID is already inserted or not.
+`skip_strict_exist_check` (default value is `false`) is a flag to skip checking whether the same set of the vector and ID is already inserted or not.
 If it is set as `true`, the checking function will be skipped.<BR>
 
 When `skip_strict_exist_check` is `false`, the following checking step will run in the removing process:
