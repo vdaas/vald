@@ -285,6 +285,8 @@ spec:
                     observability:
                       type: object
                       properties:
+                        enabled:
+                          type: boolean
                         jaeger:
                           type: object
                           properties:
@@ -1276,6 +1278,8 @@ spec:
                         observability:
                           type: object
                           properties:
+                            enabled:
+                              type: boolean
                             jaeger:
                               type: object
                               properties:
@@ -2185,6 +2189,8 @@ spec:
                     observability:
                       type: object
                       properties:
+                        enabled:
+                          type: boolean
                         jaeger:
                           type: object
                           properties:
@@ -3079,6 +3085,8 @@ spec:
                     observability:
                       type: object
                       properties:
+                        enabled:
+                          type: boolean
                         jaeger:
                           type: object
                           properties:
@@ -4500,6 +4508,8 @@ spec:
                         observability:
                           type: object
                           properties:
+                            enabled:
+                              type: boolean
                             jaeger:
                               type: object
                               properties:
@@ -5722,6 +5732,8 @@ spec:
                         observability:
                           type: object
                           properties:
+                            enabled:
+                              type: boolean
                             jaeger:
                               type: object
                               properties:
@@ -6930,6 +6942,8 @@ spec:
                         observability:
                           type: object
                           properties:
+                            enabled:
+                              type: boolean
                             jaeger:
                               type: object
                               properties:

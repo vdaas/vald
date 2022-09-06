@@ -824,6 +824,9 @@ defaults:
         insecure_skip_verify: false
   # @schema {"name": "defaults.observability", "type": "object", "anchor": "observability"}
   observability:
+    # @schema {"name": "defaults.observability.enabled", "type": "boolean"}
+    # defaults.observability.enabled -- observability features enabled
+    enabled: false
     # @schema {"name": "defaults.observability.metrics", "type": "object"}
     metrics:
       # @schema {"name": "defaults.observability.metrics.enable_version_info", "type": "boolean"}
