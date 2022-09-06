@@ -14,6 +14,8 @@ import (
 	"go.opentelemetry.io/otel/sdk/metric/export/aggregation"
 	processor "go.opentelemetry.io/otel/sdk/metric/processor/basic"
 	"go.opentelemetry.io/otel/sdk/metric/selector/simple"
+	"go.opentelemetry.io/otel/sdk/resource"
+	semconv "go.opentelemetry.io/otel/semconv/v1.12.0"
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
@@ -66,6 +68,10 @@ func New(opts ...Option) (Prometheus, error) {
 		),
 		basic.WithCollectPeriod(e.collectInterval),
 		basic.WithCollectTimeout(e.collectTimeout),
+		basic.WithResource(resource.NewWithAttributes(
+			semconv.SchemaURL,
+			semconv.ServiceNamespaceKey.String(e.namespace),
+		)),
 	)
 
 	cfg := prometheus.Config{
