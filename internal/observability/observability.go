@@ -61,7 +61,7 @@ func NewWithConfig(cfg *config.Observability, metrics ...metrics.Metric) (Observ
 	}
 
 	if cfg.Prometheus.Enabled {
-		prom, err := prometheus.New(
+		prom, err := prometheus.Init(
 			prometheus.WithEndpoint(cfg.Prometheus.Endpoint),
 			prometheus.WithNamespace(cfg.Prometheus.Namespace),
 			prometheus.WithCollectInterval(cfg.Prometheus.CollectInterval),

@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 	"reflect"
+	"sync"
 	"time"
 
 	"go.opentelemetry.io/otel/exporters/prometheus"
@@ -34,6 +35,11 @@ type exp struct {
 	inmemoryEnabled    bool
 	histogramBoundarie []float64
 }
+
+var (
+	instance Prometheus
+	once     sync.Once
+)
 
 func New(opts ...Option) (Prometheus, error) {
 	e := &exp{}
@@ -75,6 +81,17 @@ func New(opts ...Option) (Prometheus, error) {
 	return e, nil
 }
 
+func Init(opts ...Option) (Prometheus, error) {
+	var err error
+	once.Do(func() {
+		instance, err = New(opts...)
+	})
+	if err != nil {
+		once = sync.Once{}
+	}
+	return instance, err
+}
+
 func (e *exp) Start(ctx context.Context) error {
 	global.SetMeterProvider(e.exporter.MeterProvider())
 	return e.exporter.Controller().Start(ctx)
@@ -91,5 +108,8 @@ func (e *exp) NewHTTPHandler() http.Handler {
 }
 
 func Exporter() (Prometheus, error) {
-	return nil, nil
+	if instance == nil {
+		return Init()
+	}
+	return instance, nil
 }
