@@ -1,6 +1,13 @@
 // initial sidebar
-window.onload = () => {
+window.onload = async () => {
   initSidebar();
+  const githubObj = await getGitHubStar();
+  //console.log(githubObj.stargazers_count);
+  if (githubObj.stargazers_count) {
+    let elem = document.getElementById("git-star-num");
+    elem.innerHTML = githubObj.stargazers_count;
+  }
+
   if (location.hash.length > 0) {
     const height = document.getElementsByClassName('header__nav')[0].offsetHeight;
     window.scrollBy(0, -height);
@@ -273,7 +280,7 @@ function toggleVersion() {
   }
 }
 
-
+// set document version
 const setVersion = (elem) => {
   if (elem.text === '' || elem.text === undefined) {
     document.getElementById('version_details').removeAttribute('open');
@@ -325,4 +332,14 @@ const setVersion = (elem) => {
     }
   }
   document.getElementById('version_details').removeAttribute('open');
+}
+
+// get github star
+const getGitHubStar = async () => {
+  const res = await fetch('https://api.github.com/repos/vdaas/vald', {
+    method: "GET",
+    mode: "cors",
+  });
+  const json = await res.json()
+  return json
 }

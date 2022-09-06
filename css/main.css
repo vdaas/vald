@@ -1,3 +1,7 @@
+body {
+  -webkit-text-size-adjust: 100%;
+}
+
 .top {
   background-color: #54b9b2;
   position: relative;
@@ -792,11 +796,9 @@ details > summary  {
   background: #eee;
 }
 .markdown tr:not(:first-child) {
-
   th, td {
     border-top: solid 1px #ddd;
   }
-
 }
 
 .markdown th, .markdown td {

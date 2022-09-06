@@ -13,6 +13,8 @@
 
 .header__nav {
   position: relative;
+  display: flex;
+  height: 64px;
   text-align: center;
   margin: 0 auto;
 }
@@ -25,10 +27,11 @@
 
 .header .header-nav__icon {
   display: inline-block;
-  float: right;
   width: 30px;
   height: 23px;
   margin: 21px 24px 21px 0;
+  position: absolute;
+  right: 0;
 }
 
 @media screen and (min-width: 768px) {
@@ -38,11 +41,9 @@
 }
 
 .header .header-nav__link {
-  display: block;
   position: relative;
   z-index: 9;
-  float: left;
-  padding: 0 0 0 24px;
+  padding: 0 0 0 16px;
 }
 
 .header__list {
@@ -51,7 +52,7 @@
   width: 100%;
   left: 100%;
   height: 100vh;
-  padding: 0 36px;
+  padding: 0 24px;
   -webkit-transition: 0.4s;
   transition: 0.4s;
   -webkit-transition-timing-function: cubic-bezier(0.1, 0.6, 0.1, 0.9);
@@ -62,7 +63,9 @@
   .header__list {
     height: 64px ;
     position: relative;
-    text-align: right;
+    display: flex;
+    align-items: center;
+    justify-content: right;
     left: 0;
     -webkit-transition: none;
     transition: none;
@@ -81,34 +84,73 @@
   position: relative;
   display: block;
   text-align: left;
+  margin-top: 24px;
+}
+
+.header__git {
+  display: inline-flex;
+  border:1px solid #000;
+  border-radius: 4px;
+  padding: 4px 7px 5px 8px;
+}
+
+.git__logo{
+  padding-right: 8px;
+  display: flex;
+  align-items: center;
+}
+
+
+.git__logo::after{
+  content: '';
+  display: inline-block;
+  width: 1px;
+  height: 13px;
+  margin-top: 1px;
+  margin-left: 9px;
+  background: #000;
 }
 
 @media screen and (min-width: 768px) {
   .header__item {
     display: inline-block;
+    margin-top: 0;
+  }
+  .header__git {
+    margin-left: 16px;
   }
 }
 
-
-.header__icon {
-  margin-top: 15px;
-  width: 24px;
-  height: 24px;
+.git__staricon{
+  display:flex;
+  align-items:center;
 }
 
-@media screen and (min-width: 768px) {
-  .header__icon {
-    position: absolute;
-    margin-left: 12px;
-    margin-top: -18px;
+.git__star {
+  display:inline-flex;
+  align-items:center;
+  color: #000;
+}
+
+.git__starnum {
+  display:inline-flex;
+  height:16px;
+}
+
+.git__star::before{
+    content:'';
+    display:inline-block;
+    width:15px;
+    height:15px;
+    margin-right:2px;
+    margin-top: 1px;
+    background:url('../images/logo_gitstar_black.svg');
+    background-size: 15px 15px;
   }
-}
-
 
 .header__link {
   position: relative;
   display: inline-block;
-  padding: 16px 0 4px;
   font-size: 1.6rem;
   font-weight: bold;
   color: #006076;
@@ -162,7 +204,6 @@
 .header .header-button__link {
   display: inline-block;
   padding: 12px 22px;
-  float: left;
   width: 100%;
   position: relative;
   background-color: #ffffff;
@@ -210,8 +251,12 @@
 }
 
 .header .header-nav__image {
-  width: 80px;
+  width: 84px;
+  height: 64px;
+  display: flex;
+  align-items: center;
 }
+
 
 
 
@@ -226,7 +271,6 @@
 
 .header__version{
   position: relative;
-  margin-top: 16px;
   margin-bottom: 0;
   display: inline-block;
 }
@@ -234,10 +278,10 @@
 details > summary.version__current {
   position: relative;
   color: #006076;
-  padding: 6px 12px;
+  padding: 4px 8px 4px 9px;
   background-color: rgba(0,0,0,0);
   border:1px solid;
-  border-radius: 2px;
+  border-radius: 4px;
   font-weight: bold;
   list-style: none;
 }
@@ -282,8 +326,6 @@ summary.version__current::-webkit-details-marker {
     border-bottom: 1px solid #f8f8f8;
   }
 }
-
-
 
 .version__link--latest::after{
   content: 'latest';
@@ -346,6 +388,29 @@ a.version__link{
 
   a.version__link {
       color: #00BAB1;
+  }
+
+  .git__star{
+    display:flex;
+    align-items:center;
+    color: #fff;
+  }
+
+  .git__star::before{
+    content:'';
+    display:inline-block;
+    width:15px;
+    height:15px;
+    margin-right:2px;
+    background:url('../images/logo_gitstar_white.svg');
+    background-size: 15px 15px;
+  }
+
+  .header__git {
+    border:1px solid #fff;
+  }
+  .git__logo::after{
+    background: #fff;
   }
 
   @media screen and (min-width: 768px){
