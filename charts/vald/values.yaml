@@ -866,8 +866,8 @@ defaults:
       # defaults.observability.prometheus.endpoint -- Prometheus exporter endpoint
       endpoint: /metrics
       # @schema {"name": "defaults.observability.prometheus.namespace", "type": "string"}
-      # defaults.observability.prometheus.namespace -- prefix of exported metrics name
-      namespace: vald
+      # defaults.observability.prometheus.namespace -- service namespace for metrics
+      namespace: _MY_POD_NAMESPACE_
       # @schema {"name": "defaults.observability.prometheus.collect_interval", "type": "string"}
       # defaults.observability.prometheus.collect_interval -- Prometheus collect interval
       collect_interval: 500ms
@@ -1311,7 +1311,11 @@ gateway:
         sleepDuration: 2
     # @schema {"name": "gateway.filter.env", "type": "array", "items": {"type": "object"}, "anchor": "env"}
     # gateway.filter.env -- environment variables
-    env: []
+    env:
+      - name: MY_POD_NAMESPACE
+        valueFrom:
+          fieldRef:
+            fieldPath: metadata.namespace
     # @schema {"name": "gateway.filter.volumeMounts", "type": "array", "items": {"type": "object"}, "anchor": "volumeMounts"}
     # gateway.filter.volumeMounts -- volume mounts
     volumeMounts: []
@@ -1588,7 +1592,11 @@ agent:
   initContainers: []
   # @schema {"name": "agent.env", "alias": "env"}
   # agent.env -- environment variables
-  env: []
+  env:
+    - name: MY_POD_NAMESPACE
+      valueFrom:
+        fieldRef:
+          fieldPath: metadata.namespace
   # @schema {"name": "agent.volumeMounts", "alias": "volumeMounts"}
   # agent.volumeMounts -- volume mounts
   volumeMounts: []
@@ -1801,6 +1809,10 @@ agent:
         valueFrom:
           fieldRef:
             fieldPath: metadata.name
+      - name: MY_POD_NAMESPACE
+        valueFrom:
+          fieldRef:
+            fieldPath: metadata.namespace
       - name: AWS_ACCESS_KEY
         valueFrom:
           secretKeyRef:
