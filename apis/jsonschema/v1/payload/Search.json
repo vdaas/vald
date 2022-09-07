@@ -1,0 +1,213 @@
+{
+  "title": "Search",
+  "$id": "Search.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "description": "Search related messages.",
+  "properties": {
+  },
+  "definitions": {
+    "Search_Request": {
+      "title": "Request",
+      "type": "object",
+      "description": "Represent a search request.",
+      "properties": {
+        "vector": {
+          "title": "vector",
+          "type": "array",
+          "items": {
+            "type": "number",
+            "format": "float"
+          },
+          "description": "The vector to be searched."
+        },
+        "config": {
+          "description": "The configuration of the search request.",
+          "$ref": "Search_Config.json"
+        }
+      }
+    },
+    "Search_MultiRequest": {
+      "title": "MultiRequest",
+      "type": "object",
+      "description": "Represent the multiple search request.",
+      "properties": {
+        "requests": {
+          "title": "requests",
+          "type": "array",
+          "items": {
+            "$ref": "Search_Request.json"
+          },
+          "description": "Represent the multiple search request content."
+        }
+      }
+    },
+    "Search_IDRequest": {
+      "title": "IDRequest",
+      "type": "object",
+      "description": "Represent a search by ID request.",
+      "properties": {
+        "id": {
+          "title": "id",
+          "type": "string",
+          "description": "The vector ID to be searched."
+        },
+        "config": {
+          "description": "The configuration of the search request.",
+          "$ref": "Search_Config.json"
+        }
+      }
+    },
+    "Search_MultiIDRequest": {
+      "title": "MultiIDRequest",
+      "type": "object",
+      "description": "Represent the multiple search by ID request.",
+      "properties": {
+        "requests": {
+          "title": "requests",
+          "type": "array",
+          "items": {
+            "$ref": "Search_IDRequest.json"
+          },
+          "description": "Represent the multiple search by ID request content."
+        }
+      }
+    },
+    "Search_ObjectRequest": {
+      "title": "ObjectRequest",
+      "type": "object",
+      "description": "Represent a search by binary object request.",
+      "properties": {
+        "object": {
+          "title": "object",
+          "type": "string",
+          "description": "The binary object to be searched.",
+          "format": "bytes"
+        },
+        "config": {
+          "description": "The configuration of the search request.",
+          "$ref": "Search_Config.json"
+        },
+        "vectorizer": {
+          "description": "Filter configuration.",
+          "$ref": "Filter_Target.json"
+        }
+      }
+    },
+    "Search_MultiObjectRequest": {
+      "title": "MultiObjectRequest",
+      "type": "object",
+      "description": "Represent the multiple search by binary object request.",
+      "properties": {
+        "requests": {
+          "title": "requests",
+          "type": "array",
+          "items": {
+            "$ref": "Search_ObjectRequest.json"
+          },
+          "description": "Represent the multiple search by binary object request content."
+        }
+      }
+    },
+    "Search_Config": {
+      "title": "Config",
+      "type": "object",
+      "description": "Represent search configuration.",
+      "properties": {
+        "requestId": {
+          "title": "requestId",
+          "type": "string",
+          "description": "Unique request ID."
+        },
+        "num": {
+          "title": "num",
+          "type": "integer",
+          "description": "Maximum number of result to be returned.",
+          "format": "uint32"
+        },
+        "radius": {
+          "title": "radius",
+          "type": "number",
+          "description": "Search radius.",
+          "format": "float"
+        },
+        "epsilon": {
+          "title": "epsilon",
+          "type": "number",
+          "description": "Search coefficient.",
+          "format": "float"
+        },
+        "timeout": {
+          "title": "timeout",
+          "type": "integer",
+          "description": "Search timeout in nanoseconds.",
+          "format": "int64"
+        },
+        "ingressFilters": {
+          "description": "Ingress filter configurations.",
+          "$ref": "Filter_Config.json"
+        },
+        "egressFilters": {
+          "description": "Egress filter configurations.",
+          "$ref": "Filter_Config.json"
+        },
+        "minNum": {
+          "title": "minNum",
+          "type": "integer",
+          "description": "Minimum number of result to be returned.",
+          "format": "uint32"
+        }
+      }
+    },
+    "Search_Response": {
+      "title": "Response",
+      "type": "object",
+      "description": "Represent a search response.",
+      "properties": {
+        "requestId": {
+          "title": "requestId",
+          "type": "string",
+          "description": "The unique request ID."
+        },
+        "results": {
+          "title": "results",
+          "type": "array",
+          "items": {
+            "$ref": "Object_Distance.json"
+          },
+          "description": "Search results."
+        }
+      }
+    },
+    "Search_Responses": {
+      "title": "Responses",
+      "type": "object",
+      "description": "Represent multiple search responses.",
+      "properties": {
+        "responses": {
+          "title": "responses",
+          "type": "array",
+          "items": {
+            "$ref": "Search_Response.json"
+          },
+          "description": "Represent the multiple search response content."
+        }
+      }
+    },
+    "Search_StreamResponse": {
+      "title": "StreamResponse",
+      "type": "object",
+      "description": "Represent stream search response.",
+      "properties": {
+        "response": {
+          "description": "Represent the search response.",
+          "$ref": "Search_Response.json"
+        },
+        "status": {
+          "description": "The RPC error status.",
+          "$ref": "Status.json"
+        }
+      }
+    }
+  }
+}

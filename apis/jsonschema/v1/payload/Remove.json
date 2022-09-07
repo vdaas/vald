@@ -1,0 +1,59 @@
+{
+  "title": "Remove",
+  "$id": "Remove.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "description": "Remove related messages.",
+  "properties": {
+  },
+  "definitions": {
+    "Remove_Request": {
+      "title": "Request",
+      "type": "object",
+      "description": "Represent the remove request.",
+      "properties": {
+        "id": {
+          "description": "The object ID to be removed.",
+          "$ref": "Object_ID.json"
+        },
+        "config": {
+          "description": "The configuration of the remove request.",
+          "$ref": "Remove_Config.json"
+        }
+      }
+    },
+    "Remove_MultiRequest": {
+      "title": "MultiRequest",
+      "type": "object",
+      "description": "Represent the multiple remove request.",
+      "properties": {
+        "requests": {
+          "title": "requests",
+          "type": "array",
+          "items": {
+            "$ref": "Remove_Request.json"
+          },
+          "description": "Represent the multiple remove request content."
+        }
+      }
+    },
+    "Remove_Config": {
+      "title": "Config",
+      "type": "object",
+      "description": "Represent the remove configuration.",
+      "properties": {
+        "skipStrictExistCheck": {
+          "title": "skipStrictExistCheck",
+          "type": "boolean",
+          "description": "A flag to skip exist check during upsert operation."
+        },
+        "timestamp": {
+          "title": "timestamp",
+          "type": "integer",
+          "description": "Remove timestamp.",
+          "format": "int64"
+        }
+      }
+    }
+  }
+}

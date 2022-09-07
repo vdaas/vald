@@ -1,0 +1,243 @@
+{
+  "title": "Object",
+  "$id": "Object.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "description": "Common messages.",
+  "properties": {
+  },
+  "definitions": {
+    "Object_VectorRequest": {
+      "title": "VectorRequest",
+      "type": "object",
+      "description": "Represent a request to fetch raw vector.",
+      "properties": {
+        "id": {
+          "description": "The vector ID to be fetch.",
+          "$ref": "Object_ID.json"
+        },
+        "filters": {
+          "description": "Filter configurations.",
+          "$ref": "Filter_Config.json"
+        }
+      }
+    },
+    "Object_Distance": {
+      "title": "Distance",
+      "type": "object",
+      "description": "Represent the ID and distance pair.",
+      "properties": {
+        "id": {
+          "title": "id",
+          "type": "string",
+          "description": "The vector ID."
+        },
+        "distance": {
+          "title": "distance",
+          "type": "number",
+          "description": "The distance.",
+          "format": "float"
+        }
+      }
+    },
+    "Object_StreamDistance": {
+      "title": "StreamDistance",
+      "type": "object",
+      "description": "Represent stream response of distances.",
+      "properties": {
+        "distance": {
+          "description": "The distance.",
+          "$ref": "Object_Distance.json"
+        },
+        "status": {
+          "description": "The RPC error status.",
+          "$ref": "Status.json"
+        }
+      }
+    },
+    "Object_ID": {
+      "title": "ID",
+      "type": "object",
+      "description": "Represent the vector ID.",
+      "properties": {
+        "id": {
+          "title": "id",
+          "type": "string"
+        }
+      }
+    },
+    "Object_IDs": {
+      "title": "IDs",
+      "type": "object",
+      "description": "Represent multiple vector IDs.",
+      "properties": {
+        "ids": {
+          "title": "ids",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "Object_Vector": {
+      "title": "Vector",
+      "type": "object",
+      "description": "Represent a vector.",
+      "properties": {
+        "id": {
+          "title": "id",
+          "type": "string",
+          "description": "The vector ID."
+        },
+        "vector": {
+          "title": "vector",
+          "type": "array",
+          "items": {
+            "type": "number",
+            "format": "float"
+          },
+          "description": "The vector."
+        }
+      }
+    },
+    "Object_Vectors": {
+      "title": "Vectors",
+      "type": "object",
+      "description": "Represent multiple vectors.",
+      "properties": {
+        "vectors": {
+          "title": "vectors",
+          "type": "array",
+          "items": {
+            "$ref": "Object_Vector.json"
+          }
+        }
+      }
+    },
+    "Object_StreamVector": {
+      "title": "StreamVector",
+      "type": "object",
+      "description": "Represent stream response of the vector.",
+      "properties": {
+        "vector": {
+          "description": "The vector.",
+          "$ref": "Object_Vector.json"
+        },
+        "status": {
+          "description": "The RPC error status.",
+          "$ref": "Status.json"
+        }
+      }
+    },
+    "Object_ReshapeVector": {
+      "title": "ReshapeVector",
+      "type": "object",
+      "description": "Represent reshape vector.",
+      "properties": {
+        "object": {
+          "title": "object",
+          "type": "string",
+          "description": "The binary object.",
+          "format": "bytes"
+        },
+        "shape": {
+          "title": "shape",
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "description": "The new shape."
+        }
+      }
+    },
+    "Object_Blob": {
+      "title": "Blob",
+      "type": "object",
+      "description": "Represent the binary object.",
+      "properties": {
+        "id": {
+          "title": "id",
+          "type": "string",
+          "description": "The object ID."
+        },
+        "object": {
+          "title": "object",
+          "type": "string",
+          "description": "The binary object.",
+          "format": "bytes"
+        }
+      }
+    },
+    "Object_StreamBlob": {
+      "title": "StreamBlob",
+      "type": "object",
+      "description": "Represent stream response of binary objects.",
+      "properties": {
+        "blob": {
+          "description": "The binary object.",
+          "$ref": "Object_Blob.json"
+        },
+        "status": {
+          "description": "The RPC error status.",
+          "$ref": "Status.json"
+        }
+      }
+    },
+    "Object_Location": {
+      "title": "Location",
+      "type": "object",
+      "description": "Represent the vector location.",
+      "properties": {
+        "name": {
+          "title": "name",
+          "type": "string",
+          "description": "The name of the location."
+        },
+        "uuid": {
+          "title": "uuid",
+          "type": "string",
+          "description": "The UUID of the vector."
+        },
+        "ips": {
+          "title": "ips",
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "The IP list."
+        }
+      }
+    },
+    "Object_StreamLocation": {
+      "title": "StreamLocation",
+      "type": "object",
+      "description": "Represent the stream response of the vector location.",
+      "properties": {
+        "location": {
+          "description": "The vector location.",
+          "$ref": "Object_Location.json"
+        },
+        "status": {
+          "description": "The RPC error status.",
+          "$ref": "Status.json"
+        }
+      }
+    },
+    "Object_Locations": {
+      "title": "Locations",
+      "type": "object",
+      "description": "Represent multiple vector locations.",
+      "properties": {
+        "locations": {
+          "title": "locations",
+          "type": "array",
+          "items": {
+            "$ref": "Object_Location.json"
+          }
+        }
+      }
+    }
+  }
+}

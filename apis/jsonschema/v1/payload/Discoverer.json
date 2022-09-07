@@ -1,0 +1,33 @@
+{
+  "title": "Discoverer",
+  "$id": "Discoverer.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "description": "Discoverer related messages.",
+  "properties": {
+  },
+  "definitions": {
+    "Discoverer_Request": {
+      "title": "Request",
+      "type": "object",
+      "description": "Represent the dicoverer request.",
+      "properties": {
+        "name": {
+          "title": "name",
+          "type": "string",
+          "description": "The agent name to be discover."
+        },
+        "namespace": {
+          "title": "namespace",
+          "type": "string",
+          "description": "The namespace to be discover."
+        },
+        "node": {
+          "title": "node",
+          "type": "string",
+          "description": "The node to be discover."
+        }
+      }
+    }
+  }
+}

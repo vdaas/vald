@@ -1,0 +1,97 @@
+{
+  "title": "Insert",
+  "$id": "Insert.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "description": "Insert related messages.",
+  "properties": {
+  },
+  "definitions": {
+    "Insert_Request": {
+      "title": "Request",
+      "type": "object",
+      "description": "Represent the insert request.",
+      "properties": {
+        "vector": {
+          "description": "The vector to be inserted.",
+          "$ref": "Object_Vector.json"
+        },
+        "config": {
+          "description": "The configuration of the insert request.",
+          "$ref": "Insert_Config.json"
+        }
+      }
+    },
+    "Insert_MultiRequest": {
+      "title": "MultiRequest",
+      "type": "object",
+      "description": "Represent the multiple insert request.",
+      "properties": {
+        "requests": {
+          "title": "requests",
+          "type": "array",
+          "items": {
+            "$ref": "Insert_Request.json"
+          },
+          "description": "Represent multiple insert request content."
+        }
+      }
+    },
+    "Insert_ObjectRequest": {
+      "title": "ObjectRequest",
+      "type": "object",
+      "description": "Represent the insert by binary object request.",
+      "properties": {
+        "object": {
+          "description": "The binary object to be inserted.",
+          "$ref": "Object_Blob.json"
+        },
+        "config": {
+          "description": "The configuration of the insert request.",
+          "$ref": "Insert_Config.json"
+        },
+        "vectorizer": {
+          "description": "Filter configurations.",
+          "$ref": "Filter_Target.json"
+        }
+      }
+    },
+    "Insert_MultiObjectRequest": {
+      "title": "MultiObjectRequest",
+      "type": "object",
+      "description": "Represent the multiple insert by binary object request.",
+      "properties": {
+        "requests": {
+          "title": "requests",
+          "type": "array",
+          "items": {
+            "$ref": "Insert_ObjectRequest.json"
+          },
+          "description": "Represent multiple insert by object content."
+        }
+      }
+    },
+    "Insert_Config": {
+      "title": "Config",
+      "type": "object",
+      "description": "Represent insert configurations.",
+      "properties": {
+        "skipStrictExistCheck": {
+          "title": "skipStrictExistCheck",
+          "type": "boolean",
+          "description": "A flag to skip exist check during insert operation."
+        },
+        "filters": {
+          "description": "Filter configurations.",
+          "$ref": "Filter_Config.json"
+        },
+        "timestamp": {
+          "title": "timestamp",
+          "type": "integer",
+          "description": "Insert timestamp.",
+          "format": "int64"
+        }
+      }
+    }
+  }
+}

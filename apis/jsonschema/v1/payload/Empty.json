@@ -1,0 +1,9 @@
+{
+  "title": "Empty",
+  "$id": "Empty.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "description": "Represent an empty message.",
+  "properties": {
+  }
+}
