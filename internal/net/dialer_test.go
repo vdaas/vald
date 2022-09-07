@@ -80,7 +80,7 @@ func Test_dialerCache_IP(t *testing.T) {
 					return err
 				}
 
-				for i := 1; i < 20; i++ {
+				for i := 1; i < 100; i++ {
 					if d.IP() != "a" {
 						return errors.New("invalid output")
 					}
@@ -106,7 +106,7 @@ func Test_dialerCache_IP(t *testing.T) {
 					return err
 				}
 
-				for i := 1; i < 20; i++ {
+				for i := 1; i < 100; i++ {
 					idx := (i + 1) % len(d.ips)
 					if s := d.IP(); s != d.ips[idx] {
 						return errors.New("invalid output")
@@ -606,7 +606,7 @@ func Test_dialer_StartDialerCache(t *testing.T) {
 
 				opts: []DialerOption{
 					WithEnableDNSCache(),
-					WithDNSRefreshDuration("20ms"),
+					WithDNSRefreshDuration("100ms"),
 					WithDNSCacheExpiration("100ms"),
 					WithDisableDialerDualStack(),
 					WithDialerTimeout("1m"),
@@ -673,7 +673,7 @@ func Test_dialer_StartDialerCache(t *testing.T) {
 						return errors.New("cache found")
 					}
 					// sleep and wait the cache removed
-					time.Sleep(800 * time.Millisecond)
+					time.Sleep(500 * time.Millisecond)
 
 					// get again and check if the cache deleted
 					if _, ok := d.dnsCache.Get(addr); ok {
@@ -815,7 +815,7 @@ func Test_dialer_cachedDialer(t *testing.T) {
 		opts       []DialerOption
 		want       want
 		checkFunc  func(*dialer, context.Context, want, Conn, error) error
-		beforeFunc func(*testing.T, *test)
+		beforeFunc func(*testing.T)
 		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(d *dialer, ctx context.Context, w want, gotConn Conn, err error) error {
@@ -931,7 +931,7 @@ func Test_dialer_cachedDialer(t *testing.T) {
 				opts: []DialerOption{
 					WithDNSCache(c),
 				},
-				beforeFunc: func(t *testing.T, test *test) {
+				beforeFunc: func(t *testing.T) {
 					// set the hostname 'invalid_ip' to the host name of the cache with the test server ip address
 					c.Set("invalid_ip", &dialerCache{
 						ips: []string{
@@ -986,7 +986,7 @@ func Test_dialer_cachedDialer(t *testing.T) {
 						return c
 					}()),
 				},
-				beforeFunc: func(t *testing.T, test *test) {
+				beforeFunc: func(t *testing.T) {
 					// set the hostname 'invalid_ip' to the host name of the cache with the test server ip address
 					c.Set("invalid_ip", &dialerCache{
 						ips: []string{
@@ -1028,7 +1028,7 @@ func Test_dialer_cachedDialer(t *testing.T) {
 				opts: []DialerOption{
 					WithDNSCache(c),
 				},
-				beforeFunc: func(*testing.T, *test) {
+				beforeFunc: func(*testing.T) {
 					c.Set(addr, &dialerCache{
 						ips: []string{
 							addr,
@@ -1065,7 +1065,7 @@ func Test_dialer_cachedDialer(t *testing.T) {
 				opts: []DialerOption{
 					WithDNSCache(c),
 				},
-				beforeFunc: func(*testing.T, *test) {
+				beforeFunc: func(*testing.T) {
 					c.Set(addr, &dialerCache{
 						ips: []string{
 							"invalid_ip",
@@ -1119,7 +1119,7 @@ func Test_dialer_cachedDialer(t *testing.T) {
 					WithDNSCache(c),
 					WithEnableDNSCache(),
 				},
-				beforeFunc: func(t *testing.T, test *test) {
+				beforeFunc: func(t *testing.T) {
 					c.Set(addrs[0], &dialerCache{
 						ips: hosts,
 					})
@@ -1218,7 +1218,7 @@ func Test_dialer_cachedDialer(t *testing.T) {
 					WithDNSCache(c),
 					WithDialerTimeout("10s"),
 				},
-				beforeFunc: func(t *testing.T, test *test) {
+				beforeFunc: func(t *testing.T) {
 					c.Set(addr, &dialerCache{
 						cnt: math.MaxUint32,
 						ips: []string{host, host},
@@ -1246,18 +1246,18 @@ func Test_dialer_cachedDialer(t *testing.T) {
 		}(),
 	}
 
-	for i := range tests {
-		test := &tests[i]
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
 			ctx, cancel := context.WithCancel(context.Background())
 			defer cancel()
 
 			if test.beforeFunc != nil {
-				test.beforeFunc(tt, test)
+				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(tt)
+				defer test.afterFunc(tt) // even test is failed, ensure afterFunc is executed to avoid goleak error
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -1278,6 +1278,10 @@ func Test_dialer_cachedDialer(t *testing.T) {
 				tt.Errorf("error = %v", err)
 			}
 
+			// call without defer to ensure the server is closed before checking with goleak
+			if test.afterFunc != nil {
+				test.afterFunc(tt)
+			}
 		})
 	}
 }
@@ -1753,8 +1757,8 @@ func Test_dialer_tlsHandshake(t *testing.T) {
 		}(),
 	}
 
-	for i := range tests {
-		test := &tests[i]
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
 
