@@ -257,9 +257,12 @@ func (d Detail) String() string {
 }
 
 // Get returns parased Detail object.
-func (i info) Get() Detail {
+func (i *info) Get() Detail {
 	i.prepare()
+	return i.get()
+}
 
+func (i info) get() Detail {
 	i.detail.StackTrace = make([]StackTrace, 0, 10)
 	for j := 2; ; j++ {
 		pc, file, line, ok := i.rtCaller(j)
@@ -284,7 +287,7 @@ func (i info) Get() Detail {
 				left, right, ok := strings.Cut(path, "@")
 				if ok {
 					if strings.Count(right, "-") > 2 {
-						path = left + "/blob/master"
+						path = left + "/blob/main"
 					} else {
 						path = left + "/blob/" + right
 					}
