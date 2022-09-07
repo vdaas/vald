@@ -65,9 +65,11 @@ func CompressAlgorithm(ca string) compressAlgorithm {
 // CompressCore represents CompressCore configuration.
 type CompressCore struct {
 	// CompressorAlgorithm represents compression algorithm type
+	// compression algorithm. must be `gob`, `gzip`, `lz4` or `zstd`
 	CompressAlgorithm string `json:"compress_algorithm" yaml:"compress_algorithm"`
 
 	// CompressionLevel represents compression level
+	// compression level. value range relies on which algorithm is used. `gob`: level will be ignored. `gzip`: -1 (default compression), 0 (no compression), or 1 (best speed) to 9 (best compression). `lz4`: >= 0, higher is better compression. `zstd`: 1 (fastest) to 22 (best), however implementation relies on klauspost/compress.
 	CompressionLevel int `json:"compression_level" yaml:"compression_level"`
 }
 
@@ -76,49 +78,4 @@ func (c *CompressCore) Bind() *CompressCore {
 	c.CompressAlgorithm = GetActualValue(c.CompressAlgorithm)
 
 	return c
-}
-
-// Compressor represents Compressor configuration.
-type Compressor struct {
-	CompressCore `json:",inline" yaml:",inline"`
-
-	// ConcurrentLimit represents limitation of compression worker concurrency
-	ConcurrentLimit int `json:"concurrent_limit" yaml:"concurrent_limit"`
-
-	// QueueCheckDuration represents duration of queue daemon block
-	QueueCheckDuration string `json:"queue_check_duration" yaml:"queue_check_duration"`
-}
-
-// Bind binds the actual data from the Compressor receiver field.
-func (c *Compressor) Bind() *Compressor {
-	c.CompressCore = *c.CompressCore.Bind()
-
-	c.QueueCheckDuration = GetActualValue(c.QueueCheckDuration)
-
-	return c
-}
-
-// CompressorRegisterer represents CompressorRegisterer configuration.
-type CompressorRegisterer struct {
-	// ConcurrentLimit represents limitation of worker
-	ConcurrentLimit int `json:"concurrent_limit" yaml:"concurrent_limit"`
-
-	// QueueCheckDuration represents duration of queue daemon block
-	QueueCheckDuration string `json:"queue_check_duration" yaml:"queue_check_duration"`
-
-	// Compressor represents gRPC client config of compressor client (for forwarding use)
-	Compressor *BackupManager `json:"compressor" yaml:"compressor"`
-}
-
-// Bind binds the actual data from the CompressorRegisterer receiver field.
-func (cr *CompressorRegisterer) Bind() *CompressorRegisterer {
-	cr.QueueCheckDuration = GetActualValue(cr.QueueCheckDuration)
-
-	if cr.Compressor != nil {
-		cr.Compressor = cr.Compressor.Bind()
-	} else {
-		cr.Compressor = new(BackupManager)
-	}
-
-	return cr
 }

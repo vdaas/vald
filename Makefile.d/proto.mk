@@ -19,13 +19,17 @@ proto/all: \
 	proto/deps \
 	pbgo \
 	pbdoc \
-	swagger
+	openapi \
+	jsonschema
 
 .PHONY: pbgo
 pbgo: $(PBGOS)
 
-.PHONY: swagger
-swagger: $(SWAGGERS)
+.PHONY: openapi
+openapi: $(OPENAPISPECS)
+
+.PHONY: jsonschema
+jsonschema: $(OPENAPIJSONSCHEMAS)
 
 .PHONY: pbdoc
 pbdoc: $(PBDOCS)
@@ -33,7 +37,7 @@ pbdoc: $(PBDOCS)
 .PHONY: proto/clean
 ## clean proto artifacts
 proto/clean:
-	rm -rf apis/grpc apis/swagger apis/docs
+	rm -rf apis/grpc apis/openapi apis/docs
 
 .PHONY: proto/paths/print
 ## print proto paths
@@ -48,7 +52,8 @@ proto/deps: \
 	$(GOPATH)/bin/protoc-gen-go-grpc \
 	$(GOPATH)/bin/protoc-gen-go-vtproto \
 	$(GOPATH)/bin/protoc-gen-grpc-gateway \
-	$(GOPATH)/bin/protoc-gen-swagger \
+	$(GOPATH)/bin/protoc-gen-jsonschema \
+	$(GOPATH)/bin/protoc-gen-openapi \
 	$(GOPATH)/bin/protoc-gen-validate \
 	$(GOPATH)/bin/prototool \
 	$(GOPATH)/bin/swagger \
@@ -112,8 +117,11 @@ $(GOPATH)/bin/protoc-gen-go-grpc:
 $(GOPATH)/bin/protoc-gen-grpc-gateway:
 	$(call go-install, github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway)
 
-$(GOPATH)/bin/protoc-gen-swagger:
-	$(call go-install, github.com/grpc-ecosystem/grpc-gateway/protoc-gen-swagger)
+$(GOPATH)/bin/protoc-gen-openapi:
+	$(call go-install, github.com/google/gnostic/cmd/protoc-gen-openapi)
+
+$(GOPATH)/bin/protoc-gen-jsonschema:
+	$(call go-install, github.com/google/gnostic/cmd/protoc-gen-jsonschema)
 
 $(GOPATH)/bin/protoc-gen-validate:
 	$(call go-install, github.com/envoyproxy/protoc-gen-validate)
@@ -140,12 +148,19 @@ $(PBGOS): \
 	find $(ROOTDIR)/apis/grpc/* -name '*.go' | xargs sed -i -E "s%google.golang.org/grpc/status%github.com/vdaas/vald/internal/net/grpc/status%g"
 	find $(ROOTDIR)/apis/grpc/* -name '*.go' | xargs sed -i -E "s%\"io\"%\"github.com/vdaas/vald/internal/io\"%g"
 
-$(SWAGGERS): \
+$(OPENAPISPECS): \
 	$(PROTOS) \
 	proto/deps
-	@$(call green, "generating swagger.json files...")
+	@$(call green, "generating openapi.json files...")
 	$(call mkdir, $(dir $@))
-	$(call protoc-gen, $(patsubst apis/swagger/%.swagger.json,apis/proto/%.proto,$@), --swagger_out=json_names_for_fields=true:$(dir $@))
+	$(call protoc-gen, $(patsubst apis/openapi/%.openapi.json,apis/proto/%.proto,$@), --openapi_out=enum_type=string:$(dir $@))
+
+$(OPENAPIJSONSCHEMAS): \
+	$(PROTOS) \
+	proto/deps
+	@$(call green, "generating schema.json files...")
+	$(call mkdir, $(dir $@))
+	$(call protoc-gen, $(patsubst apis/jsonschema/%.schema.json,apis/proto/%.proto,$@), --jsonschema_out=$(dir $@))
 
 $(PBDOCS): \
 	$(PROTOS) \

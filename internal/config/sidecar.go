@@ -56,7 +56,7 @@ type AgentSidecar struct {
 	RestoreBackoff *Backoff `yaml:"restore_backoff" json:"restore_backoff"`
 
 	// Client represent HTTP client configurations
-	Client *Client `yaml:"client" json:"client"`
+	Client *HTTPClient `yaml:"client" json:"client"`
 }
 
 // Bind binds the actual data from the AgentSidecar receiver fields.
@@ -89,7 +89,7 @@ func (s *AgentSidecar) Bind() *AgentSidecar {
 	if s.Client != nil {
 		s.Client = s.Client.Bind()
 	} else {
-		s.Client = new(Client)
+		s.Client = new(HTTPClient).Bind()
 	}
 
 	return s

@@ -1,0 +1,24 @@
+{
+  "title": "Control",
+  "$id": "Control.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "description": "Control related messages.",
+  "properties": {
+  },
+  "definitions": {
+    "Control_CreateIndexRequest": {
+      "title": "CreateIndexRequest",
+      "type": "object",
+      "description": "Represent the create index request.",
+      "properties": {
+        "poolSize": {
+          "title": "poolSize",
+          "type": "integer",
+          "description": "The pool size of the create index operation.",
+          "format": "uint32"
+        }
+      }
+    }
+  }
+}

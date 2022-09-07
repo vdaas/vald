@@ -776,7 +776,7 @@
 - Update get started with using kubernetes ingress (#1510)
 - Fix command template (#1508)
 - Update dependencies version (#1501)
-- modify .pb.go & swagger (#1493)
+- modify .pb.go & openapi (#1493)
 - Add reshape vector proto, remove meta/backup proto (#1492)
 
 :pencil2: Documents

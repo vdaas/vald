@@ -1,0 +1,97 @@
+{
+  "title": "Update",
+  "$id": "Update.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "description": "Update related messages",
+  "properties": {
+  },
+  "definitions": {
+    "Update_Request": {
+      "title": "Request",
+      "type": "object",
+      "description": "Represent the update request.",
+      "properties": {
+        "vector": {
+          "description": "The vector to be updated.",
+          "$ref": "Object_Vector.json"
+        },
+        "config": {
+          "description": "The configuration of the update request.",
+          "$ref": "Update_Config.json"
+        }
+      }
+    },
+    "Update_MultiRequest": {
+      "title": "MultiRequest",
+      "type": "object",
+      "description": "Represent the multiple update request.",
+      "properties": {
+        "requests": {
+          "title": "requests",
+          "type": "array",
+          "items": {
+            "$ref": "Update_Request.json"
+          },
+          "description": "Represent the multiple update request content."
+        }
+      }
+    },
+    "Update_ObjectRequest": {
+      "title": "ObjectRequest",
+      "type": "object",
+      "description": "Represent the update binary object request.",
+      "properties": {
+        "object": {
+          "description": "The binary object to be updated.",
+          "$ref": "Object_Blob.json"
+        },
+        "config": {
+          "description": "The configuration of the update request.",
+          "$ref": "Update_Config.json"
+        },
+        "vectorizer": {
+          "description": "Filter target.",
+          "$ref": "Filter_Target.json"
+        }
+      }
+    },
+    "Update_MultiObjectRequest": {
+      "title": "MultiObjectRequest",
+      "type": "object",
+      "description": "Represent the multiple update binary object request.",
+      "properties": {
+        "requests": {
+          "title": "requests",
+          "type": "array",
+          "items": {
+            "$ref": "Update_ObjectRequest.json"
+          },
+          "description": "Represent the multiple update object request content."
+        }
+      }
+    },
+    "Update_Config": {
+      "title": "Config",
+      "type": "object",
+      "description": "Represent the update configuration.",
+      "properties": {
+        "skipStrictExistCheck": {
+          "title": "skipStrictExistCheck",
+          "type": "boolean",
+          "description": "A flag to skip exist check during update operation."
+        },
+        "filters": {
+          "description": "Filter configuration.",
+          "$ref": "Filter_Config.json"
+        },
+        "timestamp": {
+          "title": "timestamp",
+          "type": "integer",
+          "description": "Update timestamp.",
+          "format": "int64"
+        }
+      }
+    }
+  }
+}

@@ -15,7 +15,7 @@
 #
 {{- $discoverer := .Values.discoverer -}}
 {{- if $discoverer.hpa.enabled }}
-apiVersion: autoscaling/v1
+apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
   name: {{ $discoverer.name }}
@@ -27,12 +27,18 @@ metadata:
     app.kubernetes.io/version: {{ .Chart.Version }}
     app.kubernetes.io/component: discoverer
 spec:
-  maxReplicas: {{ $discoverer.maxReplicas }}
-  minReplicas: {{ $discoverer.minReplicas }}
   scaleTargetRef:
     apiVersion: apps/v1
     kind: {{ $discoverer.kind }}
     name: {{ $discoverer.name }}
-  targetCPUUtilizationPercentage: {{ $discoverer.hpa.targetCPUUtilizationPercentage }}
+  maxReplicas: {{ $discoverer.maxReplicas }}
+  minReplicas: {{ $discoverer.minReplicas }}
+  metrics:
+  - type: PodResource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: {{ $discoverer.hpa.targetCPUUtilizationPercentage }}
 status:
 {{- end }}

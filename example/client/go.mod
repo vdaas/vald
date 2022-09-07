@@ -9,9 +9,9 @@ replace (
 	github.com/kpango/glg => github.com/kpango/glg v1.6.13
 	github.com/pkg/sftp => github.com/pkg/sftp v1.13.5
 	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20220829220503-c86fa9a7ed90
-	golang.org/x/net => golang.org/x/net v0.0.0-20220826154423-83b083e8dc8b
+	golang.org/x/net => golang.org/x/net v0.0.0-20220906165146-f3363e06e74c
 	golang.org/x/text => golang.org/x/text v0.3.7
-	google.golang.org/genproto => google.golang.org/genproto v0.0.0-20220829175752-36a9c930ecbf
+	google.golang.org/genproto => google.golang.org/genproto v0.0.0-20220902135211-223410557253
 	google.golang.org/grpc => google.golang.org/grpc v1.49.0
 	google.golang.org/protobuf => google.golang.org/protobuf v1.28.1
 	gopkg.in/yaml.v2 => gopkg.in/yaml.v2 v2.4.0
