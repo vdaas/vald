@@ -33,7 +33,7 @@ func MetricInterceptor() (grpc.UnaryServerInterceptor, error) {
 	}
 
 	completedRPCCnt, err := meter.SyncFloat64().Counter(
-		gRPCStatus,
+		completedRPCsMetricsName,
 		metrics.WithDescription("Count of RPCs by method and status"),
 		metrics.WithUnit(metrics.Milliseconds),
 	)
