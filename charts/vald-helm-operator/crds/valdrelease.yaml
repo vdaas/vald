@@ -831,6 +831,7 @@ spec:
                                               - RecoverInterceptor
                                               - AccessLogInterceptor
                                               - TraceInterceptor
+                                              - MetricInterceptor
                                         keepalive:
                                           type: object
                                           properties:
@@ -1776,6 +1777,7 @@ spec:
                                                   - RecoverInterceptor
                                                   - AccessLogInterceptor
                                                   - TraceInterceptor
+                                                  - MetricInterceptor
                                             keepalive:
                                               type: object
                                               properties:
@@ -2678,6 +2680,7 @@ spec:
                                               - RecoverInterceptor
                                               - AccessLogInterceptor
                                               - TraceInterceptor
+                                              - MetricInterceptor
                                         keepalive:
                                           type: object
                                           properties:
@@ -3611,6 +3614,7 @@ spec:
                                               - RecoverInterceptor
                                               - AccessLogInterceptor
                                               - TraceInterceptor
+                                              - MetricInterceptor
                                         keepalive:
                                           type: object
                                           properties:
@@ -5034,6 +5038,7 @@ spec:
                                                   - RecoverInterceptor
                                                   - AccessLogInterceptor
                                                   - TraceInterceptor
+                                                  - MetricInterceptor
                                             keepalive:
                                               type: object
                                               properties:
@@ -6258,6 +6263,7 @@ spec:
                                                   - RecoverInterceptor
                                                   - AccessLogInterceptor
                                                   - TraceInterceptor
+                                                  - MetricInterceptor
                                             keepalive:
                                               type: object
                                               properties:
@@ -7471,6 +7477,7 @@ spec:
                                                   - RecoverInterceptor
                                                   - AccessLogInterceptor
                                                   - TraceInterceptor
+                                                  - MetricInterceptor
                                             keepalive:
                                               type: object
                                               properties:
