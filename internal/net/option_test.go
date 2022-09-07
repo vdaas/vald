@@ -30,7 +30,7 @@ import (
 	"github.com/vdaas/vald/internal/test/goleak"
 )
 
-func TestWithCache(t *testing.T) {
+func TestWithDNSCache(t *testing.T) {
 	type T = dialer
 	type args struct {
 		c cache.Cache
@@ -64,7 +64,8 @@ func TestWithCache(t *testing.T) {
 				},
 				want: want{
 					obj: &T{
-						cache: c,
+						dnsCache:       c,
+						enableDNSCache: true,
 					},
 				},
 			}
@@ -76,7 +77,7 @@ func TestWithCache(t *testing.T) {
 			},
 			want: want{
 				obj: &T{
-					cache: nil,
+					dnsCache: nil,
 				},
 			},
 		},
@@ -84,7 +85,7 @@ func TestWithCache(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -97,7 +98,7 @@ func TestWithCache(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 
-			got := WithCache(test.args.c)
+			got := WithDNSCache(test.args.c)
 			obj := new(T)
 			got(obj)
 			if err := checkFunc(test.want, obj); err != nil {
@@ -167,7 +168,7 @@ func TestWithDNSRefreshDuration(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -222,7 +223,7 @@ func TestWithDNSCacheExpiration(t *testing.T) {
 				obj: &T{
 					dnsCacheExpiration:    10 * time.Second,
 					dnsCacheExpirationStr: "10s",
-					dnsCache:              true,
+					enableDNSCache:        true,
 				},
 			},
 		},
@@ -235,7 +236,7 @@ func TestWithDNSCacheExpiration(t *testing.T) {
 				obj: &T{
 					dnsCacheExpiration:    1 * time.Hour,
 					dnsCacheExpirationStr: "1h",
-					dnsCache:              true,
+					enableDNSCache:        true,
 				},
 			},
 		},
@@ -249,7 +250,7 @@ func TestWithDNSCacheExpiration(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -327,7 +328,7 @@ func TestWithDialerTimeout(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -406,7 +407,7 @@ func TestWithDialerKeepalive(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -476,7 +477,7 @@ func TestWithTLS(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -522,7 +523,7 @@ func TestWithEnableDNSCache(t *testing.T) {
 			name: "dnsCache enabled",
 			want: want{
 				obj: &T{
-					dnsCache: true,
+					enableDNSCache: true,
 				},
 			},
 		},
@@ -530,7 +531,7 @@ func TestWithEnableDNSCache(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -576,7 +577,7 @@ func TestWithDisableDNSCache(t *testing.T) {
 			name: "dnsCache disabled",
 			want: want{
 				obj: &T{
-					dnsCache: false,
+					enableDNSCache: false,
 				},
 			},
 		},
@@ -584,7 +585,7 @@ func TestWithDisableDNSCache(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -638,7 +639,7 @@ func TestWithEnableDialerDualStack(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -692,7 +693,7 @@ func TestWithDisableDialerDualStack(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}

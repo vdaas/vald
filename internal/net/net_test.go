@@ -21,6 +21,7 @@ import (
 	"context"
 	"fmt"
 	"math"
+	"net"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -35,13 +36,6 @@ import (
 	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/test/goleak"
 )
-
-// Goroutine leak is detected by `fastime`, but it should be ignored in the test because it is an external package.
-var goleakIgnoreOptions = []goleak.Option{
-	goleak.IgnoreTopFunction("github.com/kpango/fastime.(*fastime).StartTimerD.func1"),
-	goleak.IgnoreTopFunction("internal/poll.runtime_pollWait"),
-	goleak.IgnoreTopFunction("net._C2func_getaddrinfo"),
-}
 
 func TestMain(m *testing.M) {
 	log.Init(log.WithLoggerType(logger.NOP.String()))
@@ -119,7 +113,7 @@ func TestIsLocal(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -207,7 +201,7 @@ func TestDialContext(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -329,10 +323,9 @@ func TestParse(t *testing.T) {
 			want: want{
 				wantHost: "dummy",
 				wantPort: uint16(80),
-				err: &strconv.NumError{
-					Func: "ParseUint",
-					Num:  "",
-					Err:  strconv.ErrSyntax,
+				err: &net.AddrError{
+					Addr: "dummy",
+					Err:  "missing port in address",
 				},
 			},
 		},
@@ -347,10 +340,9 @@ func TestParse(t *testing.T) {
 				isV4:     true,
 				isV6:     false,
 				isLocal:  false,
-				err: &strconv.NumError{
-					Func: "ParseUint",
-					Num:  "",
-					Err:  strconv.ErrSyntax,
+				err: &net.AddrError{
+					Addr: "192.168.1.1",
+					Err:  "missing port in address",
 				},
 			},
 		},
@@ -365,10 +357,9 @@ func TestParse(t *testing.T) {
 				isV4:     false,
 				isV6:     true,
 				isLocal:  false,
-				err: &strconv.NumError{
-					Func: "ParseUint",
-					Num:  "",
-					Err:  strconv.ErrSyntax,
+				err: &net.AddrError{
+					Addr: "2001:db8::1",
+					Err:  "too many colons in address",
 				},
 			},
 		},
@@ -376,7 +367,7 @@ func TestParse(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -464,10 +455,9 @@ func TestSplitHostPort(t *testing.T) {
 			want: want{
 				wantHost: "dummy",
 				wantPort: uint16(80),
-				err: &strconv.NumError{
-					Func: "ParseUint",
-					Num:  "",
-					Err:  strconv.ErrSyntax,
+				err: &net.AddrError{
+					Addr: "dummy",
+					Err:  "missing port in address",
 				},
 			},
 		},
@@ -479,10 +469,9 @@ func TestSplitHostPort(t *testing.T) {
 			want: want{
 				wantHost: "192.168.1.1",
 				wantPort: uint16(80),
-				err: &strconv.NumError{
-					Func: "ParseUint",
-					Num:  "",
-					Err:  strconv.ErrSyntax,
+				err: &net.AddrError{
+					Addr: "192.168.1.1",
+					Err:  "missing port in address",
 				},
 			},
 		},
@@ -494,10 +483,9 @@ func TestSplitHostPort(t *testing.T) {
 			want: want{
 				wantHost: "2001:db8::1",
 				wantPort: uint16(80),
-				err: &strconv.NumError{
-					Func: "ParseUint",
-					Num:  "",
-					Err:  strconv.ErrSyntax,
+				err: &net.AddrError{
+					Addr: "2001:db8::1",
+					Err:  "too many colons in address",
 				},
 			},
 		},
@@ -515,7 +503,7 @@ func TestSplitHostPort(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -722,7 +710,7 @@ func TestScanPorts(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -772,7 +760,7 @@ func TestLoadLocalIP(t *testing.T) {
 	for _, tc := range tests {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}

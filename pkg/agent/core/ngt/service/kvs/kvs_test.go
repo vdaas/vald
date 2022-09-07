@@ -1578,11 +1578,12 @@ func Test_bidi_Range(t *testing.T) {
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			eg, egctx := errgroup.New(test.args.ctx)
 			b := &bidi{
 				ou: test.fields.ou,
 				uo: test.fields.uo,
 				l:  test.fields.l,
-				eg: errgroup.Get(),
+				eg: eg,
 			}
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args, b)
@@ -1595,7 +1596,7 @@ func Test_bidi_Range(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 
-			b.Range(test.args.ctx, test.args.f)
+			b.Range(egctx, test.args.f)
 			if err := checkFunc(test.want, b); err != nil {
 				tt.Errorf("error = %v", err)
 			}

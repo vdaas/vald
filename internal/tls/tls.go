@@ -29,6 +29,7 @@ import (
 type (
 	Conn   = tls.Conn
 	Config = tls.Config
+	Dialer = tls.Dialer
 )
 
 type credentials struct {
@@ -39,7 +40,11 @@ type credentials struct {
 	insecure bool
 }
 
-var Client = tls.Client
+var (
+	Client         = tls.Client
+	Dial           = tls.Dial
+	DialWithDialer = tls.DialWithDialer
+)
 
 // NewTLSConfig returns a *tls.Config struct or error
 // This function read TLS configuration and initialize *tls.Config struct.
