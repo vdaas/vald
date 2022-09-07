@@ -580,8 +580,10 @@ dial_option:
   insecure: {{ default .default.dial_option.insecure .Values.dial_option.insecure }}
   timeout: {{ default .default.dial_option.timeout .Values.dial_option.timeout | quote }}
   {{- if .Values.dial_option.interceptors }}
+  interceptors:
     {{- toYaml .Values.dial_option.interceptors | nindent 4 }}
   {{- else if .default.dial_option.interceptors }}
+  interceptors:
     {{- toYaml .default.dial_option.interceptors | nindent 4 }}
   {{- else }}
   interceptors: []
