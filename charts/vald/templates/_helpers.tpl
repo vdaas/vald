@@ -579,6 +579,13 @@ dial_option:
   enable_backoff: {{ default .default.dial_option.enable_backoff .Values.dial_option.enable_backoff }}
   insecure: {{ default .default.dial_option.insecure .Values.dial_option.insecure }}
   timeout: {{ default .default.dial_option.timeout .Values.dial_option.timeout | quote }}
+  {{- if .Values.dial_option.interceptors }}
+    {{- toYaml .Values.dial_option.interceptors | nindent 4 }}
+  {{- else if .default.dial_option.interceptors }}
+    {{- toYaml .default.dial_option.interceptors | nindent 4 }}
+  {{- else }}
+  interceptors: []
+  {{- end }}
   net:
     {{- if .Values.dial_option.net }}
     dns:

@@ -60,6 +60,7 @@ type DialOption struct {
 	EnableBackoff               bool                 `json:"enable_backoff"                 yaml:"enable_backoff"`
 	Insecure                    bool                 `json:"insecure"                       yaml:"insecure"`
 	Timeout                     string               `json:"timeout"                        yaml:"timeout"`
+	Interceptors                []string             `json:"interceptors,omitempty"         yaml:"interceptors"`
 	Net                         *Net                 `json:"net"                            yaml:"net"`
 	Keepalive                   *GRPCClientKeepalive `json:"keepalive"                      yaml:"keepalive"`
 }
@@ -150,6 +151,7 @@ func (c *CallOption) Bind() *CallOption {
 func (d *DialOption) Bind() *DialOption {
 	d.BackoffMaxDelay = GetActualValue(d.BackoffMaxDelay)
 	d.Timeout = GetActualValue(d.Timeout)
+	d.Interceptors = GetActualValues(d.Interceptors)
 	return d
 }
 
@@ -228,7 +230,7 @@ func (g *GRPCClient) Opts() ([]grpc.Option, error) {
 			grpc.WithBackoffMaxDelay(g.DialOption.BackoffMaxDelay),
 			grpc.WithBackoffMaxDelay(g.DialOption.BackoffMaxDelay),
 			grpc.WithDialTimeout(g.DialOption.Timeout),
-			grpc.WithClientInterceptors(),
+			grpc.WithClientInterceptors(g.DialOption.Interceptors...),
 		)
 
 		if g.DialOption.Net != nil &&
