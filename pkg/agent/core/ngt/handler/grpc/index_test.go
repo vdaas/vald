@@ -472,9 +472,9 @@ func Test_server_CreateIndex(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
+			ctx, cancel := context.WithCancel(context.Background())
+			defer cancel()
+
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
