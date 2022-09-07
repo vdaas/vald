@@ -257,7 +257,7 @@ func (d Detail) String() string {
 }
 
 // Get returns parased Detail object.
-func (i *info) Get() Detail {
+func (i info) Get() Detail {
 	i.prepare()
 
 	i.detail.StackTrace = make([]StackTrace, 0, 10)

@@ -64,7 +64,8 @@ func BenchmarkParse(b *testing.B) {
 			},
 		},
 	}
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		b.Run(test.name, func(b *testing.B) {
 			b.RunParallel(func(pb *testing.PB) {
 				for pb.Next() {
@@ -187,7 +188,8 @@ func BenchmarkParseWithDefault(b *testing.B) {
 			},
 		},
 	}
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		b.Run(test.name, func(b *testing.B) {
 			b.RunParallel(func(pb *testing.PB) {
 				for pb.Next() {

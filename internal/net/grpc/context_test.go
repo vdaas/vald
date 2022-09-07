@@ -19,10 +19,10 @@ import (
 	"testing"
 
 	"github.com/vdaas/vald/internal/errors"
-	"github.com/vdaas/vald/internal/test/goleak"
 )
 
 func TestWithGRPCMethod(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx    context.Context
 		method string
@@ -78,7 +78,6 @@ func TestWithGRPCMethod(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -99,6 +98,7 @@ func TestWithGRPCMethod(t *testing.T) {
 }
 
 func TestFromGRPCMethod(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 	}
@@ -151,7 +151,6 @@ func TestFromGRPCMethod(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}

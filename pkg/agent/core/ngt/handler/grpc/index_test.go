@@ -33,7 +33,6 @@ import (
 	"github.com/vdaas/vald/internal/test/comparator"
 	"github.com/vdaas/vald/internal/test/data/request"
 	"github.com/vdaas/vald/internal/test/data/vector"
-	"github.com/vdaas/vald/internal/test/goleak"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/service"
 )
 
@@ -473,11 +472,9 @@ func Test_server_CreateIndex(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-
-			ctx, cancel := context.WithCancel(context.Background())
-			defer cancel()
-
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
@@ -592,7 +589,6 @@ func Test_server_SaveIndex(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -702,7 +698,6 @@ func Test_server_CreateAndSaveIndex(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1121,7 +1116,7 @@ func Test_server_IndexInfo(t *testing.T) {
 
 					go func() {
 						if _, err := s.SaveIndex(ctx, &payload.Empty{}); err != nil {
-							t.Error(err)
+							t.Log(err)
 						}
 					}()
 				},
@@ -1174,7 +1169,6 @@ func Test_server_IndexInfo(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 
 			ctx, cancel := context.WithCancel(context.Background())
 			defer cancel()

@@ -92,6 +92,12 @@
     - [Upsert.ObjectRequest](#payload-v1-Upsert-ObjectRequest)
     - [Upsert.Request](#payload-v1-Upsert-Request)
   
+- [apis/proto/v1/vald/filter.proto](#apis_proto_v1_vald_filter-proto)
+    - [Filter](#vald-v1-Filter)
+  
+- [apis/proto/v1/vald/insert.proto](#apis_proto_v1_vald_insert-proto)
+    - [Insert](#vald-v1-Insert)
+  
 - [apis/proto/v1/vald/object.proto](#apis_proto_v1_vald_object-proto)
     - [Object](#vald-v1-Object)
   
@@ -106,12 +112,6 @@
   
 - [apis/proto/v1/vald/upsert.proto](#apis_proto_v1_vald_upsert-proto)
     - [Upsert](#vald-v1-Upsert)
-  
-- [apis/proto/v1/vald/filter.proto](#apis_proto_v1_vald_filter-proto)
-    - [Filter](#vald-v1-Filter)
-  
-- [apis/proto/v1/vald/insert.proto](#apis_proto_v1_vald_insert-proto)
-    - [Insert](#vald-v1-Insert)
   
 - [Scalar Value Types](#scalar-value-types)
 
@@ -1326,6 +1326,71 @@ Represent the upsert request.
 
 
 
+<a name="apis_proto_v1_vald_filter-proto"></a>
+<p align="right"><a href="#top">Top</a></p>
+
+## apis/proto/v1/vald/filter.proto
+
+
+ 
+
+ 
+
+ 
+
+
+<a name="vald-v1-Filter"></a>
+
+### Filter
+Filter service provides ways to connect to Vald through filter.
+
+| Method Name | Request Type | Response Type | Description |
+| ----------- | ------------ | ------------- | ------------|
+| SearchObject | [.payload.v1.Search.ObjectRequest](#payload-v1-Search-ObjectRequest) | [.payload.v1.Search.Response](#payload-v1-Search-Response) | A method to search object. |
+| MultiSearchObject | [.payload.v1.Search.MultiObjectRequest](#payload-v1-Search-MultiObjectRequest) | [.payload.v1.Search.Responses](#payload-v1-Search-Responses) | A method to search multiple objects. |
+| StreamSearchObject | [.payload.v1.Search.ObjectRequest](#payload-v1-Search-ObjectRequest) stream | [.payload.v1.Search.StreamResponse](#payload-v1-Search-StreamResponse) stream | A method to search object by bidirectional streaming. |
+| InsertObject | [.payload.v1.Insert.ObjectRequest](#payload-v1-Insert-ObjectRequest) | [.payload.v1.Object.Location](#payload-v1-Object-Location) | A method insert object. |
+| StreamInsertObject | [.payload.v1.Insert.ObjectRequest](#payload-v1-Insert-ObjectRequest) stream | [.payload.v1.Object.StreamLocation](#payload-v1-Object-StreamLocation) stream | Represent the streaming RPC to insert object by bidirectional streaming. |
+| MultiInsertObject | [.payload.v1.Insert.MultiObjectRequest](#payload-v1-Insert-MultiObjectRequest) | [.payload.v1.Object.Locations](#payload-v1-Object-Locations) | A method to insert multiple objects. |
+| UpdateObject | [.payload.v1.Update.ObjectRequest](#payload-v1-Update-ObjectRequest) | [.payload.v1.Object.Location](#payload-v1-Object-Location) | A method to update object. |
+| StreamUpdateObject | [.payload.v1.Update.ObjectRequest](#payload-v1-Update-ObjectRequest) stream | [.payload.v1.Object.StreamLocation](#payload-v1-Object-StreamLocation) stream | A method to update object by bidirectional streaming. |
+| MultiUpdateObject | [.payload.v1.Update.MultiObjectRequest](#payload-v1-Update-MultiObjectRequest) | [.payload.v1.Object.Locations](#payload-v1-Object-Locations) | A method to update multiple objects. |
+| UpsertObject | [.payload.v1.Upsert.ObjectRequest](#payload-v1-Upsert-ObjectRequest) | [.payload.v1.Object.Location](#payload-v1-Object-Location) | A method to upsert object. |
+| StreamUpsertObject | [.payload.v1.Upsert.ObjectRequest](#payload-v1-Upsert-ObjectRequest) stream | [.payload.v1.Object.StreamLocation](#payload-v1-Object-StreamLocation) stream | A method to upsert object by bidirectional streaming. |
+| MultiUpsertObject | [.payload.v1.Upsert.MultiObjectRequest](#payload-v1-Upsert-MultiObjectRequest) | [.payload.v1.Object.Locations](#payload-v1-Object-Locations) | A method to upsert multiple objects. |
+
+ 
+
+
+
+<a name="apis_proto_v1_vald_insert-proto"></a>
+<p align="right"><a href="#top">Top</a></p>
+
+## apis/proto/v1/vald/insert.proto
+
+
+ 
+
+ 
+
+ 
+
+
+<a name="vald-v1-Insert"></a>
+
+### Insert
+Insert service provides ways to add new vectors.
+
+| Method Name | Request Type | Response Type | Description |
+| ----------- | ------------ | ------------- | ------------|
+| Insert | [.payload.v1.Insert.Request](#payload-v1-Insert-Request) | [.payload.v1.Object.Location](#payload-v1-Object-Location) | A method to add a new single vector. |
+| StreamInsert | [.payload.v1.Insert.Request](#payload-v1-Insert-Request) stream | [.payload.v1.Object.StreamLocation](#payload-v1-Object-StreamLocation) stream | A method to add new multiple vectors by bidirectional streaming. |
+| MultiInsert | [.payload.v1.Insert.MultiRequest](#payload-v1-Insert-MultiRequest) | [.payload.v1.Object.Locations](#payload-v1-Object-Locations) | A method to add new multiple vectors in a single request. |
+
+ 
+
+
+
 <a name="apis_proto_v1_vald_object-proto"></a>
 <p align="right"><a href="#top">Top</a></p>
 
@@ -1470,71 +1535,6 @@ Upsert service provides ways to insert/update vectors.
 | Upsert | [.payload.v1.Upsert.Request](#payload-v1-Upsert-Request) | [.payload.v1.Object.Location](#payload-v1-Object-Location) | A method to insert/update a vector. |
 | StreamUpsert | [.payload.v1.Upsert.Request](#payload-v1-Upsert-Request) stream | [.payload.v1.Object.StreamLocation](#payload-v1-Object-StreamLocation) stream | A method to insert/update multiple vectors by bidirectional streaming. |
 | MultiUpsert | [.payload.v1.Upsert.MultiRequest](#payload-v1-Upsert-MultiRequest) | [.payload.v1.Object.Locations](#payload-v1-Object-Locations) | A method to insert/update multiple vectors in a single request. |
-
- 
-
-
-
-<a name="apis_proto_v1_vald_filter-proto"></a>
-<p align="right"><a href="#top">Top</a></p>
-
-## apis/proto/v1/vald/filter.proto
-
-
- 
-
- 
-
- 
-
-
-<a name="vald-v1-Filter"></a>
-
-### Filter
-Filter service provides ways to connect to Vald through filter.
-
-| Method Name | Request Type | Response Type | Description |
-| ----------- | ------------ | ------------- | ------------|
-| SearchObject | [.payload.v1.Search.ObjectRequest](#payload-v1-Search-ObjectRequest) | [.payload.v1.Search.Response](#payload-v1-Search-Response) | A method to search object. |
-| MultiSearchObject | [.payload.v1.Search.MultiObjectRequest](#payload-v1-Search-MultiObjectRequest) | [.payload.v1.Search.Responses](#payload-v1-Search-Responses) | A method to search multiple objects. |
-| StreamSearchObject | [.payload.v1.Search.ObjectRequest](#payload-v1-Search-ObjectRequest) stream | [.payload.v1.Search.StreamResponse](#payload-v1-Search-StreamResponse) stream | A method to search object by bidirectional streaming. |
-| InsertObject | [.payload.v1.Insert.ObjectRequest](#payload-v1-Insert-ObjectRequest) | [.payload.v1.Object.Location](#payload-v1-Object-Location) | A method insert object. |
-| StreamInsertObject | [.payload.v1.Insert.ObjectRequest](#payload-v1-Insert-ObjectRequest) stream | [.payload.v1.Object.StreamLocation](#payload-v1-Object-StreamLocation) stream | Represent the streaming RPC to insert object by bidirectional streaming. |
-| MultiInsertObject | [.payload.v1.Insert.MultiObjectRequest](#payload-v1-Insert-MultiObjectRequest) | [.payload.v1.Object.Locations](#payload-v1-Object-Locations) | A method to insert multiple objects. |
-| UpdateObject | [.payload.v1.Update.ObjectRequest](#payload-v1-Update-ObjectRequest) | [.payload.v1.Object.Location](#payload-v1-Object-Location) | A method to update object. |
-| StreamUpdateObject | [.payload.v1.Update.ObjectRequest](#payload-v1-Update-ObjectRequest) stream | [.payload.v1.Object.StreamLocation](#payload-v1-Object-StreamLocation) stream | A method to update object by bidirectional streaming. |
-| MultiUpdateObject | [.payload.v1.Update.MultiObjectRequest](#payload-v1-Update-MultiObjectRequest) | [.payload.v1.Object.Locations](#payload-v1-Object-Locations) | A method to update multiple objects. |
-| UpsertObject | [.payload.v1.Upsert.ObjectRequest](#payload-v1-Upsert-ObjectRequest) | [.payload.v1.Object.Location](#payload-v1-Object-Location) | A method to upsert object. |
-| StreamUpsertObject | [.payload.v1.Upsert.ObjectRequest](#payload-v1-Upsert-ObjectRequest) stream | [.payload.v1.Object.StreamLocation](#payload-v1-Object-StreamLocation) stream | A method to upsert object by bidirectional streaming. |
-| MultiUpsertObject | [.payload.v1.Upsert.MultiObjectRequest](#payload-v1-Upsert-MultiObjectRequest) | [.payload.v1.Object.Locations](#payload-v1-Object-Locations) | A method to upsert multiple objects. |
-
- 
-
-
-
-<a name="apis_proto_v1_vald_insert-proto"></a>
-<p align="right"><a href="#top">Top</a></p>
-
-## apis/proto/v1/vald/insert.proto
-
-
- 
-
- 
-
- 
-
-
-<a name="vald-v1-Insert"></a>
-
-### Insert
-Insert service provides ways to add new vectors.
-
-| Method Name | Request Type | Response Type | Description |
-| ----------- | ------------ | ------------- | ------------|
-| Insert | [.payload.v1.Insert.Request](#payload-v1-Insert-Request) | [.payload.v1.Object.Location](#payload-v1-Object-Location) | A method to add a new single vector. |
-| StreamInsert | [.payload.v1.Insert.Request](#payload-v1-Insert-Request) stream | [.payload.v1.Object.StreamLocation](#payload-v1-Object-StreamLocation) stream | A method to add new multiple vectors by bidirectional streaming. |
-| MultiInsert | [.payload.v1.Insert.MultiRequest](#payload-v1-Insert-MultiRequest) | [.payload.v1.Object.Locations](#payload-v1-Object-Locations) | A method to add new multiple vectors in a single request. |
 
  
 

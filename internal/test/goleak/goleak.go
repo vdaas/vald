@@ -27,6 +27,7 @@ var (
 		goleak.IgnoreTopFunction("github.com/kpango/fastime.(*fastime).StartTimerD.func1"),
 		goleak.IgnoreTopFunction("internal/poll.runtime_pollWait"),
 		goleak.IgnoreTopFunction("net._C2func_getaddrinfo"),
+		goleak.IgnoreTopFunction("go.opencensus.io/stats/view.(*worker).start"),
 	}
 
 	IgnoreTopFunction = goleak.IgnoreTopFunction
@@ -35,4 +36,8 @@ var (
 
 func VerifyNone(t goleak.TestingT, options ...goleak.Option) {
 	goleak.VerifyNone(t, append(options, defaultGoleakOptions...)...)
+}
+
+func VerifyTestMain(m goleak.TestingM, options ...goleak.Option) {
+	goleak.VerifyTestMain(m, append(options, defaultGoleakOptions...)...)
 }

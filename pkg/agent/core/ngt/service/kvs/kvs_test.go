@@ -1390,8 +1390,7 @@ func Test_bidi_DeleteInverse(t *testing.T) {
 func Test_bidi_Range(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		ctx context.Context
-		f   func(string, uint32) bool
+		f func(string, uint32) bool
 	}
 	type fields struct {
 		ou [slen]*ou
@@ -1438,7 +1437,6 @@ func Test_bidi_Range(t *testing.T) {
 			return test{
 				name: "rage get successes",
 				args: args{
-					ctx: context.Background(),
 					f: func(s string, u uint32) bool {
 						mu.Lock()
 						got[s] = u
@@ -1490,7 +1488,6 @@ func Test_bidi_Range(t *testing.T) {
 			return test{
 				name: "rage get successes when l of fields is 100",
 				args: args{
-					ctx: context.Background(),
 					f: func(s string, u uint32) bool {
 						mu.Lock()
 						got[s] = u
@@ -1542,7 +1539,6 @@ func Test_bidi_Range(t *testing.T) {
 			return test{
 				name: "rage get successes when l of fields is maximun value of uint64",
 				args: args{
-					ctx: context.Background(),
 					f: func(s string, u uint32) bool {
 						mu.Lock()
 						got[s] = u
@@ -1578,7 +1574,9 @@ func Test_bidi_Range(t *testing.T) {
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-			eg, egctx := errgroup.New(test.args.ctx)
+			ctx, cancel := context.WithCancel(context.Background())
+			defer cancel()
+			eg, egctx := errgroup.New(ctx)
 			b := &bidi{
 				ou: test.fields.ou,
 				uo: test.fields.uo,
