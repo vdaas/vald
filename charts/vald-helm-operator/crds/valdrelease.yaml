@@ -2065,6 +2065,12 @@ spec:
                                   type: integer
                                 insecure:
                                   type: boolean
+                                interceptors:
+                                  type: array
+                                  items:
+                                    type: string
+                                    enum:
+                                      - TraceInterceptor
                                 keepalive:
                                   type: object
                                   properties:
@@ -3963,6 +3969,12 @@ spec:
                                           type: integer
                                         insecure:
                                           type: boolean
+                                        interceptors:
+                                          type: array
+                                          items:
+                                            type: string
+                                            enum:
+                                              - TraceInterceptor
                                         keepalive:
                                           type: object
                                           properties:
@@ -4140,6 +4152,12 @@ spec:
                                       type: integer
                                     insecure:
                                       type: boolean
+                                    interceptors:
+                                      type: array
+                                      items:
+                                        type: string
+                                        enum:
+                                          - TraceInterceptor
                                     keepalive:
                                       type: object
                                       properties:
@@ -4312,6 +4330,12 @@ spec:
                                           type: integer
                                         insecure:
                                           type: boolean
+                                        interceptors:
+                                          type: array
+                                          items:
+                                            type: string
+                                            enum:
+                                              - TraceInterceptor
                                         keepalive:
                                           type: object
                                           properties:
@@ -5379,6 +5403,12 @@ spec:
                                           type: integer
                                         insecure:
                                           type: boolean
+                                        interceptors:
+                                          type: array
+                                          items:
+                                            type: string
+                                            enum:
+                                              - TraceInterceptor
                                         keepalive:
                                           type: object
                                           properties:
@@ -5548,6 +5578,12 @@ spec:
                                           type: integer
                                         insecure:
                                           type: boolean
+                                        interceptors:
+                                          type: array
+                                          items:
+                                            type: string
+                                            enum:
+                                              - TraceInterceptor
                                         keepalive:
                                           type: object
                                           properties:
@@ -6635,6 +6671,12 @@ spec:
                                           type: integer
                                         insecure:
                                           type: boolean
+                                        interceptors:
+                                          type: array
+                                          items:
+                                            type: string
+                                            enum:
+                                              - TraceInterceptor
                                         keepalive:
                                           type: object
                                           properties:
@@ -6804,6 +6846,12 @@ spec:
                                           type: integer
                                         insecure:
                                           type: boolean
+                                        interceptors:
+                                          type: array
+                                          items:
+                                            type: string
+                                            enum:
+                                              - TraceInterceptor
                                         keepalive:
                                           type: object
                                           properties:
