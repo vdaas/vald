@@ -26,12 +26,6 @@ type Observability struct {
 	Jaeger     *Jaeger     `json:"jaeger"     yaml:"jaeger"`
 }
 
-// Collector represents the configuration for the collector.
-type Collector struct {
-	Duration string   `json:"duration" yaml:"duration"`
-	Metrics  *Metrics `json:"metrics"  yaml:"metrics"`
-}
-
 // Trace represents the configuration for the trace.
 type Trace struct {
 	Enabled bool `json:"enabled" yaml:"enabled"`
@@ -111,17 +105,4 @@ func (o *Observability) Bind() *Observability {
 	}
 
 	return o
-}
-
-// Bind binds the actual data from the Collector receiver fields.
-func (c *Collector) Bind() *Collector {
-	c.Duration = GetActualValue(c.Duration)
-
-	if c.Metrics != nil {
-		c.Metrics.VersionInfoLabels = GetActualValues(c.Metrics.VersionInfoLabels)
-	} else {
-		c.Metrics = new(Metrics)
-	}
-
-	return c
 }

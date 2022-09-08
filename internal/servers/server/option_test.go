@@ -2312,8 +2312,8 @@ func TestWithGRPCInterceptors(t *testing.T) {
 			},
 		},
 		{
-			name:  "Add TracePayloadInterceptor using 'TracePayloadInterceptor'",
-			names: []string{"TracePayloadInterceptor"},
+			name:  "Add TraceInterceptor using 'TraceInterceptor'",
+			names: []string{"TraceInterceptor"},
 			checkFunc: func(opt Option) error {
 				got := new(server)
 				opt(got)
@@ -2326,8 +2326,8 @@ func TestWithGRPCInterceptors(t *testing.T) {
 			},
 		},
 		{
-			name:  "Add TracePayloadInterceptor using 'TracePayload'",
-			names: []string{"TracePayload"},
+			name:  "Add TraceInterceptor using 'Trace'",
+			names: []string{"Trace"},
 			checkFunc: func(opt Option) error {
 				got := new(server)
 				opt(got)
