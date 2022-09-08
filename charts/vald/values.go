@@ -283,42 +283,6 @@ type EgressFilter struct {
 // EnvItems
 type EnvItems struct{}
 
-// Exporter
-type Exporter struct {
-	// how many view data events or trace spans can be buffered.
-	BundleCountThreshold int `json:"bundle_count_threshold,omitempty"`
-
-	// the max amount of time the exporter can wait before uploading data.
-	BundleDelayThreshold string `json:"bundle_delay_threshold,omitempty"`
-
-	// identifier of the GCP or AWS cloud region/zone the data is stored.
-	Location string `json:"location,omitempty"`
-
-	// the prefix of a stackdriver metric names.
-	MetricPrefix string `json:"metric_prefix,omitempty"`
-
-	// stackdriver monitoring enabled
-	MonitoringEnabled bool `json:"monitoring_enabled,omitempty"`
-
-	// number of workers
-	NumberOfWorkers int `json:"number_of_workers,omitempty"`
-
-	// interval between reporting metrics
-	ReportingInterval string `json:"reporting_interval,omitempty"`
-
-	// skip all the CreateMetricDescriptor calls
-	SkipCmd bool `json:"skip_cmd,omitempty"`
-
-	// timeout for all API calls
-	Timeout string `json:"timeout,omitempty"`
-
-	// maximum size of spans that will be buffered.
-	TraceSpansBufferMaxBytes int `json:"trace_spans_buffer_max_bytes,omitempty"`
-
-	// stackdriver tracing enabled
-	TracingEnabled bool `json:"tracing_enabled,omitempty"`
-}
-
 // Fields k8s field selectors for pod discovery
 type Fields struct{}
 
@@ -924,11 +888,10 @@ type Observability struct {
 	Collector *Collector `json:"collector,omitempty"`
 
 	// observability features enabled
-	Enabled     bool         `json:"enabled,omitempty"`
-	Jaeger      *Jaeger      `json:"jaeger,omitempty"`
-	Prometheus  *Prometheus  `json:"prometheus,omitempty"`
-	Stackdriver *Stackdriver `json:"stackdriver,omitempty"`
-	Trace       *Trace       `json:"trace,omitempty"`
+	Enabled    bool        `json:"enabled,omitempty"`
+	Jaeger     *Jaeger     `json:"jaeger,omitempty"`
+	Prometheus *Prometheus `json:"prometheus,omitempty"`
+	Trace      *Trace      `json:"trace,omitempty"`
 }
 
 // PersistentVolume
@@ -1015,48 +978,6 @@ type Pprof struct {
 
 // PreferredDuringSchedulingIgnoredDuringExecutionItems
 type PreferredDuringSchedulingIgnoredDuringExecutionItems struct{}
-
-// Profiler
-type Profiler struct {
-	// forces GC before the collection of each heap profile.
-	AllocForceGc bool `json:"alloc_force_gc,omitempty"`
-
-	// enables allocation profiling.
-	AllocProfiling bool `json:"alloc_profiling,omitempty"`
-
-	// HTTP endpoint to use to connect to the profiler agent API.
-	ApiAddr string `json:"api_addr,omitempty"`
-
-	// enables CPU profiling.
-	CpuProfiling bool `json:"cpu_profiling,omitempty"`
-
-	// enables detailed logging from profiler.
-	DebugLogging bool `json:"debug_logging,omitempty"`
-
-	// stackdriver profiler enabled.
-	Enabled bool `json:"enabled,omitempty"`
-
-	// enables goroutine profiling.
-	GoroutineProfiling bool `json:"goroutine_profiling,omitempty"`
-
-	// enables heap profiling.
-	HeapProfiling bool `json:"heap_profiling,omitempty"`
-
-	// the name of Compute Engine instance. This is normally determined from the Compute Engine metadata server and doesn't need to be initialized.
-	Instance string `json:"instance,omitempty"`
-
-	// enables mutex profiling.
-	MutexProfiling bool `json:"mutex_profiling,omitempty"`
-
-	// the name of the service.
-	Service string `json:"service,omitempty"`
-
-	// the version of the service.
-	ServiceVersion string `json:"service_version,omitempty"`
-
-	// the zone of Compute Engine instance. This is normally determined from the Compute Engine metadata server and doesn't need to be initialized.
-	Zone string `json:"zone,omitempty"`
-}
 
 // Prometheus
 type Prometheus struct {
@@ -1305,16 +1226,6 @@ type Sidecar struct {
 
 	// version of gateway config
 	Version string `json:"version,omitempty"`
-}
-
-// Stackdriver
-type Stackdriver struct {
-	Client   *config.GRPCClient `json:"client,omitempty"`
-	Exporter *Exporter          `json:"exporter,omitempty"`
-	Profiler *Profiler          `json:"profiler,omitempty"`
-
-	// project id for uploading the stats data
-	ProjectId string `json:"project_id,omitempty"`
 }
 
 // Startup

@@ -21,6 +21,7 @@ import (
 	"context"
 	"math"
 	"sort"
+	"strconv"
 	"sync/atomic"
 	"time"
 
@@ -96,11 +97,25 @@ func New(ctx context.Context, opts ...Option) (c Conn, err error) {
 	if err != nil {
 		log.Warnf("failed to parse addr %s: %s", p.addr, err)
 		if p.host == "" {
-			p.host = strings.SplitN(p.addr, ":", 2)[0]
+			var (
+				ok   bool
+				port string
+			)
+			p.host, port, ok = strings.Cut(p.addr, ":")
+			if !ok {
+				p.host = p.addr
+			} else {
+				portNum, err := strconv.ParseUint(port, 10, 16)
+				if err != nil {
+					p.port = uint16(portNum)
+				}
+			}
 		}
-		err = p.scanGRPCPort(ctx)
-		if err != nil {
-			return nil, err
+		if p.port == 0 {
+			err = p.scanGRPCPort(ctx)
+			if err != nil {
+				return nil, err
+			}
 		}
 		p.addr = net.JoinHostPort(p.host, p.port)
 	}
@@ -113,6 +128,10 @@ func New(ctx context.Context, opts ...Option) (c Conn, err error) {
 			return nil, err
 		}
 		p.addr = net.JoinHostPort(p.host, p.port)
+		conn, err = grpc.DialContext(ctx, p.addr, p.dopts...)
+		if err != nil {
+			return nil, err
+		}
 	}
 	if conn != nil {
 		err = conn.Close()

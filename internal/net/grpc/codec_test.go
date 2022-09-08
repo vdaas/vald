@@ -23,10 +23,10 @@ import (
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/errors"
-	"github.com/vdaas/vald/internal/test/goleak"
 )
 
 func TestCodec_Marshal(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		v interface{}
 	}
@@ -97,7 +97,6 @@ func TestCodec_Marshal(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -119,6 +118,7 @@ func TestCodec_Marshal(t *testing.T) {
 }
 
 func TestCodec_Unmarshal(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		data []byte
 		v    interface{}
@@ -190,7 +190,6 @@ func TestCodec_Unmarshal(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -212,6 +211,7 @@ func TestCodec_Unmarshal(t *testing.T) {
 }
 
 func TestCodec_Name(t *testing.T) {
+	t.Parallel()
 	type want struct {
 		want string
 	}
@@ -242,7 +242,6 @@ func TestCodec_Name(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}

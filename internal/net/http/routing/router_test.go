@@ -18,6 +18,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"reflect"
+	"sync/atomic"
 	"testing"
 
 	"github.com/vdaas/vald/internal/errors"
@@ -28,7 +29,13 @@ import (
 	"github.com/vdaas/vald/internal/test/goleak"
 )
 
+func TestMain(m *testing.M) {
+	log.Init(log.WithLoggerType(logger.NOP.String()))
+	goleak.VerifyTestMain(m)
+}
+
 func TestNew(t *testing.T) {
+	t.Parallel()
 	type test struct {
 		name        string
 		opts        []Option
@@ -36,30 +43,28 @@ func TestNew(t *testing.T) {
 	}
 
 	tests := []test{
-		func() test {
-			mw := &middlewareMock{
-				WrapFunc: func(r rest.Func) rest.Func {
-					return r
-				},
-			}
-
-			return test{
-				name: "initialize success",
-				opts: []Option{
-					WithMiddleware(mw),
-					WithRoutes(
-						Route{},
-					),
-				},
-				initialized: true,
-			}
-		}(),
+		{
+			name: "initialize success",
+			opts: []Option{
+				WithMiddleware(&middlewareMock{
+					WrapFunc: func(r rest.Func) rest.Func {
+						return r
+					},
+				}),
+				WithRoutes(
+					Route{},
+				),
+			},
+			initialized: true,
+		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got := New(tt.opts...)
-			if (got != nil) != tt.initialized {
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			got := New(test.opts...)
+			if (got != nil) != test.initialized {
 				t.Error("New() is wrong.")
 			}
 		})
@@ -67,6 +72,7 @@ func TestNew(t *testing.T) {
 }
 
 func TestRouting(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		name string
 		path string
@@ -85,9 +91,9 @@ func TestRouting(t *testing.T) {
 			w := new(httptest.ResponseRecorder)
 			r := httptest.NewRequest(http.MethodGet, "/", new(bytes.Buffer))
 
-			cnt := 0
+			var cnt int32 = 0
 			h := func(w http.ResponseWriter, req *http.Request) (code int, err error) {
-				cnt++
+				atomic.AddInt32(&cnt, 1)
 				w.WriteHeader(http.StatusOK)
 				return http.StatusOK, nil
 			}
@@ -103,13 +109,14 @@ func TestRouting(t *testing.T) {
 				checkFunc: func(hdr http.Handler) error {
 					hdr.ServeHTTP(w, r)
 
-					if cnt != 1 {
+					if atomic.LoadInt32(&cnt) != 1 {
 						return errors.Errorf("call count is wrong. want: %v, got: %v", 1, cnt)
 					}
 
 					if got, want := w.Code, http.StatusOK; got != want {
 						return errors.Errorf("status code not equals. want: %v, got: %v", want, got)
 					}
+
 					return nil
 				},
 			}
@@ -136,9 +143,9 @@ func TestRouting(t *testing.T) {
 			w := new(httptest.ResponseRecorder)
 			r := httptest.NewRequest(http.MethodGet, "/", new(bytes.Buffer))
 
-			cnt := 0
+			var cnt int32 = 0
 			h := func(w http.ResponseWriter, req *http.Request) (code int, err error) {
-				cnt++
+				atomic.AddInt32(&cnt, 1)
 				w.WriteHeader(http.StatusBadRequest)
 				return http.StatusOK, errors.New("faild")
 			}
@@ -154,7 +161,7 @@ func TestRouting(t *testing.T) {
 				checkFunc: func(hdr http.Handler) error {
 					hdr.ServeHTTP(w, r)
 
-					if cnt != 1 {
+					if atomic.LoadInt32(&cnt) != 1 {
 						return errors.Errorf("call count is wrong. want: %v, got: %v", 1, cnt)
 					}
 
@@ -167,11 +174,12 @@ func TestRouting(t *testing.T) {
 		}(),
 	}
 
-	log.Init(log.WithLoggerType(logger.NOP.String()))
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			hdr := new(router).routing(tt.args.name, tt.args.path, tt.args.m, tt.args.h)
-			if err := tt.checkFunc(hdr); err != nil {
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			// tt.Parallel()
+			hdr := new(router).routing(test.args.name, test.args.path, test.args.m, test.args.h)
+			if err := test.checkFunc(hdr); err != nil {
 				t.Error(err)
 			}
 		})
@@ -179,6 +187,7 @@ func TestRouting(t *testing.T) {
 }
 
 func Test_router_routing(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		name string
 		path string
@@ -249,9 +258,10 @@ func Test_router_routing(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}

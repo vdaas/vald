@@ -33,9 +33,79 @@ type Selectors struct {
 	PodMetrics  *Selector `json:"pod_metrics,omitempty"  yaml:"pod_metrics"`
 }
 
+func (s *Selectors) GetPodFields() map[string]string {
+	if s == nil {
+		return nil
+	}
+	return s.Pod.GetFields()
+}
+
+func (s *Selectors) GetPodLabels() map[string]string {
+	if s == nil {
+		return nil
+	}
+	return s.Pod.GetLabels()
+}
+
+func (s *Selectors) GetNodeFields() map[string]string {
+	if s == nil {
+		return nil
+	}
+	return s.Node.GetFields()
+}
+
+func (s *Selectors) GetNodeLabels() map[string]string {
+	if s == nil {
+		return nil
+	}
+	return s.Node.GetLabels()
+}
+
+func (s *Selectors) GetPodMetricsFields() map[string]string {
+	if s == nil {
+		return nil
+	}
+	return s.PodMetrics.GetFields()
+}
+
+func (s *Selectors) GetPodMetricsLabels() map[string]string {
+	if s == nil {
+		return nil
+	}
+	return s.PodMetrics.GetLabels()
+}
+
+func (s *Selectors) GetNodeMetricsFields() map[string]string {
+	if s == nil {
+		return nil
+	}
+	return s.NodeMetrics.GetFields()
+}
+
+func (s *Selectors) GetNodeMetricsLabels() map[string]string {
+	if s == nil {
+		return nil
+	}
+	return s.NodeMetrics.GetLabels()
+}
+
 type Selector struct {
 	Labels map[string]string `json:"labels,omitempty" yaml:"labels"`
 	Fields map[string]string `json:"fields,omitempty" yaml:"fields"`
+}
+
+func (s *Selector) GetLabels() map[string]string {
+	if s == nil {
+		return nil
+	}
+	return s.Labels
+}
+
+func (s *Selector) GetFields() map[string]string {
+	if s == nil {
+		return nil
+	}
+	return s.Fields
 }
 
 // Bind binds the actual data from the Discoverer receiver field.

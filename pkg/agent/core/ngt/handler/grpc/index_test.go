@@ -29,11 +29,9 @@ import (
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/net/grpc/status"
-	itest "github.com/vdaas/vald/internal/test"
 	"github.com/vdaas/vald/internal/test/comparator"
 	"github.com/vdaas/vald/internal/test/data/request"
 	"github.com/vdaas/vald/internal/test/data/vector"
-	"github.com/vdaas/vald/internal/test/goleak"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/service"
 )
 
@@ -473,8 +471,6 @@ func Test_server_CreateIndex(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-
 			ctx, cancel := context.WithCancel(context.Background())
 			defer cancel()
 
@@ -592,7 +588,6 @@ func Test_server_SaveIndex(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -702,7 +697,6 @@ func Test_server_CreateAndSaveIndex(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -869,35 +863,79 @@ func Test_server_IndexInfo(t *testing.T) {
 				},
 			},
 		},
-		{
-			name: "Equivalence Class Testing case 1.2: return stored count with 100 number of indexes",
-			args: args{
-				in1: &payload.Empty{},
-			},
-			fields: fields{
-				name: name,
-				ip:   ip,
-				svcCfg: &config.NGT{
-					Dimension:    784,
-					DistanceType: ngt.Angle.String(),
-					ObjectType:   ngt.Float.String(),
-					KVSDB:        kvsdbCfg,
-					VQueue:       vqueueCfg,
+		func() test {
+			tmpDir, err := os.MkdirTemp("", "")
+			if err != nil {
+				t.Error(err)
+			}
+
+			svcCfg := &config.NGT{
+				Dimension:    dim,
+				DistanceType: ngt.Angle.String(),
+				ObjectType:   ngt.Float.String(),
+				KVSDB:        kvsdbCfg,
+				VQueue:       vqueueCfg,
+			}
+			svcOpts := append(defaultSvcOpts,
+				service.WithIndexPath(tmpDir),
+				service.WithEnableInMemoryMode(false),
+			)
+
+			// create server to insert index before test
+			ctx, cancel := context.WithCancel(context.Background())
+			eg, _ := errgroup.New(ctx)
+			ngt, err := service.New(svcCfg, append(svcOpts, service.WithErrGroup(eg))...)
+			if err != nil {
+				t.Errorf("failed to init ngt service, error = %v", err)
+			}
+			s, err := New(WithErrGroup(eg),
+				WithNGT(ngt),
+				WithName(name),
+				WithIP(ip),
+			)
+			if err != nil {
+				t.Error(err)
+			}
+
+			// insert 100 indexes and create index
+			if _, err := insertAndCreateIndex(s, ctx, 100, true); err != nil {
+				t.Error(err)
+			}
+
+			// save index to file
+			if _, err := s.SaveIndex(ctx, &payload.Empty{}); err != nil {
+				t.Error(err)
+			}
+
+			// close this ngt instance
+			ngt.Close(ctx)
+			cancel()
+
+			return test{
+				name: "Equivalence Class Testing case 1.2: return stored count with 100 number of indexes",
+				args: args{
+					in1: &payload.Empty{},
 				},
-				svcOpts: append(defaultSvcOpts,
-					service.WithIndexPath(itest.GetTestdataPath("backup/100index")),
-					service.WithEnableInMemoryMode(false),
-				),
-			},
-			want: want{
-				wantRes: &payload.Info_Index_Count{
-					Stored:      insertCnt,
-					Uncommitted: 0,
-					Indexing:    false,
-					Saving:      false,
+				fields: fields{
+					name:    name,
+					ip:      ip,
+					svcCfg:  svcCfg,
+					svcOpts: svcOpts,
 				},
-			},
-		},
+				want: want{
+					wantRes: &payload.Info_Index_Count{
+						Stored:      insertCnt,
+						Uncommitted: 0,
+						Indexing:    false,
+						Saving:      false,
+					},
+				},
+				afterFunc: func(a args) {
+					cancel()
+					os.RemoveAll(tmpDir)
+				},
+			}
+		}(),
 		{
 			name: "Equivalence Class Testing case 2.1: return uncommitted count 0 when NGT is empty",
 			args: args{
@@ -1121,7 +1159,9 @@ func Test_server_IndexInfo(t *testing.T) {
 
 					go func() {
 						if _, err := s.SaveIndex(ctx, &payload.Empty{}); err != nil {
-							t.Error(err)
+							// since the context closed error will be returned after checkFunc,
+							// we ignore the error here to avoid go test error
+							// t.Log(err)
 						}
 					}()
 				},
@@ -1174,7 +1214,6 @@ func Test_server_IndexInfo(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 
 			ctx, cancel := context.WithCancel(context.Background())
 			defer cancel()

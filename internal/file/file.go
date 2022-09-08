@@ -97,7 +97,7 @@ func moveDir(ctx context.Context, src, dst string, rollback bool) (err error) {
 		return nil
 	}
 	exits, fi, err := exists(src)
-	if !exits || !fi.IsDir() || err != nil {
+	if !exits || fi == nil || !fi.IsDir() || err != nil {
 		return errors.ErrDirectoryNotFound(err, src, fi)
 	}
 
@@ -132,7 +132,7 @@ func moveDir(ctx context.Context, src, dst string, rollback bool) (err error) {
 			log.Debugf("directory %s successfully moved to tmp location %s", dst, tmpPath)
 		}
 		exits, fi, err = exists(src)
-		if exits && fi.IsDir() && err == nil {
+		if exits && fi != nil && fi.IsDir() && err == nil {
 			err = os.Rename(src, dst)
 			if err != nil {
 				log.Debugf("err: %v\t now trying to move file with I/O copy and Remove old index", errors.ErrFailedToRenameDir(err, src, dst, fi, nil))
@@ -152,6 +152,8 @@ func moveDir(ctx context.Context, src, dst string, rollback bool) (err error) {
 					return err
 				}
 			}
+		} else {
+			return errors.ErrDirectoryNotFound(err, src, fi)
 		}
 	}
 	log.Infof("directory %s successfully moved to destination directory %s", src, dst)
@@ -236,7 +238,7 @@ func CopyFileWithPerm(ctx context.Context, src, dst string, perm fs.FileMode) (n
 	flg := os.O_RDONLY | os.O_SYNC
 	sf, err := Open(src, flg, perm)
 	if err != nil || sf == nil {
-		err = errors.ErrFailedToCopyDir(errors.ErrFailedToOpenFile(err, src, flg, perm), src, dst, fi, nil)
+		err = errors.ErrFailedToCopyFile(errors.ErrFailedToOpenFile(err, src, flg, perm), src, dst, fi, nil)
 		return 0, err
 	}
 	defer func() {
@@ -247,11 +249,7 @@ func CopyFileWithPerm(ctx context.Context, src, dst string, perm fs.FileMode) (n
 			}
 		}
 	}()
-	sr, err := io.NewReaderWithContext(ctx, sf)
-	if err != nil {
-		return 0, err
-	}
-	n, err = OverWriteFile(ctx, dst, sr, perm)
+	n, err = OverWriteFile(ctx, dst, sf, perm)
 	if err != nil && !errors.Is(err, io.EOF) {
 		err = errors.ErrFailedToCopyFile(err, src, dst, fi, nil)
 		return 0, err
@@ -309,7 +307,11 @@ func writeFile(ctx context.Context, target string, r io.Reader, flg int, perm fs
 	if err != nil {
 		return 0, err
 	}
-	n, err = io.Copy(w, r)
+	cr, err := io.NewReaderWithContext(ctx, r)
+	if err != nil {
+		return 0, err
+	}
+	n, err = io.Copy(w, cr)
 	if err != nil && !errors.Is(err, io.EOF) {
 		return 0, err
 	}

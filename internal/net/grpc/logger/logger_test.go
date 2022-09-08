@@ -25,7 +25,12 @@ import (
 	"google.golang.org/grpc/grpclog"
 )
 
+func TestMain(m *testing.M) {
+	goleak.VerifyTestMain(m)
+}
+
 func TestInit(t *testing.T) {
+	t.Parallel()
 	type test struct {
 		name       string
 		checkFunc  func() error
@@ -74,7 +79,6 @@ func TestInit(t *testing.T) {
 	for _, tc := range tests {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(tt)
 			}
@@ -94,6 +98,7 @@ func TestInit(t *testing.T) {
 }
 
 func Test_logger_Info(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		args []interface{}
 	}
@@ -127,7 +132,6 @@ func Test_logger_Info(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -150,6 +154,7 @@ func Test_logger_Info(t *testing.T) {
 }
 
 func Test_logger_Infoln(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		args []interface{}
 	}
@@ -183,7 +188,6 @@ func Test_logger_Infoln(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -206,6 +210,7 @@ func Test_logger_Infoln(t *testing.T) {
 }
 
 func Test_logger_Infof(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		format string
 		args   []interface{}
@@ -240,7 +245,6 @@ func Test_logger_Infof(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -263,6 +267,7 @@ func Test_logger_Infof(t *testing.T) {
 }
 
 func Test_logger_Warning(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		args []interface{}
 	}
@@ -296,7 +301,6 @@ func Test_logger_Warning(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -319,6 +323,7 @@ func Test_logger_Warning(t *testing.T) {
 }
 
 func Test_logger_Warningln(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		args []interface{}
 	}
@@ -352,7 +357,6 @@ func Test_logger_Warningln(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -375,6 +379,7 @@ func Test_logger_Warningln(t *testing.T) {
 }
 
 func Test_logger_Warningf(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		format string
 		args   []interface{}
@@ -409,7 +414,6 @@ func Test_logger_Warningf(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -432,6 +436,7 @@ func Test_logger_Warningf(t *testing.T) {
 }
 
 func Test_logger_Error(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		args []interface{}
 	}
@@ -465,7 +470,6 @@ func Test_logger_Error(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -488,6 +492,7 @@ func Test_logger_Error(t *testing.T) {
 }
 
 func Test_logger_Errorln(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		args []interface{}
 	}
@@ -521,7 +526,6 @@ func Test_logger_Errorln(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -544,6 +548,7 @@ func Test_logger_Errorln(t *testing.T) {
 }
 
 func Test_logger_Errorf(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		format string
 		args   []interface{}
@@ -578,7 +583,6 @@ func Test_logger_Errorf(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -647,7 +651,6 @@ func Test_logger_Fatal(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -713,7 +716,6 @@ func Test_logger_Fatalln(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -783,7 +785,6 @@ func Test_logger_Fatalf(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -806,6 +807,7 @@ func Test_logger_Fatalf(t *testing.T) {
 }
 
 func Test_logger_V(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		v int
 	}
@@ -873,7 +875,6 @@ func Test_logger_V(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}

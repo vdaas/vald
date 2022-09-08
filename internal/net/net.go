@@ -207,11 +207,17 @@ func SplitHostPort(hostport string) (host string, port uint16, err error) {
 		host = hostport
 		port = defaultPort
 	}
-	p, err := strconv.ParseUint(portStr, 10, 16)
-	if err != nil || p > math.MaxUint16 {
-		port = defaultPort
-	} else {
-		port = uint16(p)
+	if len(portStr) > 0 {
+		var p uint64
+		p, err = strconv.ParseUint(portStr, 10, 16)
+		if err != nil || p > math.MaxUint16 {
+			port = defaultPort
+		} else {
+			port = uint16(p)
+		}
+	}
+	if len(host) == 0 {
+		host = "localhost"
 	}
 	return host, port, err
 }

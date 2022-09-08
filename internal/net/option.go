@@ -37,10 +37,13 @@ var defaultDialerOptions = []DialerOption{
 	WithDisableDNSCache(),
 }
 
-// WithCache returns the functional option to set the cache.
-func WithCache(c cache.Cache) DialerOption {
+// WithDNSCache returns the functional option to set the cache.
+func WithDNSCache(c cache.Cache) DialerOption {
 	return func(d *dialer) {
-		d.cache = c
+		d.dnsCache = c
+		if d.dnsCache != nil {
+			WithEnableDNSCache()(d)
+		}
 	}
 }
 
@@ -138,14 +141,14 @@ func WithTLS(cfg *tls.Config) DialerOption {
 // WithEnableDNSCache returns the functional option to enable DNSCache.
 func WithEnableDNSCache() DialerOption {
 	return func(d *dialer) {
-		d.dnsCache = true
+		d.enableDNSCache = true
 	}
 }
 
 // WithDisableDNSCache returns the functional option to disable DNSCache.
 func WithDisableDNSCache() DialerOption {
 	return func(d *dialer) {
-		d.dnsCache = false
+		d.enableDNSCache = false
 	}
 }
 
