@@ -49,9 +49,6 @@ func New(opts ...Option) BenchmarkOperatorWatcher {
 
 func (r *reconciler) AddListOpts(opt client.ListOption) {}
 
-//+kubebuilder:rbac:groups=vald.vdaas.org.vald.vdaas.org,resources=valdbenchmarkoperators,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=vald.vdaas.org.vald.vdaas.org,resources=valdbenchmarkoperators/status,verbs=get;update;patch
-//+kubebuilder:rbac:groups=vald.vdaas.org.vald.vdaas.org,resources=valdbenchmarkoperators/finalizers,verbs=update
 func (r *reconciler) Reconcile(ctx context.Context, req reconcile.Request) (res reconcile.Result, err error) {
 	return
 }
