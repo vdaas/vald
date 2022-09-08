@@ -18,6 +18,7 @@ import "go.uber.org/goleak"
 type (
 	Option   = goleak.Option
 	TestingT = goleak.TestingT
+	TestingM = goleak.TestingM
 )
 
 var (
@@ -34,10 +35,10 @@ var (
 	IgnoreCurrent     = goleak.IgnoreCurrent
 )
 
-func VerifyNone(t goleak.TestingT, options ...goleak.Option) {
+func VerifyNone(t TestingT, options ...Option) {
 	goleak.VerifyNone(t, append(options, defaultGoleakOptions...)...)
 }
 
-func VerifyTestMain(m goleak.TestingM, options ...goleak.Option) {
+func VerifyTestMain(m TestingM, options ...Option) {
 	goleak.VerifyTestMain(m, append(options, defaultGoleakOptions...)...)
 }
