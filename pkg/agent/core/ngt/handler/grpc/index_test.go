@@ -751,11 +751,6 @@ func Test_server_SaveIndex(t *testing.T) {
 					indexPath: indexPath,
 				},
 				beforeFunc: func(t *testing.T, ctx context.Context, s Server, n service.NGT) {
-					// remove write access
-					if err := os.Chmod(indexPath, 0o555); err != nil {
-						t.Error(err)
-					}
-
 					if _, err := s.Insert(ctx, ir); err != nil {
 						t.Error(err)
 					}
@@ -765,6 +760,12 @@ func Test_server_SaveIndex(t *testing.T) {
 					}); err != nil {
 						t.Error(err)
 					}
+
+					// remove write access
+					if err := os.Chmod(indexPath, 0o555); err != nil {
+						t.Error(err)
+					}
+
 				},
 				want: want{
 					wantRes: nil,
@@ -1068,6 +1069,80 @@ func Test_server_SaveIndex(t *testing.T) {
 				tt.Errorf("error = %v", err)
 			}
 		})
+	}
+}
+
+func TestA(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	const (
+		name = "vald-agent-ngt-1" // agent name
+		dim  = 3                  // vector dimension
+		id   = "uuid-1"           // id for getObject request
+	)
+	var (
+		ip = net.LoadLocalIP() // agent ip address
+
+		svcCfg = &config.NGT{
+			Dimension:    dim,
+			DistanceType: ngt.Angle.String(),
+			ObjectType:   ngt.Float.String(),
+			KVSDB:        &config.KVSDB{},
+			VQueue:       &config.VQueue{},
+		}
+		srvOpts = []Option{
+			WithName(name),
+			WithIP(ip),
+		}
+		svcOpts = []service.Option{
+			service.WithEnableInMemoryMode(false),
+		}
+
+		emptyPayload = &payload.Empty{}
+	)
+	indexPath := "/tmp/afjdsl"
+	if err := os.Mkdir(indexPath, 0o777); err != nil {
+		t.Error(err)
+	}
+	defer os.RemoveAll(indexPath)
+
+	eg, _ := errgroup.New(ctx)
+	ngt, err := service.New(svcCfg, append(svcOpts,
+		service.WithErrGroup(eg),
+		service.WithIndexPath(indexPath))...)
+	if err != nil {
+		t.Errorf("failed to init ngt service, error = %v", err)
+	}
+
+	s, err := New(append(srvOpts, WithNGT(ngt), WithErrGroup(eg))...)
+	if err != nil {
+		t.Errorf("failed to init server, error= %v", err)
+	}
+	if _, err := s.Insert(ctx, &payload.Insert_Request{
+		Vector: &payload.Object_Vector{
+			Vector: []float32{1, 2, 3},
+			Id:     id,
+		},
+	}); err != nil {
+		t.Error(err)
+	}
+	if _, err := s.CreateIndex(ctx, &payload.Control_CreateIndexRequest{
+		PoolSize: 1,
+	}); err != nil {
+		t.Error(err)
+	}
+	if err := os.Chmod(indexPath, 0o555); err != nil {
+		t.Error(err)
+	}
+	if _, err := s.SaveIndex(ctx, emptyPayload); err != nil {
+		st, ok := status.FromError(err)
+		if !ok {
+			t.Errorf("got error cannot convert to Status: %#v", err)
+		}
+		if st.Code() != codes.Internal {
+			t.Errorf("got code: \"%#v\",\n\t\t\t\twant code: \"%#v\"", st.Code(), codes.Internal)
+		}
 	}
 }
 
