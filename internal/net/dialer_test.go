@@ -914,26 +914,29 @@ func Test_dialer_cachedDialer(t *testing.T) {
 				w.WriteHeader(200)
 			}))
 
-			addr := "invalid_ip"
-
 			c, err := cache.New()
 			if err != nil {
 				t.Error(err)
 			}
-			host, port, _ := SplitHostPort(strings.TrimPrefix(strings.TrimPrefix(srv.URL, "https://"), "http://"))
+
+			addr := srv.URL[len("http://"):]
+			host, _, err := SplitHostPort(addr)
+			if err != nil {
+				t.Error(err)
+			}
 
 			return test{
 				name: "return cached ip connection",
 				args: args{
 					network: TCP.String(),
-					addr:    addr + ":" + strconv.FormatUint(uint64(port), 10),
+					addr:    addr,
 				},
 				opts: []DialerOption{
 					WithDNSCache(c),
 				},
 				beforeFunc: func(t *testing.T) {
 					// set the hostname 'invalid_ip' to the host name of the cache with the test server ip address
-					c.Set("invalid_ip", &dialerCache{
+					c.Set(addr, &dialerCache{
 						ips: []string{
 							host,
 						},
@@ -961,34 +964,36 @@ func Test_dialer_cachedDialer(t *testing.T) {
 			srv := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				w.WriteHeader(200)
 			}))
-
-			addr := "invalid_ip"
+			srv.TLS.InsecureSkipVerify = true
 
 			c, err := cache.New()
 			if err != nil {
 				t.Error(err)
 			}
-			host, port, _ := SplitHostPort(strings.TrimPrefix(strings.TrimPrefix(srv.URL, "https://"), "http://"))
+			tls, err := tls.NewClientConfig(tls.WithInsecureSkipVerify(true))
+			if err != nil {
+				t.Error(err)
+			}
+
+			addr := srv.URL[len("https://"):]
+			host, _, err := SplitHostPort(addr)
+			if err != nil {
+				t.Error(err)
+			}
 
 			return test{
 				name: "return cached ip tls connection",
 				args: args{
 					network: TCP.String(),
-					addr:    addr + ":" + strconv.FormatUint(uint64(port), 10),
+					addr:    addr,
 				},
 				opts: []DialerOption{
 					WithDNSCache(c),
-					WithTLS(func() *tls.Config {
-						c, err := tls.NewClientConfig(tls.WithInsecureSkipVerify(true))
-						if err != nil {
-							return nil
-						}
-						return c
-					}()),
+					WithTLS(tls),
 				},
 				beforeFunc: func(t *testing.T) {
 					// set the hostname 'invalid_ip' to the host name of the cache with the test server ip address
-					c.Set("invalid_ip", &dialerCache{
+					c.Set(addr, &dialerCache{
 						ips: []string{
 							host,
 						},
@@ -1193,26 +1198,23 @@ func Test_dialer_cachedDialer(t *testing.T) {
 			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				w.WriteHeader(200)
 			}))
-			host, port, _ := net.SplitHostPort(srv.URL[len("http://"):])
 
-			addr := "invalid_ip"
+			addr := srv.URL[len("http://"):]
+			host, _, err := SplitHostPort(addr)
+			if err != nil {
+				t.Error(err)
+			}
 
 			c, err := cache.New()
 			if err != nil {
 				t.Error(err)
 			}
-			c.Set(addr, &dialerCache{
-				ips: []string{
-					host, host, host,
-				},
-				cnt: math.MaxUint32,
-			})
 
 			return test{
 				name: "reset cache count when it is overflow",
 				args: args{
 					network: TCP.String(),
-					addr:    addr + ":" + fmt.Sprint(port),
+					addr:    addr,
 				},
 				opts: []DialerOption{
 					WithDNSCache(c),
@@ -1232,8 +1234,8 @@ func Test_dialer_cachedDialer(t *testing.T) {
 						return errors.New("conn is nil")
 					}
 
-					c, _ := d.dnsCache.Get(addr)
-					if dc := c.(*dialerCache); dc.cnt == math.MaxUint32 {
+					c, _ := d.dnsCache.Get(host)
+					if dc := c.(*dialerCache); dc.cnt != 0 {
 						return errors.Errorf("count do not reset, cnt: %v", dc.cnt)
 					}
 
