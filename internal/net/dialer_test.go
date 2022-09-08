@@ -887,10 +887,12 @@ func Test_dialer_cachedDialer(t *testing.T) {
 					return nil
 				},
 				afterFunc: func(t *testing.T) {
+					t.Helper()
 					srv.Close()
 				},
 			}
-		}(), {
+		}(),
+		{
 			name: "returns error when missing port in address",
 			args: args{
 				network: TCP.String(),
@@ -935,6 +937,7 @@ func Test_dialer_cachedDialer(t *testing.T) {
 					WithDNSCache(c),
 				},
 				beforeFunc: func(t *testing.T) {
+					t.Helper()
 					// set the hostname 'invalid_ip' to the host name of the cache with the test server ip address
 					c.Set(addr, &dialerCache{
 						ips: []string{
@@ -1644,7 +1647,7 @@ func Test_dialer_tlsHandshake(t *testing.T) {
 					}
 					return nil
 				},
-				afterFunc: func(t1 *testing.T) {
+				afterFunc: func(*testing.T) {
 					srv.Close()
 					conn.Close()
 					cancel()
@@ -1696,7 +1699,7 @@ func Test_dialer_tlsHandshake(t *testing.T) {
 				want: want{
 					err: context.DeadlineExceeded,
 				},
-				afterFunc: func(t1 *testing.T) {
+				afterFunc: func(*testing.T) {
 					srv.Close()
 					conn.Close()
 					cancel()
@@ -1741,7 +1744,7 @@ func Test_dialer_tlsHandshake(t *testing.T) {
 						return c
 					}()),
 				},
-				beforeFunc: func(t1 *testing.T) {
+				beforeFunc: func(*testing.T) {
 					// close the server before the test
 					srv.Close()
 				},
@@ -1792,7 +1795,6 @@ func Test_dialer_tlsHandshake(t *testing.T) {
 			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
