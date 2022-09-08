@@ -73,9 +73,9 @@ func Test_timeout_Wrap(t *testing.T) {
 	}
 	tests := []test{
 		func() test {
-			var cnt int32 = 0
+			var cnt uint64 = 0
 			h := func(w http.ResponseWriter, req *http.Request) (code int, err error) {
-				atomic.AddInt32(&cnt, 1)
+				atomic.AddUint64(&cnt, 1)
 				return http.StatusOK, nil
 			}
 
@@ -96,7 +96,7 @@ func Test_timeout_Wrap(t *testing.T) {
 					if code != http.StatusOK {
 						return errors.Errorf("code is not equals. want: %v, got: %v", http.StatusOK, code)
 					}
-					if atomic.LoadInt32(&cnt) != 1 {
+					if atomic.LoadUint64(&cnt) != 1 {
 						return errors.Errorf("called cnt is equals. want: %v, got: %v", 1, cnt)
 					}
 					return nil
@@ -105,9 +105,9 @@ func Test_timeout_Wrap(t *testing.T) {
 		}(),
 		func() test {
 			wantErr := errors.New("failed")
-			var cnt int32 = 0
+			var cnt uint64 = 0
 			h := func(w http.ResponseWriter, req *http.Request) (code int, err error) {
-				atomic.AddInt32(&cnt, 1)
+				atomic.AddUint64(&cnt, 1)
 				return http.StatusInternalServerError, wantErr
 			}
 
@@ -128,7 +128,7 @@ func Test_timeout_Wrap(t *testing.T) {
 					if code != http.StatusInternalServerError {
 						return errors.Errorf("code is not equals. want: %v, got: %v", http.StatusInternalServerError, code)
 					}
-					if atomic.LoadInt32(&cnt) != 1 {
+					if atomic.LoadUint64(&cnt) != 1 {
 						return errors.Errorf("called cnt is equals. want: %v, got: %v", 1, cnt)
 					}
 					return nil
