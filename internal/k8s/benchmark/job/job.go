@@ -49,9 +49,6 @@ func New(opts ...Option) BenchmarkJobWatcher {
 
 func (r *reconciler) AddListOpts(opt client.ListOption) {}
 
-//+kubebuilder:rbac:groups=vald.vdaas.org.vald.vdaas.org,resources=valdbenchmarkjobs,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=vald.vdaas.org.vald.vdaas.org,resources=valdbenchmarkjobs/status,verbs=get;update;patch
-//+kubebuilder:rbac:groups=vald.vdaas.org.vald.vdaas.org,resources=valdbenchmarkjobs/finalizers,verbs=update
 func (r *reconciler) Reconcile(ctx context.Context, req reconcile.Request) (res reconcile.Result, err error) {
 	return
 }
