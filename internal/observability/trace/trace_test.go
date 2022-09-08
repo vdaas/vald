@@ -22,10 +22,9 @@ import (
 	"reflect"
 	"testing"
 
-	"go.opentelemetry.io/otel/trace"
-
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/test/goleak"
+	"go.opentelemetry.io/otel/trace"
 )
 
 func TestStartSpan(t *testing.T) {

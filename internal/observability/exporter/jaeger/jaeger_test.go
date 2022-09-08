@@ -24,11 +24,10 @@ import (
 	"testing"
 	"time"
 
-	"go.opentelemetry.io/otel/exporters/jaeger"
-	"go.opentelemetry.io/otel/sdk/trace"
-
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/test/goleak"
+	"go.opentelemetry.io/otel/exporters/jaeger"
+	"go.opentelemetry.io/otel/sdk/trace"
 )
 
 func TestNew(t *testing.T) {

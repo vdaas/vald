@@ -18,11 +18,10 @@
 package trace
 
 import (
+	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"go.opentelemetry.io/otel/attribute"
 	ocodes "go.opentelemetry.io/otel/codes"
 	semconv "go.opentelemetry.io/otel/semconv/v1.12.0"
-
-	"github.com/vdaas/vald/internal/net/grpc/codes"
 )
 
 const (

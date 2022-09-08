@@ -21,12 +21,11 @@ import (
 	"context"
 	"reflect"
 
+	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/log"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/trace"
-
-	"github.com/vdaas/vald/internal/errors"
-	"github.com/vdaas/vald/internal/log"
 )
 
 const (
@@ -45,8 +44,7 @@ type Tracer interface {
 	Start(ctx context.Context) error
 }
 
-type tracer struct {
-}
+type tracer struct{}
 
 func StartSpan(ctx context.Context, name string, opts ...trace.SpanStartOption) (context.Context, Span) {
 	if !enabled {
