@@ -111,8 +111,8 @@ func Test_server_CreateIndex(t *testing.T) {
 			}
 		}
 
-		if diff := comparator.Diff(w.wantRes, gotRes, comparator.IgnoreUnexported(payload.Empty{})); diff != "" {
-			return errors.New(diff)
+		if !reflect.DeepEqual(gotRes, w.wantRes) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
 		}
 		return nil
 	}
