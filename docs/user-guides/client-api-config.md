@@ -1,14 +1,16 @@
 # Client API Config
 
-Vald provides client libraries for indexing vectors, searching approximate nearest neighbor vectors, and removing indexing vectors.
+Vald provides client libraries to make it easier to access different API provided by Vald, including indexing vectors, searching approximate nearest neighbor vectors, updating vectors, and removing indexed vectors.
 Each request allows setting request configuration for user demands.
 Please select the section you need.
 
-Please also see each API document.
+<div class="notice">
+Please read the API documentation for more API service details.
+</div>
 
 ## Insert Service
 
-`Insert` is inserting new vectors into the Vald cluster.
+The `Insert` service allows users to insert new vector(s) into the Vald cluster.
 It requires the vector, its ID (specific ID for the vector), and optional configuration.
 
 ### Configuration
@@ -93,7 +95,7 @@ The default value is `false`.
 #### filters
 
 `filters` is the configuration when using filter functions.
-In the `Insert` section, it is popular to use ingress filtering.
+In the `Insert` section, it is common to use ingress filtering when applying the filter's configuration.
 
 The detailed configuration is following.
 
@@ -124,7 +126,7 @@ When `timestamp` is not set, the current time will be used.
 
 ## Update Service
 
-`Update` is updating vectors already inserted in the `vald-agent` component.
+The `Update` service allows users to update vector(s) that already exists in the Vald cluster.
 It requires the new vector, its ID (the target ID already indexed), and optional configuration.
 
 ### Configuration
@@ -217,7 +219,7 @@ The update process will continue if all of the above steps have been passed.
 #### filters
 
 `filters` is the configuration when using filter functions.
-In the `Update` section, it is popular to use ingress filtering.
+In the `Update` section, it is common to use ingress filtering when applying the filter's configuration.```
 
 The detailed configuration is following.
 
@@ -248,7 +250,7 @@ When `timestamp` is not set, the current time will be used.
 
 ## Upsert Service
 
-`Upsert` is updating existing vectors in the `vald-agent` or inserting new vectors into the `vald-agent` if the request vector is not indexed.
+The `Upsert` service allows the user to update existing vectors in the Vald cluster or insert new vector(s) if the request vector is not indexed.
 It requires the vector, its ID (specific ID for the vector), and optional configuration.
 
 ### Configuration
@@ -340,7 +342,7 @@ The upsert process will continue if all of the above steps have been passed.
 #### filters
 
 `filters` is the configuration when using filter functions.
-In the `Upsert` section, it is popular to use ingress filtering.
+In the `Upsert` section, it is common to use ingress filtering when applying the filter's configuration.
 
 The detailed configuration is following.
 
@@ -389,9 +391,9 @@ Vald provides four types of search services.
 
 1. LinearSearch
 
-   - `LinearSearch` is the primary search algorithm with a query vector.
+   - `LinearSearch` is the most general search algorithm with a query vector.
      It searches all indexed vectors and calculates the distance between the query.
-     Its accuracy is exact, but the search time requires more than `Search` (ANN search) and increases the amount of indexed vector.
+     It returns accurate results but requires more processing time than `Search` (ANN search) as it needs to calculate from all indexed vectors instead of only a subset of indexed vectors.
 
 1. LinearSearchById
    - `LinearSearchById` is the primary search algorithm with the vector's ID.
@@ -593,7 +595,7 @@ It helps you avoid the timeout error when the search process requires more time.
 
 ## Remove Service
 
-`Remove` is deleting the indexed vector from the Vald cluster.
+The `Remove` service allows the user to delete indexed vectors from the Vald cluster.
 Removing the vector requires the vector's ID and optional configuration.
 
 For more details, please refer to [the Remove API document](../api/remove.md).
