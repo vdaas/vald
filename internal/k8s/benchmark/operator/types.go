@@ -31,9 +31,9 @@ type BenchmarkOperatorSpec struct {
 type BenchmarkOperatorStatus string
 
 const (
-	BenchmarkOperatorNotReady  = BenchmarkOperatorStatus("NotReady")
-	BenchmarkOperatorAvailable = BenchmarkOperatorStatus("Available")
-	BenchmarkOperatorHealthy   = BenchmarkOperatorStatus("Healthy")
+	BenchmarkOperatorNotReady  BenchmarkOperatorStatus = "NotReady"
+	BenchmarkOperatorAvailable BenchmarkOperatorStatus = "Available"
+	BenchmarkOperatorHealthy   BenchmarkOperatorStatus = "Healthy"
 )
 
 type BenchmarkOperator struct {
