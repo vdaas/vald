@@ -18,6 +18,7 @@ import "go.uber.org/goleak"
 type (
 	Option   = goleak.Option
 	TestingT = goleak.TestingT
+	TestingM = goleak.TestingM
 )
 
 var (
@@ -25,12 +26,19 @@ var (
 		// ignore conflict with testing.T.Parallel()
 		goleak.IgnoreTopFunction("testing.(*testContext).waitParallel"),
 		goleak.IgnoreTopFunction("github.com/kpango/fastime.(*fastime).StartTimerD.func1"),
+		goleak.IgnoreTopFunction("internal/poll.runtime_pollWait"),
+		goleak.IgnoreTopFunction("net._C2func_getaddrinfo"),
+		goleak.IgnoreTopFunction("go.opencensus.io/stats/view.(*worker).start"),
 	}
 
 	IgnoreTopFunction = goleak.IgnoreTopFunction
 	IgnoreCurrent     = goleak.IgnoreCurrent
 )
 
-func VerifyNone(t goleak.TestingT, options ...goleak.Option) {
+func VerifyNone(t TestingT, options ...Option) {
 	goleak.VerifyNone(t, append(options, defaultGoleakOptions...)...)
+}
+
+func VerifyTestMain(m TestingM, options ...Option) {
+	goleak.VerifyTestMain(m, append(options, defaultGoleakOptions...)...)
 }

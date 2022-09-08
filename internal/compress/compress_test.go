@@ -14,21 +14,17 @@
 // limitations under the License.
 //
 
-// Package errors provides error types and function
-package errors
+package compress
 
-var (
-	// TLS.
+import (
+	"testing"
 
-	// ErrTLSDisabled is error variable, it's replesents config error that tls is disabled by config.
-	ErrTLSDisabled = New("tls feature is disabled")
-
-	// ErrTLSCertOrKeyNotFound is error variable, it's replesents tls cert or key not found error.
-	ErrTLSCertOrKeyNotFound = New("cert or key file path not found")
-
-	ErrCertificationFailed = New("certification failed")
-
-	ErrFailedToHandshakeTLSConnection = func(network, addr string) error {
-		return Errorf("failed to handshake connection to %s:%s", network, addr)
-	}
+	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/log/logger"
+	"github.com/vdaas/vald/internal/test/goleak"
 )
+
+func TestMain(m *testing.M) {
+	log.Init(log.WithLoggerType(logger.NOP.String()))
+	goleak.VerifyTestMain(m)
+}

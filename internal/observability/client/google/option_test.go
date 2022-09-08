@@ -14,22 +14,20 @@
 // limitations under the License.
 //
 
-// Package pool provides grpc connection pool client
-package pool
+// Package google provides a google API client options.
+package google
 
 import (
 	"testing"
 
-	"github.com/vdaas/vald/internal/backoff"
-	"github.com/vdaas/vald/internal/errgroup"
+	"github.com/vdaas/vald/internal/test/goleak"
 )
 
-func TestWithAddr(t *testing.T) {
-	t.Parallel()
+func TestWithAPIKey(t *testing.T) {
 	// Change interface type to the type of object you are testing
 	type T = interface{}
 	type args struct {
-		addr string
+		apiKey string
 	}
 	type want struct {
 		obj *T
@@ -76,7 +74,7 @@ func TestWithAddr(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
-		           addr: "",
+		           apiKey: "",
 		       },
 		       want: want {
 		           obj: new(T),
@@ -90,7 +88,7 @@ func TestWithAddr(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
-		           addr: "",
+		           apiKey: "",
 		           },
 		           want: want {
 		               obj: new(T),
@@ -103,7 +101,7 @@ func TestWithAddr(t *testing.T) {
 	for _, tc := range tests {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -117,7 +115,7 @@ func TestWithAddr(t *testing.T) {
 			       test.checkFunc = defaultCheckFunc
 			   }
 
-			   got := WithAddr(test.args.addr)
+			   got := WithAPIKey(test.args.apiKey)
 			   obj := new(T)
 			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
@@ -129,7 +127,7 @@ func TestWithAddr(t *testing.T) {
 			   if test.checkFunc == nil {
 			       test.checkFunc = defaultCheckFunc
 			   }
-			   got := WithAddr(test.args.addr)
+			   got := WithAPIKey(test.args.apiKey)
 			   obj := new(T)
 			   got(obj)
 			   if err := checkFunc(test.want, obj); err != nil {
@@ -140,12 +138,11 @@ func TestWithAddr(t *testing.T) {
 	}
 }
 
-func TestWithHost(t *testing.T) {
-	t.Parallel()
+func TestWithAudiences(t *testing.T) {
 	// Change interface type to the type of object you are testing
 	type T = interface{}
 	type args struct {
-		host string
+		audiences []string
 	}
 	type want struct {
 		obj *T
@@ -192,7 +189,7 @@ func TestWithHost(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
-		           host: "",
+		           audiences: nil,
 		       },
 		       want: want {
 		           obj: new(T),
@@ -206,7 +203,7 @@ func TestWithHost(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
-		           host: "",
+		           audiences: nil,
 		           },
 		           want: want {
 		               obj: new(T),
@@ -219,7 +216,7 @@ func TestWithHost(t *testing.T) {
 	for _, tc := range tests {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -233,7 +230,7 @@ func TestWithHost(t *testing.T) {
 			       test.checkFunc = defaultCheckFunc
 			   }
 
-			   got := WithHost(test.args.host)
+			   got := WithAudiences(test.args.audiences...)
 			   obj := new(T)
 			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
@@ -245,7 +242,7 @@ func TestWithHost(t *testing.T) {
 			   if test.checkFunc == nil {
 			       test.checkFunc = defaultCheckFunc
 			   }
-			   got := WithHost(test.args.host)
+			   got := WithAudiences(test.args.audiences...)
 			   obj := new(T)
 			   got(obj)
 			   if err := checkFunc(test.want, obj); err != nil {
@@ -256,12 +253,11 @@ func TestWithHost(t *testing.T) {
 	}
 }
 
-func TestWithPort(t *testing.T) {
-	t.Parallel()
+func TestWithCredentialsFile(t *testing.T) {
 	// Change interface type to the type of object you are testing
 	type T = interface{}
 	type args struct {
-		port int
+		path string
 	}
 	type want struct {
 		obj *T
@@ -308,7 +304,7 @@ func TestWithPort(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
-		           port: 0,
+		           path: "",
 		       },
 		       want: want {
 		           obj: new(T),
@@ -322,7 +318,7 @@ func TestWithPort(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
-		           port: 0,
+		           path: "",
 		           },
 		           want: want {
 		               obj: new(T),
@@ -335,7 +331,7 @@ func TestWithPort(t *testing.T) {
 	for _, tc := range tests {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -349,7 +345,7 @@ func TestWithPort(t *testing.T) {
 			       test.checkFunc = defaultCheckFunc
 			   }
 
-			   got := WithPort(test.args.port)
+			   got := WithCredentialsFile(test.args.path)
 			   obj := new(T)
 			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
@@ -361,7 +357,7 @@ func TestWithPort(t *testing.T) {
 			   if test.checkFunc == nil {
 			       test.checkFunc = defaultCheckFunc
 			   }
-			   got := WithPort(test.args.port)
+			   got := WithCredentialsFile(test.args.path)
 			   obj := new(T)
 			   got(obj)
 			   if err := checkFunc(test.want, obj); err != nil {
@@ -372,12 +368,11 @@ func TestWithPort(t *testing.T) {
 	}
 }
 
-func TestWithStartPort(t *testing.T) {
-	t.Parallel()
+func TestWithEndpoint(t *testing.T) {
 	// Change interface type to the type of object you are testing
 	type T = interface{}
 	type args struct {
-		port int
+		endpoint string
 	}
 	type want struct {
 		obj *T
@@ -424,7 +419,7 @@ func TestWithStartPort(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
-		           port: 0,
+		           endpoint: "",
 		       },
 		       want: want {
 		           obj: new(T),
@@ -438,7 +433,7 @@ func TestWithStartPort(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
-		           port: 0,
+		           endpoint: "",
 		           },
 		           want: want {
 		               obj: new(T),
@@ -451,7 +446,7 @@ func TestWithStartPort(t *testing.T) {
 	for _, tc := range tests {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -465,7 +460,7 @@ func TestWithStartPort(t *testing.T) {
 			       test.checkFunc = defaultCheckFunc
 			   }
 
-			   got := WithStartPort(test.args.port)
+			   got := WithEndpoint(test.args.endpoint)
 			   obj := new(T)
 			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
@@ -477,7 +472,7 @@ func TestWithStartPort(t *testing.T) {
 			   if test.checkFunc == nil {
 			       test.checkFunc = defaultCheckFunc
 			   }
-			   got := WithStartPort(test.args.port)
+			   got := WithEndpoint(test.args.endpoint)
 			   obj := new(T)
 			   got(obj)
 			   if err := checkFunc(test.want, obj); err != nil {
@@ -488,12 +483,11 @@ func TestWithStartPort(t *testing.T) {
 	}
 }
 
-func TestWithEndPort(t *testing.T) {
-	t.Parallel()
+func TestWithQuotaProject(t *testing.T) {
 	// Change interface type to the type of object you are testing
 	type T = interface{}
 	type args struct {
-		port int
+		qp string
 	}
 	type want struct {
 		obj *T
@@ -540,7 +534,7 @@ func TestWithEndPort(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
-		           port: 0,
+		           qp: "",
 		       },
 		       want: want {
 		           obj: new(T),
@@ -554,7 +548,7 @@ func TestWithEndPort(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
-		           port: 0,
+		           qp: "",
 		           },
 		           want: want {
 		               obj: new(T),
@@ -567,7 +561,7 @@ func TestWithEndPort(t *testing.T) {
 	for _, tc := range tests {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -581,7 +575,7 @@ func TestWithEndPort(t *testing.T) {
 			       test.checkFunc = defaultCheckFunc
 			   }
 
-			   got := WithEndPort(test.args.port)
+			   got := WithQuotaProject(test.args.qp)
 			   obj := new(T)
 			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
@@ -593,7 +587,7 @@ func TestWithEndPort(t *testing.T) {
 			   if test.checkFunc == nil {
 			       test.checkFunc = defaultCheckFunc
 			   }
-			   got := WithEndPort(test.args.port)
+			   got := WithQuotaProject(test.args.qp)
 			   obj := new(T)
 			   got(obj)
 			   if err := checkFunc(test.want, obj); err != nil {
@@ -604,12 +598,11 @@ func TestWithEndPort(t *testing.T) {
 	}
 }
 
-func TestWithResolveDNS(t *testing.T) {
-	t.Parallel()
+func TestWithRequestReason(t *testing.T) {
 	// Change interface type to the type of object you are testing
 	type T = interface{}
 	type args struct {
-		flg bool
+		rr string
 	}
 	type want struct {
 		obj *T
@@ -656,7 +649,7 @@ func TestWithResolveDNS(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
-		           flg: false,
+		           rr: "",
 		       },
 		       want: want {
 		           obj: new(T),
@@ -670,7 +663,7 @@ func TestWithResolveDNS(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
-		           flg: false,
+		           rr: "",
 		           },
 		           want: want {
 		               obj: new(T),
@@ -683,7 +676,7 @@ func TestWithResolveDNS(t *testing.T) {
 	for _, tc := range tests {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -697,7 +690,7 @@ func TestWithResolveDNS(t *testing.T) {
 			       test.checkFunc = defaultCheckFunc
 			   }
 
-			   got := WithResolveDNS(test.args.flg)
+			   got := WithRequestReason(test.args.rr)
 			   obj := new(T)
 			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
@@ -709,7 +702,7 @@ func TestWithResolveDNS(t *testing.T) {
 			   if test.checkFunc == nil {
 			       test.checkFunc = defaultCheckFunc
 			   }
-			   got := WithResolveDNS(test.args.flg)
+			   got := WithRequestReason(test.args.rr)
 			   obj := new(T)
 			   got(obj)
 			   if err := checkFunc(test.want, obj); err != nil {
@@ -720,12 +713,11 @@ func TestWithResolveDNS(t *testing.T) {
 	}
 }
 
-func TestWithBackoff(t *testing.T) {
-	t.Parallel()
+func TestWithScopes(t *testing.T) {
 	// Change interface type to the type of object you are testing
 	type T = interface{}
 	type args struct {
-		bo backoff.Backoff
+		scopes []string
 	}
 	type want struct {
 		obj *T
@@ -772,7 +764,7 @@ func TestWithBackoff(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
-		           bo: nil,
+		           scopes: nil,
 		       },
 		       want: want {
 		           obj: new(T),
@@ -786,7 +778,7 @@ func TestWithBackoff(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
-		           bo: nil,
+		           scopes: nil,
 		           },
 		           want: want {
 		               obj: new(T),
@@ -799,7 +791,7 @@ func TestWithBackoff(t *testing.T) {
 	for _, tc := range tests {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -813,7 +805,7 @@ func TestWithBackoff(t *testing.T) {
 			       test.checkFunc = defaultCheckFunc
 			   }
 
-			   got := WithBackoff(test.args.bo)
+			   got := WithScopes(test.args.scopes...)
 			   obj := new(T)
 			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
@@ -825,7 +817,7 @@ func TestWithBackoff(t *testing.T) {
 			   if test.checkFunc == nil {
 			       test.checkFunc = defaultCheckFunc
 			   }
-			   got := WithBackoff(test.args.bo)
+			   got := WithScopes(test.args.scopes...)
 			   obj := new(T)
 			   got(obj)
 			   if err := checkFunc(test.want, obj); err != nil {
@@ -836,12 +828,11 @@ func TestWithBackoff(t *testing.T) {
 	}
 }
 
-func TestWithSize(t *testing.T) {
-	t.Parallel()
+func TestWithUserAgent(t *testing.T) {
 	// Change interface type to the type of object you are testing
 	type T = interface{}
 	type args struct {
-		size uint64
+		ua string
 	}
 	type want struct {
 		obj *T
@@ -888,7 +879,7 @@ func TestWithSize(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
-		           size: 0,
+		           ua: "",
 		       },
 		       want: want {
 		           obj: new(T),
@@ -902,7 +893,7 @@ func TestWithSize(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
-		           size: 0,
+		           ua: "",
 		           },
 		           want: want {
 		               obj: new(T),
@@ -915,7 +906,7 @@ func TestWithSize(t *testing.T) {
 	for _, tc := range tests {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -929,7 +920,7 @@ func TestWithSize(t *testing.T) {
 			       test.checkFunc = defaultCheckFunc
 			   }
 
-			   got := WithSize(test.args.size)
+			   got := WithUserAgent(test.args.ua)
 			   obj := new(T)
 			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
@@ -941,7 +932,7 @@ func TestWithSize(t *testing.T) {
 			   if test.checkFunc == nil {
 			       test.checkFunc = defaultCheckFunc
 			   }
-			   got := WithSize(test.args.size)
+			   got := WithUserAgent(test.args.ua)
 			   obj := new(T)
 			   got(obj)
 			   if err := checkFunc(test.want, obj); err != nil {
@@ -952,12 +943,11 @@ func TestWithSize(t *testing.T) {
 	}
 }
 
-func TestWithDialOptions(t *testing.T) {
-	t.Parallel()
+func TestWithCredentialsJSON(t *testing.T) {
 	// Change interface type to the type of object you are testing
 	type T = interface{}
 	type args struct {
-		opts []DialOption
+		json string
 	}
 	type want struct {
 		obj *T
@@ -1004,7 +994,7 @@ func TestWithDialOptions(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
-		           opts: nil,
+		           json: "",
 		       },
 		       want: want {
 		           obj: new(T),
@@ -1018,7 +1008,7 @@ func TestWithDialOptions(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
-		           opts: nil,
+		           json: "",
 		           },
 		           want: want {
 		               obj: new(T),
@@ -1031,7 +1021,7 @@ func TestWithDialOptions(t *testing.T) {
 	for _, tc := range tests {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1045,7 +1035,7 @@ func TestWithDialOptions(t *testing.T) {
 			       test.checkFunc = defaultCheckFunc
 			   }
 
-			   got := WithDialOptions(test.args.opts...)
+			   got := WithCredentialsJSON(test.args.json)
 			   obj := new(T)
 			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
@@ -1057,7 +1047,7 @@ func TestWithDialOptions(t *testing.T) {
 			   if test.checkFunc == nil {
 			       test.checkFunc = defaultCheckFunc
 			   }
-			   got := WithDialOptions(test.args.opts...)
+			   got := WithCredentialsJSON(test.args.json)
 			   obj := new(T)
 			   got(obj)
 			   if err := checkFunc(test.want, obj); err != nil {
@@ -1068,12 +1058,11 @@ func TestWithDialOptions(t *testing.T) {
 	}
 }
 
-func TestWithDialTimeout(t *testing.T) {
-	t.Parallel()
+func TestWithTelemetry(t *testing.T) {
 	// Change interface type to the type of object you are testing
 	type T = interface{}
 	type args struct {
-		dur string
+		enabled bool
 	}
 	type want struct {
 		obj *T
@@ -1120,7 +1109,7 @@ func TestWithDialTimeout(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
-		           dur: "",
+		           enabled: false,
 		       },
 		       want: want {
 		           obj: new(T),
@@ -1134,7 +1123,7 @@ func TestWithDialTimeout(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
-		           dur: "",
+		           enabled: false,
 		           },
 		           want: want {
 		               obj: new(T),
@@ -1147,7 +1136,7 @@ func TestWithDialTimeout(t *testing.T) {
 	for _, tc := range tests {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1161,7 +1150,7 @@ func TestWithDialTimeout(t *testing.T) {
 			       test.checkFunc = defaultCheckFunc
 			   }
 
-			   got := WithDialTimeout(test.args.dur)
+			   got := WithTelemetry(test.args.enabled)
 			   obj := new(T)
 			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
@@ -1173,7 +1162,7 @@ func TestWithDialTimeout(t *testing.T) {
 			   if test.checkFunc == nil {
 			       test.checkFunc = defaultCheckFunc
 			   }
-			   got := WithDialTimeout(test.args.dur)
+			   got := WithTelemetry(test.args.enabled)
 			   obj := new(T)
 			   got(obj)
 			   if err := checkFunc(test.want, obj); err != nil {
@@ -1184,12 +1173,11 @@ func TestWithDialTimeout(t *testing.T) {
 	}
 }
 
-func TestWithOldConnCloseDuration(t *testing.T) {
-	t.Parallel()
+func TestWithAuthentication(t *testing.T) {
 	// Change interface type to the type of object you are testing
 	type T = interface{}
 	type args struct {
-		dur string
+		enabled bool
 	}
 	type want struct {
 		obj *T
@@ -1236,7 +1224,7 @@ func TestWithOldConnCloseDuration(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
-		           dur: "",
+		           enabled: false,
 		       },
 		       want: want {
 		           obj: new(T),
@@ -1250,7 +1238,7 @@ func TestWithOldConnCloseDuration(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
-		           dur: "",
+		           enabled: false,
 		           },
 		           want: want {
 		               obj: new(T),
@@ -1263,7 +1251,7 @@ func TestWithOldConnCloseDuration(t *testing.T) {
 	for _, tc := range tests {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
+			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1277,7 +1265,7 @@ func TestWithOldConnCloseDuration(t *testing.T) {
 			       test.checkFunc = defaultCheckFunc
 			   }
 
-			   got := WithOldConnCloseDuration(test.args.dur)
+			   got := WithAuthentication(test.args.enabled)
 			   obj := new(T)
 			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 			       tt.Errorf("error = %v", err)
@@ -1289,125 +1277,10 @@ func TestWithOldConnCloseDuration(t *testing.T) {
 			   if test.checkFunc == nil {
 			       test.checkFunc = defaultCheckFunc
 			   }
-			   got := WithOldConnCloseDuration(test.args.dur)
+			   got := WithAuthentication(test.args.enabled)
 			   obj := new(T)
 			   got(obj)
 			   if err := checkFunc(test.want, obj); err != nil {
-			       tt.Errorf("error = %v", err)
-			   }
-			*/
-		})
-	}
-}
-
-func TestWithErrGroup(t *testing.T) {
-	// Change interface type to the type of object you are testing
-	type T = interface{}
-	type args struct {
-		eg errgroup.Group
-	}
-	type want struct {
-		obj *T
-		// Uncomment this line if the option returns an error, otherwise delete it
-		// err error
-	}
-	type test struct {
-		name string
-		args args
-		want want
-		// Use the first line if the option returns an error. otherwise use the second line
-		// checkFunc  func(want, *T, error) error
-		// checkFunc  func(want, *T) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-
-	// Uncomment this block if the option returns an error, otherwise delete it
-	/*
-	   defaultCheckFunc := func(w want, obj *T, err error) error {
-	       if !errors.Is(err, w.err) {
-	           return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-	       }
-	       if !reflect.DeepEqual(obj, w.obj) {
-	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
-	       }
-	       return nil
-	   }
-	*/
-
-	// Uncomment this block if the option do not returns an error, otherwise delete it
-	/*
-	   defaultCheckFunc := func(w want, obj *T) error {
-	       if !reflect.DeepEqual(obj, w.obj) {
-	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
-	       }
-	       return nil
-	   }
-	*/
-
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           eg: nil,
-		       },
-		       want: want {
-		           obj: new(T),
-		       },
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           eg: nil,
-		           },
-		           want: want {
-		               obj: new(T),
-		           },
-		       }
-		   }(),
-		*/
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-
-			// Uncomment this block if the option returns an error, otherwise delete it
-			/*
-			   if test.checkFunc == nil {
-			       test.checkFunc = defaultCheckFunc
-			   }
-
-			   got := WithErrGroup(test.args.eg)
-			   obj := new(T)
-			   if err := test.checkFunc(test.want, obj, got(obj)); err != nil {
-			       tt.Errorf("error = %v", err)
-			   }
-			*/
-
-			// Uncomment this block if the option do not return an error, otherwise delete it
-			/*
-			   if test.checkFunc == nil {
-			       test.checkFunc = defaultCheckFunc
-			   }
-			   got := WithErrGroup(test.args.eg)
-			   obj := new(T)
-			   got(obj)
-			   if err := test.checkFunc(test.want, obj); err != nil {
 			       tt.Errorf("error = %v", err)
 			   }
 			*/

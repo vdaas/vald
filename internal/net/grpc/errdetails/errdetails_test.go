@@ -27,6 +27,7 @@ import (
 )
 
 func Test_decodeDetails(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		objs []interface{}
 	}
@@ -47,6 +48,7 @@ func Test_decodeDetails(t *testing.T) {
 }
 
 func TestSerialize(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		objs []interface{}
 	}
@@ -67,6 +69,7 @@ func TestSerialize(t *testing.T) {
 }
 
 func TestAnyToErrorDetail(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		a *types.Any
 	}
@@ -87,6 +90,7 @@ func TestAnyToErrorDetail(t *testing.T) {
 }
 
 func TestDebugInfoFromInfoDetail(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		v *info.Detail
 	}
