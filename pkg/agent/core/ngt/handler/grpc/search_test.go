@@ -18,6 +18,7 @@ import (
 	"math"
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
@@ -30,7 +31,6 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/test/data/request"
 	"github.com/vdaas/vald/internal/test/data/vector"
-	"github.com/vdaas/vald/internal/test/goleak"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/model"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/service"
 )
@@ -38,11 +38,7 @@ import (
 func Test_server_Search(t *testing.T) {
 	t.Parallel()
 
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
 	type args struct {
-		ctx       context.Context
 		insertNum int
 		req       *payload.Search_Request
 	}
@@ -64,7 +60,7 @@ func Test_server_Search(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, *payload.Search_Response, error) error
-		beforeFunc func(fields, args) (Server, error)
+		beforeFunc func(context.Context, fields, args) (Server, error)
 		afterFunc  func(args)
 	}
 
@@ -75,8 +71,8 @@ func Test_server_Search(t *testing.T) {
 	defaultInsertConfig := &payload.Insert_Config{
 		SkipStrictExistCheck: true,
 	}
-	defaultBeforeFunc := func(f fields, a args) (Server, error) {
-		return buildIndex(a.ctx, f.objectType, f.distribution, a.insertNum, defaultInsertConfig, f.ngtCfg, f.ngtOpts, nil, f.overwriteVec)
+	defaultBeforeFunc := func(ctx context.Context, f fields, a args) (Server, error) {
+		return buildIndex(ctx, f.objectType, f.distribution, a.insertNum, defaultInsertConfig, f.ngtCfg, f.ngtOpts, nil, f.overwriteVec)
 	}
 	defaultCheckFunc := func(w want, gotRes *payload.Search_Response, err error) error {
 		if err != nil {
@@ -114,7 +110,7 @@ func Test_server_Search(t *testing.T) {
 		Num:     10,
 		Radius:  -1,
 		Epsilon: 0.1,
-		Timeout: 1000000000,
+		Timeout: int64(time.Second),
 	}
 	genSameVecs := func(ot request.ObjectType, n int, dim int) [][]float32 {
 		var vecs [][]float32
@@ -179,7 +175,6 @@ func Test_server_Search(t *testing.T) {
 		{
 			name: "Equivalence Class Testing case 1.1: success search vector (type: uint8)",
 			args: args{
-				ctx:       ctx,
 				insertNum: 1000,
 				req: &payload.Search_Request{
 					Vector: vector.ConvertVectorsUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, defaultDimensionSize))[0],
@@ -198,7 +193,6 @@ func Test_server_Search(t *testing.T) {
 		{
 			name: "Equivalence Class Testing case 1.2: success search vector (type: float32)",
 			args: args{
-				ctx:       ctx,
 				insertNum: 1000,
 				req: &payload.Search_Request{
 					Vector: vector.GaussianDistributedFloat32VectorGenerator(1, defaultDimensionSize)[0],
@@ -217,7 +211,6 @@ func Test_server_Search(t *testing.T) {
 		{
 			name: "Equivalence Class Testing case 2.1: fail search vector with different dimension (type: uint8)",
 			args: args{
-				ctx:       ctx,
 				insertNum: 1000,
 				req: &payload.Search_Request{
 					Vector: vector.ConvertVectorsUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, defaultDimensionSize+1))[0],
@@ -237,7 +230,6 @@ func Test_server_Search(t *testing.T) {
 		{
 			name: "Equivalence Class Testing case 2.2: fail search vector with different dimension (type: float32)",
 			args: args{
-				ctx:       ctx,
 				insertNum: 1000,
 				req: &payload.Search_Request{
 					Vector: vector.GaussianDistributedFloat32VectorGenerator(1, defaultDimensionSize+1)[0],
@@ -259,7 +251,6 @@ func Test_server_Search(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 1.1: success search with 0 value (min value) vector (type: uint8)",
 			args: args{
-				ctx:       ctx,
 				insertNum: 1000,
 				req: &payload.Search_Request{
 					Vector: vector.GenSameValueVec(defaultDimensionSize, float32(uint8(0))),
@@ -278,7 +269,6 @@ func Test_server_Search(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 1.2: success search with +0 value vector (type: float32)",
 			args: args{
-				ctx:       ctx,
 				insertNum: 1000,
 				req: &payload.Search_Request{
 					Vector: vector.GenSameValueVec(defaultDimensionSize, +0.0),
@@ -297,7 +287,6 @@ func Test_server_Search(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 1.3: success search with -0 value vector (type: float32)",
 			args: args{
-				ctx:       ctx,
 				insertNum: 1000,
 				req: &payload.Search_Request{
 					Vector: vector.GenSameValueVec(defaultDimensionSize, float32(math.Copysign(0, -1.0))),
@@ -316,7 +305,6 @@ func Test_server_Search(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 2.1: success search with max value vector (type: uint8)",
 			args: args{
-				ctx:       ctx,
 				insertNum: 1000,
 				req: &payload.Search_Request{
 					Vector: vector.GenSameValueVec(defaultDimensionSize, float32(math.MaxUint8)),
@@ -335,7 +323,6 @@ func Test_server_Search(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 2.2: success search with max value vector (type: float32)",
 			args: args{
-				ctx:       ctx,
 				insertNum: 1000,
 				req: &payload.Search_Request{
 					Vector: vector.GenSameValueVec(defaultDimensionSize, math.MaxFloat32),
@@ -355,7 +342,6 @@ func Test_server_Search(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 3.1: success search with min value vector (type: float32)",
 			args: args{
-				ctx:       ctx,
 				insertNum: 1000,
 				req: &payload.Search_Request{
 					Vector: vector.GenSameValueVec(defaultDimensionSize, -math.MaxFloat32),
@@ -375,7 +361,6 @@ func Test_server_Search(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 4.1: fail search with NaN value vector (type: float32)",
 			args: args{
-				ctx:       ctx,
 				insertNum: 1000,
 				req: &payload.Search_Request{
 					Vector: vector.GenSameValueVec(defaultDimensionSize, float32(math.NaN())),
@@ -395,7 +380,6 @@ func Test_server_Search(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 5.1: fail search with Inf value vector (type: float32)",
 			args: args{
-				ctx:       ctx,
 				insertNum: 1000,
 				req: &payload.Search_Request{
 					Vector: vector.GenSameValueVec(defaultDimensionSize, float32(math.Inf(+1.0))),
@@ -415,7 +399,6 @@ func Test_server_Search(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 6.1: fail search with -Inf value vector (type: float32)",
 			args: args{
-				ctx:       ctx,
 				insertNum: 1000,
 				req: &payload.Search_Request{
 					Vector: vector.GenSameValueVec(defaultDimensionSize, float32(math.Inf(-1.0))),
@@ -435,7 +418,6 @@ func Test_server_Search(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 7.1: fail search with 0 length vector (type: uint8)",
 			args: args{
-				ctx:       ctx,
 				insertNum: 1000,
 				req: &payload.Search_Request{
 					Vector: []float32{},
@@ -455,7 +437,6 @@ func Test_server_Search(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 7.2: fail search with 0 length vector (type: float32)",
 			args: args{
-				ctx:       ctx,
 				insertNum: 1000,
 				req: &payload.Search_Request{
 					Vector: []float32{},
@@ -475,7 +456,6 @@ func Test_server_Search(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 8.1: fail search with max dimension vector (type: uint8)",
 			args: args{
-				ctx:       ctx,
 				insertNum: 1000,
 				req: &payload.Search_Request{
 					Vector: vector.ConvertVectorsUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, math.MaxInt32>>7))[0],
@@ -495,7 +475,6 @@ func Test_server_Search(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 8.2: fail search with max dimension vector (type: float32)",
 			args: args{
-				ctx:       ctx,
 				insertNum: 1000,
 				req: &payload.Search_Request{
 					Vector: vector.GaussianDistributedFloat32VectorGenerator(1, math.MaxInt32>>7)[0],
@@ -515,7 +494,6 @@ func Test_server_Search(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 9.1: fail search with nil vector (type: uint8)",
 			args: args{
-				ctx:       ctx,
 				insertNum: 1000,
 				req: &payload.Search_Request{
 					Vector: nil,
@@ -535,7 +513,6 @@ func Test_server_Search(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 9.2: fail search with nil vector (type: float32)",
 			args: args{
-				ctx:       ctx,
 				insertNum: 1000,
 				req: &payload.Search_Request{
 					Vector: nil,
@@ -557,7 +534,6 @@ func Test_server_Search(t *testing.T) {
 		{
 			name: "Decision Table Testing case 1.1: success search with Search_Config.Num=10 from 5 different vectors (type: uint8)",
 			args: args{
-				ctx:       ctx,
 				insertNum: 5,
 				req: &payload.Search_Request{
 					Vector: vector.ConvertVectorsUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, defaultDimensionSize))[0],
@@ -576,7 +552,6 @@ func Test_server_Search(t *testing.T) {
 		{
 			name: "Decision Table Testing case 1.2: success search with Search_Config.Num=10 from 5 different vectors (type: float32)",
 			args: args{
-				ctx:       ctx,
 				insertNum: 5,
 				req: &payload.Search_Request{
 					Vector: vector.GaussianDistributedFloat32VectorGenerator(1, defaultDimensionSize)[0],
@@ -595,7 +570,6 @@ func Test_server_Search(t *testing.T) {
 		{
 			name: "Decision Table Testing case 2.1: success search with Search_Config.Num=10 from 10 different vectors (type: uint8)",
 			args: args{
-				ctx:       ctx,
 				insertNum: 10,
 				req: &payload.Search_Request{
 					Vector: vector.ConvertVectorsUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, defaultDimensionSize))[0],
@@ -614,7 +588,6 @@ func Test_server_Search(t *testing.T) {
 		{
 			name: "Decision Table Testing case 2.2: success search with Search_Config.Num=10 from 10 different vectors (type: float32)",
 			args: args{
-				ctx:       ctx,
 				insertNum: 10,
 				req: &payload.Search_Request{
 					Vector: vector.GaussianDistributedFloat32VectorGenerator(1, defaultDimensionSize)[0],
@@ -633,7 +606,6 @@ func Test_server_Search(t *testing.T) {
 		{
 			name: "Decision Table Testing case 3.1: success search with Search_Config.Num=10 from 20 different vectors (type: uint8)",
 			args: args{
-				ctx:       ctx,
 				insertNum: 20,
 				req: &payload.Search_Request{
 					Vector: vector.ConvertVectorsUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, defaultDimensionSize))[0],
@@ -652,7 +624,6 @@ func Test_server_Search(t *testing.T) {
 		{
 			name: "Decision Table Testing case 3.2: success search with Search_Config.Num=10 from 20 different vectors (type: float32)",
 			args: args{
-				ctx:       ctx,
 				insertNum: 20,
 				req: &payload.Search_Request{
 					Vector: vector.GaussianDistributedFloat32VectorGenerator(1, defaultDimensionSize)[0],
@@ -671,7 +642,6 @@ func Test_server_Search(t *testing.T) {
 		{
 			name: "Decision Table Testing case 4.1: success search with Search_Config.Num=10 from 5 same vectors (type: uint8)",
 			args: args{
-				ctx:       ctx,
 				insertNum: 5,
 				req: &payload.Search_Request{
 					Vector: vector.ConvertVectorsUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, defaultDimensionSize))[0],
@@ -691,7 +661,6 @@ func Test_server_Search(t *testing.T) {
 		{
 			name: "Decision Table Testing case 4.2: success search with Search_Config.Num=10 from 5 same vectors (type: float32)",
 			args: args{
-				ctx:       ctx,
 				insertNum: 5,
 				req: &payload.Search_Request{
 					Vector: vector.GaussianDistributedFloat32VectorGenerator(1, defaultDimensionSize)[0],
@@ -711,7 +680,6 @@ func Test_server_Search(t *testing.T) {
 		{
 			name: "Decision Table Testing case 5.1: success search with Search_Config.Num=10 from 10 same vectors (type: uint8)",
 			args: args{
-				ctx:       ctx,
 				insertNum: 10,
 				req: &payload.Search_Request{
 					Vector: vector.ConvertVectorsUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, defaultDimensionSize))[0],
@@ -731,7 +699,6 @@ func Test_server_Search(t *testing.T) {
 		{
 			name: "Decision Table Testing case 5.2: success search with Search_Config.Num=10 from 10 same vectors (type: float32)",
 			args: args{
-				ctx:       ctx,
 				insertNum: 10,
 				req: &payload.Search_Request{
 					Vector: vector.GaussianDistributedFloat32VectorGenerator(1, defaultDimensionSize)[0],
@@ -751,7 +718,6 @@ func Test_server_Search(t *testing.T) {
 		{
 			name: "Decision Table Testing case 6.1: success search with Search_Config.Num=10 from 20 same vectors (type: uint8)",
 			args: args{
-				ctx:       ctx,
 				insertNum: 20,
 				req: &payload.Search_Request{
 					Vector: vector.ConvertVectorsUint8ToFloat32(vector.GaussianDistributedUint8VectorGenerator(1, defaultDimensionSize))[0],
@@ -771,7 +737,6 @@ func Test_server_Search(t *testing.T) {
 		{
 			name: "Decision Table Testing case 6.2: success search with Search_Config.Num=10 from 20 same vectors (type: float32)",
 			args: args{
-				ctx:       ctx,
 				insertNum: 20,
 				req: &payload.Search_Request{
 					Vector: vector.GaussianDistributedFloat32VectorGenerator(1, defaultDimensionSize)[0],
@@ -794,11 +759,14 @@ func Test_server_Search(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+
+			ctx, cancel := context.WithCancel(context.Background())
+			defer cancel()
+
 			if test.beforeFunc == nil {
 				test.beforeFunc = defaultBeforeFunc
 			}
-			s, err := test.beforeFunc(test.fields, test.args)
+			s, err := test.beforeFunc(ctx, test.fields, test.args)
 			if err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -1148,7 +1116,6 @@ func Test_server_SearchByID(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc == nil {
 				test.beforeFunc = defaultBeforeFunc
 			}
@@ -1237,7 +1204,6 @@ func Test_toSearchResponse(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1333,7 +1299,6 @@ func Test_server_StreamSearch(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1436,7 +1401,6 @@ func Test_server_StreamSearchByID(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1546,7 +1510,6 @@ func Test_server_MultiSearch(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1656,7 +1619,6 @@ func Test_server_MultiSearchByID(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}

@@ -23,11 +23,11 @@ import (
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
-	"github.com/vdaas/vald/internal/test/goleak"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/service"
 )
 
 func Test_server_LinearSearch(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 		req *payload.Search_Request
@@ -115,7 +115,6 @@ func Test_server_LinearSearch(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -144,6 +143,7 @@ func Test_server_LinearSearch(t *testing.T) {
 }
 
 func Test_server_LinearSearchByID(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 		req *payload.Search_IDRequest
@@ -231,7 +231,6 @@ func Test_server_LinearSearchByID(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -260,6 +259,7 @@ func Test_server_LinearSearchByID(t *testing.T) {
 }
 
 func Test_server_StreamLinearSearch(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		stream vald.Search_StreamLinearSearchServer
 	}
@@ -340,7 +340,6 @@ func Test_server_StreamLinearSearch(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -369,6 +368,7 @@ func Test_server_StreamLinearSearch(t *testing.T) {
 }
 
 func Test_server_StreamLinearSearchByID(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		stream vald.Search_StreamLinearSearchByIDServer
 	}
@@ -449,7 +449,6 @@ func Test_server_StreamLinearSearchByID(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -478,6 +477,7 @@ func Test_server_StreamLinearSearchByID(t *testing.T) {
 }
 
 func Test_server_MultiLinearSearch(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx  context.Context
 		reqs *payload.Search_MultiRequest
@@ -565,7 +565,6 @@ func Test_server_MultiLinearSearch(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -594,6 +593,7 @@ func Test_server_MultiLinearSearch(t *testing.T) {
 }
 
 func Test_server_MultiLinearSearchByID(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx  context.Context
 		reqs *payload.Search_MultiIDRequest
@@ -681,7 +681,6 @@ func Test_server_MultiLinearSearchByID(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}

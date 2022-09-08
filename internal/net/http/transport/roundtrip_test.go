@@ -22,7 +22,6 @@ import (
 	"context"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"reflect"
 	"testing"
 
@@ -36,10 +35,11 @@ import (
 
 func TestMain(m *testing.M) {
 	log.Init(log.WithLoggerType(logger.NOP.String()))
-	os.Exit(m.Run())
+	goleak.VerifyTestMain(m)
 }
 
 func TestNewExpBackoff(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		opts []Option
 	}
@@ -88,9 +88,10 @@ func TestNewExpBackoff(t *testing.T) {
 		}(),
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			tt.Parallel()
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -111,6 +112,7 @@ func TestNewExpBackoff(t *testing.T) {
 }
 
 func Test_ert_RoundTrip(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		req *http.Request
 	}
@@ -301,9 +303,10 @@ func Test_ert_RoundTrip(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			tt.Parallel()
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -328,6 +331,7 @@ func Test_ert_RoundTrip(t *testing.T) {
 }
 
 func Test_ert_roundTrip(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		req *http.Request
 	}
@@ -434,9 +438,10 @@ func Test_ert_roundTrip(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			tt.Parallel()
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -461,6 +466,7 @@ func Test_ert_roundTrip(t *testing.T) {
 }
 
 func Test_retryableStatusCode(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		status int
 	}
@@ -502,9 +508,10 @@ func Test_retryableStatusCode(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			tt.Parallel()
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -525,6 +532,7 @@ func Test_retryableStatusCode(t *testing.T) {
 }
 
 func Test_closeBody(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		rc io.ReadCloser
 	}
@@ -558,9 +566,10 @@ func Test_closeBody(t *testing.T) {
 		}(),
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			tt.Parallel()
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}

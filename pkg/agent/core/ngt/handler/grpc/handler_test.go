@@ -19,7 +19,6 @@ package grpc
 
 import (
 	"context"
-	"os"
 	"reflect"
 	"testing"
 
@@ -39,7 +38,7 @@ import (
 func TestMain(m *testing.M) {
 	log.Init(log.WithLoggerType(logger.NOP.String()))
 	info.Init("")
-	os.Exit(m.Run())
+	goleak.VerifyTestMain(m)
 }
 
 func buildIndex(ctx context.Context, t request.ObjectType, dist vector.Distribution, num int, insertCfg *payload.Insert_Config,
@@ -145,7 +144,6 @@ func TestNew(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -241,7 +239,6 @@ func Test_server_newLocations(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -344,7 +341,6 @@ func Test_server_newLocation(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}

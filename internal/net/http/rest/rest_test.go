@@ -19,9 +19,15 @@ import (
 	"testing"
 
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/test/goleak"
 )
 
+func TestMain(m *testing.M) {
+	goleak.VerifyTestMain(m)
+}
+
 func TestHandlerToRestFunc(t *testing.T) {
+	t.Parallel()
 	type test struct {
 		name      string
 		hfn       http.HandlerFunc
@@ -59,10 +65,12 @@ func TestHandlerToRestFunc(t *testing.T) {
 		}(),
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			fn := HandlerToRestFunc(tt.hfn)
-			if err := tt.checkFunc(fn); err != nil {
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			fn := HandlerToRestFunc(test.hfn)
+			if err := test.checkFunc(fn); err != nil {
 				t.Error(err)
 			}
 		})

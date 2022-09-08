@@ -96,7 +96,8 @@ func TestString(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc()
@@ -165,7 +166,8 @@ func TestGet(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			if test.beforeFunc != nil {
 				test.beforeFunc()
@@ -333,7 +335,8 @@ func TestInit(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -542,7 +545,8 @@ func TestNew(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
@@ -645,7 +649,8 @@ func Test_info_String(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
@@ -752,7 +757,8 @@ func TestDetail_String(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
@@ -1115,7 +1121,8 @@ func Test_info_Get(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
@@ -1464,7 +1471,8 @@ func Test_info_prepare(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
@@ -1531,7 +1539,8 @@ func TestStackTrace_String(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
@@ -1552,6 +1561,98 @@ func TestStackTrace_String(t *testing.T) {
 			}
 
 			got := s.String()
+			if err := checkFunc(test.want, got); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func Test_info_get(t *testing.T) {
+	type fields struct {
+		baseURL     string
+		detail      Detail
+		prepOnce    sync.Once
+		rtCaller    func(skip int) (pc uintptr, file string, line int, ok bool)
+		rtFuncForPC func(pc uintptr) *runtime.Func
+	}
+	type want struct {
+		want Detail
+	}
+	type test struct {
+		name       string
+		fields     fields
+		want       want
+		checkFunc  func(want, Detail) error
+		beforeFunc func()
+		afterFunc  func()
+	}
+	defaultCheckFunc := func(w want, got Detail) error {
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       fields: fields {
+		           baseURL: "",
+		           detail: Detail{},
+		           prepOnce: sync.Once{},
+		           rtCaller: nil,
+		           rtFuncForPC: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           fields: fields {
+		           baseURL: "",
+		           detail: Detail{},
+		           prepOnce: sync.Once{},
+		           rtCaller: nil,
+		           rtFuncForPC: nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc()
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc()
+			}
+			checkFunc := test.checkFunc
+			if test.checkFunc == nil {
+				checkFunc = defaultCheckFunc
+			}
+			i := info{
+				baseURL:     test.fields.baseURL,
+				detail:      test.fields.detail,
+				prepOnce:    test.fields.prepOnce,
+				rtCaller:    test.fields.rtCaller,
+				rtFuncForPC: test.fields.rtFuncForPC,
+			}
+
+			got := i.get()
 			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}

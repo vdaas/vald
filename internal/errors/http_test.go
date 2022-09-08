@@ -45,7 +45,8 @@ func TestErrInvalidAPIConfig(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			if test.beforeFunc != nil {
 				test.beforeFunc()
@@ -92,7 +93,8 @@ func TestErrInvalidRequest(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			if test.beforeFunc != nil {
 				test.beforeFunc()
@@ -155,7 +157,8 @@ func TestErrHandler(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -261,7 +264,8 @@ func TestErrHandlerTimeout(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -324,7 +328,8 @@ func TestErrRequestBodyCloseAndFlush(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -387,7 +392,8 @@ func TestErrRequestBodyClose(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -450,7 +456,8 @@ func TestErrRequestBodyFlush(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -497,7 +504,8 @@ func TestErrTransportRetryable(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			if test.beforeFunc != nil {
 				test.beforeFunc()

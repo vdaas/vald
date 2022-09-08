@@ -55,7 +55,9 @@ func TestWithErrGroup(t *testing.T) {
 	}
 	tests := []test{
 		func() test {
-			eg, _ := errgroup.New(context.Background())
+			ctx, cancel := context.WithCancel(context.Background())
+			eg, _ := errgroup.New(ctx)
+
 			return test{
 				name: "set success when eg is not nil",
 				args: args{
@@ -65,6 +67,9 @@ func TestWithErrGroup(t *testing.T) {
 					obj: &T{
 						eg: eg,
 					},
+				},
+				afterFunc: func(a args) {
+					cancel()
 				},
 			}
 		}(),

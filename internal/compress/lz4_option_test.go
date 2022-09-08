@@ -22,7 +22,6 @@ import (
 	"testing"
 
 	"github.com/vdaas/vald/internal/errors"
-	"github.com/vdaas/vald/internal/test/goleak"
 )
 
 func TestWithLZ4Gob(t *testing.T) {
@@ -70,9 +69,9 @@ func TestWithLZ4Gob(t *testing.T) {
 		}(),
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -151,9 +150,10 @@ func TestWithLZ4CompressionLevel(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
+			tt.Parallel()
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
