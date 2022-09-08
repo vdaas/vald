@@ -20,9 +20,15 @@ import (
 
 	"github.com/vdaas/vald/internal/encoding/json"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/test/goleak"
 )
 
+func TestMain(m *testing.M) {
+	goleak.VerifyTestMain(m)
+}
+
 func TestRequest(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		values map[string]interface{}
 		body   map[string]interface{}
@@ -90,10 +96,12 @@ func TestRequest(t *testing.T) {
 		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			res, err := Request(tt.args.values, tt.args.body, tt.args.r)
-			if err := tt.checkFunc(res, err); err != nil {
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			res, err := Request(test.args.values, test.args.body, test.args.r)
+			if err := test.checkFunc(res, err); err != nil {
 				t.Error(err)
 			}
 		})

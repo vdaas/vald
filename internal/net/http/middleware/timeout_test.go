@@ -14,25 +14,26 @@
 package middleware
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
+	"strings"
+	"sync/atomic"
 	"testing"
 	"time"
 
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/http/rest"
-	"github.com/vdaas/vald/internal/strings"
-	"github.com/vdaas/vald/internal/test/goleak"
 )
 
 func TestNewTimeout(t *testing.T) {
+	t.Parallel()
 	type test struct {
 		name string
 		want Wrapper
 	}
-
 	tests := []test{
 		{
 			name: "create object",
@@ -42,41 +43,39 @@ func TestNewTimeout(t *testing.T) {
 			},
 		},
 	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
 			got := NewTimeout()
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("not equals. want: %v, got: %v", tt.want, got)
+			if !reflect.DeepEqual(got, test.want) {
+				t.Errorf("not equals. want: %v, got: %v", test.want, got)
 			}
 		})
 	}
 }
 
-func TestWrap(t *testing.T) {
+func Test_timeout_Wrap(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		h rest.Func
 		w http.ResponseWriter
 		r *http.Request
 	}
-
 	type field struct {
 		dur time.Duration
-		eg  errgroup.Group
 	}
-
 	type test struct {
 		name      string
 		args      args
 		field     field
 		checkFunc func(code int, err error) error
 	}
-
 	tests := []test{
 		func() test {
-			var cnt int
+			var cnt uint64 = 0
 			h := func(w http.ResponseWriter, req *http.Request) (code int, err error) {
-				cnt++
+				atomic.AddUint64(&cnt, 1)
 				return http.StatusOK, nil
 			}
 
@@ -88,32 +87,27 @@ func TestWrap(t *testing.T) {
 					r: new(http.Request),
 				},
 				field: field{
-					dur: 2 * time.Second,
-					eg:  errgroup.Get(),
+					dur: 5 * time.Second,
 				},
 				checkFunc: func(code int, err error) error {
 					if err != nil {
 						return errors.Errorf("err is not nil. err: %v", err)
 					}
-
 					if code != http.StatusOK {
 						return errors.Errorf("code is not equals. want: %v, got: %v", http.StatusOK, code)
 					}
-
-					if cnt != 1 {
+					if atomic.LoadUint64(&cnt) != 1 {
 						return errors.Errorf("called cnt is equals. want: %v, got: %v", 1, cnt)
 					}
-
 					return nil
 				},
 			}
 		}(),
 		func() test {
-			wantErr := errors.New("faild")
-
-			var cnt int
+			wantErr := errors.New("failed")
+			var cnt uint64 = 0
 			h := func(w http.ResponseWriter, req *http.Request) (code int, err error) {
-				cnt++
+				atomic.AddUint64(&cnt, 1)
 				return http.StatusInternalServerError, wantErr
 			}
 
@@ -126,159 +120,62 @@ func TestWrap(t *testing.T) {
 				},
 				field: field{
 					dur: 2 * time.Second,
-					eg:  errgroup.Get(),
 				},
 				checkFunc: func(code int, err error) error {
 					if !errors.Is(err, wantErr) {
 						return errors.Errorf("err not equals. want: %v, got: %v", wantErr, err)
 					}
-
 					if code != http.StatusInternalServerError {
 						return errors.Errorf("code is not equals. want: %v, got: %v", http.StatusInternalServerError, code)
 					}
-
-					if cnt != 1 {
+					if atomic.LoadUint64(&cnt) != 1 {
 						return errors.Errorf("called cnt is equals. want: %v, got: %v", 1, cnt)
 					}
-
 					return nil
 				},
 			}
 		}(),
-		func() test {
-			h := func(w http.ResponseWriter, req *http.Request) (code int, err error) {
-				time.Sleep(10 * time.Second)
-				return http.StatusOK, nil
-			}
-
-			return test{
-				name: "timeout processing of internally called handler",
-				args: args{
-					h: h,
-					w: new(httptest.ResponseRecorder),
-					r: new(http.Request),
+		{
+			name: "timeout processing of internally called handler",
+			args: args{
+				h: func(w http.ResponseWriter, req *http.Request) (code int, err error) {
+					return http.StatusOK, nil
 				},
-				field: field{
-					dur: 1 * time.Second,
-					eg:  errgroup.Get(),
-				},
-				checkFunc: func(code int, err error) error {
-					if err == nil {
-						return errors.Errorf("err is nil")
-					}
+				w: new(httptest.ResponseRecorder),
+				r: new(http.Request),
+			},
+			field: field{
+				dur: 1, // set to extermemly small value to let it timeout
+			},
+			checkFunc: func(code int, err error) error {
+				if err == nil {
+					return errors.Errorf("err is nil")
+				}
+				if code != http.StatusRequestTimeout {
+					return errors.Errorf("code is not equals. want: %v, got: %v", http.StatusRequestTimeout, code)
+				}
+				if !strings.Contains(err.Error(), "handler timeout") {
+					return errors.Errorf("err string no contains word of `handler timeout`")
+				}
 
-					if code != http.StatusRequestTimeout {
-						return errors.Errorf("code is not equals. want: %v, got: %v", http.StatusRequestTimeout, code)
-					}
-
-					if !strings.Contains(err.Error(), "handler timeout") {
-						return errors.Errorf("err string no contains word of `handler timeout`")
-					}
-
-					return nil
-				},
-			}
-		}(),
+				return nil
+			},
+		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			to := &timeout{
-				dur: tt.field.dur,
-				eg:  tt.field.eg,
-			}
-
-			code, err := to.Wrap(tt.args.h)(tt.args.w, tt.args.r)
-			if err := tt.checkFunc(code, err); err != nil {
-				t.Error(err)
-			}
-		})
-	}
-}
-
-func Test_timeout_Wrap(t *testing.T) {
-	type args struct {
-		h rest.Func
-	}
-	type fields struct {
-		dur time.Duration
-		eg  errgroup.Group
-	}
-	type want struct {
-		want rest.Func
-	}
-	type test struct {
-		name       string
-		args       args
-		fields     fields
-		want       want
-		checkFunc  func(want, rest.Func) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-	defaultCheckFunc := func(w want, got rest.Func) error {
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           h: nil,
-		       },
-		       fields: fields {
-		           dur: nil,
-		           eg: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           h: nil,
-		           },
-		           fields: fields {
-		           dur: nil,
-		           eg: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(t)
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-			checkFunc := test.checkFunc
-			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
-			}
-			t := &timeout{
-				dur: test.fields.dur,
-				eg:  test.fields.eg,
-			}
+			tt.Parallel()
 
-			got := t.Wrap(test.args.h)
-			if err := checkFunc(test.want, got); err != nil {
-				tt.Errorf("error = %v", err)
+			eg, _ := errgroup.New(context.Background())
+			to := &timeout{
+				dur: test.field.dur,
+				eg:  eg,
+			}
+			code, err := to.Wrap(test.args.h)(test.args.w, test.args.r)
+			if err := test.checkFunc(code, err); err != nil {
+				t.Error(err)
 			}
 		})
 	}

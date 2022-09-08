@@ -565,14 +565,14 @@ func Test_backoff_Do(t *testing.T) {
 				},
 				fields: fields{
 					wg:                    sync.WaitGroup{},
-					backoffFactor:         0,
-					initialDuration:       0,
+					backoffFactor:         1.1,
+					initialDuration:       float64(time.Millisecond * 5),
 					jittedInitialDuration: 0,
 					jitterLimit:           0,
 					durationLimit:         10,
 					maxDuration:           0,
 					maxRetryCount:         1,
-					backoffTimeLimit:      50 * time.Microsecond,
+					backoffTimeLimit:      30 * time.Microsecond,
 					errLog:                true,
 				},
 				want: want{

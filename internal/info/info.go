@@ -110,6 +110,13 @@ var (
 	valdRepo   = fmt.Sprintf("github.com/%s/%s", Organization, Repository)
 )
 
+const (
+	goSrc    = "go/src/"
+	goSrcLen = len(goSrc)
+	goMod    = "go/pkg/mod/"
+	goModLen = len(goMod)
+)
+
 // Init initializes Detail object only once.
 func Init(name string) {
 	once.Do(func() {
@@ -252,7 +259,10 @@ func (d Detail) String() string {
 // Get returns parased Detail object.
 func (i *info) Get() Detail {
 	i.prepare()
+	return i.get()
+}
 
+func (i info) get() Detail {
 	i.detail.StackTrace = make([]StackTrace, 0, 10)
 	for j := 2; ; j++ {
 		pc, file, line, ok := i.rtCaller(j)
@@ -264,25 +274,32 @@ func (i *info) Get() Detail {
 			break
 		}
 		url := i.baseURL
+		var idx int
 		switch {
 		case strings.HasPrefix(file, i.detail.GoRoot+"/src"):
 			url = "https://github.com/golang/go/blob/" + i.detail.GoVersion + strings.TrimPrefix(file, i.detail.GoRoot) + "#L" + strconv.Itoa(line)
-		case strings.Contains(file, "go/pkg/mod/"):
+		case func() bool {
+			idx = strings.Index(file, goMod)
+			return idx >= 0
+		}():
 			url = "https:/"
-			for _, path := range strings.Split(strings.SplitN(file, "go/pkg/mod/", 2)[1], "/") {
-				if strings.Contains(path, "@") {
-					sv := strings.SplitN(path, "@", 2)
-					if strings.Count(sv[1], "-") > 2 {
-						path = sv[0] + "/blob/main"
+			for _, path := range strings.Split(file[idx+goModLen:], "/") {
+				left, right, ok := strings.Cut(path, "@")
+				if ok {
+					if strings.Count(right, "-") > 2 {
+						path = left + "/blob/main"
 					} else {
-						path = sv[0] + "/blob/" + sv[1]
+						path = left + "/blob/" + right
 					}
 				}
 				url += "/" + path
 			}
 			url += "#L" + strconv.Itoa(line)
-		case strings.Contains(file, "go/src/") && strings.Contains(file, valdRepo):
-			url = strings.Replace(strings.SplitN(file, "go/src/", 2)[1]+"#L"+strconv.Itoa(line), valdRepo, "https://"+valdRepo+"/blob/"+i.detail.GitCommit, -1)
+		case func() bool {
+			idx = strings.Index(file, goSrc)
+			return idx >= 0 && strings.Index(file, valdRepo) >= 0
+		}():
+			url = strings.Replace(file[idx+goSrcLen:]+"#L"+strconv.Itoa(line), valdRepo, "https://"+valdRepo+"/blob/"+i.detail.GitCommit, -1)
 		}
 		i.detail.StackTrace = append(i.detail.StackTrace, StackTrace{
 			FuncName: funcName,

@@ -97,8 +97,8 @@ func New(selector *config.Selectors, opts ...Option) (dsc Discoverer, err error)
 				})
 			}),
 			mnode.WithNamespace(d.namespace),
-			mnode.WithFields(selector.NodeMetrics.Fields),
-			mnode.WithLabels(selector.NodeMetrics.Labels),
+			mnode.WithFields(selector.GetNodeMetricsFields()),
+			mnode.WithLabels(selector.GetNodeMetricsLabels()),
 		)),
 		k8s.WithResourceController(mpod.New(
 			mpod.WithControllerName("pod metrics discoverer"),
@@ -119,8 +119,8 @@ func New(selector *config.Selectors, opts ...Option) (dsc Discoverer, err error)
 				})
 			}),
 			mpod.WithNamespace(d.namespace),
-			mpod.WithFields(selector.PodMetrics.Fields),
-			mpod.WithLabels(selector.PodMetrics.Labels),
+			mpod.WithFields(selector.GetPodMetricsFields()),
+			mpod.WithLabels(selector.GetPodMetricsLabels()),
 		)),
 		k8s.WithResourceController(pod.New(
 			pod.WithControllerName("pod discoverer"),
@@ -144,8 +144,8 @@ func New(selector *config.Selectors, opts ...Option) (dsc Discoverer, err error)
 				})
 			}),
 			pod.WithNamespace(d.namespace),
-			pod.WithFields(selector.Pod.Fields),
-			pod.WithLabels(selector.Pod.Labels),
+			pod.WithFields(selector.GetPodFields()),
+			pod.WithLabels(selector.GetPodLabels()),
 		)),
 		k8s.WithResourceController(node.New(
 			node.WithControllerName("node discoverer"),
@@ -168,8 +168,8 @@ func New(selector *config.Selectors, opts ...Option) (dsc Discoverer, err error)
 				})
 			}),
 			node.WithNamespace(d.namespace),
-			node.WithFields(selector.Node.Fields),
-			node.WithLabels(selector.Node.Labels),
+			node.WithFields(selector.GetNodeFields()),
+			node.WithLabels(selector.GetNodeLabels()),
 		)),
 	)
 	if err != nil {
