@@ -112,7 +112,7 @@ data:
           "pluginVersion": "9.0.0-beta2",
           "targets": [
             {
-              "expr": "vald_app_version_info{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"}",
+              "expr": "app_version_info{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"}",
               "format": "table",
               "instant": true,
               "interval": "",
@@ -185,7 +185,7 @@ data:
           "pluginVersion": "9.0.0-beta2",
           "targets": [
             {
-              "expr": "label_replace(vald_app_version_info{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"}, \"go_version\", \"v$1\", \"go_version\", \"([^v].*)\")",
+              "expr": "label_replace(app_version_info{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"}, \"go_version\", \"v$1\", \"go_version\", \"([^v].*)\")",
               "format": "table",
               "instant": true,
               "interval": "",
@@ -258,7 +258,7 @@ data:
           "pluginVersion": "9.0.0-beta2",
           "targets": [
             {
-              "expr": "vald_app_version_info{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"}",
+              "expr": "app_version_info{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"}",
               "format": "table",
               "instant": true,
               "interval": "",
@@ -487,7 +487,7 @@ data:
           "pluginVersion": "9.0.0-beta2",
           "targets": [
             {
-              "expr": "vald_app_version_info{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"}",
+              "expr": "app_version_info{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"}",
               "format": "table",
               "instant": true,
               "interval": "",
@@ -560,7 +560,7 @@ data:
           "pluginVersion": "9.0.0-beta2",
           "targets": [
             {
-              "expr": "vald_app_version_info{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"}",
+              "expr": "app_version_info{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"}",
               "format": "table",
               "instant": true,
               "interval": "",
@@ -805,14 +805,14 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(irate(vald_grpc_io_server_completed_rpcs{namespace=\"$Namespace\", app=\"$ReplicaSet\", instance=~\"$PodName\"}[$interval])) by (grpc_server_method, grpc_server_status)",
+              "expr": "sum(irate(server_completed_rpcs{namespace=\"$Namespace\", app=\"$ReplicaSet\", instance=~\"$PodName\"}[$interval])) by (grpc_server_method, grpc_server_status)",
               "interval": "",
               "intervalFactor": 1,
               "legendFormat": "{{grpc_server_method}} ({{grpc_server_status}})",
               "refId": "A"
             },
             {
-              "expr": "sum(irate(vald_grpc_io_server_completed_rpcs{namespace=\"$Namespace\", app=\"$ReplicaSet\", instance=~\"$PodName\"}[$interval])) by (grpc_server_status)",
+              "expr": "sum(irate(server_completed_rpcs{namespace=\"$Namespace\", app=\"$ReplicaSet\", instance=~\"$PodName\"}[$interval])) by (grpc_server_status)",
               "interval": "",
               "intervalFactor": 1,
               "legendFormat": "Total ({{grpc_server_status}})",
@@ -904,21 +904,21 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "histogram_quantile(0.5, sum(rate(vald_grpc_io_server_server_latency_bucket{namespace=\"$Namespace\", app=\"$ReplicaSet\", instance=~\"$PodName\"}[$interval])) by (le, grpc_server_method))",
+              "expr": "histogram_quantile(0.5, sum(rate(server_latency_bucket{namespace=\"$Namespace\", app=\"$ReplicaSet\", instance=~\"$PodName\"}[$interval])) by (le, grpc_server_method))",
               "interval": "",
               "intervalFactor": 1,
               "legendFormat": "{{grpc_server_method}} p50",
               "refId": "A"
             },
             {
-              "expr": "histogram_quantile(0.95, sum(rate(vald_grpc_io_server_server_latency_bucket{namespace=\"$Namespace\", app=\"$ReplicaSet\", instance=~\"$PodName\"}[$interval])) by (le, grpc_server_method))",
+              "expr": "histogram_quantile(0.95, sum(rate(server_latency_bucket{namespace=\"$Namespace\", app=\"$ReplicaSet\", instance=~\"$PodName\"}[$interval])) by (le, grpc_server_method))",
               "interval": "",
               "intervalFactor": 1,
               "legendFormat": "{{grpc_server_method}} p95",
               "refId": "B"
             },
             {
-              "expr": "histogram_quantile(0.99, sum(rate(vald_grpc_io_server_server_latency_bucket{namespace=\"$Namespace\", app=\"$ReplicaSet\", instance=~\"$PodName\"}[$interval])) by (le, grpc_server_method))",
+              "expr": "histogram_quantile(0.99, sum(rate(server_latency_bucket{namespace=\"$Namespace\", app=\"$ReplicaSet\", instance=~\"$PodName\"}[$interval])) by (le, grpc_server_method))",
               "interval": "",
               "intervalFactor": 1,
               "legendFormat": "{{grpc_server_method}} p99",
@@ -1007,7 +1007,7 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "vald_goroutine_count{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"}",
+              "expr": "goroutine_count{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"}",
               "interval": "",
               "intervalFactor": 1,
               "legendFormat": "{{instance}}",
@@ -1101,7 +1101,7 @@ data:
                 "type": "prometheus",
                 "uid": "vald_prometheus"
               },
-              "expr": "increase(vald_gc_count{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\".+\"}[$interval])",
+              "expr": "increase(gc_count{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\".+\"}[$interval])",
               "format": "time_series",
               "instant": false,
               "interval": "",
@@ -1187,7 +1187,7 @@ data:
               "type": "prometheus",
               "uid": "vald_prometheus"
             },
-            "definition": "label_values(vald_app_version_info{server_name=\"index manager\", namespace=~\"$Namespace\"}, app)",
+            "definition": "label_values(app_version_info{server_name=\"index manager\", namespace=~\"$Namespace\"}, app)",
             "hide": 0,
             "includeAll": false,
             "label": "name",
@@ -1195,7 +1195,7 @@ data:
             "name": "ReplicaSet",
             "options": [],
             "query": {
-              "query": "label_values(vald_app_version_info{server_name=\"index manager\", namespace=~\"$Namespace\"}, app)",
+              "query": "label_values(app_version_info{server_name=\"index manager\", namespace=~\"$Namespace\"}, app)",
               "refId": "StandardVariableQuery"
             },
             "refresh": 1,
@@ -1218,7 +1218,7 @@ data:
               "type": "prometheus",
               "uid": "vald_prometheus"
             },
-            "definition": "label_values(vald_app_version_info{server_name=\"index manager\", namespace=~\"$Namespace\", app=~\"$ReplicaSet\"}, instance)",
+            "definition": "label_values(app_version_info{server_name=\"index manager\", namespace=~\"$Namespace\", app=~\"$ReplicaSet\"}, instance)",
             "hide": 0,
             "includeAll": true,
             "label": "pod",
@@ -1226,7 +1226,7 @@ data:
             "name": "PodName",
             "options": [],
             "query": {
-              "query": "label_values(vald_app_version_info{server_name=\"index manager\", namespace=~\"$Namespace\", app=~\"$ReplicaSet\"}, instance)",
+              "query": "label_values(app_version_info{server_name=\"index manager\", namespace=~\"$Namespace\", app=~\"$ReplicaSet\"}, instance)",
               "refId": "StandardVariableQuery"
             },
             "refresh": 1,

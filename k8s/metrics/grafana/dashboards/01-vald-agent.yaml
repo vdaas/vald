@@ -101,7 +101,7 @@ data:
           "pluginVersion": "8.0.1",
           "targets": [
             {
-              "expr": "vald_app_version_info{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"}",
+              "expr": "app_version_info{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"}",
               "format": "table",
               "instant": true,
               "interval": "",
@@ -175,7 +175,7 @@ data:
           "pluginVersion": "8.0.1",
           "targets": [
             {
-              "expr": "label_replace(vald_app_version_info{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"}, \"go_version\", \"v$1\", \"go_version\", \"([^v].*)\")",
+              "expr": "label_replace(app_version_info{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"}, \"go_version\", \"v$1\", \"go_version\", \"([^v].*)\")",
               "format": "table",
               "instant": true,
               "interval": "",
@@ -249,7 +249,7 @@ data:
           "pluginVersion": "8.0.1",
           "targets": [
             {
-              "expr": "vald_app_version_info{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"}",
+              "expr": "app_version_info{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"}",
               "format": "table",
               "instant": true,
               "interval": "",
@@ -481,7 +481,7 @@ data:
           "pluginVersion": "8.0.1",
           "targets": [
             {
-              "expr": "vald_app_version_info{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"}",
+              "expr": "app_version_info{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"}",
               "format": "table",
               "instant": true,
               "interval": "",
@@ -555,7 +555,7 @@ data:
           "pluginVersion": "8.0.1",
           "targets": [
             {
-              "expr": "vald_app_version_info{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"}",
+              "expr": "app_version_info{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"}",
               "format": "table",
               "instant": true,
               "interval": "",
@@ -633,7 +633,7 @@ data:
           "pluginVersion": "8.0.1",
           "targets": [
             {
-              "expr": "sum(vald_agent_core_ngt_index_count{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"})",
+              "expr": "sum(agent_core_ngt_index_count{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"})",
               "instant": true,
               "interval": "",
               "legendFormat": "",
@@ -710,7 +710,7 @@ data:
           "pluginVersion": "8.0.1",
           "targets": [
             {
-              "expr": "sum(vald_agent_core_ngt_is_indexing{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"})",
+              "expr": "sum(agent_core_ngt_is_indexing{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"})",
               "format": "time_series",
               "instant": true,
               "interval": "",
@@ -790,7 +790,7 @@ data:
           "repeatDirection": "h",
           "targets": [
             {
-              "expr": "sum(vald_agent_core_ngt_uncommitted_index_count{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"})",
+              "expr": "sum(agent_core_ngt_uncommitted_index_count{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"})",
               "instant": true,
               "interval": "",
               "legendFormat": "",
@@ -867,7 +867,7 @@ data:
           "pluginVersion": "8.0.1",
           "targets": [
             {
-              "expr": "sum(vald_agent_core_ngt_insert_vqueue_count{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"})",
+              "expr": "sum(agent_core_ngt_insert_vqueue_count{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"})",
               "instant": true,
               "interval": "",
               "legendFormat": "",
@@ -944,7 +944,7 @@ data:
           "pluginVersion": "8.0.1",
           "targets": [
             {
-              "expr": "sum(vald_agent_core_ngt_delete_vqueue_count{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"})",
+              "expr": "sum(agent_core_ngt_delete_vqueue_count{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"})",
               "instant": true,
               "interval": "",
               "legendFormat": "",
@@ -1017,7 +1017,7 @@ data:
           "pluginVersion": "8.0.1",
           "targets": [
             {
-              "expr": "label_replace(vald_app_version_info{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"}, \"ngt_version\", \"v$1\", \"ngt_version\", \"([^v].*)\")",
+              "expr": "label_replace(app_version_info{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"}, \"ngt_version\", \"v$1\", \"ngt_version\", \"([^v].*)\")",
               "format": "table",
               "instant": true,
               "interval": "",
@@ -1088,7 +1088,7 @@ data:
           "targets": [
             {
               "exemplar": true,
-              "expr": "vald_agent_core_ngt_info{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"}",
+              "expr": "agent_core_ngt_info{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"}",
               "format": "table",
               "instant": true,
               "interval": "",
@@ -1159,7 +1159,7 @@ data:
           "targets": [
             {
               "exemplar": true,
-              "expr": "vald_agent_core_ngt_info{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"}",
+              "expr": "agent_core_ngt_info{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"}",
               "format": "table",
               "instant": true,
               "interval": "",
@@ -1230,7 +1230,7 @@ data:
           "targets": [
             {
               "exemplar": true,
-              "expr": "vald_agent_core_ngt_info{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"}",
+              "expr": "agent_core_ngt_info{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"}",
               "format": "table",
               "instant": true,
               "interval": "",
@@ -1487,7 +1487,7 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(vald_agent_core_ngt_index_count{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"})",
+              "expr": "sum(agent_core_ngt_index_count{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"})",
               "interval": "",
               "legendFormat": "indices",
               "refId": "A"
@@ -1584,19 +1584,19 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(vald_agent_core_ngt_uncommitted_index_count{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"})",
+              "expr": "sum(agent_core_ngt_uncommitted_index_count{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"})",
               "interval": "",
               "legendFormat": "uncommitted-indices",
               "refId": "A"
             },
             {
-              "expr": " sum(vald_agent_core_ngt_insert_vqueue_count{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"})",
+              "expr": " sum(agent_core_ngt_insert_vqueue_count{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"})",
               "interval": "",
               "legendFormat": "insert-vqueue",
               "refId": "B"
             },
             {
-              "expr": "sum(vald_agent_core_ngt_delete_vqueue_count{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"})",
+              "expr": "sum(agent_core_ngt_delete_vqueue_count{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"})",
               "interval": "",
               "legendFormat": "delete-vqueue",
               "refId": "C"
@@ -1693,7 +1693,7 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(vald_agent_core_ngt_is_indexing{namespace=\"$Namespace\", app=~\"$ReplicaSet\"})",
+              "expr": "sum(agent_core_ngt_is_indexing{namespace=\"$Namespace\", app=~\"$ReplicaSet\"})",
               "instant": false,
               "interval": "",
               "intervalFactor": 2,
@@ -1701,7 +1701,7 @@ data:
               "refId": "A"
             },
             {
-              "expr": "count(up{namespace=\"$Namespace\", app=~\"$ReplicaSet\", app!=\"\"}) - sum(vald_agent_core_ngt_is_indexing{namespace=\"$Namespace\", app=~\"$ReplicaSet\"})",
+              "expr": "count(up{namespace=\"$Namespace\", app=~\"$ReplicaSet\", app!=\"\"}) - sum(agent_core_ngt_is_indexing{namespace=\"$Namespace\", app=~\"$ReplicaSet\"})",
               "interval": "",
               "intervalFactor": 2,
               "legendFormat": "Not indexing pods",
@@ -1797,7 +1797,7 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "vald_goroutine_count{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"}",
+              "expr": "goroutine_count{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"}",
               "interval": "",
               "intervalFactor": 1,
               "legendFormat": "{{instance}}",
@@ -1894,14 +1894,14 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(irate(vald_grpc_io_server_completed_rpcs{namespace=\"$Namespace\", app=\"$ReplicaSet\", instance=~\"$PodName\"}[$interval])) by (grpc_server_method, grpc_server_status)",
+              "expr": "sum(irate(server_completed_rpcs{namespace=\"$Namespace\", app=\"$ReplicaSet\", instance=~\"$PodName\"}[$interval])) by (grpc_server_method, grpc_server_status)",
               "interval": "",
               "intervalFactor": 1,
               "legendFormat": "{{grpc_server_method}} ({{grpc_server_status}})",
               "refId": "A"
             },
             {
-              "expr": "sum(irate(vald_grpc_io_server_completed_rpcs{namespace=\"$Namespace\", app=\"$ReplicaSet\", instance=~\"$PodName\"}[$interval])) by (grpc_server_status)",
+              "expr": "sum(irate(server_completed_rpcs{namespace=\"$Namespace\", app=\"$ReplicaSet\", instance=~\"$PodName\"}[$interval])) by (grpc_server_status)",
               "interval": "",
               "intervalFactor": 1,
               "legendFormat": "Total ({{grpc_server_status}})",
@@ -1998,20 +1998,20 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "histogram_quantile(0.5, sum(rate(vald_grpc_io_server_server_latency_bucket{namespace=\"$Namespace\", app=\"$ReplicaSet\", instance=~\"$PodName\"}[$interval])) by (le, grpc_server_method))",
+              "expr": "histogram_quantile(0.5, sum(rate(server_latency_bucket{namespace=\"$Namespace\", app=\"$ReplicaSet\", instance=~\"$PodName\"}[$interval])) by (le, grpc_server_method))",
               "interval": "",
               "intervalFactor": 1,
               "legendFormat": "{{grpc_server_method}} p50",
               "refId": "A"
             },
             {
-              "expr": "histogram_quantile(0.95, sum(rate(vald_grpc_io_server_server_latency_bucket{namespace=\"$Namespace\", app=\"$ReplicaSet\", instance=~\"$PodName\"}[$interval])) by (le, grpc_server_method))",
+              "expr": "histogram_quantile(0.95, sum(rate(server_latency_bucket{namespace=\"$Namespace\", app=\"$ReplicaSet\", instance=~\"$PodName\"}[$interval])) by (le, grpc_server_method))",
               "interval": "",
               "legendFormat": "{{grpc_server_method}} p95",
               "refId": "B"
             },
             {
-              "expr": "histogram_quantile(0.99, sum(rate(vald_grpc_io_server_server_latency_bucket{namespace=\"$Namespace\", app=\"$ReplicaSet\", instance=~\"$PodName\"}[$interval])) by (le, grpc_server_method))",
+              "expr": "histogram_quantile(0.99, sum(rate(server_latency_bucket{namespace=\"$Namespace\", app=\"$ReplicaSet\", instance=~\"$PodName\"}[$interval])) by (le, grpc_server_method))",
               "interval": "",
               "legendFormat": "{{grpc_server_method}} p99",
               "refId": "C"
@@ -2101,7 +2101,7 @@ data:
           "targets": [
             {
               "exemplar": true,
-              "expr": "sum(vald_agent_core_ngt_index_count{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"}) by (instance)",
+              "expr": "sum(agent_core_ngt_index_count{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"}) by (instance)",
               "interval": "",
               "legendFormat": "{{hostname}}",
               "refId": "A"
@@ -2193,7 +2193,7 @@ data:
               "value": "vald-agent-ngt"
             },
             "datasource": "Prometheus",
-            "definition": "label_values(vald_app_version_info{server_name=~\"agent.*\", namespace=~\"$Namespace\"}, app)",
+            "definition": "label_values(app_version_info{server_name=~\"agent.*\", namespace=~\"$Namespace\"}, app)",
             "description": null,
             "error": null,
             "hide": 0,
@@ -2203,7 +2203,7 @@ data:
             "name": "ReplicaSet",
             "options": [],
             "query": {
-              "query": "label_values(vald_app_version_info{server_name=~\"agent.*\", namespace=~\"$Namespace\"}, app)",
+              "query": "label_values(app_version_info{server_name=~\"agent.*\", namespace=~\"$Namespace\"}, app)",
               "refId": "StandardVariableQuery"
             },
             "refresh": 1,
@@ -2223,7 +2223,7 @@ data:
               "value": "$__all"
             },
             "datasource": "Prometheus",
-            "definition": "label_values(vald_app_version_info{server_name=~\"agent.*\", namespace=~\"$Namespace\", app=\"$ReplicaSet\"}, instance)",
+            "definition": "label_values(app_version_info{server_name=~\"agent.*\", namespace=~\"$Namespace\", app=\"$ReplicaSet\"}, instance)",
             "description": null,
             "error": null,
             "hide": 0,
@@ -2233,7 +2233,7 @@ data:
             "name": "PodName",
             "options": [],
             "query": {
-              "query": "label_values(vald_app_version_info{server_name=~\"agent.*\", namespace=~\"$Namespace\", app=\"$ReplicaSet\"}, instance)",
+              "query": "label_values(app_version_info{server_name=~\"agent.*\", namespace=~\"$Namespace\", app=\"$ReplicaSet\"}, instance)",
               "refId": "StandardVariableQuery"
             },
             "refresh": 1,
