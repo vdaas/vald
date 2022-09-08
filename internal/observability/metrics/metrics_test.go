@@ -76,7 +76,8 @@ func TestRegisterView(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt)
@@ -147,7 +148,8 @@ func TestRecord(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt)
@@ -223,7 +225,8 @@ func TestRecordWithTags(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt)
@@ -296,7 +299,8 @@ func TestMeasurementsCount(t *testing.T) {
 		*/
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt)

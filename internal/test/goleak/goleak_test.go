@@ -75,12 +75,84 @@ func TestVerifyNone(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
+				checkFunc = defaultCheckFunc
 			}
 
 			VerifyNone(test.args.t, test.args.options...)
-			if err := test.checkFunc(test.want); err != nil {
+			if err := checkFunc(test.want); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func TestVerifyTestMain(t *testing.T) {
+	type args struct {
+		m       TestingM
+		options []Option
+	}
+	type want struct{}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want) error {
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           m: nil,
+		           options: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           m: nil,
+		           options: nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer VerifyNone(tt, IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			checkFunc := test.checkFunc
+			if test.checkFunc == nil {
+				checkFunc = defaultCheckFunc
+			}
+
+			VerifyTestMain(test.args.m, test.args.options...)
+			if err := checkFunc(test.want); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

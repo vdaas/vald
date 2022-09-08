@@ -103,7 +103,8 @@ func TestNew(t *testing.T) {
 		}(),
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
@@ -166,7 +167,8 @@ func Test_cache_Start(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
@@ -263,7 +265,8 @@ func Test_cache_Get(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			c := &cache{
@@ -346,7 +349,8 @@ func Test_cache_Set(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
@@ -448,7 +452,8 @@ func Test_cache_Delete(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			c := &cache{
@@ -546,7 +551,8 @@ func Test_cache_GetAndDelete(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			c := &cache{

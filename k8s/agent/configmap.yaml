@@ -190,7 +190,7 @@ data:
       jaeger:
         enabled: false
         collector_endpoint: ""
-        agent_endpoint: "jaeger-agent.default.svc.cluster.local:6831"
+        agent_endpoint: ""
         username: ""
         password: ""
         service_name: "vald-agent-ngt"

@@ -24,15 +24,10 @@ import (
 
 	"github.com/vdaas/vald/internal/backoff"
 	"github.com/vdaas/vald/internal/errors"
-	"github.com/vdaas/vald/internal/test/goleak"
 )
 
-// Goroutine leak is detected by `fastime`, but it should be ignored in the test because it is an external package.
-var goleakIgnoreOptions = []goleak.Option{
-	goleak.IgnoreTopFunction("github.com/kpango/fastime.(*fastime).StartTimerD.func1"),
-}
-
 func TestWithRoundTripper(t *testing.T) {
+	t.Parallel()
 	type T = ert
 	type args struct {
 		tr http.RoundTripper
@@ -73,9 +68,10 @@ func TestWithRoundTripper(t *testing.T) {
 		}(),
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			tt.Parallel()
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -98,6 +94,7 @@ func TestWithRoundTripper(t *testing.T) {
 }
 
 func TestWithBackoff(t *testing.T) {
+	t.Parallel()
 	type T = ert
 	type args struct {
 		bo backoff.Backoff
@@ -138,9 +135,10 @@ func TestWithBackoff(t *testing.T) {
 		}(),
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			tt.Parallel()
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}

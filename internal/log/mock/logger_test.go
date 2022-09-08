@@ -73,7 +73,8 @@ func TestLogger_Debug(t *testing.T) {
 		}(),
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
@@ -154,7 +155,8 @@ func TestLogger_Debugf(t *testing.T) {
 		}(),
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
@@ -232,7 +234,8 @@ func TestLogger_Info(t *testing.T) {
 		}(),
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
@@ -313,7 +316,8 @@ func TestLogger_Infof(t *testing.T) {
 		}(),
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
@@ -391,7 +395,8 @@ func TestLogger_Warn(t *testing.T) {
 		}(),
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
@@ -472,7 +477,8 @@ func TestLogger_Warnf(t *testing.T) {
 		}(),
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
@@ -550,7 +556,8 @@ func TestLogger_Error(t *testing.T) {
 		}(),
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
@@ -631,7 +638,8 @@ func TestLogger_Errorf(t *testing.T) {
 		}(),
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
@@ -709,7 +717,8 @@ func TestLogger_Fatal(t *testing.T) {
 		}(),
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
@@ -790,7 +799,8 @@ func TestLogger_Fatalf(t *testing.T) {
 		}(),
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
