@@ -42,6 +42,7 @@ type reconciler struct {
 func New(opts ...Option) BenchmarkJobWatcher {
 	r := new(reconciler)
 	for _, opt := range append(defaultOpts, opts...) {
+		// TODO: impl error handling after implement functional option
 		opt(r)
 	}
 	return r
