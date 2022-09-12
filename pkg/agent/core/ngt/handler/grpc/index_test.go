@@ -15,7 +15,9 @@ package grpc
 
 import (
 	"context"
+	"io/fs"
 	"os"
+	"path/filepath"
 	"reflect"
 	"testing"
 	"time"
@@ -735,11 +737,6 @@ func Test_server_SaveIndex(t *testing.T) {
 			}
 		}(),
 		func() test {
-			irs, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, 1, dim, nil)
-			if err != nil {
-				t.Error(err)
-			}
-			ir := irs.Requests[0]
 			indexPath := mkdirTemp()
 
 			return test{
@@ -754,18 +751,42 @@ func Test_server_SaveIndex(t *testing.T) {
 					indexPath: indexPath,
 				},
 				beforeFunc: func(t *testing.T, ctx context.Context, s Server, n service.NGT) {
-					// remove write access
-					if err := os.Chmod(indexPath, 0o000); err != nil {
+					irs, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, 2, dim, nil)
+					if err != nil {
 						t.Error(err)
 					}
 
-					if _, err := s.Insert(ctx, ir); err != nil {
+					// insert 1 request
+					if _, err := s.Insert(ctx, irs.Requests[0]); err != nil {
+						t.Error(err)
+					}
+					// create backup files in advance
+					if _, err := s.CreateAndSaveIndex(ctx, &payload.Control_CreateIndexRequest{
+						PoolSize: 1,
+					}); err != nil {
+						t.Error(err)
+					}
+
+					// remove write access
+					var mode fs.FileMode = 0o555
+					if err := os.Chmod(indexPath, mode); err != nil {
+						t.Error(err)
+					}
+					// remove write access in all files in the directory
+					if err := filepath.WalkDir(indexPath, func(path string, e fs.DirEntry, err error) error {
+						return os.Chmod(path, mode)
+					}); err != nil {
+						t.Error(err)
+					}
+
+					// insert another vector
+					if _, err := s.Insert(ctx, irs.Requests[1]); err != nil {
 						t.Error(err)
 					}
 
 					// we need to create index before saving to store the indexed vector
 					if _, err := s.CreateIndex(ctx, &payload.Control_CreateIndexRequest{
-						PoolSize: 1,
+						PoolSize: 2,
 					}); err != nil {
 						t.Error(err)
 					}
@@ -1106,7 +1127,7 @@ func TestSaveIndexNoPermission(t *testing.T) {
 
 		emptyPayload = &payload.Empty{}
 	)
-	indexPath := "/tmp/4"
+	indexPath := "/tmp/5"
 	if err := os.Mkdir(indexPath, 0o777); err != nil {
 		t.Error(err)
 	}
@@ -1119,7 +1140,6 @@ func TestSaveIndexNoPermission(t *testing.T) {
 	if err != nil {
 		t.Errorf("failed to init ngt service, error = %v", err)
 	}
-	os.Chmod(indexPath, 0o000)
 
 	s, err := New(append(srvOpts, WithNGT(ngt), WithErrGroup(eg))...)
 	if err != nil {
@@ -1138,6 +1158,24 @@ func TestSaveIndexNoPermission(t *testing.T) {
 	}); err != nil {
 		t.Error(err)
 	}
+	s.SaveIndex(ctx, emptyPayload)
+
+	os.Chmod(indexPath, 0o000)
+
+	if _, err := s.Insert(ctx, &payload.Insert_Request{
+		Vector: &payload.Object_Vector{
+			Vector: []float32{1, 2, 3},
+			Id:     "fsdfd",
+		},
+	}); err != nil {
+		t.Error(err)
+	}
+	if _, err := s.CreateIndex(ctx, &payload.Control_CreateIndexRequest{
+		PoolSize: 1,
+	}); err != nil {
+		t.Error(err)
+	}
+
 	res, err := s.SaveIndex(ctx, emptyPayload)
 	if err == nil {
 		t.Errorf("got error is %v", err)
