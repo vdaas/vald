@@ -754,18 +754,19 @@ func Test_server_SaveIndex(t *testing.T) {
 					indexPath: indexPath,
 				},
 				beforeFunc: func(t *testing.T, ctx context.Context, s Server, n service.NGT) {
+					// remove write access
+					if err := os.Chmod(indexPath, 0o000); err != nil {
+						t.Error(err)
+					}
+
 					if _, err := s.Insert(ctx, ir); err != nil {
 						t.Error(err)
 					}
+
 					// we need to create index before saving to store the indexed vector
 					if _, err := s.CreateIndex(ctx, &payload.Control_CreateIndexRequest{
 						PoolSize: 1,
 					}); err != nil {
-						t.Error(err)
-					}
-
-					// remove write access
-					if err := os.Chmod(indexPath, 0o555); err != nil {
 						t.Error(err)
 					}
 				},
@@ -1105,7 +1106,7 @@ func TestSaveIndexNoPermission(t *testing.T) {
 
 		emptyPayload = &payload.Empty{}
 	)
-	indexPath := "/tmp/2"
+	indexPath := "/tmp/4"
 	if err := os.Mkdir(indexPath, 0o777); err != nil {
 		t.Error(err)
 	}
@@ -1118,6 +1119,7 @@ func TestSaveIndexNoPermission(t *testing.T) {
 	if err != nil {
 		t.Errorf("failed to init ngt service, error = %v", err)
 	}
+	os.Chmod(indexPath, 0o000)
 
 	s, err := New(append(srvOpts, WithNGT(ngt), WithErrGroup(eg))...)
 	if err != nil {
@@ -1134,9 +1136,6 @@ func TestSaveIndexNoPermission(t *testing.T) {
 	if _, err := s.CreateIndex(ctx, &payload.Control_CreateIndexRequest{
 		PoolSize: 1,
 	}); err != nil {
-		t.Error(err)
-	}
-	if err := os.Chmod(indexPath, 0o555); err != nil {
 		t.Error(err)
 	}
 	res, err := s.SaveIndex(ctx, emptyPayload)
