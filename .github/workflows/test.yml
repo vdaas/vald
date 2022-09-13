@@ -46,12 +46,12 @@ jobs:
       - name: set git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
-      - name: Run tests for cmd packages / tparse
+      - name: Run tests for cmd packages / gotestfmt
         run: |
-          make test/cmd/tparse | tee tparse.txt || cat tparse.txt
-      - name: Run tests for cmd packages
+          TEST_RESULT_DIR=${GITHUB_WORKSPACE} make test/cmd/gotestfmt
+      - name: print tparse result
         run: |
-          make test/cmd
+          tparse -notests -smallscreen -sort cover -format markdown -file "${GITHUB_WORKSPACE}/test-cmd-gotestfmt-result.json"
   test-internal:
     name: Run tests for internal packages
     runs-on: ubuntu-latest
@@ -63,12 +63,12 @@ jobs:
       - name: set git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
-      - name: Run tests for internal packages / tparse
+      - name: Run tests for internal packages / gotestfmt
         run: |
-          make test/internal/tparse | tee tparse.txt || cat tparse.txt
-      - name: Run tests for internal packages
+          TEST_RESULT_DIR=${GITHUB_WORKSPACE} make test/internal/gotestfmt
+      - name: print tparse result
         run: |
-          make test/internal
+          tparse -notests -smallscreen -sort cover -format markdown -file "${GITHUB_WORKSPACE}/test-internal-gotestfmt-result.json"
   test-pkg:
     name: Run tests for pkg packages
     runs-on: ubuntu-latest
@@ -80,9 +80,9 @@ jobs:
       - name: set git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
-      - name: Run tests for pkg packages / tparse
+      - name: Run tests for pkg packages / gotestfmt
         run: |
-          make test/pkg/tparse | tee tparse.txt || cat tparse.txt
-      - name: Run tests for pkg packages
+          TEST_RESULT_DIR=${GITHUB_WORKSPACE} make test/pkg/gotestfmt
+      - name: print tparse result
         run: |
-          make test/pkg
+          tparse -notests -smallscreen -sort cover -format markdown -file "${GITHUB_WORKSPACE}/test-pkg-gotestfmt-result.json"
