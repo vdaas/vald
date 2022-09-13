@@ -1127,12 +1127,15 @@ func TestSaveIndexNoPermission(t *testing.T) {
 
 		emptyPayload = &payload.Empty{}
 	)
-	indexPath := "/tmp/5"
-	if err := os.Mkdir(indexPath, 0o777); err != nil {
+
+	// create temp directory
+	indexPath, err := os.MkdirTemp("", "")
+	if err != nil {
 		t.Error(err)
 	}
 	defer os.RemoveAll(indexPath)
 
+	// create handler
 	eg, _ := errgroup.New(ctx)
 	ngt, err := service.New(svcCfg, append(svcOpts,
 		service.WithErrGroup(eg),
@@ -1140,11 +1143,12 @@ func TestSaveIndexNoPermission(t *testing.T) {
 	if err != nil {
 		t.Errorf("failed to init ngt service, error = %v", err)
 	}
-
 	s, err := New(append(srvOpts, WithNGT(ngt), WithErrGroup(eg))...)
 	if err != nil {
 		t.Errorf("failed to init server, error= %v", err)
 	}
+
+	// insert some vector and generate backup file
 	if _, err := s.Insert(ctx, &payload.Insert_Request{
 		Vector: &payload.Object_Vector{
 			Vector: []float32{1, 2, 3},
@@ -1153,30 +1157,43 @@ func TestSaveIndexNoPermission(t *testing.T) {
 	}); err != nil {
 		t.Error(err)
 	}
-	if _, err := s.CreateIndex(ctx, &payload.Control_CreateIndexRequest{
+	if _, err := s.CreateAndSaveIndex(ctx, &payload.Control_CreateIndexRequest{
 		PoolSize: 1,
 	}); err != nil {
 		t.Error(err)
 	}
-	s.SaveIndex(ctx, emptyPayload)
 
-	os.Chmod(indexPath, 0o000)
+	// remove write access
+	var mode fs.FileMode = 0o555
+	if err := os.Chmod(indexPath, mode); err != nil {
+		t.Error(err)
+	}
+	// remove write access in all files in the directory
+	if err := filepath.WalkDir(indexPath, func(path string, e fs.DirEntry, err error) error {
+		return os.Chmod(path, mode)
+	}); err != nil {
+		t.Error(err)
+	}
 
+	// insert another vector to make changes on backup file
 	if _, err := s.Insert(ctx, &payload.Insert_Request{
 		Vector: &payload.Object_Vector{
 			Vector: []float32{1, 2, 3},
-			Id:     "fsdfd",
+			Id:     "vec2",
 		},
 	}); err != nil {
 		t.Error(err)
 	}
+	// create index
 	if _, err := s.CreateIndex(ctx, &payload.Control_CreateIndexRequest{
-		PoolSize: 1,
+		PoolSize: 2,
 	}); err != nil {
 		t.Error(err)
 	}
-
+	// save index to backup file
 	res, err := s.SaveIndex(ctx, emptyPayload)
+
+	// we expect error from save index
 	if err == nil {
 		t.Errorf("got error is %v", err)
 	}
@@ -1188,8 +1205,9 @@ func TestSaveIndexNoPermission(t *testing.T) {
 		t.Errorf("got code: \"%#v\",\n\t\t\t\twant code: \"%#v\"", st.Code(), codes.Internal)
 	}
 
-	if !reflect.DeepEqual(res, nil) {
-		t.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", res, nil)
+	var want *payload.Empty
+	if !reflect.DeepEqual(res, want) {
+		t.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", res, want)
 	}
 }
 
