@@ -15,44 +15,177 @@
 #
 
 .PHONY: test
+
+.PHONY: tparse/install
+## install tparse
+tparse/install: \
+        $(GOPATH)bin/tparse
+
+$(GOPATH)bin/tparse:
+	$(call go-install, github.com/mfridman/tparse)
+
+.PHONY: gotestfmt/install
+## install gotestfmt
+gotestfmt/install: \
+        $(GOPATH)bin/gotestfmt
+
+$(GOPATH)bin/gotestfmt:
+	$(call go-install, github.com/haveyoudebuggedit/gotestfmt/v2/cmd/gotestfmt)
+
+.PHONY: gotests/install
+## install gotests
+gotests/install: \
+        $(GOPATH)bin/gotests
+
+$(GOPATH)bin/gotests:
+	$(call go-install, github.com/cweill/gotests/gotests)
+
 ## run tests for cmd, internal, pkg
 test:
 	go test -shuffle=on -race -mod=readonly -cover -timeout=30m ./cmd/... ./internal/... ./pkg/...
 
 .PHONY: test/tparse
 ## run tests for cmd, internal, pkg and show table
-test/tparse:
-	go test -shuffle=on -race -mod=readonly -json -cover -timeout=30m ./cmd/... ./internal/... ./pkg/... | tparse -notests
-
-.PHONY: test/cmd
-## run tests for cmd
-test/cmd:
-	go test -shuffle=on -race -mod=readonly -cover ./cmd/...
+test/tparse: \
+        tparse/install
+	set -euo pipefail
+	rm -rf "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json"
+	go test -shuffle=on -race -mod=readonly -json -cover -timeout=30m ./cmd/... ./internal/... ./pkg/... \
+	| tee "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json" \
+	| tparse -pass -notests
 
 .PHONY: test/cmd/tparse
 ## run tests for cmd and show table
-test/cmd/tparse:
-	go test -shuffle=on -race -mod=readonly -json -cover ./cmd/... | tparse -pass -notests
-
-.PHONY: test/internal
-## run tests for internal
-test/internal:
-	go test -shuffle=on -race -mod=readonly -cover ./internal/...
+test/cmd/tparse: \
+        tparse/install
+	set -euo pipefail
+	rm -rf "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json"
+	go test -shuffle=on -race -mod=readonly -json -cover -timeout=30m ./cmd/... \
+	| tee "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json" \
+	| tparse -pass -notests
 
 .PHONY: test/internal/tparse
 ## run tests for internal and show table
-test/internal/tparse:
-	go test -shuffle=on -race -mod=readonly -json -cover ./internal/... | tparse -pass -notests
+test/internal/tparse: \
+        tparse/install
+	set -euo pipefail
+	rm -rf "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json"
+	go test -shuffle=on -race -mod=readonly -json -cover -timeout=30m ./internal/... \
+	| tee "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json" \
+	| tparse -pass -notests
+
+.PHONY: test/pkg/tparse
+## run tests for pkg and who table
+test/pkg/tparse: \
+        tparse/install
+	set -euo pipefail
+	rm -rf "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json"
+	go test -shuffle=on -race -mod=readonly -json -cover -timeout=30m ./pkg/... \
+	| tee "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json" \
+	| tparse -pass -notests
+
+.PHONY: test/hack/tparse
+## run tests for hack and show table
+test/hack/tparse: \
+        tparse/install
+	set -euo pipefail
+	rm -rf "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json"
+	go test -shuffle=on -race -mod=readonly -json -cover \
+		./hack/gorules/... \
+		./hack/helm/... \
+		./hack/license/... \
+		./hack/tools/... \
+	| tee "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json" \
+	| tparse -pass -notests
+
+.PHONY: test/all/tparse
+## run tests for all Go codes and show table
+test/all/tparse: \
+        tparse/install
+	set -euo pipefail
+	rm -rf "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json"
+	go test -shuffle=on -race -mod=readonly -json -cover -timeout=30m ./... \
+	| tee "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json" \
+	| tparse -pass -notests
+
+.PHONY: test/gotestfmt
+## run tests for cmd, internal, pkg and show table
+test/gotestfmt: \
+        gotestfmt/install
+	set -euo pipefail
+	rm -rf "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json"
+	go test -shuffle=on -race -mod=readonly -json -cover -timeout=30m ./cmd/... ./internal/... ./pkg/... \
+	| tee "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json" \
+	| gotestfmt -showteststatus
+
+.PHONY: test/cmd/gotestfmt
+## run tests for cmd and show table
+test/cmd/gotestfmt: \
+        gotestfmt/install
+	set -euo pipefail
+	rm -rf "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json"
+	go test -shuffle=on -race -mod=readonly -json -cover -timeout=30m ./cmd/... \
+	| tee "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json" \
+	| gotestfmt -showteststatus
+
+.PHONY: test/internal/gotestfmt
+## run tests for internal and show table
+test/internal/gotestfmt: \
+        gotestfmt/install
+	set -euo pipefail
+	rm -rf "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json"
+	go test -shuffle=on -race -mod=readonly -json -cover -timeout=30m ./internal/... \
+	| tee "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json" \
+	| gotestfmt -showteststatus
+
+.PHONY: test/pkg/gotestfmt
+## run tests for pkg and who table
+test/pkg/gotestfmt: \
+        gotestfmt/install
+	set -euo pipefail
+	rm -rf "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json"
+	go test -shuffle=on -race -mod=readonly -json -cover -timeout=30m ./pkg/... \
+	| tee "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json" \
+	| gotestfmt -showteststatus
+
+.PHONY: test/hack/gotestfmt
+## run tests for hack and show table
+test/hack/gotestfmt: \
+        gotestfmt/install
+	set -euo pipefail
+	rm -rf "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json"
+	go test -shuffle=on -race -mod=readonly -json -cover \
+		./hack/gorules/... \
+		./hack/helm/... \
+		./hack/license/... \
+		./hack/tools/... \
+	| tee "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json" \
+	| gotestfmt -showteststatus
+
+.PHONY: test/all/gotestfmt
+## run tests for all Go codes and show table
+test/all/gotestfmt: \
+        gotestfmt/install
+	set -euo pipefail
+	rm -rf "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json"
+	go test -shuffle=on -race -mod=readonly -json -cover -timeout=30m ./... \
+	| tee "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json" \
+	| gotestfmt -showteststatus
 
 .PHONY: test/pkg
 ## run tests for pkg
 test/pkg:
 	go test -shuffle=on -race -mod=readonly -cover ./pkg/...
 
-.PHONY: test/pkg/tparse
-## run tests for pkg and who table
-test/pkg/tparse:
-	go test -shuffle=on -race -mod=readonly -json -cover ./pkg/... | tparse -pass -notests
+.PHONY: test/internal
+## run tests for internal
+test/internal:
+	go test -shuffle=on -race -mod=readonly -cover ./internal/...
+
+.PHONY: test/cmd
+## run tests for cmd
+test/cmd:
+	go test -shuffle=on -race -mod=readonly -cover ./cmd/...
 
 .PHONY: test/hack
 ## run tests for hack
@@ -63,41 +196,16 @@ test/hack:
 		./hack/license/...\
 		./hack/tools/...
 
-.PHONY: test/hack/tparse
-## run tests for hack and show table
-test/hack/tparse:
-	go test -shuffle=on -race -mod=readonly -json -cover
-		./hack/gorules/... \
-		./hack/helm/... \
-		./hack/license/... \
-		./hack/tools/... \
-		| tparse -pass -notests
-
 .PHONY: test/all
 ## run tests for all Go codes
 test/all:
 	go test -shuffle=on -race -mod=readonly -cover ./...
-
-.PHONY: test/all/tparse
-## run tests for all Go codes and show table
-test/all/tparse:
-	go test -shuffle=on -race -mod=readonly -json -cover ./... | tparse -notests
 
 .PHONY: coverage
 ## calculate coverages
 coverage:
 	go test -shuffle=on -race -mod=readonly -v -race -covermode=atomic -coverprofile=coverage.out ./...
 	go tool cover -html=coverage.out -o coverage.html
-
-.PHONY: tparse/install
-## install tparse
-tparse/install:
-	$(call go-install, github.com/mfridman/tparse)
-
-.PHONY: gotests/install
-## install gotests
-gotests/install:
-	$(call go-install, github.com/cweill/gotests/gotests)
 
 .PHONY: gotests/gen
 ## generate missing go test files
