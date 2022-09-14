@@ -1210,7 +1210,7 @@ func TestSaveIndexNoPermission(t *testing.T) {
 	if st.Code() != codes.Internal {
 		t.Errorf("got code: \"%#v\",\n\t\t\t\twant code: \"%#v\"", st.Code(), codes.Internal)
 		s, _ := os.Stat(indexPath)
-		t.Errorf("folder permission: %v, current uid: %v, gid: %v", s, os.Getuid(), os.Getgid())
+		t.Errorf("folder permission: %#v, current uid: %v, gid: %v", s, os.Getuid(), os.Getgid())
 	}
 
 	var want *payload.Empty
