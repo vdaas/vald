@@ -1129,11 +1129,11 @@ func TestSaveIndexNoPermission(t *testing.T) {
 	)
 
 	// create temp directory
-	indexPath, err := os.MkdirTemp("", "")
+	indexPath, err := os.MkdirTemp("/tmp", "")
 	if err != nil {
 		t.Error(err)
 	}
-	defer os.RemoveAll(indexPath)
+	//	defer os.RemoveAll(indexPath)
 
 	// create handler
 	eg, _ := errgroup.New(ctx)
@@ -1164,12 +1164,18 @@ func TestSaveIndexNoPermission(t *testing.T) {
 	}
 
 	// remove write access
+	if err := os.Chown(indexPath, os.Getuid(), os.Getgid()); err != nil {
+		t.Error(err)
+	}
 	var mode fs.FileMode = 0o555
 	if err := os.Chmod(indexPath, mode); err != nil {
 		t.Error(err)
 	}
 	// remove write access in all files in the directory
 	if err := filepath.WalkDir(indexPath, func(path string, e fs.DirEntry, err error) error {
+		if err := os.Chown(indexPath, os.Getuid(), os.Getgid()); err != nil {
+			return err
+		}
 		return os.Chmod(path, mode)
 	}); err != nil {
 		t.Error(err)
