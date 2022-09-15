@@ -15,9 +15,7 @@ package grpc
 
 import (
 	"context"
-	"io/fs"
 	"os"
-	"path/filepath"
 	"reflect"
 	"testing"
 	"time"
@@ -637,6 +635,7 @@ func Test_server_SaveIndex(t *testing.T) {
 			- case 1.1: success to save 1 inserted index
 			- case 1.2: success to save 100 inserted index
 			- case 2.1: fail to save index with no write access on backup folder
+				- this test case will be check in service layer as it has exteneral dependencies (file permission)
 			- case 3.1: success to save index when other save index process is running
 		- Boundary Value Testing
 			- case 1.1: success to save index with no index
@@ -733,66 +732,6 @@ func Test_server_SaveIndex(t *testing.T) {
 					}
 
 					return nil
-				},
-			}
-		}(),
-		func() test {
-			indexPath := mkdirTemp()
-
-			return test{
-				name: "Equivalence Class Testing case 2.1: fail to save index with no write access on backup folder",
-				args: args{
-					in1: emptyPayload,
-				},
-				fields: fields{
-					srvOpts:   defaultSrvOpts,
-					svcCfg:    defaultSvcCfg,
-					svcOpts:   defaultSvcOpts,
-					indexPath: indexPath,
-				},
-				beforeFunc: func(t *testing.T, ctx context.Context, s Server, n service.NGT) {
-					irs, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, 2, dim, nil)
-					if err != nil {
-						t.Error(err)
-					}
-
-					// insert 1 request
-					if _, err := s.Insert(ctx, irs.Requests[0]); err != nil {
-						t.Error(err)
-					}
-					// create backup files in advance
-					if _, err := s.CreateAndSaveIndex(ctx, &payload.Control_CreateIndexRequest{
-						PoolSize: 1,
-					}); err != nil {
-						t.Error(err)
-					}
-
-					// remove write access
-					var mode fs.FileMode = 0o555
-					if err := os.Chmod(indexPath, mode); err != nil {
-						t.Error(err)
-					}
-					// remove write access in all files in the directory
-					if err := filepath.WalkDir(indexPath, func(path string, e fs.DirEntry, err error) error {
-						return os.Chmod(path, mode)
-					}); err != nil {
-						t.Error(err)
-					}
-
-					// insert another vector
-					if _, err := s.Insert(ctx, irs.Requests[1]); err != nil {
-						t.Error(err)
-					}
-
-					// we need to create index before saving to store the indexed vector
-					if _, err := s.CreateIndex(ctx, &payload.Control_CreateIndexRequest{
-						PoolSize: 2,
-					}); err != nil {
-						t.Error(err)
-					}
-				},
-				want: want{
-					errCode: codes.Internal,
 				},
 			}
 		}(),
@@ -1095,127 +1034,6 @@ func Test_server_SaveIndex(t *testing.T) {
 				tt.Errorf("error = %v", err)
 			}
 		})
-	}
-}
-
-func TestSaveIndexNoPermission(t *testing.T) {
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	const (
-		name = "vald-agent-ngt-1" // agent name
-		dim  = 3                  // vector dimension
-		id   = "uuid-1"           // id for getObject request
-	)
-	var (
-		ip = net.LoadLocalIP() // agent ip address
-
-		svcCfg = &config.NGT{
-			Dimension:    dim,
-			DistanceType: ngt.Angle.String(),
-			ObjectType:   ngt.Float.String(),
-			KVSDB:        &config.KVSDB{},
-			VQueue:       &config.VQueue{},
-		}
-		srvOpts = []Option{
-			WithName(name),
-			WithIP(ip),
-		}
-		svcOpts = []service.Option{
-			service.WithEnableInMemoryMode(false),
-		}
-
-		emptyPayload = &payload.Empty{}
-	)
-
-	// create temp directory
-	indexPath, err := os.MkdirTemp("/tmp", "")
-	if err != nil {
-		t.Error(err)
-	}
-	//	defer os.RemoveAll(indexPath)
-
-	// create handler
-	eg, _ := errgroup.New(ctx)
-	ngt, err := service.New(svcCfg, append(svcOpts,
-		service.WithErrGroup(eg),
-		service.WithIndexPath(indexPath))...)
-	if err != nil {
-		t.Errorf("failed to init ngt service, error = %v", err)
-	}
-	s, err := New(append(srvOpts, WithNGT(ngt), WithErrGroup(eg))...)
-	if err != nil {
-		t.Errorf("failed to init server, error= %v", err)
-	}
-
-	// insert some vector and generate backup file
-	if _, err := s.Insert(ctx, &payload.Insert_Request{
-		Vector: &payload.Object_Vector{
-			Vector: []float32{1, 2, 3},
-			Id:     id,
-		},
-	}); err != nil {
-		t.Error(err)
-	}
-	if _, err := s.CreateAndSaveIndex(ctx, &payload.Control_CreateIndexRequest{
-		PoolSize: 1,
-	}); err != nil {
-		t.Error(err)
-	}
-
-	// remove write access
-	if err := os.Chown(indexPath, os.Getuid(), os.Getgid()); err != nil {
-		t.Error(err)
-	}
-	var mode fs.FileMode = 0o555
-	if err := os.Chmod(indexPath, mode); err != nil {
-		t.Error(err)
-	}
-	// remove write access in all files in the directory
-	if err := filepath.WalkDir(indexPath, func(path string, e fs.DirEntry, err error) error {
-		if err := os.Chown(indexPath, os.Getuid(), os.Getgid()); err != nil {
-			return err
-		}
-		return os.Chmod(path, mode)
-	}); err != nil {
-		t.Error(err)
-	}
-
-	// insert another vector to make changes on backup file
-	if _, err := s.Insert(ctx, &payload.Insert_Request{
-		Vector: &payload.Object_Vector{
-			Vector: []float32{1, 2, 3},
-			Id:     "vec2",
-		},
-	}); err != nil {
-		t.Error(err)
-	}
-	// create index
-	if _, err := s.CreateIndex(ctx, &payload.Control_CreateIndexRequest{
-		PoolSize: 2,
-	}); err != nil {
-		t.Error(err)
-	}
-	// save index to backup file
-	res, err := s.SaveIndex(ctx, emptyPayload)
-
-	// we expect error from save index
-	if err == nil {
-		t.Errorf("got error is %v", err)
-	}
-	st, ok := status.FromError(err)
-	if !ok {
-		t.Errorf("got error cannot convert to Status: %#v", err)
-	}
-	if st.Code() != codes.Internal {
-		t.Errorf("got code: \"%#v\",\n\t\t\t\twant code: \"%#v\"", st.Code(), codes.Internal)
-		s, _ := os.Stat(indexPath)
-		t.Errorf("folder permission: %#v, current uid: %v, gid: %v", s, os.Getuid(), os.Getgid())
-	}
-
-	var want *payload.Empty
-	if !reflect.DeepEqual(res, want) {
-		t.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", res, want)
 	}
 }
 
