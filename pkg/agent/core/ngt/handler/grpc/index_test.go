@@ -556,7 +556,8 @@ func Test_server_SaveIndex(t *testing.T) {
 		id   = "uuid-1"           // id for getObject request
 	)
 	var (
-		ip = net.LoadLocalIP() // agent ip address
+		// agent ip address
+		ip = net.LoadLocalIP()
 
 		// default NGT configuration for test
 		defaultSvcCfg = &config.NGT{
@@ -622,10 +623,11 @@ func Test_server_SaveIndex(t *testing.T) {
 			return err
 		}
 
-		if !reflect.DeepEqual(ii, &payload.Info_Index_Count{
+		wantIndexInfo := &payload.Info_Index_Count{
 			Stored: uint32(len(wantVecs)),
-		}) {
-			return errors.Errorf("stored index count not correct, got: %v", ii)
+		}
+		if !reflect.DeepEqual(ii, wantIndexInfo) {
+			return errors.Errorf("stored index count not correct, got: %v, want: %v", ii, wantIndexInfo)
 		}
 
 		return nil
@@ -653,7 +655,6 @@ func Test_server_SaveIndex(t *testing.T) {
 			if err != nil {
 				t.Error(err)
 			}
-			ir := irs.Requests[0]
 
 			return test{
 				name: "Equivalence Class Testing case 1.1: success to save 1 inserted index",
@@ -667,7 +668,7 @@ func Test_server_SaveIndex(t *testing.T) {
 					indexPath: mkdirTemp(),
 				},
 				beforeFunc: func(t *testing.T, ctx context.Context, s Server, n service.NGT) {
-					if _, err := s.Insert(ctx, ir); err != nil {
+					if _, err := s.Insert(ctx, irs.Requests[0]); err != nil {
 						t.Error(err)
 					}
 					// we need to create index before saving to store the indexed vector
@@ -909,7 +910,6 @@ func Test_server_SaveIndex(t *testing.T) {
 			if err != nil {
 				t.Error(err)
 			}
-			ir := irs.Requests[0]
 
 			return test{
 				name: "Decision Table Testing case 2.1: success to save 1 inserted index with copy-on-write enabled",
@@ -923,7 +923,7 @@ func Test_server_SaveIndex(t *testing.T) {
 					indexPath: mkdirTemp(),
 				},
 				beforeFunc: func(t *testing.T, ctx context.Context, s Server, n service.NGT) {
-					if _, err := s.Insert(ctx, ir); err != nil {
+					if _, err := s.Insert(ctx, irs.Requests[0]); err != nil {
 						t.Error(err)
 					}
 					// we need to create index before saving to store the indexed vector
