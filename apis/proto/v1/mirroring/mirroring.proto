@@ -1,1 +1,24 @@
 syntax = "proto3";
+
+package mirroring.v1;
+
+import "apis/proto/v1/payload/payload.proto";
+import "github.com/googleapis/googleapis/google/api/annotations.proto";
+
+option go_package = "github.com/vdaas/vald/apis/grpc/v1/mirroring";
+option java_multiple_files = true;
+option java_package = "org.vdaas.vald.api.v1.mirroring";
+option java_outer_classname = "ValdMirroring";
+
+
+// Represent the mirroring service.
+service Mirroring {
+
+  // Register the RPC to register other mirroring servers.
+  rpc Register(payload.v1.Mirroring.Request) returns (payload.v1.Empty) {
+    option (google.api.http) = {
+      post : "/mirroring/register"
+      body : "*"
+    };
+  }
+}
