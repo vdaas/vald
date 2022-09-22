@@ -116,7 +116,7 @@
 - [apis/proto/v1/vald/upsert.proto](#apis_proto_v1_vald_upsert-proto)
     - [Upsert](#vald-v1-Upsert)
   
-- [apis/proto/v1/mirro/mirro.proto](#apis_proto_v1_mirro_mirro-proto)
+- [apis/proto/v1/mirror/mirror.proto](#apis_proto_v1_mirror_mirror-proto)
     - [Mirror](#mirror-v1-Mirror)
   
 - [Scalar Value Types](#scalar-value-types)
@@ -1587,11 +1587,23 @@ Upsert service provides ways to insert/update vectors.
 
 
 
-<a name="apis_proto_v1_mirro_mirro-proto"></a>
+<a name="apis_proto_v1_mirror_mirror-proto"></a>
 <p align="right"><a href="#top">Top</a></p>
 
-## apis/proto/v1/mirro/mirro.proto
+## apis/proto/v1/mirror/mirror.proto
+Copyright (C) 2019-2022 vdaas.org vald team &lt;vald@vdaas.org&gt;
 
+Licensed under the Apache License, Version 2.0 (the &#34;License&#34;);
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+   https://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an &#34;AS IS&#34; BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
 
  
 
