@@ -981,7 +981,7 @@ Still, in some cases, you may need to change the generated code to meet your req
    1. Use `goleak.VerifyNone()` to validate it on each test cases.
    2. Use `goleak.VerifyTestMain()` to validate it on each package.
 
-   By default in Vald, the goroutine leak validation is executed in each test case. e.g.
+   By default, the goroutine leak validation is executed in each test case. e.g.
 
    ```go
    for _, tc := range tests {
@@ -992,7 +992,7 @@ Still, in some cases, you may need to change the generated code to meet your req
 
    In some cases, it may not work as some cleanup process or asynchronous process remaining in the background, and validating it on the test case using `goleak.VerifyNone()` may cause a false alarm.
 
-   To resolve it, we can consider using `goleak.VerifyTestMain()` to validate goleak when all test cases are passed in each packages, to avoid the goleak false alarm.
+   To resolve it, we can consider using `goleak.VerifyTestMain()` to validate goleak when all test cases are passed in each package, to avoid the goleak false alarm.
 
    ```go
    // implement TestMain and verify it in package level
@@ -1128,8 +1128,8 @@ Still, in some cases, you may need to change the generated code to meet your req
    By default, when testing the function of the struct, the target struct initialization is implemented by setting the date from the `fields` defined in the test case.
    This initialization method has a few disadvatages:
 
-   1. when there are many fields in the struct, it is hard to set them all
-   2. the default value is the zero value of the type, not the struct default value from the struct initialization function
+   1. When there are many fields in the struct, it is hard to set them all
+   2. The default value is the zero value of the type, not the struct default value from the struct initialization function
 
    To resolve these problems, we can modify the test implementation to use the struct initialization function instead of setting the struct fields on the test cases.
 
@@ -1156,7 +1156,7 @@ Still, in some cases, you may need to change the generated code to meet your req
                 tt.Parallel()
                 ...
 
-                // we initialization the target struct using fields defined in test case
+                // we initialize the target struct using fields defined in test case
                 s := &server{
                     name:              test.fields.name,
                     ip:                test.fields.ip,
@@ -1219,7 +1219,7 @@ Still, in some cases, you may need to change the generated code to meet your req
 In Vald, we use parallel test to accelerate the execution of tests by default. There are two layers of enabling parallel test.
 
 1. Parallel for the test function
-2. Parallel for the sub-tests in test function
+2. Parallel for the subtests in test function
 
 The generated test case will enable these two parallel mode by default. It is implemented by:
 
@@ -1233,7 +1233,7 @@ func Test_server_CreateIndex(t *testing.T) {
     for _, tc := range tests {
         test := tc
         t.Run(test.name, func(tt *testing.T) {
-            tt.Parallel() // parallel for sub-tests
+            tt.Parallel() // parallel for subtests
     ...
 ```
 
