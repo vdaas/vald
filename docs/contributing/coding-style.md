@@ -878,7 +878,7 @@ for _, tc := range tests {
     t.Run(test.name, func(tt *tesint.T) {
         checkFunc = defaultCheckFunc
         if test.checkFunc != nil {
-			checkFunc = test.checkFunc
+            checkFunc = test.checkFunc
         }
 
         c := client {
@@ -1011,7 +1011,7 @@ Still, in some cases, you may need to change the generated code to meet your req
 
    Please note that the `TestMain()` can only implement once in each package, you may need to find a right place to implement this function on the package.
 
-2. Defer function
+1. Defer function
 
    By default, the template provides `beforeFunc()` and `afterFunc()` to initialize and finalize the test case, but in some cases, it may not support your use case.
    For example, `recover()` function only works in `defer()` function.
@@ -1039,7 +1039,7 @@ Still, in some cases, you may need to change the generated code to meet your req
             // generated test code
    ```
 
-3. Unused fields
+1. Unused fields
 
    By default, the template provides the `fields` structure to initialize an object of the test target.
    But in some cases, not all `fields` are needed, so please delete the unnecessary fields.
@@ -1079,7 +1079,7 @@ Still, in some cases, you may need to change the generated code to meet your req
            // generated test code
    ```
 
-4. Context
+1. Context
 
    If the target function accept context as input argument, the test code generated will include it in `args`.
 
@@ -1087,7 +1087,7 @@ Still, in some cases, you may need to change the generated code to meet your req
 
    ```go
     type args struct {
-		ctx context.Context
+        ctx context.Context
     }
     ...
    ```
@@ -1104,16 +1104,16 @@ Still, in some cases, you may need to change the generated code to meet your req
     // we can remove the ctx from args list
     type args struct {
         // ctx context.Context
-	}
+    }
     ...
 
     for _, tc := range tests {
-	    test := tc
-		t.Run(test.name, func(tt *testing.T) {
+        test := tc
+        t.Run(test.name, func(tt *testing.T) {
             // create context here
             ctx, cancel := context.WithCancel(context.Background())
             // handle the context lifecycle by canceling the context after the test is executed
-			defer cancel()
+            defer cancel()
 
             ...
 
@@ -1214,12 +1214,6 @@ Still, in some cases, you may need to change the generated code to meet your req
                 ...
    ```
 
-### Using Mock
-
-In Vald, we use a lot of external libraries, and there are a lot of dependencies between libraries.
-
-As a result, due to the complexity, it has become hard to determine whether or not to mock dependencies.
-
 ### Parallel test
 
 In Vald, we use parallel test to accelerate the execution of tests by default. There are 2 layers of enabling parallel test.
@@ -1231,19 +1225,25 @@ The generated test case will enable these 2 parallel mode by default. It is impl
 
 ```go
 func Test_server_CreateIndex(t *testing.T) {
-	t.Parallel() // parallel for the test function
+    t.Parallel() // parallel for the test function
     type args struct {
    
     ...
 
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel() // parallel for sub-tests
+    for _, tc := range tests {
+        test := tc
+        t.Run(test.name, func(tt *testing.T) {
+            tt.Parallel() // parallel for sub-tests
     ...
 ```
 
 Be careful of using parallel test, avoid using share object used in test, to avoid race detector to detect the race in test and fail the test.
+
+### Using Mock
+
+In Vald, we use a lot of external libraries, and there are a lot of dependencies between libraries.
+
+As a result, due to the complexity, it has become hard to determine whether or not to mock dependencies.
 
 #### Condition
 
