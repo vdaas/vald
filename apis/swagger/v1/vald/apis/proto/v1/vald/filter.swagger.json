@@ -277,6 +277,21 @@
     }
   },
   "definitions": {
+    "FilterTarget": {
+      "type": "object",
+      "properties": {
+        "host": {
+          "type": "string",
+          "description": "The target hostname."
+        },
+        "port": {
+          "type": "integer",
+          "format": "int64",
+          "description": "The target port."
+        }
+      },
+      "description": "Represent the target filter server."
+    },
     "ObjectBlob": {
       "type": "object",
       "properties": {
@@ -466,27 +481,12 @@
         "targets": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/v1FilterTarget"
+            "$ref": "#/definitions/FilterTarget"
           },
           "description": "Represent the filter target configuration."
         }
       },
       "description": "Represent filter configuration."
-    },
-    "v1FilterTarget": {
-      "type": "object",
-      "properties": {
-        "host": {
-          "type": "string",
-          "description": "The target hostname."
-        },
-        "port": {
-          "type": "integer",
-          "format": "int64",
-          "description": "The target port."
-        }
-      },
-      "description": "Represent the target filter server."
     },
     "v1InsertConfig": {
       "type": "object",
@@ -532,7 +532,7 @@
           "description": "The configuration of the insert request."
         },
         "vectorizer": {
-          "$ref": "#/definitions/v1FilterTarget",
+          "$ref": "#/definitions/FilterTarget",
           "description": "Filter configurations."
         }
       },
@@ -628,7 +628,7 @@
           "description": "The configuration of the search request."
         },
         "vectorizer": {
-          "$ref": "#/definitions/v1FilterTarget",
+          "$ref": "#/definitions/FilterTarget",
           "description": "Filter configuration."
         }
       },
@@ -678,7 +678,7 @@
           "description": "The configuration of the update request."
         },
         "vectorizer": {
-          "$ref": "#/definitions/v1FilterTarget",
+          "$ref": "#/definitions/FilterTarget",
           "description": "Filter target."
         }
       },
@@ -728,7 +728,7 @@
           "description": "The configuration of the upsert request."
         },
         "vectorizer": {
-          "$ref": "#/definitions/v1FilterTarget",
+          "$ref": "#/definitions/FilterTarget",
           "description": "Filter target."
         }
       },

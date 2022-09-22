@@ -21,9 +21,6 @@
 - [apis/proto/v1/manager/index/index_manager.proto](#apis_proto_v1_manager_index_index_manager-proto)
     - [Index](#manager-index-v1-Index)
   
-- [apis/proto/v1/mirroring/mirroring.proto](#apis_proto_v1_mirroring_mirroring-proto)
-    - [Mirroring](#mirroring-v1-Mirroring)
-  
 - [apis/proto/v1/payload/payload.proto](#apis_proto_v1_payload_payload-proto)
     - [Control](#payload-v1-Control)
     - [Control.CreateIndexRequest](#payload-v1-Control-CreateIndexRequest)
@@ -52,9 +49,6 @@
     - [Insert.MultiRequest](#payload-v1-Insert-MultiRequest)
     - [Insert.ObjectRequest](#payload-v1-Insert-ObjectRequest)
     - [Insert.Request](#payload-v1-Insert-Request)
-    - [Mirroring](#payload-v1-Mirroring)
-    - [Mirroring.Request](#payload-v1-Mirroring-Request)
-    - [Mirroring.Target](#payload-v1-Mirroring-Target)
     - [Object](#payload-v1-Object)
     - [Object.Blob](#payload-v1-Object-Blob)
     - [Object.Distance](#payload-v1-Object-Distance)
@@ -279,32 +273,6 @@ Represent the index manager service.
 | Method Name | Request Type | Response Type | Description |
 | ----------- | ------------ | ------------- | ------------|
 | IndexInfo | [.payload.v1.Empty](#payload-v1-Empty) | [.payload.v1.Info.Index.Count](#payload-v1-Info-Index-Count) | Represent the RPC to get the index information. |
-
- 
-
-
-
-<a name="apis_proto_v1_mirroring_mirroring-proto"></a>
-<p align="right"><a href="#top">Top</a></p>
-
-## apis/proto/v1/mirroring/mirroring.proto
-
-
- 
-
- 
-
- 
-
-
-<a name="mirroring-v1-Mirroring"></a>
-
-### Mirroring
-Represent the mirroring service.
-
-| Method Name | Request Type | Response Type | Description |
-| ----------- | ------------ | ------------- | ------------|
-| Register | [.payload.v1.Mirroring.Request](#payload-v1-Mirroring-Request) | [.payload.v1.Empty](#payload-v1-Empty) | Register the RPC to register other mirroring servers. |
 
  
 
@@ -702,47 +670,6 @@ Represent the insert request.
 | ----- | ---- | ----- | ----------- |
 | vector | [Object.Vector](#payload-v1-Object-Vector) |  | The vector to be inserted. |
 | config | [Insert.Config](#payload-v1-Insert-Config) |  | The configuration of the insert request. |
-
-
-
-
-
-
-<a name="payload-v1-Mirroring"></a>
-
-### Mirroring
-Mirroring related messages.
-
-
-
-
-
-
-<a name="payload-v1-Mirroring-Request"></a>
-
-### Mirroring.Request
-Represent the mirroring request.
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| targets | [Mirroring.Target](#payload-v1-Mirroring-Target) | repeated | The mirroring server targets. |
-
-
-
-
-
-
-<a name="payload-v1-Mirroring-Target"></a>
-
-### Mirroring.Target
-Request server information.
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| ip | [string](#string) |  | The target ip. |
-| port | [uint32](#uint32) |  | The target port. |
 
 
 
