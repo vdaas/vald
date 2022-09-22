@@ -521,16 +521,16 @@ message Info {
 }
 
 
-// Mirroring related messages.
-message Mirroring {
+// Mirror related messages.
+message Mirror {
 
-  // Represent the mirroring request.
+  // Represent the mirror request.
   message Request {
-    // The mirroring server targets.
+    // The mirror server targets.
     repeated Target targets = 1;
   }
 
-  // Request server information.
+  // Represent server information.
   message Target {
     // The target ip.
     string ip = 1;

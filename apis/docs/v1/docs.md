@@ -49,6 +49,9 @@
     - [Insert.MultiRequest](#payload-v1-Insert-MultiRequest)
     - [Insert.ObjectRequest](#payload-v1-Insert-ObjectRequest)
     - [Insert.Request](#payload-v1-Insert-Request)
+    - [Mirror](#payload-v1-Mirror)
+    - [Mirror.Request](#payload-v1-Mirror-Request)
+    - [Mirror.Target](#payload-v1-Mirror-Target)
     - [Object](#payload-v1-Object)
     - [Object.Blob](#payload-v1-Object-Blob)
     - [Object.Distance](#payload-v1-Object-Distance)
@@ -112,6 +115,9 @@
   
 - [apis/proto/v1/vald/upsert.proto](#apis_proto_v1_vald_upsert-proto)
     - [Upsert](#vald-v1-Upsert)
+  
+- [apis/proto/v1/mirro/mirro.proto](#apis_proto_v1_mirro_mirro-proto)
+    - [Mirror](#mirror-v1-Mirror)
   
 - [Scalar Value Types](#scalar-value-types)
 
@@ -670,6 +676,47 @@ Represent the insert request.
 | ----- | ---- | ----- | ----------- |
 | vector | [Object.Vector](#payload-v1-Object-Vector) |  | The vector to be inserted. |
 | config | [Insert.Config](#payload-v1-Insert-Config) |  | The configuration of the insert request. |
+
+
+
+
+
+
+<a name="payload-v1-Mirror"></a>
+
+### Mirror
+Mirror related messages.
+
+
+
+
+
+
+<a name="payload-v1-Mirror-Request"></a>
+
+### Mirror.Request
+Represent the mirror request.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| targets | [Mirror.Target](#payload-v1-Mirror-Target) | repeated | The mirror server targets. |
+
+
+
+
+
+
+<a name="payload-v1-Mirror-Target"></a>
+
+### Mirror.Target
+Represent server information.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| ip | [string](#string) |  | The target ip. |
+| port | [uint32](#uint32) |  | The target port. |
 
 
 
@@ -1535,6 +1582,32 @@ Upsert service provides ways to insert/update vectors.
 | Upsert | [.payload.v1.Upsert.Request](#payload-v1-Upsert-Request) | [.payload.v1.Object.Location](#payload-v1-Object-Location) | A method to insert/update a vector. |
 | StreamUpsert | [.payload.v1.Upsert.Request](#payload-v1-Upsert-Request) stream | [.payload.v1.Object.StreamLocation](#payload-v1-Object-StreamLocation) stream | A method to insert/update multiple vectors by bidirectional streaming. |
 | MultiUpsert | [.payload.v1.Upsert.MultiRequest](#payload-v1-Upsert-MultiRequest) | [.payload.v1.Object.Locations](#payload-v1-Object-Locations) | A method to insert/update multiple vectors in a single request. |
+
+ 
+
+
+
+<a name="apis_proto_v1_mirro_mirro-proto"></a>
+<p align="right"><a href="#top">Top</a></p>
+
+## apis/proto/v1/mirro/mirro.proto
+
+
+ 
+
+ 
+
+ 
+
+
+<a name="mirror-v1-Mirror"></a>
+
+### Mirror
+Represent the mirror service.
+
+| Method Name | Request Type | Response Type | Description |
+| ----------- | ------------ | ------------- | ------------|
+| Register | [.payload.v1.Mirror.Request](#payload-v1-Mirror-Request) | [.payload.v1.Empty](#payload-v1-Empty) | Register the RPC to register other mirror servers. |
 
  
 
