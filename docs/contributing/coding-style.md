@@ -976,12 +976,12 @@ Still, in some cases, you may need to change the generated code to meet your req
 
 1. goleak usage
 
-   There are 2 methods to valid goroutine leak:
+   There are two methods for valid goroutine leak:
 
    1. Use `goleak.VerifyNone()` to validate it on each test cases.
    2. Use `goleak.VerifyTestMain()` to validate it on each package.
 
-   By default in Vald, the goroutine leak validation is exeucted in each test case. e.g.
+   By default in Vald, the goroutine leak validation is executed in each test case. e.g.
 
    ```go
    for _, tc := range tests {
@@ -990,9 +990,9 @@ Still, in some cases, you may need to change the generated code to meet your req
             defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
    ```
 
-   In some cases, it may not work as there may have some cleanup process or asynchronous process remain in the background, and validating it on test case using `goleak.VerifyNone()` may cause false alarm sometimes.
+   In some cases, it may not work as some cleanup process or asynchronous process remaining in the background, and validating it on the test case using `goleak.VerifyNone()` may cause a false alarm.
 
-   To resolve it, we can consider use `goleak.VerifyTestMain()` to validate goleak when all test cases is passed in each package, to avoid the goleak false alarm.
+   To resolve it, we can consider using `goleak.VerifyTestMain()` to validate goleak when all test cases are passed in each packages, to avoid the goleak false alarm.
 
    ```go
    // implement TestMain and verify it in package level
@@ -1081,7 +1081,7 @@ Still, in some cases, you may need to change the generated code to meet your req
 
 1. Context
 
-   If the target function accept context as input argument, the test code generated will include it in `args`.
+   If the target function accepts context as an input argument, the test code generated will include it in `args`.
 
    e.g. 
 
@@ -1094,9 +1094,9 @@ Still, in some cases, you may need to change the generated code to meet your req
 
    But in test implementation, it is hard to manage the context lifecycle. We want to guarantee the context is closed after the test is executed, to avoid any missing termination of the process.
 
-   In Vald, we suggest to customize the test implmentation from the generated test code to create the context and manage the lifecycle in every test.
+   In Vald, we suggest customizing the test implementation from the generated test code to create the context and manage the lifecycle in every test.
 
-   We can remove the context from the `args` struct and create the context in test execution code.
+   We can remove the context from the `args` struct and create the context in the test execution code.
 
    e.g.
 
@@ -1125,15 +1125,15 @@ Still, in some cases, you may need to change the generated code to meet your req
 
 1. Struct initialization
 
-   By default, when testing the function of the struct, the target struct initialization is implmeneted by setting the date from the `fields` defined in the test case.
-   This initialization method has few disadvatages:
+   By default, when testing the function of the struct, the target struct initialization is implemented by setting the date from the `fields` defined in the test case.
+   This initialization method has a few disadvatages:
 
    1. when there are many fields in the struct, it is hard to set them all
    2. the default value is the zero value of the type, not the struct default value from the struct initialization function
 
    To resolve these problems, we can modify the test implementation to use the struct initialization function instead of setting the struct fields on the test cases.
 
-   For example, the current implementation may look like:
+   For example, the current implementation may look like this:
 
    ```go
    func Test_server_SaveIndex(t *testing.T) {
@@ -1202,7 +1202,7 @@ Still, in some cases, you may need to change the generated code to meet your req
                     tt.Errorf("failed to init ngt service, error = %v", err)
                 }
 
-                // in here, we use the struct initialization function instead of setting the fields,
+                // we use the struct initialization function instead of setting the fields,
                 // by combining the use of functional option, we can configure the struct,
                 // and the default values of the struct will be set automatically if we are not defining it.
                 s, err := New(append(test.fields.srvOpts, WithNGT(ngt), WithErrGroup(eg))...)
@@ -1216,12 +1216,12 @@ Still, in some cases, you may need to change the generated code to meet your req
 
 ### Parallel test
 
-In Vald, we use parallel test to accelerate the execution of tests by default. There are 2 layers of enabling parallel test.
+In Vald, we use parallel test to accelerate the execution of tests by default. There are two layers of enabling parallel test.
 
 1. Parallel for the test function
 2. Parallel for the sub-tests in test function
 
-The generated test case will enable these 2 parallel mode by default. It is implemented by:
+The generated test case will enable these two parallel mode by default. It is implemented by:
 
 ```go
 func Test_server_CreateIndex(t *testing.T) {
