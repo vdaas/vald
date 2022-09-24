@@ -20,8 +20,7 @@ package storage
 import (
 	"github.com/vdaas/vald/internal/db/storage/blob/cloudstorage"
 	"github.com/vdaas/vald/internal/db/storage/blob/cloudstorage/urlopener"
-	"github.com/vdaas/vald/internal/db/storage/blob/s3"
-	"github.com/vdaas/vald/internal/db/storage/blob/s3/session"
+	"github.com/vdaas/vald/internal/db/storage/blob/v3/s3"
 	"github.com/vdaas/vald/internal/errgroup"
 )
 
@@ -77,19 +76,6 @@ func WithS3Opts(opts ...s3.Option) Option {
 		}
 
 		b.s3Opts = append(b.s3Opts, opts...)
-
-		return nil
-	}
-}
-
-func WithS3SessionOpts(opts ...session.Option) Option {
-	return func(b *bs) error {
-		if b.s3SessionOpts == nil {
-			b.s3SessionOpts = opts
-			return nil
-		}
-
-		b.s3SessionOpts = append(b.s3SessionOpts, opts...)
 
 		return nil
 	}
