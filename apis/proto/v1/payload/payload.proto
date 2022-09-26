@@ -524,10 +524,16 @@ message Info {
 // Mirror related messages.
 message Mirror {
 
-  // Represent the mirror request.
-  message Request {
+  // Represent the request to register mirror servers.
+  message RegisterRequest {
     // The mirror server targets.
-    repeated Target targets = 1;
+    Targets targets = 1;
+  }
+
+  // Represent the request to get mirror servers.
+  message TargetsRequest {
+    // A flag to skip forward request to avoid loop request.
+    bool skip_forward_request = 1;
   }
 
   // Represent server information.
@@ -536,6 +542,12 @@ message Mirror {
     string ip = 1;
     // The target port.
     uint32 port = 2;
+  }
+
+  // Represent the multiple Target message.
+  message Targets {
+    // The multiple target information.
+    repeated Target targets = 1;
   }
 }
 

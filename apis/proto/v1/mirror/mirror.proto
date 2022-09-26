@@ -30,10 +30,18 @@ option java_outer_classname = "ValdMirror";
 service Mirror {
 
   // Register the RPC to register other mirror servers.
-  rpc Register(payload.v1.Mirror.Request) returns (payload.v1.Empty) {
+  rpc Register(payload.v1.Mirror.RegisterRequest) returns (payload.v1.Empty) {
     option (google.api.http) = {
       post : "/mirror/register"
       body : "*"
     };
+  }
+
+  // Targets the RPC to get other mirror servers.
+  rpc Targets(payload.v1.Mirror.TargetsRequest) returns (payload.v1.Mirror.Targets) {
+    option (google.api.http) = {
+      post : "/mirror/targets"
+      body : "*"
+    }
   }
 }
