@@ -50,8 +50,10 @@
     - [Insert.ObjectRequest](#payload-v1-Insert-ObjectRequest)
     - [Insert.Request](#payload-v1-Insert-Request)
     - [Mirror](#payload-v1-Mirror)
-    - [Mirror.Request](#payload-v1-Mirror-Request)
+    - [Mirror.RegisterRequest](#payload-v1-Mirror-RegisterRequest)
     - [Mirror.Target](#payload-v1-Mirror-Target)
+    - [Mirror.Targets](#payload-v1-Mirror-Targets)
+    - [Mirror.TargetsRequest](#payload-v1-Mirror-TargetsRequest)
     - [Object](#payload-v1-Object)
     - [Object.Blob](#payload-v1-Object-Blob)
     - [Object.Distance](#payload-v1-Object-Distance)
@@ -692,15 +694,15 @@ Mirror related messages.
 
 
 
-<a name="payload-v1-Mirror-Request"></a>
+<a name="payload-v1-Mirror-RegisterRequest"></a>
 
-### Mirror.Request
-Represent the mirror request.
+### Mirror.RegisterRequest
+Represent the request to register mirror servers.
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| targets | [Mirror.Target](#payload-v1-Mirror-Target) | repeated | The mirror server targets. |
+| targets | [Mirror.Targets](#payload-v1-Mirror-Targets) |  | The mirror server targets. |
 
 
 
@@ -717,6 +719,36 @@ Represent server information.
 | ----- | ---- | ----- | ----------- |
 | ip | [string](#string) |  | The target ip. |
 | port | [uint32](#uint32) |  | The target port. |
+
+
+
+
+
+
+<a name="payload-v1-Mirror-Targets"></a>
+
+### Mirror.Targets
+Represent the multiple Target message.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| targets | [Mirror.Target](#payload-v1-Mirror-Target) | repeated | The multiple target information. |
+
+
+
+
+
+
+<a name="payload-v1-Mirror-TargetsRequest"></a>
+
+### Mirror.TargetsRequest
+Represent the request to get mirror servers.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| skip_forward_request | [bool](#bool) |  | A flag to skip forward request to avoid loop request. |
 
 
 
@@ -1619,7 +1651,8 @@ Represent the mirror service.
 
 | Method Name | Request Type | Response Type | Description |
 | ----------- | ------------ | ------------- | ------------|
-| Register | [.payload.v1.Mirror.Request](#payload-v1-Mirror-Request) | [.payload.v1.Empty](#payload-v1-Empty) | Register the RPC to register other mirror servers. |
+| Register | [.payload.v1.Mirror.RegisterRequest](#payload-v1-Mirror-RegisterRequest) | [.payload.v1.Empty](#payload-v1-Empty) | Register the RPC to register other mirror servers. |
+| Targets | [.payload.v1.Mirror.TargetsRequest](#payload-v1-Mirror-TargetsRequest) | [.payload.v1.Mirror.Targets](#payload-v1-Mirror-Targets) | Targets the RPC to get other mirror servers. |
 
  
 

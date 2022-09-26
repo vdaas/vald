@@ -42,6 +42,6 @@ service Mirror {
     option (google.api.http) = {
       post : "/mirror/targets"
       body : "*"
-    }
+    };
   }
 }

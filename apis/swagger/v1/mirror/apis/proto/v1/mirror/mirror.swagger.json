@@ -35,7 +35,40 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/v1MirrorRequest"
+              "$ref": "#/definitions/MirrorRegisterRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Mirror"
+        ]
+      }
+    },
+    "/mirror/targets": {
+      "post": {
+        "summary": "Targets the RPC to get other mirror servers.",
+        "operationId": "Mirror_Targets",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/MirrorTargets"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/MirrorTargetsRequest"
             }
           }
         ],
@@ -46,6 +79,39 @@
     }
   },
   "definitions": {
+    "MirrorRegisterRequest": {
+      "type": "object",
+      "properties": {
+        "targets": {
+          "$ref": "#/definitions/MirrorTargets",
+          "description": "The mirror server targets."
+        }
+      },
+      "description": "Represent the request to register mirror servers."
+    },
+    "MirrorTargets": {
+      "type": "object",
+      "properties": {
+        "targets": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1MirrorTarget"
+          },
+          "description": "The multiple target information."
+        }
+      },
+      "description": "Represent the multiple Target message."
+    },
+    "MirrorTargetsRequest": {
+      "type": "object",
+      "properties": {
+        "skipForwardRequest": {
+          "type": "boolean",
+          "description": "A flag to skip forward request to avoid loop request."
+        }
+      },
+      "description": "Represent the request to get mirror servers."
+    },
     "protobufAny": {
       "type": "object",
       "properties": {
@@ -85,19 +151,6 @@
     "v1Empty": {
       "type": "object",
       "description": "Represent an empty message."
-    },
-    "v1MirrorRequest": {
-      "type": "object",
-      "properties": {
-        "targets": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/v1MirrorTarget"
-          },
-          "description": "The mirror server targets."
-        }
-      },
-      "description": "Represent the mirror request."
     },
     "v1MirrorTarget": {
       "type": "object",

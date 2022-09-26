@@ -43,7 +43,9 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type MirrorClient interface {
 	// Register the RPC to register other mirror servers.
-	Register(ctx context.Context, in *payload.Mirror_Request, opts ...grpc.CallOption) (*payload.Empty, error)
+	Register(ctx context.Context, in *payload.Mirror_RegisterRequest, opts ...grpc.CallOption) (*payload.Empty, error)
+	// Targets the RPC to get other mirror servers.
+	Targets(ctx context.Context, in *payload.Mirror_TargetsRequest, opts ...grpc.CallOption) (*payload.Mirror_Targets, error)
 }
 
 type mirrorClient struct {
@@ -54,9 +56,18 @@ func NewMirrorClient(cc grpc.ClientConnInterface) MirrorClient {
 	return &mirrorClient{cc}
 }
 
-func (c *mirrorClient) Register(ctx context.Context, in *payload.Mirror_Request, opts ...grpc.CallOption) (*payload.Empty, error) {
+func (c *mirrorClient) Register(ctx context.Context, in *payload.Mirror_RegisterRequest, opts ...grpc.CallOption) (*payload.Empty, error) {
 	out := new(payload.Empty)
 	err := c.cc.Invoke(ctx, "/mirror.v1.Mirror/Register", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *mirrorClient) Targets(ctx context.Context, in *payload.Mirror_TargetsRequest, opts ...grpc.CallOption) (*payload.Mirror_Targets, error) {
+	out := new(payload.Mirror_Targets)
+	err := c.cc.Invoke(ctx, "/mirror.v1.Mirror/Targets", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -68,7 +79,9 @@ func (c *mirrorClient) Register(ctx context.Context, in *payload.Mirror_Request,
 // for forward compatibility
 type MirrorServer interface {
 	// Register the RPC to register other mirror servers.
-	Register(context.Context, *payload.Mirror_Request) (*payload.Empty, error)
+	Register(context.Context, *payload.Mirror_RegisterRequest) (*payload.Empty, error)
+	// Targets the RPC to get other mirror servers.
+	Targets(context.Context, *payload.Mirror_TargetsRequest) (*payload.Mirror_Targets, error)
 	mustEmbedUnimplementedMirrorServer()
 }
 
@@ -76,8 +89,11 @@ type MirrorServer interface {
 type UnimplementedMirrorServer struct {
 }
 
-func (UnimplementedMirrorServer) Register(context.Context, *payload.Mirror_Request) (*payload.Empty, error) {
+func (UnimplementedMirrorServer) Register(context.Context, *payload.Mirror_RegisterRequest) (*payload.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Register not implemented")
+}
+func (UnimplementedMirrorServer) Targets(context.Context, *payload.Mirror_TargetsRequest) (*payload.Mirror_Targets, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Targets not implemented")
 }
 func (UnimplementedMirrorServer) mustEmbedUnimplementedMirrorServer() {}
 
@@ -93,7 +109,7 @@ func RegisterMirrorServer(s grpc.ServiceRegistrar, srv MirrorServer) {
 }
 
 func _Mirror_Register_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(payload.Mirror_Request)
+	in := new(payload.Mirror_RegisterRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -105,7 +121,25 @@ func _Mirror_Register_Handler(srv interface{}, ctx context.Context, dec func(int
 		FullMethod: "/mirror.v1.Mirror/Register",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MirrorServer).Register(ctx, req.(*payload.Mirror_Request))
+		return srv.(MirrorServer).Register(ctx, req.(*payload.Mirror_RegisterRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Mirror_Targets_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(payload.Mirror_TargetsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MirrorServer).Targets(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/mirror.v1.Mirror/Targets",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MirrorServer).Targets(ctx, req.(*payload.Mirror_TargetsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -120,6 +154,10 @@ var Mirror_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Register",
 			Handler:    _Mirror_Register_Handler,
+		},
+		{
+			MethodName: "Targets",
+			Handler:    _Mirror_Targets_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
