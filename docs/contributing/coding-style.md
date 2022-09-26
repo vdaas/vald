@@ -958,7 +958,7 @@ Still, in some cases, you may need to change the generated code to meet your req
    ```
 
    In Vald, we implemented [internal goleak package](https://github.com/vdaas/vald/blob/main/internal/test/goleak/goleak.go) and wrap the goleak validation logic to ignoring the common goleak functions in Vald use case.
-   In test implementation, we can simplily import the internal goleak package and ignore all the necessary goleak function by default.
+   In test implementation, we can easily import the internal goleak package and ignore all the necessary goleak functions by default.
 
    ```go
    // import internal goleak package
@@ -1027,10 +1027,10 @@ Still, in some cases, you may need to change the generated code to meet your req
 
             // insert your defer function here
             defer func(w want, tt *testing.T) {
-            // implement your defer func logic
-            if err:= recover(); err != nil {
-                // check the panic
-            }
+                // implement your defer func logic
+                if err:= recover(); err != nil {
+                    // check the panic
+                }
             }(test.want, tt)
 
             if test.beforeFunc != nil {
@@ -1126,7 +1126,7 @@ Still, in some cases, you may need to change the generated code to meet your req
 1. Struct initialization
 
    By default, when testing the function of the struct, the target struct initialization is implemented by setting the date from the `fields` defined in the test case.
-   This initialization method has a few disadvatages:
+   This initialization method has a few disadvantages:
 
    1. When there are many fields in the struct, it is hard to set them all
    2. The default value is the zero value of the type, not the struct default value from the struct initialization function
