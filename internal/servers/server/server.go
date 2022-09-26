@@ -22,6 +22,7 @@ import (
 	"crypto/tls"
 	"net/http"
 	"os"
+	"reflect"
 	"strconv"
 	"sync"
 	"syscall"
@@ -134,7 +135,15 @@ func New(opts ...Option) (Server, error) {
 	defer srv.mu.Unlock()
 
 	for _, opt := range append(defaultOptions, opts...) {
-		opt(srv)
+		if err := opt(srv); err != nil {
+			oerr := errors.ErrOptionFailed(err, reflect.ValueOf(opt))
+			e := &errors.ErrCriticalOption{}
+			if errors.As(oerr, &e) {
+				log.Error(oerr)
+				return nil, oerr
+			}
+			log.Warn(oerr)
+		}
 	}
 	if srv.eg == nil {
 		log.Warnf("errgroup not found for %s, getting new errgroup.", srv.name)

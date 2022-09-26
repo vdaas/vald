@@ -17,16 +17,6 @@
 // Package trace provides trace function.
 package trace
 
-type TraceOption func(*tracer)
+type TraceOption func(*tracer) error
 
-var traceDefaultOpts = []TraceOption{
-	WithSamplingRate(1.0),
-}
-
-func WithSamplingRate(rate float64) TraceOption {
-	return func(t *tracer) {
-		if rate >= 0.0 && rate <= 1.0 {
-			t.samplingRate = rate
-		}
-	}
-}
+var traceDefaultOpts = []TraceOption{}

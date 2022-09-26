@@ -203,7 +203,7 @@ defaults:
             # @schema {"name": "defaults.server_config.servers.grpc.server.grpc.header_table_size", "type": "integer"}
             # defaults.server_config.servers.grpc.server.grpc.header_table_size -- gRPC server header table size
             header_table_size: 0
-            # @schema {"name": "defaults.server_config.servers.grpc.server.grpc.interceptors", "type": "array", "items": {"type": "string", "enum": ["RecoverInterceptor", "AccessLogInterceptor", "TracePayloadInterceptor"]}}
+            # @schema {"name": "defaults.server_config.servers.grpc.server.grpc.interceptors", "type": "array", "items": {"type": "string", "enum": ["RecoverInterceptor", "AccessLogInterceptor", "TraceInterceptor", "MetricInterceptor"]}}
             # defaults.server_config.servers.grpc.server.grpc.interceptors -- gRPC server interceptors
             interceptors:
               - "RecoverInterceptor"
@@ -743,6 +743,9 @@ defaults:
         # @schema {"name": "defaults.grpc.client.dial_option.timeout", "type": "string"}
         # defaults.grpc.client.dial_option.timeout -- gRPC client dial option timeout
         timeout: ""
+        # @schema {"name": "defaults.grpc.client.dial_option.interceptors", "type": "array", "items": {"type": "string", "enum": ["TraceInterceptor"]}}
+        # defaults.grpc.client.dial_option.interceptors -- gRPC client interceptors
+        interceptors: []
         # @schema {"name": "defaults.grpc.client.dial_option.net", "type": "object", "anchor": "net"}
         net:
           # @schema {"name": "defaults.grpc.client.dial_option.net.dns", "type": "object"}
@@ -827,46 +830,36 @@ defaults:
     # @schema {"name": "defaults.observability.enabled", "type": "boolean"}
     # defaults.observability.enabled -- observability features enabled
     enabled: false
-    # @schema {"name": "defaults.observability.collector", "type": "object"}
-    collector:
-      # @schema {"name": "defaults.observability.collector.duration", "type": "string"}
-      # defaults.observability.collector.duration -- metrics collect duration.
-      # if it is set as 5s, enabled metrics are collected every 5 seconds.
-      duration: 5s
-      # @schema {"name": "defaults.observability.collector.metrics", "type": "object"}
-      metrics:
-        # @schema {"name": "defaults.observability.collector.metrics.enable_version_info", "type": "boolean"}
-        # defaults.observability.collector.metrics.enable_version_info -- version info metrics enabled
-        enable_version_info: true
-        # @schema {"name": "defaults.observability.collector.metrics.version_info_labels", "type": "array", "items": {"type": "string", "enum": ["vald_version", "server_name", "git_commit", "build_time", "go_version", "go_os", "go_arch", "cgo_enabled", "ngt_version", "build_cpu_info_flags"]}}
-        # defaults.observability.collector.metrics.version_info_labels -- enabled label names of version info
-        version_info_labels:
-          - "vald_version"
-          - "server_name"
-          - "git_commit"
-          - "build_time"
-          - "go_version"
-          - "go_os"
-          - "go_arch"
-          - "ngt_version"
-        # @schema {"name": "defaults.observability.collector.metrics.enable_memory", "type": "boolean"}
-        # defaults.observability.collector.metrics.enable_memory -- memory metrics enabled
-        enable_memory: true
-        # @schema {"name": "defaults.observability.collector.metrics.enable_goroutine", "type": "boolean"}
-        # defaults.observability.collector.metrics.enable_goroutine -- goroutine metrics enabled
-        enable_goroutine: true
-        # @schema {"name": "defaults.observability.collector.metrics.enable_cgo", "type": "boolean"}
-        # defaults.observability.collector.metrics.enable_cgo -- CGO metrics enabled
-        enable_cgo: true
+    # @schema {"name": "defaults.observability.metrics", "type": "object"}
+    metrics:
+      # @schema {"name": "defaults.observability.metrics.enable_version_info", "type": "boolean"}
+      # defaults.observability.metrics.enable_version_info -- version info metrics enabled
+      enable_version_info: true
+      # @schema {"name": "defaults.observability.metrics.version_info_labels", "type": "array", "items": {"type": "string", "enum": ["vald_version", "server_name", "git_commit", "build_time", "go_version", "go_os", "go_arch", "cgo_enabled", "ngt_version", "build_cpu_info_flags"]}}
+      # defaults.observability.metrics.version_info_labels -- enabled label names of version info
+      version_info_labels:
+        - "vald_version"
+        - "server_name"
+        - "git_commit"
+        - "build_time"
+        - "go_version"
+        - "go_os"
+        - "go_arch"
+        - "ngt_version"
+      # @schema {"name": "defaults.observability.metrics.enable_memory", "type": "boolean"}
+      # defaults.observability.metrics.enable_memory -- memory metrics enabled
+      enable_memory: true
+      # @schema {"name": "defaults.observability.metrics.enable_goroutine", "type": "boolean"}
+      # defaults.observability.metrics.enable_goroutine -- goroutine metrics enabled
+      enable_goroutine: true
+      # @schema {"name": "defaults.observability.metrics.enable_cgo", "type": "boolean"}
+      # defaults.observability.metrics.enable_cgo -- CGO metrics enabled
+      enable_cgo: true
     # @schema {"name": "defaults.observability.trace", "type": "object"}
     trace:
       # @schema {"name": "defaults.observability.trace.enabled", "type": "boolean"}
       # defaults.observability.trace.enabled -- trace enabled
       enabled: false
-      # @schema {"name": "defaults.observability.trace.sampling_rate", "type": "number"}
-      # defaults.observability.trace.sampling_rate -- trace sampling rate.
-      # must be between 0.0 to 1.0.
-      sampling_rate: 1.0
     # @schema {"name": "defaults.observability.prometheus", "type": "object"}
     prometheus:
       # @schema {"name": "defaults.observability.prometheus.enabled", "type": "boolean"}
@@ -876,8 +869,17 @@ defaults:
       # defaults.observability.prometheus.endpoint -- Prometheus exporter endpoint
       endpoint: /metrics
       # @schema {"name": "defaults.observability.prometheus.namespace", "type": "string"}
-      # defaults.observability.prometheus.namespace -- prefix of exported metrics name
-      namespace: vald
+      # defaults.observability.prometheus.namespace -- service namespace for metrics
+      namespace: _MY_POD_NAMESPACE_
+      # @schema {"name": "defaults.observability.prometheus.collect_interval", "type": "string"}
+      # defaults.observability.prometheus.collect_interval -- Prometheus collect interval
+      collect_interval: 500ms
+      # @schema {"name": "defaults.observability.prometheus.collect_timeout", "type": "string"}
+      # defaults.observability.prometheus.collect_timeout -- Prometheus collect timeout
+      collect_timeout: 10s
+      # @schema {"name": "defaults.observability.prometheus.enable_in_memory_mode", "type": "boolean"}
+      # defaults.observability.prometheus.enable_in_memory_mode -- Prometheus collect with in memory
+      enable_in_memory_mode: true
     # @schema {"name": "defaults.observability.jaeger", "type": "object"}
     jaeger:
       # @schema {"name": "defaults.observability.jaeger.enabled", "type": "boolean"}
@@ -889,6 +891,9 @@ defaults:
       # @schema {"name": "defaults.observability.jaeger.agent_endpoint", "type": "string"}
       # defaults.observability.jaeger.agent_endpoint -- Jaeger agent endpoint
       agent_endpoint: ""
+      # @schema {"name": "defaults.observability.jaeger.agent_reconnect_interval", "type": "string"}
+      # defaults.observability.jaeger.agent_reconnect_interval -- Jaeger Agent reconnect interval
+      agent_reconnect_interval: 30s
       # @schema {"name": "defaults.observability.jaeger.username", "type": "string"}
       # defaults.observability.jaeger.username -- Jaeger username
       username: ""
@@ -898,9 +903,21 @@ defaults:
       # @schema {"name": "defaults.observability.jaeger.service_name", "type": "string"}
       # defaults.observability.jaeger.service_name -- Jaeger service name
       service_name: vald
-      # @schema {"name": "defaults.observability.jaeger.buffer_max_count", "type": "integer"}
-      # defaults.observability.jaeger.buffer_max_count -- Jaeger buffer max count
-      buffer_max_count: 65000
+      # @schema {"name": "defaults.observability.jaeger.agent_max_packet_size", "type": "integer"}
+      # defaults.observability.jaeger.agent_max_packet_size -- Jaeger Agent max packet size
+      agent_max_packet_size: 65000
+      # @schema {"name": "defaults.observability.jaeger.batch_timeout", "type": "string"}
+      # defaults.observability.jaeger.batch_timeout -- Jaeger export batch timeout
+      batch_timeout: 5s
+      # @schema {"name": "defaults.observability.jaeger.export_timeout", "type": "string"}
+      # defaults.observability.jaeger.export_timeout -- Jaeger export timeout
+      export_timeout: 5s
+      # @schema {"name": "defaults.observability.jaeger.max_export_batch_size", "type": "integer"}
+      # defaults.observability.jaeger.max_export_batch_size -- Jaeger max export batch size
+      max_export_batch_size: 512
+      # @schema {"name": "defaults.observability.jaeger.max_queue_size", "type": "integer"}
+      # defaults.observability.jaeger.max_queue_size -- Jaeger max queue size
+      max_queue_size: 2048
 # @schema {"name": "gateway", "type": "object"}
 gateway:
   # @schema {"name": "gateway.lb", "type": "object"}
@@ -1297,7 +1314,11 @@ gateway:
         sleepDuration: 2
     # @schema {"name": "gateway.filter.env", "type": "array", "items": {"type": "object"}, "anchor": "env"}
     # gateway.filter.env -- environment variables
-    env: []
+    env:
+      - name: MY_POD_NAMESPACE
+        valueFrom:
+          fieldRef:
+            fieldPath: metadata.namespace
     # @schema {"name": "gateway.filter.volumeMounts", "type": "array", "items": {"type": "object"}, "anchor": "volumeMounts"}
     # gateway.filter.volumeMounts -- volume mounts
     volumeMounts: []
@@ -1574,7 +1595,11 @@ agent:
   initContainers: []
   # @schema {"name": "agent.env", "alias": "env"}
   # agent.env -- environment variables
-  env: []
+  env:
+    - name: MY_POD_NAMESPACE
+      valueFrom:
+        fieldRef:
+          fieldPath: metadata.namespace
   # @schema {"name": "agent.volumeMounts", "alias": "volumeMounts"}
   # agent.volumeMounts -- volume mounts
   volumeMounts: []
@@ -1787,6 +1812,10 @@ agent:
         valueFrom:
           fieldRef:
             fieldPath: metadata.name
+      - name: MY_POD_NAMESPACE
+        valueFrom:
+          fieldRef:
+            fieldPath: metadata.namespace
       - name: AWS_ACCESS_KEY
         valueFrom:
           secretKeyRef:

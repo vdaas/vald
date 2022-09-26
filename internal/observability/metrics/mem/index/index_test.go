@@ -11,7 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-package circuitbreaker
+package index
 
 import (
 	"reflect"
@@ -85,13 +85,9 @@ func TestNew(t *testing.T) {
 	}
 }
 
-func Test_breakerMetrics_Register(t *testing.T) {
+func Test_memoryMetrics_Register(t *testing.T) {
 	type args struct {
 		m metrics.Meter
-	}
-	type fields struct {
-		breakerNameKey string
-		stateKey       string
 	}
 	type want struct {
 		err error
@@ -99,7 +95,7 @@ func Test_breakerMetrics_Register(t *testing.T) {
 	type test struct {
 		name       string
 		args       args
-		fields     fields
+		mm         *memoryMetrics
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
@@ -119,10 +115,6 @@ func Test_breakerMetrics_Register(t *testing.T) {
 		       args: args {
 		           m: nil,
 		       },
-		       fields: fields {
-		           breakerNameKey: "",
-		           stateKey: "",
-		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
 		   },
@@ -135,10 +127,6 @@ func Test_breakerMetrics_Register(t *testing.T) {
 		           name: "test_case_2",
 		           args: args {
 		           m: nil,
-		           },
-		           fields: fields {
-		           breakerNameKey: "",
-		           stateKey: "",
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -162,12 +150,9 @@ func Test_breakerMetrics_Register(t *testing.T) {
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
-			bm := &breakerMetrics{
-				breakerNameKey: test.fields.breakerNameKey,
-				stateKey:       test.fields.stateKey,
-			}
+			mm := &memoryMetrics{}
 
-			err := bm.Register(test.args.m)
+			err := mm.Register(test.args.m)
 			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}

@@ -112,10 +112,8 @@ func TestNewConfig(t *testing.T) {
 							},
 						},
 						Observability: &config.Observability{
-							Enabled: true,
-							Collector: &config.Collector{
-								Metrics: new(config.Metrics),
-							},
+							Enabled:    true,
+							Metrics:    new(config.Metrics),
 							Trace:      new(config.Trace),
 							Prometheus: new(config.Prometheus),
 							Jaeger:     new(config.Jaeger),
@@ -236,10 +234,8 @@ func TestNewConfig(t *testing.T) {
 							},
 						},
 						Observability: &config.Observability{
-							Enabled: true,
-							Collector: &config.Collector{
-								Metrics: new(config.Metrics),
-							},
+							Enabled:    true,
+							Metrics:    new(config.Metrics),
 							Trace:      new(config.Trace),
 							Prometheus: new(config.Prometheus),
 							Jaeger:     new(config.Jaeger),

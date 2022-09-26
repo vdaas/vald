@@ -1,20 +1,16 @@
-//
 // Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//    https://www.apache.org/licenses/LICENSE-2.0
+//	https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
-
-// Package ngt provides functions for ngt stats
 package ngt
 
 import (
@@ -25,131 +21,118 @@ import (
 )
 
 type ngtMetrics struct {
-	ngt                       service.NGT
-	indexCount                metrics.Int64Measure
-	uncommittedIndexCount     metrics.Int64Measure
-	insertVQueueCount         metrics.Int64Measure
-	deleteVQueueCount         metrics.Int64Measure
-	completedCreateIndexTotal metrics.Int64Measure
-	executedProactiveGCTotal  metrics.Int64Measure
-	isIndexing                metrics.Int64Measure
-	isSaving                  metrics.Int64Measure
+	ngt service.NGT
 }
 
 func New(n service.NGT) metrics.Metric {
 	return &ngtMetrics{
 		ngt: n,
-		indexCount: *metrics.Int64(
-			metrics.ValdOrg+"/agent/core/ngt/index_count",
-			"Agent NGT index count",
-			metrics.UnitDimensionless),
-		uncommittedIndexCount: *metrics.Int64(
-			metrics.ValdOrg+"/agent/core/ngt/uncommitted_index_count",
-			"Agent NGT uncommitted index count",
-			metrics.UnitDimensionless),
-		insertVQueueCount: *metrics.Int64(
-			metrics.ValdOrg+"/agent/core/ngt/insert_vqueue_count",
-			"Agent NGT insert vqueue count",
-			metrics.UnitDimensionless),
-		deleteVQueueCount: *metrics.Int64(
-			metrics.ValdOrg+"/agent/core/ngt/delete_vqueue_count",
-			"Agent NGT delete vqueue count",
-			metrics.UnitDimensionless),
-		completedCreateIndexTotal: *metrics.Int64(
-			metrics.ValdOrg+"/agent/core/ngt/completed_create_index_total",
-			"the cumulative count of completed create index execution",
-			metrics.UnitDimensionless),
-		executedProactiveGCTotal: *metrics.Int64(
-			metrics.ValdOrg+"/agent/core/ngt/executed_proactive_gc_total",
-			"the cumulative count of proactive GC execution",
-			metrics.UnitDimensionless),
-		isIndexing: *metrics.Int64(
-			metrics.ValdOrg+"/agent/core/ngt/is_indexing",
-			"currently indexing or not",
-			metrics.UnitDimensionless),
-		isSaving: *metrics.Int64(
-			metrics.ValdOrg+"/agent/core/ngt/is_saving",
-			"currently saving or not",
-			metrics.UnitDimensionless),
 	}
 }
 
-func (n *ngtMetrics) Measurement(ctx context.Context) ([]metrics.Measurement, error) {
-	var isIndexing int64
-	if n.ngt.IsIndexing() {
-		isIndexing = 1
+func (n *ngtMetrics) Register(m metrics.Meter) error {
+	indexCount, err := m.AsyncInt64().UpDownCounter(
+		"agent_core_ngt_index_count",
+		metrics.WithDescription("Agent NGT index count"),
+		metrics.WithUnit(metrics.Dimensionless),
+	)
+	if err != nil {
+		return err
 	}
 
-	var isSaving int64
-	if n.ngt.IsSaving() {
-		isSaving = 1
+	uncommittedIndexCount, err := m.AsyncInt64().UpDownCounter(
+		"agent_core_ngt_uncommitted_index_count",
+		metrics.WithDescription("Agent NGT uncommitted index count"),
+		metrics.WithUnit(metrics.Dimensionless),
+	)
+	if err != nil {
+		return err
 	}
 
-	return []metrics.Measurement{
-		n.indexCount.M(int64(n.ngt.Len())),
-		n.uncommittedIndexCount.M(int64(n.ngt.InsertVQueueBufferLen() + n.ngt.DeleteVQueueBufferLen())),
-		n.insertVQueueCount.M(int64(n.ngt.InsertVQueueBufferLen())),
-		n.deleteVQueueCount.M(int64(n.ngt.DeleteVQueueBufferLen())),
-		n.completedCreateIndexTotal.M(int64(n.ngt.NumberOfCreateIndexExecution())),
-		n.executedProactiveGCTotal.M(int64(n.ngt.NumberOfProactiveGCExecution())),
-		n.isIndexing.M(isIndexing),
-		n.isSaving.M(isSaving),
-	}, nil
-}
-
-func (n *ngtMetrics) MeasurementWithTags(ctx context.Context) ([]metrics.MeasurementWithTags, error) {
-	return []metrics.MeasurementWithTags{}, nil
-}
-
-func (n *ngtMetrics) View() []*metrics.View {
-	return []*metrics.View{
-		{
-			Name:        "agent_core_ngt_index_count",
-			Description: n.indexCount.Description(),
-			Measure:     &n.indexCount,
-			Aggregation: metrics.LastValue(),
-		},
-		{
-			Name:        "agent_core_ngt_uncommitted_index_count",
-			Description: n.uncommittedIndexCount.Description(),
-			Measure:     &n.uncommittedIndexCount,
-			Aggregation: metrics.LastValue(),
-		},
-		{
-			Name:        "agent_core_ngt_insert_vqueue_count",
-			Description: n.insertVQueueCount.Description(),
-			Measure:     &n.insertVQueueCount,
-			Aggregation: metrics.LastValue(),
-		},
-		{
-			Name:        "agent_core_ngt_delete_vqueue_count",
-			Description: n.deleteVQueueCount.Description(),
-			Measure:     &n.deleteVQueueCount,
-			Aggregation: metrics.LastValue(),
-		},
-		{
-			Name:        "agent_core_ngt_completed_create_index_total",
-			Description: n.completedCreateIndexTotal.Description(),
-			Measure:     &n.completedCreateIndexTotal,
-			Aggregation: metrics.LastValue(),
-		},
-		{
-			Name:        "agent_core_ngt_executed_proactive_gc_total",
-			Description: n.executedProactiveGCTotal.Description(),
-			Measure:     &n.executedProactiveGCTotal,
-			Aggregation: metrics.LastValue(),
-		},
-		{
-			Name:        "agent_core_ngt_is_indexing",
-			Description: n.isIndexing.Description(),
-			Measure:     &n.isIndexing,
-			Aggregation: metrics.LastValue(),
-		},
-		{
-			Name:        "agent_core_ngt_is_saving",
-			Description: n.isSaving.Description(),
-			Measure:     &n.isSaving,
-			Aggregation: metrics.LastValue(),
-		},
+	insertVQueueCount, err := m.AsyncInt64().UpDownCounter(
+		"agent_core_ngt_insert_vqueue_count",
+		metrics.WithDescription("Agent NGT insert vqueue count"),
+		metrics.WithUnit(metrics.Dimensionless),
+	)
+	if err != nil {
+		return err
 	}
+
+	deleteVQueueCount, err := m.AsyncInt64().UpDownCounter(
+		"agent_core_ngt_delete_vqueue_count",
+		metrics.WithDescription("Agent NGT delete vqueue count"),
+		metrics.WithUnit(metrics.Dimensionless),
+	)
+	if err != nil {
+		return err
+	}
+
+	completedCreateIndexTotal, err := m.AsyncInt64().UpDownCounter(
+		"agent_core_ngt_completed_create_index_total",
+		metrics.WithDescription("the cumulative count of completed create index execution"),
+		metrics.WithUnit(metrics.Dimensionless),
+	)
+	if err != nil {
+		return err
+	}
+
+	executedProactiveGCTotal, err := m.AsyncInt64().UpDownCounter(
+		"agent_core_ngt_executed_proactive_gc_total",
+		metrics.WithDescription("the cumulative count of proactive GC execution"),
+		metrics.WithUnit(metrics.Dimensionless),
+	)
+	if err != nil {
+		return err
+	}
+
+	isIndexing, err := m.AsyncInt64().UpDownCounter(
+		"agent_core_ngt_is_indexing",
+		metrics.WithDescription("currently indexing or no"),
+		metrics.WithUnit(metrics.Dimensionless),
+	)
+	if err != nil {
+		return err
+	}
+
+	isSaving, err := m.AsyncInt64().UpDownCounter(
+		"agent_core_ngt_is_saving",
+		metrics.WithDescription("currently saving or not"),
+		metrics.WithUnit(metrics.Dimensionless),
+	)
+	if err != nil {
+		return err
+	}
+
+	return m.RegisterCallback(
+		[]metrics.AsynchronousInstrument{
+			indexCount,
+			uncommittedIndexCount,
+			insertVQueueCount,
+			deleteVQueueCount,
+			completedCreateIndexTotal,
+			executedProactiveGCTotal,
+			isIndexing,
+			isSaving,
+		},
+		func(ctx context.Context) {
+			var indexing int64
+			if n.ngt.IsIndexing() {
+				indexing = 1
+			}
+
+			var saving int64
+			if n.ngt.IsSaving() {
+				saving = 1
+			}
+
+			indexCount.Observe(ctx, int64(n.ngt.Len()))
+			uncommittedIndexCount.Observe(ctx, int64(n.ngt.InsertVQueueBufferLen()+n.ngt.DeleteVQueueBufferLen()))
+			insertVQueueCount.Observe(ctx, int64(n.ngt.InsertVQueueBufferLen()))
+			deleteVQueueCount.Observe(ctx, int64(int64(n.ngt.DeleteVQueueBufferLen())))
+			completedCreateIndexTotal.Observe(ctx, int64(n.ngt.NumberOfCreateIndexExecution()))
+			executedProactiveGCTotal.Observe(ctx, int64(n.ngt.NumberOfProactiveGCExecution()))
+			isIndexing.Observe(ctx, int64(indexing))
+			isSaving.Observe(ctx, int64(saving))
+		},
+	)
 }

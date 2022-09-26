@@ -1,40 +1,38 @@
-//
 // Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//    https://www.apache.org/licenses/LICENSE-2.0
+//	https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
-
-// Package prometheus provides a prometheus exporter.
 package prometheus
 
 import (
 	"context"
 	"net/http"
+	"reflect"
 	"sync"
+	"time"
 
-	"contrib.go.opencensus.io/exporter/prometheus"
+	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/observability/exporter"
+	"go.opentelemetry.io/otel/exporters/prometheus"
+	"go.opentelemetry.io/otel/metric/global"
+	"go.opentelemetry.io/otel/sdk/metric/aggregator/histogram"
+	"go.opentelemetry.io/otel/sdk/metric/controller/basic"
+	"go.opentelemetry.io/otel/sdk/metric/export/aggregation"
+	processor "go.opentelemetry.io/otel/sdk/metric/processor/basic"
+	"go.opentelemetry.io/otel/sdk/metric/selector/simple"
+	"go.opentelemetry.io/otel/sdk/resource"
+	semconv "go.opentelemetry.io/otel/semconv/v1.12.0"
 )
-
-var (
-	instance *exp
-	once     sync.Once
-)
-
-type prometheusOptions struct {
-	endpoint string
-	options  *prometheus.Options
-}
 
 type Prometheus interface {
 	exporter.Exporter
@@ -43,53 +41,93 @@ type Prometheus interface {
 
 type exp struct {
 	exporter *prometheus.Exporter
-	options  prometheusOptions
+
+	namespace          string
+	endpoint           string
+	collectInterval    time.Duration
+	collectTimeout     time.Duration
+	inmemoryEnabled    bool
+	histogramBoundarie []float64
 }
 
-func New(opts ...PrometheusOption) (Prometheus, error) {
-	po := new(prometheusOptions)
-	po.options = new(prometheus.Options)
+var (
+	instance Prometheus
+	once     sync.Once
+)
 
-	for _, opt := range append(prometheusDefaultOpts, opts...) {
-		err := opt(po)
-		if err != nil {
-			return nil, err
+func New(opts ...Option) (Prometheus, error) {
+	e := &exp{}
+	for _, opt := range append(defaultOpts, opts...) {
+		if err := opt(e); err != nil {
+			oerr := errors.ErrOptionFailed(err, reflect.ValueOf(opt))
+			e := &errors.ErrCriticalOption{}
+			if errors.As(oerr, &e) {
+				log.Error(oerr)
+				return nil, oerr
+			}
+			log.Warn(oerr)
 		}
 	}
 
-	ex, err := prometheus.NewExporter(*po.options)
+	// Create controller for prometheus exporter.
+	controller := basic.New(
+		processor.NewFactory(
+			simple.NewWithHistogramDistribution(
+				histogram.WithExplicitBoundaries(e.histogramBoundarie),
+			),
+			aggregation.CumulativeTemporalitySelector(),
+			processor.WithMemory(e.inmemoryEnabled),
+		),
+		basic.WithCollectPeriod(e.collectInterval),
+		basic.WithCollectTimeout(e.collectTimeout),
+		basic.WithResource(resource.NewWithAttributes(
+			semconv.SchemaURL,
+			semconv.ServiceNamespaceKey.String(e.namespace),
+		)),
+	)
+
+	cfg := prometheus.Config{
+		DefaultHistogramBoundaries: e.histogramBoundarie,
+	}
+
+	var err error
+	e.exporter, err = prometheus.New(cfg, controller)
 	if err != nil {
 		return nil, err
 	}
 
-	e := exp{
-		exporter: ex,
-		options:  *po,
-	}
+	return e, nil
+}
 
+func Init(opts ...Option) (Prometheus, error) {
+	var err error
 	once.Do(func() {
-		instance = &e
+		instance, err = New(opts...)
 	})
-
-	return &e, nil
+	if err != nil {
+		once = sync.Once{}
+	}
+	return instance, err
 }
 
 func (e *exp) Start(ctx context.Context) error {
-	return nil
+	global.SetMeterProvider(e.exporter.MeterProvider())
+	return e.exporter.Controller().Start(ctx)
 }
 
-func (e *exp) Stop(ctx context.Context) {
+func (e *exp) Stop(ctx context.Context) error {
+	return e.exporter.Controller().Stop(ctx)
 }
 
 func (e *exp) NewHTTPHandler() http.Handler {
 	mux := http.NewServeMux()
-	mux.Handle(e.options.endpoint, e.exporter)
+	mux.Handle(e.endpoint, e.exporter)
 	return mux
 }
 
 func Exporter() (Prometheus, error) {
-	if instance != nil {
-		return instance, nil
+	if instance == nil {
+		return Init()
 	}
-	return New()
+	return instance, nil
 }
