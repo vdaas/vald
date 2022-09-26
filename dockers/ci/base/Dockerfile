@@ -75,6 +75,7 @@ RUN make ngt/install \
     && make kubelinter/install \
     && make yq/install \
     && make tparse/install \
+    && make gotestfmt/install \
     && make golangci-lint/install \
     && make reviewdog/install \
     && make kubectl/install \
