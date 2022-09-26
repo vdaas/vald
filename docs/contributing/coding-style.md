@@ -934,8 +934,8 @@ Still, in some cases, you may need to change the generated code to meet your req
 
 1. goleak option
 
-   The generated test code will default use [goleak](https://github.com/uber-go/goleak) library to test if there is any goroutine leak.
-   Sometimes you may want to skip the detection; for example, Vald uses [fastime](https://github.com/kpango/fastime) library, but the internal goroutine is not closed due to the needs of the library.
+   The generated test code will default use the [goleak](https://github.com/uber-go/goleak) library to test if there is any goroutine leak.
+   Sometimes you may want to skip the detection; for example, Vald uses the [fastime](https://github.com/kpango/fastime) library, but the internal goroutine is not closed due to the needs of the library.
    To skip the goleak detection, we need to create the following variable to store the ignore function.
 
    ```go
@@ -947,7 +947,7 @@ Still, in some cases, you may need to change the generated code to meet your req
    )
    ```
 
-   And use it in `VerifyNone()` in test case.
+   And use it in `VerifyNone()` in the test case.
 
    ```go
    for _, tc := range tests {
@@ -957,7 +957,7 @@ Still, in some cases, you may need to change the generated code to meet your req
            defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
    ```
 
-   In Vald, we implemented [internal goleak package](https://github.com/vdaas/vald/blob/main/internal/test/goleak/goleak.go) and wrap the goleak validation logic to ignoring the common goleak functions in Vald use case.
+   In Vald, we implemented [internal goleak package](https://github.com/vdaas/vald/blob/main/internal/test/goleak/goleak.go) and wrap the goleak validation logic to ignore the common goleak functions in Vald use case.
    In test implementation, we can easily import the internal goleak package and ignore all the necessary goleak functions by default.
 
    ```go
@@ -995,7 +995,7 @@ Still, in some cases, you may need to change the generated code to meet your req
    To resolve it, we can consider using `goleak.VerifyTestMain()` to validate goleak when all test cases are passed in each package, to avoid the goleak false alarm.
 
    ```go
-   // implement TestMain and verify it in package level
+   // implement TestMain and verify it at package level
    func TestMain(m *testing.M) {
         goleak.VerifyTestMain(m)
    }
@@ -1009,7 +1009,7 @@ Still, in some cases, you may need to change the generated code to meet your req
             // defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
    ```
 
-   Please note that the `TestMain()` can only implement once in each package, you may need to find a right place to implement this function on the package.
+   Please note that the `TestMain()` can only implement once in each package, you may need to find the right place to implement this function on the package.
 
 1. Defer function
 
@@ -1139,7 +1139,7 @@ Still, in some cases, you may need to change the generated code to meet your req
    func Test_server_SaveIndex(t *testing.T) {
         ...
 
-        // all the fields to initialize target struct
+        // all the fields to initialize the target struct
         type fields struct {
             name              string
             ip                string
@@ -1177,7 +1177,7 @@ Still, in some cases, you may need to change the generated code to meet your req
    func Test_server_SaveIndex(t *testing.T) {
         ...
 
-        // we customize the fields to initialize target struct
+        // we customize the fields to initialize the target struct
         type fields struct {
             // options to configure server struct
             srvOpts []Option
@@ -1203,7 +1203,7 @@ Still, in some cases, you may need to change the generated code to meet your req
                 }
 
                 // we use the struct initialization function instead of setting the fields,
-                // by combining the use of functional option, we can configure the struct,
+                // by combining the use of the functional option, we can configure the struct,
                 // and the default values of the struct will be set automatically if we are not defining it.
                 s, err := New(append(test.fields.srvOpts, WithNGT(ngt), WithErrGroup(eg))...)
                 if err != nil {
@@ -1216,12 +1216,12 @@ Still, in some cases, you may need to change the generated code to meet your req
 
 ### Parallel test
 
-In Vald, we use parallel test to accelerate the execution of tests by default. There are two layers of enabling parallel test.
+In Vald, we use parallel tests to accelerate the execution of tests by default. There are two layers of enabling parallel tests.
 
 1. Parallel for the test function
-2. Parallel for the subtests in test function
+2. Parallel for the subtests in the test function
 
-The generated test case will enable these two parallel mode by default. It is implemented by:
+The generated test case will enable these two parallel modes by default. It is implemented by:
 
 ```go
 func Test_server_CreateIndex(t *testing.T) {
@@ -1237,7 +1237,7 @@ func Test_server_CreateIndex(t *testing.T) {
     ...
 ```
 
-Be careful of using parallel test, avoid using share object used in test, to avoid race detector to detect the race in test and fail the test.
+Be careful of using the parallel test, avoid using share object used in the test, to avoid race detector to detect the race in test and fail the test.
 
 ### Using Mock
 
