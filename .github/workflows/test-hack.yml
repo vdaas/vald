@@ -51,9 +51,9 @@ jobs:
       - name: dependencies
         run: |
           make proto/deps
-      - name: Run tests for hack packages / tparse
+      - name: Run tests for hack packages / gotestfmt
         run: |
-          make test/cmd/tparse | tee tparse.txt || cat tparse.txt
-      - name: Run tests for hack packages
+          TEST_RESULT_DIR=${GITHUB_WORKSPACE} make test/hack/gotestfmt
+      - name: print tparse result
         run: |
-          make test/cmd
+          tparse -notests -smallscreen -sort cover -format markdown -file ${GITHUB_WORKSPACE}/test-hack-gotestfmt-result.json

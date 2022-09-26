@@ -278,6 +278,8 @@ E2E_TARGET_NAMESPACE               ?= default
 E2E_TARGET_PORT                    ?= 8081
 E2E_PORTFORWARD_ENABLED            ?= true
 
+TEST_RESULT_DIR ?= /tmp
+
 include Makefile.d/functions.mk
 
 .PHONY: maintainer
