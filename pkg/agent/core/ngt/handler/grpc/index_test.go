@@ -17,6 +17,7 @@ import (
 	"context"
 	"os"
 	"reflect"
+	"sync"
 	"testing"
 	"time"
 
@@ -769,36 +770,15 @@ func Test_server_SaveIndex(t *testing.T) {
 						t.Error(err)
 					}
 
-					// execute save index twice
-					go s.SaveIndex(ctx, emptyPayload)
-				},
-				checkFunc: func(t test, ctx context.Context, s Server, n service.NGT, w want, e *payload.Empty, err error) error {
-					if err := defaultCheckFunc(t, ctx, s, n, w, e, err); err != nil {
-						return err
-					}
-
-					timeout := time.After(10 * time.Second)
-					ticker := time.Tick(10 * time.Millisecond)
-					for {
-						select {
-						case <-timeout:
-							// execute save index twice
-							go s.SaveIndex(ctx, emptyPayload)
-
-							gotRes, err := s.SaveIndex(ctx, emptyPayload)
-							if err := defaultCheckFunc(t, ctx, s, n, w, gotRes, err); err != nil {
-								return err
-							}
-						case <-ticker:
-							// execute save index twice
-							go s.SaveIndex(ctx, emptyPayload)
-
-							gotRes, err := s.SaveIndex(ctx, emptyPayload)
-							if err := defaultCheckFunc(t, ctx, s, n, w, gotRes, err); err == nil {
-								return nil
-							}
-						}
-					}
+					// ensure the goroutine call is scheduled and the first saveIndex() will be executed in the goroutine
+					wg := sync.WaitGroup{}
+					wg.Add(1)
+					go func() {
+						wg.Done()
+						// execute in goroutine to ensure it is executed twice
+						s.SaveIndex(ctx, emptyPayload)
+					}()
+					wg.Wait() // wait until the goroutine is scheduled and wg.Done() is executed
 				},
 				want: want{
 					wantRes: emptyPayload,
