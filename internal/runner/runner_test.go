@@ -491,3 +491,32 @@ func TestDo(t *testing.T) {
 		})
 	}
 }
+
+// remove later
+func TestDoError(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	// create args for Do
+	opts := []Option{WithVersion("v1.1.7", "v1.1.5", "v1.1.0"),
+		WithConfigLoader(func(string) (interface{}, *config.GlobalConfig, error) {
+			return nil, &config.GlobalConfig{
+				Logging: &config.Logging{
+					Logger: "glg",
+					Level:  "info",
+					Format: "json",
+				},
+				Version: "v1.1.7",
+			}, nil
+		})}
+
+	// set args for Do() to execute
+	os.Args = []string{
+		"test", "-c=./runner.go",
+	}
+
+	err := Do(ctx, opts...)
+	if err != errors.ErrInvalidConfigVersion("1.1.7", ">= v1.1.0, <= v1.1.5") {
+		t.Error(err)
+	}
+}
