@@ -286,7 +286,6 @@ func TestRun(t *testing.T) {
 
 func TestDo(t *testing.T) {
 	type args struct {
-		ctx  context.Context
 		opts []Option
 	}
 	type want struct {
@@ -314,9 +313,6 @@ func TestDo(t *testing.T) {
 	tests := []test{
 		{
 			name: "returns nil when option is nil and version option is set",
-			args: args{
-				ctx: context.Background(),
-			},
 			beforeFunc: func(args) {
 				os.Args = []string{
 					"test", "-version",
@@ -329,9 +325,6 @@ func TestDo(t *testing.T) {
 
 		{
 			name: "returns error when option is nil and params.Parse returns error",
-			args: args{
-				ctx: context.Background(),
-			},
 			beforeFunc: func(args) {
 				os.Args = []string{
 					"test", "-team=set",
@@ -345,7 +338,6 @@ func TestDo(t *testing.T) {
 		{
 			name: "returns error when option is not nil and r.loadConfig returns error",
 			args: args{
-				ctx: context.Background(),
 				opts: []Option{
 					WithConfigLoader(func(string) (interface{}, *config.GlobalConfig, error) {
 						return nil, nil, errors.New("err")
@@ -365,7 +357,6 @@ func TestDo(t *testing.T) {
 		{
 			name: "returns error when option is not nil and ver.Check returns error",
 			args: args{
-				ctx: context.Background(),
 				opts: []Option{
 					WithVersion("v1.1.7", "v1.1.5", "v1.1.0"),
 					WithConfigLoader(func(string) (interface{}, *config.GlobalConfig, error) {
@@ -393,7 +384,6 @@ func TestDo(t *testing.T) {
 		{
 			name: "returns error when option is not nil and r.initializeDaemon returns error",
 			args: args{
-				ctx: context.Background(),
 				opts: []Option{
 					WithVersion("v1.1.2", "v1.1.5", "v1.1.0"),
 					WithConfigLoader(func(string) (interface{}, *config.GlobalConfig, error) {
@@ -424,7 +414,6 @@ func TestDo(t *testing.T) {
 		{
 			name: "returns nil when option is not nil and Run returns nil",
 			args: args{
-				ctx: context.Background(),
 				opts: []Option{
 					WithVersion("v1.1.2", "v1.1.5", "v1.1.0"),
 					WithConfigLoader(func(string) (interface{}, *config.GlobalConfig, error) {
@@ -477,6 +466,10 @@ func TestDo(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+
+			ctx, cancel := context.WithCancel(context.Background())
+			defer cancel()
+
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -491,7 +484,7 @@ func TestDo(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 
-			err := Do(test.args.ctx, test.args.opts...)
+			err := Do(ctx, test.args.opts...)
 			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
