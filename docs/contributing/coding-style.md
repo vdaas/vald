@@ -830,7 +830,7 @@ Example:
 
 ```go
 type args struct {
-    addr string
+    host string
     port string
 }
 
@@ -957,7 +957,7 @@ Still, in some cases, you may need to change the generated code to meet your req
            defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
    ```
 
-   In Vald, we implemented [internal goleak package](https://github.com/vdaas/vald/blob/main/internal/test/goleak/goleak.go) and wrap the goleak validation logic to ignore the common goleak functions in Vald use case.
+   In Vald, we implemented [internal goleak package](https://github.com/vdaas/vald/blob/main/internal/test/goleak/goleak.go) and wrap the goleak validation logic to ignore the common goleak functions.
    In test implementation, we can easily import the internal goleak package and ignore all the necessary goleak functions by default.
 
    ```go
@@ -979,9 +979,9 @@ Still, in some cases, you may need to change the generated code to meet your req
    There are two methods for valid goroutine leak:
 
    1. Use `goleak.VerifyNone()` to validate it on each test cases.
-   2. Use `goleak.VerifyTestMain()` to validate it on each package.
+   1. Use `goleak.VerifyTestMain()` to validate it on each package.
 
-   By default, the goroutine leak validation is executed in each test case. e.g.
+   By default, the goroutine leak validation is executed in each test case. E.g.,
 
    ```go
    for _, tc := range tests {
@@ -990,9 +990,9 @@ Still, in some cases, you may need to change the generated code to meet your req
             defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
    ```
 
-   In some cases, it may not work as some cleanup process or asynchronous process remaining in the background, and validating it on the test case using `goleak.VerifyNone()` may cause a false alarm.
+   In some cases, it may not work as some cleanup or asynchronous processes remaining in the background, and validating it on the test case using `goleak.VerifyNone()` may cause a false alarm.
 
-   To resolve it, we can consider using `goleak.VerifyTestMain()` to validate goleak when all test cases are passed in each package, to avoid the goleak false alarm.
+   To resolve it, we can consider using `goleak.VerifyTestMain()` to validate goleak when all test cases are passed in each package.
 
    ```go
    // implement TestMain and verify it at package level
@@ -1083,7 +1083,7 @@ Still, in some cases, you may need to change the generated code to meet your req
 
    If the target function accepts context as an input argument, the test code generated will include it in `args`.
 
-   e.g. 
+   E.g. ,
 
    ```go
     type args struct {
@@ -1092,13 +1092,14 @@ Still, in some cases, you may need to change the generated code to meet your req
     ...
    ```
 
-   But in test implementation, it is hard to manage the context lifecycle. We want to guarantee the context is closed after the test is executed, to avoid any missing termination of the process.
+   But in test implementation, it is hard to manage the context lifecycle.
+   We want to guarantee the context is closed after each test is executed to avoid any missing termination of the process.
 
    In Vald, we suggest customizing the test implementation from the generated test code to create the context and manage the lifecycle in every test.
 
    We can remove the context from the `args` struct and create the context in the test execution code.
 
-   e.g.
+   E.g. ,
 
    ```go
     // we can remove the ctx from args list
@@ -1125,11 +1126,11 @@ Still, in some cases, you may need to change the generated code to meet your req
 
 1. Struct initialization
 
-   By default, when testing the function of the struct, the target struct initialization is implemented by setting the date from the `fields` defined in the test case.
+   By default, when testing the function of the struct, the target struct initialization is implemented by setting the data from the `fields` defined in the test case.
    This initialization method has a few disadvantages:
 
-   1. When there are many fields in the struct, it is hard to set them all
-   2. The default value is the zero value of the type, not the struct default value from the struct initialization function
+   1. When there are many fields in the struct, it is hard to set them all.
+   1. The default value is the zero value of the type, not the struct default value from the struct initialization function.
 
    To resolve these problems, we can modify the test implementation to use the struct initialization function instead of setting the struct fields on the test cases.
 
@@ -1216,7 +1217,8 @@ Still, in some cases, you may need to change the generated code to meet your req
 
 ### Parallel test
 
-In Vald, we use parallel tests to accelerate the execution of tests by default. There are two layers of enabling parallel tests.
+In Vald, we use parallel tests to accelerate the execution of tests by default.
+There are two layers of enabling parallel tests.
 
 1. Parallel for the test function
 2. Parallel for the subtests in the test function
