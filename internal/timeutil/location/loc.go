@@ -14,9 +14,8 @@
 package location
 
 import (
-	"sync/atomic"
+	"sync"
 	"time"
-	"unsafe"
 
 	"github.com/vdaas/vald/internal/strings"
 )
@@ -32,27 +31,23 @@ var (
 	gmt = location(locationGMT, 0)
 	utc = location(locationUTC, 0)
 	jst = location(locationJST, 9*60*60)
+
+	mux sync.Mutex
 )
 
 func Set(loc string) {
-	var local *time.Location
+	mux.Lock()
+	defer mux.Unlock()
 
 	switch strings.ToLower(loc) {
 	case strings.ToLower(locationUTC):
-		local = UTC()
+		time.Local = UTC()
 	case strings.ToLower(locationGMT):
-		local = GMT()
+		time.Local = GMT()
 	case strings.ToLower(locationJST), strings.ToLower(locationTokyo):
-		local = JST()
+		time.Local = JST()
 	default:
-		local = location(loc, 0)
-	}
-
-	new := atomic.LoadPointer((*unsafe.Pointer)(unsafe.Pointer(&local)))
-	old := atomic.LoadPointer((*unsafe.Pointer)(unsafe.Pointer(&time.Local)))
-
-	for !atomic.CompareAndSwapPointer((*unsafe.Pointer)(unsafe.Pointer(&time.Local)), old, new) {
-		old = atomic.LoadPointer((*unsafe.Pointer)(unsafe.Pointer(&time.Local)))
+		time.Local = location(loc, 0)
 	}
 }
 

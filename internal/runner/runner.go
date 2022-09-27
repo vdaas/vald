@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"net/http"
 	"os/signal"
+	"sync"
 	"syscall"
 
 	"github.com/vdaas/vald/internal/config"
@@ -54,6 +55,8 @@ type runner struct {
 	loadConfig       func(string) (interface{}, *config.GlobalConfig, error)
 	initializeDaemon func(interface{}) (Runner, error)
 }
+
+var mux sync.Mutex
 
 func Do(ctx context.Context, opts ...Option) error {
 	r := new(runner)
@@ -112,7 +115,9 @@ func Do(ctx context.Context, opts ...Option) error {
 		}())
 
 	// set location temporary for initialization logging
+	mux.Lock()
 	location.Set(ccfg.TZ)
+	mux.Unlock()
 
 	err = ver.Check(ccfg.Version, r.maxVersion, r.minVersion)
 	if err != nil {
