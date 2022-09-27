@@ -11,29 +11,33 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-package circuitbreaker
+package metric
 
 import (
 	"reflect"
 	"testing"
 
 	"github.com/vdaas/vald/internal/errors"
-	"github.com/vdaas/vald/internal/observability/metrics"
+	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/test/goleak"
 )
 
-func TestNew(t *testing.T) {
+func TestMetricInterceptor(t *testing.T) {
 	type want struct {
-		want metrics.Metric
+		want grpc.UnaryServerInterceptor
+		err  error
 	}
 	type test struct {
 		name       string
 		want       want
-		checkFunc  func(want, metrics.Metric) error
+		checkFunc  func(want, grpc.UnaryServerInterceptor, error) error
 		beforeFunc func()
 		afterFunc  func()
 	}
-	defaultCheckFunc := func(w want, got metrics.Metric) error {
+	defaultCheckFunc := func(w want, got grpc.UnaryServerInterceptor, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
 		if !reflect.DeepEqual(got, w.want) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
@@ -77,37 +81,32 @@ func TestNew(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 
-			got := New()
-			if err := checkFunc(test.want, got); err != nil {
+			got, err := MetricInterceptor()
+			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
 	}
 }
 
-func Test_breakerMetrics_Register(t *testing.T) {
-	type args struct {
-		m metrics.Meter
-	}
-	type fields struct {
-		breakerNameKey string
-		stateKey       string
-	}
+func TestMetricStreamInterceptor(t *testing.T) {
 	type want struct {
-		err error
+		want grpc.StreamServerInterceptor
+		err  error
 	}
 	type test struct {
 		name       string
-		args       args
-		fields     fields
 		want       want
-		checkFunc  func(want, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		checkFunc  func(want, grpc.StreamServerInterceptor, error) error
+		beforeFunc func()
+		afterFunc  func()
 	}
-	defaultCheckFunc := func(w want, err error) error {
+	defaultCheckFunc := func(w want, got grpc.StreamServerInterceptor, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -116,13 +115,6 @@ func Test_breakerMetrics_Register(t *testing.T) {
 		/*
 		   {
 		       name: "test_case_1",
-		       args: args {
-		           m: nil,
-		       },
-		       fields: fields {
-		           breakerNameKey: "",
-		           stateKey: "",
-		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
 		   },
@@ -133,13 +125,6 @@ func Test_breakerMetrics_Register(t *testing.T) {
 		   func() test {
 		       return test {
 		           name: "test_case_2",
-		           args: args {
-		           m: nil,
-		           },
-		           fields: fields {
-		           breakerNameKey: "",
-		           stateKey: "",
-		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
 		       }
@@ -153,22 +138,18 @@ func Test_breakerMetrics_Register(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc()
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc()
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
-			bm := &breakerMetrics{
-				breakerNameKey: test.fields.breakerNameKey,
-				stateKey:       test.fields.stateKey,
-			}
 
-			err := bm.Register(test.args.m)
-			if err := checkFunc(test.want, err); err != nil {
+			got, err := MetricStreamInterceptor()
+			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

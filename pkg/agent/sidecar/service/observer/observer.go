@@ -34,6 +34,7 @@ import (
 	"github.com/vdaas/vald/internal/file/watch"
 	"github.com/vdaas/vald/internal/io"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/observability/attribute"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/pkg/agent/internal/metadata"
@@ -413,9 +414,9 @@ func (o *observer) backup(ctx context.Context) (err error) {
 	ctx, span := trace.StartSpan(ctx, "vald/agent-sidecar/service/observer/StorageObserver.backup")
 	if span != nil {
 		span.SetAttributes(
-			trace.StringAttribute("storage_type", bi.StorageInfo.Type),
-			trace.StringAttribute("bucket_name", bi.BucketName),
-			trace.StringAttribute("filename", bi.Filename),
+			attribute.String("storage_type", bi.StorageInfo.Type),
+			attribute.String("bucket_name", bi.BucketName),
+			attribute.String("filename", bi.Filename),
 		)
 	}
 	defer func() {

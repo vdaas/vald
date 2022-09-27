@@ -25,6 +25,9 @@ type (
 	UnaryServerInterceptor  = grpc.UnaryServerInterceptor
 	StreamServerInterceptor = grpc.StreamServerInterceptor
 
+	UnaryClientInterceptor  = grpc.UnaryClientInterceptor
+	StreamClientInterceptor = grpc.StreamClientInterceptor
+
 	UnaryServerInfo = grpc.UnaryServerInfo
 	UnaryHandler    = grpc.UnaryHandler
 
