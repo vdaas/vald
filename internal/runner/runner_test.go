@@ -33,8 +33,7 @@ import (
 
 func TestMain(m *testing.M) {
 	log.Init(log.WithLoggerType(logger.NOP.String()))
-	code := m.Run()
-	os.Exit(code)
+	os.Exit(m.Run())
 }
 
 func TestRun(t *testing.T) {
@@ -474,16 +473,18 @@ func TestDo(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
-			if test.afterFunc == nil {
-				test.afterFunc = defaultAfterFunc
+			afterFunc := defaultAfterFunc
+			if test.afterFunc != nil {
+				afterFunc = test.afterFunc
 			}
-			defer test.afterFunc(test.args)
+			defer afterFunc(test.args)
 
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
