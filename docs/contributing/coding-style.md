@@ -1244,7 +1244,6 @@ In golang testing package, they defined the helper functions in testing types to
 In Vald, we can apply it to the different helper functions like `beforeFunc()` or `afterFunc()` defined in the test case struct.
 
 ```go
-
 type test struct {
     ...
     beforeFunc func(*testing.T) // helper function to initialze testing
