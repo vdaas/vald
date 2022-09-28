@@ -981,7 +981,7 @@ Still, in some cases, you may need to change the generated code to meet your req
    1. Use `goleak.VerifyNone()` to validate it on each test cases.
    1. Use `goleak.VerifyTestMain()` to validate it on each package.
 
-   By default, the goroutine leak validation is executed in each test case. E.g.,
+   By default, the goroutine leak validation is executed in each test case.
 
    ```go
    for _, tc := range tests {
@@ -1083,8 +1083,6 @@ Still, in some cases, you may need to change the generated code to meet your req
 
    If the target function accepts context as an input argument, the test code generated will include it in `args`.
 
-   E.g. ,
-
    ```go
     type args struct {
         ctx context.Context
@@ -1098,8 +1096,6 @@ Still, in some cases, you may need to change the generated code to meet your req
    In Vald, we suggest customizing the test implementation from the generated test code to create the context and manage the lifecycle in every test.
 
    We can remove the context from the `args` struct and create the context in the test execution code.
-
-   E.g. ,
 
    ```go
     // we can remove the ctx from args list
