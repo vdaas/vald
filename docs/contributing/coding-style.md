@@ -1241,6 +1241,46 @@ func Test_server_CreateIndex(t *testing.T) {
 
 Be careful of using the parallel test, avoid using share object used in the test, to avoid race detector to detect the race in test and fail the test.
 
+### Helper function
+
+In golang testing package, they defined the helper functions in testing types to indicate the current function is a test helper function and skip printing the file and line information to the output.
+
+In Vald, we can apply it to the different helper functions like `beforeFunc()` or `afterFunc()` defined in the test case struct.
+
+```go
+
+type test struct {
+    ...
+    beforeFunc func(*testing.T) // helper function to initialze testing
+    afterFunc  func(*testing.T) // helper function to cleanup
+}
+
+tests := []test {
+    {
+        name: "send success when host and port are correct value",
+        args: args {
+            host: "vdaas.vald.org",
+            port: "80",
+        },
+        field: field {
+            host: "vdaas.vald.org",
+            port: "80",
+        },
+        beforeFunc: func(t *testing.T) {
+            t.Helper() // indicate the current function is helper function
+            /* initialization logic of testing environment */
+        },
+        want: want {
+            err: nil,
+        },
+        afterFunc: func(t *testing.T) {
+            t.Helper() // indicate the current function is helper function
+            /* cleanup logic */
+        }
+    },
+}
+```
+
 ### Using Mock
 
 In Vald, we use a lot of external libraries, and there are a lot of dependencies between libraries.
