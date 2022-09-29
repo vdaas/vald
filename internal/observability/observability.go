@@ -153,8 +153,10 @@ func (o *observability) PreStart(ctx context.Context) error {
 		}
 	}
 
-	if err := o.tracer.Start(ctx); err != nil {
-		return err
+	if o.tracer != nil {
+		if err := o.tracer.Start(ctx); err != nil {
+			return err
+		}
 	}
 	return nil
 }
