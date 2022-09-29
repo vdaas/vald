@@ -15,15 +15,13 @@ package trace
 
 import (
 	"github.com/vdaas/vald/internal/net/grpc"
-	// "go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
+	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 )
 
 func TraceInterceptor() grpc.UnaryServerInterceptor {
-	return nil
-	// return otelgrpc.UnaryServerInterceptor()
+	return otelgrpc.UnaryServerInterceptor()
 }
 
 func TraceStreamInterceptor() grpc.StreamServerInterceptor {
-	return nil
-	// return otelgrpc.StreamServerInterceptor()
+	return otelgrpc.StreamServerInterceptor()
 }
