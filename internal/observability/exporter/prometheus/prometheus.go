@@ -20,14 +20,17 @@ import (
 	"sync"
 	"time"
 
+	otelprom "go.opentelemetry.io/otel/exporters/prometheus"
+	"go.opentelemetry.io/otel/metric/global"
+	"go.opentelemetry.io/otel/sdk/metric"
+	"go.opentelemetry.io/otel/sdk/metric/view"
+
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/observability/exporter"
 	"github.com/vdaas/vald/internal/observability/metrics"
-	"go.opentelemetry.io/otel/exporters/prometheus"
-	"go.opentelemetry.io/otel/metric/global"
-	"go.opentelemetry.io/otel/sdk/metric"
-	"go.opentelemetry.io/otel/sdk/metric/view"
 )
 
 type Prometheus interface {
@@ -36,8 +39,9 @@ type Prometheus interface {
 }
 
 type exp struct {
-	exporter prometheus.Exporter
+	exporter otelprom.Exporter
 	viewers  []metrics.Viewer
+	registry *prometheus.Registry
 
 	namespace          string
 	endpoint           string
@@ -65,34 +69,8 @@ func New(opts ...Option) (Prometheus, error) {
 			log.Warn(oerr)
 		}
 	}
-	e.exporter = prometheus.New()
-
-	// // Create controller for prometheus exporter.
-	// controller := basic.New(
-	// 	processor.NewFactory(
-	// 		simple.NewWithHistogramDistribution(
-	// 			histogram.WithExplicitBoundaries(e.histogramBoundarie),
-	// 		),
-	// 		aggregation.CumulativeTemporalitySelector(),
-	// 		processor.WithMemory(e.inmemoryEnabled),
-	// 	),
-	// 	basic.WithCollectPeriod(e.collectInterval),
-	// 	basic.WithCollectTimeout(e.collectTimeout),
-	// 	basic.WithResource(resource.NewWithAttributes(
-	// 		semconv.SchemaURL,
-	// 		semconv.ServiceNamespaceKey.String(e.namespace),
-	// 	)),
-	// )
-
-	// cfg := prometheus.Config{
-	// 	DefaultHistogramBoundaries: e.histogramBoundarie,
-	// }
-	//
-	// var err error
-	// e.exporter, err = prometheus.New(cfg, nil)
-	// if err != nil {
-	// 	return nil, err
-	// }
+	e.exporter = otelprom.New()
+	e.registry = prometheus.NewRegistry()
 
 	return e, nil
 }
@@ -124,17 +102,21 @@ func (e *exp) Start(ctx context.Context) error {
 	))
 	global.SetMeterProvider(provider)
 
+	registry := prometheus.NewRegistry()
+	if err := registry.Register(e.exporter.Collector); err != nil {
+		return err
+	}
+
 	return nil
 }
 
 func (e *exp) Stop(ctx context.Context) error {
-	return nil
-	// return e.exporter.Controller().Stop(ctx)
+	return e.exporter.Shutdown(ctx)
 }
 
 func (e *exp) NewHTTPHandler() http.Handler {
 	mux := http.NewServeMux()
-	// mux.Handle(e.endpoint, e.exporter)
+	mux.Handle(e.endpoint, promhttp.HandlerFor(e.registry, promhttp.HandlerOpts{}))
 	return mux
 }
 
