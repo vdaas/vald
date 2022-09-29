@@ -26,7 +26,7 @@ const (
 	indexCountMetricsName        = "agent_core_ngt_index_count"
 	indexCountMetricsDescription = "Agent NGT index count"
 
-	uncommittedIndexCountMetricsName        = "agent_core_ngt_index_count"
+	uncommittedIndexCountMetricsName        = "agent_core_ngt_uncommitted_index_count"
 	uncommittedIndexCountMetricsDescription = "Agent NGT index count"
 
 	insertVQueueCountMetricsName        = "agent_core_ngt_insert_vqueue_count"
@@ -207,7 +207,7 @@ func (n *ngtMetrics) Register(m metrics.Meter) error {
 		return err
 	}
 
-	isSaving, err := m.AsyncInt64().UpDownCounter(
+	isSaving, err := m.AsyncInt64().Gauge(
 		isSavingMetricsName,
 		metrics.WithDescription(isSavingMetricsDescription),
 		metrics.WithUnit(metrics.Dimensionless),
