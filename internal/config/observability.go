@@ -42,9 +42,9 @@ type Metrics struct {
 
 // Prometheus represents the configuration for the prometheus.
 type Prometheus struct {
-	Enabled   bool   `json:"enabled"               yaml:"enabled"`
-	Endpoint  string `json:"endpoint"              yaml:"endpoint"`
-	Namespace string `json:"namespace"             yaml:"namespace"`
+	Enabled   bool   `json:"enabled"   yaml:"enabled"`
+	Endpoint  string `json:"endpoint"  yaml:"endpoint"`
+	Namespace string `json:"namespace" yaml:"namespace"`
 }
 
 // Jaeger represents the configuration for the jaeger.
