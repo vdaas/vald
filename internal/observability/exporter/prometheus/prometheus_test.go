@@ -20,9 +20,11 @@ import (
 	"testing"
 	"time"
 
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/observability/metrics"
 	"github.com/vdaas/vald/internal/test/goleak"
-	"go.opentelemetry.io/otel/exporters/prometheus"
+	otelprom "go.opentelemetry.io/otel/exporters/prometheus"
 )
 
 func TestNew(t *testing.T) {
@@ -98,6 +100,7 @@ func TestNew(t *testing.T) {
 			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -175,6 +178,7 @@ func TestInit(t *testing.T) {
 			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -184,7 +188,9 @@ func Test_exp_Start(t *testing.T) {
 		ctx context.Context
 	}
 	type fields struct {
-		exporter           *prometheus.Exporter
+		exporter           otelprom.Exporter
+		views              []metrics.View
+		registry           *prometheus.Registry
 		namespace          string
 		endpoint           string
 		collectInterval    time.Duration
@@ -220,6 +226,8 @@ func Test_exp_Start(t *testing.T) {
 		       },
 		       fields: fields {
 		           exporter: nil,
+		           views: nil,
+		           registry: nil,
 		           namespace: "",
 		           endpoint: "",
 		           collectInterval: nil,
@@ -242,6 +250,8 @@ func Test_exp_Start(t *testing.T) {
 		           },
 		           fields: fields {
 		           exporter: nil,
+		           views: nil,
+		           registry: nil,
 		           namespace: "",
 		           endpoint: "",
 		           collectInterval: nil,
@@ -273,6 +283,8 @@ func Test_exp_Start(t *testing.T) {
 			}
 			e := &exp{
 				exporter:           test.fields.exporter,
+				views:              test.fields.views,
+				registry:           test.fields.registry,
 				namespace:          test.fields.namespace,
 				endpoint:           test.fields.endpoint,
 				collectInterval:    test.fields.collectInterval,
@@ -285,6 +297,7 @@ func Test_exp_Start(t *testing.T) {
 			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -294,7 +307,9 @@ func Test_exp_Stop(t *testing.T) {
 		ctx context.Context
 	}
 	type fields struct {
-		exporter           *prometheus.Exporter
+		exporter           otelprom.Exporter
+		views              []metrics.View
+		registry           *prometheus.Registry
 		namespace          string
 		endpoint           string
 		collectInterval    time.Duration
@@ -330,6 +345,8 @@ func Test_exp_Stop(t *testing.T) {
 		       },
 		       fields: fields {
 		           exporter: nil,
+		           views: nil,
+		           registry: nil,
 		           namespace: "",
 		           endpoint: "",
 		           collectInterval: nil,
@@ -352,6 +369,8 @@ func Test_exp_Stop(t *testing.T) {
 		           },
 		           fields: fields {
 		           exporter: nil,
+		           views: nil,
+		           registry: nil,
 		           namespace: "",
 		           endpoint: "",
 		           collectInterval: nil,
@@ -383,6 +402,8 @@ func Test_exp_Stop(t *testing.T) {
 			}
 			e := &exp{
 				exporter:           test.fields.exporter,
+				views:              test.fields.views,
+				registry:           test.fields.registry,
 				namespace:          test.fields.namespace,
 				endpoint:           test.fields.endpoint,
 				collectInterval:    test.fields.collectInterval,
@@ -395,13 +416,16 @@ func Test_exp_Stop(t *testing.T) {
 			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
 
 func Test_exp_NewHTTPHandler(t *testing.T) {
 	type fields struct {
-		exporter           *prometheus.Exporter
+		exporter           otelprom.Exporter
+		views              []metrics.View
+		registry           *prometheus.Registry
 		namespace          string
 		endpoint           string
 		collectInterval    time.Duration
@@ -433,6 +457,8 @@ func Test_exp_NewHTTPHandler(t *testing.T) {
 		       name: "test_case_1",
 		       fields: fields {
 		           exporter: nil,
+		           views: nil,
+		           registry: nil,
 		           namespace: "",
 		           endpoint: "",
 		           collectInterval: nil,
@@ -452,6 +478,8 @@ func Test_exp_NewHTTPHandler(t *testing.T) {
 		           name: "test_case_2",
 		           fields: fields {
 		           exporter: nil,
+		           views: nil,
+		           registry: nil,
 		           namespace: "",
 		           endpoint: "",
 		           collectInterval: nil,
@@ -483,6 +511,8 @@ func Test_exp_NewHTTPHandler(t *testing.T) {
 			}
 			e := &exp{
 				exporter:           test.fields.exporter,
+				views:              test.fields.views,
+				registry:           test.fields.registry,
 				namespace:          test.fields.namespace,
 				endpoint:           test.fields.endpoint,
 				collectInterval:    test.fields.collectInterval,
@@ -495,6 +525,7 @@ func Test_exp_NewHTTPHandler(t *testing.T) {
 			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -562,6 +593,7 @@ func TestExporter(t *testing.T) {
 			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }

@@ -25,7 +25,6 @@ import (
 	otelprom "go.opentelemetry.io/otel/exporters/prometheus"
 	"go.opentelemetry.io/otel/metric/global"
 	"go.opentelemetry.io/otel/sdk/metric"
-	"go.opentelemetry.io/otel/sdk/metric/view"
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
@@ -40,7 +39,7 @@ type Prometheus interface {
 
 type exp struct {
 	exporter otelprom.Exporter
-	viewers  []metrics.Viewer
+	views    []metrics.View
 	registry *prometheus.Registry
 
 	namespace          string
@@ -70,6 +69,14 @@ func New(opts ...Option) (Prometheus, error) {
 		}
 	}
 	e.exporter = otelprom.New()
+
+	// If implemented in the Start function, registration of global provider will be delayed, and other internal libraries may use default global provider before registration.
+	global.SetMeterProvider(metric.NewMeterProvider(
+		metric.WithReader(
+			e.exporter,
+			e.views...,
+		),
+	))
 	e.registry = prometheus.NewRegistry()
 
 	return e, nil
@@ -87,32 +94,18 @@ func Init(opts ...Option) (Prometheus, error) {
 }
 
 func (e *exp) Start(ctx context.Context) error {
-	otlViews := make([]view.View, 0, len(e.viewers))
-	for _, viewer := range e.viewers {
-		views, err := viewer.View()
-		if err != nil {
-			return err
-		}
-		for _, v := range views {
-			otlViews = append(otlViews, *v)
-		}
-	}
-
-	provider := metric.NewMeterProvider(metric.WithReader(
-		e.exporter,
-		otlViews...,
-	))
-	global.SetMeterProvider(provider)
-
 	if err := e.registry.Register(e.exporter.Collector); err != nil {
 		return err
 	}
-
 	return nil
 }
 
 func (e *exp) Stop(ctx context.Context) error {
-	return e.exporter.Shutdown(ctx)
+	if err := e.exporter.Shutdown(ctx); err != nil {
+		return err
+	}
+	e.registry.Unregister(e.exporter.Collector)
+	return nil
 }
 
 func (e *exp) NewHTTPHandler() http.Handler {

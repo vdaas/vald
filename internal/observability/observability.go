@@ -13,7 +13,6 @@
 // limitations under the License.
 package observability
 
-// TODO: Fix observability-v2 to observability
 import (
 	"context"
 	"reflect"
@@ -81,9 +80,6 @@ func NewWithConfig(cfg *config.Observability, ms ...metrics.Metric) (Observabili
 		prom, err := prometheus.Init(
 			prometheus.WithEndpoint(cfg.Prometheus.Endpoint),
 			prometheus.WithNamespace(cfg.Prometheus.Namespace),
-			prometheus.WithCollectInterval(cfg.Prometheus.CollectInterval),
-			prometheus.WithCollectTimeout(cfg.Prometheus.CollectTimeout),
-			prometheus.WithInMemoty(cfg.Prometheus.EnableInMemoryMode),
 			prometheus.WithView(views...),
 		)
 		if err != nil {
