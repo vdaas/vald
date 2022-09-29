@@ -19,6 +19,8 @@ import (
 	"github.com/vdaas/vald/internal/backoff"
 	"github.com/vdaas/vald/internal/observability/attribute"
 	"github.com/vdaas/vald/internal/observability/metrics"
+	"go.opentelemetry.io/otel/sdk/metric/aggregation"
+	"go.opentelemetry.io/otel/sdk/metric/view"
 )
 
 type backoffMetrics struct {
@@ -29,6 +31,16 @@ func New() metrics.Metric {
 	return &backoffMetrics{
 		backoffNameKey: "backoff_name",
 	}
+}
+
+func (bm *backoffMetrics) View() {
+	view.New(
+		view.MatchInstrumentName(""),
+		view.WithSetAggregation(aggregation.ExplicitBucketHistogram{
+			Boundaries: nil,
+		}),
+		view.WithSetDescription(""),
+	)
 }
 
 func (bm *backoffMetrics) Register(m metrics.Meter) error {

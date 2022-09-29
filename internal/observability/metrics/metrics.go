@@ -18,14 +18,17 @@ import (
 	"go.opentelemetry.io/otel/metric/global"
 	"go.opentelemetry.io/otel/metric/instrument"
 	"go.opentelemetry.io/otel/metric/unit"
+	"go.opentelemetry.io/otel/sdk/metric/view"
 )
 
 const (
 	ValdOrg = "vald.vdaas.org"
 )
 
-// Meter is type alias of metrics.Meter.
-type Meter = metric.Meter
+type (
+	// Meter is type alias of metrics.Meter.
+	Meter = metric.Meter
+)
 
 // GetMeter returns the Meter object to record metrics.
 func GetMeter() Meter {
@@ -62,7 +65,9 @@ func WithDescription(desc string) instrument.Option {
 	return instrument.WithDescription(desc)
 }
 
+type View = view.View
+
 // Metric represents an interface for metric.
 type Metric interface {
-	Register(metric.Meter) error
+	Register(Meter) error
 }

@@ -471,22 +471,6 @@ replace (
 	go.mongodb.org/mongo-driver => go.mongodb.org/mongo-driver v1.10.2
 	go.mozilla.org/pkcs7 => go.mozilla.org/pkcs7 v0.0.0-20210826202110-33d05740a352
 	go.opencensus.io => go.opencensus.io v0.23.0
-	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc => go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.34.0
-	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp => go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.34.0
-	go.opentelemetry.io/otel => go.opentelemetry.io/otel v1.9.0
-	go.opentelemetry.io/otel/exporters/jaeger => go.opentelemetry.io/otel/exporters/jaeger v1.9.0
-	go.opentelemetry.io/otel/exporters/otlp => go.opentelemetry.io/otel/exporters/otlp v0.20.0
-	go.opentelemetry.io/otel/exporters/otlp/internal/retry => go.opentelemetry.io/otel/exporters/otlp/internal/retry v1.9.0
-	go.opentelemetry.io/otel/exporters/otlp/otlptrace => go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.9.0
-	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc => go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc v1.9.0
-	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp => go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp v1.9.0
-	go.opentelemetry.io/otel/exporters/prometheus => go.opentelemetry.io/otel/exporters/prometheus v0.31.0
-	go.opentelemetry.io/otel/metric => go.opentelemetry.io/otel/metric v0.31.0
-	go.opentelemetry.io/otel/sdk => go.opentelemetry.io/otel/sdk v1.9.0
-	go.opentelemetry.io/otel/sdk/export/metric => go.opentelemetry.io/otel/sdk/export/metric v0.28.0
-	go.opentelemetry.io/otel/sdk/metric => go.opentelemetry.io/otel/sdk/metric v0.31.0
-	go.opentelemetry.io/otel/trace => go.opentelemetry.io/otel/trace v1.9.0
-	go.opentelemetry.io/proto/otlp => go.opentelemetry.io/proto/otlp v0.19.0
 	go.starlark.net => go.starlark.net v0.0.0-20220817180228-f738f5508c12
 	go.uber.org/atomic => go.uber.org/atomic v1.10.0
 	go.uber.org/automaxprocs => go.uber.org/automaxprocs v1.5.1
@@ -589,14 +573,13 @@ require (
 	github.com/scylladb/gocqlx v0.0.0-00010101000000-000000000000
 	github.com/vdaas/vald-client-go v0.0.0-00010101000000-000000000000
 	github.com/zeebo/xxh3 v1.0.2
-	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.20.0
-	go.opentelemetry.io/otel v1.9.0
-	go.opentelemetry.io/otel/exporters/jaeger v0.0.0-00010101000000-000000000000
-	go.opentelemetry.io/otel/exporters/prometheus v0.0.0-00010101000000-000000000000
-	go.opentelemetry.io/otel/metric v0.31.0
-	go.opentelemetry.io/otel/sdk v1.9.0
-	go.opentelemetry.io/otel/sdk/metric v0.31.0
-	go.opentelemetry.io/otel/trace v1.9.0
+	go.opentelemetry.io/otel v1.10.0
+	go.opentelemetry.io/otel/exporters/jaeger v1.10.0
+	go.opentelemetry.io/otel/exporters/prometheus v0.32.1
+	go.opentelemetry.io/otel/metric v0.32.1
+	go.opentelemetry.io/otel/sdk v1.10.0
+	go.opentelemetry.io/otel/sdk/metric v0.32.1
+	go.opentelemetry.io/otel/trace v1.10.0
 	go.uber.org/automaxprocs v0.0.0-00010101000000-000000000000
 	go.uber.org/goleak v1.1.12
 	go.uber.org/zap v1.23.0

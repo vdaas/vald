@@ -90,6 +90,12 @@ func WithInMemoty(ok bool) Option {
 	}
 }
 
+func WithView() Option {
+	return func(e *exp) error {
+		return nil
+	}
+}
+
 func WithHistogramDistribution(fs []float64) Option {
 	return func(e *exp) error {
 		if len(fs) == 0 {

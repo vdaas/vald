@@ -23,15 +23,7 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/observability/exporter"
-	"go.opentelemetry.io/otel/exporters/prometheus"
-	"go.opentelemetry.io/otel/metric/global"
-	"go.opentelemetry.io/otel/sdk/metric/aggregator/histogram"
-	"go.opentelemetry.io/otel/sdk/metric/controller/basic"
-	"go.opentelemetry.io/otel/sdk/metric/export/aggregation"
-	processor "go.opentelemetry.io/otel/sdk/metric/processor/basic"
-	"go.opentelemetry.io/otel/sdk/metric/selector/simple"
-	"go.opentelemetry.io/otel/sdk/resource"
-	semconv "go.opentelemetry.io/otel/semconv/v1.12.0"
+	"github.com/vdaas/vald/internal/observability/metrics"
 )
 
 type Prometheus interface {
@@ -40,7 +32,8 @@ type Prometheus interface {
 }
 
 type exp struct {
-	exporter *prometheus.Exporter
+	// exporter *prometheus.Exporter
+	views metrics.View
 
 	namespace          string
 	endpoint           string
@@ -69,32 +62,32 @@ func New(opts ...Option) (Prometheus, error) {
 		}
 	}
 
-	// Create controller for prometheus exporter.
-	controller := basic.New(
-		processor.NewFactory(
-			simple.NewWithHistogramDistribution(
-				histogram.WithExplicitBoundaries(e.histogramBoundarie),
-			),
-			aggregation.CumulativeTemporalitySelector(),
-			processor.WithMemory(e.inmemoryEnabled),
-		),
-		basic.WithCollectPeriod(e.collectInterval),
-		basic.WithCollectTimeout(e.collectTimeout),
-		basic.WithResource(resource.NewWithAttributes(
-			semconv.SchemaURL,
-			semconv.ServiceNamespaceKey.String(e.namespace),
-		)),
-	)
+	// // Create controller for prometheus exporter.
+	// controller := basic.New(
+	// 	processor.NewFactory(
+	// 		simple.NewWithHistogramDistribution(
+	// 			histogram.WithExplicitBoundaries(e.histogramBoundarie),
+	// 		),
+	// 		aggregation.CumulativeTemporalitySelector(),
+	// 		processor.WithMemory(e.inmemoryEnabled),
+	// 	),
+	// 	basic.WithCollectPeriod(e.collectInterval),
+	// 	basic.WithCollectTimeout(e.collectTimeout),
+	// 	basic.WithResource(resource.NewWithAttributes(
+	// 		semconv.SchemaURL,
+	// 		semconv.ServiceNamespaceKey.String(e.namespace),
+	// 	)),
+	// )
 
-	cfg := prometheus.Config{
-		DefaultHistogramBoundaries: e.histogramBoundarie,
-	}
-
-	var err error
-	e.exporter, err = prometheus.New(cfg, controller)
-	if err != nil {
-		return nil, err
-	}
+	// cfg := prometheus.Config{
+	// 	DefaultHistogramBoundaries: e.histogramBoundarie,
+	// }
+	//
+	// var err error
+	// e.exporter, err = prometheus.New(cfg, nil)
+	// if err != nil {
+	// 	return nil, err
+	// }
 
 	return e, nil
 }
@@ -111,17 +104,19 @@ func Init(opts ...Option) (Prometheus, error) {
 }
 
 func (e *exp) Start(ctx context.Context) error {
-	global.SetMeterProvider(e.exporter.MeterProvider())
-	return e.exporter.Controller().Start(ctx)
+	// global.SetMeterProvider(e.exporter.MeterProvider())
+	return nil
+	// return e.exporter.Controller().Start(ctx)
 }
 
 func (e *exp) Stop(ctx context.Context) error {
-	return e.exporter.Controller().Stop(ctx)
+	return nil
+	// return e.exporter.Controller().Stop(ctx)
 }
 
 func (e *exp) NewHTTPHandler() http.Handler {
 	mux := http.NewServeMux()
-	mux.Handle(e.endpoint, e.exporter)
+	// mux.Handle(e.endpoint, e.exporter)
 	return mux
 }
 

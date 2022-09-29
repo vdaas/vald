@@ -80,6 +80,7 @@ func NewWithConfig(cfg *config.Observability, metrics ...metrics.Metric) (Observ
 			prometheus.WithCollectInterval(cfg.Prometheus.CollectInterval),
 			prometheus.WithCollectTimeout(cfg.Prometheus.CollectTimeout),
 			prometheus.WithInMemoty(cfg.Prometheus.EnableInMemoryMode),
+			// prometheus.WithView(cfg.View),
 		)
 		if err != nil {
 			return nil, err
