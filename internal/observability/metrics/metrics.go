@@ -67,7 +67,12 @@ func WithDescription(desc string) instrument.Option {
 
 type View = view.View
 
+type Viewer interface {
+	View() (View, error)
+}
+
 // Metric represents an interface for metric.
 type Metric interface {
+	Viewer
 	Register(Meter) error
 }
