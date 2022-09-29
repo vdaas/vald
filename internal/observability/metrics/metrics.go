@@ -21,14 +21,10 @@ import (
 	"go.opentelemetry.io/otel/sdk/metric/view"
 )
 
-const (
-	ValdOrg = "vald.vdaas.org"
-)
+const ValdOrg = "vald.vdaas.org"
 
-type (
-	// Meter is type alias of metrics.Meter.
-	Meter = metric.Meter
-)
+// Meter is type alias of metrics.Meter.
+type Meter = metric.Meter
 
 // GetMeter returns the Meter object to record metrics.
 func GetMeter() Meter {
