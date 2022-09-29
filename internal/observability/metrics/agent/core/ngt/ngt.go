@@ -63,7 +63,6 @@ func (n *ngtMetrics) View() ([]*metrics.View, error) {
 		view.MatchInstrumentName(indexCountMetricsName),
 		view.WithSetDescription(indexCountMetricsDescription),
 		view.WithSetAggregation(aggregation.LastValue{}),
-		view.MatchInstrumentKind(view.AsyncUpDownCounter),
 	)
 	if err != nil {
 		return nil, err
@@ -73,7 +72,6 @@ func (n *ngtMetrics) View() ([]*metrics.View, error) {
 		view.MatchInstrumentName(uncommittedIndexCountMetricsName),
 		view.WithSetDescription(uncommittedIndexCountMetricsDescription),
 		view.WithSetAggregation(aggregation.LastValue{}),
-		view.MatchInstrumentKind(view.AsyncUpDownCounter),
 	)
 	if err != nil {
 		return nil, err
@@ -83,7 +81,6 @@ func (n *ngtMetrics) View() ([]*metrics.View, error) {
 		view.MatchInstrumentName(insertVQueueCountMetricsName),
 		view.WithSetDescription(insertVQueueCountMetricsDescription),
 		view.WithSetAggregation(aggregation.LastValue{}),
-		view.MatchInstrumentKind(view.AsyncUpDownCounter),
 	)
 	if err != nil {
 		return nil, err
@@ -93,7 +90,6 @@ func (n *ngtMetrics) View() ([]*metrics.View, error) {
 		view.MatchInstrumentName(deleteVQueueCountMetricsName),
 		view.WithSetDescription(deleteVQueueCountMetricsDescription),
 		view.WithSetAggregation(aggregation.LastValue{}),
-		view.MatchInstrumentKind(view.AsyncUpDownCounter),
 	)
 	if err != nil {
 		return nil, err
@@ -103,7 +99,6 @@ func (n *ngtMetrics) View() ([]*metrics.View, error) {
 		view.MatchInstrumentName(completedCreateIndexTotalMetricsName),
 		view.WithSetDescription(completedCreateIndexTotalMetricsDescription),
 		view.WithSetAggregation(aggregation.LastValue{}),
-		view.MatchInstrumentKind(view.AsyncUpDownCounter),
 	)
 	if err != nil {
 		return nil, err
@@ -113,7 +108,6 @@ func (n *ngtMetrics) View() ([]*metrics.View, error) {
 		view.MatchInstrumentName(executedProactiveGCTotalMetricsName),
 		view.WithSetDescription(executedProactiveGCTotalMetricsDescription),
 		view.WithSetAggregation(aggregation.LastValue{}),
-		view.MatchInstrumentKind(view.AsyncUpDownCounter),
 	)
 	if err != nil {
 		return nil, err
@@ -123,7 +117,6 @@ func (n *ngtMetrics) View() ([]*metrics.View, error) {
 		view.MatchInstrumentName(isIndexingMetricsName),
 		view.WithSetDescription(isIndexingMetricsDescription),
 		view.WithSetAggregation(aggregation.LastValue{}),
-		view.MatchInstrumentKind(view.AsyncUpDownCounter),
 	)
 	if err != nil {
 		return nil, err
@@ -133,7 +126,6 @@ func (n *ngtMetrics) View() ([]*metrics.View, error) {
 		view.MatchInstrumentName(isSavingMetricsName),
 		view.WithSetDescription(isSavingMetricsDescription),
 		view.WithSetAggregation(aggregation.LastValue{}),
-		view.MatchInstrumentKind(view.AsyncUpDownCounter),
 	)
 	if err != nil {
 		return nil, err
@@ -152,7 +144,7 @@ func (n *ngtMetrics) View() ([]*metrics.View, error) {
 }
 
 func (n *ngtMetrics) Register(m metrics.Meter) error {
-	indexCount, err := m.AsyncInt64().UpDownCounter(
+	indexCount, err := m.AsyncInt64().Gauge(
 		indexCountMetricsName,
 		metrics.WithDescription(indexCountMetricsDescription),
 		metrics.WithUnit(metrics.Dimensionless),
@@ -161,7 +153,7 @@ func (n *ngtMetrics) Register(m metrics.Meter) error {
 		return err
 	}
 
-	uncommittedIndexCount, err := m.AsyncInt64().UpDownCounter(
+	uncommittedIndexCount, err := m.AsyncInt64().Gauge(
 		uncommittedIndexCountMetricsName,
 		metrics.WithDescription(uncommittedIndexCountMetricsDescription),
 		metrics.WithUnit(metrics.Dimensionless),
@@ -170,7 +162,7 @@ func (n *ngtMetrics) Register(m metrics.Meter) error {
 		return err
 	}
 
-	insertVQueueCount, err := m.AsyncInt64().UpDownCounter(
+	insertVQueueCount, err := m.AsyncInt64().Gauge(
 		insertVQueueCountMetricsName,
 		metrics.WithDescription(insertVQueueCountMetricsDescription),
 		metrics.WithUnit(metrics.Dimensionless),
@@ -179,7 +171,7 @@ func (n *ngtMetrics) Register(m metrics.Meter) error {
 		return err
 	}
 
-	deleteVQueueCount, err := m.AsyncInt64().UpDownCounter(
+	deleteVQueueCount, err := m.AsyncInt64().Gauge(
 		deleteVQueueCountMetricsName,
 		metrics.WithDescription(deleteVQueueCountMetricsDescription),
 		metrics.WithUnit(metrics.Dimensionless),
@@ -188,7 +180,7 @@ func (n *ngtMetrics) Register(m metrics.Meter) error {
 		return err
 	}
 
-	completedCreateIndexTotal, err := m.AsyncInt64().UpDownCounter(
+	completedCreateIndexTotal, err := m.AsyncInt64().Gauge(
 		completedCreateIndexTotalMetricsName,
 		metrics.WithDescription(completedCreateIndexTotalMetricsDescription),
 		metrics.WithUnit(metrics.Dimensionless),
@@ -197,7 +189,7 @@ func (n *ngtMetrics) Register(m metrics.Meter) error {
 		return err
 	}
 
-	executedProactiveGCTotal, err := m.AsyncInt64().UpDownCounter(
+	executedProactiveGCTotal, err := m.AsyncInt64().Gauge(
 		executedProactiveGCTotalMetricsName,
 		metrics.WithDescription(executedProactiveGCTotalMetricsDescription),
 		metrics.WithUnit(metrics.Dimensionless),
@@ -206,7 +198,7 @@ func (n *ngtMetrics) Register(m metrics.Meter) error {
 		return err
 	}
 
-	isIndexing, err := m.AsyncInt64().UpDownCounter(
+	isIndexing, err := m.AsyncInt64().Gauge(
 		isIndexingMetricsName,
 		metrics.WithDescription(isIndexingMetricsDescription),
 		metrics.WithUnit(metrics.Dimensionless),

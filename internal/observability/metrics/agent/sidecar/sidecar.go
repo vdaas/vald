@@ -63,7 +63,6 @@ func (sm *sidecarMetrics) View() ([]*metrics.View, error) {
 		view.MatchInstrumentName(uploadTotalMetricsName),
 		view.WithSetDescription(uploadTotalMetricsDescription),
 		view.WithSetAggregation(aggregation.Sum{}),
-		view.MatchInstrumentKind(view.AsyncCounter),
 	)
 	if err != nil {
 		return nil, err
@@ -73,7 +72,6 @@ func (sm *sidecarMetrics) View() ([]*metrics.View, error) {
 		view.MatchInstrumentName(uploadBytesMetricsName),
 		view.WithSetDescription(uploadBytesMetricsDescription),
 		view.WithSetAggregation(aggregation.LastValue{}),
-		view.MatchInstrumentKind(view.AsyncGauge),
 	)
 	if err != nil {
 		return nil, err
@@ -85,7 +83,6 @@ func (sm *sidecarMetrics) View() ([]*metrics.View, error) {
 		view.WithSetAggregation(aggregation.ExplicitBucketHistogram{
 			Boundaries: metrics.RoughMillisecondsDistribution,
 		}),
-		view.MatchInstrumentKind(view.AsyncUpDownCounter),
 	)
 	if err != nil {
 		return nil, err
@@ -115,7 +112,7 @@ func (sm *sidecarMetrics) Register(m metrics.Meter) error {
 	if err != nil {
 		return err
 	}
-	uploadLatency, err := m.AsyncFloat64().UpDownCounter(
+	uploadLatency, err := m.AsyncFloat64().Gauge(
 		uploadLatencyMetricsName,
 		metrics.WithDescription(uploadLatencyMetricsDescription),
 		metrics.WithUnit(metrics.Milliseconds),

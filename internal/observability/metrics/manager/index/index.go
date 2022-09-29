@@ -48,7 +48,6 @@ func (im *indexerMetrics) View() ([]*metrics.View, error) {
 		view.MatchInstrumentName(uuidCountMetricsName),
 		view.WithSetDescription(uuidCountMetricsDescription),
 		view.WithSetAggregation(aggregation.LastValue{}),
-		view.MatchInstrumentKind(view.AsyncGauge),
 	)
 	if err != nil {
 		return nil, err
@@ -58,7 +57,6 @@ func (im *indexerMetrics) View() ([]*metrics.View, error) {
 		view.MatchInstrumentName(uncommittedUUIDCountMetricsName),
 		view.WithSetDescription(uncommittedUUIDCountMetricsDescription),
 		view.WithSetAggregation(aggregation.LastValue{}),
-		view.MatchInstrumentKind(view.AsyncGauge),
 	)
 	if err != nil {
 		return nil, err
@@ -68,7 +66,6 @@ func (im *indexerMetrics) View() ([]*metrics.View, error) {
 		view.MatchInstrumentName(isIndexingMetricsName),
 		view.WithSetDescription(isIndexingMetricsDescription),
 		view.WithSetAggregation(aggregation.LastValue{}),
-		view.MatchInstrumentKind(view.AsyncGauge),
 	)
 	if err != nil {
 		return nil, err

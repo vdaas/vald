@@ -38,7 +38,6 @@ func (c *cgo) View() ([]*metrics.View, error) {
 		view.MatchInstrumentName(metricsName),
 		view.WithSetDescription(metricsDescription),
 		view.WithSetAggregation(aggregation.LastValue{}),
-		view.MatchInstrumentKind(view.AsyncUpDownCounter),
 	)
 	if err != nil {
 		return nil, err
@@ -49,7 +48,7 @@ func (c *cgo) View() ([]*metrics.View, error) {
 }
 
 func (c *cgo) Register(m metrics.Meter) error {
-	count, err := m.AsyncInt64().UpDownCounter(
+	count, err := m.AsyncInt64().Gauge(
 		metricsName,
 		metrics.WithDescription(metricsDescription),
 		metrics.WithUnit(metrics.Dimensionless),

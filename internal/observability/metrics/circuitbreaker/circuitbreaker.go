@@ -45,7 +45,6 @@ func (bm *breakerMetrics) View() ([]*metrics.View, error) {
 		view.MatchInstrumentName(metricsName),
 		view.WithSetDescription(metricsDescription),
 		view.WithSetAggregation(aggregation.LastValue{}),
-		view.MatchInstrumentKind(view.AsyncGauge),
 	)
 	if err != nil {
 		return nil, err

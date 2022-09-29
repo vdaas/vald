@@ -78,7 +78,6 @@ func (mm *memoryMetrics) View() ([]*metrics.View, error) {
 		view.MatchInstrumentName(allocMetricsDescription),
 		view.WithSetDescription(allocMetricsDescription),
 		view.WithSetAggregation(aggregation.LastValue{}),
-		view.MatchInstrumentKind(view.AsyncGauge),
 	)
 	if err != nil {
 		return nil, err
@@ -88,7 +87,6 @@ func (mm *memoryMetrics) View() ([]*metrics.View, error) {
 		view.MatchInstrumentName(totalAllocMetricsDescription),
 		view.WithSetDescription(totalAllocMetricsDescription),
 		view.WithSetAggregation(aggregation.LastValue{}),
-		view.MatchInstrumentKind(view.AsyncGauge),
 	)
 	if err != nil {
 		return nil, err
@@ -98,7 +96,6 @@ func (mm *memoryMetrics) View() ([]*metrics.View, error) {
 		view.MatchInstrumentName(sysMetricsName),
 		view.WithSetDescription(sysMetricsDescription),
 		view.WithSetAggregation(aggregation.LastValue{}),
-		view.MatchInstrumentKind(view.AsyncGauge),
 	)
 	if err != nil {
 		return nil, err
@@ -108,7 +105,6 @@ func (mm *memoryMetrics) View() ([]*metrics.View, error) {
 		view.MatchInstrumentName(mallocsMetricsName),
 		view.WithSetDescription(mallocsMetricsDescription),
 		view.WithSetAggregation(aggregation.LastValue{}),
-		view.MatchInstrumentKind(view.AsyncGauge),
 	)
 	if err != nil {
 		return nil, err
@@ -118,7 +114,6 @@ func (mm *memoryMetrics) View() ([]*metrics.View, error) {
 		view.MatchInstrumentName(freesMetricsName),
 		view.WithSetDescription(freesMetricsDescription),
 		view.WithSetAggregation(aggregation.LastValue{}),
-		view.MatchInstrumentKind(view.AsyncGauge),
 	)
 	if err != nil {
 		return nil, err
@@ -128,7 +123,6 @@ func (mm *memoryMetrics) View() ([]*metrics.View, error) {
 		view.MatchInstrumentName(heapAllocMetricsName),
 		view.WithSetDescription(heapAllocMetricsDescription),
 		view.WithSetAggregation(aggregation.LastValue{}),
-		view.MatchInstrumentKind(view.AsyncGauge),
 	)
 	if err != nil {
 		return nil, err
@@ -138,7 +132,6 @@ func (mm *memoryMetrics) View() ([]*metrics.View, error) {
 		view.MatchInstrumentName(heapSysMetricsName),
 		view.WithSetDescription(heapSysMetricsDescription),
 		view.WithSetAggregation(aggregation.LastValue{}),
-		view.MatchInstrumentKind(view.AsyncGauge),
 	)
 	if err != nil {
 		return nil, err
@@ -148,7 +141,6 @@ func (mm *memoryMetrics) View() ([]*metrics.View, error) {
 		view.MatchInstrumentName(heapIdleMetricsName),
 		view.WithSetDescription(heapIdleMetricsDescription),
 		view.WithSetAggregation(aggregation.LastValue{}),
-		view.MatchInstrumentKind(view.AsyncGauge),
 	)
 	if err != nil {
 		return nil, err
@@ -158,7 +150,6 @@ func (mm *memoryMetrics) View() ([]*metrics.View, error) {
 		view.MatchInstrumentName(heapInuseMetricsName),
 		view.WithSetDescription(heapInuseMetricsDescription),
 		view.WithSetAggregation(aggregation.LastValue{}),
-		view.MatchInstrumentKind(view.AsyncGauge),
 	)
 	if err != nil {
 		return nil, err
@@ -168,7 +159,6 @@ func (mm *memoryMetrics) View() ([]*metrics.View, error) {
 		view.MatchInstrumentName(heapReleasedMetricsName),
 		view.WithSetDescription(heapReleasedMetricsDescription),
 		view.WithSetAggregation(aggregation.LastValue{}),
-		view.MatchInstrumentKind(view.AsyncGauge),
 	)
 	if err != nil {
 		return nil, err
@@ -178,7 +168,6 @@ func (mm *memoryMetrics) View() ([]*metrics.View, error) {
 		view.MatchInstrumentName(stackInuseMetricsName),
 		view.WithSetDescription(stackInuseMetricsDescription),
 		view.WithSetAggregation(aggregation.LastValue{}),
-		view.MatchInstrumentKind(view.AsyncGauge),
 	)
 	if err != nil {
 		return nil, err
@@ -188,7 +177,6 @@ func (mm *memoryMetrics) View() ([]*metrics.View, error) {
 		view.MatchInstrumentName(stackSysMetricsName),
 		view.WithSetDescription(stackSysMetricsDescription),
 		view.WithSetAggregation(aggregation.LastValue{}),
-		view.MatchInstrumentKind(view.AsyncGauge),
 	)
 	if err != nil {
 		return nil, err
@@ -198,7 +186,6 @@ func (mm *memoryMetrics) View() ([]*metrics.View, error) {
 		view.MatchInstrumentName(pauseTotalMsMetricsName),
 		view.WithSetDescription(pauseTotalMsMetricsDescription),
 		view.WithSetAggregation(aggregation.LastValue{}),
-		view.MatchInstrumentKind(view.AsyncGauge),
 	)
 	if err != nil {
 		return nil, err
@@ -208,7 +195,6 @@ func (mm *memoryMetrics) View() ([]*metrics.View, error) {
 		view.MatchInstrumentName(numGCMetricsName),
 		view.WithSetDescription(numGCMetricsDescription),
 		view.WithSetAggregation(aggregation.LastValue{}),
-		view.MatchInstrumentKind(view.AsyncGauge),
 	)
 	if err != nil {
 		return nil, err
