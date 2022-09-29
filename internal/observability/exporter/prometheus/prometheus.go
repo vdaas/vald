@@ -20,13 +20,13 @@ import (
 	"sync"
 	"time"
 
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	otelprom "go.opentelemetry.io/otel/exporters/prometheus"
 	"go.opentelemetry.io/otel/metric/global"
 	"go.opentelemetry.io/otel/sdk/metric"
 	"go.opentelemetry.io/otel/sdk/metric/view"
 
-	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/observability/exporter"
@@ -104,8 +104,7 @@ func (e *exp) Start(ctx context.Context) error {
 	))
 	global.SetMeterProvider(provider)
 
-	registry := prometheus.NewRegistry()
-	if err := registry.Register(e.exporter.Collector); err != nil {
+	if err := e.registry.Register(e.exporter.Collector); err != nil {
 		return err
 	}
 
