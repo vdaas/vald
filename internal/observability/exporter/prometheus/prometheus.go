@@ -24,6 +24,10 @@ import (
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/observability/exporter"
 	"github.com/vdaas/vald/internal/observability/metrics"
+	"go.opentelemetry.io/otel/exporters/prometheus"
+	"go.opentelemetry.io/otel/metric/global"
+	"go.opentelemetry.io/otel/sdk/metric"
+	"go.opentelemetry.io/otel/sdk/metric/view"
 )
 
 type Prometheus interface {
@@ -32,8 +36,8 @@ type Prometheus interface {
 }
 
 type exp struct {
-	// exporter *prometheus.Exporter
-	views metrics.View
+	exporter prometheus.Exporter
+	viewers  []metrics.Viewer
 
 	namespace          string
 	endpoint           string
@@ -61,6 +65,7 @@ func New(opts ...Option) (Prometheus, error) {
 			log.Warn(oerr)
 		}
 	}
+	e.exporter = prometheus.New()
 
 	// // Create controller for prometheus exporter.
 	// controller := basic.New(
@@ -104,9 +109,22 @@ func Init(opts ...Option) (Prometheus, error) {
 }
 
 func (e *exp) Start(ctx context.Context) error {
-	// global.SetMeterProvider(e.exporter.MeterProvider())
+	views := make([]view.View, 0, len(e.viewers))
+	for _, v := range e.viewers {
+		view, err := v.View()
+		if err != nil {
+			return err
+		}
+		views = append(views, view)
+	}
+
+	provider := metric.NewMeterProvider(metric.WithReader(
+		e.exporter,
+		views...,
+	))
+	global.SetMeterProvider(provider)
+
 	return nil
-	// return e.exporter.Controller().Start(ctx)
 }
 
 func (e *exp) Stop(ctx context.Context) error {

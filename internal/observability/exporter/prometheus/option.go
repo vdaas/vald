@@ -18,6 +18,7 @@ import (
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/observability/exporter"
+	"github.com/vdaas/vald/internal/observability/metrics"
 )
 
 type Option func(e *exp) error
@@ -90,7 +91,7 @@ func WithInMemoty(ok bool) Option {
 	}
 }
 
-func WithView() Option {
+func WithView(views ...metrics.Viewer) Option {
 	return func(e *exp) error {
 		return nil
 	}
