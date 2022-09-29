@@ -16,8 +16,37 @@ package ngt
 import (
 	"context"
 
+	"go.opentelemetry.io/otel/sdk/metric/aggregation"
+	"go.opentelemetry.io/otel/sdk/metric/view"
+
 	"github.com/vdaas/vald/internal/observability/metrics"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/service"
+)
+
+const (
+	indexCountMetricsName        = "agent_core_ngt_index_count"
+	indexCountMetricsDescription = "Agent NGT index count"
+
+	uncommittedIndexCountMetricsName        = "agent_core_ngt_index_count"
+	uncommittedIndexCountMetricsDescription = "Agent NGT index count"
+
+	insertVQueueCountMetricsName        = "agent_core_ngt_insert_vqueue_count"
+	insertVQueueCountMetricsDescription = "Agent NGT insert vqueue count"
+
+	deleteVQueueCountMetricsName        = "agent_core_ngt_delete_vqueue_count"
+	deleteVQueueCountMetricsDescription = "Agent NGT delete vqueue count"
+
+	completedCreateIndexTotalMetricsName        = "agent_core_ngt_completed_create_index_total"
+	completedCreateIndexTotalMetricsDescription = "The cumulative count of completed create index execution"
+
+	executedProactiveGCTotalMetricsName        = "agent_core_ngt_executed_proactive_gc_total"
+	executedProactiveGCTotalMetricsDescription = "The cumulative count of proactive GC execution"
+
+	isIndexingMetricsName        = "agent_core_ngt_is_indexing"
+	isIndexingMetricsDescription = "Currently indexing or no"
+
+	isSavingMetricsName        = "agent_core_ngt_is_saving"
+	isSavingMetricsDescription = "Currently saving or not"
 )
 
 type ngtMetrics struct {
@@ -30,10 +59,95 @@ func New(n service.NGT) metrics.Metric {
 	}
 }
 
+func (n *ngtMetrics) View() ([]*metrics.View, error) {
+	indexCount, err := view.New(
+		view.MatchInstrumentName(indexCountMetricsName),
+		view.WithSetDescription(indexCountMetricsDescription),
+		view.WithSetAggregation(aggregation.LastValue{}),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	uncommittedIndexCount, err := view.New(
+		view.MatchInstrumentName(uncommittedIndexCountMetricsName),
+		view.WithSetDescription(uncommittedIndexCountMetricsDescription),
+		view.WithSetAggregation(aggregation.LastValue{}),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	insertVQueueCount, err := view.New(
+		view.MatchInstrumentName(insertVQueueCountMetricsName),
+		view.WithSetDescription(insertVQueueCountMetricsDescription),
+		view.WithSetAggregation(aggregation.LastValue{}),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	deleteVQueueCount, err := view.New(
+		view.MatchInstrumentName(deleteVQueueCountMetricsName),
+		view.WithSetDescription(deleteVQueueCountMetricsDescription),
+		view.WithSetAggregation(aggregation.LastValue{}),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	completedCreateIndexTotal, err := view.New(
+		view.MatchInstrumentName(completedCreateIndexTotalMetricsName),
+		view.WithSetDescription(completedCreateIndexTotalMetricsDescription),
+		view.WithSetAggregation(aggregation.LastValue{}),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	executedProactiveGCTotal, err := view.New(
+		view.MatchInstrumentName(executedProactiveGCTotalMetricsName),
+		view.WithSetDescription(executedProactiveGCTotalMetricsDescription),
+		view.WithSetAggregation(aggregation.LastValue{}),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	isIndexing, err := view.New(
+		view.MatchInstrumentName(isIndexingMetricsName),
+		view.WithSetDescription(isIndexingMetricsDescription),
+		view.WithSetAggregation(aggregation.LastValue{}),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	isSaving, err := view.New(
+		view.MatchInstrumentName(isSavingMetricsName),
+		view.WithSetDescription(isSavingMetricsDescription),
+		view.WithSetAggregation(aggregation.LastValue{}),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return []*metrics.View{
+		&indexCount,
+		&uncommittedIndexCount,
+		&insertVQueueCount,
+		&deleteVQueueCount,
+		&completedCreateIndexTotal,
+		&executedProactiveGCTotal,
+		&isIndexing,
+		&isSaving,
+	}, nil
+}
+
 func (n *ngtMetrics) Register(m metrics.Meter) error {
 	indexCount, err := m.AsyncInt64().UpDownCounter(
-		"agent_core_ngt_index_count",
-		metrics.WithDescription("Agent NGT index count"),
+		indexCountMetricsName,
+		metrics.WithDescription(indexCountMetricsDescription),
 		metrics.WithUnit(metrics.Dimensionless),
 	)
 	if err != nil {
@@ -41,8 +155,8 @@ func (n *ngtMetrics) Register(m metrics.Meter) error {
 	}
 
 	uncommittedIndexCount, err := m.AsyncInt64().UpDownCounter(
-		"agent_core_ngt_uncommitted_index_count",
-		metrics.WithDescription("Agent NGT uncommitted index count"),
+		uncommittedIndexCountMetricsName,
+		metrics.WithDescription(uncommittedIndexCountMetricsDescription),
 		metrics.WithUnit(metrics.Dimensionless),
 	)
 	if err != nil {
@@ -50,8 +164,8 @@ func (n *ngtMetrics) Register(m metrics.Meter) error {
 	}
 
 	insertVQueueCount, err := m.AsyncInt64().UpDownCounter(
-		"agent_core_ngt_insert_vqueue_count",
-		metrics.WithDescription("Agent NGT insert vqueue count"),
+		insertVQueueCountMetricsName,
+		metrics.WithDescription(insertVQueueCountMetricsDescription),
 		metrics.WithUnit(metrics.Dimensionless),
 	)
 	if err != nil {
@@ -59,8 +173,8 @@ func (n *ngtMetrics) Register(m metrics.Meter) error {
 	}
 
 	deleteVQueueCount, err := m.AsyncInt64().UpDownCounter(
-		"agent_core_ngt_delete_vqueue_count",
-		metrics.WithDescription("Agent NGT delete vqueue count"),
+		deleteVQueueCountMetricsName,
+		metrics.WithDescription(deleteVQueueCountMetricsDescription),
 		metrics.WithUnit(metrics.Dimensionless),
 	)
 	if err != nil {
@@ -68,8 +182,8 @@ func (n *ngtMetrics) Register(m metrics.Meter) error {
 	}
 
 	completedCreateIndexTotal, err := m.AsyncInt64().UpDownCounter(
-		"agent_core_ngt_completed_create_index_total",
-		metrics.WithDescription("the cumulative count of completed create index execution"),
+		completedCreateIndexTotalMetricsName,
+		metrics.WithDescription(completedCreateIndexTotalMetricsDescription),
 		metrics.WithUnit(metrics.Dimensionless),
 	)
 	if err != nil {
@@ -77,8 +191,8 @@ func (n *ngtMetrics) Register(m metrics.Meter) error {
 	}
 
 	executedProactiveGCTotal, err := m.AsyncInt64().UpDownCounter(
-		"agent_core_ngt_executed_proactive_gc_total",
-		metrics.WithDescription("the cumulative count of proactive GC execution"),
+		executedProactiveGCTotalMetricsName,
+		metrics.WithDescription(executedProactiveGCTotalMetricsDescription),
 		metrics.WithUnit(metrics.Dimensionless),
 	)
 	if err != nil {
@@ -86,8 +200,8 @@ func (n *ngtMetrics) Register(m metrics.Meter) error {
 	}
 
 	isIndexing, err := m.AsyncInt64().UpDownCounter(
-		"agent_core_ngt_is_indexing",
-		metrics.WithDescription("currently indexing or no"),
+		isIndexingMetricsName,
+		metrics.WithDescription(isIndexingMetricsDescription),
 		metrics.WithUnit(metrics.Dimensionless),
 	)
 	if err != nil {
@@ -95,8 +209,8 @@ func (n *ngtMetrics) Register(m metrics.Meter) error {
 	}
 
 	isSaving, err := m.AsyncInt64().UpDownCounter(
-		"agent_core_ngt_is_saving",
-		metrics.WithDescription("currently saving or not"),
+		isSavingMetricsName,
+		metrics.WithDescription(isSavingMetricsDescription),
 		metrics.WithUnit(metrics.Dimensionless),
 	)
 	if err != nil {

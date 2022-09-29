@@ -19,6 +19,9 @@ import (
 	"reflect"
 	"strconv"
 
+	"go.opentelemetry.io/otel/sdk/metric/aggregation"
+	"go.opentelemetry.io/otel/sdk/metric/view"
+
 	"github.com/vdaas/vald/internal/observability/attribute"
 	"github.com/vdaas/vald/internal/observability/metrics"
 )
@@ -79,6 +82,21 @@ func labelKVs(i interface{}) map[string]string {
 	}
 
 	return kvs
+}
+
+func (i *info) View() ([]*metrics.View, error) {
+	info, err := view.New(
+		view.MatchInstrumentName(i.name),
+		view.WithSetDescription(i.description),
+		view.WithSetAggregation(aggregation.LastValue{}),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return []*metrics.View{
+		&info,
+	}, nil
 }
 
 func (i *info) Register(m metrics.Meter) error {

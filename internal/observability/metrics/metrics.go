@@ -23,6 +23,51 @@ import (
 
 const ValdOrg = "vald.vdaas.org"
 
+var (
+	RoughMillisecondsDistribution = []float64{
+		1,
+		5,
+		10,
+		30,
+		60,
+		8,
+		100,
+		200,
+		300,
+		400,
+		500,
+		600,
+		800,
+		1000,
+		1300,
+		1600,
+		2000,
+		2500,
+		3000,
+		4000,
+		5000,
+		6500,
+		8000,
+		10000,
+		13000,
+		16000,
+		20000,
+		25000,
+		30000,
+		40000,
+		50000,
+		65000,
+		80000,
+		100000,
+		200000,
+		500000,
+		1000000,
+		2000000,
+		5000000,
+		10000000,
+	}
+)
+
 // Meter is type alias of metrics.Meter.
 type Meter = metric.Meter
 
@@ -64,7 +109,7 @@ func WithDescription(desc string) instrument.Option {
 type View = view.View
 
 type Viewer interface {
-	View() (View, error)
+	View() ([]*View, error)
 }
 
 // Metric represents an interface for metric.

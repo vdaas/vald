@@ -87,18 +87,20 @@ func Init(opts ...Option) (Prometheus, error) {
 }
 
 func (e *exp) Start(ctx context.Context) error {
-	views := make([]view.View, 0, len(e.viewers))
-	for _, v := range e.viewers {
-		view, err := v.View()
+	otlViews := make([]view.View, 0, len(e.viewers))
+	for _, viewer := range e.viewers {
+		views, err := viewer.View()
 		if err != nil {
 			return err
 		}
-		views = append(views, view)
+		for _, v := range views {
+			otlViews = append(otlViews, *v)
+		}
 	}
 
 	provider := metric.NewMeterProvider(metric.WithReader(
 		e.exporter,
-		views...,
+		otlViews...,
 	))
 	global.SetMeterProvider(provider)
 

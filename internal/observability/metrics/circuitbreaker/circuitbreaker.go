@@ -16,9 +16,17 @@ package circuitbreaker
 import (
 	"context"
 
+	"go.opentelemetry.io/otel/sdk/metric/aggregation"
+	"go.opentelemetry.io/otel/sdk/metric/view"
+
 	"github.com/vdaas/vald/internal/circuitbreaker"
 	"github.com/vdaas/vald/internal/observability/attribute"
 	"github.com/vdaas/vald/internal/observability/metrics"
+)
+
+const (
+	metricsName        = "circuit_breaker_state"
+	metricsDescription = "Current circuit breaker state"
 )
 
 type breakerMetrics struct {
@@ -33,10 +41,25 @@ func New() metrics.Metric {
 	}
 }
 
+func (bm *breakerMetrics) View() ([]*metrics.View, error) {
+	breakerState, err := view.New(
+		view.MatchInstrumentName(metricsName),
+		view.WithSetDescription(metricsDescription),
+		view.WithSetAggregation(aggregation.LastValue{}),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return []*metrics.View{
+		&breakerState,
+	}, nil
+}
+
 func (bm *breakerMetrics) Register(m metrics.Meter) error {
 	breakerState, err := m.AsyncInt64().Gauge(
-		"circuit_breaker_state",
-		metrics.WithDescription("current circuit breaker state"),
+		metricsName,
+		metrics.WithDescription(metricsDescription),
 		metrics.WithUnit(metrics.Dimensionless),
 	)
 	if err != nil {

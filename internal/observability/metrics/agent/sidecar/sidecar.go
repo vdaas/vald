@@ -18,9 +18,23 @@ import (
 	"sync"
 	"time"
 
+	"go.opentelemetry.io/otel/sdk/metric/aggregation"
+	"go.opentelemetry.io/otel/sdk/metric/view"
+
 	"github.com/vdaas/vald/internal/observability/attribute"
 	"github.com/vdaas/vald/internal/observability/metrics"
 	"github.com/vdaas/vald/pkg/agent/sidecar/service/observer"
+)
+
+const (
+	uploadTotalMetricsName        = "agent_sidecar_completed_upload_total"
+	uploadTotalMetricsDescription = "Cumulative count of completed upload execution"
+
+	uploadBytesMetricsName        = "agent_sidecar_upload_bytes"
+	uploadBytesMetricsDescription = "Uploaded bytes at the last backup execution"
+
+	uploadLatencyMetricsName        = "agent_sidecar_upload_latency"
+	uploadLatencyMetricsDescription = "Upload latency"
 )
 
 type MetricsHook interface {
@@ -45,26 +59,63 @@ func New() MetricsHook {
 	}
 }
 
+func (sm *sidecarMetrics) View() ([]*metrics.View, error) {
+	uploadTotal, err := view.New(
+		view.MatchInstrumentName(uploadTotalMetricsName),
+		view.WithSetDescription(uploadTotalMetricsDescription),
+		view.WithSetAggregation(aggregation.Sum{}),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	uploadBytes, err := view.New(
+		view.MatchInstrumentName(uploadBytesMetricsName),
+		view.WithSetDescription(uploadBytesMetricsDescription),
+		view.WithSetAggregation(aggregation.LastValue{}),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	uploadLatency, err := view.New(
+		view.MatchInstrumentName(uploadLatencyMetricsName),
+		view.WithSetDescription(uploadLatencyMetricsDescription),
+		view.WithSetAggregation(aggregation.ExplicitBucketHistogram{
+			Boundaries: metrics.RoughMillisecondsDistribution,
+		}),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return []*metrics.View{
+		&uploadTotal,
+		&uploadBytes,
+		&uploadLatency,
+	}, nil
+}
+
 func (sm *sidecarMetrics) Register(m metrics.Meter) error {
 	uploadTotal, err := m.AsyncInt64().Counter(
-		"agent_sidecar_completed_upload_total",
-		metrics.WithDescription("cumulative count of completed upload execution"),
+		uploadTotalMetricsName,
+		metrics.WithDescription(uploadTotalMetricsDescription),
 		metrics.WithUnit(metrics.Dimensionless),
 	)
 	if err != nil {
 		return err
 	}
 	uploadBytes, err := m.AsyncInt64().Gauge(
-		"agent_sidecar_upload_bytes",
-		metrics.WithDescription("uploaded bytes at the last backup execution"),
+		uploadBytesMetricsName,
+		metrics.WithDescription(uploadBytesMetricsDescription),
 		metrics.WithUnit(metrics.Bytes),
 	)
 	if err != nil {
 		return err
 	}
-	uploadLatency, err := m.AsyncFloat64().UpDownCounter( // TODO:
-		"agent_sidecar_upload_latency",
-		metrics.WithDescription("upload latency"),
+	uploadLatency, err := m.AsyncFloat64().UpDownCounter(
+		uploadLatencyMetricsName,
+		metrics.WithDescription(uploadLatencyMetricsDescription),
 		metrics.WithUnit(metrics.Milliseconds),
 	)
 	if err != nil {

@@ -17,7 +17,15 @@ import (
 	"context"
 	"runtime"
 
+	"go.opentelemetry.io/otel/sdk/metric/aggregation"
+	"go.opentelemetry.io/otel/sdk/metric/view"
+
 	"github.com/vdaas/vald/internal/observability/metrics"
+)
+
+const (
+	metricsName        = "goroutine_count"
+	metricsDescription = "Number of goroutines"
 )
 
 type goroutine struct{}
@@ -26,10 +34,25 @@ func New() metrics.Metric {
 	return &goroutine{}
 }
 
+func (g *goroutine) View() ([]*metrics.View, error) {
+	count, err := view.New(
+		view.MatchInstrumentName(metricsName),
+		view.WithSetDescription(metricsDescription),
+		view.WithSetAggregation(aggregation.LastValue{}),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return []*metrics.View{
+		&count,
+	}, nil
+}
+
 func (g *goroutine) Register(m metrics.Meter) error {
 	conter, err := m.AsyncInt64().Gauge(
-		"goroutine_count",
-		metrics.WithDescription("number of goroutines"),
+		metricsName,
+		metrics.WithDescription(metricsDescription),
 		metrics.WithUnit(metrics.Dimensionless),
 	)
 	if err != nil {

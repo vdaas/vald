@@ -17,7 +17,15 @@ import (
 	"context"
 	"runtime"
 
+	"go.opentelemetry.io/otel/sdk/metric/aggregation"
+	"go.opentelemetry.io/otel/sdk/metric/view"
+
 	"github.com/vdaas/vald/internal/observability/metrics"
+)
+
+const (
+	metricsName        = "cgo_call_count"
+	metricsDescription = "Number of cgo call"
 )
 
 type cgo struct{}
@@ -26,10 +34,24 @@ func New() metrics.Metric {
 	return &cgo{}
 }
 
+func (c *cgo) View() ([]*metrics.View, error) {
+	count, err := view.New(
+		view.MatchInstrumentName(metricsName),
+		view.WithSetDescription(metricsDescription),
+		view.WithSetAggregation(aggregation.LastValue{}),
+	)
+	if err != nil {
+		return nil, err
+	}
+	return []*metrics.View{
+		&count,
+	}, nil
+}
+
 func (c *cgo) Register(m metrics.Meter) error {
-	conter, err := m.AsyncInt64().UpDownCounter(
-		"cgo_call_count",
-		metrics.WithDescription("number of cgo call"),
+	count, err := m.AsyncInt64().UpDownCounter(
+		metricsName,
+		metrics.WithDescription(metricsDescription),
 		metrics.WithUnit(metrics.Dimensionless),
 	)
 	if err != nil {
@@ -37,10 +59,10 @@ func (c *cgo) Register(m metrics.Meter) error {
 	}
 	return m.RegisterCallback(
 		[]metrics.AsynchronousInstrument{
-			conter,
+			count,
 		},
 		func(ctx context.Context) {
-			conter.Observe(ctx, int64(runtime.NumGoroutine()))
+			count.Observe(ctx, int64(runtime.NumGoroutine()))
 		},
 	)
 }
