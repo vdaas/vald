@@ -45,7 +45,7 @@ func MetricInterceptor() (grpc.UnaryServerInterceptor, error) {
 		return nil, errors.Wrap(err, "failed to create latency metric")
 	}
 
-	completedRPCCnt, err := meter.SyncFloat64().Counter(
+	completedRPCCnt, err := meter.SyncInt64().Counter(
 		completedRPCsMetricsName,
 		metrics.WithDescription("Count of RPCs by method and status"),
 		metrics.WithUnit(metrics.Milliseconds),
@@ -74,7 +74,7 @@ func MetricInterceptor() (grpc.UnaryServerInterceptor, error) {
 			attribute.String(gRPCStatus, code),
 		}
 		latencyHistgram.Record(ctx, latency, attrs...)
-		completedRPCCnt.Add(ctx, latency, attrs...)
+		completedRPCCnt.Add(ctx, 1, attrs...)
 
 		return resp, err
 	}, nil
