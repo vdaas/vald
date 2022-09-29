@@ -38,6 +38,7 @@ func (c *cgo) View() ([]*metrics.View, error) {
 		view.MatchInstrumentName(metricsName),
 		view.WithSetDescription(metricsDescription),
 		view.WithSetAggregation(aggregation.LastValue{}),
+		view.MatchInstrumentKind(view.AsyncUpDownCounter),
 	)
 	if err != nil {
 		return nil, err

@@ -81,6 +81,7 @@ func (v *version) View() ([]*metrics.View, error) {
 		view.MatchInstrumentName(name),
 		view.WithSetDescription(description),
 		view.WithSetAggregation(aggregation.LastValue{}),
+		view.MatchInstrumentKind(view.AsyncGauge),
 	)
 	if err != nil {
 		return nil, err

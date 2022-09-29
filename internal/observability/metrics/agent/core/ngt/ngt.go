@@ -63,6 +63,7 @@ func (n *ngtMetrics) View() ([]*metrics.View, error) {
 		view.MatchInstrumentName(indexCountMetricsName),
 		view.WithSetDescription(indexCountMetricsDescription),
 		view.WithSetAggregation(aggregation.LastValue{}),
+		view.MatchInstrumentKind(view.AsyncUpDownCounter),
 	)
 	if err != nil {
 		return nil, err
@@ -72,6 +73,7 @@ func (n *ngtMetrics) View() ([]*metrics.View, error) {
 		view.MatchInstrumentName(uncommittedIndexCountMetricsName),
 		view.WithSetDescription(uncommittedIndexCountMetricsDescription),
 		view.WithSetAggregation(aggregation.LastValue{}),
+		view.MatchInstrumentKind(view.AsyncUpDownCounter),
 	)
 	if err != nil {
 		return nil, err
@@ -81,6 +83,7 @@ func (n *ngtMetrics) View() ([]*metrics.View, error) {
 		view.MatchInstrumentName(insertVQueueCountMetricsName),
 		view.WithSetDescription(insertVQueueCountMetricsDescription),
 		view.WithSetAggregation(aggregation.LastValue{}),
+		view.MatchInstrumentKind(view.AsyncUpDownCounter),
 	)
 	if err != nil {
 		return nil, err
@@ -90,6 +93,7 @@ func (n *ngtMetrics) View() ([]*metrics.View, error) {
 		view.MatchInstrumentName(deleteVQueueCountMetricsName),
 		view.WithSetDescription(deleteVQueueCountMetricsDescription),
 		view.WithSetAggregation(aggregation.LastValue{}),
+		view.MatchInstrumentKind(view.AsyncUpDownCounter),
 	)
 	if err != nil {
 		return nil, err
@@ -99,6 +103,7 @@ func (n *ngtMetrics) View() ([]*metrics.View, error) {
 		view.MatchInstrumentName(completedCreateIndexTotalMetricsName),
 		view.WithSetDescription(completedCreateIndexTotalMetricsDescription),
 		view.WithSetAggregation(aggregation.LastValue{}),
+		view.MatchInstrumentKind(view.AsyncUpDownCounter),
 	)
 	if err != nil {
 		return nil, err
@@ -108,6 +113,7 @@ func (n *ngtMetrics) View() ([]*metrics.View, error) {
 		view.MatchInstrumentName(executedProactiveGCTotalMetricsName),
 		view.WithSetDescription(executedProactiveGCTotalMetricsDescription),
 		view.WithSetAggregation(aggregation.LastValue{}),
+		view.MatchInstrumentKind(view.AsyncUpDownCounter),
 	)
 	if err != nil {
 		return nil, err
@@ -117,6 +123,7 @@ func (n *ngtMetrics) View() ([]*metrics.View, error) {
 		view.MatchInstrumentName(isIndexingMetricsName),
 		view.WithSetDescription(isIndexingMetricsDescription),
 		view.WithSetAggregation(aggregation.LastValue{}),
+		view.MatchInstrumentKind(view.AsyncUpDownCounter),
 	)
 	if err != nil {
 		return nil, err
@@ -126,6 +133,7 @@ func (n *ngtMetrics) View() ([]*metrics.View, error) {
 		view.MatchInstrumentName(isSavingMetricsName),
 		view.WithSetDescription(isSavingMetricsDescription),
 		view.WithSetAggregation(aggregation.LastValue{}),
+		view.MatchInstrumentKind(view.AsyncUpDownCounter),
 	)
 	if err != nil {
 		return nil, err
