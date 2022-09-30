@@ -25,6 +25,7 @@ import (
 	"github.com/vdaas/vald/internal/observability/exporter/jaeger"
 	"github.com/vdaas/vald/internal/observability/exporter/prometheus"
 	"github.com/vdaas/vald/internal/observability/metrics"
+	"github.com/vdaas/vald/internal/observability/metrics/grpc"
 	"github.com/vdaas/vald/internal/observability/metrics/mem/index"
 	"github.com/vdaas/vald/internal/observability/metrics/runtime/cgo"
 	"github.com/vdaas/vald/internal/observability/metrics/runtime/goroutine"
@@ -50,6 +51,7 @@ func NewWithConfig(cfg *config.Observability, ms ...metrics.Metric) (Observabili
 	exps := make([]exporter.Exporter, 0)
 
 	if cfg.Metrics != nil {
+		ms = append(ms, grpc.New())
 		if cfg.Metrics.EnableCGO {
 			ms = append(ms, cgo.New())
 		}
