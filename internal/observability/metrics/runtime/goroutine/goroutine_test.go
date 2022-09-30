@@ -85,6 +85,75 @@ func TestNew(t *testing.T) {
 	}
 }
 
+func Test_goroutine_View(t *testing.T) {
+	type want struct {
+		want []*metrics.View
+		err  error
+	}
+	type test struct {
+		name       string
+		g          *goroutine
+		want       want
+		checkFunc  func(want, []*metrics.View, error) error
+		beforeFunc func()
+		afterFunc  func()
+	}
+	defaultCheckFunc := func(w want, got []*metrics.View, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc()
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc()
+			}
+			checkFunc := test.checkFunc
+			if test.checkFunc == nil {
+				checkFunc = defaultCheckFunc
+			}
+			g := &goroutine{}
+
+			got, err := g.View()
+			if err := checkFunc(test.want, got, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
 func Test_goroutine_Register(t *testing.T) {
 	type args struct {
 		m metrics.Meter
@@ -154,75 +223,6 @@ func Test_goroutine_Register(t *testing.T) {
 
 			err := g.Register(test.args.m)
 			if err := checkFunc(test.want, err); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
-
-func Test_goroutine_View(t *testing.T) {
-	type want struct {
-		want []*metrics.View
-		err  error
-	}
-	type test struct {
-		name       string
-		g          *goroutine
-		want       want
-		checkFunc  func(want, []*metrics.View, error) error
-		beforeFunc func()
-		afterFunc  func()
-	}
-	defaultCheckFunc := func(w want, got []*metrics.View, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-		}
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-			if test.beforeFunc != nil {
-				test.beforeFunc()
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc()
-			}
-			checkFunc := test.checkFunc
-			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
-			}
-			g := &goroutine{}
-
-			got, err := g.View()
-			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
