@@ -530,12 +530,6 @@ message Mirror {
     Targets targets = 1;
   }
 
-  // Represent the request to get mirror servers.
-  message TargetsRequest {
-    // A flag to skip forward request to avoid loop request.
-    bool skip_forward_request = 1;
-  }
-
   // Represent server information.
   message Target {
     // The target ip.
