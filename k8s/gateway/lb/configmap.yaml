@@ -164,37 +164,39 @@ data:
         key: /path/to/key
     observability:
       enabled: false
-      collector:
-        duration: 5s
-        metrics:
-          enable_cgo: true
-          enable_goroutine: true
-          enable_memory: true
-          enable_version_info: true
-          version_info_labels:
-          - vald_version
-          - server_name
-          - git_commit
-          - build_time
-          - go_version
-          - go_os
-          - go_arch
-          - ngt_version
+      metrics:
+        enable_cgo: true
+        enable_goroutine: true
+        enable_memory: true
+        enable_version_info: true
+        version_info_labels:
+        - vald_version
+        - server_name
+        - git_commit
+        - build_time
+        - go_version
+        - go_os
+        - go_arch
+        - ngt_version
       trace:
         enabled: false
-        sampling_rate: 1
       prometheus:
         enabled: false
         endpoint: /metrics
-        namespace: vald
+        namespace: _MY_POD_NAMESPACE_
       jaeger:
         enabled: false
         collector_endpoint: ""
         agent_endpoint: ""
+        agent_reconnect_interval: "30s"
         username: ""
         password: ""
         service_name: "vald-lb-gateway"
-        buffer_max_count: 65000
+        agent_max_packet_size: 65000
+        batch_timeout: "5s"
+        export_timeout: "5s"
+        max_export_batch_size: 512
+        max_queue_size: 2048
     gateway:
       agent_port: 8081
       agent_name: "vald-agent-ngt"
@@ -242,6 +244,7 @@ data:
             initial_connection_window_size: 0
             initial_window_size: 0
             insecure: true
+            interceptors: []
             keepalive:
               permit_without_stream: true
               time: 120s
@@ -319,6 +322,7 @@ data:
             initial_connection_window_size: 0
             initial_window_size: 0
             insecure: true
+            interceptors: []
             keepalive:
               permit_without_stream: true
               time: 120s

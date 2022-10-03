@@ -285,37 +285,6 @@ spec:
                     observability:
                       type: object
                       properties:
-                        collector:
-                          type: object
-                          properties:
-                            duration:
-                              type: string
-                            metrics:
-                              type: object
-                              properties:
-                                enable_cgo:
-                                  type: boolean
-                                enable_goroutine:
-                                  type: boolean
-                                enable_memory:
-                                  type: boolean
-                                enable_version_info:
-                                  type: boolean
-                                version_info_labels:
-                                  type: array
-                                  items:
-                                    type: string
-                                    enum:
-                                      - vald_version
-                                      - server_name
-                                      - git_commit
-                                      - build_time
-                                      - go_version
-                                      - go_os
-                                      - go_arch
-                                      - cgo_enabled
-                                      - ngt_version
-                                      - build_cpu_info_flags
                         enabled:
                           type: boolean
                         jaeger:
@@ -323,18 +292,54 @@ spec:
                           properties:
                             agent_endpoint:
                               type: string
-                            buffer_max_count:
+                            agent_max_packet_size:
                               type: integer
+                            agent_reconnect_interval:
+                              type: string
+                            batch_timeout:
+                              type: string
                             collector_endpoint:
                               type: string
                             enabled:
                               type: boolean
+                            export_timeout:
+                              type: string
+                            max_export_batch_size:
+                              type: integer
+                            max_queue_size:
+                              type: integer
                             password:
                               type: string
                             service_name:
                               type: string
                             username:
                               type: string
+                        metrics:
+                          type: object
+                          properties:
+                            enable_cgo:
+                              type: boolean
+                            enable_goroutine:
+                              type: boolean
+                            enable_memory:
+                              type: boolean
+                            enable_version_info:
+                              type: boolean
+                            version_info_labels:
+                              type: array
+                              items:
+                                type: string
+                                enum:
+                                  - vald_version
+                                  - server_name
+                                  - git_commit
+                                  - build_time
+                                  - go_version
+                                  - go_os
+                                  - go_arch
+                                  - cgo_enabled
+                                  - ngt_version
+                                  - build_cpu_info_flags
                         prometheus:
                           type: object
                           properties:
@@ -349,8 +354,6 @@ spec:
                           properties:
                             enabled:
                               type: boolean
-                            sampling_rate:
-                              type: number
                     persistentVolume:
                       type: object
                       properties:
@@ -821,7 +824,8 @@ spec:
                                             enum:
                                               - RecoverInterceptor
                                               - AccessLogInterceptor
-                                              - TracePayloadInterceptor
+                                              - TraceInterceptor
+                                              - MetricInterceptor
                                         keepalive:
                                           type: object
                                           properties:
@@ -1269,37 +1273,6 @@ spec:
                         observability:
                           type: object
                           properties:
-                            collector:
-                              type: object
-                              properties:
-                                duration:
-                                  type: string
-                                metrics:
-                                  type: object
-                                  properties:
-                                    enable_cgo:
-                                      type: boolean
-                                    enable_goroutine:
-                                      type: boolean
-                                    enable_memory:
-                                      type: boolean
-                                    enable_version_info:
-                                      type: boolean
-                                    version_info_labels:
-                                      type: array
-                                      items:
-                                        type: string
-                                        enum:
-                                          - vald_version
-                                          - server_name
-                                          - git_commit
-                                          - build_time
-                                          - go_version
-                                          - go_os
-                                          - go_arch
-                                          - cgo_enabled
-                                          - ngt_version
-                                          - build_cpu_info_flags
                             enabled:
                               type: boolean
                             jaeger:
@@ -1307,18 +1280,54 @@ spec:
                               properties:
                                 agent_endpoint:
                                   type: string
-                                buffer_max_count:
+                                agent_max_packet_size:
                                   type: integer
+                                agent_reconnect_interval:
+                                  type: string
+                                batch_timeout:
+                                  type: string
                                 collector_endpoint:
                                   type: string
                                 enabled:
                                   type: boolean
+                                export_timeout:
+                                  type: string
+                                max_export_batch_size:
+                                  type: integer
+                                max_queue_size:
+                                  type: integer
                                 password:
                                   type: string
                                 service_name:
                                   type: string
                                 username:
                                   type: string
+                            metrics:
+                              type: object
+                              properties:
+                                enable_cgo:
+                                  type: boolean
+                                enable_goroutine:
+                                  type: boolean
+                                enable_memory:
+                                  type: boolean
+                                enable_version_info:
+                                  type: boolean
+                                version_info_labels:
+                                  type: array
+                                  items:
+                                    type: string
+                                    enum:
+                                      - vald_version
+                                      - server_name
+                                      - git_commit
+                                      - build_time
+                                      - go_version
+                                      - go_os
+                                      - go_arch
+                                      - cgo_enabled
+                                      - ngt_version
+                                      - build_cpu_info_flags
                             prometheus:
                               type: object
                               properties:
@@ -1333,8 +1342,6 @@ spec:
                               properties:
                                 enabled:
                                   type: boolean
-                                sampling_rate:
-                                  type: number
                         resources:
                           type: object
                           properties:
@@ -1757,7 +1764,8 @@ spec:
                                                 enum:
                                                   - RecoverInterceptor
                                                   - AccessLogInterceptor
-                                                  - TracePayloadInterceptor
+                                                  - TraceInterceptor
+                                                  - MetricInterceptor
                                             keepalive:
                                               type: object
                                               properties:
@@ -2045,6 +2053,12 @@ spec:
                                   type: integer
                                 insecure:
                                   type: boolean
+                                interceptors:
+                                  type: array
+                                  items:
+                                    type: string
+                                    enum:
+                                      - TraceInterceptor
                                 keepalive:
                                   type: object
                                   properties:
@@ -2171,37 +2185,6 @@ spec:
                     observability:
                       type: object
                       properties:
-                        collector:
-                          type: object
-                          properties:
-                            duration:
-                              type: string
-                            metrics:
-                              type: object
-                              properties:
-                                enable_cgo:
-                                  type: boolean
-                                enable_goroutine:
-                                  type: boolean
-                                enable_memory:
-                                  type: boolean
-                                enable_version_info:
-                                  type: boolean
-                                version_info_labels:
-                                  type: array
-                                  items:
-                                    type: string
-                                    enum:
-                                      - vald_version
-                                      - server_name
-                                      - git_commit
-                                      - build_time
-                                      - go_version
-                                      - go_os
-                                      - go_arch
-                                      - cgo_enabled
-                                      - ngt_version
-                                      - build_cpu_info_flags
                         enabled:
                           type: boolean
                         jaeger:
@@ -2209,18 +2192,54 @@ spec:
                           properties:
                             agent_endpoint:
                               type: string
-                            buffer_max_count:
+                            agent_max_packet_size:
                               type: integer
+                            agent_reconnect_interval:
+                              type: string
+                            batch_timeout:
+                              type: string
                             collector_endpoint:
                               type: string
                             enabled:
                               type: boolean
+                            export_timeout:
+                              type: string
+                            max_export_batch_size:
+                              type: integer
+                            max_queue_size:
+                              type: integer
                             password:
                               type: string
                             service_name:
                               type: string
                             username:
                               type: string
+                        metrics:
+                          type: object
+                          properties:
+                            enable_cgo:
+                              type: boolean
+                            enable_goroutine:
+                              type: boolean
+                            enable_memory:
+                              type: boolean
+                            enable_version_info:
+                              type: boolean
+                            version_info_labels:
+                              type: array
+                              items:
+                                type: string
+                                enum:
+                                  - vald_version
+                                  - server_name
+                                  - git_commit
+                                  - build_time
+                                  - go_version
+                                  - go_os
+                                  - go_arch
+                                  - cgo_enabled
+                                  - ngt_version
+                                  - build_cpu_info_flags
                         prometheus:
                           type: object
                           properties:
@@ -2235,8 +2254,6 @@ spec:
                           properties:
                             enabled:
                               type: boolean
-                            sampling_rate:
-                              type: number
                     server_config:
                       type: object
                       properties:
@@ -2650,7 +2667,8 @@ spec:
                                             enum:
                                               - RecoverInterceptor
                                               - AccessLogInterceptor
-                                              - TracePayloadInterceptor
+                                              - TraceInterceptor
+                                              - MetricInterceptor
                                         keepalive:
                                           type: object
                                           properties:
@@ -3058,37 +3076,6 @@ spec:
                     observability:
                       type: object
                       properties:
-                        collector:
-                          type: object
-                          properties:
-                            duration:
-                              type: string
-                            metrics:
-                              type: object
-                              properties:
-                                enable_cgo:
-                                  type: boolean
-                                enable_goroutine:
-                                  type: boolean
-                                enable_memory:
-                                  type: boolean
-                                enable_version_info:
-                                  type: boolean
-                                version_info_labels:
-                                  type: array
-                                  items:
-                                    type: string
-                                    enum:
-                                      - vald_version
-                                      - server_name
-                                      - git_commit
-                                      - build_time
-                                      - go_version
-                                      - go_os
-                                      - go_arch
-                                      - cgo_enabled
-                                      - ngt_version
-                                      - build_cpu_info_flags
                         enabled:
                           type: boolean
                         jaeger:
@@ -3096,18 +3083,54 @@ spec:
                           properties:
                             agent_endpoint:
                               type: string
-                            buffer_max_count:
+                            agent_max_packet_size:
                               type: integer
+                            agent_reconnect_interval:
+                              type: string
+                            batch_timeout:
+                              type: string
                             collector_endpoint:
                               type: string
                             enabled:
                               type: boolean
+                            export_timeout:
+                              type: string
+                            max_export_batch_size:
+                              type: integer
+                            max_queue_size:
+                              type: integer
                             password:
                               type: string
                             service_name:
                               type: string
                             username:
                               type: string
+                        metrics:
+                          type: object
+                          properties:
+                            enable_cgo:
+                              type: boolean
+                            enable_goroutine:
+                              type: boolean
+                            enable_memory:
+                              type: boolean
+                            enable_version_info:
+                              type: boolean
+                            version_info_labels:
+                              type: array
+                              items:
+                                type: string
+                                enum:
+                                  - vald_version
+                                  - server_name
+                                  - git_commit
+                                  - build_time
+                                  - go_version
+                                  - go_os
+                                  - go_arch
+                                  - cgo_enabled
+                                  - ngt_version
+                                  - build_cpu_info_flags
                         prometheus:
                           type: object
                           properties:
@@ -3122,8 +3145,6 @@ spec:
                           properties:
                             enabled:
                               type: boolean
-                            sampling_rate:
-                              type: number
                     podAnnotations:
                       type: object
                       x-kubernetes-preserve-unknown-fields: true
@@ -3574,7 +3595,8 @@ spec:
                                             enum:
                                               - RecoverInterceptor
                                               - AccessLogInterceptor
-                                              - TracePayloadInterceptor
+                                              - TraceInterceptor
+                                              - MetricInterceptor
                                         keepalive:
                                           type: object
                                           properties:
@@ -3923,6 +3945,12 @@ spec:
                                           type: integer
                                         insecure:
                                           type: boolean
+                                        interceptors:
+                                          type: array
+                                          items:
+                                            type: string
+                                            enum:
+                                              - TraceInterceptor
                                         keepalive:
                                           type: object
                                           properties:
@@ -4100,6 +4128,12 @@ spec:
                                       type: integer
                                     insecure:
                                       type: boolean
+                                    interceptors:
+                                      type: array
+                                      items:
+                                        type: string
+                                        enum:
+                                          - TraceInterceptor
                                     keepalive:
                                       type: object
                                       properties:
@@ -4272,6 +4306,12 @@ spec:
                                           type: integer
                                         insecure:
                                           type: boolean
+                                        interceptors:
+                                          type: array
+                                          items:
+                                            type: string
+                                            enum:
+                                              - TraceInterceptor
                                         keepalive:
                                           type: object
                                           properties:
@@ -4472,37 +4512,6 @@ spec:
                         observability:
                           type: object
                           properties:
-                            collector:
-                              type: object
-                              properties:
-                                duration:
-                                  type: string
-                                metrics:
-                                  type: object
-                                  properties:
-                                    enable_cgo:
-                                      type: boolean
-                                    enable_goroutine:
-                                      type: boolean
-                                    enable_memory:
-                                      type: boolean
-                                    enable_version_info:
-                                      type: boolean
-                                    version_info_labels:
-                                      type: array
-                                      items:
-                                        type: string
-                                        enum:
-                                          - vald_version
-                                          - server_name
-                                          - git_commit
-                                          - build_time
-                                          - go_version
-                                          - go_os
-                                          - go_arch
-                                          - cgo_enabled
-                                          - ngt_version
-                                          - build_cpu_info_flags
                             enabled:
                               type: boolean
                             jaeger:
@@ -4510,18 +4519,54 @@ spec:
                               properties:
                                 agent_endpoint:
                                   type: string
-                                buffer_max_count:
+                                agent_max_packet_size:
                                   type: integer
+                                agent_reconnect_interval:
+                                  type: string
+                                batch_timeout:
+                                  type: string
                                 collector_endpoint:
                                   type: string
                                 enabled:
                                   type: boolean
+                                export_timeout:
+                                  type: string
+                                max_export_batch_size:
+                                  type: integer
+                                max_queue_size:
+                                  type: integer
                                 password:
                                   type: string
                                 service_name:
                                   type: string
                                 username:
                                   type: string
+                            metrics:
+                              type: object
+                              properties:
+                                enable_cgo:
+                                  type: boolean
+                                enable_goroutine:
+                                  type: boolean
+                                enable_memory:
+                                  type: boolean
+                                enable_version_info:
+                                  type: boolean
+                                version_info_labels:
+                                  type: array
+                                  items:
+                                    type: string
+                                    enum:
+                                      - vald_version
+                                      - server_name
+                                      - git_commit
+                                      - build_time
+                                      - go_version
+                                      - go_os
+                                      - go_arch
+                                      - cgo_enabled
+                                      - ngt_version
+                                      - build_cpu_info_flags
                             prometheus:
                               type: object
                               properties:
@@ -4536,8 +4581,6 @@ spec:
                               properties:
                                 enabled:
                                   type: boolean
-                                sampling_rate:
-                                  type: number
                         podAnnotations:
                           type: object
                           x-kubernetes-preserve-unknown-fields: true
@@ -4988,7 +5031,8 @@ spec:
                                                 enum:
                                                   - RecoverInterceptor
                                                   - AccessLogInterceptor
-                                                  - TracePayloadInterceptor
+                                                  - TraceInterceptor
+                                                  - MetricInterceptor
                                             keepalive:
                                               type: object
                                               properties:
@@ -5329,6 +5373,12 @@ spec:
                                           type: integer
                                         insecure:
                                           type: boolean
+                                        interceptors:
+                                          type: array
+                                          items:
+                                            type: string
+                                            enum:
+                                              - TraceInterceptor
                                         keepalive:
                                           type: object
                                           properties:
@@ -5498,6 +5548,12 @@ spec:
                                           type: integer
                                         insecure:
                                           type: boolean
+                                        interceptors:
+                                          type: array
+                                          items:
+                                            type: string
+                                            enum:
+                                              - TraceInterceptor
                                         keepalive:
                                           type: object
                                           properties:
@@ -5687,37 +5743,6 @@ spec:
                         observability:
                           type: object
                           properties:
-                            collector:
-                              type: object
-                              properties:
-                                duration:
-                                  type: string
-                                metrics:
-                                  type: object
-                                  properties:
-                                    enable_cgo:
-                                      type: boolean
-                                    enable_goroutine:
-                                      type: boolean
-                                    enable_memory:
-                                      type: boolean
-                                    enable_version_info:
-                                      type: boolean
-                                    version_info_labels:
-                                      type: array
-                                      items:
-                                        type: string
-                                        enum:
-                                          - vald_version
-                                          - server_name
-                                          - git_commit
-                                          - build_time
-                                          - go_version
-                                          - go_os
-                                          - go_arch
-                                          - cgo_enabled
-                                          - ngt_version
-                                          - build_cpu_info_flags
                             enabled:
                               type: boolean
                             jaeger:
@@ -5725,18 +5750,54 @@ spec:
                               properties:
                                 agent_endpoint:
                                   type: string
-                                buffer_max_count:
+                                agent_max_packet_size:
                                   type: integer
+                                agent_reconnect_interval:
+                                  type: string
+                                batch_timeout:
+                                  type: string
                                 collector_endpoint:
                                   type: string
                                 enabled:
                                   type: boolean
+                                export_timeout:
+                                  type: string
+                                max_export_batch_size:
+                                  type: integer
+                                max_queue_size:
+                                  type: integer
                                 password:
                                   type: string
                                 service_name:
                                   type: string
                                 username:
                                   type: string
+                            metrics:
+                              type: object
+                              properties:
+                                enable_cgo:
+                                  type: boolean
+                                enable_goroutine:
+                                  type: boolean
+                                enable_memory:
+                                  type: boolean
+                                enable_version_info:
+                                  type: boolean
+                                version_info_labels:
+                                  type: array
+                                  items:
+                                    type: string
+                                    enum:
+                                      - vald_version
+                                      - server_name
+                                      - git_commit
+                                      - build_time
+                                      - go_version
+                                      - go_os
+                                      - go_arch
+                                      - cgo_enabled
+                                      - ngt_version
+                                      - build_cpu_info_flags
                             prometheus:
                               type: object
                               properties:
@@ -5751,8 +5812,6 @@ spec:
                               properties:
                                 enabled:
                                   type: boolean
-                                sampling_rate:
-                                  type: number
                         podAnnotations:
                           type: object
                           x-kubernetes-preserve-unknown-fields: true
@@ -6203,7 +6262,8 @@ spec:
                                                 enum:
                                                   - RecoverInterceptor
                                                   - AccessLogInterceptor
-                                                  - TracePayloadInterceptor
+                                                  - TraceInterceptor
+                                                  - MetricInterceptor
                                             keepalive:
                                               type: object
                                               properties:
@@ -6575,6 +6635,12 @@ spec:
                                           type: integer
                                         insecure:
                                           type: boolean
+                                        interceptors:
+                                          type: array
+                                          items:
+                                            type: string
+                                            enum:
+                                              - TraceInterceptor
                                         keepalive:
                                           type: object
                                           properties:
@@ -6744,6 +6810,12 @@ spec:
                                           type: integer
                                         insecure:
                                           type: boolean
+                                        interceptors:
+                                          type: array
+                                          items:
+                                            type: string
+                                            enum:
+                                              - TraceInterceptor
                                         keepalive:
                                           type: object
                                           properties:
@@ -6888,37 +6960,6 @@ spec:
                         observability:
                           type: object
                           properties:
-                            collector:
-                              type: object
-                              properties:
-                                duration:
-                                  type: string
-                                metrics:
-                                  type: object
-                                  properties:
-                                    enable_cgo:
-                                      type: boolean
-                                    enable_goroutine:
-                                      type: boolean
-                                    enable_memory:
-                                      type: boolean
-                                    enable_version_info:
-                                      type: boolean
-                                    version_info_labels:
-                                      type: array
-                                      items:
-                                        type: string
-                                        enum:
-                                          - vald_version
-                                          - server_name
-                                          - git_commit
-                                          - build_time
-                                          - go_version
-                                          - go_os
-                                          - go_arch
-                                          - cgo_enabled
-                                          - ngt_version
-                                          - build_cpu_info_flags
                             enabled:
                               type: boolean
                             jaeger:
@@ -6926,18 +6967,54 @@ spec:
                               properties:
                                 agent_endpoint:
                                   type: string
-                                buffer_max_count:
+                                agent_max_packet_size:
                                   type: integer
+                                agent_reconnect_interval:
+                                  type: string
+                                batch_timeout:
+                                  type: string
                                 collector_endpoint:
                                   type: string
                                 enabled:
                                   type: boolean
+                                export_timeout:
+                                  type: string
+                                max_export_batch_size:
+                                  type: integer
+                                max_queue_size:
+                                  type: integer
                                 password:
                                   type: string
                                 service_name:
                                   type: string
                                 username:
                                   type: string
+                            metrics:
+                              type: object
+                              properties:
+                                enable_cgo:
+                                  type: boolean
+                                enable_goroutine:
+                                  type: boolean
+                                enable_memory:
+                                  type: boolean
+                                enable_version_info:
+                                  type: boolean
+                                version_info_labels:
+                                  type: array
+                                  items:
+                                    type: string
+                                    enum:
+                                      - vald_version
+                                      - server_name
+                                      - git_commit
+                                      - build_time
+                                      - go_version
+                                      - go_os
+                                      - go_arch
+                                      - cgo_enabled
+                                      - ngt_version
+                                      - build_cpu_info_flags
                             prometheus:
                               type: object
                               properties:
@@ -6952,8 +7029,6 @@ spec:
                               properties:
                                 enabled:
                                   type: boolean
-                                sampling_rate:
-                                  type: number
                         podAnnotations:
                           type: object
                           x-kubernetes-preserve-unknown-fields: true
@@ -7407,7 +7482,8 @@ spec:
                                                 enum:
                                                   - RecoverInterceptor
                                                   - AccessLogInterceptor
-                                                  - TracePayloadInterceptor
+                                                  - TraceInterceptor
+                                                  - MetricInterceptor
                                             keepalive:
                                               type: object
                                               properties:

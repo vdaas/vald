@@ -11,7 +11,6 @@ replace (
 	cloud.google.com/go/iam => cloud.google.com/go/iam latest
 	cloud.google.com/go/kms => cloud.google.com/go/kms latest
 	cloud.google.com/go/monitoring => cloud.google.com/go/monitoring latest
-	cloud.google.com/go/profiler => cloud.google.com/go/profiler latest
 	cloud.google.com/go/pubsub => cloud.google.com/go/pubsub latest
 	cloud.google.com/go/secretmanager => cloud.google.com/go/secretmanager latest
 	cloud.google.com/go/storage => cloud.google.com/go/storage latest
@@ -23,7 +22,6 @@ replace (
 	git.sr.ht/~sbinet/gg => git.sr.ht/~sbinet/gg latest
 	github.com/AdaLogics/go-fuzz-headers => github.com/AdaLogics/go-fuzz-headers latest
 	github.com/Azure/azure-amqp-common-go/v3 => github.com/Azure/azure-amqp-common-go/v3 latest
-	github.com/Azure/azure-pipeline-go => github.com/Azure/azure-pipeline-go latest
 	github.com/Azure/azure-sdk-for-go => github.com/Azure/azure-sdk-for-go latest
 	github.com/Azure/azure-sdk-for-go/sdk/azcore => github.com/Azure/azure-sdk-for-go/sdk/azcore latest
 	github.com/Azure/azure-sdk-for-go/sdk/azidentity => github.com/Azure/azure-sdk-for-go/sdk/azidentity latest
@@ -57,7 +55,6 @@ replace (
 	github.com/alecthomas/units => github.com/alecthomas/units latest
 	github.com/alexflint/go-filemutex => github.com/alexflint/go-filemutex latest
 	github.com/antihax/optional => github.com/antihax/optional latest
-	github.com/antlr/antlr4/runtime/Go/antlr => github.com/antlr/antlr4/runtime/Go/antlr latest
 	github.com/armon/circbuf => github.com/armon/circbuf latest
 	github.com/armon/go-metrics => github.com/armon/go-metrics latest
 	github.com/armon/go-radix => github.com/armon/go-radix latest
@@ -109,8 +106,6 @@ replace (
 	github.com/cncf/xds/go => github.com/cncf/xds/go latest
 	github.com/cockroachdb/apd => github.com/cockroachdb/apd latest
 	github.com/cockroachdb/datadriven => github.com/cockroachdb/datadriven latest
-	github.com/cockroachdb/errors => github.com/cockroachdb/errors latest
-	github.com/cockroachdb/logtags => github.com/cockroachdb/logtags latest
 	github.com/containerd/aufs => github.com/containerd/aufs latest
 	github.com/containerd/btrfs => github.com/containerd/btrfs latest
 	github.com/containerd/cgroups => github.com/containerd/cgroups latest
@@ -150,7 +145,7 @@ replace (
 	github.com/dnaeon/go-vcr => github.com/dnaeon/go-vcr latest
 	github.com/docker/cli => github.com/docker/cli latest
 	github.com/docker/distribution => github.com/docker/distribution latest
-	github.com/docker/docker => github.com/moby/moby latest
+	github.com/docker/docker => github.com/docker/docker latest
 	github.com/docker/docker-credential-helpers => github.com/docker/docker-credential-helpers latest
 	github.com/docker/go-connections => github.com/docker/go-connections latest
 	github.com/docker/go-events => github.com/docker/go-events latest
@@ -171,8 +166,6 @@ replace (
 	github.com/fortytw2/leaktest => github.com/fortytw2/leaktest latest
 	github.com/frankban/quicktest => github.com/frankban/quicktest latest
 	github.com/fsnotify/fsnotify => github.com/fsnotify/fsnotify latest
-	github.com/getkin/kin-openapi => github.com/getkin/kin-openapi latest
-	github.com/getsentry/sentry-go => github.com/getsentry/sentry-go latest
 	github.com/ghodss/yaml => github.com/ghodss/yaml latest
 	github.com/gin-contrib/sse => github.com/gin-contrib/sse latest
 	github.com/gin-gonic/gin => github.com/gin-gonic/gin latest
@@ -235,7 +228,6 @@ replace (
 	github.com/golang/protobuf => github.com/golang/protobuf latest
 	github.com/golang/snappy => github.com/golang/snappy latest
 	github.com/google/btree => github.com/google/btree master
-	github.com/google/cel-go => github.com/google/cel-go latest
 	github.com/google/gnostic => github.com/google/gnostic latest
 	github.com/google/go-cmp => github.com/google/go-cmp latest
 	github.com/google/go-containerregistry => github.com/google/go-containerregistry latest
@@ -335,7 +327,6 @@ replace (
 	github.com/lyft/protoc-gen-star => github.com/lyft/protoc-gen-star latest
 	github.com/mailru/easyjson => github.com/mailru/easyjson latest
 	github.com/mattn/go-colorable => github.com/mattn/go-colorable latest
-	github.com/mattn/go-ieproxy => github.com/mattn/go-ieproxy latest
 	github.com/mattn/go-isatty => github.com/mattn/go-isatty latest
 	github.com/mattn/go-shellwords => github.com/mattn/go-shellwords latest
 	github.com/mattn/go-sqlite3 => github.com/mattn/go-sqlite3 latest
@@ -399,7 +390,6 @@ replace (
 	github.com/prometheus/exporter-toolkit => github.com/prometheus/exporter-toolkit latest
 	github.com/prometheus/procfs => github.com/prometheus/procfs latest
 	github.com/prometheus/prometheus/v2 => github.com/prometheus/prometheus/v2 latest
-	github.com/prometheus/statsd_exporter => github.com/prometheus/statsd_exporter latest
 	github.com/quasilyte/go-ruleguard => github.com/quasilyte/go-ruleguard latest
 	github.com/quasilyte/go-ruleguard/dsl => github.com/quasilyte/go-ruleguard/dsl latest
 	github.com/quasilyte/gogrep => github.com/quasilyte/gogrep latest
@@ -471,18 +461,20 @@ replace (
 	go.mongodb.org/mongo-driver => go.mongodb.org/mongo-driver latest
 	go.mozilla.org/pkcs7 => go.mozilla.org/pkcs7 latest
 	go.opencensus.io => go.opencensus.io latest
+	go.opentelemetry.io/contrib => go.opentelemetry.io/contrib latest
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc => go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc latest
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp => go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp latest
 	go.opentelemetry.io/otel => go.opentelemetry.io/otel latest
 	go.opentelemetry.io/otel/exporters/jaeger => go.opentelemetry.io/otel/exporters/jaeger latest
-	go.opentelemetry.io/otel/exporters/prometheus => go.opentelemetry.io/otel/exporters/prometheus latest
 	go.opentelemetry.io/otel/exporters/otlp => go.opentelemetry.io/otel/exporters/otlp latest
 	go.opentelemetry.io/otel/exporters/otlp/internal/retry => go.opentelemetry.io/otel/exporters/otlp/internal/retry latest
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace => go.opentelemetry.io/otel/exporters/otlp/otlptrace latest
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc => go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc latest
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp => go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp latest
+	go.opentelemetry.io/otel/exporters/prometheus => go.opentelemetry.io/otel/exporters/prometheus latest
 	go.opentelemetry.io/otel/metric => go.opentelemetry.io/otel/metric latest
 	go.opentelemetry.io/otel/sdk => go.opentelemetry.io/otel/sdk latest
+	go.opentelemetry.io/otel/sdk/export/metric => go.opentelemetry.io/otel/sdk/export/metric latest
 	go.opentelemetry.io/otel/sdk/metric => go.opentelemetry.io/otel/sdk/metric latest
 	go.opentelemetry.io/otel/trace => go.opentelemetry.io/otel/trace latest
 	go.opentelemetry.io/proto/otlp => go.opentelemetry.io/proto/otlp latest
@@ -500,6 +492,7 @@ replace (
 	golang.org/x/exp/typeparams => golang.org/x/exp/typeparams latest
 	golang.org/x/image => golang.org/x/image latest
 	golang.org/x/lint => golang.org/x/lint latest
+	golang.org/x/mobile => golang.org/x/mobile latest
 	golang.org/x/mod => golang.org/x/mod latest
 	golang.org/x/net => golang.org/x/net latest
 	golang.org/x/oauth2 => golang.org/x/oauth2 latest
@@ -522,7 +515,7 @@ replace (
 	google.golang.org/protobuf => google.golang.org/protobuf latest
 	gopkg.in/alecthomas/kingpin.v2 => gopkg.in/alecthomas/kingpin.v2 latest
 	gopkg.in/check.v1 => gopkg.in/check.v1 latest
-	gopkg.in/errgo.v2 => gopkg.in/errgo.v2 latest
+	gopkg.in/gcfg.v1 => gopkg.in/gcfg.v1 latest
 	gopkg.in/inconshreveable/log15.v2 => gopkg.in/inconshreveable/log15.v2 latest
 	gopkg.in/inf.v0 => gopkg.in/inf.v0 latest
 	gopkg.in/ini.v1 => gopkg.in/ini.v1 latest
@@ -530,6 +523,7 @@ replace (
 	gopkg.in/square/go-jose.v2 => gopkg.in/square/go-jose.v2 latest
 	gopkg.in/telebot.v3 => gopkg.in/telebot.v3 latest
 	gopkg.in/tomb.v1 => gopkg.in/tomb.v1 latest
+	gopkg.in/warnings.v0 => gopkg.in/warnings.v0 latest
 	gopkg.in/yaml.v2 => gopkg.in/yaml.v2 latest
 	gopkg.in/yaml.v3 => gopkg.in/yaml.v3 latest
 	gotest.tools/v3 => gotest.tools/v3 latest
@@ -541,15 +535,14 @@ replace (
 	k8s.io/apiserver => k8s.io/apiserver v0.25.0
 	k8s.io/cli-runtime => k8s.io/cli-runtime v0.25.0
 	k8s.io/client-go => k8s.io/client-go v0.25.0
-	k8s.io/code-generator => k8s.io/code-generator v0.25.0
 	k8s.io/component-base => k8s.io/component-base v0.25.0
 	k8s.io/cri-api => k8s.io/cri-api v0.25.0
 	k8s.io/gengo => k8s.io/gengo latest
 	k8s.io/klog => k8s.io/klog latest
 	k8s.io/klog/v2 => k8s.io/klog/v2 latest
 	k8s.io/kube-openapi => k8s.io/kube-openapi latest
+	k8s.io/kubernetes => k8s.io/kubernetes v0.25.0
 	k8s.io/metrics => k8s.io/metrics v0.25.0
-	k8s.io/utils => k8s.io/utils latest
 	nhooyr.io/websocket => nhooyr.io/websocket latest
 	rsc.io/pdf => rsc.io/pdf latest
 	sigs.k8s.io/apiserver-network-proxy/konnectivity-client => sigs.k8s.io/apiserver-network-proxy/konnectivity-client latest
