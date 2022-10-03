@@ -42,9 +42,9 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type MirrorClient interface {
-	// Register the RPC to register other mirror servers.
+	// Register is the RPC to register other mirror servers.
 	Register(ctx context.Context, in *payload.Mirror_RegisterRequest, opts ...grpc.CallOption) (*payload.Empty, error)
-	// Advertise the RPC to advertise other mirror servers.
+	// Advertise is the RPC to advertise other mirror servers.
 	Advertise(ctx context.Context, in *payload.Mirror_Targets, opts ...grpc.CallOption) (*payload.Mirror_Targets, error)
 }
 
@@ -78,9 +78,9 @@ func (c *mirrorClient) Advertise(ctx context.Context, in *payload.Mirror_Targets
 // All implementations must embed UnimplementedMirrorServer
 // for forward compatibility
 type MirrorServer interface {
-	// Register the RPC to register other mirror servers.
+	// Register is the RPC to register other mirror servers.
 	Register(context.Context, *payload.Mirror_RegisterRequest) (*payload.Empty, error)
-	// Advertise the RPC to advertise other mirror servers.
+	// Advertise is the RPC to advertise other mirror servers.
 	Advertise(context.Context, *payload.Mirror_Targets) (*payload.Mirror_Targets, error)
 	mustEmbedUnimplementedMirrorServer()
 }

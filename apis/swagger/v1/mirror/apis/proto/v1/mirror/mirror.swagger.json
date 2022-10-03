@@ -13,7 +13,7 @@
   "paths": {
     "/mirror/advertise": {
       "post": {
-        "summary": "Advertise the RPC to advertise other mirror servers.",
+        "summary": "Advertise is the RPC to advertise other mirror servers.",
         "operationId": "Mirror_Advertise",
         "responses": {
           "200": {
@@ -46,7 +46,7 @@
     },
     "/mirror/register": {
       "post": {
-        "summary": "Register the RPC to register other mirror servers.",
+        "summary": "Register is the RPC to register other mirror servers.",
         "operationId": "Mirror_Register",
         "responses": {
           "200": {

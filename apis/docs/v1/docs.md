@@ -1635,8 +1635,8 @@ Represent the mirror service.
 
 | Method Name | Request Type | Response Type | Description |
 | ----------- | ------------ | ------------- | ------------|
-| Register | [.payload.v1.Mirror.RegisterRequest](#payload-v1-Mirror-RegisterRequest) | [.payload.v1.Empty](#payload-v1-Empty) | Register the RPC to register other mirror servers. |
-| Advertise | [.payload.v1.Mirror.Targets](#payload-v1-Mirror-Targets) | [.payload.v1.Mirror.Targets](#payload-v1-Mirror-Targets) | Advertise the RPC to advertise other mirror servers. |
+| Register | [.payload.v1.Mirror.RegisterRequest](#payload-v1-Mirror-RegisterRequest) | [.payload.v1.Empty](#payload-v1-Empty) | Register is the RPC to register other mirror servers. |
+| Advertise | [.payload.v1.Mirror.Targets](#payload-v1-Mirror-Targets) | [.payload.v1.Mirror.Targets](#payload-v1-Mirror-Targets) | Advertise is the RPC to advertise other mirror servers. |
 
  
 
