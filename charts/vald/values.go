@@ -646,8 +646,11 @@ type Jaeger struct {
 	// Jaeger agent endpoint
 	AgentEndpoint string `json:"agent_endpoint,omitempty"`
 
-	// Jaeger buffer max count
-	BufferMaxCount int `json:"buffer_max_count,omitempty"`
+	// Jaeger agent reconnect interval
+	AgentReconnectInterval string `json:"agent_reconnect_interval,omitempty"`
+
+	// Jaeger Agent max packet size
+	AgentMaxPacketSize int `json:"agent_max_packet_size,omitempty"`
 
 	// Jaeger collector endpoint
 	CollectorEndpoint string `json:"collector_endpoint,omitempty"`
@@ -663,6 +666,18 @@ type Jaeger struct {
 
 	// Jaeger username
 	Username string `json:"username,omitempty"`
+
+	// Jaeger export batch timeout
+	BatchTimeout string `json:"batch_timeout,omitempty"`
+
+	// Jaeger export timeout
+	ExportTimeout string `json:"export_timeout,omitempty"`
+
+	// Jaeger max export batch size
+	MaxExportBatchSize int `json:"max_export_batch_size,omitempty"`
+
+	// Jaeger max queue size
+	MaxQueueSize int `json:"max_queue_size,omitempty"`
 }
 
 // Keepalive
@@ -885,7 +900,7 @@ type NodeSelectorTermsItems struct{}
 
 // Observability
 type Observability struct {
-	Collector *Collector `json:"collector,omitempty"`
+	Metrics *Metrics `json:"metrics,omitempty"`
 
 	// observability features enabled
 	Enabled    bool        `json:"enabled,omitempty"`
@@ -987,8 +1002,17 @@ type Prometheus struct {
 	// Prometheus exporter endpoint
 	Endpoint string `json:"endpoint,omitempty"`
 
-	// prefix of exported metrics name
+	// service namespace for metrics
 	Namespace string `json:"namespace,omitempty"`
+
+	// Prometheus collect interval
+	CollectInterval string `json:"collect_interval,omitempty"`
+
+	// Prometheus collect timeout
+	CollectTimeout string `json:"collect_timeout,omitempty"`
+
+	// Prometheus collect with in memory
+	EnableInMemoryMode bool `json:"enable_in_memory_mode,omitempty"`
 }
 
 // Readiness
@@ -1285,9 +1309,6 @@ type TopologySpreadConstraintsItems struct{}
 type Trace struct {
 	// trace enabled
 	Enabled bool `json:"enabled,omitempty"`
-
-	// trace sampling rate. must be between 0.0 to 1.0.
-	SamplingRate float64 `json:"sampling_rate,omitempty"`
 }
 
 // Values
