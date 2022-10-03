@@ -11,6 +11,39 @@
     "application/json"
   ],
   "paths": {
+    "/mirror/advertise": {
+      "post": {
+        "summary": "Advertise the RPC to advertise other mirror servers.",
+        "operationId": "Mirror_Advertise",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/MirrorTargets"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/MirrorTargets"
+            }
+          }
+        ],
+        "tags": [
+          "Mirror"
+        ]
+      }
+    },
     "/mirror/register": {
       "post": {
         "summary": "Register the RPC to register other mirror servers.",
@@ -43,39 +76,6 @@
           "Mirror"
         ]
       }
-    },
-    "/mirror/targets": {
-      "post": {
-        "summary": "Targets the RPC to get other mirror servers.",
-        "operationId": "Mirror_Targets",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/MirrorTargets"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/MirrorTargetsRequest"
-            }
-          }
-        ],
-        "tags": [
-          "Mirror"
-        ]
-      }
     }
   },
   "definitions": {
@@ -101,16 +101,6 @@
         }
       },
       "description": "Represent the multiple Target message."
-    },
-    "MirrorTargetsRequest": {
-      "type": "object",
-      "properties": {
-        "skipForwardRequest": {
-          "type": "boolean",
-          "description": "A flag to skip forward request to avoid loop request."
-        }
-      },
-      "description": "Represent the request to get mirror servers."
     },
     "protobufAny": {
       "type": "object",

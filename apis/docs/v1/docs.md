@@ -53,7 +53,6 @@
     - [Mirror.RegisterRequest](#payload-v1-Mirror-RegisterRequest)
     - [Mirror.Target](#payload-v1-Mirror-Target)
     - [Mirror.Targets](#payload-v1-Mirror-Targets)
-    - [Mirror.TargetsRequest](#payload-v1-Mirror-TargetsRequest)
     - [Object](#payload-v1-Object)
     - [Object.Blob](#payload-v1-Object-Blob)
     - [Object.Distance](#payload-v1-Object-Distance)
@@ -734,21 +733,6 @@ Represent the multiple Target message.
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | targets | [Mirror.Target](#payload-v1-Mirror-Target) | repeated | The multiple target information. |
-
-
-
-
-
-
-<a name="payload-v1-Mirror-TargetsRequest"></a>
-
-### Mirror.TargetsRequest
-Represent the request to get mirror servers.
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| skip_forward_request | [bool](#bool) |  | A flag to skip forward request to avoid loop request. |
 
 
 
@@ -1652,7 +1636,7 @@ Represent the mirror service.
 | Method Name | Request Type | Response Type | Description |
 | ----------- | ------------ | ------------- | ------------|
 | Register | [.payload.v1.Mirror.RegisterRequest](#payload-v1-Mirror-RegisterRequest) | [.payload.v1.Empty](#payload-v1-Empty) | Register the RPC to register other mirror servers. |
-| Targets | [.payload.v1.Mirror.TargetsRequest](#payload-v1-Mirror-TargetsRequest) | [.payload.v1.Mirror.Targets](#payload-v1-Mirror-Targets) | Targets the RPC to get other mirror servers. |
+| Advertise | [.payload.v1.Mirror.Targets](#payload-v1-Mirror-Targets) | [.payload.v1.Mirror.Targets](#payload-v1-Mirror-Targets) | Advertise the RPC to advertise other mirror servers. |
 
  
 
