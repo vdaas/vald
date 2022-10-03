@@ -332,16 +332,16 @@ ifeq ($(UNAME),Darwin)
 $(BINDIR)/kube-linter:
 	mkdir -p $(BINDIR)
 	cd $(TEMP_DIR) \
-	    && curl -LO https://github.com/stackrox/kube-linter/releases/download/$(KUBELINTER_VERSION)/kube-linter-darwin.zip \
-	    && unzip kube-linter-darwin.zip \
-	    && chmod a+x kube-linter \
-	    && mv kube-linter $(BINDIR)/kube-linter
+	    && curl -LO https://github.com/stackrox/kube-linter/releases/download/$(KUBELINTER_VERSION)/kube-linter-darwin \
+	    && unzip kube-linter-darwin \
+	    && mv kube-linter-darwin $(BINDIR)/kube-linter \
+	    && chmod a+x $(BINDIR)/kube-linter
 else
 $(BINDIR)/kube-linter:
 	mkdir -p $(BINDIR)
 	cd $(TEMP_DIR) \
-	    && curl -LO https://github.com/stackrox/kube-linter/releases/download/$(KUBELINTER_VERSION)/kube-linter-linux.zip \
-	    && unzip kube-linter-linux.zip \
-	    && chmod a+x kube-linter \
-	    && mv kube-linter $(BINDIR)/kube-linter
+	    && curl -LO https://github.com/stackrox/kube-linter/releases/download/$(KUBELINTER_VERSION)/kube-linter-linux \
+	    && unzip kube-linter-linux \
+	    && mv kube-linter-linux $(BINDIR)/kube-linter \
+	    && chmod a+x $(BINDIR)/kube-linter
 endif
