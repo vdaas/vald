@@ -579,6 +579,15 @@ dial_option:
   enable_backoff: {{ default .default.dial_option.enable_backoff .Values.dial_option.enable_backoff }}
   insecure: {{ default .default.dial_option.insecure .Values.dial_option.insecure }}
   timeout: {{ default .default.dial_option.timeout .Values.dial_option.timeout | quote }}
+  {{- if .Values.dial_option.interceptors }}
+  interceptors:
+    {{- toYaml .Values.dial_option.interceptors | nindent 4 }}
+  {{- else if .default.dial_option.interceptors }}
+  interceptors:
+    {{- toYaml .default.dial_option.interceptors | nindent 4 }}
+  {{- else }}
+  interceptors: []
+  {{- end }}
   net:
     {{- if .Values.dial_option.net }}
     dns:
@@ -652,40 +661,36 @@ observability
 */}}
 {{- define "vald.observability" -}}
 enabled: {{ default .default.enabled .Values.enabled }}
-collector:
-  {{- if .Values.collector }}
-  duration: {{ default .default.collector.duration .Values.collector.duration }}
-  metrics:
-    {{- if .Values.collector.metrics }}
-    enable_version_info: {{ default .default.collector.metrics.enable_version_info .Values.collector.metrics.enable_version_info }}
-    {{- if .Values.collector.metrics.version_info_labels }}
-    version_info_labels:
-      {{- toYaml .Values.collector.metrics.version_info_labels | nindent 6 }}
-    {{- else if .default.collector.metrics.version_info_labels }}
-    version_info_labels:
-      {{- toYaml .default.collector.metrics.version_info_labels | nindent 6 }}
-    {{- else }}
-    version_info_labels: []
-    {{- end }}
-    enable_memory: {{ default .default.collector.metrics.enable_memory .Values.collector.metrics.enable_memory }}
-    enable_goroutine: {{ default .default.collector.metrics.enable_goroutine .Values.collector.metrics.enable_goroutine }}
-    enable_cgo: {{ default .default.collector.metrics.enable_cgo .Values.collector.metrics.enable_cgo }}
-    {{- else }}
-    {{- toYaml .default.collector.metrics | nindent 4 }}
-    {{- end }}
+metrics:
+  {{- if .Values.metrics }}
+  enable_version_info: {{ default .default.metrics.enable_version_info .Values.metrics.enable_version_info }}
+  {{- if .Values.metrics.version_info_labels }}
+  version_info_labels:
+    {{- toYaml .Values.metrics.version_info_labels | nindent 4 }}
+  {{- else if .default.metrics.version_info_labels }}
+  version_info_labels:
+    {{- toYaml .default.metrics.version_info_labels | nindent 4 }}
   {{- else }}
-  {{- toYaml .default.collector | nindent 2 }}
+  version_info_labels: []
+  {{- end }}
+  enable_memory: {{ default .default.metrics.enable_memory .Values.metrics.enable_memory }}
+  enable_goroutine: {{ default .default.metrics.enable_goroutine .Values.metrics.enable_goroutine }}
+  enable_cgo: {{ default .default.metrics.enable_cgo .Values.metrics.enable_cgo }}
+  {{- else }}
+  {{- toYaml .default.metrics | nindent 2 }}
   {{- end }}
 trace:
   {{- if .Values.trace }}
   enabled: {{ default .default.trace.enabled .Values.trace.enabled }}
-  sampling_rate: {{ default .default.trace.sampling_rate .Values.trace.sampling_rate }}
   {{- else }}
   {{- toYaml .default.trace | nindent 2 }}
   {{- end }}
 prometheus:
   {{- if .Values.prometheus }}
   enabled: {{ default .default.prometheus.enabled .Values.prometheus.enabled }}
+  collect_interval: {{ default .default.prometheus.collect_interval .Values.prometheus.collect_interval | quote }}
+  collect_timeout: {{ default .default.prometheus.collect_timeout .Values.prometheus.collect_timeout | quote }}
+  enable_in_memory_mode: {{ default .default.prometheus.enable_in_memory_mode .Values.prometheus.enable_in_memory_mode }}
   {{- else }}
   {{- toYaml .default.prometheus | nindent 2 }}
   {{- end }}
@@ -694,10 +699,15 @@ jaeger:
   enabled: {{ default .default.jaeger.enabled .Values.jaeger.enabled }}
   collector_endpoint: {{ default .default.jaeger.collector_endpoint .Values.jaeger.collector_endpoint | quote }}
   agent_endpoint: {{ default .default.jaeger.agent_endpoint .Values.jaeger.agent_endpoint | quote }}
+  agent_reconnect_interval: {{ default .default.jaeger.agent_reconnect_interval .Values.jaeger.agent_reconnect_interval | quote }}
   username: {{ default .default.jaeger.username .Values.jaeger.username | quote }}
   password: {{ default .default.jaeger.password .Values.jaeger.password | quote }}
   service_name: {{ default .default.jaeger.service_name .Values.jaeger.service_name | quote }}
-  buffer_max_count: {{ default .default.jaeger.buffer_max_count .Values.jaeger.buffer_max_count }}
+  agent_max_packet_size: {{ default .default.jaeger.agent_max_packet_size .Values.jaeger.agent_max_packet_size }}
+  batch_timeout: {{ default .default.jaeger.batch_timeout .Values.jaeger.batch_timeout | quote }}
+  export_timeout: {{ default .default.jaeger.export_timeout .Values.jaeger.export_timeout | quote }}
+  max_export_batch_size: {{ default .default.jaeger.max_export_batch_size .Values.jaeger.max_export_batch_size }}
+  max_queue_size: {{ default .default.jaeger.max_queue_size .Values.jaeger.max_queue_size }}
   {{- else }}
   {{- toYaml .default.jaeger | nindent 2 }}
   {{- end }}

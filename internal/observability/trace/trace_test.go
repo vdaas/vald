@@ -175,7 +175,7 @@ func TestNew(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 
-			got := New(test.args.opts...)
+			got, _ := New(test.args.opts...)
 			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -252,9 +252,7 @@ func Test_tracer_Start(t *testing.T) {
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
-			tr := &tracer{
-				samplingRate: test.fields.samplingRate,
-			}
+			tr := &tracer{}
 
 			tr.Start(test.args.ctx)
 			if err := checkFunc(test.want); err != nil {

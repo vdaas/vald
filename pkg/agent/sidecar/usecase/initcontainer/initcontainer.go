@@ -31,7 +31,6 @@ import (
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/net/grpc"
-	"github.com/vdaas/vald/internal/net/grpc/metric"
 	"github.com/vdaas/vald/internal/net/http/client"
 	"github.com/vdaas/vald/internal/observability"
 	"github.com/vdaas/vald/internal/runner"
@@ -63,16 +62,6 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		rs restorer.Restorer
 		bs storage.Storage
 	)
-
-	var obs observability.Observability
-	if cfg.Observability.Enabled {
-		obs, err = observability.NewWithConfig(cfg.Observability)
-		if err != nil {
-			return nil, err
-		}
-		// TODO observe something
-		_ = obs
-	}
 
 	netOpts, err := cfg.AgentSidecar.Client.Net.Opts()
 	if err != nil {
@@ -177,13 +166,12 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		}),
 	}
 
+	var obs observability.Observability
 	if cfg.Observability.Enabled {
-		grpcServerOptions = append(
-			grpcServerOptions,
-			server.WithGRPCOption(
-				grpc.StatsHandler(metric.NewServerHandler()),
-			),
-		)
+		obs, err = observability.NewWithConfig(cfg.Observability)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	srv, err := starter.New(

@@ -24,7 +24,6 @@ import (
 	"github.com/vdaas/vald/internal/client/v1/client/discoverer"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/net/grpc"
-	"github.com/vdaas/vald/internal/net/grpc/metric"
 	"github.com/vdaas/vald/internal/observability"
 	backoffmetrics "github.com/vdaas/vald/internal/observability/metrics/backoff"
 	cbmetrics "github.com/vdaas/vald/internal/observability/metrics/circuitbreaker"
@@ -67,34 +66,6 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		acOpts,
 		grpc.WithErrGroup(eg))
 
-	var obs observability.Observability
-	if cfg.Observability.Enabled {
-		bom, err := backoffmetrics.New()
-		if err != nil {
-			return nil, err
-		}
-		cbm, err := cbmetrics.New()
-		if err != nil {
-			return nil, err
-		}
-		obs, err = observability.NewWithConfig(cfg.Observability, bom, cbm)
-		if err != nil {
-			return nil, err
-		}
-		aopts = append(
-			aopts,
-			grpc.WithDialOptions(
-				grpc.WithStatsHandler(metric.NewClientHandler()),
-			),
-		)
-		dopts = append(
-			dopts,
-			grpc.WithDialOptions(
-				grpc.WithStatsHandler(metric.NewClientHandler()),
-			),
-		)
-	}
-
 	client, err := discoverer.New(
 		discoverer.WithAutoConnect(true),
 		discoverer.WithName(cfg.Gateway.AgentName),
@@ -134,13 +105,16 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		}),
 	}
 
+	var obs observability.Observability
 	if cfg.Observability.Enabled {
-		grpcServerOptions = append(
-			grpcServerOptions,
-			server.WithGRPCOption(
-				grpc.StatsHandler(metric.NewServerHandler()),
-			),
+		obs, err = observability.NewWithConfig(
+			cfg.Observability,
+			backoffmetrics.New(),
+			cbmetrics.New(),
 		)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	srv, err := starter.New(

@@ -11,32 +11,33 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-package sidecar
+package attribute
 
 import (
-	"context"
 	"reflect"
-	"sync"
 	"testing"
 
 	"github.com/vdaas/vald/internal/errors"
-	"github.com/vdaas/vald/internal/observability/metrics"
 	"github.com/vdaas/vald/internal/test/goleak"
-	"github.com/vdaas/vald/pkg/agent/sidecar/service/observer"
 )
 
-func TestNew(t *testing.T) {
+func TestBool(t *testing.T) {
+	type args struct {
+		k string
+		v bool
+	}
 	type want struct {
-		want MetricsHook
+		want KeyValue
 	}
 	type test struct {
 		name       string
+		args       args
 		want       want
-		checkFunc  func(want, MetricsHook) error
-		beforeFunc func()
-		afterFunc  func()
+		checkFunc  func(want, KeyValue) error
+		beforeFunc func(args)
+		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, got MetricsHook) error {
+	defaultCheckFunc := func(w want, got KeyValue) error {
 		if !reflect.DeepEqual(got, w.want) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
@@ -47,6 +48,10 @@ func TestNew(t *testing.T) {
 		/*
 		   {
 		       name: "test_case_1",
+		       args: args {
+		           k: "",
+		           v: false,
+		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
 		   },
@@ -57,6 +62,10 @@ func TestNew(t *testing.T) {
 		   func() test {
 		       return test {
 		           name: "test_case_2",
+		           args: args {
+		           k: "",
+		           v: false,
+		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
 		       }
@@ -70,17 +79,17 @@ func TestNew(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
 
-			got := New()
+			got := Bool(test.args.k, test.args.v)
 			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -88,137 +97,23 @@ func TestNew(t *testing.T) {
 	}
 }
 
-func Test_sidecarMetrics_Register(t *testing.T) {
+func TestString(t *testing.T) {
 	type args struct {
-		m metrics.Meter
-	}
-	type fields struct {
-		storageTypeKey string
-		bucketNameKey  string
-		filenameKey    string
-		mu             sync.Mutex
-		info           *observer.BackupInfo
+		k string
+		v string
 	}
 	type want struct {
-		err error
+		want KeyValue
 	}
 	type test struct {
 		name       string
 		args       args
-		fields     fields
 		want       want
-		checkFunc  func(want, error) error
+		checkFunc  func(want, KeyValue) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           m: nil,
-		       },
-		       fields: fields {
-		           storageTypeKey: "",
-		           bucketNameKey: "",
-		           filenameKey: "",
-		           mu: nil,
-		           info: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           m: nil,
-		           },
-		           fields: fields {
-		           storageTypeKey: "",
-		           bucketNameKey: "",
-		           filenameKey: "",
-		           mu: nil,
-		           info: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-			checkFunc := test.checkFunc
-			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
-			}
-			sm := &sidecarMetrics{
-				storageTypeKey: test.fields.storageTypeKey,
-				bucketNameKey:  test.fields.bucketNameKey,
-				filenameKey:    test.fields.filenameKey,
-				mu:             test.fields.mu,
-				info:           test.fields.info,
-			}
-
-			err := sm.Register(test.args.m)
-			if err := checkFunc(test.want, err); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
-
-func Test_sidecarMetrics_BeforeProcess(t *testing.T) {
-	type args struct {
-		ctx  context.Context
-		info *observer.BackupInfo
-	}
-	type fields struct {
-		storageTypeKey string
-		bucketNameKey  string
-		filenameKey    string
-		mu             sync.Mutex
-		info           *observer.BackupInfo
-	}
-	type want struct {
-		want context.Context
-		err  error
-	}
-	type test struct {
-		name       string
-		args       args
-		fields     fields
-		want       want
-		checkFunc  func(want, context.Context, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-	defaultCheckFunc := func(w want, got context.Context, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-		}
+	defaultCheckFunc := func(w want, got KeyValue) error {
 		if !reflect.DeepEqual(got, w.want) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
@@ -230,15 +125,8 @@ func Test_sidecarMetrics_BeforeProcess(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
-		           ctx: nil,
-		           info: nil,
-		       },
-		       fields: fields {
-		           storageTypeKey: "",
-		           bucketNameKey: "",
-		           filenameKey: "",
-		           mu: nil,
-		           info: nil,
+		           k: "",
+		           v: "",
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -251,15 +139,8 @@ func Test_sidecarMetrics_BeforeProcess(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
-		           ctx: nil,
-		           info: nil,
-		           },
-		           fields: fields {
-		           storageTypeKey: "",
-		           bucketNameKey: "",
-		           filenameKey: "",
-		           mu: nil,
-		           info: nil,
+		           k: "",
+		           v: "",
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -283,49 +164,34 @@ func Test_sidecarMetrics_BeforeProcess(t *testing.T) {
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
-			sm := &sidecarMetrics{
-				storageTypeKey: test.fields.storageTypeKey,
-				bucketNameKey:  test.fields.bucketNameKey,
-				filenameKey:    test.fields.filenameKey,
-				mu:             test.fields.mu,
-				info:           test.fields.info,
-			}
 
-			got, err := sm.BeforeProcess(test.args.ctx, test.args.info)
-			if err := checkFunc(test.want, got, err); err != nil {
+			got := String(test.args.k, test.args.v)
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
 	}
 }
 
-func Test_sidecarMetrics_AfterProcess(t *testing.T) {
+func TestInt64(t *testing.T) {
 	type args struct {
-		ctx  context.Context
-		info *observer.BackupInfo
-	}
-	type fields struct {
-		storageTypeKey string
-		bucketNameKey  string
-		filenameKey    string
-		mu             sync.Mutex
-		info           *observer.BackupInfo
+		k string
+		v int64
 	}
 	type want struct {
-		err error
+		want KeyValue
 	}
 	type test struct {
 		name       string
 		args       args
-		fields     fields
 		want       want
-		checkFunc  func(want, error) error
+		checkFunc  func(want, KeyValue) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+	defaultCheckFunc := func(w want, got KeyValue) error {
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -335,15 +201,8 @@ func Test_sidecarMetrics_AfterProcess(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
-		           ctx: nil,
-		           info: nil,
-		       },
-		       fields: fields {
-		           storageTypeKey: "",
-		           bucketNameKey: "",
-		           filenameKey: "",
-		           mu: nil,
-		           info: nil,
+		           k: "",
+		           v: 0,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -356,15 +215,8 @@ func Test_sidecarMetrics_AfterProcess(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
-		           ctx: nil,
-		           info: nil,
-		           },
-		           fields: fields {
-		           storageTypeKey: "",
-		           bucketNameKey: "",
-		           filenameKey: "",
-		           mu: nil,
-		           info: nil,
+		           k: "",
+		           v: 0,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -388,16 +240,85 @@ func Test_sidecarMetrics_AfterProcess(t *testing.T) {
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
-			sm := &sidecarMetrics{
-				storageTypeKey: test.fields.storageTypeKey,
-				bucketNameKey:  test.fields.bucketNameKey,
-				filenameKey:    test.fields.filenameKey,
-				mu:             test.fields.mu,
-				info:           test.fields.info,
+
+			got := Int64(test.args.k, test.args.v)
+			if err := checkFunc(test.want, got); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func TestFloat64(t *testing.T) {
+	type args struct {
+		k string
+		v float64
+	}
+	type want struct {
+		want KeyValue
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, KeyValue) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, got KeyValue) error {
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           k: "",
+		           v: 0,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           k: "",
+		           v: 0,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			checkFunc := test.checkFunc
+			if test.checkFunc == nil {
+				checkFunc = defaultCheckFunc
 			}
 
-			err := sm.AfterProcess(test.args.ctx, test.args.info)
-			if err := checkFunc(test.want, err); err != nil {
+			got := Float64(test.args.k, test.args.v)
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
