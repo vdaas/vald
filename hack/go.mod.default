@@ -156,6 +156,8 @@ replace (
 	github.com/dvyukov/go-fuzz => github.com/dvyukov/go-fuzz latest
 	github.com/edsrzf/mmap-go => github.com/edsrzf/mmap-go latest
 	github.com/elazarl/goproxy => github.com/elazarl/goproxy latest
+	github.com/emicklei/go-restful => github.com/emicklei/go-restful latest
+	github.com/emicklei/go-restful/v3 => github.com/emicklei/go-restful/v3 latest
 	github.com/envoyproxy/go-control-plane => github.com/envoyproxy/go-control-plane latest
 	github.com/envoyproxy/protoc-gen-validate => github.com/envoyproxy/protoc-gen-validate latest
 	github.com/evanphx/json-patch => github.com/evanphx/json-patch latest

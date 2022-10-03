@@ -333,7 +333,6 @@ $(BINDIR)/kube-linter:
 	mkdir -p $(BINDIR)
 	cd $(TEMP_DIR) \
 	    && curl -LO https://github.com/stackrox/kube-linter/releases/download/$(KUBELINTER_VERSION)/kube-linter-darwin \
-	    && unzip kube-linter-darwin \
 	    && mv kube-linter-darwin $(BINDIR)/kube-linter \
 	    && chmod a+x $(BINDIR)/kube-linter
 else
@@ -341,7 +340,6 @@ $(BINDIR)/kube-linter:
 	mkdir -p $(BINDIR)
 	cd $(TEMP_DIR) \
 	    && curl -LO https://github.com/stackrox/kube-linter/releases/download/$(KUBELINTER_VERSION)/kube-linter-linux \
-	    && unzip kube-linter-linux \
 	    && mv kube-linter-linux $(BINDIR)/kube-linter \
 	    && chmod a+x $(BINDIR)/kube-linter
 endif

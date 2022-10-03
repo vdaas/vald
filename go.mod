@@ -156,6 +156,8 @@ replace (
 	github.com/dvyukov/go-fuzz => github.com/dvyukov/go-fuzz v0.0.0-20220726122315-1d375ef9f9f6
 	github.com/edsrzf/mmap-go => github.com/edsrzf/mmap-go v1.1.0
 	github.com/elazarl/goproxy => github.com/elazarl/goproxy v0.0.0-20220901064549-fbd10ff4f5a1
+	github.com/emicklei/go-restful => github.com/emicklei/go-restful v2.16.0+incompatible
+	github.com/emicklei/go-restful/v3 => github.com/emicklei/go-restful/v3 v3.9.0
 	github.com/envoyproxy/go-control-plane => github.com/envoyproxy/go-control-plane v0.10.3
 	github.com/envoyproxy/protoc-gen-validate => github.com/envoyproxy/protoc-gen-validate v0.6.12
 	github.com/evanphx/json-patch => github.com/evanphx/json-patch v0.5.2
@@ -537,7 +539,7 @@ replace (
 	k8s.io/client-go => k8s.io/client-go v0.25.0
 	k8s.io/component-base => k8s.io/component-base v0.25.0
 	k8s.io/cri-api => k8s.io/cri-api v0.25.0
-	k8s.io/gengo => k8s.io/gengo v0.0.0-20220913193501-391367153a38
+	k8s.io/gengo => k8s.io/gengo v0.0.0-20221003092416-e83a76d3209c
 	k8s.io/klog => k8s.io/klog v1.0.0
 	k8s.io/klog/v2 => k8s.io/klog/v2 v2.80.1
 	k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20220928191237-829ce0c27909
