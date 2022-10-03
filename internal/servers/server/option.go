@@ -547,13 +547,9 @@ func WithGRPCInterceptors(names ...string) Option {
 					grpc.ChainStreamInterceptor(trace.TraceStreamInterceptor()),
 				)
 			case "metricinterceptor", "metric":
-				mi, err := metric.MetricInterceptor()
+				mi, msi, err := metric.MetricInterceptors()
 				if err != nil {
-					return errors.NewErrCriticalOption("gRPCInterceptors", "metric", errors.Wrap(err, "failed to create UnaryInterceptor"))
-				}
-				msi, err := metric.MetricStreamInterceptor()
-				if err != nil {
-					return errors.NewErrCriticalOption("gRPCInterceptors", "metric", errors.Wrap(err, "failed to create StreamInterceptor"))
+					return errors.NewErrCriticalOption("gRPCInterceptors", "metric", errors.Wrap(err, "failed to create Interceptor"))
 				}
 				s.grpc.opts = append(
 					s.grpc.opts,
