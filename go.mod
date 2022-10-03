@@ -391,6 +391,7 @@ replace (
 	github.com/prometheus/common/sigv4 => github.com/prometheus/common/sigv4 v0.1.0
 	github.com/prometheus/exporter-toolkit => github.com/prometheus/exporter-toolkit v0.7.1
 	github.com/prometheus/procfs => github.com/prometheus/procfs v0.8.0
+	github.com/prometheus/prometheus => github.com/prometheus/prometheus v1.99.0
 	github.com/prometheus/prometheus/v2 => github.com/prometheus/prometheus/v2 v2.35.0-retract
 	github.com/quasilyte/go-ruleguard => github.com/quasilyte/go-ruleguard v0.3.18
 	github.com/quasilyte/go-ruleguard/dsl => github.com/quasilyte/go-ruleguard/dsl v0.3.21
@@ -567,10 +568,10 @@ require (
 	github.com/goccy/go-json v0.9.11
 	github.com/gocql/gocql v0.0.0-20200131111108-92af2e088537
 	github.com/gocraft/dbr/v2 v2.0.0-00010101000000-000000000000
-	github.com/google/go-cmp v0.5.9
-	github.com/gorilla/mux v1.6.2
+	github.com/google/go-cmp v0.5.8
+	github.com/gorilla/mux v0.0.0-00010101000000-000000000000
 	github.com/hashicorp/go-version v0.0.0-00010101000000-000000000000
-	github.com/klauspost/compress v1.15.8
+	github.com/klauspost/compress v1.15.1
 	github.com/kpango/fastime v1.1.4
 	github.com/kpango/fuid v0.0.0-00010101000000-000000000000
 	github.com/kpango/gache v0.0.0-00010101000000-000000000000
@@ -584,7 +585,7 @@ require (
 	github.com/scylladb/gocqlx v0.0.0-00010101000000-000000000000
 	github.com/vdaas/vald-client-go v0.0.0-00010101000000-000000000000
 	github.com/zeebo/xxh3 v1.0.2
-	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.28.0
+	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.20.0
 	go.opentelemetry.io/otel v1.10.0
 	go.opentelemetry.io/otel/exporters/jaeger v0.0.0-00010101000000-000000000000
 	go.opentelemetry.io/otel/exporters/prometheus v0.0.0-00010101000000-000000000000
@@ -592,18 +593,18 @@ require (
 	go.opentelemetry.io/otel/sdk v1.10.0
 	go.opentelemetry.io/otel/sdk/metric v0.32.1
 	go.opentelemetry.io/otel/trace v1.10.0
-	go.uber.org/automaxprocs v1.5.1
-	go.uber.org/goleak v1.2.0
+	go.uber.org/automaxprocs v0.0.0-00010101000000-000000000000
+	go.uber.org/goleak v1.1.12
 	go.uber.org/zap v1.23.0
 	gocloud.dev v0.0.0-00010101000000-000000000000
-	golang.org/x/net v0.0.0-20220921155015-db77216a4ee9
+	golang.org/x/net v0.0.0-20220909164309-bea034e7d591
 	golang.org/x/oauth2 v0.0.0-20220909003341-f21342109be1
-	golang.org/x/sync v0.0.0-20220819030929-7fc1605a5dde
-	golang.org/x/sys v0.0.0-20220928140112-f11e5e49a4ec
+	golang.org/x/sync v0.0.0-20220722155255-886fb9371eb4
+	golang.org/x/sys v0.0.0-20220908150016-7ac13a9a928d
 	golang.org/x/text v0.3.7
 	golang.org/x/tools v0.1.12
 	gonum.org/v1/hdf5 v0.0.0-00010101000000-000000000000
-	gonum.org/v1/plot v0.10.1
+	gonum.org/v1/plot v0.0.0-00010101000000-000000000000
 	google.golang.org/genproto v0.0.0-20220926220553-6981cbe3cfce
 	google.golang.org/grpc v1.49.0
 	google.golang.org/protobuf v1.28.1
@@ -636,8 +637,8 @@ require (
 	github.com/go-logr/logr v1.2.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-openapi/jsonpointer v0.19.5 // indirect
-	github.com/go-openapi/jsonreference v0.20.0 // indirect
-	github.com/go-openapi/swag v0.21.1 // indirect
+	github.com/go-openapi/jsonreference v0.19.5 // indirect
+	github.com/go-openapi/swag v0.19.14 // indirect
 	github.com/go-pdf/fpdf v0.6.0 // indirect
 	github.com/go-toolsmith/astcopy v1.0.2 // indirect
 	github.com/go-toolsmith/astequal v1.0.3 // indirect
@@ -645,10 +646,10 @@ require (
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
-	github.com/golang/snappy v0.0.4 // indirect
+	github.com/golang/snappy v0.0.3 // indirect
 	github.com/google/btree v1.0.1 // indirect
 	github.com/google/gnostic v0.5.7-v3refs // indirect
-	github.com/google/gofuzz v1.2.0 // indirect
+	github.com/google/gofuzz v1.1.0 // indirect
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510 // indirect
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/google/wire v0.5.0 // indirect
@@ -678,7 +679,7 @@ require (
 	github.com/quasilyte/gogrep v0.0.0-20220828223005-86e4605de09f // indirect
 	github.com/quasilyte/stdinfo v0.0.0-20220114132959-f7386bf02567 // indirect
 	github.com/scylladb/go-reflectx v1.0.1 // indirect
-	github.com/spf13/cobra v1.5.0 // indirect
+	github.com/spf13/cobra v1.4.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/xlab/treeprint v1.1.0 // indirect
 	go.opencensus.io v0.23.0 // indirect
