@@ -858,7 +858,7 @@ defaultCheckFunc := func(w want, err error) error {
 
 tests := []test {
     {
-        name: "send success when host and port are correct value",
+        name: "success send when host and port are correct value",
         args: args {
             host: "vdaas.vald.org",
             port: "80",
@@ -1217,7 +1217,7 @@ In Vald, we use parallel tests to accelerate the execution of tests by default.
 There are two layers of enabling parallel tests.
 
 1. Parallel for the test function
-2. Parallel for the subtests in the test function
+1. Parallel for the subtests in the test function
 
 The generated test case will enable these two parallel modes by default. It is implemented by:
 
