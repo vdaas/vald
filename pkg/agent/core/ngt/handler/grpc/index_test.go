@@ -1075,7 +1075,7 @@ func Test_server_CreateAndSaveIndex(t *testing.T) {
 			- case 2.1: success to create and save index with invalid dimension
 				- the invalid index will be removed from NGT and the index file
 		- Decision Table Testing
-			- case 1.1: success to create and save index with in-memory mode
+			- case 1.1: success to create and save 100 index with in-memory mode
 				- do nothing and no file will be created
 			- case 2.1: success to create and save 1 inserted index with copy-on-write enabled
 			- case 2.2: success to create and save 100 inserted index with copy-on-write enabled
