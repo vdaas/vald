@@ -393,7 +393,7 @@ replace (
 	github.com/prometheus/procfs => github.com/prometheus/procfs latest
 	github.com/prometheus/prometheus => github.com/prometheus/prometheus latest
 	github.com/prometheus/prometheus/v2 => github.com/prometheus/prometheus/v2 latest
-    github.com/prometheus/prometheus/web/ui => github.com/prometheus/prometheus/web/ui latest
+	github.com/prometheus/prometheus/web/ui => github.com/prometheus/prometheus/web/ui latest
 	github.com/quasilyte/go-ruleguard => github.com/quasilyte/go-ruleguard latest
 	github.com/quasilyte/go-ruleguard/dsl => github.com/quasilyte/go-ruleguard/dsl latest
 	github.com/quasilyte/gogrep => github.com/quasilyte/gogrep latest
