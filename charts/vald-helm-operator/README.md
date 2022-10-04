@@ -3,7 +3,7 @@ vald-helm-operator
 
 This is a Helm chart to install vald-helm-operator.
 
-Current chart version is `v1.5.6`
+Current chart version is `v1.6.0`
 
 Table of Contents
 ---
@@ -30,13 +30,13 @@ Upgrading the version
 
 Please upgrade the CRDs first because Helm doesn't have a support to upgrade CRDs.
 
-    $ kubectl replace -f https://raw.githubusercontent.com/vdaas/vald/v1.5.6/charts/vald-helm-operator/crds/valdrelease.yaml
-    $ kubectl replace -f https://raw.githubusercontent.com/vdaas/vald/v1.5.6/charts/vald-helm-operator/crds/valdhelmoperatorrelease.yaml
+    $ kubectl replace -f https://raw.githubusercontent.com/vdaas/vald/v1.6.0/charts/vald-helm-operator/crds/valdrelease.yaml
+    $ kubectl replace -f https://raw.githubusercontent.com/vdaas/vald/v1.6.0/charts/vald-helm-operator/crds/valdhelmoperatorrelease.yaml
 
 After upgrading CRDs, you can upgrade the operator.
 If you're using `valdhelmoperatorrelease` (or `vhor`) resource, please update the `spec.image.tag` field of it.
 
-    $ kubectl patch vhor vhor-release -p '{"spec":{"image":{"tag":"v1.5.6"}}}'
+    $ kubectl patch vhor vhor-release -p '{"spec":{"image":{"tag":"v1.6.0"}}}'
 
 On the other hand, please update the operator's deployment manually.
 
@@ -85,7 +85,7 @@ Configuration
 | healthPort | int | `8081` | port of health endpoint |
 | image.pullPolicy | string | `"Always"` | image pull policy |
 | image.repository | string | `"vdaas/vald-helm-operator"` | image repository |
-| image.tag | string | `"v1.5.6"` | image tag |
+| image.tag | string | `"v1.6.0"` | image tag |
 | leaderElectionID | string | `"vald-helm-operator"` | name of the configmap that is used for holding the leader lock. |
 | livenessProbe.enabled | bool | `true` | enable liveness probe. |
 | livenessProbe.failureThreshold | int | `2` | liveness probe failure threshold |
