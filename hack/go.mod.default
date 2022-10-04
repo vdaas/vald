@@ -17,6 +17,7 @@ replace (
 	cloud.google.com/go/trace => cloud.google.com/go/trace latest
 	code.cloudfoundry.org/bytefmt => code.cloudfoundry.org/bytefmt latest
 	contrib.go.opencensus.io/exporter/aws => contrib.go.opencensus.io/exporter/aws latest
+	contrib.go.opencensus.io/exporter/stackdriver => contrib.go.opencensus.io/exporter/stackdriver latest
 	contrib.go.opencensus.io/exporter/prometheus => contrib.go.opencensus.io/exporter/prometheus latest
 	contrib.go.opencensus.io/integrations/ocsql => contrib.go.opencensus.io/integrations/ocsql latest
 	git.sr.ht/~sbinet/gg => git.sr.ht/~sbinet/gg latest
@@ -393,7 +394,6 @@ replace (
 	github.com/prometheus/procfs => github.com/prometheus/procfs latest
 	github.com/prometheus/prometheus => github.com/prometheus/prometheus latest
 	github.com/prometheus/prometheus/v2 => github.com/prometheus/prometheus/v2 latest
-	github.com/prometheus/prometheus/web/ui => github.com/prometheus/prometheus/web/ui latest
 	github.com/quasilyte/go-ruleguard => github.com/quasilyte/go-ruleguard latest
 	github.com/quasilyte/go-ruleguard/dsl => github.com/quasilyte/go-ruleguard/dsl latest
 	github.com/quasilyte/gogrep => github.com/quasilyte/gogrep latest
