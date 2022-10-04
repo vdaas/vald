@@ -18,10 +18,97 @@ import (
 	"go.opentelemetry.io/otel/metric/global"
 	"go.opentelemetry.io/otel/metric/instrument"
 	"go.opentelemetry.io/otel/metric/unit"
+	"go.opentelemetry.io/otel/sdk/metric/view"
 )
 
-const (
-	ValdOrg = "vald.vdaas.org"
+const ValdOrg = "vald.vdaas.org"
+
+var (
+	RoughMillisecondsDistribution = []float64{
+		1,
+		5,
+		10,
+		30,
+		60,
+		8,
+		100,
+		200,
+		300,
+		400,
+		500,
+		600,
+		800,
+		1000,
+		1300,
+		1600,
+		2000,
+		2500,
+		3000,
+		4000,
+		5000,
+		6500,
+		8000,
+		10000,
+		13000,
+		16000,
+		20000,
+		25000,
+		30000,
+		40000,
+		50000,
+		65000,
+		80000,
+		100000,
+		200000,
+		500000,
+		1000000,
+		2000000,
+		5000000,
+		10000000,
+	}
+
+	DefaultMillisecondsDistribution = []float64{
+		0.01,
+		0.05,
+		0.1,
+		0.3,
+		0.6,
+		0.8,
+		1,
+		2,
+		3,
+		4,
+		5,
+		6,
+		8,
+		10,
+		13,
+		16,
+		20,
+		25,
+		30,
+		40,
+		50,
+		65,
+		80,
+		100,
+		130,
+		160,
+		200,
+		250,
+		300,
+		400,
+		500,
+		650,
+		800,
+		1000,
+		2000,
+		5000,
+		10000,
+		20000,
+		50000,
+		100000,
+	}
 )
 
 // Meter is type alias of metrics.Meter.
@@ -62,7 +149,14 @@ func WithDescription(desc string) instrument.Option {
 	return instrument.WithDescription(desc)
 }
 
+type View = view.View
+
+type Viewer interface {
+	View() ([]*View, error)
+}
+
 // Metric represents an interface for metric.
 type Metric interface {
-	Register(metric.Meter) error
+	Viewer
+	Register(Meter) error
 }

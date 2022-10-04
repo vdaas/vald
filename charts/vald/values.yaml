@@ -871,15 +871,6 @@ defaults:
       # @schema {"name": "defaults.observability.prometheus.namespace", "type": "string"}
       # defaults.observability.prometheus.namespace -- service namespace for metrics
       namespace: _MY_POD_NAMESPACE_
-      # @schema {"name": "defaults.observability.prometheus.collect_interval", "type": "string"}
-      # defaults.observability.prometheus.collect_interval -- Prometheus collect interval
-      collect_interval: 500ms
-      # @schema {"name": "defaults.observability.prometheus.collect_timeout", "type": "string"}
-      # defaults.observability.prometheus.collect_timeout -- Prometheus collect timeout
-      collect_timeout: 10s
-      # @schema {"name": "defaults.observability.prometheus.enable_in_memory_mode", "type": "boolean"}
-      # defaults.observability.prometheus.enable_in_memory_mode -- Prometheus collect with in memory
-      enable_in_memory_mode: true
     # @schema {"name": "defaults.observability.jaeger", "type": "object"}
     jaeger:
       # @schema {"name": "defaults.observability.jaeger.enabled", "type": "boolean"}
