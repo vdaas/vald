@@ -55,17 +55,7 @@ func MetricInterceptors() (grpc.UnaryServerInterceptor, grpc.StreamServerInterce
 	}
 
 	record := func(ctx context.Context, method string, err error, latency float64) {
-		code := codes.OK // default error is success when error is nil
-		if err != nil {
-			st, _ := status.FromError(err)
-			if st != nil {
-				code = st.Code()
-			}
-		}
-		attrs := []attribute.KeyValue{
-			attribute.String(gRPCMethodKeyName, method),
-			attribute.String(gRPCStatus, code.String()),
-		}
+		attrs := attributesFromError(method, err)
 		latencyHistgram.Record(ctx, latency, attrs...)
 		completedRPCCnt.Add(ctx, 1, attrs...)
 	}
@@ -82,4 +72,18 @@ func MetricInterceptors() (grpc.UnaryServerInterceptor, grpc.StreamServerInterce
 			record(ss.Context(), info.FullMethod, err, float64(elapsedTime)/float64(time.Millisecond))
 			return err
 		}, nil
+}
+
+func attributesFromError(method string, err error) []attribute.KeyValue {
+	code := codes.OK // default error is success when error is nil
+	if err != nil {
+		st, _ := status.FromError(err)
+		if st != nil {
+			code = st.Code()
+		}
+	}
+	return []attribute.KeyValue{
+		attribute.String(gRPCMethodKeyName, method),
+		attribute.String(gRPCStatus, code.String()),
+	}
 }
