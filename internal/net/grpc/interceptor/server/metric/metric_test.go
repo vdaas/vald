@@ -21,6 +21,7 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/grpc/codes"
+	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/observability/attribute"
 	"github.com/vdaas/vald/internal/test/goleak"
 )
@@ -145,6 +146,19 @@ func Test_attributesFromError(t *testing.T) {
 				obj: []attribute.KeyValue{
 					attribute.String(gRPCMethodKeyName, "InsertRPC"),
 					attribute.String(gRPCStatus, codes.DeadlineExceeded.String()),
+				},
+			},
+		},
+		{
+			name: "return []attribute.KeyValue when err type is wrapped error",
+			args: args{
+				method: "InsertRPC",
+				err:    status.WrapWithInvalidArgument("Insert API failed", errors.ErrIncompatibleDimensionSize(100, 940)),
+			},
+			want: want{
+				obj: []attribute.KeyValue{
+					attribute.String(gRPCMethodKeyName, "InsertRPC"),
+					attribute.String(gRPCStatus, codes.InvalidArgument.String()),
 				},
 			},
 		},
