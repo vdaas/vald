@@ -54,51 +54,32 @@ func MetricInterceptors() (grpc.UnaryServerInterceptor, grpc.StreamServerInterce
 		return nil, nil, errors.Wrap(err, "failed to create completedRPCs metric")
 	}
 
-	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp interface{}, err error) {
-			now := time.Now()
-
-			resp, err = handler(ctx, req)
-
-			elapsedTime := time.Since(now)
-
-			code := codes.Unknown.String()
+	record := func(ctx context.Context, method string, err error, latency float64) {
+		code := codes.OK // default error is success when error is nil
+		if err != nil {
 			st, _ := status.FromError(err)
 			if st != nil {
-				code = st.Code().String()
+				code = st.Code()
 			}
-
-			latency := float64(elapsedTime) / float64(time.Millisecond)
-
-			attrs := []attribute.KeyValue{
-				attribute.String(gRPCMethodKeyName, info.FullMethod),
-				attribute.String(gRPCStatus, code),
-			}
-			latencyHistgram.Record(ctx, latency, attrs...)
-			completedRPCCnt.Add(ctx, 1, attrs...)
-
+		}
+		attrs := []attribute.KeyValue{
+			attribute.String(gRPCMethodKeyName, method),
+			attribute.String(gRPCStatus, code.String()),
+		}
+		latencyHistgram.Record(ctx, latency, attrs...)
+		completedRPCCnt.Add(ctx, 1, attrs...)
+	}
+	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp interface{}, err error) {
+			now := time.Now()
+			resp, err = handler(ctx, req)
+			elapsedTime := time.Since(now)
+			record(ctx, info.FullMethod, err, float64(elapsedTime)/float64(time.Millisecond))
 			return resp, err
 		}, func(srv interface{}, ss grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
 			now := time.Now()
-
 			err = handler(srv, ss)
-
 			elapsedTime := time.Since(now)
-
-			code := codes.Unknown.String()
-			st, _ := status.FromError(err)
-			if st != nil {
-				code = st.Code().String()
-			}
-
-			latency := float64(elapsedTime) / float64(time.Millisecond)
-
-			attrs := []attribute.KeyValue{
-				attribute.String(gRPCMethodKeyName, info.FullMethod),
-				attribute.String(gRPCStatus, code),
-			}
-			latencyHistgram.Record(ss.Context(), latency, attrs...)
-			completedRPCCnt.Add(ss.Context(), 1, attrs...)
-
+			record(ss.Context(), info.FullMethod, err, float64(elapsedTime)/float64(time.Millisecond))
 			return err
 		}, nil
 }
