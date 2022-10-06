@@ -38,7 +38,7 @@ defaults:
   image:
     # @schema {"name": "defaults.image.tag", "type": "string"}
     # defaults.image.tag -- docker image tag
-    tag: v1.5.6
+    tag: v1.6.1
   # @schema {"name": "defaults.server_config", "type": "object", "anchor": "server_config"}
   server_config:
     # @schema {"name": "defaults.server_config.servers", "type": "object"}
@@ -871,15 +871,6 @@ defaults:
       # @schema {"name": "defaults.observability.prometheus.namespace", "type": "string"}
       # defaults.observability.prometheus.namespace -- service namespace for metrics
       namespace: _MY_POD_NAMESPACE_
-      # @schema {"name": "defaults.observability.prometheus.collect_interval", "type": "string"}
-      # defaults.observability.prometheus.collect_interval -- Prometheus collect interval
-      collect_interval: 500ms
-      # @schema {"name": "defaults.observability.prometheus.collect_timeout", "type": "string"}
-      # defaults.observability.prometheus.collect_timeout -- Prometheus collect timeout
-      collect_timeout: 10s
-      # @schema {"name": "defaults.observability.prometheus.enable_in_memory_mode", "type": "boolean"}
-      # defaults.observability.prometheus.enable_in_memory_mode -- Prometheus collect with in memory
-      enable_in_memory_mode: true
     # @schema {"name": "defaults.observability.jaeger", "type": "object"}
     jaeger:
       # @schema {"name": "defaults.observability.jaeger.enabled", "type": "boolean"}

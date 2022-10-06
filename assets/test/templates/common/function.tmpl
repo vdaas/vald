@@ -45,8 +45,8 @@ func {{ .TestName }}(t *testing.T) {
         checkFunc func(want,
                     {{- range .TestResults }} {{ .Type }}, {{- end }}
                     {{- if .ReturnsError }} error {{- end }} ) error
-        beforeFunc func({{- if .TestParameters }} args {{- end}})
-        afterFunc func({{- if .TestParameters }} args {{- end}})
+        beforeFunc func(*testing.T, {{- if .TestParameters }} args {{- end}})
+        afterFunc func(*testing.T, {{- if .TestParameters }} args {{- end}})
     }
     defaultCheckFunc := func(w want,
         {{- range .TestResults }} {{ Got . }} {{ .Type }}, {{- end }}
@@ -81,6 +81,12 @@ func {{ .TestName }}(t *testing.T) {
             {{- end }}
             want: want{},
             checkFunc: defaultCheckFunc,
+            beforeFunc: func(t *testing.T, {{- if .TestParameters }} args args {{- end }}) {
+                t.Helper()
+            },
+            afterFunc: func(t *testing.T, {{- if .TestParameters }} args args {{- end }}) {
+                t.Helper()
+            },
         },
         */
 
@@ -101,6 +107,12 @@ func {{ .TestName }}(t *testing.T) {
                 {{- end }}
                 want: want{},
                 checkFunc: defaultCheckFunc,
+                beforeFunc: func(t *testing.T, {{- if .TestParameters }} args args {{- end }}) {
+                    t.Helper()
+                },
+                afterFunc: func(t *testing.T, {{- if .TestParameters }} args args {{- end }}) {
+                    t.Helper()
+                },
             }
         }(),
         */
@@ -113,10 +125,10 @@ func {{ .TestName }}(t *testing.T) {
                 tt.Parallel()
                 defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
                 if test.beforeFunc != nil {
-                    test.beforeFunc({{- if .TestParameters }} test.args {{- end }})
+                    test.beforeFunc(tt, {{- if .TestParameters }} test.args {{- end }})
                 }
                 if test.afterFunc != nil {
-                    defer test.afterFunc({{- if .TestParameters }} test.args {{- end }})
+                    defer test.afterFunc(tt, {{- if .TestParameters }} test.args {{- end }})
                 }
                 checkFunc := test.checkFunc
                 if test.checkFunc == nil {

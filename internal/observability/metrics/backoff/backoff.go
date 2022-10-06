@@ -19,6 +19,13 @@ import (
 	"github.com/vdaas/vald/internal/backoff"
 	"github.com/vdaas/vald/internal/observability/attribute"
 	"github.com/vdaas/vald/internal/observability/metrics"
+	"go.opentelemetry.io/otel/sdk/metric/aggregation"
+	"go.opentelemetry.io/otel/sdk/metric/view"
+)
+
+const (
+	metricsName        = "backoff_retry_count"
+	metricsDescription = "Backoff retry count"
 )
 
 type backoffMetrics struct {
@@ -31,10 +38,24 @@ func New() metrics.Metric {
 	}
 }
 
+func (bm *backoffMetrics) View() ([]*metrics.View, error) {
+	retryCount, err := view.New(
+		view.MatchInstrumentName(metricsName),
+		view.WithSetDescription(metricsDescription),
+		view.WithSetAggregation(aggregation.LastValue{}),
+	)
+	if err != nil {
+		return nil, err
+	}
+	return []*metrics.View{
+		&retryCount,
+	}, nil
+}
+
 func (bm *backoffMetrics) Register(m metrics.Meter) error {
 	retryCount, err := m.AsyncInt64().Gauge(
-		"backoff_retry_count",
-		metrics.WithDescription("Backoff retry count"),
+		metricsName,
+		metrics.WithDescription(metricsDescription),
 		metrics.WithUnit(metrics.Dimensionless),
 	)
 	if err != nil {

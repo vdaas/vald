@@ -11,7 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-package goroutine
+package grpc
 
 import (
 	"reflect"
@@ -85,14 +85,14 @@ func TestNew(t *testing.T) {
 	}
 }
 
-func Test_goroutine_View(t *testing.T) {
+func Test_grpcServerMetrics_View(t *testing.T) {
 	type want struct {
 		want []*metrics.View
 		err  error
 	}
 	type test struct {
 		name       string
-		g          *goroutine
+		gm         *grpcServerMetrics
 		want       want
 		checkFunc  func(want, []*metrics.View, error) error
 		beforeFunc func()
@@ -144,9 +144,9 @@ func Test_goroutine_View(t *testing.T) {
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
-			g := &goroutine{}
+			gm := &grpcServerMetrics{}
 
-			got, err := g.View()
+			got, err := gm.View()
 			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -154,7 +154,7 @@ func Test_goroutine_View(t *testing.T) {
 	}
 }
 
-func Test_goroutine_Register(t *testing.T) {
+func Test_grpcServerMetrics_Register(t *testing.T) {
 	type args struct {
 		m metrics.Meter
 	}
@@ -164,7 +164,7 @@ func Test_goroutine_Register(t *testing.T) {
 	type test struct {
 		name       string
 		args       args
-		g          *goroutine
+		gm         *grpcServerMetrics
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
@@ -219,9 +219,9 @@ func Test_goroutine_Register(t *testing.T) {
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
-			g := &goroutine{}
+			gm := &grpcServerMetrics{}
 
-			err := g.Register(test.args.m)
+			err := gm.Register(test.args.m)
 			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}

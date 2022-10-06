@@ -343,12 +343,6 @@ spec:
                         prometheus:
                           type: object
                           properties:
-                            collect_interval:
-                              type: string
-                            collect_timeout:
-                              type: string
-                            enable_in_memory_mode:
-                              type: boolean
                             enabled:
                               type: boolean
                             endpoint:
@@ -1337,12 +1331,6 @@ spec:
                             prometheus:
                               type: object
                               properties:
-                                collect_interval:
-                                  type: string
-                                collect_timeout:
-                                  type: string
-                                enable_in_memory_mode:
-                                  type: boolean
                                 enabled:
                                   type: boolean
                                 endpoint:
@@ -2255,12 +2243,6 @@ spec:
                         prometheus:
                           type: object
                           properties:
-                            collect_interval:
-                              type: string
-                            collect_timeout:
-                              type: string
-                            enable_in_memory_mode:
-                              type: boolean
                             enabled:
                               type: boolean
                             endpoint:
@@ -3152,12 +3134,6 @@ spec:
                         prometheus:
                           type: object
                           properties:
-                            collect_interval:
-                              type: string
-                            collect_timeout:
-                              type: string
-                            enable_in_memory_mode:
-                              type: boolean
                             enabled:
                               type: boolean
                             endpoint:
@@ -4594,12 +4570,6 @@ spec:
                             prometheus:
                               type: object
                               properties:
-                                collect_interval:
-                                  type: string
-                                collect_timeout:
-                                  type: string
-                                enable_in_memory_mode:
-                                  type: boolean
                                 enabled:
                                   type: boolean
                                 endpoint:
@@ -5831,12 +5801,6 @@ spec:
                             prometheus:
                               type: object
                               properties:
-                                collect_interval:
-                                  type: string
-                                collect_timeout:
-                                  type: string
-                                enable_in_memory_mode:
-                                  type: boolean
                                 enabled:
                                   type: boolean
                                 endpoint:
@@ -7054,12 +7018,6 @@ spec:
                             prometheus:
                               type: object
                               properties:
-                                collect_interval:
-                                  type: string
-                                collect_timeout:
-                                  type: string
-                                enable_in_memory_mode:
-                                  type: boolean
                                 enabled:
                                   type: boolean
                                 endpoint:

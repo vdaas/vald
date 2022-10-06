@@ -33,7 +33,7 @@ const (
 	gRPCStatus        = "grpc_server_status"
 )
 
-func MetricInterceptor() (grpc.UnaryServerInterceptor, error) {
+func MetricInterceptors() (grpc.UnaryServerInterceptor, grpc.StreamServerInterceptor, error) {
 	meter := metrics.GetMeter()
 
 	latencyHistgram, err := meter.SyncFloat64().Histogram(
@@ -42,87 +42,48 @@ func MetricInterceptor() (grpc.UnaryServerInterceptor, error) {
 		metrics.WithUnit(metrics.Milliseconds),
 	)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to create latency metric")
+		return nil, nil, errors.Wrap(err, "failed to create latency metric")
 	}
 
-	completedRPCCnt, err := meter.SyncFloat64().Counter(
+	completedRPCCnt, err := meter.SyncInt64().Counter(
 		completedRPCsMetricsName,
 		metrics.WithDescription("Count of RPCs by method and status"),
 		metrics.WithUnit(metrics.Milliseconds),
 	)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to create completedRPCs metric")
+		return nil, nil, errors.Wrap(err, "failed to create completedRPCs metric")
 	}
 
-	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp interface{}, err error) {
-		now := time.Now()
-
-		resp, err = handler(ctx, req)
-
-		elapsedTime := time.Since(now)
-
-		code := codes.Unknown.String()
-		st, _ := status.FromError(err)
-		if st != nil {
-			code = st.Code().String()
-		}
-
-		latency := float64(elapsedTime) / float64(time.Millisecond)
-
-		attrs := []attribute.KeyValue{
-			attribute.String(gRPCMethodKeyName, info.FullMethod),
-			attribute.String(gRPCStatus, code),
-		}
+	record := func(ctx context.Context, method string, err error, latency float64) {
+		attrs := attributesFromError(method, err)
 		latencyHistgram.Record(ctx, latency, attrs...)
-		completedRPCCnt.Add(ctx, latency, attrs...)
-
-		return resp, err
-	}, nil
+		completedRPCCnt.Add(ctx, 1, attrs...)
+	}
+	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp interface{}, err error) {
+			now := time.Now()
+			resp, err = handler(ctx, req)
+			elapsedTime := time.Since(now)
+			record(ctx, info.FullMethod, err, float64(elapsedTime)/float64(time.Millisecond))
+			return resp, err
+		}, func(srv interface{}, ss grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
+			now := time.Now()
+			err = handler(srv, ss)
+			elapsedTime := time.Since(now)
+			record(ss.Context(), info.FullMethod, err, float64(elapsedTime)/float64(time.Millisecond))
+			return err
+		}, nil
 }
 
-func MetricStreamInterceptor() (grpc.StreamServerInterceptor, error) {
-	meter := metrics.GetMeter()
-
-	latencyHistgram, err := meter.SyncFloat64().Histogram(
-		latencyMetricsName,
-		metrics.WithDescription("Server latency in milliseconds, by method"),
-		metrics.WithUnit(metrics.Milliseconds),
-	)
+func attributesFromError(method string, err error) []attribute.KeyValue {
+	code := codes.OK // default error is success when error is nil
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to create latency metric")
-	}
-
-	completedRPCCnt, err := meter.SyncFloat64().Counter(
-		completedRPCsMetricsName,
-		metrics.WithDescription("Count of RPCs by method and status"),
-		metrics.WithUnit(metrics.Milliseconds),
-	)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to create completedRPCs metric")
-	}
-
-	return func(srv interface{}, ss grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) (err error) {
-		now := time.Now()
-
-		err = handler(srv, ss)
-
-		elapsedTime := time.Since(now)
-
-		code := codes.Unknown.String()
 		st, _ := status.FromError(err)
 		if st != nil {
-			code = st.Code().String()
+			code = st.Code()
 		}
-
-		latency := float64(elapsedTime) / float64(time.Millisecond)
-
-		attrs := []attribute.KeyValue{
-			attribute.String(gRPCMethodKeyName, info.FullMethod),
-			attribute.String(gRPCStatus, code),
-		}
-		latencyHistgram.Record(ss.Context(), latency, attrs...)
-		completedRPCCnt.Add(ss.Context(), latency, attrs...)
-
-		return err
-	}, nil
+	}
+	return []attribute.KeyValue{
+		attribute.String(gRPCMethodKeyName, method),
+		attribute.String(gRPCStatus, code.String()),
+	}
 }

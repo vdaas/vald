@@ -82,8 +82,8 @@ jobs:
           wait_for_selector: app=vald-lb-gateway
       - name: deploy Chaos Mesh
         run: |
-          make kubectl/install
-          curl -sSL https://mirrors.chaos-mesh.org/v2.3.0/install.sh | bash -s -- --k3s
+          make kubectl/install/linux/v1.23.6
+          curl -sSL https://mirrors.chaos-mesh.org/v2.4.1/install.sh | bash -s -- --k3s
           helm install \
             --set podChaos.failure.enabled=true \
             vald-chaos-test tests/chaos/chart
@@ -176,8 +176,8 @@ jobs:
           wait_for_selector: app=vald-lb-gateway
       - name: deploy Chaos Mesh
         run: |
-          make kubectl/install
-          curl -sSL https://mirrors.chaos-mesh.org/v2.3.0/install.sh | bash -s -- --k3s
+          make kubectl/install/linux/v1.23.6
+          curl -sSL https://mirrors.chaos-mesh.org/v2.4.1/install.sh | bash -s -- --k3s
           helm install \
             --set podChaos.kill.enabled=true \
             vald-chaos-test tests/chaos/chart
@@ -270,8 +270,8 @@ jobs:
           wait_for_selector: app=vald-lb-gateway
       - name: deploy Chaos Mesh
         run: |
-          make kubectl/install
-          curl -sSL https://mirrors.chaos-mesh.org/v2.3.0/install.sh | bash -s -- --k3s
+          make kubectl/install/linux/v1.23.6
+          curl -sSL https://mirrors.chaos-mesh.org/v2.4.1/install.sh | bash -s -- --k3s
           helm install \
             --set networkChaos.partition.enabled=true \
             vald-chaos-test tests/chaos/chart
@@ -364,8 +364,8 @@ jobs:
           wait_for_selector: app=vald-lb-gateway
       - name: deploy Chaos Mesh
         run: |
-          make kubectl/install
-          curl -sSL https://mirrors.chaos-mesh.org/v2.3.0/install.sh | bash -s -- --k3s
+          make kubectl/install/linux/v1.23.6
+          curl -sSL https://mirrors.chaos-mesh.org/v2.4.1/install.sh | bash -s -- --k3s
           helm install \
             --set networkChaos.bandwidth.enabled=true \
             vald-chaos-test tests/chaos/chart
