@@ -1,0 +1,455 @@
+<!doctype html><html><head><script async src="https://www.googletagmanager.com/gtag/js?id=UA-164223416-1"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag("js",new Date),gtag("config","UA-164223416-1")</script><link rel=canonical href=https://vald.vdaas.org><meta charset=utf-8><meta name=viewport content="width=device-width"><meta name=robots content="index, follow"><title>Vald | Client Api Config</title><meta name=description content="Vald is high scalable distributed high-speed approximate nearest neighbor search engine" }><meta name=format-detection content="telephone=no"><meta http-equiv=x-ua-compatible content="IE=edge"><meta property="og:type" content="article"><meta property="og:title" content="Vald | Client Api Config"><meta property="og:description" content="Vald is high scalable distributed high-speed approximate nearest neighbor search engine"><meta property="og:url" content="https://vald.vdaas.org/docs/v1.6/user-guides/client-api-config/"><meta property="og:image" content="https://vald.vdaas.org/images/ogp_vald.png"><meta property="og:site_name" content="vald"><meta property="og:locale" content="en_US"><meta property="fb:app_id" content="615732422350002"><meta name=twitter:site content="@vdaas_vald"><meta name=twitter:card content="app"><link rel="shortcut icon" href=https://vald.vdaas.org/favicon.ico><link rel=stylesheet type=text/css href=/css/style.min.css><link rel=stylesheet type=text/css href=/css/header.min.css><link rel=stylesheet type=text/css href=/css/footer.min.css><link rel=stylesheet type=text/css href=/css/main.min.css><script type=text/javascript src=/js/script.min.js defer></script><meta name=viewport content="target-densitydpi=device-dpi,width=device-width,maximum-scale=1,user-scalable=yes"></head><body><header class=header id=header><div class=header__content><nav class=header__nav><a href=https://vald.vdaas.org class=header-nav__link><picture class=header-nav__image><source srcset=https://vald.vdaas.org/images/vald_white.svg media="(prefers-color-scheme: dark)"><img src=https://vald.vdaas.org/images/vald_color_1.svg alt></picture></a>
+<a class=header-nav__icon id=nav-btn><span class=header-nav__button></span></a><ul class=header__list id=menu><li class=header__item><a href=/docs/v1.6/overview/about-vald class=header__link>About</a></li><li class=header__item><a href=/docs/v1.6/tutorial/get-started class=header__link>Get Started</a></li><li class=header__item><a href=/docs/v1.6/user-guides/sdks class=header__link>SDKs</a></li><li class=header__item><a href=/docs/v1.6 class=header__link>Docs</a></li><li class=header__item><a href=https://vdaas-vald.medium.com/ target=_blank class=header__link>Blog<br></a></li><li class=header__item><details class=header__version id=version_details><summary class=version__current id=current_version>v1.6</summary><ul class=version__list><il class=version__item><a href=javascript:void(0) class="version__link version__link--latest">v1.6.1</a></il>
+<il class=version__item><a href=javascript:void(0) class=version__link>v1.6</a></il>
+<il class=version__item><a href=javascript:void(0) class=version__link>v1.5</a></il>
+<il class=version__item><a href=javascript:void(0) class=version__link>v1.4</a></il>
+<il class=version__item><a href=javascript:void(0) class=version__link>v1.3</a></il>
+<il class=version__item><a href=javascript:void(0) class=version__link>v1.2</a></il>
+<il class=version__item><a href=javascript:void(0) class=version__link>v1.1</a></il>
+<il class=version__item><a href=javascript:void(0) class=version__link>v1.0</a></il></ul></details></li><li class=header__item><a class=header__git href=https://github.com/vdaas/vald target=_blank><picture class=git__logo><source srcset=https://vald.vdaas.org/images/logo_github_white.svg media="(prefers-color-scheme: dark)" width=18 height=18><img src=https://vald.vdaas.org/images/logo_github_black.svg alt=github width=18 height=18></picture><div class=git__star><p class=git__starnum id=git-star-num></p></div></a></li></ul></nav></div></header><main role=main><div class=single><aside class=page><nav><ul id=list-body><li class=withchild id=cat_Overview>Overview<ul><li class=index><a href=/docs/v1.6/overview/about-vald/>About Vald</a></li><li class=index><a href=/docs/v1.6/overview/architecture/>Architecture</a></li><li class=index><a href=/docs/v1.6/overview/data-flow/>Data Flow</a></li></ul></li><li class=withchild id=cat_Component>Component<ul><li class=index><a href=/docs/v1.6/overview/component/agent/>Agent</a></li><li class=index><a href=/docs/v1.6/overview/component/lb-gateway/>Lb Gateway</a></li><li class=index><a href=/docs/v1.6/overview/component/filter-gateway/>Filter Gateway</a></li><li class=index><a href=/docs/v1.6/overview/component/discoverer/>Discoverer</a></li><li class=index><a href=/docs/v1.6/overview/component/index-manager/>Index Manager</a></li></ul></li><li class=withchild id=cat_Tutorial>Tutorial<ul><li class=index><a href=/docs/v1.6/tutorial/get-started/>Get Started</a></li><li class=index><a href=/docs/v1.6/tutorial/vald-agent-standalone-on-docker/>Vald Agent Standalone on Docker</a></li><li class=index><a href=/docs/v1.6/tutorial/vald-agent-standalone-on-k8s/>Vald Agent Standalone on K8s</a></li></ul></li><li class=withchild id=cat_Usecase>Usecase<ul><li class=index><a href=/docs/v1.6/usecase/usage-example/>Usage Example</a></li></ul></li><li class=withchild id="cat_User Guides">User Guides<ul><li class=index><a href=/docs/v1.6/user-guides/configuration/>Configuration</a></li><li class=index><a href=/docs/v1.6/user-guides/backup-configuration/>Backup Configuration</a></li><li class=index><a href=/docs/v1.6/user-guides/filtering-configuration/>Filtering Configuration</a></li><li class=index><a href=/docs/v1.6/user-guides/deployment/>Deployment</a></li><li class=index><a href=/docs/v1.6/user-guides/operations/>Operations</a></li><li class=index><a href=/docs/v1.6/user-guides/sdks/>Sdks</a></li><li class=index><a href=/docs/v1.6/user-guides/upgrade-cluster/>Upgrade Cluster</a></li><li class=index><a href=/docs/v1.6/user-guides/capacity-planning/>Capacity Planning</a></li><li class=view><a href=/docs/v1.6/user-guides/client-api-config/>Client Api Config</a></li></ul></li><li class=withchild id=cat_Performance>Performance<ul><li class=index><a href=/docs/v1.6/performance/benchmark/>Benchmark</a></li></ul></li><li class=withchild id=cat_Api>API<ul><li class=index><a href=/docs/v1.6/api/insert/>Insert</a></li><li class=index><a href=/docs/v1.6/api/update/>Update</a></li><li class=index><a href=/docs/v1.6/api/upsert/>Upsert</a></li><li class=index><a href=/docs/v1.6/api/search/>Search</a></li><li class=index><a href=/docs/v1.6/api/remove/>Remove</a></li><li class=index><a href=/docs/v1.6/api/object/>Object</a></li><li class=index><a href=/docs/v1.6/api/status/>Status</a></li><li class=index><a href=/docs/v1.6/api/build_proto/>Build</a></li></ul></li><li class=withchild id=cat_Troubleshooting>Troubleshooting<ul><li class=index><a href=/docs/v1.6/troubleshooting/provisioning/>Provisioning</a></li><li class=index><a href=/docs/v1.6/troubleshooting/client-side/>Client Side</a></li></ul></li><li class=withchild id=cat_Contributing>Contributing<ul><li class=index><a href=/docs/v1.6/contributing/contributing-guide/>Contributing Guide</a></li><li class=index><a href=/docs/v1.6/contributing/coding-style/>Coding Style</a></li><li class=index><a href=/docs/v1.6/contributing/unit-test-guideline/>Unit Test Guideline</a></li></ul></li><li class=withchild id=cat_Support>Support<ul></ul></li><li class=withchild id=cat_Release>Release<ul><li class=index><a href=/docs/v1.6/release/changelog/>Changelog</a></li></ul></li></ul></nav></aside><div class=content><div class=markdown id=markdown><h1 id=client-api-config>Client API Config</h1><p>Vald provides client libraries to make it easier to access different API provided by Vald, including indexing vectors, searching approximate nearest neighbor vectors, updating vectors, and removing indexed vectors.
+Each request allows setting request configuration for user demands.
+Please select the section you need.</p><div class=notice>Please read the API documentation for more API service details.</div><h2 id=insert-service>Insert Service</h2><p>The <code>Insert</code> service allows users to insert new vector(s) into the Vald cluster.
+It requires the vector, its ID (specific ID for the vector), and optional configuration.</p><h3 id=configuration>Configuration</h3><pre tabindex=0><code class=language-rpc data-lang=rpc>// Represent insert configuration.
+message Config {
+  // Check whether or not the same set of vector and ID is already inserted.
+  bool skip_strict_exist_check = 1;
+  // Configuration for filters if your Vald cluster uses filters.
+  Filter.Config filters = 2;
+  // The timestamp when the vector was inserted.
+  int64 timestamp = 3;
+}
+</code></pre><details><summary>Insert Configuration Sample (Go)</summary><br><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-go data-lang=go><span style=display:flex><span><span style=color:#f92672>package</span> <span style=color:#a6e22e>main</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#f92672>import</span> (
+</span></span><span style=display:flex><span>	<span style=color:#e6db74>&#34;context&#34;</span>
+</span></span><span style=display:flex><span>	<span style=color:#e6db74>&#34;time&#34;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>	<span style=color:#e6db74>&#34;github.com/vdaas/vald-client-go/v1/payload&#34;</span>
+</span></span><span style=display:flex><span>	<span style=color:#e6db74>&#34;github.com/vdaas/vald-client-go/v1/vald&#34;</span>
+</span></span><span style=display:flex><span>	<span style=color:#e6db74>&#34;google.golang.org/grpc&#34;</span>
+</span></span><span style=display:flex><span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> <span style=color:#a6e22e>main</span>() {
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// Create connection
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#a6e22e>ctx</span>, <span style=color:#a6e22e>cancel</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>context</span>.<span style=color:#a6e22e>WithCancel</span>(<span style=color:#a6e22e>context</span>.<span style=color:#a6e22e>Background</span>())
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>defer</span> <span style=color:#a6e22e>cancel</span>()
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>target</span> <span style=color:#f92672>:=</span> <span style=color:#e6db74>&#34;localhost:8080&#34;</span>
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>conn</span>, <span style=color:#a6e22e>err</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>grpc</span>.<span style=color:#a6e22e>DialContext</span>(<span style=color:#a6e22e>ctx</span>, <span style=color:#a6e22e>target</span>)
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>if</span> <span style=color:#a6e22e>err</span> <span style=color:#f92672>!=</span> <span style=color:#66d9ef>nil</span> {
+</span></span><span style=display:flex><span>		panic(<span style=color:#a6e22e>err</span>)
+</span></span><span style=display:flex><span>	}
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// Init Vald client
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#a6e22e>client</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>vald</span>.<span style=color:#a6e22e>NewValdClient</span>(<span style=color:#a6e22e>conn</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// Insert sample
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#a6e22e>location</span>, <span style=color:#a6e22e>err</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>client</span>.<span style=color:#a6e22e>Insert</span>(<span style=color:#a6e22e>ctx</span>, <span style=color:#f92672>&amp;</span><span style=color:#a6e22e>payload</span>.<span style=color:#a6e22e>Insert_Request</span>{
+</span></span><span style=display:flex><span>		<span style=color:#75715e>// Vector information (mandatory)
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>		<span style=color:#a6e22e>Vector</span>: <span style=color:#f92672>&amp;</span><span style=color:#a6e22e>payload</span>.<span style=color:#a6e22e>Object_Vector</span>{
+</span></span><span style=display:flex><span>			<span style=color:#75715e>// Set the vector
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>			<span style=color:#a6e22e>Vector</span>: []<span style=color:#66d9ef>float32</span>{<span style=color:#ae81ff>0</span>, <span style=color:#ae81ff>1</span>, <span style=color:#ae81ff>2</span>},
+</span></span><span style=display:flex><span>			<span style=color:#75715e>// Set the specific ID for the vector
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>			<span style=color:#75715e>// The ID must not be indexed.
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>			<span style=color:#a6e22e>Id</span>:     <span style=color:#e6db74>&#34;sample&#34;</span>,
+</span></span><span style=display:flex><span>		},
+</span></span><span style=display:flex><span>		<span style=color:#75715e>// Insert configuration (optional)
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>		<span style=color:#a6e22e>Config</span>: <span style=color:#f92672>&amp;</span><span style=color:#a6e22e>payload</span>.<span style=color:#a6e22e>Insert_Config</span>{
+</span></span><span style=display:flex><span>			<span style=color:#a6e22e>SkipStrictExistCheck</span>: <span style=color:#66d9ef>false</span>,
+</span></span><span style=display:flex><span>			<span style=color:#a6e22e>Filters</span>: <span style=color:#f92672>&amp;</span><span style=color:#a6e22e>payload</span>.<span style=color:#a6e22e>Filter_Config</span>{
+</span></span><span style=display:flex><span>				<span style=color:#a6e22e>Targets</span>: []<span style=color:#f92672>*</span><span style=color:#a6e22e>payload</span>.<span style=color:#a6e22e>Filter_Target</span>{
+</span></span><span style=display:flex><span>					{
+</span></span><span style=display:flex><span>						<span style=color:#a6e22e>Host</span>: <span style=color:#e6db74>&#34;vald-ingress-filter&#34;</span>,
+</span></span><span style=display:flex><span>						<span style=color:#a6e22e>Port</span>: <span style=color:#ae81ff>8081</span>,
+</span></span><span style=display:flex><span>					},
+</span></span><span style=display:flex><span>				},
+</span></span><span style=display:flex><span>			},
+</span></span><span style=display:flex><span>			<span style=color:#a6e22e>Timestamp</span>: <span style=color:#a6e22e>time</span>.<span style=color:#a6e22e>Now</span>().<span style=color:#a6e22e>UnixMilli</span>(),
+</span></span><span style=display:flex><span>		},
+</span></span><span style=display:flex><span>	})
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>if</span> <span style=color:#a6e22e>err</span> <span style=color:#f92672>!=</span> <span style=color:#66d9ef>nil</span> {
+</span></span><span style=display:flex><span>		panic(<span style=color:#a6e22e>err</span>)
+</span></span><span style=display:flex><span>	}
+</span></span><span style=display:flex><span>	<span style=color:#f92672>...</span>
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div></details><h4 id=skip_strict_exist_check>skip_strict_exist_check</h4><p><code>skip_strict_exist_check</code> is a flag to skip checking whether the same set of the vector and ID is already inserted or not.
+If it is set as <code>true</code>, the checking function will be skipped.<br>The default value is <code>false</code>.</p><h4 id=filters>filters</h4><p><code>filters</code> is the configuration when using filter functions.
+In the <code>Insert</code> section, it is common to use ingress filtering when applying the filter&rsquo;s configuration.</p><p>The detailed configuration is following.</p><pre tabindex=0><code class=language-rpc data-lang=rpc>// Filter related messages.
+message Filter {
+
+  // Represent the target filter server.
+  message Target {
+    // The target filter component hostname.
+    string host = 1;
+    // The target filter component port.
+    uint32 port = 2;
+  }
+
+  // Represent filter configuration.
+  message Config {
+    // Represent the filter target configuration.
+    repeated Target targets = 1;
+  }
+}
+</code></pre><h4 id=timestamp>timestamp</h4><p><code>timestamp</code> is the timestamp when the vector is inserted.
+When <code>timestamp</code> is not set, the current time will be used.</p><h2 id=update-service>Update Service</h2><p>The <code>Update</code> service allows users to update vector(s) that already exists in the Vald cluster.
+It requires the new vector, its ID (the target ID already indexed), and optional configuration.</p><h3 id=configuration-1>Configuration</h3><pre tabindex=0><code class=language-rpc data-lang=rpc>// Represent update configuration.
+message Config {
+  // Check whether or not the same set of vector and ID is already inserted.
+  bool skip_strict_exist_check = 1;
+  // Configuration for filters if your Vald cluster uses filters.
+  Filter.Config filters = 2;
+  // The timestamp when the vector was inserted.
+  int64 timestamp = 3;
+}
+</code></pre><details><summary>Update Configuration Sample (Go)</summary><br><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-go data-lang=go><span style=display:flex><span><span style=color:#f92672>package</span> <span style=color:#a6e22e>main</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#f92672>import</span> (
+</span></span><span style=display:flex><span>	<span style=color:#e6db74>&#34;context&#34;</span>
+</span></span><span style=display:flex><span>	<span style=color:#e6db74>&#34;time&#34;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>	<span style=color:#e6db74>&#34;github.com/vdaas/vald-client-go/v1/payload&#34;</span>
+</span></span><span style=display:flex><span>	<span style=color:#e6db74>&#34;github.com/vdaas/vald-client-go/v1/vald&#34;</span>
+</span></span><span style=display:flex><span>	<span style=color:#e6db74>&#34;google.golang.org/grpc&#34;</span>
+</span></span><span style=display:flex><span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> <span style=color:#a6e22e>example</span>() {
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// Create connection
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#a6e22e>ctx</span>, <span style=color:#a6e22e>cancel</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>context</span>.<span style=color:#a6e22e>WithCancel</span>(<span style=color:#a6e22e>context</span>.<span style=color:#a6e22e>Background</span>())
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>defer</span> <span style=color:#a6e22e>cancel</span>()
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>target</span> <span style=color:#f92672>:=</span> <span style=color:#e6db74>&#34;localhost:8080&#34;</span>
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>conn</span>, <span style=color:#a6e22e>err</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>grpc</span>.<span style=color:#a6e22e>DialContext</span>(<span style=color:#a6e22e>ctx</span>, <span style=color:#a6e22e>target</span>)
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>if</span> <span style=color:#a6e22e>err</span> <span style=color:#f92672>!=</span> <span style=color:#66d9ef>nil</span> {
+</span></span><span style=display:flex><span>		panic(<span style=color:#a6e22e>err</span>)
+</span></span><span style=display:flex><span>	}
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// Init Vald client
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#a6e22e>client</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>vald</span>.<span style=color:#a6e22e>NewValdClient</span>(<span style=color:#a6e22e>conn</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// Update sample
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#a6e22e>location</span>, <span style=color:#a6e22e>err</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>client</span>.<span style=color:#a6e22e>Update</span>(<span style=color:#a6e22e>ctx</span>, <span style=color:#f92672>&amp;</span><span style=color:#a6e22e>payload</span>.<span style=color:#a6e22e>Update_Request</span>{
+</span></span><span style=display:flex><span>		<span style=color:#75715e>// Vector information (mandatory)
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>		<span style=color:#a6e22e>Vector</span>: <span style=color:#f92672>&amp;</span><span style=color:#a6e22e>payload</span>.<span style=color:#a6e22e>Object_Vector</span>{
+</span></span><span style=display:flex><span>			<span style=color:#75715e>// Set the vector
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>			<span style=color:#a6e22e>Vector</span>: []<span style=color:#66d9ef>float32</span>{<span style=color:#ae81ff>0</span>, <span style=color:#ae81ff>1</span>, <span style=color:#ae81ff>2</span>},
+</span></span><span style=display:flex><span>			<span style=color:#75715e>// Set the specific ID for the vector
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>                        <span style=color:#75715e>// The ID must be already indexed.
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>			<span style=color:#a6e22e>Id</span>:     <span style=color:#e6db74>&#34;sample&#34;</span>,
+</span></span><span style=display:flex><span>		},
+</span></span><span style=display:flex><span>		<span style=color:#75715e>// Update configuration (optional)
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>		<span style=color:#a6e22e>Config</span>: <span style=color:#f92672>&amp;</span><span style=color:#a6e22e>payload</span>.<span style=color:#a6e22e>Update_Config</span>{
+</span></span><span style=display:flex><span>			<span style=color:#a6e22e>SkipStrictExistCheck</span>: <span style=color:#66d9ef>false</span>,
+</span></span><span style=display:flex><span>			<span style=color:#a6e22e>Filters</span>: <span style=color:#f92672>&amp;</span><span style=color:#a6e22e>payload</span>.<span style=color:#a6e22e>Filter_Config</span>{
+</span></span><span style=display:flex><span>				<span style=color:#a6e22e>Targets</span>: []<span style=color:#f92672>*</span><span style=color:#a6e22e>payload</span>.<span style=color:#a6e22e>Filter_Target</span>{
+</span></span><span style=display:flex><span>					{
+</span></span><span style=display:flex><span>						<span style=color:#a6e22e>Host</span>: <span style=color:#e6db74>&#34;vald-ingress-filter&#34;</span>,
+</span></span><span style=display:flex><span>						<span style=color:#a6e22e>Port</span>: <span style=color:#ae81ff>8081</span>,
+</span></span><span style=display:flex><span>					},
+</span></span><span style=display:flex><span>				},
+</span></span><span style=display:flex><span>			},
+</span></span><span style=display:flex><span>			<span style=color:#a6e22e>Timestamp</span>: <span style=color:#a6e22e>time</span>.<span style=color:#a6e22e>Now</span>().<span style=color:#a6e22e>UnixMilli</span>(),
+</span></span><span style=display:flex><span>		},
+</span></span><span style=display:flex><span>	})
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>if</span> <span style=color:#a6e22e>err</span> <span style=color:#f92672>!=</span> <span style=color:#66d9ef>nil</span> {
+</span></span><span style=display:flex><span>		panic(<span style=color:#a6e22e>err</span>)
+</span></span><span style=display:flex><span>	}
+</span></span><span style=display:flex><span>	<span style=color:#f92672>...</span>
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div></details><h4 id=skip_strict_exist_check-1>skip_strict_exist_check</h4><p><code>skip_strict_exist_check</code> (default value is <code>false</code>) is a flag to skip checking whether the same set of the vector and ID is already inserted or not.
+If it is set as <code>true</code>, the checking function will be skipped.<br></p><p>When <code>skip_strict_exist_check</code> is <code>false</code>, the following checking steps will run in the update process:</p><ol><li>Check whether the set of ID and vector is already inserted.
+If there is no data, the update process ends with returning the <code>NOT_FOUND</code> error.</li><li>After passing the step.1, check whether the request vector is the same as the indexed vector.
+If it is the same, the update process ends with returning the <code>ALREADY_EXIST</code> error.</li></ol><p>The update process will continue if all of the above steps have been passed.</p><h4 id=filters-1>filters</h4><p><code>filters</code> is the configuration when using filter functions.
+In the <code>Update</code> section, it is common to use ingress filtering when applying the filter&rsquo;s configuration.```</p><p>The detailed configuration is following.</p><pre tabindex=0><code class=language-rpc data-lang=rpc>// Filter related messages.
+message Filter {
+
+  // Represent the target filter server.
+  message Target {
+    // The target filter component hostname.
+    string host = 1;
+    // The target filter component port.
+    uint32 port = 2;
+  }
+
+  // Represent filter configuration.
+  message Config {
+    // Represent the filter target configuration.
+    repeated Target targets = 1;
+  }
+}
+</code></pre><h4 id=timestamp-1>timestamp</h4><p><code>timestamp</code> is the timestamp when the vector is updated.
+When <code>timestamp</code> is not set, the current time will be used.</p><h2 id=upsert-service>Upsert Service</h2><p>The <code>Upsert</code> service allows the user to update existing vectors in the Vald cluster or insert new vector(s) if the request vector is not indexed.
+It requires the vector, its ID (specific ID for the vector), and optional configuration.</p><h3 id=configuration-2>Configuration</h3><pre tabindex=0><code class=language-rpc data-lang=rpc>// Represent upsert configuration.
+message Config {
+  // Check whether or not the same set of vector and ID is already inserted.
+  bool skip_strict_exist_check = 1;
+  // Configuration for filters if your Vald cluster uses filters.
+  Filter.Config filters = 2;
+  // The timestamp when the vector was inserted.
+  int64 timestamp = 3;
+}
+</code></pre><details><summary>Upsert Configuration Sample (Go)</summary><br><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-go data-lang=go><span style=display:flex><span><span style=color:#f92672>package</span> <span style=color:#a6e22e>main</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#f92672>import</span> (
+</span></span><span style=display:flex><span>	<span style=color:#e6db74>&#34;context&#34;</span>
+</span></span><span style=display:flex><span>	<span style=color:#e6db74>&#34;time&#34;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>	<span style=color:#e6db74>&#34;github.com/vdaas/vald-client-go/v1/payload&#34;</span>
+</span></span><span style=display:flex><span>	<span style=color:#e6db74>&#34;github.com/vdaas/vald-client-go/v1/vald&#34;</span>
+</span></span><span style=display:flex><span>	<span style=color:#e6db74>&#34;google.golang.org/grpc&#34;</span>
+</span></span><span style=display:flex><span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> <span style=color:#a6e22e>example</span>() {
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// Create connection
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#a6e22e>ctx</span>, <span style=color:#a6e22e>cancel</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>context</span>.<span style=color:#a6e22e>WithCancel</span>(<span style=color:#a6e22e>context</span>.<span style=color:#a6e22e>Background</span>())
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>defer</span> <span style=color:#a6e22e>cancel</span>()
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>target</span> <span style=color:#f92672>:=</span> <span style=color:#e6db74>&#34;localhost:8080&#34;</span>
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>conn</span>, <span style=color:#a6e22e>err</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>grpc</span>.<span style=color:#a6e22e>DialContext</span>(<span style=color:#a6e22e>ctx</span>, <span style=color:#a6e22e>target</span>)
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>if</span> <span style=color:#a6e22e>err</span> <span style=color:#f92672>!=</span> <span style=color:#66d9ef>nil</span> {
+</span></span><span style=display:flex><span>		panic(<span style=color:#a6e22e>err</span>)
+</span></span><span style=display:flex><span>	}
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// Init Vald client
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#a6e22e>client</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>vald</span>.<span style=color:#a6e22e>NewValdClient</span>(<span style=color:#a6e22e>conn</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// Upsert sample
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#a6e22e>location</span>, <span style=color:#a6e22e>err</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>client</span>.<span style=color:#a6e22e>Upsert</span>(<span style=color:#a6e22e>ctx</span>, <span style=color:#f92672>&amp;</span><span style=color:#a6e22e>payload</span>.<span style=color:#a6e22e>Upsert_Request</span>{
+</span></span><span style=display:flex><span>		<span style=color:#75715e>// Vector information (mandatory)
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>		<span style=color:#a6e22e>Vector</span>: <span style=color:#f92672>&amp;</span><span style=color:#a6e22e>payload</span>.<span style=color:#a6e22e>Object_Vector</span>{
+</span></span><span style=display:flex><span>			<span style=color:#75715e>// Set the vector
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>			<span style=color:#a6e22e>Vector</span>: []<span style=color:#66d9ef>float32</span>{<span style=color:#ae81ff>0</span>, <span style=color:#ae81ff>1</span>, <span style=color:#ae81ff>2</span>},
+</span></span><span style=display:flex><span>			<span style=color:#75715e>// Set the specific ID for the vector
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>			<span style=color:#a6e22e>Id</span>:     <span style=color:#e6db74>&#34;sample&#34;</span>,
+</span></span><span style=display:flex><span>		},
+</span></span><span style=display:flex><span>		<span style=color:#75715e>// Upsert configuration (optional)
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>		<span style=color:#a6e22e>Config</span>: <span style=color:#f92672>&amp;</span><span style=color:#a6e22e>payload</span>.<span style=color:#a6e22e>Upsert_Config</span>{
+</span></span><span style=display:flex><span>			<span style=color:#a6e22e>SkipStrictExistCheck</span>: <span style=color:#66d9ef>false</span>,
+</span></span><span style=display:flex><span>			<span style=color:#a6e22e>Filters</span>: <span style=color:#f92672>&amp;</span><span style=color:#a6e22e>payload</span>.<span style=color:#a6e22e>Filter_Config</span>{
+</span></span><span style=display:flex><span>				<span style=color:#a6e22e>Targets</span>: []<span style=color:#f92672>*</span><span style=color:#a6e22e>payload</span>.<span style=color:#a6e22e>Filter_Target</span>{
+</span></span><span style=display:flex><span>					{
+</span></span><span style=display:flex><span>						<span style=color:#a6e22e>Host</span>: <span style=color:#e6db74>&#34;vald-ingress-filter&#34;</span>,
+</span></span><span style=display:flex><span>						<span style=color:#a6e22e>Port</span>: <span style=color:#ae81ff>8081</span>,
+</span></span><span style=display:flex><span>					},
+</span></span><span style=display:flex><span>				},
+</span></span><span style=display:flex><span>			},
+</span></span><span style=display:flex><span>			<span style=color:#a6e22e>Timestamp</span>: <span style=color:#a6e22e>time</span>.<span style=color:#a6e22e>Now</span>().<span style=color:#a6e22e>UnixMilli</span>(),
+</span></span><span style=display:flex><span>		},
+</span></span><span style=display:flex><span>	})
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>if</span> <span style=color:#a6e22e>err</span> <span style=color:#f92672>!=</span> <span style=color:#66d9ef>nil</span> {
+</span></span><span style=display:flex><span>		panic(<span style=color:#a6e22e>err</span>)
+</span></span><span style=display:flex><span>	}
+</span></span><span style=display:flex><span>        <span style=color:#f92672>...</span>
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div></details><h4 id=skip_strict_exist_check-2>skip_strict_exist_check</h4><p><code>skip_strict_exist_check</code> (default value is <code>false</code>) is a flag to skip checking whether the same set of the vector and ID is already inserted or not.
+If it is set as <code>false</code>, the checking function will be skipped.<br></p><p>When <code>skip_strict_exist_check</code> is <code>false</code>, the following checking steps will run in the upsert process:</p><ol><li>Check whether the set of (ID and vector) is already inserted or not.
+The request ID and vector will be inserted if there is no data.</li><li>After passing the step.1, check whether the request vector is the same as the indexed vector.
+If it is the same, the upsert process ends with returning the <code>ALREADY_EXIST</code> error.</li></ol><p>The upsert process will continue if all of the above steps have been passed.</p><h4 id=filters-2>filters</h4><p><code>filters</code> is the configuration when using filter functions.
+In the <code>Upsert</code> section, it is common to use ingress filtering when applying the filter&rsquo;s configuration.</p><p>The detailed configuration is following.</p><pre tabindex=0><code class=language-rpc data-lang=rpc>// Filter related messages.
+message Filter {
+
+  // Represent the target filter server.
+  message Target {
+    // The target filter component hostname.
+    string host = 1;
+    // The target filter component port.
+    uint32 port = 2;
+  }
+
+  // Represent filter configuration.
+  message Config {
+    // Represent the filter target configuration.
+    repeated Target targets = 1;
+  }
+}
+</code></pre><h4 id=timestamp-2>timestamp</h4><p><code>timestamp</code> is the timestamp when the vector is inserted or updated.
+When <code>timestamp</code> is not set, the current time will be used.</p><h2 id=search-service>Search Service</h2><p>Vald provides four types of search services.</p><ol><li><p>Search</p><ul><li><code>Search</code> is the <code>ANN(Approximate Nearest Neighbor)</code> search with query vector.
+It is a fast search even though large dimension vector.
+The search duration is quick but less accurate than <code>LinearSearch</code>.
+The search algorithm depends on each core algorithm.</li></ul></li><li><p>SearchById</p><ul><li><code>SearchById</code> is the <code>ANN(Approximate Nearest Neighbor)</code> search with the stored vector&rsquo;s ID.
+The ID should already exist in the NGT indexes before the search process.
+The search algorithm is the same as <code>Search</code>.</li></ul></li><li><p>LinearSearch</p><ul><li><code>LinearSearch</code> is the most general search algorithm with a query vector.
+It searches all indexed vectors and calculates the distance between the query.
+It returns accurate results but requires more processing time than <code>Search</code> (ANN search) as it needs to calculate from all indexed vectors instead of only a subset of indexed vectors.</li></ul></li><li><p>LinearSearchById</p><ul><li><code>LinearSearchById</code> is the primary search algorithm with the vector&rsquo;s ID.
+The ID should already exist in the NGT indexes before the search process.
+The search algorithm is the same as <code>LinearSearch</code>.</li></ul></li></ol><div class=notice>Linear Search service is available from Vald v1.4 or later.</div><p>For more details, please refer to <a href=/docs/v1.6/api/search>the Search API document</a>.</p><h3 id=configuration-3>Configuration</h3><pre tabindex=0><code class=language-rpc data-lang=rpc>// Represent search configuration.
+message Config {
+  // Unique request ID.
+  string request_id = 1;
+  // Maximum number of results to be returned.
+  uint32 num = 2 [ (validate.rules).uint32.gte = 1 ];
+  // Search radius.
+  float radius = 3;
+  // Search coefficient.
+  float epsilon = 4;
+  // Search timeout in nanoseconds.
+  int64 timeout = 5;
+  // Ingress filter configurations.
+  Filter.Config ingress_filters = 6;
+  // Egress filter configurations.
+  Filter.Config egress_filters = 7;
+  // Minimum number of results to be returned.
+  uint32 min_num = 8 [ (validate.rules).uint32.gte = 0 ];
+}
+</code></pre><details><summary>Search Configuration Sample (Go)</summary><br><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-go data-lang=go><span style=display:flex><span><span style=color:#f92672>package</span> <span style=color:#a6e22e>main</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#f92672>import</span> (
+</span></span><span style=display:flex><span>	<span style=color:#e6db74>&#34;context&#34;</span>
+</span></span><span style=display:flex><span>	<span style=color:#e6db74>&#34;time&#34;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>	<span style=color:#e6db74>&#34;github.com/vdaas/vald-client-go/v1/payload&#34;</span>
+</span></span><span style=display:flex><span>	<span style=color:#e6db74>&#34;github.com/vdaas/vald-client-go/v1/vald&#34;</span>
+</span></span><span style=display:flex><span>	<span style=color:#e6db74>&#34;google.golang.org/grpc&#34;</span>
+</span></span><span style=display:flex><span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> <span style=color:#a6e22e>main</span>() {
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// Create connection
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#a6e22e>ctx</span>, <span style=color:#a6e22e>cancel</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>context</span>.<span style=color:#a6e22e>WithCancel</span>(<span style=color:#a6e22e>context</span>.<span style=color:#a6e22e>Background</span>())
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>defer</span> <span style=color:#a6e22e>cancel</span>()
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>target</span> <span style=color:#f92672>:=</span> <span style=color:#e6db74>&#34;localhost:8080&#34;</span>
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>conn</span>, <span style=color:#a6e22e>err</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>grpc</span>.<span style=color:#a6e22e>DialContext</span>(<span style=color:#a6e22e>ctx</span>, <span style=color:#a6e22e>target</span>)
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>if</span> <span style=color:#a6e22e>err</span> <span style=color:#f92672>!=</span> <span style=color:#66d9ef>nil</span> {
+</span></span><span style=display:flex><span>		panic(<span style=color:#a6e22e>err</span>)
+</span></span><span style=display:flex><span>	}
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// Init Vald client
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#a6e22e>client</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>vald</span>.<span style=color:#a6e22e>NewValdClient</span>(<span style=color:#a6e22e>conn</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// Search sample
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#a6e22e>res</span>, <span style=color:#a6e22e>err</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>client</span>.<span style=color:#a6e22e>Search</span>(<span style=color:#a6e22e>ctx</span>, <span style=color:#f92672>&amp;</span><span style=color:#a6e22e>payload</span>.<span style=color:#a6e22e>Search_Request</span>{
+</span></span><span style=display:flex><span>		<span style=color:#75715e>// Query vector
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>		<span style=color:#a6e22e>Vector</span>: []<span style=color:#66d9ef>float32</span>{<span style=color:#ae81ff>0</span>, <span style=color:#ae81ff>1</span>, <span style=color:#ae81ff>2</span>},
+</span></span><span style=display:flex><span>		<span style=color:#75715e>// Search configuration
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>		<span style=color:#a6e22e>Config</span>: <span style=color:#f92672>&amp;</span><span style=color:#a6e22e>payload</span>.<span style=color:#a6e22e>Search_Config</span>{
+</span></span><span style=display:flex><span>			<span style=color:#a6e22e>RequestId</span>: <span style=color:#e6db74>&#34;unique-request-id&#34;</span>,
+</span></span><span style=display:flex><span>			<span style=color:#75715e>// The number of the search result to be returned.
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>			<span style=color:#a6e22e>Num</span>: <span style=color:#ae81ff>10</span>,
+</span></span><span style=display:flex><span>			<span style=color:#75715e>// The minimum number of the search result to be returned.
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>			<span style=color:#75715e>// It prevents the timeout error when the number of results does NOT satisfy Num.
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>			<span style=color:#a6e22e>MinNum</span>: <span style=color:#ae81ff>5</span>,
+</span></span><span style=display:flex><span>			<span style=color:#75715e>// The space of search candidate radius for NN vectors.
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>			<span style=color:#a6e22e>Radius</span>: <span style=color:#f92672>-</span><span style=color:#ae81ff>1</span>,
+</span></span><span style=display:flex><span>			<span style=color:#75715e>// Epsilon determines how much to expand from the search candidate radius.
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>			<span style=color:#a6e22e>Epsilon</span>: <span style=color:#ae81ff>0.1</span>,
+</span></span><span style=display:flex><span>			<span style=color:#75715e>// Search timeout setting.
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>			<span style=color:#a6e22e>Timeout</span>: <span style=color:#ae81ff>100000000</span>,
+</span></span><span style=display:flex><span>			<span style=color:#a6e22e>IngressFilters</span>: <span style=color:#f92672>&amp;</span><span style=color:#a6e22e>payload</span>.<span style=color:#a6e22e>Filter_Config</span>{
+</span></span><span style=display:flex><span>				<span style=color:#a6e22e>Targets</span>: []<span style=color:#f92672>*</span><span style=color:#a6e22e>payload</span>.<span style=color:#a6e22e>Filter_Target</span>{
+</span></span><span style=display:flex><span>					{
+</span></span><span style=display:flex><span>						<span style=color:#a6e22e>Host</span>: <span style=color:#e6db74>&#34;vald-ingress-filter&#34;</span>,
+</span></span><span style=display:flex><span>						<span style=color:#a6e22e>Port</span>: <span style=color:#ae81ff>8081</span>,
+</span></span><span style=display:flex><span>					},
+</span></span><span style=display:flex><span>				},
+</span></span><span style=display:flex><span>			},
+</span></span><span style=display:flex><span>			<span style=color:#a6e22e>EgressFilters</span>: <span style=color:#f92672>&amp;</span><span style=color:#a6e22e>payload</span>.<span style=color:#a6e22e>Filter_Config</span>{
+</span></span><span style=display:flex><span>				<span style=color:#a6e22e>Targets</span>: []<span style=color:#f92672>*</span><span style=color:#a6e22e>payload</span>.<span style=color:#a6e22e>Filter_Target</span>{
+</span></span><span style=display:flex><span>					{
+</span></span><span style=display:flex><span>						<span style=color:#a6e22e>Host</span>: <span style=color:#e6db74>&#34;vald-egress-filter&#34;</span>,
+</span></span><span style=display:flex><span>						<span style=color:#a6e22e>Port</span>: <span style=color:#ae81ff>8081</span>,
+</span></span><span style=display:flex><span>					},
+</span></span><span style=display:flex><span>				},
+</span></span><span style=display:flex><span>			},
+</span></span><span style=display:flex><span>		},
+</span></span><span style=display:flex><span>	})
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>if</span> <span style=color:#a6e22e>err</span> <span style=color:#f92672>!=</span> <span style=color:#66d9ef>nil</span> {
+</span></span><span style=display:flex><span>		panic(<span style=color:#a6e22e>err</span>)
+</span></span><span style=display:flex><span>	}
+</span></span><span style=display:flex><span>	<span style=color:#f92672>...</span>
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div></details><h4 id=request_id>request_id</h4><p><code>request_id</code> is a unique request ID.
+It is <strong>NOT</strong> indexed vector&rsquo;s ID.
+Users can use it for, e.g., the error handling process.</p><h4 id=num>num</h4><p><code>num</code> is the maximum number of search results you&rsquo;d like to get.
+<code>num</code> should be a positive integer.</p><h4 id=radius>radius</h4><p><code>radius</code>, the specific parameter for NGT, specifies the search range centered on the query vector in terms of the radius of a sphere.
+The number of search target vectors increases along with the radius being large.
+There is a trade-off between accuracy and search speed.
+It is hard to set it depending on the dataset in many cases.</p><p>The default value is infinity.
+When setting a negative number as <code>radius</code>, <code>NGT</code> applies the radius as infinity.</p><div class=notice>NGT will self-update the radius during the search process.</div><h4 id=epsilon>epsilon</h4><p><code>epsilon</code>, the specific parameter for NGT, specifies the search range&rsquo;s magnification coefficient (epsilon).
+NGT will use <code>radius*(1+epsilon)</code> as the search range.
+The number of search target vectors increases along with the epsilon being large.</p><p>The default value is 0.1, and it may work in most cases.
+However, the appropriate value may vary depending on the dataset.
+While it is desirable to adjust this value within 0 - 0.3, it can also set a negative value (over -1).</p><h4 id=ingress_filters>ingress_filters</h4><p><code>ingress_filters</code> is required when using the ingress filter component.
+It requires the ingress filter component&rsquo;s hostname and port.</p><pre tabindex=0><code class=language-rpc data-lang=rpc>// Filter related messages.
+message Filter {
+
+  // Represent the target filter server.
+  message Target {
+    // The target filter component hostname.
+    string host = 1;
+    // The target filter component port.
+    uint32 port = 2;
+  }
+
+  // Represent filter configuration.
+  message Config {
+    // Represent the filter target configuration.
+    repeated Target targets = 1;
+  }
+}
+</code></pre><h4 id=egress_filters>egress_filters</h4><p><code>egress_filters</code> is required when using the egress filter component.
+It requires the egress filter component&rsquo;s hostname and port.</p><pre tabindex=0><code class=language-rpc data-lang=rpc>// Filter related messages.
+message Filter {
+
+  // Represent the target filter server.
+  message Target {
+    // The target filter component hostname.
+    string host = 1;
+    // The target filter component port.
+    uint32 port = 2;
+  }
+
+  // Represent filter configuration.
+  message Config {
+    // Represent the filter target configuration.
+    repeated Target targets = 1;
+  }
+}
+</code></pre><h4 id=min_num>min_num</h4><p><code>min_num</code> is the minimum number of search results you&rsquo;d like to get at least.
+It helps you avoid the timeout error when the search process requires more time.
+<code>min_num</code> should be a positive integer smaller than <code>num</code>.</p><h2 id=remove-service>Remove Service</h2><p>The <code>Remove</code> service allows the user to delete indexed vectors from the Vald cluster.
+Removing the vector requires the vector&rsquo;s ID and optional configuration.</p><p>For more details, please refer to <a href=/docs/v1.6/api/remove>the Remove API document</a>.</p><h3 id=configuration-4>Configuration</h3><pre tabindex=0><code class=language-rpc data-lang=rpc>// Represent remove configuration.
+message Config {
+  // Check whether or not the same set of ID and vector is already inserted.
+  bool skip_strict_exist_check = 1;
+  // The timestamp when the vector was removed.
+  int64 timestamp = 3;
+}
+</code></pre><details><summary>Remove Configuration Sample (Go)</summary><br><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-go data-lang=go><span style=display:flex><span><span style=color:#f92672>package</span> <span style=color:#a6e22e>main</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#f92672>import</span> (
+</span></span><span style=display:flex><span>	<span style=color:#e6db74>&#34;context&#34;</span>
+</span></span><span style=display:flex><span>	<span style=color:#e6db74>&#34;time&#34;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>	<span style=color:#e6db74>&#34;github.com/vdaas/vald-client-go/v1/payload&#34;</span>
+</span></span><span style=display:flex><span>	<span style=color:#e6db74>&#34;github.com/vdaas/vald-client-go/v1/vald&#34;</span>
+</span></span><span style=display:flex><span>	<span style=color:#e6db74>&#34;google.golang.org/grpc&#34;</span>
+</span></span><span style=display:flex><span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> <span style=color:#a6e22e>example</span>() {
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// Create connection
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#a6e22e>ctx</span>, <span style=color:#a6e22e>cancel</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>context</span>.<span style=color:#a6e22e>WithCancel</span>(<span style=color:#a6e22e>context</span>.<span style=color:#a6e22e>Background</span>())
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>defer</span> <span style=color:#a6e22e>cancel</span>()
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>target</span> <span style=color:#f92672>:=</span> <span style=color:#e6db74>&#34;localhost:8080&#34;</span>
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>conn</span>, <span style=color:#a6e22e>err</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>grpc</span>.<span style=color:#a6e22e>DialContext</span>(<span style=color:#a6e22e>ctx</span>, <span style=color:#a6e22e>target</span>)
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>if</span> <span style=color:#a6e22e>err</span> <span style=color:#f92672>!=</span> <span style=color:#66d9ef>nil</span> {
+</span></span><span style=display:flex><span>		panic(<span style=color:#a6e22e>err</span>)
+</span></span><span style=display:flex><span>	}
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// Init Vald client
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#a6e22e>client</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>vald</span>.<span style=color:#a6e22e>NewValdClient</span>(<span style=color:#a6e22e>conn</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>	<span style=color:#75715e>// Remove sample
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>	<span style=color:#a6e22e>location</span>, <span style=color:#a6e22e>err</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>client</span>.<span style=color:#a6e22e>Remove</span>(<span style=color:#a6e22e>ctx</span>, <span style=color:#f92672>&amp;</span><span style=color:#a6e22e>payload</span>.<span style=color:#a6e22e>Remove_Request</span>{
+</span></span><span style=display:flex><span>		<span style=color:#75715e>// Vector ID (mandatory)
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>                <span style=color:#75715e>// The ID must be already indexed.
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>		<span style=color:#a6e22e>Id</span>: <span style=color:#f92672>&amp;</span><span style=color:#a6e22e>payload</span>.<span style=color:#a6e22e>Object_ID</span>{
+</span></span><span style=display:flex><span>			<span style=color:#a6e22e>Id</span>: <span style=color:#e6db74>&#34;sample&#34;</span>,
+</span></span><span style=display:flex><span>		},
+</span></span><span style=display:flex><span>		<span style=color:#75715e>// Remove configuration (optional)
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>		<span style=color:#a6e22e>Config</span>: <span style=color:#f92672>&amp;</span><span style=color:#a6e22e>payload</span>.<span style=color:#a6e22e>Remove_Config</span>{
+</span></span><span style=display:flex><span>			<span style=color:#a6e22e>SkipStrictExistCheck</span>: <span style=color:#66d9ef>false</span>,
+</span></span><span style=display:flex><span>			<span style=color:#a6e22e>Timestamp</span>: <span style=color:#a6e22e>time</span>.<span style=color:#a6e22e>Now</span>().<span style=color:#a6e22e>UnixMilli</span>(),
+</span></span><span style=display:flex><span>		},
+</span></span><span style=display:flex><span>	})
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>if</span> <span style=color:#a6e22e>err</span> <span style=color:#f92672>!=</span> <span style=color:#66d9ef>nil</span> {
+</span></span><span style=display:flex><span>		panic(<span style=color:#a6e22e>err</span>)
+</span></span><span style=display:flex><span>	}
+</span></span><span style=display:flex><span>        <span style=color:#f92672>...</span>
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div></details><h3 id=skip_strict_exist_check-3>skip_strict_exist_check</h3><p><code>skip_strict_exist_check</code> (default value is <code>false</code>) is a flag to skip checking whether the same set of the vector and ID is already inserted or not.
+If it is set as <code>true</code>, the checking function will be skipped.<br></p><p>When <code>skip_strict_exist_check</code> is <code>false</code>, the following checking step will run in the removing process:</p><ol><li>Check whether the set of (ID and vector) is already inserted.
+If there is no data, the removal process ends with returning the <code>NOT_FOUND</code> error.</li></ol><p>The removal process will continue if the above step has been passed.</p><h3 id=timestamp-3>timestamp</h3><p><code>timestamp</code> is the timestamp when the vector is removed.
+When <code>timestamp</code> is not set, the current time will be used.</p></div><aside class=current id=current><button class=menu><span class=dot></span></button><nav id=TableOfContents><ul><li><a href=#insert-service>Insert Service</a><ul><li><a href=#configuration>Configuration</a></li></ul></li><li><a href=#update-service>Update Service</a><ul><li><a href=#configuration-1>Configuration</a></li></ul></li><li><a href=#upsert-service>Upsert Service</a><ul><li><a href=#configuration-2>Configuration</a></li></ul></li><li><a href=#search-service>Search Service</a><ul><li><a href=#configuration-3>Configuration</a></li></ul></li><li><a href=#remove-service>Remove Service</a><ul><li><a href=#configuration-4>Configuration</a></li><li><a href=#skip_strict_exist_check-3>skip_strict_exist_check</a></li><li><a href=#timestamp-3>timestamp</a></li></ul></li></ul></nav></aside></div></div></main><footer class=footer><div class="footer__content cf"><ul class=footer__list><li class=footer__item><a href=/docs/v1.6/overview/about-vald class=footer__link>About<br></a></li><li class=footer__item><a href=/docs/v1.6/tutorial/get-started class=footer__link>Get Started<br></a></li><li class=footer__item><a href=/docs/v1.6/user-guides/sdks class=footer__link>SDKs</a></li><li class=footer__item><a href=/docs/v1.6 class=footer__link>Docs</a></li><li class=footer__item><a href=https://vdaas-vald.medium.com/ target=_blank class=footer__link>Blog<br></a></li><li class=footer__item><a class="footer__item footer__icon" href=https://github.com/vdaas/vald target=_blank><picture><source srcset=https://vald.vdaas.org/images/logo_github_white.svg media="(prefers-color-scheme: dark)" class=icon__image width=24 height=24><img src=https://vald.vdaas.org/images/logo_github_black.svg alt=github class=icon__image></picture></a></li></ul></div><p class=footer__copylight>©2019-2022 vald.vdaas.org Vald team</p></footer></body></html>

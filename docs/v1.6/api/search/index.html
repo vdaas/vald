@@ -1,0 +1,448 @@
+<!doctype html><html><head><script async src="https://www.googletagmanager.com/gtag/js?id=UA-164223416-1"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag("js",new Date),gtag("config","UA-164223416-1")</script><link rel=canonical href=https://vald.vdaas.org><meta charset=utf-8><meta name=viewport content="width=device-width"><meta name=robots content="index, follow"><title>Vald | Search</title><meta name=description content="Vald is high scalable distributed high-speed approximate nearest neighbor search engine" }><meta name=format-detection content="telephone=no"><meta http-equiv=x-ua-compatible content="IE=edge"><meta property="og:type" content="article"><meta property="og:title" content="Vald | Search"><meta property="og:description" content="Vald is high scalable distributed high-speed approximate nearest neighbor search engine"><meta property="og:url" content="https://vald.vdaas.org/docs/v1.6/api/search/"><meta property="og:image" content="https://vald.vdaas.org/images/ogp_vald.png"><meta property="og:site_name" content="vald"><meta property="og:locale" content="en_US"><meta property="fb:app_id" content="615732422350002"><meta name=twitter:site content="@vdaas_vald"><meta name=twitter:card content="app"><link rel="shortcut icon" href=https://vald.vdaas.org/favicon.ico><link rel=stylesheet type=text/css href=/css/style.min.css><link rel=stylesheet type=text/css href=/css/header.min.css><link rel=stylesheet type=text/css href=/css/footer.min.css><link rel=stylesheet type=text/css href=/css/main.min.css><script type=text/javascript src=/js/script.min.js defer></script><meta name=viewport content="target-densitydpi=device-dpi,width=device-width,maximum-scale=1,user-scalable=yes"></head><body><header class=header id=header><div class=header__content><nav class=header__nav><a href=https://vald.vdaas.org class=header-nav__link><picture class=header-nav__image><source srcset=https://vald.vdaas.org/images/vald_white.svg media="(prefers-color-scheme: dark)"><img src=https://vald.vdaas.org/images/vald_color_1.svg alt></picture></a>
+<a class=header-nav__icon id=nav-btn><span class=header-nav__button></span></a><ul class=header__list id=menu><li class=header__item><a href=/docs/v1.6/overview/about-vald class=header__link>About</a></li><li class=header__item><a href=/docs/v1.6/tutorial/get-started class=header__link>Get Started</a></li><li class=header__item><a href=/docs/v1.6/user-guides/sdks class=header__link>SDKs</a></li><li class=header__item><a href=/docs/v1.6 class=header__link>Docs</a></li><li class=header__item><a href=https://vdaas-vald.medium.com/ target=_blank class=header__link>Blog<br></a></li><li class=header__item><details class=header__version id=version_details><summary class=version__current id=current_version>v1.6</summary><ul class=version__list><il class=version__item><a href=javascript:void(0) class="version__link version__link--latest">v1.6.1</a></il>
+<il class=version__item><a href=javascript:void(0) class=version__link>v1.6</a></il>
+<il class=version__item><a href=javascript:void(0) class=version__link>v1.5</a></il>
+<il class=version__item><a href=javascript:void(0) class=version__link>v1.4</a></il>
+<il class=version__item><a href=javascript:void(0) class=version__link>v1.3</a></il>
+<il class=version__item><a href=javascript:void(0) class=version__link>v1.2</a></il>
+<il class=version__item><a href=javascript:void(0) class=version__link>v1.1</a></il>
+<il class=version__item><a href=javascript:void(0) class=version__link>v1.0</a></il></ul></details></li><li class=header__item><a class=header__git href=https://github.com/vdaas/vald target=_blank><picture class=git__logo><source srcset=https://vald.vdaas.org/images/logo_github_white.svg media="(prefers-color-scheme: dark)" width=18 height=18><img src=https://vald.vdaas.org/images/logo_github_black.svg alt=github width=18 height=18></picture><div class=git__star><p class=git__starnum id=git-star-num></p></div></a></li></ul></nav></div></header><main role=main><div class=single><aside class=page><nav><ul id=list-body><li class=withchild id=cat_Overview>Overview<ul><li class=index><a href=/docs/v1.6/overview/about-vald/>About Vald</a></li><li class=index><a href=/docs/v1.6/overview/architecture/>Architecture</a></li><li class=index><a href=/docs/v1.6/overview/data-flow/>Data Flow</a></li></ul></li><li class=withchild id=cat_Component>Component<ul><li class=index><a href=/docs/v1.6/overview/component/agent/>Agent</a></li><li class=index><a href=/docs/v1.6/overview/component/lb-gateway/>Lb Gateway</a></li><li class=index><a href=/docs/v1.6/overview/component/filter-gateway/>Filter Gateway</a></li><li class=index><a href=/docs/v1.6/overview/component/discoverer/>Discoverer</a></li><li class=index><a href=/docs/v1.6/overview/component/index-manager/>Index Manager</a></li></ul></li><li class=withchild id=cat_Tutorial>Tutorial<ul><li class=index><a href=/docs/v1.6/tutorial/get-started/>Get Started</a></li><li class=index><a href=/docs/v1.6/tutorial/vald-agent-standalone-on-docker/>Vald Agent Standalone on Docker</a></li><li class=index><a href=/docs/v1.6/tutorial/vald-agent-standalone-on-k8s/>Vald Agent Standalone on K8s</a></li></ul></li><li class=withchild id=cat_Usecase>Usecase<ul><li class=index><a href=/docs/v1.6/usecase/usage-example/>Usage Example</a></li></ul></li><li class=withchild id="cat_User Guides">User Guides<ul><li class=index><a href=/docs/v1.6/user-guides/configuration/>Configuration</a></li><li class=index><a href=/docs/v1.6/user-guides/backup-configuration/>Backup Configuration</a></li><li class=index><a href=/docs/v1.6/user-guides/filtering-configuration/>Filtering Configuration</a></li><li class=index><a href=/docs/v1.6/user-guides/deployment/>Deployment</a></li><li class=index><a href=/docs/v1.6/user-guides/operations/>Operations</a></li><li class=index><a href=/docs/v1.6/user-guides/sdks/>Sdks</a></li><li class=index><a href=/docs/v1.6/user-guides/upgrade-cluster/>Upgrade Cluster</a></li><li class=index><a href=/docs/v1.6/user-guides/capacity-planning/>Capacity Planning</a></li><li class=index><a href=/docs/v1.6/user-guides/client-api-config/>Client Api Config</a></li></ul></li><li class=withchild id=cat_Performance>Performance<ul><li class=index><a href=/docs/v1.6/performance/benchmark/>Benchmark</a></li></ul></li><li class=withchild id=cat_Api>API<ul><li class=index><a href=/docs/v1.6/api/insert/>Insert</a></li><li class=index><a href=/docs/v1.6/api/update/>Update</a></li><li class=index><a href=/docs/v1.6/api/upsert/>Upsert</a></li><li class=view><a href=/docs/v1.6/api/search/>Search</a></li><li class=index><a href=/docs/v1.6/api/remove/>Remove</a></li><li class=index><a href=/docs/v1.6/api/object/>Object</a></li><li class=index><a href=/docs/v1.6/api/status/>Status</a></li><li class=index><a href=/docs/v1.6/api/build_proto/>Build</a></li></ul></li><li class=withchild id=cat_Troubleshooting>Troubleshooting<ul><li class=index><a href=/docs/v1.6/troubleshooting/provisioning/>Provisioning</a></li><li class=index><a href=/docs/v1.6/troubleshooting/client-side/>Client Side</a></li></ul></li><li class=withchild id=cat_Contributing>Contributing<ul><li class=index><a href=/docs/v1.6/contributing/contributing-guide/>Contributing Guide</a></li><li class=index><a href=/docs/v1.6/contributing/coding-style/>Coding Style</a></li><li class=index><a href=/docs/v1.6/contributing/unit-test-guideline/>Unit Test Guideline</a></li></ul></li><li class=withchild id=cat_Support>Support<ul></ul></li><li class=withchild id=cat_Release>Release<ul><li class=index><a href=/docs/v1.6/release/changelog/>Changelog</a></li></ul></li></ul></nav></aside><div class=content><div class=markdown id=markdown><h1 id=vald-search-apis>Vald Search APIs</h1><h2 id=overview>Overview</h2><p>Search Service is responsible for searching vectors from <code>vald-agent</code> which are similar to user request vector.</p><pre tabindex=0><code class=language-rpc data-lang=rpc>service Search {
+  rpc Search(payload.v1.Search.Request) returns (payload.v1.Search.Response) {}
+
+  rpc SearchByID(payload.v1.Search.IDRequest)
+      returns (payload.v1.Search.Response) {}
+
+  rpc StreamSearch(stream payload.v1.Search.Request)
+      returns (stream payload.v1.Search.StreamResponse) {}
+
+  rpc StreamSearchByID(stream payload.v1.Search.IDRequest)
+      returns (stream payload.v1.Search.StreamResponse) {}
+
+  rpc MultiSearch(payload.v1.Search.MultiRequest)
+      returns (payload.v1.Search.Responses) {}
+
+  rpc MultiSearchByID(payload.v1.Search.MultiIDRequest)
+      returns (payload.v1.Search.Responses) {}
+
+  rpc LinearSearch(payload.v1.Search.Request) returns (payload.v1.Search.Response) {}
+
+  rpc LinearSearchByID(payload.v1.Search.IDRequest)
+      returns (payload.v1.Search.Response) {}
+
+  rpc StreamLinearSearch(stream payload.v1.Search.Request)
+      returns (stream payload.v1.Search.StreamResponse) {}
+
+  rpc StreamLinearSearchByID(stream payload.v1.Search.IDRequest)
+      returns (stream payload.v1.Search.StreamResponse) {}
+
+  rpc MultiLinearSearch(payload.v1.Search.MultiRequest)
+      returns (payload.v1.Search.Responses) {}
+
+  rpc MultiLinearSearchByID(payload.v1.Search.MultiIDRequest)
+      returns (payload.v1.Search.Responses) {}
+}
+</code></pre><h2 id=search-rpc>Search RPC</h2><p>Search RPC is the method to search vector(s) similar to request vector.</p><h3 id=input>Input</h3><ul><li><p>the scheme of <code>payload.v1.Search.Request</code></p><pre tabindex=0><code class=language-rpc data-lang=rpc>message Search {
+  message Request {
+    repeated float vector = 1 [ (validate.rules).repeated .min_items = 2 ];
+    Config config = 2;
+  }
+
+  message Config {
+    string request_id = 1;
+    uint32 num = 2 [ (validate.rules).uint32.gte = 1 ];
+    float radius = 3;
+    float epsilon = 4;
+    int64 timeout = 5;
+    Filter.Config ingress_filters = 6;
+    Filter.Config egress_filters = 7;
+  }
+}
+</code></pre><ul><li><p>Search.Request</p><table><thead><tr><th style=text-align:center>field</th><th style=text-align:left>type</th><th style=text-align:left>label</th><th style=text-align:center>required</th><th style=text-align:left>desc.</th></tr></thead><tbody><tr><td style=text-align:center>vector</td><td style=text-align:left>float</td><td style=text-align:left>repeated(Array[float])</td><td style=text-align:center>*</td><td style=text-align:left>the vector data. its dimension is between 2 and 65,536.</td></tr><tr><td style=text-align:center>config</td><td style=text-align:left>Config</td><td style=text-align:left></td><td style=text-align:center>*</td><td style=text-align:left>the configuration of the search request</td></tr></tbody></table></li><li><p>Search.Config</p><table><thead><tr><th style=text-align:center>field</th><th style=text-align:left>type</th><th style=text-align:left>label</th><th style=text-align:center>required</th><th style=text-align:left>desc.</th></tr></thead><tbody><tr><td style=text-align:center>request_id</td><td style=text-align:left>string</td><td style=text-align:left></td><td style=text-align:center></td><td style=text-align:left>unique request ID</td></tr><tr><td style=text-align:center>num</td><td style=text-align:left>uint32</td><td style=text-align:left></td><td style=text-align:center>*</td><td style=text-align:left>the maximum number of result to be returned</td></tr><tr><td style=text-align:center>radius</td><td style=text-align:left>float</td><td style=text-align:left></td><td style=text-align:center>*</td><td style=text-align:left>the search radius</td></tr><tr><td style=text-align:center>epsilon</td><td style=text-align:left>float</td><td style=text-align:left></td><td style=text-align:center>*</td><td style=text-align:left>the search coefficient (default value is <code>0.1</code>)</td></tr><tr><td style=text-align:center>timeout</td><td style=text-align:left>int64</td><td style=text-align:left></td><td style=text-align:center></td><td style=text-align:left>Search timeout in nanoseconds (default value is <code>5s</code>)</td></tr><tr><td style=text-align:center>ingress_filters</td><td style=text-align:left>Filter.Config</td><td style=text-align:left></td><td style=text-align:center></td><td style=text-align:left>Ingress Filter configuration</td></tr><tr><td style=text-align:center>egress_filters</td><td style=text-align:left>Filter.Config</td><td style=text-align:left></td><td style=text-align:center></td><td style=text-align:left>Egress Filter configuration</td></tr><tr><td style=text-align:center>min_num</td><td style=text-align:left>uint32</td><td style=text-align:left></td><td style=text-align:center>the minimum number of result to be returned</td><td></td></tr></tbody></table></li></ul></li></ul><h3 id=output>Output</h3><ul><li><p>the scheme of <code>payload.v1.Search.Response</code>.</p><pre tabindex=0><code class=language-rpc data-lang=rpc>message Search {
+  message Response {
+    string request_id = 1;
+    repeated Object.Distance results = 2;
+  }
+}
+
+message Object {
+  message Distance {
+    string id = 1;
+    float distance = 2;
+  }
+}
+</code></pre><ul><li><p>Search.Response</p><table><thead><tr><th style=text-align:center>field</th><th style=text-align:left>type</th><th style=text-align:left>label</th><th style=text-align:left>desc.</th></tr></thead><tbody><tr><td style=text-align:center>request_id</td><td style=text-align:left>string</td><td style=text-align:left></td><td style=text-align:left>the unique request ID</td></tr><tr><td style=text-align:center>results</td><td style=text-align:left>Object.Distance</td><td style=text-align:left>repeated(Array[Object.Distance])</td><td style=text-align:left>search results</td></tr></tbody></table></li><li><p>Object.Distance</p><table><thead><tr><th style=text-align:center>field</th><th style=text-align:left>type</th><th style=text-align:left>label</th><th style=text-align:left>desc.</th></tr></thead><tbody><tr><td style=text-align:center>id</td><td style=text-align:left>string</td><td style=text-align:left></td><td style=text-align:left>the vector ID</td></tr><tr><td style=text-align:center>distance</td><td style=text-align:left>float</td><td style=text-align:left></td><td style=text-align:left>the distance between result vector and request vector</td></tr></tbody></table></li></ul></li></ul><h3 id=status-code>Status Code</h3><table><thead><tr><th style=text-align:center>code</th><th style=text-align:left>desc.</th></tr></thead><tbody><tr><td style=text-align:center>0</td><td style=text-align:left>OK</td></tr><tr><td style=text-align:center>3</td><td style=text-align:left>INVALID_ARGUMENT</td></tr><tr><td style=text-align:center>4</td><td style=text-align:left>DEADLINE_EXCEEDED</td></tr><tr><td style=text-align:center>5</td><td style=text-align:left>NOT_FOUND</td></tr></tbody></table><h2 id=searchbyid-rpc>SearchByID RPC</h2><p>SearchByID RPC is the method to search similar vectors using a user-defined vector ID.<br>The vector with the same requested ID should be indexed into the <code>vald-agent</code> before searching.</p><h3 id=input-1>Input</h3><ul><li><p>the scheme of <code>payload.v1.Search.IDRequest</code></p><pre tabindex=0><code class=language-rpc data-lang=rpc>message Search {
+  message IDRequest {
+    string id = 1;
+    Config config = 2;
+  }
+
+  message Config {
+    string request_id = 1;
+    uint32 num = 2 [ (validate.rules).uint32.gte = 1 ];
+    float radius = 3;
+    float epsilon = 4;
+    int64 timeout = 5;
+    Filter.Config ingress_filters = 6;
+    Filter.Config egress_filters = 7;
+  }
+}
+</code></pre><ul><li><p>Search.IDRequest</p><table><thead><tr><th style=text-align:center>field</th><th style=text-align:left>type</th><th style=text-align:left>label</th><th style=text-align:center>required</th><th style=text-align:left>desc.</th></tr></thead><tbody><tr><td style=text-align:center>id</td><td style=text-align:left>string</td><td style=text-align:left></td><td style=text-align:center>*</td><td style=text-align:left>the vector ID to be searched</td></tr><tr><td style=text-align:center>config</td><td style=text-align:left>Config</td><td style=text-align:left></td><td style=text-align:center>*</td><td style=text-align:left>the configuration of the search request</td></tr></tbody></table></li><li><p>Search.Config</p><table><thead><tr><th style=text-align:center>field</th><th style=text-align:left>type</th><th style=text-align:left>label</th><th style=text-align:center>required</th><th style=text-align:left>desc.</th></tr></thead><tbody><tr><td style=text-align:center>request_id</td><td style=text-align:left>string</td><td style=text-align:left></td><td style=text-align:center></td><td style=text-align:left>unique request ID</td></tr><tr><td style=text-align:center>num</td><td style=text-align:left>uint32</td><td style=text-align:left></td><td style=text-align:center>*</td><td style=text-align:left>the maximum number of result to be returned</td></tr><tr><td style=text-align:center>radius</td><td style=text-align:left>float</td><td style=text-align:left></td><td style=text-align:center>*</td><td style=text-align:left>the search radius</td></tr><tr><td style=text-align:center>epsilon</td><td style=text-align:left>float</td><td style=text-align:left></td><td style=text-align:center>*</td><td style=text-align:left>the search coefficient (default value is <code>0.1</code>)</td></tr><tr><td style=text-align:center>timeout</td><td style=text-align:left>int64</td><td style=text-align:left></td><td style=text-align:center></td><td style=text-align:left>Search timeout in nanoseconds (default value is <code>5s</code>)</td></tr><tr><td style=text-align:center>ingress_filters</td><td style=text-align:left>Filter.Config</td><td style=text-align:left></td><td style=text-align:center></td><td style=text-align:left>Ingress Filter configuration</td></tr><tr><td style=text-align:center>egress_filters</td><td style=text-align:left>Filter.Config</td><td style=text-align:left></td><td style=text-align:center></td><td style=text-align:left>Egress Filter configuration</td></tr><tr><td style=text-align:center>min_num</td><td style=text-align:left>uint32</td><td style=text-align:left></td><td style=text-align:center>the minimum number of result to be returned</td><td></td></tr></tbody></table></li></ul></li></ul><h3 id=output-1>Output</h3><ul><li><p>the scheme of <code>payload.v1.Search.Response</code>.</p><pre tabindex=0><code class=language-rpc data-lang=rpc>message Search {
+  message Response {
+    string request_id = 1;
+    repeated Object.Distance results = 2;
+  }
+}
+
+message Object {
+  message Distance {
+    string id = 1;
+    float distance = 2;
+  }
+}
+</code></pre><ul><li><p>Search.Response</p><table><thead><tr><th style=text-align:center>field</th><th style=text-align:left>type</th><th style=text-align:left>label</th><th style=text-align:left>desc.</th></tr></thead><tbody><tr><td style=text-align:center>request_id</td><td style=text-align:left>string</td><td style=text-align:left></td><td style=text-align:left>the unique request ID</td></tr><tr><td style=text-align:center>results</td><td style=text-align:left>Object.Distance</td><td style=text-align:left>repeated(Array[Object.Distance])</td><td style=text-align:left>search results</td></tr></tbody></table></li><li><p>Object.Distance</p><table><thead><tr><th style=text-align:center>field</th><th style=text-align:left>type</th><th style=text-align:left>label</th><th style=text-align:left>desc.</th></tr></thead><tbody><tr><td style=text-align:center>id</td><td style=text-align:left>string</td><td style=text-align:left></td><td style=text-align:left>the vector ID</td></tr><tr><td style=text-align:center>distance</td><td style=text-align:left>float</td><td style=text-align:left></td><td style=text-align:left>the distance between result vector and request vector</td></tr></tbody></table></li></ul></li></ul><h3 id=status-code-1>Status Code</h3><table><thead><tr><th style=text-align:center>code</th><th style=text-align:left>desc.</th></tr></thead><tbody><tr><td style=text-align:center>0</td><td style=text-align:left>OK</td></tr><tr><td style=text-align:center>3</td><td style=text-align:left>INVALID_ARGUMENT</td></tr><tr><td style=text-align:center>4</td><td style=text-align:left>DEADLINE_EXCEEDED</td></tr><tr><td style=text-align:center>5</td><td style=text-align:left>NOT_FOUND</td></tr></tbody></table><h2 id=streamsearch-rpc>StreamSearch RPC</h2><p>StreamSearch RPC is the method to search vectors with multi queries(vectors) using the <a href=https://grpc.io/docs/what-is-grpc/core-concepts/#bidirectional-streaming-rpc>bidirectional streaming RPC</a>.<br>By using the bidirectional streaming RPC, the search request can be communicated in any order between client and server.
+Each Search request and response are independent.</p><h3 id=input-2>Input</h3><ul><li><p>the scheme of <code>payload.v1.Search.Request stream</code></p><pre tabindex=0><code class=language-rpc data-lang=rpc>message Search {
+    message Request {
+      repeated float vector = 1 [ (validate.rules).repeated .min_items = 2 ];
+      Config config = 2;
+    }
+
+    message Config {
+      string request_id = 1;
+      uint32 num = 2 [ (validate.rules).uint32.gte = 1 ];
+      float radius = 3;
+      float epsilon = 4;
+      int64 timeout = 5;
+      Filter.Config ingress_filters = 6;
+      Filter.Config egress_filters = 7;
+    }
+}
+</code></pre><ul><li><p>Search.Request</p><table><thead><tr><th style=text-align:center>field</th><th style=text-align:left>type</th><th style=text-align:left>label</th><th style=text-align:center>required</th><th style=text-align:left>desc.</th></tr></thead><tbody><tr><td style=text-align:center>vector</td><td style=text-align:left>float</td><td style=text-align:left>repeated(Array[float])</td><td style=text-align:center>*</td><td style=text-align:left>the vector data. its dimension is between 2 and 65,536.</td></tr><tr><td style=text-align:center>config</td><td style=text-align:left>Config</td><td style=text-align:left></td><td style=text-align:center>*</td><td style=text-align:left>the configuration of the search request</td></tr></tbody></table></li><li><p>Search.Config</p><table><thead><tr><th style=text-align:center>field</th><th style=text-align:left>type</th><th style=text-align:left>label</th><th style=text-align:center>required</th><th style=text-align:left>desc.</th></tr></thead><tbody><tr><td style=text-align:center>request_id</td><td style=text-align:left>string</td><td style=text-align:left></td><td style=text-align:center></td><td style=text-align:left>unique request ID</td></tr><tr><td style=text-align:center>num</td><td style=text-align:left>uint32</td><td style=text-align:left></td><td style=text-align:center>*</td><td style=text-align:left>the maximum number of result to be returned</td></tr><tr><td style=text-align:center>radius</td><td style=text-align:left>float</td><td style=text-align:left></td><td style=text-align:center>*</td><td style=text-align:left>the search radius</td></tr><tr><td style=text-align:center>epsilon</td><td style=text-align:left>float</td><td style=text-align:left></td><td style=text-align:center>*</td><td style=text-align:left>the search coefficient (default value is <code>0.1</code>)</td></tr><tr><td style=text-align:center>timeout</td><td style=text-align:left>int64</td><td style=text-align:left></td><td style=text-align:center></td><td style=text-align:left>Search timeout in nanoseconds (default value is <code>5s</code>)</td></tr><tr><td style=text-align:center>ingress_filters</td><td style=text-align:left>Filter.Config</td><td style=text-align:left></td><td style=text-align:center></td><td style=text-align:left>Ingress Filter configuration</td></tr><tr><td style=text-align:center>egress_filters</td><td style=text-align:left>Filter.Config</td><td style=text-align:left></td><td style=text-align:center></td><td style=text-align:left>Egress Filter configuration</td></tr><tr><td style=text-align:center>min_num</td><td style=text-align:left>uint32</td><td style=text-align:left></td><td style=text-align:center>the minimum number of result to be returned</td><td></td></tr></tbody></table></li></ul></li></ul><h3 id=output-2>Output</h3><ul><li><p>the scheme of <code>payload.v1.Search.StreamResponse</code>.</p><pre tabindex=0><code class=language-rpc data-lang=rpc>message Search {
+  message StreamResponse {
+    oneof payload {
+      Response response = 1;
+      google.rpc.Status status = 2;
+    }
+  }
+
+  message Response {
+    string request_id = 1;
+    repeated Object.Distance results = 2;
+  }
+}
+
+message Object {
+  message Distance {
+    string id = 1;
+    float distance = 2;
+  }
+}
+</code></pre><ul><li><p>Search.StreamResponse</p><table><thead><tr><th style=text-align:center>field</th><th style=text-align:left>type</th><th style=text-align:left>label</th><th style=text-align:left>desc.</th></tr></thead><tbody><tr><td style=text-align:center>response</td><td style=text-align:left>Response</td><td style=text-align:left></td><td style=text-align:left>the search result response</td></tr><tr><td style=text-align:center>status</td><td style=text-align:left>google.rpc.Status</td><td style=text-align:left></td><td style=text-align:left>the status of google RPC</td></tr></tbody></table></li><li><p>Search.Response</p><table><thead><tr><th style=text-align:center>field</th><th style=text-align:left>type</th><th style=text-align:left>label</th><th style=text-align:left>desc.</th></tr></thead><tbody><tr><td style=text-align:center>request_id</td><td style=text-align:left>string</td><td style=text-align:left></td><td style=text-align:left>the unique request ID</td></tr><tr><td style=text-align:center>results</td><td style=text-align:left>Object.Distance</td><td style=text-align:left>repeated(Array[Object.Distance])</td><td style=text-align:left>search results</td></tr></tbody></table></li><li><p>Object.Distance</p><table><thead><tr><th style=text-align:center>field</th><th style=text-align:left>type</th><th style=text-align:left>label</th><th style=text-align:left>desc.</th></tr></thead><tbody><tr><td style=text-align:center>id</td><td style=text-align:left>string</td><td style=text-align:left></td><td style=text-align:left>the vector ID</td></tr><tr><td style=text-align:center>distance</td><td style=text-align:left>float</td><td style=text-align:left></td><td style=text-align:left>the distance between result vector and request vector</td></tr></tbody></table></li></ul></li></ul><h3 id=status-code-2>Status Code</h3><table><thead><tr><th style=text-align:center>code</th><th style=text-align:left>desc.</th></tr></thead><tbody><tr><td style=text-align:center>0</td><td style=text-align:left>OK</td></tr><tr><td style=text-align:center>3</td><td style=text-align:left>INVALID_ARGUMENT</td></tr><tr><td style=text-align:center>4</td><td style=text-align:left>DEADLINE_EXCEEDED</td></tr><tr><td style=text-align:center>5</td><td style=text-align:left>NOT_FOUND</td></tr></tbody></table><h2 id=streamsearchbyid-rpc>StreamSearchByID RPC</h2><p>StreamSearchByID RPC is the method to search vectors with multi queries(IDs) using the <a href=https://grpc.io/docs/what-is-grpc/core-concepts/#bidirectional-streaming-rpc>bidirectional streaming RPC</a>.<br>By using the bidirectional streaming RPC, the search request can be communicated in any order between client and server.
+Each SearchByID request and response are independent.</p><h3 id=input-3>Input</h3><ul><li><p>the scheme of <code>payload.v1.Search.IDRequest stream</code></p><pre tabindex=0><code class=language-rpc data-lang=rpc>message Search {
+  message IDRequest {
+    string id = 1;
+    Config config = 2;
+  }
+
+  message Config {
+    string request_id = 1;
+    uint32 num = 2 [ (validate.rules).uint32.gte = 1 ];
+    float radius = 3;
+    float epsilon = 4;
+    int64 timeout = 5;
+    Filter.Config ingress_filters = 6;
+    Filter.Config egress_filters = 7;
+  }
+}
+</code></pre><ul><li><p>Search.IDRequest</p><table><thead><tr><th style=text-align:center>field</th><th style=text-align:left>type</th><th style=text-align:left>label</th><th style=text-align:center>required</th><th style=text-align:left>desc.</th></tr></thead><tbody><tr><td style=text-align:center>id</td><td style=text-align:left>string</td><td style=text-align:left></td><td style=text-align:center>*</td><td style=text-align:left>the vector ID to be searched</td></tr><tr><td style=text-align:center>config</td><td style=text-align:left>Config</td><td style=text-align:left></td><td style=text-align:center>*</td><td style=text-align:left>the configuration of the search request</td></tr></tbody></table></li><li><p>Search.Config</p><table><thead><tr><th style=text-align:center>field</th><th style=text-align:left>type</th><th style=text-align:left>label</th><th style=text-align:center>required</th><th style=text-align:left>desc.</th></tr></thead><tbody><tr><td style=text-align:center>request_id</td><td style=text-align:left>string</td><td style=text-align:left></td><td style=text-align:center></td><td style=text-align:left>unique request ID</td></tr><tr><td style=text-align:center>num</td><td style=text-align:left>uint32</td><td style=text-align:left></td><td style=text-align:center>*</td><td style=text-align:left>the maximum number of result to be returned</td></tr><tr><td style=text-align:center>radius</td><td style=text-align:left>float</td><td style=text-align:left></td><td style=text-align:center>*</td><td style=text-align:left>the search radius</td></tr><tr><td style=text-align:center>epsilon</td><td style=text-align:left>float</td><td style=text-align:left></td><td style=text-align:center>*</td><td style=text-align:left>the search coefficient (default value is <code>0.1</code>)</td></tr><tr><td style=text-align:center>timeout</td><td style=text-align:left>int64</td><td style=text-align:left></td><td style=text-align:center></td><td style=text-align:left>Search timeout in nanoseconds (default value is <code>5s</code>)</td></tr><tr><td style=text-align:center>ingress_filters</td><td style=text-align:left>Filter.Config</td><td style=text-align:left></td><td style=text-align:center></td><td style=text-align:left>Ingress Filter configuration</td></tr><tr><td style=text-align:center>egress_filters</td><td style=text-align:left>Filter.Config</td><td style=text-align:left></td><td style=text-align:center></td><td style=text-align:left>Egress Filter configuration</td></tr><tr><td style=text-align:center>min_num</td><td style=text-align:left>uint32</td><td style=text-align:left></td><td style=text-align:center>the minimum number of result to be returned</td><td></td></tr></tbody></table></li></ul></li></ul><h3 id=output-3>Output</h3><ul><li><p>the scheme of <code>payload.v1.Search.StreamResponse</code>.</p><pre tabindex=0><code class=language-rpc data-lang=rpc>message Search {
+  message StreamResponse {
+    oneof payload {
+      Response response = 1;
+      google.rpc.Status status = 2;
+    }
+  }
+
+  message Response {
+    string request_id = 1;
+    repeated Object.Distance results = 2;
+  }
+}
+
+message Object {
+  message Distance {
+    string id = 1;
+    float distance = 2;
+  }
+}
+</code></pre><ul><li><p>Search.StreamResponse</p><table><thead><tr><th style=text-align:center>field</th><th style=text-align:left>type</th><th style=text-align:left>label</th><th style=text-align:left>desc.</th></tr></thead><tbody><tr><td style=text-align:center>response</td><td style=text-align:left>Response</td><td style=text-align:left></td><td style=text-align:left>the search result response</td></tr><tr><td style=text-align:center>status</td><td style=text-align:left>google.rpc.Status</td><td style=text-align:left></td><td style=text-align:left>the status of google RPC</td></tr></tbody></table></li><li><p>Search.Response</p><table><thead><tr><th style=text-align:center>field</th><th style=text-align:left>type</th><th style=text-align:left>label</th><th style=text-align:left>desc.</th></tr></thead><tbody><tr><td style=text-align:center>request_id</td><td style=text-align:left>string</td><td style=text-align:left></td><td style=text-align:left>the unique request ID</td></tr><tr><td style=text-align:center>results</td><td style=text-align:left>Object.Distance</td><td style=text-align:left>repeated(Array[Object.Distance])</td><td style=text-align:left>search results</td></tr></tbody></table></li><li><p>Object.Distance</p><table><thead><tr><th style=text-align:center>field</th><th style=text-align:left>type</th><th style=text-align:left>label</th><th style=text-align:left>desc.</th></tr></thead><tbody><tr><td style=text-align:center>id</td><td style=text-align:left>string</td><td style=text-align:left></td><td style=text-align:left>the vector ID</td></tr><tr><td style=text-align:center>distance</td><td style=text-align:left>float</td><td style=text-align:left></td><td style=text-align:left>the distance between result vector and request vector</td></tr></tbody></table></li></ul></li></ul><h3 id=status-code-3>Status Code</h3><table><thead><tr><th style=text-align:center>code</th><th style=text-align:left>desc.</th></tr></thead><tbody><tr><td style=text-align:center>0</td><td style=text-align:left>OK</td></tr><tr><td style=text-align:center>3</td><td style=text-align:left>INVALID_ARGUMENT</td></tr><tr><td style=text-align:center>4</td><td style=text-align:left>DEADLINE_EXCEEDED</td></tr><tr><td style=text-align:center>5</td><td style=text-align:left>NOT_FOUND</td></tr></tbody></table><h2 id=multisearch-rpc>MultiSearch RPC</h2><p>MultiSearch RPC is the method to search vectors with multiple vectors in <strong>1</strong> request.</p><div class=notice>gRPC has a message size limitation.<br>Please be careful that the size of the request exceeds the limit.</div><h3 id=input-4>Input</h3><ul><li><p>the scheme of <code>payload.v1.Search.MultiRequest</code></p><pre tabindex=0><code class=language-rpc data-lang=rpc>message Search {
+  message MultiRequest {
+    repeated Request requests = 1;
+  }
+
+  message Request {
+    repeated float vector = 1 [ (validate.rules).repeated .min_items = 2 ];
+    Config config = 2;
+  }
+
+  message Config {
+    string request_id = 1;
+    uint32 num = 2 [ (validate.rules).uint32.gte = 1 ];
+    float radius = 3;
+    float epsilon = 4;
+    int64 timeout = 5;
+    Filter.Config ingress_filters = 6;
+    Filter.Config egress_filters = 7;
+  }
+}
+</code></pre><ul><li><p>Search.MultiRequest</p><table><thead><tr><th style=text-align:center>field</th><th style=text-align:left>type</th><th style=text-align:left>label</th><th style=text-align:center>required</th><th style=text-align:left>desc.</th></tr></thead><tbody><tr><td style=text-align:center>requests</td><td style=text-align:left>repeated(Array[Request])</td><td style=text-align:left></td><td style=text-align:center>*</td><td style=text-align:left>the search request list</td></tr></tbody></table></li><li><p>Search.Request</p><table><thead><tr><th style=text-align:center>field</th><th style=text-align:left>type</th><th style=text-align:left>label</th><th style=text-align:center>required</th><th style=text-align:left>desc.</th></tr></thead><tbody><tr><td style=text-align:center>vector</td><td style=text-align:left>float</td><td style=text-align:left>repeated(Array[float])</td><td style=text-align:center>*</td><td style=text-align:left>the vector data. its dimension is between 2 and 65,536.</td></tr><tr><td style=text-align:center>config</td><td style=text-align:left>Config</td><td style=text-align:left></td><td style=text-align:center>*</td><td style=text-align:left>the configuration of the search request</td></tr></tbody></table></li><li><p>Search.Config</p><table><thead><tr><th style=text-align:center>field</th><th style=text-align:left>type</th><th style=text-align:left>label</th><th style=text-align:center>required</th><th style=text-align:left>desc.</th></tr></thead><tbody><tr><td style=text-align:center>request_id</td><td style=text-align:left>string</td><td style=text-align:left></td><td style=text-align:center></td><td style=text-align:left>unique request ID</td></tr><tr><td style=text-align:center>num</td><td style=text-align:left>uint32</td><td style=text-align:left></td><td style=text-align:center>*</td><td style=text-align:left>the maximum number of result to be returned</td></tr><tr><td style=text-align:center>radius</td><td style=text-align:left>float</td><td style=text-align:left></td><td style=text-align:center>*</td><td style=text-align:left>the search radius</td></tr><tr><td style=text-align:center>epsilon</td><td style=text-align:left>float</td><td style=text-align:left></td><td style=text-align:center>*</td><td style=text-align:left>the search coefficient (default value is <code>0.1</code>)</td></tr><tr><td style=text-align:center>timeout</td><td style=text-align:left>int64</td><td style=text-align:left></td><td style=text-align:center></td><td style=text-align:left>Search timeout in nanoseconds (default value is <code>5s</code>)</td></tr><tr><td style=text-align:center>ingress_filters</td><td style=text-align:left>Filter.Config</td><td style=text-align:left></td><td style=text-align:center></td><td style=text-align:left>Ingress Filter configuration</td></tr><tr><td style=text-align:center>egress_filters</td><td style=text-align:left>Filter.Config</td><td style=text-align:left></td><td style=text-align:center></td><td style=text-align:left>Egress Filter configuration</td></tr><tr><td style=text-align:center>min_num</td><td style=text-align:left>uint32</td><td style=text-align:left></td><td style=text-align:center>the minimum number of result to be returned</td><td></td></tr></tbody></table></li></ul></li></ul><h3 id=output-4>Output</h3><ul><li><p>the scheme of <code>payload.v1.Search.Responses</code>.</p><pre tabindex=0><code class=language-rpc data-lang=rpc>message Search {
+  message Responses {
+    repeated Response responses = 1;
+  }
+
+  message Response {
+    string request_id = 1;
+    repeated Object.Distance results = 2;
+  }
+}
+
+message Object {
+  message Distance {
+    string id = 1;
+    float distance = 2;
+  }
+}
+</code></pre><ul><li><p>Search.Responses</p><table><thead><tr><th style=text-align:center>field</th><th style=text-align:left>type</th><th style=text-align:left>label</th><th style=text-align:left>desc.</th></tr></thead><tbody><tr><td style=text-align:center>responses</td><td style=text-align:left>Response</td><td style=text-align:left>repeated(Array[Response])</td><td style=text-align:left>the list of search results response</td></tr></tbody></table></li><li><p>Search.Response</p><table><thead><tr><th style=text-align:center>field</th><th style=text-align:left>type</th><th style=text-align:left>label</th><th style=text-align:left>desc.</th></tr></thead><tbody><tr><td style=text-align:center>request_id</td><td style=text-align:left>string</td><td style=text-align:left></td><td style=text-align:left>the unique request ID</td></tr><tr><td style=text-align:center>results</td><td style=text-align:left>Object.Distance</td><td style=text-align:left>repeated(Array[Object.Distance])</td><td style=text-align:left>search results</td></tr></tbody></table></li><li><p>Object.Distance</p><table><thead><tr><th style=text-align:center>field</th><th style=text-align:left>type</th><th style=text-align:left>label</th><th style=text-align:left>desc.</th></tr></thead><tbody><tr><td style=text-align:center>id</td><td style=text-align:left>string</td><td style=text-align:left></td><td style=text-align:left>the vector ID</td></tr><tr><td style=text-align:center>distance</td><td style=text-align:left>float</td><td style=text-align:left></td><td style=text-align:left>the distance between result vector and request vector</td></tr></tbody></table></li></ul></li></ul><h3 id=status-code-4>Status Code</h3><table><thead><tr><th style=text-align:center>code</th><th style=text-align:left>desc.</th></tr></thead><tbody><tr><td style=text-align:center>0</td><td style=text-align:left>OK</td></tr><tr><td style=text-align:center>3</td><td style=text-align:left>INVALID_ARGUMENT</td></tr><tr><td style=text-align:center>4</td><td style=text-align:left>DEADLINE_EXCEEDED</td></tr><tr><td style=text-align:center>5</td><td style=text-align:left>NOT_FOUND</td></tr></tbody></table><h3 id=multisearchbyid-rpc>MultiSearchByID RPC</h3><p>MultiSearchByID RPC is the method to search vectors with multiple IDs in <strong>1</strong> request.</p><div class=notice>gRPC has the message size limitation.<br>Please be careful that the size of the request exceed the limit.</div><h3 id=input-5>Input</h3><ul><li><p>the scheme of <code>payload.v1.Search.MultiIDRequest stream</code></p><pre tabindex=0><code class=language-rpc data-lang=rpc>message Search {
+
+  message MultiIDRequest {
+      repeated IDRequest requests = 1;
+  }
+
+  message IDRequest {
+    string id = 1;
+    Config config = 2;
+  }
+
+  message Config {
+    string request_id = 1;
+    uint32 num = 2 [ (validate.rules).uint32.gte = 1 ];
+    float radius = 3;
+    float epsilon = 4;
+    int64 timeout = 5;
+    Filter.Config ingress_filters = 6;
+    Filter.Config egress_filters = 7;
+  }
+}
+</code></pre><ul><li><p>Search.MultiIDRequest</p><table><thead><tr><th style=text-align:center>field</th><th style=text-align:left>type</th><th style=text-align:left>label</th><th style=text-align:center>required</th><th style=text-align:left>desc.</th></tr></thead><tbody><tr><td style=text-align:center>requests</td><td style=text-align:left>IDRequest</td><td style=text-align:left>repeated(Array[IDRequest])</td><td style=text-align:center>*</td><td style=text-align:left>the searchByID request list</td></tr></tbody></table></li><li><p>Search.IDRequest</p><table><thead><tr><th style=text-align:center>field</th><th style=text-align:left>type</th><th style=text-align:left>label</th><th style=text-align:center>required</th><th style=text-align:left>desc.</th></tr></thead><tbody><tr><td style=text-align:center>id</td><td style=text-align:left>string</td><td style=text-align:left></td><td style=text-align:center>*</td><td style=text-align:left>the vector ID to be searched</td></tr><tr><td style=text-align:center>config</td><td style=text-align:left>Config</td><td style=text-align:left></td><td style=text-align:center>*</td><td style=text-align:left>the configuration of the search request</td></tr></tbody></table></li><li><p>Search.Config</p><table><thead><tr><th style=text-align:center>field</th><th style=text-align:left>type</th><th style=text-align:left>label</th><th style=text-align:center>required</th><th style=text-align:left>desc.</th></tr></thead><tbody><tr><td style=text-align:center>request_id</td><td style=text-align:left>string</td><td style=text-align:left></td><td style=text-align:center></td><td style=text-align:left>unique request ID</td></tr><tr><td style=text-align:center>num</td><td style=text-align:left>uint32</td><td style=text-align:left></td><td style=text-align:center>*</td><td style=text-align:left>the maximum number of result to be returned</td></tr><tr><td style=text-align:center>radius</td><td style=text-align:left>float</td><td style=text-align:left></td><td style=text-align:center>*</td><td style=text-align:left>the search radius</td></tr><tr><td style=text-align:center>epsilon</td><td style=text-align:left>float</td><td style=text-align:left></td><td style=text-align:center>*</td><td style=text-align:left>the search coefficient (default value is <code>0.1</code>)</td></tr><tr><td style=text-align:center>timeout</td><td style=text-align:left>int64</td><td style=text-align:left></td><td style=text-align:center></td><td style=text-align:left>Search timeout in nanoseconds (default value is <code>5s</code>)</td></tr><tr><td style=text-align:center>ingress_filters</td><td style=text-align:left>Filter.Config</td><td style=text-align:left></td><td style=text-align:center></td><td style=text-align:left>Ingress Filter configuration</td></tr><tr><td style=text-align:center>egress_filters</td><td style=text-align:left>Filter.Config</td><td style=text-align:left></td><td style=text-align:center></td><td style=text-align:left>Egress Filter configuration</td></tr><tr><td style=text-align:center>min_num</td><td style=text-align:left>uint32</td><td style=text-align:left></td><td style=text-align:center>the minimum number of result to be returned</td><td></td></tr></tbody></table></li></ul></li></ul><h3 id=output-5>Output</h3><ul><li><p>the scheme of <code>payload.v1.Search.Responses</code>.</p><pre tabindex=0><code class=language-rpc data-lang=rpc>message Search {
+  message Responses {
+    repeated Response responses = 1;
+  }
+
+  message Response {
+    string request_id = 1;
+    repeated Object.Distance results = 2;
+  }
+}
+
+message Object {
+  message Distance {
+    string id = 1;
+    float distance = 2;
+  }
+}
+</code></pre><ul><li><p>Search.Responses</p><table><thead><tr><th style=text-align:center>field</th><th style=text-align:left>type</th><th style=text-align:left>label</th><th style=text-align:left>desc.</th></tr></thead><tbody><tr><td style=text-align:center>responses</td><td style=text-align:left>Response</td><td style=text-align:left>repeated(Array[Response])</td><td style=text-align:left>the list of search results response</td></tr></tbody></table></li><li><p>Search.Response</p><table><thead><tr><th style=text-align:center>field</th><th style=text-align:left>type</th><th style=text-align:left>label</th><th style=text-align:left>desc.</th></tr></thead><tbody><tr><td style=text-align:center>request_id</td><td style=text-align:left>string</td><td style=text-align:left></td><td style=text-align:left>the unique request ID</td></tr><tr><td style=text-align:center>results</td><td style=text-align:left>Object.Distance</td><td style=text-align:left>repeated(Array[Object.Distance])</td><td style=text-align:left>search results</td></tr></tbody></table></li><li><p>Object.Distance</p><table><thead><tr><th style=text-align:center>field</th><th style=text-align:left>type</th><th style=text-align:left>label</th><th style=text-align:left>desc.</th></tr></thead><tbody><tr><td style=text-align:center>id</td><td style=text-align:left>string</td><td style=text-align:left></td><td style=text-align:left>the vector ID</td></tr><tr><td style=text-align:center>distance</td><td style=text-align:left>float</td><td style=text-align:left></td><td style=text-align:left>the distance between result vector and request vector</td></tr></tbody></table></li></ul></li></ul><h3 id=status-code-5>Status Code</h3><table><thead><tr><th style=text-align:center>code</th><th style=text-align:left>desc.</th></tr></thead><tbody><tr><td style=text-align:center>0</td><td style=text-align:left>OK</td></tr><tr><td style=text-align:center>3</td><td style=text-align:left>INVALID_ARGUMENT</td></tr><tr><td style=text-align:center>4</td><td style=text-align:left>DEADLINE_EXCEEDED</td></tr><tr><td style=text-align:center>5</td><td style=text-align:left>NOT_FOUND</td></tr></tbody></table><h2 id=linearsearch-rpc>LinearSearch RPC</h2><p>LinearSearch RPC is the method to linear search vector(s) similar to request vector.</p><h3 id=input-6>Input</h3><ul><li><p>the scheme of <code>payload.v1.Search.Request</code></p><pre tabindex=0><code class=language-rpc data-lang=rpc>message Search {
+  message Request {
+    repeated float vector = 1 [ (validate.rules).repeated .min_items = 2 ];
+    Config config = 2;
+  }
+
+  message Config {
+    string request_id = 1;
+    uint32 num = 2 [ (validate.rules).uint32.gte = 1 ];
+    int64 timeout = 5;
+    Filter.Config ingress_filters = 6;
+    Filter.Config egress_filters = 7;
+  }
+}
+</code></pre><ul><li><p>Search.Request</p><table><thead><tr><th style=text-align:center>field</th><th style=text-align:left>type</th><th style=text-align:left>label</th><th style=text-align:center>required</th><th style=text-align:left>desc.</th></tr></thead><tbody><tr><td style=text-align:center>vector</td><td style=text-align:left>float</td><td style=text-align:left>repeated(Array[float])</td><td style=text-align:center>*</td><td style=text-align:left>the vector data. its dimension is between 2 and 65,536.</td></tr><tr><td style=text-align:center>config</td><td style=text-align:left>Config</td><td style=text-align:left></td><td style=text-align:center>*</td><td style=text-align:left>the configuration of the search request</td></tr></tbody></table></li><li><p>Search.Config</p><table><thead><tr><th style=text-align:center>field</th><th style=text-align:left>type</th><th style=text-align:left>label</th><th style=text-align:center>required</th><th style=text-align:left>desc.</th></tr></thead><tbody><tr><td style=text-align:center>request_id</td><td style=text-align:left>string</td><td style=text-align:left></td><td style=text-align:center></td><td style=text-align:left>unique request ID</td></tr><tr><td style=text-align:center>num</td><td style=text-align:left>uint32</td><td style=text-align:left></td><td style=text-align:center>*</td><td style=text-align:left>the maximum number of result to be returned</td></tr><tr><td style=text-align:center>timeout</td><td style=text-align:left>int64</td><td style=text-align:left></td><td style=text-align:center></td><td style=text-align:left>Search timeout in nanoseconds (default value is <code>5s</code>)</td></tr><tr><td style=text-align:center>ingress_filters</td><td style=text-align:left>Filter.Config</td><td style=text-align:left></td><td style=text-align:center></td><td style=text-align:left>Ingress Filter configuration</td></tr><tr><td style=text-align:center>egress_filters</td><td style=text-align:left>Filter.Config</td><td style=text-align:left></td><td style=text-align:center></td><td style=text-align:left>Egress Filter configuration</td></tr><tr><td style=text-align:center>min_num</td><td style=text-align:left>uint32</td><td style=text-align:left></td><td style=text-align:center>the minimum number of result to be returned</td><td></td></tr></tbody></table></li></ul></li></ul><h3 id=output-6>Output</h3><ul><li><p>the scheme of <code>payload.v1.Search.Response</code>.</p><pre tabindex=0><code class=language-rpc data-lang=rpc>message Search {
+  message Response {
+    string request_id = 1;
+    repeated Object.Distance results = 2;
+  }
+}
+
+message Object {
+  message Distance {
+    string id = 1;
+    float distance = 2;
+  }
+}
+</code></pre><ul><li><p>Search.Response</p><table><thead><tr><th style=text-align:center>field</th><th style=text-align:left>type</th><th style=text-align:left>label</th><th style=text-align:left>desc.</th></tr></thead><tbody><tr><td style=text-align:center>request_id</td><td style=text-align:left>string</td><td style=text-align:left></td><td style=text-align:left>the unique request ID</td></tr><tr><td style=text-align:center>results</td><td style=text-align:left>Object.Distance</td><td style=text-align:left>repeated(Array[Object.Distance])</td><td style=text-align:left>search results</td></tr></tbody></table></li><li><p>Object.Distance</p><table><thead><tr><th style=text-align:center>field</th><th style=text-align:left>type</th><th style=text-align:left>label</th><th style=text-align:left>desc.</th></tr></thead><tbody><tr><td style=text-align:center>id</td><td style=text-align:left>string</td><td style=text-align:left></td><td style=text-align:left>the vector ID</td></tr><tr><td style=text-align:center>distance</td><td style=text-align:left>float</td><td style=text-align:left></td><td style=text-align:left>the distance between result vector and request vector</td></tr></tbody></table></li></ul></li></ul><h3 id=status-code-6>Status Code</h3><table><thead><tr><th style=text-align:center>code</th><th style=text-align:left>desc.</th></tr></thead><tbody><tr><td style=text-align:center>0</td><td style=text-align:left>OK</td></tr><tr><td style=text-align:center>3</td><td style=text-align:left>INVALID_ARGUMENT</td></tr><tr><td style=text-align:center>4</td><td style=text-align:left>DEADLINE_EXCEEDED</td></tr><tr><td style=text-align:center>5</td><td style=text-align:left>NOT_FOUND</td></tr></tbody></table><h2 id=linearsearchbyid-rpc>LinearSearchByID RPC</h2><p>LinearSearchByID RPC is the method to linear search similar vectors using by user defined vector ID.<br>The vector with the same requested ID should be indexed into the <code>vald-agent</code> before searching.
+If the vector doesn&rsquo;t be stored, you will get a <code>NOT_FOUND</code> error as a result.</p><h3 id=input-7>Input</h3><ul><li><p>the scheme of <code>payload.v1.Search.IDRequest</code></p><pre tabindex=0><code class=language-rpc data-lang=rpc>message Search {
+  message IDRequest {
+    string id = 1;
+    Config config = 2;
+  }
+
+  message Config {
+    string request_id = 1;
+    uint32 num = 2 [ (validate.rules).uint32.gte = 1 ];
+    int64 timeout = 5;
+    Filter.Config ingress_filters = 6;
+    Filter.Config egress_filters = 7;
+  }
+}
+</code></pre><ul><li><p>Search.IDRequest</p><table><thead><tr><th style=text-align:center>field</th><th style=text-align:left>type</th><th style=text-align:left>label</th><th style=text-align:center>required</th><th style=text-align:left>desc.</th></tr></thead><tbody><tr><td style=text-align:center>id</td><td style=text-align:left>string</td><td style=text-align:left></td><td style=text-align:center>*</td><td style=text-align:left>the vector ID to be searched</td></tr><tr><td style=text-align:center>config</td><td style=text-align:left>Config</td><td style=text-align:left></td><td style=text-align:center>*</td><td style=text-align:left>the configuration of the search request</td></tr></tbody></table></li><li><p>Search.Config</p><table><thead><tr><th style=text-align:center>field</th><th style=text-align:left>type</th><th style=text-align:left>label</th><th style=text-align:center>required</th><th style=text-align:left>desc.</th></tr></thead><tbody><tr><td style=text-align:center>request_id</td><td style=text-align:left>string</td><td style=text-align:left></td><td style=text-align:center></td><td style=text-align:left>unique request ID</td></tr><tr><td style=text-align:center>num</td><td style=text-align:left>uint32</td><td style=text-align:left></td><td style=text-align:center>*</td><td style=text-align:left>the maximum number of result to be returned</td></tr><tr><td style=text-align:center>timeout</td><td style=text-align:left>int64</td><td style=text-align:left></td><td style=text-align:center></td><td style=text-align:left>Search timeout in nanoseconds (default value is <code>5s</code>)</td></tr><tr><td style=text-align:center>ingress_filters</td><td style=text-align:left>Filter.Config</td><td style=text-align:left></td><td style=text-align:center></td><td style=text-align:left>Ingress Filter configuration</td></tr><tr><td style=text-align:center>egress_filters</td><td style=text-align:left>Filter.Config</td><td style=text-align:left></td><td style=text-align:center></td><td style=text-align:left>Egress Filter configuration</td></tr><tr><td style=text-align:center>min_num</td><td style=text-align:left>uint32</td><td style=text-align:left></td><td style=text-align:center>the minimum number of result to be returned</td><td></td></tr></tbody></table></li></ul></li></ul><h3 id=output-7>Output</h3><ul><li><p>the scheme of <code>payload.v1.Search.Response</code>.</p><pre tabindex=0><code class=language-rpc data-lang=rpc>message Search {
+  message Response {
+    string request_id = 1;
+    repeated Object.Distance results = 2;
+  }
+}
+
+message Object {
+  message Distance {
+    string id = 1;
+    float distance = 2;
+  }
+}
+</code></pre><ul><li><p>Search.Response</p><table><thead><tr><th style=text-align:center>field</th><th style=text-align:left>type</th><th style=text-align:left>label</th><th style=text-align:left>desc.</th></tr></thead><tbody><tr><td style=text-align:center>request_id</td><td style=text-align:left>string</td><td style=text-align:left></td><td style=text-align:left>the unique request ID</td></tr><tr><td style=text-align:center>results</td><td style=text-align:left>Object.Distance</td><td style=text-align:left>repeated(Array[Object.Distance])</td><td style=text-align:left>search results</td></tr></tbody></table></li><li><p>Object.Distance</p><table><thead><tr><th style=text-align:center>field</th><th style=text-align:left>type</th><th style=text-align:left>label</th><th style=text-align:left>desc.</th></tr></thead><tbody><tr><td style=text-align:center>id</td><td style=text-align:left>string</td><td style=text-align:left></td><td style=text-align:left>the vector ID</td></tr><tr><td style=text-align:center>distance</td><td style=text-align:left>float</td><td style=text-align:left></td><td style=text-align:left>the distance between result vector and request vector</td></tr></tbody></table></li></ul></li></ul><h3 id=status-code-7>Status Code</h3><table><thead><tr><th style=text-align:center>code</th><th style=text-align:left>desc.</th></tr></thead><tbody><tr><td style=text-align:center>0</td><td style=text-align:left>OK</td></tr><tr><td style=text-align:center>3</td><td style=text-align:left>INVALID_ARGUMENT</td></tr><tr><td style=text-align:center>4</td><td style=text-align:left>DEADLINE_EXCEEDED</td></tr><tr><td style=text-align:center>5</td><td style=text-align:left>NOT_FOUND</td></tr></tbody></table><h2 id=streamlinearsearch-rpc>StreamLinearSearch RPC</h2><p>StreamLinearSearch RPC is the method to linear search vectors with multi queries(vectors) using the <a href=https://grpc.io/docs/what-is-grpc/core-concepts/#bidirectional-streaming-rpc>bidirectional streaming RPC</a>.<br>By using the bidirectional streaming RPC, the linear search request can be communicated in any order between client and server.
+Each LinearSearch request and response are independent.</p><h3 id=input-8>Input</h3><ul><li><p>the scheme of <code>payload.v1.Search.Request stream</code></p><pre tabindex=0><code class=language-rpc data-lang=rpc>message Search {
+    message Request {
+      repeated float vector = 1 [ (validate.rules).repeated .min_items = 2 ];
+      Config config = 2;
+    }
+
+    message Config {
+      string request_id = 1;
+      uint32 num = 2 [ (validate.rules).uint32.gte = 1 ];
+      int64 timeout = 5;
+      Filter.Config ingress_filters = 6;
+      Filter.Config egress_filters = 7;
+    }
+}
+</code></pre><ul><li><p>Search.Request</p><table><thead><tr><th style=text-align:center>field</th><th style=text-align:left>type</th><th style=text-align:left>label</th><th style=text-align:center>required</th><th style=text-align:left>desc.</th></tr></thead><tbody><tr><td style=text-align:center>vector</td><td style=text-align:left>float</td><td style=text-align:left>repeated(Array[float])</td><td style=text-align:center>*</td><td style=text-align:left>the vector data. its dimension is between 2 and 65,536.</td></tr><tr><td style=text-align:center>config</td><td style=text-align:left>Config</td><td style=text-align:left></td><td style=text-align:center>*</td><td style=text-align:left>the configuration of the search request</td></tr></tbody></table></li><li><p>Search.Config</p><table><thead><tr><th style=text-align:center>field</th><th style=text-align:left>type</th><th style=text-align:left>label</th><th style=text-align:center>required</th><th style=text-align:left>desc.</th></tr></thead><tbody><tr><td style=text-align:center>request_id</td><td style=text-align:left>string</td><td style=text-align:left></td><td style=text-align:center></td><td style=text-align:left>unique request ID</td></tr><tr><td style=text-align:center>num</td><td style=text-align:left>uint32</td><td style=text-align:left></td><td style=text-align:center>*</td><td style=text-align:left>the maximum number of result to be returned</td></tr><tr><td style=text-align:center>timeout</td><td style=text-align:left>int64</td><td style=text-align:left></td><td style=text-align:center></td><td style=text-align:left>Search timeout in nanoseconds (default value is <code>5s</code>)</td></tr><tr><td style=text-align:center>ingress_filters</td><td style=text-align:left>Filter.Config</td><td style=text-align:left></td><td style=text-align:center></td><td style=text-align:left>Ingress Filter configuration</td></tr><tr><td style=text-align:center>egress_filters</td><td style=text-align:left>Filter.Config</td><td style=text-align:left></td><td style=text-align:center></td><td style=text-align:left>Egress Filter configuration</td></tr><tr><td style=text-align:center>min_num</td><td style=text-align:left>uint32</td><td style=text-align:left></td><td style=text-align:center>the minimum number of result to be returned</td><td></td></tr></tbody></table></li></ul></li></ul><h3 id=output-8>Output</h3><ul><li><p>the scheme of <code>payload.v1.Search.StreamResponse</code>.</p><pre tabindex=0><code class=language-rpc data-lang=rpc>message Search {
+  message StreamResponse {
+    oneof payload {
+      Response response = 1;
+      google.rpc.Status status = 2;
+    }
+  }
+
+  message Response {
+    string request_id = 1;
+    repeated Object.Distance results = 2;
+  }
+}
+
+message Object {
+  message Distance {
+    string id = 1;
+    float distance = 2;
+  }
+}
+</code></pre><ul><li><p>Search.StreamResponse</p><table><thead><tr><th style=text-align:center>field</th><th style=text-align:left>type</th><th style=text-align:left>label</th><th style=text-align:left>desc.</th></tr></thead><tbody><tr><td style=text-align:center>response</td><td style=text-align:left>Response</td><td style=text-align:left></td><td style=text-align:left>the search result response</td></tr><tr><td style=text-align:center>status</td><td style=text-align:left>google.rpc.Status</td><td style=text-align:left></td><td style=text-align:left>the status of google RPC</td></tr></tbody></table></li><li><p>Search.Response</p><table><thead><tr><th style=text-align:center>field</th><th style=text-align:left>type</th><th style=text-align:left>label</th><th style=text-align:left>desc.</th></tr></thead><tbody><tr><td style=text-align:center>request_id</td><td style=text-align:left>string</td><td style=text-align:left></td><td style=text-align:left>the unique request ID</td></tr><tr><td style=text-align:center>results</td><td style=text-align:left>Object.Distance</td><td style=text-align:left>repeated(Array[Object.Distance])</td><td style=text-align:left>search results</td></tr></tbody></table></li><li><p>Object.Distance</p><table><thead><tr><th style=text-align:center>field</th><th style=text-align:left>type</th><th style=text-align:left>label</th><th style=text-align:left>desc.</th></tr></thead><tbody><tr><td style=text-align:center>id</td><td style=text-align:left>string</td><td style=text-align:left></td><td style=text-align:left>the vector ID</td></tr><tr><td style=text-align:center>distance</td><td style=text-align:left>float</td><td style=text-align:left></td><td style=text-align:left>the distance between result vector and request vector</td></tr></tbody></table></li></ul></li></ul><h3 id=status-code-8>Status Code</h3><table><thead><tr><th style=text-align:center>code</th><th style=text-align:left>desc.</th></tr></thead><tbody><tr><td style=text-align:center>0</td><td style=text-align:left>OK</td></tr><tr><td style=text-align:center>3</td><td style=text-align:left>INVALID_ARGUMENT</td></tr><tr><td style=text-align:center>4</td><td style=text-align:left>DEADLINE_EXCEEDED</td></tr><tr><td style=text-align:center>5</td><td style=text-align:left>NOT_FOUND</td></tr></tbody></table><h2 id=streamlinearsearchbyid-rpc>StreamLinearSearchByID RPC</h2><p>StreamLinearSearchByID RPC is the method to linear search vectors with multi queries(IDs) using the <a href=https://grpc.io/docs/what-is-grpc/core-concepts/#bidirectional-streaming-rpc>bidirectional streaming RPC</a>.<br>By using the bidirectional streaming RPC, the linear search request can be communicated in any order between client and server.
+Each LinearSearchByID request and response are independent.</p><h3 id=input-9>Input</h3><ul><li><p>the scheme of <code>payload.v1.Search.IDRequest stream</code></p><pre tabindex=0><code class=language-rpc data-lang=rpc>message Search {
+  message IDRequest {
+    string id = 1;
+    Config config = 2;
+  }
+
+  message Config {
+    string request_id = 1;
+    uint32 num = 2 [ (validate.rules).uint32.gte = 1 ];
+    int64 timeout = 5;
+    Filter.Config ingress_filters = 6;
+    Filter.Config egress_filters = 7;
+  }
+}
+</code></pre><ul><li><p>Search.IDRequest</p><table><thead><tr><th style=text-align:center>field</th><th style=text-align:left>type</th><th style=text-align:left>label</th><th style=text-align:center>required</th><th style=text-align:left>desc.</th></tr></thead><tbody><tr><td style=text-align:center>id</td><td style=text-align:left>string</td><td style=text-align:left></td><td style=text-align:center>*</td><td style=text-align:left>the vector ID to be searched</td></tr><tr><td style=text-align:center>config</td><td style=text-align:left>Config</td><td style=text-align:left></td><td style=text-align:center>*</td><td style=text-align:left>the configuration of the search request</td></tr></tbody></table></li><li><p>Search.Config</p><table><thead><tr><th style=text-align:center>field</th><th style=text-align:left>type</th><th style=text-align:left>label</th><th style=text-align:center>required</th><th style=text-align:left>desc.</th></tr></thead><tbody><tr><td style=text-align:center>request_id</td><td style=text-align:left>string</td><td style=text-align:left></td><td style=text-align:center></td><td style=text-align:left>unique request ID</td></tr><tr><td style=text-align:center>num</td><td style=text-align:left>uint32</td><td style=text-align:left></td><td style=text-align:center>*</td><td style=text-align:left>the maximum number of result to be returned</td></tr><tr><td style=text-align:center>timeout</td><td style=text-align:left>int64</td><td style=text-align:left></td><td style=text-align:center></td><td style=text-align:left>Search timeout in nanoseconds (default value is <code>5s</code>)</td></tr><tr><td style=text-align:center>ingress_filters</td><td style=text-align:left>Filter.Config</td><td style=text-align:left></td><td style=text-align:center></td><td style=text-align:left>Ingress Filter configuration</td></tr><tr><td style=text-align:center>egress_filters</td><td style=text-align:left>Filter.Config</td><td style=text-align:left></td><td style=text-align:center></td><td style=text-align:left>Egress Filter configuration</td></tr><tr><td style=text-align:center>min_num</td><td style=text-align:left>uint32</td><td style=text-align:left></td><td style=text-align:center>the minimum number of result to be returned</td><td></td></tr></tbody></table></li></ul></li></ul><h3 id=output-9>Output</h3><ul><li><p>the scheme of <code>payload.v1.Search.StreamResponse</code>.</p><pre tabindex=0><code class=language-rpc data-lang=rpc>message Search {
+  message StreamResponse {
+    oneof payload {
+      Response response = 1;
+      google.rpc.Status status = 2;
+    }
+  }
+
+  message Response {
+    string request_id = 1;
+    repeated Object.Distance results = 2;
+  }
+}
+
+message Object {
+  message Distance {
+    string id = 1;
+    float distance = 2;
+  }
+}
+</code></pre><ul><li><p>Search.StreamResponse</p><table><thead><tr><th style=text-align:center>field</th><th style=text-align:left>type</th><th style=text-align:left>label</th><th style=text-align:left>desc.</th></tr></thead><tbody><tr><td style=text-align:center>response</td><td style=text-align:left>Response</td><td style=text-align:left></td><td style=text-align:left>the search result response</td></tr><tr><td style=text-align:center>status</td><td style=text-align:left>google.rpc.Status</td><td style=text-align:left></td><td style=text-align:left>the status of google RPC</td></tr></tbody></table></li><li><p>Search.Response</p><table><thead><tr><th style=text-align:center>field</th><th style=text-align:left>type</th><th style=text-align:left>label</th><th style=text-align:left>desc.</th></tr></thead><tbody><tr><td style=text-align:center>request_id</td><td style=text-align:left>string</td><td style=text-align:left></td><td style=text-align:left>the unique request ID</td></tr><tr><td style=text-align:center>results</td><td style=text-align:left>Object.Distance</td><td style=text-align:left>repeated(Array[Object.Distance])</td><td style=text-align:left>search results</td></tr></tbody></table></li><li><p>Object.Distance</p><table><thead><tr><th style=text-align:center>field</th><th style=text-align:left>type</th><th style=text-align:left>label</th><th style=text-align:left>desc.</th></tr></thead><tbody><tr><td style=text-align:center>id</td><td style=text-align:left>string</td><td style=text-align:left></td><td style=text-align:left>the vector ID</td></tr><tr><td style=text-align:center>distance</td><td style=text-align:left>float</td><td style=text-align:left></td><td style=text-align:left>the distance between result vector and request vector</td></tr></tbody></table></li></ul></li></ul><h3 id=status-code-9>Status Code</h3><table><thead><tr><th style=text-align:center>code</th><th style=text-align:left>desc.</th></tr></thead><tbody><tr><td style=text-align:center>0</td><td style=text-align:left>OK</td></tr><tr><td style=text-align:center>3</td><td style=text-align:left>INVALID_ARGUMENT</td></tr><tr><td style=text-align:center>4</td><td style=text-align:left>DEADLINE_EXCEEDED</td></tr><tr><td style=text-align:center>5</td><td style=text-align:left>NOT_FOUND</td></tr></tbody></table><h2 id=multilinearsearch-rpc>MultiLinearSearch RPC</h2><p>MultiLinearSearch RPC is the method to linear search vectors with multiple vectors in <strong>1</strong> request.</p><div class=notice>gRPC has the message size limitation.<br>Please be careful that the size of the request exceed the limit.</div><h3 id=input-10>Input</h3><ul><li><p>the scheme of <code>payload.v1.Search.MultiRequest</code></p><pre tabindex=0><code class=language-rpc data-lang=rpc>message Search {
+  message MultiRequest {
+    repeated Request requests = 1;
+  }
+
+  message Request {
+    repeated float vector = 1 [ (validate.rules).repeated .min_items = 2 ];
+    Config config = 2;
+  }
+
+  message Config {
+    string request_id = 1;
+    uint32 num = 2 [ (validate.rules).uint32.gte = 1 ];
+    int64 timeout = 5;
+    Filter.Config ingress_filters = 6;
+    Filter.Config egress_filters = 7;
+  }
+}
+</code></pre><ul><li><p>Search.MultiRequest</p><table><thead><tr><th style=text-align:center>field</th><th style=text-align:left>type</th><th style=text-align:left>label</th><th style=text-align:center>required</th><th style=text-align:left>desc.</th></tr></thead><tbody><tr><td style=text-align:center>requests</td><td style=text-align:left>repeated(Array[Request])</td><td style=text-align:left></td><td style=text-align:center>*</td><td style=text-align:left>the search request list</td></tr></tbody></table></li><li><p>Search.Request</p><table><thead><tr><th style=text-align:center>field</th><th style=text-align:left>type</th><th style=text-align:left>label</th><th style=text-align:center>required</th><th style=text-align:left>desc.</th></tr></thead><tbody><tr><td style=text-align:center>vector</td><td style=text-align:left>float</td><td style=text-align:left>repeated(Array[float])</td><td style=text-align:center>*</td><td style=text-align:left>the vector data. its dimension is between 2 and 65,536.</td></tr><tr><td style=text-align:center>config</td><td style=text-align:left>Config</td><td style=text-align:left></td><td style=text-align:center>*</td><td style=text-align:left>the configuration of the search request</td></tr></tbody></table></li><li><p>Search.Config</p><table><thead><tr><th style=text-align:center>field</th><th style=text-align:left>type</th><th style=text-align:left>label</th><th style=text-align:center>required</th><th style=text-align:left>desc.</th></tr></thead><tbody><tr><td style=text-align:center>request_id</td><td style=text-align:left>string</td><td style=text-align:left></td><td style=text-align:center></td><td style=text-align:left>unique request ID</td></tr><tr><td style=text-align:center>num</td><td style=text-align:left>uint32</td><td style=text-align:left></td><td style=text-align:center>*</td><td style=text-align:left>the maximum number of result to be returned</td></tr><tr><td style=text-align:center>timeout</td><td style=text-align:left>int64</td><td style=text-align:left></td><td style=text-align:center></td><td style=text-align:left>Search timeout in nanoseconds (default value is <code>5s</code>)</td></tr><tr><td style=text-align:center>ingress_filters</td><td style=text-align:left>Filter.Config</td><td style=text-align:left></td><td style=text-align:center></td><td style=text-align:left>Ingress Filter configuration</td></tr><tr><td style=text-align:center>egress_filters</td><td style=text-align:left>Filter.Config</td><td style=text-align:left></td><td style=text-align:center></td><td style=text-align:left>Egress Filter configuration</td></tr><tr><td style=text-align:center>min_num</td><td style=text-align:left>uint32</td><td style=text-align:left></td><td style=text-align:center>the minimum number of result to be returned</td><td></td></tr></tbody></table></li></ul></li></ul><h3 id=output-10>Output</h3><ul><li><p>the scheme of <code>payload.v1.Search.Responses</code>.</p><pre tabindex=0><code class=language-rpc data-lang=rpc>message Search {
+  message Responses {
+    repeated Response responses = 1;
+  }
+
+  message Response {
+    string request_id = 1;
+    repeated Object.Distance results = 2;
+  }
+}
+
+message Object {
+  message Distance {
+    string id = 1;
+    float distance = 2;
+  }
+}
+</code></pre><ul><li><p>Search.Responses</p><table><thead><tr><th style=text-align:center>field</th><th style=text-align:left>type</th><th style=text-align:left>label</th><th style=text-align:left>desc.</th></tr></thead><tbody><tr><td style=text-align:center>responses</td><td style=text-align:left>Response</td><td style=text-align:left>repeated(Array[Response])</td><td style=text-align:left>the list of search results response</td></tr></tbody></table></li><li><p>Search.Response</p><table><thead><tr><th style=text-align:center>field</th><th style=text-align:left>type</th><th style=text-align:left>label</th><th style=text-align:left>desc.</th></tr></thead><tbody><tr><td style=text-align:center>request_id</td><td style=text-align:left>string</td><td style=text-align:left></td><td style=text-align:left>the unique request ID</td></tr><tr><td style=text-align:center>results</td><td style=text-align:left>Object.Distance</td><td style=text-align:left>repeated(Array[Object.Distance])</td><td style=text-align:left>search results</td></tr></tbody></table></li><li><p>Object.Distance</p><table><thead><tr><th style=text-align:center>field</th><th style=text-align:left>type</th><th style=text-align:left>label</th><th style=text-align:left>desc.</th></tr></thead><tbody><tr><td style=text-align:center>id</td><td style=text-align:left>string</td><td style=text-align:left></td><td style=text-align:left>the vector ID</td></tr><tr><td style=text-align:center>distance</td><td style=text-align:left>float</td><td style=text-align:left></td><td style=text-align:left>the distance between result vector and request vector</td></tr></tbody></table></li></ul></li></ul><h3 id=status-code-10>Status Code</h3><table><thead><tr><th style=text-align:center>code</th><th style=text-align:left>desc.</th></tr></thead><tbody><tr><td style=text-align:center>0</td><td style=text-align:left>OK</td></tr><tr><td style=text-align:center>3</td><td style=text-align:left>INVALID_ARGUMENT</td></tr><tr><td style=text-align:center>4</td><td style=text-align:left>DEADLINE_EXCEEDED</td></tr><tr><td style=text-align:center>5</td><td style=text-align:left>NOT_FOUND</td></tr></tbody></table><h3 id=multilinearsearchbyid-rpc>MultiLinearSearchByID RPC</h3><p>MultiLinearSearchByID RPC is the method to linear search vectors with multiple IDs in <strong>1</strong> request.</p><div class=notice>gRPC has the message size limitation.<br>Please be careful that the size of the request exceed the limit.</div><h3 id=input-11>Input</h3><ul><li><p>the scheme of <code>payload.v1.Search.MultiIDRequest stream</code></p><pre tabindex=0><code class=language-rpc data-lang=rpc>message Search {
+
+  message MultiIDRequest {
+      repeated IDRequest requests = 1;
+  }
+
+  message IDRequest {
+    string id = 1;
+    Config config = 2;
+  }
+
+  message Config {
+    string request_id = 1;
+    uint32 num = 2 [ (validate.rules).uint32.gte = 1 ];
+    int64 timeout = 5;
+    Filter.Config ingress_filters = 6;
+    Filter.Config egress_filters = 7;
+  }
+}
+</code></pre><ul><li><p>Search.MultiIDRequest</p><table><thead><tr><th style=text-align:center>field</th><th style=text-align:left>type</th><th style=text-align:left>label</th><th style=text-align:center>required</th><th style=text-align:left>desc.</th></tr></thead><tbody><tr><td style=text-align:center>requests</td><td style=text-align:left>IDRequest</td><td style=text-align:left>repeated(Array[IDRequest])</td><td style=text-align:center>*</td><td style=text-align:left>the searchByID request list</td></tr></tbody></table></li><li><p>Search.IDRequest</p><table><thead><tr><th style=text-align:center>field</th><th style=text-align:left>type</th><th style=text-align:left>label</th><th style=text-align:center>required</th><th style=text-align:left>desc.</th></tr></thead><tbody><tr><td style=text-align:center>id</td><td style=text-align:left>string</td><td style=text-align:left></td><td style=text-align:center>*</td><td style=text-align:left>the vector ID to be searched.</td></tr><tr><td style=text-align:center>config</td><td style=text-align:left>Config</td><td style=text-align:left></td><td style=text-align:center>*</td><td style=text-align:left>the configuration of the search request</td></tr></tbody></table></li><li><p>Search.Config</p><table><thead><tr><th style=text-align:center>field</th><th style=text-align:left>type</th><th style=text-align:left>label</th><th style=text-align:center>required</th><th style=text-align:left>desc.</th></tr></thead><tbody><tr><td style=text-align:center>request_id</td><td style=text-align:left>string</td><td style=text-align:left></td><td style=text-align:center></td><td style=text-align:left>unique request ID</td></tr><tr><td style=text-align:center>num</td><td style=text-align:left>uint32</td><td style=text-align:left></td><td style=text-align:center>*</td><td style=text-align:left>the maximum number of result to be returned</td></tr><tr><td style=text-align:center>timeout</td><td style=text-align:left>int64</td><td style=text-align:left></td><td style=text-align:center></td><td style=text-align:left>Search timeout in nanoseconds (default value is <code>5s</code>)</td></tr><tr><td style=text-align:center>ingress_filters</td><td style=text-align:left>Filter.Config</td><td style=text-align:left></td><td style=text-align:center></td><td style=text-align:left>Ingress Filter configuration</td></tr><tr><td style=text-align:center>egress_filters</td><td style=text-align:left>Filter.Config</td><td style=text-align:left></td><td style=text-align:center></td><td style=text-align:left>Egress Filter configuration</td></tr><tr><td style=text-align:center>min_num</td><td style=text-align:left>uint32</td><td style=text-align:left></td><td style=text-align:center>the minimum number of result to be returned</td><td></td></tr></tbody></table></li></ul></li></ul><h3 id=output-11>Output</h3><ul><li><p>the scheme of <code>payload.v1.Search.Responses</code>.</p><pre tabindex=0><code class=language-rpc data-lang=rpc>message Search {
+  message Responses {
+    repeated Response responses = 1;
+  }
+
+  message Response {
+    string request_id = 1;
+    repeated Object.Distance results = 2;
+  }
+}
+
+message Object {
+  message Distance {
+    string id = 1;
+    float distance = 2;
+  }
+}
+</code></pre><ul><li><p>Search.Responses</p><table><thead><tr><th style=text-align:center>field</th><th style=text-align:left>type</th><th style=text-align:left>label</th><th style=text-align:left>desc.</th></tr></thead><tbody><tr><td style=text-align:center>responses</td><td style=text-align:left>Response</td><td style=text-align:left>repeated(Array[Response])</td><td style=text-align:left>the list of search results response</td></tr></tbody></table></li><li><p>Search.Response</p><table><thead><tr><th style=text-align:center>field</th><th style=text-align:left>type</th><th style=text-align:left>label</th><th style=text-align:left>desc.</th></tr></thead><tbody><tr><td style=text-align:center>request_id</td><td style=text-align:left>string</td><td style=text-align:left></td><td style=text-align:left>the unique request ID</td></tr><tr><td style=text-align:center>results</td><td style=text-align:left>Object.Distance</td><td style=text-align:left>repeated(Array[Object.Distance])</td><td style=text-align:left>search results</td></tr></tbody></table></li><li><p>Object.Distance</p><table><thead><tr><th style=text-align:center>field</th><th style=text-align:left>type</th><th style=text-align:left>label</th><th style=text-align:left>desc.</th></tr></thead><tbody><tr><td style=text-align:center>id</td><td style=text-align:left>string</td><td style=text-align:left></td><td style=text-align:left>the vector ID</td></tr><tr><td style=text-align:center>distance</td><td style=text-align:left>float</td><td style=text-align:left></td><td style=text-align:left>the distance between result vector and request vector</td></tr></tbody></table></li></ul></li></ul><h3 id=status-code-11>Status Code</h3><table><thead><tr><th style=text-align:center>code</th><th style=text-align:left>desc.</th></tr></thead><tbody><tr><td style=text-align:center>0</td><td style=text-align:left>OK</td></tr><tr><td style=text-align:center>3</td><td style=text-align:left>INVALID_ARGUMENT</td></tr><tr><td style=text-align:center>4</td><td style=text-align:left>DEADLINE_EXCEEDED</td></tr><tr><td style=text-align:center>5</td><td style=text-align:left>NOT_FOUND</td></tr></tbody></table></div><aside class=current id=current><button class=menu><span class=dot></span></button><nav id=TableOfContents><ul><li><a href=#overview>Overview</a></li><li><a href=#search-rpc>Search RPC</a><ul><li><a href=#input>Input</a></li><li><a href=#output>Output</a></li><li><a href=#status-code>Status Code</a></li></ul></li><li><a href=#searchbyid-rpc>SearchByID RPC</a><ul><li><a href=#input-1>Input</a></li><li><a href=#output-1>Output</a></li><li><a href=#status-code-1>Status Code</a></li></ul></li><li><a href=#streamsearch-rpc>StreamSearch RPC</a><ul><li><a href=#input-2>Input</a></li><li><a href=#output-2>Output</a></li><li><a href=#status-code-2>Status Code</a></li></ul></li><li><a href=#streamsearchbyid-rpc>StreamSearchByID RPC</a><ul><li><a href=#input-3>Input</a></li><li><a href=#output-3>Output</a></li><li><a href=#status-code-3>Status Code</a></li></ul></li><li><a href=#multisearch-rpc>MultiSearch RPC</a><ul><li><a href=#input-4>Input</a></li><li><a href=#output-4>Output</a></li><li><a href=#status-code-4>Status Code</a></li><li><a href=#multisearchbyid-rpc>MultiSearchByID RPC</a></li><li><a href=#input-5>Input</a></li><li><a href=#output-5>Output</a></li><li><a href=#status-code-5>Status Code</a></li></ul></li><li><a href=#linearsearch-rpc>LinearSearch RPC</a><ul><li><a href=#input-6>Input</a></li><li><a href=#output-6>Output</a></li><li><a href=#status-code-6>Status Code</a></li></ul></li><li><a href=#linearsearchbyid-rpc>LinearSearchByID RPC</a><ul><li><a href=#input-7>Input</a></li><li><a href=#output-7>Output</a></li><li><a href=#status-code-7>Status Code</a></li></ul></li><li><a href=#streamlinearsearch-rpc>StreamLinearSearch RPC</a><ul><li><a href=#input-8>Input</a></li><li><a href=#output-8>Output</a></li><li><a href=#status-code-8>Status Code</a></li></ul></li><li><a href=#streamlinearsearchbyid-rpc>StreamLinearSearchByID RPC</a><ul><li><a href=#input-9>Input</a></li><li><a href=#output-9>Output</a></li><li><a href=#status-code-9>Status Code</a></li></ul></li><li><a href=#multilinearsearch-rpc>MultiLinearSearch RPC</a><ul><li><a href=#input-10>Input</a></li><li><a href=#output-10>Output</a></li><li><a href=#status-code-10>Status Code</a></li><li><a href=#multilinearsearchbyid-rpc>MultiLinearSearchByID RPC</a></li><li><a href=#input-11>Input</a></li><li><a href=#output-11>Output</a></li><li><a href=#status-code-11>Status Code</a></li></ul></li></ul></nav></aside></div></div></main><footer class=footer><div class="footer__content cf"><ul class=footer__list><li class=footer__item><a href=/docs/v1.6/overview/about-vald class=footer__link>About<br></a></li><li class=footer__item><a href=/docs/v1.6/tutorial/get-started class=footer__link>Get Started<br></a></li><li class=footer__item><a href=/docs/v1.6/user-guides/sdks class=footer__link>SDKs</a></li><li class=footer__item><a href=/docs/v1.6 class=footer__link>Docs</a></li><li class=footer__item><a href=https://vdaas-vald.medium.com/ target=_blank class=footer__link>Blog<br></a></li><li class=footer__item><a class="footer__item footer__icon" href=https://github.com/vdaas/vald target=_blank><picture><source srcset=https://vald.vdaas.org/images/logo_github_white.svg media="(prefers-color-scheme: dark)" class=icon__image width=24 height=24><img src=https://vald.vdaas.org/images/logo_github_black.svg alt=github class=icon__image></picture></a></li></ul></div><p class=footer__copylight>©2019-2022 vald.vdaas.org Vald team</p></footer></body></html>
