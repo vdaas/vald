@@ -1087,47 +1087,231 @@ func Test_server_CreateAndSaveIndex(t *testing.T) {
 			- case 3.4: success to create and save index with poolSize = 0
 	*/
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx: nil,
-		           c: nil,
-		       },
-		       fields: fields {
-		           name: "",
-		           ip: "",
-		           ngt: nil,
-		           eg: nil,
-		           streamConcurrency: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ctx: nil,
-		           c: nil,
-		           },
-		           fields: fields {
-		           name: "",
-		           ip: "",
-		           ngt: nil,
-		           eg: nil,
-		           streamConcurrency: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		// {
+		// 	name: "Equivalence Class Testing case 1.1: success to create and save 1 uncommitted insert index",
+		// 	args: args{
+		// 		ctx: nil,
+		// 		c:   nil,
+		// 	},
+		// 	fields: fields{
+		// 		name:              "",
+		// 		ip:                "",
+		// 		ngt:               nil,
+		// 		eg:                nil,
+		// 		streamConcurrency: 0,
+		// 	},
+		// 	want: want{},
+		// },
+		// {
+		// 	name: "Equivalence Class Testing case 1.2: success to create and save 100 uncommitted insert index",
+		// 	args: args{
+		// 		ctx: nil,
+		// 		c:   nil,
+		// 	},
+		// 	fields: fields{
+		// 		name:              "",
+		// 		ip:                "",
+		// 		ngt:               nil,
+		// 		eg:                nil,
+		// 		streamConcurrency: 0,
+		// 	},
+		// 	want: want{},
+		// },
+		// {
+		// 	name: "Equivalence Class Testing case 2.1: success to create and save 1 uncommitted delete index",
+		// 	args: args{
+		// 		ctx: nil,
+		// 		c:   nil,
+		// 	},
+		// 	fields: fields{
+		// 		name:              "",
+		// 		ip:                "",
+		// 		ngt:               nil,
+		// 		eg:                nil,
+		// 		streamConcurrency: 0,
+		// 	},
+		// 	want: want{},
+		// },
+		// {
+		// 	name: "Equivalence Class Testing case 2.2: success to create and save 100 uncommitted delete index",
+		// 	args: args{
+		// 		ctx: nil,
+		// 		c:   nil,
+		// 	},
+		// 	fields: fields{
+		// 		name:              "",
+		// 		ip:                "",
+		// 		ngt:               nil,
+		// 		eg:                nil,
+		// 		streamConcurrency: 0,
+		// 	},
+		// 	want: want{},
+		// },
+		// {
+		// 	name: "Equivalence Class Testing case 3.1: success to create and save 1 uncommitted update index",
+		// 	args: args{
+		// 		ctx: nil,
+		// 		c:   nil,
+		// 	},
+		// 	fields: fields{
+		// 		name:              "",
+		// 		ip:                "",
+		// 		ngt:               nil,
+		// 		eg:                nil,
+		// 		streamConcurrency: 0,
+		// 	},
+		// 	want: want{},
+		// },
+		// {
+		// 	name: "Equivalence Class Testing case 3.2: success to create and save 100 uncommitted update index",
+		// 	args: args{
+		// 		ctx: nil,
+		// 		c:   nil,
+		// 	},
+		// 	fields: fields{
+		// 		name:              "",
+		// 		ip:                "",
+		// 		ngt:               nil,
+		// 		eg:                nil,
+		// 		streamConcurrency: 0,
+		// 	},
+		// 	want: want{},
+		// },
+		// {
+		// 	name: "Boundary Value Testing case 1.1: fail to create and save 0 index",
+		// 	args: args{
+		// 		ctx: nil,
+		// 		c:   nil,
+		// 	},
+		// 	fields: fields{
+		// 		name:              "",
+		// 		ip:                "",
+		// 		ngt:               nil,
+		// 		eg:                nil,
+		// 		streamConcurrency: 0,
+		// 	},
+		// 	want: want{},
+		// },
+		// {
+		// 	name: "Boundary Value Testing case 2.1: success to create and save index with invalid dimension",
+		// 	args: args{
+		// 		ctx: nil,
+		// 		c:   nil,
+		// 	},
+		// 	fields: fields{
+		// 		name:              "",
+		// 		ip:                "",
+		// 		ngt:               nil,
+		// 		eg:                nil,
+		// 		streamConcurrency: 0,
+		// 	},
+		// 	want: want{},
+		// },
+		// {
+		// 	name: "Decision Table Testing case 1.1: success to create and save 100 index with in-memory mode",
+		// 	args: args{
+		// 		ctx: nil,
+		// 		c:   nil,
+		// 	},
+		// 	fields: fields{
+		// 		name:              "",
+		// 		ip:                "",
+		// 		ngt:               nil,
+		// 		eg:                nil,
+		// 		streamConcurrency: 0,
+		// 	},
+		// 	want: want{},
+		// },
+		// {
+		// 	name: "Decision Table Testing case 2.1: success to create and save 1 inserted index with copy-on-write enabled",
+		// 	args: args{
+		// 		ctx: nil,
+		// 		c:   nil,
+		// 	},
+		// 	fields: fields{
+		// 		name:              "",
+		// 		ip:                "",
+		// 		ngt:               nil,
+		// 		eg:                nil,
+		// 		streamConcurrency: 0,
+		// 	},
+		// 	want: want{},
+		// },
+		// {
+		// 	name: "Decision Table Testing case 2.2: success to create and save 100 inserted index with copy-on-write enabled",
+		// 	args: args{
+		// 		ctx: nil,
+		// 		c:   nil,
+		// 	},
+		// 	fields: fields{
+		// 		name:              "",
+		// 		ip:                "",
+		// 		ngt:               nil,
+		// 		eg:                nil,
+		// 		streamConcurrency: 0,
+		// 	},
+		// 	want: want{},
+		// },
+		// {
+		// 	name: "Decision Table Testing case 3.1: success to create and save index with poolSize > uncommitted index count",
+		// 	args: args{
+		// 		ctx: nil,
+		// 		c:   nil,
+		// 	},
+		// 	fields: fields{
+		// 		name:              "",
+		// 		ip:                "",
+		// 		ngt:               nil,
+		// 		eg:                nil,
+		// 		streamConcurrency: 0,
+		// 	},
+		// 	want: want{},
+		// },
+		// {
+		// 	name: "Decision Table Testing case 3.2: success to create and save index with poolSize < uncommitted index count",
+		// 	args: args{
+		// 		ctx: nil,
+		// 		c:   nil,
+		// 	},
+		// 	fields: fields{
+		// 		name:              "",
+		// 		ip:                "",
+		// 		ngt:               nil,
+		// 		eg:                nil,
+		// 		streamConcurrency: 0,
+		// 	},
+		// 	want: want{},
+		// },
+		// {
+		// 	name: "Decision Table Testing case 3.3: success to create and save index with poolSize = uncommitted index count",
+		// 	args: args{
+		// 		ctx: nil,
+		// 		c:   nil,
+		// 	},
+		// 	fields: fields{
+		// 		name:              "",
+		// 		ip:                "",
+		// 		ngt:               nil,
+		// 		eg:                nil,
+		// 		streamConcurrency: 0,
+		// 	},
+		// 	want: want{},
+		// },
+		// {
+		// 	name: "Decision Table Testing case 3.4: success to create and save index with poolSize = 0",
+		// 	args: args{
+		// 		ctx: nil,
+		// 		c:   nil,
+		// 	},
+		// 	fields: fields{
+		// 		name:              "",
+		// 		ip:                "",
+		// 		ngt:               nil,
+		// 		eg:                nil,
+		// 		streamConcurrency: 0,
+		// 	},
+		// 	want: want{},
+		// },
 	}
 
 	for _, tc := range tests {
