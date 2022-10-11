@@ -100,6 +100,13 @@ Please note that the [Vald Discoverer](../overview/component/discoverer.md) will
 
 If you really want to modify or disable these settings, you need to grant the [cluster role settings](https://github.com/vdaas/vald/blob/main/k8s/discoverer/clusterrole.yaml) and bind it to the Vald Discoverer to retrieve required information to operate the Vald cluster.
 
+## Customize cluster role configuration on Cloud Providers
+
+Please refer to the following guidelines to configure cluster role settings for your cloud provider, and configure the service account name for Vald Discoverer.
+
+- [Amazon EKS](https://docs.aws.amazon.com/eks/latest/userguide/add-user-role.html)
+- [GKE](https://cloud.google.com/kubernetes-engine/docs/how-to/role-based-access-control)
+
 ## Related Document
 
 - [Vald Discoverer](../overview/component/discoverer.md)
