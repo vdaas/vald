@@ -68,8 +68,8 @@ func newBreaker(key string, opts ...BreakerOption) (*breaker, error) {
 // do executes the function given argument when the current breaker state is "Closed" or "Half-Open".
 // If the current breaker state is "Open", this function returns ErrCircuitBreakerOpenState.
 func (b *breaker) do(ctx context.Context, fn func(ctx context.Context) (val interface{}, err error)) (val interface{}, st State, err error) {
-	if !b.isReady() {
-		return nil, StateOpen, errors.ErrCircuitBreakerOpenState
+	if st, ok, err := b.isReady(); !ok && err != nil {
+		return nil, st, err
 	}
 	val, err = fn(ctx)
 	if err != nil {
@@ -98,14 +98,26 @@ func (b *breaker) do(ctx context.Context, fn func(ctx context.Context) (val inte
 
 // isReady determines the breaker is ready or not.
 // If the current breaker state is "Closed" or "Half-Open", this function returns true.
-func (b *breaker) isReady() (ok bool) {
-	st := b.currentState()
-	return st == StateClosed || st == StateHalfOpen
+func (b *breaker) isReady() (st State, ok bool, err error) {
+	st = b.currentState()
+	switch st {
+	case StateOpen:
+		return st, false, errors.ErrCircuitBreakerOpenState
+	case StateHalfOpen:
+
+		// For flow control in the "Half-Open" state. It is limited to 50%.
+		total := b.count.Load().(*count).Total()
+		if total != 0 && total%2 == 0 {
+			return st, false, errors.ErrCircuitBreakerHalfOpenFlowLimitation
+		}
+	}
+	return st, true, nil
 }
 
 func (b *breaker) success() {
-	b.count.Load().(*count).onSuccess()
-	if st := b.currentState(); st == StateHalfOpen {
+	cnt := b.count.Load().(*count)
+	cnt.onSuccess()
+	if st := b.currentState(); st == StateHalfOpen && cnt.Total() > b.minSamples && !b.halfOpenErrShouldTrip.ShouldTrip(cnt) {
 		log.Infof("the operation succeeded, circuit breaker state for '%s' changed,\tfrom: %s, to: %s", b.key, st.String(), StateClosed.String())
 		b.reset()
 	}
