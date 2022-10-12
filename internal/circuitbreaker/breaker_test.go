@@ -456,7 +456,7 @@ func Test_breaker_success(t *testing.T) {
 			var atCount atomic.Value
 			atCount.Store(&count{
 				successes: 10,
-				failures:  1,
+				failures:  10,
 			})
 			halfOpenErrRate := float32(0.5)
 			minSamples := int64(10)
@@ -483,8 +483,8 @@ func Test_breaker_success(t *testing.T) {
 		func() test {
 			var atCount atomic.Value
 			atCount.Store(&count{
-				successes: 1,
-				failures:  10,
+				successes: 10,
+				failures:  11,
 			})
 			halfOpenErrRate := float32(0.5)
 			minSamples := int64(10)
