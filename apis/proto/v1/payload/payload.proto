@@ -524,12 +524,6 @@ message Info {
 // Mirror related messages.
 message Mirror {
 
-  // Represent the request to register mirror servers.
-  message RegisterRequest {
-    // The mirror server targets.
-    Targets targets = 1;
-  }
-
   // Represent server information.
   message Target {
     // The target ip.

@@ -50,7 +50,6 @@
     - [Insert.ObjectRequest](#payload-v1-Insert-ObjectRequest)
     - [Insert.Request](#payload-v1-Insert-Request)
     - [Mirror](#payload-v1-Mirror)
-    - [Mirror.RegisterRequest](#payload-v1-Mirror-RegisterRequest)
     - [Mirror.Target](#payload-v1-Mirror-Target)
     - [Mirror.Targets](#payload-v1-Mirror-Targets)
     - [Object](#payload-v1-Object)
@@ -687,21 +686,6 @@ Represent the insert request.
 
 ### Mirror
 Mirror related messages.
-
-
-
-
-
-
-<a name="payload-v1-Mirror-RegisterRequest"></a>
-
-### Mirror.RegisterRequest
-Represent the request to register mirror servers.
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| targets | [Mirror.Targets](#payload-v1-Mirror-Targets) |  | The mirror server targets. |
 
 
 

@@ -4010,55 +4010,6 @@ func (x *Info_Index_UUID_Uncommitted) GetUuid() string {
 	return ""
 }
 
-// Represent the request to register mirror servers.
-type Mirror_RegisterRequest struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	// The mirror server targets.
-	Targets *Mirror_Targets `protobuf:"bytes,1,opt,name=targets,proto3" json:"targets,omitempty"`
-}
-
-func (x *Mirror_RegisterRequest) Reset() {
-	*x = Mirror_RegisterRequest{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_apis_proto_v1_payload_payload_proto_msgTypes[70]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *Mirror_RegisterRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*Mirror_RegisterRequest) ProtoMessage() {}
-
-func (x *Mirror_RegisterRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_apis_proto_v1_payload_payload_proto_msgTypes[70]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use Mirror_RegisterRequest.ProtoReflect.Descriptor instead.
-func (*Mirror_RegisterRequest) Descriptor() ([]byte, []int) {
-	return file_apis_proto_v1_payload_payload_proto_rawDescGZIP(), []int{10, 0}
-}
-
-func (x *Mirror_RegisterRequest) GetTargets() *Mirror_Targets {
-	if x != nil {
-		return x.Targets
-	}
-	return nil
-}
-
 // Represent server information.
 type Mirror_Target struct {
 	state         protoimpl.MessageState
@@ -4074,7 +4025,7 @@ type Mirror_Target struct {
 func (x *Mirror_Target) Reset() {
 	*x = Mirror_Target{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_apis_proto_v1_payload_payload_proto_msgTypes[71]
+		mi := &file_apis_proto_v1_payload_payload_proto_msgTypes[70]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -4087,7 +4038,7 @@ func (x *Mirror_Target) String() string {
 func (*Mirror_Target) ProtoMessage() {}
 
 func (x *Mirror_Target) ProtoReflect() protoreflect.Message {
-	mi := &file_apis_proto_v1_payload_payload_proto_msgTypes[71]
+	mi := &file_apis_proto_v1_payload_payload_proto_msgTypes[70]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4100,7 +4051,7 @@ func (x *Mirror_Target) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Mirror_Target.ProtoReflect.Descriptor instead.
 func (*Mirror_Target) Descriptor() ([]byte, []int) {
-	return file_apis_proto_v1_payload_payload_proto_rawDescGZIP(), []int{10, 1}
+	return file_apis_proto_v1_payload_payload_proto_rawDescGZIP(), []int{10, 0}
 }
 
 func (x *Mirror_Target) GetIp() string {
@@ -4130,7 +4081,7 @@ type Mirror_Targets struct {
 func (x *Mirror_Targets) Reset() {
 	*x = Mirror_Targets{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_apis_proto_v1_payload_payload_proto_msgTypes[72]
+		mi := &file_apis_proto_v1_payload_payload_proto_msgTypes[71]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -4143,7 +4094,7 @@ func (x *Mirror_Targets) String() string {
 func (*Mirror_Targets) ProtoMessage() {}
 
 func (x *Mirror_Targets) ProtoReflect() protoreflect.Message {
-	mi := &file_apis_proto_v1_payload_payload_proto_msgTypes[72]
+	mi := &file_apis_proto_v1_payload_payload_proto_msgTypes[71]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4156,7 +4107,7 @@ func (x *Mirror_Targets) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Mirror_Targets.ProtoReflect.Descriptor instead.
 func (*Mirror_Targets) Descriptor() ([]byte, []int) {
-	return file_apis_proto_v1_payload_payload_proto_rawDescGZIP(), []int{10, 2}
+	return file_apis_proto_v1_payload_payload_proto_rawDescGZIP(), []int{10, 1}
 }
 
 func (x *Mirror_Targets) GetTargets() []*Mirror_Target {
@@ -4539,26 +4490,22 @@ var file_apis_proto_v1_payload_payload_proto_rawDesc = []byte{
 	0x15, 0x2e, 0x70, 0x61, 0x79, 0x6c, 0x6f, 0x61, 0x64, 0x2e, 0x76, 0x31, 0x2e, 0x49, 0x6e, 0x66,
 	0x6f, 0x2e, 0x4e, 0x6f, 0x64, 0x65, 0x42, 0x08, 0xfa, 0x42, 0x05, 0x92, 0x01, 0x02, 0x08, 0x01,
 	0x52, 0x05, 0x6e, 0x6f, 0x64, 0x65, 0x73, 0x1a, 0x15, 0x0a, 0x03, 0x49, 0x50, 0x73, 0x12, 0x0e,
-	0x0a, 0x02, 0x69, 0x70, 0x18, 0x01, 0x20, 0x03, 0x28, 0x09, 0x52, 0x02, 0x69, 0x70, 0x22, 0xbf,
-	0x01, 0x0a, 0x06, 0x4d, 0x69, 0x72, 0x72, 0x6f, 0x72, 0x1a, 0x47, 0x0a, 0x0f, 0x52, 0x65, 0x67,
-	0x69, 0x73, 0x74, 0x65, 0x72, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x34, 0x0a, 0x07,
-	0x74, 0x61, 0x72, 0x67, 0x65, 0x74, 0x73, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1a, 0x2e,
-	0x70, 0x61, 0x79, 0x6c, 0x6f, 0x61, 0x64, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x69, 0x72, 0x72, 0x6f,
-	0x72, 0x2e, 0x54, 0x61, 0x72, 0x67, 0x65, 0x74, 0x73, 0x52, 0x07, 0x74, 0x61, 0x72, 0x67, 0x65,
-	0x74, 0x73, 0x1a, 0x2c, 0x0a, 0x06, 0x54, 0x61, 0x72, 0x67, 0x65, 0x74, 0x12, 0x0e, 0x0a, 0x02,
-	0x69, 0x70, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x02, 0x69, 0x70, 0x12, 0x12, 0x0a, 0x04,
-	0x70, 0x6f, 0x72, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0d, 0x52, 0x04, 0x70, 0x6f, 0x72, 0x74,
-	0x1a, 0x3e, 0x0a, 0x07, 0x54, 0x61, 0x72, 0x67, 0x65, 0x74, 0x73, 0x12, 0x33, 0x0a, 0x07, 0x74,
-	0x61, 0x72, 0x67, 0x65, 0x74, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x19, 0x2e, 0x70,
-	0x61, 0x79, 0x6c, 0x6f, 0x61, 0x64, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x69, 0x72, 0x72, 0x6f, 0x72,
-	0x2e, 0x54, 0x61, 0x72, 0x67, 0x65, 0x74, 0x52, 0x07, 0x74, 0x61, 0x72, 0x67, 0x65, 0x74, 0x73,
-	0x22, 0x07, 0x0a, 0x05, 0x45, 0x6d, 0x70, 0x74, 0x79, 0x42, 0x5a, 0x0a, 0x1d, 0x6f, 0x72, 0x67,
-	0x2e, 0x76, 0x64, 0x61, 0x61, 0x73, 0x2e, 0x76, 0x61, 0x6c, 0x64, 0x2e, 0x61, 0x70, 0x69, 0x2e,
-	0x76, 0x31, 0x2e, 0x70, 0x61, 0x79, 0x6c, 0x6f, 0x61, 0x64, 0x42, 0x0b, 0x56, 0x61, 0x6c, 0x64,
-	0x50, 0x61, 0x79, 0x6c, 0x6f, 0x61, 0x64, 0x50, 0x01, 0x5a, 0x2a, 0x67, 0x69, 0x74, 0x68, 0x75,
-	0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x76, 0x64, 0x61, 0x61, 0x73, 0x2f, 0x76, 0x61, 0x6c, 0x64,
-	0x2f, 0x61, 0x70, 0x69, 0x73, 0x2f, 0x67, 0x72, 0x70, 0x63, 0x2f, 0x76, 0x31, 0x2f, 0x70, 0x61,
-	0x79, 0x6c, 0x6f, 0x61, 0x64, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x0a, 0x02, 0x69, 0x70, 0x18, 0x01, 0x20, 0x03, 0x28, 0x09, 0x52, 0x02, 0x69, 0x70, 0x22, 0x76,
+	0x0a, 0x06, 0x4d, 0x69, 0x72, 0x72, 0x6f, 0x72, 0x1a, 0x2c, 0x0a, 0x06, 0x54, 0x61, 0x72, 0x67,
+	0x65, 0x74, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x70, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x02,
+	0x69, 0x70, 0x12, 0x12, 0x0a, 0x04, 0x70, 0x6f, 0x72, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0d,
+	0x52, 0x04, 0x70, 0x6f, 0x72, 0x74, 0x1a, 0x3e, 0x0a, 0x07, 0x54, 0x61, 0x72, 0x67, 0x65, 0x74,
+	0x73, 0x12, 0x33, 0x0a, 0x07, 0x74, 0x61, 0x72, 0x67, 0x65, 0x74, 0x73, 0x18, 0x01, 0x20, 0x03,
+	0x28, 0x0b, 0x32, 0x19, 0x2e, 0x70, 0x61, 0x79, 0x6c, 0x6f, 0x61, 0x64, 0x2e, 0x76, 0x31, 0x2e,
+	0x4d, 0x69, 0x72, 0x72, 0x6f, 0x72, 0x2e, 0x54, 0x61, 0x72, 0x67, 0x65, 0x74, 0x52, 0x07, 0x74,
+	0x61, 0x72, 0x67, 0x65, 0x74, 0x73, 0x22, 0x07, 0x0a, 0x05, 0x45, 0x6d, 0x70, 0x74, 0x79, 0x42,
+	0x5a, 0x0a, 0x1d, 0x6f, 0x72, 0x67, 0x2e, 0x76, 0x64, 0x61, 0x61, 0x73, 0x2e, 0x76, 0x61, 0x6c,
+	0x64, 0x2e, 0x61, 0x70, 0x69, 0x2e, 0x76, 0x31, 0x2e, 0x70, 0x61, 0x79, 0x6c, 0x6f, 0x61, 0x64,
+	0x42, 0x0b, 0x56, 0x61, 0x6c, 0x64, 0x50, 0x61, 0x79, 0x6c, 0x6f, 0x61, 0x64, 0x50, 0x01, 0x5a,
+	0x2a, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x76, 0x64, 0x61, 0x61,
+	0x73, 0x2f, 0x76, 0x61, 0x6c, 0x64, 0x2f, 0x61, 0x70, 0x69, 0x73, 0x2f, 0x67, 0x72, 0x70, 0x63,
+	0x2f, 0x76, 0x31, 0x2f, 0x70, 0x61, 0x79, 0x6c, 0x6f, 0x61, 0x64, 0x62, 0x06, 0x70, 0x72, 0x6f,
+	0x74, 0x6f, 0x33,
 }
 
 var (
@@ -4573,7 +4520,7 @@ func file_apis_proto_v1_payload_payload_proto_rawDescGZIP() []byte {
 	return file_apis_proto_v1_payload_payload_proto_rawDescData
 }
 
-var file_apis_proto_v1_payload_payload_proto_msgTypes = make([]protoimpl.MessageInfo, 73)
+var file_apis_proto_v1_payload_payload_proto_msgTypes = make([]protoimpl.MessageInfo, 72)
 var file_apis_proto_v1_payload_payload_proto_goTypes = []interface{}{
 	(*Search)(nil),                      // 0: payload.v1.Search
 	(*Filter)(nil),                      // 1: payload.v1.Filter
@@ -4645,10 +4592,9 @@ var file_apis_proto_v1_payload_payload_proto_goTypes = []interface{}{
 	(*Info_Index_UUID)(nil),             // 67: payload.v1.Info.Index.UUID
 	(*Info_Index_UUID_Committed)(nil),   // 68: payload.v1.Info.Index.UUID.Committed
 	(*Info_Index_UUID_Uncommitted)(nil), // 69: payload.v1.Info.Index.UUID.Uncommitted
-	(*Mirror_RegisterRequest)(nil),      // 70: payload.v1.Mirror.RegisterRequest
-	(*Mirror_Target)(nil),               // 71: payload.v1.Mirror.Target
-	(*Mirror_Targets)(nil),              // 72: payload.v1.Mirror.Targets
-	(*status.Status)(nil),               // 73: google.rpc.Status
+	(*Mirror_Target)(nil),               // 70: payload.v1.Mirror.Target
+	(*Mirror_Targets)(nil),              // 71: payload.v1.Mirror.Targets
+	(*status.Status)(nil),               // 72: google.rpc.Status
 }
 var file_apis_proto_v1_payload_payload_proto_depIdxs = []int32{
 	18, // 0: payload.v1.Search.Request.config:type_name -> payload.v1.Search.Config
@@ -4663,7 +4609,7 @@ var file_apis_proto_v1_payload_payload_proto_depIdxs = []int32{
 	43, // 9: payload.v1.Search.Response.results:type_name -> payload.v1.Object.Distance
 	19, // 10: payload.v1.Search.Responses.responses:type_name -> payload.v1.Search.Response
 	19, // 11: payload.v1.Search.StreamResponse.response:type_name -> payload.v1.Search.Response
-	73, // 12: payload.v1.Search.StreamResponse.status:type_name -> google.rpc.Status
+	72, // 12: payload.v1.Search.StreamResponse.status:type_name -> google.rpc.Status
 	22, // 13: payload.v1.Filter.Config.targets:type_name -> payload.v1.Filter.Target
 	47, // 14: payload.v1.Insert.Request.vector:type_name -> payload.v1.Object.Vector
 	28, // 15: payload.v1.Insert.Request.config:type_name -> payload.v1.Insert.Config
@@ -4695,14 +4641,14 @@ var file_apis_proto_v1_payload_payload_proto_depIdxs = []int32{
 	45, // 41: payload.v1.Object.VectorRequest.id:type_name -> payload.v1.Object.ID
 	23, // 42: payload.v1.Object.VectorRequest.filters:type_name -> payload.v1.Filter.Config
 	43, // 43: payload.v1.Object.StreamDistance.distance:type_name -> payload.v1.Object.Distance
-	73, // 44: payload.v1.Object.StreamDistance.status:type_name -> google.rpc.Status
+	72, // 44: payload.v1.Object.StreamDistance.status:type_name -> google.rpc.Status
 	47, // 45: payload.v1.Object.Vectors.vectors:type_name -> payload.v1.Object.Vector
 	47, // 46: payload.v1.Object.StreamVector.vector:type_name -> payload.v1.Object.Vector
-	73, // 47: payload.v1.Object.StreamVector.status:type_name -> google.rpc.Status
+	72, // 47: payload.v1.Object.StreamVector.status:type_name -> google.rpc.Status
 	51, // 48: payload.v1.Object.StreamBlob.blob:type_name -> payload.v1.Object.Blob
-	73, // 49: payload.v1.Object.StreamBlob.status:type_name -> google.rpc.Status
+	72, // 49: payload.v1.Object.StreamBlob.status:type_name -> google.rpc.Status
 	53, // 50: payload.v1.Object.StreamLocation.location:type_name -> payload.v1.Object.Location
-	73, // 51: payload.v1.Object.StreamLocation.status:type_name -> google.rpc.Status
+	72, // 51: payload.v1.Object.StreamLocation.status:type_name -> google.rpc.Status
 	53, // 52: payload.v1.Object.Locations.locations:type_name -> payload.v1.Object.Location
 	61, // 53: payload.v1.Info.Pod.cpu:type_name -> payload.v1.Info.CPU
 	62, // 54: payload.v1.Info.Pod.memory:type_name -> payload.v1.Info.Memory
@@ -4712,13 +4658,12 @@ var file_apis_proto_v1_payload_payload_proto_depIdxs = []int32{
 	63, // 58: payload.v1.Info.Node.Pods:type_name -> payload.v1.Info.Pods
 	59, // 59: payload.v1.Info.Pods.pods:type_name -> payload.v1.Info.Pod
 	60, // 60: payload.v1.Info.Nodes.nodes:type_name -> payload.v1.Info.Node
-	72, // 61: payload.v1.Mirror.RegisterRequest.targets:type_name -> payload.v1.Mirror.Targets
-	71, // 62: payload.v1.Mirror.Targets.targets:type_name -> payload.v1.Mirror.Target
-	63, // [63:63] is the sub-list for method output_type
-	63, // [63:63] is the sub-list for method input_type
-	63, // [63:63] is the sub-list for extension type_name
-	63, // [63:63] is the sub-list for extension extendee
-	0,  // [0:63] is the sub-list for field type_name
+	70, // 61: payload.v1.Mirror.Targets.targets:type_name -> payload.v1.Mirror.Target
+	62, // [62:62] is the sub-list for method output_type
+	62, // [62:62] is the sub-list for method input_type
+	62, // [62:62] is the sub-list for extension type_name
+	62, // [62:62] is the sub-list for extension extendee
+	0,  // [0:62] is the sub-list for field type_name
 }
 
 func init() { file_apis_proto_v1_payload_payload_proto_init() }
@@ -5568,18 +5513,6 @@ func file_apis_proto_v1_payload_payload_proto_init() {
 			}
 		}
 		file_apis_proto_v1_payload_payload_proto_msgTypes[70].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Mirror_RegisterRequest); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_apis_proto_v1_payload_payload_proto_msgTypes[71].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Mirror_Target); i {
 			case 0:
 				return &v.state
@@ -5591,7 +5524,7 @@ func file_apis_proto_v1_payload_payload_proto_init() {
 				return nil
 			}
 		}
-		file_apis_proto_v1_payload_payload_proto_msgTypes[72].Exporter = func(v interface{}, i int) interface{} {
+		file_apis_proto_v1_payload_payload_proto_msgTypes[71].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Mirror_Targets); i {
 			case 0:
 				return &v.state
@@ -5630,7 +5563,7 @@ func file_apis_proto_v1_payload_payload_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_apis_proto_v1_payload_payload_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   73,
+			NumMessages:   72,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
