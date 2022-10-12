@@ -106,9 +106,11 @@ func (b *breaker) isReady() (st State, err error) {
 	case StateHalfOpen:
 
 		// For flow control in the "Half-Open" state. It is limited to 50%.
-		// If this modulo is used, 1/2 of the requests will be error.
-		total := b.count.Load().(*count).Total()
-		if total != 0 && total%2 == 0 {
+		// If this modulo is used, 1/2 of the requests will be error. And if an error occurs, mark as failures.
+		cnt := b.count.Load().(*count)
+		total := cnt.Total()
+		if total%2 == 0 {
+			cnt.onFail()
 			return st, errors.ErrCircuitBreakerHalfOpenFlowLimitation
 		}
 	}

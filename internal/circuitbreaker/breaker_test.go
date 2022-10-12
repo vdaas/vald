@@ -15,6 +15,7 @@ package circuitbreaker
 
 import (
 	"context"
+	"fmt"
 	"reflect"
 	"sync/atomic"
 	"testing"
@@ -306,65 +307,83 @@ func Test_breaker_isReady(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           key: "",
-		           count: nil,
-		           tripped: 0,
-		           closedErrRate: 0,
-		           closedErrShouldTrip: nil,
-		           halfOpenErrRate: 0,
-		           halfOpenErrShouldTrip: nil,
-		           minSamples: 0,
-		           openTimeout: nil,
-		           openExp: 0,
-		           cloedRefreshTimeout: nil,
-		           closedRefreshExp: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		       beforeFunc: func(t *testing.T,) {
-		           t.Helper()
-		       },
-		       afterFunc: func(t *testing.T,) {
-		           t.Helper()
-		       },
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           key: "",
-		           count: nil,
-		           tripped: 0,
-		           closedErrRate: 0,
-		           closedErrShouldTrip: nil,
-		           halfOpenErrRate: 0,
-		           halfOpenErrShouldTrip: nil,
-		           minSamples: 0,
-		           openTimeout: nil,
-		           openExp: 0,
-		           cloedRefreshTimeout: nil,
-		           closedRefreshExp: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		           beforeFunc: func(t *testing.T,) {
-		               t.Helper()
-		           },
-		           afterFunc: func(t *testing.T,) {
-		               t.Helper()
-		           },
-		       }
-		   }(),
-		*/
+		func() test {
+			return test{
+				name: "return the StateClose and nil when the current state is Close",
+				fields: fields{
+					key:              "insertRPC",
+					tripped:          0,
+					closedRefreshExp: time.Now().Add(100 * time.Second).UnixNano(),
+				},
+				want: want{
+					wantSt: StateClosed,
+					err:    nil,
+				},
+				checkFunc: defaultCheckFunc,
+			}
+		}(),
+		func() test {
+			var atCount atomic.Value
+			atCount.Store(&count{
+				successes: 1,
+			})
+			return test{
+				name: "return the StateHalfOpen and nil when the current state is HalfOpen",
+				fields: fields{
+					key:     "insertRPC",
+					tripped: 1,
+					openExp: time.Now().Add(-100 * time.Second).UnixNano(),
+					count:   atCount,
+				},
+				want: want{
+					wantSt: StateHalfOpen,
+					err:    nil,
+				},
+				checkFunc: defaultCheckFunc,
+			}
+		}(),
+		func() test {
+			var atCount atomic.Value
+			atCount.Store(&count{})
+			return test{
+				name: "return the StateHalfOpen and error when the current state is HalfOpen but the flow is being limited",
+				fields: fields{
+					key:     "insertRPC",
+					tripped: 1,
+					openExp: time.Now().Add(-100 * time.Second).UnixNano(),
+					count:   atCount,
+				},
+				want: want{
+					wantSt: StateHalfOpen,
+					err:    errors.ErrCircuitBreakerHalfOpenFlowLimitation,
+				},
+				checkFunc: func(w want, s State, err error) error {
+					if err := defaultCheckFunc(w, s, err); err != nil {
+						return err
+					}
+					cnt := atCount.Load().(*count)
+					if got := cnt.Fails(); got != 1 {
+						return fmt.Errorf("failures is not equals. want: %d, but got: %d", 2, got)
+					}
+					return nil
+				},
+			}
+		}(),
+		func() test {
+			return test{
+				name: "return the StateOpen and error when the current state is Open",
+				fields: fields{
+					key:     "insertRPC",
+					tripped: 1,
+					openExp: time.Now().Add(100 * time.Second).UnixNano(),
+				},
+				want: want{
+					wantSt: StateOpen,
+					err:    errors.ErrCircuitBreakerOpenState,
+				},
+				checkFunc: defaultCheckFunc,
+			}
+		}(),
 	}
 
 	for _, tc := range tests {
