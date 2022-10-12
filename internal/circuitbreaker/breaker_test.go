@@ -286,26 +286,22 @@ func Test_breaker_isReady(t *testing.T) {
 	}
 	type want struct {
 		wantSt State
-		wantOk bool
 		err    error
 	}
 	type test struct {
 		name       string
 		fields     fields
 		want       want
-		checkFunc  func(want, State, bool, error) error
+		checkFunc  func(want, State, error) error
 		beforeFunc func(*testing.T)
 		afterFunc  func(*testing.T)
 	}
-	defaultCheckFunc := func(w want, gotSt State, gotOk bool, err error) error {
+	defaultCheckFunc := func(w want, gotSt State, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(gotSt, w.wantSt) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotSt, w.wantSt)
-		}
-		if !reflect.DeepEqual(gotOk, w.wantOk) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotOk, w.wantOk)
 		}
 		return nil
 	}
@@ -401,8 +397,8 @@ func Test_breaker_isReady(t *testing.T) {
 				closedRefreshExp:      test.fields.closedRefreshExp,
 			}
 
-			gotSt, gotOk, err := b.isReady()
-			if err := checkFunc(test.want, gotSt, gotOk, err); err != nil {
+			gotSt, err := b.isReady()
+			if err := checkFunc(test.want, gotSt, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

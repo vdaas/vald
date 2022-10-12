@@ -106,6 +106,7 @@ func (b *breaker) isReady() (st State, err error) {
 	case StateHalfOpen:
 
 		// For flow control in the "Half-Open" state. It is limited to 50%.
+		// If this modulo is used, 1/2 of the requests will be error.
 		total := b.count.Load().(*count).Total()
 		if total != 0 && total%2 == 0 {
 			return st, errors.ErrCircuitBreakerHalfOpenFlowLimitation
@@ -117,7 +118,10 @@ func (b *breaker) isReady() (st State, err error) {
 func (b *breaker) success() {
 	cnt := b.count.Load().(*count)
 	cnt.onSuccess()
-	if st := b.currentState(); st == StateHalfOpen && cnt.Total() > b.minSamples && !b.halfOpenErrShouldTrip.ShouldTrip(cnt) {
+
+	// halfOpenErrShouldTrip.ShouldTrip is true when the sum of the number of successes and failures is greater than the b.minSamples and when the error rate is greater than the b.halfOpenErrRate.
+	// In other words, if the error rate is less than the b.halfOpenErrRate, it can be judged that the success rate is high, so this function change to the "Close" state from "Half-Open".
+	if st := b.currentState(); st == StateHalfOpen && cnt.Total() >= b.minSamples && !b.halfOpenErrShouldTrip.ShouldTrip(cnt) {
 		log.Infof("the operation succeeded, circuit breaker state for '%s' changed,\tfrom: %s, to: %s", b.key, st.String(), StateClosed.String())
 		b.reset()
 	}
