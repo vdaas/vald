@@ -446,71 +446,68 @@ func Test_breaker_success(t *testing.T) {
 		want       want
 		checkFunc  func(want) error
 		beforeFunc func(*testing.T)
-		afterFunc  func(*testing.T)
+		afterFunc  func(*testing.T, *breaker)
 	}
 	defaultCheckFunc := func(w want) error {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           key: "",
-		           count: nil,
-		           tripped: 0,
-		           closedErrRate: 0,
-		           closedErrShouldTrip: nil,
-		           halfOpenErrRate: 0,
-		           halfOpenErrShouldTrip: nil,
-		           minSamples: 0,
-		           openTimeout: nil,
-		           openExp: 0,
-		           cloedRefreshTimeout: nil,
-		           closedRefreshExp: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		       beforeFunc: func(t *testing.T,) {
-		           t.Helper()
-		       },
-		       afterFunc: func(t *testing.T,) {
-		           t.Helper()
-		       },
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           key: "",
-		           count: nil,
-		           tripped: 0,
-		           closedErrRate: 0,
-		           closedErrShouldTrip: nil,
-		           halfOpenErrRate: 0,
-		           halfOpenErrShouldTrip: nil,
-		           minSamples: 0,
-		           openTimeout: nil,
-		           openExp: 0,
-		           cloedRefreshTimeout: nil,
-		           closedRefreshExp: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		           beforeFunc: func(t *testing.T,) {
-		               t.Helper()
-		           },
-		           afterFunc: func(t *testing.T,) {
-		               t.Helper()
-		           },
-		       }
-		   }(),
-		*/
+		func() test {
+			var atCount atomic.Value
+			atCount.Store(&count{
+				successes: 10,
+				failures:  1,
+			})
+			halfOpenErrRate := float32(0.5)
+			minSamples := int64(10)
+			return test{
+				name: "the current state change from HalfOpen to Close when the success rate is higher",
+				fields: fields{
+					key:                   "insertRPC",
+					count:                 atCount,
+					tripped:               1,
+					openExp:               time.Now().Add(-100 * time.Second).UnixNano(),
+					halfOpenErrRate:       halfOpenErrRate,
+					halfOpenErrShouldTrip: NewRateTripper(halfOpenErrRate, minSamples),
+					minSamples:            minSamples,
+				},
+				checkFunc: defaultCheckFunc,
+				afterFunc: func(t *testing.T, b *breaker) {
+					t.Helper()
+					if b.tripped != 0 {
+						t.Errorf("state did not change: %d", b.tripped)
+					}
+				},
+			}
+		}(),
+		func() test {
+			var atCount atomic.Value
+			atCount.Store(&count{
+				successes: 1,
+				failures:  10,
+			})
+			halfOpenErrRate := float32(0.5)
+			minSamples := int64(10)
+			return test{
+				name: "the current state do not change from HalfOpen to Close when the success rate is less",
+				fields: fields{
+					key:                   "insertRPC",
+					count:                 atCount,
+					tripped:               1,
+					openExp:               time.Now().Add(-100 * time.Second).UnixNano(),
+					halfOpenErrRate:       halfOpenErrRate,
+					halfOpenErrShouldTrip: NewRateTripper(halfOpenErrRate, minSamples),
+					minSamples:            minSamples,
+				},
+				checkFunc: defaultCheckFunc,
+				afterFunc: func(t *testing.T, b *breaker) {
+					t.Helper()
+					if b.tripped != 1 {
+						t.Errorf("state changed: %d", b.tripped)
+					}
+				},
+			}
+		}(),
 	}
 
 	for _, tc := range tests {
@@ -520,9 +517,6 @@ func Test_breaker_success(t *testing.T) {
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(tt)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(tt)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -541,6 +535,9 @@ func Test_breaker_success(t *testing.T) {
 				openExp:               test.fields.openExp,
 				cloedRefreshTimeout:   test.fields.cloedRefreshTimeout,
 				closedRefreshExp:      test.fields.closedRefreshExp,
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(tt, b)
 			}
 
 			b.success()
