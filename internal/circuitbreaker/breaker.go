@@ -68,7 +68,7 @@ func newBreaker(key string, opts ...BreakerOption) (*breaker, error) {
 // do executes the function given argument when the current breaker state is "Closed" or "Half-Open".
 // If the current breaker state is "Open", this function returns ErrCircuitBreakerOpenState.
 func (b *breaker) do(ctx context.Context, fn func(ctx context.Context) (val interface{}, err error)) (val interface{}, st State, err error) {
-	if st, ok, err := b.isReady(); !ok && err != nil {
+	if st, err := b.isReady(); err != nil {
 		return nil, st, err
 	}
 	val, err = fn(ctx)
@@ -98,20 +98,20 @@ func (b *breaker) do(ctx context.Context, fn func(ctx context.Context) (val inte
 
 // isReady determines the breaker is ready or not.
 // If the current breaker state is "Closed" or "Half-Open", this function returns true.
-func (b *breaker) isReady() (st State, ok bool, err error) {
+func (b *breaker) isReady() (st State, err error) {
 	st = b.currentState()
 	switch st {
 	case StateOpen:
-		return st, false, errors.ErrCircuitBreakerOpenState
+		return st, errors.ErrCircuitBreakerOpenState
 	case StateHalfOpen:
 
 		// For flow control in the "Half-Open" state. It is limited to 50%.
 		total := b.count.Load().(*count).Total()
 		if total != 0 && total%2 == 0 {
-			return st, false, errors.ErrCircuitBreakerHalfOpenFlowLimitation
+			return st, errors.ErrCircuitBreakerHalfOpenFlowLimitation
 		}
 	}
-	return st, true, nil
+	return st, nil
 }
 
 func (b *breaker) success() {
