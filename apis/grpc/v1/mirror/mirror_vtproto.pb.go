@@ -43,7 +43,7 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type MirrorClient interface {
 	// Register is the RPC to register other mirror servers.
-	Register(ctx context.Context, in *payload.Mirror_RegisterRequest, opts ...grpc.CallOption) (*payload.Empty, error)
+	Register(ctx context.Context, in *payload.Mirror_Targets, opts ...grpc.CallOption) (*payload.Mirror_Targets, error)
 	// Advertise is the RPC to advertise other mirror servers.
 	Advertise(ctx context.Context, in *payload.Mirror_Targets, opts ...grpc.CallOption) (*payload.Mirror_Targets, error)
 }
@@ -56,8 +56,8 @@ func NewMirrorClient(cc grpc.ClientConnInterface) MirrorClient {
 	return &mirrorClient{cc}
 }
 
-func (c *mirrorClient) Register(ctx context.Context, in *payload.Mirror_RegisterRequest, opts ...grpc.CallOption) (*payload.Empty, error) {
-	out := new(payload.Empty)
+func (c *mirrorClient) Register(ctx context.Context, in *payload.Mirror_Targets, opts ...grpc.CallOption) (*payload.Mirror_Targets, error) {
+	out := new(payload.Mirror_Targets)
 	err := c.cc.Invoke(ctx, "/mirror.v1.Mirror/Register", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -79,7 +79,7 @@ func (c *mirrorClient) Advertise(ctx context.Context, in *payload.Mirror_Targets
 // for forward compatibility
 type MirrorServer interface {
 	// Register is the RPC to register other mirror servers.
-	Register(context.Context, *payload.Mirror_RegisterRequest) (*payload.Empty, error)
+	Register(context.Context, *payload.Mirror_Targets) (*payload.Mirror_Targets, error)
 	// Advertise is the RPC to advertise other mirror servers.
 	Advertise(context.Context, *payload.Mirror_Targets) (*payload.Mirror_Targets, error)
 	mustEmbedUnimplementedMirrorServer()
@@ -89,7 +89,7 @@ type MirrorServer interface {
 type UnimplementedMirrorServer struct {
 }
 
-func (UnimplementedMirrorServer) Register(context.Context, *payload.Mirror_RegisterRequest) (*payload.Empty, error) {
+func (UnimplementedMirrorServer) Register(context.Context, *payload.Mirror_Targets) (*payload.Mirror_Targets, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Register not implemented")
 }
 func (UnimplementedMirrorServer) Advertise(context.Context, *payload.Mirror_Targets) (*payload.Mirror_Targets, error) {
@@ -109,7 +109,7 @@ func RegisterMirrorServer(s grpc.ServiceRegistrar, srv MirrorServer) {
 }
 
 func _Mirror_Register_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(payload.Mirror_RegisterRequest)
+	in := new(payload.Mirror_Targets)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -121,7 +121,7 @@ func _Mirror_Register_Handler(srv interface{}, ctx context.Context, dec func(int
 		FullMethod: "/mirror.v1.Mirror/Register",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MirrorServer).Register(ctx, req.(*payload.Mirror_RegisterRequest))
+		return srv.(MirrorServer).Register(ctx, req.(*payload.Mirror_Targets))
 	}
 	return interceptor(ctx, in, info, handler)
 }

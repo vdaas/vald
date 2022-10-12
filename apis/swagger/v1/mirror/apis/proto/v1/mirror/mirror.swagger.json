@@ -52,7 +52,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/v1Empty"
+              "$ref": "#/definitions/MirrorTargets"
             }
           },
           "default": {
@@ -68,7 +68,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/MirrorRegisterRequest"
+              "$ref": "#/definitions/MirrorTargets"
             }
           }
         ],
@@ -79,16 +79,6 @@
     }
   },
   "definitions": {
-    "MirrorRegisterRequest": {
-      "type": "object",
-      "properties": {
-        "targets": {
-          "$ref": "#/definitions/MirrorTargets",
-          "description": "The mirror server targets."
-        }
-      },
-      "description": "Represent the request to register mirror servers."
-    },
     "MirrorTargets": {
       "type": "object",
       "properties": {
@@ -137,10 +127,6 @@
           }
         }
       }
-    },
-    "v1Empty": {
-      "type": "object",
-      "description": "Represent an empty message."
     },
     "v1MirrorTarget": {
       "type": "object",
