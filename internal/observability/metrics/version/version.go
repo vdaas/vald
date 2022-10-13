@@ -22,6 +22,13 @@ import (
 	"github.com/vdaas/vald/internal/info"
 	"github.com/vdaas/vald/internal/observability/attribute"
 	"github.com/vdaas/vald/internal/observability/metrics"
+	"go.opentelemetry.io/otel/sdk/metric/aggregation"
+	"go.opentelemetry.io/otel/sdk/metric/view"
+)
+
+const (
+	name        = "app_version_info"
+	description = "app version info"
 )
 
 var reps = strings.NewReplacer("_", " ", ",omitempty", "")
@@ -69,10 +76,24 @@ func labelKVs(labels ...string) map[string]string {
 	return info
 }
 
+func (v *version) View() ([]*metrics.View, error) {
+	otlv, err := view.New(
+		view.MatchInstrumentName(name),
+		view.WithSetDescription(description),
+		view.WithSetAggregation(aggregation.LastValue{}),
+	)
+	if err != nil {
+		return nil, err
+	}
+	return []*metrics.View{
+		&otlv,
+	}, nil
+}
+
 func (v *version) Register(m metrics.Meter) error {
 	info, err := m.AsyncInt64().Gauge(
-		"app_version_info",
-		metrics.WithDescription("app version info"),
+		name,
+		metrics.WithDescription(description),
 		metrics.WithUnit(metrics.Dimensionless),
 	)
 	if err != nil {

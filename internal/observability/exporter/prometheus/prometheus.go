@@ -20,18 +20,15 @@ import (
 	"sync"
 	"time"
 
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/observability/exporter"
-	"go.opentelemetry.io/otel/exporters/prometheus"
+	"github.com/vdaas/vald/internal/observability/metrics"
+	otelprom "go.opentelemetry.io/otel/exporters/prometheus"
 	"go.opentelemetry.io/otel/metric/global"
-	"go.opentelemetry.io/otel/sdk/metric/aggregator/histogram"
-	"go.opentelemetry.io/otel/sdk/metric/controller/basic"
-	"go.opentelemetry.io/otel/sdk/metric/export/aggregation"
-	processor "go.opentelemetry.io/otel/sdk/metric/processor/basic"
-	"go.opentelemetry.io/otel/sdk/metric/selector/simple"
-	"go.opentelemetry.io/otel/sdk/resource"
-	semconv "go.opentelemetry.io/otel/semconv/v1.12.0"
+	"go.opentelemetry.io/otel/sdk/metric"
 )
 
 type Prometheus interface {
@@ -40,7 +37,9 @@ type Prometheus interface {
 }
 
 type exp struct {
-	exporter *prometheus.Exporter
+	exporter otelprom.Exporter
+	views    []metrics.View
+	registry *prometheus.Registry
 
 	namespace          string
 	endpoint           string
@@ -68,33 +67,16 @@ func New(opts ...Option) (Prometheus, error) {
 			log.Warn(oerr)
 		}
 	}
+	e.exporter = otelprom.New()
 
-	// Create controller for prometheus exporter.
-	controller := basic.New(
-		processor.NewFactory(
-			simple.NewWithHistogramDistribution(
-				histogram.WithExplicitBoundaries(e.histogramBoundarie),
-			),
-			aggregation.CumulativeTemporalitySelector(),
-			processor.WithMemory(e.inmemoryEnabled),
+	// If implemented in the Start function, registration of global provider will be delayed, and other internal libraries may use default global provider before registration.
+	global.SetMeterProvider(metric.NewMeterProvider(
+		metric.WithReader(
+			e.exporter,
+			e.views...,
 		),
-		basic.WithCollectPeriod(e.collectInterval),
-		basic.WithCollectTimeout(e.collectTimeout),
-		basic.WithResource(resource.NewWithAttributes(
-			semconv.SchemaURL,
-			semconv.ServiceNamespaceKey.String(e.namespace),
-		)),
-	)
-
-	cfg := prometheus.Config{
-		DefaultHistogramBoundaries: e.histogramBoundarie,
-	}
-
-	var err error
-	e.exporter, err = prometheus.New(cfg, controller)
-	if err != nil {
-		return nil, err
-	}
+	))
+	e.registry = prometheus.NewRegistry()
 
 	return e, nil
 }
@@ -111,17 +93,23 @@ func Init(opts ...Option) (Prometheus, error) {
 }
 
 func (e *exp) Start(ctx context.Context) error {
-	global.SetMeterProvider(e.exporter.MeterProvider())
-	return e.exporter.Controller().Start(ctx)
+	if err := e.registry.Register(e.exporter.Collector); err != nil {
+		return err
+	}
+	return nil
 }
 
 func (e *exp) Stop(ctx context.Context) error {
-	return e.exporter.Controller().Stop(ctx)
+	if err := e.exporter.Shutdown(ctx); err != nil {
+		return err
+	}
+	e.registry.Unregister(e.exporter.Collector)
+	return nil
 }
 
 func (e *exp) NewHTTPHandler() http.Handler {
 	mux := http.NewServeMux()
-	mux.Handle(e.endpoint, e.exporter)
+	mux.Handle(e.endpoint, promhttp.HandlerFor(e.registry, promhttp.HandlerOpts{}))
 	return mux
 }
 

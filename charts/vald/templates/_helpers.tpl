@@ -688,9 +688,7 @@ trace:
 prometheus:
   {{- if .Values.prometheus }}
   enabled: {{ default .default.prometheus.enabled .Values.prometheus.enabled }}
-  collect_interval: {{ default .default.prometheus.collect_interval .Values.prometheus.collect_interval | quote }}
-  collect_timeout: {{ default .default.prometheus.collect_timeout .Values.prometheus.collect_timeout | quote }}
-  enable_in_memory_mode: {{ default .default.prometheus.enable_in_memory_mode .Values.prometheus.enable_in_memory_mode }}
+  endpoint: {{ default .default.prometheus.endpoint .Values.prometheus.endpoint | quote }}
   {{- else }}
   {{- toYaml .default.prometheus | nindent 2 }}
   {{- end }}

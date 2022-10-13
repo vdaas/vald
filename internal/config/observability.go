@@ -42,12 +42,9 @@ type Metrics struct {
 
 // Prometheus represents the configuration for the prometheus.
 type Prometheus struct {
-	Enabled            bool   `json:"enabled"               yaml:"enabled"`
-	Endpoint           string `json:"endpoint"              yaml:"endpoint"`
-	Namespace          string `json:"namespace"             yaml:"namespace"`
-	CollectInterval    string `json:"collect_interval"      yaml:"collect_interval"`
-	CollectTimeout     string `json:"collect_timeout"       yaml:"collect_timeout"`
-	EnableInMemoryMode bool   `json:"enable_in_memory_mode" yaml:"enable_in_memory_mode"`
+	Enabled   bool   `json:"enabled"   yaml:"enabled"`
+	Endpoint  string `json:"endpoint"  yaml:"endpoint"`
+	Namespace string `json:"namespace" yaml:"namespace"`
 }
 
 // Jaeger represents the configuration for the jaeger.
@@ -85,8 +82,6 @@ func (o *Observability) Bind() *Observability {
 	if o.Prometheus != nil {
 		o.Prometheus.Endpoint = GetActualValue(o.Prometheus.Endpoint)
 		o.Prometheus.Namespace = GetActualValue(o.Prometheus.Namespace)
-		o.Prometheus.CollectInterval = GetActualValue(o.Prometheus.CollectInterval)
-		o.Prometheus.CollectTimeout = GetActualValue(o.Prometheus.CollectTimeout)
 	} else {
 		o.Prometheus = new(Prometheus)
 	}

@@ -3,7 +3,7 @@ Vald
 
 This is a Helm chart to install Vald components.
 
-Current chart version is `v1.5.6`
+Current chart version is `v1.6.1`
 
 Table of Contents
 ---
@@ -58,7 +58,7 @@ Configuration
 | agent.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution | list | `[]` | pod anti-affinity required scheduling terms |
 | agent.annotations | object | `{}` | deployment annotations |
 | agent.enabled | bool | `true` | agent enabled |
-| agent.env | list | `[]` | environment variables |
+| agent.env | list | `[{"name":"MY_POD_NAMESPACE","valueFrom":{"fieldRef":{"fieldPath":"metadata.namespace"}}}]` | environment variables |
 | agent.externalTrafficPolicy | string | `""` | external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local |
 | agent.hpa.enabled | bool | `false` | HPA enabled |
 | agent.hpa.targetCPUUtilizationPercentage | int | `80` | HPA CPU utilization percentage |
@@ -205,7 +205,7 @@ Configuration
 | agent.sidecar.config.restore_backoff_enabled | bool | `false` | restore backoff enabled |
 | agent.sidecar.config.watch_enabled | bool | `true` | auto backup triggered by file changes is enabled |
 | agent.sidecar.enabled | bool | `false` | sidecar enabled |
-| agent.sidecar.env | list | `[{"name":"MY_POD_NAME","valueFrom":{"fieldRef":{"fieldPath":"metadata.name"}}},{"name":"AWS_ACCESS_KEY","valueFrom":{"secretKeyRef":{"key":"access-key","name":"aws-secret"}}},{"name":"AWS_SECRET_ACCESS_KEY","valueFrom":{"secretKeyRef":{"key":"secret-access-key","name":"aws-secret"}}}]` | environment variables |
+| agent.sidecar.env | list | `[{"name":"MY_POD_NAME","valueFrom":{"fieldRef":{"fieldPath":"metadata.name"}}},{"name":"MY_POD_NAMESPACE","valueFrom":{"fieldRef":{"fieldPath":"metadata.namespace"}}},{"name":"AWS_ACCESS_KEY","valueFrom":{"secretKeyRef":{"key":"access-key","name":"aws-secret"}}},{"name":"AWS_SECRET_ACCESS_KEY","valueFrom":{"secretKeyRef":{"key":"secret-access-key","name":"aws-secret"}}}]` | environment variables |
 | agent.sidecar.image.pullPolicy | string | `"Always"` | image pull policy |
 | agent.sidecar.image.repository | string | `"vdaas/vald-agent-sidecar"` | image repository |
 | agent.sidecar.image.tag | string | `""` | image tag (overrides defaults.image.tag) |
@@ -259,6 +259,7 @@ Configuration
 | defaults.grpc.client.dial_option.initial_connection_window_size | int | `0` | gRPC client dial option initial connection window size |
 | defaults.grpc.client.dial_option.initial_window_size | int | `0` | gRPC client dial option initial window size |
 | defaults.grpc.client.dial_option.insecure | bool | `true` | gRPC client dial option insecure enabled |
+| defaults.grpc.client.dial_option.interceptors | list | `[]` | gRPC client interceptors |
 | defaults.grpc.client.dial_option.keepalive.permit_without_stream | bool | `true` | gRPC client keep alive permit without stream |
 | defaults.grpc.client.dial_option.keepalive.time | string | `"120s"` | gRPC client keep alive time |
 | defaults.grpc.client.dial_option.keepalive.timeout | string | `"30s"` | gRPC client keep alive timeout |
@@ -293,29 +294,32 @@ Configuration
 | defaults.grpc.client.tls.enabled | bool | `false` | TLS enabled |
 | defaults.grpc.client.tls.insecure_skip_verify | bool | `false` | enable/disable skip SSL certificate verification |
 | defaults.grpc.client.tls.key | string | `"/path/to/key"` | TLS key path |
-| defaults.image.tag | string | `"v1.5.6"` | docker image tag |
+| defaults.image.tag | string | `"v1.6.1"` | docker image tag |
 | defaults.logging.format | string | `"raw"` | logging format. logging format must be `raw` or `json` |
 | defaults.logging.level | string | `"debug"` | logging level. logging level must be `debug`, `info`, `warn`, `error` or `fatal`. |
 | defaults.logging.logger | string | `"glg"` | logger name. currently logger must be `glg` or `zap`. |
-| defaults.observability.collector.duration | string | `"5s"` | metrics collect duration. if it is set as 5s, enabled metrics are collected every 5 seconds. |
-| defaults.observability.collector.metrics.enable_cgo | bool | `true` | CGO metrics enabled |
-| defaults.observability.collector.metrics.enable_goroutine | bool | `true` | goroutine metrics enabled |
-| defaults.observability.collector.metrics.enable_memory | bool | `true` | memory metrics enabled |
-| defaults.observability.collector.metrics.enable_version_info | bool | `true` | version info metrics enabled |
-| defaults.observability.collector.metrics.version_info_labels | list | `["vald_version","server_name","git_commit","build_time","go_version","go_os","go_arch","ngt_version"]` | enabled label names of version info |
 | defaults.observability.enabled | bool | `false` | observability features enabled |
 | defaults.observability.jaeger.agent_endpoint | string | `""` | Jaeger agent endpoint |
-| defaults.observability.jaeger.buffer_max_count | int | `65000` | Jaeger buffer max count |
+| defaults.observability.jaeger.agent_max_packet_size | int | `65000` | Jaeger Agent max packet size |
+| defaults.observability.jaeger.agent_reconnect_interval | string | `"30s"` | Jaeger Agent reconnect interval |
+| defaults.observability.jaeger.batch_timeout | string | `"5s"` | Jaeger export batch timeout |
 | defaults.observability.jaeger.collector_endpoint | string | `""` | Jaeger collector endpoint |
 | defaults.observability.jaeger.enabled | bool | `false` | Jaeger exporter enabled |
+| defaults.observability.jaeger.export_timeout | string | `"5s"` | Jaeger export timeout |
+| defaults.observability.jaeger.max_export_batch_size | int | `512` | Jaeger max export batch size |
+| defaults.observability.jaeger.max_queue_size | int | `2048` | Jaeger max queue size |
 | defaults.observability.jaeger.password | string | `""` | Jaeger password |
 | defaults.observability.jaeger.service_name | string | `"vald"` | Jaeger service name |
 | defaults.observability.jaeger.username | string | `""` | Jaeger username |
+| defaults.observability.metrics.enable_cgo | bool | `true` | CGO metrics enabled |
+| defaults.observability.metrics.enable_goroutine | bool | `true` | goroutine metrics enabled |
+| defaults.observability.metrics.enable_memory | bool | `true` | memory metrics enabled |
+| defaults.observability.metrics.enable_version_info | bool | `true` | version info metrics enabled |
+| defaults.observability.metrics.version_info_labels | list | `["vald_version","server_name","git_commit","build_time","go_version","go_os","go_arch","ngt_version"]` | enabled label names of version info |
 | defaults.observability.prometheus.enabled | bool | `false` | Prometheus exporter enabled |
 | defaults.observability.prometheus.endpoint | string | `"/metrics"` | Prometheus exporter endpoint |
-| defaults.observability.prometheus.namespace | string | `"vald"` | prefix of exported metrics name |
+| defaults.observability.prometheus.namespace | string | `"_MY_POD_NAMESPACE_"` | service namespace for metrics |
 | defaults.observability.trace.enabled | bool | `false` | trace enabled |
-| defaults.observability.trace.sampling_rate | float | `1` | trace sampling rate. must be between 0.0 to 1.0. |
 | defaults.server_config.full_shutdown_duration | string | `"600s"` | server full shutdown duration |
 | defaults.server_config.healths.liveness.enabled | bool | `true` | liveness server enabled |
 | defaults.server_config.healths.liveness.host | string | `"0.0.0.0"` | liveness server host |
@@ -598,7 +602,7 @@ Configuration
 | gateway.filter.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution | list | `[]` | pod anti-affinity required scheduling terms |
 | gateway.filter.annotations | object | `{}` | deployment annotations |
 | gateway.filter.enabled | bool | `false` | gateway enabled |
-| gateway.filter.env | list | `[]` | environment variables |
+| gateway.filter.env | list | `[{"name":"MY_POD_NAMESPACE","valueFrom":{"fieldRef":{"fieldPath":"metadata.namespace"}}}]` | environment variables |
 | gateway.filter.externalTrafficPolicy | string | `""` | external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local |
 | gateway.filter.gateway_config.egress_filter | object | `{"client":{},"distance_filters":[],"object_filters":[]}` | gRPC client config for egress filter |
 | gateway.filter.gateway_config.egress_filter.client | object | `{}` | gRPC client config for egress filter (overrides defaults.grpc.client) |

@@ -13,7 +13,6 @@
 // limitations under the License.
 package observability
 
-// TODO: Fix observability-v2 to observability
 import (
 	"context"
 	"reflect"
@@ -26,6 +25,7 @@ import (
 	"github.com/vdaas/vald/internal/observability/exporter/jaeger"
 	"github.com/vdaas/vald/internal/observability/exporter/prometheus"
 	"github.com/vdaas/vald/internal/observability/metrics"
+	"github.com/vdaas/vald/internal/observability/metrics/grpc"
 	"github.com/vdaas/vald/internal/observability/metrics/mem/index"
 	"github.com/vdaas/vald/internal/observability/metrics/runtime/cgo"
 	"github.com/vdaas/vald/internal/observability/metrics/runtime/goroutine"
@@ -46,22 +46,23 @@ type observability struct {
 	metrics   []metrics.Metric
 }
 
-func NewWithConfig(cfg *config.Observability, metrics ...metrics.Metric) (Observability, error) {
+func NewWithConfig(cfg *config.Observability, ms ...metrics.Metric) (Observability, error) {
 	opts := make([]Option, 0)
 	exps := make([]exporter.Exporter, 0)
 
 	if cfg.Metrics != nil {
+		ms = append(ms, grpc.New())
 		if cfg.Metrics.EnableCGO {
-			metrics = append(metrics, cgo.New())
+			ms = append(ms, cgo.New())
 		}
 		if cfg.Metrics.EnableGoroutine {
-			metrics = append(metrics, goroutine.New())
+			ms = append(ms, goroutine.New())
 		}
 		if cfg.Metrics.EnableMemory {
-			metrics = append(metrics, index.New())
+			ms = append(ms, index.New())
 		}
 		if cfg.Metrics.EnableVersionInfo {
-			metrics = append(metrics, version.New(cfg.Metrics.VersionInfoLabels...))
+			ms = append(ms, version.New(cfg.Metrics.VersionInfoLabels...))
 		}
 	}
 
@@ -74,12 +75,14 @@ func NewWithConfig(cfg *config.Observability, metrics ...metrics.Metric) (Observ
 	}
 
 	if cfg.Prometheus.Enabled {
+		views := make([]metrics.Viewer, 0, len(ms))
+		for _, m := range ms {
+			views = append(views, m)
+		}
 		prom, err := prometheus.Init(
 			prometheus.WithEndpoint(cfg.Prometheus.Endpoint),
 			prometheus.WithNamespace(cfg.Prometheus.Namespace),
-			prometheus.WithCollectInterval(cfg.Prometheus.CollectInterval),
-			prometheus.WithCollectTimeout(cfg.Prometheus.CollectTimeout),
-			prometheus.WithInMemoty(cfg.Prometheus.EnableInMemoryMode),
+			prometheus.WithView(views...),
 		)
 		if err != nil {
 			return nil, err
@@ -111,7 +114,7 @@ func NewWithConfig(cfg *config.Observability, metrics ...metrics.Metric) (Observ
 	opts = append(
 		opts,
 		WithExporters(exps...),
-		WithMetrics(metrics...),
+		WithMetrics(ms...),
 	)
 
 	return New(opts...)
@@ -152,8 +155,10 @@ func (o *observability) PreStart(ctx context.Context) error {
 		}
 	}
 
-	if err := o.tracer.Start(ctx); err != nil {
-		return err
+	if o.tracer != nil {
+		if err := o.tracer.Start(ctx); err != nil {
+			return err
+		}
 	}
 	return nil
 }

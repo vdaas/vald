@@ -18,6 +18,19 @@ import (
 
 	"github.com/vdaas/vald/internal/observability/metrics"
 	"github.com/vdaas/vald/pkg/manager/index/service"
+	"go.opentelemetry.io/otel/sdk/metric/aggregation"
+	"go.opentelemetry.io/otel/sdk/metric/view"
+)
+
+const (
+	uuidCountMetricsName        = "indexer_uuid_count"
+	uuidCountMetricsDescription = "UUID count"
+
+	uncommittedUUIDCountMetricsName        = "indexer_uncommitted_uuid_count"
+	uncommittedUUIDCountMetricsDescription = "Uncommitted UUID count"
+
+	isIndexingMetricsName        = "indexer_is_indexing"
+	isIndexingMetricsDescription = "Currently indexing or not"
 )
 
 type indexerMetrics struct {
@@ -30,10 +43,45 @@ func New(i service.Indexer) metrics.Metric {
 	}
 }
 
+func (im *indexerMetrics) View() ([]*metrics.View, error) {
+	uuidCount, err := view.New(
+		view.MatchInstrumentName(uuidCountMetricsName),
+		view.WithSetDescription(uuidCountMetricsDescription),
+		view.WithSetAggregation(aggregation.LastValue{}),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	uncommittedUUIDCount, err := view.New(
+		view.MatchInstrumentName(uncommittedUUIDCountMetricsName),
+		view.WithSetDescription(uncommittedUUIDCountMetricsDescription),
+		view.WithSetAggregation(aggregation.LastValue{}),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	isIndexing, err := view.New(
+		view.MatchInstrumentName(isIndexingMetricsName),
+		view.WithSetDescription(isIndexingMetricsDescription),
+		view.WithSetAggregation(aggregation.LastValue{}),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return []*metrics.View{
+		&uuidCount,
+		&uncommittedUUIDCount,
+		&isIndexing,
+	}, nil
+}
+
 func (im *indexerMetrics) Register(m metrics.Meter) error {
 	uuidCount, err := m.AsyncInt64().Gauge(
-		"indexer_uuid_count",
-		metrics.WithDescription("UUID count"),
+		uuidCountMetricsName,
+		metrics.WithDescription(uuidCountMetricsDescription),
 		metrics.WithUnit(metrics.Dimensionless),
 	)
 	if err != nil {
@@ -41,8 +89,8 @@ func (im *indexerMetrics) Register(m metrics.Meter) error {
 	}
 
 	uncommittedUUIDCount, err := m.AsyncInt64().Gauge(
-		"indexer_uncommitted_uuid_count",
-		metrics.WithDescription("uncommitted UUID count"),
+		uncommittedUUIDCountMetricsName,
+		metrics.WithDescription(uncommittedUUIDCountMetricsDescription),
 		metrics.WithUnit(metrics.Dimensionless),
 	)
 	if err != nil {
@@ -50,8 +98,8 @@ func (im *indexerMetrics) Register(m metrics.Meter) error {
 	}
 
 	isIndexing, err := m.AsyncInt64().Gauge(
-		"indexer_is_indexing",
-		metrics.WithDescription("currently indexing or not"),
+		isIndexingMetricsName,
+		metrics.WithDescription(isIndexingMetricsDescription),
 		metrics.WithUnit(metrics.Dimensionless),
 	)
 	if err != nil {
