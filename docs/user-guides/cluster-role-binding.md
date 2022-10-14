@@ -17,7 +17,7 @@ The following manifest will be deployed.
 
 These configurations allow the service account `discoverer` to access different resources in the Kubernetes cluster.
 
-### Cluster role settings
+### Cluster role settings for Vald Discoverer
 
 By looking at the [cluster role settings](https://github.com/vdaas/vald/blob/main/k8s/discoverer/clusterrole.yaml), the access right of the following resources are granted to the cluster role `discoverer`.
 
@@ -64,7 +64,7 @@ rules:
 
 All of these rules are required to retrieve Node and Pod resource usage from [kube-apiserver](https://kubernetes.io/docs/reference/command-line-tools-reference/kube-apiserver/) and also used to discover new Vald Agent Pods or Nodes created on the cluster.
 
-### Cluster role binding settings
+### Cluster role binding settings for Vald Discoverer
 
 The cluster role binding settings bind the cluster role `discoverer` described in the previous section to the service account `vald` according to the [configuration file](https://github.com/vdaas/vald/blob/main/k8s/discoverer/clusterrolebinding.yaml).
 
