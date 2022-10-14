@@ -1187,10 +1187,7 @@ func Test_server_CreateAndSaveIndex(t *testing.T) {
 	tests := []test{
 		func() test {
 			insertCnt := 1
-			ir, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, insertCnt, dim, defaultInsertConfig)
-			if err != nil {
-				t.Error(err)
-			}
+			var ir *payload.Insert_MultiRequest
 
 			return test{
 				name: "Equivalence Class Testing case 1.1: success to create and save 1 uncommitted insert index",
@@ -1207,6 +1204,10 @@ func Test_server_CreateAndSaveIndex(t *testing.T) {
 				},
 				beforeFunc: func(t *testing.T, ctx context.Context, s Server, n service.NGT, test test) {
 					t.Helper()
+					var err error
+					if ir, err = request.GenMultiInsertReq(request.Float, vector.Gaussian, insertCnt, dim, defaultInsertConfig); err != nil {
+						t.Error(err)
+					}
 					if _, err := s.MultiInsert(ctx, ir); err != nil {
 						t.Error(err)
 					}
@@ -1224,10 +1225,7 @@ func Test_server_CreateAndSaveIndex(t *testing.T) {
 		}(),
 		func() test {
 			insertCnt := 100
-			ir, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, insertCnt, dim, defaultInsertConfig)
-			if err != nil {
-				t.Error(err)
-			}
+			var ir *payload.Insert_MultiRequest
 
 			return test{
 				name: "Equivalence Class Testing case 1.2: success to create and save 100 uncommitted insert index",
@@ -1244,6 +1242,10 @@ func Test_server_CreateAndSaveIndex(t *testing.T) {
 				},
 				beforeFunc: func(t *testing.T, ctx context.Context, s Server, n service.NGT, test test) {
 					t.Helper()
+					var err error
+					if ir, err = request.GenMultiInsertReq(request.Float, vector.Gaussian, insertCnt, dim, defaultInsertConfig); err != nil {
+						t.Error(err)
+					}
 					if _, err := s.MultiInsert(ctx, ir); err != nil {
 						t.Error(err)
 					}
@@ -1261,11 +1263,7 @@ func Test_server_CreateAndSaveIndex(t *testing.T) {
 		}(),
 		func() test {
 			insertCnt := 100
-			ir, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, insertCnt, dim, defaultInsertConfig)
-			if err != nil {
-				t.Error(err)
-			}
-			removeID := ir.GetRequests()[0].GetVector().GetId()
+			var ir *payload.Insert_MultiRequest
 
 			return test{
 				name: "Equivalence Class Testing case 2.1: success to create and save 1 uncommitted delete index",
@@ -1282,6 +1280,11 @@ func Test_server_CreateAndSaveIndex(t *testing.T) {
 				},
 				beforeFunc: func(t *testing.T, ctx context.Context, s Server, n service.NGT, test test) {
 					t.Helper()
+					var err error
+					if ir, err = request.GenMultiInsertReq(request.Float, vector.Gaussian, insertCnt, dim, defaultInsertConfig); err != nil {
+						t.Error(err)
+					}
+
 					// insert 100 request
 					if _, err := s.MultiInsert(ctx, ir); err != nil {
 						t.Error(err)
@@ -1295,7 +1298,7 @@ func Test_server_CreateAndSaveIndex(t *testing.T) {
 					// delete 1 request
 					if _, err := s.Remove(ctx, &payload.Remove_Request{
 						Id: &payload.Object_ID{
-							Id: removeID,
+							Id: ir.GetRequests()[0].GetVector().GetId(),
 						},
 					}); err != nil {
 						t.Error(err)
@@ -1316,20 +1319,7 @@ func Test_server_CreateAndSaveIndex(t *testing.T) {
 		}(),
 		func() test {
 			insertCnt := 200
-			ir, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, insertCnt, dim, defaultInsertConfig)
-			if err != nil {
-				t.Error(err)
-			}
-
-			// remove requests
-			rr := make([]*payload.Remove_Request, 100)
-			for i := 0; i < 100; i++ {
-				rr[i] = &payload.Remove_Request{
-					Id: &payload.Object_ID{
-						Id: ir.GetRequests()[i].GetVector().GetId(),
-					},
-				}
-			}
+			var ir *payload.Insert_MultiRequest
 
 			return test{
 				name: "Equivalence Class Testing case 2.2: success to create and save 100 uncommitted delete index",
@@ -1346,6 +1336,21 @@ func Test_server_CreateAndSaveIndex(t *testing.T) {
 				},
 				beforeFunc: func(t *testing.T, ctx context.Context, s Server, n service.NGT, test test) {
 					t.Helper()
+					var err error
+					if ir, err = request.GenMultiInsertReq(request.Float, vector.Gaussian, insertCnt, dim, defaultInsertConfig); err != nil {
+						t.Error(err)
+					}
+
+					// remove requests
+					rr := make([]*payload.Remove_Request, 100)
+					for i := 0; i < 100; i++ {
+						rr[i] = &payload.Remove_Request{
+							Id: &payload.Object_ID{
+								Id: ir.GetRequests()[i].GetVector().GetId(),
+							},
+						}
+					}
+
 					// insert 200 request
 					if _, err := s.MultiInsert(ctx, ir); err != nil {
 						t.Error(err)
@@ -1378,17 +1383,8 @@ func Test_server_CreateAndSaveIndex(t *testing.T) {
 		}(),
 		func() test {
 			insertCnt := 1
-			ir, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, insertCnt, dim, defaultInsertConfig)
-			if err != nil {
-				t.Error(err)
-			}
-
-			updateID := ir.GetRequests()[0].GetVector().GetId()
-			updateVecs, err := vector.GenF32Vec(vector.Gaussian, 1, dim)
-			if err != nil {
-				t.Error(err)
-			}
-			updateVec := updateVecs[0]
+			var ir *payload.Insert_MultiRequest
+			var updateVec []float32 // the updated vector
 
 			return test{
 				name: "Equivalence Class Testing case 3.1: success to create and save 1 uncommitted update index",
@@ -1405,6 +1401,18 @@ func Test_server_CreateAndSaveIndex(t *testing.T) {
 				},
 				beforeFunc: func(t *testing.T, ctx context.Context, s Server, n service.NGT, test test) {
 					t.Helper()
+					var err error
+					if ir, err = request.GenMultiInsertReq(request.Float, vector.Gaussian, insertCnt, dim, defaultInsertConfig); err != nil {
+						t.Error(err)
+					}
+
+					updateID := ir.GetRequests()[0].GetVector().GetId()
+					updateVecs, err := vector.GenF32Vec(vector.Gaussian, 1, dim)
+					if err != nil {
+						t.Error(err)
+					}
+					updateVec = updateVecs[0]
+
 					// insert 1 request
 					if _, err := s.MultiInsert(ctx, ir); err != nil {
 						t.Error(err)
@@ -1441,27 +1449,9 @@ func Test_server_CreateAndSaveIndex(t *testing.T) {
 		}(),
 		func() test {
 			insertCnt := 100
-			ir, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, insertCnt, dim, defaultInsertConfig)
-			if err != nil {
-				t.Error(err)
-			}
-
-			// generate another set of vectors for update
-			updateVecs, err := vector.GenF32Vec(vector.Gaussian, insertCnt, dim)
-			if err != nil {
-				t.Error(err)
-			}
-
-			// generate update requests for insert
+			var ir *payload.Insert_MultiRequest
+			var updateVecs [][]float32
 			updateReqs := make([]*payload.Update_Request, insertCnt)
-			for i := range ir.GetRequests() {
-				updateReqs[i] = &payload.Update_Request{
-					Vector: &payload.Object_Vector{
-						Id:     ir.GetRequests()[i].GetVector().GetId(),
-						Vector: updateVecs[i],
-					},
-				}
-			}
 
 			return test{
 				name: "Equivalence Class Testing case 3.2: success to create and save 100 uncommitted update index",
@@ -1478,6 +1468,27 @@ func Test_server_CreateAndSaveIndex(t *testing.T) {
 				},
 				beforeFunc: func(t *testing.T, ctx context.Context, s Server, n service.NGT, test test) {
 					t.Helper()
+					var err error
+					if ir, err = request.GenMultiInsertReq(request.Float, vector.Gaussian, insertCnt, dim, defaultInsertConfig); err != nil {
+						t.Error(err)
+					}
+
+					// generate another set of vectors for update
+					updateVecs, err = vector.GenF32Vec(vector.Gaussian, insertCnt, dim)
+					if err != nil {
+						t.Error(err)
+					}
+
+					// generate update requests for insert
+					for i := range ir.GetRequests() {
+						updateReqs[i] = &payload.Update_Request{
+							Vector: &payload.Object_Vector{
+								Id:     ir.GetRequests()[i].GetVector().GetId(),
+								Vector: updateVecs[i],
+							},
+						}
+					}
+
 					// insert 100 request
 					if _, err := s.MultiInsert(ctx, ir); err != nil {
 						t.Error(err)
@@ -1571,10 +1582,7 @@ func Test_server_CreateAndSaveIndex(t *testing.T) {
 		}(),
 		func() test {
 			insertCnt := 100
-			ir, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, insertCnt, dim, defaultInsertConfig)
-			if err != nil {
-				t.Error(err)
-			}
+			var ir *payload.Insert_MultiRequest
 
 			return test{
 				name: "Decision Table Testing case 1.1: success to create and save 100 index with in-memory mode",
@@ -1593,6 +1601,10 @@ func Test_server_CreateAndSaveIndex(t *testing.T) {
 				},
 				beforeFunc: func(t *testing.T, ctx context.Context, s Server, n service.NGT, test test) {
 					t.Helper()
+					var err error
+					if ir, err = request.GenMultiInsertReq(request.Float, vector.Gaussian, insertCnt, dim, defaultInsertConfig); err != nil {
+						t.Error(err)
+					}
 					if _, err := s.MultiInsert(ctx, ir); err != nil {
 						t.Error(err)
 					}
@@ -1618,16 +1630,14 @@ func Test_server_CreateAndSaveIndex(t *testing.T) {
 			}
 		}(),
 		func() test {
-			irs, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, 1, dim, nil)
-			if err != nil {
-				t.Error(err)
-			}
+			insertCnt := 1
+			var irs *payload.Insert_MultiRequest
 
 			return test{
 				name: "Decision Table Testing case 2.1: success to create and save 1 inserted index with copy-on-write enabled",
 				args: args{
 					c: &payload.Control_CreateIndexRequest{
-						PoolSize: 1,
+						PoolSize: uint32(insertCnt),
 					},
 				},
 				fields: fields{
@@ -1637,6 +1647,11 @@ func Test_server_CreateAndSaveIndex(t *testing.T) {
 					indexPath: mkdirTemp(),
 				},
 				beforeFunc: func(t *testing.T, ctx context.Context, s Server, n service.NGT, test test) {
+					t.Helper()
+					var err error
+					if irs, err = request.GenMultiInsertReq(request.Float, vector.Gaussian, insertCnt, dim, defaultInsertConfig); err != nil {
+						t.Error(err)
+					}
 					if _, err := s.Insert(ctx, irs.Requests[0]); err != nil {
 						t.Error(err)
 					}
@@ -1654,10 +1669,7 @@ func Test_server_CreateAndSaveIndex(t *testing.T) {
 		}(),
 		func() test {
 			insertCnt := 100
-			irs, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, insertCnt, dim, nil)
-			if err != nil {
-				t.Error(err)
-			}
+			var irs *payload.Insert_MultiRequest
 
 			return test{
 				name: "Decision Table Testing case 2.2: success to create and save 100 inserted index with copy-on-write enabled",
@@ -1673,6 +1685,11 @@ func Test_server_CreateAndSaveIndex(t *testing.T) {
 					indexPath: mkdirTemp(),
 				},
 				beforeFunc: func(t *testing.T, ctx context.Context, s Server, n service.NGT, test test) {
+					t.Helper()
+					var err error
+					if irs, err = request.GenMultiInsertReq(request.Float, vector.Gaussian, insertCnt, dim, defaultInsertConfig); err != nil {
+						t.Error(err)
+					}
 					if _, err := s.MultiInsert(ctx, irs); err != nil {
 						t.Error(err)
 					}
@@ -1690,10 +1707,7 @@ func Test_server_CreateAndSaveIndex(t *testing.T) {
 		}(),
 		func() test {
 			insertCnt := 100
-			irs, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, insertCnt, dim, nil)
-			if err != nil {
-				t.Error(err)
-			}
+			var irs *payload.Insert_MultiRequest
 
 			return test{
 				name: "Decision Table Testing case 3.1: success to create and save index with poolSize > uncommitted index count",
@@ -1709,6 +1723,11 @@ func Test_server_CreateAndSaveIndex(t *testing.T) {
 					indexPath: mkdirTemp(),
 				},
 				beforeFunc: func(t *testing.T, ctx context.Context, s Server, n service.NGT, test test) {
+					t.Helper()
+					var err error
+					if irs, err = request.GenMultiInsertReq(request.Float, vector.Gaussian, insertCnt, dim, defaultInsertConfig); err != nil {
+						t.Error(err)
+					}
 					if _, err := s.MultiInsert(ctx, irs); err != nil {
 						t.Error(err)
 					}
@@ -1726,10 +1745,7 @@ func Test_server_CreateAndSaveIndex(t *testing.T) {
 		}(),
 		func() test {
 			insertCnt := 100
-			irs, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, insertCnt, dim, nil)
-			if err != nil {
-				t.Error(err)
-			}
+			var irs *payload.Insert_MultiRequest
 
 			return test{
 				name: "Decision Table Testing case 3.2: success to create and save index with poolSize < uncommitted index count",
@@ -1745,6 +1761,11 @@ func Test_server_CreateAndSaveIndex(t *testing.T) {
 					indexPath: mkdirTemp(),
 				},
 				beforeFunc: func(t *testing.T, ctx context.Context, s Server, n service.NGT, test test) {
+					t.Helper()
+					var err error
+					if irs, err = request.GenMultiInsertReq(request.Float, vector.Gaussian, insertCnt, dim, defaultInsertConfig); err != nil {
+						t.Error(err)
+					}
 					if _, err := s.MultiInsert(ctx, irs); err != nil {
 						t.Error(err)
 					}
@@ -1762,10 +1783,7 @@ func Test_server_CreateAndSaveIndex(t *testing.T) {
 		}(),
 		func() test {
 			insertCnt := 100
-			irs, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, insertCnt, dim, nil)
-			if err != nil {
-				t.Error(err)
-			}
+			var irs *payload.Insert_MultiRequest
 
 			return test{
 				name: "Decision Table Testing case 3.3: success to create and save index with poolSize = uncommitted index count",
@@ -1781,6 +1799,11 @@ func Test_server_CreateAndSaveIndex(t *testing.T) {
 					indexPath: mkdirTemp(),
 				},
 				beforeFunc: func(t *testing.T, ctx context.Context, s Server, n service.NGT, test test) {
+					t.Helper()
+					var err error
+					if irs, err = request.GenMultiInsertReq(request.Float, vector.Gaussian, insertCnt, dim, defaultInsertConfig); err != nil {
+						t.Error(err)
+					}
 					if _, err := s.MultiInsert(ctx, irs); err != nil {
 						t.Error(err)
 					}
@@ -1798,10 +1821,7 @@ func Test_server_CreateAndSaveIndex(t *testing.T) {
 		}(),
 		func() test {
 			insertCnt := 100
-			irs, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, insertCnt, dim, nil)
-			if err != nil {
-				t.Error(err)
-			}
+			var irs *payload.Insert_MultiRequest
 
 			return test{
 				name: "Decision Table Testing case 3.4: success to create and save index with poolSize = 0",
@@ -1817,6 +1837,11 @@ func Test_server_CreateAndSaveIndex(t *testing.T) {
 					indexPath: mkdirTemp(),
 				},
 				beforeFunc: func(t *testing.T, ctx context.Context, s Server, n service.NGT, test test) {
+					t.Helper()
+					var err error
+					if irs, err = request.GenMultiInsertReq(request.Float, vector.Gaussian, insertCnt, dim, defaultInsertConfig); err != nil {
+						t.Error(err)
+					}
 					if _, err := s.MultiInsert(ctx, irs); err != nil {
 						t.Error(err)
 					}
