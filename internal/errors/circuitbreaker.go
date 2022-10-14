@@ -18,8 +18,8 @@ import (
 )
 
 var (
-	// ErrCircuitBreakerTooManyRequests is returned when the CB state is half open and the requests count is over the cb maxRequests.
-	ErrCircuitBreakerTooManyRequests = errors.New("too many requests")
+	// ErrCircuitBreakerHalfOpenFlowLimitation is returned in case of flow limitation in half-open state.
+	ErrCircuitBreakerHalfOpenFlowLimitation = errors.New("circuitbreaker breaker half-open flow limitation")
 	// ErrCircuitBreakerOpenState is returned when the CB state is open.
 	ErrCircuitBreakerOpenState = errors.New("circuit breaker is open")
 )
