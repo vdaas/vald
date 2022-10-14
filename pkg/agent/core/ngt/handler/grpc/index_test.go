@@ -1112,7 +1112,7 @@ func Test_server_CreateAndSaveIndex(t *testing.T) {
 		os.RemoveAll(test.fields.indexPath)
 	}
 
-	// this function checks the backup file can be loaded and check if it contain the wantVecs indexes.
+	// this function checks the backup file can be loaded and check if it contains the wantVecs indexes.
 	// it creates a new ngt and server instance with the backup file, and checks if we can retrieve all of wantVecs indexes
 	// and check the total index count matches with wantVecs count.
 	checkBackupFolder := func(fields fields, ctx context.Context, wantVecs []*payload.Insert_Request) error {
