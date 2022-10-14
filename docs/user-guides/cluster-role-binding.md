@@ -2,13 +2,15 @@
 
 The cluster role contains rules that represent a set of permission to grant access to a specific target depending on the binding rule.
 
-This page describes why we need a cluster role for the Vald cluster.
+This page describes why we need a cluster role for Vald and how to configure it.
 
 ## What are cluster role and cluster role binding for the Vald cluster?
 
-In Vald, the index is distributed across the cluster depending on the resource usage of the cluster, it requires settings to grant permission to a specific role to retrieve cluster information on Kubernetes.
+In Vald, the index is distributed across the Kubernetes cluster depending on the resource usage of the node, it requires settings to grant permission to a specific role to retrieve cluster information on Kubernetes.
 
-In Vald, the settings are deployed automatically when using helm to deploy.
+By default, the cluster role settings are deployed automatically when using helm to deploy.
+
+The following manifest will be deployed.
 
 - [clusterrole.yaml](https://github.com/vdaas/vald/blob/main/k8s/discoverer/clusterrole.yaml)
 - [clusterrolebinding.yaml](https://github.com/vdaas/vald/blob/main/k8s/discoverer/clusterrolebinding.yaml)
@@ -17,9 +19,14 @@ These configurations allow the service account `discoverer` to access different 
 
 ### Cluster role settings
 
-By looking at the [cluster role settings](https://github.com/vdaas/vald/blob/main/k8s/discoverer/clusterrole.yaml), the access right of the following resources are granted to service account `discoverer`.
+By looking at the [cluster role settings](https://github.com/vdaas/vald/blob/main/k8s/discoverer/clusterrole.yaml), the access right of the following resources are granted to the cluster role `discoverer`.
 
 ```yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: discoverer
+...
 rules:
   - apiGroups:
       - apps
@@ -55,13 +62,18 @@ rules:
       - list
 ```
 
-All of these rules are required to retrieve Nodes and Pods resource usage from [kube-apiserver](https://kubernetes.io/docs/reference/command-line-tools-reference/kube-apiserver/) and also used to discover new Vald Agents or Nodes created on the cluster.
+All of these rules are required to retrieve Node and Pod resource usage from [kube-apiserver](https://kubernetes.io/docs/reference/command-line-tools-reference/kube-apiserver/) and also used to discover new Vald Agent Pods or Nodes created on the cluster.
 
 ### Cluster role binding settings
 
-The above cluster role settings will be bind to the service account `vald` according to the [configuration file](https://github.com/vdaas/vald/blob/main/k8s/discoverer/clusterrolebinding.yaml).
+The cluster role binding settings bind the cluster role `discoverer` described in the previous section to the service account `vald` according to the [configuration file](https://github.com/vdaas/vald/blob/main/k8s/discoverer/clusterrolebinding.yaml).
 
 ```yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: discoverer
+  ...
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -72,11 +84,16 @@ subjects:
     namespace: default
 ```
 
-This service account will be [used in Vald Discoverer](https://github.com/vdaas/vald/blob/main/k8s/discoverer/deployment.yaml#L155) to help automate operations for the Vald cluster. For more information about Vald Discoverer, please refer [here](../overview/component/discoverer.md).
+When the role binds to the service account, the access right of the role will be granted to the service account.
+In this case, all the access rights of the role `discoverer` will be granted to the service account `vald`.
 
-## Customize cluster role configuration
+The service account `vald` is required for [Vald Discoverer](https://github.com/vdaas/vald/blob/main/k8s/discoverer/deployment.yaml#L155) to retrieve the required information to operate the Vald cluster.
 
-To customize cluster role configuration, you may need to change the `discoverer.clusterRole` configuration on the helm chart. The cluster role configurations are enabled by default.
+For more information about Vald Discoverer, please refer [here](../overview/component/discoverer.md).
+
+## Customize cluster role and cluster role binding configuration on Helm chart for Vald Discoverer
+
+To customize the cluster role configuration on the Helm chart for Vald Discoverer, you may need to change the `discoverer.clusterRole` configuration on the Helm chart file. The cluster role configurations are enabled by default.
 
 ```yaml
   clusterRole:
@@ -96,7 +113,7 @@ To customize cluster role configuration, you may need to change the `discoverer.
     name: vald
 ```
 
-Please note that the [Vald Discoverer](../overview/component/discoverer.md) will not work after disabling these settings, and the Vald cluster will not work.
+Please note that if you disable these settings, the [Vald Discoverer](../overview/component/discoverer.md) will not work, and the Vald cluster will not be functional.
 
 If you want to modify or disable these settings, you need to grant the [cluster role settings](https://github.com/vdaas/vald/blob/main/k8s/discoverer/clusterrole.yaml) and bind it to the Vald Discoverer to retrieve required information to operate the Vald cluster.
 
@@ -106,6 +123,8 @@ Please refer to the following guidelines to configure cluster role settings for 
 
 - [Amazon EKS](https://docs.aws.amazon.com/eks/latest/userguide/add-user-role.html)
 - [GKE](https://cloud.google.com/kubernetes-engine/docs/how-to/role-based-access-control)
+
+For other cloud providers, you may need to find the related document on their official website or you can enable the cluster role and the cluster role binding configurations on the Helm chart.
 
 ## Related Document
 
