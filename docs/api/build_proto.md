@@ -3,7 +3,8 @@
 This page shows how to build gRPC proto file for calling API to your Vald Cluster.
 
 <div class="notice">
-Vald provides the official client libraries (see: https://vald.vdaas.org/docs/user-guides/sdks ); If you can use one of the SDKs we recommend using it.
+Vald provides the official client libraries (see: <a href="https://vald.vdaas.org/docs/user-guides/sdks">SDK document</a>).
+If you can use one of the SDKs we recommend using it.
 </div>
 
 ## Target proto files
