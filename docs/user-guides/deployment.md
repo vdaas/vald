@@ -40,7 +40,7 @@ Please refer to [the basic configuration document](../user-guides/configuration.
 
 In addition, as you need, please refer to the followings:
 - [Backup Configuration](../user-guides/backup-configuration.md)
-- [Filter Configuration](../user-guides/filter-configuration.md)
+- [Filter Configuration](../user-guides/filtering-configuration.md)
 
 Moreover, we publish the example configuration files for each use case.
 Please also refer to [here](https://github.com/vdaas/vald/tree/main/charts/vald/values).
