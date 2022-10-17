@@ -2,20 +2,20 @@
 
 The cluster role contains rules that represent a set of permission to grant access to a specific target depending on the binding rule.
 
-This page describes why we need a cluster role for Vald and how to configure it.
+This page describes why we need a cluster role for the Vald cluster and how to configure it.
 
 ## What are cluster role and cluster role binding for the Vald cluster?
 
-In Vald, the index is distributed across the Kubernetes cluster depending on the resource usage of the node, it requires settings to grant permission to a specific role to retrieve cluster information on Kubernetes.
+Vald applies the distributed index system across the Kubernetes cluster depending on the resource usage of the Kubernetes Node, it requires settings to grant permission to a specific role to retrieve cluster information on Kubernetes.
 
-By default, the cluster role settings are deployed automatically when using helm to deploy.
+By default, the cluster role settings are deployed automatically when using Helm.
 
-The following manifest will be deployed.
+The following manifest will be deployed by default.
 
 - [clusterrole.yaml](https://github.com/vdaas/vald/blob/main/k8s/discoverer/clusterrole.yaml)
 - [clusterrolebinding.yaml](https://github.com/vdaas/vald/blob/main/k8s/discoverer/clusterrolebinding.yaml)
 
-These configurations allow the service account `discoverer` to access different resources in the Kubernetes cluster.
+These configurations allow the service account `discoverer`, which is for the Vald Discoverer components, to access different resources in the Kubernetes cluster.
 
 ### Cluster role settings for Vald Discoverer
 

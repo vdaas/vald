@@ -68,4 +68,4 @@ When the `initContainer` successes, Vald LB Gateway can get the metrics asynchro
 
 ### Cluster role configurations
 
-Please refer [here](../../user-guides/cluster-role-binding.md) for more information about cluster role settings.
+Please refer [here](../../user-guides/cluster-role-binding.md) for more information about the cluster role configuration.
