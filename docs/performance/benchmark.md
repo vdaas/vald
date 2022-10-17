@@ -2,7 +2,7 @@
 
 This document will show and explain the benchmark of an approximate nearest neighbor on the Vald cluster, such as [ann-benchmarks](https://github.com/erikbern/ann-benchmarks), and also explain how to perform the ann-benchmark test on your Vald cluster.
 
-If you want to perform load testing on the Vald cluster, please refer to [this document](./loadtest.md).
+If you want to perform load testing on the Vald cluster, please refer to [this document](../performance/loadtest.md).
 
 <!--
 // TODO: uncomment when unit_bench.md is created.
