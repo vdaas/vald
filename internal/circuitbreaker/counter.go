@@ -16,6 +16,7 @@ package circuitbreaker
 import "sync/atomic"
 
 type Counter interface {
+	Total() int64
 	Successes() int64
 	Fails() int64
 }
@@ -31,6 +32,10 @@ func (c *count) Successes() (n int64) {
 
 func (c *count) Fails() (n int64) {
 	return atomic.LoadInt64(&c.failures)
+}
+
+func (c *count) Total() (n int64) {
+	return c.Successes() + c.Fails()
 }
 
 func (c *count) onSuccess() {

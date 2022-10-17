@@ -15,6 +15,7 @@ package circuitbreaker
 
 import (
 	"context"
+	"fmt"
 	"reflect"
 	"sync/atomic"
 	"testing"
@@ -38,8 +39,8 @@ func Test_newBreaker(t *testing.T) {
 		args       args
 		want       want
 		checkFunc  func(want, *breaker, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, got *breaker, err error) error {
 		if !errors.Is(err, w.err) {
@@ -61,6 +62,12 @@ func Test_newBreaker(t *testing.T) {
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -75,6 +82,12 @@ func Test_newBreaker(t *testing.T) {
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -86,10 +99,10 @@ func Test_newBreaker(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -134,8 +147,8 @@ func Test_breaker_do(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, interface{}, State, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, gotVal interface{}, gotSt State, err error) error {
 		if !errors.Is(err, w.err) {
@@ -174,6 +187,12 @@ func Test_breaker_do(t *testing.T) {
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -202,6 +221,12 @@ func Test_breaker_do(t *testing.T) {
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -213,10 +238,10 @@ func Test_breaker_do(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -261,70 +286,104 @@ func Test_breaker_isReady(t *testing.T) {
 		closedRefreshExp      int64
 	}
 	type want struct {
-		wantOk bool
+		wantSt State
+		err    error
 	}
 	type test struct {
 		name       string
 		fields     fields
 		want       want
-		checkFunc  func(want, bool) error
-		beforeFunc func()
-		afterFunc  func()
+		checkFunc  func(want, State, error) error
+		beforeFunc func(*testing.T)
+		afterFunc  func(*testing.T)
 	}
-	defaultCheckFunc := func(w want, gotOk bool) error {
-		if !reflect.DeepEqual(gotOk, w.wantOk) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotOk, w.wantOk)
+	defaultCheckFunc := func(w want, gotSt State, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(gotSt, w.wantSt) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotSt, w.wantSt)
 		}
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           key: "",
-		           count: nil,
-		           tripped: 0,
-		           closedErrRate: 0,
-		           closedErrShouldTrip: nil,
-		           halfOpenErrRate: 0,
-		           halfOpenErrShouldTrip: nil,
-		           minSamples: 0,
-		           openTimeout: nil,
-		           openExp: 0,
-		           cloedRefreshTimeout: nil,
-		           closedRefreshExp: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           key: "",
-		           count: nil,
-		           tripped: 0,
-		           closedErrRate: 0,
-		           closedErrShouldTrip: nil,
-		           halfOpenErrRate: 0,
-		           halfOpenErrShouldTrip: nil,
-		           minSamples: 0,
-		           openTimeout: nil,
-		           openExp: 0,
-		           cloedRefreshTimeout: nil,
-		           closedRefreshExp: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		func() test {
+			return test{
+				name: "return the StateClose and nil when the current state is Close",
+				fields: fields{
+					key:              "insertRPC",
+					tripped:          0,
+					closedRefreshExp: time.Now().Add(100 * time.Second).UnixNano(),
+				},
+				want: want{
+					wantSt: StateClosed,
+					err:    nil,
+				},
+				checkFunc: defaultCheckFunc,
+			}
+		}(),
+		func() test {
+			var atCount atomic.Value
+			atCount.Store(&count{
+				successes: 1,
+			})
+			return test{
+				name: "return the StateHalfOpen and nil when the current state is HalfOpen",
+				fields: fields{
+					key:     "insertRPC",
+					tripped: 1,
+					openExp: time.Now().Add(-100 * time.Second).UnixNano(),
+					count:   atCount,
+				},
+				want: want{
+					wantSt: StateHalfOpen,
+					err:    nil,
+				},
+				checkFunc: defaultCheckFunc,
+			}
+		}(),
+		func() test {
+			var atCount atomic.Value
+			atCount.Store(&count{})
+			return test{
+				name: "return the StateHalfOpen and error when the current state is HalfOpen but the flow is being limited",
+				fields: fields{
+					key:     "insertRPC",
+					tripped: 1,
+					openExp: time.Now().Add(-100 * time.Second).UnixNano(),
+					count:   atCount,
+				},
+				want: want{
+					wantSt: StateHalfOpen,
+					err:    errors.ErrCircuitBreakerHalfOpenFlowLimitation,
+				},
+				checkFunc: func(w want, s State, err error) error {
+					if err := defaultCheckFunc(w, s, err); err != nil {
+						return err
+					}
+					cnt := atCount.Load().(*count)
+					if got := cnt.Fails(); got != 1 {
+						return fmt.Errorf("failures is not equals. want: %d, but got: %d", 2, got)
+					}
+					return nil
+				},
+			}
+		}(),
+		func() test {
+			return test{
+				name: "return the StateOpen and error when the current state is Open",
+				fields: fields{
+					key:     "insertRPC",
+					tripped: 1,
+					openExp: time.Now().Add(100 * time.Second).UnixNano(),
+				},
+				want: want{
+					wantSt: StateOpen,
+					err:    errors.ErrCircuitBreakerOpenState,
+				},
+				checkFunc: defaultCheckFunc,
+			}
+		}(),
 	}
 
 	for _, tc := range tests {
@@ -333,10 +392,10 @@ func Test_breaker_isReady(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -357,8 +416,8 @@ func Test_breaker_isReady(t *testing.T) {
 				closedRefreshExp:      test.fields.closedRefreshExp,
 			}
 
-			gotOk := b.isReady()
-			if err := checkFunc(test.want, gotOk); err != nil {
+			gotSt, err := b.isReady()
+			if err := checkFunc(test.want, gotSt, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -386,60 +445,69 @@ func Test_breaker_success(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want) error
-		beforeFunc func()
-		afterFunc  func()
+		beforeFunc func(*testing.T)
+		afterFunc  func(*testing.T, *breaker)
 	}
 	defaultCheckFunc := func(w want) error {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           key: "",
-		           count: nil,
-		           tripped: 0,
-		           closedErrRate: 0,
-		           closedErrShouldTrip: nil,
-		           halfOpenErrRate: 0,
-		           halfOpenErrShouldTrip: nil,
-		           minSamples: 0,
-		           openTimeout: nil,
-		           openExp: 0,
-		           cloedRefreshTimeout: nil,
-		           closedRefreshExp: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           key: "",
-		           count: nil,
-		           tripped: 0,
-		           closedErrRate: 0,
-		           closedErrShouldTrip: nil,
-		           halfOpenErrRate: 0,
-		           halfOpenErrShouldTrip: nil,
-		           minSamples: 0,
-		           openTimeout: nil,
-		           openExp: 0,
-		           cloedRefreshTimeout: nil,
-		           closedRefreshExp: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		func() test {
+			var atCount atomic.Value
+			atCount.Store(&count{
+				successes: 10,
+				failures:  10,
+			})
+			halfOpenErrRate := float32(0.5)
+			minSamples := int64(10)
+			return test{
+				name: "the current state change from HalfOpen to Close when the success rate is higher",
+				fields: fields{
+					key:                   "insertRPC",
+					count:                 atCount,
+					tripped:               1,
+					openExp:               time.Now().Add(-100 * time.Second).UnixNano(),
+					halfOpenErrRate:       halfOpenErrRate,
+					halfOpenErrShouldTrip: NewRateTripper(halfOpenErrRate, minSamples),
+					minSamples:            minSamples,
+				},
+				checkFunc: defaultCheckFunc,
+				afterFunc: func(t *testing.T, b *breaker) {
+					t.Helper()
+					if b.tripped != 0 {
+						t.Errorf("state did not change: %d", b.tripped)
+					}
+				},
+			}
+		}(),
+		func() test {
+			var atCount atomic.Value
+			atCount.Store(&count{
+				successes: 10,
+				failures:  11,
+			})
+			halfOpenErrRate := float32(0.5)
+			minSamples := int64(10)
+			return test{
+				name: "the current state do not change from HalfOpen to Close when the success rate is less",
+				fields: fields{
+					key:                   "insertRPC",
+					count:                 atCount,
+					tripped:               1,
+					openExp:               time.Now().Add(-100 * time.Second).UnixNano(),
+					halfOpenErrRate:       halfOpenErrRate,
+					halfOpenErrShouldTrip: NewRateTripper(halfOpenErrRate, minSamples),
+					minSamples:            minSamples,
+				},
+				checkFunc: defaultCheckFunc,
+				afterFunc: func(t *testing.T, b *breaker) {
+					t.Helper()
+					if b.tripped != 1 {
+						t.Errorf("state changed: %d", b.tripped)
+					}
+				},
+			}
+		}(),
 	}
 
 	for _, tc := range tests {
@@ -448,10 +516,7 @@ func Test_breaker_success(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc()
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc()
+				test.beforeFunc(tt)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -470,6 +535,9 @@ func Test_breaker_success(t *testing.T) {
 				openExp:               test.fields.openExp,
 				cloedRefreshTimeout:   test.fields.cloedRefreshTimeout,
 				closedRefreshExp:      test.fields.closedRefreshExp,
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(tt, b)
 			}
 
 			b.success()
@@ -501,8 +569,8 @@ func Test_breaker_fail(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want) error
-		beforeFunc func()
-		afterFunc  func()
+		beforeFunc func(*testing.T)
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want) error {
 		return nil
@@ -528,6 +596,12 @@ func Test_breaker_fail(t *testing.T) {
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -552,6 +626,12 @@ func Test_breaker_fail(t *testing.T) {
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -563,10 +643,10 @@ func Test_breaker_fail(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -618,8 +698,8 @@ func Test_breaker_currentState(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, State) error
-		beforeFunc func()
-		afterFunc  func()
+		beforeFunc func(*testing.T)
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want, got State) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -648,6 +728,12 @@ func Test_breaker_currentState(t *testing.T) {
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -672,6 +758,12 @@ func Test_breaker_currentState(t *testing.T) {
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -683,10 +775,10 @@ func Test_breaker_currentState(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -736,8 +828,8 @@ func Test_breaker_reset(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want) error
-		beforeFunc func()
-		afterFunc  func()
+		beforeFunc func(*testing.T)
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want) error {
 		return nil
@@ -763,6 +855,12 @@ func Test_breaker_reset(t *testing.T) {
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -787,6 +885,12 @@ func Test_breaker_reset(t *testing.T) {
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -798,10 +902,10 @@ func Test_breaker_reset(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -851,8 +955,8 @@ func Test_breaker_trip(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want) error
-		beforeFunc func()
-		afterFunc  func()
+		beforeFunc func(*testing.T)
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want) error {
 		return nil
@@ -878,6 +982,12 @@ func Test_breaker_trip(t *testing.T) {
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -902,6 +1012,12 @@ func Test_breaker_trip(t *testing.T) {
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -913,10 +1029,10 @@ func Test_breaker_trip(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -968,8 +1084,8 @@ func Test_breaker_isTripped(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, bool) error
-		beforeFunc func()
-		afterFunc  func()
+		beforeFunc func(*testing.T)
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want, gotOk bool) error {
 		if !reflect.DeepEqual(gotOk, w.wantOk) {
@@ -998,6 +1114,12 @@ func Test_breaker_isTripped(t *testing.T) {
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -1022,6 +1144,12 @@ func Test_breaker_isTripped(t *testing.T) {
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -1033,10 +1161,10 @@ func Test_breaker_isTripped(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {

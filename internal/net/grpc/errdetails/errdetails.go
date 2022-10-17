@@ -277,22 +277,29 @@ func AnyToErrorDetail(a *types.Any) proto.Message {
 
 func DebugInfoFromInfoDetail(v *info.Detail) *DebugInfo {
 	debug := &DebugInfo{
-		Detail: "Version: " + v.Version + ", " +
-			"Name: " + v.ServerName + ", " +
-			"GitCommit: " + v.GitCommit + ", " +
-			"BuildTime: " + v.BuildTime + ", " +
-			"NGT_Version: " + v.NGTVersion + ", " +
-			"Go_Version: " + v.GoVersion + ", " +
-			"GOARCH: " + v.GoArch + ", " +
-			"GOOS: " + v.GoOS + ", " +
-			"CGO_Enabled: " + v.CGOEnabled + ", " +
-			"BuildCPUInfo: [" + strings.Join(v.BuildCPUInfoFlags, ", ") + "]",
+		Detail: strings.Join(append(append([]string{
+			"Version:", v.Version, ",",
+			"Name:", v.ServerName, ",",
+			"GitCommit:", v.GitCommit, ",",
+			"BuildTime:", v.BuildTime, ",",
+			"NGT_Version:", v.NGTVersion, ",",
+			"Go_Version:", v.GoVersion, ",",
+			"GOARCH:", v.GoArch, ",",
+			"GOOS:", v.GoOS, ",",
+			"CGO_Enabled:", v.CGOEnabled, ",",
+			"BuildCPUInfo: [",
+		}, v.BuildCPUInfoFlags...), "]"), " "),
 	}
 	if debug.GetStackEntries() == nil {
 		debug.StackEntries = make([]string, 0, len(v.StackTrace))
 	}
 	for i, stack := range v.StackTrace {
-		debug.StackEntries = append(debug.GetStackEntries(), "id: "+strconv.Itoa(i)+" stack_trace: "+stack.String())
+		debug.StackEntries = append(debug.GetStackEntries(), strings.Join([]string{
+			"id:",
+			strconv.Itoa(i),
+			"stack_trace:",
+			stack.String(),
+		}, " "))
 	}
 	return debug
 }
