@@ -1879,9 +1879,12 @@ func Test_server_CreateAndSaveIndex(t *testing.T) {
 			}
 
 			eg, _ := errgroup.New(ctx)
-			ngt, err := service.New(test.fields.svcCfg, append(test.fields.svcOpts,
-				service.WithErrGroup(eg),
-				service.WithIndexPath(test.fields.indexPath))...)
+			ngt, err := service.New(
+				test.fields.svcCfg,
+				append(test.fields.svcOpts,
+					service.WithErrGroup(eg),
+					service.WithIndexPath(test.fields.indexPath),
+				)...)
 			if err != nil {
 				tt.Errorf("failed to init ngt service, error = %v", err)
 			}
