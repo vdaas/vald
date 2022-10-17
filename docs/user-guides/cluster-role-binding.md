@@ -124,7 +124,7 @@ Please refer to the following guidelines to configure cluster role settings for 
 - [Amazon EKS](https://docs.aws.amazon.com/eks/latest/userguide/add-user-role.html)
 - [GKE](https://cloud.google.com/kubernetes-engine/docs/how-to/role-based-access-control)
 
-For other cloud providers, you may need to find the related document on their official website or you can enable the cluster role and the cluster role binding configurations on the Helm chart.
+For other cloud providers, you may need to find the related document on their official website, or you can enable the cluster role and the cluster role binding configurations on the Helm chart.
 
 ## Related Document
 
