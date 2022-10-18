@@ -128,8 +128,8 @@ discoverer:
 ...
 
 <div class="warning">
-	If you disable these configurations, the Vald Discoverer will not work, and the Vald cluster will not be functional.
-	</div>
+If you disable these configurations, the Vald Discoverer will not work, and the Vald cluster will not be functional.
+</div>
 
 If you want to modify or disable these configurations, you need to grant the [cluster role configuration](https://github.com/vdaas/vald/blob/main/k8s/discoverer/clusterrole.yaml) and bind it to the Vald Discoverer to retrieve required information to operate the Vald cluster.
 
