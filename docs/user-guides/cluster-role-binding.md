@@ -146,6 +146,6 @@ For other cloud providers, you may need to find the related document on their of
 
 ## Related Documents
 
-- [Using RBAC Authorization (External Site)](https://kubernetes.io/docs/reference/access-authn-authz/rbac/)
 - [Vald Discoverer](../overview/component/discoverer.md)
 - [Data Flow](../overview/data-flow.md)
+- [Using RBAC Authorization (External Site)](https://kubernetes.io/docs/reference/access-authn-authz/rbac/)
