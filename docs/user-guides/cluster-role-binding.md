@@ -108,6 +108,8 @@ For more information about Vald Discoverer, please refer [here](../overview/comp
 To customize the cluster role configuration on the Helm chart for Vald Discoverer, you may need to change the `discoverer.clusterRole` configuration on the Helm chart file. The cluster role configurations are enabled by default.
 
 ```yaml
+discoverer:
+...
   clusterRole:
     # discoverer.clusterRole.enabled -- creates clusterRole resource
     enabled: true
@@ -123,21 +125,25 @@ To customize the cluster role configuration on the Helm chart for Vald Discovere
     enabled: true
     # discoverer.serviceAccount.name -- name of service account
     name: vald
-```
+...
 
-Please note that if you disable these configurations, the [Vald Discoverer](../overview/component/discoverer.md) will not work, and the Vald cluster will not be functional.
+<div class="warning">
+	If you disable these configurations, the Vald Discoverer will not work, and the Vald cluster will not be functional.
+	</div>
 
 If you want to modify or disable these configurations, you need to grant the [cluster role configuration](https://github.com/vdaas/vald/blob/main/k8s/discoverer/clusterrole.yaml) and bind it to the Vald Discoverer to retrieve required information to operate the Vald cluster.
 
 ## Customize cluster role configuration on Cloud Providers
 
-Please refer to the following guidelines to configure cluster role configuration for your cloud provider, and configure the service account name for Vald Discoverer.
+Please refer to the official guidelines to configure cluster role configuration for your cloud provider, and configure the service account name for Vald Discoverer.
 
+For example:
 - [Amazon EKS](https://docs.aws.amazon.com/eks/latest/userguide/add-user-role.html)
 - [GKE](https://cloud.google.com/kubernetes-engine/docs/how-to/role-based-access-control)
 
 For other cloud providers, you may need to find the related document on their official website, or you can enable the cluster role and the cluster role binding configurations on the Helm chart.
 
-## Related Document
+## Related Documents
 
 - [Vald Discoverer](../overview/component/discoverer.md)
+- [Data Flow)(../overview/data-flow.md)
