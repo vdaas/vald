@@ -65,3 +65,7 @@ For example, Vald LB Gateway creates the new `discoverer client` with config par
 When the `initContainer` successes, Vald LB Gateway can get the metrics asynchronously according to its set parameters.
 
 <!-- TODO:image -->
+
+### Cluster role configurations
+
+Please refer [here](../../user-guides/cluster-role-binding.md) for more information about the cluster role configuration.
