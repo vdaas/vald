@@ -126,6 +126,7 @@ discoverer:
     # discoverer.serviceAccount.name -- name of service account
     name: vald
 ...
+```
 
 <div class="warning">
 If you disable these configurations, the Vald Discoverer will not work, and the Vald cluster will not be functional.
