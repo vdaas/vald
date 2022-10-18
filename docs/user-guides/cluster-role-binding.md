@@ -146,4 +146,4 @@ For other cloud providers, you may need to find the related document on their of
 ## Related Documents
 
 - [Vald Discoverer](../overview/component/discoverer.md)
-- [Data Flow)(../overview/data-flow.md)
+- [Data Flow](../overview/data-flow.md)
