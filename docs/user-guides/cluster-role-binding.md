@@ -1,6 +1,6 @@
 # Cluster Role Configuration
 
-The cluster role contains rules that represent a set of permission to grant access to a specific target depending on the binding rule.
+The [cluster role](https://kubernetes.io/docs/reference/access-authn-authz/rbac/) feature provided by Kubernetes contains rules that represent a set of permission to grant access to a specific target depending on the binding rule.
 
 This page describes why we need a cluster role for the Vald cluster and how to configure it.
 
@@ -146,5 +146,6 @@ For other cloud providers, you may need to find the related document on their of
 
 ## Related Documents
 
+- [Using RBAC Authorization](https://kubernetes.io/docs/reference/access-authn-authz/rbac/)
 - [Vald Discoverer](../overview/component/discoverer.md)
 - [Data Flow](../overview/data-flow.md)
