@@ -17,12 +17,13 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/vdaas/vald/internal/errors"
+	"github.com/pkg/errors"
 	"github.com/vdaas/vald/internal/test/goleak"
 )
 
 func Test_count_Successes(t *testing.T) {
 	type fields struct {
+		ignores   int64
 		successes int64
 		failures  int64
 	}
@@ -34,8 +35,8 @@ func Test_count_Successes(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, int64) error
-		beforeFunc func()
-		afterFunc  func()
+		beforeFunc func(*testing.T)
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want, gotN int64) error {
 		if !reflect.DeepEqual(gotN, w.wantN) {
@@ -49,11 +50,18 @@ func Test_count_Successes(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       fields: fields {
+		           ignores: 0,
 		           successes: 0,
 		           failures: 0,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -63,11 +71,18 @@ func Test_count_Successes(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           fields: fields {
+		           ignores: 0,
 		           successes: 0,
 		           failures: 0,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -79,16 +94,17 @@ func Test_count_Successes(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
 			c := &count{
+				ignores:   test.fields.ignores,
 				successes: test.fields.successes,
 				failures:  test.fields.failures,
 			}
@@ -97,12 +113,14 @@ func Test_count_Successes(t *testing.T) {
 			if err := checkFunc(test.want, gotN); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
 
 func Test_count_Fails(t *testing.T) {
 	type fields struct {
+		ignores   int64
 		successes int64
 		failures  int64
 	}
@@ -114,8 +132,8 @@ func Test_count_Fails(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, int64) error
-		beforeFunc func()
-		afterFunc  func()
+		beforeFunc func(*testing.T)
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want, gotN int64) error {
 		if !reflect.DeepEqual(gotN, w.wantN) {
@@ -129,11 +147,18 @@ func Test_count_Fails(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       fields: fields {
+		           ignores: 0,
 		           successes: 0,
 		           failures: 0,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -143,11 +168,18 @@ func Test_count_Fails(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           fields: fields {
+		           ignores: 0,
 		           successes: 0,
 		           failures: 0,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -159,16 +191,17 @@ func Test_count_Fails(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
 			c := &count{
+				ignores:   test.fields.ignores,
 				successes: test.fields.successes,
 				failures:  test.fields.failures,
 			}
@@ -177,23 +210,220 @@ func Test_count_Fails(t *testing.T) {
 			if err := checkFunc(test.want, gotN); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
+		})
+	}
+}
+
+func Test_count_Ignores(t *testing.T) {
+	type fields struct {
+		ignores   int64
+		successes int64
+		failures  int64
+	}
+	type want struct {
+		wantN int64
+	}
+	type test struct {
+		name       string
+		fields     fields
+		want       want
+		checkFunc  func(want, int64) error
+		beforeFunc func(*testing.T)
+		afterFunc  func(*testing.T)
+	}
+	defaultCheckFunc := func(w want, gotN int64) error {
+		if !reflect.DeepEqual(gotN, w.wantN) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotN, w.wantN)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       fields: fields {
+		           ignores: 0,
+		           successes: 0,
+		           failures: 0,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           fields: fields {
+		           ignores: 0,
+		           successes: 0,
+		           failures: 0,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(tt)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(tt)
+			}
+			checkFunc := test.checkFunc
+			if test.checkFunc == nil {
+				checkFunc = defaultCheckFunc
+			}
+			c := &count{
+				ignores:   test.fields.ignores,
+				successes: test.fields.successes,
+				failures:  test.fields.failures,
+			}
+
+			gotN := c.Ignores()
+			if err := checkFunc(test.want, gotN); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
+		})
+	}
+}
+
+func Test_count_Total(t *testing.T) {
+	type fields struct {
+		ignores   int64
+		successes int64
+		failures  int64
+	}
+	type want struct {
+		wantN int64
+	}
+	type test struct {
+		name       string
+		fields     fields
+		want       want
+		checkFunc  func(want, int64) error
+		beforeFunc func(*testing.T)
+		afterFunc  func(*testing.T)
+	}
+	defaultCheckFunc := func(w want, gotN int64) error {
+		if !reflect.DeepEqual(gotN, w.wantN) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotN, w.wantN)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       fields: fields {
+		           ignores: 0,
+		           successes: 0,
+		           failures: 0,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           fields: fields {
+		           ignores: 0,
+		           successes: 0,
+		           failures: 0,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(tt)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(tt)
+			}
+			checkFunc := test.checkFunc
+			if test.checkFunc == nil {
+				checkFunc = defaultCheckFunc
+			}
+			c := &count{
+				ignores:   test.fields.ignores,
+				successes: test.fields.successes,
+				failures:  test.fields.failures,
+			}
+
+			gotN := c.Total()
+			if err := checkFunc(test.want, gotN); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+
 		})
 	}
 }
 
 func Test_count_onSuccess(t *testing.T) {
 	type fields struct {
+		ignores   int64
 		successes int64
 		failures  int64
 	}
-	type want struct{}
+	type want struct {
+	}
 	type test struct {
 		name       string
 		fields     fields
 		want       want
 		checkFunc  func(want) error
-		beforeFunc func()
-		afterFunc  func()
+		beforeFunc func(*testing.T)
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want) error {
 		return nil
@@ -204,11 +434,18 @@ func Test_count_onSuccess(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       fields: fields {
+		           ignores: 0,
 		           successes: 0,
 		           failures: 0,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -218,11 +455,18 @@ func Test_count_onSuccess(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           fields: fields {
+		           ignores: 0,
 		           successes: 0,
 		           failures: 0,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -234,16 +478,17 @@ func Test_count_onSuccess(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
 			c := &count{
+				ignores:   test.fields.ignores,
 				successes: test.fields.successes,
 				failures:  test.fields.failures,
 			}
@@ -258,17 +503,19 @@ func Test_count_onSuccess(t *testing.T) {
 
 func Test_count_onFail(t *testing.T) {
 	type fields struct {
+		ignores   int64
 		successes int64
 		failures  int64
 	}
-	type want struct{}
+	type want struct {
+	}
 	type test struct {
 		name       string
 		fields     fields
 		want       want
 		checkFunc  func(want) error
-		beforeFunc func()
-		afterFunc  func()
+		beforeFunc func(*testing.T)
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want) error {
 		return nil
@@ -279,11 +526,18 @@ func Test_count_onFail(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       fields: fields {
+		           ignores: 0,
 		           successes: 0,
 		           failures: 0,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -293,11 +547,18 @@ func Test_count_onFail(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           fields: fields {
+		           ignores: 0,
 		           successes: 0,
 		           failures: 0,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -309,16 +570,17 @@ func Test_count_onFail(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
 			c := &count{
+				ignores:   test.fields.ignores,
 				successes: test.fields.successes,
 				failures:  test.fields.failures,
 			}
@@ -331,19 +593,21 @@ func Test_count_onFail(t *testing.T) {
 	}
 }
 
-func Test_count_reset(t *testing.T) {
+func Test_count_onIgnore(t *testing.T) {
 	type fields struct {
+		ignores   int64
 		successes int64
 		failures  int64
 	}
-	type want struct{}
+	type want struct {
+	}
 	type test struct {
 		name       string
 		fields     fields
 		want       want
 		checkFunc  func(want) error
-		beforeFunc func()
-		afterFunc  func()
+		beforeFunc func(*testing.T)
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want) error {
 		return nil
@@ -354,11 +618,18 @@ func Test_count_reset(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       fields: fields {
+		           ignores: 0,
 		           successes: 0,
 		           failures: 0,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -368,11 +639,18 @@ func Test_count_reset(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           fields: fields {
+		           ignores: 0,
 		           successes: 0,
 		           failures: 0,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -384,16 +662,109 @@ func Test_count_reset(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
 			c := &count{
+				ignores:   test.fields.ignores,
+				successes: test.fields.successes,
+				failures:  test.fields.failures,
+			}
+
+			c.onIgnore()
+			if err := checkFunc(test.want); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func Test_count_reset(t *testing.T) {
+	type fields struct {
+		ignores   int64
+		successes int64
+		failures  int64
+	}
+	type want struct {
+	}
+	type test struct {
+		name       string
+		fields     fields
+		want       want
+		checkFunc  func(want) error
+		beforeFunc func(*testing.T)
+		afterFunc  func(*testing.T)
+	}
+	defaultCheckFunc := func(w want) error {
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       fields: fields {
+		           ignores: 0,
+		           successes: 0,
+		           failures: 0,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           fields: fields {
+		           ignores: 0,
+		           successes: 0,
+		           failures: 0,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(tt)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(tt)
+			}
+			checkFunc := test.checkFunc
+			if test.checkFunc == nil {
+				checkFunc = defaultCheckFunc
+			}
+			c := &count{
+				ignores:   test.fields.ignores,
 				successes: test.fields.successes,
 				failures:  test.fields.failures,
 			}

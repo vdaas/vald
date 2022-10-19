@@ -35,8 +35,12 @@ func (c *count) Fails() (n int64) {
 	return atomic.LoadInt64(&c.failures)
 }
 
+func (c *count) Ignores() (n int64) {
+	return atomic.LoadInt64(&c.ignores)
+}
+
 func (c *count) Total() (n int64) {
-	return c.Successes() + c.Fails()
+	return c.Successes() + c.Fails() + c.Ignores()
 }
 
 func (c *count) onSuccess() {
