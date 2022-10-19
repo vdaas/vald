@@ -57,6 +57,7 @@ func TestJoin(t *testing.T) {
 				checkFunc: defaultCheckFunc,
 			}
 		}(),
+		// This test case consumes a significant memory (maybe 300GB~) due to its characteristic of generating long strings and concatenating multiple strings, and takes a very long time to execute.
 		// func() test {
 		// 	l := 2 << 24
 		// 	c := 1024
