@@ -109,7 +109,6 @@ func (b *breaker) isReady() (st State, err error) {
 		// If this modulo is used, 1/2 of the requests will be error. And if an error occurs, mark as failures.
 		cnt := b.count.Load().(*count)
 		if cnt.Total()%2 == 0 {
-			cnt.onFail()
 			return st, errors.ErrCircuitBreakerHalfOpenFlowLimitation
 		}
 	}

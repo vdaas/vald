@@ -362,8 +362,8 @@ func Test_breaker_isReady(t *testing.T) {
 						return err
 					}
 					cnt := atCount.Load().(*count)
-					if got := cnt.Fails(); got != 1 {
-						return fmt.Errorf("failures is not equals. want: %d, but got: %d", 2, got)
+					if got := cnt.Fails(); got != 0 {
+						return fmt.Errorf("failures is not equals. want: %d, but got: %d", 0, got)
 					}
 					return nil
 				},
