@@ -69,6 +69,7 @@ func newBreaker(key string, opts ...BreakerOption) (*breaker, error) {
 // If the current breaker state is "Open", this function returns ErrCircuitBreakerOpenState.
 func (b *breaker) do(ctx context.Context, fn func(ctx context.Context) (val interface{}, err error)) (val interface{}, st State, err error) {
 	if st, err := b.isReady(); err != nil {
+		b.count.Load().(*count).onIgnore()
 		return nil, st, err
 	}
 	val, err = fn(ctx)
@@ -121,7 +122,7 @@ func (b *breaker) success() {
 	// halfOpenErrShouldTrip.ShouldTrip returns true when the sum of the number of successes and failures is greater than the b.minSamples and when the error rate is greater than the b.halfOpenErrRate.
 	// In other words, if the error rate is less than the b.halfOpenErrRate, it can be judged that the success rate is high, so this function change to the "Close" state from "Half-Open".
 	if st := b.currentState(); st == StateHalfOpen &&
-		cnt.Total() >= b.minSamples &&
+		cnt.Successes()+cnt.Fails() >= b.minSamples &&
 		!b.halfOpenErrShouldTrip.ShouldTrip(cnt) {
 		log.Infof("the operation succeeded, circuit breaker state for '%s' changed,\tfrom: %s, to: %s", b.key, st.String(), StateClosed.String())
 		b.reset()
