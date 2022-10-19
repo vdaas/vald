@@ -17,7 +17,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/pkg/errors"
+	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/test/goleak"
 )
 
@@ -113,7 +113,6 @@ func Test_count_Successes(t *testing.T) {
 			if err := checkFunc(test.want, gotN); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -210,7 +209,6 @@ func Test_count_Fails(t *testing.T) {
 			if err := checkFunc(test.want, gotN); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -307,7 +305,6 @@ func Test_count_Ignores(t *testing.T) {
 			if err := checkFunc(test.want, gotN); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -404,7 +401,6 @@ func Test_count_Total(t *testing.T) {
 			if err := checkFunc(test.want, gotN); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -415,8 +411,7 @@ func Test_count_onSuccess(t *testing.T) {
 		successes int64
 		failures  int64
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		fields     fields
@@ -507,8 +502,7 @@ func Test_count_onFail(t *testing.T) {
 		successes int64
 		failures  int64
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		fields     fields
@@ -599,8 +593,7 @@ func Test_count_onIgnore(t *testing.T) {
 		successes int64
 		failures  int64
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		fields     fields
@@ -691,8 +684,7 @@ func Test_count_reset(t *testing.T) {
 		successes int64
 		failures  int64
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		fields     fields
