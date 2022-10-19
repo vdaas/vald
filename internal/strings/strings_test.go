@@ -57,6 +57,27 @@ func TestJoin(t *testing.T) {
 				checkFunc: defaultCheckFunc,
 			}
 		}(),
+		// func() test {
+		// 	l := 2 << 24
+		// 	c := 1024
+		// 	sep := "/"
+		// 	rs := randStr(l)
+		// 	ss := make([]string, 0, c)
+		// 	for i := 0; i < c; i++ {
+		// 		ss = append(ss, rs)
+		// 	}
+		// 	return test{
+		// 		name: "test_long_string",
+		// 		args: args{
+		// 			elems: ss,
+		// 			sep:   sep,
+		// 		},
+		// 		want: want{
+		// 			wantStr: strings.Join(ss, sep),
+		// 		},
+		// 		checkFunc: defaultCheckFunc,
+		// 	}
+		// }(),
 	}
 
 	for _, tc := range tests {

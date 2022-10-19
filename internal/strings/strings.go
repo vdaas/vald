@@ -73,6 +73,7 @@ func Join(elems []string, sep string) (str string) {
 	b := bufferPool.Get().(*bytes.Buffer)
 	defer bufferPool.Put(b)
 	defer b.Reset()
+	b.Grow(n)
 	b.WriteString(elems[0])
 	for _, s := range elems[1:] {
 		b.WriteString(sep)
