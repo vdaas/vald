@@ -1,5 +1,78 @@
 # CHANGELOG
 
+## v1.6.2
+
+### Docker images
+
+<table>
+  <tr>
+    <th>component</th>
+    <th>Docker pull</th>
+  </tr>
+  <tr>
+    <td>Agent NGT</td>
+    <td>
+      <code>docker pull vdaas/vald-agent-ngt:v1.6.2</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-agent-ngt:v1.6.2</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Agent sidecar</td>
+    <td>
+      <code>docker pull vdaas/vald-agent-sidecar:v1.6.2</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-agent-sidecar:v1.6.2</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Discoverers</td>
+    <td>
+      <code>docker pull vdaas/vald-discoverer-k8s:v1.6.2</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-discoverer-k8s:v1.6.2</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Gateways</td>
+    <td>
+      <code>docker pull vdaas/vald-lb-gateway:v1.6.2</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-lb-gateway:v1.6.2</code><br/>
+      <code>docker pull vdaas/vald-filter-gateway:v1.6.2</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-filter-gateway:v1.6.2</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Index Manager</td>
+    <td>
+      <code>docker pull vdaas/vald-manager-index:v1.6.2</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-manager-index:v1.6.2</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Helm Operator</td>
+    <td>
+      <code>docker pull vdaas/vald-helm-operator:v1.6.2</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-helm-operator:v1.6.2</code>
+    </td>
+  </tr>
+</table>
+
+### Documents
+- [GoDoc](https://pkg.go.dev/github.com/vdaas/vald@v1.6.2)
+- [Helm Chart Reference](https://github.com/vdaas/vald/blob/v1.6.2/charts/vald/README.md)
+- [Helm Operator Chart Reference](https://github.com/vdaas/vald/blob/v1.6.2/charts/vald-helm-operator/README.md)
+
+### Changes
+🐛 Bugfix
+- Bugfix success handling in the half-open and add flow control [#1805](https://github.com/vdaas/vald/pull/1805)
+- Fix string concat buffer overflow [#1806](https://github.com/vdaas/vald/pull/1806)
+
+:white_check_mark: Test 
+- Implement pkg/agent/handler createAndSaveIndex test case [#1794](https://github.com/vdaas/vald/pull/1794)
+
+:pencil:  Document
+- Add cluster role document [#1796](https://github.com/vdaas/vald/pull/1796)
+- Fix document format [#1804](https://github.com/vdaas/vald/pull/1804)
+
+
 ## v1.6.1
 
 ### Docker images
