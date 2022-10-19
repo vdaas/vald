@@ -19,6 +19,7 @@ type Counter interface {
 	Total() int64
 	Successes() int64
 	Fails() int64
+	Ignores() int64
 }
 
 type count struct {
