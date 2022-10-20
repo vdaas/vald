@@ -57,6 +57,28 @@ func TestJoin(t *testing.T) {
 				checkFunc: defaultCheckFunc,
 			}
 		}(),
+		// This test case consumes a significant memory (maybe 300GB~) due to its characteristic of generating long strings and concatenating multiple strings, and takes a very long time to execute.
+		// func() test {
+		// 	l := 2 << 24
+		// 	c := 1024
+		// 	sep := "/"
+		// 	rs := randStr(l)
+		// 	ss := make([]string, 0, c)
+		// 	for i := 0; i < c; i++ {
+		// 		ss = append(ss, rs)
+		// 	}
+		// 	return test{
+		// 		name: "test_long_string",
+		// 		args: args{
+		// 			elems: ss,
+		// 			sep:   sep,
+		// 		},
+		// 		want: want{
+		// 			wantStr: strings.Join(ss, sep),
+		// 		},
+		// 		checkFunc: defaultCheckFunc,
+		// 	}
+		// }(),
 	}
 
 	for _, tc := range tests {

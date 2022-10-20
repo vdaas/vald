@@ -17,7 +17,6 @@ import (
 	"context"
 	"fmt"
 	"reflect"
-	"sync/atomic"
 	"testing"
 	"time"
 
@@ -124,7 +123,7 @@ func Test_breaker_do(t *testing.T) {
 	}
 	type fields struct {
 		key                   string
-		count                 atomic.Value
+		count                 *count
 		tripped               int32
 		closedErrRate         float32
 		closedErrShouldTrip   Tripper
@@ -273,7 +272,7 @@ func Test_breaker_do(t *testing.T) {
 func Test_breaker_isReady(t *testing.T) {
 	type fields struct {
 		key                   string
-		count                 atomic.Value
+		count                 *count
 		tripped               int32
 		closedErrRate         float32
 		closedErrShouldTrip   Tripper
@@ -323,17 +322,16 @@ func Test_breaker_isReady(t *testing.T) {
 			}
 		}(),
 		func() test {
-			var atCount atomic.Value
-			atCount.Store(&count{
+			cnt := &count{
 				successes: 1,
-			})
+			}
 			return test{
 				name: "return the StateHalfOpen and nil when the current state is HalfOpen",
 				fields: fields{
 					key:     "insertRPC",
 					tripped: 1,
 					openExp: time.Now().Add(-100 * time.Second).UnixNano(),
-					count:   atCount,
+					count:   cnt,
 				},
 				want: want{
 					wantSt: StateHalfOpen,
@@ -343,15 +341,14 @@ func Test_breaker_isReady(t *testing.T) {
 			}
 		}(),
 		func() test {
-			var atCount atomic.Value
-			atCount.Store(&count{})
+			cnt := &count{}
 			return test{
 				name: "return the StateHalfOpen and error when the current state is HalfOpen but the flow is being limited",
 				fields: fields{
 					key:     "insertRPC",
 					tripped: 1,
 					openExp: time.Now().Add(-100 * time.Second).UnixNano(),
-					count:   atCount,
+					count:   cnt,
 				},
 				want: want{
 					wantSt: StateHalfOpen,
@@ -361,9 +358,8 @@ func Test_breaker_isReady(t *testing.T) {
 					if err := defaultCheckFunc(w, s, err); err != nil {
 						return err
 					}
-					cnt := atCount.Load().(*count)
-					if got := cnt.Fails(); got != 1 {
-						return fmt.Errorf("failures is not equals. want: %d, but got: %d", 2, got)
+					if got := cnt.Fails(); got != 0 {
+						return fmt.Errorf("failures is not equals. want: %d, but got: %d", 0, got)
 					}
 					return nil
 				},
@@ -427,7 +423,7 @@ func Test_breaker_isReady(t *testing.T) {
 func Test_breaker_success(t *testing.T) {
 	type fields struct {
 		key                   string
-		count                 atomic.Value
+		count                 *count
 		tripped               int32
 		closedErrRate         float32
 		closedErrShouldTrip   Tripper
@@ -453,18 +449,17 @@ func Test_breaker_success(t *testing.T) {
 	}
 	tests := []test{
 		func() test {
-			var atCount atomic.Value
-			atCount.Store(&count{
+			cnt := &count{
 				successes: 10,
 				failures:  10,
-			})
+			}
 			halfOpenErrRate := float32(0.5)
 			minSamples := int64(10)
 			return test{
 				name: "the current state change from HalfOpen to Close when the success rate is higher",
 				fields: fields{
 					key:                   "insertRPC",
-					count:                 atCount,
+					count:                 cnt,
 					tripped:               1,
 					openExp:               time.Now().Add(-100 * time.Second).UnixNano(),
 					halfOpenErrRate:       halfOpenErrRate,
@@ -481,18 +476,17 @@ func Test_breaker_success(t *testing.T) {
 			}
 		}(),
 		func() test {
-			var atCount atomic.Value
-			atCount.Store(&count{
+			cnt := &count{
 				successes: 10,
 				failures:  11,
-			})
+			}
 			halfOpenErrRate := float32(0.5)
 			minSamples := int64(10)
 			return test{
 				name: "the current state do not change from HalfOpen to Close when the success rate is less",
 				fields: fields{
 					key:                   "insertRPC",
-					count:                 atCount,
+					count:                 cnt,
 					tripped:               1,
 					openExp:               time.Now().Add(-100 * time.Second).UnixNano(),
 					halfOpenErrRate:       halfOpenErrRate,
@@ -551,7 +545,7 @@ func Test_breaker_success(t *testing.T) {
 func Test_breaker_fail(t *testing.T) {
 	type fields struct {
 		key                   string
-		count                 atomic.Value
+		count                 *count
 		tripped               int32
 		closedErrRate         float32
 		closedErrShouldTrip   Tripper
@@ -570,71 +564,102 @@ func Test_breaker_fail(t *testing.T) {
 		want       want
 		checkFunc  func(want) error
 		beforeFunc func(*testing.T)
-		afterFunc  func(*testing.T)
+		afterFunc  func(*testing.T, *breaker)
 	}
 	defaultCheckFunc := func(w want) error {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           key: "",
-		           count: nil,
-		           tripped: 0,
-		           closedErrRate: 0,
-		           closedErrShouldTrip: nil,
-		           halfOpenErrRate: 0,
-		           halfOpenErrShouldTrip: nil,
-		           minSamples: 0,
-		           openTimeout: nil,
-		           openExp: 0,
-		           cloedRefreshTimeout: nil,
-		           closedRefreshExp: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		       beforeFunc: func(t *testing.T,) {
-		           t.Helper()
-		       },
-		       afterFunc: func(t *testing.T,) {
-		           t.Helper()
-		       },
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           key: "",
-		           count: nil,
-		           tripped: 0,
-		           closedErrRate: 0,
-		           closedErrShouldTrip: nil,
-		           halfOpenErrRate: 0,
-		           halfOpenErrShouldTrip: nil,
-		           minSamples: 0,
-		           openTimeout: nil,
-		           openExp: 0,
-		           cloedRefreshTimeout: nil,
-		           closedRefreshExp: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		           beforeFunc: func(t *testing.T,) {
-		               t.Helper()
-		           },
-		           afterFunc: func(t *testing.T,) {
-		               t.Helper()
-		           },
-		       }
-		   }(),
-		*/
+		func() test {
+			cnt := &count{
+				successes: 10,
+				failures:  11,
+			}
+			closedErrRate := float32(0.5)
+			minSamples := int64(20)
+			return test{
+				name: "the current state change from Close to Open when the failure rate is higher",
+				fields: fields{
+					key:                 "insertRPC",
+					count:               cnt,
+					tripped:             0,
+					closedErrRate:       closedErrRate,
+					closedRefreshExp:    time.Now().Add(100 * time.Second).UnixNano(),
+					closedErrShouldTrip: NewRateTripper(closedErrRate, minSamples),
+					minSamples:          minSamples,
+				},
+				checkFunc: defaultCheckFunc,
+				afterFunc: func(t *testing.T, b *breaker) {
+					t.Helper()
+					if b.tripped == 0 {
+						t.Errorf("state did not change: %d", b.tripped)
+					}
+					if total := cnt.Total(); total != 0 {
+						t.Errorf("count did not reset: %d", total)
+					}
+				},
+			}
+		}(),
+		func() test {
+			cnt := &count{
+				successes: 10,
+				failures:  11,
+			}
+			halfOpenErrRate := float32(0.5)
+			minSamples := int64(20)
+			return test{
+				name: "the current state change from HalfOpen to Open when the failure rate is higher",
+				fields: fields{
+					key:                   "insertRPC",
+					count:                 cnt,
+					tripped:               1,
+					openExp:               time.Now().Add(-100 * time.Second).UnixNano(),
+					halfOpenErrRate:       halfOpenErrRate,
+					halfOpenErrShouldTrip: NewRateTripper(halfOpenErrRate, minSamples),
+					minSamples:            minSamples,
+				},
+				checkFunc: defaultCheckFunc,
+				afterFunc: func(t *testing.T, b *breaker) {
+					t.Helper()
+					if b.tripped == 0 {
+						t.Errorf("state changed: %d", b.tripped)
+					}
+					if total := b.count.Total(); total != 0 {
+						t.Errorf("count did not reset: %d", total)
+					}
+				},
+			}
+		}(),
+		func() test {
+			cnt := &count{
+				successes: 10,
+				failures:  1,
+			}
+			halfOpenErrRate := float32(0.5)
+			minSamples := int64(10)
+			return test{
+				name: "the current HalfOpen state dot not change when the failure rate does not reached the setting value",
+				fields: fields{
+					key:                   "insertRPC",
+					count:                 cnt,
+					tripped:               1,
+					openExp:               time.Now().Add(-100 * time.Second).UnixNano(),
+					halfOpenErrRate:       halfOpenErrRate,
+					halfOpenErrShouldTrip: NewRateTripper(halfOpenErrRate, minSamples),
+					minSamples:            minSamples,
+				},
+				checkFunc: defaultCheckFunc,
+				afterFunc: func(t *testing.T, b *breaker) {
+					t.Helper()
+					if b.tripped == 0 {
+						t.Errorf("state changed: %d", b.tripped)
+					}
+					if total := b.count.Total(); total == 0 {
+						t.Errorf("count reseted: %d", total)
+					}
+				},
+			}
+		}(),
 	}
 
 	for _, tc := range tests {
@@ -644,9 +669,6 @@ func Test_breaker_fail(t *testing.T) {
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(tt)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(tt)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -666,6 +688,9 @@ func Test_breaker_fail(t *testing.T) {
 				cloedRefreshTimeout:   test.fields.cloedRefreshTimeout,
 				closedRefreshExp:      test.fields.closedRefreshExp,
 			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(tt, b)
+			}
 
 			b.fail()
 			if err := checkFunc(test.want); err != nil {
@@ -678,7 +703,7 @@ func Test_breaker_fail(t *testing.T) {
 func Test_breaker_currentState(t *testing.T) {
 	type fields struct {
 		key                   string
-		count                 atomic.Value
+		count                 *count
 		tripped               int32
 		closedErrRate         float32
 		closedErrShouldTrip   Tripper
@@ -810,7 +835,7 @@ func Test_breaker_currentState(t *testing.T) {
 func Test_breaker_reset(t *testing.T) {
 	type fields struct {
 		key                   string
-		count                 atomic.Value
+		count                 *count
 		tripped               int32
 		closedErrRate         float32
 		closedErrShouldTrip   Tripper
@@ -937,7 +962,7 @@ func Test_breaker_reset(t *testing.T) {
 func Test_breaker_trip(t *testing.T) {
 	type fields struct {
 		key                   string
-		count                 atomic.Value
+		count                 *count
 		tripped               int32
 		closedErrRate         float32
 		closedErrShouldTrip   Tripper
@@ -1064,7 +1089,7 @@ func Test_breaker_trip(t *testing.T) {
 func Test_breaker_isTripped(t *testing.T) {
 	type fields struct {
 		key                   string
-		count                 atomic.Value
+		count                 *count
 		tripped               int32
 		closedErrRate         float32
 		closedErrShouldTrip   Tripper
