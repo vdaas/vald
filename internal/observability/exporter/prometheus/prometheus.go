@@ -20,7 +20,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
@@ -37,9 +36,8 @@ type Prometheus interface {
 }
 
 type exp struct {
-	exporter otelprom.Exporter
+	exporter *otelprom.Exporter
 	views    []metrics.View
-	registry *prometheus.Registry
 
 	namespace          string
 	endpoint           string
@@ -54,8 +52,8 @@ var (
 	once     sync.Once
 )
 
-func New(opts ...Option) (Prometheus, error) {
-	e := &exp{}
+func New(opts ...Option) (prom Prometheus, err error) {
+	e := new(exp)
 	for _, opt := range append(defaultOpts, opts...) {
 		if err := opt(e); err != nil {
 			oerr := errors.ErrOptionFailed(err, reflect.ValueOf(opt))
@@ -67,7 +65,10 @@ func New(opts ...Option) (Prometheus, error) {
 			log.Warn(oerr)
 		}
 	}
-	e.exporter = otelprom.New()
+	e.exporter, err = otelprom.New()
+	if err != nil {
+		return nil, err
+	}
 
 	// If implemented in the Start function, registration of global provider will be delayed, and other internal libraries may use default global provider before registration.
 	global.SetMeterProvider(metric.NewMeterProvider(
@@ -76,9 +77,7 @@ func New(opts ...Option) (Prometheus, error) {
 			e.views...,
 		),
 	))
-	e.registry = prometheus.NewRegistry()
-
-	return e, nil
+	return prom, nil
 }
 
 func Init(opts ...Option) (Prometheus, error) {
@@ -93,9 +92,6 @@ func Init(opts ...Option) (Prometheus, error) {
 }
 
 func (e *exp) Start(ctx context.Context) error {
-	if err := e.registry.Register(e.exporter.Collector); err != nil {
-		return err
-	}
 	return nil
 }
 
@@ -103,13 +99,12 @@ func (e *exp) Stop(ctx context.Context) error {
 	if err := e.exporter.Shutdown(ctx); err != nil {
 		return err
 	}
-	e.registry.Unregister(e.exporter.Collector)
 	return nil
 }
 
 func (e *exp) NewHTTPHandler() http.Handler {
 	mux := http.NewServeMux()
-	mux.Handle(e.endpoint, promhttp.HandlerFor(e.registry, promhttp.HandlerOpts{}))
+	mux.Handle(e.endpoint, promhttp.Handler())
 	return mux
 }
 

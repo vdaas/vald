@@ -72,20 +72,41 @@ func (bm *breakerManager) Do(ctx context.Context, key string, fn func(ctx contex
 		mu.Unlock()
 	}()
 
+	var br *breaker
 	// Pre-loading to prevent a lot of object generation.
 	obj, ok := bm.m.Load(key)
-	if ok {
-		val, st, err = obj.(*breaker).do(ctx, fn)
+	if !ok {
+		br, err = newBreaker(key, bm.opts...)
+		if err != nil {
+			return nil, err
+		}
+		obj, _ = bm.m.LoadOrStore(key, br)
+	}
+	br, ok = obj.(*breaker)
+	if !ok {
+		br, err = newBreaker(key, bm.opts...)
+		if err != nil {
+			return nil, err
+		}
+		bm.m.Store(key, br)
+	}
+	val, st, err = br.do(ctx, fn)
+	if err != nil {
+		switch st {
+		case StateClosed:
+			err = errors.Wrapf(err, "circuitbreaker state is %s, this error is not caused by circuitbreaker", st.String())
+		case StateOpen:
+			if !errors.Is(err, errors.ErrCircuitBreakerOpenState) {
+				err = errors.Wrap(err, errors.ErrCircuitBreakerOpenState.Error())
+			}
+		case StateHalfOpen:
+			if !errors.Is(err, errors.ErrCircuitBreakerHalfOpenFlowLimitation) {
+				err = errors.Wrap(err, errors.ErrCircuitBreakerHalfOpenFlowLimitation.Error())
+			}
+		}
 		return val, err
 	}
-
-	b, err := newBreaker(key, bm.opts...)
-	if err != nil {
-		return nil, err
-	}
-	obj, _ = bm.m.LoadOrStore(key, b)
-	val, st, err = obj.(*breaker).do(ctx, fn)
-	return val, err
+	return val, nil
 }
 
 func Metrics(_ context.Context) map[string]map[State]int64 {

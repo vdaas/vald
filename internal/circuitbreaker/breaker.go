@@ -39,10 +39,15 @@ type breaker struct {
 	closedRefreshExp      int64 // unix time
 }
 
+var (
+	serr  = new(errors.ErrCircuitBreakerMarkWithSuccess)
+	igerr = new(errors.ErrCircuitBreakerIgnorable)
+)
+
 func newBreaker(key string, opts ...BreakerOption) (*breaker, error) {
 	b := &breaker{
 		key:   key,
-		count: &count{},
+		count: new(count),
 	}
 	for _, opt := range append(defaultBreakerOpts, opts...) {
 		if err := opt(b); err != nil {
@@ -74,15 +79,13 @@ func (b *breaker) do(ctx context.Context, fn func(ctx context.Context) (val inte
 	}
 	val, err = fn(ctx)
 	if err != nil {
-		serr := &errors.ErrCircuitBreakerMarkWithSuccess{}
 		if errors.As(err, &serr) {
 			b.success()
-			return nil, b.currentState(), serr.Unwrap()
+			return nil, b.currentState(), err.(*errors.ErrCircuitBreakerMarkWithSuccess).Unwrap()
 		}
 
-		igerr := &errors.ErrCircuitBreakerIgnorable{}
 		if errors.As(err, &igerr) {
-			return nil, b.currentState(), igerr.Unwrap()
+			return nil, b.currentState(), err.(*errors.ErrCircuitBreakerIgnorable).Unwrap()
 		}
 
 		if errors.Is(err, context.Canceled) ||
