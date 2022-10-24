@@ -16,13 +16,13 @@ Vald ===> OpenTelemetry Collector  ====
                                         ===> Prometheus <=== Grafana
 ```
 
-1. To deploy the operator in an Kubernetes Cluster, we first need to deploy [cert-manager](https://cert-manager.io/docs/installation/).
+1. To deploy the operator in a Kubernetes Cluster, we first need to deploy [cert-manager](https://cert-manager.io/docs/installation/).
 
     ```sh
     make k8s/external/cert-manager/deploy
     ```
 
-2. Deploy Jaeger and Prometheus to export metrics and traces from OpenTelemetry Collector.
+2. Deploy Jaeger and Prometheus to export traces and metrics from OpenTelemetry Collector.
 
     - Deploy Jaeger
 
