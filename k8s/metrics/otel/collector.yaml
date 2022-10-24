@@ -41,6 +41,8 @@ spec:
     exporters:
       jaeger:
         endpoint: "jaeger-collector.default.svc.cluster.local:14250"
+        tls:
+          insecure: true
 
       prometheus:
         endpoint: "0.0.0.0:6061"
