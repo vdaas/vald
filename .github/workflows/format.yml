@@ -45,11 +45,11 @@ jobs:
           BRANCH_NAME="formatter/go_and_yaml/format_at_${TIMESTAMP}"
           git checkout main
           git checkout -b ${BRANCH_NAME}
-          echo "::set-output name=BRANCH_NAME::${BRANCH_NAME}"
+          echo "BRANCH_NAME=${BRANCH_NAME}" >> $GITHUB_OUTPUT
       - name: Fetch golang version
         run: |
           GO_VERSION=`make version/go`
-          echo "::set-output name=version::${GO_VERSION}"
+          echo "version=${GO_VERSION}" >> $GITHUB_OUTPUT
         id: golang_version
       - uses: actions/setup-go@v3
         with:
