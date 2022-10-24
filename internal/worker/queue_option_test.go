@@ -18,7 +18,6 @@
 package worker
 
 import (
-	stderrors "errors"
 	"reflect"
 	"testing"
 	"time"
@@ -231,7 +230,7 @@ func TestWithQueueCheckDuration(t *testing.T) {
 			},
 			want: want{
 				obj: new(T),
-				err: stderrors.New("time: invalid duration \"invalid\""),
+				err: errors.New("time: invalid duration \"invalid\""),
 			},
 		},
 	}

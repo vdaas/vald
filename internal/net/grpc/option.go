@@ -20,7 +20,6 @@ package grpc
 import (
 	"context"
 	"crypto/tls"
-	"strings"
 	"time"
 
 	"github.com/vdaas/vald/internal/backoff"
@@ -29,6 +28,7 @@ import (
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/net/grpc/interceptor/client/trace"
+	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/timeutil"
 	"google.golang.org/grpc"
 	gbackoff "google.golang.org/grpc/backoff"

@@ -19,11 +19,12 @@ package io
 
 import (
 	"bytes"
-	"errors"
 	"io"
 	"math"
 	"sync"
 	"sync/atomic"
+
+	"github.com/vdaas/vald/internal/errors"
 )
 
 var cio = NewCopier(0)

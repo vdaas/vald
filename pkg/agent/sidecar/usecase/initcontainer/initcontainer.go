@@ -18,7 +18,6 @@ package initcontainer
 
 import (
 	"context"
-	"errors"
 
 	"github.com/vdaas/vald/apis/grpc/v1/agent/sidecar"
 	iconf "github.com/vdaas/vald/internal/config"
@@ -27,6 +26,7 @@ import (
 	"github.com/vdaas/vald/internal/db/storage/blob/s3"
 	"github.com/vdaas/vald/internal/db/storage/blob/s3/session"
 	"github.com/vdaas/vald/internal/errgroup"
+	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/io"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net"

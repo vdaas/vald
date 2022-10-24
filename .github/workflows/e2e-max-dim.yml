@@ -45,7 +45,7 @@ jobs:
         if: github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-deploy'
         run: |
           pr_num=`cat $GITHUB_EVENT_PATH | jq -r ".number"`
-          echo "::set-output name=PR_NUM::${pr_num}"
+          echo "PR_NUM=${pr_num}" >> $GITHUB_OUTPUT
       - name: Specify container versions
         if: github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-deploy'
         id: specify_container_versions
@@ -55,7 +55,7 @@ jobs:
       - name: Fetch Helm version
         run: |
           HELM_VERSION=`make version/helm`
-          echo "::set-output name=helm::${HELM_VERSION}"
+          echo "helm=${HELM_VERSION}" >> $GITHUB_OUTPUT
         id: version
       - uses: rinx/setup-k3d@v0.0.4
         with:
@@ -65,7 +65,7 @@ jobs:
       - name: check k3d
         run: |
           kubectl cluster-info
-      - uses: azure/setup-helm@v1
+      - uses: azure/setup-helm@v3
         with:
           version: ${{ steps.version.outputs.helm }}
       - name: Helm version
@@ -81,7 +81,7 @@ jobs:
       - name: Fetch golang version
         run: |
           GO_VERSION=`make version/go`
-          echo "::set-output name=version::${GO_VERSION}"
+          echo "version=${GO_VERSION}" >> $GITHUB_OUTPUT
         id: golang_version
       - uses: actions/setup-go@v3
         with:
@@ -140,7 +140,7 @@ jobs:
             BIT=$(($BIT+1))
             rm ${FILEPATH}
           done
-          echo "::set-output name=MAX_BIT::${BIT}"
+          echo "MAX_BIT=${BIT}" >> $GITHUB_OUTPUT
           echo "MAX_BIT=${BIT}"
         env:
           WAIT_FOR_SELECTOR: app=vald-agent-ngt
