@@ -13,15 +13,11 @@
 // limitations under the License.
 package errors
 
-import (
-	"errors"
-)
-
 var (
 	// ErrCircuitBreakerHalfOpenFlowLimitation is returned in case of flow limitation in half-open state.
-	ErrCircuitBreakerHalfOpenFlowLimitation = errors.New("circuitbreaker breaker half-open flow limitation")
+	ErrCircuitBreakerHalfOpenFlowLimitation = New("circuitbreaker breaker half-open flow limitation")
 	// ErrCircuitBreakerOpenState is returned when the CB state is open.
-	ErrCircuitBreakerOpenState = errors.New("circuit breaker is open")
+	ErrCircuitBreakerOpenState = New("circuit breaker is open")
 )
 
 type ErrCircuitBreakerIgnorable struct {
