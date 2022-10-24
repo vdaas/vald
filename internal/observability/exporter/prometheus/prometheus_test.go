@@ -20,7 +20,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/prometheus/client_golang/prometheus"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/observability/metrics"
 	"github.com/vdaas/vald/internal/test/goleak"
@@ -32,23 +31,23 @@ func TestNew(t *testing.T) {
 		opts []Option
 	}
 	type want struct {
-		want Prometheus
-		err  error
+		wantProm Prometheus
+		err      error
 	}
 	type test struct {
 		name       string
 		args       args
 		want       want
 		checkFunc  func(want, Prometheus, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
-	defaultCheckFunc := func(w want, got Prometheus, err error) error {
+	defaultCheckFunc := func(w want, gotProm Prometheus, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+		if !reflect.DeepEqual(gotProm, w.wantProm) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotProm, w.wantProm)
 		}
 		return nil
 	}
@@ -62,6 +61,12 @@ func TestNew(t *testing.T) {
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -75,6 +80,12 @@ func TestNew(t *testing.T) {
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -86,18 +97,18 @@ func TestNew(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
 
-			got, err := New(test.args.opts...)
-			if err := checkFunc(test.want, got, err); err != nil {
+			gotProm, err := New(test.args.opts...)
+			if err := checkFunc(test.want, gotProm, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -117,8 +128,8 @@ func TestInit(t *testing.T) {
 		args       args
 		want       want
 		checkFunc  func(want, Prometheus, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, got Prometheus, err error) error {
 		if !errors.Is(err, w.err) {
@@ -139,6 +150,12 @@ func TestInit(t *testing.T) {
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -152,6 +169,12 @@ func TestInit(t *testing.T) {
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -163,10 +186,10 @@ func TestInit(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -186,9 +209,8 @@ func Test_exp_Start(t *testing.T) {
 		ctx context.Context
 	}
 	type fields struct {
-		exporter           otelprom.Exporter
+		exporter           *otelprom.Exporter
 		views              []metrics.View
-		registry           *prometheus.Registry
 		namespace          string
 		endpoint           string
 		collectInterval    time.Duration
@@ -205,8 +227,8 @@ func Test_exp_Start(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -225,7 +247,6 @@ func Test_exp_Start(t *testing.T) {
 		       fields: fields {
 		           exporter: nil,
 		           views: nil,
-		           registry: nil,
 		           namespace: "",
 		           endpoint: "",
 		           collectInterval: nil,
@@ -235,6 +256,12 @@ func Test_exp_Start(t *testing.T) {
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -249,7 +276,6 @@ func Test_exp_Start(t *testing.T) {
 		           fields: fields {
 		           exporter: nil,
 		           views: nil,
-		           registry: nil,
 		           namespace: "",
 		           endpoint: "",
 		           collectInterval: nil,
@@ -259,6 +285,12 @@ func Test_exp_Start(t *testing.T) {
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -270,10 +302,10 @@ func Test_exp_Start(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -282,7 +314,6 @@ func Test_exp_Start(t *testing.T) {
 			e := &exp{
 				exporter:           test.fields.exporter,
 				views:              test.fields.views,
-				registry:           test.fields.registry,
 				namespace:          test.fields.namespace,
 				endpoint:           test.fields.endpoint,
 				collectInterval:    test.fields.collectInterval,
@@ -304,9 +335,8 @@ func Test_exp_Stop(t *testing.T) {
 		ctx context.Context
 	}
 	type fields struct {
-		exporter           otelprom.Exporter
+		exporter           *otelprom.Exporter
 		views              []metrics.View
-		registry           *prometheus.Registry
 		namespace          string
 		endpoint           string
 		collectInterval    time.Duration
@@ -323,8 +353,8 @@ func Test_exp_Stop(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -343,7 +373,6 @@ func Test_exp_Stop(t *testing.T) {
 		       fields: fields {
 		           exporter: nil,
 		           views: nil,
-		           registry: nil,
 		           namespace: "",
 		           endpoint: "",
 		           collectInterval: nil,
@@ -353,6 +382,12 @@ func Test_exp_Stop(t *testing.T) {
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -367,7 +402,6 @@ func Test_exp_Stop(t *testing.T) {
 		           fields: fields {
 		           exporter: nil,
 		           views: nil,
-		           registry: nil,
 		           namespace: "",
 		           endpoint: "",
 		           collectInterval: nil,
@@ -377,6 +411,12 @@ func Test_exp_Stop(t *testing.T) {
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -388,10 +428,10 @@ func Test_exp_Stop(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -400,7 +440,6 @@ func Test_exp_Stop(t *testing.T) {
 			e := &exp{
 				exporter:           test.fields.exporter,
 				views:              test.fields.views,
-				registry:           test.fields.registry,
 				namespace:          test.fields.namespace,
 				endpoint:           test.fields.endpoint,
 				collectInterval:    test.fields.collectInterval,
@@ -419,9 +458,8 @@ func Test_exp_Stop(t *testing.T) {
 
 func Test_exp_NewHTTPHandler(t *testing.T) {
 	type fields struct {
-		exporter           otelprom.Exporter
+		exporter           *otelprom.Exporter
 		views              []metrics.View
-		registry           *prometheus.Registry
 		namespace          string
 		endpoint           string
 		collectInterval    time.Duration
@@ -437,8 +475,8 @@ func Test_exp_NewHTTPHandler(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, http.Handler) error
-		beforeFunc func()
-		afterFunc  func()
+		beforeFunc func(*testing.T)
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want, got http.Handler) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -454,7 +492,6 @@ func Test_exp_NewHTTPHandler(t *testing.T) {
 		       fields: fields {
 		           exporter: nil,
 		           views: nil,
-		           registry: nil,
 		           namespace: "",
 		           endpoint: "",
 		           collectInterval: nil,
@@ -464,6 +501,12 @@ func Test_exp_NewHTTPHandler(t *testing.T) {
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -475,7 +518,6 @@ func Test_exp_NewHTTPHandler(t *testing.T) {
 		           fields: fields {
 		           exporter: nil,
 		           views: nil,
-		           registry: nil,
 		           namespace: "",
 		           endpoint: "",
 		           collectInterval: nil,
@@ -485,6 +527,12 @@ func Test_exp_NewHTTPHandler(t *testing.T) {
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -496,10 +544,10 @@ func Test_exp_NewHTTPHandler(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -508,7 +556,6 @@ func Test_exp_NewHTTPHandler(t *testing.T) {
 			e := &exp{
 				exporter:           test.fields.exporter,
 				views:              test.fields.views,
-				registry:           test.fields.registry,
 				namespace:          test.fields.namespace,
 				endpoint:           test.fields.endpoint,
 				collectInterval:    test.fields.collectInterval,
@@ -534,8 +581,8 @@ func TestExporter(t *testing.T) {
 		name       string
 		want       want
 		checkFunc  func(want, Prometheus, error) error
-		beforeFunc func()
-		afterFunc  func()
+		beforeFunc func(*testing.T)
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want, got Prometheus, err error) error {
 		if !errors.Is(err, w.err) {
@@ -553,6 +600,12 @@ func TestExporter(t *testing.T) {
 		       name: "test_case_1",
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -563,6 +616,12 @@ func TestExporter(t *testing.T) {
 		           name: "test_case_2",
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -574,10 +633,10 @@ func TestExporter(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {

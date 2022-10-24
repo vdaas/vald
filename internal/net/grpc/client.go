@@ -617,7 +617,7 @@ func (g *gRPCClient) do(ctx context.Context, p pool.Conn, addr string, enableBac
 					}
 					return r, err
 				})
-				if errors.Is(err, errors.ErrCircuitBreakerOpenState) {
+				if err != nil && errors.Is(err, errors.ErrCircuitBreakerOpenState) {
 					return r, false, err
 				}
 				return r, ret, err

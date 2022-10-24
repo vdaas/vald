@@ -91,7 +91,7 @@ jobs:
           go version
           go get github.com/vdaas/vald-client-go/v1/payload
           go get github.com/vdaas/vald-client-go/v1/vald
-          BIT=1
+          BIT=18
           RELEASE=`helm list | grep vald | awk '{print $1}'`
           while [ $BIT -ne 32 ]; do
             echo "Start: Bit=${BIT}"
