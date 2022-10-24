@@ -98,7 +98,7 @@ runs:
         kubectl get pods
 
         podname=`kubectl get pods --selector=${WAIT_FOR_SELECTOR} | tail -1 | awk '{print $1}'`
-        echo "::set-output name=POD_NAME::${podname}"
+        echo "POD_NAME=${podname}" >> $GITHUB_OUTPUT
       env:
         VALDRELEASE: ${{ inputs.valdrelease }}
         WAIT_FOR_SELECTOR: ${{ inputs.wait_for_selector }}

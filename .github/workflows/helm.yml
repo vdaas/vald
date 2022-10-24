@@ -51,7 +51,7 @@ jobs:
           BRANCH_NAME="documentation/k8s-manifests/update_k8s_manifests_${TIMESTAMP}"
           git checkout main
           git checkout -b ${BRANCH_NAME}
-          echo "::set-output name=BRANCH_NAME::${BRANCH_NAME}"
+          echo "BRANCH_NAME=${BRANCH_NAME}" >> $GITHUB_OUTPUT
       - name: Update k8s-dir
         run: |
           make k8s/manifest/update

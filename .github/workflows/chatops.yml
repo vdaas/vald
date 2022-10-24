@@ -50,7 +50,7 @@ jobs:
           do
               if yq r chatops_permissions.yaml "roles.${role}.policies.*" | grep "^${REQUIRED_POLICY}$" > /dev/null 2>&1 ; then
                 echo "[OK] label requested by ${USERNAME}"
-                echo "::set-output name=EXECUTABLE::true"
+                echo "EXECUTABLE=true" >> $GITHUB_OUTPUT
                 break
               fi
           done
@@ -103,7 +103,7 @@ jobs:
           do
               if yq r chatops_permissions.yaml "roles.${role}.policies.*" | grep "^${REQUIRED_POLICY}$" > /dev/null 2>&1 ; then
                 echo "[OK] changelog requested by ${USERNAME}"
-                echo "::set-output name=EXECUTABLE::true"
+                echo "EXECUTABLE=true" >> $GITHUB_OUTPUT
                 break
               fi
           done
@@ -175,7 +175,7 @@ jobs:
           do
               if yq r chatops_permissions.yaml "roles.${role}.policies.*" | grep "^${REQUIRED_POLICY}$" > /dev/null 2>&1 ; then
                 echo "[OK] rebase requested by ${USERNAME}"
-                echo "::set-output name=EXECUTABLE::true"
+                echo "EXECUTABLE=true" >> $GITHUB_OUTPUT
                 break
               fi
           done
@@ -255,7 +255,7 @@ jobs:
           do
               if yq r chatops_permissions.yaml "roles.${role}.policies.*" | grep "^${REQUIRED_POLICY}$" > /dev/null 2>&1 ; then
                 echo "[OK] add-contributor requested by ${USERNAME}"
-                echo "::set-output name=EXECUTABLE::true"
+                echo "EXECUTABLE=true" >> $GITHUB_OUTPUT
                 break
               fi
           done
@@ -368,7 +368,7 @@ jobs:
           do
               if yq r chatops_permissions.yaml "roles.${role}.policies.*" | grep "^${REQUIRED_POLICY}$" > /dev/null 2>&1 ; then
                 echo "[OK] format requested by ${USERNAME}"
-                echo "::set-output name=EXECUTABLE::true"
+                echo "EXECUTABLE=true" >> $GITHUB_OUTPUT
                 break
               fi
           done
@@ -407,7 +407,7 @@ jobs:
         if: steps.check_comments_format.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         run: |
           GO_VERSION=`make version/go`
-          echo "::set-output name=version::${GO_VERSION}"
+          echo "version=${GO_VERSION}" >> $GITHUB_OUTPUT
         id: golang_version
       - uses: actions/setup-go@v3
         if: steps.check_comments_format.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
@@ -504,7 +504,7 @@ jobs:
           do
               if yq r chatops_permissions.yaml "roles.${role}.policies.*" | grep "^${REQUIRED_POLICY}$" > /dev/null 2>&1 ; then
                 echo "[OK] approved requested by ${USERNAME}"
-                echo "::set-output name=EXECUTABLE::true"
+                echo "EXECUTABLE=true" >> $GITHUB_OUTPUT
                 break
               fi
           done
