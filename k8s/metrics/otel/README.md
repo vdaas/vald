@@ -4,7 +4,7 @@ This directory contains manifests to deploy OpenTelemetry Operator and Collector
 
 # Getting started
 
-This section describes how to set up a monitoring system using OpenTelemetry, Jaeger and Prometheus.
+This section describes how to set up a monitoring system using OpenTelemetry, Jaeger and Prometheus and Grafana.
 
 The following is an example structure.
 
@@ -13,7 +13,7 @@ The following is an example structure.
                                        ||
 Vald ===> OpenTelemetry Collector  ====
                                        ||
-                                        ===> Prometheus
+                                        ===> Prometheus <=== Grafana
 ```
 
 1. To deploy the operator in an Kubernetes Cluster, we first need to deploy [cert-manager](https://cert-manager.io/docs/installation/).
@@ -22,7 +22,7 @@ Vald ===> OpenTelemetry Collector  ====
 make k8s/external/cert-manager/deploy
 ```
 
-2. Deploy Jaeger and Prometheus to export metrics and traces from OpenTelemetry Collector.
+1. Deploy Jaeger and Prometheus to export metrics and traces from OpenTelemetry Collector.
 
 - Deploy Jaeger
 
@@ -36,7 +36,13 @@ make k8s/metrics/jaeger/deploy
 make k8s/metrics/prometheus/operator/deploy
 ```
 
-3. Deploy OpenTelemetry Operator and Collector.
+1. Deploy Grafana and dashboard to visualize the metrics.
+
+```sh
+make k8s/metrics/grafana/deploy
+```
+
+1. Deploy OpenTelemetry Operator and Collector.
 
 - Deploy OpenTelemetry Operator
 
