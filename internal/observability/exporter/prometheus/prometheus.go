@@ -77,7 +77,7 @@ func New(opts ...Option) (prom Prometheus, err error) {
 			e.views...,
 		),
 	))
-	return prom, nil
+	return e, nil
 }
 
 func Init(opts ...Option) (Prometheus, error) {
