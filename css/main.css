@@ -861,6 +861,62 @@ details > summary  {
     margin-bottom: 16px;
 }
 
+/* see also */
+
+.cardlist{
+  display: flex;
+  flex-direction: column;
+}
+
+.cardlist .cardlist__card{
+  display: inline-block;
+  background-color: #f8f8f8;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.cardlist .card__title{
+  margin-bottom: 12px;
+  text-decoration: underline;
+  color: #006076;
+  font-weight: bold;
+}
+
+.cardlist .card__text{
+  margin-bottom: 0;
+  color: #333333;
+}
+
+@media screen and (min-width: 768px) {
+  .cardlist{
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+  .cardlist .cardlist__card{
+    width: 50%;
+    width: calc(50% - 8px);
+  }
+  .cardlist .cardlist__card:nth-child(odd){
+    margin-right: 16px;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  .cardlist .cardlist__card{
+    background-color: #333333;
+  }
+  .cardlist .card__title{
+    color: #00BAB1;
+  }
+  .cardlist .card__text{
+    color: #ffffff;
+  }
+
+}
+
+
+
 .language-bash{
   word-break: break-all;
 }

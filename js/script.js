@@ -343,3 +343,19 @@ const getGitHubStar = async () => {
   const json = await res.json()
   return json
 }
+
+// cut see also reading text
+
+function textTrim() {
+  var selector = document.getElementsByClassName('card__text');
+  var wordCount = 60;
+  var clamp = '…';
+  for (var i = 0; i < selector.length; i++) {
+    if (selector[i].innerText.length > wordCount) {
+      var str = selector[i].innerText;
+      str = str.substr(0, (wordCount - 1));
+      selector[i].innerText = str + clamp;
+    }
+  }
+}
+textTrim();
