@@ -750,6 +750,9 @@ func TestGRPCClient_Opts(t *testing.T) {
 					EnableBackoff:               true,
 					Insecure:                    false,
 					Timeout:                     "5m",
+					Interceptors: []string{
+						"TraceInterceptor",
+					},
 					Net: &Net{
 						Dialer: &Dialer{
 							Timeout: "10m",
@@ -775,7 +778,7 @@ func TestGRPCClient_Opts(t *testing.T) {
 				},
 			},
 			want: want{
-				want: make([]grpc.Option, 25),
+				want: make([]grpc.Option, 26),
 			},
 		},
 		{
@@ -823,6 +826,9 @@ func TestGRPCClient_Opts(t *testing.T) {
 					EnableBackoff:               true,
 					Insecure:                    false,
 					Timeout:                     "5m",
+					Interceptors: []string{
+						"TraceInterceptor",
+					},
 					Net: &Net{
 						Dialer: &Dialer{
 							Timeout: "10m",
@@ -902,6 +908,9 @@ func TestGRPCClient_Opts(t *testing.T) {
 					EnableBackoff:               true,
 					Insecure:                    false,
 					Timeout:                     "5m",
+					Interceptors: []string{
+						"TraceInterceptor",
+					},
 					Net: &Net{
 						Dialer: &Dialer{
 							Timeout: "10m",
@@ -985,6 +994,9 @@ func TestGRPCClient_Opts(t *testing.T) {
 					EnableBackoff:               true,
 					Insecure:                    false,
 					Timeout:                     "5m",
+					Interceptors: []string{
+						"TraceInterceptor",
+					},
 					Net: &Net{
 						Dialer: &Dialer{
 							Timeout: "10m",

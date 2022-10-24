@@ -20,22 +20,15 @@ package config
 // Observability represents the configuration for the observability.
 type Observability struct {
 	Enabled    bool        `json:"enabled"    yaml:"enabled"`
-	Collector  *Collector  `json:"collector"  yaml:"collector"`
+	Metrics    *Metrics    `json:"metrics"    yaml:"metrics"`
 	Trace      *Trace      `json:"trace"      yaml:"trace"`
 	Prometheus *Prometheus `json:"prometheus" yaml:"prometheus"`
 	Jaeger     *Jaeger     `json:"jaeger"     yaml:"jaeger"`
 }
 
-// Collector represents the configuration for the collector.
-type Collector struct {
-	Duration string   `json:"duration" yaml:"duration"`
-	Metrics  *Metrics `json:"metrics"  yaml:"metrics"`
-}
-
 // Trace represents the configuration for the trace.
 type Trace struct {
-	Enabled      bool    `json:"enabled"       yaml:"enabled"`
-	SamplingRate float64 `json:"sampling_rate" yaml:"sampling_rate"`
+	Enabled bool `json:"enabled" yaml:"enabled"`
 }
 
 // Metrics represents the configuration for the metrics.
@@ -61,21 +54,25 @@ type Jaeger struct {
 	CollectorEndpoint string `json:"collector_endpoint" yaml:"collector_endpoint"`
 	AgentEndpoint     string `json:"agent_endpoint"     yaml:"agent_endpoint"`
 
+	AgentMaxPacketSize     int    `json:"agent_max_packet_size"    yaml:"agent_max_packet_size"`
+	AgentReconnectInterval string `json:"agent_reconnect_interval" yaml:"agent_reconnect_interval"`
+
 	Username string `json:"username" yaml:"username"`
 	Password string `json:"password" yaml:"password"`
 
-	ServiceName string `json:"service_name" yaml:"service_name"`
-
-	BufferMaxCount int `json:"buffer_max_count" yaml:"buffer_max_count"`
+	ServiceName        string `json:"service_name"          yaml:"service_name"`
+	BatchTimeout       string `json:"batch_timeout"         yaml:"batch_timeout"`
+	ExportTimeout      string `json:"export_timeout"        yaml:"export_timeout"`
+	MaxExportBatchSize int    `json:"max_export_batch_size" yaml:"max_export_batch_size"`
+	MaxQueueSize       int    `json:"max_queue_size"        yaml:"max_queue_size"`
 }
 
 // Bind binds the actual data from the Observability receiver fields.
 func (o *Observability) Bind() *Observability {
-	if o.Collector != nil {
-		o.Collector = o.Collector.Bind()
+	if o.Metrics != nil {
+		o.Metrics.VersionInfoLabels = GetActualValues(o.Metrics.VersionInfoLabels)
 	} else {
-		o.Collector = new(Collector)
-		o.Collector.Metrics = new(Metrics)
+		o.Metrics = new(Metrics)
 	}
 
 	if o.Trace == nil {
@@ -90,27 +87,17 @@ func (o *Observability) Bind() *Observability {
 	}
 
 	if o.Jaeger != nil {
-		o.Jaeger.CollectorEndpoint = GetActualValue(o.Jaeger.CollectorEndpoint)
 		o.Jaeger.AgentEndpoint = GetActualValue(o.Jaeger.AgentEndpoint)
+		o.Jaeger.AgentReconnectInterval = GetActualValue(o.Jaeger.AgentReconnectInterval)
+		o.Jaeger.CollectorEndpoint = GetActualValue(o.Jaeger.CollectorEndpoint)
 		o.Jaeger.Username = GetActualValue(o.Jaeger.Username)
 		o.Jaeger.Password = GetActualValue(o.Jaeger.Password)
 		o.Jaeger.ServiceName = GetActualValue(o.Jaeger.ServiceName)
+		o.Jaeger.BatchTimeout = GetActualValue(o.Jaeger.BatchTimeout)
+		o.Jaeger.ExportTimeout = GetActualValue(o.Jaeger.ExportTimeout)
 	} else {
 		o.Jaeger = new(Jaeger)
 	}
 
 	return o
-}
-
-// Bind binds the actual data from the Collector receiver fields.
-func (c *Collector) Bind() *Collector {
-	c.Duration = GetActualValue(c.Duration)
-
-	if c.Metrics != nil {
-		c.Metrics.VersionInfoLabels = GetActualValues(c.Metrics.VersionInfoLabels)
-	} else {
-		c.Metrics = new(Metrics)
-	}
-
-	return c
 }

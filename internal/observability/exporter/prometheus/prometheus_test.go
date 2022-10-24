@@ -1,20 +1,16 @@
-//
 // Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//    https://www.apache.org/licenses/LICENSE-2.0
+//	https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
-
-// Package prometheus provides a prometheus exporter.
 package prometheus
 
 import (
@@ -22,15 +18,106 @@ import (
 	"net/http"
 	"reflect"
 	"testing"
+	"time"
 
-	"contrib.go.opencensus.io/exporter/prometheus"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/observability/metrics"
 	"github.com/vdaas/vald/internal/test/goleak"
+	otelprom "go.opentelemetry.io/otel/exporters/prometheus"
 )
 
 func TestNew(t *testing.T) {
 	type args struct {
-		opts []PrometheusOption
+		opts []Option
+	}
+	type want struct {
+		wantProm Prometheus
+		err      error
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, Prometheus, error) error
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
+	}
+	defaultCheckFunc := func(w want, gotProm Prometheus, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(gotProm, w.wantProm) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotProm, w.wantProm)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           opts: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           opts: nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(tt, test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(tt, test.args)
+			}
+			checkFunc := test.checkFunc
+			if test.checkFunc == nil {
+				checkFunc = defaultCheckFunc
+			}
+
+			gotProm, err := New(test.args.opts...)
+			if err := checkFunc(test.want, gotProm, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func TestInit(t *testing.T) {
+	type args struct {
+		opts []Option
 	}
 	type want struct {
 		want Prometheus
@@ -41,8 +128,8 @@ func TestNew(t *testing.T) {
 		args       args
 		want       want
 		checkFunc  func(want, Prometheus, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, got Prometheus, err error) error {
 		if !errors.Is(err, w.err) {
@@ -63,6 +150,12 @@ func TestNew(t *testing.T) {
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -76,6 +169,12 @@ func TestNew(t *testing.T) {
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -84,19 +183,20 @@ func TestNew(t *testing.T) {
 	for _, tc := range tests {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
 
-			got, err := New(test.args.opts...)
+			got, err := Init(test.args.opts...)
 			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -109,8 +209,14 @@ func Test_exp_Start(t *testing.T) {
 		ctx context.Context
 	}
 	type fields struct {
-		exporter *prometheus.Exporter
-		options  prometheusOptions
+		exporter           *otelprom.Exporter
+		views              []metrics.View
+		namespace          string
+		endpoint           string
+		collectInterval    time.Duration
+		collectTimeout     time.Duration
+		inmemoryEnabled    bool
+		histogramBoundarie []float64
 	}
 	type want struct {
 		err error
@@ -121,8 +227,8 @@ func Test_exp_Start(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -140,10 +246,22 @@ func Test_exp_Start(t *testing.T) {
 		       },
 		       fields: fields {
 		           exporter: nil,
-		           options: prometheusOptions{},
+		           views: nil,
+		           namespace: "",
+		           endpoint: "",
+		           collectInterval: nil,
+		           collectTimeout: nil,
+		           inmemoryEnabled: false,
+		           histogramBoundarie: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -157,10 +275,22 @@ func Test_exp_Start(t *testing.T) {
 		           },
 		           fields: fields {
 		           exporter: nil,
-		           options: prometheusOptions{},
+		           views: nil,
+		           namespace: "",
+		           endpoint: "",
+		           collectInterval: nil,
+		           collectTimeout: nil,
+		           inmemoryEnabled: false,
+		           histogramBoundarie: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -169,20 +299,27 @@ func Test_exp_Start(t *testing.T) {
 	for _, tc := range tests {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
 			e := &exp{
-				exporter: test.fields.exporter,
-				options:  test.fields.options,
+				exporter:           test.fields.exporter,
+				views:              test.fields.views,
+				namespace:          test.fields.namespace,
+				endpoint:           test.fields.endpoint,
+				collectInterval:    test.fields.collectInterval,
+				collectTimeout:     test.fields.collectTimeout,
+				inmemoryEnabled:    test.fields.inmemoryEnabled,
+				histogramBoundarie: test.fields.histogramBoundarie,
 			}
 
 			err := e.Start(test.args.ctx)
@@ -198,20 +335,31 @@ func Test_exp_Stop(t *testing.T) {
 		ctx context.Context
 	}
 	type fields struct {
-		exporter *prometheus.Exporter
-		options  prometheusOptions
+		exporter           *otelprom.Exporter
+		views              []metrics.View
+		namespace          string
+		endpoint           string
+		collectInterval    time.Duration
+		collectTimeout     time.Duration
+		inmemoryEnabled    bool
+		histogramBoundarie []float64
 	}
-	type want struct{}
+	type want struct {
+		err error
+	}
 	type test struct {
 		name       string
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		checkFunc  func(want, error) error
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
-	defaultCheckFunc := func(w want) error {
+	defaultCheckFunc := func(w want, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
 		return nil
 	}
 	tests := []test{
@@ -224,10 +372,22 @@ func Test_exp_Stop(t *testing.T) {
 		       },
 		       fields: fields {
 		           exporter: nil,
-		           options: prometheusOptions{},
+		           views: nil,
+		           namespace: "",
+		           endpoint: "",
+		           collectInterval: nil,
+		           collectTimeout: nil,
+		           inmemoryEnabled: false,
+		           histogramBoundarie: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -241,10 +401,22 @@ func Test_exp_Stop(t *testing.T) {
 		           },
 		           fields: fields {
 		           exporter: nil,
-		           options: prometheusOptions{},
+		           views: nil,
+		           namespace: "",
+		           endpoint: "",
+		           collectInterval: nil,
+		           collectTimeout: nil,
+		           inmemoryEnabled: false,
+		           histogramBoundarie: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -253,24 +425,31 @@ func Test_exp_Stop(t *testing.T) {
 	for _, tc := range tests {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
 			e := &exp{
-				exporter: test.fields.exporter,
-				options:  test.fields.options,
+				exporter:           test.fields.exporter,
+				views:              test.fields.views,
+				namespace:          test.fields.namespace,
+				endpoint:           test.fields.endpoint,
+				collectInterval:    test.fields.collectInterval,
+				collectTimeout:     test.fields.collectTimeout,
+				inmemoryEnabled:    test.fields.inmemoryEnabled,
+				histogramBoundarie: test.fields.histogramBoundarie,
 			}
 
-			e.Stop(test.args.ctx)
-			if err := checkFunc(test.want); err != nil {
+			err := e.Stop(test.args.ctx)
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -279,8 +458,14 @@ func Test_exp_Stop(t *testing.T) {
 
 func Test_exp_NewHTTPHandler(t *testing.T) {
 	type fields struct {
-		exporter *prometheus.Exporter
-		options  prometheusOptions
+		exporter           *otelprom.Exporter
+		views              []metrics.View
+		namespace          string
+		endpoint           string
+		collectInterval    time.Duration
+		collectTimeout     time.Duration
+		inmemoryEnabled    bool
+		histogramBoundarie []float64
 	}
 	type want struct {
 		want http.Handler
@@ -290,8 +475,8 @@ func Test_exp_NewHTTPHandler(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, http.Handler) error
-		beforeFunc func()
-		afterFunc  func()
+		beforeFunc func(*testing.T)
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want, got http.Handler) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -306,10 +491,22 @@ func Test_exp_NewHTTPHandler(t *testing.T) {
 		       name: "test_case_1",
 		       fields: fields {
 		           exporter: nil,
-		           options: prometheusOptions{},
+		           views: nil,
+		           namespace: "",
+		           endpoint: "",
+		           collectInterval: nil,
+		           collectTimeout: nil,
+		           inmemoryEnabled: false,
+		           histogramBoundarie: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -320,10 +517,22 @@ func Test_exp_NewHTTPHandler(t *testing.T) {
 		           name: "test_case_2",
 		           fields: fields {
 		           exporter: nil,
-		           options: prometheusOptions{},
+		           views: nil,
+		           namespace: "",
+		           endpoint: "",
+		           collectInterval: nil,
+		           collectTimeout: nil,
+		           inmemoryEnabled: false,
+		           histogramBoundarie: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -332,20 +541,27 @@ func Test_exp_NewHTTPHandler(t *testing.T) {
 	for _, tc := range tests {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
 			e := &exp{
-				exporter: test.fields.exporter,
-				options:  test.fields.options,
+				exporter:           test.fields.exporter,
+				views:              test.fields.views,
+				namespace:          test.fields.namespace,
+				endpoint:           test.fields.endpoint,
+				collectInterval:    test.fields.collectInterval,
+				collectTimeout:     test.fields.collectTimeout,
+				inmemoryEnabled:    test.fields.inmemoryEnabled,
+				histogramBoundarie: test.fields.histogramBoundarie,
 			}
 
 			got := e.NewHTTPHandler()
@@ -365,8 +581,8 @@ func TestExporter(t *testing.T) {
 		name       string
 		want       want
 		checkFunc  func(want, Prometheus, error) error
-		beforeFunc func()
-		afterFunc  func()
+		beforeFunc func(*testing.T)
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want, got Prometheus, err error) error {
 		if !errors.Is(err, w.err) {
@@ -384,6 +600,12 @@ func TestExporter(t *testing.T) {
 		       name: "test_case_1",
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -394,6 +616,12 @@ func TestExporter(t *testing.T) {
 		           name: "test_case_2",
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -402,12 +630,13 @@ func TestExporter(t *testing.T) {
 	for _, tc := range tests {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {

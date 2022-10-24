@@ -119,8 +119,8 @@ jobs:
           git push origin main
           git push origin ${GITWERK_RESULT}
 
-          echo "::set-output name=RELEASE::true"
-          echo "::set-output name=VERSION::${GITWERK_RESULT}"
+          echo "RELEASE=true" >> $GITHUB_OUTPUT
+          echo "VERSION=${GITWERK_RESULT}" >> $GITHUB_OUTPUT
         env:
           GITHUB_USER: ${{ secrets.DISPATCH_USER }}
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}

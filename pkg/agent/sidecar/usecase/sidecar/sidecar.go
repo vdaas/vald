@@ -29,7 +29,6 @@ import (
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/net/grpc"
-	"github.com/vdaas/vald/internal/net/grpc/metric"
 	"github.com/vdaas/vald/internal/net/http/client"
 	"github.com/vdaas/vald/internal/observability"
 	metrics "github.com/vdaas/vald/internal/observability/metrics/agent/sidecar"
@@ -156,14 +155,9 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 
 	var metricsHook metrics.MetricsHook
 	if cfg.Observability.Enabled {
-		metricsHook, err = metrics.New()
-		if err != nil {
-			return nil, err
-		}
-
 		observerOpts = append(
 			observerOpts,
-			observer.WithHooks(metricsHook),
+			observer.WithHooks(metrics.New()),
 		)
 	}
 
@@ -193,13 +187,6 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		if err != nil {
 			return nil, err
 		}
-
-		grpcServerOptions = append(
-			grpcServerOptions,
-			server.WithGRPCOption(
-				grpc.StatsHandler(metric.NewServerHandler()),
-			),
-		)
 	}
 
 	srv, err := starter.New(

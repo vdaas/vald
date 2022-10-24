@@ -830,53 +830,64 @@ Example:
 
 ```go
 type args struct {
-    addr string
-    txt string
+    host string
+    port string
 }
 
 type field struct {
     timeout time.Duration
 }
 
-type test struct {
-    args args
-    field field
-    checkFunc func(t *testing.T, err error)
+type want struct {
+    err error
 }
 
-tests := map[string]func(*testing.T) test {
-    "send success when host and port are correct value": func(tt *testing.T) test {
-        tt.Helper()
+type test struct {
+    name       string
+    args       args
+    field      field
+    want       want
+    checkFunc func(err error) error
+}
 
-        return test {
-            args: args {
-                host: "vdaas.vald.org",
-                port: "80",
-            },
-            field: field {
-                host: "vdaas.vald.org",
-                port: "80",
-            },
-            checkFunc func(tt *testing.T, err error) {
-                t.Helper()
-                if err != nil {
-                    tt.Errorf("error is not nil: %v", err)
-                }
-            },
-        }
+defaultCheckFunc := func(w want, err error) error {
+    if err != w.err {
+        return errors.Errorf("got error: %v, want: %v", err, w.err)
     }
 }
 
-for name, fn := range tests {
-    t.Run(name, func(tt *tesint.T) {
-        test := fn(tt)
+tests := []test {
+    {
+        name: "success send when host and port are correct value",
+        args: args {
+            host: "vdaas.vald.org",
+            port: "80",
+        },
+        field: field {
+            host: "vdaas.vald.org",
+            port: "80",
+        },
+        want: want {
+            err: nil,
+        },
+    },
+}
+
+for _, tc := range tests {
+    test := tc
+    t.Run(test.name, func(tt *tesint.T) {
+        checkFunc = defaultCheckFunc
+        if test.checkFunc != nil {
+            checkFunc = test.checkFunc
+        }
 
         c := client {
             timeout: test.field.timeout,
         }
-
         err := c.Send(test.args.addr, test.args.txt)
-        test.checkFunc(tt, err)
+        if err := checkFunc(err); err != nil {
+            tt.Errorf("error = %v", err)
+        }
     })
 }
 
@@ -923,33 +934,82 @@ Still, in some cases, you may need to change the generated code to meet your req
 
 1. goleak option
 
-   The generated test code will default use [goleak](https://github.com/uber-go/goleak) library to test if there is any Goroutine leak.
-   Sometimes you may want to skip the detection; for example, Vald uses [fastime](https://github.com/kpango/fastime) library, but the internal Goroutine is not closed due to the needs of the library.
+   The generated test code will default use the [goleak](https://github.com/uber-go/goleak) library to test if there is any goroutine leak.
+   Sometimes you may want to skip the detection; for example, Vald uses the [fastime](https://github.com/kpango/fastime) library, but the internal goroutine is not closed due to the needs of the library.
    To skip the goleak detection, we need to create the following variable to store the ignore function.
 
    ```go
    var (
-       // Goroutine leak is detected by `fastime`, but it should be ignored in the test because it is an external package.
+       // goroutine leak is detected by `fastime`, but it should be ignored in the test because it is an external package.
        goleakIgnoreOptions = []goleak.Option{
            goleak.IgnoreTopFunction("github.com/kpango/fastime.(*fastime).StartTimerD.func1"),
        }
    )
    ```
 
-   And modify the generated test code.
+   And use it in `VerifyNone()` in the test case.
 
    ```go
-   // before
-   for _, test := range tests {
-       t.Run(test.name, func(tt *testing.T) {
-           defer goleak.VerifyNone(tt)
-
-   // after
-   for _, test := range tests {
+   for _, tc := range tests {
+       test := tc
        t.Run(test.name, func(tt *testing.T) {
            // modify the following line
            defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
    ```
+
+   In Vald, we implemented [internal goleak package](https://github.com/vdaas/vald/blob/main/internal/test/goleak/goleak.go) and wrap the goleak validation logic to ignore the common goleak functions.
+   In test implementation, we can easily import the internal goleak package and ignore all the necessary goleak functions by default.
+
+   ```go
+   // import internal goleak package
+   import (
+       "github.com/vdaas/vald/internal/test/goleak"
+   )
+
+   ...
+   for _, tc := range tests {
+       test := tc
+       t.Run(test.name, func(tt *testing.T) {
+           // use internal goleak to ignore necessary function by default
+           defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+   ```
+
+1. goleak usage
+
+   There are two methods for valid goroutine leak:
+
+   1. Use `goleak.VerifyNone()` to validate it on each test cases.
+   1. Use `goleak.VerifyTestMain()` to validate it on each package.
+
+   By default, the goroutine leak validation is executed in each test case.
+
+   ```go
+   for _, tc := range tests {
+        test := tc
+        t.Run(test.name, func(tt *testing.T) {
+            defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+   ```
+
+   In some cases, it may not work as some cleanup or asynchronous processes remaining in the background, and validating it on the test case using `goleak.VerifyNone()` may cause a false alarm.
+
+   To resolve it, we can consider using `goleak.VerifyTestMain()` to validate goleak when all test cases are passed in each package.
+
+   ```go
+   // implement TestMain and verify it at package level
+   func TestMain(m *testing.M) {
+        goleak.VerifyTestMain(m)
+   }
+
+   ...
+
+   for _, tc := range tests {
+        test := tc
+        t.Run(test.name, func(tt *testing.T) {
+            // use VerifyTestMain() above to detect goroutine leak
+            // defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+   ```
+
+   Please note that the `TestMain()` can only implement once in each package, you may need to find the right place to implement this function on the package.
 
 1. Defer function
 
@@ -960,22 +1020,23 @@ Still, in some cases, you may need to change the generated code to meet your req
    For example:
 
    ```go
-   for _, test := range tests {
-     t.Run(test.name, func(tt *testing.T) {
-       defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+   for _, tc := range tests {
+        test := tc
+        t.Run(test.name, func(tt *testing.T) {
+            defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 
-       // insert your defer function here
-       defer func(w want, tt *testing.T) {
-           // implement your defer func logic
-           if err:= recover(); err != nil {
-               // check the panic
-           }
-       }(test.want, tt)
+            // insert your defer function here
+            defer func(w want, tt *testing.T) {
+                // implement your defer func logic
+                if err:= recover(); err != nil {
+                    // check the panic
+                }
+            }(test.want, tt)
 
-       if test.beforeFunc != nil {
-           test.beforeFunc(test.args)
-       }
-       // generated test code
+            if test.beforeFunc != nil {
+                test.beforeFunc(test.args)
+            }
+            // generated test code
    ```
 
 1. Unused fields
@@ -1017,6 +1078,203 @@ Still, in some cases, you may need to change the generated code to meet your req
        type want struct {
            // generated test code
    ```
+
+1. Context
+
+   If the target function accepts context as an input argument, the test code generated will include it in `args`.
+
+   ```go
+    type args struct {
+        ctx context.Context
+    }
+    ...
+   ```
+
+   But in test implementation, it is hard to manage the context lifecycle.
+   We want to guarantee the context is closed after each test is executed to avoid any missing termination of the process.
+
+   In Vald, we suggest customizing the test implementation from the generated test code to create the context and manage the lifecycle in every test.
+
+   We can remove the context from the `args` struct and create the context in the test execution code.
+
+   ```go
+    // we can remove the ctx from args list
+    type args struct {
+        // ctx context.Context
+    }
+    ...
+
+    for _, tc := range tests {
+        test := tc
+        t.Run(test.name, func(tt *testing.T) {
+            // create context here
+            ctx, cancel := context.WithCancel(context.Background())
+            // handle the context lifecycle by canceling the context after the test is executed
+            defer cancel()
+
+            ...
+
+            // use the context created above
+            got, gotErr := someFunc(ctx)
+
+            ...
+   ```
+
+1. Struct initialization
+
+   By default, when testing the function of the struct, the target struct initialization is implemented by setting the data from the `fields` defined in the test case.
+   This initialization method has a few disadvantages:
+
+   1. When there are many fields in the struct, it is hard to set them all.
+   1. The default value is the zero value of the type, not the struct default value from the struct initialization function.
+
+   To resolve these problems, we can modify the test implementation to use the struct initialization function instead of setting the struct fields on the test cases.
+
+   For example, the current implementation may look like this:
+
+   ```go
+   func Test_server_SaveIndex(t *testing.T) {
+        ...
+
+        // all the fields to initialize the target struct
+        type fields struct {
+            name              string
+            ip                string
+            ngt               service.NGT
+            eg                errgroup.Group
+            streamConcurrency int
+        }
+
+        ...
+
+        for _, tc := range tests {
+            test := tc
+            t.Run(test.name, func(tt *testing.T) {
+                tt.Parallel()
+                ...
+
+                // we initialize the target struct using fields defined in test case
+                s := &server{
+                    name:              test.fields.name,
+                    ip:                test.fields.ip,
+                    ngt:               test.fields.ngt,
+                    eg:                test.fields.eg,
+                    streamConcurrency: test.fields.streamConcurrency,
+                    // we may have more fields defined in the struct, 
+                    // and we need to set them all here
+                }
+
+                gotRes, err := s.SaveIndex(test.args.ctx, test.args.in1)
+                ...
+   ```
+
+   We can customize the implementation to use the struct initialization function.
+
+   ```go
+   func Test_server_SaveIndex(t *testing.T) {
+        ...
+
+        // we customize the fields to initialize the target struct
+        type fields struct {
+            // options to configure server struct
+            srvOpts []Option
+
+            // options to configure ngt
+            svcCfg  *config.NGT
+            svcOpts []service.Option
+        }
+
+        ...
+
+        for _, tc := range tests {
+            test := tc
+            t.Run(test.name, func(tt *testing.T) {
+                tt.Parallel()
+                ...
+
+                // initialize required fields of server struct
+                eg, _ := errgroup.New(ctx)
+                ngt, err := service.New(test.fields.svcCfg, append(test.fields.svcOpts, service.WithErrGroup(eg))...)
+                if err != nil {
+                    tt.Errorf("failed to init ngt service, error = %v", err)
+                }
+
+                // we use the struct initialization function instead of setting the fields,
+                // by combining the use of the functional option, we can configure the struct,
+                // and the default values of the struct will be set automatically if we are not defining it.
+                s, err := New(append(test.fields.srvOpts, WithNGT(ngt), WithErrGroup(eg))...)
+                if err != nil {
+                    tt.Errorf("failed to init server, error= %v", err)
+                }
+
+                gotRes, err := s.SaveIndex(test.args.ctx, test.args.in1)
+                ...
+   ```
+
+### Parallel test
+
+In Vald, we use parallel tests to accelerate the execution of tests by default.
+There are two layers of enabling parallel tests.
+
+1. Parallel for the test function
+1. Parallel for the subtests in the test function
+
+The generated test case will enable these two parallel modes by default. It is implemented by:
+
+```go
+func Test_server_CreateIndex(t *testing.T) {
+    t.Parallel() // parallel for the test function
+    type args struct {
+   
+    ...
+
+    for _, tc := range tests {
+        test := tc
+        t.Run(test.name, func(tt *testing.T) {
+            tt.Parallel() // parallel for subtests
+    ...
+```
+
+Be careful of using the parallel test, avoid using share object used in the test, to avoid race detector to detect the race in test and fail the test.
+
+### Helper function
+
+In golang testing package, they defined the helper functions in testing types to indicate the current function is a test helper function and skip printing the file and line information to the output.
+
+In Vald, we can apply it to the different helper functions like `beforeFunc()` or `afterFunc()` defined in the test case struct.
+
+```go
+type test struct {
+    ...
+    beforeFunc func(*testing.T) // helper function to initialze testing
+    afterFunc  func(*testing.T) // helper function to cleanup
+}
+
+tests := []test {
+    {
+        name: "send success when host and port are correct value",
+        args: args {
+            host: "vdaas.vald.org",
+            port: "80",
+        },
+        field: field {
+            host: "vdaas.vald.org",
+            port: "80",
+        },
+        beforeFunc: func(t *testing.T) {
+            t.Helper() // indicate the current function is helper function
+            /* initialization logic of testing environment */
+        },
+        want: want {
+            err: nil,
+        },
+        afterFunc: func(t *testing.T) {
+            t.Helper() // indicate the current function is helper function
+            /* cleanup logic */
+        }
+    },
+}
+```
 
 ### Using Mock
 

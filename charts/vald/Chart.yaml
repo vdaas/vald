@@ -16,7 +16,7 @@
 
 apiVersion: v2
 name: vald
-version: v1.5.6
+version: v1.6.3
 description: A distributed high scalable & high-speed approximate nearest neighbor search engine
 type: application
 keywords:

@@ -56,8 +56,8 @@ runs:
         alter_image_name=`make ORG="${alter_org}" docker/name/${TARGET}`
         echo "IMAGE_NAME is: ${image_name}"
         echo "ALTER_IMAGE_NAME is: ${alter_image_name}"
-        echo "::set-output name=IMAGE_NAME::${image_name}"
-        echo "::set-output name=ALTER_IMAGE_NAME::${alter_image_name}"
+        echo "IMAGE_NAME=${image_name}" >> $GITHUB_OUTPUT
+        echo "ALTER_IMAGE_NAME=${alter_image_name}" >> $GITHUB_OUTPUT
       env:
         TARGET: ${{ inputs.target }}
     - name: Determine tag name
@@ -78,7 +78,7 @@ runs:
           primary_tag="unknown"
         fi
         echo "PRIMARY_TAG is determined: ${primary_tag}"
-        echo "::set-output name=PRIMARY_TAG::${primary_tag}"
+        echo "PRIMARY_TAG=${primary_tag}" >> $GITHUB_OUTPUT
     - name: Determine platforms
       shell: bash
       id: determine_platforms
@@ -93,7 +93,7 @@ runs:
           platforms="${TARGET_PLATFORMS}"
         fi
         echo "PLATFORMS is determined: ${platforms}"
-        echo "::set-output name=PLATFORMS::${platforms}"
+        echo "PLATFORMS=${platforms}" >> $GITHUB_OUTPUT
       env:
         TARGET_PLATFORMS: ${{ inputs.platforms }}
     - name: Add extra tags
@@ -106,7 +106,7 @@ runs:
           extra_tags="${extra_tags} ${latest_tags}"
         fi
         echo "EXTRA_TAGS is determined: ${extra_tags}"
-        echo "::set-output name=EXTRA_TAGS::${extra_tags}"
+        echo "EXTRA_TAGS=${extra_tags}" >> $GITHUB_OUTPUT
       env:
         IMAGE_NAME: ${{ steps.image_name.outputs.IMAGE_NAME }}
         ALTER_IMAGE_NAME: ${{ steps.image_name.outputs.ALTER_IMAGE_NAME }}

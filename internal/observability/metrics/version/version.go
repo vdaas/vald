@@ -1,20 +1,16 @@
-//
 // Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//    https://www.apache.org/licenses/LICENSE-2.0
+//	https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
-
-// Package version provides version info metrics functions
 package version
 
 import (
@@ -23,30 +19,31 @@ import (
 	"reflect"
 
 	"github.com/vdaas/vald/internal/info"
+	"github.com/vdaas/vald/internal/observability/attribute"
 	"github.com/vdaas/vald/internal/observability/metrics"
 	"github.com/vdaas/vald/internal/strings"
+	"go.opentelemetry.io/otel/sdk/metric/aggregation"
+	"go.opentelemetry.io/otel/sdk/metric/view"
+)
+
+const (
+	name        = "app_version_info"
+	description = "app version info"
 )
 
 var reps = strings.NewReplacer("_", " ", ",omitempty", "")
 
 type version struct {
-	info metrics.Int64Measure
-	kvs  map[metrics.Key]string
+	kvs map[string]string
 }
 
-func New(labels ...string) (metrics.Metric, error) {
-	kvs, err := labelKVs(labels...)
-	if err != nil {
-		return nil, err
-	}
-
+func New(labels ...string) metrics.Metric {
 	return &version{
-		info: *metrics.Int64(metrics.ValdOrg+"/version/info", "app version info", metrics.UnitDimensionless),
-		kvs:  kvs,
-	}, nil
+		kvs: labelKVs(labels...),
+	}
 }
 
-func labelKVs(labels ...string) (map[metrics.Key]string, error) {
+func labelKVs(labels ...string) map[string]string {
 	labelMap := make(map[string]struct{}, len(labels))
 	for _, label := range labels {
 		labelMap[reps.Replace(label)] = struct{}{}
@@ -54,7 +51,7 @@ func labelKVs(labels ...string) (map[metrics.Key]string, error) {
 
 	d := info.Get()
 	rt, rv := reflect.TypeOf(d), reflect.ValueOf(d)
-	info := make(map[metrics.Key]string, rt.NumField())
+	info := make(map[string]string, rt.NumField())
 	for i := 0; i < rt.NumField(); i++ {
 		keyName := reps.Replace(rt.Field(i).Tag.Get("json"))
 		if _, ok := labelMap[keyName]; !ok {
@@ -66,53 +63,52 @@ func labelKVs(labels ...string) (map[metrics.Key]string, error) {
 		if !ok {
 			ss, ok := v.([]string)
 			if ok {
-				k, err := metrics.NewKey(keyName)
-				if err != nil {
-					return nil, err
-				}
 				// tags must be less than 255 characters
-				info[k] = fmt.Sprintf("%.255s", fmt.Sprintf("%v", ss))
+				info[keyName] = fmt.Sprintf("%.255s", fmt.Sprintf("%v", ss))
 			}
 			continue
 		}
 		if value != "" {
-			k, err := metrics.NewKey(keyName)
-			if err != nil {
-				return nil, err
-			}
-			info[k] = value
+			info[keyName] = value
 		}
 	}
 
-	return info, nil
+	return info
 }
 
-func (v *version) Measurement(ctx context.Context) ([]metrics.Measurement, error) {
-	return []metrics.Measurement{}, nil
-}
-
-func (v *version) MeasurementWithTags(ctx context.Context) ([]metrics.MeasurementWithTags, error) {
-	return []metrics.MeasurementWithTags{
-		{
-			Measurement: v.info.M(int64(1)),
-			Tags:        v.kvs,
-		},
+func (v *version) View() ([]*metrics.View, error) {
+	otlv, err := view.New(
+		view.MatchInstrumentName(name),
+		view.WithSetDescription(description),
+		view.WithSetAggregation(aggregation.LastValue{}),
+	)
+	if err != nil {
+		return nil, err
+	}
+	return []*metrics.View{
+		&otlv,
 	}, nil
 }
 
-func (v *version) View() []*metrics.View {
-	keys := make([]metrics.Key, 0, len(v.kvs))
-	for k := range v.kvs {
-		keys = append(keys, k)
+func (v *version) Register(m metrics.Meter) error {
+	info, err := m.AsyncInt64().Gauge(
+		name,
+		metrics.WithDescription(description),
+		metrics.WithUnit(metrics.Dimensionless),
+	)
+	if err != nil {
+		return err
 	}
-
-	return []*metrics.View{
-		{
-			Name:        "app_version_info",
-			Description: v.info.Description(),
-			TagKeys:     keys,
-			Measure:     &v.info,
-			Aggregation: metrics.LastValue(),
+	return m.RegisterCallback(
+		[]metrics.AsynchronousInstrument{
+			info,
 		},
-	}
+		func(ctx context.Context) {
+			attrs := make([]attribute.KeyValue, 0, len(v.kvs))
+			for key, val := range v.kvs {
+				attrs = append(attrs, attribute.String(key, val))
+			}
+			info.Observe(ctx, 1, attrs...)
+		},
+	)
 }

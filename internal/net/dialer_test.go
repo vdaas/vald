@@ -26,7 +26,6 @@ import (
 	"net/http/httptest"
 	"reflect"
 	"strconv"
-	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -38,6 +37,7 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/io"
 	"github.com/vdaas/vald/internal/net/control"
+	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/tls"
 )
 
