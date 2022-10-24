@@ -1,0 +1,46 @@
+apiVersion: opentelemetry.io/v1alpha1
+kind: OpenTelemetryCollector
+metadata:
+  name: opentelemetry-collector
+spec:
+  mode: daemonset
+  podAnnotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/path: "/metrics"
+    prometheus.io/port: "8888"
+  ports:
+    - name: metrics # for opentelemetry-collector metrics
+      port: 8888
+      targetPort: 8888
+      protocol: TCP
+    - name: metrics-v2 # for backend service metrics
+      port: 6061
+      targetPort: 6061
+      protocol: TCP
+  config: |
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+          http:
+
+    processors:
+      batch:
+
+    service:
+      pipelines:
+        metrics:
+          receivers: [otlp]
+          processors: [batch]
+          exporters: [prometheus]
+        traces:
+          receivers: [otlp]
+          processors: [batch]
+          exporters: [jaeger]
+    
+    exporters:
+      jaeger:
+        endpoint: "jaeger-collector.default.svc.cluster.local:14250"
+
+      prometheus:
+        endpoint: "0.0.0.0:6061"
