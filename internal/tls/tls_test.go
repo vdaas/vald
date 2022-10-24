@@ -20,7 +20,6 @@ package tls
 import (
 	"crypto/tls"
 	"crypto/x509"
-	stderrs "errors"
 	"fmt"
 	"reflect"
 	"testing"
@@ -157,7 +156,7 @@ func TestNew(t *testing.T) {
 				},
 			},
 			want: want{
-				err: stderrs.New("tls: failed to find any PEM data in certificate input"),
+				err: errors.New("tls: failed to find any PEM data in certificate input"),
 			},
 		},
 		{

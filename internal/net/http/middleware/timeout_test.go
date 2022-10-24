@@ -18,7 +18,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"reflect"
-	"strings"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -26,6 +25,7 @@ import (
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/http/rest"
+	"github.com/vdaas/vald/internal/strings"
 )
 
 func TestNewTimeout(t *testing.T) {

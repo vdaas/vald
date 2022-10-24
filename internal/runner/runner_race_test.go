@@ -17,7 +17,6 @@ package runner
 
 import (
 	"context"
-	stderrs "errors"
 	"os"
 	"syscall"
 	"testing"
@@ -82,7 +81,7 @@ func TestDo_for_race(t *testing.T) {
 				}
 			},
 			want: want{
-				err: errors.ErrArgumentParseFailed(stderrs.New("flag provided but not defined: -team")),
+				err: errors.ErrArgumentParseFailed(errors.New("flag provided but not defined: -team")),
 			},
 		},
 
