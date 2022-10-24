@@ -97,7 +97,7 @@ runs:
         kubectl get pods
 
         podname=`kubectl get pods --selector=${WAIT_FOR_SELECTOR} | tail -1 | awk '{print $1}'`
-        echo "::set-output name=POD_NAME::${podname}"
+        echo "POD_NAME=${podname}" >> $GITHUB_OUTPUT
       env:
         VALUES: ${{ inputs.values }}
         HELM_EXTRA_OPTIONS: ${{ inputs.helm_extra_options }}

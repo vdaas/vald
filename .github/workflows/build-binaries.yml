@@ -34,7 +34,7 @@ jobs:
       - name: Fetch golang version
         run: |
           GO_VERSION=`make version/go`
-          echo "::set-output name=version::${GO_VERSION}"
+          echo "version=${GO_VERSION}" >> $GITHUB_OUTPUT
         id: golang_version
       - uses: actions/setup-go@v3
         with:
@@ -56,7 +56,7 @@ jobs:
   #     - name: Fetch golang version
   #       run: |
   #         GO_VERSION=`make version/go`
-  #         echo "::set-output name=version::${GO_VERSION}"
+  #         echo "version=${GO_VERSION}" >> $GITHUB_OUTPUT
   #       id: golang_version
   #     - uses: actions/setup-go@v3
   #       with:
