@@ -14,10 +14,11 @@
 package rand
 
 import (
-	"errors"
 	"sync"
 	"sync/atomic"
 	"testing"
+
+	"github.com/vdaas/vald/internal/errors"
 )
 
 func clearPool() {

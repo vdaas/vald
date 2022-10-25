@@ -18,7 +18,6 @@
 package params
 
 import (
-	stderrs "errors"
 	"os"
 	"reflect"
 	"syscall"
@@ -253,7 +252,7 @@ func Test_parser_Parse(t *testing.T) {
 			afterFunc: func() { os.Args = nil },
 			want: want{
 				want1: false,
-				err:   errors.ErrArgumentParseFailed(stderrs.New("flag provided but not defined: -name")),
+				err:   errors.ErrArgumentParseFailed(errors.New("flag provided but not defined: -name")),
 			},
 		},
 

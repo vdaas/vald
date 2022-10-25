@@ -16,10 +16,8 @@ package grpc
 import (
 	"context"
 	"fmt"
-	"io"
 	"math"
 	"reflect"
-	"strings"
 	"testing"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
@@ -27,10 +25,12 @@ import (
 	"github.com/vdaas/vald/internal/core/algorithm/ngt"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/io"
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/net/grpc/errdetails"
 	"github.com/vdaas/vald/internal/net/grpc/status"
+	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/test/data/request"
 	"github.com/vdaas/vald/internal/test/data/vector"
 	"github.com/vdaas/vald/internal/test/mock"

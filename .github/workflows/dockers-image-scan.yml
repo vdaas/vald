@@ -32,7 +32,7 @@ jobs:
           make docker/build/agent-ngt
           imagename=`make docker/name/agent-ngt`
           docker tag ${imagename} ${imagename}:${{ github.sha }}
-          echo "::set-output name=IMAGE_NAME::${imagename}"
+          echo "IMAGE_NAME=${imagename}" >> $GITHUB_OUTPUT
         env:
           DOCKER_BUILDKIT: 1
       - name: Run vulnerability scanner
@@ -65,7 +65,7 @@ jobs:
           make docker/build/agent-sidecar
           imagename=`make docker/name/agent-sidecar`
           docker tag ${imagename} ${imagename}:${{ github.sha }}
-          echo "::set-output name=IMAGE_NAME::${imagename}"
+          echo "IMAGE_NAME=${imagename}" >> $GITHUB_OUTPUT
         env:
           DOCKER_BUILDKIT: 1
       - name: Run vulnerability scanner
@@ -98,7 +98,7 @@ jobs:
           make docker/build/discoverer-k8s
           imagename=`make docker/name/discoverer-k8s`
           docker tag ${imagename} ${imagename}:${{ github.sha }}
-          echo "::set-output name=IMAGE_NAME::${imagename}"
+          echo "IMAGE_NAME=${imagename}" >> $GITHUB_OUTPUT
         env:
           DOCKER_BUILDKIT: 1
       - name: Run vulnerability scanner
@@ -131,7 +131,7 @@ jobs:
           make docker/build/manager-index
           imagename=`make docker/name/manager-index`
           docker tag ${imagename} ${imagename}:${{ github.sha }}
-          echo "::set-output name=IMAGE_NAME::${imagename}"
+          echo "IMAGE_NAME=${imagename}" >> $GITHUB_OUTPUT
         env:
           DOCKER_BUILDKIT: 1
       - name: Run vulnerability scanner
@@ -164,7 +164,7 @@ jobs:
           make docker/build/operator/helm
           imagename=`make docker/name/operator/helm`
           docker tag ${imagename} ${imagename}:${{ github.sha }}
-          echo "::set-output name=IMAGE_NAME::${imagename}"
+          echo "IMAGE_NAME=${imagename}" >> $GITHUB_OUTPUT
         env:
           DOCKER_BUILDKIT: 1
       - name: Run vulnerability scanner
@@ -197,7 +197,7 @@ jobs:
           make docker/build/loadtest
           imagename=`make docker/name/loadtest`
           docker tag ${imagename} ${imagename}:${{ github.sha }}
-          echo "::set-output name=IMAGE_NAME::${imagename}"
+          echo "IMAGE_NAME=${imagename}" >> $GITHUB_OUTPUT
         env:
           DOCKER_BUILDKIT: 1
       - name: Run vulnerability scanner
@@ -230,7 +230,7 @@ jobs:
           make docker/build/gateway-lb
           imagename=`make docker/name/gateway-lb`
           docker tag ${imagename} ${imagename}:${{ github.sha }}
-          echo "::set-output name=IMAGE_NAME::${imagename}"
+          echo "IMAGE_NAME=${imagename}" >> $GITHUB_OUTPUT
         env:
           DOCKER_BUILDKIT: 1
       - name: Run vulnerability scanner
@@ -263,7 +263,7 @@ jobs:
           make docker/build/gateway-filter
           imagename=`make docker/name/gateway-filter`
           docker tag ${imagename} ${imagename}:${{ github.sha }}
-          echo "::set-output name=IMAGE_NAME::${imagename}"
+          echo "IMAGE_NAME=${imagename}" >> $GITHUB_OUTPUT
         env:
           DOCKER_BUILDKIT: 1
       - name: Run vulnerability scanner
