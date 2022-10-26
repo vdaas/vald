@@ -4,17 +4,14 @@
 
 Filter Servie is responsible for providing insert, update, upsert and search interface for `Vald Filter Gateway`.
 
-```rpc
-service Filter {
-    // insert, update, upsert and search RPCs
-}
-```
+Vald Filter Gateway forward user request to user-defined ingress/egress filter components allowing user to run custom logic.
 
 ## Insert RPC
 
 Insert RPC is the method to insert object through Vald Filter Gateway.
 
 ```rpc
+service Filter {
   rpc InsertObject(payload.v1.Insert.ObjectRequest)
       returns (payload.v1.Object.Location) {
     option (google.api.http) = {
@@ -22,7 +19,8 @@ Insert RPC is the method to insert object through Vald Filter Gateway.
       body : "*"
     };
   }
-  ```
+}
+```
 
 ### Input
 
@@ -138,8 +136,10 @@ Each Insert request and response are independent.
 It's the recommended method to insert a large number of objects.
 
 ```rpc
+service Filter {
   rpc StreamInsertObject(stream payload.v1.Insert.ObjectRequest)
       returns (stream payload.v1.Object.StreamLocation) {}
+}
 ```
 
 ### Input
@@ -274,6 +274,7 @@ It's the recommended method to insert a large number of objects.
 MultiInsert RPC is the method to add multiple new objects in **1** request.
 
 ```rpc
+service Filter {
   rpc MultiInsertObject(payload.v1.Insert.MultiObjectRequest)
       returns (payload.v1.Object.Locations) {
     option (google.api.http) = {
@@ -281,6 +282,7 @@ MultiInsert RPC is the method to add multiple new objects in **1** request.
       body : "*"
     };
   }
+}
 ```
 
 ### Input
@@ -411,6 +413,7 @@ MultiInsert RPC is the method to add multiple new objects in **1** request.
 Update RPC is the method to update a single vector.
 
 ```rpc
+service Filter {
   rpc UpdateObject(payload.v1.Update.ObjectRequest)
       returns (payload.v1.Object.Location) {
     option (google.api.http) = {
@@ -418,6 +421,7 @@ Update RPC is the method to update a single vector.
       body : "*"
     };
   }
+}
 ```
 
 ### Input
@@ -533,9 +537,10 @@ Each Update request and response are independent.
 It's the recommended method to update the large amount of objects.
 
 ```rpc
-  // A method to update object by bidirectional streaming.
+service Filter {
   rpc StreamUpdateObject(stream payload.v1.Update.ObjectRequest)
       returns (stream payload.v1.Object.StreamLocation) {}
+}
 ```
 
 ### Input
@@ -675,7 +680,7 @@ Please be careful that the size of the request exceed the limit.
 </div>
 
 ```rpc
-  // A method to update multiple objects.
+service Filter {
   rpc MultiUpdateObject(payload.v1.Update.MultiObjectRequest)
       returns (payload.v1.Object.Locations) {
     option (google.api.http) = {
@@ -683,6 +688,7 @@ Please be careful that the size of the request exceed the limit.
       body : "*"
     };
   }
+}
 ```
 
 ### Input
@@ -813,6 +819,7 @@ Please be careful that the size of the request exceed the limit.
 Upsert RPC is the method to update a single object and add a new single object.
 
 ```rpc
+service Filter {
   rpc UpsertObject(payload.v1.Upsert.ObjectRequest)
       returns (payload.v1.Object.Location) {
     option (google.api.http) = {
@@ -820,13 +827,14 @@ Upsert RPC is the method to update a single object and add a new single object.
       body : "*"
     };
   }
+}
 ```
 
 ### Input
 
 - the scheme of `payload.v1.Upsert.ObjectRequest`
 
-```rpc
+  ```rpc
   message Upsert {
       message ObjectRequest {
         Object.Blob object = 1;
@@ -932,8 +940,10 @@ Upsert RPC is the method to update a single object and add a new single object.
 Upsert RPC is the method to update a single object and add a new single object.
 
 ```rpc
+service Filter {
   rpc StreamUpsertObject(stream payload.v1.Upsert.ObjectRequest)
       returns (stream payload.v1.Object.StreamLocation) {}
+}
 ```
 
 ### Input
@@ -1073,6 +1083,7 @@ Please be careful that the size of the request exceeds the limit.
 </div>
 
 ```rpc
+service Filter {
   rpc MultiUpsertObject(payload.v1.Upsert.MultiObjectRequest)
       returns (payload.v1.Object.Locations) {
     option (google.api.http) = {
@@ -1080,6 +1091,7 @@ Please be careful that the size of the request exceeds the limit.
       body : "*"
     };
   }
+}
 ```
 
 ### Input
@@ -1210,6 +1222,7 @@ Please be careful that the size of the request exceeds the limit.
 Search RPC is the method to search object(s) similar to request object.
 
 ```rpc
+service Filter {
   rpc SearchObject(payload.v1.Search.ObjectRequest)
       returns (payload.v1.Search.Response) {
     option (google.api.http) = {
@@ -1217,6 +1230,7 @@ Search RPC is the method to search object(s) similar to request object.
       body : "*"
     };
   }
+}
 ```
 
 ### Input
@@ -1326,8 +1340,10 @@ By using the bidirectional streaming RPC, the search request can be communicated
 Each Search request and response are independent.
 
 ```rpc
+service Filter {
   rpc StreamSearchObject(stream payload.v1.Search.ObjectRequest)
       returns (stream payload.v1.Search.StreamResponse) {}
+}
 ```
 
 ### Input
@@ -1445,6 +1461,7 @@ Please be careful that the size of the request exceeds the limit.
 </div>
 
 ```rpc
+service Filter {
   rpc MultiSearchObject(payload.v1.Search.MultiObjectRequest)
       returns (payload.v1.Search.Responses) {
     option (google.api.http) = {
@@ -1452,6 +1469,7 @@ Please be careful that the size of the request exceeds the limit.
       body : "*"
     };
   }
+}
 ```
 
 ### Input
