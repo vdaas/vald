@@ -22,8 +22,7 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/observability/exporter"
-	"github.com/vdaas/vald/internal/observability/exporter/jaeger"
-	"github.com/vdaas/vald/internal/observability/exporter/prometheus"
+	"github.com/vdaas/vald/internal/observability/exporter/otlp"
 	"github.com/vdaas/vald/internal/observability/metrics"
 	"github.com/vdaas/vald/internal/observability/metrics/grpc"
 	"github.com/vdaas/vald/internal/observability/metrics/mem/index"
@@ -74,46 +73,55 @@ func NewWithConfig(cfg *config.Observability, ms ...metrics.Metric) (Observabili
 		opts = append(opts, WithTracer(tr))
 	}
 
-	if cfg.Prometheus.Enabled {
-		views := make([]metrics.Viewer, 0, len(ms))
-		for _, m := range ms {
-			views = append(views, m)
-		}
-		prom, err := prometheus.Init(
-			prometheus.WithEndpoint(cfg.Prometheus.Endpoint),
-			prometheus.WithNamespace(cfg.Prometheus.Namespace),
-			prometheus.WithView(views...),
-		)
-		if err != nil {
-			return nil, err
-		}
-
-		exps = append(exps, prom)
+	// TODO: Add if statement to verify configuration
+	// TODO: Add otlp option
+	e, err := otlp.New(
+		otlp.WithCollectorEndpoint("opentelemetry-collector-collector.default.svc.cluster.local:4317"),
+	)
+	if err != nil {
+		return nil, err
 	}
+	exps = append(exps, e)
 
-	if cfg.Jaeger.Enabled {
-		jae, err := jaeger.New(
-			jaeger.WithAgentEndpoint(cfg.Jaeger.AgentEndpoint),
-			jaeger.WithAgentMaxPacketSize(cfg.Jaeger.AgentMaxPacketSize),
-			jaeger.WithAgentReconnectInterval(cfg.Jaeger.AgentReconnectInterval),
-			jaeger.WithCollectorEndpoint(cfg.Jaeger.CollectorEndpoint),
-			jaeger.WithUsername(cfg.Jaeger.Username),
-			jaeger.WithPassword(cfg.Jaeger.Password),
-			jaeger.WithServiceName(cfg.Jaeger.ServiceName),
-			jaeger.WithBatchTimeout(cfg.Jaeger.BatchTimeout),
-			jaeger.WithExportTimeout(cfg.Jaeger.ExportTimeout),
-			jaeger.WithMaxExportBatchSize(cfg.Jaeger.MaxExportBatchSize),
-			jaeger.WithMaxQueueSize(cfg.Jaeger.MaxQueueSize),
-		)
-		if err != nil {
-			return nil, err
-		}
-		exps = append(exps, jae)
-	}
+	// if cfg.Prometheus.Enabled {
+	// 	views := make([]metrics.Viewer, 0, len(ms))
+	// 	for _, m := range ms {
+	// 		views = append(views, m)
+	// 	}
+	// 	prom, err := prometheus.Init(
+	// 		prometheus.WithEndpoint(cfg.Prometheus.Endpoint),
+	// 		prometheus.WithNamespace(cfg.Prometheus.Namespace),
+	// 		prometheus.WithView(views...),
+	// 	)
+	// 	if err != nil {
+	// 		return nil, err
+	// 	}
+	//
+	// 	exps = append(exps, prom)
+	// }
+	//
+	// if cfg.Jaeger.Enabled {
+	// 	jae, err := jaeger.New(
+	// 		jaeger.WithAgentEndpoint(cfg.Jaeger.AgentEndpoint),
+	// 		jaeger.WithAgentMaxPacketSize(cfg.Jaeger.AgentMaxPacketSize),
+	// 		jaeger.WithAgentReconnectInterval(cfg.Jaeger.AgentReconnectInterval),
+	// 		jaeger.WithCollectorEndpoint(cfg.Jaeger.CollectorEndpoint),
+	// 		jaeger.WithUsername(cfg.Jaeger.Username),
+	// 		jaeger.WithPassword(cfg.Jaeger.Password),
+	// 		jaeger.WithServiceName(cfg.Jaeger.ServiceName),
+	// 		jaeger.WithBatchTimeout(cfg.Jaeger.BatchTimeout),
+	// 		jaeger.WithExportTimeout(cfg.Jaeger.ExportTimeout),
+	// 		jaeger.WithMaxExportBatchSize(cfg.Jaeger.MaxExportBatchSize),
+	// 		jaeger.WithMaxQueueSize(cfg.Jaeger.MaxQueueSize),
+	// 	)
+	// 	if err != nil {
+	// 		return nil, err
+	// 	}
+	// 	exps = append(exps, jae)
+	// }
 
 	opts = append(
 		opts,
-		WithExporters(exps...),
 		WithMetrics(ms...),
 	)
 
