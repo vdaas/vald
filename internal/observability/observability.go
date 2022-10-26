@@ -122,6 +122,7 @@ func NewWithConfig(cfg *config.Observability, ms ...metrics.Metric) (Observabili
 
 	opts = append(
 		opts,
+		WithExporters(exps...),
 		WithMetrics(ms...),
 	)
 
