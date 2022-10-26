@@ -2,7 +2,7 @@
 
 This page describes how to enable filtering features on the Vald cluster.
 
-Before using the filtering functions, please check [the Vald Filter Gateway document](../overview/component/filter-gatewya.md) first for what you can do.
+Before using the filtering functions, please check [the Vald Filter Gateway document](../overview/component/filter-gateway.md) first for what you can do.
 
 ## Requirement
 
