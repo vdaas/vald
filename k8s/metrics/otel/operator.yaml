@@ -1,0 +1,5 @@
+manager:
+  serviceMonitor:
+    enabled: true
+    metricsEndpoints:
+    - port: metrics # for opentelemetry-operator metrics
