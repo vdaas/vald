@@ -76,8 +76,8 @@ func NewWithConfig(cfg *config.Observability, ms ...metrics.Metric) (Observabili
 	// TODO: Add if statement to verify configuration
 	// TODO: Add otlp option
 	e, err := otlp.New(
-		// otlp.WithCollectorEndpoint("opentelemetry-collector-collector.default.svc.cluster.local:4317"),
-		otlp.WithCollectorEndpoint("localhost:4317"),
+		otlp.WithCollectorEndpoint("opentelemetry-collector-collector.default.svc.cluster.local:4317"),
+		// otlp.WithCollectorEndpoint("localhost:4317"),
 	)
 	if err != nil {
 		return nil, err
