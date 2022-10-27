@@ -99,6 +99,10 @@ func (e *exp) initMeter(ctx context.Context) (err error) {
 			metric.WithInterval(e.mExportInterval),
 			metric.WithTimeout(e.mExportTimeout),
 		), e.metricsViews...),
+		metric.WithResource(resource.NewWithAttributes(
+			semconv.SchemaURL,
+			semconv.ServiceNameKey.String(e.serviceName),
+		)),
 	)
 	return nil
 }
