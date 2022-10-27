@@ -15,4 +15,4 @@
 //
 
 // Package operator provides benchmark operator crd information and preriodically update
-package operator
+package scenario
