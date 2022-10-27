@@ -73,10 +73,11 @@ func NewWithConfig(cfg *config.Observability, ms ...metrics.Metric) (Observabili
 		opts = append(opts, WithTracer(tr))
 	}
 
-	// TODO: Add if statement to verify configuration
+	// TODO: fix this code later.
 	// TODO: Add otlp option
 	e, err := otlp.New(
 		otlp.WithCollectorEndpoint("opentelemetry-collector-collector.default.svc.cluster.local:4317"),
+		otlp.WithServiceName(cfg.Jaeger.ServiceName),
 		// otlp.WithCollectorEndpoint("localhost:4317"),
 	)
 	if err != nil {
