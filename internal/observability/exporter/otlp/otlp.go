@@ -2,6 +2,7 @@ package otlp
 
 import (
 	"context"
+	"os"
 	"reflect"
 	"time"
 
@@ -18,6 +19,7 @@ import (
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/observability/attribute"
 	"github.com/vdaas/vald/internal/observability/exporter"
 	"github.com/vdaas/vald/internal/observability/metrics"
 )
@@ -102,6 +104,10 @@ func (e *exp) initMeter(ctx context.Context) (err error) {
 		metric.WithResource(resource.NewWithAttributes(
 			semconv.SchemaURL,
 			semconv.ServiceNameKey.String(e.serviceName),
+			attribute.String("target_pod", os.Getenv("MY_POD_NAME")),                // TODO: fix it later
+			attribute.String("target_node", os.Getenv("MY_NODE_NAME")),              // TODO: fix it later
+			attribute.String("kubernetes_name", e.serviceName),                      // TODO: fix it later
+			attribute.String("kubernetes_namespace", os.Getenv("MY_POD_NAMESPACE")), // TODO: fix it later
 		)),
 	)
 	return nil
