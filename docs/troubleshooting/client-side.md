@@ -2,7 +2,7 @@
 
 This page introduces the popular troubleshooting for client side.
 
-The [flow chart](../troubleshooting/chart.md) helps you find the root reason for your problem.
+The [flow chart](../troubleshooting/provisioning.md) helps you find the root reason for your problem.
 
 Additionally, if you encounter some errors when using API, the [API status code](../api/status.md) helps you, too.
 
