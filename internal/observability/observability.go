@@ -73,12 +73,21 @@ func NewWithConfig(cfg *config.Observability, ms ...metrics.Metric) (Observabili
 		opts = append(opts, WithTracer(tr))
 	}
 
-	// TODO: fix this code later.
-	// TODO: Add otlp option
 	e, err := otlp.New(
-		otlp.WithCollectorEndpoint("opentelemetry-collector-collector.default.svc.cluster.local:4317"),
-		otlp.WithServiceName(cfg.Jaeger.ServiceName),
-		// otlp.WithCollectorEndpoint("localhost:4317"),
+		otlp.WithCollectorEndpoint(cfg.OTLP.CollectorEndpoint),
+		otlp.WithTraceBatchTimeout(cfg.OTLP.TraceBatchTimeout),
+		otlp.WithTraceExportTimeout(cfg.OTLP.TraceExportTimeout),
+		otlp.WithTraceMaxExportBatchSize(cfg.OTLP.TraceMaxExportBatchSize),
+		otlp.WithTraceMaxQueueSize(cfg.OTLP.TraceMaxQueueSize),
+		otlp.WithMetricsExportInterval(cfg.OTLP.MetricsExportInterval),
+		otlp.WithMetricsExportTimeout(cfg.OTLP.MetricsExportTimeout),
+		otlp.WithAttributes(
+			otlp.ServiceNameKey.String(cfg.OTLP.Attribute.ServiceName),
+			otlp.NamespaceKey.String(cfg.OTLP.Attribute.Namespace),
+			otlp.TargetPodNameKey.String(cfg.OTLP.Attribute.PodName),
+			otlp.TargetNodeNameKey.String(cfg.OTLP.Attribute.NodeName),
+			otlp.AppNameKey.String(cfg.OTLP.Attribute.ServiceName),
+		),
 	)
 	if err != nil {
 		return nil, err

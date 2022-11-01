@@ -108,7 +108,7 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "9.2.2",
+          "pluginVersion": "9.2.3",
           "targets": [
             {
               "datasource": {
@@ -187,7 +187,7 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "9.2.2",
+          "pluginVersion": "9.2.3",
           "targets": [
             {
               "datasource": {
@@ -265,7 +265,7 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "9.2.2",
+          "pluginVersion": "9.2.3",
           "targets": [
             {
               "datasource": {
@@ -347,7 +347,7 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "9.2.2",
+          "pluginVersion": "9.2.3",
           "targets": [
             {
               "datasource": {
@@ -355,7 +355,7 @@ data:
                 "uid": "vald_prometheus"
               },
               "editorMode": "code",
-              "expr": "count(up{kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\", kubernetes_name!=\"\"})",
+              "expr": "count(kube_pod_info{namespace=\"$Namespace\", pod=~\"$ReplicaSet.*\"})",
               "format": "table",
               "hide": false,
               "instant": true,
@@ -431,7 +431,7 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "9.2.2",
+          "pluginVersion": "9.2.3",
           "targets": [
             {
               "datasource": {
@@ -510,7 +510,7 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "9.2.2",
+          "pluginVersion": "9.2.3",
           "targets": [
             {
               "datasource": {
@@ -589,7 +589,7 @@ data:
             "textMode": "auto"
           },
           "pluginVersin": "8.0.1",
-          "pluginVersion": "9.2.2",
+          "pluginVersion": "9.2.3",
           "targets": [
             {
               "datasource": {
@@ -649,7 +649,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "9.2.2",
+          "pluginVersion": "9.2.3",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -774,7 +774,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "9.2.2",
+          "pluginVersion": "9.2.3",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -900,7 +900,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "9.2.2",
+          "pluginVersion": "9.2.3",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -1009,7 +1009,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "9.2.2",
+          "pluginVersion": "9.2.3",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",

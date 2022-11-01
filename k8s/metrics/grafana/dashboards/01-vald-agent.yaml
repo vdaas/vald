@@ -108,7 +108,7 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "9.2.2",
+          "pluginVersion": "9.2.3",
           "targets": [
             {
               "datasource": {
@@ -186,7 +186,7 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "9.2.2",
+          "pluginVersion": "9.2.3",
           "targets": [
             {
               "datasource": {
@@ -264,7 +264,7 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "9.2.2",
+          "pluginVersion": "9.2.3",
           "targets": [
             {
               "datasource": {
@@ -346,14 +346,15 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "9.2.2",
+          "pluginVersion": "9.2.3",
           "targets": [
             {
               "datasource": {
                 "type": "prometheus",
                 "uid": "vald_prometheus"
               },
-              "expr": "count(up{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance!=\"\"})",
+              "editorMode": "code",
+              "expr": "count(kube_pod_info{namespace=\"$Namespace\", pod=~\"$ReplicaSet.*\"})",
               "format": "table",
               "hide": false,
               "instant": true,
@@ -429,7 +430,7 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "9.2.2",
+          "pluginVersion": "9.2.3",
           "targets": [
             {
               "datasource": {
@@ -508,7 +509,7 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "9.2.2",
+          "pluginVersion": "9.2.3",
           "targets": [
             {
               "datasource": {
@@ -586,7 +587,7 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "9.2.2",
+          "pluginVersion": "9.2.3",
           "targets": [
             {
               "datasource": {
@@ -668,7 +669,7 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "9.2.2",
+          "pluginVersion": "9.2.3",
           "targets": [
             {
               "datasource": {
@@ -749,7 +750,7 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "9.2.2",
+          "pluginVersion": "9.2.3",
           "targets": [
             {
               "datasource": {
@@ -831,7 +832,7 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "9.2.2",
+          "pluginVersion": "9.2.3",
           "repeatDirection": "h",
           "targets": [
             {
@@ -913,7 +914,7 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "9.2.2",
+          "pluginVersion": "9.2.3",
           "targets": [
             {
               "datasource": {
@@ -994,7 +995,7 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "9.2.2",
+          "pluginVersion": "9.2.3",
           "targets": [
             {
               "datasource": {
@@ -1071,7 +1072,7 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "9.2.2",
+          "pluginVersion": "9.2.3",
           "targets": [
             {
               "datasource": {
@@ -1145,7 +1146,7 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "9.2.2",
+          "pluginVersion": "9.2.3",
           "targets": [
             {
               "datasource": {
@@ -1220,7 +1221,7 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "9.2.2",
+          "pluginVersion": "9.2.3",
           "targets": [
             {
               "datasource": {
@@ -1295,7 +1296,7 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "9.2.2",
+          "pluginVersion": "9.2.3",
           "targets": [
             {
               "datasource": {
@@ -1356,7 +1357,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "9.2.2",
+          "pluginVersion": "9.2.3",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -1481,7 +1482,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "9.2.2",
+          "pluginVersion": "9.2.3",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -1606,7 +1607,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "9.2.2",
+          "pluginVersion": "9.2.3",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -1702,7 +1703,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "9.2.2",
+          "pluginVersion": "9.2.3",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",

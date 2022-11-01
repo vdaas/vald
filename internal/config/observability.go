@@ -20,10 +20,29 @@ package config
 // Observability represents the configuration for the observability.
 type Observability struct {
 	Enabled    bool        `json:"enabled"    yaml:"enabled"`
+	OTLP       *OTLP       `json:"otlp"       yaml:"otlp"`
 	Metrics    *Metrics    `json:"metrics"    yaml:"metrics"`
 	Trace      *Trace      `json:"trace"      yaml:"trace"`
 	Prometheus *Prometheus `json:"prometheus" yaml:"prometheus"`
 	Jaeger     *Jaeger     `json:"jaeger"     yaml:"jaeger"`
+}
+
+type OTLP struct {
+	CollectorEndpoint       string         `json:"collector_endpoint"          yaml:"collector_endpoint"`
+	Attribute               *OTLPAttribute `json:"attribute"                   yaml:"attribute"`
+	TraceBatchTimeout       string         `json:"trace_batch_timeout"         yaml:"trace_batch_timeout"`
+	TraceExportTimeout      string         `json:"trace_export_timeout"        yaml:"trace_export_timeout"`
+	TraceMaxExportBatchSize int            `json:"trace_max_export_batch_size" yaml:"trace_max_export_batch_size"`
+	TraceMaxQueueSize       int            `json:"trace_max_queue_size"        yaml:"trace_max_queue_size"`
+	MetricsExportInterval   string         `json:"metrics_export_interval"     yaml:"metrics_export_interval"`
+	MetricsExportTimeout    string         `json:"metrics_export_timeout"      yaml:"metrics_export_timeout"`
+}
+
+type OTLPAttribute struct {
+	Namespace   string `json:"namespace"    yaml:"namespace"`
+	PodName     string `json:"pod_name"     yaml:"pod_name"`
+	NodeName    string `json:"node_name"    yaml:"node_name"`
+	ServiceName string `json:"service_name" yaml:"service_name"`
 }
 
 // Trace represents the configuration for the trace.
@@ -67,8 +86,33 @@ type Jaeger struct {
 	MaxQueueSize       int    `json:"max_queue_size"        yaml:"max_queue_size"`
 }
 
+// Bind binds the actual data from the OTLPAttribute receiver fields.
+func (o *OTLPAttribute) Bind() *OTLPAttribute {
+	o.Namespace = GetActualValue(o.Namespace)
+	o.PodName = GetActualValue(o.PodName)
+	o.NodeName = GetActualValue(o.NodeName)
+	o.ServiceName = GetActualValue(o.ServiceName)
+	return o
+}
+
 // Bind binds the actual data from the Observability receiver fields.
 func (o *Observability) Bind() *Observability {
+	if o.OTLP != nil {
+		o.OTLP.CollectorEndpoint = GetActualValue(o.OTLP.CollectorEndpoint)
+		o.OTLP.TraceBatchTimeout = GetActualValue(o.OTLP.TraceBatchTimeout)
+		o.OTLP.TraceExportTimeout = GetActualValue(o.OTLP.TraceExportTimeout)
+		o.OTLP.MetricsExportInterval = GetActualValue(o.OTLP.MetricsExportInterval)
+		o.OTLP.MetricsExportTimeout = GetActualValue(o.OTLP.MetricsExportTimeout)
+	} else {
+		o.OTLP = new(OTLP)
+	}
+
+	if o.OTLP.Attribute != nil {
+		o.OTLP.Attribute.Bind()
+	} else {
+		o.OTLP.Attribute = new(OTLPAttribute)
+	}
+
 	if o.Metrics != nil {
 		o.Metrics.VersionInfoLabels = GetActualValues(o.Metrics.VersionInfoLabels)
 	} else {

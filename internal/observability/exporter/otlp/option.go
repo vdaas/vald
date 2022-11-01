@@ -4,12 +4,13 @@ import (
 	"time"
 
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/observability/attribute"
 )
 
 type Option func(*exp) error
 
 var defaultOpts = []Option{
-	WithServiceName("vald"),
+	WithCollectorEndpoint("opentelemetry-collector-collector.default.svc.cluster.local:4317"),
 	WithTraceBatchTimeout("1s"),
 	WithTraceExportTimeout("1m"),
 	WithTraceMaxExportBatchSize(1024),
@@ -18,12 +19,12 @@ var defaultOpts = []Option{
 	WithMetricsExportTimeout("1m"),
 }
 
-func WithServiceName(s string) Option {
+func WithAttributes(attrs ...attribute.KeyValue) Option {
 	return func(e *exp) error {
-		if len(s) == 0 {
-			return errors.NewErrInvalidOption("serviceName", s)
+		if len(attrs) == 0 {
+			return errors.NewErrInvalidOption("attributes", attrs)
 		}
-		e.serviceName = s
+		e.attributes = append(e.attributes, attrs...)
 		return nil
 	}
 }

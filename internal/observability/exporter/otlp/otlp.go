@@ -2,7 +2,6 @@ package otlp
 
 import (
 	"context"
-	"os"
 	"reflect"
 	"time"
 
@@ -24,6 +23,16 @@ import (
 	"github.com/vdaas/vald/internal/observability/metrics"
 )
 
+// Metrics and Trace attribute keys.
+// The following keys are automatically inserted.
+const (
+	TargetPodNameKey  = attribute.Key("target_pod")
+	TargetNodeNameKey = attribute.Key("target_node")
+	NamespaceKey      = attribute.Key("kubernetes_namespace")
+	AppNameKey        = attribute.Key("kubernetes_name")
+	ServiceNameKey    = semconv.ServiceNameKey
+)
+
 type exp struct {
 	serviceName       string
 	collectorEndpoint string
@@ -42,6 +51,8 @@ type exp struct {
 
 	mExportInterval time.Duration
 	mExportTimeout  time.Duration
+
+	attributes []attribute.KeyValue
 }
 
 func New(opts ...Option) (exporter.Exporter, error) {
@@ -81,7 +92,7 @@ func (e *exp) initTracer(ctx context.Context) (err error) {
 		// Record information about this application in a Resource.
 		trace.WithResource(resource.NewWithAttributes(
 			semconv.SchemaURL,
-			semconv.ServiceNameKey.String(e.serviceName),
+			e.attributes...,
 		)),
 	)
 	return nil
@@ -103,11 +114,7 @@ func (e *exp) initMeter(ctx context.Context) (err error) {
 		), e.metricsViews...),
 		metric.WithResource(resource.NewWithAttributes(
 			semconv.SchemaURL,
-			semconv.ServiceNameKey.String(e.serviceName),
-			attribute.String("target_pod", os.Getenv("MY_POD_NAME")),                // TODO: fix it later
-			attribute.String("target_node", os.Getenv("MY_NODE_NAME")),              // TODO: fix it later
-			attribute.String("kubernetes_name", e.serviceName),                      // TODO: fix it later
-			attribute.String("kubernetes_namespace", os.Getenv("MY_POD_NAMESPACE")), // TODO: fix it later
+			e.attributes...,
 		)),
 	)
 	return nil
