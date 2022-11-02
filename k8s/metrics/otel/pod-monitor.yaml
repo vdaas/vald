@@ -31,4 +31,3 @@ spec:
       app.kubernetes.io/component: opentelemetry-collector
       app.kubernetes.io/instance: default.opentelemetry-collector
       app.kubernetes.io/name: opentelemetry-collector-collector
-
