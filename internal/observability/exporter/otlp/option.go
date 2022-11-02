@@ -10,7 +10,6 @@ import (
 type Option func(*exp) error
 
 var defaultOpts = []Option{
-	WithCollectorEndpoint("opentelemetry-collector-collector.default.svc.cluster.local:4317"),
 	WithTraceBatchTimeout("1s"),
 	WithTraceExportTimeout("1m"),
 	WithTraceMaxExportBatchSize(1024),
