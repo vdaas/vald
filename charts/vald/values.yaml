@@ -533,74 +533,6 @@ defaults:
             ip_transparent: false
             # defaults.server_config.metrics.pprof.server.socket_option.ip_recover_destination_addr -- server listen socket option for ip_recover_destination_addr functionality
             ip_recover_destination_addr: false
-      # @schema {"name": "defaults.server_config.metrics.prometheus", "type": "object"}
-      prometheus:
-        # @schema {"name": "defaults.server_config.metrics.prometheus.enabled", "type": "boolean"}
-        # defaults.server_config.metrics.prometheus.enabled -- prometheus server enabled
-        enabled: false
-        # @schema {"name": "defaults.server_config.metrics.prometheus.host", "type": "string"}
-        # defaults.server_config.metrics.prometheus.host -- prometheus server host
-        host: 0.0.0.0
-        # @schema {"name": "defaults.server_config.metrics.prometheus.port", "type": "integer", "minimum": 0, "maximum": 65535}
-        # defaults.server_config.metrics.prometheus.port -- prometheus server port
-        port: 6061
-        # @schema {"name": "defaults.server_config.metrics.prometheus.servicePort", "type": "integer", "minimum": 0, "maximum": 65535}
-        # defaults.server_config.metrics.prometheus.servicePort -- prometheus server service port
-        servicePort: 6061
-        # @schema {"name": "defaults.server_config.metrics.prometheus.server", "type": "object"}
-        server:
-          # @schema {"name": "defaults.server_config.metrics.prometheus.server.mode", "type": "string"}
-          # defaults.server_config.metrics.prometheus.server.mode -- prometheus server mode
-          mode: REST
-          # @schema {"name": "defaults.server_config.metrics.prometheus.server.probe_wait_time", "type": "string"}
-          # defaults.server_config.metrics.prometheus.server.probe_wait_time -- prometheus server probe wait time
-          probe_wait_time: 3s
-          # @schema {"name": "defaults.server_config.metrics.prometheus.server.network", "type": "string", "enum": ["tcp", "tcp4", "tcp6", "udp", "udp4", "udp6", "unix", "unixgram", "unixpacket"]}
-          # defaults.server_config.metrics.prometheus.server.network -- mysql network
-          network: tcp
-          # @schema {"name": "defaults.server_config.metrics.prometheus.server.socket_path", "type": "string"}
-          # defaults.server_config.metrics.prometheus.server.socket_path -- mysql socket_path
-          socket_path: ""
-          # @schema {"name": "defaults.server_config.metrics.prometheus.server.http", "type": "object"}
-          http:
-            # @schema {"name": "defaults.server_config.metrics.prometheus.server.http.shutdown_duration", "type": "string"}
-            # defaults.server_config.metrics.prometheus.server.http.shutdown_duration -- prometheus server shutdown duration
-            shutdown_duration: 5s
-            # @schema {"name": "defaults.server_config.metrics.prometheus.server.http.handler_timeout", "type": "string"}
-            # defaults.server_config.metrics.prometheus.server.http.handler_timeout -- prometheus server handler timeout
-            handler_timeout: 5s
-            # @schema {"name": "defaults.server_config.metrics.prometheus.server.http.idle_timeout", "type": "string"}
-            # defaults.server_config.metrics.prometheus.server.http.idle_timeout -- prometheus server idle timeout
-            idle_timeout: 2s
-            # @schema {"name": "defaults.server_config.metrics.prometheus.server.http.read_header_timeout", "type": "string"}
-            # defaults.server_config.metrics.prometheus.server.http.read_header_timeout -- prometheus server read header timeout
-            read_header_timeout: 1s
-            # @schema {"name": "defaults.server_config.metrics.prometheus.server.http.read_timeout", "type": "string"}
-            # defaults.server_config.metrics.prometheus.server.http.read_timeout -- prometheus server read timeout
-            read_timeout: 1s
-            # @schema {"name": "defaults.server_config.metrics.prometheus.server.http.write_timeout", "type": "string"}
-            # defaults.server_config.metrics.prometheus.server.http.write_timeout -- prometheus server write timeout
-            write_timeout: 1s
-          # @schema {"name": "defaults.server_config.metrics.prometheus.server.socket_option", "alias": "socket_option"}
-          socket_option:
-            # defaults.server_config.metrics.prometheus.server.socket_option.reuse_port -- server listen socket option for reuse_port functionality
-            reuse_port: true
-            # defaults.server_config.metrics.prometheus.server.socket_option.reuse_addr -- server listen socket option for reuse_addr functionality
-            reuse_addr: true
-            # defaults.server_config.metrics.prometheus.server.socket_option.tcp_fast_open -- server listen socket option for tcp_fast_open functionality
-            tcp_fast_open: true
-            # defaults.server_config.metrics.prometheus.server.socket_option.tcp_no_delay -- server listen socket option for tcp_no_delay functionality
-            tcp_no_delay: true
-            # defaults.server_config.metrics.prometheus.server.socket_option.tcp_cork -- server listen socket option for tcp_cork functionality
-            tcp_cork: false
-            # defaults.server_config.metrics.prometheus.server.socket_option.tcp_quick_ack -- server listen socket option for tcp_quick_ack functionality
-            tcp_quick_ack: true
-            # defaults.server_config.metrics.prometheus.server.socket_option.tcp_defer_accept -- server listen socket option for tcp_defer_accept functionality
-            tcp_defer_accept: true
-            # defaults.server_config.metrics.prometheus.server.socket_option.ip_transparent -- server listen socket option for ip_transparent functionality
-            ip_transparent: false
-            # defaults.server_config.metrics.prometheus.server.socket_option.ip_recover_destination_addr -- server listen socket option for ip_recover_destination_addr functionality
-            ip_recover_destination_addr: false
     # @schema {"name": "defaults.server_config.full_shutdown_duration", "type": "string"}
     # defaults.server_config.full_shutdown_duration -- server full shutdown duration
     full_shutdown_duration: 600s
@@ -1113,7 +1045,6 @@ gateway:
         startup: {}
       metrics:
         pprof: {}
-        prometheus: {}
     # @schema {"name": "gateway.lb.observability", "alias": "observability"}
     # gateway.lb.observability -- observability config (overrides defaults.observability)
     observability:
@@ -1379,7 +1310,6 @@ gateway:
         startup: {}
       metrics:
         pprof: {}
-        prometheus: {}
     # @schema {"name": "gateway.filter.observability", "alias": "observability"}
     # gateway.filter.observability -- observability config (overrides defaults.observability)
     observability:
@@ -1662,7 +1592,6 @@ agent:
           periodSeconds: 5
     metrics:
       pprof: {}
-      prometheus: {}
   # @schema {"name": "agent.observability", "alias": "observability"}
   # agent.observability -- observability config (overrides defaults.observability)
   observability:
@@ -1861,9 +1790,6 @@ agent:
         pprof:
           port: 16060
           servicePort: 16060
-        prometheus:
-          port: 16061
-          servicePort: 16061
     # @schema {"name": "agent.sidecar.observability", "alias": "observability"}
     # agent.sidecar.observability -- observability config (overrides defaults.observability)
     observability:
@@ -2309,7 +2235,6 @@ discoverer:
       startup: {}
     metrics:
       pprof: {}
-      prometheus: {}
   # @schema {"name": "discoverer.observability", "alias": "observability"}
   # discoverer.observability -- observability config (overrides defaults.observability)
   observability:
@@ -2618,7 +2543,6 @@ manager:
         startup: {}
       metrics:
         pprof: {}
-        prometheus: {}
     # @schema {"name": "manager.index.observability", "alias": "observability"}
     # manager.index.observability -- observability config (overrides defaults.observability)
     observability:
