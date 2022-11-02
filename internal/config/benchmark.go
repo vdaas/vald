@@ -19,15 +19,15 @@ package config
 
 // Job represents the configuration for the internal benchmark search job.
 type BenchmarkJob struct {
-	JobType       string      `json:"job_type" yaml:"job_type"`
-	Dataset       string      `json:"dataset" yaml:"dataset"`
-	Dimension     int         `json:"dimension" yaml:"dimension"`
-	Iter          int         `json:"iter" yaml:"iter"`
-	Num           uint32      `json:"num" yaml:"num"`
-	MinNum        uint32      `json:"min_num" yaml:"min_num"`
-	Radius        float64     `json:"radius" yaml:"radius"`
-	Epsilon       float64     `json:"epsilon" yaml:"epsilon"`
-	Timeout       string      `json:"timeout" yaml:"timeout"`
+	JobType       string      `json:"job_type"       yaml:"job_type"`
+	Dataset       string      `json:"dataset"        yaml:"dataset"`
+	Dimension     int         `json:"dimension"      yaml:"dimension"`
+	Iter          int         `json:"iter"           yaml:"iter"`
+	Num           uint32      `json:"num"            yaml:"num"`
+	MinNum        uint32      `json:"min_num"        yaml:"min_num"`
+	Radius        float64     `json:"radius"         yaml:"radius"`
+	Epsilon       float64     `json:"epsilon"        yaml:"epsilon"`
+	Timeout       string      `json:"timeout"        yaml:"timeout"`
 	GatewayClient *GRPCClient `json:"gateway_client" yaml:"gateway_client"`
 }
 
