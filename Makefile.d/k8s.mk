@@ -314,13 +314,13 @@ k8s/otel/operator/uninstall:
 ## deploy opentelemetry collector
 k8s/otel/collector/install:
 	kubectl apply -f ./k8s/metrics/otel/collector.yaml
-	kubectl apply -f ./k8s/metrics/otel/service-monitor.yaml
+	kubectl apply -f ./k8s/metrics/otel/pod-monitor.yaml
 
 .PHONY: k8s/otel/collector/uninstall
 ## delete opentelemetry collector
 k8s/otel/collector/uninstall:
 	kubectl delete -f ./k8s/metrics/otel/collector.yaml
-	kubectl delete -f ./k8s/metrics/otel/service-monitor.yaml
+	kubectl delete -f ./k8s/metrics/otel/pod-monitor.yaml
 
 .PHONY: telepresence/install
 ## install telepresence
