@@ -1867,8 +1867,9 @@ agent:
     # @schema {"name": "agent.sidecar.observability", "alias": "observability"}
     # agent.sidecar.observability -- observability config (overrides defaults.observability)
     observability:
-      jaeger:
-        service_name: vald-agent-sidecar
+      otlp:
+        attribute:
+          service_name: vald-agent-sidecar
     # @schema {"name": "agent.sidecar.resources", "alias": "resources"}
     # agent.sidecar.resources -- compute resources.
     resources:
