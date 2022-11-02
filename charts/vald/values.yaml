@@ -830,6 +830,44 @@ defaults:
     # @schema {"name": "defaults.observability.enabled", "type": "boolean"}
     # defaults.observability.enabled -- observability features enabled
     enabled: false
+    # @schema {"name": "defaults.observability.otlp", "type": "object"}
+    otlp:
+      # @schema {"name": "defaults.observability.otlp.collector_endpoint", "type": "string"}
+      # defaults.observability.otlp.collector_endpoint -- OpenTelemetry Collector endpoint
+      collector_endpoint: ""
+      # @schema {"name": "defaults.observability.otlp.attribute", "type": "object"}
+      # defaults.observability.otlp.attribute -- default resource attribute
+      attribute:
+        # @schema {"name": "defaults.observability.otlp.attribute.namespace", "type": "string"}
+        # defaults.observability.otlp.attribute.namespace -- namespace
+        namespace: _MY_POD_NAMESPACE_
+        # @schema {"name": "defaults.observability.otlp.attribute.pod_name", "type": "string"}
+        # defaults.observability.otlp.attribute.pod_name -- pod name
+        pod_name: _MY_POD_NAME_
+        # @schema {"name": "defaults.observability.otlp.attribute.node_name", "type": "string"}
+        # defaults.observability.otlp.attribute.node_name -- node name
+        node_name: _MY_NODE_NAME_
+        # @schema {"name": "defaults.observability.otlp.attribute.service_name", "type": "string"}
+        # defaults.observability.otlp.attribute.service_name -- service name
+        service_name: vald
+      # @schema {"name": "defaults.observability.otlp.trace_batch_timeout", "type": "string"}
+      # defaults.observability.otlp.trace_batch_timeout -- trace batch timeout
+      trace_batch_timeout: "1s"
+      # @schema {"name": "defaults.observability.otlp.trace_export_timeout", "type": "string"}
+      # defaults.observability.otlp.trace_export_timeout -- trace export timeout
+      trace_export_timeout: "1m"
+      # @schema {"name": "defaults.observability.otlp.trace_max_export_batch_size", "type": "integer"}
+      # defaults.observability.otlp.trace_max_export_batch_size -- trace maximum export batch size
+      trace_max_export_batch_size: 1024
+      # @schema {"name": "defaults.observability.otlp.trace_max_queue_size", "type": "integer"}
+      # defaults.observability.otlp.trace_max_queue_size -- trace maximum queue size
+      trace_max_queue_size: 256
+      # @schema {"name": "defaults.observability.otlp.metrics_export_interval", "type": "string"}
+      # defaults.observability.otlp.metrics_export_interval -- metrics export interval
+      metrics_export_interval: "1s"
+      # @schema {"name": "defaults.observability.otlp.metrics_export_timeout", "type": "string"}
+      # defaults.observability.otlp.metrics_export_timeout -- metrics export timeout
+      metrics_export_timeout: "1m"
     # @schema {"name": "defaults.observability.metrics", "type": "object"}
     metrics:
       # @schema {"name": "defaults.observability.metrics.enable_version_info", "type": "boolean"}
@@ -860,55 +898,6 @@ defaults:
       # @schema {"name": "defaults.observability.trace.enabled", "type": "boolean"}
       # defaults.observability.trace.enabled -- trace enabled
       enabled: false
-    # @schema {"name": "defaults.observability.prometheus", "type": "object"}
-    prometheus:
-      # @schema {"name": "defaults.observability.prometheus.enabled", "type": "boolean"}
-      # defaults.observability.prometheus.enabled -- Prometheus exporter enabled
-      enabled: false
-      # @schema {"name": "defaults.observability.prometheus.endpoint", "type": "string"}
-      # defaults.observability.prometheus.endpoint -- Prometheus exporter endpoint
-      endpoint: /metrics
-      # @schema {"name": "defaults.observability.prometheus.namespace", "type": "string"}
-      # defaults.observability.prometheus.namespace -- service namespace for metrics
-      namespace: _MY_POD_NAMESPACE_
-    # @schema {"name": "defaults.observability.jaeger", "type": "object"}
-    jaeger:
-      # @schema {"name": "defaults.observability.jaeger.enabled", "type": "boolean"}
-      # defaults.observability.jaeger.enabled -- Jaeger exporter enabled
-      enabled: false
-      # @schema {"name": "defaults.observability.jaeger.collector_endpoint", "type": "string"}
-      # defaults.observability.jaeger.collector_endpoint -- Jaeger collector endpoint
-      collector_endpoint: "" # http://jaeger-collector.default.svc.cluster.local:14268/api/traces
-      # @schema {"name": "defaults.observability.jaeger.agent_endpoint", "type": "string"}
-      # defaults.observability.jaeger.agent_endpoint -- Jaeger agent endpoint
-      agent_endpoint: ""
-      # @schema {"name": "defaults.observability.jaeger.agent_reconnect_interval", "type": "string"}
-      # defaults.observability.jaeger.agent_reconnect_interval -- Jaeger Agent reconnect interval
-      agent_reconnect_interval: 30s
-      # @schema {"name": "defaults.observability.jaeger.username", "type": "string"}
-      # defaults.observability.jaeger.username -- Jaeger username
-      username: ""
-      # @schema {"name": "defaults.observability.jaeger.password", "type": "string"}
-      # defaults.observability.jaeger.password -- Jaeger password
-      password: ""
-      # @schema {"name": "defaults.observability.jaeger.service_name", "type": "string"}
-      # defaults.observability.jaeger.service_name -- Jaeger service name
-      service_name: vald
-      # @schema {"name": "defaults.observability.jaeger.agent_max_packet_size", "type": "integer"}
-      # defaults.observability.jaeger.agent_max_packet_size -- Jaeger Agent max packet size
-      agent_max_packet_size: 65000
-      # @schema {"name": "defaults.observability.jaeger.batch_timeout", "type": "string"}
-      # defaults.observability.jaeger.batch_timeout -- Jaeger export batch timeout
-      batch_timeout: 5s
-      # @schema {"name": "defaults.observability.jaeger.export_timeout", "type": "string"}
-      # defaults.observability.jaeger.export_timeout -- Jaeger export timeout
-      export_timeout: 5s
-      # @schema {"name": "defaults.observability.jaeger.max_export_batch_size", "type": "integer"}
-      # defaults.observability.jaeger.max_export_batch_size -- Jaeger max export batch size
-      max_export_batch_size: 512
-      # @schema {"name": "defaults.observability.jaeger.max_queue_size", "type": "integer"}
-      # defaults.observability.jaeger.max_queue_size -- Jaeger max queue size
-      max_queue_size: 2048
 # @schema {"name": "gateway", "type": "object"}
 gateway:
   # @schema {"name": "gateway.lb", "type": "object"}
@@ -1045,10 +1034,14 @@ gateway:
     # @schema {"name": "gateway.lb.env", "type": "array", "items": {"type": "object"}, "anchor": "env"}
     # gateway.lb.env -- environment variables
     env:
-      # - name: MY_NODE_NAME
-      #   valueFrom:
-      #     fieldRef:
-      #       fieldPath: spec.nodeName
+      - name: MY_NODE_NAME
+        valueFrom:
+          fieldRef:
+            fieldPath: spec.nodeName
+      - name: MY_POD_NAME
+        valueFrom:
+          fieldRef:
+            fieldPath: metadata.name
       - name: MY_POD_NAMESPACE
         valueFrom:
           fieldRef:
@@ -1124,8 +1117,9 @@ gateway:
     # @schema {"name": "gateway.lb.observability", "alias": "observability"}
     # gateway.lb.observability -- observability config (overrides defaults.observability)
     observability:
-      jaeger:
-        service_name: vald-lb-gateway
+      otlp:
+        attribute:
+          service_name: vald-lb-gateway
     # @schema {"name": "gateway.lb.ingress", "type": "object"}
     ingress:
       # @schema {"name": "gateway.lb.ingress.pathType", "type": "string"}
@@ -1306,6 +1300,14 @@ gateway:
     # @schema {"name": "gateway.filter.env", "type": "array", "items": {"type": "object"}, "anchor": "env"}
     # gateway.filter.env -- environment variables
     env:
+      - name: MY_NODE_NAME
+        valueFrom:
+          fieldRef:
+            fieldPath: spec.nodeName
+      - name: MY_POD_NAME
+        valueFrom:
+          fieldRef:
+            fieldPath: metadata.name
       - name: MY_POD_NAMESPACE
         valueFrom:
           fieldRef:
@@ -1381,8 +1383,9 @@ gateway:
     # @schema {"name": "gateway.filter.observability", "alias": "observability"}
     # gateway.filter.observability -- observability config (overrides defaults.observability)
     observability:
-      jaeger:
-        service_name: vald-filter-gateway
+      otlp:
+        attribute:
+          service_name: vald-filter-gateway
     # @schema {"name": "gateway.filter.ingress", "type": "object"}
     ingress:
       # @schema {"name": "gateway.filter.ingress.pathType", "type": "string"}
@@ -1587,6 +1590,14 @@ agent:
   # @schema {"name": "agent.env", "alias": "env"}
   # agent.env -- environment variables
   env:
+    - name: MY_NODE_NAME
+      valueFrom:
+        fieldRef:
+          fieldPath: spec.nodeName
+    - name: MY_POD_NAME
+      valueFrom:
+        fieldRef:
+          fieldPath: metadata.name
     - name: MY_POD_NAMESPACE
       valueFrom:
         fieldRef:
@@ -1655,8 +1666,9 @@ agent:
   # @schema {"name": "agent.observability", "alias": "observability"}
   # agent.observability -- observability config (overrides defaults.observability)
   observability:
-    jaeger:
-      service_name: vald-agent-ngt
+    otlp:
+      attribute:
+        service_name: vald-agent-ngt
   # @schema {"name": "agent.resources", "alias": "resources"}
   # agent.resources -- compute resources.
   # recommended setting of memory requests = cluster memory * 0.4 / number of agent pods
@@ -1799,6 +1811,10 @@ agent:
     # @schema {"name": "agent.sidecar.env", "alias": "env"}
     # agent.sidecar.env -- environment variables
     env:
+      - name: MY_NODE_NAME
+        valueFrom:
+          fieldRef:
+            fieldPath: spec.nodeName
       - name: MY_POD_NAME
         valueFrom:
           fieldRef:
@@ -2223,6 +2239,14 @@ discoverer:
   # @schema {"name": "discoverer.env", "alias": "env"}
   # discoverer.env -- environment variables
   env:
+    - name: MY_NODE_NAME
+      valueFrom:
+        fieldRef:
+          fieldPath: spec.nodeName
+    - name: MY_POD_NAME
+      valueFrom:
+        fieldRef:
+          fieldPath: metadata.name
     - name: MY_POD_NAMESPACE
       valueFrom:
         fieldRef:
@@ -2288,8 +2312,9 @@ discoverer:
   # @schema {"name": "discoverer.observability", "alias": "observability"}
   # discoverer.observability -- observability config (overrides defaults.observability)
   observability:
-    jaeger:
-      service_name: vald-discoverer
+    otlp:
+      attribute:
+        service_name: vald-discoverer
   # @schema {"name": "discoverer.resources", "alias": "resources"}
   # discoverer.resources -- compute resources
   resources:
@@ -2532,10 +2557,14 @@ manager:
     # @schema {"name": "manager.index.env", "alias": "env"}
     # manager.index.env -- environment variables
     env:
-      # - name: MY_NODE_NAME
-      #   valueFrom:
-      #     fieldRef:
-      #       fieldPath: spec.nodeName
+      - name: MY_NODE_NAME
+        valueFrom:
+          fieldRef:
+            fieldPath: spec.nodeName
+      - name: MY_POD_NAME
+        valueFrom:
+          fieldRef:
+            fieldPath: metadata.name
       - name: MY_POD_NAMESPACE
         valueFrom:
           fieldRef:
@@ -2592,8 +2621,9 @@ manager:
     # @schema {"name": "manager.index.observability", "alias": "observability"}
     # manager.index.observability -- observability config (overrides defaults.observability)
     observability:
-      jaeger:
-        service_name: vald-manager-index
+      otlp:
+        attribute:
+          service_name: vald-manager-index
     # @schema {"name": "manager.index.resources", "alias": "resources"}
     # manager.index.resources -- compute resources
     resources:

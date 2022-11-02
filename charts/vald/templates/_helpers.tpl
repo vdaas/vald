@@ -661,6 +661,27 @@ observability
 */}}
 {{- define "vald.observability" -}}
 enabled: {{ default .default.enabled .Values.enabled }}
+otlp:
+  {{- if .Values.otlp }}
+  collector_endpoint: {{ default .default.otlp.collector_endpoint .Values.otlp.collector_endpoint | quote }}
+  trace_batch_timeout: {{ default .default.otlp.trace_batch_timeout .Values.otlp.trace_batch_timeout | quote }}
+  trace_export_timeout: {{ default .default.otlp.trace_export_timeout .Values.otlp.trace_export_timeout | quote }}
+  trace_max_export_batch_size: {{ default .default.otlp.trace_max_export_batch_size .Values.otlp.trace_max_export_batch_size }}
+  trace_max_queue_size: {{ default .default.otlp.trace_max_queue_size .Values.otlp.trace_max_queue_size }}
+  metrics_export_interval: {{ default .default.otlp.metrics_export_interval .Values.otlp.metrics_export_interval | quote }}
+  metrics_export_timeout: {{ default .default.otlp.metrics_export_timeout .Values.otlp.metrics_export_timeout | quote }}
+  attribute:
+    {{- if .Values.otlp.attribute }}
+    namespace: {{ default .default.otlp.attribute.namespace .Values.otlp.attribute.namespace | quote }}
+    pod_name: {{ default .default.otlp.attribute.pod_name .Values.otlp.attribute.pod_name | quote }}
+    node_name: {{ default .default.otlp.attribute.node_name .Values.otlp.attribute.node_name | quote }}
+    service_name: {{ default .default.otlp.attribute.service_name .Values.otlp.attribute.service_name | quote }}
+    {{- else }}
+    {{- toYaml .default.otlp.attribute | nindent 4 }}
+    {{- end }}
+  {{- else }}
+  {{- toYaml .default.otlp | nindent 2 }}
+  {{- end }}
 metrics:
   {{- if .Values.metrics }}
   enable_version_info: {{ default .default.metrics.enable_version_info .Values.metrics.enable_version_info }}
@@ -684,30 +705,6 @@ trace:
   enabled: {{ default .default.trace.enabled .Values.trace.enabled }}
   {{- else }}
   {{- toYaml .default.trace | nindent 2 }}
-  {{- end }}
-prometheus:
-  {{- if .Values.prometheus }}
-  enabled: {{ default .default.prometheus.enabled .Values.prometheus.enabled }}
-  endpoint: {{ default .default.prometheus.endpoint .Values.prometheus.endpoint | quote }}
-  {{- else }}
-  {{- toYaml .default.prometheus | nindent 2 }}
-  {{- end }}
-jaeger:
-  {{- if .Values.jaeger }}
-  enabled: {{ default .default.jaeger.enabled .Values.jaeger.enabled }}
-  collector_endpoint: {{ default .default.jaeger.collector_endpoint .Values.jaeger.collector_endpoint | quote }}
-  agent_endpoint: {{ default .default.jaeger.agent_endpoint .Values.jaeger.agent_endpoint | quote }}
-  agent_reconnect_interval: {{ default .default.jaeger.agent_reconnect_interval .Values.jaeger.agent_reconnect_interval | quote }}
-  username: {{ default .default.jaeger.username .Values.jaeger.username | quote }}
-  password: {{ default .default.jaeger.password .Values.jaeger.password | quote }}
-  service_name: {{ default .default.jaeger.service_name .Values.jaeger.service_name | quote }}
-  agent_max_packet_size: {{ default .default.jaeger.agent_max_packet_size .Values.jaeger.agent_max_packet_size }}
-  batch_timeout: {{ default .default.jaeger.batch_timeout .Values.jaeger.batch_timeout | quote }}
-  export_timeout: {{ default .default.jaeger.export_timeout .Values.jaeger.export_timeout | quote }}
-  max_export_batch_size: {{ default .default.jaeger.max_export_batch_size .Values.jaeger.max_export_batch_size }}
-  max_queue_size: {{ default .default.jaeger.max_queue_size .Values.jaeger.max_queue_size }}
-  {{- else }}
-  {{- toYaml .default.jaeger | nindent 2 }}
   {{- end }}
 {{- end -}}
 
