@@ -55,7 +55,8 @@ type job struct {
 	hdf5      hdf5.Data
 }
 
-func New(opts ...Option) (Job, error) { j := new(job)
+func New(opts ...Option) (Job, error) {
+	j := new(job)
 	for _, opt := range append(defaultOpts, opts...) {
 		if err := opt(j); err != nil {
 			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))

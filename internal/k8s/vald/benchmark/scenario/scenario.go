@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-package operator
+package scenario
 
 import (
 	"context"
@@ -28,18 +28,18 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/source"
 )
 
-type BenchmarkOperatorWatcher k8s.ResourceController
+type BenchmarkScenarioWatcher k8s.ResourceController
 
 type reconciler struct {
 	mgr         manager.Manager
 	name        string
 	namespace   string
 	onError     func(err error)
-	onReconcile func(operatorList map[string][]BenchmarkOperatorSpec)
+	onReconcile func(operatorList map[string][]BenchmarkScenarioSpec)
 	lopts       []client.ListOption
 }
 
-func New(opts ...Option) BenchmarkOperatorWatcher {
+func New(opts ...Option) BenchmarkScenarioWatcher {
 	r := new(reconciler)
 	for _, opt := range append(defaultOpts, opts...) {
 		// TODO: impl error handling after implement functional option

@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-package operator
+package scenario
 
 type Option func(*reconciler) error
 
