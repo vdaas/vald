@@ -34,7 +34,7 @@ type Servers struct {
 	// HealthCheckServers represent health check server configuration
 	HealthCheckServers []*Server `json:"health_check_servers" yaml:"health_check_servers"`
 
-	// MetricsServers represent metrics exporter server such as golang's pprof server
+	// MetricsServers represent metrics exporter server such as prometheus or opentelemetly or golang's pprof server
 	MetricsServers []*Server `json:"metrics_servers" yaml:"metrics_servers"`
 
 	// StartUpStrategy represent starting order of server name

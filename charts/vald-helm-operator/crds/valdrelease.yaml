@@ -705,6 +705,78 @@ spec:
                                   type: integer
                                   maximum: 65535
                                   minimum: 0
+                            prometheus:
+                              type: object
+                              properties:
+                                enabled:
+                                  type: boolean
+                                host:
+                                  type: string
+                                port:
+                                  type: integer
+                                  maximum: 65535
+                                  minimum: 0
+                                server:
+                                  type: object
+                                  properties:
+                                    http:
+                                      type: object
+                                      properties:
+                                        handler_timeout:
+                                          type: string
+                                        idle_timeout:
+                                          type: string
+                                        read_header_timeout:
+                                          type: string
+                                        read_timeout:
+                                          type: string
+                                        shutdown_duration:
+                                          type: string
+                                        write_timeout:
+                                          type: string
+                                    mode:
+                                      type: string
+                                    network:
+                                      type: string
+                                      enum:
+                                        - tcp
+                                        - tcp4
+                                        - tcp6
+                                        - udp
+                                        - udp4
+                                        - udp6
+                                        - unix
+                                        - unixgram
+                                        - unixpacket
+                                    probe_wait_time:
+                                      type: string
+                                    socket_option:
+                                      type: object
+                                      properties:
+                                        ip_recover_destination_addr:
+                                          type: boolean
+                                        ip_transparent:
+                                          type: boolean
+                                        reuse_addr:
+                                          type: boolean
+                                        reuse_port:
+                                          type: boolean
+                                        tcp_cork:
+                                          type: boolean
+                                        tcp_defer_accept:
+                                          type: boolean
+                                        tcp_fast_open:
+                                          type: boolean
+                                        tcp_no_delay:
+                                          type: boolean
+                                        tcp_quick_ack:
+                                          type: boolean
+                                    socket_path:
+                                      type: string
+                                servicePort:
+                                  type: integer
+                                  maximum: 65535
+                                  minimum: 0
                         servers:
                           type: object
                           properties:
@@ -1494,6 +1566,78 @@ spec:
                               type: object
                               properties:
                                 pprof:
+                                  type: object
+                                  properties:
+                                    enabled:
+                                      type: boolean
+                                    host:
+                                      type: string
+                                    port:
+                                      type: integer
+                                      maximum: 65535
+                                      minimum: 0
+                                    server:
+                                      type: object
+                                      properties:
+                                        http:
+                                          type: object
+                                          properties:
+                                            handler_timeout:
+                                              type: string
+                                            idle_timeout:
+                                              type: string
+                                            read_header_timeout:
+                                              type: string
+                                            read_timeout:
+                                              type: string
+                                            shutdown_duration:
+                                              type: string
+                                            write_timeout:
+                                              type: string
+                                        mode:
+                                          type: string
+                                        network:
+                                          type: string
+                                          enum:
+                                            - tcp
+                                            - tcp4
+                                            - tcp6
+                                            - udp
+                                            - udp4
+                                            - udp6
+                                            - unix
+                                            - unixgram
+                                            - unixpacket
+                                        probe_wait_time:
+                                          type: string
+                                        socket_option:
+                                          type: object
+                                          properties:
+                                            ip_recover_destination_addr:
+                                              type: boolean
+                                            ip_transparent:
+                                              type: boolean
+                                            reuse_addr:
+                                              type: boolean
+                                            reuse_port:
+                                              type: boolean
+                                            tcp_cork:
+                                              type: boolean
+                                            tcp_defer_accept:
+                                              type: boolean
+                                            tcp_fast_open:
+                                              type: boolean
+                                            tcp_no_delay:
+                                              type: boolean
+                                            tcp_quick_ack:
+                                              type: boolean
+                                        socket_path:
+                                          type: string
+                                    servicePort:
+                                      type: integer
+                                      maximum: 65535
+                                      minimum: 0
+                                prometheus:
                                   type: object
                                   properties:
                                     enabled:
@@ -2388,6 +2532,78 @@ spec:
                                   type: integer
                                   maximum: 65535
                                   minimum: 0
+                            prometheus:
+                              type: object
+                              properties:
+                                enabled:
+                                  type: boolean
+                                host:
+                                  type: string
+                                port:
+                                  type: integer
+                                  maximum: 65535
+                                  minimum: 0
+                                server:
+                                  type: object
+                                  properties:
+                                    http:
+                                      type: object
+                                      properties:
+                                        handler_timeout:
+                                          type: string
+                                        idle_timeout:
+                                          type: string
+                                        read_header_timeout:
+                                          type: string
+                                        read_timeout:
+                                          type: string
+                                        shutdown_duration:
+                                          type: string
+                                        write_timeout:
+                                          type: string
+                                    mode:
+                                      type: string
+                                    network:
+                                      type: string
+                                      enum:
+                                        - tcp
+                                        - tcp4
+                                        - tcp6
+                                        - udp
+                                        - udp4
+                                        - udp6
+                                        - unix
+                                        - unixgram
+                                        - unixpacket
+                                    probe_wait_time:
+                                      type: string
+                                    socket_option:
+                                      type: object
+                                      properties:
+                                        ip_recover_destination_addr:
+                                          type: boolean
+                                        ip_transparent:
+                                          type: boolean
+                                        reuse_addr:
+                                          type: boolean
+                                        reuse_port:
+                                          type: boolean
+                                        tcp_cork:
+                                          type: boolean
+                                        tcp_defer_accept:
+                                          type: boolean
+                                        tcp_fast_open:
+                                          type: boolean
+                                        tcp_no_delay:
+                                          type: boolean
+                                        tcp_quick_ack:
+                                          type: boolean
+                                    socket_path:
+                                      type: string
+                                servicePort:
+                                  type: integer
+                                  maximum: 65535
+                                  minimum: 0
                         servers:
                           type: object
                           properties:
@@ -3165,6 +3381,78 @@ spec:
                           type: object
                           properties:
                             pprof:
+                              type: object
+                              properties:
+                                enabled:
+                                  type: boolean
+                                host:
+                                  type: string
+                                port:
+                                  type: integer
+                                  maximum: 65535
+                                  minimum: 0
+                                server:
+                                  type: object
+                                  properties:
+                                    http:
+                                      type: object
+                                      properties:
+                                        handler_timeout:
+                                          type: string
+                                        idle_timeout:
+                                          type: string
+                                        read_header_timeout:
+                                          type: string
+                                        read_timeout:
+                                          type: string
+                                        shutdown_duration:
+                                          type: string
+                                        write_timeout:
+                                          type: string
+                                    mode:
+                                      type: string
+                                    network:
+                                      type: string
+                                      enum:
+                                        - tcp
+                                        - tcp4
+                                        - tcp6
+                                        - udp
+                                        - udp4
+                                        - udp6
+                                        - unix
+                                        - unixgram
+                                        - unixpacket
+                                    probe_wait_time:
+                                      type: string
+                                    socket_option:
+                                      type: object
+                                      properties:
+                                        ip_recover_destination_addr:
+                                          type: boolean
+                                        ip_transparent:
+                                          type: boolean
+                                        reuse_addr:
+                                          type: boolean
+                                        reuse_port:
+                                          type: boolean
+                                        tcp_cork:
+                                          type: boolean
+                                        tcp_defer_accept:
+                                          type: boolean
+                                        tcp_fast_open:
+                                          type: boolean
+                                        tcp_no_delay:
+                                          type: boolean
+                                        tcp_quick_ack:
+                                          type: boolean
+                                    socket_path:
+                                      type: string
+                                servicePort:
+                                  type: integer
+                                  maximum: 65535
+                                  minimum: 0
+                            prometheus:
                               type: object
                               properties:
                                 enabled:
@@ -4592,6 +4880,78 @@ spec:
                                       type: integer
                                       maximum: 65535
                                       minimum: 0
+                                prometheus:
+                                  type: object
+                                  properties:
+                                    enabled:
+                                      type: boolean
+                                    host:
+                                      type: string
+                                    port:
+                                      type: integer
+                                      maximum: 65535
+                                      minimum: 0
+                                    server:
+                                      type: object
+                                      properties:
+                                        http:
+                                          type: object
+                                          properties:
+                                            handler_timeout:
+                                              type: string
+                                            idle_timeout:
+                                              type: string
+                                            read_header_timeout:
+                                              type: string
+                                            read_timeout:
+                                              type: string
+                                            shutdown_duration:
+                                              type: string
+                                            write_timeout:
+                                              type: string
+                                        mode:
+                                          type: string
+                                        network:
+                                          type: string
+                                          enum:
+                                            - tcp
+                                            - tcp4
+                                            - tcp6
+                                            - udp
+                                            - udp4
+                                            - udp6
+                                            - unix
+                                            - unixgram
+                                            - unixpacket
+                                        probe_wait_time:
+                                          type: string
+                                        socket_option:
+                                          type: object
+                                          properties:
+                                            ip_recover_destination_addr:
+                                              type: boolean
+                                            ip_transparent:
+                                              type: boolean
+                                            reuse_addr:
+                                              type: boolean
+                                            reuse_port:
+                                              type: boolean
+                                            tcp_cork:
+                                              type: boolean
+                                            tcp_defer_accept:
+                                              type: boolean
+                                            tcp_fast_open:
+                                              type: boolean
+                                            tcp_no_delay:
+                                              type: boolean
+                                            tcp_quick_ack:
+                                              type: boolean
+                                        socket_path:
+                                          type: string
+                                    servicePort:
+                                      type: integer
+                                      maximum: 65535
+                                      minimum: 0
                             servers:
                               type: object
                               properties:
@@ -5743,6 +6103,78 @@ spec:
                                       type: integer
                                       maximum: 65535
                                       minimum: 0
+                                prometheus:
+                                  type: object
+                                  properties:
+                                    enabled:
+                                      type: boolean
+                                    host:
+                                      type: string
+                                    port:
+                                      type: integer
+                                      maximum: 65535
+                                      minimum: 0
+                                    server:
+                                      type: object
+                                      properties:
+                                        http:
+                                          type: object
+                                          properties:
+                                            handler_timeout:
+                                              type: string
+                                            idle_timeout:
+                                              type: string
+                                            read_header_timeout:
+                                              type: string
+                                            read_timeout:
+                                              type: string
+                                            shutdown_duration:
+                                              type: string
+                                            write_timeout:
+                                              type: string
+                                        mode:
+                                          type: string
+                                        network:
+                                          type: string
+                                          enum:
+                                            - tcp
+                                            - tcp4
+                                            - tcp6
+                                            - udp
+                                            - udp4
+                                            - udp6
+                                            - unix
+                                            - unixgram
+                                            - unixpacket
+                                        probe_wait_time:
+                                          type: string
+                                        socket_option:
+                                          type: object
+                                          properties:
+                                            ip_recover_destination_addr:
+                                              type: boolean
+                                            ip_transparent:
+                                              type: boolean
+                                            reuse_addr:
+                                              type: boolean
+                                            reuse_port:
+                                              type: boolean
+                                            tcp_cork:
+                                              type: boolean
+                                            tcp_defer_accept:
+                                              type: boolean
+                                            tcp_fast_open:
+                                              type: boolean
+                                            tcp_no_delay:
+                                              type: boolean
+                                            tcp_quick_ack:
+                                              type: boolean
+                                        socket_path:
+                                          type: string
+                                    servicePort:
+                                      type: integer
+                                      maximum: 65535
+                                      minimum: 0
                             servers:
                               type: object
                               properties:
@@ -6812,6 +7244,78 @@ spec:
                               type: object
                               properties:
                                 pprof:
+                                  type: object
+                                  properties:
+                                    enabled:
+                                      type: boolean
+                                    host:
+                                      type: string
+                                    port:
+                                      type: integer
+                                      maximum: 65535
+                                      minimum: 0
+                                    server:
+                                      type: object
+                                      properties:
+                                        http:
+                                          type: object
+                                          properties:
+                                            handler_timeout:
+                                              type: string
+                                            idle_timeout:
+                                              type: string
+                                            read_header_timeout:
+                                              type: string
+                                            read_timeout:
+                                              type: string
+                                            shutdown_duration:
+                                              type: string
+                                            write_timeout:
+                                              type: string
+                                        mode:
+                                          type: string
+                                        network:
+                                          type: string
+                                          enum:
+                                            - tcp
+                                            - tcp4
+                                            - tcp6
+                                            - udp
+                                            - udp4
+                                            - udp6
+                                            - unix
+                                            - unixgram
+                                            - unixpacket
+                                        probe_wait_time:
+                                          type: string
+                                        socket_option:
+                                          type: object
+                                          properties:
+                                            ip_recover_destination_addr:
+                                              type: boolean
+                                            ip_transparent:
+                                              type: boolean
+                                            reuse_addr:
+                                              type: boolean
+                                            reuse_port:
+                                              type: boolean
+                                            tcp_cork:
+                                              type: boolean
+                                            tcp_defer_accept:
+                                              type: boolean
+                                            tcp_fast_open:
+                                              type: boolean
+                                            tcp_no_delay:
+                                              type: boolean
+                                            tcp_quick_ack:
+                                              type: boolean
+                                        socket_path:
+                                          type: string
+                                    servicePort:
+                                      type: integer
+                                      maximum: 65535
+                                      minimum: 0
+                                prometheus:
                                   type: object
                                   properties:
                                     enabled:
