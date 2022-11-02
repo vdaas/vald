@@ -6,7 +6,7 @@ Read our [Code Of Conduct](https://github.com/vdaas/vald/blob/main/CODE_OF_CONDU
 
 In this guide, you will get an idea of how to contribute to Vald.
 
-If you are not a developer, don't worry, some of the contributions don't require writing a single line of code.
+If you are not a developer, don't worry, some contributions don't require writing a single line of code.
 
 ## New contributor guide
 
@@ -17,6 +17,7 @@ We welcome you to contribute to Vald to make Vald better. We accept the followin
 - Issue
   - Bug report
   - Feature request
+  - Proposal
   - Security issue report
 - Pull request
 
@@ -41,7 +42,7 @@ make ngt/install
 
 An issue can be a bug report, feature request, or security issue report.
 
-We welcome you to give us ideas to improve Vald, or report any issue that exists in Vald by creating an issue on Vald repository.
+We welcome you to give us ideas to improve Vald or report any issue that exists in Vald by creating an issue on the Vald repository.
 
 Please find [here](../contributing/issue.md) for more details about the issue, and please also feel free to ask anything on [Vald Slack channel](https://join.slack.com/t/vald-community/shared_invite/zt-db2ky9o4-R_9p2sVp8xRwztVa8gfnPA).
 
@@ -61,7 +62,7 @@ Please fill in the information written on the template to help us to understand 
 
 Please find our [opening issues](https://github.com/vdaas/vald/issues) and find one that interested you.
 
-You can find the issue by type using the label `type/*`. For example, you can find all the bug issues using the label `type/bug`.
+You can find the issue using the label `type/*`. For example, you can find all the bug issues using the label `type/bug`.
 
 ## Make changes
 
@@ -75,7 +76,7 @@ Before making changes on Vald, please follow these steps to contribute to any of
    git config --global user.email "your_email@example.com"
    ```
 
-### How to make code changes
+### How to make changes
 
 1. Comment on the issue and say you are working on it to avoid conflict with others also working on the same issue.
 2. Fork the repository. ( https://github.com/vdaas/vald/fork )
@@ -83,7 +84,7 @@ Before making changes on Vald, please follow these steps to contribute to any of
 4. Make code changes. Please follow the design or requirement discussed on the issue.
 5. Commit your changes to your branch. ( git commit -am 'Add some feature' )
 6. Push to the forked branch. ( git push origin my-new-feature )
-7. Create a new pull request against Vald repository. Please also mention the issue on the pull request.
+7. Create a new pull request against the Vald repository. Please also mention the issue on the pull request.
 8. Wait for the code review. Resolve any issue/questions raised by reviewers until it is merged.
 
 ### Pull request
@@ -95,9 +96,9 @@ Please fill in the description on the pull request and write down the overview o
 
 If you are solving an issue, please also link the pull request to the issue.
 
-Vald team will review the pull request. We may ask for changes or question we have before the pull request is merged.
+Vald team will review the pull request. We may ask for changes or questions we have before the pull request is merged.
 
-After the pull request is merged, your changes are applied to Vald and it will be included in the next Vald release.
+After the pull request is merged, your changes will be applied to Vald, and the changes will be included in the next Vald release.
 
 ### Branch naming convention
 
@@ -105,9 +106,9 @@ Name your branches with prefixes: `[type]/[area]/[description]`
 
 | Field       | Explanation                           | Naming Rule                                                                                                               |
 | :---------- | :------------------------------------ | :------------------------------------------------------------------------------------------------------------------------ |
-| type        | The PR type                           | The type of PR can be feature, bug, refactoring, benchmark, security, documentation, dependencies, ci, test, or etc...    |
-| area        | Area of context                       | The area of PR can be gateway, agent, agent-sidecar, lb-gateway, or etc...                                                |
-| description | Summarized description of your branch | The description must be hyphenated. Please use [a-zA-Z0-9] and hyphen as characters, and do not use any other characters. |
+| type        | The PR type                           | The type of PR can be a feature, bug, refactoring, benchmark, security, documentation, dependencies, ci, test, etc...    |
+| area        | Area of context                       | The area of PR can be gateway, agent, agent-sidecar, lb-gateway, etc...                                                |
+| description | Summarized description of your branch | The description must be hyphenated. Please use [a-zA-Z0-9] and a hyphen as characters, and do not use any other characters. |
 
 (\*) If you changed multiple areas, please list each area with "-".
 
