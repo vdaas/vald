@@ -28,12 +28,13 @@ If you decided to contribute source code changes, you may need to install the fo
 - [git](https://git-scm.com/)
 - [go](https://go.dev/)
 
-Also, you may need to run the following command under [Vald repository](https://github.com/vdaas/vald) to install the necessary packages.
+Please run the following command to clone [Vald repository](https://github.com/vdaas/vald) and initialize the development environment and install the necessary packages and tools.
 
 ```bash
-make init # initialize development environment
+git clone https://github.com/vdaas/vald.git
+cd vald
+make init # initialize development environment, and install NGT
 make tools/install # install development tools like helm, kind, etc.
-make ngt/install # install NGT
 ```
 
 ## Issue
@@ -85,7 +86,7 @@ Before making changes on Vald, please follow these steps to contribute to any of
 5. Test your changes if needed.
 6. Commit your changes to your branch. ( git commit -am 'Add some feature' )
 7. Push to the forked branch. ( git push origin my-new-feature )
-8. Create a new pull request against the Vald repository. Please also mention the issue on the pull request.
+8. Create a new pull request against the Vald repository. Please also mention the issue on the pull request if needed.
 9. Wait for the code review. Resolve any issue/questions raised by reviewers until it is merged.
 
 Before making code changes, please read our [coding guideline](./docs/contributing/coding-style.md) to follow our coding style to keep the coding style consistent.
