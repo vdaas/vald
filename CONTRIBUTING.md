@@ -31,9 +31,9 @@ If you decided to contribute source code changes, you may need to install the fo
 Also, you may need to run the following command under [Vald repository](https://github.com/vdaas/vald) to install the necessary packages.
 
 ```bash
-make init
-make tools/install
-make ngt/install
+make init # initialize development environment
+make tools/install # install development tools like helm, kind, etc
+make ngt/install # install NGT
 ```
 
 ## Issue
@@ -82,14 +82,48 @@ Before making changes on Vald, please follow these steps to contribute to any of
 2. Fork the repository. ( https://github.com/vdaas/vald/fork )
 3. Create your feature branch. ( git checkout -b [`[type]/[area]/[description]`](#Branch-naming-convention) )
 4. Make code changes. Please follow the design or requirement discussed on the issue.
-5. Commit your changes to your branch. ( git commit -am 'Add some feature' )
-6. Push to the forked branch. ( git push origin my-new-feature )
-7. Create a new pull request against the Vald repository. Please also mention the issue on the pull request.
-8. Wait for the code review. Resolve any issue/questions raised by reviewers until it is merged.
+5. Test your changes if needed.
+6. Commit your changes to your branch. ( git commit -am 'Add some feature' )
+7. Push to the forked branch. ( git push origin my-new-feature )
+8. Create a new pull request against the Vald repository. Please also mention the issue on the pull request.
+9. Wait for the code review. Resolve any issue/questions raised by reviewers until it is merged.
+
+Before making code changes, please read our [coding guideline](./docs/contributing/coding-style.md) to follow our coding style to keep the coding style consistent.
+
+After making code changes, we suggest you execute the following command if needed.
+
+```bash
+make gotests/install # install gotests tools, execute if needed.
+make gotests/gen # execute gotests tools to generate unit test code stubs.
+
+make format # format go and yaml files
+```
+
+`make gotests/gen` command will generate unit test code stubs to easier to implement unit test code.
+We suggest you implement or update the unit test code when making logical changes or implementing new functionality in Vald, to ensure they will work as expected.
+
+Before implementing the unit test code, we suggest you read our [unit test guideline](./docs/contributing/unit-test-guideline.md) to guide you to create good unit tests and [coding guildeline for unit test](./docs/contributing/coding-style.md#test) to guide you to implement unit tests.
+
+`make format` command will format Go and YAML files, to keep the coding style consistent.
+
+### Test your changes
+
+We provide 2 different commands to test the implementation.
+
+```bash
+make test # execute unit test
+make e2e # execute e2e tests
+```
+
+`make test` command execute unit tests to test whether the unit is working as expected in various cases. It executes all the unit tests under `*target*_test.go` files.
+
+`make e2e` command execute e2e tests to ensure whether the functionality is working as expected. It will perform the actual CRUD on a cluster and verify the result.
+
+Before executing e2e tests, you need to create a Kubernetes cluster and deploy it on it. Please refer to our [get started](./docs/tutorial/get-started.md) to deploy Vald on a Kubernetes cluster.
 
 ### Pull request
 
-After you have finished making code changes, you may create a pull request to ask for accepting the changes.
+After making code changes and testing your changes, you may create a pull request to ask for accepting the changes.
 
 Each pull request and commit should be small enough to contain only one purpose, for easier review and tracking.
 Please fill in the description on the pull request and write down the overview of the changes.
