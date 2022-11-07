@@ -102,7 +102,7 @@ make format # format go and yaml files
 `make gotests/gen` command will generate unit test code stubs to easier to implement unit test code.
 We suggest you implement or update the unit test code when making logical changes or implementing new functionality in Vald, to ensure they will work as expected.
 
-Before implementing the unit test code, we suggest you read our [unit test guideline](./docs/contributing/unit-test-guideline.md) to guide you to create good unit tests and [coding guildeline for unit test](./docs/contributing/coding-style.md#test) to guide you to implement unit tests.
+Before implementing the unit test code, we suggest you read our [unit test guideline](./docs/contributing/unit-test-guideline.md) to guide you to create good unit tests and [coding guideline for unit test](./docs/contributing/coding-style.md#test) to guide you to implement unit tests.
 
 `make format` command will format Go and YAML files, to keep the coding style consistent.
 
