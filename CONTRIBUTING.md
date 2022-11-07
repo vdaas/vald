@@ -99,12 +99,12 @@ make gotests/gen # execute gotests tools to generate unit test code stubs.
 make format # format go and yaml files
 ```
 
-`make gotests/gen` command will generate unit test code stubs to easier to implement unit test code.
+The command `make gotests/gen` generate unit test code stubs to easier to implement unit test code.
 We suggest you implement or update the unit test code when making logical changes or implementing new functionality in Vald, to ensure they will work as expected.
 
 Before implementing the unit test code, we suggest you read our [unit test guideline](./docs/contributing/unit-test-guideline.md) to guide you to create good unit tests and [coding guideline for unit test](./docs/contributing/coding-style.md#test) to guide you to implement unit tests.
 
-`make format` command will format Go and YAML files, to keep the coding style consistent.
+The command `make format` execute the code formatter to format Go and YAML files, to keep the coding style consistent.
 
 ### Test your changes
 
@@ -115,9 +115,9 @@ make test # execute unit test
 make e2e # execute e2e tests
 ```
 
-`make test` command execute unit tests to test whether the unit is working as expected in various cases. It executes all the unit tests under `*target*_test.go` files.
+The command `make test` execute unit tests to test whether the unit is working as expected in various cases. It executes all the unit tests under `*target*_test.go` files.
 
-`make e2e` command execute e2e tests to ensure whether the functionality is working as expected. It will perform the actual CRUD on a cluster and verify the result.
+The command `make e2e` execute e2e tests to ensure whether the functionality is working as expected. It will perform the actual CRUD on a cluster and verify the result.
 
 Before executing e2e tests, you need to create a Kubernetes cluster and deploy it on it. Please refer to our [get started](./docs/tutorial/get-started.md) to deploy Vald on a Kubernetes cluster.
 
