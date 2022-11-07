@@ -32,7 +32,7 @@ Also, you may need to run the following command under [Vald repository](https://
 
 ```bash
 make init # initialize development environment
-make tools/install # install development tools like helm, kind, etc
+make tools/install # install development tools like helm, kind, etc.
 make ngt/install # install NGT
 ```
 
