@@ -19,10 +19,10 @@ package config
 
 // Observability represents the configuration for the observability.
 type Observability struct {
-	Enabled bool     `json:"enabled"    yaml:"enabled"`
-	OTLP    *OTLP    `json:"otlp"       yaml:"otlp"`
-	Metrics *Metrics `json:"metrics"    yaml:"metrics"`
-	Trace   *Trace   `json:"trace"      yaml:"trace"`
+	Enabled bool     `json:"enabled" yaml:"enabled"`
+	OTLP    *OTLP    `json:"otlp"    yaml:"otlp"`
+	Metrics *Metrics `json:"metrics" yaml:"metrics"`
+	Trace   *Trace   `json:"trace"   yaml:"trace"`
 }
 
 type OTLP struct {
