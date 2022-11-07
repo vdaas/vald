@@ -8,7 +8,7 @@ In this guide, you will get an idea of how to contribute to Vald.
 
 If you are not a developer, don't worry, some contributions don't require writing a single line of code.
 
-## New contributor guide
+## Contributor guide
 
 Please read the [README](https://github.com/vdaas/vald/blob/main/README.md) to get an overview of Vald.
 
@@ -25,14 +25,19 @@ Please also feel free to ask anything on [Vald Slack channel](https://join.slack
 
 If you decided to contribute source code changes, you may need to install the following tools manually before making changes.
 
-- [git](https://git-scm.com/)
-- [go](https://go.dev/)
+- [Git](https://git-scm.com/)
+- [Go](https://go.dev/)
 
-Please run the following command to clone [Vald repository](https://github.com/vdaas/vald) and initialize the development environment and install the necessary packages and tools.
+Please [fork](https://github.com/vdaas/vald/fork) [Vald repository](https://github.com/vdaas/vald) to your repository and clone your Vald repository.
 
 ```bash
-git clone https://github.com/vdaas/vald.git
+git clone {forked Vald repository URL}
 cd vald
+```
+
+Please also run the following command to initialize the development environment and install the necessary packages and tools.
+
+```bash
 make init # initialize development environment, and install NGT
 make tools/install # install development tools like helm, kind, etc.
 ```
@@ -118,9 +123,11 @@ make e2e # execute e2e tests
 
 The command `make test` execute unit tests to test whether the unit is working as expected in various cases. It executes all the unit tests under `*target*_test.go` files.
 
-The command `make e2e` execute e2e tests to ensure whether the functionality is working as expected. It will perform the actual CRUD on a cluster and verify the result.
+The command `make e2e` execute e2e tests to ensure whether the functionality is working as expected. It will perform the actual CRUD action on a cluster and verify the result.
 
-Before executing e2e tests, you need to create a Kubernetes cluster and deploy it on it. Please refer to our [get started](./docs/tutorial/get-started.md) to deploy Vald on a Kubernetes cluster.
+E2e tests require deploying Vald on a Kubernetes cluster beforehand. You can deploy Vald on your Kubernetes cluster, or you can create a Kubernetes cluster on your local machine easily by using the tools like [k3d](https://k3d.io/) or [kind](https://kind.sigs.k8s.io/).
+
+Please refer to our [get started](./docs/tutorial/get-started.md) to create the cluster and deploy Vald on a Kubernetes cluster.
 
 ### Pull request
 
