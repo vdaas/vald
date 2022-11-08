@@ -41,7 +41,7 @@ import (
 const (
 	TargetPodNameKey  = attribute.Key("target_pod")
 	TargetNodeNameKey = attribute.Key("target_node")
-	NamespaceKey      = attribute.Key("kubernetes_namespace")
+	NamespaceKey      = attribute.Key("exported_kubernetes_namespace")
 	AppNameKey        = attribute.Key("kubernetes_name")
 	ServiceNameKey    = semconv.ServiceNameKey
 )
