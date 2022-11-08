@@ -73,26 +73,28 @@ func NewWithConfig(cfg *config.Observability, ms ...metrics.Metric) (Observabili
 		opts = append(opts, WithTracer(tr))
 	}
 
-	e, err := otlp.New(
-		otlp.WithCollectorEndpoint(cfg.OTLP.CollectorEndpoint),
-		otlp.WithTraceBatchTimeout(cfg.OTLP.TraceBatchTimeout),
-		otlp.WithTraceExportTimeout(cfg.OTLP.TraceExportTimeout),
-		otlp.WithTraceMaxExportBatchSize(cfg.OTLP.TraceMaxExportBatchSize),
-		otlp.WithTraceMaxQueueSize(cfg.OTLP.TraceMaxQueueSize),
-		otlp.WithMetricsExportInterval(cfg.OTLP.MetricsExportInterval),
-		otlp.WithMetricsExportTimeout(cfg.OTLP.MetricsExportTimeout),
-		otlp.WithAttributes(
-			otlp.ServiceNameKey.String(cfg.OTLP.Attribute.ServiceName),
-			otlp.NamespaceKey.String(cfg.OTLP.Attribute.Namespace),
-			otlp.TargetPodNameKey.String(cfg.OTLP.Attribute.PodName),
-			otlp.TargetNodeNameKey.String(cfg.OTLP.Attribute.NodeName),
-			otlp.AppNameKey.String(cfg.OTLP.Attribute.ServiceName),
-		),
-	)
-	if err != nil {
-		return nil, err
+	if cfg.OTLP != nil {
+		e, err := otlp.New(
+			otlp.WithCollectorEndpoint(cfg.OTLP.CollectorEndpoint),
+			otlp.WithTraceBatchTimeout(cfg.OTLP.TraceBatchTimeout),
+			otlp.WithTraceExportTimeout(cfg.OTLP.TraceExportTimeout),
+			otlp.WithTraceMaxExportBatchSize(cfg.OTLP.TraceMaxExportBatchSize),
+			otlp.WithTraceMaxQueueSize(cfg.OTLP.TraceMaxQueueSize),
+			otlp.WithMetricsExportInterval(cfg.OTLP.MetricsExportInterval),
+			otlp.WithMetricsExportTimeout(cfg.OTLP.MetricsExportTimeout),
+			otlp.WithAttributes(
+				otlp.ServiceNameKey.String(cfg.OTLP.Attribute.ServiceName),
+				otlp.NamespaceKey.String(cfg.OTLP.Attribute.Namespace),
+				otlp.TargetPodNameKey.String(cfg.OTLP.Attribute.PodName),
+				otlp.TargetNodeNameKey.String(cfg.OTLP.Attribute.NodeName),
+				otlp.AppNameKey.String(cfg.OTLP.Attribute.ServiceName),
+			),
+		)
+		if err != nil {
+			return nil, err
+		}
+		exps = append(exps, e)
 	}
-	exps = append(exps, e)
 
 	opts = append(
 		opts,
