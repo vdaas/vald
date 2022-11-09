@@ -40,6 +40,7 @@ Please also run the following command to initialize the development environment 
 ```bash
 make init # initialize development environment, and install NGT
 make tools/install # install development tools like helm, kind, etc.
+make gotests/install # install gotests tools to generate test stubs.
 ```
 
 ## Issue
@@ -77,74 +78,64 @@ Before making changes on Vald, please follow these steps to contribute to any of
 1. Ensure that you have completed our [CLA Agreement](https://cla-assistant.io/vdaas/vald)
 2. Set your name and email (these should match the information on your submitted CLA)
 
-   ```bash
-   git config --global user.name "Firstname Lastname"
-   git config --global user.email "your_email@example.com"
-   ```
+    ```bash
+    git config --global user.name "Firstname Lastname"
+    git config --global user.email "your_email@example.com"
+    ```
+
+    Please also refer [here](https://git-scm.com/book/en/v2/Getting-Started-First-Time-Git-Setup) for more details on setting up Git.
+3. Setup signing key on your development environment
+    Please refer [here](https://docs.github.com/authentication/managing-commit-signature-verification/telling-git-about-your-signing-key) to configure the signing key.
+    Vald recommends signing the commit to prove that the commit actually came from you, as it is easy to add anyone as an author of the commit, which can be used in hiding the author of malicious code.
 
 ### How to make changes
 
 1. Comment on the issue and say you are working on it to avoid conflict with others also working on the same issue.
-2. Fork the repository. ( https://github.com/vdaas/vald/fork )
-3. Create your feature branch. ( git checkout -b [`[type]/[area]/[description]`](#Branch-naming-convention) )
-4. Make code changes. Please follow the design or requirement discussed on the issue.
-5. Test your changes if needed.
-6. Commit your changes to your branch. ( git commit -am 'Add some feature' )
-7. Push to the forked branch. ( git push origin my-new-feature )
-8. Create a new pull request against the Vald repository. Please also mention the issue on the pull request if needed.
-9. Wait for the code review. Resolve any issue/questions raised by reviewers until it is merged.
+2. Fork the Vald repository.
+    - https://github.com/vdaas/vald/fork
+3. Create your feature branch on your forked repository.
+    - Please refer to [this section](#Branch-naming-convention) for the branch naming convention.
 
-Before making code changes, please read our [coding guideline](./docs/contributing/coding-style.md) to follow our coding style to keep the coding style consistent.
+    ```bash
+    git checkout -b [type]/[area]/[description]
+    ```
 
-After making code changes, we suggest you execute the following command if needed.
+4. Make code changes.
+    - Please follow the design or requirement discussed on the issue.
+    - Make sure you understand our [coding guideline](./docs/contributing/coding-style.md) to follow our coding style to keep the coding style consistent
+    - After making code changes, please refer [here](#after-making-code-changes) to format the source code and generate the test code
+5. Verify your changes.
+    - If you are making code changes, please refer to [this section](#test-your-changes)
+6. Add the updated files to the branch.
+    - Please only add the files related to your changes
 
-```bash
-make gotests/install # install gotests tools, execute if needed.
-make gotests/gen # execute gotests tools to generate unit test code stubs.
+    ```bash
+    git add [files]
+    ```
 
-make format # format go and yaml files
-```
+7. Commit your changes to the branch.
+    - Please write a brief description of the changes to this commit.
 
-The command `make gotests/gen` generate unit test code stubs to easier to implement unit test code.
-We suggest you implement or update the unit test code when making logical changes or implementing new functionality in Vald, to ensure they will work as expected.
+    ```bash
+    git commit --signoff -m '[commit message]'
+    ```
 
-Before implementing the unit test code, we suggest you read our [unit test guideline](./docs/contributing/unit-test-guideline.md) to guide you to create good unit tests and [coding guideline for unit test](./docs/contributing/coding-style.md#test) to guide you to implement unit tests.
+8. Push to the forked branch.
 
-The command `make format` execute the code formatter to format Go and YAML files, to keep the coding style consistent.
+    ```bash
+    git push origin [type]/[area]/[description]
+    ```
 
-### Test your changes
-
-We provide 2 different commands to test the implementation.
-
-```bash
-make test # execute unit test
-make e2e # execute e2e tests
-```
-
-The command `make test` execute unit tests to test whether the unit is working as expected in various cases. It executes all the unit tests under `*target*_test.go` files.
-
-The command `make e2e` execute e2e tests to ensure whether the functionality is working as expected. It will perform the actual CRUD action on a cluster and verify the result.
-
-E2e tests require deploying Vald on a Kubernetes cluster beforehand. You can deploy Vald on your Kubernetes cluster, or you can create a Kubernetes cluster on your local machine easily by using the tools like [k3d](https://k3d.io/) or [kind](https://kind.sigs.k8s.io/).
-
-Please refer to our [get started](./docs/tutorial/get-started.md) to create the cluster and deploy Vald on a Kubernetes cluster.
-
-### Pull request
-
-After making code changes and testing your changes, you may create a pull request to ask for accepting the changes.
-
-Each pull request and commit should be small enough to contain only one purpose, for easier review and tracking.
-Please fill in the description on the pull request and write down the overview of the changes.
-
-If you are solving an issue, please also link the pull request to the issue.
-
-Vald team will review the pull request. We may ask for changes or questions we have before the pull request is merged.
-
-After the pull request is merged, your changes will be applied to Vald, and the changes will be included in the next Vald release.
+9.  Create a new pull request against the Vald repository.
+     - Please also mention the issue on the pull request if needed.
+10.  Wait for the code review.
+     - Resolve any issue/questions raised by reviewers until it is merged.
 
 ### Branch naming convention
 
-Name your branches with prefixes: `[type]/[area]/[description]`
+Before working on changes, you need to create a development branch on your forked branch.
+
+Name the development branch  `[type]/[area]/[description]`.
 
 | Field       | Explanation                           | Naming Rule                                                                                                               |
 | :---------- | :------------------------------------ | :------------------------------------------------------------------------------------------------------------------------ |
@@ -155,3 +146,126 @@ Name your branches with prefixes: `[type]/[area]/[description]`
 (\*) If you changed multiple areas, please list each area with "-".
 
 For example, when you add a new feature for internal/servers, the name of the branch will be `feature/internal/add-newfeature-for-servers`.
+
+### After making code changes
+
+After making code changes, we suggest you execute the following command to generate the necessary test stubs and format code.
+
+```bash
+make gotests/gen # execute gotests tools to generate unit test code stubs
+make format # format go and yaml files
+```
+
+The command `make gotests/gen` generate unit test code stubs to easier to implement unit test code. Please see [this section](#unit-test) for more details.
+
+The command `make format` is used to generate the license header on the source code file, and execute the code formatter to format Go and YAML files.
+
+It will also install the following tools to format the source code.
+
+- golines
+- gofumpt
+- strictgoimports
+- goimports
+- prettier
+
+These tools are required to format your source code to keep the coding style consistent.
+
+### Test your changes
+
+Testing your changes is very important to ensure your implementation is working as expected.
+
+#### Unit test
+
+Unit test is used to check whether the unit is implemented correctly in various cases.
+
+We suggest you implement or update the unit test code when making logical changes or implementing new functionality in Vald.
+
+Before implementing the unit test code, we suggest you read our [unit test guideline](./docs/contributing/unit-test-guideline.md) to guide you to create good unit tests and [coding guideline for unit test](./docs/contributing/coding-style.md#test) to guide you to implement unit tests.
+
+If you want to execute the unit test on only part of the code, you can use `go test` command to execute the unit test on the specific package/function.
+For example, if you want to execute the unit test on a specific package, use the following command.
+
+```bash
+go test -race [package]
+```
+
+This command will execute the unit test on the package, and also enable the race detector to check if any race occurs in the implementation.
+
+If you want to execute the unit test on the whole Vald implementation, Vald provides the following command to do that.
+
+```bash
+make test
+```
+
+This command will execute all unit tests of `*target*_test.go` files on `cmd`, `internal` and `pkg` packages. It is useful to ensure that your changes will not affect the behavior of other components and packages.
+
+#### End-To-End (E2E) testing
+
+End-To-End (E2E) testing is used to test the application flow of Vald is working as expected from beginning to end.
+
+If you want to execute E2E test on Vald, Vald provides the following commands to test the implementation.
+
+```bash
+make e2e
+```
+
+The command `make e2e` execute E2E tests to ensure whether the functionality is working as expected. It will perform the actual CRUD action on a cluster and verify the result.
+
+E2E tests require deploying Vald on a Kubernetes cluster beforehand. You can deploy Vald on your Kubernetes cluster, or you can create a Kubernetes cluster on your local machine easily by using the tools like [k3d](https://k3d.io/) or [kind](https://kind.sigs.k8s.io/).
+
+Please refer to our [get started](./docs/tutorial/get-started.md) to create the cluster and deploy Vald on a Kubernetes cluster.
+
+If you want to execute E2E test on your Kubernetes cluster, you may need to modify the configuration on [Makefile](https://github.com/vdaas/vald/blob/main/Makefile) before executing the E2E test.
+
+| Config name                        | Description |
+| :--------------------------------- | :---------- |
+| E2E_BIND_HOST                      | The target host of Kubernetes cluster |
+| E2E_BIND_PORT                      | The target port of Kubernetes cluster |
+| E2E_TIMEOUT                        | The timeout of E2E test |
+| E2E_DATASET_NAME                   | The dataset name of the E2E test|
+| E2E_INSERT_COUNT                   | The number of index insert in E2E test |
+| E2E_SEARCH_COUNT                   | The number of search request in E2E test |
+| E2E_SEARCH_BY_ID_COUNT             | The number of search by ID request in E2E test |
+| E2E_GET_OBJECT_COUNT               | The number of get object request in E2E test |
+| E2E_UPDATE_COUNT                   | The number of update request in E2E test |
+| E2E_UPSERT_COUNT                   | The number of upsert request in E2E test |
+| E2E_REMOVE_COUNT                   | The number of remove request in E2E test |
+| E2E_WAIT_FOR_CREATE_INDEX_DURATION | The wait time of create index operation after insert is completed in E2E test |
+| E2E_TARGET_NAME                    | The target pod name in the Vald cluster |
+| E2E_TARGET_NAMESPACE               | The target namespace of the Vald cluster |
+| E2E_TARGET_PORT                    | The pod forward port of the target pod to the local host |
+| E2E_PORTFORWARD_ENABLED            | Enable/Disable port forwarding |
+
+### Pull request
+
+After making code changes and testing your changes, you may create a pull request to ask for accepting the changes.
+
+Each pull request and commit should be small enough to contain only one purpose, for easier review and tracking.
+Please fill in the description on the pull request and write down the overview of the changes.
+
+Please also choose the correct type label on the pull request, we provide the following type label in Vald:
+
+| Label            | Description                          |
+| :--------------- | :----------------------------------- |
+| type/bug         | For bug fixes pull request           |
+| type/dependency  | For dependency update pull request   |
+| type/feature     | For new feature pull request         |
+| type/refactoring | For code refactoring pull request    |
+| type/security    | For security fix pull request        |
+| type/test        | For test implementation pull request |
+
+We also provide the following label to execute specific actions on the [GitHub Actions](https://github.co.jp/features/actions).
+
+| Label                | Description                                           |
+| :------------------- | :---------------------------------------------------- |
+| action/e2e-chaos     | Execute E2E chaos test                                |
+| action/e2e-deploy    | Execute E2E deployment test                           |
+| action/e2e-max-dim   | Execute maximum dimension E2E test                    |
+| action/e2e-profiling | Execute E2E test with profiling                       |
+| action/fossa         | Execute [fossa](https://fossa.com/) security checking |
+
+If you are solving an issue, please also link the pull request to the issue.
+
+Vald team will review the pull request. We may ask for changes or questions we have before the pull request is merged.
+
+After the pull request is merged, your changes will be applied to Vald, and the changes will be included in the next Vald release.
