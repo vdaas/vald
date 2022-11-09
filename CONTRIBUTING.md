@@ -162,11 +162,11 @@ The command `make format` is used to generate the license header on the source c
 
 It will also install the following tools to format the source code.
 
-- golines
-- gofumpt
-- strictgoimports
-- goimports
-- prettier
+- [golines](https://github.com/segmentio/golines)
+- [gofumpt](https://github.com/mvdan/gofumpt)
+- [strictgoimports](https://github.com/momotaro98/strictgoimports)
+- [goimports](https://pkg.go.dev/golang.org/x/tools/cmd/goimports)
+- [prettier](https://prettier.io/)
 
 These tools are required to format your source code to keep the coding style consistent.
 
