@@ -117,7 +117,7 @@ data:
               },
               "editorMode": "code",
               "exemplar": true,
-              "expr": "app_version_info{kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\", target_pod=~\"$PodName\"}",
+              "expr": "app_version_info{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\", target_pod=~\"$PodName\"}",
               "format": "table",
               "instant": true,
               "interval": "",
@@ -195,7 +195,7 @@ data:
                 "uid": "vald_prometheus"
               },
               "editorMode": "code",
-              "expr": "label_replace(app_version_info{kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\", target_pod=~\"$PodName\"}, \"go_version\", \"v$1\", \"go_version\", \"([^v].*)\")",
+              "expr": "label_replace(app_version_info{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\", target_pod=~\"$PodName\"}, \"go_version\", \"v$1\", \"go_version\", \"([^v].*)\")",
               "format": "table",
               "instant": true,
               "interval": "",
@@ -273,7 +273,7 @@ data:
                 "uid": "vald_prometheus"
               },
               "editorMode": "code",
-              "expr": "app_version_info{kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\", target_pod=~\"$PodName\"}",
+              "expr": "app_version_info{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\", target_pod=~\"$PodName\"}",
               "format": "table",
               "instant": true,
               "interval": "",
@@ -518,7 +518,7 @@ data:
                 "uid": "vald_prometheus"
               },
               "editorMode": "code",
-              "expr": "app_version_info{kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\", target_pod=~\"$PodName\"}",
+              "expr": "app_version_info{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\", target_pod=~\"$PodName\"}",
               "format": "table",
               "instant": true,
               "interval": "",
@@ -597,7 +597,7 @@ data:
                 "uid": "vald_prometheus"
               },
               "editorMode": "code",
-              "expr": "app_version_info{kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\", target_pod=~\"$PodName\"}",
+              "expr": "app_version_info{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\", target_pod=~\"$PodName\"}",
               "format": "table",
               "instant": true,
               "interval": "",
@@ -915,7 +915,7 @@ data:
                 "uid": "vald_prometheus"
               },
               "editorMode": "code",
-              "expr": "sum(irate(server_completed_rpcs{kubernetes_namespace=\"$Namespace\", kubernetes_name=\"$ReplicaSet\", target_pod=~\"$PodName\"}[$interval])) by (grpc_server_method, grpc_server_status)",
+              "expr": "sum(irate(server_completed_rpcs{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=\"$ReplicaSet\", target_pod=~\"$PodName\"}[$interval])) by (grpc_server_method, grpc_server_status)",
               "interval": "",
               "intervalFactor": 1,
               "legendFormat": "{{grpc_server_method}} ({{grpc_server_status}})",
@@ -928,7 +928,7 @@ data:
                 "uid": "vald_prometheus"
               },
               "editorMode": "code",
-              "expr": "sum(irate(server_completed_rpcs{kubernetes_namespace=\"$Namespace\", kubernetes_name=\"$ReplicaSet\", target_pod=~\"$PodName\"}[$interval])) by (grpc_server_status)",
+              "expr": "sum(irate(server_completed_rpcs{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=\"$ReplicaSet\", target_pod=~\"$PodName\"}[$interval])) by (grpc_server_status)",
               "interval": "",
               "intervalFactor": 1,
               "legendFormat": "Total ({{grpc_server_status}})",
@@ -1024,7 +1024,7 @@ data:
                 "uid": "vald_prometheus"
               },
               "editorMode": "code",
-              "expr": "histogram_quantile(0.5, sum(rate(server_latency_bucket{kubernetes_namespace=\"$Namespace\", kubernetes_name=\"$ReplicaSet\", target_pod=~\"$PodName\"}[$interval])) by (le, grpc_server_method))",
+              "expr": "histogram_quantile(0.5, sum(rate(server_latency_bucket{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=\"$ReplicaSet\", target_pod=~\"$PodName\"}[$interval])) by (le, grpc_server_method))",
               "interval": "",
               "intervalFactor": 1,
               "legendFormat": "{{grpc_server_method}} p50",
@@ -1037,7 +1037,7 @@ data:
                 "uid": "vald_prometheus"
               },
               "editorMode": "code",
-              "expr": "histogram_quantile(0.95, sum(rate(server_latency_bucket{kubernetes_namespace=\"$Namespace\", kubernetes_name=\"$ReplicaSet\", target_pod=~\"$PodName\"}[$interval])) by (le, grpc_server_method))",
+              "expr": "histogram_quantile(0.95, sum(rate(server_latency_bucket{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=\"$ReplicaSet\", target_pod=~\"$PodName\"}[$interval])) by (le, grpc_server_method))",
               "interval": "",
               "intervalFactor": 1,
               "legendFormat": "{{grpc_server_method}} p95",
@@ -1050,7 +1050,7 @@ data:
                 "uid": "vald_prometheus"
               },
               "editorMode": "code",
-              "expr": "histogram_quantile(0.99, sum(rate(server_latency_bucket{kubernetes_namespace=\"$Namespace\", kubernetes_name=\"$ReplicaSet\", target_pod=~\"$PodName\"}[$interval])) by (le, grpc_server_method))",
+              "expr": "histogram_quantile(0.99, sum(rate(server_latency_bucket{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=\"$ReplicaSet\", target_pod=~\"$PodName\"}[$interval])) by (le, grpc_server_method))",
               "interval": "",
               "intervalFactor": 1,
               "legendFormat": "{{grpc_server_method}} p99",
@@ -1130,7 +1130,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "9.2.2",
+          "pluginVersion": "9.2.3",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -1145,7 +1145,7 @@ data:
                 "uid": "vald_prometheus"
               },
               "editorMode": "code",
-              "expr": "goroutine_count{kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\", target_pod=~\"$PodName\"}",
+              "expr": "goroutine_count{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\", target_pod=~\"$PodName\"}",
               "interval": "",
               "intervalFactor": 1,
               "legendFormat": "{{target_pod}}",
@@ -1226,7 +1226,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "9.2.2",
+          "pluginVersion": "9.2.3",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -1241,7 +1241,7 @@ data:
                 "uid": "vald_prometheus"
               },
               "editorMode": "code",
-              "expr": "increase(gc_count{kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\", target_node=~\".+\"}[$interval])",
+              "expr": "increase(gc_count{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\", target_node=~\".+\"}[$interval])",
               "format": "time_series",
               "instant": false,
               "interval": "",
