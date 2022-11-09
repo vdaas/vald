@@ -98,7 +98,7 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "9.2.2",
+          "pluginVersion": "9.2.4",
           "targets": [
             {
               "datasource": {
@@ -167,7 +167,7 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "9.2.2",
+          "pluginVersion": "9.2.4",
           "targets": [
             {
               "datasource": {
@@ -198,6 +198,7 @@ data:
                 "mode": "thresholds"
               },
               "custom": {
+                "align": "auto",
                 "displayMode": "auto",
                 "filterable": true,
                 "inspect": false
@@ -233,7 +234,7 @@ data:
             "showHeader": true,
             "sortBy": []
           },
-          "pluginVersion": "9.2.2",
+          "pluginVersion": "9.2.4",
           "targets": [
             {
               "datasource": {
@@ -315,7 +316,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "9.2.2",
+          "pluginVersion": "9.2.4",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -405,7 +406,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "9.2.2",
+          "pluginVersion": "9.2.4",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -501,7 +502,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "9.2.2",
+          "pluginVersion": "9.2.4",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -625,7 +626,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "9.2.2",
+          "pluginVersion": "9.2.4",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -718,7 +719,7 @@ data:
           {
             "allValue": ".+",
             "current": {
-              "selected": true,
+              "selected": false,
               "text": "default",
               "value": "default"
             },
@@ -726,7 +727,7 @@ data:
               "type": "prometheus",
               "uid": "vald_prometheus"
             },
-            "definition": "label_values(up, namespace)",
+            "definition": "label_values(kube_pod_info, namespace)",
             "hide": 0,
             "includeAll": true,
             "label": "namespace",
@@ -734,7 +735,7 @@ data:
             "name": "namespace",
             "options": [],
             "query": {
-              "query": "label_values(up, namespace)",
+              "query": "label_values(kube_pod_info, namespace)",
               "refId": "StandardVariableQuery"
             },
             "refresh": 1,
@@ -750,8 +751,8 @@ data:
             "allValue": ".+",
             "current": {
               "selected": false,
-              "text": "vald-helm-operator",
-              "value": "vald-helm-operator"
+              "text": "All",
+              "value": "$__all"
             },
             "datasource": {
               "type": "prometheus",

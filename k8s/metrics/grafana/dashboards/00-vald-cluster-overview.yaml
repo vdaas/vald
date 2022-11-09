@@ -108,7 +108,7 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "9.2.3",
+          "pluginVersion": "9.2.4",
           "targets": [
             {
               "datasource": {
@@ -186,7 +186,7 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "9.2.3",
+          "pluginVersion": "9.2.4",
           "targets": [
             {
               "datasource": {
@@ -264,7 +264,7 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "9.2.3",
+          "pluginVersion": "9.2.4",
           "targets": [
             {
               "datasource": {
@@ -324,7 +324,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "9.2.3",
+          "pluginVersion": "9.2.4",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -429,7 +429,7 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "9.2.3",
+          "pluginVersion": "9.2.4",
           "targets": [
             {
               "datasource": {
@@ -507,7 +507,7 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "9.2.3",
+          "pluginVersion": "9.2.4",
           "targets": [
             {
               "datasource": {
@@ -590,7 +590,7 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "9.2.3",
+          "pluginVersion": "9.2.4",
           "targets": [
             {
               "datasource": {
@@ -674,7 +674,7 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "9.2.3",
+          "pluginVersion": "9.2.4",
           "targets": [
             {
               "datasource": {
@@ -733,7 +733,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "9.2.3",
+          "pluginVersion": "9.2.4",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -823,7 +823,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "9.2.3",
+          "pluginVersion": "9.2.4",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -932,7 +932,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "9.2.3",
+          "pluginVersion": "9.2.4",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -1583,8 +1583,7 @@ data:
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   },
                   {
                     "color": "red",
@@ -2003,7 +2002,7 @@ data:
         "list": [
           {
             "current": {
-              "selected": false,
+              "selected": true,
               "text": "default",
               "value": "default"
             },
@@ -2011,7 +2010,7 @@ data:
               "type": "prometheus",
               "uid": "vald_prometheus"
             },
-            "definition": "label_values(up, namespace)",
+            "definition": "label_values(kube_pod_info, namespace)",
             "hide": 0,
             "includeAll": false,
             "label": "namespace",
@@ -2019,7 +2018,7 @@ data:
             "name": "Namespace",
             "options": [],
             "query": {
-              "query": "label_values(up, namespace)",
+              "query": "label_values(kube_pod_info, namespace)",
               "refId": "StandardVariableQuery"
             },
             "refresh": 1,
