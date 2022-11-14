@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 apiVersion: monitoring.coreos.com/v1
-kind: ServiceMonitor
+kind: PodMonitor
 metadata:
   labels:
     app.kubernetes.io/instance: opentelemetry-operator
@@ -23,7 +23,7 @@ metadata:
     release: prometheus
   name: opentelemetry-collector
 spec:
-  endpoints:
+  podMetricsEndpoints:
     - port: metrics
     - port: metrics-v2
   selector:

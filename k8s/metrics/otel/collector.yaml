@@ -19,10 +19,6 @@ metadata:
   name: opentelemetry-collector
 spec:
   mode: daemonset
-  podAnnotations:
-    prometheus.io/scrape: "true"
-    prometheus.io/path: "/metrics"
-    prometheus.io/port: "8888"
   ports:
     - name: metrics # for opentelemetry-collector metrics
       port: 8888
@@ -61,3 +57,6 @@ spec:
 
       prometheus:
         endpoint: "0.0.0.0:6061"
+        send_timestamps: true
+        resource_to_telemetry_conversion:
+          enabled: true

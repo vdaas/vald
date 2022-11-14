@@ -112,11 +112,12 @@ func TestNewConfig(t *testing.T) {
 							},
 						},
 						Observability: &config.Observability{
-							Enabled:    true,
-							Metrics:    new(config.Metrics),
-							Trace:      new(config.Trace),
-							Prometheus: new(config.Prometheus),
-							Jaeger:     new(config.Jaeger),
+							Enabled: true,
+							OTLP: &config.OTLP{
+								Attribute: new(config.OTLPAttribute),
+							},
+							Metrics: new(config.Metrics),
+							Trace:   new(config.Trace),
 						},
 						NGT: &config.NGT{
 							IndexPath: "/var/index",
@@ -234,11 +235,12 @@ func TestNewConfig(t *testing.T) {
 							},
 						},
 						Observability: &config.Observability{
-							Enabled:    true,
-							Metrics:    new(config.Metrics),
-							Trace:      new(config.Trace),
-							Prometheus: new(config.Prometheus),
-							Jaeger:     new(config.Jaeger),
+							Enabled: true,
+							OTLP: &config.OTLP{
+								Attribute: new(config.OTLPAttribute),
+							},
+							Metrics: new(config.Metrics),
+							Trace:   new(config.Trace),
 						},
 						NGT: &config.NGT{
 							IndexPath: "/var/index",

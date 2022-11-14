@@ -22,8 +22,7 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/observability/exporter"
-	"github.com/vdaas/vald/internal/observability/exporter/jaeger"
-	"github.com/vdaas/vald/internal/observability/exporter/prometheus"
+	"github.com/vdaas/vald/internal/observability/exporter/otlp"
 	"github.com/vdaas/vald/internal/observability/metrics"
 	"github.com/vdaas/vald/internal/observability/metrics/grpc"
 	"github.com/vdaas/vald/internal/observability/metrics/mem/index"
@@ -74,41 +73,27 @@ func NewWithConfig(cfg *config.Observability, ms ...metrics.Metric) (Observabili
 		opts = append(opts, WithTracer(tr))
 	}
 
-	if cfg.Prometheus.Enabled {
-		views := make([]metrics.Viewer, 0, len(ms))
-		for _, m := range ms {
-			views = append(views, m)
-		}
-		prom, err := prometheus.Init(
-			prometheus.WithEndpoint(cfg.Prometheus.Endpoint),
-			prometheus.WithNamespace(cfg.Prometheus.Namespace),
-			prometheus.WithView(views...),
+	if cfg.OTLP != nil {
+		e, err := otlp.New(
+			otlp.WithCollectorEndpoint(cfg.OTLP.CollectorEndpoint),
+			otlp.WithTraceBatchTimeout(cfg.OTLP.TraceBatchTimeout),
+			otlp.WithTraceExportTimeout(cfg.OTLP.TraceExportTimeout),
+			otlp.WithTraceMaxExportBatchSize(cfg.OTLP.TraceMaxExportBatchSize),
+			otlp.WithTraceMaxQueueSize(cfg.OTLP.TraceMaxQueueSize),
+			otlp.WithMetricsExportInterval(cfg.OTLP.MetricsExportInterval),
+			otlp.WithMetricsExportTimeout(cfg.OTLP.MetricsExportTimeout),
+			otlp.WithAttributes(
+				otlp.ServiceNameKey.String(cfg.OTLP.Attribute.ServiceName),
+				otlp.NamespaceKey.String(cfg.OTLP.Attribute.Namespace),
+				otlp.TargetPodNameKey.String(cfg.OTLP.Attribute.PodName),
+				otlp.TargetNodeNameKey.String(cfg.OTLP.Attribute.NodeName),
+				otlp.AppNameKey.String(cfg.OTLP.Attribute.ServiceName),
+			),
 		)
 		if err != nil {
 			return nil, err
 		}
-
-		exps = append(exps, prom)
-	}
-
-	if cfg.Jaeger.Enabled {
-		jae, err := jaeger.New(
-			jaeger.WithAgentEndpoint(cfg.Jaeger.AgentEndpoint),
-			jaeger.WithAgentMaxPacketSize(cfg.Jaeger.AgentMaxPacketSize),
-			jaeger.WithAgentReconnectInterval(cfg.Jaeger.AgentReconnectInterval),
-			jaeger.WithCollectorEndpoint(cfg.Jaeger.CollectorEndpoint),
-			jaeger.WithUsername(cfg.Jaeger.Username),
-			jaeger.WithPassword(cfg.Jaeger.Password),
-			jaeger.WithServiceName(cfg.Jaeger.ServiceName),
-			jaeger.WithBatchTimeout(cfg.Jaeger.BatchTimeout),
-			jaeger.WithExportTimeout(cfg.Jaeger.ExportTimeout),
-			jaeger.WithMaxExportBatchSize(cfg.Jaeger.MaxExportBatchSize),
-			jaeger.WithMaxQueueSize(cfg.Jaeger.MaxQueueSize),
-		)
-		if err != nil {
-			return nil, err
-		}
-		exps = append(exps, jae)
+		exps = append(exps, e)
 	}
 
 	opts = append(
