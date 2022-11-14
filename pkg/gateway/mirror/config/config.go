@@ -39,7 +39,7 @@ type Data struct {
 	Observability *config.Observability `json:"observability" yaml:"observability"`
 
 	// Mirror represent mirror gateway service configuration
-	Mirror *config.LB `json:"gateway" yaml:"gateway"`
+	Mirror *config.Mirror `json:"gateway" yaml:"gateway"`
 }
 
 func NewConfig(path string) (cfg *Data, err error) {

@@ -17,11 +17,18 @@
 // Package config providers configuration type and load configuration logic
 package config
 
-// Mirror represents the configuration for load balancer.
+// Mirror represents the Mirror Gateway configuration.
 type Mirror struct {
+	// Client represent the gRPC client configuration for connecting the other Mirror Gateway.
+	Client *GRPCClient `json:"client" yaml:"client"`
 }
 
 // Bind binds the actual data from the Mirror receiver fields.
 func (m *Mirror) Bind() *Mirror {
+	if m.Client != nil {
+		m.Client = m.Client.Bind()
+	} else {
+		m.Client = new(GRPCClient).Bind()
+	}
 	return m
 }

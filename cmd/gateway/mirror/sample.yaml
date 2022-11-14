@@ -83,162 +83,66 @@ server_config:
     key: /path/to/key
 observability:
   enabled: false
-  collector:
-    duration: 5s
-    metrics:
-      enable_cgo: true
-      enable_goroutine: true
-      enable_memory: true
-      enable_version_info: true
-      version_info_labels:
-        - vald_version
-        - server_name
-        - git_commit
-        - build_time
-        - go_version
-        - go_os
-        - go_arch
-        - ngt_version
   trace:
     enabled: false
-    sampling_rate: 1
-  prometheus:
-    enabled: false
-    endpoint: /metrics
-    namespace: vald
-  jaeger:
-    enabled: false
-    collector_endpoint: ""
-    agent_endpoint: "jaeger-agent.default.svc.cluster.local:6831"
-    username: ""
-    password: ""
-    service_name: "vald-lb-gateway"
-    buffer_max_count: 10
 gateway:
-  agent_port: 8081
-  agent_name: "vald-agent-ngt"
-  agent_dns: vald-agent-ngt.default.svc.cluster.local
-  agent_namespace: "_MY_POD_NAMESPACE_"
-  node_name: ""
-  index_replica: 5
-  discoverer:
-    duration: 200ms
-    client:
-      addrs:
-        - vald-discoverer.default.svc.cluster.local:8081
-      health_check_duration: "1s"
-      connection_pool:
-        enable_dns_resolver: true
-        enable_rebalance: true
-        old_conn_close_duration: 3s
-        rebalance_duration: 30m
-        size: 3
-      backoff:
-        backoff_factor: 1.1
-        backoff_time_limit: 5s
-        enable_error_log: true
-        initial_duration: 5ms
-        jitter_limit: 100ms
-        maximum_duration: 5s
-        retry_count: 100
-      call_option:
-        max_recv_msg_size: 0
-        max_retry_rpc_buffer_size: 0
-        max_send_msg_size: 0
-        wait_for_ready: true
-      dial_option:
-        backoff_base_delay: 1s
-        backoff_jitter: 0.2
-        backoff_max_delay: 120s
-        backoff_multiplier: 1.6
-        enable_backoff: false
-        initial_connection_window_size: 0
-        initial_window_size: 0
-        insecure: true
-        keepalive:
-          permit_without_stream: false
-          time: ""
-          timeout: ""
-        max_msg_size: 0
-        min_connection_timeout: 20s
-        read_buffer_size: 0
-        tcp:
-          dialer:
-            dual_stack_enabled: true
-            keepalive: ""
-            timeout: ""
-          dns:
-            cache_enabled: true
-            cache_expiration: 1h
-            refresh_duration: 30m
-          tls:
-            ca: /path/to/ca
-            cert: /path/to/cert
-            enabled: false
-            key: /path/to/key
+  client:
+    addrs:
+      - vald-discoverer.default.svc.cluster.local:8081
+    health_check_duration: "1s"
+    connection_pool:
+      enable_dns_resolver: true
+      enable_rebalance: true
+      old_conn_close_duration: 3s
+      rebalance_duration: 30m
+      size: 3
+    backoff:
+      backoff_factor: 1.1
+      backoff_time_limit: 5s
+      enable_error_log: true
+      initial_duration: 5ms
+      jitter_limit: 100ms
+      maximum_duration: 5s
+      retry_count: 100
+    call_option:
+      max_recv_msg_size: 0
+      max_retry_rpc_buffer_size: 0
+      max_send_msg_size: 0
+      wait_for_ready: true
+    dial_option:
+      backoff_base_delay: 1s
+      backoff_jitter: 0.2
+      backoff_max_delay: 120s
+      backoff_multiplier: 1.6
+      enable_backoff: false
+      initial_connection_window_size: 0
+      initial_window_size: 0
+      insecure: true
+      keepalive:
+        permit_without_stream: false
+        time: ""
         timeout: ""
-        write_buffer_size: 0
-      tls:
-        ca: /path/to/ca
-        cert: /path/to/cert
-        enabled: false
-        key: /path/to/key
-    agent_client_options:
-      addrs: []
-      health_check_duration: "1s"
-      connection_pool:
-        enable_dns_resolver: true
-        enable_rebalance: true
-        old_conn_close_duration: 3s
-        rebalance_duration: 30m
-        size: 3
-      backoff:
-        backoff_factor: 1.1
-        backoff_time_limit: 5s
-        enable_error_log: true
-        initial_duration: 5ms
-        jitter_limit: 100ms
-        maximum_duration: 5s
-        retry_count: 100
-      call_option:
-        max_recv_msg_size: 0
-        max_retry_rpc_buffer_size: 0
-        max_send_msg_size: 0
-        wait_for_ready: true
-      dial_option:
-        backoff_base_delay: 1s
-        backoff_jitter: 0.2
-        backoff_max_delay: 120s
-        backoff_multiplier: 1.6
-        enable_backoff: false
-        initial_connection_window_size: 0
-        initial_window_size: 0
-        insecure: true
-        keepalive:
-          permit_without_stream: false
-          time: ""
+      max_msg_size: 0
+      min_connection_timeout: 20s
+      read_buffer_size: 0
+      tcp:
+        dialer:
+          dual_stack_enabled: true
+          keepalive: ""
           timeout: ""
-        max_msg_size: 0
-        min_connection_timeout: 20s
-        read_buffer_size: 0
-        tcp:
-          dialer:
-            dual_stack_enabled: true
-            keepalive: ""
-            timeout: ""
-          dns:
-            cache_enabled: true
-            cache_expiration: 1h
-            refresh_duration: 30m
-          tls:
-            ca: /path/to/ca
-            cert: /path/to/cert
-            enabled: false
-            key: /path/to/key
-        timeout: ""
-        write_buffer_size: 0
-      tls:
-        ca: /path/to/ca
-        cert: /path/to/cert
-        enabled: false
-        key: /path/to/key
+        dns:
+          cache_enabled: true
+          cache_expiration: 1h
+          refresh_duration: 30m
+        tls:
+          ca: /path/to/ca
+          cert: /path/to/cert
+          enabled: false
+          key: /path/to/key
+      timeout: ""
+      write_buffer_size: 0
+    tls:
+      ca: /path/to/ca
+      cert: /path/to/cert
+      enabled: false
+      key: /path/to/key
