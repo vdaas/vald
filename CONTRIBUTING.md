@@ -25,12 +25,20 @@ Please also feel free to ask anything on [Vald Slack channel](https://join.slack
 
 If you decided to contribute source code changes, you may need to install the following tools manually before making changes.
 
+- [make](https://www.gnu.org/software/make/)
+- [cmake](https://cmake.org/)
+- [Protobuf](https://grpc.io/docs/protoc-installation/)
+- [npm](https://www.npmjs.com/)
+- [unzip](https://linux.die.net/man/1/unzip)
 - [Git](https://git-scm.com/)
-- [Go](https://go.dev/)
+- [Go](https://go.dev/) (v1.8 or up is required)
 
-Please [fork](https://github.com/vdaas/vald/fork) [Vald repository](https://github.com/vdaas/vald) to your repository and clone your Vald repository.
+Please [fork Vald repository](https://github.com/vdaas/vald/fork) to your repository and clone your Vald repository to your Go path.
 
 ```bash
+ORG={GitHub orginzation name} # set this value to your GitHub orginization name
+mkdir -p $(go env GOPATH)/src/github.com/${ORG}/
+cd $(go env GOPATH)/src/github.com/${ORG}/
 git clone {forked Vald repository URL}
 cd vald
 ```

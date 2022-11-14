@@ -57,7 +57,7 @@ proto/deps: \
 	$(GOPATH)/src/github.com/googleapis/googleapis \
 	$(GOPATH)/src/github.com/planetscale/vtprotobuf \
 	$(GOPATH)/src/github.com/protocolbuffers/protobuf \
-	$(GOPATH)/src/github.com/vdaas/vald/apis/proto/v1 \
+	$(GOPATH)/src/github.com/${ORG}/vald/apis/proto/v1 \
 	$(GOPATH)/src/google.golang.org/genproto \
 	$(GOPATH)/src/google.golang.org/protobuf
 
