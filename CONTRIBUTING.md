@@ -33,6 +33,12 @@ If you decided to contribute source code changes, you may need to install the fo
 - [Git](https://git-scm.com/)
 - [Go](https://go.dev/) (v1.19 is recommended)
 
+If you are using Debian-based linux distribution, you can install these required tools using `apt`.
+
+```bash
+sudo apt install make cmake protobuf-compiler npm unzip git golang
+```
+
 Please [fork Vald repository](https://github.com/vdaas/vald/fork) to your repository and clone your Vald repository to your Go path.
 
 ```bash
@@ -105,7 +111,7 @@ Before making changes on Vald, please follow these steps to contribute to any of
 
 1. Comment on the issue and say you are working on it to avoid conflict with others also working on the same issue.
 2. Fork the Vald repository.
-    - https://github.com/vdaas/vald/fork
+    - You need to fork the Vald repository only once, please see [contributor guideline](#contributor-guide) for more details
 3. Create your feature branch on your forked repository.
     - Please refer to [this section](#Branch-naming-convention) for the branch naming convention.
 

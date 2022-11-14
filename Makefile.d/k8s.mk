@@ -333,8 +333,8 @@ $(BINDIR)/telepresence:
 	    exit 1; \
 	fi
 	mkdir -p $(BINDIR)
-	curl -fL https://app.getambassador.io/download/tel2/linux/amd64/$(TELEPRESENCE_VERSION)/telepresence -o $(BINDIR)/telepresence
-    chmod a+x $(BINDIR)/telepresence
+	curl -fL https://app.getambassador.io/download/tel2/linux/amd64/${TELEPRESENCE_VERSION)/telepresence -o $(BINDIR)/telepresence
+	chmod a+x $(BINDIR)/telepresence
 
 .PHONY: telepresence/swap/agent-ngt
 ## swap agent-ngt deployment using telepresence
