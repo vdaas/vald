@@ -31,7 +31,7 @@ If you decided to contribute source code changes, you may need to install the fo
 - [npm](https://www.npmjs.com/)
 - [unzip](https://linux.die.net/man/1/unzip)
 - [Git](https://git-scm.com/)
-- [Go](https://go.dev/) (v1.19 is recommended)
+- [Go](https://go.dev/) (v1.19.2 is recommended)
 
 If you are using Debian-based linux distribution, you can install these required tools using `apt`.
 
@@ -70,7 +70,7 @@ An issue can be a bug report, feature request, or security issue report.
 
 We welcome you to give us ideas to improve Vald or report any issue that exists in Vald by creating an issue on the Vald repository.
 
-Please find [here](../contributing/issue.md) for more details about the issue, and please also feel free to ask anything on [Vald Slack channel](https://join.slack.com/t/vald-community/shared_invite/zt-db2ky9o4-R_9p2sVp8xRwztVa8gfnPA).
+Please find [here](./docs/contributing/issue.md) for more details about the issue, and please also feel free to ask anything on [Vald Slack channel](https://join.slack.com/t/vald-community/shared_invite/zt-db2ky9o4-R_9p2sVp8xRwztVa8gfnPA).
 
 ### Propose a new issue
 
