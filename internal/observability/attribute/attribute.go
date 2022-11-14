@@ -15,7 +15,10 @@ package attribute
 
 import "go.opentelemetry.io/otel/attribute"
 
-type KeyValue = attribute.KeyValue
+type (
+	KeyValue = attribute.KeyValue
+	Key      = attribute.Key
+)
 
 func Bool(k string, v bool) KeyValue {
 	return attribute.Bool(k, v)

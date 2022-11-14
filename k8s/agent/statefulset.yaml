@@ -21,10 +21,10 @@ metadata:
   labels:
     app: vald-agent-ngt
     app.kubernetes.io/name: vald
-    helm.sh/chart: vald-v1.6.1
+    helm.sh/chart: vald-v1.6.3
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: release-name
-    app.kubernetes.io/version: v1.6.1
+    app.kubernetes.io/version: v1.6.3
     app.kubernetes.io/component: agent
 spec:
   serviceName: vald-agent-ngt
@@ -138,6 +138,14 @@ spec:
             runAsNonRoot: true
             runAsUser: 65532
           env:
+            - name: MY_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: MY_POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
             - name: MY_POD_NAMESPACE
               valueFrom:
                 fieldRef:

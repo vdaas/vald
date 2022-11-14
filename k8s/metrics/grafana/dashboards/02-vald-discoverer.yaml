@@ -25,24 +25,35 @@ data:
         "list": [
           {
             "builtIn": 1,
-            "datasource": "-- Grafana --",
+            "datasource": {
+              "type": "datasource",
+              "uid": "grafana"
+            },
             "enable": true,
             "hide": true,
             "iconColor": "rgba(0, 211, 255, 1)",
             "name": "Annotations & Alerts",
+            "target": {
+              "limit": 100,
+              "matchAny": false,
+              "tags": [],
+              "type": "dashboard"
+            },
             "type": "dashboard"
           }
         ]
       },
       "editable": true,
-      "gnetId": null,
+      "fiscalYearStartMonth": 0,
       "graphTooltip": 0,
-      "iteration": 1623650873100,
       "links": [],
+      "liveNow": false,
       "panels": [
         {
-          "cacheTimeout": null,
-          "datasource": null,
+          "datasource": {
+            "type": "prometheus",
+            "uid": "vald_prometheus"
+          },
           "fieldConfig": {
             "defaults": {
               "mappings": [
@@ -80,7 +91,6 @@ data:
             "y": 0
           },
           "id": 14,
-          "interval": null,
           "links": [],
           "maxDataPoints": 100,
           "options": {
@@ -98,11 +108,16 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "8.0.1",
+          "pluginVersion": "9.2.4",
           "targets": [
             {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "vald_prometheus"
+              },
+              "editorMode": "code",
               "exemplar": true,
-              "expr": "app_version_info{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"}",
+              "expr": "app_version_info{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\", target_pod=~\"$PodName\"}",
               "format": "table",
               "instant": true,
               "interval": "",
@@ -110,14 +125,14 @@ data:
               "refId": "A"
             }
           ],
-          "timeFrom": null,
-          "timeShift": null,
           "title": "Vald Version",
           "type": "stat"
         },
         {
-          "cacheTimeout": null,
-          "datasource": null,
+          "datasource": {
+            "type": "prometheus",
+            "uid": "vald_prometheus"
+          },
           "fieldConfig": {
             "defaults": {
               "mappings": [
@@ -155,7 +170,6 @@ data:
             "y": 0
           },
           "id": 16,
-          "interval": null,
           "links": [],
           "maxDataPoints": 100,
           "options": {
@@ -173,10 +187,15 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "8.0.1",
+          "pluginVersion": "9.2.4",
           "targets": [
             {
-              "expr": "label_replace(app_version_info{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"}, \"go_version\", \"v$1\", \"go_version\", \"([^v].*)\")",
+              "datasource": {
+                "type": "prometheus",
+                "uid": "vald_prometheus"
+              },
+              "editorMode": "code",
+              "expr": "label_replace(app_version_info{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\", target_pod=~\"$PodName\"}, \"go_version\", \"v$1\", \"go_version\", \"([^v].*)\")",
               "format": "table",
               "instant": true,
               "interval": "",
@@ -184,14 +203,14 @@ data:
               "refId": "A"
             }
           ],
-          "timeFrom": null,
-          "timeShift": null,
           "title": "Go Version",
           "type": "stat"
         },
         {
-          "cacheTimeout": null,
-          "datasource": null,
+          "datasource": {
+            "type": "prometheus",
+            "uid": "vald_prometheus"
+          },
           "fieldConfig": {
             "defaults": {
               "mappings": [
@@ -229,7 +248,6 @@ data:
             "y": 0
           },
           "id": 34,
-          "interval": null,
           "links": [],
           "maxDataPoints": 100,
           "options": {
@@ -247,10 +265,15 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "8.0.1",
+          "pluginVersion": "9.2.4",
           "targets": [
             {
-              "expr": "app_version_info{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"}",
+              "datasource": {
+                "type": "prometheus",
+                "uid": "vald_prometheus"
+              },
+              "editorMode": "code",
+              "expr": "app_version_info{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\", target_pod=~\"$PodName\"}",
               "format": "table",
               "instant": true,
               "interval": "",
@@ -258,14 +281,14 @@ data:
               "refId": "A"
             }
           ],
-          "timeFrom": null,
-          "timeShift": null,
           "title": "Go OS",
           "type": "stat"
         },
         {
-          "cacheTimeout": null,
-          "datasource": null,
+          "datasource": {
+            "type": "prometheus",
+            "uid": "vald_prometheus"
+          },
           "fieldConfig": {
             "defaults": {
               "mappings": [
@@ -307,7 +330,6 @@ data:
             "y": 0
           },
           "id": 19,
-          "interval": null,
           "links": [],
           "maxDataPoints": 100,
           "options": {
@@ -325,10 +347,15 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "8.0.1",
+          "pluginVersion": "9.2.4",
           "targets": [
             {
-              "expr": "count(up{namespace=\"$Namespace\", app=~\"$ReplicaSet\", app!=\"\"})",
+              "datasource": {
+                "type": "prometheus",
+                "uid": "vald_prometheus"
+              },
+              "editorMode": "code",
+              "expr": "count(kube_pod_info{namespace=\"$Namespace\", pod=~\"$ReplicaSet.*\"})",
               "format": "table",
               "hide": false,
               "instant": true,
@@ -337,14 +364,14 @@ data:
               "refId": "A"
             }
           ],
-          "timeFrom": null,
-          "timeShift": null,
           "title": "Pods ($ReplicaSet)",
           "type": "stat"
         },
         {
-          "cacheTimeout": null,
-          "datasource": null,
+          "datasource": {
+            "type": "prometheus",
+            "uid": "vald_prometheus"
+          },
           "fieldConfig": {
             "defaults": {
               "decimals": 2,
@@ -387,7 +414,6 @@ data:
             "y": 0
           },
           "id": 20,
-          "interval": null,
           "links": [],
           "maxDataPoints": 100,
           "options": {
@@ -405,25 +431,31 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "8.0.1",
+          "pluginVersion": "9.2.4",
           "targets": [
             {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "vald_prometheus"
+              },
+              "editorMode": "code",
               "exemplar": true,
-              "expr": "sum(container_memory_working_set_bytes{namespace=\"$Namespace\", pod=~\"$ReplicaSet.*\"})",
+              "expr": "sum(container_memory_working_set_bytes{namespace=\"$Namespace\", container=\"$ReplicaSet\"})",
               "format": "time_series",
               "interval": "",
               "legendFormat": "",
+              "range": true,
               "refId": "A"
             }
           ],
-          "timeFrom": null,
-          "timeShift": null,
           "title": "Total memory working set ($ReplicaSet)",
           "type": "stat"
         },
         {
-          "cacheTimeout": null,
-          "datasource": null,
+          "datasource": {
+            "type": "prometheus",
+            "uid": "vald_prometheus"
+          },
           "fieldConfig": {
             "defaults": {
               "mappings": [
@@ -461,7 +493,6 @@ data:
             "y": 3
           },
           "id": 17,
-          "interval": null,
           "links": [],
           "maxDataPoints": 100,
           "options": {
@@ -479,10 +510,15 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "8.0.1",
+          "pluginVersion": "9.2.4",
           "targets": [
             {
-              "expr": "app_version_info{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"}",
+              "datasource": {
+                "type": "prometheus",
+                "uid": "vald_prometheus"
+              },
+              "editorMode": "code",
+              "expr": "app_version_info{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\", target_pod=~\"$PodName\"}",
               "format": "table",
               "instant": true,
               "interval": "",
@@ -490,14 +526,14 @@ data:
               "refId": "A"
             }
           ],
-          "timeFrom": null,
-          "timeShift": null,
           "title": "Git Commit",
           "type": "stat"
         },
         {
-          "cacheTimeout": null,
-          "datasource": null,
+          "datasource": {
+            "type": "prometheus",
+            "uid": "vald_prometheus"
+          },
           "fieldConfig": {
             "defaults": {
               "mappings": [
@@ -535,7 +571,6 @@ data:
             "y": 3
           },
           "id": 18,
-          "interval": null,
           "links": [],
           "maxDataPoints": 100,
           "options": {
@@ -554,9 +589,15 @@ data:
             "textMode": "auto"
           },
           "pluginVersin": "8.0.1",
+          "pluginVersion": "9.2.4",
           "targets": [
             {
-              "expr": "app_version_info{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"}",
+              "datasource": {
+                "type": "prometheus",
+                "uid": "vald_prometheus"
+              },
+              "editorMode": "code",
+              "expr": "app_version_info{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\", target_pod=~\"$PodName\"}",
               "format": "table",
               "instant": true,
               "interval": "",
@@ -564,8 +605,6 @@ data:
               "refId": "A"
             }
           ],
-          "timeFrom": null,
-          "timeShift": null,
           "title": "Build at",
           "type": "stat"
         },
@@ -574,7 +613,10 @@ data:
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": null,
+          "datasource": {
+            "type": "prometheus",
+            "uid": "vald_prometheus"
+          },
           "fieldConfig": {
             "defaults": {
               "links": []
@@ -607,7 +649,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "8.0.1",
+          "pluginVersion": "9.2.4",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -617,17 +659,49 @@ data:
           "steppedLine": false,
           "targets": [
             {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "vald_prometheus"
+              },
+              "editorMode": "code",
               "exemplar": true,
-              "expr": "sum(irate(container_cpu_usage_seconds_total{namespace=\"$Namespace\", pod=~\"$ReplicaSet.*\"}[$interval])) by (pod)",
+              "expr": "sum(irate(container_cpu_usage_seconds_total{namespace=\"$Namespace\", container=\"$ReplicaSet\", pod=~\"$PodName\"}[$interval])) by (pod) and on() count(kube_statefulset_created{statefulset=\"$ReplicaSet\"}) >= 1",
               "interval": "",
               "legendFormat": "{{pod}}",
+              "range": true,
               "refId": "A"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "vald_prometheus"
+              },
+              "editorMode": "code",
+              "exemplar": true,
+              "expr": "sum(irate(container_cpu_usage_seconds_total{namespace=\"$Namespace\", container=\"$ReplicaSet\", pod=~\"$PodName\"}[$interval])) by (pod) and on() count(kube_deployment_created{deployment=\"$ReplicaSet\"}) >= 1",
+              "hide": false,
+              "interval": "",
+              "legendFormat": "{{pod}}",
+              "range": true,
+              "refId": "B"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "vald_prometheus"
+              },
+              "editorMode": "code",
+              "exemplar": true,
+              "expr": "sum(irate(container_cpu_usage_seconds_total{namespace=\"$Namespace\", container=\"$ReplicaSet\", pod=~\"$PodName\"}[$interval])) by (pod) and on() count(kube_daemonset_created{daemonset=\"$ReplicaSet\"}) >= 1",
+              "hide": false,
+              "interval": "",
+              "legendFormat": "{{pod}}",
+              "range": true,
+              "refId": "C"
             }
           ],
           "thresholds": [],
-          "timeFrom": null,
           "timeRegions": [],
-          "timeShift": null,
           "title": "CPU",
           "tooltip": {
             "shared": true,
@@ -636,9 +710,7 @@ data:
           },
           "type": "graph",
           "xaxis": {
-            "buckets": null,
             "mode": "time",
-            "name": null,
             "show": true,
             "values": []
           },
@@ -646,25 +718,19 @@ data:
             {
               "$$hashKey": "object:76",
               "format": "short",
-              "label": null,
               "logBase": 1,
-              "max": null,
               "min": "0",
               "show": true
             },
             {
               "$$hashKey": "object:77",
               "format": "short",
-              "label": null,
               "logBase": 1,
-              "max": null,
-              "min": null,
               "show": true
             }
           ],
           "yaxis": {
-            "align": false,
-            "alignLevel": null
+            "align": false
           }
         },
         {
@@ -672,7 +738,10 @@ data:
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": null,
+          "datasource": {
+            "type": "prometheus",
+            "uid": "vald_prometheus"
+          },
           "fieldConfig": {
             "defaults": {
               "links": []
@@ -705,7 +774,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "8.0.1",
+          "pluginVersion": "9.2.4",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -715,17 +784,49 @@ data:
           "steppedLine": false,
           "targets": [
             {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "vald_prometheus"
+              },
+              "editorMode": "code",
               "exemplar": true,
-              "expr": "sum(container_memory_working_set_bytes{namespace=\"$Namespace\", pod=~\"$ReplicaSet.*\"}) by (pod)",
+              "expr": "sum(container_memory_working_set_bytes{namespace=\"$Namespace\", container=\"$ReplicaSet\", pod=~\"$PodName\"}) by (pod) and on() count(kube_statefulset_created{statefulset=\"$ReplicaSet\"}) >= 1",
               "interval": "",
               "legendFormat": "{{pod}}",
+              "range": true,
               "refId": "A"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "vald_prometheus"
+              },
+              "editorMode": "code",
+              "exemplar": true,
+              "expr": "sum(container_memory_working_set_bytes{namespace=\"$Namespace\", container=\"$ReplicaSet\", pod=~\"$PodName\"}) by (pod) and on() count(kube_deployment_created{deployment=\"$ReplicaSet\"}) >= 1",
+              "hide": false,
+              "interval": "",
+              "legendFormat": "{{pod}}",
+              "range": true,
+              "refId": "B"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "vald_prometheus"
+              },
+              "editorMode": "code",
+              "exemplar": true,
+              "expr": "sum(container_memory_working_set_bytes{namespace=\"$Namespace\", container=\"$ReplicaSet\", pod=~\"$PodName\"}) by (pod) and on() count(kube_daemonset_created{daemonset=\"$ReplicaSet\"}) >= 1",
+              "hide": false,
+              "interval": "",
+              "legendFormat": "{{pod}}",
+              "range": true,
+              "refId": "C"
             }
           ],
           "thresholds": [],
-          "timeFrom": null,
           "timeRegions": [],
-          "timeShift": null,
           "title": "Memory working set",
           "tooltip": {
             "shared": true,
@@ -734,9 +835,7 @@ data:
           },
           "type": "graph",
           "xaxis": {
-            "buckets": null,
             "mode": "time",
-            "name": null,
             "show": true,
             "values": []
           },
@@ -744,25 +843,19 @@ data:
             {
               "$$hashKey": "object:154",
               "format": "decbytes",
-              "label": null,
               "logBase": 1,
-              "max": null,
               "min": "0",
               "show": true
             },
             {
               "$$hashKey": "object:155",
               "format": "short",
-              "label": null,
               "logBase": 1,
-              "max": null,
-              "min": null,
               "show": true
             }
           ],
           "yaxis": {
-            "align": false,
-            "alignLevel": null
+            "align": false
           }
         },
         {
@@ -770,7 +863,10 @@ data:
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": null,
+          "datasource": {
+            "type": "prometheus",
+            "uid": "vald_prometheus"
+          },
           "fieldConfig": {
             "defaults": {
               "links": []
@@ -804,7 +900,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "8.0.1",
+          "pluginVersion": "9.2.4",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -814,24 +910,34 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(irate(server_completed_rpcs{namespace=\"$Namespace\", app=\"$ReplicaSet\", instance=~\"$PodName\"}[$interval])) by (grpc_server_method, grpc_server_status)",
+              "datasource": {
+                "type": "prometheus",
+                "uid": "vald_prometheus"
+              },
+              "editorMode": "code",
+              "expr": "sum(irate(server_completed_rpcs{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=\"$ReplicaSet\", target_pod=~\"$PodName\"}[$interval])) by (grpc_server_method, grpc_server_status)",
               "interval": "",
               "intervalFactor": 1,
               "legendFormat": "{{grpc_server_method}} ({{grpc_server_status}})",
+              "range": true,
               "refId": "A"
             },
             {
-              "expr": "sum(irate(server_completed_rpcs{namespace=\"$Namespace\", app=\"$ReplicaSet\", instance=~\"$PodName\"}[$interval])) by (grpc_server_status)",
+              "datasource": {
+                "type": "prometheus",
+                "uid": "vald_prometheus"
+              },
+              "editorMode": "code",
+              "expr": "sum(irate(server_completed_rpcs{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=\"$ReplicaSet\", target_pod=~\"$PodName\"}[$interval])) by (grpc_server_status)",
               "interval": "",
               "intervalFactor": 1,
               "legendFormat": "Total ({{grpc_server_status}})",
+              "range": true,
               "refId": "B"
             }
           ],
           "thresholds": [],
-          "timeFrom": null,
           "timeRegions": [],
-          "timeShift": null,
           "title": "Completed RPCs /s",
           "tooltip": {
             "shared": true,
@@ -840,33 +946,25 @@ data:
           },
           "type": "graph",
           "xaxis": {
-            "buckets": null,
             "mode": "time",
-            "name": null,
             "show": true,
             "values": []
           },
           "yaxes": [
             {
               "format": "short",
-              "label": null,
               "logBase": 1,
-              "max": null,
               "min": "0",
               "show": true
             },
             {
               "format": "short",
-              "label": null,
               "logBase": 1,
-              "max": null,
-              "min": null,
               "show": true
             }
           ],
           "yaxis": {
-            "align": false,
-            "alignLevel": null
+            "align": false
           }
         },
         {
@@ -874,7 +972,10 @@ data:
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": null,
+          "datasource": {
+            "type": "prometheus",
+            "uid": "vald_prometheus"
+          },
           "fieldConfig": {
             "defaults": {
               "links": []
@@ -908,7 +1009,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "8.0.1",
+          "pluginVersion": "9.2.4",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -918,31 +1019,47 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "histogram_quantile(0.5, sum(rate(server_latency_bucket{namespace=\"$Namespace\", app=\"$ReplicaSet\", instance=~\"$PodName\"}[$interval])) by (le, grpc_server_method))",
+              "datasource": {
+                "type": "prometheus",
+                "uid": "vald_prometheus"
+              },
+              "editorMode": "code",
+              "expr": "histogram_quantile(0.5, sum(rate(server_latency_bucket{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=\"$ReplicaSet\", target_pod=~\"$PodName\"}[$interval])) by (le, grpc_server_method))",
               "interval": "",
               "intervalFactor": 1,
               "legendFormat": "{{grpc_server_method}} p50",
+              "range": true,
               "refId": "A"
             },
             {
-              "expr": "histogram_quantile(0.95, sum(rate(server_server_latency_bucket{namespace=\"$Namespace\", app=\"$ReplicaSet\", instance=~\"$PodName\"}[$interval])) by (le, grpc_server_method))",
+              "datasource": {
+                "type": "prometheus",
+                "uid": "vald_prometheus"
+              },
+              "editorMode": "code",
+              "expr": "histogram_quantile(0.95, sum(rate(server_latency_bucket{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=\"$ReplicaSet\", target_pod=~\"$PodName\"}[$interval])) by (le, grpc_server_method))",
               "interval": "",
               "intervalFactor": 1,
               "legendFormat": "{{grpc_server_method}} p95",
+              "range": true,
               "refId": "B"
             },
             {
-              "expr": "histogram_quantile(0.99, sum(rate(server_latency_bucket{namespace=\"$Namespace\", app=\"$ReplicaSet\", instance=~\"$PodName\"}[$interval])) by (le, grpc_server_method))",
+              "datasource": {
+                "type": "prometheus",
+                "uid": "vald_prometheus"
+              },
+              "editorMode": "code",
+              "expr": "histogram_quantile(0.99, sum(rate(server_latency_bucket{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=\"$ReplicaSet\", target_pod=~\"$PodName\"}[$interval])) by (le, grpc_server_method))",
               "interval": "",
               "intervalFactor": 1,
               "legendFormat": "{{grpc_server_method}} p99",
+              "range": true,
               "refId": "C"
             }
           ],
           "thresholds": [],
-          "timeFrom": null,
           "timeRegions": [],
-          "timeShift": null,
           "title": "Latency",
           "tooltip": {
             "shared": true,
@@ -951,33 +1068,25 @@ data:
           },
           "type": "graph",
           "xaxis": {
-            "buckets": null,
             "mode": "time",
-            "name": null,
             "show": true,
             "values": []
           },
           "yaxes": [
             {
               "format": "ms",
-              "label": null,
               "logBase": 1,
-              "max": null,
               "min": "0",
               "show": true
             },
             {
               "format": "short",
-              "label": null,
               "logBase": 1,
-              "max": null,
-              "min": null,
               "show": true
             }
           ],
           "yaxis": {
-            "align": false,
-            "alignLevel": null
+            "align": false
           }
         },
         {
@@ -985,7 +1094,10 @@ data:
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": null,
+          "datasource": {
+            "type": "prometheus",
+            "uid": "vald_prometheus"
+          },
           "fieldConfig": {
             "defaults": {
               "links": []
@@ -1018,7 +1130,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "8.0.1",
+          "pluginVersion": "9.2.3",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -1028,17 +1140,21 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "goroutine_count{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$PodName\"}",
+              "datasource": {
+                "type": "prometheus",
+                "uid": "vald_prometheus"
+              },
+              "editorMode": "code",
+              "expr": "goroutine_count{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\", target_pod=~\"$PodName\"}",
               "interval": "",
               "intervalFactor": 1,
-              "legendFormat": "{{instance}}",
+              "legendFormat": "{{target_pod}}",
+              "range": true,
               "refId": "A"
             }
           ],
           "thresholds": [],
-          "timeFrom": null,
           "timeRegions": [],
-          "timeShift": null,
           "title": "goroutine count",
           "tooltip": {
             "shared": true,
@@ -1047,33 +1163,25 @@ data:
           },
           "type": "graph",
           "xaxis": {
-            "buckets": null,
             "mode": "time",
-            "name": null,
             "show": true,
             "values": []
           },
           "yaxes": [
             {
               "format": "short",
-              "label": null,
               "logBase": 1,
-              "max": null,
               "min": "0",
               "show": true
             },
             {
               "format": "short",
-              "label": null,
               "logBase": 1,
-              "max": null,
-              "min": null,
               "show": true
             }
           ],
           "yaxis": {
-            "align": false,
-            "alignLevel": null
+            "align": false
           }
         },
         {
@@ -1081,7 +1189,10 @@ data:
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": null,
+          "datasource": {
+            "type": "prometheus",
+            "uid": "vald_prometheus"
+          },
           "fieldConfig": {
             "defaults": {
               "links": []
@@ -1115,7 +1226,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "8.0.1",
+          "pluginVersion": "9.2.3",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -1125,19 +1236,22 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "irate(gc_count{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\".+\"}[$interval])",
+              "datasource": {
+                "type": "prometheus",
+                "uid": "vald_prometheus"
+              },
+              "editorMode": "code",
+              "expr": "increase(gc_count{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\", target_node=~\".+\"}[$interval])",
               "format": "time_series",
               "instant": false,
               "interval": "",
               "intervalFactor": 1,
-              "legendFormat": "{{instance}}",
+              "legendFormat": "{{target_pod}}",
               "refId": "A"
             }
           ],
           "thresholds": [],
-          "timeFrom": null,
           "timeRegions": [],
-          "timeShift": null,
           "title": "GC count /s",
           "tooltip": {
             "shared": true,
@@ -1146,53 +1260,44 @@ data:
           },
           "type": "graph",
           "xaxis": {
-            "buckets": null,
             "mode": "time",
-            "name": null,
             "show": true,
             "values": []
           },
           "yaxes": [
             {
               "format": "short",
-              "label": null,
               "logBase": 1,
-              "max": null,
-              "min": null,
               "show": true
             },
             {
               "format": "short",
-              "label": null,
               "logBase": 1,
-              "max": null,
-              "min": null,
               "show": true
             }
           ],
           "yaxis": {
-            "align": false,
-            "alignLevel": null
+            "align": false
           }
         }
       ],
       "refresh": "",
-      "schemaVersion": 30,
+      "schemaVersion": 37,
       "style": "dark",
       "tags": [],
       "templating": {
         "list": [
           {
-            "allValue": null,
             "current": {
               "selected": false,
               "text": "default",
               "value": "default"
             },
-            "datasource": "Prometheus",
-            "definition": "label_values(up, namespace)",
-            "description": null,
-            "error": null,
+            "datasource": {
+              "type": "prometheus",
+              "uid": "vald_prometheus"
+            },
+            "definition": "label_values(kube_pod_info, namespace)",
             "hide": 0,
             "includeAll": false,
             "label": "namespace",
@@ -1200,7 +1305,7 @@ data:
             "name": "Namespace",
             "options": [],
             "query": {
-              "query": "label_values(up, namespace)",
+              "query": "label_values(kube_pod_info, namespace)",
               "refId": "StandardVariableQuery"
             },
             "refresh": 1,
@@ -1213,16 +1318,16 @@ data:
             "useTags": false
           },
           {
-            "allValue": null,
             "current": {
               "selected": false,
               "text": "vald-discoverer",
               "value": "vald-discoverer"
             },
-            "datasource": "Prometheus",
-            "definition": "label_values(app_version_info{server_name=~\"discoverer.*\", namespace=~\"$Namespace\"}, app)",
-            "description": null,
-            "error": null,
+            "datasource": {
+              "type": "prometheus",
+              "uid": "vald_prometheus"
+            },
+            "definition": "label_values(app_version_info{server_name=~\"discoverer.*\"}, kubernetes_name)",
             "hide": 0,
             "includeAll": false,
             "label": "name",
@@ -1230,7 +1335,7 @@ data:
             "name": "ReplicaSet",
             "options": [],
             "query": {
-              "query": "label_values(app_version_info{server_name=~\"discoverer.*\", namespace=~\"$Namespace\"}, app)",
+              "query": "label_values(app_version_info{server_name=~\"discoverer.*\"}, kubernetes_name)",
               "refId": "StandardVariableQuery"
             },
             "refresh": 1,
@@ -1249,10 +1354,11 @@ data:
               "text": "All",
               "value": "$__all"
             },
-            "datasource": "Prometheus",
-            "definition": "label_values(app_version_info{server_name=~\"discoverer.*\", namespace=~\"$Namespace\", app=~\"$ReplicaSet\"}, instance)",
-            "description": null,
-            "error": null,
+            "datasource": {
+              "type": "prometheus",
+              "uid": "vald_prometheus"
+            },
+            "definition": "label_values(app_version_info{server_name=~\"discoverer.*\", kubernetes_name=~\"$ReplicaSet\"}, target_pod)",
             "hide": 0,
             "includeAll": true,
             "label": "pod",
@@ -1260,7 +1366,7 @@ data:
             "name": "PodName",
             "options": [],
             "query": {
-              "query": "label_values(app_version_info{server_name=~\"discoverer.*\", namespace=~\"$Namespace\", app=~\"$ReplicaSet\"}, instance)",
+              "query": "label_values(app_version_info{server_name=~\"discoverer.*\", kubernetes_name=~\"$ReplicaSet\"}, target_pod)",
               "refId": "StandardVariableQuery"
             },
             "refresh": 1,
@@ -1281,8 +1387,6 @@ data:
               "text": "5m",
               "value": "5m"
             },
-            "description": null,
-            "error": null,
             "hide": 0,
             "label": "interval",
             "name": "interval",
@@ -1361,5 +1465,6 @@ data:
       "timezone": "",
       "title": "Vald Discoverer",
       "uid": "JkemcMB",
-      "version": 1
+      "version": 1,
+      "weekStart": ""
     }

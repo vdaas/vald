@@ -196,6 +196,17 @@ k8s/metrics/prometheus/deploy:
 k8s/metrics/prometheus/delete:
 	kubectl delete -f k8s/metrics/prometheus
 
+.PHONY: k8s/metrics/prometheus/operator/deploy
+## deploy prometheus operator
+k8s/metrics/prometheus/operator/deploy:
+	helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+	helm install ${PROMETHEUS_RELEASE_NAME} prometheus-community/kube-prometheus-stack --version ${PROMETHEUS_VERSION} --set grafana.enabled=false
+
+.PHONY: k8s/metrics/prometheus/operator/delete
+## delete prometheus operator
+k8s/metrics/prometheus/operator/delete:
+	helm uninstall ${PROMETHEUS_RELEASE_NAME}
+
 .PHONY: k8s/metrics/grafana/deploy
 ## deploy grafana
 k8s/metrics/grafana/deploy:
@@ -287,6 +298,30 @@ k8s/linkerd/deploy:
 ## delete linkerd from k8s
 k8s/linkerd/delete:
 	linkerd install --ignore-cluster | kubectl delete -f -
+
+.PHONY: k8s/otel/operator/install
+## deploy opentelemetry operator
+k8s/otel/operator/install:
+	helm repo add open-telemetry https://open-telemetry.github.io/opentelemetry-helm-charts
+	helm install ${OTEL_OPERATOR_RELEASE_NAME} open-telemetry/opentelemetry-operator --set installCRDs=true --version ${OTEL_OPERATOR_VERSION}
+	kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=opentelemetry-operator --timeout=60s
+
+.PHONY: k8s/otel/operator/uninstall
+## delete opentelemetry operator
+k8s/otel/operator/uninstall:
+	helm uninstall ${OTEL_OPERATOR_RELEASE_NAME}
+
+.PHONY: k8s/otel/collector/install
+## deploy opentelemetry collector
+k8s/otel/collector/install:
+	kubectl apply -f ./k8s/metrics/otel/collector.yaml
+	kubectl apply -f ./k8s/metrics/otel/pod-monitor.yaml
+
+.PHONY: k8s/otel/collector/uninstall
+## delete opentelemetry collector
+k8s/otel/collector/uninstall:
+	kubectl delete -f ./k8s/metrics/otel/collector.yaml
+	kubectl delete -f ./k8s/metrics/otel/pod-monitor.yaml
 
 .PHONY: telepresence/install
 ## install telepresence

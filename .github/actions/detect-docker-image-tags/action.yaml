@@ -61,9 +61,9 @@ runs:
         done
 
         echo "HELM_EXTRA_OPTIONS=${HELM_EXTRA_OPTIONS}"
-        echo "::set-output name=HELM_EXTRA_OPTIONS::${HELM_EXTRA_OPTIONS}"
+        echo "HELM_EXTRA_OPTIONS=${HELM_EXTRA_OPTIONS}" >> $GITHUB_OUTPUT
         echo "IMAGE_TAGS=${IMAGE_TAGS}"
-        echo "::set-output name=IMAGE_TAGS::${IMAGE_TAGS}"
+        echo "IMAGE_TAGS=${IMAGE_TAGS}" >> $GITHUB_OUTPUT
       env:
         IMAGES: ${{ inputs.images }}
         TAG_NAME: ${{ inputs.tag_name }}

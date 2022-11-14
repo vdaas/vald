@@ -3,7 +3,7 @@ Vald
 
 This is a Helm chart to install Vald components.
 
-Current chart version is `v1.6.1`
+Current chart version is `v1.6.3`
 
 Table of Contents
 ---
@@ -58,7 +58,7 @@ Configuration
 | agent.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution | list | `[]` | pod anti-affinity required scheduling terms |
 | agent.annotations | object | `{}` | deployment annotations |
 | agent.enabled | bool | `true` | agent enabled |
-| agent.env | list | `[{"name":"MY_POD_NAMESPACE","valueFrom":{"fieldRef":{"fieldPath":"metadata.namespace"}}}]` | environment variables |
+| agent.env | list | `[{"name":"MY_NODE_NAME","valueFrom":{"fieldRef":{"fieldPath":"spec.nodeName"}}},{"name":"MY_POD_NAME","valueFrom":{"fieldRef":{"fieldPath":"metadata.name"}}},{"name":"MY_POD_NAMESPACE","valueFrom":{"fieldRef":{"fieldPath":"metadata.namespace"}}}]` | environment variables |
 | agent.externalTrafficPolicy | string | `""` | external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local |
 | agent.hpa.enabled | bool | `false` | HPA enabled |
 | agent.hpa.targetCPUUtilizationPercentage | int | `80` | HPA CPU utilization percentage |
@@ -99,7 +99,7 @@ Configuration
 | agent.ngt.vqueue.insert_buffer_pool_size | int | `10000` | insert slice pool buffer size |
 | agent.nodeName | string | `""` | node name |
 | agent.nodeSelector | object | `{}` | node selector |
-| agent.observability | object | `{"jaeger":{"service_name":"vald-agent-ngt"}}` | observability config (overrides defaults.observability) |
+| agent.observability | object | `{"otlp":{"attribute":{"service_name":"vald-agent-ngt"}}}` | observability config (overrides defaults.observability) |
 | agent.persistentVolume.accessMode | string | `"ReadWriteOncePod"` | agent pod storage accessMode |
 | agent.persistentVolume.enabled | bool | `false` | enables PVC. It is required to enable if agent pod's file store functionality is enabled with non in-memory mode |
 | agent.persistentVolume.mountPropagation | string | `"None"` | agent pod storage mountPropagation |
@@ -117,7 +117,7 @@ Configuration
 | agent.rollingUpdate.maxUnavailable | string | `"25%"` | max unavailable of rolling update |
 | agent.rollingUpdate.partition | int | `0` | StatefulSet partition |
 | agent.securityContext | object | `{"allowPrivilegeEscalation":false,"capabilities":{"drop":["ALL"]},"privileged":false,"readOnlyRootFilesystem":false,"runAsGroup":65532,"runAsNonRoot":true,"runAsUser":65532}` | security context for container |
-| agent.server_config | object | `{"healths":{"liveness":{},"readiness":{},"startup":{"startupProbe":{"failureThreshold":200,"periodSeconds":5}}},"metrics":{"pprof":{},"prometheus":{}},"servers":{"grpc":{},"rest":{}}}` | server config (overrides defaults.server_config) |
+| agent.server_config | object | `{"healths":{"liveness":{},"readiness":{},"startup":{"startupProbe":{"failureThreshold":200,"periodSeconds":5}}},"metrics":{"pprof":{}},"servers":{"grpc":{},"rest":{}}}` | server config (overrides defaults.server_config) |
 | agent.service.annotations | object | `{}` | service annotations |
 | agent.service.labels | object | `{}` | service labels |
 | agent.serviceType | string | `"ClusterIP"` | service type: ClusterIP, LoadBalancer or NodePort |
@@ -205,16 +205,16 @@ Configuration
 | agent.sidecar.config.restore_backoff_enabled | bool | `false` | restore backoff enabled |
 | agent.sidecar.config.watch_enabled | bool | `true` | auto backup triggered by file changes is enabled |
 | agent.sidecar.enabled | bool | `false` | sidecar enabled |
-| agent.sidecar.env | list | `[{"name":"MY_POD_NAME","valueFrom":{"fieldRef":{"fieldPath":"metadata.name"}}},{"name":"MY_POD_NAMESPACE","valueFrom":{"fieldRef":{"fieldPath":"metadata.namespace"}}},{"name":"AWS_ACCESS_KEY","valueFrom":{"secretKeyRef":{"key":"access-key","name":"aws-secret"}}},{"name":"AWS_SECRET_ACCESS_KEY","valueFrom":{"secretKeyRef":{"key":"secret-access-key","name":"aws-secret"}}}]` | environment variables |
+| agent.sidecar.env | list | `[{"name":"MY_NODE_NAME","valueFrom":{"fieldRef":{"fieldPath":"spec.nodeName"}}},{"name":"MY_POD_NAME","valueFrom":{"fieldRef":{"fieldPath":"metadata.name"}}},{"name":"MY_POD_NAMESPACE","valueFrom":{"fieldRef":{"fieldPath":"metadata.namespace"}}},{"name":"AWS_ACCESS_KEY","valueFrom":{"secretKeyRef":{"key":"access-key","name":"aws-secret"}}},{"name":"AWS_SECRET_ACCESS_KEY","valueFrom":{"secretKeyRef":{"key":"secret-access-key","name":"aws-secret"}}}]` | environment variables |
 | agent.sidecar.image.pullPolicy | string | `"Always"` | image pull policy |
 | agent.sidecar.image.repository | string | `"vdaas/vald-agent-sidecar"` | image repository |
 | agent.sidecar.image.tag | string | `""` | image tag (overrides defaults.image.tag) |
 | agent.sidecar.initContainerEnabled | bool | `false` | sidecar on initContainer mode enabled. |
 | agent.sidecar.logging | object | `{}` | logging config (overrides defaults.logging) |
 | agent.sidecar.name | string | `"vald-agent-sidecar"` | name of agent sidecar |
-| agent.sidecar.observability | object | `{"jaeger":{"service_name":"vald-agent-sidecar"}}` | observability config (overrides defaults.observability) |
+| agent.sidecar.observability | object | `{"otlp":{"attribute":{"service_name":"vald-agent-sidecar"}}}` | observability config (overrides defaults.observability) |
 | agent.sidecar.resources | object | `{"requests":{"cpu":"100m","memory":"100Mi"}}` | compute resources. |
-| agent.sidecar.server_config | object | `{"healths":{"liveness":{"enabled":false,"port":13000,"servicePort":13000},"readiness":{"enabled":false,"port":13001,"servicePort":13001},"startup":{"enabled":false,"port":13001}},"metrics":{"pprof":{"port":16060,"servicePort":16060},"prometheus":{"port":16061,"servicePort":16061}},"servers":{"grpc":{"enabled":false,"port":18081,"servicePort":18081},"rest":{"enabled":false,"port":18080,"servicePort":18080}}}` | server config (overrides defaults.server_config) |
+| agent.sidecar.server_config | object | `{"healths":{"liveness":{"enabled":false,"port":13000,"servicePort":13000},"readiness":{"enabled":false,"port":13001,"servicePort":13001},"startup":{"enabled":false,"port":13001}},"metrics":{"pprof":{"port":16060,"servicePort":16060}},"servers":{"grpc":{"enabled":false,"port":18081,"servicePort":18081},"rest":{"enabled":false,"port":18080,"servicePort":18080}}}` | server config (overrides defaults.server_config) |
 | agent.sidecar.service.annotations | object | `{}` | agent sidecar service annotations |
 | agent.sidecar.service.enabled | bool | `false` | agent sidecar service enabled |
 | agent.sidecar.service.externalTrafficPolicy | string | `""` | external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local |
@@ -294,31 +294,28 @@ Configuration
 | defaults.grpc.client.tls.enabled | bool | `false` | TLS enabled |
 | defaults.grpc.client.tls.insecure_skip_verify | bool | `false` | enable/disable skip SSL certificate verification |
 | defaults.grpc.client.tls.key | string | `"/path/to/key"` | TLS key path |
-| defaults.image.tag | string | `"v1.6.1"` | docker image tag |
+| defaults.image.tag | string | `"v1.6.3"` | docker image tag |
 | defaults.logging.format | string | `"raw"` | logging format. logging format must be `raw` or `json` |
 | defaults.logging.level | string | `"debug"` | logging level. logging level must be `debug`, `info`, `warn`, `error` or `fatal`. |
 | defaults.logging.logger | string | `"glg"` | logger name. currently logger must be `glg` or `zap`. |
 | defaults.observability.enabled | bool | `false` | observability features enabled |
-| defaults.observability.jaeger.agent_endpoint | string | `""` | Jaeger agent endpoint |
-| defaults.observability.jaeger.agent_max_packet_size | int | `65000` | Jaeger Agent max packet size |
-| defaults.observability.jaeger.agent_reconnect_interval | string | `"30s"` | Jaeger Agent reconnect interval |
-| defaults.observability.jaeger.batch_timeout | string | `"5s"` | Jaeger export batch timeout |
-| defaults.observability.jaeger.collector_endpoint | string | `""` | Jaeger collector endpoint |
-| defaults.observability.jaeger.enabled | bool | `false` | Jaeger exporter enabled |
-| defaults.observability.jaeger.export_timeout | string | `"5s"` | Jaeger export timeout |
-| defaults.observability.jaeger.max_export_batch_size | int | `512` | Jaeger max export batch size |
-| defaults.observability.jaeger.max_queue_size | int | `2048` | Jaeger max queue size |
-| defaults.observability.jaeger.password | string | `""` | Jaeger password |
-| defaults.observability.jaeger.service_name | string | `"vald"` | Jaeger service name |
-| defaults.observability.jaeger.username | string | `""` | Jaeger username |
 | defaults.observability.metrics.enable_cgo | bool | `true` | CGO metrics enabled |
 | defaults.observability.metrics.enable_goroutine | bool | `true` | goroutine metrics enabled |
 | defaults.observability.metrics.enable_memory | bool | `true` | memory metrics enabled |
 | defaults.observability.metrics.enable_version_info | bool | `true` | version info metrics enabled |
 | defaults.observability.metrics.version_info_labels | list | `["vald_version","server_name","git_commit","build_time","go_version","go_os","go_arch","ngt_version"]` | enabled label names of version info |
-| defaults.observability.prometheus.enabled | bool | `false` | Prometheus exporter enabled |
-| defaults.observability.prometheus.endpoint | string | `"/metrics"` | Prometheus exporter endpoint |
-| defaults.observability.prometheus.namespace | string | `"_MY_POD_NAMESPACE_"` | service namespace for metrics |
+| defaults.observability.otlp.attribute | object | `{"namespace":"_MY_POD_NAMESPACE_","node_name":"_MY_NODE_NAME_","pod_name":"_MY_POD_NAME_","service_name":"vald"}` | default resource attribute |
+| defaults.observability.otlp.attribute.namespace | string | `"_MY_POD_NAMESPACE_"` | namespace |
+| defaults.observability.otlp.attribute.node_name | string | `"_MY_NODE_NAME_"` | node name |
+| defaults.observability.otlp.attribute.pod_name | string | `"_MY_POD_NAME_"` | pod name |
+| defaults.observability.otlp.attribute.service_name | string | `"vald"` | service name |
+| defaults.observability.otlp.collector_endpoint | string | `""` | OpenTelemetry Collector endpoint |
+| defaults.observability.otlp.metrics_export_interval | string | `"1s"` | metrics export interval |
+| defaults.observability.otlp.metrics_export_timeout | string | `"1m"` | metrics export timeout |
+| defaults.observability.otlp.trace_batch_timeout | string | `"1s"` | trace batch timeout |
+| defaults.observability.otlp.trace_export_timeout | string | `"1m"` | trace export timeout |
+| defaults.observability.otlp.trace_max_export_batch_size | int | `1024` | trace maximum export batch size |
+| defaults.observability.otlp.trace_max_queue_size | int | `256` | trace maximum queue size |
 | defaults.observability.trace.enabled | bool | `false` | trace enabled |
 | defaults.server_config.full_shutdown_duration | string | `"600s"` | server full shutdown duration |
 | defaults.server_config.healths.liveness.enabled | bool | `true` | liveness server enabled |
@@ -416,29 +413,6 @@ Configuration
 | defaults.server_config.metrics.pprof.server.socket_option.tcp_quick_ack | bool | `true` | server listen socket option for tcp_quick_ack functionality |
 | defaults.server_config.metrics.pprof.server.socket_path | string | `""` | mysql socket_path |
 | defaults.server_config.metrics.pprof.servicePort | int | `6060` | pprof server service port |
-| defaults.server_config.metrics.prometheus.enabled | bool | `false` | prometheus server enabled |
-| defaults.server_config.metrics.prometheus.host | string | `"0.0.0.0"` | prometheus server host |
-| defaults.server_config.metrics.prometheus.port | int | `6061` | prometheus server port |
-| defaults.server_config.metrics.prometheus.server.http.handler_timeout | string | `"5s"` | prometheus server handler timeout |
-| defaults.server_config.metrics.prometheus.server.http.idle_timeout | string | `"2s"` | prometheus server idle timeout |
-| defaults.server_config.metrics.prometheus.server.http.read_header_timeout | string | `"1s"` | prometheus server read header timeout |
-| defaults.server_config.metrics.prometheus.server.http.read_timeout | string | `"1s"` | prometheus server read timeout |
-| defaults.server_config.metrics.prometheus.server.http.shutdown_duration | string | `"5s"` | prometheus server shutdown duration |
-| defaults.server_config.metrics.prometheus.server.http.write_timeout | string | `"1s"` | prometheus server write timeout |
-| defaults.server_config.metrics.prometheus.server.mode | string | `"REST"` | prometheus server mode |
-| defaults.server_config.metrics.prometheus.server.network | string | `"tcp"` | mysql network |
-| defaults.server_config.metrics.prometheus.server.probe_wait_time | string | `"3s"` | prometheus server probe wait time |
-| defaults.server_config.metrics.prometheus.server.socket_option.ip_recover_destination_addr | bool | `false` | server listen socket option for ip_recover_destination_addr functionality |
-| defaults.server_config.metrics.prometheus.server.socket_option.ip_transparent | bool | `false` | server listen socket option for ip_transparent functionality |
-| defaults.server_config.metrics.prometheus.server.socket_option.reuse_addr | bool | `true` | server listen socket option for reuse_addr functionality |
-| defaults.server_config.metrics.prometheus.server.socket_option.reuse_port | bool | `true` | server listen socket option for reuse_port functionality |
-| defaults.server_config.metrics.prometheus.server.socket_option.tcp_cork | bool | `false` | server listen socket option for tcp_cork functionality |
-| defaults.server_config.metrics.prometheus.server.socket_option.tcp_defer_accept | bool | `true` | server listen socket option for tcp_defer_accept functionality |
-| defaults.server_config.metrics.prometheus.server.socket_option.tcp_fast_open | bool | `true` | server listen socket option for tcp_fast_open functionality |
-| defaults.server_config.metrics.prometheus.server.socket_option.tcp_no_delay | bool | `true` | server listen socket option for tcp_no_delay functionality |
-| defaults.server_config.metrics.prometheus.server.socket_option.tcp_quick_ack | bool | `true` | server listen socket option for tcp_quick_ack functionality |
-| defaults.server_config.metrics.prometheus.server.socket_path | string | `""` | mysql socket_path |
-| defaults.server_config.metrics.prometheus.servicePort | int | `6061` | prometheus server service port |
 | defaults.server_config.servers.grpc.enabled | bool | `true` | gRPC server enabled |
 | defaults.server_config.servers.grpc.host | string | `"0.0.0.0"` | gRPC server host |
 | defaults.server_config.servers.grpc.port | int | `8081` | gRPC server port |
@@ -553,7 +527,7 @@ Configuration
 | discoverer.discoverer.selectors.pod_metrics.fields | object | `{}` | k8s field selectors for pod_metrics discovery |
 | discoverer.discoverer.selectors.pod_metrics.labels | object | `{}` | k8s label selectors for pod_metrics discovery |
 | discoverer.enabled | bool | `true` | discoverer enabled |
-| discoverer.env | list | `[{"name":"MY_POD_NAMESPACE","valueFrom":{"fieldRef":{"fieldPath":"metadata.namespace"}}}]` | environment variables |
+| discoverer.env | list | `[{"name":"MY_NODE_NAME","valueFrom":{"fieldRef":{"fieldPath":"spec.nodeName"}}},{"name":"MY_POD_NAME","valueFrom":{"fieldRef":{"fieldPath":"metadata.name"}}},{"name":"MY_POD_NAMESPACE","valueFrom":{"fieldRef":{"fieldPath":"metadata.namespace"}}}]` | environment variables |
 | discoverer.externalTrafficPolicy | string | `""` | external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local |
 | discoverer.hpa.enabled | bool | `false` | HPA enabled |
 | discoverer.hpa.targetCPUUtilizationPercentage | int | `80` | HPA CPU utilization percentage |
@@ -570,7 +544,7 @@ Configuration
 | discoverer.name | string | `"vald-discoverer"` | name of discoverer deployment |
 | discoverer.nodeName | string | `""` | node name |
 | discoverer.nodeSelector | object | `{}` | node selector |
-| discoverer.observability | object | `{"jaeger":{"service_name":"vald-discoverer"}}` | observability config (overrides defaults.observability) |
+| discoverer.observability | object | `{"otlp":{"attribute":{"service_name":"vald-discoverer"}}}` | observability config (overrides defaults.observability) |
 | discoverer.podAnnotations | object | `{}` | pod annotations |
 | discoverer.podPriority.enabled | bool | `true` | discoverer pod PriorityClass enabled |
 | discoverer.podPriority.value | int | `1000000` | discoverer pod PriorityClass value |
@@ -581,7 +555,7 @@ Configuration
 | discoverer.rollingUpdate.maxSurge | string | `"25%"` | max surge of rolling update |
 | discoverer.rollingUpdate.maxUnavailable | string | `"25%"` | max unavailable of rolling update |
 | discoverer.securityContext | object | `{"allowPrivilegeEscalation":false,"capabilities":{"drop":["ALL"]},"privileged":false,"readOnlyRootFilesystem":true,"runAsGroup":65532,"runAsNonRoot":true,"runAsUser":65532}` | security context for container |
-| discoverer.server_config | object | `{"healths":{"liveness":{},"readiness":{},"startup":{}},"metrics":{"pprof":{},"prometheus":{}},"servers":{"grpc":{},"rest":{}}}` | server config (overrides defaults.server_config) |
+| discoverer.server_config | object | `{"healths":{"liveness":{},"readiness":{},"startup":{}},"metrics":{"pprof":{}},"servers":{"grpc":{},"rest":{}}}` | server config (overrides defaults.server_config) |
 | discoverer.service.annotations | object | `{}` | service annotations |
 | discoverer.service.labels | object | `{}` | service labels |
 | discoverer.serviceAccount.enabled | bool | `true` | creates service account |
@@ -602,7 +576,7 @@ Configuration
 | gateway.filter.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution | list | `[]` | pod anti-affinity required scheduling terms |
 | gateway.filter.annotations | object | `{}` | deployment annotations |
 | gateway.filter.enabled | bool | `false` | gateway enabled |
-| gateway.filter.env | list | `[{"name":"MY_POD_NAMESPACE","valueFrom":{"fieldRef":{"fieldPath":"metadata.namespace"}}}]` | environment variables |
+| gateway.filter.env | list | `[{"name":"MY_NODE_NAME","valueFrom":{"fieldRef":{"fieldPath":"spec.nodeName"}}},{"name":"MY_POD_NAME","valueFrom":{"fieldRef":{"fieldPath":"metadata.name"}}},{"name":"MY_POD_NAMESPACE","valueFrom":{"fieldRef":{"fieldPath":"metadata.namespace"}}}]` | environment variables |
 | gateway.filter.externalTrafficPolicy | string | `""` | external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local |
 | gateway.filter.gateway_config.egress_filter | object | `{"client":{},"distance_filters":[],"object_filters":[]}` | gRPC client config for egress filter |
 | gateway.filter.gateway_config.egress_filter.client | object | `{}` | gRPC client config for egress filter (overrides defaults.grpc.client) |
@@ -636,7 +610,7 @@ Configuration
 | gateway.filter.name | string | `"vald-filter-gateway"` | name of filter gateway deployment |
 | gateway.filter.nodeName | string | `""` | node name |
 | gateway.filter.nodeSelector | object | `{}` | node selector |
-| gateway.filter.observability | object | `{"jaeger":{"service_name":"vald-filter-gateway"}}` | observability config (overrides defaults.observability) |
+| gateway.filter.observability | object | `{"otlp":{"attribute":{"service_name":"vald-filter-gateway"}}}` | observability config (overrides defaults.observability) |
 | gateway.filter.podAnnotations | object | `{}` | pod annotations |
 | gateway.filter.podPriority.enabled | bool | `true` | gateway pod PriorityClass enabled |
 | gateway.filter.podPriority.value | int | `1000000` | gateway pod PriorityClass value |
@@ -647,7 +621,7 @@ Configuration
 | gateway.filter.rollingUpdate.maxSurge | string | `"25%"` | max surge of rolling update |
 | gateway.filter.rollingUpdate.maxUnavailable | string | `"25%"` | max unavailable of rolling update |
 | gateway.filter.securityContext | object | `{"allowPrivilegeEscalation":false,"capabilities":{"drop":["ALL"]},"privileged":false,"readOnlyRootFilesystem":true,"runAsGroup":65532,"runAsNonRoot":true,"runAsUser":65532}` | security context for container |
-| gateway.filter.server_config | object | `{"healths":{"liveness":{},"readiness":{},"startup":{}},"metrics":{"pprof":{},"prometheus":{}},"servers":{"grpc":{},"rest":{}}}` | server config (overrides defaults.server_config) |
+| gateway.filter.server_config | object | `{"healths":{"liveness":{},"readiness":{},"startup":{}},"metrics":{"pprof":{}},"servers":{"grpc":{},"rest":{}}}` | server config (overrides defaults.server_config) |
 | gateway.filter.service.annotations | object | `{}` | service annotations |
 | gateway.filter.service.labels | object | `{}` | service labels |
 | gateway.filter.serviceType | string | `"ClusterIP"` | service type: ClusterIP, LoadBalancer or NodePort |
@@ -666,7 +640,7 @@ Configuration
 | gateway.lb.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution | list | `[]` | pod anti-affinity required scheduling terms |
 | gateway.lb.annotations | object | `{}` | deployment annotations |
 | gateway.lb.enabled | bool | `true` | gateway enabled |
-| gateway.lb.env | list | `[{"name":"MY_POD_NAMESPACE","valueFrom":{"fieldRef":{"fieldPath":"metadata.namespace"}}}]` | environment variables |
+| gateway.lb.env | list | `[{"name":"MY_NODE_NAME","valueFrom":{"fieldRef":{"fieldPath":"spec.nodeName"}}},{"name":"MY_POD_NAME","valueFrom":{"fieldRef":{"fieldPath":"metadata.name"}}},{"name":"MY_POD_NAMESPACE","valueFrom":{"fieldRef":{"fieldPath":"metadata.namespace"}}}]` | environment variables |
 | gateway.lb.externalTrafficPolicy | string | `""` | external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local |
 | gateway.lb.gateway_config.agent_namespace | string | `"_MY_POD_NAMESPACE_"` | agent namespace |
 | gateway.lb.gateway_config.discoverer.agent_client_options | object | `{}` | gRPC client options for agents (overrides defaults.grpc.client) |
@@ -694,7 +668,7 @@ Configuration
 | gateway.lb.name | string | `"vald-lb-gateway"` | name of gateway deployment |
 | gateway.lb.nodeName | string | `""` | node name |
 | gateway.lb.nodeSelector | object | `{}` | node selector |
-| gateway.lb.observability | object | `{"jaeger":{"service_name":"vald-lb-gateway"}}` | observability config (overrides defaults.observability) |
+| gateway.lb.observability | object | `{"otlp":{"attribute":{"service_name":"vald-lb-gateway"}}}` | observability config (overrides defaults.observability) |
 | gateway.lb.podAnnotations | object | `{}` | pod annotations |
 | gateway.lb.podPriority.enabled | bool | `true` | gateway pod PriorityClass enabled |
 | gateway.lb.podPriority.value | int | `1000000` | gateway pod PriorityClass value |
@@ -705,7 +679,7 @@ Configuration
 | gateway.lb.rollingUpdate.maxSurge | string | `"25%"` | max surge of rolling update |
 | gateway.lb.rollingUpdate.maxUnavailable | string | `"25%"` | max unavailable of rolling update |
 | gateway.lb.securityContext | object | `{"allowPrivilegeEscalation":false,"capabilities":{"drop":["ALL"]},"privileged":false,"readOnlyRootFilesystem":true,"runAsGroup":65532,"runAsNonRoot":true,"runAsUser":65532}` | security context for container |
-| gateway.lb.server_config | object | `{"healths":{"liveness":{},"readiness":{},"startup":{}},"metrics":{"pprof":{},"prometheus":{}},"servers":{"grpc":{},"rest":{}}}` | server config (overrides defaults.server_config) |
+| gateway.lb.server_config | object | `{"healths":{"liveness":{},"readiness":{},"startup":{}},"metrics":{"pprof":{}},"servers":{"grpc":{},"rest":{}}}` | server config (overrides defaults.server_config) |
 | gateway.lb.service.annotations | object | `{}` | service annotations |
 | gateway.lb.service.labels | object | `{}` | service labels |
 | gateway.lb.serviceType | string | `"ClusterIP"` | service type: ClusterIP, LoadBalancer or NodePort |
@@ -724,7 +698,7 @@ Configuration
 | manager.index.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution | list | `[]` | pod anti-affinity required scheduling terms |
 | manager.index.annotations | object | `{}` | deployment annotations |
 | manager.index.enabled | bool | `true` | index manager enabled |
-| manager.index.env | list | `[{"name":"MY_POD_NAMESPACE","valueFrom":{"fieldRef":{"fieldPath":"metadata.namespace"}}}]` | environment variables |
+| manager.index.env | list | `[{"name":"MY_NODE_NAME","valueFrom":{"fieldRef":{"fieldPath":"spec.nodeName"}}},{"name":"MY_POD_NAME","valueFrom":{"fieldRef":{"fieldPath":"metadata.name"}}},{"name":"MY_POD_NAMESPACE","valueFrom":{"fieldRef":{"fieldPath":"metadata.namespace"}}}]` | environment variables |
 | manager.index.externalTrafficPolicy | string | `""` | external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local |
 | manager.index.image.pullPolicy | string | `"Always"` | image pull policy |
 | manager.index.image.repository | string | `"vdaas/vald-manager-index"` | image repository |
@@ -748,7 +722,7 @@ Configuration
 | manager.index.name | string | `"vald-manager-index"` | name of index manager deployment |
 | manager.index.nodeName | string | `""` | node name |
 | manager.index.nodeSelector | object | `{}` | node selector |
-| manager.index.observability | object | `{"jaeger":{"service_name":"vald-manager-index"}}` | observability config (overrides defaults.observability) |
+| manager.index.observability | object | `{"otlp":{"attribute":{"service_name":"vald-manager-index"}}}` | observability config (overrides defaults.observability) |
 | manager.index.podAnnotations | object | `{}` | pod annotations |
 | manager.index.podPriority.enabled | bool | `true` | index manager pod PriorityClass enabled |
 | manager.index.podPriority.value | int | `1000000` | index manager pod PriorityClass value |
@@ -760,7 +734,7 @@ Configuration
 | manager.index.rollingUpdate.maxSurge | string | `"25%"` | max surge of rolling update |
 | manager.index.rollingUpdate.maxUnavailable | string | `"25%"` | max unavailable of rolling update |
 | manager.index.securityContext | object | `{"allowPrivilegeEscalation":false,"capabilities":{"drop":["ALL"]},"privileged":false,"readOnlyRootFilesystem":true,"runAsGroup":65532,"runAsNonRoot":true,"runAsUser":65532}` | security context for container |
-| manager.index.server_config | object | `{"healths":{"liveness":{},"readiness":{},"startup":{}},"metrics":{"pprof":{},"prometheus":{}},"servers":{"grpc":{},"rest":{}}}` | server config (overrides defaults.server_config) |
+| manager.index.server_config | object | `{"healths":{"liveness":{},"readiness":{},"startup":{}},"metrics":{"pprof":{}},"servers":{"grpc":{},"rest":{}}}` | server config (overrides defaults.server_config) |
 | manager.index.service.annotations | object | `{}` | service annotations |
 | manager.index.service.labels | object | `{}` | service labels |
 | manager.index.serviceType | string | `"ClusterIP"` | service type: ClusterIP, LoadBalancer or NodePort |
