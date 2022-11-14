@@ -304,6 +304,7 @@ k8s/linkerd/delete:
 k8s/otel/operator/install:
 	helm repo add open-telemetry https://open-telemetry.github.io/opentelemetry-helm-charts
 	helm install ${OTEL_OPERATOR_RELEASE_NAME} open-telemetry/opentelemetry-operator --set installCRDs=true --version ${OTEL_OPERATOR_VERSION}
+	kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=opentelemetry-operator --timeout=60s
 
 .PHONY: k8s/otel/operator/uninstall
 ## delete opentelemetry operator
@@ -314,13 +315,13 @@ k8s/otel/operator/uninstall:
 ## deploy opentelemetry collector
 k8s/otel/collector/install:
 	kubectl apply -f ./k8s/metrics/otel/collector.yaml
-	kubectl apply -f ./k8s/metrics/otel/service-monitor.yaml
+	kubectl apply -f ./k8s/metrics/otel/pod-monitor.yaml
 
 .PHONY: k8s/otel/collector/uninstall
 ## delete opentelemetry collector
 k8s/otel/collector/uninstall:
 	kubectl delete -f ./k8s/metrics/otel/collector.yaml
-	kubectl delete -f ./k8s/metrics/otel/service-monitor.yaml
+	kubectl delete -f ./k8s/metrics/otel/pod-monitor.yaml
 
 .PHONY: telepresence/install
 ## install telepresence

@@ -164,6 +164,19 @@ data:
         key: /path/to/key
     observability:
       enabled: false
+      otlp:
+        collector_endpoint: ""
+        trace_batch_timeout: "1s"
+        trace_export_timeout: "1m"
+        trace_max_export_batch_size: 1024
+        trace_max_queue_size: 256
+        metrics_export_interval: "1s"
+        metrics_export_timeout: "1m"
+        attribute:
+          namespace: "_MY_POD_NAMESPACE_"
+          pod_name: "_MY_POD_NAME_"
+          node_name: "_MY_NODE_NAME_"
+          service_name: "vald-agent-ngt"
       metrics:
         enable_cgo: true
         enable_goroutine: true
@@ -180,23 +193,6 @@ data:
         - ngt_version
       trace:
         enabled: false
-      prometheus:
-        enabled: false
-        endpoint: /metrics
-        namespace: _MY_POD_NAMESPACE_
-      jaeger:
-        enabled: false
-        collector_endpoint: ""
-        agent_endpoint: ""
-        agent_reconnect_interval: "30s"
-        username: ""
-        password: ""
-        service_name: "vald-agent-ngt"
-        agent_max_packet_size: 65000
-        batch_timeout: "5s"
-        export_timeout: "5s"
-        max_export_batch_size: 512
-        max_queue_size: 2048
     ngt:
       auto_create_index_pool_size: 10000
       auto_index_check_duration: 30m
