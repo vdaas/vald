@@ -31,16 +31,21 @@ If you decided to contribute source code changes, you may need to install the fo
 - [npm](https://www.npmjs.com/)
 - [unzip](https://linux.die.net/man/1/unzip)
 - [Git](https://git-scm.com/)
-- [Go](https://go.dev/) (v1.8 or up is required)
+- [Go](https://go.dev/) (v1.19 is recommended)
 
 Please [fork Vald repository](https://github.com/vdaas/vald/fork) to your repository and clone your Vald repository to your Go path.
 
 ```bash
-ORG={GitHub orginzation name} # set this value to your GitHub orginization name
-mkdir -p $(go env GOPATH)/src/github.com/${ORG}/
-cd $(go env GOPATH)/src/github.com/${ORG}/
-git clone {forked Vald repository URL}
+# clone vdaas repo
+mkdir -p $(go env GOPATH)/src/github.com/vdaas/
+cd $(go env GOPATH)/src/github.com/vdaas/
+git clone https://github.com/vdaas/vald.git
 cd vald
+
+# rename origin repo to upstream and set origin to remote folked repo
+git remote rename origin upstream
+git remote add origin {your forked repo}
+git fetch origin
 ```
 
 Please also run the following command to initialize the development environment and install the necessary packages and tools.
