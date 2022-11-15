@@ -37,14 +37,15 @@ import (
 	handler "github.com/vdaas/vald/pkg/gateway/mirror/handler/grpc"
 	"github.com/vdaas/vald/pkg/gateway/mirror/handler/rest"
 	"github.com/vdaas/vald/pkg/gateway/mirror/router"
+	"github.com/vdaas/vald/pkg/gateway/mirror/service"
 )
 
 type run struct {
 	eg            errgroup.Group
 	cfg           *config.Data
 	server        starter.Server
-	mirror        mclient.Client
-	vald          vald.Client
+	vald          vclient.Client
+	gateway       service.Gateway
 	observability observability.Observability
 }
 
@@ -79,10 +80,18 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		return nil, err
 	}
 
+	gateway, err := service.NewGateway(
+		service.WithErrGroup(eg),
+		service.WithMirror(mc),
+	)
+	if err != nil {
+		return nil, err
+	}
+
 	v := handler.New(
-		handler.WithMirrorClient(mc),
 		handler.WithValdClient(vc),
 		handler.WithErrGroup(eg),
+		handler.WithGateway(gateway),
 		handler.WithStreamConcurrency(cfg.Server.GetGRPCStreamConcurrency()),
 	)
 
@@ -135,9 +144,9 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		eg:            eg,
 		cfg:           cfg,
 		server:        srv,
-		observability: obs,
-		mirror:        mc,
 		vald:          vc,
+		gateway:       gateway,
+		observability: obs,
 	}, nil
 }
 
@@ -150,11 +159,26 @@ func (r *run) PreStart(ctx context.Context) error {
 
 func (r *run) Start(ctx context.Context) (<-chan error, error) {
 	ech := make(chan error, 6)
-	var gech, sech, oech <-chan error
+	var gech, vech, sech, oech <-chan error
+	var err error
+	if r.gateway != nil {
+		gech, err = r.gateway.Start(ctx)
+		if err != nil {
+			close(ech)
+			return nil, err
+		}
+	}
+	if r.vald != nil {
+		vech, err = r.vald.Start(ctx)
+		if err != nil {
+			close(ech)
+			return nil, err
+		}
+	}
 	if r.observability != nil {
 		oech = r.observability.Start(ctx)
 	}
-	// TODO: Start vald and mirror gRPC client.
+
 	sech = r.server.ListenAndServe(ctx)
 	r.eg.Go(safety.RecoverFunc(func() (err error) {
 		defer close(ech)
@@ -165,6 +189,7 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 			case err = <-oech:
 			case err = <-gech:
 			case err = <-sech:
+			case err = <-vech:
 			}
 			if err != nil {
 				select {

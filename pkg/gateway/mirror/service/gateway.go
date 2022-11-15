@@ -20,11 +20,9 @@ package service
 import (
 	"context"
 	"reflect"
-	"sync"
-	"sync/atomic"
 
-	"github.com/vdaas/vald/apis/grpc/v1/vald"
-	"github.com/vdaas/vald/internal/client/v1/client/discoverer"
+	"github.com/vdaas/vald/apis/grpc/v1/mirror"
+	mclient "github.com/vdaas/vald/internal/client/v1/client/mirror"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc"
@@ -33,16 +31,13 @@ import (
 
 type Gateway interface {
 	Start(ctx context.Context) (<-chan error, error)
-	GetAgentCount(ctx context.Context) int
 	Addrs(ctx context.Context) []string
-	DoMulti(ctx context.Context, num int,
-		f func(ctx context.Context, tgt string, ac vald.Client, copts ...grpc.CallOption) error) error
 	BroadCast(ctx context.Context,
-		f func(ctx context.Context, tgt string, ac vald.Client, copts ...grpc.CallOption) error) error
+		f func(ctx context.Context, tgt string, mc mirror.MirrorClient, copts ...grpc.CallOption) error) error
 }
 
 type gateway struct {
-	client discoverer.Client
+	client mclient.Client
 	eg     errgroup.Group
 }
 
@@ -61,92 +56,30 @@ func (g *gateway) Start(ctx context.Context) (<-chan error, error) {
 }
 
 func (g *gateway) BroadCast(ctx context.Context,
-	f func(ctx context.Context, target string, ac vald.Client, copts ...grpc.CallOption) error,
+	f func(ctx context.Context, target string, mc mirror.MirrorClient, copts ...grpc.CallOption) error,
 ) (err error) {
-	fctx, span := trace.StartSpan(ctx, "vald/gateway-lb/service/Gateway.BroadCast")
+	fctx, span := trace.StartSpan(ctx, "vald/gateway-mirror/service/Gateway.BroadCast")
 	defer func() {
 		if span != nil {
 			span.End()
 		}
 	}()
-	return g.client.GetClient().RangeConcurrent(fctx, -1, func(ictx context.Context,
+	return g.client.GRPCClient().RangeConcurrent(fctx, -1, func(ictx context.Context,
 		addr string, conn *grpc.ClientConn, copts ...grpc.CallOption,
 	) (err error) {
 		select {
 		case <-ictx.Done():
 			return nil
 		default:
-			err = f(ictx, addr, vald.NewValdClient(conn), copts...)
+			err = f(ictx, addr, mirror.NewMirrorClient(conn), copts...)
 			if err != nil {
 				return err
 			}
 		}
 		return nil
 	})
-}
-
-func (g *gateway) DoMulti(ctx context.Context, num int,
-	f func(ctx context.Context, target string, ac vald.Client, copts ...grpc.CallOption) error,
-) (err error) {
-	sctx, span := trace.StartSpan(ctx, "vald/gateway-lb/service/Gateway.DoMulti")
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
-	var cur uint32 = 0
-	addrs := g.client.GetAddrs(sctx)
-	var limit uint32
-	if len(addrs) < num {
-		limit = uint32(len(addrs))
-	} else {
-		limit = uint32(num)
-	}
-	var visited sync.Map
-	err = g.client.GetClient().OrderedRange(sctx, addrs, func(ictx context.Context,
-		addr string,
-		conn *grpc.ClientConn,
-		copts ...grpc.CallOption,
-	) (err error) {
-		if atomic.LoadUint32(&cur) < limit {
-			err = f(ictx, addr, vald.NewValdClient(conn), copts...)
-			if err != nil {
-				return err
-			}
-			atomic.AddUint32(&cur, 1)
-			visited.Store(addr, struct{}{})
-		}
-		return nil
-	})
-	if err != nil || cur < limit {
-		err = g.client.GetClient().OrderedRange(sctx, addrs, func(ictx context.Context,
-			addr string,
-			conn *grpc.ClientConn,
-			copts ...grpc.CallOption,
-		) (err error) {
-			if atomic.LoadUint32(&cur) < limit {
-				_, ok := visited.Load(addr)
-				if !ok {
-					err = f(ictx, addr, vald.NewValdClient(conn), copts...)
-					if err != nil {
-						return err
-					}
-					atomic.AddUint32(&cur, 1)
-				}
-			}
-			return nil
-		})
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func (g *gateway) GetAgentCount(ctx context.Context) int {
-	return len(g.Addrs(ctx))
 }
 
 func (g *gateway) Addrs(ctx context.Context) []string {
-	return g.client.GetAddrs(ctx)
+	return g.client.GRPCClient().ConnectedAddrs()
 }

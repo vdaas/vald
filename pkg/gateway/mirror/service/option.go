@@ -18,7 +18,7 @@
 package service
 
 import (
-	"github.com/vdaas/vald/internal/client/v1/client/discoverer"
+	"github.com/vdaas/vald/internal/client/v1/client/mirror"
 	"github.com/vdaas/vald/internal/errgroup"
 )
 
@@ -28,7 +28,7 @@ var defaultGWOpts = []Option{
 	WithErrGroup(errgroup.Get()),
 }
 
-func WithDiscoverer(c discoverer.Client) Option {
+func WithMirror(c mirror.Client) Option {
 	return func(g *gateway) error {
 		if c != nil {
 			g.client = c

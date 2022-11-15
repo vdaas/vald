@@ -22,13 +22,12 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/vdaas/vald/internal/client/v1/client/mirror"
 	"github.com/vdaas/vald/internal/client/v1/client/vald"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/timeutil"
-	"github.com/vdaas/vald/pkg/gateway/lb/service"
+	"github.com/vdaas/vald/pkg/gateway/mirror/service"
 )
 
 type Option func(*server)
@@ -69,7 +68,6 @@ func WithName(name string) Option {
 func WithGateway(g service.Gateway) Option {
 	return func(s *server) {
 		if g != nil {
-			s.gateway = g
 		}
 	}
 }
@@ -104,14 +102,6 @@ func WithStreamConcurrency(c int) Option {
 	return func(s *server) {
 		if c != 0 {
 			s.streamConcurrency = c
-		}
-	}
-}
-
-func WithMirrorClient(mc mirror.Client) Option {
-	return func(s *server) {
-		if mc != nil {
-
 		}
 	}
 }
