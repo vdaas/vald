@@ -64,9 +64,14 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		return nil, err
 	}
 
+	vcOpts, err := cfg.Mirror.LB.Opts()
+	if err != nil {
+		return nil, err
+	}
+
 	vc, err := vclient.New(
 		vclient.WithAddrs(cfg.Mirror.LB.Addrs...),
-		vclient.WithClient(grpc.New(mcOpts...)),
+		vclient.WithClient(grpc.New(vcOpts...)),
 	)
 	if err != nil {
 		return nil, err
