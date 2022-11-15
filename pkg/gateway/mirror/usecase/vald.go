@@ -55,6 +55,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	if err != nil {
 		return nil, err
 	}
+	mcOpts = append(mcOpts, grpc.WithErrGroup(eg))
 
 	mc, err := mclient.New(
 		mclient.WithAddrs(cfg.Mirror.Mirror.Addrs...),
@@ -68,6 +69,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	if err != nil {
 		return nil, err
 	}
+	vcOpts = append(vcOpts, grpc.WithErrGroup(eg))
 
 	vc, err := vclient.New(
 		vclient.WithAddrs(cfg.Mirror.LB.Addrs...),
