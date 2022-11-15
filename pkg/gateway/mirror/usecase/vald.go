@@ -20,7 +20,11 @@ package usecase
 import (
 	"context"
 
+	"github.com/vdaas/vald/apis/grpc/v1/mirror"
+	"github.com/vdaas/vald/apis/grpc/v1/vald"
+	client "github.com/vdaas/vald/internal/client/v1/client/mirror"
 	"github.com/vdaas/vald/internal/errgroup"
+	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/observability"
 	backoffmetrics "github.com/vdaas/vald/internal/observability/metrics/backoff"
 	cbmetrics "github.com/vdaas/vald/internal/observability/metrics/circuitbreaker"
@@ -29,9 +33,9 @@ import (
 	"github.com/vdaas/vald/internal/servers/server"
 	"github.com/vdaas/vald/internal/servers/starter"
 	"github.com/vdaas/vald/pkg/gateway/mirror/config"
+	handler "github.com/vdaas/vald/pkg/gateway/mirror/handler/grpc"
 	"github.com/vdaas/vald/pkg/gateway/mirror/handler/rest"
 	"github.com/vdaas/vald/pkg/gateway/mirror/router"
-	"github.com/vdaas/vald/pkg/gateway/mirror/service"
 )
 
 type run struct {
@@ -39,67 +43,39 @@ type run struct {
 	cfg           *config.Data
 	server        starter.Server
 	observability observability.Observability
-	gateway       service.Gateway
 }
 
 func New(cfg *config.Data) (r runner.Runner, err error) {
 	eg := errgroup.Get()
 
-	var gateway service.Gateway
+	copts, err := cfg.Mirror.Client.Opts()
+	if err != nil {
+		return nil, err
+	}
 
-	// cOpts, err := cfg.Gateway.Discoverer.Client.Opts()
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// dopts := append(
-	// 	cOpts,
-	// 	grpc.WithErrGroup(eg))
-	// acOpts, err := cfg.Gateway.Discoverer.AgentClientOptions.Opts()
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// aopts := append(
-	// 	acOpts,
-	// 	grpc.WithErrGroup(eg))
-	//
-	// client, err := discoverer.New(
-	// 	discoverer.WithAutoConnect(true),
-	// 	discoverer.WithName(cfg.Gateway.AgentName),
-	// 	discoverer.WithNamespace(cfg.Gateway.AgentNamespace),
-	// 	discoverer.WithPort(cfg.Gateway.AgentPort),
-	// 	discoverer.WithServiceDNSARecord(cfg.Gateway.AgentDNS),
-	// 	discoverer.WithDiscovererClient(grpc.New(dopts...)),
-	// 	discoverer.WithDiscoverDuration(cfg.Gateway.Discoverer.Duration),
-	// 	discoverer.WithOptions(aopts...),
-	// 	discoverer.WithNodeName(cfg.Gateway.NodeName),
-	// )
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// gateway, err = service.NewGateway(
-	// 	service.WithErrGroup(eg),
-	// 	service.WithDiscoverer(client),
-	// )
-	// if err != nil {
-	// 	return nil, err
-	// }
-	//
-	// v := handler.New(
-	// 	handler.WithGateway(gateway),
-	// 	handler.WithErrGroup(eg),
-	// 	handler.WithReplicationCount(cfg.Gateway.IndexReplica),
-	// 	handler.WithStreamConcurrency(cfg.Server.GetGRPCStreamConcurrency()),
-	// )
-	//
-	// grpcServerOptions := []server.Option{
-	// 	server.WithGRPCRegistFunc(func(srv *grpc.Server) {
-	// 		vald.RegisterValdServer(srv, v)
-	// 	}),
-	// 	server.WithPreStopFunction(func() error {
-	// 		// TODO notify another gateway and scheduler
-	// 		return nil
-	// 	}),
-	// }
+	mc, err := client.New(
+		client.WithAddrs(cfg.Mirror.Client.Addrs...),
+		client.WithGRPCClient(grpc.New(copts...)),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	v := handler.New(
+		handler.WithMirrorClient(mc),
+		handler.WithErrGroup(eg),
+		handler.WithStreamConcurrency(cfg.Server.GetGRPCStreamConcurrency()),
+	)
+
+	grpcServerOptions := []server.Option{
+		server.WithGRPCRegistFunc(func(srv *grpc.Server) {
+			vald.RegisterValdServer(srv, v)
+			mirror.RegisterMirrorServer(srv, v)
+		}),
+		server.WithPreStopFunction(func() error {
+			return nil
+		}),
+	}
 
 	var obs observability.Observability
 	if cfg.Observability.Enabled {
@@ -121,7 +97,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 					router.New(
 						router.WithHandler(
 							rest.New(
-							// rest.WithVald(v),
+								rest.WithVald(v),
 							),
 						),
 					),
@@ -129,8 +105,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 			}
 		}),
 		starter.WithGRPC(func(sc *config.Server) []server.Option {
-			return nil
-			// return grpcServerOptions
+			return grpcServerOptions
 		}),
 	)
 	if err != nil {
@@ -142,7 +117,6 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		cfg:           cfg,
 		server:        srv,
 		observability: obs,
-		gateway:       gateway,
 	}, nil
 }
 
@@ -156,16 +130,8 @@ func (r *run) PreStart(ctx context.Context) error {
 func (r *run) Start(ctx context.Context) (<-chan error, error) {
 	ech := make(chan error, 6)
 	var gech, sech, oech <-chan error
-	var err error
 	if r.observability != nil {
 		oech = r.observability.Start(ctx)
-	}
-	if r.gateway != nil {
-		gech, err = r.gateway.Start(ctx)
-		if err != nil {
-			close(ech)
-			return nil, err
-		}
 	}
 	sech = r.server.ListenAndServe(ctx)
 	r.eg.Go(safety.RecoverFunc(func() (err error) {

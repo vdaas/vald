@@ -27,6 +27,7 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/vdaas/vald/apis/grpc/v1/mirror"
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
 	"github.com/vdaas/vald/internal/conv"
@@ -46,6 +47,11 @@ import (
 	"github.com/vdaas/vald/pkg/gateway/lb/service"
 )
 
+type MirrorServer interface {
+	vald.Server
+	mirror.MirrorServer
+}
+
 type server struct {
 	eg                errgroup.Group
 	gateway           service.Gateway
@@ -55,11 +61,12 @@ type server struct {
 	name              string
 	ip                string
 	vald.UnimplementedValdServer
+	mirror.MirrorServer
 }
 
 const apiName = "vald/gateway/lb"
 
-func New(opts ...Option) vald.Server {
+func New(opts ...Option) MirrorServer {
 	s := new(server)
 
 	for _, opt := range append(defaultOptions, opts...) {

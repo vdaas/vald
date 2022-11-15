@@ -35,6 +35,10 @@ type ServerWithFilter interface {
 	FilterServer
 }
 
+type ServerWithMirror interface {
+	Server
+}
+
 type UnimplementedValdServer struct {
 	UnimplementedInsertServer
 	UnimplementedUpdateServer
