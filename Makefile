@@ -51,16 +51,16 @@ TEMP_DIR := $(eval TEMP_DIR := $(shell mktemp -d))$(TEMP_DIR)
 
 OPERATOR_SDK_VERSION := $(eval OPERATOR_SDK_VERSION := $(shell cat versions/OPERATOR_SDK_VERSION))$(OPERATOR_SDK_VERSION)
 
-KIND_VERSION            ?= v0.16.0
+KIND_VERSION            ?= v0.17.0
 HELM_VERSION            ?= v3.10.1
 HELM_DOCS_VERSION       ?= 1.11.0
-YQ_VERSION              ?= v4.28.2
-VALDCLI_VERSION         ?= v1.5.6
-TELEPRESENCE_VERSION    ?= 2.8.2
+YQ_VERSION              ?= v4.29.2
+VALDCLI_VERSION         ?= v1.6.3
+TELEPRESENCE_VERSION    ?= 2.8.5
 KUBELINTER_VERSION      ?= 0.5.0
 GOLANGCILINT_VERSION    ?= v1.50.1
 REVIEWDOG_VERSION       ?= v0.14.1
-PROTOBUF_VERSION        ?= 21.8
+PROTOBUF_VERSION        ?= 21.9
 JAEGER_OPERATOR_VERSION ?= 2.30.0
 OTEL_OPERATOR_VERSION   ?= 0.16.0
 PROMETHEUS_VERSION      ?= 41.5.1
@@ -76,12 +76,6 @@ BINDIR ?= /usr/local/bin
 
 UNAME := $(eval UNAME := $(shell uname))$(UNAME)
 PWD := $(eval PWD := $(shell pwd))$(PWD)
-
-ifeq ($(UNAME),Linux)
-CPU_INFO_FLAGS := $(eval CPU_INFO_FLAGS := $(shell cat /proc/cpuinfo | grep flags | cut -d " " -f 2- | head -1))$(CPU_INFO_FLAGS)
-else
-CPU_INFO_FLAGS := ""
-endif
 
 GIT_COMMIT := $(eval GIT_COMMIT := $(shell git rev-list -1 HEAD))$(GIT_COMMIT)
 
@@ -113,6 +107,15 @@ else
 CFLAGS ?=
 CXXFLAGS ?= $(CFLAGS)
 EXTLDFLAGS ?=
+endif
+
+ifeq ($(UNAME),Linux)
+CPU_INFO_FLAGS := $(eval CPU_INFO_FLAGS := $(shell cat /proc/cpuinfo | grep flags | cut -d " " -f 2- | head -1))$(CPU_INFO_FLAGS)
+else
+CPU_INFO_FLAGS := ""
+LDFLAGS ?= $(LDFLAGS) -L/opt/homebrew/opt/libomp/lib
+CXXFLAGS = $(CFLAGS) -I/opt/homebrew/opt/libomp/include
+CPPFLAGS ?= $(CXXFLAGS)
 endif
 
 BENCH_DATASET_MD5S := $(eval BENCH_DATASET_MD5S := $(shell find $(BENCH_DATASET_MD5_DIR) -type f -regex ".*\.md5"))$(BENCH_DATASET_MD5S)
