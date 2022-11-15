@@ -23,6 +23,7 @@ import (
 	"time"
 
 	"github.com/vdaas/vald/internal/client/v1/client/mirror"
+	"github.com/vdaas/vald/internal/client/v1/client/vald"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net"
@@ -110,6 +111,14 @@ func WithStreamConcurrency(c int) Option {
 func WithMirrorClient(mc mirror.Client) Option {
 	return func(s *server) {
 		if mc != nil {
+
+		}
+	}
+}
+
+func WithValdClient(vc vald.Client) Option {
+	return func(s *server) {
+		if vc != nil {
 
 		}
 	}

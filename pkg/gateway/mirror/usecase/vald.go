@@ -22,7 +22,8 @@ import (
 
 	"github.com/vdaas/vald/apis/grpc/v1/mirror"
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
-	client "github.com/vdaas/vald/internal/client/v1/client/mirror"
+	mclient "github.com/vdaas/vald/internal/client/v1/client/mirror"
+	vclient "github.com/vdaas/vald/internal/client/v1/client/vald"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/observability"
@@ -42,20 +43,30 @@ type run struct {
 	eg            errgroup.Group
 	cfg           *config.Data
 	server        starter.Server
+	mirror        mclient.Client
+	vald          vald.Client
 	observability observability.Observability
 }
 
 func New(cfg *config.Data) (r runner.Runner, err error) {
 	eg := errgroup.Get()
 
-	copts, err := cfg.Mirror.Client.Opts()
+	mcOpts, err := cfg.Mirror.Mirror.Opts()
 	if err != nil {
 		return nil, err
 	}
 
-	mc, err := client.New(
-		client.WithAddrs(cfg.Mirror.Client.Addrs...),
-		client.WithGRPCClient(grpc.New(copts...)),
+	mc, err := mclient.New(
+		mclient.WithAddrs(cfg.Mirror.Mirror.Addrs...),
+		mclient.WithClient(grpc.New(mcOpts...)),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	vc, err := vclient.New(
+		vclient.WithAddrs(cfg.Mirror.LB.Addrs...),
+		vclient.WithClient(grpc.New(mcOpts...)),
 	)
 	if err != nil {
 		return nil, err
@@ -63,6 +74,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 
 	v := handler.New(
 		handler.WithMirrorClient(mc),
+		handler.WithValdClient(vc),
 		handler.WithErrGroup(eg),
 		handler.WithStreamConcurrency(cfg.Server.GetGRPCStreamConcurrency()),
 	)
@@ -117,6 +129,8 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		cfg:           cfg,
 		server:        srv,
 		observability: obs,
+		mirror:        mc,
+		vald:          vc,
 	}, nil
 }
 
@@ -133,6 +147,7 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 	if r.observability != nil {
 		oech = r.observability.Start(ctx)
 	}
+	// TODO: Start vald and mirror gRPC client.
 	sech = r.server.ListenAndServe(ctx)
 	r.eg.Go(safety.RecoverFunc(func() (err error) {
 		defer close(ech)

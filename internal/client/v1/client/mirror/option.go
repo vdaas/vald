@@ -41,7 +41,7 @@ func WithValdClient(vc vald.Client) Option {
 	}
 }
 
-func WithGRPCClient(gc grpc.Client) Option {
+func WithClient(gc grpc.Client) Option {
 	return func(c *client) error {
 		if gc != nil {
 			c.c = gc

@@ -17,6 +17,7 @@ const (
 
 type Client interface {
 	vald.Client
+	Target(ctx context.Context, addr ...string) (Client, error)
 	mirror.MirrorClient
 	GRPCClient() grpc.Client
 	Start(context.Context) (<-chan error, error)
@@ -59,7 +60,7 @@ func New(opts ...Option) (Client, error) {
 			return nil, err
 		}
 	}
-	return nil, nil
+	return c, nil
 }
 
 func (c *client) Start(ctx context.Context) (<-chan error, error) {
@@ -72,6 +73,10 @@ func (c *client) Stop(ctx context.Context) error {
 
 func (c *client) GRPCClient() grpc.Client {
 	return c.c
+}
+
+func (c *client) Target(ctx context.Context, addr ...string) (Client, error) {
+	return nil, nil
 }
 
 func (c *client) Register(ctx context.Context, in *payload.Mirror_Targets, opts ...grpc.CallOption) (res *payload.Mirror_Targets, err error) {

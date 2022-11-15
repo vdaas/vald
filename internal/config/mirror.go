@@ -19,16 +19,23 @@ package config
 
 // Mirror represents the Mirror Gateway configuration.
 type Mirror struct {
-	// Client represent the gRPC client configuration for connecting the other Mirror Gateway.
-	Client *GRPCClient `json:"client" yaml:"client"`
+	// MirrorClient represent the gRPC client configuration for connecting the LB Gateway.
+	LB *GRPCClient `json:"lb" yaml:"lb"`
+	// MirrorClient represent the gRPC client configuration for connecting the other Mirror Gateway.
+	Mirror *GRPCClient `json:"mirror" yaml:"mirror"`
 }
 
 // Bind binds the actual data from the Mirror receiver fields.
 func (m *Mirror) Bind() *Mirror {
-	if m.Client != nil {
-		m.Client = m.Client.Bind()
+	if m.LB != nil {
+		m.LB = m.LB.Bind()
 	} else {
-		m.Client = new(GRPCClient).Bind()
+		m.LB = new(GRPCClient).Bind()
+	}
+	if m.Mirror != nil {
+		m.Mirror = m.Mirror.Bind()
+	} else {
+		m.Mirror = new(GRPCClient).Bind()
 	}
 	return m
 }
