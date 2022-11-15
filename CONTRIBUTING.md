@@ -33,7 +33,17 @@ If you decided to contribute source code changes, you may need to install the fo
 - [Git](https://git-scm.com/)
 - [Go](https://go.dev/) (v1.19.2 is recommended)
 
-If you are using Debian-based linux distribution, you can install these required tools using `apt`.
+We recommend using Linux to build and test Vald.
+
+For MacOS / Windows users, please install and use `docker` to create a Linux container to start the container.
+
+You may also want to mount the Vald repository cloned below.
+
+```bash
+docker run -v '{vald repo}':'{folder mount}' {container name}
+```
+
+For Debian-based Linux distribution users, you can install these required tools using `apt`.
 
 ```bash
 sudo apt install make cmake protobuf-compiler npm unzip git golang
