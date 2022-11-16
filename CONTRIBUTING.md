@@ -23,7 +23,17 @@ We welcome you to contribute to Vald to make Vald better. We accept the followin
 
 Please also feel free to ask anything on [Vald Slack channel](https://join.slack.com/t/vald-community/shared_invite/zt-db2ky9o4-R_9p2sVp8xRwztVa8gfnPA) :)
 
-If you decided to contribute source code changes, you may need to install the following tools manually before making changes.
+If you decided to contribute source code changes, please follow the following guideline to install the required tools.
+
+We recommend using Linux to build and test Vald.
+For MacOS / Windows users, please install and use `docker` to create a Linux container to build and test Vald. You may need to install the packages and execute the commands listed below inside the docker container rather than in your local environment.
+If you want to start development on your host environment, please also consider mounting the Vald repository path from the host environment to the container environment after cloning the Vald repository described below.
+
+```bash
+docker run -v '{vald repo}':'{folder mount}' {container name}
+```
+
+Please install the following tools on your environment.
 
 - [make](https://www.gnu.org/software/make/)
 - [cmake](https://cmake.org/)
@@ -32,16 +42,6 @@ If you decided to contribute source code changes, you may need to install the fo
 - [unzip](https://linux.die.net/man/1/unzip)
 - [Git](https://git-scm.com/)
 - [Go](https://go.dev/) (v1.19.2 is recommended)
-
-We recommend using Linux to build and test Vald.
-
-For MacOS / Windows users, please install and use `docker` to create a Linux container to start the container.
-
-You may also want to mount the Vald repository cloned below.
-
-```bash
-docker run -v '{vald repo}':'{folder mount}' {container name}
-```
 
 For Debian-based Linux distribution users, you can install these required tools using `apt`.
 
