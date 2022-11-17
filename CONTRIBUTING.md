@@ -24,20 +24,16 @@ We accept the following types of contributions:
 
 Please also feel free to ask anything on [Vald Slack channel](https://join.slack.com/t/vald-community/shared_invite/zt-db2ky9o4-R_9p2sVp8xRwztVa8gfnPA) :)
 
-## Installation guide
-
-In this section, we will guide you on how to install the required tools to contribute to Vald in your environment.
-
-### Issue contributor
+## Issue contribution
 
 Please find [here](./docs/contributing/issue.md) for more details about how to contribute to the issue.
 
-### Code contributor
+## Code contribution
 
 We recommend using Linux environment to contribute code.
 Please find the below sections to install the required tools on your environment.
 
-#### Mac/Windows users
+### Development environment installation guide for Mac/Windows users
 
 For Mac / Windows users, please install and use [docker](https://www.docker.com/) to create a Linux container to build and test Vald.
 
@@ -70,8 +66,6 @@ For Debian-based Linux distribution users, you can install these required tools 
 sudo apt install curl make cmake protobuf-compiler npm unzip git golang
 ```
 
-#### Fork and clone Vald Repository
-
 Please [fork Vald repository](https://github.com/vdaas/vald/fork) to your repository and clone your Vald repository to your Go path.
 
 ```bash
@@ -86,8 +80,6 @@ git remote rename origin upstream
 git remote add origin {your forked repo}
 git fetch origin
 ```
-
-#### Initialize development environment
 
 Please also run the following command under your Vald repository to initialize the development environment and install the necessary packages and tools.
 
