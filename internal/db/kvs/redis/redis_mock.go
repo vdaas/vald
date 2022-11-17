@@ -58,19 +58,19 @@ type dummyHook struct {
 	name string
 }
 
-func (d *dummyHook) BeforeProcess(ctx context.Context, cmd Cmder) (context.Context, error) {
+func (*dummyHook) BeforeProcess(ctx context.Context, cmd Cmder) (context.Context, error) {
 	return ctx, nil
 }
 
-func (d *dummyHook) AfterProcess(ctx context.Context, cmd Cmder) error {
+func (*dummyHook) AfterProcess(ctx context.Context, cmd Cmder) error {
 	return nil
 }
 
-func (d *dummyHook) BeforeProcessPipeline(ctx context.Context, cmds []Cmder) (context.Context, error) {
+func (*dummyHook) BeforeProcessPipeline(ctx context.Context, cmds []Cmder) (context.Context, error) {
 	return ctx, nil
 }
 
-func (d *dummyHook) AfterProcessPipeline(ctx context.Context, cmds []Cmder) error {
+func (*dummyHook) AfterProcessPipeline(ctx context.Context, cmds []Cmder) error {
 	return nil
 }
 

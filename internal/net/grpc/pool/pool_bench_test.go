@@ -44,7 +44,7 @@ func init() {
 	log.Init(log.WithLevel(level.ERROR.String()))
 }
 
-func (s *server) Pods(context.Context, *payload.Discoverer_Request) (*payload.Info_Pods, error) {
+func (*server) Pods(context.Context, *payload.Discoverer_Request) (*payload.Info_Pods, error) {
 	return &payload.Info_Pods{
 		Pods: []*payload.Info_Pod{
 			{
@@ -54,7 +54,7 @@ func (s *server) Pods(context.Context, *payload.Discoverer_Request) (*payload.In
 	}, nil
 }
 
-func (s *server) Nodes(context.Context, *payload.Discoverer_Request) (*payload.Info_Nodes, error) {
+func (*server) Nodes(context.Context, *payload.Discoverer_Request) (*payload.Info_Nodes, error) {
 	return new(payload.Info_Nodes), nil
 }
 
