@@ -730,7 +730,7 @@ func (n *ngt) update(uuid string, vec []float32, t int64) (err error) {
 	if err = n.readyForUpdate(uuid, vec); err != nil {
 		return err
 	}
-	err = n.delete(uuid, t, true) // true is to return NotFound error with non-existent ID
+	err = n.delete(uuid, t, true) // `true` is to return NotFound error with non-existent ID
 	if err != nil {
 		return err
 	}
@@ -1010,7 +1010,7 @@ func (n *ngt) saveIndex(ctx context.Context) (err error) {
 
 	eg, ectx := errgroup.New(ctx)
 	// we want to ensure the acutal kvs size between kvsdb and metadata,
-	// so we create thie counter to count the actual kvs size instead of using kvs.Len()
+	// so we create this counter to count the actual kvs size instead of using kvs.Len()
 	var (
 		kvsLen uint64
 		path   string
