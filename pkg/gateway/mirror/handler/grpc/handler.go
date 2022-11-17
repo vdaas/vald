@@ -30,6 +30,7 @@ import (
 	"github.com/vdaas/vald/apis/grpc/v1/mirror"
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
+	vclient "github.com/vdaas/vald/internal/client/v1/client/vald"
 	"github.com/vdaas/vald/internal/conv"
 	"github.com/vdaas/vald/internal/core/algorithm"
 	"github.com/vdaas/vald/internal/errgroup"
@@ -55,6 +56,7 @@ type MirrorServer interface {
 type server struct {
 	eg                errgroup.Group
 	gateway           service.Gateway
+	client            vclient.Client
 	timeout           time.Duration
 	replica           int
 	streamConcurrency int
@@ -83,135 +85,8 @@ func (s *server) Exists(ctx context.Context, meta *payload.Object_ID) (id *paylo
 		}
 	}()
 
-	uuid := meta.GetId()
-	if len(uuid) == 0 {
-		err = errors.ErrInvalidUUID(uuid)
-		err = status.WrapWithInvalidArgument(vald.ExistsRPCName+" API invalid argument for uuid \""+uuid+"\" detected", err,
-			&errdetails.RequestInfo{
-				RequestId:   uuid,
-				ServingData: errdetails.Serialize(meta),
-			},
-			&errdetails.BadRequest{
-				FieldViolations: []*errdetails.BadRequestFieldViolation{
-					{
-						Field:       "uuid",
-						Description: err.Error(),
-					},
-				},
-			},
-			&errdetails.ResourceInfo{
-				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.ExistsRPCName,
-				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-			})
-		log.Warn(err)
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.StatusCodeInvalidArgument(err.Error())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
-		return nil, err
-	}
-	ich := make(chan *payload.Object_ID, 1)
-	ech := make(chan error, 1)
-	s.eg.Go(func() error {
-		defer close(ich)
-		defer close(ech)
-		var cancel context.CancelFunc
-		ctx, cancel = context.WithCancel(ctx)
-		var once sync.Once
-		ech <- s.gateway.BroadCast(ctx, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error {
-			sctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.ExistsRPCName+"/"+target)
-			defer func() {
-				if sspan != nil {
-					sspan.End()
-				}
-			}()
-			oid, err := vc.Exists(sctx, &payload.Object_ID{
-				Id: uuid,
-			}, copts...)
-			if err != nil {
-				switch {
-				case errors.Is(err, context.Canceled),
-					errors.Is(err, errors.ErrRPCCallFailed(target, context.Canceled)):
-					if sspan != nil {
-						sspan.RecordError(err)
-						sspan.SetAttributes(trace.StatusCodeCancelled(
-							errdetails.ValdGRPCResourceTypePrefix +
-								"/vald.v1." + vald.ExistsRPCName + ".BroadCast/" +
-								target + " canceled: " + err.Error())...)
-						sspan.SetStatus(trace.StatusError, err.Error())
-					}
-					return nil
-				case errors.Is(err, context.DeadlineExceeded),
-					errors.Is(err, errors.ErrRPCCallFailed(target, context.DeadlineExceeded)):
-					if sspan != nil {
-						sspan.RecordError(err)
-						sspan.SetAttributes(trace.StatusCodeDeadlineExceeded(
-							errdetails.ValdGRPCResourceTypePrefix +
-								"/vald.v1." + vald.ExistsRPCName + ".BroadCast/" +
-								target + " deadline_exceeded: " + err.Error())...)
-						sspan.SetStatus(trace.StatusError, err.Error())
-					}
-					return nil
-				}
-				var (
-					st  *status.Status
-					msg string
-				)
-				st, msg, err = status.ParseError(err, codes.NotFound, "error "+vald.ExistsRPCName+" API meta "+uuid+"'s uuid not found",
-					&errdetails.RequestInfo{
-						RequestId:   uuid,
-						ServingData: errdetails.Serialize(meta),
-					},
-					&errdetails.ResourceInfo{
-						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.ExistsRPCName,
-						ResourceName: fmt.Sprintf("%s: %s(%s) to %s", apiName, s.name, s.ip, target),
-					})
-				if sspan != nil {
-					sspan.RecordError(err)
-					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
-					sspan.SetStatus(trace.StatusError, err.Error())
-				}
-				if err != nil && st.Code() != codes.NotFound {
-					return err
-				}
-				return nil
-			}
-			if oid != nil && oid.GetId() != "" {
-				once.Do(func() {
-					ich <- oid
-					cancel()
-				})
-			}
-			return nil
-		})
-		return nil
-	})
-	select {
-	case <-ctx.Done():
-		err = ctx.Err()
-	case id = <-ich:
-	case err = <-ech:
-	}
-	if err != nil || id == nil || id.GetId() == "" {
-		if err == nil {
-			err = errors.ErrObjectIDNotFound(uuid)
-		}
-		st, msg, err := status.ParseError(err, codes.NotFound, "error "+vald.ExistsRPCName+" API meta "+uuid+"'s uuid not found",
-			&errdetails.RequestInfo{
-				RequestId:   uuid,
-				ServingData: errdetails.Serialize(meta),
-			},
-			&errdetails.ResourceInfo{
-				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.ExistsRPCName,
-				ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
-			})
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
-
+	id, err = s.client.Exists(ctx, meta, s.client.GRPCClient().GetCallOption()...)
+	if err != nil {
 		return nil, err
 	}
 	return id, nil
