@@ -24,6 +24,7 @@ ARG VALD_KIND="ValdRelease"
 ARG VALD_HELM_OPERATOR_KIND="ValdHelmOperatorRelease"
 ARG MAINTAINER="vdaas.org vald team <vald@vdaas.org>"
 
+# skipcq: DOK-SC2002
 FROM quay.io/operator-framework/helm-operator:${OPERATOR_SDK_VERSION} AS operator
 
 FROM golang:${GO_VERSION} AS builder
