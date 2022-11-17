@@ -82,6 +82,7 @@ RUN make helm/schema/vald
 RUN make helm/schema/vald-helm-operator
 RUN cp -r charts /charts
 
+# skipcq: DOK-DL3008
 RUN apt-get clean \
     && rm -rf \
         /var/lib/apt/lists/* \

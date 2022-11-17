@@ -28,6 +28,7 @@ ENV REPO vald
 ENV PKG manager/index
 ENV APP_NAME index
 
+# skipcq: DOK-DL3008
 RUN apt-get update && apt-get install -y --no-install-recommends \
     upx \
     git \

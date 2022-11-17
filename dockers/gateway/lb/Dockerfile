@@ -28,6 +28,7 @@ ENV REPO vald
 ENV PKG gateway/lb
 ENV APP_NAME lb
 
+# skipcq: DOK-DL3008
 RUN apt-get update && apt-get install -y --no-install-recommends \
     upx \
     git \

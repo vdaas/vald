@@ -26,6 +26,7 @@ ENV REPO vald
 ENV APP_NAME loadtest
 ENV PKG tools/cli/${APP_NAME}
 
+# skipcq: DOK-DL3008
 RUN apt-get update && apt-get install -y --no-install-recommends \
     upx \
     git \

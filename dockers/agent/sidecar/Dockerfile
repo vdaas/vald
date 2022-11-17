@@ -29,6 +29,7 @@ ENV PKG agent/sidecar
 ENV PKG_INTERNAL agent/internal
 ENV APP_NAME sidecar
 
+# skipcq: DOK-DL3008
 RUN apt-get update && apt-get install -y --no-install-recommends \
     upx \
     git \
