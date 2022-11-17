@@ -82,7 +82,7 @@ RUN make helm/schema/vald
 RUN make helm/schema/vald-helm-operator
 RUN cp -r charts /charts
 
-RUN apt clean \
+RUN apt-get clean \
     && rm -rf \
         /var/lib/apt/lists/* \
         /var/cache/* \
