@@ -159,7 +159,7 @@ make gotests/gen # execute gotests tools to generate unit test code stubs
 make format # format go and yaml files
 ```
 
-The command `make gotests/gen` generate unit test code stubs to easier to implement unit test code. Please see [this section](#unit-test) for more details.
+The command `make gotests/gen` generate unit test code stubs to easier to implement unit test code.
 
 The command `make format` is used to generate the license header on the source code file, and execute the code formatter to format Go and YAML files.
 
