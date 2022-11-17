@@ -30,7 +30,7 @@ Please find [here](./docs/contributing/issue.md) for more details about how to c
 
 ## Code contribution
 
-### Development environment installation guide
+### Installation guide
 
 We recommend using Linux environment to contribute code.
 Please find the below sections to install the required tools on your environment.
