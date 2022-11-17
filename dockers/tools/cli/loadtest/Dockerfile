@@ -63,10 +63,10 @@ COPY versions/GO_VERSION .
 COPY versions/VALD_VERSION .
 COPY .git .
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-RUN GO_VERSION="$(cat GO_VERSION)" \
-    && VALD_VERSION="$(cat VALD_VERSION)" \
+RUN GO_VERSION="$(< GO_VERSION)" \
+    && VALD_VERSION="$(< VALD_VERSION)" \
     && GIT_COMMIT="$(git rev-list -1 HEAD)" \
-    && CPU_INFO_FLAGS="$(cat /proc/cpuinfo | grep flags | cut -d " " -f 2- | head -1)" \
+    && CPU_INFO_FLAGS="$(< /proc/cpuinfo | grep flags | cut -d " " -f 2- | head -1)" \
     && GOOS="$(go env GOOS)" \
     && GOARCH="$(go env GOARCH)" \
     && CGO_ENABLED=1 \
