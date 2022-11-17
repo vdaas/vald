@@ -30,14 +30,16 @@ Please find [here](./docs/contributing/issue.md) for more details about how to c
 
 ## Code contribution
 
+### Development environment installation guide
+
 We recommend using Linux environment to contribute code.
 Please find the below sections to install the required tools on your environment.
 
-### Development environment installation guide for Mac/Windows users
+#### Mac/Windows users
 
 For Mac / Windows users, please install and use [docker](https://www.docker.com/) to create a Linux container to build and test Vald.
 
-You need to install the packages and execute the commands listed in the [Linux section](#linux) inside the docker container rather than in your local environment.
+You need to install the packages and execute the commands listed in the [Linux section](#linux-users) inside the docker container rather than in your local environment.
 
 If you want to start development on your host environment rather than in the docker container, please consider mounting the Vald repository path from the host environment to the container environment after cloning the Vald repository described below.
 
