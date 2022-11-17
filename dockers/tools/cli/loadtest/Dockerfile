@@ -62,6 +62,7 @@ WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}
 COPY versions/GO_VERSION .
 COPY versions/VALD_VERSION .
 COPY .git .
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 RUN GO_VERSION="$(cat GO_VERSION)" \
     && VALD_VERSION="$(cat VALD_VERSION)" \
     && GIT_COMMIT="$(git rev-list -1 HEAD)" \
