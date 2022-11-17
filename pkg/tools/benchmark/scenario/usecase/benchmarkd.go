@@ -27,6 +27,7 @@ import (
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/grpc/interceptor/server/recover"
+
 	"github.com/vdaas/vald/internal/observability"
 	infometrics "github.com/vdaas/vald/internal/observability/metrics/info"
 	"github.com/vdaas/vald/internal/runner"
@@ -118,7 +119,7 @@ func New(cfg *config.Config) (r runner.Runner, err error) {
 	if cfg.Observability.Enabled {
 		obs, err = observability.NewWithConfig(
 			cfg.Observability,
-			infometrics.New("vald_benchmark_job_info", "Benchmark Job info", *cfg.Job),
+			infometrics.New("vald_benchmark_scenario_info", "Benchmark Scenario info", *cfg.Job),
 		)
 		if err != nil {
 			return nil, err

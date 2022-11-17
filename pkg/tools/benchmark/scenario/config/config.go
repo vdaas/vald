@@ -35,7 +35,7 @@ type Config struct {
 	// Observability represent observability configurations
 	Observability *config.Observability `json:"observability" yaml:"observability"`
 
-	// Job represents benchmark job configurations
+	// Operator represents benchmark operator configurations
 	Job *config.BenchmarkJob `json:"job" yaml:"job"`
 }
 
@@ -52,27 +52,16 @@ func NewConfig(path string) (cfg *Config, err error) {
 
 	if cfg.Server != nil {
 		cfg.Server = cfg.Server.Bind()
-	} else {
-		cfg.Server = new(config.Servers)
 	}
 
 	if cfg.Observability != nil {
 		cfg.Observability = cfg.Observability.Bind()
-	} else {
-		cfg.Observability = new(config.Observability)
 	}
 
 	if cfg.Job != nil {
 		cfg.Job = cfg.Job.Bind()
 	} else {
 		cfg.Job = new(config.BenchmarkJob)
-	}
-
-	if cfg.Job.GatewayClient == nil {
-		cfg.Job.GatewayClient = new(config.GRPCClient)
-		cfg.Job.GatewayClient.Addrs = []string{
-			"vald-lb-gateway.default.svc.cluster.local:8081",
-		}
 	}
 
 	return cfg, nil

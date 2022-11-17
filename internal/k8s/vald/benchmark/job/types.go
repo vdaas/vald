@@ -240,3 +240,28 @@ func (in *BenchmarkJobList) DeepCopyObject() runtime.Object {
 	}
 	return nil
 }
+
+/*
+spec:
+	name: xxx
+	# Job実行のrule {immediately | after | exclue | time | concurrent}
+	rules:
+		- type: string # exclude
+			name: string # insert-zzz
+		- type: string # after
+			name: string # yyy
+	target:
+		host: string
+		port: string
+	dataset:
+		name: string # dataset_name
+		group: string # e.g., { train | test } (ANN benchmarkの場合)
+									# (hdf5に準拠した内容)
+		indexes: number # dataset_range
+		range:
+			start: number
+			end: number
+  jobType: string # insert, search, upsert, etc
+	timeout: xxx
+	rps: number
+*/
