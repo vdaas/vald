@@ -430,6 +430,7 @@ func Test_server_ListenAndServe(t *testing.T) {
 
 			srv := &http.Server{
 				Handler: handler,
+				ReadHeaderTimeout: 3 * time.Second,
 			}
 
 			return test{
