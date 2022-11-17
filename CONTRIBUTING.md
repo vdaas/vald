@@ -136,7 +136,7 @@ git checkout -b [type]/[area]/[description]
 
 ##### 3. Make code changes
 
-If you have discussed about the design and the requirement of the changes with Vald members, please follow the design and requirement discussed.
+If you have discussed the design and the requirement of the changes with Vald members, please follow the design and requirement discussed.
 
 To make changes on Vald, you need to understand the package structure of Vald and know which part you need to make changes.
 
