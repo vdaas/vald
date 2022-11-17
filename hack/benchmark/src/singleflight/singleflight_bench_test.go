@@ -266,7 +266,6 @@ func toCSV(name string, r []Result) error {
 	if err != nil {
 		return err
 	}
-	defer f.Close()
 	_, err = fmt.Fprintln(f, "goroutine,duration,hit_rate")
 	if err != nil {
 		return err
@@ -277,5 +276,5 @@ func toCSV(name string, r []Result) error {
 			return err
 		}
 	}
-	return nil
+	return f.Close()
 }
