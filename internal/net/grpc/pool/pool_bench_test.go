@@ -64,6 +64,7 @@ func ListenAndServe(b *testing.B, addr string) func() {
 		b.Error(err)
 	}
 
+	// skipcq: GO-S0902
 	s := grpc.NewServer()
 	discoverer.RegisterDiscovererServer(s, new(server))
 
