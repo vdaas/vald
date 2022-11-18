@@ -167,15 +167,15 @@ func (r *reconciler) NewReconciler(ctx context.Context, mgr manager.Manager) rec
 	return r
 }
 
-func (r *reconciler) For() (client.Object, []builder.ForOption) {
+func (*reconciler) For() (client.Object, []builder.ForOption) {
 	return new(corev1.Node), nil
 }
 
-func (r *reconciler) Owns() (client.Object, []builder.OwnsOption) {
+func (*reconciler) Owns() (client.Object, []builder.OwnsOption) {
 	return nil, nil
 }
 
-func (r *reconciler) Watches() (*source.Kind, handler.EventHandler, []builder.WatchesOption) {
+func (*reconciler) Watches() (*source.Kind, handler.EventHandler, []builder.WatchesOption) {
 	// return &source.Kind{Type: new(corev1.Node)}, &handler.EnqueueRequestForObject{}
 	return nil, nil, nil
 }

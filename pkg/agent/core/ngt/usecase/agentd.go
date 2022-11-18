@@ -175,7 +175,7 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 	return ech, nil
 }
 
-func (r *run) PreStop(ctx context.Context) error {
+func (*run) PreStop(ctx context.Context) error {
 	return nil
 }
 
