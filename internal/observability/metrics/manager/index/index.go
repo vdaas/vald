@@ -43,7 +43,7 @@ func New(i service.Indexer) metrics.Metric {
 	}
 }
 
-func (im *indexerMetrics) View() ([]*metrics.View, error) {
+func (*indexerMetrics) View() ([]*metrics.View, error) {
 	uuidCount, err := view.New(
 		view.MatchInstrumentName(uuidCountMetricsName),
 		view.WithSetDescription(uuidCountMetricsDescription),
