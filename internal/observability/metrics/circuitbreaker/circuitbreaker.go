@@ -40,7 +40,7 @@ func New() metrics.Metric {
 	}
 }
 
-func (bm *breakerMetrics) View() ([]*metrics.View, error) {
+func (*breakerMetrics) View() ([]*metrics.View, error) {
 	breakerState, err := view.New(
 		view.MatchInstrumentName(metricsName),
 		view.WithSetDescription(metricsDescription),

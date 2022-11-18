@@ -30,93 +30,93 @@ func NewPProfHandler() http.Handler {
 	return routing.New(
 		routing.WithRoutes([]routing.Route{
 			{
-				"Debug pprof",
-				[]string{
+				Name: "Debug pprof",
+				Methods: []string{
 					http.MethodGet,
 				},
-				"/debug/pprof/",
-				rest.HandlerToRestFunc(pprof.Index),
+				Pattern:     "/debug/pprof/",
+				HandlerFunc: rest.HandlerToRestFunc(pprof.Index),
 			},
 			{
-				"Debug cmdline",
-				[]string{
+				Name: "Debug cmdline",
+				Methods: []string{
 					http.MethodGet,
 				},
-				"/debug/pprof/cmdline",
-				rest.HandlerToRestFunc(pprof.Cmdline),
+				Pattern:     "/debug/pprof/cmdline",
+				HandlerFunc: rest.HandlerToRestFunc(pprof.Cmdline),
 			},
 			{
-				"Debug profile",
-				[]string{
+				Name: "Debug profile",
+				Methods: []string{
 					http.MethodGet,
 				},
-				"/debug/pprof/profile",
-				rest.HandlerToRestFunc(pprof.Profile),
+				Pattern:     "/debug/pprof/profile",
+				HandlerFunc: rest.HandlerToRestFunc(pprof.Profile),
 			},
 			{
-				"Debug symbol profile",
-				[]string{
+				Name: "Debug symbol profile",
+				Methods: []string{
 					http.MethodGet,
 				},
-				"/debug/pprof/symbol",
-				rest.HandlerToRestFunc(pprof.Symbol),
+				Pattern:     "/debug/pprof/symbol",
+				HandlerFunc: rest.HandlerToRestFunc(pprof.Symbol),
 			},
 			{
-				"Debug trace profile",
-				[]string{
+				Name: "Debug trace profile",
+				Methods: []string{
 					http.MethodGet,
 				},
-				"/debug/pprof/trace",
-				rest.HandlerToRestFunc(pprof.Trace),
+				Pattern:     "/debug/pprof/trace",
+				HandlerFunc: rest.HandlerToRestFunc(pprof.Trace),
 			},
 			{
-				"Debug allocs profile",
-				[]string{
+				Name: "Debug allocs profile",
+				Methods: []string{
 					http.MethodGet,
 				},
-				"/debug/pprof/allocs",
-				rest.HandlerToRestFunc(pprof.Handler("allocs").ServeHTTP),
+				Pattern:     "/debug/pprof/allocs",
+				HandlerFunc: rest.HandlerToRestFunc(pprof.Handler("allocs").ServeHTTP),
 			},
 			{
-				"Debug heap profile",
-				[]string{
+				Name: "Debug heap profile",
+				Methods: []string{
 					http.MethodGet,
 				},
-				"/debug/pprof/heap",
-				rest.HandlerToRestFunc(pprof.Handler("heap").ServeHTTP),
+				Pattern:     "/debug/pprof/heap",
+				HandlerFunc: rest.HandlerToRestFunc(pprof.Handler("heap").ServeHTTP),
 			},
 			{
-				"Debug goroutine profile",
-				[]string{
+				Name: "Debug goroutine profile",
+				Methods: []string{
 					http.MethodGet,
 				},
-				"/debug/pprof/goroutine",
-				rest.HandlerToRestFunc(pprof.Handler("goroutine").ServeHTTP),
+				Pattern:     "/debug/pprof/goroutine",
+				HandlerFunc: rest.HandlerToRestFunc(pprof.Handler("goroutine").ServeHTTP),
 			},
 			{
-				"Debug thread profile",
-				[]string{
+				Name: "Debug thread profile",
+				Methods: []string{
 					http.MethodGet,
 				},
-				"/debug/pprof/threadcreate",
-				rest.HandlerToRestFunc(pprof.Handler("threadcreate").ServeHTTP),
+				Pattern:     "/debug/pprof/threadcreate",
+				HandlerFunc: rest.HandlerToRestFunc(pprof.Handler("threadcreate").ServeHTTP),
 			},
 			{
-				"Debug block profile",
-				[]string{
+				Name: "Debug block profile",
+				Methods: []string{
 					http.MethodGet,
 				},
-				"/debug/pprof/block",
-				rest.HandlerToRestFunc(pprof.Handler("block").ServeHTTP),
+				Pattern:     "/debug/pprof/block",
+				HandlerFunc: rest.HandlerToRestFunc(pprof.Handler("block").ServeHTTP),
 			},
 
 			{
-				"Debug mutex profile",
-				[]string{
+				Name: "Debug mutex profile",
+				Methods: []string{
 					http.MethodGet,
 				},
-				"/debug/pprof/mutex",
-				rest.HandlerToRestFunc(pprof.Handler("mutex").ServeHTTP),
+				Pattern:     "/debug/pprof/mutex",
+				HandlerFunc: rest.HandlerToRestFunc(pprof.Handler("mutex").ServeHTTP),
 			},
 		}...))
 }

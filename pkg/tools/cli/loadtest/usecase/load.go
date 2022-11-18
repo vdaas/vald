@@ -120,7 +120,7 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 }
 
 // PreStop does nothing.
-func (r *run) PreStop(ctx context.Context) error {
+func (*run) PreStop(ctx context.Context) error {
 	return nil
 }
 
@@ -130,6 +130,6 @@ func (r *run) Stop(ctx context.Context) error {
 }
 
 // PostStop does nothing.
-func (r *run) PostStop(ctx context.Context) error {
+func (*run) PostStop(ctx context.Context) error {
 	return nil
 }
