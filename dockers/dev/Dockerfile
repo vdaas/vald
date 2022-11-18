@@ -28,7 +28,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 WORKDIR /tmp
 
-# skipcq: DOK-SC2002
+# skipcq: DOK-DL3026
 FROM mcr.microsoft.com/vscode/devcontainers/go:1 AS base
 LABEL maintainer "${MAINTAINER}"
 
