@@ -75,7 +75,7 @@ func New(opts ...TraceOption) (Tracer, error) {
 	return t, nil
 }
 
-func (t *tracer) Start(ctx context.Context) error {
+func (*tracer) Start(ctx context.Context) error {
 	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(propagation.TraceContext{}, propagation.Baggage{}))
 	return nil
 }
