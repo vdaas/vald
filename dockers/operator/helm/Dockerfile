@@ -24,6 +24,7 @@ ARG VALD_KIND="ValdRelease"
 ARG VALD_HELM_OPERATOR_KIND="ValdHelmOperatorRelease"
 ARG MAINTAINER="vdaas.org vald team <vald@vdaas.org>"
 
+# skipcq: DOK-DL3026
 FROM quay.io/operator-framework/helm-operator:${OPERATOR_SDK_VERSION} AS operator
 
 FROM golang:${GO_VERSION} AS builder
@@ -81,7 +82,8 @@ RUN make helm/schema/vald
 RUN make helm/schema/vald-helm-operator
 RUN cp -r charts /charts
 
-RUN apt clean \
+# skipcq: DOK-DL3008
+RUN apt-get clean \
     && rm -rf \
         /var/lib/apt/lists/* \
         /var/cache/* \
