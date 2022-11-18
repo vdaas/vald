@@ -102,6 +102,6 @@ func (l *Logger) Fatald(msg string, details ...interface{}) {
 	l.FatalfFunc(msg, details...)
 }
 
-func (l *Logger) Close() error {
+func (*Logger) Close() error {
 	return nil
 }

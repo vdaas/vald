@@ -42,20 +42,20 @@ func New(opts ...Option) http.Handler {
 	return routing.New(
 		routing.WithRoutes([]routing.Route{
 			{
-				"Index",
-				[]string{
+				Name: "Index",
+				Methods: []string{
 					http.MethodGet,
 				},
-				"/",
-				h.Index,
+				Pattern:     "/",
+				HandlerFunc: h.Index,
 			},
 			{
-				"IndexInfo",
-				[]string{
+				Name: "IndexInfo",
+				Methods: []string{
 					http.MethodGet,
 				},
-				"/index",
-				h.IndexInfo,
+				Pattern:     "/index",
+				HandlerFunc: h.IndexInfo,
 			},
 		}...))
 }

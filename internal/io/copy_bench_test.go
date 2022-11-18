@@ -31,7 +31,7 @@ type writer struct {
 	io.Writer
 }
 
-func (w *writer) Write(p []byte) (n int, err error) {
+func (*writer) Write(p []byte) (n int, err error) {
 	return len(p), nil
 }
 

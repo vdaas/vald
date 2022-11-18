@@ -58,7 +58,7 @@ func New() MetricsHook {
 	}
 }
 
-func (sm *sidecarMetrics) View() ([]*metrics.View, error) {
+func (*sidecarMetrics) View() ([]*metrics.View, error) {
 	uploadTotal, err := view.New(
 		view.MatchInstrumentName(uploadTotalMetricsName),
 		view.WithSetDescription(uploadTotalMetricsDescription),
@@ -152,7 +152,7 @@ func (sm *sidecarMetrics) Register(m metrics.Meter) error {
 	)
 }
 
-func (sm *sidecarMetrics) BeforeProcess(ctx context.Context, info *observer.BackupInfo) (context.Context, error) {
+func (*sidecarMetrics) BeforeProcess(ctx context.Context, info *observer.BackupInfo) (context.Context, error) {
 	return ctx, nil
 }
 
