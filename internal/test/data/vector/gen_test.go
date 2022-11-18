@@ -208,7 +208,7 @@ func TestUint8VectorGenerator(t *testing.T) {
 	}
 }
 
-func Test_float32VectorGenerator(t *testing.T) {
+func Test_genFloat32Vec(t *testing.T) {
 	type args struct {
 		n   int
 		dim int
@@ -279,7 +279,7 @@ func Test_float32VectorGenerator(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 
-			gotRet := float32VectorGenerator(test.args.n, test.args.dim, test.args.gen)
+			gotRet := genFloat32Vec(test.args.n, test.args.dim, test.args.gen)
 			if err := checkFunc(test.want, gotRet); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -439,7 +439,7 @@ func TestGaussianDistributedFloat32VectorGenerator(t *testing.T) {
 	}
 }
 
-func Test_uint8VectorGenerator(t *testing.T) {
+func Test_genUint8Vec(t *testing.T) {
 	type args struct {
 		n   int
 		dim int
@@ -510,7 +510,7 @@ func Test_uint8VectorGenerator(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 
-			gotRet := uint8VectorGenerator(test.args.n, test.args.dim, test.args.gen)
+			gotRet := genUint8Vec(test.args.n, test.args.dim, test.args.gen)
 			if err := checkFunc(test.want, gotRet); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -663,88 +663,6 @@ func TestGaussianDistributedUint8VectorGenerator(t *testing.T) {
 			}
 
 			got := GaussianDistributedUint8VectorGenerator(test.args.n, test.args.dim)
-			if err := checkFunc(test.want, got); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
-
-func Test_gaussianDistributedUint8VectorGenerator(t *testing.T) {
-	type args struct {
-		n     int
-		dim   int
-		mean  float64
-		sigma float64
-	}
-	type want struct {
-		want [][]uint8
-	}
-	type test struct {
-		name       string
-		args       args
-		want       want
-		checkFunc  func(want, [][]uint8) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-	defaultCheckFunc := func(w want, got [][]uint8) error {
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           n: 0,
-		           dim: 0,
-		           mean: 0,
-		           sigma: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           n: 0,
-		           dim: 0,
-		           mean: 0,
-		           sigma: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-			checkFunc := test.checkFunc
-			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
-			}
-
-			got := gaussianDistributedUint8VectorGenerator(test.args.n, test.args.dim, test.args.mean, test.args.sigma)
 			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}

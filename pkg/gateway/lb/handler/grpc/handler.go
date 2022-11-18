@@ -245,7 +245,7 @@ func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *
 	if req.Config != nil {
 		req.Config.MinNum = 0
 	}
-	res, err = s.search(ctx, &payload.Search_Config{
+	res, err = s.searchCommon(ctx, &payload.Search_Config{
 		RequestId:      cfg.GetRequestId(),
 		Num:            cfg.GetNum(),
 		MinNum:         mn,
@@ -346,7 +346,7 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 				ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
 			})
 		var serr error
-		res, serr = s.search(ctx, scfg, func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error) {
+		res, serr = s.searchCommon(ctx, scfg, func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error) {
 			return vc.SearchByID(ctx, req, copts...)
 		})
 		if serr == nil {
@@ -382,7 +382,7 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 				ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
 			}, info.Get())
 		var serr error
-		res, serr = s.search(ctx, scfg, func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error) {
+		res, serr = s.searchCommon(ctx, scfg, func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error) {
 			return vc.SearchByID(ctx, req, copts...)
 		})
 		if serr == nil {
@@ -412,7 +412,7 @@ type DistPayload struct {
 	distance *big.Float
 }
 
-func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
+func (s *server) searchCommon(ctx context.Context, cfg *payload.Search_Config,
 	f func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error)) (
 	res *payload.Search_Response, err error,
 ) {
@@ -1009,7 +1009,7 @@ func (s *server) LinearSearch(ctx context.Context, req *payload.Search_Request) 
 	if req.Config != nil {
 		req.Config.MinNum = 0
 	}
-	res, err = s.search(ctx, &payload.Search_Config{
+	res, err = s.searchCommon(ctx, &payload.Search_Config{
 		RequestId:      cfg.GetRequestId(),
 		Num:            cfg.GetNum(),
 		MinNum:         mn,
@@ -1101,7 +1101,7 @@ func (s *server) LinearSearchByID(ctx context.Context, req *payload.Search_IDReq
 				ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
 			})
 		var serr error
-		res, serr = s.search(ctx, scfg, func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error) {
+		res, serr = s.searchCommon(ctx, scfg, func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error) {
 			return vc.LinearSearchByID(ctx, req, copts...)
 		})
 		if serr == nil {
@@ -1138,7 +1138,7 @@ func (s *server) LinearSearchByID(ctx context.Context, req *payload.Search_IDReq
 				ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
 			}, info.Get())
 		var serr error
-		res, serr = s.search(ctx, scfg, func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error) {
+		res, serr = s.searchCommon(ctx, scfg, func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error) {
 			return vc.LinearSearchByID(ctx, req, copts...)
 		})
 		if serr == nil {

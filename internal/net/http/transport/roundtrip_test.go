@@ -330,7 +330,7 @@ func Test_ert_RoundTrip(t *testing.T) {
 	}
 }
 
-func Test_ert_roundTrip(t *testing.T) {
+func Test_ert_doRoundTrip(t *testing.T) {
 	t.Parallel()
 	type args struct {
 		req *http.Request
@@ -457,7 +457,7 @@ func Test_ert_roundTrip(t *testing.T) {
 				bo:        test.fields.bo,
 			}
 
-			gotRes, err := e.roundTrip(test.args.req)
+			gotRes, err := e.doRoundTrip(test.args.req)
 			if err := checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
