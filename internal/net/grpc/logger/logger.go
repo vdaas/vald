@@ -90,16 +90,19 @@ func (l *logger) Errorf(format string, args ...interface{}) {
 
 // Fatal prints the fatal log to the logger and exit the program.
 func (l *logger) Fatal(args ...interface{}) {
+	// skipcq: RVV-A0003
 	log.Fatal(append([]interface{}{tag}, args...)...)
 }
 
 // Fatalln prints the fatal log to the logger and exit the program.
 func (l *logger) Fatalln(args ...interface{}) {
+	// skipcq: RVV-A0003
 	log.Fatal(append([]interface{}{tag}, args...)...)
 }
 
 // Fatalf prints the fatal log to the logger and exit the program.
 func (l *logger) Fatalf(format string, args ...interface{}) {
+	// skipcq: RVV-A0003
 	log.Fatalf(tag+"\t"+format, args...)
 }
 
