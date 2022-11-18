@@ -70,6 +70,7 @@ func TestNewServer(t *testing.T) {
 				opts: nil,
 			},
 			want: want{
+				// skipcq: GO-S0902
 				want: grpc.NewServer(),
 			},
 		},
@@ -79,6 +80,7 @@ func TestNewServer(t *testing.T) {
 				opts: []ServerOption{MaxSendMsgSize(100)},
 			},
 			want: want{
+				// skipcq: GO-S0902
 				want: grpc.NewServer(),
 			},
 		},

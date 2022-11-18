@@ -50,28 +50,28 @@ func New(opts ...Option) http.Handler {
 			)),
 		routing.WithRoutes([]routing.Route{
 			{
-				"Index",
-				[]string{
+				Name: "Index",
+				Methods: []string{
 					http.MethodGet,
 				},
-				"/",
-				h.Index,
+				Pattern:     "/",
+				HandlerFunc: h.Index,
 			},
 			{
-				"Pods",
-				[]string{
+				Name: "Pods",
+				Methods: []string{
 					http.MethodPost,
 				},
-				"/pods",
-				h.Pods,
+				Pattern:     "/pods",
+				HandlerFunc: h.Pods,
 			},
 			{
-				"Nodes",
-				[]string{
+				Name: "Nodes",
+				Methods: []string{
 					http.MethodPost,
 				},
-				"/nodes",
-				h.Nodes,
+				Pattern:     "/nodes",
+				HandlerFunc: h.Nodes,
 			},
 		}...))
 }

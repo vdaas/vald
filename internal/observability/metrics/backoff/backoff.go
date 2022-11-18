@@ -38,7 +38,7 @@ func New() metrics.Metric {
 	}
 }
 
-func (bm *backoffMetrics) View() ([]*metrics.View, error) {
+func (*backoffMetrics) View() ([]*metrics.View, error) {
 	retryCount, err := view.New(
 		view.MatchInstrumentName(metricsName),
 		view.WithSetDescription(metricsDescription),
