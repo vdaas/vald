@@ -123,6 +123,7 @@ func Init(name string) {
 		i, err := New(WithServerName(name))
 		if err != nil {
 			log.Init()
+			// skipcq: RVV-A0003
 			log.Fatal(errors.ErrFailedToInitInfo(err))
 		}
 		infoProvider = i
