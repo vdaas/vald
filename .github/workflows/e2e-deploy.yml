@@ -169,7 +169,7 @@ jobs:
           for IMAGE_TAG in "${IMAGE_TAGS[@]}"
           do
             echo "IMAGE_TAG:${IMAGE_TAG}"
-            yq e ".spec.${IMAGE_TAG}" -i ./.github/valdrelease/valdrelease.yaml
+            yq e ".spec.\"${IMAGE_TAG}\"" -i ./.github/valdrelease/valdrelease.yaml
           done
       - name: deploy Vald
         id: deploy_vald
