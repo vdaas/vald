@@ -45,6 +45,7 @@ var ErrServerStopped = grpc.ErrServerStopped
 
 // NewServer returns the gRPC server.
 func NewServer(opts ...ServerOption) *Server {
+	// skipcq: GO-S0902
 	return grpc.NewServer(opts...)
 }
 
