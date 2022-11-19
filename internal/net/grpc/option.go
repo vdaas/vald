@@ -33,6 +33,7 @@ import (
 	"google.golang.org/grpc"
 	gbackoff "google.golang.org/grpc/backoff"
 	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/keepalive"
 )
 
@@ -287,23 +288,23 @@ func WithInsecure(flg bool) Option {
 	return func(g *gRPCClient) {
 		if flg {
 			g.dopts = append(g.dopts,
-				grpc.WithInsecure(),
+				grpc.WithTransportCredentials(insecure.NewCredentials()),
 			)
 		}
 	}
 }
 
-func WithDialTimeout(dur string) Option {
-	return func(g *gRPCClient) {
-		d, err := timeutil.Parse(dur)
-		if err != nil {
-			return
-		}
-		g.dopts = append(g.dopts,
-			grpc.WithTimeout(d),
-		)
-	}
-}
+// func WithDialTimeout(dur string) Option {
+// 	return func(g *gRPCClient) {
+// 		d, err := timeutil.Parse(dur)
+// 		if err != nil {
+// 			return
+// 		}
+// 		g.dopts = append(g.dopts,
+// 			grpc.WithTimeout(d),
+// 		)
+// 	}
+// }
 
 func WithKeepaliveParams(t, to string, permitWithoutStream bool) Option {
 	return func(g *gRPCClient) {

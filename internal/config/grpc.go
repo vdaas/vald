@@ -229,7 +229,6 @@ func (g *GRPCClient) Opts() ([]grpc.Option, error) {
 			grpc.WithInsecure(g.DialOption.Insecure),
 			grpc.WithBackoffMaxDelay(g.DialOption.BackoffMaxDelay),
 			grpc.WithBackoffMaxDelay(g.DialOption.BackoffMaxDelay),
-			grpc.WithDialTimeout(g.DialOption.Timeout),
 			grpc.WithClientInterceptors(g.DialOption.Interceptors...),
 		)
 
