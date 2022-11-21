@@ -210,7 +210,7 @@ func (v *vqueue) addDelete(d key) {
 	v.dmu.Unlock()
 }
 
-func (v *vqueue) RangePopInsert(ctx context.Context, now int64, f func(uuid string, vector []float32) bool) {
+func (v *vqueue) RangePopInsert(_ context.Context, now int64, f func(uuid string, vector []float32) bool) {
 	v.imu.Lock()
 	uii := make([]index, len(v.uii))
 	copy(uii, v.uii)
@@ -252,7 +252,7 @@ func (v *vqueue) RangePopInsert(ctx context.Context, now int64, f func(uuid stri
 	}
 }
 
-func (v *vqueue) RangePopDelete(ctx context.Context, now int64, f func(uuid string) bool) {
+func (v *vqueue) RangePopDelete(_ context.Context, now int64, f func(uuid string) bool) {
 	v.dmu.Lock()
 	udk := make([]key, len(v.udk))
 	copy(udk, v.udk)
