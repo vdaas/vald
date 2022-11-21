@@ -27,6 +27,7 @@ import (
 	"time"
 
 	"github.com/vdaas/vald/internal/cache"
+	"github.com/vdaas/vald/internal/cache/cacher"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/control"
@@ -43,7 +44,7 @@ type Dialer interface {
 }
 
 type dialer struct {
-	dnsCache              cache.Cache
+	dnsCache              cacher.Cache
 	enableDNSCache        bool
 	dnsCachedOnce         sync.Once
 	tlsConfig             *tls.Config

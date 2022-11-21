@@ -298,7 +298,7 @@ func (i info) get() Detail {
 			url += "#L" + strconv.Itoa(line)
 		case func() bool {
 			idx = strings.Index(file, goSrc)
-			return idx >= 0 && strings.Index(file, valdRepo) >= 0
+			return idx >= 0 && strings.Contains(file, valdRepo)
 		}():
 			url = strings.Replace(file[idx+goSrcLen:]+"#L"+strconv.Itoa(line), valdRepo, "https://"+valdRepo+"/blob/"+i.detail.GitCommit, -1)
 		}

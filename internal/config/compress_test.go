@@ -31,7 +31,7 @@ func Test_compressAlgorithm_String(t *testing.T) {
 	}
 	type test struct {
 		name       string
-		ca         compressAlgorithm
+		ca         CompressAlgorithm
 		want       want
 		checkFunc  func(want, string) error
 		beforeFunc func()
@@ -80,7 +80,7 @@ func Test_compressAlgorithm_String(t *testing.T) {
 		},
 		{
 			name: "return unknown when compressAlgorithm is 100",
-			ca:   compressAlgorithm(100),
+			ca:   CompressAlgorithm(100),
 			want: want{
 				want: "unknown",
 			},
@@ -110,22 +110,22 @@ func Test_compressAlgorithm_String(t *testing.T) {
 	}
 }
 
-func TestCompressAlgorithm(t *testing.T) {
+func TestAToCompressAlgorithm(t *testing.T) {
 	type args struct {
 		ca string
 	}
 	type want struct {
-		want compressAlgorithm
+		want CompressAlgorithm
 	}
 	type test struct {
 		name       string
 		args       args
 		want       want
-		checkFunc  func(want, compressAlgorithm) error
+		checkFunc  func(want, CompressAlgorithm) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, got compressAlgorithm) error {
+	defaultCheckFunc := func(w want, got CompressAlgorithm) error {
 		if !reflect.DeepEqual(got, w.want) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
@@ -227,7 +227,7 @@ func TestCompressAlgorithm(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 
-			got := CompressAlgorithm(test.args.ca)
+			got := AToCompressAlgorithm(test.args.ca)
 			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
