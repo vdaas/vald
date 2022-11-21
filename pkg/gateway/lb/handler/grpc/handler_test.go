@@ -436,7 +436,7 @@ func Test_server_SearchByID(t *testing.T) {
 	}
 }
 
-func Test_server_searchCommon(t *testing.T) {
+func Test_server_doSearch(t *testing.T) {
 	t.Parallel()
 	type args struct {
 		ctx context.Context
@@ -541,7 +541,7 @@ func Test_server_searchCommon(t *testing.T) {
 				streamConcurrency: test.fields.streamConcurrency,
 			}
 
-			gotRes, err := s.searchCommon(test.args.ctx, test.args.cfg, test.args.f)
+			gotRes, err := s.doSearch(test.args.ctx, test.args.cfg, test.args.f)
 			if err := checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
