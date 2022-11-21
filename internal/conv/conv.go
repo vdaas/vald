@@ -25,7 +25,9 @@ import (
 
 // Btoa converts from byte slice to string.
 func Btoa(b []byte) (s string) {
+	// skipcq: GSC-G103
 	slh := (*reflect.SliceHeader)(unsafe.Pointer(&b))
+	// skipcq: GSC-G103
 	sh := (*reflect.StringHeader)(unsafe.Pointer(&s))
 	sh.Data = slh.Data
 	sh.Len = slh.Len
@@ -34,7 +36,9 @@ func Btoa(b []byte) (s string) {
 
 // Atobs converts from string to byte slice.
 func Atob(s string) (b []byte) {
+	// skipcq: GSC-G103
 	sh := (*reflect.StringHeader)(unsafe.Pointer(&s))
+	// skipcq: GSC-G103
 	slh := (*reflect.SliceHeader)(unsafe.Pointer(&b))
 	slh.Data = sh.Data
 	slh.Len = sh.Len
@@ -45,9 +49,13 @@ func Atob(s string) (b []byte) {
 // F32stos converts from float32 slice to type string.
 func F32stos(fs []float32) (s string) {
 	lf := 4 * len(fs)
+	// skipcq: GSC-G103
 	buf := (*(*[1]byte)(unsafe.Pointer(&(fs[0]))))[:]
+	// skipcq: GSC-G103
 	addr := unsafe.Pointer(&buf)
+	// skipcq: GSC-G103
 	(*(*int)(unsafe.Pointer(uintptr(addr) + uintptr(8)))) = lf
+	// skipcq: GSC-G103
 	(*(*int)(unsafe.Pointer(uintptr(addr) + uintptr(16)))) = lf
 	return Btoa(buf)
 }

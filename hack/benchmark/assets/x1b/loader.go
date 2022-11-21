@@ -93,6 +93,7 @@ func open(fname string, elementSize int) (f *file, err error) {
 		return nil, err
 	}
 
+	// skipcq: GSC-G103
 	dim := int(*(*int32)(unsafe.Pointer(&mem[0])))
 	block := headerSize + dim*elementSize
 	return &file{
@@ -128,6 +129,7 @@ func (bv *bvecs) LoadUint8(i int) ([]uint8, error) {
 	if err != nil {
 		return nil, err
 	}
+	// skipcq: GSC-G103
 	return ((*[1 << 26]uint8)(unsafe.Pointer(&buf[0])))[:bv.dim:bv.dim], nil
 }
 
@@ -140,6 +142,7 @@ func (fv *fvecs) LoadFloat32(i int) ([]float32, error) {
 	if err != nil {
 		return nil, err
 	}
+	// skipcq: GSC-G103
 	return ((*[1 << 26]float32)(unsafe.Pointer(&buf[0])))[:fv.dim:fv.dim], nil
 }
 
@@ -152,6 +155,7 @@ func (iv *ivecs) LoadInt32(i int) ([]int32, error) {
 	if err != nil {
 		return nil, err
 	}
+	// skipcq: GSC-G103
 	return ((*[1 << 26]int32)(unsafe.Pointer(&buf[0])))[:iv.dim:iv.dim], nil
 }
 
