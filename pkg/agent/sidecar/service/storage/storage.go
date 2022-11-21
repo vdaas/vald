@@ -83,7 +83,7 @@ func (b *bs) initCompressor() (err error) {
 		return nil
 	}
 
-	switch config.CompressAlgorithm(b.compressAlgorithm) {
+	switch config.AToCompressAlgorithm(b.compressAlgorithm) {
 	case config.GOB:
 		b.compressor, err = compress.NewGob()
 	case config.GZIP:

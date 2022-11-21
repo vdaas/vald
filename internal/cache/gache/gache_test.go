@@ -23,7 +23,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/google/go-cmp/cmp"
 	"github.com/kpango/gache"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/test/goleak"
@@ -39,29 +38,25 @@ func TestNew(t *testing.T) {
 		opts []Option
 	}
 	type want struct {
-		wantC *cache
+		wantC Cache
 	}
 	type test struct {
 		name       string
 		args       args
 		want       want
-		checkFunc  func(want, *cache) error
+		checkFunc  func(want, Cache) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, gotC *cache) error {
-		opts := []cmp.Option{
-			cmp.AllowUnexported(*w.wantC),
-			cmp.AllowUnexported(*gotC),
-			cmp.Comparer(func(want, got gache.Gache) bool {
-				return want != nil && got != nil
-			}),
-			cmp.Comparer(func(want, got func(context.Context, string)) bool {
-				return reflect.ValueOf(want).Pointer() == reflect.ValueOf(got).Pointer()
-			}),
+	defaultCheckFunc := func(w want, got Cache) error {
+		wc := reflect.ValueOf(w.wantC.(*cache))
+		gc := reflect.ValueOf(got.(*cache))
+		flag := false
+		for i := 0; i < reflect.Indirect(gc).NumField(); i++ {
+			flag = reflect.DeepEqual(reflect.Indirect(gc).Field(i), reflect.Indirect(wc).Field(i))
 		}
-		if diff := cmp.Diff(w.wantC, gotC, opts...); diff != "" {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotC, w.wantC)
+		if flag {
+			return errors.Errorf("got: \"%#v\",\n\t\t\twant: \"%#v\"", got, w.wantC)
 		}
 		return nil
 	}

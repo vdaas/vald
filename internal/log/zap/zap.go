@@ -32,6 +32,27 @@ var (
 	zapcore_NewJSONEncoder    = zapcore.NewJSONEncoder
 )
 
+// Logger is an interface of zap logger.
+type Logger interface {
+	initialize(sinkPath, errSinkPath string) error
+	Close() error
+	Debug(...interface{})
+	Debugf(string, ...interface{})
+	Debugd(string, ...interface{})
+	Info(...interface{})
+	Infof(string, ...interface{})
+	Infod(string, ...interface{})
+	Warn(...interface{})
+	Warnf(string, ...interface{})
+	Warnd(string, ...interface{})
+	Error(...interface{})
+	Errorf(string, ...interface{})
+	Errord(string, ...interface{})
+	Fatal(...interface{})
+	Fatalf(string, ...interface{})
+	Fatald(string, ...interface{})
+}
+
 type logger struct {
 	format format.Format
 	level  level.Level
@@ -43,7 +64,7 @@ type logger struct {
 }
 
 // New returns a new logger instance.
-func New(opts ...Option) (*logger, error) {
+func New(opts ...Option) (Logger, error) {
 	l := new(logger)
 	for _, opt := range append(defaultOpts, opts...) {
 		opt(l)
