@@ -46,6 +46,7 @@ func New(opts ...Option) (cc cacher.Cache, err error) {
 			gache.WithExpireCheckDuration(c.expireCheckDur),
 			gache.WithExpiredHook(c.expiredHook),
 		), nil
+	default:
+		return nil, errors.ErrInvalidCacherType
 	}
-	return nil, errors.ErrInvalidCacherType
 }
