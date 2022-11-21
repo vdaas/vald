@@ -326,7 +326,7 @@ func (g *gRPCClient) Range(ctx context.Context,
 		case <-ctx.Done():
 			return false
 		default:
-			g.do(ssctx, p, addr, true, func(ictx context.Context,
+			g.doConnect(ssctx, p, addr, true, func(ictx context.Context,
 				conn *ClientConn, copts ...CallOption,
 			) (interface{}, error) {
 				return nil, f(ictx, addr, conn, copts...)
@@ -360,7 +360,7 @@ func (g *gRPCClient) RangeConcurrent(ctx context.Context,
 			case <-egctx.Done():
 				return nil
 			default:
-				g.do(ssctx, p, addr, true, func(ictx context.Context,
+				g.doConnect(ssctx, p, addr, true, func(ictx context.Context,
 					conn *ClientConn, copts ...CallOption,
 				) (interface{}, error) {
 					return nil, f(ictx, addr, conn, copts...)
@@ -403,7 +403,7 @@ func (g *gRPCClient) OrderedRange(ctx context.Context,
 					span.End()
 				}
 			}()
-			g.do(ssctx, p, addr, true, func(ictx context.Context,
+			g.doConnect(ssctx, p, addr, true, func(ictx context.Context,
 				conn *ClientConn, copts ...CallOption,
 			) (interface{}, error) {
 				return nil, f(ictx, addr, conn, copts...)
@@ -447,7 +447,7 @@ func (g *gRPCClient) OrderedRangeConcurrent(ctx context.Context,
 			case <-egctx.Done():
 				return nil
 			default:
-				g.do(ssctx, p, addr, true, func(ictx context.Context,
+				g.doConnect(ssctx, p, addr, true, func(ictx context.Context,
 					conn *ClientConn, copts ...CallOption,
 				) (interface{}, error) {
 					return nil, f(ictx, addr, conn, copts...)
@@ -475,7 +475,7 @@ func (g *gRPCClient) RoundRobin(ctx context.Context, f func(ctx context.Context,
 			sctx = backoff.WithBackoffName(ctx, boName)
 		}
 		do := func(ctx context.Context, p pool.Conn, addr string, f func(ctx context.Context, conn *ClientConn, copts ...CallOption) (interface{}, error)) (r interface{}, ret bool, err error) {
-			r, err = g.do(ctx, p, addr, false, f)
+			r, err = g.doConnect(ctx, p, addr, false, f)
 			if err != nil {
 				st, ok := status.FromError(err)
 				if !ok || st == nil {
@@ -555,10 +555,10 @@ func (g *gRPCClient) Do(ctx context.Context, addr string,
 		log.Warnf("gRPCClient.Do operation failed, grpc pool connection for %s is invalid,\terror: %v", addr, err)
 		return nil, err
 	}
-	return g.do(sctx, p, addr, true, f)
+	return g.doConnect(sctx, p, addr, true, f)
 }
 
-func (g *gRPCClient) do(ctx context.Context, p pool.Conn, addr string, enableBackoff bool,
+func (g *gRPCClient) doConnect(ctx context.Context, p pool.Conn, addr string, enableBackoff bool,
 	f func(ctx context.Context,
 		conn *ClientConn, copts ...CallOption) (interface{}, error),
 ) (data interface{}, err error) {

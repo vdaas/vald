@@ -484,7 +484,7 @@ func TestExistsWithDetail(t *testing.T) {
 	}
 }
 
-func Test_exists(t *testing.T) {
+func Test_doExists(t *testing.T) {
 	type args struct {
 		path string
 	}
@@ -556,7 +556,7 @@ func Test_exists(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 
-			gotExists, gotFi, err := exists(test.args.path)
+			gotExists, gotFi, err := doExists(test.args.path)
 			if err := test.checkFunc(test.want, gotExists, gotFi, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -955,7 +955,7 @@ func Test_moveDir(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 
-			err := moveDir(test.args.ctx, test.args.src, test.args.dst, test.args.rollback)
+			err := doMoveDir(test.args.ctx, test.args.src, test.args.dst, test.args.rollback)
 			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -1122,7 +1122,7 @@ func TestJoin(t *testing.T) {
 	}
 }
 
-func Test_join(t *testing.T) {
+func Test_doJoin(t *testing.T) {
 	type args struct {
 		paths []string
 	}
@@ -1187,7 +1187,7 @@ func Test_join(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 
-			gotPath := join(test.args.paths...)
+			gotPath := doJoin(test.args.paths...)
 			if err := checkFunc(test.want, gotPath); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -1606,7 +1606,7 @@ func TestAppendFile(t *testing.T) {
 	}
 }
 
-func Test_writeFile(t *testing.T) {
+func Test_doWriteFile(t *testing.T) {
 	type args struct {
 		ctx    context.Context
 		target string
@@ -1687,7 +1687,7 @@ func Test_writeFile(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 
-			gotN, err := writeFile(test.args.ctx, test.args.target, test.args.r, test.args.flg, test.args.perm)
+			gotN, err := doWriteFile(test.args.ctx, test.args.target, test.args.r, test.args.flg, test.args.perm)
 			if err := checkFunc(test.want, gotN, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}

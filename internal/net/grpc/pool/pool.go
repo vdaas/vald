@@ -19,7 +19,6 @@ package pool
 
 import (
 	"context"
-	"math"
 	"sort"
 	"strconv"
 	"sync/atomic"
@@ -158,11 +157,11 @@ func (p *pool) Connect(ctx context.Context) (c Conn, err error) {
 	}
 
 	if p.isIP || !p.resolveDNS {
-		return p.connect(ctx)
+		return p.doConnect(ctx)
 	}
 	ips, err := p.lookupIPAddr(ctx)
 	if err != nil {
-		return p.connect(ctx)
+		return p.doConnect(ctx)
 	}
 	p.reconnectHash = strings.Join(ips, "-")
 
@@ -213,7 +212,7 @@ func (p *pool) load(idx int) (pc *poolConn, ok bool) {
 	return
 }
 
-func (p *pool) connect(ctx context.Context) (c Conn, err error) {
+func (p *pool) doConnect(ctx context.Context) (c Conn, err error) {
 	p.reconnectHash = p.host
 	failCnt := uint64(0)
 	for i := range p.pool {
@@ -357,11 +356,7 @@ func (p *pool) Do(f func(conn *ClientConn) error) error {
 }
 
 func (p *pool) Get() (*ClientConn, bool) {
-	return p.get(p.Len())
-}
-
-func (p *pool) get(retry uint64) (*ClientConn, bool) {
-	if retry <= 0 || retry > math.MaxUint64-p.Len() || p.Len() <= 0 {
+	handleErr := func() {
 		log.Warnf("failed to find grpc pool connection for %s", p.addr)
 		if p.isIP {
 			log.Debugf("failure connection is IP connection trying to disconnect grpc connection for %s", p.addr)
@@ -369,16 +364,24 @@ func (p *pool) get(retry uint64) (*ClientConn, bool) {
 				log.Debugf("failed to disconnect grpc IP connection for %s,\terr: %v", p.addr, err)
 			}
 		}
+	}
+
+	len := p.Len()
+	if len <= 0 {
+		handleErr()
 		return nil, false
 	}
 
-	if res := p.pool[atomic.AddUint64(&p.current, 1)%p.Len()].Load(); res != nil {
-		if pc, ok := res.(*poolConn); ok && pc != nil && isHealthy(pc.conn) {
-			return pc.conn, true
+	for i := 0; i < int(len)+1; i++ {
+		if res := p.pool[atomic.AddUint64(&p.current, 1)%p.Len()].Load(); res != nil {
+			if pc, ok := res.(*poolConn); ok && pc != nil && isHealthy(pc.conn) {
+				return pc.conn, true
+			}
 		}
 	}
-	retry--
-	return p.get(retry)
+
+	handleErr()
+	return nil, false
 }
 
 func (p *pool) Len() uint64 {
@@ -440,7 +443,7 @@ func (p *pool) Reconnect(ctx context.Context, force bool) (c Conn, err error) {
 	if p.reconnectHash == "" {
 		log.Debugf("connection history for %s not found starting first connection phase", p.addr)
 		if p.isIP || !p.resolveDNS {
-			return p.connect(ctx)
+			return p.doConnect(ctx)
 		}
 		return p.Connect(ctx)
 	}
@@ -451,7 +454,7 @@ func (p *pool) Reconnect(ctx context.Context, force bool) (c Conn, err error) {
 			if p.isIP {
 				return nil, errors.ErrInvalidGRPCClientConn(p.addr)
 			}
-			return p.connect(ctx)
+			return p.doConnect(ctx)
 		}
 		return p, nil
 	}

@@ -413,7 +413,7 @@ func Test_pool_load(t *testing.T) {
 	}
 }
 
-func Test_pool_connect(t *testing.T) {
+func Test_pool_doConnect(t *testing.T) {
 	t.Parallel()
 	type args struct {
 		ctx context.Context
@@ -555,7 +555,7 @@ func Test_pool_connect(t *testing.T) {
 				reconnectHash: test.fields.reconnectHash,
 			}
 
-			gotC, err := p.connect(test.args.ctx)
+			gotC, err := p.doConnect(test.args.ctx)
 			if err := checkFunc(test.want, gotC, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -1277,156 +1277,6 @@ func Test_pool_Get(t *testing.T) {
 			}
 
 			got, got1 := p.Get()
-			if err := checkFunc(test.want, got, got1); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
-
-func Test_pool_get(t *testing.T) {
-	t.Parallel()
-	type args struct {
-		retry uint64
-	}
-	type fields struct {
-		pool          []atomic.Value
-		startPort     uint16
-		endPort       uint16
-		host          string
-		port          uint16
-		addr          string
-		size          uint64
-		current       uint64
-		bo            backoff.Backoff
-		dopts         []DialOption
-		dialTimeout   time.Duration
-		roccd         time.Duration
-		closing       atomic.Value
-		isIP          bool
-		resolveDNS    bool
-		reconnectHash string
-	}
-	type want struct {
-		want  *ClientConn
-		want1 bool
-	}
-	type test struct {
-		name       string
-		args       args
-		fields     fields
-		want       want
-		checkFunc  func(want, *ClientConn, bool) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-	defaultCheckFunc := func(w want, got *ClientConn, got1 bool) error {
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-		}
-		if !reflect.DeepEqual(got1, w.want1) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got1, w.want1)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           retry: 0,
-		       },
-		       fields: fields {
-		           pool: nil,
-		           startPort: 0,
-		           endPort: 0,
-		           host: "",
-		           port: 0,
-		           addr: "",
-		           size: 0,
-		           current: 0,
-		           bo: nil,
-		           dopts: nil,
-		           dialTimeout: nil,
-		           roccd: nil,
-		           closing: nil,
-		           isIP: false,
-		           resolveDNS: false,
-		           reconnectHash: "",
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           retry: 0,
-		           },
-		           fields: fields {
-		           pool: nil,
-		           startPort: 0,
-		           endPort: 0,
-		           host: "",
-		           port: 0,
-		           addr: "",
-		           size: 0,
-		           current: 0,
-		           bo: nil,
-		           dopts: nil,
-		           dialTimeout: nil,
-		           roccd: nil,
-		           closing: nil,
-		           isIP: false,
-		           resolveDNS: false,
-		           reconnectHash: "",
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-			checkFunc := test.checkFunc
-			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
-			}
-			p := &pool{
-				pool:          test.fields.pool,
-				startPort:     test.fields.startPort,
-				endPort:       test.fields.endPort,
-				host:          test.fields.host,
-				port:          test.fields.port,
-				addr:          test.fields.addr,
-				size:          test.fields.size,
-				current:       test.fields.current,
-				bo:            test.fields.bo,
-				dopts:         test.fields.dopts,
-				dialTimeout:   test.fields.dialTimeout,
-				roccd:         test.fields.roccd,
-				closing:       test.fields.closing,
-				isIP:          test.fields.isIP,
-				resolveDNS:    test.fields.resolveDNS,
-				reconnectHash: test.fields.reconnectHash,
-			}
-
-			got, got1 := p.get(test.args.retry)
 			if err := checkFunc(test.want, got, got1); err != nil {
 				tt.Errorf("error = %v", err)
 			}
