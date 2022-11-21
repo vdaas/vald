@@ -33,6 +33,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/vdaas/vald/internal/cache"
+	"github.com/vdaas/vald/internal/cache/cacher"
 	"github.com/vdaas/vald/internal/cache/gache"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/io"
@@ -268,7 +269,7 @@ func TestNewDialer(t *testing.T) {
 		if diff := cmp.Diff(*want, *got,
 			cmpopts.IgnoreFields(*want, "dialer", "der", "addrs", "dnsCachedOnce", "dnsCache", "ctrl", "tmu"),
 			cmp.AllowUnexported(*want),
-			cmp.Comparer(func(x, y cache.Cache) bool {
+			cmp.Comparer(func(x, y cacher.Cache) bool {
 				if x == nil && y == nil {
 					return true
 				}
@@ -528,7 +529,7 @@ func Test_dialer_lookup(t *testing.T) {
 				addr: "addr",
 			},
 			opts: []DialerOption{
-				WithDNSCache(func() cache.Cache {
+				WithDNSCache(func() cacher.Cache {
 					g := gache.New()
 					g.Set("addr", &dialerCache{
 						ips: []string{"999.999.999.999"},
@@ -1806,7 +1807,7 @@ func Test_dialer_lookupIPAddrs(t *testing.T) {
 		host string
 	}
 	type fields struct {
-		dnsCache              cache.Cache
+		dnsCache              cacher.Cache
 		enableDNSCache        bool
 		dnsCachedOnce         sync.Once
 		tlsConfig             *tls.Config

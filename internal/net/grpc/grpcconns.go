@@ -37,6 +37,7 @@ type readOnlyGrpcConns struct {
 	amended bool
 }
 
+// skipcq: GSC-G103
 var expungedGrpcConns = unsafe.Pointer(new(pool.Conn))
 
 type entryGrpcConns struct {
@@ -44,6 +45,7 @@ type entryGrpcConns struct {
 }
 
 func newEntryGrpcConns(i pool.Conn) *entryGrpcConns {
+	// skipcq: GSC-G103
 	return &entryGrpcConns{p: unsafe.Pointer(&i)}
 }
 
@@ -105,6 +107,7 @@ func (e *entryGrpcConns) tryStore(i *pool.Conn) bool {
 		if p == expungedGrpcConns {
 			return false
 		}
+		// skipcq: GSC-G103
 		if atomic.CompareAndSwapPointer(&e.p, p, unsafe.Pointer(i)) {
 			return true
 		}
@@ -116,6 +119,7 @@ func (e *entryGrpcConns) unexpungeLocked() (wasExpunged bool) {
 }
 
 func (e *entryGrpcConns) storeLocked(i *pool.Conn) {
+	// skipcq: GSC-G103
 	atomic.StorePointer(&e.p, unsafe.Pointer(i))
 }
 

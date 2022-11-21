@@ -23,7 +23,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/vdaas/vald/internal/cache"
+	"github.com/vdaas/vald/internal/cache/cacher"
 	"github.com/vdaas/vald/internal/cache/gache"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/control"
@@ -33,7 +33,7 @@ func TestWithDNSCache(t *testing.T) {
 	t.Parallel()
 	type T = dialer
 	type args struct {
-		c cache.Cache
+		c cacher.Cache
 	}
 	type want struct {
 		obj *T
