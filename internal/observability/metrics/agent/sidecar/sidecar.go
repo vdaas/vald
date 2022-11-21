@@ -152,11 +152,11 @@ func (sm *sidecarMetrics) Register(m metrics.Meter) error {
 	)
 }
 
-func (*sidecarMetrics) BeforeProcess(ctx context.Context, info *observer.BackupInfo) (context.Context, error) {
+func (*sidecarMetrics) BeforeProcess(ctx context.Context, _ *observer.BackupInfo) (context.Context, error) {
 	return ctx, nil
 }
 
-func (sm *sidecarMetrics) AfterProcess(ctx context.Context, info *observer.BackupInfo) error {
+func (sm *sidecarMetrics) AfterProcess(_ context.Context, info *observer.BackupInfo) error {
 	sm.mu.Lock()
 	defer sm.mu.Unlock()
 	sm.info = info
