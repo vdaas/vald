@@ -778,7 +778,7 @@ func TestGRPCClient_Opts(t *testing.T) {
 				},
 			},
 			want: want{
-				want: make([]grpc.Option, 26),
+				want: make([]grpc.Option, 25),
 			},
 		},
 		{

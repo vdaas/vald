@@ -99,17 +99,8 @@ func TestNew(t *testing.T) {
 					return errors.Errorf("Certificates[0] want: %v, but got: %v", want, got)
 				}
 
-				sl := len(c.ClientCAs.Subjects())
-				if sl == 0 {
-					return errors.New("subjects are empty")
-				}
-
-				if got, want := c.ClientCAs.Subjects()[sl-1], w.want.ClientCAs.Subjects()[sl-1]; !reflect.DeepEqual(got, want) {
-					return errors.Errorf("ClientCAs.Subjects want: %v, got: %v", want, got)
-				}
-
-				if got, want := c.ClientCAs.Subjects()[sl-1], w.want.ClientCAs.Subjects()[sl-1]; !reflect.DeepEqual(got, want) {
-					return errors.Errorf("ClientCAs.Subjects want: %v, got: %v", want, got)
+				if ok := c.ClientCAs.Equal(w.want.ClientCAs); !ok {
+					return errors.Errorf("ClientCAs.Equal want: %v, got: %v", want, got)
 				}
 
 				if got, want := c.ClientAuth, w.want.ClientAuth; want != got {
@@ -344,9 +335,15 @@ func TestNewX509CertPool(t *testing.T) {
 			},
 			want: want{
 				want: func() *x509.CertPool {
-					pool := x509.NewCertPool()
-					b, _ := file.ReadFile(testdata.GetTestdataPath("tls/dummyServer.crt"))
-					pool.AppendCertsFromPEM(b)
+					path := testdata.GetTestdataPath("tls/dummyServer.crt")
+					pool, err := x509.SystemCertPool()
+					if err != nil {
+						pool = x509.NewCertPool()
+					}
+					b, err := file.ReadFile(path)
+					if err == nil {
+						pool.AppendCertsFromPEM(b)
+					}
 					return pool
 				}(),
 			},
@@ -357,15 +354,9 @@ func TestNewX509CertPool(t *testing.T) {
 				if cp == nil {
 					return errors.New("got is nil")
 				}
-
-				if len(cp.Subjects()) == 0 {
-					return errors.New("cert files are empty")
+				if ok := cp.Equal(w.want); !ok {
+					return errors.Errorf("not equals. want: %#v, got: %#v", w.want, cp)
 				}
-				l := len(cp.Subjects()) - 1
-				if got, want := cp.Subjects()[l], w.want.Subjects()[0]; !reflect.DeepEqual(got, want) {
-					return errors.Errorf("not equals. want: %v, got: %v", want, got)
-				}
-
 				return nil
 			},
 		},
@@ -397,7 +388,7 @@ func TestNewX509CertPool(t *testing.T) {
 					return errors.New("err is nil")
 				}
 				if cp != nil {
-					return errors.Errorf("got is not nil: %v", cp)
+					return errors.Errorf("got is not nil: %v, want: %v", cp, w)
 				}
 				return nil
 			},
@@ -409,7 +400,7 @@ func TestNewX509CertPool(t *testing.T) {
 					return errors.New("err is nil")
 				}
 				if cp != nil {
-					return errors.Errorf("got is not nil: %v", cp)
+					return errors.Errorf("got is not nil: %v, want: %v", cp, w)
 				}
 				return nil
 			},

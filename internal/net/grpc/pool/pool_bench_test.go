@@ -28,6 +28,7 @@ import (
 	"github.com/vdaas/vald/internal/log/level"
 	"github.com/vdaas/vald/internal/net"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 const (
@@ -100,7 +101,7 @@ func Benchmark_ConnPool(b *testing.B) {
 	pool, err := New(ctx,
 		WithAddr(DefaultServerAddr),
 		WithSize(DefaultPoolSize),
-		WithDialOptions(grpc.WithInsecure()),
+		WithDialOptions(grpc.WithTransportCredentials(insecure.NewCredentials())),
 	)
 	if err != nil {
 		b.Error(err)
@@ -126,7 +127,7 @@ func Benchmark_ConnPool(b *testing.B) {
 func Benchmark_StaticDial(b *testing.B) {
 	defer ListenAndServe(b, DefaultServerAddr)()
 
-	conn, err := grpc.DialContext(context.Background(), DefaultServerAddr, grpc.WithInsecure())
+	conn, err := grpc.DialContext(context.Background(), DefaultServerAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		b.Error(err)
 	}
@@ -155,7 +156,7 @@ func BenchmarkParallel_ConnPool(b *testing.B) {
 	pool, err := New(ctx,
 		WithAddr(DefaultServerAddr),
 		WithSize(DefaultPoolSize),
-		WithDialOptions(grpc.WithInsecure()),
+		WithDialOptions(grpc.WithTransportCredentials(insecure.NewCredentials())),
 	)
 	if err != nil {
 		b.Error(err)
@@ -183,7 +184,7 @@ func BenchmarkParallel_ConnPool(b *testing.B) {
 func BenchmarkParallel_StaticDial(b *testing.B) {
 	defer ListenAndServe(b, DefaultServerAddr)()
 
-	conn, err := grpc.DialContext(context.Background(), DefaultServerAddr, grpc.WithInsecure())
+	conn, err := grpc.DialContext(context.Background(), DefaultServerAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		b.Error(err)
 	}
