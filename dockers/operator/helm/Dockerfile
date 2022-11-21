@@ -78,7 +78,7 @@ COPY Makefile.d .
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}
 COPY Makefile .
 
-RUN make helm/schema/vald && make helm/schema/vald-helm-operator
+RUN make helm/schema/vald helm/schema/vald-helm-operator
 
 RUN cp -r charts /charts
 
