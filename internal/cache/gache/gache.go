@@ -22,16 +22,8 @@ import (
 	"time"
 
 	"github.com/kpango/gache"
+	"github.com/vdaas/vald/internal/cache/cacher"
 )
-
-// Cache is an interface to handle a gache for cache.
-type Cache interface {
-	Start(context.Context)
-	Get(string) (interface{}, bool)
-	Set(string, interface{})
-	Delete(string)
-	GetAndDelete(string) (interface{}, bool)
-}
 
 type cache struct {
 	gache          gache.Gache
@@ -41,7 +33,7 @@ type cache struct {
 }
 
 // New loads a cache model and returns a new cache struct.
-func New(opts ...Option) (Cache) {
+func New(opts ...Option) (cacher.Cache) {
 	c := new(cache)
 	for _, opt := range append(defaultOptions(), opts...) {
 		opt(c)

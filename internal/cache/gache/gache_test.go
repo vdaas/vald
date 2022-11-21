@@ -24,6 +24,7 @@ import (
 	"time"
 
 	"github.com/kpango/gache"
+	"github.com/vdaas/vald/internal/cache/cacher"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/test/goleak"
 )
@@ -38,17 +39,17 @@ func TestNew(t *testing.T) {
 		opts []Option
 	}
 	type want struct {
-		wantC Cache
+		wantC cacher.Cache
 	}
 	type test struct {
 		name       string
 		args       args
 		want       want
-		checkFunc  func(want, Cache) error
+		checkFunc  func(want, cacher.Cache) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, got Cache) error {
+	defaultCheckFunc := func(w want, got cacher.Cache) error {
 		wc := reflect.ValueOf(w.wantC.(*cache))
 		gc := reflect.ValueOf(got.(*cache))
 		flag := false
