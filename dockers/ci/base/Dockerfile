@@ -34,6 +34,7 @@ ENV PATH ${PATH}:${GOROOT}/bin:${GOPATH}/bin
 COPY --from=golang /usr/local/go $GOROOT
 RUN mkdir -p $GOPATH/src
 
+# skipcq: DOK-DL3008
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     ca-certificates \
