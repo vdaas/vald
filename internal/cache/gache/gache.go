@@ -33,7 +33,7 @@ type cache struct {
 }
 
 // New loads a cache model and returns a new cache struct.
-func New(opts ...Option) (cacher.Cache) {
+func New(opts ...Option) cacher.Cache {
 	c := new(cache)
 	for _, opt := range append(defaultOptions(), opts...) {
 		opt(c)
