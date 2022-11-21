@@ -206,7 +206,7 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 	return ech, nil
 }
 
-func (*run) PreStop(ctx context.Context) error {
+func (*run) PreStop(_ context.Context) error {
 	return nil
 }
 
@@ -217,6 +217,6 @@ func (r *run) Stop(ctx context.Context) error {
 	return r.server.Shutdown(ctx)
 }
 
-func (*run) PostStop(ctx context.Context) error {
+func (*run) PostStop(_ context.Context) error {
 	return nil
 }
