@@ -20,6 +20,7 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log/format"
 	"github.com/vdaas/vald/internal/log/level"
+	log "github.com/vdaas/vald/internal/log/logger"
 	"github.com/vdaas/vald/internal/test/goleak"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -37,11 +38,11 @@ func TestNew(t *testing.T) {
 		name       string
 		args       args
 		want       want
-		checkFunc  func(want, *logger, error) error
+		checkFunc  func(want, log.Logger, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, got *logger, err error) error {
+	defaultCheckFunc := func(w want, got log.Logger, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
@@ -58,7 +59,7 @@ func TestNew(t *testing.T) {
 				name: "return new logger instance correctly",
 				args: args{
 					opts: []Option{
-						func(l *logger) {
+						func(*logger) {
 							called = true
 						},
 					},
@@ -67,7 +68,7 @@ func TestNew(t *testing.T) {
 					want: &logger{},
 					err:  nil,
 				},
-				checkFunc: func(w want, got *logger, err error) error {
+				checkFunc: func(w want, got log.Logger, err error) error {
 					if !called {
 						return errors.New("Option function is not applied")
 					}

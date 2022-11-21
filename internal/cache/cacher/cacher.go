@@ -17,7 +17,20 @@
 // Package cacher provides implementation of cache type definition
 package cacher
 
-import "github.com/vdaas/vald/internal/strings"
+import (
+	"context"
+
+	"github.com/vdaas/vald/internal/strings"
+)
+
+// Cache represent the cache interface to store cache.
+type Cache interface {
+	Start(context.Context)
+	Get(string) (interface{}, bool)
+	Set(string, interface{})
+	Delete(string)
+	GetAndDelete(string) (interface{}, bool)
+}
 
 // Type represents the cacher type. Currently it support GACHE only.
 type Type uint8
