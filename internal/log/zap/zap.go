@@ -17,6 +17,7 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log/format"
 	"github.com/vdaas/vald/internal/log/level"
+	log "github.com/vdaas/vald/internal/log/logger"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
@@ -32,27 +33,6 @@ var (
 	zapcore_NewJSONEncoder    = zapcore.NewJSONEncoder
 )
 
-// Logger is an interface of zap logger.
-type Logger interface {
-	initialize(sinkPath, errSinkPath string) error
-	Close() error
-	Debug(...interface{})
-	Debugf(string, ...interface{})
-	Debugd(string, ...interface{})
-	Info(...interface{})
-	Infof(string, ...interface{})
-	Infod(string, ...interface{})
-	Warn(...interface{})
-	Warnf(string, ...interface{})
-	Warnd(string, ...interface{})
-	Error(...interface{})
-	Errorf(string, ...interface{})
-	Errord(string, ...interface{})
-	Fatal(...interface{})
-	Fatalf(string, ...interface{})
-	Fatald(string, ...interface{})
-}
-
 type logger struct {
 	format format.Format
 	level  level.Level
@@ -64,7 +44,7 @@ type logger struct {
 }
 
 // New returns a new logger instance.
-func New(opts ...Option) (Logger, error) {
+func New(opts ...Option) (log.Logger, error) {
 	l := new(logger)
 	for _, opt := range append(defaultOpts, opts...) {
 		opt(l)
