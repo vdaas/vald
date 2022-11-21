@@ -34,6 +34,7 @@ type readOnlyUiim struct {
 	amended bool
 }
 
+// skipcq: GSC-G103
 var expungedUiim = unsafe.Pointer(new(index))
 
 type entryUiim struct {
@@ -41,6 +42,7 @@ type entryUiim struct {
 }
 
 func newEntryUiim(i index) *entryUiim {
+	// skipcq: GSC-G103
 	return &entryUiim{p: unsafe.Pointer(&i)}
 }
 
@@ -105,6 +107,7 @@ func (e *entryUiim) tryStore(i *index) bool {
 		if p == expungedUiim {
 			return false
 		}
+		// skipcq: GSC-G103
 		if atomic.CompareAndSwapPointer(&e.p, p, unsafe.Pointer(i)) {
 			return true
 		}
@@ -116,6 +119,7 @@ func (e *entryUiim) unexpungeLocked() (wasExpunged bool) {
 }
 
 func (e *entryUiim) storeLocked(i *index) {
+	// skipcq: GSC-G103
 	atomic.StorePointer(&e.p, unsafe.Pointer(i))
 }
 
@@ -163,6 +167,7 @@ func (e *entryUiim) tryLoadOrStore(i index) (actual index, loaded, ok bool) {
 
 	ic := i
 	for {
+		// skipcq: GSC-G103
 		if atomic.CompareAndSwapPointer(&e.p, nil, unsafe.Pointer(&ic)) {
 			return i, false, true
 		}
