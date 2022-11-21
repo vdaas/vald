@@ -25,49 +25,49 @@ func New() logger.Logger {
 }
 
 // Debug logs the vals at Debug level.
-func (*nopLogger) Debug(vals ...interface{}) {}
+func (*nopLogger) Debug(_ ...interface{}) {}
 
 // Debugf logs the formatted message at Debug level.
-func (*nopLogger) Debugf(format string, vals ...interface{}) {}
+func (*nopLogger) Debugf(_ string, _ ...interface{}) {}
 
 // Debugd logs the message with details at Debug level.
-func (*nopLogger) Debugd(msg string, details ...interface{}) {}
+func (*nopLogger) Debugd(_ string, _ ...interface{}) {}
 
 // Info logs the vals at Info level.
-func (*nopLogger) Info(vals ...interface{}) {}
+func (*nopLogger) Info(_ ...interface{}) {}
 
 // Infof logs the formatted message at Info level.
-func (*nopLogger) Infof(format string, vals ...interface{}) {}
+func (*nopLogger) Infof(_ string, _ ...interface{}) {}
 
 // Infod logs the message with details at Info level.
-func (*nopLogger) Infod(msg string, details ...interface{}) {}
+func (*nopLogger) Infod(_ string, _ ...interface{}) {}
 
 // Warn logs the vals at Warn level.
-func (*nopLogger) Warn(vals ...interface{}) {}
+func (*nopLogger) Warn(_ ...interface{}) {}
 
 // Warnf logs the formatted message at Warn level.
-func (*nopLogger) Warnf(format string, vals ...interface{}) {}
+func (*nopLogger) Warnf(_ string, _ ...interface{}) {}
 
 // Warnd logs the message with details at Warn level.
-func (*nopLogger) Warnd(msg string, details ...interface{}) {}
+func (*nopLogger) Warnd(_ string, _ ...interface{}) {}
 
 // Error logs the vals at Error level.
-func (*nopLogger) Error(vals ...interface{}) {}
+func (*nopLogger) Error(_ ...interface{}) {}
 
 // Errorf logs the formatted message at Error level.
-func (*nopLogger) Errorf(format string, vals ...interface{}) {}
+func (*nopLogger) Errorf(_ string, _ ...interface{}) {}
 
 // Errord logs the message with details at Error level.
-func (*nopLogger) Errord(msg string, details ...interface{}) {}
+func (*nopLogger) Errord(_ string, _ ...interface{}) {}
 
 // Fatal logs the vals at Fatal level, then calls os.Exit(1).
-func (*nopLogger) Fatal(vals ...interface{}) {}
+func (*nopLogger) Fatal(_ ...interface{}) {}
 
 // Fatalf logs the formatted message at Fatal level, then calls os.Exit(1).
-func (*nopLogger) Fatalf(format string, vals ...interface{}) {}
+func (*nopLogger) Fatalf(_ string, _ ...interface{}) {}
 
 // Fatald logs the message with details at Fatal level, then calls os.Exit(1).
-func (*nopLogger) Fatald(msg string, details ...interface{}) {}
+func (*nopLogger) Fatald(_ string, _ ...interface{}) {}
 
 // Close calls finalizer of logger implementations.
 func (*nopLogger) Close() error {
