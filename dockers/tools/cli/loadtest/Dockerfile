@@ -67,7 +67,7 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 RUN GO_VERSION="$(< GO_VERSION)" \
     && VALD_VERSION="$(< VALD_VERSION)" \
     && GIT_COMMIT="$(git rev-list -1 HEAD)" \
-    && CPU_INFO_FLAGS="$(< /proc/cpuinfo | grep flags | cut -d " " -f 2- | head -1)" \
+    && CPU_INFO_FLAGS="$(< /proc/cpuinfo | grep flags | cut -d " " -f 2- | head -1 || true)" \
     && GOOS="$(go env GOOS)" \
     && GOARCH="$(go env GOARCH)" \
     && CGO_ENABLED=1 \
