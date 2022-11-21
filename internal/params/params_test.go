@@ -38,11 +38,11 @@ func TestNew(t *testing.T) {
 		name       string
 		args       args
 		want       want
-		checkFunc  func(want, *parser) error
+		checkFunc  func(want, Parser) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, got *parser) error {
+	defaultCheckFunc := func(w want, got Parser) error {
 		if !reflect.DeepEqual(got, w.want) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}

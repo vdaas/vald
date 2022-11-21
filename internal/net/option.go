@@ -21,7 +21,7 @@ import (
 	"crypto/tls"
 	"time"
 
-	"github.com/vdaas/vald/internal/cache"
+	"github.com/vdaas/vald/internal/cache/cacher"
 	"github.com/vdaas/vald/internal/net/control"
 	"github.com/vdaas/vald/internal/timeutil"
 )
@@ -38,7 +38,7 @@ var defaultDialerOptions = []DialerOption{
 }
 
 // WithDNSCache returns the functional option to set the cache.
-func WithDNSCache(c cache.Cache) DialerOption {
+func WithDNSCache(c cacher.Cache) DialerOption {
 	return func(d *dialer) {
 		d.dnsCache = c
 		if d.dnsCache != nil {
