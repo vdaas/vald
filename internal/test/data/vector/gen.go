@@ -30,7 +30,7 @@ const (
 	Gaussian Distribution = iota
 	Uniform
 
-	// NOTE: mean:128, sigma:128/3, all of 99.7% are in [0, 255]
+	// NOTE: mean:128, sigma:128/3, all of 99.7% are in [0, 255].
 	gaussianMean  float64 = 128
 	gaussianSigma float64 = 128 / 3
 )

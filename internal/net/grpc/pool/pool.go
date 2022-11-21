@@ -366,13 +366,13 @@ func (p *pool) Get() (*ClientConn, bool) {
 		}
 	}
 
-	len := p.Len()
-	if len <= 0 {
+	l := p.Len()
+	if l <= 0 {
 		handleErr()
 		return nil, false
 	}
 
-	for i := 0; i < int(len)+1; i++ {
+	for i := 0; i < int(l)+1; i++ {
 		if res := p.pool[atomic.AddUint64(&p.current, 1)%p.Len()].Load(); res != nil {
 			if pc, ok := res.(*poolConn); ok && pc != nil && isHealthy(pc.conn) {
 				return pc.conn, true

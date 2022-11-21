@@ -47,6 +47,10 @@ func NewExpBackoff(opts ...Option) http.RoundTripper {
 // It round trip the request and returns the response, and return any error occurred.
 // It returns errors.ErrTransportRetryable to indicate if the request is consider as retryable.
 func (e *ert) RoundTrip(req *http.Request) (res *http.Response, err error) {
+	if req != nil {
+		defer closeBody(req.Body)
+	}
+
 	if e.bo == nil {
 		return e.doRoundTrip(req)
 	}

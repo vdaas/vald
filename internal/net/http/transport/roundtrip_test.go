@@ -461,6 +461,13 @@ func Test_ert_doRoundTrip(t *testing.T) {
 			if err := checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
+			if gotRes != nil {
+				defer closeBody(gotRes.Body)
+			}
+			if test.args.req != nil {
+				defer closeBody(test.args.req.Body)
+			}
 		})
 	}
 }
