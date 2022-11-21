@@ -74,7 +74,7 @@ func (r *reconciler) addListOpts(opt client.ListOption) {
 	r.lopts = append(r.lopts, opt)
 }
 
-func (r *reconciler) Reconcile(ctx context.Context, req reconcile.Request) (res reconcile.Result, err error) {
+func (r *reconciler) Reconcile(ctx context.Context, _ reconcile.Request) (res reconcile.Result, err error) {
 	ns := &corev1.NodeList{}
 
 	if r.lopts != nil {
@@ -150,7 +150,7 @@ func (r *reconciler) GetName() string {
 	return r.name
 }
 
-func (r *reconciler) NewReconciler(ctx context.Context, mgr manager.Manager) reconcile.Reconciler {
+func (r *reconciler) NewReconciler(_ context.Context, mgr manager.Manager) reconcile.Reconciler {
 	if r.mgr == nil && mgr != nil {
 		r.mgr = mgr
 	}

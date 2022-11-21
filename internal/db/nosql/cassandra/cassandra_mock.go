@@ -39,4 +39,4 @@ func (dm *DialerMock) DialContext(ctx context.Context, network, addr string) (ne
 func (dm *DialerMock) GetDialer() func(ctx context.Context, network, addr string) (net.Conn, error) {
 	return dm.DialContextFunc
 }
-func (*DialerMock) StartDialerCache(ctx context.Context) {}
+func (*DialerMock) StartDialerCache(_ context.Context) {}
