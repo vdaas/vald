@@ -34,7 +34,6 @@ import (
 )
 
 func TestNew(t *testing.T) {
-	t.Parallel()
 	type args struct {
 		selector *config.Selectors
 		opts     []Option
@@ -48,8 +47,8 @@ func TestNew(t *testing.T) {
 		args       args
 		want       want
 		checkFunc  func(want, Discoverer, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, gotDsc Discoverer, err error) error {
 		if !errors.Is(err, w.err) {
@@ -66,10 +65,17 @@ func TestNew(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
+		           selector: nil,
 		           opts: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -79,10 +85,17 @@ func TestNew(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
+		           selector: nil,
 		           opts: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -94,10 +107,10 @@ func TestNew(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -113,16 +126,31 @@ func TestNew(t *testing.T) {
 }
 
 func Test_discoverer_Start(t *testing.T) {
-	t.Parallel()
 	type args struct {
 		ctx context.Context
 	}
 	type fields struct {
-		maxPods         int
-		nodes           nodeMap
-		nodeMetrics     nodeMetricsMap
-		pods            podsMap
-		podMetrics      podMetricsMap
+		maxPods int
+		nodes   struct {
+			read   atomic.Value
+			dirty  map[string]*entryNodeMap
+			misses int
+		}
+		nodeMetrics struct {
+			read   atomic.Value
+			dirty  map[string]*entryNodeMetricsMap
+			misses int
+		}
+		pods struct {
+			read   atomic.Value
+			dirty  map[string]*entryPodsMap
+			misses int
+		}
+		podMetrics struct {
+			read   atomic.Value
+			dirty  map[string]*entryPodMetricsMap
+			misses int
+		}
 		podsByNode      atomic.Value
 		podsByNamespace atomic.Value
 		podsByName      atomic.Value
@@ -144,8 +172,8 @@ func Test_discoverer_Start(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, <-chan error, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, got <-chan error, err error) error {
 		if !errors.Is(err, w.err) {
@@ -166,10 +194,10 @@ func Test_discoverer_Start(t *testing.T) {
 		       },
 		       fields: fields {
 		           maxPods: 0,
-		           nodes: nodeMap{},
-		           nodeMetrics: nodeMetricsMap{},
-		           pods: podsMap{},
-		           podMetrics: podMetricsMap{},
+		           nodes: struct{},
+		           nodeMetrics: struct{},
+		           pods: struct{},
+		           podMetrics: struct{},
 		           podsByNode: nil,
 		           podsByNamespace: nil,
 		           podsByName: nil,
@@ -183,6 +211,12 @@ func Test_discoverer_Start(t *testing.T) {
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -196,10 +230,10 @@ func Test_discoverer_Start(t *testing.T) {
 		           },
 		           fields: fields {
 		           maxPods: 0,
-		           nodes: nodeMap{},
-		           nodeMetrics: nodeMetricsMap{},
-		           pods: podsMap{},
-		           podMetrics: podMetricsMap{},
+		           nodes: struct{},
+		           nodeMetrics: struct{},
+		           pods: struct{},
+		           podMetrics: struct{},
 		           podsByNode: nil,
 		           podsByNamespace: nil,
 		           podsByName: nil,
@@ -213,6 +247,12 @@ func Test_discoverer_Start(t *testing.T) {
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -224,21 +264,37 @@ func Test_discoverer_Start(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
 			d := &discoverer{
-				maxPods:         test.fields.maxPods,
-				nodes:           test.fields.nodes,
-				nodeMetrics:     test.fields.nodeMetrics,
-				pods:            test.fields.pods,
-				podMetrics:      test.fields.podMetrics,
+				maxPods: test.fields.maxPods,
+				nodes: nodeMap{
+					read:   test.fields.nodes.read,
+					dirty:  test.fields.nodes.dirty,
+					misses: test.fields.nodes.misses,
+				},
+				nodeMetrics: nodeMetricsMap{
+					read:   test.fields.nodeMetrics.read,
+					dirty:  test.fields.nodeMetrics.dirty,
+					misses: test.fields.nodeMetrics.misses,
+				},
+				pods: podsMap{
+					read:   test.fields.pods.read,
+					dirty:  test.fields.pods.dirty,
+					misses: test.fields.pods.misses,
+				},
+				podMetrics: podMetricsMap{
+					read:   test.fields.podMetrics.read,
+					dirty:  test.fields.podMetrics.dirty,
+					misses: test.fields.podMetrics.misses,
+				},
 				podsByNode:      test.fields.podsByNode,
 				podsByNamespace: test.fields.podsByNamespace,
 				podsByName:      test.fields.podsByName,
@@ -260,16 +316,31 @@ func Test_discoverer_Start(t *testing.T) {
 }
 
 func Test_discoverer_GetPods(t *testing.T) {
-	t.Parallel()
 	type args struct {
 		req *payload.Discoverer_Request
 	}
 	type fields struct {
-		maxPods         int
-		nodes           nodeMap
-		nodeMetrics     nodeMetricsMap
-		pods            podsMap
-		podMetrics      podMetricsMap
+		maxPods int
+		nodes   struct {
+			read   atomic.Value
+			dirty  map[string]*entryNodeMap
+			misses int
+		}
+		nodeMetrics struct {
+			read   atomic.Value
+			dirty  map[string]*entryNodeMetricsMap
+			misses int
+		}
+		pods struct {
+			read   atomic.Value
+			dirty  map[string]*entryPodsMap
+			misses int
+		}
+		podMetrics struct {
+			read   atomic.Value
+			dirty  map[string]*entryPodMetricsMap
+			misses int
+		}
 		podsByNode      atomic.Value
 		podsByNamespace atomic.Value
 		podsByName      atomic.Value
@@ -291,8 +362,8 @@ func Test_discoverer_GetPods(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, *payload.Info_Pods, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, gotPods *payload.Info_Pods, err error) error {
 		if !errors.Is(err, w.err) {
@@ -313,10 +384,10 @@ func Test_discoverer_GetPods(t *testing.T) {
 		       },
 		       fields: fields {
 		           maxPods: 0,
-		           nodes: nodeMap{},
-		           nodeMetrics: nodeMetricsMap{},
-		           pods: podsMap{},
-		           podMetrics: podMetricsMap{},
+		           nodes: struct{},
+		           nodeMetrics: struct{},
+		           pods: struct{},
+		           podMetrics: struct{},
 		           podsByNode: nil,
 		           podsByNamespace: nil,
 		           podsByName: nil,
@@ -330,6 +401,12 @@ func Test_discoverer_GetPods(t *testing.T) {
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -343,10 +420,10 @@ func Test_discoverer_GetPods(t *testing.T) {
 		           },
 		           fields: fields {
 		           maxPods: 0,
-		           nodes: nodeMap{},
-		           nodeMetrics: nodeMetricsMap{},
-		           pods: podsMap{},
-		           podMetrics: podMetricsMap{},
+		           nodes: struct{},
+		           nodeMetrics: struct{},
+		           pods: struct{},
+		           podMetrics: struct{},
 		           podsByNode: nil,
 		           podsByNamespace: nil,
 		           podsByName: nil,
@@ -360,6 +437,12 @@ func Test_discoverer_GetPods(t *testing.T) {
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -371,21 +454,37 @@ func Test_discoverer_GetPods(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
 			d := &discoverer{
-				maxPods:         test.fields.maxPods,
-				nodes:           test.fields.nodes,
-				nodeMetrics:     test.fields.nodeMetrics,
-				pods:            test.fields.pods,
-				podMetrics:      test.fields.podMetrics,
+				maxPods: test.fields.maxPods,
+				nodes: nodeMap{
+					read:   test.fields.nodes.read,
+					dirty:  test.fields.nodes.dirty,
+					misses: test.fields.nodes.misses,
+				},
+				nodeMetrics: nodeMetricsMap{
+					read:   test.fields.nodeMetrics.read,
+					dirty:  test.fields.nodeMetrics.dirty,
+					misses: test.fields.nodeMetrics.misses,
+				},
+				pods: podsMap{
+					read:   test.fields.pods.read,
+					dirty:  test.fields.pods.dirty,
+					misses: test.fields.pods.misses,
+				},
+				podMetrics: podMetricsMap{
+					read:   test.fields.podMetrics.read,
+					dirty:  test.fields.podMetrics.dirty,
+					misses: test.fields.podMetrics.misses,
+				},
 				podsByNode:      test.fields.podsByNode,
 				podsByNamespace: test.fields.podsByNamespace,
 				podsByName:      test.fields.podsByName,
@@ -407,16 +506,31 @@ func Test_discoverer_GetPods(t *testing.T) {
 }
 
 func Test_discoverer_GetNodes(t *testing.T) {
-	t.Parallel()
 	type args struct {
 		req *payload.Discoverer_Request
 	}
 	type fields struct {
-		maxPods         int
-		nodes           nodeMap
-		nodeMetrics     nodeMetricsMap
-		pods            podsMap
-		podMetrics      podMetricsMap
+		maxPods int
+		nodes   struct {
+			read   atomic.Value
+			dirty  map[string]*entryNodeMap
+			misses int
+		}
+		nodeMetrics struct {
+			read   atomic.Value
+			dirty  map[string]*entryNodeMetricsMap
+			misses int
+		}
+		pods struct {
+			read   atomic.Value
+			dirty  map[string]*entryPodsMap
+			misses int
+		}
+		podMetrics struct {
+			read   atomic.Value
+			dirty  map[string]*entryPodMetricsMap
+			misses int
+		}
 		podsByNode      atomic.Value
 		podsByNamespace atomic.Value
 		podsByName      atomic.Value
@@ -438,8 +552,8 @@ func Test_discoverer_GetNodes(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, *payload.Info_Nodes, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, gotNodes *payload.Info_Nodes, err error) error {
 		if !errors.Is(err, w.err) {
@@ -460,10 +574,10 @@ func Test_discoverer_GetNodes(t *testing.T) {
 		       },
 		       fields: fields {
 		           maxPods: 0,
-		           nodes: nodeMap{},
-		           nodeMetrics: nodeMetricsMap{},
-		           pods: podsMap{},
-		           podMetrics: podMetricsMap{},
+		           nodes: struct{},
+		           nodeMetrics: struct{},
+		           pods: struct{},
+		           podMetrics: struct{},
 		           podsByNode: nil,
 		           podsByNamespace: nil,
 		           podsByName: nil,
@@ -477,6 +591,12 @@ func Test_discoverer_GetNodes(t *testing.T) {
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -490,10 +610,10 @@ func Test_discoverer_GetNodes(t *testing.T) {
 		           },
 		           fields: fields {
 		           maxPods: 0,
-		           nodes: nodeMap{},
-		           nodeMetrics: nodeMetricsMap{},
-		           pods: podsMap{},
-		           podMetrics: podMetricsMap{},
+		           nodes: struct{},
+		           nodeMetrics: struct{},
+		           pods: struct{},
+		           podMetrics: struct{},
 		           podsByNode: nil,
 		           podsByNamespace: nil,
 		           podsByName: nil,
@@ -507,6 +627,12 @@ func Test_discoverer_GetNodes(t *testing.T) {
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -518,21 +644,37 @@ func Test_discoverer_GetNodes(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
 			d := &discoverer{
-				maxPods:         test.fields.maxPods,
-				nodes:           test.fields.nodes,
-				nodeMetrics:     test.fields.nodeMetrics,
-				pods:            test.fields.pods,
-				podMetrics:      test.fields.podMetrics,
+				maxPods: test.fields.maxPods,
+				nodes: nodeMap{
+					read:   test.fields.nodes.read,
+					dirty:  test.fields.nodes.dirty,
+					misses: test.fields.nodes.misses,
+				},
+				nodeMetrics: nodeMetricsMap{
+					read:   test.fields.nodeMetrics.read,
+					dirty:  test.fields.nodeMetrics.dirty,
+					misses: test.fields.nodeMetrics.misses,
+				},
+				pods: podsMap{
+					read:   test.fields.pods.read,
+					dirty:  test.fields.pods.dirty,
+					misses: test.fields.pods.misses,
+				},
+				podMetrics: podMetricsMap{
+					read:   test.fields.podMetrics.read,
+					dirty:  test.fields.podMetrics.dirty,
+					misses: test.fields.podMetrics.misses,
+				},
 				podsByNode:      test.fields.podsByNode,
 				podsByNamespace: test.fields.podsByNamespace,
 				podsByName:      test.fields.podsByName,
