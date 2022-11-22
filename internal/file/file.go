@@ -280,7 +280,7 @@ func writeFile(ctx context.Context, target string, r io.Reader, flg int, perm fs
 		err = errors.ErrFileAlreadyExists(target)
 	case err != nil && !errors.Is(err, fs.ErrNotExist), err != nil && errors.Is(err, fs.ErrExist):
 		err = errors.Wrap(errors.ErrFileAlreadyExists(target), err.Error())
-	case err != nil && !errors.Is(err, fs.ErrNotExist):
+	case err != nil:
 		log.Warn(err)
 	}
 

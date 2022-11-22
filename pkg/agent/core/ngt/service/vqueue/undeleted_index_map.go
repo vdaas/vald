@@ -31,6 +31,7 @@ type readOnlyUdim struct {
 	amended bool
 }
 
+// skipcq: GSC-G103
 var expungedUdim = unsafe.Pointer(new(int64))
 
 type entryUdim struct {
@@ -38,6 +39,7 @@ type entryUdim struct {
 }
 
 func newEntryUdim(i int64) *entryUdim {
+	// skipcq: GSC-G103
 	return &entryUdim{p: unsafe.Pointer(&i)}
 }
 
@@ -99,6 +101,7 @@ func (e *entryUdim) tryStore(i *int64) bool {
 		if p == expungedUdim {
 			return false
 		}
+		// skipcq: GSC-G103
 		if atomic.CompareAndSwapPointer(&e.p, p, unsafe.Pointer(i)) {
 			return true
 		}
@@ -110,6 +113,7 @@ func (e *entryUdim) unexpungeLocked() (wasExpunged bool) {
 }
 
 func (e *entryUdim) storeLocked(i *int64) {
+	// skipcq: GSC-G103
 	atomic.StorePointer(&e.p, unsafe.Pointer(i))
 }
 
@@ -157,6 +161,7 @@ func (e *entryUdim) tryLoadOrStore(i int64) (actual int64, loaded, ok bool) {
 
 	ic := i
 	for {
+		// skipcq: GSC-G103
 		if atomic.CompareAndSwapPointer(&e.p, nil, unsafe.Pointer(&ic)) {
 			return i, false, true
 		}
