@@ -554,6 +554,7 @@ func (s *server) search(ctx context.Context, cfg *payload.Search_Config,
 			case pos == rl-1:
 				res.Results = append(res.GetResults(), dist)
 			case pos >= 0:
+				// skipcq: CRT-D0001
 				res.Results = append(res.GetResults()[:pos+1], res.GetResults()[pos:]...)
 				res.Results[pos+1] = dist
 			}

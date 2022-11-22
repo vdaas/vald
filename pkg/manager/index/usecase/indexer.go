@@ -56,6 +56,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	if err != nil {
 		return nil, err
 	}
+	// skipcq: CRT-D0001
 	dopts := append(
 		cOpts,
 		grpc.WithErrGroup(eg))
@@ -64,6 +65,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	if err != nil {
 		return nil, err
 	}
+	// skipcq: CRT-D0001
 	aopts := append(
 		acOpts,
 		grpc.WithErrGroup(eg))
