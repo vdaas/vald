@@ -130,11 +130,27 @@ func Test_discoverer_Start(t *testing.T) {
 		ctx context.Context
 	}
 	type fields struct {
-		maxPods         int
-		nodes           func() nodeMap
-		nodeMetrics     func() nodeMetricsMap
-		pods            func() podsMap
-		podMetrics      func() podMetricsMap
+		maxPods int
+		nodes    struct {
+			read   atomic.Value
+			dirty  map[string]*entryNodeMap
+			misses int
+		}
+		nodeMetrics struct {
+			read   atomic.Value
+			dirty  map[string]*entryNodeMetricsMap
+			misses int
+		}
+		pods struct {
+			read   atomic.Value
+			dirty  map[string]*entryPodsMap
+			misses int
+		}
+		podMetrics struct {
+			read   atomic.Value
+			dirty  map[string]*entryPodMetricsMap
+			misses int
+		}
 		podsByNode      atomic.Value
 		podsByNamespace atomic.Value
 		podsByName      atomic.Value
@@ -178,10 +194,10 @@ func Test_discoverer_Start(t *testing.T) {
 		       },
 		       fields: fields {
 		           maxPods: 0,
-		           nodes: nodeMap{},
-		           nodeMetrics: nodeMetricsMap{},
-		           pods: podsMap{},
-		           podMetrics: podMetricsMap{},
+		           nodes: struct{},
+		           nodeMetrics: struct{},
+		           pods: struct{},
+		           podMetrics: struct{},
 		           podsByNode: nil,
 		           podsByNamespace: nil,
 		           podsByName: nil,
@@ -214,10 +230,10 @@ func Test_discoverer_Start(t *testing.T) {
 		           },
 		           fields: fields {
 		           maxPods: 0,
-		           nodes: nodeMap{},
-		           nodeMetrics: nodeMetricsMap{},
-		           pods: podsMap{},
-		           podMetrics: podMetricsMap{},
+		           nodes: struct{},
+		           nodeMetrics: struct{},
+		           pods: struct{},
+		           podMetrics: struct{},
 		           podsByNode: nil,
 		           podsByNamespace: nil,
 		           podsByName: nil,
@@ -258,11 +274,27 @@ func Test_discoverer_Start(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 			d := &discoverer{
-				maxPods:         test.fields.maxPods,
-				nodes:           test.fields.nodes(),
-				nodeMetrics:     test.fields.nodeMetrics(),
-				pods:            test.fields.pods(),
-				podMetrics:      test.fields.podMetrics(),
+				maxPods: test.fields.maxPods,
+				nodes: nodeMap{
+					read:   test.fields.nodes.read,
+					dirty:  test.fields.nodes.dirty,
+					misses: test.fields.nodes.misses,
+				},
+				nodeMetrics: nodeMetricsMap{
+					read:   test.fields.nodeMetrics.read,
+					dirty:  test.fields.nodeMetrics.dirty,
+					misses: test.fields.nodeMetrics.misses,
+				},
+				pods: podsMap{
+					read:   test.fields.pods.read,
+					dirty:  test.fields.pods.dirty,
+					misses: test.fields.pods.misses,
+				},
+				podMetrics: podMetricsMap{
+					read:   test.fields.podMetrics.read,
+					dirty:  test.fields.podMetrics.dirty,
+					misses: test.fields.podMetrics.misses,
+				},
 				podsByNode:      test.fields.podsByNode,
 				podsByNamespace: test.fields.podsByNamespace,
 				podsByName:      test.fields.podsByName,
@@ -289,10 +321,26 @@ func Test_discoverer_GetPods(t *testing.T) {
 	}
 	type fields struct {
 		maxPods         int
-		nodes           func() nodeMap
-		nodeMetrics     func() nodeMetricsMap
-		pods            func() podsMap
-		podMetrics      func() podMetricsMap
+		nodes    struct {
+			read   atomic.Value
+			dirty  map[string]*entryNodeMap
+			misses int
+		}
+		nodeMetrics struct {
+			read   atomic.Value
+			dirty  map[string]*entryNodeMetricsMap
+			misses int
+		}
+		pods struct {
+			read   atomic.Value
+			dirty  map[string]*entryPodsMap
+			misses int
+		}
+		podMetrics struct {
+			read   atomic.Value
+			dirty  map[string]*entryPodMetricsMap
+			misses int
+		}
 		podsByNode      atomic.Value
 		podsByNamespace atomic.Value
 		podsByName      atomic.Value
@@ -336,10 +384,10 @@ func Test_discoverer_GetPods(t *testing.T) {
 		       },
 		       fields: fields {
 		           maxPods: 0,
-		           nodes: nodeMap{},
-		           nodeMetrics: nodeMetricsMap{},
-		           pods: podsMap{},
-		           podMetrics: podMetricsMap{},
+		           nodes: struct{},
+		           nodeMetrics: struct{},
+		           pods: struct{},
+		           podMetrics: struct{},
 		           podsByNode: nil,
 		           podsByNamespace: nil,
 		           podsByName: nil,
@@ -372,10 +420,10 @@ func Test_discoverer_GetPods(t *testing.T) {
 		           },
 		           fields: fields {
 		           maxPods: 0,
-		           nodes: nodeMap{},
-		           nodeMetrics: nodeMetricsMap{},
-		           pods: podsMap{},
-		           podMetrics: podMetricsMap{},
+		           nodes: struct{},
+		           nodeMetrics: struct{},
+		           pods: struct{},
+		           podMetrics: struct{},
 		           podsByNode: nil,
 		           podsByNamespace: nil,
 		           podsByName: nil,
@@ -417,10 +465,26 @@ func Test_discoverer_GetPods(t *testing.T) {
 			}
 			d := &discoverer{
 				maxPods:         test.fields.maxPods,
-				nodes:           test.fields.nodes(),
-				nodeMetrics:     test.fields.nodeMetrics(),
-				pods:            test.fields.pods(),
-				podMetrics:      test.fields.podMetrics(),
+				nodes: nodeMap{
+					read:   test.fields.nodes.read,
+					dirty:  test.fields.nodes.dirty,
+					misses: test.fields.nodes.misses,
+				},
+				nodeMetrics: nodeMetricsMap{
+					read:   test.fields.nodeMetrics.read,
+					dirty:  test.fields.nodeMetrics.dirty,
+					misses: test.fields.nodeMetrics.misses,
+				},
+				pods: podsMap{
+					read:   test.fields.pods.read,
+					dirty:  test.fields.pods.dirty,
+					misses: test.fields.pods.misses,
+				},
+				podMetrics: podMetricsMap{
+					read:   test.fields.podMetrics.read,
+					dirty:  test.fields.podMetrics.dirty,
+					misses: test.fields.podMetrics.misses,
+				},
 				podsByNode:      test.fields.podsByNode,
 				podsByNamespace: test.fields.podsByNamespace,
 				podsByName:      test.fields.podsByName,
@@ -447,10 +511,26 @@ func Test_discoverer_GetNodes(t *testing.T) {
 	}
 	type fields struct {
 		maxPods         int
-		nodes           func() nodeMap
-		nodeMetrics     func() nodeMetricsMap
-		pods            func() podsMap
-		podMetrics      func() podMetricsMap
+		nodes    struct {
+			read   atomic.Value
+			dirty  map[string]*entryNodeMap
+			misses int
+		}
+		nodeMetrics struct {
+			read   atomic.Value
+			dirty  map[string]*entryNodeMetricsMap
+			misses int
+		}
+		pods struct {
+			read   atomic.Value
+			dirty  map[string]*entryPodsMap
+			misses int
+		}
+		podMetrics struct {
+			read   atomic.Value
+			dirty  map[string]*entryPodMetricsMap
+			misses int
+		}
 		podsByNode      atomic.Value
 		podsByNamespace atomic.Value
 		podsByName      atomic.Value
@@ -494,10 +574,10 @@ func Test_discoverer_GetNodes(t *testing.T) {
 		       },
 		       fields: fields {
 		           maxPods: 0,
-		           nodes: nodeMap{},
-		           nodeMetrics: nodeMetricsMap{},
-		           pods: podsMap{},
-		           podMetrics: podMetricsMap{},
+		           nodes: struct{},
+		           nodeMetrics: struct{},
+		           pods: struct{},
+		           podMetrics: struct{},
 		           podsByNode: nil,
 		           podsByNamespace: nil,
 		           podsByName: nil,
@@ -530,10 +610,10 @@ func Test_discoverer_GetNodes(t *testing.T) {
 		           },
 		           fields: fields {
 		           maxPods: 0,
-		           nodes: nodeMap{},
-		           nodeMetrics: nodeMetricsMap{},
-		           pods: podsMap{},
-		           podMetrics: podMetricsMap{},
+		           nodes: struct{},
+		           nodeMetrics: struct{},
+		           pods: struct{},
+		           podMetrics: struct{},
 		           podsByNode: nil,
 		           podsByNamespace: nil,
 		           podsByName: nil,
@@ -575,10 +655,26 @@ func Test_discoverer_GetNodes(t *testing.T) {
 			}
 			d := &discoverer{
 				maxPods:         test.fields.maxPods,
-				nodes:           test.fields.nodes(),
-				nodeMetrics:     test.fields.nodeMetrics(),
-				pods:            test.fields.pods(),
-				podMetrics:      test.fields.podMetrics(),
+				nodes: nodeMap{
+					read:   test.fields.nodes.read,
+					dirty:  test.fields.nodes.dirty,
+					misses: test.fields.nodes.misses,
+				},
+				nodeMetrics: nodeMetricsMap{
+					read:   test.fields.nodeMetrics.read,
+					dirty:  test.fields.nodeMetrics.dirty,
+					misses: test.fields.nodeMetrics.misses,
+				},
+				pods: podsMap{
+					read:   test.fields.pods.read,
+					dirty:  test.fields.pods.dirty,
+					misses: test.fields.pods.misses,
+				},
+				podMetrics: podMetricsMap{
+					read:   test.fields.podMetrics.read,
+					dirty:  test.fields.podMetrics.dirty,
+					misses: test.fields.podMetrics.misses,
+				},
 				podsByNode:      test.fields.podsByNode,
 				podsByNamespace: test.fields.podsByNamespace,
 				podsByName:      test.fields.podsByName,
