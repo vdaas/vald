@@ -20,7 +20,6 @@ package ingress
 import (
 	"context"
 	"reflect"
-	"sync"
 	"testing"
 
 	"github.com/vdaas/vald/apis/grpc/v1/filter/ingress"
@@ -115,7 +114,6 @@ func Test_client_Start(t *testing.T) {
 	}
 	type fields struct {
 		addrs []string
-		cl    sync.Map
 		c     grpc.Client
 	}
 	type want struct {
@@ -150,7 +148,6 @@ func Test_client_Start(t *testing.T) {
 		       },
 		       fields: fields {
 		           addrs: nil,
-		           cl: sync.Map{},
 		           c: nil,
 		       },
 		       want: want{},
@@ -168,7 +165,6 @@ func Test_client_Start(t *testing.T) {
 		           },
 		           fields: fields {
 		           addrs: nil,
-		           cl: sync.Map{},
 		           c: nil,
 		           },
 		           want: want{},
@@ -195,7 +191,6 @@ func Test_client_Start(t *testing.T) {
 			}
 			c := &client{
 				addrs: test.fields.addrs,
-				cl:    test.fields.cl,
 				c:     test.fields.c,
 			}
 
@@ -214,7 +209,6 @@ func Test_client_Stop(t *testing.T) {
 	}
 	type fields struct {
 		addrs []string
-		cl    sync.Map
 		c     grpc.Client
 	}
 	type want struct {
@@ -245,7 +239,6 @@ func Test_client_Stop(t *testing.T) {
 		       },
 		       fields: fields {
 		           addrs: nil,
-		           cl: sync.Map{},
 		           c: nil,
 		       },
 		       want: want{},
@@ -263,7 +256,6 @@ func Test_client_Stop(t *testing.T) {
 		           },
 		           fields: fields {
 		           addrs: nil,
-		           cl: sync.Map{},
 		           c: nil,
 		           },
 		           want: want{},
@@ -290,7 +282,6 @@ func Test_client_Stop(t *testing.T) {
 			}
 			c := &client{
 				addrs: test.fields.addrs,
-				cl:    test.fields.cl,
 				c:     test.fields.c,
 			}
 
@@ -306,7 +297,6 @@ func Test_client_GRPCClient(t *testing.T) {
 	t.Parallel()
 	type fields struct {
 		addrs []string
-		cl    sync.Map
 		c     grpc.Client
 	}
 	type want struct {
@@ -333,7 +323,6 @@ func Test_client_GRPCClient(t *testing.T) {
 		       name: "test_case_1",
 		       fields: fields {
 		           addrs: nil,
-		           cl: sync.Map{},
 		           c: nil,
 		       },
 		       want: want{},
@@ -348,7 +337,6 @@ func Test_client_GRPCClient(t *testing.T) {
 		           name: "test_case_2",
 		           fields: fields {
 		           addrs: nil,
-		           cl: sync.Map{},
 		           c: nil,
 		           },
 		           want: want{},
@@ -375,7 +363,6 @@ func Test_client_GRPCClient(t *testing.T) {
 			}
 			c := &client{
 				addrs: test.fields.addrs,
-				cl:    test.fields.cl,
 				c:     test.fields.c,
 			}
 
@@ -395,7 +382,6 @@ func Test_client_Target(t *testing.T) {
 	}
 	type fields struct {
 		addrs []string
-		cl    sync.Map
 		c     grpc.Client
 	}
 	type want struct {
@@ -431,7 +417,6 @@ func Test_client_Target(t *testing.T) {
 		       },
 		       fields: fields {
 		           addrs: nil,
-		           cl: sync.Map{},
 		           c: nil,
 		       },
 		       want: want{},
@@ -450,7 +435,6 @@ func Test_client_Target(t *testing.T) {
 		           },
 		           fields: fields {
 		           addrs: nil,
-		           cl: sync.Map{},
 		           c: nil,
 		           },
 		           want: want{},
@@ -477,7 +461,6 @@ func Test_client_Target(t *testing.T) {
 			}
 			c := &client{
 				addrs: test.fields.addrs,
-				cl:    test.fields.cl,
 				c:     test.fields.c,
 			}
 
@@ -498,7 +481,6 @@ func Test_client_GenVector(t *testing.T) {
 	}
 	type fields struct {
 		addrs []string
-		cl    sync.Map
 		c     grpc.Client
 	}
 	type want struct {
@@ -535,7 +517,6 @@ func Test_client_GenVector(t *testing.T) {
 		       },
 		       fields: fields {
 		           addrs: nil,
-		           cl: sync.Map{},
 		           c: nil,
 		       },
 		       want: want{},
@@ -555,7 +536,6 @@ func Test_client_GenVector(t *testing.T) {
 		           },
 		           fields: fields {
 		           addrs: nil,
-		           cl: sync.Map{},
 		           c: nil,
 		           },
 		           want: want{},
@@ -582,7 +562,6 @@ func Test_client_GenVector(t *testing.T) {
 			}
 			c := &client{
 				addrs: test.fields.addrs,
-				cl:    test.fields.cl,
 				c:     test.fields.c,
 			}
 
@@ -603,7 +582,6 @@ func Test_client_FilterVector(t *testing.T) {
 	}
 	type fields struct {
 		addrs []string
-		cl    sync.Map
 		c     grpc.Client
 	}
 	type want struct {
@@ -640,7 +618,6 @@ func Test_client_FilterVector(t *testing.T) {
 		       },
 		       fields: fields {
 		           addrs: nil,
-		           cl: sync.Map{},
 		           c: nil,
 		       },
 		       want: want{},
@@ -660,7 +637,6 @@ func Test_client_FilterVector(t *testing.T) {
 		           },
 		           fields: fields {
 		           addrs: nil,
-		           cl: sync.Map{},
 		           c: nil,
 		           },
 		           want: want{},
@@ -687,7 +663,6 @@ func Test_client_FilterVector(t *testing.T) {
 			}
 			c := &client{
 				addrs: test.fields.addrs,
-				cl:    test.fields.cl,
 				c:     test.fields.c,
 			}
 
