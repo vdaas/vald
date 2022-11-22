@@ -131,7 +131,7 @@ func Test_discoverer_Start(t *testing.T) {
 	}
 	type fields struct {
 		maxPods int
-		nodes    struct {
+		nodes   struct {
 			read   atomic.Value
 			dirty  map[string]*entryNodeMap
 			misses int
@@ -320,8 +320,8 @@ func Test_discoverer_GetPods(t *testing.T) {
 		req *payload.Discoverer_Request
 	}
 	type fields struct {
-		maxPods         int
-		nodes    struct {
+		maxPods int
+		nodes   struct {
 			read   atomic.Value
 			dirty  map[string]*entryNodeMap
 			misses int
@@ -464,7 +464,7 @@ func Test_discoverer_GetPods(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 			d := &discoverer{
-				maxPods:         test.fields.maxPods,
+				maxPods: test.fields.maxPods,
 				nodes: nodeMap{
 					read:   test.fields.nodes.read,
 					dirty:  test.fields.nodes.dirty,
@@ -510,8 +510,8 @@ func Test_discoverer_GetNodes(t *testing.T) {
 		req *payload.Discoverer_Request
 	}
 	type fields struct {
-		maxPods         int
-		nodes    struct {
+		maxPods int
+		nodes   struct {
 			read   atomic.Value
 			dirty  map[string]*entryNodeMap
 			misses int
@@ -654,7 +654,7 @@ func Test_discoverer_GetNodes(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 			d := &discoverer{
-				maxPods:         test.fields.maxPods,
+				maxPods: test.fields.maxPods,
 				nodes: nodeMap{
 					read:   test.fields.nodes.read,
 					dirty:  test.fields.nodes.dirty,
@@ -691,7 +691,6 @@ func Test_discoverer_GetNodes(t *testing.T) {
 			if err := checkFunc(test.want, gotNodes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }

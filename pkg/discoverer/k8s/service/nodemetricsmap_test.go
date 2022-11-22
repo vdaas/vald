@@ -108,7 +108,6 @@ func Test_newEntryNodeMetricsMap(t *testing.T) {
 			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -219,7 +218,6 @@ func Test_nodeMetricsMap_Load(t *testing.T) {
 			if err := checkFunc(test.want, gotValue, gotOk); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -312,7 +310,6 @@ func Test_entryNodeMetricsMap_load(t *testing.T) {
 			if err := checkFunc(test.want, gotValue, gotOk); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -327,8 +324,7 @@ func Test_nodeMetricsMap_Store(t *testing.T) {
 		dirty  map[string]*entryNodeMetricsMap
 		misses int
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -516,7 +512,6 @@ func Test_entryNodeMetricsMap_tryStore(t *testing.T) {
 			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -605,7 +600,6 @@ func Test_entryNodeMetricsMap_unexpungeLocked(t *testing.T) {
 			if err := checkFunc(test.want, gotWasExpunged); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -617,8 +611,7 @@ func Test_entryNodeMetricsMap_storeLocked(t *testing.T) {
 	type fields struct {
 		p unsafe.Pointer
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -813,7 +806,6 @@ func Test_nodeMetricsMap_LoadOrStore(t *testing.T) {
 			if err := checkFunc(test.want, gotActual, gotLoaded); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -920,7 +912,6 @@ func Test_entryNodeMetricsMap_tryLoadOrStore(t *testing.T) {
 			if err := checkFunc(test.want, gotActual, gotLoaded, gotOk); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -934,8 +925,7 @@ func Test_nodeMetricsMap_Delete(t *testing.T) {
 		dirty  map[string]*entryNodeMetricsMap
 		misses int
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -1111,7 +1101,6 @@ func Test_entryNodeMetricsMap_delete(t *testing.T) {
 			if err := checkFunc(test.want, gotHadValue); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -1125,8 +1114,7 @@ func Test_nodeMetricsMap_Range(t *testing.T) {
 		dirty  map[string]*entryNodeMetricsMap
 		misses int
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -1224,8 +1212,7 @@ func Test_nodeMetricsMap_missLocked(t *testing.T) {
 		dirty  map[string]*entryNodeMetricsMap
 		misses int
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		fields     fields
@@ -1316,8 +1303,7 @@ func Test_nodeMetricsMap_dirtyLocked(t *testing.T) {
 		dirty  map[string]*entryNodeMetricsMap
 		misses int
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		fields     fields
@@ -1486,7 +1472,6 @@ func Test_entryNodeMetricsMap_tryExpungeLocked(t *testing.T) {
 			if err := checkFunc(test.want, gotIsExpunged); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
