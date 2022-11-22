@@ -34,6 +34,7 @@ import (
 	"github.com/vdaas/vald/internal/strings"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/connectivity"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 type (
@@ -528,7 +529,7 @@ func isGRPCPort(ctx context.Context, host string, port uint16) bool {
 	defer cancel()
 	conn, err := grpc.DialContext(ctx,
 		net.JoinHostPort(host, port),
-		grpc.WithInsecure(),
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
 		grpc.WithBlock(),
 	)
 	if err != nil {
