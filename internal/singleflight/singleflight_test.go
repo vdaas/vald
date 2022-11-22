@@ -86,7 +86,6 @@ func Test_group_Do(t *testing.T) {
 		key string
 		fn  func() (interface{}, error)
 	}
-	type fields struct{}
 	type want struct {
 		wantV      interface{}
 		wantShared bool
@@ -95,7 +94,6 @@ func Test_group_Do(t *testing.T) {
 	type test struct {
 		name       string
 		args       args
-		fields     fields
 		want       want
 		beforeFunc func(args)
 		execFunc   func(*testing.T, *group, args) (interface{}, bool, error)
