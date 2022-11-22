@@ -20,7 +20,6 @@ package service
 import (
 	"context"
 	"reflect"
-	"sync"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -133,13 +132,16 @@ func Test_index_Start(t *testing.T) {
 		saveIndexDurationLimit time.Duration
 		saveIndexWaitDuration  time.Duration
 		saveIndexTargetAddrCh  chan string
-		schMap                 sync.Map
 		concurrency            int
-		indexInfos             func() indexInfos
-		indexing               atomic.Value
-		minUncommitted         uint32
-		uuidsCount             uint32
-		uncommittedUUIDsCount  uint32
+		indexInfos             struct {
+			read   atomic.Value
+			dirty  map[string]*entryIndexInfos
+			misses int
+		}
+		indexing              atomic.Value
+		minUncommitted        uint32
+		uuidsCount            uint32
+		uncommittedUUIDsCount uint32
 	}
 	type want struct {
 		want <-chan error
@@ -180,7 +182,6 @@ func Test_index_Start(t *testing.T) {
 		           saveIndexDurationLimit: nil,
 		           saveIndexWaitDuration: nil,
 		           saveIndexTargetAddrCh: nil,
-		           schMap: nil,
 		           concurrency: 0,
 		           indexInfos: indexInfos{},
 		           indexing: nil,
@@ -216,7 +217,6 @@ func Test_index_Start(t *testing.T) {
 		           saveIndexDurationLimit: nil,
 		           saveIndexWaitDuration: nil,
 		           saveIndexTargetAddrCh: nil,
-		           schMap: nil,
 		           concurrency: 0,
 		           indexInfos: indexInfos{},
 		           indexing: nil,
@@ -261,13 +261,16 @@ func Test_index_Start(t *testing.T) {
 				saveIndexDurationLimit: test.fields.saveIndexDurationLimit,
 				saveIndexWaitDuration:  test.fields.saveIndexWaitDuration,
 				saveIndexTargetAddrCh:  test.fields.saveIndexTargetAddrCh,
-				schMap:                 test.fields.schMap,
 				concurrency:            test.fields.concurrency,
-				indexInfos:             test.fields.indexInfos(),
-				indexing:               test.fields.indexing,
-				minUncommitted:         test.fields.minUncommitted,
-				uuidsCount:             test.fields.uuidsCount,
-				uncommittedUUIDsCount:  test.fields.uncommittedUUIDsCount,
+				indexInfos: indexInfos{
+					read:   test.fields.indexInfos.read,
+					dirty:  test.fields.indexInfos.dirty,
+					misses: test.fields.indexInfos.misses,
+				},
+				indexing:              test.fields.indexing,
+				minUncommitted:        test.fields.minUncommitted,
+				uuidsCount:            test.fields.uuidsCount,
+				uncommittedUUIDsCount: test.fields.uncommittedUUIDsCount,
 			}
 
 			got, err := idx.Start(test.args.ctx)
@@ -293,13 +296,16 @@ func Test_index_execute(t *testing.T) {
 		saveIndexDurationLimit time.Duration
 		saveIndexWaitDuration  time.Duration
 		saveIndexTargetAddrCh  chan string
-		schMap                 sync.Map
 		concurrency            int
-		indexInfos             func() indexInfos
-		indexing               atomic.Value
-		minUncommitted         uint32
-		uuidsCount             uint32
-		uncommittedUUIDsCount  uint32
+		indexInfos             struct {
+			read   atomic.Value
+			dirty  map[string]*entryIndexInfos
+			misses int
+		}
+		indexing              atomic.Value
+		minUncommitted        uint32
+		uuidsCount            uint32
+		uncommittedUUIDsCount uint32
 	}
 	type want struct {
 		err error
@@ -338,7 +344,6 @@ func Test_index_execute(t *testing.T) {
 		           saveIndexDurationLimit: nil,
 		           saveIndexWaitDuration: nil,
 		           saveIndexTargetAddrCh: nil,
-		           schMap: nil,
 		           concurrency: 0,
 		           indexInfos: indexInfos{},
 		           indexing: nil,
@@ -376,7 +381,6 @@ func Test_index_execute(t *testing.T) {
 		           saveIndexDurationLimit: nil,
 		           saveIndexWaitDuration: nil,
 		           saveIndexTargetAddrCh: nil,
-		           schMap: nil,
 		           concurrency: 0,
 		           indexInfos: indexInfos{},
 		           indexing: nil,
@@ -421,13 +425,16 @@ func Test_index_execute(t *testing.T) {
 				saveIndexDurationLimit: test.fields.saveIndexDurationLimit,
 				saveIndexWaitDuration:  test.fields.saveIndexWaitDuration,
 				saveIndexTargetAddrCh:  test.fields.saveIndexTargetAddrCh,
-				schMap:                 test.fields.schMap,
 				concurrency:            test.fields.concurrency,
-				indexInfos:             test.fields.indexInfos(),
-				indexing:               test.fields.indexing,
-				minUncommitted:         test.fields.minUncommitted,
-				uuidsCount:             test.fields.uuidsCount,
-				uncommittedUUIDsCount:  test.fields.uncommittedUUIDsCount,
+				indexInfos: indexInfos{
+					read:   test.fields.indexInfos.read,
+					dirty:  test.fields.indexInfos.dirty,
+					misses: test.fields.indexInfos.misses,
+				},
+				indexing:              test.fields.indexing,
+				minUncommitted:        test.fields.minUncommitted,
+				uuidsCount:            test.fields.uuidsCount,
+				uncommittedUUIDsCount: test.fields.uncommittedUUIDsCount,
 			}
 
 			err := idx.execute(test.args.ctx, test.args.enableLowIndexSkip, test.args.immediateSaving)
@@ -451,13 +458,16 @@ func Test_index_waitForNextSaving(t *testing.T) {
 		saveIndexDurationLimit time.Duration
 		saveIndexWaitDuration  time.Duration
 		saveIndexTargetAddrCh  chan string
-		schMap                 sync.Map
 		concurrency            int
-		indexInfos             func() indexInfos
-		indexing               atomic.Value
-		minUncommitted         uint32
-		uuidsCount             uint32
-		uncommittedUUIDsCount  uint32
+		indexInfos             struct {
+			read   atomic.Value
+			dirty  map[string]*entryIndexInfos
+			misses int
+		}
+		indexing              atomic.Value
+		minUncommitted        uint32
+		uuidsCount            uint32
+		uncommittedUUIDsCount uint32
 	}
 	type want struct{}
 	type test struct {
@@ -489,7 +499,6 @@ func Test_index_waitForNextSaving(t *testing.T) {
 		           saveIndexDurationLimit: nil,
 		           saveIndexWaitDuration: nil,
 		           saveIndexTargetAddrCh: nil,
-		           schMap: nil,
 		           concurrency: 0,
 		           indexInfos: indexInfos{},
 		           indexing: nil,
@@ -525,7 +534,6 @@ func Test_index_waitForNextSaving(t *testing.T) {
 		           saveIndexDurationLimit: nil,
 		           saveIndexWaitDuration: nil,
 		           saveIndexTargetAddrCh: nil,
-		           schMap: nil,
 		           concurrency: 0,
 		           indexInfos: indexInfos{},
 		           indexing: nil,
@@ -570,13 +578,16 @@ func Test_index_waitForNextSaving(t *testing.T) {
 				saveIndexDurationLimit: test.fields.saveIndexDurationLimit,
 				saveIndexWaitDuration:  test.fields.saveIndexWaitDuration,
 				saveIndexTargetAddrCh:  test.fields.saveIndexTargetAddrCh,
-				schMap:                 test.fields.schMap,
 				concurrency:            test.fields.concurrency,
-				indexInfos:             test.fields.indexInfos(),
-				indexing:               test.fields.indexing,
-				minUncommitted:         test.fields.minUncommitted,
-				uuidsCount:             test.fields.uuidsCount,
-				uncommittedUUIDsCount:  test.fields.uncommittedUUIDsCount,
+				indexInfos: indexInfos{
+					read:   test.fields.indexInfos.read,
+					dirty:  test.fields.indexInfos.dirty,
+					misses: test.fields.indexInfos.misses,
+				},
+				indexing:              test.fields.indexing,
+				minUncommitted:        test.fields.minUncommitted,
+				uuidsCount:            test.fields.uuidsCount,
+				uncommittedUUIDsCount: test.fields.uncommittedUUIDsCount,
 			}
 
 			idx.waitForNextSaving(test.args.ctx)
@@ -600,13 +611,16 @@ func Test_index_loadInfos(t *testing.T) {
 		saveIndexDurationLimit time.Duration
 		saveIndexWaitDuration  time.Duration
 		saveIndexTargetAddrCh  chan string
-		schMap                 sync.Map
 		concurrency            int
-		indexInfos             func() indexInfos
-		indexing               atomic.Value
-		minUncommitted         uint32
-		uuidsCount             uint32
-		uncommittedUUIDsCount  uint32
+		indexInfos             struct {
+			read   atomic.Value
+			dirty  map[string]*entryIndexInfos
+			misses int
+		}
+		indexing              atomic.Value
+		minUncommitted        uint32
+		uuidsCount            uint32
+		uncommittedUUIDsCount uint32
 	}
 	type want struct {
 		err error
@@ -643,7 +657,6 @@ func Test_index_loadInfos(t *testing.T) {
 		           saveIndexDurationLimit: nil,
 		           saveIndexWaitDuration: nil,
 		           saveIndexTargetAddrCh: nil,
-		           schMap: nil,
 		           concurrency: 0,
 		           indexInfos: indexInfos{},
 		           indexing: nil,
@@ -679,7 +692,6 @@ func Test_index_loadInfos(t *testing.T) {
 		           saveIndexDurationLimit: nil,
 		           saveIndexWaitDuration: nil,
 		           saveIndexTargetAddrCh: nil,
-		           schMap: nil,
 		           concurrency: 0,
 		           indexInfos: indexInfos{},
 		           indexing: nil,
@@ -724,13 +736,16 @@ func Test_index_loadInfos(t *testing.T) {
 				saveIndexDurationLimit: test.fields.saveIndexDurationLimit,
 				saveIndexWaitDuration:  test.fields.saveIndexWaitDuration,
 				saveIndexTargetAddrCh:  test.fields.saveIndexTargetAddrCh,
-				schMap:                 test.fields.schMap,
 				concurrency:            test.fields.concurrency,
-				indexInfos:             test.fields.indexInfos(),
-				indexing:               test.fields.indexing,
-				minUncommitted:         test.fields.minUncommitted,
-				uuidsCount:             test.fields.uuidsCount,
-				uncommittedUUIDsCount:  test.fields.uncommittedUUIDsCount,
+				indexInfos: indexInfos{
+					read:   test.fields.indexInfos.read,
+					dirty:  test.fields.indexInfos.dirty,
+					misses: test.fields.indexInfos.misses,
+				},
+				indexing:              test.fields.indexing,
+				minUncommitted:        test.fields.minUncommitted,
+				uuidsCount:            test.fields.uuidsCount,
+				uncommittedUUIDsCount: test.fields.uncommittedUUIDsCount,
 			}
 
 			err := idx.loadInfos(test.args.ctx)
@@ -751,13 +766,16 @@ func Test_index_IsIndexing(t *testing.T) {
 		saveIndexDurationLimit time.Duration
 		saveIndexWaitDuration  time.Duration
 		saveIndexTargetAddrCh  chan string
-		schMap                 sync.Map
 		concurrency            int
-		indexInfos             func() indexInfos
-		indexing               atomic.Value
-		minUncommitted         uint32
-		uuidsCount             uint32
-		uncommittedUUIDsCount  uint32
+		indexInfos             struct {
+			read   atomic.Value
+			dirty  map[string]*entryIndexInfos
+			misses int
+		}
+		indexing              atomic.Value
+		minUncommitted        uint32
+		uuidsCount            uint32
+		uncommittedUUIDsCount uint32
 	}
 	type want struct {
 		want bool
@@ -790,7 +808,6 @@ func Test_index_IsIndexing(t *testing.T) {
 		           saveIndexDurationLimit: nil,
 		           saveIndexWaitDuration: nil,
 		           saveIndexTargetAddrCh: nil,
-		           schMap: nil,
 		           concurrency: 0,
 		           indexInfos: indexInfos{},
 		           indexing: nil,
@@ -823,7 +840,6 @@ func Test_index_IsIndexing(t *testing.T) {
 		           saveIndexDurationLimit: nil,
 		           saveIndexWaitDuration: nil,
 		           saveIndexTargetAddrCh: nil,
-		           schMap: nil,
 		           concurrency: 0,
 		           indexInfos: indexInfos{},
 		           indexing: nil,
@@ -868,13 +884,16 @@ func Test_index_IsIndexing(t *testing.T) {
 				saveIndexDurationLimit: test.fields.saveIndexDurationLimit,
 				saveIndexWaitDuration:  test.fields.saveIndexWaitDuration,
 				saveIndexTargetAddrCh:  test.fields.saveIndexTargetAddrCh,
-				schMap:                 test.fields.schMap,
 				concurrency:            test.fields.concurrency,
-				indexInfos:             test.fields.indexInfos(),
-				indexing:               test.fields.indexing,
-				minUncommitted:         test.fields.minUncommitted,
-				uuidsCount:             test.fields.uuidsCount,
-				uncommittedUUIDsCount:  test.fields.uncommittedUUIDsCount,
+				indexInfos: indexInfos{
+					read:   test.fields.indexInfos.read,
+					dirty:  test.fields.indexInfos.dirty,
+					misses: test.fields.indexInfos.misses,
+				},
+				indexing:              test.fields.indexing,
+				minUncommitted:        test.fields.minUncommitted,
+				uuidsCount:            test.fields.uuidsCount,
+				uncommittedUUIDsCount: test.fields.uncommittedUUIDsCount,
 			}
 
 			got := idx.IsIndexing()
@@ -895,13 +914,16 @@ func Test_index_NumberOfUUIDs(t *testing.T) {
 		saveIndexDurationLimit time.Duration
 		saveIndexWaitDuration  time.Duration
 		saveIndexTargetAddrCh  chan string
-		schMap                 sync.Map
 		concurrency            int
-		indexInfos             func() indexInfos
-		indexing               atomic.Value
-		minUncommitted         uint32
-		uuidsCount             uint32
-		uncommittedUUIDsCount  uint32
+		indexInfos             struct {
+			read   atomic.Value
+			dirty  map[string]*entryIndexInfos
+			misses int
+		}
+		indexing              atomic.Value
+		minUncommitted        uint32
+		uuidsCount            uint32
+		uncommittedUUIDsCount uint32
 	}
 	type want struct {
 		want uint32
@@ -934,7 +956,6 @@ func Test_index_NumberOfUUIDs(t *testing.T) {
 		           saveIndexDurationLimit: nil,
 		           saveIndexWaitDuration: nil,
 		           saveIndexTargetAddrCh: nil,
-		           schMap: nil,
 		           concurrency: 0,
 		           indexInfos: indexInfos{},
 		           indexing: nil,
@@ -967,7 +988,6 @@ func Test_index_NumberOfUUIDs(t *testing.T) {
 		           saveIndexDurationLimit: nil,
 		           saveIndexWaitDuration: nil,
 		           saveIndexTargetAddrCh: nil,
-		           schMap: nil,
 		           concurrency: 0,
 		           indexInfos: indexInfos{},
 		           indexing: nil,
@@ -1012,13 +1032,16 @@ func Test_index_NumberOfUUIDs(t *testing.T) {
 				saveIndexDurationLimit: test.fields.saveIndexDurationLimit,
 				saveIndexWaitDuration:  test.fields.saveIndexWaitDuration,
 				saveIndexTargetAddrCh:  test.fields.saveIndexTargetAddrCh,
-				schMap:                 test.fields.schMap,
 				concurrency:            test.fields.concurrency,
-				indexInfos:             test.fields.indexInfos(),
-				indexing:               test.fields.indexing,
-				minUncommitted:         test.fields.minUncommitted,
-				uuidsCount:             test.fields.uuidsCount,
-				uncommittedUUIDsCount:  test.fields.uncommittedUUIDsCount,
+				indexInfos: indexInfos{
+					read:   test.fields.indexInfos.read,
+					dirty:  test.fields.indexInfos.dirty,
+					misses: test.fields.indexInfos.misses,
+				},
+				indexing:              test.fields.indexing,
+				minUncommitted:        test.fields.minUncommitted,
+				uuidsCount:            test.fields.uuidsCount,
+				uncommittedUUIDsCount: test.fields.uncommittedUUIDsCount,
 			}
 
 			got := idx.NumberOfUUIDs()
@@ -1039,13 +1062,16 @@ func Test_index_NumberOfUncommittedUUIDs(t *testing.T) {
 		saveIndexDurationLimit time.Duration
 		saveIndexWaitDuration  time.Duration
 		saveIndexTargetAddrCh  chan string
-		schMap                 sync.Map
 		concurrency            int
-		indexInfos             func() indexInfos
-		indexing               atomic.Value
-		minUncommitted         uint32
-		uuidsCount             uint32
-		uncommittedUUIDsCount  uint32
+		indexInfos             struct {
+			read   atomic.Value
+			dirty  map[string]*entryIndexInfos
+			misses int
+		}
+		indexing              atomic.Value
+		minUncommitted        uint32
+		uuidsCount            uint32
+		uncommittedUUIDsCount uint32
 	}
 	type want struct {
 		want uint32
@@ -1078,7 +1104,6 @@ func Test_index_NumberOfUncommittedUUIDs(t *testing.T) {
 		           saveIndexDurationLimit: nil,
 		           saveIndexWaitDuration: nil,
 		           saveIndexTargetAddrCh: nil,
-		           schMap: nil,
 		           concurrency: 0,
 		           indexInfos: indexInfos{},
 		           indexing: nil,
@@ -1111,7 +1136,6 @@ func Test_index_NumberOfUncommittedUUIDs(t *testing.T) {
 		           saveIndexDurationLimit: nil,
 		           saveIndexWaitDuration: nil,
 		           saveIndexTargetAddrCh: nil,
-		           schMap: nil,
 		           concurrency: 0,
 		           indexInfos: indexInfos{},
 		           indexing: nil,
@@ -1156,13 +1180,16 @@ func Test_index_NumberOfUncommittedUUIDs(t *testing.T) {
 				saveIndexDurationLimit: test.fields.saveIndexDurationLimit,
 				saveIndexWaitDuration:  test.fields.saveIndexWaitDuration,
 				saveIndexTargetAddrCh:  test.fields.saveIndexTargetAddrCh,
-				schMap:                 test.fields.schMap,
 				concurrency:            test.fields.concurrency,
-				indexInfos:             test.fields.indexInfos(),
-				indexing:               test.fields.indexing,
-				minUncommitted:         test.fields.minUncommitted,
-				uuidsCount:             test.fields.uuidsCount,
-				uncommittedUUIDsCount:  test.fields.uncommittedUUIDsCount,
+				indexInfos: indexInfos{
+					read:   test.fields.indexInfos.read,
+					dirty:  test.fields.indexInfos.dirty,
+					misses: test.fields.indexInfos.misses,
+				},
+				indexing:              test.fields.indexing,
+				minUncommitted:        test.fields.minUncommitted,
+				uuidsCount:            test.fields.uuidsCount,
+				uncommittedUUIDsCount: test.fields.uncommittedUUIDsCount,
 			}
 
 			got := idx.NumberOfUncommittedUUIDs()

@@ -152,7 +152,6 @@ func Test_indexInfos_Load(t *testing.T) {
 		           key: "",
 		       },
 		       fields: fields {
-		           mu: nil,
 		           read: nil,
 		           dirty: nil,
 		           misses: 0,
@@ -177,7 +176,6 @@ func Test_indexInfos_Load(t *testing.T) {
 		           key: "",
 		           },
 		           fields: fields {
-		           mu: nil,
 		           read: nil,
 		           dirty: nil,
 		           misses: 0,
@@ -349,7 +347,6 @@ func Test_indexInfos_Store(t *testing.T) {
 		           value: nil,
 		       },
 		       fields: fields {
-		           mu: nil,
 		           read: nil,
 		           dirty: nil,
 		           misses: 0,
@@ -375,7 +372,6 @@ func Test_indexInfos_Store(t *testing.T) {
 		           value: nil,
 		           },
 		           fields: fields {
-		           mu: nil,
 		           read: nil,
 		           dirty: nil,
 		           misses: 0,
@@ -732,7 +728,6 @@ func Test_indexInfos_Delete(t *testing.T) {
 		           key: "",
 		       },
 		       fields: fields {
-		           mu: nil,
 		           read: nil,
 		           dirty: nil,
 		           misses: 0,
@@ -757,7 +752,6 @@ func Test_indexInfos_Delete(t *testing.T) {
 		           key: "",
 		           },
 		           fields: fields {
-		           mu: nil,
 		           read: nil,
 		           dirty: nil,
 		           misses: 0,
@@ -923,7 +917,6 @@ func Test_indexInfos_Range(t *testing.T) {
 		           f: nil,
 		       },
 		       fields: fields {
-		           mu: nil,
 		           read: nil,
 		           dirty: nil,
 		           misses: 0,
@@ -948,7 +941,6 @@ func Test_indexInfos_Range(t *testing.T) {
 		           f: nil,
 		           },
 		           fields: fields {
-		           mu: nil,
 		           read: nil,
 		           dirty: nil,
 		           misses: 0,
@@ -1019,7 +1011,6 @@ func Test_indexInfos_missLocked(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       fields: fields {
-		           mu: nil,
 		           read: nil,
 		           dirty: nil,
 		           misses: 0,
@@ -1041,7 +1032,6 @@ func Test_indexInfos_missLocked(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           fields: fields {
-		           mu: nil,
 		           read: nil,
 		           dirty: nil,
 		           misses: 0,
@@ -1112,7 +1102,6 @@ func Test_indexInfos_dirtyLocked(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       fields: fields {
-		           mu: nil,
 		           read: nil,
 		           dirty: nil,
 		           misses: 0,
@@ -1134,7 +1123,6 @@ func Test_indexInfos_dirtyLocked(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           fields: fields {
-		           mu: nil,
 		           read: nil,
 		           dirty: nil,
 		           misses: 0,
