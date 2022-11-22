@@ -21,7 +21,6 @@ import (
 	"context"
 	"os"
 	"reflect"
-	"sync"
 	"testing"
 	"time"
 
@@ -88,7 +87,6 @@ func Test_backoff_addJitter(t *testing.T) {
 		dur float64
 	}
 	type fields struct {
-		wg                    sync.WaitGroup
 		backoffFactor         float64
 		initialDuration       float64
 		jittedInitialDuration float64
@@ -148,7 +146,6 @@ func Test_backoff_addJitter(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 			b := &backoff{
-				wg:                    test.fields.wg,
 				backoffFactor:         test.fields.backoffFactor,
 				initialDuration:       test.fields.initialDuration,
 				jittedInitialDuration: test.fields.jittedInitialDuration,
@@ -170,9 +167,7 @@ func Test_backoff_addJitter(t *testing.T) {
 
 func Test_backoff_Close(t *testing.T) {
 	t.Parallel()
-	type fields struct {
-		wg sync.WaitGroup
-	}
+	type fields struct{}
 	type want struct{}
 	type test struct {
 		name       string
@@ -187,11 +182,9 @@ func Test_backoff_Close(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "success backoff Close",
-			fields: fields{
-				wg: sync.WaitGroup{},
-			},
-			want: want{},
+			name:   "success backoff Close",
+			fields: fields{},
+			want:   want{},
 		},
 	}
 
@@ -210,9 +203,7 @@ func Test_backoff_Close(t *testing.T) {
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
-			b := &backoff{
-				wg: test.fields.wg,
-			}
+			b := &backoff{}
 
 			b.Close()
 			if err := checkFunc(test.want); err != nil {
@@ -229,7 +220,6 @@ func Test_backoff_Do(t *testing.T) {
 		f   func(ctx context.Context) (val interface{}, retryable bool, err error)
 	}
 	type fields struct {
-		wg                    sync.WaitGroup
 		backoffFactor         float64
 		initialDuration       float64
 		jittedInitialDuration float64
@@ -307,7 +297,6 @@ func Test_backoff_Do(t *testing.T) {
 					f:   f,
 				},
 				fields: fields{
-					wg:                    sync.WaitGroup{},
 					backoffFactor:         0,
 					initialDuration:       0,
 					jittedInitialDuration: 0,
@@ -337,7 +326,6 @@ func Test_backoff_Do(t *testing.T) {
 					f:   f,
 				},
 				fields: fields{
-					wg:                    sync.WaitGroup{},
 					backoffFactor:         0,
 					initialDuration:       0,
 					jittedInitialDuration: 0,
@@ -372,7 +360,6 @@ func Test_backoff_Do(t *testing.T) {
 					f:   f,
 				},
 				fields: fields{
-					wg:                    sync.WaitGroup{},
 					backoffFactor:         0,
 					initialDuration:       0,
 					jittedInitialDuration: 0,
@@ -407,7 +394,6 @@ func Test_backoff_Do(t *testing.T) {
 					f:   f,
 				},
 				fields: fields{
-					wg:                    sync.WaitGroup{},
 					backoffFactor:         0,
 					initialDuration:       0,
 					jittedInitialDuration: 0,
@@ -436,7 +422,6 @@ func Test_backoff_Do(t *testing.T) {
 					f:   f,
 				},
 				fields: fields{
-					wg:                    sync.WaitGroup{},
 					backoffFactor:         0,
 					initialDuration:       0,
 					jittedInitialDuration: 0,
@@ -466,7 +451,6 @@ func Test_backoff_Do(t *testing.T) {
 					f:   f,
 				},
 				fields: fields{
-					wg:                    sync.WaitGroup{},
 					backoffFactor:         0,
 					initialDuration:       0,
 					jittedInitialDuration: 0,
@@ -496,7 +480,6 @@ func Test_backoff_Do(t *testing.T) {
 					f:   f,
 				},
 				fields: fields{
-					wg:                    sync.WaitGroup{},
 					backoffFactor:         0,
 					initialDuration:       0,
 					jittedInitialDuration: 0,
@@ -530,7 +513,6 @@ func Test_backoff_Do(t *testing.T) {
 					f:   f,
 				},
 				fields: fields{
-					wg:                    sync.WaitGroup{},
 					backoffFactor:         0,
 					initialDuration:       0,
 					jittedInitialDuration: 0,
@@ -564,7 +546,6 @@ func Test_backoff_Do(t *testing.T) {
 					f:   f,
 				},
 				fields: fields{
-					wg:                    sync.WaitGroup{},
 					backoffFactor:         1.1,
 					initialDuration:       float64(time.Millisecond * 5),
 					jittedInitialDuration: 0,
@@ -598,7 +579,6 @@ func Test_backoff_Do(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 			b := &backoff{
-				wg:                    test.fields.wg,
 				backoffFactor:         test.fields.backoffFactor,
 				initialDuration:       test.fields.initialDuration,
 				jittedInitialDuration: test.fields.jittedInitialDuration,
