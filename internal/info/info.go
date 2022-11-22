@@ -263,7 +263,7 @@ func (i *info) Get() Detail {
 	return i.get()
 }
 
-func (i info) get() Detail {
+func (i *info) get() Detail {
 	i.detail.StackTrace = make([]StackTrace, 0, 10)
 	for j := 2; ; j++ {
 		pc, file, line, ok := i.rtCaller(j)
