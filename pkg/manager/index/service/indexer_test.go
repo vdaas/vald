@@ -116,7 +116,6 @@ func TestNew(t *testing.T) {
 			if err := checkFunc(test.want, gotIdx, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -136,7 +135,7 @@ func Test_index_Start(t *testing.T) {
 		saveIndexTargetAddrCh  chan string
 		schMap                 sync.Map
 		concurrency            int
-		indexInfos             indexInfos
+		indexInfos             func() indexInfos
 		indexing               atomic.Value
 		minUncommitted         uint32
 		uuidsCount             uint32
@@ -264,7 +263,7 @@ func Test_index_Start(t *testing.T) {
 				saveIndexTargetAddrCh:  test.fields.saveIndexTargetAddrCh,
 				schMap:                 test.fields.schMap,
 				concurrency:            test.fields.concurrency,
-				indexInfos:             test.fields.indexInfos,
+				indexInfos:             test.fields.indexInfos(),
 				indexing:               test.fields.indexing,
 				minUncommitted:         test.fields.minUncommitted,
 				uuidsCount:             test.fields.uuidsCount,
@@ -275,7 +274,6 @@ func Test_index_Start(t *testing.T) {
 			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -297,7 +295,7 @@ func Test_index_execute(t *testing.T) {
 		saveIndexTargetAddrCh  chan string
 		schMap                 sync.Map
 		concurrency            int
-		indexInfos             indexInfos
+		indexInfos             func() indexInfos
 		indexing               atomic.Value
 		minUncommitted         uint32
 		uuidsCount             uint32
@@ -425,7 +423,7 @@ func Test_index_execute(t *testing.T) {
 				saveIndexTargetAddrCh:  test.fields.saveIndexTargetAddrCh,
 				schMap:                 test.fields.schMap,
 				concurrency:            test.fields.concurrency,
-				indexInfos:             test.fields.indexInfos,
+				indexInfos:             test.fields.indexInfos(),
 				indexing:               test.fields.indexing,
 				minUncommitted:         test.fields.minUncommitted,
 				uuidsCount:             test.fields.uuidsCount,
@@ -436,7 +434,6 @@ func Test_index_execute(t *testing.T) {
 			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -456,14 +453,13 @@ func Test_index_waitForNextSaving(t *testing.T) {
 		saveIndexTargetAddrCh  chan string
 		schMap                 sync.Map
 		concurrency            int
-		indexInfos             indexInfos
+		indexInfos             func() indexInfos
 		indexing               atomic.Value
 		minUncommitted         uint32
 		uuidsCount             uint32
 		uncommittedUUIDsCount  uint32
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -576,7 +572,7 @@ func Test_index_waitForNextSaving(t *testing.T) {
 				saveIndexTargetAddrCh:  test.fields.saveIndexTargetAddrCh,
 				schMap:                 test.fields.schMap,
 				concurrency:            test.fields.concurrency,
-				indexInfos:             test.fields.indexInfos,
+				indexInfos:             test.fields.indexInfos(),
 				indexing:               test.fields.indexing,
 				minUncommitted:         test.fields.minUncommitted,
 				uuidsCount:             test.fields.uuidsCount,
@@ -606,7 +602,7 @@ func Test_index_loadInfos(t *testing.T) {
 		saveIndexTargetAddrCh  chan string
 		schMap                 sync.Map
 		concurrency            int
-		indexInfos             indexInfos
+		indexInfos             func() indexInfos
 		indexing               atomic.Value
 		minUncommitted         uint32
 		uuidsCount             uint32
@@ -730,7 +726,7 @@ func Test_index_loadInfos(t *testing.T) {
 				saveIndexTargetAddrCh:  test.fields.saveIndexTargetAddrCh,
 				schMap:                 test.fields.schMap,
 				concurrency:            test.fields.concurrency,
-				indexInfos:             test.fields.indexInfos,
+				indexInfos:             test.fields.indexInfos(),
 				indexing:               test.fields.indexing,
 				minUncommitted:         test.fields.minUncommitted,
 				uuidsCount:             test.fields.uuidsCount,
@@ -741,7 +737,6 @@ func Test_index_loadInfos(t *testing.T) {
 			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -758,7 +753,7 @@ func Test_index_IsIndexing(t *testing.T) {
 		saveIndexTargetAddrCh  chan string
 		schMap                 sync.Map
 		concurrency            int
-		indexInfos             indexInfos
+		indexInfos             func() indexInfos
 		indexing               atomic.Value
 		minUncommitted         uint32
 		uuidsCount             uint32
@@ -875,7 +870,7 @@ func Test_index_IsIndexing(t *testing.T) {
 				saveIndexTargetAddrCh:  test.fields.saveIndexTargetAddrCh,
 				schMap:                 test.fields.schMap,
 				concurrency:            test.fields.concurrency,
-				indexInfos:             test.fields.indexInfos,
+				indexInfos:             test.fields.indexInfos(),
 				indexing:               test.fields.indexing,
 				minUncommitted:         test.fields.minUncommitted,
 				uuidsCount:             test.fields.uuidsCount,
@@ -886,7 +881,6 @@ func Test_index_IsIndexing(t *testing.T) {
 			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -903,7 +897,7 @@ func Test_index_NumberOfUUIDs(t *testing.T) {
 		saveIndexTargetAddrCh  chan string
 		schMap                 sync.Map
 		concurrency            int
-		indexInfos             indexInfos
+		indexInfos             func() indexInfos
 		indexing               atomic.Value
 		minUncommitted         uint32
 		uuidsCount             uint32
@@ -1020,7 +1014,7 @@ func Test_index_NumberOfUUIDs(t *testing.T) {
 				saveIndexTargetAddrCh:  test.fields.saveIndexTargetAddrCh,
 				schMap:                 test.fields.schMap,
 				concurrency:            test.fields.concurrency,
-				indexInfos:             test.fields.indexInfos,
+				indexInfos:             test.fields.indexInfos(),
 				indexing:               test.fields.indexing,
 				minUncommitted:         test.fields.minUncommitted,
 				uuidsCount:             test.fields.uuidsCount,
@@ -1031,7 +1025,6 @@ func Test_index_NumberOfUUIDs(t *testing.T) {
 			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -1048,7 +1041,7 @@ func Test_index_NumberOfUncommittedUUIDs(t *testing.T) {
 		saveIndexTargetAddrCh  chan string
 		schMap                 sync.Map
 		concurrency            int
-		indexInfos             indexInfos
+		indexInfos             func() indexInfos
 		indexing               atomic.Value
 		minUncommitted         uint32
 		uuidsCount             uint32
@@ -1165,7 +1158,7 @@ func Test_index_NumberOfUncommittedUUIDs(t *testing.T) {
 				saveIndexTargetAddrCh:  test.fields.saveIndexTargetAddrCh,
 				schMap:                 test.fields.schMap,
 				concurrency:            test.fields.concurrency,
-				indexInfos:             test.fields.indexInfos,
+				indexInfos:             test.fields.indexInfos(),
 				indexing:               test.fields.indexing,
 				minUncommitted:         test.fields.minUncommitted,
 				uuidsCount:             test.fields.uuidsCount,
@@ -1176,7 +1169,6 @@ func Test_index_NumberOfUncommittedUUIDs(t *testing.T) {
 			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }

@@ -18,7 +18,6 @@ package service
 
 import (
 	"reflect"
-	"sync"
 	"sync/atomic"
 	"testing"
 	"unsafe"
@@ -109,7 +108,6 @@ func Test_newEntryIndexInfos(t *testing.T) {
 			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -119,7 +117,6 @@ func Test_indexInfos_Load(t *testing.T) {
 		key string
 	}
 	type fields struct {
-		mu     sync.Mutex
 		read   atomic.Value
 		dirty  map[string]*entryIndexInfos
 		misses int
@@ -214,7 +211,6 @@ func Test_indexInfos_Load(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 			m := &indexInfos{
-				mu:     test.fields.mu,
 				read:   test.fields.read,
 				dirty:  test.fields.dirty,
 				misses: test.fields.misses,
@@ -224,7 +220,6 @@ func Test_indexInfos_Load(t *testing.T) {
 			if err := checkFunc(test.want, gotValue, gotOk); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -317,7 +312,6 @@ func Test_entryIndexInfos_load(t *testing.T) {
 			if err := checkFunc(test.want, gotValue, gotOk); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -328,13 +322,11 @@ func Test_indexInfos_Store(t *testing.T) {
 		value *payload.Info_Index_Count
 	}
 	type fields struct {
-		mu     sync.Mutex
 		read   atomic.Value
 		dirty  map[string]*entryIndexInfos
 		misses int
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -417,7 +409,6 @@ func Test_indexInfos_Store(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 			m := &indexInfos{
-				mu:     test.fields.mu,
 				read:   test.fields.read,
 				dirty:  test.fields.dirty,
 				misses: test.fields.misses,
@@ -525,7 +516,6 @@ func Test_entryIndexInfos_tryStore(t *testing.T) {
 			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -614,7 +604,6 @@ func Test_entryIndexInfos_unexpungeLocked(t *testing.T) {
 			if err := checkFunc(test.want, gotWasExpunged); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -626,8 +615,7 @@ func Test_entryIndexInfos_storeLocked(t *testing.T) {
 	type fields struct {
 		p unsafe.Pointer
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -718,13 +706,11 @@ func Test_indexInfos_Delete(t *testing.T) {
 		key string
 	}
 	type fields struct {
-		mu     sync.Mutex
 		read   atomic.Value
 		dirty  map[string]*entryIndexInfos
 		misses int
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -805,7 +791,6 @@ func Test_indexInfos_Delete(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 			m := &indexInfos{
-				mu:     test.fields.mu,
 				read:   test.fields.read,
 				dirty:  test.fields.dirty,
 				misses: test.fields.misses,
@@ -903,7 +888,6 @@ func Test_entryIndexInfos_delete(t *testing.T) {
 			if err := checkFunc(test.want, gotHadValue); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -913,13 +897,11 @@ func Test_indexInfos_Range(t *testing.T) {
 		f func(key string, value *payload.Info_Index_Count) bool
 	}
 	type fields struct {
-		mu     sync.Mutex
 		read   atomic.Value
 		dirty  map[string]*entryIndexInfos
 		misses int
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		args       args
@@ -1000,7 +982,6 @@ func Test_indexInfos_Range(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 			m := &indexInfos{
-				mu:     test.fields.mu,
 				read:   test.fields.read,
 				dirty:  test.fields.dirty,
 				misses: test.fields.misses,
@@ -1016,13 +997,11 @@ func Test_indexInfos_Range(t *testing.T) {
 
 func Test_indexInfos_missLocked(t *testing.T) {
 	type fields struct {
-		mu     sync.Mutex
 		read   atomic.Value
 		dirty  map[string]*entryIndexInfos
 		misses int
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		fields     fields
@@ -1096,7 +1075,6 @@ func Test_indexInfos_missLocked(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 			m := &indexInfos{
-				mu:     test.fields.mu,
 				read:   test.fields.read,
 				dirty:  test.fields.dirty,
 				misses: test.fields.misses,
@@ -1112,13 +1090,11 @@ func Test_indexInfos_missLocked(t *testing.T) {
 
 func Test_indexInfos_dirtyLocked(t *testing.T) {
 	type fields struct {
-		mu     sync.Mutex
 		read   atomic.Value
 		dirty  map[string]*entryIndexInfos
 		misses int
 	}
-	type want struct {
-	}
+	type want struct{}
 	type test struct {
 		name       string
 		fields     fields
@@ -1192,7 +1168,6 @@ func Test_indexInfos_dirtyLocked(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 			m := &indexInfos{
-				mu:     test.fields.mu,
 				read:   test.fields.read,
 				dirty:  test.fields.dirty,
 				misses: test.fields.misses,
@@ -1290,7 +1265,6 @@ func Test_entryIndexInfos_tryExpungeLocked(t *testing.T) {
 			if err := checkFunc(test.want, gotIsExpunged); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
