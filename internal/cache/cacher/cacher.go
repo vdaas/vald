@@ -45,8 +45,9 @@ func (m Type) String() string {
 	switch m {
 	case GACHE:
 		return "gache"
+	default:
+		return "unknown"
 	}
-	return "unknown"
 }
 
 // ToType returns the type based on the string.
@@ -54,6 +55,7 @@ func ToType(str string) Type {
 	switch strings.ToLower(str) {
 	case "gache":
 		return GACHE
+	default:
+		return Unknown
 	}
-	return Unknown
 }
