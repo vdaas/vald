@@ -22,6 +22,7 @@ import (
 	"io"
 	"reflect"
 	"sync"
+	"sync/atomic"
 	"testing"
 
 	"github.com/vdaas/vald/internal/errors"
@@ -279,7 +280,6 @@ func Test_copier_Copy(t *testing.T) {
 	}
 	type fields struct {
 		bufSize int64
-		pool    sync.Pool
 	}
 	type want struct {
 		wantWritten int64
@@ -326,7 +326,11 @@ func Test_copier_Copy(t *testing.T) {
 			}
 			c := &copier{
 				bufSize: test.fields.bufSize,
-				pool:    test.fields.pool,
+			}
+			c.pool = sync.Pool{
+				New: func() interface{} {
+					return bytes.NewBuffer(make([]byte, int(atomic.LoadInt64(&c.bufSize))))
+				},
 			}
 			dst := &bytes.Buffer{}
 
