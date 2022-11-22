@@ -16,7 +16,6 @@ package sidecar
 import (
 	"context"
 	"reflect"
-	"sync"
 	"testing"
 
 	"github.com/vdaas/vald/internal/errors"
@@ -96,7 +95,6 @@ func Test_sidecarMetrics_Register(t *testing.T) {
 		storageTypeKey string
 		bucketNameKey  string
 		filenameKey    string
-		mu             sync.Mutex
 		info           *observer.BackupInfo
 	}
 	type want struct {
@@ -129,7 +127,6 @@ func Test_sidecarMetrics_Register(t *testing.T) {
 		           storageTypeKey: "",
 		           bucketNameKey: "",
 		           filenameKey: "",
-		           mu: nil,
 		           info: nil,
 		       },
 		       want: want{},
@@ -149,7 +146,6 @@ func Test_sidecarMetrics_Register(t *testing.T) {
 		           storageTypeKey: "",
 		           bucketNameKey: "",
 		           filenameKey: "",
-		           mu: nil,
 		           info: nil,
 		           },
 		           want: want{},
@@ -178,7 +174,6 @@ func Test_sidecarMetrics_Register(t *testing.T) {
 				storageTypeKey: test.fields.storageTypeKey,
 				bucketNameKey:  test.fields.bucketNameKey,
 				filenameKey:    test.fields.filenameKey,
-				mu:             test.fields.mu,
 				info:           test.fields.info,
 			}
 
@@ -199,7 +194,6 @@ func Test_sidecarMetrics_BeforeProcess(t *testing.T) {
 		storageTypeKey string
 		bucketNameKey  string
 		filenameKey    string
-		mu             sync.Mutex
 		info           *observer.BackupInfo
 	}
 	type want struct {
@@ -237,7 +231,6 @@ func Test_sidecarMetrics_BeforeProcess(t *testing.T) {
 		           storageTypeKey: "",
 		           bucketNameKey: "",
 		           filenameKey: "",
-		           mu: nil,
 		           info: nil,
 		       },
 		       want: want{},
@@ -258,7 +251,6 @@ func Test_sidecarMetrics_BeforeProcess(t *testing.T) {
 		           storageTypeKey: "",
 		           bucketNameKey: "",
 		           filenameKey: "",
-		           mu: nil,
 		           info: nil,
 		           },
 		           want: want{},
@@ -287,7 +279,6 @@ func Test_sidecarMetrics_BeforeProcess(t *testing.T) {
 				storageTypeKey: test.fields.storageTypeKey,
 				bucketNameKey:  test.fields.bucketNameKey,
 				filenameKey:    test.fields.filenameKey,
-				mu:             test.fields.mu,
 				info:           test.fields.info,
 			}
 
@@ -308,7 +299,6 @@ func Test_sidecarMetrics_AfterProcess(t *testing.T) {
 		storageTypeKey string
 		bucketNameKey  string
 		filenameKey    string
-		mu             sync.Mutex
 		info           *observer.BackupInfo
 	}
 	type want struct {
@@ -342,7 +332,6 @@ func Test_sidecarMetrics_AfterProcess(t *testing.T) {
 		           storageTypeKey: "",
 		           bucketNameKey: "",
 		           filenameKey: "",
-		           mu: nil,
 		           info: nil,
 		       },
 		       want: want{},
@@ -363,7 +352,6 @@ func Test_sidecarMetrics_AfterProcess(t *testing.T) {
 		           storageTypeKey: "",
 		           bucketNameKey: "",
 		           filenameKey: "",
-		           mu: nil,
 		           info: nil,
 		           },
 		           want: want{},
@@ -392,7 +380,6 @@ func Test_sidecarMetrics_AfterProcess(t *testing.T) {
 				storageTypeKey: test.fields.storageTypeKey,
 				bucketNameKey:  test.fields.bucketNameKey,
 				filenameKey:    test.fields.filenameKey,
-				mu:             test.fields.mu,
 				info:           test.fields.info,
 			}
 
@@ -409,7 +396,6 @@ func Test_sidecarMetrics_View(t *testing.T) {
 		storageTypeKey string
 		bucketNameKey  string
 		filenameKey    string
-		mu             sync.Mutex
 		info           *observer.BackupInfo
 	}
 	type want struct {
@@ -442,7 +428,6 @@ func Test_sidecarMetrics_View(t *testing.T) {
 		           storageTypeKey: "",
 		           bucketNameKey: "",
 		           filenameKey: "",
-		           mu: nil,
 		           info: nil,
 		       },
 		       want: want{},
@@ -459,7 +444,6 @@ func Test_sidecarMetrics_View(t *testing.T) {
 		           storageTypeKey: "",
 		           bucketNameKey: "",
 		           filenameKey: "",
-		           mu: nil,
 		           info: nil,
 		           },
 		           want: want{},
@@ -488,7 +472,6 @@ func Test_sidecarMetrics_View(t *testing.T) {
 				storageTypeKey: test.fields.storageTypeKey,
 				bucketNameKey:  test.fields.bucketNameKey,
 				filenameKey:    test.fields.filenameKey,
-				mu:             test.fields.mu,
 				info:           test.fields.info,
 			}
 

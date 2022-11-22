@@ -86,9 +86,7 @@ func Test_group_Do(t *testing.T) {
 		key string
 		fn  func() (interface{}, error)
 	}
-	type fields struct {
-		m sync.Map
-	}
+	type fields struct{}
 	type want struct {
 		wantV      interface{}
 		wantShared bool
@@ -278,9 +276,7 @@ func Test_group_Do(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 
-			g := &group{
-				m: test.fields.m,
-			}
+			g := &group{}
 
 			execFunc := defaultExecFunc
 			if test.execFunc != nil {
