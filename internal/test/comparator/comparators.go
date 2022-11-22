@@ -25,7 +25,9 @@ var (
 		return reflect.DeepEqual(x, y)
 	})
 
+	// skipcq: VET-V0008
 	MutexComparer = Comparer(func(x, y sync.Mutex) bool {
+		// skipcq: VET-V0008
 		return reflect.DeepEqual(x, y)
 	})
 
@@ -37,11 +39,15 @@ var (
 		return errors.Is(x, y)
 	})
 
+	// skipcq: VET-V0008
 	OnceComparer = Comparer(func(x, y sync.Once) bool {
+		// skipcq: VET-V0008
 		return reflect.DeepEqual(x, y)
 	})
 
+	// skipcq: VET-V0008
 	WaitGroupComparer = Comparer(func(x, y sync.WaitGroup) bool {
+		// skipcq: VET-V0008
 		return reflect.DeepEqual(x, y)
 	})
 )

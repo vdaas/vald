@@ -192,6 +192,7 @@ func (i *info) String() string {
 }
 
 // String returns summary of Detail object.
+// skipcq: RVV-B0006
 func (d Detail) String() string {
 	d.Version = log.Bold(d.Version)
 	maxlen, l := 0, 0
@@ -263,7 +264,8 @@ func (i *info) Get() Detail {
 	return i.get()
 }
 
-func (i *info) get() Detail {
+// skipcq: VET-V0008
+func (i info) get() Detail {
 	i.detail.StackTrace = make([]StackTrace, 0, 10)
 	for j := 2; ; j++ {
 		pc, file, line, ok := i.rtCaller(j)
