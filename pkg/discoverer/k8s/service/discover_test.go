@@ -121,7 +121,6 @@ func TestNew(t *testing.T) {
 			if err := checkFunc(test.want, gotDsc, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -280,7 +279,6 @@ func Test_discoverer_Start(t *testing.T) {
 			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -439,7 +437,6 @@ func Test_discoverer_GetPods(t *testing.T) {
 			if err := checkFunc(test.want, gotPods, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
