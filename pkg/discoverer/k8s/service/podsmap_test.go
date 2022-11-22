@@ -22,7 +22,7 @@ import (
 	"testing"
 	"unsafe"
 
-	"github.com/pkg/errors"
+	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/k8s/pod"
 	"github.com/vdaas/vald/internal/test/goleak"
 )
