@@ -20,7 +20,6 @@ package service
 import (
 	"context"
 	"reflect"
-	"sync"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -44,8 +43,8 @@ func TestNew(t *testing.T) {
 		args       args
 		want       want
 		checkFunc  func(want, Indexer, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, gotIdx Indexer, err error) error {
 		if !errors.Is(err, w.err) {
@@ -66,6 +65,12 @@ func TestNew(t *testing.T) {
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -79,6 +84,12 @@ func TestNew(t *testing.T) {
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -90,10 +101,10 @@ func TestNew(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -121,13 +132,16 @@ func Test_index_Start(t *testing.T) {
 		saveIndexDurationLimit time.Duration
 		saveIndexWaitDuration  time.Duration
 		saveIndexTargetAddrCh  chan string
-		schMap                 sync.Map
 		concurrency            int
-		indexInfos             indexInfos
-		indexing               atomic.Value
-		minUncommitted         uint32
-		uuidsCount             uint32
-		uncommittedUUIDsCount  uint32
+		indexInfos             struct {
+			read   atomic.Value
+			dirty  map[string]*entryIndexInfos
+			misses int
+		}
+		indexing              atomic.Value
+		minUncommitted        uint32
+		uuidsCount            uint32
+		uncommittedUUIDsCount uint32
 	}
 	type want struct {
 		want <-chan error
@@ -139,8 +153,8 @@ func Test_index_Start(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, <-chan error, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, got <-chan error, err error) error {
 		if !errors.Is(err, w.err) {
@@ -168,7 +182,6 @@ func Test_index_Start(t *testing.T) {
 		           saveIndexDurationLimit: nil,
 		           saveIndexWaitDuration: nil,
 		           saveIndexTargetAddrCh: nil,
-		           schMap: sync.Map{},
 		           concurrency: 0,
 		           indexInfos: indexInfos{},
 		           indexing: nil,
@@ -178,6 +191,12 @@ func Test_index_Start(t *testing.T) {
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -198,7 +217,6 @@ func Test_index_Start(t *testing.T) {
 		           saveIndexDurationLimit: nil,
 		           saveIndexWaitDuration: nil,
 		           saveIndexTargetAddrCh: nil,
-		           schMap: sync.Map{},
 		           concurrency: 0,
 		           indexInfos: indexInfos{},
 		           indexing: nil,
@@ -208,6 +226,12 @@ func Test_index_Start(t *testing.T) {
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -219,10 +243,10 @@ func Test_index_Start(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -237,13 +261,16 @@ func Test_index_Start(t *testing.T) {
 				saveIndexDurationLimit: test.fields.saveIndexDurationLimit,
 				saveIndexWaitDuration:  test.fields.saveIndexWaitDuration,
 				saveIndexTargetAddrCh:  test.fields.saveIndexTargetAddrCh,
-				schMap:                 test.fields.schMap,
 				concurrency:            test.fields.concurrency,
-				indexInfos:             test.fields.indexInfos,
-				indexing:               test.fields.indexing,
-				minUncommitted:         test.fields.minUncommitted,
-				uuidsCount:             test.fields.uuidsCount,
-				uncommittedUUIDsCount:  test.fields.uncommittedUUIDsCount,
+				indexInfos: indexInfos{
+					read:   test.fields.indexInfos.read,
+					dirty:  test.fields.indexInfos.dirty,
+					misses: test.fields.indexInfos.misses,
+				},
+				indexing:              test.fields.indexing,
+				minUncommitted:        test.fields.minUncommitted,
+				uuidsCount:            test.fields.uuidsCount,
+				uncommittedUUIDsCount: test.fields.uncommittedUUIDsCount,
 			}
 
 			got, err := idx.Start(test.args.ctx)
@@ -269,13 +296,16 @@ func Test_index_execute(t *testing.T) {
 		saveIndexDurationLimit time.Duration
 		saveIndexWaitDuration  time.Duration
 		saveIndexTargetAddrCh  chan string
-		schMap                 sync.Map
 		concurrency            int
-		indexInfos             indexInfos
-		indexing               atomic.Value
-		minUncommitted         uint32
-		uuidsCount             uint32
-		uncommittedUUIDsCount  uint32
+		indexInfos             struct {
+			read   atomic.Value
+			dirty  map[string]*entryIndexInfos
+			misses int
+		}
+		indexing              atomic.Value
+		minUncommitted        uint32
+		uuidsCount            uint32
+		uncommittedUUIDsCount uint32
 	}
 	type want struct {
 		err error
@@ -286,8 +316,8 @@ func Test_index_execute(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -314,7 +344,6 @@ func Test_index_execute(t *testing.T) {
 		           saveIndexDurationLimit: nil,
 		           saveIndexWaitDuration: nil,
 		           saveIndexTargetAddrCh: nil,
-		           schMap: sync.Map{},
 		           concurrency: 0,
 		           indexInfos: indexInfos{},
 		           indexing: nil,
@@ -324,6 +353,12 @@ func Test_index_execute(t *testing.T) {
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -346,7 +381,6 @@ func Test_index_execute(t *testing.T) {
 		           saveIndexDurationLimit: nil,
 		           saveIndexWaitDuration: nil,
 		           saveIndexTargetAddrCh: nil,
-		           schMap: sync.Map{},
 		           concurrency: 0,
 		           indexInfos: indexInfos{},
 		           indexing: nil,
@@ -356,6 +390,12 @@ func Test_index_execute(t *testing.T) {
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -367,10 +407,10 @@ func Test_index_execute(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -385,13 +425,16 @@ func Test_index_execute(t *testing.T) {
 				saveIndexDurationLimit: test.fields.saveIndexDurationLimit,
 				saveIndexWaitDuration:  test.fields.saveIndexWaitDuration,
 				saveIndexTargetAddrCh:  test.fields.saveIndexTargetAddrCh,
-				schMap:                 test.fields.schMap,
 				concurrency:            test.fields.concurrency,
-				indexInfos:             test.fields.indexInfos,
-				indexing:               test.fields.indexing,
-				minUncommitted:         test.fields.minUncommitted,
-				uuidsCount:             test.fields.uuidsCount,
-				uncommittedUUIDsCount:  test.fields.uncommittedUUIDsCount,
+				indexInfos: indexInfos{
+					read:   test.fields.indexInfos.read,
+					dirty:  test.fields.indexInfos.dirty,
+					misses: test.fields.indexInfos.misses,
+				},
+				indexing:              test.fields.indexing,
+				minUncommitted:        test.fields.minUncommitted,
+				uuidsCount:            test.fields.uuidsCount,
+				uncommittedUUIDsCount: test.fields.uncommittedUUIDsCount,
 			}
 
 			err := idx.execute(test.args.ctx, test.args.enableLowIndexSkip, test.args.immediateSaving)
@@ -415,13 +458,16 @@ func Test_index_waitForNextSaving(t *testing.T) {
 		saveIndexDurationLimit time.Duration
 		saveIndexWaitDuration  time.Duration
 		saveIndexTargetAddrCh  chan string
-		schMap                 sync.Map
 		concurrency            int
-		indexInfos             indexInfos
-		indexing               atomic.Value
-		minUncommitted         uint32
-		uuidsCount             uint32
-		uncommittedUUIDsCount  uint32
+		indexInfos             struct {
+			read   atomic.Value
+			dirty  map[string]*entryIndexInfos
+			misses int
+		}
+		indexing              atomic.Value
+		minUncommitted        uint32
+		uuidsCount            uint32
+		uncommittedUUIDsCount uint32
 	}
 	type want struct{}
 	type test struct {
@@ -430,8 +476,8 @@ func Test_index_waitForNextSaving(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want) error {
 		return nil
@@ -453,7 +499,6 @@ func Test_index_waitForNextSaving(t *testing.T) {
 		           saveIndexDurationLimit: nil,
 		           saveIndexWaitDuration: nil,
 		           saveIndexTargetAddrCh: nil,
-		           schMap: sync.Map{},
 		           concurrency: 0,
 		           indexInfos: indexInfos{},
 		           indexing: nil,
@@ -463,6 +508,12 @@ func Test_index_waitForNextSaving(t *testing.T) {
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -483,7 +534,6 @@ func Test_index_waitForNextSaving(t *testing.T) {
 		           saveIndexDurationLimit: nil,
 		           saveIndexWaitDuration: nil,
 		           saveIndexTargetAddrCh: nil,
-		           schMap: sync.Map{},
 		           concurrency: 0,
 		           indexInfos: indexInfos{},
 		           indexing: nil,
@@ -493,6 +543,12 @@ func Test_index_waitForNextSaving(t *testing.T) {
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -504,10 +560,10 @@ func Test_index_waitForNextSaving(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -522,13 +578,16 @@ func Test_index_waitForNextSaving(t *testing.T) {
 				saveIndexDurationLimit: test.fields.saveIndexDurationLimit,
 				saveIndexWaitDuration:  test.fields.saveIndexWaitDuration,
 				saveIndexTargetAddrCh:  test.fields.saveIndexTargetAddrCh,
-				schMap:                 test.fields.schMap,
 				concurrency:            test.fields.concurrency,
-				indexInfos:             test.fields.indexInfos,
-				indexing:               test.fields.indexing,
-				minUncommitted:         test.fields.minUncommitted,
-				uuidsCount:             test.fields.uuidsCount,
-				uncommittedUUIDsCount:  test.fields.uncommittedUUIDsCount,
+				indexInfos: indexInfos{
+					read:   test.fields.indexInfos.read,
+					dirty:  test.fields.indexInfos.dirty,
+					misses: test.fields.indexInfos.misses,
+				},
+				indexing:              test.fields.indexing,
+				minUncommitted:        test.fields.minUncommitted,
+				uuidsCount:            test.fields.uuidsCount,
+				uncommittedUUIDsCount: test.fields.uncommittedUUIDsCount,
 			}
 
 			idx.waitForNextSaving(test.args.ctx)
@@ -552,13 +611,16 @@ func Test_index_loadInfos(t *testing.T) {
 		saveIndexDurationLimit time.Duration
 		saveIndexWaitDuration  time.Duration
 		saveIndexTargetAddrCh  chan string
-		schMap                 sync.Map
 		concurrency            int
-		indexInfos             indexInfos
-		indexing               atomic.Value
-		minUncommitted         uint32
-		uuidsCount             uint32
-		uncommittedUUIDsCount  uint32
+		indexInfos             struct {
+			read   atomic.Value
+			dirty  map[string]*entryIndexInfos
+			misses int
+		}
+		indexing              atomic.Value
+		minUncommitted        uint32
+		uuidsCount            uint32
+		uncommittedUUIDsCount uint32
 	}
 	type want struct {
 		err error
@@ -569,8 +631,8 @@ func Test_index_loadInfos(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -595,7 +657,6 @@ func Test_index_loadInfos(t *testing.T) {
 		           saveIndexDurationLimit: nil,
 		           saveIndexWaitDuration: nil,
 		           saveIndexTargetAddrCh: nil,
-		           schMap: sync.Map{},
 		           concurrency: 0,
 		           indexInfos: indexInfos{},
 		           indexing: nil,
@@ -605,6 +666,12 @@ func Test_index_loadInfos(t *testing.T) {
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -625,7 +692,6 @@ func Test_index_loadInfos(t *testing.T) {
 		           saveIndexDurationLimit: nil,
 		           saveIndexWaitDuration: nil,
 		           saveIndexTargetAddrCh: nil,
-		           schMap: sync.Map{},
 		           concurrency: 0,
 		           indexInfos: indexInfos{},
 		           indexing: nil,
@@ -635,6 +701,12 @@ func Test_index_loadInfos(t *testing.T) {
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -646,10 +718,10 @@ func Test_index_loadInfos(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -664,13 +736,16 @@ func Test_index_loadInfos(t *testing.T) {
 				saveIndexDurationLimit: test.fields.saveIndexDurationLimit,
 				saveIndexWaitDuration:  test.fields.saveIndexWaitDuration,
 				saveIndexTargetAddrCh:  test.fields.saveIndexTargetAddrCh,
-				schMap:                 test.fields.schMap,
 				concurrency:            test.fields.concurrency,
-				indexInfos:             test.fields.indexInfos,
-				indexing:               test.fields.indexing,
-				minUncommitted:         test.fields.minUncommitted,
-				uuidsCount:             test.fields.uuidsCount,
-				uncommittedUUIDsCount:  test.fields.uncommittedUUIDsCount,
+				indexInfos: indexInfos{
+					read:   test.fields.indexInfos.read,
+					dirty:  test.fields.indexInfos.dirty,
+					misses: test.fields.indexInfos.misses,
+				},
+				indexing:              test.fields.indexing,
+				minUncommitted:        test.fields.minUncommitted,
+				uuidsCount:            test.fields.uuidsCount,
+				uncommittedUUIDsCount: test.fields.uncommittedUUIDsCount,
 			}
 
 			err := idx.loadInfos(test.args.ctx)
@@ -691,13 +766,16 @@ func Test_index_IsIndexing(t *testing.T) {
 		saveIndexDurationLimit time.Duration
 		saveIndexWaitDuration  time.Duration
 		saveIndexTargetAddrCh  chan string
-		schMap                 sync.Map
 		concurrency            int
-		indexInfos             indexInfos
-		indexing               atomic.Value
-		minUncommitted         uint32
-		uuidsCount             uint32
-		uncommittedUUIDsCount  uint32
+		indexInfos             struct {
+			read   atomic.Value
+			dirty  map[string]*entryIndexInfos
+			misses int
+		}
+		indexing              atomic.Value
+		minUncommitted        uint32
+		uuidsCount            uint32
+		uncommittedUUIDsCount uint32
 	}
 	type want struct {
 		want bool
@@ -707,8 +785,8 @@ func Test_index_IsIndexing(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, bool) error
-		beforeFunc func()
-		afterFunc  func()
+		beforeFunc func(*testing.T)
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want, got bool) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -730,7 +808,6 @@ func Test_index_IsIndexing(t *testing.T) {
 		           saveIndexDurationLimit: nil,
 		           saveIndexWaitDuration: nil,
 		           saveIndexTargetAddrCh: nil,
-		           schMap: sync.Map{},
 		           concurrency: 0,
 		           indexInfos: indexInfos{},
 		           indexing: nil,
@@ -740,6 +817,12 @@ func Test_index_IsIndexing(t *testing.T) {
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -757,7 +840,6 @@ func Test_index_IsIndexing(t *testing.T) {
 		           saveIndexDurationLimit: nil,
 		           saveIndexWaitDuration: nil,
 		           saveIndexTargetAddrCh: nil,
-		           schMap: sync.Map{},
 		           concurrency: 0,
 		           indexInfos: indexInfos{},
 		           indexing: nil,
@@ -767,6 +849,12 @@ func Test_index_IsIndexing(t *testing.T) {
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -778,10 +866,10 @@ func Test_index_IsIndexing(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -796,13 +884,16 @@ func Test_index_IsIndexing(t *testing.T) {
 				saveIndexDurationLimit: test.fields.saveIndexDurationLimit,
 				saveIndexWaitDuration:  test.fields.saveIndexWaitDuration,
 				saveIndexTargetAddrCh:  test.fields.saveIndexTargetAddrCh,
-				schMap:                 test.fields.schMap,
 				concurrency:            test.fields.concurrency,
-				indexInfos:             test.fields.indexInfos,
-				indexing:               test.fields.indexing,
-				minUncommitted:         test.fields.minUncommitted,
-				uuidsCount:             test.fields.uuidsCount,
-				uncommittedUUIDsCount:  test.fields.uncommittedUUIDsCount,
+				indexInfos: indexInfos{
+					read:   test.fields.indexInfos.read,
+					dirty:  test.fields.indexInfos.dirty,
+					misses: test.fields.indexInfos.misses,
+				},
+				indexing:              test.fields.indexing,
+				minUncommitted:        test.fields.minUncommitted,
+				uuidsCount:            test.fields.uuidsCount,
+				uncommittedUUIDsCount: test.fields.uncommittedUUIDsCount,
 			}
 
 			got := idx.IsIndexing()
@@ -823,13 +914,16 @@ func Test_index_NumberOfUUIDs(t *testing.T) {
 		saveIndexDurationLimit time.Duration
 		saveIndexWaitDuration  time.Duration
 		saveIndexTargetAddrCh  chan string
-		schMap                 sync.Map
 		concurrency            int
-		indexInfos             indexInfos
-		indexing               atomic.Value
-		minUncommitted         uint32
-		uuidsCount             uint32
-		uncommittedUUIDsCount  uint32
+		indexInfos             struct {
+			read   atomic.Value
+			dirty  map[string]*entryIndexInfos
+			misses int
+		}
+		indexing              atomic.Value
+		minUncommitted        uint32
+		uuidsCount            uint32
+		uncommittedUUIDsCount uint32
 	}
 	type want struct {
 		want uint32
@@ -839,8 +933,8 @@ func Test_index_NumberOfUUIDs(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, uint32) error
-		beforeFunc func()
-		afterFunc  func()
+		beforeFunc func(*testing.T)
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want, got uint32) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -862,7 +956,6 @@ func Test_index_NumberOfUUIDs(t *testing.T) {
 		           saveIndexDurationLimit: nil,
 		           saveIndexWaitDuration: nil,
 		           saveIndexTargetAddrCh: nil,
-		           schMap: sync.Map{},
 		           concurrency: 0,
 		           indexInfos: indexInfos{},
 		           indexing: nil,
@@ -872,6 +965,12 @@ func Test_index_NumberOfUUIDs(t *testing.T) {
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -889,7 +988,6 @@ func Test_index_NumberOfUUIDs(t *testing.T) {
 		           saveIndexDurationLimit: nil,
 		           saveIndexWaitDuration: nil,
 		           saveIndexTargetAddrCh: nil,
-		           schMap: sync.Map{},
 		           concurrency: 0,
 		           indexInfos: indexInfos{},
 		           indexing: nil,
@@ -899,6 +997,12 @@ func Test_index_NumberOfUUIDs(t *testing.T) {
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -910,10 +1014,10 @@ func Test_index_NumberOfUUIDs(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -928,13 +1032,16 @@ func Test_index_NumberOfUUIDs(t *testing.T) {
 				saveIndexDurationLimit: test.fields.saveIndexDurationLimit,
 				saveIndexWaitDuration:  test.fields.saveIndexWaitDuration,
 				saveIndexTargetAddrCh:  test.fields.saveIndexTargetAddrCh,
-				schMap:                 test.fields.schMap,
 				concurrency:            test.fields.concurrency,
-				indexInfos:             test.fields.indexInfos,
-				indexing:               test.fields.indexing,
-				minUncommitted:         test.fields.minUncommitted,
-				uuidsCount:             test.fields.uuidsCount,
-				uncommittedUUIDsCount:  test.fields.uncommittedUUIDsCount,
+				indexInfos: indexInfos{
+					read:   test.fields.indexInfos.read,
+					dirty:  test.fields.indexInfos.dirty,
+					misses: test.fields.indexInfos.misses,
+				},
+				indexing:              test.fields.indexing,
+				minUncommitted:        test.fields.minUncommitted,
+				uuidsCount:            test.fields.uuidsCount,
+				uncommittedUUIDsCount: test.fields.uncommittedUUIDsCount,
 			}
 
 			got := idx.NumberOfUUIDs()
@@ -955,13 +1062,16 @@ func Test_index_NumberOfUncommittedUUIDs(t *testing.T) {
 		saveIndexDurationLimit time.Duration
 		saveIndexWaitDuration  time.Duration
 		saveIndexTargetAddrCh  chan string
-		schMap                 sync.Map
 		concurrency            int
-		indexInfos             indexInfos
-		indexing               atomic.Value
-		minUncommitted         uint32
-		uuidsCount             uint32
-		uncommittedUUIDsCount  uint32
+		indexInfos             struct {
+			read   atomic.Value
+			dirty  map[string]*entryIndexInfos
+			misses int
+		}
+		indexing              atomic.Value
+		minUncommitted        uint32
+		uuidsCount            uint32
+		uncommittedUUIDsCount uint32
 	}
 	type want struct {
 		want uint32
@@ -971,8 +1081,8 @@ func Test_index_NumberOfUncommittedUUIDs(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, uint32) error
-		beforeFunc func()
-		afterFunc  func()
+		beforeFunc func(*testing.T)
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want, got uint32) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -994,7 +1104,6 @@ func Test_index_NumberOfUncommittedUUIDs(t *testing.T) {
 		           saveIndexDurationLimit: nil,
 		           saveIndexWaitDuration: nil,
 		           saveIndexTargetAddrCh: nil,
-		           schMap: sync.Map{},
 		           concurrency: 0,
 		           indexInfos: indexInfos{},
 		           indexing: nil,
@@ -1004,6 +1113,12 @@ func Test_index_NumberOfUncommittedUUIDs(t *testing.T) {
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -1021,7 +1136,6 @@ func Test_index_NumberOfUncommittedUUIDs(t *testing.T) {
 		           saveIndexDurationLimit: nil,
 		           saveIndexWaitDuration: nil,
 		           saveIndexTargetAddrCh: nil,
-		           schMap: sync.Map{},
 		           concurrency: 0,
 		           indexInfos: indexInfos{},
 		           indexing: nil,
@@ -1031,6 +1145,12 @@ func Test_index_NumberOfUncommittedUUIDs(t *testing.T) {
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -1042,10 +1162,10 @@ func Test_index_NumberOfUncommittedUUIDs(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -1060,13 +1180,16 @@ func Test_index_NumberOfUncommittedUUIDs(t *testing.T) {
 				saveIndexDurationLimit: test.fields.saveIndexDurationLimit,
 				saveIndexWaitDuration:  test.fields.saveIndexWaitDuration,
 				saveIndexTargetAddrCh:  test.fields.saveIndexTargetAddrCh,
-				schMap:                 test.fields.schMap,
 				concurrency:            test.fields.concurrency,
-				indexInfos:             test.fields.indexInfos,
-				indexing:               test.fields.indexing,
-				minUncommitted:         test.fields.minUncommitted,
-				uuidsCount:             test.fields.uuidsCount,
-				uncommittedUUIDsCount:  test.fields.uncommittedUUIDsCount,
+				indexInfos: indexInfos{
+					read:   test.fields.indexInfos.read,
+					dirty:  test.fields.indexInfos.dirty,
+					misses: test.fields.indexInfos.misses,
+				},
+				indexing:              test.fields.indexing,
+				minUncommitted:        test.fields.minUncommitted,
+				uuidsCount:            test.fields.uuidsCount,
+				uncommittedUUIDsCount: test.fields.uncommittedUUIDsCount,
 			}
 
 			got := idx.NumberOfUncommittedUUIDs()
