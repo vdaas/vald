@@ -1103,8 +1103,10 @@ func Test_logger_Fatal(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			// skipcq: SCC-SA4006
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
+				// skipcq: SCC-SA4006
 				checkFunc = defaultCheckFunc
 			}
 			l := &logger{
@@ -1177,8 +1179,10 @@ func Test_logger_Fatalf(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			// skipcq: SCC-SA4006
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
+				// skipcq: SCC-SA4006
 				checkFunc = defaultCheckFunc
 			}
 			l := &logger{
@@ -1652,8 +1656,10 @@ func Test_logger_Fatald(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			// skipcq: SCC-SA4006
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
+				// skipcq: SCC-SA4006
 				checkFunc = defaultCheckFunc
 			}
 			l := &logger{
