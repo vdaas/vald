@@ -18,6 +18,7 @@ import (
 	"math/rand"
 
 	"github.com/vdaas/vald/internal/errors"
+	irand "github.com/vdaas/vald/internal/rand"
 )
 
 type (
@@ -105,7 +106,7 @@ func genUint8Vec(n, dim int, gen func() uint8) (ret [][]uint8) {
 // UniformDistributedUint8VectorGenerator returns n uint8 vectors with dim dimension and their values under Uniform distribution
 func UniformDistributedUint8VectorGenerator(n, dim int) [][]uint8 {
 	return genUint8Vec(n, dim, func() uint8 {
-		return uint8(rand.Intn(int(math.MaxUint8) + 1))
+		return uint8(irand.LimitedUint32(math.MaxUint8))
 	})
 }
 
