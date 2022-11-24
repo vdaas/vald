@@ -194,6 +194,7 @@ func (i *info) String() string {
 // String returns summary of Detail object.
 // skipcq: RVV-B0006
 func (d Detail) String() string {
+	// skipcq: RVV-B0006
 	d.Version = log.Bold(d.Version)
 	maxlen, l := 0, 0
 	rv := reflect.ValueOf(d)
