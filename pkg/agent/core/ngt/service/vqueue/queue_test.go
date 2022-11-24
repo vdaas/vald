@@ -1031,7 +1031,6 @@ func Test_vqueue_GetVector(t *testing.T) {
 			v := &vqueue{
 				uii: test.fields.uii,
 				uiim: uiim{
-
 					read:   test.fields.uiim.read,
 					dirty:  test.fields.uiim.dirty,
 					misses: test.fields.uiim.misses,
