@@ -78,24 +78,23 @@ COPY Makefile.d .
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}
 COPY Makefile .
 
-RUN make helm/schema/vald helm/schema/vald-helm-operator
-
-RUN cp -r charts /charts
+RUN make helm/schema/vald helm/schema/vald-helm-operator \
+    && cp -r charts /charts
 
 # skipcq: DOK-DL3008
 RUN apt-get clean \
     && rm -rf \
         /var/lib/apt/lists/* \
         /var/cache/* \
-    && apt update -y \
-    && apt upgrade -y \
-    && apt install -y --no-install-recommends --fix-missing \
+    && apt-get update -y \
+    && apt-get upgrade -y \
+    && apt-get install -y --no-install-recommends --fix-missing \
     upx \
-    && apt clean \
+    && apt-get clean \
     && rm -rf \
         /var/lib/apt/lists/* \
         /var/cache/* \
-    && apt autoremove
+    && apt-get autoremove
 
 ENV APP_NAME helm-operator
 
