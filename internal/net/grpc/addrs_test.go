@@ -19,15 +19,14 @@ package grpc
 
 import (
 	"reflect"
-	"sync"
 	"sync/atomic"
 	"testing"
 
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/test/goleak"
 )
 
 func Test_newAddr(t *testing.T) {
-	t.Parallel()
 	type args struct {
 		addrList map[string]struct{}
 	}
@@ -39,8 +38,8 @@ func Test_newAddr(t *testing.T) {
 		args       args
 		want       want
 		checkFunc  func(want, AtomicAddrs) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, got AtomicAddrs) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -58,6 +57,12 @@ func Test_newAddr(t *testing.T) {
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -71,6 +76,12 @@ func Test_newAddr(t *testing.T) {
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -80,11 +91,12 @@ func Test_newAddr(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -100,11 +112,9 @@ func Test_newAddr(t *testing.T) {
 }
 
 func Test_atomicAddrs_GetAll(t *testing.T) {
-	t.Parallel()
 	type fields struct {
 		addrs      atomic.Value
 		dupCheck   map[string]bool
-		mu         sync.RWMutex
 		addrSeeker uint64
 	}
 	type want struct {
@@ -116,8 +126,8 @@ func Test_atomicAddrs_GetAll(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, []string, bool) error
-		beforeFunc func()
-		afterFunc  func()
+		beforeFunc func(*testing.T)
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want, got []string, got1 bool) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -136,11 +146,16 @@ func Test_atomicAddrs_GetAll(t *testing.T) {
 		       fields: fields {
 		           addrs: nil,
 		           dupCheck: nil,
-		           mu: sync.RWMutex{},
 		           addrSeeker: 0,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -152,11 +167,16 @@ func Test_atomicAddrs_GetAll(t *testing.T) {
 		           fields: fields {
 		           addrs: nil,
 		           dupCheck: nil,
-		           mu: sync.RWMutex{},
 		           addrSeeker: 0,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -166,11 +186,12 @@ func Test_atomicAddrs_GetAll(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -179,7 +200,6 @@ func Test_atomicAddrs_GetAll(t *testing.T) {
 			a := &atomicAddrs{
 				addrs:      test.fields.addrs,
 				dupCheck:   test.fields.dupCheck,
-				mu:         test.fields.mu,
 				addrSeeker: test.fields.addrSeeker,
 			}
 
@@ -192,14 +212,12 @@ func Test_atomicAddrs_GetAll(t *testing.T) {
 }
 
 func Test_atomicAddrs_Range(t *testing.T) {
-	t.Parallel()
 	type args struct {
 		f func(addr string) bool
 	}
 	type fields struct {
 		addrs      atomic.Value
 		dupCheck   map[string]bool
-		mu         sync.RWMutex
 		addrSeeker uint64
 	}
 	type want struct{}
@@ -209,8 +227,8 @@ func Test_atomicAddrs_Range(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want) error {
 		return nil
@@ -226,11 +244,16 @@ func Test_atomicAddrs_Range(t *testing.T) {
 		       fields: fields {
 		           addrs: nil,
 		           dupCheck: nil,
-		           mu: sync.RWMutex{},
 		           addrSeeker: 0,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -245,11 +268,16 @@ func Test_atomicAddrs_Range(t *testing.T) {
 		           fields: fields {
 		           addrs: nil,
 		           dupCheck: nil,
-		           mu: sync.RWMutex{},
 		           addrSeeker: 0,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -259,11 +287,12 @@ func Test_atomicAddrs_Range(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -272,7 +301,6 @@ func Test_atomicAddrs_Range(t *testing.T) {
 			a := &atomicAddrs{
 				addrs:      test.fields.addrs,
 				dupCheck:   test.fields.dupCheck,
-				mu:         test.fields.mu,
 				addrSeeker: test.fields.addrSeeker,
 			}
 
@@ -285,14 +313,12 @@ func Test_atomicAddrs_Range(t *testing.T) {
 }
 
 func Test_atomicAddrs_Add(t *testing.T) {
-	t.Parallel()
 	type args struct {
 		addr string
 	}
 	type fields struct {
 		addrs      atomic.Value
 		dupCheck   map[string]bool
-		mu         sync.RWMutex
 		addrSeeker uint64
 	}
 	type want struct{}
@@ -302,8 +328,8 @@ func Test_atomicAddrs_Add(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want) error {
 		return nil
@@ -319,11 +345,16 @@ func Test_atomicAddrs_Add(t *testing.T) {
 		       fields: fields {
 		           addrs: nil,
 		           dupCheck: nil,
-		           mu: sync.RWMutex{},
 		           addrSeeker: 0,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -338,11 +369,16 @@ func Test_atomicAddrs_Add(t *testing.T) {
 		           fields: fields {
 		           addrs: nil,
 		           dupCheck: nil,
-		           mu: sync.RWMutex{},
 		           addrSeeker: 0,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -352,11 +388,12 @@ func Test_atomicAddrs_Add(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -365,7 +402,6 @@ func Test_atomicAddrs_Add(t *testing.T) {
 			a := &atomicAddrs{
 				addrs:      test.fields.addrs,
 				dupCheck:   test.fields.dupCheck,
-				mu:         test.fields.mu,
 				addrSeeker: test.fields.addrSeeker,
 			}
 
@@ -378,14 +414,12 @@ func Test_atomicAddrs_Add(t *testing.T) {
 }
 
 func Test_atomicAddrs_Delete(t *testing.T) {
-	t.Parallel()
 	type args struct {
 		addr string
 	}
 	type fields struct {
 		addrs      atomic.Value
 		dupCheck   map[string]bool
-		mu         sync.RWMutex
 		addrSeeker uint64
 	}
 	type want struct{}
@@ -395,8 +429,8 @@ func Test_atomicAddrs_Delete(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want) error {
 		return nil
@@ -412,11 +446,16 @@ func Test_atomicAddrs_Delete(t *testing.T) {
 		       fields: fields {
 		           addrs: nil,
 		           dupCheck: nil,
-		           mu: sync.RWMutex{},
 		           addrSeeker: 0,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -431,11 +470,16 @@ func Test_atomicAddrs_Delete(t *testing.T) {
 		           fields: fields {
 		           addrs: nil,
 		           dupCheck: nil,
-		           mu: sync.RWMutex{},
 		           addrSeeker: 0,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -445,11 +489,12 @@ func Test_atomicAddrs_Delete(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -458,7 +503,6 @@ func Test_atomicAddrs_Delete(t *testing.T) {
 			a := &atomicAddrs{
 				addrs:      test.fields.addrs,
 				dupCheck:   test.fields.dupCheck,
-				mu:         test.fields.mu,
 				addrSeeker: test.fields.addrSeeker,
 			}
 
@@ -471,11 +515,9 @@ func Test_atomicAddrs_Delete(t *testing.T) {
 }
 
 func Test_atomicAddrs_Next(t *testing.T) {
-	t.Parallel()
 	type fields struct {
 		addrs      atomic.Value
 		dupCheck   map[string]bool
-		mu         sync.RWMutex
 		addrSeeker uint64
 	}
 	type want struct {
@@ -487,8 +529,8 @@ func Test_atomicAddrs_Next(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, string, bool) error
-		beforeFunc func()
-		afterFunc  func()
+		beforeFunc func(*testing.T)
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want, got string, got1 bool) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -507,11 +549,16 @@ func Test_atomicAddrs_Next(t *testing.T) {
 		       fields: fields {
 		           addrs: nil,
 		           dupCheck: nil,
-		           mu: sync.RWMutex{},
 		           addrSeeker: 0,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -523,11 +570,16 @@ func Test_atomicAddrs_Next(t *testing.T) {
 		           fields: fields {
 		           addrs: nil,
 		           dupCheck: nil,
-		           mu: sync.RWMutex{},
 		           addrSeeker: 0,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -537,11 +589,12 @@ func Test_atomicAddrs_Next(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -550,7 +603,6 @@ func Test_atomicAddrs_Next(t *testing.T) {
 			a := &atomicAddrs{
 				addrs:      test.fields.addrs,
 				dupCheck:   test.fields.dupCheck,
-				mu:         test.fields.mu,
 				addrSeeker: test.fields.addrSeeker,
 			}
 
@@ -563,11 +615,9 @@ func Test_atomicAddrs_Next(t *testing.T) {
 }
 
 func Test_atomicAddrs_Len(t *testing.T) {
-	t.Parallel()
 	type fields struct {
 		addrs      atomic.Value
 		dupCheck   map[string]bool
-		mu         sync.RWMutex
 		addrSeeker uint64
 	}
 	type want struct {
@@ -578,8 +628,8 @@ func Test_atomicAddrs_Len(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, uint64) error
-		beforeFunc func()
-		afterFunc  func()
+		beforeFunc func(*testing.T)
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want, got uint64) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -595,11 +645,16 @@ func Test_atomicAddrs_Len(t *testing.T) {
 		       fields: fields {
 		           addrs: nil,
 		           dupCheck: nil,
-		           mu: sync.RWMutex{},
 		           addrSeeker: 0,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -611,11 +666,16 @@ func Test_atomicAddrs_Len(t *testing.T) {
 		           fields: fields {
 		           addrs: nil,
 		           dupCheck: nil,
-		           mu: sync.RWMutex{},
 		           addrSeeker: 0,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -625,11 +685,12 @@ func Test_atomicAddrs_Len(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -638,7 +699,6 @@ func Test_atomicAddrs_Len(t *testing.T) {
 			a := &atomicAddrs{
 				addrs:      test.fields.addrs,
 				dupCheck:   test.fields.dupCheck,
-				mu:         test.fields.mu,
 				addrSeeker: test.fields.addrSeeker,
 			}
 
