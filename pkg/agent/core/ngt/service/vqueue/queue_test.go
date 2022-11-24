@@ -20,7 +20,6 @@ package vqueue
 import (
 	"context"
 	"reflect"
-	"sync"
 	"testing"
 
 	"github.com/vdaas/vald/internal/errgroup"
@@ -113,10 +112,8 @@ func Test_vqueue_PushInsert(t *testing.T) {
 	}
 	type fields struct {
 		uii      []index
-		imu      sync.RWMutex
 		uiim     uiim
 		udk      []key
-		dmu      sync.RWMutex
 		udim     udim
 		eg       errgroup.Group
 		iBufSize int
@@ -219,10 +216,8 @@ func Test_vqueue_PushInsert(t *testing.T) {
 			}
 			v := &vqueue{
 				uii:      test.fields.uii,
-				imu:      test.fields.imu,
 				uiim:     test.fields.uiim,
 				udk:      test.fields.udk,
-				dmu:      test.fields.dmu,
 				udim:     test.fields.udim,
 				eg:       test.fields.eg,
 				iBufSize: test.fields.iBufSize,
@@ -244,10 +239,8 @@ func Test_vqueue_PushDelete(t *testing.T) {
 	}
 	type fields struct {
 		uii      []index
-		imu      sync.RWMutex
 		uiim     uiim
 		udk      []key
-		dmu      sync.RWMutex
 		udim     udim
 		eg       errgroup.Group
 		iBufSize int
@@ -348,10 +341,8 @@ func Test_vqueue_PushDelete(t *testing.T) {
 			}
 			v := &vqueue{
 				uii:      test.fields.uii,
-				imu:      test.fields.imu,
 				uiim:     test.fields.uiim,
 				udk:      test.fields.udk,
-				dmu:      test.fields.dmu,
 				udim:     test.fields.udim,
 				eg:       test.fields.eg,
 				iBufSize: test.fields.iBufSize,
@@ -374,10 +365,8 @@ func Test_vqueue_RangePopInsert(t *testing.T) {
 	}
 	type fields struct {
 		uii      []index
-		imu      sync.RWMutex
 		uiim     uiim
 		udk      []key
-		dmu      sync.RWMutex
 		udim     udim
 		eg       errgroup.Group
 		iBufSize int
@@ -473,10 +462,8 @@ func Test_vqueue_RangePopInsert(t *testing.T) {
 			}
 			v := &vqueue{
 				uii:      test.fields.uii,
-				imu:      test.fields.imu,
 				uiim:     test.fields.uiim,
 				udk:      test.fields.udk,
-				dmu:      test.fields.dmu,
 				udim:     test.fields.udim,
 				eg:       test.fields.eg,
 				iBufSize: test.fields.iBufSize,
@@ -499,10 +486,8 @@ func Test_vqueue_RangePopDelete(t *testing.T) {
 	}
 	type fields struct {
 		uii      []index
-		imu      sync.RWMutex
 		uiim     uiim
 		udk      []key
-		dmu      sync.RWMutex
 		udim     udim
 		eg       errgroup.Group
 		iBufSize int
@@ -598,10 +583,8 @@ func Test_vqueue_RangePopDelete(t *testing.T) {
 			}
 			v := &vqueue{
 				uii:      test.fields.uii,
-				imu:      test.fields.imu,
 				uiim:     test.fields.uiim,
 				udk:      test.fields.udk,
-				dmu:      test.fields.dmu,
 				udim:     test.fields.udim,
 				eg:       test.fields.eg,
 				iBufSize: test.fields.iBufSize,
@@ -622,10 +605,8 @@ func Test_vqueue_GetVector(t *testing.T) {
 	}
 	type fields struct {
 		uii      []index
-		imu      sync.RWMutex
 		uiim     uiim
 		udk      []key
-		dmu      sync.RWMutex
 		udim     udim
 		eg       errgroup.Group
 		iBufSize int
@@ -976,10 +957,8 @@ func Test_vqueue_GetVector(t *testing.T) {
 			}
 			v := &vqueue{
 				uii:      test.fields.uii,
-				imu:      test.fields.imu,
 				uiim:     test.fields.uiim,
 				udk:      test.fields.udk,
-				dmu:      test.fields.dmu,
 				udim:     test.fields.udim,
 				eg:       test.fields.eg,
 				iBufSize: test.fields.iBufSize,
@@ -1000,10 +979,8 @@ func Test_vqueue_IVExists(t *testing.T) {
 	}
 	type fields struct {
 		uii      []index
-		imu      sync.RWMutex
 		uiim     uiim
 		udk      []key
-		dmu      sync.RWMutex
 		udim     udim
 		eg       errgroup.Group
 		iBufSize int
@@ -1342,10 +1319,8 @@ func Test_vqueue_IVExists(t *testing.T) {
 			}
 			v := &vqueue{
 				uii:      test.fields.uii,
-				imu:      test.fields.imu,
 				uiim:     test.fields.uiim,
 				udk:      test.fields.udk,
-				dmu:      test.fields.dmu,
 				udim:     test.fields.udim,
 				eg:       test.fields.eg,
 				iBufSize: test.fields.iBufSize,
@@ -1366,10 +1341,8 @@ func Test_vqueue_DVExists(t *testing.T) {
 	}
 	type fields struct {
 		uii      []index
-		imu      sync.RWMutex
 		uiim     uiim
 		udk      []key
-		dmu      sync.RWMutex
 		udim     udim
 		eg       errgroup.Group
 		iBufSize int
@@ -1706,10 +1679,8 @@ func Test_vqueue_DVExists(t *testing.T) {
 			}
 			v := &vqueue{
 				uii:      test.fields.uii,
-				imu:      test.fields.imu,
 				uiim:     test.fields.uiim,
 				udk:      test.fields.udk,
-				dmu:      test.fields.dmu,
 				udim:     test.fields.udim,
 				eg:       test.fields.eg,
 				iBufSize: test.fields.iBufSize,
@@ -1730,10 +1701,8 @@ func Test_vqueue_addInsert(t *testing.T) {
 	}
 	type fields struct {
 		uii      []index
-		imu      sync.RWMutex
 		uiim     uiim
 		udk      []key
-		dmu      sync.RWMutex
 		udim     udim
 		eg       errgroup.Group
 		iBufSize int
@@ -1827,10 +1796,8 @@ func Test_vqueue_addInsert(t *testing.T) {
 			}
 			v := &vqueue{
 				uii:      test.fields.uii,
-				imu:      test.fields.imu,
 				uiim:     test.fields.uiim,
 				udk:      test.fields.udk,
-				dmu:      test.fields.dmu,
 				udim:     test.fields.udim,
 				eg:       test.fields.eg,
 				iBufSize: test.fields.iBufSize,
@@ -1851,10 +1818,8 @@ func Test_vqueue_addDelete(t *testing.T) {
 	}
 	type fields struct {
 		uii      []index
-		imu      sync.RWMutex
 		uiim     uiim
 		udk      []key
-		dmu      sync.RWMutex
 		udim     udim
 		eg       errgroup.Group
 		iBufSize int
@@ -1948,10 +1913,8 @@ func Test_vqueue_addDelete(t *testing.T) {
 			}
 			v := &vqueue{
 				uii:      test.fields.uii,
-				imu:      test.fields.imu,
 				uiim:     test.fields.uiim,
 				udk:      test.fields.udk,
-				dmu:      test.fields.dmu,
 				udim:     test.fields.udim,
 				eg:       test.fields.eg,
 				iBufSize: test.fields.iBufSize,
@@ -1969,10 +1932,8 @@ func Test_vqueue_addDelete(t *testing.T) {
 func Test_vqueue_IVQLen(t *testing.T) {
 	type fields struct {
 		uii      []index
-		imu      sync.RWMutex
 		uiim     uiim
 		udk      []key
-		dmu      sync.RWMutex
 		udim     udim
 		eg       errgroup.Group
 		iBufSize int
@@ -2111,10 +2072,8 @@ func Test_vqueue_IVQLen(t *testing.T) {
 			}
 			v := &vqueue{
 				uii:      test.fields.uii,
-				imu:      test.fields.imu,
 				uiim:     test.fields.uiim,
 				udk:      test.fields.udk,
-				dmu:      test.fields.dmu,
 				udim:     test.fields.udim,
 				eg:       test.fields.eg,
 				iBufSize: test.fields.iBufSize,
@@ -2132,10 +2091,8 @@ func Test_vqueue_IVQLen(t *testing.T) {
 func Test_vqueue_DVQLen(t *testing.T) {
 	type fields struct {
 		uii      []index
-		imu      sync.RWMutex
 		uiim     uiim
 		udk      []key
-		dmu      sync.RWMutex
 		udim     udim
 		eg       errgroup.Group
 		iBufSize int
@@ -2274,10 +2231,8 @@ func Test_vqueue_DVQLen(t *testing.T) {
 			}
 			v := &vqueue{
 				uii:      test.fields.uii,
-				imu:      test.fields.imu,
 				uiim:     test.fields.uiim,
 				udk:      test.fields.udk,
-				dmu:      test.fields.dmu,
 				udim:     test.fields.udim,
 				eg:       test.fields.eg,
 				iBufSize: test.fields.iBufSize,
