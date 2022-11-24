@@ -62,7 +62,7 @@ func Uint8VectorGenerator(d Distribution) (Uint8VectorGeneratorFunc, error) {
 	}
 }
 
-// genFloat32Vec return n float32 vectors with dim dimension
+// genFloat32Vec return n float32 vectors with dim dimension.
 func genFloat32Vec(n, dim int, gen func() float32) (ret [][]float32) {
 	ret = make([][]float32, 0, n)
 
