@@ -110,6 +110,7 @@ type (
 		dcHost    string
 		whiteList []string
 	}
+	// skipcq: SCC-U1000
 	events struct {
 		DisableNodeStatusEvents bool
 		DisableTopologyEvents   bool
