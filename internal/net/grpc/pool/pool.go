@@ -19,6 +19,7 @@ package pool
 
 import (
 	"context"
+	"math"
 	"sort"
 	"strconv"
 	"sync/atomic"
@@ -356,7 +357,11 @@ func (p *pool) Do(f func(conn *ClientConn) error) error {
 }
 
 func (p *pool) Get() (*ClientConn, bool) {
-	handleErr := func() {
+	return p.get(p.Len())
+}
+
+func (p *pool) get(retry uint64) (*ClientConn, bool) {
+	if retry <= 0 || retry > math.MaxUint64-p.Len() || p.Len() <= 0 {
 		log.Warnf("failed to find grpc pool connection for %s", p.addr)
 		if p.isIP {
 			log.Debugf("failure connection is IP connection trying to disconnect grpc connection for %s", p.addr)
@@ -364,24 +369,16 @@ func (p *pool) Get() (*ClientConn, bool) {
 				log.Debugf("failed to disconnect grpc IP connection for %s,\terr: %v", p.addr, err)
 			}
 		}
-	}
-
-	l := p.Len()
-	if l <= 0 {
-		handleErr()
 		return nil, false
 	}
 
-	for i := 0; i < int(l); i++ {
-		if res := p.pool[atomic.AddUint64(&p.current, 1)%p.Len()].Load(); res != nil {
-			if pc, ok := res.(*poolConn); ok && pc != nil && isHealthy(pc.conn) {
-				return pc.conn, true
-			}
+	if res := p.pool[atomic.AddUint64(&p.current, 1)%p.Len()].Load(); res != nil {
+		if pc, ok := res.(*poolConn); ok && pc != nil && isHealthy(pc.conn) {
+			return pc.conn, true
 		}
 	}
-
-	handleErr()
-	return nil, false
+	retry--
+	return p.get(retry)
 }
 
 func (p *pool) Len() uint64 {
