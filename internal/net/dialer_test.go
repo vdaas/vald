@@ -275,9 +275,6 @@ func TestNewDialer(t *testing.T) {
 				if x == nil && y == nil {
 					return true
 				}
-				if x == nil || y == nil {
-					return false
-				}
 				return reflect.DeepEqual(x, y)
 			}),
 			cmp.Comparer(func(x, y *tls.Config) bool {
