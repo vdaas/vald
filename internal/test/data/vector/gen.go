@@ -30,6 +30,10 @@ type (
 const (
 	Gaussian Distribution = iota
 	Uniform
+
+	// NOTE: mean:128, sigma:128/3, all of 99.7% are in [0, 255].
+	gaussianMean  float64 = 128
+	gaussianSigma float64 = 128 / 3
 )
 
 // ErrUnknownDistritbution represents an error which the distribution is unknown.
@@ -59,8 +63,8 @@ func Uint8VectorGenerator(d Distribution) (Uint8VectorGeneratorFunc, error) {
 	}
 }
 
-// float32VectorGenerator return n float32 vectors with dim dimension
-func float32VectorGenerator(n, dim int, gen func() float32) (ret [][]float32) {
+// genFloat32Vec return n float32 vectors with dim dimension.
+func genFloat32Vec(n, dim int, gen func() float32) (ret [][]float32) {
 	ret = make([][]float32, 0, n)
 
 	for i := 0; i < n; i++ {
@@ -75,18 +79,18 @@ func float32VectorGenerator(n, dim int, gen func() float32) (ret [][]float32) {
 
 // UniformDistributedFloat32VectorGenerator returns n float32 vectors with dim dimension and their values under Uniform distribution
 func UniformDistributedFloat32VectorGenerator(n, dim int) [][]float32 {
-	return float32VectorGenerator(n, dim, rand.Float32)
+	return genFloat32Vec(n, dim, rand.Float32)
 }
 
 // GaussianDistributedFloat32VectorGenerator returns n float32 vectors with dim dimension and their values under Gaussian distribution
 func GaussianDistributedFloat32VectorGenerator(n, dim int) [][]float32 {
-	return float32VectorGenerator(n, dim, func() float32 {
+	return genFloat32Vec(n, dim, func() float32 {
 		return float32(rand.NormFloat64())
 	})
 }
 
-// uint8VectorGenerator return n uint8 vectors with dim dimension
-func uint8VectorGenerator(n, dim int, gen func() uint8) (ret [][]uint8) {
+// genUint8Vec return n uint8 vectors with dim dimension
+func genUint8Vec(n, dim int, gen func() uint8) (ret [][]uint8) {
 	ret = make([][]uint8, 0, n)
 
 	for i := 0; i < n; i++ {
@@ -101,26 +105,16 @@ func uint8VectorGenerator(n, dim int, gen func() uint8) (ret [][]uint8) {
 
 // UniformDistributedUint8VectorGenerator returns n uint8 vectors with dim dimension and their values under Uniform distribution
 func UniformDistributedUint8VectorGenerator(n, dim int) [][]uint8 {
-	return uint8VectorGenerator(n, dim, func() uint8 {
+	return genUint8Vec(n, dim, func() uint8 {
 		return uint8(irand.LimitedUint32(math.MaxUint8))
 	})
 }
 
 // GaussianDistributedUint8VectorGenerator returns n uint8 vectors with dim dimension and their values under Gaussian distribution
 func GaussianDistributedUint8VectorGenerator(n, dim int) [][]uint8 {
-	// NOTE: mean:128, sigma:128/3, all of 99.7% are in [0, 255]
-	const (
-		mean  float64 = 128
-		sigma float64 = 128 / 3
-	)
-	return gaussianDistributedUint8VectorGenerator(n, dim, mean, sigma)
-}
-
-// gaussianDistributedUint8VectorGenerator returns n uint8 vectors with dim dimension and their values under Gaussian distribution with user-specified mean and sigma
-func gaussianDistributedUint8VectorGenerator(n, dim int, mean, sigma float64) [][]uint8 {
 	// NOTE: The boundary test is the main purpose for refactoring. Now, passing this function is dependent on the seed of the random generator. We should fix the randomness of the passing test.
-	return uint8VectorGenerator(n, dim, func() uint8 {
-		val := rand.NormFloat64()*sigma + mean
+	return genUint8Vec(n, dim, func() uint8 {
+		val := rand.NormFloat64()*gaussianSigma + gaussianMean
 		if val < 0 {
 			return 0
 		} else if val > math.MaxUint8 {
