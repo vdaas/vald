@@ -1567,6 +1567,7 @@ func TestStackTrace_String(t *testing.T) {
 	}
 }
 
+// skipcq: RVV-B0001
 func Test_info_get(t *testing.T) {
 	type fields struct {
 		baseURL     string

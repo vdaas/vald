@@ -265,7 +265,7 @@ func (i *info) Get() Detail {
 	return i.get()
 }
 
-// skipcq: VET-V0008
+// skipcq: VET-V0008, RVV-B0001
 func (i info) get() Detail {
 	i.detail.StackTrace = make([]StackTrace, 0, 10)
 	for j := 2; ; j++ {

@@ -1284,6 +1284,7 @@ func Test_pool_Get(t *testing.T) {
 	}
 }
 
+// skipcq: RVV-B0001
 func Test_pool_get(t *testing.T) {
 	t.Parallel()
 	type args struct {

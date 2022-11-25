@@ -360,6 +360,7 @@ func (p *pool) Get() (*ClientConn, bool) {
 	return p.get(p.Len())
 }
 
+// skipcq: RVV-B0001
 func (p *pool) get(retry uint64) (*ClientConn, bool) {
 	if retry <= 0 || retry > math.MaxUint64-p.Len() || p.Len() <= 0 {
 		log.Warnf("failed to find grpc pool connection for %s", p.addr)

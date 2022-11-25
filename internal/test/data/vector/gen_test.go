@@ -208,7 +208,7 @@ func TestUint8VectorGenerator(t *testing.T) {
 	}
 }
 
-func Test_genFloat32Vec(t *testing.T) {
+func Test_doGenFloat32Vec(t *testing.T) {
 	type args struct {
 		n   int
 		dim int
@@ -279,7 +279,7 @@ func Test_genFloat32Vec(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 
-			gotRet := genFloat32Vec(test.args.n, test.args.dim, test.args.gen)
+			gotRet := doGenFloat32Vec(test.args.n, test.args.dim, test.args.gen)
 			if err := checkFunc(test.want, gotRet); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -439,7 +439,7 @@ func TestGaussianDistributedFloat32VectorGenerator(t *testing.T) {
 	}
 }
 
-func Test_genUint8Vec(t *testing.T) {
+func Test_doGenUint8Vec(t *testing.T) {
 	type args struct {
 		n   int
 		dim int
@@ -510,7 +510,7 @@ func Test_genUint8Vec(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 
-			gotRet := genUint8Vec(test.args.n, test.args.dim, test.args.gen)
+			gotRet := doGenUint8Vec(test.args.n, test.args.dim, test.args.gen)
 			if err := checkFunc(test.want, gotRet); err != nil {
 				tt.Errorf("error = %v", err)
 			}
