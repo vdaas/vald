@@ -1284,7 +1284,7 @@ func Test_pool_Get(t *testing.T) {
 	}
 }
 
-func Test_pool_get(t *testing.T) {
+func Test_pool_doGet(t *testing.T) {
 	t.Parallel()
 	type args struct {
 		retry uint64
@@ -1426,7 +1426,7 @@ func Test_pool_get(t *testing.T) {
 				reconnectHash: test.fields.reconnectHash,
 			}
 
-			got, got1 := p.get(test.args.retry)
+			got, got1 := p.doGet(test.args.retry)
 			if err := checkFunc(test.want, got, got1); err != nil {
 				tt.Errorf("error = %v", err)
 			}

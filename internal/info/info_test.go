@@ -1567,7 +1567,7 @@ func TestStackTrace_String(t *testing.T) {
 	}
 }
 
-func Test_info_get(t *testing.T) {
+func Test_info_getDetail(t *testing.T) {
 	type fields struct {
 		baseURL     string
 		detail      Detail
@@ -1649,7 +1649,7 @@ func Test_info_get(t *testing.T) {
 				rtFuncForPC: test.fields.rtFuncForPC,
 			}
 
-			got := i.get()
+			got := i.getDetail()
 			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
