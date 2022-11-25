@@ -1,4 +1,5 @@
 //
+//
 // Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -262,11 +263,11 @@ func (d Detail) String() string {
 // Get returns parased Detail object.
 func (i *info) Get() Detail {
 	i.prepare()
-	return i.get()
+	return i.getDetail()
 }
 
-// skipcq: VET-V0008, RVV-B0001
-func (i info) get() Detail {
+// skipcq: VET-V0008
+func (i info) getDetail() Detail {
 	i.detail.StackTrace = make([]StackTrace, 0, 10)
 	for j := 2; ; j++ {
 		pc, file, line, ok := i.rtCaller(j)
