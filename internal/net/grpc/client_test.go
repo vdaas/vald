@@ -20,7 +20,6 @@ package grpc
 import (
 	"context"
 	"reflect"
-	"sync"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -149,7 +148,6 @@ func Test_gRPCClient_StartConnectionMonitor(t *testing.T) {
 		gbo                 gbackoff.Config
 		mcd                 time.Duration
 		group               singleflight.Group
-		crl                 sync.Map
 		ech                 <-chan error
 		monitorRunning      atomic.Value
 		stopMonitor         context.CancelFunc
@@ -204,7 +202,6 @@ func Test_gRPCClient_StartConnectionMonitor(t *testing.T) {
 		           gbo: nil,
 		           mcd: nil,
 		           group: nil,
-		           crl: sync.Map{},
 		           ech: nil,
 		           monitorRunning: nil,
 		           stopMonitor: nil,
@@ -248,7 +245,6 @@ func Test_gRPCClient_StartConnectionMonitor(t *testing.T) {
 		           gbo: nil,
 		           mcd: nil,
 		           group: nil,
-		           crl: sync.Map{},
 		           ech: nil,
 		           monitorRunning: nil,
 		           stopMonitor: nil,
@@ -305,7 +301,6 @@ func Test_gRPCClient_StartConnectionMonitor(t *testing.T) {
 				gbo:                 test.fields.gbo,
 				mcd:                 test.fields.mcd,
 				group:               test.fields.group,
-				crl:                 test.fields.crl,
 				ech:                 test.fields.ech,
 				monitorRunning:      test.fields.monitorRunning,
 				stopMonitor:         test.fields.stopMonitor,
@@ -348,7 +343,6 @@ func Test_gRPCClient_Range(t *testing.T) {
 		gbo                 gbackoff.Config
 		mcd                 time.Duration
 		group               singleflight.Group
-		crl                 sync.Map
 		ech                 <-chan error
 		monitorRunning      atomic.Value
 		stopMonitor         context.CancelFunc
@@ -400,7 +394,6 @@ func Test_gRPCClient_Range(t *testing.T) {
 		           gbo: nil,
 		           mcd: nil,
 		           group: nil,
-		           crl: sync.Map{},
 		           ech: nil,
 		           monitorRunning: nil,
 		           stopMonitor: nil,
@@ -445,7 +438,6 @@ func Test_gRPCClient_Range(t *testing.T) {
 		           gbo: nil,
 		           mcd: nil,
 		           group: nil,
-		           crl: sync.Map{},
 		           ech: nil,
 		           monitorRunning: nil,
 		           stopMonitor: nil,
@@ -502,7 +494,6 @@ func Test_gRPCClient_Range(t *testing.T) {
 				gbo:                 test.fields.gbo,
 				mcd:                 test.fields.mcd,
 				group:               test.fields.group,
-				crl:                 test.fields.crl,
 				ech:                 test.fields.ech,
 				monitorRunning:      test.fields.monitorRunning,
 				stopMonitor:         test.fields.stopMonitor,
@@ -546,7 +537,6 @@ func Test_gRPCClient_RangeConcurrent(t *testing.T) {
 		gbo                 gbackoff.Config
 		mcd                 time.Duration
 		group               singleflight.Group
-		crl                 sync.Map
 		ech                 <-chan error
 		monitorRunning      atomic.Value
 		stopMonitor         context.CancelFunc
@@ -599,7 +589,6 @@ func Test_gRPCClient_RangeConcurrent(t *testing.T) {
 		           gbo: nil,
 		           mcd: nil,
 		           group: nil,
-		           crl: sync.Map{},
 		           ech: nil,
 		           monitorRunning: nil,
 		           stopMonitor: nil,
@@ -645,7 +634,6 @@ func Test_gRPCClient_RangeConcurrent(t *testing.T) {
 		           gbo: nil,
 		           mcd: nil,
 		           group: nil,
-		           crl: sync.Map{},
 		           ech: nil,
 		           monitorRunning: nil,
 		           stopMonitor: nil,
@@ -702,7 +690,6 @@ func Test_gRPCClient_RangeConcurrent(t *testing.T) {
 				gbo:                 test.fields.gbo,
 				mcd:                 test.fields.mcd,
 				group:               test.fields.group,
-				crl:                 test.fields.crl,
 				ech:                 test.fields.ech,
 				monitorRunning:      test.fields.monitorRunning,
 				stopMonitor:         test.fields.stopMonitor,
@@ -746,7 +733,6 @@ func Test_gRPCClient_OrderedRange(t *testing.T) {
 		gbo                 gbackoff.Config
 		mcd                 time.Duration
 		group               singleflight.Group
-		crl                 sync.Map
 		ech                 <-chan error
 		monitorRunning      atomic.Value
 		stopMonitor         context.CancelFunc
@@ -799,7 +785,6 @@ func Test_gRPCClient_OrderedRange(t *testing.T) {
 		           gbo: nil,
 		           mcd: nil,
 		           group: nil,
-		           crl: sync.Map{},
 		           ech: nil,
 		           monitorRunning: nil,
 		           stopMonitor: nil,
@@ -845,7 +830,6 @@ func Test_gRPCClient_OrderedRange(t *testing.T) {
 		           gbo: nil,
 		           mcd: nil,
 		           group: nil,
-		           crl: sync.Map{},
 		           ech: nil,
 		           monitorRunning: nil,
 		           stopMonitor: nil,
@@ -902,7 +886,6 @@ func Test_gRPCClient_OrderedRange(t *testing.T) {
 				gbo:                 test.fields.gbo,
 				mcd:                 test.fields.mcd,
 				group:               test.fields.group,
-				crl:                 test.fields.crl,
 				ech:                 test.fields.ech,
 				monitorRunning:      test.fields.monitorRunning,
 				stopMonitor:         test.fields.stopMonitor,
@@ -947,7 +930,6 @@ func Test_gRPCClient_OrderedRangeConcurrent(t *testing.T) {
 		gbo                 gbackoff.Config
 		mcd                 time.Duration
 		group               singleflight.Group
-		crl                 sync.Map
 		ech                 <-chan error
 		monitorRunning      atomic.Value
 		stopMonitor         context.CancelFunc
@@ -1001,7 +983,6 @@ func Test_gRPCClient_OrderedRangeConcurrent(t *testing.T) {
 		           gbo: nil,
 		           mcd: nil,
 		           group: nil,
-		           crl: sync.Map{},
 		           ech: nil,
 		           monitorRunning: nil,
 		           stopMonitor: nil,
@@ -1048,7 +1029,6 @@ func Test_gRPCClient_OrderedRangeConcurrent(t *testing.T) {
 		           gbo: nil,
 		           mcd: nil,
 		           group: nil,
-		           crl: sync.Map{},
 		           ech: nil,
 		           monitorRunning: nil,
 		           stopMonitor: nil,
@@ -1105,7 +1085,6 @@ func Test_gRPCClient_OrderedRangeConcurrent(t *testing.T) {
 				gbo:                 test.fields.gbo,
 				mcd:                 test.fields.mcd,
 				group:               test.fields.group,
-				crl:                 test.fields.crl,
 				ech:                 test.fields.ech,
 				monitorRunning:      test.fields.monitorRunning,
 				stopMonitor:         test.fields.stopMonitor,
@@ -1148,7 +1127,6 @@ func Test_gRPCClient_RoundRobin(t *testing.T) {
 		gbo                 gbackoff.Config
 		mcd                 time.Duration
 		group               singleflight.Group
-		crl                 sync.Map
 		ech                 <-chan error
 		monitorRunning      atomic.Value
 		stopMonitor         context.CancelFunc
@@ -1204,7 +1182,6 @@ func Test_gRPCClient_RoundRobin(t *testing.T) {
 		           gbo: nil,
 		           mcd: nil,
 		           group: nil,
-		           crl: sync.Map{},
 		           ech: nil,
 		           monitorRunning: nil,
 		           stopMonitor: nil,
@@ -1249,7 +1226,6 @@ func Test_gRPCClient_RoundRobin(t *testing.T) {
 		           gbo: nil,
 		           mcd: nil,
 		           group: nil,
-		           crl: sync.Map{},
 		           ech: nil,
 		           monitorRunning: nil,
 		           stopMonitor: nil,
@@ -1306,7 +1282,6 @@ func Test_gRPCClient_RoundRobin(t *testing.T) {
 				gbo:                 test.fields.gbo,
 				mcd:                 test.fields.mcd,
 				group:               test.fields.group,
-				crl:                 test.fields.crl,
 				ech:                 test.fields.ech,
 				monitorRunning:      test.fields.monitorRunning,
 				stopMonitor:         test.fields.stopMonitor,
@@ -1350,7 +1325,6 @@ func Test_gRPCClient_Do(t *testing.T) {
 		gbo                 gbackoff.Config
 		mcd                 time.Duration
 		group               singleflight.Group
-		crl                 sync.Map
 		ech                 <-chan error
 		monitorRunning      atomic.Value
 		stopMonitor         context.CancelFunc
@@ -1407,7 +1381,6 @@ func Test_gRPCClient_Do(t *testing.T) {
 		           gbo: nil,
 		           mcd: nil,
 		           group: nil,
-		           crl: sync.Map{},
 		           ech: nil,
 		           monitorRunning: nil,
 		           stopMonitor: nil,
@@ -1453,7 +1426,6 @@ func Test_gRPCClient_Do(t *testing.T) {
 		           gbo: nil,
 		           mcd: nil,
 		           group: nil,
-		           crl: sync.Map{},
 		           ech: nil,
 		           monitorRunning: nil,
 		           stopMonitor: nil,
@@ -1510,7 +1482,6 @@ func Test_gRPCClient_Do(t *testing.T) {
 				gbo:                 test.fields.gbo,
 				mcd:                 test.fields.mcd,
 				group:               test.fields.group,
-				crl:                 test.fields.crl,
 				ech:                 test.fields.ech,
 				monitorRunning:      test.fields.monitorRunning,
 				stopMonitor:         test.fields.stopMonitor,
@@ -1556,7 +1527,6 @@ func Test_gRPCClient_doConnect(t *testing.T) {
 		gbo                 gbackoff.Config
 		mcd                 time.Duration
 		group               singleflight.Group
-		crl                 sync.Map
 		ech                 <-chan error
 		monitorRunning      atomic.Value
 		stopMonitor         context.CancelFunc
@@ -1615,7 +1585,6 @@ func Test_gRPCClient_doConnect(t *testing.T) {
 		           gbo: nil,
 		           mcd: nil,
 		           group: nil,
-		           crl: sync.Map{},
 		           ech: nil,
 		           monitorRunning: nil,
 		           stopMonitor: nil,
@@ -1663,7 +1632,6 @@ func Test_gRPCClient_doConnect(t *testing.T) {
 		           gbo: nil,
 		           mcd: nil,
 		           group: nil,
-		           crl: sync.Map{},
 		           ech: nil,
 		           monitorRunning: nil,
 		           stopMonitor: nil,
@@ -1720,7 +1688,6 @@ func Test_gRPCClient_doConnect(t *testing.T) {
 				gbo:                 test.fields.gbo,
 				mcd:                 test.fields.mcd,
 				group:               test.fields.group,
-				crl:                 test.fields.crl,
 				ech:                 test.fields.ech,
 				monitorRunning:      test.fields.monitorRunning,
 				stopMonitor:         test.fields.stopMonitor,
@@ -1759,7 +1726,6 @@ func Test_gRPCClient_GetDialOption(t *testing.T) {
 		gbo                 gbackoff.Config
 		mcd                 time.Duration
 		group               singleflight.Group
-		crl                 sync.Map
 		ech                 <-chan error
 		monitorRunning      atomic.Value
 		stopMonitor         context.CancelFunc
@@ -1806,7 +1772,6 @@ func Test_gRPCClient_GetDialOption(t *testing.T) {
 		           gbo: nil,
 		           mcd: nil,
 		           group: nil,
-		           crl: sync.Map{},
 		           ech: nil,
 		           monitorRunning: nil,
 		           stopMonitor: nil,
@@ -1847,7 +1812,6 @@ func Test_gRPCClient_GetDialOption(t *testing.T) {
 		           gbo: nil,
 		           mcd: nil,
 		           group: nil,
-		           crl: sync.Map{},
 		           ech: nil,
 		           monitorRunning: nil,
 		           stopMonitor: nil,
@@ -1904,7 +1868,6 @@ func Test_gRPCClient_GetDialOption(t *testing.T) {
 				gbo:                 test.fields.gbo,
 				mcd:                 test.fields.mcd,
 				group:               test.fields.group,
-				crl:                 test.fields.crl,
 				ech:                 test.fields.ech,
 				monitorRunning:      test.fields.monitorRunning,
 				stopMonitor:         test.fields.stopMonitor,
@@ -1943,7 +1906,6 @@ func Test_gRPCClient_GetCallOption(t *testing.T) {
 		gbo                 gbackoff.Config
 		mcd                 time.Duration
 		group               singleflight.Group
-		crl                 sync.Map
 		ech                 <-chan error
 		monitorRunning      atomic.Value
 		stopMonitor         context.CancelFunc
@@ -1990,7 +1952,6 @@ func Test_gRPCClient_GetCallOption(t *testing.T) {
 		           gbo: nil,
 		           mcd: nil,
 		           group: nil,
-		           crl: sync.Map{},
 		           ech: nil,
 		           monitorRunning: nil,
 		           stopMonitor: nil,
@@ -2031,7 +1992,6 @@ func Test_gRPCClient_GetCallOption(t *testing.T) {
 		           gbo: nil,
 		           mcd: nil,
 		           group: nil,
-		           crl: sync.Map{},
 		           ech: nil,
 		           monitorRunning: nil,
 		           stopMonitor: nil,
@@ -2088,7 +2048,6 @@ func Test_gRPCClient_GetCallOption(t *testing.T) {
 				gbo:                 test.fields.gbo,
 				mcd:                 test.fields.mcd,
 				group:               test.fields.group,
-				crl:                 test.fields.crl,
 				ech:                 test.fields.ech,
 				monitorRunning:      test.fields.monitorRunning,
 				stopMonitor:         test.fields.stopMonitor,
@@ -2127,7 +2086,6 @@ func Test_gRPCClient_GetBackoff(t *testing.T) {
 		gbo                 gbackoff.Config
 		mcd                 time.Duration
 		group               singleflight.Group
-		crl                 sync.Map
 		ech                 <-chan error
 		monitorRunning      atomic.Value
 		stopMonitor         context.CancelFunc
@@ -2174,7 +2132,6 @@ func Test_gRPCClient_GetBackoff(t *testing.T) {
 		           gbo: nil,
 		           mcd: nil,
 		           group: nil,
-		           crl: sync.Map{},
 		           ech: nil,
 		           monitorRunning: nil,
 		           stopMonitor: nil,
@@ -2215,7 +2172,6 @@ func Test_gRPCClient_GetBackoff(t *testing.T) {
 		           gbo: nil,
 		           mcd: nil,
 		           group: nil,
-		           crl: sync.Map{},
 		           ech: nil,
 		           monitorRunning: nil,
 		           stopMonitor: nil,
@@ -2272,7 +2228,6 @@ func Test_gRPCClient_GetBackoff(t *testing.T) {
 				gbo:                 test.fields.gbo,
 				mcd:                 test.fields.mcd,
 				group:               test.fields.group,
-				crl:                 test.fields.crl,
 				ech:                 test.fields.ech,
 				monitorRunning:      test.fields.monitorRunning,
 				stopMonitor:         test.fields.stopMonitor,
@@ -2316,7 +2271,6 @@ func Test_gRPCClient_Connect(t *testing.T) {
 		gbo                 gbackoff.Config
 		mcd                 time.Duration
 		group               singleflight.Group
-		crl                 sync.Map
 		ech                 <-chan error
 		monitorRunning      atomic.Value
 		stopMonitor         context.CancelFunc
@@ -2373,7 +2327,6 @@ func Test_gRPCClient_Connect(t *testing.T) {
 		           gbo: nil,
 		           mcd: nil,
 		           group: nil,
-		           crl: sync.Map{},
 		           ech: nil,
 		           monitorRunning: nil,
 		           stopMonitor: nil,
@@ -2419,7 +2372,6 @@ func Test_gRPCClient_Connect(t *testing.T) {
 		           gbo: nil,
 		           mcd: nil,
 		           group: nil,
-		           crl: sync.Map{},
 		           ech: nil,
 		           monitorRunning: nil,
 		           stopMonitor: nil,
@@ -2476,7 +2428,6 @@ func Test_gRPCClient_Connect(t *testing.T) {
 				gbo:                 test.fields.gbo,
 				mcd:                 test.fields.mcd,
 				group:               test.fields.group,
-				crl:                 test.fields.crl,
 				ech:                 test.fields.ech,
 				monitorRunning:      test.fields.monitorRunning,
 				stopMonitor:         test.fields.stopMonitor,
@@ -2519,7 +2470,6 @@ func Test_gRPCClient_IsConnected(t *testing.T) {
 		gbo                 gbackoff.Config
 		mcd                 time.Duration
 		group               singleflight.Group
-		crl                 sync.Map
 		ech                 <-chan error
 		monitorRunning      atomic.Value
 		stopMonitor         context.CancelFunc
@@ -2571,7 +2521,6 @@ func Test_gRPCClient_IsConnected(t *testing.T) {
 		           gbo: nil,
 		           mcd: nil,
 		           group: nil,
-		           crl: sync.Map{},
 		           ech: nil,
 		           monitorRunning: nil,
 		           stopMonitor: nil,
@@ -2616,7 +2565,6 @@ func Test_gRPCClient_IsConnected(t *testing.T) {
 		           gbo: nil,
 		           mcd: nil,
 		           group: nil,
-		           crl: sync.Map{},
 		           ech: nil,
 		           monitorRunning: nil,
 		           stopMonitor: nil,
@@ -2673,7 +2621,6 @@ func Test_gRPCClient_IsConnected(t *testing.T) {
 				gbo:                 test.fields.gbo,
 				mcd:                 test.fields.mcd,
 				group:               test.fields.group,
-				crl:                 test.fields.crl,
 				ech:                 test.fields.ech,
 				monitorRunning:      test.fields.monitorRunning,
 				stopMonitor:         test.fields.stopMonitor,
@@ -2716,7 +2663,6 @@ func Test_gRPCClient_Disconnect(t *testing.T) {
 		gbo                 gbackoff.Config
 		mcd                 time.Duration
 		group               singleflight.Group
-		crl                 sync.Map
 		ech                 <-chan error
 		monitorRunning      atomic.Value
 		stopMonitor         context.CancelFunc
@@ -2768,7 +2714,6 @@ func Test_gRPCClient_Disconnect(t *testing.T) {
 		           gbo: nil,
 		           mcd: nil,
 		           group: nil,
-		           crl: sync.Map{},
 		           ech: nil,
 		           monitorRunning: nil,
 		           stopMonitor: nil,
@@ -2813,7 +2758,6 @@ func Test_gRPCClient_Disconnect(t *testing.T) {
 		           gbo: nil,
 		           mcd: nil,
 		           group: nil,
-		           crl: sync.Map{},
 		           ech: nil,
 		           monitorRunning: nil,
 		           stopMonitor: nil,
@@ -2870,7 +2814,6 @@ func Test_gRPCClient_Disconnect(t *testing.T) {
 				gbo:                 test.fields.gbo,
 				mcd:                 test.fields.mcd,
 				group:               test.fields.group,
-				crl:                 test.fields.crl,
 				ech:                 test.fields.ech,
 				monitorRunning:      test.fields.monitorRunning,
 				stopMonitor:         test.fields.stopMonitor,
@@ -2909,7 +2852,6 @@ func Test_gRPCClient_ConnectedAddrs(t *testing.T) {
 		gbo                 gbackoff.Config
 		mcd                 time.Duration
 		group               singleflight.Group
-		crl                 sync.Map
 		ech                 <-chan error
 		monitorRunning      atomic.Value
 		stopMonitor         context.CancelFunc
@@ -2956,7 +2898,6 @@ func Test_gRPCClient_ConnectedAddrs(t *testing.T) {
 		           gbo: nil,
 		           mcd: nil,
 		           group: nil,
-		           crl: sync.Map{},
 		           ech: nil,
 		           monitorRunning: nil,
 		           stopMonitor: nil,
@@ -2997,7 +2938,6 @@ func Test_gRPCClient_ConnectedAddrs(t *testing.T) {
 		           gbo: nil,
 		           mcd: nil,
 		           group: nil,
-		           crl: sync.Map{},
 		           ech: nil,
 		           monitorRunning: nil,
 		           stopMonitor: nil,
@@ -3054,7 +2994,6 @@ func Test_gRPCClient_ConnectedAddrs(t *testing.T) {
 				gbo:                 test.fields.gbo,
 				mcd:                 test.fields.mcd,
 				group:               test.fields.group,
-				crl:                 test.fields.crl,
 				ech:                 test.fields.ech,
 				monitorRunning:      test.fields.monitorRunning,
 				stopMonitor:         test.fields.stopMonitor,
@@ -3096,7 +3035,6 @@ func Test_gRPCClient_Close(t *testing.T) {
 		gbo                 gbackoff.Config
 		mcd                 time.Duration
 		group               singleflight.Group
-		crl                 sync.Map
 		ech                 <-chan error
 		monitorRunning      atomic.Value
 		stopMonitor         context.CancelFunc
@@ -3147,7 +3085,6 @@ func Test_gRPCClient_Close(t *testing.T) {
 		           gbo: nil,
 		           mcd: nil,
 		           group: nil,
-		           crl: sync.Map{},
 		           ech: nil,
 		           monitorRunning: nil,
 		           stopMonitor: nil,
@@ -3191,7 +3128,6 @@ func Test_gRPCClient_Close(t *testing.T) {
 		           gbo: nil,
 		           mcd: nil,
 		           group: nil,
-		           crl: sync.Map{},
 		           ech: nil,
 		           monitorRunning: nil,
 		           stopMonitor: nil,
@@ -3248,7 +3184,6 @@ func Test_gRPCClient_Close(t *testing.T) {
 				gbo:                 test.fields.gbo,
 				mcd:                 test.fields.mcd,
 				group:               test.fields.group,
-				crl:                 test.fields.crl,
 				ech:                 test.fields.ech,
 				monitorRunning:      test.fields.monitorRunning,
 				stopMonitor:         test.fields.stopMonitor,
