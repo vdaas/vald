@@ -151,7 +151,7 @@ func (q *queue) Pop(ctx context.Context) (JobFunc, error) {
 			}
 		}
 	}
-	return nil, errors.ErrJobFuncIsNil()
+	return nil, errors.ErrJobFuncNotFound()
 }
 
 // Len returns the length of queue.

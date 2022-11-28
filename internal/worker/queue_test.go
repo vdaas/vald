@@ -754,7 +754,7 @@ func Test_queue_Pop(t *testing.T) {
 				},
 				want: want{
 					want: nil,
-					err:  errors.ErrJobFuncIsNil(),
+					err:  errors.ErrJobFuncNotFound(),
 				},
 				beforeFunc: func(args) {
 					outCh <- nil

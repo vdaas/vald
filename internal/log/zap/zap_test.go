@@ -405,12 +405,12 @@ func Test_toZapEncoder(t *testing.T) {
 		return nil
 	}
 	consoleEnc := zapcore.NewConsoleEncoder(zap.NewDevelopmentEncoderConfig())
-	zapcore_NewConsoleEncoder = func(_ zapcore.EncoderConfig) zapcore.Encoder {
+	zapcore_NewConsoleEncoder = func(zapcore.EncoderConfig) zapcore.Encoder {
 		return consoleEnc
 	}
 
 	jsonEnc := zapcore.NewJSONEncoder(zap.NewDevelopmentEncoderConfig())
-	zapcore_NewJSONEncoder = func(_ zapcore.EncoderConfig) zapcore.Encoder {
+	zapcore_NewJSONEncoder = func(zapcore.EncoderConfig) zapcore.Encoder {
 		return jsonEnc
 	}
 

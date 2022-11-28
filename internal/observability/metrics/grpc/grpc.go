@@ -59,7 +59,7 @@ func (*grpcServerMetrics) View() ([]*metrics.View, error) {
 	}, nil
 }
 
-func (*grpcServerMetrics) Register(_ metrics.Meter) error {
+func (*grpcServerMetrics) Register(metrics.Meter) error {
 	// The metrics are dynamically registered at the grpc server interceptor package,
 	// so do nothing in this part
 	return nil

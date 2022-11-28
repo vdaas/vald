@@ -180,7 +180,7 @@ func (m *mySQLClient) Ping(ctx context.Context) (err error) {
 
 // Close closes the connection of MySQL database.
 // If the connection is already closed or closing connection is failed, it returns error.
-func (m *mySQLClient) Close(_ context.Context) (err error) {
+func (m *mySQLClient) Close(context.Context) (err error) {
 	if m.session == nil {
 		err = errors.ErrMySQLSessionNil
 		m.errorLog(err)

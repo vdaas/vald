@@ -170,7 +170,7 @@ func (b *backoff) Close() {
 	b.wg.Wait()
 }
 
-func Metrics(_ context.Context) map[string]int64 {
+func Metrics(context.Context) map[string]int64 {
 	mu.RLock()
 	defer mu.RUnlock()
 
