@@ -20,7 +20,7 @@ package vqueue
 import (
 	"context"
 	"reflect"
-	"sync"
+	"sync/atomic"
 	"testing"
 
 	"github.com/vdaas/vald/internal/errgroup"
@@ -105,6 +105,18 @@ func TestNew(t *testing.T) {
 	}
 }
 
+type uiimNoLock struct {
+	read   atomic.Value
+	dirty  map[string]*entryUiim
+	misses int
+}
+
+type udimNoLock struct {
+	read   atomic.Value
+	dirty  map[string]*entryUdim
+	misses int
+}
+
 func Test_vqueue_PushInsert(t *testing.T) {
 	type args struct {
 		uuid   string
@@ -113,11 +125,9 @@ func Test_vqueue_PushInsert(t *testing.T) {
 	}
 	type fields struct {
 		uii      []index
-		imu      sync.RWMutex
-		uiim     uiim
+		uiim     uiimNoLock
 		udk      []key
-		dmu      sync.RWMutex
-		udim     udim
+		udim     udimNoLock
 		eg       errgroup.Group
 		iBufSize int
 		dBufSize int
@@ -153,12 +163,10 @@ func Test_vqueue_PushInsert(t *testing.T) {
 		       fields: fields {
 		           ich: nil,
 		           uii: nil,
-		           imu: nil,
-		           uiim: uiim{},
+		           uiim: uiimNoLock{},
 		           dch: nil,
 		           udk: nil,
-		           dmu: nil,
-		           udim: udim{},
+		           udim: udimNoLock{},
 		           eg: nil,
 		           ichSize: 0,
 		           dchSize: 0,
@@ -183,12 +191,10 @@ func Test_vqueue_PushInsert(t *testing.T) {
 		           fields: fields {
 		           ich: nil,
 		           uii: nil,
-		           imu: nil,
-		           uiim: uiim{},
+		           uiim: uiimNoLock{},
 		           dch: nil,
 		           udk: nil,
-		           dmu: nil,
-		           udim: udim{},
+		           udim: udimNoLock{},
 		           eg: nil,
 		           ichSize: 0,
 		           dchSize: 0,
@@ -218,12 +224,18 @@ func Test_vqueue_PushInsert(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 			v := &vqueue{
-				uii:      test.fields.uii,
-				imu:      test.fields.imu,
-				uiim:     test.fields.uiim,
-				udk:      test.fields.udk,
-				dmu:      test.fields.dmu,
-				udim:     test.fields.udim,
+				uii: test.fields.uii,
+				uiim: uiim{
+					read:   test.fields.uiim.read,
+					dirty:  test.fields.uiim.dirty,
+					misses: test.fields.uiim.misses,
+				},
+				udk: test.fields.udk,
+				udim: udim{
+					read:   test.fields.udim.read,
+					dirty:  test.fields.udim.dirty,
+					misses: test.fields.udim.misses,
+				},
 				eg:       test.fields.eg,
 				iBufSize: test.fields.iBufSize,
 				dBufSize: test.fields.dBufSize,
@@ -244,11 +256,9 @@ func Test_vqueue_PushDelete(t *testing.T) {
 	}
 	type fields struct {
 		uii      []index
-		imu      sync.RWMutex
-		uiim     uiim
+		uiim     uiimNoLock
 		udk      []key
-		dmu      sync.RWMutex
-		udim     udim
+		udim     udimNoLock
 		eg       errgroup.Group
 		iBufSize int
 		dBufSize int
@@ -283,12 +293,10 @@ func Test_vqueue_PushDelete(t *testing.T) {
 		       fields: fields {
 		           ich: nil,
 		           uii: nil,
-		           imu: nil,
-		           uiim: uiim{},
+		           uiim: uiimNoLock{},
 		           dch: nil,
 		           udk: nil,
-		           dmu: nil,
-		           udim: udim{},
+		           udim: udimNoLock{},
 		           eg: nil,
 		           ichSize: 0,
 		           dchSize: 0,
@@ -312,12 +320,10 @@ func Test_vqueue_PushDelete(t *testing.T) {
 		           fields: fields {
 		           ich: nil,
 		           uii: nil,
-		           imu: nil,
-		           uiim: uiim{},
+		           uiim: uiimNoLock{},
 		           dch: nil,
 		           udk: nil,
-		           dmu: nil,
-		           udim: udim{},
+		           udim: udimNoLock{},
 		           eg: nil,
 		           ichSize: 0,
 		           dchSize: 0,
@@ -347,12 +353,18 @@ func Test_vqueue_PushDelete(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 			v := &vqueue{
-				uii:      test.fields.uii,
-				imu:      test.fields.imu,
-				uiim:     test.fields.uiim,
-				udk:      test.fields.udk,
-				dmu:      test.fields.dmu,
-				udim:     test.fields.udim,
+				uii: test.fields.uii,
+				uiim: uiim{
+					read:   test.fields.uiim.read,
+					dirty:  test.fields.uiim.dirty,
+					misses: test.fields.uiim.misses,
+				},
+				udk: test.fields.udk,
+				udim: udim{
+					read:   test.fields.udim.read,
+					dirty:  test.fields.udim.dirty,
+					misses: test.fields.udim.misses,
+				},
 				eg:       test.fields.eg,
 				iBufSize: test.fields.iBufSize,
 				dBufSize: test.fields.dBufSize,
@@ -374,11 +386,9 @@ func Test_vqueue_RangePopInsert(t *testing.T) {
 	}
 	type fields struct {
 		uii      []index
-		imu      sync.RWMutex
-		uiim     uiim
+		uiim     uiimNoLock
 		udk      []key
-		dmu      sync.RWMutex
-		udim     udim
+		udim     udimNoLock
 		eg       errgroup.Group
 		iBufSize int
 		dBufSize int
@@ -408,12 +418,10 @@ func Test_vqueue_RangePopInsert(t *testing.T) {
 		       fields: fields {
 		           ich: nil,
 		           uii: nil,
-		           imu: nil,
-		           uiim: uiim{},
+		           uiim: uiimNoLock{},
 		           dch: nil,
 		           udk: nil,
-		           dmu: nil,
-		           udim: udim{},
+		           udim: udimNoLock{},
 		           eg: nil,
 		           ichSize: 0,
 		           dchSize: 0,
@@ -437,12 +445,10 @@ func Test_vqueue_RangePopInsert(t *testing.T) {
 		           fields: fields {
 		           ich: nil,
 		           uii: nil,
-		           imu: nil,
-		           uiim: uiim{},
+		           uiim: uiimNoLock{},
 		           dch: nil,
 		           udk: nil,
-		           dmu: nil,
-		           udim: udim{},
+		           udim: udimNoLock{},
 		           eg: nil,
 		           ichSize: 0,
 		           dchSize: 0,
@@ -472,12 +478,18 @@ func Test_vqueue_RangePopInsert(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 			v := &vqueue{
-				uii:      test.fields.uii,
-				imu:      test.fields.imu,
-				uiim:     test.fields.uiim,
-				udk:      test.fields.udk,
-				dmu:      test.fields.dmu,
-				udim:     test.fields.udim,
+				uii: test.fields.uii,
+				uiim: uiim{
+					read:   test.fields.uiim.read,
+					dirty:  test.fields.uiim.dirty,
+					misses: test.fields.uiim.misses,
+				},
+				udk: test.fields.udk,
+				udim: udim{
+					read:   test.fields.udim.read,
+					dirty:  test.fields.udim.dirty,
+					misses: test.fields.udim.misses,
+				},
 				eg:       test.fields.eg,
 				iBufSize: test.fields.iBufSize,
 				dBufSize: test.fields.dBufSize,
@@ -499,11 +511,9 @@ func Test_vqueue_RangePopDelete(t *testing.T) {
 	}
 	type fields struct {
 		uii      []index
-		imu      sync.RWMutex
-		uiim     uiim
+		uiim     uiimNoLock
 		udk      []key
-		dmu      sync.RWMutex
-		udim     udim
+		udim     udimNoLock
 		eg       errgroup.Group
 		iBufSize int
 		dBufSize int
@@ -533,12 +543,10 @@ func Test_vqueue_RangePopDelete(t *testing.T) {
 		       fields: fields {
 		           ich: nil,
 		           uii: nil,
-		           imu: nil,
-		           uiim: uiim{},
+		           uiim: uiimNoLock{},
 		           dch: nil,
 		           udk: nil,
-		           dmu: nil,
-		           udim: udim{},
+		           udim: udimNoLock{},
 		           eg: nil,
 		           ichSize: 0,
 		           dchSize: 0,
@@ -562,12 +570,10 @@ func Test_vqueue_RangePopDelete(t *testing.T) {
 		           fields: fields {
 		           ich: nil,
 		           uii: nil,
-		           imu: nil,
-		           uiim: uiim{},
+		           uiim: uiimNoLock{},
 		           dch: nil,
 		           udk: nil,
-		           dmu: nil,
-		           udim: udim{},
+		           udim: udimNoLock{},
 		           eg: nil,
 		           ichSize: 0,
 		           dchSize: 0,
@@ -597,12 +603,18 @@ func Test_vqueue_RangePopDelete(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 			v := &vqueue{
-				uii:      test.fields.uii,
-				imu:      test.fields.imu,
-				uiim:     test.fields.uiim,
-				udk:      test.fields.udk,
-				dmu:      test.fields.dmu,
-				udim:     test.fields.udim,
+				uii: test.fields.uii,
+				uiim: uiim{
+					read:   test.fields.uiim.read,
+					dirty:  test.fields.uiim.dirty,
+					misses: test.fields.uiim.misses,
+				},
+				udk: test.fields.udk,
+				udim: udim{
+					read:   test.fields.udim.read,
+					dirty:  test.fields.udim.dirty,
+					misses: test.fields.udim.misses,
+				},
 				eg:       test.fields.eg,
 				iBufSize: test.fields.iBufSize,
 				dBufSize: test.fields.dBufSize,
@@ -622,11 +634,9 @@ func Test_vqueue_GetVector(t *testing.T) {
 	}
 	type fields struct {
 		uii      []index
-		imu      sync.RWMutex
-		uiim     uiim
+		uiim     uiimNoLock
 		udk      []key
-		dmu      sync.RWMutex
-		udim     udim
+		udim     udimNoLock
 		eg       errgroup.Group
 		iBufSize int
 		dBufSize int
@@ -677,7 +687,11 @@ func Test_vqueue_GetVector(t *testing.T) {
 					uuid: uuid,
 				},
 				fields: fields{
-					uiim: uiim,
+					uiim: uiimNoLock{
+						read:   uiim.read,
+						dirty:  uiim.dirty,
+						misses: uiim.misses,
+					},
 				},
 				want: want{
 					want:  nil,
@@ -707,7 +721,11 @@ func Test_vqueue_GetVector(t *testing.T) {
 					uuid: "",
 				},
 				fields: fields{
-					uiim: uiim,
+					uiim: uiimNoLock{
+						read:   uiim.read,
+						dirty:  uiim.dirty,
+						misses: uiim.misses,
+					},
 				},
 				want: want{
 					want:  nil,
@@ -768,8 +786,16 @@ func Test_vqueue_GetVector(t *testing.T) {
 					uuid: uuid,
 				},
 				fields: fields{
-					uiim: uiim,
-					udim: udim,
+					uiim: uiimNoLock{
+						read:   uiim.read,
+						dirty:  uiim.dirty,
+						misses: uiim.misses,
+					},
+					udim: udimNoLock{
+						read:   udim.read,
+						dirty:  udim.dirty,
+						misses: udim.misses,
+					},
 				},
 				want: want{
 					want:  []float32{1},
@@ -802,7 +828,11 @@ func Test_vqueue_GetVector(t *testing.T) {
 					uuid: uuid,
 				},
 				fields: fields{
-					uiim: uiim,
+					uiim: uiimNoLock{
+						read:   uiim.read,
+						dirty:  uiim.dirty,
+						misses: uiim.misses,
+					},
 				},
 				want: want{
 					want:  []float32{1},
@@ -850,8 +880,16 @@ func Test_vqueue_GetVector(t *testing.T) {
 					uuid: uuid,
 				},
 				fields: fields{
-					uiim: uiim,
-					udim: udim,
+					uiim: uiimNoLock{
+						read:   uiim.read,
+						dirty:  uiim.dirty,
+						misses: uiim.misses,
+					},
+					udim: udimNoLock{
+						read:   udim.read,
+						dirty:  udim.dirty,
+						misses: udim.misses,
+					},
 				},
 				want: want{
 					want:  []float32{1},
@@ -899,8 +937,16 @@ func Test_vqueue_GetVector(t *testing.T) {
 					uuid: uuid,
 				},
 				fields: fields{
-					uiim: uiim,
-					udim: udim,
+					uiim: uiimNoLock{
+						read:   uiim.read,
+						dirty:  uiim.dirty,
+						misses: uiim.misses,
+					},
+					udim: udimNoLock{
+						read:   udim.read,
+						dirty:  udim.dirty,
+						misses: udim.misses,
+					},
 				},
 				want: want{
 					want:  []float32{1},
@@ -948,8 +994,16 @@ func Test_vqueue_GetVector(t *testing.T) {
 					uuid: uuid,
 				},
 				fields: fields{
-					uiim: uiim,
-					udim: udim,
+					uiim: uiimNoLock{
+						read:   uiim.read,
+						dirty:  uiim.dirty,
+						misses: uiim.misses,
+					},
+					udim: udimNoLock{
+						read:   udim.read,
+						dirty:  udim.dirty,
+						misses: udim.misses,
+					},
 				},
 				want: want{
 					want:  nil,
@@ -975,12 +1029,18 @@ func Test_vqueue_GetVector(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 			v := &vqueue{
-				uii:      test.fields.uii,
-				imu:      test.fields.imu,
-				uiim:     test.fields.uiim,
-				udk:      test.fields.udk,
-				dmu:      test.fields.dmu,
-				udim:     test.fields.udim,
+				uii: test.fields.uii,
+				uiim: uiim{
+					read:   test.fields.uiim.read,
+					dirty:  test.fields.uiim.dirty,
+					misses: test.fields.uiim.misses,
+				},
+				udk: test.fields.udk,
+				udim: udim{
+					read:   test.fields.udim.read,
+					dirty:  test.fields.udim.dirty,
+					misses: test.fields.udim.misses,
+				},
 				eg:       test.fields.eg,
 				iBufSize: test.fields.iBufSize,
 				dBufSize: test.fields.dBufSize,
@@ -1000,11 +1060,9 @@ func Test_vqueue_IVExists(t *testing.T) {
 	}
 	type fields struct {
 		uii      []index
-		imu      sync.RWMutex
-		uiim     uiim
+		uiim     uiimNoLock
 		udk      []key
-		dmu      sync.RWMutex
-		udim     udim
+		udim     udimNoLock
 		eg       errgroup.Group
 		iBufSize int
 		dBufSize int
@@ -1051,7 +1109,11 @@ func Test_vqueue_IVExists(t *testing.T) {
 					uuid: uuid,
 				},
 				fields: fields{
-					uiim: uiim,
+					uiim: uiimNoLock{
+						read:   uiim.read,
+						dirty:  uiim.dirty,
+						misses: uiim.misses,
+					},
 				},
 				want: want{
 					want: false,
@@ -1080,7 +1142,11 @@ func Test_vqueue_IVExists(t *testing.T) {
 					uuid: "",
 				},
 				fields: fields{
-					uiim: uiim,
+					uiim: uiimNoLock{
+						read:   uiim.read,
+						dirty:  uiim.dirty,
+						misses: uiim.misses,
+					},
 				},
 				want: want{
 					want: false,
@@ -1139,8 +1205,16 @@ func Test_vqueue_IVExists(t *testing.T) {
 					uuid: uuid,
 				},
 				fields: fields{
-					uiim: uiim,
-					udim: udim,
+					uiim: uiimNoLock{
+						read:   uiim.read,
+						dirty:  uiim.dirty,
+						misses: uiim.misses,
+					},
+					udim: udimNoLock{
+						read:   udim.read,
+						dirty:  udim.dirty,
+						misses: udim.misses,
+					},
 				},
 				want: want{
 					want: true,
@@ -1172,7 +1246,11 @@ func Test_vqueue_IVExists(t *testing.T) {
 					uuid: uuid,
 				},
 				fields: fields{
-					uiim: uiim,
+					uiim: uiimNoLock{
+						read:   uiim.read,
+						dirty:  uiim.dirty,
+						misses: uiim.misses,
+					},
 				},
 				want: want{
 					want: true,
@@ -1219,8 +1297,16 @@ func Test_vqueue_IVExists(t *testing.T) {
 					uuid: uuid,
 				},
 				fields: fields{
-					uiim: uiim,
-					udim: udim,
+					uiim: uiimNoLock{
+						read:   uiim.read,
+						dirty:  uiim.dirty,
+						misses: uiim.misses,
+					},
+					udim: udimNoLock{
+						read:   udim.read,
+						dirty:  udim.dirty,
+						misses: udim.misses,
+					},
 				},
 				want: want{
 					want: true,
@@ -1267,8 +1353,16 @@ func Test_vqueue_IVExists(t *testing.T) {
 					uuid: uuid,
 				},
 				fields: fields{
-					uiim: uiim,
-					udim: udim,
+					uiim: uiimNoLock{
+						read:   uiim.read,
+						dirty:  uiim.dirty,
+						misses: uiim.misses,
+					},
+					udim: udimNoLock{
+						read:   udim.read,
+						dirty:  udim.dirty,
+						misses: udim.misses,
+					},
 				},
 				want: want{
 					want: true,
@@ -1315,8 +1409,16 @@ func Test_vqueue_IVExists(t *testing.T) {
 					uuid: uuid,
 				},
 				fields: fields{
-					uiim: uiim,
-					udim: udim,
+					uiim: uiimNoLock{
+						read:   uiim.read,
+						dirty:  uiim.dirty,
+						misses: uiim.misses,
+					},
+					udim: udimNoLock{
+						read:   udim.read,
+						dirty:  udim.dirty,
+						misses: udim.misses,
+					},
 				},
 				want: want{
 					want: false,
@@ -1341,12 +1443,18 @@ func Test_vqueue_IVExists(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 			v := &vqueue{
-				uii:      test.fields.uii,
-				imu:      test.fields.imu,
-				uiim:     test.fields.uiim,
-				udk:      test.fields.udk,
-				dmu:      test.fields.dmu,
-				udim:     test.fields.udim,
+				uii: test.fields.uii,
+				uiim: uiim{
+					read:   test.fields.uiim.read,
+					dirty:  test.fields.uiim.dirty,
+					misses: test.fields.uiim.misses,
+				},
+				udk: test.fields.udk,
+				udim: udim{
+					read:   test.fields.udim.read,
+					dirty:  test.fields.udim.dirty,
+					misses: test.fields.udim.misses,
+				},
 				eg:       test.fields.eg,
 				iBufSize: test.fields.iBufSize,
 				dBufSize: test.fields.dBufSize,
@@ -1366,11 +1474,9 @@ func Test_vqueue_DVExists(t *testing.T) {
 	}
 	type fields struct {
 		uii      []index
-		imu      sync.RWMutex
-		uiim     uiim
+		uiim     uiimNoLock
 		udk      []key
-		dmu      sync.RWMutex
-		udim     udim
+		udim     udimNoLock
 		eg       errgroup.Group
 		iBufSize int
 		dBufSize int
@@ -1417,7 +1523,11 @@ func Test_vqueue_DVExists(t *testing.T) {
 					uuid: uuid,
 				},
 				fields: fields{
-					udim: udim,
+					udim: udimNoLock{
+						read:   udim.read,
+						dirty:  udim.dirty,
+						misses: udim.misses,
+					},
 				},
 				want: want{
 					want: false,
@@ -1446,7 +1556,11 @@ func Test_vqueue_DVExists(t *testing.T) {
 					uuid: "",
 				},
 				fields: fields{
-					udim: udim,
+					udim: udimNoLock{
+						read:   udim.read,
+						dirty:  udim.dirty,
+						misses: udim.misses,
+					},
 				},
 				want: want{
 					want: false,
@@ -1505,8 +1619,16 @@ func Test_vqueue_DVExists(t *testing.T) {
 					uuid: uuid,
 				},
 				fields: fields{
-					uiim: uiim,
-					udim: udim,
+					uiim: uiimNoLock{
+						read:   uiim.read,
+						dirty:  uiim.dirty,
+						misses: uiim.misses,
+					},
+					udim: udimNoLock{
+						read:   udim.read,
+						dirty:  udim.dirty,
+						misses: udim.misses,
+					},
 				},
 				want: want{
 					want: true,
@@ -1536,7 +1658,11 @@ func Test_vqueue_DVExists(t *testing.T) {
 					uuid: uuid,
 				},
 				fields: fields{
-					udim: udim,
+					udim: udimNoLock{
+						read:   udim.read,
+						dirty:  udim.dirty,
+						misses: udim.misses,
+					},
 				},
 				want: want{
 					want: true,
@@ -1583,8 +1709,16 @@ func Test_vqueue_DVExists(t *testing.T) {
 					uuid: uuid,
 				},
 				fields: fields{
-					uiim: uiim,
-					udim: udim,
+					uiim: uiimNoLock{
+						read:   uiim.read,
+						dirty:  uiim.dirty,
+						misses: uiim.misses,
+					},
+					udim: udimNoLock{
+						read:   udim.read,
+						dirty:  udim.dirty,
+						misses: udim.misses,
+					},
 				},
 				want: want{
 					want: false,
@@ -1631,8 +1765,16 @@ func Test_vqueue_DVExists(t *testing.T) {
 					uuid: uuid,
 				},
 				fields: fields{
-					uiim: uiim,
-					udim: udim,
+					uiim: uiimNoLock{
+						read:   uiim.read,
+						dirty:  uiim.dirty,
+						misses: uiim.misses,
+					},
+					udim: udimNoLock{
+						read:   udim.read,
+						dirty:  udim.dirty,
+						misses: udim.misses,
+					},
 				},
 				want: want{
 					want: true,
@@ -1679,8 +1821,16 @@ func Test_vqueue_DVExists(t *testing.T) {
 					uuid: uuid,
 				},
 				fields: fields{
-					uiim: uiim,
-					udim: udim,
+					uiim: uiimNoLock{
+						read:   uiim.read,
+						dirty:  uiim.dirty,
+						misses: uiim.misses,
+					},
+					udim: udimNoLock{
+						read:   udim.read,
+						dirty:  udim.dirty,
+						misses: udim.misses,
+					},
 				},
 				want: want{
 					want: false,
@@ -1705,12 +1855,18 @@ func Test_vqueue_DVExists(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 			v := &vqueue{
-				uii:      test.fields.uii,
-				imu:      test.fields.imu,
-				uiim:     test.fields.uiim,
-				udk:      test.fields.udk,
-				dmu:      test.fields.dmu,
-				udim:     test.fields.udim,
+				uii: test.fields.uii,
+				uiim: uiim{
+					read:   test.fields.uiim.read,
+					dirty:  test.fields.uiim.dirty,
+					misses: test.fields.uiim.misses,
+				},
+				udk: test.fields.udk,
+				udim: udim{
+					read:   test.fields.udim.read,
+					dirty:  test.fields.udim.dirty,
+					misses: test.fields.udim.misses,
+				},
 				eg:       test.fields.eg,
 				iBufSize: test.fields.iBufSize,
 				dBufSize: test.fields.dBufSize,
@@ -1730,11 +1886,9 @@ func Test_vqueue_addInsert(t *testing.T) {
 	}
 	type fields struct {
 		uii      []index
-		imu      sync.RWMutex
-		uiim     uiim
+		uiim     uiimNoLock
 		udk      []key
-		dmu      sync.RWMutex
-		udim     udim
+		udim     udimNoLock
 		eg       errgroup.Group
 		iBufSize int
 		dBufSize int
@@ -1763,12 +1917,10 @@ func Test_vqueue_addInsert(t *testing.T) {
 		       fields: fields {
 		           ich: nil,
 		           uii: nil,
-		           imu: nil,
-		           uiim: uiim{},
+		           uiim: uiimNoLock{},
 		           dch: nil,
 		           udk: nil,
-		           dmu: nil,
-		           udim: udim{},
+		           udim: udimNoLock{},
 		           eg: nil,
 		           ichSize: 0,
 		           dchSize: 0,
@@ -1791,12 +1943,10 @@ func Test_vqueue_addInsert(t *testing.T) {
 		           fields: fields {
 		           ich: nil,
 		           uii: nil,
-		           imu: nil,
-		           uiim: uiim{},
+		           uiim: uiimNoLock{},
 		           dch: nil,
 		           udk: nil,
-		           dmu: nil,
-		           udim: udim{},
+		           udim: udimNoLock{},
 		           eg: nil,
 		           ichSize: 0,
 		           dchSize: 0,
@@ -1826,12 +1976,18 @@ func Test_vqueue_addInsert(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 			v := &vqueue{
-				uii:      test.fields.uii,
-				imu:      test.fields.imu,
-				uiim:     test.fields.uiim,
-				udk:      test.fields.udk,
-				dmu:      test.fields.dmu,
-				udim:     test.fields.udim,
+				uii: test.fields.uii,
+				uiim: uiim{
+					read:   test.fields.uiim.read,
+					dirty:  test.fields.uiim.dirty,
+					misses: test.fields.uiim.misses,
+				},
+				udk: test.fields.udk,
+				udim: udim{
+					read:   test.fields.udim.read,
+					dirty:  test.fields.udim.dirty,
+					misses: test.fields.udim.misses,
+				},
 				eg:       test.fields.eg,
 				iBufSize: test.fields.iBufSize,
 				dBufSize: test.fields.dBufSize,
@@ -1851,11 +2007,9 @@ func Test_vqueue_addDelete(t *testing.T) {
 	}
 	type fields struct {
 		uii      []index
-		imu      sync.RWMutex
-		uiim     uiim
+		uiim     uiimNoLock
 		udk      []key
-		dmu      sync.RWMutex
-		udim     udim
+		udim     udimNoLock
 		eg       errgroup.Group
 		iBufSize int
 		dBufSize int
@@ -1884,12 +2038,10 @@ func Test_vqueue_addDelete(t *testing.T) {
 		       fields: fields {
 		           ich: nil,
 		           uii: nil,
-		           imu: nil,
-		           uiim: uiim{},
+		           uiim: uiimNoLock{},
 		           dch: nil,
 		           udk: nil,
-		           dmu: nil,
-		           udim: udim{},
+		           udim: udimNoLock{},
 		           eg: nil,
 		           ichSize: 0,
 		           dchSize: 0,
@@ -1912,12 +2064,10 @@ func Test_vqueue_addDelete(t *testing.T) {
 		           fields: fields {
 		           ich: nil,
 		           uii: nil,
-		           imu: nil,
-		           uiim: uiim{},
+		           uiim: uiimNoLock{},
 		           dch: nil,
 		           udk: nil,
-		           dmu: nil,
-		           udim: udim{},
+		           udim: udimNoLock{},
 		           eg: nil,
 		           ichSize: 0,
 		           dchSize: 0,
@@ -1947,12 +2097,18 @@ func Test_vqueue_addDelete(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 			v := &vqueue{
-				uii:      test.fields.uii,
-				imu:      test.fields.imu,
-				uiim:     test.fields.uiim,
-				udk:      test.fields.udk,
-				dmu:      test.fields.dmu,
-				udim:     test.fields.udim,
+				uii: test.fields.uii,
+				uiim: uiim{
+					read:   test.fields.uiim.read,
+					dirty:  test.fields.uiim.dirty,
+					misses: test.fields.uiim.misses,
+				},
+				udk: test.fields.udk,
+				udim: udim{
+					read:   test.fields.udim.read,
+					dirty:  test.fields.udim.dirty,
+					misses: test.fields.udim.misses,
+				},
 				eg:       test.fields.eg,
 				iBufSize: test.fields.iBufSize,
 				dBufSize: test.fields.dBufSize,
@@ -1969,11 +2125,9 @@ func Test_vqueue_addDelete(t *testing.T) {
 func Test_vqueue_IVQLen(t *testing.T) {
 	type fields struct {
 		uii      []index
-		imu      sync.RWMutex
-		uiim     uiim
+		uiim     uiimNoLock
 		udk      []key
-		dmu      sync.RWMutex
-		udim     udim
+		udim     udimNoLock
 		eg       errgroup.Group
 		iBufSize int
 		dBufSize int
@@ -2110,12 +2264,18 @@ func Test_vqueue_IVQLen(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 			v := &vqueue{
-				uii:      test.fields.uii,
-				imu:      test.fields.imu,
-				uiim:     test.fields.uiim,
-				udk:      test.fields.udk,
-				dmu:      test.fields.dmu,
-				udim:     test.fields.udim,
+				uii: test.fields.uii,
+				uiim: uiim{
+					read:   test.fields.uiim.read,
+					dirty:  test.fields.uiim.dirty,
+					misses: test.fields.uiim.misses,
+				},
+				udk: test.fields.udk,
+				udim: udim{
+					read:   test.fields.udim.read,
+					dirty:  test.fields.udim.dirty,
+					misses: test.fields.udim.misses,
+				},
 				eg:       test.fields.eg,
 				iBufSize: test.fields.iBufSize,
 				dBufSize: test.fields.dBufSize,
@@ -2132,11 +2292,9 @@ func Test_vqueue_IVQLen(t *testing.T) {
 func Test_vqueue_DVQLen(t *testing.T) {
 	type fields struct {
 		uii      []index
-		imu      sync.RWMutex
-		uiim     uiim
+		uiim     uiimNoLock
 		udk      []key
-		dmu      sync.RWMutex
-		udim     udim
+		udim     udimNoLock
 		eg       errgroup.Group
 		iBufSize int
 		dBufSize int
@@ -2273,12 +2431,18 @@ func Test_vqueue_DVQLen(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 			v := &vqueue{
-				uii:      test.fields.uii,
-				imu:      test.fields.imu,
-				uiim:     test.fields.uiim,
-				udk:      test.fields.udk,
-				dmu:      test.fields.dmu,
-				udim:     test.fields.udim,
+				uii: test.fields.uii,
+				uiim: uiim{
+					read:   test.fields.uiim.read,
+					dirty:  test.fields.uiim.dirty,
+					misses: test.fields.uiim.misses,
+				},
+				udk: test.fields.udk,
+				udim: udim{
+					read:   test.fields.udim.read,
+					dirty:  test.fields.udim.dirty,
+					misses: test.fields.udim.misses,
+				},
 				eg:       test.fields.eg,
 				iBufSize: test.fields.iBufSize,
 				dBufSize: test.fields.dBufSize,

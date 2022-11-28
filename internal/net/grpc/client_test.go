@@ -20,7 +20,6 @@ package grpc
 import (
 	"context"
 	"reflect"
-	"sync"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -48,8 +47,8 @@ func TestNew(t *testing.T) {
 		args       args
 		want       want
 		checkFunc  func(want, Client) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, gotC Client) error {
 		if !reflect.DeepEqual(gotC, w.wantC) {
@@ -67,6 +66,12 @@ func TestNew(t *testing.T) {
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -80,6 +85,12 @@ func TestNew(t *testing.T) {
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -91,10 +102,10 @@ func TestNew(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -114,11 +125,15 @@ func Test_gRPCClient_StartConnectionMonitor(t *testing.T) {
 		ctx context.Context
 	}
 	type fields struct {
-		addrs               map[string]struct{}
-		atomicAddrs         AtomicAddrs
-		poolSize            uint64
-		clientCount         uint64
-		conns               grpcConns
+		addrs       map[string]struct{}
+		atomicAddrs AtomicAddrs
+		poolSize    uint64
+		clientCount uint64
+		conns       struct {
+			read   atomic.Value
+			dirty  map[string]*entryGrpcConns
+			misses int
+		}
 		hcDur               time.Duration
 		prDur               time.Duration
 		dialer              net.Dialer
@@ -133,7 +148,6 @@ func Test_gRPCClient_StartConnectionMonitor(t *testing.T) {
 		gbo                 gbackoff.Config
 		mcd                 time.Duration
 		group               singleflight.Group
-		crl                 sync.Map
 		ech                 <-chan error
 		monitorRunning      atomic.Value
 		stopMonitor         context.CancelFunc
@@ -148,8 +162,8 @@ func Test_gRPCClient_StartConnectionMonitor(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, <-chan error, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, got <-chan error, err error) error {
 		if !errors.Is(err, w.err) {
@@ -173,7 +187,7 @@ func Test_gRPCClient_StartConnectionMonitor(t *testing.T) {
 		           atomicAddrs: nil,
 		           poolSize: 0,
 		           clientCount: 0,
-		           conns: grpcConns{},
+		           conns: struct{},
 		           hcDur: nil,
 		           prDur: nil,
 		           dialer: nil,
@@ -188,13 +202,18 @@ func Test_gRPCClient_StartConnectionMonitor(t *testing.T) {
 		           gbo: nil,
 		           mcd: nil,
 		           group: nil,
-		           crl: sync.Map{},
 		           ech: nil,
 		           monitorRunning: nil,
 		           stopMonitor: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -211,7 +230,7 @@ func Test_gRPCClient_StartConnectionMonitor(t *testing.T) {
 		           atomicAddrs: nil,
 		           poolSize: 0,
 		           clientCount: 0,
-		           conns: grpcConns{},
+		           conns: struct{},
 		           hcDur: nil,
 		           prDur: nil,
 		           dialer: nil,
@@ -226,13 +245,18 @@ func Test_gRPCClient_StartConnectionMonitor(t *testing.T) {
 		           gbo: nil,
 		           mcd: nil,
 		           group: nil,
-		           crl: sync.Map{},
 		           ech: nil,
 		           monitorRunning: nil,
 		           stopMonitor: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -244,21 +268,25 @@ func Test_gRPCClient_StartConnectionMonitor(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
 			g := &gRPCClient{
-				addrs:               test.fields.addrs,
-				atomicAddrs:         test.fields.atomicAddrs,
-				poolSize:            test.fields.poolSize,
-				clientCount:         test.fields.clientCount,
-				conns:               test.fields.conns,
+				addrs:       test.fields.addrs,
+				atomicAddrs: test.fields.atomicAddrs,
+				poolSize:    test.fields.poolSize,
+				clientCount: test.fields.clientCount,
+				conns: grpcConns{
+					read:   test.fields.conns.read,
+					dirty:  test.fields.conns.dirty,
+					misses: test.fields.conns.misses,
+				},
 				hcDur:               test.fields.hcDur,
 				prDur:               test.fields.prDur,
 				dialer:              test.fields.dialer,
@@ -273,7 +301,6 @@ func Test_gRPCClient_StartConnectionMonitor(t *testing.T) {
 				gbo:                 test.fields.gbo,
 				mcd:                 test.fields.mcd,
 				group:               test.fields.group,
-				crl:                 test.fields.crl,
 				ech:                 test.fields.ech,
 				monitorRunning:      test.fields.monitorRunning,
 				stopMonitor:         test.fields.stopMonitor,
@@ -293,11 +320,15 @@ func Test_gRPCClient_Range(t *testing.T) {
 		f   func(ctx context.Context, addr string, conn *ClientConn, copts ...CallOption) error
 	}
 	type fields struct {
-		addrs               map[string]struct{}
-		atomicAddrs         AtomicAddrs
-		poolSize            uint64
-		clientCount         uint64
-		conns               grpcConns
+		addrs       map[string]struct{}
+		atomicAddrs AtomicAddrs
+		poolSize    uint64
+		clientCount uint64
+		conns       struct {
+			read   atomic.Value
+			dirty  map[string]*entryGrpcConns
+			misses int
+		}
 		hcDur               time.Duration
 		prDur               time.Duration
 		dialer              net.Dialer
@@ -312,7 +343,6 @@ func Test_gRPCClient_Range(t *testing.T) {
 		gbo                 gbackoff.Config
 		mcd                 time.Duration
 		group               singleflight.Group
-		crl                 sync.Map
 		ech                 <-chan error
 		monitorRunning      atomic.Value
 		stopMonitor         context.CancelFunc
@@ -326,8 +356,8 @@ func Test_gRPCClient_Range(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -349,7 +379,7 @@ func Test_gRPCClient_Range(t *testing.T) {
 		           atomicAddrs: nil,
 		           poolSize: 0,
 		           clientCount: 0,
-		           conns: grpcConns{},
+		           conns: struct{},
 		           hcDur: nil,
 		           prDur: nil,
 		           dialer: nil,
@@ -364,13 +394,18 @@ func Test_gRPCClient_Range(t *testing.T) {
 		           gbo: nil,
 		           mcd: nil,
 		           group: nil,
-		           crl: sync.Map{},
 		           ech: nil,
 		           monitorRunning: nil,
 		           stopMonitor: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -388,7 +423,7 @@ func Test_gRPCClient_Range(t *testing.T) {
 		           atomicAddrs: nil,
 		           poolSize: 0,
 		           clientCount: 0,
-		           conns: grpcConns{},
+		           conns: struct{},
 		           hcDur: nil,
 		           prDur: nil,
 		           dialer: nil,
@@ -403,13 +438,18 @@ func Test_gRPCClient_Range(t *testing.T) {
 		           gbo: nil,
 		           mcd: nil,
 		           group: nil,
-		           crl: sync.Map{},
 		           ech: nil,
 		           monitorRunning: nil,
 		           stopMonitor: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -421,21 +461,25 @@ func Test_gRPCClient_Range(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
 			g := &gRPCClient{
-				addrs:               test.fields.addrs,
-				atomicAddrs:         test.fields.atomicAddrs,
-				poolSize:            test.fields.poolSize,
-				clientCount:         test.fields.clientCount,
-				conns:               test.fields.conns,
+				addrs:       test.fields.addrs,
+				atomicAddrs: test.fields.atomicAddrs,
+				poolSize:    test.fields.poolSize,
+				clientCount: test.fields.clientCount,
+				conns: grpcConns{
+					read:   test.fields.conns.read,
+					dirty:  test.fields.conns.dirty,
+					misses: test.fields.conns.misses,
+				},
 				hcDur:               test.fields.hcDur,
 				prDur:               test.fields.prDur,
 				dialer:              test.fields.dialer,
@@ -450,7 +494,6 @@ func Test_gRPCClient_Range(t *testing.T) {
 				gbo:                 test.fields.gbo,
 				mcd:                 test.fields.mcd,
 				group:               test.fields.group,
-				crl:                 test.fields.crl,
 				ech:                 test.fields.ech,
 				monitorRunning:      test.fields.monitorRunning,
 				stopMonitor:         test.fields.stopMonitor,
@@ -471,11 +514,15 @@ func Test_gRPCClient_RangeConcurrent(t *testing.T) {
 		f           func(ctx context.Context, addr string, conn *ClientConn, copts ...CallOption) error
 	}
 	type fields struct {
-		addrs               map[string]struct{}
-		atomicAddrs         AtomicAddrs
-		poolSize            uint64
-		clientCount         uint64
-		conns               grpcConns
+		addrs       map[string]struct{}
+		atomicAddrs AtomicAddrs
+		poolSize    uint64
+		clientCount uint64
+		conns       struct {
+			read   atomic.Value
+			dirty  map[string]*entryGrpcConns
+			misses int
+		}
 		hcDur               time.Duration
 		prDur               time.Duration
 		dialer              net.Dialer
@@ -490,7 +537,6 @@ func Test_gRPCClient_RangeConcurrent(t *testing.T) {
 		gbo                 gbackoff.Config
 		mcd                 time.Duration
 		group               singleflight.Group
-		crl                 sync.Map
 		ech                 <-chan error
 		monitorRunning      atomic.Value
 		stopMonitor         context.CancelFunc
@@ -504,8 +550,8 @@ func Test_gRPCClient_RangeConcurrent(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -528,7 +574,7 @@ func Test_gRPCClient_RangeConcurrent(t *testing.T) {
 		           atomicAddrs: nil,
 		           poolSize: 0,
 		           clientCount: 0,
-		           conns: grpcConns{},
+		           conns: struct{},
 		           hcDur: nil,
 		           prDur: nil,
 		           dialer: nil,
@@ -543,13 +589,18 @@ func Test_gRPCClient_RangeConcurrent(t *testing.T) {
 		           gbo: nil,
 		           mcd: nil,
 		           group: nil,
-		           crl: sync.Map{},
 		           ech: nil,
 		           monitorRunning: nil,
 		           stopMonitor: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -568,7 +619,7 @@ func Test_gRPCClient_RangeConcurrent(t *testing.T) {
 		           atomicAddrs: nil,
 		           poolSize: 0,
 		           clientCount: 0,
-		           conns: grpcConns{},
+		           conns: struct{},
 		           hcDur: nil,
 		           prDur: nil,
 		           dialer: nil,
@@ -583,13 +634,18 @@ func Test_gRPCClient_RangeConcurrent(t *testing.T) {
 		           gbo: nil,
 		           mcd: nil,
 		           group: nil,
-		           crl: sync.Map{},
 		           ech: nil,
 		           monitorRunning: nil,
 		           stopMonitor: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -601,21 +657,25 @@ func Test_gRPCClient_RangeConcurrent(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
 			g := &gRPCClient{
-				addrs:               test.fields.addrs,
-				atomicAddrs:         test.fields.atomicAddrs,
-				poolSize:            test.fields.poolSize,
-				clientCount:         test.fields.clientCount,
-				conns:               test.fields.conns,
+				addrs:       test.fields.addrs,
+				atomicAddrs: test.fields.atomicAddrs,
+				poolSize:    test.fields.poolSize,
+				clientCount: test.fields.clientCount,
+				conns: grpcConns{
+					read:   test.fields.conns.read,
+					dirty:  test.fields.conns.dirty,
+					misses: test.fields.conns.misses,
+				},
 				hcDur:               test.fields.hcDur,
 				prDur:               test.fields.prDur,
 				dialer:              test.fields.dialer,
@@ -630,7 +690,6 @@ func Test_gRPCClient_RangeConcurrent(t *testing.T) {
 				gbo:                 test.fields.gbo,
 				mcd:                 test.fields.mcd,
 				group:               test.fields.group,
-				crl:                 test.fields.crl,
 				ech:                 test.fields.ech,
 				monitorRunning:      test.fields.monitorRunning,
 				stopMonitor:         test.fields.stopMonitor,
@@ -651,11 +710,15 @@ func Test_gRPCClient_OrderedRange(t *testing.T) {
 		f      func(ctx context.Context, addr string, conn *ClientConn, copts ...CallOption) error
 	}
 	type fields struct {
-		addrs               map[string]struct{}
-		atomicAddrs         AtomicAddrs
-		poolSize            uint64
-		clientCount         uint64
-		conns               grpcConns
+		addrs       map[string]struct{}
+		atomicAddrs AtomicAddrs
+		poolSize    uint64
+		clientCount uint64
+		conns       struct {
+			read   atomic.Value
+			dirty  map[string]*entryGrpcConns
+			misses int
+		}
 		hcDur               time.Duration
 		prDur               time.Duration
 		dialer              net.Dialer
@@ -670,7 +733,6 @@ func Test_gRPCClient_OrderedRange(t *testing.T) {
 		gbo                 gbackoff.Config
 		mcd                 time.Duration
 		group               singleflight.Group
-		crl                 sync.Map
 		ech                 <-chan error
 		monitorRunning      atomic.Value
 		stopMonitor         context.CancelFunc
@@ -684,8 +746,8 @@ func Test_gRPCClient_OrderedRange(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -708,7 +770,7 @@ func Test_gRPCClient_OrderedRange(t *testing.T) {
 		           atomicAddrs: nil,
 		           poolSize: 0,
 		           clientCount: 0,
-		           conns: grpcConns{},
+		           conns: struct{},
 		           hcDur: nil,
 		           prDur: nil,
 		           dialer: nil,
@@ -723,13 +785,18 @@ func Test_gRPCClient_OrderedRange(t *testing.T) {
 		           gbo: nil,
 		           mcd: nil,
 		           group: nil,
-		           crl: sync.Map{},
 		           ech: nil,
 		           monitorRunning: nil,
 		           stopMonitor: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -748,7 +815,7 @@ func Test_gRPCClient_OrderedRange(t *testing.T) {
 		           atomicAddrs: nil,
 		           poolSize: 0,
 		           clientCount: 0,
-		           conns: grpcConns{},
+		           conns: struct{},
 		           hcDur: nil,
 		           prDur: nil,
 		           dialer: nil,
@@ -763,13 +830,18 @@ func Test_gRPCClient_OrderedRange(t *testing.T) {
 		           gbo: nil,
 		           mcd: nil,
 		           group: nil,
-		           crl: sync.Map{},
 		           ech: nil,
 		           monitorRunning: nil,
 		           stopMonitor: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -781,21 +853,25 @@ func Test_gRPCClient_OrderedRange(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
 			g := &gRPCClient{
-				addrs:               test.fields.addrs,
-				atomicAddrs:         test.fields.atomicAddrs,
-				poolSize:            test.fields.poolSize,
-				clientCount:         test.fields.clientCount,
-				conns:               test.fields.conns,
+				addrs:       test.fields.addrs,
+				atomicAddrs: test.fields.atomicAddrs,
+				poolSize:    test.fields.poolSize,
+				clientCount: test.fields.clientCount,
+				conns: grpcConns{
+					read:   test.fields.conns.read,
+					dirty:  test.fields.conns.dirty,
+					misses: test.fields.conns.misses,
+				},
 				hcDur:               test.fields.hcDur,
 				prDur:               test.fields.prDur,
 				dialer:              test.fields.dialer,
@@ -810,7 +886,6 @@ func Test_gRPCClient_OrderedRange(t *testing.T) {
 				gbo:                 test.fields.gbo,
 				mcd:                 test.fields.mcd,
 				group:               test.fields.group,
-				crl:                 test.fields.crl,
 				ech:                 test.fields.ech,
 				monitorRunning:      test.fields.monitorRunning,
 				stopMonitor:         test.fields.stopMonitor,
@@ -832,11 +907,15 @@ func Test_gRPCClient_OrderedRangeConcurrent(t *testing.T) {
 		f           func(ctx context.Context, addr string, conn *ClientConn, copts ...CallOption) error
 	}
 	type fields struct {
-		addrs               map[string]struct{}
-		atomicAddrs         AtomicAddrs
-		poolSize            uint64
-		clientCount         uint64
-		conns               grpcConns
+		addrs       map[string]struct{}
+		atomicAddrs AtomicAddrs
+		poolSize    uint64
+		clientCount uint64
+		conns       struct {
+			read   atomic.Value
+			dirty  map[string]*entryGrpcConns
+			misses int
+		}
 		hcDur               time.Duration
 		prDur               time.Duration
 		dialer              net.Dialer
@@ -851,7 +930,6 @@ func Test_gRPCClient_OrderedRangeConcurrent(t *testing.T) {
 		gbo                 gbackoff.Config
 		mcd                 time.Duration
 		group               singleflight.Group
-		crl                 sync.Map
 		ech                 <-chan error
 		monitorRunning      atomic.Value
 		stopMonitor         context.CancelFunc
@@ -865,8 +943,8 @@ func Test_gRPCClient_OrderedRangeConcurrent(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -890,7 +968,7 @@ func Test_gRPCClient_OrderedRangeConcurrent(t *testing.T) {
 		           atomicAddrs: nil,
 		           poolSize: 0,
 		           clientCount: 0,
-		           conns: grpcConns{},
+		           conns: struct{},
 		           hcDur: nil,
 		           prDur: nil,
 		           dialer: nil,
@@ -905,13 +983,18 @@ func Test_gRPCClient_OrderedRangeConcurrent(t *testing.T) {
 		           gbo: nil,
 		           mcd: nil,
 		           group: nil,
-		           crl: sync.Map{},
 		           ech: nil,
 		           monitorRunning: nil,
 		           stopMonitor: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -931,7 +1014,7 @@ func Test_gRPCClient_OrderedRangeConcurrent(t *testing.T) {
 		           atomicAddrs: nil,
 		           poolSize: 0,
 		           clientCount: 0,
-		           conns: grpcConns{},
+		           conns: struct{},
 		           hcDur: nil,
 		           prDur: nil,
 		           dialer: nil,
@@ -946,13 +1029,18 @@ func Test_gRPCClient_OrderedRangeConcurrent(t *testing.T) {
 		           gbo: nil,
 		           mcd: nil,
 		           group: nil,
-		           crl: sync.Map{},
 		           ech: nil,
 		           monitorRunning: nil,
 		           stopMonitor: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -964,21 +1052,25 @@ func Test_gRPCClient_OrderedRangeConcurrent(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
 			g := &gRPCClient{
-				addrs:               test.fields.addrs,
-				atomicAddrs:         test.fields.atomicAddrs,
-				poolSize:            test.fields.poolSize,
-				clientCount:         test.fields.clientCount,
-				conns:               test.fields.conns,
+				addrs:       test.fields.addrs,
+				atomicAddrs: test.fields.atomicAddrs,
+				poolSize:    test.fields.poolSize,
+				clientCount: test.fields.clientCount,
+				conns: grpcConns{
+					read:   test.fields.conns.read,
+					dirty:  test.fields.conns.dirty,
+					misses: test.fields.conns.misses,
+				},
 				hcDur:               test.fields.hcDur,
 				prDur:               test.fields.prDur,
 				dialer:              test.fields.dialer,
@@ -993,7 +1085,6 @@ func Test_gRPCClient_OrderedRangeConcurrent(t *testing.T) {
 				gbo:                 test.fields.gbo,
 				mcd:                 test.fields.mcd,
 				group:               test.fields.group,
-				crl:                 test.fields.crl,
 				ech:                 test.fields.ech,
 				monitorRunning:      test.fields.monitorRunning,
 				stopMonitor:         test.fields.stopMonitor,
@@ -1013,11 +1104,15 @@ func Test_gRPCClient_RoundRobin(t *testing.T) {
 		f   func(ctx context.Context, conn *ClientConn, copts ...CallOption) (interface{}, error)
 	}
 	type fields struct {
-		addrs               map[string]struct{}
-		atomicAddrs         AtomicAddrs
-		poolSize            uint64
-		clientCount         uint64
-		conns               grpcConns
+		addrs       map[string]struct{}
+		atomicAddrs AtomicAddrs
+		poolSize    uint64
+		clientCount uint64
+		conns       struct {
+			read   atomic.Value
+			dirty  map[string]*entryGrpcConns
+			misses int
+		}
 		hcDur               time.Duration
 		prDur               time.Duration
 		dialer              net.Dialer
@@ -1032,7 +1127,6 @@ func Test_gRPCClient_RoundRobin(t *testing.T) {
 		gbo                 gbackoff.Config
 		mcd                 time.Duration
 		group               singleflight.Group
-		crl                 sync.Map
 		ech                 <-chan error
 		monitorRunning      atomic.Value
 		stopMonitor         context.CancelFunc
@@ -1047,8 +1141,8 @@ func Test_gRPCClient_RoundRobin(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, interface{}, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, gotData interface{}, err error) error {
 		if !errors.Is(err, w.err) {
@@ -1073,7 +1167,7 @@ func Test_gRPCClient_RoundRobin(t *testing.T) {
 		           atomicAddrs: nil,
 		           poolSize: 0,
 		           clientCount: 0,
-		           conns: grpcConns{},
+		           conns: struct{},
 		           hcDur: nil,
 		           prDur: nil,
 		           dialer: nil,
@@ -1088,13 +1182,18 @@ func Test_gRPCClient_RoundRobin(t *testing.T) {
 		           gbo: nil,
 		           mcd: nil,
 		           group: nil,
-		           crl: sync.Map{},
 		           ech: nil,
 		           monitorRunning: nil,
 		           stopMonitor: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -1112,7 +1211,7 @@ func Test_gRPCClient_RoundRobin(t *testing.T) {
 		           atomicAddrs: nil,
 		           poolSize: 0,
 		           clientCount: 0,
-		           conns: grpcConns{},
+		           conns: struct{},
 		           hcDur: nil,
 		           prDur: nil,
 		           dialer: nil,
@@ -1127,13 +1226,18 @@ func Test_gRPCClient_RoundRobin(t *testing.T) {
 		           gbo: nil,
 		           mcd: nil,
 		           group: nil,
-		           crl: sync.Map{},
 		           ech: nil,
 		           monitorRunning: nil,
 		           stopMonitor: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -1145,21 +1249,25 @@ func Test_gRPCClient_RoundRobin(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
 			g := &gRPCClient{
-				addrs:               test.fields.addrs,
-				atomicAddrs:         test.fields.atomicAddrs,
-				poolSize:            test.fields.poolSize,
-				clientCount:         test.fields.clientCount,
-				conns:               test.fields.conns,
+				addrs:       test.fields.addrs,
+				atomicAddrs: test.fields.atomicAddrs,
+				poolSize:    test.fields.poolSize,
+				clientCount: test.fields.clientCount,
+				conns: grpcConns{
+					read:   test.fields.conns.read,
+					dirty:  test.fields.conns.dirty,
+					misses: test.fields.conns.misses,
+				},
 				hcDur:               test.fields.hcDur,
 				prDur:               test.fields.prDur,
 				dialer:              test.fields.dialer,
@@ -1174,7 +1282,6 @@ func Test_gRPCClient_RoundRobin(t *testing.T) {
 				gbo:                 test.fields.gbo,
 				mcd:                 test.fields.mcd,
 				group:               test.fields.group,
-				crl:                 test.fields.crl,
 				ech:                 test.fields.ech,
 				monitorRunning:      test.fields.monitorRunning,
 				stopMonitor:         test.fields.stopMonitor,
@@ -1195,11 +1302,15 @@ func Test_gRPCClient_Do(t *testing.T) {
 		f    func(ctx context.Context, conn *ClientConn, copts ...CallOption) (interface{}, error)
 	}
 	type fields struct {
-		addrs               map[string]struct{}
-		atomicAddrs         AtomicAddrs
-		poolSize            uint64
-		clientCount         uint64
-		conns               grpcConns
+		addrs       map[string]struct{}
+		atomicAddrs AtomicAddrs
+		poolSize    uint64
+		clientCount uint64
+		conns       struct {
+			read   atomic.Value
+			dirty  map[string]*entryGrpcConns
+			misses int
+		}
 		hcDur               time.Duration
 		prDur               time.Duration
 		dialer              net.Dialer
@@ -1214,7 +1325,6 @@ func Test_gRPCClient_Do(t *testing.T) {
 		gbo                 gbackoff.Config
 		mcd                 time.Duration
 		group               singleflight.Group
-		crl                 sync.Map
 		ech                 <-chan error
 		monitorRunning      atomic.Value
 		stopMonitor         context.CancelFunc
@@ -1229,8 +1339,8 @@ func Test_gRPCClient_Do(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, interface{}, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, gotData interface{}, err error) error {
 		if !errors.Is(err, w.err) {
@@ -1256,7 +1366,7 @@ func Test_gRPCClient_Do(t *testing.T) {
 		           atomicAddrs: nil,
 		           poolSize: 0,
 		           clientCount: 0,
-		           conns: grpcConns{},
+		           conns: struct{},
 		           hcDur: nil,
 		           prDur: nil,
 		           dialer: nil,
@@ -1271,13 +1381,18 @@ func Test_gRPCClient_Do(t *testing.T) {
 		           gbo: nil,
 		           mcd: nil,
 		           group: nil,
-		           crl: sync.Map{},
 		           ech: nil,
 		           monitorRunning: nil,
 		           stopMonitor: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -1296,7 +1411,7 @@ func Test_gRPCClient_Do(t *testing.T) {
 		           atomicAddrs: nil,
 		           poolSize: 0,
 		           clientCount: 0,
-		           conns: grpcConns{},
+		           conns: struct{},
 		           hcDur: nil,
 		           prDur: nil,
 		           dialer: nil,
@@ -1311,13 +1426,18 @@ func Test_gRPCClient_Do(t *testing.T) {
 		           gbo: nil,
 		           mcd: nil,
 		           group: nil,
-		           crl: sync.Map{},
 		           ech: nil,
 		           monitorRunning: nil,
 		           stopMonitor: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -1329,21 +1449,25 @@ func Test_gRPCClient_Do(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
 			g := &gRPCClient{
-				addrs:               test.fields.addrs,
-				atomicAddrs:         test.fields.atomicAddrs,
-				poolSize:            test.fields.poolSize,
-				clientCount:         test.fields.clientCount,
-				conns:               test.fields.conns,
+				addrs:       test.fields.addrs,
+				atomicAddrs: test.fields.atomicAddrs,
+				poolSize:    test.fields.poolSize,
+				clientCount: test.fields.clientCount,
+				conns: grpcConns{
+					read:   test.fields.conns.read,
+					dirty:  test.fields.conns.dirty,
+					misses: test.fields.conns.misses,
+				},
 				hcDur:               test.fields.hcDur,
 				prDur:               test.fields.prDur,
 				dialer:              test.fields.dialer,
@@ -1358,7 +1482,6 @@ func Test_gRPCClient_Do(t *testing.T) {
 				gbo:                 test.fields.gbo,
 				mcd:                 test.fields.mcd,
 				group:               test.fields.group,
-				crl:                 test.fields.crl,
 				ech:                 test.fields.ech,
 				monitorRunning:      test.fields.monitorRunning,
 				stopMonitor:         test.fields.stopMonitor,
@@ -1372,7 +1495,7 @@ func Test_gRPCClient_Do(t *testing.T) {
 	}
 }
 
-func Test_gRPCClient_do(t *testing.T) {
+func Test_gRPCClient_doConnect(t *testing.T) {
 	type args struct {
 		ctx           context.Context
 		p             pool.Conn
@@ -1381,11 +1504,15 @@ func Test_gRPCClient_do(t *testing.T) {
 		f             func(ctx context.Context, conn *ClientConn, copts ...CallOption) (interface{}, error)
 	}
 	type fields struct {
-		addrs               map[string]struct{}
-		atomicAddrs         AtomicAddrs
-		poolSize            uint64
-		clientCount         uint64
-		conns               grpcConns
+		addrs       map[string]struct{}
+		atomicAddrs AtomicAddrs
+		poolSize    uint64
+		clientCount uint64
+		conns       struct {
+			read   atomic.Value
+			dirty  map[string]*entryGrpcConns
+			misses int
+		}
 		hcDur               time.Duration
 		prDur               time.Duration
 		dialer              net.Dialer
@@ -1400,7 +1527,6 @@ func Test_gRPCClient_do(t *testing.T) {
 		gbo                 gbackoff.Config
 		mcd                 time.Duration
 		group               singleflight.Group
-		crl                 sync.Map
 		ech                 <-chan error
 		monitorRunning      atomic.Value
 		stopMonitor         context.CancelFunc
@@ -1415,8 +1541,8 @@ func Test_gRPCClient_do(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, interface{}, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, gotData interface{}, err error) error {
 		if !errors.Is(err, w.err) {
@@ -1444,7 +1570,7 @@ func Test_gRPCClient_do(t *testing.T) {
 		           atomicAddrs: nil,
 		           poolSize: 0,
 		           clientCount: 0,
-		           conns: grpcConns{},
+		           conns: struct{},
 		           hcDur: nil,
 		           prDur: nil,
 		           dialer: nil,
@@ -1459,13 +1585,18 @@ func Test_gRPCClient_do(t *testing.T) {
 		           gbo: nil,
 		           mcd: nil,
 		           group: nil,
-		           crl: sync.Map{},
 		           ech: nil,
 		           monitorRunning: nil,
 		           stopMonitor: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -1486,7 +1617,7 @@ func Test_gRPCClient_do(t *testing.T) {
 		           atomicAddrs: nil,
 		           poolSize: 0,
 		           clientCount: 0,
-		           conns: grpcConns{},
+		           conns: struct{},
 		           hcDur: nil,
 		           prDur: nil,
 		           dialer: nil,
@@ -1501,13 +1632,18 @@ func Test_gRPCClient_do(t *testing.T) {
 		           gbo: nil,
 		           mcd: nil,
 		           group: nil,
-		           crl: sync.Map{},
 		           ech: nil,
 		           monitorRunning: nil,
 		           stopMonitor: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -1519,21 +1655,25 @@ func Test_gRPCClient_do(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
 			g := &gRPCClient{
-				addrs:               test.fields.addrs,
-				atomicAddrs:         test.fields.atomicAddrs,
-				poolSize:            test.fields.poolSize,
-				clientCount:         test.fields.clientCount,
-				conns:               test.fields.conns,
+				addrs:       test.fields.addrs,
+				atomicAddrs: test.fields.atomicAddrs,
+				poolSize:    test.fields.poolSize,
+				clientCount: test.fields.clientCount,
+				conns: grpcConns{
+					read:   test.fields.conns.read,
+					dirty:  test.fields.conns.dirty,
+					misses: test.fields.conns.misses,
+				},
 				hcDur:               test.fields.hcDur,
 				prDur:               test.fields.prDur,
 				dialer:              test.fields.dialer,
@@ -1548,13 +1688,12 @@ func Test_gRPCClient_do(t *testing.T) {
 				gbo:                 test.fields.gbo,
 				mcd:                 test.fields.mcd,
 				group:               test.fields.group,
-				crl:                 test.fields.crl,
 				ech:                 test.fields.ech,
 				monitorRunning:      test.fields.monitorRunning,
 				stopMonitor:         test.fields.stopMonitor,
 			}
 
-			gotData, err := g.do(test.args.ctx, test.args.p, test.args.addr, test.args.enableBackoff, test.args.f)
+			gotData, err := g.doConnect(test.args.ctx, test.args.p, test.args.addr, test.args.enableBackoff, test.args.f)
 			if err := checkFunc(test.want, gotData, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -1564,11 +1703,15 @@ func Test_gRPCClient_do(t *testing.T) {
 
 func Test_gRPCClient_GetDialOption(t *testing.T) {
 	type fields struct {
-		addrs               map[string]struct{}
-		atomicAddrs         AtomicAddrs
-		poolSize            uint64
-		clientCount         uint64
-		conns               grpcConns
+		addrs       map[string]struct{}
+		atomicAddrs AtomicAddrs
+		poolSize    uint64
+		clientCount uint64
+		conns       struct {
+			read   atomic.Value
+			dirty  map[string]*entryGrpcConns
+			misses int
+		}
 		hcDur               time.Duration
 		prDur               time.Duration
 		dialer              net.Dialer
@@ -1583,7 +1726,6 @@ func Test_gRPCClient_GetDialOption(t *testing.T) {
 		gbo                 gbackoff.Config
 		mcd                 time.Duration
 		group               singleflight.Group
-		crl                 sync.Map
 		ech                 <-chan error
 		monitorRunning      atomic.Value
 		stopMonitor         context.CancelFunc
@@ -1596,8 +1738,8 @@ func Test_gRPCClient_GetDialOption(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, []DialOption) error
-		beforeFunc func()
-		afterFunc  func()
+		beforeFunc func(*testing.T)
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want, got []DialOption) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -1615,7 +1757,7 @@ func Test_gRPCClient_GetDialOption(t *testing.T) {
 		           atomicAddrs: nil,
 		           poolSize: 0,
 		           clientCount: 0,
-		           conns: grpcConns{},
+		           conns: struct{},
 		           hcDur: nil,
 		           prDur: nil,
 		           dialer: nil,
@@ -1630,13 +1772,18 @@ func Test_gRPCClient_GetDialOption(t *testing.T) {
 		           gbo: nil,
 		           mcd: nil,
 		           group: nil,
-		           crl: sync.Map{},
 		           ech: nil,
 		           monitorRunning: nil,
 		           stopMonitor: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -1650,7 +1797,7 @@ func Test_gRPCClient_GetDialOption(t *testing.T) {
 		           atomicAddrs: nil,
 		           poolSize: 0,
 		           clientCount: 0,
-		           conns: grpcConns{},
+		           conns: struct{},
 		           hcDur: nil,
 		           prDur: nil,
 		           dialer: nil,
@@ -1665,13 +1812,18 @@ func Test_gRPCClient_GetDialOption(t *testing.T) {
 		           gbo: nil,
 		           mcd: nil,
 		           group: nil,
-		           crl: sync.Map{},
 		           ech: nil,
 		           monitorRunning: nil,
 		           stopMonitor: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -1683,21 +1835,25 @@ func Test_gRPCClient_GetDialOption(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
 			g := &gRPCClient{
-				addrs:               test.fields.addrs,
-				atomicAddrs:         test.fields.atomicAddrs,
-				poolSize:            test.fields.poolSize,
-				clientCount:         test.fields.clientCount,
-				conns:               test.fields.conns,
+				addrs:       test.fields.addrs,
+				atomicAddrs: test.fields.atomicAddrs,
+				poolSize:    test.fields.poolSize,
+				clientCount: test.fields.clientCount,
+				conns: grpcConns{
+					read:   test.fields.conns.read,
+					dirty:  test.fields.conns.dirty,
+					misses: test.fields.conns.misses,
+				},
 				hcDur:               test.fields.hcDur,
 				prDur:               test.fields.prDur,
 				dialer:              test.fields.dialer,
@@ -1712,7 +1868,6 @@ func Test_gRPCClient_GetDialOption(t *testing.T) {
 				gbo:                 test.fields.gbo,
 				mcd:                 test.fields.mcd,
 				group:               test.fields.group,
-				crl:                 test.fields.crl,
 				ech:                 test.fields.ech,
 				monitorRunning:      test.fields.monitorRunning,
 				stopMonitor:         test.fields.stopMonitor,
@@ -1728,11 +1883,15 @@ func Test_gRPCClient_GetDialOption(t *testing.T) {
 
 func Test_gRPCClient_GetCallOption(t *testing.T) {
 	type fields struct {
-		addrs               map[string]struct{}
-		atomicAddrs         AtomicAddrs
-		poolSize            uint64
-		clientCount         uint64
-		conns               grpcConns
+		addrs       map[string]struct{}
+		atomicAddrs AtomicAddrs
+		poolSize    uint64
+		clientCount uint64
+		conns       struct {
+			read   atomic.Value
+			dirty  map[string]*entryGrpcConns
+			misses int
+		}
 		hcDur               time.Duration
 		prDur               time.Duration
 		dialer              net.Dialer
@@ -1747,7 +1906,6 @@ func Test_gRPCClient_GetCallOption(t *testing.T) {
 		gbo                 gbackoff.Config
 		mcd                 time.Duration
 		group               singleflight.Group
-		crl                 sync.Map
 		ech                 <-chan error
 		monitorRunning      atomic.Value
 		stopMonitor         context.CancelFunc
@@ -1760,8 +1918,8 @@ func Test_gRPCClient_GetCallOption(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, []CallOption) error
-		beforeFunc func()
-		afterFunc  func()
+		beforeFunc func(*testing.T)
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want, got []CallOption) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -1779,7 +1937,7 @@ func Test_gRPCClient_GetCallOption(t *testing.T) {
 		           atomicAddrs: nil,
 		           poolSize: 0,
 		           clientCount: 0,
-		           conns: grpcConns{},
+		           conns: struct{},
 		           hcDur: nil,
 		           prDur: nil,
 		           dialer: nil,
@@ -1794,13 +1952,18 @@ func Test_gRPCClient_GetCallOption(t *testing.T) {
 		           gbo: nil,
 		           mcd: nil,
 		           group: nil,
-		           crl: sync.Map{},
 		           ech: nil,
 		           monitorRunning: nil,
 		           stopMonitor: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -1814,7 +1977,7 @@ func Test_gRPCClient_GetCallOption(t *testing.T) {
 		           atomicAddrs: nil,
 		           poolSize: 0,
 		           clientCount: 0,
-		           conns: grpcConns{},
+		           conns: struct{},
 		           hcDur: nil,
 		           prDur: nil,
 		           dialer: nil,
@@ -1829,13 +1992,18 @@ func Test_gRPCClient_GetCallOption(t *testing.T) {
 		           gbo: nil,
 		           mcd: nil,
 		           group: nil,
-		           crl: sync.Map{},
 		           ech: nil,
 		           monitorRunning: nil,
 		           stopMonitor: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -1847,21 +2015,25 @@ func Test_gRPCClient_GetCallOption(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
 			g := &gRPCClient{
-				addrs:               test.fields.addrs,
-				atomicAddrs:         test.fields.atomicAddrs,
-				poolSize:            test.fields.poolSize,
-				clientCount:         test.fields.clientCount,
-				conns:               test.fields.conns,
+				addrs:       test.fields.addrs,
+				atomicAddrs: test.fields.atomicAddrs,
+				poolSize:    test.fields.poolSize,
+				clientCount: test.fields.clientCount,
+				conns: grpcConns{
+					read:   test.fields.conns.read,
+					dirty:  test.fields.conns.dirty,
+					misses: test.fields.conns.misses,
+				},
 				hcDur:               test.fields.hcDur,
 				prDur:               test.fields.prDur,
 				dialer:              test.fields.dialer,
@@ -1876,7 +2048,6 @@ func Test_gRPCClient_GetCallOption(t *testing.T) {
 				gbo:                 test.fields.gbo,
 				mcd:                 test.fields.mcd,
 				group:               test.fields.group,
-				crl:                 test.fields.crl,
 				ech:                 test.fields.ech,
 				monitorRunning:      test.fields.monitorRunning,
 				stopMonitor:         test.fields.stopMonitor,
@@ -1892,11 +2063,15 @@ func Test_gRPCClient_GetCallOption(t *testing.T) {
 
 func Test_gRPCClient_GetBackoff(t *testing.T) {
 	type fields struct {
-		addrs               map[string]struct{}
-		atomicAddrs         AtomicAddrs
-		poolSize            uint64
-		clientCount         uint64
-		conns               grpcConns
+		addrs       map[string]struct{}
+		atomicAddrs AtomicAddrs
+		poolSize    uint64
+		clientCount uint64
+		conns       struct {
+			read   atomic.Value
+			dirty  map[string]*entryGrpcConns
+			misses int
+		}
 		hcDur               time.Duration
 		prDur               time.Duration
 		dialer              net.Dialer
@@ -1911,7 +2086,6 @@ func Test_gRPCClient_GetBackoff(t *testing.T) {
 		gbo                 gbackoff.Config
 		mcd                 time.Duration
 		group               singleflight.Group
-		crl                 sync.Map
 		ech                 <-chan error
 		monitorRunning      atomic.Value
 		stopMonitor         context.CancelFunc
@@ -1924,8 +2098,8 @@ func Test_gRPCClient_GetBackoff(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, backoff.Backoff) error
-		beforeFunc func()
-		afterFunc  func()
+		beforeFunc func(*testing.T)
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want, got backoff.Backoff) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -1943,7 +2117,7 @@ func Test_gRPCClient_GetBackoff(t *testing.T) {
 		           atomicAddrs: nil,
 		           poolSize: 0,
 		           clientCount: 0,
-		           conns: grpcConns{},
+		           conns: struct{},
 		           hcDur: nil,
 		           prDur: nil,
 		           dialer: nil,
@@ -1958,13 +2132,18 @@ func Test_gRPCClient_GetBackoff(t *testing.T) {
 		           gbo: nil,
 		           mcd: nil,
 		           group: nil,
-		           crl: sync.Map{},
 		           ech: nil,
 		           monitorRunning: nil,
 		           stopMonitor: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -1978,7 +2157,7 @@ func Test_gRPCClient_GetBackoff(t *testing.T) {
 		           atomicAddrs: nil,
 		           poolSize: 0,
 		           clientCount: 0,
-		           conns: grpcConns{},
+		           conns: struct{},
 		           hcDur: nil,
 		           prDur: nil,
 		           dialer: nil,
@@ -1993,13 +2172,18 @@ func Test_gRPCClient_GetBackoff(t *testing.T) {
 		           gbo: nil,
 		           mcd: nil,
 		           group: nil,
-		           crl: sync.Map{},
 		           ech: nil,
 		           monitorRunning: nil,
 		           stopMonitor: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -2011,21 +2195,25 @@ func Test_gRPCClient_GetBackoff(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
 			g := &gRPCClient{
-				addrs:               test.fields.addrs,
-				atomicAddrs:         test.fields.atomicAddrs,
-				poolSize:            test.fields.poolSize,
-				clientCount:         test.fields.clientCount,
-				conns:               test.fields.conns,
+				addrs:       test.fields.addrs,
+				atomicAddrs: test.fields.atomicAddrs,
+				poolSize:    test.fields.poolSize,
+				clientCount: test.fields.clientCount,
+				conns: grpcConns{
+					read:   test.fields.conns.read,
+					dirty:  test.fields.conns.dirty,
+					misses: test.fields.conns.misses,
+				},
 				hcDur:               test.fields.hcDur,
 				prDur:               test.fields.prDur,
 				dialer:              test.fields.dialer,
@@ -2040,7 +2228,6 @@ func Test_gRPCClient_GetBackoff(t *testing.T) {
 				gbo:                 test.fields.gbo,
 				mcd:                 test.fields.mcd,
 				group:               test.fields.group,
-				crl:                 test.fields.crl,
 				ech:                 test.fields.ech,
 				monitorRunning:      test.fields.monitorRunning,
 				stopMonitor:         test.fields.stopMonitor,
@@ -2061,11 +2248,15 @@ func Test_gRPCClient_Connect(t *testing.T) {
 		dopts []DialOption
 	}
 	type fields struct {
-		addrs               map[string]struct{}
-		atomicAddrs         AtomicAddrs
-		poolSize            uint64
-		clientCount         uint64
-		conns               grpcConns
+		addrs       map[string]struct{}
+		atomicAddrs AtomicAddrs
+		poolSize    uint64
+		clientCount uint64
+		conns       struct {
+			read   atomic.Value
+			dirty  map[string]*entryGrpcConns
+			misses int
+		}
 		hcDur               time.Duration
 		prDur               time.Duration
 		dialer              net.Dialer
@@ -2080,7 +2271,6 @@ func Test_gRPCClient_Connect(t *testing.T) {
 		gbo                 gbackoff.Config
 		mcd                 time.Duration
 		group               singleflight.Group
-		crl                 sync.Map
 		ech                 <-chan error
 		monitorRunning      atomic.Value
 		stopMonitor         context.CancelFunc
@@ -2095,8 +2285,8 @@ func Test_gRPCClient_Connect(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, pool.Conn, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, gotConn pool.Conn, err error) error {
 		if !errors.Is(err, w.err) {
@@ -2122,7 +2312,7 @@ func Test_gRPCClient_Connect(t *testing.T) {
 		           atomicAddrs: nil,
 		           poolSize: 0,
 		           clientCount: 0,
-		           conns: grpcConns{},
+		           conns: struct{},
 		           hcDur: nil,
 		           prDur: nil,
 		           dialer: nil,
@@ -2137,13 +2327,18 @@ func Test_gRPCClient_Connect(t *testing.T) {
 		           gbo: nil,
 		           mcd: nil,
 		           group: nil,
-		           crl: sync.Map{},
 		           ech: nil,
 		           monitorRunning: nil,
 		           stopMonitor: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -2162,7 +2357,7 @@ func Test_gRPCClient_Connect(t *testing.T) {
 		           atomicAddrs: nil,
 		           poolSize: 0,
 		           clientCount: 0,
-		           conns: grpcConns{},
+		           conns: struct{},
 		           hcDur: nil,
 		           prDur: nil,
 		           dialer: nil,
@@ -2177,13 +2372,18 @@ func Test_gRPCClient_Connect(t *testing.T) {
 		           gbo: nil,
 		           mcd: nil,
 		           group: nil,
-		           crl: sync.Map{},
 		           ech: nil,
 		           monitorRunning: nil,
 		           stopMonitor: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -2195,21 +2395,25 @@ func Test_gRPCClient_Connect(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
 			g := &gRPCClient{
-				addrs:               test.fields.addrs,
-				atomicAddrs:         test.fields.atomicAddrs,
-				poolSize:            test.fields.poolSize,
-				clientCount:         test.fields.clientCount,
-				conns:               test.fields.conns,
+				addrs:       test.fields.addrs,
+				atomicAddrs: test.fields.atomicAddrs,
+				poolSize:    test.fields.poolSize,
+				clientCount: test.fields.clientCount,
+				conns: grpcConns{
+					read:   test.fields.conns.read,
+					dirty:  test.fields.conns.dirty,
+					misses: test.fields.conns.misses,
+				},
 				hcDur:               test.fields.hcDur,
 				prDur:               test.fields.prDur,
 				dialer:              test.fields.dialer,
@@ -2224,7 +2428,6 @@ func Test_gRPCClient_Connect(t *testing.T) {
 				gbo:                 test.fields.gbo,
 				mcd:                 test.fields.mcd,
 				group:               test.fields.group,
-				crl:                 test.fields.crl,
 				ech:                 test.fields.ech,
 				monitorRunning:      test.fields.monitorRunning,
 				stopMonitor:         test.fields.stopMonitor,
@@ -2244,11 +2447,15 @@ func Test_gRPCClient_IsConnected(t *testing.T) {
 		addr string
 	}
 	type fields struct {
-		addrs               map[string]struct{}
-		atomicAddrs         AtomicAddrs
-		poolSize            uint64
-		clientCount         uint64
-		conns               grpcConns
+		addrs       map[string]struct{}
+		atomicAddrs AtomicAddrs
+		poolSize    uint64
+		clientCount uint64
+		conns       struct {
+			read   atomic.Value
+			dirty  map[string]*entryGrpcConns
+			misses int
+		}
 		hcDur               time.Duration
 		prDur               time.Duration
 		dialer              net.Dialer
@@ -2263,7 +2470,6 @@ func Test_gRPCClient_IsConnected(t *testing.T) {
 		gbo                 gbackoff.Config
 		mcd                 time.Duration
 		group               singleflight.Group
-		crl                 sync.Map
 		ech                 <-chan error
 		monitorRunning      atomic.Value
 		stopMonitor         context.CancelFunc
@@ -2277,8 +2483,8 @@ func Test_gRPCClient_IsConnected(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, bool) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, got bool) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -2300,7 +2506,7 @@ func Test_gRPCClient_IsConnected(t *testing.T) {
 		           atomicAddrs: nil,
 		           poolSize: 0,
 		           clientCount: 0,
-		           conns: grpcConns{},
+		           conns: struct{},
 		           hcDur: nil,
 		           prDur: nil,
 		           dialer: nil,
@@ -2315,13 +2521,18 @@ func Test_gRPCClient_IsConnected(t *testing.T) {
 		           gbo: nil,
 		           mcd: nil,
 		           group: nil,
-		           crl: sync.Map{},
 		           ech: nil,
 		           monitorRunning: nil,
 		           stopMonitor: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -2339,7 +2550,7 @@ func Test_gRPCClient_IsConnected(t *testing.T) {
 		           atomicAddrs: nil,
 		           poolSize: 0,
 		           clientCount: 0,
-		           conns: grpcConns{},
+		           conns: struct{},
 		           hcDur: nil,
 		           prDur: nil,
 		           dialer: nil,
@@ -2354,13 +2565,18 @@ func Test_gRPCClient_IsConnected(t *testing.T) {
 		           gbo: nil,
 		           mcd: nil,
 		           group: nil,
-		           crl: sync.Map{},
 		           ech: nil,
 		           monitorRunning: nil,
 		           stopMonitor: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -2372,21 +2588,25 @@ func Test_gRPCClient_IsConnected(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
 			g := &gRPCClient{
-				addrs:               test.fields.addrs,
-				atomicAddrs:         test.fields.atomicAddrs,
-				poolSize:            test.fields.poolSize,
-				clientCount:         test.fields.clientCount,
-				conns:               test.fields.conns,
+				addrs:       test.fields.addrs,
+				atomicAddrs: test.fields.atomicAddrs,
+				poolSize:    test.fields.poolSize,
+				clientCount: test.fields.clientCount,
+				conns: grpcConns{
+					read:   test.fields.conns.read,
+					dirty:  test.fields.conns.dirty,
+					misses: test.fields.conns.misses,
+				},
 				hcDur:               test.fields.hcDur,
 				prDur:               test.fields.prDur,
 				dialer:              test.fields.dialer,
@@ -2401,7 +2621,6 @@ func Test_gRPCClient_IsConnected(t *testing.T) {
 				gbo:                 test.fields.gbo,
 				mcd:                 test.fields.mcd,
 				group:               test.fields.group,
-				crl:                 test.fields.crl,
 				ech:                 test.fields.ech,
 				monitorRunning:      test.fields.monitorRunning,
 				stopMonitor:         test.fields.stopMonitor,
@@ -2421,11 +2640,15 @@ func Test_gRPCClient_Disconnect(t *testing.T) {
 		addr string
 	}
 	type fields struct {
-		addrs               map[string]struct{}
-		atomicAddrs         AtomicAddrs
-		poolSize            uint64
-		clientCount         uint64
-		conns               grpcConns
+		addrs       map[string]struct{}
+		atomicAddrs AtomicAddrs
+		poolSize    uint64
+		clientCount uint64
+		conns       struct {
+			read   atomic.Value
+			dirty  map[string]*entryGrpcConns
+			misses int
+		}
 		hcDur               time.Duration
 		prDur               time.Duration
 		dialer              net.Dialer
@@ -2440,7 +2663,6 @@ func Test_gRPCClient_Disconnect(t *testing.T) {
 		gbo                 gbackoff.Config
 		mcd                 time.Duration
 		group               singleflight.Group
-		crl                 sync.Map
 		ech                 <-chan error
 		monitorRunning      atomic.Value
 		stopMonitor         context.CancelFunc
@@ -2454,8 +2676,8 @@ func Test_gRPCClient_Disconnect(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -2477,7 +2699,7 @@ func Test_gRPCClient_Disconnect(t *testing.T) {
 		           atomicAddrs: nil,
 		           poolSize: 0,
 		           clientCount: 0,
-		           conns: grpcConns{},
+		           conns: struct{},
 		           hcDur: nil,
 		           prDur: nil,
 		           dialer: nil,
@@ -2492,13 +2714,18 @@ func Test_gRPCClient_Disconnect(t *testing.T) {
 		           gbo: nil,
 		           mcd: nil,
 		           group: nil,
-		           crl: sync.Map{},
 		           ech: nil,
 		           monitorRunning: nil,
 		           stopMonitor: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -2516,7 +2743,7 @@ func Test_gRPCClient_Disconnect(t *testing.T) {
 		           atomicAddrs: nil,
 		           poolSize: 0,
 		           clientCount: 0,
-		           conns: grpcConns{},
+		           conns: struct{},
 		           hcDur: nil,
 		           prDur: nil,
 		           dialer: nil,
@@ -2531,13 +2758,18 @@ func Test_gRPCClient_Disconnect(t *testing.T) {
 		           gbo: nil,
 		           mcd: nil,
 		           group: nil,
-		           crl: sync.Map{},
 		           ech: nil,
 		           monitorRunning: nil,
 		           stopMonitor: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -2549,21 +2781,25 @@ func Test_gRPCClient_Disconnect(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
 			g := &gRPCClient{
-				addrs:               test.fields.addrs,
-				atomicAddrs:         test.fields.atomicAddrs,
-				poolSize:            test.fields.poolSize,
-				clientCount:         test.fields.clientCount,
-				conns:               test.fields.conns,
+				addrs:       test.fields.addrs,
+				atomicAddrs: test.fields.atomicAddrs,
+				poolSize:    test.fields.poolSize,
+				clientCount: test.fields.clientCount,
+				conns: grpcConns{
+					read:   test.fields.conns.read,
+					dirty:  test.fields.conns.dirty,
+					misses: test.fields.conns.misses,
+				},
 				hcDur:               test.fields.hcDur,
 				prDur:               test.fields.prDur,
 				dialer:              test.fields.dialer,
@@ -2578,7 +2814,6 @@ func Test_gRPCClient_Disconnect(t *testing.T) {
 				gbo:                 test.fields.gbo,
 				mcd:                 test.fields.mcd,
 				group:               test.fields.group,
-				crl:                 test.fields.crl,
 				ech:                 test.fields.ech,
 				monitorRunning:      test.fields.monitorRunning,
 				stopMonitor:         test.fields.stopMonitor,
@@ -2594,11 +2829,15 @@ func Test_gRPCClient_Disconnect(t *testing.T) {
 
 func Test_gRPCClient_ConnectedAddrs(t *testing.T) {
 	type fields struct {
-		addrs               map[string]struct{}
-		atomicAddrs         AtomicAddrs
-		poolSize            uint64
-		clientCount         uint64
-		conns               grpcConns
+		addrs       map[string]struct{}
+		atomicAddrs AtomicAddrs
+		poolSize    uint64
+		clientCount uint64
+		conns       struct {
+			read   atomic.Value
+			dirty  map[string]*entryGrpcConns
+			misses int
+		}
 		hcDur               time.Duration
 		prDur               time.Duration
 		dialer              net.Dialer
@@ -2613,7 +2852,6 @@ func Test_gRPCClient_ConnectedAddrs(t *testing.T) {
 		gbo                 gbackoff.Config
 		mcd                 time.Duration
 		group               singleflight.Group
-		crl                 sync.Map
 		ech                 <-chan error
 		monitorRunning      atomic.Value
 		stopMonitor         context.CancelFunc
@@ -2626,8 +2864,8 @@ func Test_gRPCClient_ConnectedAddrs(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, []string) error
-		beforeFunc func()
-		afterFunc  func()
+		beforeFunc func(*testing.T)
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want, got []string) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -2645,7 +2883,7 @@ func Test_gRPCClient_ConnectedAddrs(t *testing.T) {
 		           atomicAddrs: nil,
 		           poolSize: 0,
 		           clientCount: 0,
-		           conns: grpcConns{},
+		           conns: struct{},
 		           hcDur: nil,
 		           prDur: nil,
 		           dialer: nil,
@@ -2660,13 +2898,18 @@ func Test_gRPCClient_ConnectedAddrs(t *testing.T) {
 		           gbo: nil,
 		           mcd: nil,
 		           group: nil,
-		           crl: sync.Map{},
 		           ech: nil,
 		           monitorRunning: nil,
 		           stopMonitor: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -2680,7 +2923,7 @@ func Test_gRPCClient_ConnectedAddrs(t *testing.T) {
 		           atomicAddrs: nil,
 		           poolSize: 0,
 		           clientCount: 0,
-		           conns: grpcConns{},
+		           conns: struct{},
 		           hcDur: nil,
 		           prDur: nil,
 		           dialer: nil,
@@ -2695,13 +2938,18 @@ func Test_gRPCClient_ConnectedAddrs(t *testing.T) {
 		           gbo: nil,
 		           mcd: nil,
 		           group: nil,
-		           crl: sync.Map{},
 		           ech: nil,
 		           monitorRunning: nil,
 		           stopMonitor: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -2713,21 +2961,25 @@ func Test_gRPCClient_ConnectedAddrs(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
 			g := &gRPCClient{
-				addrs:               test.fields.addrs,
-				atomicAddrs:         test.fields.atomicAddrs,
-				poolSize:            test.fields.poolSize,
-				clientCount:         test.fields.clientCount,
-				conns:               test.fields.conns,
+				addrs:       test.fields.addrs,
+				atomicAddrs: test.fields.atomicAddrs,
+				poolSize:    test.fields.poolSize,
+				clientCount: test.fields.clientCount,
+				conns: grpcConns{
+					read:   test.fields.conns.read,
+					dirty:  test.fields.conns.dirty,
+					misses: test.fields.conns.misses,
+				},
 				hcDur:               test.fields.hcDur,
 				prDur:               test.fields.prDur,
 				dialer:              test.fields.dialer,
@@ -2742,7 +2994,6 @@ func Test_gRPCClient_ConnectedAddrs(t *testing.T) {
 				gbo:                 test.fields.gbo,
 				mcd:                 test.fields.mcd,
 				group:               test.fields.group,
-				crl:                 test.fields.crl,
 				ech:                 test.fields.ech,
 				monitorRunning:      test.fields.monitorRunning,
 				stopMonitor:         test.fields.stopMonitor,
@@ -2761,11 +3012,15 @@ func Test_gRPCClient_Close(t *testing.T) {
 		ctx context.Context
 	}
 	type fields struct {
-		addrs               map[string]struct{}
-		atomicAddrs         AtomicAddrs
-		poolSize            uint64
-		clientCount         uint64
-		conns               grpcConns
+		addrs       map[string]struct{}
+		atomicAddrs AtomicAddrs
+		poolSize    uint64
+		clientCount uint64
+		conns       struct {
+			read   atomic.Value
+			dirty  map[string]*entryGrpcConns
+			misses int
+		}
 		hcDur               time.Duration
 		prDur               time.Duration
 		dialer              net.Dialer
@@ -2780,7 +3035,6 @@ func Test_gRPCClient_Close(t *testing.T) {
 		gbo                 gbackoff.Config
 		mcd                 time.Duration
 		group               singleflight.Group
-		crl                 sync.Map
 		ech                 <-chan error
 		monitorRunning      atomic.Value
 		stopMonitor         context.CancelFunc
@@ -2794,8 +3048,8 @@ func Test_gRPCClient_Close(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -2816,7 +3070,7 @@ func Test_gRPCClient_Close(t *testing.T) {
 		           atomicAddrs: nil,
 		           poolSize: 0,
 		           clientCount: 0,
-		           conns: grpcConns{},
+		           conns: struct{},
 		           hcDur: nil,
 		           prDur: nil,
 		           dialer: nil,
@@ -2831,13 +3085,18 @@ func Test_gRPCClient_Close(t *testing.T) {
 		           gbo: nil,
 		           mcd: nil,
 		           group: nil,
-		           crl: sync.Map{},
 		           ech: nil,
 		           monitorRunning: nil,
 		           stopMonitor: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -2854,7 +3113,7 @@ func Test_gRPCClient_Close(t *testing.T) {
 		           atomicAddrs: nil,
 		           poolSize: 0,
 		           clientCount: 0,
-		           conns: grpcConns{},
+		           conns: struct{},
 		           hcDur: nil,
 		           prDur: nil,
 		           dialer: nil,
@@ -2869,13 +3128,18 @@ func Test_gRPCClient_Close(t *testing.T) {
 		           gbo: nil,
 		           mcd: nil,
 		           group: nil,
-		           crl: sync.Map{},
 		           ech: nil,
 		           monitorRunning: nil,
 		           stopMonitor: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -2887,21 +3151,25 @@ func Test_gRPCClient_Close(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
 			g := &gRPCClient{
-				addrs:               test.fields.addrs,
-				atomicAddrs:         test.fields.atomicAddrs,
-				poolSize:            test.fields.poolSize,
-				clientCount:         test.fields.clientCount,
-				conns:               test.fields.conns,
+				addrs:       test.fields.addrs,
+				atomicAddrs: test.fields.atomicAddrs,
+				poolSize:    test.fields.poolSize,
+				clientCount: test.fields.clientCount,
+				conns: grpcConns{
+					read:   test.fields.conns.read,
+					dirty:  test.fields.conns.dirty,
+					misses: test.fields.conns.misses,
+				},
 				hcDur:               test.fields.hcDur,
 				prDur:               test.fields.prDur,
 				dialer:              test.fields.dialer,
@@ -2916,7 +3184,6 @@ func Test_gRPCClient_Close(t *testing.T) {
 				gbo:                 test.fields.gbo,
 				mcd:                 test.fields.mcd,
 				group:               test.fields.group,
-				crl:                 test.fields.crl,
 				ech:                 test.fields.ech,
 				monitorRunning:      test.fields.monitorRunning,
 				stopMonitor:         test.fields.stopMonitor,
