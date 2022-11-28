@@ -158,11 +158,11 @@ func (p *pool) Connect(ctx context.Context) (c Conn, err error) {
 	}
 
 	if p.isIP || !p.resolveDNS {
-		return p.doConnect(ctx)
+		return p.reconnectUnhealthy(ctx)
 	}
 	ips, err := p.lookupIPAddr(ctx)
 	if err != nil {
-		return p.doConnect(ctx)
+		return p.reconnectUnhealthy(ctx)
 	}
 	p.reconnectHash = strings.Join(ips, "-")
 
@@ -213,7 +213,7 @@ func (p *pool) load(idx int) (pc *poolConn, ok bool) {
 	return
 }
 
-func (p *pool) doConnect(ctx context.Context) (c Conn, err error) {
+func (p *pool) reconnectUnhealthy(ctx context.Context) (c Conn, err error) {
 	p.reconnectHash = p.host
 	failCnt := uint64(0)
 	for i := range p.pool {
@@ -440,7 +440,7 @@ func (p *pool) Reconnect(ctx context.Context, force bool) (c Conn, err error) {
 	if p.reconnectHash == "" {
 		log.Debugf("connection history for %s not found starting first connection phase", p.addr)
 		if p.isIP || !p.resolveDNS {
-			return p.doConnect(ctx)
+			return p.reconnectUnhealthy(ctx)
 		}
 		return p.Connect(ctx)
 	}
@@ -451,7 +451,7 @@ func (p *pool) Reconnect(ctx context.Context, force bool) (c Conn, err error) {
 			if p.isIP {
 				return nil, errors.ErrInvalidGRPCClientConn(p.addr)
 			}
-			return p.doConnect(ctx)
+			return p.reconnectUnhealthy(ctx)
 		}
 		return p, nil
 	}

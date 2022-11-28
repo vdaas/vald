@@ -413,7 +413,7 @@ func Test_pool_load(t *testing.T) {
 	}
 }
 
-func Test_pool_doConnect(t *testing.T) {
+func Test_pool_reconnectUnhealthy(t *testing.T) {
 	t.Parallel()
 	type args struct {
 		ctx context.Context
@@ -555,7 +555,7 @@ func Test_pool_doConnect(t *testing.T) {
 				reconnectHash: test.fields.reconnectHash,
 			}
 
-			gotC, err := p.doConnect(test.args.ctx)
+			gotC, err := p.reconnectUnhealthy(test.args.ctx)
 			if err := checkFunc(test.want, gotC, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
