@@ -357,10 +357,10 @@ func (p *pool) Do(f func(conn *ClientConn) error) error {
 }
 
 func (p *pool) Get() (*ClientConn, bool) {
-	return p.doGet(p.Len())
+	return p.getHelthyConn(p.Len())
 }
 
-func (p *pool) doGet(retry uint64) (*ClientConn, bool) {
+func (p *pool) getHelthyConn(retry uint64) (*ClientConn, bool) {
 	if retry <= 0 || retry > math.MaxUint64-p.Len() || p.Len() <= 0 {
 		log.Warnf("failed to find grpc pool connection for %s", p.addr)
 		if p.isIP {
@@ -378,7 +378,7 @@ func (p *pool) doGet(retry uint64) (*ClientConn, bool) {
 		}
 	}
 	retry--
-	return p.doGet(retry)
+	return p.getHelthyConn(retry)
 }
 
 func (p *pool) Len() uint64 {
