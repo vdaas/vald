@@ -44,7 +44,7 @@ var (
 		return New("JobFunc is nil")
 	}
 
-	// ErrJobFuncIsNil represents a function to generate job function is not found.
+	// ErrJobFuncNotFound represents a function to generate job function is not found.
 	ErrJobFuncNotFound = func() error {
 		return New("JobFunc is not found")
 	}
