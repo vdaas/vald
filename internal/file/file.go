@@ -89,14 +89,14 @@ func Open(path string, flg int, perm fs.FileMode) (file *os.File, err error) {
 }
 
 func MoveDir(ctx context.Context, src, dst string) (err error) {
-	return moveDir(ctx, src, dst, true)
+	return doMoveDir(ctx, src, dst, true)
 }
 
-func moveDir(ctx context.Context, src, dst string, rollback bool) (err error) {
+func doMoveDir(ctx context.Context, src, dst string, rollback bool) (err error) {
 	if len(src) == 0 || len(dst) == 0 || src == dst {
 		return nil
 	}
-	exits, fi, err := exists(src)
+	exits, fi, err := doExists(src)
 	if !exits || fi == nil || !fi.IsDir() || err != nil {
 		return errors.ErrDirectoryNotFound(err, src, fi)
 	}
@@ -105,7 +105,7 @@ func moveDir(ctx context.Context, src, dst string, rollback bool) (err error) {
 	if err != nil {
 		log.Debug(errors.ErrFailedToRenameDir(err, src, dst, nil, nil))
 		var tmpPath string
-		exits, fi, err := exists(dst)
+		exits, fi, err := doExists(dst)
 		if exits && fi.IsDir() && err == nil {
 			tmpPath = Join(filepath.Dir(dst), "tmp-"+strconv.FormatInt(fastime.UnixNanoNow(), 10))
 			_ = os.RemoveAll(tmpPath)
@@ -123,7 +123,7 @@ func moveDir(ctx context.Context, src, dst string, rollback bool) (err error) {
 				if err != nil && Exists(dst) {
 					err = errors.ErrFailedToRemoveDir(err, dst, nil)
 					if rollback {
-						err = errors.Wrap(moveDir(ctx, tmpPath, dst, false), errors.Wrapf(err, "trying to recover temporary file %s to rollback previous operation", tmpPath).Error())
+						err = errors.Wrap(doMoveDir(ctx, tmpPath, dst, false), errors.Wrapf(err, "trying to recover temporary file %s to rollback previous operation", tmpPath).Error())
 					}
 					log.Warn(err)
 					return err
@@ -131,7 +131,7 @@ func moveDir(ctx context.Context, src, dst string, rollback bool) (err error) {
 			}
 			log.Debugf("directory %s successfully moved to tmp location %s", dst, tmpPath)
 		}
-		exits, fi, err = exists(src)
+		exits, fi, err = doExists(src)
 		if exits && fi != nil && fi.IsDir() && err == nil {
 			err = os.Rename(src, dst)
 			if err != nil {
@@ -140,7 +140,7 @@ func moveDir(ctx context.Context, src, dst string, rollback bool) (err error) {
 				if err != nil {
 					err = errors.ErrFailedToCopyDir(err, src, dst, fi, nil)
 					if rollback {
-						err = errors.Wrap(moveDir(ctx, tmpPath, dst, false), errors.Wrapf(err, "trying to recover temporary file %s to rollback previous operation", tmpPath).Error())
+						err = errors.Wrap(doMoveDir(ctx, tmpPath, dst, false), errors.Wrapf(err, "trying to recover temporary file %s to rollback previous operation", tmpPath).Error())
 					}
 					log.Warn(err)
 					return err
@@ -223,7 +223,7 @@ func CopyFileWithPerm(ctx context.Context, src, dst string, perm fs.FileMode) (n
 		}
 	}()
 
-	exist, fi, err := exists(src)
+	exist, fi, err := doExists(src)
 	switch {
 	case !exist, fi == nil, fi.Size() == 0, fi.IsDir():
 		return 0, errors.Wrap(err, errors.ErrFileNotFound(src).Error())
@@ -258,23 +258,23 @@ func CopyFileWithPerm(ctx context.Context, src, dst string, perm fs.FileMode) (n
 }
 
 func WriteFile(ctx context.Context, target string, r io.Reader, perm fs.FileMode) (n int64, err error) {
-	return writeFile(ctx, target, r, os.O_CREATE|os.O_WRONLY|os.O_SYNC, perm)
+	return doWriteFile(ctx, target, r, os.O_CREATE|os.O_WRONLY|os.O_SYNC, perm)
 }
 
 func OverWriteFile(ctx context.Context, target string, r io.Reader, perm fs.FileMode) (n int64, err error) {
-	return writeFile(ctx, target, r, os.O_CREATE|os.O_TRUNC|os.O_WRONLY|os.O_SYNC, perm)
+	return doWriteFile(ctx, target, r, os.O_CREATE|os.O_TRUNC|os.O_WRONLY|os.O_SYNC, perm)
 }
 
 func AppendFile(ctx context.Context, target string, r io.Reader, perm fs.FileMode) (n int64, err error) {
-	return writeFile(ctx, target, r, os.O_CREATE|os.O_APPEND|os.O_RDWR|os.O_SYNC, perm)
+	return doWriteFile(ctx, target, r, os.O_CREATE|os.O_APPEND|os.O_RDWR|os.O_SYNC, perm)
 }
 
-func writeFile(ctx context.Context, target string, r io.Reader, flg int, perm fs.FileMode) (n int64, err error) {
+func doWriteFile(ctx context.Context, target string, r io.Reader, flg int, perm fs.FileMode) (n int64, err error) {
 	if len(target) == 0 || r == nil {
 		return 0, nil
 	}
 
-	exist, fi, err := exists(target)
+	exist, fi, err := doExists(target)
 	switch {
 	case err == nil, exist, fi != nil && fi.Size() != 0, fi != nil && fi.IsDir():
 		err = errors.ErrFileAlreadyExists(target)
@@ -359,13 +359,13 @@ func ReadFile(path string) (n []byte, err error) {
 
 // Exists returns file existence
 func Exists(path string) (e bool) {
-	e, _, _ = exists(path)
+	e, _, _ = doExists(path)
 	return e
 }
 
 // ExistsWithDetail returns file existence
 func ExistsWithDetail(path string) (e bool, fi fs.FileInfo, err error) {
-	return exists(path)
+	return doExists(path)
 }
 
 // MkdirAll creates directory like mkdir -p
@@ -375,7 +375,7 @@ func MkdirAll(path string, perm fs.FileMode) (err error) {
 		fi         fs.FileInfo
 		merr, rerr error
 	)
-	exist, fi, err = exists(path)
+	exist, fi, err = doExists(path)
 	if exist {
 		if err == nil && fi != nil && fi.IsDir() {
 			return nil
@@ -447,8 +447,8 @@ func CreateTemp(baseDir string) (f *os.File, err error) {
 	return nil, errors.ErrFailedToCreateFile(err, path, nil)
 }
 
-// exists returns file existence with detailed information
-func exists(path string) (exists bool, fi fs.FileInfo, err error) {
+// doExists returns file existence with detailed information
+func doExists(path string) (exists bool, fi fs.FileInfo, err error) {
 	fi, err = os.Stat(path)
 	if err != nil {
 		if os.IsExist(err) {
@@ -464,7 +464,7 @@ func exists(path string) (exists bool, fi fs.FileInfo, err error) {
 
 // ListInDir returns file list in directory
 func ListInDir(path string) ([]string, error) {
-	exists, fi, err := exists(path)
+	exists, fi, err := doExists(path)
 	if !exists {
 		return nil, err
 	}
@@ -484,7 +484,7 @@ func Join(paths ...string) (path string) {
 		return ""
 	}
 	if len(paths) > 1 {
-		path = join(paths...)
+		path = doJoin(paths...)
 	} else {
 		path = replacer.Replace(paths[0])
 	}
@@ -498,7 +498,7 @@ func Join(paths ...string) (path string) {
 		log.Warn(err)
 		return filepath.Clean(path)
 	}
-	return filepath.Clean(join(root, path))
+	return filepath.Clean(doJoin(root, path))
 }
 
 var replacer = strings.NewReplacer(
@@ -508,7 +508,7 @@ var replacer = strings.NewReplacer(
 	string(os.PathSeparator),
 )
 
-func join(paths ...string) (path string) {
+func doJoin(paths ...string) (path string) {
 	for i, path := range paths {
 		if path != "" {
 			return replacer.Replace(strings.Join(paths[i:], string(os.PathSeparator)))
