@@ -163,7 +163,7 @@ func New(opts ...Option) (Info, error) {
 	}
 
 	if i.rtCaller == nil || i.rtFuncForPC == nil {
-		return nil, errors.ErrRuntimeFuncNil()
+		return nil, errors.ErrRuntimeFuncNil
 	}
 
 	i.prepare()

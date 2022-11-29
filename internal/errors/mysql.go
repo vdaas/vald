@@ -21,11 +21,9 @@ var (
 	// ErrMySQLConnectionPingFailed represents an error that the ping failed.
 	ErrMySQLConnectionPingFailed = New("error MySQL connection ping failed")
 
-	// NewErrMySQLNotFoundIdentity represents a function to generate an error that the element is not found.
-	NewErrMySQLNotFoundIdentity = func() error {
-		return &ErrMySQLNotFoundIdentity{
-			err: New("error mysql element not found"),
-		}
+	// NewErrMySQLNotFoundIdentity generates an error that the element is not found.
+	NewErrMySQLNotFoundIdentity = &ErrMySQLNotFoundIdentity{
+		err: New("error mysql element not found"),
 	}
 
 	// ErrMySQLConnectionClosed represents a function to generate an error that the connection closed.
@@ -36,19 +34,17 @@ var (
 
 	// ErrRequiredElementNotFoundByUUID represents a function to generate an error that the required element is not found.
 	ErrRequiredElementNotFoundByUUID = func(uuid string) error {
-		return Wrapf(NewErrMySQLNotFoundIdentity(), "error required element not found, uuid: %s", uuid)
+		return Wrapf(NewErrMySQLNotFoundIdentity, "error required element not found, uuid: %s", uuid)
 	}
 
-	// NewErrMySQLInvalidArgumentIdentity represents a function to generate an error that the argument is invalid.
-	NewErrMySQLInvalidArgumentIdentity = func() error {
-		return &ErrMySQLInvalidArgumentIdentity{
-			err: New("error mysql invalid argument"),
-		}
+	// NewErrMySQLInvalidArgumentIdentity generates an error that the argument is invalid.
+	NewErrMySQLInvalidArgumentIdentity = &ErrMySQLInvalidArgumentIdentity{
+		err: New("error mysql invalid argument"),
 	}
 
 	// ErrRequiredMemberNotFilled represents a function to generate an error that the required member is not filled.
 	ErrRequiredMemberNotFilled = func(member string) error {
-		return Wrapf(NewErrMySQLInvalidArgumentIdentity(), "error required member not filled (member: %s)", member)
+		return Wrapf(NewErrMySQLInvalidArgumentIdentity, "error required member not filled (member: %s)", member)
 	}
 
 	// ErrMySQLSessionNil represents a function to generate an error that the MySQL session is nil.

@@ -24,16 +24,14 @@ var (
 		return Errorf("kv index and vk prefix must be defferent.\t(kv: %s,\tvk: %s)", kv, vk)
 	}
 
-	// NewErrRedisNotFoundIdentity represents a function to generate an ErrRedisNotFoundIdentity error.
-	NewErrRedisNotFoundIdentity = func() error {
-		return &ErrRedisNotFoundIdentity{
-			err: New("error redis entry not found"),
-		}
+	// NewErrRedisNotFoundIdentity generates an ErrRedisNotFoundIdentity error.
+	NewErrRedisNotFoundIdentity = &ErrRedisNotFoundIdentity{
+		err: New("error redis entry not found"),
 	}
 
 	// ErrRedisNotFound represents a function to wrap Redis key not found error and err.
 	ErrRedisNotFound = func(key string) error {
-		return Wrapf(NewErrRedisNotFoundIdentity(), "error redis key '%s' not found", key)
+		return Wrapf(NewErrRedisNotFoundIdentity, "error redis key '%s' not found", key)
 	}
 
 	// ErrRedisInvalidOption generates a new error of Redis invalid option.

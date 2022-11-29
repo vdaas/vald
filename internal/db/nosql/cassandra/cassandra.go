@@ -379,7 +379,7 @@ func WrapErrorWithKeys(err error, keys ...string) error {
 	case ErrNotFound:
 		return errors.ErrCassandraNotFound(keys...)
 	case ErrUnavailable:
-		return errors.ErrCassandraUnavailable()
+		return errors.ErrCassandraUnavailable
 	case ErrUnsupported:
 		return err
 	case ErrTooManyStmts:

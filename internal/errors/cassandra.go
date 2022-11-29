@@ -23,18 +23,14 @@ var (
 		return Errorf("consistetncy type %q is not defined", consistency)
 	}
 
-	// NewErrCassandraNotFoundIdentity represents a function to generate an error of cassandra entry not found.
-	NewErrCassandraNotFoundIdentity = func() error {
-		return &ErrCassandraNotFoundIdentity{
-			err: New("cassandra entry not found"),
-		}
+	// NewErrCassandraNotFoundIdentity generates an error of cassandra entry not found.
+	NewErrCassandraNotFoundIdentity = &ErrCassandraNotFoundIdentity{
+		err: New("cassandra entry not found"),
 	}
 
-	// NewErrCassandraUnavailableIdentity represents a function to generate an error of cassandra unavailable.
-	NewErrCassandraUnavailableIdentity = func() error {
-		return &ErrCassandraUnavailableIdentity{
-			err: New("cassandra unavailable"),
-		}
+	// NewErrCassandraUnavailableIdentity generates an error of cassandra unavailable.
+	NewErrCassandraUnavailableIdentity = &ErrCassandraUnavailableIdentity{
+		err: New("cassandra unavailable"),
 	}
 
 	// ErrCassandraUnavailable represents NewErrCassandraUnavailableIdentity.
@@ -44,9 +40,9 @@ var (
 	ErrCassandraNotFound = func(keys ...string) error {
 		switch {
 		case len(keys) == 1:
-			return Wrapf(NewErrCassandraNotFoundIdentity(), "cassandra key '%s' not found", keys[0])
+			return Wrapf(NewErrCassandraNotFoundIdentity, "cassandra key '%s' not found", keys[0])
 		case len(keys) > 1:
-			return Wrapf(NewErrCassandraNotFoundIdentity(), "cassandra keys '%v' not found", keys)
+			return Wrapf(NewErrCassandraNotFoundIdentity, "cassandra keys '%v' not found", keys)
 		default:
 			return nil
 		}

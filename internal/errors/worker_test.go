@@ -197,7 +197,7 @@ func TestErrQueueIsNotRunning(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 
-			err := ErrQueueIsNotRunning()
+			err := ErrQueueIsNotRunning
 			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -247,7 +247,7 @@ func TestErrQueueIsAlreadyRunning(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 
-			err := ErrQueueIsAlreadyRunning()
+			err := ErrQueueIsAlreadyRunning
 			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -297,7 +297,7 @@ func TestErrJobFuncIsNil(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 
-			err := ErrJobFuncIsNil()
+			err := ErrJobFuncIsNil
 			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -347,7 +347,7 @@ func TestErrJobFuncNotFound(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 
-			err := ErrJobFuncNotFound()
+			err := ErrJobFuncNotFound
 			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}

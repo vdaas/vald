@@ -2219,7 +2219,7 @@ func TestWrapErrorWithKeys(t *testing.T) {
 				err: ErrUnavailable,
 			},
 			want: want{
-				err: errors.ErrCassandraUnavailable(),
+				err: errors.ErrCassandraUnavailable,
 			},
 		},
 		{

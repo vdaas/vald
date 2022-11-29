@@ -130,7 +130,7 @@ func TestNewErrCassandraNotFoundIdentity(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 
-			got := NewErrCassandraNotFoundIdentity()
+			got := NewErrCassandraNotFoundIdentity
 			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -180,7 +180,7 @@ func TestNewErrCassandraUnavailableIdentity(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 
-			got := NewErrCassandraUnavailableIdentity()
+			got := NewErrCassandraUnavailableIdentity
 			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -230,7 +230,7 @@ func TestErrCassandraUnavailable(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 
-			got := ErrCassandraUnavailable()
+			got := ErrCassandraUnavailable
 			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}

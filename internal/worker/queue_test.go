@@ -254,7 +254,7 @@ func Test_queue_Start(t *testing.T) {
 					}(),
 				},
 				want: want{
-					err: errors.ErrQueueIsAlreadyRunning(),
+					err: errors.ErrQueueIsAlreadyRunning,
 				},
 				checkFunc: defaultCheckFunc,
 			}
@@ -502,7 +502,7 @@ func Test_queue_Push(t *testing.T) {
 					job: nil,
 				},
 				want: want{
-					err: errors.ErrJobFuncIsNil(),
+					err: errors.ErrJobFuncIsNil,
 				},
 			}
 		}(),
@@ -522,7 +522,7 @@ func Test_queue_Push(t *testing.T) {
 					}(),
 				},
 				want: want{
-					err: errors.ErrQueueIsNotRunning(),
+					err: errors.ErrQueueIsNotRunning,
 				},
 			}
 		}(),
@@ -687,7 +687,7 @@ func Test_queue_Pop(t *testing.T) {
 			},
 			want: want{
 				want: nil,
-				err:  errors.ErrQueueIsNotRunning(),
+				err:  errors.ErrQueueIsNotRunning,
 			},
 		},
 		func() test {
@@ -754,7 +754,7 @@ func Test_queue_Pop(t *testing.T) {
 				},
 				want: want{
 					want: nil,
-					err:  errors.ErrJobFuncNotFound(),
+					err:  errors.ErrJobFuncNotFound,
 				},
 				beforeFunc: func(args) {
 					outCh <- nil

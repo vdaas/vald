@@ -159,7 +159,7 @@ func TestNewErrRedisNotFoundIdentity(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 
-			got := NewErrRedisNotFoundIdentity()
+			got := NewErrRedisNotFoundIdentity
 			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -195,14 +195,14 @@ func TestErrRdisNotFound(t *testing.T) {
 				key: "vdaas",
 			},
 			want: want{
-				want: Wrap(NewErrRedisNotFoundIdentity(), "error redis key 'vdaas' not found"),
+				want: Wrap(NewErrRedisNotFoundIdentity, "error redis key 'vdaas' not found"),
 			},
 		},
 		{
 			name:   "return an ErrRedisNotFound error when key is empty",
 			fields: fields{},
 			want: want{
-				want: Wrap(NewErrRedisNotFoundIdentity(), "error redis key '' not found"),
+				want: Wrap(NewErrRedisNotFoundIdentity, "error redis key '' not found"),
 			},
 		},
 	}

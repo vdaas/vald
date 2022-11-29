@@ -118,7 +118,7 @@ func TestNewErrMySQLNotFoundIdentity(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 
-			got := NewErrMySQLNotFoundIdentity()
+			got := NewErrMySQLNotFoundIdentity
 			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -340,7 +340,7 @@ func TestNewErrMySQLInvalidArgumentIdentity(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 
-			got := NewErrMySQLInvalidArgumentIdentity()
+			got := NewErrMySQLInvalidArgumentIdentity
 			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
