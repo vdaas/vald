@@ -10,7 +10,7 @@ If you are not a developer, don't worry, some contributions don't require writin
 
 ## Contributions
 
-Please read the [README](https://github.com/vdaas/vald/blob/main/README.md) to get an overview of Vald.
+Please read the [About Vald](https://vald.vdaas.org/docs/overview/about-vald) to get an overview of Vald.
 
 We welcome you to contribute to Vald to make Vald better.
 We accept the following types of contributions:
@@ -60,7 +60,7 @@ For Linux users, please install the following tools on your environment.
 - [npm](https://www.npmjs.com/)
 - [unzip](https://linux.die.net/man/1/unzip)
 - [Git](https://git-scm.com/)
-- [Go](https://go.dev/) (v1.19.2 is recommended)
+- [Go](https://go.dev/) (v1.19.2 or later is recommended)
 
 For Debian-based Linux distribution users, you can install these required tools using `apt`.
 
