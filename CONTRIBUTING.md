@@ -110,13 +110,13 @@ Before making changes on Vald, please follow these steps to contribute to any of
 
 #### Make changes
 
-##### 1. Make sure no one is working on the same issue/feature
+1. Make sure no one is working on the same issue/feature
 
 Before making any changes, you need to check if anyone is working on the same feature in the pull request list.
 
 If you are solving an issue, check if anyone is working on the issue and comment on the issue and say you are working on it to avoid conflict with others also working on the same issue.
 
-##### 2. Create your feature branch on your forked repository
+2. Create your feature branch on your forked repository
 
 Before working on changes, you need to create a development branch on your forked branch.
 
@@ -136,7 +136,7 @@ For example, when you add a new feature for internal/servers, the name of the br
 git checkout -b [type]/[area]/[description]
 ```
 
-##### 3. Make code changes
+3. Make code changes
 
 If you have discussed the design and the requirement of the changes with Vald members, please follow the design and requirement discussed.
 
@@ -152,7 +152,7 @@ To make changes on Vald, you need to understand the package structure of Vald an
 
 Please make sure you understand our [coding guideline](./docs/contributing/coding-style.md) to follow our coding style to keep the coding style consistent.
 
-##### 4. After making code changes
+4. After making code changes
 
 After making code changes, we suggest you execute the following command to generate the necessary test stubs and format code.
 
@@ -175,11 +175,11 @@ It will also install the following tools to format the source code.
 
 These tools are required to format your source code to keep the coding style consistent.
 
-##### 5. Verify the changes
+5. Verify the changes
 
 If you are making logical changes on Vald, please refer to [this document](./docs/contributing/testing-guideline.md) for more detail about how to test your changes.
 
-##### 6. Commit and push your changes to the branch
+6. Commit and push your changes to the branch
 
 After verifing the changes, you may want to push the changes to your development branch.
 
@@ -196,7 +196,7 @@ git commit --signoff -m '[commit message]'
 git push origin [type]/[area]/[description]
 ```
 
-##### 7. Create a new pull request against the Vald repository
+7. Create a new pull request against the Vald repository
 
 After committing your changes, you may create a pull request to ask for accepting the changes.
 
@@ -230,7 +230,7 @@ Please add the action label to the pull request to execute specific action if ne
 
 If you are solving an issue, please also link the pull request to the issue.
 
-##### 8. Review and merge pull request
+8. Review and merge pull request
 
 Vald team will review the pull request.
 
