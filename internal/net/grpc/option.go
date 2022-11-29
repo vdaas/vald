@@ -294,18 +294,6 @@ func WithInsecure(flg bool) Option {
 	}
 }
 
-// func WithDialTimeout(dur string) Option {
-// 	return func(g *gRPCClient) {
-// 		d, err := timeutil.Parse(dur)
-// 		if err != nil {
-// 			return
-// 		}
-// 		g.dopts = append(g.dopts,
-// 			grpc.WithTimeout(d),
-// 		)
-// 	}
-// }
-
 func WithKeepaliveParams(t, to string, permitWithoutStream bool) Option {
 	return func(g *gRPCClient) {
 		if len(t) == 0 || len(to) == 0 {
