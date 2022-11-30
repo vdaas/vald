@@ -115,7 +115,7 @@ func TestErrRedisInvalidKVVKPrefic(t *testing.T) {
 	}
 }
 
-func TestNewErrRedisNotFoundIdentity(t *testing.T) {
+func TestErrRedisNotFoundIdentity(t *testing.T) {
 	type want struct {
 		want error
 	}
@@ -137,7 +137,7 @@ func TestNewErrRedisNotFoundIdentity(t *testing.T) {
 			return test{
 				name: "return an NewErrRedisNotFoundIdentity error",
 				want: want{
-					want: &ErrRedisNotFoundIdentity{
+					want: &RedisNotFoundIdentityError{
 						err: New("error redis entry not found"),
 					},
 				},
@@ -159,7 +159,7 @@ func TestNewErrRedisNotFoundIdentity(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 
-			got := NewErrRedisNotFoundIdentity
+			got := ErrRedisNotFoundIdentity
 			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -195,14 +195,14 @@ func TestErrRdisNotFound(t *testing.T) {
 				key: "vdaas",
 			},
 			want: want{
-				want: Wrap(NewErrRedisNotFoundIdentity, "error redis key 'vdaas' not found"),
+				want: Wrap(ErrRedisNotFoundIdentity, "error redis key 'vdaas' not found"),
 			},
 		},
 		{
 			name:   "return an ErrRedisNotFound error when key is empty",
 			fields: fields{},
 			want: want{
-				want: Wrap(NewErrRedisNotFoundIdentity, "error redis key '' not found"),
+				want: Wrap(ErrRedisNotFoundIdentity, "error redis key '' not found"),
 			},
 		},
 	}
@@ -741,7 +741,7 @@ func TestErrRedisConnectionPingFailed(t *testing.T) {
 	}
 }
 
-func TestErrRedisNotFoundIdentity_Error(t *testing.T) {
+func TestRedisNotFoundIdentityError_Error(t *testing.T) {
 	type fields struct {
 		err error
 	}
@@ -794,7 +794,7 @@ func TestErrRedisNotFoundIdentity_Error(t *testing.T) {
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
-			e := &ErrRedisNotFoundIdentity{
+			e := &RedisNotFoundIdentityError{
 				err: test.fields.err,
 			}
 
@@ -806,7 +806,7 @@ func TestErrRedisNotFoundIdentity_Error(t *testing.T) {
 	}
 }
 
-func TestErrRedisNotFoundIdentity_Unwrap(t *testing.T) {
+func TestErrRedisNotFoundIdentityError_Unwrap(t *testing.T) {
 	type fields struct {
 		err error
 	}
@@ -859,7 +859,7 @@ func TestErrRedisNotFoundIdentity_Unwrap(t *testing.T) {
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
-			e := &ErrRedisNotFoundIdentity{
+			e := &RedisNotFoundIdentityError{
 				err: test.fields.err,
 			}
 
@@ -871,7 +871,7 @@ func TestErrRedisNotFoundIdentity_Unwrap(t *testing.T) {
 	}
 }
 
-func TestIsErrRedisNotFound(t *testing.T) {
+func TestIsRedisNotFoundError(t *testing.T) {
 	type args struct {
 		err error
 	}
@@ -903,7 +903,7 @@ func TestIsErrRedisNotFound(t *testing.T) {
 		{
 			name: "return false when err does not match ErrRedisNotFoundIdentity",
 			args: args{
-				err: &ErrRedisNotFoundIdentity{
+				err: &RedisNotFoundIdentityError{
 					err: New("err: Redis not found identity"),
 				},
 			},
@@ -932,7 +932,7 @@ func TestIsErrRedisNotFound(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 
-			got := IsErrRedisNotFound(test.args.err)
+			got := IsRedisNotFoundError(test.args.err)
 			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}

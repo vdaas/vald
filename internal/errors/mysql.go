@@ -21,8 +21,8 @@ var (
 	// ErrMySQLConnectionPingFailed represents an error that the ping failed.
 	ErrMySQLConnectionPingFailed = New("error MySQL connection ping failed")
 
-	// NewErrMySQLNotFoundIdentity generates an error that the element is not found.
-	NewErrMySQLNotFoundIdentity = &ErrMySQLNotFoundIdentity{
+	// ErrMySQLNotFoundIdentity generates an error that the element is not found.
+	ErrMySQLNotFoundIdentity = &MySQLNotFoundIdentityError{
 		err: New("error mysql element not found"),
 	}
 
@@ -34,11 +34,11 @@ var (
 
 	// ErrRequiredElementNotFoundByUUID represents a function to generate an error that the required element is not found.
 	ErrRequiredElementNotFoundByUUID = func(uuid string) error {
-		return Wrapf(NewErrMySQLNotFoundIdentity, "error required element not found, uuid: %s", uuid)
+		return Wrapf(ErrMySQLNotFoundIdentity, "error required element not found, uuid: %s", uuid)
 	}
 
 	// NewErrMySQLInvalidArgumentIdentity generates an error that the argument is invalid.
-	NewErrMySQLInvalidArgumentIdentity = &ErrMySQLInvalidArgumentIdentity{
+	NewErrMySQLInvalidArgumentIdentity = &MySQLInvalidArgumentIdentityError{
 		err: New("error mysql invalid argument"),
 	}
 
@@ -51,44 +51,44 @@ var (
 	ErrMySQLSessionNil = New("error MySQL session is nil")
 )
 
-// ErrMySQLNotFoundIdentity represents a custom error type that the element is not found.
-type ErrMySQLNotFoundIdentity struct {
+// MySQLNotFoundIdentityError represents a custom error type that the element is not found.
+type MySQLNotFoundIdentityError struct {
 	err error
 }
 
 // Error returns the string of internal error.
-func (e *ErrMySQLNotFoundIdentity) Error() string {
+func (e *MySQLNotFoundIdentityError) Error() string {
 	return e.err.Error()
 }
 
 // Unwrap returns the internal error.
-func (e *ErrMySQLNotFoundIdentity) Unwrap() error {
+func (e *MySQLNotFoundIdentityError) Unwrap() error {
 	return e.err
 }
 
-// IsErrMySQLNotFound returns true when the err type is ErrMySQLNotFoundIdentity.
-func IsErrMySQLNotFound(err error) bool {
-	target := new(ErrMySQLNotFoundIdentity)
+// IsMySQLNotFoundError returns true when the err type is MySQLNotFoundIdentityError.
+func IsMySQLNotFoundError(err error) bool {
+	target := new(MySQLNotFoundIdentityError)
 	return As(err, &target)
 }
 
-// ErrMySQLInvalidArgumentIdentity represents a custom error type that the argument is not found.
-type ErrMySQLInvalidArgumentIdentity struct {
+// MySQLInvalidArgumentIdentityError represents a custom error type that the argument is not found.
+type MySQLInvalidArgumentIdentityError struct {
 	err error
 }
 
 // Error returns the string of internal error.
-func (e *ErrMySQLInvalidArgumentIdentity) Error() string {
+func (e *MySQLInvalidArgumentIdentityError) Error() string {
 	return e.err.Error()
 }
 
 // Unwrap returns the internal error.
-func (e *ErrMySQLInvalidArgumentIdentity) Unwrap() error {
+func (e *MySQLInvalidArgumentIdentityError) Unwrap() error {
 	return e.err
 }
 
-// IsErrMySQLInvalidArgument returns true when the err type is ErrMySQLInvalidArgumentIdentity.
-func IsErrMySQLInvalidArgument(err error) bool {
-	target := new(ErrMySQLInvalidArgumentIdentity)
+// IsMySQLInvalidArgumentError returns true when the err type is MySQLInvalidArgumentIdentityError.
+func IsMySQLInvalidArgumentError(err error) bool {
+	target := new(MySQLInvalidArgumentIdentityError)
 	return As(err, &target)
 }
