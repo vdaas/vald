@@ -1703,6 +1703,56 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (locs 
 			span.End()
 		}
 	}()
+	handleSpan := func(rpcName string, span trace.Span, err error) error {
+		if err == nil {
+			return nil
+		}
+		st, msg, err := status.ParseError(err, codes.Internal,
+			"failed to parse "+rpcName+" gRPC error response")
+		if span != nil {
+			span.RecordError(err)
+			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+			span.SetStatus(trace.StatusError, err.Error())
+		}
+		return err
+	}
+
+	ovec, err := s.GetObject(ctx, &payload.Object_VectorRequest{
+		Id: req.GetId(),
+	})
+	if err != nil {
+		return nil, err
+	}
+	err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
+		sctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.RemoveRPCName+"/"+target)
+		defer func() {
+			if sspan != nil {
+				sspan.End()
+			}
+		}()
+		_, err := vald.NewValdClient(conn).Remove(sctx, req, copts...)
+		return handleSpan(vald.RemoveRPCName, sspan, err)
+	})
+	if err != nil {
+		_, err := s.Upsert(ctx, &payload.Upsert_Request{
+			Vector: ovec,
+			Config: &payload.Upsert_Config{
+				// TODO
+			},
+		})
+		// return nil, handleSpan(vald.RemoveRPCName, span, err)
+		return nil, err
+	}
+	return nil, nil
+}
+
+func (s *server) _Remove(ctx context.Context, req *payload.Remove_Request) (locs *payload.Object_Location, err error) {
+	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.RemoveRPCServiceName+"/"+vald.RemoveRPCName), apiName+"/"+vald.RemoveRPCName)
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
 
 	id := req.GetId()
 	if !req.GetConfig().GetSkipStrictExistCheck() {
