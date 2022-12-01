@@ -62,7 +62,7 @@ type server struct {
 	mirror.MirrorServer
 }
 
-const apiName = "vald/gateway/lb"
+const apiName = "vald/gateway/mirror"
 
 func New(opts ...Option) MirrorServer {
 	s := new(server)
@@ -83,6 +83,12 @@ func (s *server) Exists(ctx context.Context, meta *payload.Object_ID) (id *paylo
 
 	id, err = s.client.Exists(ctx, meta, s.client.GRPCClient().GetCallOption()...)
 	if err != nil {
+		st, msg, err := status.ParseError(err, codes.Internal, "failed to parse "+vald.ExistsRPCName+" gRPC error response")
+		if span != nil {
+			span.RecordError(err)
+			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+			span.SetStatus(trace.StatusError, err.Error())
+		}
 		return nil, err
 	}
 	return id, nil
@@ -97,6 +103,12 @@ func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *
 	}()
 	res, err = s.client.Search(ctx, req)
 	if err != nil {
+		st, msg, err := status.ParseError(err, codes.Internal, "failed to parse "+vald.SearchRPCName+" gRPC error response")
+		if span != nil {
+			span.RecordError(err)
+			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+			span.SetStatus(trace.StatusError, err.Error())
+		}
 		return nil, err
 	}
 	return res, nil
@@ -113,6 +125,12 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 	}()
 	res, err = s.client.SearchByID(ctx, req)
 	if err != nil {
+		st, msg, err := status.ParseError(err, codes.Internal, "failed to parse "+vald.SearchByIDRPCName+" gRPC error response")
+		if span != nil {
+			span.RecordError(err)
+			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+			span.SetStatus(trace.StatusError, err.Error())
+		}
 		return nil, err
 	}
 	return res, nil
@@ -156,38 +174,6 @@ func (s *server) StreamSearch(stream vald.Search_StreamSearchServer) (err error)
 				},
 			}, nil
 		})
-
-	// err = grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
-	// 	func() interface{} { return new(payload.Search_Request) },
-	// 	func(ctx context.Context, data interface{}) (interface{}, error) {
-	// 		req := data.(*payload.Search_Request)
-	// 		ctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.StreamSearchRPCName+"/requestID-"+req.GetConfig().GetRequestId())
-	// 		defer func() {
-	// 			if sspan != nil {
-	// 				sspan.End()
-	// 			}
-	// 		}()
-	// 		res, err := s.Search(ctx, data.(*payload.Search_Request))
-	// 		if err != nil {
-	// 			st, msg, err := status.ParseError(err, codes.Internal, "failed to parse "+vald.SearchRPCName+" gRPC error response")
-	// 			if sspan != nil {
-	// 				sspan.RecordError(err)
-	// 				sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
-	// 				sspan.SetStatus(trace.StatusError, err.Error())
-	// 			}
-	// 			return &payload.Search_StreamResponse{
-	// 				Payload: &payload.Search_StreamResponse_Status{
-	// 					Status: st.Proto(),
-	// 				},
-	// 			}, err
-	// 		}
-	// 		return &payload.Search_StreamResponse{
-	// 			Payload: &payload.Search_StreamResponse_Response{
-	// 				Response: res,
-	// 			},
-	// 		}, nil
-	// 	})
-	//
 	if err != nil {
 		st, msg, err := status.ParseError(err, codes.Internal,
 			"failed to parse "+vald.StreamSearchRPCName+" gRPC error response")
@@ -238,7 +224,6 @@ func (s *server) StreamSearchByID(stream vald.Search_StreamSearchByIDServer) (er
 				},
 			}, nil
 		})
-
 	if err != nil {
 		st, msg, err := status.ParseError(err, codes.Internal,
 			"failed to parse "+vald.StreamSearchByIDRPCName+" gRPC error response")
@@ -262,6 +247,12 @@ func (s *server) MultiSearch(ctx context.Context, reqs *payload.Search_MultiRequ
 
 	res, err := s.client.MultiSearch(ctx, reqs)
 	if err != nil {
+		st, msg, err := status.ParseError(err, codes.Internal, "failed to parse "+vald.MultiSearchRPCName+" gRPC error response")
+		if span != nil {
+			span.RecordError(err)
+			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+			span.SetStatus(trace.StatusError, err.Error())
+		}
 		return nil, err
 	}
 	return res, nil
@@ -276,6 +267,12 @@ func (s *server) MultiSearchByID(ctx context.Context, reqs *payload.Search_Multi
 	}()
 	res, err = s.client.MultiSearchByID(ctx, reqs)
 	if err != nil {
+		st, msg, err := status.ParseError(err, codes.Internal, "failed to parse "+vald.MultiSearchByIDRPCName+" gRPC error response")
+		if span != nil {
+			span.RecordError(err)
+			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+			span.SetStatus(trace.StatusError, err.Error())
+		}
 		return nil, err
 	}
 	return res, nil
@@ -290,6 +287,12 @@ func (s *server) LinearSearch(ctx context.Context, req *payload.Search_Request) 
 	}()
 	res, err = s.client.LinearSearch(ctx, req)
 	if err != nil {
+		st, msg, err := status.ParseError(err, codes.Internal, "failed to parse "+vald.LinearSearchRPCName+" gRPC error response")
+		if span != nil {
+			span.RecordError(err)
+			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+			span.SetStatus(trace.StatusError, err.Error())
+		}
 		return nil, err
 	}
 	return res, nil
@@ -306,6 +309,12 @@ func (s *server) LinearSearchByID(ctx context.Context, req *payload.Search_IDReq
 	}()
 	res, err = s.client.LinearSearchByID(ctx, req)
 	if err != nil {
+		st, msg, err := status.ParseError(err, codes.Internal, "failed to parse "+vald.LinearSearchByIDRPCName+" gRPC error response")
+		if span != nil {
+			span.RecordError(err)
+			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+			span.SetStatus(trace.StatusError, err.Error())
+		}
 		return nil, err
 	}
 	return res, nil
@@ -422,6 +431,12 @@ func (s *server) MultiLinearSearch(ctx context.Context, reqs *payload.Search_Mul
 	}()
 	res, err = s.client.MultiLinearSearch(ctx, reqs)
 	if err != nil {
+		st, msg, err := status.ParseError(err, codes.Internal, "failed to parse "+vald.MultiSearchRPCName+" gRPC error response")
+		if span != nil {
+			span.RecordError(err)
+			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+			span.SetStatus(trace.StatusError, err.Error())
+		}
 		return nil, err
 	}
 	return res, nil
@@ -436,6 +451,12 @@ func (s *server) MultiLinearSearchByID(ctx context.Context, reqs *payload.Search
 	}()
 	res, err = s.client.MultiLinearSearchByID(ctx, reqs)
 	if err != nil {
+		st, msg, err := status.ParseError(err, codes.Internal, "failed to parse "+vald.MultiLinearSearchRPCName+" gRPC error response")
+		if span != nil {
+			span.RecordError(err)
+			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+			span.SetStatus(trace.StatusError, err.Error())
+		}
 		return nil, err
 	}
 	return res, nil
@@ -1951,6 +1972,12 @@ func (s *server) GetObject(ctx context.Context, req *payload.Object_VectorReques
 	}()
 	vec, err = s.client.GetObject(ctx, req)
 	if err != nil {
+		st, msg, err := status.ParseError(err, codes.Internal, "failed to parse "+vald.GetObjectRPCName+" gRPC error response")
+		if span != nil {
+			span.RecordError(err)
+			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+			span.SetStatus(trace.StatusError, err.Error())
+		}
 		return nil, err
 	}
 	return vec, nil
