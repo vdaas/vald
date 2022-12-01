@@ -52,7 +52,7 @@ type MirrorServer interface {
 type server struct {
 	eg                errgroup.Group
 	gateway           service.Gateway
-	client            vclient.Client
+	client            vclient.Client // LB Gateway client in the same cluster.
 	timeout           time.Duration
 	replica           int
 	streamConcurrency int
@@ -470,31 +470,61 @@ func (s *server) MultiLinearSearchByID(ctx context.Context, reqs *payload.Search
 	return res, nil
 }
 func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *payload.Object_Location, err error) {
-	// WIP
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.InsertRPCServiceName+"/"+vald.InsertRPCName), apiName+"/"+vald.InsertRPCName)
 	defer func() {
 		if span != nil {
 			span.End()
 		}
 	}()
-	err = s.gateway.BroadCast(ctx, func(ctx context.Context, tgt string, mc mirror.MirrorClient, copts ...grpc.CallOption) error {
-		return nil
-	})
-	if err != nil {
-		s.gateway.BroadCast(ctx, func(ctx context.Context, tgt string, mc mirror.MirrorClient, copts ...grpc.CallOption) error {
+	handleSpan := func(rpcName string, span trace.Span, err error) error {
+		if err == nil {
 			return nil
-		})
-	}
-
-	ce, err = s.client.Insert(ctx, req)
-	if err != nil {
+		}
 		st, msg, err := status.ParseError(err, codes.Internal,
-			"failed to parse "+vald.InsertRPCName+" gRPC error response")
+			"failed to parse "+rpcName+" gRPC error response")
 		if span != nil {
 			span.RecordError(err)
 			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
 			span.SetStatus(trace.StatusError, err.Error())
 		}
+		return err
+	}
+
+	err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
+		sctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.InsertRPCName+"/"+target)
+		defer func() {
+			if sspan != nil {
+				sspan.End()
+			}
+		}()
+		_, err := vald.NewValdClient(conn).Insert(sctx, req, copts...)
+		return handleSpan(vald.RemoveRPCName, sspan, err)
+	})
+	if err != nil {
+		removeReq := &payload.Remove_Request{
+			Id: &payload.Object_ID{
+				Id: req.Vector.Id,
+			},
+		}
+		err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
+			sctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.RemoveRPCName+"/"+target)
+			defer func() {
+				if sspan != nil {
+					sspan.End()
+				}
+			}()
+			_, err := vald.NewValdClient(conn).Remove(sctx, removeReq)
+			return handleSpan(vald.RemoveRPCName, sspan, err)
+		})
+		if err := handleSpan(vald.RemoveRPCName, span, err); err != nil {
+			return nil, err
+		}
+		return nil, err
+	}
+
+	ce, err = s.client.Insert(ctx, req)
+	if err := handleSpan(vald.InsertRPCName, span, err); err != nil {
+		return nil, err
 	}
 	return ce, nil
 }

@@ -21,7 +21,6 @@ import (
 	"context"
 	"reflect"
 
-	"github.com/vdaas/vald/apis/grpc/v1/mirror"
 	mclient "github.com/vdaas/vald/internal/client/v1/client/mirror"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
@@ -33,7 +32,7 @@ type Gateway interface {
 	Start(ctx context.Context) (<-chan error, error)
 	Addrs(ctx context.Context) []string
 	BroadCast(ctx context.Context,
-		f func(ctx context.Context, tgt string, mc mirror.MirrorClient, copts ...grpc.CallOption) error) error
+		f func(ctx context.Context, tgt string, conn *grpc.ClientConn, copts ...grpc.CallOption) error) error
 }
 
 type gateway struct {
@@ -56,7 +55,7 @@ func (g *gateway) Start(ctx context.Context) (<-chan error, error) {
 }
 
 func (g *gateway) BroadCast(ctx context.Context,
-	f func(ctx context.Context, target string, mc mirror.MirrorClient, copts ...grpc.CallOption) error,
+	f func(ctx context.Context, target string, conn *grpc.ClientConn, copts ...grpc.CallOption) error,
 ) (err error) {
 	fctx, span := trace.StartSpan(ctx, "vald/gateway-mirror/service/Gateway.BroadCast")
 	defer func() {
@@ -71,7 +70,7 @@ func (g *gateway) BroadCast(ctx context.Context,
 		case <-ictx.Done():
 			return nil
 		default:
-			err = f(ictx, addr, mirror.NewMirrorClient(conn), copts...)
+			err = f(ictx, addr, conn, copts...)
 			if err != nil {
 				return err
 			}
