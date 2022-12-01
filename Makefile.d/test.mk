@@ -30,7 +30,7 @@ gotestfmt/install: \
         $(GOPATH)bin/gotestfmt
 
 $(GOPATH)bin/gotestfmt:
-	$(call go-install, github.com/haveyoudebuggedit/gotestfmt/v2/cmd/gotestfmt)
+	$(call go-install, github.com/gotesttools/gotestfmt/v2/cmd/gotestfmt)
 
 .PHONY: gotests/install
 ## install gotests
