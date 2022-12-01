@@ -73,6 +73,14 @@ func New(opts ...Option) MirrorServer {
 	return s
 }
 
+func (s *server) Register(context.Context, *payload.Mirror_Targets) (*payload.Mirror_Targets, error) {
+	return nil, nil
+}
+
+func (s *server) Advertise(context.Context, *payload.Mirror_Targets) (*payload.Mirror_Targets, error) {
+	return nil, nil
+}
+
 func (s *server) Exists(ctx context.Context, meta *payload.Object_ID) (id *payload.Object_ID, err error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.ObjectRPCServiceName+"/"+vald.ExistsRPCName), apiName+"/"+vald.ExistsRPCName)
 	defer func() {
