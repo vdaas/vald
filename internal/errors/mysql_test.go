@@ -296,7 +296,7 @@ func TestErrRequiredElementNotFoundByUUID(t *testing.T) {
 	}
 }
 
-func TestNewErrMySQLInvalidArgumentIdentity(t *testing.T) {
+func TestErrMySQLInvalidArgumentIdentity(t *testing.T) {
 	type want struct {
 		want error
 	}
@@ -340,7 +340,7 @@ func TestNewErrMySQLInvalidArgumentIdentity(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 
-			got := NewErrMySQLInvalidArgumentIdentity
+			got := ErrMySQLInvalidArgumentIdentity
 			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
