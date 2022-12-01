@@ -41,7 +41,7 @@ import (
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/pkg/gateway/internal/location"
-	"github.com/vdaas/vald/pkg/gateway/lb/service"
+	"github.com/vdaas/vald/pkg/gateway/mirror/service"
 )
 
 type MirrorServer interface {
@@ -469,8 +469,37 @@ func (s *server) MultiLinearSearchByID(ctx context.Context, reqs *payload.Search
 	}
 	return res, nil
 }
-
 func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *payload.Object_Location, err error) {
+	// WIP
+	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.InsertRPCServiceName+"/"+vald.InsertRPCName), apiName+"/"+vald.InsertRPCName)
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	err = s.gateway.BroadCast(ctx, func(ctx context.Context, tgt string, mc mirror.MirrorClient, copts ...grpc.CallOption) error {
+		return nil
+	})
+	if err != nil {
+		s.gateway.BroadCast(ctx, func(ctx context.Context, tgt string, mc mirror.MirrorClient, copts ...grpc.CallOption) error {
+			return nil
+		})
+	}
+
+	ce, err = s.client.Insert(ctx, req)
+	if err != nil {
+		st, msg, err := status.ParseError(err, codes.Internal,
+			"failed to parse "+vald.InsertRPCName+" gRPC error response")
+		if span != nil {
+			span.RecordError(err)
+			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+			span.SetStatus(trace.StatusError, err.Error())
+		}
+	}
+	return ce, nil
+}
+
+func (s *server) _Insert(ctx context.Context, req *payload.Insert_Request) (ce *payload.Object_Location, err error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.InsertRPCServiceName+"/"+vald.InsertRPCName), apiName+"/"+vald.InsertRPCName)
 	defer func() {
 		if span != nil {
