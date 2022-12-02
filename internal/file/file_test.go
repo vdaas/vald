@@ -1526,7 +1526,7 @@ func TestAppendFile(t *testing.T) {
 	}
 }
 
-func Test_writeFileCtx(t *testing.T) {
+func Test_writeFileWithContext(t *testing.T) {
 	type args struct {
 		ctx    context.Context
 		target string
@@ -1607,7 +1607,7 @@ func Test_writeFileCtx(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 
-			gotN, err := writeFileCtx(test.args.ctx, test.args.target, test.args.r, test.args.flg, test.args.perm)
+			gotN, err := writeFileWithContext(test.args.ctx, test.args.target, test.args.r, test.args.flg, test.args.perm)
 			if err := checkFunc(test.want, gotN, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}

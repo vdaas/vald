@@ -258,18 +258,18 @@ func CopyFileWithPerm(ctx context.Context, src, dst string, perm fs.FileMode) (n
 }
 
 func WriteFile(ctx context.Context, target string, r io.Reader, perm fs.FileMode) (n int64, err error) {
-	return writeFileCtx(ctx, target, r, os.O_CREATE|os.O_WRONLY|os.O_SYNC, perm)
+	return writeFileWithContext(ctx, target, r, os.O_CREATE|os.O_WRONLY|os.O_SYNC, perm)
 }
 
 func OverWriteFile(ctx context.Context, target string, r io.Reader, perm fs.FileMode) (n int64, err error) {
-	return writeFileCtx(ctx, target, r, os.O_CREATE|os.O_TRUNC|os.O_WRONLY|os.O_SYNC, perm)
+	return writeFileWithContext(ctx, target, r, os.O_CREATE|os.O_TRUNC|os.O_WRONLY|os.O_SYNC, perm)
 }
 
 func AppendFile(ctx context.Context, target string, r io.Reader, perm fs.FileMode) (n int64, err error) {
-	return writeFileCtx(ctx, target, r, os.O_CREATE|os.O_APPEND|os.O_RDWR|os.O_SYNC, perm)
+	return writeFileWithContext(ctx, target, r, os.O_CREATE|os.O_APPEND|os.O_RDWR|os.O_SYNC, perm)
 }
 
-func writeFileCtx(ctx context.Context, target string, r io.Reader, flg int, perm fs.FileMode) (n int64, err error) {
+func writeFileWithContext(ctx context.Context, target string, r io.Reader, flg int, perm fs.FileMode) (n int64, err error) {
 	if len(target) == 0 || r == nil {
 		return 0, nil
 	}
