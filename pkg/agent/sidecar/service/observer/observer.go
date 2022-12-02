@@ -388,7 +388,7 @@ func (*observer) terminate() error {
 	return p.Signal(syscall.SIGTERM)
 }
 
-func (o *observer) requestBackup(_ context.Context) error {
+func (o *observer) requestBackup(context.Context) error {
 	select {
 	case o.ch <- struct{}{}:
 	default:
