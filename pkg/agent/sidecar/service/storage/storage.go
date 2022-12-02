@@ -167,7 +167,7 @@ func (b *bs) Start(ctx context.Context) (<-chan error, error) {
 	return ech, nil
 }
 
-func (b *bs) Stop(_ context.Context) error {
+func (b *bs) Stop(context.Context) error {
 	if b.bucket != nil {
 		return b.bucket.Close()
 	}

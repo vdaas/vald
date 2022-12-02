@@ -204,7 +204,7 @@ func TestErrCompressorRegistererIsNotRunning(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 
-			got := ErrCompressorRegistererIsNotRunning()
+			got := ErrCompressorRegistererIsNotRunning
 			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -252,7 +252,7 @@ func TestErrCompressorRegistererChannelIsFull(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 
-			got := ErrCompressorRegistererChannelIsFull()
+			got := ErrCompressorRegistererChannelIsFull
 			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}

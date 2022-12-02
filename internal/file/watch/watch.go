@@ -197,7 +197,7 @@ func (w *watch) Remove(dirs ...string) (err error) {
 }
 
 // Stop stops watching all named files or directories. If an error occurs, returns the error.
-func (w *watch) Stop(_ context.Context) (err error) {
+func (w *watch) Stop(context.Context) (err error) {
 	w.mu.Lock()
 	defer w.mu.Unlock()
 	for dir := range w.dirs {

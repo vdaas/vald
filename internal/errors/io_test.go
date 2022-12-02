@@ -55,7 +55,7 @@ func TestNewErrContextNotProvided(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 
-			got := NewErrContextNotProvided()
+			got := NewErrContextNotProvided
 			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -103,7 +103,7 @@ func TestNewErrReaderNotProvided(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 
-			got := NewErrReaderNotProvided()
+			got := NewErrReaderNotProvided
 			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -151,7 +151,7 @@ func TestNewErrWriterNotProvided(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 
-			got := NewErrWriterNotProvided()
+			got := NewErrWriterNotProvided
 			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}

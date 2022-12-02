@@ -148,7 +148,7 @@ func (o *observability) PreStart(ctx context.Context) error {
 	return nil
 }
 
-func (*observability) Start(_ context.Context) <-chan error {
+func (*observability) Start(context.Context) <-chan error {
 	return nil
 }
 
