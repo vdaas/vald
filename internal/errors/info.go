@@ -20,7 +20,5 @@ var (
 	}
 
 	// ErrRuntimeFuncNil represents an error that the runtime function is nil.
-	ErrRuntimeFuncNil = func() error {
-		return New("runtime function is nil")
-	}
+	ErrRuntimeFuncNil = New("runtime function is nil")
 )

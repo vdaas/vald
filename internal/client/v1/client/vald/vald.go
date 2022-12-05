@@ -621,11 +621,11 @@ func (c *client) StreamGetObject(ctx context.Context, opts ...grpc.CallOption) (
 	return res, nil
 }
 
-func (*singleClient) Start(_ context.Context) (<-chan error, error) {
+func (*singleClient) Start(context.Context) (<-chan error, error) {
 	return nil, nil
 }
 
-func (*singleClient) Stop(_ context.Context) error {
+func (*singleClient) Stop(context.Context) error {
 	return nil
 }
 

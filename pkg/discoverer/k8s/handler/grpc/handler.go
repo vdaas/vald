@@ -69,7 +69,7 @@ func New(opts ...Option) (ds DiscovererServer, err error) {
 	return s, nil
 }
 
-func (*server) Start(_ context.Context) {
+func (*server) Start(context.Context) {
 }
 
 func (s *server) Pods(ctx context.Context, req *payload.Discoverer_Request) (*payload.Info_Pods, error) {

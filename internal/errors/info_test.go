@@ -123,7 +123,7 @@ func TestErrRuntimeFuncNil(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 
-			got := ErrRuntimeFuncNil()
+			got := ErrRuntimeFuncNil
 			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}

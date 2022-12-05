@@ -315,7 +315,7 @@ func (c *client) Open(ctx context.Context) (err error) {
 }
 
 // Close closes the session to cassandra.
-func (c *client) Close(_ context.Context) error {
+func (c *client) Close(context.Context) error {
 	c.session.Close()
 	return nil
 }
@@ -379,7 +379,7 @@ func WrapErrorWithKeys(err error, keys ...string) error {
 	case ErrNotFound:
 		return errors.ErrCassandraNotFound(keys...)
 	case ErrUnavailable:
-		return errors.ErrCassandraUnavailable()
+		return errors.ErrCassandraUnavailable
 	case ErrUnsupported:
 		return err
 	case ErrTooManyStmts:

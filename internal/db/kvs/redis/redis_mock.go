@@ -34,7 +34,7 @@ func (m *MockRedis) TxPipeline() redis.Pipeliner {
 	return m.TxPipelineFunc()
 }
 
-func (m *MockRedis) Ping(_ context.Context) *StatusCmd {
+func (m *MockRedis) Ping(context.Context) *StatusCmd {
 	return m.PingFunc()
 }
 
@@ -62,7 +62,7 @@ func (*dummyHook) BeforeProcess(ctx context.Context, _ Cmder) (context.Context, 
 	return ctx, nil
 }
 
-func (*dummyHook) AfterProcess(_ context.Context, _ Cmder) error {
+func (*dummyHook) AfterProcess(context.Context, Cmder) error {
 	return nil
 }
 
@@ -70,7 +70,7 @@ func (*dummyHook) BeforeProcessPipeline(ctx context.Context, _ []Cmder) (context
 	return ctx, nil
 }
 
-func (*dummyHook) AfterProcessPipeline(_ context.Context, _ []Cmder) error {
+func (*dummyHook) AfterProcessPipeline(context.Context, []Cmder) error {
 	return nil
 }
 

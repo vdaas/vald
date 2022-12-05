@@ -40,13 +40,9 @@ var (
 	// ErrDecompressFailed returns an error of decompressing failed.
 	ErrDecompressFailed = New("decompress failed")
 
-	// ErrCompressorRegistererIsNotRunning represents a function to generate an error of compressor registerers is not running.
-	ErrCompressorRegistererIsNotRunning = func() error {
-		return New("compressor registerers is not running")
-	}
+	// ErrCompressorRegistererIsNotRunning generates an error of compressor registerers is not running.
+	ErrCompressorRegistererIsNotRunning = New("compressor registerers is not running")
 
-	// ErrCompressorRegistererChannelIsFull represents a function to generate an error that compressor registerer channel is full.
-	ErrCompressorRegistererChannelIsFull = func() error {
-		return New("compressor registerer channel is full")
-	}
+	// ErrCompressorRegistererChannelIsFull generates an error that compressor registerer channel is full.
+	ErrCompressorRegistererChannelIsFull = New("compressor registerer channel is full")
 )

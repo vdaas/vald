@@ -61,7 +61,7 @@ func TestErrCollectorNotFound(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 
-			got := ErrCollectorNotFound()
+			got := ErrCollectorNotFound
 			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}

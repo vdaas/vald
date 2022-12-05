@@ -109,7 +109,7 @@ func (bm *breakerManager) Do(ctx context.Context, key string, fn func(ctx contex
 	return val, nil
 }
 
-func Metrics(_ context.Context) map[string]map[State]int64 {
+func Metrics(context.Context) map[string]map[State]int64 {
 	mu.RLock()
 	defer mu.RUnlock()
 
