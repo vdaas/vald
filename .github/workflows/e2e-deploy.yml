@@ -164,12 +164,16 @@ jobs:
           helm version
       - name: Merge image tag
         run: |
+          yq --version
           IMAGE_TAGS=(${{ steps.specify_container_versions.outputs.IMAGE_TAGS }})
 
           for IMAGE_TAG in "${IMAGE_TAGS[@]}"
           do
             echo "IMAGE_TAG:${IMAGE_TAG}"
+            
+            cat ./.github/valdrelease/valdrelease.yaml
             yq e ".spec.\"${IMAGE_TAG}\"" -i ./.github/valdrelease/valdrelease.yaml
+            cat ./.github/valdrelease/valdrelease.yaml
           done
       - name: deploy Vald
         id: deploy_vald
