@@ -229,7 +229,7 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 	return ech, nil
 }
 
-func (*run) PreStop(_ context.Context) error {
+func (*run) PreStop(context.Context) error {
 	return nil
 }
 

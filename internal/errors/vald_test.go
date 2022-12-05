@@ -123,7 +123,7 @@ func TestErrMetadataCannotFetch(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 
-			got := ErrMetaDataCannotFetch()
+			got := ErrMetaDataCannotFetch
 			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
