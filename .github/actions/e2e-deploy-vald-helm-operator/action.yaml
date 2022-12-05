@@ -91,6 +91,7 @@ runs:
       run: |
         echo hello
         cat ${VALDRELEASE}
+        yq --version
 
         kubectl apply -f ${VALDRELEASE}
 
