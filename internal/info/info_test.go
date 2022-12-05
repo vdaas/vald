@@ -1179,7 +1179,7 @@ func Test_info_prepare(t *testing.T) {
 		}
 		return nil
 	}
-	tests := []test{
+	tests := []*test{
 		{
 			name: "set success with all fields are empty",
 			want: want{
@@ -1472,8 +1472,8 @@ func Test_info_prepare(t *testing.T) {
 		},
 	}
 
-	for _, tc := range tests {
-		test := tc
+	for i := range tests {
+		test := tests[i]
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {

@@ -1,6 +1,6 @@
 module github.com/vdaas/vald
 
-go 1.18
+go 1.19
 
 replace (
 	cloud.google.com/go => cloud.google.com/go latest
@@ -178,7 +178,7 @@ replace (
 	github.com/go-fonts/stix => github.com/go-fonts/stix latest
 	github.com/go-gl/gl => github.com/go-gl/gl latest
 	github.com/go-gl/glfw/v3.3/glfw => github.com/go-gl/glfw/v3.3/glfw latest
-	github.com/go-kit/kit => github.com/go-kit/kit latest
+	github.com/go-kit/kit => github.com/go-kit/kit master
 	github.com/go-kit/log => github.com/go-kit/log latest
 	github.com/go-latex/latex => github.com/go-latex/latex latest
 	github.com/go-logfmt/logfmt => github.com/go-logfmt/logfmt latest
@@ -529,27 +529,26 @@ replace (
 	gotest.tools/v3 => gotest.tools/v3 latest
 	honnef.co/go/tools => honnef.co/go/tools latest
 	inet.af/netaddr => inet.af/netaddr latest
-	k8s.io/api => k8s.io/api v0.25.3
-	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.25.3
-	k8s.io/apimachinery => k8s.io/apimachinery v0.25.3
-	k8s.io/apiserver => k8s.io/apiserver v0.25.3
-	k8s.io/cli-runtime => k8s.io/cli-runtime v0.25.3
-	k8s.io/client-go => k8s.io/client-go v0.25.3
-	k8s.io/component-base => k8s.io/component-base v0.25.3
-	k8s.io/cri-api => k8s.io/cri-api v0.25.3
+	k8s.io/api => k8s.io/api v0.25.4
+	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.25.4
+	k8s.io/apimachinery => k8s.io/apimachinery v0.25.4
+	k8s.io/apiserver => k8s.io/apiserver v0.25.4
+	k8s.io/cli-runtime => k8s.io/cli-runtime v0.25.4
+	k8s.io/client-go => k8s.io/client-go v0.25.4
+	k8s.io/component-base => k8s.io/component-base v0.25.4
+	k8s.io/cri-api => k8s.io/cri-api v0.25.4
 	k8s.io/gengo => k8s.io/gengo latest
 	k8s.io/klog => k8s.io/klog latest
 	k8s.io/klog/v2 => k8s.io/klog/v2 latest
 	k8s.io/kube-openapi => k8s.io/kube-openapi latest
-	k8s.io/kubernetes => k8s.io/kubernetes v0.25.3
-	k8s.io/metrics => k8s.io/metrics v0.25.3
+	k8s.io/kubernetes => k8s.io/kubernetes v0.25.4
+	k8s.io/metrics => k8s.io/metrics v0.25.4
 	nhooyr.io/websocket => nhooyr.io/websocket latest
 	rsc.io/pdf => rsc.io/pdf latest
 	sigs.k8s.io/apiserver-network-proxy/konnectivity-client => sigs.k8s.io/apiserver-network-proxy/konnectivity-client latest
-	sigs.k8s.io/controller-runtime => sigs.k8s.io/controller-runtime v0.13.0
+	sigs.k8s.io/controller-runtime => sigs.k8s.io/controller-runtime v0.13.1
 	sigs.k8s.io/json => sigs.k8s.io/json latest
-	sigs.k8s.io/kustomize/api => sigs.k8s.io/kustomize/api latest
-	sigs.k8s.io/kustomize/kyaml => sigs.k8s.io/kustomize/kyaml latest
+	sigs.k8s.io/kustomize => sigs.k8s.io/kustomize latest
 	sigs.k8s.io/structured-merge-diff/v4 => sigs.k8s.io/structured-merge-diff/v4 latest
 	sigs.k8s.io/yaml => sigs.k8s.io/yaml latest
 )
