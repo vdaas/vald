@@ -21,7 +21,7 @@ import (
 	"github.com/vdaas/vald/internal/test/goleak"
 )
 
-func Test_doOpen(t *testing.T) {
+func Test_openFile(t *testing.T) {
 	t.Parallel()
 	type args struct {
 		fname       string
@@ -94,7 +94,7 @@ func Test_doOpen(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 
-			gotF, err := doOpen(test.args.fname, test.args.elementSize)
+			gotF, err := openFile(test.args.fname, test.args.elementSize)
 			if err := checkFunc(test.want, gotF, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}

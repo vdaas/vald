@@ -63,8 +63,8 @@ func Uint8VectorGenerator(d Distribution) (Uint8VectorGeneratorFunc, error) {
 	}
 }
 
-// doGenFloat32Vec return n float32 vectors with dim dimension.
-func doGenFloat32Vec(n, dim int, gen func() float32) (ret [][]float32) {
+// genF32Slice return n float32 vectors with dim dimension.
+func genF32Slice(n, dim int, gen func() float32) (ret [][]float32) {
 	ret = make([][]float32, 0, n)
 
 	for i := 0; i < n; i++ {
@@ -79,18 +79,18 @@ func doGenFloat32Vec(n, dim int, gen func() float32) (ret [][]float32) {
 
 // UniformDistributedFloat32VectorGenerator returns n float32 vectors with dim dimension and their values under Uniform distribution
 func UniformDistributedFloat32VectorGenerator(n, dim int) [][]float32 {
-	return doGenFloat32Vec(n, dim, rand.Float32)
+	return genF32Slice(n, dim, rand.Float32)
 }
 
 // GaussianDistributedFloat32VectorGenerator returns n float32 vectors with dim dimension and their values under Gaussian distribution
 func GaussianDistributedFloat32VectorGenerator(n, dim int) [][]float32 {
-	return doGenFloat32Vec(n, dim, func() float32 {
+	return genF32Slice(n, dim, func() float32 {
 		return float32(rand.NormFloat64())
 	})
 }
 
-// doGenUint8Vec return n uint8 vectors with dim dimension
-func doGenUint8Vec(n, dim int, gen func() uint8) (ret [][]uint8) {
+// genUint8Slice return n uint8 vectors with dim dimension
+func genUint8Slice(n, dim int, gen func() uint8) (ret [][]uint8) {
 	ret = make([][]uint8, 0, n)
 
 	for i := 0; i < n; i++ {
@@ -105,7 +105,7 @@ func doGenUint8Vec(n, dim int, gen func() uint8) (ret [][]uint8) {
 
 // UniformDistributedUint8VectorGenerator returns n uint8 vectors with dim dimension and their values under Uniform distribution
 func UniformDistributedUint8VectorGenerator(n, dim int) [][]uint8 {
-	return doGenUint8Vec(n, dim, func() uint8 {
+	return genUint8Slice(n, dim, func() uint8 {
 		return uint8(irand.LimitedUint32(math.MaxUint8))
 	})
 }
@@ -113,7 +113,7 @@ func UniformDistributedUint8VectorGenerator(n, dim int) [][]uint8 {
 // GaussianDistributedUint8VectorGenerator returns n uint8 vectors with dim dimension and their values under Gaussian distribution
 func GaussianDistributedUint8VectorGenerator(n, dim int) [][]uint8 {
 	// NOTE: The boundary test is the main purpose for refactoring. Now, passing this function is dependent on the seed of the random generator. We should fix the randomness of the passing test.
-	return doGenUint8Vec(n, dim, func() uint8 {
+	return genUint8Slice(n, dim, func() uint8 {
 		val := rand.NormFloat64()*gaussianSigma + gaussianMean
 		if val < 0 {
 			return 0
