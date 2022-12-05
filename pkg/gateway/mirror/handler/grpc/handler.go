@@ -252,7 +252,6 @@ func (s *server) MultiSearch(ctx context.Context, reqs *payload.Search_MultiRequ
 			span.End()
 		}
 	}()
-
 	res, err := s.client.MultiSearch(ctx, reqs)
 	if err != nil {
 		st, msg, err := status.ParseError(err, codes.Internal, "failed to parse "+vald.MultiSearchRPCName+" gRPC error response")
@@ -335,6 +334,7 @@ func (s *server) StreamLinearSearch(stream vald.Search_StreamLinearSearchServer)
 			span.End()
 		}
 	}()
+
 	err = grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
 		func() interface{} { return new(payload.Search_Request) },
 		func(ctx context.Context, data interface{}) (interface{}, error) {
@@ -386,6 +386,7 @@ func (s *server) StreamLinearSearchByID(stream vald.Search_StreamLinearSearchByI
 			span.End()
 		}
 	}()
+
 	err = grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
 		func() interface{} { return new(payload.Search_IDRequest) },
 		func(ctx context.Context, data interface{}) (interface{}, error) {
@@ -416,7 +417,6 @@ func (s *server) StreamLinearSearchByID(stream vald.Search_StreamLinearSearchByI
 				},
 			}, nil
 		})
-
 	if err != nil {
 		st, msg, err := status.ParseError(err, codes.Internal,
 			"failed to parse "+vald.StreamLinearSearchByIDRPCName+" gRPC error response")
@@ -504,6 +504,9 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 		removeReq := &payload.Remove_Request{
 			Id: &payload.Object_ID{
 				Id: req.Vector.Id,
+			},
+			Config: &payload.Remove_Config{
+				SkipStrictExistCheck: true,
 			},
 		}
 		err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
@@ -1734,15 +1737,15 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (locs 
 		return handleSpan(vald.RemoveRPCName, sspan, err)
 	})
 	if err != nil {
-		_, err := s.Upsert(ctx, &payload.Upsert_Request{
+		res, err := s.Upsert(ctx, &payload.Upsert_Request{
 			Vector: ovec,
 			Config: &payload.Upsert_Config{
-				// TODO
+				SkipStrictExistCheck: true,
 			},
 		})
-		// return nil, handleSpan(vald.RemoveRPCName, span, err)
-		return nil, err
+		return res, handleSpan(vald.RemoveRPCName, span, err)
 	}
+	// TODO:
 	return nil, nil
 }
 
