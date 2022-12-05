@@ -89,6 +89,9 @@ runs:
       shell: bash
       id: deploy_vald
       run: |
+        echo hello
+        cat ${VALDRELEASE}
+        
         kubectl apply -f ${VALDRELEASE}
 
         sleep 3
