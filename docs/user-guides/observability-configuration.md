@@ -206,7 +206,7 @@ defaults:
 #### gRPC Configuration
 
 The interceptor configuration is required to send the metrics and trace data related to gRPC.
-You can add the interceptor to the server-side or client-side by editing `defaults.server_config.servers.grpc.server.grpc.interceptors` parameters.
+You can add the interceptor to the server-side and client-side by editing `defaults.server_config.servers.grpc.server.grpc.interceptors` parameters.
 
 ```yaml
 defaults:
