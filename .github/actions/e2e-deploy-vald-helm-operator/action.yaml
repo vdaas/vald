@@ -91,7 +91,7 @@ runs:
       run: |
         echo hello
         cat ${VALDRELEASE}
-        
+
         kubectl apply -f ${VALDRELEASE}
 
         sleep 3
