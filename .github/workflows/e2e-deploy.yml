@@ -164,7 +164,6 @@ jobs:
           helm version
       - name: Merge image tag
         run: |
-          yq --version
           IMAGE_TAGS=(${{ steps.specify_container_versions.outputs.IMAGE_TAGS }})
 
           for IMAGE_TAG in "${IMAGE_TAGS[@]}"
