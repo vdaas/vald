@@ -581,14 +581,14 @@ require (
 	github.com/vdaas/vald-client-go v0.0.0-00010101000000-000000000000
 	github.com/zeebo/xxh3 v1.0.2
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.20.0
-	go.opentelemetry.io/otel v1.11.1
+	go.opentelemetry.io/otel v1.11.2
 	go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc v0.33.0
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.11.1
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc v0.0.0-00010101000000-000000000000
 	go.opentelemetry.io/otel/metric v0.33.0
 	go.opentelemetry.io/otel/sdk v1.11.1
 	go.opentelemetry.io/otel/sdk/metric v0.33.0
-	go.opentelemetry.io/otel/trace v1.11.1
+	go.opentelemetry.io/otel/trace v1.11.2
 	go.uber.org/automaxprocs v0.0.0-00010101000000-000000000000
 	go.uber.org/goleak v1.2.0
 	go.uber.org/zap v1.23.0
