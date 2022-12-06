@@ -22,8 +22,8 @@ We accept the following types of contributions:
 - Pull request
   - Source code implementation
     - Business logic implementation
-  	- Test implementation
-	- Documentation
+    - Test implementation
+  - Documentation
 
 Please also feel free to ask anything on [Vald Slack channel](https://join.slack.com/t/vald-community/shared_invite/zt-db2ky9o4-R_9p2sVp8xRwztVa8gfnPA) :)
 
