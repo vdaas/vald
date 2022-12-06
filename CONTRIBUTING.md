@@ -45,9 +45,9 @@ You need to create pull request to make changes on:
    2. Test implementation
 2. Documentation creation / update
 
-### Install and configure Github
+### Install and configure GitHub
 
-Before createing an pull request, you need to install and configure Github to create development branch, make changes and finally create a pull request.
+Before creating a pull request, you need to install and configure GitHub to create development branch, make changes and finally create a pull request.
 
 Please install [Git](https://git-scm.com/) and configure it first.
 
@@ -55,7 +55,7 @@ Please install [Git](https://git-scm.com/) and configure it first.
 1. Set your name and email (these should match the information on your submitted CLA).
 
     ```bash
-    git config --global user.name "Github user name"
+    git config --global user.name "GitHub user name"
     git config --global user.email "your_email@example.com"
     ```
 
