@@ -18,8 +18,8 @@ import (
 	"runtime"
 
 	"github.com/vdaas/vald/internal/observability/metrics"
-	"go.opentelemetry.io/otel/sdk/metric/aggregation"
 	"go.opentelemetry.io/otel/sdk/metric/view"
+	"go.opentelemetry.io/otel/sdk/metric/aggregation"
 )
 
 const (

@@ -124,7 +124,8 @@ func (e *exp) initMeter(ctx context.Context) (err error) {
 			e.metricsExporter,
 			metric.WithInterval(e.mExportInterval),
 			metric.WithTimeout(e.mExportTimeout),
-		), e.metricsViews...),
+		)),
+		metric.WithView(e.metricsViews...),
 		metric.WithResource(resource.NewWithAttributes(
 			semconv.SchemaURL,
 			e.attributes...,
