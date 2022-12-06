@@ -37,7 +37,7 @@ Please find [here](./docs/contributing/issue.md) for more details about how to c
 
 Pull request is also called merge request to let other knows about the changes you have made, to review and discuss the changes and finally merge it to the main branch.
 
-In Vald, you need to create an pull request to ask for the review and actually make changes to Vald.
+In Vald, you need to create a pull request to ask for the review and actually make changes to Vald.
 
 You need to create pull request to make changes on:
 1. Source code changes
