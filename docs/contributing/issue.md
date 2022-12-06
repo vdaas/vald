@@ -15,7 +15,7 @@ If you have found something that should be updated in Vald, search open issues t
 If it is something new, please open a new issue using the following template:
 
 - [Bug report](https://github.com/vdaas/vald/issues/new?assignees=&labels=type%2Fbug%2C+priority%2Fmedium%2C+team%2Fcore&template=bug_report.md&title=)
-- [Feature request](https://github.com/vdaas/vald/issues/new?assignees=&labels=type%2Ffeature%2C+priority%2Flow%2C+team%2Fcore&template=feature_request.md&title=)
+- [Feature request / Proposal](https://github.com/vdaas/vald/issues/new?assignees=&labels=type%2Ffeature%2C+priority%2Flow%2C+team%2Fcore&template=feature_request.md&title=)
 - [Security issue report](https://github.com/vdaas/vald/issues/new?assignees=&labels=type%2Fsecurity%2C+priority%2Fmedium%2C+team%2Fcore%2C+team%2Fsre&template=security_issue_report.md&title=)
 
 Please fill in the information written on the template to help us to understand what you think.
@@ -38,31 +38,19 @@ When filing an issue, make sure to answer these five questions:
 
 Please submit the bug report [here](https://github.com/vdaas/vald/issues/new?assignees=&labels=type%2Fbug%2C+priority%2Fmedium%2C+team%2Fcore&template=bug_report.md&title=)
 
-## Proposal
+## Feature Request / Proposal
 
-The Vald is being developed based on the design-driven process.
+Feature request and proposal is welcome.
 
-The significant change to the library or the architecture should be discussed first.
+Before creating the feature request or proposal, please make sure your idea fits the project.
 
-We may ask for detailed documentation before your proposal is accepted.
+You can request the feature or propose a new idea and convince the project maintainers to accept your request.
 
-Your proposal will be reviewed, discussed, and decided whether it is accepted or declined.
-
-Please submit the proposal [here](https://github.com/vdaas/vald/issues/new?assignees=&labels=type%2Ffeature%2C+priority%2Flow%2C+team%2Fcore&template=feature_request.md&title=)
-
-## Feature Request
-
-Feature request is welcome.
-
-Before opening an issue, please make sure your idea fits the project.
-
-You can request the feature and convince the project maintainers to accept your feature request.
-
-Please provide the problem and solution associated with the feature request in as much detail as possible.
+Please provide the problem and solution associated with the request in as much detail as possible.
 
 NOTE: If you’d like to contribute to the new feature which may affect the current Vald architecture or design, you should discuss it with the Vald team first.
 
-Please submit the feature request [here](https://github.com/vdaas/vald/issues/new?assignees=&labels=type%2Ffeature%2C+priority%2Flow%2C+team%2Fcore&template=feature_request.md&title=)
+Please submit the feature request or proposal [here](https://github.com/vdaas/vald/issues/new?assignees=&labels=type%2Ffeature%2C+priority%2Flow%2C+team%2Fcore&template=feature_request.md&title=)
 
 ## Security Issue Report
 
