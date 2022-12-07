@@ -19,7 +19,6 @@ package grpc
 
 import (
 	"context"
-	"fmt"
 	"sync"
 	"time"
 
@@ -28,16 +27,10 @@ import (
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
 	vclient "github.com/vdaas/vald/internal/client/v1/client/vald"
 	"github.com/vdaas/vald/internal/errgroup"
-	"github.com/vdaas/vald/internal/errors"
-	"github.com/vdaas/vald/internal/info"
-	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/grpc/codes"
-	"github.com/vdaas/vald/internal/net/grpc/errdetails"
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/observability/trace"
-	"github.com/vdaas/vald/internal/strings"
-	"github.com/vdaas/vald/pkg/gateway/internal/location"
 	"github.com/vdaas/vald/pkg/gateway/mirror/service"
 )
 
@@ -2146,7 +2139,7 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (loc *
 }
 
 func (s *server) removeRollback(ctx context.Context, req *payload.Remove_Request) (err error) {
-	ctx, span := trace.StartSpan(ctx, apiName+"/"+vald.UpsertRPCName)
+	ctx, span := trace.StartSpan(ctx, apiName+"/"+vald.RemoveRPCName)
 	defer func() {
 		if span != nil {
 			span.End()
@@ -2380,161 +2373,214 @@ func (s *server) StreamRemove(stream vald.Remove_StreamRemoveServer) (err error)
 }
 
 func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequest) (locs *payload.Object_Locations, err error) {
-	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.RemoveRPCServiceName+"/"+vald.MultiRemoveRPCName), apiName+"/"+vald.MultiRemoveRPCName)
+	ctx, span := trace.StartSpan(ctx, apiName+"/"+vald.MultiRemoveRPCName)
 	defer func() {
 		if span != nil {
 			span.End()
 		}
 	}()
-
-	now := time.Now().UnixNano()
-	ids := make([]string, 0, len(reqs.GetRequests()))
-	for i, req := range reqs.GetRequests() {
-		id := req.GetId()
-		ids = append(ids, id.GetId())
-		if !req.GetConfig().GetSkipStrictExistCheck() {
-			sid, err := s.Exists(ctx, id)
-			if err != nil || sid == nil || len(sid.GetId()) == 0 {
-				if err == nil {
-					err = errors.ErrObjectIDNotFound(id.GetId())
-				}
-				st, msg, err := status.ParseError(err, codes.NotFound,
-					fmt.Sprintf(vald.MultiRemoveRPCName+" API ID = %v not found", id.GetId()),
-					&errdetails.RequestInfo{
-						RequestId:   id.GetId(),
-						ServingData: errdetails.Serialize(reqs),
-					},
-					&errdetails.ResourceInfo{
-						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.MultiRemoveRPCName + "." + vald.ExistsRPCName,
-						ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
-					}, info.Get())
-				if span != nil {
-					span.RecordError(err)
-					span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
-					span.SetStatus(trace.StatusError, err.Error())
-				}
-				return nil, err
-			}
-			if reqs.GetRequests()[i].GetConfig() != nil {
-				reqs.GetRequests()[i].GetConfig().SkipStrictExistCheck = true
-			} else {
-				reqs.GetRequests()[i].Config = &payload.Remove_Config{SkipStrictExistCheck: true}
-			}
-
-		}
-		if req.GetConfig().GetTimestamp() == 0 {
-			if req.GetConfig() == nil {
-				reqs.GetRequests()[i].Config = &payload.Remove_Config{
-					Timestamp: now,
-				}
-			} else {
-				reqs.GetRequests()[i].GetConfig().Timestamp = now
-			}
-		}
-	}
-	var mu sync.Mutex
-	locs = &payload.Object_Locations{
-		Locations: make([]*payload.Object_Location, 0, len(reqs.GetRequests())),
-	}
-	err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error {
-		ctx, span := trace.StartSpan(ctx, apiName+"."+vald.MultiRemoveRPCName+"/"+target)
-		defer func() {
-			if span != nil {
-				span.End()
-			}
-		}()
-		loc, err := vc.MultiRemove(ctx, reqs, copts...)
-		if err != nil {
-			switch {
-			case errors.Is(err, context.Canceled),
-				errors.Is(err, errors.ErrRPCCallFailed(target, context.Canceled)):
-				if span != nil {
-					span.RecordError(err)
-					span.SetAttributes(trace.StatusCodeCancelled(
-						errdetails.ValdGRPCResourceTypePrefix +
-							"/vald.v1." + vald.MultiRemoveRPCName + ".BroadCast/" +
-							target + " canceled: " + err.Error())...)
-					span.SetStatus(trace.StatusError, err.Error())
-				}
-				return nil
-			case errors.Is(err, context.DeadlineExceeded),
-				errors.Is(err, errors.ErrRPCCallFailed(target, context.DeadlineExceeded)):
-				if span != nil {
-					span.RecordError(err)
-					span.SetAttributes(trace.StatusCodeDeadlineExceeded(
-						errdetails.ValdGRPCResourceTypePrefix +
-							"/vald.v1." + vald.MultiRemoveRPCName + ".BroadCast/" +
-							target + " deadline_exceeded: " + err.Error())...)
-					span.SetStatus(trace.StatusError, err.Error())
-				}
-				return nil
-			}
-			st, msg, err := status.ParseError(err, codes.Internal,
-				"failed to parse MultiRemove gRPC error response",
-				&errdetails.RequestInfo{
-					RequestId:   strings.Join(ids, ","),
-					ServingData: errdetails.Serialize(reqs),
-				},
-				&errdetails.ResourceInfo{
-					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.MultiRemoveRPCName,
-					ResourceName: fmt.Sprintf("%s: %s(%s) to %s", apiName, s.name, s.ip, target),
-				})
-			if span != nil {
-				span.RecordError(err)
-				span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
-				span.SetStatus(trace.StatusError, err.Error())
-			}
-
-			if err != nil && st.Code() != codes.NotFound {
-				log.Error(err)
-				return err
-			}
+	handleSpan := func(rpcName string, span trace.Span, err error) error {
+		if err == nil {
 			return nil
 		}
-		mu.Lock()
-		locs.Locations = append(locs.GetLocations(), loc.GetLocations()...)
-		mu.Unlock()
-		return nil
-	})
-	if err != nil {
 		st, msg, err := status.ParseError(err, codes.Internal,
-			"failed to parse "+vald.MultiRemoveRPCName+" gRPC error response",
-			&errdetails.RequestInfo{
-				RequestId:   strings.Join(ids, ","),
-				ServingData: errdetails.Serialize(reqs),
-			},
-			&errdetails.ResourceInfo{
-				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.MultiRemoveRPCName,
-				ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
-			}, info.Get())
+			"failed to parse "+rpcName+" gRPC error response")
 		if span != nil {
 			span.RecordError(err)
 			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
 			span.SetStatus(trace.StatusError, err.Error())
 		}
-		return nil, err
+		return err
 	}
-	if len(locs.Locations) <= 0 {
-		err = errors.ErrIndexNotFound
-		err = status.WrapWithNotFound(vald.MultiRemoveRPCName+" API remove target not found", err,
-			&errdetails.RequestInfo{
-				RequestId:   strings.Join(ids, ","),
-				ServingData: errdetails.Serialize(reqs),
-			},
-			&errdetails.ResourceInfo{
-				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.MultiRemoveRPCName,
-				ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
+
+	err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
+		sctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.RemoveRPCName+"/"+target)
+		defer func() {
+			if sspan != nil {
+				sspan.End()
+			}
+		}()
+		_, err := vald.NewValdClient(conn).MultiRemove(sctx, reqs, copts...)
+		return handleSpan(vald.RemoveRPCName, sspan, err)
+	})
+	if err != nil {
+		eg, egctx := errgroup.New(ctx)
+
+		for _, req := range reqs.GetRequests() {
+			req := req
+			eg.Go(func() error {
+				return s.removeRollback(egctx, req)
 			})
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.StatusCodeNotFound(err.Error())...)
-			span.SetStatus(trace.StatusError, err.Error())
 		}
+		if err := eg.Wait(); err != nil {
+			return nil, handleSpan(vald.RemoveRPCName, span, err)
+		}
+		return nil, handleSpan(vald.RemoveRPCName, span, err)
+	}
+
+	locs, err = s.client.MultiRemove(ctx, reqs, s.client.GRPCClient().GetCallOption()...)
+	if err := handleSpan(vald.MultiRemoveRPCName, span, err); err != nil {
 		return nil, err
 	}
-	return location.ReStructure(ids, locs), nil
+	return locs, nil
 }
 
+// func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequest) (locs *payload.Object_Locations, err error) {
+// 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.RemoveRPCServiceName+"/"+vald.MultiRemoveRPCName), apiName+"/"+vald.MultiRemoveRPCName)
+// 	defer func() {
+// 		if span != nil {
+// 			span.End()
+// 		}
+// 	}()
+//
+// 	now := time.Now().UnixNano()
+// 	ids := make([]string, 0, len(reqs.GetRequests()))
+// 	for i, req := range reqs.GetRequests() {
+// 		id := req.GetId()
+// 		ids = append(ids, id.GetId())
+// 		if !req.GetConfig().GetSkipStrictExistCheck() {
+// 			sid, err := s.Exists(ctx, id)
+// 			if err != nil || sid == nil || len(sid.GetId()) == 0 {
+// 				if err == nil {
+// 					err = errors.ErrObjectIDNotFound(id.GetId())
+// 				}
+// 				st, msg, err := status.ParseError(err, codes.NotFound,
+// 					fmt.Sprintf(vald.MultiRemoveRPCName+" API ID = %v not found", id.GetId()),
+// 					&errdetails.RequestInfo{
+// 						RequestId:   id.GetId(),
+// 						ServingData: errdetails.Serialize(reqs),
+// 					},
+// 					&errdetails.ResourceInfo{
+// 						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.MultiRemoveRPCName + "." + vald.ExistsRPCName,
+// 						ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
+// 					}, info.Get())
+// 				if span != nil {
+// 					span.RecordError(err)
+// 					span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+// 					span.SetStatus(trace.StatusError, err.Error())
+// 				}
+// 				return nil, err
+// 			}
+// 			if reqs.GetRequests()[i].GetConfig() != nil {
+// 				reqs.GetRequests()[i].GetConfig().SkipStrictExistCheck = true
+// 			} else {
+// 				reqs.GetRequests()[i].Config = &payload.Remove_Config{SkipStrictExistCheck: true}
+// 			}
+//
+// 		}
+// 		if req.GetConfig().GetTimestamp() == 0 {
+// 			if req.GetConfig() == nil {
+// 				reqs.GetRequests()[i].Config = &payload.Remove_Config{
+// 					Timestamp: now,
+// 				}
+// 			} else {
+// 				reqs.GetRequests()[i].GetConfig().Timestamp = now
+// 			}
+// 		}
+// 	}
+// 	var mu sync.Mutex
+// 	locs = &payload.Object_Locations{
+// 		Locations: make([]*payload.Object_Location, 0, len(reqs.GetRequests())),
+// 	}
+// 	err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error {
+// 		ctx, span := trace.StartSpan(ctx, apiName+"."+vald.MultiRemoveRPCName+"/"+target)
+// 		defer func() {
+// 			if span != nil {
+// 				span.End()
+// 			}
+// 		}()
+// 		loc, err := vc.MultiRemove(ctx, reqs, copts...)
+// 		if err != nil {
+// 			switch {
+// 			case errors.Is(err, context.Canceled),
+// 				errors.Is(err, errors.ErrRPCCallFailed(target, context.Canceled)):
+// 				if span != nil {
+// 					span.RecordError(err)
+// 					span.SetAttributes(trace.StatusCodeCancelled(
+// 						errdetails.ValdGRPCResourceTypePrefix +
+// 							"/vald.v1." + vald.MultiRemoveRPCName + ".BroadCast/" +
+// 							target + " canceled: " + err.Error())...)
+// 					span.SetStatus(trace.StatusError, err.Error())
+// 				}
+// 				return nil
+// 			case errors.Is(err, context.DeadlineExceeded),
+// 				errors.Is(err, errors.ErrRPCCallFailed(target, context.DeadlineExceeded)):
+// 				if span != nil {
+// 					span.RecordError(err)
+// 					span.SetAttributes(trace.StatusCodeDeadlineExceeded(
+// 						errdetails.ValdGRPCResourceTypePrefix +
+// 							"/vald.v1." + vald.MultiRemoveRPCName + ".BroadCast/" +
+// 							target + " deadline_exceeded: " + err.Error())...)
+// 					span.SetStatus(trace.StatusError, err.Error())
+// 				}
+// 				return nil
+// 			}
+// 			st, msg, err := status.ParseError(err, codes.Internal,
+// 				"failed to parse MultiRemove gRPC error response",
+// 				&errdetails.RequestInfo{
+// 					RequestId:   strings.Join(ids, ","),
+// 					ServingData: errdetails.Serialize(reqs),
+// 				},
+// 				&errdetails.ResourceInfo{
+// 					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.MultiRemoveRPCName,
+// 					ResourceName: fmt.Sprintf("%s: %s(%s) to %s", apiName, s.name, s.ip, target),
+// 				})
+// 			if span != nil {
+// 				span.RecordError(err)
+// 				span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+// 				span.SetStatus(trace.StatusError, err.Error())
+// 			}
+//
+// 			if err != nil && st.Code() != codes.NotFound {
+// 				log.Error(err)
+// 				return err
+// 			}
+// 			return nil
+// 		}
+// 		mu.Lock()
+// 		locs.Locations = append(locs.GetLocations(), loc.GetLocations()...)
+// 		mu.Unlock()
+// 		return nil
+// 	})
+// 	if err != nil {
+// 		st, msg, err := status.ParseError(err, codes.Internal,
+// 			"failed to parse "+vald.MultiRemoveRPCName+" gRPC error response",
+// 			&errdetails.RequestInfo{
+// 				RequestId:   strings.Join(ids, ","),
+// 				ServingData: errdetails.Serialize(reqs),
+// 			},
+// 			&errdetails.ResourceInfo{
+// 				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.MultiRemoveRPCName,
+// 				ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
+// 			}, info.Get())
+// 		if span != nil {
+// 			span.RecordError(err)
+// 			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+// 			span.SetStatus(trace.StatusError, err.Error())
+// 		}
+// 		return nil, err
+// 	}
+// 	if len(locs.Locations) <= 0 {
+// 		err = errors.ErrIndexNotFound
+// 		err = status.WrapWithNotFound(vald.MultiRemoveRPCName+" API remove target not found", err,
+// 			&errdetails.RequestInfo{
+// 				RequestId:   strings.Join(ids, ","),
+// 				ServingData: errdetails.Serialize(reqs),
+// 			},
+// 			&errdetails.ResourceInfo{
+// 				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.MultiRemoveRPCName,
+// 				ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
+// 			})
+// 		if span != nil {
+// 			span.RecordError(err)
+// 			span.SetAttributes(trace.StatusCodeNotFound(err.Error())...)
+// 			span.SetStatus(trace.StatusError, err.Error())
+// 		}
+// 		return nil, err
+// 	}
+// 	return location.ReStructure(ids, locs), nil
+// }
+//
 func (s *server) GetObject(ctx context.Context, req *payload.Object_VectorRequest) (vec *payload.Object_Vector, err error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.ObjectRPCServiceName+"/"+vald.GetObjectRPCName), apiName+"/"+vald.GetObjectRPCName)
 	defer func() {
