@@ -226,9 +226,9 @@ func TestWithRuntimeFuncForPC(t *testing.T) {
 
 		opts := []comparator.Option{
 			comparator.AllowUnexported(info{}),
-			// skipcp: VET-V0008
+			// skipcq: VET-V0008
 			comparator.Comparer(func(x, y sync.Once) bool {
-				// skipcp: VET-V0008
+				// skipcq: VET-V0008
 				return reflect.DeepEqual(x, y)
 			}),
 			comparator.Comparer(func(x, y func(skip int) (pc uintptr, file string, line int, ok bool)) bool {

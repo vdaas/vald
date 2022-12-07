@@ -204,7 +204,7 @@ test/all:
 .PHONY: coverage
 ## calculate coverages
 coverage:
-	go test -shuffle=on -race -mod=readonly -v -race -covermode=atomic -coverprofile=coverage.out ./...
+	go test -shuffle=on -race -mod=readonly -v -race -covermode=atomic -timeout=30m -coverprofile=coverage.out ./...
 	go tool cover -html=coverage.out -o coverage.html
 
 .PHONY: gotests/gen
