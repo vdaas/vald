@@ -469,6 +469,7 @@ func (s *server) MultiLinearSearchByID(ctx context.Context, reqs *payload.Search
 	}
 	return res, nil
 }
+
 func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *payload.Object_Location, err error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.InsertRPCServiceName+"/"+vald.InsertRPCName), apiName+"/"+vald.InsertRPCName)
 	defer func() {

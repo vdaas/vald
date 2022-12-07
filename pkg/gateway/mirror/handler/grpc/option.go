@@ -109,7 +109,6 @@ func WithStreamConcurrency(c int) Option {
 func WithValdClient(vc vald.Client) Option {
 	return func(s *server) {
 		if vc != nil {
-
 		}
 	}
 }
