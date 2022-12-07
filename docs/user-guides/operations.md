@@ -27,11 +27,11 @@ For example:
 If you’re going to deploy Vald on the multi-tenant cluster, please take care of the followings.
 
 - It is recommended to define PriorityClasses for agents not to be evicted.
-    - For more info, please visit the page [Pod Priority and Preemption][pod-priority-preemption].
-    - If you are using [the Vald chart][vald-helm-chart], PriorityClasses are defined by default.
+  - For more info, please visit the page [Pod Priority and Preemption][pod-priority-preemption].
+  - If you are using [the Vald chart][vald-helm-chart], PriorityClasses are defined by default.
 - Defining unique namespaces for each Vald and the other apps are recommended.
 - Then, please define ResourceQuotas for the namespace for the other apps to limit their memory usage.
-    - For more info, please visit this page, [Resource Quotas][resource-quota].
+  - For more info, please visit this page, [Resource Quotas][resource-quota].
 
 ## Monitoring
 
@@ -93,12 +93,11 @@ This is an example of a custom dashboard. It is based on [our standard dashboard
 
 <img src="../../assets/docs/guides/operations/grafana-example.png" />
 
-
 ## Upgrading
 
 Our versioning strategy is based on [Semantic Versioning][semver].
 Upgrading to a new version, such as minor or major, may require changing your configurations.
-Please read the [CHANGELOG][CHANGELOG] before upgrading.
+Please read the [CHANGELOG][changelog] before upgrading.
 
 ### In case of manual deploy
 
@@ -129,23 +128,17 @@ On the other hand, please update the operator's deployment manually.
 After that, please update `image.tag` field in your valdrelease (or `vr`) resource.
 The operator will automatically detect the changes and update the deployed Vald cluster.
 
-
-
-
 ### References
 
 - [vald-helm-chart][vald-helm-chart]
 - [vald-helm-operator-chart][vald-helm-operator-chart]
-- [CHANGELOG][CHANGELOG]
-
+- [CHANGELOG][changelog]
 
 [vald-helm-chart]: https://github.com/vdaas/vald/tree/main/charts/vald
 [vald-helm-operator-chart]: https://github.com/vdaas/vald/tree/main/charts/vald-helm-operator
-[CHANGELOG]: https://vald.vdaas.org/docs/release/changelog/
-
+[changelog]: https://vald.vdaas.org/docs/release/changelog/
 [pod-priority-preemption]: https://kubernetes.io/docs/concepts/configuration/pod-priority-preemption/
 [resource-quota]: https://kubernetes.io/docs/concepts/policy/resource-quotas/
-
 [prometheus-io]: https://prometheus.io/
 [grafana]: https://grafana.com
 [vald-prometheus]: https://github.com/vdaas/vald/tree/main/k8s/metrics/prometheus

@@ -13,4 +13,3 @@ If any components output the `INTERNAL` error log, let us know the detail.
 ## Related Document
 
 - [Client Side Troubleshooting](../troubleshooting/client-side.md)
-
