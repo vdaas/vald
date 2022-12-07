@@ -169,7 +169,11 @@ jobs:
           for IMAGE_TAG in "${IMAGE_TAGS[@]}"
           do
             echo "IMAGE_TAG:${IMAGE_TAG}"
-            yq e ".spec.\"${IMAGE_TAG}\"" -i ./.github/valdrelease/valdrelease.yaml
+            
+            ARR=(${IMAGE_TAG//=/ })
+            FIELD=${ARR[0]}
+            TAG="\"${ARR[1]}\""
+            yq e ".spec.$FIELD=$TAG" -i ./.github/valdrelease/valdrelease.yaml
           done
       - name: deploy Vald
         id: deploy_vald
