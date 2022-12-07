@@ -18,6 +18,7 @@ The telemetry data is used to monitor or visualize with the observing tools.
 ## Build an observing environment
 
 The recommended observability environment consists of the following:
+
 - Cert-Manager
 - Jaeger Operator and Jaeger
 - Prometheus Operator and Prometheus
@@ -49,7 +50,7 @@ make k8s/metrics/jaeger/deploy
 
 ### Prometheus Operator and Prometheus
 
-Vald recommends using Prometheus as a backend service by the following command to monitor the metrics data. 
+Vald recommends using Prometheus as a backend service by the following command to monitor the metrics data.
 
 ```bash
 make k8s/metrics/prometheus/operator/deploy
@@ -77,10 +78,11 @@ make k8s/otel/operator/install k8s/otel/collector/install
 This section shows how to set `values.yaml` to enable each Vald component to send its own telemetry data.
 
 The setting points are the following:
+
 1. Enable observability feature
 1. Enable sending system metrics
 1. Enable sending trace data
-1. Set OpenTelemetry parameters 
+1. Set OpenTelemetry parameters
 
 <div class="notice">
 The general settings are described for convenience, but individual settings are possible for each component by editing `[component].observability`. 
@@ -121,7 +123,7 @@ defaults:
         - "ngt_version"
       # enable memory metrics
       enable_memory: true
-      # enable goroutine metrics 
+      # enable goroutine metrics
       enable_goroutine: true
       # enable cgo metrics
       enable_cgo: true
