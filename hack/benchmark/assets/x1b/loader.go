@@ -72,7 +72,7 @@ type ivecs struct {
 	*file
 }
 
-func doOpen(fname string, elementSize int) (f *file, err error) {
+func openFile(fname string, elementSize int) (f *file, err error) {
 	fp, err := os.Open(fname)
 	if err != nil {
 		return nil, err
@@ -164,7 +164,7 @@ func (iv *ivecs) Load(i int) (interface{}, error) {
 }
 
 func NewUint8Vectors(fname string) (Uint8Vectors, error) {
-	f, err := doOpen(fname, 1)
+	f, err := openFile(fname, 1)
 	if err != nil {
 		return nil, err
 	}
@@ -172,7 +172,7 @@ func NewUint8Vectors(fname string) (Uint8Vectors, error) {
 }
 
 func NewFloatVectors(fname string) (FloatVectors, error) {
-	f, err := doOpen(fname, 4)
+	f, err := openFile(fname, 4)
 	if err != nil {
 		return nil, err
 	}
@@ -180,7 +180,7 @@ func NewFloatVectors(fname string) (FloatVectors, error) {
 }
 
 func NewInt32Vectors(fname string) (Int32Vectors, error) {
-	f, err := doOpen(fname, 4)
+	f, err := openFile(fname, 4)
 	if err != nil {
 		return nil, err
 	}

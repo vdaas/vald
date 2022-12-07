@@ -1495,7 +1495,7 @@ func Test_gRPCClient_Do(t *testing.T) {
 	}
 }
 
-func Test_gRPCClient_doConnect(t *testing.T) {
+func Test_gRPCClient_connectWithBackoff(t *testing.T) {
 	type args struct {
 		ctx           context.Context
 		p             pool.Conn
@@ -1693,7 +1693,7 @@ func Test_gRPCClient_doConnect(t *testing.T) {
 				stopMonitor:         test.fields.stopMonitor,
 			}
 
-			gotData, err := g.doConnect(test.args.ctx, test.args.p, test.args.addr, test.args.enableBackoff, test.args.f)
+			gotData, err := g.connectWithBackoff(test.args.ctx, test.args.p, test.args.addr, test.args.enableBackoff, test.args.f)
 			if err := checkFunc(test.want, gotData, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
