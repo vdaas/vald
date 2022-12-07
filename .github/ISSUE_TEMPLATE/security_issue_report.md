@@ -4,7 +4,6 @@ about: Create a report of security issue
 title: ""
 labels: "type/security, priority/medium, team/core, team/sre"
 assignees: ""
-
 ---
 
 ### Describe the issue:
