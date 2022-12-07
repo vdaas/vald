@@ -866,11 +866,11 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 		return nil, err
 	}
 
-	ces, err := s.client.MultiInsert(ctx, reqs, s.client.GRPCClient().GetCallOption()...)
+	locs, err = s.client.MultiInsert(ctx, reqs, s.client.GRPCClient().GetCallOption()...)
 	if err := handleSpan(vald.MultiInsertRPCName, span, err); err != nil {
 		return nil, err
 	}
-	return ces, nil
+	return locs, nil
 }
 
 // func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequest) (locs *payload.Object_Locations, err error) {
