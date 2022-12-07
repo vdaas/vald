@@ -9,7 +9,7 @@ This page shows the best practice for applying observing features by constructin
 
 Vald conforms [OpenTeremetry Protocol](https://opentelemetry.io/docs/reference/specification/protocol/otlp/) and does NOT depend on any commercial data format.
 
-<!-- Image -->
+<img src="../../assets/docs/guides/observability-configuration/architecture.png" />
 
 OpenTelemetry Collector handles receiving / processing / exporting the telemetry data, which does NOT depend on the vendors' format.
 All Vald components can send OTLP-compliant telemetry data, like metrics, traces, or logs, to the OpenTelemerty Collector.
