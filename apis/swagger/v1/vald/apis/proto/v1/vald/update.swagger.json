@@ -4,12 +4,8 @@
     "title": "apis/proto/v1/vald/update.proto",
     "version": "version not set"
   },
-  "consumes": [
-    "application/json"
-  ],
-  "produces": [
-    "application/json"
-  ],
+  "consumes": ["application/json"],
+  "produces": ["application/json"],
   "paths": {
     "/update": {
       "post": {
@@ -39,9 +35,7 @@
             }
           }
         ],
-        "tags": [
-          "Update"
-        ]
+        "tags": ["Update"]
       }
     },
     "/update/multiple": {
@@ -72,9 +66,7 @@
             }
           }
         ],
-        "tags": [
-          "Update"
-        ]
+        "tags": ["Update"]
       }
     }
   },
