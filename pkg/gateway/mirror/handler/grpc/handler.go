@@ -873,25 +873,12 @@ func (s *server) multiUpdateRollback(ctx context.Context, reqs *payload.Update_M
 }
 
 func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *payload.Object_Location, err error) {
-	ctx, span := trace.StartSpan(ctx, apiName+"/"+vald.UpsertRPCName)
+	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.UpsertRPCServiceName+"/"+vald.UpsertRPCName), apiName+"/"+vald.UpsertRPCName)
 	defer func() {
 		if span != nil {
 			span.End()
 		}
 	}()
-	handleSpan := func(rpcName string, span trace.Span, err error) error {
-		if err == nil {
-			return nil
-		}
-		st, msg, err := status.ParseError(err, codes.Internal,
-			"failed to parse "+rpcName+" gRPC error response")
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
-		return err
-	}
 
 	err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
 		sctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.UpsertRPCName+"/"+target)
@@ -901,235 +888,52 @@ func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *
 			}
 		}()
 		_, err := vald.NewValdClient(conn).Upsert(sctx, req, copts...)
-		return handleSpan(vald.UpsertRPCName, sspan, err)
+		return s.handleSpan(vald.UpsertRPCName, sspan, err)
 	})
 	if err != nil {
-		if err := s.upsertRollback(ctx, req); err != nil {
+		if err := s.handleSpan(rollbackName+" for "+vald.UpsertRPCName, span, s.upsertRollback(ctx, req)); err != nil {
 			return nil, err
 		}
-		return nil, err
+		return nil, s.handleSpan("BroadCast: "+vald.UpsertRPCName, span, err)
 	}
 
 	ce, err := s.client.Upsert(ctx, req, s.client.GRPCClient().GetCallOption()...)
-	if err := handleSpan(vald.UpsertRPCName, span, err); err != nil {
+	if err := s.handleSpan(vald.UpsertRPCName, span, err); err != nil {
 		return nil, err
 	}
 	return ce, nil
 }
 
-func (s *server) upsertRollback(ctx context.Context, req *payload.Upsert_Request) error {
-	ctx, span := trace.StartSpan(ctx, apiName+"/"+vald.UpsertRPCName)
+func (s *server) upsertRollback(ctx context.Context, req *payload.Upsert_Request) (err error) {
+	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.UpsertRPCServiceName+"/"+vald.UpsertRPCName), apiName+"/"+vald.UpsertRPCName)
 	defer func() {
 		if span != nil {
 			span.End()
 		}
 	}()
-	handleSpan := func(rpcName string, span trace.Span, err error) error {
-		if err == nil {
-			return nil
-		}
-		st, msg, err := status.ParseError(err, codes.Internal,
-			"failed to parse "+rpcName+" gRPC error response")
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
-		return err
-	}
-	oid := &payload.Object_ID{
-		Id: req.GetVector().GetId(),
-	}
-	ce, err := s.GetObject(ctx, &payload.Object_VectorRequest{
-		Id: oid,
+
+	err = s.updateRollback(ctx, &payload.Update_Request{
+		Vector: req.GetVector(),
+		Config: &payload.Update_Config{
+			SkipStrictExistCheck: req.GetConfig().GetSkipStrictExistCheck(),
+		},
 	})
 	if err != nil {
 		st, _, err := status.ParseError(err, codes.Internal, "error "+vald.GetObjectRPCName+" API")
 		if err != nil && st.Code() == codes.NotFound {
-			removeReq := &payload.Remove_Request{
-				Id: oid,
+			if err := s.insertRollback(ctx, &payload.Insert_Request{
+				Vector: req.GetVector(),
+				Config: &payload.Insert_Config{
+					SkipStrictExistCheck: req.GetConfig().GetSkipStrictExistCheck(),
+				},
+			}); err != nil {
+				return s.handleSpan(vald.RemoveRPCName+" for "+vald.UpsertRPCName, span, err)
 			}
-			err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
-				sctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.RemoveRPCName+"/"+target)
-				defer func() {
-					if sspan != nil {
-						sspan.End()
-					}
-				}()
-				_, err := vald.NewValdClient(conn).Remove(sctx, removeReq, copts...)
-				return handleSpan(vald.RemoveRPCName, sspan, err)
-			})
-			if err := handleSpan(vald.RemoveRPCName, span, err); err != nil {
-				return err
-			}
-			return err
 		}
-		return err
-	}
-	updateReq := &payload.Update_Request{
-		Vector: &payload.Object_Vector{
-			Id:     ce.GetId(),
-			Vector: ce.GetVector(),
-		},
-		Config: &payload.Update_Config{
-			SkipStrictExistCheck: true,
-		},
-	}
-	err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
-		sctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.UpdateRPCName+"/"+target)
-		defer func() {
-			if sspan != nil {
-				sspan.End()
-			}
-		}()
-		_, err := vald.NewValdClient(conn).Update(sctx, updateReq, copts...)
-		return handleSpan(vald.UpdateRPCName, sspan, err)
-	})
-	if err := handleSpan(vald.UpdateRPCName, span, err); err != nil {
-		return err
+		return s.handleSpan(vald.UpdateRPCName+" for "+vald.UpsertRPCName, span, err)
 	}
 	return nil
 }
-
-// func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *payload.Object_Location, err error) {
-// 	ctx, span := trace.StartSpan(ctx, apiName+"/"+vald.UpsertRPCName)
-// 	defer func() {
-// 		if span != nil {
-// 			span.End()
-// 		}
-// 	}()
-//
-// 	vec := req.GetVector()
-// 	uuid := vec.GetId()
-// 	if len(uuid) == 0 {
-// 		err = errors.ErrInvalidMetaDataConfig
-// 		err = status.WrapWithInvalidArgument(vald.UpsertRPCName+" API invalid uuid", err,
-// 			&errdetails.RequestInfo{
-// 				ServingData: errdetails.Serialize(req),
-// 			},
-// 			&errdetails.BadRequest{
-// 				FieldViolations: []*errdetails.BadRequestFieldViolation{
-// 					{
-// 						Field:       "invalid id",
-// 						Description: err.Error(),
-// 					},
-// 				},
-// 			},
-// 			&errdetails.ResourceInfo{
-// 				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.UpsertRPCName,
-// 				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-// 			})
-// 		if span != nil {
-// 			span.RecordError(err)
-// 			span.SetAttributes(trace.StatusCodeInvalidArgument(err.Error())...)
-// 			span.SetStatus(trace.StatusError, err.Error())
-// 		}
-// 		return nil, err
-// 	}
-//
-// 	vl := len(vec.GetVector())
-// 	if vl < algorithm.MinimumVectorDimensionSize {
-// 		err = errors.ErrInvalidDimensionSize(vl, 0)
-// 		err = status.WrapWithInvalidArgument(vald.UpsertRPCName+" API invalid vector argument", err,
-// 			&errdetails.RequestInfo{
-// 				RequestId:   uuid,
-// 				ServingData: errdetails.Serialize(req),
-// 			},
-// 			&errdetails.BadRequest{
-// 				FieldViolations: []*errdetails.BadRequestFieldViolation{
-// 					{
-// 						Field:       "vector dimension size",
-// 						Description: err.Error(),
-// 					},
-// 				},
-// 			}, info.Get())
-// 		if span != nil {
-// 			span.RecordError(err)
-// 			span.SetAttributes(trace.StatusCodeInvalidArgument(err.Error())...)
-// 			span.SetStatus(trace.StatusError, err.Error())
-// 		}
-// 		return nil, err
-// 	}
-// 	var shouldInsert bool
-// 	if !req.GetConfig().GetSkipStrictExistCheck() {
-// 		vec, err := s.GetObject(ctx, &payload.Object_VectorRequest{
-// 			Id: &payload.Object_ID{
-// 				Id: uuid,
-// 			},
-// 		})
-// 		if err != nil || vec == nil || len(vec.GetId()) == 0 {
-// 			shouldInsert = true
-// 		} else if conv.F32stos(vec.GetVector()) == conv.F32stos(req.GetVector().GetVector()) {
-// 			if err == nil {
-// 				err = errors.ErrSameVectorAlreadyExists(uuid, vec.GetVector(), req.GetVector().GetVector())
-// 			}
-// 			st, msg, err := status.ParseError(err, codes.AlreadyExists,
-// 				"error "+vald.UpdateRPCName+" for "+vald.UpsertRPCName+" API ID = "+uuid+"'s same vector data already exists",
-// 				&errdetails.RequestInfo{
-// 					RequestId:   uuid,
-// 					ServingData: errdetails.Serialize(req),
-// 				},
-// 				&errdetails.ResourceInfo{
-// 					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.UpsertRPCName + "." + vald.GetObjectRPCName,
-// 					ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
-// 				}, info.Get())
-// 			if span != nil {
-// 				span.RecordError(err)
-// 				span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
-// 				span.SetStatus(trace.StatusError, err.Error())
-// 			}
-// 			return nil, err
-// 		}
-// 	} else {
-// 		id, err := s.Exists(ctx, &payload.Object_ID{
-// 			Id: uuid,
-// 		})
-// 		shouldInsert = err != nil || id == nil || len(id.GetId()) == 0
-// 	}
-//
-// 	var operation string
-// 	if shouldInsert {
-// 		operation = vald.InsertRPCName
-// 		loc, err = s.Insert(ctx, &payload.Insert_Request{
-// 			Vector: vec,
-// 			Config: &payload.Insert_Config{
-// 				SkipStrictExistCheck: true,
-// 				Filters:              req.GetConfig().GetFilters(),
-// 				Timestamp:            req.GetConfig().GetTimestamp(),
-// 			},
-// 		})
-// 	} else {
-// 		operation = vald.UpdateRPCName
-// 		loc, err = s.Update(ctx, &payload.Update_Request{
-// 			Vector: vec,
-// 			Config: &payload.Update_Config{
-// 				SkipStrictExistCheck: true,
-// 				Filters:              req.GetConfig().GetFilters(),
-// 				Timestamp:            req.GetConfig().GetTimestamp(),
-// 			},
-// 		})
-// 	}
-//
-// 	if err != nil {
-// 		st, msg, err := status.ParseError(err, codes.Internal,
-// 			"failed to parse "+operation+" for "+vald.UpsertRPCName+" gRPC error response",
-// 			&errdetails.RequestInfo{
-// 				RequestId:   uuid,
-// 				ServingData: errdetails.Serialize(req),
-// 			},
-// 			&errdetails.ResourceInfo{
-// 				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.UpsertRPCName + "." + operation,
-// 				ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
-// 			}, info.Get())
-// 		if span != nil {
-// 			span.RecordError(err)
-// 			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
-// 			span.SetStatus(trace.StatusError, err.Error())
-// 		}
-// 		return nil, err
-// 	}
-// 	return loc, nil
-// }
 
 func (s *server) StreamUpsert(stream vald.Upsert_StreamUpsertServer) (err error) {
 	ctx, span := trace.StartSpan(stream.Context(), apiName+"/"+vald.StreamUpsertRPCName)
