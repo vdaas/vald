@@ -299,7 +299,7 @@ message Object {
 
   // Represent a request to fetch raw vector.
   message VectorRequest {
-    // The vector ID to be fetch.
+    // The vector ID to be fetched.
     ID id = 1 [ (validate.rules).repeated .min_items = 2 ];
     // Filter configurations.
     Filter.Config filters = 2;

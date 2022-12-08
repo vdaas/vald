@@ -2249,7 +2249,7 @@ type Object_VectorRequest struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// The vector ID to be fetch.
+	// The vector ID to be fetched.
 	Id *Object_ID `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	// Filter configurations.
 	Filters *Filter_Config `protobuf:"bytes,2,opt,name=filters,proto3" json:"filters,omitempty"`

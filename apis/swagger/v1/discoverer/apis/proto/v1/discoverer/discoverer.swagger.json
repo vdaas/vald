@@ -4,8 +4,12 @@
     "title": "apis/proto/v1/discoverer/discoverer.proto",
     "version": "version not set"
   },
-  "consumes": ["application/json"],
-  "produces": ["application/json"],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
   "paths": {
     "/discover/nodes": {
       "post": {
@@ -35,7 +39,9 @@
             }
           }
         ],
-        "tags": ["Discoverer"]
+        "tags": [
+          "Discoverer"
+        ]
       }
     },
     "/discover/pods": {
@@ -66,7 +72,9 @@
             }
           }
         ],
-        "tags": ["Discoverer"]
+        "tags": [
+          "Discoverer"
+        ]
       }
     }
   },
