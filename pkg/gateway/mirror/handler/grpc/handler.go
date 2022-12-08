@@ -782,25 +782,12 @@ func (s *server) StreamUpdate(stream vald.Update_StreamUpdateServer) (err error)
 }
 
 func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequest) (res *payload.Object_Locations, err error) {
-	ctx, span := trace.StartSpan(ctx, apiName+"/"+vald.MultiUpdateRPCName)
+	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.UpdateRPCServiceName+"/"+vald.MultiUpdateRPCName), apiName+"/"+vald.MultiUpdateRPCName)
 	defer func() {
 		if span != nil {
 			span.End()
 		}
 	}()
-	handleSpan := func(rpcName string, span trace.Span, err error) error {
-		if err == nil {
-			return nil
-		}
-		st, msg, err := status.ParseError(err, codes.Internal,
-			"failed to parse "+rpcName+" gRPC error response")
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
-		return err
-	}
 
 	err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
 		sctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.MultiUpdateRPCName+"/"+target)
@@ -810,212 +797,80 @@ func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequ
 			}
 		}()
 		_, err := vald.NewValdClient(conn).MultiUpdate(sctx, reqs)
-		return handleSpan(vald.MultiUpdateRPCName, sspan, err)
+		return s.handleSpan(vald.MultiUpdateRPCName, sspan, err)
 	})
 	if err != nil {
-		mu := new(sync.Mutex)
-		newReqs := &payload.Update_MultiRequest{
-			Requests: make([]*payload.Update_Request, 0, len(reqs.GetRequests())),
-		}
-		eg, egctx := errgroup.New(ctx)
-
-		for _, req := range reqs.GetRequests() {
-			req := req
-			eg.Go(func() error {
-				ovec, err := s.GetObject(egctx, &payload.Object_VectorRequest{
-					Id: &payload.Object_ID{
-						Id: req.GetVector().GetId(),
-					},
-				})
-				if err != nil {
-					return err
-				}
-				mu.Lock()
-				newReqs.Requests = append(newReqs.Requests, &payload.Update_Request{
-					Vector: &payload.Object_Vector{
-						Id:     ovec.GetId(),
-						Vector: ovec.GetVector(),
-					},
-					Config: &payload.Update_Config{
-						SkipStrictExistCheck: true,
-					},
-				})
-				mu.Unlock()
-				return nil
-			})
-		}
-		if err := eg.Wait(); err != nil {
+		if err := s.handleSpan(rollbackName+" for "+vald.MultiUpdateRPCName, span, s.multiUpdateRollback(ctx, reqs)); err != nil {
 			return nil, err
 		}
-
-		err := s.gateway.BroadCast(ctx, func(ctx context.Context, target string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
-			sctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.MultiUpdateRPCName+"/"+target)
-			defer func() {
-				if sspan != nil {
-					sspan.End()
-				}
-			}()
-			_, err := vald.NewValdClient(conn).MultiUpdate(sctx, newReqs, copts...)
-			return handleSpan(vald.MultiUpdateRPCName, sspan, err)
-		})
-		if err := handleSpan(vald.MultiUpdateRPCName, span, err); err != nil {
-			return nil, err
-		}
-		return nil, err
+		return nil, s.handleSpan("BroadCast: "+vald.MultiUpdateRPCName, span, err)
 	}
 
 	ces, err := s.client.MultiUpdate(ctx, reqs, s.client.GRPCClient().GetCallOption()...)
-	if err = handleSpan(vald.MultiUpdateRPCName, span, err); err != nil {
+	if err = s.handleSpan(vald.MultiUpdateRPCName, span, err); err != nil {
 		return nil, err
 	}
 	return ces, nil
 }
 
-// func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequest) (res *payload.Object_Locations, err error) {
-// 	ctx, span := trace.StartSpan(ctx, apiName+"/"+vald.MultiUpdateRPCName)
-// 	defer func() {
-// 		if span != nil {
-// 			span.End()
-// 		}
-// 	}()
-// 	vecs := reqs.GetRequests()
-// 	ids := make([]string, 0, len(vecs))
-// 	ireqs := make([]*payload.Insert_Request, 0, len(vecs))
-// 	rreqs := make([]*payload.Remove_Request, 0, len(vecs))
-// 	now := time.Now().UnixNano()
-// 	for _, req := range vecs {
-// 		vl := len(req.GetVector().GetVector())
-// 		if vl < algorithm.MinimumVectorDimensionSize {
-// 			err = errors.ErrInvalidDimensionSize(vl, 0)
-// 			err = status.WrapWithInvalidArgument(vald.MultiUpdateRPCName+" API invalid vector argument", err,
-// 				&errdetails.RequestInfo{
-// 					RequestId:   req.GetVector().GetId(),
-// 					ServingData: errdetails.Serialize(reqs),
-// 				},
-// 				&errdetails.BadRequest{
-// 					FieldViolations: []*errdetails.BadRequestFieldViolation{
-// 						{
-// 							Field:       "vector dimension size",
-// 							Description: err.Error(),
-// 						},
-// 					},
-// 				}, info.Get())
-// 			if span != nil {
-// 				span.RecordError(err)
-// 				span.SetAttributes(trace.StatusCodeInvalidArgument(err.Error())...)
-// 				span.SetStatus(trace.StatusError, err.Error())
-// 			}
-// 			return nil, err
-// 		}
-// 		uuid := req.GetVector().GetId()
-// 		if !req.GetConfig().GetSkipStrictExistCheck() {
-// 			vec, err := s.GetObject(ctx, &payload.Object_VectorRequest{
-// 				Id: &payload.Object_ID{
-// 					Id: uuid,
-// 				},
-// 			})
-// 			if err != nil || vec == nil || len(vec.GetId()) == 0 {
-// 				if err == nil {
-// 					err = errors.ErrObjectIDNotFound(uuid)
-// 				}
-// 				st, msg, err := status.ParseError(err, codes.NotFound,
-// 					"error "+vald.MultiUpdateRPCName+" API ID = "+uuid+" not fount",
-// 					&errdetails.RequestInfo{
-// 						RequestId:   uuid,
-// 						ServingData: errdetails.Serialize(reqs),
-// 					},
-// 					&errdetails.ResourceInfo{
-// 						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.MultiUpdateRPCName + "." + vald.GetObjectRPCName,
-// 						ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
-// 					}, info.Get())
-// 				if span != nil {
-// 					span.RecordError(err)
-// 					span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
-// 					span.SetStatus(trace.StatusError, err.Error())
-// 				}
-// 				return nil, err
-// 			}
-// 			if conv.F32stos(vec.GetVector()) == conv.F32stos(req.GetVector().GetVector()) {
-// 				log.Warn(errors.ErrSameVectorAlreadyExists(uuid, vec.GetVector(), req.GetVector().GetVector()))
-// 				continue
-// 			}
-// 			if req.GetConfig() != nil {
-// 				req.Config.SkipStrictExistCheck = true
-// 			} else {
-// 				req.Config = &payload.Update_Config{SkipStrictExistCheck: true}
-// 			}
-// 		}
-// 		var n int64
-// 		if req.GetConfig().GetTimestamp() != 0 {
-// 			n = req.GetConfig().GetTimestamp()
-// 		} else {
-// 			n = now
-// 		}
-// 		ids = append(ids, req.GetVector().GetId())
-// 		rreqs = append(rreqs, &payload.Remove_Request{
-// 			Id: &payload.Object_ID{
-// 				Id: req.GetVector().GetId(),
-// 			},
-// 			Config: &payload.Remove_Config{
-// 				SkipStrictExistCheck: true,
-// 				Timestamp:            n,
-// 			},
-// 		})
-// 		n++
-// 		ireqs = append(ireqs, &payload.Insert_Request{
-// 			Vector: req.GetVector(),
-// 			Config: &payload.Insert_Config{
-// 				SkipStrictExistCheck: true,
-// 				Filters:              req.GetConfig().GetFilters(),
-// 				Timestamp:            n,
-// 			},
-// 		})
-// 	}
-// 	locs, err := s.MultiRemove(ctx, &payload.Remove_MultiRequest{
-// 		Requests: rreqs,
-// 	})
-// 	if err != nil {
-// 		st, msg, err := status.ParseError(err, codes.Internal,
-// 			"failed to parse "+vald.MultiRemoveRPCName+" for "+vald.MultiUpdateRPCName+" gRPC error response",
-// 			&errdetails.RequestInfo{
-// 				RequestId:   strings.Join(ids, ","),
-// 				ServingData: errdetails.Serialize(rreqs),
-// 			},
-// 			&errdetails.ResourceInfo{
-// 				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.MultiUpdateRPCName + "." + vald.MultiRemoveRPCName,
-// 				ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
-// 			}, info.Get())
-// 		if span != nil {
-// 			span.RecordError(err)
-// 			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
-// 			span.SetStatus(trace.StatusError, err.Error())
-// 		}
-// 		return nil, err
-// 	}
-// 	log.Debugf("uuids %v were removed from %v due to MultiUpdate. "+vald.MultiInsertRPCName+" will be executed for them soon. Please see detail %#v", ids, locs.GetLocations(), locs)
-// 	locs, err = s.MultiInsert(ctx, &payload.Insert_MultiRequest{
-// 		Requests: ireqs,
-// 	})
-// 	if err != nil {
-// 		st, msg, err := status.ParseError(err, codes.Internal,
-// 			"failed to parse "+vald.MultiInsertRPCName+" for "+vald.MultiUpdateRPCName+" gRPC error response",
-// 			&errdetails.RequestInfo{
-// 				RequestId:   strings.Join(ids, ","),
-// 				ServingData: errdetails.Serialize(ireqs),
-// 			},
-// 			&errdetails.ResourceInfo{
-// 				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.MultiUpdateRPCName + "." + vald.MultiInsertRPCName,
-// 				ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
-// 			}, info.Get())
-// 		if span != nil {
-// 			span.RecordError(err)
-// 			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
-// 			span.SetStatus(trace.StatusError, err.Error())
-// 		}
-// 		return nil, err
-// 	}
-// 	return locs, nil
-// }
+func (s *server) multiUpdateRollback(ctx context.Context, reqs *payload.Update_MultiRequest) error {
+	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.UpdateRPCServiceName+"/"+vald.MultiUpdateRPCName), apiName+"/"+vald.MultiUpdateRPCName)
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+
+	mu := new(sync.Mutex)
+	newReqs := &payload.Update_MultiRequest{
+		Requests: make([]*payload.Update_Request, 0, len(reqs.GetRequests())),
+	}
+	eg, egctx := errgroup.New(ctx)
+
+	for _, req := range reqs.GetRequests() {
+		req := req
+		eg.Go(func() error {
+			ovec, err := s.GetObject(egctx, &payload.Object_VectorRequest{
+				Id: &payload.Object_ID{
+					Id: req.GetVector().GetId(),
+				},
+			})
+			if err != nil {
+				return err
+			}
+			mu.Lock()
+			newReqs.Requests = append(newReqs.Requests, &payload.Update_Request{
+				Vector: &payload.Object_Vector{
+					Id:     ovec.GetId(),
+					Vector: ovec.GetVector(),
+				},
+				Config: &payload.Update_Config{
+					SkipStrictExistCheck: true,
+				},
+			})
+			mu.Unlock()
+			return nil
+		})
+	}
+	if err := eg.Wait(); err != nil {
+		return err
+	}
+
+	err := s.gateway.BroadCast(ctx, func(ctx context.Context, target string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
+		sctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.MultiUpdateRPCName+"/"+target)
+		defer func() {
+			if sspan != nil {
+				sspan.End()
+			}
+		}()
+		_, err := vald.NewValdClient(conn).MultiUpdate(sctx, newReqs, copts...)
+		return s.handleSpan(vald.MultiUpdateRPCName, sspan, err)
+	})
+	if err := s.handleSpan("BroadCast: "+vald.MultiUpdateRPCName, span, err); err != nil {
+		return err
+	}
+	return nil
+}
 
 func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *payload.Object_Location, err error) {
 	ctx, span := trace.StartSpan(ctx, apiName+"/"+vald.UpsertRPCName)
