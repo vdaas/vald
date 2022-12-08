@@ -4,12 +4,16 @@
     "title": "apis/proto/v1/agent/core/agent.proto",
     "version": "version not set"
   },
-  "consumes": ["application/json"],
-  "produces": ["application/json"],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
   "paths": {
     "/index/create": {
       "get": {
-        "summary": "Represent the create index RPC.",
+        "summary": "Represent the creating index RPC.",
         "operationId": "Agent_CreateIndex",
         "responses": {
           "200": {
@@ -35,12 +39,14 @@
             "format": "int64"
           }
         ],
-        "tags": ["Agent"]
+        "tags": [
+          "Agent"
+        ]
       }
     },
     "/index/createandsave": {
       "get": {
-        "summary": "Represent the create and save index RPC.",
+        "summary": "Represent the creating and saving index RPC.",
         "operationId": "Agent_CreateAndSaveIndex",
         "responses": {
           "200": {
@@ -66,7 +72,9 @@
             "format": "int64"
           }
         ],
-        "tags": ["Agent"]
+        "tags": [
+          "Agent"
+        ]
       }
     },
     "/index/info": {
@@ -87,12 +95,14 @@
             }
           }
         },
-        "tags": ["Agent"]
+        "tags": [
+          "Agent"
+        ]
       }
     },
     "/index/save": {
       "get": {
-        "summary": "Represent the save index RPC.",
+        "summary": "Represent the saving index RPC.",
         "operationId": "Agent_SaveIndex",
         "responses": {
           "200": {
@@ -108,7 +118,9 @@
             }
           }
         },
-        "tags": ["Agent"]
+        "tags": [
+          "Agent"
+        ]
       }
     }
   },
