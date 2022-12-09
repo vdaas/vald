@@ -9,7 +9,7 @@
   "paths": {
     "/index/create": {
       "get": {
-        "summary": "Represent the create index RPC.",
+        "summary": "Represent the creating index RPC.",
         "operationId": "Agent_CreateIndex",
         "responses": {
           "200": {
@@ -40,7 +40,7 @@
     },
     "/index/createandsave": {
       "get": {
-        "summary": "Represent the create and save index RPC.",
+        "summary": "Represent the creating and saving index RPC.",
         "operationId": "Agent_CreateAndSaveIndex",
         "responses": {
           "200": {
@@ -92,7 +92,7 @@
     },
     "/index/save": {
       "get": {
-        "summary": "Represent the save index RPC.",
+        "summary": "Represent the saving index RPC.",
         "operationId": "Agent_SaveIndex",
         "responses": {
           "200": {
