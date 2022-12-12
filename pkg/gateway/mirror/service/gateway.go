@@ -28,8 +28,17 @@ import (
 	"github.com/vdaas/vald/internal/observability/trace"
 )
 
+type contextKey string
+
+const (
+	forwardedContextKey   contextKey = "forwarded-for"
+	forwardedContextValue            = "gateway mirror"
+)
+
 type Gateway interface {
 	Start(ctx context.Context) (<-chan error, error)
+	ForwardedContext(ctx context.Context) context.Context
+	FromForwardedContext(ctx context.Context) string
 	Addrs(ctx context.Context) []string
 	BroadCast(ctx context.Context,
 		f func(ctx context.Context, tgt string, conn *grpc.ClientConn, copts ...grpc.CallOption) error) error
@@ -54,6 +63,19 @@ func (g *gateway) Start(ctx context.Context) (<-chan error, error) {
 	return g.client.Start(ctx)
 }
 
+func (g *gateway) ForwardedContext(ctx context.Context) context.Context {
+	return context.WithValue(ctx, forwardedContextKey, forwardedContextValue)
+}
+
+func (g *gateway) FromForwardedContext(ctx context.Context) string {
+	if v := ctx.Value(forwardedContextKey); v != nil {
+		if name, ok := v.(string); ok {
+			return name
+		}
+	}
+	return ""
+}
+
 func (g *gateway) BroadCast(ctx context.Context,
 	f func(ctx context.Context, target string, conn *grpc.ClientConn, copts ...grpc.CallOption) error,
 ) (err error) {
@@ -63,7 +85,7 @@ func (g *gateway) BroadCast(ctx context.Context,
 			span.End()
 		}
 	}()
-	return g.client.GRPCClient().RangeConcurrent(fctx, -1, func(ictx context.Context,
+	return g.client.GRPCClient().RangeConcurrent(g.ForwardedContext(fctx), -1, func(ictx context.Context,
 		addr string, conn *grpc.ClientConn, copts ...grpc.CallOption,
 	) (err error) {
 		select {

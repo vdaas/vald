@@ -21,7 +21,6 @@ import (
 	"context"
 
 	"github.com/vdaas/vald/apis/grpc/v1/mirror"
-	"github.com/vdaas/vald/apis/grpc/v1/vald"
 	mclient "github.com/vdaas/vald/internal/client/v1/client/mirror"
 	vclient "github.com/vdaas/vald/internal/client/v1/client/vald"
 	"github.com/vdaas/vald/internal/errgroup"
@@ -97,7 +96,6 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 
 	grpcServerOptions := []server.Option{
 		server.WithGRPCRegistFunc(func(srv *grpc.Server) {
-			vald.RegisterValdServer(srv, v)
 			mirror.RegisterMirrorServer(srv, v)
 		}),
 		server.WithPreStopFunction(func() error {

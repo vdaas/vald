@@ -35,22 +35,16 @@ import (
 	"github.com/vdaas/vald/pkg/gateway/mirror/service"
 )
 
-type MirrorServer interface {
-	vald.Server
-	mirror.MirrorServer
-}
-
 type server struct {
 	eg                errgroup.Group
-	gateway           service.Gateway // LB Gateway client for the other cluster.
+	gateway           service.Gateway // Mirror Gateway client for the other cluster.
 	client            vclient.Client  // LB Gateway client for the same cluster.
 	timeout           time.Duration
 	replica           int
 	streamConcurrency int
 	name              string
 	ip                string
-	vald.UnimplementedValdServer
-	mirror.MirrorServer
+	mirror.UnimplementedValdServerWithMirror
 }
 
 const (
@@ -58,7 +52,7 @@ const (
 	rollbackName = "Rollback"
 )
 
-func New(opts ...Option) MirrorServer {
+func New(opts ...Option) mirror.Server {
 	s := new(server)
 
 	for _, opt := range append(defaultOptions, opts...) {
@@ -67,11 +61,29 @@ func New(opts ...Option) MirrorServer {
 	return s
 }
 
-func (s *server) Register(context.Context, *payload.Mirror_Targets) (*payload.Mirror_Targets, error) {
+func (s *server) Register(ctx context.Context, req *payload.Mirror_Targets) (*payload.Mirror_Targets, error) {
+	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, mirror.PackageName+"."+mirror.MirrorRPCServiceName+"/"+mirror.RegisterRPCName), apiName+"/"+mirror.RegisterRPCName)
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+
+	// TODO:
+
 	return nil, nil
 }
 
-func (s *server) Advertise(context.Context, *payload.Mirror_Targets) (*payload.Mirror_Targets, error) {
+func (s *server) Advertise(ctx context.Context, req *payload.Mirror_Targets) (*payload.Mirror_Targets, error) {
+	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, mirror.PackageName+"."+mirror.MirrorRPCServiceName+"/"+mirror.AdvertiseRPCName), apiName+"/"+mirror.AdvertiseRPCName)
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+
+	// TODO:
+
 	return nil, nil
 }
 
@@ -485,21 +497,24 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 			span.End()
 		}
 	}()
-	err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
-		sctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.InsertRPCName+"/"+target)
-		defer func() {
-			if sspan != nil {
-				sspan.End()
+
+	if len(s.gateway.FromForwardedContext(ctx)) == 0 {
+		err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
+			sctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.InsertRPCName+"/"+target)
+			defer func() {
+				if sspan != nil {
+					sspan.End()
+				}
+			}()
+			_, err := vald.NewValdClient(conn).Insert(sctx, req, copts...)
+			return s.handleSpan(vald.InsertRPCName, sspan, err)
+		})
+		if err != nil {
+			if err := s.handleSpan(rollbackName+" for "+vald.InsertRPCName, span, s.insertRollback(ctx, req)); err != nil {
+				return nil, err
 			}
-		}()
-		_, err := vald.NewValdClient(conn).Insert(sctx, req, copts...)
-		return s.handleSpan(vald.InsertRPCName, sspan, err)
-	})
-	if err != nil {
-		if err := s.handleSpan(rollbackName+" for "+vald.InsertRPCName, span, s.insertRollback(ctx, req)); err != nil {
-			return nil, err
+			return nil, s.handleSpan(vald.InsertRPCName, span, err)
 		}
-		return nil, s.handleSpan(vald.InsertRPCName, span, err)
 	}
 
 	ce, err = s.client.Insert(ctx, req)
@@ -599,21 +614,23 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 		}
 	}()
 
-	err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
-		sctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.MultiInsertRPCName+"/"+target)
-		defer func() {
-			if sspan != nil {
-				sspan.End()
+	if len(s.gateway.FromForwardedContext(ctx)) == 0 {
+		err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
+			sctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.MultiInsertRPCName+"/"+target)
+			defer func() {
+				if sspan != nil {
+					sspan.End()
+				}
+			}()
+			_, err := vald.NewValdClient(conn).MultiInsert(sctx, reqs, copts...)
+			return s.handleSpan(vald.MultiInsertRPCName, sspan, err)
+		})
+		if err != nil {
+			if err := s.handleSpan(rollbackName+" for "+vald.MultiInsertRPCName, span, s.multiInsertRollback(ctx, reqs)); err != nil {
+				return nil, err
 			}
-		}()
-		_, err := vald.NewValdClient(conn).MultiInsert(sctx, reqs, copts...)
-		return s.handleSpan(vald.MultiInsertRPCName, sspan, err)
-	})
-	if err != nil {
-		if err := s.handleSpan(rollbackName+" for "+vald.MultiInsertRPCName, span, s.multiInsertRollback(ctx, reqs)); err != nil {
-			return nil, err
+			return nil, s.handleSpan(vald.MultiInsertRPCName, span, err)
 		}
-		return nil, s.handleSpan(vald.MultiInsertRPCName, span, err)
 	}
 
 	locs, err = s.client.MultiInsert(ctx, reqs, s.client.GRPCClient().GetCallOption()...)
@@ -668,21 +685,24 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (res *
 			span.End()
 		}
 	}()
-	err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
-		sctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.UpdateRPCName+"/"+target)
-		defer func() {
-			if sspan != nil {
-				sspan.End()
+
+	if len(s.gateway.FromForwardedContext(ctx)) == 0 {
+		err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
+			sctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.UpdateRPCName+"/"+target)
+			defer func() {
+				if sspan != nil {
+					sspan.End()
+				}
+			}()
+			_, err := vald.NewValdClient(conn).Update(sctx, req, copts...)
+			return s.handleSpan(vald.UpdateRPCName, sspan, err)
+		})
+		if err != nil {
+			if err := s.handleSpan(rollbackName+" for "+vald.UpdateRPCName, span, s.updateRollback(ctx, req)); err != nil {
+				return nil, err
 			}
-		}()
-		_, err := vald.NewValdClient(conn).Update(sctx, req, copts...)
-		return s.handleSpan(vald.UpdateRPCName, sspan, err)
-	})
-	if err != nil {
-		if err := s.handleSpan(rollbackName+" for "+vald.UpdateRPCName, span, s.updateRollback(ctx, req)); err != nil {
-			return nil, err
+			return nil, s.handleSpan(vald.UpdateRPCName, span, err)
 		}
-		return nil, s.handleSpan(vald.UpdateRPCName, span, err)
 	}
 
 	ce, err := s.client.Update(ctx, req, s.client.GRPCClient().GetCallOption()...)
@@ -792,21 +812,23 @@ func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequ
 		}
 	}()
 
-	err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
-		sctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.MultiUpdateRPCName+"/"+target)
-		defer func() {
-			if sspan != nil {
-				sspan.End()
+	if len(s.gateway.FromForwardedContext(ctx)) == 0 {
+		err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
+			sctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.MultiUpdateRPCName+"/"+target)
+			defer func() {
+				if sspan != nil {
+					sspan.End()
+				}
+			}()
+			_, err := vald.NewValdClient(conn).MultiUpdate(sctx, reqs)
+			return s.handleSpan(vald.MultiUpdateRPCName, sspan, err)
+		})
+		if err != nil {
+			if err := s.handleSpan(rollbackName+" for "+vald.MultiUpdateRPCName, span, s.multiUpdateRollback(ctx, reqs)); err != nil {
+				return nil, err
 			}
-		}()
-		_, err := vald.NewValdClient(conn).MultiUpdate(sctx, reqs)
-		return s.handleSpan(vald.MultiUpdateRPCName, sspan, err)
-	})
-	if err != nil {
-		if err := s.handleSpan(rollbackName+" for "+vald.MultiUpdateRPCName, span, s.multiUpdateRollback(ctx, reqs)); err != nil {
-			return nil, err
+			return nil, s.handleSpan(vald.MultiUpdateRPCName, span, err)
 		}
-		return nil, s.handleSpan(vald.MultiUpdateRPCName, span, err)
 	}
 
 	ces, err := s.client.MultiUpdate(ctx, reqs, s.client.GRPCClient().GetCallOption()...)
@@ -890,21 +912,24 @@ func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *
 			span.End()
 		}
 	}()
-	err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
-		sctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.UpsertRPCName+"/"+target)
-		defer func() {
-			if sspan != nil {
-				sspan.End()
+
+	if len(s.gateway.FromForwardedContext(ctx)) == 0 {
+		err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
+			sctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.UpsertRPCName+"/"+target)
+			defer func() {
+				if sspan != nil {
+					sspan.End()
+				}
+			}()
+			_, err := vald.NewValdClient(conn).Upsert(sctx, req, copts...)
+			return s.handleSpan(vald.UpsertRPCName, sspan, err)
+		})
+		if err != nil {
+			if err := s.handleSpan(rollbackName+" for "+vald.UpsertRPCName, span, s.upsertRollback(ctx, req)); err != nil {
+				return nil, err
 			}
-		}()
-		_, err := vald.NewValdClient(conn).Upsert(sctx, req, copts...)
-		return s.handleSpan(vald.UpsertRPCName, sspan, err)
-	})
-	if err != nil {
-		if err := s.handleSpan(rollbackName+" for "+vald.UpsertRPCName, span, s.upsertRollback(ctx, req)); err != nil {
-			return nil, err
+			return nil, s.handleSpan(vald.UpsertRPCName, span, err)
 		}
-		return nil, s.handleSpan(vald.UpsertRPCName, span, err)
 	}
 
 	ce, err := s.client.Upsert(ctx, req, s.client.GRPCClient().GetCallOption()...)
@@ -1004,21 +1029,23 @@ func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequ
 		}
 	}()
 
-	err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
-		sctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.UpsertRPCName+"/"+target)
-		defer func() {
-			if sspan != nil {
-				sspan.End()
+	if len(s.gateway.FromForwardedContext(ctx)) == 0 {
+		err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
+			sctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.UpsertRPCName+"/"+target)
+			defer func() {
+				if sspan != nil {
+					sspan.End()
+				}
+			}()
+			_, err := vald.NewValdClient(conn).MultiUpsert(sctx, reqs, copts...)
+			return s.handleSpan(vald.UpsertRPCName, sspan, err)
+		})
+		if err != nil {
+			if err := s.handleSpan(rollbackName+" for "+vald.MultiUpsertRPCName, span, s.multiUpsertRollback(ctx, reqs)); err != nil {
+				return nil, err
 			}
-		}()
-		_, err := vald.NewValdClient(conn).MultiUpsert(sctx, reqs, copts...)
-		return s.handleSpan(vald.UpsertRPCName, sspan, err)
-	})
-	if err != nil {
-		if err := s.handleSpan(rollbackName+" for "+vald.MultiUpsertRPCName, span, s.multiUpsertRollback(ctx, reqs)); err != nil {
-			return nil, err
+			return nil, s.handleSpan(vald.MultiUpsertRPCName, span, err)
 		}
-		return nil, s.handleSpan(vald.MultiUpsertRPCName, span, err)
 	}
 
 	res, err = s.client.MultiUpsert(ctx, reqs, s.client.GRPCClient().GetCallOption()...)
@@ -1067,21 +1094,23 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (loc *
 		}
 	}()
 
-	err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
-		sctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.RemoveRPCName+"/"+target)
-		defer func() {
-			if sspan != nil {
-				sspan.End()
+	if len(s.gateway.FromForwardedContext(ctx)) == 0 {
+		err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
+			sctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.RemoveRPCName+"/"+target)
+			defer func() {
+				if sspan != nil {
+					sspan.End()
+				}
+			}()
+			_, err := vald.NewValdClient(conn).Remove(sctx, req, copts...)
+			return s.handleSpan(vald.RemoveRPCName, sspan, err)
+		})
+		if err != nil {
+			if err := s.handleSpan(rollbackName+" for "+vald.RemoveRPCName, span, s.removeRollback(ctx, req)); err != nil {
+				return nil, err
 			}
-		}()
-		_, err := vald.NewValdClient(conn).Remove(sctx, req, copts...)
-		return s.handleSpan(vald.RemoveRPCName, sspan, err)
-	})
-	if err != nil {
-		if err := s.handleSpan(rollbackName+" for "+vald.RemoveRPCName, span, s.removeRollback(ctx, req)); err != nil {
-			return nil, err
+			return nil, s.handleSpan(vald.RemoveRPCName, span, err)
 		}
-		return nil, s.handleSpan(vald.RemoveRPCName, span, err)
 	}
 
 	loc, err = s.client.Remove(ctx, req, s.client.GRPCClient().GetCallOption()...)
@@ -1191,21 +1220,23 @@ func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequ
 		}
 	}()
 
-	err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
-		sctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.RemoveRPCName+"/"+target)
-		defer func() {
-			if sspan != nil {
-				sspan.End()
+	if len(s.gateway.FromForwardedContext(ctx)) == 0 {
+		err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
+			sctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.RemoveRPCName+"/"+target)
+			defer func() {
+				if sspan != nil {
+					sspan.End()
+				}
+			}()
+			_, err := vald.NewValdClient(conn).MultiRemove(sctx, reqs, copts...)
+			return s.handleSpan(vald.RemoveRPCName, sspan, err)
+		})
+		if err != nil {
+			if err := s.handleSpan(rollbackName+" for "+vald.RemoveRPCName, span, s.multiRemoveRollback(ctx, reqs)); err != nil {
+				return nil, err
 			}
-		}()
-		_, err := vald.NewValdClient(conn).MultiRemove(sctx, reqs, copts...)
-		return s.handleSpan(vald.RemoveRPCName, sspan, err)
-	})
-	if err != nil {
-		if err := s.handleSpan(rollbackName+" for "+vald.RemoveRPCName, span, s.multiRemoveRollback(ctx, reqs)); err != nil {
-			return nil, err
+			return nil, s.handleSpan(vald.MultiRemoveRPCName, span, err)
 		}
-		return nil, s.handleSpan(vald.MultiRemoveRPCName, span, err)
 	}
 
 	locs, err = s.client.MultiRemove(ctx, reqs, s.client.GRPCClient().GetCallOption()...)
