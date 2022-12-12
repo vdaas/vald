@@ -54,9 +54,8 @@ type server struct {
 }
 
 const (
-	apiName       = "vald/gateway/mirror"
-	rollbackName  = "Rollback"
-	broadCastName = "BroadCast"
+	apiName      = "vald/gateway/mirror"
+	rollbackName = "Rollback"
 )
 
 func New(opts ...Option) MirrorServer {
@@ -500,7 +499,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 		if err := s.handleSpan(rollbackName+" for "+vald.InsertRPCName, span, s.insertRollback(ctx, req)); err != nil {
 			return nil, err
 		}
-		return nil, s.handleSpan(broadCastName+" of "+vald.InsertRPCName, span, err)
+		return nil, s.handleSpan(vald.InsertRPCName, span, err)
 	}
 
 	ce, err = s.client.Insert(ctx, req)
@@ -536,7 +535,7 @@ func (s *server) insertRollback(ctx context.Context, req *payload.Insert_Request
 		_, err := vald.NewValdClient(conn).Remove(sctx, newReq, copts...)
 		return s.handleSpan(vald.RemoveRPCName, sspan, err)
 	})
-	if err := s.handleSpan(broadCastName+" of "+vald.RemoveRPCName, span, err); err != nil {
+	if err := s.handleSpan(vald.RemoveRPCName, span, err); err != nil {
 		return err
 	}
 	return nil
@@ -614,7 +613,7 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 		if err := s.handleSpan(rollbackName+" for "+vald.MultiInsertRPCName, span, s.multiInsertRollback(ctx, reqs)); err != nil {
 			return nil, err
 		}
-		return nil, s.handleSpan(broadCastName+" of "+vald.MultiInsertRPCName, span, err)
+		return nil, s.handleSpan(vald.MultiInsertRPCName, span, err)
 	}
 
 	locs, err = s.client.MultiInsert(ctx, reqs, s.client.GRPCClient().GetCallOption()...)
@@ -656,7 +655,7 @@ func (s *server) multiInsertRollback(ctx context.Context, reqs *payload.Insert_M
 		_, err := vald.NewValdClient(conn).MultiRemove(sctx, newReq, copts...)
 		return s.handleSpan(vald.MultiRemoveRPCName, sspan, err)
 	})
-	if err := s.handleSpan(broadCastName+" of "+vald.MultiRemoveRPCName, span, err); err != nil {
+	if err := s.handleSpan(vald.MultiRemoveRPCName, span, err); err != nil {
 		return err
 	}
 	return nil
@@ -683,7 +682,7 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (res *
 		if err := s.handleSpan(rollbackName+" for "+vald.UpdateRPCName, span, s.updateRollback(ctx, req)); err != nil {
 			return nil, err
 		}
-		return nil, s.handleSpan(broadCastName+" of "+vald.UpdateRPCName, span, err)
+		return nil, s.handleSpan(vald.UpdateRPCName, span, err)
 	}
 
 	ce, err := s.client.Update(ctx, req, s.client.GRPCClient().GetCallOption()...)
@@ -729,7 +728,7 @@ func (s *server) updateRollback(ctx context.Context, req *payload.Update_Request
 		_, err := vald.NewValdClient(conn).Update(sctx, newReq, copts...)
 		return s.handleSpan(vald.UpdateRPCName, sspan, err)
 	})
-	if err := s.handleSpan(broadCastName+" of "+vald.UpdateRPCName, span, err); err != nil {
+	if err := s.handleSpan(vald.UpdateRPCName, span, err); err != nil {
 		return err
 	}
 	return nil
@@ -807,7 +806,7 @@ func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequ
 		if err := s.handleSpan(rollbackName+" for "+vald.MultiUpdateRPCName, span, s.multiUpdateRollback(ctx, reqs)); err != nil {
 			return nil, err
 		}
-		return nil, s.handleSpan(broadCastName+" of "+vald.MultiUpdateRPCName, span, err)
+		return nil, s.handleSpan(vald.MultiUpdateRPCName, span, err)
 	}
 
 	ces, err := s.client.MultiUpdate(ctx, reqs, s.client.GRPCClient().GetCallOption()...)
@@ -878,7 +877,7 @@ func (s *server) multiUpdateRollback(ctx context.Context, reqs *payload.Update_M
 		_, err := vald.NewValdClient(conn).MultiUpdate(sctx, newReqs, copts...)
 		return s.handleSpan(vald.MultiUpdateRPCName, sspan, err)
 	})
-	if err := s.handleSpan(broadCastName+" of "+vald.MultiUpdateRPCName, span, err); err != nil {
+	if err := s.handleSpan(vald.MultiUpdateRPCName, span, err); err != nil {
 		return err
 	}
 	return nil
@@ -905,7 +904,7 @@ func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *
 		if err := s.handleSpan(rollbackName+" for "+vald.UpsertRPCName, span, s.upsertRollback(ctx, req)); err != nil {
 			return nil, err
 		}
-		return nil, s.handleSpan(broadCastName+" of "+vald.UpsertRPCName, span, err)
+		return nil, s.handleSpan(vald.UpsertRPCName, span, err)
 	}
 
 	ce, err := s.client.Upsert(ctx, req, s.client.GRPCClient().GetCallOption()...)
@@ -1019,7 +1018,7 @@ func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequ
 		if err := s.handleSpan(rollbackName+" for "+vald.MultiUpsertRPCName, span, s.multiUpsertRollback(ctx, reqs)); err != nil {
 			return nil, err
 		}
-		return nil, s.handleSpan("BroadCast "+vald.MultiUpsertRPCName, span, err)
+		return nil, s.handleSpan(vald.MultiUpsertRPCName, span, err)
 	}
 
 	res, err = s.client.MultiUpsert(ctx, reqs, s.client.GRPCClient().GetCallOption()...)
@@ -1029,6 +1028,7 @@ func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequ
 	return res, nil
 }
 
+// multiUpsertRollback executes the upsertRollback method.
 func (s *server) multiUpsertRollback(ctx context.Context, reqs *payload.Upsert_MultiRequest) error {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.UpsertRPCServiceName+"/"+vald.MultiUpsertRPCName), apiName+"/"+vald.MultiUpsertRPCName)
 	defer func() {
@@ -1081,7 +1081,7 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (loc *
 		if err := s.handleSpan(rollbackName+" for "+vald.RemoveRPCName, span, s.removeRollback(ctx, req)); err != nil {
 			return nil, err
 		}
-		return nil, s.handleSpan("BroadCast "+vald.RemoveRPCName, span, err)
+		return nil, s.handleSpan(vald.RemoveRPCName, span, err)
 	}
 
 	loc, err = s.client.Remove(ctx, req, s.client.GRPCClient().GetCallOption()...)
@@ -1091,6 +1091,7 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (loc *
 	return loc, nil
 }
 
+// updateRollback executes the GetObject on the same cluster to get old vector data and executes the Upsert RPC for rollback.
 func (s *server) removeRollback(ctx context.Context, req *payload.Remove_Request) (err error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.RemoveRPCServiceName+"/"+vald.RemoveRPCName), apiName+"/"+vald.RemoveRPCName)
 	defer func() {
@@ -1127,7 +1128,7 @@ func (s *server) removeRollback(ctx context.Context, req *payload.Remove_Request
 		_, err := vald.NewValdClient(conn).Upsert(sctx, newReq, copts...)
 		return s.handleSpan(vald.UpsertRPCName, sspan, err)
 	})
-	if err = s.handleSpan("BroadCast "+vald.RemoveRPCName, span, err); err != nil {
+	if err = s.handleSpan(vald.UpsertObjectRPCName+" for "+vald.RemoveRPCName, span, err); err != nil {
 		return err
 	}
 	return nil
@@ -1205,7 +1206,7 @@ func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequ
 		if err := s.handleSpan(rollbackName+" for "+vald.RemoveRPCName, span, s.multiRemoveRollback(ctx, reqs)); err != nil {
 			return nil, err
 		}
-		return nil, s.handleSpan("BroadCast "+vald.MultiRemoveRPCName, span, err)
+		return nil, s.handleSpan(vald.MultiRemoveRPCName, span, err)
 	}
 
 	locs, err = s.client.MultiRemove(ctx, reqs, s.client.GRPCClient().GetCallOption()...)
@@ -1215,6 +1216,7 @@ func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequ
 	return locs, nil
 }
 
+// updateRollback executes the removeRollback method.
 func (s *server) multiRemoveRollback(ctx context.Context, reqs *payload.Remove_MultiRequest) error {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.RemoveRPCServiceName+"/"+vald.MultiRemoveRPCName), apiName+"/"+vald.MultiRemoveRPCName)
 	defer func() {
