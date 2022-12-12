@@ -101,6 +101,10 @@ func (g *gateway) BroadCast(ctx context.Context,
 	})
 }
 
+// func (g *gateway) Connect(ctx context.Context, addrs ...string) error {
+// 	return nil
+// }
+
 func (g *gateway) Addrs(ctx context.Context) []string {
 	return g.client.GRPCClient().ConnectedAddrs()
 }

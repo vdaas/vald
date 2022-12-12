@@ -37,7 +37,7 @@ import (
 
 type server struct {
 	eg                errgroup.Group
-	gateway           service.Gateway // Mirror Gateway client for the other cluster.
+	gateway           service.Gateway // Mirror Gateway service.
 	client            vclient.Client  // LB Gateway client for the same cluster.
 	timeout           time.Duration
 	replica           int
