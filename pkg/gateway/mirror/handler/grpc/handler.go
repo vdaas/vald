@@ -1124,7 +1124,6 @@ func (s *server) removeRollback(ctx context.Context, req *payload.Remove_Request
 				sspan.End()
 			}
 		}()
-
 		_, err := vald.NewValdClient(conn).Upsert(sctx, newReq, copts...)
 		return s.handleSpan(vald.UpsertRPCName, sspan, err)
 	})
