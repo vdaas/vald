@@ -42,8 +42,8 @@ type MirrorServer interface {
 
 type server struct {
 	eg                errgroup.Group
-	gateway           service.Gateway
-	client            vclient.Client // LB Gateway client in the same cluster.
+	gateway           service.Gateway // LB Gateway client for the other cluster.
+	client            vclient.Client  // LB Gateway client for the same cluster.
 	timeout           time.Duration
 	replica           int
 	streamConcurrency int
@@ -522,7 +522,7 @@ func (s *server) insertRollback(ctx context.Context, req *payload.Insert_Request
 			Id: req.GetVector().GetId(),
 		},
 		Config: &payload.Remove_Config{
-			SkipStrictExistCheck: true,
+			SkipStrictExistCheck: false,
 		},
 	}
 	err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
@@ -641,7 +641,7 @@ func (s *server) multiInsertRollback(ctx context.Context, reqs *payload.Insert_M
 				Id: req.GetVector().GetId(),
 			},
 			Config: &payload.Remove_Config{
-				SkipStrictExistCheck: true,
+				SkipStrictExistCheck: false,
 			},
 		})
 	}
@@ -715,7 +715,7 @@ func (s *server) updateRollback(ctx context.Context, req *payload.Update_Request
 			Vector: loc.GetVector(),
 		},
 		Config: &payload.Update_Config{
-			SkipStrictExistCheck: true,
+			SkipStrictExistCheck: false,
 		},
 	}
 	err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
@@ -856,7 +856,7 @@ func (s *server) multiUpdateRollback(ctx context.Context, reqs *payload.Update_M
 					Vector: ovec.GetVector(),
 				},
 				Config: &payload.Update_Config{
-					SkipStrictExistCheck: true,
+					SkipStrictExistCheck: false,
 				},
 			})
 			mu.Unlock()
@@ -926,7 +926,7 @@ func (s *server) upsertRollback(ctx context.Context, req *payload.Upsert_Request
 	err = s.updateRollback(ctx, &payload.Update_Request{
 		Vector: req.GetVector(),
 		Config: &payload.Update_Config{
-			SkipStrictExistCheck: req.GetConfig().GetSkipStrictExistCheck(),
+			SkipStrictExistCheck: false,
 		},
 	})
 	if err != nil {
@@ -935,7 +935,7 @@ func (s *server) upsertRollback(ctx context.Context, req *payload.Upsert_Request
 			if err := s.insertRollback(ctx, &payload.Insert_Request{
 				Vector: req.GetVector(),
 				Config: &payload.Insert_Config{
-					SkipStrictExistCheck: req.GetConfig().GetSkipStrictExistCheck(),
+					SkipStrictExistCheck: false,
 				},
 			}); err != nil {
 				return s.handleSpan(rollbackName+" for "+vald.UpsertRPCName, span, err)
@@ -1114,7 +1114,7 @@ func (s *server) removeRollback(ctx context.Context, req *payload.Remove_Request
 			Vector: loc.GetVector(),
 		},
 		Config: &payload.Upsert_Config{
-			SkipStrictExistCheck: true,
+			SkipStrictExistCheck: false,
 		},
 	}
 	err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
