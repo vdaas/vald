@@ -10930,7 +10930,11 @@ func Test_ngt_InsertUpsert(t *testing.T) {
 						tt.Errorf("error creating index: %v", err)
 					}
 				}
+			}
 
+			count = 0
+			for _, idx := range test.args.idxes {
+				count++
 				err = n.Update(idx.uuid, idx.vec)
 				if err := checkFunc(test.want, err); err != nil {
 					tt.Errorf("error = %v", err)
