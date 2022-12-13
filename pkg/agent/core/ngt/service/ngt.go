@@ -831,7 +831,7 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 	wf := atomic.AddUint64(&n.wfci, 1)
 	if wf > 1 {
 		atomic.AddUint64(&n.wfci, ^uint64(0))
-		log.Warnf("concurrent create index waiting detected this request will be ignored, concurrent: %d", wf)
+		log.Debugf("concurrent create index waiting detected this request will be ignored, concurrent: %d", wf)
 		return nil
 	}
 	err = func() error {
