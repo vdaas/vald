@@ -22,8 +22,8 @@ on:
       - "CHANGELOG.md"
 
 jobs:
-  languagetool:
-    name: runner / LanguageTool
+  languagetool_apis_charts:
+    name: runner / LanguageTool / apis & charts
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -35,7 +35,25 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           reporter: github-pr-review
-          patterns: "**/*.md **/*.md.gotmpl !**/CHANGELOG.md"
+          patterns: "apis/**/*.md apis/**/*.md.gotmpl charts/**/*.md !charts/vald/README.md"
+          level: warning
+          language: en-US
+          disabled_rules: "DOUBLE_PUNCTUATION,WORD_CONTAINS_UNDERSCORE,ARROWS,CURRENCY,DASH_RULE,EN_QUOTES"
+          disabled_categories: "TYPOS,TYPOGRAPHY,STYLE,CASING"
+  languagetool_docs:
+    name: runner / LanguageTool / Docs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: set git config
+        run: |
+          git config --global --add safe.directory ${GITHUB_WORKSPACE}
+      - name: LanguageTool
+        uses: reviewdog/action-languagetool@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          reporter: github-pr-review
+          patterns: "**/*.md **/*.md.gotmpl !**/CHANGELOG.md !apis/** !charts/**"
           level: warning
           language: en-US
           disabled_rules: "DOUBLE_PUNCTUATION,WORD_CONTAINS_UNDERSCORE,ARROWS,CURRENCY,DASH_RULE,EN_QUOTES"
