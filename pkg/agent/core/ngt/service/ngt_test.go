@@ -18,8 +18,8 @@
 package service
 
 import (
-	"fmt"
 	"context"
+	"fmt"
 	"reflect"
 	"sync"
 	"sync/atomic"
@@ -11494,7 +11494,7 @@ func Test_ngt_InsertUpsert(t *testing.T) {
 
 				if count >= test.args.bulkSize {
 					wg.Add(1)
-					eg.Go(func()error{
+					eg.Go(func() error {
 						defer wg.Done()
 						err = n.CreateAndSaveIndex(ctx, test.args.poolSize)
 						if err != nil {
@@ -11527,7 +11527,7 @@ func Test_ngt_InsertUpsert(t *testing.T) {
 
 				if count >= test.args.bulkSize {
 					wgu.Add(1)
-					eg.Go(func()error{
+					eg.Go(func() error {
 						defer wgu.Done()
 						err = n.CreateAndSaveIndex(ctx, test.args.poolSize)
 						if err != nil {
@@ -11544,6 +11544,7 @@ func Test_ngt_InsertUpsert(t *testing.T) {
 			if err != nil {
 				tt.Errorf("error creating index: %v", err)
 			}
+			eg.Wait()
 		})
 	}
 }
@@ -11553,7 +11554,7 @@ func createRandomData(num int) []index {
 	f32s, _ := vector.GenF32Vec(vector.Gaussian, num, 128)
 	for idx, vec := range f32s {
 		result = append(result, index{
-			uuid: fmt.Sprintf("%s-%s:%d:%d,%d",uuid.New().String(), uuid.New().String(), idx, idx/100,idx%100),
+			uuid: fmt.Sprintf("%s_%s-%s:%d:%d,%d", uuid.New().String(), uuid.New().String(), uuid.New().String(), idx, idx/100, idx%100),
 			vec:  vec,
 		})
 	}

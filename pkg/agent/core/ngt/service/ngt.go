@@ -1192,11 +1192,15 @@ func (n *ngt) Exists(uuid string) (oid uint32, ok bool) {
 	if !ok {
 		oid, ok = n.kvs.Get(uuid)
 		if !ok {
-			// log.Debugf("Exists\tuuid: %s's data not found in kvsdb and insert vqueue\terror: %v", uuid, errors.ErrObjectIDNotFound(uuid))
+			log.Debugf("Exists\tuuid: %s's data not found in kvsdb and insert vqueue\terror: %v", uuid, errors.ErrObjectIDNotFound(uuid))
 			return 0, false
 		}
 		if n.vq.DVExists(uuid) {
-			// log.Debugf("Exists\tuuid: %s's data found in kvsdb and not found in insert vqueue, but delete vqueue data exists. the object will be delete soon\terror: %v", uuid, errors.ErrObjectIDNotFound(uuid))
+			log.Debugf(
+				"Exists\tuuid: %s's data found in kvsdb and not found in insert vqueue, but delete vqueue data exists. the object will be delete soon\terror: %v",
+				uuid,
+				errors.ErrObjectIDNotFound(uuid),
+			)
 			return 0, false
 		}
 	}
