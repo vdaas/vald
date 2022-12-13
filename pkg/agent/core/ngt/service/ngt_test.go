@@ -10945,6 +10945,13 @@ func Test_ngt_InsertUpsert(t *testing.T) {
 				}
 			}
 
+			if count%100 != 0 {
+				err = n.CreateAndSaveIndex(ctx, uint32(count%100))
+				if err != nil {
+					tt.Errorf("error creating index: %v", err)
+				}
+			}
+
 			count = 0
 			for _, idx := range test.args.idxes {
 				count++
@@ -10958,6 +10965,13 @@ func Test_ngt_InsertUpsert(t *testing.T) {
 					if err != nil {
 						tt.Errorf("error creating index: %v", err)
 					}
+				}
+			}
+
+			if count%100 != 0 {
+				err = n.CreateAndSaveIndex(ctx, uint32(count%100))
+				if err != nil {
+					tt.Errorf("error creating index: %v", err)
 				}
 			}
 		})
