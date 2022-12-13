@@ -38,7 +38,7 @@ import (
 type server struct {
 	eg                errgroup.Group
 	gateway           service.Gateway // Mirror Gateway service.
-	client            vclient.Client  // LB Gateway client for the same cluster.
+	lbClient          vclient.Client  // LB Gateway client for the same cluster.
 	timeout           time.Duration
 	replica           int
 	streamConcurrency int
@@ -95,7 +95,7 @@ func (s *server) Exists(ctx context.Context, meta *payload.Object_ID) (id *paylo
 		}
 	}()
 
-	id, err = s.client.Exists(ctx, meta, s.client.GRPCClient().GetCallOption()...)
+	id, err = s.lbClient.Exists(ctx, meta, s.lbClient.GRPCClient().GetCallOption()...)
 	if err != nil {
 		st, msg, err := status.ParseError(err, codes.Internal, "failed to parse "+vald.ExistsRPCName+" gRPC error response")
 		if span != nil {
@@ -115,7 +115,7 @@ func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *
 			span.End()
 		}
 	}()
-	res, err = s.client.Search(ctx, req)
+	res, err = s.lbClient.Search(ctx, req)
 	if err != nil {
 		st, msg, err := status.ParseError(err, codes.Internal, "failed to parse "+vald.SearchRPCName+" gRPC error response")
 		if span != nil {
@@ -137,7 +137,7 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 			span.End()
 		}
 	}()
-	res, err = s.client.SearchByID(ctx, req)
+	res, err = s.lbClient.SearchByID(ctx, req)
 	if err != nil {
 		st, msg, err := status.ParseError(err, codes.Internal, "failed to parse "+vald.SearchByIDRPCName+" gRPC error response")
 		if span != nil {
@@ -258,7 +258,7 @@ func (s *server) MultiSearch(ctx context.Context, reqs *payload.Search_MultiRequ
 			span.End()
 		}
 	}()
-	res, err := s.client.MultiSearch(ctx, reqs)
+	res, err := s.lbClient.MultiSearch(ctx, reqs)
 	if err != nil {
 		st, msg, err := status.ParseError(err, codes.Internal, "failed to parse "+vald.MultiSearchRPCName+" gRPC error response")
 		if span != nil {
@@ -278,7 +278,7 @@ func (s *server) MultiSearchByID(ctx context.Context, reqs *payload.Search_Multi
 			span.End()
 		}
 	}()
-	res, err = s.client.MultiSearchByID(ctx, reqs)
+	res, err = s.lbClient.MultiSearchByID(ctx, reqs)
 	if err != nil {
 		st, msg, err := status.ParseError(err, codes.Internal, "failed to parse "+vald.MultiSearchByIDRPCName+" gRPC error response")
 		if span != nil {
@@ -298,7 +298,7 @@ func (s *server) LinearSearch(ctx context.Context, req *payload.Search_Request) 
 			span.End()
 		}
 	}()
-	res, err = s.client.LinearSearch(ctx, req)
+	res, err = s.lbClient.LinearSearch(ctx, req)
 	if err != nil {
 		st, msg, err := status.ParseError(err, codes.Internal, "failed to parse "+vald.LinearSearchRPCName+" gRPC error response")
 		if span != nil {
@@ -320,7 +320,7 @@ func (s *server) LinearSearchByID(ctx context.Context, req *payload.Search_IDReq
 			span.End()
 		}
 	}()
-	res, err = s.client.LinearSearchByID(ctx, req)
+	res, err = s.lbClient.LinearSearchByID(ctx, req)
 	if err != nil {
 		st, msg, err := status.ParseError(err, codes.Internal, "failed to parse "+vald.LinearSearchByIDRPCName+" gRPC error response")
 		if span != nil {
@@ -443,7 +443,7 @@ func (s *server) MultiLinearSearch(ctx context.Context, reqs *payload.Search_Mul
 			span.End()
 		}
 	}()
-	res, err = s.client.MultiLinearSearch(ctx, reqs)
+	res, err = s.lbClient.MultiLinearSearch(ctx, reqs)
 	if err != nil {
 		st, msg, err := status.ParseError(err, codes.Internal, "failed to parse "+vald.MultiSearchRPCName+" gRPC error response")
 		if span != nil {
@@ -463,7 +463,7 @@ func (s *server) MultiLinearSearchByID(ctx context.Context, reqs *payload.Search
 			span.End()
 		}
 	}()
-	res, err = s.client.MultiLinearSearchByID(ctx, reqs)
+	res, err = s.lbClient.MultiLinearSearchByID(ctx, reqs)
 	if err != nil {
 		st, msg, err := status.ParseError(err, codes.Internal, "failed to parse "+vald.MultiLinearSearchRPCName+" gRPC error response")
 		if span != nil {
@@ -517,7 +517,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 		}
 	}
 
-	ce, err = s.client.Insert(ctx, req)
+	ce, err = s.lbClient.Insert(ctx, req)
 	if err := s.handleSpan(vald.InsertRPCName, span, err); err != nil {
 		return nil, err
 	}
@@ -633,7 +633,7 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 		}
 	}
 
-	locs, err = s.client.MultiInsert(ctx, reqs, s.client.GRPCClient().GetCallOption()...)
+	locs, err = s.lbClient.MultiInsert(ctx, reqs, s.lbClient.GRPCClient().GetCallOption()...)
 	if err := s.handleSpan(vald.MultiInsertRPCName, span, err); err != nil {
 		return nil, err
 	}
@@ -705,7 +705,7 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (res *
 		}
 	}
 
-	ce, err := s.client.Update(ctx, req, s.client.GRPCClient().GetCallOption()...)
+	ce, err := s.lbClient.Update(ctx, req, s.lbClient.GRPCClient().GetCallOption()...)
 	if err = s.handleSpan(vald.UpdateRPCName, span, err); err != nil {
 		return nil, err
 	}
@@ -831,7 +831,7 @@ func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequ
 		}
 	}
 
-	ces, err := s.client.MultiUpdate(ctx, reqs, s.client.GRPCClient().GetCallOption()...)
+	ces, err := s.lbClient.MultiUpdate(ctx, reqs, s.lbClient.GRPCClient().GetCallOption()...)
 	if err = s.handleSpan(vald.MultiUpdateRPCName, span, err); err != nil {
 		return nil, err
 	}
@@ -932,7 +932,7 @@ func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *
 		}
 	}
 
-	ce, err := s.client.Upsert(ctx, req, s.client.GRPCClient().GetCallOption()...)
+	ce, err := s.lbClient.Upsert(ctx, req, s.lbClient.GRPCClient().GetCallOption()...)
 	if err := s.handleSpan(vald.UpsertRPCName, span, err); err != nil {
 		return nil, err
 	}
@@ -1048,7 +1048,7 @@ func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequ
 		}
 	}
 
-	res, err = s.client.MultiUpsert(ctx, reqs, s.client.GRPCClient().GetCallOption()...)
+	res, err = s.lbClient.MultiUpsert(ctx, reqs, s.lbClient.GRPCClient().GetCallOption()...)
 	if err := s.handleSpan(vald.MultiUpsertRPCName, span, err); err != nil {
 		return nil, err
 	}
@@ -1113,7 +1113,7 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (loc *
 		}
 	}
 
-	loc, err = s.client.Remove(ctx, req, s.client.GRPCClient().GetCallOption()...)
+	loc, err = s.lbClient.Remove(ctx, req, s.lbClient.GRPCClient().GetCallOption()...)
 	if err := s.handleSpan(vald.RemoveRPCName, span, err); err != nil {
 		return nil, err
 	}
@@ -1239,7 +1239,7 @@ func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequ
 		}
 	}
 
-	locs, err = s.client.MultiRemove(ctx, reqs, s.client.GRPCClient().GetCallOption()...)
+	locs, err = s.lbClient.MultiRemove(ctx, reqs, s.lbClient.GRPCClient().GetCallOption()...)
 	if err := s.handleSpan(vald.MultiRemoveRPCName, span, err); err != nil {
 		return nil, err
 	}
@@ -1284,7 +1284,7 @@ func (s *server) GetObject(ctx context.Context, req *payload.Object_VectorReques
 			span.End()
 		}
 	}()
-	vec, err = s.client.GetObject(ctx, req)
+	vec, err = s.lbClient.GetObject(ctx, req)
 	if err != nil {
 		st, msg, err := status.ParseError(err, codes.Internal, "failed to parse "+vald.GetObjectRPCName+" gRPC error response")
 		if span != nil {

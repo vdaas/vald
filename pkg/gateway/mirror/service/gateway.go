@@ -45,8 +45,9 @@ type Gateway interface {
 }
 
 type gateway struct {
-	client mclient.Client
-	eg     errgroup.Group
+	client  mclient.Client // Mirror Gateway client for other cluster.
+	iclient mclient.Client // Mirror Gateway client for the same cluster.
+	eg      errgroup.Group
 }
 
 func NewGateway(opts ...Option) (gw Gateway, err error) {
