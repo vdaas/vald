@@ -61,7 +61,38 @@ func NewGateway(opts ...Option) (gw Gateway, err error) {
 }
 
 func (g *gateway) Start(ctx context.Context) (<-chan error, error) {
-	return g.client.Start(ctx)
+	ech := make(chan error, 100)
+
+	cech, err := g.client.Start(ctx)
+	if err != nil {
+		close(ech)
+		return nil, err
+	}
+	icech, err := g.iclient.Start(ctx)
+	if err != nil {
+		close(ech)
+		return nil, err
+	}
+
+	g.eg.Go(func() (err error) {
+		defer close(ech)
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case err = <-cech:
+			case err = <-icech:
+			}
+			if err != nil {
+				select {
+				case <-ctx.Done():
+				case ech <- err:
+				}
+				err = nil
+			}
+		}
+	})
+	return ech, nil
 }
 
 func (g *gateway) ForwardedContext(ctx context.Context) context.Context {
@@ -86,6 +117,8 @@ func (g *gateway) BroadCast(ctx context.Context,
 			span.End()
 		}
 	}()
+
+	imAddrs := g.internlMirrorAddrs()
 	return g.client.GRPCClient().RangeConcurrent(g.ForwardedContext(fctx), -1, func(ictx context.Context,
 		addr string, conn *grpc.ClientConn, copts ...grpc.CallOption,
 	) (err error) {
@@ -93,6 +126,9 @@ func (g *gateway) BroadCast(ctx context.Context,
 		case <-ictx.Done():
 			return nil
 		default:
+			if _, ok := imAddrs[addr]; ok {
+				return
+			}
 			err = f(ictx, addr, conn, copts...)
 			if err != nil {
 				return err
@@ -100,6 +136,14 @@ func (g *gateway) BroadCast(ctx context.Context,
 		}
 		return nil
 	})
+}
+
+// internlAddrs returns the addresses of Mirror Gateway on the same cluster.
+func (g *gateway) internlMirrorAddrs() (m map[string]struct{}) {
+	for _, addr := range g.iclient.GRPCClient().ConnectedAddrs() {
+		m[addr] = struct{}{}
+	}
+	return m
 }
 
 // func (g *gateway) Connect(ctx context.Context, addrs ...string) error {
