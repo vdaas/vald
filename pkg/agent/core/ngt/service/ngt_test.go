@@ -11349,7 +11349,9 @@ type index struct {
 
 func Test_ngt_InsertUpsert(t *testing.T) {
 	type args struct {
-		idxes []index
+		idxes    []index
+		poolSize uint32
+		bulkSize int
 	}
 	type fields struct {
 		svcCfg  *config.NGT
@@ -11437,7 +11439,9 @@ func Test_ngt_InsertUpsert(t *testing.T) {
 		{
 			name: "insert & upsert 100 random",
 			args: args{
-				idxes: createRandomData(10000000),
+				idxes:    createRandomData(10000000),
+				poolSize: 100000,
+				bulkSize: 100000,
 			},
 			fields: fields{
 				svcCfg: &config.NGT{
@@ -11478,7 +11482,7 @@ func Test_ngt_InsertUpsert(t *testing.T) {
 			if err != nil {
 				tt.Errorf("failed to init ngt service, error = %v", err)
 			}
-
+			var wg sync.WaitGroup
 			count := 0
 			for _, idx := range test.args.idxes {
 				count++
@@ -11487,36 +11491,53 @@ func Test_ngt_InsertUpsert(t *testing.T) {
 					tt.Errorf("error = %v", err)
 				}
 
-				if count%1000 == 0 {
-					err = n.CreateAndSaveIndex(ctx, 100)
-					if err != nil {
-						tt.Errorf("error creating index: %v", err)
-					}
+				if count >= test.args.bulkSize {
+					wg.Add(1)
+					go func() {
+						defer wg.Done()
+						err = n.CreateAndSaveIndex(ctx, test.args.poolSize)
+						if err != nil {
+							tt.Errorf("error creating index: %v", err)
+						}
+					}()
+					count = 0
 				}
 			}
+			wg.Wait()
 
-			err = n.CreateAndSaveIndex(ctx, uint32(count%100))
+			err = n.CreateAndSaveIndex(ctx, test.args.poolSize)
 			if err != nil {
 				tt.Errorf("error creating index: %v", err)
 			}
 
+			var wgu sync.WaitGroup
 			count = 0
 			for _, idx := range test.args.idxes {
 				count++
-				err = n.Update(idx.uuid, idx.vec)
+				err = n.Delete(idx.uuid)
+				if err != nil {
+					tt.Errorf("delete error = %v", err)
+				}
+				err = n.Insert(idx.uuid, idx.vec)
 				if err := checkFunc(test.want, err); err != nil {
 					tt.Errorf("error = %v", err)
 				}
 
-				if count%1000 == 0 {
-					err = n.CreateAndSaveIndex(ctx, 100)
-					if err != nil {
-						tt.Errorf("error creating index: %v", err)
-					}
+				if count >= test.args.bulkSize {
+					wgu.Add(1)
+					go func() {
+						defer wgu.Done()
+						err = n.CreateAndSaveIndex(ctx, test.args.poolSize)
+						if err != nil {
+							tt.Errorf("error creating index: %v", err)
+						}
+					}()
+					count = 0
 				}
 			}
+			wgu.Wait()
 
-			err = n.CreateAndSaveIndex(ctx, uint32(count%100))
+			err = n.CreateAndSaveIndex(ctx, test.args.poolSize)
 			if err != nil {
 				tt.Errorf("error creating index: %v", err)
 			}

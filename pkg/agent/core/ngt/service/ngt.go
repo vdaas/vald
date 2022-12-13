@@ -99,6 +99,7 @@ type ngt struct {
 	// counters
 	nocie uint64 // number of create index execution
 	nogce uint64 // number of proactive GC execution
+	wfci  uint64 // wait for create indexing
 
 	// configurations
 	inMem bool // in-memory mode
@@ -827,6 +828,12 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 	if ic == 0 {
 		return errors.ErrUncommittedIndexNotFound
 	}
+	wf := atomic.AddUint64(&n.wfci, 1)
+	if wf > 1 {
+		atomic.AddUint64(&n.wfci, ^uint64(0))
+		log.Warnf("concurrent create index waiting detected this request will be ignored, concurrent: %d", wf)
+		return nil
+	}
 	err = func() error {
 		ticker := time.NewTicker(time.Millisecond * 100)
 		defer ticker.Stop()
@@ -835,10 +842,12 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 			runtime.Gosched()
 			select {
 			case <-ctx.Done():
+				atomic.AddUint64(&n.wfci, ^uint64(0))
 				return ctx.Err()
 			case <-ticker.C:
 			}
 		}
+		atomic.AddUint64(&n.wfci, ^uint64(0))
 		return nil
 	}()
 	if err != nil {
@@ -1183,12 +1192,11 @@ func (n *ngt) Exists(uuid string) (oid uint32, ok bool) {
 	if !ok {
 		oid, ok = n.kvs.Get(uuid)
 		if !ok {
-			log.Debugf("Exists\tuuid: %s's data not found in kvsdb and insert vqueue\terror: %v", uuid, errors.ErrObjectIDNotFound(uuid))
+			// log.Debugf("Exists\tuuid: %s's data not found in kvsdb and insert vqueue\terror: %v", uuid, errors.ErrObjectIDNotFound(uuid))
 			return 0, false
 		}
 		if n.vq.DVExists(uuid) {
-			log.Debugf("Exists\tuuid: %s's data found in kvsdb and not found in insert vqueue, but delete vqueue data exists. the object will be delete soon\terror: %v",
-				uuid, errors.ErrObjectIDNotFound(uuid))
+			// log.Debugf("Exists\tuuid: %s's data found in kvsdb and not found in insert vqueue, but delete vqueue data exists. the object will be delete soon\terror: %v", uuid, errors.ErrObjectIDNotFound(uuid))
 			return 0, false
 		}
 	}
