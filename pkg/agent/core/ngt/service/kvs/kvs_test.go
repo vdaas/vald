@@ -1775,8 +1775,9 @@ func Test_bidi_Close(t *testing.T) {
 }
 
 func Test_set_get_delete(t *testing.T) {
+	// ids := readFileByLine("/tmp/20221026_ids")
 	ids := []string{
-		// id here
+		// ids here
 	}
 
 	b := New().(*bidi)
@@ -1793,32 +1794,35 @@ func Test_set_get_delete(t *testing.T) {
 		}
 	}
 
-	for i, id := range ids[0:5] {
-		j, ok := b.Delete(id)
-		if !ok {
-			t.Fatal("delete not ok")
-		}
-		if uint32(i) != j {
-			t.Fatal("delete not match")
-		}
+	wg := sync.WaitGroup{}
+	for idx, uuid := range ids {
+		i := idx
+		id := uuid
+
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+
+			j, ok := b.Delete(id)
+			if !ok {
+				t.Fatal("delete not ok")
+			}
+			if uint32(i) != j {
+				t.Fatal("delete not match")
+			}
+
+			b.Set(id, uint32(i))
+
+			j, ok = b.Get(id)
+			if !ok {
+				t.Fatal("get not ok")
+			}
+			if uint32(i) != j {
+				t.Fatal("get not match")
+			}
+		}()
 	}
-	for _, id := range ids[0:5] {
-		_, ok := b.Get(id)
-		if ok {
-			t.Fatal("exist")
-		}
-	}
-	for i, id := range ids {
-		b.Set(id, uint32(i))
-	}
-	for i, id := range ids {
-		j, ok := b.Get(id)
-		if !ok {
-			t.Fatal("get not ok")
-		}
-		if uint32(i) != j {
-			t.Fatal("get not match")
-		}
-	}
+
+	wg.Wait()
 	// t.Fatalf("id length: %d, ou length: %d, uo length: %d", len(ids), len(b.ou), len(b.uo))
 }
