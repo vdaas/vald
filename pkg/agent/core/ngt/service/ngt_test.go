@@ -18,14 +18,20 @@
 package service
 
 import (
+	"bufio"
 	"context"
+	"os"
 	"reflect"
+	"strconv"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"testing"
 	"time"
 
+	"github.com/kpango/glg"
 	"github.com/vdaas/vald/internal/config"
+	"github.com/vdaas/vald/internal/core/algorithm/ngt"
 	core "github.com/vdaas/vald/internal/core/algorithm/ngt"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
@@ -10762,4 +10768,243 @@ func Test_ngt_Close(t *testing.T) {
 			}
 		})
 	}
+}
+
+type index struct {
+	uuid string
+	vec  []float32
+}
+
+func Test_ngt_InsertUpsert(t *testing.T) {
+	type args struct {
+		idxes []index
+	}
+	type fields struct {
+		svcCfg  *config.NGT
+		svcOpts []Option
+
+		core              core.NGT
+		eg                errgroup.Group
+		kvs               kvs.BidiMap
+		fmu               sync.Mutex
+		fmap              map[string]uint32
+		vq                vqueue.Queue
+		indexing          atomic.Value
+		saving            atomic.Value
+		cimu              sync.Mutex
+		lastNocie         uint64
+		nocie             uint64
+		nogce             uint64
+		inMem             bool
+		dim               int
+		alen              int
+		lim               time.Duration
+		dur               time.Duration
+		sdur              time.Duration
+		minLit            time.Duration
+		maxLit            time.Duration
+		litFactor         time.Duration
+		enableProactiveGC bool
+		enableCopyOnWrite bool
+		path              string
+		smu               sync.Mutex
+		tmpPath           atomic.Value
+		oldPath           string
+		basePath          string
+		cowmu             sync.Mutex
+		backupGen         uint64
+		poolSize          uint32
+		radius            float32
+		epsilon           float32
+		idelay            time.Duration
+		dcd               bool
+		kvsdbConcurrency  int
+	}
+	type want struct {
+		err error
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		return nil
+	}
+	var (
+		// default NGT configuration for test
+		kvsdbCfg  = &config.KVSDB{}
+		vqueueCfg = &config.VQueue{}
+	)
+	idxes := readDiffFile("./20221025")
+	tests := []test{
+		{
+			name: "insert & upsert 1",
+			args: args{
+				idxes: []index{
+					{
+						uuid: "19731011_puls-0000303:43171:1",
+						vec: []float32{
+							-0.018963795, 0.13975345, -0.01438206, 0.021553166, -0.1163193, 0.02389161, -0.043322664, 0.051071428, -0.09778391, 0.17714833, 0.070366226, 0.00964489, 0.123230025, -0.0072021615, -0.12053576, -0.25266534, -0.05868739, -0.06946657, -0.13858624, 0.08516157, -0.123261474, 0.14827089, -0.15974368, -0.045519657, -0.15578407, 0.12303146, -0.10828495, 0.061408218, -0.12964113, 0.02870139, 0.2465153, 0.16652209, 0.12929203, -0.24059042, 0.08436171, 0.018702978, -0.005219509, -0.07248656, 0.14141396, -0.13592686, 0.044463452, 0.083398245, -0.12660366, 0.01033342, 0.10309342, 0.1062651, -0.04192098, -0.024938857, -0.17638475, -0.04105866, 0.16464227, 0.09967009, -0.24130723, 0.05822357, 0.065308936, 0.14314993, -0.025086135, -0.014758362, -0.12474182, -0.10733189, -0.16456085, 0.17825097, 0.048106, -0.17680661, 0.02702824, 0.4698901, -0.41418663, 0.4129158, -0.02523511, 0.36365706, -0.30040222, 0.5185276, -0.51615494, 0.5655249, -0.092418216, 0.07052821, 0.40197027, 0.084085345, -0.4798388, -0.5527801, 0.12522608, -0.13325042, -0.4993201, -0.31595704, -0.35174417, 0.27274206, 0.2663609, 0.40937683, -0.45539486, 0.16548769, -0.7304982, 0.2212803, -0.70699847, -0.019003047, 0.63269913, 0.23438695, 0.14075014, 0.034899414, 0.1016486, -0.5403803, 0.049518738, 0.08046312, 0.3919085, -0.1290008, -0.07870986, -0.060331456, 0.1759862, 0.12838659, 0.17038107, -0.09322341, -0.05854857, 0.029937917, -0.0010719631, -0.11727104, 0.1532171, -0.07039561, 0.016434262, -0.14807108, 0.08238894, 0.23709965, 0.15327819, -0.07462129, 0.036771126, 0.07617792, 0.22700097, -0.10173196, 0.15948103, -0.18994464 - 0.018963795, 0.13975345, -0.01438206, 0.021553166, -0.1163193, 0.02389161, -0.043322664, 0.051071428, -0.09778391, 0.17714833, 0.070366226, 0.00964489, 0.123230025, -0.0072021615, -0.12053576, -0.25266534, -0.05868739, -0.06946657, -0.13858624, 0.08516157, -0.123261474, 0.14827089, -0.15974368, -0.045519657, -0.15578407, 0.12303146, -0.10828495, 0.061408218, -0.12964113, 0.02870139, 0.2465153, 0.16652209, 0.12929203, -0.24059042, 0.08436171, 0.018702978, -0.005219509, -0.07248656, 0.14141396, -0.13592686, 0.044463452, 0.083398245, -0.12660366, 0.01033342, 0.10309342, 0.1062651, -0.04192098, -0.024938857, -0.17638475, -0.04105866, 0.16464227, 0.09967009, -0.24130723, 0.05822357, 0.065308936, 0.14314993, -0.025086135, -0.014758362, -0.12474182, -0.10733189, -0.16456085, 0.17825097, 0.048106, -0.17680661, 0.02702824, 0.4698901, -0.41418663, 0.4129158, -0.02523511, 0.36365706, -0.30040222, 0.5185276, -0.51615494, 0.5655249, -0.092418216, 0.07052821, 0.40197027, 0.084085345, -0.4798388, -0.5527801, 0.12522608, -0.13325042, -0.4993201, -0.31595704, -0.35174417, 0.27274206, 0.2663609, 0.40937683, -0.45539486, 0.16548769, -0.7304982, 0.2212803, -0.70699847, -0.019003047, 0.63269913, 0.23438695, 0.14075014, 0.034899414, 0.1016486, -0.5403803, 0.049518738, 0.08046312, 0.3919085, -0.1290008, -0.07870986, -0.060331456, 0.1759862, 0.12838659, 0.17038107, -0.09322341, -0.05854857, 0.029937917, -0.0010719631, -0.11727104, 0.1532171, -0.07039561, 0.016434262, -0.14807108, 0.08238894, 0.23709965, 0.15327819, -0.07462129, 0.036771126, 0.07617792, 0.22700097, -0.10173196, 0.15948103, -0.18994464,
+						},
+					},
+				},
+			},
+			fields: fields{
+				svcCfg: &config.NGT{
+					Dimension:    128,
+					DistanceType: ngt.Cosine.String(),
+					ObjectType:   ngt.Uint8.String(),
+					KVSDB:        kvsdbCfg,
+					VQueue:       vqueueCfg,
+				},
+				svcOpts: []Option{
+					WithEnableInMemoryMode(true),
+				},
+			},
+		},
+		{
+			name: "insert & upsert all",
+			args: args{
+				idxes: idxes,
+			},
+			fields: fields{
+				svcCfg: &config.NGT{
+					Dimension:    128,
+					DistanceType: ngt.Cosine.String(),
+					ObjectType:   ngt.Uint8.String(),
+					KVSDB:        kvsdbCfg,
+					VQueue:       vqueueCfg,
+				},
+				svcOpts: []Option{
+					WithEnableInMemoryMode(true),
+				},
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+
+			ctx, cancel := context.WithCancel(context.Background())
+			defer cancel()
+
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			checkFunc := test.checkFunc
+			if test.checkFunc == nil {
+				checkFunc = defaultCheckFunc
+			}
+
+			eg, _ := errgroup.New(ctx)
+			n, err := New(test.fields.svcCfg, append(test.fields.svcOpts, WithErrGroup(eg))...)
+			if err != nil {
+				tt.Errorf("failed to init ngt service, error = %v", err)
+			}
+
+			count := 0
+			for _, idx := range test.args.idxes {
+				count++
+				err = n.Insert(idx.uuid, idx.vec)
+				if err := checkFunc(test.want, err); err != nil {
+					tt.Errorf("error = %v", err)
+				}
+
+				if count%100 == 0 {
+					err = n.CreateAndSaveIndex(ctx, 100)
+					if err != nil {
+						tt.Errorf("error creating index: %v", err)
+					}
+				}
+
+				err = n.Update(idx.uuid, idx.vec)
+				if err := checkFunc(test.want, err); err != nil {
+					tt.Errorf("error = %v", err)
+				}
+
+				if count%100 == 0 {
+					err = n.CreateAndSaveIndex(ctx, 100)
+					if err != nil {
+						tt.Errorf("error creating index: %v", err)
+					}
+				}
+			}
+		})
+	}
+}
+
+func readDiffFile(filePath string) []index {
+	// only read all data with insert
+	f, err := os.Open(filePath)
+	if err != nil {
+		glg.Fatal("Unable to read input file "+filePath, err)
+	}
+	defer f.Close()
+	scanner := bufio.NewScanner(f)
+
+	result := make([]index, 0)
+	for scanner.Scan() {
+		row := scanner.Text()
+
+		r := strings.Split(row, "\t")
+		id := r[0]
+		action := r[1]
+		var vec []float32
+
+		if action != "delete" {
+			vecSlice := r[2:]
+			vec = make([]float32, len(vecSlice))
+			for i, v := range vecSlice {
+				f, err := strconv.ParseFloat(v, 32)
+				if err != nil {
+					glg.Fatal(err)
+				}
+				vec[i] = float32(f)
+			}
+
+			if len(vec) != 128 {
+				glg.Error("invalid vec lengh, ID: %v, vec: %v", id, vec)
+			}
+		}
+
+		if action == "insert" {
+			result = append(result, index{
+				uuid: id,
+				vec:  vec,
+			})
+			// _, err = client.Upsert(ctx, &payload.Upsert_Request{
+			// 	Vector: &payload.Object_Vector{
+			// 		Id:     id,
+			// 		Vector: vec,
+			// 	},
+			// 	Config: &payload.Upsert_Config{
+			// 		SkipStrictExistCheck: true,
+			// 	},
+			// })
+			// } else if action == "delete" {
+			// 	_, err = client.Remove(ctx, &payload.Remove_Request{
+			// 		Id: &payload.Object_ID{
+			// 			Id: id,
+			// 		},
+			// 		Config: &payload.Remove_Config{
+			// 			SkipStrictExistCheck: true,
+			// 		},
+			// 	})
+		}
+	}
+	return result
 }
