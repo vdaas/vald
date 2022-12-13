@@ -1773,3 +1773,52 @@ func Test_bidi_Close(t *testing.T) {
 		})
 	}
 }
+
+func Test_set_get_delete(t *testing.T) {
+	ids := []string{
+		// id here
+	}
+
+	b := New().(*bidi)
+	for i, id := range ids {
+		b.Set(id, uint32(i))
+	}
+	for i, id := range ids {
+		j, ok := b.Get(id)
+		if !ok {
+			t.Fatal("get not ok")
+		}
+		if uint32(i) != j {
+			t.Fatal("get not match")
+		}
+	}
+
+	for i, id := range ids[0:5] {
+		j, ok := b.Delete(id)
+		if !ok {
+			t.Fatal("delete not ok")
+		}
+		if uint32(i) != j {
+			t.Fatal("delete not match")
+		}
+	}
+	for _, id := range ids[0:5] {
+		_, ok := b.Get(id)
+		if ok {
+			t.Fatal("exist")
+		}
+	}
+	for i, id := range ids {
+		b.Set(id, uint32(i))
+	}
+	for i, id := range ids {
+		j, ok := b.Get(id)
+		if !ok {
+			t.Fatal("get not ok")
+		}
+		if uint32(i) != j {
+			t.Fatal("get not match")
+		}
+	}
+	// t.Fatalf("id length: %d, ou length: %d, uo length: %d", len(ids), len(b.ou), len(b.uo))
+}
