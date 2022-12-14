@@ -20,6 +20,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"math"
 	"reflect"
 	"sync"
 	"sync/atomic"
@@ -11887,8 +11888,17 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 
 	result := make([]index, 0)
 	f32s, _ := vector.GenF32Vec(vector.NegativeUniform, num, 128)
+
 	for idx, vec := range f32s {
 		for i := range vec {
+			if f := vec[i] * ad; f == 0.0 {
+				if vec[i] > 0.0 {
+					vec[i] = math.MaxFloat32
+				} else if vec[i] < 0.0 {
+					vec[i] = math.SmallestNonzeroFloat32
+				}
+				continue
+			}
 			vec[i] = vec[i] * ad
 		}
 		result = append(result, index{
