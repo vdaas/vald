@@ -554,7 +554,7 @@ func (n *ngt) Start(ctx context.Context) <-chan error {
 			}
 			if err != nil && err != errors.ErrUncommittedIndexNotFound {
 				ech <- err
-				// runtime.Gosched()
+				runtime.Gosched()
 				err = nil
 			}
 		}
@@ -839,7 +839,7 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 		defer ticker.Stop()
 		// wait for not indexing & not saving
 		for n.IsIndexing() || n.IsSaving() {
-			// runtime.Gosched()
+			runtime.Gosched()
 			select {
 			case <-ctx.Done():
 				atomic.AddUint64(&n.wfci, ^uint64(0))
@@ -997,7 +997,7 @@ func (n *ngt) saveIndex(ctx context.Context) (err error) {
 		defer ticker.Stop()
 		// wait for not indexing & not saving
 		for n.IsIndexing() || n.IsSaving() {
-			// runtime.Gosched()
+			runtime.Gosched()
 			select {
 			case <-ctx.Done():
 				return ctx.Err()
