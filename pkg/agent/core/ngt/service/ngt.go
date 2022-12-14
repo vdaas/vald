@@ -554,7 +554,7 @@ func (n *ngt) Start(ctx context.Context) <-chan error {
 			}
 			if err != nil && err != errors.ErrUncommittedIndexNotFound {
 				ech <- err
-				runtime.Gosched()
+				// runtime.Gosched()
 				err = nil
 			}
 		}
@@ -831,7 +831,7 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 	wf := atomic.AddUint64(&n.wfci, 1)
 	if wf > 1 {
 		atomic.AddUint64(&n.wfci, ^uint64(0))
-		log.Debugf("concurrent create index waiting detected this request will be ignored, concurrent: %d", wf)
+		// log.Debugf("concurrent create index waiting detected this request will be ignored, concurrent: %d", wf)
 		return nil
 	}
 	err = func() error {
@@ -839,7 +839,7 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 		defer ticker.Stop()
 		// wait for not indexing & not saving
 		for n.IsIndexing() || n.IsSaving() {
-			runtime.Gosched()
+			// runtime.Gosched()
 			select {
 			case <-ctx.Done():
 				atomic.AddUint64(&n.wfci, ^uint64(0))
@@ -997,7 +997,7 @@ func (n *ngt) saveIndex(ctx context.Context) (err error) {
 		defer ticker.Stop()
 		// wait for not indexing & not saving
 		for n.IsIndexing() || n.IsSaving() {
-			runtime.Gosched()
+			// runtime.Gosched()
 			select {
 			case <-ctx.Done():
 				return ctx.Err()
@@ -1192,15 +1192,15 @@ func (n *ngt) Exists(uuid string) (oid uint32, ok bool) {
 	if !ok {
 		oid, ok = n.kvs.Get(uuid)
 		if !ok {
-			log.Debugf("Exists\tuuid: %s's data not found in kvsdb and insert vqueue\terror: %v", uuid, errors.ErrObjectIDNotFound(uuid))
+			// log.Debugf("Exists\tuuid: %s's data not found in kvsdb and insert vqueue\terror: %v", uuid, errors.ErrObjectIDNotFound(uuid))
 			return 0, false
 		}
 		if n.vq.DVExists(uuid) {
-			log.Debugf(
-				"Exists\tuuid: %s's data found in kvsdb and not found in insert vqueue, but delete vqueue data exists. the object will be delete soon\terror: %v",
-				uuid,
-				errors.ErrObjectIDNotFound(uuid),
-			)
+			// log.Debugf(
+			// 	"Exists\tuuid: %s's data found in kvsdb and not found in insert vqueue, but delete vqueue data exists. the object will be delete soon\terror: %v",
+			// 	uuid,
+			// 	errors.ErrObjectIDNotFound(uuid),
+			// )
 			return 0, false
 		}
 	}

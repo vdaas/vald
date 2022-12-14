@@ -16,6 +16,7 @@ package vector
 import (
 	"math"
 	"math/rand"
+	"time"
 
 	"github.com/vdaas/vald/internal/errors"
 )
@@ -29,6 +30,7 @@ type (
 const (
 	Gaussian Distribution = iota
 	Uniform
+	NegativeUniform
 )
 
 // ErrUnknownDistritbution represents an error which the distribution is unknown.
@@ -41,6 +43,8 @@ func Float32VectorGenerator(d Distribution) (Float32VectorGeneratorFunc, error) 
 		return GaussianDistributedFloat32VectorGenerator, nil
 	case Uniform:
 		return UniformDistributedFloat32VectorGenerator, nil
+	case NegativeUniform:
+		return NegativeUniformDistributedFloat32VectorGenerator, nil
 	default:
 		return nil, ErrUnknownDistribution
 	}
@@ -75,6 +79,23 @@ func float32VectorGenerator(n, dim int, gen func() float32) (ret [][]float32) {
 // UniformDistributedFloat32VectorGenerator returns n float32 vectors with dim dimension and their values under Uniform distribution
 func UniformDistributedFloat32VectorGenerator(n, dim int) [][]float32 {
 	return float32VectorGenerator(n, dim, rand.Float32)
+}
+
+// NegativeUniformDistributedFloat32VectorGenerator returns n float32 vectors with dim dimension and their values under Uniform distribution
+func NegativeUniformDistributedFloat32VectorGenerator(n, dim int) (vecs [][]float32) {
+	left, right := dim/2, dim-dim/2
+	lvs := float32VectorGenerator(n, left, func() float32 {
+		return -rand.Float32()
+	})
+	rvs := UniformDistributedFloat32VectorGenerator(n, right)
+	vecs = make([][]float32, 0, n)
+	rand.Seed(time.Now().UnixNano())
+	for i := 0; i < n; i++ {
+		vs := append(lvs[i], rvs[i]...)
+		rand.Shuffle(len(vs), func(i, j int) { vs[i], vs[j] = vs[j], vs[i] })
+		vecs = append(vecs, vs)
+	}
+	return vecs
 }
 
 // GaussianDistributedFloat32VectorGenerator returns n float32 vectors with dim dimension and their values under Gaussian distribution

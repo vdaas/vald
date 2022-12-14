@@ -11466,7 +11466,7 @@ func Test_ngt_InsertUpsert(t *testing.T) {
 			ctx, cancel := context.WithCancel(context.Background())
 			defer cancel()
 
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			// defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -11512,33 +11512,98 @@ func Test_ngt_InsertUpsert(t *testing.T) {
 				tt.Errorf("error creating index: %v", err)
 			}
 
-			var wgu sync.WaitGroup
-			count = 0
-			for _, idx := range test.args.idxes {
-				count++
-				err = n.Delete(idx.uuid)
-				if err != nil {
-					tt.Errorf("delete error = %v", err)
-				}
-				err = n.Insert(idx.uuid, idx.vec)
-				if err := checkFunc(test.want, err); err != nil {
-					tt.Errorf("error = %v", err)
-				}
+			eg.Go(func() error {
+				var wgu sync.WaitGroup
+				count = 0
+				for _, idx := range test.args.idxes[:len(test.args.idxes)/3] {
+					count++
+					err = n.Delete(idx.uuid)
+					if err != nil {
+						tt.Errorf("delete error = %v", err)
+					}
+					err = n.Insert(idx.uuid, idx.vec)
+					if err := checkFunc(test.want, err); err != nil {
+						tt.Errorf("error = %v", err)
+					}
 
-				if count >= test.args.bulkSize {
-					wgu.Add(1)
-					eg.Go(func() error {
-						defer wgu.Done()
-						err = n.CreateAndSaveIndex(ctx, test.args.poolSize)
-						if err != nil {
-							tt.Errorf("error creating index: %v", err)
-						}
-						return nil
-					})
-					count = 0
+					if count >= test.args.bulkSize {
+						wgu.Add(1)
+						eg.Go(func() error {
+							defer wgu.Done()
+							err = n.CreateAndSaveIndex(ctx, test.args.poolSize)
+							if err != nil {
+								tt.Errorf("error creating index: %v", err)
+							}
+							return nil
+						})
+						count = 0
+					}
 				}
-			}
-			wgu.Wait()
+				wgu.Wait()
+				return nil
+			})
+
+			eg.Go(func() error {
+				var wgu sync.WaitGroup
+				count = 0
+				for _, idx := range test.args.idxes[len(test.args.idxes)/3 : 2*len(test.args.idxes)/3] {
+					count++
+					err = n.Delete(idx.uuid)
+					if err != nil {
+						tt.Errorf("delete error = %v", err)
+					}
+					err = n.Insert(idx.uuid, idx.vec)
+					if err := checkFunc(test.want, err); err != nil {
+						tt.Errorf("error = %v", err)
+					}
+
+					if count >= test.args.bulkSize {
+						wgu.Add(1)
+						eg.Go(func() error {
+							defer wgu.Done()
+							err = n.CreateAndSaveIndex(ctx, test.args.poolSize)
+							if err != nil {
+								tt.Errorf("error creating index: %v", err)
+							}
+							return nil
+						})
+						count = 0
+					}
+				}
+				wgu.Wait()
+				return nil
+			})
+
+			eg.Go(func() error {
+				var wgu sync.WaitGroup
+				count = 0
+				for _, idx := range test.args.idxes[2*len(test.args.idxes)/3:] {
+					count++
+					err = n.Delete(idx.uuid)
+					if err != nil {
+						tt.Errorf("delete error = %v", err)
+					}
+					err = n.Insert(idx.uuid, idx.vec)
+					if err := checkFunc(test.want, err); err != nil {
+						tt.Errorf("error = %v", err)
+					}
+
+					if count >= test.args.bulkSize {
+						wgu.Add(1)
+						eg.Go(func() error {
+							defer wgu.Done()
+							err = n.CreateAndSaveIndex(ctx, test.args.poolSize)
+							if err != nil {
+								tt.Errorf("error creating index: %v", err)
+							}
+							return nil
+						})
+						count = 0
+					}
+				}
+				wgu.Wait()
+				return nil
+			})
 
 			err = n.CreateAndSaveIndex(ctx, test.args.poolSize)
 			if err != nil {
@@ -11551,7 +11616,7 @@ func Test_ngt_InsertUpsert(t *testing.T) {
 
 func createRandomData(num int) []index {
 	result := make([]index, 0)
-	f32s, _ := vector.GenF32Vec(vector.Gaussian, num, 128)
+	f32s, _ := vector.GenF32Vec(vector.NegativeUniform, num, 128)
 	for idx, vec := range f32s {
 		result = append(result, index{
 			uuid: fmt.Sprintf("%s_%s-%s:%d:%d,%d", uuid.New().String(), uuid.New().String(), uuid.New().String(), idx, idx/100, idx%100),
