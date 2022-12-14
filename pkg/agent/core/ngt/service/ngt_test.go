@@ -11422,7 +11422,7 @@ func Test_ngt_InsertUpsert(t *testing.T) {
 		{
 			name: "insert & upsert 1",
 			args: args{
-				idxes: createRandomData(1),
+				idxes: createRandomData(1, new(createRandomDataConfig)),
 			},
 			fields: fields{
 				svcCfg: &config.NGT{
@@ -11440,7 +11440,7 @@ func Test_ngt_InsertUpsert(t *testing.T) {
 		{
 			name: "insert & upsert 100 random",
 			args: args{
-				idxes:    createRandomData(10000000),
+				idxes:    createRandomData(10000000, new(createRandomDataConfig)),
 				poolSize: 100000,
 				bulkSize: 100000,
 			},
@@ -11614,10 +11614,282 @@ func Test_ngt_InsertUpsert(t *testing.T) {
 	}
 }
 
-func createRandomData(num int) []index {
+func Test_ngt_InsertUpsert_with_additional_digits_for_each_vector_element(t *testing.T) {
+	type args struct {
+		idxes    []index
+		poolSize uint32
+		bulkSize int
+	}
+	type fields struct {
+		svcCfg  *config.NGT
+		svcOpts []Option
+
+		core              core.NGT
+		eg                errgroup.Group
+		kvs               kvs.BidiMap
+		fmu               sync.Mutex
+		fmap              map[string]uint32
+		vq                vqueue.Queue
+		indexing          atomic.Value
+		saving            atomic.Value
+		cimu              sync.Mutex
+		lastNocie         uint64
+		nocie             uint64
+		nogce             uint64
+		inMem             bool
+		dim               int
+		alen              int
+		lim               time.Duration
+		dur               time.Duration
+		sdur              time.Duration
+		minLit            time.Duration
+		maxLit            time.Duration
+		litFactor         time.Duration
+		enableProactiveGC bool
+		enableCopyOnWrite bool
+		path              string
+		smu               sync.Mutex
+		tmpPath           atomic.Value
+		oldPath           string
+		basePath          string
+		cowmu             sync.Mutex
+		backupGen         uint64
+		poolSize          uint32
+		radius            float32
+		epsilon           float32
+		idelay            time.Duration
+		dcd               bool
+		kvsdbConcurrency  int
+	}
+	type want struct {
+		err error
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		return nil
+	}
+	var (
+		// default NGT configuration for test
+		kvsdbCfg  = &config.KVSDB{}
+		vqueueCfg = &config.VQueue{}
+	)
+	tests := []test{
+		{
+			name: "insert & upsert 100 random",
+			args: args{
+				idxes: createRandomData(10000000, &createRandomDataConfig{
+					additionaldigits: 11,
+				}),
+			},
+			fields: fields{
+				svcCfg: &config.NGT{
+					Dimension:    128,
+					DistanceType: core.Cosine.String(),
+					ObjectType:   core.Uint8.String(),
+					KVSDB:        kvsdbCfg,
+					VQueue:       vqueueCfg,
+				},
+				svcOpts: []Option{
+					WithEnableInMemoryMode(true),
+				},
+			},
+		},
+	}
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+
+			ctx, cancel := context.WithCancel(context.Background())
+			defer cancel()
+
+			// defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			checkFunc := test.checkFunc
+			if test.checkFunc == nil {
+				checkFunc = defaultCheckFunc
+			}
+
+			eg, _ := errgroup.New(ctx)
+			n, err := New(test.fields.svcCfg, append(test.fields.svcOpts, WithErrGroup(eg))...)
+			if err != nil {
+				tt.Errorf("failed to init ngt service, error = %v", err)
+			}
+			var wg sync.WaitGroup
+			count := 0
+			for _, idx := range test.args.idxes {
+				count++
+				err = n.Insert(idx.uuid, idx.vec)
+				if err := checkFunc(test.want, err); err != nil {
+					tt.Errorf("error = %v", err)
+				}
+
+				if count >= test.args.bulkSize {
+					wg.Add(1)
+					eg.Go(func() error {
+						defer wg.Done()
+						err = n.CreateAndSaveIndex(ctx, test.args.poolSize)
+						if err != nil {
+							tt.Errorf("error creating index: %v", err)
+						}
+						return nil
+					})
+					count = 0
+				}
+			}
+			wg.Wait()
+
+			err = n.CreateAndSaveIndex(ctx, test.args.poolSize)
+			if err != nil {
+				tt.Errorf("error creating index: %v", err)
+			}
+
+			eg.Go(func() error {
+				var wgu sync.WaitGroup
+				count = 0
+				for _, idx := range test.args.idxes[:len(test.args.idxes)/3] {
+					count++
+					err = n.Delete(idx.uuid)
+					if err != nil {
+						tt.Errorf("delete error = %v", err)
+					}
+					err = n.Insert(idx.uuid, idx.vec)
+					if err := checkFunc(test.want, err); err != nil {
+						tt.Errorf("error = %v", err)
+					}
+
+					if count >= test.args.bulkSize {
+						wgu.Add(1)
+						eg.Go(func() error {
+							defer wgu.Done()
+							err = n.CreateAndSaveIndex(ctx, test.args.poolSize)
+							if err != nil {
+								tt.Errorf("error creating index: %v", err)
+							}
+							return nil
+						})
+						count = 0
+					}
+				}
+				wgu.Wait()
+				return nil
+			})
+
+			eg.Go(func() error {
+				var wgu sync.WaitGroup
+				count = 0
+				for _, idx := range test.args.idxes[len(test.args.idxes)/3 : 2*len(test.args.idxes)/3] {
+					count++
+					err = n.Delete(idx.uuid)
+					if err != nil {
+						tt.Errorf("delete error = %v", err)
+					}
+					err = n.Insert(idx.uuid, idx.vec)
+					if err := checkFunc(test.want, err); err != nil {
+						tt.Errorf("error = %v", err)
+					}
+
+					if count >= test.args.bulkSize {
+						wgu.Add(1)
+						eg.Go(func() error {
+							defer wgu.Done()
+							err = n.CreateAndSaveIndex(ctx, test.args.poolSize)
+							if err != nil {
+								tt.Errorf("error creating index: %v", err)
+							}
+							return nil
+						})
+						count = 0
+					}
+				}
+				wgu.Wait()
+				return nil
+			})
+
+			eg.Go(func() error {
+				var wgu sync.WaitGroup
+				count = 0
+				for _, idx := range test.args.idxes[2*len(test.args.idxes)/3:] {
+					count++
+					err = n.Delete(idx.uuid)
+					if err != nil {
+						tt.Errorf("delete error = %v", err)
+					}
+					err = n.Insert(idx.uuid, idx.vec)
+					if err := checkFunc(test.want, err); err != nil {
+						tt.Errorf("error = %v", err)
+					}
+
+					if count >= test.args.bulkSize {
+						wgu.Add(1)
+						eg.Go(func() error {
+							defer wgu.Done()
+							err = n.CreateAndSaveIndex(ctx, test.args.poolSize)
+							if err != nil {
+								tt.Errorf("error creating index: %v", err)
+							}
+							return nil
+						})
+						count = 0
+					}
+				}
+				wgu.Wait()
+				return nil
+			})
+
+			err = n.CreateAndSaveIndex(ctx, test.args.poolSize)
+			if err != nil {
+				tt.Errorf("error creating index: %v", err)
+			}
+			eg.Wait()
+		})
+	}
+}
+
+type createRandomDataConfig struct {
+	additionaldigits int
+}
+
+func (cfg *createRandomDataConfig) verify() *createRandomDataConfig {
+	if cfg == nil {
+		cfg = new(createRandomDataConfig)
+	}
+	if cfg.additionaldigits < 0 {
+		cfg.additionaldigits = 0
+	}
+	return cfg
+}
+
+func createRandomData(num int, cfg *createRandomDataConfig) []index {
+	cfg = cfg.verify()
+
+	var ad float32 = 1.0
+	for i := 0; i < cfg.additionaldigits; i++ {
+		ad = ad * 0.1
+	}
+
 	result := make([]index, 0)
 	f32s, _ := vector.GenF32Vec(vector.NegativeUniform, num, 128)
 	for idx, vec := range f32s {
+		for i := range vec {
+			vec[i] = vec[i] * ad
+		}
 		result = append(result, index{
 			uuid: fmt.Sprintf("%s_%s-%s:%d:%d,%d", uuid.New().String(), uuid.New().String(), uuid.New().String(), idx, idx/100, idx%100),
 			vec:  vec,
