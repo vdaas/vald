@@ -21,6 +21,9 @@ var (
 	// ErrCreateIndexingIsInProgress represents an error that the indexing is in progress but search request received
 	ErrCreateIndexingIsInProgress = New("create indexing is in progress")
 
+	// ErrFlushingIsInProgress represents an error that the flushing is in progress but any request received
+	ErrFlushingIsInProgress = New("flush is in progress")
+
 	// ErrCreateProperty represents a function to generate an error that the property creation failed.
 	ErrCreateProperty = func(err error) error {
 		return Wrap(err, "failed to create property")
