@@ -142,6 +142,34 @@ message Filter {
     // The target query.
     Query query = 2;
   }
+
+  // Represent the ID and distance pair.
+  message DistanceRequest {
+    // Distance
+    repeated Object.Distance distance = 1;
+    // Query
+    Query query = 2;
+  }
+
+  // Represent the ID and distance pair.
+  message DistanceResponse {
+    // Distance
+    repeated Object.Distance distance = 1;
+  }
+
+  // Represent the ID and vector pair.
+  message VectorRequest {
+    // Vector
+    repeated Object.Vector vector = 1;
+    // Query
+    Query query = 2;
+  }
+
+  // Represent the ID and vector pair.
+  message VectorResponse {
+    // Distance
+    repeated Object.Vector vector = 1;
+  }
 }
 
 // Insert related messages.

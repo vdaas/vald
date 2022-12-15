@@ -43,9 +43,9 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type FilterClient interface {
 	// Represent the RPC to filter the distance.
-	FilterDistance(ctx context.Context, in *payload.Object_Distance, opts ...grpc.CallOption) (*payload.Object_Distance, error)
+	FilterDistance(ctx context.Context, in *payload.Filter_DistanceRequest, opts ...grpc.CallOption) (*payload.Filter_DistanceResponse, error)
 	// Represent the RPC to filter the vector.
-	FilterVector(ctx context.Context, in *payload.Object_Vector, opts ...grpc.CallOption) (*payload.Object_Vector, error)
+	FilterVector(ctx context.Context, in *payload.Filter_VectorRequest, opts ...grpc.CallOption) (*payload.Filter_VectorResponse, error)
 }
 
 type filterClient struct {
@@ -56,8 +56,8 @@ func NewFilterClient(cc grpc.ClientConnInterface) FilterClient {
 	return &filterClient{cc}
 }
 
-func (c *filterClient) FilterDistance(ctx context.Context, in *payload.Object_Distance, opts ...grpc.CallOption) (*payload.Object_Distance, error) {
-	out := new(payload.Object_Distance)
+func (c *filterClient) FilterDistance(ctx context.Context, in *payload.Filter_DistanceRequest, opts ...grpc.CallOption) (*payload.Filter_DistanceResponse, error) {
+	out := new(payload.Filter_DistanceResponse)
 	err := c.cc.Invoke(ctx, "/filter.egress.v1.Filter/FilterDistance", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -65,8 +65,8 @@ func (c *filterClient) FilterDistance(ctx context.Context, in *payload.Object_Di
 	return out, nil
 }
 
-func (c *filterClient) FilterVector(ctx context.Context, in *payload.Object_Vector, opts ...grpc.CallOption) (*payload.Object_Vector, error) {
-	out := new(payload.Object_Vector)
+func (c *filterClient) FilterVector(ctx context.Context, in *payload.Filter_VectorRequest, opts ...grpc.CallOption) (*payload.Filter_VectorResponse, error) {
+	out := new(payload.Filter_VectorResponse)
 	err := c.cc.Invoke(ctx, "/filter.egress.v1.Filter/FilterVector", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -79,9 +79,9 @@ func (c *filterClient) FilterVector(ctx context.Context, in *payload.Object_Vect
 // for forward compatibility
 type FilterServer interface {
 	// Represent the RPC to filter the distance.
-	FilterDistance(context.Context, *payload.Object_Distance) (*payload.Object_Distance, error)
+	FilterDistance(context.Context, *payload.Filter_DistanceRequest) (*payload.Filter_DistanceResponse, error)
 	// Represent the RPC to filter the vector.
-	FilterVector(context.Context, *payload.Object_Vector) (*payload.Object_Vector, error)
+	FilterVector(context.Context, *payload.Filter_VectorRequest) (*payload.Filter_VectorResponse, error)
 	mustEmbedUnimplementedFilterServer()
 }
 
@@ -89,10 +89,10 @@ type FilterServer interface {
 type UnimplementedFilterServer struct {
 }
 
-func (UnimplementedFilterServer) FilterDistance(context.Context, *payload.Object_Distance) (*payload.Object_Distance, error) {
+func (UnimplementedFilterServer) FilterDistance(context.Context, *payload.Filter_DistanceRequest) (*payload.Filter_DistanceResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method FilterDistance not implemented")
 }
-func (UnimplementedFilterServer) FilterVector(context.Context, *payload.Object_Vector) (*payload.Object_Vector, error) {
+func (UnimplementedFilterServer) FilterVector(context.Context, *payload.Filter_VectorRequest) (*payload.Filter_VectorResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method FilterVector not implemented")
 }
 func (UnimplementedFilterServer) mustEmbedUnimplementedFilterServer() {}
@@ -109,7 +109,7 @@ func RegisterFilterServer(s grpc.ServiceRegistrar, srv FilterServer) {
 }
 
 func _Filter_FilterDistance_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(payload.Object_Distance)
+	in := new(payload.Filter_DistanceRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -121,13 +121,13 @@ func _Filter_FilterDistance_Handler(srv interface{}, ctx context.Context, dec fu
 		FullMethod: "/filter.egress.v1.Filter/FilterDistance",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FilterServer).FilterDistance(ctx, req.(*payload.Object_Distance))
+		return srv.(FilterServer).FilterDistance(ctx, req.(*payload.Filter_DistanceRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _Filter_FilterVector_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(payload.Object_Vector)
+	in := new(payload.Filter_VectorRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -139,7 +139,7 @@ func _Filter_FilterVector_Handler(srv interface{}, ctx context.Context, dec func
 		FullMethod: "/filter.egress.v1.Filter/FilterVector",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FilterServer).FilterVector(ctx, req.(*payload.Object_Vector))
+		return srv.(FilterServer).FilterVector(ctx, req.(*payload.Filter_VectorRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }

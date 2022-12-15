@@ -30,8 +30,8 @@ option java_outer_classname = "ValdEgressFilter";
 service Filter {
 
   // Represent the RPC to filter the distance.
-  rpc FilterDistance(payload.v1.Object.Distance)
-      returns (payload.v1.Object.Distance) {
+  rpc FilterDistance(payload.v1.Filter.DistanceRequest)
+      returns (payload.v1.Filter.DistanceResponse) {
     option (google.api.http) = {
       post : "/filter/egress/distance"
       body : "*"
@@ -39,8 +39,8 @@ service Filter {
   }
 
   // Represent the RPC to filter the vector.
-  rpc FilterVector(payload.v1.Object.Vector)
-      returns (payload.v1.Object.Vector) {
+  rpc FilterVector(payload.v1.Filter.VectorRequest)
+      returns (payload.v1.Filter.VectorResponse) {
     option (google.api.http) = {
       post : "/filter/egress/vector"
       body : "*"

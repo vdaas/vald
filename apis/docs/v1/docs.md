@@ -29,8 +29,12 @@
     - [Empty](#payload-v1-Empty)
     - [Filter](#payload-v1-Filter)
     - [Filter.Config](#payload-v1-Filter-Config)
+    - [Filter.DistanceRequest](#payload-v1-Filter-DistanceRequest)
+    - [Filter.DistanceResponse](#payload-v1-Filter-DistanceResponse)
     - [Filter.Query](#payload-v1-Filter-Query)
     - [Filter.Target](#payload-v1-Filter-Target)
+    - [Filter.VectorRequest](#payload-v1-Filter-VectorRequest)
+    - [Filter.VectorResponse](#payload-v1-Filter-VectorResponse)
     - [Info](#payload-v1-Info)
     - [Info.CPU](#payload-v1-Info-CPU)
     - [Info.IPs](#payload-v1-Info-IPs)
@@ -219,8 +223,8 @@ Represent the egress filter service.
 
 | Method Name | Request Type | Response Type | Description |
 | ----------- | ------------ | ------------- | ------------|
-| FilterDistance | [.payload.v1.Object.Distance](#payload-v1-Object-Distance) | [.payload.v1.Object.Distance](#payload-v1-Object-Distance) | Represent the RPC to filter the distance. |
-| FilterVector | [.payload.v1.Object.Vector](#payload-v1-Object-Vector) | [.payload.v1.Object.Vector](#payload-v1-Object-Vector) | Represent the RPC to filter the vector. |
+| FilterDistance | [.payload.v1.Filter.DistanceRequest](#payload-v1-Filter-DistanceRequest) | [.payload.v1.Filter.DistanceResponse](#payload-v1-Filter-DistanceResponse) | Represent the RPC to filter the distance. |
+| FilterVector | [.payload.v1.Filter.VectorRequest](#payload-v1-Filter-VectorRequest) | [.payload.v1.Filter.VectorResponse](#payload-v1-Filter-VectorResponse) | Represent the RPC to filter the vector. |
 
  
 
@@ -374,6 +378,37 @@ Represent filter configuration.
 
 
 
+<a name="payload-v1-Filter-DistanceRequest"></a>
+
+### Filter.DistanceRequest
+Represent the ID and distance pair.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| distance | [Object.Distance](#payload-v1-Object-Distance) | repeated | Distance |
+| query | [Filter.Query](#payload-v1-Filter-Query) |  | Query |
+
+
+
+
+
+
+<a name="payload-v1-Filter-DistanceResponse"></a>
+
+### Filter.DistanceResponse
+Represent the ID and distance pair.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| distance | [Object.Distance](#payload-v1-Object-Distance) | repeated | Distance |
+
+
+
+
+
+
 <a name="payload-v1-Filter-Query"></a>
 
 ### Filter.Query
@@ -399,6 +434,37 @@ Represent the target filter server.
 | ----- | ---- | ----- | ----------- |
 | host | [string](#string) |  | The target hostname. |
 | port | [uint32](#uint32) |  | The target port. |
+
+
+
+
+
+
+<a name="payload-v1-Filter-VectorRequest"></a>
+
+### Filter.VectorRequest
+Represent the ID and vector pair.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| vector | [Object.Vector](#payload-v1-Object-Vector) | repeated | Vector |
+| query | [Filter.Query](#payload-v1-Filter-Query) |  | Query |
+
+
+
+
+
+
+<a name="payload-v1-Filter-VectorResponse"></a>
+
+### Filter.VectorResponse
+Represent the ID and vector pair.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| vector | [Object.Vector](#payload-v1-Object-Vector) | repeated | Distance |
 
 
 
