@@ -86,9 +86,9 @@ message Search {
     // Search timeout in nanoseconds.
     int64 timeout = 5;
     // Ingress filter configurations.
-    Filter.Config ingress_filters = 6;
+    repeated Filter.Config ingress_filters = 6;
     // Egress filter configurations.
-    Filter.Config egress_filters = 7;
+    repeated Filter.Config egress_filters = 7;
     // Minimum number of result to be returned.
     uint32 min_num = 8 [ (validate.rules).uint32.gte = 0 ];
   }
@@ -127,8 +127,6 @@ message Filter {
     string host = 1;
     // The target port.
     uint32 port = 2;
-    // The target query.
-    Query query = 3;
   }
 
   // Represent the filter query.
@@ -140,7 +138,9 @@ message Filter {
   // Represent filter configuration.
   message Config { 
     // Represent the filter target configuration.
-    repeated Target targets = 1; 
+    Target target = 1; 
+    // The target query.
+    Query query = 2;
   }
 }
 

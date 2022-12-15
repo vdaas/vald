@@ -368,25 +368,29 @@ func (m *Search_Config) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 		i--
 		dAtA[i] = 0x40
 	}
-	if m.EgressFilters != nil {
-		size, err := m.EgressFilters.MarshalToSizedBufferVT(dAtA[:i])
-		if err != nil {
-			return 0, err
+	if len(m.EgressFilters) > 0 {
+		for iNdEx := len(m.EgressFilters) - 1; iNdEx >= 0; iNdEx-- {
+			size, err := m.EgressFilters[iNdEx].MarshalToSizedBufferVT(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarint(dAtA, i, uint64(size))
+			i--
+			dAtA[i] = 0x3a
 		}
-		i -= size
-		i = encodeVarint(dAtA, i, uint64(size))
-		i--
-		dAtA[i] = 0x3a
 	}
-	if m.IngressFilters != nil {
-		size, err := m.IngressFilters.MarshalToSizedBufferVT(dAtA[:i])
-		if err != nil {
-			return 0, err
+	if len(m.IngressFilters) > 0 {
+		for iNdEx := len(m.IngressFilters) - 1; iNdEx >= 0; iNdEx-- {
+			size, err := m.IngressFilters[iNdEx].MarshalToSizedBufferVT(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarint(dAtA, i, uint64(size))
+			i--
+			dAtA[i] = 0x32
 		}
-		i -= size
-		i = encodeVarint(dAtA, i, uint64(size))
-		i--
-		dAtA[i] = 0x32
 	}
 	if m.Timeout != 0 {
 		i = encodeVarint(dAtA, i, uint64(m.Timeout))
@@ -675,16 +679,6 @@ func (m *Filter_Target) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 		i -= len(m.unknownFields)
 		copy(dAtA[i:], m.unknownFields)
 	}
-	if m.Query != nil {
-		size, err := m.Query.MarshalToSizedBufferVT(dAtA[:i])
-		if err != nil {
-			return 0, err
-		}
-		i -= size
-		i = encodeVarint(dAtA, i, uint64(size))
-		i--
-		dAtA[i] = 0x1a
-	}
 	if m.Port != 0 {
 		i = encodeVarint(dAtA, i, uint64(m.Port))
 		i--
@@ -770,17 +764,25 @@ func (m *Filter_Config) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 		i -= len(m.unknownFields)
 		copy(dAtA[i:], m.unknownFields)
 	}
-	if len(m.Targets) > 0 {
-		for iNdEx := len(m.Targets) - 1; iNdEx >= 0; iNdEx-- {
-			size, err := m.Targets[iNdEx].MarshalToSizedBufferVT(dAtA[:i])
-			if err != nil {
-				return 0, err
-			}
-			i -= size
-			i = encodeVarint(dAtA, i, uint64(size))
-			i--
-			dAtA[i] = 0xa
+	if m.Query != nil {
+		size, err := m.Query.MarshalToSizedBufferVT(dAtA[:i])
+		if err != nil {
+			return 0, err
 		}
+		i -= size
+		i = encodeVarint(dAtA, i, uint64(size))
+		i--
+		dAtA[i] = 0x12
+	}
+	if m.Target != nil {
+		size, err := m.Target.MarshalToSizedBufferVT(dAtA[:i])
+		if err != nil {
+			return 0, err
+		}
+		i -= size
+		i = encodeVarint(dAtA, i, uint64(size))
+		i--
+		dAtA[i] = 0xa
 	}
 	return len(dAtA) - i, nil
 }
@@ -3778,13 +3780,17 @@ func (m *Search_Config) SizeVT() (n int) {
 	if m.Timeout != 0 {
 		n += 1 + sov(uint64(m.Timeout))
 	}
-	if m.IngressFilters != nil {
-		l = m.IngressFilters.SizeVT()
-		n += 1 + l + sov(uint64(l))
+	if len(m.IngressFilters) > 0 {
+		for _, e := range m.IngressFilters {
+			l = e.SizeVT()
+			n += 1 + l + sov(uint64(l))
+		}
 	}
-	if m.EgressFilters != nil {
-		l = m.EgressFilters.SizeVT()
-		n += 1 + l + sov(uint64(l))
+	if len(m.EgressFilters) > 0 {
+		for _, e := range m.EgressFilters {
+			l = e.SizeVT()
+			n += 1 + l + sov(uint64(l))
+		}
 	}
 	if m.MinNum != 0 {
 		n += 1 + sov(uint64(m.MinNum))
@@ -3905,10 +3911,6 @@ func (m *Filter_Target) SizeVT() (n int) {
 	if m.Port != 0 {
 		n += 1 + sov(uint64(m.Port))
 	}
-	if m.Query != nil {
-		l = m.Query.SizeVT()
-		n += 1 + l + sov(uint64(l))
-	}
 	if m.unknownFields != nil {
 		n += len(m.unknownFields)
 	}
@@ -3937,11 +3939,13 @@ func (m *Filter_Config) SizeVT() (n int) {
 	}
 	var l int
 	_ = l
-	if len(m.Targets) > 0 {
-		for _, e := range m.Targets {
-			l = e.SizeVT()
-			n += 1 + l + sov(uint64(l))
-		}
+	if m.Target != nil {
+		l = m.Target.SizeVT()
+		n += 1 + l + sov(uint64(l))
+	}
+	if m.Query != nil {
+		l = m.Query.SizeVT()
+		n += 1 + l + sov(uint64(l))
 	}
 	if m.unknownFields != nil {
 		n += len(m.unknownFields)
@@ -5927,10 +5931,8 @@ func (m *Search_Config) UnmarshalVT(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if m.IngressFilters == nil {
-				m.IngressFilters = &Filter_Config{}
-			}
-			if err := m.IngressFilters.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
+			m.IngressFilters = append(m.IngressFilters, &Filter_Config{})
+			if err := m.IngressFilters[len(m.IngressFilters)-1].UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -5963,10 +5965,8 @@ func (m *Search_Config) UnmarshalVT(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if m.EgressFilters == nil {
-				m.EgressFilters = &Filter_Config{}
-			}
-			if err := m.EgressFilters.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
+			m.EgressFilters = append(m.EgressFilters, &Filter_Config{})
+			if err := m.EgressFilters[len(m.EgressFilters)-1].UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -6493,42 +6493,6 @@ func (m *Filter_Target) UnmarshalVT(dAtA []byte) error {
 					break
 				}
 			}
-		case 3:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Query", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflow
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLength
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLength
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			if m.Query == nil {
-				m.Query = &Filter_Query{}
-			}
-			if err := m.Query.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
 			skippy, err := skip(dAtA[iNdEx:])
@@ -6665,7 +6629,7 @@ func (m *Filter_Config) UnmarshalVT(dAtA []byte) error {
 		switch fieldNum {
 		case 1:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Targets", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field Target", wireType)
 			}
 			var msglen int
 			for shift := uint(0); ; shift += 7 {
@@ -6692,8 +6656,46 @@ func (m *Filter_Config) UnmarshalVT(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Targets = append(m.Targets, &Filter_Target{})
-			if err := m.Targets[len(m.Targets)-1].UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
+			if m.Target == nil {
+				m.Target = &Filter_Target{}
+			}
+			if err := m.Target.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Query", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLength
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.Query == nil {
+				m.Query = &Filter_Query{}
+			}
+			if err := m.Query.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex

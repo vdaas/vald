@@ -366,7 +366,8 @@ Represent filter configuration.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| targets | [Filter.Target](#payload-v1-Filter-Target) | repeated | Represent the filter target configuration. |
+| target | [Filter.Target](#payload-v1-Filter-Target) |  | Represent the filter target configuration. |
+| query | [Filter.Query](#payload-v1-Filter-Query) |  | The target query. |
 
 
 
@@ -398,7 +399,6 @@ Represent the target filter server.
 | ----- | ---- | ----- | ----------- |
 | host | [string](#string) |  | The target hostname. |
 | port | [uint32](#uint32) |  | The target port. |
-| query | [Filter.Query](#payload-v1-Filter-Query) |  | The target query. |
 
 
 
@@ -1004,8 +1004,8 @@ Represent search configuration.
 | radius | [float](#float) |  | Search radius. |
 | epsilon | [float](#float) |  | Search coefficient. |
 | timeout | [int64](#int64) |  | Search timeout in nanoseconds. |
-| ingress_filters | [Filter.Config](#payload-v1-Filter-Config) |  | Ingress filter configurations. |
-| egress_filters | [Filter.Config](#payload-v1-Filter-Config) |  | Egress filter configurations. |
+| ingress_filters | [Filter.Config](#payload-v1-Filter-Config) | repeated | Ingress filter configurations. |
+| egress_filters | [Filter.Config](#payload-v1-Filter-Config) | repeated | Egress filter configurations. |
 | min_num | [uint32](#uint32) |  | Minimum number of result to be returned. |
 
 

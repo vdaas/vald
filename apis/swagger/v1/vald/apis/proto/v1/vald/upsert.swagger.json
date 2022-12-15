@@ -100,10 +100,6 @@
           "type": "integer",
           "format": "int64",
           "description": "The target port."
-        },
-        "query": {
-          "$ref": "#/definitions/FilterQuery",
-          "description": "The target query."
         }
       },
       "description": "Represent the target filter server."
@@ -238,12 +234,13 @@
     "v1FilterConfig": {
       "type": "object",
       "properties": {
-        "targets": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/FilterTarget"
-          },
+        "target": {
+          "$ref": "#/definitions/FilterTarget",
           "description": "Represent the filter target configuration."
+        },
+        "query": {
+          "$ref": "#/definitions/FilterQuery",
+          "description": "The target query."
         }
       },
       "description": "Represent filter configuration."

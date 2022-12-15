@@ -66,6 +66,28 @@
             "in": "path",
             "required": true,
             "type": "string"
+          },
+          {
+            "name": "filters.target.host",
+            "description": "The target hostname.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "filters.target.port",
+            "description": "The target port.",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int64"
+          },
+          {
+            "name": "filters.query.query",
+            "description": "The raw query string.",
+            "in": "query",
+            "required": false,
+            "type": "string"
           }
         ],
         "tags": [
@@ -96,10 +118,6 @@
           "type": "integer",
           "format": "int64",
           "description": "The target port."
-        },
-        "query": {
-          "$ref": "#/definitions/FilterQuery",
-          "description": "The target query."
         }
       },
       "description": "Represent the target filter server."
@@ -231,12 +249,13 @@
     "v1FilterConfig": {
       "type": "object",
       "properties": {
-        "targets": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/FilterTarget"
-          },
+        "target": {
+          "$ref": "#/definitions/FilterTarget",
           "description": "Represent the filter target configuration."
+        },
+        "query": {
+          "$ref": "#/definitions/FilterQuery",
+          "description": "The target query."
         }
       },
       "description": "Represent filter configuration."
