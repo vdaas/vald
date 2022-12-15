@@ -2892,6 +2892,105 @@ func (s *server) getObject(ctx context.Context, uuid string) (vec *payload.Objec
 	return vec, nil
 }
 
+func (s *server) Flush(ctx context.Context, req *payload.Flush_Request) (locs *payload.Info_Index_Count, err error) {
+	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.FlushRPCServiceName+"/"+vald.FlushRPCName), apiName+"/"+vald.FlushRPCName)
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+
+	var mu sync.Mutex
+	cnts = &payload.Info_Index_Count{
+		Stored: 0,
+		Uncommitted: 0,
+		Indexing: false,
+		Saving: false,
+	}
+	now := time.Now().UnixNano()
+	err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) (err error) {
+		ctx, span := trace.StartSpan(ctx, apiName+"."+vald.FlushRPCName+"/"+target)
+		defer func() {
+			if span != nil {
+				span.End()
+			}
+		}()
+		cnt, err := vc.Flush(ctx, req, copts...)
+		if err != nil {
+			st, msg, err := status.ParseError(err, codes.Internal,
+				"failed to parse "+vald.FlushRPCName+" gRPC error response",
+				&errdetails.RequestInfo{
+					RequestId:   now,
+					ServingData: errdetails.Serialize(req),
+				},
+				&errdetails.ResourceInfo{
+					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.FlushRPCName,
+					ResourceName: fmt.Sprintf("%s: %s(%s) to %s", apiName, s.name, s.ip, target),
+				})
+			if span != nil {
+				span.RecordError(err)
+				span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+				span.SetStatus(trace.StatusError, err.Error())
+			}
+			if err != nil && st.Code() != codes.NotFound {
+				log.Error(err)
+				return err
+			}
+			return nil
+		}
+
+		mu.Lock()
+		cnts.Stored = atomic.AddUint32(cnts.Stored, cnt.Stored)
+		cnts.Uncommitted = atomic.AddUint32(cnts.Uncommitted, cnt.Uncommitted)
+		cnts.Indexing = cnts.Indexing || cnt.Indexing
+		cnts.Saving = cnts.Saving || cnt.Saving
+		mu.Unlock()
+		return nil
+	})
+	if err != nil {
+		st, msg, err := status.ParseError(err, codes.Internal,
+			"failed to parse "+vald.FlushRPCName+" gRPC error response",
+			&errdetails.RequestInfo{
+				RequestId:   now,
+				ServingData: errdetails.Serialize(req),
+			},
+			&errdetails.ResourceInfo{
+				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.FlushRPCName,
+				ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
+			}, info.Get())
+		if span != nil {
+			span.RecordError(err)
+			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+			span.SetStatus(trace.StatusError, err.Error())
+		}
+		return nil, err
+	}
+	
+	if len(cnts.Stored) > 0 || len(cnts.Uncommitted) > 0 || cnts.Indexing || cnts.Saving {
+		err = errors.Errorf(
+			"stored index: %d, uncommited: %d, indexing: %t, saving: %t",
+			cnts.Stored, cnts.Uncommitted, cnts.Indexing, cnts.Saving
+		)
+		err = status.WrapWithInternal(vald.FlushRPCName+" API flush failed", err,
+			&errdetails.RequestInfo{
+				RequestId:   now,
+				ServingData: errdetails.Serialize(req),
+			},
+			&errdetails.ResourceInfo{
+				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.FlushRPCName,
+				ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
+			})
+		if span != nil {
+			span.RecordError(err)
+			span.SetAttributes(trace.StatusCodeInternal(err.Error())...)
+			span.SetStatus(trace.StatusError, err.Error())
+		}
+		return nil, err
+	}
+
+	return cnts, nil
+}
+
 func (s *server) GetObject(ctx context.Context, req *payload.Object_VectorRequest) (vec *payload.Object_Vector, err error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.ObjectRPCServiceName+"/"+vald.GetObjectRPCName), apiName+"/"+vald.GetObjectRPCName)
 	defer func() {
