@@ -127,6 +127,14 @@ message Filter {
     string host = 1;
     // The target port.
     uint32 port = 2;
+    // The target query.
+    Query query = 3;
+  }
+
+  // Represent the filter query.
+  message Query {
+    // The raw query string.
+    string query = 1;
   }
 
   // Represent filter configuration.

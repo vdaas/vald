@@ -277,6 +277,16 @@
     }
   },
   "definitions": {
+    "FilterQuery": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "type": "string",
+          "description": "The raw query string."
+        }
+      },
+      "description": "Represent the filter query."
+    },
     "FilterTarget": {
       "type": "object",
       "properties": {
@@ -288,6 +298,10 @@
           "type": "integer",
           "format": "int64",
           "description": "The target port."
+        },
+        "query": {
+          "$ref": "#/definitions/FilterQuery",
+          "description": "The target query."
         }
       },
       "description": "Represent the target filter server."

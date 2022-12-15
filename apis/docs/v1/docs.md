@@ -29,6 +29,7 @@
     - [Empty](#payload-v1-Empty)
     - [Filter](#payload-v1-Filter)
     - [Filter.Config](#payload-v1-Filter-Config)
+    - [Filter.Query](#payload-v1-Filter-Query)
     - [Filter.Target](#payload-v1-Filter-Target)
     - [Info](#payload-v1-Info)
     - [Info.CPU](#payload-v1-Info-CPU)
@@ -372,6 +373,21 @@ Represent filter configuration.
 
 
 
+<a name="payload-v1-Filter-Query"></a>
+
+### Filter.Query
+Represent the filter query.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| query | [string](#string) |  | The raw query string. |
+
+
+
+
+
+
 <a name="payload-v1-Filter-Target"></a>
 
 ### Filter.Target
@@ -382,6 +398,7 @@ Represent the target filter server.
 | ----- | ---- | ----- | ----------- |
 | host | [string](#string) |  | The target hostname. |
 | port | [uint32](#uint32) |  | The target port. |
+| query | [Filter.Query](#payload-v1-Filter-Query) |  | The target query. |
 
 
 
