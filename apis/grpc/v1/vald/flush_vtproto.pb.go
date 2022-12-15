@@ -6,7 +6,7 @@ package vald
 
 import (
 	context "context"
-	payload "github.com/vdaa s/vald/apis/grpc/v1/payload"
+	payload "github.com/vdaas/vald/apis/grpc/v1/payload"
 	grpc "google.golang.org/grpc"
 	codes "github.com/vdaas/vald/internal/net/grpc/codes"
 	status "github.com/vdaas/vald/internal/net/grpc/status"
