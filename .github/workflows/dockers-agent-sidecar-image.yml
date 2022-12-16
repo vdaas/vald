@@ -54,24 +54,42 @@ on:
       - "cmd/agent/sidecar/**"
       - "dockers/agent/sidecar/Dockerfile"
       - "versions/GO_VERSION"
+  pull_request_target:
+    types: [labeled]
+    paths:
+      - ".github/actions/docker-build/actions.yaml"
+      - ".github/workflows/dockers-agent-sidecar-image.yml"
+      - "go.mod"
+      - "go.sum"
+      - "internal/**"
+      - "!internal/**/*_test.go"
+      - "!internal/db/**"
+      - "internal/db/storage/blob/**"
+      - "!internal/k8s/**"
+      - "apis/grpc/**"
+      - "pkg/agent/sidecar/**"
+      - "cmd/agent/sidecar/**"
+      - "dockers/agent/sidecar/Dockerfile"
+      - "versions/GO_VERSION"
 
 jobs:
   build:
     strategy:
       max-parallel: 4
     runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'pull_request' || (github.event_name == 'pull_request_target' && contains(github.event.pull_request.labels.*.name, 'ci/approved')) }}
     steps:
       - uses: actions/checkout@v3
       - name: set git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
       - name: Setup QEMU
-        uses: docker/setup-qemu-action@v1
+        uses: docker/setup-qemu-action@v2
         with:
           platforms: all
       - name: Setup Docker Buildx
         id: buildx
-        uses: docker/setup-buildx-action@v1
+        uses: docker/setup-buildx-action@v2
         with:
           buildkitd-flags: "--debug"
       - name: Login to DockerHub
