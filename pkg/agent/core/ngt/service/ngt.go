@@ -64,7 +64,7 @@ type NGT interface {
 	DeleteWithTime(uuid string, t int64) (err error)
 	DeleteMultiple(uuids ...string) (err error)
 	DeleteMultipleWithTime(uuids []string, t int64) (err error)
-	ReganarateIndecies(ctx context.Context) (err error)
+	RegenerateIndex(ctx context.Context) (err error)
 	GetObject(uuid string) (vec []float32, err error)
 	CreateIndex(ctx context.Context, poolSize uint32) (err error)
 	SaveIndex(ctx context.Context) (err error)
@@ -102,6 +102,10 @@ type ngt struct {
 	// counters
 	nocie uint64 // number of create index execution
 	nogce uint64 // number of proactive GC execution
+
+	// parameters
+	cfg  *config.NGT
+	opts []Option
 
 	// configurations
 	inMem bool // in-memory mode
@@ -145,12 +149,18 @@ const (
 )
 
 func New(cfg *config.NGT, opts ...Option) (nn NGT, err error) {
-	n := &ngt{
+	return newNGT(cfg, opts...)
+}
+
+func newNGT(cfg *config.NGT, opts ...Option) (n *ngt, err error) {
+	n = &ngt{
 		fmap:              make(map[string]uint32),
 		dim:               cfg.Dimension,
 		enableProactiveGC: cfg.EnableProactiveGC,
 		enableCopyOnWrite: cfg.EnableCopyOnWrite,
 		kvsdbConcurrency:  cfg.KVSDB.Concurrency,
+		cfg:               cfg,
+		opts:              opts,
 	}
 
 	for _, opt := range append(defaultOptions, opts...) {
@@ -606,7 +616,7 @@ func (n *ngt) Search(vec []float32, size uint32, epsilon, radius float32) ([]mod
 
 func (n *ngt) SearchByID(uuid string, size uint32, epsilon, radius float32) (vec []float32, dst []model.Distance, err error) {
 	if n.IsFlushing() {
-		return nil, errors.ErrFlushingIsInProgress
+		return nil, nil, errors.ErrFlushingIsInProgress
 	}
 	if n.IsIndexing() {
 		return nil, nil, errors.ErrCreateIndexingIsInProgress
@@ -664,7 +674,7 @@ func (n *ngt) LinearSearch(vec []float32, size uint32) ([]model.Distance, error)
 
 func (n *ngt) LinearSearchByID(uuid string, size uint32) (vec []float32, dst []model.Distance, err error) {
 	if n.IsFlushing() {
-		return nil, errors.ErrFlushingIsInProgress
+		return nil, nil, errors.ErrFlushingIsInProgress
 	}
 	if n.IsIndexing() {
 		return nil, nil, errors.ErrCreateIndexingIsInProgress
@@ -682,14 +692,14 @@ func (n *ngt) LinearSearchByID(uuid string, size uint32) (vec []float32, dst []m
 
 func (n *ngt) Insert(uuid string, vec []float32) (err error) {
 	if n.IsFlushing() {
-		return nil, errors.ErrFlushingIsInProgress
+		return errors.ErrFlushingIsInProgress
 	}
 	return n.insert(uuid, vec, time.Now().UnixNano(), true)
 }
 
 func (n *ngt) InsertWithTime(uuid string, vec []float32, t int64) (err error) {
 	if n.IsFlushing() {
-		return nil, errors.ErrFlushingIsInProgress
+		return errors.ErrFlushingIsInProgress
 	}
 	if t <= 0 {
 		t = time.Now().UnixNano()
@@ -713,14 +723,14 @@ func (n *ngt) insert(uuid string, vec []float32, t int64, validation bool) (err 
 
 func (n *ngt) InsertMultiple(vecs map[string][]float32) (err error) {
 	if n.IsFlushing() {
-		return nil, errors.ErrFlushingIsInProgress
+		return errors.ErrFlushingIsInProgress
 	}
 	return n.insertMultiple(vecs, time.Now().UnixNano(), true)
 }
 
 func (n *ngt) InsertMultipleWithTime(vecs map[string][]float32, t int64) (err error) {
 	if n.IsFlushing() {
-		return nil, errors.ErrFlushingIsInProgress
+		return errors.ErrFlushingIsInProgress
 	}
 	if t <= 0 {
 		t = time.Now().UnixNano()
@@ -744,14 +754,14 @@ func (n *ngt) insertMultiple(vecs map[string][]float32, now int64, validation bo
 
 func (n *ngt) Update(uuid string, vec []float32) (err error) {
 	if n.IsFlushing() {
-		return nil, errors.ErrFlushingIsInProgress
+		return errors.ErrFlushingIsInProgress
 	}
 	return n.update(uuid, vec, time.Now().UnixNano())
 }
 
 func (n *ngt) UpdateWithTime(uuid string, vec []float32, t int64) (err error) {
 	if n.IsFlushing() {
-		return nil, errors.ErrFlushingIsInProgress
+		return errors.ErrFlushingIsInProgress
 	}
 	if t <= 0 {
 		t = time.Now().UnixNano()
@@ -773,14 +783,14 @@ func (n *ngt) update(uuid string, vec []float32, t int64) (err error) {
 
 func (n *ngt) UpdateMultiple(vecs map[string][]float32) (err error) {
 	if n.IsFlushing() {
-		return nil, errors.ErrFlushingIsInProgress
+		return errors.ErrFlushingIsInProgress
 	}
 	return n.updateMultiple(vecs, time.Now().UnixNano())
 }
 
 func (n *ngt) UpdateMultipleWithTime(vecs map[string][]float32, t int64) (err error) {
 	if n.IsFlushing() {
-		return nil, errors.ErrFlushingIsInProgress
+		return errors.ErrFlushingIsInProgress
 	}
 	if t <= 0 {
 		t = time.Now().UnixNano()
@@ -807,14 +817,14 @@ func (n *ngt) updateMultiple(vecs map[string][]float32, t int64) (err error) {
 
 func (n *ngt) Delete(uuid string) (err error) {
 	if n.IsFlushing() {
-		return nil, errors.ErrFlushingIsInProgress
+		return errors.ErrFlushingIsInProgress
 	}
 	return n.delete(uuid, time.Now().UnixNano(), true)
 }
 
 func (n *ngt) DeleteWithTime(uuid string, t int64) (err error) {
 	if n.IsFlushing() {
-		return nil, errors.ErrFlushingIsInProgress
+		return errors.ErrFlushingIsInProgress
 	}
 	if t <= 0 {
 		t = time.Now().UnixNano()
@@ -838,14 +848,14 @@ func (n *ngt) delete(uuid string, t int64, validation bool) (err error) {
 
 func (n *ngt) DeleteMultiple(uuids ...string) (err error) {
 	if n.IsFlushing() {
-		return nil, errors.ErrFlushingIsInProgress
+		return errors.ErrFlushingIsInProgress
 	}
 	return n.deleteMultiple(uuids, time.Now().UnixNano(), true)
 }
 
 func (n *ngt) DeleteMultipleWithTime(uuids []string, t int64) (err error) {
 	if n.IsFlushing() {
-		return nil, errors.ErrFlushingIsInProgress
+		return errors.ErrFlushingIsInProgress
 	}
 	if t <= 0 {
 		t = time.Now().UnixNano()
@@ -867,9 +877,9 @@ func (n *ngt) deleteMultiple(uuids []string, now int64, validation bool) (err er
 	return err
 }
 
-func (n *ngt) ReganarateIndecies(ctx context.Context) (err error) {
+func (n *ngt) RegenerateIndex(ctx context.Context) (err error) {
 	if n.IsFlushing() {
-		return nil, errors.ErrFlushingIsInProgress
+		return errors.ErrFlushingIsInProgress
 	}
 	err = func() error {
 		ticker := time.NewTicker(time.Millisecond * 100)
@@ -892,7 +902,6 @@ func (n *ngt) ReganarateIndecies(ctx context.Context) (err error) {
 	defer n.cimu.Unlock()
 	n.flushing.Store(true)
 	n.indexing.Store(true)
-	now := time.Now().UnixNano()
 	defer n.flushing.Store(false)
 	defer n.indexing.Store(false)
 
@@ -904,8 +913,8 @@ func (n *ngt) ReganarateIndecies(ctx context.Context) (err error) {
 	n.kvs = nil
 
 	// delete ngt
-	err = n.ngt.CloseWithoutSaveIndex()
-	n.ngt = nil
+	n.core.CloseWithoutSaveIndex()
+	n.core = nil
 
 	// delete vq
 	n.vq = nil
@@ -915,7 +924,7 @@ func (n *ngt) ReganarateIndecies(ctx context.Context) (err error) {
 	atomic.AddUint64(&n.nogce, 1)
 
 	// delete file
-	err := file.DeleteDir(n.path)
+	err = file.DeleteDir(ctx, n.path)
 	if err != nil {
 		// ここはエラーにすべき？
 		log.Errorf("failed to flushing vector to ngt index in delete file. error: %v", err)
@@ -923,24 +932,23 @@ func (n *ngt) ReganarateIndecies(ctx context.Context) (err error) {
 
 	// delete cow
 	if n.enableCopyOnWrite {
-		path = n.tmpPath.Load().(string)
-		err := file.DeleteDir(path)
+		err := file.DeleteDir(ctx, n.oldPath)
 		if err != nil {
 			// ここはエラーにすべき？
 			log.Errorf("failed to flushing vector to ngt index in delete file. error: %v", err)
 		}
 	}
 
-	// new kvs
-	n.kvs =
+	// renew instance
+	nn, err := newNGT(n.cfg, n.opts...)
+	if err != nil {
+		return err
+	}
+	// Regenerate with flags set
+	nn.flushing.Store(true)
+	nn.indexing.Store(true)
+	n = nn
 
-	// new ngt
-
-	// new vq
-
-	// struct filed init
-
-	// return
 	return nil
 }
 
@@ -1310,6 +1318,11 @@ func (n *ngt) mktmp() (err error) {
 }
 
 func (n *ngt) Exists(uuid string) (oid uint32, ok bool) {
+	if n.IsFlushing() {
+		log.Debugf("Exists\tuuid: %s's data will be delete soon\terror: %v",
+			uuid, errors.ErrFlushingIsInProgress())
+		return 0, false
+	}
 	ok = n.vq.IVExists(uuid)
 	if !ok {
 		oid, ok = n.kvs.Get(uuid)

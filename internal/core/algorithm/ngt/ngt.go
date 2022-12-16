@@ -728,8 +728,8 @@ func (n *ngt) newGoError(ebuf C.NGTError) (err error) {
 	return errors.NewNGTError(msg)
 }
 
-// Close NGT without save index
-func CloseWithoutSaveIndex() {
+// Close NGT without save index.
+func (n *ngt) CloseWithoutSaveIndex() {
 	n.index = nil
 	n.prop = nil
 	n.ospace = nil

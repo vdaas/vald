@@ -85,6 +85,18 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (res *
 				})
 			log.Warn(err)
 			attrs = trace.StatusCodeAlreadyExists(err.Error())
+		} else if errors.Is(err, errors.ErrFlushingIsInProgress()) {
+			err = status.WrapWithAborted("Insert API aborted to process search request due to flushing indices is in progress", err,
+				&errdetails.RequestInfo{
+					RequestId:   req.GetVector().GetId(),
+					ServingData: errdetails.Serialize(req),
+				},
+				&errdetails.ResourceInfo{
+					ResourceType: ngtResourceType + "/ngt.Insert",
+					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+				})
+			log.Warn(err)
+			attrs = trace.StatusCodeAlreadyExists(err.Error())
 		} else if errors.Is(err, errors.ErrUUIDNotFound(0)) {
 			err = status.WrapWithInvalidArgument(fmt.Sprintf("Insert API empty uuid \"%s\" was given", vec.GetId()), err,
 				&errdetails.RequestInfo{

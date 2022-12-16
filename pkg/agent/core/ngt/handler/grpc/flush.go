@@ -15,6 +15,13 @@ package grpc
 
 import (
 	"context"
+	"fmt"
+	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/info"
+	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/net/grpc/errdetails"
+	"github.com/vdaas/vald/internal/net/grpc/status"
+	"go.opentelemetry.io/otel/attribute"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
@@ -28,5 +35,38 @@ func (s *server) Flush(ctx context.Context, req *payload.Flush_Request) (*payloa
 			span.End()
 		}
 	}()
+	err := s.ngt.RegenerateIndex(ctx)
+	if err != nil {
+		var attrs []attribute.KeyValue
+		if errors.Is(err, errors.ErrFlushingIsInProgress()) {
+			err = status.WrapWithAborted("Flush API aborted to process search request due to flushing indices is in progress", err,
+				&errdetails.RequestInfo{
+					ServingData: errdetails.Serialize(req),
+				},
+				&errdetails.ResourceInfo{
+					ResourceType: ngtResourceType + "/ngt.Flush",
+					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+				})
+			log.Debug(err)
+			attrs = trace.StatusCodeAborted(err.Error())
+		} else {
+			err = status.WrapWithInternal("Flush API failed", err,
+				&errdetails.RequestInfo{
+					ServingData: errdetails.Serialize(req),
+				},
+				&errdetails.ResourceInfo{
+					ResourceType: ngtResourceType + "/ngt.Flush",
+					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+				}, info.Get())
+			log.Error(err)
+			attrs = trace.StatusCodeInternal(err.Error())
+		}
+		if span != nil {
+			span.RecordError(err)
+			span.SetAttributes(attrs...)
+			span.SetStatus(trace.StatusError, err.Error())
+		}
+		return nil, err
+	}
 	return nil, err
 }
