@@ -371,7 +371,6 @@ message Filter {
 `timestamp` is the timestamp when the vector is inserted or updated.
 When `timestamp` is not set, the current time will be used.
 
-
 ## Search Service
 
 Vald provides four types of search services.
