@@ -2892,7 +2892,7 @@ func (s *server) getObject(ctx context.Context, uuid string) (vec *payload.Objec
 	return vec, nil
 }
 
-func (s *server) Flush(ctx context.Context, req *payload.Flush_Request) (locs *payload.Info_Index_Count, err error) {
+func (s *server) Flush(ctx context.Context, req *payload.Flush_Request) (cnts *payload.Info_Index_Count, err error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.FlushRPCServiceName+"/"+vald.FlushRPCName), apiName+"/"+vald.FlushRPCName)
 	defer func() {
 		if span != nil {

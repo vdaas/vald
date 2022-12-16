@@ -74,7 +74,7 @@ const (
 	UpsertRPCServiceName = "Upsert"
 	SearchRPCServiceName = "Search"
 	RemoveRPCServiceName = "Remove"
-	FlushRPCServiceName = "Flush"
+	FlushRPCServiceName  = "Flush"
 	ObjectRPCServiceName = "Object"
 	FilterRPCServiceName = "Filter"
 )
@@ -124,7 +124,7 @@ const (
 	StreamRemoveRPCName = "StreamRemove"
 	MultiRemoveRPCName  = "MultiRemove"
 
-	FlushRPCName        = "Flush"
+	FlushRPCName = "Flush"
 
 	ExistsRPCName          = "Exists"
 	GetObjectRPCName       = "GetObject"
