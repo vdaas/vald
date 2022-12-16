@@ -45,6 +45,7 @@ type Handler interface {
 	MultiUpsert(w http.ResponseWriter, r *http.Request) (int, error)
 	Remove(w http.ResponseWriter, r *http.Request) (int, error)
 	MultiRemove(w http.ResponseWriter, r *http.Request) (int, error)
+	Flush(w http.ResponseWriter, r *http.Request) (int, error)
 	GetObject(w http.ResponseWriter, r *http.Request) (int, error)
 	SearchObject(w http.ResponseWriter, r *http.Request) (int, error)
 	InsertObject(w http.ResponseWriter, r *http.Request) (int, error)
@@ -185,6 +186,13 @@ func (h *handler) MultiRemove(w http.ResponseWriter, r *http.Request) (code int,
 	var req *payload.Remove_MultiRequest
 	return json.Handler(w, r, &req, func() (interface{}, error) {
 		return h.vald.MultiRemove(r.Context(), req)
+	})
+}
+
+func (h *handler) Flush(w http.ResponseWriter, r *http.Request) (code int, err error) {
+	var req *payload.Flush_Request
+	return json.Handler(w, r, &req, func() (interface{}, error) {
+		return h.vald.Flush(r.Context(), req)
 	})
 }
 
