@@ -53,7 +53,6 @@ on:
       - "dockers/manager/index/Dockerfile"
       - "versions/GO_VERSION"
   pull_request_target:
-    types: [labeled]
     paths:
       - ".github/actions/docker-build/actions.yaml"
       - ".github/workflows/dockers-manager-index-image.yml"
@@ -74,7 +73,7 @@ jobs:
     strategy:
       max-parallel: 4
     runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'pull_request' && github.event.pull_request_head.repo.fork == false || (github.event_name == 'pull_request_target' && contains(github.event.pull_request.labels.*.name, 'ci/approved')) }}
+    if: ${{ (github.event_name == 'pull_request' && github.event.pull_request_head.repo.fork == false) || (github.event.pull_request_head.repo.fork == true && github.event_name == 'pull_request_target' && contains(github.event.pull_request.labels.*.name, 'ci/approved')) }}
     steps:
       - uses: actions/checkout@v3
       - name: set git config
