@@ -2900,13 +2900,15 @@ func (s *server) Flush(ctx context.Context, req *payload.Flush_Request) (cnts *p
 		}
 	}()
 
-	var mu sync.Mutex
-	cnts = &payload.Info_Index_Count{
-		Stored: 0,
-		Uncommitted: 0,
-		Indexing: false,
-		Saving: false,
-	}
+	var (
+		mu sync.Mutex
+		stored uint32
+		uncommited uint32
+		indexing atomic.Value
+		saving atomic.Value
+	)
+	indexing.Store(false)
+	saving.Store(false)
 	now := time.Now().UnixNano()
 	err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) (err error) {
 		ctx, span := trace.StartSpan(ctx, apiName+"."+vald.FlushRPCName+"/"+target)
@@ -2938,13 +2940,14 @@ func (s *server) Flush(ctx context.Context, req *payload.Flush_Request) (cnts *p
 			}
 			return nil
 		}
-
-		mu.Lock()
-		cnts.Stored = atomic.AddUint32(cnts.Stored, cnt.Stored)
-		cnts.Uncommitted = atomic.AddUint32(cnts.Uncommitted, cnt.Uncommitted)
-		cnts.Indexing = cnts.Indexing || cnt.Indexing
-		cnts.Saving = cnts.Saving || cnt.Saving
-		mu.Unlock()
+		atomic.AddUint32(&stored, cnt.Stored)
+		atomic.AddUint32(&uncommitted, cnt.Uncommitted)
+		if cnt.Indexing {
+		 	indexing.Store(cnt.Indexing)
+		}
+		if cnt.Saving {
+		 	saving.Store(cnt.Saving)
+		}
 		return nil
 	})
 	if err != nil {
@@ -2965,7 +2968,12 @@ func (s *server) Flush(ctx context.Context, req *payload.Flush_Request) (cnts *p
 		}
 		return nil, err
 	}
-	
+	cnts = &payload.Info_Index_Count{
+		Stored: atomic.LoadUint32(&stored),
+		Uncommitted: atomic.LoadUint32(&uncommited),
+		Indexing: indexing.Load().(bool),
+		Saving: saving.Load().(bool),
+	}
 	if len(cnts.Stored) > 0 || len(cnts.Uncommitted) > 0 || cnts.Indexing || cnts.Saving {
 		err = errors.Errorf(
 			"stored index: %d, uncommited: %d, indexing: %t, saving: %t",
