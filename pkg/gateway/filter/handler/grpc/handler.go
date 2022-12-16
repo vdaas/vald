@@ -33,6 +33,7 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/info"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/net/grpc/errdetails"
@@ -1375,7 +1376,7 @@ func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *
 	filterConfigs := req.GetConfig().GetIngressFilters()
 	if filterConfigs != nil || s.SearchFilters != nil {
 		for _, filterConfig := range filterConfigs {
-			addr := fmt.Sprintf("%s:%d", filterConfig.GetTarget().GetHost(), filterConfig.GetTarget().GetPort())
+			addr := net.JoinHostPort(filterConfig.GetTarget().GetHost(), uint16(filterConfig.GetTarget().GetPort()))
 			c, err := s.ingress.Target(ctx, addr)
 			if err != nil {
 				err = status.WrapWithUnavailable(
@@ -1444,7 +1445,7 @@ func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *
 	filterConfigs = req.GetConfig().GetEgressFilters()
 	if filterConfigs != nil || s.DistanceFilters != nil {
 		for _, filterConfig := range filterConfigs {
-			addr := fmt.Sprintf("%s:%d", filterConfig.GetTarget().GetHost(), filterConfig.GetTarget().GetPort())
+			addr := net.JoinHostPort(filterConfig.GetTarget().GetHost(), uint16(filterConfig.GetTarget().GetPort()))
 			c, err := s.egress.Target(ctx, addr)
 			if err != nil {
 				err = status.WrapWithUnavailable(
@@ -1525,7 +1526,7 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 	filterConfigs := req.GetConfig().GetEgressFilters()
 	if filterConfigs != nil || s.DistanceFilters != nil {
 		for _, filterConfig := range filterConfigs {
-			addr := fmt.Sprintf("%s:%d", filterConfig.GetTarget().GetHost(), filterConfig.GetTarget().GetPort())
+			addr := net.JoinHostPort(filterConfig.GetTarget().GetHost(), uint16(filterConfig.GetTarget().GetPort()))
 			c, err := s.egress.Target(ctx, addr)
 			if err != nil {
 				err = status.WrapWithUnavailable(
@@ -1861,7 +1862,7 @@ func (s *server) LinearSearch(ctx context.Context, req *payload.Search_Request) 
 	filterConfigs := req.GetConfig().GetIngressFilters()
 	if filterConfigs != nil || s.SearchFilters != nil {
 		for _, filterConfig := range filterConfigs {
-			addr := fmt.Sprintf("%s:%d", filterConfig.GetTarget().GetHost(), filterConfig.GetTarget().GetPort())
+			addr := net.JoinHostPort(filterConfig.GetTarget().GetHost(), uint16(filterConfig.GetTarget().GetPort()))
 			c, err := s.ingress.Target(ctx, addr)
 			if err != nil {
 				err = status.WrapWithUnavailable(
@@ -1924,7 +1925,7 @@ func (s *server) LinearSearch(ctx context.Context, req *payload.Search_Request) 
 	filterConfigs = req.GetConfig().GetEgressFilters()
 	if filterConfigs != nil || s.DistanceFilters != nil {
 		for _, filterConfig := range filterConfigs {
-			addr := fmt.Sprintf("%s:%d", filterConfig.GetTarget().GetHost(), filterConfig.GetTarget().GetPort())
+			addr := net.JoinHostPort(filterConfig.GetTarget().GetHost(), uint16(filterConfig.GetTarget().GetPort()))
 			c, err := s.egress.Target(ctx, addr)
 			if err != nil {
 				err = status.WrapWithUnavailable(
@@ -2001,7 +2002,7 @@ func (s *server) LinearSearchByID(ctx context.Context, req *payload.Search_IDReq
 	filterConfigs := req.GetConfig().GetEgressFilters()
 	if filterConfigs != nil || s.DistanceFilters != nil {
 		for _, filterConfig := range filterConfigs {
-			addr := fmt.Sprintf("%s:%d", filterConfig.GetTarget().GetHost(), filterConfig.GetTarget().GetPort())
+			addr := net.JoinHostPort(filterConfig.GetTarget().GetHost(), uint16(filterConfig.GetTarget().GetPort()))
 			c, err := s.egress.Target(ctx, addr)
 			if err != nil {
 				err = status.WrapWithUnavailable(
@@ -2385,7 +2386,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (loc *
 		return s.gateway.Insert(ctx, req)
 	}
 	for _, filterConfig := range filterConfigs {
-		addr := fmt.Sprintf("%s:%d", filterConfig.GetTarget().GetHost(), filterConfig.GetTarget().GetPort())
+		addr := net.JoinHostPort(filterConfig.GetTarget().GetHost(), uint16(filterConfig.GetTarget().GetPort()))
 		c, err := s.ingress.Target(ctx, addr)
 		if err != nil {
 			err = status.WrapWithUnavailable(
@@ -2655,7 +2656,7 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (loc *
 		return s.gateway.Update(ctx, req)
 	}
 	for _, filterConfig := range filterConfigs {
-		addr := fmt.Sprintf("%s:%d", filterConfig.GetTarget().GetHost(), filterConfig.GetTarget().GetPort())
+		addr := net.JoinHostPort(filterConfig.GetTarget().GetHost(), uint16(filterConfig.GetTarget().GetPort()))
 		c, err := s.ingress.Target(ctx, addr)
 		if err != nil {
 			err = status.WrapWithUnavailable(
@@ -2910,7 +2911,7 @@ func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *
 		return s.gateway.Upsert(ctx, req)
 	}
 	for _, filterConfig := range filterConfigs {
-		addr := fmt.Sprintf("%s:%d", filterConfig.GetTarget().GetHost(), filterConfig.GetTarget().GetPort())
+		addr := net.JoinHostPort(filterConfig.GetTarget().GetHost(), uint16(filterConfig.GetTarget().GetPort()))
 		c, err := s.ingress.Target(ctx, addr)
 		if err != nil {
 			err = status.WrapWithUnavailable(
@@ -3265,7 +3266,7 @@ func (s *server) GetObject(ctx context.Context, req *payload.Object_VectorReques
 	filterConfigs := req.GetFilters()
 	if filterConfigs != nil || s.ObjectFilters != nil {
 		for _, filterConfig := range filterConfigs {
-			addr := fmt.Sprintf("%s:%d", filterConfig.GetTarget().GetHost(), filterConfig.GetTarget().GetPort())
+			addr := net.JoinHostPort(filterConfig.GetTarget().GetHost(), uint16(filterConfig.GetTarget().GetPort()))
 			c, err := s.egress.Target(ctx, addr)
 			if err != nil {
 				err = status.WrapWithUnavailable(vald.SearchObjectRPCName+" API target filter API unavailable", err,
