@@ -2901,7 +2901,6 @@ func (s *server) Flush(ctx context.Context, req *payload.Flush_Request) (cnts *p
 	}()
 
 	var (
-		mu sync.Mutex
 		stored uint32
 		uncommited uint32
 		indexing atomic.Value
