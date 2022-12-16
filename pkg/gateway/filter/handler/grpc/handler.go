@@ -1372,118 +1372,45 @@ func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *
 			span.End()
 		}
 	}()
-	targets := req.GetConfig().GetIngressFilters().GetTargets()
-	if targets != nil || s.SearchFilters != nil {
-		addrs := make([]string, 0, len(targets)+len(s.SearchFilters))
-		addrs = append(addrs, s.SearchFilters...)
-		for _, target := range targets {
-			addrs = append(addrs, fmt.Sprintf("%s:%d", target.GetHost(), target.GetPort()))
-		}
-		c, err := s.ingress.Target(ctx, addrs...)
-		if err != nil {
-			err = status.WrapWithUnavailable(
-				fmt.Sprintf(vald.SearchRPCName+" API ingress filter targets %v not found", addrs),
-				err,
-				&errdetails.RequestInfo{
-					RequestId:   req.GetConfig().GetRequestId(),
-					ServingData: errdetails.Serialize(req),
-				},
-				&errdetails.BadRequest{
-					FieldViolations: []*errdetails.BadRequestFieldViolation{
-						{
-							Field:       "vectorizer targets",
-							Description: err.Error(),
+	filterConfigs := req.GetConfig().GetIngressFilters()
+	if filterConfigs != nil || s.SearchFilters != nil {
+		for _, filterConfig := range filterConfigs {
+			addr := fmt.Sprintf("%s:%d", filterConfig.GetTarget().GetHost(), filterConfig.GetTarget().GetPort())
+			c, err := s.ingress.Target(ctx, addr)
+			if err != nil {
+				err = status.WrapWithUnavailable(
+					fmt.Sprintf(vald.SearchRPCName+" API ingress filter target %v not found", addr),
+					err,
+					&errdetails.RequestInfo{
+						RequestId:   req.GetConfig().GetRequestId(),
+						ServingData: errdetails.Serialize(req),
+					},
+					&errdetails.BadRequest{
+						FieldViolations: []*errdetails.BadRequestFieldViolation{
+							{
+								Field:       "vectorizer targets",
+								Description: err.Error(),
+							},
 						},
 					},
-				},
-				&errdetails.ResourceInfo{
-					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.SearchRPCName,
-					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-				}, info.Get())
-			log.Warn(err)
-			if span != nil {
-				span.RecordError(err)
-				span.SetAttributes(trace.StatusCodeUnavailable(err.Error())...)
-				span.SetStatus(trace.StatusError, err.Error())
+					&errdetails.ResourceInfo{
+						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.SearchRPCName,
+						ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+					}, info.Get())
+				log.Warn(err)
+				if span != nil {
+					span.RecordError(err)
+					span.SetAttributes(trace.StatusCodeUnavailable(err.Error())...)
+					span.SetStatus(trace.StatusError, err.Error())
+				}
+				return nil, err
 			}
-			return nil, err
-		}
-		vec, err := c.FilterVector(ctx, &payload.Object_Vector{
-			Vector: req.GetVector(),
-		})
-		if err != nil {
-			err = status.WrapWithInternal(
-				fmt.Sprintf(vald.SearchRPCName+" API ingress filter request to %v failure on vec %v", addrs, req.GetVector()),
-				err,
-				&errdetails.RequestInfo{
-					RequestId:   req.GetConfig().GetRequestId(),
-					ServingData: errdetails.Serialize(req),
-				},
-				&errdetails.ResourceInfo{
-					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.SearchRPCName,
-					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-				}, info.Get())
-			log.Warn(err)
-			if span != nil {
-				span.RecordError(err)
-				span.SetAttributes(trace.StatusCodeInternal(err.Error())...)
-				span.SetStatus(trace.StatusError, err.Error())
-			}
-			return nil, err
-		}
-		req.Vector = vec.GetVector()
-	}
-	res, err = s.gateway.Search(ctx, req, s.copts...)
-	if err != nil {
-		st, msg, err := status.ParseError(err, codes.Internal, "failed to parse "+vald.SearchRPCName+" gRPC error response")
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
-		return nil, err
-	}
-	targets = req.GetConfig().GetEgressFilters().GetTargets()
-	if targets != nil || s.DistanceFilters != nil {
-		addrs := make([]string, 0, len(targets)+len(s.DistanceFilters))
-		addrs = append(addrs, s.DistanceFilters...)
-		for _, target := range targets {
-			addrs = append(addrs, fmt.Sprintf("%s:%d", target.GetHost(), target.GetPort()))
-		}
-		c, err := s.egress.Target(ctx, addrs...)
-		if err != nil {
-			err = status.WrapWithUnavailable(
-				fmt.Sprintf(vald.SearchRPCName+" API egress filter targets %v not found", addrs),
-				err,
-				&errdetails.RequestInfo{
-					RequestId:   req.GetConfig().GetRequestId(),
-					ServingData: errdetails.Serialize(req),
-				},
-				&errdetails.BadRequest{
-					FieldViolations: []*errdetails.BadRequestFieldViolation{
-						{
-							Field:       "vectorizer targets",
-							Description: err.Error(),
-						},
-					},
-				},
-				&errdetails.ResourceInfo{
-					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.SearchRPCName,
-					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-				}, info.Get())
-			log.Warn(err)
-			if span != nil {
-				span.RecordError(err)
-				span.SetAttributes(trace.StatusCodeUnavailable(err.Error())...)
-				span.SetStatus(trace.StatusError, err.Error())
-			}
-			return nil, err
-		}
-		for i, dist := range res.GetResults() {
-			d, err := c.FilterDistance(ctx, dist)
+			vec, err := c.FilterVector(ctx, &payload.Object_Vector{
+				Vector: req.GetVector(),
+			})
 			if err != nil {
 				err = status.WrapWithInternal(
-					fmt.Sprintf(vald.SearchRPCName+" API egress filter request to %v failure on id %s", addrs, dist.GetId()),
+					fmt.Sprintf(vald.SearchRPCName+" API ingress filter request to %v failure on vec %v", addr, req.GetVector()),
 					err,
 					&errdetails.RequestInfo{
 						RequestId:   req.GetConfig().GetRequestId(),
@@ -1501,7 +1428,78 @@ func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *
 				}
 				return nil, err
 			}
-			res.Results[i] = d
+			req.Vector = vec.GetVector()
+		}
+	}
+	res, err = s.gateway.Search(ctx, req, s.copts...)
+	if err != nil {
+		st, msg, err := status.ParseError(err, codes.Internal, "failed to parse "+vald.SearchRPCName+" gRPC error response")
+		if span != nil {
+			span.RecordError(err)
+			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+			span.SetStatus(trace.StatusError, err.Error())
+		}
+		return nil, err
+	}
+	filterConfigs = req.GetConfig().GetEgressFilters()
+	if filterConfigs != nil || s.DistanceFilters != nil {
+		for _, filterConfig := range filterConfigs {
+			addr := fmt.Sprintf("%s:%d", filterConfig.GetTarget().GetHost(), filterConfig.GetTarget().GetPort())
+			c, err := s.egress.Target(ctx, addr)
+			if err != nil {
+				err = status.WrapWithUnavailable(
+					fmt.Sprintf(vald.SearchRPCName+" API egress filter target %v not found", addr),
+					err,
+					&errdetails.RequestInfo{
+						RequestId:   req.GetConfig().GetRequestId(),
+						ServingData: errdetails.Serialize(req),
+					},
+					&errdetails.BadRequest{
+						FieldViolations: []*errdetails.BadRequestFieldViolation{
+							{
+								Field:       "vectorizer target",
+								Description: err.Error(),
+							},
+						},
+					},
+					&errdetails.ResourceInfo{
+						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.SearchRPCName,
+						ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+					}, info.Get())
+				log.Warn(err)
+				if span != nil {
+					span.RecordError(err)
+					span.SetAttributes(trace.StatusCodeUnavailable(err.Error())...)
+					span.SetStatus(trace.StatusError, err.Error())
+				}
+				return nil, err
+			}
+			dist := res.GetResults()
+			d, err := c.FilterDistance(ctx, &payload.Filter_DistanceRequest{
+				Distance: dist,
+				Query:    filterConfig.GetQuery(),
+			})
+			if err != nil {
+				err = status.WrapWithInternal(
+					fmt.Sprintf(vald.SearchRPCName+" API egress filter request to %v failure on id %s", addr, dist),
+					err,
+					&errdetails.RequestInfo{
+						RequestId:   req.GetConfig().GetRequestId(),
+						ServingData: errdetails.Serialize(req),
+					},
+					&errdetails.ResourceInfo{
+						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.SearchRPCName,
+						ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+					}, info.Get())
+				log.Warn(err)
+				if span != nil {
+					span.RecordError(err)
+					span.SetAttributes(trace.StatusCodeInternal(err.Error())...)
+					span.SetStatus(trace.StatusError, err.Error())
+				}
+				return nil, err
+			}
+			res.Results = d.GetDistance()
 		}
 	}
 	return res, nil
@@ -1524,47 +1522,47 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 		}
 		return nil, err
 	}
-	targets := req.GetConfig().GetEgressFilters().GetTargets()
-	if targets != nil || s.DistanceFilters != nil {
-		addrs := make([]string, 0, len(targets)+len(s.DistanceFilters))
-		addrs = append(addrs, s.DistanceFilters...)
-		for _, target := range targets {
-			addrs = append(addrs, fmt.Sprintf("%s:%d", target.GetHost(), target.GetPort()))
-		}
-		c, err := s.egress.Target(ctx, addrs...)
-		if err != nil {
-			err = status.WrapWithUnavailable(
-				fmt.Sprintf(vald.SearchByIDRPCName+" API egress filter targets %v not found", addrs),
-				err,
-				&errdetails.RequestInfo{
-					RequestId:   req.GetConfig().GetRequestId(),
-					ServingData: errdetails.Serialize(req),
-				},
-				&errdetails.BadRequest{
-					FieldViolations: []*errdetails.BadRequestFieldViolation{
-						{
-							Field:       "vectorizer targets",
-							Description: err.Error(),
+	filterConfigs := req.GetConfig().GetEgressFilters()
+	if filterConfigs != nil || s.DistanceFilters != nil {
+		for _, filterConfig := range filterConfigs {
+			addr := fmt.Sprintf("%s:%d", filterConfig.GetTarget().GetHost(), filterConfig.GetTarget().GetPort())
+			c, err := s.egress.Target(ctx, addr)
+			if err != nil {
+				err = status.WrapWithUnavailable(
+					fmt.Sprintf(vald.SearchByIDRPCName+" API egress filter target %v not found", addr),
+					err,
+					&errdetails.RequestInfo{
+						RequestId:   req.GetConfig().GetRequestId(),
+						ServingData: errdetails.Serialize(req),
+					},
+					&errdetails.BadRequest{
+						FieldViolations: []*errdetails.BadRequestFieldViolation{
+							{
+								Field:       "vectorizer targets",
+								Description: err.Error(),
+							},
 						},
 					},
-				},
-				&errdetails.ResourceInfo{
-					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.SearchByIDRPCName,
-					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-				}, info.Get())
-			log.Warn(err)
-			if span != nil {
-				span.RecordError(err)
-				span.SetAttributes(trace.StatusCodeUnavailable(err.Error())...)
-				span.SetStatus(trace.StatusError, err.Error())
+					&errdetails.ResourceInfo{
+						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.SearchByIDRPCName,
+						ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+					}, info.Get())
+				log.Warn(err)
+				if span != nil {
+					span.RecordError(err)
+					span.SetAttributes(trace.StatusCodeUnavailable(err.Error())...)
+					span.SetStatus(trace.StatusError, err.Error())
+				}
+				return nil, err
 			}
-			return nil, err
-		}
-		for i, dist := range res.GetResults() {
-			d, err := c.FilterDistance(ctx, dist)
+			dist := res.GetResults()
+			d, err := c.FilterDistance(ctx, &payload.Filter_DistanceRequest{
+				Distance: dist,
+				Query:    filterConfig.GetQuery(),
+			})
 			if err != nil {
 				err = status.WrapWithInternal(
-					fmt.Sprintf(vald.SearchByIDRPCName+" API egress filter request to %v failure on id %s", addrs, dist.GetId()),
+					fmt.Sprintf(vald.SearchByIDRPCName+" API egress filter request to %v failure on id %s", addr, dist),
 					err,
 					&errdetails.RequestInfo{
 						RequestId:   req.GetConfig().GetRequestId(),
@@ -1582,7 +1580,7 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 				}
 				return nil, err
 			}
-			res.Results[i] = d
+			res.Results = d.GetDistance()
 		}
 	}
 	return res, nil
@@ -1860,112 +1858,45 @@ func (s *server) LinearSearch(ctx context.Context, req *payload.Search_Request) 
 			span.End()
 		}
 	}()
-	targets := req.GetConfig().GetIngressFilters().GetTargets()
-	if targets != nil || s.SearchFilters != nil {
-		addrs := make([]string, 0, len(targets)+len(s.SearchFilters))
-		addrs = append(addrs, s.SearchFilters...)
-		for _, target := range targets {
-			addrs = append(addrs, fmt.Sprintf("%s:%d", target.GetHost(), target.GetPort()))
-		}
-		c, err := s.ingress.Target(ctx, addrs...)
-		if err != nil {
-			err = status.WrapWithUnavailable(
-				fmt.Sprintf(vald.LinearSearchRPCName+" API ingress filter targets %v not found", addrs),
-				err,
-				&errdetails.RequestInfo{
-					RequestId:   req.GetConfig().GetRequestId(),
-					ServingData: errdetails.Serialize(req),
-				},
-				&errdetails.BadRequest{
-					FieldViolations: []*errdetails.BadRequestFieldViolation{
-						{
-							Field:       "vectorizer targets",
-							Description: err.Error(),
+	filterConfigs := req.GetConfig().GetIngressFilters()
+	if filterConfigs != nil || s.SearchFilters != nil {
+		for _, filterConfig := range filterConfigs {
+			addr := fmt.Sprintf("%s:%d", filterConfig.GetTarget().GetHost(), filterConfig.GetTarget().GetPort())
+			c, err := s.ingress.Target(ctx, addr)
+			if err != nil {
+				err = status.WrapWithUnavailable(
+					fmt.Sprintf(vald.LinearSearchRPCName+" API ingress filter target %v not found", addr),
+					err,
+					&errdetails.RequestInfo{
+						RequestId:   req.GetConfig().GetRequestId(),
+						ServingData: errdetails.Serialize(req),
+					},
+					&errdetails.BadRequest{
+						FieldViolations: []*errdetails.BadRequestFieldViolation{
+							{
+								Field:       "vectorizer targets",
+								Description: err.Error(),
+							},
 						},
 					},
-				},
-				&errdetails.ResourceInfo{
-					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.LinearSearchRPCName,
-					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-				}, info.Get())
-			log.Warn(err)
-			if span != nil {
-				span.RecordError(err)
-				span.SetAttributes(trace.StatusCodeUnavailable(err.Error())...)
-				span.SetStatus(trace.StatusError, err.Error())
+					&errdetails.ResourceInfo{
+						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.LinearSearchRPCName,
+						ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+					}, info.Get())
+				log.Warn(err)
+				if span != nil {
+					span.RecordError(err)
+					span.SetAttributes(trace.StatusCodeUnavailable(err.Error())...)
+					span.SetStatus(trace.StatusError, err.Error())
+				}
+				return nil, err
 			}
-			return nil, err
-		}
-		vec, err := c.FilterVector(ctx, &payload.Object_Vector{
-			Vector: req.GetVector(),
-		})
-		if err != nil {
-			err = status.WrapWithInternal(
-				fmt.Sprintf(vald.LinearSearchRPCName+" API ingress filter request to %v failure on vec %v", addrs, req.GetVector()),
-				err,
-				&errdetails.RequestInfo{
-					RequestId:   req.GetConfig().GetRequestId(),
-					ServingData: errdetails.Serialize(req),
-				},
-				&errdetails.ResourceInfo{
-					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.LinearSearchRPCName,
-					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-				}, info.Get())
-			log.Warn(err)
-			if span != nil {
-				span.RecordError(err)
-				span.SetAttributes(trace.StatusCodeInternal(err.Error())...)
-				span.SetStatus(trace.StatusError, err.Error())
-			}
-			return nil, err
-		}
-		req.Vector = vec.GetVector()
-	}
-	res, err = s.gateway.LinearSearch(ctx, req, s.copts...)
-	if err != nil {
-		return nil, err
-	}
-	targets = req.GetConfig().GetEgressFilters().GetTargets()
-	if targets != nil || s.DistanceFilters != nil {
-		addrs := make([]string, 0, len(targets)+len(s.DistanceFilters))
-		addrs = append(addrs, s.DistanceFilters...)
-		for _, target := range targets {
-			addrs = append(addrs, fmt.Sprintf("%s:%d", target.GetHost(), target.GetPort()))
-		}
-		c, err := s.egress.Target(ctx, addrs...)
-		if err != nil {
-			err = status.WrapWithUnavailable(
-				fmt.Sprintf(vald.LinearSearchRPCName+" API ingress filter targets %v not found", addrs),
-				err,
-				&errdetails.RequestInfo{
-					RequestId:   req.GetConfig().GetRequestId(),
-					ServingData: errdetails.Serialize(req),
-				},
-				&errdetails.BadRequest{
-					FieldViolations: []*errdetails.BadRequestFieldViolation{
-						{
-							Field:       "vectorizer targets",
-							Description: err.Error(),
-						},
-					},
-				},
-				&errdetails.ResourceInfo{
-					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.LinearSearchRPCName,
-					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-				}, info.Get())
-			log.Warn(err)
-			if span != nil {
-				span.RecordError(err)
-				span.SetAttributes(trace.StatusCodeUnavailable(err.Error())...)
-				span.SetStatus(trace.StatusError, err.Error())
-			}
-			return nil, err
-		}
-		for i, dist := range res.GetResults() {
-			d, err := c.FilterDistance(ctx, dist)
+			vec, err := c.FilterVector(ctx, &payload.Object_Vector{
+				Vector: req.GetVector(),
+			})
 			if err != nil {
 				err = status.WrapWithInternal(
-					fmt.Sprintf(vald.LinearSearchRPCName+" API egress filter request to %v failure on id %s", addrs, dist.GetId()),
+					fmt.Sprintf(vald.LinearSearchRPCName+" API ingress filter request to %v failure on vec %v", addr, req.GetVector()),
 					err,
 					&errdetails.RequestInfo{
 						RequestId:   req.GetConfig().GetRequestId(),
@@ -1983,7 +1914,74 @@ func (s *server) LinearSearch(ctx context.Context, req *payload.Search_Request) 
 				}
 				return nil, err
 			}
-			res.Results[i] = d
+			req.Vector = vec.GetVector()
+		}
+	}
+	res, err = s.gateway.LinearSearch(ctx, req, s.copts...)
+	if err != nil {
+		return nil, err
+	}
+	filterConfigs = req.GetConfig().GetEgressFilters()
+	if filterConfigs != nil || s.DistanceFilters != nil {
+		for _, filterConfig := range filterConfigs {
+			addr := fmt.Sprintf("%s:%d", filterConfig.GetTarget().GetHost(), filterConfig.GetTarget().GetPort())
+			c, err := s.egress.Target(ctx, addr)
+			if err != nil {
+				err = status.WrapWithUnavailable(
+					fmt.Sprintf(vald.LinearSearchRPCName+" API ingress filter target %v not found", addr),
+					err,
+					&errdetails.RequestInfo{
+						RequestId:   req.GetConfig().GetRequestId(),
+						ServingData: errdetails.Serialize(req),
+					},
+					&errdetails.BadRequest{
+						FieldViolations: []*errdetails.BadRequestFieldViolation{
+							{
+								Field:       "vectorizer targets",
+								Description: err.Error(),
+							},
+						},
+					},
+					&errdetails.ResourceInfo{
+						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.LinearSearchRPCName,
+						ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+					}, info.Get())
+				log.Warn(err)
+				if span != nil {
+					span.RecordError(err)
+					span.SetAttributes(trace.StatusCodeUnavailable(err.Error())...)
+					span.SetStatus(trace.StatusError, err.Error())
+				}
+				return nil, err
+			}
+
+			dist := res.GetResults()
+			d, err := c.FilterDistance(ctx, &payload.Filter_DistanceRequest{
+				Distance: dist,
+				Query:    filterConfig.GetQuery(),
+			})
+			if err != nil {
+				err = status.WrapWithInternal(
+					fmt.Sprintf(vald.LinearSearchRPCName+" API egress filter request to %v failure on id %s", addr, dist),
+					err,
+					&errdetails.RequestInfo{
+						RequestId:   req.GetConfig().GetRequestId(),
+						ServingData: errdetails.Serialize(req),
+					},
+					&errdetails.ResourceInfo{
+						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.LinearSearchRPCName,
+						ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+					}, info.Get())
+				log.Warn(err)
+				if span != nil {
+					span.RecordError(err)
+					span.SetAttributes(trace.StatusCodeInternal(err.Error())...)
+					span.SetStatus(trace.StatusError, err.Error())
+				}
+				return nil, err
+			}
+			res.Results = d.GetDistance()
+
 		}
 	}
 	return res, nil
@@ -2000,50 +1998,50 @@ func (s *server) LinearSearchByID(ctx context.Context, req *payload.Search_IDReq
 	if err != nil {
 		return nil, err
 	}
-	targets := req.GetConfig().GetEgressFilters().GetTargets()
-	if targets != nil || s.DistanceFilters != nil {
-		addrs := make([]string, 0, len(targets)+len(s.DistanceFilters))
-		addrs = append(addrs, s.DistanceFilters...)
-		for _, target := range targets {
-			addrs = append(addrs, fmt.Sprintf("%s:%d", target.GetHost(), target.GetPort()))
-		}
-		c, err := s.egress.Target(ctx, addrs...)
-		if err != nil {
-			err = status.WrapWithUnavailable(
-				fmt.Sprintf(vald.LinearSearchByIDRPCName+" API egress filter targets %v not found", addrs),
-				err,
-				&errdetails.RequestInfo{
-					RequestId:   req.GetConfig().GetRequestId(),
-					ServingData: errdetails.Serialize(req),
-				},
-				&errdetails.BadRequest{
-					FieldViolations: []*errdetails.BadRequestFieldViolation{
-						{
-							Field:       "vectorizer targets",
-							Description: err.Error(),
-						},
-					},
-				},
-				&errdetails.ResourceInfo{
-					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.LinearSearchByIDRPCName,
-					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-				}, info.Get())
-			log.Warn(err)
-			if span != nil {
-				span.RecordError(err)
-				span.SetAttributes(trace.StatusCodeUnavailable(err.Error())...)
-				span.SetStatus(trace.StatusError, err.Error())
-			}
-			return nil, err
-		}
-		for i, dist := range res.GetResults() {
-			d, err := c.FilterDistance(ctx, dist)
+	filterConfigs := req.GetConfig().GetEgressFilters()
+	if filterConfigs != nil || s.DistanceFilters != nil {
+		for _, filterConfig := range filterConfigs {
+			addr := fmt.Sprintf("%s:%d", filterConfig.GetTarget().GetHost(), filterConfig.GetTarget().GetPort())
+			c, err := s.egress.Target(ctx, addr)
 			if err != nil {
-				err = status.WrapWithInternal(
-					fmt.Sprintf(vald.LinearSearchByIDRPCName+" API egress filter request to %v failure on id %s", addrs, dist.GetId()),
+				err = status.WrapWithUnavailable(
+					fmt.Sprintf(vald.LinearSearchByIDRPCName+" API egress filter target %v not found", addr),
 					err,
 					&errdetails.RequestInfo{
-						RequestId:   dist.GetId(),
+						RequestId:   req.GetConfig().GetRequestId(),
+						ServingData: errdetails.Serialize(req),
+					},
+					&errdetails.BadRequest{
+						FieldViolations: []*errdetails.BadRequestFieldViolation{
+							{
+								Field:       "vectorizer targets",
+								Description: err.Error(),
+							},
+						},
+					},
+					&errdetails.ResourceInfo{
+						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.LinearSearchByIDRPCName,
+						ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+					}, info.Get())
+				log.Warn(err)
+				if span != nil {
+					span.RecordError(err)
+					span.SetAttributes(trace.StatusCodeUnavailable(err.Error())...)
+					span.SetStatus(trace.StatusError, err.Error())
+				}
+				return nil, err
+			}
+			dist := res.GetResults()
+			d, err := c.FilterDistance(ctx, &payload.Filter_DistanceRequest{
+				Distance: dist,
+				Query:    filterConfig.GetQuery(),
+			})
+			if err != nil {
+				err = status.WrapWithInternal(
+					fmt.Sprintf(vald.LinearSearchByIDRPCName+" API egress filter request to %v failure on id %s", addr, dist),
+					err,
+					&errdetails.RequestInfo{
+						RequestId:   req.GetConfig().GetRequestId(),
 						ServingData: errdetails.Serialize(req),
 					},
 					&errdetails.ResourceInfo{
@@ -2058,7 +2056,7 @@ func (s *server) LinearSearchByID(ctx context.Context, req *payload.Search_IDReq
 				}
 				return nil, err
 			}
-			res.Results[i] = d
+			res.Results = d.GetDistance()
 		}
 	}
 	return res, nil
@@ -2382,58 +2380,56 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (loc *
 			req.Config = &payload.Insert_Config{SkipStrictExistCheck: true}
 		}
 	}
-	targets := req.GetConfig().GetFilters().GetTargets()
-	if len(targets) == 0 && len(s.InsertFilters) == 0 {
+	filterConfigs := req.GetConfig().GetFilters()
+	if len(filterConfigs) == 0 && len(s.InsertFilters) == 0 {
 		return s.gateway.Insert(ctx, req)
 	}
-	addrs := make([]string, 0, len(targets)+len(s.InsertFilters))
-	addrs = append(addrs, s.InsertFilters...)
-	for _, target := range targets {
-		addrs = append(addrs, fmt.Sprintf("%s:%d", target.GetHost(), target.GetPort()))
-	}
-	c, err := s.ingress.Target(ctx, addrs...)
-	if err != nil {
-		err = status.WrapWithUnavailable(
-			fmt.Sprintf(vald.InsertRPCName+" API ingress filter filter targets %v not found", addrs), err,
-			&errdetails.RequestInfo{
-				RequestId:   req.GetVector().GetId(),
-				ServingData: errdetails.Serialize(req),
-			},
-			&errdetails.ResourceInfo{
-				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.InsertRPCName,
-				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-			}, info.Get())
-		log.Warn(err)
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.StatusCodeUnavailable(err.Error())...)
-			span.SetStatus(trace.StatusError, err.Error())
+	for _, filterConfig := range filterConfigs {
+		addr := fmt.Sprintf("%s:%d", filterConfig.GetTarget().GetHost(), filterConfig.GetTarget().GetPort())
+		c, err := s.ingress.Target(ctx, addr)
+		if err != nil {
+			err = status.WrapWithUnavailable(
+				fmt.Sprintf(vald.InsertRPCName+" API ingress filter filter target %v not found", addr), err,
+				&errdetails.RequestInfo{
+					RequestId:   req.GetVector().GetId(),
+					ServingData: errdetails.Serialize(req),
+				},
+				&errdetails.ResourceInfo{
+					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.InsertRPCName,
+					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+				}, info.Get())
+			log.Warn(err)
+			if span != nil {
+				span.RecordError(err)
+				span.SetAttributes(trace.StatusCodeUnavailable(err.Error())...)
+				span.SetStatus(trace.StatusError, err.Error())
+			}
 		}
-	}
-	vec, err = c.FilterVector(ctx, req.GetVector())
-	if err != nil {
-		err = status.WrapWithInternal(
-			fmt.Sprintf(vald.InsertRPCName+" API ingress filter request to %v failure on id: %s\tvec: %v", addrs, req.GetVector().GetId(), req.GetVector().GetVector()), err,
-			&errdetails.RequestInfo{
-				RequestId:   req.GetVector().GetId(),
-				ServingData: errdetails.Serialize(req),
-			},
-			&errdetails.ResourceInfo{
-				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.InsertRPCName,
-				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-			}, info.Get())
-		log.Warn(err)
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.StatusCodeInternal(err.Error())...)
-			span.SetStatus(trace.StatusError, err.Error())
+		vec, err = c.FilterVector(ctx, req.GetVector())
+		if err != nil {
+			err = status.WrapWithInternal(
+				fmt.Sprintf(vald.InsertRPCName+" API ingress filter request to %v failure on id: %s\tvec: %v", addr, req.GetVector().GetId(), req.GetVector().GetVector()), err,
+				&errdetails.RequestInfo{
+					RequestId:   req.GetVector().GetId(),
+					ServingData: errdetails.Serialize(req),
+				},
+				&errdetails.ResourceInfo{
+					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.InsertRPCName,
+					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+				}, info.Get())
+			log.Warn(err)
+			if span != nil {
+				span.RecordError(err)
+				span.SetAttributes(trace.StatusCodeInternal(err.Error())...)
+				span.SetStatus(trace.StatusError, err.Error())
+			}
+			return nil, err
 		}
-		return nil, err
+		if vec.GetId() == "" {
+			vec.Id = req.GetVector().GetId()
+		}
+		req.Vector = vec
 	}
-	if vec.GetId() == "" {
-		vec.Id = req.GetVector().GetId()
-	}
-	req.Vector = vec
 	loc, err = s.gateway.Insert(ctx, req, s.copts...)
 	if err != nil {
 		err = status.WrapWithInternal(
@@ -2654,59 +2650,57 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (loc *
 			req.Config = &payload.Update_Config{SkipStrictExistCheck: true}
 		}
 	}
-	targets := req.GetConfig().GetFilters().GetTargets()
-	if len(targets) == 0 && len(s.UpdateFilters) == 0 {
+	filterConfigs := req.GetConfig().GetFilters()
+	if len(filterConfigs) == 0 && len(s.UpdateFilters) == 0 {
 		return s.gateway.Update(ctx, req)
 	}
-	addrs := make([]string, 0, len(targets)+len(s.UpdateFilters))
-	addrs = append(addrs, s.UpdateFilters...)
-	for _, target := range targets {
-		addrs = append(addrs, fmt.Sprintf("%s:%d", target.GetHost(), target.GetPort()))
-	}
-	c, err := s.ingress.Target(ctx, addrs...)
-	if err != nil {
-		err = status.WrapWithUnavailable(
-			fmt.Sprintf(vald.UpdateRPCName+" API ingress filter filter targets %v not found", addrs), err,
-			&errdetails.RequestInfo{
-				RequestId:   req.GetVector().GetId(),
-				ServingData: errdetails.Serialize(req),
-			},
-			&errdetails.ResourceInfo{
-				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.UpdateRPCName,
-				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-			}, info.Get())
-		log.Warn(err)
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.StatusCodeUnavailable(err.Error())...)
-			span.SetStatus(trace.StatusError, err.Error())
+	for _, filterConfig := range filterConfigs {
+		addr := fmt.Sprintf("%s:%d", filterConfig.GetTarget().GetHost(), filterConfig.GetTarget().GetPort())
+		c, err := s.ingress.Target(ctx, addr)
+		if err != nil {
+			err = status.WrapWithUnavailable(
+				fmt.Sprintf(vald.UpdateRPCName+" API ingress filter filter target %v not found", addr), err,
+				&errdetails.RequestInfo{
+					RequestId:   req.GetVector().GetId(),
+					ServingData: errdetails.Serialize(req),
+				},
+				&errdetails.ResourceInfo{
+					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.UpdateRPCName,
+					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+				}, info.Get())
+			log.Warn(err)
+			if span != nil {
+				span.RecordError(err)
+				span.SetAttributes(trace.StatusCodeUnavailable(err.Error())...)
+				span.SetStatus(trace.StatusError, err.Error())
+			}
+			return nil, err
 		}
-		return nil, err
-	}
-	vec, err = c.FilterVector(ctx, req.GetVector())
-	if err != nil {
-		err = status.WrapWithInternal(
-			fmt.Sprintf(vald.UpdateRPCName+" API ingress filter request to %v failure on id: %s\tvec: %v", addrs, req.GetVector().GetId(), req.GetVector().GetVector()), err,
-			&errdetails.RequestInfo{
-				RequestId:   req.GetVector().GetId(),
-				ServingData: errdetails.Serialize(req),
-			},
-			&errdetails.ResourceInfo{
-				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.UpdateRPCName,
-				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-			}, info.Get())
-		log.Warn(err)
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.StatusCodeInternal(err.Error())...)
-			span.SetStatus(trace.StatusError, err.Error())
+		vec, err = c.FilterVector(ctx, req.GetVector())
+		if err != nil {
+			err = status.WrapWithInternal(
+				fmt.Sprintf(vald.UpdateRPCName+" API ingress filter request to %v failure on id: %s\tvec: %v", addr, req.GetVector().GetId(), req.GetVector().GetVector()), err,
+				&errdetails.RequestInfo{
+					RequestId:   req.GetVector().GetId(),
+					ServingData: errdetails.Serialize(req),
+				},
+				&errdetails.ResourceInfo{
+					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.UpdateRPCName,
+					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+				}, info.Get())
+			log.Warn(err)
+			if span != nil {
+				span.RecordError(err)
+				span.SetAttributes(trace.StatusCodeInternal(err.Error())...)
+				span.SetStatus(trace.StatusError, err.Error())
+			}
+			return nil, err
 		}
-		return nil, err
+		if vec.GetId() == "" {
+			vec.Id = req.GetVector().GetId()
+		}
+		req.Vector = vec
 	}
-	if vec.GetId() == "" {
-		vec.Id = req.GetVector().GetId()
-	}
-	req.Vector = vec
 	loc, err = s.gateway.Update(ctx, req, s.copts...)
 	if err != nil {
 		err = status.WrapWithInternal(
@@ -2911,59 +2905,57 @@ func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *
 			req.Config = &payload.Upsert_Config{SkipStrictExistCheck: true}
 		}
 	}
-	targets := req.GetConfig().GetFilters().GetTargets()
-	if len(targets) == 0 && len(s.UpsertFilters) == 0 {
+	filterConfigs := req.GetConfig().GetFilters()
+	if len(filterConfigs) == 0 && len(s.UpsertFilters) == 0 {
 		return s.gateway.Upsert(ctx, req)
 	}
-	addrs := make([]string, 0, len(targets))
-	addrs = append(addrs, s.UpsertFilters...)
-	for _, target := range targets {
-		addrs = append(addrs, fmt.Sprintf("%s:%d", target.GetHost(), target.GetPort()))
-	}
-	c, err := s.ingress.Target(ctx, addrs...)
-	if err != nil {
-		err = status.WrapWithUnavailable(
-			fmt.Sprintf(vald.UpsertRPCName+" API ingress filter filter targets %v not found", addrs), err,
-			&errdetails.RequestInfo{
-				RequestId:   req.GetVector().GetId(),
-				ServingData: errdetails.Serialize(req),
-			},
-			&errdetails.ResourceInfo{
-				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.UpsertObjectRPCName,
-				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-			}, info.Get())
-		log.Warn(err)
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.StatusCodeUnavailable(err.Error())...)
-			span.SetStatus(trace.StatusError, err.Error())
+	for _, filterConfig := range filterConfigs {
+		addr := fmt.Sprintf("%s:%d", filterConfig.GetTarget().GetHost(), filterConfig.GetTarget().GetPort())
+		c, err := s.ingress.Target(ctx, addr)
+		if err != nil {
+			err = status.WrapWithUnavailable(
+				fmt.Sprintf(vald.UpsertRPCName+" API ingress filter filter target %v not found", addr), err,
+				&errdetails.RequestInfo{
+					RequestId:   req.GetVector().GetId(),
+					ServingData: errdetails.Serialize(req),
+				},
+				&errdetails.ResourceInfo{
+					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.UpsertObjectRPCName,
+					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+				}, info.Get())
+			log.Warn(err)
+			if span != nil {
+				span.RecordError(err)
+				span.SetAttributes(trace.StatusCodeUnavailable(err.Error())...)
+				span.SetStatus(trace.StatusError, err.Error())
+			}
+			return nil, err
 		}
-		return nil, err
-	}
-	vec, err = c.FilterVector(ctx, req.GetVector())
-	if err != nil {
-		err = status.WrapWithInternal(
-			fmt.Sprintf(vald.UpsertRPCName+" API ingress filter request to %v failure on id: %s\tvec: %v", addrs, req.GetVector().GetId(), req.GetVector().GetVector()), err,
-			&errdetails.RequestInfo{
-				RequestId:   req.GetVector().GetId(),
-				ServingData: errdetails.Serialize(req),
-			},
-			&errdetails.ResourceInfo{
-				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.UpsertObjectRPCName,
-				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-			}, info.Get())
-		log.Warn(err)
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.StatusCodeInternal(err.Error())...)
-			span.SetStatus(trace.StatusError, err.Error())
+		vec, err = c.FilterVector(ctx, req.GetVector())
+		if err != nil {
+			err = status.WrapWithInternal(
+				fmt.Sprintf(vald.UpsertRPCName+" API ingress filter request to %v failure on id: %s\tvec: %v", addr, req.GetVector().GetId(), req.GetVector().GetVector()), err,
+				&errdetails.RequestInfo{
+					RequestId:   req.GetVector().GetId(),
+					ServingData: errdetails.Serialize(req),
+				},
+				&errdetails.ResourceInfo{
+					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.UpsertObjectRPCName,
+					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+				}, info.Get())
+			log.Warn(err)
+			if span != nil {
+				span.RecordError(err)
+				span.SetAttributes(trace.StatusCodeInternal(err.Error())...)
+				span.SetStatus(trace.StatusError, err.Error())
+			}
+			return nil, err
 		}
-		return nil, err
+		if vec.GetId() == "" {
+			vec.Id = req.GetVector().GetId()
+		}
+		req.Vector = vec
 	}
-	if vec.GetId() == "" {
-		vec.Id = req.GetVector().GetId()
-	}
-	req.Vector = vec
 	loc, err = s.gateway.Upsert(ctx, req, s.copts...)
 	if err != nil {
 		err = status.WrapWithInternal(vald.UpsertRPCName+" API failed to Execute DoMulti ID = "+uuid, err,
@@ -3270,58 +3262,62 @@ func (s *server) GetObject(ctx context.Context, req *payload.Object_VectorReques
 		}
 		return nil, err
 	}
-	targets := req.GetFilters().GetTargets()
-	if targets != nil || s.ObjectFilters != nil {
-		addrs := make([]string, 0, len(targets)+len(s.ObjectFilters))
-		addrs = append(addrs, s.ObjectFilters...)
-		for _, target := range targets {
-			addrs = append(addrs, fmt.Sprintf("%s:%d", target.GetHost(), target.GetPort()))
-		}
-		c, err := s.egress.Target(ctx, addrs...)
-		if err != nil {
-			err = status.WrapWithUnavailable(vald.SearchObjectRPCName+" API target filter API unavailable", err,
-				&errdetails.RequestInfo{
-					RequestId:   req.GetId().GetId(),
-					ServingData: errdetails.Serialize(req),
-				},
-				&errdetails.BadRequest{
-					FieldViolations: []*errdetails.BadRequestFieldViolation{
-						{
-							Field:       "vectorizer targets",
-							Description: err.Error(),
+	filterConfigs := req.GetFilters()
+	if filterConfigs != nil || s.ObjectFilters != nil {
+		for _, filterConfig := range filterConfigs {
+			addr := fmt.Sprintf("%s:%d", filterConfig.GetTarget().GetHost(), filterConfig.GetTarget().GetPort())
+			c, err := s.egress.Target(ctx, addr)
+			if err != nil {
+				err = status.WrapWithUnavailable(vald.SearchObjectRPCName+" API target filter API unavailable", err,
+					&errdetails.RequestInfo{
+						RequestId:   req.GetId().GetId(),
+						ServingData: errdetails.Serialize(req),
+					},
+					&errdetails.BadRequest{
+						FieldViolations: []*errdetails.BadRequestFieldViolation{
+							{
+								Field:       "vectorizer targets",
+								Description: err.Error(),
+							},
 						},
 					},
-				},
-				&errdetails.ResourceInfo{
-					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.GetObjectRPCName,
-					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-				}, info.Get())
-			log.Warn(err)
-			if span != nil {
-				span.RecordError(err)
-				span.SetAttributes(trace.StatusCodeUnavailable(err.Error())...)
-				span.SetStatus(trace.StatusError, err.Error())
+					&errdetails.ResourceInfo{
+						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.GetObjectRPCName,
+						ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+					}, info.Get())
+				log.Warn(err)
+				if span != nil {
+					span.RecordError(err)
+					span.SetAttributes(trace.StatusCodeUnavailable(err.Error())...)
+					span.SetStatus(trace.StatusError, err.Error())
+				}
+				return nil, err
 			}
-			return nil, err
-		}
-		vec, err = c.FilterVector(ctx, vec)
-		if err != nil {
-			err = status.WrapWithInternal(vald.GetObjectRPCName+" API egress filter API failed", err,
-				&errdetails.RequestInfo{
-					RequestId:   req.GetId().GetId(),
-					ServingData: errdetails.Serialize(req),
+			res, err := c.FilterVector(ctx, &payload.Filter_VectorRequest{
+				Vector: []*payload.Object_Vector {
+					vec,
 				},
-				&errdetails.ResourceInfo{
-					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.GetObjectRPCName,
-					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-				}, info.Get())
-			log.Warn(err)
-			if span != nil {
-				span.RecordError(err)
-				span.SetAttributes(trace.StatusCodeInternal(err.Error())...)
-				span.SetStatus(trace.StatusError, err.Error())
+				Query:  filterConfig.GetQuery(),
+			})
+			if err != nil {
+				err = status.WrapWithInternal(vald.GetObjectRPCName+" API egress filter API failed", err,
+					&errdetails.RequestInfo{
+						RequestId:   req.GetId().GetId(),
+						ServingData: errdetails.Serialize(req),
+					},
+					&errdetails.ResourceInfo{
+						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.GetObjectRPCName,
+						ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+					}, info.Get())
+				log.Warn(err)
+				if span != nil {
+					span.RecordError(err)
+					span.SetAttributes(trace.StatusCodeInternal(err.Error())...)
+					span.SetStatus(trace.StatusError, err.Error())
+				}
+				return nil, err
 			}
-			return nil, err
+			vec = res.GetVector()[0]
 		}
 	}
 	return vec, nil
