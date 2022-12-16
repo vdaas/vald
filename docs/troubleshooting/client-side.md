@@ -27,16 +27,16 @@ There are two possible reasons.
 
 1. Indexing has not finished in Vald Agent
 
-    Vald will search the nearest vectors of query from the indexing in Vald Agent.
-    If the indexing process is running, Vald Agent returns no search result.
-    
-    It will resolve when completed indexing instructions, like `CreateIndex`.
+   Vald will search the nearest vectors of query from the indexing in Vald Agent.
+   If the indexing process is running, Vald Agent returns no search result.
+
+   It will resolve when completed indexing instructions, like `CreateIndex`.
 
 1. Too short timeout for searching
 
-    When the search timeout configuration is too short, Vald LB Gateway stops the searching process before getting the search result from Vald Agent.
+   When the search timeout configuration is too short, Vald LB Gateway stops the searching process before getting the search result from Vald Agent.
 
-    In the sense of search operation, you can modify search timeout by [payload config](../api/search.md).
+   In the sense of search operation, you can modify search timeout by [payload config](../api/search.md).
 
 <div class="notice">
 It is easy to find out which problem occurs by inspections of the log of each Pod, like <a href="https://github.com/wercker/stern">stern</a>.

@@ -2249,7 +2249,7 @@ type Object_VectorRequest struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// The vector ID to be fetch.
+	// The vector ID to be fetched.
 	Id *Object_ID `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	// Filter configurations.
 	Filters *Filter_Config `protobuf:"bytes,2,opt,name=filters,proto3" json:"filters,omitempty"`
@@ -3183,11 +3183,11 @@ type Discoverer_Request struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// The agent name to be discover.
+	// The agent name to be discovered.
 	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	// The namespace to be discover.
+	// The namespace to be discovered.
 	Namespace string `protobuf:"bytes,2,opt,name=namespace,proto3" json:"namespace,omitempty"`
-	// The node to be discover.
+	// The node to be discovered.
 	Node string `protobuf:"bytes,3,opt,name=node,proto3" json:"node,omitempty"`
 }
 

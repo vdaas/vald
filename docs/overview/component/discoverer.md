@@ -40,7 +40,6 @@ The kind of metrics are here:
   | CPU       | CPU limit and CPU request       |
   | Memory    | Memory limit and Memory request |
 
-
 When syncing success, Vald Discoverer chooses the necessary metrics from the result and stores them into their four kinds of `Map` on their local memory:
 
 | Map name        | Description                          |
