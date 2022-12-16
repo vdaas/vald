@@ -74,6 +74,10 @@ runs:
           pr_num=`cat $GITHUB_EVENT_PATH | jq -r ".number"`
           echo "PR-${pr_num}" > versions/VALD_VERSION
           primary_tag="pr-${pr_num}"
+        elif [ "${{ github.event_name }}" = "pull_request_target" ]; then
+          pr_num=`cat $GITHUB_EVENT_PATH | jq -r ".number"`
+          echo "PR-${pr_num}" > versions/VALD_VERSION
+          primary_tag="pr-${pr_num}"
         else
           primary_tag="unknown"
         fi
@@ -85,6 +89,8 @@ runs:
       run: |
         if [ "${TARGET_PLATFORMS}" = "" ]; then
           if [ "${{ github.event_name }}" = "pull_request" ]; then
+            platforms="linux/amd64"
+          elif [ "${{ github.event_name }}" = "pull_request_target" ]; then
             platforms="linux/amd64"
           else
             platforms=`make docker/platforms`
