@@ -52,10 +52,27 @@ on:
       - "cmd/tools/cli/loadtest/**"
       - "dockers/tools/cli/loadtest/Dockerfile"
       - "versions/GO_VERSION"
+  pull_request_target:
+    types: [labeled]
+    paths:
+      - ".github/actions/docker-build/actions.yaml"
+      - ".github/workflows/dockers-loadtest-image.yml"
+      - "go.mod"
+      - "go.sum"
+      - "internal/**"
+      - "!internal/**/*_test.go"
+      - "!internal/db/**"
+      - "!internal/k8s/**"
+      - "apis/grpc/**"
+      - "pkg/tools/cli/loadtest/**"
+      - "cmd/tools/cli/loadtest/**"
+      - "dockers/tools/cli/loadtest/Dockerfile"
+      - "versions/GO_VERSION"
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'pull_request' || (github.event_name == 'pull_request_target' && contains(github.event.pull_request.labels.*.name, 'ci/approved')) }}
     strategy:
       max-parallel: 4
     steps:
@@ -64,12 +81,12 @@ jobs:
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
       - name: Setup QEMU
-        uses: docker/setup-qemu-action@v1
+        uses: docker/setup-qemu-action@v2
         with:
           platforms: all
       - name: Setup Docker Buildx
         id: buildx
-        uses: docker/setup-buildx-action@v1
+        uses: docker/setup-buildx-action@v2
         with:
           buildkitd-flags: "--debug"
       - name: Login to DockerHub
