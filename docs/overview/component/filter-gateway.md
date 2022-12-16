@@ -105,13 +105,12 @@ Vector filtering allows you to add the process: for example, to remove different
 
 If you want to use this feature, please deploy your own egress filter component, which meets the following interface.
 
-
 - The scheme of egress filter service
 
   ```rpc
   // https://github.com/vdaas/vald/blob/main/apis/proto/v1/filter/ingress/egress_filter.proto
   service Filter {
-  
+
     // Represent the RPC to filter the distance.
     rpc FilterDistance(payload.v1.Object.Distance)
         returns (payload.v1.Object.Distance) {
@@ -120,7 +119,7 @@ If you want to use this feature, please deploy your own egress filter component,
         body : "*"
       };
     }
-  
+
     // Represent the RPC to filter the vector.
     rpc FilterVector(payload.v1.Object.Vector)
         returns (payload.v1.Object.Vector) {
@@ -143,7 +142,7 @@ If you want to use this feature, please deploy your own egress filter component,
     // The distance.
     float distance = 2;
   }
-  
+
   // Represent a vector.
   message Vector {
     // The vector ID.

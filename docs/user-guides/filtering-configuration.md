@@ -17,48 +17,48 @@ Every filter component should meet Vald's filter gRPC interface.
 
 - The ingress RPC definition
 
-    ```rpc
-    service Filter {
-      // Represent the RPC to generate the vector.
-      rpc GenVector(payload.v1.Object.Blob) returns (payload.v1.Object.Vector) {
-        option (google.api.http) = {
-          post : "/filter/ingress/object"
-          body : "*"
-        };
-      }
-      // Represent the RPC to filter the vector.
-      rpc FilterVector(payload.v1.Object.Vector)
-          returns (payload.v1.Object.Vector) {
-        option (google.api.http) = {
-          post : "/filter/ingress/vector"
-          body : "*"
-        };
-      }
+  ```rpc
+  service Filter {
+    // Represent the RPC to generate the vector.
+    rpc GenVector(payload.v1.Object.Blob) returns (payload.v1.Object.Vector) {
+      option (google.api.http) = {
+        post : "/filter/ingress/object"
+        body : "*"
+      };
     }
-    ```
+    // Represent the RPC to filter the vector.
+    rpc FilterVector(payload.v1.Object.Vector)
+        returns (payload.v1.Object.Vector) {
+      option (google.api.http) = {
+        post : "/filter/ingress/vector"
+        body : "*"
+      };
+    }
+  }
+  ```
 
 - The egress RPC definition
 
-    ```rpc
-    service Filter {
-      // Represent the RPC to filter the distance.
-      rpc FilterDistance(payload.v1.Object.Distance)
-          returns (payload.v1.Object.Distance) {
-        option (google.api.http) = {
-          post : "/filter/egress/distance"
-          body : "*"
-        };
-      }
-      // Represent the RPC to filter the vector.
-      rpc FilterVector(payload.v1.Object.Vector)
-          returns (payload.v1.Object.Vector) {
-        option (google.api.http) = {
-          post : "/filter/egress/vector"
-          body : "*"
-        };
-      }
+  ```rpc
+  service Filter {
+    // Represent the RPC to filter the distance.
+    rpc FilterDistance(payload.v1.Object.Distance)
+        returns (payload.v1.Object.Distance) {
+      option (google.api.http) = {
+        post : "/filter/egress/distance"
+        body : "*"
+      };
     }
-    ```
+    // Represent the RPC to filter the vector.
+    rpc FilterVector(payload.v1.Object.Vector)
+        returns (payload.v1.Object.Vector) {
+      option (google.api.http) = {
+        post : "/filter/egress/vector"
+        body : "*"
+      };
+    }
+  }
+  ```
 
 For more details, please refer to [the Vald Filter Gateway document](../overview/component/filter-gateway.md)
 
@@ -68,6 +68,7 @@ Vald provides the two types of ingress filter components.
 These will help you to implement your original filter component.
 
 Please refer to:
+
 - [Vald ONNX Ingress Filter](https://github.com/vdaas/vald-onnx-ingress-filter)
 - [Vald Tensorflow Ingress Filter](https://github.com/vdaas/vald-tensorflow-ingress-filter)
 
@@ -76,12 +77,11 @@ Please refer to:
 It is easy to enable the filtering feature.
 
 ```yaml
-...
+---
 gateway:
-...
-    filter:
-        enabled: true
-...
+---
+filter:
+  enabled: true
 ```
 
 The Vald Filter gateway connects to the filter component specified in the users' request.
