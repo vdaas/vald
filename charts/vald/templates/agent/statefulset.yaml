@@ -258,6 +258,10 @@ spec:
         resources:
           requests:
             storage: {{ $agent.persistentVolume.size }}
+        dataSource:
+          name: PVC_NAME
+          kind: VolumeSnapshot
+          apiGroup: snapshot.storage.k8s.io
   {{- end }}
   {{- end }}
   {{- end }}
