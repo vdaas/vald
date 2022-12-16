@@ -72,7 +72,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'pull_request' || (github.event_name == 'pull_request_target' && contains(github.event.pull_request.labels.*.name, 'ci/approved')) }}
+    if: ${{ github.event_name == 'pull_request' && github.event.pull_request_head.repo.fork == false || (github.event_name == 'pull_request_target' && contains(github.event.pull_request.labels.*.name, 'ci/approved')) }}
     strategy:
       max-parallel: 4
     steps:
