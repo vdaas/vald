@@ -23,7 +23,7 @@
 package vald
 
 import (
-	payload "github.com/vdaa s/vald/apis/grpc/v1/payload"
+	payload "github.com/vdaas/vald/apis/grpc/v1/payload"
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"

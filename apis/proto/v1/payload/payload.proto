@@ -21,7 +21,7 @@ package payload.v1;
 import "github.com/envoyproxy/protoc-gen-validate/validate/validate.proto";
 import "github.com/googleapis/googleapis/google/rpc/status.proto";
 
-option go_package = "github.com/vdaa s/vald/apis/grpc/v1/payload";
+option go_package = "github.com/vdaas/vald/apis/grpc/v1/payload";
 option java_multiple_files = true;
 option java_package = "org.vdaas.vald.api.v1.payload";
 option java_outer_classname = "ValdPayload";
