@@ -478,34 +478,35 @@ func ListInDir(path string) ([]string, error) {
 	return files, nil
 }
 
-func DeleteDir(path string) (err error) {
+func DeleteDir(ctx context.Context, path string) (err error) {
 	exists, _, err := ExistsWithDetail(path)
 	if !exists {
-		return nil, err
+		return err
 	}
-	err := os.Remove(path)
+	err = os.Remove(path)
 	if err == nil {
 		return nil
 	}
+	eg, _ := errgroup.New(ctx)
 
 	path, err = filepath.Abs(path)
 	if err != nil {
 		return err
 	}
-	err = filepath.WalkDir(src, func(childPath string, info fs.DirEntry, err error) error {
+	err = filepath.WalkDir(path, func(childPath string, info fs.DirEntry, err error) error {
 		if err != nil {
 			fi, ierr := info.Info()
 			if ierr != nil {
 				err = errors.Wrap(err, ierr.Error())
 			}
-			err = errors.ErrFailedToWalkDir(err, src, childPath, nil, fi)
+			err = errors.ErrFailedToWalkDir(err, path, childPath, nil, fi)
 			log.Warn(err)
 			return err
 		}
-		eg.Go(func() (err error) {
-			_, err = os.Delete(childPath)
+		eg.Go(safety.RecoverFunc(func() (err error) {
+			err = os.Remove(childPath)
 			return err
-		})
+		}))
 		return nil
 	})
 	if err != nil {

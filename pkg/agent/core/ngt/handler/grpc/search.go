@@ -89,6 +89,18 @@ func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *
 				})
 			log.Debug(err)
 			attrs = trace.StatusCodeAborted(err.Error())
+		case errors.Is(err, errors.ErrFlushingIsInProgress):
+			err = status.WrapWithAborted("Search API aborted to process search request due to flushing indices is in progress", err,
+				&errdetails.RequestInfo{
+					RequestId:   req.GetConfig().GetRequestId(),
+					ServingData: errdetails.Serialize(req),
+				},
+				&errdetails.ResourceInfo{
+					ResourceType: ngtResourceType + "/ngt.Search",
+					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+				})
+			log.Debug(err)
+			attrs = trace.StatusCodeAborted(err.Error())
 		case errors.Is(err, errors.ErrEmptySearchResult),
 			err == nil && res == nil,
 			0 < req.GetConfig().GetMinNum() && len(res.GetResults()) < int(req.GetConfig().GetMinNum()):
