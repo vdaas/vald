@@ -66,28 +66,6 @@
             "in": "path",
             "required": true,
             "type": "string"
-          },
-          {
-            "name": "filters.target.host",
-            "description": "The target hostname.",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "filters.target.port",
-            "description": "The target port.",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int64"
-          },
-          {
-            "name": "filters.query.query",
-            "description": "The raw query string.",
-            "in": "query",
-            "required": false,
-            "type": "string"
           }
         ],
         "tags": [

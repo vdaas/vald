@@ -688,7 +688,7 @@ Represent insert configurations.
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | skip_strict_exist_check | [bool](#bool) |  | A flag to skip exist check during insert operation. |
-| filters | [Filter.Config](#payload-v1-Filter-Config) |  | Filter configurations. |
+| filters | [Filter.Config](#payload-v1-Filter-Config) | repeated | Filter configurations. |
 | timestamp | [int64](#int64) |  | Insert timestamp. |
 
 
@@ -968,7 +968,7 @@ Represent a request to fetch raw vector.
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | id | [Object.ID](#payload-v1-Object-ID) |  | The vector ID to be fetch. |
-| filters | [Filter.Config](#payload-v1-Filter-Config) |  | Filter configurations. |
+| filters | [Filter.Config](#payload-v1-Filter-Config) | repeated | Filter configurations. |
 
 
 
@@ -1239,7 +1239,7 @@ Represent the update configuration.
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | skip_strict_exist_check | [bool](#bool) |  | A flag to skip exist check during update operation. |
-| filters | [Filter.Config](#payload-v1-Filter-Config) |  | Filter configuration. |
+| filters | [Filter.Config](#payload-v1-Filter-Config) | repeated | Filter configuration. |
 | timestamp | [int64](#int64) |  | Update timestamp. |
 
 
@@ -1329,7 +1329,7 @@ Represent the upsert configuration.
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | skip_strict_exist_check | [bool](#bool) |  | A flag to skip exist check during upsert operation. |
-| filters | [Filter.Config](#payload-v1-Filter-Config) |  | Filter configuration. |
+| filters | [Filter.Config](#payload-v1-Filter-Config) | repeated | Filter configuration. |
 | timestamp | [int64](#int64) |  | Upsert timestamp. |
 
 

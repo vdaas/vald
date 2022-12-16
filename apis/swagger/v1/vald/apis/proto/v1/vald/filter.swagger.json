@@ -507,7 +507,10 @@
           "description": "A flag to skip exist check during insert operation."
         },
         "filters": {
-          "$ref": "#/definitions/v1FilterConfig",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1FilterConfig"
+          },
           "description": "Filter configurations."
         },
         "timestamp": {
@@ -659,7 +662,10 @@
           "description": "A flag to skip exist check during update operation."
         },
         "filters": {
-          "$ref": "#/definitions/v1FilterConfig",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1FilterConfig"
+          },
           "description": "Filter configuration."
         },
         "timestamp": {
@@ -709,7 +715,10 @@
           "description": "A flag to skip exist check during upsert operation."
         },
         "filters": {
-          "$ref": "#/definitions/v1FilterConfig",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1FilterConfig"
+          },
           "description": "Filter configuration."
         },
         "timestamp": {

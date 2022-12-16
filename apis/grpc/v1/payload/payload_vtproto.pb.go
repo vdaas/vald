@@ -1261,15 +1261,17 @@ func (m *Insert_Config) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 		i--
 		dAtA[i] = 0x18
 	}
-	if m.Filters != nil {
-		size, err := m.Filters.MarshalToSizedBufferVT(dAtA[:i])
-		if err != nil {
-			return 0, err
+	if len(m.Filters) > 0 {
+		for iNdEx := len(m.Filters) - 1; iNdEx >= 0; iNdEx-- {
+			size, err := m.Filters[iNdEx].MarshalToSizedBufferVT(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarint(dAtA, i, uint64(size))
+			i--
+			dAtA[i] = 0x12
 		}
-		i -= size
-		i = encodeVarint(dAtA, i, uint64(size))
-		i--
-		dAtA[i] = 0x12
 	}
 	if m.SkipStrictExistCheck {
 		i--
@@ -1558,15 +1560,17 @@ func (m *Update_Config) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 		i--
 		dAtA[i] = 0x18
 	}
-	if m.Filters != nil {
-		size, err := m.Filters.MarshalToSizedBufferVT(dAtA[:i])
-		if err != nil {
-			return 0, err
+	if len(m.Filters) > 0 {
+		for iNdEx := len(m.Filters) - 1; iNdEx >= 0; iNdEx-- {
+			size, err := m.Filters[iNdEx].MarshalToSizedBufferVT(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarint(dAtA, i, uint64(size))
+			i--
+			dAtA[i] = 0x12
 		}
-		i -= size
-		i = encodeVarint(dAtA, i, uint64(size))
-		i--
-		dAtA[i] = 0x12
 	}
 	if m.SkipStrictExistCheck {
 		i--
@@ -1855,15 +1859,17 @@ func (m *Upsert_Config) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 		i--
 		dAtA[i] = 0x18
 	}
-	if m.Filters != nil {
-		size, err := m.Filters.MarshalToSizedBufferVT(dAtA[:i])
-		if err != nil {
-			return 0, err
+	if len(m.Filters) > 0 {
+		for iNdEx := len(m.Filters) - 1; iNdEx >= 0; iNdEx-- {
+			size, err := m.Filters[iNdEx].MarshalToSizedBufferVT(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarint(dAtA, i, uint64(size))
+			i--
+			dAtA[i] = 0x12
 		}
-		i -= size
-		i = encodeVarint(dAtA, i, uint64(size))
-		i--
-		dAtA[i] = 0x12
 	}
 	if m.SkipStrictExistCheck {
 		i--
@@ -2120,15 +2126,17 @@ func (m *Object_VectorRequest) MarshalToSizedBufferVT(dAtA []byte) (int, error) 
 		i -= len(m.unknownFields)
 		copy(dAtA[i:], m.unknownFields)
 	}
-	if m.Filters != nil {
-		size, err := m.Filters.MarshalToSizedBufferVT(dAtA[:i])
-		if err != nil {
-			return 0, err
+	if len(m.Filters) > 0 {
+		for iNdEx := len(m.Filters) - 1; iNdEx >= 0; iNdEx-- {
+			size, err := m.Filters[iNdEx].MarshalToSizedBufferVT(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarint(dAtA, i, uint64(size))
+			i--
+			dAtA[i] = 0x12
 		}
-		i -= size
-		i = encodeVarint(dAtA, i, uint64(size))
-		i--
-		dAtA[i] = 0x12
 	}
 	if m.Id != nil {
 		size, err := m.Id.MarshalToSizedBufferVT(dAtA[:i])
@@ -4334,9 +4342,11 @@ func (m *Insert_Config) SizeVT() (n int) {
 	if m.SkipStrictExistCheck {
 		n += 2
 	}
-	if m.Filters != nil {
-		l = m.Filters.SizeVT()
-		n += 1 + l + sov(uint64(l))
+	if len(m.Filters) > 0 {
+		for _, e := range m.Filters {
+			l = e.SizeVT()
+			n += 1 + l + sov(uint64(l))
+		}
 	}
 	if m.Timestamp != 0 {
 		n += 1 + sov(uint64(m.Timestamp))
@@ -4448,9 +4458,11 @@ func (m *Update_Config) SizeVT() (n int) {
 	if m.SkipStrictExistCheck {
 		n += 2
 	}
-	if m.Filters != nil {
-		l = m.Filters.SizeVT()
-		n += 1 + l + sov(uint64(l))
+	if len(m.Filters) > 0 {
+		for _, e := range m.Filters {
+			l = e.SizeVT()
+			n += 1 + l + sov(uint64(l))
+		}
 	}
 	if m.Timestamp != 0 {
 		n += 1 + sov(uint64(m.Timestamp))
@@ -4562,9 +4574,11 @@ func (m *Upsert_Config) SizeVT() (n int) {
 	if m.SkipStrictExistCheck {
 		n += 2
 	}
-	if m.Filters != nil {
-		l = m.Filters.SizeVT()
-		n += 1 + l + sov(uint64(l))
+	if len(m.Filters) > 0 {
+		for _, e := range m.Filters {
+			l = e.SizeVT()
+			n += 1 + l + sov(uint64(l))
+		}
 	}
 	if m.Timestamp != 0 {
 		n += 1 + sov(uint64(m.Timestamp))
@@ -4665,9 +4679,11 @@ func (m *Object_VectorRequest) SizeVT() (n int) {
 		l = m.Id.SizeVT()
 		n += 1 + l + sov(uint64(l))
 	}
-	if m.Filters != nil {
-		l = m.Filters.SizeVT()
-		n += 1 + l + sov(uint64(l))
+	if len(m.Filters) > 0 {
+		for _, e := range m.Filters {
+			l = e.SizeVT()
+			n += 1 + l + sov(uint64(l))
+		}
 	}
 	if m.unknownFields != nil {
 		n += len(m.unknownFields)
@@ -7994,10 +8010,8 @@ func (m *Insert_Config) UnmarshalVT(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if m.Filters == nil {
-				m.Filters = &Filter_Config{}
-			}
-			if err := m.Filters.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
+			m.Filters = append(m.Filters, &Filter_Config{})
+			if err := m.Filters[len(m.Filters)-1].UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -8623,10 +8637,8 @@ func (m *Update_Config) UnmarshalVT(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if m.Filters == nil {
-				m.Filters = &Filter_Config{}
-			}
-			if err := m.Filters.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
+			m.Filters = append(m.Filters, &Filter_Config{})
+			if err := m.Filters[len(m.Filters)-1].UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -9252,10 +9264,8 @@ func (m *Upsert_Config) UnmarshalVT(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if m.Filters == nil {
-				m.Filters = &Filter_Config{}
-			}
-			if err := m.Filters.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
+			m.Filters = append(m.Filters, &Filter_Config{})
+			if err := m.Filters[len(m.Filters)-1].UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -9794,10 +9804,8 @@ func (m *Object_VectorRequest) UnmarshalVT(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if m.Filters == nil {
-				m.Filters = &Filter_Config{}
-			}
-			if err := m.Filters.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
+			m.Filters = append(m.Filters, &Filter_Config{})
+			if err := m.Filters[len(m.Filters)-1].UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex

@@ -210,7 +210,7 @@ message Insert {
     // A flag to skip exist check during insert operation.
     bool skip_strict_exist_check = 1;
     // Filter configurations.
-    Filter.Config filters = 2;
+    repeated Filter.Config filters = 2;
     // Insert timestamp.
     int64 timestamp = 3;
   }
@@ -254,7 +254,7 @@ message Update {
     // A flag to skip exist check during update operation.
     bool skip_strict_exist_check = 1;
     // Filter configuration.
-    Filter.Config filters = 2;
+    repeated Filter.Config filters = 2;
     // Update timestamp.
     int64 timestamp = 3;
   }
@@ -298,7 +298,7 @@ message Upsert {
     // A flag to skip exist check during upsert operation.
     bool skip_strict_exist_check = 1;
     // Filter configuration.
-    Filter.Config filters = 2;
+    repeated Filter.Config filters = 2;
     // Upsert timestamp.
     int64 timestamp = 3;
   }
@@ -338,7 +338,7 @@ message Object {
     // The vector ID to be fetch.
     ID id = 1 [ (validate.rules).repeated .min_items = 2 ];
     // Filter configurations.
-    Filter.Config filters = 2;
+    repeated Filter.Config filters = 2;
   }
 
   // Represent the ID and distance pair.

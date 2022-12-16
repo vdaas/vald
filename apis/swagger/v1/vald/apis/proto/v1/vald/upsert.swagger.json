@@ -274,7 +274,10 @@
           "description": "A flag to skip exist check during upsert operation."
         },
         "filters": {
-          "$ref": "#/definitions/v1FilterConfig",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1FilterConfig"
+          },
           "description": "Filter configuration."
         },
         "timestamp": {
