@@ -64,12 +64,13 @@ runs:
       shell: bash
       id: determine_tag_name
       run: |
+        echo "GITHUB_REF $GITHUB_REF"
+        echo "GITHUB_EVENT_PATH $GITHUB_EVENT_PATH"
+        echo "GITHUB_EVENT_NAME ${{ github.event_name }}"
+        echo "GITHUB_EVENT_NUMBER  ${{ github.event.number }}"
         if [[ "$GITHUB_REF" =~ ^refs/tags/.* ]]; then
           tag_name=`echo $GITHUB_REF | sed -e 's:^refs/tags/::'`
           primary_tag="${tag_name}"
-        elif [ "$GITHUB_REF" = "refs/heads/main" ]; then
-          echo "nightly" > versions/VALD_VERSION
-          primary_tag="nightly"
         elif [ "${{ github.event_name }}" = "pull_request" ]; then
           pr_num=`cat $GITHUB_EVENT_PATH | jq -r ".number"`
           echo "PR-${pr_num}" > versions/VALD_VERSION
@@ -78,6 +79,9 @@ runs:
           pr_num=`cat $GITHUB_EVENT_PATH | jq -r ".number"`
           echo "PR-${pr_num}" > versions/VALD_VERSION
           primary_tag="pr-${pr_num}"
+        elif [ "$GITHUB_REF" = "refs/heads/main" ]; then
+          echo "nightly" > versions/VALD_VERSION
+          primary_tag="nightly"
         else
           primary_tag="unknown"
         fi
