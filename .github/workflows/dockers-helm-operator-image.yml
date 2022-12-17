@@ -59,6 +59,10 @@ on:
       - "charts/vald-helm-operator/templates/**"
       - "versions/OPERATOR_SDK_VERSION"
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     strategy:
