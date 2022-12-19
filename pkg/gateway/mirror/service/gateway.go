@@ -109,7 +109,7 @@ func (g *gateway) startAdvertise(ctx context.Context) <-chan error {
 	tic := time.NewTicker(g.advertiseDur)
 	defer tic.Stop()
 
-	ech := make(chan error, 1)
+	ech := make(chan error, 100)
 	g.eg.Go(func() error {
 		defer close(ech)
 		for {
@@ -118,7 +118,10 @@ func (g *gateway) startAdvertise(ctx context.Context) <-chan error {
 				return ctx.Err()
 			case <-tic.C:
 				targets, err := g.ConnectedTargets()
-				if err != nil {
+				if err != nil || len(targets) == 0 {
+					if err == nil {
+						err = errors.ErrTargetNotFound
+					}
 					select {
 					case <-ctx.Done():
 						return ctx.Err()
@@ -169,7 +172,7 @@ func (g *gateway) BroadCast(ctx context.Context,
 		}
 	}()
 
-	imAddrs := g.internlMirrorAddrs()
+	selfAddrs := g.selfMirrorAddrs()
 	return g.client.GRPCClient().RangeConcurrent(g.ForwardedContext(fctx), -1, func(ictx context.Context,
 		addr string, conn *grpc.ClientConn, copts ...grpc.CallOption,
 	) (err error) {
@@ -177,7 +180,7 @@ func (g *gateway) BroadCast(ctx context.Context,
 		case <-ictx.Done():
 			return nil
 		default:
-			if _, ok := imAddrs[addr]; ok {
+			if _, ok := selfAddrs[addr]; ok {
 				return
 			}
 			err = f(ictx, addr, conn, copts...)
@@ -189,8 +192,8 @@ func (g *gateway) BroadCast(ctx context.Context,
 	})
 }
 
-// internlAddrs returns the addresses of Mirror Gateway on the same cluster.
-func (g *gateway) internlMirrorAddrs() (m map[string]struct{}) {
+// selfAddrs returns the addresses of Mirror Gateway on the same cluster.
+func (g *gateway) selfMirrorAddrs() (m map[string]struct{}) {
 	for _, addr := range g.iclient.GRPCClient().ConnectedAddrs() {
 		m[addr] = struct{}{}
 	}
@@ -215,19 +218,33 @@ func (g *gateway) ConnectedTargets() ([]*payload.Mirror_Target, error) {
 }
 
 func (g *gateway) Connect(ctx context.Context, targets ...*payload.Mirror_Target) ([]*payload.Mirror_Target, error) {
-	imAddrs := g.internlMirrorAddrs()
+	ctx, span := trace.StartSpan(ctx, "vald/gateway/mirror/service/Gateway.Connect")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+
+	eg, egctx := errgroup.New(ctx)
+	selfAddrs := g.selfMirrorAddrs()
+
 	for _, target := range targets {
 		addr := fmt.Sprintf("%s:%d", target.GetIp(), target.GetPort())
-		if _, ok := imAddrs[addr]; ok {
+		if _, ok := selfAddrs[addr]; ok {
 			continue
 		}
-
-		if !g.client.GRPCClient().IsConnected(ctx, addr) {
-			_, err := g.client.GRPCClient().Connect(ctx, addr, g.client.GRPCClient().GetDialOption()...)
-			if err != nil {
-				return nil, err
+		eg.Go(func() error {
+			if !g.client.GRPCClient().IsConnected(egctx, addr) {
+				_, err := g.client.GRPCClient().Connect(egctx, addr, g.client.GRPCClient().GetDialOption()...)
+				if err != nil {
+					return err
+				}
 			}
-		}
+			return nil
+		})
+	}
+	if err := eg.Wait(); err != nil {
+		return nil, err
 	}
 	tgts, err := g.ConnectedTargets()
 	if err != nil {
