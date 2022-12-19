@@ -82,6 +82,7 @@ type readOnlyPodMetricsMap struct {
 
 // expunged is an arbitrary pointer that marks entries which have been deleted
 // from the dirty map.
+// skipcq: GSC-G103
 var expungedPodMetricsMap = unsafe.Pointer(new(mpod.Pod))
 
 // An entry is a slot in the map corresponding to a particular key.
@@ -108,6 +109,7 @@ type entryPodMetricsMap struct {
 }
 
 func newEntryPodMetricsMap(i mpod.Pod) *entryPodMetricsMap {
+	// skipcq: GSC-G103
 	return &entryPodMetricsMap{p: unsafe.Pointer(&i)}
 }
 
@@ -187,6 +189,7 @@ func (e *entryPodMetricsMap) tryStore(i *mpod.Pod) bool {
 		if p == expungedPodMetricsMap {
 			return false
 		}
+		// skipcq: GSC-G103
 		if atomic.CompareAndSwapPointer(&e.p, p, unsafe.Pointer(i)) {
 			return true
 		}
@@ -205,6 +208,7 @@ func (e *entryPodMetricsMap) unexpungeLocked() (wasExpunged bool) {
 //
 // The entry must be known not to be expunged.
 func (e *entryPodMetricsMap) storeLocked(i *mpod.Pod) {
+	// skipcq: GSC-G103
 	atomic.StorePointer(&e.p, unsafe.Pointer(i))
 }
 
@@ -265,6 +269,7 @@ func (e *entryPodMetricsMap) tryLoadOrStore(i mpod.Pod) (actual mpod.Pod, loaded
 	// shouldn't bother heap-allocating.
 	ic := i
 	for {
+		// skipcq: GSC-G103
 		if atomic.CompareAndSwapPointer(&e.p, nil, unsafe.Pointer(&ic)) {
 			return i, false, true
 		}

@@ -69,7 +69,7 @@ func NewQueue(opts ...QueueOption) (Queue, error) {
 // It returns the error channel that the queueing job return.
 func (q *queue) Start(ctx context.Context) (<-chan error, error) {
 	if q.isRunning() {
-		return nil, errors.ErrQueueIsAlreadyRunning()
+		return nil, errors.ErrQueueIsAlreadyRunning
 	}
 
 	ech := make(chan error, 1)
@@ -117,11 +117,11 @@ func (q *queue) isRunning() bool {
 // If JobFunc is nil or queue is not running, Push returns error.
 func (q *queue) Push(ctx context.Context, job JobFunc) error {
 	if job == nil {
-		return errors.ErrJobFuncIsNil()
+		return errors.ErrJobFuncIsNil
 	}
 
 	if !q.isRunning() {
-		return errors.ErrQueueIsNotRunning()
+		return errors.ErrQueueIsNotRunning
 	}
 
 	select {
@@ -135,29 +135,23 @@ func (q *queue) Push(ctx context.Context, job JobFunc) error {
 // Pop returns (JobFunc, nil) if the channnel, which will be used for queuing job, contains JobFunc.
 // It returns (nil ,error) if it failed to pop from the job queue.
 func (q *queue) Pop(ctx context.Context) (JobFunc, error) {
-	return q.pop(ctx, q.Len())
-}
+	tryCnt := int(q.Len()) + 1 // include the first try
 
-func (q *queue) pop(ctx context.Context, retry uint64) (JobFunc, error) {
-	if !q.isRunning() {
-		return nil, errors.ErrQueueIsNotRunning()
-	}
+	for i := 0; i < tryCnt; i++ {
+		if !q.isRunning() {
+			return nil, errors.ErrQueueIsNotRunning
+		}
 
-	select {
-	case <-ctx.Done():
-		return nil, ctx.Err()
-	case job := <-q.outCh:
-		if job != nil {
-			return job, nil
+		select {
+		case <-ctx.Done():
+			return nil, ctx.Err()
+		case job := <-q.outCh:
+			if job != nil {
+				return job, nil
+			}
 		}
 	}
-
-	if retry <= 0 {
-		return nil, errors.ErrJobFuncIsNil()
-	}
-
-	retry--
-	return q.pop(ctx, retry)
+	return nil, errors.ErrJobFuncNotFound
 }
 
 // Len returns the length of queue.

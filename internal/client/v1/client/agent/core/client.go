@@ -100,7 +100,7 @@ func NewAgentClient(cc *grpc.ClientConn) interface {
 func (c *agentClient) CreateIndex(
 	ctx context.Context,
 	req *client.ControlCreateIndexRequest,
-	opts ...grpc.CallOption,
+	_ ...grpc.CallOption,
 ) (*client.Empty, error) {
 	ctx, span := trace.StartSpan(ctx, apiName+"/agentClient.CreateIndex")
 	defer func() {
@@ -118,8 +118,8 @@ func (c *agentClient) CreateIndex(
 
 func (c *agentClient) SaveIndex(
 	ctx context.Context,
-	req *client.Empty,
-	opts ...grpc.CallOption,
+	_ *client.Empty,
+	_ ...grpc.CallOption,
 ) (*client.Empty, error) {
 	ctx, span := trace.StartSpan(ctx, apiName+"/agentClient.SaveIndex")
 	defer func() {
@@ -138,7 +138,7 @@ func (c *agentClient) SaveIndex(
 func (c *agentClient) CreateAndSaveIndex(
 	ctx context.Context,
 	req *client.ControlCreateIndexRequest,
-	opts ...grpc.CallOption,
+	_ ...grpc.CallOption,
 ) (*client.Empty, error) {
 	ctx, span := trace.StartSpan(ctx, apiName+"/agentClient.CreateAndSaveIndex")
 	defer func() {
@@ -156,8 +156,8 @@ func (c *agentClient) CreateAndSaveIndex(
 
 func (c *agentClient) IndexInfo(
 	ctx context.Context,
-	req *client.Empty,
-	opts ...grpc.CallOption,
+	_ *client.Empty,
+	_ ...grpc.CallOption,
 ) (res *client.InfoIndexCount, err error) {
 	ctx, span := trace.StartSpan(ctx, apiName+"/agentClient.IndexInfo")
 	defer func() {
@@ -196,7 +196,7 @@ func (c *singleAgentClient) CreateIndex(
 
 func (c *singleAgentClient) SaveIndex(
 	ctx context.Context,
-	req *client.Empty,
+	_ *client.Empty,
 	opts ...grpc.CallOption,
 ) (*client.Empty, error) {
 	ctx, span := trace.StartSpan(ctx, apiName+"/agentClient.SaveIndex")
@@ -224,7 +224,7 @@ func (c *singleAgentClient) CreateAndSaveIndex(
 
 func (c *singleAgentClient) IndexInfo(
 	ctx context.Context,
-	req *client.Empty,
+	_ *client.Empty,
 	opts ...grpc.CallOption,
 ) (res *client.InfoIndexCount, err error) {
 	ctx, span := trace.StartSpan(ctx, apiName+"/agentClient.IndexInfo")

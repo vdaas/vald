@@ -180,7 +180,7 @@ func (m *mySQLClient) Ping(ctx context.Context) (err error) {
 
 // Close closes the connection of MySQL database.
 // If the connection is already closed or closing connection is failed, it returns error.
-func (m *mySQLClient) Close(ctx context.Context) (err error) {
+func (m *mySQLClient) Close(context.Context) (err error) {
 	if m.session == nil {
 		err = errors.ErrMySQLSessionNil
 		m.errorLog(err)
@@ -391,7 +391,8 @@ func (m *mySQLClient) SetVectors(ctx context.Context, vecs ...Vector) error {
 	return tx.Commit()
 }
 
-func (m *mySQLClient) deleteVector(ctx context.Context, val string) error {
+// DeleteVector deletes vector data from backup_vector table and podIPs from pod_ip table using vector's uuid.
+func (m *mySQLClient) DeleteVector(ctx context.Context, val string) error {
 	if !m.connected.Load().(bool) {
 		return errors.ErrMySQLConnectionClosed
 	}
@@ -432,15 +433,10 @@ func (m *mySQLClient) deleteVector(ctx context.Context, val string) error {
 	return tx.Commit()
 }
 
-// DeleteVector deletes vector data from backup_vector table and podIPs from pod_ip table using vector's uuid.
-func (m *mySQLClient) DeleteVector(ctx context.Context, uuid string) error {
-	return m.deleteVector(ctx, uuid)
-}
-
 // DeleteVectors is the same as DeleteVector() but it deletes multiple records.
 func (m *mySQLClient) DeleteVectors(ctx context.Context, uuids ...string) (err error) {
 	for _, uuid := range uuids {
-		err = m.deleteVector(ctx, uuid)
+		err = m.DeleteVector(ctx, uuid)
 		if err != nil {
 			return err
 		}

@@ -60,8 +60,8 @@ func New(opts ...Option) http.Handler {
 // routing wraps the handler.Func and returns a new http.Handler.
 // routing helps to handle unsupported HTTP method, timeout,
 // and the error returned from the handler.Func.
-func (rt *router) routing(
-	name, path string, m []string, h rest.Func,
+func (*router) routing(
+	name, _ string, m []string, h rest.Func,
 ) http.Handler {
 	return http.HandlerFunc(
 		func(w http.ResponseWriter, r *http.Request) {

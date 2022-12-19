@@ -236,7 +236,7 @@ func TestRecoverWithoutPanicFunc(t *testing.T) {
 	}
 }
 
-func Test_recoverFunc(t *testing.T) {
+func Test_recoverFn(t *testing.T) {
 	type args struct {
 		fn        func() error
 		withPanic bool
@@ -303,7 +303,7 @@ func Test_recoverFunc(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 
-			got := recoverFunc(test.args.fn, test.args.withPanic)
+			got := recoverFn(test.args.fn, test.args.withPanic)
 			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}

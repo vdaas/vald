@@ -123,6 +123,7 @@ func Init(name string) {
 		i, err := New(WithServerName(name))
 		if err != nil {
 			log.Init()
+			// skipcq: RVV-A0003
 			log.Fatal(errors.ErrFailedToInitInfo(err))
 		}
 		infoProvider = i
@@ -162,7 +163,7 @@ func New(opts ...Option) (Info, error) {
 	}
 
 	if i.rtCaller == nil || i.rtFuncForPC == nil {
-		return nil, errors.ErrRuntimeFuncNil()
+		return nil, errors.ErrRuntimeFuncNil
 	}
 
 	i.prepare()
@@ -191,7 +192,9 @@ func (i *info) String() string {
 }
 
 // String returns summary of Detail object.
+// skipcq: RVV-B0006
 func (d Detail) String() string {
+	// skipcq: RVV-B0006
 	d.Version = log.Bold(d.Version)
 	maxlen, l := 0, 0
 	rv := reflect.ValueOf(d)
@@ -259,10 +262,11 @@ func (d Detail) String() string {
 // Get returns parased Detail object.
 func (i *info) Get() Detail {
 	i.prepare()
-	return i.get()
+	return i.getDetail()
 }
 
-func (i info) get() Detail {
+// skipcq: VET-V0008
+func (i info) getDetail() Detail {
 	i.detail.StackTrace = make([]StackTrace, 0, 10)
 	for j := 2; ; j++ {
 		pc, file, line, ok := i.rtCaller(j)
@@ -297,7 +301,7 @@ func (i info) get() Detail {
 			url += "#L" + strconv.Itoa(line)
 		case func() bool {
 			idx = strings.Index(file, goSrc)
-			return idx >= 0 && strings.Index(file, valdRepo) >= 0
+			return idx >= 0 && strings.Contains(file, valdRepo)
 		}():
 			url = strings.Replace(file[idx+goSrcLen:]+"#L"+strconv.Itoa(line), valdRepo, "https://"+valdRepo+"/blob/"+i.detail.GitCommit, -1)
 		}

@@ -15,7 +15,6 @@ package kvs
 
 import (
 	"reflect"
-	"sync"
 	"sync/atomic"
 	"testing"
 	"unsafe"
@@ -101,7 +100,6 @@ func Test_ou_Load(t *testing.T) {
 		key uint32
 	}
 	type fields struct {
-		mu     sync.Mutex
 		read   atomic.Value
 		dirty  map[uint32]*entryOu
 		misses int
@@ -137,7 +135,6 @@ func Test_ou_Load(t *testing.T) {
 		           key: 0,
 		       },
 		       fields: fields {
-		           mu: sync.Mutex{},
 		           read: nil,
 		           dirty: nil,
 		           misses: 0,
@@ -156,7 +153,6 @@ func Test_ou_Load(t *testing.T) {
 		           key: 0,
 		           },
 		           fields: fields {
-		           mu: sync.Mutex{},
 		           read: nil,
 		           dirty: nil,
 		           misses: 0,
@@ -183,7 +179,6 @@ func Test_ou_Load(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			m := &ou{
-				mu:     test.fields.mu,
 				read:   test.fields.read,
 				dirty:  test.fields.dirty,
 				misses: test.fields.misses,
@@ -282,7 +277,6 @@ func Test_ou_Store(t *testing.T) {
 		value string
 	}
 	type fields struct {
-		mu     sync.Mutex
 		read   atomic.Value
 		dirty  map[uint32]*entryOu
 		misses int
@@ -310,7 +304,6 @@ func Test_ou_Store(t *testing.T) {
 		           value: "",
 		       },
 		       fields: fields {
-		           mu: sync.Mutex{},
 		           read: nil,
 		           dirty: nil,
 		           misses: 0,
@@ -330,7 +323,6 @@ func Test_ou_Store(t *testing.T) {
 		           value: "",
 		           },
 		           fields: fields {
-		           mu: sync.Mutex{},
 		           read: nil,
 		           dirty: nil,
 		           misses: 0,
@@ -357,7 +349,6 @@ func Test_ou_Store(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			m := &ou{
-				mu:     test.fields.mu,
 				read:   test.fields.read,
 				dirty:  test.fields.dirty,
 				misses: test.fields.misses,
@@ -617,7 +608,6 @@ func Test_ou_LoadOrStore(t *testing.T) {
 		value string
 	}
 	type fields struct {
-		mu     sync.Mutex
 		read   atomic.Value
 		dirty  map[uint32]*entryOu
 		misses int
@@ -654,7 +644,6 @@ func Test_ou_LoadOrStore(t *testing.T) {
 		           value: "",
 		       },
 		       fields: fields {
-		           mu: sync.Mutex{},
 		           read: nil,
 		           dirty: nil,
 		           misses: 0,
@@ -674,7 +663,6 @@ func Test_ou_LoadOrStore(t *testing.T) {
 		           value: "",
 		           },
 		           fields: fields {
-		           mu: sync.Mutex{},
 		           read: nil,
 		           dirty: nil,
 		           misses: 0,
@@ -701,7 +689,6 @@ func Test_ou_LoadOrStore(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			m := &ou{
-				mu:     test.fields.mu,
 				read:   test.fields.read,
 				dirty:  test.fields.dirty,
 				misses: test.fields.misses,
@@ -813,7 +800,6 @@ func Test_ou_LoadAndDelete(t *testing.T) {
 		key uint32
 	}
 	type fields struct {
-		mu     sync.Mutex
 		read   atomic.Value
 		dirty  map[uint32]*entryOu
 		misses int
@@ -849,7 +835,6 @@ func Test_ou_LoadAndDelete(t *testing.T) {
 		           key: 0,
 		       },
 		       fields: fields {
-		           mu: sync.Mutex{},
 		           read: nil,
 		           dirty: nil,
 		           misses: 0,
@@ -868,7 +853,6 @@ func Test_ou_LoadAndDelete(t *testing.T) {
 		           key: 0,
 		           },
 		           fields: fields {
-		           mu: sync.Mutex{},
 		           read: nil,
 		           dirty: nil,
 		           misses: 0,
@@ -895,7 +879,6 @@ func Test_ou_LoadAndDelete(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			m := &ou{
-				mu:     test.fields.mu,
 				read:   test.fields.read,
 				dirty:  test.fields.dirty,
 				misses: test.fields.misses,
@@ -914,7 +897,6 @@ func Test_ou_Delete(t *testing.T) {
 		key uint32
 	}
 	type fields struct {
-		mu     sync.Mutex
 		read   atomic.Value
 		dirty  map[uint32]*entryOu
 		misses int
@@ -941,7 +923,6 @@ func Test_ou_Delete(t *testing.T) {
 		           key: 0,
 		       },
 		       fields: fields {
-		           mu: sync.Mutex{},
 		           read: nil,
 		           dirty: nil,
 		           misses: 0,
@@ -960,7 +941,6 @@ func Test_ou_Delete(t *testing.T) {
 		           key: 0,
 		           },
 		           fields: fields {
-		           mu: sync.Mutex{},
 		           read: nil,
 		           dirty: nil,
 		           misses: 0,
@@ -987,7 +967,6 @@ func Test_ou_Delete(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			m := &ou{
-				mu:     test.fields.mu,
 				read:   test.fields.read,
 				dirty:  test.fields.dirty,
 				misses: test.fields.misses,
@@ -1085,7 +1064,6 @@ func Test_ou_Range(t *testing.T) {
 		f func(key uint32, value string) bool
 	}
 	type fields struct {
-		mu     sync.Mutex
 		read   atomic.Value
 		dirty  map[uint32]*entryOu
 		misses int
@@ -1112,7 +1090,6 @@ func Test_ou_Range(t *testing.T) {
 		           f: nil,
 		       },
 		       fields: fields {
-		           mu: sync.Mutex{},
 		           read: nil,
 		           dirty: nil,
 		           misses: 0,
@@ -1131,7 +1108,6 @@ func Test_ou_Range(t *testing.T) {
 		           f: nil,
 		           },
 		           fields: fields {
-		           mu: sync.Mutex{},
 		           read: nil,
 		           dirty: nil,
 		           misses: 0,
@@ -1158,7 +1134,6 @@ func Test_ou_Range(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			m := &ou{
-				mu:     test.fields.mu,
 				read:   test.fields.read,
 				dirty:  test.fields.dirty,
 				misses: test.fields.misses,
@@ -1174,7 +1149,6 @@ func Test_ou_Range(t *testing.T) {
 
 func Test_ou_missLocked(t *testing.T) {
 	type fields struct {
-		mu     sync.Mutex
 		read   atomic.Value
 		dirty  map[uint32]*entryOu
 		misses int
@@ -1197,7 +1171,6 @@ func Test_ou_missLocked(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       fields: fields {
-		           mu: sync.Mutex{},
 		           read: nil,
 		           dirty: nil,
 		           misses: 0,
@@ -1213,7 +1186,6 @@ func Test_ou_missLocked(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           fields: fields {
-		           mu: sync.Mutex{},
 		           read: nil,
 		           dirty: nil,
 		           misses: 0,
@@ -1240,7 +1212,6 @@ func Test_ou_missLocked(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			m := &ou{
-				mu:     test.fields.mu,
 				read:   test.fields.read,
 				dirty:  test.fields.dirty,
 				misses: test.fields.misses,
@@ -1256,7 +1227,6 @@ func Test_ou_missLocked(t *testing.T) {
 
 func Test_ou_dirtyLocked(t *testing.T) {
 	type fields struct {
-		mu     sync.Mutex
 		read   atomic.Value
 		dirty  map[uint32]*entryOu
 		misses int
@@ -1279,7 +1249,6 @@ func Test_ou_dirtyLocked(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       fields: fields {
-		           mu: sync.Mutex{},
 		           read: nil,
 		           dirty: nil,
 		           misses: 0,
@@ -1295,7 +1264,6 @@ func Test_ou_dirtyLocked(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           fields: fields {
-		           mu: sync.Mutex{},
 		           read: nil,
 		           dirty: nil,
 		           misses: 0,
@@ -1322,7 +1290,6 @@ func Test_ou_dirtyLocked(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 			m := &ou{
-				mu:     test.fields.mu,
 				read:   test.fields.read,
 				dirty:  test.fields.dirty,
 				misses: test.fields.misses,

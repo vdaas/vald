@@ -17,6 +17,7 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log/format"
 	"github.com/vdaas/vald/internal/log/level"
+	log "github.com/vdaas/vald/internal/log/logger"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
@@ -43,7 +44,7 @@ type logger struct {
 }
 
 // New returns a new logger instance.
-func New(opts ...Option) (*logger, error) {
+func New(opts ...Option) (log.Logger, error) {
 	l := new(logger)
 	for _, opt := range append(defaultOpts, opts...) {
 		opt(l)

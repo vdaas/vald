@@ -37,6 +37,11 @@ type data struct {
 	showVersion    bool
 }
 
+// Parser is an interface to parse commnad-line argument.
+type Parser interface {
+	Parse() (Data, bool, error)
+}
+
 type parser struct {
 	filePath struct {
 		keys        []string
@@ -51,7 +56,7 @@ type parser struct {
 }
 
 // New returns parser object.
-func New(opts ...Option) *parser {
+func New(opts ...Option) Parser {
 	p := new(parser)
 	for _, opt := range append(defaultOptions, opts...) {
 		opt(p)

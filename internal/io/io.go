@@ -61,11 +61,11 @@ type ctxReader struct {
 
 func NewReaderWithContext(ctx context.Context, r io.Reader) (io.Reader, error) {
 	if ctx == nil {
-		return nil, errors.NewErrContextNotProvided()
+		return nil, errors.NewErrContextNotProvided
 	}
 
 	if r == nil {
-		return nil, errors.NewErrReaderNotProvided()
+		return nil, errors.NewErrReaderNotProvided
 	}
 
 	return &ctxReader{
@@ -76,11 +76,11 @@ func NewReaderWithContext(ctx context.Context, r io.Reader) (io.Reader, error) {
 
 func NewReadCloserWithContext(ctx context.Context, r io.ReadCloser) (io.ReadCloser, error) {
 	if ctx == nil {
-		return nil, errors.NewErrContextNotProvided()
+		return nil, errors.NewErrContextNotProvided
 	}
 
 	if r == nil {
-		return nil, errors.NewErrReaderNotProvided()
+		return nil, errors.NewErrReaderNotProvided
 	}
 
 	return &ctxReader{
@@ -119,11 +119,11 @@ type ctxWriter struct {
 
 func NewWriterWithContext(ctx context.Context, w io.Writer) (io.Writer, error) {
 	if ctx == nil {
-		return nil, errors.NewErrContextNotProvided()
+		return nil, errors.NewErrContextNotProvided
 	}
 
 	if w == nil {
-		return nil, errors.NewErrWriterNotProvided()
+		return nil, errors.NewErrWriterNotProvided
 	}
 
 	return &ctxWriter{
@@ -134,11 +134,11 @@ func NewWriterWithContext(ctx context.Context, w io.Writer) (io.Writer, error) {
 
 func NewWriteCloserWithContext(ctx context.Context, w io.WriteCloser) (io.WriteCloser, error) {
 	if ctx == nil {
-		return nil, errors.NewErrContextNotProvided()
+		return nil, errors.NewErrContextNotProvided
 	}
 
 	if w == nil {
-		return nil, errors.NewErrWriterNotProvided()
+		return nil, errors.NewErrWriterNotProvided
 	}
 
 	return &ctxWriter{
@@ -176,7 +176,7 @@ func NewEOFReader() Reader {
 	return &eofReader{}
 }
 
-func (*eofReader) Read(_ []byte) (n int, err error) {
+func (*eofReader) Read([]byte) (n int, err error) {
 	return 0, EOF
 }
 

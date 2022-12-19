@@ -89,7 +89,7 @@ func New(opts ...Option) (b blob.Bucket, err error) {
 }
 
 // Open does nothing. Always returns nil.
-func (*client) Open(ctx context.Context) (err error) {
+func (*client) Open(context.Context) (err error) {
 	return nil
 }
 
