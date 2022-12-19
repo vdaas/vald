@@ -19,6 +19,7 @@ package grpc
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 	"sync"
 	"time"
@@ -28,8 +29,10 @@ import (
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
 	vclient "github.com/vdaas/vald/internal/client/v1/client/vald"
 	"github.com/vdaas/vald/internal/errgroup"
+	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/grpc/codes"
+	"github.com/vdaas/vald/internal/net/grpc/errdetails"
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/pkg/gateway/mirror/service"
@@ -69,12 +72,39 @@ func (s *server) Register(ctx context.Context, req *payload.Mirror_Targets) (*pa
 		}
 	}()
 
-	// TODO:
-
-	return nil, nil
+	tgs, err := s.gateway.Connect(ctx, req.Targets...)
+	if err != nil {
+		err = status.WrapWithUnavailable(mirror.RegisterRPCName+" API target Mirror Gateway unavailable", err,
+			&errdetails.RequestInfo{
+				ServingData: errdetails.Serialize(req),
+			},
+			&errdetails.BadRequest{
+				FieldViolations: []*errdetails.BadRequestFieldViolation{
+					{
+						Field:       "mirror gateway targets",
+						Description: err.Error(),
+					},
+				},
+			},
+			&errdetails.ResourceInfo{
+				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + mirror.RegisterRPCName,
+				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+			},
+		)
+		log.Warn(err)
+		if span != nil {
+			span.RecordError(err)
+			span.SetAttributes(trace.StatusCodeUnavailable(err.Error())...)
+			span.SetStatus(trace.StatusError, err.Error())
+		}
+		return nil, err
+	}
+	return &payload.Mirror_Targets{
+		Targets: tgs,
+	}, nil
 }
 
-func (s *server) Advertise(ctx context.Context, req *payload.Mirror_Targets) (*payload.Mirror_Targets, error) {
+func (s *server) Advertise(ctx context.Context, req *payload.Mirror_Targets) (res *payload.Mirror_Targets, err error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, mirror.PackageName+"."+mirror.MirrorRPCServiceName+"/"+mirror.AdvertiseRPCName), apiName+"/"+mirror.AdvertiseRPCName)
 	defer func() {
 		if span != nil {
@@ -82,9 +112,36 @@ func (s *server) Advertise(ctx context.Context, req *payload.Mirror_Targets) (*p
 		}
 	}()
 
-	// TODO:
-
-	return nil, nil
+	tgts, err := s.gateway.ConnectedTargets()
+	if err != nil {
+		err = status.WrapWithInternal(mirror.AdvertiseRPCName+" API failed to get connected mirror gateway targets", err,
+			&errdetails.RequestInfo{
+				ServingData: errdetails.Serialize(req),
+			},
+			&errdetails.BadRequest{
+				FieldViolations: []*errdetails.BadRequestFieldViolation{
+					{
+						Field:       "mirror gateway targets",
+						Description: err.Error(),
+					},
+				},
+			},
+			&errdetails.ResourceInfo{
+				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + mirror.AdvertiseRPCName,
+				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+			},
+		)
+		log.Warn(err)
+		if span != nil {
+			span.RecordError(err)
+			span.SetAttributes(trace.StatusCodeInternal(err.Error())...)
+			span.SetStatus(trace.StatusError, err.Error())
+		}
+		return nil, err
+	}
+	return &payload.Mirror_Targets{
+		Targets: tgts,
+	}, nil
 }
 
 func (s *server) Exists(ctx context.Context, meta *payload.Object_ID) (id *payload.Object_ID, err error) {
