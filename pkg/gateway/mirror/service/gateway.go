@@ -129,7 +129,6 @@ func (g *gateway) startAdvertise(ctx context.Context) <-chan error {
 					return err
 				})
 				if err != nil {
-
 				}
 			}
 		}
