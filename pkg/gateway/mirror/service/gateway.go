@@ -87,7 +87,7 @@ func (g *gateway) Start(ctx context.Context) (<-chan error, error) {
 		for {
 			select {
 			case <-ctx.Done():
-				return
+				return ctx.Err()
 			case err = <-cech:
 			case err = <-icech:
 			case err = <-aech:
@@ -95,6 +95,7 @@ func (g *gateway) Start(ctx context.Context) (<-chan error, error) {
 			if err != nil {
 				select {
 				case <-ctx.Done():
+					return ctx.Err()
 				case ech <- err:
 				}
 				err = nil
@@ -118,7 +119,11 @@ func (g *gateway) startAdvertise(ctx context.Context) <-chan error {
 			case <-tic.C:
 				targets, err := g.ConnectedTargets()
 				if err != nil {
-					ech <- err
+					select {
+					case <-ctx.Done():
+						return ctx.Err()
+					case ech <- err:
+					}
 					continue
 				}
 				req := &payload.Mirror_Targets{
@@ -129,6 +134,11 @@ func (g *gateway) startAdvertise(ctx context.Context) <-chan error {
 					return err
 				})
 				if err != nil {
+					select {
+					case <-ctx.Done():
+						return ctx.Err()
+					case ech <- err:
+					}
 				}
 			}
 		}
