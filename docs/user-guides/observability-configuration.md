@@ -37,7 +37,7 @@ You can change parameters such as the export host by editing the manifest for yo
 A `Cert-Manager` is required to enable to use of operators on the Kubernetes Cluster.
 
 ```bash
-make k8s/external/cert-manager-deploy
+make k8s/external/cert-manager/deploy
 ```
 
 ### Jaeger Operator and Jaeger
