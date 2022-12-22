@@ -201,6 +201,7 @@ func (g *gateway) FromForwardedContext(ctx context.Context) string {
 	return ""
 }
 
+// BroadCast executes a broadcast operation to the Mirror Gateway on other clusters.
 func (g *gateway) BroadCast(ctx context.Context,
 	f func(ctx context.Context, target string, conn *grpc.ClientConn, copts ...grpc.CallOption) error,
 ) (err error) {
@@ -248,7 +249,7 @@ func (g *gateway) selfMirrorTargets() (tgts []*payload.Mirror_Target, err error)
 	return tgts, nil
 }
 
-// OtherMirrorAddrs returns the addresses of Mirror Gateway on the same cluster.
+// OtherMirrorAddrs returns the addresses of Mirror Gateway on the other clusters.
 func (g *gateway) OtherMirrorAddrs() (oaddrs []string) {
 	selfAddrs := g.selfMirrorAddrs()
 	addrs := g.client.GRPCClient().ConnectedAddrs()
