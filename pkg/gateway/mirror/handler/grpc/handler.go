@@ -657,8 +657,23 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 	}
 
 	ce, err = s.lbClient.Insert(ctx, req)
-	if err := s.handleSpan(vald.InsertRPCName, span, err); err != nil {
-		return nil, err
+	if err != nil {
+		st, msg, err := status.ParseError(err, codes.Internal,
+			"failed to parse "+vald.InsertRPCName+" gRPC error response",
+			&errdetails.RequestInfo{
+				RequestId:   req.GetVector().GetId(),
+				ServingData: errdetails.Serialize(req),
+			},
+			&errdetails.ResourceInfo{
+				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.InsertRPCName,
+				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+			},
+		)
+		if span != nil {
+			span.RecordError(err)
+			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+			span.SetStatus(trace.StatusError, err.Error())
+		}
 	}
 	return ce, nil
 }
@@ -780,7 +795,22 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 	}
 
 	locs, err = s.lbClient.MultiInsert(ctx, reqs, s.lbClient.GRPCClient().GetCallOption()...)
-	if err := s.handleSpan(vald.MultiInsertRPCName, span, err); err != nil {
+	if err != nil {
+		st, msg, err := status.ParseError(err, codes.Internal,
+			"failed to parse "+vald.MultiInsertRPCName+" gRPC error response",
+			&errdetails.RequestInfo{
+				ServingData: errdetails.Serialize(reqs),
+			},
+			&errdetails.ResourceInfo{
+				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.MultiInsertRPCName,
+				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+			},
+		)
+		if span != nil {
+			span.RecordError(err)
+			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+			span.SetStatus(trace.StatusError, err.Error())
+		}
 		return nil, err
 	}
 	return locs, nil
@@ -859,7 +889,23 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (res *
 	}
 
 	ce, err := s.lbClient.Update(ctx, req, s.lbClient.GRPCClient().GetCallOption()...)
-	if err = s.handleSpan(vald.UpdateRPCName, span, err); err != nil {
+	if err != nil {
+		st, msg, err := status.ParseError(err, codes.Internal,
+			"failed to parse "+vald.UpdateRPCName+" gRPC error response",
+			&errdetails.RequestInfo{
+				RequestId:   req.GetVector().GetId(),
+				ServingData: errdetails.Serialize(req),
+			},
+			&errdetails.ResourceInfo{
+				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.UpdateRPCName,
+				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+			},
+		)
+		if span != nil {
+			span.RecordError(err)
+			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+			span.SetStatus(trace.StatusError, err.Error())
+		}
 		return nil, err
 	}
 	return ce, nil
@@ -992,7 +1038,22 @@ func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequ
 	}
 
 	ces, err := s.lbClient.MultiUpdate(ctx, reqs, s.lbClient.GRPCClient().GetCallOption()...)
-	if err = s.handleSpan(vald.MultiUpdateRPCName, span, err); err != nil {
+	if err != nil {
+		st, msg, err := status.ParseError(err, codes.Internal,
+			"failed to parse "+vald.MultiUpdateRPCName+" gRPC error response",
+			&errdetails.RequestInfo{
+				ServingData: errdetails.Serialize(reqs),
+			},
+			&errdetails.ResourceInfo{
+				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.MultiUpdateRPCName,
+				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+			},
+		)
+		if span != nil {
+			span.RecordError(err)
+			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+			span.SetStatus(trace.StatusError, err.Error())
+		}
 		return nil, err
 	}
 	return ces, nil
@@ -1100,7 +1161,23 @@ func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *
 	}
 
 	ce, err := s.lbClient.Upsert(ctx, req, s.lbClient.GRPCClient().GetCallOption()...)
-	if err := s.handleSpan(vald.UpsertRPCName, span, err); err != nil {
+	if err != nil {
+		st, msg, err := status.ParseError(err, codes.Internal,
+			"failed to parse "+vald.UpsertRPCName+" gRPC error response",
+			&errdetails.RequestInfo{
+				RequestId:   req.GetVector().GetId(),
+				ServingData: errdetails.Serialize(req),
+			},
+			&errdetails.ResourceInfo{
+				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.UpsertRPCName,
+				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+			},
+		)
+		if span != nil {
+			span.RecordError(err)
+			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+			span.SetStatus(trace.StatusError, err.Error())
+		}
 		return nil, err
 	}
 	return ce, nil
@@ -1220,7 +1297,22 @@ func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequ
 	}
 
 	res, err = s.lbClient.MultiUpsert(ctx, reqs, s.lbClient.GRPCClient().GetCallOption()...)
-	if err := s.handleSpan(vald.MultiUpsertRPCName, span, err); err != nil {
+	if err != nil {
+		st, msg, err := status.ParseError(err, codes.Internal,
+			"failed to parse "+vald.MultiUpsertRPCName+" gRPC error response",
+			&errdetails.RequestInfo{
+				ServingData: errdetails.Serialize(reqs),
+			},
+			&errdetails.ResourceInfo{
+				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.MultiUpsertRPCName,
+				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+			},
+		)
+		if span != nil {
+			span.RecordError(err)
+			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+			span.SetStatus(trace.StatusError, err.Error())
+		}
 		return nil, err
 	}
 	return res, nil
@@ -1329,7 +1421,23 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (loc *
 	}
 
 	loc, err = s.lbClient.Remove(ctx, req, s.lbClient.GRPCClient().GetCallOption()...)
-	if err := s.handleSpan(vald.RemoveRPCName, span, err); err != nil {
+	if err != nil {
+		st, msg, err := status.ParseError(err, codes.Internal,
+			"failed to parse "+vald.RemoveRPCName+" gRPC error response",
+			&errdetails.RequestInfo{
+				RequestId:   req.GetId().GetId(),
+				ServingData: errdetails.Serialize(req),
+			},
+			&errdetails.ResourceInfo{
+				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.RemoveRPCName,
+				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+			},
+		)
+		if span != nil {
+			span.RecordError(err)
+			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+			span.SetStatus(trace.StatusError, err.Error())
+		}
 		return nil, err
 	}
 	return loc, nil
@@ -1462,7 +1570,22 @@ func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequ
 	}
 
 	locs, err = s.lbClient.MultiRemove(ctx, reqs, s.lbClient.GRPCClient().GetCallOption()...)
-	if err := s.handleSpan(vald.MultiRemoveRPCName, span, err); err != nil {
+	if err != nil {
+		st, msg, err := status.ParseError(err, codes.Internal,
+			"failed to parse "+vald.MultiRemoveRPCName+" gRPC error response",
+			&errdetails.RequestInfo{
+				ServingData: errdetails.Serialize(reqs),
+			},
+			&errdetails.ResourceInfo{
+				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.MultiRemoveRPCName,
+				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+			},
+		)
+		if span != nil {
+			span.RecordError(err)
+			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+			span.SetStatus(trace.StatusError, err.Error())
+		}
 		return nil, err
 	}
 	return locs, nil
