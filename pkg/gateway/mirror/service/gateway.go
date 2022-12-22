@@ -21,6 +21,7 @@ import (
 	"context"
 	"fmt"
 	"reflect"
+	"sync"
 	"time"
 
 	"github.com/vdaas/vald/apis/grpc/v1/mirror"
@@ -28,6 +29,7 @@ import (
 	mclient "github.com/vdaas/vald/internal/client/v1/client/mirror"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/observability/trace"
@@ -42,7 +44,8 @@ const (
 
 type Gateway interface {
 	Start(ctx context.Context) (<-chan error, error)
-	ConnectedTargets() ([]*payload.Mirror_Target, error)
+	MirrorTargets() ([]*payload.Mirror_Target, error)
+	OtherMirrorAddrs() []string
 	Connect(ctx context.Context, targets ...*payload.Mirror_Target) ([]*payload.Mirror_Target, error)
 	ForwardedContext(ctx context.Context) context.Context
 	FromForwardedContext(ctx context.Context) string
@@ -80,7 +83,11 @@ func (g *gateway) Start(ctx context.Context) (<-chan error, error) {
 		close(ech)
 		return nil, err
 	}
-	aech := g.startAdvertise(ctx)
+	aech, err := g.startAdvertise(ctx)
+	if err != nil {
+		close(ech)
+		return nil, err
+	}
 
 	g.eg.Go(func() (err error) {
 		defer close(ech)
@@ -105,9 +112,24 @@ func (g *gateway) Start(ctx context.Context) (<-chan error, error) {
 	return ech, nil
 }
 
-func (g *gateway) startAdvertise(ctx context.Context) <-chan error {
+func (g *gateway) startAdvertise(ctx context.Context) (<-chan error, error) {
 	tic := time.NewTicker(g.advertiseDur)
 	defer tic.Stop()
+
+	tgts, err := g.selfMirrorTargets()
+	if err != nil {
+		return nil, err
+	}
+	req := &payload.Mirror_Targets{
+		Targets: tgts,
+	}
+	err = g.BroadCast(ctx, func(ctx context.Context, target string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
+		_, err := mirror.NewMirrorClient(conn).Register(ctx, req, copts...)
+		return err
+	})
+	if err != nil {
+		return nil, err
+	}
 
 	ech := make(chan error, 100)
 	g.eg.Go(func() error {
@@ -117,8 +139,8 @@ func (g *gateway) startAdvertise(ctx context.Context) <-chan error {
 			case <-ctx.Done():
 				return ctx.Err()
 			case <-tic.C:
-				targets, err := g.ConnectedTargets()
-				if err != nil || len(targets) == 0 {
+				tgts, err := g.MirrorTargets()
+				if err != nil || len(tgts) == 0 {
 					if err == nil {
 						err = errors.ErrTargetNotFound
 					}
@@ -130,10 +152,17 @@ func (g *gateway) startAdvertise(ctx context.Context) <-chan error {
 					continue
 				}
 				req := &payload.Mirror_Targets{
-					Targets: targets,
+					Targets: tgts,
 				}
-				err = g.BroadCast(ctx, func(ctx context.Context, target string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
-					_, err := mirror.NewMirrorClient(conn).Advertise(ctx, req, copts...)
+				resTgts := make([]*payload.Mirror_Target, 0, len(tgts))
+				mutex := sync.Mutex{}
+				err = g.BroadCast(ctx, func(ctx context.Context, target string, conn *grpc.ClientConn, copts ...grpc.CallOption) (err error) {
+					res, err := mirror.NewMirrorClient(conn).Advertise(ctx, req, copts...)
+					if err == nil {
+						mutex.Lock()
+						resTgts = append(resTgts, res.Targets...)
+						mutex.Unlock()
+					}
 					return err
 				})
 				if err != nil {
@@ -142,11 +171,21 @@ func (g *gateway) startAdvertise(ctx context.Context) <-chan error {
 						return ctx.Err()
 					case ech <- err:
 					}
+				} else {
+					resTgts, err = g.Connect(ctx, resTgts...)
+					if err != nil {
+						select {
+						case <-ctx.Done():
+							return ctx.Err()
+						case ech <- err:
+						}
+					}
+					log.Infof("connected mirror gateway targets: %v", resTgts)
 				}
 			}
 		}
 	})
-	return ech
+	return ech, nil
 }
 
 func (g *gateway) ForwardedContext(ctx context.Context) context.Context {
@@ -200,10 +239,39 @@ func (g *gateway) selfMirrorAddrs() (m map[string]struct{}) {
 	return m
 }
 
-func (g *gateway) ConnectedTargets() ([]*payload.Mirror_Target, error) {
-	addrs := g.client.GRPCClient().ConnectedAddrs()
-	targets := make([]*payload.Mirror_Target, 0, len(addrs))
+// SelfAddrs returns the Targets of Mirror Gateway on the same cluster.
+func (g *gateway) selfMirrorTargets() (tgts []*payload.Mirror_Target, err error) {
+	tgts, err = g.addrsToTargets(g.iclient.GRPCClient().ConnectedAddrs())
+	if err != nil {
+		return nil, err
+	}
+	return tgts, nil
+}
 
+// OtherMirrorAddrs returns the addresses of Mirror Gateway on the same cluster.
+func (g *gateway) OtherMirrorAddrs() (oaddrs []string) {
+	selfAddrs := g.selfMirrorAddrs()
+	addrs := g.client.GRPCClient().ConnectedAddrs()
+	oaddrs = make([]string, 0, len(addrs))
+	for _, addr := range g.client.GRPCClient().ConnectedAddrs() {
+		if _, ok := selfAddrs[addr]; !ok {
+			oaddrs = append(oaddrs, addr)
+		}
+	}
+	return oaddrs
+}
+
+// MirrorTargets returns the connected Mirror Gateway targets.
+func (g *gateway) MirrorTargets() (tgts []*payload.Mirror_Target, err error) {
+	tgts, err = g.addrsToTargets(g.client.GRPCClient().ConnectedAddrs())
+	if err != nil {
+		return nil, err
+	}
+	return tgts, nil
+}
+
+func (g *gateway) addrsToTargets(addrs []string) ([]*payload.Mirror_Target, error) {
+	targets := make([]*payload.Mirror_Target, 0, len(addrs))
 	for _, addr := range addrs {
 		host, port, err := net.SplitHostPort(addr)
 		if err != nil {
@@ -246,7 +314,7 @@ func (g *gateway) Connect(ctx context.Context, targets ...*payload.Mirror_Target
 	if err := eg.Wait(); err != nil {
 		return nil, err
 	}
-	tgts, err := g.ConnectedTargets()
+	tgts, err := g.MirrorTargets()
 	if err != nil {
 		return nil, err
 	}
