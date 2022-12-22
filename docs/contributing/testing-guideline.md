@@ -45,21 +45,21 @@ Please refer to our [get started](./docs/tutorial/get-started.md) to create the 
 
 If you want to execute E2E test on your Kubernetes cluster, you may need to modify the configuration on [Makefile](https://github.com/vdaas/vald/blob/main/Makefile) before executing the E2E test.
 
-| Config name                        | Description |
-| :--------------------------------- | :---------- |
-| E2E_BIND_HOST                      | The target host of Kubernetes cluster |
-| E2E_BIND_PORT                      | The target port of Kubernetes cluster |
-| E2E_TIMEOUT                        | The timeout of E2E test |
-| E2E_DATASET_NAME                   | The dataset name of the E2E test|
-| E2E_INSERT_COUNT                   | The number of index insert in E2E test |
-| E2E_SEARCH_COUNT                   | The number of search request in E2E test |
-| E2E_SEARCH_BY_ID_COUNT             | The number of search by ID request in E2E test |
-| E2E_GET_OBJECT_COUNT               | The number of get object request in E2E test |
-| E2E_UPDATE_COUNT                   | The number of update request in E2E test |
-| E2E_UPSERT_COUNT                   | The number of upsert request in E2E test |
-| E2E_REMOVE_COUNT                   | The number of remove request in E2E test |
+| Config name                        | Description                                                                   |
+| :--------------------------------- | :---------------------------------------------------------------------------- |
+| E2E_BIND_HOST                      | The target host of Kubernetes cluster                                         |
+| E2E_BIND_PORT                      | The target port of Kubernetes cluster                                         |
+| E2E_TIMEOUT                        | The timeout of E2E test                                                       |
+| E2E_DATASET_NAME                   | The dataset name of the E2E test                                              |
+| E2E_INSERT_COUNT                   | The number of index insert in E2E test                                        |
+| E2E_SEARCH_COUNT                   | The number of search request in E2E test                                      |
+| E2E_SEARCH_BY_ID_COUNT             | The number of search by ID request in E2E test                                |
+| E2E_GET_OBJECT_COUNT               | The number of get object request in E2E test                                  |
+| E2E_UPDATE_COUNT                   | The number of update request in E2E test                                      |
+| E2E_UPSERT_COUNT                   | The number of upsert request in E2E test                                      |
+| E2E_REMOVE_COUNT                   | The number of remove request in E2E test                                      |
 | E2E_WAIT_FOR_CREATE_INDEX_DURATION | The wait time of create index operation after insert is completed in E2E test |
-| E2E_TARGET_NAME                    | The target pod name in the Vald cluster |
-| E2E_TARGET_NAMESPACE               | The target namespace of the Vald cluster |
-| E2E_TARGET_PORT                    | The pod forward port of the target pod to the local host |
-| E2E_PORTFORWARD_ENABLED            | Enable/Disable port forwarding |
+| E2E_TARGET_NAME                    | The target pod name in the Vald cluster                                       |
+| E2E_TARGET_NAMESPACE               | The target namespace of the Vald cluster                                      |
+| E2E_TARGET_PORT                    | The pod forward port of the target pod to the local host                      |
+| E2E_PORTFORWARD_ENABLED            | Enable/Disable port forwarding                                                |

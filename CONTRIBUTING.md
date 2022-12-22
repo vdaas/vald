@@ -40,6 +40,7 @@ Pull request is also called merge request to let other knows about the changes y
 In Vald, you need to create a pull request to ask for the review and actually make changes to Vald.
 
 You need to create pull request to make changes on:
+
 1. Source code changes
    1. Business logic implementation
    2. Test implementation
@@ -54,18 +55,18 @@ Please install [Git](https://git-scm.com/) and configure it first.
 1. Ensure that you have completed our [CLA Agreement](https://cla-assistant.io/vdaas/vald).
 1. Set your name and email (these should match the information on your submitted CLA).
 
-    ```bash
-    git config --global user.name "GitHub user name"
-    git config --global user.email "your_email@example.com"
-    ```
+   ```bash
+   git config --global user.name "GitHub user name"
+   git config --global user.email "your_email@example.com"
+   ```
 
-    Please also refer [here](https://git-scm.com/book/en/v2/Getting-Started-First-Time-Git-Setup) for more details on setting up Git.
+   Please also refer [here](https://git-scm.com/book/en/v2/Getting-Started-First-Time-Git-Setup) for more details on setting up Git.
 
 1. Setup signing key on your development environment.
 
-    Please refer [here](https://docs.github.com/authentication/managing-commit-signature-verification/telling-git-about-your-signing-key) to configure the signing key.
-    
-    Vald recommends signing the commit to prove that the commit actually came from you, as it is easy to add anyone as an author of the commit, which can be used in hiding the author of malicious code.
+   Please refer [here](https://docs.github.com/authentication/managing-commit-signature-verification/telling-git-about-your-signing-key) to configure the signing key.
+
+   Vald recommends signing the commit to prove that the commit actually came from you, as it is easy to add anyone as an author of the commit, which can be used in hiding the author of malicious code.
 
 After install and configure Git, please clone Vald repository to your Go path, [fork Vald repository](https://github.com/vdaas/vald/fork) and setup the remote branch to your forked Vald repository.
 
@@ -158,108 +159,108 @@ make gotests/install # install gotests tools to generate test stubs.
 
 1. Make sure no one is working on the same issue/feature
 
-    Before making any changes, you need to check if anyone is working on the same feature in the pull request list.
+   Before making any changes, you need to check if anyone is working on the same feature in the pull request list.
 
-    If you are solving an issue, check if anyone is working on the issue and comment on the issue and say you are working on it to avoid conflict with others also working on the same issue.
+   If you are solving an issue, check if anyone is working on the issue and comment on the issue and say you are working on it to avoid conflict with others also working on the same issue.
 
 2. Create your feature branch on your forked repository
 
-    Before working on changes, you need to create a development branch on your forked branch.
+   Before working on changes, you need to create a development branch on your forked branch.
 
-    Name the development branch  `[type]/[area]/[description]`.
+   Name the development branch `[type]/[area]/[description]`.
 
-    | Field       | Explanation                           | Naming Rule                                                                                                                 |
-    | :---------- | :------------------------------------ | :-------------------------------------------------------------------------------------------------------------------------- |
-    | type        | The PR type                           | The type of PR can be a feature, bug, refactoring, benchmark, security, documentation, dependencies, ci, test, etc...       |
-    | area        | Area of context                       | The area of PR can be gateway, agent, agent-sidecar, lb-gateway, etc...                                                     |
-    | description | Summarized description of your branch | The description must be hyphenated. Please use [a-zA-Z0-9] and a hyphen as characters, and do not use any other characters. |
+   | Field       | Explanation                           | Naming Rule                                                                                                                 |
+   | :---------- | :------------------------------------ | :-------------------------------------------------------------------------------------------------------------------------- |
+   | type        | The PR type                           | The type of PR can be a feature, bug, refactoring, benchmark, security, documentation, dependencies, ci, test, etc...       |
+   | area        | Area of context                       | The area of PR can be gateway, agent, agent-sidecar, lb-gateway, etc...                                                     |
+   | description | Summarized description of your branch | The description must be hyphenated. Please use [a-zA-Z0-9] and a hyphen as characters, and do not use any other characters. |
 
-    (\*) If you changed multiple areas, please list each area with "-".
+   (\*) If you changed multiple areas, please list each area with "-".
 
-    For example, when you add a new feature for internal/servers, the name of the branch will be `feature/internal/add-newfeature-for-servers`.
+   For example, when you add a new feature for internal/servers, the name of the branch will be `feature/internal/add-newfeature-for-servers`.
 
-    ```bash
-    git checkout -b [type]/[area]/[description]
-    ```
+   ```bash
+   git checkout -b [type]/[area]/[description]
+   ```
 
 3. Make changes on Vald
 
-    If you have discussed the design and the requirement of the changes with Vald members, please follow the design and the requirement discussed.
+   If you have discussed the design and the requirement of the changes with Vald members, please follow the design and the requirement discussed.
 
 4. After making source code changes
 
-    If you are making source code changes, we suggest you execute the following command to generate the necessary test stubs and format code.
+   If you are making source code changes, we suggest you execute the following command to generate the necessary test stubs and format code.
 
-    ```bash
-    make gotests/gen # execute gotests tools to generate unit test code stubs
-    make format # format go and yaml files
-    ```
+   ```bash
+   make gotests/gen # execute gotests tools to generate unit test code stubs
+   make format # format go and yaml files
+   ```
 
-    The command `make gotests/gen` generate unit test code stubs to easier to implement unit test code.
+   The command `make gotests/gen` generate unit test code stubs to easier to implement unit test code.
 
-    The command `make format` is used to generate the license header on the source code file, and execute the code formatter to format Go and YAML files.
+   The command `make format` is used to generate the license header on the source code file, and execute the code formatter to format Go and YAML files.
 
 5. Verify the changes
 
-    If you are making logical changes on Vald, please refer to [this document](./docs/contributing/testing-guideline.md) for more detail about how to test your changes.
+   If you are making logical changes on Vald, please refer to [this document](./docs/contributing/testing-guideline.md) for more detail about how to test your changes.
 
 6. Commit and push your changes to the branch
 
-    After verifing the changes, you may want to push the changes to your development branch.
+   After verifing the changes, you may want to push the changes to your development branch.
 
-    Please add the files that related to your changes only.
+   Please add the files that related to your changes only.
 
-    ```bash
-    git add [files]
-    ```
+   ```bash
+   git add [files]
+   ```
 
-    Please write a brief description of the changes to the commit, and push it to your forked repository.
+   Please write a brief description of the changes to the commit, and push it to your forked repository.
 
-    ```bash
-    git commit --signoff -m '[commit message]'
-    git push origin [type]/[area]/[description]
-    ```
+   ```bash
+   git commit --signoff -m '[commit message]'
+   git push origin [type]/[area]/[description]
+   ```
 
 7. Create a new pull request against the Vald repository
 
-    After committing your changes, you may create a pull request to ask for accepting the changes.
+   After committing your changes, you may create a pull request to ask for accepting the changes.
 
-    Please create the pull request to the Vald repository under `vdaas` orginization.
+   Please create the pull request to the Vald repository under `vdaas` orginization.
 
-    Each pull request and commit should be small enough to contain only one purpose, for easier review and tracking.
-    Please fill in the description on the pull request and write down the overview of the changes.
+   Each pull request and commit should be small enough to contain only one purpose, for easier review and tracking.
+   Please fill in the description on the pull request and write down the overview of the changes.
 
-    Please also choose the correct type label on the pull request, we provide the following type label in Vald:
+   Please also choose the correct type label on the pull request, we provide the following type label in Vald:
 
-    | Label            | Description                          |
-    | :--------------- | :----------------------------------- |
-    | type/bug         | For bug fixes pull request           |
-    | type/dependency  | For dependency update pull request   |
-    | type/feature     | For new feature pull request         |
-    | type/refactoring | For code refactoring pull request    |
-    | type/security    | For security fix pull request        |
-    | type/test        | For test implementation pull request |
+   | Label            | Description                          |
+   | :--------------- | :----------------------------------- |
+   | type/bug         | For bug fixes pull request           |
+   | type/dependency  | For dependency update pull request   |
+   | type/feature     | For new feature pull request         |
+   | type/refactoring | For code refactoring pull request    |
+   | type/security    | For security fix pull request        |
+   | type/test        | For test implementation pull request |
 
-    We also provide the following label to execute specific actions on the [GitHub Actions](https://github.co.jp/features/actions).
+   We also provide the following label to execute specific actions on the [GitHub Actions](https://github.co.jp/features/actions).
 
-    | Label                | Description                                           |
-    | :------------------- | :---------------------------------------------------- |
-    | action/e2e-chaos     | Execute E2E chaos test                                |
-    | action/e2e-deploy    | Execute E2E deployment test                           |
-    | action/e2e-max-dim   | Execute maximum dimension E2E test                    |
-    | action/e2e-profiling | Execute E2E test with profiling                       |
-    | action/fossa         | Execute [fossa](https://fossa.com/) security checking |
+   | Label                | Description                                           |
+   | :------------------- | :---------------------------------------------------- |
+   | action/e2e-chaos     | Execute E2E chaos test                                |
+   | action/e2e-deploy    | Execute E2E deployment test                           |
+   | action/e2e-max-dim   | Execute maximum dimension E2E test                    |
+   | action/e2e-profiling | Execute E2E test with profiling                       |
+   | action/fossa         | Execute [fossa](https://fossa.com/) security checking |
 
-    Please add the action label to the pull request to execute specific action if needed.
+   Please add the action label to the pull request to execute specific action if needed.
 
-    If you are solving an issue, please also link the pull request to the issue.
+   If you are solving an issue, please also link the pull request to the issue.
 
 8. Review and merge pull request
 
-    Vald team will review the pull request.
+   Vald team will review the pull request.
 
-    We may ask for changes or questions we have during the review process.
+   We may ask for changes or questions we have during the review process.
 
-    We will add a mention to your GitHub account on each comment and reply to make the communication smooth.
+   We will add a mention to your GitHub account on each comment and reply to make the communication smooth.
 
-    After the review is done, we will merge the pull request to Vald. Your changes will be applied to Vald, and the changes will be included in the next Vald release.
+   After the review is done, we will merge the pull request to Vald. Your changes will be applied to Vald, and the changes will be included in the next Vald release.
