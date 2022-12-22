@@ -26,15 +26,6 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 )
 
-// Cache represent the cache interface to store cache.
-type Cache interface {
-	Start(context.Context)
-	Get(string) (interface{}, bool)
-	Set(string, interface{})
-	Delete(string)
-	GetAndDelete(string) (interface{}, bool)
-}
-
 type cache struct {
 	cacher         cacher.Type
 	expireDur      time.Duration
@@ -43,7 +34,7 @@ type cache struct {
 }
 
 // New returns the Cache instance or error.
-func New(opts ...Option) (cc Cache, err error) {
+func New(opts ...Option) (cc cacher.Cache, err error) {
 	c := new(cache)
 	for _, opt := range append(defaultOptions, opts...) {
 		opt(c)
@@ -55,6 +46,7 @@ func New(opts ...Option) (cc Cache, err error) {
 			gache.WithExpireCheckDuration(c.expireCheckDur),
 			gache.WithExpiredHook(c.expiredHook),
 		), nil
+	default:
+		return nil, errors.ErrInvalidCacherType
 	}
-	return nil, errors.ErrInvalidCacherType
 }

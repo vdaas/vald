@@ -26,13 +26,13 @@ import (
 	"net/http/httptest"
 	"reflect"
 	"strconv"
-	"sync"
 	"testing"
 	"time"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/vdaas/vald/internal/cache"
+	"github.com/vdaas/vald/internal/cache/cacher"
 	"github.com/vdaas/vald/internal/cache/gache"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/io"
@@ -58,7 +58,7 @@ func Test_dialerCache_IP(t *testing.T) {
 		beforeFunc func()
 		afterFunc  func()
 	}
-	defaultCheckFunc := func(d *dialerCache, w want, got string) error {
+	defaultCheckFunc := func(_ *dialerCache, w want, got string) error {
 		if !reflect.DeepEqual(got, w.want) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
@@ -265,14 +265,17 @@ func TestNewDialer(t *testing.T) {
 		if !ok {
 			return errors.Errorf("got: \"%+v\" is not a dialer", gotDer)
 		}
+		// skipcq: VET-V0008
 		if diff := cmp.Diff(*want, *got,
+			// skipcq: VET-V0008
 			cmpopts.IgnoreFields(*want, "dialer", "der", "addrs", "dnsCachedOnce", "dnsCache", "ctrl", "tmu"),
+			// skipcq: VET-V0008
 			cmp.AllowUnexported(*want),
-			cmp.Comparer(func(x, y cache.Cache) bool {
+			cmp.Comparer(func(x, y cacher.Cache) bool {
 				if x == nil && y == nil {
 					return true
 				}
-				return !(x == nil && y != nil) || !(y == nil && x != nil)
+				return reflect.DeepEqual(x, y)
 			}),
 			cmp.Comparer(func(x, y *tls.Config) bool {
 				return reflect.DeepEqual(x, y)
@@ -528,7 +531,7 @@ func Test_dialer_lookup(t *testing.T) {
 				addr: "addr",
 			},
 			opts: []DialerOption{
-				WithDNSCache(func() cache.Cache {
+				WithDNSCache(func() cacher.Cache {
 					g := gache.New()
 					g.Set("addr", &dialerCache{
 						ips: []string{"999.999.999.999"},
@@ -1806,11 +1809,9 @@ func Test_dialer_lookupIPAddrs(t *testing.T) {
 		host string
 	}
 	type fields struct {
-		dnsCache              cache.Cache
+		dnsCache              cacher.Cache
 		enableDNSCache        bool
-		dnsCachedOnce         sync.Once
 		tlsConfig             *tls.Config
-		tmu                   sync.RWMutex
 		dnsRefreshDurationStr string
 		dnsCacheExpirationStr string
 		dnsRefreshDuration    time.Duration
@@ -1821,7 +1822,6 @@ func Test_dialer_lookupIPAddrs(t *testing.T) {
 		ctrl                  control.SocketController
 		sockFlg               control.SocketFlag
 		dialerDualStack       bool
-		addrs                 sync.Map
 		der                   *net.Dialer
 		dialer                func(ctx context.Context, network, addr string) (Conn, error)
 	}
@@ -1893,9 +1893,7 @@ func Test_dialer_lookupIPAddrs(t *testing.T) {
 		           fields: fields {
 		           dnsCache: nil,
 		           enableDNSCache: false,
-		           dnsCachedOnce: sync.Once{},
 		           tlsConfig: nil,
-		           tmu: sync.RWMutex{},
 		           dnsRefreshDurationStr: "",
 		           dnsCacheExpirationStr: "",
 		           dnsRefreshDuration: nil,
@@ -1906,7 +1904,6 @@ func Test_dialer_lookupIPAddrs(t *testing.T) {
 		           ctrl: nil,
 		           sockFlg: nil,
 		           dialerDualStack: false,
-		           addrs: sync.Map{},
 		           der: net.Dialer{},
 		           dialer: nil,
 		           },
@@ -1934,9 +1931,7 @@ func Test_dialer_lookupIPAddrs(t *testing.T) {
 			d := &dialer{
 				dnsCache:              test.fields.dnsCache,
 				enableDNSCache:        test.fields.enableDNSCache,
-				dnsCachedOnce:         test.fields.dnsCachedOnce,
 				tlsConfig:             test.fields.tlsConfig,
-				tmu:                   test.fields.tmu,
 				dnsRefreshDurationStr: test.fields.dnsRefreshDurationStr,
 				dnsCacheExpirationStr: test.fields.dnsCacheExpirationStr,
 				dnsRefreshDuration:    test.fields.dnsRefreshDuration,
@@ -1947,7 +1942,6 @@ func Test_dialer_lookupIPAddrs(t *testing.T) {
 				ctrl:                  test.fields.ctrl,
 				sockFlg:               test.fields.sockFlg,
 				dialerDualStack:       test.fields.dialerDualStack,
-				addrs:                 test.fields.addrs,
 				der:                   test.fields.der,
 				dialer:                test.fields.dialer,
 			}

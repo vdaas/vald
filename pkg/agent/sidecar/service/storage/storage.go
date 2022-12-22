@@ -83,7 +83,7 @@ func (b *bs) initCompressor() (err error) {
 		return nil
 	}
 
-	switch config.CompressAlgorithm(b.compressAlgorithm) {
+	switch config.AToCompressAlgorithm(b.compressAlgorithm) {
 	case config.GOB:
 		b.compressor, err = compress.NewGob()
 	case config.GZIP:
@@ -167,7 +167,7 @@ func (b *bs) Start(ctx context.Context) (<-chan error, error) {
 	return ech, nil
 }
 
-func (b *bs) Stop(ctx context.Context) error {
+func (b *bs) Stop(context.Context) error {
 	if b.bucket != nil {
 		return b.bucket.Close()
 	}

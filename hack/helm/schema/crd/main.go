@@ -120,6 +120,7 @@ func genSchema(path string, nindent int) error {
 	defer func() {
 		err := f.Close()
 		if err != nil {
+			// skipcq: RVV-A0003
 			log.Fatal(err)
 		}
 	}()

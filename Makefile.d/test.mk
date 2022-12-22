@@ -30,7 +30,7 @@ gotestfmt/install: \
         $(GOPATH)bin/gotestfmt
 
 $(GOPATH)bin/gotestfmt:
-	$(call go-install, github.com/haveyoudebuggedit/gotestfmt/v2/cmd/gotestfmt)
+	$(call go-install, github.com/gotesttools/gotestfmt/v2/cmd/gotestfmt)
 
 .PHONY: gotests/install
 ## install gotests
@@ -204,7 +204,7 @@ test/all:
 .PHONY: coverage
 ## calculate coverages
 coverage:
-	go test -shuffle=on -race -mod=readonly -v -race -covermode=atomic -coverprofile=coverage.out ./...
+	go test -shuffle=on -race -mod=readonly -v -race -covermode=atomic -timeout=30m -coverprofile=coverage.out ./...
 	go tool cover -html=coverage.out -o coverage.html
 
 .PHONY: gotests/gen

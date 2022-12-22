@@ -78,7 +78,7 @@ func (l *logger) setLogFormat(fmt format.Format) *logger {
 	return l
 }
 
-func (l *logger) Close() error {
+func (*logger) Close() error {
 	return nil
 }
 

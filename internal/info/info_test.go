@@ -206,7 +206,9 @@ func TestInit(t *testing.T) {
 	defaultCheckFunc := func(w want, got Info) error {
 		opts := []comparator.Option{
 			comparator.AllowUnexported(info{}),
+			// skipcq: VET-V0008
 			comparator.Comparer(func(x, y sync.Once) bool {
+				// skipcq: VET-V0008
 				return reflect.DeepEqual(x, y)
 			}),
 			comparator.Comparer(func(x, y func(skip int) (pc uintptr, file string, line int, ok bool)) bool {
@@ -379,7 +381,9 @@ func TestNew(t *testing.T) {
 		}
 		opts := []comparator.Option{
 			comparator.AllowUnexported(info{}),
+			// skipcq: VET-V0008
 			comparator.Comparer(func(x, y sync.Once) bool {
+				// skipcq: VET-V0008
 				return reflect.DeepEqual(x, y)
 			}),
 			comparator.Comparer(func(x, y func(skip int) (pc uintptr, file string, line int, ok bool)) bool {
@@ -571,7 +575,6 @@ func TestNew(t *testing.T) {
 func Test_info_String(t *testing.T) {
 	type fields struct {
 		detail      Detail
-		prepOnce    sync.Once
 		rtCaller    func(skip int) (pc uintptr, file string, line int, ok bool)
 		rtFuncForPC func(pc uintptr) *runtime.Func
 	}
@@ -665,7 +668,6 @@ func Test_info_String(t *testing.T) {
 			}
 			i := info{
 				detail:      test.fields.detail,
-				prepOnce:    test.fields.prepOnce,
 				rtCaller:    test.fields.rtCaller,
 				rtFuncForPC: test.fields.rtFuncForPC,
 			}
@@ -796,7 +798,6 @@ func TestDetail_String(t *testing.T) {
 func Test_info_Get(t *testing.T) {
 	type fields struct {
 		detail      Detail
-		prepOnce    sync.Once
 		rtCaller    func(skip int) (pc uintptr, file string, line int, ok bool)
 		rtFuncForPC func(pc uintptr) *runtime.Func
 	}
@@ -1137,7 +1138,6 @@ func Test_info_Get(t *testing.T) {
 			}
 			i := info{
 				detail:      test.fields.detail,
-				prepOnce:    test.fields.prepOnce,
 				rtCaller:    test.fields.rtCaller,
 				rtFuncForPC: test.fields.rtFuncForPC,
 			}
@@ -1153,7 +1153,6 @@ func Test_info_Get(t *testing.T) {
 func Test_info_prepare(t *testing.T) {
 	type fields struct {
 		detail      Detail
-		prepOnce    sync.Once
 		rtCaller    func(skip int) (pc uintptr, file string, line int, ok bool)
 		rtFuncForPC func(pc uintptr) *runtime.Func
 	}
@@ -1168,17 +1167,19 @@ func Test_info_prepare(t *testing.T) {
 		beforeFunc func()
 		afterFunc  func()
 	}
+	// skipcq: VET-V0008
 	defaultCheckFunc := func(got info, w want) error {
 		opts := []comparator.Option{
 			comparator.AllowUnexported(info{}),
 			comparator.IgnoreFields(info{}, "prepOnce"),
 		}
+		// skipcq: VET-V0008
 		if diff := comparator.Diff(w.want, got, opts...); len(diff) != 0 {
 			return errors.Errorf("err: %s", diff)
 		}
 		return nil
 	}
-	tests := []test{
+	tests := []*test{
 		{
 			name: "set success with all fields are empty",
 			want: want{
@@ -1471,8 +1472,8 @@ func Test_info_prepare(t *testing.T) {
 		},
 	}
 
-	for _, tc := range tests {
-		test := tc
+	for i := range tests {
+		test := tests[i]
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
@@ -1487,11 +1488,9 @@ func Test_info_prepare(t *testing.T) {
 			}
 			i := &info{
 				detail:      test.fields.detail,
-				prepOnce:    test.fields.prepOnce,
 				rtCaller:    test.fields.rtCaller,
 				rtFuncForPC: test.fields.rtFuncForPC,
 			}
-
 			i.prepare()
 			if err := checkFunc(*i, test.want); err != nil {
 				tt.Errorf("error = %v", err)
@@ -1568,11 +1567,10 @@ func TestStackTrace_String(t *testing.T) {
 	}
 }
 
-func Test_info_get(t *testing.T) {
+func Test_info_getDetail(t *testing.T) {
 	type fields struct {
 		baseURL     string
 		detail      Detail
-		prepOnce    sync.Once
 		rtCaller    func(skip int) (pc uintptr, file string, line int, ok bool)
 		rtFuncForPC func(pc uintptr) *runtime.Func
 	}
@@ -1647,12 +1645,11 @@ func Test_info_get(t *testing.T) {
 			i := info{
 				baseURL:     test.fields.baseURL,
 				detail:      test.fields.detail,
-				prepOnce:    test.fields.prepOnce,
 				rtCaller:    test.fields.rtCaller,
 				rtFuncForPC: test.fields.rtFuncForPC,
 			}
 
-			got := i.get()
+			got := i.getDetail()
 			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}

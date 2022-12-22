@@ -116,6 +116,7 @@ func genJSONSchema(path string) error {
 	defer func() {
 		err := f.Close()
 		if err != nil {
+			// skipcq: RVV-A0003
 			log.Fatal(err)
 		}
 	}()

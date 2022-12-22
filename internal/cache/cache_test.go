@@ -21,6 +21,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/vdaas/vald/internal/cache/cacher"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/test/goleak"
 )
@@ -35,18 +36,18 @@ func TestNew(t *testing.T) {
 		opts []Option
 	}
 	type want struct {
-		wantCc Cache
+		wantCc cacher.Cache
 		err    error
 	}
 	type test struct {
 		name       string
 		args       args
 		want       want
-		checkFunc  func(want, Cache, error) error
+		checkFunc  func(want, cacher.Cache, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, gotCc Cache, err error) error {
+	defaultCheckFunc := func(w want, gotCc cacher.Cache, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
@@ -61,7 +62,7 @@ func TestNew(t *testing.T) {
 			args: args{
 				opts: []Option{WithType("gache")},
 			},
-			checkFunc: func(w want, got Cache, err error) error {
+			checkFunc: func(w want, got cacher.Cache, err error) error {
 				if err != nil {
 					return err
 				}
@@ -86,7 +87,7 @@ func TestNew(t *testing.T) {
 			args: args{
 				opts: []Option{WithType("")},
 			},
-			checkFunc: func(w want, got Cache, err error) error {
+			checkFunc: func(w want, got cacher.Cache, err error) error {
 				if err != nil {
 					return err
 				}

@@ -18,7 +18,6 @@ package service
 
 import (
 	"reflect"
-	"sync"
 	"sync/atomic"
 	"testing"
 	"unsafe"
@@ -40,8 +39,8 @@ func Test_newEntryIndexInfos(t *testing.T) {
 		args       args
 		want       want
 		checkFunc  func(want, *entryIndexInfos) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, got *entryIndexInfos) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -59,6 +58,12 @@ func Test_newEntryIndexInfos(t *testing.T) {
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -72,6 +77,12 @@ func Test_newEntryIndexInfos(t *testing.T) {
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -83,10 +94,10 @@ func Test_newEntryIndexInfos(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -106,7 +117,6 @@ func Test_indexInfos_Load(t *testing.T) {
 		key string
 	}
 	type fields struct {
-		mu     sync.Mutex
 		read   atomic.Value
 		dirty  map[string]*entryIndexInfos
 		misses int
@@ -121,8 +131,8 @@ func Test_indexInfos_Load(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, *payload.Info_Index_Count, bool) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, gotValue *payload.Info_Index_Count, gotOk bool) error {
 		if !reflect.DeepEqual(gotValue, w.wantValue) {
@@ -142,13 +152,18 @@ func Test_indexInfos_Load(t *testing.T) {
 		           key: "",
 		       },
 		       fields: fields {
-		           mu: sync.Mutex{},
 		           read: nil,
 		           dirty: nil,
 		           misses: 0,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -161,13 +176,18 @@ func Test_indexInfos_Load(t *testing.T) {
 		           key: "",
 		           },
 		           fields: fields {
-		           mu: sync.Mutex{},
 		           read: nil,
 		           dirty: nil,
 		           misses: 0,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -179,17 +199,16 @@ func Test_indexInfos_Load(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
 			m := &indexInfos{
-				mu:     test.fields.mu,
 				read:   test.fields.read,
 				dirty:  test.fields.dirty,
 				misses: test.fields.misses,
@@ -216,8 +235,8 @@ func Test_entryIndexInfos_load(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, *payload.Info_Index_Count, bool) error
-		beforeFunc func()
-		afterFunc  func()
+		beforeFunc func(*testing.T)
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want, gotValue *payload.Info_Index_Count, gotOk bool) error {
 		if !reflect.DeepEqual(gotValue, w.wantValue) {
@@ -238,6 +257,12 @@ func Test_entryIndexInfos_load(t *testing.T) {
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -251,6 +276,12 @@ func Test_entryIndexInfos_load(t *testing.T) {
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -262,10 +293,10 @@ func Test_entryIndexInfos_load(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -289,7 +320,6 @@ func Test_indexInfos_Store(t *testing.T) {
 		value *payload.Info_Index_Count
 	}
 	type fields struct {
-		mu     sync.Mutex
 		read   atomic.Value
 		dirty  map[string]*entryIndexInfos
 		misses int
@@ -301,8 +331,8 @@ func Test_indexInfos_Store(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want) error {
 		return nil
@@ -317,13 +347,18 @@ func Test_indexInfos_Store(t *testing.T) {
 		           value: nil,
 		       },
 		       fields: fields {
-		           mu: sync.Mutex{},
 		           read: nil,
 		           dirty: nil,
 		           misses: 0,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -337,13 +372,18 @@ func Test_indexInfos_Store(t *testing.T) {
 		           value: nil,
 		           },
 		           fields: fields {
-		           mu: sync.Mutex{},
 		           read: nil,
 		           dirty: nil,
 		           misses: 0,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -355,17 +395,16 @@ func Test_indexInfos_Store(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
 			m := &indexInfos{
-				mu:     test.fields.mu,
 				read:   test.fields.read,
 				dirty:  test.fields.dirty,
 				misses: test.fields.misses,
@@ -395,8 +434,8 @@ func Test_entryIndexInfos_tryStore(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, bool) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, got bool) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -417,6 +456,12 @@ func Test_entryIndexInfos_tryStore(t *testing.T) {
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -433,6 +478,12 @@ func Test_entryIndexInfos_tryStore(t *testing.T) {
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -444,10 +495,10 @@ func Test_entryIndexInfos_tryStore(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -477,8 +528,8 @@ func Test_entryIndexInfos_unexpungeLocked(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, bool) error
-		beforeFunc func()
-		afterFunc  func()
+		beforeFunc func(*testing.T)
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want, gotWasExpunged bool) error {
 		if !reflect.DeepEqual(gotWasExpunged, w.wantWasExpunged) {
@@ -496,6 +547,12 @@ func Test_entryIndexInfos_unexpungeLocked(t *testing.T) {
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -509,6 +566,12 @@ func Test_entryIndexInfos_unexpungeLocked(t *testing.T) {
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -520,10 +583,10 @@ func Test_entryIndexInfos_unexpungeLocked(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -555,8 +618,8 @@ func Test_entryIndexInfos_storeLocked(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want) error {
 		return nil
@@ -574,6 +637,12 @@ func Test_entryIndexInfos_storeLocked(t *testing.T) {
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -590,6 +659,12 @@ func Test_entryIndexInfos_storeLocked(t *testing.T) {
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -601,10 +676,10 @@ func Test_entryIndexInfos_storeLocked(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -627,7 +702,6 @@ func Test_indexInfos_Delete(t *testing.T) {
 		key string
 	}
 	type fields struct {
-		mu     sync.Mutex
 		read   atomic.Value
 		dirty  map[string]*entryIndexInfos
 		misses int
@@ -639,8 +713,8 @@ func Test_indexInfos_Delete(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want) error {
 		return nil
@@ -654,13 +728,18 @@ func Test_indexInfos_Delete(t *testing.T) {
 		           key: "",
 		       },
 		       fields: fields {
-		           mu: sync.Mutex{},
 		           read: nil,
 		           dirty: nil,
 		           misses: 0,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -673,13 +752,18 @@ func Test_indexInfos_Delete(t *testing.T) {
 		           key: "",
 		           },
 		           fields: fields {
-		           mu: sync.Mutex{},
 		           read: nil,
 		           dirty: nil,
 		           misses: 0,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -691,17 +775,16 @@ func Test_indexInfos_Delete(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
 			m := &indexInfos{
-				mu:     test.fields.mu,
 				read:   test.fields.read,
 				dirty:  test.fields.dirty,
 				misses: test.fields.misses,
@@ -727,8 +810,8 @@ func Test_entryIndexInfos_delete(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, bool) error
-		beforeFunc func()
-		afterFunc  func()
+		beforeFunc func(*testing.T)
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want, gotHadValue bool) error {
 		if !reflect.DeepEqual(gotHadValue, w.wantHadValue) {
@@ -746,6 +829,12 @@ func Test_entryIndexInfos_delete(t *testing.T) {
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -759,6 +848,12 @@ func Test_entryIndexInfos_delete(t *testing.T) {
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -770,10 +865,10 @@ func Test_entryIndexInfos_delete(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -796,7 +891,6 @@ func Test_indexInfos_Range(t *testing.T) {
 		f func(key string, value *payload.Info_Index_Count) bool
 	}
 	type fields struct {
-		mu     sync.Mutex
 		read   atomic.Value
 		dirty  map[string]*entryIndexInfos
 		misses int
@@ -808,8 +902,8 @@ func Test_indexInfos_Range(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want) error {
 		return nil
@@ -823,13 +917,18 @@ func Test_indexInfos_Range(t *testing.T) {
 		           f: nil,
 		       },
 		       fields: fields {
-		           mu: sync.Mutex{},
 		           read: nil,
 		           dirty: nil,
 		           misses: 0,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -842,13 +941,18 @@ func Test_indexInfos_Range(t *testing.T) {
 		           f: nil,
 		           },
 		           fields: fields {
-		           mu: sync.Mutex{},
 		           read: nil,
 		           dirty: nil,
 		           misses: 0,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -860,17 +964,16 @@ func Test_indexInfos_Range(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
 			m := &indexInfos{
-				mu:     test.fields.mu,
 				read:   test.fields.read,
 				dirty:  test.fields.dirty,
 				misses: test.fields.misses,
@@ -886,7 +989,6 @@ func Test_indexInfos_Range(t *testing.T) {
 
 func Test_indexInfos_missLocked(t *testing.T) {
 	type fields struct {
-		mu     sync.Mutex
 		read   atomic.Value
 		dirty  map[string]*entryIndexInfos
 		misses int
@@ -897,8 +999,8 @@ func Test_indexInfos_missLocked(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want) error
-		beforeFunc func()
-		afterFunc  func()
+		beforeFunc func(*testing.T)
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want) error {
 		return nil
@@ -909,13 +1011,18 @@ func Test_indexInfos_missLocked(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       fields: fields {
-		           mu: sync.Mutex{},
 		           read: nil,
 		           dirty: nil,
 		           misses: 0,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -925,13 +1032,18 @@ func Test_indexInfos_missLocked(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           fields: fields {
-		           mu: sync.Mutex{},
 		           read: nil,
 		           dirty: nil,
 		           misses: 0,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -943,17 +1055,16 @@ func Test_indexInfos_missLocked(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
 			m := &indexInfos{
-				mu:     test.fields.mu,
 				read:   test.fields.read,
 				dirty:  test.fields.dirty,
 				misses: test.fields.misses,
@@ -969,7 +1080,6 @@ func Test_indexInfos_missLocked(t *testing.T) {
 
 func Test_indexInfos_dirtyLocked(t *testing.T) {
 	type fields struct {
-		mu     sync.Mutex
 		read   atomic.Value
 		dirty  map[string]*entryIndexInfos
 		misses int
@@ -980,8 +1090,8 @@ func Test_indexInfos_dirtyLocked(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want) error
-		beforeFunc func()
-		afterFunc  func()
+		beforeFunc func(*testing.T)
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want) error {
 		return nil
@@ -992,13 +1102,18 @@ func Test_indexInfos_dirtyLocked(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       fields: fields {
-		           mu: sync.Mutex{},
 		           read: nil,
 		           dirty: nil,
 		           misses: 0,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -1008,13 +1123,18 @@ func Test_indexInfos_dirtyLocked(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           fields: fields {
-		           mu: sync.Mutex{},
 		           read: nil,
 		           dirty: nil,
 		           misses: 0,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -1026,17 +1146,16 @@ func Test_indexInfos_dirtyLocked(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
 			m := &indexInfos{
-				mu:     test.fields.mu,
 				read:   test.fields.read,
 				dirty:  test.fields.dirty,
 				misses: test.fields.misses,
@@ -1062,8 +1181,8 @@ func Test_entryIndexInfos_tryExpungeLocked(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, bool) error
-		beforeFunc func()
-		afterFunc  func()
+		beforeFunc func(*testing.T)
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want, gotIsExpunged bool) error {
 		if !reflect.DeepEqual(gotIsExpunged, w.wantIsExpunged) {
@@ -1081,6 +1200,12 @@ func Test_entryIndexInfos_tryExpungeLocked(t *testing.T) {
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -1094,6 +1219,12 @@ func Test_entryIndexInfos_tryExpungeLocked(t *testing.T) {
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -1105,10 +1236,10 @@ func Test_entryIndexInfos_tryExpungeLocked(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {

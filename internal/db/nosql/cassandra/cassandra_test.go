@@ -80,7 +80,7 @@ var clientComparatorOpts = []comparator.Option{
 		return reflect.ValueOf(x).Pointer() == reflect.ValueOf(y).Pointer()
 	}),
 
-	comparator.Comparer(func(x, y tls.Config) bool {
+	comparator.Comparer(func(x, y *tls.Config) bool {
 		return reflect.DeepEqual(x, y)
 	}),
 }
@@ -2219,7 +2219,7 @@ func TestWrapErrorWithKeys(t *testing.T) {
 				err: ErrUnavailable,
 			},
 			want: want{
-				err: errors.ErrCassandraUnavailable(),
+				err: errors.ErrCassandraUnavailable,
 			},
 		},
 		{

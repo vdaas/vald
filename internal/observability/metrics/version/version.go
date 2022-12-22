@@ -76,7 +76,7 @@ func labelKVs(labels ...string) map[string]string {
 	return info
 }
 
-func (v *version) View() ([]*metrics.View, error) {
+func (*version) View() ([]*metrics.View, error) {
 	otlv, err := view.New(
 		view.MatchInstrumentName(name),
 		view.WithSetDescription(description),

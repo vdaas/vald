@@ -33,7 +33,7 @@ func New() metrics.Metric {
 	return &goroutine{}
 }
 
-func (g *goroutine) View() ([]*metrics.View, error) {
+func (*goroutine) View() ([]*metrics.View, error) {
 	count, err := view.New(
 		view.MatchInstrumentName(metricsName),
 		view.WithSetDescription(metricsDescription),
@@ -48,7 +48,7 @@ func (g *goroutine) View() ([]*metrics.View, error) {
 	}, nil
 }
 
-func (g *goroutine) Register(m metrics.Meter) error {
+func (*goroutine) Register(m metrics.Meter) error {
 	conter, err := m.AsyncInt64().Gauge(
 		metricsName,
 		metrics.WithDescription(metricsDescription),

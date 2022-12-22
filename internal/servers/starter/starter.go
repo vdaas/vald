@@ -138,7 +138,7 @@ func (s *srvs) setupAPIs(cfg *tls.Config) ([]servers.Option, error) {
 	return opts, nil
 }
 
-func (s *srvs) setupHealthCheck(cfg *tls.Config) ([]servers.Option, error) {
+func (s *srvs) setupHealthCheck(*tls.Config) ([]servers.Option, error) {
 	opts := make([]servers.Option, 0, len(s.cfg.HealthCheckServers))
 	for _, hsc := range s.cfg.HealthCheckServers {
 		srv, err := server.New(

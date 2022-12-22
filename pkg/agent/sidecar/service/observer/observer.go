@@ -377,7 +377,7 @@ func (o *observer) isValidMetadata() (bool, error) {
 	return !metadata.IsInvalid, nil
 }
 
-func (o *observer) terminate() error {
+func (*observer) terminate() error {
 	log.Error("the process will be terminated because the files are invalid")
 
 	p, err := os.FindProcess(os.Getpid())
@@ -388,7 +388,7 @@ func (o *observer) terminate() error {
 	return p.Signal(syscall.SIGTERM)
 }
 
-func (o *observer) requestBackup(ctx context.Context) error {
+func (o *observer) requestBackup(context.Context) error {
 	select {
 	case o.ch <- struct{}{}:
 	default:
