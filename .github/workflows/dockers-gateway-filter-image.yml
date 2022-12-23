@@ -56,24 +56,46 @@ on:
       - "pkg/gateway/internal/**"
       - "dockers/gateway/filter/Dockerfile"
       - "versions/GO_VERSION"
+  pull_request_target:
+    paths:
+      - ".github/actions/docker-build/actions.yaml"
+      - ".github/workflows/dockers-gateway-filter-image.yml"
+      - "go.mod"
+      - "go.sum"
+      - "internal/**"
+      - "!internal/**/*_test.go"
+      - "!internal/**/*_mock.go"
+      - "!internal/db/**"
+      - "!internal/k8s/**"
+      - "apis/grpc/**"
+      - "pkg/gateway/filter/**"
+      - "cmd/gateway/filter/**"
+      - "pkg/gateway/internal/**"
+      - "dockers/gateway/filter/Dockerfile"
+      - "versions/GO_VERSION"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}-${{ github.event_name }}
+  cancel-in-progress: true
 
 jobs:
   build:
     strategy:
       max-parallel: 4
     runs-on: ubuntu-latest
+    if: ${{ (github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == false) || (github.event.pull_request.head.repo.fork == true && github.event_name == 'pull_request_target' && contains(github.event.pull_request.labels.*.name, 'ci/approved')) }}
     steps:
       - uses: actions/checkout@v3
       - name: set git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
       - name: Setup QEMU
-        uses: docker/setup-qemu-action@v1
+        uses: docker/setup-qemu-action@v2
         with:
           platforms: all
       - name: Setup Docker Buildx
         id: buildx
-        uses: docker/setup-buildx-action@v1
+        uses: docker/setup-buildx-action@v2
         with:
           buildkitd-flags: "--debug"
       - name: Cache Docker layers
@@ -84,12 +106,12 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-buildx-vald-gateway-filter-
       - name: Login to DockerHub
-        uses: docker/login-action@v1
+        uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKERHUB_USER }}
           password: ${{ secrets.DOCKERHUB_PASS }}
       - name: Login to GitHub Container Registry
-        uses: docker/login-action@v1
+        uses: docker/login-action@v2
         with:
           registry: ghcr.io
           username: ${{ secrets.PACKAGE_USER }}

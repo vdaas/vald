@@ -4,12 +4,8 @@
     "title": "apis/proto/v1/discoverer/discoverer.proto",
     "version": "version not set"
   },
-  "consumes": [
-    "application/json"
-  ],
-  "produces": [
-    "application/json"
-  ],
+  "consumes": ["application/json"],
+  "produces": ["application/json"],
   "paths": {
     "/discover/nodes": {
       "post": {
@@ -39,9 +35,7 @@
             }
           }
         ],
-        "tags": [
-          "Discoverer"
-        ]
+        "tags": ["Discoverer"]
       }
     },
     "/discover/pods": {
@@ -72,9 +66,7 @@
             }
           }
         ],
-        "tags": [
-          "Discoverer"
-        ]
+        "tags": ["Discoverer"]
       }
     }
   },
@@ -252,15 +244,15 @@
       "properties": {
         "name": {
           "type": "string",
-          "description": "The agent name to be discover."
+          "description": "The agent name to be discovered."
         },
         "namespace": {
           "type": "string",
-          "description": "The namespace to be discover."
+          "description": "The namespace to be discovered."
         },
         "node": {
           "type": "string",
-          "description": "The node to be discover."
+          "description": "The node to be discovered."
         }
       },
       "description": "Represent the dicoverer request."

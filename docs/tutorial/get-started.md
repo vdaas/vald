@@ -407,21 +407,21 @@ If you are interested, please refer to [SDKs](../user-guides/sdks.md).<br>
         - Remove 400 indexed training datasets from the Vald agent.
             <details><summary>example code</summary><br>
 
-            ```go
-            for i := range ids [:insertCount] {
-                _, err := client.Remove(ctx, &payload.Remove_Request{
-                    Id: &payload.Object_ID{
-                        Id: ids[i],
-                    },
-                })
-                if err != nil {
-                    glg.Fatal(err)
-                }
-                if i%10 == 0 {
-                    glg.Infof("Removed %d", i)
-                }
-            }
-            ```
+          ```go
+          for i := range ids [:insertCount] {
+              _, err := client.Remove(ctx, &payload.Remove_Request{
+                  Id: &payload.Object_ID{
+                      Id: ids[i],
+                  },
+              })
+              if err != nil {
+                  glg.Fatal(err)
+              }
+              if i%10 == 0 {
+                  glg.Infof("Removed %d", i)
+              }
+          }
+          ```
 
             </details>
 

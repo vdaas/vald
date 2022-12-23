@@ -144,6 +144,16 @@
       "contributions": [
         "doc"
       ]
+    },
+    {
+      "login": "takuyaymd",
+      "name": "takuyaymd",
+      "avatar_url": "https://avatars.githubusercontent.com/u/49614391?v=4",
+      "profile": "https://github.com/takuyaymd",
+      "contributions": [
+        "bug",
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
@@ -153,5 +163,6 @@
   "projectOwner": "vdaas",
   "repoType": "github",
   "repoHost": "https://github.com",
-  "skipCi": true
+  "skipCi": true,
+  "commitConvention": "angular"
 }
