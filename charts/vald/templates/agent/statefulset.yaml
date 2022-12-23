@@ -258,6 +258,12 @@ spec:
         resources:
           requests:
             storage: {{ $agent.persistentVolume.size }}
+        {{- if $agent.persistentVolume.dataSource.enabled }}
+        dataSource:
+          name: {{ $agent.name }}-ds
+          kind: {{ $agent.persistentVolume.dataSource.kind }}
+          apiGroup: {{ $agent.persistentVolume.dataSource.apiGroup }}
+        {{- end }}
   {{- end }}
   {{- end }}
   {{- end }}

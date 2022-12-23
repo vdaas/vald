@@ -351,6 +351,15 @@ spec:
                       properties:
                         accessMode:
                           type: string
+                        dataSource:
+                          type: object
+                          properties:
+                            apiGroup:
+                              type: string
+                            enabled:
+                              type: boolean
+                            kind:
+                              type: string
                         enabled:
                           type: boolean
                         mountPropagation:

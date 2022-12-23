@@ -1471,6 +1471,17 @@ agent:
     # @schema {"name": "agent.persistentVolume.size", "type": "string"}
     # agent.persistentVolume.size -- size of agent pod volume
     size: 100Gi
+    # @schema {"name": "agent.persistentVolume.dataSource", "type": "object"}
+    dataSource:
+      # @schema {"name": "agent.persistentVolume.dataSource.enabled", "type": "boolean"}
+      # agent.persistentVolume.dataSource.enabled -- enables PVC DataSource.
+      enabled: false
+      # @schema {"name": "agent.persistentVolume.dataSource.kind", "type": "string"}
+      # agent.persistentVolume.dataSource.kind -- PVC DataSource kind.
+      kind: VolumeSnapshot
+      # @schema {"name": "agent.persistentVolume.dataSource.apiGroup", "type": "string"}
+      # agent.persistentVolume.dataSource.apiGroup -- PVC DataSource apiGroup.
+      apiGroup: snapshot.storage.k8s.io
   # @schema {"name": "agent.podPriority", "alias": "podPriority"}
   podPriority:
     # agent.podPriority.enabled -- agent pod PriorityClass enabled
