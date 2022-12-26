@@ -8,10 +8,10 @@ replace (
 	github.com/golang/protobuf => github.com/golang/protobuf v1.5.2
 	github.com/kpango/glg => github.com/kpango/glg v1.6.14
 	github.com/pkg/sftp => github.com/pkg/sftp v1.13.5
-	golang.org/x/crypto => golang.org/x/crypto v0.3.0
-	golang.org/x/net => golang.org/x/net v0.3.0
+	golang.org/x/crypto => golang.org/x/crypto v0.4.0
+	golang.org/x/net => golang.org/x/net v0.4.0
 	golang.org/x/text => golang.org/x/text v0.5.0
-	google.golang.org/genproto => google.golang.org/genproto v0.0.0-20221205194025-8222ab48f5fc
+	google.golang.org/genproto => google.golang.org/genproto v0.0.0-20221207170731-23e4bf6bdc37
 	google.golang.org/grpc => google.golang.org/grpc v1.51.0
 	google.golang.org/protobuf => google.golang.org/protobuf v1.28.1
 	gopkg.in/yaml.v2 => gopkg.in/yaml.v2 v2.4.0
@@ -23,7 +23,7 @@ require (
 	github.com/kpango/glg v1.6.14
 	github.com/vdaas/vald-client-go v1.6.3
 	gonum.org/v1/hdf5 v0.0.0-20210714002203-8c5d23bc6946
-	google.golang.org/grpc v1.50.1
+	google.golang.org/grpc v1.51.0
 )
 
 require (

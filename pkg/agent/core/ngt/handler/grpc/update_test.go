@@ -122,7 +122,17 @@ func Test_server_Update(t *testing.T) {
 					a.indexVector,
 				}
 			}
-			return buildIndex(ctx, request.Float, vector.Gaussian, insertNum, defaultInsertConfig, cfg, nil, []string{a.indexID}, overwriteVec)
+
+			eg, ctx := errgroup.New(ctx)
+			ngt, err := newIndexedNGTService(ctx, eg, request.Float, vector.Gaussian, insertNum, defaultInsertConfig, cfg, nil, []string{a.indexID}, overwriteVec)
+			if err != nil {
+				return nil, err
+			}
+			s, err := New(WithErrGroup(eg), WithNGT(ngt))
+			if err != nil {
+				return nil, err
+			}
+			return s, nil
 		}
 	}
 

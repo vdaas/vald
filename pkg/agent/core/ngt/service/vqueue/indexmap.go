@@ -19,39 +19,42 @@ import (
 	"unsafe"
 )
 
-type udim struct {
+type indexMap struct {
 	mu     sync.Mutex
 	read   atomic.Value
-	dirty  map[string]*entryUdim
+	dirty  map[string]*entryIndexMap
 	misses int
 }
 
-type readOnlyUdim struct {
-	m       map[string]*entryUdim
+type readOnlyIndexMap struct {
+	m       map[string]*entryIndexMap
 	amended bool
 }
 
 // skipcq: GSC-G103
-var expungedUdim = unsafe.Pointer(new(int64))
+var expungedIndexMap = unsafe.Pointer(new(index))
 
-type entryUdim struct {
+type entryIndexMap struct {
+	// skipcq: GSC-G103
 	p unsafe.Pointer
 }
 
-func newEntryUdim(i int64) *entryUdim {
+func newEntryIndexMap(i index) *entryIndexMap {
 	// skipcq: GSC-G103
-	return &entryUdim{p: unsafe.Pointer(&i)}
+	return &entryIndexMap{p: unsafe.Pointer(&i)}
 }
 
-func (m *udim) Load(key string) (value int64, ok bool) {
-	read, _ := m.read.Load().(readOnlyUdim)
+func (m *indexMap) Load(key string) (value index, ok bool) {
+	read, _ := m.read.Load().(readOnlyIndexMap)
 	e, ok := read.m[key]
 	if !ok && read.amended {
 		m.mu.Lock()
-		read, _ = m.read.Load().(readOnlyUdim)
+
+		read, _ = m.read.Load().(readOnlyIndexMap)
 		e, ok = read.m[key]
 		if !ok && read.amended {
 			e, ok = m.dirty[key]
+
 			m.missLocked()
 		}
 		m.mu.Unlock()
@@ -62,22 +65,22 @@ func (m *udim) Load(key string) (value int64, ok bool) {
 	return e.load()
 }
 
-func (e *entryUdim) load() (value int64, ok bool) {
+func (e *entryIndexMap) load() (value index, ok bool) {
 	p := atomic.LoadPointer(&e.p)
-	if p == nil || p == expungedUdim {
+	if p == nil || p == expungedIndexMap {
 		return value, false
 	}
-	return *(*int64)(p), true
+	return *(*index)(p), true
 }
 
-func (m *udim) Store(key string, value int64) {
-	read, _ := m.read.Load().(readOnlyUdim)
+func (m *indexMap) Store(key string, value index) {
+	read, _ := m.read.Load().(readOnlyIndexMap)
 	if e, ok := read.m[key]; ok && e.tryStore(&value) {
 		return
 	}
 
 	m.mu.Lock()
-	read, _ = m.read.Load().(readOnlyUdim)
+	read, _ = m.read.Load().(readOnlyIndexMap)
 	if e, ok := read.m[key]; ok {
 		if e.unexpungeLocked() {
 			m.dirty[key] = e
@@ -87,18 +90,19 @@ func (m *udim) Store(key string, value int64) {
 		e.storeLocked(&value)
 	} else {
 		if !read.amended {
+
 			m.dirtyLocked()
-			m.read.Store(readOnlyUdim{m: read.m, amended: true})
+			m.read.Store(readOnlyIndexMap{m: read.m, amended: true})
 		}
-		m.dirty[key] = newEntryUdim(value)
+		m.dirty[key] = newEntryIndexMap(value)
 	}
 	m.mu.Unlock()
 }
 
-func (e *entryUdim) tryStore(i *int64) bool {
+func (e *entryIndexMap) tryStore(i *index) bool {
 	for {
 		p := atomic.LoadPointer(&e.p)
-		if p == expungedUdim {
+		if p == expungedIndexMap {
 			return false
 		}
 		// skipcq: GSC-G103
@@ -108,17 +112,17 @@ func (e *entryUdim) tryStore(i *int64) bool {
 	}
 }
 
-func (e *entryUdim) unexpungeLocked() (wasExpunged bool) {
-	return atomic.CompareAndSwapPointer(&e.p, expungedUdim, nil)
+func (e *entryIndexMap) unexpungeLocked() (wasExpunged bool) {
+	return atomic.CompareAndSwapPointer(&e.p, expungedIndexMap, nil)
 }
 
-func (e *entryUdim) storeLocked(i *int64) {
+func (e *entryIndexMap) storeLocked(i *index) {
 	// skipcq: GSC-G103
 	atomic.StorePointer(&e.p, unsafe.Pointer(i))
 }
 
-func (m *udim) LoadOrStore(key string, value int64) (actual int64, loaded bool) {
-	read, _ := m.read.Load().(readOnlyUdim)
+func (m *indexMap) LoadOrStore(key string, value index) (actual index, loaded bool) {
+	read, _ := m.read.Load().(readOnlyIndexMap)
 	if e, ok := read.m[key]; ok {
 		actual, loaded, ok := e.tryLoadOrStore(value)
 		if ok {
@@ -127,7 +131,7 @@ func (m *udim) LoadOrStore(key string, value int64) (actual int64, loaded bool) 
 	}
 
 	m.mu.Lock()
-	read, _ = m.read.Load().(readOnlyUdim)
+	read, _ = m.read.Load().(readOnlyIndexMap)
 	if e, ok := read.m[key]; ok {
 		if e.unexpungeLocked() {
 			m.dirty[key] = e
@@ -140,9 +144,9 @@ func (m *udim) LoadOrStore(key string, value int64) (actual int64, loaded bool) 
 		if !read.amended {
 
 			m.dirtyLocked()
-			m.read.Store(readOnlyUdim{m: read.m, amended: true})
+			m.read.Store(readOnlyIndexMap{m: read.m, amended: true})
 		}
-		m.dirty[key] = newEntryUdim(value)
+		m.dirty[key] = newEntryIndexMap(value)
 		actual, loaded = value, false
 	}
 	m.mu.Unlock()
@@ -150,37 +154,38 @@ func (m *udim) LoadOrStore(key string, value int64) (actual int64, loaded bool) 
 	return actual, loaded
 }
 
-func (e *entryUdim) tryLoadOrStore(i int64) (actual int64, loaded, ok bool) {
+func (e *entryIndexMap) tryLoadOrStore(i index) (actual index, loaded, ok bool) {
 	p := atomic.LoadPointer(&e.p)
-	if p == expungedUdim {
+	if p == expungedIndexMap {
 		return actual, false, false
 	}
 	if p != nil {
-		return *(*int64)(p), true, true
+		return *(*index)(p), true, true
 	}
 
 	ic := i
 	for {
+
 		// skipcq: GSC-G103
 		if atomic.CompareAndSwapPointer(&e.p, nil, unsafe.Pointer(&ic)) {
 			return i, false, true
 		}
 		p = atomic.LoadPointer(&e.p)
-		if p == expungedUdim {
+		if p == expungedIndexMap {
 			return actual, false, false
 		}
 		if p != nil {
-			return *(*int64)(p), true, true
+			return *(*index)(p), true, true
 		}
 	}
 }
 
-func (m *udim) LoadAndDelete(key string) (value int64, loaded bool) {
-	read, _ := m.read.Load().(readOnlyUdim)
+func (m *indexMap) LoadAndDelete(key string) (value index, loaded bool) {
+	read, _ := m.read.Load().(readOnlyIndexMap)
 	e, ok := read.m[key]
 	if !ok && read.amended {
 		m.mu.Lock()
-		read, _ = m.read.Load().(readOnlyUdim)
+		read, _ = m.read.Load().(readOnlyIndexMap)
 		e, ok = read.m[key]
 		if !ok && read.amended {
 			e, ok = m.dirty[key]
@@ -196,30 +201,30 @@ func (m *udim) LoadAndDelete(key string) (value int64, loaded bool) {
 	return value, false
 }
 
-func (m *udim) Delete(key string) {
+func (m *indexMap) Delete(key string) {
 	m.LoadAndDelete(key)
 }
 
-func (e *entryUdim) delete() (value int64, ok bool) {
+func (e *entryIndexMap) delete() (value index, ok bool) {
 	for {
 		p := atomic.LoadPointer(&e.p)
-		if p == nil || p == expungedUdim {
+		if p == nil || p == expungedIndexMap {
 			return value, false
 		}
 		if atomic.CompareAndSwapPointer(&e.p, p, nil) {
-			return *(*int64)(p), true
+			return *(*index)(p), true
 		}
 	}
 }
 
-func (m *udim) Range(f func(key string, value int64) bool) {
-	read, _ := m.read.Load().(readOnlyUdim)
+func (m *indexMap) Range(f func(key string, value index) bool) {
+	read, _ := m.read.Load().(readOnlyIndexMap)
 	if read.amended {
 
 		m.mu.Lock()
-		read, _ = m.read.Load().(readOnlyUdim)
+		read, _ = m.read.Load().(readOnlyIndexMap)
 		if read.amended {
-			read = readOnlyUdim{m: m.dirty}
+			read = readOnlyIndexMap{m: m.dirty}
 			m.read.Store(read)
 			m.dirty = nil
 			m.misses = 0
@@ -238,23 +243,23 @@ func (m *udim) Range(f func(key string, value int64) bool) {
 	}
 }
 
-func (m *udim) missLocked() {
+func (m *indexMap) missLocked() {
 	m.misses++
 	if m.misses < len(m.dirty) {
 		return
 	}
-	m.read.Store(readOnlyUdim{m: m.dirty})
+	m.read.Store(readOnlyIndexMap{m: m.dirty})
 	m.dirty = nil
 	m.misses = 0
 }
 
-func (m *udim) dirtyLocked() {
+func (m *indexMap) dirtyLocked() {
 	if m.dirty != nil {
 		return
 	}
 
-	read, _ := m.read.Load().(readOnlyUdim)
-	m.dirty = make(map[string]*entryUdim, len(read.m))
+	read, _ := m.read.Load().(readOnlyIndexMap)
+	m.dirty = make(map[string]*entryIndexMap, len(read.m))
 	for k, e := range read.m {
 		if !e.tryExpungeLocked() {
 			m.dirty[k] = e
@@ -262,13 +267,13 @@ func (m *udim) dirtyLocked() {
 	}
 }
 
-func (e *entryUdim) tryExpungeLocked() (isExpunged bool) {
+func (e *entryIndexMap) tryExpungeLocked() (isExpunged bool) {
 	p := atomic.LoadPointer(&e.p)
 	for p == nil {
-		if atomic.CompareAndSwapPointer(&e.p, nil, expungedUdim) {
+		if atomic.CompareAndSwapPointer(&e.p, nil, expungedIndexMap) {
 			return true
 		}
 		p = atomic.LoadPointer(&e.p)
 	}
-	return p == expungedUdim
+	return p == expungedIndexMap
 }
