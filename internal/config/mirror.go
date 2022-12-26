@@ -39,5 +39,10 @@ func (m *Mirror) Bind() *Mirror {
 	} else {
 		m.Mirror = new(GRPCClient).Bind()
 	}
+	if m.SelfMirror != nil {
+		m.SelfMirror = m.SelfMirror.Bind()
+	} else {
+		m.SelfMirror = new(GRPCClient).Bind()
+	}
 	return m
 }
