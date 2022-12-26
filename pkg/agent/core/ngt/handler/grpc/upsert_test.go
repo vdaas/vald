@@ -125,7 +125,17 @@ func Test_server_Upsert(t *testing.T) {
 					opt.vec,
 				}
 			}
-			return buildIndex(ctx, request.Float, vector.Gaussian, insertNum, defaultInsertConfig, cfg, nil, overwriteID, overwriteVec)
+
+			eg, ctx := errgroup.New(ctx)
+			ngt, err := newIndexedNGTService(ctx, eg, request.Float, vector.Gaussian, insertNum, defaultInsertConfig, cfg, nil, overwriteID, overwriteVec)
+			if err != nil {
+				return nil, err
+			}
+			s, err := New(WithErrGroup(eg), WithNGT(ngt))
+			if err != nil {
+				return nil, err
+			}
+			return s, nil
 		}
 	}
 
