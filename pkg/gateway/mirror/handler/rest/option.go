@@ -17,13 +17,13 @@
 // Package rest provides rest api logic
 package rest
 
-import "github.com/vdaas/vald/apis/grpc/v1/vald"
+import "github.com/vdaas/vald/apis/grpc/v1/mirror"
 
 type Option func(*handler)
 
 var defaultOptions = []Option{}
 
-func WithVald(v vald.Server) Option {
+func WithVald(v mirror.Server) Option {
 	return func(h *handler) {
 		h.vald = v
 	}

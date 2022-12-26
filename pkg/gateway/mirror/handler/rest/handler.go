@@ -20,13 +20,15 @@ package rest
 import (
 	"net/http"
 
+	"github.com/vdaas/vald/apis/grpc/v1/mirror"
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
-	"github.com/vdaas/vald/apis/grpc/v1/vald"
 	"github.com/vdaas/vald/internal/net/http/dump"
 	"github.com/vdaas/vald/internal/net/http/json"
 )
 
 type Handler interface {
+	Register(w http.ResponseWriter, r *http.Request) (int, error)
+	Advertise(w http.ResponseWriter, r *http.Request) (int, error)
 	Index(w http.ResponseWriter, r *http.Request) (int, error)
 	Exists(w http.ResponseWriter, r *http.Request) (int, error)
 	Search(w http.ResponseWriter, r *http.Request) (int, error)
@@ -49,7 +51,7 @@ type Handler interface {
 }
 
 type handler struct {
-	vald vald.Server
+	vald mirror.Server
 }
 
 func New(opts ...Option) Handler {
@@ -59,6 +61,20 @@ func New(opts ...Option) Handler {
 		opt(h)
 	}
 	return h
+}
+
+func (h *handler) Register(w http.ResponseWriter, r *http.Request) (code int, err error) {
+	var req *payload.Mirror_Targets
+	return json.Handler(w, r, &req, func() (interface{}, error) {
+		return h.vald.Register(r.Context(), req)
+	})
+}
+
+func (h *handler) Advertise(w http.ResponseWriter, r *http.Request) (code int, err error) {
+	var req *payload.Mirror_Targets
+	return json.Handler(w, r, &req, func() (interface{}, error) {
+		return h.vald.Advertise(r.Context(), req)
+	})
 }
 
 func (h *handler) Index(w http.ResponseWriter, r *http.Request) (int, error) {
