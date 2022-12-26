@@ -4,8 +4,12 @@
     "title": "apis/proto/v1/filter/ingress/ingress_filter.proto",
     "version": "version not set"
   },
-  "consumes": ["application/json"],
-  "produces": ["application/json"],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
   "paths": {
     "/filter/ingress/object": {
       "post": {
@@ -35,7 +39,9 @@
             }
           }
         ],
-        "tags": ["Filter"]
+        "tags": [
+          "Filter"
+        ]
       }
     },
     "/filter/ingress/vector": {
@@ -66,7 +72,9 @@
             }
           }
         ],
-        "tags": ["Filter"]
+        "tags": [
+          "Filter"
+        ]
       }
     }
   },

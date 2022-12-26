@@ -4,8 +4,12 @@
     "title": "apis/proto/v1/agent/core/agent.proto",
     "version": "version not set"
   },
-  "consumes": ["application/json"],
-  "produces": ["application/json"],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
   "paths": {
     "/index/create": {
       "get": {
@@ -35,7 +39,9 @@
             "format": "int64"
           }
         ],
-        "tags": ["Agent"]
+        "tags": [
+          "Agent"
+        ]
       }
     },
     "/index/createandsave": {
@@ -66,7 +72,9 @@
             "format": "int64"
           }
         ],
-        "tags": ["Agent"]
+        "tags": [
+          "Agent"
+        ]
       }
     },
     "/index/info": {
@@ -87,7 +95,9 @@
             }
           }
         },
-        "tags": ["Agent"]
+        "tags": [
+          "Agent"
+        ]
       }
     },
     "/index/save": {
@@ -108,7 +118,9 @@
             }
           }
         },
-        "tags": ["Agent"]
+        "tags": [
+          "Agent"
+        ]
       }
     }
   },
