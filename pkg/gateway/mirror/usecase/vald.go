@@ -43,7 +43,7 @@ type run struct {
 	eg            errgroup.Group
 	cfg           *config.Data
 	server        starter.Server
-	vald          vclient.Client
+	lbc           vclient.Client
 	gateway       service.Gateway
 	observability observability.Observability
 }
@@ -65,15 +65,29 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		return nil, err
 	}
 
-	vcOpts, err := cfg.Mirror.LB.Opts()
+	selfMcOpts, err := cfg.Mirror.SelfMirror.Opts()
 	if err != nil {
 		return nil, err
 	}
-	vcOpts = append(vcOpts, grpc.WithErrGroup(eg))
+	selfMcOpts = append(selfMcOpts, grpc.WithErrGroup(eg))
 
-	vc, err := vclient.New(
+	selfMc, err := mclient.New(
+		mclient.WithAddrs(cfg.Mirror.SelfMirror.Addrs...),
+		mclient.WithClient(grpc.New(selfMcOpts...)),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	lbcOpts, err := cfg.Mirror.LB.Opts()
+	if err != nil {
+		return nil, err
+	}
+	lbcOpts = append(lbcOpts, grpc.WithErrGroup(eg))
+
+	lbc, err := vclient.New(
 		vclient.WithAddrs(cfg.Mirror.LB.Addrs...),
-		vclient.WithClient(grpc.New(vcOpts...)),
+		vclient.WithClient(grpc.New(lbcOpts...)),
 	)
 	if err != nil {
 		return nil, err
@@ -81,6 +95,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 
 	gateway, err := service.NewGateway(
 		service.WithErrGroup(eg),
+		service.WithSelfMirror(selfMc),
 		service.WithMirror(mc),
 	)
 	if err != nil {
@@ -88,7 +103,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	}
 
 	v := handler.New(
-		handler.WithValdClient(vc),
+		handler.WithValdClient(lbc),
 		handler.WithErrGroup(eg),
 		handler.WithGateway(gateway),
 		handler.WithStreamConcurrency(cfg.Server.GetGRPCStreamConcurrency()),
@@ -142,7 +157,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		eg:            eg,
 		cfg:           cfg,
 		server:        srv,
-		vald:          vc,
+		lbc:           lbc,
 		gateway:       gateway,
 		observability: obs,
 	}, nil
@@ -157,7 +172,7 @@ func (r *run) PreStart(ctx context.Context) error {
 
 func (r *run) Start(ctx context.Context) (<-chan error, error) {
 	ech := make(chan error, 6)
-	var gech, vech, sech, oech <-chan error
+	var gech, lech, sech, oech <-chan error
 	var err error
 	if r.gateway != nil {
 		gech, err = r.gateway.Start(ctx)
@@ -166,8 +181,8 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 			return nil, err
 		}
 	}
-	if r.vald != nil {
-		vech, err = r.vald.Start(ctx)
+	if r.lbc != nil {
+		lech, err = r.lbc.Start(ctx)
 		if err != nil {
 			close(ech)
 			return nil, err
@@ -187,7 +202,7 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 			case err = <-oech:
 			case err = <-gech:
 			case err = <-sech:
-			case err = <-vech:
+			case err = <-lech:
 			}
 			if err != nil {
 				select {

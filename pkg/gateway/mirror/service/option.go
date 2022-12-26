@@ -37,6 +37,15 @@ func WithMirror(c mirror.Client) Option {
 	}
 }
 
+func WithSelfMirror(c mirror.Client) Option {
+	return func(g *gateway) error {
+		if c != nil {
+			g.iclient = c
+		}
+		return nil
+	}
+}
+
 func WithErrGroup(eg errgroup.Group) Option {
 	return func(g *gateway) error {
 		if eg != nil {
