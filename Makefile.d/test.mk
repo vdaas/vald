@@ -42,7 +42,7 @@ $(GOPATH)bin/gotests:
 
 ## run tests for cmd, internal, pkg
 test:
-	go test -shuffle=on -race -mod=readonly -cover -timeout=30m ./cmd/... ./internal/... ./pkg/...
+	go test -short -shuffle=on -race -mod=readonly -cover -timeout=$(GOTEST_TIMEOUT) ./cmd/... ./internal/... ./pkg/...
 
 .PHONY: test/tparse
 ## run tests for cmd, internal, pkg and show table
@@ -50,7 +50,7 @@ test/tparse: \
         tparse/install
 	set -euo pipefail
 	rm -rf "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json"
-	go test -shuffle=on -race -mod=readonly -json -cover -timeout=30m ./cmd/... ./internal/... ./pkg/... \
+	go test -short -shuffle=on -race -mod=readonly -json -cover -timeout=$(GOTEST_TIMEOUT) ./cmd/... ./internal/... ./pkg/... \
 	| tee "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json" \
 	| tparse -pass -notests
 
@@ -60,7 +60,7 @@ test/cmd/tparse: \
         tparse/install
 	set -euo pipefail
 	rm -rf "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json"
-	go test -shuffle=on -race -mod=readonly -json -cover -timeout=30m ./cmd/... \
+	go test -short -shuffle=on -race -mod=readonly -json -cover -timeout=$(GOTEST_TIMEOUT) ./cmd/... \
 	| tee "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json" \
 	| tparse -pass -notests
 
@@ -70,7 +70,7 @@ test/internal/tparse: \
         tparse/install
 	set -euo pipefail
 	rm -rf "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json"
-	go test -shuffle=on -race -mod=readonly -json -cover -timeout=30m ./internal/... \
+	go test -short -shuffle=on -race -mod=readonly -json -cover -timeout=$(GOTEST_TIMEOUT) ./internal/... \
 	| tee "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json" \
 	| tparse -pass -notests
 
@@ -80,7 +80,7 @@ test/pkg/tparse: \
         tparse/install
 	set -euo pipefail
 	rm -rf "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json"
-	go test -shuffle=on -race -mod=readonly -json -cover -timeout=30m ./pkg/... \
+	go test -short -shuffle=on -race -mod=readonly -json -cover -timeout=$(GOTEST_TIMEOUT) ./pkg/... \
 	| tee "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json" \
 	| tparse -pass -notests
 
@@ -90,7 +90,7 @@ test/hack/tparse: \
         tparse/install
 	set -euo pipefail
 	rm -rf "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json"
-	go test -shuffle=on -race -mod=readonly -json -cover \
+	go test -short -shuffle=on -race -mod=readonly -json -cover \
 		./hack/gorules/... \
 		./hack/helm/... \
 		./hack/license/... \
@@ -104,7 +104,7 @@ test/all/tparse: \
         tparse/install
 	set -euo pipefail
 	rm -rf "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json"
-	go test -shuffle=on -race -mod=readonly -json -cover -timeout=30m ./... \
+	go test -short -shuffle=on -race -mod=readonly -json -cover -timeout=$(GOTEST_TIMEOUT) ./... \
 	| tee "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json" \
 	| tparse -pass -notests
 
@@ -114,7 +114,7 @@ test/gotestfmt: \
         gotestfmt/install
 	set -euo pipefail
 	rm -rf "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json"
-	go test -shuffle=on -race -mod=readonly -json -cover -timeout=30m ./cmd/... ./internal/... ./pkg/... \
+	go test -short -shuffle=on -race -mod=readonly -json -cover -timeout=$(GOTEST_TIMEOUT) ./cmd/... ./internal/... ./pkg/... \
 	| tee "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json" \
 	| gotestfmt -showteststatus
 
@@ -124,7 +124,7 @@ test/cmd/gotestfmt: \
         gotestfmt/install
 	set -euo pipefail
 	rm -rf "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json"
-	go test -shuffle=on -race -mod=readonly -json -cover -timeout=30m ./cmd/... \
+	go test -short -shuffle=on -race -mod=readonly -json -cover -timeout=$(GOTEST_TIMEOUT) ./cmd/... \
 	| tee "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json" \
 	| gotestfmt -showteststatus
 
@@ -134,7 +134,7 @@ test/internal/gotestfmt: \
         gotestfmt/install
 	set -euo pipefail
 	rm -rf "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json"
-	go test -shuffle=on -race -mod=readonly -json -cover -timeout=30m ./internal/... \
+	go test -short -shuffle=on -race -mod=readonly -json -cover -timeout=$(GOTEST_TIMEOUT) ./internal/... \
 	| tee "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json" \
 	| gotestfmt -showteststatus
 
@@ -144,7 +144,7 @@ test/pkg/gotestfmt: \
         gotestfmt/install
 	set -euo pipefail
 	rm -rf "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json"
-	go test -shuffle=on -race -mod=readonly -json -cover -timeout=30m ./pkg/... \
+	go test -short -shuffle=on -race -mod=readonly -json -cover -timeout=$(GOTEST_TIMEOUT) ./pkg/... \
 	| tee "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json" \
 	| gotestfmt -showteststatus
 
@@ -154,7 +154,7 @@ test/hack/gotestfmt: \
         gotestfmt/install
 	set -euo pipefail
 	rm -rf "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json"
-	go test -shuffle=on -race -mod=readonly -json -cover \
+	go test -short -shuffle=on -race -mod=readonly -json -cover \
 		./hack/gorules/... \
 		./hack/helm/... \
 		./hack/license/... \
@@ -168,29 +168,29 @@ test/all/gotestfmt: \
         gotestfmt/install
 	set -euo pipefail
 	rm -rf "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json"
-	go test -shuffle=on -race -mod=readonly -json -cover -timeout=30m ./... \
+	go test -short -shuffle=on -race -mod=readonly -json -cover -timeout=$(GOTEST_TIMEOUT) ./... \
 	| tee "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json" \
 	| gotestfmt -showteststatus
 
 .PHONY: test/pkg
 ## run tests for pkg
 test/pkg:
-	go test -shuffle=on -race -mod=readonly -cover ./pkg/...
+	go test -short -shuffle=on -race -mod=readonly -cover ./pkg/...
 
 .PHONY: test/internal
 ## run tests for internal
 test/internal:
-	go test -shuffle=on -race -mod=readonly -cover ./internal/...
+	go test -short -shuffle=on -race -mod=readonly -cover ./internal/...
 
 .PHONY: test/cmd
 ## run tests for cmd
 test/cmd:
-	go test -shuffle=on -race -mod=readonly -cover ./cmd/...
+	go test -short -shuffle=on -race -mod=readonly -cover ./cmd/...
 
 .PHONY: test/hack
 ## run tests for hack
 test/hack:
-	go test -shuffle=on -race -mod=readonly -cover \
+	go test -short -shuffle=on -race -mod=readonly -cover \
 		./hack/gorules... \
 		./hack/helm/... \
 		./hack/license/...\
@@ -199,12 +199,12 @@ test/hack:
 .PHONY: test/all
 ## run tests for all Go codes
 test/all:
-	go test -shuffle=on -race -mod=readonly -cover ./...
+	go test -short -shuffle=on -race -mod=readonly -cover ./...
 
 .PHONY: coverage
 ## calculate coverages
 coverage:
-	go test -shuffle=on -race -mod=readonly -v -race -covermode=atomic -timeout=30m -coverprofile=coverage.out ./...
+	go test -short -shuffle=on -race -mod=readonly -v -race -covermode=atomic -timeout=$(GOTEST_TIMEOUT) -coverprofile=coverage.out ./...
 	go tool cover -html=coverage.out -o coverage.html
 
 .PHONY: gotests/gen

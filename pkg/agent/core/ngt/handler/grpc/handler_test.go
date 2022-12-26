@@ -41,16 +41,10 @@ func TestMain(m *testing.M) {
 	goleak.VerifyTestMain(m)
 }
 
-func buildIndex(ctx context.Context, t request.ObjectType, dist vector.Distribution, num int, insertCfg *payload.Insert_Config,
+func newIndexedNGTService(ctx context.Context, eg errgroup.Group, t request.ObjectType, dist vector.Distribution, num int, insertCfg *payload.Insert_Config,
 	ngtCfg *config.NGT, ngtOpts []service.Option, overwriteIDs []string, overwriteVectors [][]float32,
-) (Server, error) {
-	eg, ctx := errgroup.New(ctx)
+) (service.NGT, error) {
 	ngt, err := service.New(ngtCfg, append(ngtOpts, service.WithErrGroup(eg), service.WithEnableInMemoryMode(true))...)
-	if err != nil {
-		return nil, err
-	}
-
-	s, err := New(WithErrGroup(eg), WithNGT(ngt))
 	if err != nil {
 		return nil, err
 	}
@@ -73,17 +67,19 @@ func buildIndex(ctx context.Context, t request.ObjectType, dist vector.Distribut
 		}
 
 		// insert and create index
-		if _, err := s.MultiInsert(ctx, reqs); err != nil {
-			return nil, err
+		for _, req := range reqs.GetRequests() {
+			err := ngt.Insert(req.GetVector().GetId(), req.GetVector().GetVector())
+			if err != nil {
+				return nil, err
+			}
 		}
-		if _, err := s.CreateIndex(ctx, &payload.Control_CreateIndexRequest{
-			PoolSize: 100,
-		}); err != nil {
+		err = ngt.CreateIndex(ctx, 1000)
+		if err != nil {
 			return nil, err
 		}
 	}
 
-	return s, nil
+	return ngt, nil
 }
 
 func TestNew(t *testing.T) {

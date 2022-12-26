@@ -20,10 +20,8 @@ package vqueue
 import (
 	"context"
 	"reflect"
-	"sync/atomic"
 	"testing"
 
-	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/test/goleak"
 )
@@ -41,8 +39,8 @@ func TestNew(t *testing.T) {
 		args       args
 		want       want
 		checkFunc  func(want, Queue, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, got Queue, err error) error {
 		if !errors.Is(err, w.err) {
@@ -63,6 +61,12 @@ func TestNew(t *testing.T) {
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -76,6 +80,12 @@ func TestNew(t *testing.T) {
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -87,10 +97,10 @@ func TestNew(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -105,18 +115,6 @@ func TestNew(t *testing.T) {
 	}
 }
 
-type uiimNoLock struct {
-	read   atomic.Value
-	dirty  map[string]*entryUiim
-	misses int
-}
-
-type udimNoLock struct {
-	read   atomic.Value
-	dirty  map[string]*entryUdim
-	misses int
-}
-
 func Test_vqueue_PushInsert(t *testing.T) {
 	type args struct {
 		uuid   string
@@ -124,13 +122,10 @@ func Test_vqueue_PushInsert(t *testing.T) {
 		date   int64
 	}
 	type fields struct {
-		uii      []index
-		uiim     uiimNoLock
-		udk      []key
-		udim     udimNoLock
-		eg       errgroup.Group
-		iBufSize int
-		dBufSize int
+		il indexMap
+		dl indexMap
+		ic uint64
+		dc uint64
 	}
 	type want struct {
 		err error
@@ -141,8 +136,8 @@ func Test_vqueue_PushInsert(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -161,20 +156,19 @@ func Test_vqueue_PushInsert(t *testing.T) {
 		           date: 0,
 		       },
 		       fields: fields {
-		           ich: nil,
-		           uii: nil,
-		           uiim: uiimNoLock{},
-		           dch: nil,
-		           udk: nil,
-		           udim: udimNoLock{},
-		           eg: nil,
-		           ichSize: 0,
-		           dchSize: 0,
-		           iBufSize: 0,
-		           dBufSize: 0,
+		           il: indexMap{},
+		           dl: indexMap{},
+		           ic: 0,
+		           dc: 0,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -189,20 +183,19 @@ func Test_vqueue_PushInsert(t *testing.T) {
 		           date: 0,
 		           },
 		           fields: fields {
-		           ich: nil,
-		           uii: nil,
-		           uiim: uiimNoLock{},
-		           dch: nil,
-		           udk: nil,
-		           udim: udimNoLock{},
-		           eg: nil,
-		           ichSize: 0,
-		           dchSize: 0,
-		           iBufSize: 0,
-		           dBufSize: 0,
+		           il: indexMap{},
+		           dl: indexMap{},
+		           ic: 0,
+		           dc: 0,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -214,31 +207,20 @@ func Test_vqueue_PushInsert(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
 			v := &vqueue{
-				uii: test.fields.uii,
-				uiim: uiim{
-					read:   test.fields.uiim.read,
-					dirty:  test.fields.uiim.dirty,
-					misses: test.fields.uiim.misses,
-				},
-				udk: test.fields.udk,
-				udim: udim{
-					read:   test.fields.udim.read,
-					dirty:  test.fields.udim.dirty,
-					misses: test.fields.udim.misses,
-				},
-				eg:       test.fields.eg,
-				iBufSize: test.fields.iBufSize,
-				dBufSize: test.fields.dBufSize,
+				il: test.fields.il,
+				dl: test.fields.dl,
+				ic: test.fields.ic,
+				dc: test.fields.dc,
 			}
 
 			err := v.PushInsert(test.args.uuid, test.args.vector, test.args.date)
@@ -255,13 +237,10 @@ func Test_vqueue_PushDelete(t *testing.T) {
 		date int64
 	}
 	type fields struct {
-		uii      []index
-		uiim     uiimNoLock
-		udk      []key
-		udim     udimNoLock
-		eg       errgroup.Group
-		iBufSize int
-		dBufSize int
+		il indexMap
+		dl indexMap
+		ic uint64
+		dc uint64
 	}
 	type want struct {
 		err error
@@ -272,8 +251,8 @@ func Test_vqueue_PushDelete(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -291,20 +270,19 @@ func Test_vqueue_PushDelete(t *testing.T) {
 		           date: 0,
 		       },
 		       fields: fields {
-		           ich: nil,
-		           uii: nil,
-		           uiim: uiimNoLock{},
-		           dch: nil,
-		           udk: nil,
-		           udim: udimNoLock{},
-		           eg: nil,
-		           ichSize: 0,
-		           dchSize: 0,
-		           iBufSize: 0,
-		           dBufSize: 0,
+		           il: indexMap{},
+		           dl: indexMap{},
+		           ic: 0,
+		           dc: 0,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -318,20 +296,19 @@ func Test_vqueue_PushDelete(t *testing.T) {
 		           date: 0,
 		           },
 		           fields: fields {
-		           ich: nil,
-		           uii: nil,
-		           uiim: uiimNoLock{},
-		           dch: nil,
-		           udk: nil,
-		           udim: udimNoLock{},
-		           eg: nil,
-		           ichSize: 0,
-		           dchSize: 0,
-		           iBufSize: 0,
-		           dBufSize: 0,
+		           il: indexMap{},
+		           dl: indexMap{},
+		           ic: 0,
+		           dc: 0,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -343,285 +320,24 @@ func Test_vqueue_PushDelete(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
 			v := &vqueue{
-				uii: test.fields.uii,
-				uiim: uiim{
-					read:   test.fields.uiim.read,
-					dirty:  test.fields.uiim.dirty,
-					misses: test.fields.uiim.misses,
-				},
-				udk: test.fields.udk,
-				udim: udim{
-					read:   test.fields.udim.read,
-					dirty:  test.fields.udim.dirty,
-					misses: test.fields.udim.misses,
-				},
-				eg:       test.fields.eg,
-				iBufSize: test.fields.iBufSize,
-				dBufSize: test.fields.dBufSize,
+				il: test.fields.il,
+				dl: test.fields.dl,
+				ic: test.fields.ic,
+				dc: test.fields.dc,
 			}
 
 			err := v.PushDelete(test.args.uuid, test.args.date)
 			if err := checkFunc(test.want, err); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
-
-func Test_vqueue_RangePopInsert(t *testing.T) {
-	type args struct {
-		ctx context.Context
-		now int64
-		f   func(uuid string, vector []float32) bool
-	}
-	type fields struct {
-		uii      []index
-		uiim     uiimNoLock
-		udk      []key
-		udim     udimNoLock
-		eg       errgroup.Group
-		iBufSize int
-		dBufSize int
-	}
-	type want struct{}
-	type test struct {
-		name       string
-		args       args
-		fields     fields
-		want       want
-		checkFunc  func(want) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-	defaultCheckFunc := func(w want) error {
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx: nil,
-		           f: nil,
-		       },
-		       fields: fields {
-		           ich: nil,
-		           uii: nil,
-		           uiim: uiimNoLock{},
-		           dch: nil,
-		           udk: nil,
-		           udim: udimNoLock{},
-		           eg: nil,
-		           ichSize: 0,
-		           dchSize: 0,
-		           iBufSize: 0,
-		           dBufSize: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ctx: nil,
-		           f: nil,
-		           },
-		           fields: fields {
-		           ich: nil,
-		           uii: nil,
-		           uiim: uiimNoLock{},
-		           dch: nil,
-		           udk: nil,
-		           udim: udimNoLock{},
-		           eg: nil,
-		           ichSize: 0,
-		           dchSize: 0,
-		           iBufSize: 0,
-		           dBufSize: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-			checkFunc := test.checkFunc
-			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
-			}
-			v := &vqueue{
-				uii: test.fields.uii,
-				uiim: uiim{
-					read:   test.fields.uiim.read,
-					dirty:  test.fields.uiim.dirty,
-					misses: test.fields.uiim.misses,
-				},
-				udk: test.fields.udk,
-				udim: udim{
-					read:   test.fields.udim.read,
-					dirty:  test.fields.udim.dirty,
-					misses: test.fields.udim.misses,
-				},
-				eg:       test.fields.eg,
-				iBufSize: test.fields.iBufSize,
-				dBufSize: test.fields.dBufSize,
-			}
-
-			v.RangePopInsert(test.args.ctx, test.args.now, test.args.f)
-			if err := checkFunc(test.want); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
-
-func Test_vqueue_RangePopDelete(t *testing.T) {
-	type args struct {
-		ctx context.Context
-		now int64
-		f   func(uuid string) bool
-	}
-	type fields struct {
-		uii      []index
-		uiim     uiimNoLock
-		udk      []key
-		udim     udimNoLock
-		eg       errgroup.Group
-		iBufSize int
-		dBufSize int
-	}
-	type want struct{}
-	type test struct {
-		name       string
-		args       args
-		fields     fields
-		want       want
-		checkFunc  func(want) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-	defaultCheckFunc := func(w want) error {
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx: nil,
-		           f: nil,
-		       },
-		       fields: fields {
-		           ich: nil,
-		           uii: nil,
-		           uiim: uiimNoLock{},
-		           dch: nil,
-		           udk: nil,
-		           udim: udimNoLock{},
-		           eg: nil,
-		           ichSize: 0,
-		           dchSize: 0,
-		           iBufSize: 0,
-		           dBufSize: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ctx: nil,
-		           f: nil,
-		           },
-		           fields: fields {
-		           ich: nil,
-		           uii: nil,
-		           uiim: uiimNoLock{},
-		           dch: nil,
-		           udk: nil,
-		           udim: udimNoLock{},
-		           eg: nil,
-		           ichSize: 0,
-		           dchSize: 0,
-		           iBufSize: 0,
-		           dBufSize: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-			checkFunc := test.checkFunc
-			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
-			}
-			v := &vqueue{
-				uii: test.fields.uii,
-				uiim: uiim{
-					read:   test.fields.uiim.read,
-					dirty:  test.fields.uiim.dirty,
-					misses: test.fields.uiim.misses,
-				},
-				udk: test.fields.udk,
-				udim: udim{
-					read:   test.fields.udim.read,
-					dirty:  test.fields.udim.dirty,
-					misses: test.fields.udim.misses,
-				},
-				eg:       test.fields.eg,
-				iBufSize: test.fields.iBufSize,
-				dBufSize: test.fields.dBufSize,
-			}
-
-			v.RangePopDelete(test.args.ctx, test.args.now, test.args.f)
-			if err := checkFunc(test.want); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -633,13 +349,10 @@ func Test_vqueue_GetVector(t *testing.T) {
 		uuid string
 	}
 	type fields struct {
-		uii      []index
-		uiim     uiimNoLock
-		udk      []key
-		udim     udimNoLock
-		eg       errgroup.Group
-		iBufSize int
-		dBufSize int
+		il indexMap
+		dl indexMap
+		ic uint64
+		dc uint64
 	}
 	type want struct {
 		want  []float32
@@ -651,8 +364,8 @@ func Test_vqueue_GetVector(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, []float32, bool) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, got []float32, got1 bool) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -664,353 +377,55 @@ func Test_vqueue_GetVector(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		func() test {
-			uuid := "146bbe1a-bc48-11eb-8529-0242ac130003"
-			uii := []index{
-				{
-					uuid: "246bbe1a-bc48-11eb-8529-0242ac130003",
-					date: 2000000000,
-				},
-				{
-					uuid: "346bbe1a-bc48-11eb-8529-0242ac130003",
-					date: 3000000000,
-				},
-			}
-			var uiim uiim
-			for _, idx := range uii {
-				uiim.Store(idx.uuid, idx)
-			}
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           uuid: "",
+		       },
+		       fields: fields {
+		           il: indexMap{},
+		           dl: indexMap{},
+		           ic: 0,
+		           dc: 0,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		   },
+		*/
 
-			return test{
-				name: "return (nil, false) when the uiid dose not exist in uiim",
-				args: args{
-					uuid: uuid,
-				},
-				fields: fields{
-					uiim: uiimNoLock{
-						read:   uiim.read,
-						dirty:  uiim.dirty,
-						misses: uiim.misses,
-					},
-				},
-				want: want{
-					want:  nil,
-					want1: false,
-				},
-			}
-		}(),
-		func() test {
-			uii := []index{
-				{
-					uuid: "146bbe1a-bc48-11eb-8529-0242ac130003",
-					date: 2000000000,
-				},
-				{
-					uuid: "246bbe1a-bc48-11eb-8529-0242ac130003",
-					date: 3000000000,
-				},
-			}
-			var uiim uiim
-			for _, idx := range uii {
-				uiim.Store(idx.uuid, idx)
-			}
-
-			return test{
-				name: "return (nil, false) when the uuid is empty",
-				args: args{
-					uuid: "",
-				},
-				fields: fields{
-					uiim: uiimNoLock{
-						read:   uiim.read,
-						dirty:  uiim.dirty,
-						misses: uiim.misses,
-					},
-				},
-				want: want{
-					want:  nil,
-					want1: false,
-				},
-			}
-		}(),
-		func() test {
-			return test{
-				name: "return (nil, false) when the uiim is empty",
-				args: args{
-					uuid: "146bbe1a-bc48-11eb-8529-0242ac130003",
-				},
-				fields: fields{},
-				want: want{
-					want:  nil,
-					want1: false,
-				},
-			}
-		}(),
-		func() test {
-			uuid := "146bbe1a-bc48-11eb-8529-0242ac130003"
-			uii := []index{
-				{
-					uuid:   uuid,
-					vector: []float32{1},
-					date:   1000000000,
-				},
-				{
-					uuid:   "246bbe1a-bc48-11eb-8529-0242ac130003",
-					vector: []float32{2},
-					date:   2000000000,
-				},
-			}
-			var uiim uiim
-			for _, idx := range uii {
-				uiim.Store(idx.uuid, idx)
-			}
-
-			udk := []key{
-				{
-					uuid: "346bbe1a-bc48-11eb-8529-0242ac130003",
-					date: 1000000000,
-				},
-				{
-					uuid: "446bbe1a-bc48-11eb-8529-0242ac130003",
-					date: 4000000000,
-				},
-			}
-			var udim udim
-			for _, key := range udk {
-				udim.Store(key.uuid, key.date)
-			}
-
-			return test{
-				name: "return (1, true) when the uiid dose not exist in udim",
-				args: args{
-					uuid: uuid,
-				},
-				fields: fields{
-					uiim: uiimNoLock{
-						read:   uiim.read,
-						dirty:  uiim.dirty,
-						misses: uiim.misses,
-					},
-					udim: udimNoLock{
-						read:   udim.read,
-						dirty:  udim.dirty,
-						misses: udim.misses,
-					},
-				},
-				want: want{
-					want:  []float32{1},
-					want1: true,
-				},
-			}
-		}(),
-		func() test {
-			uuid := "146bbe1a-bc48-11eb-8529-0242ac130003"
-			uii := []index{
-				{
-					uuid:   uuid,
-					vector: []float32{1},
-					date:   1000000000,
-				},
-				{
-					uuid:   "246bbe1a-bc48-11eb-8529-0242ac130003",
-					vector: []float32{2},
-					date:   2000000000,
-				},
-			}
-			var uiim uiim
-			for _, idx := range uii {
-				uiim.Store(idx.uuid, idx)
-			}
-
-			return test{
-				name: "return (1, true) when the udim is empty",
-				args: args{
-					uuid: uuid,
-				},
-				fields: fields{
-					uiim: uiimNoLock{
-						read:   uiim.read,
-						dirty:  uiim.dirty,
-						misses: uiim.misses,
-					},
-				},
-				want: want{
-					want:  []float32{1},
-					want1: true,
-				},
-			}
-		}(),
-		func() test {
-			uuid := "146bbe1a-bc48-11eb-8529-0242ac130003"
-			uii := []index{
-				{
-					uuid:   uuid,
-					vector: []float32{1},
-					date:   1000000000,
-				},
-				{
-					uuid:   "246bbe1a-bc48-11eb-8529-0242ac130003",
-					vector: []float32{2},
-					date:   2000000000,
-				},
-			}
-			var uiim uiim
-			for _, idx := range uii {
-				uiim.Store(idx.uuid, idx)
-			}
-
-			udk := []key{
-				{
-					uuid: uuid,
-					date: 1000000000,
-				},
-				{
-					uuid: "346bbe1a-bc48-11eb-8529-0242ac130003",
-					date: 4000000000,
-				},
-			}
-			var udim udim
-			for _, key := range udk {
-				udim.Store(key.uuid, key.date)
-			}
-
-			return test{
-				name: "return (1, true) when the date of uiim is equal the date of udim",
-				args: args{
-					uuid: uuid,
-				},
-				fields: fields{
-					uiim: uiimNoLock{
-						read:   uiim.read,
-						dirty:  uiim.dirty,
-						misses: uiim.misses,
-					},
-					udim: udimNoLock{
-						read:   udim.read,
-						dirty:  udim.dirty,
-						misses: udim.misses,
-					},
-				},
-				want: want{
-					want:  []float32{1},
-					want1: true,
-				},
-			}
-		}(),
-		func() test {
-			uuid := "146bbe1a-bc48-11eb-8529-0242ac130003"
-			uii := []index{
-				{
-					uuid:   uuid,
-					vector: []float32{1},
-					date:   1000000001,
-				},
-				{
-					uuid:   "246bbe1a-bc48-11eb-8529-0242ac130003",
-					vector: []float32{2},
-					date:   2000000000,
-				},
-			}
-			var uiim uiim
-			for _, idx := range uii {
-				uiim.Store(idx.uuid, idx)
-			}
-
-			udk := []key{
-				{
-					uuid: uuid,
-					date: 1000000000,
-				},
-				{
-					uuid: "346bbe1a-bc48-11eb-8529-0242ac130003",
-					date: 4000000000,
-				},
-			}
-			var udim udim
-			for _, key := range udk {
-				udim.Store(key.uuid, key.date)
-			}
-
-			return test{
-				name: "return (1, true) when the date of uiim is newer than the date of udim",
-				args: args{
-					uuid: uuid,
-				},
-				fields: fields{
-					uiim: uiimNoLock{
-						read:   uiim.read,
-						dirty:  uiim.dirty,
-						misses: uiim.misses,
-					},
-					udim: udimNoLock{
-						read:   udim.read,
-						dirty:  udim.dirty,
-						misses: udim.misses,
-					},
-				},
-				want: want{
-					want:  []float32{1},
-					want1: true,
-				},
-			}
-		}(),
-		func() test {
-			uuid := "146bbe1a-bc48-11eb-8529-0242ac130003"
-			uii := []index{
-				{
-					uuid:   uuid,
-					vector: []float32{1},
-					date:   999999999,
-				},
-				{
-					uuid:   "246bbe1a-bc48-11eb-8529-0242ac130003",
-					vector: []float32{2},
-					date:   2000000000,
-				},
-			}
-			var uiim uiim
-			for _, idx := range uii {
-				uiim.Store(idx.uuid, idx)
-			}
-
-			udk := []key{
-				{
-					uuid: uuid,
-					date: 1000000000,
-				},
-				{
-					uuid: "346bbe1a-bc48-11eb-8529-0242ac130003",
-					date: 4000000000,
-				},
-			}
-			var udim udim
-			for _, key := range udk {
-				udim.Store(key.uuid, key.date)
-			}
-
-			return test{
-				name: "return (nil, false) when the date of uiim is older than the date of udim",
-				args: args{
-					uuid: uuid,
-				},
-				fields: fields{
-					uiim: uiimNoLock{
-						read:   uiim.read,
-						dirty:  uiim.dirty,
-						misses: uiim.misses,
-					},
-					udim: udimNoLock{
-						read:   udim.read,
-						dirty:  udim.dirty,
-						misses: udim.misses,
-					},
-				},
-				want: want{
-					want:  nil,
-					want1: false,
-				},
-			}
-		}(),
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           uuid: "",
+		           },
+		           fields: fields {
+		           il: indexMap{},
+		           dl: indexMap{},
+		           ic: 0,
+		           dc: 0,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		       }
+		   }(),
+		*/
 	}
 
 	for _, tc := range tests {
@@ -1019,31 +434,20 @@ func Test_vqueue_GetVector(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
 			v := &vqueue{
-				uii: test.fields.uii,
-				uiim: uiim{
-					read:   test.fields.uiim.read,
-					dirty:  test.fields.uiim.dirty,
-					misses: test.fields.uiim.misses,
-				},
-				udk: test.fields.udk,
-				udim: udim{
-					read:   test.fields.udim.read,
-					dirty:  test.fields.udim.dirty,
-					misses: test.fields.udim.misses,
-				},
-				eg:       test.fields.eg,
-				iBufSize: test.fields.iBufSize,
-				dBufSize: test.fields.dBufSize,
+				il: test.fields.il,
+				dl: test.fields.dl,
+				ic: test.fields.ic,
+				dc: test.fields.dc,
 			}
 
 			got, got1 := v.GetVector(test.args.uuid)
@@ -1059,13 +463,10 @@ func Test_vqueue_IVExists(t *testing.T) {
 		uuid string
 	}
 	type fields struct {
-		uii      []index
-		uiim     uiimNoLock
-		udk      []key
-		udim     udimNoLock
-		eg       errgroup.Group
-		iBufSize int
-		dBufSize int
+		il indexMap
+		dl indexMap
+		ic uint64
+		dc uint64
 	}
 	type want struct {
 		want bool
@@ -1076,8 +477,8 @@ func Test_vqueue_IVExists(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, bool) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, got bool) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -1086,345 +487,55 @@ func Test_vqueue_IVExists(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		func() test {
-			uuid := "146bbe1a-bc48-11eb-8529-0242ac130003"
-			uii := []index{
-				{
-					uuid: "246bbe1a-bc48-11eb-8529-0242ac130003",
-					date: 2000000000,
-				},
-				{
-					uuid: "346bbe1a-bc48-11eb-8529-0242ac130003",
-					date: 3000000000,
-				},
-			}
-			var uiim uiim
-			for _, idx := range uii {
-				uiim.Store(idx.uuid, idx)
-			}
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           uuid: "",
+		       },
+		       fields: fields {
+		           il: indexMap{},
+		           dl: indexMap{},
+		           ic: 0,
+		           dc: 0,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		   },
+		*/
 
-			return test{
-				name: "return false when the uiid dose not exist in uiim",
-				args: args{
-					uuid: uuid,
-				},
-				fields: fields{
-					uiim: uiimNoLock{
-						read:   uiim.read,
-						dirty:  uiim.dirty,
-						misses: uiim.misses,
-					},
-				},
-				want: want{
-					want: false,
-				},
-			}
-		}(),
-		func() test {
-			uii := []index{
-				{
-					uuid: "146bbe1a-bc48-11eb-8529-0242ac130003",
-					date: 2000000000,
-				},
-				{
-					uuid: "246bbe1a-bc48-11eb-8529-0242ac130003",
-					date: 3000000000,
-				},
-			}
-			var uiim uiim
-			for _, idx := range uii {
-				uiim.Store(idx.uuid, idx)
-			}
-
-			return test{
-				name: "return false when the uuid is empty",
-				args: args{
-					uuid: "",
-				},
-				fields: fields{
-					uiim: uiimNoLock{
-						read:   uiim.read,
-						dirty:  uiim.dirty,
-						misses: uiim.misses,
-					},
-				},
-				want: want{
-					want: false,
-				},
-			}
-		}(),
-		func() test {
-			return test{
-				name: "return false when the uiim is empty",
-				args: args{
-					uuid: "146bbe1a-bc48-11eb-8529-0242ac130003",
-				},
-				fields: fields{},
-				want: want{
-					want: false,
-				},
-			}
-		}(),
-		func() test {
-			uuid := "146bbe1a-bc48-11eb-8529-0242ac130003"
-			uii := []index{
-				{
-					uuid:   uuid,
-					vector: []float32{1},
-					date:   1000000000,
-				},
-				{
-					uuid:   "246bbe1a-bc48-11eb-8529-0242ac130003",
-					vector: []float32{2},
-					date:   2000000000,
-				},
-			}
-			var uiim uiim
-			for _, idx := range uii {
-				uiim.Store(idx.uuid, idx)
-			}
-
-			udk := []key{
-				{
-					uuid: "346bbe1a-bc48-11eb-8529-0242ac130003",
-					date: 1000000000,
-				},
-				{
-					uuid: "446bbe1a-bc48-11eb-8529-0242ac130003",
-					date: 4000000000,
-				},
-			}
-			var udim udim
-			for _, key := range udk {
-				udim.Store(key.uuid, key.date)
-			}
-
-			return test{
-				name: "return true when the uiid dose not exist in udim",
-				args: args{
-					uuid: uuid,
-				},
-				fields: fields{
-					uiim: uiimNoLock{
-						read:   uiim.read,
-						dirty:  uiim.dirty,
-						misses: uiim.misses,
-					},
-					udim: udimNoLock{
-						read:   udim.read,
-						dirty:  udim.dirty,
-						misses: udim.misses,
-					},
-				},
-				want: want{
-					want: true,
-				},
-			}
-		}(),
-		func() test {
-			uuid := "146bbe1a-bc48-11eb-8529-0242ac130003"
-			uii := []index{
-				{
-					uuid:   uuid,
-					vector: []float32{1},
-					date:   1000000000,
-				},
-				{
-					uuid:   "246bbe1a-bc48-11eb-8529-0242ac130003",
-					vector: []float32{2},
-					date:   2000000000,
-				},
-			}
-			var uiim uiim
-			for _, idx := range uii {
-				uiim.Store(idx.uuid, idx)
-			}
-
-			return test{
-				name: "return true when the udim is empty",
-				args: args{
-					uuid: uuid,
-				},
-				fields: fields{
-					uiim: uiimNoLock{
-						read:   uiim.read,
-						dirty:  uiim.dirty,
-						misses: uiim.misses,
-					},
-				},
-				want: want{
-					want: true,
-				},
-			}
-		}(),
-		func() test {
-			uuid := "146bbe1a-bc48-11eb-8529-0242ac130003"
-			uii := []index{
-				{
-					uuid:   uuid,
-					vector: []float32{1},
-					date:   1000000000,
-				},
-				{
-					uuid:   "246bbe1a-bc48-11eb-8529-0242ac130003",
-					vector: []float32{2},
-					date:   2000000000,
-				},
-			}
-			var uiim uiim
-			for _, idx := range uii {
-				uiim.Store(idx.uuid, idx)
-			}
-
-			udk := []key{
-				{
-					uuid: uuid,
-					date: 1000000000,
-				},
-				{
-					uuid: "346bbe1a-bc48-11eb-8529-0242ac130003",
-					date: 4000000000,
-				},
-			}
-			var udim udim
-			for _, key := range udk {
-				udim.Store(key.uuid, key.date)
-			}
-
-			return test{
-				name: "return true when the date of uiim is equal the date of udim",
-				args: args{
-					uuid: uuid,
-				},
-				fields: fields{
-					uiim: uiimNoLock{
-						read:   uiim.read,
-						dirty:  uiim.dirty,
-						misses: uiim.misses,
-					},
-					udim: udimNoLock{
-						read:   udim.read,
-						dirty:  udim.dirty,
-						misses: udim.misses,
-					},
-				},
-				want: want{
-					want: true,
-				},
-			}
-		}(),
-		func() test {
-			uuid := "146bbe1a-bc48-11eb-8529-0242ac130003"
-			uii := []index{
-				{
-					uuid:   uuid,
-					vector: []float32{1},
-					date:   1000000001,
-				},
-				{
-					uuid:   "246bbe1a-bc48-11eb-8529-0242ac130003",
-					vector: []float32{2},
-					date:   2000000000,
-				},
-			}
-			var uiim uiim
-			for _, idx := range uii {
-				uiim.Store(idx.uuid, idx)
-			}
-
-			udk := []key{
-				{
-					uuid: uuid,
-					date: 1000000000,
-				},
-				{
-					uuid: "346bbe1a-bc48-11eb-8529-0242ac130003",
-					date: 4000000000,
-				},
-			}
-			var udim udim
-			for _, key := range udk {
-				udim.Store(key.uuid, key.date)
-			}
-
-			return test{
-				name: "return true when the date of uiim is newer than the date of udim",
-				args: args{
-					uuid: uuid,
-				},
-				fields: fields{
-					uiim: uiimNoLock{
-						read:   uiim.read,
-						dirty:  uiim.dirty,
-						misses: uiim.misses,
-					},
-					udim: udimNoLock{
-						read:   udim.read,
-						dirty:  udim.dirty,
-						misses: udim.misses,
-					},
-				},
-				want: want{
-					want: true,
-				},
-			}
-		}(),
-		func() test {
-			uuid := "146bbe1a-bc48-11eb-8529-0242ac130003"
-			uii := []index{
-				{
-					uuid:   uuid,
-					vector: []float32{1},
-					date:   999999999,
-				},
-				{
-					uuid:   "246bbe1a-bc48-11eb-8529-0242ac130003",
-					vector: []float32{2},
-					date:   2000000000,
-				},
-			}
-			var uiim uiim
-			for _, idx := range uii {
-				uiim.Store(idx.uuid, idx)
-			}
-
-			udk := []key{
-				{
-					uuid: uuid,
-					date: 1000000000,
-				},
-				{
-					uuid: "346bbe1a-bc48-11eb-8529-0242ac130003",
-					date: 4000000000,
-				},
-			}
-			var udim udim
-			for _, key := range udk {
-				udim.Store(key.uuid, key.date)
-			}
-
-			return test{
-				name: "return false when the date of uiim is older than the date of udim",
-				args: args{
-					uuid: uuid,
-				},
-				fields: fields{
-					uiim: uiimNoLock{
-						read:   uiim.read,
-						dirty:  uiim.dirty,
-						misses: uiim.misses,
-					},
-					udim: udimNoLock{
-						read:   udim.read,
-						dirty:  udim.dirty,
-						misses: udim.misses,
-					},
-				},
-				want: want{
-					want: false,
-				},
-			}
-		}(),
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           uuid: "",
+		           },
+		           fields: fields {
+		           il: indexMap{},
+		           dl: indexMap{},
+		           ic: 0,
+		           dc: 0,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		       }
+		   }(),
+		*/
 	}
 
 	for _, tc := range tests {
@@ -1433,31 +544,20 @@ func Test_vqueue_IVExists(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
 			v := &vqueue{
-				uii: test.fields.uii,
-				uiim: uiim{
-					read:   test.fields.uiim.read,
-					dirty:  test.fields.uiim.dirty,
-					misses: test.fields.uiim.misses,
-				},
-				udk: test.fields.udk,
-				udim: udim{
-					read:   test.fields.udim.read,
-					dirty:  test.fields.udim.dirty,
-					misses: test.fields.udim.misses,
-				},
-				eg:       test.fields.eg,
-				iBufSize: test.fields.iBufSize,
-				dBufSize: test.fields.dBufSize,
+				il: test.fields.il,
+				dl: test.fields.dl,
+				ic: test.fields.ic,
+				dc: test.fields.dc,
 			}
 
 			got := v.IVExists(test.args.uuid)
@@ -1473,13 +573,10 @@ func Test_vqueue_DVExists(t *testing.T) {
 		uuid string
 	}
 	type fields struct {
-		uii      []index
-		uiim     uiimNoLock
-		udk      []key
-		udim     udimNoLock
-		eg       errgroup.Group
-		iBufSize int
-		dBufSize int
+		il indexMap
+		dl indexMap
+		ic uint64
+		dc uint64
 	}
 	type want struct {
 		want bool
@@ -1490,8 +587,8 @@ func Test_vqueue_DVExists(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, bool) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, got bool) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -1500,343 +597,55 @@ func Test_vqueue_DVExists(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		func() test {
-			uuid := "146bbe1a-bc48-11eb-8529-0242ac130003"
-			udk := []key{
-				{
-					uuid: "246bbe1a-bc48-11eb-8529-0242ac130003",
-					date: 2000000000,
-				},
-				{
-					uuid: "346bbe1a-bc48-11eb-8529-0242ac130003",
-					date: 3000000000,
-				},
-			}
-			var udim udim
-			for _, key := range udk {
-				udim.Store(key.uuid, key.date)
-			}
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           uuid: "",
+		       },
+		       fields: fields {
+		           il: indexMap{},
+		           dl: indexMap{},
+		           ic: 0,
+		           dc: 0,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		   },
+		*/
 
-			return test{
-				name: "return false when the uiid dose not exist in udim",
-				args: args{
-					uuid: uuid,
-				},
-				fields: fields{
-					udim: udimNoLock{
-						read:   udim.read,
-						dirty:  udim.dirty,
-						misses: udim.misses,
-					},
-				},
-				want: want{
-					want: false,
-				},
-			}
-		}(),
-		func() test {
-			udk := []key{
-				{
-					uuid: "146bbe1a-bc48-11eb-8529-0242ac130003",
-					date: 2000000000,
-				},
-				{
-					uuid: "246bbe1a-bc48-11eb-8529-0242ac130003",
-					date: 3000000000,
-				},
-			}
-			var udim udim
-			for _, key := range udk {
-				udim.Store(key.uuid, key.date)
-			}
-
-			return test{
-				name: "return false when the uuid is empty",
-				args: args{
-					uuid: "",
-				},
-				fields: fields{
-					udim: udimNoLock{
-						read:   udim.read,
-						dirty:  udim.dirty,
-						misses: udim.misses,
-					},
-				},
-				want: want{
-					want: false,
-				},
-			}
-		}(),
-		func() test {
-			return test{
-				name: "return false when the udim is empty",
-				args: args{
-					uuid: "146bbe1a-bc48-11eb-8529-0242ac130003",
-				},
-				fields: fields{},
-				want: want{
-					want: false,
-				},
-			}
-		}(),
-		func() test {
-			uuid := "146bbe1a-bc48-11eb-8529-0242ac130003"
-			udk := []key{
-				{
-					uuid: uuid,
-					date: 1000000000,
-				},
-				{
-					uuid: "246bbe1a-bc48-11eb-8529-0242ac130003",
-					date: 2000000000,
-				},
-			}
-			var udim udim
-			for _, key := range udk {
-				udim.Store(key.uuid, key.date)
-			}
-
-			uii := []index{
-				{
-					uuid:   "346bbe1a-bc48-11eb-8529-0242ac130003",
-					vector: []float32{1},
-					date:   1000000000,
-				},
-				{
-					uuid:   "446bbe1a-bc48-11eb-8529-0242ac130003",
-					vector: []float32{2},
-					date:   4000000000,
-				},
-			}
-			var uiim uiim
-			for _, idx := range uii {
-				uiim.Store(idx.uuid, idx)
-			}
-
-			return test{
-				name: "return true when the uiid dose not exist in uiim",
-				args: args{
-					uuid: uuid,
-				},
-				fields: fields{
-					uiim: uiimNoLock{
-						read:   uiim.read,
-						dirty:  uiim.dirty,
-						misses: uiim.misses,
-					},
-					udim: udimNoLock{
-						read:   udim.read,
-						dirty:  udim.dirty,
-						misses: udim.misses,
-					},
-				},
-				want: want{
-					want: true,
-				},
-			}
-		}(),
-		func() test {
-			uuid := "146bbe1a-bc48-11eb-8529-0242ac130003"
-			udk := []key{
-				{
-					uuid: uuid,
-					date: 1000000000,
-				},
-				{
-					uuid: "246bbe1a-bc48-11eb-8529-0242ac130003",
-					date: 2000000000,
-				},
-			}
-			var udim udim
-			for _, key := range udk {
-				udim.Store(key.uuid, key.date)
-			}
-
-			return test{
-				name: "return true when the uiim is empty",
-				args: args{
-					uuid: uuid,
-				},
-				fields: fields{
-					udim: udimNoLock{
-						read:   udim.read,
-						dirty:  udim.dirty,
-						misses: udim.misses,
-					},
-				},
-				want: want{
-					want: true,
-				},
-			}
-		}(),
-		func() test {
-			uuid := "146bbe1a-bc48-11eb-8529-0242ac130003"
-			udk := []key{
-				{
-					uuid: uuid,
-					date: 1000000000,
-				},
-				{
-					uuid: "246bbe1a-bc48-11eb-8529-0242ac130003",
-					date: 2000000000,
-				},
-			}
-			var udim udim
-			for _, key := range udk {
-				udim.Store(key.uuid, key.date)
-			}
-
-			uii := []index{
-				{
-					uuid:   uuid,
-					vector: []float32{1},
-					date:   1000000000,
-				},
-				{
-					uuid:   "346bbe1a-bc48-11eb-8529-0242ac130003",
-					vector: []float32{2},
-					date:   4000000000,
-				},
-			}
-			var uiim uiim
-			for _, idx := range uii {
-				uiim.Store(idx.uuid, idx)
-			}
-
-			return test{
-				name: "return true when the date of udim is equal the date of uiim",
-				args: args{
-					uuid: uuid,
-				},
-				fields: fields{
-					uiim: uiimNoLock{
-						read:   uiim.read,
-						dirty:  uiim.dirty,
-						misses: uiim.misses,
-					},
-					udim: udimNoLock{
-						read:   udim.read,
-						dirty:  udim.dirty,
-						misses: udim.misses,
-					},
-				},
-				want: want{
-					want: false,
-				},
-			}
-		}(),
-		func() test {
-			uuid := "146bbe1a-bc48-11eb-8529-0242ac130003"
-			udk := []key{
-				{
-					uuid: uuid,
-					date: 1000000001,
-				},
-				{
-					uuid: "246bbe1a-bc48-11eb-8529-0242ac130003",
-					date: 2000000000,
-				},
-			}
-			var udim udim
-			for _, key := range udk {
-				udim.Store(key.uuid, key.date)
-			}
-
-			uii := []index{
-				{
-					uuid:   uuid,
-					vector: []float32{1},
-					date:   1000000000,
-				},
-				{
-					uuid:   "346bbe1a-bc48-11eb-8529-0242ac130003",
-					vector: []float32{2},
-					date:   4000000000,
-				},
-			}
-			var uiim uiim
-			for _, idx := range uii {
-				uiim.Store(idx.uuid, idx)
-			}
-
-			return test{
-				name: "return true when the date of udim is newer than the date of uiim",
-				args: args{
-					uuid: uuid,
-				},
-				fields: fields{
-					uiim: uiimNoLock{
-						read:   uiim.read,
-						dirty:  uiim.dirty,
-						misses: uiim.misses,
-					},
-					udim: udimNoLock{
-						read:   udim.read,
-						dirty:  udim.dirty,
-						misses: udim.misses,
-					},
-				},
-				want: want{
-					want: true,
-				},
-			}
-		}(),
-		func() test {
-			uuid := "146bbe1a-bc48-11eb-8529-0242ac130003"
-			udk := []key{
-				{
-					uuid: uuid,
-					date: 999999999,
-				},
-				{
-					uuid: "246bbe1a-bc48-11eb-8529-0242ac130003",
-					date: 2000000000,
-				},
-			}
-			var udim udim
-			for _, key := range udk {
-				udim.Store(key.uuid, key.date)
-			}
-
-			uii := []index{
-				{
-					uuid:   uuid,
-					vector: []float32{1},
-					date:   1000000000,
-				},
-				{
-					uuid:   "346bbe1a-bc48-11eb-8529-0242ac130003",
-					vector: []float32{2},
-					date:   4000000000,
-				},
-			}
-			var uiim uiim
-			for _, idx := range uii {
-				uiim.Store(idx.uuid, idx)
-			}
-
-			return test{
-				name: "return false when the date of udim is older than the date of uiim",
-				args: args{
-					uuid: uuid,
-				},
-				fields: fields{
-					uiim: uiimNoLock{
-						read:   uiim.read,
-						dirty:  uiim.dirty,
-						misses: uiim.misses,
-					},
-					udim: udimNoLock{
-						read:   udim.read,
-						dirty:  udim.dirty,
-						misses: udim.misses,
-					},
-				},
-				want: want{
-					want: false,
-				},
-			}
-		}(),
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           uuid: "",
+		           },
+		           fields: fields {
+		           il: indexMap{},
+		           dl: indexMap{},
+		           ic: 0,
+		           dc: 0,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		       }
+		   }(),
+		*/
 	}
 
 	for _, tc := range tests {
@@ -1845,31 +654,20 @@ func Test_vqueue_DVExists(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
 			v := &vqueue{
-				uii: test.fields.uii,
-				uiim: uiim{
-					read:   test.fields.uiim.read,
-					dirty:  test.fields.uiim.dirty,
-					misses: test.fields.uiim.misses,
-				},
-				udk: test.fields.udk,
-				udim: udim{
-					read:   test.fields.udim.read,
-					dirty:  test.fields.udim.dirty,
-					misses: test.fields.udim.misses,
-				},
-				eg:       test.fields.eg,
-				iBufSize: test.fields.iBufSize,
-				dBufSize: test.fields.dBufSize,
+				il: test.fields.il,
+				dl: test.fields.dl,
+				ic: test.fields.ic,
+				dc: test.fields.dc,
 			}
 
 			got := v.DVExists(test.args.uuid)
@@ -1880,18 +678,17 @@ func Test_vqueue_DVExists(t *testing.T) {
 	}
 }
 
-func Test_vqueue_addInsert(t *testing.T) {
+func Test_vqueue_RangePopInsert(t *testing.T) {
 	type args struct {
-		i index
+		in0 context.Context
+		now int64
+		f   func(uuid string, vector []float32) bool
 	}
 	type fields struct {
-		uii      []index
-		uiim     uiimNoLock
-		udk      []key
-		udim     udimNoLock
-		eg       errgroup.Group
-		iBufSize int
-		dBufSize int
+		il indexMap
+		dl indexMap
+		ic uint64
+		dc uint64
 	}
 	type want struct{}
 	type test struct {
@@ -1900,8 +697,8 @@ func Test_vqueue_addInsert(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want) error {
 		return nil
@@ -1912,23 +709,24 @@ func Test_vqueue_addInsert(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
-		           i: index{},
+		           in0: nil,
+		           now: 0,
+		           f: nil,
 		       },
 		       fields: fields {
-		           ich: nil,
-		           uii: nil,
-		           uiim: uiimNoLock{},
-		           dch: nil,
-		           udk: nil,
-		           udim: udimNoLock{},
-		           eg: nil,
-		           ichSize: 0,
-		           dchSize: 0,
-		           iBufSize: 0,
-		           dBufSize: 0,
+		           il: indexMap{},
+		           dl: indexMap{},
+		           ic: 0,
+		           dc: 0,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -1938,23 +736,24 @@ func Test_vqueue_addInsert(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
-		           i: index{},
+		           in0: nil,
+		           now: 0,
+		           f: nil,
 		           },
 		           fields: fields {
-		           ich: nil,
-		           uii: nil,
-		           uiim: uiimNoLock{},
-		           dch: nil,
-		           udk: nil,
-		           udim: udimNoLock{},
-		           eg: nil,
-		           ichSize: 0,
-		           dchSize: 0,
-		           iBufSize: 0,
-		           dBufSize: 0,
+		           il: indexMap{},
+		           dl: indexMap{},
+		           ic: 0,
+		           dc: 0,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -1966,34 +765,23 @@ func Test_vqueue_addInsert(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
 			v := &vqueue{
-				uii: test.fields.uii,
-				uiim: uiim{
-					read:   test.fields.uiim.read,
-					dirty:  test.fields.uiim.dirty,
-					misses: test.fields.uiim.misses,
-				},
-				udk: test.fields.udk,
-				udim: udim{
-					read:   test.fields.udim.read,
-					dirty:  test.fields.udim.dirty,
-					misses: test.fields.udim.misses,
-				},
-				eg:       test.fields.eg,
-				iBufSize: test.fields.iBufSize,
-				dBufSize: test.fields.dBufSize,
+				il: test.fields.il,
+				dl: test.fields.dl,
+				ic: test.fields.ic,
+				dc: test.fields.dc,
 			}
 
-			v.addInsert(test.args.i)
+			v.RangePopInsert(test.args.in0, test.args.now, test.args.f)
 			if err := checkFunc(test.want); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -2001,18 +789,17 @@ func Test_vqueue_addInsert(t *testing.T) {
 	}
 }
 
-func Test_vqueue_addDelete(t *testing.T) {
+func Test_vqueue_RangePopDelete(t *testing.T) {
 	type args struct {
-		d key
+		in0 context.Context
+		now int64
+		f   func(uuid string) bool
 	}
 	type fields struct {
-		uii      []index
-		uiim     uiimNoLock
-		udk      []key
-		udim     udimNoLock
-		eg       errgroup.Group
-		iBufSize int
-		dBufSize int
+		il indexMap
+		dl indexMap
+		ic uint64
+		dc uint64
 	}
 	type want struct{}
 	type test struct {
@@ -2021,8 +808,8 @@ func Test_vqueue_addDelete(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want) error {
 		return nil
@@ -2033,23 +820,24 @@ func Test_vqueue_addDelete(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
-		           d: key{},
+		           in0: nil,
+		           now: 0,
+		           f: nil,
 		       },
 		       fields: fields {
-		           ich: nil,
-		           uii: nil,
-		           uiim: uiimNoLock{},
-		           dch: nil,
-		           udk: nil,
-		           udim: udimNoLock{},
-		           eg: nil,
-		           ichSize: 0,
-		           dchSize: 0,
-		           iBufSize: 0,
-		           dBufSize: 0,
+		           il: indexMap{},
+		           dl: indexMap{},
+		           ic: 0,
+		           dc: 0,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -2059,23 +847,24 @@ func Test_vqueue_addDelete(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
-		           d: key{},
+		           in0: nil,
+		           now: 0,
+		           f: nil,
 		           },
 		           fields: fields {
-		           ich: nil,
-		           uii: nil,
-		           uiim: uiimNoLock{},
-		           dch: nil,
-		           udk: nil,
-		           udim: udimNoLock{},
-		           eg: nil,
-		           ichSize: 0,
-		           dchSize: 0,
-		           iBufSize: 0,
-		           dBufSize: 0,
+		           il: indexMap{},
+		           dl: indexMap{},
+		           ic: 0,
+		           dc: 0,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -2087,34 +876,23 @@ func Test_vqueue_addDelete(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
 			v := &vqueue{
-				uii: test.fields.uii,
-				uiim: uiim{
-					read:   test.fields.uiim.read,
-					dirty:  test.fields.uiim.dirty,
-					misses: test.fields.uiim.misses,
-				},
-				udk: test.fields.udk,
-				udim: udim{
-					read:   test.fields.udim.read,
-					dirty:  test.fields.udim.dirty,
-					misses: test.fields.udim.misses,
-				},
-				eg:       test.fields.eg,
-				iBufSize: test.fields.iBufSize,
-				dBufSize: test.fields.dBufSize,
+				il: test.fields.il,
+				dl: test.fields.dl,
+				ic: test.fields.ic,
+				dc: test.fields.dc,
 			}
 
-			v.addDelete(test.args.d)
+			v.RangePopDelete(test.args.in0, test.args.now, test.args.f)
 			if err := checkFunc(test.want); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -2124,13 +902,10 @@ func Test_vqueue_addDelete(t *testing.T) {
 
 func Test_vqueue_IVQLen(t *testing.T) {
 	type fields struct {
-		uii      []index
-		uiim     uiimNoLock
-		udk      []key
-		udim     udimNoLock
-		eg       errgroup.Group
-		iBufSize int
-		dBufSize int
+		il indexMap
+		dl indexMap
+		ic uint64
+		dc uint64
 	}
 	type want struct {
 		wantL int
@@ -2140,8 +915,8 @@ func Test_vqueue_IVQLen(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, int) error
-		beforeFunc func()
-		afterFunc  func()
+		beforeFunc func(*testing.T)
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want, gotL int) error {
 		if !reflect.DeepEqual(gotL, w.wantL) {
@@ -2150,102 +925,49 @@ func Test_vqueue_IVQLen(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		func() test {
-			size := 0
-			uii := make([]index, size)
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       fields: fields {
+		           il: indexMap{},
+		           dl: indexMap{},
+		           ic: 0,
+		           dc: 0,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
+		   },
+		*/
 
-			return test{
-				name: "return 0 when the capacity and length is 0",
-				fields: fields{
-					uii: uii,
-				},
-				want: want{
-					wantL: size,
-				},
-			}
-		}(),
-		func() test {
-			size := 10
-			uii := make([]index, size)
-
-			return test{
-				name: "return 10 when the capacity and length is 10",
-				fields: fields{
-					uii: uii,
-				},
-				want: want{
-					wantL: size,
-				},
-			}
-		}(),
-		func() test {
-			c := 10
-			l := 5
-			uii := make([]index, l, c)
-
-			return test{
-				name: "return 5 when the capacity is 10 and the length is 5",
-				fields: fields{
-					uii: uii,
-				},
-				want: want{
-					wantL: l,
-				},
-			}
-		}(),
-		func() test {
-			iniLen := 5
-			isrtSize := 2
-			uii := make([]index, iniLen, 10)
-			for i := 0; i < isrtSize; i++ {
-				uii = append(uii, index{})
-			}
-
-			return test{
-				name: "return 7 when the capacity is 10 and the initial length is 5 but the inserted size is 2",
-				fields: fields{
-					uii: uii,
-				},
-				want: want{
-					wantL: iniLen + isrtSize,
-				},
-			}
-		}(),
-		func() test {
-			size := 10
-			uii := make([]index, 0, size)
-			for i := 0; i < size; i++ {
-				uii = append(uii, index{})
-			}
-
-			return test{
-				name: "return 10 when the inserted size is 10",
-				fields: fields{
-					uii: uii,
-				},
-				want: want{
-					wantL: size,
-				},
-			}
-		}(),
-		func() test {
-			insertSize := 5
-			size := 10
-			uii := make([]index, 0, size)
-			for i := 0; i < insertSize; i++ {
-				uii = append(uii, index{})
-			}
-
-			return test{
-				name: "return 5 when the capacity is 10 and the inserted size is 5",
-				fields: fields{
-					uii: uii,
-				},
-				want: want{
-					wantL: insertSize,
-				},
-			}
-		}(),
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           fields: fields {
+		           il: indexMap{},
+		           dl: indexMap{},
+		           ic: 0,
+		           dc: 0,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
+		       }
+		   }(),
+		*/
 	}
 
 	for _, tc := range tests {
@@ -2254,31 +976,20 @@ func Test_vqueue_IVQLen(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
 			v := &vqueue{
-				uii: test.fields.uii,
-				uiim: uiim{
-					read:   test.fields.uiim.read,
-					dirty:  test.fields.uiim.dirty,
-					misses: test.fields.uiim.misses,
-				},
-				udk: test.fields.udk,
-				udim: udim{
-					read:   test.fields.udim.read,
-					dirty:  test.fields.udim.dirty,
-					misses: test.fields.udim.misses,
-				},
-				eg:       test.fields.eg,
-				iBufSize: test.fields.iBufSize,
-				dBufSize: test.fields.dBufSize,
+				il: test.fields.il,
+				dl: test.fields.dl,
+				ic: test.fields.ic,
+				dc: test.fields.dc,
 			}
 
 			gotL := v.IVQLen()
@@ -2291,13 +1002,10 @@ func Test_vqueue_IVQLen(t *testing.T) {
 
 func Test_vqueue_DVQLen(t *testing.T) {
 	type fields struct {
-		uii      []index
-		uiim     uiimNoLock
-		udk      []key
-		udim     udimNoLock
-		eg       errgroup.Group
-		iBufSize int
-		dBufSize int
+		il indexMap
+		dl indexMap
+		ic uint64
+		dc uint64
 	}
 	type want struct {
 		wantL int
@@ -2307,8 +1015,8 @@ func Test_vqueue_DVQLen(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, int) error
-		beforeFunc func()
-		afterFunc  func()
+		beforeFunc func(*testing.T)
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want, gotL int) error {
 		if !reflect.DeepEqual(gotL, w.wantL) {
@@ -2317,102 +1025,49 @@ func Test_vqueue_DVQLen(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		func() test {
-			size := 0
-			udk := make([]key, size)
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       fields: fields {
+		           il: indexMap{},
+		           dl: indexMap{},
+		           ic: 0,
+		           dc: 0,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
+		   },
+		*/
 
-			return test{
-				name: "return 0 when the capacity and length is 0",
-				fields: fields{
-					udk: udk,
-				},
-				want: want{
-					wantL: size,
-				},
-			}
-		}(),
-		func() test {
-			size := 10
-			udk := make([]key, size)
-
-			return test{
-				name: "return 10 when the capacity and length is 10",
-				fields: fields{
-					udk: udk,
-				},
-				want: want{
-					wantL: size,
-				},
-			}
-		}(),
-		func() test {
-			c := 10
-			l := 5
-			udk := make([]key, l, c)
-
-			return test{
-				name: "return 5 when the capacity is 10 and the length is 5",
-				fields: fields{
-					udk: udk,
-				},
-				want: want{
-					wantL: l,
-				},
-			}
-		}(),
-		func() test {
-			iniLen := 5
-			isrtSize := 2
-			udk := make([]key, iniLen, 10)
-			for i := 0; i < isrtSize; i++ {
-				udk = append(udk, key{})
-			}
-
-			return test{
-				name: "return 7 when the capacity is 10 and the initial length is 5 but the inserted size is 2",
-				fields: fields{
-					udk: udk,
-				},
-				want: want{
-					wantL: iniLen + isrtSize,
-				},
-			}
-		}(),
-		func() test {
-			size := 10
-			udk := make([]key, 0, size)
-			for i := 0; i < size; i++ {
-				udk = append(udk, key{})
-			}
-
-			return test{
-				name: "return 10 when the inserted size is 10",
-				fields: fields{
-					udk: udk,
-				},
-				want: want{
-					wantL: size,
-				},
-			}
-		}(),
-		func() test {
-			insertSize := 5
-			size := 10
-			udk := make([]key, 0, size)
-			for i := 0; i < insertSize; i++ {
-				udk = append(udk, key{})
-			}
-
-			return test{
-				name: "return 5 when the capacity is 10 and the inserted size is 5",
-				fields: fields{
-					udk: udk,
-				},
-				want: want{
-					wantL: insertSize,
-				},
-			}
-		}(),
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           fields: fields {
+		           il: indexMap{},
+		           dl: indexMap{},
+		           ic: 0,
+		           dc: 0,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
+		       }
+		   }(),
+		*/
 	}
 
 	for _, tc := range tests {
@@ -2421,31 +1076,20 @@ func Test_vqueue_DVQLen(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
 			v := &vqueue{
-				uii: test.fields.uii,
-				uiim: uiim{
-					read:   test.fields.uiim.read,
-					dirty:  test.fields.uiim.dirty,
-					misses: test.fields.uiim.misses,
-				},
-				udk: test.fields.udk,
-				udim: udim{
-					read:   test.fields.udim.read,
-					dirty:  test.fields.udim.dirty,
-					misses: test.fields.udim.misses,
-				},
-				eg:       test.fields.eg,
-				iBufSize: test.fields.iBufSize,
-				dBufSize: test.fields.dBufSize,
+				il: test.fields.il,
+				dl: test.fields.dl,
+				ic: test.fields.ic,
+				dc: test.fields.dc,
 			}
 
 			gotL := v.DVQLen()
