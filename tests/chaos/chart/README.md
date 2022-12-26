@@ -6,38 +6,39 @@ A Helm chart for testing Vald using Chaos Mesh.
 
 ## Values
 
-| Key | Type | Default | Description |
-|-----|------|---------|-------------|
-| networkChaos.bandwidth.buffer | int | `10000` |  |
-| networkChaos.bandwidth.duration | string | `"100ms"` |  |
-| networkChaos.bandwidth.enabled | bool | `false` |  |
-| networkChaos.bandwidth.limit | int | `100` |  |
-| networkChaos.bandwidth.minburst | int | `1000000` |  |
-| networkChaos.bandwidth.name | string | `"vald-network-bandwidth"` |  |
-| networkChaos.bandwidth.peakrate | int | `1000000` |  |
-| networkChaos.bandwidth.rate | string | `"100kbps"` |  |
-| networkChaos.bandwidth.schedule | string | `"*/3 * * * * *"` |  |
-| networkChaos.bandwidth.selector.labelSelectors."app.kubernetes.io/name" | string | `"vald"` |  |
-| networkChaos.bandwidth.selector.namespaces[0] | string | `"default"` |  |
-| networkChaos.partition.duration | string | `"100ms"` |  |
-| networkChaos.partition.enabled | bool | `false` |  |
-| networkChaos.partition.name | string | `"vald-network-partition"` |  |
-| networkChaos.partition.schedule | string | `"*/3 * * * * *"` |  |
-| networkChaos.partition.selector.labelSelectors."app.kubernetes.io/component" | string | `"agent"` |  |
-| networkChaos.partition.selector.labelSelectors."app.kubernetes.io/name" | string | `"vald"` |  |
-| networkChaos.partition.selector.namespaces[0] | string | `"default"` |  |
-| podChaos.failure.duration | string | `"10s"` |  |
-| podChaos.failure.enabled | bool | `false` |  |
-| podChaos.failure.name | string | `"vald-pod-failure"` |  |
-| podChaos.failure.schedule | string | `"*/1 * * * *"` |  |
-| podChaos.failure.selector.labelSelectors."app.kubernetes.io/component" | string | `"agent"` |  |
-| podChaos.failure.selector.labelSelectors."app.kubernetes.io/name" | string | `"vald"` |  |
-| podChaos.failure.selector.namespaces[0] | string | `"default"` |  |
-| podChaos.kill.enabled | bool | `false` |  |
-| podChaos.kill.name | string | `"vald-pod-kill"` |  |
-| podChaos.kill.schedule | string | `"*/2 * * * *"` |  |
-| podChaos.kill.selector.labelSelectors."app.kubernetes.io/name" | string | `"vald"` |  |
-| podChaos.kill.selector.namespaces[0] | string | `"default"` |  |
+| Key                                                                          | Type   | Default                    | Description |
+| ---------------------------------------------------------------------------- | ------ | -------------------------- | ----------- |
+| networkChaos.bandwidth.buffer                                                | int    | `10000`                    |             |
+| networkChaos.bandwidth.duration                                              | string | `"100ms"`                  |             |
+| networkChaos.bandwidth.enabled                                               | bool   | `false`                    |             |
+| networkChaos.bandwidth.limit                                                 | int    | `100`                      |             |
+| networkChaos.bandwidth.minburst                                              | int    | `1000000`                  |             |
+| networkChaos.bandwidth.name                                                  | string | `"vald-network-bandwidth"` |             |
+| networkChaos.bandwidth.peakrate                                              | int    | `1000000`                  |             |
+| networkChaos.bandwidth.rate                                                  | string | `"100kbps"`                |             |
+| networkChaos.bandwidth.schedule                                              | string | `"*/3 * * * * *"`          |             |
+| networkChaos.bandwidth.selector.labelSelectors."app.kubernetes.io/name"      | string | `"vald"`                   |             |
+| networkChaos.bandwidth.selector.namespaces[0]                                | string | `"default"`                |             |
+| networkChaos.partition.duration                                              | string | `"100ms"`                  |             |
+| networkChaos.partition.enabled                                               | bool   | `false`                    |             |
+| networkChaos.partition.name                                                  | string | `"vald-network-partition"` |             |
+| networkChaos.partition.schedule                                              | string | `"*/3 * * * * *"`          |             |
+| networkChaos.partition.selector.labelSelectors."app.kubernetes.io/component" | string | `"agent"`                  |             |
+| networkChaos.partition.selector.labelSelectors."app.kubernetes.io/name"      | string | `"vald"`                   |             |
+| networkChaos.partition.selector.namespaces[0]                                | string | `"default"`                |             |
+| podChaos.failure.duration                                                    | string | `"10s"`                    |             |
+| podChaos.failure.enabled                                                     | bool   | `false`                    |             |
+| podChaos.failure.name                                                        | string | `"vald-pod-failure"`       |             |
+| podChaos.failure.schedule                                                    | string | `"*/1 * * * *"`            |             |
+| podChaos.failure.selector.labelSelectors."app.kubernetes.io/component"       | string | `"agent"`                  |             |
+| podChaos.failure.selector.labelSelectors."app.kubernetes.io/name"            | string | `"vald"`                   |             |
+| podChaos.failure.selector.namespaces[0]                                      | string | `"default"`                |             |
+| podChaos.kill.enabled                                                        | bool   | `false`                    |             |
+| podChaos.kill.name                                                           | string | `"vald-pod-kill"`          |             |
+| podChaos.kill.schedule                                                       | string | `"*/2 * * * *"`            |             |
+| podChaos.kill.selector.labelSelectors."app.kubernetes.io/name"               | string | `"vald"`                   |             |
+| podChaos.kill.selector.namespaces[0]                                         | string | `"default"`                |             |
 
-----------------------------------------------
+---
+
 Autogenerated from chart metadata using [helm-docs v1.11.0](https://github.com/norwoodj/helm-docs/releases/v1.11.0)

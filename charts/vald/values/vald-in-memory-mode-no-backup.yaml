@@ -66,7 +66,7 @@ manager:
       # concurrency for indexing operation.
       concurrency: 1
       # limit duration of automatic indexing.
-      auto_index_duration_limit: 10m 
+      auto_index_duration_limit: 10m
       # check duration of automatic indexing.
       auto_index_check_duration: 1m
       # limit duration of automatic index saving.
