@@ -18,6 +18,11 @@ import (
 	"reflect"
 	"time"
 
+	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/observability/attribute"
+	"github.com/vdaas/vald/internal/observability/exporter"
+	"github.com/vdaas/vald/internal/observability/metrics"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
@@ -28,12 +33,6 @@ import (
 	"go.opentelemetry.io/otel/sdk/resource"
 	"go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.4.0"
-
-	"github.com/vdaas/vald/internal/errors"
-	"github.com/vdaas/vald/internal/log"
-	"github.com/vdaas/vald/internal/observability/attribute"
-	"github.com/vdaas/vald/internal/observability/exporter"
-	"github.com/vdaas/vald/internal/observability/metrics"
 )
 
 // Metrics and Trace attribute keys.

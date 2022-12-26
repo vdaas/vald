@@ -48,6 +48,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     graphviz \
     jq \
     libhdf5-dev \
+    liblapack-dev \
+    libomp-dev \
+    libopenblas-dev \
     nodejs \
     npm \
     sed \

@@ -97,7 +97,16 @@ func Test_server_Exists(t *testing.T) {
 		SkipStrictExistCheck: true,
 	}
 	defaultBeforeFunc := func(ctx context.Context, a args) (Server, error) {
-		return buildIndex(ctx, request.Float, vector.Gaussian, insertNum, defaultInsertConfig, defaultNgtConfig, nil, []string{a.indexID}, nil)
+		eg, ctx := errgroup.New(ctx)
+		ngt, err := newIndexedNGTService(ctx, eg, request.Float, vector.Gaussian, insertNum, defaultInsertConfig, defaultNgtConfig, nil, []string{a.indexID}, nil)
+		if err != nil {
+			return nil, err
+		}
+		s, err := New(WithErrGroup(eg), WithNGT(ngt))
+		if err != nil {
+			return nil, err
+		}
+		return s, nil
 	}
 
 	/*

@@ -1167,3 +1167,91 @@ func TestConvertVectorsUint8ToFloat32(t *testing.T) {
 		})
 	}
 }
+
+func TestNegativeUniformDistributedFloat32VectorGenerator(t *testing.T) {
+	type args struct {
+		n   int
+		dim int
+	}
+	type want struct {
+		wantVecs [][]float32
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, [][]float32) error
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
+	}
+	defaultCheckFunc := func(w want, gotVecs [][]float32) error {
+		if !reflect.DeepEqual(gotVecs, w.wantVecs) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotVecs, w.wantVecs)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           n: 0,
+		           dim: 0,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           n: 0,
+		           dim: 0,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(tt, test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(tt, test.args)
+			}
+			checkFunc := test.checkFunc
+			if test.checkFunc == nil {
+				checkFunc = defaultCheckFunc
+			}
+
+			gotVecs := NegativeUniformDistributedFloat32VectorGenerator(test.args.n, test.args.dim)
+			if err := checkFunc(test.want, gotVecs); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
