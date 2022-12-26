@@ -18,40 +18,40 @@ Vald ===> OpenTelemetry Collector  ====
 
 1. To deploy the operator in a Kubernetes Cluster, we first need to deploy [cert-manager](https://cert-manager.io/docs/installation/).
 
-    ```sh
-    make k8s/external/cert-manager/deploy
-    ```
+   ```sh
+   make k8s/external/cert-manager/deploy
+   ```
 
 2. Deploy Jaeger and Prometheus to export traces and metrics from OpenTelemetry Collector.
 
-    - Deploy Jaeger
+   - Deploy Jaeger
 
-    ```sh
-    make k8s/metrics/jaeger/deploy
-    ```
+   ```sh
+   make k8s/metrics/jaeger/deploy
+   ```
 
-    - Deploy Prometheus
+   - Deploy Prometheus
 
-    ```sh
-    make k8s/metrics/prometheus/operator/deploy
-    ```
+   ```sh
+   make k8s/metrics/prometheus/operator/deploy
+   ```
 
 3. Deploy Grafana and dashboard to visualize the metrics.
 
-    ```sh
-    make k8s/metrics/grafana/deploy
-    ```
+   ```sh
+   make k8s/metrics/grafana/deploy
+   ```
 
 4. Deploy OpenTelemetry Operator and Collector.
 
-    - Deploy OpenTelemetry Operator
+   - Deploy OpenTelemetry Operator
 
-    ```sh
-    make k8s/otel/operator/install
-    ```
+   ```sh
+   make k8s/otel/operator/install
+   ```
 
-    - Deploy OpenTelemetry Collector
+   - Deploy OpenTelemetry Collector
 
-    ```sh
-    make k8s/otel/collector/install
-    ```
+   ```sh
+   make k8s/otel/collector/install
+   ```

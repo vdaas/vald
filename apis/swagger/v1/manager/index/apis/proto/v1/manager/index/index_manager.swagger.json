@@ -4,12 +4,8 @@
     "title": "apis/proto/v1/manager/index/index_manager.proto",
     "version": "version not set"
   },
-  "consumes": [
-    "application/json"
-  ],
-  "produces": [
-    "application/json"
-  ],
+  "consumes": ["application/json"],
+  "produces": ["application/json"],
   "paths": {
     "/index/info": {
       "get": {
@@ -29,9 +25,7 @@
             }
           }
         },
-        "tags": [
-          "Index"
-        ]
+        "tags": ["Index"]
       }
     }
   },

@@ -121,9 +121,9 @@ Represent the agent service.
 
 | Method Name        | Request Type                                                                     | Response Type                                                | Description                                           |
 | ------------------ | -------------------------------------------------------------------------------- | ------------------------------------------------------------ | ----------------------------------------------------- |
-| CreateIndex        | [.payload.v1.Control.CreateIndexRequest](#payload-v1-Control-CreateIndexRequest) | [.payload.v1.Empty](#payload-v1-Empty)                       | Represent the create index RPC.                       |
-| SaveIndex          | [.payload.v1.Empty](#payload-v1-Empty)                                           | [.payload.v1.Empty](#payload-v1-Empty)                       | Represent the save index RPC.                         |
-| CreateAndSaveIndex | [.payload.v1.Control.CreateIndexRequest](#payload-v1-Control-CreateIndexRequest) | [.payload.v1.Empty](#payload-v1-Empty)                       | Represent the create and save index RPC.              |
+| CreateIndex        | [.payload.v1.Control.CreateIndexRequest](#payload-v1-Control-CreateIndexRequest) | [.payload.v1.Empty](#payload-v1-Empty)                       | Represent the creating index RPC.                     |
+| SaveIndex          | [.payload.v1.Empty](#payload-v1-Empty)                                           | [.payload.v1.Empty](#payload-v1-Empty)                       | Represent the saving index RPC.                       |
+| CreateAndSaveIndex | [.payload.v1.Control.CreateIndexRequest](#payload-v1-Control-CreateIndexRequest) | [.payload.v1.Empty](#payload-v1-Empty)                       | Represent the creating and saving index RPC.          |
 | IndexInfo          | [.payload.v1.Empty](#payload-v1-Empty)                                           | [.payload.v1.Info.Index.Count](#payload-v1-Info-Index-Count) | Represent the RPC to get the agent index information. |
 
 <a name="apis_proto_v1_agent_sidecar_sidecar-proto"></a>
@@ -242,11 +242,11 @@ Discoverer related messages.
 
 Represent the dicoverer request.
 
-| Field     | Type              | Label | Description                    |
-| --------- | ----------------- | ----- | ------------------------------ |
-| name      | [string](#string) |       | The agent name to be discover. |
-| namespace | [string](#string) |       | The namespace to be discover.  |
-| node      | [string](#string) |       | The node to be discover.       |
+| Field     | Type              | Label | Description                      |
+| --------- | ----------------- | ----- | -------------------------------- |
+| name      | [string](#string) |       | The agent name to be discovered. |
+| namespace | [string](#string) |       | The namespace to be discovered.  |
+| node      | [string](#string) |       | The node to be discovered.       |
 
 <a name="payload-v1-Empty"></a>
 
@@ -647,10 +647,10 @@ Represent a vector.
 
 Represent a request to fetch raw vector.
 
-| Field   | Type                                       | Label | Description                |
-| ------- | ------------------------------------------ | ----- | -------------------------- |
-| id      | [Object.ID](#payload-v1-Object-ID)         |       | The vector ID to be fetch. |
-| filters | [Filter.Config](#payload-v1-Filter-Config) |       | Filter configurations.     |
+| Field   | Type                                       | Label | Description                  |
+| ------- | ------------------------------------------ | ----- | ---------------------------- |
+| id      | [Object.ID](#payload-v1-Object-ID)         |       | The vector ID to be fetched. |
+| filters | [Filter.Config](#payload-v1-Filter-Config) |       | Filter configurations.       |
 
 <a name="payload-v1-Object-Vectors"></a>
 
