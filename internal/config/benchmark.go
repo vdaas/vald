@@ -17,7 +17,7 @@
 // Package config providers configuration type and load configuration logic
 package config
 
-// Job represents the configuration for the internal benchmark search job.
+// BenchmarkJob represents the configuration for the internal benchmark search job.
 type BenchmarkJob struct {
 	Target        *BenchmarkTarget    `json:"target" yaml:"target"`
 	JobType       string              `json:"job_type"       yaml:"job_type"`
@@ -35,13 +35,20 @@ type BenchmarkJob struct {
 	GatewayClient *GRPCClient         `json:"gateway_client" yaml:"gateway_client"`
 }
 
-// BenchmarkTarget defines the desired state of BenchmarkTarget
+// BenchmarkScenario represents the configuration for the internal benchmark scenario.
+type BenchmarkScenario struct {
+	Target  *BenchmarkTarget  `json:"target" yaml:"target"`
+	Dataset *BenchmarkDataset `jon:"dataset" yaml:"dataset"`
+	Jobs    []*BenchmarkJob   `job:"jobs" yaml:jobs`
+}
+
+// BenchmarkTarget defines the desired state of BenchmarkTarget.
 type BenchmarkTarget struct {
 	Host string `json:"host"`
 	Port int    `json:"port"`
 }
 
-// BenchmarkDataset defines the desired state of BenchmarkDateset
+// BenchmarkDataset defines the desired state of BenchmarkDateset.
 type BenchmarkDataset struct {
 	Name    string                 `json:"name" yaml:"name"`
 	Group   string                 `json:"group" yaml:"group"`
@@ -49,13 +56,13 @@ type BenchmarkDataset struct {
 	Range   *BenchmarkDatasetRange `json:"range" yaml:"range"`
 }
 
-// BenchmarkDatasetRange defines the desired state of BenchmarkDatesetRange
+// BenchmarkDatasetRange defines the desired state of BenchmarkDatesetRange.
 type BenchmarkDatasetRange struct {
 	Start int `json:"start" yaml:"start"`
 	End   int `json:"end" yaml:"end"`
 }
 
-// BenchmarkJobRule defines the desired state of BenchmarkJobRule
+// BenchmarkJobRule defines the desired state of BenchmarkJobRule.
 type BenchmarkJobRule struct {
 	Name string `json:"name" yaml:"name"`
 	Type string `json:"type" yaml:"type"`
@@ -69,5 +76,10 @@ func (b *BenchmarkJob) Bind() *BenchmarkJob {
 	if b.GatewayClient != nil {
 		b.GatewayClient = b.GatewayClient.Bind()
 	}
+	return b
+}
+
+// Bind binds the actual data from the BenchmarkScenario receiver fields.
+func (b *BenchmarkScenario) Bind() *BenchmarkScenario {
 	return b
 }

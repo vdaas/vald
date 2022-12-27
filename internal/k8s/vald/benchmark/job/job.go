@@ -22,6 +22,7 @@ import (
 	"time"
 
 	"github.com/vdaas/vald/internal/k8s"
+	v1 "github.com/vdaas/vald/internal/k8s/vald/benchmark/api/v1"
 	"github.com/vdaas/vald/internal/log"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -50,7 +51,7 @@ type reconciler struct {
 	name        string
 	namespaces  []string
 	onError     func(err error)
-	onReconcile func(ctx context.Context, jobList map[string]BenchmarkJobSpec)
+	onReconcile func(ctx context.Context, jobList map[string]v1.BenchmarkJobSpec)
 	lopts       []client.ListOption
 }
 
@@ -74,7 +75,7 @@ func (r *reconciler) AddListOpts(opt client.ListOption) {
 }
 
 func (r *reconciler) Reconcile(ctx context.Context, req reconcile.Request) (res reconcile.Result, err error) {
-	bj := new(BenchmarkJobList)
+	bj := new(v1.BenchmarkJobList)
 
 	if r.lopts == nil {
 		err = r.mgr.GetClient().List(ctx, bj, r.lopts...)
@@ -100,7 +101,7 @@ func (r *reconciler) Reconcile(ctx context.Context, req reconcile.Request) (res 
 		return
 	}
 
-	var jobs = make(map[string]BenchmarkJobSpec, 0)
+	var jobs = make(map[string]v1.BenchmarkJobSpec, 0)
 	for _, item := range bj.Items {
 		name := strconv.FormatInt(time.Now().UnixNano(), 10)
 		jobs[name] = item.Spec
@@ -121,13 +122,13 @@ func (r *reconciler) NewReconciler(ctx context.Context, mgr manager.Manager) rec
 		r.mgr = mgr
 	}
 
-	AddToScheme(r.mgr.GetScheme())
+	v1.AddToScheme(r.mgr.GetScheme())
 
 	return r
 }
 
 func (r *reconciler) For() (client.Object, []builder.ForOption) {
-	return nil, nil
+	return new(v1.BenchmarkJob), nil
 }
 
 func (r *reconciler) Owns() (client.Object, []builder.OwnsOption) {

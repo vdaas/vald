@@ -19,6 +19,7 @@ package job
 import (
 	"context"
 
+	v1 "github.com/vdaas/vald/internal/k8s/vald/benchmark/api/v1"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
 
@@ -60,7 +61,7 @@ func WithOnErrorFunc(f func(err error)) Option {
 }
 
 // WithOnReconcileFunc returns Option that sets r.onReconcile.
-func WithOnReconcileFunc(f func(ctx context.Context, jobList map[string]BenchmarkJobSpec)) Option {
+func WithOnReconcileFunc(f func(ctx context.Context, jobList map[string]v1.BenchmarkJobSpec)) Option {
 	return func(r *reconciler) error {
 		r.onReconcile = f
 		return nil

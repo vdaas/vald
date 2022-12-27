@@ -16,12 +16,12 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: benchmark-operator-rolebinding
+  name: benchmark-scenario-rolebinding
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: benchmark-operator-role # TODO: fix
+  name: benchmark-scenario-role # TODO: fix
 subjects:
   - kind: ServiceAccount
-    name: benchmark-operator-service # TODO: fix
+    name: benchmark-scenario-service # TODO: fix
     namespace: default # TODO: fix

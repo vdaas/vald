@@ -99,6 +99,17 @@ charts/vald-helm-operator/values.schema.json: \
 	GOPRIVATE=$(GOPRIVATE) \
 	go run -mod=readonly hack/helm/schema/gen/main.go charts/vald-helm-operator/values.yaml > charts/vald-helm-operator/values.schema.json
 
+.PHONY: helm/schema/vald-benchmark-operator
+## generate json schema for Vald Benchmark Operator Chart
+helm/schema/vald-benchmark-operator: charts/vald-benchmark-operator/values.schema.json
+
+charts/vald-benchmark-operator/values.schema.json: \
+	charts/vald-benchmark-operator/values.yaml \
+	hack/helm/schema/gen/main.go
+	GOPRIVATE=$(GOPRIVATE) \
+	go run -mod=readonly hack/helm/schema/gen/main.go charts/vald-benchmark-operator/values.yaml > charts/vald-benchmark-operator/values.schema.json
+
+
 .PHONY: yq/install
 ## install yq
 yq/install: $(BINDIR)/yq
@@ -140,3 +151,14 @@ helm/schema/crd/vald-helm-operator: \
 	charts/vald-helm-operator/values.yaml > $(TEMP_DIR)/valdhelmoperatorrelease-spec.yaml
 	$(BINDIR)/yq eval-all 'select(fileIndex==0).spec.versions[0].schema.openAPIV3Schema.properties.spec = select(fileIndex==1).spec | select(fileIndex==0)' \
 	$(TEMP_DIR)/valdhelmoperatorrelease.yaml $(TEMP_DIR)/valdhelmoperatorrelease-spec.yaml > charts/vald-helm-operator/crds/valdhelmoperatorrelease.yaml
+
+.PHONY: helm/schema/crd/vald-benchmark-operator
+## generate OpenAPI v3 schema for ValdBenchmarkOperatorRelease
+helm/schema/crd/vald-benchmark-operator: \
+	yq/install
+	mv charts/vald-benchmark-operator/crds/valdbenchmarkoperatorrelease.yaml > $(TEMP_DIR)/valdbenchmarkoperatorrelease.yaml
+	GOPRIVATE=$(GOPRIVATE) \
+	go run -mod=readonly hack/helm/schema/crd/main.go \
+	charts/vald-benchmark-operator/values.yaml > $(TEMP_DIR)/valdbenchmarkoperatorrelease-spec.yaml
+	$(BINDIR)/yq eval-all 'select(fileIndex==0).spec.versions[0].schema.openAPIV3Schema.properties.spec = select(fileIndex==1).spec | select(fileIndex==0)' \
+	$(TEMP_DIR)/valdbenchmarkoperatorrelease.yaml $(TEMP_DIR)/valdbenchmarkoperatorrelease-spec.yaml > charts/vald-benchmark-operator/crds/valdbenchmarkoperatorrelease.yaml

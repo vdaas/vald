@@ -22,6 +22,7 @@ import (
 	"time"
 
 	"github.com/vdaas/vald/internal/k8s"
+	v1 "github.com/vdaas/vald/internal/k8s/vald/benchmark/api/v1"
 	"github.com/vdaas/vald/internal/log"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -48,9 +49,9 @@ var (
 type reconciler struct {
 	mgr         manager.Manager
 	name        string
-	namespace   string
+	namespaces  []string
 	onError     func(err error)
-	onReconcile func(ctx context.Context, operatorList map[string]BenchmarkScenarioSpec)
+	onReconcile func(ctx context.Context, operatorList map[string]v1.ValdBenchmarkScenarioSpec)
 	lopts       []client.ListOption
 }
 
@@ -63,10 +64,18 @@ func New(opts ...Option) (BenchmarkScenarioWatcher, error) {
 	return r, nil
 }
 
-func (r *reconciler) AddListOpts(opt client.ListOption) {}
+func (r *reconciler) AddListOpts(opt client.ListOption) {
+	if opt == nil {
+		return
+	}
+	if r.lopts == nil {
+		r.lopts = make([]client.ListOption, 0, 1)
+	}
+	r.lopts = append(r.lopts, opt)
+}
 
 func (r *reconciler) Reconcile(ctx context.Context, req reconcile.Request) (res reconcile.Result, err error) {
-	bs := new(BenchmarkScenarioList)
+	bs := new(v1.ValdBenchmarkScenarioList)
 
 	if r.lopts == nil {
 		err = r.mgr.GetClient().List(ctx, bs, r.lopts...)
@@ -92,7 +101,7 @@ func (r *reconciler) Reconcile(ctx context.Context, req reconcile.Request) (res 
 		return
 	}
 
-	var scenarios = make(map[string]BenchmarkScenarioSpec, 0)
+	var scenarios = make(map[string]v1.ValdBenchmarkScenarioSpec, 0)
 	for _, item := range bs.Items {
 		name := strconv.FormatInt(time.Now().UnixNano(), 10)
 		scenarios[name] = item.Spec
@@ -113,14 +122,15 @@ func (r *reconciler) NewReconciler(ctx context.Context, mgr manager.Manager) rec
 	if r.mgr == nil && mgr != nil {
 		r.mgr = mgr
 	}
-
-	AddToScheme(r.mgr.GetScheme())
+	log.Debug("start add to scheme")
+	v1.AddToScheme(r.mgr.GetScheme())
+	log.Debug("end add to scheme")
 
 	return r
 }
 
 func (r *reconciler) For() (client.Object, []builder.ForOption) {
-	return nil, nil
+	return new(v1.ValdBenchmarkScenario), nil
 }
 
 func (r *reconciler) Owns() (client.Object, []builder.OwnsOption) {
@@ -129,5 +139,5 @@ func (r *reconciler) Owns() (client.Object, []builder.OwnsOption) {
 
 func (r *reconciler) Watches() (*source.Kind, handler.EventHandler, []builder.WatchesOption) {
 	// return &source.Kind{Type: new(corev1.Pod)}, &handler.EnqueueRequestForObject{}
-	return nil, nil, nil
+	return &source.Kind{Type: new(v1.ValdBenchmarkScenario)}, &handler.EnqueueRequestForObject{}, nil
 }
