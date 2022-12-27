@@ -46,7 +46,7 @@ spec:
         app.kubernetes.io/instance: release-name
         app.kubernetes.io/component: gateway-lb
       annotations:
-        checksum/configmap: b1cd6339c052f74dd3f4b49dfe895990e2f71107a614d18fe693e69cbd4ba7d1
+        checksum/configmap: c879a5db76b206022708d44df9b5c7a58492799b59e99d3758690adecb9fed8d
         profefe.com/enable: "true"
         profefe.com/port: "6060"
         profefe.com/service: vald-lb-gateway
@@ -164,6 +164,14 @@ spec:
             runAsNonRoot: true
             runAsUser: 65532
           env:
+            - name: MY_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: MY_POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
             - name: MY_POD_NAMESPACE
               valueFrom:
                 fieldRef:

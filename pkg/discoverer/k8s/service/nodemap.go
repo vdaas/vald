@@ -82,6 +82,7 @@ type readOnlyNodeMap struct {
 
 // expunged is an arbitrary pointer that marks entries which have been deleted
 // from the dirty map.
+// skipcq: GSC-G103
 var expungedNodeMap = unsafe.Pointer(new(*node.Node))
 
 // An entry is a slot in the map corresponding to a particular key.
@@ -108,6 +109,7 @@ type entryNodeMap struct {
 }
 
 func newEntryNodeMap(i *node.Node) *entryNodeMap {
+	// skipcq: GSC-G103
 	return &entryNodeMap{p: unsafe.Pointer(&i)}
 }
 
@@ -187,6 +189,7 @@ func (e *entryNodeMap) tryStore(i **node.Node) bool {
 		if p == expungedNodeMap {
 			return false
 		}
+		// skipcq: GSC-G103
 		if atomic.CompareAndSwapPointer(&e.p, p, unsafe.Pointer(i)) {
 			return true
 		}
@@ -205,6 +208,7 @@ func (e *entryNodeMap) unexpungeLocked() (wasExpunged bool) {
 //
 // The entry must be known not to be expunged.
 func (e *entryNodeMap) storeLocked(i **node.Node) {
+	// skipcq: GSC-G103
 	atomic.StorePointer(&e.p, unsafe.Pointer(i))
 }
 
@@ -265,6 +269,7 @@ func (e *entryNodeMap) tryLoadOrStore(i *node.Node) (actual *node.Node, loaded, 
 	// shouldn't bother heap-allocating.
 	ic := i
 	for {
+		// skipcq: GSC-G103
 		if atomic.CompareAndSwapPointer(&e.p, nil, unsafe.Pointer(&ic)) {
 			return i, false, true
 		}

@@ -413,7 +413,7 @@ func Test_pool_load(t *testing.T) {
 	}
 }
 
-func Test_pool_connect(t *testing.T) {
+func Test_pool_reconnectUnhealthy(t *testing.T) {
 	t.Parallel()
 	type args struct {
 		ctx context.Context
@@ -555,7 +555,7 @@ func Test_pool_connect(t *testing.T) {
 				reconnectHash: test.fields.reconnectHash,
 			}
 
-			gotC, err := p.connect(test.args.ctx)
+			gotC, err := p.reconnectUnhealthy(test.args.ctx)
 			if err := checkFunc(test.want, gotC, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -1284,7 +1284,7 @@ func Test_pool_Get(t *testing.T) {
 	}
 }
 
-func Test_pool_get(t *testing.T) {
+func Test_pool_getHelthyConn(t *testing.T) {
 	t.Parallel()
 	type args struct {
 		retry uint64
@@ -1426,7 +1426,7 @@ func Test_pool_get(t *testing.T) {
 				reconnectHash: test.fields.reconnectHash,
 			}
 
-			got, got1 := p.get(test.args.retry)
+			got, got1 := p.getHelthyConn(test.args.retry)
 			if err := checkFunc(test.want, got, got1); err != nil {
 				tt.Errorf("error = %v", err)
 			}

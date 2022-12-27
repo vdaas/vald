@@ -36,16 +36,20 @@ ENV PKG agent/core/ngt
 ENV PKG_INTERNAL agent/internal
 ENV APP_NAME ngt
 
+# skipcq: DOK-DL3008
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
     build-essential \
     cmake \
-    upx \
     curl \
-    unzip \
-    git \
-    gcc \
     g++ \
+    gcc \
+    git \
+    liblapack-dev \
+    libomp-dev \
+    libopenblas-dev \
+    unzip \
+    upx \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 

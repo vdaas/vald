@@ -24,6 +24,7 @@ import (
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/config"
+	"github.com/vdaas/vald/internal/core/algorithm"
 	"github.com/vdaas/vald/internal/core/algorithm/ngt"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
@@ -130,8 +131,8 @@ func TestMaxDimInsert(t *testing.T) {
 				if bit == maxBit {
 					dim--
 				}
-				if dim > ngt.VectorDimensionSizeLimit {
-					t.Fatal(errors.ErrInvalidDimensionSize(dim, ngt.VectorDimensionSizeLimit))
+				if dim > algorithm.MaximumVectorDimensionSize {
+					t.Fatal(errors.ErrInvalidDimensionSize(dim, algorithm.MaximumVectorDimensionSize))
 				}
 				t.Logf("Start test: dimension = %d (bit = %d)", dim, bit)
 				ngt, err := init_ngt_service(dim)
@@ -233,8 +234,8 @@ func TestMaxDimInsertGRPC(t *testing.T) {
 				if bit == maxBit {
 					dim--
 				}
-				if dim > ngt.VectorDimensionSizeLimit {
-					t.Fatal(errors.ErrInvalidDimensionSize(dim, ngt.VectorDimensionSizeLimit))
+				if dim > algorithm.MaximumVectorDimensionSize {
+					t.Fatal(errors.ErrInvalidDimensionSize(dim, algorithm.MaximumVectorDimensionSize))
 				}
 				t.Logf("Start test: dimension = %d (bit = %d)", dim, bit)
 				ngt, err := init_ngt_service(dim)

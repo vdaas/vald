@@ -27,14 +27,14 @@ import (
 )
 
 func RecoverFunc(fn func() error) func() error {
-	return recoverFunc(fn, true)
+	return recoverFn(fn, true)
 }
 
 func RecoverWithoutPanicFunc(fn func() error) func() error {
-	return recoverFunc(fn, false)
+	return recoverFn(fn, false)
 }
 
-func recoverFunc(fn func() error, withPanic bool) func() error {
+func recoverFn(fn func() error, withPanic bool) func() error {
 	return func() (err error) {
 		defer func() {
 			if r := recover(); r != nil {

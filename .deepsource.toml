@@ -29,7 +29,17 @@ name = "go"
 enabled = true
 
   [analyzers.meta]
-  import_path = "github.com/vdaas/vald"
+  import_root = "github.com/vdaas/vald"
+  dependencies_vendored = false
+  cgo_enabled = false
+
+[[analyzers]]
+name = "secrets"
+enabled = true
+
+[[analyzers]]
+name = "shell"
+enabled = true
 
 [[analyzers]]
 name = "docker"
@@ -51,9 +61,18 @@ enabled = true
 
   trusted_registries = [
     "docker.io",
-    "hub.docker.com"
+    "hub.docker.com",
+    "ghcr.io/vdaas/vald"
   ]
 
 [[analyzers]]
 name = "test-coverage"
+enabled = true
+
+[[transformers]]
+name = "gofumpt"
+enabled = true
+
+[[transformers]]
+name = "prettier"
 enabled = true

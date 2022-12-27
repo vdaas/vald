@@ -48,6 +48,7 @@ GOBIN := $(eval GOBIN := $(shell go env GOBIN))$(GOBIN)
 GOCACHE := $(eval GOCACHE := $(shell go env GOCACHE))$(GOCACHE)
 GOOS := $(eval GOOS := $(shell go env GOOS))$(GOOS)
 GOPATH := $(eval GOPATH := $(shell go env GOPATH))$(GOPATH)
+GOTEST_TIMEOUT = 30m
 
 TEMP_DIR := $(eval TEMP_DIR := $(shell mktemp -d))$(TEMP_DIR)
 
@@ -378,6 +379,8 @@ update: \
 format: \
 	license \
 	format/go \
+	format/json \
+	format/md \
 	format/yaml
 
 .PHONY: format/go
@@ -400,6 +403,23 @@ format/yaml: \
 	    ".github/**/*.yml" \
 	    "cmd/**/*.yaml" \
 	    "k8s/**/*.yaml"
+
+.PHONY: format/md
+format/md: \
+	prettier/install
+	prettier --write \
+	    "charts/**/*.md" \
+	    "apis/**/*.md" \
+	    "tests/**/*.md" \
+	    "./*.md"
+
+.PHONY: format/json
+format/json: \
+	prettier/install
+	prettier --write \
+	    "apis/**/*.json" \
+	    "charts/**/*.json" \
+	    "hack/**/*.json"
 
 .PHONY: deps
 ## resolve dependencies

@@ -44,62 +44,65 @@ func Init() {
 }
 
 // Info prints the debug log to the logger.
-func (l *logger) Info(args ...interface{}) {
+func (*logger) Info(args ...interface{}) {
 	log.Debug(append([]interface{}{tag}, args...)...)
 }
 
 // Infoln prints the debug log to the logger.
-func (l *logger) Infoln(args ...interface{}) {
+func (*logger) Infoln(args ...interface{}) {
 	log.Debug(append([]interface{}{tag}, args...)...)
 }
 
 // Infof prints the debug log to the logger.
-func (l *logger) Infof(format string, args ...interface{}) {
+func (*logger) Infof(format string, args ...interface{}) {
 	log.Debugf(tag+"\t"+format, args...)
 }
 
 // Warning prints the warning log to the logger.
-func (l *logger) Warning(args ...interface{}) {
+func (*logger) Warning(args ...interface{}) {
 	log.Warn(append([]interface{}{tag}, args...)...)
 }
 
 // Warningln prints the warning log to the logger.
-func (l *logger) Warningln(args ...interface{}) {
+func (*logger) Warningln(args ...interface{}) {
 	log.Warn(append([]interface{}{tag}, args...)...)
 }
 
 // Warningf prints the warning log to the logger.
-func (l *logger) Warningf(format string, args ...interface{}) {
+func (*logger) Warningf(format string, args ...interface{}) {
 	log.Warnf(tag+"\t"+format, args...)
 }
 
 // Error prints the error log to the logger.
-func (l *logger) Error(args ...interface{}) {
+func (*logger) Error(args ...interface{}) {
 	log.Error(append([]interface{}{tag}, args...)...)
 }
 
 // Errorln prints the error log to the logger.
-func (l *logger) Errorln(args ...interface{}) {
+func (*logger) Errorln(args ...interface{}) {
 	log.Error(append([]interface{}{tag}, args...)...)
 }
 
 // Errorf prints the error log to the logger.
-func (l *logger) Errorf(format string, args ...interface{}) {
+func (*logger) Errorf(format string, args ...interface{}) {
 	log.Errorf(tag+"\t"+format, args...)
 }
 
 // Fatal prints the fatal log to the logger and exit the program.
-func (l *logger) Fatal(args ...interface{}) {
+func (*logger) Fatal(args ...interface{}) {
+	// skipcq: RVV-A0003
 	log.Fatal(append([]interface{}{tag}, args...)...)
 }
 
 // Fatalln prints the fatal log to the logger and exit the program.
-func (l *logger) Fatalln(args ...interface{}) {
+func (*logger) Fatalln(args ...interface{}) {
+	// skipcq: RVV-A0003
 	log.Fatal(append([]interface{}{tag}, args...)...)
 }
 
 // Fatalf prints the fatal log to the logger and exit the program.
-func (l *logger) Fatalf(format string, args ...interface{}) {
+func (*logger) Fatalf(format string, args ...interface{}) {
+	// skipcq: RVV-A0003
 	log.Fatalf(tag+"\t"+format, args...)
 }
 

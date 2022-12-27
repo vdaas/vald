@@ -16,7 +16,6 @@ package circuitbreaker
 import (
 	"context"
 	"reflect"
-	"sync"
 	"testing"
 
 	"github.com/vdaas/vald/internal/errors"
@@ -107,7 +106,6 @@ func Test_breakerManager_Do(t *testing.T) {
 		fn  func(ctx context.Context) (interface{}, error)
 	}
 	type fields struct {
-		m    sync.Map
 		opts []BreakerOption
 	}
 	type want struct {
@@ -188,7 +186,6 @@ func Test_breakerManager_Do(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 			bm := &breakerManager{
-				m:    test.fields.m,
 				opts: test.fields.opts,
 			}
 

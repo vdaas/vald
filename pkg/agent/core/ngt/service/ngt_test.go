@@ -19,20 +19,28 @@ package service
 
 import (
 	"context"
+	"fmt"
+	"math"
 	"reflect"
 	"sync"
 	"sync/atomic"
 	"testing"
 	"time"
 
+	"github.com/google/uuid"
+	"github.com/vdaas/vald/apis/grpc/v1/payload"
+	"github.com/vdaas/vald/internal/client/v1/client/vald"
 	"github.com/vdaas/vald/internal/config"
 	core "github.com/vdaas/vald/internal/core/algorithm/ngt"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/test/data/vector"
 	"github.com/vdaas/vald/internal/test/goleak"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/model"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/service/kvs"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/service/vqueue"
+	"google.golang.org/grpc"
 )
 
 func TestNew(t *testing.T) {
@@ -49,8 +57,8 @@ func TestNew(t *testing.T) {
 		args       args
 		want       want
 		checkFunc  func(want, NGT, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, gotNn NGT, err error) error {
 		if !errors.Is(err, w.err) {
@@ -72,6 +80,12 @@ func TestNew(t *testing.T) {
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -86,6 +100,12 @@ func TestNew(t *testing.T) {
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -97,10 +117,10 @@ func TestNew(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -125,12 +145,10 @@ func Test_ngt_load(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		fmu               sync.Mutex
 		fmap              map[string]uint32
 		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
-		cimu              sync.Mutex
 		lastNocie         uint64
 		nocie             uint64
 		nogce             uint64
@@ -146,11 +164,9 @@ func Test_ngt_load(t *testing.T) {
 		enableProactiveGC bool
 		enableCopyOnWrite bool
 		path              string
-		smu               sync.Mutex
 		tmpPath           atomic.Value
 		oldPath           string
 		basePath          string
-		cowmu             sync.Mutex
 		backupGen         uint64
 		poolSize          uint32
 		radius            float32
@@ -168,8 +184,8 @@ func Test_ngt_load(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -191,12 +207,10 @@ func Test_ngt_load(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           fmu: sync.Mutex{},
 		           fmap: nil,
 		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
-		           cimu: sync.Mutex{},
 		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
@@ -212,11 +226,9 @@ func Test_ngt_load(t *testing.T) {
 		           enableProactiveGC: false,
 		           enableCopyOnWrite: false,
 		           path: "",
-		           smu: sync.Mutex{},
 		           tmpPath: nil,
 		           oldPath: "",
 		           basePath: "",
-		           cowmu: sync.Mutex{},
 		           backupGen: 0,
 		           poolSize: 0,
 		           radius: 0,
@@ -227,6 +239,12 @@ func Test_ngt_load(t *testing.T) {
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -244,12 +262,10 @@ func Test_ngt_load(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           fmu: sync.Mutex{},
 		           fmap: nil,
 		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
-		           cimu: sync.Mutex{},
 		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
@@ -265,11 +281,9 @@ func Test_ngt_load(t *testing.T) {
 		           enableProactiveGC: false,
 		           enableCopyOnWrite: false,
 		           path: "",
-		           smu: sync.Mutex{},
 		           tmpPath: nil,
 		           oldPath: "",
 		           basePath: "",
-		           cowmu: sync.Mutex{},
 		           backupGen: 0,
 		           poolSize: 0,
 		           radius: 0,
@@ -280,6 +294,12 @@ func Test_ngt_load(t *testing.T) {
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -291,10 +311,10 @@ func Test_ngt_load(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -304,12 +324,10 @@ func Test_ngt_load(t *testing.T) {
 				core:              test.fields.core,
 				eg:                test.fields.eg,
 				kvs:               test.fields.kvs,
-				fmu:               test.fields.fmu,
 				fmap:              test.fields.fmap,
 				vq:                test.fields.vq,
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
-				cimu:              test.fields.cimu,
 				lastNocie:         test.fields.lastNocie,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
@@ -325,11 +343,9 @@ func Test_ngt_load(t *testing.T) {
 				enableProactiveGC: test.fields.enableProactiveGC,
 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
 				path:              test.fields.path,
-				smu:               test.fields.smu,
 				tmpPath:           test.fields.tmpPath,
 				oldPath:           test.fields.oldPath,
 				basePath:          test.fields.basePath,
-				cowmu:             test.fields.cowmu,
 				backupGen:         test.fields.backupGen,
 				poolSize:          test.fields.poolSize,
 				radius:            test.fields.radius,
@@ -355,12 +371,10 @@ func Test_ngt_initNGT(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		fmu               sync.Mutex
 		fmap              map[string]uint32
 		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
-		cimu              sync.Mutex
 		lastNocie         uint64
 		nocie             uint64
 		nogce             uint64
@@ -376,11 +390,9 @@ func Test_ngt_initNGT(t *testing.T) {
 		enableProactiveGC bool
 		enableCopyOnWrite bool
 		path              string
-		smu               sync.Mutex
 		tmpPath           atomic.Value
 		oldPath           string
 		basePath          string
-		cowmu             sync.Mutex
 		backupGen         uint64
 		poolSize          uint32
 		radius            float32
@@ -398,8 +410,8 @@ func Test_ngt_initNGT(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -419,12 +431,10 @@ func Test_ngt_initNGT(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           fmu: sync.Mutex{},
 		           fmap: nil,
 		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
-		           cimu: sync.Mutex{},
 		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
@@ -440,11 +450,9 @@ func Test_ngt_initNGT(t *testing.T) {
 		           enableProactiveGC: false,
 		           enableCopyOnWrite: false,
 		           path: "",
-		           smu: sync.Mutex{},
 		           tmpPath: nil,
 		           oldPath: "",
 		           basePath: "",
-		           cowmu: sync.Mutex{},
 		           backupGen: 0,
 		           poolSize: 0,
 		           radius: 0,
@@ -455,6 +463,12 @@ func Test_ngt_initNGT(t *testing.T) {
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -470,12 +484,10 @@ func Test_ngt_initNGT(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           fmu: sync.Mutex{},
 		           fmap: nil,
 		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
-		           cimu: sync.Mutex{},
 		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
@@ -491,11 +503,9 @@ func Test_ngt_initNGT(t *testing.T) {
 		           enableProactiveGC: false,
 		           enableCopyOnWrite: false,
 		           path: "",
-		           smu: sync.Mutex{},
 		           tmpPath: nil,
 		           oldPath: "",
 		           basePath: "",
-		           cowmu: sync.Mutex{},
 		           backupGen: 0,
 		           poolSize: 0,
 		           radius: 0,
@@ -506,6 +516,12 @@ func Test_ngt_initNGT(t *testing.T) {
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -517,10 +533,10 @@ func Test_ngt_initNGT(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -530,12 +546,10 @@ func Test_ngt_initNGT(t *testing.T) {
 				core:              test.fields.core,
 				eg:                test.fields.eg,
 				kvs:               test.fields.kvs,
-				fmu:               test.fields.fmu,
 				fmap:              test.fields.fmap,
 				vq:                test.fields.vq,
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
-				cimu:              test.fields.cimu,
 				lastNocie:         test.fields.lastNocie,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
@@ -551,11 +565,9 @@ func Test_ngt_initNGT(t *testing.T) {
 				enableProactiveGC: test.fields.enableProactiveGC,
 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
 				path:              test.fields.path,
-				smu:               test.fields.smu,
 				tmpPath:           test.fields.tmpPath,
 				oldPath:           test.fields.oldPath,
 				basePath:          test.fields.basePath,
-				cowmu:             test.fields.cowmu,
 				backupGen:         test.fields.backupGen,
 				poolSize:          test.fields.poolSize,
 				radius:            test.fields.radius,
@@ -581,12 +593,10 @@ func Test_ngt_loadKVS(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		fmu               sync.Mutex
 		fmap              map[string]uint32
 		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
-		cimu              sync.Mutex
 		lastNocie         uint64
 		nocie             uint64
 		nogce             uint64
@@ -602,11 +612,9 @@ func Test_ngt_loadKVS(t *testing.T) {
 		enableProactiveGC bool
 		enableCopyOnWrite bool
 		path              string
-		smu               sync.Mutex
 		tmpPath           atomic.Value
 		oldPath           string
 		basePath          string
-		cowmu             sync.Mutex
 		backupGen         uint64
 		poolSize          uint32
 		radius            float32
@@ -624,8 +632,8 @@ func Test_ngt_loadKVS(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -645,12 +653,10 @@ func Test_ngt_loadKVS(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           fmu: sync.Mutex{},
 		           fmap: nil,
 		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
-		           cimu: sync.Mutex{},
 		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
@@ -666,11 +672,9 @@ func Test_ngt_loadKVS(t *testing.T) {
 		           enableProactiveGC: false,
 		           enableCopyOnWrite: false,
 		           path: "",
-		           smu: sync.Mutex{},
 		           tmpPath: nil,
 		           oldPath: "",
 		           basePath: "",
-		           cowmu: sync.Mutex{},
 		           backupGen: 0,
 		           poolSize: 0,
 		           radius: 0,
@@ -681,6 +685,12 @@ func Test_ngt_loadKVS(t *testing.T) {
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -696,12 +706,10 @@ func Test_ngt_loadKVS(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           fmu: sync.Mutex{},
 		           fmap: nil,
 		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
-		           cimu: sync.Mutex{},
 		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
@@ -717,11 +725,9 @@ func Test_ngt_loadKVS(t *testing.T) {
 		           enableProactiveGC: false,
 		           enableCopyOnWrite: false,
 		           path: "",
-		           smu: sync.Mutex{},
 		           tmpPath: nil,
 		           oldPath: "",
 		           basePath: "",
-		           cowmu: sync.Mutex{},
 		           backupGen: 0,
 		           poolSize: 0,
 		           radius: 0,
@@ -732,6 +738,12 @@ func Test_ngt_loadKVS(t *testing.T) {
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -743,10 +755,10 @@ func Test_ngt_loadKVS(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -756,12 +768,10 @@ func Test_ngt_loadKVS(t *testing.T) {
 				core:              test.fields.core,
 				eg:                test.fields.eg,
 				kvs:               test.fields.kvs,
-				fmu:               test.fields.fmu,
 				fmap:              test.fields.fmap,
 				vq:                test.fields.vq,
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
-				cimu:              test.fields.cimu,
 				lastNocie:         test.fields.lastNocie,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
@@ -777,11 +787,9 @@ func Test_ngt_loadKVS(t *testing.T) {
 				enableProactiveGC: test.fields.enableProactiveGC,
 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
 				path:              test.fields.path,
-				smu:               test.fields.smu,
 				tmpPath:           test.fields.tmpPath,
 				oldPath:           test.fields.oldPath,
 				basePath:          test.fields.basePath,
-				cowmu:             test.fields.cowmu,
 				backupGen:         test.fields.backupGen,
 				poolSize:          test.fields.poolSize,
 				radius:            test.fields.radius,
@@ -807,12 +815,10 @@ func Test_ngt_Start(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		fmu               sync.Mutex
 		fmap              map[string]uint32
 		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
-		cimu              sync.Mutex
 		lastNocie         uint64
 		nocie             uint64
 		nogce             uint64
@@ -828,11 +834,9 @@ func Test_ngt_Start(t *testing.T) {
 		enableProactiveGC bool
 		enableCopyOnWrite bool
 		path              string
-		smu               sync.Mutex
 		tmpPath           atomic.Value
 		oldPath           string
 		basePath          string
-		cowmu             sync.Mutex
 		backupGen         uint64
 		poolSize          uint32
 		radius            float32
@@ -850,8 +854,8 @@ func Test_ngt_Start(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, <-chan error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, got <-chan error) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -871,12 +875,10 @@ func Test_ngt_Start(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           fmu: sync.Mutex{},
 		           fmap: nil,
 		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
-		           cimu: sync.Mutex{},
 		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
@@ -892,11 +894,9 @@ func Test_ngt_Start(t *testing.T) {
 		           enableProactiveGC: false,
 		           enableCopyOnWrite: false,
 		           path: "",
-		           smu: sync.Mutex{},
 		           tmpPath: nil,
 		           oldPath: "",
 		           basePath: "",
-		           cowmu: sync.Mutex{},
 		           backupGen: 0,
 		           poolSize: 0,
 		           radius: 0,
@@ -907,6 +907,12 @@ func Test_ngt_Start(t *testing.T) {
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -922,12 +928,10 @@ func Test_ngt_Start(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           fmu: sync.Mutex{},
 		           fmap: nil,
 		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
-		           cimu: sync.Mutex{},
 		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
@@ -943,11 +947,9 @@ func Test_ngt_Start(t *testing.T) {
 		           enableProactiveGC: false,
 		           enableCopyOnWrite: false,
 		           path: "",
-		           smu: sync.Mutex{},
 		           tmpPath: nil,
 		           oldPath: "",
 		           basePath: "",
-		           cowmu: sync.Mutex{},
 		           backupGen: 0,
 		           poolSize: 0,
 		           radius: 0,
@@ -958,6 +960,12 @@ func Test_ngt_Start(t *testing.T) {
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -969,10 +977,10 @@ func Test_ngt_Start(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -982,12 +990,10 @@ func Test_ngt_Start(t *testing.T) {
 				core:              test.fields.core,
 				eg:                test.fields.eg,
 				kvs:               test.fields.kvs,
-				fmu:               test.fields.fmu,
 				fmap:              test.fields.fmap,
 				vq:                test.fields.vq,
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
-				cimu:              test.fields.cimu,
 				lastNocie:         test.fields.lastNocie,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
@@ -1003,11 +1009,9 @@ func Test_ngt_Start(t *testing.T) {
 				enableProactiveGC: test.fields.enableProactiveGC,
 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
 				path:              test.fields.path,
-				smu:               test.fields.smu,
 				tmpPath:           test.fields.tmpPath,
 				oldPath:           test.fields.oldPath,
 				basePath:          test.fields.basePath,
-				cowmu:             test.fields.cowmu,
 				backupGen:         test.fields.backupGen,
 				poolSize:          test.fields.poolSize,
 				radius:            test.fields.radius,
@@ -1036,12 +1040,10 @@ func Test_ngt_Search(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		fmu               sync.Mutex
 		fmap              map[string]uint32
 		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
-		cimu              sync.Mutex
 		lastNocie         uint64
 		nocie             uint64
 		nogce             uint64
@@ -1057,11 +1059,9 @@ func Test_ngt_Search(t *testing.T) {
 		enableProactiveGC bool
 		enableCopyOnWrite bool
 		path              string
-		smu               sync.Mutex
 		tmpPath           atomic.Value
 		oldPath           string
 		basePath          string
-		cowmu             sync.Mutex
 		backupGen         uint64
 		poolSize          uint32
 		radius            float32
@@ -1080,8 +1080,8 @@ func Test_ngt_Search(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, []model.Distance, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, got []model.Distance, err error) error {
 		if !errors.Is(err, w.err) {
@@ -1107,12 +1107,10 @@ func Test_ngt_Search(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           fmu: sync.Mutex{},
 		           fmap: nil,
 		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
-		           cimu: sync.Mutex{},
 		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
@@ -1128,11 +1126,9 @@ func Test_ngt_Search(t *testing.T) {
 		           enableProactiveGC: false,
 		           enableCopyOnWrite: false,
 		           path: "",
-		           smu: sync.Mutex{},
 		           tmpPath: nil,
 		           oldPath: "",
 		           basePath: "",
-		           cowmu: sync.Mutex{},
 		           backupGen: 0,
 		           poolSize: 0,
 		           radius: 0,
@@ -1143,6 +1139,12 @@ func Test_ngt_Search(t *testing.T) {
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -1161,12 +1163,10 @@ func Test_ngt_Search(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           fmu: sync.Mutex{},
 		           fmap: nil,
 		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
-		           cimu: sync.Mutex{},
 		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
@@ -1182,11 +1182,9 @@ func Test_ngt_Search(t *testing.T) {
 		           enableProactiveGC: false,
 		           enableCopyOnWrite: false,
 		           path: "",
-		           smu: sync.Mutex{},
 		           tmpPath: nil,
 		           oldPath: "",
 		           basePath: "",
-		           cowmu: sync.Mutex{},
 		           backupGen: 0,
 		           poolSize: 0,
 		           radius: 0,
@@ -1197,6 +1195,12 @@ func Test_ngt_Search(t *testing.T) {
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -1208,10 +1212,10 @@ func Test_ngt_Search(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -1221,12 +1225,10 @@ func Test_ngt_Search(t *testing.T) {
 				core:              test.fields.core,
 				eg:                test.fields.eg,
 				kvs:               test.fields.kvs,
-				fmu:               test.fields.fmu,
 				fmap:              test.fields.fmap,
 				vq:                test.fields.vq,
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
-				cimu:              test.fields.cimu,
 				lastNocie:         test.fields.lastNocie,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
@@ -1242,11 +1244,9 @@ func Test_ngt_Search(t *testing.T) {
 				enableProactiveGC: test.fields.enableProactiveGC,
 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
 				path:              test.fields.path,
-				smu:               test.fields.smu,
 				tmpPath:           test.fields.tmpPath,
 				oldPath:           test.fields.oldPath,
 				basePath:          test.fields.basePath,
-				cowmu:             test.fields.cowmu,
 				backupGen:         test.fields.backupGen,
 				poolSize:          test.fields.poolSize,
 				radius:            test.fields.radius,
@@ -1275,12 +1275,10 @@ func Test_ngt_SearchByID(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		fmu               sync.Mutex
 		fmap              map[string]uint32
 		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
-		cimu              sync.Mutex
 		lastNocie         uint64
 		nocie             uint64
 		nogce             uint64
@@ -1296,11 +1294,9 @@ func Test_ngt_SearchByID(t *testing.T) {
 		enableProactiveGC bool
 		enableCopyOnWrite bool
 		path              string
-		smu               sync.Mutex
 		tmpPath           atomic.Value
 		oldPath           string
 		basePath          string
-		cowmu             sync.Mutex
 		backupGen         uint64
 		poolSize          uint32
 		radius            float32
@@ -1320,8 +1316,8 @@ func Test_ngt_SearchByID(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, []float32, []model.Distance, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, gotVec []float32, gotDst []model.Distance, err error) error {
 		if !errors.Is(err, w.err) {
@@ -1350,12 +1346,10 @@ func Test_ngt_SearchByID(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           fmu: sync.Mutex{},
 		           fmap: nil,
 		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
-		           cimu: sync.Mutex{},
 		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
@@ -1371,11 +1365,9 @@ func Test_ngt_SearchByID(t *testing.T) {
 		           enableProactiveGC: false,
 		           enableCopyOnWrite: false,
 		           path: "",
-		           smu: sync.Mutex{},
 		           tmpPath: nil,
 		           oldPath: "",
 		           basePath: "",
-		           cowmu: sync.Mutex{},
 		           backupGen: 0,
 		           poolSize: 0,
 		           radius: 0,
@@ -1386,6 +1378,12 @@ func Test_ngt_SearchByID(t *testing.T) {
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -1404,12 +1402,10 @@ func Test_ngt_SearchByID(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           fmu: sync.Mutex{},
 		           fmap: nil,
 		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
-		           cimu: sync.Mutex{},
 		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
@@ -1425,11 +1421,9 @@ func Test_ngt_SearchByID(t *testing.T) {
 		           enableProactiveGC: false,
 		           enableCopyOnWrite: false,
 		           path: "",
-		           smu: sync.Mutex{},
 		           tmpPath: nil,
 		           oldPath: "",
 		           basePath: "",
-		           cowmu: sync.Mutex{},
 		           backupGen: 0,
 		           poolSize: 0,
 		           radius: 0,
@@ -1440,6 +1434,12 @@ func Test_ngt_SearchByID(t *testing.T) {
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -1451,10 +1451,10 @@ func Test_ngt_SearchByID(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -1464,12 +1464,10 @@ func Test_ngt_SearchByID(t *testing.T) {
 				core:              test.fields.core,
 				eg:                test.fields.eg,
 				kvs:               test.fields.kvs,
-				fmu:               test.fields.fmu,
 				fmap:              test.fields.fmap,
 				vq:                test.fields.vq,
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
-				cimu:              test.fields.cimu,
 				lastNocie:         test.fields.lastNocie,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
@@ -1485,11 +1483,9 @@ func Test_ngt_SearchByID(t *testing.T) {
 				enableProactiveGC: test.fields.enableProactiveGC,
 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
 				path:              test.fields.path,
-				smu:               test.fields.smu,
 				tmpPath:           test.fields.tmpPath,
 				oldPath:           test.fields.oldPath,
 				basePath:          test.fields.basePath,
-				cowmu:             test.fields.cowmu,
 				backupGen:         test.fields.backupGen,
 				poolSize:          test.fields.poolSize,
 				radius:            test.fields.radius,
@@ -1516,12 +1512,10 @@ func Test_ngt_LinearSearch(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		fmu               sync.Mutex
 		fmap              map[string]uint32
 		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
-		cimu              sync.Mutex
 		lastNocie         uint64
 		nocie             uint64
 		nogce             uint64
@@ -1537,11 +1531,9 @@ func Test_ngt_LinearSearch(t *testing.T) {
 		enableProactiveGC bool
 		enableCopyOnWrite bool
 		path              string
-		smu               sync.Mutex
 		tmpPath           atomic.Value
 		oldPath           string
 		basePath          string
-		cowmu             sync.Mutex
 		backupGen         uint64
 		poolSize          uint32
 		radius            float32
@@ -1560,8 +1552,8 @@ func Test_ngt_LinearSearch(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, []model.Distance, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, got []model.Distance, err error) error {
 		if !errors.Is(err, w.err) {
@@ -1585,12 +1577,10 @@ func Test_ngt_LinearSearch(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           fmu: sync.Mutex{},
 		           fmap: nil,
 		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
-		           cimu: sync.Mutex{},
 		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
@@ -1606,11 +1596,9 @@ func Test_ngt_LinearSearch(t *testing.T) {
 		           enableProactiveGC: false,
 		           enableCopyOnWrite: false,
 		           path: "",
-		           smu: sync.Mutex{},
 		           tmpPath: nil,
 		           oldPath: "",
 		           basePath: "",
-		           cowmu: sync.Mutex{},
 		           backupGen: 0,
 		           poolSize: 0,
 		           radius: 0,
@@ -1621,6 +1609,12 @@ func Test_ngt_LinearSearch(t *testing.T) {
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -1637,12 +1631,10 @@ func Test_ngt_LinearSearch(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           fmu: sync.Mutex{},
 		           fmap: nil,
 		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
-		           cimu: sync.Mutex{},
 		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
@@ -1658,11 +1650,9 @@ func Test_ngt_LinearSearch(t *testing.T) {
 		           enableProactiveGC: false,
 		           enableCopyOnWrite: false,
 		           path: "",
-		           smu: sync.Mutex{},
 		           tmpPath: nil,
 		           oldPath: "",
 		           basePath: "",
-		           cowmu: sync.Mutex{},
 		           backupGen: 0,
 		           poolSize: 0,
 		           radius: 0,
@@ -1673,6 +1663,12 @@ func Test_ngt_LinearSearch(t *testing.T) {
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -1684,10 +1680,10 @@ func Test_ngt_LinearSearch(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -1697,12 +1693,10 @@ func Test_ngt_LinearSearch(t *testing.T) {
 				core:              test.fields.core,
 				eg:                test.fields.eg,
 				kvs:               test.fields.kvs,
-				fmu:               test.fields.fmu,
 				fmap:              test.fields.fmap,
 				vq:                test.fields.vq,
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
-				cimu:              test.fields.cimu,
 				lastNocie:         test.fields.lastNocie,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
@@ -1718,11 +1712,9 @@ func Test_ngt_LinearSearch(t *testing.T) {
 				enableProactiveGC: test.fields.enableProactiveGC,
 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
 				path:              test.fields.path,
-				smu:               test.fields.smu,
 				tmpPath:           test.fields.tmpPath,
 				oldPath:           test.fields.oldPath,
 				basePath:          test.fields.basePath,
-				cowmu:             test.fields.cowmu,
 				backupGen:         test.fields.backupGen,
 				poolSize:          test.fields.poolSize,
 				radius:            test.fields.radius,
@@ -1749,12 +1741,10 @@ func Test_ngt_LinearSearchByID(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		fmu               sync.Mutex
 		fmap              map[string]uint32
 		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
-		cimu              sync.Mutex
 		lastNocie         uint64
 		nocie             uint64
 		nogce             uint64
@@ -1770,11 +1760,9 @@ func Test_ngt_LinearSearchByID(t *testing.T) {
 		enableProactiveGC bool
 		enableCopyOnWrite bool
 		path              string
-		smu               sync.Mutex
 		tmpPath           atomic.Value
 		oldPath           string
 		basePath          string
-		cowmu             sync.Mutex
 		backupGen         uint64
 		poolSize          uint32
 		radius            float32
@@ -1794,8 +1782,8 @@ func Test_ngt_LinearSearchByID(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, []float32, []model.Distance, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, gotVec []float32, gotDst []model.Distance, err error) error {
 		if !errors.Is(err, w.err) {
@@ -1822,12 +1810,10 @@ func Test_ngt_LinearSearchByID(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           fmu: sync.Mutex{},
 		           fmap: nil,
 		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
-		           cimu: sync.Mutex{},
 		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
@@ -1843,11 +1829,9 @@ func Test_ngt_LinearSearchByID(t *testing.T) {
 		           enableProactiveGC: false,
 		           enableCopyOnWrite: false,
 		           path: "",
-		           smu: sync.Mutex{},
 		           tmpPath: nil,
 		           oldPath: "",
 		           basePath: "",
-		           cowmu: sync.Mutex{},
 		           backupGen: 0,
 		           poolSize: 0,
 		           radius: 0,
@@ -1858,6 +1842,12 @@ func Test_ngt_LinearSearchByID(t *testing.T) {
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -1874,12 +1864,10 @@ func Test_ngt_LinearSearchByID(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           fmu: sync.Mutex{},
 		           fmap: nil,
 		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
-		           cimu: sync.Mutex{},
 		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
@@ -1895,11 +1883,9 @@ func Test_ngt_LinearSearchByID(t *testing.T) {
 		           enableProactiveGC: false,
 		           enableCopyOnWrite: false,
 		           path: "",
-		           smu: sync.Mutex{},
 		           tmpPath: nil,
 		           oldPath: "",
 		           basePath: "",
-		           cowmu: sync.Mutex{},
 		           backupGen: 0,
 		           poolSize: 0,
 		           radius: 0,
@@ -1910,6 +1896,12 @@ func Test_ngt_LinearSearchByID(t *testing.T) {
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -1921,10 +1913,10 @@ func Test_ngt_LinearSearchByID(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -1934,12 +1926,10 @@ func Test_ngt_LinearSearchByID(t *testing.T) {
 				core:              test.fields.core,
 				eg:                test.fields.eg,
 				kvs:               test.fields.kvs,
-				fmu:               test.fields.fmu,
 				fmap:              test.fields.fmap,
 				vq:                test.fields.vq,
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
-				cimu:              test.fields.cimu,
 				lastNocie:         test.fields.lastNocie,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
@@ -1955,11 +1945,9 @@ func Test_ngt_LinearSearchByID(t *testing.T) {
 				enableProactiveGC: test.fields.enableProactiveGC,
 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
 				path:              test.fields.path,
-				smu:               test.fields.smu,
 				tmpPath:           test.fields.tmpPath,
 				oldPath:           test.fields.oldPath,
 				basePath:          test.fields.basePath,
-				cowmu:             test.fields.cowmu,
 				backupGen:         test.fields.backupGen,
 				poolSize:          test.fields.poolSize,
 				radius:            test.fields.radius,
@@ -1986,12 +1974,10 @@ func Test_ngt_Insert(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		fmu               sync.Mutex
 		fmap              map[string]uint32
 		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
-		cimu              sync.Mutex
 		lastNocie         uint64
 		nocie             uint64
 		nogce             uint64
@@ -2007,11 +1993,9 @@ func Test_ngt_Insert(t *testing.T) {
 		enableProactiveGC bool
 		enableCopyOnWrite bool
 		path              string
-		smu               sync.Mutex
 		tmpPath           atomic.Value
 		oldPath           string
 		basePath          string
-		cowmu             sync.Mutex
 		backupGen         uint64
 		poolSize          uint32
 		radius            float32
@@ -2029,8 +2013,8 @@ func Test_ngt_Insert(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -2051,12 +2035,10 @@ func Test_ngt_Insert(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           fmu: sync.Mutex{},
 		           fmap: nil,
 		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
-		           cimu: sync.Mutex{},
 		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
@@ -2072,11 +2054,9 @@ func Test_ngt_Insert(t *testing.T) {
 		           enableProactiveGC: false,
 		           enableCopyOnWrite: false,
 		           path: "",
-		           smu: sync.Mutex{},
 		           tmpPath: nil,
 		           oldPath: "",
 		           basePath: "",
-		           cowmu: sync.Mutex{},
 		           backupGen: 0,
 		           poolSize: 0,
 		           radius: 0,
@@ -2087,6 +2067,12 @@ func Test_ngt_Insert(t *testing.T) {
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -2103,12 +2089,10 @@ func Test_ngt_Insert(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           fmu: sync.Mutex{},
 		           fmap: nil,
 		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
-		           cimu: sync.Mutex{},
 		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
@@ -2124,11 +2108,9 @@ func Test_ngt_Insert(t *testing.T) {
 		           enableProactiveGC: false,
 		           enableCopyOnWrite: false,
 		           path: "",
-		           smu: sync.Mutex{},
 		           tmpPath: nil,
 		           oldPath: "",
 		           basePath: "",
-		           cowmu: sync.Mutex{},
 		           backupGen: 0,
 		           poolSize: 0,
 		           radius: 0,
@@ -2139,6 +2121,12 @@ func Test_ngt_Insert(t *testing.T) {
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -2150,10 +2138,10 @@ func Test_ngt_Insert(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -2163,12 +2151,10 @@ func Test_ngt_Insert(t *testing.T) {
 				core:              test.fields.core,
 				eg:                test.fields.eg,
 				kvs:               test.fields.kvs,
-				fmu:               test.fields.fmu,
 				fmap:              test.fields.fmap,
 				vq:                test.fields.vq,
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
-				cimu:              test.fields.cimu,
 				lastNocie:         test.fields.lastNocie,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
@@ -2184,11 +2170,9 @@ func Test_ngt_Insert(t *testing.T) {
 				enableProactiveGC: test.fields.enableProactiveGC,
 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
 				path:              test.fields.path,
-				smu:               test.fields.smu,
 				tmpPath:           test.fields.tmpPath,
 				oldPath:           test.fields.oldPath,
 				basePath:          test.fields.basePath,
-				cowmu:             test.fields.cowmu,
 				backupGen:         test.fields.backupGen,
 				poolSize:          test.fields.poolSize,
 				radius:            test.fields.radius,
@@ -2216,12 +2200,10 @@ func Test_ngt_InsertWithTime(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		fmu               sync.Mutex
 		fmap              map[string]uint32
 		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
-		cimu              sync.Mutex
 		lastNocie         uint64
 		nocie             uint64
 		nogce             uint64
@@ -2237,11 +2219,9 @@ func Test_ngt_InsertWithTime(t *testing.T) {
 		enableProactiveGC bool
 		enableCopyOnWrite bool
 		path              string
-		smu               sync.Mutex
 		tmpPath           atomic.Value
 		oldPath           string
 		basePath          string
-		cowmu             sync.Mutex
 		backupGen         uint64
 		poolSize          uint32
 		radius            float32
@@ -2259,8 +2239,8 @@ func Test_ngt_InsertWithTime(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -2282,12 +2262,10 @@ func Test_ngt_InsertWithTime(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           fmu: sync.Mutex{},
 		           fmap: nil,
 		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
-		           cimu: sync.Mutex{},
 		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
@@ -2303,11 +2281,9 @@ func Test_ngt_InsertWithTime(t *testing.T) {
 		           enableProactiveGC: false,
 		           enableCopyOnWrite: false,
 		           path: "",
-		           smu: sync.Mutex{},
 		           tmpPath: nil,
 		           oldPath: "",
 		           basePath: "",
-		           cowmu: sync.Mutex{},
 		           backupGen: 0,
 		           poolSize: 0,
 		           radius: 0,
@@ -2318,6 +2294,12 @@ func Test_ngt_InsertWithTime(t *testing.T) {
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -2335,12 +2317,10 @@ func Test_ngt_InsertWithTime(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           fmu: sync.Mutex{},
 		           fmap: nil,
 		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
-		           cimu: sync.Mutex{},
 		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
@@ -2356,11 +2336,9 @@ func Test_ngt_InsertWithTime(t *testing.T) {
 		           enableProactiveGC: false,
 		           enableCopyOnWrite: false,
 		           path: "",
-		           smu: sync.Mutex{},
 		           tmpPath: nil,
 		           oldPath: "",
 		           basePath: "",
-		           cowmu: sync.Mutex{},
 		           backupGen: 0,
 		           poolSize: 0,
 		           radius: 0,
@@ -2371,6 +2349,12 @@ func Test_ngt_InsertWithTime(t *testing.T) {
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -2382,10 +2366,10 @@ func Test_ngt_InsertWithTime(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -2395,12 +2379,10 @@ func Test_ngt_InsertWithTime(t *testing.T) {
 				core:              test.fields.core,
 				eg:                test.fields.eg,
 				kvs:               test.fields.kvs,
-				fmu:               test.fields.fmu,
 				fmap:              test.fields.fmap,
 				vq:                test.fields.vq,
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
-				cimu:              test.fields.cimu,
 				lastNocie:         test.fields.lastNocie,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
@@ -2416,11 +2398,9 @@ func Test_ngt_InsertWithTime(t *testing.T) {
 				enableProactiveGC: test.fields.enableProactiveGC,
 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
 				path:              test.fields.path,
-				smu:               test.fields.smu,
 				tmpPath:           test.fields.tmpPath,
 				oldPath:           test.fields.oldPath,
 				basePath:          test.fields.basePath,
-				cowmu:             test.fields.cowmu,
 				backupGen:         test.fields.backupGen,
 				poolSize:          test.fields.poolSize,
 				radius:            test.fields.radius,
@@ -2449,12 +2429,10 @@ func Test_ngt_insert(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		fmu               sync.Mutex
 		fmap              map[string]uint32
 		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
-		cimu              sync.Mutex
 		lastNocie         uint64
 		nocie             uint64
 		nogce             uint64
@@ -2470,11 +2448,9 @@ func Test_ngt_insert(t *testing.T) {
 		enableProactiveGC bool
 		enableCopyOnWrite bool
 		path              string
-		smu               sync.Mutex
 		tmpPath           atomic.Value
 		oldPath           string
 		basePath          string
-		cowmu             sync.Mutex
 		backupGen         uint64
 		poolSize          uint32
 		radius            float32
@@ -2492,8 +2468,8 @@ func Test_ngt_insert(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -2516,12 +2492,10 @@ func Test_ngt_insert(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           fmu: sync.Mutex{},
 		           fmap: nil,
 		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
-		           cimu: sync.Mutex{},
 		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
@@ -2537,11 +2511,9 @@ func Test_ngt_insert(t *testing.T) {
 		           enableProactiveGC: false,
 		           enableCopyOnWrite: false,
 		           path: "",
-		           smu: sync.Mutex{},
 		           tmpPath: nil,
 		           oldPath: "",
 		           basePath: "",
-		           cowmu: sync.Mutex{},
 		           backupGen: 0,
 		           poolSize: 0,
 		           radius: 0,
@@ -2552,6 +2524,12 @@ func Test_ngt_insert(t *testing.T) {
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -2570,12 +2548,10 @@ func Test_ngt_insert(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           fmu: sync.Mutex{},
 		           fmap: nil,
 		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
-		           cimu: sync.Mutex{},
 		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
@@ -2591,11 +2567,9 @@ func Test_ngt_insert(t *testing.T) {
 		           enableProactiveGC: false,
 		           enableCopyOnWrite: false,
 		           path: "",
-		           smu: sync.Mutex{},
 		           tmpPath: nil,
 		           oldPath: "",
 		           basePath: "",
-		           cowmu: sync.Mutex{},
 		           backupGen: 0,
 		           poolSize: 0,
 		           radius: 0,
@@ -2606,6 +2580,12 @@ func Test_ngt_insert(t *testing.T) {
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -2617,10 +2597,10 @@ func Test_ngt_insert(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -2630,12 +2610,10 @@ func Test_ngt_insert(t *testing.T) {
 				core:              test.fields.core,
 				eg:                test.fields.eg,
 				kvs:               test.fields.kvs,
-				fmu:               test.fields.fmu,
 				fmap:              test.fields.fmap,
 				vq:                test.fields.vq,
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
-				cimu:              test.fields.cimu,
 				lastNocie:         test.fields.lastNocie,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
@@ -2651,11 +2629,9 @@ func Test_ngt_insert(t *testing.T) {
 				enableProactiveGC: test.fields.enableProactiveGC,
 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
 				path:              test.fields.path,
-				smu:               test.fields.smu,
 				tmpPath:           test.fields.tmpPath,
 				oldPath:           test.fields.oldPath,
 				basePath:          test.fields.basePath,
-				cowmu:             test.fields.cowmu,
 				backupGen:         test.fields.backupGen,
 				poolSize:          test.fields.poolSize,
 				radius:            test.fields.radius,
@@ -2681,12 +2657,10 @@ func Test_ngt_InsertMultiple(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		fmu               sync.Mutex
 		fmap              map[string]uint32
 		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
-		cimu              sync.Mutex
 		lastNocie         uint64
 		nocie             uint64
 		nogce             uint64
@@ -2702,11 +2676,9 @@ func Test_ngt_InsertMultiple(t *testing.T) {
 		enableProactiveGC bool
 		enableCopyOnWrite bool
 		path              string
-		smu               sync.Mutex
 		tmpPath           atomic.Value
 		oldPath           string
 		basePath          string
-		cowmu             sync.Mutex
 		backupGen         uint64
 		poolSize          uint32
 		radius            float32
@@ -2724,8 +2696,8 @@ func Test_ngt_InsertMultiple(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -2745,12 +2717,10 @@ func Test_ngt_InsertMultiple(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           fmu: sync.Mutex{},
 		           fmap: nil,
 		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
-		           cimu: sync.Mutex{},
 		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
@@ -2766,11 +2736,9 @@ func Test_ngt_InsertMultiple(t *testing.T) {
 		           enableProactiveGC: false,
 		           enableCopyOnWrite: false,
 		           path: "",
-		           smu: sync.Mutex{},
 		           tmpPath: nil,
 		           oldPath: "",
 		           basePath: "",
-		           cowmu: sync.Mutex{},
 		           backupGen: 0,
 		           poolSize: 0,
 		           radius: 0,
@@ -2781,6 +2749,12 @@ func Test_ngt_InsertMultiple(t *testing.T) {
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -2796,12 +2770,10 @@ func Test_ngt_InsertMultiple(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           fmu: sync.Mutex{},
 		           fmap: nil,
 		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
-		           cimu: sync.Mutex{},
 		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
@@ -2817,11 +2789,9 @@ func Test_ngt_InsertMultiple(t *testing.T) {
 		           enableProactiveGC: false,
 		           enableCopyOnWrite: false,
 		           path: "",
-		           smu: sync.Mutex{},
 		           tmpPath: nil,
 		           oldPath: "",
 		           basePath: "",
-		           cowmu: sync.Mutex{},
 		           backupGen: 0,
 		           poolSize: 0,
 		           radius: 0,
@@ -2832,6 +2802,12 @@ func Test_ngt_InsertMultiple(t *testing.T) {
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -2843,10 +2819,10 @@ func Test_ngt_InsertMultiple(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -2856,12 +2832,10 @@ func Test_ngt_InsertMultiple(t *testing.T) {
 				core:              test.fields.core,
 				eg:                test.fields.eg,
 				kvs:               test.fields.kvs,
-				fmu:               test.fields.fmu,
 				fmap:              test.fields.fmap,
 				vq:                test.fields.vq,
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
-				cimu:              test.fields.cimu,
 				lastNocie:         test.fields.lastNocie,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
@@ -2877,11 +2851,9 @@ func Test_ngt_InsertMultiple(t *testing.T) {
 				enableProactiveGC: test.fields.enableProactiveGC,
 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
 				path:              test.fields.path,
-				smu:               test.fields.smu,
 				tmpPath:           test.fields.tmpPath,
 				oldPath:           test.fields.oldPath,
 				basePath:          test.fields.basePath,
-				cowmu:             test.fields.cowmu,
 				backupGen:         test.fields.backupGen,
 				poolSize:          test.fields.poolSize,
 				radius:            test.fields.radius,
@@ -2908,12 +2880,10 @@ func Test_ngt_InsertMultipleWithTime(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		fmu               sync.Mutex
 		fmap              map[string]uint32
 		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
-		cimu              sync.Mutex
 		lastNocie         uint64
 		nocie             uint64
 		nogce             uint64
@@ -2929,11 +2899,9 @@ func Test_ngt_InsertMultipleWithTime(t *testing.T) {
 		enableProactiveGC bool
 		enableCopyOnWrite bool
 		path              string
-		smu               sync.Mutex
 		tmpPath           atomic.Value
 		oldPath           string
 		basePath          string
-		cowmu             sync.Mutex
 		backupGen         uint64
 		poolSize          uint32
 		radius            float32
@@ -2951,8 +2919,8 @@ func Test_ngt_InsertMultipleWithTime(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -2973,12 +2941,10 @@ func Test_ngt_InsertMultipleWithTime(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           fmu: sync.Mutex{},
 		           fmap: nil,
 		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
-		           cimu: sync.Mutex{},
 		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
@@ -2994,11 +2960,9 @@ func Test_ngt_InsertMultipleWithTime(t *testing.T) {
 		           enableProactiveGC: false,
 		           enableCopyOnWrite: false,
 		           path: "",
-		           smu: sync.Mutex{},
 		           tmpPath: nil,
 		           oldPath: "",
 		           basePath: "",
-		           cowmu: sync.Mutex{},
 		           backupGen: 0,
 		           poolSize: 0,
 		           radius: 0,
@@ -3009,6 +2973,12 @@ func Test_ngt_InsertMultipleWithTime(t *testing.T) {
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -3025,12 +2995,10 @@ func Test_ngt_InsertMultipleWithTime(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           fmu: sync.Mutex{},
 		           fmap: nil,
 		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
-		           cimu: sync.Mutex{},
 		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
@@ -3046,11 +3014,9 @@ func Test_ngt_InsertMultipleWithTime(t *testing.T) {
 		           enableProactiveGC: false,
 		           enableCopyOnWrite: false,
 		           path: "",
-		           smu: sync.Mutex{},
 		           tmpPath: nil,
 		           oldPath: "",
 		           basePath: "",
-		           cowmu: sync.Mutex{},
 		           backupGen: 0,
 		           poolSize: 0,
 		           radius: 0,
@@ -3061,6 +3027,12 @@ func Test_ngt_InsertMultipleWithTime(t *testing.T) {
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -3072,10 +3044,10 @@ func Test_ngt_InsertMultipleWithTime(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -3085,12 +3057,10 @@ func Test_ngt_InsertMultipleWithTime(t *testing.T) {
 				core:              test.fields.core,
 				eg:                test.fields.eg,
 				kvs:               test.fields.kvs,
-				fmu:               test.fields.fmu,
 				fmap:              test.fields.fmap,
 				vq:                test.fields.vq,
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
-				cimu:              test.fields.cimu,
 				lastNocie:         test.fields.lastNocie,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
@@ -3106,11 +3076,9 @@ func Test_ngt_InsertMultipleWithTime(t *testing.T) {
 				enableProactiveGC: test.fields.enableProactiveGC,
 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
 				path:              test.fields.path,
-				smu:               test.fields.smu,
 				tmpPath:           test.fields.tmpPath,
 				oldPath:           test.fields.oldPath,
 				basePath:          test.fields.basePath,
-				cowmu:             test.fields.cowmu,
 				backupGen:         test.fields.backupGen,
 				poolSize:          test.fields.poolSize,
 				radius:            test.fields.radius,
@@ -3138,12 +3106,10 @@ func Test_ngt_insertMultiple(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		fmu               sync.Mutex
 		fmap              map[string]uint32
 		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
-		cimu              sync.Mutex
 		lastNocie         uint64
 		nocie             uint64
 		nogce             uint64
@@ -3159,11 +3125,9 @@ func Test_ngt_insertMultiple(t *testing.T) {
 		enableProactiveGC bool
 		enableCopyOnWrite bool
 		path              string
-		smu               sync.Mutex
 		tmpPath           atomic.Value
 		oldPath           string
 		basePath          string
-		cowmu             sync.Mutex
 		backupGen         uint64
 		poolSize          uint32
 		radius            float32
@@ -3181,8 +3145,8 @@ func Test_ngt_insertMultiple(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -3204,12 +3168,10 @@ func Test_ngt_insertMultiple(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           fmu: sync.Mutex{},
 		           fmap: nil,
 		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
-		           cimu: sync.Mutex{},
 		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
@@ -3225,11 +3187,9 @@ func Test_ngt_insertMultiple(t *testing.T) {
 		           enableProactiveGC: false,
 		           enableCopyOnWrite: false,
 		           path: "",
-		           smu: sync.Mutex{},
 		           tmpPath: nil,
 		           oldPath: "",
 		           basePath: "",
-		           cowmu: sync.Mutex{},
 		           backupGen: 0,
 		           poolSize: 0,
 		           radius: 0,
@@ -3240,6 +3200,12 @@ func Test_ngt_insertMultiple(t *testing.T) {
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -3257,12 +3223,10 @@ func Test_ngt_insertMultiple(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           fmu: sync.Mutex{},
 		           fmap: nil,
 		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
-		           cimu: sync.Mutex{},
 		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
@@ -3278,11 +3242,9 @@ func Test_ngt_insertMultiple(t *testing.T) {
 		           enableProactiveGC: false,
 		           enableCopyOnWrite: false,
 		           path: "",
-		           smu: sync.Mutex{},
 		           tmpPath: nil,
 		           oldPath: "",
 		           basePath: "",
-		           cowmu: sync.Mutex{},
 		           backupGen: 0,
 		           poolSize: 0,
 		           radius: 0,
@@ -3293,6 +3255,12 @@ func Test_ngt_insertMultiple(t *testing.T) {
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -3304,10 +3272,10 @@ func Test_ngt_insertMultiple(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -3317,12 +3285,10 @@ func Test_ngt_insertMultiple(t *testing.T) {
 				core:              test.fields.core,
 				eg:                test.fields.eg,
 				kvs:               test.fields.kvs,
-				fmu:               test.fields.fmu,
 				fmap:              test.fields.fmap,
 				vq:                test.fields.vq,
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
-				cimu:              test.fields.cimu,
 				lastNocie:         test.fields.lastNocie,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
@@ -3338,11 +3304,9 @@ func Test_ngt_insertMultiple(t *testing.T) {
 				enableProactiveGC: test.fields.enableProactiveGC,
 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
 				path:              test.fields.path,
-				smu:               test.fields.smu,
 				tmpPath:           test.fields.tmpPath,
 				oldPath:           test.fields.oldPath,
 				basePath:          test.fields.basePath,
-				cowmu:             test.fields.cowmu,
 				backupGen:         test.fields.backupGen,
 				poolSize:          test.fields.poolSize,
 				radius:            test.fields.radius,
@@ -3369,12 +3333,10 @@ func Test_ngt_Update(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		fmu               sync.Mutex
 		fmap              map[string]uint32
 		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
-		cimu              sync.Mutex
 		lastNocie         uint64
 		nocie             uint64
 		nogce             uint64
@@ -3390,11 +3352,9 @@ func Test_ngt_Update(t *testing.T) {
 		enableProactiveGC bool
 		enableCopyOnWrite bool
 		path              string
-		smu               sync.Mutex
 		tmpPath           atomic.Value
 		oldPath           string
 		basePath          string
-		cowmu             sync.Mutex
 		backupGen         uint64
 		poolSize          uint32
 		radius            float32
@@ -3412,8 +3372,8 @@ func Test_ngt_Update(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -3434,12 +3394,10 @@ func Test_ngt_Update(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           fmu: sync.Mutex{},
 		           fmap: nil,
 		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
-		           cimu: sync.Mutex{},
 		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
@@ -3455,11 +3413,9 @@ func Test_ngt_Update(t *testing.T) {
 		           enableProactiveGC: false,
 		           enableCopyOnWrite: false,
 		           path: "",
-		           smu: sync.Mutex{},
 		           tmpPath: nil,
 		           oldPath: "",
 		           basePath: "",
-		           cowmu: sync.Mutex{},
 		           backupGen: 0,
 		           poolSize: 0,
 		           radius: 0,
@@ -3470,6 +3426,12 @@ func Test_ngt_Update(t *testing.T) {
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -3486,12 +3448,10 @@ func Test_ngt_Update(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           fmu: sync.Mutex{},
 		           fmap: nil,
 		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
-		           cimu: sync.Mutex{},
 		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
@@ -3507,11 +3467,9 @@ func Test_ngt_Update(t *testing.T) {
 		           enableProactiveGC: false,
 		           enableCopyOnWrite: false,
 		           path: "",
-		           smu: sync.Mutex{},
 		           tmpPath: nil,
 		           oldPath: "",
 		           basePath: "",
-		           cowmu: sync.Mutex{},
 		           backupGen: 0,
 		           poolSize: 0,
 		           radius: 0,
@@ -3522,6 +3480,12 @@ func Test_ngt_Update(t *testing.T) {
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -3533,10 +3497,10 @@ func Test_ngt_Update(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -3546,12 +3510,10 @@ func Test_ngt_Update(t *testing.T) {
 				core:              test.fields.core,
 				eg:                test.fields.eg,
 				kvs:               test.fields.kvs,
-				fmu:               test.fields.fmu,
 				fmap:              test.fields.fmap,
 				vq:                test.fields.vq,
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
-				cimu:              test.fields.cimu,
 				lastNocie:         test.fields.lastNocie,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
@@ -3567,11 +3529,9 @@ func Test_ngt_Update(t *testing.T) {
 				enableProactiveGC: test.fields.enableProactiveGC,
 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
 				path:              test.fields.path,
-				smu:               test.fields.smu,
 				tmpPath:           test.fields.tmpPath,
 				oldPath:           test.fields.oldPath,
 				basePath:          test.fields.basePath,
-				cowmu:             test.fields.cowmu,
 				backupGen:         test.fields.backupGen,
 				poolSize:          test.fields.poolSize,
 				radius:            test.fields.radius,
@@ -3599,12 +3559,10 @@ func Test_ngt_UpdateWithTime(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		fmu               sync.Mutex
 		fmap              map[string]uint32
 		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
-		cimu              sync.Mutex
 		lastNocie         uint64
 		nocie             uint64
 		nogce             uint64
@@ -3620,11 +3578,9 @@ func Test_ngt_UpdateWithTime(t *testing.T) {
 		enableProactiveGC bool
 		enableCopyOnWrite bool
 		path              string
-		smu               sync.Mutex
 		tmpPath           atomic.Value
 		oldPath           string
 		basePath          string
-		cowmu             sync.Mutex
 		backupGen         uint64
 		poolSize          uint32
 		radius            float32
@@ -3642,8 +3598,8 @@ func Test_ngt_UpdateWithTime(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -3665,12 +3621,10 @@ func Test_ngt_UpdateWithTime(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           fmu: sync.Mutex{},
 		           fmap: nil,
 		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
-		           cimu: sync.Mutex{},
 		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
@@ -3686,11 +3640,9 @@ func Test_ngt_UpdateWithTime(t *testing.T) {
 		           enableProactiveGC: false,
 		           enableCopyOnWrite: false,
 		           path: "",
-		           smu: sync.Mutex{},
 		           tmpPath: nil,
 		           oldPath: "",
 		           basePath: "",
-		           cowmu: sync.Mutex{},
 		           backupGen: 0,
 		           poolSize: 0,
 		           radius: 0,
@@ -3701,6 +3653,12 @@ func Test_ngt_UpdateWithTime(t *testing.T) {
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -3718,12 +3676,10 @@ func Test_ngt_UpdateWithTime(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           fmu: sync.Mutex{},
 		           fmap: nil,
 		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
-		           cimu: sync.Mutex{},
 		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
@@ -3739,11 +3695,9 @@ func Test_ngt_UpdateWithTime(t *testing.T) {
 		           enableProactiveGC: false,
 		           enableCopyOnWrite: false,
 		           path: "",
-		           smu: sync.Mutex{},
 		           tmpPath: nil,
 		           oldPath: "",
 		           basePath: "",
-		           cowmu: sync.Mutex{},
 		           backupGen: 0,
 		           poolSize: 0,
 		           radius: 0,
@@ -3754,6 +3708,12 @@ func Test_ngt_UpdateWithTime(t *testing.T) {
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -3765,10 +3725,10 @@ func Test_ngt_UpdateWithTime(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -3778,12 +3738,10 @@ func Test_ngt_UpdateWithTime(t *testing.T) {
 				core:              test.fields.core,
 				eg:                test.fields.eg,
 				kvs:               test.fields.kvs,
-				fmu:               test.fields.fmu,
 				fmap:              test.fields.fmap,
 				vq:                test.fields.vq,
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
-				cimu:              test.fields.cimu,
 				lastNocie:         test.fields.lastNocie,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
@@ -3799,11 +3757,9 @@ func Test_ngt_UpdateWithTime(t *testing.T) {
 				enableProactiveGC: test.fields.enableProactiveGC,
 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
 				path:              test.fields.path,
-				smu:               test.fields.smu,
 				tmpPath:           test.fields.tmpPath,
 				oldPath:           test.fields.oldPath,
 				basePath:          test.fields.basePath,
-				cowmu:             test.fields.cowmu,
 				backupGen:         test.fields.backupGen,
 				poolSize:          test.fields.poolSize,
 				radius:            test.fields.radius,
@@ -3831,12 +3787,10 @@ func Test_ngt_update(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		fmu               sync.Mutex
 		fmap              map[string]uint32
 		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
-		cimu              sync.Mutex
 		lastNocie         uint64
 		nocie             uint64
 		nogce             uint64
@@ -3852,11 +3806,9 @@ func Test_ngt_update(t *testing.T) {
 		enableProactiveGC bool
 		enableCopyOnWrite bool
 		path              string
-		smu               sync.Mutex
 		tmpPath           atomic.Value
 		oldPath           string
 		basePath          string
-		cowmu             sync.Mutex
 		backupGen         uint64
 		poolSize          uint32
 		radius            float32
@@ -3874,8 +3826,8 @@ func Test_ngt_update(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -3897,12 +3849,10 @@ func Test_ngt_update(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           fmu: sync.Mutex{},
 		           fmap: nil,
 		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
-		           cimu: sync.Mutex{},
 		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
@@ -3918,11 +3868,9 @@ func Test_ngt_update(t *testing.T) {
 		           enableProactiveGC: false,
 		           enableCopyOnWrite: false,
 		           path: "",
-		           smu: sync.Mutex{},
 		           tmpPath: nil,
 		           oldPath: "",
 		           basePath: "",
-		           cowmu: sync.Mutex{},
 		           backupGen: 0,
 		           poolSize: 0,
 		           radius: 0,
@@ -3933,6 +3881,12 @@ func Test_ngt_update(t *testing.T) {
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -3950,12 +3904,10 @@ func Test_ngt_update(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           fmu: sync.Mutex{},
 		           fmap: nil,
 		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
-		           cimu: sync.Mutex{},
 		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
@@ -3971,11 +3923,9 @@ func Test_ngt_update(t *testing.T) {
 		           enableProactiveGC: false,
 		           enableCopyOnWrite: false,
 		           path: "",
-		           smu: sync.Mutex{},
 		           tmpPath: nil,
 		           oldPath: "",
 		           basePath: "",
-		           cowmu: sync.Mutex{},
 		           backupGen: 0,
 		           poolSize: 0,
 		           radius: 0,
@@ -3986,6 +3936,12 @@ func Test_ngt_update(t *testing.T) {
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -3997,10 +3953,10 @@ func Test_ngt_update(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -4010,12 +3966,10 @@ func Test_ngt_update(t *testing.T) {
 				core:              test.fields.core,
 				eg:                test.fields.eg,
 				kvs:               test.fields.kvs,
-				fmu:               test.fields.fmu,
 				fmap:              test.fields.fmap,
 				vq:                test.fields.vq,
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
-				cimu:              test.fields.cimu,
 				lastNocie:         test.fields.lastNocie,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
@@ -4031,11 +3985,9 @@ func Test_ngt_update(t *testing.T) {
 				enableProactiveGC: test.fields.enableProactiveGC,
 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
 				path:              test.fields.path,
-				smu:               test.fields.smu,
 				tmpPath:           test.fields.tmpPath,
 				oldPath:           test.fields.oldPath,
 				basePath:          test.fields.basePath,
-				cowmu:             test.fields.cowmu,
 				backupGen:         test.fields.backupGen,
 				poolSize:          test.fields.poolSize,
 				radius:            test.fields.radius,
@@ -4061,12 +4013,10 @@ func Test_ngt_UpdateMultiple(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		fmu               sync.Mutex
 		fmap              map[string]uint32
 		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
-		cimu              sync.Mutex
 		lastNocie         uint64
 		nocie             uint64
 		nogce             uint64
@@ -4082,11 +4032,9 @@ func Test_ngt_UpdateMultiple(t *testing.T) {
 		enableProactiveGC bool
 		enableCopyOnWrite bool
 		path              string
-		smu               sync.Mutex
 		tmpPath           atomic.Value
 		oldPath           string
 		basePath          string
-		cowmu             sync.Mutex
 		backupGen         uint64
 		poolSize          uint32
 		radius            float32
@@ -4104,8 +4052,8 @@ func Test_ngt_UpdateMultiple(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -4125,12 +4073,10 @@ func Test_ngt_UpdateMultiple(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           fmu: sync.Mutex{},
 		           fmap: nil,
 		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
-		           cimu: sync.Mutex{},
 		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
@@ -4146,11 +4092,9 @@ func Test_ngt_UpdateMultiple(t *testing.T) {
 		           enableProactiveGC: false,
 		           enableCopyOnWrite: false,
 		           path: "",
-		           smu: sync.Mutex{},
 		           tmpPath: nil,
 		           oldPath: "",
 		           basePath: "",
-		           cowmu: sync.Mutex{},
 		           backupGen: 0,
 		           poolSize: 0,
 		           radius: 0,
@@ -4161,6 +4105,12 @@ func Test_ngt_UpdateMultiple(t *testing.T) {
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -4176,12 +4126,10 @@ func Test_ngt_UpdateMultiple(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           fmu: sync.Mutex{},
 		           fmap: nil,
 		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
-		           cimu: sync.Mutex{},
 		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
@@ -4197,11 +4145,9 @@ func Test_ngt_UpdateMultiple(t *testing.T) {
 		           enableProactiveGC: false,
 		           enableCopyOnWrite: false,
 		           path: "",
-		           smu: sync.Mutex{},
 		           tmpPath: nil,
 		           oldPath: "",
 		           basePath: "",
-		           cowmu: sync.Mutex{},
 		           backupGen: 0,
 		           poolSize: 0,
 		           radius: 0,
@@ -4212,6 +4158,12 @@ func Test_ngt_UpdateMultiple(t *testing.T) {
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -4223,10 +4175,10 @@ func Test_ngt_UpdateMultiple(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -4236,12 +4188,10 @@ func Test_ngt_UpdateMultiple(t *testing.T) {
 				core:              test.fields.core,
 				eg:                test.fields.eg,
 				kvs:               test.fields.kvs,
-				fmu:               test.fields.fmu,
 				fmap:              test.fields.fmap,
 				vq:                test.fields.vq,
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
-				cimu:              test.fields.cimu,
 				lastNocie:         test.fields.lastNocie,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
@@ -4257,11 +4207,9 @@ func Test_ngt_UpdateMultiple(t *testing.T) {
 				enableProactiveGC: test.fields.enableProactiveGC,
 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
 				path:              test.fields.path,
-				smu:               test.fields.smu,
 				tmpPath:           test.fields.tmpPath,
 				oldPath:           test.fields.oldPath,
 				basePath:          test.fields.basePath,
-				cowmu:             test.fields.cowmu,
 				backupGen:         test.fields.backupGen,
 				poolSize:          test.fields.poolSize,
 				radius:            test.fields.radius,
@@ -4288,12 +4236,10 @@ func Test_ngt_UpdateMultipleWithTime(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		fmu               sync.Mutex
 		fmap              map[string]uint32
 		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
-		cimu              sync.Mutex
 		lastNocie         uint64
 		nocie             uint64
 		nogce             uint64
@@ -4309,11 +4255,9 @@ func Test_ngt_UpdateMultipleWithTime(t *testing.T) {
 		enableProactiveGC bool
 		enableCopyOnWrite bool
 		path              string
-		smu               sync.Mutex
 		tmpPath           atomic.Value
 		oldPath           string
 		basePath          string
-		cowmu             sync.Mutex
 		backupGen         uint64
 		poolSize          uint32
 		radius            float32
@@ -4331,8 +4275,8 @@ func Test_ngt_UpdateMultipleWithTime(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -4353,12 +4297,10 @@ func Test_ngt_UpdateMultipleWithTime(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           fmu: sync.Mutex{},
 		           fmap: nil,
 		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
-		           cimu: sync.Mutex{},
 		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
@@ -4374,11 +4316,9 @@ func Test_ngt_UpdateMultipleWithTime(t *testing.T) {
 		           enableProactiveGC: false,
 		           enableCopyOnWrite: false,
 		           path: "",
-		           smu: sync.Mutex{},
 		           tmpPath: nil,
 		           oldPath: "",
 		           basePath: "",
-		           cowmu: sync.Mutex{},
 		           backupGen: 0,
 		           poolSize: 0,
 		           radius: 0,
@@ -4389,6 +4329,12 @@ func Test_ngt_UpdateMultipleWithTime(t *testing.T) {
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -4405,12 +4351,10 @@ func Test_ngt_UpdateMultipleWithTime(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           fmu: sync.Mutex{},
 		           fmap: nil,
 		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
-		           cimu: sync.Mutex{},
 		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
@@ -4426,11 +4370,9 @@ func Test_ngt_UpdateMultipleWithTime(t *testing.T) {
 		           enableProactiveGC: false,
 		           enableCopyOnWrite: false,
 		           path: "",
-		           smu: sync.Mutex{},
 		           tmpPath: nil,
 		           oldPath: "",
 		           basePath: "",
-		           cowmu: sync.Mutex{},
 		           backupGen: 0,
 		           poolSize: 0,
 		           radius: 0,
@@ -4441,6 +4383,12 @@ func Test_ngt_UpdateMultipleWithTime(t *testing.T) {
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -4452,10 +4400,10 @@ func Test_ngt_UpdateMultipleWithTime(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -4465,12 +4413,10 @@ func Test_ngt_UpdateMultipleWithTime(t *testing.T) {
 				core:              test.fields.core,
 				eg:                test.fields.eg,
 				kvs:               test.fields.kvs,
-				fmu:               test.fields.fmu,
 				fmap:              test.fields.fmap,
 				vq:                test.fields.vq,
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
-				cimu:              test.fields.cimu,
 				lastNocie:         test.fields.lastNocie,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
@@ -4486,11 +4432,9 @@ func Test_ngt_UpdateMultipleWithTime(t *testing.T) {
 				enableProactiveGC: test.fields.enableProactiveGC,
 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
 				path:              test.fields.path,
-				smu:               test.fields.smu,
 				tmpPath:           test.fields.tmpPath,
 				oldPath:           test.fields.oldPath,
 				basePath:          test.fields.basePath,
-				cowmu:             test.fields.cowmu,
 				backupGen:         test.fields.backupGen,
 				poolSize:          test.fields.poolSize,
 				radius:            test.fields.radius,
@@ -4517,12 +4461,10 @@ func Test_ngt_updateMultiple(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		fmu               sync.Mutex
 		fmap              map[string]uint32
 		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
-		cimu              sync.Mutex
 		lastNocie         uint64
 		nocie             uint64
 		nogce             uint64
@@ -4538,11 +4480,9 @@ func Test_ngt_updateMultiple(t *testing.T) {
 		enableProactiveGC bool
 		enableCopyOnWrite bool
 		path              string
-		smu               sync.Mutex
 		tmpPath           atomic.Value
 		oldPath           string
 		basePath          string
-		cowmu             sync.Mutex
 		backupGen         uint64
 		poolSize          uint32
 		radius            float32
@@ -4560,8 +4500,8 @@ func Test_ngt_updateMultiple(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -4582,12 +4522,10 @@ func Test_ngt_updateMultiple(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           fmu: sync.Mutex{},
 		           fmap: nil,
 		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
-		           cimu: sync.Mutex{},
 		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
@@ -4603,11 +4541,9 @@ func Test_ngt_updateMultiple(t *testing.T) {
 		           enableProactiveGC: false,
 		           enableCopyOnWrite: false,
 		           path: "",
-		           smu: sync.Mutex{},
 		           tmpPath: nil,
 		           oldPath: "",
 		           basePath: "",
-		           cowmu: sync.Mutex{},
 		           backupGen: 0,
 		           poolSize: 0,
 		           radius: 0,
@@ -4618,6 +4554,12 @@ func Test_ngt_updateMultiple(t *testing.T) {
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -4634,12 +4576,10 @@ func Test_ngt_updateMultiple(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           fmu: sync.Mutex{},
 		           fmap: nil,
 		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
-		           cimu: sync.Mutex{},
 		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
@@ -4655,11 +4595,9 @@ func Test_ngt_updateMultiple(t *testing.T) {
 		           enableProactiveGC: false,
 		           enableCopyOnWrite: false,
 		           path: "",
-		           smu: sync.Mutex{},
 		           tmpPath: nil,
 		           oldPath: "",
 		           basePath: "",
-		           cowmu: sync.Mutex{},
 		           backupGen: 0,
 		           poolSize: 0,
 		           radius: 0,
@@ -4670,6 +4608,12 @@ func Test_ngt_updateMultiple(t *testing.T) {
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -4681,10 +4625,10 @@ func Test_ngt_updateMultiple(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -4694,12 +4638,10 @@ func Test_ngt_updateMultiple(t *testing.T) {
 				core:              test.fields.core,
 				eg:                test.fields.eg,
 				kvs:               test.fields.kvs,
-				fmu:               test.fields.fmu,
 				fmap:              test.fields.fmap,
 				vq:                test.fields.vq,
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
-				cimu:              test.fields.cimu,
 				lastNocie:         test.fields.lastNocie,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
@@ -4715,11 +4657,9 @@ func Test_ngt_updateMultiple(t *testing.T) {
 				enableProactiveGC: test.fields.enableProactiveGC,
 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
 				path:              test.fields.path,
-				smu:               test.fields.smu,
 				tmpPath:           test.fields.tmpPath,
 				oldPath:           test.fields.oldPath,
 				basePath:          test.fields.basePath,
-				cowmu:             test.fields.cowmu,
 				backupGen:         test.fields.backupGen,
 				poolSize:          test.fields.poolSize,
 				radius:            test.fields.radius,
@@ -4745,12 +4685,10 @@ func Test_ngt_Delete(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		fmu               sync.Mutex
 		fmap              map[string]uint32
 		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
-		cimu              sync.Mutex
 		lastNocie         uint64
 		nocie             uint64
 		nogce             uint64
@@ -4766,11 +4704,9 @@ func Test_ngt_Delete(t *testing.T) {
 		enableProactiveGC bool
 		enableCopyOnWrite bool
 		path              string
-		smu               sync.Mutex
 		tmpPath           atomic.Value
 		oldPath           string
 		basePath          string
-		cowmu             sync.Mutex
 		backupGen         uint64
 		poolSize          uint32
 		radius            float32
@@ -4788,8 +4724,8 @@ func Test_ngt_Delete(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -4809,12 +4745,10 @@ func Test_ngt_Delete(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           fmu: sync.Mutex{},
 		           fmap: nil,
 		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
-		           cimu: sync.Mutex{},
 		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
@@ -4830,11 +4764,9 @@ func Test_ngt_Delete(t *testing.T) {
 		           enableProactiveGC: false,
 		           enableCopyOnWrite: false,
 		           path: "",
-		           smu: sync.Mutex{},
 		           tmpPath: nil,
 		           oldPath: "",
 		           basePath: "",
-		           cowmu: sync.Mutex{},
 		           backupGen: 0,
 		           poolSize: 0,
 		           radius: 0,
@@ -4845,6 +4777,12 @@ func Test_ngt_Delete(t *testing.T) {
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -4860,12 +4798,10 @@ func Test_ngt_Delete(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           fmu: sync.Mutex{},
 		           fmap: nil,
 		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
-		           cimu: sync.Mutex{},
 		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
@@ -4881,11 +4817,9 @@ func Test_ngt_Delete(t *testing.T) {
 		           enableProactiveGC: false,
 		           enableCopyOnWrite: false,
 		           path: "",
-		           smu: sync.Mutex{},
 		           tmpPath: nil,
 		           oldPath: "",
 		           basePath: "",
-		           cowmu: sync.Mutex{},
 		           backupGen: 0,
 		           poolSize: 0,
 		           radius: 0,
@@ -4896,6 +4830,12 @@ func Test_ngt_Delete(t *testing.T) {
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -4907,10 +4847,10 @@ func Test_ngt_Delete(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -4920,12 +4860,10 @@ func Test_ngt_Delete(t *testing.T) {
 				core:              test.fields.core,
 				eg:                test.fields.eg,
 				kvs:               test.fields.kvs,
-				fmu:               test.fields.fmu,
 				fmap:              test.fields.fmap,
 				vq:                test.fields.vq,
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
-				cimu:              test.fields.cimu,
 				lastNocie:         test.fields.lastNocie,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
@@ -4941,11 +4879,9 @@ func Test_ngt_Delete(t *testing.T) {
 				enableProactiveGC: test.fields.enableProactiveGC,
 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
 				path:              test.fields.path,
-				smu:               test.fields.smu,
 				tmpPath:           test.fields.tmpPath,
 				oldPath:           test.fields.oldPath,
 				basePath:          test.fields.basePath,
-				cowmu:             test.fields.cowmu,
 				backupGen:         test.fields.backupGen,
 				poolSize:          test.fields.poolSize,
 				radius:            test.fields.radius,
@@ -4972,12 +4908,10 @@ func Test_ngt_DeleteWithTime(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		fmu               sync.Mutex
 		fmap              map[string]uint32
 		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
-		cimu              sync.Mutex
 		lastNocie         uint64
 		nocie             uint64
 		nogce             uint64
@@ -4993,11 +4927,9 @@ func Test_ngt_DeleteWithTime(t *testing.T) {
 		enableProactiveGC bool
 		enableCopyOnWrite bool
 		path              string
-		smu               sync.Mutex
 		tmpPath           atomic.Value
 		oldPath           string
 		basePath          string
-		cowmu             sync.Mutex
 		backupGen         uint64
 		poolSize          uint32
 		radius            float32
@@ -5015,8 +4947,8 @@ func Test_ngt_DeleteWithTime(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -5037,12 +4969,10 @@ func Test_ngt_DeleteWithTime(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           fmu: sync.Mutex{},
 		           fmap: nil,
 		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
-		           cimu: sync.Mutex{},
 		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
@@ -5058,11 +4988,9 @@ func Test_ngt_DeleteWithTime(t *testing.T) {
 		           enableProactiveGC: false,
 		           enableCopyOnWrite: false,
 		           path: "",
-		           smu: sync.Mutex{},
 		           tmpPath: nil,
 		           oldPath: "",
 		           basePath: "",
-		           cowmu: sync.Mutex{},
 		           backupGen: 0,
 		           poolSize: 0,
 		           radius: 0,
@@ -5073,6 +5001,12 @@ func Test_ngt_DeleteWithTime(t *testing.T) {
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -5089,12 +5023,10 @@ func Test_ngt_DeleteWithTime(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           fmu: sync.Mutex{},
 		           fmap: nil,
 		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
-		           cimu: sync.Mutex{},
 		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
@@ -5110,11 +5042,9 @@ func Test_ngt_DeleteWithTime(t *testing.T) {
 		           enableProactiveGC: false,
 		           enableCopyOnWrite: false,
 		           path: "",
-		           smu: sync.Mutex{},
 		           tmpPath: nil,
 		           oldPath: "",
 		           basePath: "",
-		           cowmu: sync.Mutex{},
 		           backupGen: 0,
 		           poolSize: 0,
 		           radius: 0,
@@ -5125,6 +5055,12 @@ func Test_ngt_DeleteWithTime(t *testing.T) {
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -5136,10 +5072,10 @@ func Test_ngt_DeleteWithTime(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -5149,12 +5085,10 @@ func Test_ngt_DeleteWithTime(t *testing.T) {
 				core:              test.fields.core,
 				eg:                test.fields.eg,
 				kvs:               test.fields.kvs,
-				fmu:               test.fields.fmu,
 				fmap:              test.fields.fmap,
 				vq:                test.fields.vq,
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
-				cimu:              test.fields.cimu,
 				lastNocie:         test.fields.lastNocie,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
@@ -5170,11 +5104,9 @@ func Test_ngt_DeleteWithTime(t *testing.T) {
 				enableProactiveGC: test.fields.enableProactiveGC,
 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
 				path:              test.fields.path,
-				smu:               test.fields.smu,
 				tmpPath:           test.fields.tmpPath,
 				oldPath:           test.fields.oldPath,
 				basePath:          test.fields.basePath,
-				cowmu:             test.fields.cowmu,
 				backupGen:         test.fields.backupGen,
 				poolSize:          test.fields.poolSize,
 				radius:            test.fields.radius,
@@ -5202,12 +5134,10 @@ func Test_ngt_delete(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		fmu               sync.Mutex
 		fmap              map[string]uint32
 		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
-		cimu              sync.Mutex
 		lastNocie         uint64
 		nocie             uint64
 		nogce             uint64
@@ -5223,11 +5153,9 @@ func Test_ngt_delete(t *testing.T) {
 		enableProactiveGC bool
 		enableCopyOnWrite bool
 		path              string
-		smu               sync.Mutex
 		tmpPath           atomic.Value
 		oldPath           string
 		basePath          string
-		cowmu             sync.Mutex
 		backupGen         uint64
 		poolSize          uint32
 		radius            float32
@@ -5245,8 +5173,8 @@ func Test_ngt_delete(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -5268,12 +5196,10 @@ func Test_ngt_delete(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           fmu: sync.Mutex{},
 		           fmap: nil,
 		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
-		           cimu: sync.Mutex{},
 		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
@@ -5289,11 +5215,9 @@ func Test_ngt_delete(t *testing.T) {
 		           enableProactiveGC: false,
 		           enableCopyOnWrite: false,
 		           path: "",
-		           smu: sync.Mutex{},
 		           tmpPath: nil,
 		           oldPath: "",
 		           basePath: "",
-		           cowmu: sync.Mutex{},
 		           backupGen: 0,
 		           poolSize: 0,
 		           radius: 0,
@@ -5304,6 +5228,12 @@ func Test_ngt_delete(t *testing.T) {
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -5321,12 +5251,10 @@ func Test_ngt_delete(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           fmu: sync.Mutex{},
 		           fmap: nil,
 		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
-		           cimu: sync.Mutex{},
 		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
@@ -5342,11 +5270,9 @@ func Test_ngt_delete(t *testing.T) {
 		           enableProactiveGC: false,
 		           enableCopyOnWrite: false,
 		           path: "",
-		           smu: sync.Mutex{},
 		           tmpPath: nil,
 		           oldPath: "",
 		           basePath: "",
-		           cowmu: sync.Mutex{},
 		           backupGen: 0,
 		           poolSize: 0,
 		           radius: 0,
@@ -5357,6 +5283,12 @@ func Test_ngt_delete(t *testing.T) {
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -5368,10 +5300,10 @@ func Test_ngt_delete(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -5381,12 +5313,10 @@ func Test_ngt_delete(t *testing.T) {
 				core:              test.fields.core,
 				eg:                test.fields.eg,
 				kvs:               test.fields.kvs,
-				fmu:               test.fields.fmu,
 				fmap:              test.fields.fmap,
 				vq:                test.fields.vq,
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
-				cimu:              test.fields.cimu,
 				lastNocie:         test.fields.lastNocie,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
@@ -5402,11 +5332,9 @@ func Test_ngt_delete(t *testing.T) {
 				enableProactiveGC: test.fields.enableProactiveGC,
 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
 				path:              test.fields.path,
-				smu:               test.fields.smu,
 				tmpPath:           test.fields.tmpPath,
 				oldPath:           test.fields.oldPath,
 				basePath:          test.fields.basePath,
-				cowmu:             test.fields.cowmu,
 				backupGen:         test.fields.backupGen,
 				poolSize:          test.fields.poolSize,
 				radius:            test.fields.radius,
@@ -5432,12 +5360,10 @@ func Test_ngt_DeleteMultiple(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		fmu               sync.Mutex
 		fmap              map[string]uint32
 		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
-		cimu              sync.Mutex
 		lastNocie         uint64
 		nocie             uint64
 		nogce             uint64
@@ -5453,11 +5379,9 @@ func Test_ngt_DeleteMultiple(t *testing.T) {
 		enableProactiveGC bool
 		enableCopyOnWrite bool
 		path              string
-		smu               sync.Mutex
 		tmpPath           atomic.Value
 		oldPath           string
 		basePath          string
-		cowmu             sync.Mutex
 		backupGen         uint64
 		poolSize          uint32
 		radius            float32
@@ -5475,8 +5399,8 @@ func Test_ngt_DeleteMultiple(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -5496,12 +5420,10 @@ func Test_ngt_DeleteMultiple(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           fmu: sync.Mutex{},
 		           fmap: nil,
 		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
-		           cimu: sync.Mutex{},
 		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
@@ -5517,11 +5439,9 @@ func Test_ngt_DeleteMultiple(t *testing.T) {
 		           enableProactiveGC: false,
 		           enableCopyOnWrite: false,
 		           path: "",
-		           smu: sync.Mutex{},
 		           tmpPath: nil,
 		           oldPath: "",
 		           basePath: "",
-		           cowmu: sync.Mutex{},
 		           backupGen: 0,
 		           poolSize: 0,
 		           radius: 0,
@@ -5532,6 +5452,12 @@ func Test_ngt_DeleteMultiple(t *testing.T) {
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -5547,12 +5473,10 @@ func Test_ngt_DeleteMultiple(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           fmu: sync.Mutex{},
 		           fmap: nil,
 		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
-		           cimu: sync.Mutex{},
 		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
@@ -5568,11 +5492,9 @@ func Test_ngt_DeleteMultiple(t *testing.T) {
 		           enableProactiveGC: false,
 		           enableCopyOnWrite: false,
 		           path: "",
-		           smu: sync.Mutex{},
 		           tmpPath: nil,
 		           oldPath: "",
 		           basePath: "",
-		           cowmu: sync.Mutex{},
 		           backupGen: 0,
 		           poolSize: 0,
 		           radius: 0,
@@ -5583,6 +5505,12 @@ func Test_ngt_DeleteMultiple(t *testing.T) {
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -5594,10 +5522,10 @@ func Test_ngt_DeleteMultiple(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -5607,12 +5535,10 @@ func Test_ngt_DeleteMultiple(t *testing.T) {
 				core:              test.fields.core,
 				eg:                test.fields.eg,
 				kvs:               test.fields.kvs,
-				fmu:               test.fields.fmu,
 				fmap:              test.fields.fmap,
 				vq:                test.fields.vq,
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
-				cimu:              test.fields.cimu,
 				lastNocie:         test.fields.lastNocie,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
@@ -5628,11 +5554,9 @@ func Test_ngt_DeleteMultiple(t *testing.T) {
 				enableProactiveGC: test.fields.enableProactiveGC,
 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
 				path:              test.fields.path,
-				smu:               test.fields.smu,
 				tmpPath:           test.fields.tmpPath,
 				oldPath:           test.fields.oldPath,
 				basePath:          test.fields.basePath,
-				cowmu:             test.fields.cowmu,
 				backupGen:         test.fields.backupGen,
 				poolSize:          test.fields.poolSize,
 				radius:            test.fields.radius,
@@ -5659,12 +5583,10 @@ func Test_ngt_DeleteMultipleWithTime(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		fmu               sync.Mutex
 		fmap              map[string]uint32
 		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
-		cimu              sync.Mutex
 		lastNocie         uint64
 		nocie             uint64
 		nogce             uint64
@@ -5680,11 +5602,9 @@ func Test_ngt_DeleteMultipleWithTime(t *testing.T) {
 		enableProactiveGC bool
 		enableCopyOnWrite bool
 		path              string
-		smu               sync.Mutex
 		tmpPath           atomic.Value
 		oldPath           string
 		basePath          string
-		cowmu             sync.Mutex
 		backupGen         uint64
 		poolSize          uint32
 		radius            float32
@@ -5702,8 +5622,8 @@ func Test_ngt_DeleteMultipleWithTime(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -5724,12 +5644,10 @@ func Test_ngt_DeleteMultipleWithTime(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           fmu: sync.Mutex{},
 		           fmap: nil,
 		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
-		           cimu: sync.Mutex{},
 		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
@@ -5745,11 +5663,9 @@ func Test_ngt_DeleteMultipleWithTime(t *testing.T) {
 		           enableProactiveGC: false,
 		           enableCopyOnWrite: false,
 		           path: "",
-		           smu: sync.Mutex{},
 		           tmpPath: nil,
 		           oldPath: "",
 		           basePath: "",
-		           cowmu: sync.Mutex{},
 		           backupGen: 0,
 		           poolSize: 0,
 		           radius: 0,
@@ -5760,6 +5676,12 @@ func Test_ngt_DeleteMultipleWithTime(t *testing.T) {
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -5776,12 +5698,10 @@ func Test_ngt_DeleteMultipleWithTime(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           fmu: sync.Mutex{},
 		           fmap: nil,
 		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
-		           cimu: sync.Mutex{},
 		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
@@ -5797,11 +5717,9 @@ func Test_ngt_DeleteMultipleWithTime(t *testing.T) {
 		           enableProactiveGC: false,
 		           enableCopyOnWrite: false,
 		           path: "",
-		           smu: sync.Mutex{},
 		           tmpPath: nil,
 		           oldPath: "",
 		           basePath: "",
-		           cowmu: sync.Mutex{},
 		           backupGen: 0,
 		           poolSize: 0,
 		           radius: 0,
@@ -5812,6 +5730,12 @@ func Test_ngt_DeleteMultipleWithTime(t *testing.T) {
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -5823,10 +5747,10 @@ func Test_ngt_DeleteMultipleWithTime(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -5836,12 +5760,10 @@ func Test_ngt_DeleteMultipleWithTime(t *testing.T) {
 				core:              test.fields.core,
 				eg:                test.fields.eg,
 				kvs:               test.fields.kvs,
-				fmu:               test.fields.fmu,
 				fmap:              test.fields.fmap,
 				vq:                test.fields.vq,
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
-				cimu:              test.fields.cimu,
 				lastNocie:         test.fields.lastNocie,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
@@ -5857,11 +5779,9 @@ func Test_ngt_DeleteMultipleWithTime(t *testing.T) {
 				enableProactiveGC: test.fields.enableProactiveGC,
 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
 				path:              test.fields.path,
-				smu:               test.fields.smu,
 				tmpPath:           test.fields.tmpPath,
 				oldPath:           test.fields.oldPath,
 				basePath:          test.fields.basePath,
-				cowmu:             test.fields.cowmu,
 				backupGen:         test.fields.backupGen,
 				poolSize:          test.fields.poolSize,
 				radius:            test.fields.radius,
@@ -5889,12 +5809,10 @@ func Test_ngt_deleteMultiple(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		fmu               sync.Mutex
 		fmap              map[string]uint32
 		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
-		cimu              sync.Mutex
 		lastNocie         uint64
 		nocie             uint64
 		nogce             uint64
@@ -5910,11 +5828,9 @@ func Test_ngt_deleteMultiple(t *testing.T) {
 		enableProactiveGC bool
 		enableCopyOnWrite bool
 		path              string
-		smu               sync.Mutex
 		tmpPath           atomic.Value
 		oldPath           string
 		basePath          string
-		cowmu             sync.Mutex
 		backupGen         uint64
 		poolSize          uint32
 		radius            float32
@@ -5932,8 +5848,8 @@ func Test_ngt_deleteMultiple(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -5955,12 +5871,10 @@ func Test_ngt_deleteMultiple(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           fmu: sync.Mutex{},
 		           fmap: nil,
 		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
-		           cimu: sync.Mutex{},
 		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
@@ -5976,11 +5890,9 @@ func Test_ngt_deleteMultiple(t *testing.T) {
 		           enableProactiveGC: false,
 		           enableCopyOnWrite: false,
 		           path: "",
-		           smu: sync.Mutex{},
 		           tmpPath: nil,
 		           oldPath: "",
 		           basePath: "",
-		           cowmu: sync.Mutex{},
 		           backupGen: 0,
 		           poolSize: 0,
 		           radius: 0,
@@ -5991,6 +5903,12 @@ func Test_ngt_deleteMultiple(t *testing.T) {
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -6008,12 +5926,10 @@ func Test_ngt_deleteMultiple(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           fmu: sync.Mutex{},
 		           fmap: nil,
 		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
-		           cimu: sync.Mutex{},
 		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
@@ -6029,11 +5945,9 @@ func Test_ngt_deleteMultiple(t *testing.T) {
 		           enableProactiveGC: false,
 		           enableCopyOnWrite: false,
 		           path: "",
-		           smu: sync.Mutex{},
 		           tmpPath: nil,
 		           oldPath: "",
 		           basePath: "",
-		           cowmu: sync.Mutex{},
 		           backupGen: 0,
 		           poolSize: 0,
 		           radius: 0,
@@ -6044,6 +5958,12 @@ func Test_ngt_deleteMultiple(t *testing.T) {
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -6055,10 +5975,10 @@ func Test_ngt_deleteMultiple(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -6068,12 +5988,10 @@ func Test_ngt_deleteMultiple(t *testing.T) {
 				core:              test.fields.core,
 				eg:                test.fields.eg,
 				kvs:               test.fields.kvs,
-				fmu:               test.fields.fmu,
 				fmap:              test.fields.fmap,
 				vq:                test.fields.vq,
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
-				cimu:              test.fields.cimu,
 				lastNocie:         test.fields.lastNocie,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
@@ -6089,11 +6007,9 @@ func Test_ngt_deleteMultiple(t *testing.T) {
 				enableProactiveGC: test.fields.enableProactiveGC,
 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
 				path:              test.fields.path,
-				smu:               test.fields.smu,
 				tmpPath:           test.fields.tmpPath,
 				oldPath:           test.fields.oldPath,
 				basePath:          test.fields.basePath,
-				cowmu:             test.fields.cowmu,
 				backupGen:         test.fields.backupGen,
 				poolSize:          test.fields.poolSize,
 				radius:            test.fields.radius,
@@ -6120,12 +6036,10 @@ func Test_ngt_CreateIndex(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		fmu               sync.Mutex
 		fmap              map[string]uint32
 		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
-		cimu              sync.Mutex
 		lastNocie         uint64
 		nocie             uint64
 		nogce             uint64
@@ -6141,11 +6055,9 @@ func Test_ngt_CreateIndex(t *testing.T) {
 		enableProactiveGC bool
 		enableCopyOnWrite bool
 		path              string
-		smu               sync.Mutex
 		tmpPath           atomic.Value
 		oldPath           string
 		basePath          string
-		cowmu             sync.Mutex
 		backupGen         uint64
 		poolSize          uint32
 		radius            float32
@@ -6163,8 +6075,8 @@ func Test_ngt_CreateIndex(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -6185,12 +6097,10 @@ func Test_ngt_CreateIndex(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           fmu: sync.Mutex{},
 		           fmap: nil,
 		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
-		           cimu: sync.Mutex{},
 		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
@@ -6206,11 +6116,9 @@ func Test_ngt_CreateIndex(t *testing.T) {
 		           enableProactiveGC: false,
 		           enableCopyOnWrite: false,
 		           path: "",
-		           smu: sync.Mutex{},
 		           tmpPath: nil,
 		           oldPath: "",
 		           basePath: "",
-		           cowmu: sync.Mutex{},
 		           backupGen: 0,
 		           poolSize: 0,
 		           radius: 0,
@@ -6221,6 +6129,12 @@ func Test_ngt_CreateIndex(t *testing.T) {
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -6237,12 +6151,10 @@ func Test_ngt_CreateIndex(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           fmu: sync.Mutex{},
 		           fmap: nil,
 		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
-		           cimu: sync.Mutex{},
 		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
@@ -6258,11 +6170,9 @@ func Test_ngt_CreateIndex(t *testing.T) {
 		           enableProactiveGC: false,
 		           enableCopyOnWrite: false,
 		           path: "",
-		           smu: sync.Mutex{},
 		           tmpPath: nil,
 		           oldPath: "",
 		           basePath: "",
-		           cowmu: sync.Mutex{},
 		           backupGen: 0,
 		           poolSize: 0,
 		           radius: 0,
@@ -6273,6 +6183,12 @@ func Test_ngt_CreateIndex(t *testing.T) {
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -6284,10 +6200,10 @@ func Test_ngt_CreateIndex(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -6297,12 +6213,10 @@ func Test_ngt_CreateIndex(t *testing.T) {
 				core:              test.fields.core,
 				eg:                test.fields.eg,
 				kvs:               test.fields.kvs,
-				fmu:               test.fields.fmu,
 				fmap:              test.fields.fmap,
 				vq:                test.fields.vq,
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
-				cimu:              test.fields.cimu,
 				lastNocie:         test.fields.lastNocie,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
@@ -6318,11 +6232,9 @@ func Test_ngt_CreateIndex(t *testing.T) {
 				enableProactiveGC: test.fields.enableProactiveGC,
 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
 				path:              test.fields.path,
-				smu:               test.fields.smu,
 				tmpPath:           test.fields.tmpPath,
 				oldPath:           test.fields.oldPath,
 				basePath:          test.fields.basePath,
-				cowmu:             test.fields.cowmu,
 				backupGen:         test.fields.backupGen,
 				poolSize:          test.fields.poolSize,
 				radius:            test.fields.radius,
@@ -6348,12 +6260,10 @@ func Test_ngt_removeInvalidIndex(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		fmu               sync.Mutex
 		fmap              map[string]uint32
 		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
-		cimu              sync.Mutex
 		lastNocie         uint64
 		nocie             uint64
 		nogce             uint64
@@ -6369,11 +6279,9 @@ func Test_ngt_removeInvalidIndex(t *testing.T) {
 		enableProactiveGC bool
 		enableCopyOnWrite bool
 		path              string
-		smu               sync.Mutex
 		tmpPath           atomic.Value
 		oldPath           string
 		basePath          string
-		cowmu             sync.Mutex
 		backupGen         uint64
 		poolSize          uint32
 		radius            float32
@@ -6389,8 +6297,8 @@ func Test_ngt_removeInvalidIndex(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want) error {
 		return nil
@@ -6407,12 +6315,10 @@ func Test_ngt_removeInvalidIndex(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           fmu: sync.Mutex{},
 		           fmap: nil,
 		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
-		           cimu: sync.Mutex{},
 		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
@@ -6428,11 +6334,9 @@ func Test_ngt_removeInvalidIndex(t *testing.T) {
 		           enableProactiveGC: false,
 		           enableCopyOnWrite: false,
 		           path: "",
-		           smu: sync.Mutex{},
 		           tmpPath: nil,
 		           oldPath: "",
 		           basePath: "",
-		           cowmu: sync.Mutex{},
 		           backupGen: 0,
 		           poolSize: 0,
 		           radius: 0,
@@ -6443,6 +6347,12 @@ func Test_ngt_removeInvalidIndex(t *testing.T) {
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -6458,12 +6368,10 @@ func Test_ngt_removeInvalidIndex(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           fmu: sync.Mutex{},
 		           fmap: nil,
 		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
-		           cimu: sync.Mutex{},
 		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
@@ -6479,11 +6387,9 @@ func Test_ngt_removeInvalidIndex(t *testing.T) {
 		           enableProactiveGC: false,
 		           enableCopyOnWrite: false,
 		           path: "",
-		           smu: sync.Mutex{},
 		           tmpPath: nil,
 		           oldPath: "",
 		           basePath: "",
-		           cowmu: sync.Mutex{},
 		           backupGen: 0,
 		           poolSize: 0,
 		           radius: 0,
@@ -6494,6 +6400,12 @@ func Test_ngt_removeInvalidIndex(t *testing.T) {
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -6505,10 +6417,10 @@ func Test_ngt_removeInvalidIndex(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -6518,12 +6430,10 @@ func Test_ngt_removeInvalidIndex(t *testing.T) {
 				core:              test.fields.core,
 				eg:                test.fields.eg,
 				kvs:               test.fields.kvs,
-				fmu:               test.fields.fmu,
 				fmap:              test.fields.fmap,
 				vq:                test.fields.vq,
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
-				cimu:              test.fields.cimu,
 				lastNocie:         test.fields.lastNocie,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
@@ -6539,11 +6449,9 @@ func Test_ngt_removeInvalidIndex(t *testing.T) {
 				enableProactiveGC: test.fields.enableProactiveGC,
 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
 				path:              test.fields.path,
-				smu:               test.fields.smu,
 				tmpPath:           test.fields.tmpPath,
 				oldPath:           test.fields.oldPath,
 				basePath:          test.fields.basePath,
-				cowmu:             test.fields.cowmu,
 				backupGen:         test.fields.backupGen,
 				poolSize:          test.fields.poolSize,
 				radius:            test.fields.radius,
@@ -6569,12 +6477,10 @@ func Test_ngt_SaveIndex(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		fmu               sync.Mutex
 		fmap              map[string]uint32
 		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
-		cimu              sync.Mutex
 		lastNocie         uint64
 		nocie             uint64
 		nogce             uint64
@@ -6590,11 +6496,9 @@ func Test_ngt_SaveIndex(t *testing.T) {
 		enableProactiveGC bool
 		enableCopyOnWrite bool
 		path              string
-		smu               sync.Mutex
 		tmpPath           atomic.Value
 		oldPath           string
 		basePath          string
-		cowmu             sync.Mutex
 		backupGen         uint64
 		poolSize          uint32
 		radius            float32
@@ -6612,8 +6516,8 @@ func Test_ngt_SaveIndex(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -6633,12 +6537,10 @@ func Test_ngt_SaveIndex(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           fmu: sync.Mutex{},
 		           fmap: nil,
 		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
-		           cimu: sync.Mutex{},
 		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
@@ -6654,11 +6556,9 @@ func Test_ngt_SaveIndex(t *testing.T) {
 		           enableProactiveGC: false,
 		           enableCopyOnWrite: false,
 		           path: "",
-		           smu: sync.Mutex{},
 		           tmpPath: nil,
 		           oldPath: "",
 		           basePath: "",
-		           cowmu: sync.Mutex{},
 		           backupGen: 0,
 		           poolSize: 0,
 		           radius: 0,
@@ -6669,6 +6569,12 @@ func Test_ngt_SaveIndex(t *testing.T) {
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -6684,12 +6590,10 @@ func Test_ngt_SaveIndex(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           fmu: sync.Mutex{},
 		           fmap: nil,
 		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
-		           cimu: sync.Mutex{},
 		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
@@ -6705,11 +6609,9 @@ func Test_ngt_SaveIndex(t *testing.T) {
 		           enableProactiveGC: false,
 		           enableCopyOnWrite: false,
 		           path: "",
-		           smu: sync.Mutex{},
 		           tmpPath: nil,
 		           oldPath: "",
 		           basePath: "",
-		           cowmu: sync.Mutex{},
 		           backupGen: 0,
 		           poolSize: 0,
 		           radius: 0,
@@ -6720,6 +6622,12 @@ func Test_ngt_SaveIndex(t *testing.T) {
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -6731,10 +6639,10 @@ func Test_ngt_SaveIndex(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -6744,12 +6652,10 @@ func Test_ngt_SaveIndex(t *testing.T) {
 				core:              test.fields.core,
 				eg:                test.fields.eg,
 				kvs:               test.fields.kvs,
-				fmu:               test.fields.fmu,
 				fmap:              test.fields.fmap,
 				vq:                test.fields.vq,
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
-				cimu:              test.fields.cimu,
 				lastNocie:         test.fields.lastNocie,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
@@ -6765,11 +6671,9 @@ func Test_ngt_SaveIndex(t *testing.T) {
 				enableProactiveGC: test.fields.enableProactiveGC,
 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
 				path:              test.fields.path,
-				smu:               test.fields.smu,
 				tmpPath:           test.fields.tmpPath,
 				oldPath:           test.fields.oldPath,
 				basePath:          test.fields.basePath,
-				cowmu:             test.fields.cowmu,
 				backupGen:         test.fields.backupGen,
 				poolSize:          test.fields.poolSize,
 				radius:            test.fields.radius,
@@ -6795,12 +6699,10 @@ func Test_ngt_saveIndex(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		fmu               sync.Mutex
 		fmap              map[string]uint32
 		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
-		cimu              sync.Mutex
 		lastNocie         uint64
 		nocie             uint64
 		nogce             uint64
@@ -6816,11 +6718,9 @@ func Test_ngt_saveIndex(t *testing.T) {
 		enableProactiveGC bool
 		enableCopyOnWrite bool
 		path              string
-		smu               sync.Mutex
 		tmpPath           atomic.Value
 		oldPath           string
 		basePath          string
-		cowmu             sync.Mutex
 		backupGen         uint64
 		poolSize          uint32
 		radius            float32
@@ -6838,8 +6738,8 @@ func Test_ngt_saveIndex(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -6859,12 +6759,10 @@ func Test_ngt_saveIndex(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           fmu: sync.Mutex{},
 		           fmap: nil,
 		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
-		           cimu: sync.Mutex{},
 		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
@@ -6880,11 +6778,9 @@ func Test_ngt_saveIndex(t *testing.T) {
 		           enableProactiveGC: false,
 		           enableCopyOnWrite: false,
 		           path: "",
-		           smu: sync.Mutex{},
 		           tmpPath: nil,
 		           oldPath: "",
 		           basePath: "",
-		           cowmu: sync.Mutex{},
 		           backupGen: 0,
 		           poolSize: 0,
 		           radius: 0,
@@ -6895,6 +6791,12 @@ func Test_ngt_saveIndex(t *testing.T) {
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -6910,12 +6812,10 @@ func Test_ngt_saveIndex(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           fmu: sync.Mutex{},
 		           fmap: nil,
 		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
-		           cimu: sync.Mutex{},
 		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
@@ -6931,11 +6831,9 @@ func Test_ngt_saveIndex(t *testing.T) {
 		           enableProactiveGC: false,
 		           enableCopyOnWrite: false,
 		           path: "",
-		           smu: sync.Mutex{},
 		           tmpPath: nil,
 		           oldPath: "",
 		           basePath: "",
-		           cowmu: sync.Mutex{},
 		           backupGen: 0,
 		           poolSize: 0,
 		           radius: 0,
@@ -6946,6 +6844,12 @@ func Test_ngt_saveIndex(t *testing.T) {
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -6957,10 +6861,10 @@ func Test_ngt_saveIndex(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -6970,12 +6874,10 @@ func Test_ngt_saveIndex(t *testing.T) {
 				core:              test.fields.core,
 				eg:                test.fields.eg,
 				kvs:               test.fields.kvs,
-				fmu:               test.fields.fmu,
 				fmap:              test.fields.fmap,
 				vq:                test.fields.vq,
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
-				cimu:              test.fields.cimu,
 				lastNocie:         test.fields.lastNocie,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
@@ -6991,11 +6893,9 @@ func Test_ngt_saveIndex(t *testing.T) {
 				enableProactiveGC: test.fields.enableProactiveGC,
 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
 				path:              test.fields.path,
-				smu:               test.fields.smu,
 				tmpPath:           test.fields.tmpPath,
 				oldPath:           test.fields.oldPath,
 				basePath:          test.fields.basePath,
-				cowmu:             test.fields.cowmu,
 				backupGen:         test.fields.backupGen,
 				poolSize:          test.fields.poolSize,
 				radius:            test.fields.radius,
@@ -7022,12 +6922,10 @@ func Test_ngt_CreateAndSaveIndex(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		fmu               sync.Mutex
 		fmap              map[string]uint32
 		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
-		cimu              sync.Mutex
 		lastNocie         uint64
 		nocie             uint64
 		nogce             uint64
@@ -7043,11 +6941,9 @@ func Test_ngt_CreateAndSaveIndex(t *testing.T) {
 		enableProactiveGC bool
 		enableCopyOnWrite bool
 		path              string
-		smu               sync.Mutex
 		tmpPath           atomic.Value
 		oldPath           string
 		basePath          string
-		cowmu             sync.Mutex
 		backupGen         uint64
 		poolSize          uint32
 		radius            float32
@@ -7065,8 +6961,8 @@ func Test_ngt_CreateAndSaveIndex(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -7087,12 +6983,10 @@ func Test_ngt_CreateAndSaveIndex(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           fmu: sync.Mutex{},
 		           fmap: nil,
 		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
-		           cimu: sync.Mutex{},
 		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
@@ -7108,11 +7002,9 @@ func Test_ngt_CreateAndSaveIndex(t *testing.T) {
 		           enableProactiveGC: false,
 		           enableCopyOnWrite: false,
 		           path: "",
-		           smu: sync.Mutex{},
 		           tmpPath: nil,
 		           oldPath: "",
 		           basePath: "",
-		           cowmu: sync.Mutex{},
 		           backupGen: 0,
 		           poolSize: 0,
 		           radius: 0,
@@ -7123,6 +7015,12 @@ func Test_ngt_CreateAndSaveIndex(t *testing.T) {
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -7139,12 +7037,10 @@ func Test_ngt_CreateAndSaveIndex(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           fmu: sync.Mutex{},
 		           fmap: nil,
 		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
-		           cimu: sync.Mutex{},
 		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
@@ -7160,11 +7056,9 @@ func Test_ngt_CreateAndSaveIndex(t *testing.T) {
 		           enableProactiveGC: false,
 		           enableCopyOnWrite: false,
 		           path: "",
-		           smu: sync.Mutex{},
 		           tmpPath: nil,
 		           oldPath: "",
 		           basePath: "",
-		           cowmu: sync.Mutex{},
 		           backupGen: 0,
 		           poolSize: 0,
 		           radius: 0,
@@ -7175,6 +7069,12 @@ func Test_ngt_CreateAndSaveIndex(t *testing.T) {
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -7186,10 +7086,10 @@ func Test_ngt_CreateAndSaveIndex(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -7199,12 +7099,10 @@ func Test_ngt_CreateAndSaveIndex(t *testing.T) {
 				core:              test.fields.core,
 				eg:                test.fields.eg,
 				kvs:               test.fields.kvs,
-				fmu:               test.fields.fmu,
 				fmap:              test.fields.fmap,
 				vq:                test.fields.vq,
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
-				cimu:              test.fields.cimu,
 				lastNocie:         test.fields.lastNocie,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
@@ -7220,11 +7118,9 @@ func Test_ngt_CreateAndSaveIndex(t *testing.T) {
 				enableProactiveGC: test.fields.enableProactiveGC,
 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
 				path:              test.fields.path,
-				smu:               test.fields.smu,
 				tmpPath:           test.fields.tmpPath,
 				oldPath:           test.fields.oldPath,
 				basePath:          test.fields.basePath,
-				cowmu:             test.fields.cowmu,
 				backupGen:         test.fields.backupGen,
 				poolSize:          test.fields.poolSize,
 				radius:            test.fields.radius,
@@ -7250,12 +7146,10 @@ func Test_ngt_moveAndSwitchSavedData(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		fmu               sync.Mutex
 		fmap              map[string]uint32
 		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
-		cimu              sync.Mutex
 		lastNocie         uint64
 		nocie             uint64
 		nogce             uint64
@@ -7271,11 +7165,9 @@ func Test_ngt_moveAndSwitchSavedData(t *testing.T) {
 		enableProactiveGC bool
 		enableCopyOnWrite bool
 		path              string
-		smu               sync.Mutex
 		tmpPath           atomic.Value
 		oldPath           string
 		basePath          string
-		cowmu             sync.Mutex
 		backupGen         uint64
 		poolSize          uint32
 		radius            float32
@@ -7293,8 +7185,8 @@ func Test_ngt_moveAndSwitchSavedData(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -7314,12 +7206,10 @@ func Test_ngt_moveAndSwitchSavedData(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           fmu: sync.Mutex{},
 		           fmap: nil,
 		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
-		           cimu: sync.Mutex{},
 		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
@@ -7335,11 +7225,9 @@ func Test_ngt_moveAndSwitchSavedData(t *testing.T) {
 		           enableProactiveGC: false,
 		           enableCopyOnWrite: false,
 		           path: "",
-		           smu: sync.Mutex{},
 		           tmpPath: nil,
 		           oldPath: "",
 		           basePath: "",
-		           cowmu: sync.Mutex{},
 		           backupGen: 0,
 		           poolSize: 0,
 		           radius: 0,
@@ -7350,6 +7238,12 @@ func Test_ngt_moveAndSwitchSavedData(t *testing.T) {
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -7365,12 +7259,10 @@ func Test_ngt_moveAndSwitchSavedData(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           fmu: sync.Mutex{},
 		           fmap: nil,
 		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
-		           cimu: sync.Mutex{},
 		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
@@ -7386,11 +7278,9 @@ func Test_ngt_moveAndSwitchSavedData(t *testing.T) {
 		           enableProactiveGC: false,
 		           enableCopyOnWrite: false,
 		           path: "",
-		           smu: sync.Mutex{},
 		           tmpPath: nil,
 		           oldPath: "",
 		           basePath: "",
-		           cowmu: sync.Mutex{},
 		           backupGen: 0,
 		           poolSize: 0,
 		           radius: 0,
@@ -7401,6 +7291,12 @@ func Test_ngt_moveAndSwitchSavedData(t *testing.T) {
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -7412,10 +7308,10 @@ func Test_ngt_moveAndSwitchSavedData(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -7425,12 +7321,10 @@ func Test_ngt_moveAndSwitchSavedData(t *testing.T) {
 				core:              test.fields.core,
 				eg:                test.fields.eg,
 				kvs:               test.fields.kvs,
-				fmu:               test.fields.fmu,
 				fmap:              test.fields.fmap,
 				vq:                test.fields.vq,
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
-				cimu:              test.fields.cimu,
 				lastNocie:         test.fields.lastNocie,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
@@ -7446,11 +7340,9 @@ func Test_ngt_moveAndSwitchSavedData(t *testing.T) {
 				enableProactiveGC: test.fields.enableProactiveGC,
 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
 				path:              test.fields.path,
-				smu:               test.fields.smu,
 				tmpPath:           test.fields.tmpPath,
 				oldPath:           test.fields.oldPath,
 				basePath:          test.fields.basePath,
-				cowmu:             test.fields.cowmu,
 				backupGen:         test.fields.backupGen,
 				poolSize:          test.fields.poolSize,
 				radius:            test.fields.radius,
@@ -7473,12 +7365,10 @@ func Test_ngt_mktmp(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		fmu               sync.Mutex
 		fmap              map[string]uint32
 		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
-		cimu              sync.Mutex
 		lastNocie         uint64
 		nocie             uint64
 		nogce             uint64
@@ -7494,11 +7384,9 @@ func Test_ngt_mktmp(t *testing.T) {
 		enableProactiveGC bool
 		enableCopyOnWrite bool
 		path              string
-		smu               sync.Mutex
 		tmpPath           atomic.Value
 		oldPath           string
 		basePath          string
-		cowmu             sync.Mutex
 		backupGen         uint64
 		poolSize          uint32
 		radius            float32
@@ -7515,8 +7403,8 @@ func Test_ngt_mktmp(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, error) error
-		beforeFunc func()
-		afterFunc  func()
+		beforeFunc func(*testing.T)
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -7533,12 +7421,10 @@ func Test_ngt_mktmp(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           fmu: sync.Mutex{},
 		           fmap: nil,
 		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
-		           cimu: sync.Mutex{},
 		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
@@ -7554,11 +7440,9 @@ func Test_ngt_mktmp(t *testing.T) {
 		           enableProactiveGC: false,
 		           enableCopyOnWrite: false,
 		           path: "",
-		           smu: sync.Mutex{},
 		           tmpPath: nil,
 		           oldPath: "",
 		           basePath: "",
-		           cowmu: sync.Mutex{},
 		           backupGen: 0,
 		           poolSize: 0,
 		           radius: 0,
@@ -7569,6 +7453,12 @@ func Test_ngt_mktmp(t *testing.T) {
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -7581,12 +7471,10 @@ func Test_ngt_mktmp(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           fmu: sync.Mutex{},
 		           fmap: nil,
 		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
-		           cimu: sync.Mutex{},
 		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
@@ -7602,11 +7490,9 @@ func Test_ngt_mktmp(t *testing.T) {
 		           enableProactiveGC: false,
 		           enableCopyOnWrite: false,
 		           path: "",
-		           smu: sync.Mutex{},
 		           tmpPath: nil,
 		           oldPath: "",
 		           basePath: "",
-		           cowmu: sync.Mutex{},
 		           backupGen: 0,
 		           poolSize: 0,
 		           radius: 0,
@@ -7617,6 +7503,12 @@ func Test_ngt_mktmp(t *testing.T) {
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -7628,10 +7520,10 @@ func Test_ngt_mktmp(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -7641,12 +7533,10 @@ func Test_ngt_mktmp(t *testing.T) {
 				core:              test.fields.core,
 				eg:                test.fields.eg,
 				kvs:               test.fields.kvs,
-				fmu:               test.fields.fmu,
 				fmap:              test.fields.fmap,
 				vq:                test.fields.vq,
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
-				cimu:              test.fields.cimu,
 				lastNocie:         test.fields.lastNocie,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
@@ -7662,11 +7552,9 @@ func Test_ngt_mktmp(t *testing.T) {
 				enableProactiveGC: test.fields.enableProactiveGC,
 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
 				path:              test.fields.path,
-				smu:               test.fields.smu,
 				tmpPath:           test.fields.tmpPath,
 				oldPath:           test.fields.oldPath,
 				basePath:          test.fields.basePath,
-				cowmu:             test.fields.cowmu,
 				backupGen:         test.fields.backupGen,
 				poolSize:          test.fields.poolSize,
 				radius:            test.fields.radius,
@@ -7692,12 +7580,10 @@ func Test_ngt_Exists(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		fmu               sync.Mutex
 		fmap              map[string]uint32
 		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
-		cimu              sync.Mutex
 		lastNocie         uint64
 		nocie             uint64
 		nogce             uint64
@@ -7713,11 +7599,9 @@ func Test_ngt_Exists(t *testing.T) {
 		enableProactiveGC bool
 		enableCopyOnWrite bool
 		path              string
-		smu               sync.Mutex
 		tmpPath           atomic.Value
 		oldPath           string
 		basePath          string
-		cowmu             sync.Mutex
 		backupGen         uint64
 		poolSize          uint32
 		radius            float32
@@ -7736,8 +7620,8 @@ func Test_ngt_Exists(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, uint32, bool) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, gotOid uint32, gotOk bool) error {
 		if !reflect.DeepEqual(gotOid, w.wantOid) {
@@ -7760,12 +7644,10 @@ func Test_ngt_Exists(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           fmu: sync.Mutex{},
 		           fmap: nil,
 		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
-		           cimu: sync.Mutex{},
 		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
@@ -7781,11 +7663,9 @@ func Test_ngt_Exists(t *testing.T) {
 		           enableProactiveGC: false,
 		           enableCopyOnWrite: false,
 		           path: "",
-		           smu: sync.Mutex{},
 		           tmpPath: nil,
 		           oldPath: "",
 		           basePath: "",
-		           cowmu: sync.Mutex{},
 		           backupGen: 0,
 		           poolSize: 0,
 		           radius: 0,
@@ -7796,6 +7676,12 @@ func Test_ngt_Exists(t *testing.T) {
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -7811,12 +7697,10 @@ func Test_ngt_Exists(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           fmu: sync.Mutex{},
 		           fmap: nil,
 		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
-		           cimu: sync.Mutex{},
 		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
@@ -7832,11 +7716,9 @@ func Test_ngt_Exists(t *testing.T) {
 		           enableProactiveGC: false,
 		           enableCopyOnWrite: false,
 		           path: "",
-		           smu: sync.Mutex{},
 		           tmpPath: nil,
 		           oldPath: "",
 		           basePath: "",
-		           cowmu: sync.Mutex{},
 		           backupGen: 0,
 		           poolSize: 0,
 		           radius: 0,
@@ -7847,6 +7729,12 @@ func Test_ngt_Exists(t *testing.T) {
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -7858,10 +7746,10 @@ func Test_ngt_Exists(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -7871,12 +7759,10 @@ func Test_ngt_Exists(t *testing.T) {
 				core:              test.fields.core,
 				eg:                test.fields.eg,
 				kvs:               test.fields.kvs,
-				fmu:               test.fields.fmu,
 				fmap:              test.fields.fmap,
 				vq:                test.fields.vq,
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
-				cimu:              test.fields.cimu,
 				lastNocie:         test.fields.lastNocie,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
@@ -7892,11 +7778,9 @@ func Test_ngt_Exists(t *testing.T) {
 				enableProactiveGC: test.fields.enableProactiveGC,
 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
 				path:              test.fields.path,
-				smu:               test.fields.smu,
 				tmpPath:           test.fields.tmpPath,
 				oldPath:           test.fields.oldPath,
 				basePath:          test.fields.basePath,
-				cowmu:             test.fields.cowmu,
 				backupGen:         test.fields.backupGen,
 				poolSize:          test.fields.poolSize,
 				radius:            test.fields.radius,
@@ -7922,12 +7806,10 @@ func Test_ngt_GetObject(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		fmu               sync.Mutex
 		fmap              map[string]uint32
 		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
-		cimu              sync.Mutex
 		lastNocie         uint64
 		nocie             uint64
 		nogce             uint64
@@ -7943,11 +7825,9 @@ func Test_ngt_GetObject(t *testing.T) {
 		enableProactiveGC bool
 		enableCopyOnWrite bool
 		path              string
-		smu               sync.Mutex
 		tmpPath           atomic.Value
 		oldPath           string
 		basePath          string
-		cowmu             sync.Mutex
 		backupGen         uint64
 		poolSize          uint32
 		radius            float32
@@ -7966,8 +7846,8 @@ func Test_ngt_GetObject(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, []float32, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, gotVec []float32, err error) error {
 		if !errors.Is(err, w.err) {
@@ -7990,12 +7870,10 @@ func Test_ngt_GetObject(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           fmu: sync.Mutex{},
 		           fmap: nil,
 		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
-		           cimu: sync.Mutex{},
 		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
@@ -8011,11 +7889,9 @@ func Test_ngt_GetObject(t *testing.T) {
 		           enableProactiveGC: false,
 		           enableCopyOnWrite: false,
 		           path: "",
-		           smu: sync.Mutex{},
 		           tmpPath: nil,
 		           oldPath: "",
 		           basePath: "",
-		           cowmu: sync.Mutex{},
 		           backupGen: 0,
 		           poolSize: 0,
 		           radius: 0,
@@ -8026,6 +7902,12 @@ func Test_ngt_GetObject(t *testing.T) {
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -8041,12 +7923,10 @@ func Test_ngt_GetObject(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           fmu: sync.Mutex{},
 		           fmap: nil,
 		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
-		           cimu: sync.Mutex{},
 		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
@@ -8062,11 +7942,9 @@ func Test_ngt_GetObject(t *testing.T) {
 		           enableProactiveGC: false,
 		           enableCopyOnWrite: false,
 		           path: "",
-		           smu: sync.Mutex{},
 		           tmpPath: nil,
 		           oldPath: "",
 		           basePath: "",
-		           cowmu: sync.Mutex{},
 		           backupGen: 0,
 		           poolSize: 0,
 		           radius: 0,
@@ -8077,6 +7955,12 @@ func Test_ngt_GetObject(t *testing.T) {
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -8088,10 +7972,10 @@ func Test_ngt_GetObject(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -8101,12 +7985,10 @@ func Test_ngt_GetObject(t *testing.T) {
 				core:              test.fields.core,
 				eg:                test.fields.eg,
 				kvs:               test.fields.kvs,
-				fmu:               test.fields.fmu,
 				fmap:              test.fields.fmap,
 				vq:                test.fields.vq,
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
-				cimu:              test.fields.cimu,
 				lastNocie:         test.fields.lastNocie,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
@@ -8122,11 +8004,9 @@ func Test_ngt_GetObject(t *testing.T) {
 				enableProactiveGC: test.fields.enableProactiveGC,
 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
 				path:              test.fields.path,
-				smu:               test.fields.smu,
 				tmpPath:           test.fields.tmpPath,
 				oldPath:           test.fields.oldPath,
 				basePath:          test.fields.basePath,
-				cowmu:             test.fields.cowmu,
 				backupGen:         test.fields.backupGen,
 				poolSize:          test.fields.poolSize,
 				radius:            test.fields.radius,
@@ -8153,12 +8033,10 @@ func Test_ngt_readyForUpdate(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		fmu               sync.Mutex
 		fmap              map[string]uint32
 		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
-		cimu              sync.Mutex
 		lastNocie         uint64
 		nocie             uint64
 		nogce             uint64
@@ -8174,11 +8052,9 @@ func Test_ngt_readyForUpdate(t *testing.T) {
 		enableProactiveGC bool
 		enableCopyOnWrite bool
 		path              string
-		smu               sync.Mutex
 		tmpPath           atomic.Value
 		oldPath           string
 		basePath          string
-		cowmu             sync.Mutex
 		backupGen         uint64
 		poolSize          uint32
 		radius            float32
@@ -8196,8 +8072,8 @@ func Test_ngt_readyForUpdate(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -8218,12 +8094,10 @@ func Test_ngt_readyForUpdate(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           fmu: sync.Mutex{},
 		           fmap: nil,
 		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
-		           cimu: sync.Mutex{},
 		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
@@ -8239,11 +8113,9 @@ func Test_ngt_readyForUpdate(t *testing.T) {
 		           enableProactiveGC: false,
 		           enableCopyOnWrite: false,
 		           path: "",
-		           smu: sync.Mutex{},
 		           tmpPath: nil,
 		           oldPath: "",
 		           basePath: "",
-		           cowmu: sync.Mutex{},
 		           backupGen: 0,
 		           poolSize: 0,
 		           radius: 0,
@@ -8254,6 +8126,12 @@ func Test_ngt_readyForUpdate(t *testing.T) {
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -8270,12 +8148,10 @@ func Test_ngt_readyForUpdate(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           fmu: sync.Mutex{},
 		           fmap: nil,
 		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
-		           cimu: sync.Mutex{},
 		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
@@ -8291,11 +8167,9 @@ func Test_ngt_readyForUpdate(t *testing.T) {
 		           enableProactiveGC: false,
 		           enableCopyOnWrite: false,
 		           path: "",
-		           smu: sync.Mutex{},
 		           tmpPath: nil,
 		           oldPath: "",
 		           basePath: "",
-		           cowmu: sync.Mutex{},
 		           backupGen: 0,
 		           poolSize: 0,
 		           radius: 0,
@@ -8306,6 +8180,12 @@ func Test_ngt_readyForUpdate(t *testing.T) {
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -8317,10 +8197,10 @@ func Test_ngt_readyForUpdate(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -8330,12 +8210,10 @@ func Test_ngt_readyForUpdate(t *testing.T) {
 				core:              test.fields.core,
 				eg:                test.fields.eg,
 				kvs:               test.fields.kvs,
-				fmu:               test.fields.fmu,
 				fmap:              test.fields.fmap,
 				vq:                test.fields.vq,
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
-				cimu:              test.fields.cimu,
 				lastNocie:         test.fields.lastNocie,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
@@ -8351,11 +8229,9 @@ func Test_ngt_readyForUpdate(t *testing.T) {
 				enableProactiveGC: test.fields.enableProactiveGC,
 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
 				path:              test.fields.path,
-				smu:               test.fields.smu,
 				tmpPath:           test.fields.tmpPath,
 				oldPath:           test.fields.oldPath,
 				basePath:          test.fields.basePath,
-				cowmu:             test.fields.cowmu,
 				backupGen:         test.fields.backupGen,
 				poolSize:          test.fields.poolSize,
 				radius:            test.fields.radius,
@@ -8378,12 +8254,10 @@ func Test_ngt_IsSaving(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		fmu               sync.Mutex
 		fmap              map[string]uint32
 		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
-		cimu              sync.Mutex
 		lastNocie         uint64
 		nocie             uint64
 		nogce             uint64
@@ -8399,11 +8273,9 @@ func Test_ngt_IsSaving(t *testing.T) {
 		enableProactiveGC bool
 		enableCopyOnWrite bool
 		path              string
-		smu               sync.Mutex
 		tmpPath           atomic.Value
 		oldPath           string
 		basePath          string
-		cowmu             sync.Mutex
 		backupGen         uint64
 		poolSize          uint32
 		radius            float32
@@ -8420,8 +8292,8 @@ func Test_ngt_IsSaving(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, bool) error
-		beforeFunc func()
-		afterFunc  func()
+		beforeFunc func(*testing.T)
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want, got bool) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -8438,12 +8310,10 @@ func Test_ngt_IsSaving(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           fmu: sync.Mutex{},
 		           fmap: nil,
 		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
-		           cimu: sync.Mutex{},
 		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
@@ -8459,11 +8329,9 @@ func Test_ngt_IsSaving(t *testing.T) {
 		           enableProactiveGC: false,
 		           enableCopyOnWrite: false,
 		           path: "",
-		           smu: sync.Mutex{},
 		           tmpPath: nil,
 		           oldPath: "",
 		           basePath: "",
-		           cowmu: sync.Mutex{},
 		           backupGen: 0,
 		           poolSize: 0,
 		           radius: 0,
@@ -8474,6 +8342,12 @@ func Test_ngt_IsSaving(t *testing.T) {
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -8486,12 +8360,10 @@ func Test_ngt_IsSaving(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           fmu: sync.Mutex{},
 		           fmap: nil,
 		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
-		           cimu: sync.Mutex{},
 		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
@@ -8507,11 +8379,9 @@ func Test_ngt_IsSaving(t *testing.T) {
 		           enableProactiveGC: false,
 		           enableCopyOnWrite: false,
 		           path: "",
-		           smu: sync.Mutex{},
 		           tmpPath: nil,
 		           oldPath: "",
 		           basePath: "",
-		           cowmu: sync.Mutex{},
 		           backupGen: 0,
 		           poolSize: 0,
 		           radius: 0,
@@ -8522,6 +8392,12 @@ func Test_ngt_IsSaving(t *testing.T) {
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -8533,10 +8409,10 @@ func Test_ngt_IsSaving(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -8546,12 +8422,10 @@ func Test_ngt_IsSaving(t *testing.T) {
 				core:              test.fields.core,
 				eg:                test.fields.eg,
 				kvs:               test.fields.kvs,
-				fmu:               test.fields.fmu,
 				fmap:              test.fields.fmap,
 				vq:                test.fields.vq,
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
-				cimu:              test.fields.cimu,
 				lastNocie:         test.fields.lastNocie,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
@@ -8567,11 +8441,9 @@ func Test_ngt_IsSaving(t *testing.T) {
 				enableProactiveGC: test.fields.enableProactiveGC,
 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
 				path:              test.fields.path,
-				smu:               test.fields.smu,
 				tmpPath:           test.fields.tmpPath,
 				oldPath:           test.fields.oldPath,
 				basePath:          test.fields.basePath,
-				cowmu:             test.fields.cowmu,
 				backupGen:         test.fields.backupGen,
 				poolSize:          test.fields.poolSize,
 				radius:            test.fields.radius,
@@ -8594,12 +8466,10 @@ func Test_ngt_IsIndexing(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		fmu               sync.Mutex
 		fmap              map[string]uint32
 		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
-		cimu              sync.Mutex
 		lastNocie         uint64
 		nocie             uint64
 		nogce             uint64
@@ -8615,11 +8485,9 @@ func Test_ngt_IsIndexing(t *testing.T) {
 		enableProactiveGC bool
 		enableCopyOnWrite bool
 		path              string
-		smu               sync.Mutex
 		tmpPath           atomic.Value
 		oldPath           string
 		basePath          string
-		cowmu             sync.Mutex
 		backupGen         uint64
 		poolSize          uint32
 		radius            float32
@@ -8636,8 +8504,8 @@ func Test_ngt_IsIndexing(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, bool) error
-		beforeFunc func()
-		afterFunc  func()
+		beforeFunc func(*testing.T)
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want, got bool) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -8654,12 +8522,10 @@ func Test_ngt_IsIndexing(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           fmu: sync.Mutex{},
 		           fmap: nil,
 		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
-		           cimu: sync.Mutex{},
 		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
@@ -8675,11 +8541,9 @@ func Test_ngt_IsIndexing(t *testing.T) {
 		           enableProactiveGC: false,
 		           enableCopyOnWrite: false,
 		           path: "",
-		           smu: sync.Mutex{},
 		           tmpPath: nil,
 		           oldPath: "",
 		           basePath: "",
-		           cowmu: sync.Mutex{},
 		           backupGen: 0,
 		           poolSize: 0,
 		           radius: 0,
@@ -8690,6 +8554,12 @@ func Test_ngt_IsIndexing(t *testing.T) {
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -8702,12 +8572,10 @@ func Test_ngt_IsIndexing(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           fmu: sync.Mutex{},
 		           fmap: nil,
 		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
-		           cimu: sync.Mutex{},
 		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
@@ -8723,11 +8591,9 @@ func Test_ngt_IsIndexing(t *testing.T) {
 		           enableProactiveGC: false,
 		           enableCopyOnWrite: false,
 		           path: "",
-		           smu: sync.Mutex{},
 		           tmpPath: nil,
 		           oldPath: "",
 		           basePath: "",
-		           cowmu: sync.Mutex{},
 		           backupGen: 0,
 		           poolSize: 0,
 		           radius: 0,
@@ -8738,6 +8604,12 @@ func Test_ngt_IsIndexing(t *testing.T) {
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -8749,10 +8621,10 @@ func Test_ngt_IsIndexing(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -8762,12 +8634,10 @@ func Test_ngt_IsIndexing(t *testing.T) {
 				core:              test.fields.core,
 				eg:                test.fields.eg,
 				kvs:               test.fields.kvs,
-				fmu:               test.fields.fmu,
 				fmap:              test.fields.fmap,
 				vq:                test.fields.vq,
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
-				cimu:              test.fields.cimu,
 				lastNocie:         test.fields.lastNocie,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
@@ -8783,11 +8653,9 @@ func Test_ngt_IsIndexing(t *testing.T) {
 				enableProactiveGC: test.fields.enableProactiveGC,
 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
 				path:              test.fields.path,
-				smu:               test.fields.smu,
 				tmpPath:           test.fields.tmpPath,
 				oldPath:           test.fields.oldPath,
 				basePath:          test.fields.basePath,
-				cowmu:             test.fields.cowmu,
 				backupGen:         test.fields.backupGen,
 				poolSize:          test.fields.poolSize,
 				radius:            test.fields.radius,
@@ -8813,12 +8681,10 @@ func Test_ngt_UUIDs(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		fmu               sync.Mutex
 		fmap              map[string]uint32
 		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
-		cimu              sync.Mutex
 		lastNocie         uint64
 		nocie             uint64
 		nogce             uint64
@@ -8834,11 +8700,9 @@ func Test_ngt_UUIDs(t *testing.T) {
 		enableProactiveGC bool
 		enableCopyOnWrite bool
 		path              string
-		smu               sync.Mutex
 		tmpPath           atomic.Value
 		oldPath           string
 		basePath          string
-		cowmu             sync.Mutex
 		backupGen         uint64
 		poolSize          uint32
 		radius            float32
@@ -8856,8 +8720,8 @@ func Test_ngt_UUIDs(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, []string) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, gotUuids []string) error {
 		if !reflect.DeepEqual(gotUuids, w.wantUuids) {
@@ -8877,12 +8741,10 @@ func Test_ngt_UUIDs(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           fmu: sync.Mutex{},
 		           fmap: nil,
 		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
-		           cimu: sync.Mutex{},
 		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
@@ -8898,11 +8760,9 @@ func Test_ngt_UUIDs(t *testing.T) {
 		           enableProactiveGC: false,
 		           enableCopyOnWrite: false,
 		           path: "",
-		           smu: sync.Mutex{},
 		           tmpPath: nil,
 		           oldPath: "",
 		           basePath: "",
-		           cowmu: sync.Mutex{},
 		           backupGen: 0,
 		           poolSize: 0,
 		           radius: 0,
@@ -8913,6 +8773,12 @@ func Test_ngt_UUIDs(t *testing.T) {
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -8928,12 +8794,10 @@ func Test_ngt_UUIDs(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           fmu: sync.Mutex{},
 		           fmap: nil,
 		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
-		           cimu: sync.Mutex{},
 		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
@@ -8949,11 +8813,9 @@ func Test_ngt_UUIDs(t *testing.T) {
 		           enableProactiveGC: false,
 		           enableCopyOnWrite: false,
 		           path: "",
-		           smu: sync.Mutex{},
 		           tmpPath: nil,
 		           oldPath: "",
 		           basePath: "",
-		           cowmu: sync.Mutex{},
 		           backupGen: 0,
 		           poolSize: 0,
 		           radius: 0,
@@ -8964,6 +8826,12 @@ func Test_ngt_UUIDs(t *testing.T) {
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -8975,10 +8843,10 @@ func Test_ngt_UUIDs(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -8988,12 +8856,10 @@ func Test_ngt_UUIDs(t *testing.T) {
 				core:              test.fields.core,
 				eg:                test.fields.eg,
 				kvs:               test.fields.kvs,
-				fmu:               test.fields.fmu,
 				fmap:              test.fields.fmap,
 				vq:                test.fields.vq,
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
-				cimu:              test.fields.cimu,
 				lastNocie:         test.fields.lastNocie,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
@@ -9009,11 +8875,9 @@ func Test_ngt_UUIDs(t *testing.T) {
 				enableProactiveGC: test.fields.enableProactiveGC,
 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
 				path:              test.fields.path,
-				smu:               test.fields.smu,
 				tmpPath:           test.fields.tmpPath,
 				oldPath:           test.fields.oldPath,
 				basePath:          test.fields.basePath,
-				cowmu:             test.fields.cowmu,
 				backupGen:         test.fields.backupGen,
 				poolSize:          test.fields.poolSize,
 				radius:            test.fields.radius,
@@ -9036,12 +8900,10 @@ func Test_ngt_NumberOfCreateIndexExecution(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		fmu               sync.Mutex
 		fmap              map[string]uint32
 		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
-		cimu              sync.Mutex
 		lastNocie         uint64
 		nocie             uint64
 		nogce             uint64
@@ -9057,11 +8919,9 @@ func Test_ngt_NumberOfCreateIndexExecution(t *testing.T) {
 		enableProactiveGC bool
 		enableCopyOnWrite bool
 		path              string
-		smu               sync.Mutex
 		tmpPath           atomic.Value
 		oldPath           string
 		basePath          string
-		cowmu             sync.Mutex
 		backupGen         uint64
 		poolSize          uint32
 		radius            float32
@@ -9078,8 +8938,8 @@ func Test_ngt_NumberOfCreateIndexExecution(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, uint64) error
-		beforeFunc func()
-		afterFunc  func()
+		beforeFunc func(*testing.T)
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want, got uint64) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -9096,12 +8956,10 @@ func Test_ngt_NumberOfCreateIndexExecution(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           fmu: sync.Mutex{},
 		           fmap: nil,
 		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
-		           cimu: sync.Mutex{},
 		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
@@ -9117,11 +8975,9 @@ func Test_ngt_NumberOfCreateIndexExecution(t *testing.T) {
 		           enableProactiveGC: false,
 		           enableCopyOnWrite: false,
 		           path: "",
-		           smu: sync.Mutex{},
 		           tmpPath: nil,
 		           oldPath: "",
 		           basePath: "",
-		           cowmu: sync.Mutex{},
 		           backupGen: 0,
 		           poolSize: 0,
 		           radius: 0,
@@ -9132,6 +8988,12 @@ func Test_ngt_NumberOfCreateIndexExecution(t *testing.T) {
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -9144,12 +9006,10 @@ func Test_ngt_NumberOfCreateIndexExecution(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           fmu: sync.Mutex{},
 		           fmap: nil,
 		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
-		           cimu: sync.Mutex{},
 		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
@@ -9165,11 +9025,9 @@ func Test_ngt_NumberOfCreateIndexExecution(t *testing.T) {
 		           enableProactiveGC: false,
 		           enableCopyOnWrite: false,
 		           path: "",
-		           smu: sync.Mutex{},
 		           tmpPath: nil,
 		           oldPath: "",
 		           basePath: "",
-		           cowmu: sync.Mutex{},
 		           backupGen: 0,
 		           poolSize: 0,
 		           radius: 0,
@@ -9180,6 +9038,12 @@ func Test_ngt_NumberOfCreateIndexExecution(t *testing.T) {
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -9191,10 +9055,10 @@ func Test_ngt_NumberOfCreateIndexExecution(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -9204,12 +9068,10 @@ func Test_ngt_NumberOfCreateIndexExecution(t *testing.T) {
 				core:              test.fields.core,
 				eg:                test.fields.eg,
 				kvs:               test.fields.kvs,
-				fmu:               test.fields.fmu,
 				fmap:              test.fields.fmap,
 				vq:                test.fields.vq,
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
-				cimu:              test.fields.cimu,
 				lastNocie:         test.fields.lastNocie,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
@@ -9225,11 +9087,9 @@ func Test_ngt_NumberOfCreateIndexExecution(t *testing.T) {
 				enableProactiveGC: test.fields.enableProactiveGC,
 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
 				path:              test.fields.path,
-				smu:               test.fields.smu,
 				tmpPath:           test.fields.tmpPath,
 				oldPath:           test.fields.oldPath,
 				basePath:          test.fields.basePath,
-				cowmu:             test.fields.cowmu,
 				backupGen:         test.fields.backupGen,
 				poolSize:          test.fields.poolSize,
 				radius:            test.fields.radius,
@@ -9252,12 +9112,10 @@ func Test_ngt_NumberOfProactiveGCExecution(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		fmu               sync.Mutex
 		fmap              map[string]uint32
 		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
-		cimu              sync.Mutex
 		lastNocie         uint64
 		nocie             uint64
 		nogce             uint64
@@ -9273,11 +9131,9 @@ func Test_ngt_NumberOfProactiveGCExecution(t *testing.T) {
 		enableProactiveGC bool
 		enableCopyOnWrite bool
 		path              string
-		smu               sync.Mutex
 		tmpPath           atomic.Value
 		oldPath           string
 		basePath          string
-		cowmu             sync.Mutex
 		backupGen         uint64
 		poolSize          uint32
 		radius            float32
@@ -9294,8 +9150,8 @@ func Test_ngt_NumberOfProactiveGCExecution(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, uint64) error
-		beforeFunc func()
-		afterFunc  func()
+		beforeFunc func(*testing.T)
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want, got uint64) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -9312,12 +9168,10 @@ func Test_ngt_NumberOfProactiveGCExecution(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           fmu: sync.Mutex{},
 		           fmap: nil,
 		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
-		           cimu: sync.Mutex{},
 		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
@@ -9333,11 +9187,9 @@ func Test_ngt_NumberOfProactiveGCExecution(t *testing.T) {
 		           enableProactiveGC: false,
 		           enableCopyOnWrite: false,
 		           path: "",
-		           smu: sync.Mutex{},
 		           tmpPath: nil,
 		           oldPath: "",
 		           basePath: "",
-		           cowmu: sync.Mutex{},
 		           backupGen: 0,
 		           poolSize: 0,
 		           radius: 0,
@@ -9348,6 +9200,12 @@ func Test_ngt_NumberOfProactiveGCExecution(t *testing.T) {
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -9360,12 +9218,10 @@ func Test_ngt_NumberOfProactiveGCExecution(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           fmu: sync.Mutex{},
 		           fmap: nil,
 		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
-		           cimu: sync.Mutex{},
 		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
@@ -9381,11 +9237,9 @@ func Test_ngt_NumberOfProactiveGCExecution(t *testing.T) {
 		           enableProactiveGC: false,
 		           enableCopyOnWrite: false,
 		           path: "",
-		           smu: sync.Mutex{},
 		           tmpPath: nil,
 		           oldPath: "",
 		           basePath: "",
-		           cowmu: sync.Mutex{},
 		           backupGen: 0,
 		           poolSize: 0,
 		           radius: 0,
@@ -9396,6 +9250,12 @@ func Test_ngt_NumberOfProactiveGCExecution(t *testing.T) {
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -9407,10 +9267,10 @@ func Test_ngt_NumberOfProactiveGCExecution(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -9420,12 +9280,10 @@ func Test_ngt_NumberOfProactiveGCExecution(t *testing.T) {
 				core:              test.fields.core,
 				eg:                test.fields.eg,
 				kvs:               test.fields.kvs,
-				fmu:               test.fields.fmu,
 				fmap:              test.fields.fmap,
 				vq:                test.fields.vq,
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
-				cimu:              test.fields.cimu,
 				lastNocie:         test.fields.lastNocie,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
@@ -9441,11 +9299,9 @@ func Test_ngt_NumberOfProactiveGCExecution(t *testing.T) {
 				enableProactiveGC: test.fields.enableProactiveGC,
 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
 				path:              test.fields.path,
-				smu:               test.fields.smu,
 				tmpPath:           test.fields.tmpPath,
 				oldPath:           test.fields.oldPath,
 				basePath:          test.fields.basePath,
-				cowmu:             test.fields.cowmu,
 				backupGen:         test.fields.backupGen,
 				poolSize:          test.fields.poolSize,
 				radius:            test.fields.radius,
@@ -9468,12 +9324,10 @@ func Test_ngt_gc(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		fmu               sync.Mutex
 		fmap              map[string]uint32
 		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
-		cimu              sync.Mutex
 		lastNocie         uint64
 		nocie             uint64
 		nogce             uint64
@@ -9489,11 +9343,9 @@ func Test_ngt_gc(t *testing.T) {
 		enableProactiveGC bool
 		enableCopyOnWrite bool
 		path              string
-		smu               sync.Mutex
 		tmpPath           atomic.Value
 		oldPath           string
 		basePath          string
-		cowmu             sync.Mutex
 		backupGen         uint64
 		poolSize          uint32
 		radius            float32
@@ -9508,8 +9360,8 @@ func Test_ngt_gc(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want) error
-		beforeFunc func()
-		afterFunc  func()
+		beforeFunc func(*testing.T)
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want) error {
 		return nil
@@ -9523,12 +9375,10 @@ func Test_ngt_gc(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           fmu: sync.Mutex{},
 		           fmap: nil,
 		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
-		           cimu: sync.Mutex{},
 		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
@@ -9544,11 +9394,9 @@ func Test_ngt_gc(t *testing.T) {
 		           enableProactiveGC: false,
 		           enableCopyOnWrite: false,
 		           path: "",
-		           smu: sync.Mutex{},
 		           tmpPath: nil,
 		           oldPath: "",
 		           basePath: "",
-		           cowmu: sync.Mutex{},
 		           backupGen: 0,
 		           poolSize: 0,
 		           radius: 0,
@@ -9559,6 +9407,12 @@ func Test_ngt_gc(t *testing.T) {
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -9571,12 +9425,10 @@ func Test_ngt_gc(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           fmu: sync.Mutex{},
 		           fmap: nil,
 		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
-		           cimu: sync.Mutex{},
 		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
@@ -9592,11 +9444,9 @@ func Test_ngt_gc(t *testing.T) {
 		           enableProactiveGC: false,
 		           enableCopyOnWrite: false,
 		           path: "",
-		           smu: sync.Mutex{},
 		           tmpPath: nil,
 		           oldPath: "",
 		           basePath: "",
-		           cowmu: sync.Mutex{},
 		           backupGen: 0,
 		           poolSize: 0,
 		           radius: 0,
@@ -9607,6 +9457,12 @@ func Test_ngt_gc(t *testing.T) {
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -9618,10 +9474,10 @@ func Test_ngt_gc(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -9631,12 +9487,10 @@ func Test_ngt_gc(t *testing.T) {
 				core:              test.fields.core,
 				eg:                test.fields.eg,
 				kvs:               test.fields.kvs,
-				fmu:               test.fields.fmu,
 				fmap:              test.fields.fmap,
 				vq:                test.fields.vq,
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
-				cimu:              test.fields.cimu,
 				lastNocie:         test.fields.lastNocie,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
@@ -9652,11 +9506,9 @@ func Test_ngt_gc(t *testing.T) {
 				enableProactiveGC: test.fields.enableProactiveGC,
 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
 				path:              test.fields.path,
-				smu:               test.fields.smu,
 				tmpPath:           test.fields.tmpPath,
 				oldPath:           test.fields.oldPath,
 				basePath:          test.fields.basePath,
-				cowmu:             test.fields.cowmu,
 				backupGen:         test.fields.backupGen,
 				poolSize:          test.fields.poolSize,
 				radius:            test.fields.radius,
@@ -9679,12 +9531,10 @@ func Test_ngt_Len(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		fmu               sync.Mutex
 		fmap              map[string]uint32
 		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
-		cimu              sync.Mutex
 		lastNocie         uint64
 		nocie             uint64
 		nogce             uint64
@@ -9700,11 +9550,9 @@ func Test_ngt_Len(t *testing.T) {
 		enableProactiveGC bool
 		enableCopyOnWrite bool
 		path              string
-		smu               sync.Mutex
 		tmpPath           atomic.Value
 		oldPath           string
 		basePath          string
-		cowmu             sync.Mutex
 		backupGen         uint64
 		poolSize          uint32
 		radius            float32
@@ -9721,8 +9569,8 @@ func Test_ngt_Len(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, uint64) error
-		beforeFunc func()
-		afterFunc  func()
+		beforeFunc func(*testing.T)
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want, got uint64) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -9739,12 +9587,10 @@ func Test_ngt_Len(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           fmu: sync.Mutex{},
 		           fmap: nil,
 		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
-		           cimu: sync.Mutex{},
 		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
@@ -9760,11 +9606,9 @@ func Test_ngt_Len(t *testing.T) {
 		           enableProactiveGC: false,
 		           enableCopyOnWrite: false,
 		           path: "",
-		           smu: sync.Mutex{},
 		           tmpPath: nil,
 		           oldPath: "",
 		           basePath: "",
-		           cowmu: sync.Mutex{},
 		           backupGen: 0,
 		           poolSize: 0,
 		           radius: 0,
@@ -9775,6 +9619,12 @@ func Test_ngt_Len(t *testing.T) {
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -9787,12 +9637,10 @@ func Test_ngt_Len(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           fmu: sync.Mutex{},
 		           fmap: nil,
 		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
-		           cimu: sync.Mutex{},
 		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
@@ -9808,11 +9656,9 @@ func Test_ngt_Len(t *testing.T) {
 		           enableProactiveGC: false,
 		           enableCopyOnWrite: false,
 		           path: "",
-		           smu: sync.Mutex{},
 		           tmpPath: nil,
 		           oldPath: "",
 		           basePath: "",
-		           cowmu: sync.Mutex{},
 		           backupGen: 0,
 		           poolSize: 0,
 		           radius: 0,
@@ -9823,6 +9669,12 @@ func Test_ngt_Len(t *testing.T) {
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -9834,10 +9686,10 @@ func Test_ngt_Len(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -9847,12 +9699,10 @@ func Test_ngt_Len(t *testing.T) {
 				core:              test.fields.core,
 				eg:                test.fields.eg,
 				kvs:               test.fields.kvs,
-				fmu:               test.fields.fmu,
 				fmap:              test.fields.fmap,
 				vq:                test.fields.vq,
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
-				cimu:              test.fields.cimu,
 				lastNocie:         test.fields.lastNocie,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
@@ -9868,11 +9718,9 @@ func Test_ngt_Len(t *testing.T) {
 				enableProactiveGC: test.fields.enableProactiveGC,
 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
 				path:              test.fields.path,
-				smu:               test.fields.smu,
 				tmpPath:           test.fields.tmpPath,
 				oldPath:           test.fields.oldPath,
 				basePath:          test.fields.basePath,
-				cowmu:             test.fields.cowmu,
 				backupGen:         test.fields.backupGen,
 				poolSize:          test.fields.poolSize,
 				radius:            test.fields.radius,
@@ -9895,12 +9743,10 @@ func Test_ngt_InsertVQueueBufferLen(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		fmu               sync.Mutex
 		fmap              map[string]uint32
 		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
-		cimu              sync.Mutex
 		lastNocie         uint64
 		nocie             uint64
 		nogce             uint64
@@ -9916,11 +9762,9 @@ func Test_ngt_InsertVQueueBufferLen(t *testing.T) {
 		enableProactiveGC bool
 		enableCopyOnWrite bool
 		path              string
-		smu               sync.Mutex
 		tmpPath           atomic.Value
 		oldPath           string
 		basePath          string
-		cowmu             sync.Mutex
 		backupGen         uint64
 		poolSize          uint32
 		radius            float32
@@ -9937,8 +9781,8 @@ func Test_ngt_InsertVQueueBufferLen(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, uint64) error
-		beforeFunc func()
-		afterFunc  func()
+		beforeFunc func(*testing.T)
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want, got uint64) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -9955,12 +9799,10 @@ func Test_ngt_InsertVQueueBufferLen(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           fmu: sync.Mutex{},
 		           fmap: nil,
 		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
-		           cimu: sync.Mutex{},
 		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
@@ -9976,11 +9818,9 @@ func Test_ngt_InsertVQueueBufferLen(t *testing.T) {
 		           enableProactiveGC: false,
 		           enableCopyOnWrite: false,
 		           path: "",
-		           smu: sync.Mutex{},
 		           tmpPath: nil,
 		           oldPath: "",
 		           basePath: "",
-		           cowmu: sync.Mutex{},
 		           backupGen: 0,
 		           poolSize: 0,
 		           radius: 0,
@@ -9991,6 +9831,12 @@ func Test_ngt_InsertVQueueBufferLen(t *testing.T) {
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -10003,12 +9849,10 @@ func Test_ngt_InsertVQueueBufferLen(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           fmu: sync.Mutex{},
 		           fmap: nil,
 		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
-		           cimu: sync.Mutex{},
 		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
@@ -10024,11 +9868,9 @@ func Test_ngt_InsertVQueueBufferLen(t *testing.T) {
 		           enableProactiveGC: false,
 		           enableCopyOnWrite: false,
 		           path: "",
-		           smu: sync.Mutex{},
 		           tmpPath: nil,
 		           oldPath: "",
 		           basePath: "",
-		           cowmu: sync.Mutex{},
 		           backupGen: 0,
 		           poolSize: 0,
 		           radius: 0,
@@ -10039,6 +9881,12 @@ func Test_ngt_InsertVQueueBufferLen(t *testing.T) {
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -10050,10 +9898,10 @@ func Test_ngt_InsertVQueueBufferLen(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -10063,12 +9911,10 @@ func Test_ngt_InsertVQueueBufferLen(t *testing.T) {
 				core:              test.fields.core,
 				eg:                test.fields.eg,
 				kvs:               test.fields.kvs,
-				fmu:               test.fields.fmu,
 				fmap:              test.fields.fmap,
 				vq:                test.fields.vq,
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
-				cimu:              test.fields.cimu,
 				lastNocie:         test.fields.lastNocie,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
@@ -10084,11 +9930,9 @@ func Test_ngt_InsertVQueueBufferLen(t *testing.T) {
 				enableProactiveGC: test.fields.enableProactiveGC,
 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
 				path:              test.fields.path,
-				smu:               test.fields.smu,
 				tmpPath:           test.fields.tmpPath,
 				oldPath:           test.fields.oldPath,
 				basePath:          test.fields.basePath,
-				cowmu:             test.fields.cowmu,
 				backupGen:         test.fields.backupGen,
 				poolSize:          test.fields.poolSize,
 				radius:            test.fields.radius,
@@ -10111,12 +9955,10 @@ func Test_ngt_DeleteVQueueBufferLen(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		fmu               sync.Mutex
 		fmap              map[string]uint32
 		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
-		cimu              sync.Mutex
 		lastNocie         uint64
 		nocie             uint64
 		nogce             uint64
@@ -10132,11 +9974,9 @@ func Test_ngt_DeleteVQueueBufferLen(t *testing.T) {
 		enableProactiveGC bool
 		enableCopyOnWrite bool
 		path              string
-		smu               sync.Mutex
 		tmpPath           atomic.Value
 		oldPath           string
 		basePath          string
-		cowmu             sync.Mutex
 		backupGen         uint64
 		poolSize          uint32
 		radius            float32
@@ -10153,8 +9993,8 @@ func Test_ngt_DeleteVQueueBufferLen(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, uint64) error
-		beforeFunc func()
-		afterFunc  func()
+		beforeFunc func(*testing.T)
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want, got uint64) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -10171,12 +10011,10 @@ func Test_ngt_DeleteVQueueBufferLen(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           fmu: sync.Mutex{},
 		           fmap: nil,
 		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
-		           cimu: sync.Mutex{},
 		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
@@ -10192,11 +10030,9 @@ func Test_ngt_DeleteVQueueBufferLen(t *testing.T) {
 		           enableProactiveGC: false,
 		           enableCopyOnWrite: false,
 		           path: "",
-		           smu: sync.Mutex{},
 		           tmpPath: nil,
 		           oldPath: "",
 		           basePath: "",
-		           cowmu: sync.Mutex{},
 		           backupGen: 0,
 		           poolSize: 0,
 		           radius: 0,
@@ -10207,6 +10043,12 @@ func Test_ngt_DeleteVQueueBufferLen(t *testing.T) {
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -10219,12 +10061,10 @@ func Test_ngt_DeleteVQueueBufferLen(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           fmu: sync.Mutex{},
 		           fmap: nil,
 		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
-		           cimu: sync.Mutex{},
 		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
@@ -10240,11 +10080,9 @@ func Test_ngt_DeleteVQueueBufferLen(t *testing.T) {
 		           enableProactiveGC: false,
 		           enableCopyOnWrite: false,
 		           path: "",
-		           smu: sync.Mutex{},
 		           tmpPath: nil,
 		           oldPath: "",
 		           basePath: "",
-		           cowmu: sync.Mutex{},
 		           backupGen: 0,
 		           poolSize: 0,
 		           radius: 0,
@@ -10255,6 +10093,12 @@ func Test_ngt_DeleteVQueueBufferLen(t *testing.T) {
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -10266,10 +10110,10 @@ func Test_ngt_DeleteVQueueBufferLen(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -10279,12 +10123,10 @@ func Test_ngt_DeleteVQueueBufferLen(t *testing.T) {
 				core:              test.fields.core,
 				eg:                test.fields.eg,
 				kvs:               test.fields.kvs,
-				fmu:               test.fields.fmu,
 				fmap:              test.fields.fmap,
 				vq:                test.fields.vq,
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
-				cimu:              test.fields.cimu,
 				lastNocie:         test.fields.lastNocie,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
@@ -10300,11 +10142,9 @@ func Test_ngt_DeleteVQueueBufferLen(t *testing.T) {
 				enableProactiveGC: test.fields.enableProactiveGC,
 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
 				path:              test.fields.path,
-				smu:               test.fields.smu,
 				tmpPath:           test.fields.tmpPath,
 				oldPath:           test.fields.oldPath,
 				basePath:          test.fields.basePath,
-				cowmu:             test.fields.cowmu,
 				backupGen:         test.fields.backupGen,
 				poolSize:          test.fields.poolSize,
 				radius:            test.fields.radius,
@@ -10327,12 +10167,10 @@ func Test_ngt_GetDimensionSize(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		fmu               sync.Mutex
 		fmap              map[string]uint32
 		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
-		cimu              sync.Mutex
 		lastNocie         uint64
 		nocie             uint64
 		nogce             uint64
@@ -10348,11 +10186,9 @@ func Test_ngt_GetDimensionSize(t *testing.T) {
 		enableProactiveGC bool
 		enableCopyOnWrite bool
 		path              string
-		smu               sync.Mutex
 		tmpPath           atomic.Value
 		oldPath           string
 		basePath          string
-		cowmu             sync.Mutex
 		backupGen         uint64
 		poolSize          uint32
 		radius            float32
@@ -10369,8 +10205,8 @@ func Test_ngt_GetDimensionSize(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, int) error
-		beforeFunc func()
-		afterFunc  func()
+		beforeFunc func(*testing.T)
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want, got int) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -10387,12 +10223,10 @@ func Test_ngt_GetDimensionSize(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           fmu: sync.Mutex{},
 		           fmap: nil,
 		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
-		           cimu: sync.Mutex{},
 		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
@@ -10408,11 +10242,9 @@ func Test_ngt_GetDimensionSize(t *testing.T) {
 		           enableProactiveGC: false,
 		           enableCopyOnWrite: false,
 		           path: "",
-		           smu: sync.Mutex{},
 		           tmpPath: nil,
 		           oldPath: "",
 		           basePath: "",
-		           cowmu: sync.Mutex{},
 		           backupGen: 0,
 		           poolSize: 0,
 		           radius: 0,
@@ -10423,6 +10255,12 @@ func Test_ngt_GetDimensionSize(t *testing.T) {
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -10435,12 +10273,10 @@ func Test_ngt_GetDimensionSize(t *testing.T) {
 		           core: nil,
 		           eg: nil,
 		           kvs: nil,
-		           fmu: sync.Mutex{},
 		           fmap: nil,
 		           vq: nil,
 		           indexing: nil,
 		           saving: nil,
-		           cimu: sync.Mutex{},
 		           lastNocie: 0,
 		           nocie: 0,
 		           nogce: 0,
@@ -10456,11 +10292,9 @@ func Test_ngt_GetDimensionSize(t *testing.T) {
 		           enableProactiveGC: false,
 		           enableCopyOnWrite: false,
 		           path: "",
-		           smu: sync.Mutex{},
 		           tmpPath: nil,
 		           oldPath: "",
 		           basePath: "",
-		           cowmu: sync.Mutex{},
 		           backupGen: 0,
 		           poolSize: 0,
 		           radius: 0,
@@ -10471,6 +10305,12 @@ func Test_ngt_GetDimensionSize(t *testing.T) {
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -10482,10 +10322,10 @@ func Test_ngt_GetDimensionSize(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -10495,12 +10335,10 @@ func Test_ngt_GetDimensionSize(t *testing.T) {
 				core:              test.fields.core,
 				eg:                test.fields.eg,
 				kvs:               test.fields.kvs,
-				fmu:               test.fields.fmu,
 				fmap:              test.fields.fmap,
 				vq:                test.fields.vq,
 				indexing:          test.fields.indexing,
 				saving:            test.fields.saving,
-				cimu:              test.fields.cimu,
 				lastNocie:         test.fields.lastNocie,
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
@@ -10516,11 +10354,9 @@ func Test_ngt_GetDimensionSize(t *testing.T) {
 				enableProactiveGC: test.fields.enableProactiveGC,
 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
 				path:              test.fields.path,
-				smu:               test.fields.smu,
 				tmpPath:           test.fields.tmpPath,
 				oldPath:           test.fields.oldPath,
 				basePath:          test.fields.basePath,
-				cowmu:             test.fields.cowmu,
 				backupGen:         test.fields.backupGen,
 				poolSize:          test.fields.poolSize,
 				radius:            test.fields.radius,
@@ -10543,6 +10379,242 @@ func Test_ngt_Close(t *testing.T) {
 		ctx context.Context
 	}
 	type fields struct {
+		core              core.NGT
+		eg                errgroup.Group
+		kvs               kvs.BidiMap
+		fmap              map[string]uint32
+		vq                vqueue.Queue
+		indexing          atomic.Value
+		saving            atomic.Value
+		lastNocie         uint64
+		nocie             uint64
+		nogce             uint64
+		inMem             bool
+		dim               int
+		alen              int
+		lim               time.Duration
+		dur               time.Duration
+		sdur              time.Duration
+		minLit            time.Duration
+		maxLit            time.Duration
+		litFactor         time.Duration
+		enableProactiveGC bool
+		enableCopyOnWrite bool
+		path              string
+		tmpPath           atomic.Value
+		oldPath           string
+		basePath          string
+		backupGen         uint64
+		poolSize          uint32
+		radius            float32
+		epsilon           float32
+		idelay            time.Duration
+		dcd               bool
+		kvsdbConcurrency  int
+	}
+	type want struct {
+		err error
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, error) error
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
+	}
+	defaultCheckFunc := func(w want, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           ctx: nil,
+		       },
+		       fields: fields {
+		           core: nil,
+		           eg: nil,
+		           kvs: nil,
+		           fmap: nil,
+		           vq: nil,
+		           indexing: nil,
+		           saving: nil,
+		           lastNocie: 0,
+		           nocie: 0,
+		           nogce: 0,
+		           inMem: false,
+		           dim: 0,
+		           alen: 0,
+		           lim: nil,
+		           dur: nil,
+		           sdur: nil,
+		           minLit: nil,
+		           maxLit: nil,
+		           litFactor: nil,
+		           enableProactiveGC: false,
+		           enableCopyOnWrite: false,
+		           path: "",
+		           tmpPath: nil,
+		           oldPath: "",
+		           basePath: "",
+		           backupGen: 0,
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
+		           idelay: nil,
+		           dcd: false,
+		           kvsdbConcurrency: 0,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           ctx: nil,
+		           },
+		           fields: fields {
+		           core: nil,
+		           eg: nil,
+		           kvs: nil,
+		           fmap: nil,
+		           vq: nil,
+		           indexing: nil,
+		           saving: nil,
+		           lastNocie: 0,
+		           nocie: 0,
+		           nogce: 0,
+		           inMem: false,
+		           dim: 0,
+		           alen: 0,
+		           lim: nil,
+		           dur: nil,
+		           sdur: nil,
+		           minLit: nil,
+		           maxLit: nil,
+		           litFactor: nil,
+		           enableProactiveGC: false,
+		           enableCopyOnWrite: false,
+		           path: "",
+		           tmpPath: nil,
+		           oldPath: "",
+		           basePath: "",
+		           backupGen: 0,
+		           poolSize: 0,
+		           radius: 0,
+		           epsilon: 0,
+		           idelay: nil,
+		           dcd: false,
+		           kvsdbConcurrency: 0,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(tt, test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(tt, test.args)
+			}
+			checkFunc := test.checkFunc
+			if test.checkFunc == nil {
+				checkFunc = defaultCheckFunc
+			}
+			n := &ngt{
+				core:              test.fields.core,
+				eg:                test.fields.eg,
+				kvs:               test.fields.kvs,
+				fmap:              test.fields.fmap,
+				vq:                test.fields.vq,
+				indexing:          test.fields.indexing,
+				saving:            test.fields.saving,
+				lastNocie:         test.fields.lastNocie,
+				nocie:             test.fields.nocie,
+				nogce:             test.fields.nogce,
+				inMem:             test.fields.inMem,
+				dim:               test.fields.dim,
+				alen:              test.fields.alen,
+				lim:               test.fields.lim,
+				dur:               test.fields.dur,
+				sdur:              test.fields.sdur,
+				minLit:            test.fields.minLit,
+				maxLit:            test.fields.maxLit,
+				litFactor:         test.fields.litFactor,
+				enableProactiveGC: test.fields.enableProactiveGC,
+				enableCopyOnWrite: test.fields.enableCopyOnWrite,
+				path:              test.fields.path,
+				tmpPath:           test.fields.tmpPath,
+				oldPath:           test.fields.oldPath,
+				basePath:          test.fields.basePath,
+				backupGen:         test.fields.backupGen,
+				poolSize:          test.fields.poolSize,
+				radius:            test.fields.radius,
+				epsilon:           test.fields.epsilon,
+				idelay:            test.fields.idelay,
+				dcd:               test.fields.dcd,
+				kvsdbConcurrency:  test.fields.kvsdbConcurrency,
+			}
+
+			err := n.Close(test.args.ctx)
+			if err := checkFunc(test.want, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+type index struct {
+	uuid string
+	vec  []float32
+}
+
+func Test_ngt_InsertUpsert(t *testing.T) {
+	if testing.Short() {
+		t.Skip("The execution of this test takes a lot of time, so it is not performed during the short test\ttest: Test_ngt_InsertUpsert")
+		return
+	}
+	type args struct {
+		idxes    []index
+		poolSize uint32
+		bulkSize int
+	}
+	type fields struct {
+		svcCfg  *config.NGT
+		svcOpts []Option
+
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
@@ -10598,115 +10670,44 @@ func Test_ngt_Close(t *testing.T) {
 		}
 		return nil
 	}
+	var (
+		// default NGT configuration for test
+		kvsdbCfg  = &config.KVSDB{}
+		vqueueCfg = &config.VQueue{}
+	)
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx: nil,
-		       },
-		       fields: fields {
-		           core: nil,
-		           eg: nil,
-		           kvs: nil,
-		           fmu: sync.Mutex{},
-		           fmap: nil,
-		           vq: nil,
-		           indexing: nil,
-		           saving: nil,
-		           cimu: sync.Mutex{},
-		           lastNocie: 0,
-		           nocie: 0,
-		           nogce: 0,
-		           inMem: false,
-		           dim: 0,
-		           alen: 0,
-		           lim: nil,
-		           dur: nil,
-		           sdur: nil,
-		           minLit: nil,
-		           maxLit: nil,
-		           litFactor: nil,
-		           enableProactiveGC: false,
-		           enableCopyOnWrite: false,
-		           path: "",
-		           smu: sync.Mutex{},
-		           tmpPath: nil,
-		           oldPath: "",
-		           basePath: "",
-		           cowmu: sync.Mutex{},
-		           backupGen: 0,
-		           poolSize: 0,
-		           radius: 0,
-		           epsilon: 0,
-		           idelay: nil,
-		           dcd: false,
-		           kvsdbConcurrency: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ctx: nil,
-		           },
-		           fields: fields {
-		           core: nil,
-		           eg: nil,
-		           kvs: nil,
-		           fmu: sync.Mutex{},
-		           fmap: nil,
-		           vq: nil,
-		           indexing: nil,
-		           saving: nil,
-		           cimu: sync.Mutex{},
-		           lastNocie: 0,
-		           nocie: 0,
-		           nogce: 0,
-		           inMem: false,
-		           dim: 0,
-		           alen: 0,
-		           lim: nil,
-		           dur: nil,
-		           sdur: nil,
-		           minLit: nil,
-		           maxLit: nil,
-		           litFactor: nil,
-		           enableProactiveGC: false,
-		           enableCopyOnWrite: false,
-		           path: "",
-		           smu: sync.Mutex{},
-		           tmpPath: nil,
-		           oldPath: "",
-		           basePath: "",
-		           cowmu: sync.Mutex{},
-		           backupGen: 0,
-		           poolSize: 0,
-		           radius: 0,
-		           epsilon: 0,
-		           idelay: nil,
-		           dcd: false,
-		           kvsdbConcurrency: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+		{
+			name: "insert & upsert 10000000 random and 11 digits added to each vector element",
+			args: args{
+				idxes: createRandomData(10000000, &createRandomDataConfig{
+					additionaldigits: 11,
+				}),
+				poolSize: 100000,
+				bulkSize: 100000,
+			},
+			fields: fields{
+				svcCfg: &config.NGT{
+					Dimension:    128,
+					DistanceType: core.Cosine.String(),
+					ObjectType:   core.Uint8.String(),
+					KVSDB:        kvsdbCfg,
+					VQueue:       vqueueCfg,
+				},
+				svcOpts: []Option{
+					WithEnableInMemoryMode(true),
+				},
+			},
+		},
 	}
-
 	for _, tc := range tests {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+
+			ctx, cancel := context.WithCancel(context.Background())
+			defer cancel()
+
+			// defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -10717,49 +10718,254 @@ func Test_ngt_Close(t *testing.T) {
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
-			n := &ngt{
-				core:              test.fields.core,
-				eg:                test.fields.eg,
-				kvs:               test.fields.kvs,
-				fmu:               test.fields.fmu,
-				fmap:              test.fields.fmap,
-				vq:                test.fields.vq,
-				indexing:          test.fields.indexing,
-				saving:            test.fields.saving,
-				cimu:              test.fields.cimu,
-				lastNocie:         test.fields.lastNocie,
-				nocie:             test.fields.nocie,
-				nogce:             test.fields.nogce,
-				inMem:             test.fields.inMem,
-				dim:               test.fields.dim,
-				alen:              test.fields.alen,
-				lim:               test.fields.lim,
-				dur:               test.fields.dur,
-				sdur:              test.fields.sdur,
-				minLit:            test.fields.minLit,
-				maxLit:            test.fields.maxLit,
-				litFactor:         test.fields.litFactor,
-				enableProactiveGC: test.fields.enableProactiveGC,
-				enableCopyOnWrite: test.fields.enableCopyOnWrite,
-				path:              test.fields.path,
-				smu:               test.fields.smu,
-				tmpPath:           test.fields.tmpPath,
-				oldPath:           test.fields.oldPath,
-				basePath:          test.fields.basePath,
-				cowmu:             test.fields.cowmu,
-				backupGen:         test.fields.backupGen,
-				poolSize:          test.fields.poolSize,
-				radius:            test.fields.radius,
-				epsilon:           test.fields.epsilon,
-				idelay:            test.fields.idelay,
-				dcd:               test.fields.dcd,
-				kvsdbConcurrency:  test.fields.kvsdbConcurrency,
-			}
 
-			err := n.Close(test.args.ctx)
-			if err := checkFunc(test.want, err); err != nil {
-				tt.Errorf("error = %v", err)
+			eg, _ := errgroup.New(ctx)
+			n, err := New(test.fields.svcCfg, append(test.fields.svcOpts, WithErrGroup(eg))...)
+			if err != nil {
+				tt.Errorf("failed to init ngt service, error = %v", err)
+			}
+			var wg sync.WaitGroup
+			count := 0
+			for _, idx := range test.args.idxes {
+				count++
+				err = n.Insert(idx.uuid, idx.vec)
+				if err := checkFunc(test.want, err); err != nil {
+					tt.Errorf("error = %v", err)
+				}
+
+				if count >= test.args.bulkSize {
+					wg.Add(1)
+					eg.Go(func() error {
+						defer wg.Done()
+						err = n.CreateAndSaveIndex(ctx, test.args.poolSize)
+						if err != nil {
+							tt.Errorf("error creating index: %v", err)
+						}
+						return nil
+					})
+					count = 0
+				}
+			}
+			wg.Wait()
+
+			log.Warn("start create index operation")
+			err = n.CreateAndSaveIndex(ctx, test.args.poolSize)
+			if err != nil {
+				tt.Errorf("error creating index: %v", err)
+			}
+			log.Warn("start update operation")
+			for i := 0; i < 100; i++ {
+				idx := i
+				eg.Go(func() error {
+					log.Warnf("started %d-1", idx)
+					var wgu sync.WaitGroup
+					count = 0
+					for _, idx := range test.args.idxes[:len(test.args.idxes)/3] {
+						count++
+						_ = n.Delete(idx.uuid)
+						_ = n.Insert(idx.uuid, idx.vec)
+					}
+					wgu.Wait()
+					log.Warnf("finished %d-1", idx)
+					return nil
+				})
+
+				eg.Go(func() error {
+					log.Warnf("started %d-2", idx)
+					var wgu sync.WaitGroup
+					count = 0
+					for _, idx := range test.args.idxes[len(test.args.idxes)/3 : 2*len(test.args.idxes)/3] {
+						count++
+						_ = n.Delete(idx.uuid)
+						_ = n.Insert(idx.uuid, idx.vec)
+					}
+					wgu.Wait()
+					log.Warnf("finished %d-2", idx)
+					return nil
+				})
+
+				eg.Go(func() error {
+					log.Warnf("started %d-3", idx)
+					var wgu sync.WaitGroup
+					count = 0
+					for _, idx := range test.args.idxes[2*len(test.args.idxes)/3:] {
+						count++
+						_ = n.Delete(idx.uuid)
+						_ = n.Insert(idx.uuid, idx.vec)
+					}
+					wgu.Wait()
+					log.Warnf("finished %d-3", idx)
+					return nil
+				})
+			}
+			eg.Wait()
+
+			log.Warn("start final create index operation")
+			err = n.CreateAndSaveIndex(ctx, test.args.poolSize)
+			if err != nil {
+				tt.Errorf("error creating index: %v", err)
 			}
 		})
 	}
+}
+
+// NOTE: After moving this implementation to the e2e package, remove this test function.
+func Test_ngt_E2E(t *testing.T) {
+	if testing.Short() {
+		t.Skip("The execution of this test takes a lot of time, so it is not performed during the short test\ttest: Test_ngt_E2E")
+		return
+	}
+	type args struct {
+		requests []*payload.Upsert_MultiRequest
+
+		addr     string
+		dialOpts []grpc.DialOption
+	}
+	type want struct {
+		err error
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		return nil
+	}
+	multiUpsertRequestGenFunc := func(idxes []index, chunk int) (res []*payload.Upsert_MultiRequest) {
+		reqs := make([]*payload.Upsert_Request, 0, chunk)
+		for i := 0; i < len(idxes); i++ {
+			if len(reqs) == chunk-1 {
+				res = append(res, &payload.Upsert_MultiRequest{
+					Requests: reqs,
+				})
+				reqs = make([]*payload.Upsert_Request, 0, chunk)
+			} else {
+				reqs = append(reqs, &payload.Upsert_Request{
+					Vector: &payload.Object_Vector{
+						Id:     idxes[i].uuid,
+						Vector: idxes[i].vec,
+					},
+					Config: &payload.Upsert_Config{
+						SkipStrictExistCheck: true,
+					},
+				})
+			}
+		}
+		if len(reqs) > 0 {
+			res = append(res, &payload.Upsert_MultiRequest{
+				Requests: reqs,
+			})
+		}
+		return res
+	}
+
+	tests := []test{
+		{
+			name: "insert & upsert 100 random",
+			args: args{
+				requests: multiUpsertRequestGenFunc(
+					createRandomData(500000, new(createRandomDataConfig)),
+					50,
+				),
+				addr: "127.0.0.1:8080",
+				dialOpts: []grpc.DialOption{
+					grpc.WithInsecure(),
+				},
+			},
+		},
+	}
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+
+			ctx, cancel := context.WithCancel(context.Background())
+			defer cancel()
+
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			checkFunc := test.checkFunc
+			if test.checkFunc == nil {
+				checkFunc = defaultCheckFunc
+			}
+			conn, err := grpc.DialContext(ctx, test.args.addr, test.args.dialOpts...)
+			if err := checkFunc(test.want, err); err != nil {
+				t.Fatal(err)
+			}
+			defer func() {
+				if err := conn.Close(); err != nil {
+					t.Error(err)
+				}
+			}()
+			client := vald.NewValdClient(conn)
+
+			for i := 0; i < 2; i++ {
+				for _, req := range test.args.requests {
+					_, err := client.MultiUpsert(ctx, req)
+					if err != nil {
+						t.Error(err)
+					}
+				}
+				log.Info("%d step: finished all requests", i+1)
+				time.Sleep(3 * time.Second)
+			}
+		})
+	}
+}
+
+type createRandomDataConfig struct {
+	additionaldigits int
+}
+
+func (cfg *createRandomDataConfig) verify() *createRandomDataConfig {
+	if cfg == nil {
+		cfg = new(createRandomDataConfig)
+	}
+	if cfg.additionaldigits < 0 {
+		cfg.additionaldigits = 0
+	}
+	return cfg
+}
+
+func createRandomData(num int, cfg *createRandomDataConfig) []index {
+	cfg = cfg.verify()
+
+	var ad float32 = 1.0
+	for i := 0; i < cfg.additionaldigits; i++ {
+		ad = ad * 0.1
+	}
+
+	result := make([]index, 0)
+	f32s, _ := vector.GenF32Vec(vector.NegativeUniform, num, 128)
+
+	for idx, vec := range f32s {
+		for i := range vec {
+			if f := vec[i] * ad; f == 0.0 {
+				if vec[i] > 0.0 {
+					vec[i] = math.MaxFloat32
+				} else if vec[i] < 0.0 {
+					vec[i] = math.SmallestNonzeroFloat32
+				}
+				continue
+			}
+			vec[i] = vec[i] * ad
+		}
+		result = append(result, index{
+			uuid: fmt.Sprintf("%s_%s-%s:%d:%d,%d", uuid.New().String(), uuid.New().String(), uuid.New().String(), idx, idx/100, idx%100),
+			vec:  vec,
+		})
+	}
+
+	return result
 }

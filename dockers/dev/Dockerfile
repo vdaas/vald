@@ -18,6 +18,7 @@ ARG MAINTAINER="vdaas.org vald team <vald@vdaas.org>"
 
 FROM ubuntu:devel AS builder
 
+# skipcq: DOK-DL3008
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
     curl \
@@ -27,25 +28,30 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 WORKDIR /tmp
 
+# skipcq: DOK-DL3026
 FROM mcr.microsoft.com/vscode/devcontainers/go:1 AS base
 LABEL maintainer "${MAINTAINER}"
 
+# skipcq: DOK-DL3008
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     cmake \
     curl \
-    libhdf5-dev \
     g++ \
     gawk \
     gcc \
     git \
     graphviz \
+    jq \
+    libhdf5-dev \
+    liblapack-dev \
+    libomp-dev \
+    libopenblas-dev \
     nodejs \
     npm \
-    jq \
     sed \
-    zip \
     unzip \
+    zip \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 

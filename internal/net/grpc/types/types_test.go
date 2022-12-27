@@ -56,11 +56,11 @@ func TestUnmarshalAny(t *testing.T) {
 			name: "return nil when success to unmarshal insert",
 			args: args{
 				any: func() *Any {
-					any, err := anypb.New(new(payload.Insert_Request))
+					anyVal, err := anypb.New(new(payload.Insert_Request))
 					if err != nil {
 						t.Error(err)
 					}
-					return any
+					return anyVal
 				}(),
 				pb: &payload.Insert_Request{
 					Vector: &payload.Object_Vector{
@@ -77,11 +77,11 @@ func TestUnmarshalAny(t *testing.T) {
 			name: "return error when unmarshal type mismatch",
 			args: args{
 				any: func() *Any {
-					any, err := anypb.New(new(payload.Insert_Request))
+					anyVal, err := anypb.New(new(payload.Insert_Request))
 					if err != nil {
 						t.Error(err)
 					}
-					return any
+					return anyVal
 				}(),
 				pb: &payload.Object_Vector{
 					Id:     "1",

@@ -2793,457 +2793,6 @@ func Test_mySQLClient_SetVectors(t *testing.T) {
 	}
 }
 
-func Test_mySQLClient_deleteVector(t *testing.T) {
-	type args struct {
-		ctx context.Context
-		val string
-	}
-	type fields struct {
-		session   dbr.Session
-		connected atomic.Value
-		dbr       dbr.DBR
-	}
-	type want struct {
-		err error
-	}
-	type test struct {
-		name       string
-		args       args
-		fields     fields
-		want       want
-		checkFunc  func(want, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-	defaultCheckFunc := func(w want, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-		}
-		return nil
-	}
-	tests := []test{
-		func() test {
-			err := errors.ErrMySQLConnectionClosed
-			return test{
-				name: "return error when MySQL connection is closed",
-				args: args{
-					ctx: context.Background(),
-					val: "vald-01",
-				},
-				fields: fields{
-					connected: func() (v atomic.Value) {
-						v.Store(false)
-						return
-					}(),
-				},
-				want: want{
-					err: err,
-				},
-			}
-		}(),
-		func() test {
-			return test{
-				name: "return error when MySQL session is nil",
-				args: args{
-					ctx: context.Background(),
-					val: "vald-01",
-				},
-				fields: fields{
-					connected: func() (v atomic.Value) {
-						v.Store(true)
-						return
-					}(),
-				},
-				want: want{
-					err: errors.ErrMySQLSessionNil,
-				},
-			}
-		}(),
-		func() test {
-			err := errors.New("Begin error")
-			return test{
-				name: "return error when session.Begin returns error",
-				args: args{
-					ctx: context.Background(),
-					val: "vald-01",
-				},
-				fields: fields{
-					session: &dbr.MockSession{
-						BeginFunc: func() (dbr.Tx, error) {
-							return nil, err
-						},
-					},
-					connected: func() (v atomic.Value) {
-						v.Store(true)
-						return
-					}(),
-				},
-				want: want{
-					err: err,
-				},
-			}
-		}(),
-		func() test {
-			err := errors.ErrMySQLTransactionNotCreated
-			return test{
-				name: "return error when transacton is nil",
-				args: args{
-					ctx: context.Background(),
-					val: "vald-01",
-				},
-				fields: fields{
-					session: &dbr.MockSession{
-						BeginFunc: func() (dbr.Tx, error) {
-							return nil, nil
-						},
-					},
-					connected: func() (v atomic.Value) {
-						v.Store(true)
-						return
-					}(),
-				},
-				want: want{
-					err: err,
-				},
-			}
-		}(),
-		func() test {
-			err := errors.New("error returned from Select.From.Where.Limit.LoadContext")
-			return test{
-				name: "return error when Select(idColumnName) returns error",
-				args: args{
-					ctx: context.Background(),
-					val: "vald-01",
-				},
-				fields: fields{
-					session: &dbr.MockSession{
-						BeginFunc: func() (dbr.Tx, error) {
-							return &dbr.MockTx{
-								CommitFunc: func() error {
-									return nil
-								},
-								RollbackUnlessCommittedFunc: func() {},
-								SelectFunc: func(column ...string) dbr.SelectStmt {
-									s := new(dbr.MockSelect)
-									s.FromFunc = func(table interface{}) dbr.SelectStmt {
-										return s
-									}
-									s.WhereFunc = func(query interface{}, value ...interface{}) dbr.SelectStmt {
-										return s
-									}
-									s.LimitFunc = func(n uint64) dbr.SelectStmt {
-										return s
-									}
-									s.LoadContextFunc = func(ctx context.Context, value interface{}) (int, error) {
-										return 0, err
-									}
-
-									return s
-								},
-							}, nil
-						},
-					},
-					connected: func() (v atomic.Value) {
-						v.Store(true)
-						return
-					}(),
-					dbr: &dbr.MockDBR{
-						EqFunc: func(col string, val interface{}) dbr.Builder {
-							return dbr.New().Eq(col, val)
-						},
-					},
-				},
-				want: want{
-					err: err,
-				},
-			}
-		}(),
-		func() test {
-			uuid := "uuid"
-			err := errors.ErrRequiredElementNotFoundByUUID(uuid)
-			return test{
-				name: "return error when returned id = 0 from Select statement",
-				args: args{
-					ctx: context.Background(),
-					val: uuid,
-				},
-				fields: fields{
-					session: &dbr.MockSession{
-						BeginFunc: func() (dbr.Tx, error) {
-							return &dbr.MockTx{
-								CommitFunc: func() error {
-									return nil
-								},
-								RollbackUnlessCommittedFunc: func() {},
-								SelectFunc: func(column ...string) dbr.SelectStmt {
-									s := new(dbr.MockSelect)
-									s.FromFunc = func(table interface{}) dbr.SelectStmt {
-										return s
-									}
-									s.WhereFunc = func(query interface{}, value ...interface{}) dbr.SelectStmt {
-										return s
-									}
-									s.LimitFunc = func(n uint64) dbr.SelectStmt {
-										return s
-									}
-									s.LoadContextFunc = func(ctx context.Context, value interface{}) (int, error) {
-										return 0, nil
-									}
-
-									return s
-								},
-							}, nil
-						},
-					},
-					connected: func() (v atomic.Value) {
-						v.Store(true)
-						return
-					}(),
-					dbr: &dbr.MockDBR{
-						EqFunc: func(col string, val interface{}) dbr.Builder {
-							return dbr.New().Eq(col, val)
-						},
-					},
-				},
-				want: want{
-					err: err,
-				},
-			}
-		}(),
-		func() test {
-			err := errors.New("vectorTableName error")
-			return test{
-				name: "return error when DeleteFromFunc(vectorTableName) returns error",
-				args: args{
-					ctx: context.Background(),
-					val: "vald-01",
-				},
-				fields: fields{
-					session: &dbr.MockSession{
-						BeginFunc: func() (dbr.Tx, error) {
-							return &dbr.MockTx{
-								CommitFunc: func() error {
-									return nil
-								},
-								RollbackUnlessCommittedFunc: func() {},
-								SelectFunc: func(column ...string) dbr.SelectStmt {
-									s := new(dbr.MockSelect)
-									s.FromFunc = func(table interface{}) dbr.SelectStmt {
-										return s
-									}
-									s.WhereFunc = func(query interface{}, value ...interface{}) dbr.SelectStmt {
-										return s
-									}
-									s.LimitFunc = func(n uint64) dbr.SelectStmt {
-										return s
-									}
-									s.LoadContextFunc = func(ctx context.Context, value interface{}) (int, error) {
-										var id int64
-										if reflect.TypeOf(value) == reflect.TypeOf(&id) {
-											id := int64(1)
-											reflect.ValueOf(value).Elem().Set(reflect.ValueOf(id))
-											return 1, nil
-										}
-										return 0, nil
-									}
-
-									return s
-								},
-								DeleteFromFunc: func(table string) dbr.DeleteStmt {
-									s := new(dbr.MockDelete)
-									s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
-										if table == "backup_vector" {
-											return nil, err
-										}
-										return nil, nil
-									}
-									s.WhereFunc = func(query interface{}, value ...interface{}) dbr.DeleteStmt {
-										return s
-									}
-									return s
-								},
-							}, nil
-						},
-					},
-					connected: func() (v atomic.Value) {
-						v.Store(true)
-						return
-					}(),
-					dbr: &dbr.MockDBR{
-						EqFunc: func(col string, val interface{}) dbr.Builder {
-							return dbr.New().Eq(col, val)
-						},
-					},
-				},
-				want: want{
-					err: err,
-				},
-			}
-		}(),
-		func() test {
-			err := errors.New("podIPTableNmae error")
-			return test{
-				name: "return error when DeleteFromFunc(podIPTableNmae) returns error",
-				args: args{
-					ctx: context.Background(),
-					val: "vald-01",
-				},
-				fields: fields{
-					session: &dbr.MockSession{
-						BeginFunc: func() (dbr.Tx, error) {
-							return &dbr.MockTx{
-								CommitFunc: func() error {
-									return nil
-								},
-								RollbackUnlessCommittedFunc: func() {},
-								SelectFunc: func(column ...string) dbr.SelectStmt {
-									s := new(dbr.MockSelect)
-									s.FromFunc = func(table interface{}) dbr.SelectStmt {
-										return s
-									}
-									s.WhereFunc = func(query interface{}, value ...interface{}) dbr.SelectStmt {
-										return s
-									}
-									s.LimitFunc = func(n uint64) dbr.SelectStmt {
-										return s
-									}
-									s.LoadContextFunc = func(ctx context.Context, value interface{}) (int, error) {
-										var id int64
-										if reflect.TypeOf(value) == reflect.TypeOf(&id) {
-											id := int64(1)
-											reflect.ValueOf(value).Elem().Set(reflect.ValueOf(id))
-											return 1, nil
-										}
-										return 0, nil
-									}
-
-									return s
-								},
-								DeleteFromFunc: func(table string) dbr.DeleteStmt {
-									s := new(dbr.MockDelete)
-									s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
-										if table == "pod_ip" {
-											return nil, err
-										}
-										return nil, nil
-									}
-									s.WhereFunc = func(query interface{}, value ...interface{}) dbr.DeleteStmt {
-										return s
-									}
-									return s
-								},
-							}, nil
-						},
-					},
-					connected: func() (v atomic.Value) {
-						v.Store(true)
-						return
-					}(),
-					dbr: &dbr.MockDBR{
-						EqFunc: func(col string, val interface{}) dbr.Builder {
-							return dbr.New().Eq(col, val)
-						},
-					},
-				},
-				want: want{
-					err: err,
-				},
-			}
-		}(),
-		func() test {
-			return test{
-				name: "return nil when no error occurs",
-				args: args{
-					ctx: context.Background(),
-					val: "vald-01",
-				},
-				fields: fields{
-					session: &dbr.MockSession{
-						BeginFunc: func() (dbr.Tx, error) {
-							return &dbr.MockTx{
-								CommitFunc: func() error {
-									return nil
-								},
-								RollbackUnlessCommittedFunc: func() {},
-								SelectFunc: func(column ...string) dbr.SelectStmt {
-									s := new(dbr.MockSelect)
-									s.FromFunc = func(table interface{}) dbr.SelectStmt {
-										return s
-									}
-									s.WhereFunc = func(query interface{}, value ...interface{}) dbr.SelectStmt {
-										return s
-									}
-									s.LimitFunc = func(n uint64) dbr.SelectStmt {
-										return s
-									}
-									s.LoadContextFunc = func(ctx context.Context, value interface{}) (int, error) {
-										var id int64
-										if reflect.TypeOf(value) == reflect.TypeOf(&id) {
-											id := int64(1)
-											reflect.ValueOf(value).Elem().Set(reflect.ValueOf(id))
-											return 1, nil
-										}
-										return 0, nil
-									}
-
-									return s
-								},
-								DeleteFromFunc: func(table string) dbr.DeleteStmt {
-									s := new(dbr.MockDelete)
-									s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
-										return nil, nil
-									}
-									s.WhereFunc = func(query interface{}, value ...interface{}) dbr.DeleteStmt {
-										return s
-									}
-									return s
-								},
-							}, nil
-						},
-					},
-					connected: func() (v atomic.Value) {
-						v.Store(true)
-						return
-					}(),
-					dbr: &dbr.MockDBR{
-						EqFunc: func(col string, val interface{}) dbr.Builder {
-							return dbr.New().Eq(col, val)
-						},
-					},
-				},
-				want: want{},
-			}
-		}(),
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-			checkFunc := test.checkFunc
-			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
-			}
-			m := &mySQLClient{
-				session:   test.fields.session,
-				connected: test.fields.connected,
-				dbr:       test.fields.dbr,
-			}
-
-			err := m.deleteVector(test.args.ctx, test.args.val)
-			if err := checkFunc(test.want, err); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
-
 func Test_mySQLClient_DeleteVector(t *testing.T) {
 	type args struct {
 		ctx  context.Context
@@ -3340,6 +2889,398 @@ func Test_mySQLClient_DeleteVector(t *testing.T) {
 		func() test {
 			return test{
 				name: "return nil when deleteVector success with uuid",
+				args: args{
+					ctx:  context.Background(),
+					uuid: "vald-01",
+				},
+				fields: fields{
+					session: &dbr.MockSession{
+						BeginFunc: func() (dbr.Tx, error) {
+							return &dbr.MockTx{
+								CommitFunc: func() error {
+									return nil
+								},
+								RollbackUnlessCommittedFunc: func() {},
+								SelectFunc: func(column ...string) dbr.SelectStmt {
+									s := new(dbr.MockSelect)
+									s.FromFunc = func(table interface{}) dbr.SelectStmt {
+										return s
+									}
+									s.WhereFunc = func(query interface{}, value ...interface{}) dbr.SelectStmt {
+										return s
+									}
+									s.LimitFunc = func(n uint64) dbr.SelectStmt {
+										return s
+									}
+									s.LoadContextFunc = func(ctx context.Context, value interface{}) (int, error) {
+										var id int64
+										if reflect.TypeOf(value) == reflect.TypeOf(&id) {
+											id := int64(1)
+											reflect.ValueOf(value).Elem().Set(reflect.ValueOf(id))
+											return 1, nil
+										}
+										return 0, nil
+									}
+
+									return s
+								},
+								DeleteFromFunc: func(table string) dbr.DeleteStmt {
+									s := new(dbr.MockDelete)
+									s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
+										return nil, nil
+									}
+									s.WhereFunc = func(query interface{}, value ...interface{}) dbr.DeleteStmt {
+										return s
+									}
+									return s
+								},
+							}, nil
+						},
+					},
+					connected: func() (v atomic.Value) {
+						v.Store(true)
+						return
+					}(),
+					dbr: &dbr.MockDBR{
+						EqFunc: func(col string, val interface{}) dbr.Builder {
+							return dbr.New().Eq(col, val)
+						},
+					},
+				},
+				want: want{},
+			}
+		}(),
+		func() test {
+			err := errors.ErrMySQLConnectionClosed
+			return test{
+				name: "return error when MySQL connection is closed",
+				args: args{
+					ctx:  context.Background(),
+					uuid: "vald-01",
+				},
+				fields: fields{
+					connected: func() (v atomic.Value) {
+						v.Store(false)
+						return
+					}(),
+				},
+				want: want{
+					err: err,
+				},
+			}
+		}(),
+		func() test {
+			return test{
+				name: "return error when MySQL session is nil",
+				args: args{
+					ctx:  context.Background(),
+					uuid: "vald-01",
+				},
+				fields: fields{
+					connected: func() (v atomic.Value) {
+						v.Store(true)
+						return
+					}(),
+				},
+				want: want{
+					err: errors.ErrMySQLSessionNil,
+				},
+			}
+		}(),
+		func() test {
+			err := errors.New("Begin error")
+			return test{
+				name: "return error when session.Begin returns error",
+				args: args{
+					ctx:  context.Background(),
+					uuid: "vald-01",
+				},
+				fields: fields{
+					session: &dbr.MockSession{
+						BeginFunc: func() (dbr.Tx, error) {
+							return nil, err
+						},
+					},
+					connected: func() (v atomic.Value) {
+						v.Store(true)
+						return
+					}(),
+				},
+				want: want{
+					err: err,
+				},
+			}
+		}(),
+		func() test {
+			err := errors.ErrMySQLTransactionNotCreated
+			return test{
+				name: "return error when transacton is nil",
+				args: args{
+					ctx:  context.Background(),
+					uuid: "vald-01",
+				},
+				fields: fields{
+					session: &dbr.MockSession{
+						BeginFunc: func() (dbr.Tx, error) {
+							return nil, nil
+						},
+					},
+					connected: func() (v atomic.Value) {
+						v.Store(true)
+						return
+					}(),
+				},
+				want: want{
+					err: err,
+				},
+			}
+		}(),
+		func() test {
+			err := errors.New("error returned from Select.From.Where.Limit.LoadContext")
+			return test{
+				name: "return error when Select(idColumnName) returns error",
+				args: args{
+					ctx:  context.Background(),
+					uuid: "vald-01",
+				},
+				fields: fields{
+					session: &dbr.MockSession{
+						BeginFunc: func() (dbr.Tx, error) {
+							return &dbr.MockTx{
+								CommitFunc: func() error {
+									return nil
+								},
+								RollbackUnlessCommittedFunc: func() {},
+								SelectFunc: func(column ...string) dbr.SelectStmt {
+									s := new(dbr.MockSelect)
+									s.FromFunc = func(table interface{}) dbr.SelectStmt {
+										return s
+									}
+									s.WhereFunc = func(query interface{}, value ...interface{}) dbr.SelectStmt {
+										return s
+									}
+									s.LimitFunc = func(n uint64) dbr.SelectStmt {
+										return s
+									}
+									s.LoadContextFunc = func(ctx context.Context, value interface{}) (int, error) {
+										return 0, err
+									}
+
+									return s
+								},
+							}, nil
+						},
+					},
+					connected: func() (v atomic.Value) {
+						v.Store(true)
+						return
+					}(),
+					dbr: &dbr.MockDBR{
+						EqFunc: func(col string, val interface{}) dbr.Builder {
+							return dbr.New().Eq(col, val)
+						},
+					},
+				},
+				want: want{
+					err: err,
+				},
+			}
+		}(),
+		func() test {
+			uuid := "uuid"
+			err := errors.ErrRequiredElementNotFoundByUUID(uuid)
+			return test{
+				name: "return error when returned id = 0 from Select statement",
+				args: args{
+					ctx:  context.Background(),
+					uuid: uuid,
+				},
+				fields: fields{
+					session: &dbr.MockSession{
+						BeginFunc: func() (dbr.Tx, error) {
+							return &dbr.MockTx{
+								CommitFunc: func() error {
+									return nil
+								},
+								RollbackUnlessCommittedFunc: func() {},
+								SelectFunc: func(column ...string) dbr.SelectStmt {
+									s := new(dbr.MockSelect)
+									s.FromFunc = func(table interface{}) dbr.SelectStmt {
+										return s
+									}
+									s.WhereFunc = func(query interface{}, value ...interface{}) dbr.SelectStmt {
+										return s
+									}
+									s.LimitFunc = func(n uint64) dbr.SelectStmt {
+										return s
+									}
+									s.LoadContextFunc = func(ctx context.Context, value interface{}) (int, error) {
+										return 0, nil
+									}
+
+									return s
+								},
+							}, nil
+						},
+					},
+					connected: func() (v atomic.Value) {
+						v.Store(true)
+						return
+					}(),
+					dbr: &dbr.MockDBR{
+						EqFunc: func(col string, val interface{}) dbr.Builder {
+							return dbr.New().Eq(col, val)
+						},
+					},
+				},
+				want: want{
+					err: err,
+				},
+			}
+		}(),
+		func() test {
+			err := errors.New("vectorTableName error")
+			return test{
+				name: "return error when DeleteFromFunc(vectorTableName) returns error",
+				args: args{
+					ctx:  context.Background(),
+					uuid: "vald-01",
+				},
+				fields: fields{
+					session: &dbr.MockSession{
+						BeginFunc: func() (dbr.Tx, error) {
+							return &dbr.MockTx{
+								CommitFunc: func() error {
+									return nil
+								},
+								RollbackUnlessCommittedFunc: func() {},
+								SelectFunc: func(column ...string) dbr.SelectStmt {
+									s := new(dbr.MockSelect)
+									s.FromFunc = func(table interface{}) dbr.SelectStmt {
+										return s
+									}
+									s.WhereFunc = func(query interface{}, value ...interface{}) dbr.SelectStmt {
+										return s
+									}
+									s.LimitFunc = func(n uint64) dbr.SelectStmt {
+										return s
+									}
+									s.LoadContextFunc = func(ctx context.Context, value interface{}) (int, error) {
+										var id int64
+										if reflect.TypeOf(value) == reflect.TypeOf(&id) {
+											id := int64(1)
+											reflect.ValueOf(value).Elem().Set(reflect.ValueOf(id))
+											return 1, nil
+										}
+										return 0, nil
+									}
+
+									return s
+								},
+								DeleteFromFunc: func(table string) dbr.DeleteStmt {
+									s := new(dbr.MockDelete)
+									s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
+										if table == "backup_vector" {
+											return nil, err
+										}
+										return nil, nil
+									}
+									s.WhereFunc = func(query interface{}, value ...interface{}) dbr.DeleteStmt {
+										return s
+									}
+									return s
+								},
+							}, nil
+						},
+					},
+					connected: func() (v atomic.Value) {
+						v.Store(true)
+						return
+					}(),
+					dbr: &dbr.MockDBR{
+						EqFunc: func(col string, val interface{}) dbr.Builder {
+							return dbr.New().Eq(col, val)
+						},
+					},
+				},
+				want: want{
+					err: err,
+				},
+			}
+		}(),
+		func() test {
+			err := errors.New("podIPTableNmae error")
+			return test{
+				name: "return error when DeleteFromFunc(podIPTableNmae) returns error",
+				args: args{
+					ctx:  context.Background(),
+					uuid: "vald-01",
+				},
+				fields: fields{
+					session: &dbr.MockSession{
+						BeginFunc: func() (dbr.Tx, error) {
+							return &dbr.MockTx{
+								CommitFunc: func() error {
+									return nil
+								},
+								RollbackUnlessCommittedFunc: func() {},
+								SelectFunc: func(column ...string) dbr.SelectStmt {
+									s := new(dbr.MockSelect)
+									s.FromFunc = func(table interface{}) dbr.SelectStmt {
+										return s
+									}
+									s.WhereFunc = func(query interface{}, value ...interface{}) dbr.SelectStmt {
+										return s
+									}
+									s.LimitFunc = func(n uint64) dbr.SelectStmt {
+										return s
+									}
+									s.LoadContextFunc = func(ctx context.Context, value interface{}) (int, error) {
+										var id int64
+										if reflect.TypeOf(value) == reflect.TypeOf(&id) {
+											id := int64(1)
+											reflect.ValueOf(value).Elem().Set(reflect.ValueOf(id))
+											return 1, nil
+										}
+										return 0, nil
+									}
+
+									return s
+								},
+								DeleteFromFunc: func(table string) dbr.DeleteStmt {
+									s := new(dbr.MockDelete)
+									s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
+										if table == "pod_ip" {
+											return nil, err
+										}
+										return nil, nil
+									}
+									s.WhereFunc = func(query interface{}, value ...interface{}) dbr.DeleteStmt {
+										return s
+									}
+									return s
+								},
+							}, nil
+						},
+					},
+					connected: func() (v atomic.Value) {
+						v.Store(true)
+						return
+					}(),
+					dbr: &dbr.MockDBR{
+						EqFunc: func(col string, val interface{}) dbr.Builder {
+							return dbr.New().Eq(col, val)
+						},
+					},
+				},
+				want: want{
+					err: err,
+				},
+			}
+		}(),
+		func() test {
+			return test{
+				name: "return nil when no error occurs",
 				args: args{
 					ctx:  context.Background(),
 					uuid: "vald-01",

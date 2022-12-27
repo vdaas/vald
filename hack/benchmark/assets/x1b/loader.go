@@ -72,7 +72,7 @@ type ivecs struct {
 	*file
 }
 
-func open(fname string, elementSize int) (f *file, err error) {
+func openFile(fname string, elementSize int) (f *file, err error) {
 	fp, err := os.Open(fname)
 	if err != nil {
 		return nil, err
@@ -93,6 +93,7 @@ func open(fname string, elementSize int) (f *file, err error) {
 		return nil, err
 	}
 
+	// skipcq: GSC-G103
 	dim := int(*(*int32)(unsafe.Pointer(&mem[0])))
 	block := headerSize + dim*elementSize
 	return &file{
@@ -128,6 +129,7 @@ func (bv *bvecs) LoadUint8(i int) ([]uint8, error) {
 	if err != nil {
 		return nil, err
 	}
+	// skipcq: GSC-G103
 	return ((*[1 << 26]uint8)(unsafe.Pointer(&buf[0])))[:bv.dim:bv.dim], nil
 }
 
@@ -140,6 +142,7 @@ func (fv *fvecs) LoadFloat32(i int) ([]float32, error) {
 	if err != nil {
 		return nil, err
 	}
+	// skipcq: GSC-G103
 	return ((*[1 << 26]float32)(unsafe.Pointer(&buf[0])))[:fv.dim:fv.dim], nil
 }
 
@@ -152,6 +155,7 @@ func (iv *ivecs) LoadInt32(i int) ([]int32, error) {
 	if err != nil {
 		return nil, err
 	}
+	// skipcq: GSC-G103
 	return ((*[1 << 26]int32)(unsafe.Pointer(&buf[0])))[:iv.dim:iv.dim], nil
 }
 
@@ -160,7 +164,7 @@ func (iv *ivecs) Load(i int) (interface{}, error) {
 }
 
 func NewUint8Vectors(fname string) (Uint8Vectors, error) {
-	f, err := open(fname, 1)
+	f, err := openFile(fname, 1)
 	if err != nil {
 		return nil, err
 	}
@@ -168,7 +172,7 @@ func NewUint8Vectors(fname string) (Uint8Vectors, error) {
 }
 
 func NewFloatVectors(fname string) (FloatVectors, error) {
-	f, err := open(fname, 4)
+	f, err := openFile(fname, 4)
 	if err != nil {
 		return nil, err
 	}
@@ -176,7 +180,7 @@ func NewFloatVectors(fname string) (FloatVectors, error) {
 }
 
 func NewInt32Vectors(fname string) (Int32Vectors, error) {
-	f, err := open(fname, 4)
+	f, err := openFile(fname, 4)
 	if err != nil {
 		return nil, err
 	}

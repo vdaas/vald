@@ -70,7 +70,7 @@ func (r *reconciler) addListOpts(opt client.ListOption) {
 	r.lopts = append(r.lopts, opt)
 }
 
-func (r *reconciler) Reconcile(ctx context.Context, req reconcile.Request) (res reconcile.Result, err error) {
+func (r *reconciler) Reconcile(ctx context.Context, _ reconcile.Request) (res reconcile.Result, err error) {
 	m := &metrics.PodMetricsList{}
 
 	if r.lopts != nil {
@@ -154,18 +154,18 @@ func (r *reconciler) NewReconciler(ctx context.Context, mgr manager.Manager) rec
 	return r
 }
 
-func (r *reconciler) For() (client.Object, []builder.ForOption) {
+func (*reconciler) For() (client.Object, []builder.ForOption) {
 	// WARN: metrics should be renew
 	// https://github.com/kubernetes/community/blob/main/contributors/design-proposals/instrumentation/resource-metrics-api.md#further-improvements
 	return new(metrics.PodMetrics), nil
 }
 
-func (r *reconciler) Owns() (client.Object, []builder.OwnsOption) {
+func (*reconciler) Owns() (client.Object, []builder.OwnsOption) {
 	// return new(metrics.PodMetrics)
 	return nil, nil
 }
 
-func (r *reconciler) Watches() (*source.Kind, handler.EventHandler, []builder.WatchesOption) {
+func (*reconciler) Watches() (*source.Kind, handler.EventHandler, []builder.WatchesOption) {
 	// return &source.Kind{Type: new(metrics.PodMetrics)}, &handler.EnqueueRequestForObject{}
 	return nil, nil, nil
 }

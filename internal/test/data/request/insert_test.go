@@ -52,6 +52,7 @@ func TestGenMultiInsertReq(t *testing.T) {
 		afterFunc  func(args)
 	}
 	dim := 10
+	// skipcq: CRT-D0001
 	comparators := append(defaultMultiInsertReqComparators, comparator.IgnoreFields(payload.Object_Vector{}, "Vector"))
 
 	defaultCheckFunc := func(w want, got *payload.Insert_MultiRequest, err error) error {

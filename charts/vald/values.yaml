@@ -533,74 +533,6 @@ defaults:
             ip_transparent: false
             # defaults.server_config.metrics.pprof.server.socket_option.ip_recover_destination_addr -- server listen socket option for ip_recover_destination_addr functionality
             ip_recover_destination_addr: false
-      # @schema {"name": "defaults.server_config.metrics.prometheus", "type": "object"}
-      prometheus:
-        # @schema {"name": "defaults.server_config.metrics.prometheus.enabled", "type": "boolean"}
-        # defaults.server_config.metrics.prometheus.enabled -- prometheus server enabled
-        enabled: false
-        # @schema {"name": "defaults.server_config.metrics.prometheus.host", "type": "string"}
-        # defaults.server_config.metrics.prometheus.host -- prometheus server host
-        host: 0.0.0.0
-        # @schema {"name": "defaults.server_config.metrics.prometheus.port", "type": "integer", "minimum": 0, "maximum": 65535}
-        # defaults.server_config.metrics.prometheus.port -- prometheus server port
-        port: 6061
-        # @schema {"name": "defaults.server_config.metrics.prometheus.servicePort", "type": "integer", "minimum": 0, "maximum": 65535}
-        # defaults.server_config.metrics.prometheus.servicePort -- prometheus server service port
-        servicePort: 6061
-        # @schema {"name": "defaults.server_config.metrics.prometheus.server", "type": "object"}
-        server:
-          # @schema {"name": "defaults.server_config.metrics.prometheus.server.mode", "type": "string"}
-          # defaults.server_config.metrics.prometheus.server.mode -- prometheus server mode
-          mode: REST
-          # @schema {"name": "defaults.server_config.metrics.prometheus.server.probe_wait_time", "type": "string"}
-          # defaults.server_config.metrics.prometheus.server.probe_wait_time -- prometheus server probe wait time
-          probe_wait_time: 3s
-          # @schema {"name": "defaults.server_config.metrics.prometheus.server.network", "type": "string", "enum": ["tcp", "tcp4", "tcp6", "udp", "udp4", "udp6", "unix", "unixgram", "unixpacket"]}
-          # defaults.server_config.metrics.prometheus.server.network -- mysql network
-          network: tcp
-          # @schema {"name": "defaults.server_config.metrics.prometheus.server.socket_path", "type": "string"}
-          # defaults.server_config.metrics.prometheus.server.socket_path -- mysql socket_path
-          socket_path: ""
-          # @schema {"name": "defaults.server_config.metrics.prometheus.server.http", "type": "object"}
-          http:
-            # @schema {"name": "defaults.server_config.metrics.prometheus.server.http.shutdown_duration", "type": "string"}
-            # defaults.server_config.metrics.prometheus.server.http.shutdown_duration -- prometheus server shutdown duration
-            shutdown_duration: 5s
-            # @schema {"name": "defaults.server_config.metrics.prometheus.server.http.handler_timeout", "type": "string"}
-            # defaults.server_config.metrics.prometheus.server.http.handler_timeout -- prometheus server handler timeout
-            handler_timeout: 5s
-            # @schema {"name": "defaults.server_config.metrics.prometheus.server.http.idle_timeout", "type": "string"}
-            # defaults.server_config.metrics.prometheus.server.http.idle_timeout -- prometheus server idle timeout
-            idle_timeout: 2s
-            # @schema {"name": "defaults.server_config.metrics.prometheus.server.http.read_header_timeout", "type": "string"}
-            # defaults.server_config.metrics.prometheus.server.http.read_header_timeout -- prometheus server read header timeout
-            read_header_timeout: 1s
-            # @schema {"name": "defaults.server_config.metrics.prometheus.server.http.read_timeout", "type": "string"}
-            # defaults.server_config.metrics.prometheus.server.http.read_timeout -- prometheus server read timeout
-            read_timeout: 1s
-            # @schema {"name": "defaults.server_config.metrics.prometheus.server.http.write_timeout", "type": "string"}
-            # defaults.server_config.metrics.prometheus.server.http.write_timeout -- prometheus server write timeout
-            write_timeout: 1s
-          # @schema {"name": "defaults.server_config.metrics.prometheus.server.socket_option", "alias": "socket_option"}
-          socket_option:
-            # defaults.server_config.metrics.prometheus.server.socket_option.reuse_port -- server listen socket option for reuse_port functionality
-            reuse_port: true
-            # defaults.server_config.metrics.prometheus.server.socket_option.reuse_addr -- server listen socket option for reuse_addr functionality
-            reuse_addr: true
-            # defaults.server_config.metrics.prometheus.server.socket_option.tcp_fast_open -- server listen socket option for tcp_fast_open functionality
-            tcp_fast_open: true
-            # defaults.server_config.metrics.prometheus.server.socket_option.tcp_no_delay -- server listen socket option for tcp_no_delay functionality
-            tcp_no_delay: true
-            # defaults.server_config.metrics.prometheus.server.socket_option.tcp_cork -- server listen socket option for tcp_cork functionality
-            tcp_cork: false
-            # defaults.server_config.metrics.prometheus.server.socket_option.tcp_quick_ack -- server listen socket option for tcp_quick_ack functionality
-            tcp_quick_ack: true
-            # defaults.server_config.metrics.prometheus.server.socket_option.tcp_defer_accept -- server listen socket option for tcp_defer_accept functionality
-            tcp_defer_accept: true
-            # defaults.server_config.metrics.prometheus.server.socket_option.ip_transparent -- server listen socket option for ip_transparent functionality
-            ip_transparent: false
-            # defaults.server_config.metrics.prometheus.server.socket_option.ip_recover_destination_addr -- server listen socket option for ip_recover_destination_addr functionality
-            ip_recover_destination_addr: false
     # @schema {"name": "defaults.server_config.full_shutdown_duration", "type": "string"}
     # defaults.server_config.full_shutdown_duration -- server full shutdown duration
     full_shutdown_duration: 600s
@@ -830,6 +762,44 @@ defaults:
     # @schema {"name": "defaults.observability.enabled", "type": "boolean"}
     # defaults.observability.enabled -- observability features enabled
     enabled: false
+    # @schema {"name": "defaults.observability.otlp", "type": "object"}
+    otlp:
+      # @schema {"name": "defaults.observability.otlp.collector_endpoint", "type": "string"}
+      # defaults.observability.otlp.collector_endpoint -- OpenTelemetry Collector endpoint
+      collector_endpoint: ""
+      # @schema {"name": "defaults.observability.otlp.attribute", "type": "object"}
+      # defaults.observability.otlp.attribute -- default resource attribute
+      attribute:
+        # @schema {"name": "defaults.observability.otlp.attribute.namespace", "type": "string"}
+        # defaults.observability.otlp.attribute.namespace -- namespace
+        namespace: _MY_POD_NAMESPACE_
+        # @schema {"name": "defaults.observability.otlp.attribute.pod_name", "type": "string"}
+        # defaults.observability.otlp.attribute.pod_name -- pod name
+        pod_name: _MY_POD_NAME_
+        # @schema {"name": "defaults.observability.otlp.attribute.node_name", "type": "string"}
+        # defaults.observability.otlp.attribute.node_name -- node name
+        node_name: _MY_NODE_NAME_
+        # @schema {"name": "defaults.observability.otlp.attribute.service_name", "type": "string"}
+        # defaults.observability.otlp.attribute.service_name -- service name
+        service_name: vald
+      # @schema {"name": "defaults.observability.otlp.trace_batch_timeout", "type": "string"}
+      # defaults.observability.otlp.trace_batch_timeout -- trace batch timeout
+      trace_batch_timeout: "1s"
+      # @schema {"name": "defaults.observability.otlp.trace_export_timeout", "type": "string"}
+      # defaults.observability.otlp.trace_export_timeout -- trace export timeout
+      trace_export_timeout: "1m"
+      # @schema {"name": "defaults.observability.otlp.trace_max_export_batch_size", "type": "integer"}
+      # defaults.observability.otlp.trace_max_export_batch_size -- trace maximum export batch size
+      trace_max_export_batch_size: 1024
+      # @schema {"name": "defaults.observability.otlp.trace_max_queue_size", "type": "integer"}
+      # defaults.observability.otlp.trace_max_queue_size -- trace maximum queue size
+      trace_max_queue_size: 256
+      # @schema {"name": "defaults.observability.otlp.metrics_export_interval", "type": "string"}
+      # defaults.observability.otlp.metrics_export_interval -- metrics export interval
+      metrics_export_interval: "1s"
+      # @schema {"name": "defaults.observability.otlp.metrics_export_timeout", "type": "string"}
+      # defaults.observability.otlp.metrics_export_timeout -- metrics export timeout
+      metrics_export_timeout: "1m"
     # @schema {"name": "defaults.observability.metrics", "type": "object"}
     metrics:
       # @schema {"name": "defaults.observability.metrics.enable_version_info", "type": "boolean"}
@@ -860,55 +830,6 @@ defaults:
       # @schema {"name": "defaults.observability.trace.enabled", "type": "boolean"}
       # defaults.observability.trace.enabled -- trace enabled
       enabled: false
-    # @schema {"name": "defaults.observability.prometheus", "type": "object"}
-    prometheus:
-      # @schema {"name": "defaults.observability.prometheus.enabled", "type": "boolean"}
-      # defaults.observability.prometheus.enabled -- Prometheus exporter enabled
-      enabled: false
-      # @schema {"name": "defaults.observability.prometheus.endpoint", "type": "string"}
-      # defaults.observability.prometheus.endpoint -- Prometheus exporter endpoint
-      endpoint: /metrics
-      # @schema {"name": "defaults.observability.prometheus.namespace", "type": "string"}
-      # defaults.observability.prometheus.namespace -- service namespace for metrics
-      namespace: _MY_POD_NAMESPACE_
-    # @schema {"name": "defaults.observability.jaeger", "type": "object"}
-    jaeger:
-      # @schema {"name": "defaults.observability.jaeger.enabled", "type": "boolean"}
-      # defaults.observability.jaeger.enabled -- Jaeger exporter enabled
-      enabled: false
-      # @schema {"name": "defaults.observability.jaeger.collector_endpoint", "type": "string"}
-      # defaults.observability.jaeger.collector_endpoint -- Jaeger collector endpoint
-      collector_endpoint: "" # http://jaeger-collector.default.svc.cluster.local:14268/api/traces
-      # @schema {"name": "defaults.observability.jaeger.agent_endpoint", "type": "string"}
-      # defaults.observability.jaeger.agent_endpoint -- Jaeger agent endpoint
-      agent_endpoint: ""
-      # @schema {"name": "defaults.observability.jaeger.agent_reconnect_interval", "type": "string"}
-      # defaults.observability.jaeger.agent_reconnect_interval -- Jaeger Agent reconnect interval
-      agent_reconnect_interval: 30s
-      # @schema {"name": "defaults.observability.jaeger.username", "type": "string"}
-      # defaults.observability.jaeger.username -- Jaeger username
-      username: ""
-      # @schema {"name": "defaults.observability.jaeger.password", "type": "string"}
-      # defaults.observability.jaeger.password -- Jaeger password
-      password: ""
-      # @schema {"name": "defaults.observability.jaeger.service_name", "type": "string"}
-      # defaults.observability.jaeger.service_name -- Jaeger service name
-      service_name: vald
-      # @schema {"name": "defaults.observability.jaeger.agent_max_packet_size", "type": "integer"}
-      # defaults.observability.jaeger.agent_max_packet_size -- Jaeger Agent max packet size
-      agent_max_packet_size: 65000
-      # @schema {"name": "defaults.observability.jaeger.batch_timeout", "type": "string"}
-      # defaults.observability.jaeger.batch_timeout -- Jaeger export batch timeout
-      batch_timeout: 5s
-      # @schema {"name": "defaults.observability.jaeger.export_timeout", "type": "string"}
-      # defaults.observability.jaeger.export_timeout -- Jaeger export timeout
-      export_timeout: 5s
-      # @schema {"name": "defaults.observability.jaeger.max_export_batch_size", "type": "integer"}
-      # defaults.observability.jaeger.max_export_batch_size -- Jaeger max export batch size
-      max_export_batch_size: 512
-      # @schema {"name": "defaults.observability.jaeger.max_queue_size", "type": "integer"}
-      # defaults.observability.jaeger.max_queue_size -- Jaeger max queue size
-      max_queue_size: 2048
 # @schema {"name": "gateway", "type": "object"}
 gateway:
   # @schema {"name": "gateway.lb", "type": "object"}
@@ -1045,10 +966,14 @@ gateway:
     # @schema {"name": "gateway.lb.env", "type": "array", "items": {"type": "object"}, "anchor": "env"}
     # gateway.lb.env -- environment variables
     env:
-      # - name: MY_NODE_NAME
-      #   valueFrom:
-      #     fieldRef:
-      #       fieldPath: spec.nodeName
+      - name: MY_NODE_NAME
+        valueFrom:
+          fieldRef:
+            fieldPath: spec.nodeName
+      - name: MY_POD_NAME
+        valueFrom:
+          fieldRef:
+            fieldPath: metadata.name
       - name: MY_POD_NAMESPACE
         valueFrom:
           fieldRef:
@@ -1120,12 +1045,12 @@ gateway:
         startup: {}
       metrics:
         pprof: {}
-        prometheus: {}
     # @schema {"name": "gateway.lb.observability", "alias": "observability"}
     # gateway.lb.observability -- observability config (overrides defaults.observability)
     observability:
-      jaeger:
-        service_name: vald-lb-gateway
+      otlp:
+        attribute:
+          service_name: vald-lb-gateway
     # @schema {"name": "gateway.lb.ingress", "type": "object"}
     ingress:
       # @schema {"name": "gateway.lb.ingress.pathType", "type": "string"}
@@ -1306,6 +1231,14 @@ gateway:
     # @schema {"name": "gateway.filter.env", "type": "array", "items": {"type": "object"}, "anchor": "env"}
     # gateway.filter.env -- environment variables
     env:
+      - name: MY_NODE_NAME
+        valueFrom:
+          fieldRef:
+            fieldPath: spec.nodeName
+      - name: MY_POD_NAME
+        valueFrom:
+          fieldRef:
+            fieldPath: metadata.name
       - name: MY_POD_NAMESPACE
         valueFrom:
           fieldRef:
@@ -1377,12 +1310,12 @@ gateway:
         startup: {}
       metrics:
         pprof: {}
-        prometheus: {}
     # @schema {"name": "gateway.filter.observability", "alias": "observability"}
     # gateway.filter.observability -- observability config (overrides defaults.observability)
     observability:
-      jaeger:
-        service_name: vald-filter-gateway
+      otlp:
+        attribute:
+          service_name: vald-filter-gateway
     # @schema {"name": "gateway.filter.ingress", "type": "object"}
     ingress:
       # @schema {"name": "gateway.filter.ingress.pathType", "type": "string"}
@@ -1587,6 +1520,14 @@ agent:
   # @schema {"name": "agent.env", "alias": "env"}
   # agent.env -- environment variables
   env:
+    - name: MY_NODE_NAME
+      valueFrom:
+        fieldRef:
+          fieldPath: spec.nodeName
+    - name: MY_POD_NAME
+      valueFrom:
+        fieldRef:
+          fieldPath: metadata.name
     - name: MY_POD_NAMESPACE
       valueFrom:
         fieldRef:
@@ -1651,12 +1592,12 @@ agent:
           periodSeconds: 5
     metrics:
       pprof: {}
-      prometheus: {}
   # @schema {"name": "agent.observability", "alias": "observability"}
   # agent.observability -- observability config (overrides defaults.observability)
   observability:
-    jaeger:
-      service_name: vald-agent-ngt
+    otlp:
+      attribute:
+        service_name: vald-agent-ngt
   # @schema {"name": "agent.resources", "alias": "resources"}
   # agent.resources -- compute resources.
   # recommended setting of memory requests = cluster memory * 0.4 / number of agent pods
@@ -1698,7 +1639,8 @@ agent:
     # it should be `l1`, `l2`, `angle`, `hamming`, `cosine`,`poincare`, `lorentz`, `jaccard`, `sparsejaccard`, `normalizedangle` or `normalizedcosine`.
     # for further details about NGT libraries supported distance is https://github.com/yahoojapan/NGT/wiki/Command-Quick-Reference
     # and vald agent's supported NGT distance type is https://pkg.go.dev/github.com/vdaas/vald/internal/core/algorithm/ngt#pkg-constants
-    distance_type: l2
+    distance_type:
+      l2
       # @schema {"name": "agent.ngt.object_type", "type": "string", "enum": ["float", "float16", "uint8"]}
     # agent.ngt.object_type -- object type.
     # it should be `float` or `uint8` or `float16`.
@@ -1799,6 +1741,10 @@ agent:
     # @schema {"name": "agent.sidecar.env", "alias": "env"}
     # agent.sidecar.env -- environment variables
     env:
+      - name: MY_NODE_NAME
+        valueFrom:
+          fieldRef:
+            fieldPath: spec.nodeName
       - name: MY_POD_NAME
         valueFrom:
           fieldRef:
@@ -1845,14 +1791,12 @@ agent:
         pprof:
           port: 16060
           servicePort: 16060
-        prometheus:
-          port: 16061
-          servicePort: 16061
     # @schema {"name": "agent.sidecar.observability", "alias": "observability"}
     # agent.sidecar.observability -- observability config (overrides defaults.observability)
     observability:
-      jaeger:
-        service_name: vald-agent-sidecar
+      otlp:
+        attribute:
+          service_name: vald-agent-sidecar
     # @schema {"name": "agent.sidecar.resources", "alias": "resources"}
     # agent.sidecar.resources -- compute resources.
     resources:
@@ -2223,6 +2167,14 @@ discoverer:
   # @schema {"name": "discoverer.env", "alias": "env"}
   # discoverer.env -- environment variables
   env:
+    - name: MY_NODE_NAME
+      valueFrom:
+        fieldRef:
+          fieldPath: spec.nodeName
+    - name: MY_POD_NAME
+      valueFrom:
+        fieldRef:
+          fieldPath: metadata.name
     - name: MY_POD_NAMESPACE
       valueFrom:
         fieldRef:
@@ -2284,12 +2236,12 @@ discoverer:
       startup: {}
     metrics:
       pprof: {}
-      prometheus: {}
   # @schema {"name": "discoverer.observability", "alias": "observability"}
   # discoverer.observability -- observability config (overrides defaults.observability)
   observability:
-    jaeger:
-      service_name: vald-discoverer
+    otlp:
+      attribute:
+        service_name: vald-discoverer
   # @schema {"name": "discoverer.resources", "alias": "resources"}
   # discoverer.resources -- compute resources
   resources:
@@ -2532,10 +2484,14 @@ manager:
     # @schema {"name": "manager.index.env", "alias": "env"}
     # manager.index.env -- environment variables
     env:
-      # - name: MY_NODE_NAME
-      #   valueFrom:
-      #     fieldRef:
-      #       fieldPath: spec.nodeName
+      - name: MY_NODE_NAME
+        valueFrom:
+          fieldRef:
+            fieldPath: spec.nodeName
+      - name: MY_POD_NAME
+        valueFrom:
+          fieldRef:
+            fieldPath: metadata.name
       - name: MY_POD_NAMESPACE
         valueFrom:
           fieldRef:
@@ -2588,12 +2544,12 @@ manager:
         startup: {}
       metrics:
         pprof: {}
-        prometheus: {}
     # @schema {"name": "manager.index.observability", "alias": "observability"}
     # manager.index.observability -- observability config (overrides defaults.observability)
     observability:
-      jaeger:
-        service_name: vald-manager-index
+      otlp:
+        attribute:
+          service_name: vald-manager-index
     # @schema {"name": "manager.index.resources", "alias": "resources"}
     # manager.index.resources -- compute resources
     resources:

@@ -78,7 +78,7 @@ func TestNewReaderWithContext(t *testing.T) {
 			},
 			want: want{
 				want: nil,
-				err:  errors.NewErrReaderNotProvided(),
+				err:  errors.NewErrReaderNotProvided,
 			},
 		},
 		{
@@ -89,7 +89,7 @@ func TestNewReaderWithContext(t *testing.T) {
 			},
 			want: want{
 				want: nil,
-				err:  errors.NewErrContextNotProvided(),
+				err:  errors.NewErrContextNotProvided,
 			},
 		},
 	}
@@ -168,7 +168,7 @@ func TestNewReadCloserWithContext(t *testing.T) {
 			},
 			want: want{
 				want: nil,
-				err:  errors.NewErrReaderNotProvided(),
+				err:  errors.NewErrReaderNotProvided,
 			},
 		},
 		{
@@ -179,7 +179,7 @@ func TestNewReadCloserWithContext(t *testing.T) {
 			},
 			want: want{
 				want: nil,
-				err:  errors.NewErrContextNotProvided(),
+				err:  errors.NewErrContextNotProvided,
 			},
 		},
 	}
@@ -459,7 +459,7 @@ func TestNewWriterWithContext(t *testing.T) {
 			},
 			want: want{
 				want: nil,
-				err:  errors.NewErrWriterNotProvided(),
+				err:  errors.NewErrWriterNotProvided,
 			},
 		},
 		{
@@ -470,7 +470,7 @@ func TestNewWriterWithContext(t *testing.T) {
 			},
 			want: want{
 				want: nil,
-				err:  errors.NewErrContextNotProvided(),
+				err:  errors.NewErrContextNotProvided,
 			},
 		},
 	}
@@ -557,7 +557,7 @@ func TestNewWriteCloserWithContext(t *testing.T) {
 			},
 			want: want{
 				want: nil,
-				err:  errors.NewErrWriterNotProvided(),
+				err:  errors.NewErrWriterNotProvided,
 			},
 		},
 		{
@@ -568,7 +568,7 @@ func TestNewWriteCloserWithContext(t *testing.T) {
 			},
 			want: want{
 				want: nil,
-				err:  errors.NewErrContextNotProvided(),
+				err:  errors.NewErrContextNotProvided,
 			},
 		},
 	}

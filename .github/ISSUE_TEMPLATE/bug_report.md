@@ -4,7 +4,6 @@ about: Create a report to help us improve
 title: ""
 labels: "type/bug, priority/medium, team/core"
 assignees: ""
-
 ---
 
 ### Describe the bug:
@@ -23,7 +22,7 @@ assignees: ""
 
 <!--- Please change the versions below along with your environment -->
 
-- Go Version: 1.19.2
+- Go Version: 1.19.4
 - Docker Version: 20.10.8
 - Kubernetes Version: 1.22.0
-- NGT Version: 1.14.8
+- NGT Version: 2.0.8

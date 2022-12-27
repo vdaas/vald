@@ -793,11 +793,9 @@ func Test_group_closeLimitation(t *testing.T) {
 	type fields struct {
 		egctx            context.Context
 		cancel           context.CancelFunc
-		wg               sync.WaitGroup
 		limitation       chan struct{}
 		enableLimitation atomic.Value
 		cancelOnce       sync.Once
-		mu               sync.RWMutex
 		emap             map[string]struct{}
 		errs             []error
 		err              error
@@ -822,11 +820,9 @@ func Test_group_closeLimitation(t *testing.T) {
 		       fields: fields {
 		           egctx: nil,
 		           cancel: nil,
-		           wg: sync.WaitGroup{},
 		           limitation: nil,
 		           enableLimitation: nil,
 		           cancelOnce: sync.Once{},
-		           mu: sync.RWMutex{},
 		           emap: nil,
 		           errs: nil,
 		           err: nil,
@@ -844,11 +840,9 @@ func Test_group_closeLimitation(t *testing.T) {
 		           fields: fields {
 		           egctx: nil,
 		           cancel: nil,
-		           wg: sync.WaitGroup{},
 		           limitation: nil,
 		           enableLimitation: nil,
 		           cancelOnce: sync.Once{},
-		           mu: sync.RWMutex{},
 		           emap: nil,
 		           errs: nil,
 		           err: nil,
@@ -877,11 +871,9 @@ func Test_group_closeLimitation(t *testing.T) {
 			g := &group{
 				egctx:            test.fields.egctx,
 				cancel:           test.fields.cancel,
-				wg:               test.fields.wg,
 				limitation:       test.fields.limitation,
 				enableLimitation: test.fields.enableLimitation,
 				cancelOnce:       test.fields.cancelOnce,
-				mu:               test.fields.mu,
 				emap:             test.fields.emap,
 				errs:             test.fields.errs,
 				err:              test.fields.err,

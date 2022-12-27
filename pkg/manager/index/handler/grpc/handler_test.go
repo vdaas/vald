@@ -41,8 +41,8 @@ func TestNew(t *testing.T) {
 		args       args
 		want       want
 		checkFunc  func(want, index.IndexServer) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, got index.IndexServer) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -60,6 +60,12 @@ func TestNew(t *testing.T) {
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -73,6 +79,12 @@ func TestNew(t *testing.T) {
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -84,10 +96,10 @@ func TestNew(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -108,7 +120,8 @@ func Test_server_IndexInfo(t *testing.T) {
 		in1 *payload.Empty
 	}
 	type fields struct {
-		indexer service.Indexer
+		indexer                  service.Indexer
+		UnimplementedIndexServer index.UnimplementedIndexServer
 	}
 	type want struct {
 		wantRes *payload.Info_Index_Count
@@ -120,8 +133,8 @@ func Test_server_IndexInfo(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, *payload.Info_Index_Count, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, gotRes *payload.Info_Index_Count, err error) error {
 		if !errors.Is(err, w.err) {
@@ -143,9 +156,16 @@ func Test_server_IndexInfo(t *testing.T) {
 		       },
 		       fields: fields {
 		           indexer: nil,
+		           UnimplementedIndexServer: nil,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -160,9 +180,16 @@ func Test_server_IndexInfo(t *testing.T) {
 		           },
 		           fields: fields {
 		           indexer: nil,
+		           UnimplementedIndexServer: nil,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -174,17 +201,18 @@ func Test_server_IndexInfo(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
 			s := &server{
-				indexer: test.fields.indexer,
+				indexer:                  test.fields.indexer,
+				UnimplementedIndexServer: test.fields.UnimplementedIndexServer,
 			}
 
 			gotRes, err := s.IndexInfo(test.args.ctx, test.args.in1)

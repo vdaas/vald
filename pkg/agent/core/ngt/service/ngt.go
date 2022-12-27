@@ -99,6 +99,7 @@ type ngt struct {
 	// counters
 	nocie uint64 // number of create index execution
 	nogce uint64 // number of proactive GC execution
+	wfci  uint64 // wait for create indexing
 
 	// configurations
 	inMem bool // in-memory mode
@@ -202,11 +203,7 @@ func New(cfg *config.NGT, opts ...Option) (nn NGT, err error) {
 		n.dcd = true
 	}
 	if n.vq == nil {
-		n.vq, err = vqueue.New(
-			vqueue.WithErrGroup(n.eg),
-			vqueue.WithInsertBufferPoolSize(cfg.VQueue.InsertBufferPoolSize),
-			vqueue.WithDeleteBufferPoolSize(cfg.VQueue.DeleteBufferPoolSize),
-		)
+		n.vq, err = vqueue.New()
 		if err != nil {
 			return nil, err
 		}
@@ -730,7 +727,7 @@ func (n *ngt) update(uuid string, vec []float32, t int64) (err error) {
 	if err = n.readyForUpdate(uuid, vec); err != nil {
 		return err
 	}
-	err = n.delete(uuid, t, true) // true is to return NotFound error with non-existent ID
+	err = n.delete(uuid, t, true) // `true` is to return NotFound error with non-existent ID
 	if err != nil {
 		return err
 	}
@@ -827,6 +824,12 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 	if ic == 0 {
 		return errors.ErrUncommittedIndexNotFound
 	}
+	wf := atomic.AddUint64(&n.wfci, 1)
+	if wf > 1 {
+		atomic.AddUint64(&n.wfci, ^uint64(0))
+		log.Debugf("concurrent create index waiting detected this request will be ignored, concurrent: %d", wf)
+		return nil
+	}
 	err = func() error {
 		ticker := time.NewTicker(time.Millisecond * 100)
 		defer ticker.Stop()
@@ -835,10 +838,12 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 			runtime.Gosched()
 			select {
 			case <-ctx.Done():
+				atomic.AddUint64(&n.wfci, ^uint64(0))
 				return ctx.Err()
 			case <-ticker.C:
 			}
 		}
+		atomic.AddUint64(&n.wfci, ^uint64(0))
 		return nil
 	}()
 	if err != nil {
@@ -857,17 +862,20 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 	log.Infof("create index operation started, uncommitted indexes = %d", ic)
 	log.Debug("create index delete phase started")
 	n.vq.RangePopDelete(ctx, now, func(uuid string) bool {
+		log.Debugf("start delete operation for kvsdb id: %s", uuid)
 		oid, ok := n.kvs.Delete(uuid)
 		if !ok {
 			log.Warn(errors.ErrObjectIDNotFound(uuid))
 			return true
 		}
+		log.Debugf("start remove operation for ngt index id: %s, oid: %d", uuid, oid)
 		if err := n.core.Remove(uint(oid)); err != nil {
 			log.Errorf("failed to remove oid: %d from ngt index. error: %v", oid, err)
 			n.fmu.Lock()
 			n.fmap[uuid] = oid
 			n.fmu.Unlock()
 		}
+		log.Debugf("removed from ngt index and kvsdb id: %s, oid: %d", uuid, oid)
 		return true
 	})
 	log.Debug("create index delete phase finished")
@@ -875,28 +883,31 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 	log.Debug("create index insert phase started")
 	var icnt uint32
 	n.vq.RangePopInsert(ctx, now, func(uuid string, vector []float32) bool {
+		log.Debugf("start insert operation for ngt index id: %s", uuid)
 		oid, err := n.core.Insert(vector)
 		if err != nil {
 			log.Warnf("failed to insert vector uuid: %s vec: %v to ngt index. error: %v", uuid, vector, err)
-			if !errors.Is(err, errors.ErrIncompatibleDimensionSize(len(vector), n.dim)) {
-				oid, err = n.core.Insert(vector)
-				if err != nil {
-					log.Errorf("failed to retry insert vector uuid: %s vec: %v to ngt index. error: %v", uuid, vector, err)
-					return true
-				}
-				n.kvs.Set(uuid, uint32(oid))
-				atomic.AddUint32(&icnt, 1)
+			if errors.Is(err, errors.ErrIncompatibleDimensionSize(len(vector), n.dim)) {
+				log.Error(err)
+				return true
 			}
-		} else {
-			n.kvs.Set(uuid, uint32(oid))
-			atomic.AddUint32(&icnt, 1)
+			oid, err = n.core.Insert(vector)
+			if err != nil {
+				log.Errorf("failed to retry insert vector uuid: %s vec: %v to ngt index. error: %v", uuid, vector, err)
+				return true
+			}
 		}
+		log.Debugf("start insert operation for kvsdb id: %s, oid: %d", uuid, oid)
+		n.kvs.Set(uuid, uint32(oid))
+		atomic.AddUint32(&icnt, 1)
+
 		n.fmu.Lock()
 		_, ok := n.fmap[uuid]
 		if ok {
 			delete(n.fmap, uuid)
 		}
 		n.fmu.Unlock()
+		log.Debugf("inserted to ngt index and kvsdb id: %s, oid: %d", uuid, oid)
 		return true
 	})
 	if poolSize <= 0 {
@@ -1010,7 +1021,7 @@ func (n *ngt) saveIndex(ctx context.Context) (err error) {
 
 	eg, ectx := errgroup.New(ctx)
 	// we want to ensure the acutal kvs size between kvsdb and metadata,
-	// so we create thie counter to count the actual kvs size instead of using kvs.Len()
+	// so we create this counter to count the actual kvs size instead of using kvs.Len()
 	var (
 		kvsLen uint64
 		path   string
@@ -1187,8 +1198,11 @@ func (n *ngt) Exists(uuid string) (oid uint32, ok bool) {
 			return 0, false
 		}
 		if n.vq.DVExists(uuid) {
-			log.Debugf("Exists\tuuid: %s's data found in kvsdb and not found in insert vqueue, but delete vqueue data exists. the object will be delete soon\terror: %v",
-				uuid, errors.ErrObjectIDNotFound(uuid))
+			log.Debugf(
+				"Exists\tuuid: %s's data found in kvsdb and not found in insert vqueue, but delete vqueue data exists. the object will be delete soon\terror: %v",
+				uuid,
+				errors.ErrObjectIDNotFound(uuid),
+			)
 			return 0, false
 		}
 	}
