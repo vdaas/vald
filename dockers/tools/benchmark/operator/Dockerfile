@@ -28,7 +28,7 @@ ENV GO111MODULE on
 ENV LANG en_US.UTF-8
 ENV ORG vdaas
 ENV REPO vald
-ENV APP_NAME scenario
+ENV APP_NAME operator
 ENV PKG tools/benchmark/${APP_NAME}
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -77,11 +77,11 @@ RUN cp sample.yaml /tmp/config.yaml
 
 FROM ${DISTROLESS_IMAGE}:${DISTROLESS_IMAGE_TAG}
 LABEL maintainer "Vald team <vald@vdaas.org>"
-ENV APP_NAME scenario
+ENV APP_NAME operator
 
 COPY --from=builder /usr/bin/${APP_NAME} /go/bin/${APP_NAME}
 COPY --from=builder /tmp/config.yaml /etc/server/config.yaml
 
 USER nonroot:nonroot
 
-ENTRYPOINT ["/go/bin/scenario"]
+ENTRYPOINT ["/go/bin/operator"]

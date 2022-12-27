@@ -236,11 +236,11 @@ cmd/tools/benchmark/job/job: \
 		$(dir $@)main.go
 	$@ -version
 
-cmd/tools/benchmark/scenario/scenario: \
+cmd/tools/benchmark/operator/operator: \
 	$(GO_SOURCES_INTERNAL) \
 	$(PBGOS) \
-	$(shell find ./cmd/tools/benchmark/scenario -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go') \
-	$(shell find ./pkg/tools/benchmark/scenario -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
+	$(shell find ./cmd/tools/benchmark/operator -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go') \
+	$(shell find ./pkg/tools/benchmark/operator -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
 	CFLAGS="$(CFLAGS)" \
 	CXXFLAGS="$(CXXFLAGS)" \
 	CGO_ENABLED=1 \

@@ -867,29 +867,6 @@ func TestRead(t *testing.T) {
 				},
 			}
 		}(),
-		func() test {
-			path := "/home/vankichi/Documents/vald-read-test.yaml"
-			cfg := new(GlobalConfig)
-
-			return test{
-				name: "hoge",
-				args: args{
-					path: path,
-					cfg:  cfg,
-				},
-				beforeFunc: func(t *testing.T, _ args) {
-					t.Helper()
-				},
-				afterFunc: func(t *testing.T, _ args) {
-					t.Helper()
-				},
-				want: want{
-					want: cfg,
-					err:  nil,
-				},
-			}
-		}(),
-
 	}
 
 	for _, tc := range tests {

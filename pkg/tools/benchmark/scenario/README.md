@@ -1,1 +1,0 @@
-# vald benchmark operator
