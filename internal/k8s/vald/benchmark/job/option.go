@@ -23,7 +23,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
 
-
 type Option func(*reconciler) error
 
 var defaultOpts = []Option{}

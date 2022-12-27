@@ -35,35 +35,37 @@ spec:
       subresources:
         status: {}
       additionalPrinterColumns:
-      - jsonPath: .spec.replica
-        name: REPLICAS
-        type: integer
-      - jsonPath: .status
-        name: STATUS
-        type: string
+        - jsonPath: .spec.replica
+          name: REPLICAS
+          type: integer
+        - jsonPath: .status
+          name: STATUS
+          type: string
       schema:
         openAPIV3Schema:
           description: ValdBenchmarkJob is the Schema for the valdbenchmarkjobs API
           type: object
           properties:
             apiVersion:
-              description: 'APIVersion defines the versioned schema of this representation
+              description:
+                "APIVersion defines the versioned schema of this representation
                 of an object. Servers should convert recognized schemas to the latest
-                internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+                internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources"
               type: string
             kind:
-              description: 'Kind is a string value representing the REST resource this
+              description:
+                "Kind is a string value representing the REST resource this
                 object represents. Servers may infer this from the endpoint the client
-                submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+                submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds"
               type: string
             metadata:
               type: object
             status:
               description: ValdBenchmarkJobStatus defines the observed state of ValdBenchmarkJob
               enum:
-              - NotReady
-              - Available
-              - Healthy
+                - NotReady
+                - Available
+                - Healthy
               type: string
             spec:
               description: ValdBenchmarkJobSpec defines the desired state of ValdBenchmarkJob
@@ -86,12 +88,12 @@ spec:
                         start:
                           type: integer
                       required:
-                      - end
-                      - start
+                        - end
+                        - start
                       type: object
                   required:
-                  - group
-                  - name
+                    - group
+                    - name
                   type: object
                 dimension:
                   type: integer
@@ -124,8 +126,8 @@ spec:
                       type:
                         type: string
                     required:
-                    - name
-                    - type
+                      - name
+                      - type
                     type: object
                   type: array
                 target:
@@ -136,8 +138,8 @@ spec:
                     port:
                       type: integer
                   required:
-                  - host
-                  - port
+                    - host
+                    - port
                   type: object
                 timeout:
                   type: string
@@ -311,11 +313,11 @@ spec:
                     wait_for_ready:
                       type: boolean
               required:
-              - dimension
-              - epsilon
-              - iter
-              - job_type
-              - min_num
-              - num
-              - radius
-              - timeout
+                - dimension
+                - epsilon
+                - iter
+                - job_type
+                - min_num
+                - num
+                - radius
+                - timeout

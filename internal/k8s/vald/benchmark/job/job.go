@@ -101,7 +101,7 @@ func (r *reconciler) Reconcile(ctx context.Context, req reconcile.Request) (res 
 		return
 	}
 
-	var jobs = make(map[string]v1.BenchmarkJobSpec, 0)
+	jobs := make(map[string]v1.BenchmarkJobSpec, 0)
 	for _, item := range bj.Items {
 		name := strconv.FormatInt(time.Now().UnixNano(), 10)
 		jobs[name] = item.Spec

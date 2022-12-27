@@ -90,7 +90,7 @@ func (r *reconciler) Reconcile(ctx context.Context, req reconcile.Request) (res 
 		return
 	}
 
-	var scenarios = make(map[string]v1.ValdBenchmarkScenarioSpec, 0)
+	scenarios := make(map[string]v1.ValdBenchmarkScenarioSpec, 0)
 	for _, item := range bs.Items {
 		name := strconv.FormatInt(time.Now().UnixNano(), 10)
 		scenarios[name] = item.Spec
