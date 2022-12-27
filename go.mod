@@ -60,7 +60,7 @@ replace (
 	github.com/armon/go-radix => github.com/armon/go-radix v1.0.0
 	github.com/armon/go-socks5 => github.com/armon/go-socks5 v0.0.0-20160902184237-e75332964ef5
 	github.com/asaskevich/govalidator => github.com/asaskevich/govalidator v0.0.0-20210307081110-f21760c49a8d
-	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.44.167
+	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.44.168
 	github.com/aws/aws-sdk-go-v2 => github.com/aws/aws-sdk-go-v2 v1.17.3
 	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream => github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.4.10
 	github.com/aws/aws-sdk-go-v2/config => github.com/aws/aws-sdk-go-v2/config v1.18.7
@@ -291,7 +291,7 @@ replace (
 	github.com/jackc/pgmock => github.com/jackc/pgmock v0.0.0-20210724152146-4ad1a8207f65
 	github.com/jackc/pgpassfile => github.com/jackc/pgpassfile v1.0.0
 	github.com/jackc/pgproto3/v2 => github.com/jackc/pgproto3/v2 v2.3.1
-	github.com/jackc/pgservicefile => github.com/jackc/pgservicefile v0.0.0-20200714003250-2b9c44734f2b
+	github.com/jackc/pgservicefile => github.com/jackc/pgservicefile v0.0.0-20221227161230-091c0ba34f0a
 	github.com/jackc/pgtype => github.com/jackc/pgtype v1.13.0
 	github.com/jackc/pgx/v4 => github.com/jackc/pgx/v4 v4.17.2
 	github.com/jackc/puddle => github.com/jackc/puddle v1.3.0
@@ -399,7 +399,7 @@ replace (
 	github.com/quasilyte/stdinfo => github.com/quasilyte/stdinfo v0.0.0-20220114132959-f7386bf02567
 	github.com/rogpeppe/fastuuid => github.com/rogpeppe/fastuuid v1.2.0
 	github.com/rogpeppe/go-internal => github.com/rogpeppe/go-internal v1.9.0
-	github.com/rs/cors => github.com/rs/cors v1.8.2
+	github.com/rs/cors => github.com/rs/cors v1.8.3
 	github.com/rs/xid => github.com/rs/xid v1.4.0
 	github.com/rs/zerolog => github.com/rs/zerolog v1.28.0
 	github.com/russross/blackfriday/v2 => github.com/russross/blackfriday/v2 v2.1.0
@@ -435,8 +435,8 @@ replace (
 	github.com/tidwall/pretty => github.com/tidwall/pretty v1.2.1
 	github.com/tmc/grpc-websocket-proxy => github.com/tmc/grpc-websocket-proxy v0.0.0-20220101234140-673ab2c3ae75
 	github.com/tv42/httpunix => github.com/tv42/httpunix v0.0.0-20191220191345-2ba4b9c3382c
-	github.com/ugorji/go => github.com/ugorji/go v1.2.7
-	github.com/ugorji/go/codec => github.com/ugorji/go/codec v1.2.7
+	github.com/ugorji/go => github.com/ugorji/go v1.2.8
+	github.com/ugorji/go/codec => github.com/ugorji/go/codec v1.2.8
 	github.com/urfave/cli => github.com/urfave/cli v1.22.10
 	github.com/vdaas/vald-client-go => github.com/vdaas/vald-client-go v1.6.3
 	github.com/vishvananda/netlink => github.com/vishvananda/netlink v1.1.0
@@ -486,8 +486,8 @@ replace (
 	go4.org/unsafe/assume-no-moving-gc => go4.org/unsafe/assume-no-moving-gc v0.0.0-20220617031537-928513b29760
 	gocloud.dev => gocloud.dev v0.27.0
 	golang.org/x/crypto => golang.org/x/crypto v0.4.0
-	golang.org/x/exp => golang.org/x/exp v0.0.0-20221217163422-3c43f8badb15
-	golang.org/x/exp/typeparams => golang.org/x/exp/typeparams v0.0.0-20221217163422-3c43f8badb15
+	golang.org/x/exp => golang.org/x/exp v0.0.0-20221227203929-1b447090c38c
+	golang.org/x/exp/typeparams => golang.org/x/exp/typeparams v0.0.0-20221227203929-1b447090c38c
 	golang.org/x/image => golang.org/x/image v0.2.0
 	golang.org/x/lint => golang.org/x/lint v0.0.0-20210508222113-6edffad5e616
 	golang.org/x/mobile => golang.org/x/mobile v0.0.0-20221110043201-43a038452099
@@ -507,7 +507,7 @@ replace (
 	gonum.org/v1/plot => gonum.org/v1/plot v0.12.0
 	google.golang.org/api => google.golang.org/api v0.105.0
 	google.golang.org/appengine => google.golang.org/appengine v1.6.7
-	google.golang.org/genproto => google.golang.org/genproto v0.0.0-20221207170731-23e4bf6bdc37
+	google.golang.org/genproto => google.golang.org/genproto v0.0.0-20221227171554-f9683d7f8bef
 	google.golang.org/grpc => google.golang.org/grpc v1.51.0
 	google.golang.org/grpc/cmd/protoc-gen-go-grpc => google.golang.org/grpc/cmd/protoc-gen-go-grpc v1.2.0
 	google.golang.org/protobuf => google.golang.org/protobuf v1.28.1

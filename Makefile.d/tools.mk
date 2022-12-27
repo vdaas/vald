@@ -67,9 +67,9 @@ kubectl/install: $(BINDIR)/kubectl
 ## https://github.com/chaos-mesh/chaos-mesh/blob/master/install.sh#L291
 .PHONY: kubectl/install/linux/v1.23.6
 kubectl/install/linux/v1.23.6:
-	curl -L "https://storage.googleapis.com/kubernetes-release/release/v1.23.6/bin/linux/amd64/kubectl" -o ./kubectl
-	chmod a+x ./kubectl
-	mv ./kubectl $(BINDIR)/kubectl
+	curl -L "https://storage.googleapis.com/kubernetes-release/release/v1.23.6/bin/linux/amd64/kubectl" -o $(ROOTDIR)/kubectl
+	chmod a+x $(ROOTDIR)/kubectl
+	mv $(ROOTDIR)/kubectl $(BINDIR)/kubectl
 
 ifeq ($(UNAME),Darwin)
 $(BINDIR)/kubectl:

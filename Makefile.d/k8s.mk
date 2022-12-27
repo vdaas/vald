@@ -200,7 +200,7 @@ k8s/metrics/prometheus/delete:
 ## deploy prometheus operator
 k8s/metrics/prometheus/operator/deploy:
 	helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
-	helm install ${PROMETHEUS_RELEASE_NAME} prometheus-community/kube-prometheus-stack --version ${PROMETHEUS_VERSION} --set grafana.enabled=false
+	helm install ${PROMETHEUS_RELEASE_NAME} prometheus-community/kube-prometheus-stack --version ${PROMETHEUS_STACK_VERSION} --set grafana.enabled=false
 
 .PHONY: k8s/metrics/prometheus/operator/delete
 ## delete prometheus operator
@@ -314,14 +314,14 @@ k8s/otel/operator/uninstall:
 .PHONY: k8s/otel/collector/install
 ## deploy opentelemetry collector
 k8s/otel/collector/install:
-	kubectl apply -f ./k8s/metrics/otel/collector.yaml
-	kubectl apply -f ./k8s/metrics/otel/pod-monitor.yaml
+	kubectl apply -f $(ROOTDIR)/k8s/metrics/otel/collector.yaml
+	kubectl apply -f $(ROOTDIR)/k8s/metrics/otel/pod-monitor.yaml
 
 .PHONY: k8s/otel/collector/uninstall
 ## delete opentelemetry collector
 k8s/otel/collector/uninstall:
-	kubectl delete -f ./k8s/metrics/otel/collector.yaml
-	kubectl delete -f ./k8s/metrics/otel/pod-monitor.yaml
+	kubectl delete -f $(ROOTDIR)/k8s/metrics/otel/collector.yaml
+	kubectl delete -f $(ROOTDIR)/k8s/metrics/otel/pod-monitor.yaml
 
 .PHONY: telepresence/install
 ## install telepresence
