@@ -18,39 +18,98 @@ package job
 
 import (
 	"context"
+	"strconv"
+	"time"
 
 	"github.com/vdaas/vald/internal/k8s"
+	v1 "github.com/vdaas/vald/internal/k8s/vald/benchmark/api/v1"
+	"github.com/vdaas/vald/internal/log"
+	"k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
+	"sigs.k8s.io/controller-runtime/pkg/scheme"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 )
 
 type BenchmarkJobWatcher k8s.ResourceController
 
+var (
+	// GroupVersion is group version used to register these objects
+	GroupVersion = schema.GroupVersion{Group: "vald.benchmark.job", Version: "v1"}
+	// SchemeBuilder is used to add go types to the GroupVersionKind scheme
+	SchemeBuilder = &scheme.Builder{GroupVersion: GroupVersion}
+	// AddToScheme adds the types in this group-version to the given scheme.
+	AddToScheme = SchemeBuilder.AddToScheme
+)
+
 type reconciler struct {
 	mgr         manager.Manager
 	name        string
-	namespace   string
+	namespaces  []string
 	onError     func(err error)
-	onReconcile func(jobList map[string][]BenchmarkJobSpec)
+	onReconcile func(ctx context.Context, jobList map[string]v1.BenchmarkJobSpec)
 	lopts       []client.ListOption
 }
 
-func New(opts ...Option) BenchmarkJobWatcher {
+func New(opts ...Option) (BenchmarkJobWatcher, error) {
 	r := new(reconciler)
 	for _, opt := range append(defaultOpts, opts...) {
 		// TODO: impl error handling after implement functional option
 		opt(r)
 	}
-	return r
+	return r, nil
 }
 
-func (r *reconciler) AddListOpts(opt client.ListOption) {}
+func (r *reconciler) AddListOpts(opt client.ListOption) {
+	if opt == nil {
+		return
+	}
+	if r.lopts == nil {
+		r.lopts = make([]client.ListOption, 0, 1)
+	}
+	r.lopts = append(r.lopts, opt)
+}
 
 func (r *reconciler) Reconcile(ctx context.Context, req reconcile.Request) (res reconcile.Result, err error) {
+	bj := new(v1.BenchmarkJobList)
+
+	if r.lopts == nil {
+		err = r.mgr.GetClient().List(ctx, bj, r.lopts...)
+	} else {
+		err = r.mgr.GetClient().List(ctx, bj)
+	}
+
+	if err != nil {
+		if r.onError != nil {
+			r.onError(err)
+		}
+		res = reconcile.Result{
+			Requeue:      true,
+			RequeueAfter: time.Millisecond * 100,
+		}
+		if errors.IsNotFound(err) {
+			log.Errorf("not found: %s", err)
+			return reconcile.Result{
+				Requeue:      true,
+				RequeueAfter: time.Second,
+			}, nil
+		}
+		return
+	}
+
+	var jobs = make(map[string]v1.BenchmarkJobSpec, 0)
+	for _, item := range bj.Items {
+		name := strconv.FormatInt(time.Now().UnixNano(), 10)
+		jobs[name] = item.Spec
+	}
+
+	if r.onReconcile != nil {
+		r.onReconcile(ctx, jobs)
+	}
 	return
 }
 
@@ -59,11 +118,17 @@ func (r *reconciler) GetName() string {
 }
 
 func (r *reconciler) NewReconciler(ctx context.Context, mgr manager.Manager) reconcile.Reconciler {
+	if r.mgr == nil && mgr != nil {
+		r.mgr = mgr
+	}
+
+	v1.AddToScheme(r.mgr.GetScheme())
+
 	return r
 }
 
 func (r *reconciler) For() (client.Object, []builder.ForOption) {
-	return nil, nil
+	return new(v1.BenchmarkJob), nil
 }
 
 func (r *reconciler) Owns() (client.Object, []builder.OwnsOption) {

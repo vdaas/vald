@@ -35,8 +35,8 @@ type Config struct {
 	// Observability represent observability configurations
 	Observability *config.Observability `json:"observability" yaml:"observability"`
 
-	// Job represents benchmark job configurations
-	Job *config.BenchmarkJob `json:"job" yaml:"job"`
+	// Scenario represents benchmark scenario configurations
+	Scenario *config.BenchmarkScenario `json:"scenario" yaml:"scenario"`
 }
 
 // NewConfig represents the set config from the given setting file path.
@@ -52,27 +52,16 @@ func NewConfig(path string) (cfg *Config, err error) {
 
 	if cfg.Server != nil {
 		cfg.Server = cfg.Server.Bind()
-	} else {
-		cfg.Server = new(config.Servers)
 	}
 
 	if cfg.Observability != nil {
 		cfg.Observability = cfg.Observability.Bind()
-	} else {
-		cfg.Observability = new(config.Observability)
 	}
 
-	if cfg.Job != nil {
-		cfg.Job = cfg.Job.Bind()
+	if cfg.Scenario != nil {
+		cfg.Scenario = cfg.Scenario.Bind()
 	} else {
-		cfg.Job = new(config.BenchmarkJob)
-	}
-
-	if cfg.Job.GatewayClient == nil {
-		cfg.Job.GatewayClient = new(config.GRPCClient)
-		cfg.Job.GatewayClient.Addrs = []string{
-			"vald-lb-gateway.default.svc.cluster.local:8081",
-		}
+		cfg.Scenario = new(config.BenchmarkScenario)
 	}
 
 	return cfg, nil
@@ -152,16 +141,34 @@ func NewConfig(path string) (cfg *Config, err error) {
 // 				CA:      "/path/to/ca",
 // 			},
 // 		},
-// 		Job: &config.BenchmarkJob{
-//			JobType:   "search",
-//			Dataset:   "fashion-mnist-784-euc",
-//			Dimension: 784,
-//			Iter:      100,
-//			Num:       10,
-//			MinNum:    5,
-//			Radius:    -1,
-//			Epsilon:   0.1,
-//			Timeout:   "5s",
+// 		Scenario: &config.BenchmarkScenario{
+// 			Target: &config.BenchmarkTarget{
+// 				Host: "localhost",
+// 				Port: 8081,
+// 			},
+// 			Dataset: &config.BenchmarkDataset{
+// 				Name:    "fashion-mnist-784-euc",
+// 				Group:   "Train",
+// 				Indexes: 10000,
+// 				Range: &config.BenchmarkDatasetRange{
+// 					Start: 100000,
+// 					End:   200000,
+// 				},
+// 			},
+// 			Jobs: []*config.BenchmarkJob{
+// 				{
+// 					JobType:    "search",
+// 					Replica:    1,
+// 					Repetition: 1,
+// 					Dimension:  784,
+// 					Iter:       10000,
+// 					Num:        10,
+// 					MinNum:     100,
+// 					Radius:     -1,
+// 					Epsilon:    0.1,
+// 					Timeout:    "5s",
+// 				},
+// 			},
 // 		},
 // 	}
 // 	fmt.Println(config.ToRawYaml(d))

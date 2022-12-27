@@ -20,72 +20,44 @@ package usecase
 import (
 	"context"
 
-	"github.com/vdaas/vald/internal/client/v1/client/vald"
 	iconf "github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/grpc/interceptor/server/recover"
+
 	"github.com/vdaas/vald/internal/observability"
 	infometrics "github.com/vdaas/vald/internal/observability/metrics/info"
 	"github.com/vdaas/vald/internal/runner"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/servers/server"
 	"github.com/vdaas/vald/internal/servers/starter"
-	"github.com/vdaas/vald/internal/test/data/hdf5"
-	"github.com/vdaas/vald/pkg/tools/benchmark/job/config"
-	handler "github.com/vdaas/vald/pkg/tools/benchmark/job/handler/grpc"
-	"github.com/vdaas/vald/pkg/tools/benchmark/job/handler/rest"
-	"github.com/vdaas/vald/pkg/tools/benchmark/job/router"
-	"github.com/vdaas/vald/pkg/tools/benchmark/job/service"
+	"github.com/vdaas/vald/pkg/tools/benchmark/operator/config"
+	handler "github.com/vdaas/vald/pkg/tools/benchmark/operator/handler/grpc"
+	"github.com/vdaas/vald/pkg/tools/benchmark/operator/handler/rest"
+	"github.com/vdaas/vald/pkg/tools/benchmark/operator/router"
+	"github.com/vdaas/vald/pkg/tools/benchmark/operator/service"
 )
 
 type run struct {
 	eg            errgroup.Group
 	cfg           *config.Config
-	job           service.Job
+	scenario      service.Scenario
 	h             handler.Benchmark
 	server        starter.Server
 	observability observability.Observability
 }
 
 func New(cfg *config.Config) (r runner.Runner, err error) {
-	log.Info("pkg/tools/benchmark/job/cmd start")
+	log.Info("pkg/tools/benchmark/scenario/cmd start")
+
 	eg := errgroup.Get()
-	copts, err := cfg.Job.GatewayClient.Opts()
-	if err != nil {
-		return nil, err
-	}
 
-	c, err := vald.New(
-		vald.WithAddrs(cfg.Job.GatewayClient.Addrs...),
-		vald.WithClient(grpc.New(copts...)),
-	)
-	if err != nil {
-		return nil, err
-	}
+	log.Info("pkg/tools/benchmark/scenario/cmd success d")
 
-	d, err := hdf5.New(
-		hdf5.WithNameByString(cfg.Job.Dataset.Name),
-	)
-	if err != nil {
-		return nil, err
-	}
-	log.Info("pkg/tools/benchmark/job/cmd success d")
-
-	job, err := service.New(
+	sc, err := service.New(
 		service.WithErrGroup(eg),
-		service.WithValdClient(c),
-		service.WithJobTypeByString(cfg.Job.JobType),
-		service.WithDimension(cfg.Job.Dimension),
-		service.WithIter(cfg.Job.Iter),
-		service.WithNum(cfg.Job.Num),
-		service.WithMinNum(cfg.Job.MinNum),
-		service.WithRadius(cfg.Job.Radius),
-		service.WithEpsilon(cfg.Job.Epsilon),
-		service.WithTimeout(cfg.Job.Timeout),
-		service.WithHdf5(d),
 	)
 	if err != nil {
 		return nil, err
@@ -118,7 +90,7 @@ func New(cfg *config.Config) (r runner.Runner, err error) {
 	if cfg.Observability.Enabled {
 		obs, err = observability.NewWithConfig(
 			cfg.Observability,
-			infometrics.New("vald_benchmark_job_info", "Benchmark Job info", *cfg.Job),
+			infometrics.New("vald_benchmark_scenario_info", "Benchmark Scenario info", *cfg.Scenario),
 		)
 		if err != nil {
 			return nil, err
@@ -148,12 +120,12 @@ func New(cfg *config.Config) (r runner.Runner, err error) {
 	if err != nil {
 		return nil, err
 	}
-	log.Info("pkg/tools/benchmark/job/cmd end")
+	log.Info("pkg/tools/benchmark/scenario/cmd end")
 
 	return &run{
 		eg:            eg,
 		cfg:           cfg,
-		job:           job,
+		scenario:      sc,
 		h:             h,
 		server:        srv,
 		observability: obs,
@@ -166,8 +138,8 @@ func (r *run) PreStart(ctx context.Context) error {
 			return err
 		}
 	}
-	if r.job != nil {
-		return r.job.PreStart(ctx)
+	if r.scenario != nil {
+		return r.scenario.PreStart(ctx)
 	}
 	return nil
 }
@@ -180,8 +152,8 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 		if r.observability != nil {
 			oech = r.observability.Start(ctx)
 		}
-		dech, err = r.job.Start(ctx)
 
+		dech, err = r.scenario.Start(ctx)
 		if err != nil {
 			ech <- err
 			return err

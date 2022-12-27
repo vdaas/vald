@@ -154,15 +154,15 @@ observability:
       api_addr: ""
       instance: ""
       zone: ""
-  job:
-    job_type: "search"
-    dimension: 784
-    iter: 100
-    num: 10
-    minNum: 10
-    radius: -1
-    epsilon: 0.1
-    timeout: 5s
-    gateway_client:
-      addrs:
-        - vald-lb-gateway.default.svc.cluster.local:8081
+job:
+  job_type: "search"
+  dimension: 784
+  iter: 100
+  num: 10
+  minNum: 10
+  radius: -1
+  epsilon: 0.1
+  timeout: 5s
+  gateway_client:
+    addrs:
+      - vald-lb-gateway.default.svc.cluster.local:8081
