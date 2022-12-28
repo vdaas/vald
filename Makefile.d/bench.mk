@@ -270,14 +270,14 @@ metrics/agent: \
 metrics/agent/core/ngt: $(ROOTDIR)/metrics.gob
 
 $(ROOTDIR)/metrics.gob:
-	go test -mod=readonly -v --timeout=1h ./hack/benchmark/e2e/agent/core/ngt/... -output=$(ROOTDIR)/metrics.gob
+	go test -mod=readonly -v --timeout=1h $(ROOTDIR)/hack/benchmark/e2e/agent/core/ngt/... -output=$(ROOTDIR)/metrics.gob
 
 .PHONY: metrics/chart
 ## create metrics chart
 metrics/chart: $(ROOTDIR)/assets/image/metrics.svg
 
 $(ROOTDIR)/assets/image/metrics.svg: $(ROOTDIR)/metrics.gob
-	go run ./hack/tools/metrics/main.go -title "Recall-QPS" -x Recall -y QPS -width 960 -height 720 -input=$(ROOTDIR)/metrics.gob -output=$(ROOTDIR)/assets/image/metrics.svg
+	go run $(ROOTDIR)/hack/tools/metrics/main.go -title "Recall-QPS" -x Recall -y QPS -width 960 -height 720 -input=$(ROOTDIR)/metrics.gob -output=$(ROOTDIR)/assets/image/metrics.svg
 
 .PHONY: bench/kill
 ## kill all benchmark processes

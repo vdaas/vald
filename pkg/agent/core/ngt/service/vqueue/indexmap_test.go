@@ -1,20 +1,24 @@
+//
 // Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//	https://www.apache.org/licenses/LICENSE-2.0
+//    https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+//
+
 package vqueue
 
 import (
 	"reflect"
+	"sync"
 	"sync/atomic"
 	"testing"
 	"unsafe"
@@ -23,22 +27,22 @@ import (
 	"github.com/vdaas/vald/internal/test/goleak"
 )
 
-func Test_newEntryUiim(t *testing.T) {
+func Test_newEntryIndexMap(t *testing.T) {
 	type args struct {
 		i index
 	}
 	type want struct {
-		want *entryUiim
+		want *entryIndexMap
 	}
 	type test struct {
 		name       string
 		args       args
 		want       want
-		checkFunc  func(want, *entryUiim) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		checkFunc  func(want, *entryIndexMap) error
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
-	defaultCheckFunc := func(w want, got *entryUiim) error {
+	defaultCheckFunc := func(w want, got *entryIndexMap) error {
 		if !reflect.DeepEqual(got, w.want) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
@@ -54,6 +58,12 @@ func Test_newEntryUiim(t *testing.T) {
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -67,6 +77,12 @@ func Test_newEntryUiim(t *testing.T) {
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -78,17 +94,17 @@ func Test_newEntryUiim(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
 
-			got := newEntryUiim(test.args.i)
+			got := newEntryIndexMap(test.args.i)
 			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -96,13 +112,14 @@ func Test_newEntryUiim(t *testing.T) {
 	}
 }
 
-func Test_uiim_Load(t *testing.T) {
+func Test_indexMap_Load(t *testing.T) {
 	type args struct {
 		key string
 	}
 	type fields struct {
+		mu     sync.Mutex
 		read   atomic.Value
-		dirty  map[string]*entryUiim
+		dirty  map[string]*entryIndexMap
 		misses int
 	}
 	type want struct {
@@ -115,8 +132,8 @@ func Test_uiim_Load(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, index, bool) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, gotValue index, gotOk bool) error {
 		if !reflect.DeepEqual(gotValue, w.wantValue) {
@@ -136,12 +153,19 @@ func Test_uiim_Load(t *testing.T) {
 		           key: "",
 		       },
 		       fields: fields {
+		           mu: sync.Mutex{},
 		           read: nil,
 		           dirty: nil,
 		           misses: 0,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -154,12 +178,19 @@ func Test_uiim_Load(t *testing.T) {
 		           key: "",
 		           },
 		           fields: fields {
+		           mu: sync.Mutex{},
 		           read: nil,
 		           dirty: nil,
 		           misses: 0,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -171,16 +202,17 @@ func Test_uiim_Load(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
-			m := &uiim{
+			m := &indexMap{
+				mu:     test.fields.mu,
 				read:   test.fields.read,
 				dirty:  test.fields.dirty,
 				misses: test.fields.misses,
@@ -194,7 +226,7 @@ func Test_uiim_Load(t *testing.T) {
 	}
 }
 
-func Test_entryUiim_load(t *testing.T) {
+func Test_entryIndexMap_load(t *testing.T) {
 	type fields struct {
 		p unsafe.Pointer
 	}
@@ -207,8 +239,8 @@ func Test_entryUiim_load(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, index, bool) error
-		beforeFunc func()
-		afterFunc  func()
+		beforeFunc func(*testing.T)
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want, gotValue index, gotOk bool) error {
 		if !reflect.DeepEqual(gotValue, w.wantValue) {
@@ -229,6 +261,12 @@ func Test_entryUiim_load(t *testing.T) {
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -242,6 +280,12 @@ func Test_entryUiim_load(t *testing.T) {
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -253,16 +297,16 @@ func Test_entryUiim_load(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
-			e := &entryUiim{
+			e := &entryIndexMap{
 				p: test.fields.p,
 			}
 
@@ -274,14 +318,15 @@ func Test_entryUiim_load(t *testing.T) {
 	}
 }
 
-func Test_uiim_Store(t *testing.T) {
+func Test_indexMap_Store(t *testing.T) {
 	type args struct {
 		key   string
 		value index
 	}
 	type fields struct {
+		mu     sync.Mutex
 		read   atomic.Value
-		dirty  map[string]*entryUiim
+		dirty  map[string]*entryIndexMap
 		misses int
 	}
 	type want struct{}
@@ -291,8 +336,8 @@ func Test_uiim_Store(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want) error {
 		return nil
@@ -307,12 +352,19 @@ func Test_uiim_Store(t *testing.T) {
 		           value: index{},
 		       },
 		       fields: fields {
+		           mu: sync.Mutex{},
 		           read: nil,
 		           dirty: nil,
 		           misses: 0,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -326,12 +378,19 @@ func Test_uiim_Store(t *testing.T) {
 		           value: index{},
 		           },
 		           fields: fields {
+		           mu: sync.Mutex{},
 		           read: nil,
 		           dirty: nil,
 		           misses: 0,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -343,16 +402,17 @@ func Test_uiim_Store(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
-			m := &uiim{
+			m := &indexMap{
+				mu:     test.fields.mu,
 				read:   test.fields.read,
 				dirty:  test.fields.dirty,
 				misses: test.fields.misses,
@@ -366,7 +426,7 @@ func Test_uiim_Store(t *testing.T) {
 	}
 }
 
-func Test_entryUiim_tryStore(t *testing.T) {
+func Test_entryIndexMap_tryStore(t *testing.T) {
 	type args struct {
 		i *index
 	}
@@ -382,8 +442,8 @@ func Test_entryUiim_tryStore(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, bool) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, got bool) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -404,6 +464,12 @@ func Test_entryUiim_tryStore(t *testing.T) {
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -420,6 +486,12 @@ func Test_entryUiim_tryStore(t *testing.T) {
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -431,16 +503,16 @@ func Test_entryUiim_tryStore(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
-			e := &entryUiim{
+			e := &entryIndexMap{
 				p: test.fields.p,
 			}
 
@@ -452,7 +524,7 @@ func Test_entryUiim_tryStore(t *testing.T) {
 	}
 }
 
-func Test_entryUiim_unexpungeLocked(t *testing.T) {
+func Test_entryIndexMap_unexpungeLocked(t *testing.T) {
 	type fields struct {
 		p unsafe.Pointer
 	}
@@ -464,8 +536,8 @@ func Test_entryUiim_unexpungeLocked(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, bool) error
-		beforeFunc func()
-		afterFunc  func()
+		beforeFunc func(*testing.T)
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want, gotWasExpunged bool) error {
 		if !reflect.DeepEqual(gotWasExpunged, w.wantWasExpunged) {
@@ -483,6 +555,12 @@ func Test_entryUiim_unexpungeLocked(t *testing.T) {
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -496,6 +574,12 @@ func Test_entryUiim_unexpungeLocked(t *testing.T) {
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -507,16 +591,16 @@ func Test_entryUiim_unexpungeLocked(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
-			e := &entryUiim{
+			e := &entryIndexMap{
 				p: test.fields.p,
 			}
 
@@ -528,7 +612,7 @@ func Test_entryUiim_unexpungeLocked(t *testing.T) {
 	}
 }
 
-func Test_entryUiim_storeLocked(t *testing.T) {
+func Test_entryIndexMap_storeLocked(t *testing.T) {
 	type args struct {
 		i *index
 	}
@@ -542,8 +626,8 @@ func Test_entryUiim_storeLocked(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want) error {
 		return nil
@@ -561,6 +645,12 @@ func Test_entryUiim_storeLocked(t *testing.T) {
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -577,6 +667,12 @@ func Test_entryUiim_storeLocked(t *testing.T) {
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -588,16 +684,16 @@ func Test_entryUiim_storeLocked(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
-			e := &entryUiim{
+			e := &entryIndexMap{
 				p: test.fields.p,
 			}
 
@@ -609,14 +705,15 @@ func Test_entryUiim_storeLocked(t *testing.T) {
 	}
 }
 
-func Test_uiim_LoadOrStore(t *testing.T) {
+func Test_indexMap_LoadOrStore(t *testing.T) {
 	type args struct {
 		key   string
 		value index
 	}
 	type fields struct {
+		mu     sync.Mutex
 		read   atomic.Value
-		dirty  map[string]*entryUiim
+		dirty  map[string]*entryIndexMap
 		misses int
 	}
 	type want struct {
@@ -629,8 +726,8 @@ func Test_uiim_LoadOrStore(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, index, bool) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, gotActual index, gotLoaded bool) error {
 		if !reflect.DeepEqual(gotActual, w.wantActual) {
@@ -651,12 +748,19 @@ func Test_uiim_LoadOrStore(t *testing.T) {
 		           value: index{},
 		       },
 		       fields: fields {
+		           mu: sync.Mutex{},
 		           read: nil,
 		           dirty: nil,
 		           misses: 0,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -670,12 +774,19 @@ func Test_uiim_LoadOrStore(t *testing.T) {
 		           value: index{},
 		           },
 		           fields: fields {
+		           mu: sync.Mutex{},
 		           read: nil,
 		           dirty: nil,
 		           misses: 0,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -687,16 +798,17 @@ func Test_uiim_LoadOrStore(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
-			m := &uiim{
+			m := &indexMap{
+				mu:     test.fields.mu,
 				read:   test.fields.read,
 				dirty:  test.fields.dirty,
 				misses: test.fields.misses,
@@ -710,7 +822,7 @@ func Test_uiim_LoadOrStore(t *testing.T) {
 	}
 }
 
-func Test_entryUiim_tryLoadOrStore(t *testing.T) {
+func Test_entryIndexMap_tryLoadOrStore(t *testing.T) {
 	type args struct {
 		i index
 	}
@@ -728,8 +840,8 @@ func Test_entryUiim_tryLoadOrStore(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, index, bool, bool) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, gotActual index, gotLoaded bool, gotOk bool) error {
 		if !reflect.DeepEqual(gotActual, w.wantActual) {
@@ -756,6 +868,12 @@ func Test_entryUiim_tryLoadOrStore(t *testing.T) {
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -772,6 +890,12 @@ func Test_entryUiim_tryLoadOrStore(t *testing.T) {
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -783,16 +907,16 @@ func Test_entryUiim_tryLoadOrStore(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
-			e := &entryUiim{
+			e := &entryIndexMap{
 				p: test.fields.p,
 			}
 
@@ -804,13 +928,14 @@ func Test_entryUiim_tryLoadOrStore(t *testing.T) {
 	}
 }
 
-func Test_uiim_LoadAndDelete(t *testing.T) {
+func Test_indexMap_LoadAndDelete(t *testing.T) {
 	type args struct {
 		key string
 	}
 	type fields struct {
+		mu     sync.Mutex
 		read   atomic.Value
-		dirty  map[string]*entryUiim
+		dirty  map[string]*entryIndexMap
 		misses int
 	}
 	type want struct {
@@ -823,8 +948,8 @@ func Test_uiim_LoadAndDelete(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, index, bool) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, gotValue index, gotLoaded bool) error {
 		if !reflect.DeepEqual(gotValue, w.wantValue) {
@@ -844,12 +969,19 @@ func Test_uiim_LoadAndDelete(t *testing.T) {
 		           key: "",
 		       },
 		       fields: fields {
+		           mu: sync.Mutex{},
 		           read: nil,
 		           dirty: nil,
 		           misses: 0,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -862,12 +994,19 @@ func Test_uiim_LoadAndDelete(t *testing.T) {
 		           key: "",
 		           },
 		           fields: fields {
+		           mu: sync.Mutex{},
 		           read: nil,
 		           dirty: nil,
 		           misses: 0,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -879,16 +1018,17 @@ func Test_uiim_LoadAndDelete(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
-			m := &uiim{
+			m := &indexMap{
+				mu:     test.fields.mu,
 				read:   test.fields.read,
 				dirty:  test.fields.dirty,
 				misses: test.fields.misses,
@@ -902,13 +1042,14 @@ func Test_uiim_LoadAndDelete(t *testing.T) {
 	}
 }
 
-func Test_uiim_Delete(t *testing.T) {
+func Test_indexMap_Delete(t *testing.T) {
 	type args struct {
 		key string
 	}
 	type fields struct {
+		mu     sync.Mutex
 		read   atomic.Value
-		dirty  map[string]*entryUiim
+		dirty  map[string]*entryIndexMap
 		misses int
 	}
 	type want struct{}
@@ -918,8 +1059,8 @@ func Test_uiim_Delete(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want) error {
 		return nil
@@ -933,12 +1074,19 @@ func Test_uiim_Delete(t *testing.T) {
 		           key: "",
 		       },
 		       fields: fields {
+		           mu: sync.Mutex{},
 		           read: nil,
 		           dirty: nil,
 		           misses: 0,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -951,12 +1099,19 @@ func Test_uiim_Delete(t *testing.T) {
 		           key: "",
 		           },
 		           fields: fields {
+		           mu: sync.Mutex{},
 		           read: nil,
 		           dirty: nil,
 		           misses: 0,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -968,16 +1123,17 @@ func Test_uiim_Delete(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
-			m := &uiim{
+			m := &indexMap{
+				mu:     test.fields.mu,
 				read:   test.fields.read,
 				dirty:  test.fields.dirty,
 				misses: test.fields.misses,
@@ -991,7 +1147,7 @@ func Test_uiim_Delete(t *testing.T) {
 	}
 }
 
-func Test_entryUiim_delete(t *testing.T) {
+func Test_entryIndexMap_delete(t *testing.T) {
 	type fields struct {
 		p unsafe.Pointer
 	}
@@ -1004,8 +1160,8 @@ func Test_entryUiim_delete(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, index, bool) error
-		beforeFunc func()
-		afterFunc  func()
+		beforeFunc func(*testing.T)
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want, gotValue index, gotOk bool) error {
 		if !reflect.DeepEqual(gotValue, w.wantValue) {
@@ -1026,6 +1182,12 @@ func Test_entryUiim_delete(t *testing.T) {
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -1039,6 +1201,12 @@ func Test_entryUiim_delete(t *testing.T) {
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -1050,16 +1218,16 @@ func Test_entryUiim_delete(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
-			e := &entryUiim{
+			e := &entryIndexMap{
 				p: test.fields.p,
 			}
 
@@ -1071,13 +1239,14 @@ func Test_entryUiim_delete(t *testing.T) {
 	}
 }
 
-func Test_uiim_Range(t *testing.T) {
+func Test_indexMap_Range(t *testing.T) {
 	type args struct {
 		f func(key string, value index) bool
 	}
 	type fields struct {
+		mu     sync.Mutex
 		read   atomic.Value
-		dirty  map[string]*entryUiim
+		dirty  map[string]*entryIndexMap
 		misses int
 	}
 	type want struct{}
@@ -1087,8 +1256,8 @@ func Test_uiim_Range(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want) error {
 		return nil
@@ -1102,12 +1271,19 @@ func Test_uiim_Range(t *testing.T) {
 		           f: nil,
 		       },
 		       fields: fields {
+		           mu: sync.Mutex{},
 		           read: nil,
 		           dirty: nil,
 		           misses: 0,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -1120,12 +1296,19 @@ func Test_uiim_Range(t *testing.T) {
 		           f: nil,
 		           },
 		           fields: fields {
+		           mu: sync.Mutex{},
 		           read: nil,
 		           dirty: nil,
 		           misses: 0,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -1137,16 +1320,17 @@ func Test_uiim_Range(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
-			m := &uiim{
+			m := &indexMap{
+				mu:     test.fields.mu,
 				read:   test.fields.read,
 				dirty:  test.fields.dirty,
 				misses: test.fields.misses,
@@ -1160,10 +1344,11 @@ func Test_uiim_Range(t *testing.T) {
 	}
 }
 
-func Test_uiim_missLocked(t *testing.T) {
+func Test_indexMap_missLocked(t *testing.T) {
 	type fields struct {
+		mu     sync.Mutex
 		read   atomic.Value
-		dirty  map[string]*entryUiim
+		dirty  map[string]*entryIndexMap
 		misses int
 	}
 	type want struct{}
@@ -1172,8 +1357,8 @@ func Test_uiim_missLocked(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want) error
-		beforeFunc func()
-		afterFunc  func()
+		beforeFunc func(*testing.T)
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want) error {
 		return nil
@@ -1184,12 +1369,19 @@ func Test_uiim_missLocked(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       fields: fields {
+		           mu: sync.Mutex{},
 		           read: nil,
 		           dirty: nil,
 		           misses: 0,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -1199,12 +1391,19 @@ func Test_uiim_missLocked(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           fields: fields {
+		           mu: sync.Mutex{},
 		           read: nil,
 		           dirty: nil,
 		           misses: 0,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -1216,16 +1415,17 @@ func Test_uiim_missLocked(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
-			m := &uiim{
+			m := &indexMap{
+				mu:     test.fields.mu,
 				read:   test.fields.read,
 				dirty:  test.fields.dirty,
 				misses: test.fields.misses,
@@ -1239,10 +1439,11 @@ func Test_uiim_missLocked(t *testing.T) {
 	}
 }
 
-func Test_uiim_dirtyLocked(t *testing.T) {
+func Test_indexMap_dirtyLocked(t *testing.T) {
 	type fields struct {
+		mu     sync.Mutex
 		read   atomic.Value
-		dirty  map[string]*entryUiim
+		dirty  map[string]*entryIndexMap
 		misses int
 	}
 	type want struct{}
@@ -1251,8 +1452,8 @@ func Test_uiim_dirtyLocked(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want) error
-		beforeFunc func()
-		afterFunc  func()
+		beforeFunc func(*testing.T)
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want) error {
 		return nil
@@ -1263,12 +1464,19 @@ func Test_uiim_dirtyLocked(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       fields: fields {
+		           mu: sync.Mutex{},
 		           read: nil,
 		           dirty: nil,
 		           misses: 0,
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -1278,12 +1486,19 @@ func Test_uiim_dirtyLocked(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           fields: fields {
+		           mu: sync.Mutex{},
 		           read: nil,
 		           dirty: nil,
 		           misses: 0,
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -1295,16 +1510,17 @@ func Test_uiim_dirtyLocked(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
-			m := &uiim{
+			m := &indexMap{
+				mu:     test.fields.mu,
 				read:   test.fields.read,
 				dirty:  test.fields.dirty,
 				misses: test.fields.misses,
@@ -1318,7 +1534,7 @@ func Test_uiim_dirtyLocked(t *testing.T) {
 	}
 }
 
-func Test_entryUiim_tryExpungeLocked(t *testing.T) {
+func Test_entryIndexMap_tryExpungeLocked(t *testing.T) {
 	type fields struct {
 		p unsafe.Pointer
 	}
@@ -1330,8 +1546,8 @@ func Test_entryUiim_tryExpungeLocked(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, bool) error
-		beforeFunc func()
-		afterFunc  func()
+		beforeFunc func(*testing.T)
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want, gotIsExpunged bool) error {
 		if !reflect.DeepEqual(gotIsExpunged, w.wantIsExpunged) {
@@ -1349,6 +1565,12 @@ func Test_entryUiim_tryExpungeLocked(t *testing.T) {
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -1362,6 +1584,12 @@ func Test_entryUiim_tryExpungeLocked(t *testing.T) {
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -1373,16 +1601,16 @@ func Test_entryUiim_tryExpungeLocked(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
-			e := &entryUiim{
+			e := &entryIndexMap{
 				p: test.fields.p,
 			}
 

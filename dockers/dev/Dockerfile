@@ -37,18 +37,21 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     cmake \
     curl \
-    libhdf5-dev \
     g++ \
     gawk \
     gcc \
     git \
     graphviz \
+    jq \
+    libhdf5-dev \
+    liblapack-dev \
+    libomp-dev \
+    libopenblas-dev \
     nodejs \
     npm \
-    jq \
     sed \
-    zip \
     unzip \
+    zip \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 

@@ -62,9 +62,9 @@ define go-lint
 endef
 
 define go-vet
-	cat <(GOARCH=amd64 go vet ./...) \
-	  <(GOARCH=386 go vet ./...) \
-	  <(GOARCH=arm go vet ./...) \
+	cat <(GOARCH=amd64 go vet $(ROOTDIR)/...) \
+	  <(GOARCH=386 go vet $(ROOTDIR)/...) \
+	  <(GOARCH=arm go vet $(ROOTDIR)/...) \
 	  | rg -v "Mutex" | sort | uniq
 endef
 
@@ -79,7 +79,6 @@ define telepresence
 	    ## https://github.com/telepresenceio/telepresence/commit/bb7473fbf19ed4f61796a5e32747e23de6ab03da
 	    ## --deployment-type "$(SWAP_DEPLOYMENT_TYPE)"
 endef
-
 
 define run-e2e-crud-test
 	go test \
