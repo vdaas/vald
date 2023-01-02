@@ -8,10 +8,10 @@ replace (
 	github.com/golang/protobuf => github.com/golang/protobuf v1.5.2
 	github.com/kpango/glg => github.com/kpango/glg v1.6.14
 	github.com/pkg/sftp => github.com/pkg/sftp v1.13.5
-	golang.org/x/crypto => golang.org/x/crypto v0.4.0
-	golang.org/x/net => golang.org/x/net v0.4.0
-	golang.org/x/text => golang.org/x/text v0.5.0
-	google.golang.org/genproto => google.golang.org/genproto v0.0.0-20221227171554-f9683d7f8bef
+	golang.org/x/crypto => golang.org/x/crypto v0.5.0
+	golang.org/x/net => golang.org/x/net v0.5.0
+	golang.org/x/text => golang.org/x/text v0.6.0
+	google.golang.org/genproto => google.golang.org/genproto v0.0.0-20230109162033-3c3c17ce83e6
 	google.golang.org/grpc => google.golang.org/grpc v1.51.0
 	google.golang.org/protobuf => google.golang.org/protobuf v1.28.1
 	gopkg.in/yaml.v2 => gopkg.in/yaml.v2 v2.4.0
@@ -32,8 +32,8 @@ require (
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/kpango/fastime v1.1.6 // indirect
 	golang.org/x/net v0.2.0 // indirect
-	golang.org/x/sys v0.3.0 // indirect
-	golang.org/x/text v0.5.0 // indirect
+	golang.org/x/sys v0.4.0 // indirect
+	golang.org/x/text v0.6.0 // indirect
 	google.golang.org/genproto v0.0.0-20221014213838-99cd37c6964a // indirect
 	google.golang.org/protobuf v1.28.1 // indirect
 )
