@@ -174,6 +174,8 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 	ech := make(chan error, 6)
 	var gech, lech, sech, oech <-chan error
 	var err error
+
+	sech = r.server.ListenAndServe(ctx)
 	if r.gateway != nil {
 		gech, err = r.gateway.Start(ctx)
 		if err != nil {
@@ -192,7 +194,6 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 		oech = r.observability.Start(ctx)
 	}
 
-	sech = r.server.ListenAndServe(ctx)
 	r.eg.Go(safety.RecoverFunc(func() (err error) {
 		defer close(ech)
 		for {
