@@ -64,6 +64,13 @@ func NewGateway(opts ...Option) (gw Gateway, err error) {
 	g := new(gateway)
 	for _, opt := range append(defaultGWOpts, opts...) {
 		if err := opt(g); err != nil {
+			oerr := errors.ErrOptionFailed(err, reflect.ValueOf(opt))
+			e := &errors.ErrCriticalOption{}
+			if errors.As(err, &e) {
+				log.Error(oerr)
+				return nil, oerr
+			}
+			log.Warn(oerr)
 			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 		}
 	}
@@ -158,12 +165,13 @@ func (g *gateway) startAdvertise(ctx context.Context) (<-chan error, error) {
 				mutex := sync.Mutex{}
 				err = g.BroadCast(ctx, func(ctx context.Context, target string, conn *grpc.ClientConn, copts ...grpc.CallOption) (err error) {
 					res, err := mirror.NewMirrorClient(conn).Advertise(ctx, req, copts...)
-					if err == nil {
-						mutex.Lock()
-						resTgts = append(resTgts, res.Targets...)
-						mutex.Unlock()
+					if err != nil {
+						return err
 					}
-					return err
+					mutex.Lock()
+					resTgts = append(resTgts, res.Targets...)
+					mutex.Unlock()
+					return nil
 				})
 				if err != nil {
 					select {

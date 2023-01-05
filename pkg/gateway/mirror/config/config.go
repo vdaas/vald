@@ -45,9 +45,7 @@ type Data struct {
 func NewConfig(path string) (cfg *Data, err error) {
 	cfg = new(Data)
 
-	err = config.Read(path, &cfg)
-
-	if err != nil {
+	if err = config.Read(path, &cfg); err != nil {
 		return nil, err
 	}
 
@@ -74,7 +72,6 @@ func NewConfig(path string) (cfg *Data, err error) {
 	} else {
 		return nil, errors.ErrInvalidConfig
 	}
-
 	return cfg, nil
 }
 
