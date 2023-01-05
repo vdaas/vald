@@ -20,16 +20,15 @@ package rest
 import (
 	"testing"
 
-	"github.com/vdaas/vald/apis/grpc/v1/vald"
+	"github.com/vdaas/vald/apis/grpc/v1/mirror"
 	"github.com/vdaas/vald/internal/test/goleak"
 )
 
 func TestWithVald(t *testing.T) {
-	t.Parallel()
 	// Change interface type to the type of object you are testing
 	type T = interface{}
 	type args struct {
-		v vald.Server
+		v mirror.Server
 	}
 	type want struct {
 		obj *T
@@ -43,8 +42,8 @@ func TestWithVald(t *testing.T) {
 		// Use the first line if the option returns an error. otherwise use the second line
 		// checkFunc  func(want, *T, error) error
 		// checkFunc  func(want, *T) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 
 	// Uncomment this block if the option returns an error, otherwise delete it
@@ -81,6 +80,12 @@ func TestWithVald(t *testing.T) {
 		       want: want {
 		           obj: new(T),
 		       },
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -95,6 +100,12 @@ func TestWithVald(t *testing.T) {
 		           want: want {
 		               obj: new(T),
 		           },
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -106,16 +117,17 @@ func TestWithVald(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 
 			// Uncomment this block if the option returns an error, otherwise delete it
 			/*
+			   checkFunc := test.checkFunc
 			   if test.checkFunc == nil {
-			       test.checkFunc = defaultCheckFunc
+			       checkFunc = defaultCheckFunc
 			   }
 
 			   got := WithVald(test.args.v)
@@ -127,8 +139,9 @@ func TestWithVald(t *testing.T) {
 
 			// Uncomment this block if the option do not return an error, otherwise delete it
 			/*
+			   checkFunc := test.checkFunc
 			   if test.checkFunc == nil {
-			       test.checkFunc = defaultCheckFunc
+			       checkFunc = defaultCheckFunc
 			   }
 			   got := WithVald(test.args.v)
 			   obj := new(T)
