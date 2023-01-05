@@ -242,6 +242,7 @@ func (g *gateway) BroadCast(ctx context.Context,
 
 // selfAddrs returns the addresses of Mirror Gateway on the same cluster.
 func (g *gateway) selfMirrorAddrs() (m map[string]struct{}) {
+	m = make(map[string]struct{})
 	for _, addr := range g.iclient.GRPCClient().ConnectedAddrs() {
 		m[addr] = struct{}{}
 	}
