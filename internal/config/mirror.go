@@ -20,11 +20,11 @@ package config
 // Mirror represents the Mirror Gateway configuration.
 type Mirror struct {
 	// MirrorClient represent the gRPC client configuration for connecting the LB Gateway.
-	LB *GRPCClient `json:"lb" yaml:"lb"`
+	LB *GRPCClient `json:"lb_client" yaml:"lb_client"`
 	// MirrorClient represent the gRPC client configuration for connecting the Mirror Gateway.
-	Mirror *GRPCClient `json:"mirror" yaml:"mirror"`
+	Mirror *GRPCClient `json:"mirror_client" yaml:"mirror_client"`
 	// MirrorClient represent the gRPC client configuration for connecting the self Mirror Gateway.
-	SelfMirror *GRPCClient `json:"self_mirror" yaml:"self_mirror"`
+	SelfMirror *GRPCClient `json:"self_mirror_client" yaml:"self_mirror_client"`
 }
 
 // Bind binds the actual data from the Mirror receiver fields.
