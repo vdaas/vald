@@ -21,7 +21,7 @@ import (
 	"net/http"
 
 	"github.com/vdaas/vald/internal/net/http/routing"
-	"github.com/vdaas/vald/pkg/gateway/lb/handler/rest"
+	"github.com/vdaas/vald/pkg/gateway/mirror/handler/rest"
 )
 
 type router struct {
@@ -48,6 +48,22 @@ func New(opts ...Option) http.Handler {
 				},
 				"/",
 				h.Index,
+			},
+			{
+				"Register",
+				[]string{
+					http.MethodPost,
+				},
+				"/register",
+				h.Register,
+			},
+			{
+				"Advertise",
+				[]string{
+					http.MethodPost,
+				},
+				"/register",
+				h.Advertise,
 			},
 			{
 				"Search",

@@ -18,7 +18,7 @@
 package router
 
 import (
-	"github.com/vdaas/vald/pkg/gateway/lb/handler/rest"
+	"github.com/vdaas/vald/pkg/gateway/mirror/handler/rest"
 )
 
 type Option func(*router)
