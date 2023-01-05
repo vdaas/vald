@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -53,19 +53,19 @@ TEMP_DIR := $(eval TEMP_DIR := $(shell mktemp -d))$(TEMP_DIR)
 
 OPERATOR_SDK_VERSION := $(eval OPERATOR_SDK_VERSION := $(shell cat versions/OPERATOR_SDK_VERSION))$(OPERATOR_SDK_VERSION)
 
-KIND_VERSION            ?= v0.16.0
-HELM_VERSION            ?= v3.10.1
-HELM_DOCS_VERSION       ?= 1.11.0
-YQ_VERSION              ?= v4.28.2
-VALDCLI_VERSION         ?= v1.5.6
-TELEPRESENCE_VERSION    ?= 2.8.2
-KUBELINTER_VERSION      ?= 0.5.0
-GOLANGCILINT_VERSION    ?= v1.50.1
-REVIEWDOG_VERSION       ?= v0.14.1
-PROTOBUF_VERSION        ?= 21.8
-JAEGER_OPERATOR_VERSION ?= 2.30.0
-OTEL_OPERATOR_VERSION   ?= 0.16.0
-PROMETHEUS_VERSION      ?= 41.5.1
+GOLANGCILINT_VERSION      := $(eval GOLANGCILINT_VERSION := $(shell cat versions/GOLANGCILINT_VERSION))$(GOLANGCILINT_VERSION)
+HELM_DOCS_VERSION         := $(eval HELM_DOCS_VERSION := $(shell cat versions/HELM_DOCS_VERSION))$(HELM_DOCS_VERSION)
+HELM_VERSION              := $(eval HELM_VERSION := $(shell cat versions/HELM_VERSION))$(HELM_VERSION)
+JAEGER_OPERATOR_VERSION   := $(eval JAEGER_OPERATOR_VERSION := $(shell cat versions/JAEGER_OPERATOR_VERSION))$(JAEGER_OPERATOR_VERSION)
+KIND_VERSION              := $(eval KIND_VERSION := $(shell cat versions/KIND_VERSION))$(KIND_VERSION)
+KUBELINTER_VERSION        := $(eval KUBELINTER_VERSION := $(shell cat versions/KUBELINTER_VERSION))$(KUBELINTER_VERSION)
+OTEL_OPERATOR_VERSION     := $(eval OTEL_OPERATOR_VERSION := $(shell cat versions/OTEL_OPERATOR_VERSION))$(OTEL_OPERATOR_VERSION)
+PROMETHEUS_STACK_VERSION  := $(eval PROMETHEUS_STACK_VERSION := $(shell cat versions/PROMETHEUS_STACK_VERSION))$(PROMETHEUS_STACK_VERSION)
+PROTOBUF_VERSION          := $(eval PROTOBUF_VERSION := $(shell cat versions/PROTOBUF_VERSION))$(PROTOBUF_VERSION)
+REVIEWDOG_VERSION         := $(eval REVIEWDOG_VERSION := $(shell cat versions/REVIEWDOG_VERSION))$(REVIEWDOG_VERSION)
+TELEPRESENCE_VERSION      := $(eval TELEPRESENCE_VERSION := $(shell cat versions/TELEPRESENCE_VERSION))$(TELEPRESENCE_VERSION)
+VALDCLI_VERSION           := $(eval VALDCLI_VERSION := $(shell cat versions/VALDCLI_VERSION))$(VALDCLI_VERSION)
+YQ_VERSION                := $(eval YQ_VERSION := $(shell cat versions/YQ_VERSION))$(YQ_VERSION)
 
 OTEL_OPERATOR_RELEASE_NAME ?= opentelemetry-operator
 PROMETHEUS_RELEASE_NAME    ?= prometheus
@@ -436,36 +436,6 @@ deps/install: \
 	prettier/install \
 	go/deps
 
-.PHONY: go/deps
-## install Go package dependencies
-go/deps:
-	rm -rf vendor \
-		/go/pkg \
-		$(GOCACHE) \
-		./go.sum \
-		./go.mod
-	cp ./hack/go.mod.default ./go.mod
-	GOPRIVATE=$(GOPRIVATE) go mod tidy
-	go clean -cache -modcache -testcache -i -r
-	rm -rf vendor \
-		/go/pkg \
-		$(GOCACHE) \
-		./go.sum \
-		./go.mod
-	cp ./hack/go.mod.default ./go.mod
-	GOPRIVATE=$(GOPRIVATE) go mod tidy
-	go get -u all 2>/dev/null || true
-
-.PHONY: go/example/deps
-## install Go package dependencies
-go/example/deps:
-	rm -rf vendor \
-		$(GOCACHE) \
-	        ./example/client/go.mod \
-	        ./example/client/go.sum
-	cp ./example/client/go.mod.default ./example/client/go.mod
-	cd ./example/client && GOPRIVATE=$(GOPRIVATE) go mod tidy && cd -
-
 .PHONY: version
 ## print vald version
 version: \
@@ -550,14 +520,15 @@ changelog/next/print:
 
 include Makefile.d/bench.mk
 include Makefile.d/build.mk
+include Makefile.d/client.mk
+include Makefile.d/dependencies.mk
 include Makefile.d/docker.mk
+include Makefile.d/e2e.mk
 include Makefile.d/git.mk
 include Makefile.d/helm.mk
-include Makefile.d/proto.mk
 include Makefile.d/k3d.mk
 include Makefile.d/k8s.mk
 include Makefile.d/kind.mk
-include Makefile.d/client.mk
+include Makefile.d/proto.mk
 include Makefile.d/test.mk
 include Makefile.d/tools.mk
-include Makefile.d/e2e.mk

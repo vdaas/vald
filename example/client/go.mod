@@ -11,7 +11,7 @@ replace (
 	golang.org/x/crypto => golang.org/x/crypto v0.4.0
 	golang.org/x/net => golang.org/x/net v0.4.0
 	golang.org/x/text => golang.org/x/text v0.5.0
-	google.golang.org/genproto => google.golang.org/genproto v0.0.0-20221207170731-23e4bf6bdc37
+	google.golang.org/genproto => google.golang.org/genproto v0.0.0-20221227171554-f9683d7f8bef
 	google.golang.org/grpc => google.golang.org/grpc v1.51.0
 	google.golang.org/protobuf => google.golang.org/protobuf v1.28.1
 	gopkg.in/yaml.v2 => gopkg.in/yaml.v2 v2.4.0
