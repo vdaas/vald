@@ -56,6 +56,8 @@ data:
         {{- include "vald.grpc.client" $GRPCClient | nindent 8 }}
       mirror_client:
         {{- $mirrorClient := $gateway.gateway_config.mirror_client }}
+        {{- $mirrorAddrs := dict "Values" $mirrorClient.addrs }}
+        {{- include "vald.grpc.client.addrs" $mirrorAddrs | nindent 8 }}
         {{- $GRPCClient := dict "Values" $mirrorClient "default" .Values.defaults.grpc.client }}
         {{- include "vald.grpc.client" $GRPCClient | nindent 8 }}
       self_mirror_client:
