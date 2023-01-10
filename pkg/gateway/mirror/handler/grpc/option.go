@@ -68,6 +68,7 @@ func WithName(name string) Option {
 func WithGateway(g service.Gateway) Option {
 	return func(s *server) {
 		if g != nil {
+			s.gateway = g
 		}
 	}
 }
@@ -109,6 +110,7 @@ func WithStreamConcurrency(c int) Option {
 func WithValdClient(vc vald.Client) Option {
 	return func(s *server) {
 		if vc != nil {
+			s.lbClient = vc
 		}
 	}
 }
