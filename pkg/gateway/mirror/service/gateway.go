@@ -169,7 +169,7 @@ func (g *gateway) startAdvertise(ctx context.Context) (<-chan error, error) {
 						return err
 					}
 					mutex.Lock()
-					resTgts = append(resTgts, res.Targets...)
+					resTgts = append(resTgts, res.GetTargets()...)
 					mutex.Unlock()
 					return nil
 				})
@@ -307,6 +307,9 @@ func (g *gateway) Connect(ctx context.Context, targets ...*payload.Mirror_Target
 	selfAddrs := g.selfMirrorAddrs()
 
 	for _, target := range targets {
+		if target == nil {
+			continue
+		}
 		addr := fmt.Sprintf("%s:%d", target.GetIp(), target.GetPort())
 		if _, ok := selfAddrs[addr]; ok {
 			continue
