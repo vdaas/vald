@@ -72,7 +72,7 @@ func (s *server) Register(ctx context.Context, req *payload.Mirror_Targets) (*pa
 			span.End()
 		}
 	}()
-	tgts, err := s.gateway.Connect(ctx, req.Targets...)
+	tgts, err := s.gateway.Connect(ctx, req.GetTargets()...)
 	if err != nil {
 		err = status.WrapWithUnavailable(mirror.RegisterRPCName+" API target Mirror Gateway unavailable", err,
 			&errdetails.RequestInfo{
