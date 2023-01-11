@@ -121,7 +121,6 @@ func (g *gateway) Start(ctx context.Context) (<-chan error, error) {
 
 func (g *gateway) startAdvertise(ctx context.Context) (<-chan error, error) {
 	tic := time.NewTicker(g.advertiseDur)
-	defer tic.Stop()
 
 	tgts, err := g.selfMirrorTargets()
 	if err != nil {
@@ -141,6 +140,7 @@ func (g *gateway) startAdvertise(ctx context.Context) (<-chan error, error) {
 	ech := make(chan error, 100)
 	g.eg.Go(func() error {
 		defer close(ech)
+		defer tic.Stop()
 		for {
 			select {
 			case <-ctx.Done():
