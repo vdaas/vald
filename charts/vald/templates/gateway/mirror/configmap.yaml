@@ -69,6 +69,13 @@ data:
         {{- $defaultSelfMirrorAddr := (list (printf "%s:%d" $defaultSelfMirrorHost (int64 $defaultSelfMirrorPort))) }}
         {{- $selfMirrorAddrs := dict "Values" $selfMirrorClient.addrs "default" $defaultSelfMirrorAddr }}
         {{- include "vald.grpc.client.addrs" $selfMirrorAddrs | nindent 8 }}
+        {{- else -}}
+        {{- $defaultSelfMirrorHost := printf "%s.%s.svc.cluster.local" $gateway.name .Release.Namespace }}
+        {{- $selfMirrorServerPort := $gateway.server_config.servers.grpc.port }}
+        {{- $defaultSelfMirrorPort := default .Values.defaults.server_config.servers.grpc.port $selfMirrorServerPort }}
+        {{- $defaultSelfMirrorAddr := (list (printf "%s:%d" $defaultSelfMirrorHost (int64 $defaultSelfMirrorPort))) }}
+        {{- $selfMirrorAddrs := dict "Values" $selfMirrorClient.addrs "default" $defaultSelfMirrorAddr }}
+        {{- include "vald.grpc.client.addrs" $selfMirrorAddrs | nindent 8 }}
         {{- end -}}
         {{- $GRPCClient := dict "Values" $selfMirrorClient "default" .Values.defaults.grpc.client }}
         {{- include "vald.grpc.client" $GRPCClient | nindent 8 }}
