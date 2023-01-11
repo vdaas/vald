@@ -232,6 +232,6 @@ defaults:
 ## Monitoring telemetry data
 
 Telemetry data can be monitored using Grafana, Jaeger, etc.
-Vald publishes the sample manifest, which enables Grafana and Jaeger.
+Vald publishes [the sample manifest](https://github.com/vdaas/vald/blob/main/charts/vald/values/dev-observability.yaml), which enables Grafana and Jaeger.
 
 You can apply it after creating an observability environment.
