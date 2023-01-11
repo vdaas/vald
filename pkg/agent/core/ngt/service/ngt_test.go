@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -10676,28 +10676,31 @@ func Test_ngt_InsertUpsert(t *testing.T) {
 		vqueueCfg = &config.VQueue{}
 	)
 	tests := []test{
-		{
-			name: "insert & upsert 10000000 random and 11 digits added to each vector element",
-			args: args{
-				idxes: createRandomData(10000000, &createRandomDataConfig{
-					additionaldigits: 11,
-				}),
-				poolSize: 100000,
-				bulkSize: 100000,
-			},
-			fields: fields{
-				svcCfg: &config.NGT{
-					Dimension:    128,
-					DistanceType: core.Cosine.String(),
-					ObjectType:   core.Uint8.String(),
-					KVSDB:        kvsdbCfg,
-					VQueue:       vqueueCfg,
+		func() test {
+			count := 10000000
+			return test{
+				name: fmt.Sprintf("insert & upsert %d random and 11 digits added to each vector element", count),
+				args: args{
+					idxes: createRandomData(count, &createRandomDataConfig{
+						additionaldigits: 11,
+					}),
+					poolSize: uint32(count / 10),
+					bulkSize: count / 10,
 				},
-				svcOpts: []Option{
-					WithEnableInMemoryMode(true),
+				fields: fields{
+					svcCfg: &config.NGT{
+						Dimension:    128,
+						DistanceType: core.Cosine.String(),
+						ObjectType:   core.Uint8.String(),
+						KVSDB:        kvsdbCfg,
+						VQueue:       vqueueCfg,
+					},
+					svcOpts: []Option{
+						WithEnableInMemoryMode(true),
+					},
 				},
-			},
-		},
+			}
+		}(),
 	}
 	for _, tc := range tests {
 		test := tc
@@ -10724,29 +10727,13 @@ func Test_ngt_InsertUpsert(t *testing.T) {
 			if err != nil {
 				tt.Errorf("failed to init ngt service, error = %v", err)
 			}
-			var wg sync.WaitGroup
-			count := 0
 			for _, idx := range test.args.idxes {
-				count++
 				err = n.Insert(idx.uuid, idx.vec)
 				if err := checkFunc(test.want, err); err != nil {
 					tt.Errorf("error = %v", err)
 				}
 
-				if count >= test.args.bulkSize {
-					wg.Add(1)
-					eg.Go(func() error {
-						defer wg.Done()
-						err = n.CreateAndSaveIndex(ctx, test.args.poolSize)
-						if err != nil {
-							tt.Errorf("error creating index: %v", err)
-						}
-						return nil
-					})
-					count = 0
-				}
 			}
-			wg.Wait()
 
 			log.Warn("start create index operation")
 			err = n.CreateAndSaveIndex(ctx, test.args.poolSize)
@@ -10758,42 +10745,30 @@ func Test_ngt_InsertUpsert(t *testing.T) {
 				idx := i
 				eg.Go(func() error {
 					log.Warnf("started %d-1", idx)
-					var wgu sync.WaitGroup
-					count = 0
 					for _, idx := range test.args.idxes[:len(test.args.idxes)/3] {
-						count++
 						_ = n.Delete(idx.uuid)
 						_ = n.Insert(idx.uuid, idx.vec)
 					}
-					wgu.Wait()
 					log.Warnf("finished %d-1", idx)
 					return nil
 				})
 
 				eg.Go(func() error {
 					log.Warnf("started %d-2", idx)
-					var wgu sync.WaitGroup
-					count = 0
 					for _, idx := range test.args.idxes[len(test.args.idxes)/3 : 2*len(test.args.idxes)/3] {
-						count++
 						_ = n.Delete(idx.uuid)
 						_ = n.Insert(idx.uuid, idx.vec)
 					}
-					wgu.Wait()
 					log.Warnf("finished %d-2", idx)
 					return nil
 				})
 
 				eg.Go(func() error {
 					log.Warnf("started %d-3", idx)
-					var wgu sync.WaitGroup
-					count = 0
 					for _, idx := range test.args.idxes[2*len(test.args.idxes)/3:] {
-						count++
 						_ = n.Delete(idx.uuid)
 						_ = n.Insert(idx.uuid, idx.vec)
 					}
-					wgu.Wait()
 					log.Warnf("finished %d-3", idx)
 					return nil
 				})

@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -30,8 +30,8 @@ cmd/agent/core/ngt/ngt: \
 	ngt/install \
 	$(GO_SOURCES_INTERNAL) \
 	$(PBGOS) \
-	$(shell find ./cmd/agent/core/ngt -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go') \
-	$(shell find ./pkg/agent/core/ngt ./pkg/agent/internal -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
+	$(shell find $(ROOTDIR)/cmd/agent/core/ngt -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go') \
+	$(shell find $(ROOTDIR)/pkg/agent/core/ngt $(ROOTDIR)/pkg/agent/internal -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
 	CFLAGS="$(CFLAGS)" \
 	CXXFLAGS="$(CXXFLAGS)" \
 	CGO_ENABLED=1 \
@@ -65,8 +65,8 @@ cmd/agent/core/ngt/ngt: \
 cmd/agent/sidecar/sidecar: \
 	$(GO_SOURCES_INTERNAL) \
 	$(PBGOS) \
-	$(shell find ./cmd/agent/sidecar -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go') \
-	$(shell find ./pkg/agent/sidecar ./pkg/agent/internal -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
+	$(shell find $(ROOTDIR)/cmd/agent/sidecar -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go') \
+	$(shell find $(ROOTDIR)/pkg/agent/sidecar $(ROOTDIR)/pkg/agent/internal -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
 	CGO_ENABLED=0 \
 	GO111MODULE=on \
 	GOPRIVATE=$(GOPRIVATE) \
@@ -93,8 +93,8 @@ cmd/agent/sidecar/sidecar: \
 cmd/discoverer/k8s/discoverer: \
 	$(GO_SOURCES_INTERNAL) \
 	$(PBGOS) \
-	$(shell find ./cmd/discoverer/k8s -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go') \
-	$(shell find ./pkg/discoverer/k8s -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
+	$(shell find $(ROOTDIR)/cmd/discoverer/k8s -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go') \
+	$(shell find $(ROOTDIR)/pkg/discoverer/k8s -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
 	CGO_ENABLED=0 \
 	GO111MODULE=on \
 	GOPRIVATE=$(GOPRIVATE) \
@@ -121,8 +121,8 @@ cmd/discoverer/k8s/discoverer: \
 cmd/gateway/lb/lb: \
 	$(GO_SOURCES_INTERNAL) \
 	$(PBGOS) \
-	$(shell find ./cmd/gateway/lb -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go') \
-	$(shell find ./pkg/gateway/lb -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
+	$(shell find $(ROOTDIR)/cmd/gateway/lb -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go') \
+	$(shell find $(ROOTDIR)/pkg/gateway/lb -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
 	CGO_ENABLED=0 \
 	GO111MODULE=on \
 	GOPRIVATE=$(GOPRIVATE) \
@@ -149,8 +149,8 @@ cmd/gateway/lb/lb: \
 cmd/gateway/filter/filter: \
 	$(GO_SOURCES_INTERNAL) \
 	$(PBGOS) \
-	$(shell find ./cmd/gateway/filter -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go') \
-	$(shell find ./pkg/gateway/filter -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
+	$(shell find $(ROOTDIR)/cmd/gateway/filter -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go') \
+	$(shell find $(ROOTDIR)/pkg/gateway/filter -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
 	CGO_ENABLED=0 \
 	GO111MODULE=on \
 	GOPRIVATE=$(GOPRIVATE) \
@@ -177,8 +177,8 @@ cmd/gateway/filter/filter: \
 cmd/manager/index/index: \
 	$(GO_SOURCES_INTERNAL) \
 	$(PBGOS) \
-	$(shell find ./cmd/manager/index -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go') \
-	$(shell find ./pkg/manager/index -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
+	$(shell find $(ROOTDIR)/cmd/manager/index -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go') \
+	$(shell find $(ROOTDIR)/pkg/manager/index -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
 	CGO_ENABLED=0 \
 	GO111MODULE=on \
 	GOPRIVATE=$(GOPRIVATE) \

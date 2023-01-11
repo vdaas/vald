@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -907,7 +907,7 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 			delete(n.fmap, uuid)
 		}
 		n.fmu.Unlock()
-		log.Debugf("inserted to ngt index and kvsdb id: %s, oid: %d", uuid, oid)
+		log.Debugf("finished to insert ngt index and kvsdb id: %s, oid: %d", uuid, oid)
 		return true
 	})
 	if poolSize <= 0 {
