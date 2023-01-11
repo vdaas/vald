@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -29,18 +29,18 @@ option java_outer_classname = "ValdAgent";
 // Represent the agent service.
 service Agent {
 
-  // Represent the create index RPC.
+  // Represent the creating index RPC.
   rpc CreateIndex(payload.v1.Control.CreateIndexRequest)
       returns (payload.v1.Empty) {
     option (google.api.http).get = "/index/create";
   }
 
-  // Represent the save index RPC.
+  // Represent the saving index RPC.
   rpc SaveIndex(payload.v1.Empty) returns (payload.v1.Empty) {
     option (google.api.http).get = "/index/save";
   }
 
-  // Represent the create and save index RPC.
+  // Represent the creating and saving index RPC.
   rpc CreateAndSaveIndex(payload.v1.Control.CreateIndexRequest)
       returns (payload.v1.Empty) {
     option (google.api.http).get = "/index/createandsave";

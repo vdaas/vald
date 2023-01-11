@@ -2,7 +2,7 @@
 
 This is the mafests to deploy pyroscope server and pyroscope agent.
 
-The pyroscope server scrapes pprof data. 
+The pyroscope server scrapes pprof data.
 
 Which pod data to scrape is determined by `podAnnotations`.
 

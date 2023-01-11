@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -40,7 +40,7 @@ message Search {
   // Represent the multiple search request.
   message MultiRequest {
     // Represent the multiple search request content.
-    repeated Request requests = 1; 
+    repeated Request requests = 1;
   }
 
   // Represent a search by ID request.
@@ -52,9 +52,9 @@ message Search {
   }
 
   // Represent the multiple search by ID request.
-  message MultiIDRequest { 
+  message MultiIDRequest {
     // Represent the multiple search by ID request content.
-    repeated IDRequest requests = 1; 
+    repeated IDRequest requests = 1;
   }
 
   // Represent a search by binary object request.
@@ -68,9 +68,9 @@ message Search {
   }
 
   // Represent the multiple search by binary object request.
-  message MultiObjectRequest { 
+  message MultiObjectRequest {
     // Represent the multiple search by binary object request content.
-    repeated ObjectRequest requests = 1; 
+    repeated ObjectRequest requests = 1;
   }
 
   // Represent search configuration.
@@ -102,9 +102,9 @@ message Search {
   }
 
   // Represent multiple search responses.
-  message Responses { 
+  message Responses {
     // Represent the multiple search response content.
-    repeated Response responses = 1; 
+    repeated Response responses = 1;
   }
 
   // Represent stream search response.
@@ -130,9 +130,9 @@ message Filter {
   }
 
   // Represent filter configuration.
-  message Config { 
+  message Config {
     // Represent the filter target configuration.
-    repeated Target targets = 1; 
+    repeated Target targets = 1;
   }
 }
 
@@ -299,7 +299,7 @@ message Object {
 
   // Represent a request to fetch raw vector.
   message VectorRequest {
-    // The vector ID to be fetch.
+    // The vector ID to be fetched.
     ID id = 1 [ (validate.rules).repeated .min_items = 2 ];
     // Filter configurations.
     Filter.Config filters = 2;
@@ -414,11 +414,11 @@ message Discoverer {
 
   // Represent the dicoverer request.
   message Request {
-    // The agent name to be discover.
+    // The agent name to be discovered.
     string name = 1 [ (validate.rules).string.min_len = 1 ];
-    // The namespace to be discover.
+    // The namespace to be discovered.
     string namespace = 2;
-    // The node to be discover.
+    // The node to be discovered.
     string node = 3;
   }
 }
