@@ -368,6 +368,7 @@ tools/install: \
 ## update deps, license, and run golines, gofumpt, goimports
 update: \
 	clean \
+	update/libs \
 	proto/all \
 	deps \
 	format \

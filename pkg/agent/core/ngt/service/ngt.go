@@ -907,7 +907,7 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 			delete(n.fmap, uuid)
 		}
 		n.fmu.Unlock()
-		log.Debugf("inserted to ngt index and kvsdb id: %s, oid: %d", uuid, oid)
+		log.Debugf("finished to insert ngt index and kvsdb id: %s, oid: %d", uuid, oid)
 		return true
 	})
 	if poolSize <= 0 {
