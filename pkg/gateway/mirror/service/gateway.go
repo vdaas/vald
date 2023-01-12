@@ -35,11 +35,9 @@ import (
 	"github.com/vdaas/vald/internal/observability/trace"
 )
 
-type contextKey string
-
 const (
-	forwardedContextKey   contextKey = "forwarded-for"
-	forwardedContextValue            = "gateway mirror"
+	forwardedContextKey   = "forwarded-for"
+	forwardedContextValue = "gateway mirror"
 )
 
 type Gateway interface {
@@ -197,14 +195,24 @@ func (g *gateway) startAdvertise(ctx context.Context) (<-chan error, error) {
 }
 
 func (g *gateway) ForwardedContext(ctx context.Context) context.Context {
-	return context.WithValue(ctx, forwardedContextKey, forwardedContextValue)
+	return grpc.NewOutgoingContext(ctx, grpc.MD{
+		forwardedContextKey: []string{
+			forwardedContextValue,
+		},
+	})
 }
 
 func (g *gateway) FromForwardedContext(ctx context.Context) string {
-	if v := ctx.Value(forwardedContextKey); v != nil {
-		if name, ok := v.(string); ok {
-			return name
-		}
+	md, ok := grpc.FromIncomingContext(ctx)
+	if !ok {
+		return ""
+	}
+	vals, ok := md[forwardedContextKey]
+	if !ok {
+		return ""
+	}
+	if len(vals) > 0 {
+		return vals[0]
 	}
 	return ""
 }
