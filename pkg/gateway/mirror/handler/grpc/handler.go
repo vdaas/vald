@@ -111,6 +111,10 @@ func (s *server) Advertise(ctx context.Context, req *payload.Mirror_Targets) (re
 			span.End()
 		}
 	}()
+	_, err = s.Register(ctx, req)
+	if err != nil {
+		return nil, err
+	}
 	tgts, err := s.gateway.MirrorTargets()
 	if err != nil {
 		err = status.WrapWithInternal(mirror.AdvertiseRPCName+" API failed to get connected mirror gateway targets", err,
