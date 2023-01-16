@@ -323,7 +323,6 @@ func (s *server) StreamSearchByID(stream vald.Search_StreamSearchByIDServer) (er
 					},
 				}, err
 			}
-			log.Warn(err)
 			return &payload.Search_StreamResponse{
 				Payload: &payload.Search_StreamResponse_Response{
 					Response: res,
