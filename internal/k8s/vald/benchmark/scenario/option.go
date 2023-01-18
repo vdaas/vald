@@ -60,7 +60,7 @@ func WithOnErrorFunc(f func(err error)) Option {
 }
 
 // WithOnReconcileFunc returns Option that sets r.onReconcile.
-func WithOnReconcileFunc(f func(ctx context.Context, scenarioList map[string]v1.ValdBenchmarkScenarioSpec)) Option {
+func WithOnReconcileFunc(f func(ctx context.Context, scenarioList map[string]v1.ValdBenchmarkScenario)) Option {
 	return func(r *reconciler) error {
 		r.onReconcile = f
 		return nil

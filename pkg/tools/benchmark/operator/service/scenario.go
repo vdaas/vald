@@ -20,6 +20,7 @@ package service
 import (
 	"context"
 	"reflect"
+	"strconv"
 	"sync/atomic"
 	"time"
 
@@ -31,6 +32,8 @@ import (
 	benchjob "github.com/vdaas/vald/internal/k8s/vald/benchmark/job"
 	benchscenario "github.com/vdaas/vald/internal/k8s/vald/benchmark/scenario"
 	"github.com/vdaas/vald/internal/log"
+	corev1 "k8s.io/api/core/v1"
+	k8smeta "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 type Scenario interface {
@@ -47,6 +50,7 @@ type scenario struct {
 	currentDeviationJobName atomic.Value
 
 	scenarios atomic.Value
+	benchjobs atomic.Value
 
 	rcd  time.Duration // reconcile check duration
 	eg   errgroup.Group
@@ -128,19 +132,195 @@ func (sc *scenario) initCtrl() (err error) {
 	return
 }
 
-func (sc *scenario) jobReconcile(ctx context.Context, jobList map[string][]job.Job) {}
-
-func (sc *scenario) benchJobReconcile(ctx context.Context, jobList map[string]v1.BenchmarkJobSpec) {
+func (sc *scenario) jobReconcile(ctx context.Context, jobList map[string][]job.Job) {
+	log.Warn(jobList)
+	return
 }
 
-func (sc *scenario) benchScenarioReconcile(ctx context.Context, scenarioList map[string]v1.ValdBenchmarkScenarioSpec) {
-	log.Infof("[reconcile scenario] Start scenario reconcile: %#v", scenarioList)
-	scenario, ok := scenarioList[sc.jobName]
-	if !ok {
-		sc.scenarios.Store(make([]v1.ValdBenchmarkScenarioSpec, 0))
-		log.Infof("[reconcile scenario] scenario not found")
+func (sc *scenario) benchJobReconcile(ctx context.Context, jobList map[string]v1.ValdBenchmarkJob) {
+	log.Debug("[reconcile benchmark job resource]: %v", jobList)
+	if len(jobList) == 0 {
+		if ok := sc.benchjobs.Load(); ok == nil {
+			sc.benchjobs.Store(make([]*v1.ValdBenchmarkJob, 0))
+		} else {
+			sc.benchjobs.Swap(make([]*v1.ValdBenchmarkJob, 0))
+		}
+		log.Infof("[reconcile benchmark job resource] job resource not found")
+		return
 	}
-	sc.scenarios.Store(scenario)
+	var cbjl []*v1.ValdBenchmarkJob
+	if ok := sc.benchjobs.Load(); ok == nil {
+		cbjl = make([]*v1.ValdBenchmarkJob, 0)
+	} else {
+		cbjl = ok.([]*v1.ValdBenchmarkJob)
+	}
+	for _, job := range jobList {
+		err := sc.createJob(ctx, job)
+		if err != nil {
+			log.Errorf("[reconcile benchmark job] failed to create job: %s", err.Error())
+		}
+		cbjl = append(cbjl, &job)
+	}
+	sc.benchjobs.Swap(cbjl)
+}
+
+func (sc *scenario) benchScenarioReconcile(ctx context.Context, scenarioList map[string]v1.ValdBenchmarkScenario) {
+	log.Debug("[reconcile scenario]: %#v", scenarioList)
+	if len(scenarioList) == 0 {
+		if ok := sc.scenarios.Load(); ok == nil {
+			sc.scenarios.Store(make([]*v1.ValdBenchmarkScenario, 0))
+		} else {
+			sc.scenarios.Swap(make([]*v1.ValdBenchmarkScenario, 0))
+		}
+		log.Infof("[reconcile scenario] scenario not found")
+		return
+	}
+	var cbsl []*v1.ValdBenchmarkScenario
+	if ok := sc.scenarios.Load(); ok == nil {
+		cbsl = make([]*v1.ValdBenchmarkScenario, len(scenarioList))
+	} else {
+		cbsl = ok.([]*v1.ValdBenchmarkScenario)
+	}
+	for _, scenario := range scenarioList {
+		err := sc.createBenchmarkJob(ctx, scenario)
+		if err != nil {
+			log.Errorf("[reconcile scenario] failed to create job: %s", err.Error())
+		}
+		cbsl = append(cbsl, &scenario)
+	}
+	sc.scenarios.Swap(cbsl)
+}
+
+// createBenchmarkJob creates the ValdBenchmarkJob crd for running job.
+func (sc *scenario) createBenchmarkJob(ctx context.Context, scenario v1.ValdBenchmarkScenario) error {
+	ownerRef := []k8smeta.OwnerReference{
+		{
+			APIVersion: scenario.APIVersion,
+			Kind:       scenario.Kind,
+			Name:       scenario.Name,
+			UID:        scenario.UID,
+		},
+	}
+	for _, job := range scenario.Spec.Jobs {
+		bj := new(v1.ValdBenchmarkJob)
+		// set metadata.name, metadata.namespace
+		bj.Name = scenario.GetName() + "-" + job.JobType + "-" + strconv.FormatInt(time.Now().UnixNano(), 10)
+		bj.Namespace = scenario.GetNamespace()
+		bj.SetOwnerReferences(ownerRef)
+
+		// set specs
+		bj.Spec = *job
+		if bj.Spec.Target == nil {
+			bj.Spec.Target = scenario.Spec.Target
+		}
+		if bj.Spec.Dataset == nil {
+			bj.Spec.Dataset = scenario.Spec.Dataset
+		}
+		// create benchmark job resource
+		c := sc.ctrl.GetManager().GetClient()
+		if err := c.Create(ctx, bj); err != nil {
+			// TODO: create new custom error
+			return err
+		}
+	}
+	return nil
+}
+
+func createJobTemplate(ns, name string) job.Job {
+	j := new(job.Job)
+	backoffLimit := int32(0)
+	j.Spec.BackoffLimit = &backoffLimit
+	j.Spec.Template.Spec.ServiceAccountName = "vald-benchmark-operator"
+	j.Spec.Template.Spec.RestartPolicy = corev1.RestartPolicyNever
+	j.Spec.Template.Spec.Containers = []corev1.Container{
+		{
+			Name:            "vald-benchmark-job",
+			Image:           "local-registry:5000/vdaas/vald-benchmark-job:latest",
+			ImagePullPolicy: corev1.PullAlways,
+			LivenessProbe: &corev1.Probe{
+				InitialDelaySeconds: int32(60),
+				PeriodSeconds:       int32(10),
+				TimeoutSeconds:      int32(300),
+				ProbeHandler: corev1.ProbeHandler{
+					Exec: &corev1.ExecAction{
+						Command: []string{
+							"/go/bin/job",
+							"-v",
+						},
+					},
+				},
+			},
+			StartupProbe: &corev1.Probe{
+				FailureThreshold: int32(30),
+				PeriodSeconds:    int32(10),
+				TimeoutSeconds:   int32(300),
+				ProbeHandler: corev1.ProbeHandler{
+					Exec: &corev1.ExecAction{
+						Command: []string{
+							"/go/bin/job",
+							"-v",
+						},
+					},
+				},
+			},
+			Ports: []corev1.ContainerPort{
+				{
+					Name:          "liveness",
+					Protocol:      corev1.ProtocolTCP,
+					ContainerPort: int32(3000),
+				},
+				{
+					Name:          "readiness",
+					Protocol:      corev1.ProtocolTCP,
+					ContainerPort: int32(3001),
+				},
+			},
+			Env: []corev1.EnvVar{
+				{
+					Name: "POD_NAMESPACE",
+					Value: ns,
+					// ValueFrom: &corev1.EnvVarSource{
+					// 	FieldRef: &corev1.ObjectFieldSelector{
+					// 		FieldPath: "metadata.namespace",
+					// 	},
+					// },
+				},
+				{
+					Name: "POD_NAME",
+					Value: name,
+					// ValueFrom: &corev1.EnvVarSource{
+					// 	FieldRef: &corev1.ObjectFieldSelector{
+					// 		FieldPath: "metadata.name",
+					// 	},
+					// },
+				},
+			},
+		},
+	}
+	return *j
+}
+
+// createJob creates benchmark job from benchmark job resource.
+func (sc *scenario) createJob(ctx context.Context, bjr v1.ValdBenchmarkJob) (err error) {
+	bj := createJobTemplate(bjr.Namespace, bjr.Name)
+	bj.Name = bjr.Name
+	bj.Namespace = bjr.Namespace
+	bj.SetOwnerReferences(bjr.GetOwnerReferences())
+	// create job
+	c := sc.ctrl.GetManager().GetClient()
+	if err = c.Create(ctx, &bj); err != nil {
+		// TODO: create new custom error
+		return err
+	}
+	if ok := sc.jobs.Load(); ok == nil {
+		sc.jobs.Store([]string{bj.Name})
+		return
+	} else {
+		jobs := sc.jobs.Load().([]string)
+		jobs = append(jobs, bj.Name)
+		sc.jobs.Swap(jobs)
+	}
+	return
 }
 
 func (sc *scenario) PreStart(ctx context.Context) error {
@@ -164,6 +344,11 @@ func (sc *scenario) Start(ctx context.Context) (<-chan error, error) {
 				return nil
 			case <-dt.C:
 				// TODO: Get Resource
+				_, ok := sc.scenarios.Load().([]*v1.ValdBenchmarkScenario)
+				if !ok {
+					log.Info("benchmark scenario resource is empty")
+					continue
+				}
 			case err = <-scch:
 				if err != nil {
 					ech <- err

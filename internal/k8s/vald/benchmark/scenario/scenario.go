@@ -18,7 +18,6 @@ package scenario
 
 import (
 	"context"
-	"strconv"
 	"time"
 
 	"github.com/vdaas/vald/internal/k8s"
@@ -40,7 +39,7 @@ type reconciler struct {
 	name        string
 	namespaces  []string
 	onError     func(err error)
-	onReconcile func(ctx context.Context, operatorList map[string]v1.ValdBenchmarkScenarioSpec)
+	onReconcile func(ctx context.Context, operatorList map[string]v1.ValdBenchmarkScenario)
 	lopts       []client.ListOption
 }
 
@@ -89,11 +88,10 @@ func (r *reconciler) Reconcile(ctx context.Context, req reconcile.Request) (res 
 		}
 		return
 	}
-
-	scenarios := make(map[string]v1.ValdBenchmarkScenarioSpec, 0)
+	scenarios := make(map[string]v1.ValdBenchmarkScenario, 0)
 	for _, item := range bs.Items {
-		name := strconv.FormatInt(time.Now().UnixNano(), 10)
-		scenarios[name] = item.Spec
+		name := item.Name
+		scenarios[name] = item
 	}
 
 	if r.onReconcile != nil {
@@ -111,9 +109,7 @@ func (r *reconciler) NewReconciler(ctx context.Context, mgr manager.Manager) rec
 	if r.mgr == nil && mgr != nil {
 		r.mgr = mgr
 	}
-	log.Debug("start add to scheme")
 	v1.AddToScheme(r.mgr.GetScheme())
-	log.Debug("end add to scheme")
 
 	return r
 }

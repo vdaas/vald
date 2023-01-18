@@ -34,7 +34,7 @@ func init() {
 	SchemeBuilder.Register(
 		&ValdBenchmarkScenario{},
 		&ValdBenchmarkScenarioList{},
-		&BenchmarkJob{},
-		&BenchmarkJobList{},
+		&ValdBenchmarkJob{},
+		&ValdBenchmarkJobList{},
 	)
 }

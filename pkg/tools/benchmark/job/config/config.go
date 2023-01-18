@@ -18,7 +18,17 @@
 package config
 
 import (
+	"context"
+	"os"
+
 	"github.com/vdaas/vald/internal/config"
+	v1 "github.com/vdaas/vald/internal/k8s/vald/benchmark/api/v1"
+	"github.com/vdaas/vald/internal/log"
+	"k8s.io/apimachinery/pkg/runtime"
+	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
 
 // GlobalConfig is type alias for config.GlobalConfig
@@ -39,8 +49,14 @@ type Config struct {
 	Job *config.BenchmarkJob `json:"job" yaml:"job"`
 }
 
+var (
+	NAMESPACE = os.Getenv("POD_NAMESPACE")
+	NAME      = os.Getenv("POD_NAME")
+	mgr       manager.Manager
+)
+
 // NewConfig represents the set config from the given setting file path.
-func NewConfig(path string) (cfg *Config, err error) {
+func NewConfig(ctx context.Context, path string) (cfg *Config, err error) {
 	err = config.Read(path, &cfg)
 	if err != nil {
 		return nil, err
@@ -75,6 +91,37 @@ func NewConfig(path string) (cfg *Config, err error) {
 		}
 	}
 
+	// Get config from applied ValdBenchmarkJob custom resource
+	scheme := runtime.NewScheme()
+	v1.AddToScheme(scheme)
+	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), manager.Options{
+		Scheme: scheme,
+	})
+	if err != nil {
+		log.Warn(err.Error())
+	}
+	cli := mgr.GetAPIReader()
+	var jobResource v1.ValdBenchmarkJob
+	err = cli.Get(ctx, client.ObjectKey{
+		Name:      NAME,
+		Namespace: NAMESPACE,
+	}, &jobResource)
+	if err != nil {
+		log.Warn(err.Error())
+	}
+
+	cfg.Job.Target = jobResource.Spec.Target
+	cfg.Job.Dataset = jobResource.Spec.Dataset
+	cfg.Job.Replica = jobResource.Spec.Replica
+	cfg.Job.Repetition = jobResource.Spec.Repetition
+	cfg.Job.JobType = jobResource.Spec.JobType
+	cfg.Job.Dimension = jobResource.Spec.Dimension
+	cfg.Job.Epsilon = float64(jobResource.Spec.Epsilon)
+	cfg.Job.Radius = float64(jobResource.Spec.Radius)
+	cfg.Job.Num = uint32(jobResource.Spec.Num)
+	cfg.Job.MinNum = uint32(jobResource.Spec.MinNum)
+	cfg.Job.Timeout = jobResource.Spec.Timeout
+	cfg.Job.Rules = jobResource.Spec.Rules
 	return cfg, nil
 }
 

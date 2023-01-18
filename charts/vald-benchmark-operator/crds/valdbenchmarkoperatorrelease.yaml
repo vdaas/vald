@@ -83,7 +83,10 @@ spec:
                     type: object
                     x-kubernetes-preserve-unknown-fields: true
                 target:
-                  type: array
-                  items:
-                    type: object
-                    x-kubernetes-preserve-unknown-fields: true
+                  type: object
+                  x-kubernetes-preserve-unknown-fields: true
+                  properties:
+                    host:
+                      type: string
+                    port:
+                      type: integer

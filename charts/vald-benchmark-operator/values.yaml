@@ -66,5 +66,5 @@ jobs:
 # @schema {"name": "target", "type": "array", "items": {"type": "object"}}
 # target -- target cluster host&port
 target:
-  - host: "localhost"
-    port: 8081
+  host: "localhost"
+  port: 8081

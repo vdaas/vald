@@ -35,7 +35,8 @@ rules:
   - apiGroups:
       - vald.vdaas.org
     resources:
-      - valdbenchmarkscenario
+      - valdbenchmarkscenarios
+      - valdbenchmarkjobs
     verbs:
       - create
       - delete
@@ -47,13 +48,15 @@ rules:
   - apiGroups:
       - vald.vdaas.org
     resources:
-      - valdbenchmarkscenario/finalizers
+      - valdbenchmarkscenarios/finalizers
+      - valdbenchmarkjobs/finalizers
     verbs:
       - update
   - apiGroups:
       - vald.vdaas.org
     resources:
-      - valdbenchmarkscenario/status
+      - valdbenchmarkscenarios/status
+      - valdbenchmarkjobs/status
     verbs:
       - get
       - patch
