@@ -277,7 +277,7 @@ func createJobTemplate(ns, name string) job.Job {
 			},
 			Env: []corev1.EnvVar{
 				{
-					Name: "POD_NAMESPACE",
+					Name:  "POD_NAMESPACE",
 					Value: ns,
 					// ValueFrom: &corev1.EnvVarSource{
 					// 	FieldRef: &corev1.ObjectFieldSelector{
@@ -286,7 +286,7 @@ func createJobTemplate(ns, name string) job.Job {
 					// },
 				},
 				{
-					Name: "POD_NAME",
+					Name:  "POD_NAME",
 					Value: name,
 					// ValueFrom: &corev1.EnvVarSource{
 					// 	FieldRef: &corev1.ObjectFieldSelector{
