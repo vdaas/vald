@@ -57,12 +57,10 @@ type scenario struct {
 	ctrl k8s.Controller
 }
 
+// New creates the new scenario struct to handle vald benchmark job scenario.
+// When the input options are invalid, the error will be returned.
 func New(opts ...Option) (Scenario, error) {
 	sc := new(scenario)
-
-	// TODO: impl functional option
-	sc.rcd, _ = time.ParseDuration("10s")
-
 	for _, opt := range append(defaultOpts, opts...) {
 		if err := opt(sc); err != nil {
 			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
@@ -120,6 +118,7 @@ func (sc *scenario) initCtrl() (err error) {
 		return
 	}
 
+	// create reconcile controller which watches valdbenchmarkscenario resource, valdbenchmarkjob resource, and job resource.
 	sc.ctrl, err = k8s.New(
 		k8s.WithControllerName("vald benchmark operator"),
 		k8s.WithResourceController(bs),
@@ -132,11 +131,15 @@ func (sc *scenario) initCtrl() (err error) {
 	return
 }
 
+// jobReconcile gets k8s job list and watches theirs STATUS.
+// Then, it processes according STATUS.
 func (sc *scenario) jobReconcile(ctx context.Context, jobList map[string][]job.Job) {
 	log.Warn(jobList)
+	// TODO: impl logic
 	return
 }
 
+// benchmarkJobReconcile gets the vald benchmark job resource list and create Job for running benchmark job.
 func (sc *scenario) benchJobReconcile(ctx context.Context, jobList map[string]v1.ValdBenchmarkJob) {
 	log.Debug("[reconcile benchmark job resource]: %v", jobList)
 	if len(jobList) == 0 {
@@ -164,6 +167,7 @@ func (sc *scenario) benchJobReconcile(ctx context.Context, jobList map[string]v1
 	sc.benchjobs.Swap(cbjl)
 }
 
+// benchScenarioReconcile gets the vald benchmark scenario list and create vald benchmark job resource according to it.
 func (sc *scenario) benchScenarioReconcile(ctx context.Context, scenarioList map[string]v1.ValdBenchmarkScenario) {
 	log.Debug("[reconcile scenario]: %#v", scenarioList)
 	if len(scenarioList) == 0 {
@@ -226,6 +230,8 @@ func (sc *scenario) createBenchmarkJob(ctx context.Context, scenario v1.ValdBenc
 	return nil
 }
 
+// createJobTemplate creates the job template for crating k8s job resource.
+// ns and name are required to set job environment value.
 func createJobTemplate(ns, name string) job.Job {
 	j := new(job.Job)
 	backoffLimit := int32(0)
@@ -279,20 +285,10 @@ func createJobTemplate(ns, name string) job.Job {
 				{
 					Name:  "POD_NAMESPACE",
 					Value: ns,
-					// ValueFrom: &corev1.EnvVarSource{
-					// 	FieldRef: &corev1.ObjectFieldSelector{
-					// 		FieldPath: "metadata.namespace",
-					// 	},
-					// },
 				},
 				{
 					Name:  "POD_NAME",
 					Value: name,
-					// ValueFrom: &corev1.EnvVarSource{
-					// 	FieldRef: &corev1.ObjectFieldSelector{
-					// 		FieldPath: "metadata.name",
-					// 	},
-					// },
 				},
 			},
 		},
