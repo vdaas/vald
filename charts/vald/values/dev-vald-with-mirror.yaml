@@ -35,7 +35,7 @@ gateway:
         memory: 50Mi
     gateway_config:
       index_replica: 2
-  
+
   # NOTE: Will work with multiple replicas in the future.
   mirror:
     enabled: true
