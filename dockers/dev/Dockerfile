@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -37,18 +37,21 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     cmake \
     curl \
-    libhdf5-dev \
     g++ \
     gawk \
     gcc \
     git \
     graphviz \
+    jq \
+    libhdf5-dev \
+    liblapack-dev \
+    libomp-dev \
+    libopenblas-dev \
     nodejs \
     npm \
-    jq \
     sed \
-    zip \
     unzip \
+    zip \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 

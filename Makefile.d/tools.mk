@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -67,9 +67,9 @@ kubectl/install: $(BINDIR)/kubectl
 ## https://github.com/chaos-mesh/chaos-mesh/blob/master/install.sh#L291
 .PHONY: kubectl/install/linux/v1.23.6
 kubectl/install/linux/v1.23.6:
-	curl -L "https://storage.googleapis.com/kubernetes-release/release/v1.23.6/bin/linux/amd64/kubectl" -o ./kubectl
-	chmod a+x ./kubectl
-	mv ./kubectl $(BINDIR)/kubectl
+	curl -L "https://storage.googleapis.com/kubernetes-release/release/v1.23.6/bin/linux/amd64/kubectl" -o $(ROOTDIR)/kubectl
+	chmod a+x $(ROOTDIR)/kubectl
+	mv $(ROOTDIR)/kubectl $(BINDIR)/kubectl
 
 ifeq ($(UNAME),Darwin)
 $(BINDIR)/kubectl:
