@@ -299,29 +299,50 @@ k8s/linkerd/deploy:
 k8s/linkerd/delete:
 	linkerd install --ignore-cluster | kubectl delete -f -
 
-.PHONY: k8s/otel/operator/install
+.PHONY: k8s/otel/operator/deploy
 ## deploy opentelemetry operator
-k8s/otel/operator/install:
+k8s/otel/operator/deploy:
 	helm repo add open-telemetry https://open-telemetry.github.io/opentelemetry-helm-charts
 	helm install ${OTEL_OPERATOR_RELEASE_NAME} open-telemetry/opentelemetry-operator --set installCRDs=true --version ${OTEL_OPERATOR_VERSION}
 	kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=opentelemetry-operator --timeout=60s
+	sleep 10
 
-.PHONY: k8s/otel/operator/uninstall
+.PHONY: k8s/otel/operator/delete
 ## delete opentelemetry operator
-k8s/otel/operator/uninstall:
+k8s/otel/operator/delete:
 	helm uninstall ${OTEL_OPERATOR_RELEASE_NAME}
 
-.PHONY: k8s/otel/collector/install
+.PHONY: k8s/otel/collector/deploy
 ## deploy opentelemetry collector
-k8s/otel/collector/install:
+k8s/otel/collector/deploy:
 	kubectl apply -f $(ROOTDIR)/k8s/metrics/otel/collector.yaml
 	kubectl apply -f $(ROOTDIR)/k8s/metrics/otel/pod-monitor.yaml
 
-.PHONY: k8s/otel/collector/uninstall
+.PHONY: k8s/otel/collector/delete
 ## delete opentelemetry collector
-k8s/otel/collector/uninstall:
+k8s/otel/collector/delete:
 	kubectl delete -f $(ROOTDIR)/k8s/metrics/otel/collector.yaml
 	kubectl delete -f $(ROOTDIR)/k8s/metrics/otel/pod-monitor.yaml
+
+.PHONY: k8s/monitoring/deploy
+## deploy monitoring stack
+k8s/monitoring/deploy: \
+	k8s/external/cert-manager/deploy \
+	k8s/metrics/jaeger/deploy \
+	k8s/metrics/prometheus/operator/deploy \
+	k8s/metrics/grafana/deploy \
+	k8s/otel/operator/deploy \
+	k8s/otel/collector/deploy
+
+.PHONY: k8s/monitoring/delete
+## delete monitoring stack
+k8s/monitoring/delete: \
+	k8s/otel/collector/delete \
+	k8s/otel/operator/delete \
+	k8s/metrics/grafana/delete \
+	k8s/metrics/jaeger/delete \
+	k8s/metrics/prometheus/operator/delete \
+	k8s/external/cert-manager/delete
 
 .PHONY: telepresence/install
 ## install telepresence
