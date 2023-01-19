@@ -120,9 +120,9 @@ k8s/multi/vald/deploy:
 .PHONY: k8s/multi/vald/delete
 ## delete multiple vald sample clusters to k8s
 k8s/multi/vald/delete:
-	helm uninstall vald-cluster-01
-	helm uninstall vald-cluster-02
-	helm uninstall vald-cluster-03
+	helm uninstall vald-cluster-01 -n vald-01
+	helm uninstall vald-cluster-02 -n vald-02
+	helm uninstall vald-cluster-03 -n vald-03
 	-@kubectl delete ns vald-01 vald-02 vald-03
 
 

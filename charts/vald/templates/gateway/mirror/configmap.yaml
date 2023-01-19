@@ -56,8 +56,21 @@ data:
         {{- include "vald.grpc.client" $GRPCClient | nindent 8 }}
       mirror_client:
         {{- $mirrorClient := $gateway.gateway_config.mirror_client }}
-        {{- $mirrorAddrs := dict "Values" $mirrorClient.addrs }}
+        {{- if $gateway.ingress.enabled -}}
+        {{- $defaultSelfMirrorHost := $gateway.ingress.host }}
+        {{- $selfMirrorServerPort := $gateway.server_config.servers.grpc.port }}
+        {{- $defaultSelfMirrorPort := default .Values.defaults.server_config.servers.grpc.port $selfMirrorServerPort }}
+        {{- $defaultSelfMirrorAddr := (list (printf "%s:%d" $defaultSelfMirrorHost (int64 $defaultSelfMirrorPort))) }}
+        {{- $mirrorAddrs := dict "Values" $mirrorClient.addrs "default" $defaultSelfMirrorAddr }}
         {{- include "vald.grpc.client.addrs" $mirrorAddrs | nindent 8 }}
+        {{- else -}}
+        {{- $defaultSelfMirrorHost := printf "%s.%s.svc.cluster.local" $gateway.name .Release.Namespace }}
+        {{- $selfMirrorServerPort := $gateway.server_config.servers.grpc.port }}
+        {{- $defaultSelfMirrorPort := default .Values.defaults.server_config.servers.grpc.port $selfMirrorServerPort }}
+        {{- $defaultSelfMirrorAddr := (list (printf "%s:%d" $defaultSelfMirrorHost (int64 $defaultSelfMirrorPort))) }}
+        {{- $selfMirrorAddrs := dict "Values" $mirrorClient.addrs "default" $defaultSelfMirrorAddr }}
+        {{- include "vald.grpc.client.addrs" $selfMirrorAddrs | nindent 8 }}
+        {{- end -}}
         {{- $GRPCClient := dict "Values" $mirrorClient "default" .Values.defaults.grpc.client }}
         {{- include "vald.grpc.client" $GRPCClient | nindent 8 }}
       self_mirror_client:
