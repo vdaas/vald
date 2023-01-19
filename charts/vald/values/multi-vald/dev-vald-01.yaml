@@ -1,0 +1,15 @@
+gateway:
+  mirror:
+    gateway_config:
+      self_mirror_client:
+        addrs:
+        - vald-mirror-gateway.vald-01.svc.cluster.local:8081
+      mirror_client:
+        addrs:
+        - vald-mirror-gateway.vald-01.svc.cluster.local:8081 
+
+discoverer:
+  clusterRoleBinding:
+    name: vald-01
+  serviceAccount:
+    name: vald-01

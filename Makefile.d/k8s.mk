@@ -98,6 +98,30 @@ k8s/vald/delete:
 	kubectl delete -f $(TEMP_DIR)/vald/templates/agent
 	rm -rf $(TEMP_DIR)
 
+.PHONY: k8s/multi/vald/deploy
+## deploy multiple vald sample clusters to k8s
+k8s/multi/vald/deploy:
+	helm install vald-cluster-01 charts/vald \
+		-f ./charts/vald/values/multi-vald/dev-vald-with-mirror.yaml \
+		-f ./charts/vald/values/multi-vald/dev-vald-01.yaml \
+	    -n vald-01
+	helm install vald-cluster-02 charts/vald \
+		-f ./charts/vald/values/multi-vald/dev-vald-with-mirror.yaml \
+		-f ./charts/vald/values/multi-vald/dev-vald-02.yaml \
+	    -n vald-02
+	helm install vald-cluster-03 charts/vald \
+		-f ./charts/vald/values/multi-vald/dev-vald-with-mirror.yaml \
+		-f ./charts/vald/values/multi-vald/dev-vald-03.yaml \
+		-n vald-03
+
+.PHONY: k8s/multi/vald/delete
+## delete multiple vald sample clusters to k8s
+k8s/multi/vald/delete:
+	helm uninstall vald-cluster-01
+	helm uninstall vald-cluster-02
+	helm uninstall vald-cluster-03
+
+
 .PHONY: k8s/vald-helm-operator/deploy
 ## deploy vald-helm-operator to k8s
 k8s/vald-helm-operator/deploy:
