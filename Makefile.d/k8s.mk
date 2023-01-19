@@ -101,6 +101,9 @@ k8s/vald/delete:
 .PHONY: k8s/multi/vald/deploy
 ## deploy multiple vald sample clusters to k8s
 k8s/multi/vald/deploy:
+	-@kubectl create ns vald-01
+	-@kubectl create ns vald-02
+	-@kubectl create ns vald-03
 	helm install vald-cluster-01 charts/vald \
 		-f ./charts/vald/values/multi-vald/dev-vald-with-mirror.yaml \
 		-f ./charts/vald/values/multi-vald/dev-vald-01.yaml \
@@ -120,6 +123,7 @@ k8s/multi/vald/delete:
 	helm uninstall vald-cluster-01
 	helm uninstall vald-cluster-02
 	helm uninstall vald-cluster-03
+	-@kubectl delete ns vald-01 vald-02 vald-03
 
 
 .PHONY: k8s/vald-helm-operator/deploy

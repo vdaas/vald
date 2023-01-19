@@ -44,7 +44,7 @@ gateway:
     image:
       tag: "pr-1829" # TODO: Delete it later.
     ingress:
-      enabled: true
+      enabled: false
     gateway_config:
       lb_client: {}
       mirror_client: {}
