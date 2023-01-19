@@ -42,6 +42,8 @@ data:
       {{- $observability := dict "Values" $gateway.observability "default" .Values.defaults.observability }}
       {{- include "vald.observability" $observability | nindent 6 }}
     gateway:
+      pod_name: {{ $gateway.gateway_config.pod_name }}
+      advertise_interval: {{ $gateway.gateway_config.advertise_interval }}
       lb_client:
         {{- $lbClient := $gateway.gateway_config.lb_client }}
         {{- if $lb.enabled -}}
