@@ -633,7 +633,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 			span.End()
 		}
 	}()
-	if len(s.gateway.FromForwardedContext(ctx)) == 0 {
+	if podName := s.gateway.FromForwardedContext(ctx); len(podName) == 0 {
 		successTgts := new(sync.Map)
 		err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
 			sctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.InsertRPCName+"/"+target)
@@ -705,6 +705,8 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 			}
 			return nil, err
 		}
+	} else if s.gateway.IsSamePod(podName) {
+		return new(payload.Object_Location), nil
 	}
 
 	ce, err = s.lbClient.Insert(ctx, req)
@@ -859,7 +861,7 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 		}
 	}()
 
-	if len(s.gateway.FromForwardedContext(ctx)) == 0 {
+	if podName := s.gateway.FromForwardedContext(ctx); len(podName) == 0 {
 		successTgts := new(sync.Map)
 		err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
 			sctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.MultiInsertRPCName+"/"+target)
@@ -928,6 +930,8 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 			}
 			return nil, err
 		}
+	} else if s.gateway.IsSamePod(podName) {
+		return new(payload.Object_Locations), nil
 	}
 
 	locs, err = s.lbClient.MultiInsert(ctx, reqs, s.lbClient.GRPCClient().GetCallOption()...)
@@ -1036,7 +1040,7 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (res *
 		}
 	}()
 
-	if len(s.gateway.FromForwardedContext(ctx)) == 0 {
+	if podName := s.gateway.FromForwardedContext(ctx); len(podName) == 0 {
 		successTgts := new(sync.Map)
 		err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
 			sctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.UpdateRPCName+"/"+target)
@@ -1108,6 +1112,8 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (res *
 			}
 			return nil, err
 		}
+	} else if s.gateway.IsSamePod(podName) {
+		return new(payload.Object_Location), nil
 	}
 
 	ce, err := s.lbClient.Update(ctx, req, s.lbClient.GRPCClient().GetCallOption()...)
@@ -1291,7 +1297,7 @@ func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequ
 		}
 	}()
 
-	if len(s.gateway.FromForwardedContext(ctx)) == 0 {
+	if podName := s.gateway.FromForwardedContext(ctx); len(podName) == 0 {
 		successTgts := new(sync.Map)
 		err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
 			sctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.MultiUpdateRPCName+"/"+target)
@@ -1360,6 +1366,8 @@ func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequ
 			}
 			return nil, err
 		}
+	} else if s.gateway.IsSamePod(podName) {
+		return new(payload.Object_Locations), nil
 	}
 
 	ces, err := s.lbClient.MultiUpdate(ctx, reqs, s.lbClient.GRPCClient().GetCallOption()...)
@@ -1531,7 +1539,7 @@ func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *
 		}
 	}()
 
-	if len(s.gateway.FromForwardedContext(ctx)) == 0 {
+	if podName := s.gateway.FromForwardedContext(ctx); len(podName) == 0 {
 		successTgts := new(sync.Map)
 		err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
 			sctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.UpsertRPCName+"/"+target)
@@ -1603,6 +1611,8 @@ func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *
 			}
 			return nil, err
 		}
+	} else if s.gateway.IsSamePod(podName) {
+		return new(payload.Object_Location), nil
 	}
 
 	ce, err := s.lbClient.Upsert(ctx, req, s.lbClient.GRPCClient().GetCallOption()...)
@@ -1755,7 +1765,7 @@ func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequ
 		}
 	}()
 
-	if len(s.gateway.FromForwardedContext(ctx)) == 0 {
+	if podName := s.gateway.FromForwardedContext(ctx); len(podName) == 0 {
 		successTgts := new(sync.Map)
 		err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
 			sctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.UpsertRPCName+"/"+target)
@@ -1824,6 +1834,8 @@ func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequ
 			}
 			return nil, err
 		}
+	} else if s.gateway.IsSamePod(podName) {
+		return new(payload.Object_Locations), nil
 	}
 
 	res, err = s.lbClient.MultiUpsert(ctx, reqs, s.lbClient.GRPCClient().GetCallOption()...)
@@ -1995,7 +2007,7 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (loc *
 		}
 	}()
 
-	if len(s.gateway.FromForwardedContext(ctx)) == 0 {
+	if podName := s.gateway.FromForwardedContext(ctx); len(podName) == 0 {
 		successTgts := new(sync.Map)
 		err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
 			sctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.RemoveRPCName+"/"+target)
@@ -2067,6 +2079,8 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (loc *
 			}
 			return nil, err
 		}
+	} else if s.gateway.IsSamePod(podName) {
+		return new(payload.Object_Location), nil
 	}
 
 	loc, err = s.lbClient.Remove(ctx, req, s.lbClient.GRPCClient().GetCallOption()...)
@@ -2251,7 +2265,7 @@ func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequ
 		}
 	}()
 
-	if len(s.gateway.FromForwardedContext(ctx)) == 0 {
+	if podName := s.gateway.FromForwardedContext(ctx); len(podName) == 0 {
 		successTgts := new(sync.Map)
 		err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
 			sctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.RemoveRPCName+"/"+target)
@@ -2320,6 +2334,8 @@ func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequ
 			}
 			return nil, err
 		}
+	} else if s.gateway.IsSamePod(podName) {
+		return new(payload.Object_Locations), nil
 	}
 
 	locs, err = s.lbClient.MultiRemove(ctx, reqs, s.lbClient.GRPCClient().GetCallOption()...)

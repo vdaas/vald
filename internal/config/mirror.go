@@ -19,16 +19,22 @@ package config
 
 // Mirror represents the Mirror Gateway configuration.
 type Mirror struct {
-	// MirrorClient represent the gRPC client configuration for connecting the LB Gateway.
+	// LB represents the gRPC client configuration for connecting the LB Gateway.
 	LB *GRPCClient `json:"lb_client" yaml:"lb_client"`
-	// MirrorClient represent the gRPC client configuration for connecting the Mirror Gateway.
+	// MirrorClient represents the gRPC client configuration for connecting the Mirror Gateway.
 	Mirror *GRPCClient `json:"mirror_client" yaml:"mirror_client"`
-	// MirrorClient represent the gRPC client configuration for connecting the self Mirror Gateway.
+	// MirrorClient represents the gRPC client configuration for connecting the self Mirror Gateway.
 	SelfMirror *GRPCClient `json:"self_mirror_client" yaml:"self_mirror_client"`
+	// PodName represents self Mirror Gateway Pod name.
+	PodName string `json:"pod_name" yaml:"pod_name"`
+	// AdvertiseInterval represents interval to advertise Mirror Gateway information to other mirror gateway.
+	AdvertiseInterval string `json:"advertise_interval" yaml:"advertise_interval"`
 }
 
 // Bind binds the actual data from the Mirror receiver fields.
 func (m *Mirror) Bind() *Mirror {
+	m.PodName = GetActualValue(m.PodName)
+	m.AdvertiseInterval = GetActualValue(m.AdvertiseInterval)
 	if m.LB != nil {
 		m.LB = m.LB.Bind()
 	} else {

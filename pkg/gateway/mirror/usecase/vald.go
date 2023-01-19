@@ -97,6 +97,8 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		service.WithErrGroup(eg),
 		service.WithSelfMirror(selfMc),
 		service.WithMirror(mc),
+		service.WithPodName(cfg.Mirror.PodName),
+		service.WithAdvertiseInterval(cfg.Mirror.AdvertiseInterval),
 	)
 	if err != nil {
 		return nil, err

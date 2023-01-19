@@ -45,7 +45,8 @@ type Gateway interface {
 	MirrorTargets() ([]*payload.Mirror_Target, error)
 	OtherMirrorAddrs() []string
 	Connect(ctx context.Context, targets ...*payload.Mirror_Target) ([]*payload.Mirror_Target, error)
-	ForwardedContext(ctx context.Context) context.Context
+	ForwardedContext(ctx context.Context, podName string) context.Context
+	IsSamePod(podName string) bool
 	FromForwardedContext(ctx context.Context) string
 	BroadCast(ctx context.Context,
 		f func(ctx context.Context, tgt string, conn *grpc.ClientConn, copts ...grpc.CallOption) error) error
@@ -56,6 +57,7 @@ type gateway struct {
 	iclient      mclient.Client // Mirror Gateway client for the same cluster.
 	eg           errgroup.Group
 	advertiseDur time.Duration
+	podName      string
 }
 
 func NewGateway(opts ...Option) (gw Gateway, err error) {
@@ -194,10 +196,10 @@ func (g *gateway) startAdvertise(ctx context.Context) (<-chan error, error) {
 	return ech, nil
 }
 
-func (g *gateway) ForwardedContext(ctx context.Context) context.Context {
+func (g *gateway) ForwardedContext(ctx context.Context, podName string) context.Context {
 	return grpc.NewOutgoingContext(ctx, grpc.MD{
 		forwardedContextKey: []string{
-			forwardedContextValue,
+			podName,
 		},
 	})
 }
@@ -217,6 +219,10 @@ func (g *gateway) FromForwardedContext(ctx context.Context) string {
 	return ""
 }
 
+func (g *gateway) IsSamePod(podName string) bool {
+	return g.podName == podName
+}
+
 // BroadCast executes a broadcast operation to the Mirror Gateway on other clusters.
 func (g *gateway) BroadCast(ctx context.Context,
 	f func(ctx context.Context, target string, conn *grpc.ClientConn, copts ...grpc.CallOption) error,
@@ -229,7 +235,7 @@ func (g *gateway) BroadCast(ctx context.Context,
 	}()
 
 	selfAddrs := g.selfMirrorAddrs()
-	return g.client.GRPCClient().RangeConcurrent(g.ForwardedContext(fctx), -1, func(ictx context.Context,
+	return g.client.GRPCClient().RangeConcurrent(g.ForwardedContext(fctx, g.podName), -1, func(ictx context.Context,
 		addr string, conn *grpc.ClientConn, copts ...grpc.CallOption,
 	) (err error) {
 		select {

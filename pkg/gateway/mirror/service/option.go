@@ -72,3 +72,13 @@ func WithAdvertiseInterval(s string) Option {
 		return nil
 	}
 }
+
+func WithPodName(s string) Option {
+	return func(g *gateway) error {
+		if len(s) == 0 {
+			return errors.NewErrCriticalOption("podName", s)
+		}
+		g.podName = s
+		return nil
+	}
+}

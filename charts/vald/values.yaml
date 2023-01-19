@@ -1637,6 +1637,12 @@ gateway:
       # @schema {"name": "gateway.mirror.gateway_config.self_mirror_client", "alias": "grpc.client"}
       # gateway.mirror.gateway_config.self_mirror_client -- gRPC client for self mirror-gateway (overrides defaults.grpc.client)
       self_mirror_client: {}
+      # @schema {"name": "gateway.mirror.gateway_config.pod_name", "type": "string"}
+      # gateway.mirror.gateway_config.pod_name -- self mirror gateway pod name
+      pod_name: _MY_POD_NAME_
+      # @schema {"name": "gateway.mirror.gateway_config.advertise_interval", "type": "string"}
+      # gateway.mirror.gateway_config.advertise_interval -- interval to advertise mirror-gateway information to other mirror-gateway.
+      advertise_interval: "1s"
 # @schema {"name": "agent", "type": "object"}
 agent:
   # @schema {"name": "agent.enabled", "type": "boolean"}
