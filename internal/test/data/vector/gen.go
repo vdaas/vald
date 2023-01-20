@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@ package vector
 import (
 	"math"
 	"math/rand"
+	"time"
 
 	"github.com/vdaas/vald/internal/errors"
 	irand "github.com/vdaas/vald/internal/rand"
@@ -30,13 +31,14 @@ type (
 const (
 	Gaussian Distribution = iota
 	Uniform
+	NegativeUniform
 
 	// NOTE: mean:128, sigma:128/3, all of 99.7% are in [0, 255].
 	gaussianMean  float64 = 128
 	gaussianSigma float64 = 128 / 3
 )
 
-// ErrUnknownDistritbution represents an error which the distribution is unknown.
+// ErrUnknownDistribution represents an error which the distribution is unknown.
 var ErrUnknownDistribution = errors.New("Unknown distribution generator type")
 
 // Float32VectorGenerator returns float32 vector generator function which has selected distribution
@@ -46,6 +48,8 @@ func Float32VectorGenerator(d Distribution) (Float32VectorGeneratorFunc, error) 
 		return GaussianDistributedFloat32VectorGenerator, nil
 	case Uniform:
 		return UniformDistributedFloat32VectorGenerator, nil
+	case NegativeUniform:
+		return NegativeUniformDistributedFloat32VectorGenerator, nil
 	default:
 		return nil, ErrUnknownDistribution
 	}
@@ -80,6 +84,25 @@ func genF32Slice(n, dim int, gen func() float32) (ret [][]float32) {
 // UniformDistributedFloat32VectorGenerator returns n float32 vectors with dim dimension and their values under Uniform distribution
 func UniformDistributedFloat32VectorGenerator(n, dim int) [][]float32 {
 	return genF32Slice(n, dim, rand.Float32)
+}
+
+// NegativeUniformDistributedFloat32VectorGenerator returns n float32 vectors with dim dimension and their values under Uniform distribution
+func NegativeUniformDistributedFloat32VectorGenerator(n, dim int) (vecs [][]float32) {
+	left, right := dim/2, dim-dim/2
+	lvs := genF32Slice(n, left, func() float32 {
+		return -rand.Float32()
+	})
+	rvs := UniformDistributedFloat32VectorGenerator(n, right)
+	vecs = make([][]float32, 0, n)
+	// skipcq: GO-S1033
+	rand.Seed(time.Now().UnixNano())
+	for i := 0; i < n; i++ {
+		// skipcq: CRT-D0001
+		vs := append(lvs[i], rvs[i]...)
+		rand.Shuffle(len(vs), func(i, j int) { vs[i], vs[j] = vs[j], vs[i] })
+		vecs = append(vecs, vs)
+	}
+	return vecs
 }
 
 // GaussianDistributedFloat32VectorGenerator returns n float32 vectors with dim dimension and their values under Gaussian distribution

@@ -1,6 +1,6 @@
 ---
 #
-# Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -47,7 +47,7 @@ spec:
         app.kubernetes.io/instance: release-name
         app.kubernetes.io/component: discoverer
       annotations:
-        checksum/configmap: febb14192dedc53a8a38b88b24a7a93654111e6cab2f489d8118ffb4d410e69f
+        checksum/configmap: 9ad0f3962a476c05865348d478d0b106337b5f2b18ed545c4cc5aedc890101eb
         profefe.com/enable: "true"
         profefe.com/port: "6060"
         profefe.com/service: vald-discoverer

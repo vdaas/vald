@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -547,9 +547,12 @@ func isHealthy(conn *ClientConn) bool {
 	switch state {
 	case connectivity.Ready:
 		return true
-	case connectivity.Idle, connectivity.Connecting:
+	case connectivity.Connecting:
 		log.Debugf("grpc target %s's connection status will be Ready soon:\tstatus: %s", conn.Target(), state.String())
 		return true
+	case connectivity.Idle:
+		log.Debugf("grpc target %s's connection status is waiting for target:\tstatus: %s", conn.Target(), state.String())
+		return false
 	case connectivity.Shutdown, connectivity.TransientFailure:
 		log.Errorf("grpc target %s's connection status is unhealthy:\tstatus: %s", conn.Target(), state.String())
 		return false
