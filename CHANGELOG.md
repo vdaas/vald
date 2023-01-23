@@ -117,10 +117,10 @@
 - Fix deepsource: RVV-B0013 Unused method receiver [#1852](https://github.com/vdaas/vald/pull/1852)
 - Fix deepsource: CRT-D0007 Duplicate cases found in switch statement [#1851](https://github.com/vdaas/vald/pull/1851)
 - Fix deepsource: GO-W1009 using a deprecated function, variable, constant or field [#1846](https://github.com/vdaas/vald/pull/1846)
-- Fix deepsource: RVV-B0011 exported function returning value of unexported type  [#1848](https://github.com/vdaas/vald/pull/1848)
+- Fix deepsource: RVV-B0011 exported function returning value of unexported type [#1848](https://github.com/vdaas/vald/pull/1848)
 - Fix deepsource: GSC-G103 Function call made to an unsafe package [#1850](https://github.com/vdaas/vald/pull/1850)
 - Fix deepsource: RVV-B0012 Unused parameter in the function
-- Fix deepsource: DOK-SC2002, DOK-W1001  Useless cat and Multiple consecutive RUN [#1847](https://github.com/vdaas/vald/pull/1847)
+- Fix deepsource: DOK-SC2002, DOK-W1001 Useless cat and Multiple consecutive RUN [#1847](https://github.com/vdaas/vald/pull/1847)
 - Fix deepsource: dockerfile warning [#1835](https://github.com/vdaas/vald/pull/1835)
 - Fix deepsource RVV-B0013 [#1832](https://github.com/vdaas/vald/pull/1832)
 - Fix deepsource VET-V0007 unkeyed composite literals [#1837](https://github.com/vdaas/vald/pull/1837)
@@ -145,7 +145,7 @@
 - Format code with prettier and gofumpt [#1886](https://github.com/vdaas/vald/pull/1886)
 - Update deepsource configuration [#1881](https://github.com/vdaas/vald/pull/1881)
 - Update gotestfmt org [#1880](https://github.com/vdaas/vald/pull/1880)
-- Add escape for e2e workflow  [#1845](https://github.com/vdaas/vald/pull/1845)
+- Add escape for e2e workflow [#1845](https://github.com/vdaas/vald/pull/1845)
 - Resolve GitHub Actions warning [#1818](https://github.com/vdaas/vald/pull/1818)
 
 :memo: Document
