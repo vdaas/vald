@@ -62,8 +62,8 @@
 - [Helm Operator Chart Reference](https://github.com/vdaas/vald/blob/v1.7.0/charts/vald-helm-operator/README.md)
 
 ### Changes
-null
 
+null
 
 ## v1.6.3
 
