@@ -1,31 +1,51 @@
-# Contributing to Vald
+# Contributing guide
 
 Thank you for your interest in Vald, and thank you for investing your time in contributing to Vald!
 
-Please read our [Code Of Conduct](https://github.com/vdaas/vald/blob/main/CODE_OF_CONDUCT.md) to keep our community approachable and respectable.
-
 In this guide, you will get an idea of how to contribute to Vald.
 
-If you are not a developer, don't worry, some contributions don't require writing a single line of code.
+This guide is for everyone who want to contribute to Vald. Even if you are not a developer, don't worry, some contributions don't require writing a single line of code.
 
-## Contributions
+Please read our [Code Of Conduct](https://github.com/vdaas/vald/blob/main/CODE_OF_CONDUCT.md) to keep our community approachable and respectable.
 
-Please read the [About Vald](https://vald.vdaas.org/docs/overview/about-vald) to get an overview of Vald.
+Before you make any contribution to Vald, please read the [About Vald](https://vald.vdaas.org/docs/overview/about-vald) to get an overview of Vald.
 
-We welcome you to contribute to Vald to make Vald better.
-We accept the following types of contributions:
+## Type of contribution
+
+Vald is an open source project, everyone can contribute to Vald.
+
+We accept any kind of contributions, including the following types of contributions:
 
 - Issue
   - Bug report
-  - Feature request / Proposal
   - Security issue report
+  - Feature request / Proposal
+
 - Pull request
   - Source code implementation
     - Business logic implementation
     - Test implementation
   - Documentation
 
-Please also feel free to ask anything on [Vald Slack channel](https://join.slack.com/t/vald-community/shared_invite/zt-db2ky9o4-R_9p2sVp8xRwztVa8gfnPA) :)
+Please note that you can make contribution not only listed above, any voice is meaningful and important for us.
+
+Please feel free to contact us on [Slack](https://join.slack.com/t/vald-community/shared_invite/zt-db2ky9o4-R_9p2sVp8xRwztVa8gfnPA). We are waiting for you :)
+
+## Change flow
+
+Before making any changes, you may need to understand the standard flow of making changes.
+
+If you found any bugs or security issue in Vald, or you want to request a new feature, please follow [this section](#issue-contribution) to contribute on the issue.
+
+If you decided to make pull request contribution, including source code changes, or documentation changes, you need to understand the overall flow to make changes, including:
+
+1. Create development branch
+2. Make code changes
+3. Test your changes
+4. Commit your changes
+5. Create Pull Request
+
+We will describe the details in [this section](#pull-request-contribution).
 
 ## Issue contribution
 
@@ -35,20 +55,21 @@ Please find [here](./docs/contributing/issue.md) for more details about how to c
 
 ## Pull request contribution
 
-Pull request is also called merge request to let other knows about the changes you have made, to review and discuss the changes and finally merge it to the main branch.
+Pull request is also called merge request to let other knows about the changes you have made, to review and discuss the changes made and finally merge it to the main branch.
 
 In Vald, you need to create a pull request to ask for the review and actually make changes to Vald.
 
-You need to create pull request to make changes on:
+In this section, we will describe what you need to do to make pull request contribution to Vald.
 
-1. Source code changes
-   1. Business logic implementation
-   2. Test implementation
-2. Documentation creation / update
+### Development environment setup
 
-### Install and configure GitHub
+Before making any changes to Vald, you need to install the required tools to make changes to Vald.
 
-Before creating a pull request, you need to install and configure GitHub to create development branch, make changes and finally create a pull request.
+In this section, we will describe how to install the required tools and the required steps before making changes to Vald.
+
+Please note that if you have already setup the development environment, you do not need to do it again.
+
+#### Setup GitHub
 
 Please install [Git](https://git-scm.com/) and configure it first.
 
@@ -66,58 +87,15 @@ Please install [Git](https://git-scm.com/) and configure it first.
 
    Please refer [here](https://docs.github.com/authentication/managing-commit-signature-verification/telling-git-about-your-signing-key) to configure the signing key.
 
-   Vald recommends signing the commit to prove that the commit actually came from you, as it is easy to add anyone as an author of the commit, which can be used in hiding the author of malicious code.
+   Vald recommends signing the commit to prove that the commit is actually came from you. The reason is that it is easy to add anyone as an author of the commit, which can be used in hiding the author of malicious code.
 
-After install and configure Git, please clone Vald repository to your Go path, [fork Vald repository](https://github.com/vdaas/vald/fork) and setup the remote branch to your forked Vald repository.
+1. Fork Vald repository.
+   
+   Please [fork Vald repository](https://github.com/vdaas/vald/fork) to copy Vald repository to your own GitHub organization. It allows you to make changes to it without affecting Vald repository.
 
-```bash
-# clone vdaas repo
-mkdir -p $(go env GOPATH)/src/github.com/vdaas/
-cd $(go env GOPATH)/src/github.com/vdaas/
-git clone https://github.com/vdaas/vald.git
-cd vald
+#### Windows / Mac
 
-# rename origin repo to upstream and set origin to remote folked repo
-git remote rename origin upstream
-git remote add origin {your forked repo}
-git fetch origin
-```
-
-### Document contribution
-
-In Vald, the document is written as markdown files mainly under [docs](https://github.com/vdaas/vald/tree/main/docs) directory, and the asset files like image files is placed on [assets/docs](https://github.com/vdaas/vald/tree/main/assets/docs).
-
-For the image files, we use [diagrams.net](https://app.diagrams.net/) to draw and modify the image files.
-
-#### Installation guide for document contributor
-
-For making changes on document (Markdown files), we recommand using [Visual Studio Code](https://code.visualstudio.com/) to make changes on Markdown files.
-Please follow the link above to install it to your development environment.
-
-We also recommend you to install a plugin for Visual Studio Code called [Markdown All in One](https://marketplace.visualstudio.com/items?itemName=yzhang.markdown-all-in-one) to enable some extra features for easier modification on Markdown file.
-
-### Source code contribution
-
-If you decided to contribute source code to Vald, include business logic changes and test case implementation, you need to understand the package structure of Vald and know which part you need to make changes.
-
-| Package name | Description                                                      |
-| :----------- | :--------------------------------------------------------------- |
-| apis         | Vald API definitation                                            |
-| cmd          | Entry point of the Vald components                               |
-| example      | Example code of Vald                                             |
-| internal     | Internal package to extend and customize libraries functionality |
-| pkg          | Contains business logic implementation                           |
-
-Please make sure you understand our [coding guideline](./docs/contributing/coding-style.md) to follow our coding style to keep the coding style consistent.
-
-#### Installation guide for source code contributor
-
-We recommend using Linux environment to contribute code.
-Please find the below sections to install the required tools on your environment.
-
-##### Mac/Windows users
-
-For Mac / Windows users, please install and use [docker](https://www.docker.com/) to create a Linux container to build and test Vald.
+For Mac / Windows users, please download and install [docker](https://www.docker.com/) to create a Linux container to build and test Vald.
 
 You need to install the packages and execute the commands listed in the [Linux section](#linux-users) inside the docker container rather than in your local environment.
 
@@ -129,7 +107,7 @@ docker run -v '{vald repo}':'{folder mount}' {container name}
 
 For more details about docker, please refer to the [docker documentation](https://docs.docker.com/get-started/overview/).
 
-##### Linux users
+#### Linux
 
 For Linux users, please install the following tools on your environment.
 
@@ -147,7 +125,22 @@ For Debian-based Linux distribution users, you can install these required tools 
 sudo apt install curl make cmake protobuf-compiler npm unzip git golang
 ```
 
-Please also run the following command under your Vald repository to initialize the development environment and install the necessary packages and tools.
+Please clone Vald repository to the GOPATH, and setup the remote branch to your forked Vald repository.
+
+```bash
+# clone vdaas repo
+mkdir -p $(go env GOPATH)/src/github.com/vdaas/
+cd $(go env GOPATH)/src/github.com/vdaas/
+git clone https://github.com/vdaas/vald.git
+cd vald
+
+# rename origin repo to upstream and set origin to remote folked repo
+git remote rename origin upstream
+git remote add origin {your forked repo}
+git fetch origin
+```
+
+Please also execute the following command to initialize the development environment and install the necessary packages and tools.
 
 ```bash
 make init # initialize development environment, and install NGT
@@ -155,112 +148,248 @@ make tools/install # install development tools like helm, kind, etc.
 make gotests/install # install gotests tools to generate test stubs.
 ```
 
+### Vald code structure
+
+Before making changes, you need to understand Vald code structure in order to know which part of the code you needed to make changes.
+
+Vald is mainly written in Golang. If you are going to contribute to the source code, please find below description of the packages.
+
+| Package name | Description                                                      |
+| :----------- | :--------------------------------------------------------------- |
+| apis         | Vald API definitation                                            |
+| cmd          | Entry point of the Vald components                               |
+| example      | Example code of Vald                                             |
+| internal     | Internal package to extend and customize libraries functionality |
+| pkg          | Contains business logic implementation                           |
+| hack         | Contains implementation to change the behavour of tools          |
+| tests        | Contains test implementation except unit test like e2e test      | 
+
+Other than source code, you may need to make changes on manifest files of Vald such as documentation, helm configuration files, proto files, GitHub CI/CD manifest, and etc.
+
+Please find below description with the folder architecture with manifest files.
+
+| Folder name   | Description                                                      |
+| :------------ | :--------------------------------------------------------------- |
+| .devcontainer | Contains development container manifest                          |
+| .github       | GitHub CI/CD settings                                            |
+| Makefile.d    | Make command definitation                                        |
+| assets        | Contains assertion files                                         |
+| charts        | Contains Helm charts files and configuration                     |
+| design        | Contains Vald design documentation                               |
+| dockers       | Contains docker files of all component in Vald                   |
+| docs          | Contains Vald documentation                                      |
+| k8s           | Contains all example k8s manifest of all component in Vald       |
+| versions      | Contains version definitation of Vald and third-party components |
+
+### Make command
+
+Vald provides a different make command to help you make changes to Vald. Different action in make command provide different functionality for the user.
+
+Use the following command. `make [action]` to execute an action of make command.
+
+Here are some useful action of the make command.
+
+| Action           | Description                                                                                       |
+| :--------------- | :------------------------------------------------------------------------------------------------ |
+| format           | Format go, yaml, markdown and json files, and generate the license header on the source code file |
+| binary/build     | Build all Vald component into executable                                                          |
+| docker/build     | Build all Vald component into docker images                                                       |
+| proto/all        | Rebuild all proto files and generate source code files                                            |
+| helm/schema/vald | Generate json schema for Vald Helm Chart                                                          |
+| helm/docs/vald   | Generate Helm documentation                                                                       |
+| gotests/gen      | Execute gotests tools to generate unit test code stubs                                            |
+| test             | Execute unit test on cmd, pkg and internal packages                                               |
+| bench            | Execute the bencmarking on NGT, Vald agent and Vald LB gateway                                    |
+
+For more actions and details about our make commands, please find our [Makefile](https://github.com/vdaas/vald/blob/main/Makefile) and [Makefile.d](https://github.com/vdaas/vald/tree/main/Makefile.d).
+
+### CI/CD
+
+Currently, Vald contains mainly 3 types of CI/CD pipelines running on GitHub action:
+
+- Build and deploy pipelines
+- Testing pipelines
+- Linter pipelines
+
+And these pipelines are executed when a pull request is created.
+
+| Pipeline name                            | Description                                           |
+| :--------------------------------------- | :---------------------------------------------------- |
+| Build docker image: {image name}         | Pipeline to build docker image of specific image      |
+| Coverage                                 | Execute code test coverage report                     |
+| Run tests / Run tests for {package name} | Run unit test on the specific package                 |
+| Run e2e {target}                         | Execute End-to-end testing                            |
+| Run Helm lint / {chart name}             | Execute linter for Helm chart files                   |
+| reviewdog - {target}                     | Execute reviewdog to review the changes on the target |
+| DeepSource - {target}                    | Execute DeepSource to analysis target files           |
+
+About the `Build docker image` pipeline, it will build the docker image for the specific tag and upload it to the [DockerHub](https://hub.docker.com/u/vdaas).
+
+Specifically, it build the docker image on every pull request and tag the image as `pr-{pull request number}`.
+
+Whenever a pull request is merged into main branch, a nightly build will be built and uploaded to the DockerHub.
+
+When Vald release, this pipline will build the docker image with specific version (e.g. `v1.6.1`)  and also update the `latest` tag image.
+
+About the `Run e2e` pipline, it will execute the end-to-end testing and fails if any error occurred.
+
+This pipline will be executed only if the label `e2e/{target}` is added to the pull request.
+
+### Create development branch
+
+Before working on changes, you need to create a development branch on your forked branch.
+
+Name the development branch `[type]/[area]/[description]`.
+
+| Field       | Explanation                           | Naming Rule                                                                                                                 |
+| :---------- | :------------------------------------ | :-------------------------------------------------------------------------------------------------------------------------- |
+| type        | The PR type                           | The type of PR can be a feature, bug, refactoring, benchmark, security, documentation, dependencies, ci, test, etc...       |
+| area        | Area of context                       | The area of PR can be gateway, agent, agent-sidecar, lb-gateway, etc...                                                     |
+| description | Summarized description of your branch | The description must be hyphenated. Please use [a-zA-Z0-9] and a hyphen as characters, and do not use any other characters. |
+
+(\*) If you changed multiple areas, please list each area with "-".
+
+For example, when you add a new feature for internal/servers, the name of the branch will be `feature/internal/add-newfeature-for-servers`.
+
+```bash
+git checkout -b [type]/[area]/[description]
+```
+
 ### Make changes
 
-1. Make sure no one is working on the same issue/feature
+In this section, we will briefly describe how to make changes to Vald.
 
-   Before making any changes, you need to check if anyone is working on the same feature in the pull request list.
+Before making changes, please make sure you know what you are doing and know about which part of the source code is required to change, please do not change the code which is unnecessary.
 
-   If you are solving an issue, check if anyone is working on the issue and comment on the issue and say you are working on it to avoid conflict with others also working on the same issue.
+#### Code changes
 
-2. Create your feature branch on your forked repository
+If you are making source code changes, please follow and understand our [coding guideline](./docs/contributing/coding-style.md) to follow our coding style to keep the coding style consistent.
 
-   Before working on changes, you need to create a development branch on your forked branch.
+If you have discussed the design and the requirement of the changes with Vald members, please follow the design and the requirement discussed.
 
-   Name the development branch `[type]/[area]/[description]`.
+After your changes is made, we suggest you execute the following command to generate the necessary test stubs and format the source code.
 
-   | Field       | Explanation                           | Naming Rule                                                                                                                 |
-   | :---------- | :------------------------------------ | :-------------------------------------------------------------------------------------------------------------------------- |
-   | type        | The PR type                           | The type of PR can be a feature, bug, refactoring, benchmark, security, documentation, dependencies, ci, test, etc...       |
-   | area        | Area of context                       | The area of PR can be gateway, agent, agent-sidecar, lb-gateway, etc...                                                     |
-   | description | Summarized description of your branch | The description must be hyphenated. Please use [a-zA-Z0-9] and a hyphen as characters, and do not use any other characters. |
+```bash
+make gotests/gen # execute gotests tools to generate unit test code stubs
+make format # format go and yaml files
+```
 
-   (\*) If you changed multiple areas, please list each area with "-".
+#### Document & image changes
 
-   For example, when you add a new feature for internal/servers, the name of the branch will be `feature/internal/add-newfeature-for-servers`.
+Describe how to make document changes and validate it, including markdown file and draw.io images
 
-   ```bash
-   git checkout -b [type]/[area]/[description]
-   ```
+In Vald, the documents are written in Markdown format and stored in `docs` folder. Eventually, documents will be deployed to [Vald official website](https://vald.vdaas.org/).
 
-3. Make changes on Vald
+In Vald, we support some style specific to the official website to display different type of content.
 
-   If you have discussed the design and the requirement of the changes with Vald members, please follow the design and the requirement discussed.
+We provide the following CSS class for the website:
 
-4. After making source code changes
+| CSS class name | Description                              |
+| :------------- | :--------------------------------------- | 
+| caution        | Display the content as a caution message |
+| warning        | Display the content as a warning message | 
+| note           | Display the content as a note message    |
 
-   If you are making source code changes, we suggest you execute the following command to generate the necessary test stubs and format code.
+To apply the above CSS class, quote the sentence to the div with the CSS class name.
 
-   ```bash
-   make gotests/gen # execute gotests tools to generate unit test code stubs
-   make format # format go and yaml files
-   ```
+For example, to quote the sentense as a warning message:
 
-   The command `make gotests/gen` generate unit test code stubs to easier to implement unit test code.
+```html
+<div class="warning">
+This is warning message!!
+</div>
+```
 
-   The command `make format` is used to generate the license header on the source code file, and execute the code formatter to format Go and YAML files.
+About the images in the document, we are using [diagrams.net](https://www.diagrams.net/) to draw the image.
 
-5. Verify the changes
+All of the images of the document are stored in `assets/docs` directory, and each of the image should contain a `.drawio` extension file and a `svg` or `png` file.
 
-   If you are making logical changes on Vald, please refer to [this document](./docs/contributing/testing-guideline.md) for more detail about how to test your changes.
+This `.drawio` file is the source file and can only be opened on [diagrams.net](https://www.diagrams.net/).
 
-6. Commit and push your changes to the branch
+Please find [here](https://www.diagrams.net/features) for more about how to use diagrams.net.
 
-   After verifing the changes, you may want to push the changes to your development branch.
+After creating or modifing the image on diagrams.net, please store and update the `.drawio`, and export the image to `.svg` file to the Vald repository.
 
-   Please add the files that related to your changes only.
+#### Test your changes
 
-   ```bash
-   git add [files]
-   ```
+Please make sure to test and validate your changes before adding and committing your changes. 
 
-   Please write a brief description of the changes to the commit, and push it to your forked repository.
+For code changes, please refer to [this document](./docs/contributing/testing-guideline.md) for more detail about how to test your changes.
 
-   ```bash
-   git commit --signoff -m '[commit message]'
-   git push origin [type]/[area]/[description]
-   ```
+### Add and commit changes
 
-7. Create a new pull request against the Vald repository
+After verifing the changes, you need to add your changes and push it to your development branch.
 
-   After committing your changes, you may create a pull request to ask for accepting the changes.
+Please add the files that related to your changes only.
 
-   Please create the pull request to the Vald repository under `vdaas` orginization.
+```bash
+git add [file1] [file2] ...
+```
 
-   Each pull request and commit should be small enough to contain only one purpose, for easier review and tracking.
-   Please fill in the description on the pull request and write down the overview of the changes.
+And please write a brief description to the commit message, and push it to your forked repository.
 
-   Please also choose the correct type label on the pull request, we provide the following type label in Vald:
+```bash
+git commit --signoff -m '[commit message]'
+git push origin [type]/[area]/[description]
+```
 
-   | Label            | Description                          |
-   | :--------------- | :----------------------------------- |
-   | type/bug         | For bug fixes pull request           |
-   | type/dependency  | For dependency update pull request   |
-   | type/feature     | For new feature pull request         |
-   | type/refactoring | For code refactoring pull request    |
-   | type/security    | For security fix pull request        |
-   | type/test        | For test implementation pull request |
+### Create Pull Request
 
-   We also provide the following label to execute specific actions on the [GitHub Actions](https://github.co.jp/features/actions).
+After committing your changes, you may create a pull request to ask for accepting the changes.
 
-   | Label                | Description                                           |
-   | :------------------- | :---------------------------------------------------- |
-   | action/e2e-chaos     | Execute E2E chaos test                                |
-   | action/e2e-deploy    | Execute E2E deployment test                           |
-   | action/e2e-max-dim   | Execute maximum dimension E2E test                    |
-   | action/e2e-profiling | Execute E2E test with profiling                       |
-   | action/fossa         | Execute [fossa](https://fossa.com/) security checking |
+Please create the pull request to the Vald repository under `vdaas` orginization.
 
-   Please add the action label to the pull request to execute specific action if needed.
+Each pull request and commit should be small enough to contain only one purpose, for easier review and tracking.
+Please fill in the description on the pull request and write down the overview of the changes.
 
-   If you are solving an issue, please also link the pull request to the issue.
+#### Pull Request labels
 
-8. Review and merge pull request
+Labels in pull request indicates what kind of the changes is, and provide some extra feature to the pull request.
 
-   Vald team will review the pull request.
+Please choose the correct type label on the pull request, we provide the following type label in Vald:
 
-   We may ask for changes or questions we have during the review process.
+| Label            | Description                          |
+| :--------------- | :----------------------------------- |
+| type/bug         | For bug fixes pull request           |
+| type/dependency  | For dependency update pull request   |
+| type/feature     | For new feature pull request         |
+| type/refactoring | For code refactoring pull request    |
+| type/security    | For security fix pull request        |
+| type/test        | For test implementation pull request |
 
-   We will add a mention to your GitHub account on each comment and reply to make the communication smooth.
+We also provide the following label to execute specific actions on the [GitHub Actions](https://github.co.jp/features/actions).
 
-   After the review is done, we will merge the pull request to Vald. Your changes will be applied to Vald, and the changes will be included in the next Vald release.
+| Label                | Description                                           |
+| :------------------- | :---------------------------------------------------- |
+| action/e2e-chaos     | Execute E2E chaos test                                |
+| action/e2e-deploy    | Execute E2E deployment test                           |
+| action/e2e-max-dim   | Execute maximum dimension E2E test                    |
+| action/e2e-profiling | Execute E2E test with profiling                       |
+| action/fossa         | Execute [fossa](https://fossa.com/) security checking |
+
+Please add the action label to the pull request to execute specific action if needed.
+
+#### Confirmation item of Pull Request
+
+Before asking for review, please make sure to check the following things:
+
+- CI/CD pipeline works properly
+- Linter warnings and comments
+
+About CI/CD, please confirm CI/CD works properly, especially the build pipelines and test pipelines.
+
+It helps to ensure Vald is working properly to ensure the quality of deliverables.
+
+About Linter warnings and comments, Vald is integrated with different linters to check the quality of Vald.
+
+Please check all of the warnings and comments from linters, review them one-by-one and fix them if necessary.
+
+#### Review
+
+Vald team will review the pull request.
+
+We may ask for changes or questions we have during the review process.
+
+We will add a mention to your GitHub account on each comment and reply to make the communication smooth.
+
+After the review is done, we will merge the pull request to Vald. Your changes will be applied to Vald, and the changes will be included in the next Vald release.

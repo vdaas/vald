@@ -15,8 +15,8 @@ If you have found something that should be updated in Vald, search open issues t
 If it is something new, please open a new issue using the following template:
 
 - [Bug report](https://github.com/vdaas/vald/issues/new?assignees=&labels=type%2Fbug%2C+priority%2Fmedium%2C+team%2Fcore&template=bug_report.md&title=)
-- [Feature request / Proposal](https://github.com/vdaas/vald/issues/new?assignees=&labels=type%2Ffeature%2C+priority%2Flow%2C+team%2Fcore&template=feature_request.md&title=)
 - [Security issue report](https://github.com/vdaas/vald/issues/new?assignees=&labels=type%2Fsecurity%2C+priority%2Fmedium%2C+team%2Fcore%2C+team%2Fsre&template=security_issue_report.md&title=)
+- [Feature request / Proposal](https://github.com/vdaas/vald/issues/new?assignees=&labels=type%2Ffeature%2C+priority%2Flow%2C+team%2Fcore&template=feature_request.md&title=)
 
 Please fill in the information written on the template to help us to understand what you think.
 
@@ -38,20 +38,6 @@ When filing an issue, make sure to answer these five questions:
 
 Please submit the bug report [here](https://github.com/vdaas/vald/issues/new?assignees=&labels=type%2Fbug%2C+priority%2Fmedium%2C+team%2Fcore&template=bug_report.md&title=)
 
-## Feature Request / Proposal
-
-Feature request and proposal is welcome.
-
-Before creating the feature request or proposal, please make sure your idea fits the project.
-
-You can request the feature or propose a new idea and convince the project maintainers to accept your request.
-
-Please provide the problem and solution associated with the request in as much detail as possible.
-
-NOTE: If you’d like to contribute to the new feature which may affect the current Vald architecture or design, you should discuss it with the Vald team first.
-
-Please submit the feature request or proposal [here](https://github.com/vdaas/vald/issues/new?assignees=&labels=type%2Ffeature%2C+priority%2Flow%2C+team%2Fcore&template=feature_request.md&title=)
-
 ## Security Issue Report
 
 The Vald team and community have a serious concern about security issues.
@@ -65,3 +51,17 @@ If the security issue is caused by a third-party module, we will contact the mod
 We will consider using another third-party module if the vulnerable module is not actively maintained anymore.
 
 Please submit the security issue report [here](https://github.com/vdaas/vald/issues/new?assignees=&labels=type%2Fsecurity%2C+priority%2Fmedium%2C+team%2Fcore%2C+team%2Fsre&template=security_issue_report.md&title=)
+
+## Feature Request / Proposal
+
+Feature request and proposal is welcome.
+
+Before creating the feature request or proposal, please make sure your idea fits the project.
+
+You can request the feature or propose a new idea and convince the project maintainers to accept your request.
+
+Please provide the problem and solution associated with the request in as much detail as possible.
+
+NOTE: If you’d like to contribute to the new feature which may affect the current Vald architecture or design, you should discuss it with the Vald team first.
+
+Please submit the feature request or proposal [here](https://github.com/vdaas/vald/issues/new?assignees=&labels=type%2Ffeature%2C+priority%2Flow%2C+team%2Fcore&template=feature_request.md&title=)
