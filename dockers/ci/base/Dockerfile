@@ -61,6 +61,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 WORKDIR ${GOPATH}/src/github.com/vdaas/vald
 
+ENV ROOTDIR .
+
 COPY go.mod .
 COPY go.sum .
 COPY Makefile .
@@ -69,7 +71,7 @@ COPY apis/proto apis/proto
 COPY versions versions
 COPY hack/go.mod.default hack/go.mod.default
 
-RUN make deps
+RUN make deps ROOTDIR=$ROOTDIR
 
 RUN make ngt/install \
     && make helm/install \
