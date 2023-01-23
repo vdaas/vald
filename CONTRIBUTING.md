@@ -17,6 +17,7 @@ Vald is an open source project, everyone can contribute to Vald.
 We accept any kind of contributions, including the following types of contributions:
 
 - Issue
+
   - Bug report
   - Security issue report
   - Feature request / Proposal
@@ -90,7 +91,7 @@ Please install [Git](https://git-scm.com/) and configure it first.
    Vald recommends signing the commit to prove that the commit is actually came from you. The reason is that it is easy to add anyone as an author of the commit, which can be used in hiding the author of malicious code.
 
 1. Fork Vald repository.
-   
+
    Please [fork Vald repository](https://github.com/vdaas/vald/fork) to copy Vald repository to your own GitHub organization. It allows you to make changes to it without affecting Vald repository.
 
 #### Windows / Mac
@@ -162,7 +163,7 @@ Vald is mainly written in Golang. If you are going to contribute to the source c
 | internal     | Internal package to extend and customize libraries functionality |
 | pkg          | Contains business logic implementation                           |
 | hack         | Contains implementation to change the behavour of tools          |
-| tests        | Contains test implementation except unit test like e2e test      | 
+| tests        | Contains test implementation except unit test like e2e test      |
 
 Other than source code, you may need to make changes on manifest files of Vald such as documentation, helm configuration files, proto files, GitHub CI/CD manifest, and etc.
 
@@ -229,7 +230,7 @@ Specifically, it build the docker image on every pull request and tag the image 
 
 Whenever a pull request is merged into main branch, a nightly build will be built and uploaded to the DockerHub.
 
-When Vald release, this pipline will build the docker image with specific version (e.g. `v1.6.1`)  and also update the `latest` tag image.
+When Vald release, this pipline will build the docker image with specific version (e.g. `v1.6.1`) and also update the `latest` tag image.
 
 About the `Run e2e` pipline, it will execute the end-to-end testing and fails if any error occurred.
 
@@ -285,9 +286,9 @@ In Vald, we support some style specific to the official website to display diffe
 We provide the following CSS class for the website:
 
 | CSS class name | Description                              |
-| :------------- | :--------------------------------------- | 
+| :------------- | :--------------------------------------- |
 | caution        | Display the content as a caution message |
-| warning        | Display the content as a warning message | 
+| warning        | Display the content as a warning message |
 | note           | Display the content as a note message    |
 
 To apply the above CSS class, quote the sentence to the div with the CSS class name.
@@ -295,9 +296,7 @@ To apply the above CSS class, quote the sentence to the div with the CSS class n
 For example, to quote the sentense as a warning message:
 
 ```html
-<div class="warning">
-This is warning message!!
-</div>
+<div class="warning">This is warning message!!</div>
 ```
 
 About the images in the document, we are using [diagrams.net](https://www.diagrams.net/) to draw the image.
@@ -312,7 +311,7 @@ After creating or modifing the image on diagrams.net, please store and update th
 
 #### Test your changes
 
-Please make sure to test and validate your changes before adding and committing your changes. 
+Please make sure to test and validate your changes before adding and committing your changes.
 
 For code changes, please refer to [this document](./docs/contributing/testing-guideline.md) for more detail about how to test your changes.
 
