@@ -236,6 +236,8 @@ About the `Run e2e` pipeline, it will execute the end-to-end testing and fails i
 
 This pipeline will be executed only if the label `e2e/{target}` is added to the pull request.
 
+Please note that if you are working in a forked repository, all of the CI/CD pipelines will not be executed automatically. You may need to ask the Vald owner to grant access by adding the `ci/approved` label to the pull request to execute the pipelines.
+
 ### Create development branch
 
 Before working on changes, you need to create a development branch on your forked branch.
