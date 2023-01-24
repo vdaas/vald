@@ -2,7 +2,7 @@
 
 Before making any changes to Vald, you need to install the required tools to make changes to Vald.
 
-In this section, we will describe how to install the required tools and the required steps before making changes to Vald.
+We will describe how to install the required tools and the required steps before making changes to Vald.
 
 Please note that if you have already setup the development environment, you do not need to do it again.
 
