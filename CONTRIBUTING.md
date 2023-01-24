@@ -169,18 +169,18 @@ Other than source code, you may need to make changes on manifest files of Vald s
 
 Please find below the description of the folder architecture with manifest files.
 
-| Folder name   | Description                                                      |
-| :------------ | :--------------------------------------------------------------- |
-| .devcontainer | Contains development container manifest                          |
-| .github       | GitHub CI/CD settings                                            |
-| Makefile.d    | Make command definition                                          |
-| assets        | Contains assertion files                                         |
-| charts        | Contains Helm charts files and configuration                     |
-| design        | Contains Vald design documentation                               |
-| dockers       | Contains docker files of all components in Vald                  |
-| docs          | Contains Vald documentation                                      |
-| k8s           | Contains all example k8s manifest of all components in Vald      |
-| versions      | Contains version definition of Vald and third-party components   |
+| Folder name   | Description                                                    |
+| :------------ | :------------------------------------------------------------- |
+| .devcontainer | Contains development container manifest                        |
+| .github       | GitHub CI/CD settings                                          |
+| Makefile.d    | Make command definition                                        |
+| assets        | Contains assertion files                                       |
+| charts        | Contains Helm charts files and configuration                   |
+| design        | Contains Vald design documentation                             |
+| dockers       | Contains docker files of all components in Vald                |
+| docs          | Contains Vald documentation                                    |
+| k8s           | Contains all example k8s manifest of all components in Vald    |
+| versions      | Contains version definition of Vald and third-party components |
 
 ### Make command
 
