@@ -11,7 +11,7 @@ replace (
 	golang.org/x/crypto => golang.org/x/crypto v0.5.0
 	golang.org/x/net => golang.org/x/net v0.5.0
 	golang.org/x/text => golang.org/x/text v0.6.0
-	google.golang.org/genproto => google.golang.org/genproto v0.0.0-20230117162540-28d6b9783ac4
+	google.golang.org/genproto => google.golang.org/genproto v0.0.0-20230123190316-2c411cf9d197
 	google.golang.org/grpc => google.golang.org/grpc v1.52.0
 	google.golang.org/protobuf => google.golang.org/protobuf v1.28.1
 	gopkg.in/yaml.v2 => gopkg.in/yaml.v2 v2.4.0
@@ -21,7 +21,7 @@ replace (
 require (
 	github.com/kpango/fuid v0.0.0-20221203053508-503b5ad89aa1
 	github.com/kpango/glg v1.6.14
-	github.com/vdaas/vald-client-go v1.6.3
+	github.com/vdaas/vald-client-go v1.7.0
 	gonum.org/v1/hdf5 v0.0.0-20210714002203-8c5d23bc6946
 	google.golang.org/grpc v1.51.0
 )
