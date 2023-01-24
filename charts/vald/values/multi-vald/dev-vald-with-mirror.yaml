@@ -1,4 +1,6 @@
 defaults:
+  image:
+    tag: "pr-1829" # TODO: Delete it later.
   server_config:
     metrics:
       pprof:
@@ -41,8 +43,6 @@ gateway:
     enabled: true
     minReplicas: 1
     maxReplicas: 1
-    image:
-      tag: "pr-1829" # TODO: Delete it later.
     ingress:
       enabled: false
     gateway_config:

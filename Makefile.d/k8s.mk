@@ -125,7 +125,6 @@ k8s/multi/vald/delete:
 	helm uninstall vald-cluster-03 -n vald-03
 	-@kubectl delete ns vald-01 vald-02 vald-03
 
-
 .PHONY: k8s/vald-helm-operator/deploy
 ## deploy vald-helm-operator to k8s
 k8s/vald-helm-operator/deploy:
