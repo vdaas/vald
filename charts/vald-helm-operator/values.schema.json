@@ -1,1 +1,227 @@
-{"$schema":"http://json-schema.org/draft-07/schema#","title":"Values","type":"object","properties":{"affinity":{"type":"object","description":"affinity"},"annotations":{"type":"object","description":"deployment annotations"},"enableLeaderElection":{"type":"boolean","description":"enable leader election for controller manager."},"enableMetrics":{"type":"boolean","description":"enable metrics endpoint"},"healthPort":{"type":"integer","description":"port of health endpoint"},"image":{"type":"object","properties":{"pullPolicy":{"type":"string","description":"image pull policy","enum":["Always","Never","IfNotPresent"]},"repository":{"type":"string","description":"image repository"},"tag":{"type":"string","description":"image tag"}}},"leaderElectionID":{"type":"string","description":"name of the configmap that is used for holding the leader lock."},"livenessProbe":{"type":"object","properties":{"enabled":{"type":"boolean","description":"enable liveness probe."},"failureThreshold":{"type":"integer","description":"liveness probe failure threshold"},"httpGet":{"type":"object","properties":{"path":{"type":"string","description":"readiness probe path"},"port":{"type":"string","description":"readiness probe port"},"scheme":{"type":"string","description":"readiness probe scheme"}}},"initialDelaySeconds":{"type":"integer","description":"liveness probe initial delay seconds"},"periodSeconds":{"type":"integer","description":"liveness probe period seconds"},"successThreshold":{"type":"integer","description":"liveness probe success threshold"},"timeoutSeconds":{"type":"integer","description":"liveness probe timeout seconds"}}},"logging":{"type":"object","properties":{"format":{"type":"string","description":"logging format of operator (console or json)","enum":["console","json"]},"level":{"type":"string","description":"logging level of operator (debug, info, or error)","enum":["debug","info","error"]},"stacktraceLevel":{"type":"string","description":"minimum log level triggers stacktrace generation","enum":["debug","info","error"]}}},"maxConcurrentReconciles":{"type":"integer","description":"max number of concurrent reconciles"},"metricsPort":{"type":"integer","description":"port of metrics endpoint"},"name":{"type":"string","description":"name of the deployment"},"namespaced":{"type":"boolean","description":"if it is true, operator will behave as a namespace-scoped operator, if it is false, it will behave as a cluster-scoped operator."},"nodeSelector":{"type":"object","description":"node labels for pod assignment"},"podAnnotations":{"type":"object","description":"pod annotations"},"podSecurityContext":{"type":"object","description":"security context for pod"},"rbac":{"type":"object","properties":{"create":{"type":"boolean","description":"required roles and rolebindings will be created"},"name":{"type":"string","description":"name of roles and rolebindings"}}},"readinessProbe":{"type":"object","properties":{"enabled":{"type":"boolean","description":"enable readiness probe."},"failureThreshold":{"type":"integer","description":"liveness probe failure threshold"},"httpGet":{"type":"object","properties":{"path":{"type":"string","description":"readiness probe path"},"port":{"type":"string","description":"readiness probe port"},"scheme":{"type":"string","description":"readiness probe scheme"}}},"initialDelaySeconds":{"type":"integer","description":"liveness probe initial delay seconds"},"periodSeconds":{"type":"integer","description":"liveness probe period seconds"},"successThreshold":{"type":"integer","description":"liveness probe success threshold"},"timeoutSeconds":{"type":"integer","description":"liveness probe timeout seconds"}}},"reconcilePeriod":{"type":"string","description":"reconcile duration of operator"},"replicas":{"type":"integer","description":"number of replicas"},"resources":{"type":"object","description":"kubernetes resources of pod"},"securityContext":{"type":"object","description":"security context for container"},"service":{"type":"object","properties":{"annotations":{"type":"object","description":"service annotations"},"enabled":{"type":"boolean","description":"service enabled"},"externalTrafficPolicy":{"type":"string","description":"external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local"},"labels":{"type":"object","description":"service labels"},"type":{"type":"string","description":"service type: ClusterIP, LoadBalancer or NodePort","enum":["ClusterIP","LoadBalancer","NodePort"]}}},"serviceAccount":{"type":"object","properties":{"create":{"type":"boolean","description":"service account will be created"},"name":{"type":"string","description":"name of service account"}}},"tolerations":{"type":"array","description":"tolerations","items":{"type":"object"}},"watchNamespaces":{"type":"string","description":"comma separated names of namespaces to watch, if it is empty, the namespace that the operator exists in is used."}}}
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Values",
+  "type": "object",
+  "properties": {
+    "affinity": { "type": "object", "description": "affinity" },
+    "annotations": {
+      "type": "object",
+      "description": "deployment annotations"
+    },
+    "enableLeaderElection": {
+      "type": "boolean",
+      "description": "enable leader election for controller manager."
+    },
+    "enableMetrics": {
+      "type": "boolean",
+      "description": "enable metrics endpoint"
+    },
+    "healthPort": {
+      "type": "integer",
+      "description": "port of health endpoint"
+    },
+    "image": {
+      "type": "object",
+      "properties": {
+        "pullPolicy": {
+          "type": "string",
+          "description": "image pull policy",
+          "enum": ["Always", "Never", "IfNotPresent"]
+        },
+        "repository": { "type": "string", "description": "image repository" },
+        "tag": { "type": "string", "description": "image tag" }
+      }
+    },
+    "leaderElectionID": {
+      "type": "string",
+      "description": "name of the configmap that is used for holding the leader lock."
+    },
+    "livenessProbe": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "enable liveness probe."
+        },
+        "failureThreshold": {
+          "type": "integer",
+          "description": "liveness probe failure threshold"
+        },
+        "httpGet": {
+          "type": "object",
+          "properties": {
+            "path": { "type": "string", "description": "readiness probe path" },
+            "port": { "type": "string", "description": "readiness probe port" },
+            "scheme": {
+              "type": "string",
+              "description": "readiness probe scheme"
+            }
+          }
+        },
+        "initialDelaySeconds": {
+          "type": "integer",
+          "description": "liveness probe initial delay seconds"
+        },
+        "periodSeconds": {
+          "type": "integer",
+          "description": "liveness probe period seconds"
+        },
+        "successThreshold": {
+          "type": "integer",
+          "description": "liveness probe success threshold"
+        },
+        "timeoutSeconds": {
+          "type": "integer",
+          "description": "liveness probe timeout seconds"
+        }
+      }
+    },
+    "logging": {
+      "type": "object",
+      "properties": {
+        "format": {
+          "type": "string",
+          "description": "logging format of operator (console or json)",
+          "enum": ["console", "json"]
+        },
+        "level": {
+          "type": "string",
+          "description": "logging level of operator (debug, info, or error)",
+          "enum": ["debug", "info", "error"]
+        },
+        "stacktraceLevel": {
+          "type": "string",
+          "description": "minimum log level triggers stacktrace generation",
+          "enum": ["debug", "info", "error"]
+        }
+      }
+    },
+    "maxConcurrentReconciles": {
+      "type": "integer",
+      "description": "max number of concurrent reconciles"
+    },
+    "metricsPort": {
+      "type": "integer",
+      "description": "port of metrics endpoint"
+    },
+    "name": { "type": "string", "description": "name of the deployment" },
+    "namespaced": {
+      "type": "boolean",
+      "description": "if it is true, operator will behave as a namespace-scoped operator, if it is false, it will behave as a cluster-scoped operator."
+    },
+    "nodeSelector": {
+      "type": "object",
+      "description": "node labels for pod assignment"
+    },
+    "podAnnotations": { "type": "object", "description": "pod annotations" },
+    "podSecurityContext": {
+      "type": "object",
+      "description": "security context for pod"
+    },
+    "rbac": {
+      "type": "object",
+      "properties": {
+        "create": {
+          "type": "boolean",
+          "description": "required roles and rolebindings will be created"
+        },
+        "name": {
+          "type": "string",
+          "description": "name of roles and rolebindings"
+        }
+      }
+    },
+    "readinessProbe": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "enable readiness probe."
+        },
+        "failureThreshold": {
+          "type": "integer",
+          "description": "liveness probe failure threshold"
+        },
+        "httpGet": {
+          "type": "object",
+          "properties": {
+            "path": { "type": "string", "description": "readiness probe path" },
+            "port": { "type": "string", "description": "readiness probe port" },
+            "scheme": {
+              "type": "string",
+              "description": "readiness probe scheme"
+            }
+          }
+        },
+        "initialDelaySeconds": {
+          "type": "integer",
+          "description": "liveness probe initial delay seconds"
+        },
+        "periodSeconds": {
+          "type": "integer",
+          "description": "liveness probe period seconds"
+        },
+        "successThreshold": {
+          "type": "integer",
+          "description": "liveness probe success threshold"
+        },
+        "timeoutSeconds": {
+          "type": "integer",
+          "description": "liveness probe timeout seconds"
+        }
+      }
+    },
+    "reconcilePeriod": {
+      "type": "string",
+      "description": "reconcile duration of operator"
+    },
+    "replicas": { "type": "integer", "description": "number of replicas" },
+    "resources": {
+      "type": "object",
+      "description": "kubernetes resources of pod"
+    },
+    "securityContext": {
+      "type": "object",
+      "description": "security context for container"
+    },
+    "service": {
+      "type": "object",
+      "properties": {
+        "annotations": {
+          "type": "object",
+          "description": "service annotations"
+        },
+        "enabled": { "type": "boolean", "description": "service enabled" },
+        "externalTrafficPolicy": {
+          "type": "string",
+          "description": "external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local"
+        },
+        "labels": { "type": "object", "description": "service labels" },
+        "type": {
+          "type": "string",
+          "description": "service type: ClusterIP, LoadBalancer or NodePort",
+          "enum": ["ClusterIP", "LoadBalancer", "NodePort"]
+        }
+      }
+    },
+    "serviceAccount": {
+      "type": "object",
+      "properties": {
+        "create": {
+          "type": "boolean",
+          "description": "service account will be created"
+        },
+        "name": { "type": "string", "description": "name of service account" }
+      }
+    },
+    "tolerations": {
+      "type": "array",
+      "description": "tolerations",
+      "items": { "type": "object" }
+    },
+    "watchNamespaces": {
+      "type": "string",
+      "description": "comma separated names of namespaces to watch, if it is empty, the namespace that the operator exists in is used."
+    }
+  }
+}
