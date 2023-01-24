@@ -56,7 +56,7 @@ Please find [here](./docs/contributing/issue.md) for more details about how to c
 
 ## Pull request contribution
 
-Pull request is also called merge request to let other know about the changes you have made, to review and discuss the changes made and finally merge it to the main branch.
+Pull request is also called merge request to let others know about the changes you have made, to review and discuss the changes made and finally merge it to the main branch.
 
 In Vald, you need to create a pull request to ask for the review and actually make changes to Vald.
 
@@ -169,18 +169,18 @@ Other than source code, you may need to make changes on manifest files of Vald s
 
 Please find below the description of the folder architecture with manifest files.
 
-| Folder name   | Description                                                    |
-| :------------ | :------------------------------------------------------------- |
-| .devcontainer | Contains development container manifest                        |
-| .github       | GitHub CI/CD settings                                          |
-| Makefile.d    | Make command definition                                        |
-| assets        | Contains assertion files                                       |
-| charts        | Contains Helm charts files and configuration                   |
-| design        | Contains Vald design documentation                             |
-| dockers       | Contains docker files of all components in Vald                |
-| docs          | Contains Vald documentation                                    |
-| k8s           | Contains all example k8s manifest of all component in Vald     |
-| versions      | Contains version definition of Vald and third-party components |
+| Folder name   | Description                                                      |
+| :------------ | :--------------------------------------------------------------- |
+| .devcontainer | Contains development container manifest                          |
+| .github       | GitHub CI/CD settings                                            |
+| Makefile.d    | Make command definition                                          |
+| assets        | Contains assertion files                                         |
+| charts        | Contains Helm charts files and configuration                     |
+| design        | Contains Vald design documentation                               |
+| dockers       | Contains docker files of all components in Vald                  |
+| docs          | Contains Vald documentation                                      |
+| k8s           | Contains all example k8s manifest of all components in Vald      |
+| versions      | Contains version definition of Vald and third-party components   |
 
 ### Make command
 
@@ -299,7 +299,7 @@ For example, to quote the sentence as a warning message:
 
 About the images in the document, we are using [diagrams.net](https://www.diagrams.net/) to draw the image.
 
-All of the images of the document are stored in the `assets/docs` directory, and each of the images should contain a `.drawio` extension file and the `svg` or `png` file.
+All the images of the document are stored in the `assets/docs` directory, and each of the images should contain a `.drawio` extension file and the `svg` or `png` file.
 
 This `.drawio` file is the source file and can only be opened on [diagrams.net](https://www.diagrams.net/).
 
