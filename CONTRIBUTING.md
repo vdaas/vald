@@ -118,7 +118,7 @@ For Linux users, please install the following tools on your environment.
 - [Protobuf](https://grpc.io/docs/protoc-installation/)
 - [npm](https://www.npmjs.com/)
 - [unzip](https://linux.die.net/man/1/unzip)
-- [Go](https://go.dev/) (v1.19.2 or later is recommended)
+- [Go](https://go.dev/) (v1.19.5 or later is recommended)
 
 For Debian-based Linux distribution users, you can install these required tools using `apt`.
 
