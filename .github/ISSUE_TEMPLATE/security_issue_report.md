@@ -16,7 +16,7 @@ assignees: ""
 
 <!--- Please change the versions below along with your environment -->
 
-- Vald Version: 1.6.3
+- Vald Version: 1.7.0
 - Go Version: 1.19.5
 - Docker Version: 20.10.8
 - Kubernetes Version: 1.22.0
