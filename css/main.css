@@ -46,17 +46,16 @@ body {
   padding: 12px 24px;
   margin-bottom: 10px;
   border: 1px solid #ffffff;
-  background: rgba(255,255,255,0.2);
+  background: rgba(255, 255, 255, 0.2);
   color: #ffffff;
 }
-.top__linkitem:hover{
-  background: rgba(255,255,255,0.1);
+.top__linkitem:hover {
+  background: rgba(255, 255, 255, 0.1);
   transition: all 0.2s;
 }
 
-
-.top__linkitem::before{
-  content: '';
+.top__linkitem::before {
+  content: "";
   display: inline-flex;
   margin-right: 8px;
   background-size: 16px 16px;
@@ -65,18 +64,17 @@ body {
   height: 16px;
 }
 
-.top__linkitem--getstarted::before{
+.top__linkitem--getstarted::before {
   background-image: url(../images/top_icon_getstarted.svg);
 }
 
-.top__linkitem--docs::before{
+.top__linkitem--docs::before {
   background-image: url(../images/top_icon_docs.svg);
 }
 
-.top__linkitem--valdslack::before{
+.top__linkitem--valdslack::before {
   background-image: url(../images/top_icon_valdslack.svg);
 }
-
 
 @media screen and (min-width: 768px) {
   .top__linkitem {
@@ -88,11 +86,10 @@ body {
   }
 }
 
-
 .top__bg {
   position: absolute;
-  top:0;
-  left:0;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
 }
@@ -160,8 +157,7 @@ body {
   top: 0;
 }
 
-
-.bg__wrap .bg__wrap--dark{
+.bg__wrap .bg__wrap--dark {
   display: none;
 }
 
@@ -341,7 +337,6 @@ body {
   padding: 0 24px 24px;
 }
 
-
 @media screen and (min-width: 768px) {
   .top__content {
     margin: 0 auto;
@@ -354,10 +349,8 @@ body {
   }
 
   .top__lead {
-    font-size: 4.0rem;
+    font-size: 4rem;
   }
-
-
 
   .concept__content {
     margin: 0 auto;
@@ -435,24 +428,24 @@ pre {
   line-height: 1.45;
   background-color: #f6f8fa;
   margin-bottom: 8px;
-  font-family: SFMono-Regular,Consolas,Liberation Mono,Menlo,monospace;
+  font-family: SFMono-Regular, Consolas, Liberation Mono, Menlo, monospace;
   letter-spacing: 0;
 }
 
-.highlight{
+.highlight {
   position: relative;
 }
 
-.highlight::before{
-  content: '';
+.highlight::before {
+  content: "";
   position: absolute;
   width: 20px;
   height: 20px;
   background-color: #f8f8f8;
-  background-image:url('../images/docs_icon_copy.png');
+  background-image: url("../images/docs_icon_copy.png");
   display: inline-block;
   right: 0;
-  top:0;
+  top: 0;
   z-index: 2;
   background-size: 40px 20px;
   -webkit-transition: opacity 0.3s;
@@ -462,39 +455,40 @@ pre {
   transition: opacity 0.3s;
 }
 
-.page ul li:hover{
-    color: #00BAB1;
+.page ul li:hover {
+  color: #00bab1;
 }
-.page a:hover{
-    color: #00BAB1;
+.page a:hover {
+  color: #00bab1;
 }
 
-.highlight::after{
-  content: '';
+.highlight::after {
+  content: "";
   position: absolute;
   width: 20px;
   height: 20px;
   background-color: #f8f8f8;
-  background-image:url('../images/docs_icon_copy.png');
+  background-image: url("../images/docs_icon_copy.png");
   display: inline-block;
   right: 0;
-  top:0;
+  top: 0;
   z-index: 1;
   background-size: 40px 20px;
   background-position: 20px 0;
 }
 
-.highlight.clicked::before{
+.highlight.clicked::before {
   opacity: 0;
 }
 
-
-pre::-webkit-scrollbar{height:4px;}
-pre::-webkit-scrollbar-track{
-  background:#e9e9e9;
+pre::-webkit-scrollbar {
+  height: 4px;
 }
-pre::-webkit-scrollbar-thumb{
-  background:#777777;
+pre::-webkit-scrollbar-track {
+  background: #e9e9e9;
+}
+pre::-webkit-scrollbar-thumb {
+  background: #777777;
 }
 
 /*table::-webkit-scrollbar{height:6px;}
@@ -509,11 +503,11 @@ table::-webkit-scrollbar-thumb{
   pre {
     background-color: #272822;
   }
-  pre::-webkit-scrollbar-track{
-    background:#777777;
+  pre::-webkit-scrollbar-track {
+    background: #777777;
   }
-  pre::-webkit-scrollbar-thumb{
-    background:#e9e9e9;
+  pre::-webkit-scrollbar-thumb {
+    background: #e9e9e9;
   }
 }
 
@@ -535,20 +529,19 @@ main {
   width: 100%;
 }
 
-
 details {
   margin-bottom: 12px;
 }
 
-details #text{
+details #text {
   margin: 12px 0;
 }
 
-details br{
+details br {
   display: none;
 }
 
-details > summary  {
+details > summary {
   color: #ffffff;
   padding: 6px 12px;
   background-color: #272822;
@@ -577,7 +570,7 @@ details > summary  {
   font-size: 1.4rem;
 }
 
-.current.open{
+.current.open {
   width: 60%;
 }
 
@@ -587,7 +580,7 @@ details > summary  {
   color: #333333;
 }
 
-.current ul{
+.current ul {
   display: none;
 }
 
@@ -632,21 +625,19 @@ details > summary  {
   background-color: #006076;
 }
 
-.current ul li a{
+.current ul li a {
   border-left: 2px solid #ccc;
   padding: 5px 0 5px 20px;
   margin-top: -2px;
 }
 
-.current ul li a.view{
+.current ul li a.view {
   border-left: 2px solid #006076;
 }
 
-.current ul li ul li a{
+.current ul li ul li a {
   padding-left: 40px;
 }
-
-
 
 /*page*/
 .page {
@@ -662,7 +653,7 @@ details > summary  {
   color: #333333;
 }
 
-.page ul li{
+.page ul li {
   margin: 8px 0 0 20px;
 }
 
@@ -748,45 +739,43 @@ details > summary  {
 }
 
 .markdown a {
-  color: #309BE9;
+  color: #309be9;
 }
 
 .markdown a:visited {
-  color: #309BE9;
+  color: #309be9;
 }
 
 .markdown code {
   display: inline;
-  padding: .1em .4em;
+  padding: 0.1em 0.4em;
   margin: 0;
   font-size: 85%;
-  background-color: rgba(27, 31, 35, .05);
+  background-color: rgba(27, 31, 35, 0.05);
   border-radius: 3px;
   overflow-wrap: break-word;
 }
 
-
-.markdown pre code{
-  padding:0;
+.markdown pre code {
+  padding: 0;
   font-size: 100%;
 }
 
-.markdown code.language-rpc{
+.markdown code.language-rpc {
   background-color: rgba(0, 0, 0, 0);
 }
 
-
-.markdown table{
-  width: 100%;
-  margin-bottom: 32px;
-  white-space: nowrap;
-  overflow: auto;
-  background: #f8f8f8;
-  text-align: left;
-  border-spacing: 0 30px 0 0;
+.markdown table {
   display: block;
+  white-space: nowrap;
+  margin-bottom: 32px;
+  overflow: auto;
 }
 
+.markdown table tr th,
+.markdown table tr td {
+  text-align: left !important;
+}
 
 .markdown tbody {
   border-collapse: collapse;
@@ -796,13 +785,15 @@ details > summary  {
   background: #eee;
 }
 .markdown tr:not(:first-child) {
-  th, td {
-    border-top: solid 1px #ddd;
+  th,
+  td {
+    border-top: 1px solid #ddd;
   }
 }
 
-.markdown th, .markdown td {
-  padding: 10px 45px 10px 10px;
+.markdown th,
+.markdown td {
+  padding: 10px;
 }
 .markdown thead th {
   padding: 10px;
@@ -825,7 +816,12 @@ details > summary  {
   font-size: 18px;
 }
 
-.markdown h1, .markdown h2, .markdown h3, .markdown h4, .markdown h5, .markdown h6 {
+.markdown h1,
+.markdown h2,
+.markdown h3,
+.markdown h4,
+.markdown h5,
+.markdown h6 {
   margin-top: 24px;
   margin-bottom: 16px;
   font-weight: 600;
@@ -833,11 +829,14 @@ details > summary  {
   color: #006076;
 }
 
-.markdown p, .markdown ul, .markdown ol {
+.markdown p,
+.markdown ul,
+.markdown ol {
   margin-bottom: 16px;
 }
 
-.markdown ol, .markdown ul {
+.markdown ol,
+.markdown ul {
   padding-left: 2em;
 }
 
@@ -858,66 +857,63 @@ details > summary  {
 }
 
 .markdown .highlight {
-    margin-bottom: 16px;
+  margin-bottom: 16px;
 }
 
 /* see also */
 
-.cardlist{
+.cardlist {
   display: flex;
   flex-direction: column;
 }
 
-.cardlist .cardlist__card{
+.cardlist .cardlist__card {
   display: inline-block;
   background-color: #f8f8f8;
   padding: 16px;
   margin-bottom: 16px;
 }
 
-.cardlist .card__title{
+.cardlist .card__title {
   margin-bottom: 12px;
   text-decoration: underline;
   color: #006076;
   font-weight: bold;
 }
 
-.cardlist .card__text{
+.cardlist .card__text {
   margin-bottom: 0;
   color: #333333;
 }
 
 @media screen and (min-width: 768px) {
-  .cardlist{
+  .cardlist {
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
   }
-  .cardlist .cardlist__card{
+  .cardlist .cardlist__card {
     width: 50%;
     width: calc(50% - 8px);
   }
-  .cardlist .cardlist__card:nth-child(odd){
+  .cardlist .cardlist__card:nth-child(odd) {
     margin-right: 16px;
   }
 }
 
 @media (prefers-color-scheme: dark) {
-  .cardlist .cardlist__card{
+  .cardlist .cardlist__card {
     background-color: #333333;
   }
-  .cardlist .card__title{
-    color: #00BAB1;
+  .cardlist .card__title {
+    color: #00bab1;
   }
-  .cardlist .card__text{
+  .cardlist .card__text {
     color: #ffffff;
   }
-
 }
 
-
-
-.language-bash{
+.language-bash {
   word-break: break-all;
 }
 
@@ -940,7 +936,7 @@ details > summary  {
 }
 
 .error .error__link {
-  color: #309BE9;
+  color: #309be9;
 }
 
 .coming {
@@ -962,7 +958,7 @@ details > summary  {
 }
 
 .coming .coming__link {
-  color: #309BE9;
+  color: #309be9;
 }
 
 @media screen and (min-width: 768px) {
@@ -991,7 +987,7 @@ details > summary  {
     background-color: none;
   }
 
-  .current.open{
+  .current.open {
     width: 25%;
   }
 
@@ -999,13 +995,12 @@ details > summary  {
     padding-top: 0;
   }
 
-  .current ul{
+  .current ul {
     display: block;
   }
 }
 
 @media screen and (min-width: 1000px) {
-
   .single {
     display: -webkit-box;
     display: -ms-flexbox;
@@ -1042,7 +1037,6 @@ details > summary  {
     width: 23%;
   }
 
-
   .page li {
     display: block;
   }
@@ -1050,7 +1044,6 @@ details > summary  {
   .page p.index {
     display: none;
   }
-
 }
 
 @media screen and (min-width: 1440px) {
@@ -1060,32 +1053,30 @@ details > summary  {
   }
 }
 
-
 /* card */
 
 .notice,
 .caution,
-.warning{
+.warning {
   width: 100%;
   margin: 0 0 16px 0;
   font-size: 1.4rem;
   padding: 16px;
   border-radius: 4px;
-  color: #093E92;
-  word-break:break-all;
+  color: #093e92;
+  word-break: break-all;
   display: inline-block;
 }
 
 .notice p,
 .caution p,
-.warning p{
+.warning p {
   margin-bottom: 0;
 }
 
-
 .notice .label,
 .caution .label,
-.warning .label{
+.warning .label {
   display: flex;
   flex-direction: row;
   font-weight: bold;
@@ -1095,8 +1086,8 @@ details > summary  {
 
 .notice .label::before,
 .caution .label::before,
-.warning .label::before{
-  content: '';
+.warning .label::before {
+  content: "";
   width: 14px;
   height: 14px;
   margin-right: 5px;
@@ -1104,108 +1095,128 @@ details > summary  {
   background-size: 28px 42px;
 }
 
-.notice{
-  background-color: #F0F6FF;
-  color: #001E4D;
+.notice {
+  background-color: #f0f6ff;
+  color: #001e4d;
 }
 
-.caution{
-  background-color: #FFF6DC;
-  color: #4A3800;
+.caution {
+  background-color: #fff6dc;
+  color: #4a3800;
 }
-.warning{
-  background-color: #FFECE9;
+.warning {
+  background-color: #ffece9;
   color: #440900;
 }
 
-.notice .label::before{
+.notice .label::before {
   background-position: 0 0;
 }
 
-.caution .label::before{
+.caution .label::before {
   background-position: 0 -14px;
 }
 
-.warning .label::before{
+.warning .label::before {
   background-position: 0 -28px;
 }
 /* card end*/
 
 @media (prefers-color-scheme: dark) {
-
- html{
-   background: #333333;
- }
+  html {
+    background: #333333;
+  }
 
   body {
     color: #ffffff;
     background: #393939;
   }
 
-  .concept, .features, .about__list, .learn {
+  .concept,
+  .features,
+  .about__list,
+  .learn {
     background-color: #333333;
   }
 
-  .concept__heading, .features__heading, .about__title, .learn__title {
-    color: #00BAB1;
+  .concept__heading,
+  .features__heading,
+  .about__title,
+  .learn__title {
+    color: #00bab1;
   }
 
-.bg__wrap .bg__wrap--light{
+  .bg__wrap .bg__wrap--light {
     display: none;
   }
 
-.bg__wrap .bg__wrap--dark{
+  .bg__wrap .bg__wrap--dark {
     display: block;
   }
 
-  .about, .features__item, .mdl-card__content {
+  .about,
+  .features__item,
+  .mdl-card__content {
     background-color: #393939;
   }
 
-  .mdl-card__title, .mdl-card__caption {
+  .mdl-card__title,
+  .mdl-card__caption {
     color: #ffffff;
   }
 
-  .single, .current {
+  .single,
+  .current {
     background-color: #393939;
   }
 
-  .current .dot, .current .dot::before, .current .dot::after {
-    background-color: #00BAB1;
+  .current .dot,
+  .current .dot::before,
+  .current .dot::after {
+    background-color: #00bab1;
   }
 
   .current {
     background-color: #393939;
-    border: 1px solid #00BAB1;
+    border: 1px solid #00bab1;
   }
 
   .current ul li a.view {
-    border-left: 2px solid #00BAB1;
-}
+    border-left: 2px solid #00bab1;
+  }
 
   .page {
     background-color: #333333;
   }
 
-  .page a, .page button.index, .current a {
+  .page a,
+  .page button.index,
+  .current a {
     color: #ffffff;
   }
 
-  .markdown h1, .markdown h2, .markdown h3, .markdown h4, .markdown h5, .markdown h6 {
-    color: #00BAB1;
+  .markdown h1,
+  .markdown h2,
+  .markdown h3,
+  .markdown h4,
+  .markdown h5,
+  .markdown h6 {
+    color: #00bab1;
   }
 
-  .page button.index::before, .page button.index::after {
-    border-top: 2px solid #00BAB1;
-    border-right: 2px solid #00BAB1;
+  .page button.index::before,
+  .page button.index::after {
+    border-top: 2px solid #00bab1;
+    border-right: 2px solid #00bab1;
   }
 
   .page li.withchild::before {
-    border-top: 2px solid #00BAB1;
-    border-right: 2px solid #00BAB1;
+    border-top: 2px solid #00bab1;
+    border-right: 2px solid #00bab1;
   }
 
-  .markdown table{
+  .markdown table tbody,
+  .markdown table thead {
     background: #333333;
   }
   .markdown tr:hover {
@@ -1220,5 +1231,4 @@ details > summary  {
       border: none;
     }
   }
-
 }
