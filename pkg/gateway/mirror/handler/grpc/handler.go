@@ -750,6 +750,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
 			span.SetStatus(trace.StatusError, err.Error())
 		}
+		return nil, err
 	}
 	return ce, nil
 }
