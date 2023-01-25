@@ -1,0 +1,87 @@
+<!doctype html><html><head><script async src="https://www.googletagmanager.com/gtag/js?id=UA-164223416-1"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag("js",new Date),gtag("config","UA-164223416-1")</script><link rel=canonical href=https://vald.vdaas.org><meta charset=utf-8><meta name=viewport content="width=device-width"><meta name=robots content="index, follow"><title>Vald | Filter Gateway</title><meta name=description content="Vald is high scalable distributed high-speed approximate nearest neighbor search engine" }><meta name=format-detection content="telephone=no"><meta http-equiv=x-ua-compatible content="IE=edge"><meta property="og:type" content="article"><meta property="og:title" content="Vald | Filter Gateway"><meta property="og:description" content="Vald is high scalable distributed high-speed approximate nearest neighbor search engine"><meta property="og:url" content="https://vald.vdaas.org/docs/v1.7/overview/component/filter-gateway/"><meta property="og:image" content="https://vald.vdaas.org/images/ogp_vald.png"><meta property="og:site_name" content="vald"><meta property="og:locale" content="en_US"><meta property="fb:app_id" content="615732422350002"><meta name=twitter:site content="@vdaas_vald"><meta name=twitter:card content="app"><link rel="shortcut icon" href=https://vald.vdaas.org/favicon.ico><link rel=stylesheet type=text/css href=/css/style.min.css><link rel=stylesheet type=text/css href=/css/header.min.css><link rel=stylesheet type=text/css href=/css/footer.min.css><link rel=stylesheet type=text/css href=/css/main.min.css><script type=text/javascript src=/js/script.min.js defer></script><meta name=viewport content="target-densitydpi=device-dpi,width=device-width,maximum-scale=1,user-scalable=yes"></head><body><header class=header id=header><div class=header__content><nav class=header__nav><a href=https://vald.vdaas.org class=header-nav__link><picture class=header-nav__image><source srcset=https://vald.vdaas.org/images/vald_white.svg media="(prefers-color-scheme: dark)"><img src=https://vald.vdaas.org/images/vald_color_1.svg alt></picture></a>
+<a class=header-nav__icon id=nav-btn><span class=header-nav__button></span></a><ul class=header__list id=menu><li class=header__item><a href=/docs/v1.7/overview/about-vald class=header__link>About</a></li><li class=header__item><a href=/docs/v1.7/tutorial/get-started class=header__link>Get Started</a></li><li class=header__item><a href=/docs/v1.7/user-guides/sdks class=header__link>SDKs</a></li><li class=header__item><a href=/docs/v1.7 class=header__link>Docs</a></li><li class=header__item><a href=https://vdaas-vald.medium.com/ target=_blank class=header__link>Blog<br></a></li><li class=header__item><details class=header__version id=version_details><summary class=version__current id=current_version>v1.7</summary><ul class=version__list><il class=version__item><a href=javascript:void(0) class="version__link version__link--latest">v1.7.0</a></il>
+<il class=version__item><a href=javascript:void(0) class=version__link>v1.7</a></il>
+<il class=version__item><a href=javascript:void(0) class=version__link>v1.6</a></il>
+<il class=version__item><a href=javascript:void(0) class=version__link>v1.5</a></il>
+<il class=version__item><a href=javascript:void(0) class=version__link>v1.4</a></il>
+<il class=version__item><a href=javascript:void(0) class=version__link>v1.3</a></il>
+<il class=version__item><a href=javascript:void(0) class=version__link>v1.2</a></il>
+<il class=version__item><a href=javascript:void(0) class=version__link>v1.1</a></il>
+<il class=version__item><a href=javascript:void(0) class=version__link>v1.0</a></il></ul></details></li><li class=header__item><a class=header__git href=https://github.com/vdaas/vald target=_blank><picture class=git__logo><source srcset=https://vald.vdaas.org/images/logo_github_white.svg media="(prefers-color-scheme: dark)" width=18 height=18><img src=https://vald.vdaas.org/images/logo_github_black.svg alt=github width=18 height=18></picture><div class=git__star><p class=git__starnum id=git-star-num></p></div></a></li></ul></nav></div></header><main role=main><div class=single><aside class=page><nav><ul id=list-body><li class=withchild id=cat_Overview>Overview<ul><li class=index><a href=/docs/v1.7/overview/about-vald/>About Vald</a></li><li class=index><a href=/docs/v1.7/overview/architecture/>Architecture</a></li><li class=index><a href=/docs/v1.7/overview/data-flow/>Data Flow</a></li></ul></li><li class=withchild id=cat_Component>Component<ul><li class=index><a href=/docs/v1.7/overview/component/agent/>Agent</a></li><li class=index><a href=/docs/v1.7/overview/component/lb-gateway/>Lb Gateway</a></li><li class=view><a href=/docs/v1.7/overview/component/filter-gateway/>Filter Gateway</a></li><li class=index><a href=/docs/v1.7/overview/component/discoverer/>Discoverer</a></li><li class=index><a href=/docs/v1.7/overview/component/index-manager/>Index Manager</a></li></ul></li><li class=withchild id=cat_Tutorial>Tutorial<ul><li class=index><a href=/docs/v1.7/tutorial/get-started/>Get Started</a></li><li class=index><a href=/docs/v1.7/tutorial/vald-agent-standalone-on-k8s/>Vald Agent Standalone on K8s</a></li><li class=index><a href=/docs/v1.7/tutorial/vald-agent-standalone-on-docker/>Vald Agent Standalone on Docker</a></li></ul></li><li class=withchild id=cat_Usecase>Usecase<ul><li class=index><a href=/docs/v1.7/usecase/usage-example/>Usage Example</a></li></ul></li><li class=withchild id="cat_User Guides">User Guides<ul><li class=index><a href=/docs/v1.7/user-guides/configuration/>Configuration</a></li><li class=index><a href=/docs/v1.7/user-guides/backup-configuration/>Backup Configuration</a></li><li class=index><a href=/docs/v1.7/user-guides/filtering-configuration/>Filtering Configuration</a></li><li class=index><a href=/docs/v1.7/user-guides/cluster-role-binding/>Cluster Role Binding</a></li><li class=index><a href=/docs/v1.7/user-guides/deployment/>Deployment</a></li><li class=index><a href=/docs/v1.7/user-guides/operations/>Operations</a></li><li class=index><a href=/docs/v1.7/user-guides/upgrade-cluster/>Upgrade Cluster</a></li><li class=index><a href=/docs/v1.7/user-guides/capacity-planning/>Capacity Planning</a></li><li class=index><a href=/docs/v1.7/user-guides/client-api-config/>Client Api Config</a></li><li class=index><a href=/docs/v1.7/user-guides/observability-configuration/>Observability Configuration</a></li><li class=index><a href=/docs/v1.7/user-guides/sdks/>Sdks</a></li></ul></li><li class=withchild id=cat_Performance>Performance<ul><li class=index><a href=/docs/v1.7/performance/loadtest/>Loadtest</a></li><li class=index><a href=/docs/v1.7/performance/benchmark/>Benchmark</a></li></ul></li><li class=withchild id=cat_Api>API<ul><li class=index><a href=/docs/v1.7/api/insert/>Insert</a></li><li class=index><a href=/docs/v1.7/api/update/>Update</a></li><li class=index><a href=/docs/v1.7/api/upsert/>Upsert</a></li><li class=index><a href=/docs/v1.7/api/search/>Search</a></li><li class=index><a href=/docs/v1.7/api/remove/>Remove</a></li><li class=index><a href=/docs/v1.7/api/object/>Object</a></li><li class=index><a href=/docs/v1.7/api/filter-gateway/>Filter Gateway</a></li><li class=index><a href=/docs/v1.7/api/status/>Status</a></li><li class=index><a href=/docs/v1.7/api/build_proto/>Build Proto</a></li></ul></li><li class=withchild id=cat_Troubleshooting>Troubleshooting<ul><li class=index><a href=/docs/v1.7/troubleshooting/provisioning/>Provisioning</a></li><li class=index><a href=/docs/v1.7/troubleshooting/client-side/>Client Side</a></li></ul></li><li class=withchild id=cat_Contributing>Contributing<ul><li class=index><a href=/docs/v1.7/contributing/contributing-guide/>Contributing Guide</a></li><li class=index><a href=/docs/v1.7/contributing/coding-style/>Coding Style</a></li><li class=index><a href=/docs/v1.7/contributing/unit-test-guideline/>Unit Test Guideline</a></li></ul></li><li class=withchild id=cat_Support>Support<ul><li class=index><a href=/docs/v1.7/support/contacts/>Contacts</a></li><li class=index><a href=/docs/v1.7/support/faq/>Faq</a></li></ul></li><li class=withchild id=cat_Release>Release<ul><li class=index><a href=/docs/v1.7/release/changelog/>Changelog</a></li></ul></li></ul></nav></aside><div class=content><div class=markdown id=markdown><h1 id=vald-filter-gateway>Vald Filter Gateway</h1><p>Vald Filter Gateway is the component to communicate user-defined ingress/egress filter components with requests.</p><h2 id=responsibility>Responsibility</h2><p>Vald Filter Gateway is an optional component in the Vald cluster allowing the user to run user-defined custom logic with ingress/egress filter components.
+The responsibility is to bypass the user request or response between the Vald cluster and the user-defined ingress filter (or egress filter) component.</p><h2 id=features>Features</h2><h3 id=ingress-filtering>Ingress Filtering</h3><p>Ingress filtering is the pre-process before the request is processed by the Vald LB Gateway.</p><p>This is useful, e.g., when you want to vectorize object data (when you want to handle object data directly as the request query) or when you want to pad the vector, etc.</p><p>Here are the steps of pre-processing with the ingress filter:</p><ol><li>The user&rsquo;s request flows from the filter gateway to the ingress filter component when using the Ingress filter.</li><li>Ingress filter performs arbitrary processing for each user and returns the result to the filter gateway.</li><li>The filter gateway forwards the ingress filter result to the Vald LB Gateway.(The Vald LB Gateway migration process is the same as when the ingress filter is not used. Click <a href=/docs/v1.7/overview/data-flow>here</a> for a detailed data flow.)</li></ol><img src=/images/v1.7/overview/component/filter-gateway/ingress_filtering_blob.svg alt="example data flow of ingress filtering with blob data">
+<img src=/images/v1.7/overview/component/filter-gateway/ingress_filtering_vector.svg alt="example data flow of ingress filtering with vector"><p>There are two types of ingress filtering methods: generating the vector and the vector filtering.</p><p>In generating the vector, for example, you can vectorize object data using your favorite model.</p><p>The filtering vector allows you to filter out vectors that contain outliers so that they are not indexed.</p><p>Vald officially offers two types of ingress filter components.</p><ul><li><a href=https://github.com/vdaas/vald-onnx-ingress-filter>vald-onnx-ingress-filter</a></li><li><a href=https://github.com/vdaas/vald-tensorflow-ingress-filter>vald-tensorflow-ingress-filter</a></li></ul><p>Of course, you can use your own implemented ingress filter component.
+When using it, please make sure to meet the following interface.</p><ul><li><p>The scheme of ingress filter service</p><pre tabindex=0><code class=language-rpc data-lang=rpc>// https://github.com/vdaas/vald/blob/main/apis/proto/v1/filter/ingress/ingress_filter.proto
+service Filter {
+  // Represent the RPC to generate the vector.
+  rpc GenVector(payload.v1.Object.Blob) returns (payload.v1.Object.Vector) {
+    option (google.api.http) = {
+      post : &#34;/filter/ingress/object&#34;
+      body : &#34;*&#34;
+    };
+  }
+
+  // Represent the RPC to filter the vector.
+  rpc FilterVector(payload.v1.Object.Vector)
+      returns (payload.v1.Object.Vector) {
+    option (google.api.http) = {
+      post : &#34;/filter/ingress/vector&#34;
+      body : &#34;*&#34;
+    };
+  }
+}
+</code></pre></li><li><p>The scheme of <code>payload.v1.Object.Blob</code> and <code>payload.v1.Object.Vector</code></p><pre tabindex=0><code class=language-rpc data-lang=rpc>// https://github.com/vdaas/vald/blob/main/apis/proto/v1/payload/payload.proto
+// Represent the binary object.
+message Blob {
+  // The object ID.
+  string id = 1 [ (validate.rules).string.min_len = 1 ];
+  // The binary object.
+  bytes object = 2;
+}
+
+// Represent a vector.
+message Vector {
+  // The vector ID.
+  string id = 1 [ (validate.rules).string.min_len = 1 ];
+  // The vector.
+  repeated float vector = 2 [ (validate.rules).repeated .min_items = 2 ];
+}
+</code></pre></li></ul><h3 id=egress-filtering>Egress Filtering</h3><p>Egress filtering is mainly used as the post-processing for the search result returned from the Vald LB Gateway.
+Egress filtering returns the search results filtered by the egress filter component to the requesting user.</p><p>Here are the steps of pre-processing with the egress filter:</p><ol><li>The filter gateway receives the search results from the Vald LB Gateway and forwards them to the egress filter component.</li><li>The egress filter component filters the search results and returns the filtered search results to the Filter Gateway.</li><li>The filter gateway returns the filtered search results to the user.</li></ol><img src=/images/v1.7/overview/component/filter-gateway/egress_filtering.svg alt="search data flow with egress filtering"><p>There are two types of egress filtering methods: distance filtering and vector filtering.</p><p>In distance filtering, for example, you can add a process to exclude vectors that exceed the upper limit of distance from the search results.</p><p>Vector filtering allows you to add the process: for example, to remove different categories&rsquo; vectors from the search results. (e.g., excluding kid&rsquo;s T-shirts from the search for adult&rsquo;s T-shirts.)</p><p>If you want to use this feature, please deploy your own egress filter component, which meets the following interface.</p><ul><li><p>The scheme of egress filter service</p><pre tabindex=0><code class=language-rpc data-lang=rpc>// https://github.com/vdaas/vald/blob/main/apis/proto/v1/filter/ingress/egress_filter.proto
+service Filter {
+
+  // Represent the RPC to filter the distance.
+  rpc FilterDistance(payload.v1.Object.Distance)
+      returns (payload.v1.Object.Distance) {
+    option (google.api.http) = {
+      post : &#34;/filter/egress/distance&#34;
+      body : &#34;*&#34;
+    };
+  }
+
+  // Represent the RPC to filter the vector.
+  rpc FilterVector(payload.v1.Object.Vector)
+      returns (payload.v1.Object.Vector) {
+    option (google.api.http) = {
+      post : &#34;/filter/egress/vector&#34;
+      body : &#34;*&#34;
+    };
+  }
+}
+</code></pre></li><li><p>The scheme of <code>payload.v1.Object.Distance</code> and <code>payload.v1.Object.Vector</code></p><pre tabindex=0><code class=language-rpc data-lang=rpc>// https://github.com/vdaas/vald/blob/main/apis/proto/v1/payload/payload.proto
+// Represent the ID and distance pair.
+message Distance {
+  // The vector ID.
+  string id = 1;
+  // The distance.
+  float distance = 2;
+}
+
+// Represent a vector.
+message Vector {
+  // The vector ID.
+  string id = 1 [ (validate.rules).string.min_len = 1 ];
+  // The vector.
+  repeated float vector = 2 [ (validate.rules).repeated .min_items = 2 ];
+}
+</code></pre></li></ul></div><aside class=current id=current><button class=menu><span class=dot></span></button><nav id=TableOfContents><ul><li><a href=#responsibility>Responsibility</a></li><li><a href=#features>Features</a><ul><li><a href=#ingress-filtering>Ingress Filtering</a></li><li><a href=#egress-filtering>Egress Filtering</a></li></ul></li></ul></nav></aside></div></div></main><footer class=footer><div class="footer__content cf"><ul class=footer__list><li class=footer__item><a href=/docs/v1.7/overview/about-vald class=footer__link>About<br></a></li><li class=footer__item><a href=/docs/v1.7/tutorial/get-started class=footer__link>Get Started<br></a></li><li class=footer__item><a href=/docs/v1.7/user-guides/sdks class=footer__link>SDKs</a></li><li class=footer__item><a href=/docs/v1.7 class=footer__link>Docs</a></li><li class=footer__item><a href=https://vdaas-vald.medium.com/ target=_blank class=footer__link>Blog<br></a></li><li class=footer__item><a class="footer__item footer__icon" href=https://github.com/vdaas/vald target=_blank><picture><source srcset=https://vald.vdaas.org/images/logo_github_white.svg media="(prefers-color-scheme: dark)" class=icon__image width=24 height=24><img src=https://vald.vdaas.org/images/logo_github_black.svg alt=github class=icon__image></picture></a></li></ul></div><p class=footer__copylight>©2019-2023 vald.vdaas.org Vald team</p></footer></body></html>
