@@ -20,10 +20,10 @@ metadata:
   name: default-vald-lb-gateway-priority
   labels:
     app.kubernetes.io/name: vald
-    helm.sh/chart: vald-v1.6.3
+    helm.sh/chart: vald-v1.7.0
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: release-name
-    app.kubernetes.io/version: v1.6.3
+    app.kubernetes.io/version: v1.7.0
     app.kubernetes.io/component: gateway-lb
 value: 1e+06
 globalDefault: false

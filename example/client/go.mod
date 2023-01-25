@@ -11,8 +11,8 @@ replace (
 	golang.org/x/crypto => golang.org/x/crypto v0.5.0
 	golang.org/x/net => golang.org/x/net v0.5.0
 	golang.org/x/text => golang.org/x/text v0.6.0
-	google.golang.org/genproto => google.golang.org/genproto v0.0.0-20230109162033-3c3c17ce83e6
-	google.golang.org/grpc => google.golang.org/grpc v1.51.0
+	google.golang.org/genproto => google.golang.org/genproto v0.0.0-20230123190316-2c411cf9d197
+	google.golang.org/grpc => google.golang.org/grpc v1.52.0
 	google.golang.org/protobuf => google.golang.org/protobuf v1.28.1
 	gopkg.in/yaml.v2 => gopkg.in/yaml.v2 v2.4.0
 	gopkg.in/yaml.v3 => gopkg.in/yaml.v3 v3.0.1
@@ -21,7 +21,7 @@ replace (
 require (
 	github.com/kpango/fuid v0.0.0-20221203053508-503b5ad89aa1
 	github.com/kpango/glg v1.6.14
-	github.com/vdaas/vald-client-go v1.6.3
+	github.com/vdaas/vald-client-go v1.7.0
 	gonum.org/v1/hdf5 v0.0.0-20210714002203-8c5d23bc6946
 	google.golang.org/grpc v1.51.0
 )
@@ -31,9 +31,9 @@ require (
 	github.com/goccy/go-json v0.9.11 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/kpango/fastime v1.1.6 // indirect
-	golang.org/x/net v0.2.0 // indirect
+	golang.org/x/net v0.4.0 // indirect
 	golang.org/x/sys v0.4.0 // indirect
 	golang.org/x/text v0.6.0 // indirect
-	google.golang.org/genproto v0.0.0-20221014213838-99cd37c6964a // indirect
+	google.golang.org/genproto v0.0.0-20221118155620-16455021b5e6 // indirect
 	google.golang.org/protobuf v1.28.1 // indirect
 )
