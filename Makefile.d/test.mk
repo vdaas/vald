@@ -232,13 +232,13 @@ gotests/patch: \
 	find $(ROOTDIR)/internal/test/goleak -name '*_test.go' | xargs sed -i -E "s/goleak\.//g"
 
 $(GO_TEST_SOURCES): \
-	$(ROOTDIR)/assets/test/templates/common \
+	$(ROOTDIR)/assets/test/templates/common/ \
 	$(GO_SOURCES)
 	@$(call green, $(patsubst %,"generating go test file: %",$@))
-	gotests -w -template_dir $(ROOTDIR)/assets/test/templates/common -all $(patsubst %_test.go,%.go,$@)
+	gotests -w -template_dir $(ROOTDIR)/assets/test/templates/common/ -all $(patsubst %_test.go,%.go,$@)
 
 $(GO_OPTION_TEST_SOURCES): \
-	$(ROOTDIR)/assets/test/templates/option \
+	$(ROOTDIR)/assets/test/templates/option/ \
 	$(GO_OPTION_SOURCES)
 	@$(call green, $(patsubst %,"generating go test file: %",$@))
-	gotests -w -template_dir $(ROOTDIR)/assets/test/templates/option -all $(patsubst %_test.go,%.go,$@)
+	gotests -w -template_dir $(ROOTDIR)/assets/test/templates/option/ -all $(patsubst %_test.go,%.go,$@)
