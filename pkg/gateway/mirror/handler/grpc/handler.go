@@ -2141,7 +2141,7 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (loc *
 
 	successTgts := new(sync.Map)
 	if podName := s.gateway.FromForwardedContext(ctx); len(podName) == 0 {
-		err := s.gateway.BroadCast(ctx, func(ctx context.Context, target string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
+		err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
 			sctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.RemoveRPCName+"/"+target)
 			defer func() {
 				if sspan != nil {
@@ -2172,7 +2172,6 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (loc *
 			successTgts.Store(target, struct{}{})
 			return nil
 		})
-		log.Info(successTgts)
 		log.Error(err)
 		if err != nil {
 			if err := s.removeRollback(ctx, req, successTgts); err != nil {
