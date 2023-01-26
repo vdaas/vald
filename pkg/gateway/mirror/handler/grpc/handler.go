@@ -2150,7 +2150,6 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (loc *
 			}()
 			_, err := vald.NewValdClient(conn).Remove(sctx, req, copts...)
 			if err != nil {
-				log.Error(err)
 				st, msg, err := status.ParseError(err, codes.Internal,
 					"failed to parse "+vald.RemoveRPCName+" gRPC error response",
 					&errdetails.RequestInfo{
@@ -2172,7 +2171,6 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (loc *
 			successTgts.Store(target, struct{}{})
 			return nil
 		})
-		log.Error(err)
 		if err != nil {
 			if err := s.removeRollback(ctx, req, successTgts); err != nil {
 				st, msg, err := status.ParseError(err, codes.Internal,
