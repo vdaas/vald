@@ -917,8 +917,6 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 		}
 	}()
 
-	mutex := new(sync.Mutex)
-	var errs error
 	successTgts := new(sync.Map)
 	if podName := s.gateway.FromForwardedContext(ctx); len(podName) == 0 {
 		err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
@@ -945,26 +943,12 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 					span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
 					span.SetStatus(trace.StatusError, err.Error())
 				}
-				mutex.Lock()
-				if errs == nil {
-					errs = err
-				} else {
-					errs = errors.Wrap(errs, err.Error())
-				}
-				mutex.Unlock()
 				return err
 			}
 			successTgts.Store(target, struct{}{})
 			return nil
 		})
 		if err != nil {
-			if errs == nil {
-				errs = err
-			} else {
-				errs = errors.Wrap(errs, err.Error())
-			}
-		}
-		if errs != nil {
 			if err := s.multiInsertRollback(ctx, reqs, successTgts); err != nil {
 				st, msg, err := status.ParseError(err, codes.Internal,
 					"failed to parse "+vald.MultiInsertRPCName+" "+rollbackName+" error response",
@@ -984,7 +968,7 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 				}
 				return nil, err
 			}
-			st, msg, err := status.ParseError(errs, codes.Internal,
+			st, msg, err := status.ParseError(err, codes.Internal,
 				"failed to parse "+vald.MultiInsertRPCName+" gRPC error response",
 				&errdetails.RequestInfo{
 					ServingData: errdetails.Serialize(reqs),
@@ -1072,8 +1056,6 @@ func (s *server) multiInsertRollback(ctx context.Context, reqs *payload.Insert_M
 			},
 		})
 	}
-	mutex := new(sync.Mutex)
-	var errs error
 	err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
 		if _, ok := targets.Load(target); !ok {
 			return nil
@@ -1101,26 +1083,12 @@ func (s *server) multiInsertRollback(ctx context.Context, reqs *payload.Insert_M
 				span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
 				span.SetStatus(trace.StatusError, err.Error())
 			}
-			mutex.Lock()
-			if errs == nil {
-				errs = err
-			} else {
-				errs = errors.Wrap(errs, err.Error())
-			}
-			mutex.Unlock()
 			return err
 		}
 		return nil
 	})
 	if err != nil {
-		if errs == nil {
-			errs = err
-		} else {
-			errs = errors.Wrap(errs, err.Error())
-		}
-	}
-	if errs != nil {
-		st, msg, err := status.ParseError(errs, codes.Internal,
+		st, msg, err := status.ParseError(err, codes.Internal,
 			"failed to parse "+vald.MultiRemoveRPCName+" gRPC error response",
 			&errdetails.RequestInfo{
 				ServingData: errdetails.Serialize(newReq),
@@ -1149,8 +1117,6 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (res *
 		}
 	}()
 
-	mutex := new(sync.Mutex)
-	var errs error
 	successTgts := new(sync.Map)
 	if podName := s.gateway.FromForwardedContext(ctx); len(podName) == 0 {
 		err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
@@ -1178,26 +1144,12 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (res *
 					span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
 					span.SetStatus(trace.StatusError, err.Error())
 				}
-				mutex.Lock()
-				if errs == nil {
-					errs = err
-				} else {
-					errs = errors.Wrap(errs, err.Error())
-				}
-				mutex.Unlock()
 				return err
 			}
 			successTgts.Store(target, struct{}{})
 			return nil
 		})
 		if err != nil {
-			if errs == nil {
-				errs = err
-			} else {
-				errs = errors.Wrap(errs, err.Error())
-			}
-		}
-		if errs != nil {
 			if err := s.updateRollback(ctx, req, successTgts); err != nil {
 				st, msg, err := status.ParseError(err, codes.Internal,
 					"failed to parse "+vald.UpdateRPCName+" "+rollbackName+" error response",
@@ -1218,7 +1170,7 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (res *
 				}
 				return nil, err
 			}
-			st, msg, err := status.ParseError(errs, codes.Internal,
+			st, msg, err := status.ParseError(err, codes.Internal,
 				"failed to parse "+vald.UpdateRPCName+" gRPC error response",
 				&errdetails.RequestInfo{
 					RequestId:   req.GetVector().GetId(),
@@ -1331,8 +1283,6 @@ func (s *server) updateRollback(ctx context.Context, req *payload.Update_Request
 			SkipStrictExistCheck: false,
 		},
 	}
-	mutex := new(sync.Mutex)
-	var errs error
 	err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
 		if _, ok := targets.Load(target); !ok {
 			return nil
@@ -1361,26 +1311,12 @@ func (s *server) updateRollback(ctx context.Context, req *payload.Update_Request
 				span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
 				span.SetStatus(trace.StatusError, err.Error())
 			}
-			mutex.Lock()
-			if errs == nil {
-				errs = err
-			} else {
-				errs = errors.Wrap(errs, err.Error())
-			}
-			mutex.Unlock()
 			return err
 		}
 		return nil
 	})
 	if err != nil {
-		if errs == nil {
-			errs = err
-		} else {
-			errs = errors.Wrap(errs, err.Error())
-		}
-	}
-	if errs != nil {
-		st, msg, err := status.ParseError(errs, codes.Internal,
+		st, msg, err := status.ParseError(err, codes.Internal,
 			"failed to parse "+vald.UpdateRPCName+" gRPC error response",
 			&errdetails.RequestInfo{
 				RequestId:   newReq.GetVector().GetId(),
@@ -1460,8 +1396,6 @@ func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequ
 		}
 	}()
 
-	mutex := new(sync.Mutex)
-	var errs error
 	successTgts := new(sync.Map)
 	if podName := s.gateway.FromForwardedContext(ctx); len(podName) == 0 {
 		err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
@@ -1488,26 +1422,12 @@ func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequ
 					span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
 					span.SetStatus(trace.StatusError, err.Error())
 				}
-				mutex.Lock()
-				if errs == nil {
-					errs = err
-				} else {
-					errs = errors.Wrap(errs, err.Error())
-				}
-				mutex.Unlock()
 				return err
 			}
 			successTgts.Store(target, struct{}{})
 			return nil
 		})
 		if err != nil {
-			if errs == nil {
-				errs = err
-			} else {
-				errs = errors.Wrap(errs, err.Error())
-			}
-		}
-		if errs != nil {
 			if err := s.multiUpdateRollback(ctx, reqs, successTgts); err != nil {
 				st, msg, err := status.ParseError(err, codes.Internal,
 					"failed to parse "+vald.MultiUpdateRPCName+" "+rollbackName+" error response",
@@ -1527,7 +1447,7 @@ func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequ
 				}
 				return nil, err
 			}
-			st, msg, err := status.ParseError(errs, codes.Internal,
+			st, msg, err := status.ParseError(err, codes.Internal,
 				"failed to parse "+vald.MultiUpdateRPCName+" gRPC error response",
 				&errdetails.RequestInfo{
 					ServingData: errdetails.Serialize(reqs),
@@ -1678,7 +1598,6 @@ func (s *server) multiUpdateRollback(ctx context.Context, reqs *payload.Update_M
 		return err
 	}
 
-	var errs error
 	err := s.gateway.BroadCast(ctx, func(ctx context.Context, target string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
 		if _, ok := targets.Load(target); !ok {
 			return nil
@@ -1706,26 +1625,12 @@ func (s *server) multiUpdateRollback(ctx context.Context, reqs *payload.Update_M
 				span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
 				span.SetStatus(trace.StatusError, err.Error())
 			}
-			mutex.Lock()
-			if errs == nil {
-				errs = err
-			} else {
-				errs = errors.Wrap(errs, err.Error())
-			}
-			mutex.Unlock()
 			return err
 		}
 		return nil
 	})
 	if err != nil {
-		if errs == nil {
-			errs = err
-		} else {
-			errs = errors.Wrap(errs, err.Error())
-		}
-	}
-	if errs != nil {
-		st, msg, err := status.ParseError(errs, codes.Internal,
+		st, msg, err := status.ParseError(err, codes.Internal,
 			"failed to parse "+vald.MultiUpdateRPCName+" gRPC error response",
 			&errdetails.RequestInfo{
 				ServingData: errdetails.Serialize(newReqs),
@@ -1754,8 +1659,6 @@ func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *
 		}
 	}()
 
-	mutex := new(sync.Mutex)
-	var errs error
 	successTgts := new(sync.Map)
 	if podName := s.gateway.FromForwardedContext(ctx); len(podName) == 0 {
 		err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
@@ -1783,26 +1686,12 @@ func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *
 					span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
 					span.SetStatus(trace.StatusError, err.Error())
 				}
-				mutex.Lock()
-				if errs == nil {
-					errs = err
-				} else {
-					errs = errors.Wrap(errs, err.Error())
-				}
-				mutex.Unlock()
 				return err
 			}
 			successTgts.Store(target, struct{}{})
 			return nil
 		})
 		if err != nil {
-			if errs == nil {
-				errs = err
-			} else {
-				errs = errors.Wrap(errs, err.Error())
-			}
-		}
-		if errs != nil {
 			if err := s.upsertRollback(ctx, req, successTgts); err != nil {
 				st, msg, err := status.ParseError(err, codes.Internal,
 					"failed to parse "+vald.UpsertRPCName+" "+rollbackName+" error response",
@@ -1823,7 +1712,7 @@ func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *
 				}
 				return nil, err
 			}
-			st, msg, err := status.ParseError(errs, codes.Internal,
+			st, msg, err := status.ParseError(err, codes.Internal,
 				"failed to parse "+vald.UpsertRPCName+" gRPC error response",
 				&errdetails.RequestInfo{
 					RequestId:   req.GetVector().GetId(),
@@ -2019,8 +1908,6 @@ func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequ
 		}
 	}()
 
-	mutex := new(sync.Mutex)
-	var errs error
 	successTgts := new(sync.Map)
 	if podName := s.gateway.FromForwardedContext(ctx); len(podName) == 0 {
 		err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
@@ -2047,26 +1934,12 @@ func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequ
 					span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
 					span.SetStatus(trace.StatusError, err.Error())
 				}
-				mutex.Lock()
-				if errs == nil {
-					errs = err
-				} else {
-					errs = errors.Wrap(errs, err.Error())
-				}
-				mutex.Unlock()
 				return err
 			}
 			successTgts.Store(target, struct{}{})
 			return nil
 		})
 		if err != nil {
-			if errs == nil {
-				errs = err
-			} else {
-				errs = errors.Wrap(errs, err.Error())
-			}
-		}
-		if errs != nil {
 			if err := s.multiUpsertRollback(ctx, reqs, successTgts); err != nil {
 				st, msg, err := status.ParseError(err, codes.Internal,
 					"failed to parse "+vald.MultiUpsertRPCName+" "+rollbackName+" error response",
@@ -2086,7 +1959,7 @@ func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequ
 				}
 				return nil, err
 			}
-			st, msg, err := status.ParseError(errs, codes.Internal,
+			st, msg, err := status.ParseError(err, codes.Internal,
 				"failed to parse "+vald.MultiUpsertRPCName+" gRPC error response",
 				&errdetails.RequestInfo{
 					ServingData: errdetails.Serialize(reqs),
@@ -2238,7 +2111,6 @@ func (s *server) multiUpsertRollback(ctx context.Context, reqs *payload.Upsert_M
 		return err
 	}
 
-	var errs error
 	err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
 		if _, ok := targets.Load(target); !ok {
 			return nil
@@ -2266,26 +2138,12 @@ func (s *server) multiUpsertRollback(ctx context.Context, reqs *payload.Upsert_M
 				span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
 				span.SetStatus(trace.StatusError, err.Error())
 			}
-			mutex.Lock()
-			if errs == nil {
-				errs = err
-			} else {
-				errs = errors.Wrap(errs, err.Error())
-			}
-			mutex.Unlock()
 			return err
 		}
 		return nil
 	})
 	if err != nil {
-		if errs == nil {
-			errs = err
-		} else {
-			errs = errors.Wrap(errs, err.Error())
-		}
-	}
-	if errs != nil {
-		st, msg, err := status.ParseError(errs, codes.Internal,
+		st, msg, err := status.ParseError(err, codes.Internal,
 			"failed to parse "+vald.MultiUpsertRPCName+" gRPC error response",
 			&errdetails.RequestInfo{
 				ServingData: errdetails.Serialize(newReqs),
@@ -2626,8 +2484,6 @@ func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequ
 		}
 	}()
 
-	mutex := new(sync.Mutex)
-	var errs error
 	successTgts := new(sync.Map)
 	if podName := s.gateway.FromForwardedContext(ctx); len(podName) == 0 {
 		err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
@@ -2654,26 +2510,12 @@ func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequ
 					span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
 					span.SetStatus(trace.StatusError, err.Error())
 				}
-				mutex.Lock()
-				if errs == nil {
-					errs = err
-				} else {
-					errs = errors.Wrap(errs, err.Error())
-				}
-				mutex.Unlock()
 				return err
 			}
 			successTgts.Store(target, struct{}{})
 			return nil
 		})
 		if err != nil {
-			if errs == nil {
-				errs = err
-			} else {
-				errs = errors.Wrap(errs, err.Error())
-			}
-		}
-		if errs != nil {
 			if err := s.multiRemoveRollback(ctx, reqs, successTgts); err != nil {
 				st, msg, err := status.ParseError(err, codes.Internal,
 					"failed to parse "+vald.MultiRemoveRPCName+" "+rollbackName+" error response",
@@ -2693,7 +2535,7 @@ func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequ
 				}
 				return nil, err
 			}
-			st, msg, err := status.ParseError(errs, codes.Internal,
+			st, msg, err := status.ParseError(err, codes.Internal,
 				"failed to parse "+vald.MultiRemoveRPCName+" gRPC error response",
 				&errdetails.RequestInfo{
 					ServingData: errdetails.Serialize(reqs),
@@ -2844,13 +2686,12 @@ func (s *server) multiRemoveRollback(ctx context.Context, reqs *payload.Remove_M
 		return err
 	}
 
-	var errs error
 	ctx = grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.UpsertRPCServiceName+"/"+vald.MultiUpsertRPCName)
 	err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
 		if _, ok := targets.Load(target); !ok {
 			return nil
 		}
-		sctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.MultiUpsertRPCName+"/"+target)
+		sctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.MultiRemoveRPCName+"/"+target)
 		defer func() {
 			if sspan != nil {
 				sspan.End()
@@ -2873,26 +2714,12 @@ func (s *server) multiRemoveRollback(ctx context.Context, reqs *payload.Remove_M
 				span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
 				span.SetStatus(trace.StatusError, err.Error())
 			}
-			mutex.Lock()
-			if errs == nil {
-				errs = err
-			} else {
-				errs = errors.Wrap(errs, err.Error())
-			}
-			mutex.Unlock()
 			return err
 		}
 		return nil
 	})
 	if err != nil {
-		if errs == nil {
-			errs = err
-		} else {
-			errs = errors.Wrap(errs, err.Error())
-		}
-	}
-	if errs != nil {
-		st, msg, err := status.ParseError(errs, codes.Internal,
+		st, msg, err := status.ParseError(err, codes.Internal,
 			"failed to parse "+vald.MultiUpsertRPCName+" gRPC error response",
 			&errdetails.RequestInfo{
 				ServingData: errdetails.Serialize(newReqs),
