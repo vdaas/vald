@@ -154,6 +154,7 @@ func Test_server_CreateIndex(t *testing.T) {
 				svcOpts: defaultSvcOpts,
 			},
 			beforeFunc: func(t *testing.T, ctx context.Context, a args, s Server) {
+				t.Helper()
 				if err := insert(ctx, s, 1); err != nil {
 					t.Fatal(err)
 				}
@@ -178,6 +179,7 @@ func Test_server_CreateIndex(t *testing.T) {
 				svcOpts: defaultSvcOpts,
 			},
 			beforeFunc: func(t *testing.T, ctx context.Context, a args, s Server) {
+				t.Helper()
 				if err := insert(ctx, s, 100); err != nil {
 					t.Fatal(err)
 				}
@@ -202,6 +204,7 @@ func Test_server_CreateIndex(t *testing.T) {
 				svcOpts: defaultSvcOpts,
 			},
 			beforeFunc: func(t *testing.T, ctx context.Context, a args, s Server) {
+				t.Helper()
 				if err := insert(ctx, s, 1); err != nil {
 					t.Fatal(err)
 				}
@@ -234,6 +237,7 @@ func Test_server_CreateIndex(t *testing.T) {
 				svcOpts: defaultSvcOpts,
 			},
 			beforeFunc: func(t *testing.T, ctx context.Context, a args, s Server) {
+				t.Helper()
 				cnt := 100
 				if err := insert(ctx, s, cnt); err != nil {
 					t.Fatal(err)
@@ -267,6 +271,7 @@ func Test_server_CreateIndex(t *testing.T) {
 				svcOpts: defaultSvcOpts,
 			},
 			beforeFunc: func(t *testing.T, ctx context.Context, a args, s Server) {
+				t.Helper()
 				insertCnt := 1
 				removeCnt := 1
 				if err := insert(ctx, s, insertCnt); err != nil {
@@ -296,6 +301,7 @@ func Test_server_CreateIndex(t *testing.T) {
 				svcOpts: defaultSvcOpts,
 			},
 			beforeFunc: func(t *testing.T, ctx context.Context, a args, s Server) {
+				t.Helper()
 				insertCnt := 100
 				removeCnt := 100
 				if err := insert(ctx, s, insertCnt); err != nil {
@@ -344,6 +350,7 @@ func Test_server_CreateIndex(t *testing.T) {
 				svcOpts: defaultSvcOpts,
 			},
 			beforeFunc: func(t *testing.T, ctx context.Context, a args, s Server) {
+				t.Helper()
 				srv, ok := s.(*server)
 				if !ok {
 					t.Error("Server cannot convert to *server")
@@ -382,6 +389,7 @@ func Test_server_CreateIndex(t *testing.T) {
 				svcOpts: defaultSvcOpts,
 			},
 			beforeFunc: func(t *testing.T, ctx context.Context, a args, s Server) {
+				t.Helper()
 				insertCnt := 100
 				if err := insert(ctx, s, insertCnt); err != nil {
 					t.Fatal(err)
@@ -407,6 +415,7 @@ func Test_server_CreateIndex(t *testing.T) {
 				svcOpts: defaultSvcOpts,
 			},
 			beforeFunc: func(t *testing.T, ctx context.Context, a args, s Server) {
+				t.Helper()
 				insertCnt := 100
 				if err := insert(ctx, s, insertCnt); err != nil {
 					t.Fatal(err)
@@ -432,6 +441,7 @@ func Test_server_CreateIndex(t *testing.T) {
 				svcOpts: defaultSvcOpts,
 			},
 			beforeFunc: func(t *testing.T, ctx context.Context, a args, s Server) {
+				t.Helper()
 				insertCnt := 100
 				if err := insert(ctx, s, insertCnt); err != nil {
 					t.Fatal(err)
@@ -457,6 +467,7 @@ func Test_server_CreateIndex(t *testing.T) {
 				svcOpts: defaultSvcOpts,
 			},
 			beforeFunc: func(t *testing.T, ctx context.Context, a args, s Server) {
+				t.Helper()
 				insertCnt := 100
 				if err := insert(ctx, s, insertCnt); err != nil {
 					t.Fatal(err)
@@ -672,6 +683,7 @@ func Test_server_SaveIndex(t *testing.T) {
 					indexPath: mkdirTemp(),
 				},
 				beforeFunc: func(t *testing.T, ctx context.Context, s Server, n service.NGT) {
+					t.Helper()
 					if _, err := s.Insert(ctx, irs.Requests[0]); err != nil {
 						t.Error(err)
 					}
@@ -715,6 +727,7 @@ func Test_server_SaveIndex(t *testing.T) {
 					indexPath: mkdirTemp(),
 				},
 				beforeFunc: func(t *testing.T, ctx context.Context, s Server, n service.NGT) {
+					t.Helper()
 					if _, err := s.MultiInsert(ctx, irs); err != nil {
 						t.Error(err)
 					}
@@ -760,6 +773,7 @@ func Test_server_SaveIndex(t *testing.T) {
 					indexPath: mkdirTemp(),
 				},
 				beforeFunc: func(t *testing.T, ctx context.Context, s Server, n service.NGT) {
+					t.Helper()
 					if _, err := s.MultiInsert(ctx, irs); err != nil {
 						t.Error(err)
 					}
@@ -825,6 +839,7 @@ func Test_server_SaveIndex(t *testing.T) {
 					indexPath: mkdirTemp(),
 				},
 				beforeFunc: func(t *testing.T, ctx context.Context, s Server, n service.NGT) {
+					t.Helper()
 					invalidDim := dim + 1
 					vecs, err := vector.GenF32Vec(vector.Gaussian, 1, invalidDim)
 					if err != nil {
@@ -912,6 +927,7 @@ func Test_server_SaveIndex(t *testing.T) {
 					indexPath: mkdirTemp(),
 				},
 				beforeFunc: func(t *testing.T, ctx context.Context, s Server, n service.NGT) {
+					t.Helper()
 					if _, err := s.Insert(ctx, irs.Requests[0]); err != nil {
 						t.Error(err)
 					}
@@ -955,6 +971,7 @@ func Test_server_SaveIndex(t *testing.T) {
 					indexPath: mkdirTemp(),
 				},
 				beforeFunc: func(t *testing.T, ctx context.Context, s Server, n service.NGT) {
+					t.Helper()
 					if _, err := s.MultiInsert(ctx, irs); err != nil {
 						t.Error(err)
 					}
@@ -2151,6 +2168,7 @@ func Test_server_IndexInfo(t *testing.T) {
 				svcOpts: defaultSvcOpts,
 			},
 			beforeFunc: func(t *testing.T, ctx context.Context, a args, s Server) {
+				t.Helper()
 				if _, err := insertAndCreateIndex(s, ctx, insertCnt, false); err != nil {
 					t.Fatal(err)
 				}
@@ -2176,6 +2194,7 @@ func Test_server_IndexInfo(t *testing.T) {
 				svcOpts: defaultSvcOpts,
 			},
 			beforeFunc: func(t *testing.T, ctx context.Context, a args, s Server) {
+				t.Helper()
 				// we need to insert request first before remove
 				req, err := insertAndCreateIndex(s, ctx, removeCnt, true)
 				if err != nil {
@@ -2215,6 +2234,7 @@ func Test_server_IndexInfo(t *testing.T) {
 				svcOpts: defaultSvcOpts,
 			},
 			beforeFunc: func(t *testing.T, ctx context.Context, a args, s Server) {
+				t.Helper()
 				// we need vectors inserted before removal
 				rreq, err := insertAndCreateIndex(s, ctx, removeCnt, true)
 				if err != nil {
@@ -2262,6 +2282,7 @@ func Test_server_IndexInfo(t *testing.T) {
 				),
 			},
 			beforeFunc: func(t *testing.T, ctx context.Context, a args, s Server) {
+				t.Helper()
 				insertCnt := 10000
 				if _, err := insertAndCreateIndex(s, ctx, insertCnt, false); err != nil {
 					t.Fatal(err)
@@ -2335,6 +2356,7 @@ func Test_server_IndexInfo(t *testing.T) {
 					),
 				},
 				beforeFunc: func(t *testing.T, ctx context.Context, a args, s Server) {
+					t.Helper()
 					insertCnt := 10000
 					if _, err := insertAndCreateIndex(s, ctx, insertCnt, true); err != nil {
 						t.Fatal(err)
