@@ -21,20 +21,19 @@ import v1 "github.com/vdaas/vald/internal/k8s/vald/benchmark/api/v1"
 
 // BenchmarkJob represents the configuration for the internal benchmark search job.
 type BenchmarkJob struct {
-	Target        *v1.BenchmarkTarget    `json:"target" yaml:"target"`
-	Dataset       *v1.BenchmarkDataset   `json:"dataset"        yaml:"dataset"`
-	Replica       int                    `json:"replica" yaml:"replica"`
-	Repetition    int                    `json:"repetition" yaml:"repetition"`
-	JobType       string                 `json:"job_type"       yaml:"job_type"`
-	Dimension     int                    `json:"dimension"      yaml:"dimension"`
-	Epsilon       float64                `json:"epsilon"        yaml:"epsilon"`
-	Radius        float64                `json:"radius"         yaml:"radius"`
-	Iter          int                    `json:"iter"           yaml:"iter"`
-	Num           uint32                 `json:"num"            yaml:"num"`
-	MinNum        uint32                 `json:"min_num"        yaml:"min_num"`
-	Timeout       string                 `json:"timeout"        yaml:"timeout"`
-	Rules         []*v1.BenchmarkJobRule `json:"rules,omitempty" yaml:"rules,omitempty"`
-	GatewayClient *GRPCClient            `json:"gateway_client" yaml:"gateway_client"`
+	Target       *v1.BenchmarkTarget    `json:"target,omitempty" yaml:"target"`
+	Dataset      *v1.BenchmarkDataset   `json:"dataset,omitempty" yaml:"dataset"`
+	Dimension    int                    `json:"dimension,omitempty" yaml:"dimension"`
+	Replica      int                    `json:"replica,omitempty" yaml:"replica"`
+	Repetition   int                    `json:"repetition,omitempty" yaml:"repetition"`
+	JobType      string                 `json:"job_type,omitempty" yaml:"job_type"`
+	InsertConfig *v1.InsertConfig       `json:"insert_config,omitempty" yaml:"insert_config"`
+	UpdateConfig *v1.UpdateConfig       `json:"update_config,omitempty" yaml:"update_config"`
+	UpsertConfig *v1.UpsertConfig       `json:"upsert_config,omitempty" yaml:"upsert_config"`
+	SearchConfig *v1.SearchConfig       `json:"search_config,omitempty" yaml:"search_config"`
+	RemoveConfig *v1.RemoveConfig       `json:"remove_config,omitempty" yaml:"remove_config"`
+	ClientConfig *GRPCClient            `json:"client_config,omitempty" yaml:"client_config"`
+	Rules        []*v1.BenchmarkJobRule `json:"rules,omitempty" yaml:"rules"`
 }
 
 // BenchmarkScenario represents the configuration for the internal benchmark scenario.
@@ -46,11 +45,10 @@ type BenchmarkScenario struct {
 
 // Bind binds the actual data from the Job receiver fields.
 func (b *BenchmarkJob) Bind() *BenchmarkJob {
-	b.Timeout = GetActualValue(b.Timeout)
 	b.JobType = GetActualValue(b.JobType)
 
-	if b.GatewayClient != nil {
-		b.GatewayClient = b.GatewayClient.Bind()
+	if b.ClientConfig != nil {
+		b.ClientConfig = b.ClientConfig.Bind()
 	}
 	return b
 }
