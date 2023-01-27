@@ -84,27 +84,39 @@ jobs:
     steps:
       - name: Dump GitHub context
         id: github_context_step
-        run: "printenv JSON"
+        run: |
+          printf '%s\n' "$JSON" > context.json
+          cat context.json
         env:
           JSON: ${{ toJSON(github) }}
       - name: Dump job context
-        run: "printenv JSON"
+        run: |
+          printf '%s\n' "$JSON" > context.json
+          cat context.json
         env:
           JSON: ${{ toJSON(job) }}
       - name: Dump steps context
-        run: "printenv JSON"
+        run: |
+          printf '%s\n' "$JSON" > context.json
+          cat context.json
         env:
           JSON: ${{ toJSON(steps) }}
       - name: Dump runner context
-        run: "printenv JSON"
+        run: |
+          printf '%s\n' "$JSON" > context.json
+          cat context.json
         env:
           JSON: ${{ toJSON(runner) }}
       - name: Dump strategy context
-        run: "printenv JSON"
+        run: |
+          printf '%s\n' "$JSON" > context.json
+          cat context.json
         env:
           JSON: ${{ toJSON(strategy) }}
       - name: Dump matrix context
-        run: "printenv JSON"
+        run: |
+          printf '%s\n' "$JSON" > context.json
+          cat context.json
         env:
           JSON: ${{ toJSON(matrix) }}
   build:
