@@ -39,7 +39,7 @@ type GlobalConfig = config.GlobalConfig
 type Config struct {
 	config.GlobalConfig `json:",inline" yaml:",inline"`
 
-	// Server represent all server configurations
+	// Server represent all server configuration
 	Server *config.Servers `json:"server_config" yaml:"server_config"`
 
 	// Observability represent observability configurations
@@ -84,9 +84,9 @@ func NewConfig(ctx context.Context, path string) (cfg *Config, err error) {
 		cfg.Job = new(config.BenchmarkJob)
 	}
 
-	if cfg.Job.GatewayClient == nil {
-		cfg.Job.GatewayClient = new(config.GRPCClient)
-		cfg.Job.GatewayClient.Addrs = []string{
+	if cfg.Job.ClientConfig == nil {
+		cfg.Job.ClientConfig = new(config.GRPCClient)
+		cfg.Job.ClientConfig.Addrs = []string{
 			"vald-lb-gateway.default.svc.cluster.local:8081",
 		}
 	}
@@ -108,20 +108,51 @@ func NewConfig(ctx context.Context, path string) (cfg *Config, err error) {
 	}, &jobResource)
 	if err != nil {
 		log.Warn(err.Error())
+	} else {
+		cfg.Job.Target = jobResource.Spec.Target
+		cfg.Job.Dataset = jobResource.Spec.Dataset
+		cfg.Job.Replica = jobResource.Spec.Replica
+		cfg.Job.Repetition = jobResource.Spec.Repetition
+		cfg.Job.JobType = jobResource.Spec.JobType
+		cfg.Job.Rules = jobResource.Spec.Rules
+		cfg.Job.InsertConfig = jobResource.Spec.InsertConfig
+		cfg.Job.UpdateConfig = jobResource.Spec.UpdateConfig
+		cfg.Job.UpsertConfig = jobResource.Spec.UpsertConfig
+		cfg.Job.SearchConfig = jobResource.Spec.SearchConfig
+		cfg.Job.RemoveConfig = jobResource.Spec.RemoveConfig
+		clientConfig := &config.GRPCClient{
+			Addrs:               jobResource.Spec.ClientConfig.Addrs,
+			HealthCheckDuration: jobResource.Spec.ClientConfig.HealthCheckDuration,
+			ConnectionPool:      (*config.ConnectionPool)(jobResource.Spec.ClientConfig.ConnectionPool),
+			Backoff:             (*config.Backoff)(jobResource.Spec.ClientConfig.Backoff),
+			CircuitBreaker:      (*config.CircuitBreaker)(jobResource.Spec.ClientConfig.CircuitBreaker),
+			CallOption:          (*config.CallOption)(jobResource.Spec.ClientConfig.CallOption),
+			DialOption: &config.DialOption{
+				WriteBufferSize:          jobResource.Spec.ClientConfig.DialOption.WriteBufferSize,
+				ReadBufferSize:           jobResource.Spec.ClientConfig.DialOption.ReadBufferSize,
+				InitialWindowSize:        jobResource.Spec.ClientConfig.DialOption.InitialWindowSize,
+				MaxMsgSize:               jobResource.Spec.ClientConfig.DialOption.MaxMsgSize,
+				BackoffMaxDelay:          jobResource.Spec.ClientConfig.DialOption.BackoffMaxDelay,
+				BackoffBaseDelay:         jobResource.Spec.ClientConfig.DialOption.BackoffBaseDelay,
+				BackoffMultiplier:        jobResource.Spec.ClientConfig.DialOption.BackoffMultiplier,
+				MinimumConnectionTimeout: jobResource.Spec.ClientConfig.DialOption.MinimumConnectionTimeout,
+				EnableBackoff:            jobResource.Spec.ClientConfig.DialOption.EnableBackoff,
+				Insecure:                 jobResource.Spec.ClientConfig.DialOption.Insecure,
+				Timeout:                  jobResource.Spec.ClientConfig.DialOption.Timeout,
+				Interceptors:             jobResource.Spec.ClientConfig.DialOption.Interceptors,
+				Net: &config.Net{
+					DNS:          (*config.DNS)(jobResource.Spec.ClientConfig.DialOption.Net.DNS),
+					Dialer:       (*config.Dialer)(jobResource.Spec.ClientConfig.DialOption.Net.Dialer),
+					SocketOption: (*config.SocketOption)(jobResource.Spec.ClientConfig.DialOption.Net.SocketOption),
+					TLS:          (*config.TLS)(jobResource.Spec.ClientConfig.TLS),
+				},
+				Keepalive: (*config.GRPCClientKeepalive)(jobResource.Spec.ClientConfig.DialOption.Keepalive),
+			},
+			TLS: (*config.TLS)(jobResource.Spec.ClientConfig.TLS),
+		}
+		cfg.Job.ClientConfig = clientConfig
 	}
 
-	cfg.Job.Target = jobResource.Spec.Target
-	cfg.Job.Dataset = jobResource.Spec.Dataset
-	cfg.Job.Replica = jobResource.Spec.Replica
-	cfg.Job.Repetition = jobResource.Spec.Repetition
-	cfg.Job.JobType = jobResource.Spec.JobType
-	cfg.Job.Dimension = jobResource.Spec.Dimension
-	cfg.Job.Epsilon = float64(jobResource.Spec.Epsilon)
-	cfg.Job.Radius = float64(jobResource.Spec.Radius)
-	cfg.Job.Num = uint32(jobResource.Spec.Num)
-	cfg.Job.MinNum = uint32(jobResource.Spec.MinNum)
-	cfg.Job.Timeout = jobResource.Spec.Timeout
-	cfg.Job.Rules = jobResource.Spec.Rules
 	return cfg, nil
 }
 
@@ -131,17 +162,19 @@ func NewConfig(ctx context.Context, path string) (cfg *Config, err error) {
 // 		Server: &config.Servers{
 // 			Servers: []*config.Server{
 // 				{
-// 					Name:              "agent-rest",
-// 					Host:              "127.0.0.1",
-// 					Port:              8080,
-// 					Mode:              "REST",
-// 					ProbeWaitTime:     "3s",
-// 					ShutdownDuration:  "5s",
-// 					HandlerTimeout:    "5s",
-// 					IdleTimeout:       "2s",
-// 					ReadHeaderTimeout: "1s",
-// 					ReadTimeout:       "1s",
-// 					WriteTimeout:      "1s",
+// 					Name:          "agent-rest",
+// 					Host:          "127.0.0.1",
+// 					Port:          8080,
+// 					Mode:          "REST",
+// 					ProbeWaitTime: "3s",
+// 					HTTP: &config.HTTP{
+// 						ShutdownDuration:  "5s",
+// 						HandlerTimeout:    "5s",
+// 						IdleTimeout:       "2s",
+// 						ReadHeaderTimeout: "1s",
+// 						ReadTimeout:       "1s",
+// 						WriteTimeout:      "1s",
+// 					},
 // 				},
 // 				{
 // 					Name: "agent-grpc",
@@ -152,17 +185,19 @@ func NewConfig(ctx context.Context, path string) (cfg *Config, err error) {
 // 			},
 // 			MetricsServers: []*config.Server{
 // 				{
-// 					Name:              "pprof",
-// 					Host:              "127.0.0.1",
-// 					Port:              6060,
-// 					Mode:              "REST",
-// 					ProbeWaitTime:     "3s",
-// 					ShutdownDuration:  "5s",
-// 					HandlerTimeout:    "5s",
-// 					IdleTimeout:       "2s",
-// 					ReadHeaderTimeout: "1s",
-// 					ReadTimeout:       "1s",
-// 					WriteTimeout:      "1s",
+// 					Name:          "pprof",
+// 					Host:          "127.0.0.1",
+// 					Port:          6060,
+// 					Mode:          "REST",
+// 					ProbeWaitTime: "3s",
+// 					HTTP: &config.HTTP{
+// 						ShutdownDuration:  "5s",
+// 						HandlerTimeout:    "5s",
+// 						IdleTimeout:       "2s",
+// 						ReadHeaderTimeout: "1s",
+// 						ReadTimeout:       "1s",
+// 						WriteTimeout:      "1s",
+// 					},
 // 				},
 // 			},
 // 			HealthCheckServers: []*config.Server{
@@ -200,15 +235,120 @@ func NewConfig(ctx context.Context, path string) (cfg *Config, err error) {
 // 			},
 // 		},
 // 		Job: &config.BenchmarkJob{
-//			JobType:   "search",
-//			Dataset:   "fashion-mnist-784-euc",
-//			Dimension: 784,
-//			Iter:      100,
-//			Num:       10,
-//			MinNum:    5,
-//			Radius:    -1,
-//			Epsilon:   0.1,
-//			Timeout:   "5s",
+// 			Target: &v1.BenchmarkTarget{
+// 				Host: "vald-lb-gateway.svc.local",
+// 				Port: 8081,
+// 			},
+// 			Dataset: &v1.BenchmarkDataset{
+// 				Name:    "fashion-mnist",
+// 				Group:   "train",
+// 				Indexes: 10000,
+// 				Range: &v1.BenchmarkDatasetRange{
+// 					Start: 0,
+// 					End:   10000,
+// 				},
+// 			},
+// 			Replica:      1,
+// 			Repetition:   1,
+// 			JobType:      "search",
+// 			InsertConfig: &v1.InsertJobConfig{},
+// 			UpdateConfig: &v1.UpdateJobConfig{},
+// 			UpsertConfig: &v1.UpsertJobConfig{},
+// 			SearchConfig: &v1.SearchJobConfig{},
+// 			RemoveConfig: &v1.RemoveJobConfig{},
+// 			ClientConfig: &config.GRPCClient{
+// 				Addrs:               []string{},
+// 				HealthCheckDuration: "1s",
+// 				ConnectionPool: &config.ConnectionPool{
+// 					ResolveDNS:           true,
+// 					EnableRebalance:      true,
+// 					RebalanceDuration:    "30m",
+// 					Size:                 3,
+// 					OldConnCloseDuration: "2m",
+// 				},
+// 				Backoff: &config.Backoff{
+// 					InitialDuration:  "5ms",
+// 					BackoffTimeLimit: "5s",
+// 					MaximumDuration:  "5s",
+// 					JitterLimit:      "100ms",
+// 					BackoffFactor:    1.1,
+// 					RetryCount:       100,
+// 					EnableErrorLog:   true,
+// 				},
+// 				CircuitBreaker: &config.CircuitBreaker{
+// 					ClosedErrorRate:      0.7,
+// 					HalfOpenErrorRate:    0.5,
+// 					MinSamples:           1000,
+// 					OpenTimeout:          "1s",
+// 					ClosedRefreshTimeout: "10s",
+// 				},
+// 				CallOption: &config.CallOption{
+// 					WaitForReady:          true,
+// 					MaxRetryRPCBufferSize: 0,
+// 					MaxRecvMsgSize:        0,
+// 					MaxSendMsgSize:        0,
+// 				},
+// 				DialOption: &config.DialOption{
+// 					WriteBufferSize:             0,
+// 					ReadBufferSize:              0,
+// 					InitialWindowSize:           0,
+// 					InitialConnectionWindowSize: 0,
+// 					MaxMsgSize:                  0,
+// 					BackoffMaxDelay:             "120s",
+// 					BackoffBaseDelay:            "1s",
+// 					BackoffJitter:               0.2,
+// 					BackoffMultiplier:           1.6,
+// 					MinimumConnectionTimeout:    "20s",
+// 					EnableBackoff:               true,
+// 					Insecure:                    true,
+// 					Timeout:                     "",
+// 					Interceptors:                []string{},
+// 					Net: &config.Net{
+// 						DNS: &config.DNS{
+// 							CacheEnabled:    true,
+// 							RefreshDuration: "30m",
+// 							CacheExpiration: "1h",
+// 						},
+// 						Dialer: &config.Dialer{
+// 							Timeout:          "",
+// 							Keepalive:        "",
+// 							FallbackDelay:    "",
+// 							DualStackEnabled: true,
+// 						},
+// 						TLS: &config.TLS{
+// 							Enabled:            false,
+// 							Cert:               "path/to/cert",
+// 							Key:                "path/to/key",
+// 							CA:                 "path/to/ca",
+// 							InsecureSkipVerify: false,
+// 						},
+// 						SocketOption: &config.SocketOption{
+// 							ReusePort:                true,
+// 							ReuseAddr:                true,
+// 							TCPFastOpen:              true,
+// 							TCPNoDelay:               true,
+// 							TCPQuickAck:              true,
+// 							TCPCork:                  false,
+// 							TCPDeferAccept:           true,
+// 							IPTransparent:            false,
+// 							IPRecoverDestinationAddr: false,
+// 						},
+// 					},
+// 					Keepalive: &config.GRPCClientKeepalive{
+// 						Time:                "120s",
+// 						Timeout:             "30s",
+// 						PermitWithoutStream: true,
+// 					},
+// 				},
+// 				TLS: &config.TLS{
+// 					Enabled:            false,
+// 					Cert:               "path/to/cert",
+// 					Key:                "path/to/key",
+// 					CA:                 "path/to/ca",
+// 					InsecureSkipVerify: false,
+// 				},
+// 			},
+// 			Rules: []*v1.BenchmarkJobRule{},
 // 		},
 // 	}
 // 	fmt.Println(config.ToRawYaml(d))

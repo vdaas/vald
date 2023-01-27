@@ -53,13 +53,13 @@ type run struct {
 func New(cfg *config.Config) (r runner.Runner, err error) {
 	log.Info("pkg/tools/benchmark/job/cmd start")
 	eg := errgroup.Get()
-	copts, err := cfg.Job.GatewayClient.Opts()
+	copts, err := cfg.Job.ClientConfig.Opts()
 	if err != nil {
 		return nil, err
 	}
 
 	c, err := vald.New(
-		vald.WithAddrs(cfg.Job.GatewayClient.Addrs...),
+		vald.WithAddrs(cfg.Job.ClientConfig.Addrs...),
 		vald.WithClient(grpc.New(copts...)),
 	)
 	if err != nil {
@@ -77,14 +77,14 @@ func New(cfg *config.Config) (r runner.Runner, err error) {
 	job, err := service.New(
 		service.WithErrGroup(eg),
 		service.WithValdClient(c),
+		service.WithDataset(cfg.Job.Dataset),
 		service.WithJobTypeByString(cfg.Job.JobType),
 		service.WithDimension(cfg.Job.Dimension),
-		service.WithIter(cfg.Job.Iter),
-		service.WithNum(cfg.Job.Num),
-		service.WithMinNum(cfg.Job.MinNum),
-		service.WithRadius(cfg.Job.Radius),
-		service.WithEpsilon(cfg.Job.Epsilon),
-		service.WithTimeout(cfg.Job.Timeout),
+		service.WithInsertConfig(cfg.Job.InsertConfig),
+		service.WithUpdateConfig(cfg.Job.UpdateConfig),
+		service.WithUpsertConfig(cfg.Job.UpsertConfig),
+		service.WithSearchConfig(cfg.Job.SearchConfig),
+		service.WithRemoveConfig(cfg.Job.RemoveConfig),
 		service.WithHdf5(d),
 	)
 	if err != nil {

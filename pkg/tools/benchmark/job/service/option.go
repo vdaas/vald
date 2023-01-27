@@ -18,11 +18,10 @@
 package service
 
 import (
-	"time"
-
 	"github.com/vdaas/vald/internal/client/v1/client/vald"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
+	v1 "github.com/vdaas/vald/internal/k8s/vald/benchmark/api/v1"
 	"github.com/vdaas/vald/internal/test/data/hdf5"
 )
 
@@ -30,11 +29,7 @@ type Option func(j *job) error
 
 var defaultOpts = []Option{
 	WithDimension(748),
-	WithNum(10),
-	WithMinNum(10),
-	WithRadius(-1),
-	WithEpsilon(0.1),
-	WithTimeout("1s"),
+	// TODO: set default config for client
 }
 
 func WithDimension(dim int) Option {
@@ -46,54 +41,47 @@ func WithDimension(dim int) Option {
 	}
 }
 
-func WithIter(iter int) Option {
+func WithInsertConfig(c *v1.InsertConfig) Option {
 	return func(j *job) error {
-		if iter > 0 {
-			j.iter = iter
+		if c != nil {
+			j.insertConfig = c
 		}
 		return nil
 	}
 }
 
-func WithNum(num uint32) Option {
+func WithUpdateConfig(c *v1.UpdateConfig) Option {
 	return func(j *job) error {
-		if num > 0 {
-			j.num = num
+		if c != nil {
+			j.updateConfig = c
 		}
 		return nil
 	}
 }
 
-func WithMinNum(minNum uint32) Option {
+func WithUpsertConfig(c *v1.UpsertConfig) Option {
 	return func(j *job) error {
-		if minNum > 0 {
-			j.minNum = minNum
+		if c != nil {
+			j.upsertConfig = c
 		}
 		return nil
 	}
 }
 
-func WithRadius(radius float64) Option {
+func WithSearchConfig(c *v1.SearchConfig) Option {
 	return func(j *job) error {
-		j.radius = radius
-		return nil
-	}
-}
-
-func WithEpsilon(epsilon float64) Option {
-	return func(j *job) error {
-		j.epsilon = epsilon
-		return nil
-	}
-}
-
-func WithTimeout(timeout string) Option {
-	return func(j *job) error {
-		dur, err := time.ParseDuration(timeout)
-		if err != nil {
-			return errors.NewErrInvalidOption("timeout", timeout, err)
+		if c != nil {
+			j.searchConfig = c
 		}
-		j.timeout = dur
+		return nil
+	}
+}
+
+func WithRemoveConfig(c *v1.RemoveConfig) Option {
+	return func(j *job) error {
+		if c != nil {
+			j.removeConfig = c
+		}
 		return nil
 	}
 }
@@ -128,6 +116,16 @@ func WithHdf5(d hdf5.Data) Option {
 	}
 }
 
+func WithDataset(d *v1.BenchmarkDataset) Option {
+	return func(j *job) error {
+		if d == nil {
+			return errors.NewErrInvalidOption("dataset", d)
+		}
+		j.dataset = d
+		return nil
+	}
+}
+
 func WithJobTypeByString(t string) Option {
 	var jt jobType
 	switch t {
@@ -142,6 +140,7 @@ func WithJobType(jt jobType) Option {
 		switch jt {
 		case SEARCH:
 			j.jobType = jt
+			j.jobFunc = j.search
 		default:
 			return errors.NewErrInvalidOption("jobType", jt)
 		}

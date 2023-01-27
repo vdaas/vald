@@ -20,12 +20,12 @@ package service
 import (
 	"context"
 	"reflect"
-	"time"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/client/v1/client/vald"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
+	v1 "github.com/vdaas/vald/internal/k8s/vald/benchmark/api/v1"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/test/data/hdf5"
 )
@@ -42,17 +42,18 @@ const (
 )
 
 type job struct {
-	eg        errgroup.Group
-	jobType   jobType
-	dimension int
-	iter      int
-	num       uint32
-	minNum    uint32
-	radius    float64
-	epsilon   float64
-	timeout   time.Duration
-	client    vald.Client
-	hdf5      hdf5.Data
+	eg           errgroup.Group
+	dimension    int
+	dataset      *v1.BenchmarkDataset
+	jobType      jobType
+	jobFunc      func(context.Context, chan error) error
+	insertConfig *v1.InsertConfig
+	updateConfig *v1.UpdateConfig
+	upsertConfig *v1.UpsertConfig
+	searchConfig *v1.SearchConfig
+	removeConfig *v1.RemoveConfig
+	client       vald.Client
+	hdf5         hdf5.Data
 }
 
 func New(opts ...Option) (Job, error) {
@@ -66,6 +67,8 @@ func New(opts ...Option) (Job, error) {
 }
 
 func (j *job) PreStart(ctx context.Context) error {
+	// TODO: check target host is ok
+
 	log.Infof("[benchmark job] start download dataset of %s", j.hdf5.GetName().String())
 	if err := j.hdf5.Download(); err != nil {
 		return err
@@ -96,13 +99,11 @@ func (j *job) Start(ctx context.Context) (<-chan error, error) {
 		}
 	})
 
-	switch j.jobType {
-	case SEARCH:
-		err := search(ctx, j, ech)
-		if err != nil {
-			return ech, err
-		}
+	err = j.jobFunc(ctx, ech)
+	if err != nil {
+		return ech, err
 	}
+
 	return ech, nil
 }
 

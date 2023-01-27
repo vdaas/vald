@@ -27,22 +27,37 @@ import (
 	"github.com/vdaas/vald/internal/log"
 )
 
-func search(ctx context.Context, j *job, ech chan error) error {
+func (j *job) search(ctx context.Context, ech chan error) error {
 	log.Info("[benchmark job] Start benchmarking search")
 	j.eg.Go(func() (err error) {
+		if j.searchConfig == nil {
+			err := errors.NewErrInvalidOption("searchConfig", j.searchConfig)
+			select {
+			case <-ctx.Done():
+				if err != context.Canceled {
+					ech <- errors.Wrap(err, ctx.Err().Error())
+				} else {
+					ech <- err
+				}
+			case ech <- err:
+			}
+			return err
+		}
+
 		vecs := j.hdf5.GetTest()
-		if len(vecs) < j.iter {
-			log.Infof("[benchmark job] update search iteration from %d to %d", j.iter, len(vecs))
-			j.iter = len(vecs)
+		if len(vecs) < j.dataset.Indexes {
+			log.Infof("[benchmark job] update search iteration from %d to %d", j.dataset.Indexes, len(vecs))
+			j.dataset.Indexes = len(vecs)
 		}
+		timeout, _ := time.ParseDuration(j.searchConfig.Timeout)
 		cfg := &payload.Search_Config{
-			Num:     j.num,
-			MinNum:  j.minNum,
-			Radius:  float32(j.radius),
-			Epsilon: float32(j.epsilon),
-			Timeout: j.timeout.Microseconds(),
+			Num:     uint32(j.searchConfig.Num),
+			MinNum:  uint32(j.searchConfig.MinNum),
+			Radius:  float32(j.searchConfig.Radius),
+			Epsilon: float32(j.searchConfig.Epsilon),
+			Timeout: timeout.Nanoseconds(),
 		}
-		for i := 0; i < j.iter; i++ {
+		for i := 0; i < j.dataset.Indexes; i++ {
 			log.Infof("[benchmark job] Start search: iter = %d\n", i)
 			lres, err := j.client.LinearSearch(ctx, &payload.Search_Request{
 				Vector: vecs[i],
