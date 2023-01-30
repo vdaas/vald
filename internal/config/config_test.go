@@ -54,7 +54,7 @@ func TestGlobalConfig_Bind(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, *GlobalConfig) error
-		beforeFunc func()
+		beforeFunc func(*testing.T)
 		afterFunc  func()
 	}
 	defaultCheckFunc := func(w want, got *GlobalConfig) error {
@@ -231,7 +231,8 @@ func TestGlobalConfig_Bind(t *testing.T) {
 						},
 					},
 				},
-				beforeFunc: func() {
+				beforeFunc: func(t *testing.T) {
+					t.Helper()
 					for key, val := range env {
 						t.Setenv(key, val)
 					}
@@ -245,7 +246,7 @@ func TestGlobalConfig_Bind(t *testing.T) {
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
 				defer test.afterFunc()

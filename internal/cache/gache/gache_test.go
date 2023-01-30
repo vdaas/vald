@@ -211,7 +211,7 @@ func Test_cache_Get(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, interface{}, bool) error
-		beforeFunc func(args, *cache)
+		beforeFunc func(*testing.T, args, *cache)
 		afterFunc  func(args)
 	}
 	defaultCheckFunc := func(w want, got interface{}, got1 bool) error {
@@ -255,7 +255,8 @@ func Test_cache_Get(t *testing.T) {
 				want:  "vald",
 				want1: true,
 			},
-			beforeFunc: func(args args, c *cache) {
+			beforeFunc: func(t *testing.T, args args, c *cache) {
+				t.Helper()
 				c.Set(args.key, "vald")
 			},
 		},
@@ -272,7 +273,7 @@ func Test_cache_Get(t *testing.T) {
 				expiredHook:    test.fields.expiredHook,
 			}
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args, c)
+				test.beforeFunc(tt, test.args, c)
 			}
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
@@ -395,7 +396,7 @@ func Test_cache_Delete(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, *cache) error
-		beforeFunc func(args, *cache)
+		beforeFunc func(*testing.T, args, *cache)
 		afterFunc  func(args)
 	}
 	defaultCheckFunc := func(w want, c *cache) error {
@@ -442,7 +443,8 @@ func Test_cache_Delete(t *testing.T) {
 				want:  nil,
 				want1: false,
 			},
-			beforeFunc: func(args args, c *cache) {
+			beforeFunc: func(t *testing.T, args args, c *cache) {
+				t.Helper()
 				c.Set(args.key, "vald")
 			},
 		},
@@ -459,7 +461,7 @@ func Test_cache_Delete(t *testing.T) {
 				expiredHook:    test.fields.expiredHook,
 			}
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args, c)
+				test.beforeFunc(tt, test.args, c)
 			}
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
@@ -497,7 +499,7 @@ func Test_cache_GetAndDelete(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, interface{}, bool) error
-		beforeFunc func(args, *cache)
+		beforeFunc func(*testing.T, args, *cache)
 		afterFunc  func(args)
 	}
 	defaultCheckFunc := func(w want, got interface{}, got1 bool) error {
@@ -541,7 +543,8 @@ func Test_cache_GetAndDelete(t *testing.T) {
 				want:  "vald",
 				want1: true,
 			},
-			beforeFunc: func(args args, c *cache) {
+			beforeFunc: func(t *testing.T, args args, c *cache) {
+				t.Helper()
 				c.Set(args.key, "vald")
 			},
 		},
@@ -558,7 +561,7 @@ func Test_cache_GetAndDelete(t *testing.T) {
 				expiredHook:    test.fields.expiredHook,
 			}
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args, c)
+				test.beforeFunc(tt, test.args, c)
 			}
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)

@@ -50,7 +50,7 @@ func TestString(t *testing.T) {
 		name       string
 		want       want
 		checkFunc  func(want, string) error
-		beforeFunc func()
+		beforeFunc func(*testing.T)
 		afterFunc  func()
 	}
 	defaultCheckFunc := func(w want, got string) error {
@@ -62,7 +62,8 @@ func TestString(t *testing.T) {
 	tests := []test{
 		{
 			name: "return correct string with no stack trace initialized",
-			beforeFunc: func() {
+			beforeFunc: func(t *testing.T) {
+				t.Helper()
 				infoProvider, _ = New(WithServerName(""),
 					WithRuntimeCaller(func(skip int) (pc uintptr, file string, line int, ok bool) {
 						return uintptr(0), "", 0, false
@@ -79,7 +80,8 @@ func TestString(t *testing.T) {
 
 		{
 			name: "return correct string with no information initialized",
-			beforeFunc: func() {
+			beforeFunc: func(t *testing.T) {
+				t.Helper()
 				infoProvider = &info{
 					rtCaller: func(skip int) (pc uintptr, file string, line int, ok bool) {
 						return uintptr(0), "", 0, false
@@ -103,7 +105,7 @@ func TestString(t *testing.T) {
 				defer test.afterFunc()
 			}
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(tt)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -126,7 +128,7 @@ func TestGet(t *testing.T) {
 		name       string
 		want       want
 		checkFunc  func(want, Detail) error
-		beforeFunc func()
+		beforeFunc func(*testing.T)
 		afterFunc  func()
 	}
 	defaultCheckFunc := func(w want, got Detail) error {
@@ -138,7 +140,8 @@ func TestGet(t *testing.T) {
 	tests := []test{
 		{
 			name: "return detail with initialized runtime information",
-			beforeFunc: func() {
+			beforeFunc: func(t *testing.T) {
+				t.Helper()
 				infoProvider, _ = New(WithServerName(""), WithRuntimeCaller(func(skip int) (pc uintptr, file string, line int, ok bool) {
 					return uintptr(0), "", 0, false
 				}))
@@ -170,7 +173,7 @@ func TestGet(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
 				defer test.afterFunc()
@@ -200,7 +203,7 @@ func TestInit(t *testing.T) {
 		args       args
 		want       want
 		checkFunc  func(want, Info) error
-		beforeFunc func(args)
+		beforeFunc func(*testing.T, args)
 		afterFunc  func(args)
 	}
 	defaultCheckFunc := func(w want, got Info) error {
@@ -263,7 +266,8 @@ func TestInit(t *testing.T) {
 					}(),
 				},
 			},
-			beforeFunc: func(args) {
+			beforeFunc: func(t *testing.T, _ args) {
+				t.Helper()
 				GitCommit = "gitcommit"
 				Version = ""
 				BuildTime = "1s"
@@ -315,7 +319,8 @@ func TestInit(t *testing.T) {
 					}(),
 				},
 			},
-			beforeFunc: func(args) {
+			beforeFunc: func(t *testing.T, _ args) {
+				t.Helper()
 				GitCommit = "gitcommit"
 				Version = ""
 				BuildTime = "1s"
@@ -341,7 +346,7 @@ func TestInit(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
