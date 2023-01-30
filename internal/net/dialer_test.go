@@ -853,7 +853,8 @@ func Test_dialer_cachedDialer(t *testing.T) {
 					}
 					return nil
 				},
-				afterFunc: func(*testing.T) {
+				afterFunc: func(t *testing.T) {
+					t.Helper()
 					srv.Close()
 				},
 			}
@@ -963,6 +964,7 @@ func Test_dialer_cachedDialer(t *testing.T) {
 					return nil
 				},
 				afterFunc: func(t *testing.T) {
+					t.Helper()
 					srv.Close()
 				},
 			}
@@ -1021,6 +1023,7 @@ func Test_dialer_cachedDialer(t *testing.T) {
 					return nil
 				},
 				afterFunc: func(t *testing.T) {
+					t.Helper()
 					srv.Close()
 				},
 			}
@@ -1199,6 +1202,7 @@ func Test_dialer_cachedDialer(t *testing.T) {
 					return nil
 				},
 				afterFunc: func(t *testing.T) {
+					t.Helper()
 					for _, s := range srvs {
 						s.Close()
 					}
@@ -1254,6 +1258,7 @@ func Test_dialer_cachedDialer(t *testing.T) {
 					return nil
 				},
 				afterFunc: func(t *testing.T) {
+					t.Helper()
 					srv.Close()
 				},
 			}
@@ -1656,7 +1661,8 @@ func Test_dialer_tlsHandshake(t *testing.T) {
 					}
 					return nil
 				},
-				afterFunc: func(*testing.T) {
+				afterFunc: func(t *testing.T) {
+					t.Helper()
 					srv.Close()
 					conn.Close()
 					cancel()
@@ -1708,7 +1714,8 @@ func Test_dialer_tlsHandshake(t *testing.T) {
 				want: want{
 					err: context.DeadlineExceeded,
 				},
-				afterFunc: func(*testing.T) {
+				afterFunc: func(t *testing.T) {
+					t.Helper()
 					srv.Close()
 					conn.Close()
 					cancel()
@@ -1764,7 +1771,8 @@ func Test_dialer_tlsHandshake(t *testing.T) {
 					}
 					return nil
 				},
-				afterFunc: func(t1 *testing.T) {
+				afterFunc: func(t *testing.T) {
+					t.Helper()
 					conn.Close()
 					cancel()
 				},

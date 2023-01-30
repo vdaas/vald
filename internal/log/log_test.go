@@ -48,7 +48,7 @@ func TestInit(t *testing.T) {
 		want       want
 		checkFunc  func(want, logger.Logger) error
 		beforeFunc func(*testing.T, args)
-		afterFunc  func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, got logger.Logger) error {
 		if !reflect.DeepEqual(got, l) {
@@ -101,7 +101,7 @@ func TestInit(t *testing.T) {
 				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -129,8 +129,7 @@ func Test_getLogger(t *testing.T) {
 		want       want
 		checkFunc  func(want, logger.Logger) error
 		beforeFunc func(*testing.T, args)
-
-		afterFunc func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, got logger.Logger) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -216,7 +215,7 @@ func Test_getLogger(t *testing.T) {
 				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -244,8 +243,7 @@ func TestBold(t *testing.T) {
 		want       want
 		checkFunc  func(want, string) error
 		beforeFunc func(*testing.T, args)
-
-		afterFunc func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, got string) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -273,7 +271,7 @@ func TestBold(t *testing.T) {
 				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -301,8 +299,7 @@ func TestDebug(t *testing.T) {
 		want       want
 		checkFunc  func(want) error
 		beforeFunc func(*testing.T, args)
-
-		afterFunc func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	tests := []test{
 		func() test {
@@ -330,7 +327,8 @@ func TestDebug(t *testing.T) {
 					t.Helper()
 					l = ml
 				},
-				afterFunc: func(args) {
+				afterFunc: func(t *testing.T, _ args) {
+					t.Helper()
 					l = nil
 				},
 				checkFunc: func(w want) error {
@@ -351,7 +349,7 @@ func TestDebug(t *testing.T) {
 				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 
 			Debug(test.args.vals...)
@@ -377,8 +375,7 @@ func TestDebugf(t *testing.T) {
 		want       want
 		checkFunc  func(want) error
 		beforeFunc func(*testing.T, args)
-
-		afterFunc func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	tests := []test{
 		func() test {
@@ -411,7 +408,8 @@ func TestDebugf(t *testing.T) {
 					t.Helper()
 					l = ml
 				},
-				afterFunc: func(args) {
+				afterFunc: func(t *testing.T, _ args) {
+					t.Helper()
 					l = nil
 				},
 				checkFunc: func(w want) error {
@@ -435,7 +433,7 @@ func TestDebugf(t *testing.T) {
 				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 
 			Debugf(test.args.format, test.args.vals...)
@@ -459,8 +457,7 @@ func TestInfo(t *testing.T) {
 		want       want
 		checkFunc  func(want) error
 		beforeFunc func(*testing.T, args)
-
-		afterFunc func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	tests := []test{
 		func() test {
@@ -488,7 +485,8 @@ func TestInfo(t *testing.T) {
 					t.Helper()
 					l = ml
 				},
-				afterFunc: func(args) {
+				afterFunc: func(t *testing.T, _ args) {
+					t.Helper()
 					l = nil
 				},
 				checkFunc: func(want) error {
@@ -509,7 +507,7 @@ func TestInfo(t *testing.T) {
 				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 
 			Info(test.args.vals...)
@@ -535,8 +533,7 @@ func TestInfof(t *testing.T) {
 		want       want
 		checkFunc  func(want) error
 		beforeFunc func(*testing.T, args)
-
-		afterFunc func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	tests := []test{
 		func() test {
@@ -569,7 +566,8 @@ func TestInfof(t *testing.T) {
 					t.Helper()
 					l = ml
 				},
-				afterFunc: func(args) {
+				afterFunc: func(t *testing.T, _ args) {
+					t.Helper()
 					l = nil
 				},
 				checkFunc: func(w want) error {
@@ -593,7 +591,7 @@ func TestInfof(t *testing.T) {
 				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 
 			Infof(test.args.format, test.args.vals...)
@@ -617,8 +615,7 @@ func TestWarn(t *testing.T) {
 		want       want
 		checkFunc  func(want) error
 		beforeFunc func(*testing.T, args)
-
-		afterFunc func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	tests := []test{
 		func() test {
@@ -646,7 +643,8 @@ func TestWarn(t *testing.T) {
 					t.Helper()
 					l = ml
 				},
-				afterFunc: func(args) {
+				afterFunc: func(t *testing.T, _ args) {
+					t.Helper()
 					l = nil
 				},
 				checkFunc: func(want) error {
@@ -667,7 +665,7 @@ func TestWarn(t *testing.T) {
 				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 
 			Warn(test.args.vals...)
@@ -693,8 +691,7 @@ func TestWarnf(t *testing.T) {
 		want       want
 		checkFunc  func(want) error
 		beforeFunc func(*testing.T, args)
-
-		afterFunc func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	tests := []test{
 		func() test {
@@ -727,7 +724,8 @@ func TestWarnf(t *testing.T) {
 					t.Helper()
 					l = ml
 				},
-				afterFunc: func(args) {
+				afterFunc: func(t *testing.T, _ args) {
+					t.Helper()
 					l = nil
 				},
 				checkFunc: func(w want) error {
@@ -751,7 +749,7 @@ func TestWarnf(t *testing.T) {
 				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 
 			Warnf(test.args.format, test.args.vals...)
@@ -775,8 +773,7 @@ func TestError(t *testing.T) {
 		want       want
 		checkFunc  func(want) error
 		beforeFunc func(*testing.T, args)
-
-		afterFunc func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	tests := []test{
 		func() test {
@@ -804,7 +801,8 @@ func TestError(t *testing.T) {
 					t.Helper()
 					l = ml
 				},
-				afterFunc: func(args) {
+				afterFunc: func(t *testing.T, _ args) {
+					t.Helper()
 					l = nil
 				},
 				checkFunc: func(w want) error {
@@ -825,7 +823,7 @@ func TestError(t *testing.T) {
 				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 
 			Error(test.args.vals...)
@@ -851,8 +849,7 @@ func TestErrorf(t *testing.T) {
 		want       want
 		checkFunc  func(want) error
 		beforeFunc func(*testing.T, args)
-
-		afterFunc func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	tests := []test{
 		func() test {
@@ -885,7 +882,8 @@ func TestErrorf(t *testing.T) {
 					t.Helper()
 					l = ml
 				},
-				afterFunc: func(args) {
+				afterFunc: func(t *testing.T, _ args) {
+					t.Helper()
 					l = nil
 				},
 				checkFunc: func(w want) error {
@@ -909,7 +907,7 @@ func TestErrorf(t *testing.T) {
 				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 
 			Errorf(test.args.format, test.args.vals...)
@@ -933,8 +931,7 @@ func TestFatal(t *testing.T) {
 		want       want
 		checkFunc  func(want) error
 		beforeFunc func(*testing.T, args)
-
-		afterFunc func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	tests := []test{
 		func() test {
@@ -962,7 +959,8 @@ func TestFatal(t *testing.T) {
 					t.Helper()
 					l = ml
 				},
-				afterFunc: func(args) {
+				afterFunc: func(t *testing.T, _ args) {
+					t.Helper()
 					l = nil
 				},
 				checkFunc: func(w want) error {
@@ -983,7 +981,7 @@ func TestFatal(t *testing.T) {
 				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 
 			Fatal(test.args.vals...)
@@ -1009,8 +1007,7 @@ func TestFatalf(t *testing.T) {
 		want       want
 		checkFunc  func(want) error
 		beforeFunc func(*testing.T, args)
-
-		afterFunc func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	tests := []test{
 		func() test {
@@ -1043,7 +1040,8 @@ func TestFatalf(t *testing.T) {
 					t.Helper()
 					l = ml
 				},
-				afterFunc: func(args) {
+				afterFunc: func(t *testing.T, _ args) {
+					t.Helper()
 					l = nil
 				},
 				checkFunc: func(w want) error {
@@ -1067,7 +1065,7 @@ func TestFatalf(t *testing.T) {
 				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 
 			Fatalf(test.args.format, test.args.vals...)
@@ -1091,8 +1089,7 @@ func TestDebugd(t *testing.T) {
 		want       want
 		checkFunc  func(want) error
 		beforeFunc func(*testing.T, args)
-
-		afterFunc func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want) error {
 		return nil
@@ -1136,7 +1133,7 @@ func TestDebugd(t *testing.T) {
 				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -1164,8 +1161,7 @@ func TestInfod(t *testing.T) {
 		want       want
 		checkFunc  func(want) error
 		beforeFunc func(*testing.T, args)
-
-		afterFunc func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want) error {
 		return nil
@@ -1209,7 +1205,7 @@ func TestInfod(t *testing.T) {
 				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -1237,8 +1233,7 @@ func TestWarnd(t *testing.T) {
 		want       want
 		checkFunc  func(want) error
 		beforeFunc func(*testing.T, args)
-
-		afterFunc func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want) error {
 		return nil
@@ -1282,7 +1277,7 @@ func TestWarnd(t *testing.T) {
 				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -1310,8 +1305,7 @@ func TestErrord(t *testing.T) {
 		want       want
 		checkFunc  func(want) error
 		beforeFunc func(*testing.T, args)
-
-		afterFunc func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want) error {
 		return nil
@@ -1355,7 +1349,7 @@ func TestErrord(t *testing.T) {
 				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -1383,8 +1377,7 @@ func TestFatald(t *testing.T) {
 		want       want
 		checkFunc  func(want) error
 		beforeFunc func(*testing.T, args)
-
-		afterFunc func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want) error {
 		return nil
@@ -1428,7 +1421,7 @@ func TestFatald(t *testing.T) {
 				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {

@@ -150,7 +150,7 @@ func TestDialContext(t *testing.T) {
 		srv        *httptest.Server
 		checkFunc  func(want, Conn, error) error
 		beforeFunc func(*testing.T, *test)
-		afterFunc  func(*test)
+		afterFunc  func(*testing.T, *test)
 	}
 	defaultCheckFunc := func(w want, gotConn Conn, err error) error {
 		if !errors.Is(err, w.err) {
@@ -194,10 +194,10 @@ func TestDialContext(t *testing.T) {
 
 				return nil
 			},
-			afterFunc: func(t *test) {
-				t.srv.Client().CloseIdleConnections()
-				t.srv.CloseClientConnections()
-				t.srv.Close()
+			afterFunc: func(t *testing.T, test *test) {
+				test.srv.Client().CloseIdleConnections()
+				test.srv.CloseClientConnections()
+				test.srv.Close()
 			},
 		},
 	}
@@ -222,7 +222,7 @@ func TestDialContext(t *testing.T) {
 			}
 
 			if test.afterFunc != nil {
-				test.afterFunc(test)
+				test.afterFunc(tt, test)
 			}
 		})
 	}

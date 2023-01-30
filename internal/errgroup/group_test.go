@@ -51,7 +51,7 @@ func TestNew(t *testing.T) {
 		want       want
 		checkFunc  func(want, Group, context.Context) error
 		beforeFunc func(args)
-		afterFunc  func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, got Group, got1 context.Context) error {
 		if got, want := got.(*group), w.want.(*group); !reflect.DeepEqual(got.emap, want.emap) &&
@@ -97,7 +97,7 @@ func TestNew(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -125,7 +125,7 @@ func TestInit(t *testing.T) {
 		want       want
 		checkFunc  func(want, context.Context) error
 		beforeFunc func(args)
-		afterFunc  func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, gotEgctx context.Context) error {
 		if !reflect.DeepEqual(gotEgctx, w.wantEgctx) {
@@ -152,7 +152,8 @@ func TestInit(t *testing.T) {
 				want: want{
 					wantEgctx: egctx,
 				},
-				afterFunc: func(a args) {
+				afterFunc: func(t *testing.T, a args) {
+					t.Helper()
 					cancel()
 					defaultBeforeFunc(a)
 				},
@@ -169,7 +170,7 @@ func TestInit(t *testing.T) {
 			test.beforeFunc(test.args)
 
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -358,7 +359,7 @@ func Test_group_Limitation(t *testing.T) {
 		want       want
 		checkFunc  func(want, Group) error
 		beforeFunc func(args)
-		afterFunc  func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, g Group) error {
 		got, want := g.(*group), w.want.(*group)
@@ -414,7 +415,7 @@ func Test_group_Limitation(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -450,7 +451,7 @@ func Test_group_Go(t *testing.T) {
 		fields     fields
 		checkFunc  func(Group) error
 		beforeFunc func(*testing.T, args, Group)
-		afterFunc  func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(g Group) error {
 		return nil
@@ -560,7 +561,7 @@ func Test_group_Go(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -656,7 +657,7 @@ func TestWait(t *testing.T) {
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(*testing.T)
-		afterFunc  func()
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -671,7 +672,8 @@ func TestWait(t *testing.T) {
 				t.Helper()
 				instance, _ = New(context.Background())
 			},
-			afterFunc: func() {
+			afterFunc: func(t *testing.T) {
+				t.Helper()
 				instance = nil
 			},
 		},
@@ -685,7 +687,7 @@ func TestWait(t *testing.T) {
 				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {

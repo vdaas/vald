@@ -57,7 +57,7 @@ func Test_server_CreateIndex(t *testing.T) {
 		want       want
 		checkFunc  func(want, *payload.Empty, error) error
 		beforeFunc func(*testing.T, context.Context, args, Server)
-		afterFunc  func(args)
+		afterFunc  func(*testing.T, args)
 	}
 
 	// common variables for test
@@ -487,7 +487,7 @@ func Test_server_CreateIndex(t *testing.T) {
 			defer cancel()
 
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -1947,7 +1947,7 @@ func Test_server_IndexInfo(t *testing.T) {
 		want       want
 		checkFunc  func(Server, context.Context, args, want, *payload.Info_Index_Count, error) error
 		beforeFunc func(*testing.T, context.Context, args, Server)
-		afterFunc  func(args)
+		afterFunc  func(*testing.T, args)
 	}
 
 	// common variables for test
@@ -2131,7 +2131,8 @@ func Test_server_IndexInfo(t *testing.T) {
 						Saving:      false,
 					},
 				},
-				afterFunc: func(a args) {
+				afterFunc: func(t *testing.T, _ args) {
+					t.Helper()
 					cancel()
 					os.RemoveAll(tmpDir)
 				},
@@ -2389,7 +2390,8 @@ func Test_server_IndexInfo(t *testing.T) {
 
 					return periodicallyCheckIndexInfoFunc(s, ctx, args, w, chk)
 				},
-				afterFunc: func(a args) {
+				afterFunc: func(t *testing.T, _ args) {
+					t.Helper()
 					os.RemoveAll(tmpDir)
 				},
 			}
@@ -2425,7 +2427,7 @@ func Test_server_IndexInfo(t *testing.T) {
 			defer cancel()
 
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {

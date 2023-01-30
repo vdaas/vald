@@ -51,7 +51,7 @@ func TestString(t *testing.T) {
 		want       want
 		checkFunc  func(want, string) error
 		beforeFunc func(*testing.T)
-		afterFunc  func()
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want, got string) error {
 		if got != w.want {
@@ -69,7 +69,8 @@ func TestString(t *testing.T) {
 						return uintptr(0), "", 0, false
 					}))
 			},
-			afterFunc: func() {
+			afterFunc: func(t *testing.T) {
+				t.Helper()
 				once = sync.Once{}
 				infoProvider = nil
 			},
@@ -88,7 +89,8 @@ func TestString(t *testing.T) {
 					},
 				}
 			},
-			afterFunc: func() {
+			afterFunc: func(t *testing.T) {
+				t.Helper()
 				once = sync.Once{}
 				infoProvider = nil
 			},
@@ -102,7 +104,7 @@ func TestString(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			if test.beforeFunc != nil {
 				test.beforeFunc(tt)
@@ -129,7 +131,7 @@ func TestGet(t *testing.T) {
 		want       want
 		checkFunc  func(want, Detail) error
 		beforeFunc func(*testing.T)
-		afterFunc  func()
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want, got Detail) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -146,7 +148,8 @@ func TestGet(t *testing.T) {
 					return uintptr(0), "", 0, false
 				}))
 			},
-			afterFunc: func() {
+			afterFunc: func(t *testing.T) {
+				t.Helper()
 				once = sync.Once{}
 				infoProvider = nil
 			},
@@ -176,7 +179,7 @@ func TestGet(t *testing.T) {
 				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -204,7 +207,7 @@ func TestInit(t *testing.T) {
 		want       want
 		checkFunc  func(want, Info) error
 		beforeFunc func(*testing.T, args)
-		afterFunc  func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, got Info) error {
 		opts := []comparator.Option{
@@ -275,7 +278,8 @@ func TestInit(t *testing.T) {
 				NGTVersion = "v1.11.6"
 				BuildCPUInfoFlags = "\t\tavx512f avx512dq\t"
 			},
-			afterFunc: func(args) {
+			afterFunc: func(t *testing.T, _ args) {
+				t.Helper()
 				once = sync.Once{}
 				infoProvider = nil
 
@@ -328,7 +332,8 @@ func TestInit(t *testing.T) {
 				NGTVersion = "v1.11.6"
 				BuildCPUInfoFlags = "\t\tavx512f avx512dq\t"
 			},
-			afterFunc: func(args) {
+			afterFunc: func(t *testing.T, _ args) {
+				t.Helper()
 				once = sync.Once{}
 				infoProvider = nil
 
@@ -349,7 +354,7 @@ func TestInit(t *testing.T) {
 				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -378,7 +383,7 @@ func TestNew(t *testing.T) {
 		want       want
 		checkFunc  func(want, Info, error) error
 		beforeFunc func(args)
-		afterFunc  func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, got Info, err error) error {
 		if !errors.Is(err, w.err) {
@@ -562,7 +567,7 @@ func TestNew(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -592,7 +597,7 @@ func Test_info_String(t *testing.T) {
 		want       want
 		checkFunc  func(want, string) error
 		beforeFunc func()
-		afterFunc  func()
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want, got string) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -665,7 +670,7 @@ func Test_info_String(t *testing.T) {
 				test.beforeFunc()
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -708,7 +713,7 @@ func TestDetail_String(t *testing.T) {
 		want       want
 		checkFunc  func(want, string) error
 		beforeFunc func()
-		afterFunc  func()
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want, got string) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -772,7 +777,7 @@ func TestDetail_String(t *testing.T) {
 				test.beforeFunc()
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -815,7 +820,7 @@ func Test_info_Get(t *testing.T) {
 		want       want
 		checkFunc  func(want, Detail) error
 		beforeFunc func()
-		afterFunc  func()
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want, got Detail) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -1135,7 +1140,7 @@ func Test_info_Get(t *testing.T) {
 				test.beforeFunc()
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -1170,7 +1175,7 @@ func Test_info_prepare(t *testing.T) {
 		want       want
 		checkFunc  func(info, want) error
 		beforeFunc func()
-		afterFunc  func()
+		afterFunc  func(*testing.T)
 	}
 	// skipcq: VET-V0008
 	defaultCheckFunc := func(got info, w want) error {
@@ -1485,7 +1490,7 @@ func Test_info_prepare(t *testing.T) {
 				test.beforeFunc()
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -1520,7 +1525,7 @@ func TestStackTrace_String(t *testing.T) {
 		want       want
 		checkFunc  func(want, string) error
 		beforeFunc func()
-		afterFunc  func()
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want, got string) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -1551,7 +1556,7 @@ func TestStackTrace_String(t *testing.T) {
 				test.beforeFunc()
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -1588,7 +1593,7 @@ func Test_info_getDetail(t *testing.T) {
 		want       want
 		checkFunc  func(want, Detail) error
 		beforeFunc func()
-		afterFunc  func()
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want, got Detail) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -1641,7 +1646,7 @@ func Test_info_getDetail(t *testing.T) {
 				test.beforeFunc()
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {

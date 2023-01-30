@@ -35,7 +35,7 @@ func TestInit(t *testing.T) {
 		name       string
 		checkFunc  func() error
 		beforeFunc func(*testing.T)
-		afterFunc  func()
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func() error {
 		return nil
@@ -49,7 +49,8 @@ func TestInit(t *testing.T) {
 				}
 				return nil
 			},
-			afterFunc: func() {
+			afterFunc: func(t *testing.T) {
+				t.Helper()
 				once = sync.Once{}
 			},
 		},
@@ -71,7 +72,8 @@ func TestInit(t *testing.T) {
 				}
 				return nil
 			},
-			afterFunc: func() {
+			afterFunc: func(t *testing.T) {
+				t.Helper()
 				once = sync.Once{}
 			},
 		},
@@ -84,7 +86,7 @@ func TestInit(t *testing.T) {
 				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -112,7 +114,7 @@ func Test_logger_Info(t *testing.T) {
 		fields     fields
 		checkFunc  func() error
 		beforeFunc func(args)
-		afterFunc  func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func() error {
 		return nil
@@ -137,7 +139,7 @@ func Test_logger_Info(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -168,7 +170,7 @@ func Test_logger_Infoln(t *testing.T) {
 		fields     fields
 		checkFunc  func() error
 		beforeFunc func(args)
-		afterFunc  func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func() error {
 		return nil
@@ -193,7 +195,7 @@ func Test_logger_Infoln(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -225,7 +227,7 @@ func Test_logger_Infof(t *testing.T) {
 		fields     fields
 		checkFunc  func() error
 		beforeFunc func(args)
-		afterFunc  func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func() error {
 		return nil
@@ -250,7 +252,7 @@ func Test_logger_Infof(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -281,7 +283,7 @@ func Test_logger_Warning(t *testing.T) {
 		fields     fields
 		checkFunc  func() error
 		beforeFunc func(args)
-		afterFunc  func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func() error {
 		return nil
@@ -306,7 +308,7 @@ func Test_logger_Warning(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -337,7 +339,7 @@ func Test_logger_Warningln(t *testing.T) {
 		fields     fields
 		checkFunc  func() error
 		beforeFunc func(args)
-		afterFunc  func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func() error {
 		return nil
@@ -362,7 +364,7 @@ func Test_logger_Warningln(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -394,7 +396,7 @@ func Test_logger_Warningf(t *testing.T) {
 		fields     fields
 		checkFunc  func() error
 		beforeFunc func(args)
-		afterFunc  func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func() error {
 		return nil
@@ -419,7 +421,7 @@ func Test_logger_Warningf(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -450,7 +452,7 @@ func Test_logger_Error(t *testing.T) {
 		fields     fields
 		checkFunc  func() error
 		beforeFunc func(args)
-		afterFunc  func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func() error {
 		return nil
@@ -475,7 +477,7 @@ func Test_logger_Error(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -506,7 +508,7 @@ func Test_logger_Errorln(t *testing.T) {
 		fields     fields
 		checkFunc  func() error
 		beforeFunc func(args)
-		afterFunc  func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func() error {
 		return nil
@@ -531,7 +533,7 @@ func Test_logger_Errorln(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -563,7 +565,7 @@ func Test_logger_Errorf(t *testing.T) {
 		fields     fields
 		checkFunc  func() error
 		beforeFunc func(args)
-		afterFunc  func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func() error {
 		return nil
@@ -588,7 +590,7 @@ func Test_logger_Errorf(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -628,7 +630,7 @@ func Test_logger_Fatal(t *testing.T) {
 		fields     fields
 		checkFunc  func() error
 		beforeFunc func(args)
-		afterFunc  func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func() error {
 		return nil
@@ -642,7 +644,8 @@ func Test_logger_Fatal(t *testing.T) {
 			fields: fields{
 				v: 0,
 			},
-			afterFunc: func(a args) {
+			afterFunc: func(t *testing.T, _ args) {
+				t.Helper()
 				_ = recover()
 			},
 		},
@@ -656,7 +659,7 @@ func Test_logger_Fatal(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -696,7 +699,7 @@ func Test_logger_Fatalln(t *testing.T) {
 		fields     fields
 		checkFunc  func() error
 		beforeFunc func(args)
-		afterFunc  func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func() error {
 		return nil
@@ -721,7 +724,7 @@ func Test_logger_Fatalln(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -762,7 +765,7 @@ func Test_logger_Fatalf(t *testing.T) {
 		fields     fields
 		checkFunc  func() error
 		beforeFunc func(args)
-		afterFunc  func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func() error {
 		return nil
@@ -776,7 +779,8 @@ func Test_logger_Fatalf(t *testing.T) {
 			fields: fields{
 				v: 0,
 			},
-			afterFunc: func(a args) {
+			afterFunc: func(t *testing.T, _ args) {
+				t.Helper()
 				_ = recover()
 			},
 		},
@@ -790,7 +794,7 @@ func Test_logger_Fatalf(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -825,7 +829,7 @@ func Test_logger_V(t *testing.T) {
 		want       want
 		checkFunc  func(want, bool) error
 		beforeFunc func(args)
-		afterFunc  func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, got bool) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -880,7 +884,7 @@ func Test_logger_V(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc

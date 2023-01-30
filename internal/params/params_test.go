@@ -174,7 +174,7 @@ func Test_parser_Parse(t *testing.T) {
 		want       want
 		checkFunc  func(want, Data, bool, error) error
 		beforeFunc func(*testing.T)
-		afterFunc  func()
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want, got Data, got1 bool, err error) error {
 		if !errors.Is(err, w.err) {
@@ -221,7 +221,10 @@ func Test_parser_Parse(t *testing.T) {
 					"test", "--path=./params.go", "--version=false",
 				}
 			},
-			afterFunc: func() { os.Args = nil },
+			afterFunc: func(t *testing.T) {
+				t.Helper()
+				os.Args = nil
+			},
 			want: want{
 				want: &data{
 					configFilePath: "./params.go",
@@ -238,7 +241,10 @@ func Test_parser_Parse(t *testing.T) {
 					"test", "--help",
 				}
 			},
-			afterFunc: func() { os.Args = nil },
+			afterFunc: func(t *testing.T) {
+				t.Helper()
+				os.Args = nil
+			},
 			want: want{
 				want1: true,
 			},
@@ -252,7 +258,10 @@ func Test_parser_Parse(t *testing.T) {
 					"test", "--name",
 				}
 			},
-			afterFunc: func() { os.Args = nil },
+			afterFunc: func(t *testing.T) {
+				t.Helper()
+				os.Args = nil
+			},
 			want: want{
 				want1: false,
 				err:   errors.ErrArgumentParseFailed(errors.New("flag provided but not defined: -name")),
@@ -279,7 +288,10 @@ func Test_parser_Parse(t *testing.T) {
 					"test", "--path=config.yml",
 				}
 			},
-			afterFunc: func() { os.Args = nil },
+			afterFunc: func(t *testing.T) {
+				t.Helper()
+				os.Args = nil
+			},
 			want: want{
 				want1: true,
 				err: &os.PathError{
@@ -299,7 +311,7 @@ func Test_parser_Parse(t *testing.T) {
 				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -331,7 +343,7 @@ func Test_data_ConfigFilePath(t *testing.T) {
 		want       want
 		checkFunc  func(want, string) error
 		beforeFunc func(*testing.T)
-		afterFunc  func()
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want, got string) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -359,7 +371,7 @@ func Test_data_ConfigFilePath(t *testing.T) {
 				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -390,7 +402,7 @@ func Test_data_ShowVersion(t *testing.T) {
 		want       want
 		checkFunc  func(want, bool) error
 		beforeFunc func(*testing.T)
-		afterFunc  func()
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want, got bool) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -418,7 +430,7 @@ func Test_data_ShowVersion(t *testing.T) {
 				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
