@@ -55,7 +55,7 @@ func Test_server_Upsert(t *testing.T) {
 		args       args
 		want       want
 		checkFunc  func(want, *payload.Object_Location, error) error
-		beforeFunc func(context.Context, optIdx) (Server, error)
+		beforeFunc func(*testing.T, context.Context, optIdx) (Server, error)
 		afterFunc  func()
 	}
 	defaultCheckFunc := func(w want, gotRes *payload.Object_Location, err error) error {
@@ -96,8 +96,7 @@ func Test_server_Upsert(t *testing.T) {
 	defaultInsertConfig := &payload.Insert_Config{
 		SkipStrictExistCheck: true,
 	}
-	defaultBeforeFunc := func(t *testing.T, ctx context.Context, opt optIdx, objectType string, insertNum int) (Server, error) {
-		t.Helper()
+	defaultBeforeFunc := func(objectType string, insertNum int) func(*testing.T, context.Context, optIdx) (Server, error) {
 		cfg := &config.NGT{
 			Dimension:        dimension,
 			DistanceType:     ngt.L2.String(),
@@ -113,29 +112,31 @@ func Test_server_Upsert(t *testing.T) {
 			},
 		}
 
-		var overwriteID []string
-		if opt.id != "" {
-			overwriteID = []string{
-				opt.id,
+		return func(t *testing.T, ctx context.Context, opt optIdx) (Server, error) {
+			var overwriteID []string
+			if opt.id != "" {
+				overwriteID = []string{
+					opt.id,
+				}
 			}
-		}
-		var overwriteVec [][]float32
-		if opt.vec != nil {
-			overwriteVec = [][]float32{
-				opt.vec,
+			var overwriteVec [][]float32
+			if opt.vec != nil {
+				overwriteVec = [][]float32{
+					opt.vec,
+				}
 			}
-		}
 
-		eg, ctx := errgroup.New(ctx)
-		ngt, err := newIndexedNGTService(ctx, eg, request.Float, vector.Gaussian, insertNum, defaultInsertConfig, cfg, nil, overwriteID, overwriteVec)
-		if err != nil {
-			return nil, err
+			eg, ctx := errgroup.New(ctx)
+			ngt, err := newIndexedNGTService(ctx, eg, request.Float, vector.Gaussian, insertNum, defaultInsertConfig, cfg, nil, overwriteID, overwriteVec)
+			if err != nil {
+				return nil, err
+			}
+			s, err := New(WithErrGroup(eg), WithNGT(ngt))
+			if err != nil {
+				return nil, err
+			}
+			return s, nil
 		}
-		s, err := New(WithErrGroup(eg), WithNGT(ngt))
-		if err != nil {
-			return nil, err
-		}
-		return s, nil
 	}
 
 	/*
@@ -1571,7 +1572,7 @@ func Test_server_Upsert(t *testing.T) {
 			if test.beforeFunc == nil {
 				test.beforeFunc = defaultBeforeFunc(ngt.Float.String(), defaultInsertNum)
 			}
-			s, err := test.beforeFunc(ctx, test.args.optIdx)
+			s, err := test.beforeFunc(tt, ctx, test.args.optIdx)
 			if err != nil {
 				tt.Errorf("error = %v", err)
 			}
