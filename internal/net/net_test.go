@@ -195,6 +195,7 @@ func TestDialContext(t *testing.T) {
 				return nil
 			},
 			afterFunc: func(t *testing.T, test *test) {
+				t.Helper()
 				test.srv.Client().CloseIdleConnections()
 				test.srv.CloseClientConnections()
 				test.srv.Close()
