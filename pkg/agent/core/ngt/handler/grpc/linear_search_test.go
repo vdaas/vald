@@ -113,7 +113,6 @@ func Test_server_LinearSearch(t *testing.T) {
 			if err := checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -207,7 +206,6 @@ func Test_server_LinearSearchByID(t *testing.T) {
 			if err := checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -294,7 +292,6 @@ func Test_server_StreamLinearSearch(t *testing.T) {
 			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -381,7 +378,6 @@ func Test_server_StreamLinearSearchByID(t *testing.T) {
 			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -475,7 +471,6 @@ func Test_server_MultiLinearSearch(t *testing.T) {
 			if err := checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -569,7 +564,6 @@ func Test_server_MultiLinearSearchByID(t *testing.T) {
 			if err := checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }

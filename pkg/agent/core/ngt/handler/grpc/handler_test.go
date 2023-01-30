@@ -167,7 +167,6 @@ func TestNew(t *testing.T) {
 			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -254,7 +253,6 @@ func Test_server_newLocations(t *testing.T) {
 			if err := checkFunc(test.want, gotLocs); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -341,7 +339,6 @@ func Test_server_newLocation(t *testing.T) {
 			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }

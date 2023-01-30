@@ -1263,7 +1263,6 @@ func Test_server_StreamGetObject(t *testing.T) {
 			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
