@@ -735,6 +735,7 @@ func Test_group_Wait(t *testing.T) {
 					}(),
 				},
 				beforeFunc: func(t *testing.T, g Group) {
+					t.Helper()
 					g.Go(func() error {
 						atomic.StoreInt32(&num, int32(runtime.NumGoroutine()))
 						time.Sleep(time.Second)
