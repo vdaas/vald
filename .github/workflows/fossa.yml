@@ -28,17 +28,29 @@ jobs:
     steps:
       - name: Dump GitHub context
         id: github_context_step
-        run: echo '${{ toJSON(github) }}'
+        run: echo $JSON
+        env:
+          JSON: ${{ toJSON(github) }}
       - name: Dump job context
-        run: echo '${{ toJSON(job) }}'
+        run: echo $JSON
+        env:
+          JSON: ${{ toJSON(job) }}
       - name: Dump steps context
-        run: echo '${{ toJSON(steps) }}'
+        run: echo $JSON
+        env:
+          JSON: ${{ toJSON(steps) }}
       - name: Dump runner context
-        run: echo '${{ toJSON(runner) }}'
+        run: echo $JSON
+        env:
+          JSON: ${{ toJSON(runner) }}
       - name: Dump strategy context
-        run: echo '${{ toJSON(strategy) }}'
+        run: echo $JSON
+        env:
+          JSON: ${{ toJSON(strategy) }}
       - name: Dump matrix context
-        run: echo '${{ toJSON(matrix) }}'
+        run: echo $JSON
+        env:
+          JSON: ${{ toJSON(matrix) }}
   fossa-scan:
     name: "trigger FOSSA scan"
     runs-on: ubuntu-latest
