@@ -29,6 +29,7 @@ import (
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
 	vclient "github.com/vdaas/vald/internal/client/v1/client/vald"
 	"github.com/vdaas/vald/internal/errgroup"
+	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/grpc/codes"
@@ -633,6 +634,8 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 			span.End()
 		}
 	}()
+	mutex := new(sync.Mutex)
+	var errs error
 	successTgts := new(sync.Map)
 	if podName := s.gateway.FromForwardedContext(ctx); len(podName) == 0 {
 		err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
@@ -655,17 +658,31 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 						ResourceName: fmt.Sprintf("%s: %s(%s) to %s", apiName, s.name, s.ip, target),
 					},
 				)
-				if span != nil {
-					span.RecordError(err)
-					span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
-					span.SetStatus(trace.StatusError, err.Error())
+				if sspan != nil {
+					sspan.RecordError(err)
+					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+					sspan.SetStatus(trace.StatusError, err.Error())
 				}
+				mutex.Lock()
+				if errs == nil {
+					errs = err
+				} else {
+					errs = errors.Wrap(errs, err.Error())
+				}
+				mutex.Unlock()
 				return err
 			}
 			successTgts.Store(target, struct{}{})
 			return nil
 		})
 		if err != nil {
+			if errs == nil {
+				errs = err
+			} else {
+				errs = errors.Wrap(errs, err.Error())
+			}
+		}
+		if errs != nil {
 			if err := s.insertRollback(ctx, req, successTgts); err != nil {
 				st, msg, err := status.ParseError(err, codes.Internal,
 					"failed to parse "+vald.InsertRPCName+" "+rollbackName+" error response",
@@ -686,7 +703,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 				}
 				return nil, err
 			}
-			st, msg, err := status.ParseError(err, codes.Internal,
+			st, msg, err := status.ParseError(errs, codes.Internal,
 				"failed to parse "+vald.InsertRPCName+" gRPC error response",
 				&errdetails.RequestInfo{
 					RequestId:   req.GetVector().GetId(),
@@ -771,6 +788,8 @@ func (s *server) insertRollback(ctx context.Context, req *payload.Insert_Request
 			SkipStrictExistCheck: false,
 		},
 	}
+	mutex := new(sync.Mutex)
+	var errs error
 	err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
 		if _, ok := targets.Load(target); !ok {
 			return nil
@@ -794,17 +813,31 @@ func (s *server) insertRollback(ctx context.Context, req *payload.Insert_Request
 					ResourceName: fmt.Sprintf("%s: %s(%s) to %s", apiName, s.name, s.ip, target),
 				},
 			)
-			if span != nil {
-				span.RecordError(err)
-				span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
-				span.SetStatus(trace.StatusError, err.Error())
+			if sspan != nil {
+				sspan.RecordError(err)
+				sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+				sspan.SetStatus(trace.StatusError, err.Error())
 			}
+			mutex.Lock()
+			if errs == nil {
+				errs = err
+			} else {
+				errs = errors.Wrap(errs, err.Error())
+			}
+			mutex.Unlock()
 			return err
 		}
 		return nil
 	})
 	if err != nil {
-		st, msg, err := status.ParseError(err, codes.Internal,
+		if errs == nil {
+			errs = err
+		} else {
+			errs = errors.Wrap(errs, err.Error())
+		}
+	}
+	if errs != nil {
+		st, msg, err := status.ParseError(errs, codes.Internal,
 			"failed to parse "+vald.RemoveRPCName+" gRPC error response",
 			&errdetails.RequestInfo{
 				RequestId:   newReq.GetId().GetId(),
