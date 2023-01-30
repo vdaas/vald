@@ -47,7 +47,7 @@ func TestInit(t *testing.T) {
 		args       args
 		want       want
 		checkFunc  func(want, logger.Logger) error
-		beforeFunc func(args)
+		beforeFunc func(*testing.T, args)
 		afterFunc  func(args)
 	}
 	defaultCheckFunc := func(w want, got logger.Logger) error {
@@ -65,7 +65,8 @@ func TestInit(t *testing.T) {
 						glg.WithLevel(level.DEBUG.String()),
 					),
 				},
-				beforeFunc: func(args) {
+				beforeFunc: func(t *testing.T, _ args) {
+					t.Helper()
 					once = sync.Once{}
 				},
 			}
@@ -84,7 +85,8 @@ func TestInit(t *testing.T) {
 						glg.WithLevel(level.FATAL.String()),
 					),
 				},
-				beforeFunc: func(args) {
+				beforeFunc: func(t *testing.T, _ args) {
+					t.Helper()
 					once = sync.Once{}
 				},
 			}
@@ -96,7 +98,7 @@ func TestInit(t *testing.T) {
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
@@ -126,8 +128,9 @@ func Test_getLogger(t *testing.T) {
 		args       args
 		want       want
 		checkFunc  func(want, logger.Logger) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+
+		afterFunc func(args)
 	}
 	defaultCheckFunc := func(w want, got logger.Logger) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -210,7 +213,7 @@ func Test_getLogger(t *testing.T) {
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
@@ -240,8 +243,9 @@ func TestBold(t *testing.T) {
 		args       args
 		want       want
 		checkFunc  func(want, string) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+
+		afterFunc func(args)
 	}
 	defaultCheckFunc := func(w want, got string) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -266,7 +270,7 @@ func TestBold(t *testing.T) {
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
@@ -296,8 +300,9 @@ func TestDebug(t *testing.T) {
 		args       args
 		want       want
 		checkFunc  func(want) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+
+		afterFunc func(args)
 	}
 	tests := []test{
 		func() test {
@@ -321,7 +326,8 @@ func TestDebug(t *testing.T) {
 					vals: w.vals,
 				},
 				want: w,
-				beforeFunc: func(args) {
+				beforeFunc: func(t *testing.T, _ args) {
+					t.Helper()
 					l = ml
 				},
 				afterFunc: func(args) {
@@ -342,7 +348,7 @@ func TestDebug(t *testing.T) {
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
@@ -370,8 +376,9 @@ func TestDebugf(t *testing.T) {
 		args       args
 		want       want
 		checkFunc  func(want) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+
+		afterFunc func(args)
 	}
 	tests := []test{
 		func() test {
@@ -400,7 +407,8 @@ func TestDebugf(t *testing.T) {
 					vals:   w.vals,
 				},
 				want: w,
-				beforeFunc: func(args) {
+				beforeFunc: func(t *testing.T, _ args) {
+					t.Helper()
 					l = ml
 				},
 				afterFunc: func(args) {
@@ -424,7 +432,7 @@ func TestDebugf(t *testing.T) {
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
@@ -450,8 +458,9 @@ func TestInfo(t *testing.T) {
 		args       args
 		want       want
 		checkFunc  func(want) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+
+		afterFunc func(args)
 	}
 	tests := []test{
 		func() test {
@@ -475,7 +484,8 @@ func TestInfo(t *testing.T) {
 					vals: w.vals,
 				},
 				want: w,
-				beforeFunc: func(args) {
+				beforeFunc: func(t *testing.T, _ args) {
+					t.Helper()
 					l = ml
 				},
 				afterFunc: func(args) {
@@ -496,7 +506,7 @@ func TestInfo(t *testing.T) {
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
@@ -524,8 +534,9 @@ func TestInfof(t *testing.T) {
 		args       args
 		want       want
 		checkFunc  func(want) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+
+		afterFunc func(args)
 	}
 	tests := []test{
 		func() test {
@@ -554,7 +565,8 @@ func TestInfof(t *testing.T) {
 					vals:   w.vals,
 				},
 				want: w,
-				beforeFunc: func(args) {
+				beforeFunc: func(t *testing.T, _ args) {
+					t.Helper()
 					l = ml
 				},
 				afterFunc: func(args) {
@@ -578,7 +590,7 @@ func TestInfof(t *testing.T) {
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
@@ -604,8 +616,9 @@ func TestWarn(t *testing.T) {
 		args       args
 		want       want
 		checkFunc  func(want) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+
+		afterFunc func(args)
 	}
 	tests := []test{
 		func() test {
@@ -629,7 +642,8 @@ func TestWarn(t *testing.T) {
 					vals: w.vals,
 				},
 				want: w,
-				beforeFunc: func(args) {
+				beforeFunc: func(t *testing.T, _ args) {
+					t.Helper()
 					l = ml
 				},
 				afterFunc: func(args) {
@@ -650,7 +664,7 @@ func TestWarn(t *testing.T) {
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
@@ -678,8 +692,9 @@ func TestWarnf(t *testing.T) {
 		args       args
 		want       want
 		checkFunc  func(want) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+
+		afterFunc func(args)
 	}
 	tests := []test{
 		func() test {
@@ -708,7 +723,8 @@ func TestWarnf(t *testing.T) {
 					vals:   w.vals,
 				},
 				want: w,
-				beforeFunc: func(args) {
+				beforeFunc: func(t *testing.T, _ args) {
+					t.Helper()
 					l = ml
 				},
 				afterFunc: func(args) {
@@ -732,7 +748,7 @@ func TestWarnf(t *testing.T) {
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
@@ -758,8 +774,9 @@ func TestError(t *testing.T) {
 		args       args
 		want       want
 		checkFunc  func(want) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+
+		afterFunc func(args)
 	}
 	tests := []test{
 		func() test {
@@ -783,7 +800,8 @@ func TestError(t *testing.T) {
 					vals: w.vals,
 				},
 				want: w,
-				beforeFunc: func(args) {
+				beforeFunc: func(t *testing.T, _ args) {
+					t.Helper()
 					l = ml
 				},
 				afterFunc: func(args) {
@@ -804,7 +822,7 @@ func TestError(t *testing.T) {
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
@@ -832,8 +850,9 @@ func TestErrorf(t *testing.T) {
 		args       args
 		want       want
 		checkFunc  func(want) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+
+		afterFunc func(args)
 	}
 	tests := []test{
 		func() test {
@@ -862,7 +881,8 @@ func TestErrorf(t *testing.T) {
 					vals:   w.vals,
 				},
 				want: w,
-				beforeFunc: func(args) {
+				beforeFunc: func(t *testing.T, _ args) {
+					t.Helper()
 					l = ml
 				},
 				afterFunc: func(args) {
@@ -886,7 +906,7 @@ func TestErrorf(t *testing.T) {
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
@@ -912,8 +932,9 @@ func TestFatal(t *testing.T) {
 		args       args
 		want       want
 		checkFunc  func(want) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+
+		afterFunc func(args)
 	}
 	tests := []test{
 		func() test {
@@ -937,7 +958,8 @@ func TestFatal(t *testing.T) {
 					vals: w.vals,
 				},
 				want: w,
-				beforeFunc: func(args) {
+				beforeFunc: func(t *testing.T, _ args) {
+					t.Helper()
 					l = ml
 				},
 				afterFunc: func(args) {
@@ -958,7 +980,7 @@ func TestFatal(t *testing.T) {
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
@@ -986,8 +1008,9 @@ func TestFatalf(t *testing.T) {
 		args       args
 		want       want
 		checkFunc  func(want) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+
+		afterFunc func(args)
 	}
 	tests := []test{
 		func() test {
@@ -1016,7 +1039,8 @@ func TestFatalf(t *testing.T) {
 					vals:   w.vals,
 				},
 				want: w,
-				beforeFunc: func(args) {
+				beforeFunc: func(t *testing.T, _ args) {
+					t.Helper()
 					l = ml
 				},
 				afterFunc: func(args) {
@@ -1040,7 +1064,7 @@ func TestFatalf(t *testing.T) {
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
@@ -1066,8 +1090,9 @@ func TestDebugd(t *testing.T) {
 		args       args
 		want       want
 		checkFunc  func(want) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+
+		afterFunc func(args)
 	}
 	defaultCheckFunc := func(w want) error {
 		return nil
@@ -1108,7 +1133,7 @@ func TestDebugd(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
@@ -1138,8 +1163,9 @@ func TestInfod(t *testing.T) {
 		args       args
 		want       want
 		checkFunc  func(want) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+
+		afterFunc func(args)
 	}
 	defaultCheckFunc := func(w want) error {
 		return nil
@@ -1180,7 +1206,7 @@ func TestInfod(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
@@ -1210,8 +1236,9 @@ func TestWarnd(t *testing.T) {
 		args       args
 		want       want
 		checkFunc  func(want) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+
+		afterFunc func(args)
 	}
 	defaultCheckFunc := func(w want) error {
 		return nil
@@ -1252,7 +1279,7 @@ func TestWarnd(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
@@ -1282,8 +1309,9 @@ func TestErrord(t *testing.T) {
 		args       args
 		want       want
 		checkFunc  func(want) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+
+		afterFunc func(args)
 	}
 	defaultCheckFunc := func(w want) error {
 		return nil
@@ -1324,7 +1352,7 @@ func TestErrord(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
@@ -1354,8 +1382,9 @@ func TestFatald(t *testing.T) {
 		args       args
 		want       want
 		checkFunc  func(want) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+
+		afterFunc func(args)
 	}
 	defaultCheckFunc := func(w want) error {
 		return nil
@@ -1396,7 +1425,7 @@ func TestFatald(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)

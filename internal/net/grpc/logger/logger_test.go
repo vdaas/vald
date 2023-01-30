@@ -56,6 +56,7 @@ func TestInit(t *testing.T) {
 		{
 			name: "set logger success with verbosity level is set",
 			beforeFunc: func(t *testing.T) {
+				t.Helper()
 				t.Setenv("GRPC_GO_LOG_VERBOSITY_LEVEL", "2")
 			},
 			checkFunc: func() error {

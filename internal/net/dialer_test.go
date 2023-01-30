@@ -593,7 +593,7 @@ func Test_dialer_StartDialerCache(t *testing.T) {
 		opts       []DialerOption
 		want       want
 		checkFunc  func(*dialer) error
-		beforeFunc func(*dialer)
+		beforeFunc func(*testing.T, *dialer)
 		afterFunc  func(args)
 	}
 	defaultCheckFunc := func(d *dialer) error {
@@ -615,7 +615,8 @@ func Test_dialer_StartDialerCache(t *testing.T) {
 					WithDialerTimeout("1m"),
 					WithDialerKeepalive("1m"),
 				},
-				beforeFunc: func(d *dialer) {
+				beforeFunc: func(t *testing.T, d *dialer) {
+					t.Helper()
 					d.dnsCache.Set(addr, &dialerCache{
 						ips: ips,
 					})
@@ -709,7 +710,7 @@ func Test_dialer_StartDialerCache(t *testing.T) {
 				tt.Errorf("NewDialer return value Dialer is not *dialer: %v", der)
 			}
 			if test.beforeFunc != nil {
-				test.beforeFunc(d)
+				test.beforeFunc(tt, d)
 			}
 
 			d.StartDialerCache(ctx)
@@ -998,6 +999,7 @@ func Test_dialer_cachedDialer(t *testing.T) {
 					WithTLS(tls),
 				},
 				beforeFunc: func(t *testing.T) {
+					t.Helper()
 					// set the hostname 'invalid_ip' to the host name of the cache with the test server ip address
 					c.Set(addr, &dialerCache{
 						ips: []string{
@@ -1039,7 +1041,8 @@ func Test_dialer_cachedDialer(t *testing.T) {
 				opts: []DialerOption{
 					WithDNSCache(c),
 				},
-				beforeFunc: func(*testing.T) {
+				beforeFunc: func(t *testing.T) {
+					t.Helper()
 					c.Set(addr, &dialerCache{
 						ips: []string{
 							addr,
@@ -1076,7 +1079,8 @@ func Test_dialer_cachedDialer(t *testing.T) {
 				opts: []DialerOption{
 					WithDNSCache(c),
 				},
-				beforeFunc: func(*testing.T) {
+				beforeFunc: func(t *testing.T) {
+					t.Helper()
 					c.Set(addr, &dialerCache{
 						ips: []string{
 							"invalid_ip",
@@ -1131,6 +1135,7 @@ func Test_dialer_cachedDialer(t *testing.T) {
 					WithEnableDNSCache(),
 				},
 				beforeFunc: func(t *testing.T) {
+					t.Helper()
 					c.Set(addrs[0], &dialerCache{
 						ips: hosts,
 					})
@@ -1227,6 +1232,7 @@ func Test_dialer_cachedDialer(t *testing.T) {
 					WithDialerTimeout("10s"),
 				},
 				beforeFunc: func(t *testing.T) {
+					t.Helper()
 					c.Set(addr, &dialerCache{
 						cnt: math.MaxUint32,
 						ips: []string{host, host},
@@ -1747,7 +1753,8 @@ func Test_dialer_tlsHandshake(t *testing.T) {
 						return c
 					}()),
 				},
-				beforeFunc: func(*testing.T) {
+				beforeFunc: func(t *testing.T) {
+					t.Helper()
 					// close the server before the test
 					srv.Close()
 				},

@@ -149,7 +149,7 @@ func TestDialContext(t *testing.T) {
 		want       want
 		srv        *httptest.Server
 		checkFunc  func(want, Conn, error) error
-		beforeFunc func(*test)
+		beforeFunc func(*testing.T, *test)
 		afterFunc  func(*test)
 	}
 	defaultCheckFunc := func(w want, gotConn Conn, err error) error {
@@ -167,14 +167,15 @@ func TestDialContext(t *testing.T) {
 			args: args{
 				network: TCP.String(),
 			},
-			beforeFunc: func(t *test) {
+			beforeFunc: func(t *testing.T, test *test) {
+				t.Helper()
 				srvContent := "test"
 
-				t.srv = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				test.srv = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 					w.WriteHeader(200)
 					fmt.Fprint(w, srvContent)
 				}))
-				t.args.addr = t.srv.URL[len("http://"):]
+				test.args.addr = test.srv.URL[len("http://"):]
 			},
 			checkFunc: func(w want, gotConn Conn, err error) error {
 				if !errors.Is(err, w.err) {
@@ -208,7 +209,7 @@ func TestDialContext(t *testing.T) {
 			ctx, cancel := context.WithCancel(context.Background())
 			defer cancel()
 			if test.beforeFunc != nil {
-				test.beforeFunc(test)
+				test.beforeFunc(tt, test)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -588,6 +589,7 @@ func TestScanPorts(t *testing.T) {
 				host: "localhost",
 			},
 			beforeFunc: func(t *testing.T, test *test) {
+				t.Helper()
 				srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 					w.WriteHeader(200)
 				}))
@@ -617,6 +619,7 @@ func TestScanPorts(t *testing.T) {
 				host: "localhost",
 			},
 			beforeFunc: func(t *testing.T, test *test) {
+				t.Helper()
 				srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 					w.WriteHeader(200)
 				}))
@@ -646,6 +649,7 @@ func TestScanPorts(t *testing.T) {
 				host: "localhost",
 			},
 			beforeFunc: func(t *testing.T, test *test) {
+				t.Helper()
 				srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 					w.WriteHeader(200)
 				}))
@@ -675,6 +679,7 @@ func TestScanPorts(t *testing.T) {
 				host: "localhost",
 			},
 			beforeFunc: func(t *testing.T, test *test) {
+				t.Helper()
 				srvNum := 20
 
 				srvs := make([]*httptest.Server, 0, srvNum)

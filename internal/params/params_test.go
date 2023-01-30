@@ -173,7 +173,7 @@ func Test_parser_Parse(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, Data, bool, error) error
-		beforeFunc func()
+		beforeFunc func(*testing.T)
 		afterFunc  func()
 	}
 	defaultCheckFunc := func(w want, got Data, got1 bool, err error) error {
@@ -215,7 +215,8 @@ func Test_parser_Parse(t *testing.T) {
 					description: "show version",
 				},
 			},
-			beforeFunc: func() {
+			beforeFunc: func(t *testing.T) {
+				t.Helper()
 				os.Args = []string{
 					"test", "--path=./params.go", "--version=false",
 				}
@@ -231,7 +232,8 @@ func Test_parser_Parse(t *testing.T) {
 
 		{
 			name: "returns (nil, true, nil) When parse fails but the help option is set",
-			beforeFunc: func() {
+			beforeFunc: func(t *testing.T) {
+				t.Helper()
 				os.Args = []string{
 					"test", "--help",
 				}
@@ -244,7 +246,8 @@ func Test_parser_Parse(t *testing.T) {
 
 		{
 			name: "returns (nil, true, nil) When parse fails but the help option is not set",
-			beforeFunc: func() {
+			beforeFunc: func(t *testing.T) {
+				t.Helper()
 				os.Args = []string{
 					"test", "--name",
 				}
@@ -270,7 +273,8 @@ func Test_parser_Parse(t *testing.T) {
 					description: "sets file path",
 				},
 			},
-			beforeFunc: func() {
+			beforeFunc: func(t *testing.T) {
+				t.Helper()
 				os.Args = []string{
 					"test", "--path=config.yml",
 				}
@@ -292,7 +296,7 @@ func Test_parser_Parse(t *testing.T) {
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
 				defer test.afterFunc()
@@ -326,7 +330,7 @@ func Test_data_ConfigFilePath(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, string) error
-		beforeFunc func()
+		beforeFunc func(*testing.T)
 		afterFunc  func()
 	}
 	defaultCheckFunc := func(w want, got string) error {
@@ -352,7 +356,7 @@ func Test_data_ConfigFilePath(t *testing.T) {
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
 				defer test.afterFunc()
@@ -385,7 +389,7 @@ func Test_data_ShowVersion(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, bool) error
-		beforeFunc func()
+		beforeFunc func(*testing.T)
 		afterFunc  func()
 	}
 	defaultCheckFunc := func(w want, got bool) error {
@@ -411,7 +415,7 @@ func Test_data_ShowVersion(t *testing.T) {
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
 				defer test.afterFunc()

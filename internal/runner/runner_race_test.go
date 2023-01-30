@@ -40,8 +40,9 @@ func TestDo_for_race(t *testing.T) {
 		args       args
 		want       want
 		checkFunc  func(want, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+
+		afterFunc func(args)
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -60,7 +61,8 @@ func TestDo_for_race(t *testing.T) {
 			args: args{
 				ctx: context.Background(),
 			},
-			beforeFunc: func(args) {
+			beforeFunc: func(t *testing.T, _ args) {
+				t.Helper()
 				os.Args = []string{
 					"test", "-version",
 				}
@@ -75,7 +77,8 @@ func TestDo_for_race(t *testing.T) {
 			args: args{
 				ctx: context.Background(),
 			},
-			beforeFunc: func(args) {
+			beforeFunc: func(t *testing.T, _ args) {
+				t.Helper()
 				os.Args = []string{
 					"test", "-team=set",
 				}
@@ -95,7 +98,8 @@ func TestDo_for_race(t *testing.T) {
 					}),
 				},
 			},
-			beforeFunc: func(args) {
+			beforeFunc: func(t *testing.T, _ args) {
+				t.Helper()
 				os.Args = []string{
 					"test", "-c=./runner.go",
 				}
@@ -123,7 +127,8 @@ func TestDo_for_race(t *testing.T) {
 					}),
 				},
 			},
-			beforeFunc: func(args) {
+			beforeFunc: func(t *testing.T, _ args) {
+				t.Helper()
 				os.Args = []string{
 					"test", "-c=./runner.go",
 				}
@@ -154,7 +159,8 @@ func TestDo_for_race(t *testing.T) {
 					}),
 				},
 			},
-			beforeFunc: func(args) {
+			beforeFunc: func(t *testing.T, _ args) {
+				t.Helper()
 				os.Args = []string{
 					"test", "-c=./runner.go",
 				}
@@ -201,7 +207,8 @@ func TestDo_for_race(t *testing.T) {
 					}),
 				},
 			},
-			beforeFunc: func(args) {
+			beforeFunc: func(t *testing.T, _ args) {
+				t.Helper()
 				os.Args = []string{
 					"test", "-c=./runner.go",
 				}
@@ -221,7 +228,7 @@ func TestDo_for_race(t *testing.T) {
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc == nil {
 				test.afterFunc = defaultAfterFunc

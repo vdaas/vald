@@ -1574,6 +1574,7 @@ func Test_server_CreateAndSaveIndex(t *testing.T) {
 					indexPath: mkdirTemp(),
 				},
 				beforeFunc: func(t *testing.T, ctx context.Context, s Server, n service.NGT, test test) {
+					t.Helper()
 					invalidDim := dim + 1
 					vecs, err := vector.GenF32Vec(vector.Gaussian, 1, invalidDim)
 					if err != nil {
