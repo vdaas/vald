@@ -113,6 +113,7 @@ func Test_server_Upsert(t *testing.T) {
 		}
 
 		return func(t *testing.T, ctx context.Context, opt optIdx) (Server, error) {
+			t.Helper()
 			var overwriteID []string
 			if opt.id != "" {
 				overwriteID = []string{
