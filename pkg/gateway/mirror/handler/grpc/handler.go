@@ -663,14 +663,16 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
 					sspan.SetStatus(trace.StatusError, err.Error())
 				}
-				mutex.Lock()
-				if errs == nil {
-					errs = err
-				} else {
-					errs = errors.Wrap(errs, err.Error())
+				if err != nil && st.Code() != codes.AlreadyExists {
+					mutex.Lock()
+					if errs == nil {
+						errs = err
+					} else {
+						errs = errors.Wrap(errs, err.Error())
+					}
+					mutex.Unlock()
+					return err
 				}
-				mutex.Unlock()
-				return err
 			}
 			successTgts.Store(target, struct{}{})
 			return nil
@@ -818,14 +820,16 @@ func (s *server) insertRollback(ctx context.Context, req *payload.Insert_Request
 				sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
 				sspan.SetStatus(trace.StatusError, err.Error())
 			}
-			mutex.Lock()
-			if errs == nil {
-				errs = err
-			} else {
-				errs = errors.Wrap(errs, err.Error())
+			if err != nil && st.Code() != codes.NotFound {
+				mutex.Lock()
+				if errs == nil {
+					errs = err
+				} else {
+					errs = errors.Wrap(errs, err.Error())
+				}
+				mutex.Unlock()
+				return err
 			}
-			mutex.Unlock()
-			return err
 		}
 		return nil
 	})
