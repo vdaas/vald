@@ -416,6 +416,7 @@ spec:
                     required:
                       - job_type
                       - dimension
-                      - dataset
               required:
                 - jobs
+                - dataset
+                - target

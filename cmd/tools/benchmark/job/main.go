@@ -37,9 +37,8 @@ const (
 
 func main() {
 	if err := safety.RecoverFunc(func() error {
-		ctx := context.Background()
 		return runner.Do(
-			ctx,
+			context.Background(),
 			runner.WithName(name),
 			runner.WithVersion(info.Version, maxVersion, minVersion),
 			runner.WithConfigLoader(func(path string) (interface{}, *config.GlobalConfig, error) {

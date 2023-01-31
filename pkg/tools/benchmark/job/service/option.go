@@ -18,6 +18,8 @@
 package service
 
 import (
+	"context"
+
 	"github.com/vdaas/vald/internal/client/v1/client/vald"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
@@ -129,6 +131,8 @@ func WithDataset(d *v1.BenchmarkDataset) Option {
 func WithJobTypeByString(t string) Option {
 	var jt jobType
 	switch t {
+	case "userdefined":
+		jt = USERDEFINED
 	case "search":
 		jt = SEARCH
 	}
@@ -138,12 +142,23 @@ func WithJobTypeByString(t string) Option {
 func WithJobType(jt jobType) Option {
 	return func(j *job) error {
 		switch jt {
+		case USERDEFINED:
+			j.jobType = jt
 		case SEARCH:
 			j.jobType = jt
-			j.jobFunc = j.search
 		default:
 			return errors.NewErrInvalidOption("jobType", jt)
 		}
+		return nil
+	}
+}
+
+func WithJobFunc(jf func(context.Context, chan error) error) Option {
+	return func(j *job) error {
+		if jf == nil {
+			return errors.NewErrInvalidOption("jobFunc", jf)
+		}
+		j.jobFunc = jf
 		return nil
 	}
 }
