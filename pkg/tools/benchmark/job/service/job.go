@@ -19,7 +19,9 @@ package service
 
 import (
 	"context"
+	"os"
 	"reflect"
+	"syscall"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/client/v1/client/vald"
@@ -33,13 +35,25 @@ import (
 type Job interface {
 	PreStart(context.Context) error
 	Start(context.Context) (<-chan error, error)
+	Stop(context.Context) error
 }
 
 type jobType int
 
 const (
-	SEARCH jobType = iota
+	USERDEFINED jobType = iota
+	SEARCH
 )
+
+func (jt jobType) String() string {
+	switch jt {
+	case USERDEFINED:
+		return "userdefined"
+	case SEARCH:
+		return "search"
+	}
+	return ""
+}
 
 type job struct {
 	eg           errgroup.Group
@@ -63,12 +77,22 @@ func New(opts ...Option) (Job, error) {
 			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 		}
 	}
+	if j.jobFunc == nil {
+		switch j.jobType {
+		case USERDEFINED:
+			opt := WithJobFunc(j.jobFunc)
+			err := opt(j)
+			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
+		case SEARCH:
+			j.jobFunc = j.search
+		}
+	} else if j.jobType != USERDEFINED {
+		log.Warnf("[benchmark job] userdefined jobFunc is set but jobType is set %s", j.jobType.String())
+	}
 	return j, nil
 }
 
 func (j *job) PreStart(ctx context.Context) error {
-	// TODO: check target host is ok
-
 	log.Infof("[benchmark job] start download dataset of %s", j.hdf5.GetName().String())
 	if err := j.hdf5.Download(); err != nil {
 		return err
@@ -99,17 +123,44 @@ func (j *job) Start(ctx context.Context) (<-chan error, error) {
 		}
 	})
 
-	err = j.jobFunc(ctx, ech)
-	if err != nil {
-		return ech, err
-	}
+	j.eg.Go(func() error {
+		err := j.jobFunc(ctx, ech)
+		defer func() {
+			p, perr := os.FindProcess(os.Getegid())
+			if perr != nil {
+				log.Error(perr)
+				return
+			}
+			if err != nil {
+				select {
+				case <-ctx.Done():
+					ech <- errors.Wrap(err, ctx.Err().Error())
+				case ech <- err:
+				}
+			}
+			log.Info("send SIGTERM to the process")
+			if err := p.Signal(syscall.SIGTERM); err != nil {
+				log.Error(err)
+			}
+		}()
+		return err
+	})
 
 	return ech, nil
 }
 
+func (j *job) Stop(ctx context.Context) (err error) {
+	err = j.client.Stop(ctx)
+	return
+}
+
 func calcRecall(linearRes, searchRes []*payload.Object_Distance) float64 {
+	var recall float64
+	if linearRes == nil || searchRes == nil {
+		return recall
+	}
 	if len(linearRes) == 0 || len(searchRes) == 0 {
-		return 0
+		return recall
 	}
 	linearIds := make([]string, len(linearRes))
 	for i, v := range linearRes {
@@ -121,7 +172,8 @@ func calcRecall(linearRes, searchRes []*payload.Object_Distance) float64 {
 			cnt++
 		}
 	}
-	return float64(cnt / len(linearRes))
+	recall = float64(cnt / len(linearRes))
+	return recall
 }
 
 func contains(target string, arr []string) bool {
@@ -131,4 +183,19 @@ func contains(target string, arr []string) bool {
 		}
 	}
 	return false
+}
+
+func genVec(data [][]float32, cfg *v1.BenchmarkDataset) [][]float32 {
+	start := cfg.Range.Start
+	end := cfg.Range.End
+	if (end - start) < cfg.Indexes {
+		end = cfg.Indexes
+	}
+	num := end - start + 1
+	if len(data) < num {
+		num = len(data)
+		end = start + num + 1
+	}
+	vectors := data[start : end+1]
+	return vectors
 }

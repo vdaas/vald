@@ -19,6 +19,7 @@ package usecase
 
 import (
 	"context"
+	"strconv"
 
 	"github.com/vdaas/vald/internal/client/v1/client/vald"
 	iconf "github.com/vdaas/vald/internal/config"
@@ -53,14 +54,42 @@ type run struct {
 func New(cfg *config.Config) (r runner.Runner, err error) {
 	log.Info("pkg/tools/benchmark/job/cmd start")
 	eg := errgroup.Get()
+
+	if cfg.Job.Target != nil {
+		addr := cfg.Job.Target.Host + ":" + strconv.Itoa(cfg.Job.Target.Port)
+		if cfg.Job.ClientConfig.Addrs == nil {
+			cfg.Job.ClientConfig.Addrs = []string{addr}
+		} else {
+			cfg.Job.ClientConfig.Addrs = append(cfg.Job.ClientConfig.Addrs, addr)
+		}
+	}
+
 	copts, err := cfg.Job.ClientConfig.Opts()
 	if err != nil {
 		return nil, err
 	}
+	copts = append(copts, grpc.WithInsecure(true))
 
-	c, err := vald.New(
+	// log.Infof("pkg/tools/benchmark/job/cmd check the connection to target...: %v", cfg.Job.ClientConfig.Addrs)
+	// conn := grpc.New(copts...)
+	// ctx := context.Background()
+	// cerr, err := conn.StartConnectionMonitor(ctx)
+	// if err != nil {
+	// 	cherr := <-cerr
+	// 	return nil, errors.New(cherr.Error() + ":" + err.Error())
+	// }
+	// 
+	// if !conn.IsConnected(ctx, cfg.Job.ClientConfig.Addrs[0]) {
+	// 	return nil, err
+	// }
+	// conn.Close(ctx)
+	// ctx.Done()
+	// log.Infof("pkg/tools/benchmark/job/cmd finish checking the connection to target...: %v", cfg.Job.ClientConfig.Addrs)
+
+	gcli := grpc.New(copts...)
+	vcli, err := vald.New(
 		vald.WithAddrs(cfg.Job.ClientConfig.Addrs...),
-		vald.WithClient(grpc.New(copts...)),
+		vald.WithClient(gcli),
 	)
 	if err != nil {
 		return nil, err
@@ -76,7 +105,7 @@ func New(cfg *config.Config) (r runner.Runner, err error) {
 
 	job, err := service.New(
 		service.WithErrGroup(eg),
-		service.WithValdClient(c),
+		service.WithValdClient(vcli),
 		service.WithDataset(cfg.Job.Dataset),
 		service.WithJobTypeByString(cfg.Job.JobType),
 		service.WithDimension(cfg.Job.Dimension),
@@ -219,6 +248,9 @@ func (r *run) PreStop(ctx context.Context) error {
 func (r *run) Stop(ctx context.Context) error {
 	if r.observability != nil {
 		r.observability.Stop(ctx)
+	}
+	if r.job != nil {
+		r.job.Stop(ctx)
 	}
 	return r.server.Shutdown(ctx)
 }

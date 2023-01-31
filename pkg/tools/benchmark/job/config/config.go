@@ -20,6 +20,7 @@ package config
 import (
 	"context"
 	"os"
+	"time"
 
 	"github.com/vdaas/vald/internal/config"
 	v1 "github.com/vdaas/vald/internal/k8s/vald/benchmark/api/v1"
@@ -86,9 +87,6 @@ func NewConfig(ctx context.Context, path string) (cfg *Config, err error) {
 
 	if cfg.Job.ClientConfig == nil {
 		cfg.Job.ClientConfig = new(config.GRPCClient)
-		cfg.Job.ClientConfig.Addrs = []string{
-			"vald-lb-gateway.default.svc.cluster.local:8081",
-		}
 	}
 
 	// Get config from applied ValdBenchmarkJob custom resource
@@ -120,40 +118,79 @@ func NewConfig(ctx context.Context, path string) (cfg *Config, err error) {
 		cfg.Job.UpsertConfig = jobResource.Spec.UpsertConfig
 		cfg.Job.SearchConfig = jobResource.Spec.SearchConfig
 		cfg.Job.RemoveConfig = jobResource.Spec.RemoveConfig
-		clientConfig := &config.GRPCClient{
-			Addrs:               jobResource.Spec.ClientConfig.Addrs,
-			HealthCheckDuration: jobResource.Spec.ClientConfig.HealthCheckDuration,
-			ConnectionPool:      (*config.ConnectionPool)(jobResource.Spec.ClientConfig.ConnectionPool),
-			Backoff:             (*config.Backoff)(jobResource.Spec.ClientConfig.Backoff),
-			CircuitBreaker:      (*config.CircuitBreaker)(jobResource.Spec.ClientConfig.CircuitBreaker),
-			CallOption:          (*config.CallOption)(jobResource.Spec.ClientConfig.CallOption),
-			DialOption: &config.DialOption{
-				WriteBufferSize:          jobResource.Spec.ClientConfig.DialOption.WriteBufferSize,
-				ReadBufferSize:           jobResource.Spec.ClientConfig.DialOption.ReadBufferSize,
-				InitialWindowSize:        jobResource.Spec.ClientConfig.DialOption.InitialWindowSize,
-				MaxMsgSize:               jobResource.Spec.ClientConfig.DialOption.MaxMsgSize,
-				BackoffMaxDelay:          jobResource.Spec.ClientConfig.DialOption.BackoffMaxDelay,
-				BackoffBaseDelay:         jobResource.Spec.ClientConfig.DialOption.BackoffBaseDelay,
-				BackoffMultiplier:        jobResource.Spec.ClientConfig.DialOption.BackoffMultiplier,
-				MinimumConnectionTimeout: jobResource.Spec.ClientConfig.DialOption.MinimumConnectionTimeout,
-				EnableBackoff:            jobResource.Spec.ClientConfig.DialOption.EnableBackoff,
-				Insecure:                 jobResource.Spec.ClientConfig.DialOption.Insecure,
-				Timeout:                  jobResource.Spec.ClientConfig.DialOption.Timeout,
-				Interceptors:             jobResource.Spec.ClientConfig.DialOption.Interceptors,
-				Net: &config.Net{
-					DNS:          (*config.DNS)(jobResource.Spec.ClientConfig.DialOption.Net.DNS),
-					Dialer:       (*config.Dialer)(jobResource.Spec.ClientConfig.DialOption.Net.Dialer),
-					SocketOption: (*config.SocketOption)(jobResource.Spec.ClientConfig.DialOption.Net.SocketOption),
-					TLS:          (*config.TLS)(jobResource.Spec.ClientConfig.TLS),
-				},
-				Keepalive: (*config.GRPCClientKeepalive)(jobResource.Spec.ClientConfig.DialOption.Keepalive),
-			},
-			TLS: (*config.TLS)(jobResource.Spec.ClientConfig.TLS),
-		}
-		cfg.Job.ClientConfig = clientConfig
+		cfg.Job.ClientConfig = convertClientOpts(jobResource.Spec.ClientConfig)
 	}
 
 	return cfg, nil
+}
+
+func convertClientOpts(g *v1.ClientConfig) *config.GRPCClient {
+	cfg := new(config.GRPCClient)
+	if g == nil {
+		return cfg
+	}
+
+	if len(g.Addrs) > 0 {
+		cfg.Addrs = g.Addrs
+	}
+
+	_, err := time.ParseDuration(g.HealthCheckDuration)
+	if err == nil {
+		cfg.HealthCheckDuration = g.HealthCheckDuration
+	} else {
+		cfg.HealthCheckDuration = "10s"
+	}
+
+	if g.ConnectionPool != nil {
+		cfg.ConnectionPool = (*config.ConnectionPool)(g.ConnectionPool)
+	}
+
+	if g.Backoff != nil {
+		cfg.Backoff = (*config.Backoff)(g.Backoff)
+	}
+
+	if g.CircuitBreaker != nil {
+		cfg.CircuitBreaker = (*config.CircuitBreaker)(g.CircuitBreaker)
+	}
+
+	if g.CallOption != nil {
+		cfg.CallOption = (*config.CallOption)(g.CallOption)
+	}
+
+	if g.DialOption != nil {
+		cfg.DialOption.WriteBufferSize = g.DialOption.WriteBufferSize
+		cfg.DialOption.ReadBufferSize = g.DialOption.ReadBufferSize
+		cfg.DialOption.InitialWindowSize = g.DialOption.InitialWindowSize
+		cfg.DialOption.MaxMsgSize = g.DialOption.MaxMsgSize
+		cfg.DialOption.BackoffMaxDelay = g.DialOption.BackoffMaxDelay
+		cfg.DialOption.BackoffBaseDelay = g.DialOption.BackoffBaseDelay
+		cfg.DialOption.BackoffMultiplier = g.DialOption.BackoffMultiplier
+		cfg.DialOption.MinimumConnectionTimeout = g.DialOption.MinimumConnectionTimeout
+		cfg.DialOption.EnableBackoff = g.DialOption.EnableBackoff
+		cfg.DialOption.Insecure = g.DialOption.Insecure
+		cfg.DialOption.Timeout = g.DialOption.Timeout
+		cfg.DialOption.Interceptors = g.DialOption.Interceptors
+		if g.DialOption.Net != nil {
+			if g.DialOption.Net.DNS != nil {
+				cfg.DialOption.Net.DNS = (*config.DNS)(g.DialOption.Net.DNS)
+			}
+			if g.DialOption.Net.Dialer != nil {
+				cfg.DialOption.Net.Dialer = (*config.Dialer)(g.DialOption.Net.Dialer)
+			}
+			if g.DialOption.Net.SocketOption != nil {
+				cfg.DialOption.Net.SocketOption = (*config.SocketOption)(g.DialOption.Net.SocketOption)
+			}
+			if g.DialOption.Net.TLS != nil && g.DialOption.Net.TLS.Enabled {
+				cfg.DialOption.Net.TLS = (*config.TLS)(g.DialOption.Net.TLS)
+			}
+		}
+	}
+
+	if g.TLS != nil && g.TLS.Enabled {
+		cfg.TLS = (*config.TLS)(g.TLS)
+	}
+
+	return cfg
 }
 
 // func FakeData() {

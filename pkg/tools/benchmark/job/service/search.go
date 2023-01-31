@@ -29,12 +29,40 @@ import (
 
 func (j *job) search(ctx context.Context, ech chan error) error {
 	log.Info("[benchmark job] Start benchmarking search")
-	j.eg.Go(func() (err error) {
-		if j.searchConfig == nil {
-			err := errors.NewErrInvalidOption("searchConfig", j.searchConfig)
+	if j.searchConfig == nil {
+		err := errors.NewErrInvalidOption("searchConfig", j.searchConfig)
+		select {
+		case <-ctx.Done():
+			if err != context.Canceled {
+				ech <- errors.Wrap(err, ctx.Err().Error())
+			} else {
+				ech <- err
+			}
+		case ech <- err:
+		}
+		return err
+	}
+
+	// create data
+	vecs := genVec(j.hdf5.GetTest(), j.dataset)
+	timeout, _ := time.ParseDuration(j.searchConfig.Timeout)
+	cfg := &payload.Search_Config{
+		Num:     uint32(j.searchConfig.Num),
+		MinNum:  uint32(j.searchConfig.MinNum),
+		Radius:  float32(j.searchConfig.Radius),
+		Epsilon: float32(j.searchConfig.Epsilon),
+		Timeout: timeout.Nanoseconds(),
+	}
+	for i := 0; i < len(vecs); i++ {
+		log.Infof("[benchmark job] Start search: iter = %d", i)
+		lres, err := j.client.LinearSearch(ctx, &payload.Search_Request{
+			Vector: vecs[i],
+			Config: cfg,
+		})
+		if err != nil {
 			select {
 			case <-ctx.Done():
-				if err != context.Canceled {
+				if !errors.Is(err, context.Canceled) {
 					ech <- errors.Wrap(err, ctx.Err().Error())
 				} else {
 					ech <- err
@@ -43,68 +71,34 @@ func (j *job) search(ctx context.Context, ech chan error) error {
 			}
 			return err
 		}
-
-		vecs := j.hdf5.GetTest()
-		if len(vecs) < j.dataset.Indexes {
-			log.Infof("[benchmark job] update search iteration from %d to %d", j.dataset.Indexes, len(vecs))
-			j.dataset.Indexes = len(vecs)
-		}
-		timeout, _ := time.ParseDuration(j.searchConfig.Timeout)
-		cfg := &payload.Search_Config{
-			Num:     uint32(j.searchConfig.Num),
-			MinNum:  uint32(j.searchConfig.MinNum),
-			Radius:  float32(j.searchConfig.Radius),
-			Epsilon: float32(j.searchConfig.Epsilon),
-			Timeout: timeout.Nanoseconds(),
-		}
-		for i := 0; i < j.dataset.Indexes; i++ {
-			log.Infof("[benchmark job] Start search: iter = %d\n", i)
-			lres, err := j.client.LinearSearch(ctx, &payload.Search_Request{
+		bres := testing.Benchmark(func(b *testing.B) {
+			b.Helper()
+			b.ResetTimer()
+			start := time.Now()
+			sres, err := j.client.Search(ctx, &payload.Search_Request{
 				Vector: vecs[i],
 				Config: cfg,
 			})
 			if err != nil {
 				select {
 				case <-ctx.Done():
-					if err != context.Canceled {
+					if errors.Is(err, context.Canceled) {
 						ech <- errors.Wrap(err, ctx.Err().Error())
 					} else {
 						ech <- err
 					}
 				case ech <- err:
+					break
 				}
-				return err
 			}
-			bres := testing.Benchmark(func(b *testing.B) {
-				b.Helper()
-				b.ResetTimer()
-				start := time.Now()
-				sres, err := j.client.Search(ctx, &payload.Search_Request{
-					Vector: vecs[i],
-					Config: cfg,
-				})
-				if err != nil {
-					select {
-					case <-ctx.Done():
-						if errors.Is(err, context.Canceled) {
-							ech <- errors.Wrap(err, ctx.Err().Error())
-						} else {
-							ech <- err
-						}
-					case ech <- err:
-						break
-					}
-				}
-				latency := time.Since(start)
-				recall := calcRecall(lres.Results, sres.Results)
-				b.ReportMetric(recall, "recall")
-				b.ReportMetric(float64(latency.Microseconds()), "latency")
-			})
-			// TODO: send metrics to the Prometeus
-			log.Infof("[benchmark job] Finish search bench: iter= %d \n%#v\n", i, bres)
-		}
-		return nil
-	})
+			latency := time.Since(start)
+			recall := calcRecall(lres.Results, sres.Results)
+			b.ReportMetric(recall, "recall")
+			b.ReportMetric(float64(latency.Microseconds()), "latency")
+		})
+		// TODO: send metrics to the Prometeus
+		log.Infof("[benchmark job] Finish search bench: iter= %d \n%#v\n", i, bres)
+	}
 
 	log.Info("[benchmark job] Finish benchmarking search")
 	return nil
