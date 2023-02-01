@@ -673,6 +673,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 					mutex.Unlock()
 					return err
 				}
+				log.Infof("[intert-mirror]: insert request succeeds: %#v, err: %#v, code: %s", req.GetVector(), err.Error(), st.Code().String())
 			}
 			successTgts.Store(target, struct{}{})
 			return nil
@@ -725,9 +726,11 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 			return nil, err
 		}
 	} else if s.gateway.IsSamePod(podName) {
+		log.Infof("is same pod: %s", podName)
 		return new(payload.Object_Location), nil
 	}
 
+	log.Infof("[intert-mirror]: insert request for other cluster succeeds: %#v", req.GetVector())
 	ce, err = s.lbClient.Insert(ctx, req)
 	if err != nil {
 		if podName := s.gateway.FromForwardedContext(ctx); len(podName) == 0 {
@@ -771,6 +774,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 		}
 		return nil, err
 	}
+	log.Info("[insert-mirror]: success")
 	return ce, nil
 }
 
