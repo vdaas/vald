@@ -268,4 +268,3 @@ jobs:
         ca: /path/to/ca
         # client_config.tls.insecure_skip_verify -- enable/disable skip SSL certificate verification
         insecure_skip_verify: false
-
