@@ -55,7 +55,7 @@ func Test_server_Upsert(t *testing.T) {
 		args       args
 		want       want
 		checkFunc  func(want, *payload.Object_Location, error) error
-		beforeFunc func(context.Context, optIdx) (Server, error)
+		beforeFunc func(*testing.T, context.Context, optIdx) (Server, error)
 		afterFunc  func()
 	}
 	defaultCheckFunc := func(w want, gotRes *payload.Object_Location, err error) error {
@@ -96,7 +96,7 @@ func Test_server_Upsert(t *testing.T) {
 	defaultInsertConfig := &payload.Insert_Config{
 		SkipStrictExistCheck: true,
 	}
-	defaultBeforeFunc := func(objectType string, insertNum int) func(context.Context, optIdx) (Server, error) {
+	defaultBeforeFunc := func(objectType string, insertNum int) func(*testing.T, context.Context, optIdx) (Server, error) {
 		cfg := &config.NGT{
 			Dimension:        dimension,
 			DistanceType:     ngt.L2.String(),
@@ -112,7 +112,8 @@ func Test_server_Upsert(t *testing.T) {
 			},
 		}
 
-		return func(ctx context.Context, opt optIdx) (Server, error) {
+		return func(t *testing.T, ctx context.Context, opt optIdx) (Server, error) {
+			t.Helper()
 			var overwriteID []string
 			if opt.id != "" {
 				overwriteID = []string{
@@ -1572,7 +1573,7 @@ func Test_server_Upsert(t *testing.T) {
 			if test.beforeFunc == nil {
 				test.beforeFunc = defaultBeforeFunc(ngt.Float.String(), defaultInsertNum)
 			}
-			s, err := test.beforeFunc(ctx, test.args.optIdx)
+			s, err := test.beforeFunc(tt, ctx, test.args.optIdx)
 			if err != nil {
 				tt.Errorf("error = %v", err)
 			}

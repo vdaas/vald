@@ -83,7 +83,6 @@ func newIndexedNGTService(ctx context.Context, eg errgroup.Group, t request.Obje
 }
 
 func TestNew(t *testing.T) {
-	t.Parallel()
 	type args struct {
 		opts []Option
 	}
@@ -96,12 +95,12 @@ func TestNew(t *testing.T) {
 		args       args
 		want       want
 		checkFunc  func(want, Server, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, got Server, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant_error: \"%#v\"", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(got, w.want) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
@@ -118,6 +117,12 @@ func TestNew(t *testing.T) {
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -131,6 +136,12 @@ func TestNew(t *testing.T) {
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -140,11 +151,12 @@ func TestNew(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -160,16 +172,8 @@ func TestNew(t *testing.T) {
 }
 
 func Test_server_newLocations(t *testing.T) {
-	t.Parallel()
 	type args struct {
 		uuids []string
-	}
-	type fields struct {
-		name              string
-		ip                string
-		ngt               service.NGT
-		eg                errgroup.Group
-		streamConcurrency int
 	}
 	type want struct {
 		wantLocs *payload.Object_Locations
@@ -177,11 +181,11 @@ func Test_server_newLocations(t *testing.T) {
 	type test struct {
 		name       string
 		args       args
-		fields     fields
+		s          *server
 		want       want
 		checkFunc  func(want, *payload.Object_Locations) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, gotLocs *payload.Object_Locations) error {
 		if !reflect.DeepEqual(gotLocs, w.wantLocs) {
@@ -197,15 +201,14 @@ func Test_server_newLocations(t *testing.T) {
 		       args: args {
 		           uuids: nil,
 		       },
-		       fields: fields {
-		           name: "",
-		           ip: "",
-		           ngt: nil,
-		           eg: nil,
-		           streamConcurrency: 0,
-		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -217,15 +220,14 @@ func Test_server_newLocations(t *testing.T) {
 		           args: args {
 		           uuids: nil,
 		           },
-		           fields: fields {
-		           name: "",
-		           ip: "",
-		           ngt: nil,
-		           eg: nil,
-		           streamConcurrency: 0,
-		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -235,25 +237,19 @@ func Test_server_newLocations(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
-			s := &server{
-				name:              test.fields.name,
-				ip:                test.fields.ip,
-				ngt:               test.fields.ngt,
-				eg:                test.fields.eg,
-				streamConcurrency: test.fields.streamConcurrency,
-			}
 
-			gotLocs := s.newLocations(test.args.uuids...)
+			gotLocs := test.s.newLocations(test.args.uuids...)
 			if err := checkFunc(test.want, gotLocs); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -262,16 +258,8 @@ func Test_server_newLocations(t *testing.T) {
 }
 
 func Test_server_newLocation(t *testing.T) {
-	t.Parallel()
 	type args struct {
 		uuid string
-	}
-	type fields struct {
-		name              string
-		ip                string
-		ngt               service.NGT
-		eg                errgroup.Group
-		streamConcurrency int
 	}
 	type want struct {
 		want *payload.Object_Location
@@ -279,11 +267,11 @@ func Test_server_newLocation(t *testing.T) {
 	type test struct {
 		name       string
 		args       args
-		fields     fields
+		s          *server
 		want       want
 		checkFunc  func(want, *payload.Object_Location) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, got *payload.Object_Location) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -299,15 +287,14 @@ func Test_server_newLocation(t *testing.T) {
 		       args: args {
 		           uuid: "",
 		       },
-		       fields: fields {
-		           name: "",
-		           ip: "",
-		           ngt: nil,
-		           eg: nil,
-		           streamConcurrency: 0,
-		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -319,15 +306,14 @@ func Test_server_newLocation(t *testing.T) {
 		           args: args {
 		           uuid: "",
 		           },
-		           fields: fields {
-		           name: "",
-		           ip: "",
-		           ngt: nil,
-		           eg: nil,
-		           streamConcurrency: 0,
-		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -337,25 +323,19 @@ func Test_server_newLocation(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
-			s := &server{
-				name:              test.fields.name,
-				ip:                test.fields.ip,
-				ngt:               test.fields.ngt,
-				eg:                test.fields.eg,
-				streamConcurrency: test.fields.streamConcurrency,
-			}
 
-			got := s.newLocation(test.args.uuid)
+			got := test.s.newLocation(test.args.uuid)
 			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}

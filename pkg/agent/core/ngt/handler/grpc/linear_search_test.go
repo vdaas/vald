@@ -18,28 +18,16 @@ import (
 	"reflect"
 	"testing"
 
-	agent "github.com/vdaas/vald/apis/grpc/v1/agent/core"
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
-	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
-	"github.com/vdaas/vald/pkg/agent/core/ngt/service"
+	"github.com/vdaas/vald/internal/test/goleak"
 )
 
 func Test_server_LinearSearch(t *testing.T) {
-	t.Parallel()
 	type args struct {
 		ctx context.Context
 		req *payload.Search_Request
-	}
-	type fields struct {
-		name                     string
-		ip                       string
-		ngt                      service.NGT
-		eg                       errgroup.Group
-		streamConcurrency        int
-		UnimplementedAgentServer agent.UnimplementedAgentServer
-		UnimplementedValdServer  vald.UnimplementedValdServer
 	}
 	type want struct {
 		wantRes *payload.Search_Response
@@ -48,11 +36,11 @@ func Test_server_LinearSearch(t *testing.T) {
 	type test struct {
 		name       string
 		args       args
-		fields     fields
+		s          *server
 		want       want
 		checkFunc  func(want, *payload.Search_Response, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, gotRes *payload.Search_Response, err error) error {
 		if !errors.Is(err, w.err) {
@@ -72,17 +60,14 @@ func Test_server_LinearSearch(t *testing.T) {
 		           ctx: nil,
 		           req: nil,
 		       },
-		       fields: fields {
-		           name: "",
-		           ip: "",
-		           ngt: nil,
-		           eg: nil,
-		           streamConcurrency: 0,
-		           UnimplementedAgentServer: nil,
-		           UnimplementedValdServer: nil,
-		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -95,17 +80,14 @@ func Test_server_LinearSearch(t *testing.T) {
 		           ctx: nil,
 		           req: nil,
 		           },
-		           fields: fields {
-		           name: "",
-		           ip: "",
-		           ngt: nil,
-		           eg: nil,
-		           streamConcurrency: 0,
-		           UnimplementedAgentServer: nil,
-		           UnimplementedValdServer: nil,
-		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -115,27 +97,20 @@ func Test_server_LinearSearch(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
-			s := &server{
-				name:                     test.fields.name,
-				ip:                       test.fields.ip,
-				ngt:                      test.fields.ngt,
-				eg:                       test.fields.eg,
-				streamConcurrency:        test.fields.streamConcurrency,
-				UnimplementedAgentServer: test.fields.UnimplementedAgentServer,
-				UnimplementedValdServer:  test.fields.UnimplementedValdServer,
+				checkFunc = defaultCheckFunc
 			}
 
-			gotRes, err := s.LinearSearch(test.args.ctx, test.args.req)
-			if err := test.checkFunc(test.want, gotRes, err); err != nil {
+			gotRes, err := test.s.LinearSearch(test.args.ctx, test.args.req)
+			if err := checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -143,19 +118,9 @@ func Test_server_LinearSearch(t *testing.T) {
 }
 
 func Test_server_LinearSearchByID(t *testing.T) {
-	t.Parallel()
 	type args struct {
 		ctx context.Context
 		req *payload.Search_IDRequest
-	}
-	type fields struct {
-		name                     string
-		ip                       string
-		ngt                      service.NGT
-		eg                       errgroup.Group
-		streamConcurrency        int
-		UnimplementedAgentServer agent.UnimplementedAgentServer
-		UnimplementedValdServer  vald.UnimplementedValdServer
 	}
 	type want struct {
 		wantRes *payload.Search_Response
@@ -164,11 +129,11 @@ func Test_server_LinearSearchByID(t *testing.T) {
 	type test struct {
 		name       string
 		args       args
-		fields     fields
+		s          *server
 		want       want
 		checkFunc  func(want, *payload.Search_Response, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, gotRes *payload.Search_Response, err error) error {
 		if !errors.Is(err, w.err) {
@@ -188,17 +153,14 @@ func Test_server_LinearSearchByID(t *testing.T) {
 		           ctx: nil,
 		           req: nil,
 		       },
-		       fields: fields {
-		           name: "",
-		           ip: "",
-		           ngt: nil,
-		           eg: nil,
-		           streamConcurrency: 0,
-		           UnimplementedAgentServer: nil,
-		           UnimplementedValdServer: nil,
-		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -211,17 +173,14 @@ func Test_server_LinearSearchByID(t *testing.T) {
 		           ctx: nil,
 		           req: nil,
 		           },
-		           fields: fields {
-		           name: "",
-		           ip: "",
-		           ngt: nil,
-		           eg: nil,
-		           streamConcurrency: 0,
-		           UnimplementedAgentServer: nil,
-		           UnimplementedValdServer: nil,
-		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -231,27 +190,20 @@ func Test_server_LinearSearchByID(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
-			s := &server{
-				name:                     test.fields.name,
-				ip:                       test.fields.ip,
-				ngt:                      test.fields.ngt,
-				eg:                       test.fields.eg,
-				streamConcurrency:        test.fields.streamConcurrency,
-				UnimplementedAgentServer: test.fields.UnimplementedAgentServer,
-				UnimplementedValdServer:  test.fields.UnimplementedValdServer,
+				checkFunc = defaultCheckFunc
 			}
 
-			gotRes, err := s.LinearSearchByID(test.args.ctx, test.args.req)
-			if err := test.checkFunc(test.want, gotRes, err); err != nil {
+			gotRes, err := test.s.LinearSearchByID(test.args.ctx, test.args.req)
+			if err := checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -259,18 +211,8 @@ func Test_server_LinearSearchByID(t *testing.T) {
 }
 
 func Test_server_StreamLinearSearch(t *testing.T) {
-	t.Parallel()
 	type args struct {
 		stream vald.Search_StreamLinearSearchServer
-	}
-	type fields struct {
-		name                     string
-		ip                       string
-		ngt                      service.NGT
-		eg                       errgroup.Group
-		streamConcurrency        int
-		UnimplementedAgentServer agent.UnimplementedAgentServer
-		UnimplementedValdServer  vald.UnimplementedValdServer
 	}
 	type want struct {
 		err error
@@ -278,11 +220,11 @@ func Test_server_StreamLinearSearch(t *testing.T) {
 	type test struct {
 		name       string
 		args       args
-		fields     fields
+		s          *server
 		want       want
 		checkFunc  func(want, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -298,17 +240,14 @@ func Test_server_StreamLinearSearch(t *testing.T) {
 		       args: args {
 		           stream: nil,
 		       },
-		       fields: fields {
-		           name: "",
-		           ip: "",
-		           ngt: nil,
-		           eg: nil,
-		           streamConcurrency: 0,
-		           UnimplementedAgentServer: nil,
-		           UnimplementedValdServer: nil,
-		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -320,17 +259,14 @@ func Test_server_StreamLinearSearch(t *testing.T) {
 		           args: args {
 		           stream: nil,
 		           },
-		           fields: fields {
-		           name: "",
-		           ip: "",
-		           ngt: nil,
-		           eg: nil,
-		           streamConcurrency: 0,
-		           UnimplementedAgentServer: nil,
-		           UnimplementedValdServer: nil,
-		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -340,27 +276,20 @@ func Test_server_StreamLinearSearch(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
-			s := &server{
-				name:                     test.fields.name,
-				ip:                       test.fields.ip,
-				ngt:                      test.fields.ngt,
-				eg:                       test.fields.eg,
-				streamConcurrency:        test.fields.streamConcurrency,
-				UnimplementedAgentServer: test.fields.UnimplementedAgentServer,
-				UnimplementedValdServer:  test.fields.UnimplementedValdServer,
+				checkFunc = defaultCheckFunc
 			}
 
-			err := s.StreamLinearSearch(test.args.stream)
-			if err := test.checkFunc(test.want, err); err != nil {
+			err := test.s.StreamLinearSearch(test.args.stream)
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -368,18 +297,8 @@ func Test_server_StreamLinearSearch(t *testing.T) {
 }
 
 func Test_server_StreamLinearSearchByID(t *testing.T) {
-	t.Parallel()
 	type args struct {
 		stream vald.Search_StreamLinearSearchByIDServer
-	}
-	type fields struct {
-		name                     string
-		ip                       string
-		ngt                      service.NGT
-		eg                       errgroup.Group
-		streamConcurrency        int
-		UnimplementedAgentServer agent.UnimplementedAgentServer
-		UnimplementedValdServer  vald.UnimplementedValdServer
 	}
 	type want struct {
 		err error
@@ -387,11 +306,11 @@ func Test_server_StreamLinearSearchByID(t *testing.T) {
 	type test struct {
 		name       string
 		args       args
-		fields     fields
+		s          *server
 		want       want
 		checkFunc  func(want, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -407,17 +326,14 @@ func Test_server_StreamLinearSearchByID(t *testing.T) {
 		       args: args {
 		           stream: nil,
 		       },
-		       fields: fields {
-		           name: "",
-		           ip: "",
-		           ngt: nil,
-		           eg: nil,
-		           streamConcurrency: 0,
-		           UnimplementedAgentServer: nil,
-		           UnimplementedValdServer: nil,
-		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -429,17 +345,14 @@ func Test_server_StreamLinearSearchByID(t *testing.T) {
 		           args: args {
 		           stream: nil,
 		           },
-		           fields: fields {
-		           name: "",
-		           ip: "",
-		           ngt: nil,
-		           eg: nil,
-		           streamConcurrency: 0,
-		           UnimplementedAgentServer: nil,
-		           UnimplementedValdServer: nil,
-		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -449,27 +362,20 @@ func Test_server_StreamLinearSearchByID(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
-			s := &server{
-				name:                     test.fields.name,
-				ip:                       test.fields.ip,
-				ngt:                      test.fields.ngt,
-				eg:                       test.fields.eg,
-				streamConcurrency:        test.fields.streamConcurrency,
-				UnimplementedAgentServer: test.fields.UnimplementedAgentServer,
-				UnimplementedValdServer:  test.fields.UnimplementedValdServer,
+				checkFunc = defaultCheckFunc
 			}
 
-			err := s.StreamLinearSearchByID(test.args.stream)
-			if err := test.checkFunc(test.want, err); err != nil {
+			err := test.s.StreamLinearSearchByID(test.args.stream)
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -477,19 +383,9 @@ func Test_server_StreamLinearSearchByID(t *testing.T) {
 }
 
 func Test_server_MultiLinearSearch(t *testing.T) {
-	t.Parallel()
 	type args struct {
 		ctx  context.Context
 		reqs *payload.Search_MultiRequest
-	}
-	type fields struct {
-		name                     string
-		ip                       string
-		ngt                      service.NGT
-		eg                       errgroup.Group
-		streamConcurrency        int
-		UnimplementedAgentServer agent.UnimplementedAgentServer
-		UnimplementedValdServer  vald.UnimplementedValdServer
 	}
 	type want struct {
 		wantRes *payload.Search_Responses
@@ -498,11 +394,11 @@ func Test_server_MultiLinearSearch(t *testing.T) {
 	type test struct {
 		name       string
 		args       args
-		fields     fields
+		s          *server
 		want       want
 		checkFunc  func(want, *payload.Search_Responses, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, gotRes *payload.Search_Responses, err error) error {
 		if !errors.Is(err, w.err) {
@@ -522,17 +418,14 @@ func Test_server_MultiLinearSearch(t *testing.T) {
 		           ctx: nil,
 		           reqs: nil,
 		       },
-		       fields: fields {
-		           name: "",
-		           ip: "",
-		           ngt: nil,
-		           eg: nil,
-		           streamConcurrency: 0,
-		           UnimplementedAgentServer: nil,
-		           UnimplementedValdServer: nil,
-		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -545,17 +438,14 @@ func Test_server_MultiLinearSearch(t *testing.T) {
 		           ctx: nil,
 		           reqs: nil,
 		           },
-		           fields: fields {
-		           name: "",
-		           ip: "",
-		           ngt: nil,
-		           eg: nil,
-		           streamConcurrency: 0,
-		           UnimplementedAgentServer: nil,
-		           UnimplementedValdServer: nil,
-		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -565,27 +455,20 @@ func Test_server_MultiLinearSearch(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
-			s := &server{
-				name:                     test.fields.name,
-				ip:                       test.fields.ip,
-				ngt:                      test.fields.ngt,
-				eg:                       test.fields.eg,
-				streamConcurrency:        test.fields.streamConcurrency,
-				UnimplementedAgentServer: test.fields.UnimplementedAgentServer,
-				UnimplementedValdServer:  test.fields.UnimplementedValdServer,
+				checkFunc = defaultCheckFunc
 			}
 
-			gotRes, err := s.MultiLinearSearch(test.args.ctx, test.args.reqs)
-			if err := test.checkFunc(test.want, gotRes, err); err != nil {
+			gotRes, err := test.s.MultiLinearSearch(test.args.ctx, test.args.reqs)
+			if err := checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -593,19 +476,9 @@ func Test_server_MultiLinearSearch(t *testing.T) {
 }
 
 func Test_server_MultiLinearSearchByID(t *testing.T) {
-	t.Parallel()
 	type args struct {
 		ctx  context.Context
 		reqs *payload.Search_MultiIDRequest
-	}
-	type fields struct {
-		name                     string
-		ip                       string
-		ngt                      service.NGT
-		eg                       errgroup.Group
-		streamConcurrency        int
-		UnimplementedAgentServer agent.UnimplementedAgentServer
-		UnimplementedValdServer  vald.UnimplementedValdServer
 	}
 	type want struct {
 		wantRes *payload.Search_Responses
@@ -614,11 +487,11 @@ func Test_server_MultiLinearSearchByID(t *testing.T) {
 	type test struct {
 		name       string
 		args       args
-		fields     fields
+		s          *server
 		want       want
 		checkFunc  func(want, *payload.Search_Responses, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, gotRes *payload.Search_Responses, err error) error {
 		if !errors.Is(err, w.err) {
@@ -638,17 +511,14 @@ func Test_server_MultiLinearSearchByID(t *testing.T) {
 		           ctx: nil,
 		           reqs: nil,
 		       },
-		       fields: fields {
-		           name: "",
-		           ip: "",
-		           ngt: nil,
-		           eg: nil,
-		           streamConcurrency: 0,
-		           UnimplementedAgentServer: nil,
-		           UnimplementedValdServer: nil,
-		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -661,17 +531,14 @@ func Test_server_MultiLinearSearchByID(t *testing.T) {
 		           ctx: nil,
 		           reqs: nil,
 		           },
-		           fields: fields {
-		           name: "",
-		           ip: "",
-		           ngt: nil,
-		           eg: nil,
-		           streamConcurrency: 0,
-		           UnimplementedAgentServer: nil,
-		           UnimplementedValdServer: nil,
-		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -681,27 +548,20 @@ func Test_server_MultiLinearSearchByID(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
+			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
-			s := &server{
-				name:                     test.fields.name,
-				ip:                       test.fields.ip,
-				ngt:                      test.fields.ngt,
-				eg:                       test.fields.eg,
-				streamConcurrency:        test.fields.streamConcurrency,
-				UnimplementedAgentServer: test.fields.UnimplementedAgentServer,
-				UnimplementedValdServer:  test.fields.UnimplementedValdServer,
+				checkFunc = defaultCheckFunc
 			}
 
-			gotRes, err := s.MultiLinearSearchByID(test.args.ctx, test.args.reqs)
-			if err := test.checkFunc(test.want, gotRes, err); err != nil {
+			gotRes, err := test.s.MultiLinearSearchByID(test.args.ctx, test.args.reqs)
+			if err := checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

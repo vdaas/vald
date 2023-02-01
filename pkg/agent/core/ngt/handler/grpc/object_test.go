@@ -30,6 +30,7 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/test/data/request"
 	"github.com/vdaas/vald/internal/test/data/vector"
+	"github.com/vdaas/vald/internal/test/goleak"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/service"
 )
 
@@ -48,7 +49,7 @@ func Test_server_Exists(t *testing.T) {
 		args       args
 		want       want
 		checkFunc  func(want, *payload.Object_ID, error) error
-		beforeFunc func(context.Context, args) (Server, error)
+		beforeFunc func(*testing.T, context.Context, args) (Server, error)
 		afterFunc  func(args)
 	}
 	defaultCheckFunc := func(w want, gotRes *payload.Object_ID, err error) error {
@@ -96,7 +97,8 @@ func Test_server_Exists(t *testing.T) {
 	defaultInsertConfig := &payload.Insert_Config{
 		SkipStrictExistCheck: true,
 	}
-	defaultBeforeFunc := func(ctx context.Context, a args) (Server, error) {
+	defaultBeforeFunc := func(t *testing.T, ctx context.Context, a args) (Server, error) {
+		t.Helper()
 		eg, ctx := errgroup.New(ctx)
 		ngt, err := newIndexedNGTService(ctx, eg, request.Float, vector.Gaussian, insertNum, defaultInsertConfig, defaultNgtConfig, nil, []string{a.indexID}, nil)
 		if err != nil {
@@ -317,7 +319,7 @@ func Test_server_Exists(t *testing.T) {
 			if test.beforeFunc == nil {
 				test.beforeFunc = defaultBeforeFunc
 			}
-			s, err := test.beforeFunc(ctx, test.args)
+			s, err := test.beforeFunc(tt, ctx, test.args)
 			if err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -485,6 +487,7 @@ func Test_server_GetObject(t *testing.T) {
 					svcOpts: defaultSvcOpts,
 				},
 				beforeFunc: func(t *testing.T, ctx context.Context, a args, s Server) {
+					t.Helper()
 					insertAndCreateIndex(t, ctx, s, ir)
 				},
 				want: want{
@@ -520,6 +523,7 @@ func Test_server_GetObject(t *testing.T) {
 					svcOpts: defaultSvcOpts,
 				},
 				beforeFunc: func(t *testing.T, ctx context.Context, a args, s Server) {
+					t.Helper()
 					insertAndCreateIndex(t, ctx, s, ir)
 				},
 				want: want{
@@ -554,6 +558,7 @@ func Test_server_GetObject(t *testing.T) {
 					svcOpts: defaultSvcOpts,
 				},
 				beforeFunc: func(t *testing.T, ctx context.Context, a args, s Server) {
+					t.Helper()
 					insertAndCreateIndex(t, ctx, s, ir)
 				},
 				want: want{
@@ -587,6 +592,7 @@ func Test_server_GetObject(t *testing.T) {
 					svcOpts: defaultSvcOpts,
 				},
 				beforeFunc: func(t *testing.T, ctx context.Context, a args, s Server) {
+					t.Helper()
 					insertAndCreateIndex(t, ctx, s, ir)
 				},
 				want: want{
@@ -623,6 +629,7 @@ func Test_server_GetObject(t *testing.T) {
 					svcOpts: defaultSvcOpts,
 				},
 				beforeFunc: func(t *testing.T, ctx context.Context, a args, s Server) {
+					t.Helper()
 					insertAndCreateIndex(t, ctx, s, ir)
 				},
 				want: want{
@@ -659,6 +666,7 @@ func Test_server_GetObject(t *testing.T) {
 					svcOpts: defaultSvcOpts,
 				},
 				beforeFunc: func(t *testing.T, ctx context.Context, a args, s Server) {
+					t.Helper()
 					insertAndCreateIndex(t, ctx, s, ir)
 				},
 				want: want{
@@ -695,6 +703,7 @@ func Test_server_GetObject(t *testing.T) {
 					svcOpts: defaultSvcOpts,
 				},
 				beforeFunc: func(t *testing.T, ctx context.Context, a args, s Server) {
+					t.Helper()
 					insertAndCreateIndex(t, ctx, s, ir)
 				},
 				want: want{
@@ -731,6 +740,7 @@ func Test_server_GetObject(t *testing.T) {
 					svcOpts: defaultSvcOpts,
 				},
 				beforeFunc: func(t *testing.T, ctx context.Context, a args, s Server) {
+					t.Helper()
 					insertAndCreateIndex(t, ctx, s, ir)
 				},
 				want: want{
@@ -767,6 +777,7 @@ func Test_server_GetObject(t *testing.T) {
 					svcOpts: defaultSvcOpts,
 				},
 				beforeFunc: func(t *testing.T, ctx context.Context, a args, s Server) {
+					t.Helper()
 					insertAndCreateIndex(t, ctx, s, ir)
 				},
 				want: want{
@@ -803,6 +814,7 @@ func Test_server_GetObject(t *testing.T) {
 					svcOpts: defaultSvcOpts,
 				},
 				beforeFunc: func(t *testing.T, ctx context.Context, a args, s Server) {
+					t.Helper()
 					insertAndCreateIndex(t, ctx, s, ir)
 				},
 				want: want{
@@ -839,6 +851,7 @@ func Test_server_GetObject(t *testing.T) {
 					svcOpts: defaultSvcOpts,
 				},
 				beforeFunc: func(t *testing.T, ctx context.Context, a args, s Server) {
+					t.Helper()
 					insertAndCreateIndex(t, ctx, s, ir)
 				},
 				want: want{
@@ -872,6 +885,7 @@ func Test_server_GetObject(t *testing.T) {
 					svcOpts: defaultSvcOpts,
 				},
 				beforeFunc: func(t *testing.T, ctx context.Context, a args, s Server) {
+					t.Helper()
 					insertAndCreateIndex(t, ctx, s, ir)
 				},
 				want: want{
@@ -905,6 +919,7 @@ func Test_server_GetObject(t *testing.T) {
 					svcOpts: defaultSvcOpts,
 				},
 				beforeFunc: func(t *testing.T, ctx context.Context, a args, s Server) {
+					t.Helper()
 					insertAndCreateIndex(t, ctx, s, ir)
 				},
 				want: want{
@@ -938,6 +953,7 @@ func Test_server_GetObject(t *testing.T) {
 					svcOpts: defaultSvcOpts,
 				},
 				beforeFunc: func(t *testing.T, ctx context.Context, a args, s Server) {
+					t.Helper()
 					insertAndCreateIndex(t, ctx, s, ir)
 				},
 				want: want{
@@ -974,6 +990,7 @@ func Test_server_GetObject(t *testing.T) {
 					svcOpts: defaultSvcOpts,
 				},
 				beforeFunc: func(t *testing.T, ctx context.Context, a args, s Server) {
+					t.Helper()
 					insertAndCreateIndex(t, ctx, s, ir)
 				},
 				want: want{
@@ -1007,6 +1024,7 @@ func Test_server_GetObject(t *testing.T) {
 					svcOpts: defaultSvcOpts,
 				},
 				beforeFunc: func(t *testing.T, ctx context.Context, a args, s Server) {
+					t.Helper()
 					insertAndCreateIndex(t, ctx, s, ir)
 				},
 				want: want{
@@ -1040,6 +1058,7 @@ func Test_server_GetObject(t *testing.T) {
 					svcOpts: defaultSvcOpts,
 				},
 				beforeFunc: func(t *testing.T, ctx context.Context, a args, s Server) {
+					t.Helper()
 					insertAndCreateIndex(t, ctx, s, ir)
 				},
 				want: want{
@@ -1073,6 +1092,7 @@ func Test_server_GetObject(t *testing.T) {
 					svcOpts: defaultSvcOpts,
 				},
 				beforeFunc: func(t *testing.T, ctx context.Context, a args, s Server) {
+					t.Helper()
 					insertAndCreateIndex(t, ctx, s, ir)
 				},
 				want: want{
@@ -1109,6 +1129,7 @@ func Test_server_GetObject(t *testing.T) {
 					svcOpts: defaultSvcOpts,
 				},
 				beforeFunc: func(t *testing.T, ctx context.Context, a args, s Server) {
+					t.Helper()
 					insertAndCreateIndex(t, ctx, s, ir)
 				},
 				want: want{
@@ -1161,16 +1182,8 @@ func Test_server_GetObject(t *testing.T) {
 }
 
 func Test_server_StreamGetObject(t *testing.T) {
-	t.Parallel()
 	type args struct {
 		stream vald.Object_StreamGetObjectServer
-	}
-	type fields struct {
-		name              string
-		ip                string
-		ngt               service.NGT
-		eg                errgroup.Group
-		streamConcurrency int
 	}
 	type want struct {
 		err error
@@ -1178,11 +1191,11 @@ func Test_server_StreamGetObject(t *testing.T) {
 	type test struct {
 		name       string
 		args       args
-		fields     fields
+		s          *server
 		want       want
 		checkFunc  func(want, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -1198,15 +1211,14 @@ func Test_server_StreamGetObject(t *testing.T) {
 		       args: args {
 		           stream: nil,
 		       },
-		       fields: fields {
-		           name: "",
-		           ip: "",
-		           ngt: nil,
-		           eg: nil,
-		           streamConcurrency: 0,
-		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
 		   },
 		*/
 
@@ -1218,15 +1230,14 @@ func Test_server_StreamGetObject(t *testing.T) {
 		           args: args {
 		           stream: nil,
 		           },
-		           fields: fields {
-		           name: "",
-		           ip: "",
-		           ngt: nil,
-		           eg: nil,
-		           streamConcurrency: 0,
-		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
 		       }
 		   }(),
 		*/
@@ -1236,25 +1247,19 @@ func Test_server_StreamGetObject(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
-			s := &server{
-				name:              test.fields.name,
-				ip:                test.fields.ip,
-				ngt:               test.fields.ngt,
-				eg:                test.fields.eg,
-				streamConcurrency: test.fields.streamConcurrency,
-			}
 
-			err := s.StreamGetObject(test.args.stream)
+			err := test.s.StreamGetObject(test.args.stream)
 			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}

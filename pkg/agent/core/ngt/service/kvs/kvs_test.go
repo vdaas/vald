@@ -118,7 +118,7 @@ func Test_bidi_Get(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, uint32, bool, *bidi) error
-		beforeFunc func(args, BidiMap)
+		beforeFunc func(*testing.T, args, BidiMap)
 		afterFunc  func(args, BidiMap)
 	}
 	defaultCheckFunc := func(w want, got uint32, got1 bool, bm *bidi) error {
@@ -154,7 +154,8 @@ func Test_bidi_Get(t *testing.T) {
 					key: key,
 				},
 				fields: fields,
-				beforeFunc: func(a args, bm BidiMap) {
+				beforeFunc: func(t *testing.T, a args, bm BidiMap) {
+					t.Helper()
 					bm.Set(a.key, val)
 				},
 				want: want{
@@ -184,7 +185,7 @@ func Test_bidi_Get(t *testing.T) {
 					key: key,
 				},
 				fields: fields,
-				beforeFunc: func(a args, bm BidiMap) {
+				beforeFunc: func(t *testing.T, a args, bm BidiMap) {
 					t.Helper()
 					bm.Set(a.key, val)
 				},
@@ -215,7 +216,8 @@ func Test_bidi_Get(t *testing.T) {
 					key: key,
 				},
 				fields: fields,
-				beforeFunc: func(a args, bm BidiMap) {
+				beforeFunc: func(t *testing.T, a args, bm BidiMap) {
+					t.Helper()
 					bm.Set(a.key, val)
 				},
 				want: want{
@@ -245,7 +247,8 @@ func Test_bidi_Get(t *testing.T) {
 					key: "84a333-59633fd4-4553-414a",
 				},
 				fields: fields,
-				beforeFunc: func(a args, bm BidiMap) {
+				beforeFunc: func(t *testing.T, a args, bm BidiMap) {
+					t.Helper()
 					bm.Set(key, val)
 				},
 				want: want{
@@ -273,7 +276,8 @@ func Test_bidi_Get(t *testing.T) {
 				name:   "return (0, false) when there is no value for the key and the key is empty string",
 				args:   args{},
 				fields: fields,
-				beforeFunc: func(a args, bm BidiMap) {
+				beforeFunc: func(t *testing.T, a args, bm BidiMap) {
+					t.Helper()
 					bm.Set(key, val)
 				},
 				want: want{
@@ -301,7 +305,8 @@ func Test_bidi_Get(t *testing.T) {
 				name:   "return (0, true) when the default value is set for the key and the key is empty string",
 				args:   args{},
 				fields: fields,
-				beforeFunc: func(a args, bm BidiMap) {
+				beforeFunc: func(t *testing.T, a args, bm BidiMap) {
+					t.Helper()
 					bm.Set(key, val)
 				},
 				want: want{
@@ -324,7 +329,7 @@ func Test_bidi_Get(t *testing.T) {
 				l:  test.fields.l,
 			}
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args, b)
+				test.beforeFunc(tt, test.args, b)
 			}
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args, b)
@@ -363,7 +368,7 @@ func Test_bidi_GetInverse(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, string, bool, *bidi) error
-		beforeFunc func(args, BidiMap)
+		beforeFunc func(*testing.T, args, BidiMap)
 		afterFunc  func(args, BidiMap)
 	}
 	defaultCheckFunc := func(w want, got string, got1 bool, bm *bidi) error {
@@ -399,7 +404,8 @@ func Test_bidi_GetInverse(t *testing.T) {
 					val: val,
 				},
 				fields: fields,
-				beforeFunc: func(_ args, bm BidiMap) {
+				beforeFunc: func(t *testing.T, _ args, bm BidiMap) {
+					t.Helper()
 					bm.Set(key, val)
 				},
 				want: want{
@@ -429,7 +435,8 @@ func Test_bidi_GetInverse(t *testing.T) {
 					val: val,
 				},
 				fields: fields,
-				beforeFunc: func(_ args, bm BidiMap) {
+				beforeFunc: func(t *testing.T, _ args, bm BidiMap) {
+					t.Helper()
 					bm.Set(key, val)
 				},
 				want: want{
@@ -459,7 +466,8 @@ func Test_bidi_GetInverse(t *testing.T) {
 					val: val,
 				},
 				fields: fields,
-				beforeFunc: func(_ args, bm BidiMap) {
+				beforeFunc: func(t *testing.T, _ args, bm BidiMap) {
+					t.Helper()
 					bm.Set(key, val)
 				},
 				want: want{
@@ -489,7 +497,8 @@ func Test_bidi_GetInverse(t *testing.T) {
 					val: 10000,
 				},
 				fields: fields,
-				beforeFunc: func(_ args, bm BidiMap) {
+				beforeFunc: func(t *testing.T, _ args, bm BidiMap) {
+					t.Helper()
 					bm.Set(key, val)
 				},
 				want: want{
@@ -517,7 +526,8 @@ func Test_bidi_GetInverse(t *testing.T) {
 				name:   "return false when there is a no key for the value and the val is 0",
 				args:   args{},
 				fields: fields,
-				beforeFunc: func(_ args, bm BidiMap) {
+				beforeFunc: func(t *testing.T, _ args, bm BidiMap) {
+					t.Helper()
 					bm.Set(key, val)
 				},
 				want: want{
@@ -545,7 +555,8 @@ func Test_bidi_GetInverse(t *testing.T) {
 				name:   "return (0, true) when the default value is set for the key and the val is 0",
 				args:   args{},
 				fields: fields,
-				beforeFunc: func(_ args, bm BidiMap) {
+				beforeFunc: func(t *testing.T, _ args, bm BidiMap) {
+					t.Helper()
 					bm.Set(key, val)
 				},
 				want: want{
@@ -569,7 +580,7 @@ func Test_bidi_GetInverse(t *testing.T) {
 				l:  test.fields.l,
 			}
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args, b)
+				test.beforeFunc(tt, test.args, b)
 			}
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args, b)
@@ -609,7 +620,7 @@ func Test_bidi_Set(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(w want, args args, b *bidi) error
-		beforeFunc func(args, *bidi)
+		beforeFunc func(*testing.T, args, *bidi)
 		afterFunc  func(args)
 	}
 	defaultCheckFunc := func(w want, args args, b *bidi) error {
@@ -740,7 +751,8 @@ func Test_bidi_Set(t *testing.T) {
 					val: val,
 				},
 				fields: fields,
-				beforeFunc: func(a args, b *bidi) {
+				beforeFunc: func(t *testing.T, a args, b *bidi) {
+					t.Helper()
 					b.Set(a.key, oldVal)
 				},
 				want: want{
@@ -830,7 +842,7 @@ func Test_bidi_Set(t *testing.T) {
 				l:  test.fields.l,
 			}
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args, b)
+				test.beforeFunc(tt, test.args, b)
 			}
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
@@ -869,7 +881,7 @@ func Test_bidi_Delete(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, args, *bidi, uint32, bool) error
-		beforeFunc func(args, BidiMap)
+		beforeFunc func(*testing.T, args, BidiMap)
 		afterFunc  func(args)
 	}
 	defaultCheckFunc := func(w want, _ args, _ *bidi, gotVal uint32, gotOk bool) error {
@@ -902,7 +914,8 @@ func Test_bidi_Delete(t *testing.T) {
 					key: key,
 				},
 				fields: fields,
-				beforeFunc: func(a args, bm BidiMap) {
+				beforeFunc: func(t *testing.T, a args, bm BidiMap) {
+					t.Helper()
 					bm.Set(a.key, val)
 				},
 				checkFunc: func(w want, a args, b *bidi, gotVal uint32, gotOk bool) error {
@@ -947,7 +960,8 @@ func Test_bidi_Delete(t *testing.T) {
 					key: key,
 				},
 				fields: fields,
-				beforeFunc: func(a args, bm BidiMap) {
+				beforeFunc: func(t *testing.T, a args, bm BidiMap) {
+					t.Helper()
 					bm.Set(a.key, val)
 				},
 				checkFunc: func(w want, a args, b *bidi, gotVal uint32, gotOk bool) error {
@@ -992,7 +1006,8 @@ func Test_bidi_Delete(t *testing.T) {
 					key: key,
 				},
 				fields: fields,
-				beforeFunc: func(a args, bm BidiMap) {
+				beforeFunc: func(t *testing.T, a args, bm BidiMap) {
+					t.Helper()
 					bm.Set(a.key, val)
 				},
 				checkFunc: func(w want, a args, b *bidi, gotVal uint32, gotOk bool) error {
@@ -1032,7 +1047,8 @@ func Test_bidi_Delete(t *testing.T) {
 				name:   "return val and true when the delete successes and the key is empty string",
 				args:   args{},
 				fields: fields,
-				beforeFunc: func(a args, bm BidiMap) {
+				beforeFunc: func(t *testing.T, a args, bm BidiMap) {
+					t.Helper()
 					bm.Set(a.key, val)
 				},
 				checkFunc: func(w want, a args, b *bidi, gotVal uint32, gotOk bool) error {
@@ -1077,7 +1093,8 @@ func Test_bidi_Delete(t *testing.T) {
 					key: "95314ec4-d95f-14ea-19d0",
 				},
 				fields: fields,
-				beforeFunc: func(a args, bm BidiMap) {
+				beforeFunc: func(t *testing.T, a args, bm BidiMap) {
+					t.Helper()
 					bm.Set(key, val)
 				},
 				want: want{
@@ -1099,7 +1116,7 @@ func Test_bidi_Delete(t *testing.T) {
 				l:  test.fields.l,
 			}
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args, b)
+				test.beforeFunc(tt, test.args, b)
 			}
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
@@ -1138,7 +1155,7 @@ func Test_bidi_DeleteInverse(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, args, *bidi, string, bool) error
-		beforeFunc func(args, BidiMap)
+		beforeFunc func(*testing.T, args, BidiMap)
 		afterFunc  func(args)
 	}
 	defaultCheckFunc := func(w want, _ args, _ *bidi, gotKey string, gotOk bool) error {
@@ -1170,7 +1187,8 @@ func Test_bidi_DeleteInverse(t *testing.T) {
 				args: args{
 					val: val,
 				},
-				beforeFunc: func(a args, bm BidiMap) {
+				beforeFunc: func(t *testing.T, a args, bm BidiMap) {
+					t.Helper()
 					bm.Set(key, val)
 				},
 				checkFunc: func(w want, a args, b *bidi, gotKey string, gotOk bool) error {
@@ -1215,7 +1233,8 @@ func Test_bidi_DeleteInverse(t *testing.T) {
 				args: args{
 					val: val,
 				},
-				beforeFunc: func(a args, bm BidiMap) {
+				beforeFunc: func(t *testing.T, a args, bm BidiMap) {
+					t.Helper()
 					bm.Set(key, val)
 				},
 				checkFunc: func(w want, a args, b *bidi, gotKey string, gotOk bool) error {
@@ -1260,7 +1279,8 @@ func Test_bidi_DeleteInverse(t *testing.T) {
 				args: args{
 					val: val,
 				},
-				beforeFunc: func(a args, bm BidiMap) {
+				beforeFunc: func(t *testing.T, a args, bm BidiMap) {
+					t.Helper()
 					bm.Set(key, val)
 				},
 				checkFunc: func(w want, a args, b *bidi, gotKey string, gotOk bool) error {
@@ -1300,7 +1320,8 @@ func Test_bidi_DeleteInverse(t *testing.T) {
 			return test{
 				name: "return key and true when the delete successes and the val is 0",
 				args: args{},
-				beforeFunc: func(a args, bm BidiMap) {
+				beforeFunc: func(t *testing.T, a args, bm BidiMap) {
+					t.Helper()
 					bm.Set(key, a.val)
 				},
 				checkFunc: func(w want, a args, b *bidi, gotKey string, gotOk bool) error {
@@ -1345,7 +1366,8 @@ func Test_bidi_DeleteInverse(t *testing.T) {
 				args: args{
 					val: 10000,
 				},
-				beforeFunc: func(a args, bm BidiMap) {
+				beforeFunc: func(t *testing.T, a args, bm BidiMap) {
+					t.Helper()
 					bm.Set(key, val)
 				},
 				fields: fields,
@@ -1369,7 +1391,7 @@ func Test_bidi_DeleteInverse(t *testing.T) {
 				l:  test.fields.l,
 			}
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args, b)
+				test.beforeFunc(tt, test.args, b)
 			}
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
@@ -1407,7 +1429,7 @@ func Test_bidi_Range(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, *bidi) error
-		beforeFunc func(args, BidiMap)
+		beforeFunc func(*testing.T, args, BidiMap)
 		afterFunc  func(args)
 	}
 	defaultCheckFunc := func(w want, bm *bidi) error {
@@ -1444,7 +1466,8 @@ func Test_bidi_Range(t *testing.T) {
 						return true
 					},
 				},
-				beforeFunc: func(a args, bm BidiMap) {
+				beforeFunc: func(t *testing.T, a args, bm BidiMap) {
+					t.Helper()
 					for key, id := range wantMap {
 						bm.Set(key, id)
 					}
@@ -1495,7 +1518,8 @@ func Test_bidi_Range(t *testing.T) {
 						return true
 					},
 				},
-				beforeFunc: func(a args, bm BidiMap) {
+				beforeFunc: func(t *testing.T, a args, bm BidiMap) {
+					t.Helper()
 					for key, id := range wantMap {
 						bm.Set(key, id)
 					}
@@ -1546,7 +1570,8 @@ func Test_bidi_Range(t *testing.T) {
 						return true
 					},
 				},
-				beforeFunc: func(a args, bm BidiMap) {
+				beforeFunc: func(t *testing.T, a args, bm BidiMap) {
+					t.Helper()
 					for key, id := range wantMap {
 						bm.Set(key, id)
 					}
@@ -1584,7 +1609,7 @@ func Test_bidi_Range(t *testing.T) {
 				eg: eg,
 			}
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args, b)
+				test.beforeFunc(tt, test.args, b)
 			}
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
