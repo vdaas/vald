@@ -156,7 +156,7 @@ helm/schema/crd/vald-helm-operator: \
 ## generate OpenAPI v3 schema for ValdBenchmarkOperatorRelease
 helm/schema/crd/vald-benchmark-operator: \
 	yq/install
-	mv charts/vald-benchmark-operator/crds/valdbenchmarkoperatorrelease.yaml > $(TEMP_DIR)/valdbenchmarkoperatorrelease.yaml
+	mv charts/vald-benchmark-operator/crds/valdbenchmarkoperatorrelease.yaml $(TEMP_DIR)/valdbenchmarkoperatorrelease.yaml
 	GOPRIVATE=$(GOPRIVATE) \
 	go run -mod=readonly hack/helm/schema/crd/main.go \
 	charts/vald-benchmark-operator/values.yaml > $(TEMP_DIR)/valdbenchmarkoperatorrelease-spec.yaml

@@ -207,7 +207,7 @@ docker/build/benchmark-job:
 	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG)
 
 .PHONY: docker/name/benchmark-operator
-docker/name/benchmark-job:
+docker/name/benchmark-operator:
 	@echo "$(ORG)/$(BENCHMARK_OPERATOR_IMAGE)"
 
 .PHONY: docker/build/benchmark-operator
