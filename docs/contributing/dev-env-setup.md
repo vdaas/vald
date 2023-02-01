@@ -59,7 +59,7 @@ For Linux users, please install the following tools on your environment.
 For Debian-based Linux distribution users, you can install these required tools using `apt`.
 
 ```bash
-sudo apt install curl make cmake protobuf-compiler npm unzip git golang
+apt install curl make cmake protobuf-compiler npm unzip git golang
 ```
 
 Please clone Vald repository to the GOPATH, and setup the remote branch to your forked Vald repository.

@@ -480,10 +480,10 @@ ngt/install: /usr/local/include/NGT/Capi.h
 	cd $(TEMP_DIR)/NGT-$(NGT_VERSION) && \
 		cmake -DCMAKE_C_FLAGS="$(CFLAGS)" -DCMAKE_CXX_FLAGS="$(CXXFLAGS)" .
 	make -j -C $(TEMP_DIR)/NGT-$(NGT_VERSION)
-	sudo make install -C $(TEMP_DIR)/NGT-$(NGT_VERSION)
+	make install -C $(TEMP_DIR)/NGT-$(NGT_VERSION)
 	rm -rf v$(NGT_VERSION).tar.gz
 	rm -rf $(TEMP_DIR)/NGT-$(NGT_VERSION)
-	sudo ldconfig
+	ldconfig
 
 .PHONY: lint
 ## run lints

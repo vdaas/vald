@@ -24,14 +24,14 @@ $(BINDIR)/valdcli:
 	curl -LO https://github.com/rinx/vald-client-clj/releases/download/$(VALDCLI_VERSION)/valdcli-macos.zip
 	unzip valdcli-macos.zip
 	rm -f valdcli-macos.zip
-	sudo mv valdcli $(BINDIR)/valdcli
+	mv valdcli $(BINDIR)/valdcli
 else
 $(BINDIR)/valdcli:
 	mkdir -p $(BINDIR)
 	curl -LO https://github.com/rinx/vald-client-clj/releases/download/$(VALDCLI_VERSION)/valdcli-linux-static.zip
 	unzip valdcli-linux-static.zip
 	rm -f valdcli-linux-static.zip
-	sudo mv valdcli $(BINDIR)/valdcli
+	mv valdcli $(BINDIR)/valdcli
 endif
 
 .PHONY: valdcli/xpanes/insert
