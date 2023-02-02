@@ -1516,6 +1516,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 			}
 			return nil, err
 		}
+		log.Infof("[lb-gateway-debug]: exits error: %v", err)
 		if req.GetConfig() != nil {
 			req.GetConfig().SkipStrictExistCheck = true
 		} else {
