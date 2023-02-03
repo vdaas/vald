@@ -646,6 +646,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 				}
 			}()
 			_, err := vald.NewValdClient(conn).Insert(sctx, req, copts...)
+			log.Error("[funapy]: insert error: %v", err)
 			if err != nil {
 				st, msg, err := status.ParseError(err, codes.Internal,
 					"failed to parse "+vald.InsertRPCName+" gRPC error response",
@@ -658,6 +659,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 						ResourceName: fmt.Sprintf("%s: %s(%s) to %s", apiName, s.name, s.ip, target),
 					},
 				)
+				log.Error("[funapy]: parse insert error: %v, st: %v", err, st.Code().String())
 				if sspan != nil {
 					sspan.RecordError(err)
 					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
@@ -684,7 +686,13 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 				errs = errors.Wrap(errs, err.Error())
 			}
 		}
+		log.Error("[funapy]: insert broadcast error: %v", err)
+		successTgts.Range(func(key, value any) bool {
+			log.Error("[funapy]: insert broadcast success targets: %v", key)
+			return true
+		})
 		if errs != nil {
+			log.Error("[funapy]: start insert broadcast error: %v", errs)
 			if err := s.insertRollback(ctx, req, successTgts); err != nil {
 				st, msg, err := status.ParseError(err, codes.Internal,
 					"failed to parse "+vald.InsertRPCName+" "+rollbackName+" error response",
