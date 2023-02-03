@@ -12,6 +12,7 @@ defaults:
             interceptors:
               - RecoverInterceptor
               - TraceInterceptor
+              - AccessLogInterceptor
               - MetricInterceptor
   grpc:
     client:
@@ -27,6 +28,8 @@ defaults:
 
 gateway:
   lb:
+    image:
+      tag: pr-1939
     podAnnotations:
       profefe.com/enable: "true"
       profefe.com/port: "6060"
