@@ -20,6 +20,34 @@ on:
       - main
 
 jobs:
+  dump_contexts_to_log:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dump GitHub context
+        id: github_context_step
+        run: echo $JSON
+        env:
+          JSON: ${{ toJSON(github) }}
+      - name: Dump job context
+        run: echo $JSON
+        env:
+          JSON: ${{ toJSON(job) }}
+      - name: Dump steps context
+        run: echo $JSON
+        env:
+          JSON: ${{ toJSON(steps) }}
+      - name: Dump runner context
+        run: echo $JSON
+        env:
+          JSON: ${{ toJSON(runner) }}
+      - name: Dump strategy context
+        run: echo $JSON
+        env:
+          JSON: ${{ toJSON(strategy) }}
+      - name: Dump matrix context
+        run: echo $JSON
+        env:
+          JSON: ${{ toJSON(matrix) }}
   semver-auto:
     name: Run semver-auto
     runs-on: ubuntu-latest
@@ -41,8 +69,12 @@ jobs:
           git_commit_gpgsign: true
       - name: Get latest gitwerk
         run: |
-          curl -fsSLO https://github.com/rinx/gitwerk/releases/latest/download/gitwerk-linux-amd64.zip
+          curl -fsSLO \
+            -H "Authorization: Bearer ${GITHUB_TOKEN}" \
+            https://github.com/rinx/gitwerk/releases/latest/download/gitwerk-linux-amd64.zip
           unzip gitwerk-linux-amd64.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Run gitwerk semver-auto
         id: semver
         run: |
@@ -89,7 +121,7 @@ jobs:
 
           BODY=""
           if [ ! -z "${PR_NUM}" ]; then
-            BODY=`curl -s "https://api.github.com/repos/${GITHUB_REPOSITORY}/pulls/${PR_NUM}" | jq -r '.body'`
+            BODY=`curl -s -H "Authorization: Bearer ${GITHUB_TOKEN}" "https://api.github.com/repos/${GITHUB_REPOSITORY}/pulls/${PR_NUM}" | jq -r '.body'`
           fi
 
           if [ -z "$BODY" ]; then

@@ -50,7 +50,7 @@ func TestNGT_Bind(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, *NGT) error
-		beforeFunc func()
+		beforeFunc func(*testing.T)
 		afterFunc  func()
 	}
 	defaultCheckFunc := func(w want, got *NGT) error {
@@ -118,7 +118,8 @@ func TestNGT_Bind(t *testing.T) {
 				VQueue:                  new(VQueue),
 				KVSDB:                   new(KVSDB),
 			},
-			beforeFunc: func() {
+			beforeFunc: func(t *testing.T) {
+				t.Helper()
 				t.Setenv("NGT_BIND_INDEX_PATH", "config/ngt")
 				t.Setenv("NGT_BIND_DISTANCE_TYPE", "l2")
 				t.Setenv("NGT_BIND_OBJECT_TYPE", "float")
@@ -162,7 +163,7 @@ func TestNGT_Bind(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
 				defer test.afterFunc()

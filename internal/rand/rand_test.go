@@ -32,22 +32,24 @@ func clearPool() {
 func TestUint32(t *testing.T) {
 	type test struct {
 		name       string
-		beforeFunc func()
+		beforeFunc func(*testing.T)
 	}
 
 	tests := []test{
 		{
 			name: "returns random number when pooled rand instance is nil",
-			beforeFunc: func() {
+			beforeFunc: func(t *testing.T) {
+				t.Helper()
 				clearPool()
 			},
 		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if tt.beforeFunc != nil {
-				tt.beforeFunc()
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			if test.beforeFunc != nil {
+				test.beforeFunc(tt)
 			}
 
 			_ = Uint32()
@@ -61,29 +63,31 @@ func TestUint32(t *testing.T) {
 func TestLimitedUint32(t *testing.T) {
 	type test struct {
 		name       string
-		beforeFunc func()
+		beforeFunc func(*testing.T)
 		max        uint64
 	}
 
 	tests := []test{
 		{
 			name: "returns random number less than max",
-			beforeFunc: func() {
+			beforeFunc: func(t *testing.T) {
+				t.Helper()
 				clearPool()
 			},
 			max: 100,
 		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if tt.beforeFunc != nil {
-				tt.beforeFunc()
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			if test.beforeFunc != nil {
+				test.beforeFunc(tt)
 			}
 
-			got := LimitedUint32(tt.max)
-			if got > uint32(tt.max) {
-				t.Errorf("more than %v. got: %v", tt.max, got)
+			got := LimitedUint32(test.max)
+			if got > uint32(test.max) {
+				t.Errorf("more than %v. got: %v", test.max, got)
 			}
 		})
 	}
