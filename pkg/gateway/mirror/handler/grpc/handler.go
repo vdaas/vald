@@ -686,7 +686,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 				errs = errors.Wrap(errs, err.Error())
 			}
 		}
-		log.Errorf("[funapy]: insert broadcast error: %v", err)
+		log.Errorf("[funapy]: insert broadcast error: %v, errs", err, errs)
 		successTgts.Range(func(key, value any) bool {
 			log.Errorf("[funapy]: insert broadcast success targets: %v", key)
 			return true
