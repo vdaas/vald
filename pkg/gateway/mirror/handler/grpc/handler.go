@@ -647,8 +647,8 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 				}
 			}()
 			_, err := vald.NewValdClient(conn).Insert(sctx, req, copts...)
-			if _, ok := broadCastTgts.Load(target); ok {
-				log.Debugf("[funapy] duplicated target: %v", target)
+			if perr, ok := broadCastTgts.Load(target); ok {
+				log.Debugf("[funapy] duplicated target: %v, prev error: %v, current error", target, perr, err)
 			} else {
 				broadCastTgts.Store(target, err)
 			}
@@ -698,16 +698,12 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 			return true
 		})
 
-		resust := make(map[string]error, 0)
+		results := make(map[string]error, 0)
 		broadCastTgts.Range(func(key, value any) bool {
-			if s, ok := key.(string); ok {
-				if err, ok := value.(error); ok {
-					resust[s] = err
-				}
-			}
+			results[key.(string)] = value.(error)
 			return true
 		})
-		log.Debugf("[funapy]: insert broadcast results: %v, success targets: %v", resust, targets)
+		log.Debugf("[funapy]: insert broadcast results: %v, Tgts: %v,success targets: %v", results, broadCastTgts, targets)
 
 		if errs != nil {
 			if err := s.insertRollback(ctx, req, successTgts); err != nil {
