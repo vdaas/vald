@@ -646,7 +646,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 				}
 			}()
 			_, err := vald.NewValdClient(conn).Insert(sctx, req, copts...)
-			log.Errorf("[funapy]: insert error: %v", err)
+			log.Errorf("[funapy]: insert error: %v, target: %v, uid: %v", err, target, req.GetVector().GetId())
 			if err != nil {
 				st, msg, err := status.ParseError(err, codes.Internal,
 					"failed to parse "+vald.InsertRPCName+" gRPC error response",
