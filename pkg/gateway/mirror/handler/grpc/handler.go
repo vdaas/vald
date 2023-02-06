@@ -637,6 +637,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 	mutex := new(sync.Mutex)
 	var errs error
 	successTgts := new(sync.Map)
+	broadCastTgts := new(sync.Map)
 	if podName := s.gateway.FromForwardedContext(ctx); len(podName) == 0 {
 		err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
 			sctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.InsertRPCName+"/"+target)
@@ -646,7 +647,11 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 				}
 			}()
 			_, err := vald.NewValdClient(conn).Insert(sctx, req, copts...)
-			log.Errorf("[funapy]: insert error: %v, target: %v, uid: %v", err, target, req.GetVector().GetId())
+			if _, ok := broadCastTgts.Load(target); ok {
+				log.Debugf("[funapy] duplicated target: %v", target)
+			} else {
+				broadCastTgts.Store(target, err)
+			}
 			if err != nil {
 				st, msg, err := status.ParseError(err, codes.Internal,
 					"failed to parse "+vald.InsertRPCName+" gRPC error response",
@@ -659,7 +664,6 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 						ResourceName: fmt.Sprintf("%s: %s(%s) to %s", apiName, s.name, s.ip, target),
 					},
 				)
-				log.Errorf("[funapy]: parse insert error: %v, st: %v", err, st.Code().String())
 				if sspan != nil {
 					sspan.RecordError(err)
 					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
@@ -686,15 +690,26 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 				errs = errors.Wrap(errs, err.Error())
 			}
 		}
-		log.Errorf("[funapy]: insert broadcast error: %v, errs", err, errs)
+		targets := make([]string, 0)
 		successTgts.Range(func(key, value any) bool {
-			log.Errorf("[funapy]: insert broadcast success targets: %v", key)
+			if s, ok := key.(string); ok {
+				targets = append(targets, s)
+			}
 			return true
 		})
-		saddrs, _ := s.gateway.MirrorTargets()
-		log.Errorf("[funapy]: insert broadcast targets: %v, self: %v", s.gateway.OtherMirrorAddrs(), saddrs)
+
+		resust := make(map[string]error, 0)
+		broadCastTgts.Range(func(key, value any) bool {
+			if s, ok := key.(string); ok {
+				if err, ok := value.(error); ok {
+					resust[s] = err
+				}
+			}
+			return true
+		})
+		log.Debugf("[funapy]: insert broadcast results: %v, success targets: %v", resust, targets)
+
 		if errs != nil {
-			log.Error("[funapy]: start insert broadcast error: %v", errs)
 			if err := s.insertRollback(ctx, req, successTgts); err != nil {
 				st, msg, err := status.ParseError(err, codes.Internal,
 					"failed to parse "+vald.InsertRPCName+" "+rollbackName+" error response",
@@ -781,7 +796,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 		}
 		return nil, err
 	}
-	log.Debugf("[funapy]: Insert API insert succeeded to %#v", ce)
+	log.Debugf("Insert API insert succeeded to %#v", ce)
 	return ce, nil
 }
 
