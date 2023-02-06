@@ -99,4 +99,9 @@ var (
 
 	// ErrCAPINotImplemented represents an error that the function is not implemented in C API.
 	ErrCAPINotImplemented = New("not implemented in C API")
+
+	// ErrObjectNotFound represents a function to generate an error that the object is not found.
+	ErrObjectNotFound = func(err error, uuid string) error {
+		return Wrapf(err, "uuid %s's object not found", uuid)
+	}
 )

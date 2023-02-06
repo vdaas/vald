@@ -20,6 +20,7 @@ package grpc
 import (
 	"context"
 	"reflect"
+	"sync"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -125,15 +126,11 @@ func Test_gRPCClient_StartConnectionMonitor(t *testing.T) {
 		ctx context.Context
 	}
 	type fields struct {
-		addrs       map[string]struct{}
-		atomicAddrs AtomicAddrs
-		poolSize    uint64
-		clientCount uint64
-		conns       struct {
-			read   atomic.Value
-			dirty  map[string]*entryGrpcConns
-			misses int
-		}
+		addrs               map[string]struct{}
+		atomicAddrs         AtomicAddrs
+		poolSize            uint64
+		clientCount         uint64
+		conns               grpcConns
 		hcDur               time.Duration
 		prDur               time.Duration
 		dialer              net.Dialer
@@ -148,6 +145,7 @@ func Test_gRPCClient_StartConnectionMonitor(t *testing.T) {
 		gbo                 gbackoff.Config
 		mcd                 time.Duration
 		group               singleflight.Group
+		crl                 sync.Map
 		ech                 <-chan error
 		monitorRunning      atomic.Value
 		stopMonitor         context.CancelFunc
@@ -187,7 +185,7 @@ func Test_gRPCClient_StartConnectionMonitor(t *testing.T) {
 		           atomicAddrs: nil,
 		           poolSize: 0,
 		           clientCount: 0,
-		           conns: struct{},
+		           conns: grpcConns{},
 		           hcDur: nil,
 		           prDur: nil,
 		           dialer: nil,
@@ -202,6 +200,7 @@ func Test_gRPCClient_StartConnectionMonitor(t *testing.T) {
 		           gbo: nil,
 		           mcd: nil,
 		           group: nil,
+		           crl: sync.Map{},
 		           ech: nil,
 		           monitorRunning: nil,
 		           stopMonitor: nil,
@@ -230,7 +229,7 @@ func Test_gRPCClient_StartConnectionMonitor(t *testing.T) {
 		           atomicAddrs: nil,
 		           poolSize: 0,
 		           clientCount: 0,
-		           conns: struct{},
+		           conns: grpcConns{},
 		           hcDur: nil,
 		           prDur: nil,
 		           dialer: nil,
@@ -245,6 +244,7 @@ func Test_gRPCClient_StartConnectionMonitor(t *testing.T) {
 		           gbo: nil,
 		           mcd: nil,
 		           group: nil,
+		           crl: sync.Map{},
 		           ech: nil,
 		           monitorRunning: nil,
 		           stopMonitor: nil,
@@ -278,15 +278,11 @@ func Test_gRPCClient_StartConnectionMonitor(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 			g := &gRPCClient{
-				addrs:       test.fields.addrs,
-				atomicAddrs: test.fields.atomicAddrs,
-				poolSize:    test.fields.poolSize,
-				clientCount: test.fields.clientCount,
-				conns: grpcConns{
-					read:   test.fields.conns.read,
-					dirty:  test.fields.conns.dirty,
-					misses: test.fields.conns.misses,
-				},
+				addrs:               test.fields.addrs,
+				atomicAddrs:         test.fields.atomicAddrs,
+				poolSize:            test.fields.poolSize,
+				clientCount:         test.fields.clientCount,
+				conns:               test.fields.conns,
 				hcDur:               test.fields.hcDur,
 				prDur:               test.fields.prDur,
 				dialer:              test.fields.dialer,
@@ -301,6 +297,7 @@ func Test_gRPCClient_StartConnectionMonitor(t *testing.T) {
 				gbo:                 test.fields.gbo,
 				mcd:                 test.fields.mcd,
 				group:               test.fields.group,
+				crl:                 test.fields.crl,
 				ech:                 test.fields.ech,
 				monitorRunning:      test.fields.monitorRunning,
 				stopMonitor:         test.fields.stopMonitor,
@@ -320,15 +317,11 @@ func Test_gRPCClient_Range(t *testing.T) {
 		f   func(ctx context.Context, addr string, conn *ClientConn, copts ...CallOption) error
 	}
 	type fields struct {
-		addrs       map[string]struct{}
-		atomicAddrs AtomicAddrs
-		poolSize    uint64
-		clientCount uint64
-		conns       struct {
-			read   atomic.Value
-			dirty  map[string]*entryGrpcConns
-			misses int
-		}
+		addrs               map[string]struct{}
+		atomicAddrs         AtomicAddrs
+		poolSize            uint64
+		clientCount         uint64
+		conns               grpcConns
 		hcDur               time.Duration
 		prDur               time.Duration
 		dialer              net.Dialer
@@ -343,6 +336,7 @@ func Test_gRPCClient_Range(t *testing.T) {
 		gbo                 gbackoff.Config
 		mcd                 time.Duration
 		group               singleflight.Group
+		crl                 sync.Map
 		ech                 <-chan error
 		monitorRunning      atomic.Value
 		stopMonitor         context.CancelFunc
@@ -379,7 +373,7 @@ func Test_gRPCClient_Range(t *testing.T) {
 		           atomicAddrs: nil,
 		           poolSize: 0,
 		           clientCount: 0,
-		           conns: struct{},
+		           conns: grpcConns{},
 		           hcDur: nil,
 		           prDur: nil,
 		           dialer: nil,
@@ -394,6 +388,7 @@ func Test_gRPCClient_Range(t *testing.T) {
 		           gbo: nil,
 		           mcd: nil,
 		           group: nil,
+		           crl: sync.Map{},
 		           ech: nil,
 		           monitorRunning: nil,
 		           stopMonitor: nil,
@@ -423,7 +418,7 @@ func Test_gRPCClient_Range(t *testing.T) {
 		           atomicAddrs: nil,
 		           poolSize: 0,
 		           clientCount: 0,
-		           conns: struct{},
+		           conns: grpcConns{},
 		           hcDur: nil,
 		           prDur: nil,
 		           dialer: nil,
@@ -438,6 +433,7 @@ func Test_gRPCClient_Range(t *testing.T) {
 		           gbo: nil,
 		           mcd: nil,
 		           group: nil,
+		           crl: sync.Map{},
 		           ech: nil,
 		           monitorRunning: nil,
 		           stopMonitor: nil,
@@ -471,15 +467,11 @@ func Test_gRPCClient_Range(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 			g := &gRPCClient{
-				addrs:       test.fields.addrs,
-				atomicAddrs: test.fields.atomicAddrs,
-				poolSize:    test.fields.poolSize,
-				clientCount: test.fields.clientCount,
-				conns: grpcConns{
-					read:   test.fields.conns.read,
-					dirty:  test.fields.conns.dirty,
-					misses: test.fields.conns.misses,
-				},
+				addrs:               test.fields.addrs,
+				atomicAddrs:         test.fields.atomicAddrs,
+				poolSize:            test.fields.poolSize,
+				clientCount:         test.fields.clientCount,
+				conns:               test.fields.conns,
 				hcDur:               test.fields.hcDur,
 				prDur:               test.fields.prDur,
 				dialer:              test.fields.dialer,
@@ -494,6 +486,7 @@ func Test_gRPCClient_Range(t *testing.T) {
 				gbo:                 test.fields.gbo,
 				mcd:                 test.fields.mcd,
 				group:               test.fields.group,
+				crl:                 test.fields.crl,
 				ech:                 test.fields.ech,
 				monitorRunning:      test.fields.monitorRunning,
 				stopMonitor:         test.fields.stopMonitor,
@@ -514,15 +507,11 @@ func Test_gRPCClient_RangeConcurrent(t *testing.T) {
 		f           func(ctx context.Context, addr string, conn *ClientConn, copts ...CallOption) error
 	}
 	type fields struct {
-		addrs       map[string]struct{}
-		atomicAddrs AtomicAddrs
-		poolSize    uint64
-		clientCount uint64
-		conns       struct {
-			read   atomic.Value
-			dirty  map[string]*entryGrpcConns
-			misses int
-		}
+		addrs               map[string]struct{}
+		atomicAddrs         AtomicAddrs
+		poolSize            uint64
+		clientCount         uint64
+		conns               grpcConns
 		hcDur               time.Duration
 		prDur               time.Duration
 		dialer              net.Dialer
@@ -537,6 +526,7 @@ func Test_gRPCClient_RangeConcurrent(t *testing.T) {
 		gbo                 gbackoff.Config
 		mcd                 time.Duration
 		group               singleflight.Group
+		crl                 sync.Map
 		ech                 <-chan error
 		monitorRunning      atomic.Value
 		stopMonitor         context.CancelFunc
@@ -574,7 +564,7 @@ func Test_gRPCClient_RangeConcurrent(t *testing.T) {
 		           atomicAddrs: nil,
 		           poolSize: 0,
 		           clientCount: 0,
-		           conns: struct{},
+		           conns: grpcConns{},
 		           hcDur: nil,
 		           prDur: nil,
 		           dialer: nil,
@@ -589,6 +579,7 @@ func Test_gRPCClient_RangeConcurrent(t *testing.T) {
 		           gbo: nil,
 		           mcd: nil,
 		           group: nil,
+		           crl: sync.Map{},
 		           ech: nil,
 		           monitorRunning: nil,
 		           stopMonitor: nil,
@@ -619,7 +610,7 @@ func Test_gRPCClient_RangeConcurrent(t *testing.T) {
 		           atomicAddrs: nil,
 		           poolSize: 0,
 		           clientCount: 0,
-		           conns: struct{},
+		           conns: grpcConns{},
 		           hcDur: nil,
 		           prDur: nil,
 		           dialer: nil,
@@ -634,6 +625,7 @@ func Test_gRPCClient_RangeConcurrent(t *testing.T) {
 		           gbo: nil,
 		           mcd: nil,
 		           group: nil,
+		           crl: sync.Map{},
 		           ech: nil,
 		           monitorRunning: nil,
 		           stopMonitor: nil,
@@ -667,15 +659,11 @@ func Test_gRPCClient_RangeConcurrent(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 			g := &gRPCClient{
-				addrs:       test.fields.addrs,
-				atomicAddrs: test.fields.atomicAddrs,
-				poolSize:    test.fields.poolSize,
-				clientCount: test.fields.clientCount,
-				conns: grpcConns{
-					read:   test.fields.conns.read,
-					dirty:  test.fields.conns.dirty,
-					misses: test.fields.conns.misses,
-				},
+				addrs:               test.fields.addrs,
+				atomicAddrs:         test.fields.atomicAddrs,
+				poolSize:            test.fields.poolSize,
+				clientCount:         test.fields.clientCount,
+				conns:               test.fields.conns,
 				hcDur:               test.fields.hcDur,
 				prDur:               test.fields.prDur,
 				dialer:              test.fields.dialer,
@@ -690,6 +678,7 @@ func Test_gRPCClient_RangeConcurrent(t *testing.T) {
 				gbo:                 test.fields.gbo,
 				mcd:                 test.fields.mcd,
 				group:               test.fields.group,
+				crl:                 test.fields.crl,
 				ech:                 test.fields.ech,
 				monitorRunning:      test.fields.monitorRunning,
 				stopMonitor:         test.fields.stopMonitor,
@@ -710,15 +699,11 @@ func Test_gRPCClient_OrderedRange(t *testing.T) {
 		f      func(ctx context.Context, addr string, conn *ClientConn, copts ...CallOption) error
 	}
 	type fields struct {
-		addrs       map[string]struct{}
-		atomicAddrs AtomicAddrs
-		poolSize    uint64
-		clientCount uint64
-		conns       struct {
-			read   atomic.Value
-			dirty  map[string]*entryGrpcConns
-			misses int
-		}
+		addrs               map[string]struct{}
+		atomicAddrs         AtomicAddrs
+		poolSize            uint64
+		clientCount         uint64
+		conns               grpcConns
 		hcDur               time.Duration
 		prDur               time.Duration
 		dialer              net.Dialer
@@ -733,6 +718,7 @@ func Test_gRPCClient_OrderedRange(t *testing.T) {
 		gbo                 gbackoff.Config
 		mcd                 time.Duration
 		group               singleflight.Group
+		crl                 sync.Map
 		ech                 <-chan error
 		monitorRunning      atomic.Value
 		stopMonitor         context.CancelFunc
@@ -770,7 +756,7 @@ func Test_gRPCClient_OrderedRange(t *testing.T) {
 		           atomicAddrs: nil,
 		           poolSize: 0,
 		           clientCount: 0,
-		           conns: struct{},
+		           conns: grpcConns{},
 		           hcDur: nil,
 		           prDur: nil,
 		           dialer: nil,
@@ -785,6 +771,7 @@ func Test_gRPCClient_OrderedRange(t *testing.T) {
 		           gbo: nil,
 		           mcd: nil,
 		           group: nil,
+		           crl: sync.Map{},
 		           ech: nil,
 		           monitorRunning: nil,
 		           stopMonitor: nil,
@@ -815,7 +802,7 @@ func Test_gRPCClient_OrderedRange(t *testing.T) {
 		           atomicAddrs: nil,
 		           poolSize: 0,
 		           clientCount: 0,
-		           conns: struct{},
+		           conns: grpcConns{},
 		           hcDur: nil,
 		           prDur: nil,
 		           dialer: nil,
@@ -830,6 +817,7 @@ func Test_gRPCClient_OrderedRange(t *testing.T) {
 		           gbo: nil,
 		           mcd: nil,
 		           group: nil,
+		           crl: sync.Map{},
 		           ech: nil,
 		           monitorRunning: nil,
 		           stopMonitor: nil,
@@ -863,15 +851,11 @@ func Test_gRPCClient_OrderedRange(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 			g := &gRPCClient{
-				addrs:       test.fields.addrs,
-				atomicAddrs: test.fields.atomicAddrs,
-				poolSize:    test.fields.poolSize,
-				clientCount: test.fields.clientCount,
-				conns: grpcConns{
-					read:   test.fields.conns.read,
-					dirty:  test.fields.conns.dirty,
-					misses: test.fields.conns.misses,
-				},
+				addrs:               test.fields.addrs,
+				atomicAddrs:         test.fields.atomicAddrs,
+				poolSize:            test.fields.poolSize,
+				clientCount:         test.fields.clientCount,
+				conns:               test.fields.conns,
 				hcDur:               test.fields.hcDur,
 				prDur:               test.fields.prDur,
 				dialer:              test.fields.dialer,
@@ -886,6 +870,7 @@ func Test_gRPCClient_OrderedRange(t *testing.T) {
 				gbo:                 test.fields.gbo,
 				mcd:                 test.fields.mcd,
 				group:               test.fields.group,
+				crl:                 test.fields.crl,
 				ech:                 test.fields.ech,
 				monitorRunning:      test.fields.monitorRunning,
 				stopMonitor:         test.fields.stopMonitor,
@@ -907,15 +892,11 @@ func Test_gRPCClient_OrderedRangeConcurrent(t *testing.T) {
 		f           func(ctx context.Context, addr string, conn *ClientConn, copts ...CallOption) error
 	}
 	type fields struct {
-		addrs       map[string]struct{}
-		atomicAddrs AtomicAddrs
-		poolSize    uint64
-		clientCount uint64
-		conns       struct {
-			read   atomic.Value
-			dirty  map[string]*entryGrpcConns
-			misses int
-		}
+		addrs               map[string]struct{}
+		atomicAddrs         AtomicAddrs
+		poolSize            uint64
+		clientCount         uint64
+		conns               grpcConns
 		hcDur               time.Duration
 		prDur               time.Duration
 		dialer              net.Dialer
@@ -930,6 +911,7 @@ func Test_gRPCClient_OrderedRangeConcurrent(t *testing.T) {
 		gbo                 gbackoff.Config
 		mcd                 time.Duration
 		group               singleflight.Group
+		crl                 sync.Map
 		ech                 <-chan error
 		monitorRunning      atomic.Value
 		stopMonitor         context.CancelFunc
@@ -968,7 +950,7 @@ func Test_gRPCClient_OrderedRangeConcurrent(t *testing.T) {
 		           atomicAddrs: nil,
 		           poolSize: 0,
 		           clientCount: 0,
-		           conns: struct{},
+		           conns: grpcConns{},
 		           hcDur: nil,
 		           prDur: nil,
 		           dialer: nil,
@@ -983,6 +965,7 @@ func Test_gRPCClient_OrderedRangeConcurrent(t *testing.T) {
 		           gbo: nil,
 		           mcd: nil,
 		           group: nil,
+		           crl: sync.Map{},
 		           ech: nil,
 		           monitorRunning: nil,
 		           stopMonitor: nil,
@@ -1014,7 +997,7 @@ func Test_gRPCClient_OrderedRangeConcurrent(t *testing.T) {
 		           atomicAddrs: nil,
 		           poolSize: 0,
 		           clientCount: 0,
-		           conns: struct{},
+		           conns: grpcConns{},
 		           hcDur: nil,
 		           prDur: nil,
 		           dialer: nil,
@@ -1029,6 +1012,7 @@ func Test_gRPCClient_OrderedRangeConcurrent(t *testing.T) {
 		           gbo: nil,
 		           mcd: nil,
 		           group: nil,
+		           crl: sync.Map{},
 		           ech: nil,
 		           monitorRunning: nil,
 		           stopMonitor: nil,
@@ -1062,15 +1046,11 @@ func Test_gRPCClient_OrderedRangeConcurrent(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 			g := &gRPCClient{
-				addrs:       test.fields.addrs,
-				atomicAddrs: test.fields.atomicAddrs,
-				poolSize:    test.fields.poolSize,
-				clientCount: test.fields.clientCount,
-				conns: grpcConns{
-					read:   test.fields.conns.read,
-					dirty:  test.fields.conns.dirty,
-					misses: test.fields.conns.misses,
-				},
+				addrs:               test.fields.addrs,
+				atomicAddrs:         test.fields.atomicAddrs,
+				poolSize:            test.fields.poolSize,
+				clientCount:         test.fields.clientCount,
+				conns:               test.fields.conns,
 				hcDur:               test.fields.hcDur,
 				prDur:               test.fields.prDur,
 				dialer:              test.fields.dialer,
@@ -1085,6 +1065,7 @@ func Test_gRPCClient_OrderedRangeConcurrent(t *testing.T) {
 				gbo:                 test.fields.gbo,
 				mcd:                 test.fields.mcd,
 				group:               test.fields.group,
+				crl:                 test.fields.crl,
 				ech:                 test.fields.ech,
 				monitorRunning:      test.fields.monitorRunning,
 				stopMonitor:         test.fields.stopMonitor,
@@ -1104,15 +1085,11 @@ func Test_gRPCClient_RoundRobin(t *testing.T) {
 		f   func(ctx context.Context, conn *ClientConn, copts ...CallOption) (interface{}, error)
 	}
 	type fields struct {
-		addrs       map[string]struct{}
-		atomicAddrs AtomicAddrs
-		poolSize    uint64
-		clientCount uint64
-		conns       struct {
-			read   atomic.Value
-			dirty  map[string]*entryGrpcConns
-			misses int
-		}
+		addrs               map[string]struct{}
+		atomicAddrs         AtomicAddrs
+		poolSize            uint64
+		clientCount         uint64
+		conns               grpcConns
 		hcDur               time.Duration
 		prDur               time.Duration
 		dialer              net.Dialer
@@ -1127,6 +1104,7 @@ func Test_gRPCClient_RoundRobin(t *testing.T) {
 		gbo                 gbackoff.Config
 		mcd                 time.Duration
 		group               singleflight.Group
+		crl                 sync.Map
 		ech                 <-chan error
 		monitorRunning      atomic.Value
 		stopMonitor         context.CancelFunc
@@ -1167,7 +1145,7 @@ func Test_gRPCClient_RoundRobin(t *testing.T) {
 		           atomicAddrs: nil,
 		           poolSize: 0,
 		           clientCount: 0,
-		           conns: struct{},
+		           conns: grpcConns{},
 		           hcDur: nil,
 		           prDur: nil,
 		           dialer: nil,
@@ -1182,6 +1160,7 @@ func Test_gRPCClient_RoundRobin(t *testing.T) {
 		           gbo: nil,
 		           mcd: nil,
 		           group: nil,
+		           crl: sync.Map{},
 		           ech: nil,
 		           monitorRunning: nil,
 		           stopMonitor: nil,
@@ -1211,7 +1190,7 @@ func Test_gRPCClient_RoundRobin(t *testing.T) {
 		           atomicAddrs: nil,
 		           poolSize: 0,
 		           clientCount: 0,
-		           conns: struct{},
+		           conns: grpcConns{},
 		           hcDur: nil,
 		           prDur: nil,
 		           dialer: nil,
@@ -1226,6 +1205,7 @@ func Test_gRPCClient_RoundRobin(t *testing.T) {
 		           gbo: nil,
 		           mcd: nil,
 		           group: nil,
+		           crl: sync.Map{},
 		           ech: nil,
 		           monitorRunning: nil,
 		           stopMonitor: nil,
@@ -1259,15 +1239,11 @@ func Test_gRPCClient_RoundRobin(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 			g := &gRPCClient{
-				addrs:       test.fields.addrs,
-				atomicAddrs: test.fields.atomicAddrs,
-				poolSize:    test.fields.poolSize,
-				clientCount: test.fields.clientCount,
-				conns: grpcConns{
-					read:   test.fields.conns.read,
-					dirty:  test.fields.conns.dirty,
-					misses: test.fields.conns.misses,
-				},
+				addrs:               test.fields.addrs,
+				atomicAddrs:         test.fields.atomicAddrs,
+				poolSize:            test.fields.poolSize,
+				clientCount:         test.fields.clientCount,
+				conns:               test.fields.conns,
 				hcDur:               test.fields.hcDur,
 				prDur:               test.fields.prDur,
 				dialer:              test.fields.dialer,
@@ -1282,6 +1258,7 @@ func Test_gRPCClient_RoundRobin(t *testing.T) {
 				gbo:                 test.fields.gbo,
 				mcd:                 test.fields.mcd,
 				group:               test.fields.group,
+				crl:                 test.fields.crl,
 				ech:                 test.fields.ech,
 				monitorRunning:      test.fields.monitorRunning,
 				stopMonitor:         test.fields.stopMonitor,
@@ -1302,15 +1279,11 @@ func Test_gRPCClient_Do(t *testing.T) {
 		f    func(ctx context.Context, conn *ClientConn, copts ...CallOption) (interface{}, error)
 	}
 	type fields struct {
-		addrs       map[string]struct{}
-		atomicAddrs AtomicAddrs
-		poolSize    uint64
-		clientCount uint64
-		conns       struct {
-			read   atomic.Value
-			dirty  map[string]*entryGrpcConns
-			misses int
-		}
+		addrs               map[string]struct{}
+		atomicAddrs         AtomicAddrs
+		poolSize            uint64
+		clientCount         uint64
+		conns               grpcConns
 		hcDur               time.Duration
 		prDur               time.Duration
 		dialer              net.Dialer
@@ -1325,6 +1298,7 @@ func Test_gRPCClient_Do(t *testing.T) {
 		gbo                 gbackoff.Config
 		mcd                 time.Duration
 		group               singleflight.Group
+		crl                 sync.Map
 		ech                 <-chan error
 		monitorRunning      atomic.Value
 		stopMonitor         context.CancelFunc
@@ -1366,7 +1340,7 @@ func Test_gRPCClient_Do(t *testing.T) {
 		           atomicAddrs: nil,
 		           poolSize: 0,
 		           clientCount: 0,
-		           conns: struct{},
+		           conns: grpcConns{},
 		           hcDur: nil,
 		           prDur: nil,
 		           dialer: nil,
@@ -1381,6 +1355,7 @@ func Test_gRPCClient_Do(t *testing.T) {
 		           gbo: nil,
 		           mcd: nil,
 		           group: nil,
+		           crl: sync.Map{},
 		           ech: nil,
 		           monitorRunning: nil,
 		           stopMonitor: nil,
@@ -1411,7 +1386,7 @@ func Test_gRPCClient_Do(t *testing.T) {
 		           atomicAddrs: nil,
 		           poolSize: 0,
 		           clientCount: 0,
-		           conns: struct{},
+		           conns: grpcConns{},
 		           hcDur: nil,
 		           prDur: nil,
 		           dialer: nil,
@@ -1426,6 +1401,7 @@ func Test_gRPCClient_Do(t *testing.T) {
 		           gbo: nil,
 		           mcd: nil,
 		           group: nil,
+		           crl: sync.Map{},
 		           ech: nil,
 		           monitorRunning: nil,
 		           stopMonitor: nil,
@@ -1459,15 +1435,11 @@ func Test_gRPCClient_Do(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 			g := &gRPCClient{
-				addrs:       test.fields.addrs,
-				atomicAddrs: test.fields.atomicAddrs,
-				poolSize:    test.fields.poolSize,
-				clientCount: test.fields.clientCount,
-				conns: grpcConns{
-					read:   test.fields.conns.read,
-					dirty:  test.fields.conns.dirty,
-					misses: test.fields.conns.misses,
-				},
+				addrs:               test.fields.addrs,
+				atomicAddrs:         test.fields.atomicAddrs,
+				poolSize:            test.fields.poolSize,
+				clientCount:         test.fields.clientCount,
+				conns:               test.fields.conns,
 				hcDur:               test.fields.hcDur,
 				prDur:               test.fields.prDur,
 				dialer:              test.fields.dialer,
@@ -1482,6 +1454,7 @@ func Test_gRPCClient_Do(t *testing.T) {
 				gbo:                 test.fields.gbo,
 				mcd:                 test.fields.mcd,
 				group:               test.fields.group,
+				crl:                 test.fields.crl,
 				ech:                 test.fields.ech,
 				monitorRunning:      test.fields.monitorRunning,
 				stopMonitor:         test.fields.stopMonitor,
@@ -1504,15 +1477,11 @@ func Test_gRPCClient_connectWithBackoff(t *testing.T) {
 		f             func(ctx context.Context, conn *ClientConn, copts ...CallOption) (interface{}, error)
 	}
 	type fields struct {
-		addrs       map[string]struct{}
-		atomicAddrs AtomicAddrs
-		poolSize    uint64
-		clientCount uint64
-		conns       struct {
-			read   atomic.Value
-			dirty  map[string]*entryGrpcConns
-			misses int
-		}
+		addrs               map[string]struct{}
+		atomicAddrs         AtomicAddrs
+		poolSize            uint64
+		clientCount         uint64
+		conns               grpcConns
 		hcDur               time.Duration
 		prDur               time.Duration
 		dialer              net.Dialer
@@ -1527,6 +1496,7 @@ func Test_gRPCClient_connectWithBackoff(t *testing.T) {
 		gbo                 gbackoff.Config
 		mcd                 time.Duration
 		group               singleflight.Group
+		crl                 sync.Map
 		ech                 <-chan error
 		monitorRunning      atomic.Value
 		stopMonitor         context.CancelFunc
@@ -1570,7 +1540,7 @@ func Test_gRPCClient_connectWithBackoff(t *testing.T) {
 		           atomicAddrs: nil,
 		           poolSize: 0,
 		           clientCount: 0,
-		           conns: struct{},
+		           conns: grpcConns{},
 		           hcDur: nil,
 		           prDur: nil,
 		           dialer: nil,
@@ -1585,6 +1555,7 @@ func Test_gRPCClient_connectWithBackoff(t *testing.T) {
 		           gbo: nil,
 		           mcd: nil,
 		           group: nil,
+		           crl: sync.Map{},
 		           ech: nil,
 		           monitorRunning: nil,
 		           stopMonitor: nil,
@@ -1617,7 +1588,7 @@ func Test_gRPCClient_connectWithBackoff(t *testing.T) {
 		           atomicAddrs: nil,
 		           poolSize: 0,
 		           clientCount: 0,
-		           conns: struct{},
+		           conns: grpcConns{},
 		           hcDur: nil,
 		           prDur: nil,
 		           dialer: nil,
@@ -1632,6 +1603,7 @@ func Test_gRPCClient_connectWithBackoff(t *testing.T) {
 		           gbo: nil,
 		           mcd: nil,
 		           group: nil,
+		           crl: sync.Map{},
 		           ech: nil,
 		           monitorRunning: nil,
 		           stopMonitor: nil,
@@ -1665,15 +1637,11 @@ func Test_gRPCClient_connectWithBackoff(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 			g := &gRPCClient{
-				addrs:       test.fields.addrs,
-				atomicAddrs: test.fields.atomicAddrs,
-				poolSize:    test.fields.poolSize,
-				clientCount: test.fields.clientCount,
-				conns: grpcConns{
-					read:   test.fields.conns.read,
-					dirty:  test.fields.conns.dirty,
-					misses: test.fields.conns.misses,
-				},
+				addrs:               test.fields.addrs,
+				atomicAddrs:         test.fields.atomicAddrs,
+				poolSize:            test.fields.poolSize,
+				clientCount:         test.fields.clientCount,
+				conns:               test.fields.conns,
 				hcDur:               test.fields.hcDur,
 				prDur:               test.fields.prDur,
 				dialer:              test.fields.dialer,
@@ -1688,6 +1656,7 @@ func Test_gRPCClient_connectWithBackoff(t *testing.T) {
 				gbo:                 test.fields.gbo,
 				mcd:                 test.fields.mcd,
 				group:               test.fields.group,
+				crl:                 test.fields.crl,
 				ech:                 test.fields.ech,
 				monitorRunning:      test.fields.monitorRunning,
 				stopMonitor:         test.fields.stopMonitor,
@@ -1703,15 +1672,11 @@ func Test_gRPCClient_connectWithBackoff(t *testing.T) {
 
 func Test_gRPCClient_GetDialOption(t *testing.T) {
 	type fields struct {
-		addrs       map[string]struct{}
-		atomicAddrs AtomicAddrs
-		poolSize    uint64
-		clientCount uint64
-		conns       struct {
-			read   atomic.Value
-			dirty  map[string]*entryGrpcConns
-			misses int
-		}
+		addrs               map[string]struct{}
+		atomicAddrs         AtomicAddrs
+		poolSize            uint64
+		clientCount         uint64
+		conns               grpcConns
 		hcDur               time.Duration
 		prDur               time.Duration
 		dialer              net.Dialer
@@ -1726,6 +1691,7 @@ func Test_gRPCClient_GetDialOption(t *testing.T) {
 		gbo                 gbackoff.Config
 		mcd                 time.Duration
 		group               singleflight.Group
+		crl                 sync.Map
 		ech                 <-chan error
 		monitorRunning      atomic.Value
 		stopMonitor         context.CancelFunc
@@ -1757,7 +1723,7 @@ func Test_gRPCClient_GetDialOption(t *testing.T) {
 		           atomicAddrs: nil,
 		           poolSize: 0,
 		           clientCount: 0,
-		           conns: struct{},
+		           conns: grpcConns{},
 		           hcDur: nil,
 		           prDur: nil,
 		           dialer: nil,
@@ -1772,6 +1738,7 @@ func Test_gRPCClient_GetDialOption(t *testing.T) {
 		           gbo: nil,
 		           mcd: nil,
 		           group: nil,
+		           crl: sync.Map{},
 		           ech: nil,
 		           monitorRunning: nil,
 		           stopMonitor: nil,
@@ -1797,7 +1764,7 @@ func Test_gRPCClient_GetDialOption(t *testing.T) {
 		           atomicAddrs: nil,
 		           poolSize: 0,
 		           clientCount: 0,
-		           conns: struct{},
+		           conns: grpcConns{},
 		           hcDur: nil,
 		           prDur: nil,
 		           dialer: nil,
@@ -1812,6 +1779,7 @@ func Test_gRPCClient_GetDialOption(t *testing.T) {
 		           gbo: nil,
 		           mcd: nil,
 		           group: nil,
+		           crl: sync.Map{},
 		           ech: nil,
 		           monitorRunning: nil,
 		           stopMonitor: nil,
@@ -1845,15 +1813,11 @@ func Test_gRPCClient_GetDialOption(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 			g := &gRPCClient{
-				addrs:       test.fields.addrs,
-				atomicAddrs: test.fields.atomicAddrs,
-				poolSize:    test.fields.poolSize,
-				clientCount: test.fields.clientCount,
-				conns: grpcConns{
-					read:   test.fields.conns.read,
-					dirty:  test.fields.conns.dirty,
-					misses: test.fields.conns.misses,
-				},
+				addrs:               test.fields.addrs,
+				atomicAddrs:         test.fields.atomicAddrs,
+				poolSize:            test.fields.poolSize,
+				clientCount:         test.fields.clientCount,
+				conns:               test.fields.conns,
 				hcDur:               test.fields.hcDur,
 				prDur:               test.fields.prDur,
 				dialer:              test.fields.dialer,
@@ -1868,6 +1832,7 @@ func Test_gRPCClient_GetDialOption(t *testing.T) {
 				gbo:                 test.fields.gbo,
 				mcd:                 test.fields.mcd,
 				group:               test.fields.group,
+				crl:                 test.fields.crl,
 				ech:                 test.fields.ech,
 				monitorRunning:      test.fields.monitorRunning,
 				stopMonitor:         test.fields.stopMonitor,
@@ -1883,15 +1848,11 @@ func Test_gRPCClient_GetDialOption(t *testing.T) {
 
 func Test_gRPCClient_GetCallOption(t *testing.T) {
 	type fields struct {
-		addrs       map[string]struct{}
-		atomicAddrs AtomicAddrs
-		poolSize    uint64
-		clientCount uint64
-		conns       struct {
-			read   atomic.Value
-			dirty  map[string]*entryGrpcConns
-			misses int
-		}
+		addrs               map[string]struct{}
+		atomicAddrs         AtomicAddrs
+		poolSize            uint64
+		clientCount         uint64
+		conns               grpcConns
 		hcDur               time.Duration
 		prDur               time.Duration
 		dialer              net.Dialer
@@ -1906,6 +1867,7 @@ func Test_gRPCClient_GetCallOption(t *testing.T) {
 		gbo                 gbackoff.Config
 		mcd                 time.Duration
 		group               singleflight.Group
+		crl                 sync.Map
 		ech                 <-chan error
 		monitorRunning      atomic.Value
 		stopMonitor         context.CancelFunc
@@ -1937,7 +1899,7 @@ func Test_gRPCClient_GetCallOption(t *testing.T) {
 		           atomicAddrs: nil,
 		           poolSize: 0,
 		           clientCount: 0,
-		           conns: struct{},
+		           conns: grpcConns{},
 		           hcDur: nil,
 		           prDur: nil,
 		           dialer: nil,
@@ -1952,6 +1914,7 @@ func Test_gRPCClient_GetCallOption(t *testing.T) {
 		           gbo: nil,
 		           mcd: nil,
 		           group: nil,
+		           crl: sync.Map{},
 		           ech: nil,
 		           monitorRunning: nil,
 		           stopMonitor: nil,
@@ -1977,7 +1940,7 @@ func Test_gRPCClient_GetCallOption(t *testing.T) {
 		           atomicAddrs: nil,
 		           poolSize: 0,
 		           clientCount: 0,
-		           conns: struct{},
+		           conns: grpcConns{},
 		           hcDur: nil,
 		           prDur: nil,
 		           dialer: nil,
@@ -1992,6 +1955,7 @@ func Test_gRPCClient_GetCallOption(t *testing.T) {
 		           gbo: nil,
 		           mcd: nil,
 		           group: nil,
+		           crl: sync.Map{},
 		           ech: nil,
 		           monitorRunning: nil,
 		           stopMonitor: nil,
@@ -2025,15 +1989,11 @@ func Test_gRPCClient_GetCallOption(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 			g := &gRPCClient{
-				addrs:       test.fields.addrs,
-				atomicAddrs: test.fields.atomicAddrs,
-				poolSize:    test.fields.poolSize,
-				clientCount: test.fields.clientCount,
-				conns: grpcConns{
-					read:   test.fields.conns.read,
-					dirty:  test.fields.conns.dirty,
-					misses: test.fields.conns.misses,
-				},
+				addrs:               test.fields.addrs,
+				atomicAddrs:         test.fields.atomicAddrs,
+				poolSize:            test.fields.poolSize,
+				clientCount:         test.fields.clientCount,
+				conns:               test.fields.conns,
 				hcDur:               test.fields.hcDur,
 				prDur:               test.fields.prDur,
 				dialer:              test.fields.dialer,
@@ -2048,6 +2008,7 @@ func Test_gRPCClient_GetCallOption(t *testing.T) {
 				gbo:                 test.fields.gbo,
 				mcd:                 test.fields.mcd,
 				group:               test.fields.group,
+				crl:                 test.fields.crl,
 				ech:                 test.fields.ech,
 				monitorRunning:      test.fields.monitorRunning,
 				stopMonitor:         test.fields.stopMonitor,
@@ -2063,15 +2024,11 @@ func Test_gRPCClient_GetCallOption(t *testing.T) {
 
 func Test_gRPCClient_GetBackoff(t *testing.T) {
 	type fields struct {
-		addrs       map[string]struct{}
-		atomicAddrs AtomicAddrs
-		poolSize    uint64
-		clientCount uint64
-		conns       struct {
-			read   atomic.Value
-			dirty  map[string]*entryGrpcConns
-			misses int
-		}
+		addrs               map[string]struct{}
+		atomicAddrs         AtomicAddrs
+		poolSize            uint64
+		clientCount         uint64
+		conns               grpcConns
 		hcDur               time.Duration
 		prDur               time.Duration
 		dialer              net.Dialer
@@ -2086,6 +2043,7 @@ func Test_gRPCClient_GetBackoff(t *testing.T) {
 		gbo                 gbackoff.Config
 		mcd                 time.Duration
 		group               singleflight.Group
+		crl                 sync.Map
 		ech                 <-chan error
 		monitorRunning      atomic.Value
 		stopMonitor         context.CancelFunc
@@ -2117,7 +2075,7 @@ func Test_gRPCClient_GetBackoff(t *testing.T) {
 		           atomicAddrs: nil,
 		           poolSize: 0,
 		           clientCount: 0,
-		           conns: struct{},
+		           conns: grpcConns{},
 		           hcDur: nil,
 		           prDur: nil,
 		           dialer: nil,
@@ -2132,6 +2090,7 @@ func Test_gRPCClient_GetBackoff(t *testing.T) {
 		           gbo: nil,
 		           mcd: nil,
 		           group: nil,
+		           crl: sync.Map{},
 		           ech: nil,
 		           monitorRunning: nil,
 		           stopMonitor: nil,
@@ -2157,7 +2116,7 @@ func Test_gRPCClient_GetBackoff(t *testing.T) {
 		           atomicAddrs: nil,
 		           poolSize: 0,
 		           clientCount: 0,
-		           conns: struct{},
+		           conns: grpcConns{},
 		           hcDur: nil,
 		           prDur: nil,
 		           dialer: nil,
@@ -2172,6 +2131,7 @@ func Test_gRPCClient_GetBackoff(t *testing.T) {
 		           gbo: nil,
 		           mcd: nil,
 		           group: nil,
+		           crl: sync.Map{},
 		           ech: nil,
 		           monitorRunning: nil,
 		           stopMonitor: nil,
@@ -2205,15 +2165,11 @@ func Test_gRPCClient_GetBackoff(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 			g := &gRPCClient{
-				addrs:       test.fields.addrs,
-				atomicAddrs: test.fields.atomicAddrs,
-				poolSize:    test.fields.poolSize,
-				clientCount: test.fields.clientCount,
-				conns: grpcConns{
-					read:   test.fields.conns.read,
-					dirty:  test.fields.conns.dirty,
-					misses: test.fields.conns.misses,
-				},
+				addrs:               test.fields.addrs,
+				atomicAddrs:         test.fields.atomicAddrs,
+				poolSize:            test.fields.poolSize,
+				clientCount:         test.fields.clientCount,
+				conns:               test.fields.conns,
 				hcDur:               test.fields.hcDur,
 				prDur:               test.fields.prDur,
 				dialer:              test.fields.dialer,
@@ -2228,6 +2184,7 @@ func Test_gRPCClient_GetBackoff(t *testing.T) {
 				gbo:                 test.fields.gbo,
 				mcd:                 test.fields.mcd,
 				group:               test.fields.group,
+				crl:                 test.fields.crl,
 				ech:                 test.fields.ech,
 				monitorRunning:      test.fields.monitorRunning,
 				stopMonitor:         test.fields.stopMonitor,
@@ -2248,15 +2205,11 @@ func Test_gRPCClient_Connect(t *testing.T) {
 		dopts []DialOption
 	}
 	type fields struct {
-		addrs       map[string]struct{}
-		atomicAddrs AtomicAddrs
-		poolSize    uint64
-		clientCount uint64
-		conns       struct {
-			read   atomic.Value
-			dirty  map[string]*entryGrpcConns
-			misses int
-		}
+		addrs               map[string]struct{}
+		atomicAddrs         AtomicAddrs
+		poolSize            uint64
+		clientCount         uint64
+		conns               grpcConns
 		hcDur               time.Duration
 		prDur               time.Duration
 		dialer              net.Dialer
@@ -2271,6 +2224,7 @@ func Test_gRPCClient_Connect(t *testing.T) {
 		gbo                 gbackoff.Config
 		mcd                 time.Duration
 		group               singleflight.Group
+		crl                 sync.Map
 		ech                 <-chan error
 		monitorRunning      atomic.Value
 		stopMonitor         context.CancelFunc
@@ -2312,7 +2266,7 @@ func Test_gRPCClient_Connect(t *testing.T) {
 		           atomicAddrs: nil,
 		           poolSize: 0,
 		           clientCount: 0,
-		           conns: struct{},
+		           conns: grpcConns{},
 		           hcDur: nil,
 		           prDur: nil,
 		           dialer: nil,
@@ -2327,6 +2281,7 @@ func Test_gRPCClient_Connect(t *testing.T) {
 		           gbo: nil,
 		           mcd: nil,
 		           group: nil,
+		           crl: sync.Map{},
 		           ech: nil,
 		           monitorRunning: nil,
 		           stopMonitor: nil,
@@ -2357,7 +2312,7 @@ func Test_gRPCClient_Connect(t *testing.T) {
 		           atomicAddrs: nil,
 		           poolSize: 0,
 		           clientCount: 0,
-		           conns: struct{},
+		           conns: grpcConns{},
 		           hcDur: nil,
 		           prDur: nil,
 		           dialer: nil,
@@ -2372,6 +2327,7 @@ func Test_gRPCClient_Connect(t *testing.T) {
 		           gbo: nil,
 		           mcd: nil,
 		           group: nil,
+		           crl: sync.Map{},
 		           ech: nil,
 		           monitorRunning: nil,
 		           stopMonitor: nil,
@@ -2405,15 +2361,11 @@ func Test_gRPCClient_Connect(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 			g := &gRPCClient{
-				addrs:       test.fields.addrs,
-				atomicAddrs: test.fields.atomicAddrs,
-				poolSize:    test.fields.poolSize,
-				clientCount: test.fields.clientCount,
-				conns: grpcConns{
-					read:   test.fields.conns.read,
-					dirty:  test.fields.conns.dirty,
-					misses: test.fields.conns.misses,
-				},
+				addrs:               test.fields.addrs,
+				atomicAddrs:         test.fields.atomicAddrs,
+				poolSize:            test.fields.poolSize,
+				clientCount:         test.fields.clientCount,
+				conns:               test.fields.conns,
 				hcDur:               test.fields.hcDur,
 				prDur:               test.fields.prDur,
 				dialer:              test.fields.dialer,
@@ -2428,6 +2380,7 @@ func Test_gRPCClient_Connect(t *testing.T) {
 				gbo:                 test.fields.gbo,
 				mcd:                 test.fields.mcd,
 				group:               test.fields.group,
+				crl:                 test.fields.crl,
 				ech:                 test.fields.ech,
 				monitorRunning:      test.fields.monitorRunning,
 				stopMonitor:         test.fields.stopMonitor,
@@ -2447,15 +2400,11 @@ func Test_gRPCClient_IsConnected(t *testing.T) {
 		addr string
 	}
 	type fields struct {
-		addrs       map[string]struct{}
-		atomicAddrs AtomicAddrs
-		poolSize    uint64
-		clientCount uint64
-		conns       struct {
-			read   atomic.Value
-			dirty  map[string]*entryGrpcConns
-			misses int
-		}
+		addrs               map[string]struct{}
+		atomicAddrs         AtomicAddrs
+		poolSize            uint64
+		clientCount         uint64
+		conns               grpcConns
 		hcDur               time.Duration
 		prDur               time.Duration
 		dialer              net.Dialer
@@ -2470,6 +2419,7 @@ func Test_gRPCClient_IsConnected(t *testing.T) {
 		gbo                 gbackoff.Config
 		mcd                 time.Duration
 		group               singleflight.Group
+		crl                 sync.Map
 		ech                 <-chan error
 		monitorRunning      atomic.Value
 		stopMonitor         context.CancelFunc
@@ -2506,7 +2456,7 @@ func Test_gRPCClient_IsConnected(t *testing.T) {
 		           atomicAddrs: nil,
 		           poolSize: 0,
 		           clientCount: 0,
-		           conns: struct{},
+		           conns: grpcConns{},
 		           hcDur: nil,
 		           prDur: nil,
 		           dialer: nil,
@@ -2521,6 +2471,7 @@ func Test_gRPCClient_IsConnected(t *testing.T) {
 		           gbo: nil,
 		           mcd: nil,
 		           group: nil,
+		           crl: sync.Map{},
 		           ech: nil,
 		           monitorRunning: nil,
 		           stopMonitor: nil,
@@ -2550,7 +2501,7 @@ func Test_gRPCClient_IsConnected(t *testing.T) {
 		           atomicAddrs: nil,
 		           poolSize: 0,
 		           clientCount: 0,
-		           conns: struct{},
+		           conns: grpcConns{},
 		           hcDur: nil,
 		           prDur: nil,
 		           dialer: nil,
@@ -2565,6 +2516,7 @@ func Test_gRPCClient_IsConnected(t *testing.T) {
 		           gbo: nil,
 		           mcd: nil,
 		           group: nil,
+		           crl: sync.Map{},
 		           ech: nil,
 		           monitorRunning: nil,
 		           stopMonitor: nil,
@@ -2598,15 +2550,11 @@ func Test_gRPCClient_IsConnected(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 			g := &gRPCClient{
-				addrs:       test.fields.addrs,
-				atomicAddrs: test.fields.atomicAddrs,
-				poolSize:    test.fields.poolSize,
-				clientCount: test.fields.clientCount,
-				conns: grpcConns{
-					read:   test.fields.conns.read,
-					dirty:  test.fields.conns.dirty,
-					misses: test.fields.conns.misses,
-				},
+				addrs:               test.fields.addrs,
+				atomicAddrs:         test.fields.atomicAddrs,
+				poolSize:            test.fields.poolSize,
+				clientCount:         test.fields.clientCount,
+				conns:               test.fields.conns,
 				hcDur:               test.fields.hcDur,
 				prDur:               test.fields.prDur,
 				dialer:              test.fields.dialer,
@@ -2621,6 +2569,7 @@ func Test_gRPCClient_IsConnected(t *testing.T) {
 				gbo:                 test.fields.gbo,
 				mcd:                 test.fields.mcd,
 				group:               test.fields.group,
+				crl:                 test.fields.crl,
 				ech:                 test.fields.ech,
 				monitorRunning:      test.fields.monitorRunning,
 				stopMonitor:         test.fields.stopMonitor,
@@ -2640,15 +2589,11 @@ func Test_gRPCClient_Disconnect(t *testing.T) {
 		addr string
 	}
 	type fields struct {
-		addrs       map[string]struct{}
-		atomicAddrs AtomicAddrs
-		poolSize    uint64
-		clientCount uint64
-		conns       struct {
-			read   atomic.Value
-			dirty  map[string]*entryGrpcConns
-			misses int
-		}
+		addrs               map[string]struct{}
+		atomicAddrs         AtomicAddrs
+		poolSize            uint64
+		clientCount         uint64
+		conns               grpcConns
 		hcDur               time.Duration
 		prDur               time.Duration
 		dialer              net.Dialer
@@ -2663,6 +2608,7 @@ func Test_gRPCClient_Disconnect(t *testing.T) {
 		gbo                 gbackoff.Config
 		mcd                 time.Duration
 		group               singleflight.Group
+		crl                 sync.Map
 		ech                 <-chan error
 		monitorRunning      atomic.Value
 		stopMonitor         context.CancelFunc
@@ -2699,7 +2645,7 @@ func Test_gRPCClient_Disconnect(t *testing.T) {
 		           atomicAddrs: nil,
 		           poolSize: 0,
 		           clientCount: 0,
-		           conns: struct{},
+		           conns: grpcConns{},
 		           hcDur: nil,
 		           prDur: nil,
 		           dialer: nil,
@@ -2714,6 +2660,7 @@ func Test_gRPCClient_Disconnect(t *testing.T) {
 		           gbo: nil,
 		           mcd: nil,
 		           group: nil,
+		           crl: sync.Map{},
 		           ech: nil,
 		           monitorRunning: nil,
 		           stopMonitor: nil,
@@ -2743,7 +2690,7 @@ func Test_gRPCClient_Disconnect(t *testing.T) {
 		           atomicAddrs: nil,
 		           poolSize: 0,
 		           clientCount: 0,
-		           conns: struct{},
+		           conns: grpcConns{},
 		           hcDur: nil,
 		           prDur: nil,
 		           dialer: nil,
@@ -2758,6 +2705,7 @@ func Test_gRPCClient_Disconnect(t *testing.T) {
 		           gbo: nil,
 		           mcd: nil,
 		           group: nil,
+		           crl: sync.Map{},
 		           ech: nil,
 		           monitorRunning: nil,
 		           stopMonitor: nil,
@@ -2791,15 +2739,11 @@ func Test_gRPCClient_Disconnect(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 			g := &gRPCClient{
-				addrs:       test.fields.addrs,
-				atomicAddrs: test.fields.atomicAddrs,
-				poolSize:    test.fields.poolSize,
-				clientCount: test.fields.clientCount,
-				conns: grpcConns{
-					read:   test.fields.conns.read,
-					dirty:  test.fields.conns.dirty,
-					misses: test.fields.conns.misses,
-				},
+				addrs:               test.fields.addrs,
+				atomicAddrs:         test.fields.atomicAddrs,
+				poolSize:            test.fields.poolSize,
+				clientCount:         test.fields.clientCount,
+				conns:               test.fields.conns,
 				hcDur:               test.fields.hcDur,
 				prDur:               test.fields.prDur,
 				dialer:              test.fields.dialer,
@@ -2814,6 +2758,7 @@ func Test_gRPCClient_Disconnect(t *testing.T) {
 				gbo:                 test.fields.gbo,
 				mcd:                 test.fields.mcd,
 				group:               test.fields.group,
+				crl:                 test.fields.crl,
 				ech:                 test.fields.ech,
 				monitorRunning:      test.fields.monitorRunning,
 				stopMonitor:         test.fields.stopMonitor,
@@ -2829,15 +2774,11 @@ func Test_gRPCClient_Disconnect(t *testing.T) {
 
 func Test_gRPCClient_ConnectedAddrs(t *testing.T) {
 	type fields struct {
-		addrs       map[string]struct{}
-		atomicAddrs AtomicAddrs
-		poolSize    uint64
-		clientCount uint64
-		conns       struct {
-			read   atomic.Value
-			dirty  map[string]*entryGrpcConns
-			misses int
-		}
+		addrs               map[string]struct{}
+		atomicAddrs         AtomicAddrs
+		poolSize            uint64
+		clientCount         uint64
+		conns               grpcConns
 		hcDur               time.Duration
 		prDur               time.Duration
 		dialer              net.Dialer
@@ -2852,6 +2793,7 @@ func Test_gRPCClient_ConnectedAddrs(t *testing.T) {
 		gbo                 gbackoff.Config
 		mcd                 time.Duration
 		group               singleflight.Group
+		crl                 sync.Map
 		ech                 <-chan error
 		monitorRunning      atomic.Value
 		stopMonitor         context.CancelFunc
@@ -2883,7 +2825,7 @@ func Test_gRPCClient_ConnectedAddrs(t *testing.T) {
 		           atomicAddrs: nil,
 		           poolSize: 0,
 		           clientCount: 0,
-		           conns: struct{},
+		           conns: grpcConns{},
 		           hcDur: nil,
 		           prDur: nil,
 		           dialer: nil,
@@ -2898,6 +2840,7 @@ func Test_gRPCClient_ConnectedAddrs(t *testing.T) {
 		           gbo: nil,
 		           mcd: nil,
 		           group: nil,
+		           crl: sync.Map{},
 		           ech: nil,
 		           monitorRunning: nil,
 		           stopMonitor: nil,
@@ -2923,7 +2866,7 @@ func Test_gRPCClient_ConnectedAddrs(t *testing.T) {
 		           atomicAddrs: nil,
 		           poolSize: 0,
 		           clientCount: 0,
-		           conns: struct{},
+		           conns: grpcConns{},
 		           hcDur: nil,
 		           prDur: nil,
 		           dialer: nil,
@@ -2938,6 +2881,7 @@ func Test_gRPCClient_ConnectedAddrs(t *testing.T) {
 		           gbo: nil,
 		           mcd: nil,
 		           group: nil,
+		           crl: sync.Map{},
 		           ech: nil,
 		           monitorRunning: nil,
 		           stopMonitor: nil,
@@ -2971,15 +2915,11 @@ func Test_gRPCClient_ConnectedAddrs(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 			g := &gRPCClient{
-				addrs:       test.fields.addrs,
-				atomicAddrs: test.fields.atomicAddrs,
-				poolSize:    test.fields.poolSize,
-				clientCount: test.fields.clientCount,
-				conns: grpcConns{
-					read:   test.fields.conns.read,
-					dirty:  test.fields.conns.dirty,
-					misses: test.fields.conns.misses,
-				},
+				addrs:               test.fields.addrs,
+				atomicAddrs:         test.fields.atomicAddrs,
+				poolSize:            test.fields.poolSize,
+				clientCount:         test.fields.clientCount,
+				conns:               test.fields.conns,
 				hcDur:               test.fields.hcDur,
 				prDur:               test.fields.prDur,
 				dialer:              test.fields.dialer,
@@ -2994,6 +2934,7 @@ func Test_gRPCClient_ConnectedAddrs(t *testing.T) {
 				gbo:                 test.fields.gbo,
 				mcd:                 test.fields.mcd,
 				group:               test.fields.group,
+				crl:                 test.fields.crl,
 				ech:                 test.fields.ech,
 				monitorRunning:      test.fields.monitorRunning,
 				stopMonitor:         test.fields.stopMonitor,
@@ -3012,15 +2953,11 @@ func Test_gRPCClient_Close(t *testing.T) {
 		ctx context.Context
 	}
 	type fields struct {
-		addrs       map[string]struct{}
-		atomicAddrs AtomicAddrs
-		poolSize    uint64
-		clientCount uint64
-		conns       struct {
-			read   atomic.Value
-			dirty  map[string]*entryGrpcConns
-			misses int
-		}
+		addrs               map[string]struct{}
+		atomicAddrs         AtomicAddrs
+		poolSize            uint64
+		clientCount         uint64
+		conns               grpcConns
 		hcDur               time.Duration
 		prDur               time.Duration
 		dialer              net.Dialer
@@ -3035,6 +2972,7 @@ func Test_gRPCClient_Close(t *testing.T) {
 		gbo                 gbackoff.Config
 		mcd                 time.Duration
 		group               singleflight.Group
+		crl                 sync.Map
 		ech                 <-chan error
 		monitorRunning      atomic.Value
 		stopMonitor         context.CancelFunc
@@ -3070,7 +3008,7 @@ func Test_gRPCClient_Close(t *testing.T) {
 		           atomicAddrs: nil,
 		           poolSize: 0,
 		           clientCount: 0,
-		           conns: struct{},
+		           conns: grpcConns{},
 		           hcDur: nil,
 		           prDur: nil,
 		           dialer: nil,
@@ -3085,6 +3023,7 @@ func Test_gRPCClient_Close(t *testing.T) {
 		           gbo: nil,
 		           mcd: nil,
 		           group: nil,
+		           crl: sync.Map{},
 		           ech: nil,
 		           monitorRunning: nil,
 		           stopMonitor: nil,
@@ -3113,7 +3052,7 @@ func Test_gRPCClient_Close(t *testing.T) {
 		           atomicAddrs: nil,
 		           poolSize: 0,
 		           clientCount: 0,
-		           conns: struct{},
+		           conns: grpcConns{},
 		           hcDur: nil,
 		           prDur: nil,
 		           dialer: nil,
@@ -3128,6 +3067,7 @@ func Test_gRPCClient_Close(t *testing.T) {
 		           gbo: nil,
 		           mcd: nil,
 		           group: nil,
+		           crl: sync.Map{},
 		           ech: nil,
 		           monitorRunning: nil,
 		           stopMonitor: nil,
@@ -3161,15 +3101,11 @@ func Test_gRPCClient_Close(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 			g := &gRPCClient{
-				addrs:       test.fields.addrs,
-				atomicAddrs: test.fields.atomicAddrs,
-				poolSize:    test.fields.poolSize,
-				clientCount: test.fields.clientCount,
-				conns: grpcConns{
-					read:   test.fields.conns.read,
-					dirty:  test.fields.conns.dirty,
-					misses: test.fields.conns.misses,
-				},
+				addrs:               test.fields.addrs,
+				atomicAddrs:         test.fields.atomicAddrs,
+				poolSize:            test.fields.poolSize,
+				clientCount:         test.fields.clientCount,
+				conns:               test.fields.conns,
 				hcDur:               test.fields.hcDur,
 				prDur:               test.fields.prDur,
 				dialer:              test.fields.dialer,
@@ -3184,6 +3120,7 @@ func Test_gRPCClient_Close(t *testing.T) {
 				gbo:                 test.fields.gbo,
 				mcd:                 test.fields.mcd,
 				group:               test.fields.group,
+				crl:                 test.fields.crl,
 				ech:                 test.fields.ech,
 				monitorRunning:      test.fields.monitorRunning,
 				stopMonitor:         test.fields.stopMonitor,
