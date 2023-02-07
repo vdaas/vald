@@ -398,7 +398,7 @@ func TestWithBackoffOpts(t *testing.T) {
 		args       args
 		want       want
 		checkFunc  func(want, *T) error
-		beforeFunc func(args, *T)
+		beforeFunc func(*testing.T, args, *T)
 		afterFunc  func(args, *T)
 	}
 	defaultCheckFunc := func(w want, got *T) error {
@@ -450,7 +450,8 @@ func TestWithBackoffOpts(t *testing.T) {
 						backoffOpts: append(defaultOptions, opts...),
 					},
 				},
-				beforeFunc: func(args args, r *T) {
+				beforeFunc: func(t *testing.T, args args, r *T) {
+					t.Helper()
 					r.backoffOpts = args.defaultOptions
 				},
 			}
@@ -471,7 +472,7 @@ func TestWithBackoffOpts(t *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			obj := new(T)
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args, obj)
+				test.beforeFunc(tt, test.args, obj)
 			}
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args, obj)
