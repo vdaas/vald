@@ -729,7 +729,11 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 
 		results := make(map[string]error, 0)
 		broadCastTgts.Range(func(key, value any) bool {
-			results[key.(string)] = value.(error)
+			if err, ok := value.(error); ok {
+				results[key.(string)] = err
+			} else {
+				results[key.(string)] = nil
+			}
 			return true
 		})
 		log.Debugf("[funapy]: insert broadcast results: %v, Tgts: %v,success targets: %v", results, broadCastTgts, targets)
