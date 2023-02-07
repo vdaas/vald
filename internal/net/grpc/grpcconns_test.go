@@ -19,6 +19,7 @@ package grpc
 
 import (
 	"reflect"
+	"sync"
 	"sync/atomic"
 	"testing"
 	"unsafe"
@@ -118,6 +119,7 @@ func Test_grpcConns_Load(t *testing.T) {
 		key string
 	}
 	type fields struct {
+		mu     sync.Mutex
 		read   atomic.Value
 		dirty  map[string]*entryGrpcConns
 		misses int
@@ -153,6 +155,7 @@ func Test_grpcConns_Load(t *testing.T) {
 		           key: "",
 		       },
 		       fields: fields {
+		           mu: sync.Mutex{},
 		           read: nil,
 		           dirty: nil,
 		           misses: 0,
@@ -177,6 +180,7 @@ func Test_grpcConns_Load(t *testing.T) {
 		           key: "",
 		           },
 		           fields: fields {
+		           mu: sync.Mutex{},
 		           read: nil,
 		           dirty: nil,
 		           misses: 0,
@@ -210,6 +214,7 @@ func Test_grpcConns_Load(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 			m := &grpcConns{
+				mu:     test.fields.mu,
 				read:   test.fields.read,
 				dirty:  test.fields.dirty,
 				misses: test.fields.misses,
@@ -321,6 +326,7 @@ func Test_grpcConns_Store(t *testing.T) {
 		value pool.Conn
 	}
 	type fields struct {
+		mu     sync.Mutex
 		read   atomic.Value
 		dirty  map[string]*entryGrpcConns
 		misses int
@@ -348,6 +354,7 @@ func Test_grpcConns_Store(t *testing.T) {
 		           value: nil,
 		       },
 		       fields: fields {
+		           mu: sync.Mutex{},
 		           read: nil,
 		           dirty: nil,
 		           misses: 0,
@@ -373,6 +380,7 @@ func Test_grpcConns_Store(t *testing.T) {
 		           value: nil,
 		           },
 		           fields: fields {
+		           mu: sync.Mutex{},
 		           read: nil,
 		           dirty: nil,
 		           misses: 0,
@@ -406,6 +414,7 @@ func Test_grpcConns_Store(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 			m := &grpcConns{
+				mu:     test.fields.mu,
 				read:   test.fields.read,
 				dirty:  test.fields.dirty,
 				misses: test.fields.misses,
@@ -703,6 +712,7 @@ func Test_grpcConns_Delete(t *testing.T) {
 		key string
 	}
 	type fields struct {
+		mu     sync.Mutex
 		read   atomic.Value
 		dirty  map[string]*entryGrpcConns
 		misses int
@@ -729,6 +739,7 @@ func Test_grpcConns_Delete(t *testing.T) {
 		           key: "",
 		       },
 		       fields: fields {
+		           mu: sync.Mutex{},
 		           read: nil,
 		           dirty: nil,
 		           misses: 0,
@@ -753,6 +764,7 @@ func Test_grpcConns_Delete(t *testing.T) {
 		           key: "",
 		           },
 		           fields: fields {
+		           mu: sync.Mutex{},
 		           read: nil,
 		           dirty: nil,
 		           misses: 0,
@@ -786,6 +798,7 @@ func Test_grpcConns_Delete(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 			m := &grpcConns{
+				mu:     test.fields.mu,
 				read:   test.fields.read,
 				dirty:  test.fields.dirty,
 				misses: test.fields.misses,
@@ -892,21 +905,27 @@ func Test_grpcConns_Range(t *testing.T) {
 		f func(key string, value pool.Conn) bool
 	}
 	type fields struct {
+		mu     sync.Mutex
 		read   atomic.Value
 		dirty  map[string]*entryGrpcConns
 		misses int
 	}
-	type want struct{}
+	type want struct {
+		err error
+	}
 	type test struct {
 		name       string
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want) error
+		checkFunc  func(want, error) error
 		beforeFunc func(*testing.T, args)
 		afterFunc  func(*testing.T, args)
 	}
-	defaultCheckFunc := func(w want) error {
+	defaultCheckFunc := func(w want, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
 		return nil
 	}
 	tests := []test{
@@ -918,6 +937,7 @@ func Test_grpcConns_Range(t *testing.T) {
 		           f: nil,
 		       },
 		       fields: fields {
+		           mu: sync.Mutex{},
 		           read: nil,
 		           dirty: nil,
 		           misses: 0,
@@ -942,6 +962,7 @@ func Test_grpcConns_Range(t *testing.T) {
 		           f: nil,
 		           },
 		           fields: fields {
+		           mu: sync.Mutex{},
 		           read: nil,
 		           dirty: nil,
 		           misses: 0,
@@ -975,35 +996,42 @@ func Test_grpcConns_Range(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 			m := &grpcConns{
+				mu:     test.fields.mu,
 				read:   test.fields.read,
 				dirty:  test.fields.dirty,
 				misses: test.fields.misses,
 			}
 
-			m.Range(test.args.f)
-			if err := checkFunc(test.want); err != nil {
+			err := m.Range(test.args.f)
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
 	}
 }
 
-func Test_grpcConns_missLocked(t *testing.T) {
+func Test_grpcConns_Len(t *testing.T) {
 	type fields struct {
+		mu     sync.Mutex
 		read   atomic.Value
 		dirty  map[string]*entryGrpcConns
 		misses int
 	}
-	type want struct{}
+	type want struct {
+		want int
+	}
 	type test struct {
 		name       string
 		fields     fields
 		want       want
-		checkFunc  func(want) error
+		checkFunc  func(want, int) error
 		beforeFunc func(*testing.T)
 		afterFunc  func(*testing.T)
 	}
-	defaultCheckFunc := func(w want) error {
+	defaultCheckFunc := func(w want, got int) error {
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+		}
 		return nil
 	}
 	tests := []test{
@@ -1012,6 +1040,7 @@ func Test_grpcConns_missLocked(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       fields: fields {
+		           mu: sync.Mutex{},
 		           read: nil,
 		           dirty: nil,
 		           misses: 0,
@@ -1033,6 +1062,7 @@ func Test_grpcConns_missLocked(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           fields: fields {
+		           mu: sync.Mutex{},
 		           read: nil,
 		           dirty: nil,
 		           misses: 0,
@@ -1066,6 +1096,102 @@ func Test_grpcConns_missLocked(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 			m := &grpcConns{
+				mu:     test.fields.mu,
+				read:   test.fields.read,
+				dirty:  test.fields.dirty,
+				misses: test.fields.misses,
+			}
+
+			got := m.Len()
+			if err := checkFunc(test.want, got); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func Test_grpcConns_missLocked(t *testing.T) {
+	type fields struct {
+		mu     sync.Mutex
+		read   atomic.Value
+		dirty  map[string]*entryGrpcConns
+		misses int
+	}
+	type want struct{}
+	type test struct {
+		name       string
+		fields     fields
+		want       want
+		checkFunc  func(want) error
+		beforeFunc func(*testing.T)
+		afterFunc  func(*testing.T)
+	}
+	defaultCheckFunc := func(w want) error {
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       fields: fields {
+		           mu: sync.Mutex{},
+		           read: nil,
+		           dirty: nil,
+		           misses: 0,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           fields: fields {
+		           mu: sync.Mutex{},
+		           read: nil,
+		           dirty: nil,
+		           misses: 0,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(tt)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(tt)
+			}
+			checkFunc := test.checkFunc
+			if test.checkFunc == nil {
+				checkFunc = defaultCheckFunc
+			}
+			m := &grpcConns{
+				mu:     test.fields.mu,
 				read:   test.fields.read,
 				dirty:  test.fields.dirty,
 				misses: test.fields.misses,
@@ -1081,6 +1207,7 @@ func Test_grpcConns_missLocked(t *testing.T) {
 
 func Test_grpcConns_dirtyLocked(t *testing.T) {
 	type fields struct {
+		mu     sync.Mutex
 		read   atomic.Value
 		dirty  map[string]*entryGrpcConns
 		misses int
@@ -1103,6 +1230,7 @@ func Test_grpcConns_dirtyLocked(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       fields: fields {
+		           mu: sync.Mutex{},
 		           read: nil,
 		           dirty: nil,
 		           misses: 0,
@@ -1124,6 +1252,7 @@ func Test_grpcConns_dirtyLocked(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           fields: fields {
+		           mu: sync.Mutex{},
 		           read: nil,
 		           dirty: nil,
 		           misses: 0,
@@ -1157,6 +1286,7 @@ func Test_grpcConns_dirtyLocked(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 			m := &grpcConns{
+				mu:     test.fields.mu,
 				read:   test.fields.read,
 				dirty:  test.fields.dirty,
 				misses: test.fields.misses,

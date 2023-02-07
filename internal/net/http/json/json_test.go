@@ -412,7 +412,7 @@ func TestDecodeResponse(t *testing.T) {
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
-		afterFunc  func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -532,7 +532,7 @@ func TestDecodeResponse(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -563,7 +563,7 @@ func TestEncodeRequest(t *testing.T) {
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
-		afterFunc  func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if w.err != nil && err != nil && !strings.HasPrefix(err.Error(), w.err.Error()) {
@@ -645,7 +645,7 @@ func TestEncodeRequest(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -678,7 +678,7 @@ func TestRequest(t *testing.T) {
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
-		afterFunc  func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -768,7 +768,8 @@ func TestRequest(t *testing.T) {
 					}
 					return nil
 				},
-				afterFunc: func(args) {
+				afterFunc: func(t *testing.T, _ args) {
+					t.Helper()
 					srv.Close()
 				},
 			}
@@ -783,7 +784,7 @@ func TestRequest(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {

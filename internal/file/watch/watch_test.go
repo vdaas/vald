@@ -737,6 +737,7 @@ func Test_watch_Add(t *testing.T) {
 				},
 			},
 			afterFunc: func(t *testing.T, args args, w Watcher) {
+				t.Helper()
 				_ = w.Remove("./watch_test.go")
 				defaultAfterFunc(t, args, w)
 			},

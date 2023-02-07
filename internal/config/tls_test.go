@@ -40,7 +40,7 @@ func TestTLS_Bind(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, *TLS) error
-		beforeFunc func()
+		beforeFunc func(*testing.T)
 		afterFunc  func()
 	}
 	defaultCheckFunc := func(w want, got *TLS) error {
@@ -75,7 +75,8 @@ func TestTLS_Bind(t *testing.T) {
 				Key:     "_TLS_BIND_KEY_",
 				CA:      "_TLS_BIND_CA_",
 			},
-			beforeFunc: func() {
+			beforeFunc: func(t *testing.T) {
+				t.Helper()
 				t.Setenv("TLS_BIND_CERT", "tls_cert")
 				t.Setenv("TLS_BIND_KEY", "tls_key")
 				t.Setenv("TLS_BIND_CA", "tls_ca")
@@ -101,7 +102,7 @@ func TestTLS_Bind(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
 				defer test.afterFunc()

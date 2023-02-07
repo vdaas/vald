@@ -117,7 +117,7 @@ func Test_retry_Out(t *testing.T) {
 		fields     fields
 		checkFunc  func() error
 		beforeFunc func(args)
-		afterFunc  func(args, *testing.T)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func() error {
 		return nil
@@ -191,7 +191,7 @@ func Test_retry_Out(t *testing.T) {
 
 					return nil
 				},
-				afterFunc: func(args args, t *testing.T) {
+				afterFunc: func(t *testing.T, args args) {
 					t.Helper()
 					if e := recover(); e == nil {
 						t.Error("panic dose not occur")
@@ -209,7 +209,7 @@ func Test_retry_Out(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args, tt)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -244,7 +244,7 @@ func Test_retry_Outf(t *testing.T) {
 		fields     fields
 		checkFunc  func() error
 		beforeFunc func(args)
-		afterFunc  func(args, *testing.T)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func() error {
 		return nil
@@ -340,7 +340,7 @@ func Test_retry_Outf(t *testing.T) {
 
 					return nil
 				},
-				afterFunc: func(args args, t *testing.T) {
+				afterFunc: func(t *testing.T, args args) {
 					t.Helper()
 					if e := recover(); e == nil {
 						t.Error("panic dose not occur")
@@ -358,7 +358,7 @@ func Test_retry_Outf(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args, tt)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {

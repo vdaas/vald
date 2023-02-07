@@ -56,7 +56,7 @@ func TestMySQL_Bind(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, *MySQL) error
-		beforeFunc func()
+		beforeFunc func(*testing.T)
 		afterFunc  func()
 	}
 	defaultCheckFunc := func(w want, got *MySQL) error {
@@ -190,7 +190,8 @@ func TestMySQL_Bind(t *testing.T) {
 					Net:                  new(Net),
 				},
 			},
-			beforeFunc: func() {
+			beforeFunc: func(t *testing.T) {
+				t.Helper()
 				t.Setenv("MYSQL_BIND_DB", "db")
 				t.Setenv("MYSQL_BIND_HOST", "host")
 				t.Setenv("MYSQL_BIND_USER", "user")
@@ -209,7 +210,7 @@ func TestMySQL_Bind(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
 				defer test.afterFunc()

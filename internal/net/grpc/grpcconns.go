@@ -22,6 +22,7 @@ import (
 	"sync/atomic"
 	"unsafe"
 
+	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc/pool"
 )
 
@@ -152,7 +153,7 @@ func (e *entryGrpcConns) delete() (hadValue bool) {
 	}
 }
 
-func (m *grpcConns) Range(f func(key string, value pool.Conn) bool) {
+func (m *grpcConns) Range(f func(key string, value pool.Conn) bool) (err error) {
 	read, _ := m.read.Load().(readOnlyGrpcConns)
 	if read.amended {
 		m.mu.Lock()
@@ -166,15 +167,38 @@ func (m *grpcConns) Range(f func(key string, value pool.Conn) bool) {
 		m.mu.Unlock()
 	}
 
+	var cnt int
 	for k, e := range read.m {
 		v, ok := e.load()
 		if !ok {
 			continue
 		}
+		cnt++
 		if !f(k, v) {
-			break
+			return nil
 		}
 	}
+	if cnt == 0 {
+		return errors.ErrGRPCClientConnNotFound("*")
+	}
+	return nil
+}
+
+func (m *grpcConns) Len() int {
+	read, _ := m.read.Load().(readOnlyGrpcConns)
+	if read.amended {
+		m.mu.Lock()
+		read, _ = m.read.Load().(readOnlyGrpcConns)
+		if read.amended {
+			read = readOnlyGrpcConns{m: m.dirty}
+			m.read.Store(read)
+			m.dirty = nil
+			m.misses = 0
+		}
+		m.mu.Unlock()
+	}
+
+	return len(read.m)
 }
 
 func (m *grpcConns) missLocked() {

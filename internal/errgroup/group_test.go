@@ -51,7 +51,7 @@ func TestNew(t *testing.T) {
 		want       want
 		checkFunc  func(want, Group, context.Context) error
 		beforeFunc func(args)
-		afterFunc  func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, got Group, got1 context.Context) error {
 		if got, want := got.(*group), w.want.(*group); !reflect.DeepEqual(got.emap, want.emap) &&
@@ -97,7 +97,7 @@ func TestNew(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -125,7 +125,7 @@ func TestInit(t *testing.T) {
 		want       want
 		checkFunc  func(want, context.Context) error
 		beforeFunc func(args)
-		afterFunc  func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, gotEgctx context.Context) error {
 		if !reflect.DeepEqual(gotEgctx, w.wantEgctx) {
@@ -152,7 +152,8 @@ func TestInit(t *testing.T) {
 				want: want{
 					wantEgctx: egctx,
 				},
-				afterFunc: func(a args) {
+				afterFunc: func(t *testing.T, a args) {
+					t.Helper()
 					cancel()
 					defaultBeforeFunc(a)
 				},
@@ -169,7 +170,7 @@ func TestInit(t *testing.T) {
 			test.beforeFunc(test.args)
 
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -192,8 +193,8 @@ func TestGet(t *testing.T) {
 		name       string
 		want       want
 		checkFunc  func(want, Group) error
-		beforeFunc func()
-		afterFunc  func()
+		beforeFunc func(*testing.T)
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want, got Group) error {
 		if got, want := got.(*group), w.want.(*group); !reflect.DeepEqual(got.egctx, want.egctx) {
@@ -204,10 +205,12 @@ func TestGet(t *testing.T) {
 	initFunc := func() {
 		instance, once = nil, sync.Once{}
 	}
-	defaultBeforeFunc := func() {
+	defaultBeforeFunc := func(t *testing.T) {
+		t.Helper()
 		initFunc()
 	}
-	defaultAfterFunc := func() {
+	defaultAfterFunc := func(t *testing.T) {
+		t.Helper()
 		initFunc()
 	}
 
@@ -236,7 +239,8 @@ func TestGet(t *testing.T) {
 				want: want{
 					want: g,
 				},
-				beforeFunc: func() {
+				beforeFunc: func(t *testing.T) {
+					t.Helper()
 					instance = g
 				},
 			}
@@ -249,12 +253,12 @@ func TestGet(t *testing.T) {
 			if test.beforeFunc == nil {
 				test.beforeFunc = defaultBeforeFunc
 			}
-			test.beforeFunc()
+			test.beforeFunc(tt)
 
 			if test.afterFunc == nil {
 				test.afterFunc = defaultAfterFunc
 			}
-			defer test.afterFunc()
+			defer test.afterFunc(tt)
 
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -277,8 +281,8 @@ func TestGo(t *testing.T) {
 		name       string
 		args       args
 		checkFunc  func(Group) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(Group) error {
 		return nil
@@ -295,7 +299,8 @@ func TestGo(t *testing.T) {
 						return nil
 					},
 				},
-				beforeFunc: func(args) {
+				beforeFunc: func(t *testing.T, _ args) {
+					t.Helper()
 					g := new(group)
 					g.enableLimitation.Store(false)
 					instance = g
@@ -318,10 +323,10 @@ func TestGo(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -354,7 +359,7 @@ func Test_group_Limitation(t *testing.T) {
 		want       want
 		checkFunc  func(want, Group) error
 		beforeFunc func(args)
-		afterFunc  func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, g Group) error {
 		got, want := g.(*group), w.want.(*group)
@@ -410,7 +415,7 @@ func Test_group_Limitation(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -445,8 +450,8 @@ func Test_group_Go(t *testing.T) {
 		args       args
 		fields     fields
 		checkFunc  func(Group) error
-		beforeFunc func(args, Group)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args, Group)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(g Group) error {
 		return nil
@@ -475,7 +480,8 @@ func Test_group_Go(t *testing.T) {
 						return
 					}(),
 				},
-				beforeFunc: func(_ args, g Group) {
+				beforeFunc: func(t *testing.T, _ args, g Group) {
+					t.Helper()
 					for i := 0; i < limit; i++ {
 						g.Go(func() error {
 							time.Sleep(3 * time.Second)
@@ -521,7 +527,8 @@ func Test_group_Go(t *testing.T) {
 					}(),
 					emap: make(map[string]struct{}),
 				},
-				beforeFunc: func(a args, g Group) {
+				beforeFunc: func(t *testing.T, a args, g Group) {
+					t.Helper()
 					g.Go(func() error {
 						return errors.New("err-1")
 					})
@@ -554,7 +561,7 @@ func Test_group_Go(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -570,7 +577,7 @@ func Test_group_Go(t *testing.T) {
 			}
 
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args, g)
+				test.beforeFunc(tt, test.args, g)
 			}
 
 			g.Go(test.args.f)
@@ -649,8 +656,8 @@ func TestWait(t *testing.T) {
 		name       string
 		want       want
 		checkFunc  func(want, error) error
-		beforeFunc func()
-		afterFunc  func()
+		beforeFunc func(*testing.T)
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -661,10 +668,12 @@ func TestWait(t *testing.T) {
 	tests := []test{
 		{
 			name: "returns nil when Wait returns nil",
-			beforeFunc: func() {
+			beforeFunc: func(t *testing.T) {
+				t.Helper()
 				instance, _ = New(context.Background())
 			},
-			afterFunc: func() {
+			afterFunc: func(t *testing.T) {
+				t.Helper()
 				instance = nil
 			},
 		},
@@ -675,10 +684,10 @@ func TestWait(t *testing.T) {
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -707,7 +716,7 @@ func Test_group_Wait(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, error) error
-		beforeFunc func(Group)
+		beforeFunc func(*testing.T, Group)
 		afterFunc  func()
 	}
 	defaultCheckFunc := func(w want, err error) error {
@@ -727,7 +736,8 @@ func Test_group_Wait(t *testing.T) {
 						return
 					}(),
 				},
-				beforeFunc: func(g Group) {
+				beforeFunc: func(t *testing.T, g Group) {
+					t.Helper()
 					g.Go(func() error {
 						atomic.StoreInt32(&num, int32(runtime.NumGoroutine()))
 						time.Sleep(time.Second)
@@ -778,7 +788,7 @@ func Test_group_Wait(t *testing.T) {
 			}
 
 			if test.beforeFunc != nil {
-				test.beforeFunc(g)
+				test.beforeFunc(tt, g)
 			}
 
 			err := g.Wait()

@@ -315,7 +315,10 @@ func (g *gRPCClient) Range(ctx context.Context,
 			span.End()
 		}
 	}()
-	g.conns.Range(func(addr string, p pool.Conn) bool {
+	if g.conns.Len() == 0 {
+		return errors.ErrGRPCClientConnNotFound("*")
+	}
+	return g.conns.Range(func(addr string, p pool.Conn) bool {
 		ssctx, sspan := trace.StartSpan(sctx, apiName+"/Client.Range/"+addr)
 		defer func() {
 			if sspan != nil {
@@ -334,7 +337,6 @@ func (g *gRPCClient) Range(ctx context.Context,
 		}
 		return true
 	})
-	return nil
 }
 
 func (g *gRPCClient) RangeConcurrent(ctx context.Context,
@@ -348,7 +350,10 @@ func (g *gRPCClient) RangeConcurrent(ctx context.Context,
 	}()
 	eg, egctx := errgroup.New(sctx)
 	eg.Limitation(concurrency)
-	g.conns.Range(func(addr string, p pool.Conn) bool {
+	if g.conns.Len() == 0 {
+		return errors.ErrGRPCClientConnNotFound("*")
+	}
+	rerr = g.conns.Range(func(addr string, p pool.Conn) bool {
 		eg.Go(safety.RecoverFunc(func() (err error) {
 			ssctx, sspan := trace.StartSpan(sctx, apiName+"/Client.RangeConcurrent/"+addr)
 			defer func() {
@@ -363,14 +368,19 @@ func (g *gRPCClient) RangeConcurrent(ctx context.Context,
 				g.connectWithBackoff(ssctx, p, addr, true, func(ictx context.Context,
 					conn *ClientConn, copts ...CallOption,
 				) (interface{}, error) {
-					return nil, f(ictx, addr, conn, copts...)
+					err := f(ictx, addr, conn, copts...)
+					return nil, err
 				})
 				return nil
 			}
 		}))
 		return true
 	})
-	return eg.Wait()
+	if rerr != nil {
+		return rerr
+	}
+	rerr = eg.Wait()
+	return rerr
 }
 
 func (g *gRPCClient) OrderedRange(ctx context.Context,
@@ -382,9 +392,12 @@ func (g *gRPCClient) OrderedRange(ctx context.Context,
 			span.End()
 		}
 	}()
-	if orders == nil {
+	if len(orders) == 0 {
 		log.Warn("no order found for OrderedRange")
 		return g.Range(sctx, f)
+	}
+	if g.conns.Len() == 0 {
+		return errors.ErrGRPCClientConnNotFound("*")
 	}
 	for _, addr := range orders {
 		select {
@@ -422,9 +435,12 @@ func (g *gRPCClient) OrderedRangeConcurrent(ctx context.Context,
 			span.End()
 		}
 	}()
-	if orders == nil {
+	if len(orders) == 0 {
 		log.Warn("no order found for OrderedRangeConcurrent")
 		return g.RangeConcurrent(sctx, concurrency, f)
+	}
+	if g.conns.Len() == 0 {
+		return errors.ErrGRPCClientConnNotFound("*")
 	}
 	eg, egctx := errgroup.New(sctx)
 	eg.Limitation(concurrency)
@@ -468,6 +484,9 @@ func (g *gRPCClient) RoundRobin(ctx context.Context, f func(ctx context.Context,
 			span.End()
 		}
 	}()
+	if g.conns.Len() == 0 {
+		return nil, errors.ErrGRPCClientConnNotFound("*")
+	}
 	if g.bo != nil && g.atomicAddrs.Len() > 1 {
 		var boName string
 		if method := FromGRPCMethod(sctx); len(method) != 0 {

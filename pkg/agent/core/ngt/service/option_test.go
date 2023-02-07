@@ -42,7 +42,7 @@ func TestWithErrGroup(t *testing.T) {
 		want       want
 		checkFunc  func(want, *T, error) error
 		beforeFunc func(args)
-		afterFunc  func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, obj *T, err error) error {
 		if !errors.Is(err, w.err) {
@@ -68,7 +68,8 @@ func TestWithErrGroup(t *testing.T) {
 						eg: eg,
 					},
 				},
-				afterFunc: func(a args) {
+				afterFunc: func(t *testing.T, _ args) {
+					t.Helper()
 					cancel()
 				},
 			}
@@ -92,7 +93,7 @@ func TestWithErrGroup(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := defaultCheckFunc
 			if test.checkFunc != nil {
@@ -123,7 +124,7 @@ func TestWithEnableInMemoryMode(t *testing.T) {
 		want       want
 		checkFunc  func(want, *T, error) error
 		beforeFunc func(args)
-		afterFunc  func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, obj *T, err error) error {
 		if !errors.Is(err, w.err) {
@@ -167,7 +168,7 @@ func TestWithEnableInMemoryMode(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := defaultCheckFunc
 			if test.checkFunc != nil {
@@ -198,7 +199,7 @@ func TestWithIndexPath(t *testing.T) {
 		want       want
 		checkFunc  func(want, *T, error) error
 		beforeFunc func(args)
-		afterFunc  func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, obj *T, err error) error {
 		if !errors.Is(err, w.err) {
@@ -243,7 +244,7 @@ func TestWithIndexPath(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := defaultCheckFunc
 			if test.checkFunc != nil {
@@ -274,7 +275,7 @@ func TestWithAutoIndexCheckDuration(t *testing.T) {
 		want       want
 		checkFunc  func(want, *T, error) error
 		beforeFunc func(args)
-		afterFunc  func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, obj *T, err error) error {
 		if !errors.Is(err, w.err) {
@@ -328,7 +329,7 @@ func TestWithAutoIndexCheckDuration(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := defaultCheckFunc
 			if test.checkFunc != nil {
@@ -359,7 +360,7 @@ func TestWithAutoIndexDurationLimit(t *testing.T) {
 		want       want
 		checkFunc  func(want, *T, error) error
 		beforeFunc func(args)
-		afterFunc  func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, obj *T, err error) error {
 		if !errors.Is(err, w.err) {
@@ -413,7 +414,7 @@ func TestWithAutoIndexDurationLimit(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := defaultCheckFunc
 			if test.checkFunc != nil {
@@ -444,7 +445,7 @@ func TestWithAutoSaveIndexDuration(t *testing.T) {
 		want       want
 		checkFunc  func(want, *T, error) error
 		beforeFunc func(args)
-		afterFunc  func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, obj *T, err error) error {
 		if !errors.Is(err, w.err) {
@@ -498,7 +499,7 @@ func TestWithAutoSaveIndexDuration(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := defaultCheckFunc
 			if test.checkFunc != nil {
@@ -529,7 +530,7 @@ func TestWithAutoIndexLength(t *testing.T) {
 		want       want
 		checkFunc  func(want, *T, error) error
 		beforeFunc func(args)
-		afterFunc  func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, obj *T, err error) error {
 		if !errors.Is(err, w.err) {
@@ -573,7 +574,7 @@ func TestWithAutoIndexLength(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := defaultCheckFunc
 			if test.checkFunc != nil {
@@ -604,7 +605,7 @@ func TestWithInitialDelayMaxDuration(t *testing.T) {
 		want       want
 		checkFunc  func(want, *T, error) error
 		beforeFunc func(args)
-		afterFunc  func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, obj *T, err error) error {
 		if !errors.Is(err, w.err) {
@@ -659,7 +660,7 @@ func TestWithInitialDelayMaxDuration(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := defaultCheckFunc
 			if test.checkFunc != nil {
@@ -690,7 +691,7 @@ func TestWithMinLoadIndexTimeout(t *testing.T) {
 		want       want
 		checkFunc  func(want, *T, error) error
 		beforeFunc func(args)
-		afterFunc  func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, obj *T, err error) error {
 		if !errors.Is(err, w.err) {
@@ -744,7 +745,7 @@ func TestWithMinLoadIndexTimeout(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := defaultCheckFunc
 			if test.checkFunc != nil {
@@ -775,7 +776,7 @@ func TestWithMaxLoadIndexTimeout(t *testing.T) {
 		want       want
 		checkFunc  func(want, *T, error) error
 		beforeFunc func(args)
-		afterFunc  func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, obj *T, err error) error {
 		if !errors.Is(err, w.err) {
@@ -829,7 +830,7 @@ func TestWithMaxLoadIndexTimeout(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := defaultCheckFunc
 			if test.checkFunc != nil {
@@ -860,7 +861,7 @@ func TestWithLoadIndexTimeoutFactor(t *testing.T) {
 		want       want
 		checkFunc  func(want, *T, error) error
 		beforeFunc func(args)
-		afterFunc  func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, obj *T, err error) error {
 		if !errors.Is(err, w.err) {
@@ -914,7 +915,7 @@ func TestWithLoadIndexTimeoutFactor(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := defaultCheckFunc
 			if test.checkFunc != nil {
@@ -945,7 +946,7 @@ func TestWithDefaultPoolSize(t *testing.T) {
 		want       want
 		checkFunc  func(want, *T, error) error
 		beforeFunc func(args)
-		afterFunc  func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, obj *T, err error) error {
 		if !errors.Is(err, w.err) {
@@ -989,7 +990,7 @@ func TestWithDefaultPoolSize(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := defaultCheckFunc
 			if test.checkFunc != nil {
@@ -1020,7 +1021,7 @@ func TestWithDefaultRadius(t *testing.T) {
 		want       want
 		checkFunc  func(want, *T, error) error
 		beforeFunc func(args)
-		afterFunc  func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, obj *T, err error) error {
 		if !errors.Is(err, w.err) {
@@ -1064,7 +1065,7 @@ func TestWithDefaultRadius(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := defaultCheckFunc
 			if test.checkFunc != nil {
@@ -1095,7 +1096,7 @@ func TestWithDefaultEpsilon(t *testing.T) {
 		want       want
 		checkFunc  func(want, *T, error) error
 		beforeFunc func(args)
-		afterFunc  func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, obj *T, err error) error {
 		if !errors.Is(err, w.err) {
@@ -1139,7 +1140,7 @@ func TestWithDefaultEpsilon(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := defaultCheckFunc
 			if test.checkFunc != nil {
@@ -1170,7 +1171,7 @@ func TestWithProactiveGC(t *testing.T) {
 		want       want
 		checkFunc  func(want, *T, error) error
 		beforeFunc func(args)
-		afterFunc  func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, obj *T, err error) error {
 		if !errors.Is(err, w.err) {
@@ -1214,7 +1215,7 @@ func TestWithProactiveGC(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := defaultCheckFunc
 			if test.checkFunc != nil {
@@ -1245,7 +1246,7 @@ func TestWithCopyOnWrite(t *testing.T) {
 		want       want
 		checkFunc  func(want, *T, error) error
 		beforeFunc func(args)
-		afterFunc  func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, obj *T, err error) error {
 		if !errors.Is(err, w.err) {
@@ -1289,7 +1290,7 @@ func TestWithCopyOnWrite(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := defaultCheckFunc
 			if test.checkFunc != nil {
