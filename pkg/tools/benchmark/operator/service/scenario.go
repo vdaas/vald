@@ -125,74 +125,81 @@ func (sc *scenario) initCtrl() (err error) {
 		k8s.WithResourceController(bj),
 		k8s.WithResourceController(job),
 	)
-	if err != nil {
-		return
-	}
 	return
 }
 
 // jobReconcile gets k8s job list and watches theirs STATUS.
 // Then, it processes according STATUS.
 func (sc *scenario) jobReconcile(ctx context.Context, jobList map[string][]job.Job) {
-	log.Warn(jobList)
 	// TODO: impl logic
+	// for k, v := range jobList {
+	// 	log.Warnf("key: %s, value: %v", k, v)
+	// }
 	return
 }
 
 // benchmarkJobReconcile gets the vald benchmark job resource list and create Job for running benchmark job.
 func (sc *scenario) benchJobReconcile(ctx context.Context, jobList map[string]v1.ValdBenchmarkJob) {
-	log.Debug("[reconcile benchmark job resource]: %v", jobList)
+	log.Debugf("[reconcile benchmark job resource] job list: %#v", jobList)
 	if len(jobList) == 0 {
-		if ok := sc.benchjobs.Load(); ok == nil {
-			sc.benchjobs.Store(make([]*v1.ValdBenchmarkJob, 0))
-		} else {
-			sc.benchjobs.Swap(make([]*v1.ValdBenchmarkJob, 0))
-		}
-		log.Infof("[reconcile benchmark job resource] job resource not found")
+		sc.benchjobs.Store(make(map[string]*v1.ValdBenchmarkJob, 0))
+		log.Info("[reconcile benchmark job resource] job resource not found")
 		return
 	}
-	var cbjl []*v1.ValdBenchmarkJob
+	var cbjl map[string]*v1.ValdBenchmarkJob
 	if ok := sc.benchjobs.Load(); ok == nil {
-		cbjl = make([]*v1.ValdBenchmarkJob, 0)
+		cbjl = make(map[string]*v1.ValdBenchmarkJob, 0)
 	} else {
-		cbjl = ok.([]*v1.ValdBenchmarkJob)
+		cbjl = ok.(map[string]*v1.ValdBenchmarkJob)
 	}
-	for _, job := range jobList {
-		err := sc.createJob(ctx, job)
-		if err != nil {
-			log.Errorf("[reconcile benchmark job] failed to create job: %s", err.Error())
+	for k, job := range jobList {
+		if oldJob := cbjl[k]; oldJob != nil {
+			if oldJob.GetGeneration() != job.GetGeneration() {
+				// TODO: delete old version job
+				cbjl[k] = &job
+			}
+		} else {
+			log.Info("create job: ", k)
+			err := sc.createJob(ctx, job)
+			if err != nil {
+				log.Errorf("[reconcile benchmark job resource] failed to create job: %s", err.Error())
+			}
+			cbjl[k] = &job
 		}
-		cbjl = append(cbjl, &job)
 	}
-	sc.benchjobs.Swap(cbjl)
+	sc.benchjobs.Store(cbjl)
 }
 
 // benchScenarioReconcile gets the vald benchmark scenario list and create vald benchmark job resource according to it.
 func (sc *scenario) benchScenarioReconcile(ctx context.Context, scenarioList map[string]v1.ValdBenchmarkScenario) {
-	log.Debug("[reconcile scenario]: %#v", scenarioList)
+	log.Debugf("[reconcile benchmark scenario resource] scenario list: %#v", scenarioList)
 	if len(scenarioList) == 0 {
-		if ok := sc.scenarios.Load(); ok == nil {
-			sc.scenarios.Store(make([]*v1.ValdBenchmarkScenario, 0))
-		} else {
-			sc.scenarios.Swap(make([]*v1.ValdBenchmarkScenario, 0))
-		}
-		log.Infof("[reconcile scenario] scenario not found")
+		sc.scenarios.Store(make(map[string]*v1.ValdBenchmarkScenario, 0))
+		sc.benchjobs.Store(make(map[string]*v1.ValdBenchmarkJob, 0))
+		log.Info("[reconcile benchmark scenario resource]: scenario not found")
 		return
 	}
-	var cbsl []*v1.ValdBenchmarkScenario
+	var cbsl map[string]*v1.ValdBenchmarkScenario
 	if ok := sc.scenarios.Load(); ok == nil {
-		cbsl = make([]*v1.ValdBenchmarkScenario, len(scenarioList))
+		cbsl = make(map[string]*v1.ValdBenchmarkScenario, len(scenarioList))
 	} else {
-		cbsl = ok.([]*v1.ValdBenchmarkScenario)
+		cbsl = ok.(map[string]*v1.ValdBenchmarkScenario)
 	}
-	for _, scenario := range scenarioList {
-		err := sc.createBenchmarkJob(ctx, scenario)
-		if err != nil {
-			log.Errorf("[reconcile scenario] failed to create job: %s", err.Error())
+	for k, scenario := range scenarioList {
+		if oldScenario := cbsl[k]; oldScenario == nil {
+			err := sc.createBenchmarkJob(ctx, scenario)
+			if err != nil {
+				log.Errorf("[reconcile scenario] failed to create job: %s", err.Error())
+			}
+			cbsl[k] = &scenario
+		} else {
+			// TODO delete old jobresource and job
+			if oldScenario.GetGeneration() != scenario.GetGeneration() {
+				cbsl[k] = &scenario
+			}
 		}
-		cbsl = append(cbsl, &scenario)
 	}
-	sc.scenarios.Swap(cbsl)
+	sc.scenarios.Store(cbsl)
 }
 
 // createBenchmarkJob creates the ValdBenchmarkJob crd for running job.
@@ -283,12 +290,20 @@ func createJobTemplate(ns, name string) job.Job {
 			},
 			Env: []corev1.EnvVar{
 				{
-					Name:  "POD_NAMESPACE",
-					Value: ns,
+					Name: "CRD_NAMESPACE",
+					ValueFrom: &corev1.EnvVarSource{
+						FieldRef: &corev1.ObjectFieldSelector{
+							FieldPath: "metadata.namespace",
+						},
+					},
 				},
 				{
-					Name:  "POD_NAME",
-					Value: name,
+					Name: "CRD_NAME",
+					ValueFrom: &corev1.EnvVarSource{
+						FieldRef: &corev1.ObjectFieldSelector{
+							FieldPath: "metadata.labels['job-name']",
+						},
+					},
 				},
 			},
 		},
@@ -340,7 +355,7 @@ func (sc *scenario) Start(ctx context.Context) (<-chan error, error) {
 				return nil
 			case <-dt.C:
 				// TODO: Get Resource
-				_, ok := sc.scenarios.Load().([]*v1.ValdBenchmarkScenario)
+				_, ok := sc.scenarios.Load().(map[string]*v1.ValdBenchmarkScenario)
 				if !ok {
 					log.Info("benchmark scenario resource is empty")
 					continue

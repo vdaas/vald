@@ -25,9 +25,9 @@ import (
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/client/v1/client/vald"
+	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
-	v1 "github.com/vdaas/vald/internal/k8s/vald/benchmark/api/v1"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/test/data/hdf5"
 )
@@ -58,14 +58,14 @@ func (jt jobType) String() string {
 type job struct {
 	eg           errgroup.Group
 	dimension    int
-	dataset      *v1.BenchmarkDataset
+	dataset      *config.BenchmarkDataset
 	jobType      jobType
 	jobFunc      func(context.Context, chan error) error
-	insertConfig *v1.InsertConfig
-	updateConfig *v1.UpdateConfig
-	upsertConfig *v1.UpsertConfig
-	searchConfig *v1.SearchConfig
-	removeConfig *v1.RemoveConfig
+	insertConfig *config.InsertConfig
+	updateConfig *config.UpdateConfig
+	upsertConfig *config.UpsertConfig
+	searchConfig *config.SearchConfig
+	removeConfig *config.RemoveConfig
 	client       vald.Client
 	hdf5         hdf5.Data
 }
@@ -185,7 +185,7 @@ func contains(target string, arr []string) bool {
 	return false
 }
 
-func genVec(data [][]float32, cfg *v1.BenchmarkDataset) [][]float32 {
+func genVec(data [][]float32, cfg *config.BenchmarkDataset) [][]float32 {
 	start := cfg.Range.Start
 	end := cfg.Range.End
 	if (end - start) < cfg.Indexes {

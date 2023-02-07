@@ -21,9 +21,9 @@ import (
 	"context"
 
 	"github.com/vdaas/vald/internal/client/v1/client/vald"
+	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
-	v1 "github.com/vdaas/vald/internal/k8s/vald/benchmark/api/v1"
 	"github.com/vdaas/vald/internal/test/data/hdf5"
 )
 
@@ -43,7 +43,7 @@ func WithDimension(dim int) Option {
 	}
 }
 
-func WithInsertConfig(c *v1.InsertConfig) Option {
+func WithInsertConfig(c *config.InsertConfig) Option {
 	return func(j *job) error {
 		if c != nil {
 			j.insertConfig = c
@@ -52,7 +52,7 @@ func WithInsertConfig(c *v1.InsertConfig) Option {
 	}
 }
 
-func WithUpdateConfig(c *v1.UpdateConfig) Option {
+func WithUpdateConfig(c *config.UpdateConfig) Option {
 	return func(j *job) error {
 		if c != nil {
 			j.updateConfig = c
@@ -61,7 +61,7 @@ func WithUpdateConfig(c *v1.UpdateConfig) Option {
 	}
 }
 
-func WithUpsertConfig(c *v1.UpsertConfig) Option {
+func WithUpsertConfig(c *config.UpsertConfig) Option {
 	return func(j *job) error {
 		if c != nil {
 			j.upsertConfig = c
@@ -70,7 +70,7 @@ func WithUpsertConfig(c *v1.UpsertConfig) Option {
 	}
 }
 
-func WithSearchConfig(c *v1.SearchConfig) Option {
+func WithSearchConfig(c *config.SearchConfig) Option {
 	return func(j *job) error {
 		if c != nil {
 			j.searchConfig = c
@@ -79,7 +79,7 @@ func WithSearchConfig(c *v1.SearchConfig) Option {
 	}
 }
 
-func WithRemoveConfig(c *v1.RemoveConfig) Option {
+func WithRemoveConfig(c *config.RemoveConfig) Option {
 	return func(j *job) error {
 		if c != nil {
 			j.removeConfig = c
@@ -118,7 +118,7 @@ func WithHdf5(d hdf5.Data) Option {
 	}
 }
 
-func WithDataset(d *v1.BenchmarkDataset) Option {
+func WithDataset(d *config.BenchmarkDataset) Option {
 	return func(j *job) error {
 		if d == nil {
 			return errors.NewErrInvalidOption("dataset", d)

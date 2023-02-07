@@ -20,7 +20,6 @@ package config
 import (
 	"context"
 	"os"
-	"time"
 
 	"github.com/vdaas/vald/internal/config"
 	v1 "github.com/vdaas/vald/internal/k8s/vald/benchmark/api/v1"
@@ -51,8 +50,8 @@ type Config struct {
 }
 
 var (
-	NAMESPACE = os.Getenv("POD_NAMESPACE")
-	NAME      = os.Getenv("POD_NAME")
+	NAMESPACE = os.Getenv("CRD_NAMESPACE")
+	NAME      = os.Getenv("CRD_NAME")
 	mgr       manager.Manager
 )
 
@@ -107,8 +106,8 @@ func NewConfig(ctx context.Context, path string) (cfg *Config, err error) {
 	if err != nil {
 		log.Warn(err.Error())
 	} else {
-		cfg.Job.Target = jobResource.Spec.Target
-		cfg.Job.Dataset = jobResource.Spec.Dataset
+		cfg.Job.Target = (*config.BenchmarkTarget)(jobResource.Spec.Target)
+		cfg.Job.Dataset = (*config.BenchmarkDataset)(jobResource.Spec.Dataset)
 		cfg.Job.Replica = jobResource.Spec.Replica
 		cfg.Job.Repetition = jobResource.Spec.Repetition
 		cfg.Job.JobType = jobResource.Spec.JobType
@@ -118,79 +117,10 @@ func NewConfig(ctx context.Context, path string) (cfg *Config, err error) {
 		cfg.Job.UpsertConfig = jobResource.Spec.UpsertConfig
 		cfg.Job.SearchConfig = jobResource.Spec.SearchConfig
 		cfg.Job.RemoveConfig = jobResource.Spec.RemoveConfig
-		cfg.Job.ClientConfig = convertClientOpts(jobResource.Spec.ClientConfig)
+		cfg.Job.ClientConfig = jobResource.Spec.ClientConfig
 	}
 
 	return cfg, nil
-}
-
-func convertClientOpts(g *v1.ClientConfig) *config.GRPCClient {
-	cfg := new(config.GRPCClient)
-	if g == nil {
-		return cfg
-	}
-
-	if len(g.Addrs) > 0 {
-		cfg.Addrs = g.Addrs
-	}
-
-	_, err := time.ParseDuration(g.HealthCheckDuration)
-	if err == nil {
-		cfg.HealthCheckDuration = g.HealthCheckDuration
-	} else {
-		cfg.HealthCheckDuration = "10s"
-	}
-
-	if g.ConnectionPool != nil {
-		cfg.ConnectionPool = (*config.ConnectionPool)(g.ConnectionPool)
-	}
-
-	if g.Backoff != nil {
-		cfg.Backoff = (*config.Backoff)(g.Backoff)
-	}
-
-	if g.CircuitBreaker != nil {
-		cfg.CircuitBreaker = (*config.CircuitBreaker)(g.CircuitBreaker)
-	}
-
-	if g.CallOption != nil {
-		cfg.CallOption = (*config.CallOption)(g.CallOption)
-	}
-
-	if g.DialOption != nil {
-		cfg.DialOption.WriteBufferSize = g.DialOption.WriteBufferSize
-		cfg.DialOption.ReadBufferSize = g.DialOption.ReadBufferSize
-		cfg.DialOption.InitialWindowSize = g.DialOption.InitialWindowSize
-		cfg.DialOption.MaxMsgSize = g.DialOption.MaxMsgSize
-		cfg.DialOption.BackoffMaxDelay = g.DialOption.BackoffMaxDelay
-		cfg.DialOption.BackoffBaseDelay = g.DialOption.BackoffBaseDelay
-		cfg.DialOption.BackoffMultiplier = g.DialOption.BackoffMultiplier
-		cfg.DialOption.MinimumConnectionTimeout = g.DialOption.MinimumConnectionTimeout
-		cfg.DialOption.EnableBackoff = g.DialOption.EnableBackoff
-		cfg.DialOption.Insecure = g.DialOption.Insecure
-		cfg.DialOption.Timeout = g.DialOption.Timeout
-		cfg.DialOption.Interceptors = g.DialOption.Interceptors
-		if g.DialOption.Net != nil {
-			if g.DialOption.Net.DNS != nil {
-				cfg.DialOption.Net.DNS = (*config.DNS)(g.DialOption.Net.DNS)
-			}
-			if g.DialOption.Net.Dialer != nil {
-				cfg.DialOption.Net.Dialer = (*config.Dialer)(g.DialOption.Net.Dialer)
-			}
-			if g.DialOption.Net.SocketOption != nil {
-				cfg.DialOption.Net.SocketOption = (*config.SocketOption)(g.DialOption.Net.SocketOption)
-			}
-			if g.DialOption.Net.TLS != nil && g.DialOption.Net.TLS.Enabled {
-				cfg.DialOption.Net.TLS = (*config.TLS)(g.DialOption.Net.TLS)
-			}
-		}
-	}
-
-	if g.TLS != nil && g.TLS.Enabled {
-		cfg.TLS = (*config.TLS)(g.TLS)
-	}
-
-	return cfg
 }
 
 // func FakeData() {
@@ -272,15 +202,15 @@ func convertClientOpts(g *v1.ClientConfig) *config.GRPCClient {
 // 			},
 // 		},
 // 		Job: &config.BenchmarkJob{
-// 			Target: &v1.BenchmarkTarget{
+// 			Target: &config.BenchmarkTarget{
 // 				Host: "vald-lb-gateway.svc.local",
 // 				Port: 8081,
 // 			},
-// 			Dataset: &v1.BenchmarkDataset{
+// 			Dataset: &config.BenchmarkDataset{
 // 				Name:    "fashion-mnist",
 // 				Group:   "train",
 // 				Indexes: 10000,
-// 				Range: &v1.BenchmarkDatasetRange{
+// 				Range: &config.BenchmarkDatasetRange{
 // 					Start: 0,
 // 					End:   10000,
 // 				},
@@ -288,11 +218,11 @@ func convertClientOpts(g *v1.ClientConfig) *config.GRPCClient {
 // 			Replica:      1,
 // 			Repetition:   1,
 // 			JobType:      "search",
-// 			InsertConfig: &v1.InsertJobConfig{},
-// 			UpdateConfig: &v1.UpdateJobConfig{},
-// 			UpsertConfig: &v1.UpsertJobConfig{},
-// 			SearchConfig: &v1.SearchJobConfig{},
-// 			RemoveConfig: &v1.RemoveJobConfig{},
+// 			InsertConfig: &config.InsertConfig{},
+// 			UpdateConfig: &config.UpdateConfig{},
+// 			UpsertConfig: &config.UpsertConfig{},
+// 			SearchConfig: &config.SearchConfig{},
+// 			RemoveConfig: &config.RemoveConfig{},
 // 			ClientConfig: &config.GRPCClient{
 // 				Addrs:               []string{},
 // 				HealthCheckDuration: "1s",
@@ -385,7 +315,7 @@ func convertClientOpts(g *v1.ClientConfig) *config.GRPCClient {
 // 					InsecureSkipVerify: false,
 // 				},
 // 			},
-// 			Rules: []*v1.BenchmarkJobRule{},
+// 			Rules: []*config.BenchmarkJobRule{},
 // 		},
 // 	}
 // 	fmt.Println(config.ToRawYaml(d))

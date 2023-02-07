@@ -17,24 +17,25 @@
 package v1
 
 import (
+	"github.com/vdaas/vald/internal/config"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
 type BenchmarkJobSpec struct {
-	Target       *BenchmarkTarget    `json:"target,omitempty"`
-	Dataset      *BenchmarkDataset   `json:"dataset,omitempty"`
-	Dimension    int                 `json:"dimension,omitempty"`
-	Replica      int                 `json:"replica,omitempty"`
-	Repetition   int                 `json:"repetition,omitempty"`
-	JobType      string              `json:"job_type,omitempty"`
-	InsertConfig *InsertConfig       `json:"insert_config,omitempty"`
-	UpdateConfig *UpdateConfig       `json:"update_config,omitempty"`
-	UpsertConfig *UpsertConfig       `json:"upsert_config,omitempty"`
-	SearchConfig *SearchConfig       `json:"search_config,omitempty"`
-	RemoveConfig *RemoveConfig       `json:"remove_config,omitempty"`
-	ClientConfig *ClientConfig       `json:"client_config,omitempty"`
-	Rules        []*BenchmarkJobRule `json:"rules,omitempty"`
+	Target       *BenchmarkTarget           `json:"target,omitempty"`
+	Dataset      *BenchmarkDataset          `json:"dataset,omitempty"`
+	Dimension    int                        `json:"dimension,omitempty"`
+	Replica      int                        `json:"replica,omitempty"`
+	Repetition   int                        `json:"repetition,omitempty"`
+	JobType      string                     `json:"job_type,omitempty"`
+	InsertConfig *config.InsertConfig       `json:"insert_config,omitempty"`
+	UpdateConfig *config.UpdateConfig       `json:"update_config,omitempty"`
+	UpsertConfig *config.UpsertConfig       `json:"upsert_config,omitempty"`
+	SearchConfig *config.SearchConfig       `json:"search_config,omitempty"`
+	RemoveConfig *config.RemoveConfig       `json:"remove_config,omitempty"`
+	ClientConfig *config.GRPCClient         `json:"client_config,omitempty"`
+	Rules        []*config.BenchmarkJobRule `json:"rules,omitempty"`
 }
 
 type BenchmarkJobStatus string
@@ -46,193 +47,16 @@ const (
 )
 
 // BenchmarkTarget defines the desired state of BenchmarkTarget
-type BenchmarkTarget struct {
-	Host string `json:"host,omitempty"`
-	Port int    `json:"port,omitempty"`
-}
+type BenchmarkTarget config.BenchmarkTarget
 
 // BenchmarkDataset defines the desired state of BenchmarkDateset
-type BenchmarkDataset struct {
-	Name    string                 `json:"name,omitempty"`
-	Group   string                 `json:"group,omitempty"`
-	Indexes int                    `json:"indexes,omitempty"`
-	Range   *BenchmarkDatasetRange `json:"range,omitempty"`
-}
+type BenchmarkDataset config.BenchmarkDataset
 
 // BenchmarkDatasetRange defines the desired state of BenchmarkDatesetRange
-type BenchmarkDatasetRange struct {
-	Start int `json:"start,omitempty"`
-	End   int `json:"end,omitempty"`
-}
+type BenchmarkDatasetRange config.BenchmarkDatasetRange
 
 // BenchmarkJobRule defines the desired state of BenchmarkJobRule
-type BenchmarkJobRule struct {
-	Name string `json:"name,omitempty"`
-	Type string `json:"type,omitempty"`
-}
-
-// InsertConfig defines the desired state of insert config
-type InsertConfig struct {
-	SkipStrictExistCheck bool   `json:"skip_strict_exist_check,omitempty"`
-	Timestamp            string `json:"timestamp,omitempty"`
-}
-
-// UpdateConfig defines the desired state of update config
-type UpdateConfig struct {
-	SkipStrictExistCheck bool   `json:"skip_strict_exist_check,omitempty"`
-	Timestamp            string `json:"timestamp,omitempty"`
-}
-
-// UpsertConfig defines the desired state of upsert config
-type UpsertConfig struct {
-	SkipStrictExistCheck bool   `json:"skip_strict_exist_check,omitempty"`
-	Timestamp            string `json:"timestamp,omitempty"`
-}
-
-// SearchConfig defines the desired state of search config
-type SearchConfig struct {
-	Epsilon float32 `json:"epsilon,omitempty"`
-	Radius  float32 `json:"radius,omitempty"`
-	Num     int32   `json:"num,omitempty"`
-	MinNum  int32   `json:"min_num,omitempty"`
-	Timeout string  `json:"timeout,omitempty"`
-}
-
-// RemoveConfig defines the desired state of remove config
-type RemoveConfig struct {
-	SkipStrictExistCheck bool   `json:"skip_strict_exist_check,omitempty"`
-	Timestamp            string `json:"timestamp,omitempty"`
-}
-
-// ClientConfig represents the configurations for gRPC client.
-type ClientConfig struct {
-	Addrs               []string        `json:"addrs"                 yaml:"addrs"`
-	HealthCheckDuration string          `json:"health_check_duration" yaml:"health_check_duration"`
-	ConnectionPool      *ConnectionPool `json:"connection_pool"       yaml:"connection_pool"`
-	Backoff             *Backoff        `json:"backoff"               yaml:"backoff"`
-	CircuitBreaker      *CircuitBreaker `json:"circuit_breaker"       yaml:"circuit_breaker"`
-	CallOption          *CallOption     `json:"call_option"           yaml:"call_option"`
-	DialOption          *DialOption     `json:"dial_option"           yaml:"dial_option"`
-	TLS                 *TLS            `json:"tls"                   yaml:"tls"`
-}
-
-// CircuitBreaker represents the configuration for the internal circuitbreaker package.
-type CircuitBreaker struct {
-	ClosedErrorRate      float32 `yaml:"closed_error_rate"      json:"closed_error_rate,omitempty"`
-	HalfOpenErrorRate    float32 `yaml:"half_open_error_rate"   json:"half_open_error_rate,omitempty"`
-	MinSamples           int64   `yaml:"min_samples"            json:"min_samples,omitempty"`
-	OpenTimeout          string  `yaml:"open_timeout"           json:"open_timeout,omitempty"`
-	ClosedRefreshTimeout string  `yaml:"closed_refresh_timeout" json:"closed_refresh_timeout,omitempty"`
-}
-
-// TLS represent the TLS configuration for server.
-type TLS struct {
-	// Enable represent the server enable TLS or not.
-	Enabled bool `yaml:"enabled" json:"enabled"`
-
-	// Cert represent the certificate environment variable key used to start server.
-	Cert string `yaml:"cert" json:"cert"`
-
-	// Key represent the private key environment variable key used to start server.
-	Key string `yaml:"key" json:"key"`
-
-	// CA represent the CA certificate environment variable key used to start server.
-	CA string `yaml:"ca" json:"ca"`
-
-	// InsecureSkipVerify represent enable/disable skip SSL certificate verification
-	InsecureSkipVerify bool `yaml:"insecure_skip_verify" json:"insecure_skip_verify"`
-}
-
-// Backoff represents the configuration for the internal backoff package.
-type Backoff struct {
-	InitialDuration  string  `json:"initial_duration"   yaml:"initial_duration"`
-	BackoffTimeLimit string  `json:"backoff_time_limit" yaml:"backoff_time_limit"`
-	MaximumDuration  string  `json:"maximum_duration"   yaml:"maximum_duration"`
-	JitterLimit      string  `json:"jitter_limit"       yaml:"jitter_limit"`
-	BackoffFactor    float64 `json:"backoff_factor"     yaml:"backoff_factor"`
-	RetryCount       int     `json:"retry_count"        yaml:"retry_count"`
-	EnableErrorLog   bool    `json:"enable_error_log"   yaml:"enable_error_log"`
-}
-
-// CallOption represents the configurations for call option.
-type CallOption struct {
-	WaitForReady          bool `json:"wait_for_ready"            yaml:"wait_for_ready"`
-	MaxRetryRPCBufferSize int  `json:"max_retry_rpc_buffer_size" yaml:"max_retry_rpc_buffer_size"`
-	MaxRecvMsgSize        int  `json:"max_recv_msg_size"         yaml:"max_recv_msg_size"`
-	MaxSendMsgSize        int  `json:"max_send_msg_size"         yaml:"max_send_msg_size"`
-}
-
-// DialOption represents the configurations for dial option.
-type DialOption struct {
-	WriteBufferSize             int                  `json:"write_buffer_size"              yaml:"write_buffer_size"`
-	ReadBufferSize              int                  `json:"read_buffer_size"               yaml:"read_buffer_size"`
-	InitialWindowSize           int                  `json:"initial_window_size"            yaml:"initial_window_size"`
-	InitialConnectionWindowSize int                  `json:"initial_connection_window_size" yaml:"initial_connection_window_size"`
-	MaxMsgSize                  int                  `json:"max_msg_size"                   yaml:"max_msg_size"`
-	BackoffMaxDelay             string               `json:"backoff_max_delay"              yaml:"backoff_max_delay"`
-	BackoffBaseDelay            string               `json:"backoff_base_delay"             yaml:"backoff_base_delay"`
-	BackoffJitter               float64              `json:"backoff_jitter"                 yaml:"backoff_jitter"`
-	BackoffMultiplier           float64              `json:"backoff_multiplier"             yaml:"backoff_multiplier"`
-	MinimumConnectionTimeout    string               `json:"min_connection_timeout"         yaml:"min_connection_timeout"`
-	EnableBackoff               bool                 `json:"enable_backoff"                 yaml:"enable_backoff"`
-	Insecure                    bool                 `json:"insecure"                       yaml:"insecure"`
-	Timeout                     string               `json:"timeout"                        yaml:"timeout"`
-	Interceptors                []string             `json:"interceptors,omitempty"         yaml:"interceptors"`
-	Net                         *Net                 `json:"net"                            yaml:"net"`
-	Keepalive                   *GRPCClientKeepalive `json:"keepalive"                      yaml:"keepalive"`
-}
-
-// ConnectionPool represents the configurations for connection pool.
-type ConnectionPool struct {
-	ResolveDNS           bool   `json:"enable_dns_resolver"     yaml:"enable_dns_resolver"`
-	EnableRebalance      bool   `json:"enable_rebalance"        yaml:"enable_rebalance"`
-	RebalanceDuration    string `json:"rebalance_duration"      yaml:"rebalance_duration"`
-	Size                 int    `json:"size"                    yaml:"size"`
-	OldConnCloseDuration string `json:"old_conn_close_duration" yaml:"old_conn_close_duration"`
-}
-
-// GRPCClientKeepalive represents the configurations for gRPC keep-alive.
-type GRPCClientKeepalive struct {
-	Time                string `json:"time"                  yaml:"time"`
-	Timeout             string `json:"timeout"               yaml:"timeout"`
-	PermitWithoutStream bool   `json:"permit_without_stream" yaml:"permit_without_stream"`
-}
-
-// Net represents the network configuration tcp, udp, unix domain socket.
-type Net struct {
-	DNS          *DNS          `yaml:"dns"           json:"dns,omitempty"`
-	Dialer       *Dialer       `yaml:"dialer"        json:"dialer,omitempty"`
-	SocketOption *SocketOption `yaml:"socket_option" json:"socket_option,omitempty"`
-	TLS          *TLS          `yaml:"tls"           json:"tls,omitempty"`
-}
-
-// Dialer represents the configuration for dial.
-type Dialer struct {
-	Timeout          string `yaml:"timeout"            json:"timeout,omitempty"`
-	Keepalive        string `yaml:"keepalive"          json:"keepalive,omitempty"`
-	FallbackDelay    string `yaml:"fallback_delay"     json:"fallback_delay,omitempty"`
-	DualStackEnabled bool   `yaml:"dual_stack_enabled" json:"dual_stack_enabled,omitempty"`
-}
-
-// DNS represents the configuration for resolving DNS.
-type DNS struct {
-	CacheEnabled    bool   `yaml:"cache_enabled"    json:"cache_enabled,omitempty"`
-	RefreshDuration string `yaml:"refresh_duration" json:"refresh_duration,omitempty"`
-	CacheExpiration string `yaml:"cache_expiration" json:"cache_expiration,omitempty"`
-}
-
-// SocketOption represents the socket configurations.
-type SocketOption struct {
-	ReusePort                bool `json:"reuse_port,omitempty"                  yaml:"reuse_port"`
-	ReuseAddr                bool `json:"reuse_addr,omitempty"                  yaml:"reuse_addr"`
-	TCPFastOpen              bool `json:"tcp_fast_open,omitempty"               yaml:"tcp_fast_open"`
-	TCPNoDelay               bool `json:"tcp_no_delay,omitempty"                yaml:"tcp_no_delay"`
-	TCPCork                  bool `json:"tcp_cork,omitempty"                    yaml:"tcp_cork"`
-	TCPQuickAck              bool `json:"tcp_quick_ack,omitempty"               yaml:"tcp_quick_ack"`
-	TCPDeferAccept           bool `json:"tcp_defer_accept,omitempty"            yaml:"tcp_defer_accept"`
-	IPTransparent            bool `json:"ip_transparent,omitempty"              yaml:"ip_transparent"`
-	IPRecoverDestinationAddr bool `json:"ip_recover_destination_addr,omitempty" yaml:"ip_recover_destination_addr"`
-}
+type BenchmarkJobRule config.BenchmarkJobRule
 
 type ValdBenchmarkJob struct {
 	metav1.TypeMeta   `json:",inline"`
@@ -254,7 +78,7 @@ func (in *BenchmarkDataset) DeepCopyInto(out *BenchmarkDataset) {
 	*out = *in
 	if in.Range != nil {
 		in, out := &in.Range, &out.Range
-		*out = new(BenchmarkDatasetRange)
+		*out = new(config.BenchmarkDatasetRange)
 		**out = **in
 	}
 }
@@ -314,11 +138,11 @@ func (in *BenchmarkJobSpec) DeepCopyInto(out *BenchmarkJobSpec) {
 	}
 	if in.Rules != nil {
 		in, out := &in.Rules, &out.Rules
-		*out = make([]*BenchmarkJobRule, len(*in))
+		*out = make([]*config.BenchmarkJobRule, len(*in))
 		for i := range *in {
 			if (*in)[i] != nil {
 				in, out := &(*in)[i], &(*out)[i]
-				*out = new(BenchmarkJobRule)
+				*out = new(config.BenchmarkJobRule)
 				**out = **in
 			}
 		}

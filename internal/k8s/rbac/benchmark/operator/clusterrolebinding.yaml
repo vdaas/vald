@@ -23,5 +23,5 @@ roleRef:
   name: benchmark-scenario-role # TODO: fix
 subjects:
   - kind: ServiceAccount
-    name: benchmark-scenario-service # TODO: fix
+    name: vald-benchmark-operator # TODO: fix
     namespace: default # TODO: fix

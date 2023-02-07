@@ -37,12 +37,13 @@ const (
 
 func main() {
 	if err := safety.RecoverFunc(func() error {
+		ctx := context.Background()
 		return runner.Do(
-			context.Background(),
+			ctx,
 			runner.WithName(name),
 			runner.WithVersion(info.Version, maxVersion, minVersion),
 			runner.WithConfigLoader(func(path string) (interface{}, *config.GlobalConfig, error) {
-				cfg, err := config.NewConfig(context.Background(), path)
+				cfg, err := config.NewConfig(ctx, path)
 				if err != nil {
 					return nil, nil, errors.Wrap(err, "failed to load "+name+"'s configuration")
 				}
