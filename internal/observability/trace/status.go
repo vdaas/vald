@@ -24,6 +24,8 @@ import (
 	semconv "go.opentelemetry.io/otel/semconv/v1.12.0"
 )
 
+type Attributes = []attribute.KeyValue
+
 const (
 	grpcMsgAttributeKey = attribute.Key("rpc.grpc.message")
 	StatusOK            = ocodes.Ok

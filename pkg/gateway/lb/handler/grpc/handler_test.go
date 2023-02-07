@@ -3185,3 +3185,269 @@ func Test_server_MultiLinearSearchByID(t *testing.T) {
 		})
 	}
 }
+
+func Test_server_exists(t *testing.T) {
+	type args struct {
+		ctx  context.Context
+		uuid string
+	}
+	type fields struct {
+		eg                      errgroup.Group
+		gateway                 service.Gateway
+		timeout                 time.Duration
+		replica                 int
+		streamConcurrency       int
+		name                    string
+		ip                      string
+		UnimplementedValdServer vald.UnimplementedValdServer
+	}
+	type want struct {
+		wantId *payload.Object_ID
+		err    error
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, *payload.Object_ID, error) error
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
+	}
+	defaultCheckFunc := func(w want, gotId *payload.Object_ID, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(gotId, w.wantId) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotId, w.wantId)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           ctx: nil,
+		           uuid: "",
+		       },
+		       fields: fields {
+		           eg: nil,
+		           gateway: nil,
+		           timeout: nil,
+		           replica: 0,
+		           streamConcurrency: 0,
+		           name: "",
+		           ip: "",
+		           UnimplementedValdServer: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           ctx: nil,
+		           uuid: "",
+		           },
+		           fields: fields {
+		           eg: nil,
+		           gateway: nil,
+		           timeout: nil,
+		           replica: 0,
+		           streamConcurrency: 0,
+		           name: "",
+		           ip: "",
+		           UnimplementedValdServer: nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(tt, test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(tt, test.args)
+			}
+			checkFunc := test.checkFunc
+			if test.checkFunc == nil {
+				checkFunc = defaultCheckFunc
+			}
+			s := &server{
+				eg:                      test.fields.eg,
+				gateway:                 test.fields.gateway,
+				timeout:                 test.fields.timeout,
+				replica:                 test.fields.replica,
+				streamConcurrency:       test.fields.streamConcurrency,
+				name:                    test.fields.name,
+				ip:                      test.fields.ip,
+				UnimplementedValdServer: test.fields.UnimplementedValdServer,
+			}
+
+			gotId, err := s.exists(test.args.ctx, test.args.uuid)
+			if err := checkFunc(test.want, gotId, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func Test_server_getObject(t *testing.T) {
+	type args struct {
+		ctx  context.Context
+		uuid string
+	}
+	type fields struct {
+		eg                      errgroup.Group
+		gateway                 service.Gateway
+		timeout                 time.Duration
+		replica                 int
+		streamConcurrency       int
+		name                    string
+		ip                      string
+		UnimplementedValdServer vald.UnimplementedValdServer
+	}
+	type want struct {
+		wantVec *payload.Object_Vector
+		err     error
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, *payload.Object_Vector, error) error
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
+	}
+	defaultCheckFunc := func(w want, gotVec *payload.Object_Vector, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(gotVec, w.wantVec) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotVec, w.wantVec)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           ctx: nil,
+		           uuid: "",
+		       },
+		       fields: fields {
+		           eg: nil,
+		           gateway: nil,
+		           timeout: nil,
+		           replica: 0,
+		           streamConcurrency: 0,
+		           name: "",
+		           ip: "",
+		           UnimplementedValdServer: nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           ctx: nil,
+		           uuid: "",
+		           },
+		           fields: fields {
+		           eg: nil,
+		           gateway: nil,
+		           timeout: nil,
+		           replica: 0,
+		           streamConcurrency: 0,
+		           name: "",
+		           ip: "",
+		           UnimplementedValdServer: nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(tt, test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(tt, test.args)
+			}
+			checkFunc := test.checkFunc
+			if test.checkFunc == nil {
+				checkFunc = defaultCheckFunc
+			}
+			s := &server{
+				eg:                      test.fields.eg,
+				gateway:                 test.fields.gateway,
+				timeout:                 test.fields.timeout,
+				replica:                 test.fields.replica,
+				streamConcurrency:       test.fields.streamConcurrency,
+				name:                    test.fields.name,
+				ip:                      test.fields.ip,
+				UnimplementedValdServer: test.fields.UnimplementedValdServer,
+			}
+
+			gotVec, err := s.getObject(test.args.ctx, test.args.uuid)
+			if err := checkFunc(test.want, gotVec, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}

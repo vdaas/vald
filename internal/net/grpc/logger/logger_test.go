@@ -30,7 +30,6 @@ func TestMain(m *testing.M) {
 }
 
 func TestInit(t *testing.T) {
-	t.Parallel()
 	type test struct {
 		name       string
 		checkFunc  func() error

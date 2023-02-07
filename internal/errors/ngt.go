@@ -36,11 +36,6 @@ var (
 		return Errorf("ngt uuid %s's object id not found", uuid)
 	}
 
-	// ErrObjectNotFound represents a function to generate an error that the object is not found.
-	ErrObjectNotFound = func(err error, uuid string) error {
-		return Wrapf(err, "ngt uuid %s's object not found", uuid)
-	}
-
 	// ErrRemoveRequestedBeforeIndexing represents a function to generate an error that the object is not indexed so can not remove it.
 	ErrRemoveRequestedBeforeIndexing = func(oid uint) error {
 		return Errorf("object id %d is not indexed we cannot remove it", oid)
