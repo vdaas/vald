@@ -120,6 +120,7 @@ replace (
 	github.com/containernetworking/cni => github.com/containernetworking/cni latest
 	github.com/containernetworking/plugins => github.com/containernetworking/plugins latest
 	github.com/containers/ocicrypt => github.com/containers/ocicrypt latest
+	github.com/coreos/etcd =>  go.etcd.io/etcd latest
 	github.com/coreos/go-iptables => github.com/coreos/go-iptables latest
 	github.com/coreos/go-oidc => github.com/coreos/go-oidc latest
 	github.com/coreos/go-semver => github.com/coreos/go-semver latest
@@ -307,6 +308,7 @@ replace (
 	github.com/liggitt/tabwriter => github.com/liggitt/tabwriter latest
 	github.com/linode/linodego => github.com/linode/linodego latest
 	github.com/linuxkit/virtsock => github.com/linuxkit/virtsock latest
+	github.com/lucas-clemente/quic-go => github.com/lucas-clemente/quic-go latest
 	github.com/lucasb-eyer/go-colorful => github.com/lucasb-eyer/go-colorful latest
 	github.com/lyft/protoc-gen-star => github.com/lyft/protoc-gen-star latest
 	github.com/mailru/easyjson => github.com/mailru/easyjson latest

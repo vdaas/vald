@@ -193,6 +193,22 @@ data:
         - ngt_version
       trace:
         enabled: false
+<<<<<<< HEAD
+=======
+        sampling_rate: 1
+      prometheus:
+        enabled: false
+        endpoint: /metrics
+        namespace: vald
+      jaeger:
+        enabled: false
+        collector_endpoint: ""
+        agent_endpoint: ""
+        username: ""
+        password: ""
+        service_name: "vald-manager-index"
+        buffer_max_count: 65000
+>>>>>>> feature/internal-net/support-quic
     indexer:
       agent_port: 8081
       agent_name: "vald-agent-ngt"
@@ -255,6 +271,7 @@ data:
                 cache_enabled: true
                 cache_expiration: 1h
                 refresh_duration: 30m
+              network: tcp
               socket_option:
                 ip_recover_destination_addr: false
                 ip_transparent: false

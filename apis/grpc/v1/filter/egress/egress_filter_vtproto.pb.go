@@ -18,11 +18,10 @@ package egress
 
 import (
 	context "context"
-
 	payload "github.com/vdaas/vald/apis/grpc/v1/payload"
+	grpc "google.golang.org/grpc"
 	codes "github.com/vdaas/vald/internal/net/grpc/codes"
 	status "github.com/vdaas/vald/internal/net/grpc/status"
-	grpc "google.golang.org/grpc"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 )
 

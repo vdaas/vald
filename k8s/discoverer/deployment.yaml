@@ -47,7 +47,11 @@ spec:
         app.kubernetes.io/instance: release-name
         app.kubernetes.io/component: discoverer
       annotations:
+<<<<<<< HEAD
         checksum/configmap: 36bf4b0cf18a8bc7213912ea96e99a887a7208a6336c539a45eb88a1a500b59b
+=======
+        checksum/configmap: 6f73519e674103ba49d90fb47ab7db424bbfa93f93bfdef8bd61b0f8e23552f9
+>>>>>>> feature/internal-net/support-quic
         profefe.com/enable: "true"
         profefe.com/port: "6060"
         profefe.com/service: vald-discoverer
@@ -68,10 +72,10 @@ spec:
             - podAffinityTerm:
                 labelSelector:
                   matchExpressions:
-                    - key: app
-                      operator: In
-                      values:
-                        - vald-discoverer
+                  - key: app
+                    operator: In
+                    values:
+                    - vald-discoverer
                 topologyKey: kubernetes.io/hostname
               weight: 100
           requiredDuringSchedulingIgnoredDuringExecution: []
@@ -135,7 +139,7 @@ spec:
             allowPrivilegeEscalation: false
             capabilities:
               drop:
-                - ALL
+              - ALL
             privileged: false
             readOnlyRootFilesystem: true
             runAsGroup: 65532

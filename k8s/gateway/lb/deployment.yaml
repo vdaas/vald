@@ -46,7 +46,11 @@ spec:
         app.kubernetes.io/instance: release-name
         app.kubernetes.io/component: gateway-lb
       annotations:
+<<<<<<< HEAD
         checksum/configmap: c59c3a730eaf6fc4a174bb4306837bd384e728b57606602c8e4cfdacf21c772b
+=======
+        checksum/configmap: 419c0d2782efe00dd1fe09d42579f70341b2da6c331a1529cc17c352eaf5edef
+>>>>>>> feature/internal-net/support-quic
         profefe.com/enable: "true"
         profefe.com/port: "6060"
         profefe.com/service: vald-lb-gateway
@@ -90,10 +94,10 @@ spec:
             - podAffinityTerm:
                 labelSelector:
                   matchExpressions:
-                    - key: app
-                      operator: In
-                      values:
-                        - vald-lb-gateway
+                  - key: app
+                    operator: In
+                    values:
+                    - vald-lb-gateway
                 topologyKey: kubernetes.io/hostname
               weight: 100
           requiredDuringSchedulingIgnoredDuringExecution: []
@@ -157,7 +161,7 @@ spec:
             allowPrivilegeEscalation: false
             capabilities:
               drop:
-                - ALL
+              - ALL
             privileged: false
             readOnlyRootFilesystem: true
             runAsGroup: 65532

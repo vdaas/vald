@@ -1,5 +1,9 @@
 //
+<<<<<<< HEAD:pkg/agent/core/ngt/service/vqueue/indexmap_test.go
 // Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
+=======
+// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+>>>>>>> feature/internal-net/support-quic:pkg/agent/core/ngt/service/vqueue/uninserted_index_map_test.go
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -13,7 +17,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+<<<<<<< HEAD:pkg/agent/core/ngt/service/vqueue/indexmap_test.go
 
+=======
+>>>>>>> feature/internal-net/support-quic:pkg/agent/core/ngt/service/vqueue/uninserted_index_map_test.go
 package vqueue
 
 import (

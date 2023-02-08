@@ -19,13 +19,12 @@ package payload
 import (
 	binary "encoding/binary"
 	fmt "fmt"
-	math "math"
-	bits "math/bits"
-
-	io "github.com/vdaas/vald/internal/io"
 	status "google.golang.org/genproto/googleapis/rpc/status"
 	proto "google.golang.org/protobuf/proto"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
+	io "github.com/vdaas/vald/internal/io"
+	math "math"
+	bits "math/bits"
 )
 
 const (

@@ -47,7 +47,11 @@ spec:
         app.kubernetes.io/instance: release-name
         app.kubernetes.io/component: manager-index
       annotations:
+<<<<<<< HEAD
         checksum/configmap: 6c4780abd8ade67931a0f451225b6cce6b415bbacbbb19ffba5ab0edfdb2d849
+=======
+        checksum/configmap: c8141ebe854259590d348fa0b8498ecc9f0642038b8bc2c79c410e32149359a5
+>>>>>>> feature/internal-net/support-quic
         profefe.com/enable: "true"
         profefe.com/port: "6060"
         profefe.com/service: vald-manager-index
@@ -149,7 +153,7 @@ spec:
             allowPrivilegeEscalation: false
             capabilities:
               drop:
-                - ALL
+              - ALL
             privileged: false
             readOnlyRootFilesystem: true
             runAsGroup: 65532

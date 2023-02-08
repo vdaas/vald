@@ -24,6 +24,7 @@ logging:
 server_config:
   servers:
     - name: grpc
+      network: udp
       host: 0.0.0.0
       port: 8081
       grpc:
@@ -66,10 +67,10 @@ server_config:
     - readiness
   full_shutdown_duration: 600s
   tls:
-    ca: /path/to/ca
-    cert: /path/to/cert
-    enabled: false
-    key: /path/to/key
+    ca: ./dummyCa.pem
+    cert: ./dummyServer.crt
+    enabled: true
+    key: ./dummyServer.key
 observability:
   enabled: false
   collector:
