@@ -61,6 +61,7 @@ Exists RPC is the method to check the a vector exists in the `vald-agent`.
 | code | desc.             |
 | :--: | :---------------- |
 |  0   | OK                |
+|  1   | CANCELLED         |
 |  3   | INVALID_ARGUMENT  |
 |  4   | DEADLINE_EXCEEDED |
 |  5   | NOT_FOUND         |
@@ -122,12 +123,14 @@ GetObject RPC is the method to get the metadata of a vector inserted into the `v
 
 ### Status Code
 
-| code | desc.            |
-| :--: | :--------------- |
-|  0   | OK               |
-|  3   | INVALID_ARGUMENT |
-|  5   | NOT_FOUND        |
-|  13  | INTERNAL         |
+| code | desc.             |
+| :--: | :---------------- |
+|  0   | OK                |
+|  1   | CANCELLED         |
+|  3   | INVALID_ARGUMENT  |
+|  4   | DEADLINE_EXCEEDED |
+|  5   | NOT_FOUND         |
+|  13  | INTERNAL          |
 
 ## StreamGetObject RPC
 
@@ -198,9 +201,11 @@ Each Upsert request and response are independent.
 
 ### Status Code
 
-| code | desc.            |
-| :--: | :--------------- |
-|  0   | OK               |
-|  3   | INVALID_ARGUMENT |
-|  5   | NOT_FOUND        |
-|  13  | INTERNAL         |
+| code | desc.             |
+| :--: | :---------------- |
+|  0   | OK                |
+|  1   | CANCELLED         |
+|  3   | INVALID_ARGUMENT  |
+|  4   | DEADLINE_EXCEEDED |
+|  5   | NOT_FOUND         |
+|  13  | INTERNAL          |

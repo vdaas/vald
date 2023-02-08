@@ -90,13 +90,15 @@ Update RPC is the method to update a single vector.
 
 ### Status Code
 
-| code | desc.            |
-| :--: | :--------------- |
-|  0   | OK               |
-|  3   | INVALID_ARGUMENT |
-|  5   | NOT_FOUND        |
-|  6   | ALREADY_EXISTS   |
-|  13  | INTERNAL         |
+| code | desc.             |
+| :--: | :---------------- |
+|  0   | OK                |
+|  1   | CANCELLED         |
+|  3   | INVALID_ARGUMENT  |
+|  4   | DEADLINE_EXCEEDED |
+|  5   | NOT_FOUND         |
+|  6   | ALREADY_EXISTS    |
+|  13  | INTERNAL          |
 
 ## StreamUpdate RPC
 
@@ -198,13 +200,15 @@ It's the recommended method to update the large amount of vectors.
 
 ### Status Code
 
-| code | desc.            |
-| :--: | :--------------- |
-|  0   | OK               |
-|  3   | INVALID_ARGUMENT |
-|  5   | NOT_FOUND        |
-|  6   | ALREADY_EXISTS   |
-|  13  | INTERNAL         |
+| code | desc.             |
+| :--: | :---------------- |
+|  0   | OK                |
+|  1   | CANCELLED         |
+|  3   | INVALID_ARGUMENT  |
+|  4   | DEADLINE_EXCEEDED |
+|  5   | NOT_FOUND         |
+|  6   | ALREADY_EXISTS    |
+|  13  | INTERNAL          |
 
 ## MultiUpdate RPC
 
@@ -303,10 +307,12 @@ Please be careful that the size of the request exceed the limit.
 
 ### Status Code
 
-| code | desc.            |
-| :--: | :--------------- |
-|  0   | OK               |
-|  3   | INVALID_ARGUMENT |
-|  5   | NOT_FOUND        |
-|  6   | ALREADY_EXISTS   |
-|  13  | INTERNAL         |
+| code | desc.             |
+| :--: | :---------------- |
+|  0   | OK                |
+|  1   | CANCELLED         |
+|  3   | INVALID_ARGUMENT  |
+|  4   | DEADLINE_EXCEEDED |
+|  5   | NOT_FOUND         |
+|  6   | ALREADY_EXISTS    |
+|  13  | INTERNAL          |

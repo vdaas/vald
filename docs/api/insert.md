@@ -90,12 +90,14 @@ Inset RPC is the method to add a new single vector.
 
 ### Status Code
 
-| code | desc.            |
-| :--: | :--------------- |
-|  0   | OK               |
-|  3   | INVALID_ARGUMENT |
-|  6   | ALREADY_EXISTS   |
-|  13  | INTERNAL         |
+| code | desc.             |
+| :--: | :---------------- |
+|  0   | OK                |
+|  1   | CANCELLED         |
+|  3   | INVALID_ARGUMENT  |
+|  4   | DEADLINE_EXCEEDED |
+|  6   | ALREADY_EXISTS    |
+|  13  | INTERNAL          |
 
 ## StreamInsert RPC
 
@@ -197,12 +199,14 @@ It's the recommended method to insert a large number of vectors.
 
 ### Status Code
 
-| code | desc.            |
-| :--: | :--------------- |
-|  0   | OK               |
-|  3   | INVALID_ARGUMENT |
-|  6   | ALREADY_EXISTS   |
-|  13  | INTERNAL         |
+| code | desc.             |
+| :--: | :---------------- |
+|  0   | OK                |
+|  1   | CANCELLED         |
+|  3   | INVALID_ARGUMENT  |
+|  4   | DEADLINE_EXCEEDED |
+|  6   | ALREADY_EXISTS    |
+|  13  | INTERNAL          |
 
 ## MultiInsert RPC
 
@@ -301,9 +305,11 @@ Please be careful that the size of the request exceeds the limit.
 
 ### Status Code
 
-| code | desc.            |
-| :--: | :--------------- |
-|  0   | OK               |
-|  3   | INVALID_ARGUMENT |
-|  6   | ALREADY_EXISTS   |
-|  13  | INTERNAL         |
+| code | desc.             |
+| :--: | :---------------- |
+|  0   | OK                |
+|  1   | CANCELLED         |
+|  3   | INVALID_ARGUMENT  |
+|  4   | DEADLINE_EXCEEDED |
+|  6   | ALREADY_EXISTS    |
+|  13  | INTERNAL          |
