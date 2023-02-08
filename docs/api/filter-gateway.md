@@ -120,12 +120,14 @@ service Filter {
 
 ### Status Code
 
-| code | desc.            |
-| :--: | :--------------- |
-|  0   | OK               |
-|  3   | INVALID_ARGUMENT |
-|  6   | ALREADY_EXISTS   |
-|  13  | INTERNAL         |
+| code | desc.             |
+| :--: | :---------------- |
+|  0   | OK                |
+|  1   | CANCELLED         |
+|  3   | INVALID_ARGUMENT  |
+|  4   | DEADLINE_EXCEEDED |
+|  6   | ALREADY_EXISTS    |
+|  13  | INTERNAL          |
 
 ## StreamInsert RPC
 
@@ -262,12 +264,14 @@ service Filter {
 
 ### Status Code
 
-| code | desc.            |
-| :--: | :--------------- |
-|  0   | OK               |
-|  3   | INVALID_ARGUMENT |
-|  6   | ALREADY_EXISTS   |
-|  13  | INTERNAL         |
+| code | desc.             |
+| :--: | :---------------- |
+|  0   | OK                |
+|  1   | CANCELLED         |
+|  3   | INVALID_ARGUMENT  |
+|  4   | DEADLINE_EXCEEDED |
+|  6   | ALREADY_EXISTS    |
+|  13  | INTERNAL          |
 
 ## MultiInsert RPC
 
@@ -401,12 +405,14 @@ service Filter {
 
 ### Status Code
 
-| code | desc.            |
-| :--: | :--------------- |
-|  0   | OK               |
-|  3   | INVALID_ARGUMENT |
-|  6   | ALREADY_EXISTS   |
-|  13  | INTERNAL         |
+| code | desc.             |
+| :--: | :---------------- |
+|  0   | OK                |
+|  1   | CANCELLED         |
+|  3   | INVALID_ARGUMENT  |
+|  4   | DEADLINE_EXCEEDED |
+|  6   | ALREADY_EXISTS    |
+|  13  | INTERNAL          |
 
 ## Update RPC
 
@@ -522,12 +528,14 @@ service Filter {
 
 ### Status Code
 
-| code | desc.            |
-| :--: | :--------------- |
-|  0   | OK               |
-|  3   | INVALID_ARGUMENT |
-|  6   | ALREADY_EXISTS   |
-|  13  | INTERNAL         |
+| code | desc.             |
+| :--: | :---------------- |
+|  0   | OK                |
+|  1   | CANCELLED         |
+|  3   | INVALID_ARGUMENT  |
+|  4   | DEADLINE_EXCEEDED |
+|  6   | ALREADY_EXISTS    |
+|  13  | INTERNAL          |
 
 ## Stream Update RPC
 
@@ -663,12 +671,14 @@ service Filter {
 
 ### Status Code
 
-| code | desc.            |
-| :--: | :--------------- |
-|  0   | OK               |
-|  3   | INVALID_ARGUMENT |
-|  6   | ALREADY_EXISTS   |
-|  13  | INTERNAL         |
+| code | desc.             |
+| :--: | :---------------- |
+|  0   | OK                |
+|  1   | CANCELLED         |
+|  3   | INVALID_ARGUMENT  |
+|  4   | DEADLINE_EXCEEDED |
+|  6   | ALREADY_EXISTS    |
+|  13  | INTERNAL          |
 
 ## MultiUpdate RPC
 
@@ -807,12 +817,14 @@ service Filter {
 
 ### Status Code
 
-| code | desc.            |
-| :--: | :--------------- |
-|  0   | OK               |
-|  3   | INVALID_ARGUMENT |
-|  6   | ALREADY_EXISTS   |
-|  13  | INTERNAL         |
+| code | desc.             |
+| :--: | :---------------- |
+|  0   | OK                |
+|  1   | CANCELLED         |
+|  3   | INVALID_ARGUMENT  |
+|  4   | DEADLINE_EXCEEDED |
+|  6   | ALREADY_EXISTS    |
+|  13  | INTERNAL          |
 
 ## Upsert RPC
 
@@ -928,12 +940,14 @@ service Filter {
 
 ### Status Code
 
-| code | desc.            |
-| :--: | :--------------- |
-|  0   | OK               |
-|  3   | INVALID_ARGUMENT |
-|  6   | ALREADY_EXISTS   |
-|  13  | INTERNAL         |
+| code | desc.             |
+| :--: | :---------------- |
+|  0   | OK                |
+|  1   | CANCELLED         |
+|  3   | INVALID_ARGUMENT  |
+|  4   | DEADLINE_EXCEEDED |
+|  6   | ALREADY_EXISTS    |
+|  13  | INTERNAL          |
 
 ## StreamUpsert RPC
 
@@ -1066,12 +1080,14 @@ service Filter {
 
 ### Status Code
 
-| code | desc.            |
-| :--: | :--------------- |
-|  0   | OK               |
-|  3   | INVALID_ARGUMENT |
-|  6   | ALREADY_EXISTS   |
-|  13  | INTERNAL         |
+| code | desc.             |
+| :--: | :---------------- |
+|  0   | OK                |
+|  1   | CANCELLED         |
+|  3   | INVALID_ARGUMENT  |
+|  4   | DEADLINE_EXCEEDED |
+|  6   | ALREADY_EXISTS    |
+|  13  | INTERNAL          |
 
 ## MultiUpsert RPC
 
@@ -1210,12 +1226,14 @@ service Filter {
 
 ### Status Code
 
-| code | desc.            |
-| :--: | :--------------- |
-|  0   | OK               |
-|  3   | INVALID_ARGUMENT |
-|  6   | ALREADY_EXISTS   |
-|  13  | INTERNAL         |
+| code | desc.             |
+| :--: | :---------------- |
+|  0   | OK                |
+|  1   | CANCELLED         |
+|  3   | INVALID_ARGUMENT  |
+|  4   | DEADLINE_EXCEEDED |
+|  6   | ALREADY_EXISTS    |
+|  13  | INTERNAL          |
 
 ## Search RPC
 
@@ -1329,9 +1347,11 @@ service Filter {
 | code | desc.             |
 | :--: | :---------------- |
 |  0   | OK                |
+|  1   | CANCELLED         |
 |  3   | INVALID_ARGUMENT  |
 |  4   | DEADLINE_EXCEEDED |
 |  5   | NOT_FOUND         |
+|  13  | INTERNAL          |
 
 ## StreamSearch RPC
 
@@ -1588,6 +1608,8 @@ service Filter {
 | code | desc.             |
 | :--: | :---------------- |
 |  0   | OK                |
+|  1   | CANCELLED         |
 |  3   | INVALID_ARGUMENT  |
 |  4   | DEADLINE_EXCEEDED |
 |  5   | NOT_FOUND         |
+|  13  | INTERNAL          |
