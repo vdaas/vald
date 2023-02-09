@@ -49,7 +49,7 @@ type Gateway interface {
 	IsSamePod(podName string) bool
 	FromForwardedContext(ctx context.Context) string
 	BroadCast(ctx context.Context,
-		f func(ctx context.Context, tgt string, conn *grpc.ClientConn, copts ...grpc.CallOption) error) error
+		f func(ctx context.Context, target string, conn *grpc.ClientConn, copts ...grpc.CallOption) error) error
 }
 
 type gateway struct {

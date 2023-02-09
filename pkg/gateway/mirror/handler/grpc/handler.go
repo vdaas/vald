@@ -20,6 +20,7 @@ package grpc
 import (
 	"context"
 	"fmt"
+	"sync"
 	"time"
 
 	"github.com/vdaas/vald/apis/grpc/v1/mirror"
@@ -27,6 +28,7 @@ import (
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
 	vclient "github.com/vdaas/vald/internal/client/v1/client/vald"
 	"github.com/vdaas/vald/internal/errgroup"
+	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/grpc/codes"
@@ -631,6 +633,350 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 			span.End()
 		}
 	}()
+
+	reqSrcPodName := s.gateway.FromForwardedContext(ctx)
+
+	// mirror gateway that are the starting point of the mirror process.
+	if len(reqSrcPodName) == 0 {
+		var errs error
+		ce = &payload.Object_Location{
+			Uuid: req.GetVector().GetId(),
+			Ips:  make([]string, 0),
+		}
+		mutex := new(sync.Mutex)
+		errMutex := new(sync.Mutex)
+		successTargets := new(sync.Map)
+
+		// process to send request to the mirror gateways including myself.
+		err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
+			ctx, span := trace.StartSpan(ctx, apiName+"."+vald.InsertRPCName+"/"+target)
+			defer func() {
+				if span != nil {
+					span.End()
+				}
+			}()
+
+			loc, err := vald.NewValdClient(conn).Insert(ctx, req, copts...)
+			if err != nil {
+				switch {
+				case errors.Is(err, context.Canceled),
+					errors.Is(err, errors.ErrRPCCallFailed(target, context.Canceled)):
+					if span != nil {
+						span.RecordError(err)
+						span.SetAttributes(trace.StatusCodeCancelled(
+							errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.InsertRPCName + ".BroadCast/" +
+								target + " canceled: " + err.Error())...)
+						span.SetStatus(trace.StatusError, err.Error())
+					}
+					log.Warn(err)
+					return nil
+				case errors.Is(err, context.DeadlineExceeded),
+					errors.Is(err, errors.ErrRPCCallFailed(target, context.DeadlineExceeded)):
+					if span != nil {
+						span.RecordError(err)
+						span.SetAttributes(trace.StatusCodeCancelled(
+							errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.InsertRPCName + ".BroadCast/" +
+								target + " deadline_exceeded: " + err.Error())...)
+						span.SetStatus(trace.StatusError, err.Error())
+					}
+					log.Warn(err)
+					return nil
+				}
+				st, msg, err := status.ParseError(err, codes.Internal,
+					vald.InsertRPCName+" API failed to send insert request to "+target,
+					&errdetails.RequestInfo{
+						RequestId:   req.GetVector().GetId(),
+						ServingData: errdetails.Serialize(req),
+					},
+					&errdetails.ResourceInfo{
+						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.InsertRPCName + ".BroadCast/" + target,
+						ResourceName: fmt.Sprintf("%s: %s(%s) to %s", apiName, s.name, s.ip, target),
+					},
+				)
+				log.Warn("failed to send insert request to %s.\terror: %s", target, err.Error())
+				if span != nil {
+					span.RecordError(err)
+					span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+					span.SetStatus(trace.StatusError, err.Error())
+				}
+				if err != nil && st.Code() != codes.AlreadyExists {
+					errMutex.Lock()
+					if errs == nil {
+						errs = err
+					} else {
+						errs = errors.Wrap(errs, err.Error())
+					}
+					errMutex.Unlock()
+					return err
+				} else if err != nil {
+					// In this case, the status code is AlreadyExists.
+					// TODO: If it is strictly necessary to check, put it in the "successTarget".
+					return nil
+				}
+			}
+			mutex.Lock()
+			ce.Name = loc.GetName()
+			ce.Ips = append(ce.Ips, loc.GetIps()...)
+			mutex.Unlock()
+			successTargets.Store(target, struct{}{})
+			return nil
+		})
+		if err != nil {
+			if errors.Is(err, errors.ErrGRPCClientConnNotFound("*")) {
+				err = status.WrapWithInternal(
+					vald.InsertRPCName+" API connection not found", err,
+					&errdetails.RequestInfo{
+						RequestId:   req.GetVector().GetId(),
+						ServingData: errdetails.Serialize(req),
+					},
+					&errdetails.ResourceInfo{
+						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.InsertRPCName + ".BroadCast",
+						ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+					},
+				)
+				log.Warnf("failed to broadcast insert request.\terror: %s", err.Error())
+				if span != nil {
+					span.RecordError(err)
+					span.SetAttributes(trace.StatusCodeInternal(err.Error())...)
+					span.SetStatus(trace.StatusError, err.Error())
+				}
+				return nil, err
+			}
+			if errs != nil {
+				errs = errors.Wrap(errs, err.Error())
+			} else {
+				errs = err
+			}
+		}
+		if errs == nil {
+			return ce, nil
+		}
+		log.Warnf("failed to send insert request inside the broadcast process.\terror: %s", errs.Error())
+
+		rmReq := &payload.Remove_Request{
+			Id: &payload.Object_ID{
+				Id: req.GetVector().GetId(),
+			},
+			Config: &payload.Remove_Config{
+				SkipStrictExistCheck: false,
+			},
+		}
+		ierrs := errs
+		errs = nil
+
+		// process to send rollback request to the success mirror gateways.
+		err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
+			if _, ok := successTargets.Load(target); !ok {
+				return nil
+			}
+			ctx, span := trace.StartSpan(ctx, apiName+"."+vald.InsertRPCName+"/rollback/"+target)
+			defer func() {
+				if span != nil {
+					span.End()
+				}
+			}()
+
+			_, err := vald.NewValdClient(conn).Remove(ctx, rmReq, copts...)
+			if err != nil {
+				switch {
+				case errors.Is(err, context.Canceled),
+					errors.Is(err, errors.ErrRPCCallFailed(target, context.Canceled)):
+					if span != nil {
+						span.RecordError(err)
+						span.SetAttributes(trace.StatusCodeCancelled(
+							errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.InsertRPCName + "." + vald.RemoveRPCName + ".BroadCast/" +
+								target + " canceled: " + err.Error())...)
+						span.SetStatus(trace.StatusError, err.Error())
+					}
+					log.Warn(err)
+					return nil
+				case errors.Is(err, context.DeadlineExceeded),
+					errors.Is(err, errors.ErrRPCCallFailed(target, context.DeadlineExceeded)):
+					if span != nil {
+						span.RecordError(err)
+						span.SetAttributes(trace.StatusCodeCancelled(
+							errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.InsertRPCName + "." + vald.RemoveRPCName + ".BroadCast/" +
+								target + " deadline_exceeded: " + err.Error())...)
+						span.SetStatus(trace.StatusError, err.Error())
+					}
+					log.Warn(err)
+					return nil
+				}
+				st, msg, err := status.ParseError(err, codes.Internal,
+					vald.InsertRPCName+"API failed to process remove request to "+target,
+					&errdetails.RequestInfo{
+						RequestId:   rmReq.GetId().GetId(),
+						ServingData: errdetails.Serialize(rmReq),
+					},
+					&errdetails.ResourceInfo{
+						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.InsertRPCName + "." + vald.RemoveRPCName + ".BroadCast/" + target,
+						ResourceName: fmt.Sprintf("%s: %s(%s) to %s", apiName, s.name, s.ip, target),
+					},
+				)
+				if span != nil {
+					span.RecordError(err)
+					span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+					span.SetStatus(trace.StatusError, err.Error())
+				}
+				if err != nil && st.Code() != codes.NotFound {
+					errMutex.Lock()
+					if errs == nil {
+						errs = err
+					} else {
+						errs = errors.Wrap(errs, err.Error())
+					}
+					errMutex.Unlock()
+					return err
+				}
+			}
+			return nil
+		})
+		if err != nil {
+			if errors.Is(err, errors.ErrGRPCClientConnNotFound("*")) {
+				err = status.WrapWithInternal(
+					vald.InsertRPCName+" API connection not found", err,
+					&errdetails.RequestInfo{
+						RequestId:   req.GetVector().GetId(),
+						ServingData: errdetails.Serialize(req),
+					},
+					&errdetails.ResourceInfo{
+						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.RemoveRPCName + ".BroadCast",
+						ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+					},
+				)
+				log.Warnf("failed to broadcast insert request.\terror: %s", err.Error())
+				if span != nil {
+					span.RecordError(err)
+					span.SetAttributes(trace.StatusCodeInternal(err.Error())...)
+					span.SetStatus(trace.StatusError, err.Error())
+				}
+				return nil, err
+			}
+			if errs != nil {
+				errs = errors.Wrap(errs, err.Error())
+			} else {
+				errs = err
+			}
+		}
+		if errs == nil {
+			st, msg, err := status.ParseError(ierrs, codes.Internal,
+				vald.InsertRPCName+"API success to rollback remove request for insert request",
+				&errdetails.RequestInfo{
+					RequestId:   rmReq.GetId().GetId(),
+					ServingData: errdetails.Serialize(rmReq),
+				},
+				&errdetails.ResourceInfo{
+					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.InsertRPCName + "." + vald.RemoveRPCName + ".BroadCast/",
+					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+				},
+			)
+			if span != nil {
+				span.RecordError(err)
+				span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+				span.SetStatus(trace.StatusError, err.Error())
+			}
+			return nil, err
+		}
+		reqInfo := &errdetails.RequestInfo{
+			RequestId:   req.GetVector().GetId(),
+			ServingData: errdetails.Serialize(req),
+		}
+		resInfo := &errdetails.ResourceInfo{
+			ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.InsertRPCName + "/rollback",
+			ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+		}
+		var attrs trace.Attributes
+
+		switch {
+		case errors.Is(errs, context.Canceled):
+			err = status.WrapWithCanceled(
+				vald.InsertRPCName+" API canceld", err, reqInfo, resInfo,
+			)
+			attrs = trace.StatusCodeCancelled(
+				errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.InsertRPCName,
+			)
+		case errors.Is(errs, context.DeadlineExceeded):
+			err = status.WrapWithDeadlineExceeded(
+				vald.InsertRPCName+" API deadline exceeded", err, reqInfo, resInfo,
+			)
+			attrs = trace.StatusCodeDeadlineExceeded(
+				errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.InsertRPCName,
+			)
+		case errors.Is(errs, errors.ErrGRPCClientConnNotFound("*")):
+			err = status.WrapWithInternal(
+				vald.InsertRPCName+" API connection not found", err, reqInfo, resInfo,
+			)
+			attrs = trace.StatusCodeInternal(errs.Error())
+		default:
+			var (
+				st  *status.Status
+				msg string
+			)
+			st, msg, err = status.ParseError(errs, codes.Internal,
+				vald.InsertRPCName+" API failed to process insert request", reqInfo, resInfo,
+			)
+			attrs = trace.FromGRPCStatus(st.Code(), msg)
+		}
+		log.Warnf("failed to send rollback request for insert request.\terror: %s", err.Error())
+		if span != nil {
+			span.RecordError(err)
+			span.SetAttributes(attrs...)
+			span.SetStatus(trace.StatusError, err.Error())
+		}
+		return nil, err
+	}
+
+	_, err = s.lbClient.Insert(ctx, req)
+	if err != nil {
+		reqInfo := &errdetails.RequestInfo{
+			RequestId:   req.GetVector().GetId(),
+			ServingData: errdetails.Serialize(req),
+		}
+		resInfo := &errdetails.ResourceInfo{
+			ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.InsertRPCName,
+			ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+		}
+		var attrs trace.Attributes
+
+		switch {
+		case errors.Is(err, context.Canceled):
+			err = status.WrapWithCanceled(
+				vald.InsertRPCName+" API canceld", err, reqInfo, resInfo,
+			)
+			attrs = trace.StatusCodeCancelled(
+				errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.InsertRPCName,
+			)
+		case errors.Is(err, context.DeadlineExceeded):
+			err = status.WrapWithDeadlineExceeded(
+				vald.InsertRPCName+" API deadline exceeded", err, reqInfo, resInfo,
+			)
+			attrs = trace.StatusCodeDeadlineExceeded(
+				errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.InsertRPCName,
+			)
+		case errors.Is(err, errors.ErrGRPCClientConnNotFound("*")):
+			err = status.WrapWithInternal(
+				vald.InsertRPCName+" API connection not found", err, reqInfo, resInfo,
+			)
+			attrs = trace.StatusCodeInternal(err.Error())
+		default:
+			var (
+				st  *status.Status
+				msg string
+			)
+			st, msg, err = status.ParseError(err, codes.Internal,
+				vald.InsertRPCName+" API failed to process insert request", reqInfo, resInfo,
+			)
+			attrs = trace.FromGRPCStatus(st.Code(), msg)
+		}
+		log.Warn("failed to send insert request to the same cluster\terror: %s", err.Error())
+		if span != nil {
+			span.RecordError(err)
+			span.SetAttributes(attrs...)
+			span.SetStatus(trace.StatusError, err.Error())
+		}
+		return nil, err
+	}
+
 	log.Debugf("Insert API insert succeeded to %#v", ce)
 	return ce, nil
 }
