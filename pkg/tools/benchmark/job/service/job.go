@@ -123,10 +123,9 @@ func (j *job) Start(ctx context.Context) (<-chan error, error) {
 		}
 	})
 
-	j.eg.Go(func() error {
-		err := j.jobFunc(ctx, ech)
+	j.eg.Go(func() (err error) {
 		defer func() {
-			p, perr := os.FindProcess(os.Getegid())
+			p, perr := os.FindProcess(os.Getpid())
 			if perr != nil {
 				log.Error(perr)
 				return
@@ -138,12 +137,15 @@ func (j *job) Start(ctx context.Context) (<-chan error, error) {
 				case ech <- err:
 				}
 			}
-			log.Info("send SIGTERM to the process")
 			if err := p.Signal(syscall.SIGTERM); err != nil {
 				log.Error(err)
 			}
 		}()
-		return err
+		err = j.jobFunc(ctx, ech)
+		if err != nil {
+			log.Errorf("[benchmark job] failed to job: %v", err)
+		}
+		return
 	})
 
 	return ech, nil
@@ -154,35 +156,20 @@ func (j *job) Stop(ctx context.Context) (err error) {
 	return
 }
 
-func calcRecall(linearRes, searchRes []*payload.Object_Distance) float64 {
-	var recall float64
-	if linearRes == nil || searchRes == nil {
-		return recall
-	}
+func calcRecall(linearRes, searchRes []*payload.Object_Distance) (recall float64) {
 	if len(linearRes) == 0 || len(searchRes) == 0 {
-		return recall
+		return
 	}
-	linearIds := make([]string, len(linearRes))
-	for i, v := range linearRes {
-		linearIds[i] = v.Id
+	linearIds := map[string]struct{}{}
+	for _, v := range linearRes {
+		linearIds[v.Id] = struct{}{}
 	}
-	cnt := 0
 	for _, v := range searchRes {
-		if contains(v.Id, linearIds) {
-			cnt++
+		if _, ok := linearIds[v.Id]; ok {
+			recall++
 		}
 	}
-	recall = float64(cnt / len(linearRes))
-	return recall
-}
-
-func contains(target string, arr []string) bool {
-	for _, v := range arr {
-		if v == target {
-			return true
-		}
-	}
-	return false
+	return recall / float64(len(linearRes))
 }
 
 func genVec(data [][]float32, cfg *config.BenchmarkDataset) [][]float32 {
