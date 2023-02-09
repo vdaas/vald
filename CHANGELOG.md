@@ -1,5 +1,77 @@
 # CHANGELOG
 
+## v1.7.1
+
+### Docker images
+
+<table>
+  <tr>
+    <th>component</th>
+    <th>Docker pull</th>
+  </tr>
+  <tr>
+    <td>Agent NGT</td>
+    <td>
+      <code>docker pull vdaas/vald-agent-ngt:v1.7.1</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-agent-ngt:v1.7.1</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Agent sidecar</td>
+    <td>
+      <code>docker pull vdaas/vald-agent-sidecar:v1.7.1</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-agent-sidecar:v1.7.1</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Discoverers</td>
+    <td>
+      <code>docker pull vdaas/vald-discoverer-k8s:v1.7.1</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-discoverer-k8s:v1.7.1</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Gateways</td>
+    <td>
+      <code>docker pull vdaas/vald-lb-gateway:v1.7.1</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-lb-gateway:v1.7.1</code><br/>
+      <code>docker pull vdaas/vald-filter-gateway:v1.7.1</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-filter-gateway:v1.7.1</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Index Manager</td>
+    <td>
+      <code>docker pull vdaas/vald-manager-index:v1.7.1</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-manager-index:v1.7.1</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Helm Operator</td>
+    <td>
+      <code>docker pull vdaas/vald-helm-operator:v1.7.1</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-helm-operator:v1.7.1</code>
+    </td>
+  </tr>
+</table>
+
+### Documents
+
+- [GoDoc](https://pkg.go.dev/github.com/vdaas/vald@v1.7.1)
+- [Helm Chart Reference](https://github.com/vdaas/vald/blob/v1.7.1/charts/vald/README.md)
+- [Helm Operator Chart Reference](https://github.com/vdaas/vald/blob/v1.7.1/charts/vald-helm-operator/README.md)
+
+### Changes
+#### 🐛 Bugfix 
+- [bugfix] add target length validation for each grpc client exection method [#1939](https://github.com/vdaas/vald/pull/1939)
+
+#### ♻️ Refactor
+- update grpc status code for API docs [#1943](https://github.com/vdaas/vald/pull/1943)
+- Refactor: Add t.Helper() on test helper function [#1935](https://github.com/vdaas/vald/pull/1935)
+- Fix syntax error on dump context workflow [#1936](https://github.com/vdaas/vald/pull/1936)
+- format codes [#1934](https://github.com/vdaas/vald/pull/1934)
+
+
 ## v1.7.0
 
 ### Docker images
