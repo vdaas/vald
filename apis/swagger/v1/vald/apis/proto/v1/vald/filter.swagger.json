@@ -257,21 +257,6 @@
     }
   },
   "definitions": {
-    "FilterTarget": {
-      "type": "object",
-      "properties": {
-        "host": {
-          "type": "string",
-          "description": "The target hostname."
-        },
-        "port": {
-          "type": "integer",
-          "format": "int64",
-          "description": "The target port."
-        }
-      },
-      "description": "Represent the target filter server."
-    },
     "ObjectBlob": {
       "type": "object",
       "properties": {
@@ -405,11 +390,11 @@
         "code": {
           "type": "integer",
           "format": "int32",
-          "description": "The status code, which should be an enum value of [google.rpc.Code][google.rpc.Code]."
+          "description": "The status code, which should be an enum value of\n[google.rpc.Code][google.rpc.Code]."
         },
         "message": {
           "type": "string",
-          "description": "A developer-facing error message, which should be in English. Any\nuser-facing error message should be localized and sent in the\n[google.rpc.Status.details][google.rpc.Status.details] field, or localized by the client."
+          "description": "A developer-facing error message, which should be in English. Any\nuser-facing error message should be localized and sent in the\n[google.rpc.Status.details][google.rpc.Status.details] field, or localized\nby the client."
         },
         "details": {
           "type": "array",
@@ -473,12 +458,27 @@
         "targets": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/FilterTarget"
+            "$ref": "#/definitions/v1FilterTarget"
           },
           "description": "Represent the filter target configuration."
         }
       },
       "description": "Represent filter configuration."
+    },
+    "v1FilterTarget": {
+      "type": "object",
+      "properties": {
+        "host": {
+          "type": "string",
+          "description": "The target hostname."
+        },
+        "port": {
+          "type": "integer",
+          "format": "int64",
+          "description": "The target port."
+        }
+      },
+      "description": "Represent the target filter server."
     },
     "v1InsertConfig": {
       "type": "object",
@@ -524,7 +524,7 @@
           "description": "The configuration of the insert request."
         },
         "vectorizer": {
-          "$ref": "#/definitions/FilterTarget",
+          "$ref": "#/definitions/v1FilterTarget",
           "description": "Filter configurations."
         }
       },
@@ -624,7 +624,7 @@
           "description": "The configuration of the search request."
         },
         "vectorizer": {
-          "$ref": "#/definitions/FilterTarget",
+          "$ref": "#/definitions/v1FilterTarget",
           "description": "Filter configuration."
         }
       },
@@ -678,7 +678,7 @@
           "description": "The configuration of the update request."
         },
         "vectorizer": {
-          "$ref": "#/definitions/FilterTarget",
+          "$ref": "#/definitions/v1FilterTarget",
           "description": "Filter target."
         }
       },
@@ -732,7 +732,7 @@
           "description": "The configuration of the upsert request."
         },
         "vectorizer": {
-          "$ref": "#/definitions/FilterTarget",
+          "$ref": "#/definitions/v1FilterTarget",
           "description": "Filter target."
         }
       },
