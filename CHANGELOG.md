@@ -62,15 +62,17 @@
 - [Helm Operator Chart Reference](https://github.com/vdaas/vald/blob/v1.7.1/charts/vald-helm-operator/README.md)
 
 ### Changes
-#### 🐛 Bugfix 
+
+#### 🐛 Bugfix
+
 - [bugfix] add target length validation for each grpc client exection method [#1939](https://github.com/vdaas/vald/pull/1939)
 
 #### ♻️ Refactor
+
 - update grpc status code for API docs [#1943](https://github.com/vdaas/vald/pull/1943)
 - Refactor: Add t.Helper() on test helper function [#1935](https://github.com/vdaas/vald/pull/1935)
 - Fix syntax error on dump context workflow [#1936](https://github.com/vdaas/vald/pull/1936)
 - format codes [#1934](https://github.com/vdaas/vald/pull/1934)
-
 
 ## v1.7.0
 
