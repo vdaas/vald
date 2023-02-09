@@ -20,10 +20,10 @@ metadata:
   name: vald-helm-operator
   labels:
     app.kubernetes.io/name: vald-helm-operator
-    helm.sh/chart: vald-helm-operator-v1.7.0
+    helm.sh/chart: vald-helm-operator-v1.7.1
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: release-name
-    app.kubernetes.io/version: v1.7.0
+    app.kubernetes.io/version: v1.7.1
     app.kubernetes.io/component: helm-operator
 spec:
   ports:

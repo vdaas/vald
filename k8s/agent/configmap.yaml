@@ -20,10 +20,10 @@ metadata:
   name: vald-agent-ngt-config
   labels:
     app.kubernetes.io/name: vald
-    helm.sh/chart: vald-v1.7.0
+    helm.sh/chart: vald-v1.7.1
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: release-name
-    app.kubernetes.io/version: v1.7.0
+    app.kubernetes.io/version: v1.7.1
     app.kubernetes.io/component: agent
 data:
   config.yaml: |
