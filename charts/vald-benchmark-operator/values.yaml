@@ -494,3 +494,4 @@ observability:
     enabled: false
     # @schema {"name": "observability.trace.sampling_rate", "type": "integer"}
     sampling_rate: 1
+

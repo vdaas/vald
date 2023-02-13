@@ -113,13 +113,7 @@ func NewConfig(ctx context.Context, path string) (cfg *Config, err error) {
 		cfg.Job.UpsertConfig = jobResource.Spec.UpsertConfig
 		cfg.Job.SearchConfig = jobResource.Spec.SearchConfig
 		cfg.Job.RemoveConfig = jobResource.Spec.RemoveConfig
-		cfg.Job.ObjectConfig = jobResource.Spec.ObjectConfig
 		cfg.Job.ClientConfig = jobResource.Spec.ClientConfig
-		cfg.Job.RPS = jobResource.Spec.RPS
-		if annotations := jobResource.GetAnnotations(); annotations != nil {
-			cfg.Job.BeforeJobName = annotations[JOBNAME_ANNOTATION]
-			cfg.Job.BeforeJobNamespace = annotations[JOBNAMESPACE_ANNOTATION]
-		}
 	}
 
 	return cfg, nil

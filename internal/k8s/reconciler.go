@@ -40,6 +40,8 @@ type (
 	OwnerReference = v1.OwnerReference
 )
 
+type Manager = manager.Manager
+
 type Controller interface {
 	Start(ctx context.Context) (<-chan error, error)
 	GetManager() Manager
