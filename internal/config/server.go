@@ -39,7 +39,7 @@ type Servers struct {
 
 	// StartUpStrategy represent starting order of server name
 	StartUpStrategy []string `json:"startup_strategy"  yaml:"startup_strategy"`
-	// ShutdownStrategy represent shutdonw order of server name
+	// ShutdownStrategy represent shutdown order of server name
 	ShutdownStrategy []string `json:"shutdown_strategy" yaml:"shutdown_strategy"`
 
 	// FullShutdownDuration represent summary duration of shutdown time

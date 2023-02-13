@@ -22,6 +22,8 @@ docker/build: \
 	docker/build/gateway-lb \
 	docker/build/gateway-filter \
 	docker/build/manager-index \
+	docker/build/benchmark-job \
+	docker/build/benchmark-operator \
 	docker/build/helm-operator
 
 .PHONY: docker/name/org
@@ -188,3 +190,33 @@ docker/build/loadtest:
 	    -t $(ORG)/$(LOADTEST_IMAGE):$(TAG) . \
 	    --build-arg MAINTAINER=$(MAINTAINER) \
 	    --build-arg GO_VERSION=$(GO_VERSION)
+
+.PHONY: docker/name/benchmark-job
+docker/name/benchmark-job:
+	@echo "$(ORG)/$(BENCHMARK_JOB_IMAGE)"
+
+.PHONY: docker/build/benchmark-job
+## build benchmark job
+docker/build/benchmark-job:
+	$(DOCKER) build \
+	    $(DOCKER_OPTS) \
+	    -f dockers/tools/benchmark/job/Dockerfile \
+	    -t $(ORG)/$(BENCHMARK_JOB_IMAGE):$(TAG) . \
+	    --build-arg GO_VERSION=$(GO_VERSION) \
+	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
+	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG)
+
+.PHONY: docker/name/benchmark-operator
+docker/name/benchmark-operator:
+	@echo "$(ORG)/$(BENCHMARK_OPERATOR_IMAGE)"
+
+.PHONY: docker/build/benchmark-operator
+## build benchmark operator
+docker/build/benchmark-operator:
+	$(DOCKER) build \
+	    $(DOCKER_OPTS) \
+	    -f dockers/tools/benchmark/operator/Dockerfile \
+	    -t $(ORG)/$(BENCHMARK_OPERATOR_IMAGE):$(TAG) . \
+	    --build-arg GO_VERSION=$(GO_VERSION) \
+	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
+	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG)
