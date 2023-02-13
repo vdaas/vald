@@ -1,3 +1,4 @@
+//
 // Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -11,6 +12,9 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+//
+
+// Package client is Kubernetes client for getting resource from Kubernetes cluster.
 package client
 
 import (
@@ -89,7 +93,6 @@ func New(opts ...Option) (Client, error) {
 	if c.scheme == nil {
 		c.scheme = runtime.NewScheme()
 	}
-
 	for _, opt := range opts {
 		if err := opt(c); err != nil {
 			return nil, err
@@ -103,7 +106,6 @@ func New(opts ...Option) (Client, error) {
 	if err := snapshotv1.AddToScheme(c.scheme); err != nil {
 		return nil, err
 	}
-
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), manager.Options{
 		Scheme: c.scheme,
 	})
