@@ -22,13 +22,9 @@ import (
 	"os"
 
 	"github.com/vdaas/vald/internal/config"
+	"github.com/vdaas/vald/internal/k8s/client"
 	v1 "github.com/vdaas/vald/internal/k8s/vald/benchmark/api/v1"
 	"github.com/vdaas/vald/internal/log"
-	"k8s.io/apimachinery/pkg/runtime"
-	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/client"
-
-	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
 
 // GlobalConfig is type alias for config.GlobalConfig
@@ -52,7 +48,6 @@ type Config struct {
 var (
 	NAMESPACE = os.Getenv("CRD_NAMESPACE")
 	NAME      = os.Getenv("CRD_NAME")
-	mgr       manager.Manager
 )
 
 // NewConfig represents the set config from the given setting file path.
@@ -89,20 +84,12 @@ func NewConfig(ctx context.Context, path string) (cfg *Config, err error) {
 	}
 
 	// Get config from applied ValdBenchmarkJob custom resource
-	scheme := runtime.NewScheme()
-	v1.AddToScheme(scheme)
-	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), manager.Options{
-		Scheme: scheme,
-	})
+	var jobResource v1.ValdBenchmarkJob
+	c, err := client.New(client.WithSchemeBuilder(*v1.SchemeBuilder))
 	if err != nil {
 		log.Warn(err.Error())
 	}
-	cli := mgr.GetAPIReader()
-	var jobResource v1.ValdBenchmarkJob
-	err = cli.Get(ctx, client.ObjectKey{
-		Name:      NAME,
-		Namespace: NAMESPACE,
-	}, &jobResource)
+	err = c.Get(ctx, NAME, NAMESPACE, &jobResource)
 	if err != nil {
 		log.Warn(err.Error())
 	} else {
