@@ -128,7 +128,6 @@ func (j *job) PreStart(ctx context.Context) error {
 			return err
 		}
 	}
-
 	log.Infof("[benchmark job] start download dataset of %s", j.hdf5.GetName().String())
 	if err := j.hdf5.Download(); err != nil {
 		return err
