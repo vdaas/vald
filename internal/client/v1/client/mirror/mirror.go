@@ -83,7 +83,7 @@ func (c *client) Register(ctx context.Context, in *payload.Mirror_Targets, opts 
 	}()
 
 	_, err = c.c.RoundRobin(ctx, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
-		res, err = mirror.NewMirrorClient(conn).Register(ctx, in, append(copts, opts)...)
+		res, err = mirror.NewMirrorClient(conn).Register(ctx, in, append(copts, opts...)...)
 		if err != nil {
 			return nil, err
 		}
@@ -104,7 +104,7 @@ func (c *client) Advertise(ctx context.Context, in *payload.Mirror_Targets, opts
 	}()
 
 	_, err = c.c.RoundRobin(ctx, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
-		res, err = mirror.NewMirrorClient(conn).Advertise(ctx, in, append(copts, opts)...)
+		res, err = mirror.NewMirrorClient(conn).Advertise(ctx, in, append(copts, opts...)...)
 		if err != nil {
 			return nil, err
 		}

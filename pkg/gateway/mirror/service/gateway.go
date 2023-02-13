@@ -46,7 +46,6 @@ type Gateway interface {
 	OtherMirrorAddrs() []string
 	Connect(ctx context.Context, targets ...*payload.Mirror_Target) ([]*payload.Mirror_Target, error)
 	ForwardedContext(ctx context.Context, podName string) context.Context
-	IsSamePod(podName string) bool
 	FromForwardedContext(ctx context.Context) string
 	BroadCast(ctx context.Context,
 		f func(ctx context.Context, target string, conn *grpc.ClientConn, copts ...grpc.CallOption) error) error
@@ -219,10 +218,6 @@ func (g *gateway) FromForwardedContext(ctx context.Context) string {
 	return ""
 }
 
-func (g *gateway) IsSamePod(podName string) bool {
-	return g.podName == podName
-}
-
 // BroadCast executes a broadcast operation to the Mirror Gateway on other clusters.
 func (g *gateway) BroadCast(ctx context.Context,
 	f func(ctx context.Context, target string, conn *grpc.ClientConn, copts ...grpc.CallOption) error,
@@ -234,7 +229,6 @@ func (g *gateway) BroadCast(ctx context.Context,
 		}
 	}()
 
-	selfAddrs := g.selfMirrorAddrs()
 	return g.client.GRPCClient().RangeConcurrent(g.ForwardedContext(fctx, g.podName), -1, func(ictx context.Context,
 		addr string, conn *grpc.ClientConn, copts ...grpc.CallOption,
 	) (err error) {
@@ -242,9 +236,6 @@ func (g *gateway) BroadCast(ctx context.Context,
 		case <-ictx.Done():
 			return nil
 		default:
-			if _, ok := selfAddrs[addr]; ok {
-				return
-			}
 			err = f(ictx, addr, conn, copts...)
 			if err != nil {
 				return err
