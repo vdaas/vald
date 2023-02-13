@@ -19,6 +19,7 @@ package usecase
 
 import (
 	"context"
+	"strconv"
 
 	"github.com/vdaas/vald/internal/client/v1/client/vald"
 	iconf "github.com/vdaas/vald/internal/config"
@@ -53,14 +54,27 @@ type run struct {
 func New(cfg *config.Config) (r runner.Runner, err error) {
 	log.Info("pkg/tools/benchmark/job/cmd start")
 	eg := errgroup.Get()
-	copts, err := cfg.Job.GatewayClient.Opts()
+
+	if cfg.Job.Target != nil {
+		addr := cfg.Job.Target.Host + ":" + strconv.Itoa(cfg.Job.Target.Port)
+		if cfg.Job.ClientConfig.Addrs == nil {
+			cfg.Job.ClientConfig.Addrs = []string{addr}
+		} else {
+			cfg.Job.ClientConfig.Addrs = append(cfg.Job.ClientConfig.Addrs, addr)
+		}
+	}
+
+	copts, err := cfg.Job.ClientConfig.Opts()
 	if err != nil {
 		return nil, err
 	}
-
-	c, err := vald.New(
-		vald.WithAddrs(cfg.Job.GatewayClient.Addrs...),
-		vald.WithClient(grpc.New(copts...)),
+	if cfg.Job.ClientConfig.DialOption == nil {
+		copts = append(copts, grpc.WithInsecure(true))
+	}
+	gcli := grpc.New(copts...)
+	vcli, err := vald.New(
+		vald.WithAddrs(cfg.Job.ClientConfig.Addrs...),
+		vald.WithClient(gcli),
 	)
 	if err != nil {
 		return nil, err
@@ -76,15 +90,15 @@ func New(cfg *config.Config) (r runner.Runner, err error) {
 
 	job, err := service.New(
 		service.WithErrGroup(eg),
-		service.WithValdClient(c),
+		service.WithValdClient(vcli),
+		service.WithDataset(cfg.Job.Dataset),
 		service.WithJobTypeByString(cfg.Job.JobType),
 		service.WithDimension(cfg.Job.Dimension),
-		service.WithIter(cfg.Job.Iter),
-		service.WithNum(cfg.Job.Num),
-		service.WithMinNum(cfg.Job.MinNum),
-		service.WithRadius(cfg.Job.Radius),
-		service.WithEpsilon(cfg.Job.Epsilon),
-		service.WithTimeout(cfg.Job.Timeout),
+		service.WithInsertConfig(cfg.Job.InsertConfig),
+		service.WithUpdateConfig(cfg.Job.UpdateConfig),
+		service.WithUpsertConfig(cfg.Job.UpsertConfig),
+		service.WithSearchConfig(cfg.Job.SearchConfig),
+		service.WithRemoveConfig(cfg.Job.RemoveConfig),
 		service.WithHdf5(d),
 	)
 	if err != nil {
@@ -219,6 +233,9 @@ func (r *run) PreStop(ctx context.Context) error {
 func (r *run) Stop(ctx context.Context) error {
 	if r.observability != nil {
 		r.observability.Stop(ctx)
+	}
+	if r.job != nil {
+		r.job.Stop(ctx)
 	}
 	return r.server.Shutdown(ctx)
 }

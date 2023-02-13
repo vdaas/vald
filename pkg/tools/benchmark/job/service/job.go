@@ -19,11 +19,13 @@ package service
 
 import (
 	"context"
+	"os"
 	"reflect"
-	"time"
+	"syscall"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/client/v1/client/vald"
+	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
@@ -33,26 +35,39 @@ import (
 type Job interface {
 	PreStart(context.Context) error
 	Start(context.Context) (<-chan error, error)
+	Stop(context.Context) error
 }
 
 type jobType int
 
 const (
-	SEARCH jobType = iota
+	USERDEFINED jobType = iota
+	SEARCH
 )
 
+func (jt jobType) String() string {
+	switch jt {
+	case USERDEFINED:
+		return "userdefined"
+	case SEARCH:
+		return "search"
+	}
+	return ""
+}
+
 type job struct {
-	eg        errgroup.Group
-	jobType   jobType
-	dimension int
-	iter      int
-	num       uint32
-	minNum    uint32
-	radius    float64
-	epsilon   float64
-	timeout   time.Duration
-	client    vald.Client
-	hdf5      hdf5.Data
+	eg           errgroup.Group
+	dimension    int
+	dataset      *config.BenchmarkDataset
+	jobType      jobType
+	jobFunc      func(context.Context, chan error) error
+	insertConfig *config.InsertConfig
+	updateConfig *config.UpdateConfig
+	upsertConfig *config.UpsertConfig
+	searchConfig *config.SearchConfig
+	removeConfig *config.RemoveConfig
+	client       vald.Client
+	hdf5         hdf5.Data
 }
 
 func New(opts ...Option) (Job, error) {
@@ -61,6 +76,18 @@ func New(opts ...Option) (Job, error) {
 		if err := opt(j); err != nil {
 			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 		}
+	}
+	if j.jobFunc == nil {
+		switch j.jobType {
+		case USERDEFINED:
+			opt := WithJobFunc(j.jobFunc)
+			err := opt(j)
+			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
+		case SEARCH:
+			j.jobFunc = j.search
+		}
+	} else if j.jobType != USERDEFINED {
+		log.Warnf("[benchmark job] userdefined jobFunc is set but jobType is set %s", j.jobType.String())
 	}
 	return j, nil
 }
@@ -96,38 +123,66 @@ func (j *job) Start(ctx context.Context) (<-chan error, error) {
 		}
 	})
 
-	switch j.jobType {
-	case SEARCH:
-		err := search(ctx, j, ech)
+	j.eg.Go(func() (err error) {
+		defer func() {
+			p, perr := os.FindProcess(os.Getpid())
+			if perr != nil {
+				log.Error(perr)
+				return
+			}
+			if err != nil {
+				select {
+				case <-ctx.Done():
+					ech <- errors.Wrap(err, ctx.Err().Error())
+				case ech <- err:
+				}
+			}
+			if err := p.Signal(syscall.SIGTERM); err != nil {
+				log.Error(err)
+			}
+		}()
+		err = j.jobFunc(ctx, ech)
 		if err != nil {
-			return ech, err
+			log.Errorf("[benchmark job] failed to job: %v", err)
 		}
-	}
+		return
+	})
+
 	return ech, nil
 }
 
-func calcRecall(linearRes, searchRes []*payload.Object_Distance) float64 {
-	if len(linearRes) == 0 || len(searchRes) == 0 {
-		return 0
-	}
-	linearIds := make([]string, len(linearRes))
-	for i, v := range linearRes {
-		linearIds[i] = v.Id
-	}
-	cnt := 0
-	for _, v := range searchRes {
-		if contains(v.Id, linearIds) {
-			cnt++
-		}
-	}
-	return float64(cnt / len(linearRes))
+func (j *job) Stop(ctx context.Context) (err error) {
+	err = j.client.Stop(ctx)
+	return
 }
 
-func contains(target string, arr []string) bool {
-	for _, v := range arr {
-		if v == target {
-			return true
+func calcRecall(linearRes, searchRes []*payload.Object_Distance) (recall float64) {
+	if len(linearRes) == 0 || len(searchRes) == 0 {
+		return
+	}
+	linearIds := map[string]struct{}{}
+	for _, v := range linearRes {
+		linearIds[v.Id] = struct{}{}
+	}
+	for _, v := range searchRes {
+		if _, ok := linearIds[v.Id]; ok {
+			recall++
 		}
 	}
-	return false
+	return recall / float64(len(linearRes))
+}
+
+func genVec(data [][]float32, cfg *config.BenchmarkDataset) [][]float32 {
+	start := cfg.Range.Start
+	end := cfg.Range.End
+	if (end - start) < cfg.Indexes {
+		end = cfg.Indexes
+	}
+	num := end - start + 1
+	if len(data) < num {
+		num = len(data)
+		end = start + num + 1
+	}
+	vectors := data[start : end+1]
+	return vectors
 }

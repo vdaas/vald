@@ -18,6 +18,7 @@
 package config
 
 import (
+	"context"
 	"io/fs"
 	"os"
 	"testing"
@@ -117,7 +118,7 @@ func TestNewConfig(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 
-			gotCfg, err := NewConfig(test.args.path)
+			gotCfg, err := NewConfig(context.Background(), test.args.path)
 			if err := checkFunc(test.want, gotCfg, err); err != nil {
 				tt.Errorf("error = %v, got = %#v", err, gotCfg)
 			}

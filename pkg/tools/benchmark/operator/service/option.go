@@ -18,20 +18,38 @@
 package service
 
 import (
+	"time"
+
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 )
 
+// Option represents the functional option for scenario struct.
 type Option func(sc *scenario) error
 
-var defaultOpts = []Option{}
+var defaultOpts = []Option{
+	WithReconcileCheckDuration("10s"),
+}
 
+// WithErrGroup sets the error group to scenario.
 func WithErrGroup(eg errgroup.Group) Option {
 	return func(sc *scenario) error {
 		if eg == nil {
 			return errors.NewErrInvalidOption("client", eg)
 		}
 		sc.eg = eg
+		return nil
+	}
+}
+
+// WithReconcileCheckDuration sets the reconcile check duration from input string.
+func WithReconcileCheckDuration(ts string) Option {
+	return func(sc *scenario) error {
+		t, err := time.ParseDuration(ts)
+		if err != nil {
+			return err
+		}
+		sc.rcd = t
 		return nil
 	}
 }

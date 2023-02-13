@@ -22,9 +22,9 @@ import (
 )
 
 type ValdBenchmarkScenarioSpec struct {
-	Target  *BenchmarkTarget
-	Dataset *BenchmarkDataset
-	Jobs    []*BenchmarkJobSpec
+	Target  *BenchmarkTarget    `json:"target,omitempty"`
+	Dataset *BenchmarkDataset   `json:"dataset,omitempty"`
+	Jobs    []*BenchmarkJobSpec `json:"jobs,omitempty"`
 }
 
 type ValdBenchmarkScenarioStatus string

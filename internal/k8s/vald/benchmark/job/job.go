@@ -18,7 +18,6 @@ package job
 
 import (
 	"context"
-	"strconv"
 	"time"
 
 	"github.com/vdaas/vald/internal/k8s"
@@ -51,7 +50,7 @@ type reconciler struct {
 	name        string
 	namespaces  []string
 	onError     func(err error)
-	onReconcile func(ctx context.Context, jobList map[string]v1.BenchmarkJobSpec)
+	onReconcile func(ctx context.Context, jobList map[string]v1.ValdBenchmarkJob)
 	lopts       []client.ListOption
 }
 
@@ -75,7 +74,7 @@ func (r *reconciler) AddListOpts(opt client.ListOption) {
 }
 
 func (r *reconciler) Reconcile(ctx context.Context, req reconcile.Request) (res reconcile.Result, err error) {
-	bj := new(v1.BenchmarkJobList)
+	bj := new(v1.ValdBenchmarkJobList)
 
 	if r.lopts == nil {
 		err = r.mgr.GetClient().List(ctx, bj, r.lopts...)
@@ -101,10 +100,10 @@ func (r *reconciler) Reconcile(ctx context.Context, req reconcile.Request) (res 
 		return
 	}
 
-	jobs := make(map[string]v1.BenchmarkJobSpec, 0)
+	jobs := make(map[string]v1.ValdBenchmarkJob, 0)
 	for _, item := range bj.Items {
-		name := strconv.FormatInt(time.Now().UnixNano(), 10)
-		jobs[name] = item.Spec
+		name := item.GetName()
+		jobs[name] = item
 	}
 
 	if r.onReconcile != nil {
@@ -128,7 +127,7 @@ func (r *reconciler) NewReconciler(ctx context.Context, mgr manager.Manager) rec
 }
 
 func (r *reconciler) For() (client.Object, []builder.ForOption) {
-	return new(v1.BenchmarkJob), nil
+	return new(v1.ValdBenchmarkJob), nil
 }
 
 func (r *reconciler) Owns() (client.Object, []builder.OwnsOption) {
