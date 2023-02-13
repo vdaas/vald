@@ -1386,7 +1386,266 @@ gateway:
         # @schema {"name": "gateway.filter.gateway_config.egress_filter.distance_filters", "type": "array", "items": {"type": "string"}}
         # gateway.filter.gateway_config.egress_filter.distance_filters -- distance egress vector filter targets
         distance_filters: []
-
+  # @schema {"name": "gateway.mirror", "type": "object"}
+  mirror:
+    # @schema {"name": "gateway.mirror.enabled", "type": "boolean"}
+    # gateway.mirror.enabled -- gateway enabled
+    enabled: false
+    # @schema {"name": "gateway.mirror.version", "type": "string", "pattern": "^v[0-9]+\\.[0-9]+\\.[0-9]$", "anchor": "version"}
+    # gateway.mirror.version -- version of gateway config
+    version: v0.0.0
+    # @schema {"name": "gateway.mirror.time_zone", "type": "string"}
+    # gateway.mirror.time_zone -- Time zone
+    time_zone: ""
+    # @schema {"name": "gateway.mirror.logging", "alias": "logging"}
+    # gateway.mirror.logging -- logging config (overrides defaults.logging)
+    logging: {}
+    # @schema {"name": "gateway.mirror.name", "type": "string"}
+    # gateway.mirror.name -- name of gateway deployment
+    name: vald-mirror-gateway
+    # @schema {"name": "gateway.mirror.kind", "type": "string", "enum": ["Deployment", "DaemonSet"]}
+    # gateway.mirror.kind -- deployment kind: Deployment or DaemonSet
+    kind: Deployment
+    # @schema {"name": "gateway.mirror.serviceType", "type": "string", "enum": ["ClusterIP", "LoadBalancer", "NodePort"]}
+    # gateway.mirror.serviceType -- service type: ClusterIP, LoadBalancer or NodePort
+    serviceType: ClusterIP
+    # @schema {"name": "gateway.mirror.externalTrafficPolicy", "type": "string"}
+    # gateway.mirror.externalTrafficPolicy -- external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local
+    externalTrafficPolicy: ""
+    # @schema {"name": "gateway.mirror.internalTrafficPolicy", "type": "string"}
+    # gateway.mirror.internalTrafficPolicy -- internal traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local
+    internalTrafficPolicy: ""
+    # @schema {"name": "gateway.mirror.progressDeadlineSeconds", "type": "integer"}
+    # gateway.mirror.progressDeadlineSeconds -- progress deadline seconds
+    progressDeadlineSeconds: 600
+    # @schema {"name": "gateway.mirror.minReplicas", "type": "integer", "minimum": 0}
+    # gateway.mirror.minReplicas -- minimum number of replicas.
+    # if HPA is disabled, the replicas will be set to this value
+    minReplicas: 3
+    # @schema {"name": "gateway.mirror.maxReplicas", "type": "integer", "minimum": 0}
+    # gateway.mirror.maxReplicas -- maximum number of replicas.
+    # if HPA is disabled, this value will be ignored.
+    maxReplicas: 9
+    # @schema {"name": "gateway.mirror.maxUnavailable", "type": "string"}
+    # gateway.mirror.maxUnavailable -- maximum number of unavailable replicas
+    maxUnavailable: 50%
+    # @schema {"name": "gateway.mirror.revisionHistoryLimit", "type": "integer", "minimum": 0}
+    # gateway.mirror.revisionHistoryLimit -- number of old history to retain to allow rollback
+    revisionHistoryLimit: 2
+    # @schema {"name": "gateway.mirror.terminationGracePeriodSeconds", "type": "integer", "minimum": 0}
+    # gateway.mirror.terminationGracePeriodSeconds -- duration in seconds pod needs to terminate gracefully
+    terminationGracePeriodSeconds: 30
+    # @schema {"name": "gateway.mirror.podSecurityContext", "type": "object"}
+    # gateway.mirror.podSecurityContext -- security context for pod
+    podSecurityContext:
+      runAsUser: 65532
+      runAsNonRoot: true
+      runAsGroup: 65532
+      fsGroup: 65532
+      fsGroupChangePolicy: "OnRootMismatch"
+    # @schema {"name": "gateway.mirror.securityContext", "type": "object"}
+    # gateway.mirror.securityContext -- security context for container
+    securityContext:
+      runAsUser: 65532
+      runAsNonRoot: true
+      runAsGroup: 65532
+      privileged: false
+      allowPrivilegeEscalation: false
+      readOnlyRootFilesystem: true
+      capabilities:
+        drop:
+          - ALL
+    # @schema {"name": "gateway.mirror.podPriority", "type": "object", "anchor": "podPriority"}
+    podPriority:
+      # @schema {"name": "gateway.mirror.podPriority.enabled", "type": "boolean"}
+      # gateway.mirror.podPriority.enabled -- gateway pod PriorityClass enabled
+      enabled: true
+      # @schema {"name": "gateway.mirror.podPriority.value", "type": "integer"}
+      # gateway.mirror.podPriority.value -- gateway pod PriorityClass value
+      value: 1000000
+    # @schema {"name": "gateway.mirror.annotations", "type": "object"}
+    # gateway.mirror.annotations -- deployment annotations
+    annotations: {}
+    # @schema {"name": "gateway.mirror.podAnnotations", "type": "object"}
+    # gateway.mirror.podAnnotations -- pod annotations
+    podAnnotations: {}
+    # @schema {"name": "gateway.mirror.service", "type": "object", "anchor": "service"}
+    service:
+      # @schema {"name": "gateway.mirror.service.annotations", "type": "object"}
+      # gateway.mirror.service.annotations -- service annotations
+      annotations: {}
+      # @schema {"name": "gateway.mirror.service.labels", "type": "object"}
+      # gateway.mirror.service.labels -- service labels
+      labels: {}
+    # @schema {"name": "gateway.mirror.hpa", "type": "object", "anchor": "hpa"}
+    hpa:
+      # @schema {"name": "gateway.mirror.hpa.enabled", "type": "boolean"}
+      # gateway.mirror.hpa.enabled -- HPA enabled
+      enabled: true
+      # @schema {"name": "gateway.mirror.hpa.targetCPUUtilizationPercentage", "type": "integer"}
+      # gateway.mirror.hpa.targetCPUUtilizationPercentage -- HPA CPU utilization percentage
+      targetCPUUtilizationPercentage: 80
+    # @schema {"name": "gateway.mirror.image", "type": "object", "anchor": "image"}
+    image:
+      # @schema {"name": "gateway.mirror.image.repository", "type": "string"}
+      # gateway.mirror.image.repository -- image repository
+      repository: vdaas/vald-mirror-gateway
+      # @schema {"name": "gateway.mirror.image.tag", "type": "string"}
+      # gateway.mirror.image.tag -- image tag (overrides defaults.image.tag)
+      tag: ""
+      # @schema {"name": "gateway.mirror.image.pullPolicy", "type": "string", "enum": ["Always", "Never", "IfNotPresent"]}
+      # gateway.mirror.image.pullPolicy -- image pull policy
+      pullPolicy: Always
+    # @schema {"name": "gateway.mirror.rollingUpdate", "type": "object", "anchor": "rollingUpdate"}
+    rollingUpdate:
+      # @schema {"name": "gateway.mirror.rollingUpdate.maxSurge", "type": "string"}
+      # gateway.mirror.rollingUpdate.maxSurge -- max surge of rolling update
+      maxSurge: 25%
+      # @schema {"name": "gateway.mirror.rollingUpdate.maxUnavailable", "type": "string"}
+      # gateway.mirror.rollingUpdate.maxUnavailable -- max unavailable of rolling update
+      maxUnavailable: 25%
+    # @schema {"name": "gateway.mirror.initContainers", "type": "array", "items": {"type": "object"}, "anchor": "initContainers"}
+    # gateway.mirror.initContainers -- init containers
+    initContainers:
+      - type: wait-for
+        name: wait-for-gateway-lb
+        target: gateway-lb
+        image: busybox:stable
+        sleepDuration: 2
+    # @schema {"name": "gateway.mirror.env", "type": "array", "items": {"type": "object"}, "anchor": "env"}
+    # gateway.mirror.env -- environment variables
+    env:
+      - name: MY_NODE_NAME
+        valueFrom:
+          fieldRef:
+            fieldPath: spec.nodeName
+      - name: MY_POD_NAME
+        valueFrom:
+          fieldRef:
+            fieldPath: metadata.name
+      - name: MY_POD_NAMESPACE
+        valueFrom:
+          fieldRef:
+            fieldPath: metadata.namespace
+    # @schema {"name": "gateway.mirror.volumeMounts", "type": "array", "items": {"type": "object"}, "anchor": "volumeMounts"}
+    # gateway.mirror.volumeMounts -- volume mounts
+    volumeMounts: []
+    # @schema {"name": "gateway.mirror.volumes", "type": "array", "items": {"type": "object"}, "anchor": "volumes"}
+    # gateway.mirror.volumes -- volumes
+    volumes: []
+    # @schema {"name": "gateway.mirror.nodeName", "type": "string"}
+    # gateway.mirror.nodeName -- node name
+    nodeName: ""
+    # @schema {"name": "gateway.mirror.nodeSelector", "type": "object", "anchor": "nodeSelector"}
+    # gateway.mirror.nodeSelector -- node selector
+    nodeSelector: {}
+    # @schema {"name": "gateway.mirror.tolerations", "type": "array", "items": {"type": "object"}, "anchor": "tolerations"}
+    # gateway.mirror.tolerations -- tolerations
+    tolerations: []
+    # @schema {"name": "gateway.mirror.affinity", "type": "object", "anchor": "affinity"}
+    affinity:
+      # @schema {"name": "gateway.mirror.affinity.nodeAffinity", "type": "object"}
+      nodeAffinity:
+        # @schema {"name": "gateway.mirror.affinity.nodeAffinity.preferredDuringSchedulingIgnoredDuringExecution", "type": "array", "items": {"type": "object"}}
+        # gateway.mirror.affinity.nodeAffinity.preferredDuringSchedulingIgnoredDuringExecution -- node affinity preferred scheduling terms
+        preferredDuringSchedulingIgnoredDuringExecution: []
+        # @schema {"name": "gateway.mirror.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution", "type": "object"}
+        requiredDuringSchedulingIgnoredDuringExecution:
+          # @schema {"name": "gateway.mirror.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms", "type": "array", "items": {"type": "object"}}
+          # gateway.mirror.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms -- node affinity required node selectors
+          nodeSelectorTerms: []
+      # @schema {"name": "gateway.mirror.affinity.podAffinity", "type": "object"}
+      podAffinity:
+        # @schema {"name": "gateway.mirror.affinity.podAffinity.preferredDuringSchedulingIgnoredDuringExecution", "type": "array", "items": {"type": "object"}}
+        # gateway.mirror.affinity.podAffinity.preferredDuringSchedulingIgnoredDuringExecution -- pod affinity preferred scheduling terms
+        preferredDuringSchedulingIgnoredDuringExecution: []
+        # @schema {"name": "gateway.mirror.affinity.podAffinity.requiredDuringSchedulingIgnoredDuringExecution", "type": "array", "items": {"type": "object"}}
+        # gateway.mirror.affinity.podAffinity.requiredDuringSchedulingIgnoredDuringExecution -- pod affinity required scheduling terms
+        requiredDuringSchedulingIgnoredDuringExecution: []
+      # @schema {"name": "gateway.mirror.affinity.podAntiAffinity", "type": "object"}
+      podAntiAffinity:
+        # @schema {"name": "gateway.mirror.affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution", "type": "array", "items": {"type": "object"}}
+        # gateway.mirror.affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution -- pod anti-affinity preferred scheduling terms
+        preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              topologyKey: kubernetes.io/hostname
+              labelSelector:
+                matchExpressions:
+                  - key: app
+                    operator: In
+                    values:
+                      - vald-mirror-gateway
+        # @schema {"name": "gateway.mirror.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution", "type": "array", "items": {"type": "object"}}
+        # gateway.mirror.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution -- pod anti-affinity required scheduling terms
+        requiredDuringSchedulingIgnoredDuringExecution: []
+    # @schema {"name": "gateway.mirror.topologySpreadConstraints", "type": "array", "items": {"type": "object"}, "anchor": "topologySpreadConstraints"}
+    # gateway.mirror.topologySpreadConstraints -- topology spread constraints of gateway pods
+    topologySpreadConstraints: []
+    # @schema {"name": "gateway.mirror.server_config", "alias": "server_config"}
+    # gateway.mirror.server_config -- server config (overrides defaults.server_config)
+    server_config:
+      servers:
+        rest: {}
+        grpc: {}
+      healths:
+        liveness: {}
+        readiness: {}
+        startup: {}
+      metrics:
+        pprof: {}
+    # @schema {"name": "gateway.mirror.observability", "alias": "observability"}
+    # gateway.mirror.observability -- observability config (overrides defaults.observability)
+    observability:
+      otlp:
+        attribute:
+          service_name: vald-mirror-gateway
+    # @schema {"name": "gateway.mirror.ingress", "type": "object"}
+    ingress:
+      # @schema {"name": "gateway.mirror.ingress.pathType", "type": "string"}
+      # gateway.mirror.ingress.pathType -- gateway ingress pathType
+      pathType: ImplementationSpecific
+      # @schema {"name": "gateway.mirror.ingress.enabled", "type": "boolean"}
+      # gateway.mirror.ingress.enabled -- gateway ingress enabled
+      enabled: false
+      # @schema {"name": "gateway.mirror.ingress.annotations", "type": "object"}
+      # gateway.mirror.ingress.annotations -- annotations for ingress
+      annotations:
+        nginx.ingress.kubernetes.io/grpc-backend: "true"
+      # @schema {"name": "gateway.mirror.ingress.host", "type": "string"}
+      # gateway.mirror.ingress.host -- ingress hostname
+      host: mirror.gateway.vald.vdaas.org
+      # @schema {"name": "gateway.mirror.ingress.servicePort", "type": "string"}
+      # gateway.mirror.ingress.servicePort -- service port to be exposed by ingress
+      servicePort: grpc
+    # @schema {"name": "gateway.mirror.resources", "type": "object", "anchor": "resources"}
+    # gateway.mirror.resources -- compute resources
+    resources:
+      # @schema {"name": "gateway.mirror.resources.requests", "type": "object"}
+      requests:
+        cpu: 200m
+        memory: 150Mi
+      # @schema {"name": "gateway.mirror.resources.limits", "type": "object"}
+      limits:
+        cpu: 2000m
+        memory: 700Mi
+    # @schema {"name": "gateway.mirror.gateway_config", "type": "object"}
+    gateway_config:
+      # @schema {"name": "gateway.mirror.gateway_config.lb_client", "alias": "grpc.client"}
+      # gateway.mirror.gateway_config.lb_client -- gRPC client for lb-gateway (overrides defaults.grpc.client)
+      lb_client: {}
+      # @schema {"name": "gateway.mirror.gateway_config.mirror_client", "alias": "grpc.client"}
+      # gateway.mirror.gateway_config.mirror_client -- gRPC client for external mirror-gateway (overrides defaults.grpc.client)
+      mirror_client: {}
+      # @schema {"name": "gateway.mirror.gateway_config.self_mirror_client", "alias": "grpc.client"}
+      # gateway.mirror.gateway_config.self_mirror_client -- gRPC client for self mirror-gateway (overrides defaults.grpc.client)
+      self_mirror_client: {}
+      # @schema {"name": "gateway.mirror.gateway_config.pod_name", "type": "string"}
+      # gateway.mirror.gateway_config.pod_name -- self mirror gateway pod name
+      pod_name: _MY_POD_NAME_
+      # @schema {"name": "gateway.mirror.gateway_config.advertise_interval", "type": "string"}
+      # gateway.mirror.gateway_config.advertise_interval -- interval to advertise mirror-gateway information to other mirror-gateway.
+      advertise_interval: "1s"
 # @schema {"name": "agent", "type": "object"}
 agent:
   # @schema {"name": "agent.enabled", "type": "boolean"}

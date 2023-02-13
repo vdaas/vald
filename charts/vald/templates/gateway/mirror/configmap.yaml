@@ -1,0 +1,97 @@
+#
+# Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+{{- $gateway := .Values.gateway.mirror -}}
+{{- $lb := .Values.gateway.lb -}}
+{{- if $gateway.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ $gateway.name }}-config
+  labels:
+    app.kubernetes.io/name: {{ include "vald.name" . }}
+    helm.sh/chart: {{ include "vald.chart" . }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/version: {{ .Chart.Version }}
+    app.kubernetes.io/component: gateway-mirror
+data:
+  config.yaml: |
+    ---
+    version: {{ $gateway.version }}
+    time_zone: {{ default .Values.defaults.time_zone $gateway.time_zone }}
+    logging:
+      {{- $logging := dict "Values" $gateway.logging "default" .Values.defaults.logging }}
+      {{- include "vald.logging" $logging | nindent 6 }}
+    server_config:
+      {{- $servers := dict "Values" $gateway.server_config "default" .Values.defaults.server_config }}
+      {{- include "vald.servers" $servers | nindent 6 }}
+    observability:
+      {{- $observability := dict "Values" $gateway.observability "default" .Values.defaults.observability }}
+      {{- include "vald.observability" $observability | nindent 6 }}
+    gateway:
+      pod_name: {{ $gateway.gateway_config.pod_name }}
+      advertise_interval: {{ $gateway.gateway_config.advertise_interval }}
+      lb_client:
+        {{- $lbClient := $gateway.gateway_config.lb_client }}
+        {{- if $lb.enabled -}}
+        {{- $defaultLBHost := printf "%s.%s.svc.cluster.local" $lb.name .Release.Namespace }}
+        {{- $lbServerPort := $lb.server_config.servers.grpc.port }}
+        {{- $defaultLBPort := default .Values.defaults.server_config.servers.grpc.port $lbServerPort }}
+        {{- $defaultLBAddr := (list (printf "%s:%d" $defaultLBHost (int64 $defaultLBPort))) }}
+        {{- $lbAddrs := dict "Values" $lbClient.addrs "default" $defaultLBAddr }}
+        {{- include "vald.grpc.client.addrs" $lbAddrs | nindent 8 }}
+        {{- end -}}
+        {{- $GRPCClient := dict "Values" $lbClient "default" .Values.defaults.grpc.client }}
+        {{- include "vald.grpc.client" $GRPCClient | nindent 8 }}
+      mirror_client:
+        {{- $mirrorClient := $gateway.gateway_config.mirror_client }}
+        {{- if $gateway.ingress.enabled -}}
+        {{- $defaultSelfMirrorHost := $gateway.ingress.host }}
+        {{- $selfMirrorServerPort := $gateway.server_config.servers.grpc.port }}
+        {{- $defaultSelfMirrorPort := default .Values.defaults.server_config.servers.grpc.port $selfMirrorServerPort }}
+        {{- $defaultSelfMirrorAddr := (list (printf "%s:%d" $defaultSelfMirrorHost (int64 $defaultSelfMirrorPort))) }}
+        {{- $mirrorAddrs := dict "Values" $mirrorClient.addrs "default" $defaultSelfMirrorAddr }}
+        {{- include "vald.grpc.client.addrs" $mirrorAddrs | nindent 8 }}
+        {{- else -}}
+        {{- $defaultSelfMirrorHost := printf "%s.%s.svc.cluster.local" $gateway.name .Release.Namespace }}
+        {{- $selfMirrorServerPort := $gateway.server_config.servers.grpc.port }}
+        {{- $defaultSelfMirrorPort := default .Values.defaults.server_config.servers.grpc.port $selfMirrorServerPort }}
+        {{- $defaultSelfMirrorAddr := (list (printf "%s:%d" $defaultSelfMirrorHost (int64 $defaultSelfMirrorPort))) }}
+        {{- $selfMirrorAddrs := dict "Values" $mirrorClient.addrs "default" $defaultSelfMirrorAddr }}
+        {{- include "vald.grpc.client.addrs" $selfMirrorAddrs | nindent 8 }}
+        {{- end -}}
+        {{- $GRPCClient := dict "Values" $mirrorClient "default" .Values.defaults.grpc.client }}
+        {{- include "vald.grpc.client" $GRPCClient | nindent 8 }}
+      self_mirror_client:
+        {{- $selfMirrorClient := $gateway.gateway_config.self_mirror_client }}
+        {{- if $gateway.ingress.enabled -}}
+        {{- $defaultSelfMirrorHost := $gateway.ingress.host }}
+        {{- $selfMirrorServerPort := $gateway.server_config.servers.grpc.port }}
+        {{- $defaultSelfMirrorPort := default .Values.defaults.server_config.servers.grpc.port $selfMirrorServerPort }}
+        {{- $defaultSelfMirrorAddr := (list (printf "%s:%d" $defaultSelfMirrorHost (int64 $defaultSelfMirrorPort))) }}
+        {{- $selfMirrorAddrs := dict "Values" $selfMirrorClient.addrs "default" $defaultSelfMirrorAddr }}
+        {{- include "vald.grpc.client.addrs" $selfMirrorAddrs | nindent 8 }}
+        {{- else -}}
+        {{- $defaultSelfMirrorHost := printf "%s.%s.svc.cluster.local" $gateway.name .Release.Namespace }}
+        {{- $selfMirrorServerPort := $gateway.server_config.servers.grpc.port }}
+        {{- $defaultSelfMirrorPort := default .Values.defaults.server_config.servers.grpc.port $selfMirrorServerPort }}
+        {{- $defaultSelfMirrorAddr := (list (printf "%s:%d" $defaultSelfMirrorHost (int64 $defaultSelfMirrorPort))) }}
+        {{- $selfMirrorAddrs := dict "Values" $selfMirrorClient.addrs "default" $defaultSelfMirrorAddr }}
+        {{- include "vald.grpc.client.addrs" $selfMirrorAddrs | nindent 8 }}
+        {{- end -}}
+        {{- $GRPCClient := dict "Values" $selfMirrorClient "default" .Values.defaults.grpc.client }}
+        {{- include "vald.grpc.client" $GRPCClient | nindent 8 }}
+{{- end }}
