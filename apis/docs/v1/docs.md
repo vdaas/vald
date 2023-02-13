@@ -107,6 +107,14 @@
   - [Search](#vald-v1-Search)
 - [apis/proto/v1/vald/update.proto](#apis_proto_v1_vald_update-proto)
   - [Update](#vald-v1-Update)
+<<<<<<< HEAD
+=======
+- [apis/proto/v1/vald/upsert.proto](#apis_proto_v1_vald_upsert-proto)
+  - [Upsert](#vald-v1-Upsert)
+- [apis/proto/v1/benchmark/benchmark.proto](#apis_proto_v1_benchmark_benchmark-proto)
+  - [Controller](#benchmark-v1-Controller)
+  - [Job](#benchmark-v1-Job)
+>>>>>>> 075d4e4ce (Implement base of continuous benchmark tool (#1776))
 - [Scalar Value Types](#scalar-value-types)
 
 <a name="apis_proto_v1_filter_egress_egress_filter-proto"></a>
