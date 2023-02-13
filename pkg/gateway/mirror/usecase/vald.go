@@ -230,6 +230,6 @@ func (r *run) Stop(ctx context.Context) error {
 	return r.server.Shutdown(ctx)
 }
 
-func (r *run) PostStop(ctx context.Context) error {
+func (*run) PostStop(_ context.Context) error {
 	return nil
 }
