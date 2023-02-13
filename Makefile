@@ -35,6 +35,8 @@ INDEX_CREATION_IMAGE            = $(NAME)-index-creation
 INDEX_SAVE_IMAGE                = $(NAME)-index-save
 READREPLICA_ROTATE_IMAGE        = $(NAME)-readreplica-rotate
 MANAGER_INDEX_IMAGE             = $(NAME)-manager-index
+BENCHMARK_JOB_IMAGE             = $(NAME)-benchmark-job
+BENCHMARK_OPERATOR_IMAGE        = $(NAME)-benchmark-operator
 MAINTAINER                      = "$(ORG).org $(NAME) team <$(NAME)@$(ORG).org>"
 
 VERSION ?= $(eval VERSION := $(shell cat versions/VALD_VERSION))$(VERSION)
