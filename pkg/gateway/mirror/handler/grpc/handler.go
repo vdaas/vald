@@ -881,21 +881,21 @@ func (s *server) remove(ctx context.Context, client vald.RemoveClient, req *payl
 		switch {
 		case errors.Is(err, context.Canceled):
 			err = status.WrapWithCanceled(
-				vald.InsertRPCName+" API canceld", err, reqInfo, resInfo,
+				vald.RemoveRPCName+" API canceld", err, reqInfo, resInfo,
 			)
 			attrs = trace.StatusCodeCancelled(
 				errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.RemoveRPCName,
 			)
 		case errors.Is(err, context.DeadlineExceeded):
 			err = status.WrapWithDeadlineExceeded(
-				vald.InsertRPCName+" API deadline exceeded", err, reqInfo, resInfo,
+				vald.RemoveRPCName+" API deadline exceeded", err, reqInfo, resInfo,
 			)
 			attrs = trace.StatusCodeDeadlineExceeded(
 				errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.RemoveRPCName,
 			)
 		case errors.Is(err, errors.ErrGRPCClientConnNotFound("*")):
 			err = status.WrapWithInternal(
-				vald.InsertRPCName+" API connection not found", err, reqInfo, resInfo,
+				vald.RemoveRPCName+" API connection not found", err, reqInfo, resInfo,
 			)
 			attrs = trace.StatusCodeInternal(err.Error())
 		default:
