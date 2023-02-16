@@ -1,6 +1,6 @@
 defaults:
   image:
-    tag: "pr-1829" # TODO: Delete it later.
+    tag: pr-1949 # TODO: Delete it later.
   server_config:
     metrics:
       pprof:
@@ -28,8 +28,6 @@ defaults:
 
 gateway:
   lb:
-    image:
-      tag: pr-1939
     podAnnotations:
       profefe.com/enable: "true"
       profefe.com/port: "6060"

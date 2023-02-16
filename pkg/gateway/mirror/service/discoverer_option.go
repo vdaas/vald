@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/vdaas/vald/internal/client/v1/client/mirror"
+	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 )
 
@@ -11,6 +12,15 @@ type DiscovererOption func(d *discoverer) error
 
 var defaultMirrOpts = []DiscovererOption{
 	WithAdvertiseInterval("1s"),
+}
+
+func WithErrorGroup(eg errgroup.Group) DiscovererOption {
+	return func(d *discoverer) error {
+		if eg != nil {
+			d.eg = eg
+		}
+		return nil
+	}
 }
 
 func WithValdAddrs(addrs ...string) DiscovererOption {

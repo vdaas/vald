@@ -90,6 +90,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		return nil, err
 	}
 	dis, err := service.NewDiscoverer(
+		service.WithErrorGroup(eg),
 		service.WithAdvertiseInterval(cfg.Mirror.AdvertiseInterval),
 		service.WithValdAddrs(cfg.Mirror.Client.Addrs...),
 		service.WithSelfMirrorAddrs(cfg.Mirror.MirrorClient.Addrs...),
