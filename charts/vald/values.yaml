@@ -1631,15 +1631,15 @@ gateway:
         memory: 700Mi
     # @schema {"name": "gateway.mirror.gateway_config", "type": "object"}
     gateway_config:
-      # @schema {"name": "gateway.mirror.gateway_config.lb_client", "alias": "grpc.client"}
-      # gateway.mirror.gateway_config.lb_client -- gRPC client for lb-gateway (overrides defaults.grpc.client)
-      lb_client: {}
+      # @schema {"name": "gateway.mirror.gateway_config.client", "alias": "grpc.client"}
+      # gateway.mirror.gateway_config.client -- gRPC client for lb-gateway (overrides defaults.grpc.client)
+      client: {}
+      # @schema {"name": "gateway.mirror.gateway_config.self_mirror_addrs", "type": "array", "items": {"type": "string"}}
+      # gateway.mirror.gateway_config.self_mirror_addrs -- addresses for self mirror-gateway
+      self_mirror_addrs: []
       # @schema {"name": "gateway.mirror.gateway_config.mirror_client", "alias": "grpc.client"}
       # gateway.mirror.gateway_config.mirror_client -- gRPC client for external mirror-gateway (overrides defaults.grpc.client)
       mirror_client: {}
-      # @schema {"name": "gateway.mirror.gateway_config.self_mirror_client", "alias": "grpc.client"}
-      # gateway.mirror.gateway_config.self_mirror_client -- gRPC client for self mirror-gateway (overrides defaults.grpc.client)
-      self_mirror_client: {}
       # @schema {"name": "gateway.mirror.gateway_config.pod_name", "type": "string"}
       # gateway.mirror.gateway_config.pod_name -- self mirror gateway pod name
       pod_name: _MY_POD_NAME_
