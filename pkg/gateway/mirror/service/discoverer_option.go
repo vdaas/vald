@@ -9,11 +9,9 @@ import (
 
 type DiscovererOption func(d *discoverer) error
 
-var (
-	defaultMirrOpts = []DiscovererOption{
-		WithAdvertiseInterval("1s"),
-	}
-)
+var defaultMirrOpts = []DiscovererOption{
+	WithAdvertiseInterval("1s"),
+}
 
 func WithValdAddrs(addrs ...string) DiscovererOption {
 	return func(d *discoverer) error {
