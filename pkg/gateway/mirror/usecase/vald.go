@@ -43,71 +43,67 @@ type run struct {
 	eg            errgroup.Group
 	cfg           *config.Data
 	server        starter.Server
-	lbc           vclient.Client
-	gateway       service.Gateway
+	vc            vclient.Client
+	mc            mclient.Client
+	gw            service.Gateway
+	dis           service.Discoverer
 	observability observability.Observability
 }
 
 func New(cfg *config.Data) (r runner.Runner, err error) {
 	eg := errgroup.Get()
 
-	mcOpts, err := cfg.Mirror.Mirror.Opts()
+	mcOpts, err := cfg.Mirror.MirrorClient.Opts()
 	if err != nil {
 		return nil, err
 	}
 	mcOpts = append(mcOpts, grpc.WithErrGroup(eg))
 
 	mc, err := mclient.New(
-		mclient.WithAddrs(cfg.Mirror.Mirror.Addrs...),
+		mclient.WithAddrs(cfg.Mirror.MirrorClient.Addrs...),
 		mclient.WithClient(grpc.New(mcOpts...)),
 	)
 	if err != nil {
 		return nil, err
 	}
 
-	selfMcOpts, err := cfg.Mirror.SelfMirror.Opts()
+	vcOpts, err := cfg.Mirror.Client.Opts()
 	if err != nil {
 		return nil, err
 	}
-	selfMcOpts = append(selfMcOpts, grpc.WithErrGroup(eg))
+	vcOpts = append(vcOpts, grpc.WithErrGroup(eg))
 
-	selfMc, err := mclient.New(
-		mclient.WithAddrs(cfg.Mirror.SelfMirror.Addrs...),
-		mclient.WithClient(grpc.New(selfMcOpts...)),
+	vc, err := vclient.New(
+		vclient.WithAddrs(cfg.Mirror.Client.Addrs...),
+		vclient.WithClient(grpc.New(vcOpts...)),
 	)
 	if err != nil {
 		return nil, err
 	}
 
-	lbcOpts, err := cfg.Mirror.LB.Opts()
-	if err != nil {
-		return nil, err
-	}
-	lbcOpts = append(lbcOpts, grpc.WithErrGroup(eg))
-
-	lbc, err := vclient.New(
-		vclient.WithAddrs(cfg.Mirror.LB.Addrs...),
-		vclient.WithClient(grpc.New(lbcOpts...)),
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	gateway, err := service.NewGateway(
+	gw, err := service.NewGateway(
 		service.WithErrGroup(eg),
-		service.WithSelfMirror(selfMc),
-		service.WithMirror(mc),
+		service.WithMirrorClient(mc),
 		service.WithPodName(cfg.Mirror.PodName),
+	)
+	if err != nil {
+		return nil, err
+	}
+	dis, err := service.NewDiscoverer(
 		service.WithAdvertiseInterval(cfg.Mirror.AdvertiseInterval),
+		service.WithValdAddrs(cfg.Mirror.Client.Addrs...),
+		service.WithSelfMirrorAddrs(cfg.Mirror.MirrorClient.Addrs...),
+		service.WithDiscoverer(mc),
 	)
 	if err != nil {
 		return nil, err
 	}
 
 	v := handler.New(
-		handler.WithValdClient(lbc),
+		handler.WithValdClient(vc),
 		handler.WithErrGroup(eg),
-		handler.WithGateway(gateway),
+		handler.WithGateway(gw),
+		handler.WithDiscoverer(dis),
 		handler.WithStreamConcurrency(cfg.Server.GetGRPCStreamConcurrency()),
 	)
 
@@ -159,8 +155,10 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		eg:            eg,
 		cfg:           cfg,
 		server:        srv,
-		lbc:           lbc,
-		gateway:       gateway,
+		vc:            vc,
+		mc:            mc,
+		gw:            gw,
+		dis:           dis,
 		observability: obs,
 	}, nil
 }
@@ -174,19 +172,33 @@ func (r *run) PreStart(ctx context.Context) error {
 
 func (r *run) Start(ctx context.Context) (<-chan error, error) {
 	ech := make(chan error, 6)
-	var gech, lech, sech, oech <-chan error
+	var gech, dech, mcech, vcech, sech, oech <-chan error
 	var err error
 
 	sech = r.server.ListenAndServe(ctx)
-	if r.gateway != nil {
-		gech, err = r.gateway.Start(ctx)
+	if r.gw != nil {
+		gech, err = r.gw.Start(ctx)
 		if err != nil {
 			close(ech)
 			return nil, err
 		}
 	}
-	if r.lbc != nil {
-		lech, err = r.lbc.Start(ctx)
+	if r.dis != nil {
+		dech, err = r.dis.Start(ctx)
+		if err != nil {
+			close(ech)
+			return nil, err
+		}
+	}
+	if r.mc != nil {
+		mcech, err = r.mc.Start(ctx)
+		if err != nil {
+			close(ech)
+			return nil, err
+		}
+	}
+	if r.vc != nil {
+		vcech, err = r.vc.Start(ctx)
 		if err != nil {
 			close(ech)
 			return nil, err
@@ -202,10 +214,12 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 			select {
 			case <-ctx.Done():
 				return ctx.Err()
-			case err = <-oech:
 			case err = <-gech:
+			case err = <-dech:
+			case err = <-mcech:
+			case err = <-vcech:
 			case err = <-sech:
-			case err = <-lech:
+			case err = <-oech:
 			}
 			if err != nil {
 				select {

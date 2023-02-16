@@ -18,8 +18,6 @@
 package service
 
 import (
-	"time"
-
 	"github.com/vdaas/vald/internal/client/v1/client/mirror"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
@@ -29,22 +27,12 @@ type Option func(g *gateway) error
 
 var defaultGWOpts = []Option{
 	WithErrGroup(errgroup.Get()),
-	WithAdvertiseInterval("1s"),
 }
 
-func WithMirror(c mirror.Client) Option {
+func WithMirrorClient(c mirror.Client) Option {
 	return func(g *gateway) error {
 		if c != nil {
 			g.client = c
-		}
-		return nil
-	}
-}
-
-func WithSelfMirror(c mirror.Client) Option {
-	return func(g *gateway) error {
-		if c != nil {
-			g.iclient = c
 		}
 		return nil
 	}
@@ -55,20 +43,6 @@ func WithErrGroup(eg errgroup.Group) Option {
 		if eg != nil {
 			g.eg = eg
 		}
-		return nil
-	}
-}
-
-func WithAdvertiseInterval(s string) Option {
-	return func(g *gateway) error {
-		if len(s) == 0 {
-			return errors.NewErrInvalidOption("advertiseInterval", s)
-		}
-		dur, err := time.ParseDuration(s)
-		if err != nil {
-			return errors.NewErrInvalidOption("advertiseInterval", s, err)
-		}
-		g.advertiseDur = dur
 		return nil
 	}
 }

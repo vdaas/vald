@@ -40,8 +40,9 @@ import (
 
 type server struct {
 	eg                errgroup.Group
-	gateway           service.Gateway // Mirror Gateway service.
-	lbClient          vclient.Client  // LB Gateway client for the same cluster.
+	gateway           service.Gateway // Mirror Gateway client service.
+	discoverer        service.Discoverer
+	vc                vclient.Client // Vald gateway client (LB gateway) for the same cluster.
 	timeout           time.Duration
 	replica           int
 	streamConcurrency int
@@ -72,7 +73,7 @@ func (s *server) Register(ctx context.Context, req *payload.Mirror_Targets) (*pa
 			span.End()
 		}
 	}()
-	tgts, err := s.gateway.Connect(ctx, req.GetTargets()...)
+	err := s.discoverer.Connect(ctx, req.GetTargets()...)
 	if err != nil {
 		err = status.WrapWithUnavailable(mirror.RegisterRPCName+" API target Mirror Gateway unavailable", err,
 			&errdetails.RequestInfo{
@@ -99,9 +100,7 @@ func (s *server) Register(ctx context.Context, req *payload.Mirror_Targets) (*pa
 		}
 		return nil, err
 	}
-	return &payload.Mirror_Targets{
-		Targets: tgts,
-	}, nil
+	return req, nil
 }
 
 func (s *server) Advertise(ctx context.Context, req *payload.Mirror_Targets) (res *payload.Mirror_Targets, err error) {
@@ -115,7 +114,7 @@ func (s *server) Advertise(ctx context.Context, req *payload.Mirror_Targets) (re
 	if err != nil {
 		return nil, err
 	}
-	tgts, err := s.gateway.MirrorTargets()
+	tgts, err := s.discoverer.MirrorTargets()
 	if err != nil {
 		err = status.WrapWithInternal(mirror.AdvertiseRPCName+" API failed to get connected mirror gateway targets", err,
 			&errdetails.RequestInfo{
@@ -154,7 +153,7 @@ func (s *server) Exists(ctx context.Context, meta *payload.Object_ID) (id *paylo
 			span.End()
 		}
 	}()
-	id, err = s.lbClient.Exists(ctx, meta, s.lbClient.GRPCClient().GetCallOption()...)
+	id, err = s.vc.Exists(ctx, meta, s.vc.GRPCClient().GetCallOption()...)
 	if err != nil {
 		st, msg, err := status.ParseError(err, codes.Internal,
 			"failed to parse "+vald.ExistsRPCName+" gRPC error response",
@@ -185,7 +184,7 @@ func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *
 			span.End()
 		}
 	}()
-	res, err = s.lbClient.Search(ctx, req)
+	res, err = s.vc.Search(ctx, req)
 	if err != nil {
 		st, msg, err := status.ParseError(err, codes.Internal,
 			"failed to parse "+vald.SearchRPCName+" gRPC error response",
@@ -218,7 +217,7 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 			span.End()
 		}
 	}()
-	res, err = s.lbClient.SearchByID(ctx, req)
+	res, err = s.vc.SearchByID(ctx, req)
 	if err != nil {
 		st, msg, err := status.ParseError(err, codes.Internal,
 			"failed to parse "+vald.SearchByIDRPCName+" gRPC error response",
@@ -349,7 +348,7 @@ func (s *server) MultiSearch(ctx context.Context, reqs *payload.Search_MultiRequ
 			span.End()
 		}
 	}()
-	res, err := s.lbClient.MultiSearch(ctx, reqs)
+	res, err := s.vc.MultiSearch(ctx, reqs)
 	if err != nil {
 		st, msg, err := status.ParseError(err, codes.Internal,
 			"failed to parse "+vald.MultiSearchRPCName+" gRPC error response",
@@ -379,7 +378,7 @@ func (s *server) MultiSearchByID(ctx context.Context, reqs *payload.Search_Multi
 			span.End()
 		}
 	}()
-	res, err = s.lbClient.MultiSearchByID(ctx, reqs)
+	res, err = s.vc.MultiSearchByID(ctx, reqs)
 	if err != nil {
 		st, msg, err := status.ParseError(err, codes.Internal,
 			"failed to parse "+vald.MultiSearchByIDRPCName+" gRPC error response",
@@ -409,7 +408,7 @@ func (s *server) LinearSearch(ctx context.Context, req *payload.Search_Request) 
 			span.End()
 		}
 	}()
-	res, err = s.lbClient.LinearSearch(ctx, req)
+	res, err = s.vc.LinearSearch(ctx, req)
 	if err != nil {
 		st, msg, err := status.ParseError(err, codes.Internal,
 			"failed to parse "+vald.LinearSearchRPCName+" gRPC error response",
@@ -442,7 +441,7 @@ func (s *server) LinearSearchByID(ctx context.Context, req *payload.Search_IDReq
 			span.End()
 		}
 	}()
-	res, err = s.lbClient.LinearSearchByID(ctx, req)
+	res, err = s.vc.LinearSearchByID(ctx, req)
 	if err != nil {
 		st, msg, err := status.ParseError(err, codes.Internal,
 			"failed to parse "+vald.LinearSearchByIDRPCName+" gRPC error response",
@@ -573,7 +572,7 @@ func (s *server) MultiLinearSearch(ctx context.Context, reqs *payload.Search_Mul
 			span.End()
 		}
 	}()
-	res, err = s.lbClient.MultiLinearSearch(ctx, reqs)
+	res, err = s.vc.MultiLinearSearch(ctx, reqs)
 	if err != nil {
 		st, msg, err := status.ParseError(err, codes.Internal,
 			"failed to parse "+vald.MultiLinearSearchRPCName+" gRPC error response",
@@ -603,7 +602,7 @@ func (s *server) MultiLinearSearchByID(ctx context.Context, reqs *payload.Search
 			span.End()
 		}
 	}()
-	res, err = s.lbClient.MultiLinearSearchByID(ctx, reqs)
+	res, err = s.vc.MultiLinearSearchByID(ctx, reqs)
 	if err != nil {
 		st, msg, err := status.ParseError(err, codes.Internal,
 			"failed to parse "+vald.MultiLinearSearchByIDRPCName+" gRPC error response",
@@ -637,9 +636,9 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 	reqSrcPodName := s.gateway.FromForwardedContext(ctx)
 
 	// When this condition is matched, the request is proxied to another Mirror gateway.
-	// So this component sends the request only to the LB gateway of own cluster.
+	// So this component sends the request only to the Vald gateway (LB gateway) of own cluster.
 	if len(reqSrcPodName) != 0 {
-		ce, err = s.insert(ctx, s.lbClient, req, s.lbClient.GRPCClient().GetCallOption()...)
+		ce, err = s.insert(ctx, s.vc, req, s.vc.GRPCClient().GetCallOption()...)
 		if err != nil {
 			return nil, err
 		}
@@ -648,7 +647,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 	}
 
 	// When this condition is matched, this Mirror gateway is the starting point of the mirror process.
-	// So this component sends request to the Mirror Gateways of other clusters and to the LB Gateway of own cluster.
+	// So this component sends request to the Mirror Gateways of other clusters and to the Vald gateway (LB gateway) of own cluster.
 
 	var insertErrs error
 	ce = &payload.Object_Location{
@@ -659,7 +658,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 	errMutex := new(sync.Mutex)
 	successTargets := new(sync.Map)
 
-	// This process sends request to the Mirror Gateways of other clusters and to the LB Gateway of its own cluster.
+	// This process sends request to the Mirror Gateways of other clusters and to the Vald gateway (LB gateway) of its own cluster.
 	err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
 		ctx, span := trace.StartSpan(ctx, apiName+"."+vald.InsertRPCName+"/"+target)
 		defer func() {
@@ -753,7 +752,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 		},
 	}
 
-	// This process sends rollback request to the Mirror Gateways of other clusters and to the LB Gateway of its own cluster.
+	// This process sends rollback request to the Mirror Gateways of other clusters and to the Vald gateway (LB gateway) of its own cluster.
 	err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
 		if _, ok := successTargets.Load(target); !ok {
 			return nil
@@ -858,67 +857,6 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 	return nil, err
 }
 
-func (s *server) remove(ctx context.Context, client vald.RemoveClient, req *payload.Remove_Request, opts ...grpc.CallOption) (*payload.Object_Location, error) {
-	ctx, span := trace.StartSpan(ctx, apiName+"."+vald.RemoveRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
-
-	loc, err := client.Remove(ctx, req, opts...)
-	if err != nil {
-		reqInfo := &errdetails.RequestInfo{
-			RequestId:   req.GetId().GetId(),
-			ServingData: errdetails.Serialize(req),
-		}
-		resInfo := &errdetails.ResourceInfo{
-			ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.RemoveRPCName,
-			ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-		}
-		var attrs trace.Attributes
-
-		switch {
-		case errors.Is(err, context.Canceled):
-			err = status.WrapWithCanceled(
-				vald.RemoveRPCName+" API canceld", err, reqInfo, resInfo,
-			)
-			attrs = trace.StatusCodeCancelled(
-				errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.RemoveRPCName,
-			)
-		case errors.Is(err, context.DeadlineExceeded):
-			err = status.WrapWithDeadlineExceeded(
-				vald.RemoveRPCName+" API deadline exceeded", err, reqInfo, resInfo,
-			)
-			attrs = trace.StatusCodeDeadlineExceeded(
-				errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.RemoveRPCName,
-			)
-		case errors.Is(err, errors.ErrGRPCClientConnNotFound("*")):
-			err = status.WrapWithInternal(
-				vald.RemoveRPCName+" API connection not found", err, reqInfo, resInfo,
-			)
-			attrs = trace.StatusCodeInternal(err.Error())
-		default:
-			var (
-				st  *status.Status
-				msg string
-			)
-			st, msg, err = status.ParseError(err, codes.Internal,
-				"failed to parse "+vald.RemoveRPCName+" gRPC error response", reqInfo, resInfo,
-			)
-			attrs = trace.FromGRPCStatus(st.Code(), msg)
-		}
-		log.Warn("failed to process remove request\terror: %s", err.Error())
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(attrs...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
-		return nil, err
-	}
-	return loc, nil
-}
-
 func (s *server) insert(ctx context.Context, client vald.InsertClient, req *payload.Insert_Request, opts ...grpc.CallOption) (loc *payload.Object_Location, err error) {
 	ctx, span := trace.StartSpan(ctx, apiName+"/"+vald.InsertRPCName)
 	defer func() {
@@ -970,6 +908,67 @@ func (s *server) insert(ctx context.Context, client vald.InsertClient, req *payl
 			attrs = trace.FromGRPCStatus(st.Code(), msg)
 		}
 		log.Warn("failed to process insert request\terror: %s", err.Error())
+		if span != nil {
+			span.RecordError(err)
+			span.SetAttributes(attrs...)
+			span.SetStatus(trace.StatusError, err.Error())
+		}
+		return nil, err
+	}
+	return loc, nil
+}
+
+func (s *server) remove(ctx context.Context, client vald.RemoveClient, req *payload.Remove_Request, opts ...grpc.CallOption) (*payload.Object_Location, error) {
+	ctx, span := trace.StartSpan(ctx, apiName+"."+vald.RemoveRPCName)
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+
+	loc, err := client.Remove(ctx, req, opts...)
+	if err != nil {
+		reqInfo := &errdetails.RequestInfo{
+			RequestId:   req.GetId().GetId(),
+			ServingData: errdetails.Serialize(req),
+		}
+		resInfo := &errdetails.ResourceInfo{
+			ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.RemoveRPCName,
+			ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+		}
+		var attrs trace.Attributes
+
+		switch {
+		case errors.Is(err, context.Canceled):
+			err = status.WrapWithCanceled(
+				vald.RemoveRPCName+" API canceld", err, reqInfo, resInfo,
+			)
+			attrs = trace.StatusCodeCancelled(
+				errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.RemoveRPCName,
+			)
+		case errors.Is(err, context.DeadlineExceeded):
+			err = status.WrapWithDeadlineExceeded(
+				vald.RemoveRPCName+" API deadline exceeded", err, reqInfo, resInfo,
+			)
+			attrs = trace.StatusCodeDeadlineExceeded(
+				errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.RemoveRPCName,
+			)
+		case errors.Is(err, errors.ErrGRPCClientConnNotFound("*")):
+			err = status.WrapWithInternal(
+				vald.RemoveRPCName+" API connection not found", err, reqInfo, resInfo,
+			)
+			attrs = trace.StatusCodeInternal(err.Error())
+		default:
+			var (
+				st  *status.Status
+				msg string
+			)
+			st, msg, err = status.ParseError(err, codes.Internal,
+				"failed to parse "+vald.RemoveRPCName+" gRPC error response", reqInfo, resInfo,
+			)
+			attrs = trace.FromGRPCStatus(st.Code(), msg)
+		}
+		log.Warn("failed to process remove request\terror: %s", err.Error())
 		if span != nil {
 			span.RecordError(err)
 			span.SetAttributes(attrs...)
@@ -1257,7 +1256,7 @@ func (s *server) GetObject(ctx context.Context, req *payload.Object_VectorReques
 			span.End()
 		}
 	}()
-	vec, err = s.lbClient.GetObject(ctx, req)
+	vec, err = s.vc.GetObject(ctx, req)
 	if err != nil {
 		st, msg, err := status.ParseError(err, codes.Internal,
 			"failed to parse "+vald.GetObjectRPCName+" gRPC error response",

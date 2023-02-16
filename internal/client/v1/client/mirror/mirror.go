@@ -2,10 +2,10 @@ package mirror
 
 import (
 	"context"
+	"sync"
 
 	"github.com/vdaas/vald/apis/grpc/v1/mirror"
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
-	"github.com/vdaas/vald/internal/client/v1/client/vald"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/observability/trace"
@@ -16,7 +16,6 @@ const (
 )
 
 type Client interface {
-	vald.Client
 	mirror.MirrorClient
 	GRPCClient() grpc.Client
 	Start(context.Context) (<-chan error, error)
@@ -24,9 +23,9 @@ type Client interface {
 }
 
 type client struct {
+	cl    sync.Map
 	addrs []string
 	c     grpc.Client
-	vald.Client
 }
 
 func New(opts ...Option) (Client, error) {
@@ -37,27 +36,10 @@ func New(opts ...Option) (Client, error) {
 		}
 	}
 	if c.c == nil {
-		if c.Client != nil {
-			c.c = c.Client.GRPCClient()
-		} else {
-			if len(c.addrs) == 0 {
-				return nil, errors.ErrGRPCTargetAddrNotFound
-			}
-			c.c = grpc.New(grpc.WithAddrs(c.addrs...))
-		}
-	}
-	if c.Client == nil {
 		if len(c.addrs) == 0 {
 			return nil, errors.ErrGRPCTargetAddrNotFound
 		}
-		var err error
-		c.Client, err = vald.New(
-			vald.WithAddrs(c.addrs...),
-			vald.WithClient(c.c),
-		)
-		if err != nil {
-			return nil, err
-		}
+		c.c = grpc.New(grpc.WithAddrs(c.addrs...))
 	}
 	return c, nil
 }

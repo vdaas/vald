@@ -1,9 +1,6 @@
 package mirror
 
 import (
-	"context"
-
-	"github.com/vdaas/vald/internal/client/v1/client/vald"
 	"github.com/vdaas/vald/internal/net/grpc"
 )
 
@@ -20,22 +17,6 @@ func WithAddrs(addrs ...string) Option {
 			c.addrs = append(c.addrs, addrs...)
 		} else {
 			c.addrs = addrs
-		}
-		return nil
-	}
-}
-
-func WithValdClient(vc vald.Client) Option {
-	return func(c *client) error {
-		if vc != nil {
-			c.Client = vc
-			if c.c != nil {
-				err := c.c.Close(context.Background())
-				if err != nil {
-					return err
-				}
-			}
-			c.c = c.Client.GRPCClient()
 		}
 		return nil
 	}

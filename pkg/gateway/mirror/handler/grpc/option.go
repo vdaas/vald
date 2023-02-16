@@ -73,6 +73,14 @@ func WithGateway(g service.Gateway) Option {
 	}
 }
 
+func WithDiscoverer(dis service.Discoverer) Option {
+	return func(s *server) {
+		if dis != nil {
+			s.discoverer = dis
+		}
+	}
+}
+
 func WithErrGroup(eg errgroup.Group) Option {
 	return func(s *server) {
 		if eg != nil {
@@ -110,7 +118,7 @@ func WithStreamConcurrency(c int) Option {
 func WithValdClient(vc vald.Client) Option {
 	return func(s *server) {
 		if vc != nil {
-			s.lbClient = vc
+			s.vc = vc
 		}
 	}
 }
