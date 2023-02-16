@@ -281,6 +281,9 @@ func (d *discoverer) broadCast(ctx context.Context,
 			addrs = append(addrs, addr)
 		}
 	}
+	if len(addrs) == 0 {
+		return errors.ErrTargetNotFound
+	}
 
 	return d.client.GRPCClient().OrderedRangeConcurrent(fctx, addrs, -1, func(ictx context.Context,
 		addr string, conn *grpc.ClientConn, copts ...grpc.CallOption,
