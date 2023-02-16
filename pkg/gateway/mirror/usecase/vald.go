@@ -93,7 +93,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		service.WithErrorGroup(eg),
 		service.WithAdvertiseInterval(cfg.Mirror.AdvertiseInterval),
 		service.WithValdAddrs(cfg.Mirror.Client.Addrs...),
-		service.WithSelfMirrorAddrs(cfg.Mirror.MirrorClient.Addrs...),
+		service.WithSelfMirrorAddrs(cfg.Mirror.SelfMirrorAddrs...),
 		service.WithDiscoverer(mc),
 	)
 	if err != nil {
