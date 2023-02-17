@@ -155,7 +155,9 @@ func (d *discoverer) startAdvertise(ctx context.Context) (<-chan error, error) {
 			case <-ctx.Done():
 				return err
 			case <-tic.C:
-				req, err := d.addrsToTargets(append(d.selfMirrAddrs, d.client.GRPCClient().ConnectedAddrs()...)...)
+				req, err := d.addrsToTargets(
+					d.extractMirrorAddrs(append(d.selfMirrAddrs, d.client.GRPCClient().ConnectedAddrs()...)...)...,
+				)
 				if err != nil || len(req.GetTargets()) == 0 {
 					if err == nil {
 						err = errors.ErrTargetNotFound
@@ -251,7 +253,7 @@ func (d *discoverer) Connect(ctx context.Context, targets ...*payload.Mirror_Tar
 }
 
 func (d *discoverer) MirrorTargets() ([]*payload.Mirror_Target, error) {
-	addrs := append(d.selfMirrAddrs, d.client.GRPCClient().ConnectedAddrs()...)
+	addrs := d.extractMirrorAddrs(append(d.selfMirrAddrs, d.client.GRPCClient().ConnectedAddrs()...)...)
 	tgts := make([]*payload.Mirror_Target, 0, len(addrs))
 	for _, addr := range addrs {
 		host, port, err := net.SplitHostPort(addr)
@@ -327,4 +329,14 @@ func (d *discoverer) addrsToTargets(addrs ...string) (*payload.Mirror_Targets, e
 	return &payload.Mirror_Targets{
 		Targets: tgts,
 	}, nil
+}
+
+func (d *discoverer) extractMirrorAddrs(addrs ...string) []string {
+	res := make([]string, 0, len(addrs))
+	for _, addr := range addrs {
+		if _, ok := d.vAddrl.Load(addr); !ok {
+			res = append(res, addr)
+		}
+	}
+	return res
 }
