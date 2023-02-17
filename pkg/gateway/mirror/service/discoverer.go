@@ -215,6 +215,7 @@ func (d *discoverer) startAdvertise(ctx context.Context) (<-chan error, error) {
 					case ech <- err:
 					}
 				}
+				log.Infof("[mirror]: connected mirror gateway targets: %v", resTgts)
 			}
 		}
 	})
