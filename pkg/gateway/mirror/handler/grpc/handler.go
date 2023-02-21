@@ -110,7 +110,6 @@ func (s *server) Advertise(ctx context.Context, req *payload.Mirror_Targets) (re
 			span.End()
 		}
 	}()
-	log.Debugf("[funapy]: Advertise requst targets: %v", req.GetTargets())
 	_, err = s.Register(ctx, req)
 	if err != nil {
 		return nil, err
