@@ -1186,6 +1186,20 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (loc *
 			span.End()
 		}
 	}()
+
+	reqSrcPodName := s.gateway.FromForwardedContext(ctx)
+
+	// When this condition is matched, the request is proxied to another Mirror gateway.
+	// So this component sends the request only to the Vald gateway (LB gateway) of own cluster.
+	if len(reqSrcPodName) != 0 {
+		loc, err = s.remove(ctx, s.vc, req, s.vc.GRPCClient().GetCallOption()...)
+		if err != nil {
+			return nil, err
+		}
+		log.Debugf("Remove API remove succeeded to %#v", loc)
+		return loc, nil
+	}
+	// TODO: Implment it later.
 	return loc, nil
 }
 
