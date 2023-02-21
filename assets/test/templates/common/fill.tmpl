@@ -1,28 +1,32 @@
 {{define "fill" }}
         {{- range . }}
-                {{ Param . }}: {{ $typ := .Type.String -}}
-                {{- if eq $typ "int8" -}} 0,
-                {{- else if eq $typ "uint8" -}} 0,
-                {{- else if eq $typ "uint16" -}} 0,
-                {{- else if eq $typ "uint32" -}} 0,
-                {{- else if eq $typ "uint64" -}} 0,
-                {{- else if eq $typ "uint" -}} 0,
-                {{- else if eq $typ "uintptr" -}} 0,
-                {{- else if eq $typ "int8" -}} 0,
-                {{- else if eq $typ "int16" -}} 0,
-                {{- else if eq $typ "int32" -}} 0,
-                {{- else if eq $typ "int64" -}} 0,
-                {{- else if eq $typ "int" -}} 0,
-                {{- else if eq $typ "float32" -}} 0,
-                {{- else if eq $typ "float64" -}} 0,
-                {{- else if eq $typ "complex64" -}} 0+0i,
-                {{- else if eq $typ "complex128" -}} 0+0i,
-                {{- else if eq $typ "byte" -}} 0,
-                {{- else if eq $typ "rune" -}} 0,
-                {{- else if eq $typ "string" -}} "",
-                {{- else if eq $typ "bool" -}} false,
-                {{- else if .IsStruct -}} {{.Type.Value}}{},
-                {{- else -}} nil,
+                {{ $typ := .Type.String -}}
+                {{- if eq $typ "sync.Map" -}}
+                {{- else -}}
+                        {{ Param . }}:
+                        {{- if eq $typ "int8" -}} 0,
+                        {{- else if eq $typ "uint8" -}} 0,
+                        {{- else if eq $typ "uint16" -}} 0,
+                        {{- else if eq $typ "uint32" -}} 0,
+                        {{- else if eq $typ "uint64" -}} 0,
+                        {{- else if eq $typ "uint" -}} 0,
+                        {{- else if eq $typ "uintptr" -}} 0,
+                        {{- else if eq $typ "int8" -}} 0,
+                        {{- else if eq $typ "int16" -}} 0,
+                        {{- else if eq $typ "int32" -}} 0,
+                        {{- else if eq $typ "int64" -}} 0,
+                        {{- else if eq $typ "int" -}} 0,
+                        {{- else if eq $typ "float32" -}} 0,
+                        {{- else if eq $typ "float64" -}} 0,
+                        {{- else if eq $typ "complex64" -}} 0+0i,
+                        {{- else if eq $typ "complex128" -}} 0+0i,
+                        {{- else if eq $typ "byte" -}} 0,
+                        {{- else if eq $typ "rune" -}} 0,
+                        {{- else if eq $typ "string" -}} "",
+                        {{- else if eq $typ "bool" -}} false,
+                        {{- else if .IsStruct -}} {{.Type.Value}}{},
+                        {{- else -}} nil,
+                        {{- end -}}
                 {{- end -}}
         {{ end -}}
 {{ end }}
