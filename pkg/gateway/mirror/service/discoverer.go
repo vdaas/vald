@@ -210,6 +210,7 @@ func (d *discoverer) startAdvertise(ctx context.Context) (<-chan error, error) {
 					}
 					continue
 				}
+				log.Infof("[funapy]: mirror gateway targets request: %v", d.client.GRPCClient().ConnectedAddrs())
 				if err = d.Connect(ctx, resTgts...); err != nil {
 					select {
 					case <-ctx.Done():
@@ -217,7 +218,7 @@ func (d *discoverer) startAdvertise(ctx context.Context) (<-chan error, error) {
 					case ech <- err:
 					}
 				}
-				log.Infof("[mirror]: connected mirror gateway targets: %v", d.client.GRPCClient().ConnectedAddrs())
+				log.Infof("[funapy]: connected mirror gateway targets: %v", d.client.GRPCClient().ConnectedAddrs())
 			}
 		}
 	})
