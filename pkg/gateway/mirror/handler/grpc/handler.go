@@ -51,11 +51,7 @@ type server struct {
 	mirror.UnimplementedValdServerWithMirror
 }
 
-const (
-	apiName       = "vald/gateway/mirror"
-	rollbackName  = "Rollback"
-	broadCastName = "BroadCast"
-)
+const apiName = "vald/gateway/mirror"
 
 func New(opts ...Option) mirror.Server {
 	s := new(server)
@@ -75,27 +71,54 @@ func (s *server) Register(ctx context.Context, req *payload.Mirror_Targets) (*pa
 	}()
 	err := s.discoverer.Connect(ctx, req.GetTargets()...)
 	if err != nil {
-		err = status.WrapWithUnavailable(mirror.RegisterRPCName+" API target Mirror Gateway unavailable", err,
-			&errdetails.RequestInfo{
-				ServingData: errdetails.Serialize(req),
-			},
-			&errdetails.BadRequest{
-				FieldViolations: []*errdetails.BadRequestFieldViolation{
-					{
-						Field:       "mirror gateway targets",
-						Description: err.Error(),
-					},
-				},
-			},
-			&errdetails.ResourceInfo{
-				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + mirror.RegisterRPCName,
-				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-			},
-		)
-		log.Warn(err)
+		reqInfo := &errdetails.RequestInfo{
+			ServingData: errdetails.Serialize(req),
+		}
+		resInfo := &errdetails.ResourceInfo{
+			ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + mirror.RegisterRPCName,
+			ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+		}
+		var attrs trace.Attributes
+
+		switch {
+		case errors.Is(err, context.Canceled):
+			err = status.WrapWithCanceled(
+				mirror.RegisterRPCName+" API canceld", err, reqInfo, resInfo,
+			)
+			attrs = trace.StatusCodeCancelled(
+				errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + mirror.RegisterRPCName,
+			)
+		case errors.Is(err, context.DeadlineExceeded):
+			err = status.WrapWithCanceled(
+				mirror.RegisterRPCName+" API deadline exceeded", err, reqInfo, resInfo,
+			)
+			attrs = trace.StatusCodeCancelled(
+				errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + mirror.RegisterRPCName,
+			)
+		case errors.Is(err, errors.ErrGRPCClientConnNotFound("*")):
+			err = status.WrapWithInternal(
+				mirror.RegisterRPCName+" API connection not found", err, reqInfo, resInfo,
+			)
+			attrs = trace.StatusCodeInternal(err.Error())
+		case errors.Is(err, errors.ErrTargetNotFound):
+			err = status.WrapWithInvalidArgument(
+				mirror.RegisterRPCName+" API target not found", err, reqInfo, resInfo,
+			)
+			attrs = trace.StatusCodeInvalidArgument(err.Error())
+		default:
+			var (
+				st  *status.Status
+				msg string
+			)
+			st, msg, err = status.ParseError(err, codes.Internal,
+				"failed to parse "+mirror.RegisterRPCName+" gRPC error response", reqInfo, resInfo,
+			)
+			attrs = trace.FromGRPCStatus(st.Code(), msg)
+		}
+		log.Warn("failed to process register request\terror: %s", err.Error())
 		if span != nil {
 			span.RecordError(err)
-			span.SetAttributes(trace.StatusCodeUnavailable(err.Error())...)
+			span.SetAttributes(attrs...)
 			span.SetStatus(trace.StatusError, err.Error())
 		}
 		return nil, err
@@ -116,7 +139,7 @@ func (s *server) Advertise(ctx context.Context, req *payload.Mirror_Targets) (re
 	}
 	tgts, err := s.discoverer.MirrorTargets()
 	if err != nil {
-		err = status.WrapWithInternal(mirror.AdvertiseRPCName+" API failed to get connected mirror gateway targets", err,
+		err = status.WrapWithInvalidArgument(mirror.AdvertiseRPCName+" API failed to get connected mirror gateway targets", err,
 			&errdetails.RequestInfo{
 				ServingData: errdetails.Serialize(req),
 			},
