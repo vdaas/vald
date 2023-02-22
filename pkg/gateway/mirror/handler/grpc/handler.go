@@ -863,7 +863,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 	var msg string
 
 	if removeErrs == nil {
-		log.Debugf("Insert API success to rollback insert succeeded to %#v", ce)
+		log.Debugf("Insert API rollback insert succeeded to %#v", ce)
 		// set an broadcast insert error instead if rollback succeededs.
 		msg = vald.InsertRPCName + "API success to rollback insert request"
 		err = insertErrs
