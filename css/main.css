@@ -562,16 +562,15 @@ details > summary {
 .current {
   position: fixed;
   top: 90px;
-  right: -2px;
+  right: -8px;
   border: 1px solid #006076;
-  padding: 16px 12px 14px 14px;
+  padding: 16px 12px 37px 14px;
   background-color: #ffffff;
   z-index: 10;
   font-size: 1.4rem;
-}
-
-.current.open {
-  width: 60%;
+  width: 39px;
+  max-height: 60vh;
+  overflow-y: scroll;
 }
 
 .current a {
@@ -584,14 +583,20 @@ details > summary {
   display: none;
 }
 
+.current.open {
+  width: 60%;
+  padding-bottom: 14px;
+}
+
 .current.open ul {
   display: block;
 }
 
 .current .menu {
-  display: inline-block;
-  text-align: right;
-  width: 100%;
+  display: block;
+  position: fixed;
+  right: 12px;
+  z-index: 20;
 }
 
 .current .dot {
