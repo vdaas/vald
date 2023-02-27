@@ -15,7 +15,13 @@ func {{ .TestName }}(t *testing.T) {
             {{- if .Fields}}
                 type fields struct { {{ $hasFields = true }}
                     {{- range .Fields }} {{ $typ := .Type.String -}}
-                        {{- if ne $typ "sync.Map" "sync.Mutex" "sync.RWMutex" "sync.Once" "sync.Map" "sync.WaitGroup" "sync.Pool" -}}
+                        {{- if and (ne $typ "sync.Map")
+                        (ne $typ "sync.Mutex")
+                        (ne $typ "sync.RWMutex")
+                        (ne $typ "sync.Once")
+                        (ne $typ "sync.Map")
+                        (ne $typ  "sync.WaitGroup")
+                        (ne $typ "sync.Pool") -}}
                             {{ Field . }} {{ .Type }}
                         {{- end -}}
                     {{- end }}
@@ -141,7 +147,13 @@ func {{ .TestName }}(t *testing.T) {
                     {{- if .IsStruct }}
                         {{ Receiver . }} := {{- if .Type.IsStar }}&{{- end }}{{ .Type.Value }} {
                         {{- range .Fields }} {{ $typ := .Type.String -}}
-                            {{- if ne $typ "sync.Map" "sync.Mutex" "sync.RWMutex" "sync.Once" "sync.Map" "sync.WaitGroup" "sync.Pool" -}}
+                            {{- if and (ne $typ "sync.Map")
+                            (ne $typ "sync.Mutex")
+                            (ne $typ "sync.RWMutex")
+                            (ne $typ "sync.Once")
+                            (ne $typ "sync.Map")
+                            (ne $typ  "sync.WaitGroup")
+                            (ne $typ "sync.Pool") -}}
                                 {{ Field . }}: test.fields.{{ Field . }},
                             {{- end }}
                         {{- end }}
