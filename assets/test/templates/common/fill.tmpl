@@ -1,8 +1,6 @@
 {{define "fill" }}
-        {{- range . }}
-                {{ $typ := .Type.String -}}
-                {{- if eq $typ "sync.Map" -}}
-                {{- else -}}
+        {{- range . }} {{ $typ := .Type.String -}}
+                {{- if ne $typ "sync.Map" "sync.Mutex" "sync.RWMutex" "sync.Once" "sync.Map" "sync.WaitGroup" "sync.Pool" -}}
                         {{ Param . }}:
                         {{- if eq $typ "int8" -}} 0,
                         {{- else if eq $typ "uint8" -}} 0,
