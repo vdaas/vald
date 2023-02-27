@@ -5,8 +5,8 @@
                 (ne $typ "sync.RWMutex")
                 (ne $typ "sync.Once")
                 (ne $typ "sync.Map")
-                (ne $typ  "sync.WaitGroup")
-                (ne $typ "sync.Pool") -}}
+                (ne $typ "sync.WaitGroup")
+                (ne $typ "sync.Pool") }}
                         {{ Param . }}:
                         {{- if eq $typ "int8" -}} 0,
                         {{- else if eq $typ "uint8" -}} 0,

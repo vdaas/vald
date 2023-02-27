@@ -20,8 +20,8 @@ func {{ .TestName }}(t *testing.T) {
                         (ne $typ "sync.RWMutex")
                         (ne $typ "sync.Once")
                         (ne $typ "sync.Map")
-                        (ne $typ  "sync.WaitGroup")
-                        (ne $typ "sync.Pool") -}}
+                        (ne $typ "sync.WaitGroup")
+                        (ne $typ "sync.Pool") }}
                             {{ Field . }} {{ .Type }}
                         {{- end -}}
                     {{- end }}
@@ -152,8 +152,8 @@ func {{ .TestName }}(t *testing.T) {
                             (ne $typ "sync.RWMutex")
                             (ne $typ "sync.Once")
                             (ne $typ "sync.Map")
-                            (ne $typ  "sync.WaitGroup")
-                            (ne $typ "sync.Pool") -}}
+                            (ne $typ "sync.WaitGroup")
+                            (ne $typ "sync.Pool") }}
                                 {{ Field . }}: test.fields.{{ Field . }},
                             {{- end }}
                         {{- end }}
