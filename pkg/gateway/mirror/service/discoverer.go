@@ -48,8 +48,8 @@ type discoverer struct {
 	addrl         sync.Map // List of all connected addresses
 	selfMirrAddrs []string // Address of my mirror gateway
 	selfMirrAddrl sync.Map // List of my Mirror gateway addresses
-	vAddrs        []string // Address of Vald Gateway (LB gateway)
-	vAddrl        sync.Map // List of Vald Gateway addresses
+	gwAddrs       []string // Address of Vald Gateway (LB gateway)
+	gwAddrl       sync.Map // List of Vald Gateway addresses
 	client        mclient.Client
 	eg            errgroup.Group
 	advertiseDur  time.Duration
@@ -72,8 +72,8 @@ func NewDiscoverer(opts ...DiscovererOption) (Discoverer, error) {
 	for _, addr := range d.selfMirrAddrs {
 		d.selfMirrAddrl.Store(addr, struct{}{})
 	}
-	for _, addr := range d.vAddrs {
-		d.vAddrl.Store(addr, struct{}{})
+	for _, addr := range d.gwAddrs {
+		d.gwAddrl.Store(addr, struct{}{})
 	}
 	return d, nil
 }
@@ -110,7 +110,7 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 func (d *discoverer) startAdvertise(ctx context.Context) (<-chan error, error) {
 	ech := make(chan error, 100)
 
-	req, err := d.addrsToTargets(d.selfMirrAddrs...)
+	req, err := d.mirrorAddrsToTargets(d.selfMirrAddrs...)
 	if err != nil {
 		close(ech)
 		return nil, err
@@ -155,9 +155,7 @@ func (d *discoverer) startAdvertise(ctx context.Context) (<-chan error, error) {
 			case <-ctx.Done():
 				return err
 			case <-tic.C:
-				req, err := d.addrsToTargets(
-					d.extractMirrorAddrs(append(d.selfMirrAddrs, d.client.GRPCClient().ConnectedAddrs()...)...)...,
-				)
+				req, err := d.mirrorAddrsToTargets(append(d.selfMirrAddrs, d.client.GRPCClient().ConnectedAddrs()...)...)
 				if err != nil || len(req.GetTargets()) == 0 {
 					if err == nil {
 						err = errors.ErrTargetNotFound
@@ -236,34 +234,35 @@ func (d *discoverer) Connect(ctx context.Context, targets ...*payload.Mirror_Tar
 	}
 	for _, target := range targets {
 		addr := net.JoinHostPort(target.GetIp(), uint16(target.GetPort())) // addr: host:port
-		if d.isSelfMirorAddrOrValdAddr(addr) {
-			continue
-		}
-		_, ok := d.addrl.Load(addr)
-		if !ok || !d.client.GRPCClient().IsConnected(ctx, addr) {
-			_, err := d.client.GRPCClient().Connect(ctx, addr)
-			if err != nil {
-				d.addrl.Delete(addr)
-				return err
+		if !d.isSelfMirrorAddr(addr) && !d.isGatewayAddr(addr) {
+			_, ok := d.addrl.Load(addr)
+			if !ok || !d.client.GRPCClient().IsConnected(ctx, addr) {
+				_, err := d.client.GRPCClient().Connect(ctx, addr)
+				if err != nil {
+					d.addrl.Delete(addr)
+					return err
+				}
 			}
+			d.addrl.Store(addr, struct{}{})
 		}
-		d.addrl.Store(addr, struct{}{})
 	}
 	return nil
 }
 
 func (d *discoverer) MirrorTargets() ([]*payload.Mirror_Target, error) {
-	addrs := d.extractMirrorAddrs(append(d.selfMirrAddrs, d.client.GRPCClient().ConnectedAddrs()...)...)
+	addrs := append(d.selfMirrAddrs, d.client.GRPCClient().ConnectedAddrs()...)
 	tgts := make([]*payload.Mirror_Target, 0, len(addrs))
 	for _, addr := range addrs {
-		host, port, err := net.SplitHostPort(addr)
-		if err != nil {
-			return nil, err
+		if !d.isGatewayAddr(addr) {
+			host, port, err := net.SplitHostPort(addr)
+			if err != nil {
+				return nil, err
+			}
+			tgts = append(tgts, &payload.Mirror_Target{
+				Ip:   host,
+				Port: uint32(port),
+			})
 		}
-		tgts = append(tgts, &payload.Mirror_Target{
-			Ip:   host,
-			Port: uint32(port),
-		})
 	}
 	return tgts, nil
 }
@@ -280,7 +279,7 @@ func (d *discoverer) broadCast(ctx context.Context,
 	connectedAddrs := d.client.GRPCClient().ConnectedAddrs()
 	addrs := make([]string, 0, len(connectedAddrs))
 	for _, addr := range connectedAddrs {
-		if !d.isSelfMirorAddrOrValdAddr(addr) {
+		if !d.isSelfMirrorAddr(addr) && !d.isGatewayAddr(addr) {
 			addrs = append(addrs, addr)
 		}
 	}
@@ -304,39 +303,35 @@ func (d *discoverer) broadCast(ctx context.Context,
 	})
 }
 
-func (d *discoverer) isSelfMirorAddrOrValdAddr(addr string) bool {
+func (d *discoverer) isSelfMirrorAddr(addr string) bool {
 	if _, ok := d.selfMirrAddrl.Load(addr); ok {
-		return true
-	}
-	if _, ok := d.vAddrl.Load(addr); ok {
 		return true
 	}
 	return false
 }
 
-func (d *discoverer) addrsToTargets(addrs ...string) (*payload.Mirror_Targets, error) {
+func (d *discoverer) isGatewayAddr(addr string) bool {
+	if _, ok := d.gwAddrl.Load(addr); ok {
+		return true
+	}
+	return false
+}
+
+func (d *discoverer) mirrorAddrsToTargets(addrs ...string) (*payload.Mirror_Targets, error) {
 	tgts := make([]*payload.Mirror_Target, 0, len(addrs))
 	for _, addr := range addrs {
-		host, port, err := net.SplitHostPort(addr)
-		if err != nil {
-			return nil, err
+		if ok := d.isGatewayAddr(addr); !ok {
+			host, port, err := net.SplitHostPort(addr)
+			if err != nil {
+				return nil, err
+			}
+			tgts = append(tgts, &payload.Mirror_Target{
+				Ip:   host,
+				Port: uint32(port),
+			})
 		}
-		tgts = append(tgts, &payload.Mirror_Target{
-			Ip:   host,
-			Port: uint32(port),
-		})
 	}
 	return &payload.Mirror_Targets{
 		Targets: tgts,
 	}, nil
-}
-
-func (d *discoverer) extractMirrorAddrs(addrs ...string) []string {
-	res := make([]string, 0, len(addrs))
-	for _, addr := range addrs {
-		if _, ok := d.vAddrl.Load(addr); !ok {
-			res = append(res, addr)
-		}
-	}
-	return res
 }

@@ -43,7 +43,7 @@ type run struct {
 	eg            errgroup.Group
 	cfg           *config.Data
 	server        starter.Server
-	vc            vclient.Client
+	c             vclient.Client
 	mc            mclient.Client
 	gw            service.Gateway
 	dis           service.Discoverer
@@ -67,15 +67,15 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		return nil, err
 	}
 
-	vcOpts, err := cfg.Mirror.Client.Opts()
+	cOpts, err := cfg.Mirror.Client.Opts()
 	if err != nil {
 		return nil, err
 	}
-	vcOpts = append(vcOpts, grpc.WithErrGroup(eg))
+	cOpts = append(cOpts, grpc.WithErrGroup(eg))
 
-	vc, err := vclient.New(
+	c, err := vclient.New(
 		vclient.WithAddrs(cfg.Mirror.Client.Addrs...),
-		vclient.WithClient(grpc.New(vcOpts...)),
+		vclient.WithClient(grpc.New(cOpts...)),
 	)
 	if err != nil {
 		return nil, err
@@ -101,7 +101,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	}
 
 	v := handler.New(
-		handler.WithValdClient(vc),
+		handler.WithValdClient(c),
 		handler.WithErrGroup(eg),
 		handler.WithGateway(gw),
 		handler.WithDiscoverer(dis),
@@ -156,7 +156,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		eg:            eg,
 		cfg:           cfg,
 		server:        srv,
-		vc:            vc,
+		c:             c,
 		mc:            mc,
 		gw:            gw,
 		dis:           dis,
@@ -173,7 +173,7 @@ func (r *run) PreStart(ctx context.Context) error {
 
 func (r *run) Start(ctx context.Context) (<-chan error, error) {
 	ech := make(chan error, 6)
-	var gech, dech, mcech, vcech, sech, oech <-chan error
+	var gech, dech, mcech, cech, sech, oech <-chan error
 	var err error
 
 	sech = r.server.ListenAndServe(ctx)
@@ -198,8 +198,8 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 			return nil, err
 		}
 	}
-	if r.vc != nil {
-		vcech, err = r.vc.Start(ctx)
+	if r.c != nil {
+		cech, err = r.c.Start(ctx)
 		if err != nil {
 			close(ech)
 			return nil, err
@@ -218,7 +218,7 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 			case err = <-gech:
 			case err = <-dech:
 			case err = <-mcech:
-			case err = <-vcech:
+			case err = <-cech:
 			case err = <-sech:
 			case err = <-oech:
 			}

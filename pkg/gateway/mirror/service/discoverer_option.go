@@ -28,10 +28,10 @@ func WithValdAddrs(addrs ...string) DiscovererOption {
 		if len(addrs) == 0 {
 			return errors.NewErrCriticalOption("lbAddrs", addrs)
 		}
-		if d.vAddrs == nil {
-			d.vAddrs = make([]string, 0, len(addrs))
+		if d.gwAddrs == nil {
+			d.gwAddrs = make([]string, 0, len(addrs))
 		}
-		d.vAddrs = append(d.vAddrs, addrs...)
+		d.gwAddrs = append(d.gwAddrs, addrs...)
 		return nil
 	}
 }
