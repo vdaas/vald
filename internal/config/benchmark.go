@@ -17,21 +17,26 @@
 // Package config providers configuration type and load configuration logic
 package config
 
+import "github.com/vdaas/vald/internal/k8s/client"
+
 // BenchmarkJob represents the configuration for the internal benchmark search job.
 type BenchmarkJob struct {
-	Target       *BenchmarkTarget    `json:"target,omitempty" yaml:"target"`
-	Dataset      *BenchmarkDataset   `json:"dataset,omitempty" yaml:"dataset"`
-	Dimension    int                 `json:"dimension,omitempty" yaml:"dimension"`
-	Replica      int                 `json:"replica,omitempty" yaml:"replica"`
-	Repetition   int                 `json:"repetition,omitempty" yaml:"repetition"`
-	JobType      string              `json:"job_type,omitempty" yaml:"job_type"`
-	InsertConfig *InsertConfig       `json:"insert_config,omitempty" yaml:"insert_config"`
-	UpdateConfig *UpdateConfig       `json:"update_config,omitempty" yaml:"update_config"`
-	UpsertConfig *UpsertConfig       `json:"upsert_config,omitempty" yaml:"upsert_config"`
-	SearchConfig *SearchConfig       `json:"search_config,omitempty" yaml:"search_config"`
-	RemoveConfig *RemoveConfig       `json:"remove_config,omitempty" yaml:"remove_config"`
-	ClientConfig *GRPCClient         `json:"client_config,omitempty" yaml:"client_config"`
-	Rules        []*BenchmarkJobRule `json:"rules,omitempty" yaml:"rules"`
+	Target             *BenchmarkTarget    `json:"target,omitempty" yaml:"target"`
+	Dataset            *BenchmarkDataset   `json:"dataset,omitempty" yaml:"dataset"`
+	Dimension          int                 `json:"dimension,omitempty" yaml:"dimension"`
+	Replica            int                 `json:"replica,omitempty" yaml:"replica"`
+	Repetition         int                 `json:"repetition,omitempty" yaml:"repetition"`
+	JobType            string              `json:"job_type,omitempty" yaml:"job_type"`
+	InsertConfig       *InsertConfig       `json:"insert_config,omitempty" yaml:"insert_config"`
+	UpdateConfig       *UpdateConfig       `json:"update_config,omitempty" yaml:"update_config"`
+	UpsertConfig       *UpsertConfig       `json:"upsert_config,omitempty" yaml:"upsert_config"`
+	SearchConfig       *SearchConfig       `json:"search_config,omitempty" yaml:"search_config"`
+	RemoveConfig       *RemoveConfig       `json:"remove_config,omitempty" yaml:"remove_config"`
+	ClientConfig       *GRPCClient         `json:"client_config,omitempty" yaml:"client_config"`
+	Rules              []*BenchmarkJobRule `json:"rules,omitempty" yaml:"rules"`
+	BeforeJobName      string              `json:"before_job_name,omitempty" yaml:"before_job_name"`
+	BeforeJobNamespace string              `json:"before_job_namespace,omitempty" yaml:"before_job_namespace"`
+	Client             client.Client       `json:"client,omitempty" yaml:"client"`
 }
 
 // BenchmarkScenario represents the configuration for the internal benchmark scenario.
