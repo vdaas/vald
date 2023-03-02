@@ -131,7 +131,7 @@ func ParseError(err error, defaultCode codes.Code, defaultMsg string, details ..
 			defaultCode = codes.Internal
 		}
 		if len(defaultMsg) == 0 {
-			defaultMsg = "failed to parse grpc status from error"
+			defaultMsg = "failed to parse gRPC status from error"
 		}
 		st = newStatus(defaultCode, defaultMsg, err, details...)
 		if st == nil || st.Message() == "" {

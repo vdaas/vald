@@ -20,12 +20,12 @@ package vqueue
 import (
 	"context"
 	"reflect"
-	"sort"
 	"sync/atomic"
 	"time"
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/slices"
 )
 
 // Queue represents vector queue cache interface
@@ -192,9 +192,9 @@ func (v *vqueue) RangePopInsert(ctx context.Context, now int64, f func(uuid stri
 		}
 		return true
 	})
-	sort.Slice(uii, func(i, j int) bool {
+	slices.SortFunc(uii, func(left, right index) bool {
 		// sort by latest unix time order
-		return uii[i].date > uii[j].date
+		return left.date > right.date
 	})
 	for _, idx := range uii {
 		if !f(idx.uuid, idx.vector) {
@@ -224,9 +224,9 @@ func (v *vqueue) RangePopDelete(ctx context.Context, now int64, f func(uuid stri
 		}
 		return true
 	})
-	sort.Slice(udi, func(i, j int) bool {
+	slices.SortFunc(udi, func(left, right index) bool {
 		// sort by latest unix time order
-		return udi[i].date > udi[j].date
+		return left.date > right.date
 	})
 	for _, idx := range udi {
 		if !f(idx.uuid) {

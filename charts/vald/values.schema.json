@@ -8724,6 +8724,11 @@
                   "description": "number of index replica",
                   "minimum": 1
                 },
+                "multi_operation_concurrency": {
+                  "type": "integer",
+                  "description": "number of concurrency of multiXXX api's operation",
+                  "minimum": 2
+                },
                 "node_name": { "type": "string", "description": "node name" }
               }
             },

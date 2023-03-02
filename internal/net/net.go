@@ -169,7 +169,7 @@ func Parse(addr string) (host string, port uint16, isLocal, isIPv4, isIPv6 bool,
 	// return host and port and flags
 	return host, port,
 		// check is local ip or not
-		IsLocal(host) || ip.IsLoopback(),
+		IsLocal(host) || nerr == nil && ip.IsLoopback(),
 		// check is IPv4 or not
 		// ic < 2,
 		nerr == nil && ip.Is4(),

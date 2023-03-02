@@ -578,7 +578,7 @@ func TestErrGRPCTargetAddrNotFound(t *testing.T) {
 		{
 			name: "return ErrGRPCTargetAddrNotFound error",
 			want: want{
-				want: New("grpc connection target not found"),
+				want: New("gRPC connection target not found"),
 			},
 		},
 	}

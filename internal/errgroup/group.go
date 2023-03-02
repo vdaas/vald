@@ -39,7 +39,7 @@ type group struct {
 	wg sync.WaitGroup
 
 	limitation       chan struct{}
-	enableLimitation atomic.Value
+	enableLimitation atomic.Bool
 	cancelOnce       sync.Once
 	mu               sync.RWMutex
 	emap             map[string]struct{}
@@ -114,9 +114,8 @@ func (g *group) Go(f func() error) {
 		g.wg.Add(1)
 		go func() {
 			defer g.wg.Done()
-			limited := g.enableLimitation.Load().(bool)
 			var err error
-			if limited {
+			if g.enableLimitation.Load() {
 				select {
 				case <-g.egctx.Done():
 					return

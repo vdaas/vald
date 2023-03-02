@@ -109,16 +109,20 @@ func (bm *breakerManager) Do(ctx context.Context, key string, fn func(ctx contex
 	return val, nil
 }
 
-func Metrics(context.Context) map[string]map[State]int64 {
+func Metrics(context.Context) (ms map[string]map[State]int64) {
 	mu.RLock()
 	defer mu.RUnlock()
 
 	if len(metrics) == 0 {
 		return nil
 	}
-	m := make(map[string]map[State]int64, len(metrics))
-	for name, sts := range metrics {
-		m[name] = sts
+	ms = make(map[string]map[State]int64, len(metrics))
+	for name, state := range metrics {
+		sts := make(map[State]int64, len(state))
+		for st, cnt := range state {
+			sts[st] = cnt
+		}
+		ms[name] = sts
 	}
-	return m
+	return ms
 }

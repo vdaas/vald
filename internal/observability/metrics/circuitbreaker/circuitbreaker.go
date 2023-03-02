@@ -71,15 +71,15 @@ func (bm *breakerMetrics) Register(m metrics.Meter) error {
 		},
 		func(ctx context.Context) {
 			ms := circuitbreaker.Metrics(ctx)
-			if len(ms) == 0 {
-				return
-			}
-			for name, sts := range ms {
-				for st, cnt := range sts {
-					breakerState.Observe(ctx, cnt,
-						attribute.String(bm.breakerNameKey, name),
-						attribute.String(bm.stateKey, st.String()),
-					)
+			if len(ms) != 0 {
+				for name, sts := range ms {
+					if len(sts) != 0 {
+						for st, cnt := range sts {
+							breakerState.Observe(ctx, cnt,
+								attribute.String(bm.breakerNameKey, name),
+								attribute.String(bm.stateKey, st.String()))
+						}
+					}
 				}
 			}
 		},

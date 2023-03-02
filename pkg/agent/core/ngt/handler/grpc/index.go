@@ -71,8 +71,8 @@ func (s *server) CreateIndex(ctx context.Context, c *payload.Control_CreateIndex
 		default:
 			err = status.WrapWithInternal(fmt.Sprintf("CreateIndex API failed to create indexes pool_size = %d, error: %v", c.GetPoolSize(), err), err, append(details, info.Get())...)
 			code = codes.Internal
+			log.Error(err)
 		}
-		log.Error(err)
 		if span != nil {
 			span.RecordError(err)
 			span.SetAttributes(trace.FromGRPCStatus(code, err.Error())...)

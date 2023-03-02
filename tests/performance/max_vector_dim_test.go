@@ -28,6 +28,7 @@ import (
 	"github.com/vdaas/vald/internal/core/algorithm/ngt"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/test/data/vector"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/handler/grpc"
@@ -86,7 +87,7 @@ func TestMaxDimInsert(t *testing.T) {
 	// Get the above the limit of bit (2~32)
 	bits := make([]int, 0, maxBit-1)
 	ticker := time.NewTicker(5 * time.Second)
-	eg.Go(func() error {
+	eg.Go(safety.RecoverFunc(func() error {
 		for {
 			select {
 			case <-ctx.Done():
@@ -119,8 +120,8 @@ func TestMaxDimInsert(t *testing.T) {
 				}
 			}
 		}
-	})
-	eg.Go(func() error {
+	}))
+	eg.Go(safety.RecoverFunc(func() error {
 		for bit := 2; bit <= maxBit; bit++ {
 			select {
 			case <-ctx.Done():
@@ -168,7 +169,7 @@ func TestMaxDimInsert(t *testing.T) {
 			time.Sleep(30 * time.Second)
 		}
 		return nil
-	})
+	}))
 	eg.Wait()
 	// Get the max bit, which the environment finish process, from bits
 	var max_bit int
@@ -189,7 +190,7 @@ func TestMaxDimInsertGRPC(t *testing.T) {
 	// Get the above the limit of bit (2~32)
 	bits := make([]int, 0, maxBit-1)
 	ticker := time.NewTicker(5 * time.Second)
-	eg.Go(func() error {
+	eg.Go(safety.RecoverFunc(func() error {
 		for {
 			select {
 			case <-ctx.Done():
@@ -222,8 +223,8 @@ func TestMaxDimInsertGRPC(t *testing.T) {
 				}
 			}
 		}
-	})
-	eg.Go(func() error {
+	}))
+	eg.Go(safety.RecoverFunc(func() error {
 		for bit := 2; bit <= maxBit; bit++ {
 			select {
 			case <-ctx.Done():
@@ -286,7 +287,7 @@ func TestMaxDimInsertGRPC(t *testing.T) {
 			time.Sleep(30 * time.Second)
 		}
 		return nil
-	})
+	}))
 	eg.Wait()
 	// Get the max bit, which the environment finish process, from bits
 	var max_bit int

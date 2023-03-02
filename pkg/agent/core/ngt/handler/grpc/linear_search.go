@@ -28,6 +28,7 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc/errdetails"
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/observability/trace"
+	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/strings"
 	"go.opentelemetry.io/otel/attribute"
 )
@@ -412,7 +413,7 @@ func (s *server) MultiLinearSearch(ctx context.Context, reqs *payload.Search_Mul
 		idx, query := i, req
 		rids = append(rids, req.GetConfig().GetRequestId())
 		wg.Add(1)
-		s.eg.Go(func() (err error) {
+		s.eg.Go(safety.RecoverFunc(func() (err error) {
 			defer wg.Done()
 			ctx, sspan := trace.StartSpan(ctx, fmt.Sprintf("%s/%s/errgroup.Go/id-%d", apiName, vald.MultiLinearSearchRPCName, idx))
 			defer func() {
@@ -444,7 +445,7 @@ func (s *server) MultiLinearSearch(ctx context.Context, reqs *payload.Search_Mul
 			}
 			res.Responses[idx] = r
 			return nil
-		})
+		}))
 	}
 	wg.Wait()
 	if errs != nil {
@@ -486,7 +487,7 @@ func (s *server) MultiLinearSearchByID(ctx context.Context, reqs *payload.Search
 		idx, query := i, req
 		rids = append(rids, req.GetConfig().GetRequestId())
 		wg.Add(1)
-		s.eg.Go(func() error {
+		s.eg.Go(safety.RecoverFunc(func() error {
 			ctx, sspan := trace.StartSpan(ctx, fmt.Sprintf("%s/%s/errgroup.Go/id-%d", apiName, vald.MultiLinearSearchByIDRPCName, idx))
 			defer func() {
 				if sspan != nil {
@@ -518,7 +519,7 @@ func (s *server) MultiLinearSearchByID(ctx context.Context, reqs *payload.Search
 			}
 			res.Responses[idx] = r
 			return nil
-		})
+		}))
 	}
 	wg.Wait()
 	if errs != nil {
