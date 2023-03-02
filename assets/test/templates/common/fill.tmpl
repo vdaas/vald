@@ -8,7 +8,7 @@
                 (ne $typ "sync.WaitGroup")
                 (ne $typ "sync.Cond")
                 (ne $typ "sync.Pool") }}
-                        {{ Param . }}:
+                {{ Param . }}:
                         {{- if eq $typ "int8" -}} 0,
                         {{- else if eq $typ "uint8" -}} 0,
                         {{- else if eq $typ "uint16" -}} 0,
