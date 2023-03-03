@@ -1227,7 +1227,6 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (loc *
 		return nil
 	})
 	if err != nil {
-
 	}
 
 	var removeErrs error
