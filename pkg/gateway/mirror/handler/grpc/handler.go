@@ -1214,8 +1214,172 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (loc *
 		log.Debugf("Remove API remove succeeded to %#v", loc)
 		return loc, nil
 	}
-	// TODO: Implment it later.
-	return loc, nil
+
+	mutex := new(sync.Mutex)
+
+	err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
+		ctx, span := trace.StartSpan(ctx, apiName+"."+vald.GetObjectRPCName+"/"+target)
+		defer func() {
+			if span != nil {
+				span.End()
+			}
+		}()
+		return nil
+	})
+	if err != nil {
+
+	}
+
+	var removeErrs error
+	ce := &payload.Object_Location{
+		Uuid: req.GetId().GetId(),
+		Ips:  make([]string, 0),
+	}
+	err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
+		ctx, span := trace.StartSpan(ctx, apiName+"."+vald.RemoveRPCName+"/"+target)
+		defer func() {
+			if span != nil {
+				span.End()
+			}
+		}()
+
+		_, err := s.remove(ctx, vald.NewValdClient(conn), req, copts...)
+		if err != nil {
+			st, msg, err := status.ParseError(err, codes.Internal,
+				"failed to parse "+vald.RemoveRPCName+" API "+"error response for "+target,
+				&errdetails.RequestInfo{
+					RequestId:   req.GetId().GetId(),
+					ServingData: errdetails.Serialize(req),
+				},
+				&errdetails.ResourceInfo{
+					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.RemoveRPCName + ".BroadCast/" + target,
+					ResourceName: fmt.Sprintf("%s: %s(%s) to %s", apiName, s.name, s.ip, target),
+				},
+			)
+			if span != nil {
+				span.RecordError(err)
+				span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+				span.SetStatus(trace.StatusError, err.Error())
+			}
+			if st.Code() != codes.NotFound {
+				mutex.Lock()
+				if removeErrs == nil {
+					removeErrs = err
+				} else {
+					removeErrs = errors.Wrap(removeErrs, err.Error())
+				}
+				mutex.Unlock()
+				return err
+			}
+			return nil
+		}
+		mutex.Lock()
+		ce.Name = loc.GetName()
+		ce.Ips = append(ce.Ips, loc.GetIps()...)
+		mutex.Unlock()
+		return nil
+	})
+	if err != nil {
+		if errors.Is(err, errors.ErrGRPCClientConnNotFound("*")) {
+			err = status.WrapWithInternal(
+				vald.RemoveRPCName+" API connection not found", err,
+				&errdetails.RequestInfo{
+					RequestId:   req.GetId().GetId(),
+					ServingData: errdetails.Serialize(req),
+				},
+				&errdetails.ResourceInfo{
+					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.RemoveRPCName + ".BroadCast",
+					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+				},
+			)
+			log.Warn(err)
+			if span != nil {
+				span.RecordError(err)
+				span.SetAttributes(trace.StatusCodeInternal(err.Error())...)
+				span.SetStatus(trace.StatusError, err.Error())
+			}
+			return nil, err
+		}
+		if removeErrs == nil {
+			removeErrs = err
+		} else {
+			removeErrs = errors.Wrap(removeErrs, err.Error())
+		}
+	}
+	if removeErrs == nil {
+		return ce, nil
+	}
+
+	var upsertErrs error
+	err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
+		ctx, span := trace.StartSpan(ctx, apiName+"."+vald.UpsertRPCName+"/"+target)
+		defer func() {
+			if span != nil {
+				span.End()
+			}
+		}()
+		return nil
+	})
+	if err != nil {
+		if errors.Is(err, errors.ErrGRPCClientConnNotFound("*")) {
+			err = status.WrapWithInternal(
+				vald.UpsertRPCName+" API for "+vald.RemoveRPCName+" API connection not found", err,
+				&errdetails.RequestInfo{
+					RequestId:   req.GetId().GetId(),
+					ServingData: errdetails.Serialize(req),
+				},
+				&errdetails.ResourceInfo{
+					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.RemoveRPCName + "." + vald.UpsertRPCName + ".BroadCast",
+					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+				},
+			)
+			log.Warn(err)
+			if span != nil {
+				span.RecordError(err)
+				span.SetAttributes(trace.StatusCodeInternal(err.Error())...)
+				span.SetStatus(trace.StatusError, err.Error())
+			}
+			return nil, err
+		}
+		if upsertErrs != nil {
+			err = errors.Wrap(upsertErrs, err.Error())
+		}
+
+		st, msg, err := status.ParseError(err, codes.Internal,
+			"failed to parse "+vald.UpsertRPCName+" gRPC error response for "+vald.RemoveRPCName+" API ",
+			&errdetails.RequestInfo{
+				RequestId:   req.GetId().GetId(),
+				ServingData: errdetails.Serialize(req),
+			},
+			&errdetails.ResourceInfo{
+				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.RemoveRPCName + "." + vald.UpsertRPCName,
+				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+			},
+		)
+		if span != nil {
+			span.RecordError(err)
+			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+			span.SetStatus(trace.StatusError, err.Error())
+		}
+		return nil, err
+	}
+	st, msg, err := status.ParseError(removeErrs, codes.Internal,
+		"failed to parse "+vald.RemoveRPCName+" gRPC error response",
+		&errdetails.RequestInfo{
+			RequestId:   req.GetId().GetId(),
+			ServingData: errdetails.Serialize(req),
+		},
+		&errdetails.ResourceInfo{
+			ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.RemoveRPCName,
+			ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+		},
+	)
+	if span != nil {
+		span.RecordError(err)
+		span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+		span.SetStatus(trace.StatusError, err.Error())
+	}
+	return nil, err
 }
 
 func (s *server) StreamRemove(stream vald.Remove_StreamRemoveServer) (err error) {
