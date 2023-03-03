@@ -157,7 +157,7 @@ func (b *backoff) Do(ctx context.Context, f func(ctx context.Context) (val inter
 				log.Errord("[backoff]\tfor: "+name+",\terror: "+err.Error(), info.Get())
 			}
 			// e.g. name = vald.v1.Exists/ip ...etc
-			if name == "" {
+			if name != "" {
 				mu.Lock()
 				metrics[name] += 1
 				mu.Unlock()
