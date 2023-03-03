@@ -108,7 +108,7 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "9.2.4",
+          "pluginVersion": "9.4.3",
           "targets": [
             {
               "datasource": {
@@ -186,7 +186,7 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "9.2.4",
+          "pluginVersion": "9.4.3",
           "targets": [
             {
               "datasource": {
@@ -264,7 +264,7 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "9.2.4",
+          "pluginVersion": "9.4.3",
           "targets": [
             {
               "datasource": {
@@ -324,7 +324,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "9.2.4",
+          "pluginVersion": "9.4.3",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -429,7 +429,7 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "9.2.4",
+          "pluginVersion": "9.4.3",
           "targets": [
             {
               "datasource": {
@@ -507,7 +507,7 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "9.2.4",
+          "pluginVersion": "9.4.3",
           "targets": [
             {
               "datasource": {
@@ -590,7 +590,7 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "9.2.4",
+          "pluginVersion": "9.4.3",
           "targets": [
             {
               "datasource": {
@@ -674,7 +674,7 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "9.2.4",
+          "pluginVersion": "9.4.3",
           "targets": [
             {
               "datasource": {
@@ -733,7 +733,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "9.2.4",
+          "pluginVersion": "9.4.3",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -823,7 +823,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "9.2.4",
+          "pluginVersion": "9.4.3",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -932,7 +932,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "9.2.4",
+          "pluginVersion": "9.4.3",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -1054,7 +1054,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "9.2.3",
+          "pluginVersion": "9.4.3",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -1163,7 +1163,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "9.2.3",
+          "pluginVersion": "9.4.3",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -1283,7 +1283,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "9.2.3",
+          "pluginVersion": "9.4.3",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -1298,7 +1298,7 @@ data:
                 "uid": "prometheus"
               },
               "editorMode": "code",
-              "expr": "increase(sum(label_replace(backoff_retry_count{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\", target_pod=~\"$ValdGatewayPodName\"}, \"rpc\", \"$1\",  \"backoff_name\", \"(.*/.*)/.*\")) by (rpc) [$interval:])",
+              "expr": "increase(sum(label_replace(backoff_retry_count{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\", target_pod=~\"$ValdGatewayPodName\", backoff_name!~\"github.com/.*\"}, \"rpc\", \"$1\",  \"backoff_name\", \"(.*/.*)/.*\")) by (rpc) [$interval:])",
               "interval": "",
               "intervalFactor": 1,
               "legendFormat": "{{rpc}}",
@@ -1379,7 +1379,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "9.2.3",
+          "pluginVersion": "9.4.3",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -1394,7 +1394,7 @@ data:
                 "uid": "prometheus"
               },
               "editorMode": "code",
-              "expr": "increase(sum(label_replace(backoff_retry_count{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\", target_pod=~\"$ValdGatewayPodName\"}, \"grpc_server_method\", \"$1\",  \"backoff_name\", \"(.*/.*)/.*\")) by (grpc_server_method)[$interval:]) / sum(irate(server_completed_rpcs{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\", target_pod=~\"$ValdAgentPodName\"}[$interval])) by (grpc_server_method)",
+              "expr": "increase(sum(label_replace(backoff_retry_count{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\", target_pod=~\"$ValdGatewayPodName\", backoff_name!~\"github.com/.*\"}, \"grpc_server_method\", \"$1\",  \"backoff_name\", \"(.*/.*)/.*\")) by (grpc_server_method)[$interval:]) / sum(irate(server_completed_rpcs{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\", target_pod=~\"$ValdAgentPodName\"}[$interval])) by (grpc_server_method)",
               "interval": "",
               "intervalFactor": 1,
               "legendFormat": "{{grpc_server_method}} ({{grpc_server_status}})",
@@ -1475,7 +1475,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "9.2.3",
+          "pluginVersion": "9.4.3",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -1583,7 +1583,8 @@ data:
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green"
+                    "color": "green",
+                    "value": null
                   },
                   {
                     "color": "red",
@@ -1619,7 +1620,7 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "9.2.3",
+          "pluginVersion": "9.4.3",
           "repeatDirection": "v",
           "targets": [
             {
@@ -1681,7 +1682,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "9.2.3",
+          "pluginVersion": "9.4.3",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -1850,7 +1851,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "9.2.3",
+          "pluginVersion": "9.4.3",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -1942,7 +1943,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "9.2.3",
+          "pluginVersion": "9.4.3",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -1994,15 +1995,16 @@ data:
           }
         }
       ],
-      "refresh": false,
-      "schemaVersion": 37,
+      "refresh": "",
+      "revision": 1,
+      "schemaVersion": 38,
       "style": "dark",
       "tags": [],
       "templating": {
         "list": [
           {
             "current": {
-              "selected": true,
+              "selected": false,
               "text": "default",
               "value": "default"
             },
