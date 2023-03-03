@@ -62,16 +62,19 @@
 - [Helm Operator Chart Reference](https://github.com/vdaas/vald/blob/v1.7.2/charts/vald-helm-operator/README.md)
 
 ### Changes
+
 :bug: Bug fix
+
 - Vald gRPC Client and Pool logic makes huge backoff [#1953](https://github.com/vdaas/vald/pull/1953)
 - Missing backoff metrics [#1958](https://github.com/vdaas/vald/pull/1958)
 
 :recycle: Refactor
+
 - Update test template to exclude deepsource warning [#1954](https://github.com/vdaas/vald/pull/1954)
 
 :white_check_mark: Test
-- Remove non-implemented test [#1952](https://github.com/vdaas/vald/pull/1952)
 
+- Remove non-implemented test [#1952](https://github.com/vdaas/vald/pull/1952)
 
 ## v1.7.1
 
