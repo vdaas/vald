@@ -1,6 +1,6 @@
 <!doctype html><html><head><script async src="https://www.googletagmanager.com/gtag/js?id=UA-164223416-1"></script>
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag("js",new Date),gtag("config","UA-164223416-1")</script><link rel=canonical href=https://vald.vdaas.org><meta charset=utf-8><meta name=viewport content="width=device-width"><meta name=robots content="index, follow"><title>Vald | Build Proto</title><meta name=description content="Vald is high scalable distributed high-speed approximate nearest neighbor search engine" }><meta name=format-detection content="telephone=no"><meta http-equiv=x-ua-compatible content="IE=edge"><meta property="og:type" content="article"><meta property="og:title" content="Vald | Build Proto"><meta property="og:description" content="Vald is high scalable distributed high-speed approximate nearest neighbor search engine"><meta property="og:url" content="https://vald.vdaas.org/docs/api/build_proto/"><meta property="og:image" content="https://vald.vdaas.org/images/ogp_vald.png"><meta property="og:site_name" content="vald"><meta property="og:locale" content="en_US"><meta property="fb:app_id" content="615732422350002"><meta name=twitter:site content="@vdaas_vald"><meta name=twitter:card content="app"><link rel="shortcut icon" href=https://vald.vdaas.org/favicon.ico><link rel=stylesheet type=text/css href=/css/style.min.css><link rel=stylesheet type=text/css href=/css/header.min.css><link rel=stylesheet type=text/css href=/css/footer.min.css><link rel=stylesheet type=text/css href=/css/main.min.css><script type=text/javascript src=/js/script.min.js defer></script><meta name=viewport content="target-densitydpi=device-dpi,width=device-width,maximum-scale=1,user-scalable=yes"></head><body><header class=header id=header><div class=header__content><nav class=header__nav><a href=https://vald.vdaas.org class=header-nav__link><picture class=header-nav__image><source srcset=https://vald.vdaas.org/images/vald_white.svg media="(prefers-color-scheme: dark)"><img src=https://vald.vdaas.org/images/vald_color_1.svg alt></picture></a>
-<a class=header-nav__icon id=nav-btn><span class=header-nav__button></span></a><ul class=header__list id=menu><li class=header__item><a href=/docs/overview/about-vald class=header__link>About</a></li><li class=header__item><a href=/docs/tutorial/get-started class=header__link>Get Started</a></li><li class=header__item><a href=/docs/user-guides/sdks class=header__link>SDKs</a></li><li class=header__item><a href=/docs class=header__link>Docs</a></li><li class=header__item><a href=https://vdaas-vald.medium.com/ target=_blank class=header__link>Blog<br></a></li><li class=header__item><details class=header__version id=version_details><summary class=version__current id=current_version>v1.7.1</summary><ul class=version__list><il class=version__item><a href=javascript:void(0) class="version__link version__link--latest">v1.7.1</a></il>
+<a class=header-nav__icon id=nav-btn><span class=header-nav__button></span></a><ul class=header__list id=menu><li class=header__item><a href=/docs/overview/about-vald class=header__link>About</a></li><li class=header__item><a href=/docs/tutorial/get-started class=header__link>Get Started</a></li><li class=header__item><a href=/docs/user-guides/sdks class=header__link>SDKs</a></li><li class=header__item><a href=/docs class=header__link>Docs</a></li><li class=header__item><a href=https://vdaas-vald.medium.com/ target=_blank class=header__link>Blog<br></a></li><li class=header__item><details class=header__version id=version_details><summary class=version__current id=current_version>v1.7.2</summary><ul class=version__list><il class=version__item><a href=javascript:void(0) class="version__link version__link--latest">v1.7.2</a></il>
 <il class=version__item><a href=javascript:void(0) class=version__link>v1.7</a></il>
 <il class=version__item><a href=javascript:void(0) class=version__link>v1.6</a></il>
 <il class=version__item><a href=javascript:void(0) class=version__link>v1.5</a></il>
@@ -89,7 +89,7 @@ Let&rsquo;s check the below table for the details.</p><table><thead><tr><th styl
 </span></span><span style=display:flex><span>            ],
 </span></span><span style=display:flex><span>            <span style=color:#f92672>&amp;</span>[<span style=color:#e6db74>&#34;./proto&#34;</span>],
 </span></span><span style=display:flex><span>        )
-</span></span><span style=display:flex><span>        .unwrap_or_else(<span style=color:#f92672>|</span>e<span style=color:#f92672>|</span> panic!(<span style=color:#e6db74>&#34;protobuf compile error: {}&#34;</span>, e));
+</span></span><span style=display:flex><span>        .unwrap_or_else(<span style=color:#f92672>|</span>e<span style=color:#f92672>|</span> panic!(<span style=color:#e6db74>&#34;protobuf compile error: </span><span style=color:#e6db74>{}</span><span style=color:#e6db74>&#34;</span>, e));
 </span></span><span style=display:flex><span>    Ok(())
 </span></span><span style=display:flex><span>}
 </span></span></code></pre></div></li><li><p>build proto</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>cargo build
@@ -143,20 +143,20 @@ Let&rsquo;s check the below table for the details.</p><table><thead><tr><th styl
 </span></span><span style=display:flex><span><span style=color:#66d9ef>use</span> vald_sample_rust_client::vald::v1::search_client;
 </span></span><span style=display:flex><span>
 </span></span><span style=display:flex><span><span style=color:#75715e>// Dataset file name
-</span></span></span><span style=display:flex><span><span style=color:#75715e></span><span style=color:#66d9ef>static</span> FILE: <span style=color:#66d9ef>&amp;</span><span style=color:#66d9ef>str</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;fashion-mnist-784-euclidean.hdf5&#34;</span>;
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span><span style=color:#66d9ef>static</span> <span style=color:#66d9ef>FILE</span>: <span style=color:#66d9ef>&amp;</span><span style=color:#66d9ef>str</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;fashion-mnist-784-euclidean.hdf5&#34;</span>;
 </span></span><span style=display:flex><span><span style=color:#75715e>// Dataset name
-</span></span></span><span style=display:flex><span><span style=color:#75715e></span><span style=color:#66d9ef>static</span> DATASET: <span style=color:#66d9ef>&amp;</span><span style=color:#66d9ef>str</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;train&#34;</span>;
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span><span style=color:#66d9ef>static</span> <span style=color:#66d9ef>DATASET</span>: <span style=color:#66d9ef>&amp;</span><span style=color:#66d9ef>str</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;train&#34;</span>;
 </span></span><span style=display:flex><span><span style=color:#75715e>// set Vald cluster host
-</span></span></span><span style=display:flex><span><span style=color:#75715e></span><span style=color:#66d9ef>static</span> HOST: <span style=color:#66d9ef>&amp;</span><span style=color:#66d9ef>str</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;http://localhost:8080&#34;</span>;
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span><span style=color:#66d9ef>static</span> <span style=color:#66d9ef>HOST</span>: <span style=color:#66d9ef>&amp;</span><span style=color:#66d9ef>str</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;http://localhost:8080&#34;</span>;
 </span></span><span style=display:flex><span><span style=color:#75715e>// Time duration for waiting to finish `CreateIndex` and `SaveIndex`
-</span></span></span><span style=display:flex><span><span style=color:#75715e></span><span style=color:#66d9ef>static</span> DURATION: <span style=color:#66d9ef>u64</span> <span style=color:#f92672>=</span> <span style=color:#ae81ff>15</span>;
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span><span style=color:#66d9ef>static</span> <span style=color:#66d9ef>DURATION</span>: <span style=color:#66d9ef>u64</span> <span style=color:#f92672>=</span> <span style=color:#ae81ff>15</span>;
 </span></span><span style=display:flex><span>
 </span></span><span style=display:flex><span><span style=color:#75715e>// load data
 </span></span></span><span style=display:flex><span><span style=color:#75715e></span><span style=color:#66d9ef>fn</span> <span style=color:#a6e22e>read_file</span>() -&gt; Result<span style=color:#f92672>&lt;</span>Vec<span style=color:#f92672>&lt;</span>Vec<span style=color:#f92672>&lt;</span><span style=color:#66d9ef>f32</span><span style=color:#f92672>&gt;&gt;&gt;</span> {
-</span></span><span style=display:flex><span>    <span style=color:#66d9ef>let</span> file <span style=color:#f92672>=</span> File::open(FILE).unwrap_or_else(<span style=color:#f92672>|</span>e<span style=color:#f92672>|</span> panic!(<span style=color:#e6db74>&#34;[ERR] failed to read file: {}&#34;</span>, e));
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>let</span> file <span style=color:#f92672>=</span> File::open(<span style=color:#66d9ef>FILE</span>).unwrap_or_else(<span style=color:#f92672>|</span>e<span style=color:#f92672>|</span> panic!(<span style=color:#e6db74>&#34;[ERR] failed to read file: </span><span style=color:#e6db74>{}</span><span style=color:#e6db74>&#34;</span>, e));
 </span></span><span style=display:flex><span>    <span style=color:#66d9ef>let</span> data <span style=color:#f92672>=</span> file
-</span></span><span style=display:flex><span>        .dataset(DATASET)
-</span></span><span style=display:flex><span>        .unwrap_or_else(<span style=color:#f92672>|</span>e<span style=color:#f92672>|</span> panic!(<span style=color:#e6db74>&#34;[ERR] failed to get dataset: {}&#34;</span>, e));
+</span></span><span style=display:flex><span>        .dataset(<span style=color:#66d9ef>DATASET</span>)
+</span></span><span style=display:flex><span>        .unwrap_or_else(<span style=color:#f92672>|</span>e<span style=color:#f92672>|</span> panic!(<span style=color:#e6db74>&#34;[ERR] failed to get dataset: </span><span style=color:#e6db74>{}</span><span style=color:#e6db74>&#34;</span>, e));
 </span></span><span style=display:flex><span>    <span style=color:#66d9ef>let</span> <span style=color:#66d9ef>mut</span> vector <span style=color:#f92672>=</span> Vec::new();
 </span></span><span style=display:flex><span>    <span style=color:#66d9ef>for</span> train <span style=color:#66d9ef>in</span> data.read_2d::<span style=color:#f92672>&lt;</span><span style=color:#66d9ef>f32</span><span style=color:#f92672>&gt;</span>()<span style=color:#f92672>?</span>.outer_iter() {
 </span></span><span style=display:flex><span>        <span style=color:#66d9ef>let</span> <span style=color:#66d9ef>mut</span> vec: Vec<span style=color:#f92672>&lt;</span><span style=color:#66d9ef>f32</span><span style=color:#f92672>&gt;</span> <span style=color:#f92672>=</span> Vec::new();
@@ -171,14 +171,14 @@ Let&rsquo;s check the below table for the details.</p><table><thead><tr><th styl
 </span></span><span style=display:flex><span>
 </span></span><span style=display:flex><span><span style=color:#75715e>#[tokio::main(flavor = </span><span style=color:#e6db74>&#34;current_thread&#34;</span><span style=color:#75715e>)]</span>
 </span></span><span style=display:flex><span><span style=color:#66d9ef>async</span> <span style=color:#66d9ef>fn</span> <span style=color:#a6e22e>main</span>() -&gt; Result<span style=color:#f92672>&lt;</span>(), Box<span style=color:#f92672>&lt;</span><span style=color:#66d9ef>dyn</span> std::error::Error<span style=color:#f92672>&gt;&gt;</span> {
-</span></span><span style=display:flex><span>    print!(<span style=color:#e6db74>&#34;[Start] Load {} file\n&#34;</span>, FILE);
+</span></span><span style=display:flex><span>    print!(<span style=color:#e6db74>&#34;[Start] Load </span><span style=color:#e6db74>{}</span><span style=color:#e6db74> file</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>&#34;</span>, <span style=color:#66d9ef>FILE</span>);
 </span></span><span style=display:flex><span>    <span style=color:#66d9ef>let</span> vec <span style=color:#f92672>=</span> read_file()<span style=color:#f92672>?</span>;
-</span></span><span style=display:flex><span>    print!(<span style=color:#e6db74>&#34;[End] Success to load {} file\n&#34;</span>, FILE);
+</span></span><span style=display:flex><span>    print!(<span style=color:#e6db74>&#34;[End] Success to load </span><span style=color:#e6db74>{}</span><span style=color:#e6db74> file</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>&#34;</span>, <span style=color:#66d9ef>FILE</span>);
 </span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span>    print!(<span style=color:#e6db74>&#34;[Start] Insert phase\n&#34;</span>);
+</span></span><span style=display:flex><span>    print!(<span style=color:#e6db74>&#34;[Start] Insert phase</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>&#34;</span>);
 </span></span><span style=display:flex><span>    <span style=color:#75715e>// create insert client
 </span></span></span><span style=display:flex><span><span style=color:#75715e></span>    <span style=color:#66d9ef>let</span> <span style=color:#66d9ef>mut</span> insert_client <span style=color:#f92672>=</span>
-</span></span><span style=display:flex><span>        insert_client::InsertClient::connect(Endpoint::from_static(HOST)).<span style=color:#66d9ef>await</span><span style=color:#f92672>?</span>;
+</span></span><span style=display:flex><span>        insert_client::InsertClient::connect(Endpoint::from_static(<span style=color:#66d9ef>HOST</span>)).<span style=color:#66d9ef>await</span><span style=color:#f92672>?</span>;
 </span></span><span style=display:flex><span>    <span style=color:#66d9ef>let</span> <span style=color:#66d9ef>mut</span> ids: Vec<span style=color:#f92672>&lt;</span>String<span style=color:#f92672>&gt;</span> <span style=color:#f92672>=</span> Vec::new();
 </span></span><span style=display:flex><span>    <span style=color:#66d9ef>for</span> v <span style=color:#66d9ef>in</span> vec.iter() {
 </span></span><span style=display:flex><span>        <span style=color:#66d9ef>let</span> id <span style=color:#f92672>=</span> Utc::now().timestamp_nanos().to_string();
@@ -198,15 +198,15 @@ Let&rsquo;s check the below table for the details.</p><table><thead><tr><th styl
 </span></span><span style=display:flex><span>            })
 </span></span><span style=display:flex><span>            .<span style=color:#66d9ef>await</span><span style=color:#f92672>?</span>;
 </span></span><span style=display:flex><span>    }
-</span></span><span style=display:flex><span>    print!(<span style=color:#e6db74>&#34;[End] Finish Insert Phase\n&#34;</span>);
+</span></span><span style=display:flex><span>    print!(<span style=color:#e6db74>&#34;[End] Finish Insert Phase</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>&#34;</span>);
 </span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span>    print!(<span style=color:#e6db74>&#34;[Sleep] Waiting SaveIndex is completed...\n&#34;</span>);
-</span></span><span style=display:flex><span>    sleep(time::Duration::from_secs(DURATION));
+</span></span><span style=display:flex><span>    print!(<span style=color:#e6db74>&#34;[Sleep] Waiting SaveIndex is completed...</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>&#34;</span>);
+</span></span><span style=display:flex><span>    sleep(time::Duration::from_secs(<span style=color:#66d9ef>DURATION</span>));
 </span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span>    print!(<span style=color:#e6db74>&#34;[Start] Search phase\n&#34;</span>);
+</span></span><span style=display:flex><span>    print!(<span style=color:#e6db74>&#34;[Start] Search phase</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>&#34;</span>);
 </span></span><span style=display:flex><span>    <span style=color:#75715e>// create search client
 </span></span></span><span style=display:flex><span><span style=color:#75715e></span>    <span style=color:#66d9ef>let</span> <span style=color:#66d9ef>mut</span> search_client <span style=color:#f92672>=</span>
-</span></span><span style=display:flex><span>        search_client::SearchClient::connect(Endpoint::from_static(HOST)).<span style=color:#66d9ef>await</span><span style=color:#f92672>?</span>;
+</span></span><span style=display:flex><span>        search_client::SearchClient::connect(Endpoint::from_static(<span style=color:#66d9ef>HOST</span>)).<span style=color:#66d9ef>await</span><span style=color:#f92672>?</span>;
 </span></span><span style=display:flex><span>    <span style=color:#66d9ef>for</span> id <span style=color:#66d9ef>in</span> ids.clone() {
 </span></span><span style=display:flex><span>        <span style=color:#75715e>// search nearest neighbor vectors using searchById method
 </span></span></span><span style=display:flex><span><span style=color:#75715e></span>        <span style=color:#66d9ef>let</span> res <span style=color:#f92672>=</span> search_client
@@ -223,15 +223,15 @@ Let&rsquo;s check the below table for the details.</p><table><thead><tr><th styl
 </span></span><span style=display:flex><span>                }),
 </span></span><span style=display:flex><span>            })
 </span></span><span style=display:flex><span>            .<span style=color:#66d9ef>await</span><span style=color:#f92672>?</span>;
-</span></span><span style=display:flex><span>        print!(<span style=color:#e6db74>&#34;[Id]: {:?}\n&#34;</span>, id.to_string());
-</span></span><span style=display:flex><span>        print!(<span style=color:#e6db74>&#34;[Result]: {:#?}\n&#34;</span>, res.into_inner().results);
+</span></span><span style=display:flex><span>        print!(<span style=color:#e6db74>&#34;[Id]: </span><span style=color:#e6db74>{:?}</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>&#34;</span>, id.to_string());
+</span></span><span style=display:flex><span>        print!(<span style=color:#e6db74>&#34;[Result]: </span><span style=color:#e6db74>{:#?}</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>&#34;</span>, res.into_inner().results);
 </span></span><span style=display:flex><span>    }
-</span></span><span style=display:flex><span>    print!(<span style=color:#e6db74>&#34;[End] Finish Search Phase\n&#34;</span>);
+</span></span><span style=display:flex><span>    print!(<span style=color:#e6db74>&#34;[End] Finish Search Phase</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>&#34;</span>);
 </span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span>    print!(<span style=color:#e6db74>&#34;[Start] Remove phase\n&#34;</span>);
+</span></span><span style=display:flex><span>    print!(<span style=color:#e6db74>&#34;[Start] Remove phase</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>&#34;</span>);
 </span></span><span style=display:flex><span>    <span style=color:#75715e>// create remove client
 </span></span></span><span style=display:flex><span><span style=color:#75715e></span>    <span style=color:#66d9ef>let</span> <span style=color:#66d9ef>mut</span> remove_client <span style=color:#f92672>=</span>
-</span></span><span style=display:flex><span>        remove_client::RemoveClient::connect(Endpoint::from_static(HOST)).<span style=color:#66d9ef>await</span><span style=color:#f92672>?</span>;
+</span></span><span style=display:flex><span>        remove_client::RemoveClient::connect(Endpoint::from_static(<span style=color:#66d9ef>HOST</span>)).<span style=color:#66d9ef>await</span><span style=color:#f92672>?</span>;
 </span></span><span style=display:flex><span>    <span style=color:#66d9ef>for</span> id <span style=color:#66d9ef>in</span> ids.clone() {
 </span></span><span style=display:flex><span>        <span style=color:#75715e>// remove vectors
 </span></span></span><span style=display:flex><span><span style=color:#75715e></span>        <span style=color:#66d9ef>let</span> _ <span style=color:#f92672>=</span> remove_client
@@ -241,7 +241,7 @@ Let&rsquo;s check the below table for the details.</p><table><thead><tr><th styl
 </span></span><span style=display:flex><span>            })
 </span></span><span style=display:flex><span>            .<span style=color:#66d9ef>await</span><span style=color:#f92672>?</span>;
 </span></span><span style=display:flex><span>    }
-</span></span><span style=display:flex><span>    print!(<span style=color:#e6db74>&#34;[End] Finish Remove phase\n&#34;</span>);
+</span></span><span style=display:flex><span>    print!(<span style=color:#e6db74>&#34;[End] Finish Remove phase</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>&#34;</span>);
 </span></span><span style=display:flex><span>
 </span></span><span style=display:flex><span>    Ok(())
 </span></span><span style=display:flex><span>}
