@@ -34,6 +34,7 @@ import (
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/test/data/vector"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/service/kvs"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/service/vqueue"
@@ -187,7 +188,7 @@ func Test_ngt_InsertUpsert(t *testing.T) {
 			log.Warn("start update operation")
 			for i := 0; i < 100; i++ {
 				idx := i
-				eg.Go(func() error {
+				eg.Go(safety.RecoverFunc(func() error {
 					log.Warnf("started %d-1", idx)
 					for _, idx := range test.args.idxes[:len(test.args.idxes)/3] {
 						_ = n.Delete(idx.uuid)
@@ -195,9 +196,9 @@ func Test_ngt_InsertUpsert(t *testing.T) {
 					}
 					log.Warnf("finished %d-1", idx)
 					return nil
-				})
+				}))
 
-				eg.Go(func() error {
+				eg.Go(safety.RecoverFunc(func() error {
 					log.Warnf("started %d-2", idx)
 					for _, idx := range test.args.idxes[len(test.args.idxes)/3 : 2*len(test.args.idxes)/3] {
 						_ = n.Delete(idx.uuid)
@@ -205,9 +206,9 @@ func Test_ngt_InsertUpsert(t *testing.T) {
 					}
 					log.Warnf("finished %d-2", idx)
 					return nil
-				})
+				}))
 
-				eg.Go(func() error {
+				eg.Go(safety.RecoverFunc(func() error {
 					log.Warnf("started %d-3", idx)
 					for _, idx := range test.args.idxes[2*len(test.args.idxes)/3:] {
 						_ = n.Delete(idx.uuid)
@@ -215,7 +216,7 @@ func Test_ngt_InsertUpsert(t *testing.T) {
 					}
 					log.Warnf("finished %d-3", idx)
 					return nil
-				})
+				}))
 			}
 			eg.Wait()
 

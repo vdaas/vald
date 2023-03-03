@@ -38,6 +38,7 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc/errdetails"
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/observability/trace"
+	"github.com/vdaas/vald/internal/safety"
 )
 
 type server struct {
@@ -221,7 +222,7 @@ func (s *server) MultiSearchObject(ctx context.Context, reqs *payload.Search_Mul
 	for i, req := range reqs.Requests {
 		idx, query := i, req
 		wg.Add(1)
-		s.eg.Go(func() error {
+		s.eg.Go(safety.RecoverFunc(func() error {
 			defer wg.Done()
 			ctx, sspan := trace.StartSpan(ctx, fmt.Sprintf("%s.%s/errgroup.Go/id-%d", apiName, vald.MultiSearchObjectRPCName, idx))
 			defer func() {
@@ -270,7 +271,7 @@ func (s *server) MultiSearchObject(ctx context.Context, reqs *payload.Search_Mul
 			}
 			res.Responses[idx] = r
 			return nil
-		})
+		}))
 	}
 	wg.Wait()
 	return res, errs
@@ -472,7 +473,7 @@ func (s *server) MultiLinearSearchObject(ctx context.Context, reqs *payload.Sear
 	for i, req := range reqs.Requests {
 		idx, query := i, req
 		wg.Add(1)
-		s.eg.Go(func() error {
+		s.eg.Go(safety.RecoverFunc(func() error {
 			defer wg.Done()
 			ctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.MultiLinearSearchObjectRPCName+"/requestID-"+query.GetConfig().GetRequestId())
 			defer func() {
@@ -515,7 +516,7 @@ func (s *server) MultiLinearSearchObject(ctx context.Context, reqs *payload.Sear
 			}
 			res.Responses[idx] = r
 			return nil
-		})
+		}))
 	}
 	wg.Wait()
 	return res, errs
@@ -790,7 +791,7 @@ func (s *server) MultiInsertObject(ctx context.Context, reqs *payload.Insert_Mul
 	for i, req := range reqs.Requests {
 		idx, query := i, req
 		wg.Add(1)
-		s.eg.Go(func() error {
+		s.eg.Go(safety.RecoverFunc(func() error {
 			defer wg.Done()
 			ctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.MultiInsertObjectRPCName+"/errgroup.Go/id-"+strconv.Itoa(idx))
 			defer func() {
@@ -832,7 +833,7 @@ func (s *server) MultiInsertObject(ctx context.Context, reqs *payload.Insert_Mul
 			}
 			locs.Locations[idx] = loc
 			return nil
-		})
+		}))
 	}
 	wg.Wait()
 	return locs, errs
@@ -1045,7 +1046,7 @@ func (s *server) MultiUpdateObject(ctx context.Context, reqs *payload.Update_Mul
 	for i, req := range reqs.Requests {
 		idx, query := i, req
 		wg.Add(1)
-		s.eg.Go(func() error {
+		s.eg.Go(safety.RecoverFunc(func() error {
 			defer wg.Done()
 			ctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.MultiUpdateObjectRPCName+"/errgroup.Go/id-"+strconv.Itoa(idx))
 			defer func() {
@@ -1087,7 +1088,7 @@ func (s *server) MultiUpdateObject(ctx context.Context, reqs *payload.Update_Mul
 			}
 			locs.Locations[idx] = loc
 			return nil
-		})
+		}))
 	}
 	wg.Wait()
 	return locs, errs
@@ -1308,7 +1309,7 @@ func (s *server) MultiUpsertObject(ctx context.Context, reqs *payload.Upsert_Mul
 	for i, req := range reqs.Requests {
 		idx, query := i, req
 		wg.Add(1)
-		s.eg.Go(func() error {
+		s.eg.Go(safety.RecoverFunc(func() error {
 			defer wg.Done()
 			ctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.MultiUpsertObjectRPCName+"/errgroup.Go/id-"+strconv.Itoa(idx))
 			defer func() {
@@ -1349,7 +1350,7 @@ func (s *server) MultiUpsertObject(ctx context.Context, reqs *payload.Upsert_Mul
 			}
 			locs.Locations[idx] = loc
 			return nil
-		})
+		}))
 	}
 	wg.Wait()
 	return locs, errs
@@ -1728,7 +1729,7 @@ func (s *server) MultiSearch(ctx context.Context, reqs *payload.Search_MultiRequ
 	for i, req := range reqs.Requests {
 		idx, query := i, req
 		wg.Add(1)
-		s.eg.Go(func() error {
+		s.eg.Go(safety.RecoverFunc(func() error {
 			defer wg.Done()
 			ctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.MultiSearchRPCName+"/errgroup.Go/id-"+strconv.Itoa(idx))
 			defer func() {
@@ -1777,7 +1778,7 @@ func (s *server) MultiSearch(ctx context.Context, reqs *payload.Search_MultiRequ
 			}
 			res.Responses[idx] = r
 			return nil
-		})
+		}))
 	}
 	wg.Wait()
 	return res, errs
@@ -1798,7 +1799,7 @@ func (s *server) MultiSearchByID(ctx context.Context, reqs *payload.Search_Multi
 	for i, req := range reqs.Requests {
 		idx, query := i, req
 		wg.Add(1)
-		s.eg.Go(func() error {
+		s.eg.Go(safety.RecoverFunc(func() error {
 			defer wg.Done()
 			ctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.MultiSearchByIDRPCName+"/errgroup.Go/id-"+strconv.Itoa(idx))
 			defer func() {
@@ -1847,7 +1848,7 @@ func (s *server) MultiSearchByID(ctx context.Context, reqs *payload.Search_Multi
 			}
 			res.Responses[idx] = r
 			return nil
-		})
+		}))
 	}
 	wg.Wait()
 	return res, errs
@@ -2209,7 +2210,7 @@ func (s *server) MultiLinearSearch(ctx context.Context, reqs *payload.Search_Mul
 	for i, req := range reqs.Requests {
 		idx, query := i, req
 		wg.Add(1)
-		s.eg.Go(func() error {
+		s.eg.Go(safety.RecoverFunc(func() error {
 			defer wg.Done()
 			ctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.MultiLinearSearchRPCName+"/errgroup.Go/id-"+strconv.Itoa(idx))
 			defer func() {
@@ -2250,7 +2251,7 @@ func (s *server) MultiLinearSearch(ctx context.Context, reqs *payload.Search_Mul
 			}
 			res.Responses[idx] = r
 			return nil
-		})
+		}))
 	}
 	wg.Wait()
 	return res, errs
@@ -2271,7 +2272,7 @@ func (s *server) MultiLinearSearchByID(ctx context.Context, reqs *payload.Search
 	for i, req := range reqs.Requests {
 		idx, query := i, req
 		wg.Add(1)
-		s.eg.Go(func() error {
+		s.eg.Go(safety.RecoverFunc(func() error {
 			defer wg.Done()
 			ctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.MultiLinearSearchByIDRPCName+"/errgroup.Go/id-"+strconv.Itoa(idx))
 			defer func() {
@@ -2312,7 +2313,7 @@ func (s *server) MultiLinearSearchByID(ctx context.Context, reqs *payload.Search
 			}
 			res.Responses[idx] = r
 			return nil
-		})
+		}))
 	}
 	wg.Wait()
 	return res, errs
@@ -2541,7 +2542,7 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 	for i, req := range reqs.Requests {
 		idx, query := i, req
 		wg.Add(1)
-		s.eg.Go(func() error {
+		s.eg.Go(safety.RecoverFunc(func() error {
 			defer wg.Done()
 			ctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.MultiInsertRPCName+"/errgroup.Go/id-"+strconv.Itoa(idx))
 			defer func() {
@@ -2590,7 +2591,7 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 			}
 			locs.Locations[idx] = r
 			return nil
-		})
+		}))
 	}
 	wg.Wait()
 	return locs, errs
@@ -2798,7 +2799,7 @@ func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequ
 	for i, req := range reqs.Requests {
 		idx, query := i, req
 		wg.Add(1)
-		s.eg.Go(func() error {
+		s.eg.Go(safety.RecoverFunc(func() error {
 			defer wg.Done()
 			ctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.MultiUpdateRPCName+"/errgroup.Go/id-"+strconv.Itoa(idx))
 			defer func() {
@@ -2847,7 +2848,7 @@ func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequ
 			}
 			locs.Locations[idx] = r
 			return nil
-		})
+		}))
 	}
 	wg.Wait()
 	return locs, errs
@@ -3063,7 +3064,7 @@ func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequ
 	for i, req := range reqs.Requests {
 		idx, query := i, req
 		wg.Add(1)
-		s.eg.Go(func() error {
+		s.eg.Go(safety.RecoverFunc(func() error {
 			defer wg.Done()
 			ctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.MultiUpsertRPCName+"/errgroup.Go/id-"+strconv.Itoa(idx))
 			defer func() {
@@ -3105,7 +3106,7 @@ func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequ
 			}
 			locs.Locations[idx] = r
 			return nil
-		})
+		}))
 	}
 	wg.Wait()
 	return locs, errs
@@ -3196,7 +3197,7 @@ func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequ
 	for i, req := range reqs.Requests {
 		idx, query := i, req
 		wg.Add(1)
-		s.eg.Go(func() error {
+		s.eg.Go(safety.RecoverFunc(func() error {
 			defer wg.Done()
 			ctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.MultiRemoveRPCName+"/errgroup.Go/id-"+strconv.Itoa(idx))
 			defer func() {
@@ -3238,7 +3239,7 @@ func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequ
 			}
 			locs.Locations[idx] = r
 			return nil
-		})
+		}))
 	}
 	wg.Wait()
 	return locs, errs

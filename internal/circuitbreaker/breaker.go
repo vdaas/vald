@@ -145,7 +145,7 @@ func (b *breaker) fail() {
 		return
 	}
 	if ok {
-		log.Infof("the operation failed, circuit breaker state for '%s' changed,\nfrom: %s, to: %s", b.key, st.String(), StateOpen.String())
+		log.Warnf("the operation failed, circuit breaker state for '%s' changed,\tfrom: %s, to: %s", b.key, st.String(), StateOpen.String())
 		b.trip()
 	}
 }
@@ -162,7 +162,6 @@ func (b *breaker) currentState() State {
 		return StateHalfOpen
 	}
 	if expire := atomic.LoadInt64(&b.closedRefreshExp); expire == 0 || now > expire {
-		log.Infof("the closed state expired, circuit breaker state for '%s' refleshed,\nto: %s", b.key, StateClosed.String())
 		b.reset()
 	}
 	return StateClosed

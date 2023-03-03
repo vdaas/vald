@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package vald provides vald grpc client library
+// Package vald provides vald gRPC client library
 package vald

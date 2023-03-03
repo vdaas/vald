@@ -14,8 +14,10 @@
 package location
 
 import (
+	"os"
 	"time"
 
+	"github.com/kpango/fastime"
 	"github.com/vdaas/vald/internal/strings"
 )
 
@@ -23,11 +25,15 @@ func Set(loc string) {
 	switch strings.ToLower(loc) {
 	case strings.ToLower(locationUTC):
 		time.Local = UTC()
+		os.Setenv("TZ", "UTC")
 	case strings.ToLower(locationGMT):
 		time.Local = GMT()
+		os.Setenv("TZ", "GMT")
 	case strings.ToLower(locationJST), strings.ToLower(locationTokyo):
 		time.Local = JST()
+		os.Setenv("TZ", "JST")
 	default:
 		time.Local = location(loc, 0)
 	}
+	fastime.SetLocation(time.Local)
 }

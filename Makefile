@@ -319,6 +319,7 @@ clean:
 	rm -rf vendor
 	go clean -cache -modcache -testcache -i -r
 	mv ./apis/grpc/v1/vald/vald.go $(TEMP_DIR)/vald.go
+	mv ./apis/grpc/v1/agent/core/agent.go $(TEMP_DIR)/agent.go
 	mv ./apis/grpc/v1/payload/interface.go $(TEMP_DIR)/interface.go
 	rm -rf \
 		/go/pkg \
@@ -335,6 +336,8 @@ clean:
 		./go.mod
 	mkdir -p ./apis/grpc/v1/vald
 	mv $(TEMP_DIR)/vald.go ./apis/grpc/v1/vald/vald.go
+	mkdir -p ./apis/grpc/v1/agent/core
+	mv $(TEMP_DIR)/agent.go ./apis/grpc/v1/agent/core/agent.go
 	mkdir -p ./apis/grpc/v1/payload
 	mv $(TEMP_DIR)/interface.go ./apis/grpc/v1/payload/interface.go
 	cp ./hack/go.mod.default ./go.mod

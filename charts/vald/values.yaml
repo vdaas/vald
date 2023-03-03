@@ -1090,7 +1090,10 @@ gateway:
       node_name: "" # _MY_NODE_NAME_
       # @schema {"name": "gateway.lb.gateway_config.index_replica", "type": "integer", "minimum": 1}
       # gateway.lb.gateway_config.index_replica -- number of index replica
-      index_replica: 5
+      index_replica: 3
+      # @schema {"name": "gateway.lb.gateway_config.multi_operation_concurrency", "type": "integer", "minimum": 2}
+      # gateway.lb.gateway_config.multi_operation_concurrency -- number of concurrency of multiXXX api's operation
+      multi_operation_concurrency: 20
       # @schema {"name": "gateway.lb.gateway_config.discoverer", "type": "object"}
       discoverer:
         # @schema {"name": "gateway.lb.gateway_config.discoverer.duration", "type": "string"}

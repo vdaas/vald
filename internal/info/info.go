@@ -21,12 +21,12 @@ import (
 	"fmt"
 	"reflect"
 	"runtime"
-	"sort"
 	"strconv"
 	"sync"
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/slices"
 	"github.com/vdaas/vald/internal/strings"
 )
 
@@ -173,11 +173,17 @@ func New(opts ...Option) (Info, error) {
 
 // String calls String method of global detail object.
 func String() string {
+	if infoProvider == nil {
+		return ""
+	}
 	return infoProvider.String()
 }
 
 // Get calls Get method of global detail object.
 func Get() Detail {
+	if infoProvider == nil {
+		return Detail{}
+	}
 	return infoProvider.Get()
 }
 
@@ -185,7 +191,8 @@ func Get() Detail {
 // The stacktrace will be initialized when the stacktrace is not initialized yet.
 func (i *info) String() string {
 	if len(i.detail.StackTrace) == 0 {
-		i.detail = i.Get()
+		i.prepare()
+		i.detail = i.getDetail()
 	}
 
 	return i.detail.String()
@@ -255,7 +262,7 @@ func (d Detail) String() string {
 			strs = append(strs, fmt.Sprintf(infoFormat, tag)+value)
 		}
 	}
-	sort.Strings(strs)
+	slices.Sort(strs)
 	return "\n" + strings.Join(strs, "\n")
 }
 
@@ -268,7 +275,7 @@ func (i *info) Get() Detail {
 // skipcq: VET-V0008
 func (i info) getDetail() Detail {
 	i.detail.StackTrace = make([]StackTrace, 0, 10)
-	for j := 2; ; j++ {
+	for j := 3; ; j++ {
 		pc, file, line, ok := i.rtCaller(j)
 		if !ok {
 			break
@@ -301,9 +308,11 @@ func (i info) getDetail() Detail {
 			url += "#L" + strconv.Itoa(line)
 		case func() bool {
 			idx = strings.Index(file, goSrc)
-			return idx >= 0 && strings.Contains(file, valdRepo)
+			return idx >= 0 && strings.Index(file, valdRepo) >= 0
 		}():
 			url = strings.Replace(file[idx+goSrcLen:]+"#L"+strconv.Itoa(line), valdRepo, "https://"+valdRepo+"/blob/"+i.detail.GitCommit, -1)
+		case strings.HasPrefix(file, valdRepo):
+			url = fmt.Sprintf("%s#L%d", strings.Replace(file, valdRepo, "https://"+valdRepo+"/blob/"+i.detail.GitCommit, -1), line)
 		}
 		i.detail.StackTrace = append(i.detail.StackTrace, StackTrace{
 			FuncName: funcName,

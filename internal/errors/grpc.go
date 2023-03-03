@@ -42,13 +42,16 @@ var (
 	// ErrGRPCClientNotFound represents an error that the vald internal gRPC client couldn't find.
 	ErrGRPCClientNotFound = New("vald internal gRPC client not found")
 
+	// ErrGRPCPoolConnectionNotFound represents an error that the vald internal gRPC client pool connection couldn't find.
+	ErrGRPCPoolConnectionNotFound = New("vald internal gRPC pool connection not found")
+
 	// ErrGRPCClientConnNotFound represents a function to generate an error that the gRPC client connection couldn't find.
 	ErrGRPCClientConnNotFound = func(addr string) error {
 		return Errorf("gRPC client connection not found in %s", addr)
 	}
 
-	// ErrGRPCClientStreamNotFound represents an error that the vald internal gRPC client couldn't find any grpc client stream connection.
-	ErrGRPCClientStreamNotFound = New("vald internal gRPC client grpc client stream not found")
+	// ErrGRPCClientStreamNotFound represents an error that the vald internal gRPC client couldn't find any gRPC client stream connection.
+	ErrGRPCClientStreamNotFound = New("vald internal gRPC client gRPC client stream not found")
 
 	// ErrRPCCallFailed represents a function to generate an error that the RPC call failed.
 	ErrRPCCallFailed = func(addr string, err error) error {
@@ -56,13 +59,14 @@ var (
 	}
 
 	// ErrGRPCTargetAddrNotFound represents an error that the gRPC target address couldn't find.
-	ErrGRPCTargetAddrNotFound = New("grpc connection target not found")
+	ErrGRPCTargetAddrNotFound = New("gRPC connection target not found")
 
-	// ErrGRPCUnexpectedStatusError represents an error that the gRPC status code is undefined
+	// ErrGRPCUnexpectedStatusError represents an error that the gRPC status code is undefined.
 	ErrGRPCUnexpectedStatusError = func(code string, err error) error {
 		return Wrapf(err, "unexcepted error detected: code %s", code)
 	}
 
+	// ErrInvalidProtoMessageType represents an error that the gRPC protocol buffers message type is invalid.
 	ErrInvalidProtoMessageType = func(v interface{}) error {
 		return Errorf("failed to marshal/unmarshal proto message, message type is %T (missing vtprotobuf/protobuf helpers)", v)
 	}

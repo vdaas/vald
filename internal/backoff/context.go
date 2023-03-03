@@ -17,7 +17,11 @@ import "context"
 
 type contextKey string
 
-const backoffNameContextKey contextKey = "backoff_name"
+const (
+	backoffNameContextKey      contextKey = "backoff_name"
+	backoffRunningContextKey   contextKey = "backoff_running"
+	backoffRunningContextValue string     = string(backoffRunningContextKey)
+)
 
 // WithBackoffName returns a copy of parent in which the method associated with key (backoffNameContextKey).
 func WithBackoffName(ctx context.Context, name string) context.Context {
@@ -32,4 +36,14 @@ func FromBackoffName(ctx context.Context) string {
 		}
 	}
 	return ""
+}
+
+// isRunning returns context and is running or not for preventing duplicated backoff execution
+func isRunning(ctx context.Context) (context.Context, bool) {
+	if val := ctx.Value(backoffRunningContextKey); val != nil {
+		if v, ok := val.(string); ok && v == backoffRunningContextValue {
+			return ctx, true
+		}
+	}
+	return context.WithValue(ctx, backoffRunningContextKey, backoffRunningContextValue), false
 }

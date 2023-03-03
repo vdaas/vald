@@ -17,7 +17,10 @@
 package glg
 
 import (
+	"encoding/json"
+
 	"github.com/kpango/glg"
+	"github.com/vdaas/vald/internal/conv"
 	"github.com/vdaas/vald/internal/log/format"
 	"github.com/vdaas/vald/internal/log/level"
 	log "github.com/vdaas/vald/internal/log/logger"
@@ -25,7 +28,8 @@ import (
 )
 
 const (
-	detailsFormat = "%s\tdetails: %#v"
+	detailsFormat     = "%s\tdetails: %s"
+	detailsFailFormat = "%s\tdetails: %#v\terror: %v"
 )
 
 type logger struct {
@@ -48,7 +52,6 @@ func New(opts ...Option) log.Logger {
 
 func (l *logger) setLevelMode(lv level.Level) *logger {
 	l.glg.SetMode(glg.NONE).SetLineTraceMode(glg.TraceLineNone)
-
 	switch lv {
 	case level.DEBUG:
 		l.glg.SetLevelMode(glg.DEBG, glg.STD).
@@ -62,10 +65,14 @@ func (l *logger) setLevelMode(lv level.Level) *logger {
 		l.glg.SetLevelMode(glg.WARN, glg.STD)
 		fallthrough
 	case level.ERROR:
-		l.glg.SetLevelMode(glg.ERR, glg.STD)
+		l.glg.SetLevelMode(glg.ERR, glg.STD).
+			SetCallerDepth(5).
+			SetLevelLineTraceMode(glg.ERR, glg.TraceLineLong)
 		fallthrough
 	case level.FATAL:
-		l.glg.SetLevelMode(glg.FATAL, glg.STD)
+		l.glg.SetLevelMode(glg.FATAL, glg.STD).
+			SetCallerDepth(5).
+			SetLevelLineTraceMode(glg.FATAL, glg.TraceLineLong)
 	}
 
 	return l
@@ -91,7 +98,28 @@ func (l *logger) Infof(format string, vals ...interface{}) {
 }
 
 func (l *logger) Infod(msg string, details ...interface{}) {
-	l.Infof(detailsFormat, msg, details)
+	lf := l.glg.Infof
+	var dstr string
+	switch len(details) {
+	case 0:
+		l.retry.Out(l.glg.Info, msg)
+		return
+	case 1:
+		b, err := json.Marshal(details[0])
+		if err != nil {
+			l.retry.Outf(lf, detailsFailFormat, msg, details, err)
+			return
+		}
+		dstr = conv.Btoa(b)
+	default:
+		b, err := json.Marshal(details)
+		if err != nil {
+			l.retry.Outf(lf, detailsFailFormat, msg, details, err)
+			return
+		}
+		dstr = conv.Btoa(b)
+	}
+	l.retry.Outf(lf, detailsFormat, msg, dstr)
 }
 
 func (l *logger) Debug(vals ...interface{}) {
@@ -103,7 +131,28 @@ func (l *logger) Debugf(format string, vals ...interface{}) {
 }
 
 func (l *logger) Debugd(msg string, details ...interface{}) {
-	l.Debugf(detailsFormat, msg, details)
+	lf := l.glg.Debugf
+	var dstr string
+	switch len(details) {
+	case 0:
+		l.retry.Out(l.glg.Debug, msg)
+		return
+	case 1:
+		b, err := json.Marshal(details[0])
+		if err != nil {
+			l.retry.Outf(lf, detailsFailFormat, msg, details, err)
+			return
+		}
+		dstr = conv.Btoa(b)
+	default:
+		b, err := json.Marshal(details)
+		if err != nil {
+			l.retry.Outf(lf, detailsFailFormat, msg, details, err)
+			return
+		}
+		dstr = conv.Btoa(b)
+	}
+	l.retry.Outf(lf, detailsFormat, msg, dstr)
 }
 
 func (l *logger) Warn(vals ...interface{}) {
@@ -115,7 +164,28 @@ func (l *logger) Warnf(format string, vals ...interface{}) {
 }
 
 func (l *logger) Warnd(msg string, details ...interface{}) {
-	l.Warnf(detailsFormat, msg, details)
+	lf := l.glg.Warnf
+	var dstr string
+	switch len(details) {
+	case 0:
+		l.retry.Out(l.glg.Warn, msg)
+		return
+	case 1:
+		b, err := json.Marshal(details[0])
+		if err != nil {
+			l.retry.Outf(lf, detailsFailFormat, msg, details, err)
+			return
+		}
+		dstr = conv.Btoa(b)
+	default:
+		b, err := json.Marshal(details)
+		if err != nil {
+			l.retry.Outf(lf, detailsFailFormat, msg, details, err)
+			return
+		}
+		dstr = conv.Btoa(b)
+	}
+	l.retry.Outf(lf, detailsFormat, msg, dstr)
 }
 
 func (l *logger) Error(vals ...interface{}) {
@@ -127,17 +197,58 @@ func (l *logger) Errorf(format string, vals ...interface{}) {
 }
 
 func (l *logger) Errord(msg string, details ...interface{}) {
-	l.Errorf(detailsFormat, msg, details)
+	lf := l.glg.Errorf
+	var dstr string
+	switch len(details) {
+	case 0:
+		l.retry.Out(l.glg.Error, msg)
+		return
+	case 1:
+		b, err := json.Marshal(details[0])
+		if err != nil {
+			l.retry.Outf(lf, detailsFailFormat, msg, details, err)
+			return
+		}
+		dstr = conv.Btoa(b)
+	default:
+		b, err := json.Marshal(details)
+		if err != nil {
+			l.retry.Outf(lf, detailsFailFormat, msg, details, err)
+			return
+		}
+		dstr = conv.Btoa(b)
+	}
+	l.retry.Outf(lf, detailsFormat, msg, dstr)
 }
 
 func (l *logger) Fatal(vals ...interface{}) {
-	l.glg.Fatal(vals...)
+	l.glg.SetCallerDepth(4).Fatal(vals...)
 }
 
 func (l *logger) Fatalf(format string, vals ...interface{}) {
-	l.glg.Fatalf(format, vals...)
+	l.glg.SetCallerDepth(4).Fatalf(format, vals...)
 }
 
 func (l *logger) Fatald(msg string, details ...interface{}) {
-	l.Fatalf(detailsFormat, msg, details)
+	var dstr string
+	switch len(details) {
+	case 0:
+		l.glg.SetCallerDepth(4).Fatal(msg)
+		return
+	case 1:
+		b, err := json.Marshal(details[0])
+		if err != nil {
+			l.glg.SetCallerDepth(4).Fatalf(detailsFailFormat, msg, details[0], err)
+			return
+		}
+		dstr = conv.Btoa(b)
+	default:
+		b, err := json.Marshal(details)
+		if err != nil {
+			l.glg.SetCallerDepth(4).Fatalf(detailsFailFormat, msg, details, err)
+			return
+		}
+		dstr = conv.Btoa(b)
+	}
+	l.glg.SetCallerDepth(4).Fatalf(detailsFormat, msg, dstr)
 }

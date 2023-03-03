@@ -19,6 +19,15 @@ type contextKey string
 
 const grpcMethodContextKey contextKey = "grpc_method"
 
+// WrapGRPCMethod returns a copy of parent in which the method associated with key (grpcMethodContextKey).
+func WrapGRPCMethod(ctx context.Context, method string) context.Context {
+	m := FromGRPCMethod(ctx)
+	if m == "" {
+		return context.WithValue(ctx, grpcMethodContextKey, method)
+	}
+	return context.WithValue(ctx, grpcMethodContextKey, m+"/"+method)
+}
+
 // WithGRPCMethod returns a copy of parent in which the method associated with key (grpcMethodContextKey).
 func WithGRPCMethod(ctx context.Context, method string) context.Context {
 	return context.WithValue(ctx, grpcMethodContextKey, method)

@@ -45,12 +45,12 @@ func Init() {
 
 // Info prints the debug log to the logger.
 func (*logger) Info(args ...interface{}) {
-	log.Debug(append([]interface{}{tag}, args...)...)
+	log.Debugd(tag, args...)
 }
 
 // Infoln prints the debug log to the logger.
 func (*logger) Infoln(args ...interface{}) {
-	log.Debug(append([]interface{}{tag}, args...)...)
+	log.Debugd(tag, args...)
 }
 
 // Infof prints the debug log to the logger.
@@ -60,12 +60,12 @@ func (*logger) Infof(format string, args ...interface{}) {
 
 // Warning prints the warning log to the logger.
 func (*logger) Warning(args ...interface{}) {
-	log.Warn(append([]interface{}{tag}, args...)...)
+	log.Warnd(tag, args...)
 }
 
 // Warningln prints the warning log to the logger.
 func (*logger) Warningln(args ...interface{}) {
-	log.Warn(append([]interface{}{tag}, args...)...)
+	log.Warnd(tag, args...)
 }
 
 // Warningf prints the warning log to the logger.
@@ -75,12 +75,12 @@ func (*logger) Warningf(format string, args ...interface{}) {
 
 // Error prints the error log to the logger.
 func (*logger) Error(args ...interface{}) {
-	log.Error(append([]interface{}{tag}, args...)...)
+	log.Errord(tag, args...)
 }
 
 // Errorln prints the error log to the logger.
 func (*logger) Errorln(args ...interface{}) {
-	log.Error(append([]interface{}{tag}, args...)...)
+	log.Errord(tag, args...)
 }
 
 // Errorf prints the error log to the logger.
@@ -91,13 +91,13 @@ func (*logger) Errorf(format string, args ...interface{}) {
 // Fatal prints the fatal log to the logger and exit the program.
 func (*logger) Fatal(args ...interface{}) {
 	// skipcq: RVV-A0003
-	log.Fatal(append([]interface{}{tag}, args...)...)
+	log.Fatald(tag, args...)
 }
 
 // Fatalln prints the fatal log to the logger and exit the program.
 func (*logger) Fatalln(args ...interface{}) {
 	// skipcq: RVV-A0003
-	log.Fatal(append([]interface{}{tag}, args...)...)
+	log.Fatald(tag, args...)
 }
 
 // Fatalf prints the fatal log to the logger and exit the program.

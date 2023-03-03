@@ -125,7 +125,14 @@ func BidirectionalStream(ctx context.Context, stream ServerStream,
 							sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
 							sspan.SetStatus(trace.StatusError, msg)
 						}
-						if err != nil {
+						code := st.Code()
+						if err != nil && st != nil &&
+							code != codes.Canceled &&
+							code != codes.DeadlineExceeded &&
+							code != codes.InvalidArgument &&
+							code != codes.NotFound &&
+							code != codes.OK &&
+							code != codes.Unimplemented {
 							log.Error(err)
 						}
 					}

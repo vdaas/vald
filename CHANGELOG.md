@@ -65,11 +65,11 @@
 
 #### 🐛 Bugfix
 
-- [bugfix] add target length validation for each grpc client exection method [#1939](https://github.com/vdaas/vald/pull/1939)
+- [bugfix] add target length validation for each gRPC client exection method [#1939](https://github.com/vdaas/vald/pull/1939)
 
 #### ♻️ Refactor
 
-- update grpc status code for API docs [#1943](https://github.com/vdaas/vald/pull/1943)
+- update gRPC status code for API docs [#1943](https://github.com/vdaas/vald/pull/1943)
 - Refactor: Add t.Helper() on test helper function [#1935](https://github.com/vdaas/vald/pull/1935)
 - Fix syntax error on dump context workflow [#1936](https://github.com/vdaas/vald/pull/1936)
 - format codes [#1934](https://github.com/vdaas/vald/pull/1934)
@@ -2279,7 +2279,7 @@
 - :robot: Update license headers / Format Go codes and YAML files ([#1255](https://github.com/vdaas/vald/pull/1255))
 - :fire: Remove invalid initialization option ([#1252](https://github.com/vdaas/vald/pull/1252))
 - add single connection client for agent & vald ([#1254](https://github.com/vdaas/vald/pull/1254))
-- bugfix remove unneccessary error return & add grpc status code handling for backoff ([#1253](https://github.com/vdaas/vald/pull/1253))
+- bugfix remove unneccessary error return & add gRPC status code handling for backoff ([#1253](https://github.com/vdaas/vald/pull/1253))
 - bugfix agent vqueue & refactor tools/deps ([#1250](https://github.com/vdaas/vald/pull/1250))
 - Add test for pkg/agent/core/ngt/service/vqueue/option ([#1233](https://github.com/vdaas/vald/pull/1233))
 - Add config agent core ngt service kvs test ([#1223](https://github.com/vdaas/vald/pull/1223))
@@ -2381,7 +2381,7 @@
 
 #### Feature
 
-- add correct grpc status and error handling (#1224)
+- add correct gRPC status and error handling (#1224)
 - Add Cloud Storage mode of Agent Sidecar. (#519)
 - Add general info metrics package / Add NGT info metrics (#1195)
 - improve internal/info implementation (#1177)
@@ -3027,7 +3027,7 @@
 - change grpc bidi-stream error handling and change grpc API interface ([#928](https://github.com/vdaas/vald/pull/928))
 - fix unclosed string literal in Dockerfile's ARG MAINTAINER ([#923](https://github.com/vdaas/vald/pull/923))
 - Revise building workflow of ci and dev containers ([#922](https://github.com/vdaas/vald/pull/922))
-- bugfix add nil check for grpc connection pool objects in grpc/client.go ([#921](https://github.com/vdaas/vald/pull/921))
+- bugfix add nil check for gRPC connection pool objects in grpc/client.go ([#921](https://github.com/vdaas/vald/pull/921))
 - remove unneccessary pr-tag definition from chart ([#920](https://github.com/vdaas/vald/pull/920))
 - :pencil: Fix typo in gateway-vald configmap template ([#919](https://github.com/vdaas/vald/pull/919))
 - change docker base image PRIMARY_TAG name from nightly to latest ([#917](https://github.com/vdaas/vald/pull/917))
@@ -4803,7 +4803,7 @@
 ### Changes
 
 - async compressor
-- optimized gRPC pool connection
+- optimized gRPC connection pool
 - update helm chart API version
 - internal gRPC client for Vald
 - Cassandra NewConvictionPolicy

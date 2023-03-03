@@ -96,7 +96,7 @@ func WithErrGroup(eg errgroup.Group) Option {
 
 func WithStreamConcurrency(c int) Option {
 	return func(s *server) {
-		if c != 0 {
+		if c > 1 {
 			s.streamConcurrency = c
 		}
 	}

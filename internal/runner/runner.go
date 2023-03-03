@@ -75,7 +75,7 @@ func Do(ctx context.Context, opts ...Option) error {
 	if p.ShowVersion() {
 		log.Init(log.WithLevel(level.INFO.String()))
 		defer log.Close()
-		log.Info(info.String())
+		log.Info(info.Get())
 		return nil
 	}
 

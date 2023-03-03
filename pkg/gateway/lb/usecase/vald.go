@@ -95,6 +95,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		handler.WithErrGroup(eg),
 		handler.WithReplicationCount(cfg.Gateway.IndexReplica),
 		handler.WithStreamConcurrency(cfg.Server.GetGRPCStreamConcurrency()),
+		handler.WithMultiConcurrency(cfg.Gateway.MultiOperationConcurrency),
 	)
 
 	grpcServerOptions := []server.Option{

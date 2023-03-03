@@ -19,6 +19,11 @@
 e2e:
 	$(call run-e2e-crud-test,-run TestE2EStandardCRUD)
 
+.PHONY: e2e/multi
+## run e2e multiple apis
+e2e/multi:
+	$(call run-e2e-multi-crud-test,-run TestE2EMultiAPIs)
+
 .PHONY: e2e/insert
 ## run insert e2e
 e2e/insert:

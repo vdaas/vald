@@ -326,7 +326,7 @@ func WithDialer(der net.Dialer) Option {
 			g.dopts = append(g.dopts,
 				grpc.WithContextDialer(func(ctx context.Context, addr string) (net.Conn, error) {
 					// TODO we need change network type dynamically
-					log.Debugf("grpc Context Dialer addr is %s", addr)
+					log.Debugf("gRPC context Dialer addr is %s", addr)
 					return der.GetDialer()(ctx, net.TCP.String(), addr)
 				}),
 			)

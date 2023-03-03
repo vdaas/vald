@@ -78,7 +78,7 @@ func TestNew(t *testing.T) {
 					want: &group{
 						egctx:  egctx,
 						cancel: cancel,
-						enableLimitation: func() (el atomic.Value) {
+						enableLimitation: func() (el atomic.Bool) {
 							el.Store(false)
 							return
 						}(),
@@ -347,7 +347,7 @@ func Test_group_Limitation(t *testing.T) {
 	}
 	type fields struct {
 		limitation       chan struct{}
-		enableLimitation atomic.Value
+		enableLimitation atomic.Bool
 	}
 	type want struct {
 		want Group
@@ -379,8 +379,8 @@ func Test_group_Limitation(t *testing.T) {
 			},
 			want: want{
 				want: &group{
-					enableLimitation: func() atomic.Value {
-						var el atomic.Value
+					enableLimitation: func() atomic.Bool {
+						var el atomic.Bool
 						el.Store(false)
 						return el
 					}(),
@@ -398,8 +398,8 @@ func Test_group_Limitation(t *testing.T) {
 			},
 			want: want{
 				want: &group{
-					enableLimitation: func() atomic.Value {
-						var el atomic.Value
+					enableLimitation: func() atomic.Bool {
+						var el atomic.Bool
 						el.Store(true)
 						return el
 					}(),
@@ -442,7 +442,7 @@ func Test_group_Go(t *testing.T) {
 		egctx            context.Context
 		cancel           context.CancelFunc
 		limitation       chan struct{}
-		enableLimitation atomic.Value
+		enableLimitation atomic.Bool
 		emap             map[string]struct{}
 	}
 	type test struct {
@@ -475,7 +475,7 @@ func Test_group_Go(t *testing.T) {
 				fields: fields{
 					egctx:      egctx,
 					limitation: make(chan struct{}, limit),
-					enableLimitation: func() (el atomic.Value) {
+					enableLimitation: func() (el atomic.Bool) {
 						el.Store(true)
 						return
 					}(),
@@ -521,7 +521,7 @@ func Test_group_Go(t *testing.T) {
 				fields: fields{
 					egctx:  egctx,
 					cancel: cancel,
-					enableLimitation: func() (el atomic.Value) {
+					enableLimitation: func() (el atomic.Bool) {
 						el.Store(false)
 						return
 					}(),
@@ -705,7 +705,7 @@ func TestWait(t *testing.T) {
 func Test_group_Wait(t *testing.T) {
 	type fields struct {
 		limitation       chan struct{}
-		enableLimitation atomic.Value
+		enableLimitation atomic.Bool
 		errs             []error
 	}
 	type want struct {
@@ -731,7 +731,7 @@ func Test_group_Wait(t *testing.T) {
 			return test{
 				name: "returns nil after all goroutne returns",
 				fields: fields{
-					enableLimitation: func() (el atomic.Value) {
+					enableLimitation: func() (el atomic.Bool) {
 						el.Store(false)
 						return
 					}(),

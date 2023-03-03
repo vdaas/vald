@@ -39,6 +39,9 @@ type LB struct {
 
 	// Discoverer represent agent discoverer service configuration
 	Discoverer *DiscovererClient `json:"discoverer" yaml:"discoverer"`
+
+	// MultiOperationConcurrency
+	MultiOperationConcurrency int `json:"multi_operation_concurrency" yaml:"multi_operation_concurrency"`
 }
 
 // Bind binds the actual data from the LB receiver fields.
