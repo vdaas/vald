@@ -512,7 +512,7 @@ defaults:
             read_timeout: 1s
             # @schema {"name": "defaults.server_config.metrics.pprof.server.http.write_timeout", "type": "string"}
             # defaults.server_config.metrics.pprof.server.http.write_timeout -- pprof server write timeout
-            write_timeout: 1s
+            write_timeout: 1m
           # @schema {"name": "defaults.server_config.metrics.pprof.server.socket_option", "alias": "socket_option"}
           socket_option:
             # defaults.server_config.metrics.pprof.server.socket_option.reuse_port -- server listen socket option for reuse_port functionality
