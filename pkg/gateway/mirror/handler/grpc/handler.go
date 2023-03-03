@@ -678,7 +678,6 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 		Ips:  make([]string, 0),
 	}
 	mutex := new(sync.Mutex)
-	errMutex := new(sync.Mutex)
 	successTargets := new(sync.Map)
 
 	// This process sends request to the Mirror Gateways of other clusters and to the Vald gateway (LB gateway) of its own cluster.
@@ -710,21 +709,18 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 				span.SetStatus(trace.StatusError, err.Error())
 			}
 			if err != nil {
-				switch st.Code() {
-				case codes.Canceled, codes.DeadlineExceeded:
-					return nil
-				case codes.AlreadyExists:
+				if st.Code() == codes.AlreadyExists {
 					// NOTE: If it is strictly necessary to check, fix this logic.
 					return nil
 				}
 				log.Error(err)
-				errMutex.Lock()
+				mutex.Lock()
 				if insertErrs == nil {
 					insertErrs = err
 				} else {
 					insertErrs = errors.Wrap(insertErrs, err.Error())
 				}
-				errMutex.Unlock()
+				mutex.Unlock()
 				return err
 			}
 		}
@@ -806,20 +802,17 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 				span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
 				span.SetStatus(trace.StatusError, err.Error())
 			}
-			switch st.Code() {
-			case codes.Canceled, codes.DeadlineExceeded:
-				return nil
-			case codes.NotFound:
+			if st.Code() == codes.NotFound {
 				return nil
 			}
 			log.Error(err)
-			errMutex.Lock()
+			mutex.Lock()
 			if removeErrs == nil {
 				removeErrs = err
 			} else {
 				removeErrs = errors.Wrap(removeErrs, err.Error())
 			}
-			errMutex.Unlock()
+			mutex.Unlock()
 			return err
 		}
 		return nil
@@ -863,8 +856,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 	var msg string
 
 	if removeErrs == nil {
-		log.Debugf("Insert API rollback insert succeeded to %#v", ce)
-		// set an broadcast insert error instead if rollback succeededs.
+		log.Debugf("Insert API rollback succeeded to %#v", ce)
 		msg = vald.InsertRPCName + "API success to rollback insert request"
 		err = insertErrs
 	} else {
