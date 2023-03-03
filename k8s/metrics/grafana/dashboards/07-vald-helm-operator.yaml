@@ -52,7 +52,7 @@ data:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "vald_prometheus"
+            "uid": "prometheus"
           },
           "fieldConfig": {
             "defaults": {
@@ -103,7 +103,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "vald_prometheus"
+                "uid": "prometheus"
               },
               "editorMode": "code",
               "exemplar": true,
@@ -121,7 +121,7 @@ data:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "vald_prometheus"
+            "uid": "prometheus"
           },
           "fieldConfig": {
             "defaults": {
@@ -172,7 +172,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "vald_prometheus"
+                "uid": "prometheus"
               },
               "editorMode": "code",
               "exemplar": true,
@@ -190,7 +190,7 @@ data:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "vald_prometheus"
+            "uid": "prometheus"
           },
           "fieldConfig": {
             "defaults": {
@@ -239,7 +239,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "vald_prometheus"
+                "uid": "prometheus"
               },
               "editorMode": "code",
               "exemplar": true,
@@ -288,7 +288,7 @@ data:
           "dashes": false,
           "datasource": {
             "type": "prometheus",
-            "uid": "vald_prometheus"
+            "uid": "prometheus"
           },
           "fill": 1,
           "fillGradient": 0,
@@ -328,7 +328,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "vald_prometheus"
+                "uid": "prometheus"
               },
               "editorMode": "code",
               "exemplar": true,
@@ -378,7 +378,7 @@ data:
           "dashes": false,
           "datasource": {
             "type": "prometheus",
-            "uid": "vald_prometheus"
+            "uid": "prometheus"
           },
           "fill": 1,
           "fillGradient": 0,
@@ -418,7 +418,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "vald_prometheus"
+                "uid": "prometheus"
               },
               "editorMode": "code",
               "exemplar": true,
@@ -468,7 +468,7 @@ data:
           "dashes": false,
           "datasource": {
             "type": "prometheus",
-            "uid": "vald_prometheus"
+            "uid": "prometheus"
           },
           "fieldConfig": {
             "defaults": {
@@ -514,7 +514,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "vald_prometheus"
+                "uid": "prometheus"
               },
               "editorMode": "code",
               "exemplar": true,
@@ -527,7 +527,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "vald_prometheus"
+                "uid": "prometheus"
               },
               "editorMode": "code",
               "exemplar": true,
@@ -541,7 +541,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "vald_prometheus"
+                "uid": "prometheus"
               },
               "editorMode": "code",
               "exemplar": true,
@@ -592,7 +592,7 @@ data:
           "dashes": false,
           "datasource": {
             "type": "prometheus",
-            "uid": "vald_prometheus"
+            "uid": "prometheus"
           },
           "fieldConfig": {
             "defaults": {
@@ -638,7 +638,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "vald_prometheus"
+                "uid": "prometheus"
               },
               "editorMode": "code",
               "exemplar": true,
@@ -651,7 +651,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "vald_prometheus"
+                "uid": "prometheus"
               },
               "editorMode": "code",
               "exemplar": true,
@@ -665,7 +665,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "vald_prometheus"
+                "uid": "prometheus"
               },
               "editorMode": "code",
               "exemplar": true,
@@ -725,7 +725,7 @@ data:
             },
             "datasource": {
               "type": "prometheus",
-              "uid": "vald_prometheus"
+              "uid": "prometheus"
             },
             "definition": "label_values(kube_pod_info, namespace)",
             "hide": 0,
@@ -756,7 +756,7 @@ data:
             },
             "datasource": {
               "type": "prometheus",
-              "uid": "vald_prometheus"
+              "uid": "prometheus"
             },
             "definition": "label_values(helm_operator_build_info{namespace=~\"$namespace\"}, app_kubernetes_io_name)",
             "hide": 0,
@@ -787,7 +787,7 @@ data:
             },
             "datasource": {
               "type": "prometheus",
-              "uid": "vald_prometheus"
+              "uid": "prometheus"
             },
             "definition": "label_values(helm_operator_build_info{namespace=~\"$namespace\", app_kubernetes_io_name=~\"$app\"}, instance)",
             "hide": 0,

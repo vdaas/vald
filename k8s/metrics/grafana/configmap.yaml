@@ -51,7 +51,7 @@ data:
         type: prometheus
         access: proxy
         orgId: 1
-        uid: vald_prometheus
+        uid: prometheus
         url: http://prometheus-kube-prometheus-prometheus:9090
         isDefault: true
         editable: false
