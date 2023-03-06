@@ -708,21 +708,19 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 				span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
 				span.SetStatus(trace.StatusError, err.Error())
 			}
-			if err != nil {
-				if st.Code() == codes.AlreadyExists {
-					// NOTE: If it is strictly necessary to check, fix this logic.
-					return nil
-				}
-				log.Error(err)
-				mutex.Lock()
-				if insertErrs == nil {
-					insertErrs = err
-				} else {
-					insertErrs = errors.Wrap(insertErrs, err.Error())
-				}
-				mutex.Unlock()
-				return err
+			if st.Code() == codes.AlreadyExists {
+				// NOTE: If it is strictly necessary to check, fix this logic.
+				return nil
 			}
+			log.Error(err)
+			mutex.Lock()
+			if insertErrs == nil {
+				insertErrs = err
+			} else {
+				insertErrs = errors.Wrap(insertErrs, err.Error())
+			}
+			mutex.Unlock()
+			return err
 		}
 		mutex.Lock()
 		ce.Name = loc.GetName()
@@ -844,26 +842,36 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 			removeErrs = err
 		}
 	}
-
-	reqInfo := &errdetails.RequestInfo{
-		RequestId:   rmReq.GetId().GetId(),
-		ServingData: errdetails.Serialize(rmReq),
+	if removeErrs != nil {
+		st, msg, err := status.ParseError(removeErrs, codes.Internal,
+			"failed to parse "+vald.RemoveRPCName+" gRPC error response for "+vald.InsertRPCName+" API ",
+			&errdetails.RequestInfo{
+				RequestId:   rmReq.GetId().GetId(),
+				ServingData: errdetails.Serialize(rmReq),
+			},
+			&errdetails.ResourceInfo{
+				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.InsertRPCName + "." + vald.RemoveRPCName,
+				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+			},
+		)
+		if span != nil {
+			span.RecordError(err)
+			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+			span.SetStatus(trace.StatusError, err.Error())
+		}
+		return nil, err
 	}
-	resInfo := &errdetails.ResourceInfo{
-		ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.InsertRPCName + "." + vald.RemoveRPCName + ".BroadCast/",
-		ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-	}
-	var msg string
-
-	if removeErrs == nil {
-		log.Debugf("Insert API rollback succeeded to %#v", ce)
-		msg = vald.InsertRPCName + "API success to rollback insert request"
-		err = insertErrs
-	} else {
-		msg = vald.InsertRPCName + "API failed to process rollback insert request"
-		err = removeErrs
-	}
-	st, msg, err := status.ParseError(err, codes.Internal, msg, reqInfo, resInfo)
+	st, msg, err := status.ParseError(insertErrs, codes.Internal,
+		"failed to parse "+vald.InsertRPCName+" gRPC error response",
+		&errdetails.RequestInfo{
+			RequestId:   req.GetVector().GetId(),
+			ServingData: errdetails.Serialize(req),
+		},
+		&errdetails.ResourceInfo{
+			ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.InsertRPCName,
+			ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+		},
+	)
 	if span != nil {
 		span.RecordError(err)
 		span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
