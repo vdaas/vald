@@ -52,7 +52,7 @@ data:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "vald_prometheus"
+            "uid": "prometheus"
           },
           "fieldConfig": {
             "defaults": {
@@ -113,7 +113,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "vald_prometheus"
+                "uid": "prometheus"
               },
               "editorMode": "code",
               "expr": "app_version_info{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\", target_pod=~\"$PodName\"}",
@@ -130,7 +130,7 @@ data:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "vald_prometheus"
+            "uid": "prometheus"
           },
           "fieldConfig": {
             "defaults": {
@@ -191,7 +191,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "vald_prometheus"
+                "uid": "prometheus"
               },
               "editorMode": "code",
               "expr": "label_replace(app_version_info{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\", target_pod=~\"$PodName\"}, \"go_version\", \"v$1\", \"go_version\", \"([^v].*)\")",
@@ -208,7 +208,7 @@ data:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "vald_prometheus"
+            "uid": "prometheus"
           },
           "fieldConfig": {
             "defaults": {
@@ -269,7 +269,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "vald_prometheus"
+                "uid": "prometheus"
               },
               "editorMode": "code",
               "expr": "app_version_info{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\", target_pod=~\"$PodName\"}",
@@ -286,7 +286,7 @@ data:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "vald_prometheus"
+            "uid": "prometheus"
           },
           "fieldConfig": {
             "defaults": {
@@ -351,7 +351,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "vald_prometheus"
+                "uid": "prometheus"
               },
               "editorMode": "code",
               "expr": "count(kube_pod_info{namespace=\"$Namespace\", pod=~\"$ReplicaSet.*\"})",
@@ -369,7 +369,7 @@ data:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "vald_prometheus"
+            "uid": "prometheus"
           },
           "fieldConfig": {
             "defaults": {
@@ -435,7 +435,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "vald_prometheus"
+                "uid": "prometheus"
               },
               "editorMode": "code",
               "exemplar": true,
@@ -453,7 +453,7 @@ data:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "vald_prometheus"
+            "uid": "prometheus"
           },
           "fieldConfig": {
             "defaults": {
@@ -514,7 +514,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "vald_prometheus"
+                "uid": "prometheus"
               },
               "editorMode": "code",
               "expr": "app_version_info{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\", target_pod=~\"$PodName\"}",
@@ -531,7 +531,7 @@ data:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "vald_prometheus"
+            "uid": "prometheus"
           },
           "fieldConfig": {
             "defaults": {
@@ -592,7 +592,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "vald_prometheus"
+                "uid": "prometheus"
               },
               "editorMode": "code",
               "expr": "app_version_info{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\", target_pod=~\"$PodName\"}",
@@ -613,7 +613,7 @@ data:
           "dashes": false,
           "datasource": {
             "type": "prometheus",
-            "uid": "vald_prometheus"
+            "uid": "prometheus"
           },
           "fieldConfig": {
             "defaults": {
@@ -659,7 +659,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "vald_prometheus"
+                "uid": "prometheus"
               },
               "editorMode": "code",
               "exemplar": true,
@@ -672,7 +672,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "vald_prometheus"
+                "uid": "prometheus"
               },
               "editorMode": "code",
               "exemplar": true,
@@ -686,7 +686,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "vald_prometheus"
+                "uid": "prometheus"
               },
               "editorMode": "code",
               "exemplar": true,
@@ -738,7 +738,7 @@ data:
           "dashes": false,
           "datasource": {
             "type": "prometheus",
-            "uid": "vald_prometheus"
+            "uid": "prometheus"
           },
           "fieldConfig": {
             "defaults": {
@@ -784,7 +784,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "vald_prometheus"
+                "uid": "prometheus"
               },
               "editorMode": "code",
               "exemplar": true,
@@ -797,7 +797,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "vald_prometheus"
+                "uid": "prometheus"
               },
               "editorMode": "code",
               "exemplar": true,
@@ -811,7 +811,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "vald_prometheus"
+                "uid": "prometheus"
               },
               "editorMode": "code",
               "exemplar": true,
@@ -863,7 +863,7 @@ data:
           "dashes": false,
           "datasource": {
             "type": "prometheus",
-            "uid": "vald_prometheus"
+            "uid": "prometheus"
           },
           "fieldConfig": {
             "defaults": {
@@ -910,7 +910,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "vald_prometheus"
+                "uid": "prometheus"
               },
               "editorMode": "code",
               "expr": "sum(irate(server_completed_rpcs{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=\"$ReplicaSet\", target_pod=~\"$PodName\"}[$interval])) by (grpc_server_method, grpc_server_status)",
@@ -923,7 +923,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "vald_prometheus"
+                "uid": "prometheus"
               },
               "editorMode": "code",
               "expr": "sum(irate(server_completed_rpcs{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=\"$ReplicaSet\", target_pod=~\"$PodName\"}[$interval])) by (grpc_server_status)",
@@ -972,7 +972,7 @@ data:
           "dashes": false,
           "datasource": {
             "type": "prometheus",
-            "uid": "vald_prometheus"
+            "uid": "prometheus"
           },
           "fieldConfig": {
             "defaults": {
@@ -1019,7 +1019,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "vald_prometheus"
+                "uid": "prometheus"
               },
               "editorMode": "code",
               "expr": "histogram_quantile(0.5, sum(rate(server_latency_bucket{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=\"$ReplicaSet\", target_pod=~\"$PodName\"}[$interval])) by (le, grpc_server_method))",
@@ -1032,7 +1032,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "vald_prometheus"
+                "uid": "prometheus"
               },
               "editorMode": "code",
               "expr": "histogram_quantile(0.95, sum(rate(server_latency_bucket{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=\"$ReplicaSet\", target_pod=~\"$PodName\"}[$interval])) by (le, grpc_server_method))",
@@ -1045,7 +1045,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "vald_prometheus"
+                "uid": "prometheus"
               },
               "editorMode": "code",
               "expr": "histogram_quantile(0.99, sum(rate(server_latency_bucket{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=\"$ReplicaSet\", target_pod=~\"$PodName\"}[$interval])) by (le, grpc_server_method))",
@@ -1094,7 +1094,7 @@ data:
           "dashes": false,
           "datasource": {
             "type": "prometheus",
-            "uid": "vald_prometheus"
+            "uid": "prometheus"
           },
           "fieldConfig": {
             "defaults": {
@@ -1140,7 +1140,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "vald_prometheus"
+                "uid": "prometheus"
               },
               "editorMode": "code",
               "expr": "goroutine_count{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\", target_pod=~\"$PodName\"}",
@@ -1189,7 +1189,7 @@ data:
           "dashes": false,
           "datasource": {
             "type": "prometheus",
-            "uid": "vald_prometheus"
+            "uid": "prometheus"
           },
           "fieldConfig": {
             "defaults": {
@@ -1236,7 +1236,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "vald_prometheus"
+                "uid": "prometheus"
               },
               "editorMode": "code",
               "expr": "increase(gc_count{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\", target_node=~\".+\"}[$interval])",
@@ -1292,7 +1292,7 @@ data:
             },
             "datasource": {
               "type": "prometheus",
-              "uid": "vald_prometheus"
+              "uid": "prometheus"
             },
             "definition": "label_values(kube_pod_info, namespace)",
             "hide": 0,
@@ -1319,7 +1319,7 @@ data:
             },
             "datasource": {
               "type": "prometheus",
-              "uid": "vald_prometheus"
+              "uid": "prometheus"
             },
             "definition": "label_values(app_version_info{server_name=~\"gateway lb.*\"}, kubernetes_name)",
             "hide": 0,
@@ -1347,7 +1347,7 @@ data:
             },
             "datasource": {
               "type": "prometheus",
-              "uid": "vald_prometheus"
+              "uid": "prometheus"
             },
             "definition": "label_values(app_version_info{server_name=~\"gateway lb.*\", kubernetes_name=\"$ReplicaSet\"}, target_pod)",
             "hide": 0,
