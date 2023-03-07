@@ -489,7 +489,7 @@ func (s *server) LinearSearchByID(ctx context.Context, req *payload.Search_IDReq
 }
 
 func (s *server) StreamLinearSearch(stream vald.Search_StreamLinearSearchServer) (err error) {
-	ctx, span := trace.StartSpan(stream.Context(), apiName+"/"+vald.StreamLinearSearchRPCName)
+	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(stream.Context(), vald.PackageName+"."+vald.SearchRPCServiceName+"/"+vald.StreamLinearSearchRPCName), apiName+"/"+vald.StreamLinearSearchRPCName)
 	defer func() {
 		if span != nil {
 			span.End()
@@ -499,7 +499,7 @@ func (s *server) StreamLinearSearch(stream vald.Search_StreamLinearSearchServer)
 		func() interface{} { return new(payload.Search_Request) },
 		func(ctx context.Context, data interface{}) (interface{}, error) {
 			req := data.(*payload.Search_Request)
-			ctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.StreamLinearSearchRPCName+"/requestID-"+req.GetConfig().GetRequestId())
+			ctx, sspan := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "BidirectionalStream"), apiName+"/"+vald.StreamLinearSearchRPCName+"/requestID-"+req.GetConfig().GetRequestId())
 			defer func() {
 				if sspan != nil {
 					sspan.End()
@@ -539,7 +539,7 @@ func (s *server) StreamLinearSearch(stream vald.Search_StreamLinearSearchServer)
 }
 
 func (s *server) StreamLinearSearchByID(stream vald.Search_StreamLinearSearchByIDServer) (err error) {
-	ctx, span := trace.StartSpan(stream.Context(), apiName+"/"+vald.StreamLinearSearchByIDRPCName)
+	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(stream.Context(), vald.PackageName+"."+vald.SearchRPCServiceName+"/"+vald.StreamLinearSearchByIDRPCName), apiName+"/"+vald.StreamLinearSearchByIDRPCName)
 	defer func() {
 		if span != nil {
 			span.End()
@@ -549,7 +549,7 @@ func (s *server) StreamLinearSearchByID(stream vald.Search_StreamLinearSearchByI
 		func() interface{} { return new(payload.Search_IDRequest) },
 		func(ctx context.Context, data interface{}) (interface{}, error) {
 			req := data.(*payload.Search_IDRequest)
-			ctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.LinearSearchByIDRPCName+"/id-"+req.GetId())
+			ctx, sspan := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "BidirectionalStream"), apiName+"."+vald.StreamLinearSearchByIDRPCName+"/id-"+req.GetId())
 			defer func() {
 				if sspan != nil {
 					sspan.End()
@@ -769,15 +769,15 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 
 	// This process sends rollback request to the Mirror Gateways of other clusters and to the Vald gateway (LB gateway) of its own cluster.
 	err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
-		if _, ok := successTargets.Load(target); !ok {
-			return nil
-		}
-		ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "BroadCast/"+target), apiName+"/"+vald.InsertRPCName+"/rollback/"+target)
+		ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "rollback/BroadCast/"+target), apiName+"/"+vald.InsertRPCName+"/rollback/"+target)
 		defer func() {
 			if span != nil {
 				span.End()
 			}
 		}()
+		if _, ok := successTargets.Load(target); !ok {
+			return nil
+		}
 
 		_, err := s.remove(ctx, vald.NewValdClient(conn), rmReq, copts...)
 		if err != nil {
@@ -1089,7 +1089,7 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (loc *
 	}
 
 	err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
-		ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "BroadCast/"+target), apiName+"/"+vald.GetObjectRPCName+"/"+target)
+		ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "getObject/BroadCast/"+target), apiName+"/"+vald.UpdateRPCName+"/getObject/"+target)
 		defer func() {
 			if span != nil {
 				span.End()
@@ -1272,15 +1272,15 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (loc *
 	}
 
 	err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
-		if _, ok := successTargets.Load(target); !ok {
-			return nil
-		}
-		ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "BroadCast/"+target), apiName+"."+vald.UpdateRPCName+"/"+target)
+		ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "rollback/BroadCast/"+target), apiName+"."+vald.UpdateRPCName+"/rollback/"+target)
 		defer func() {
 			if span != nil {
 				span.End()
 			}
 		}()
+		if _, ok := successTargets.Load(target); !ok {
+			return nil
+		}
 
 		oldVec, ok := oldVecs.Load(target)
 		if !ok {
@@ -1599,7 +1599,7 @@ func (s *server) upsert(ctx context.Context, client vald.UpsertClient, req *payl
 }
 
 func (s *server) StreamUpsert(stream vald.Upsert_StreamUpsertServer) (err error) {
-	ctx, span := trace.StartSpan(stream.Context(), apiName+"/"+vald.StreamUpsertRPCName)
+	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(stream.Context(), vald.PackageName+"."+vald.UpsertRPCServiceName+"/"+vald.StreamUpsertRPCName), apiName+"/"+vald.StreamUpsertRPCName)
 	defer func() {
 		if span != nil {
 			span.End()
@@ -1609,7 +1609,7 @@ func (s *server) StreamUpsert(stream vald.Upsert_StreamUpsertServer) (err error)
 		func() interface{} { return new(payload.Upsert_Request) },
 		func(ctx context.Context, data interface{}) (interface{}, error) {
 			req := data.(*payload.Upsert_Request)
-			ctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.StreamUpsertRPCName+"/id-"+req.GetVector().GetId())
+			ctx, sspan := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "BidirectionalStream"), apiName+"/"+vald.StreamUpsertRPCName+"/id-"+req.GetVector().GetId())
 			defer func() {
 				if sspan != nil {
 					sspan.End()
@@ -1689,7 +1689,7 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (loc *
 	}
 
 	err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
-		ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "BroadCast/"+target), apiName+"."+vald.GetObjectRPCName+"/"+target)
+		ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "getObject/BroadCast/"+target), apiName+"/"+vald.RemoveRPCName+"/getObject/"+target)
 		defer func() {
 			if span != nil {
 				span.End()
@@ -1784,7 +1784,7 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (loc *
 	}
 
 	err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
-		ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "BroadCast/"+target), apiName+"."+vald.RemoveRPCName+"/"+target)
+		ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "BroadCast/"+target), apiName+"/"+vald.RemoveRPCName+"/"+target)
 		defer func() {
 			if span != nil {
 				span.End()
@@ -1869,7 +1869,7 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (loc *
 		if !ok {
 			return nil
 		}
-		ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "BroadCast/"+target), apiName+"."+vald.UpsertRPCName+"/"+target)
+		ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "rollback/BroadCast/"+target), apiName+"/"+vald.RemoveRPCName+"/rollback/"+target)
 		defer func() {
 			if span != nil {
 				span.End()
