@@ -157,6 +157,9 @@ func (d *DialOption) Bind() *DialOption {
 
 // Opts creates the slice with the functional options for the gRPC options.
 func (g *GRPCClient) Opts() ([]grpc.Option, error) {
+	if g == nil {
+		return nil, nil
+	}
 	opts := make([]grpc.Option, 0, 18)
 	opts = append(opts,
 		grpc.WithHealthCheckDuration(g.HealthCheckDuration),

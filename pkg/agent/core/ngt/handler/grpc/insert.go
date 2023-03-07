@@ -140,9 +140,7 @@ func (s *server) StreamInsert(stream vald.Insert_StreamInsertServer) (err error)
 		}
 	}()
 	err = grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
-		func() interface{} { return new(payload.Insert_Request) },
-		func(ctx context.Context, data interface{}) (interface{}, error) {
-			req := data.(*payload.Insert_Request)
+		func(ctx context.Context, req *payload.Insert_Request) (*payload.Object_StreamLocation, error) {
 			ctx, sspan := trace.StartSpan(ctx, apiName+"/"+vald.StreamInsertRPCName+"/id-"+req.GetVector().GetId())
 			defer func() {
 				if sspan != nil {

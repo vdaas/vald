@@ -135,7 +135,7 @@ data:
             read_header_timeout: 1s
             read_timeout: 1s
             shutdown_duration: 5s
-            write_timeout: 1s
+            write_timeout: 1m
           mode: REST
           network: tcp
           probe_wait_time: 3s

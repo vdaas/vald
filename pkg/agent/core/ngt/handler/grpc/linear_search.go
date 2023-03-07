@@ -303,16 +303,14 @@ func (s *server) StreamLinearSearch(stream vald.Search_StreamLinearSearchServer)
 		}
 	}()
 	err = grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
-		func() interface{} { return new(payload.Search_Request) },
-		func(ctx context.Context, data interface{}) (interface{}, error) {
-			req := data.(*payload.Search_Request)
+		func(ctx context.Context, req *payload.Search_Request) (*payload.Search_StreamResponse, error) {
 			ctx, sspan := trace.StartSpan(ctx, apiName+"/"+vald.StreamLinearSearchRPCName+"/requestID-"+req.GetConfig().GetRequestId())
 			defer func() {
 				if sspan != nil {
 					sspan.End()
 				}
 			}()
-			res, err := s.LinearSearch(ctx, data.(*payload.Search_Request))
+			res, err := s.LinearSearch(ctx, req)
 			if err != nil {
 				st, msg, err := status.ParseError(err, codes.Internal, "failed to parse LinearSearch gRPC error response")
 				if sspan != nil {
@@ -354,9 +352,7 @@ func (s *server) StreamLinearSearchByID(stream vald.Search_StreamLinearSearchByI
 		}
 	}()
 	err = grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
-		func() interface{} { return new(payload.Search_IDRequest) },
-		func(ctx context.Context, data interface{}) (interface{}, error) {
-			req := data.(*payload.Search_IDRequest)
+		func(ctx context.Context, req *payload.Search_IDRequest) (*payload.Search_StreamResponse, error) {
 			ctx, sspan := trace.StartSpan(ctx, apiName+"/"+vald.StreamLinearSearchByIDRPCName+"/id-"+req.GetId())
 			defer func() {
 				if sspan != nil {

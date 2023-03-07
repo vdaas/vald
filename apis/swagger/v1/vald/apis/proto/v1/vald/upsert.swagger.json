@@ -262,6 +262,10 @@
           "type": "string",
           "format": "int64",
           "description": "Upsert timestamp."
+        },
+        "disableBalancedUpdate": {
+          "type": "boolean",
+          "description": "A flag to disable balanced update (split remove -\u003e insert operation) during update operation."
         }
       },
       "description": "Represent the upsert configuration."

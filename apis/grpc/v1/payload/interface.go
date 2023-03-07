@@ -13,17 +13,17 @@
 // limitations under the License.
 package payload
 
-import proto "google.golang.org/protobuf/proto"
+import "google.golang.org/protobuf/reflect/protoreflect"
 
 type Payload interface {
 	Reset()
 	String() string
 	ProtoMessage()
+	ProtoReflect() protoreflect.Message
 	Descriptor() ([]byte, []int)
-	XXX_Unmarshal(b []byte) error
-	XXX_Marshal(b []byte, deterministic bool) ([]byte, error)
-	XXX_Merge(src proto.Message)
-	XXX_Size() int
-	XXX_DiscardUnknown()
-	XXX_MessageName() string
+	// MarshalToSizedBufferVT(dAtA []byte) (int, error)
+	// MarshalToVT(dAtA []byte) (int, error)
+	// MarshalVT() (dAtA []byte, err error)
+	// SizeVT() (n int)
+	// UnmarshalVT(dAtA []byte) error
 }

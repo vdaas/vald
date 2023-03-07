@@ -42,10 +42,9 @@ type (
 )
 
 // BidirectionalStream represents gRPC bidirectional stream server handler.
-func BidirectionalStream(ctx context.Context, stream ServerStream,
+func BidirectionalStream[Q any, R any](ctx context.Context, stream ServerStream,
 	concurrency int,
-	newData func() interface{},
-	f func(context.Context, interface{}) (interface{}, error),
+	f func(context.Context, *Q) (*R, error),
 ) (err error) {
 	ctx, span := trace.StartSpan(stream.Context(), apiName+"/BidirectionalStream")
 	defer func() {
@@ -95,7 +94,7 @@ func BidirectionalStream(ctx context.Context, stream ServerStream,
 		case <-ctx.Done():
 			return finalize()
 		default:
-			data := newData()
+			data := new(Q)
 			err = stream.RecvMsg(data)
 			if err != nil {
 				if err != io.EOF && !errors.Is(err, io.EOF) {
@@ -114,7 +113,7 @@ func BidirectionalStream(ctx context.Context, stream ServerStream,
 							sspan.End()
 						}
 					}()
-					var res interface{}
+					var res *R
 					res, err = f(ctx, data)
 					if err != nil {
 						runtime.Gosched()
