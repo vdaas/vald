@@ -109,7 +109,7 @@ func WithReplicationCount(rep int) Option {
 
 func WithStreamConcurrency(c int) Option {
 	return func(s *server) {
-		if c != 0 {
+		if c > 0 {
 			s.streamConcurrency = c
 		}
 	}

@@ -20,6 +20,8 @@ package grpc
 import (
 	"context"
 	"fmt"
+	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -35,6 +37,7 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc/errdetails"
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/observability/trace"
+	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/pkg/gateway/mirror/service"
 )
 
@@ -371,55 +374,151 @@ func (s *server) MultiSearch(ctx context.Context, reqs *payload.Search_MultiRequ
 			span.End()
 		}
 	}()
-	res, err := s.vc.MultiSearch(ctx, reqs)
-	if err != nil {
-		st, msg, err := status.ParseError(err, codes.Internal,
-			"failed to parse "+vald.MultiSearchRPCName+" gRPC error response",
+
+	res = &payload.Search_Responses{
+		Responses: make([]*payload.Search_Response, len(reqs.GetRequests())),
+	}
+
+	var mutex, errMutex sync.Mutex
+	var wg sync.WaitGroup
+	rids := make([]string, 0, len(reqs.GetRequests()))
+
+	for i, req := range reqs.GetRequests() {
+		idx, query := i, req
+		rids = append(rids, query.GetConfig().GetRequestId())
+		wg.Add(1)
+		s.eg.Go(safety.RecoverFunc(func() error {
+			defer wg.Done()
+			ti := "errgroup.Go/id-" + strconv.Itoa(idx)
+			ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, ti), apiName+"/"+vald.MultiSearchRPCName+"/"+ti)
+			defer func() {
+				if span != nil {
+					span.End()
+				}
+			}()
+
+			r, err := s.Search(ctx, query)
+			if err != nil {
+				st, msg, err := status.ParseError(err, codes.Internal, "failed to parse "+vald.SearchRPCName+" gRPC error response",
+					&errdetails.RequestInfo{
+						RequestId:   query.GetConfig().GetRequestId(),
+						ServingData: errdetails.Serialize(query),
+					})
+				if span != nil {
+					span.RecordError(err)
+					span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+					span.SetStatus(trace.StatusError, err.Error())
+				}
+				errMutex.Lock()
+				if errs == nil {
+					errs = err
+				} else {
+					errs = errors.Wrap(errs, err.Error())
+				}
+				errMutex.Unlock()
+				return nil
+			}
+			mutex.Lock()
+			res.Responses[idx] = r
+			mutex.Unlock()
+			return nil
+		}))
+	}
+	wg.Wait()
+	if errs != nil {
+		st, msg, err := status.ParseError(errs, codes.Internal, "failed to parse "+vald.MultiSearchRPCName+" gRPC error response",
 			&errdetails.RequestInfo{
+				RequestId:   strings.Join(rids, ","),
 				ServingData: errdetails.Serialize(reqs),
 			},
 			&errdetails.ResourceInfo{
 				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.MultiSearchRPCName,
 				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-			},
-		)
-		log.Warn(err)
+			})
 		if span != nil {
 			span.RecordError(err)
 			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
 			span.SetStatus(trace.StatusError, err.Error())
 		}
-		return nil, err
+		return res, err
 	}
 	return res, nil
 }
 
-func (s *server) MultiSearchByID(ctx context.Context, reqs *payload.Search_MultiIDRequest) (res *payload.Search_Responses, err error) {
+func (s *server) MultiSearchByID(ctx context.Context, reqs *payload.Search_MultiIDRequest) (res *payload.Search_Responses, errs error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.SearchRPCServiceName+"/"+vald.MultiSearchByIDRPCName), apiName+"/"+vald.MultiSearchByIDRPCName)
 	defer func() {
 		if span != nil {
 			span.End()
 		}
 	}()
-	res, err = s.vc.MultiSearchByID(ctx, reqs)
-	if err != nil {
-		st, msg, err := status.ParseError(err, codes.Internal,
-			"failed to parse "+vald.MultiSearchByIDRPCName+" gRPC error response",
+
+	res = &payload.Search_Responses{
+		Responses: make([]*payload.Search_Response, len(reqs.GetRequests())),
+	}
+
+	var mutex, errMutex sync.Mutex
+	var wg sync.WaitGroup
+	rids := make([]string, 0, len(reqs.GetRequests()))
+
+	for i, req := range reqs.GetRequests() {
+		idx, query := i, req
+		rids = append(rids, query.GetConfig().GetRequestId())
+		wg.Add(1)
+		s.eg.Go(safety.RecoverFunc(func() error {
+			defer wg.Done()
+			ti := "errgroup.Go/id-" + strconv.Itoa(idx)
+			ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, ti), apiName+"/"+vald.MultiSearchByIDRPCName+"/"+ti)
+			defer func() {
+				if span != nil {
+					span.End()
+				}
+			}()
+
+			r, err := s.SearchByID(ctx, query)
+			if err != nil {
+				st, msg, err := status.ParseError(err, codes.Internal, "failed to parse "+vald.SearchByIDRPCName+" gRPC error response",
+					&errdetails.RequestInfo{
+						RequestId:   query.GetConfig().GetRequestId(),
+						ServingData: errdetails.Serialize(query),
+					})
+				if span != nil {
+					span.RecordError(err)
+					span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+					span.SetStatus(trace.StatusError, err.Error())
+				}
+				errMutex.Lock()
+				if errs == nil {
+					errs = err
+				} else {
+					errs = errors.Wrap(errs, err.Error())
+				}
+				errMutex.Unlock()
+				return nil
+			}
+			mutex.Lock()
+			res.Responses[idx] = r
+			mutex.Unlock()
+			return nil
+		}))
+	}
+	wg.Wait()
+	if errs != nil {
+		st, msg, err := status.ParseError(errs, codes.Internal, "failed to parse "+vald.MultiSearchByIDRPCName+" gRPC error response",
 			&errdetails.RequestInfo{
+				RequestId:   strings.Join(rids, ","),
 				ServingData: errdetails.Serialize(reqs),
 			},
 			&errdetails.ResourceInfo{
 				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.MultiSearchByIDRPCName,
 				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-			},
-		)
-		log.Warn(err)
+			})
 		if span != nil {
 			span.RecordError(err)
 			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
 			span.SetStatus(trace.StatusError, err.Error())
 		}
-		return nil, err
+		return res, err
 	}
 	return res, nil
 }
@@ -588,62 +687,158 @@ func (s *server) StreamLinearSearchByID(stream vald.Search_StreamLinearSearchByI
 	return nil
 }
 
-func (s *server) MultiLinearSearch(ctx context.Context, reqs *payload.Search_MultiRequest) (res *payload.Search_Responses, err error) {
+func (s *server) MultiLinearSearch(ctx context.Context, reqs *payload.Search_MultiRequest) (res *payload.Search_Responses, errs error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.SearchRPCServiceName+"/"+vald.MultiLinearSearchRPCName), apiName+"/"+vald.MultiLinearSearchRPCName)
 	defer func() {
 		if span != nil {
 			span.End()
 		}
 	}()
-	res, err = s.vc.MultiLinearSearch(ctx, reqs)
-	if err != nil {
-		st, msg, err := status.ParseError(err, codes.Internal,
-			"failed to parse "+vald.MultiLinearSearchRPCName+" gRPC error response",
+
+	res = &payload.Search_Responses{
+		Responses: make([]*payload.Search_Response, len(reqs.GetRequests())),
+	}
+
+	var mutex, errMutex sync.Mutex
+	var wg sync.WaitGroup
+	rids := make([]string, 0, len(reqs.GetRequests()))
+
+	for i, req := range reqs.GetRequests() {
+		idx, query := i, req
+		rids = append(rids, query.GetConfig().GetRequestId())
+		wg.Add(1)
+		s.eg.Go(safety.RecoverFunc(func() error {
+			defer wg.Done()
+			ti := "errgroup.Go/id-" + strconv.Itoa(idx)
+			ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, ti), apiName+"/"+vald.MultiLinearSearchRPCName+"/"+ti)
+			defer func() {
+				if span != nil {
+					span.End()
+				}
+			}()
+
+			r, err := s.LinearSearch(ctx, query)
+			if err != nil {
+				st, msg, err := status.ParseError(err, codes.Internal, "failed to parse "+vald.LinearSearchRPCName+" gRPC error response",
+					&errdetails.RequestInfo{
+						RequestId:   query.GetConfig().GetRequestId(),
+						ServingData: errdetails.Serialize(query),
+					})
+				if span != nil {
+					span.RecordError(err)
+					span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+					span.SetStatus(trace.StatusError, err.Error())
+				}
+				errMutex.Lock()
+				if errs == nil {
+					errs = err
+				} else {
+					errs = errors.Wrap(errs, err.Error())
+				}
+				errMutex.Unlock()
+				return nil
+			}
+			mutex.Lock()
+			res.Responses[idx] = r
+			mutex.Unlock()
+			return nil
+		}))
+	}
+	wg.Wait()
+	if errs != nil {
+		st, msg, err := status.ParseError(errs, codes.Internal, "failed to parse "+vald.MultiLinearSearchRPCName+" gRPC error response",
 			&errdetails.RequestInfo{
+				RequestId:   strings.Join(rids, ","),
 				ServingData: errdetails.Serialize(reqs),
 			},
 			&errdetails.ResourceInfo{
 				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.MultiLinearSearchRPCName,
 				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-			},
-		)
-		log.Warn(err)
+			})
 		if span != nil {
 			span.RecordError(err)
 			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
 			span.SetStatus(trace.StatusError, err.Error())
 		}
-		return nil, err
+		return res, err
 	}
 	return res, nil
 }
 
-func (s *server) MultiLinearSearchByID(ctx context.Context, reqs *payload.Search_MultiIDRequest) (res *payload.Search_Responses, err error) {
+func (s *server) MultiLinearSearchByID(ctx context.Context, reqs *payload.Search_MultiIDRequest) (res *payload.Search_Responses, errs error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.SearchRPCServiceName+"/"+vald.MultiLinearSearchByIDRPCName), apiName+"/"+vald.MultiLinearSearchByIDRPCName)
 	defer func() {
 		if span != nil {
 			span.End()
 		}
 	}()
-	res, err = s.vc.MultiLinearSearchByID(ctx, reqs)
-	if err != nil {
-		st, msg, err := status.ParseError(err, codes.Internal,
-			"failed to parse "+vald.MultiLinearSearchByIDRPCName+" gRPC error response",
+
+	res = &payload.Search_Responses{
+		Responses: make([]*payload.Search_Response, len(reqs.GetRequests())),
+	}
+
+	var mutex, errMutex sync.Mutex
+	var wg sync.WaitGroup
+	rids := make([]string, 0, len(reqs.GetRequests()))
+
+	for i, req := range reqs.GetRequests() {
+		idx, query := i, req
+		rids = append(rids, query.GetConfig().GetRequestId())
+		wg.Add(1)
+		s.eg.Go(safety.RecoverFunc(func() error {
+			defer wg.Done()
+			ti := "errgroup.Go/id-" + strconv.Itoa(idx)
+			ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, ti), apiName+"/"+vald.MultiLinearSearchByIDRPCName+"/"+ti)
+			defer func() {
+				if span != nil {
+					span.End()
+				}
+			}()
+
+			r, err := s.LinearSearchByID(ctx, query)
+			if err != nil {
+				st, msg, err := status.ParseError(err, codes.Internal, "failed to parse "+vald.LinearSearchByIDRPCName+" gRPC error response",
+					&errdetails.RequestInfo{
+						RequestId:   query.GetConfig().GetRequestId(),
+						ServingData: errdetails.Serialize(query),
+					})
+				if span != nil {
+					span.RecordError(err)
+					span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+					span.SetStatus(trace.StatusError, err.Error())
+				}
+				errMutex.Lock()
+				if errs == nil {
+					errs = err
+				} else {
+					errs = errors.Wrap(errs, err.Error())
+				}
+				errMutex.Unlock()
+				return nil
+			}
+			mutex.Lock()
+			res.Responses[idx] = r
+			mutex.Unlock()
+			return nil
+		}))
+	}
+	wg.Wait()
+	if errs != nil {
+		st, msg, err := status.ParseError(errs, codes.Internal, "failed to parse "+vald.MultiLinearSearchByIDRPCName+" gRPC error response",
 			&errdetails.RequestInfo{
+				RequestId:   strings.Join(rids, ","),
 				ServingData: errdetails.Serialize(reqs),
 			},
 			&errdetails.ResourceInfo{
 				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.MultiLinearSearchByIDRPCName,
 				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-			},
-		)
-		log.Warn(err)
+			})
 		if span != nil {
 			span.RecordError(err)
 			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
 			span.SetStatus(trace.StatusError, err.Error())
 		}
-		return nil, err
+		return res, err
 	}
 	return res, nil
 }
@@ -1050,14 +1245,76 @@ func (s *server) StreamInsert(stream vald.Insert_StreamInsertServer) (err error)
 	return nil
 }
 
-func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequest) (locs *payload.Object_Locations, err error) {
+func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequest) (res *payload.Object_Locations, errs error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.InsertRPCServiceName+"/"+vald.MultiInsertRPCName), apiName+"/"+vald.MultiInsertRPCName)
 	defer func() {
 		if span != nil {
 			span.End()
 		}
 	}()
-	return locs, nil
+
+	res = &payload.Object_Locations{
+		Locations: make([]*payload.Object_Location, len(reqs.GetRequests())),
+	}
+
+	var mutex, errMutex sync.Mutex
+	var wg sync.WaitGroup
+
+	for i, r := range reqs.GetRequests() {
+		idx, req := i, r
+		wg.Add(1)
+		s.eg.Go(safety.RecoverFunc(func() error {
+			defer wg.Done()
+			ti := "errgroup.Go/id-" + req.GetVector().GetId()
+			ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, ti), apiName+"/"+vald.MultiInsertRPCName+"/"+ti)
+			defer func() {
+				if span != nil {
+					span.End()
+				}
+			}()
+
+			loc, err := s.Insert(ctx, req)
+			if err != nil {
+				st, msg, err := status.ParseError(err, codes.Internal, "failed to parse "+vald.InsertRPCName+" gRPC error response",
+					&errdetails.RequestInfo{
+						RequestId:   req.GetVector().GetId(),
+						ServingData: errdetails.Serialize(req),
+					})
+				if span != nil {
+					span.RecordError(err)
+					span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+					span.SetStatus(trace.StatusError, err.Error())
+				}
+				errMutex.Lock()
+				if errs == nil {
+					errs = err
+				} else {
+					errs = errors.Wrap(errs, err.Error())
+				}
+				errMutex.Unlock()
+				return nil
+			}
+			mutex.Lock()
+			res.Locations[idx] = loc
+			mutex.Unlock()
+			return nil
+		}))
+	}
+	wg.Wait()
+	if errs != nil {
+		st, msg, err := status.ParseError(errs, codes.Internal, "failed to parse "+vald.MultiInsertRPCName+" gRPC error response",
+			&errdetails.ResourceInfo{
+				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.MultiInsertRPCName,
+				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+			})
+		if span != nil {
+			span.RecordError(err)
+			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+			span.SetStatus(trace.StatusError, err.Error())
+		}
+		return res, err
+	}
+	return res, nil
 }
 
 func (s *server) Update(ctx context.Context, req *payload.Update_Request) (loc *payload.Object_Location, err error) {
@@ -1444,13 +1701,75 @@ func (s *server) StreamUpdate(stream vald.Update_StreamUpdateServer) (err error)
 	return nil
 }
 
-func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequest) (res *payload.Object_Locations, err error) {
+func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequest) (res *payload.Object_Locations, errs error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.UpdateRPCServiceName+"/"+vald.MultiUpdateRPCName), apiName+"/"+vald.MultiUpdateRPCName)
 	defer func() {
 		if span != nil {
 			span.End()
 		}
 	}()
+
+	res = &payload.Object_Locations{
+		Locations: make([]*payload.Object_Location, len(reqs.GetRequests())),
+	}
+
+	var mutex, errMutex sync.Mutex
+	var wg sync.WaitGroup
+
+	for i, r := range reqs.GetRequests() {
+		idx, req := i, r
+		wg.Add(1)
+		s.eg.Go(safety.RecoverFunc(func() error {
+			defer wg.Done()
+			ti := "errgroup.Go/id-" + req.GetVector().GetId()
+			ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, ti), apiName+"/"+vald.MultiUpdateRPCName+"/"+ti)
+			defer func() {
+				if span != nil {
+					span.End()
+				}
+			}()
+
+			loc, err := s.Update(ctx, req)
+			if err != nil {
+				st, msg, err := status.ParseError(err, codes.Internal, "failed to parse "+vald.UpdateRPCName+" gRPC error response",
+					&errdetails.RequestInfo{
+						RequestId:   req.GetVector().GetId(),
+						ServingData: errdetails.Serialize(req),
+					})
+				if span != nil {
+					span.RecordError(err)
+					span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+					span.SetStatus(trace.StatusError, err.Error())
+				}
+				errMutex.Lock()
+				if errs == nil {
+					errs = err
+				} else {
+					errs = errors.Wrap(errs, err.Error())
+				}
+				errMutex.Unlock()
+				return nil
+			}
+			mutex.Lock()
+			res.Locations[idx] = loc
+			mutex.Unlock()
+			return nil
+		}))
+	}
+	wg.Wait()
+	if errs != nil {
+		st, msg, err := status.ParseError(errs, codes.Internal, "failed to parse "+vald.MultiUpdateRPCName+" gRPC error response",
+			&errdetails.ResourceInfo{
+				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.MultiUpdateRPCName,
+				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+			})
+		if span != nil {
+			span.RecordError(err)
+			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+			span.SetStatus(trace.StatusError, err.Error())
+		}
+		return res, err
+	}
 	return res, nil
 }
 
@@ -1827,13 +2146,75 @@ func (s *server) StreamUpsert(stream vald.Upsert_StreamUpsertServer) (err error)
 	return nil
 }
 
-func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequest) (res *payload.Object_Locations, err error) {
+func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequest) (res *payload.Object_Locations, errs error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.UpsertRPCServiceName+"/"+vald.MultiUpsertRPCName), apiName+"/"+vald.MultiUpsertRPCName)
 	defer func() {
 		if span != nil {
 			span.End()
 		}
 	}()
+
+	res = &payload.Object_Locations{
+		Locations: make([]*payload.Object_Location, len(reqs.GetRequests())),
+	}
+
+	var mutex, errMutex sync.Mutex
+	var wg sync.WaitGroup
+
+	for i, r := range reqs.GetRequests() {
+		idx, req := i, r
+		wg.Add(1)
+		s.eg.Go(safety.RecoverFunc(func() error {
+			defer wg.Done()
+			ti := "errgroup.Go/id-" + req.GetVector().GetId()
+			ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, ti), apiName+"/"+vald.MultiUpsertRPCName+"/"+ti)
+			defer func() {
+				if span != nil {
+					span.End()
+				}
+			}()
+
+			loc, err := s.Upsert(ctx, req)
+			if err != nil {
+				st, msg, err := status.ParseError(err, codes.Internal, "failed to parse "+vald.UpsertRPCName+" gRPC error response",
+					&errdetails.RequestInfo{
+						RequestId:   req.GetVector().GetId(),
+						ServingData: errdetails.Serialize(req),
+					})
+				if span != nil {
+					span.RecordError(err)
+					span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+					span.SetStatus(trace.StatusError, err.Error())
+				}
+				errMutex.Lock()
+				if errs == nil {
+					errs = err
+				} else {
+					errs = errors.Wrap(errs, err.Error())
+				}
+				errMutex.Unlock()
+				return nil
+			}
+			mutex.Lock()
+			res.Locations[idx] = loc
+			mutex.Unlock()
+			return nil
+		}))
+	}
+	wg.Wait()
+	if errs != nil {
+		st, msg, err := status.ParseError(errs, codes.Internal, "failed to parse "+vald.MultiUpsertRPCName+" gRPC error response",
+			&errdetails.ResourceInfo{
+				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.MultiUpsertRPCName,
+				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+			})
+		if span != nil {
+			span.RecordError(err)
+			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+			span.SetStatus(trace.StatusError, err.Error())
+		}
+		return res, err
+	}
 	return res, nil
 }
 
@@ -2130,14 +2511,76 @@ func (s *server) StreamRemove(stream vald.Remove_StreamRemoveServer) (err error)
 	return nil
 }
 
-func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequest) (locs *payload.Object_Locations, err error) {
+func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequest) (res *payload.Object_Locations, errs error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.RemoveRPCServiceName+"/"+vald.MultiRemoveRPCName), apiName+"/"+vald.MultiRemoveRPCName)
 	defer func() {
 		if span != nil {
 			span.End()
 		}
 	}()
-	return locs, nil
+
+	res = &payload.Object_Locations{
+		Locations: make([]*payload.Object_Location, len(reqs.GetRequests())),
+	}
+
+	var mutex, errMutex sync.Mutex
+	var wg sync.WaitGroup
+
+	for i, r := range reqs.GetRequests() {
+		idx, req := i, r
+		wg.Add(1)
+		s.eg.Go(safety.RecoverFunc(func() error {
+			defer wg.Done()
+			ti := "errgroup.Go/id-" + req.GetId().GetId()
+			ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, ti), apiName+"/"+vald.MultiRemoveRPCName+"/"+ti)
+			defer func() {
+				if span != nil {
+					span.End()
+				}
+			}()
+
+			loc, err := s.Remove(ctx, req)
+			if err != nil {
+				st, msg, err := status.ParseError(err, codes.Internal, "failed to parse "+vald.RemoveRPCName+" gRPC error response",
+					&errdetails.RequestInfo{
+						RequestId:   req.GetId().GetId(),
+						ServingData: errdetails.Serialize(req),
+					})
+				if span != nil {
+					span.RecordError(err)
+					span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+					span.SetStatus(trace.StatusError, err.Error())
+				}
+				errMutex.Lock()
+				if errs == nil {
+					errs = err
+				} else {
+					errs = errors.Wrap(errs, err.Error())
+				}
+				errMutex.Unlock()
+				return nil
+			}
+			mutex.Lock()
+			res.Locations[idx] = loc
+			mutex.Unlock()
+			return nil
+		}))
+	}
+	wg.Wait()
+	if errs != nil {
+		st, msg, err := status.ParseError(errs, codes.Internal, "failed to parse "+vald.MultiRemoveRPCName+" gRPC error response",
+			&errdetails.ResourceInfo{
+				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.MultiRemoveRPCName,
+				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+			})
+		if span != nil {
+			span.RecordError(err)
+			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+			span.SetStatus(trace.StatusError, err.Error())
+		}
+		return res, err
+	}
+	return res, nil
 }
 
 func (s *server) GetObject(ctx context.Context, req *payload.Object_VectorRequest) (vec *payload.Object_Vector, err error) {
