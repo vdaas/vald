@@ -43,7 +43,7 @@ import (
 type run struct {
 	eg            errgroup.Group
 	cfg           *config.Config
-	scenario      service.Scenario
+	operator      service.Operator
 	h             handler.Benchmark
 	server        starter.Server
 	observability observability.Observability
@@ -56,7 +56,7 @@ func New(cfg *config.Config) (r runner.Runner, err error) {
 
 	log.Info("pkg/tools/benchmark/scenario/cmd success d")
 
-	sc, err := service.New(
+	operator, err := service.New(
 		service.WithErrGroup(eg),
 	)
 	if err != nil {
@@ -125,7 +125,7 @@ func New(cfg *config.Config) (r runner.Runner, err error) {
 	return &run{
 		eg:            eg,
 		cfg:           cfg,
-		scenario:      sc,
+		operator:      operator,
 		h:             h,
 		server:        srv,
 		observability: obs,
@@ -138,8 +138,8 @@ func (r *run) PreStart(ctx context.Context) error {
 			return err
 		}
 	}
-	if r.scenario != nil {
-		return r.scenario.PreStart(ctx)
+	if r.operator != nil {
+		return r.operator.PreStart(ctx)
 	}
 	return nil
 }
@@ -153,7 +153,7 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 			oech = r.observability.Start(ctx)
 		}
 
-		dech, err = r.scenario.Start(ctx)
+		dech, err = r.operator.Start(ctx)
 		if err != nil {
 			ech <- err
 			return err
