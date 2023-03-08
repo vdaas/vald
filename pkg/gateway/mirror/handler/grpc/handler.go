@@ -659,7 +659,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 	reqSrcPodName := s.gateway.FromForwardedContext(ctx)
 
 	// When this condition is matched, the request is proxied to another Mirror gateway.
-	// So this component sends the request only to the Vald gateway (LB gateway) of own cluster.
+	// So this component sends the request only to its cluster's Vald gateway (LB gateway).
 	if len(reqSrcPodName) != 0 {
 		ce, err = s.insert(ctx, s.vc, req, s.vc.GRPCClient().GetCallOption()...)
 		if err != nil {
@@ -670,7 +670,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 	}
 
 	// When this condition is matched, this Mirror gateway is the starting point of the mirror process.
-	// So this component sends request to the Mirror Gateways of other clusters and to the Vald gateway (LB gateway) of own cluster.
+	// This component sends requests to the Mirror Gateways of other clusters and its cluster's Vald gateway (LB gateway).
 	var insertErrs error
 	var errMutex, mutex sync.Mutex
 	var successTargets sync.Map
@@ -679,7 +679,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 		Ips:  make([]string, 0),
 	}
 
-	// This process sends request to the Mirror Gateways of other clusters and to the Vald gateway (LB gateway) of its own cluster.
+	// This process sends the request to the Mirror Gateways of other clusters and its cluster's Vald gateway (LB gateway).
 	err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
 		ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "BroadCast/"+target), apiName+"/"+vald.InsertRPCName+"/"+target)
 		defer func() {
@@ -767,7 +767,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 		},
 	}
 
-	// This process sends rollback request to the Mirror Gateways of other clusters and to the Vald gateway (LB gateway) of its own cluster.
+	// This process sends the rollback request to the Mirror Gateways of other clusters and its cluster's Vald gateway (LB gateway).
 	err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
 		ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "rollback/BroadCast/"+target), apiName+"/"+vald.InsertRPCName+"/rollback/"+target)
 		defer func() {
