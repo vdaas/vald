@@ -44,7 +44,7 @@ import (
 type server struct {
 	eg                errgroup.Group
 	gateway           service.Gateway // Mirror Gateway client service.
-	discoverer        service.Discoverer
+	mirror            service.Mirror
 	vc                vclient.Client // Vald gateway client (LB gateway) for the same cluster.
 	timeout           time.Duration
 	replica           int
@@ -72,7 +72,7 @@ func (s *server) Register(ctx context.Context, req *payload.Mirror_Targets) (*pa
 			span.End()
 		}
 	}()
-	err := s.discoverer.Connect(ctx, req.GetTargets()...)
+	err := s.mirror.Connect(ctx, req.GetTargets()...)
 	if err != nil {
 		reqInfo := &errdetails.RequestInfo{
 			ServingData: errdetails.Serialize(req),
@@ -140,7 +140,7 @@ func (s *server) Advertise(ctx context.Context, req *payload.Mirror_Targets) (re
 	if err != nil {
 		return nil, err
 	}
-	tgts, err := s.discoverer.MirrorTargets()
+	tgts, err := s.mirror.MirrorTargets()
 	if err != nil {
 		err = status.WrapWithInternal(mirror.AdvertiseRPCName+" API failed to get connected mirror gateway targets", err,
 			&errdetails.RequestInfo{

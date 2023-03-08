@@ -73,10 +73,10 @@ func WithGateway(g service.Gateway) Option {
 	}
 }
 
-func WithDiscoverer(dis service.Discoverer) Option {
+func WithMirror(m service.Mirror) Option {
 	return func(s *server) {
-		if dis != nil {
-			s.discoverer = dis
+		if m != nil {
+			s.mirror = m
 		}
 	}
 }

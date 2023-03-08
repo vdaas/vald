@@ -46,7 +46,7 @@ type run struct {
 	c             vclient.Client
 	mc            mclient.Client
 	gw            service.Gateway
-	dis           service.Discoverer
+	mgw           service.Mirror
 	observability observability.Observability
 }
 
@@ -89,12 +89,12 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	if err != nil {
 		return nil, err
 	}
-	dis, err := service.NewDiscoverer(
+	mgw, err := service.NewMirror(
 		service.WithErrorGroup(eg),
 		service.WithAdvertiseInterval(cfg.Mirror.AdvertiseInterval),
 		service.WithValdAddrs(cfg.Mirror.Client.Addrs...),
 		service.WithSelfMirrorAddrs(cfg.Mirror.SelfMirrorAddrs...),
-		service.WithDiscoverer(mc),
+		service.WithMirror(mc),
 	)
 	if err != nil {
 		return nil, err
@@ -104,7 +104,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		handler.WithValdClient(c),
 		handler.WithErrGroup(eg),
 		handler.WithGateway(gw),
-		handler.WithDiscoverer(dis),
+		handler.WithMirror(mgw),
 		handler.WithStreamConcurrency(cfg.Server.GetGRPCStreamConcurrency()),
 	)
 
@@ -159,7 +159,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		c:             c,
 		mc:            mc,
 		gw:            gw,
-		dis:           dis,
+		mgw:           mgw,
 		observability: obs,
 	}, nil
 }
@@ -173,7 +173,7 @@ func (r *run) PreStart(ctx context.Context) error {
 
 func (r *run) Start(ctx context.Context) (<-chan error, error) {
 	ech := make(chan error, 6)
-	var gech, dech, mcech, cech, sech, oech <-chan error
+	var gech, mech, mcech, cech, sech, oech <-chan error
 	var err error
 
 	sech = r.server.ListenAndServe(ctx)
@@ -184,8 +184,8 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 			return nil, err
 		}
 	}
-	if r.dis != nil {
-		dech, err = r.dis.Start(ctx)
+	if r.mgw != nil {
+		mech, err = r.mgw.Start(ctx)
 		if err != nil {
 			close(ech)
 			return nil, err
@@ -216,7 +216,7 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 			case <-ctx.Done():
 				return ctx.Err()
 			case err = <-gech:
-			case err = <-dech:
+			case err = <-mech:
 			case err = <-mcech:
 			case err = <-cech:
 			case err = <-sech:
