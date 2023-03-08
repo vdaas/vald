@@ -26,6 +26,15 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
 
+type (
+	Object             = cli.Object
+	ObjectKey          = cli.ObjectKey
+	DeleteAllOfOptions = cli.DeleteAllOfOptions
+	ListOptions        = cli.ListOptions
+	MatchingLabels     = cli.MatchingLabels
+	InNamespace        = cli.InNamespace
+)
+
 type Client interface {
 	// Get retrieves an obj for the given object key from the Kubernetes Cluster.
 	// obj must be a struct pointer so that obj can be updated with the response

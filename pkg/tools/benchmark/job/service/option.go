@@ -24,16 +24,20 @@ import (
 	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/k8s/client"
 	"github.com/vdaas/vald/internal/test/data/hdf5"
+	"github.com/vdaas/vald/internal/timeutil"
 )
 
 type Option func(j *job) error
 
 var defaultOpts = []Option{
-	WithDimension(748),
 	// TODO: set default config for client
+	WithDimension(748),
+	WithBeforeJobDuration("30s"),
 }
 
+// WithDimension sets the vector's dimension for running benchmark job with dataset.
 func WithDimension(dim int) Option {
 	return func(j *job) error {
 		if dim > 0 {
@@ -43,6 +47,7 @@ func WithDimension(dim int) Option {
 	}
 }
 
+// WithInsertConfig sets the insert API config for running insert request job.
 func WithInsertConfig(c *config.InsertConfig) Option {
 	return func(j *job) error {
 		if c != nil {
@@ -52,6 +57,7 @@ func WithInsertConfig(c *config.InsertConfig) Option {
 	}
 }
 
+// WithUpdateConfig sets the update API config for running update request job.
 func WithUpdateConfig(c *config.UpdateConfig) Option {
 	return func(j *job) error {
 		if c != nil {
@@ -61,6 +67,7 @@ func WithUpdateConfig(c *config.UpdateConfig) Option {
 	}
 }
 
+// WithUpsertConfig sets the upsert API config for running upsert request job.
 func WithUpsertConfig(c *config.UpsertConfig) Option {
 	return func(j *job) error {
 		if c != nil {
@@ -70,6 +77,7 @@ func WithUpsertConfig(c *config.UpsertConfig) Option {
 	}
 }
 
+// WithSearchConfig sets the search API config for running search request job.
 func WithSearchConfig(c *config.SearchConfig) Option {
 	return func(j *job) error {
 		if c != nil {
@@ -79,6 +87,7 @@ func WithSearchConfig(c *config.SearchConfig) Option {
 	}
 }
 
+// WithRemoveConfig sets the remove API config for running remove request job.
 func WithRemoveConfig(c *config.RemoveConfig) Option {
 	return func(j *job) error {
 		if c != nil {
@@ -88,6 +97,7 @@ func WithRemoveConfig(c *config.RemoveConfig) Option {
 	}
 }
 
+// WithValdClient sets the Vald client for sending request to the target Vald cluster.
 func WithValdClient(c vald.Client) Option {
 	return func(j *job) error {
 		if c == nil {
@@ -98,16 +108,18 @@ func WithValdClient(c vald.Client) Option {
 	}
 }
 
+// WithErrGroup sets the errgroup to the job struct to handle errors.
 func WithErrGroup(eg errgroup.Group) Option {
 	return func(j *job) error {
 		if eg == nil {
-			return errors.NewErrInvalidOption("client", eg)
+			return errors.NewErrInvalidOption("error group", eg)
 		}
 		j.eg = eg
 		return nil
 	}
 }
 
+// WithHdf5 sets the hdf5.Data which is used for benchmark job dataset.
 func WithHdf5(d hdf5.Data) Option {
 	return func(j *job) error {
 		if d == nil {
@@ -118,6 +130,7 @@ func WithHdf5(d hdf5.Data) Option {
 	}
 }
 
+// WithDataset sets the config.BenchmarkDataset including benchmakr dataset name, group name of hdf5.Data, the number of index, start range and end range.
 func WithDataset(d *config.BenchmarkDataset) Option {
 	return func(j *job) error {
 		if d == nil {
@@ -128,6 +141,7 @@ func WithDataset(d *config.BenchmarkDataset) Option {
 	}
 }
 
+// WithJobTypeByString converts given string to JobType.
 func WithJobTypeByString(t string) Option {
 	var jt jobType
 	switch t {
@@ -139,6 +153,7 @@ func WithJobTypeByString(t string) Option {
 	return WithJobType(jt)
 }
 
+// WithJobType sets the jobType for running benchmark job.
 func WithJobType(jt jobType) Option {
 	return func(j *job) error {
 		switch jt {
@@ -153,12 +168,58 @@ func WithJobType(jt jobType) Option {
 	}
 }
 
+// WithJobFunc sets the job function.
 func WithJobFunc(jf func(context.Context, chan error) error) Option {
 	return func(j *job) error {
 		if jf == nil {
 			return errors.NewErrInvalidOption("jobFunc", jf)
 		}
 		j.jobFunc = jf
+		return nil
+	}
+}
+
+// WithBeforeJobName sets the beforeJobName which we should wait for until finish before running job.
+func WithBeforeJobName(bjn string) Option {
+	return func(j *job) error {
+		if len(bjn) > 0 {
+			j.beforeJobName = bjn
+		}
+		return nil
+	}
+}
+
+// WithBeforeJobNamespace sets the beforeJobNamespace of the beforeJobName which we should wait for until finish before running job.
+func WithBeforeJobNamespace(bjns string) Option {
+	return func(j *job) error {
+		if len(bjns) > 0 {
+			j.beforeJobNamespace = bjns
+		}
+		return nil
+	}
+}
+
+// WithBeforeJobDuration sets the duration for watching beforeJobName's status.
+func WithBeforeJobDuration(dur string) Option {
+	return func(j *job) error {
+		if len(dur) == 0 {
+			return nil
+		}
+		dur, err := timeutil.Parse(dur)
+		if err != nil {
+			return err
+		}
+		j.beforeJobDur = dur
+		return nil
+	}
+}
+
+// WithK8sClient binds the k8s client to the job struct which is used for get BenchmarkJobResource from Kubernetes API server.
+func WithK8sClient(cli client.Client) Option {
+	return func(j *job) error {
+		if cli != nil {
+			j.k8sClient = cli
+		}
 		return nil
 	}
 }

@@ -22,13 +22,17 @@ import (
 	"os"
 	"reflect"
 	"syscall"
+	"time"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/client/v1/client/vald"
 	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/k8s/client"
+	v1 "github.com/vdaas/vald/internal/k8s/vald/benchmark/api/v1"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/test/data/hdf5"
 )
 
@@ -56,18 +60,22 @@ func (jt jobType) String() string {
 }
 
 type job struct {
-	eg           errgroup.Group
-	dimension    int
-	dataset      *config.BenchmarkDataset
-	jobType      jobType
-	jobFunc      func(context.Context, chan error) error
-	insertConfig *config.InsertConfig
-	updateConfig *config.UpdateConfig
-	upsertConfig *config.UpsertConfig
-	searchConfig *config.SearchConfig
-	removeConfig *config.RemoveConfig
-	client       vald.Client
-	hdf5         hdf5.Data
+	eg                 errgroup.Group
+	dimension          int
+	dataset            *config.BenchmarkDataset
+	jobType            jobType
+	jobFunc            func(context.Context, chan error) error
+	insertConfig       *config.InsertConfig
+	updateConfig       *config.UpdateConfig
+	upsertConfig       *config.UpsertConfig
+	searchConfig       *config.SearchConfig
+	removeConfig       *config.RemoveConfig
+	client             vald.Client
+	hdf5               hdf5.Data
+	beforeJobName      string
+	beforeJobNamespace string
+	k8sClient          client.Client
+	beforeJobDur       time.Duration
 }
 
 func New(opts ...Option) (Job, error) {
@@ -93,6 +101,34 @@ func New(opts ...Option) (Job, error) {
 }
 
 func (j *job) PreStart(ctx context.Context) error {
+	if len(j.beforeJobName) != 0 {
+		var jobResource v1.ValdBenchmarkJob
+		log.Info("[benchmark job] check before benchjob is completed or not...")
+		j.eg.Go(safety.RecoverFunc(func() error {
+			dt := time.NewTicker(j.beforeJobDur)
+			defer dt.Stop()
+			for {
+				select {
+				case <-ctx.Done():
+					return nil
+				case <-dt.C:
+					err := j.k8sClient.Get(ctx, j.beforeJobName, j.beforeJobNamespace, &jobResource)
+					if err != nil {
+						return err
+					}
+					if jobResource.Status == v1.BenchmarkJobCompleted {
+						log.Infof("[benchmark job ] before job (%s) is completed, job service will start soon.", j.beforeJobName)
+						return nil
+					}
+					log.Infof("[benchmark job] before job (%s) is not completed...", j.beforeJobName)
+				}
+			}
+		}))
+		if err := j.eg.Wait(); err != nil {
+			return err
+		}
+	}
+
 	log.Infof("[benchmark job] start download dataset of %s", j.hdf5.GetName().String())
 	if err := j.hdf5.Download(); err != nil {
 		return err
