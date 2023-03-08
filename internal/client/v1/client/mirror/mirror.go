@@ -57,7 +57,7 @@ func (c *client) GRPCClient() grpc.Client {
 }
 
 func (c *client) Register(ctx context.Context, in *payload.Mirror_Targets, opts ...grpc.CallOption) (res *payload.Mirror_Targets, err error) {
-	ctx, span := trace.StartSpan(ctx, apiName+"/Client.Register")
+	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+mirror.RegisterRPCName), apiName+"/"+mirror.RegisterRPCName)
 	defer func() {
 		if span != nil {
 			span.End()
@@ -78,7 +78,7 @@ func (c *client) Register(ctx context.Context, in *payload.Mirror_Targets, opts 
 }
 
 func (c *client) Advertise(ctx context.Context, in *payload.Mirror_Targets, opts ...grpc.CallOption) (res *payload.Mirror_Targets, err error) {
-	ctx, span := trace.StartSpan(ctx, apiName+"/Client.Advertise")
+	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+mirror.AdvertiseRPCName), apiName+"/"+mirror.AdvertiseRPCName)
 	defer func() {
 		if span != nil {
 			span.End()
