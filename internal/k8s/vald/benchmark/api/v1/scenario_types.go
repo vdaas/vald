@@ -31,6 +31,7 @@ type ValdBenchmarkScenarioStatus string
 
 const (
 	BenchmarkScenarioNotReady  ValdBenchmarkScenarioStatus = "NotReady"
+	BenchmarkScenarioCompleted ValdBenchmarkScenarioStatus = "Completed"
 	BenchmarkScenarioAvailable ValdBenchmarkScenarioStatus = "Available"
 	BenchmarkScenarioHealthy   ValdBenchmarkScenarioStatus = "Healthy"
 )

@@ -33,7 +33,7 @@ type Benchmark interface {
 type server struct {
 	benchmark.UnimplementedJobServer
 
-	scenario service.Scenario
+	operator service.Operator
 	group    singleflight.Group
 }
 
