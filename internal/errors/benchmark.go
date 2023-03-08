@@ -17,4 +17,16 @@
 // Package errors provides benchmark error
 package errors
 
-var ErrInvalidCoreMode = New("invalid core mode")
+var (
+	ErrInvalidCoreMode = New("invalid core mode")
+
+	// ErrFailedToCreateBenchmarkJob represents a function to generate an error that failed to create benchmark job crd.
+	ErrFailedToCreateBenchmarkJob = func(err error, jn string) error {
+		return Wrapf(err, "could not create benchmark job resource: %s ", jn)
+	}
+
+	// ErrFailedToCreateJob represents a function to generate an error that failed to create job resource.
+	ErrFailedToCreateJob = func(err error, jn string) error {
+		return Wrapf(err, "could not create job: %s ", jn)
+	}
+)
