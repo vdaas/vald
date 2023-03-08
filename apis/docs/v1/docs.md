@@ -799,11 +799,12 @@ Update related messages
 
 Represent the update configuration.
 
-| Field                   | Type                                       | Label | Description                                         |
-| ----------------------- | ------------------------------------------ | ----- | --------------------------------------------------- |
-| skip_strict_exist_check | [bool](#bool)                              |       | A flag to skip exist check during update operation. |
-| filters                 | [Filter.Config](#payload-v1-Filter-Config) |       | Filter configuration.                               |
-| timestamp               | [int64](#int64)                            |       | Update timestamp.                                   |
+| Field                   | Type                                       | Label | Description                                                                                      |
+| ----------------------- | ------------------------------------------ | ----- | ------------------------------------------------------------------------------------------------ |
+| skip_strict_exist_check | [bool](#bool)                              |       | A flag to skip exist check during update operation.                                              |
+| filters                 | [Filter.Config](#payload-v1-Filter-Config) |       | Filter configuration.                                                                            |
+| timestamp               | [int64](#int64)                            |       | Update timestamp.                                                                                |
+| disable_balanced_update | [bool](#bool)                              |       | A flag to disable balanced update (split remove -&gt; insert operation) during update operation. |
 
 <a name="payload-v1-Update-MultiObjectRequest"></a>
 
@@ -860,11 +861,12 @@ Upsert related messages.
 
 Represent the upsert configuration.
 
-| Field                   | Type                                       | Label | Description                                         |
-| ----------------------- | ------------------------------------------ | ----- | --------------------------------------------------- |
-| skip_strict_exist_check | [bool](#bool)                              |       | A flag to skip exist check during upsert operation. |
-| filters                 | [Filter.Config](#payload-v1-Filter-Config) |       | Filter configuration.                               |
-| timestamp               | [int64](#int64)                            |       | Upsert timestamp.                                   |
+| Field                   | Type                                       | Label | Description                                                                                      |
+| ----------------------- | ------------------------------------------ | ----- | ------------------------------------------------------------------------------------------------ |
+| skip_strict_exist_check | [bool](#bool)                              |       | A flag to skip exist check during upsert operation.                                              |
+| filters                 | [Filter.Config](#payload-v1-Filter-Config) |       | Filter configuration.                                                                            |
+| timestamp               | [int64](#int64)                            |       | Upsert timestamp.                                                                                |
+| disable_balanced_update | [bool](#bool)                              |       | A flag to disable balanced update (split remove -&gt; insert operation) during update operation. |
 
 <a name="payload-v1-Upsert-MultiObjectRequest"></a>
 

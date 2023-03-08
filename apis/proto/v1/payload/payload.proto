@@ -221,6 +221,8 @@ message Update {
     Filter.Config filters = 2;
     // Update timestamp.
     int64 timestamp = 3;
+    // A flag to disable balanced update (split remove -> insert operation) during update operation.
+    bool disable_balanced_update = 4;
   }
 }
 
@@ -265,6 +267,8 @@ message Upsert {
     Filter.Config filters = 2;
     // Upsert timestamp.
     int64 timestamp = 3;
+    // A flag to disable balanced update (split remove -> insert operation) during update operation.
+    bool disable_balanced_update = 4;
   }
 }
 

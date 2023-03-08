@@ -168,9 +168,7 @@ func (s *server) StreamUpdate(stream vald.Update_StreamUpdateServer) (err error)
 		}
 	}()
 	err = grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
-		func() interface{} { return new(payload.Update_Request) },
-		func(ctx context.Context, data interface{}) (interface{}, error) {
-			req := data.(*payload.Update_Request)
+		func(ctx context.Context, req *payload.Update_Request) (*payload.Object_StreamLocation, error) {
 			ctx, sspan := trace.StartSpan(ctx, apiName+"/"+vald.StreamUpdateRPCName+"/id-"+req.GetVector().GetId())
 			defer func() {
 				if sspan != nil {

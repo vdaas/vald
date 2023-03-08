@@ -133,9 +133,7 @@ func (s *server) StreamRemove(stream vald.Remove_StreamRemoveServer) (err error)
 		}
 	}()
 	err = grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
-		func() interface{} { return new(payload.Remove_Request) },
-		func(ctx context.Context, data interface{}) (interface{}, error) {
-			req := data.(*payload.Remove_Request)
+		func(ctx context.Context, req *payload.Remove_Request) (*payload.Object_StreamLocation, error) {
 			ctx, sspan := trace.StartSpan(ctx, apiName+"/"+vald.StreamRemoveRPCName+"/id-"+req.GetId().GetId())
 			defer func() {
 				if sspan != nil {
