@@ -64,6 +64,7 @@ spec:
               description: ValdBenchmarkJobStatus defines the observed state of ValdBenchmarkJob
               enum:
                 - NotReady
+                - Completed
                 - Available
                 - Healthy
               type: string
