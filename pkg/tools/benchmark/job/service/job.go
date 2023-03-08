@@ -190,6 +190,34 @@ func New(opts ...Option) (Job, error) {
 }
 
 func (j *job) PreStart(ctx context.Context) error {
+	if len(j.beforeJobName) != 0 {
+		var jobResource v1.ValdBenchmarkJob
+		log.Info("[benchmark job] check before benchjob is completed or not...")
+		j.eg.Go(safety.RecoverFunc(func() error {
+			dt := time.NewTicker(j.beforeJobDur)
+			defer dt.Stop()
+			for {
+				select {
+				case <-ctx.Done():
+					return nil
+				case <-dt.C:
+					err := j.k8sClient.Get(ctx, j.beforeJobName, j.beforeJobNamespace, &jobResource)
+					if err != nil {
+						return err
+					}
+					if jobResource.Status == v1.BenchmarkJobCompleted {
+						log.Infof("[benchmark job ] before job (%s) is completed, job service will start soon.", j.beforeJobName)
+						return nil
+					}
+					log.Infof("[benchmark job] before job (%s) is not completed...", j.beforeJobName)
+				}
+			}
+		}))
+		if err := j.eg.Wait(); err != nil {
+			return err
+		}
+	}
+
 	log.Infof("[benchmark job] start download dataset of %s", j.hdf5.GetName().String())
 	if err := j.hdf5.Download(); err != nil {
 		return err

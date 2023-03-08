@@ -61,6 +61,7 @@ spec:
               description: ValdBenchmarkScenarioStatus defines the observed state of ValdBenchmarkScenario
               enum:
                 - NotReady
+                - Completed
                 - Available
                 - Healthy
               type: string
