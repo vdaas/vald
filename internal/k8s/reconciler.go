@@ -25,6 +25,7 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/safety"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -34,7 +35,10 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
 
-type Manager = manager.Manager
+type (
+	Manager        = manager.Manager
+	OwnerReference = v1.OwnerReference
+)
 
 type Controller interface {
 	Start(ctx context.Context) (<-chan error, error)
