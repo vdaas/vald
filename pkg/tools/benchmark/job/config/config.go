@@ -85,11 +85,15 @@ func NewConfig(ctx context.Context, path string) (cfg *Config, err error) {
 
 	// Get config from applied ValdBenchmarkJob custom resource
 	var jobResource v1.ValdBenchmarkJob
-	c, err := client.New(client.WithSchemeBuilder(*v1.SchemeBuilder))
-	if err != nil {
-		log.Warn(err.Error())
+	if cfg.Job.Client == nil {
+		c, err := client.New(client.WithSchemeBuilder(*v1.SchemeBuilder))
+		if err != nil {
+			log.Error(err.Error())
+			return nil, err
+		}
+		cfg.Job.Client = c
 	}
-	err = c.Get(ctx, NAME, NAMESPACE, &jobResource)
+	err = cfg.Job.Client.Get(ctx, NAME, NAMESPACE, &jobResource)
 	if err != nil {
 		log.Warn(err.Error())
 	} else {
@@ -105,6 +109,10 @@ func NewConfig(ctx context.Context, path string) (cfg *Config, err error) {
 		cfg.Job.SearchConfig = jobResource.Spec.SearchConfig
 		cfg.Job.RemoveConfig = jobResource.Spec.RemoveConfig
 		cfg.Job.ClientConfig = jobResource.Spec.ClientConfig
+		if annotations := jobResource.GetAnnotations(); annotations != nil {
+			cfg.Job.BeforeJobName = annotations["before-job-name"]
+			cfg.Job.BeforeJobNamespace = annotations["before-job-namespace"]
+		}
 	}
 
 	return cfg, nil
