@@ -42,6 +42,7 @@ type BenchmarkJobStatus string
 
 const (
 	BenchmarkJobNotReady  = BenchmarkJobStatus("NotReady")
+	BenchmarkJobCompleted = BenchmarkJobStatus("Completed")
 	BenchmarkJobAvailable = BenchmarkJobStatus("Available")
 	BenchmarkJobHealthy   = BenchmarkJobStatus("Healthy")
 )
