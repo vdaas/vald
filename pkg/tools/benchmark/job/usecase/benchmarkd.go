@@ -100,6 +100,9 @@ func New(cfg *config.Config) (r runner.Runner, err error) {
 		service.WithSearchConfig(cfg.Job.SearchConfig),
 		service.WithRemoveConfig(cfg.Job.RemoveConfig),
 		service.WithHdf5(d),
+		service.WithBeforeJobName(cfg.Job.BeforeJobName),
+		service.WithBeforeJobNamespace(cfg.Job.BeforeJobNamespace),
+		service.WithK8sClient(cfg.Job.Client),
 	)
 	if err != nil {
 		return nil, err
