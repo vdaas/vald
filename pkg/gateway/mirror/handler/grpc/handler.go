@@ -1418,6 +1418,7 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (loc *
 				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
 			},
 		)
+		log.Warn(err)
 		if span != nil {
 			span.RecordError(err)
 			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
@@ -2712,7 +2713,7 @@ func (s *server) getObjects(ctx context.Context, req *payload.Object_VectorReque
 			if st.Code() == codes.NotFound {
 				return nil
 			}
-			log.Warn(err)
+			log.Warn(err, "\t", st.Code())
 			mutex.Lock()
 			if objErrs == nil {
 				objErrs = err
@@ -2764,6 +2765,7 @@ func (s *server) getObjects(ctx context.Context, req *payload.Object_VectorReque
 				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
 			},
 		)
+		log.Warn(err)
 		if span != nil {
 			span.RecordError(err)
 			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
@@ -2823,8 +2825,9 @@ func (s *server) getObject(ctx context.Context, client vald.ObjectClient, req *p
 				"failed to parse "+vald.GetObjectRPCName+" gRPC error response", reqInfo, resInfo,
 			)
 			attrs = trace.FromGRPCStatus(st.Code(), msg)
+			log.Warn(err, "\n", st.Code())
 		}
-		log.Warn("failed to process GetObject request\terror: %s", err.Error())
+		log.Warn(err)
 		if span != nil {
 			span.RecordError(err)
 			span.SetAttributes(attrs...)
