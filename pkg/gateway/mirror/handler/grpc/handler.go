@@ -1862,6 +1862,7 @@ func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *
 				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
 			},
 		)
+		log.Warnf("%s\tcode: %s", err.Error(), st.Code())
 		if span != nil {
 			span.RecordError(err)
 			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
@@ -2713,7 +2714,7 @@ func (s *server) getObjects(ctx context.Context, req *payload.Object_VectorReque
 			if st.Code() == codes.NotFound {
 				return nil
 			}
-			log.Warn(err, "\t", st.Code())
+			log.Warnf("%s\tcode: %s", err.Error(), st.Code())
 			mutex.Lock()
 			if objErrs == nil {
 				objErrs = err
@@ -2739,7 +2740,7 @@ func (s *server) getObjects(ctx context.Context, req *payload.Object_VectorReque
 					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
 				},
 			)
-			log.Warn(err)
+			log.Warnf("%s\tcode: %s", err.Error(), codes.Internal)
 			if span != nil {
 				span.RecordError(err)
 				span.SetAttributes(trace.StatusCodeInternal(err.Error())...)
@@ -2765,7 +2766,7 @@ func (s *server) getObjects(ctx context.Context, req *payload.Object_VectorReque
 				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
 			},
 		)
-		log.Warn(err)
+		log.Warnf("%s\tcode: %s", err.Error(), st.Code())
 		if span != nil {
 			span.RecordError(err)
 			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
@@ -2795,6 +2796,7 @@ func (s *server) getObject(ctx context.Context, client vald.ObjectClient, req *p
 			ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
 		}
 		var attrs trace.Attributes
+		var code codes.Code
 
 		switch {
 		case errors.Is(err, context.Canceled):
@@ -2804,6 +2806,7 @@ func (s *server) getObject(ctx context.Context, client vald.ObjectClient, req *p
 			attrs = trace.StatusCodeCancelled(
 				errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.GetObjectRPCName,
 			)
+			code = codes.Canceled
 		case errors.Is(err, context.DeadlineExceeded):
 			err = status.WrapWithDeadlineExceeded(
 				vald.GetObjectRPCName+" API deadline exceeded", err, reqInfo, resInfo,
@@ -2811,11 +2814,13 @@ func (s *server) getObject(ctx context.Context, client vald.ObjectClient, req *p
 			attrs = trace.StatusCodeDeadlineExceeded(
 				errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.GetObjectRPCName,
 			)
+			code = codes.DeadlineExceeded
 		case errors.Is(err, errors.ErrGRPCClientConnNotFound("*")):
 			err = status.WrapWithInternal(
 				vald.GetObjectRPCName+" API connection not found", err, reqInfo, resInfo,
 			)
 			attrs = trace.StatusCodeInternal(err.Error())
+			code = codes.Internal
 		default:
 			var (
 				st  *status.Status
@@ -2825,9 +2830,8 @@ func (s *server) getObject(ctx context.Context, client vald.ObjectClient, req *p
 				"failed to parse "+vald.GetObjectRPCName+" gRPC error response", reqInfo, resInfo,
 			)
 			attrs = trace.FromGRPCStatus(st.Code(), msg)
-			log.Warn(err, "\n", st.Code())
 		}
-		log.Warn(err)
+		log.Warnf("%s\tcode: %s", err.Error(), code)
 		if span != nil {
 			span.RecordError(err)
 			span.SetAttributes(attrs...)
