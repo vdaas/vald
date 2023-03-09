@@ -220,6 +220,14 @@ gotests/gen: \
 	$(GO_OPTION_TEST_SOURCES) \
 	gotests/patch
 
+.PHONY: gotests/regen
+## regenerate missing go test files
+gotests/regen: \
+        $(GO_TEST_PLACEHOLDER_PATCH) \
+        $(GO_TEST_SOURCES) \
+        $(GO_OPTION_TEST_SOURCES) \
+        gotests/patch
+
 .PHONY: gotests/patch
 ## apply patches to generated go test files
 gotests/patch: \
@@ -237,6 +245,11 @@ gotests/patch: \
 	find $(ROOTDIR)/internal/test/goleak -name '*_test.go' | xargs sed -i -E "s%\"github.com/vdaas/vald/internal/test/goleak\"%%g"
 	find $(ROOTDIR)/internal/test/goleak -name '*_test.go' | xargs sed -i -E "s/goleak\.//g"
 
+.PHONY: gotests/placeholder
+## apply not implemented placeholder patching
+gotests/placeholder: \
+	$(GO_TEST_PLACEHOLDER_PATCH)
+
 $(GO_TEST_SOURCES): \
 	$(ROOTDIR)/assets/test/templates/common \
 	$(GO_SOURCES)
@@ -248,3 +261,10 @@ $(GO_OPTION_TEST_SOURCES): \
 	$(GO_OPTION_SOURCES)
 	@$(call green, $(patsubst %,"generating go test file: %",$@))
 	gotests -w -template_dir $(ROOTDIR)/assets/test/templates/option -all $(patsubst %_test.go,%.go,$@)
+
+$(GO_TEST_PLACEHOLDER_PATCH):
+	@$(call green, "replace placeholder of test files")
+	find $(ROOTDIR)/* -name '*_test.go' | xargs sed -i -e '/\/\/ NOT IMPLEMENTED BELOW/,$d' && \
+	find $(ROOTDIR)/* -name '*_test.go' -exec sh -c ' \
+			for arg in "$@"; do echo "// NOT IMPLEMENTED BELOW" >>"$arg"; done \
+	' _ {} +
