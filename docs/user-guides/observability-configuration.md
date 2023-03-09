@@ -241,6 +241,6 @@ Vald publishes [the sample manifest](https://github.com/vdaas/vald/blob/main/cha
 You can apply it after creating an observability environment.
 
 <div class="notice">
-The default manifests don't set ingress host<BR>
+The default manifests don't set ingress host.<BR>
 You can monitor the browser by port forwarding or define the ingress host by yourself.
 </div>
