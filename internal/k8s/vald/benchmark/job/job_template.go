@@ -43,6 +43,7 @@ func NewBenchmarkJobTemplate(opts ...BenchmarkJobOption) (benchmarkJobTemplate, 
 			return *jobTmpl, err
 		}
 	}
+	terminationGracePeriodSeconds := int64(10)
 	jobTmpl.Spec.Template.Spec.Containers = []corev1.Container{
 		{
 			Name:            ContainerName,
@@ -60,6 +61,10 @@ func NewBenchmarkJobTemplate(opts ...BenchmarkJobOption) (benchmarkJobTemplate, 
 						},
 					},
 				},
+				TerminationGracePeriodSeconds: &terminationGracePeriodSeconds,
+			},
+			ReadinessProbe: &corev1.Probe{
+				TerminationGracePeriodSeconds: &terminationGracePeriodSeconds,
 			},
 			StartupProbe: &corev1.Probe{
 				FailureThreshold: int32(30),
@@ -73,6 +78,7 @@ func NewBenchmarkJobTemplate(opts ...BenchmarkJobOption) (benchmarkJobTemplate, 
 						},
 					},
 				},
+				TerminationGracePeriodSeconds: &terminationGracePeriodSeconds,
 			},
 			Ports: []corev1.ContainerPort{
 				{

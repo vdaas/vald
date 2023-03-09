@@ -167,6 +167,8 @@ spec:
                             - type
                           type: object
                         type: array
+                      rpc:
+                        type: integer
                       insert_config:
                         description: InsertConfig defines the desired state of insert config
                         properties:
@@ -206,6 +208,8 @@ spec:
                             type: boolean
                           timestamp:
                             type: string
+                          disable_balanced_update:
+                            type: boolean
                         type: object
                       upsert_config:
                         description: UpsertConfig defines the desired state of upsert config
@@ -214,6 +218,8 @@ spec:
                             type: boolean
                           timestamp:
                             type: string
+                          disable_balanced_update:
+                            type: boolean
                         type: object
                       client_config:
                         description: ClientConfig represents the configurations for gRPC client.

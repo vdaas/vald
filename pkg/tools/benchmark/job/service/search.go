@@ -19,7 +19,6 @@ package service
 
 import (
 	"context"
-	"testing"
 	"time"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
@@ -42,9 +41,8 @@ func (j *job) search(ctx context.Context, ech chan error) error {
 		}
 		return err
 	}
-
 	// create data
-	vecs := genVec(j.hdf5.GetTest(), j.dataset)
+	vecs := j.genVec(j.dataset)
 	timeout, _ := time.ParseDuration(j.searchConfig.Timeout)
 	cfg := &payload.Search_Config{
 		Num:     uint32(j.searchConfig.Num),
@@ -53,9 +51,13 @@ func (j *job) search(ctx context.Context, ech chan error) error {
 		Epsilon: float32(j.searchConfig.Epsilon),
 		Timeout: timeout.Nanoseconds(),
 	}
+	lres := make([]*payload.Search_Response, len(vecs))
 	for i := 0; i < len(vecs); i++ {
-		log.Infof("[benchmark job] Start search: iter = %d", i)
-		lres, err := j.client.LinearSearch(ctx, &payload.Search_Request{
+		if len(vecs[i]) != j.dimension {
+			log.Warn("len(vecs) ", len(vecs[i]), "is not matched with ", j.dimension)
+			continue
+		}
+		res, err := j.client.LinearSearch(ctx, &payload.Search_Request{
 			Vector: vecs[i],
 			Config: cfg,
 		})
@@ -71,35 +73,46 @@ func (j *job) search(ctx context.Context, ech chan error) error {
 			}
 			return err
 		}
-		bres := testing.Benchmark(func(b *testing.B) {
-			b.Helper()
-			b.ResetTimer()
-			start := time.Now()
-			sres, err := j.client.Search(ctx, &payload.Search_Request{
-				Vector: vecs[i],
-				Config: cfg,
-			})
-			if err != nil {
-				select {
-				case <-ctx.Done():
-					if errors.Is(err, context.Canceled) {
-						ech <- errors.Wrap(err, ctx.Err().Error())
-					} else {
-						ech <- err
-					}
-				case ech <- err:
-					break
-				}
-			}
-			latency := time.Since(start)
-			recall := calcRecall(lres.Results, sres.Results)
-			b.ReportMetric(recall, "recall")
-			b.ReportMetric(float64(latency.Microseconds()), "latency")
-		})
-		// TODO: send metrics to the Prometeus
-		log.Infof("[benchmark job] Finish search bench: iter= %d \n%#v\n", i, bres)
+		lres[i] = res
 	}
-
+	// TODO: apply rpc from crd setting params
+	sres := make([]*payload.Search_Response, len(vecs))
+	log.Infof("[benchmark job] Start search")
+	for i := 0; i < len(vecs); i++ {
+		if len(vecs[i]) != j.dimension {
+			log.Warn("len(vecs) ", len(vecs[i]), "is not matched with ", j.dimension)
+			continue
+		}
+		err := j.limiter.Wait(ctx)
+		if err != nil {
+			errors.Is(context.Canceled, err)
+			ech <- err
+			break
+		}
+		res, err := j.client.Search(ctx, &payload.Search_Request{
+			Vector: vecs[i],
+			Config: cfg,
+		})
+		log.Infof("[benchmark job] search %d", i)
+		if err != nil {
+			select {
+			case <-ctx.Done():
+				if errors.Is(err, context.Canceled) {
+					ech <- errors.Wrap(err, ctx.Err().Error())
+				} else {
+					ech <- err
+				}
+			case ech <- err:
+				break
+			}
+		}
+		sres[i] = res
+	}
+	recall := make([]float64, len(vecs))
+	for i := 0; i < len(vecs); i++ {
+		recall[i] = calcRecall(lres[i].Results, sres[i].Results)
+		log.Info("[branch job] search recall: ", recall[i])
+	}
 	log.Info("[benchmark job] Finish benchmarking search")
 	return nil
 }

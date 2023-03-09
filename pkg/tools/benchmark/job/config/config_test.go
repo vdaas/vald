@@ -20,12 +20,10 @@ package config
 import (
 	"context"
 	"io/fs"
-	"os"
 	"testing"
 
 	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errors"
-	"github.com/vdaas/vald/internal/file"
 	"github.com/vdaas/vald/internal/test/comparator"
 	"github.com/vdaas/vald/internal/test/goleak"
 )
@@ -59,25 +57,11 @@ func TestNewConfig(t *testing.T) {
 	}
 	tests := []test{
 		func() test {
-			name := "/home/vankichi/Documents/vald-read-test.yaml"
-			path := name
+			var path string
 			return test{
 				name: "return error when can't read file",
 				args: args{
 					path: path,
-				},
-				beforeFunc: func(t *testing.T, a args) {
-					t.Helper()
-					f, err := file.Open(a.path, os.O_CREATE, fs.ModeIrregular)
-					if err != nil {
-						if errors.Is(err, fs.ErrPermission) {
-							return
-						}
-						t.Error(err)
-					}
-					if err := f.Close(); err != nil {
-						t.Error(err)
-					}
 				},
 				checkFunc: func(w want, gotCfg *Config, err error) error {
 					if errors.Is(err, fs.ErrPermission) {
@@ -86,17 +70,14 @@ func TestNewConfig(t *testing.T) {
 					if !errors.Is(err, w.err) {
 						return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 					}
-					return nil
-				},
-				afterFunc: func(t *testing.T, a args) {
-					t.Helper()
-					if err := os.Remove(a.path); err != nil {
-						t.Fatal(err)
+					if gotCfg != nil {
+						return errors.Errorf("got cfg: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotCfg, nil)
 					}
+					return nil
 				},
 				want: want{
 					wantCfg: nil,
-					err:     errors.ErrUnsupportedConfigFileType(".yaml"),
+					err:     errors.ErrPathNotSpecified,
 				},
 			}
 		}(),

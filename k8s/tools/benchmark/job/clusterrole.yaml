@@ -16,9 +16,8 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  creationTimestamp: null
-  name: benchmark-scenario-role # TODO: fix
-  namespace: default # TODO: fix
+  name: benchmark-job-role
+  namespace: default
 rules:
   - apiGroups:
       - apps
@@ -35,7 +34,6 @@ rules:
   - apiGroups:
       - vald.vdaas.org
     resources:
-      - valdbenchmarkscenarios
       - valdbenchmarkjobs
     verbs:
       - create
@@ -48,14 +46,12 @@ rules:
   - apiGroups:
       - vald.vdaas.org
     resources:
-      - valdbenchmarkscenarios/finalizers
       - valdbenchmarkjobs/finalizers
     verbs:
       - update
   - apiGroups:
       - vald.vdaas.org
     resources:
-      - valdbenchmarkscenarios/status
       - valdbenchmarkjobs/status
     verbs:
       - get

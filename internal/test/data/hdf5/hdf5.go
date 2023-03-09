@@ -21,11 +21,10 @@ import (
 	"os"
 	"reflect"
 
-	"gonum.org/v1/hdf5"
-
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/io"
 	"github.com/vdaas/vald/internal/net/http/client"
+	"gonum.org/v1/hdf5"
 )
 
 type Data interface {
@@ -33,6 +32,7 @@ type Data interface {
 	Read() error
 	GetName() DatasetName
 	GetPath() string
+	GetByGroupName(name string) [][]float32
 	GetTrain() [][]float32
 	GetTest() [][]float32
 	GetNeighbors() [][]int
@@ -162,6 +162,27 @@ func (d *data) GetName() DatasetName {
 
 func (d *data) GetPath() string {
 	return d.path
+}
+
+// TODO: Apply generics
+func (d *data) GetByGroupName(name string) [][]float32 {
+	switch name {
+	case "train":
+		return d.GetTrain()
+	case "test":
+		return d.GetTest()
+	case "neighbors":
+		l := d.GetNeighbors()
+		r := make([][]float32, 0)
+		for x := range l {
+			for y, z := range l[x] {
+				r[x][y] = float32(z)
+			}
+		}
+		return r
+	default:
+		return nil
+	}
 }
 
 func (d *data) GetTrain() [][]float32 {

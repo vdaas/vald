@@ -108,7 +108,9 @@ func NewConfig(ctx context.Context, path string) (cfg *Config, err error) {
 		cfg.Job.UpsertConfig = jobResource.Spec.UpsertConfig
 		cfg.Job.SearchConfig = jobResource.Spec.SearchConfig
 		cfg.Job.RemoveConfig = jobResource.Spec.RemoveConfig
+		cfg.Job.ObjectConfig = jobResource.Spec.ObjectConfig
 		cfg.Job.ClientConfig = jobResource.Spec.ClientConfig
+		cfg.Job.RPC = jobResource.Spec.RPC
 		if annotations := jobResource.GetAnnotations(); annotations != nil {
 			cfg.Job.BeforeJobName = annotations["before-job-name"]
 			cfg.Job.BeforeJobNamespace = annotations["before-job-namespace"]

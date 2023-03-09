@@ -20,6 +20,9 @@ import (
 	"sync"
 	"time"
 
+	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/k8s"
+	"github.com/vdaas/vald/internal/log"
 	batchv1 "k8s.io/api/batch/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
@@ -28,10 +31,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
-
-	"github.com/vdaas/vald/internal/errors"
-	"github.com/vdaas/vald/internal/k8s"
-	"github.com/vdaas/vald/internal/log"
 )
 
 // JobWatcher is a type alias for k8s resource controller.

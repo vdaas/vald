@@ -21,22 +21,24 @@ import "github.com/vdaas/vald/internal/k8s/client"
 
 // BenchmarkJob represents the configuration for the internal benchmark search job.
 type BenchmarkJob struct {
-	Target             *BenchmarkTarget    `json:"target,omitempty" yaml:"target"`
-	Dataset            *BenchmarkDataset   `json:"dataset,omitempty" yaml:"dataset"`
-	Dimension          int                 `json:"dimension,omitempty" yaml:"dimension"`
-	Replica            int                 `json:"replica,omitempty" yaml:"replica"`
-	Repetition         int                 `json:"repetition,omitempty" yaml:"repetition"`
-	JobType            string              `json:"job_type,omitempty" yaml:"job_type"`
-	InsertConfig       *InsertConfig       `json:"insert_config,omitempty" yaml:"insert_config"`
-	UpdateConfig       *UpdateConfig       `json:"update_config,omitempty" yaml:"update_config"`
-	UpsertConfig       *UpsertConfig       `json:"upsert_config,omitempty" yaml:"upsert_config"`
-	SearchConfig       *SearchConfig       `json:"search_config,omitempty" yaml:"search_config"`
-	RemoveConfig       *RemoveConfig       `json:"remove_config,omitempty" yaml:"remove_config"`
-	ClientConfig       *GRPCClient         `json:"client_config,omitempty" yaml:"client_config"`
-	Rules              []*BenchmarkJobRule `json:"rules,omitempty" yaml:"rules"`
-	BeforeJobName      string              `json:"before_job_name,omitempty" yaml:"before_job_name"`
+	Target             *BenchmarkTarget    `json:"target,omitempty"               yaml:"target"`
+	Dataset            *BenchmarkDataset   `json:"dataset,omitempty"              yaml:"dataset"`
+	Dimension          int                 `json:"dimension,omitempty"            yaml:"dimension"`
+	Replica            int                 `json:"replica,omitempty"              yaml:"replica"`
+	Repetition         int                 `json:"repetition,omitempty"           yaml:"repetition"`
+	JobType            string              `json:"job_type,omitempty"             yaml:"job_type"`
+	InsertConfig       *InsertConfig       `json:"insert_config,omitempty"        yaml:"insert_config"`
+	UpdateConfig       *UpdateConfig       `json:"update_config,omitempty"        yaml:"update_config"`
+	UpsertConfig       *UpsertConfig       `json:"upsert_config,omitempty"        yaml:"upsert_config"`
+	SearchConfig       *SearchConfig       `json:"search_config,omitempty"        yaml:"search_config"`
+	RemoveConfig       *RemoveConfig       `json:"remove_config,omitempty"        yaml:"remove_config"`
+	ObjectConfig       *ObjectConfig       `json:"object_config,omitempty"        yaml:"object_config"`
+	ClientConfig       *GRPCClient         `json:"client_config,omitempty"        yaml:"client_config"`
+	Rules              []*BenchmarkJobRule `json:"rules,omitempty"                yaml:"rules"`
+	BeforeJobName      string              `json:"before_job_name,omitempty"      yaml:"before_job_name"`
 	BeforeJobNamespace string              `json:"before_job_namespace,omitempty" yaml:"before_job_namespace"`
-	Client             client.Client       `json:"client,omitempty" yaml:"client"`
+	Client             client.Client       `json:"client,omitempty"               yaml:"client"`
+	RPC                int                 `json:"rpc,omitempty"                  yaml:"rpc"`
 }
 
 // BenchmarkScenario represents the configuration for the internal benchmark scenario.
@@ -80,14 +82,16 @@ type InsertConfig struct {
 
 // UpdateConfig defines the desired state of update config
 type UpdateConfig struct {
-	SkipStrictExistCheck bool   `json:"skip_strict_exist_check,omitempty"`
-	Timestamp            string `json:"timestamp,omitempty"`
+	SkipStrictExistCheck  bool   `json:"skip_strict_exist_check,omitempty"`
+	Timestamp             string `json:"timestamp,omitempty"`
+	DisableBalancedUpdate bool   `json:"disable_balanced_update,omitempty"`
 }
 
 // UpsertConfig defines the desired state of upsert config
 type UpsertConfig struct {
-	SkipStrictExistCheck bool   `json:"skip_strict_exist_check,omitempty"`
-	Timestamp            string `json:"timestamp,omitempty"`
+	SkipStrictExistCheck  bool   `json:"skip_strict_exist_check,omitempty"`
+	Timestamp             string `json:"timestamp,omitempty"`
+	DisableBalancedUpdate bool   `json:"disable_balanced_update,omitempty"`
 }
 
 // SearchConfig defines the desired state of search config
@@ -103,6 +107,22 @@ type SearchConfig struct {
 type RemoveConfig struct {
 	SkipStrictExistCheck bool   `json:"skip_strict_exist_check,omitempty"`
 	Timestamp            string `json:"timestamp,omitempty"`
+}
+
+// ObjectConfig defines the desired state of object config
+type ObjectConfig struct {
+	FilterConfig FilterConfig `json:"filter_config,omitempty" yaml:"filter_config"`
+}
+
+// FilterTarget defines the desired state of filter target
+type FilterTarget struct {
+	Host string `json:"host,omitempty" yaml:"host"`
+	Port int32  `json:"port,omitempty" yaml:"port"`
+}
+
+// FilterConfig defines the desired state of filter config
+type FilterConfig struct {
+	Targets []*FilterTarget `json:"target,omitempty" yaml:"target"`
 }
 
 // Bind binds the actual data from the Job receiver fields.

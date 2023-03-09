@@ -13,15 +13,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
+apiVersion: v1
+kind: Service
 metadata:
-  name: benchmark-scenario-rolebinding
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: benchmark-scenario-role # TODO: fix
-subjects:
-  - kind: ServiceAccount
-    name: vald-benchmark-operator # TODO: fix
-    namespace: default # TODO: fix
+  name: benchmark-job-svc
+spec:
+  ports:
+    - name: prometheus
+      port: 4000 # TODO: FIX ME
+      targetPort: 4000 # TODO: FIX ME
+      protocol: TCP
+  selector:
+    app.kubernetes.io/name: benchmark-job-svc
+    app.kubernetes.io/component: benchmark-job
+  clusterIP: None
+  type: ClusterIP
+  externalTrafficPolicy: ""
