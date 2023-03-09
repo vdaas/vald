@@ -242,5 +242,5 @@ You can apply it after creating an observability environment.
 
 <div class="notice">
 The default manifests don't set ingress host<BR>
-you can monitor on the browser by port forwarding or set ingress host by yourself.
+You can monitor the browser by port forwarding or define the ingress host by yourself.
 </div>
