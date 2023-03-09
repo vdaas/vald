@@ -2663,7 +2663,7 @@ func (s *server) GetObject(ctx context.Context, req *payload.Object_VectorReques
 				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
 			},
 		)
-		log.Warn(err)
+		log.Warnf("%s\tcode: %s", err.Error(), st.Code())
 		if span != nil {
 			span.RecordError(err)
 			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
