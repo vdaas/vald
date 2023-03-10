@@ -2651,25 +2651,25 @@ func (s *server) GetObject(ctx context.Context, req *payload.Object_VectorReques
 		}
 	}()
 	vec, err = s.getObject(ctx, s.vc, req, s.vc.GRPCClient().GetCallOption()...)
-	log.Debugf("%#v", err)
 	if err != nil {
-		st, msg, err := status.ParseError(err, codes.Internal,
-			"failed to parse "+vald.GetObjectRPCName+" gRPC error response",
-			&errdetails.RequestInfo{
-				RequestId:   req.GetId().GetId(),
-				ServingData: errdetails.Serialize(req),
-			},
-			&errdetails.ResourceInfo{
-				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.GetObjectRPCName,
-				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-			},
-		)
-		log.Warnf("%s\tcode: %s", err.Error(), st.Code())
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
+		log.Debug(err.Error())
+		// st, msg, err := status.ParseError(err, codes.Internal,
+		// 	"failed to parse "+vald.GetObjectRPCName+" gRPC error response",
+		// 	&errdetails.RequestInfo{
+		// 		RequestId:   req.GetId().GetId(),
+		// 		ServingData: errdetails.Serialize(req),
+		// 	},
+		// 	&errdetails.ResourceInfo{
+		// 		ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.GetObjectRPCName,
+		// 		ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+		// 	},
+		// )
+		// log.Warnf("%s\tcode: %s", err.Error(), st.Code())
+		// if span != nil {
+		// 	span.RecordError(err)
+		// 	span.SetAttributes(trace.StatusFr)
+		// 	span.SetStatus(trace.StatusError, err.Error())
+		// }
 		return nil, err
 	}
 	return vec, nil
