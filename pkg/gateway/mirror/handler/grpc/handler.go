@@ -2651,6 +2651,7 @@ func (s *server) GetObject(ctx context.Context, req *payload.Object_VectorReques
 		}
 	}()
 	vec, err = s.getObject(ctx, s.vc, req, s.vc.GRPCClient().GetCallOption()...)
+	log.Debugf("%#v", err)
 	if err != nil {
 		st, msg, err := status.ParseError(err, codes.Internal,
 			"failed to parse "+vald.GetObjectRPCName+" gRPC error response",
@@ -2787,6 +2788,7 @@ func (s *server) getObject(ctx context.Context, client vald.ObjectClient, req *p
 
 	ovec, err = client.GetObject(ctx, req, opts...)
 	if err != nil {
+		log.Debugf("%#v", err)
 		reqInfo := &errdetails.RequestInfo{
 			RequestId:   req.GetId().GetId(),
 			ServingData: errdetails.Serialize(req),
