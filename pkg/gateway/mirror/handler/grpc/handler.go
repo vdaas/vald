@@ -2789,7 +2789,7 @@ func (s *server) getObject(ctx context.Context, client vald.ObjectClient, req *p
 
 	ovec, err = client.GetObject(ctx, req, opts...)
 	if err != nil {
-		log.Debugf("%#v", err)
+		log.Debug(err.Error())
 		reqInfo := &errdetails.RequestInfo{
 			RequestId:   req.GetId().GetId(),
 			ServingData: errdetails.Serialize(req),
@@ -2829,11 +2829,11 @@ func (s *server) getObject(ctx context.Context, client vald.ObjectClient, req *p
 				st  *status.Status
 				msg string
 			)
-			log.Debugf("%#v", err)
+			log.Debugf("%s", err.Error())
 			st, msg, err = status.ParseError(err, codes.Internal,
 				"failed to parse "+vald.GetObjectRPCName+" gRPC error response", reqInfo, resInfo,
 			)
-			log.Debugf("code: %#v, msg: %s, err: %#v", st, msg, err)
+			log.Debugf("code: %#v, msg: %s, err: %s", st, msg, err.Error())
 			attrs = trace.FromGRPCStatus(st.Code(), msg)
 			code = st.Code()
 		}
