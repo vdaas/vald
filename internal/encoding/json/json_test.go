@@ -18,6 +18,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/vdaas/vald/internal/conv"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/io"
 )
@@ -191,7 +192,7 @@ func TestMarshalIndent(t *testing.T) {
 				}
 
 				if got, want := data, []byte("{\n\"name\": \"vald\"\n}"); !reflect.DeepEqual(got, want) {
-					return errors.Errorf("data not equals. want: %v, got: %v", string(want), string(got))
+					return errors.Errorf("data not equals. want: %v, got: %v", conv.Btoa(want), conv.Btoa(got))
 				}
 
 				return nil

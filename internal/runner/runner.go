@@ -24,6 +24,7 @@ import (
 	"syscall"
 
 	"github.com/vdaas/vald/internal/config"
+	"github.com/vdaas/vald/internal/conv"
 	"github.com/vdaas/vald/internal/encoding/json"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
@@ -102,13 +103,13 @@ func Do(ctx context.Context, opts ...Option) error {
 			if err != nil {
 				return "failed to serialize build information"
 			}
-			return string(b)
+			return conv.Btoa(b)
 		}(), func() string {
 			b, err := json.Marshal(cfg)
 			if err != nil {
 				return "failed to serialize configuration"
 			}
-			return string(b)
+			return conv.Btoa(b)
 		}())
 
 	// set location temporary for initialization logging

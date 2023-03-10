@@ -34,6 +34,7 @@ import (
 	"github.com/vdaas/vald/internal/cache"
 	"github.com/vdaas/vald/internal/cache/cacher"
 	"github.com/vdaas/vald/internal/cache/gache"
+	"github.com/vdaas/vald/internal/conv"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/io"
 	"github.com/vdaas/vald/internal/strings"
@@ -1165,8 +1166,11 @@ func Test_dialer_cachedDialer(t *testing.T) {
 
 						// read the output from the server and check if it is equals to the count
 						fmt.Fprintf(gotConn, "GET / HTTP/1.0\r\n\r\n")
-						buf, _ := io.ReadAll(gotConn)
-						content := strings.Split(string(buf), "\n")[5] // skip HTTP header
+						buf, err := io.ReadAll(gotConn)
+						if err != nil || buf == nil {
+							return errors.Errorf("error or buffer is nil,\terror: %v, buf: %v", err, buf)
+						}
+						content := strings.Split(conv.Btoa(buf), "\n")[5] // skip HTTP header
 						if content != srvContent {
 							return errors.Errorf("excepted output from server, got: %v, want: %v", content, srvContent)
 						}

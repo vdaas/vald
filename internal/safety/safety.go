@@ -21,6 +21,7 @@ import (
 	"runtime"
 	"runtime/debug"
 
+	"github.com/vdaas/vald/internal/conv"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/info"
 	"github.com/vdaas/vald/internal/log"
@@ -38,7 +39,7 @@ func recoverFn(fn func() error, withPanic bool) func() error {
 	return func() (err error) {
 		defer func() {
 			if r := recover(); r != nil {
-				stack := string(debug.Stack())
+				stack := conv.Btoa(debug.Stack())
 				log.Warnf("recovered: %#v\nstacktrace:\n%s", r, stack)
 				switch x := r.(type) {
 				case runtime.Error:

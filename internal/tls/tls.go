@@ -107,7 +107,7 @@ func NewClientConfig(opts ...Option) (*Config, error) {
 // The CertPool will read the certificate from the path, and append the content to the system certificate pool, and return.
 func NewX509CertPool(path string) (pool *x509.CertPool, err error) {
 	c, err := file.ReadFile(path)
-	if err != nil {
+	if err != nil || c == nil {
 		return nil, err
 	}
 	if err == nil && c != nil {

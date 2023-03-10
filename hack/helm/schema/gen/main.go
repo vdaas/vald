@@ -24,6 +24,7 @@ import (
 	"os"
 	"regexp"
 
+	"github.com/vdaas/vald/internal/conv"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/strings"
@@ -179,7 +180,7 @@ func genJSONSchema(path string) error {
 		return errors.Errorf("error: %s", err)
 	}
 
-	fmt.Println(string(json))
+	fmt.Println(conv.Btoa(json))
 
 	return nil
 }
