@@ -62,7 +62,7 @@ func (uo *urlOpener) URLOpener(ctx context.Context) (guo *gcsblob.URLOpener, err
 	switch {
 	case len(uo.credentialsFilePath) != 0:
 		data, err := file.ReadFile(uo.credentialsFilePath)
-		if err != nil {
+		if err != nil || data == nil {
 			return nil, err
 		}
 		creds, err = google.CredentialsFromJSON(ctx, data, scope)

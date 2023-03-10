@@ -99,7 +99,7 @@ func GetActualValue(val string) (res string) {
 	res = os.ExpandEnv(val)
 	if strings.HasPrefix(res, fileValuePrefix) {
 		body, err := file.ReadFile(strings.TrimPrefix(res, fileValuePrefix))
-		if err != nil {
+		if err != nil || body == nil {
 			return
 		}
 		res = conv.Btoa(body)

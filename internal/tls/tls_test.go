@@ -24,6 +24,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/vdaas/vald/internal/conv"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/file"
 	testdata "github.com/vdaas/vald/internal/test"
@@ -93,8 +94,8 @@ func TestNew(t *testing.T) {
 					return errors.New("Certificates length is wrong")
 				}
 
-				want := string(w.want.Certificates[0].Certificate[0])
-				got := string(c.Certificates[0].Certificate[0])
+				want := conv.Btoa(w.want.Certificates[0].Certificate[0])
+				got := conv.Btoa(c.Certificates[0].Certificate[0])
 				if want != got {
 					return errors.Errorf("Certificates[0] want: %v, but got: %v", want, got)
 				}
@@ -341,7 +342,7 @@ func TestNewX509CertPool(t *testing.T) {
 						pool = x509.NewCertPool()
 					}
 					b, err := file.ReadFile(path)
-					if err == nil {
+					if err == nil && b != nil {
 						pool.AppendCertsFromPEM(b)
 					}
 					return pool

@@ -5,7 +5,7 @@ go 1.20
 replace (
 	github.com/envoyproxy/protoc-gen-validate => github.com/envoyproxy/protoc-gen-validate v0.9.1
 	github.com/goccy/go-json => github.com/goccy/go-json v0.10.0
-	github.com/golang/protobuf => github.com/golang/protobuf v1.5.2
+	github.com/golang/protobuf => github.com/golang/protobuf v1.5.3
 	github.com/kpango/glg => github.com/kpango/glg v1.6.14
 	github.com/pkg/sftp => github.com/pkg/sftp v1.13.5
 	golang.org/x/crypto => golang.org/x/crypto v0.7.0
@@ -13,7 +13,7 @@ replace (
 	golang.org/x/text => golang.org/x/text v0.8.0
 	google.golang.org/genproto => google.golang.org/genproto v0.0.0-20230306155012-7f2fa6fef1f4
 	google.golang.org/grpc => google.golang.org/grpc v1.53.0
-	google.golang.org/protobuf => google.golang.org/protobuf v1.28.1
+	google.golang.org/protobuf => google.golang.org/protobuf v1.29.0
 	gopkg.in/yaml.v2 => gopkg.in/yaml.v2 v2.4.0
 	gopkg.in/yaml.v3 => gopkg.in/yaml.v3 v3.0.1
 )
