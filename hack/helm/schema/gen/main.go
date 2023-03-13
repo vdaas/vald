@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import (
 	"os"
 	"regexp"
 
+	"github.com/vdaas/vald/internal/conv"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/strings"
@@ -116,6 +117,7 @@ func genJSONSchema(path string) error {
 	defer func() {
 		err := f.Close()
 		if err != nil {
+			// skipcq: RVV-A0003
 			log.Fatal(err)
 		}
 	}()
@@ -178,7 +180,7 @@ func genJSONSchema(path string) error {
 		return errors.Errorf("error: %s", err)
 	}
 
-	fmt.Println(string(json))
+	fmt.Println(conv.Btoa(json))
 
 	return nil
 }

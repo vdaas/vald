@@ -92,6 +92,7 @@ Remove RPC is the method to remove a single vector.
 | code | desc.             |
 | :--: | :---------------- |
 |  0   | OK                |
+|  1   | CANCELLED         |
 |  3   | INVALID_ARGUMENT  |
 |  4   | DEADLINE_EXCEEDED |
 |  5   | NOT_FOUND         |
@@ -197,6 +198,7 @@ It's the recommended method to remove a large number of vectors.
 | code | desc.             |
 | :--: | :---------------- |
 |  0   | OK                |
+|  1   | CANCELLED         |
 |  3   | INVALID_ARGUMENT  |
 |  4   | DEADLINE_EXCEEDED |
 |  5   | NOT_FOUND         |
@@ -300,6 +302,7 @@ Please be careful that the size of the request exceeds the limit.
 | code | desc.             |
 | :--: | :---------------- |
 |  0   | OK                |
+|  1   | CANCELLED         |
 |  3   | INVALID_ARGUMENT  |
 |  4   | DEADLINE_EXCEEDED |
 |  5   | NOT_FOUND         |

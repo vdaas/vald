@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log/format"
 	"github.com/vdaas/vald/internal/log/level"
+	log "github.com/vdaas/vald/internal/log/logger"
 	"github.com/vdaas/vald/internal/test/goleak"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -37,11 +38,11 @@ func TestNew(t *testing.T) {
 		name       string
 		args       args
 		want       want
-		checkFunc  func(want, *logger, error) error
+		checkFunc  func(want, log.Logger, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, got *logger, err error) error {
+	defaultCheckFunc := func(w want, got log.Logger, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
@@ -58,7 +59,7 @@ func TestNew(t *testing.T) {
 				name: "return new logger instance correctly",
 				args: args{
 					opts: []Option{
-						func(l *logger) {
+						func(*logger) {
 							called = true
 						},
 					},
@@ -67,7 +68,7 @@ func TestNew(t *testing.T) {
 					want: &logger{},
 					err:  nil,
 				},
-				checkFunc: func(w want, got *logger, err error) error {
+				checkFunc: func(w want, got log.Logger, err error) error {
 					if !called {
 						return errors.New("Option function is not applied")
 					}
@@ -404,12 +405,12 @@ func Test_toZapEncoder(t *testing.T) {
 		return nil
 	}
 	consoleEnc := zapcore.NewConsoleEncoder(zap.NewDevelopmentEncoderConfig())
-	zapcore_NewConsoleEncoder = func(_ zapcore.EncoderConfig) zapcore.Encoder {
+	zapcore_NewConsoleEncoder = func(zapcore.EncoderConfig) zapcore.Encoder {
 		return consoleEnc
 	}
 
 	jsonEnc := zapcore.NewJSONEncoder(zap.NewDevelopmentEncoderConfig())
-	zapcore_NewJSONEncoder = func(_ zapcore.EncoderConfig) zapcore.Encoder {
+	zapcore_NewJSONEncoder = func(zapcore.EncoderConfig) zapcore.Encoder {
 		return jsonEnc
 	}
 
@@ -1102,8 +1103,10 @@ func Test_logger_Fatal(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			// skipcq: SCC-SA4006
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
+				// skipcq: SCC-SA4006
 				checkFunc = defaultCheckFunc
 			}
 			l := &logger{
@@ -1176,8 +1179,10 @@ func Test_logger_Fatalf(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			// skipcq: SCC-SA4006
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
+				// skipcq: SCC-SA4006
 				checkFunc = defaultCheckFunc
 			}
 			l := &logger{
@@ -1651,8 +1656,10 @@ func Test_logger_Fatald(t *testing.T) {
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
 			}
+			// skipcq: SCC-SA4006
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
+				// skipcq: SCC-SA4006
 				checkFunc = defaultCheckFunc
 			}
 			l := &logger{
@@ -1665,99 +1672,6 @@ func Test_logger_Fatald(t *testing.T) {
 
 			l.Fatald(test.args.msg, test.args.details...)
 			if err := checkFunc(test.want); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
-
-func Test_logger_Close(t *testing.T) {
-	t.Parallel()
-	type fields struct {
-		format       format.Format
-		level        level.Level
-		enableCaller bool
-		logger       *zap.Logger
-		sugar        *zap.SugaredLogger
-	}
-	type want struct {
-		err error
-	}
-	type test struct {
-		name       string
-		fields     fields
-		want       want
-		checkFunc  func(want, error) error
-		beforeFunc func()
-		afterFunc  func()
-	}
-	defaultCheckFunc := func(w want, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           format: nil,
-		           level: nil,
-		           enableCaller: false,
-		           logger: nil,
-		           sugar: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           format: nil,
-		           level: nil,
-		           enableCaller: false,
-		           logger: nil,
-		           sugar: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-			if test.beforeFunc != nil {
-				test.beforeFunc()
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc()
-			}
-			checkFunc := test.checkFunc
-			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
-			}
-			l := &logger{
-				format:       test.fields.format,
-				level:        test.fields.level,
-				enableCaller: test.fields.enableCaller,
-				logger:       test.fields.logger,
-				sugar:        test.fields.sugar,
-			}
-
-			err := l.Close()
-			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

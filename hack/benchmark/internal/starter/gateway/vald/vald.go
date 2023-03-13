@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ func New(opts ...Option) starter.Starter {
 	return srv
 }
 
-func (s *server) Run(ctx context.Context, tb testing.TB) func() {
+func (*server) Run(_ context.Context, tb testing.TB) func() {
 	tb.Helper()
 
 	// TODO (@hlts2): Make when divided gateway.

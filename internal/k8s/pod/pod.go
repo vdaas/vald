@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -75,7 +75,7 @@ func (r *reconciler) addListOpts(opt client.ListOption) {
 	r.lopts = append(r.lopts, opt)
 }
 
-func (r *reconciler) Reconcile(ctx context.Context, req reconcile.Request) (res reconcile.Result, err error) {
+func (r *reconciler) Reconcile(ctx context.Context, _ reconcile.Request) (res reconcile.Result, err error) {
 	ps := &corev1.PodList{}
 
 	if r.lopts != nil {
@@ -181,15 +181,15 @@ func (r *reconciler) NewReconciler(ctx context.Context, mgr manager.Manager) rec
 	return r
 }
 
-func (r *reconciler) For() (client.Object, []builder.ForOption) {
+func (*reconciler) For() (client.Object, []builder.ForOption) {
 	return new(corev1.Pod), nil
 }
 
-func (r *reconciler) Owns() (client.Object, []builder.OwnsOption) {
+func (*reconciler) Owns() (client.Object, []builder.OwnsOption) {
 	return nil, nil
 }
 
-func (r *reconciler) Watches() (*source.Kind, handler.EventHandler, []builder.WatchesOption) {
+func (*reconciler) Watches() (*source.Kind, handler.EventHandler, []builder.WatchesOption) {
 	// return &source.Kind{Type: new(corev1.Pod)}, &handler.EnqueueRequestForObject{}
 	return nil, nil, nil
 }

@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,30 +23,26 @@ var (
 		return Errorf("consistetncy type %q is not defined", consistency)
 	}
 
-	// NewErrCassandraNotFoundIdentity represents a function to generate an error of cassandra entry not found.
-	NewErrCassandraNotFoundIdentity = func() error {
-		return &ErrCassandraNotFoundIdentity{
-			err: New("cassandra entry not found"),
-		}
+	// ErrCassandraNotFoundIdentity generates an error of cassandra entry not found.
+	ErrCassandraNotFoundIdentity = &CassandraNotFoundIdentityError{
+		err: New("cassandra entry not found"),
 	}
 
-	// NewErrCassandraUnavailableIdentity represents a function to generate an error of cassandra unavailable.
-	NewErrCassandraUnavailableIdentity = func() error {
-		return &ErrCassandraUnavailableIdentity{
-			err: New("cassandra unavailable"),
-		}
+	// ErrCassandraUnavailableIdentity generates an error of cassandra unavailable.
+	ErrCassandraUnavailableIdentity = &CassandraUnavailableIdentityError{
+		err: New("cassandra unavailable"),
 	}
 
 	// ErrCassandraUnavailable represents NewErrCassandraUnavailableIdentity.
-	ErrCassandraUnavailable = NewErrCassandraUnavailableIdentity
+	ErrCassandraUnavailable = ErrCassandraUnavailableIdentity
 
 	// ErrCassandraNotFound represents a function to generate an error of cassandra keys not found.
 	ErrCassandraNotFound = func(keys ...string) error {
 		switch {
 		case len(keys) == 1:
-			return Wrapf(NewErrCassandraNotFoundIdentity(), "cassandra key '%s' not found", keys[0])
+			return Wrapf(ErrCassandraNotFoundIdentity, "cassandra key '%s' not found", keys[0])
 		case len(keys) > 1:
-			return Wrapf(NewErrCassandraNotFoundIdentity(), "cassandra keys '%v' not found", keys)
+			return Wrapf(ErrCassandraNotFoundIdentity, "cassandra keys '%v' not found", keys)
 		default:
 			return nil
 		}
@@ -76,44 +72,44 @@ var (
 	}
 )
 
-// ErrCassandraNotFoundIdentity represents custom error for cassandra not found.
-type ErrCassandraNotFoundIdentity struct {
+// CassandraNotFoundIdentityError represents custom error for cassandra not found.
+type CassandraNotFoundIdentityError struct {
 	err error
 }
 
 // Error returns string of internal error.
-func (e *ErrCassandraNotFoundIdentity) Error() string {
+func (e *CassandraNotFoundIdentityError) Error() string {
 	return e.err.Error()
 }
 
 // Unwrap returns an internal error.
-func (e *ErrCassandraNotFoundIdentity) Unwrap() error {
+func (e *CassandraNotFoundIdentityError) Unwrap() error {
 	return e.err
 }
 
-// IsErrCassandraNotFound reports whether any error in err's chain matches ErrCassandraNotFound.
-func IsErrCassandraNotFound(err error) bool {
-	target := new(ErrCassandraNotFoundIdentity)
+// IsCassandraNotFoundError reports whether any error in err's chain matches CassandraNotFoundError.
+func IsCassandraNotFoundError(err error) bool {
+	target := new(CassandraNotFoundIdentityError)
 	return As(err, &target)
 }
 
-// ErrCassandraUnavailableIdentity represents custom error for cassandra unavailable.
-type ErrCassandraUnavailableIdentity struct {
+// CassandraUnavailableIdentityError represents custom error for cassandra unavailable.
+type CassandraUnavailableIdentityError struct {
 	err error
 }
 
 // Error returns string of internal error.
-func (e *ErrCassandraUnavailableIdentity) Error() string {
+func (e *CassandraUnavailableIdentityError) Error() string {
 	return e.err.Error()
 }
 
 // Unwrap returns internal error.
-func (e *ErrCassandraUnavailableIdentity) Unwrap() error {
+func (e *CassandraUnavailableIdentityError) Unwrap() error {
 	return e.err
 }
 
-// IsErrCassandraUnavailable reports whether any error in err's chain matches ErrCassandraUnavailableIdentity.
-func IsErrCassandraUnavailable(err error) bool {
-	target := new(ErrCassandraUnavailableIdentity)
+// IsCassandraUnavailableError reports whether any error in err's chain matches CassandraUnavailableIdentityError.
+func IsCassandraUnavailableError(err error) bool {
+	target := new(CassandraUnavailableIdentityError)
 	return As(err, &target)
 }

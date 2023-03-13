@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -48,7 +48,7 @@ func New() Group {
 // It makes sure only one execution of the function for each given key.
 // If duplicate comes, the duplicated call with the same key will wait for the first caller return.
 // It returns the result and the error of the given function, and whether the result is shared from the first caller.
-func (g *group) Do(ctx context.Context, key string, fn func() (interface{}, error)) (v interface{}, shared bool, err error) {
+func (g *group) Do(_ context.Context, key string, fn func() (interface{}, error)) (v interface{}, shared bool, err error) {
 	actual, loaded := g.m.LoadOrStore(key, new(call))
 	c := actual.(*call)
 	if loaded {

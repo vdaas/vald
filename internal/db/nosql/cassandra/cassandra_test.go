@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -80,7 +80,7 @@ var clientComparatorOpts = []comparator.Option{
 		return reflect.ValueOf(x).Pointer() == reflect.ValueOf(y).Pointer()
 	}),
 
-	comparator.Comparer(func(x, y tls.Config) bool {
+	comparator.Comparer(func(x, y *tls.Config) bool {
 		return reflect.DeepEqual(x, y)
 	}),
 }
@@ -2219,7 +2219,7 @@ func TestWrapErrorWithKeys(t *testing.T) {
 				err: ErrUnavailable,
 			},
 			want: want{
-				err: errors.ErrCassandraUnavailable(),
+				err: errors.ErrCassandraUnavailable,
 			},
 		},
 		{

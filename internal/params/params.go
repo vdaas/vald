@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -37,6 +37,11 @@ type data struct {
 	showVersion    bool
 }
 
+// Parser is an interface to parse commnad-line argument.
+type Parser interface {
+	Parse() (Data, bool, error)
+}
+
 type parser struct {
 	filePath struct {
 		keys        []string
@@ -51,7 +56,7 @@ type parser struct {
 }
 
 // New returns parser object.
-func New(opts ...Option) *parser {
+func New(opts ...Option) Parser {
 	p := new(parser)
 	for _, opt := range append(defaultOptions, opts...) {
 		opt(p)

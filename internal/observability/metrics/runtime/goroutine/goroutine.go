@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ func New() metrics.Metric {
 	return &goroutine{}
 }
 
-func (g *goroutine) View() ([]*metrics.View, error) {
+func (*goroutine) View() ([]*metrics.View, error) {
 	count, err := view.New(
 		view.MatchInstrumentName(metricsName),
 		view.WithSetDescription(metricsDescription),
@@ -48,7 +48,7 @@ func (g *goroutine) View() ([]*metrics.View, error) {
 	}, nil
 }
 
-func (g *goroutine) Register(m metrics.Meter) error {
+func (*goroutine) Register(m metrics.Meter) error {
 	conter, err := m.AsyncInt64().Gauge(
 		metricsName,
 		metrics.WithDescription(metricsDescription),

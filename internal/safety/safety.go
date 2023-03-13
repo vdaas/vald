@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -21,24 +21,25 @@ import (
 	"runtime"
 	"runtime/debug"
 
+	"github.com/vdaas/vald/internal/conv"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/info"
 	"github.com/vdaas/vald/internal/log"
 )
 
 func RecoverFunc(fn func() error) func() error {
-	return recoverFunc(fn, true)
+	return recoverFn(fn, true)
 }
 
 func RecoverWithoutPanicFunc(fn func() error) func() error {
-	return recoverFunc(fn, false)
+	return recoverFn(fn, false)
 }
 
-func recoverFunc(fn func() error, withPanic bool) func() error {
+func recoverFn(fn func() error, withPanic bool) func() error {
 	return func() (err error) {
 		defer func() {
 			if r := recover(); r != nil {
-				stack := string(debug.Stack())
+				stack := conv.Btoa(debug.Stack())
 				log.Warnf("recovered: %#v\nstacktrace:\n%s", r, stack)
 				switch x := r.(type) {
 				case runtime.Error:

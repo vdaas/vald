@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -40,7 +40,7 @@ func New() metrics.Metric {
 	}
 }
 
-func (bm *breakerMetrics) View() ([]*metrics.View, error) {
+func (*breakerMetrics) View() ([]*metrics.View, error) {
 	breakerState, err := view.New(
 		view.MatchInstrumentName(metricsName),
 		view.WithSetDescription(metricsDescription),
@@ -71,15 +71,15 @@ func (bm *breakerMetrics) Register(m metrics.Meter) error {
 		},
 		func(ctx context.Context) {
 			ms := circuitbreaker.Metrics(ctx)
-			if len(ms) == 0 {
-				return
-			}
-			for name, sts := range ms {
-				for st, cnt := range sts {
-					breakerState.Observe(ctx, cnt,
-						attribute.String(bm.breakerNameKey, name),
-						attribute.String(bm.stateKey, st.String()),
-					)
+			if len(ms) != 0 {
+				for name, sts := range ms {
+					if len(sts) != 0 {
+						for st, cnt := range sts {
+							breakerState.Observe(ctx, cnt,
+								attribute.String(bm.breakerNameKey, name),
+								attribute.String(bm.stateKey, st.String()))
+						}
+					}
 				}
 			}
 		},

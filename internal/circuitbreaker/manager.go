@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -109,16 +109,20 @@ func (bm *breakerManager) Do(ctx context.Context, key string, fn func(ctx contex
 	return val, nil
 }
 
-func Metrics(_ context.Context) map[string]map[State]int64 {
+func Metrics(context.Context) (ms map[string]map[State]int64) {
 	mu.RLock()
 	defer mu.RUnlock()
 
 	if len(metrics) == 0 {
 		return nil
 	}
-	m := make(map[string]map[State]int64, len(metrics))
-	for name, sts := range metrics {
-		m[name] = sts
+	ms = make(map[string]map[State]int64, len(metrics))
+	for name, state := range metrics {
+		sts := make(map[State]int64, len(state))
+		for st, cnt := range state {
+			sts[st] = cnt
+		}
+		ms[name] = sts
 	}
-	return m
+	return ms
 }

@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -50,8 +50,8 @@ func TestString(t *testing.T) {
 		name       string
 		want       want
 		checkFunc  func(want, string) error
-		beforeFunc func()
-		afterFunc  func()
+		beforeFunc func(*testing.T)
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want, got string) error {
 		if got != w.want {
@@ -62,13 +62,15 @@ func TestString(t *testing.T) {
 	tests := []test{
 		{
 			name: "return correct string with no stack trace initialized",
-			beforeFunc: func() {
+			beforeFunc: func(t *testing.T) {
+				t.Helper()
 				infoProvider, _ = New(WithServerName(""),
 					WithRuntimeCaller(func(skip int) (pc uintptr, file string, line int, ok bool) {
 						return uintptr(0), "", 0, false
 					}))
 			},
-			afterFunc: func() {
+			afterFunc: func(t *testing.T) {
+				t.Helper()
 				once = sync.Once{}
 				infoProvider = nil
 			},
@@ -79,14 +81,16 @@ func TestString(t *testing.T) {
 
 		{
 			name: "return correct string with no information initialized",
-			beforeFunc: func() {
+			beforeFunc: func(t *testing.T) {
+				t.Helper()
 				infoProvider = &info{
 					rtCaller: func(skip int) (pc uintptr, file string, line int, ok bool) {
 						return uintptr(0), "", 0, false
 					},
 				}
 			},
-			afterFunc: func() {
+			afterFunc: func(t *testing.T) {
+				t.Helper()
 				once = sync.Once{}
 				infoProvider = nil
 			},
@@ -100,10 +104,10 @@ func TestString(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(tt)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -126,8 +130,8 @@ func TestGet(t *testing.T) {
 		name       string
 		want       want
 		checkFunc  func(want, Detail) error
-		beforeFunc func()
-		afterFunc  func()
+		beforeFunc func(*testing.T)
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want, got Detail) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -138,12 +142,14 @@ func TestGet(t *testing.T) {
 	tests := []test{
 		{
 			name: "return detail with initialized runtime information",
-			beforeFunc: func() {
+			beforeFunc: func(t *testing.T) {
+				t.Helper()
 				infoProvider, _ = New(WithServerName(""), WithRuntimeCaller(func(skip int) (pc uintptr, file string, line int, ok bool) {
 					return uintptr(0), "", 0, false
 				}))
 			},
-			afterFunc: func() {
+			afterFunc: func(t *testing.T) {
+				t.Helper()
 				once = sync.Once{}
 				infoProvider = nil
 			},
@@ -170,10 +176,10 @@ func TestGet(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -200,13 +206,15 @@ func TestInit(t *testing.T) {
 		args       args
 		want       want
 		checkFunc  func(want, Info) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, got Info) error {
 		opts := []comparator.Option{
 			comparator.AllowUnexported(info{}),
+			// skipcq: VET-V0008
 			comparator.Comparer(func(x, y sync.Once) bool {
+				// skipcq: VET-V0008
 				return reflect.DeepEqual(x, y)
 			}),
 			comparator.Comparer(func(x, y func(skip int) (pc uintptr, file string, line int, ok bool)) bool {
@@ -261,7 +269,8 @@ func TestInit(t *testing.T) {
 					}(),
 				},
 			},
-			beforeFunc: func(args) {
+			beforeFunc: func(t *testing.T, _ args) {
+				t.Helper()
 				GitCommit = "gitcommit"
 				Version = ""
 				BuildTime = "1s"
@@ -269,7 +278,8 @@ func TestInit(t *testing.T) {
 				NGTVersion = "v1.11.6"
 				BuildCPUInfoFlags = "\t\tavx512f avx512dq\t"
 			},
-			afterFunc: func(args) {
+			afterFunc: func(t *testing.T, _ args) {
+				t.Helper()
 				once = sync.Once{}
 				infoProvider = nil
 
@@ -313,7 +323,8 @@ func TestInit(t *testing.T) {
 					}(),
 				},
 			},
-			beforeFunc: func(args) {
+			beforeFunc: func(t *testing.T, _ args) {
+				t.Helper()
 				GitCommit = "gitcommit"
 				Version = ""
 				BuildTime = "1s"
@@ -321,7 +332,8 @@ func TestInit(t *testing.T) {
 				NGTVersion = "v1.11.6"
 				BuildCPUInfoFlags = "\t\tavx512f avx512dq\t"
 			},
-			afterFunc: func(args) {
+			afterFunc: func(t *testing.T, _ args) {
+				t.Helper()
 				once = sync.Once{}
 				infoProvider = nil
 
@@ -339,10 +351,10 @@ func TestInit(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -371,7 +383,7 @@ func TestNew(t *testing.T) {
 		want       want
 		checkFunc  func(want, Info, error) error
 		beforeFunc func(args)
-		afterFunc  func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, got Info, err error) error {
 		if !errors.Is(err, w.err) {
@@ -379,7 +391,9 @@ func TestNew(t *testing.T) {
 		}
 		opts := []comparator.Option{
 			comparator.AllowUnexported(info{}),
+			// skipcq: VET-V0008
 			comparator.Comparer(func(x, y sync.Once) bool {
+				// skipcq: VET-V0008
 				return reflect.DeepEqual(x, y)
 			}),
 			comparator.Comparer(func(x, y func(skip int) (pc uintptr, file string, line int, ok bool)) bool {
@@ -553,7 +567,7 @@ func TestNew(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -571,7 +585,6 @@ func TestNew(t *testing.T) {
 func Test_info_String(t *testing.T) {
 	type fields struct {
 		detail      Detail
-		prepOnce    sync.Once
 		rtCaller    func(skip int) (pc uintptr, file string, line int, ok bool)
 		rtFuncForPC func(pc uintptr) *runtime.Func
 	}
@@ -584,7 +597,7 @@ func Test_info_String(t *testing.T) {
 		want       want
 		checkFunc  func(want, string) error
 		beforeFunc func()
-		afterFunc  func()
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want, got string) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -657,7 +670,7 @@ func Test_info_String(t *testing.T) {
 				test.beforeFunc()
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -665,7 +678,6 @@ func Test_info_String(t *testing.T) {
 			}
 			i := info{
 				detail:      test.fields.detail,
-				prepOnce:    test.fields.prepOnce,
 				rtCaller:    test.fields.rtCaller,
 				rtFuncForPC: test.fields.rtFuncForPC,
 			}
@@ -701,7 +713,7 @@ func TestDetail_String(t *testing.T) {
 		want       want
 		checkFunc  func(want, string) error
 		beforeFunc func()
-		afterFunc  func()
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want, got string) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -765,7 +777,7 @@ func TestDetail_String(t *testing.T) {
 				test.beforeFunc()
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -796,7 +808,6 @@ func TestDetail_String(t *testing.T) {
 func Test_info_Get(t *testing.T) {
 	type fields struct {
 		detail      Detail
-		prepOnce    sync.Once
 		rtCaller    func(skip int) (pc uintptr, file string, line int, ok bool)
 		rtFuncForPC func(pc uintptr) *runtime.Func
 	}
@@ -809,7 +820,7 @@ func Test_info_Get(t *testing.T) {
 		want       want
 		checkFunc  func(want, Detail) error
 		beforeFunc func()
-		afterFunc  func()
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want, got Detail) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -1129,7 +1140,7 @@ func Test_info_Get(t *testing.T) {
 				test.beforeFunc()
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -1137,7 +1148,6 @@ func Test_info_Get(t *testing.T) {
 			}
 			i := info{
 				detail:      test.fields.detail,
-				prepOnce:    test.fields.prepOnce,
 				rtCaller:    test.fields.rtCaller,
 				rtFuncForPC: test.fields.rtFuncForPC,
 			}
@@ -1153,7 +1163,6 @@ func Test_info_Get(t *testing.T) {
 func Test_info_prepare(t *testing.T) {
 	type fields struct {
 		detail      Detail
-		prepOnce    sync.Once
 		rtCaller    func(skip int) (pc uintptr, file string, line int, ok bool)
 		rtFuncForPC func(pc uintptr) *runtime.Func
 	}
@@ -1166,19 +1175,21 @@ func Test_info_prepare(t *testing.T) {
 		want       want
 		checkFunc  func(info, want) error
 		beforeFunc func()
-		afterFunc  func()
+		afterFunc  func(*testing.T)
 	}
+	// skipcq: VET-V0008
 	defaultCheckFunc := func(got info, w want) error {
 		opts := []comparator.Option{
 			comparator.AllowUnexported(info{}),
 			comparator.IgnoreFields(info{}, "prepOnce"),
 		}
+		// skipcq: VET-V0008
 		if diff := comparator.Diff(w.want, got, opts...); len(diff) != 0 {
 			return errors.Errorf("err: %s", diff)
 		}
 		return nil
 	}
-	tests := []test{
+	tests := []*test{
 		{
 			name: "set success with all fields are empty",
 			want: want{
@@ -1471,15 +1482,15 @@ func Test_info_prepare(t *testing.T) {
 		},
 	}
 
-	for _, tc := range tests {
-		test := tc
+	for i := range tests {
+		test := tests[i]
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -1487,11 +1498,9 @@ func Test_info_prepare(t *testing.T) {
 			}
 			i := &info{
 				detail:      test.fields.detail,
-				prepOnce:    test.fields.prepOnce,
 				rtCaller:    test.fields.rtCaller,
 				rtFuncForPC: test.fields.rtFuncForPC,
 			}
-
 			i.prepare()
 			if err := checkFunc(*i, test.want); err != nil {
 				tt.Errorf("error = %v", err)
@@ -1516,7 +1525,7 @@ func TestStackTrace_String(t *testing.T) {
 		want       want
 		checkFunc  func(want, string) error
 		beforeFunc func()
-		afterFunc  func()
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want, got string) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -1547,7 +1556,7 @@ func TestStackTrace_String(t *testing.T) {
 				test.beforeFunc()
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -1561,98 +1570,6 @@ func TestStackTrace_String(t *testing.T) {
 			}
 
 			got := s.String()
-			if err := checkFunc(test.want, got); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
-
-func Test_info_get(t *testing.T) {
-	type fields struct {
-		baseURL     string
-		detail      Detail
-		prepOnce    sync.Once
-		rtCaller    func(skip int) (pc uintptr, file string, line int, ok bool)
-		rtFuncForPC func(pc uintptr) *runtime.Func
-	}
-	type want struct {
-		want Detail
-	}
-	type test struct {
-		name       string
-		fields     fields
-		want       want
-		checkFunc  func(want, Detail) error
-		beforeFunc func()
-		afterFunc  func()
-	}
-	defaultCheckFunc := func(w want, got Detail) error {
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           baseURL: "",
-		           detail: Detail{},
-		           prepOnce: sync.Once{},
-		           rtCaller: nil,
-		           rtFuncForPC: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           baseURL: "",
-		           detail: Detail{},
-		           prepOnce: sync.Once{},
-		           rtCaller: nil,
-		           rtFuncForPC: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-			if test.beforeFunc != nil {
-				test.beforeFunc()
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc()
-			}
-			checkFunc := test.checkFunc
-			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
-			}
-			i := info{
-				baseURL:     test.fields.baseURL,
-				detail:      test.fields.detail,
-				prepOnce:    test.fields.prepOnce,
-				rtCaller:    test.fields.rtCaller,
-				rtFuncForPC: test.fields.rtFuncForPC,
-			}
-
-			got := i.get()
 			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}

@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/singleflight"
 	stdsingleflight "golang.org/x/sync/singleflight"
 )
@@ -261,12 +262,18 @@ func Benchmark_group_Do_with_vald_internal_singleflight(b *testing.B) {
 	}
 }
 
-func toCSV(name string, r []Result) error {
-	f, err := os.OpenFile(name, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, fs.ModePerm)
+func toCSV(name string, r []Result) (err error) {
+	var f *os.File
+	f, err = os.OpenFile(name, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, fs.ModePerm)
 	if err != nil {
 		return err
 	}
-	defer f.Close()
+	defer func() {
+		e := f.Close()
+		if e != nil {
+			err = errors.Wrap(err, e.Error())
+		}
+	}()
 	_, err = fmt.Fprintln(f, "goroutine,duration,hit_rate")
 	if err != nil {
 		return err

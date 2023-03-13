@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,5 +22,5 @@ git/config/init:
 .PHONY: git/hooks/init
 ## add configs for registering pre-defined git hooks
 git/hooks/init:
-	ln -sf ../../hack/git/hooks/pre-commit .git/hooks/pre-commit
-	chmod a+x .git/hooks/pre-commit
+	ln -sf $(ROOTDIR)/hack/git/hooks/pre-commit $(ROOTDIR)/.git/hooks/pre-commit
+	chmod a+x $(ROOTDIR)/.git/hooks/pre-commit

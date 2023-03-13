@@ -3,7 +3,7 @@ Vald
 
 This is a Helm chart to install Vald components.
 
-Current chart version is `v1.6.3`
+Current chart version is `v1.7.3`
 
 Table of Contents
 ---
@@ -294,7 +294,7 @@ Configuration
 | defaults.grpc.client.tls.enabled | bool | `false` | TLS enabled |
 | defaults.grpc.client.tls.insecure_skip_verify | bool | `false` | enable/disable skip SSL certificate verification |
 | defaults.grpc.client.tls.key | string | `"/path/to/key"` | TLS key path |
-| defaults.image.tag | string | `"v1.6.3"` | docker image tag |
+| defaults.image.tag | string | `"v1.7.3"` | docker image tag |
 | defaults.logging.format | string | `"raw"` | logging format. logging format must be `raw` or `json` |
 | defaults.logging.level | string | `"debug"` | logging level. logging level must be `debug`, `info`, `warn`, `error` or `fatal`. |
 | defaults.logging.logger | string | `"glg"` | logger name. currently logger must be `glg` or `zap`. |
@@ -398,7 +398,7 @@ Configuration
 | defaults.server_config.metrics.pprof.server.http.read_header_timeout | string | `"1s"` | pprof server read header timeout |
 | defaults.server_config.metrics.pprof.server.http.read_timeout | string | `"1s"` | pprof server read timeout |
 | defaults.server_config.metrics.pprof.server.http.shutdown_duration | string | `"5s"` | pprof server shutdown duration |
-| defaults.server_config.metrics.pprof.server.http.write_timeout | string | `"1s"` | pprof server write timeout |
+| defaults.server_config.metrics.pprof.server.http.write_timeout | string | `"1m"` | pprof server write timeout |
 | defaults.server_config.metrics.pprof.server.mode | string | `"REST"` | pprof server mode |
 | defaults.server_config.metrics.pprof.server.network | string | `"tcp"` | mysql network |
 | defaults.server_config.metrics.pprof.server.probe_wait_time | string | `"3s"` | pprof server probe wait time |
@@ -646,7 +646,8 @@ Configuration
 | gateway.lb.gateway_config.discoverer.agent_client_options | object | `{}` | gRPC client options for agents (overrides defaults.grpc.client) |
 | gateway.lb.gateway_config.discoverer.client | object | `{}` | gRPC client for discoverer (overrides defaults.grpc.client) |
 | gateway.lb.gateway_config.discoverer.duration | string | `"200ms"` |  |
-| gateway.lb.gateway_config.index_replica | int | `5` | number of index replica |
+| gateway.lb.gateway_config.index_replica | int | `3` | number of index replica |
+| gateway.lb.gateway_config.multi_operation_concurrency | int | `20` | number of concurrency of multiXXX api's operation |
 | gateway.lb.gateway_config.node_name | string | `""` | node name |
 | gateway.lb.hpa.enabled | bool | `true` | HPA enabled |
 | gateway.lb.hpa.targetCPUUtilizationPercentage | int | `80` | HPA CPU utilization percentage |

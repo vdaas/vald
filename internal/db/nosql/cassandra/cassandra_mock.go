@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -39,4 +39,4 @@ func (dm *DialerMock) DialContext(ctx context.Context, network, addr string) (ne
 func (dm *DialerMock) GetDialer() func(ctx context.Context, network, addr string) (net.Conn, error) {
 	return dm.DialContextFunc
 }
-func (dm *DialerMock) StartDialerCache(ctx context.Context) {}
+func (*DialerMock) StartDialerCache(context.Context) {}

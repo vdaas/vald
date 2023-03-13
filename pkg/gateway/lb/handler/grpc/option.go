@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -35,6 +35,7 @@ var defaultOptions = []Option{
 	WithErrGroup(errgroup.Get()),
 	WithReplicationCount(3),
 	WithStreamConcurrency(runtime.GOMAXPROCS(-1) * 10),
+	WithMultiConcurrency(runtime.GOMAXPROCS(-1) * 10),
 	WithTimeout("5s"),
 	WithName(func() string {
 		name, err := os.Hostname()
@@ -100,8 +101,16 @@ func WithReplicationCount(rep int) Option {
 
 func WithStreamConcurrency(c int) Option {
 	return func(s *server) {
-		if c != 0 {
+		if c > 1 {
 			s.streamConcurrency = c
+		}
+	}
+}
+
+func WithMultiConcurrency(c int) Option {
+	return func(s *server) {
+		if c > 1 {
+			s.multiConcurrency = c
 		}
 	}
 }

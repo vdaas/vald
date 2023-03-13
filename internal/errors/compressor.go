@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -40,13 +40,9 @@ var (
 	// ErrDecompressFailed returns an error of decompressing failed.
 	ErrDecompressFailed = New("decompress failed")
 
-	// ErrCompressorRegistererIsNotRunning represents a function to generate an error of compressor registerers is not running.
-	ErrCompressorRegistererIsNotRunning = func() error {
-		return New("compressor registerers is not running")
-	}
+	// ErrCompressorRegistererIsNotRunning generates an error of compressor registerers is not running.
+	ErrCompressorRegistererIsNotRunning = New("compressor registerers is not running")
 
-	// ErrCompressorRegistererChannelIsFull represents a function to generate an error that compressor registerer channel is full.
-	ErrCompressorRegistererChannelIsFull = func() error {
-		return New("compressor registerer channel is full")
-	}
+	// ErrCompressorRegistererChannelIsFull generates an error that compressor registerer channel is full.
+	ErrCompressorRegistererChannelIsFull = New("compressor registerer channel is full")
 )

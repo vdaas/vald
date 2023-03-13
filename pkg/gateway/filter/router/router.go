@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -42,157 +42,157 @@ func New(opts ...Option) http.Handler {
 	return routing.New(
 		routing.WithRoutes([]routing.Route{
 			{
-				"Index",
-				[]string{
+				Name: "Index",
+				Methods: []string{
 					http.MethodGet,
 				},
-				"/",
-				h.Index,
+				Pattern:     "/",
+				HandlerFunc: h.Index,
 			},
 			{
-				"Search",
-				[]string{
+				Name: "Search",
+				Methods: []string{
 					http.MethodPost,
 				},
-				"/search",
-				h.Search,
+				Pattern:     "/search",
+				HandlerFunc: h.Search,
 			},
 			{
-				"Search By ID",
-				[]string{
+				Name: "Search By ID",
+				Methods: []string{
 					http.MethodGet,
 				},
-				"/search/{id}",
-				h.SearchByID,
+				Pattern:     "/search/{id}",
+				HandlerFunc: h.SearchByID,
 			},
 			{
-				"Multi Search",
-				[]string{
+				Name: "Multi Search",
+				Methods: []string{
 					http.MethodPost,
 				},
-				"/search/multi",
-				h.MultiSearch,
+				Pattern:     "/search/multi",
+				HandlerFunc: h.MultiSearch,
 			},
 			{
-				"Multi Search By ID",
-				[]string{
+				Name: "Multi Search By ID",
+				Methods: []string{
 					http.MethodGet,
 				},
-				"/search/multi/{id}",
-				h.MultiSearchByID,
+				Pattern:     "/search/multi/{id}",
+				HandlerFunc: h.MultiSearchByID,
 			},
 			{
-				"Linear_Search",
-				[]string{
+				Name: "Linear_Search",
+				Methods: []string{
 					http.MethodPost,
 				},
-				"/linearsearch",
-				h.LinearSearch,
+				Pattern:     "/linearsearch",
+				HandlerFunc: h.LinearSearch,
 			},
 			{
-				"Linear_Search By ID",
-				[]string{
+				Name: "Linear_Search By ID",
+				Methods: []string{
 					http.MethodGet,
 				},
-				"/linearsearch/{id}",
-				h.SearchByID,
+				Pattern:     "/linearsearch/{id}",
+				HandlerFunc: h.SearchByID,
 			},
 			{
-				"Multi Linear_Search",
-				[]string{
+				Name: "Multi Linear_Search",
+				Methods: []string{
 					http.MethodPost,
 				},
-				"/linearsearch/multi",
-				h.MultiLinearSearch,
+				Pattern:     "/linearsearch/multi",
+				HandlerFunc: h.MultiLinearSearch,
 			},
 			{
-				"Multi Linear_Search By ID",
-				[]string{
+				Name: "Multi Linear_Search By ID",
+				Methods: []string{
 					http.MethodGet,
 				},
-				"/linearsearch/multi/{id}",
-				h.MultiLinearSearchByID,
+				Pattern:     "/linearsearch/multi/{id}",
+				HandlerFunc: h.MultiLinearSearchByID,
 			},
 			{
-				"Insert",
-				[]string{
+				Name: "Insert",
+				Methods: []string{
 					http.MethodPost,
 				},
-				"/insert",
-				h.Insert,
+				Pattern:     "/insert",
+				HandlerFunc: h.Insert,
 			},
 			{
-				"Multiple Insert",
-				[]string{
+				Name: "Multiple Insert",
+				Methods: []string{
 					http.MethodPost,
 				},
-				"/insert/multi",
-				h.MultiInsert,
+				Pattern:     "/insert/multi",
+				HandlerFunc: h.MultiInsert,
 			},
 			{
-				"Update",
-				[]string{
+				Name: "Update",
+				Methods: []string{
 					http.MethodPost,
 					http.MethodPatch,
 					http.MethodPut,
 				},
-				"/update",
-				h.Update,
+				Pattern:     "/update",
+				HandlerFunc: h.Update,
 			},
 			{
-				"Multiple Update",
-				[]string{
+				Name: "Multiple Update",
+				Methods: []string{
 					http.MethodPost,
 					http.MethodPatch,
 					http.MethodPut,
 				},
-				"/update/multi",
-				h.MultiUpdate,
+				Pattern:     "/update/multi",
+				HandlerFunc: h.MultiUpdate,
 			},
 			{
-				"Upsert",
-				[]string{
+				Name: "Upsert",
+				Methods: []string{
 					http.MethodPost,
 					http.MethodPatch,
 					http.MethodPut,
 				},
-				"/upsert",
-				h.Upsert,
+				Pattern:     "/upsert",
+				HandlerFunc: h.Upsert,
 			},
 			{
-				"Multiple Upsert",
-				[]string{
+				Name: "Multiple Upsert",
+				Methods: []string{
 					http.MethodPost,
 					http.MethodPatch,
 					http.MethodPut,
 				},
-				"/upsert/multi",
-				h.MultiUpsert,
+				Pattern:     "/upsert/multi",
+				HandlerFunc: h.MultiUpsert,
 			},
 			{
-				"Remove",
-				[]string{
+				Name: "Remove",
+				Methods: []string{
 					http.MethodDelete,
 				},
-				"/delete/{id}",
-				h.Remove,
+				Pattern:     "/delete/{id}",
+				HandlerFunc: h.Remove,
 			},
 			{
-				"Multiple Remove",
-				[]string{
+				Name: "Multiple Remove",
+				Methods: []string{
 					http.MethodDelete,
 					http.MethodPost,
 				},
-				"/delete/multi",
-				h.MultiRemove,
+				Pattern:     "/delete/multi",
+				HandlerFunc: h.MultiRemove,
 			},
 			{
-				"GetObject",
-				[]string{
+				Name: "GetObject",
+				Methods: []string{
 					http.MethodGet,
 				},
-				"/object/{id}",
-				h.GetObject,
+				Pattern:     "/object/{id}",
+				HandlerFunc: h.GetObject,
 			},
 		}...))
 }

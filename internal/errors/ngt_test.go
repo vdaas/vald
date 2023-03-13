@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,10 +19,7 @@ package errors
 
 import (
 	"math"
-	"reflect"
 	"testing"
-
-	"github.com/vdaas/vald/internal/test/goleak"
 )
 
 func TestErrCreateProperty(t *testing.T) {
@@ -1352,93 +1349,6 @@ func TestErrObjectIDNotFound(t *testing.T) {
 	}
 }
 
-func TestErrObjectNotFound(t *testing.T) {
-	type args struct {
-		err  error
-		uuid string
-	}
-	type want struct {
-		want error
-	}
-	type test struct {
-		name       string
-		args       args
-		want       want
-		checkFunc  func(want, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-	defaultCheckFunc := func(w want, got error) error {
-		if !Is(got, w.want) {
-			return Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-		}
-		return nil
-	}
-	tests := []test{
-		{
-			name: "return a wrapped ErrObjectNotFound error when err is ngt error and uuid is 550e8400-e29b-41d4",
-			args: args{
-				err:  New("ngt error"),
-				uuid: "550e8400-e29b-41d4",
-			},
-			want: want{
-				want: New("ngt uuid 550e8400-e29b-41d4's object not found: ngt error"),
-			},
-		},
-		{
-			name: "return a wrapped ErrObjectNotFound error when err is ngt error and uuid is empty",
-			args: args{
-				err:  New("ngt error"),
-				uuid: "",
-			},
-			want: want{
-				want: New("ngt uuid 's object not found: ngt error"),
-			},
-		},
-		{
-			name: "return an ErrObjectNotFound error when err is nil and uuid is 550e8400-e29b-41d4",
-			args: args{
-				err:  nil,
-				uuid: "550e8400-e29b-41d4",
-			},
-			want: want{
-				want: New("ngt uuid 550e8400-e29b-41d4's object not found"),
-			},
-		},
-		{
-			name: "return an ErrObjectNotFound error when err is nil and uuid is empty",
-			args: args{
-				err:  nil,
-				uuid: "",
-			},
-			want: want{
-				want: New("ngt uuid 's object not found"),
-			},
-		},
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-			checkFunc := test.checkFunc
-			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
-			}
-
-			got := ErrObjectNotFound(test.args.err, test.args.uuid)
-			if err := checkFunc(test.want, got); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
-
 func TestErrRemoveRequestedBeforeIndexing(t *testing.T) {
 	type args struct {
 		oid uint
@@ -1506,153 +1416,6 @@ func TestErrRemoveRequestedBeforeIndexing(t *testing.T) {
 
 			got := ErrRemoveRequestedBeforeIndexing(test.args.oid)
 			if err := checkFunc(test.want, got); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
-
-func TestNewNGTError(t *testing.T) {
-	type args struct {
-		msg string
-	}
-	type want struct {
-		err error
-	}
-	type test struct {
-		name       string
-		args       args
-		want       want
-		checkFunc  func(want, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-	defaultCheckFunc := func(w want, err error) error {
-		if !Is(err, w.err) {
-			return Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           msg: "",
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           msg: "",
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
-
-			err := NewNGTError(test.args.msg)
-			if err := test.checkFunc(test.want, err); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
-
-func TestNGTError_Error(t *testing.T) {
-	type fields struct {
-		Msg string
-	}
-	type want struct {
-		want string
-	}
-	type test struct {
-		name       string
-		fields     fields
-		want       want
-		checkFunc  func(want, string) error
-		beforeFunc func()
-		afterFunc  func()
-	}
-	defaultCheckFunc := func(w want, got string) error {
-		if !reflect.DeepEqual(got, w.want) {
-			return Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       fields: fields {
-		           Msg: "",
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           fields: fields {
-		           Msg: "",
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-			if test.beforeFunc != nil {
-				test.beforeFunc()
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc()
-			}
-			if test.checkFunc == nil {
-				test.checkFunc = defaultCheckFunc
-			}
-			n := NGTError{
-				Msg: test.fields.Msg,
-			}
-
-			got := n.Error()
-			if err := test.checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

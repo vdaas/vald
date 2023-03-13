@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -58,7 +58,7 @@ func New() MetricsHook {
 	}
 }
 
-func (sm *sidecarMetrics) View() ([]*metrics.View, error) {
+func (*sidecarMetrics) View() ([]*metrics.View, error) {
 	uploadTotal, err := view.New(
 		view.MatchInstrumentName(uploadTotalMetricsName),
 		view.WithSetDescription(uploadTotalMetricsDescription),
@@ -152,11 +152,11 @@ func (sm *sidecarMetrics) Register(m metrics.Meter) error {
 	)
 }
 
-func (sm *sidecarMetrics) BeforeProcess(ctx context.Context, info *observer.BackupInfo) (context.Context, error) {
+func (*sidecarMetrics) BeforeProcess(ctx context.Context, _ *observer.BackupInfo) (context.Context, error) {
 	return ctx, nil
 }
 
-func (sm *sidecarMetrics) AfterProcess(ctx context.Context, info *observer.BackupInfo) error {
+func (sm *sidecarMetrics) AfterProcess(_ context.Context, info *observer.BackupInfo) error {
 	sm.mu.Lock()
 	defer sm.mu.Unlock()
 	sm.info = info

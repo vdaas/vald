@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -120,7 +120,7 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 }
 
 // PreStop does nothing.
-func (r *run) PreStop(ctx context.Context) error {
+func (*run) PreStop(ctx context.Context) error {
 	return nil
 }
 
@@ -130,6 +130,6 @@ func (r *run) Stop(ctx context.Context) error {
 }
 
 // PostStop does nothing.
-func (r *run) PostStop(ctx context.Context) error {
+func (*run) PostStop(ctx context.Context) error {
 	return nil
 }

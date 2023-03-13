@@ -1,7 +1,7 @@
 //go:build !race
 
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -86,9 +86,6 @@ func Test_group_Do(t *testing.T) {
 		key string
 		fn  func() (interface{}, error)
 	}
-	type fields struct {
-		m sync.Map
-	}
 	type want struct {
 		wantV      interface{}
 		wantShared bool
@@ -97,7 +94,6 @@ func Test_group_Do(t *testing.T) {
 	type test struct {
 		name       string
 		args       args
-		fields     fields
 		want       want
 		beforeFunc func(args)
 		execFunc   func(*testing.T, *group, args) (interface{}, bool, error)
@@ -278,9 +274,7 @@ func Test_group_Do(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 
-			g := &group{
-				m: test.fields.m,
-			}
+			g := &group{}
 
 			execFunc := defaultExecFunc
 			if test.execFunc != nil {

@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -47,8 +47,8 @@ func TestInit(t *testing.T) {
 		args       args
 		want       want
 		checkFunc  func(want, logger.Logger) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, got logger.Logger) error {
 		if !reflect.DeepEqual(got, l) {
@@ -65,7 +65,8 @@ func TestInit(t *testing.T) {
 						glg.WithLevel(level.DEBUG.String()),
 					),
 				},
-				beforeFunc: func(args) {
+				beforeFunc: func(t *testing.T, _ args) {
+					t.Helper()
 					once = sync.Once{}
 				},
 			}
@@ -84,7 +85,8 @@ func TestInit(t *testing.T) {
 						glg.WithLevel(level.FATAL.String()),
 					),
 				},
-				beforeFunc: func(args) {
+				beforeFunc: func(t *testing.T, _ args) {
+					t.Helper()
 					once = sync.Once{}
 				},
 			}
@@ -96,10 +98,10 @@ func TestInit(t *testing.T) {
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -126,8 +128,8 @@ func Test_getLogger(t *testing.T) {
 		args       args
 		want       want
 		checkFunc  func(want, logger.Logger) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, got logger.Logger) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -210,10 +212,10 @@ func Test_getLogger(t *testing.T) {
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -240,8 +242,8 @@ func TestBold(t *testing.T) {
 		args       args
 		want       want
 		checkFunc  func(want, string) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, got string) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -266,10 +268,10 @@ func TestBold(t *testing.T) {
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -296,8 +298,8 @@ func TestDebug(t *testing.T) {
 		args       args
 		want       want
 		checkFunc  func(want) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	tests := []test{
 		func() test {
@@ -321,10 +323,12 @@ func TestDebug(t *testing.T) {
 					vals: w.vals,
 				},
 				want: w,
-				beforeFunc: func(args) {
+				beforeFunc: func(t *testing.T, _ args) {
+					t.Helper()
 					l = ml
 				},
-				afterFunc: func(args) {
+				afterFunc: func(t *testing.T, _ args) {
+					t.Helper()
 					l = nil
 				},
 				checkFunc: func(w want) error {
@@ -342,10 +346,10 @@ func TestDebug(t *testing.T) {
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 
 			Debug(test.args.vals...)
@@ -370,8 +374,8 @@ func TestDebugf(t *testing.T) {
 		args       args
 		want       want
 		checkFunc  func(want) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	tests := []test{
 		func() test {
@@ -400,10 +404,12 @@ func TestDebugf(t *testing.T) {
 					vals:   w.vals,
 				},
 				want: w,
-				beforeFunc: func(args) {
+				beforeFunc: func(t *testing.T, _ args) {
+					t.Helper()
 					l = ml
 				},
-				afterFunc: func(args) {
+				afterFunc: func(t *testing.T, _ args) {
+					t.Helper()
 					l = nil
 				},
 				checkFunc: func(w want) error {
@@ -424,10 +430,10 @@ func TestDebugf(t *testing.T) {
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 
 			Debugf(test.args.format, test.args.vals...)
@@ -450,8 +456,8 @@ func TestInfo(t *testing.T) {
 		args       args
 		want       want
 		checkFunc  func(want) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	tests := []test{
 		func() test {
@@ -475,10 +481,12 @@ func TestInfo(t *testing.T) {
 					vals: w.vals,
 				},
 				want: w,
-				beforeFunc: func(args) {
+				beforeFunc: func(t *testing.T, _ args) {
+					t.Helper()
 					l = ml
 				},
-				afterFunc: func(args) {
+				afterFunc: func(t *testing.T, _ args) {
+					t.Helper()
 					l = nil
 				},
 				checkFunc: func(want) error {
@@ -496,10 +504,10 @@ func TestInfo(t *testing.T) {
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 
 			Info(test.args.vals...)
@@ -524,8 +532,8 @@ func TestInfof(t *testing.T) {
 		args       args
 		want       want
 		checkFunc  func(want) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	tests := []test{
 		func() test {
@@ -554,10 +562,12 @@ func TestInfof(t *testing.T) {
 					vals:   w.vals,
 				},
 				want: w,
-				beforeFunc: func(args) {
+				beforeFunc: func(t *testing.T, _ args) {
+					t.Helper()
 					l = ml
 				},
-				afterFunc: func(args) {
+				afterFunc: func(t *testing.T, _ args) {
+					t.Helper()
 					l = nil
 				},
 				checkFunc: func(w want) error {
@@ -578,10 +588,10 @@ func TestInfof(t *testing.T) {
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 
 			Infof(test.args.format, test.args.vals...)
@@ -604,8 +614,8 @@ func TestWarn(t *testing.T) {
 		args       args
 		want       want
 		checkFunc  func(want) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	tests := []test{
 		func() test {
@@ -629,10 +639,12 @@ func TestWarn(t *testing.T) {
 					vals: w.vals,
 				},
 				want: w,
-				beforeFunc: func(args) {
+				beforeFunc: func(t *testing.T, _ args) {
+					t.Helper()
 					l = ml
 				},
-				afterFunc: func(args) {
+				afterFunc: func(t *testing.T, _ args) {
+					t.Helper()
 					l = nil
 				},
 				checkFunc: func(want) error {
@@ -650,10 +662,10 @@ func TestWarn(t *testing.T) {
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 
 			Warn(test.args.vals...)
@@ -678,8 +690,8 @@ func TestWarnf(t *testing.T) {
 		args       args
 		want       want
 		checkFunc  func(want) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	tests := []test{
 		func() test {
@@ -708,10 +720,12 @@ func TestWarnf(t *testing.T) {
 					vals:   w.vals,
 				},
 				want: w,
-				beforeFunc: func(args) {
+				beforeFunc: func(t *testing.T, _ args) {
+					t.Helper()
 					l = ml
 				},
-				afterFunc: func(args) {
+				afterFunc: func(t *testing.T, _ args) {
+					t.Helper()
 					l = nil
 				},
 				checkFunc: func(w want) error {
@@ -732,10 +746,10 @@ func TestWarnf(t *testing.T) {
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 
 			Warnf(test.args.format, test.args.vals...)
@@ -758,8 +772,8 @@ func TestError(t *testing.T) {
 		args       args
 		want       want
 		checkFunc  func(want) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	tests := []test{
 		func() test {
@@ -783,10 +797,12 @@ func TestError(t *testing.T) {
 					vals: w.vals,
 				},
 				want: w,
-				beforeFunc: func(args) {
+				beforeFunc: func(t *testing.T, _ args) {
+					t.Helper()
 					l = ml
 				},
-				afterFunc: func(args) {
+				afterFunc: func(t *testing.T, _ args) {
+					t.Helper()
 					l = nil
 				},
 				checkFunc: func(w want) error {
@@ -804,10 +820,10 @@ func TestError(t *testing.T) {
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 
 			Error(test.args.vals...)
@@ -832,8 +848,8 @@ func TestErrorf(t *testing.T) {
 		args       args
 		want       want
 		checkFunc  func(want) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	tests := []test{
 		func() test {
@@ -862,10 +878,12 @@ func TestErrorf(t *testing.T) {
 					vals:   w.vals,
 				},
 				want: w,
-				beforeFunc: func(args) {
+				beforeFunc: func(t *testing.T, _ args) {
+					t.Helper()
 					l = ml
 				},
-				afterFunc: func(args) {
+				afterFunc: func(t *testing.T, _ args) {
+					t.Helper()
 					l = nil
 				},
 				checkFunc: func(w want) error {
@@ -886,10 +904,10 @@ func TestErrorf(t *testing.T) {
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 
 			Errorf(test.args.format, test.args.vals...)
@@ -912,8 +930,8 @@ func TestFatal(t *testing.T) {
 		args       args
 		want       want
 		checkFunc  func(want) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	tests := []test{
 		func() test {
@@ -937,10 +955,12 @@ func TestFatal(t *testing.T) {
 					vals: w.vals,
 				},
 				want: w,
-				beforeFunc: func(args) {
+				beforeFunc: func(t *testing.T, _ args) {
+					t.Helper()
 					l = ml
 				},
-				afterFunc: func(args) {
+				afterFunc: func(t *testing.T, _ args) {
+					t.Helper()
 					l = nil
 				},
 				checkFunc: func(w want) error {
@@ -958,10 +978,10 @@ func TestFatal(t *testing.T) {
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 
 			Fatal(test.args.vals...)
@@ -986,8 +1006,8 @@ func TestFatalf(t *testing.T) {
 		args       args
 		want       want
 		checkFunc  func(want) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	tests := []test{
 		func() test {
@@ -1016,10 +1036,12 @@ func TestFatalf(t *testing.T) {
 					vals:   w.vals,
 				},
 				want: w,
-				beforeFunc: func(args) {
+				beforeFunc: func(t *testing.T, _ args) {
+					t.Helper()
 					l = ml
 				},
-				afterFunc: func(args) {
+				afterFunc: func(t *testing.T, _ args) {
+					t.Helper()
 					l = nil
 				},
 				checkFunc: func(w want) error {
@@ -1040,438 +1062,14 @@ func TestFatalf(t *testing.T) {
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 
 			Fatalf(test.args.format, test.args.vals...)
 			if err := test.checkFunc(test.want); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
-
-func TestDebugd(t *testing.T) {
-	t.Parallel()
-	type args struct {
-		msg     string
-		details []interface{}
-	}
-	type want struct{}
-	type test struct {
-		name       string
-		args       args
-		want       want
-		checkFunc  func(want) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-	defaultCheckFunc := func(w want) error {
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           msg: "",
-		           details: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           msg: "",
-		           details: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-			checkFunc := test.checkFunc
-			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
-			}
-
-			Debugd(test.args.msg, test.args.details...)
-			if err := checkFunc(test.want); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
-
-func TestInfod(t *testing.T) {
-	t.Parallel()
-	type args struct {
-		msg     string
-		details []interface{}
-	}
-	type want struct{}
-	type test struct {
-		name       string
-		args       args
-		want       want
-		checkFunc  func(want) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-	defaultCheckFunc := func(w want) error {
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           msg: "",
-		           details: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           msg: "",
-		           details: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-			checkFunc := test.checkFunc
-			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
-			}
-
-			Infod(test.args.msg, test.args.details...)
-			if err := checkFunc(test.want); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
-
-func TestWarnd(t *testing.T) {
-	t.Parallel()
-	type args struct {
-		msg     string
-		details []interface{}
-	}
-	type want struct{}
-	type test struct {
-		name       string
-		args       args
-		want       want
-		checkFunc  func(want) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-	defaultCheckFunc := func(w want) error {
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           msg: "",
-		           details: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           msg: "",
-		           details: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-			checkFunc := test.checkFunc
-			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
-			}
-
-			Warnd(test.args.msg, test.args.details...)
-			if err := checkFunc(test.want); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
-
-func TestErrord(t *testing.T) {
-	t.Parallel()
-	type args struct {
-		msg     string
-		details []interface{}
-	}
-	type want struct{}
-	type test struct {
-		name       string
-		args       args
-		want       want
-		checkFunc  func(want) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-	defaultCheckFunc := func(w want) error {
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           msg: "",
-		           details: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           msg: "",
-		           details: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-			checkFunc := test.checkFunc
-			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
-			}
-
-			Errord(test.args.msg, test.args.details...)
-			if err := checkFunc(test.want); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
-
-func TestFatald(t *testing.T) {
-	t.Parallel()
-	type args struct {
-		msg     string
-		details []interface{}
-	}
-	type want struct{}
-	type test struct {
-		name       string
-		args       args
-		want       want
-		checkFunc  func(want) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-	defaultCheckFunc := func(w want) error {
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           msg: "",
-		           details: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           msg: "",
-		           details: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-			checkFunc := test.checkFunc
-			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
-			}
-
-			Fatald(test.args.msg, test.args.details...)
-			if err := checkFunc(test.want); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
-
-func TestClose(t *testing.T) {
-	t.Parallel()
-	type want struct {
-		err error
-	}
-	type test struct {
-		name       string
-		want       want
-		checkFunc  func(want, error) error
-		beforeFunc func()
-		afterFunc  func()
-	}
-	defaultCheckFunc := func(w want, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-			if test.beforeFunc != nil {
-				test.beforeFunc()
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc()
-			}
-			checkFunc := test.checkFunc
-			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
-			}
-
-			err := Close()
-			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

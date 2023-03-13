@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import (
 	"io"
 	"reflect"
 	"sync"
+	"sync/atomic"
 	"testing"
 
 	"github.com/vdaas/vald/internal/errors"
@@ -279,7 +280,6 @@ func Test_copier_Copy(t *testing.T) {
 	}
 	type fields struct {
 		bufSize int64
-		pool    sync.Pool
 	}
 	type want struct {
 		wantWritten int64
@@ -326,7 +326,11 @@ func Test_copier_Copy(t *testing.T) {
 			}
 			c := &copier{
 				bufSize: test.fields.bufSize,
-				pool:    test.fields.pool,
+			}
+			c.pool = sync.Pool{
+				New: func() interface{} {
+					return bytes.NewBuffer(make([]byte, int(atomic.LoadInt64(&c.bufSize))))
+				},
 			}
 			dst := &bytes.Buffer{}
 

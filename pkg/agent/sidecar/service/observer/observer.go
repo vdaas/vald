@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -377,7 +377,7 @@ func (o *observer) isValidMetadata() (bool, error) {
 	return !metadata.IsInvalid, nil
 }
 
-func (o *observer) terminate() error {
+func (*observer) terminate() error {
 	log.Error("the process will be terminated because the files are invalid")
 
 	p, err := os.FindProcess(os.Getpid())
@@ -388,7 +388,7 @@ func (o *observer) terminate() error {
 	return p.Signal(syscall.SIGTERM)
 }
 
-func (o *observer) requestBackup(ctx context.Context) error {
+func (o *observer) requestBackup(context.Context) error {
 	select {
 	case o.ch <- struct{}{}:
 	default:

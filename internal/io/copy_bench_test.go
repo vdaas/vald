@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@ type writer struct {
 	io.Writer
 }
 
-func (w *writer) Write(p []byte) (n int, err error) {
+func (*writer) Write(p []byte) (n int, err error) {
 	return len(p), nil
 }
 

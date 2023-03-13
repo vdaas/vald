@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,11 +19,12 @@ package config
 
 import "github.com/vdaas/vald/internal/strings"
 
-type compressAlgorithm uint8
+// CompressAlgorithm is an enum for compress algorithm.
+type CompressAlgorithm uint8
 
 const (
 	// GOB represents gob algorithm.
-	GOB compressAlgorithm = 1 + iota
+	GOB CompressAlgorithm = 1 + iota
 	// GZIP represents gzip algorithm.
 	GZIP
 	// LZ4 represents lz4 algorithm.
@@ -33,7 +34,7 @@ const (
 )
 
 // String returns compress algorithm.
-func (ca compressAlgorithm) String() string {
+func (ca CompressAlgorithm) String() string {
 	switch ca {
 	case GOB:
 		return "gob"
@@ -47,8 +48,8 @@ func (ca compressAlgorithm) String() string {
 	return "unknown"
 }
 
-// CompressAlgorithm returns compressAlgorithm converted from string.
-func CompressAlgorithm(ca string) compressAlgorithm {
+// AToCompressAlgorithm returns CompressAlgorithm converted from string.
+func AToCompressAlgorithm(ca string) CompressAlgorithm {
 	switch strings.ToLower(ca) {
 	case "gob":
 		return GOB

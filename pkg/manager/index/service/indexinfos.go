@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -36,6 +36,7 @@ type readOnlyIndexInfos struct {
 	amended bool
 }
 
+// skipcq: GSC-G103
 var expungedIndexInfos = unsafe.Pointer(new(*payload.Info_Index_Count))
 
 type entryIndexInfos struct {
@@ -43,6 +44,7 @@ type entryIndexInfos struct {
 }
 
 func newEntryIndexInfos(i *payload.Info_Index_Count) *entryIndexInfos {
+	// skipcq: GSC-G103
 	return &entryIndexInfos{p: unsafe.Pointer(&i)}
 }
 
@@ -104,6 +106,7 @@ func (e *entryIndexInfos) tryStore(i **payload.Info_Index_Count) bool {
 		if p == expungedIndexInfos {
 			return false
 		}
+		// skipcq: GSC-G103
 		if atomic.CompareAndSwapPointer(&e.p, p, unsafe.Pointer(i)) {
 			return true
 		}
@@ -115,6 +118,7 @@ func (e *entryIndexInfos) unexpungeLocked() (wasExpunged bool) {
 }
 
 func (e *entryIndexInfos) storeLocked(i **payload.Info_Index_Count) {
+	// skipcq: GSC-G103
 	atomic.StorePointer(&e.p, unsafe.Pointer(i))
 }
 

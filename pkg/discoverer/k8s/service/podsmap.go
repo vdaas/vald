@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -82,6 +82,7 @@ type readOnlyPodsMap struct {
 
 // expunged is an arbitrary pointer that marks entries which have been deleted
 // from the dirty map.
+// skipcq: GSC-G103
 var expungedPodsMap = unsafe.Pointer(new([]pod.Pod))
 
 // An entry is a slot in the map corresponding to a particular key.
@@ -108,6 +109,7 @@ type entryPodsMap struct {
 }
 
 func newEntryPodsMap(i []pod.Pod) *entryPodsMap {
+	// skipcq: GSC-G103
 	return &entryPodsMap{p: unsafe.Pointer(&i)}
 }
 
@@ -187,6 +189,7 @@ func (e *entryPodsMap) tryStore(i *[]pod.Pod) bool {
 		if p == expungedPodsMap {
 			return false
 		}
+		// skipcq: GSC-G103
 		if atomic.CompareAndSwapPointer(&e.p, p, unsafe.Pointer(i)) {
 			return true
 		}
@@ -205,6 +208,7 @@ func (e *entryPodsMap) unexpungeLocked() (wasExpunged bool) {
 //
 // The entry must be known not to be expunged.
 func (e *entryPodsMap) storeLocked(i *[]pod.Pod) {
+	// skipcq: GSC-G103
 	atomic.StorePointer(&e.p, unsafe.Pointer(i))
 }
 
@@ -265,6 +269,7 @@ func (e *entryPodsMap) tryLoadOrStore(i []pod.Pod) (actual []pod.Pod, loaded, ok
 	// shouldn't bother heap-allocating.
 	ic := i
 	for {
+		// skipcq: GSC-G103
 		if atomic.CompareAndSwapPointer(&e.p, nil, unsafe.Pointer(&ic)) {
 			return i, false, true
 		}

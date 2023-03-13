@@ -128,9 +128,11 @@ Search RPC is the method to search vector(s) similar to request vector.
 | code | desc.             |
 | :--: | :---------------- |
 |  0   | OK                |
+|  1   | CANCELLED         |
 |  3   | INVALID_ARGUMENT  |
 |  4   | DEADLINE_EXCEEDED |
 |  5   | NOT_FOUND         |
+|  13  | INTERNAL          |
 
 ## SearchByID RPC
 
@@ -219,9 +221,11 @@ The vector with the same requested ID should be indexed into the `vald-agent` be
 | code | desc.             |
 | :--: | :---------------- |
 |  0   | OK                |
+|  1   | CANCELLED         |
 |  3   | INVALID_ARGUMENT  |
 |  4   | DEADLINE_EXCEEDED |
 |  5   | NOT_FOUND         |
+|  13  | INTERNAL          |
 
 ## StreamSearch RPC
 
@@ -325,9 +329,11 @@ Each Search request and response are independent.
 | code | desc.             |
 | :--: | :---------------- |
 |  0   | OK                |
+|  1   | CANCELLED         |
 |  3   | INVALID_ARGUMENT  |
 |  4   | DEADLINE_EXCEEDED |
 |  5   | NOT_FOUND         |
+|  13  | INTERNAL          |
 
 ## StreamSearchByID RPC
 
@@ -431,9 +437,11 @@ Each SearchByID request and response are independent.
 | code | desc.             |
 | :--: | :---------------- |
 |  0   | OK                |
+|  1   | CANCELLED         |
 |  3   | INVALID_ARGUMENT  |
 |  4   | DEADLINE_EXCEEDED |
 |  5   | NOT_FOUND         |
+|  13  | INTERNAL          |
 
 ## MultiSearch RPC
 
@@ -546,9 +554,11 @@ Please be careful that the size of the request exceeds the limit.
 | code | desc.             |
 | :--: | :---------------- |
 |  0   | OK                |
+|  1   | CANCELLED         |
 |  3   | INVALID_ARGUMENT  |
 |  4   | DEADLINE_EXCEEDED |
 |  5   | NOT_FOUND         |
+|  13  | INTERNAL          |
 
 ### MultiSearchByID RPC
 
@@ -662,9 +672,11 @@ Please be careful that the size of the request exceed the limit.
 | code | desc.             |
 | :--: | :---------------- |
 |  0   | OK                |
+|  1   | CANCELLED         |
 |  3   | INVALID_ARGUMENT  |
 |  4   | DEADLINE_EXCEEDED |
 |  5   | NOT_FOUND         |
+|  13  | INTERNAL          |
 
 ## LinearSearch RPC
 
@@ -748,9 +760,11 @@ LinearSearch RPC is the method to linear search vector(s) similar to request vec
 | code | desc.             |
 | :--: | :---------------- |
 |  0   | OK                |
+|  1   | CANCELLED         |
 |  3   | INVALID_ARGUMENT  |
 |  4   | DEADLINE_EXCEEDED |
 |  5   | NOT_FOUND         |
+|  13  | INTERNAL          |
 
 ## LinearSearchByID RPC
 
@@ -836,9 +850,11 @@ If the vector doesn't be stored, you will get a `NOT_FOUND` error as a result.
 | code | desc.             |
 | :--: | :---------------- |
 |  0   | OK                |
+|  1   | CANCELLED         |
 |  3   | INVALID_ARGUMENT  |
 |  4   | DEADLINE_EXCEEDED |
 |  5   | NOT_FOUND         |
+|  13  | INTERNAL          |
 
 ## StreamLinearSearch RPC
 
@@ -938,9 +954,11 @@ Each LinearSearch request and response are independent.
 | code | desc.             |
 | :--: | :---------------- |
 |  0   | OK                |
+|  1   | CANCELLED         |
 |  3   | INVALID_ARGUMENT  |
 |  4   | DEADLINE_EXCEEDED |
 |  5   | NOT_FOUND         |
+|  13  | INTERNAL          |
 
 ## StreamLinearSearchByID RPC
 
@@ -1040,9 +1058,11 @@ Each LinearSearchByID request and response are independent.
 | code | desc.             |
 | :--: | :---------------- |
 |  0   | OK                |
+|  1   | CANCELLED         |
 |  3   | INVALID_ARGUMENT  |
 |  4   | DEADLINE_EXCEEDED |
 |  5   | NOT_FOUND         |
+|  13  | INTERNAL          |
 
 ## MultiLinearSearch RPC
 
@@ -1151,9 +1171,11 @@ Please be careful that the size of the request exceed the limit.
 | code | desc.             |
 | :--: | :---------------- |
 |  0   | OK                |
+|  1   | CANCELLED         |
 |  3   | INVALID_ARGUMENT  |
 |  4   | DEADLINE_EXCEEDED |
 |  5   | NOT_FOUND         |
+|  13  | INTERNAL          |
 
 ### MultiLinearSearchByID RPC
 
@@ -1263,6 +1285,8 @@ Please be careful that the size of the request exceed the limit.
 | code | desc.             |
 | :--: | :---------------- |
 |  0   | OK                |
+|  1   | CANCELLED         |
 |  3   | INVALID_ARGUMENT  |
 |  4   | DEADLINE_EXCEEDED |
 |  5   | NOT_FOUND         |
+|  13  | INTERNAL          |

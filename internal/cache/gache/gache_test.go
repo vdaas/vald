@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,8 +23,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/google/go-cmp/cmp"
 	"github.com/kpango/gache"
+	"github.com/vdaas/vald/internal/cache/cacher"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/test/goleak"
 )
@@ -39,29 +39,25 @@ func TestNew(t *testing.T) {
 		opts []Option
 	}
 	type want struct {
-		wantC *cache
+		wantC cacher.Cache
 	}
 	type test struct {
 		name       string
 		args       args
 		want       want
-		checkFunc  func(want, *cache) error
+		checkFunc  func(want, cacher.Cache) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, gotC *cache) error {
-		opts := []cmp.Option{
-			cmp.AllowUnexported(*w.wantC),
-			cmp.AllowUnexported(*gotC),
-			cmp.Comparer(func(want, got gache.Gache) bool {
-				return want != nil && got != nil
-			}),
-			cmp.Comparer(func(want, got func(context.Context, string)) bool {
-				return reflect.ValueOf(want).Pointer() == reflect.ValueOf(got).Pointer()
-			}),
+	defaultCheckFunc := func(w want, got cacher.Cache) error {
+		wc := reflect.ValueOf(w.wantC.(*cache))
+		gc := reflect.ValueOf(got.(*cache))
+		flag := false
+		for i := 0; i < reflect.Indirect(gc).NumField(); i++ {
+			flag = reflect.DeepEqual(reflect.Indirect(gc).Field(i), reflect.Indirect(wc).Field(i))
 		}
-		if diff := cmp.Diff(w.wantC, gotC, opts...); diff != "" {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotC, w.wantC)
+		if flag {
+			return errors.Errorf("got: \"%#v\",\n\t\t\twant: \"%#v\"", got, w.wantC)
 		}
 		return nil
 	}
@@ -215,7 +211,7 @@ func Test_cache_Get(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, interface{}, bool) error
-		beforeFunc func(args, *cache)
+		beforeFunc func(*testing.T, args, *cache)
 		afterFunc  func(args)
 	}
 	defaultCheckFunc := func(w want, got interface{}, got1 bool) error {
@@ -259,7 +255,8 @@ func Test_cache_Get(t *testing.T) {
 				want:  "vald",
 				want1: true,
 			},
-			beforeFunc: func(args args, c *cache) {
+			beforeFunc: func(t *testing.T, args args, c *cache) {
+				t.Helper()
 				c.Set(args.key, "vald")
 			},
 		},
@@ -276,7 +273,7 @@ func Test_cache_Get(t *testing.T) {
 				expiredHook:    test.fields.expiredHook,
 			}
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args, c)
+				test.beforeFunc(tt, test.args, c)
 			}
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
@@ -399,7 +396,7 @@ func Test_cache_Delete(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, *cache) error
-		beforeFunc func(args, *cache)
+		beforeFunc func(*testing.T, args, *cache)
 		afterFunc  func(args)
 	}
 	defaultCheckFunc := func(w want, c *cache) error {
@@ -446,7 +443,8 @@ func Test_cache_Delete(t *testing.T) {
 				want:  nil,
 				want1: false,
 			},
-			beforeFunc: func(args args, c *cache) {
+			beforeFunc: func(t *testing.T, args args, c *cache) {
+				t.Helper()
 				c.Set(args.key, "vald")
 			},
 		},
@@ -463,7 +461,7 @@ func Test_cache_Delete(t *testing.T) {
 				expiredHook:    test.fields.expiredHook,
 			}
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args, c)
+				test.beforeFunc(tt, test.args, c)
 			}
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
@@ -501,7 +499,7 @@ func Test_cache_GetAndDelete(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, interface{}, bool) error
-		beforeFunc func(args, *cache)
+		beforeFunc func(*testing.T, args, *cache)
 		afterFunc  func(args)
 	}
 	defaultCheckFunc := func(w want, got interface{}, got1 bool) error {
@@ -545,7 +543,8 @@ func Test_cache_GetAndDelete(t *testing.T) {
 				want:  "vald",
 				want1: true,
 			},
-			beforeFunc: func(args args, c *cache) {
+			beforeFunc: func(t *testing.T, args args, c *cache) {
+				t.Helper()
 				c.Set(args.key, "vald")
 			},
 		},
@@ -562,7 +561,7 @@ func Test_cache_GetAndDelete(t *testing.T) {
 				expiredHook:    test.fields.expiredHook,
 			}
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args, c)
+				test.beforeFunc(tt, test.args, c)
 			}
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)

@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -28,13 +28,14 @@ ENV REPO vald
 ENV PKG gateway/lb
 ENV APP_NAME lb
 
+# skipcq: DOK-DL3008
 RUN apt-get update && apt-get install -y --no-install-recommends \
     upx \
     git \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-RUN mkdir -p $GOPATH/src
+RUN mkdir -p "$GOPATH/src"
 
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}
 
@@ -51,9 +52,6 @@ COPY apis/grpc .
 
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/pkg/${PKG}
 COPY pkg/${PKG} .
-
-WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/pkg/gateway/internal
-COPY pkg/gateway/internal .
 
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/cmd/${PKG}
 COPY cmd/${PKG} .

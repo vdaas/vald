@@ -1,6 +1,6 @@
 ---
 #
-# Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,10 +21,10 @@ metadata:
   labels:
     app: vald-lb-gateway
     app.kubernetes.io/name: vald
-    helm.sh/chart: vald-v1.6.3
+    helm.sh/chart: vald-v1.7.2
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: release-name
-    app.kubernetes.io/version: v1.6.3
+    app.kubernetes.io/version: v1.7.2
     app.kubernetes.io/component: gateway-lb
 spec:
   progressDeadlineSeconds: 600
@@ -46,7 +46,7 @@ spec:
         app.kubernetes.io/instance: release-name
         app.kubernetes.io/component: gateway-lb
       annotations:
-        checksum/configmap: c879a5db76b206022708d44df9b5c7a58492799b59e99d3758690adecb9fed8d
+        checksum/configmap: 6f54b6b9ecc11f60e50cc69e6c596b03e3d97c1f6e3f86bb311008613e252910
         profefe.com/enable: "true"
         profefe.com/port: "6060"
         profefe.com/service: vald-lb-gateway

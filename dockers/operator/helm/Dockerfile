@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ ARG VALD_KIND="ValdRelease"
 ARG VALD_HELM_OPERATOR_KIND="ValdHelmOperatorRelease"
 ARG MAINTAINER="vdaas.org vald team <vald@vdaas.org>"
 
+# skipcq: DOK-DL3026
 FROM quay.io/operator-framework/helm-operator:${OPERATOR_SDK_VERSION} AS operator
 
 FROM golang:${GO_VERSION} AS builder
@@ -59,6 +60,9 @@ COPY internal/errors .
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/internal/log
 COPY internal/log .
 
+WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/internal/conv
+COPY internal/conv .
+
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/internal/strings
 COPY internal/strings .
 
@@ -77,23 +81,23 @@ COPY Makefile.d .
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}
 COPY Makefile .
 
-RUN make helm/schema/vald
-RUN make helm/schema/vald-helm-operator
-RUN cp -r charts /charts
+RUN make helm/schema/vald helm/schema/vald-helm-operator \
+    && cp -r charts /charts
 
-RUN apt clean \
+# skipcq: DOK-DL3008
+RUN apt-get clean \
     && rm -rf \
         /var/lib/apt/lists/* \
         /var/cache/* \
-    && apt update -y \
-    && apt upgrade -y \
-    && apt install -y --no-install-recommends --fix-missing \
+    && apt-get update -y \
+    && apt-get upgrade -y \
+    && apt-get install -y --no-install-recommends --fix-missing \
     upx \
-    && apt clean \
+    && apt-get clean \
     && rm -rf \
         /var/lib/apt/lists/* \
         /var/cache/* \
-    && apt autoremove
+    && apt-get autoremove
 
 ENV APP_NAME helm-operator
 

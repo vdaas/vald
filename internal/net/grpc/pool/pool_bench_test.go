@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-// Package pool provides grpc client connection pool
+// Package pool provides gRPC client connection pool
 package pool
 
 import (
@@ -28,6 +28,7 @@ import (
 	"github.com/vdaas/vald/internal/log/level"
 	"github.com/vdaas/vald/internal/net"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 const (
@@ -44,7 +45,7 @@ func init() {
 	log.Init(log.WithLevel(level.ERROR.String()))
 }
 
-func (s *server) Pods(context.Context, *payload.Discoverer_Request) (*payload.Info_Pods, error) {
+func (*server) Pods(context.Context, *payload.Discoverer_Request) (*payload.Info_Pods, error) {
 	return &payload.Info_Pods{
 		Pods: []*payload.Info_Pod{
 			{
@@ -54,7 +55,7 @@ func (s *server) Pods(context.Context, *payload.Discoverer_Request) (*payload.In
 	}, nil
 }
 
-func (s *server) Nodes(context.Context, *payload.Discoverer_Request) (*payload.Info_Nodes, error) {
+func (*server) Nodes(context.Context, *payload.Discoverer_Request) (*payload.Info_Nodes, error) {
 	return new(payload.Info_Nodes), nil
 }
 
@@ -64,6 +65,7 @@ func ListenAndServe(b *testing.B, addr string) func() {
 		b.Error(err)
 	}
 
+	// skipcq: GO-S0902
 	s := grpc.NewServer()
 	discoverer.RegisterDiscovererServer(s, new(server))
 
@@ -99,7 +101,7 @@ func Benchmark_ConnPool(b *testing.B) {
 	pool, err := New(ctx,
 		WithAddr(DefaultServerAddr),
 		WithSize(DefaultPoolSize),
-		WithDialOptions(grpc.WithInsecure()),
+		WithDialOptions(grpc.WithTransportCredentials(insecure.NewCredentials())),
 	)
 	if err != nil {
 		b.Error(err)
@@ -114,7 +116,7 @@ func Benchmark_ConnPool(b *testing.B) {
 	b.ReportAllocs()
 	b.StartTimer()
 	for i := 0; i < b.N; i++ {
-		conn, ok := pool.Get()
+		conn, ok := pool.Get(ctx)
 		if ok {
 			do(b, conn)
 		}
@@ -125,7 +127,7 @@ func Benchmark_ConnPool(b *testing.B) {
 func Benchmark_StaticDial(b *testing.B) {
 	defer ListenAndServe(b, DefaultServerAddr)()
 
-	conn, err := grpc.DialContext(context.Background(), DefaultServerAddr, grpc.WithInsecure())
+	conn, err := grpc.DialContext(context.Background(), DefaultServerAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		b.Error(err)
 	}
@@ -154,7 +156,7 @@ func BenchmarkParallel_ConnPool(b *testing.B) {
 	pool, err := New(ctx,
 		WithAddr(DefaultServerAddr),
 		WithSize(DefaultPoolSize),
-		WithDialOptions(grpc.WithInsecure()),
+		WithDialOptions(grpc.WithTransportCredentials(insecure.NewCredentials())),
 	)
 	if err != nil {
 		b.Error(err)
@@ -170,7 +172,7 @@ func BenchmarkParallel_ConnPool(b *testing.B) {
 	b.StartTimer()
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
-			conn, ok := pool.Get()
+			conn, ok := pool.Get(ctx)
 			if ok {
 				do(b, conn)
 			}
@@ -182,7 +184,7 @@ func BenchmarkParallel_ConnPool(b *testing.B) {
 func BenchmarkParallel_StaticDial(b *testing.B) {
 	defer ListenAndServe(b, DefaultServerAddr)()
 
-	conn, err := grpc.DialContext(context.Background(), DefaultServerAddr, grpc.WithInsecure())
+	conn, err := grpc.DialContext(context.Background(), DefaultServerAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		b.Error(err)
 	}

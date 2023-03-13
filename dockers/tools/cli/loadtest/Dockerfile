@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ ENV REPO vald
 ENV APP_NAME loadtest
 ENV PKG tools/cli/${APP_NAME}
 
+# skipcq: DOK-DL3008
 RUN apt-get update && apt-get install -y --no-install-recommends \
     upx \
     git \
@@ -34,7 +35,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-RUN mkdir -p $GOPATH/src
+RUN mkdir -p "$GOPATH/src"
 
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}
 
@@ -62,10 +63,11 @@ WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}
 COPY versions/GO_VERSION .
 COPY versions/VALD_VERSION .
 COPY .git .
-RUN GO_VERSION="$(cat GO_VERSION)" \
-    && VALD_VERSION="$(cat VALD_VERSION)" \
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+RUN GO_VERSION="$(< GO_VERSION)" \
+    && VALD_VERSION="$(< VALD_VERSION)" \
     && GIT_COMMIT="$(git rev-list -1 HEAD)" \
-    && CPU_INFO_FLAGS="$(cat /proc/cpuinfo | grep flags | cut -d " " -f 2- | head -1)" \
+    && CPU_INFO_FLAGS="$(< /proc/cpuinfo | grep flags | cut -d " " -f 2- | head -1 || true)" \
     && GOOS="$(go env GOOS)" \
     && GOARCH="$(go env GOARCH)" \
     && CGO_ENABLED=1 \

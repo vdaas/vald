@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -204,7 +204,7 @@ func TestErrCompressorRegistererIsNotRunning(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 
-			got := ErrCompressorRegistererIsNotRunning()
+			got := ErrCompressorRegistererIsNotRunning
 			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -252,7 +252,7 @@ func TestErrCompressorRegistererChannelIsFull(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 
-			got := ErrCompressorRegistererChannelIsFull()
+			got := ErrCompressorRegistererChannelIsFull
 			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}

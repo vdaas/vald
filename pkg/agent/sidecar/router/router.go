@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -42,12 +42,12 @@ func New(opts ...Option) http.Handler {
 	return routing.New(
 		routing.WithRoutes([]routing.Route{
 			{
-				"Index",
-				[]string{
+				Name: "Index",
+				Methods: []string{
 					http.MethodGet,
 				},
-				"/",
-				h.Index,
+				Pattern:     "/",
+				HandlerFunc: h.Index,
 			},
 		}...))
 }

@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -38,7 +38,7 @@ defaults:
   image:
     # @schema {"name": "defaults.image.tag", "type": "string"}
     # defaults.image.tag -- docker image tag
-    tag: v1.6.3
+    tag: v1.7.3
   # @schema {"name": "defaults.server_config", "type": "object", "anchor": "server_config"}
   server_config:
     # @schema {"name": "defaults.server_config.servers", "type": "object"}
@@ -512,7 +512,7 @@ defaults:
             read_timeout: 1s
             # @schema {"name": "defaults.server_config.metrics.pprof.server.http.write_timeout", "type": "string"}
             # defaults.server_config.metrics.pprof.server.http.write_timeout -- pprof server write timeout
-            write_timeout: 1s
+            write_timeout: 1m
           # @schema {"name": "defaults.server_config.metrics.pprof.server.socket_option", "alias": "socket_option"}
           socket_option:
             # defaults.server_config.metrics.pprof.server.socket_option.reuse_port -- server listen socket option for reuse_port functionality
@@ -1095,7 +1095,10 @@ gateway:
       node_name: "" # _MY_NODE_NAME_
       # @schema {"name": "gateway.lb.gateway_config.index_replica", "type": "integer", "minimum": 1}
       # gateway.lb.gateway_config.index_replica -- number of index replica
-      index_replica: 5
+      index_replica: 3
+      # @schema {"name": "gateway.lb.gateway_config.multi_operation_concurrency", "type": "integer", "minimum": 2}
+      # gateway.lb.gateway_config.multi_operation_concurrency -- number of concurrency of multiXXX api's operation
+      multi_operation_concurrency: 20
       # @schema {"name": "gateway.lb.gateway_config.discoverer", "type": "object"}
       discoverer:
         # @schema {"name": "gateway.lb.gateway_config.discoverer.duration", "type": "string"}
@@ -1644,7 +1647,8 @@ agent:
     # it should be `l1`, `l2`, `angle`, `hamming`, `cosine`,`poincare`, `lorentz`, `jaccard`, `sparsejaccard`, `normalizedangle` or `normalizedcosine`.
     # for further details about NGT libraries supported distance is https://github.com/yahoojapan/NGT/wiki/Command-Quick-Reference
     # and vald agent's supported NGT distance type is https://pkg.go.dev/github.com/vdaas/vald/internal/core/algorithm/ngt#pkg-constants
-    distance_type: l2
+    distance_type:
+      l2
       # @schema {"name": "agent.ngt.object_type", "type": "string", "enum": ["float", "float16", "uint8"]}
     # agent.ngt.object_type -- object type.
     # it should be `float` or `uint8` or `float16`.

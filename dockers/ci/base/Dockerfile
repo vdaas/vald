@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@ ENV PATH ${PATH}:${GOROOT}/bin:${GOPATH}/bin
 COPY --from=golang /usr/local/go $GOROOT
 RUN mkdir -p $GOPATH/src
 
+# skipcq: DOK-DL3008
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     ca-certificates \
@@ -47,6 +48,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     graphviz \
     jq \
     libhdf5-dev \
+    liblapack-dev \
+    libomp-dev \
+    libopenblas-dev \
     nodejs \
     npm \
     sed \
@@ -57,6 +61,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 WORKDIR ${GOPATH}/src/github.com/vdaas/vald
 
+ENV ROOTDIR .
+
 COPY go.mod .
 COPY go.sum .
 COPY Makefile .
@@ -65,7 +71,7 @@ COPY apis/proto apis/proto
 COPY versions versions
 COPY hack/go.mod.default hack/go.mod.default
 
-RUN make deps
+RUN make deps ROOTDIR=$ROOTDIR
 
 RUN make ngt/install \
     && make helm/install \

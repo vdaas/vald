@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -25,9 +25,11 @@ import (
 	"time"
 
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/info"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/rand"
+	"github.com/vdaas/vald/internal/strings"
 )
 
 // NOTE: This variable is for observability package.
@@ -76,9 +78,17 @@ func New(opts ...Option) Backoff {
 
 // Do tries to backoff using the input function and returns the response and error.
 func (b *backoff) Do(ctx context.Context, f func(ctx context.Context) (val interface{}, retryable bool, err error)) (res interface{}, err error) {
-	res, ret, err := f(ctx)
-	if err == nil || !ret {
+	if f == nil {
 		return
+	}
+	var ret bool
+	res, ret, err = f(ctx)
+	if err == nil || !ret {
+		return res, err
+	}
+	ctx, running := isRunning(ctx)
+	if running {
+		return res, err
 	}
 
 	sctx, span := trace.StartSpan(ctx, traceTag)
@@ -95,6 +105,17 @@ func (b *backoff) Do(ctx context.Context, f func(ctx context.Context) (val inter
 	dur := b.initialDuration
 	jdur := b.jittedInitialDuration
 	name := FromBackoffName(ctx)
+	if name == "" || name == "Value" || strings.TrimSpace(name) == "" {
+		st := info.Get().StackTrace
+		switch len(st) {
+		case 0:
+			name = "unknown backoff"
+		case 1:
+			name = st[0].FuncName
+		default:
+			name = st[1].FuncName
+		}
+	}
 
 	dctx, cancel := context.WithDeadline(sctx, time.Now().Add(b.backoffTimeLimit))
 	defer cancel()
@@ -103,8 +124,10 @@ func (b *backoff) Do(ctx context.Context, f func(ctx context.Context) (val inter
 		case <-dctx.Done():
 			switch dctx.Err() {
 			case context.DeadlineExceeded:
+				log.Debugf("[backoff]\tfor: "+name+",\tDeadline Exceeded\terror: %v", err.Error())
 				return nil, errors.ErrBackoffTimeout(err)
 			case context.Canceled:
+				log.Debugf("[backoff]\tfor: "+name+",\tCanceled\terror: %v", err.Error())
 				return nil, err
 			default:
 				return nil, errors.Wrap(err, dctx.Err().Error())
@@ -125,11 +148,16 @@ func (b *backoff) Do(ctx context.Context, f func(ctx context.Context) (val inter
 			if err == nil {
 				return res, nil
 			}
-			if b.errLog {
-				log.Error(err)
+			if errors.Is(err, context.Canceled) ||
+				errors.Is(err, context.DeadlineExceeded) ||
+				errors.Is(err, errors.ErrBackoffTimeout(nil)) {
+				return nil, err
+			}
+			if b.errLog && err != nil && err.Error() != "" {
+				log.Errord("[backoff]\tfor: "+name+",\terror: "+err.Error(), info.Get())
 			}
 			// e.g. name = vald.v1.Exists/ip ...etc
-			if len(name) != 0 {
+			if name != "" {
 				mu.Lock()
 				metrics[name] += 1
 				mu.Unlock()
@@ -140,8 +168,10 @@ func (b *backoff) Do(ctx context.Context, f func(ctx context.Context) (val inter
 			case <-dctx.Done():
 				switch dctx.Err() {
 				case context.DeadlineExceeded:
+					log.Debugf("[backoff]\tfor: "+name+",\tDeadline Exceeded\terror: %v", err.Error())
 					return nil, errors.ErrBackoffTimeout(err)
 				case context.Canceled:
+					log.Debugf("[backoff]\tfor: "+name+",\tCanceled\terror: %v", err.Error())
 					return nil, err
 				default:
 					return nil, errors.Wrap(dctx.Err(), err.Error())
@@ -170,7 +200,7 @@ func (b *backoff) Close() {
 	b.wg.Wait()
 }
 
-func Metrics(_ context.Context) map[string]int64 {
+func Metrics(context.Context) map[string]int64 {
 	mu.RLock()
 	defer mu.RUnlock()
 

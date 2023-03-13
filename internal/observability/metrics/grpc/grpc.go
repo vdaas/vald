@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ func New() metrics.Metric {
 	return &grpcServerMetrics{}
 }
 
-func (gm *grpcServerMetrics) View() ([]*metrics.View, error) {
+func (*grpcServerMetrics) View() ([]*metrics.View, error) {
 	latencyHistgram, err := view.New(
 		view.MatchInstrumentName(latencyMetricsName),
 		view.WithSetDescription(latencyMetricsDesctiption),
@@ -59,7 +59,7 @@ func (gm *grpcServerMetrics) View() ([]*metrics.View, error) {
 	}, nil
 }
 
-func (gm *grpcServerMetrics) Register(m metrics.Meter) error {
+func (*grpcServerMetrics) Register(metrics.Meter) error {
 	// The metrics are dynamically registered at the grpc server interceptor package,
 	// so do nothing in this part
 	return nil

@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -44,7 +44,7 @@ func New(opts ...Option) Handler {
 	return h
 }
 
-func (h *handler) Index(w http.ResponseWriter, r *http.Request) (int, error) {
+func (*handler) Index(w http.ResponseWriter, r *http.Request) (int, error) {
 	data := make(map[string]interface{})
 	return json.Handler(w, r, &data, func() (interface{}, error) {
 		return dump.Request(nil, data, r)

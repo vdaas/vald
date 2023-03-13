@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/vdaas/vald/internal/conv"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/file"
 	testdata "github.com/vdaas/vald/internal/test"
@@ -93,23 +94,14 @@ func TestNew(t *testing.T) {
 					return errors.New("Certificates length is wrong")
 				}
 
-				want := string(w.want.Certificates[0].Certificate[0])
-				got := string(c.Certificates[0].Certificate[0])
+				want := conv.Btoa(w.want.Certificates[0].Certificate[0])
+				got := conv.Btoa(c.Certificates[0].Certificate[0])
 				if want != got {
 					return errors.Errorf("Certificates[0] want: %v, but got: %v", want, got)
 				}
 
-				sl := len(c.ClientCAs.Subjects())
-				if sl == 0 {
-					return errors.New("subjects are empty")
-				}
-
-				if got, want := c.ClientCAs.Subjects()[sl-1], w.want.ClientCAs.Subjects()[sl-1]; !reflect.DeepEqual(got, want) {
-					return errors.Errorf("ClientCAs.Subjects want: %v, got: %v", want, got)
-				}
-
-				if got, want := c.ClientCAs.Subjects()[sl-1], w.want.ClientCAs.Subjects()[sl-1]; !reflect.DeepEqual(got, want) {
-					return errors.Errorf("ClientCAs.Subjects want: %v, got: %v", want, got)
+				if ok := c.ClientCAs.Equal(w.want.ClientCAs); !ok {
+					return errors.Errorf("ClientCAs.Equal want: %v, got: %v", want, got)
 				}
 
 				if got, want := c.ClientAuth, w.want.ClientAuth; want != got {
@@ -344,9 +336,15 @@ func TestNewX509CertPool(t *testing.T) {
 			},
 			want: want{
 				want: func() *x509.CertPool {
-					pool := x509.NewCertPool()
-					b, _ := file.ReadFile(testdata.GetTestdataPath("tls/dummyServer.crt"))
-					pool.AppendCertsFromPEM(b)
+					path := testdata.GetTestdataPath("tls/dummyServer.crt")
+					pool, err := x509.SystemCertPool()
+					if err != nil {
+						pool = x509.NewCertPool()
+					}
+					b, err := file.ReadFile(path)
+					if err == nil && b != nil {
+						pool.AppendCertsFromPEM(b)
+					}
 					return pool
 				}(),
 			},
@@ -357,15 +355,9 @@ func TestNewX509CertPool(t *testing.T) {
 				if cp == nil {
 					return errors.New("got is nil")
 				}
-
-				if len(cp.Subjects()) == 0 {
-					return errors.New("cert files are empty")
+				if ok := cp.Equal(w.want); !ok {
+					return errors.Errorf("not equals. want: %#v, got: %#v", w.want, cp)
 				}
-				l := len(cp.Subjects()) - 1
-				if got, want := cp.Subjects()[l], w.want.Subjects()[0]; !reflect.DeepEqual(got, want) {
-					return errors.Errorf("not equals. want: %v, got: %v", want, got)
-				}
-
 				return nil
 			},
 		},
@@ -397,7 +389,7 @@ func TestNewX509CertPool(t *testing.T) {
 					return errors.New("err is nil")
 				}
 				if cp != nil {
-					return errors.Errorf("got is not nil: %v", cp)
+					return errors.Errorf("got is not nil: %v, want: %v", cp, w)
 				}
 				return nil
 			},
@@ -409,7 +401,7 @@ func TestNewX509CertPool(t *testing.T) {
 					return errors.New("err is nil")
 				}
 				if cp != nil {
-					return errors.Errorf("got is not nil: %v", cp)
+					return errors.Errorf("got is not nil: %v, want: %v", cp, w)
 				}
 				return nil
 			},
@@ -433,84 +425,6 @@ func TestNewX509CertPool(t *testing.T) {
 
 			got, err := NewX509CertPool(test.args.path)
 			if err := checkFunc(test.want, got, err); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
-
-func Test_newCredential(t *testing.T) {
-	t.Parallel()
-	type args struct {
-		opts []Option
-	}
-	type want struct {
-		wantC *credentials
-		err   error
-	}
-	type test struct {
-		name       string
-		args       args
-		want       want
-		checkFunc  func(want, *credentials, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-	defaultCheckFunc := func(w want, gotC *credentials, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-		}
-		if !reflect.DeepEqual(gotC, w.wantC) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotC, w.wantC)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           opts: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           opts: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-			checkFunc := test.checkFunc
-			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
-			}
-
-			gotC, err := newCredential(test.args.opts...)
-			if err := checkFunc(test.want, gotC, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

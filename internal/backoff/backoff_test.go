@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -21,11 +21,11 @@ import (
 	"context"
 	"os"
 	"reflect"
-	"sync"
 	"testing"
 	"time"
 
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/info"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/log/logger"
 	"github.com/vdaas/vald/internal/test/goleak"
@@ -35,6 +35,7 @@ const str = "success"
 
 func TestMain(m *testing.M) {
 	log.Init(log.WithLoggerType(logger.NOP.String()))
+	info.Init("backoff test")
 	os.Exit(m.Run())
 }
 
@@ -88,7 +89,6 @@ func Test_backoff_addJitter(t *testing.T) {
 		dur float64
 	}
 	type fields struct {
-		wg                    sync.WaitGroup
 		backoffFactor         float64
 		initialDuration       float64
 		jittedInitialDuration float64
@@ -148,7 +148,6 @@ func Test_backoff_addJitter(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 			b := &backoff{
-				wg:                    test.fields.wg,
 				backoffFactor:         test.fields.backoffFactor,
 				initialDuration:       test.fields.initialDuration,
 				jittedInitialDuration: test.fields.jittedInitialDuration,
@@ -170,9 +169,7 @@ func Test_backoff_addJitter(t *testing.T) {
 
 func Test_backoff_Close(t *testing.T) {
 	t.Parallel()
-	type fields struct {
-		wg sync.WaitGroup
-	}
+	type fields struct{}
 	type want struct{}
 	type test struct {
 		name       string
@@ -187,11 +184,9 @@ func Test_backoff_Close(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "success backoff Close",
-			fields: fields{
-				wg: sync.WaitGroup{},
-			},
-			want: want{},
+			name:   "success backoff Close",
+			fields: fields{},
+			want:   want{},
 		},
 	}
 
@@ -210,9 +205,7 @@ func Test_backoff_Close(t *testing.T) {
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
-			b := &backoff{
-				wg: test.fields.wg,
-			}
+			b := &backoff{}
 
 			b.Close()
 			if err := checkFunc(test.want); err != nil {
@@ -229,7 +222,6 @@ func Test_backoff_Do(t *testing.T) {
 		f   func(ctx context.Context) (val interface{}, retryable bool, err error)
 	}
 	type fields struct {
-		wg                    sync.WaitGroup
 		backoffFactor         float64
 		initialDuration       float64
 		jittedInitialDuration float64
@@ -307,7 +299,6 @@ func Test_backoff_Do(t *testing.T) {
 					f:   f,
 				},
 				fields: fields{
-					wg:                    sync.WaitGroup{},
 					backoffFactor:         0,
 					initialDuration:       0,
 					jittedInitialDuration: 0,
@@ -337,7 +328,6 @@ func Test_backoff_Do(t *testing.T) {
 					f:   f,
 				},
 				fields: fields{
-					wg:                    sync.WaitGroup{},
 					backoffFactor:         0,
 					initialDuration:       0,
 					jittedInitialDuration: 0,
@@ -372,7 +362,6 @@ func Test_backoff_Do(t *testing.T) {
 					f:   f,
 				},
 				fields: fields{
-					wg:                    sync.WaitGroup{},
 					backoffFactor:         0,
 					initialDuration:       0,
 					jittedInitialDuration: 0,
@@ -407,7 +396,6 @@ func Test_backoff_Do(t *testing.T) {
 					f:   f,
 				},
 				fields: fields{
-					wg:                    sync.WaitGroup{},
 					backoffFactor:         0,
 					initialDuration:       0,
 					jittedInitialDuration: 0,
@@ -436,7 +424,6 @@ func Test_backoff_Do(t *testing.T) {
 					f:   f,
 				},
 				fields: fields{
-					wg:                    sync.WaitGroup{},
 					backoffFactor:         0,
 					initialDuration:       0,
 					jittedInitialDuration: 0,
@@ -466,7 +453,6 @@ func Test_backoff_Do(t *testing.T) {
 					f:   f,
 				},
 				fields: fields{
-					wg:                    sync.WaitGroup{},
 					backoffFactor:         0,
 					initialDuration:       0,
 					jittedInitialDuration: 0,
@@ -496,7 +482,6 @@ func Test_backoff_Do(t *testing.T) {
 					f:   f,
 				},
 				fields: fields{
-					wg:                    sync.WaitGroup{},
 					backoffFactor:         0,
 					initialDuration:       0,
 					jittedInitialDuration: 0,
@@ -530,7 +515,6 @@ func Test_backoff_Do(t *testing.T) {
 					f:   f,
 				},
 				fields: fields{
-					wg:                    sync.WaitGroup{},
 					backoffFactor:         0,
 					initialDuration:       0,
 					jittedInitialDuration: 0,
@@ -564,7 +548,6 @@ func Test_backoff_Do(t *testing.T) {
 					f:   f,
 				},
 				fields: fields{
-					wg:                    sync.WaitGroup{},
 					backoffFactor:         1.1,
 					initialDuration:       float64(time.Millisecond * 5),
 					jittedInitialDuration: 0,
@@ -598,7 +581,6 @@ func Test_backoff_Do(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 			b := &backoff{
-				wg:                    test.fields.wg,
 				backoffFactor:         test.fields.backoffFactor,
 				initialDuration:       test.fields.initialDuration,
 				jittedInitialDuration: test.fields.jittedInitialDuration,
@@ -612,79 +594,6 @@ func Test_backoff_Do(t *testing.T) {
 
 			gotRes, err := b.Do(test.args.ctx, test.args.f)
 			if err := checkFunc(test.want, gotRes, err); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
-
-func TestMetrics(t *testing.T) {
-	type args struct {
-		in0 context.Context
-	}
-	type want struct {
-		want map[string]int64
-	}
-	type test struct {
-		name       string
-		args       args
-		want       want
-		checkFunc  func(want, map[string]int64) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-	defaultCheckFunc := func(w want, got map[string]int64) error {
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           in0: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           in0: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-			checkFunc := test.checkFunc
-			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
-			}
-
-			got := Metrics(test.args.in0)
-			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

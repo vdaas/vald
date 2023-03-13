@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -47,11 +47,15 @@ func NewExpBackoff(opts ...Option) http.RoundTripper {
 // It round trip the request and returns the response, and return any error occurred.
 // It returns errors.ErrTransportRetryable to indicate if the request is consider as retryable.
 func (e *ert) RoundTrip(req *http.Request) (res *http.Response, err error) {
+	if req != nil {
+		defer closeBody(req.Body)
+	}
+
 	if e.bo == nil {
-		return e.roundTrip(req)
+		return e.doRoundTrip(req)
 	}
 	_, err = e.bo.Do(req.Context(), func(ctx context.Context) (interface{}, bool, error) {
-		r, err := e.roundTrip(req)
+		r, err := e.doRoundTrip(req)
 		if err != nil {
 			return nil, errors.Is(err, errors.ErrTransportRetryable), err
 		}
@@ -65,7 +69,7 @@ func (e *ert) RoundTrip(req *http.Request) (res *http.Response, err error) {
 	return res, nil
 }
 
-func (e *ert) roundTrip(req *http.Request) (res *http.Response, err error) {
+func (e *ert) doRoundTrip(req *http.Request) (res *http.Response, err error) {
 	res, err = e.transport.RoundTrip(req)
 	if err != nil {
 		log.Error(err)

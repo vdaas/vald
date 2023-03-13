@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -131,7 +131,7 @@ func ParseError(err error, defaultCode codes.Code, defaultMsg string, details ..
 			defaultCode = codes.Internal
 		}
 		if len(defaultMsg) == 0 {
-			defaultMsg = "failed to parse grpc status from error"
+			defaultMsg = "failed to parse gRPC status from error"
 		}
 		st = newStatus(defaultCode, defaultMsg, err, details...)
 		if st == nil || st.Message() == "" {

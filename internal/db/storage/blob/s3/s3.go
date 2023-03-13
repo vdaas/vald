@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -89,7 +89,7 @@ func New(opts ...Option) (b blob.Bucket, err error) {
 }
 
 // Open does nothing. Always returns nil.
-func (*client) Open(ctx context.Context) (err error) {
+func (*client) Open(context.Context) (err error) {
 	return nil
 }
 

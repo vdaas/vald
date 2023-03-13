@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -24,9 +24,11 @@ import (
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/config"
+	"github.com/vdaas/vald/internal/core/algorithm"
 	"github.com/vdaas/vald/internal/core/algorithm/ngt"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/test/data/vector"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/handler/grpc"
@@ -85,7 +87,7 @@ func TestMaxDimInsert(t *testing.T) {
 	// Get the above the limit of bit (2~32)
 	bits := make([]int, 0, maxBit-1)
 	ticker := time.NewTicker(5 * time.Second)
-	eg.Go(func() error {
+	eg.Go(safety.RecoverFunc(func() error {
 		for {
 			select {
 			case <-ctx.Done():
@@ -118,8 +120,8 @@ func TestMaxDimInsert(t *testing.T) {
 				}
 			}
 		}
-	})
-	eg.Go(func() error {
+	}))
+	eg.Go(safety.RecoverFunc(func() error {
 		for bit := 2; bit <= maxBit; bit++ {
 			select {
 			case <-ctx.Done():
@@ -130,8 +132,8 @@ func TestMaxDimInsert(t *testing.T) {
 				if bit == maxBit {
 					dim--
 				}
-				if dim > ngt.VectorDimensionSizeLimit {
-					t.Fatal(errors.ErrInvalidDimensionSize(dim, ngt.VectorDimensionSizeLimit))
+				if dim > algorithm.MaximumVectorDimensionSize {
+					t.Fatal(errors.ErrInvalidDimensionSize(dim, algorithm.MaximumVectorDimensionSize))
 				}
 				t.Logf("Start test: dimension = %d (bit = %d)", dim, bit)
 				ngt, err := init_ngt_service(dim)
@@ -167,7 +169,7 @@ func TestMaxDimInsert(t *testing.T) {
 			time.Sleep(30 * time.Second)
 		}
 		return nil
-	})
+	}))
 	eg.Wait()
 	// Get the max bit, which the environment finish process, from bits
 	var max_bit int
@@ -188,7 +190,7 @@ func TestMaxDimInsertGRPC(t *testing.T) {
 	// Get the above the limit of bit (2~32)
 	bits := make([]int, 0, maxBit-1)
 	ticker := time.NewTicker(5 * time.Second)
-	eg.Go(func() error {
+	eg.Go(safety.RecoverFunc(func() error {
 		for {
 			select {
 			case <-ctx.Done():
@@ -221,8 +223,8 @@ func TestMaxDimInsertGRPC(t *testing.T) {
 				}
 			}
 		}
-	})
-	eg.Go(func() error {
+	}))
+	eg.Go(safety.RecoverFunc(func() error {
 		for bit := 2; bit <= maxBit; bit++ {
 			select {
 			case <-ctx.Done():
@@ -233,8 +235,8 @@ func TestMaxDimInsertGRPC(t *testing.T) {
 				if bit == maxBit {
 					dim--
 				}
-				if dim > ngt.VectorDimensionSizeLimit {
-					t.Fatal(errors.ErrInvalidDimensionSize(dim, ngt.VectorDimensionSizeLimit))
+				if dim > algorithm.MaximumVectorDimensionSize {
+					t.Fatal(errors.ErrInvalidDimensionSize(dim, algorithm.MaximumVectorDimensionSize))
 				}
 				t.Logf("Start test: dimension = %d (bit = %d)", dim, bit)
 				ngt, err := init_ngt_service(dim)
@@ -285,7 +287,7 @@ func TestMaxDimInsertGRPC(t *testing.T) {
 			time.Sleep(30 * time.Second)
 		}
 		return nil
-	})
+	}))
 	eg.Wait()
 	// Get the max bit, which the environment finish process, from bits
 	var max_bit int

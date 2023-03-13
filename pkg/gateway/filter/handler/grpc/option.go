@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -96,7 +96,7 @@ func WithErrGroup(eg errgroup.Group) Option {
 
 func WithStreamConcurrency(c int) Option {
 	return func(s *server) {
-		if c != 0 {
+		if c > 1 {
 			s.streamConcurrency = c
 		}
 	}

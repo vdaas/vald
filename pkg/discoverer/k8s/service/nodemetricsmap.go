@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -82,6 +82,7 @@ type readOnlyNodeMetricsMap struct {
 
 // expunged is an arbitrary pointer that marks entries which have been deleted
 // from the dirty map.
+// skipcq: GSC-G103
 var expungedNodeMetricsMap = unsafe.Pointer(new(mnode.Node))
 
 // An entry is a slot in the map corresponding to a particular key.
@@ -108,6 +109,7 @@ type entryNodeMetricsMap struct {
 }
 
 func newEntryNodeMetricsMap(i mnode.Node) *entryNodeMetricsMap {
+	// skipcq: GSC-G103
 	return &entryNodeMetricsMap{p: unsafe.Pointer(&i)}
 }
 
@@ -187,6 +189,7 @@ func (e *entryNodeMetricsMap) tryStore(i *mnode.Node) bool {
 		if p == expungedNodeMetricsMap {
 			return false
 		}
+		// skipcq: GSC-G103
 		if atomic.CompareAndSwapPointer(&e.p, p, unsafe.Pointer(i)) {
 			return true
 		}
@@ -205,6 +208,7 @@ func (e *entryNodeMetricsMap) unexpungeLocked() (wasExpunged bool) {
 //
 // The entry must be known not to be expunged.
 func (e *entryNodeMetricsMap) storeLocked(i *mnode.Node) {
+	// skipcq: GSC-G103
 	atomic.StorePointer(&e.p, unsafe.Pointer(i))
 }
 
@@ -265,6 +269,7 @@ func (e *entryNodeMetricsMap) tryLoadOrStore(i mnode.Node) (actual mnode.Node, l
 	// shouldn't bother heap-allocating.
 	ic := i
 	for {
+		// skipcq: GSC-G103
 		if atomic.CompareAndSwapPointer(&e.p, nil, unsafe.Pointer(&ic)) {
 			return i, false, true
 		}

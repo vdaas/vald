@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import (
 	"time"
 
 	"github.com/kpango/gache"
+	"github.com/vdaas/vald/internal/cache/cacher"
 )
 
 type cache struct {
@@ -32,8 +33,8 @@ type cache struct {
 }
 
 // New loads a cache model and returns a new cache struct.
-func New(opts ...Option) (c *cache) {
-	c = new(cache)
+func New(opts ...Option) cacher.Cache {
+	c := new(cache)
 	for _, opt := range append(defaultOptions(), opts...) {
 		opt(c)
 	}

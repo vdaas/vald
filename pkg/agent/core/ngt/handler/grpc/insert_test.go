@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -60,7 +60,7 @@ func Test_server_Insert(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, *payload.Object_Location, error) error
-		beforeFunc func(*server)
+		beforeFunc func(*testing.T, *server)
 		afterFunc  func(args)
 	}
 	defaultCheckFunc := func(w want, gotRes *payload.Object_Location, err error) error {
@@ -1086,7 +1086,8 @@ func Test_server_Insert(t *testing.T) {
 						service.WithEnableInMemoryMode(true),
 					},
 				},
-				beforeFunc: func(s *server) {
+				beforeFunc: func(t *testing.T, s *server) {
+					t.Helper()
 					s.ngt.Insert(id, bVecs[0])
 				},
 				want: want{
@@ -1134,7 +1135,8 @@ func Test_server_Insert(t *testing.T) {
 						service.WithEnableInMemoryMode(true),
 					},
 				},
-				beforeFunc: func(s *server) {
+				beforeFunc: func(t *testing.T, s *server) {
+					t.Helper()
 					s.ngt.Insert(bID, intVec)
 				},
 				want: want{
@@ -1176,7 +1178,8 @@ func Test_server_Insert(t *testing.T) {
 						service.WithEnableInMemoryMode(true),
 					},
 				},
-				beforeFunc: func(s *server) {
+				beforeFunc: func(t *testing.T, s *server) {
+					t.Helper()
 					s.ngt.Insert(id, intVec)
 				},
 				want: want{
@@ -1227,7 +1230,8 @@ func Test_server_Insert(t *testing.T) {
 						service.WithEnableInMemoryMode(true),
 					},
 				},
-				beforeFunc: func(s *server) {
+				beforeFunc: func(t *testing.T, s *server) {
+					t.Helper()
 					s.ngt.Insert(id, bVec[0])
 				},
 				want: want{
@@ -1275,7 +1279,8 @@ func Test_server_Insert(t *testing.T) {
 						service.WithEnableInMemoryMode(true),
 					},
 				},
-				beforeFunc: func(s *server) {
+				beforeFunc: func(t *testing.T, s *server) {
+					t.Helper()
 					s.ngt.Insert(bID, intVec)
 				},
 				want: want{
@@ -1317,7 +1322,8 @@ func Test_server_Insert(t *testing.T) {
 						service.WithEnableInMemoryMode(true),
 					},
 				},
-				beforeFunc: func(s *server) {
+				beforeFunc: func(t *testing.T, s *server) {
+					t.Helper()
 					s.ngt.Insert(id, intVec)
 				},
 				want: want{
@@ -1365,7 +1371,7 @@ func Test_server_Insert(t *testing.T) {
 				streamConcurrency: test.fields.streamConcurrency,
 			}
 			if test.beforeFunc != nil {
-				test.beforeFunc(s)
+				test.beforeFunc(tt, s)
 			}
 
 			gotRes, err := s.Insert(ctx, test.args.req)
@@ -2368,6 +2374,7 @@ func Test_server_StreamInsert(t *testing.T) {
 					ngtCfg: defaultF32SvcCfg,
 				},
 				beforeFunc: func(t *testing.T, ctx context.Context, a args, s Server) {
+					t.Helper()
 					iv, err := vector.GenF32Vec(vector.Gaussian, 1, f32VecDim)
 					if err != nil {
 						t.Fatal(err)
@@ -2417,6 +2424,7 @@ func Test_server_StreamInsert(t *testing.T) {
 					ngtCfg: defaultF32SvcCfg,
 				},
 				beforeFunc: func(t *testing.T, ctx context.Context, a args, s Server) {
+					t.Helper()
 					iv, err := vector.GenF32Vec(vector.Gaussian, 1, f32VecDim)
 					if err != nil {
 						t.Fatal(err)
@@ -2466,6 +2474,7 @@ func Test_server_StreamInsert(t *testing.T) {
 					ngtCfg: defaultF32SvcCfg,
 				},
 				beforeFunc: func(t *testing.T, ctx context.Context, a args, s Server) {
+					t.Helper()
 					ir := &payload.Insert_Request{
 						Vector: &payload.Object_Vector{
 							Id:     "non-exists-id",
@@ -2506,6 +2515,7 @@ func Test_server_StreamInsert(t *testing.T) {
 					ngtCfg: defaultF32SvcCfg,
 				},
 				beforeFunc: func(t *testing.T, ctx context.Context, a args, s Server) {
+					t.Helper()
 					ir := &payload.Insert_Request{
 						Vector: &payload.Object_Vector{
 							Id:     "non-exists-id",
@@ -2546,6 +2556,7 @@ func Test_server_StreamInsert(t *testing.T) {
 					ngtCfg: defaultF32SvcCfg,
 				},
 				beforeFunc: func(t *testing.T, ctx context.Context, a args, s Server) {
+					t.Helper()
 					ir := &payload.Insert_Request{
 						Vector: &payload.Object_Vector{
 							Id:     reqs.Requests[0].Vector.Id,
@@ -2591,6 +2602,7 @@ func Test_server_StreamInsert(t *testing.T) {
 					ngtCfg: defaultF32SvcCfg,
 				},
 				beforeFunc: func(t *testing.T, ctx context.Context, a args, s Server) {
+					t.Helper()
 					ir := &payload.Insert_Request{
 						Vector: &payload.Object_Vector{
 							Id:     reqs.Requests[0].Vector.Id,
@@ -4972,6 +4984,7 @@ func Test_server_MultiInsert(t *testing.T) {
 					svcOpts: defaultSvcOpts,
 				},
 				beforeFunc: func(t *testing.T, ctx context.Context, s *server) {
+					t.Helper()
 					vecs, err := vector.GenF32Vec(vector.Gaussian, 2, f32VecDim)
 					if err != nil {
 						t.Error(err)
@@ -5029,6 +5042,7 @@ func Test_server_MultiInsert(t *testing.T) {
 					svcOpts: defaultSvcOpts,
 				},
 				beforeFunc: func(t *testing.T, ctx context.Context, s *server) {
+					t.Helper()
 					vecs, err := vector.GenF32Vec(vector.Gaussian, insertNum, f32VecDim)
 					if err != nil {
 						t.Error(err)
@@ -5077,6 +5091,7 @@ func Test_server_MultiInsert(t *testing.T) {
 					svcOpts: defaultSvcOpts,
 				},
 				beforeFunc: func(t *testing.T, ctx context.Context, s *server) {
+					t.Helper()
 					vecs, err := vector.GenF32Vec(vector.Gaussian, 2, f32VecDim)
 					if err != nil {
 						t.Error(err)
@@ -5134,6 +5149,7 @@ func Test_server_MultiInsert(t *testing.T) {
 					svcOpts: defaultSvcOpts,
 				},
 				beforeFunc: func(t *testing.T, ctx context.Context, s *server) {
+					t.Helper()
 					vecs, err := vector.GenF32Vec(vector.Gaussian, insertNum, f32VecDim)
 					if err != nil {
 						t.Error(err)
@@ -5182,6 +5198,7 @@ func Test_server_MultiInsert(t *testing.T) {
 					svcOpts: defaultSvcOpts,
 				},
 				beforeFunc: func(t *testing.T, ctx context.Context, s *server) {
+					t.Helper()
 					// insert same request with different ID
 					for i := 0; i < 2; i++ {
 						ir := &payload.Insert_Request{
@@ -5227,6 +5244,7 @@ func Test_server_MultiInsert(t *testing.T) {
 					svcOpts: defaultSvcOpts,
 				},
 				beforeFunc: func(t *testing.T, ctx context.Context, s *server) {
+					t.Helper()
 					// insert same request with different ID
 					for i := range req.Requests {
 						ir := &payload.Insert_Request{
@@ -5272,6 +5290,7 @@ func Test_server_MultiInsert(t *testing.T) {
 					svcOpts: defaultSvcOpts,
 				},
 				beforeFunc: func(t *testing.T, ctx context.Context, s *server) {
+					t.Helper()
 					// insert same request with different ID
 					for i := 0; i < 2; i++ {
 						ir := &payload.Insert_Request{
@@ -5317,6 +5336,7 @@ func Test_server_MultiInsert(t *testing.T) {
 					svcOpts: defaultSvcOpts,
 				},
 				beforeFunc: func(t *testing.T, ctx context.Context, s *server) {
+					t.Helper()
 					// insert same request with different ID
 					for i := range req.Requests {
 						ir := &payload.Insert_Request{
@@ -5362,6 +5382,7 @@ func Test_server_MultiInsert(t *testing.T) {
 					svcOpts: defaultSvcOpts,
 				},
 				beforeFunc: func(t *testing.T, ctx context.Context, s *server) {
+					t.Helper()
 					for i := 0; i < 2; i++ {
 						ir := &payload.Insert_Request{
 							Vector: req.Requests[i].Vector,
@@ -5412,6 +5433,7 @@ func Test_server_MultiInsert(t *testing.T) {
 					svcOpts: defaultSvcOpts,
 				},
 				beforeFunc: func(t *testing.T, ctx context.Context, s *server) {
+					t.Helper()
 					for _, r := range req.Requests {
 						ir := &payload.Insert_Request{
 							Vector: r.Vector,
@@ -5453,6 +5475,7 @@ func Test_server_MultiInsert(t *testing.T) {
 					svcOpts: defaultSvcOpts,
 				},
 				beforeFunc: func(t *testing.T, ctx context.Context, s *server) {
+					t.Helper()
 					for i := 0; i < 2; i++ {
 						ir := &payload.Insert_Request{
 							Vector: req.Requests[i].Vector,
@@ -5503,6 +5526,7 @@ func Test_server_MultiInsert(t *testing.T) {
 					svcOpts: defaultSvcOpts,
 				},
 				beforeFunc: func(t *testing.T, ctx context.Context, s *server) {
+					t.Helper()
 					for _, r := range req.Requests {
 						ir := &payload.Insert_Request{
 							Vector: r.Vector,

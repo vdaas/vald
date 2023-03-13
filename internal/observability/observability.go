@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -148,7 +148,7 @@ func (o *observability) PreStart(ctx context.Context) error {
 	return nil
 }
 
-func (o *observability) Start(ctx context.Context) <-chan error {
+func (*observability) Start(context.Context) <-chan error {
 	return nil
 }
 

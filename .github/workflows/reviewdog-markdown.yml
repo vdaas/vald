@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,8 +22,36 @@ on:
       - "CHANGELOG.md"
 
 jobs:
-  languagetool:
-    name: runner / LanguageTool
+  dump_contexts_to_log:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dump GitHub context
+        id: github_context_step
+        run: echo $JSON
+        env:
+          JSON: ${{ toJSON(github) }}
+      - name: Dump job context
+        run: echo $JSON
+        env:
+          JSON: ${{ toJSON(job) }}
+      - name: Dump steps context
+        run: echo $JSON
+        env:
+          JSON: ${{ toJSON(steps) }}
+      - name: Dump runner context
+        run: echo $JSON
+        env:
+          JSON: ${{ toJSON(runner) }}
+      - name: Dump strategy context
+        run: echo $JSON
+        env:
+          JSON: ${{ toJSON(strategy) }}
+      - name: Dump matrix context
+        run: echo $JSON
+        env:
+          JSON: ${{ toJSON(matrix) }}
+  languagetool_apis_charts:
+    name: runner / LanguageTool / apis & charts
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -35,7 +63,25 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           reporter: github-pr-review
-          patterns: "**/*.md **/*.md.gotmpl !**/CHANGELOG.md"
+          patterns: "apis/**/*.md apis/**/*.md.gotmpl charts/**/*.md !charts/vald/README.md"
+          level: warning
+          language: en-US
+          disabled_rules: "DOUBLE_PUNCTUATION,WORD_CONTAINS_UNDERSCORE,ARROWS,CURRENCY,DASH_RULE,EN_QUOTES"
+          disabled_categories: "TYPOS,TYPOGRAPHY,STYLE,CASING"
+  languagetool_docs:
+    name: runner / LanguageTool / Docs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: set git config
+        run: |
+          git config --global --add safe.directory ${GITHUB_WORKSPACE}
+      - name: LanguageTool
+        uses: reviewdog/action-languagetool@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          reporter: github-pr-review
+          patterns: "**/*.md **/*.md.gotmpl !**/CHANGELOG.md !apis/** !charts/**"
           level: warning
           language: en-US
           disabled_rules: "DOUBLE_PUNCTUATION,WORD_CONTAINS_UNDERSCORE,ARROWS,CURRENCY,DASH_RULE,EN_QUOTES"

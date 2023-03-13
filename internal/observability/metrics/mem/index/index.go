@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -73,7 +73,7 @@ func New() metrics.Metric {
 	return &memoryMetrics{}
 }
 
-func (mm *memoryMetrics) View() ([]*metrics.View, error) {
+func (*memoryMetrics) View() ([]*metrics.View, error) {
 	alloc, err := view.New(
 		view.MatchInstrumentName(allocMetricsDescription),
 		view.WithSetDescription(allocMetricsDescription),
@@ -218,7 +218,7 @@ func (mm *memoryMetrics) View() ([]*metrics.View, error) {
 	}, nil
 }
 
-func (mm *memoryMetrics) Register(m metrics.Meter) error {
+func (*memoryMetrics) Register(m metrics.Meter) error {
 	alloc, err := m.AsyncInt64().Gauge(
 		allocMetricsName,
 		metrics.WithDescription(allocMetricsDescription),

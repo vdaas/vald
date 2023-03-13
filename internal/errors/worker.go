@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -29,18 +29,15 @@ var (
 		return Errorf("worker %s is already running", name)
 	}
 
-	// ErrQueueIsNotRunning represents a function to generate the queue is not running error.
-	ErrQueueIsNotRunning = func() error {
-		return New("queue is not running")
-	}
+	// ErrQueueIsNotRunning represents an error that the queue is not running.
+	ErrQueueIsNotRunning = New("queue is not running")
 
-	// ErrQueueIsAlreadyRunning represents a function to generate the queue is already running error.
-	ErrQueueIsAlreadyRunning = func() error {
-		return New("queue is already running")
-	}
+	// ErrQueueIsAlreadyRunning represents an error that the queue is already running.
+	ErrQueueIsAlreadyRunning = New("queue is already running")
 
-	// ErrJobFuncIsNil represents a function to generate job function is nil error.
-	ErrJobFuncIsNil = func() error {
-		return New("JobFunc is nil")
-	}
+	// ErrJobFuncIsNil represents an error that job function is nil.
+	ErrJobFuncIsNil = New("JobFunc is nil")
+
+	// ErrJobFuncNotFound represents an error that job function is not found.
+	ErrJobFuncNotFound = New("JobFunc is not found")
 )

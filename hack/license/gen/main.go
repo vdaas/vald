@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -69,12 +69,14 @@ const (
 func main() {
 	log.Init()
 	if len(os.Args) < minimumArgumentLength {
+		// skipcq: RVV-A0003
 		log.Fatal(errors.New("invalid argument"))
 	}
 	for _, path := range dirwalk(os.Args[1]) {
 		fmt.Println(path)
 		err := readAndRewrite(path)
 		if err != nil {
+			// skipcq: RVV-A0003
 			log.Fatal(err)
 		}
 	}
@@ -165,6 +167,7 @@ func readAndRewrite(path string) error {
 	if err != nil {
 		err = f.Close()
 		if err != nil {
+			// skipcq: RVV-A0003
 			log.Fatal(err)
 		}
 		return errors.Errorf("filepath %s, could not open", path)
@@ -182,6 +185,7 @@ func readAndRewrite(path string) error {
 	if fi.Name() == "LICENSE" {
 		err = license.Execute(buf, d)
 		if err != nil {
+			// skipcq: RVV-A0003
 			log.Fatal(err)
 		}
 	} else {
@@ -200,14 +204,17 @@ func readAndRewrite(path string) error {
 				bf = true
 				_, err = buf.WriteString(line)
 				if err != nil {
+					// skipcq: RVV-A0003
 					log.Fatal(err)
 				}
 				_, err = buf.WriteString("\n")
 				if err != nil {
+					// skipcq: RVV-A0003
 					log.Fatal(err)
 				}
 				_, err = buf.WriteString("\n")
 				if err != nil {
+					// skipcq: RVV-A0003
 					log.Fatal(err)
 				}
 				continue
@@ -215,10 +222,12 @@ func readAndRewrite(path string) error {
 			if (filepath.Ext(path) == ".yaml" || filepath.Ext(path) == ".yml") && strings.HasPrefix(line, "---") {
 				_, err = buf.WriteString(line)
 				if err != nil {
+					// skipcq: RVV-A0003
 					log.Fatal(err)
 				}
 				_, err = buf.WriteString("\n")
 				if err != nil {
+					// skipcq: RVV-A0003
 					log.Fatal(err)
 				}
 				continue
@@ -229,6 +238,7 @@ func readAndRewrite(path string) error {
 				once.Do(func() {
 					err = apache.Execute(buf, d)
 					if err != nil {
+						// skipcq: RVV-A0003
 						log.Fatal(err)
 					}
 				})
@@ -237,10 +247,12 @@ func readAndRewrite(path string) error {
 			if !lf {
 				_, err = buf.WriteString(line)
 				if err != nil {
+					// skipcq: RVV-A0003
 					log.Fatal(err)
 				}
 				_, err = buf.WriteString("\n")
 				if err != nil {
+					// skipcq: RVV-A0003
 					log.Fatal(err)
 				}
 			}
@@ -259,16 +271,19 @@ func readAndRewrite(path string) error {
 	if err != nil {
 		err = f.Close()
 		if err != nil {
+			// skipcq: RVV-A0003
 			log.Fatal(err)
 		}
 		return errors.Errorf("filepath %s, could not open", path)
 	}
 	_, err = f.WriteString(strings.ReplaceAll(buf.String(), d.Escape+"\n\n\n", d.Escape+"\n\n"))
 	if err != nil {
+		// skipcq: RVV-A0003
 		log.Fatal(err)
 	}
 	err = f.Close()
 	if err != nil {
+		// skipcq: RVV-A0003
 		log.Fatal(err)
 	}
 	return nil

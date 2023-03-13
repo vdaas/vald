@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import (
 	"syscall"
 
 	"github.com/vdaas/vald/internal/errors"
-	"github.com/vdaas/vald/internal/log"
 )
 
 // SocketController represents the socket listener controller.
@@ -99,7 +98,6 @@ func (ctrl *control) GetControl() func(network, addr string, c syscall.RawConn) 
 
 func (ctrl *control) controlFunc(network, address string, c syscall.RawConn) (err error) {
 	return c.Control(func(fd uintptr) {
-		log.Debugf("controlling socket for %s://%s, config %#v", network, address, ctrl)
 		f := int(fd)
 		var ierr error
 		if SO_REUSEPORT != 0 {

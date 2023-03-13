@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -197,7 +197,7 @@ func (w *watch) Remove(dirs ...string) (err error) {
 }
 
 // Stop stops watching all named files or directories. If an error occurs, returns the error.
-func (w *watch) Stop(ctx context.Context) (err error) {
+func (w *watch) Stop(context.Context) (err error) {
 	w.mu.Lock()
 	defer w.mu.Unlock()
 	for dir := range w.dirs {

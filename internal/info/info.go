@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -21,12 +21,12 @@ import (
 	"fmt"
 	"reflect"
 	"runtime"
-	"sort"
 	"strconv"
 	"sync"
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/slices"
 	"github.com/vdaas/vald/internal/strings"
 )
 
@@ -123,6 +123,7 @@ func Init(name string) {
 		i, err := New(WithServerName(name))
 		if err != nil {
 			log.Init()
+			// skipcq: RVV-A0003
 			log.Fatal(errors.ErrFailedToInitInfo(err))
 		}
 		infoProvider = i
@@ -162,7 +163,7 @@ func New(opts ...Option) (Info, error) {
 	}
 
 	if i.rtCaller == nil || i.rtFuncForPC == nil {
-		return nil, errors.ErrRuntimeFuncNil()
+		return nil, errors.ErrRuntimeFuncNil
 	}
 
 	i.prepare()
@@ -172,11 +173,17 @@ func New(opts ...Option) (Info, error) {
 
 // String calls String method of global detail object.
 func String() string {
+	if infoProvider == nil {
+		return ""
+	}
 	return infoProvider.String()
 }
 
 // Get calls Get method of global detail object.
 func Get() Detail {
+	if infoProvider == nil {
+		return Detail{}
+	}
 	return infoProvider.Get()
 }
 
@@ -184,14 +191,17 @@ func Get() Detail {
 // The stacktrace will be initialized when the stacktrace is not initialized yet.
 func (i *info) String() string {
 	if len(i.detail.StackTrace) == 0 {
-		i.detail = i.Get()
+		i.prepare()
+		i.detail = i.getDetail()
 	}
 
 	return i.detail.String()
 }
 
 // String returns summary of Detail object.
+// skipcq: RVV-B0006
 func (d Detail) String() string {
+	// skipcq: RVV-B0006
 	d.Version = log.Bold(d.Version)
 	maxlen, l := 0, 0
 	rv := reflect.ValueOf(d)
@@ -252,19 +262,20 @@ func (d Detail) String() string {
 			strs = append(strs, fmt.Sprintf(infoFormat, tag)+value)
 		}
 	}
-	sort.Strings(strs)
+	slices.Sort(strs)
 	return "\n" + strings.Join(strs, "\n")
 }
 
 // Get returns parased Detail object.
 func (i *info) Get() Detail {
 	i.prepare()
-	return i.get()
+	return i.getDetail()
 }
 
-func (i info) get() Detail {
+// skipcq: VET-V0008
+func (i info) getDetail() Detail {
 	i.detail.StackTrace = make([]StackTrace, 0, 10)
-	for j := 2; ; j++ {
+	for j := 3; ; j++ {
 		pc, file, line, ok := i.rtCaller(j)
 		if !ok {
 			break
@@ -300,6 +311,8 @@ func (i info) get() Detail {
 			return idx >= 0 && strings.Index(file, valdRepo) >= 0
 		}():
 			url = strings.Replace(file[idx+goSrcLen:]+"#L"+strconv.Itoa(line), valdRepo, "https://"+valdRepo+"/blob/"+i.detail.GitCommit, -1)
+		case strings.HasPrefix(file, valdRepo):
+			url = fmt.Sprintf("%s#L%d", strings.Replace(file, valdRepo, "https://"+valdRepo+"/blob/"+i.detail.GitCommit, -1), line)
 		}
 		i.detail.StackTrace = append(i.detail.StackTrace, StackTrace{
 			FuncName: funcName,

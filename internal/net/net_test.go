@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/vdaas/vald/internal/conv"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/io"
 	"github.com/vdaas/vald/internal/log"
@@ -149,8 +150,8 @@ func TestDialContext(t *testing.T) {
 		want       want
 		srv        *httptest.Server
 		checkFunc  func(want, Conn, error) error
-		beforeFunc func(*test)
-		afterFunc  func(*test)
+		beforeFunc func(*testing.T, *test)
+		afterFunc  func(*testing.T, *test)
 	}
 	defaultCheckFunc := func(w want, gotConn Conn, err error) error {
 		if !errors.Is(err, w.err) {
@@ -167,14 +168,15 @@ func TestDialContext(t *testing.T) {
 			args: args{
 				network: TCP.String(),
 			},
-			beforeFunc: func(t *test) {
+			beforeFunc: func(t *testing.T, test *test) {
+				t.Helper()
 				srvContent := "test"
 
-				t.srv = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				test.srv = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 					w.WriteHeader(200)
 					fmt.Fprint(w, srvContent)
 				}))
-				t.args.addr = t.srv.URL[len("http://"):]
+				test.args.addr = test.srv.URL[len("http://"):]
 			},
 			checkFunc: func(w want, gotConn Conn, err error) error {
 				if !errors.Is(err, w.err) {
@@ -185,18 +187,22 @@ func TestDialContext(t *testing.T) {
 
 				// read the output from the server and check if it is equals to the count
 				fmt.Fprintf(gotConn, "GET / HTTP/1.0\r\n\r\n")
-				buf, _ := io.ReadAll(gotConn)
-				content := strings.Split(string(buf), "\n")[5] // skip HTTP header
+				buf, err := io.ReadAll(gotConn)
+				if err != nil || buf == nil {
+					return errors.Errorf("error or buffer is nil,\terror: %v, buf: %v", err, buf)
+				}
+				content := strings.Split(conv.Btoa(buf), "\n")[5] // skip HTTP header
 				if content != srvContent {
 					return errors.Errorf("invalid content, got: %v, want: %v", content, srvContent)
 				}
 
 				return nil
 			},
-			afterFunc: func(t *test) {
-				t.srv.Client().CloseIdleConnections()
-				t.srv.CloseClientConnections()
-				t.srv.Close()
+			afterFunc: func(t *testing.T, test *test) {
+				t.Helper()
+				test.srv.Client().CloseIdleConnections()
+				test.srv.CloseClientConnections()
+				test.srv.Close()
 			},
 		},
 	}
@@ -208,7 +214,7 @@ func TestDialContext(t *testing.T) {
 			ctx, cancel := context.WithCancel(context.Background())
 			defer cancel()
 			if test.beforeFunc != nil {
-				test.beforeFunc(test)
+				test.beforeFunc(tt, test)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -221,7 +227,7 @@ func TestDialContext(t *testing.T) {
 			}
 
 			if test.afterFunc != nil {
-				test.afterFunc(test)
+				test.afterFunc(tt, test)
 			}
 		})
 	}
@@ -588,6 +594,7 @@ func TestScanPorts(t *testing.T) {
 				host: "localhost",
 			},
 			beforeFunc: func(t *testing.T, test *test) {
+				t.Helper()
 				srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 					w.WriteHeader(200)
 				}))
@@ -617,6 +624,7 @@ func TestScanPorts(t *testing.T) {
 				host: "localhost",
 			},
 			beforeFunc: func(t *testing.T, test *test) {
+				t.Helper()
 				srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 					w.WriteHeader(200)
 				}))
@@ -646,6 +654,7 @@ func TestScanPorts(t *testing.T) {
 				host: "localhost",
 			},
 			beforeFunc: func(t *testing.T, test *test) {
+				t.Helper()
 				srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 					w.WriteHeader(200)
 				}))
@@ -675,6 +684,7 @@ func TestScanPorts(t *testing.T) {
 				host: "localhost",
 			},
 			beforeFunc: func(t *testing.T, test *test) {
+				t.Helper()
 				srvNum := 20
 
 				srvs := make([]*httptest.Server, 0, srvNum)

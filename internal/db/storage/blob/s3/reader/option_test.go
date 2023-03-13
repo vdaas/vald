@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -398,7 +398,7 @@ func TestWithBackoffOpts(t *testing.T) {
 		args       args
 		want       want
 		checkFunc  func(want, *T) error
-		beforeFunc func(args, *T)
+		beforeFunc func(*testing.T, args, *T)
 		afterFunc  func(args, *T)
 	}
 	defaultCheckFunc := func(w want, got *T) error {
@@ -450,7 +450,8 @@ func TestWithBackoffOpts(t *testing.T) {
 						backoffOpts: append(defaultOptions, opts...),
 					},
 				},
-				beforeFunc: func(args args, r *T) {
+				beforeFunc: func(t *testing.T, args args, r *T) {
+					t.Helper()
 					r.backoffOpts = args.defaultOptions
 				},
 			}
@@ -471,7 +472,7 @@ func TestWithBackoffOpts(t *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			obj := new(T)
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args, obj)
+				test.beforeFunc(tt, test.args, obj)
 			}
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args, obj)

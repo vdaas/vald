@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc/errdetails"
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/observability/trace"
+	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/strings"
 	"go.opentelemetry.io/otel/attribute"
 )
@@ -302,16 +303,14 @@ func (s *server) StreamLinearSearch(stream vald.Search_StreamLinearSearchServer)
 		}
 	}()
 	err = grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
-		func() interface{} { return new(payload.Search_Request) },
-		func(ctx context.Context, data interface{}) (interface{}, error) {
-			req := data.(*payload.Search_Request)
+		func(ctx context.Context, req *payload.Search_Request) (*payload.Search_StreamResponse, error) {
 			ctx, sspan := trace.StartSpan(ctx, apiName+"/"+vald.StreamLinearSearchRPCName+"/requestID-"+req.GetConfig().GetRequestId())
 			defer func() {
 				if sspan != nil {
 					sspan.End()
 				}
 			}()
-			res, err := s.LinearSearch(ctx, data.(*payload.Search_Request))
+			res, err := s.LinearSearch(ctx, req)
 			if err != nil {
 				st, msg, err := status.ParseError(err, codes.Internal, "failed to parse LinearSearch gRPC error response")
 				if sspan != nil {
@@ -353,9 +352,7 @@ func (s *server) StreamLinearSearchByID(stream vald.Search_StreamLinearSearchByI
 		}
 	}()
 	err = grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
-		func() interface{} { return new(payload.Search_IDRequest) },
-		func(ctx context.Context, data interface{}) (interface{}, error) {
-			req := data.(*payload.Search_IDRequest)
+		func(ctx context.Context, req *payload.Search_IDRequest) (*payload.Search_StreamResponse, error) {
 			ctx, sspan := trace.StartSpan(ctx, apiName+"/"+vald.StreamLinearSearchByIDRPCName+"/id-"+req.GetId())
 			defer func() {
 				if sspan != nil {
@@ -412,7 +409,7 @@ func (s *server) MultiLinearSearch(ctx context.Context, reqs *payload.Search_Mul
 		idx, query := i, req
 		rids = append(rids, req.GetConfig().GetRequestId())
 		wg.Add(1)
-		s.eg.Go(func() (err error) {
+		s.eg.Go(safety.RecoverFunc(func() (err error) {
 			defer wg.Done()
 			ctx, sspan := trace.StartSpan(ctx, fmt.Sprintf("%s/%s/errgroup.Go/id-%d", apiName, vald.MultiLinearSearchRPCName, idx))
 			defer func() {
@@ -444,7 +441,7 @@ func (s *server) MultiLinearSearch(ctx context.Context, reqs *payload.Search_Mul
 			}
 			res.Responses[idx] = r
 			return nil
-		})
+		}))
 	}
 	wg.Wait()
 	if errs != nil {
@@ -486,7 +483,7 @@ func (s *server) MultiLinearSearchByID(ctx context.Context, reqs *payload.Search
 		idx, query := i, req
 		rids = append(rids, req.GetConfig().GetRequestId())
 		wg.Add(1)
-		s.eg.Go(func() error {
+		s.eg.Go(safety.RecoverFunc(func() error {
 			ctx, sspan := trace.StartSpan(ctx, fmt.Sprintf("%s/%s/errgroup.Go/id-%d", apiName, vald.MultiLinearSearchByIDRPCName, idx))
 			defer func() {
 				if sspan != nil {
@@ -518,7 +515,7 @@ func (s *server) MultiLinearSearchByID(ctx context.Context, reqs *payload.Search
 			}
 			res.Responses[idx] = r
 			return nil
-		})
+		}))
 	}
 	wg.Wait()
 	if errs != nil {

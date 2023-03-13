@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -737,6 +737,7 @@ func Test_watch_Add(t *testing.T) {
 				},
 			},
 			afterFunc: func(t *testing.T, args args, w Watcher) {
+				t.Helper()
 				_ = w.Remove("./watch_test.go")
 				defaultAfterFunc(t, args, w)
 			},

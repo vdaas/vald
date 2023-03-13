@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -30,12 +30,12 @@ func NewConvictionPolicy() gocql.ConvictionPolicy {
 }
 
 // AddFailure implements gocql.ConvictionPolicy interface to handle failure and convicts all hosts.
-func (c *convictionPolicy) AddFailure(err error, host *gocql.HostInfo) bool {
+func (*convictionPolicy) AddFailure(err error, host *gocql.HostInfo) bool {
 	log.Warn(errors.ErrCassandraHostDownDetected(err, host.String()))
 	return true
 }
 
 // Reset clears the conviction state.
-func (c *convictionPolicy) Reset(host *gocql.HostInfo) {
+func (*convictionPolicy) Reset(host *gocql.HostInfo) {
 	log.Infof("cassandra host %s reset detected\t%s", host.HostnameAndPort(), host.String())
 }

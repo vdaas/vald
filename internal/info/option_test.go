@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -128,7 +128,9 @@ func TestWithRuntimeCaller(t *testing.T) {
 
 		opts := []comparator.Option{
 			comparator.AllowUnexported(info{}),
+			// skipcq: VET-V0008
 			comparator.Comparer(func(x, y sync.Once) bool {
+				// skipcq: VET-V0008
 				return reflect.DeepEqual(x, y)
 			}),
 			comparator.Comparer(func(x, y func(skip int) (pc uintptr, file string, line int, ok bool)) bool {
@@ -224,7 +226,9 @@ func TestWithRuntimeFuncForPC(t *testing.T) {
 
 		opts := []comparator.Option{
 			comparator.AllowUnexported(info{}),
+			// skipcq: VET-V0008
 			comparator.Comparer(func(x, y sync.Once) bool {
+				// skipcq: VET-V0008
 				return reflect.DeepEqual(x, y)
 			}),
 			comparator.Comparer(func(x, y func(skip int) (pc uintptr, file string, line int, ok bool)) bool {

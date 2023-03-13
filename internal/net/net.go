@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import (
 	"context"
 	"math"
 	"net"
+	"net/netip"
 	"strconv"
 	"sync"
 	"syscall"
@@ -30,7 +31,6 @@ import (
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/strings"
-	"inet.af/netaddr"
 )
 
 type (
@@ -161,7 +161,7 @@ func Parse(addr string) (host string, port uint16, isLocal, isIPv4, isIPv6 bool,
 		host = addr
 	}
 
-	ip, nerr := netaddr.ParseIP(host)
+	ip, nerr := netip.ParseAddr(host)
 	if nerr != nil {
 		log.Debugf("host: %s,\tport: %d,\tip: %#v,\terror: %v", host, port, ip, nerr)
 	}
@@ -169,13 +169,13 @@ func Parse(addr string) (host string, port uint16, isLocal, isIPv4, isIPv6 bool,
 	// return host and port and flags
 	return host, port,
 		// check is local ip or not
-		IsLocal(host) || ip.IsLoopback(),
+		IsLocal(host) || nerr == nil && ip.IsLoopback(),
 		// check is IPv4 or not
 		// ic < 2,
 		nerr == nil && ip.Is4(),
 		// check is IPv6 or not
 		// ic >= 2,
-		nerr == nil && (ip.Is6() || ip.Is4in6()),
+		nerr == nil && (ip.Is6() || ip.Is4In6()),
 		// Split error
 		err
 }
@@ -284,9 +284,9 @@ func LoadLocalIP() string {
 	}
 	for _, address := range addrs {
 		if ipn, ok := address.(*net.IPNet); ok {
-			if ip, ok := netaddr.FromStdIPNet(ipn); ok && ip.Valid() && ip.IP().IsLoopback() &&
-				(ip.IP().Is4() || ip.IP().Is6() || ip.IP().Is4in6()) {
-				return ip.IP().String()
+			if ip, err := netip.ParsePrefix(ipn.String()); err == nil && ip.IsValid() && ip.Addr().IsLoopback() &&
+				(ip.Addr().Is4() || ip.Addr().Is6() || ip.Addr().Is4In6()) {
+				return ip.Addr().String()
 			}
 		}
 	}

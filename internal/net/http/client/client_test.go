@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -63,19 +63,25 @@ var (
 		comparator.Comparer(func(x, y func(ctx context.Context, network, addr string) (net.Conn, error)) bool {
 			return reflect.ValueOf(x).Pointer() == reflect.ValueOf(y).Pointer()
 		}),
+		// skipcq: VET-V0008
 		comparator.Comparer(func(x, y sync.Mutex) bool {
+			// skipcq: VET-V0008
 			return reflect.DeepEqual(x, y)
 		}),
 		comparator.Comparer(func(x, y atomic.Value) bool {
 			return reflect.DeepEqual(x.Load(), y.Load())
 		}),
+		// skipcq: VET-V0008
 		comparator.Comparer(func(x, y sync.Once) bool {
+			// skipcq: VET-V0008
 			return reflect.DeepEqual(x, y)
 		}),
 		comparator.Comparer(func(x, y *tls.Config) bool {
 			return reflect.DeepEqual(x, y)
 		}),
+		// skipcq: VET-V0008
 		comparator.Comparer(func(x, y sync.WaitGroup) bool {
+			// skipcq: VET-V0008
 			return reflect.DeepEqual(x, y)
 		}),
 	}

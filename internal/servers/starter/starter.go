@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -138,7 +138,7 @@ func (s *srvs) setupAPIs(cfg *tls.Config) ([]servers.Option, error) {
 	return opts, nil
 }
 
-func (s *srvs) setupHealthCheck(cfg *tls.Config) ([]servers.Option, error) {
+func (s *srvs) setupHealthCheck(*tls.Config) ([]servers.Option, error) {
 	opts := make([]servers.Option, 0, len(s.cfg.HealthCheckServers))
 	for _, hsc := range s.cfg.HealthCheckServers {
 		srv, err := server.New(

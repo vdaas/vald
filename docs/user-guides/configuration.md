@@ -308,7 +308,6 @@ Each configuration file is the following:
 - [Cluster role binding](https://github.com/vdaas/vald/blob/main/k8s/discoverer/clusterrolebinding.yaml)
 - [Service account](https://github.com/vdaas/vald/blob/main/k8s/discoverer/serviceaccount.yaml)
 
-
 #### Resource requests and limits
 
 The number of discoverer pods and resource limits can be estimated by the configurations of your LB gateways and index managers because its APIs are called by them.
@@ -360,7 +359,6 @@ For further details, there are references to the Helm values in the Vald GitHub 
 - [README of Vald-Helm-Operator Chart][vald-helm-operator-chart]
 
 <!-- TODO: add related document(pullugable options) -->
-
 
 [vald-helm-chart]: https://github.com/vdaas/vald/tree/main/charts/vald
 [vald-helm-operator-chart]: https://github.com/vdaas/vald/tree/main/charts/vald-helm-operator

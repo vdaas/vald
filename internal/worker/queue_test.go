@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -49,8 +49,9 @@ func TestNewQueue(t *testing.T) {
 		args       args
 		want       want
 		checkFunc  func(want, Queue, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+
+		afterFunc func(args)
 	}
 	defaultCheckFunc := func(w want, got Queue, err error) error {
 		if !errors.Is(err, w.err) {
@@ -135,7 +136,7 @@ func TestNewQueue(t *testing.T) {
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
@@ -176,8 +177,9 @@ func Test_queue_Start(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, <-chan error, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+
+		afterFunc func(args)
 	}
 	defaultCheckFunc := func(w want, got <-chan error, err error) error {
 		if !errors.Is(err, w.err) {
@@ -223,7 +225,8 @@ func Test_queue_Start(t *testing.T) {
 				want: want{
 					want: wantC,
 				},
-				beforeFunc: func(args) {
+				beforeFunc: func(t *testing.T, _ args) {
+					t.Helper()
 					for i := 0; i < 10; i++ {
 						inCh <- func(context.Context) error {
 							return nil
@@ -254,7 +257,7 @@ func Test_queue_Start(t *testing.T) {
 					}(),
 				},
 				want: want{
-					err: errors.ErrQueueIsAlreadyRunning(),
+					err: errors.ErrQueueIsAlreadyRunning,
 				},
 				checkFunc: defaultCheckFunc,
 			}
@@ -286,7 +289,8 @@ func Test_queue_Start(t *testing.T) {
 				want: want{
 					want: wantC,
 				},
-				beforeFunc: func(args) {
+				beforeFunc: func(t *testing.T, _ args) {
+					t.Helper()
 					go func() {
 						time.Sleep(time.Millisecond * 50)
 						cancel()
@@ -322,7 +326,8 @@ func Test_queue_Start(t *testing.T) {
 				want: want{
 					want: wantC,
 				},
-				beforeFunc: func(args) {
+				beforeFunc: func(t *testing.T, _ args) {
+					t.Helper()
 					for i := 0; i < 10; i++ {
 						inCh <- func(context.Context) error {
 							return nil
@@ -342,7 +347,7 @@ func Test_queue_Start(t *testing.T) {
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
@@ -455,8 +460,9 @@ func Test_queue_Push(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+
+		afterFunc func(args)
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -502,7 +508,7 @@ func Test_queue_Push(t *testing.T) {
 					job: nil,
 				},
 				want: want{
-					err: errors.ErrJobFuncIsNil(),
+					err: errors.ErrJobFuncIsNil,
 				},
 			}
 		}(),
@@ -522,7 +528,7 @@ func Test_queue_Push(t *testing.T) {
 					}(),
 				},
 				want: want{
-					err: errors.ErrQueueIsNotRunning(),
+					err: errors.ErrQueueIsNotRunning,
 				},
 			}
 		}(),
@@ -555,7 +561,8 @@ func Test_queue_Push(t *testing.T) {
 				want: want{
 					err: context.Canceled,
 				},
-				beforeFunc: func(args) {
+				beforeFunc: func(t *testing.T, _ args) {
+					t.Helper()
 					inCh <- func(context.Context) error {
 						return nil
 					}
@@ -573,7 +580,7 @@ func Test_queue_Push(t *testing.T) {
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
@@ -623,8 +630,9 @@ func Test_queue_Pop(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, JobFunc, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+
+		afterFunc func(args)
 	}
 	defaultCheckFunc := func(w want, got JobFunc, err error) error {
 		if !errors.Is(err, w.err) {
@@ -665,97 +673,30 @@ func Test_queue_Pop(t *testing.T) {
 				want: want{
 					want: f,
 				},
-				beforeFunc: func(args) {
+				beforeFunc: func(t *testing.T, _ args) {
+					t.Helper()
 					outCh <- f
 				},
 			}
 		}(),
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-			checkFunc := test.checkFunc
-			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
-			}
-			q := &queue{
-				buffer:  test.fields.buffer,
-				eg:      test.fields.eg,
-				qcdur:   test.fields.qcdur,
-				inCh:    test.fields.inCh,
-				outCh:   test.fields.outCh,
-				qLen:    test.fields.qLen,
-				running: test.fields.running,
-			}
-
-			got, err := q.Pop(test.args.ctx)
-			if err := checkFunc(test.want, got, err); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
-
-func Test_queue_pop(t *testing.T) {
-	type args struct {
-		ctx   context.Context
-		retry uint64
-	}
-	type fields struct {
-		buffer  int
-		eg      errgroup.Group
-		qcdur   time.Duration
-		inCh    chan JobFunc
-		outCh   chan JobFunc
-		qLen    atomic.Value
-		running atomic.Value
-	}
-	type want struct {
-		want JobFunc
-		err  error
-	}
-	type test struct {
-		name       string
-		args       args
-		fields     fields
-		want       want
-		checkFunc  func(want, JobFunc, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-	defaultCheckFunc := func(w want, got JobFunc, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-		}
-		if reflect.ValueOf(w.want).Pointer() != reflect.ValueOf(got).Pointer() {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-		}
-		return nil
-	}
-	tests := []test{
 		{
 			name: "return (nil, error) when queue is not running.",
 			args: args{
-				ctx:   context.Background(),
-				retry: 1,
+				ctx: context.Background(),
 			},
 			fields: fields{
 				running: func() (v atomic.Value) {
 					v.Store(false)
 					return v
 				}(),
+				qLen: func() (v atomic.Value) {
+					v.Store(uint64(1))
+					return v
+				}(),
 			},
 			want: want{
 				want: nil,
-				err:  errors.ErrQueueIsNotRunning(),
+				err:  errors.ErrQueueIsNotRunning,
 			},
 		},
 		func() test {
@@ -767,8 +708,7 @@ func Test_queue_pop(t *testing.T) {
 			return test{
 				name: "return (JobFunc, nil) when first pop is retry.",
 				args: args{
-					ctx:   ctx,
-					retry: 10,
+					ctx: ctx,
 				},
 				fields: fields{
 					buffer: 10,
@@ -777,7 +717,7 @@ func Test_queue_pop(t *testing.T) {
 					inCh:   make(chan JobFunc, 10),
 					outCh:  outCh,
 					qLen: func() (v atomic.Value) {
-						v.Store(uint64(0))
+						v.Store(uint64(10))
 						return v
 					}(),
 					running: func() (v atomic.Value) {
@@ -789,7 +729,8 @@ func Test_queue_pop(t *testing.T) {
 					want: f,
 					err:  nil,
 				},
-				beforeFunc: func(args) {
+				beforeFunc: func(t *testing.T, _ args) {
+					t.Helper()
 					outCh <- nil
 					outCh <- f
 				},
@@ -804,8 +745,7 @@ func Test_queue_pop(t *testing.T) {
 			return test{
 				name: "return (nil, error) when retry is 1 and retry.",
 				args: args{
-					ctx:   ctx,
-					retry: 1,
+					ctx: ctx,
 				},
 				fields: fields{
 					buffer: 10,
@@ -814,7 +754,7 @@ func Test_queue_pop(t *testing.T) {
 					inCh:   make(chan JobFunc, 10),
 					outCh:  outCh,
 					qLen: func() (v atomic.Value) {
-						v.Store(uint64(0))
+						v.Store(uint64(1))
 						return v
 					}(),
 					running: func() (v atomic.Value) {
@@ -824,9 +764,10 @@ func Test_queue_pop(t *testing.T) {
 				},
 				want: want{
 					want: nil,
-					err:  errors.ErrJobFuncIsNil(),
+					err:  errors.ErrJobFuncNotFound,
 				},
-				beforeFunc: func(args) {
+				beforeFunc: func(t *testing.T, _ args) {
+					t.Helper()
 					outCh <- nil
 					outCh <- nil
 					outCh <- f
@@ -838,8 +779,7 @@ func Test_queue_pop(t *testing.T) {
 			return test{
 				name: "return (JobFunc, error) when context canceled.",
 				args: args{
-					ctx:   ctx,
-					retry: 0,
+					ctx: ctx,
 				},
 				fields: fields{
 					buffer: 10,
@@ -860,7 +800,8 @@ func Test_queue_pop(t *testing.T) {
 					want: nil,
 					err:  context.Canceled,
 				},
-				beforeFunc: func(args) {
+				beforeFunc: func(t *testing.T, _ args) {
+					t.Helper()
 					go func() {
 						time.Sleep(time.Millisecond * 50)
 						cancel()
@@ -875,7 +816,7 @@ func Test_queue_pop(t *testing.T) {
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
@@ -894,7 +835,7 @@ func Test_queue_pop(t *testing.T) {
 				running: test.fields.running,
 			}
 
-			got, err := q.pop(test.args.ctx, test.args.retry)
+			got, err := q.Pop(test.args.ctx)
 			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}

@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -157,6 +157,9 @@ func (d *DialOption) Bind() *DialOption {
 
 // Opts creates the slice with the functional options for the gRPC options.
 func (g *GRPCClient) Opts() ([]grpc.Option, error) {
+	if g == nil {
+		return nil, nil
+	}
 	opts := make([]grpc.Option, 0, 18)
 	opts = append(opts,
 		grpc.WithHealthCheckDuration(g.HealthCheckDuration),
@@ -229,7 +232,6 @@ func (g *GRPCClient) Opts() ([]grpc.Option, error) {
 			grpc.WithInsecure(g.DialOption.Insecure),
 			grpc.WithBackoffMaxDelay(g.DialOption.BackoffMaxDelay),
 			grpc.WithBackoffMaxDelay(g.DialOption.BackoffMaxDelay),
-			grpc.WithDialTimeout(g.DialOption.Timeout),
 			grpc.WithClientInterceptors(g.DialOption.Interceptors...),
 		)
 

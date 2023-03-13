@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -66,7 +66,7 @@ func TestWithHosts(t *testing.T) {
 		args       args
 		want       want
 		checkFunc  func(want, *T, error) error
-		beforeFunc func(*T)
+		beforeFunc func(*testing.T, *T)
 		afterFunc  func(args)
 	}
 	defaultCheckFunc := func(w want, obj *T, err error) error {
@@ -112,7 +112,8 @@ func TestWithHosts(t *testing.T) {
 			args: args{
 				hosts: []string{"hosts1"},
 			},
-			beforeFunc: func(obj *T) {
+			beforeFunc: func(t *testing.T, obj *T) {
+				t.Helper()
 				_ = WithHosts("vald.vdaas.org")(obj)
 			},
 			want: want{
@@ -138,7 +139,7 @@ func TestWithHosts(t *testing.T) {
 			got := WithHosts(test.args.hosts...)
 			obj := new(T)
 			if test.beforeFunc != nil {
-				test.beforeFunc(obj)
+				test.beforeFunc(tt, obj)
 			}
 			if err := checkFunc(test.want, obj, got(obj)); err != nil {
 				tt.Errorf("error = %v", err)

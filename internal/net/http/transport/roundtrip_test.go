@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -330,7 +330,7 @@ func Test_ert_RoundTrip(t *testing.T) {
 	}
 }
 
-func Test_ert_roundTrip(t *testing.T) {
+func Test_ert_doRoundTrip(t *testing.T) {
 	t.Parallel()
 	type args struct {
 		req *http.Request
@@ -457,9 +457,16 @@ func Test_ert_roundTrip(t *testing.T) {
 				bo:        test.fields.bo,
 			}
 
-			gotRes, err := e.roundTrip(test.args.req)
+			gotRes, err := e.doRoundTrip(test.args.req)
 			if err := checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
+			}
+
+			if gotRes != nil {
+				defer closeBody(gotRes.Body)
+			}
+			if test.args.req != nil {
+				defer closeBody(test.args.req.Body)
 			}
 		})
 	}

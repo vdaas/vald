@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@ type readOnlyUo struct {
 	amended bool
 }
 
+// skipcq: GSC-G103
 var expungedUo = unsafe.Pointer(new(uint32))
 
 type entryUo struct {
@@ -38,6 +39,7 @@ type entryUo struct {
 }
 
 func newEntryUo(i uint32) *entryUo {
+	// skipcq: GSC-G103
 	return &entryUo{p: unsafe.Pointer(&i)}
 }
 
@@ -98,6 +100,7 @@ func (e *entryUo) tryStore(i *uint32) bool {
 		if p == expungedUo {
 			return false
 		}
+		// skipcq: GSC-G103
 		if atomic.CompareAndSwapPointer(&e.p, p, unsafe.Pointer(i)) {
 			return true
 		}
@@ -109,6 +112,7 @@ func (e *entryUo) unexpungeLocked() (wasExpunged bool) {
 }
 
 func (e *entryUo) storeLocked(i *uint32) {
+	// skipcq: GSC-G103
 	atomic.StorePointer(&e.p, unsafe.Pointer(i))
 }
 
@@ -152,6 +156,7 @@ func (e *entryUo) tryLoadOrStore(i uint32) (actual uint32, loaded, ok bool) {
 	}
 	ic := i
 	for {
+		// skipcq: GSC-G103
 		if atomic.CompareAndSwapPointer(&e.p, nil, unsafe.Pointer(&ic)) {
 			return i, false, true
 		}
