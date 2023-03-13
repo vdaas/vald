@@ -62,22 +62,26 @@
 - [Helm Operator Chart Reference](https://github.com/vdaas/vald/blob/v1.7.3/charts/vald-helm-operator/README.md)
 
 ### Changes
-:sparkles: New feature 
+
+:sparkles: New feature
+
 - Add disable balanced update features & use generic type for BidirectionalStream [#1964](https://github.com/vdaas/vald/pull/1964)
 
 :bug: Bug fix
+
 - Fix grafana dashboard query for backoff retry count [#1961](https://github.com/vdaas/vald/pull/1961)
 
-
 :recycle: Refactor
+
 - Refactor conv.go [#1968](https://github.com/vdaas/vald/pull/1968)
 
 :memo: Document
+
 - Add new API parameter and update observability docs [#1966](https://github.com/vdaas/vald/pull/1966)
 
 :arrow_up: Dependency update
-- Update deps [#1969](https://github.com/vdaas/vald/pull/1969)
 
+- Update deps [#1969](https://github.com/vdaas/vald/pull/1969)
 
 ## v1.7.2
 
