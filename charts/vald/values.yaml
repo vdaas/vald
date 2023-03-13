@@ -1058,7 +1058,7 @@ gateway:
       pathType: ImplementationSpecific
       # @schema {"name": "gateway.lb.ingress.enabled", "type": "boolean"}
       # gateway.lb.ingress.enabled -- gateway ingress enabled
-      enabled: false
+      enabled: true
       # @schema {"name": "gateway.lb.ingress.annotations", "type": "object"}
       # gateway.lb.ingress.annotations -- annotations for ingress
       annotations:
@@ -1069,6 +1069,11 @@ gateway:
       # @schema {"name": "gateway.lb.ingress.servicePort", "type": "string"}
       # gateway.lb.ingress.servicePort -- service port to be exposed by ingress
       servicePort: grpc
+      # @schema {"name": "gateway.lb.ingress.defaultBackend", "type": "object"}
+      defaultBackend:
+        # @schema {"name": "gateway.lb.ingress.defaultBackend.enabled", "type": "boolean"}
+        # gateway.lb.ingress.defaultBackend.enabled -- gateway ingress defaultBackend enabled
+        enabled: true
     # @schema {"name": "gateway.lb.resources", "type": "object", "anchor": "resources"}
     # gateway.lb.resources -- compute resources
     resources:
