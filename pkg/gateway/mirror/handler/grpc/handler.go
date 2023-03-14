@@ -1390,7 +1390,6 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (loc *
 	}()
 
 	reqSrcPodName := s.gateway.FromForwardedContext(ctx)
-
 	if len(reqSrcPodName) != 0 {
 		loc, err = s.update(ctx, s.vc, req, s.vc.GRPCClient().GetCallOption()...)
 		if err != nil {
@@ -1843,6 +1842,16 @@ func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *
 			span.End()
 		}
 	}()
+
+	reqSrcPodName := s.gateway.FromForwardedContext(ctx)
+	if len(reqSrcPodName) != 0 {
+		loc, err = s.upsert(ctx, s.vc, req, s.vc.GRPCClient().GetCallOption()...)
+		if err != nil {
+			return nil, err
+		}
+		log.Debugf("Upsert API succeeded to %#v", loc)
+		return loc, nil
+	}
 
 	objReq := &payload.Object_VectorRequest{
 		Id: &payload.Object_ID{
@@ -2836,9 +2845,6 @@ func (s *server) getObject(ctx context.Context, client vald.ObjectClient, req *p
 			log.Debugf("code: %#v, msg: %s, err: %s", st, msg, err.Error())
 			attrs = trace.FromGRPCStatus(st.Code(), msg)
 			code = st.Code()
-
-			// TODO: delete this code later.
-			err = status.Error(codes.NotFound, "[funapy-log]: "+err.Error())
 		}
 		log.Warnf("%s\tcode: %s", err.Error(), code)
 		if span != nil {
