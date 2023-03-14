@@ -5,120 +5,106 @@
 ## Table of Contents
 
 - [apis/proto/v1/agent/core/agent.proto](#apis_proto_v1_agent_core_agent-proto)
-    - [Agent](#core-v1-Agent)
-  
+  - [Agent](#core-v1-Agent)
 - [apis/proto/v1/agent/sidecar/sidecar.proto](#apis_proto_v1_agent_sidecar_sidecar-proto)
-    - [Sidecar](#sidecar-v1-Sidecar)
-  
+  - [Sidecar](#sidecar-v1-Sidecar)
 - [apis/proto/v1/discoverer/discoverer.proto](#apis_proto_v1_discoverer_discoverer-proto)
-    - [Discoverer](#discoverer-v1-Discoverer)
-  
+  - [Discoverer](#discoverer-v1-Discoverer)
 - [apis/proto/v1/filter/egress/egress_filter.proto](#apis_proto_v1_filter_egress_egress_filter-proto)
-    - [Filter](#filter-egress-v1-Filter)
-  
+  - [Filter](#filter-egress-v1-Filter)
 - [apis/proto/v1/filter/ingress/ingress_filter.proto](#apis_proto_v1_filter_ingress_ingress_filter-proto)
-    - [Filter](#filter-ingress-v1-Filter)
-  
+  - [Filter](#filter-ingress-v1-Filter)
 - [apis/proto/v1/manager/index/index_manager.proto](#apis_proto_v1_manager_index_index_manager-proto)
-    - [Index](#manager-index-v1-Index)
-  
+  - [Index](#manager-index-v1-Index)
 - [apis/proto/v1/payload/payload.proto](#apis_proto_v1_payload_payload-proto)
-    - [Control](#payload-v1-Control)
-    - [Control.CreateIndexRequest](#payload-v1-Control-CreateIndexRequest)
-    - [Discoverer](#payload-v1-Discoverer)
-    - [Discoverer.Request](#payload-v1-Discoverer-Request)
-    - [Empty](#payload-v1-Empty)
-    - [Filter](#payload-v1-Filter)
-    - [Filter.Config](#payload-v1-Filter-Config)
-    - [Filter.DistanceRequest](#payload-v1-Filter-DistanceRequest)
-    - [Filter.DistanceResponse](#payload-v1-Filter-DistanceResponse)
-    - [Filter.Query](#payload-v1-Filter-Query)
-    - [Filter.Target](#payload-v1-Filter-Target)
-    - [Filter.VectorRequest](#payload-v1-Filter-VectorRequest)
-    - [Filter.VectorResponse](#payload-v1-Filter-VectorResponse)
-    - [Info](#payload-v1-Info)
-    - [Info.CPU](#payload-v1-Info-CPU)
-    - [Info.IPs](#payload-v1-Info-IPs)
-    - [Info.Index](#payload-v1-Info-Index)
-    - [Info.Index.Count](#payload-v1-Info-Index-Count)
-    - [Info.Index.UUID](#payload-v1-Info-Index-UUID)
-    - [Info.Index.UUID.Committed](#payload-v1-Info-Index-UUID-Committed)
-    - [Info.Index.UUID.Uncommitted](#payload-v1-Info-Index-UUID-Uncommitted)
-    - [Info.Memory](#payload-v1-Info-Memory)
-    - [Info.Node](#payload-v1-Info-Node)
-    - [Info.Nodes](#payload-v1-Info-Nodes)
-    - [Info.Pod](#payload-v1-Info-Pod)
-    - [Info.Pods](#payload-v1-Info-Pods)
-    - [Insert](#payload-v1-Insert)
-    - [Insert.Config](#payload-v1-Insert-Config)
-    - [Insert.MultiObjectRequest](#payload-v1-Insert-MultiObjectRequest)
-    - [Insert.MultiRequest](#payload-v1-Insert-MultiRequest)
-    - [Insert.ObjectRequest](#payload-v1-Insert-ObjectRequest)
-    - [Insert.Request](#payload-v1-Insert-Request)
-    - [Object](#payload-v1-Object)
-    - [Object.Blob](#payload-v1-Object-Blob)
-    - [Object.Distance](#payload-v1-Object-Distance)
-    - [Object.ID](#payload-v1-Object-ID)
-    - [Object.IDs](#payload-v1-Object-IDs)
-    - [Object.Location](#payload-v1-Object-Location)
-    - [Object.Locations](#payload-v1-Object-Locations)
-    - [Object.ReshapeVector](#payload-v1-Object-ReshapeVector)
-    - [Object.StreamBlob](#payload-v1-Object-StreamBlob)
-    - [Object.StreamDistance](#payload-v1-Object-StreamDistance)
-    - [Object.StreamLocation](#payload-v1-Object-StreamLocation)
-    - [Object.StreamVector](#payload-v1-Object-StreamVector)
-    - [Object.Vector](#payload-v1-Object-Vector)
-    - [Object.VectorRequest](#payload-v1-Object-VectorRequest)
-    - [Object.Vectors](#payload-v1-Object-Vectors)
-    - [Remove](#payload-v1-Remove)
-    - [Remove.Config](#payload-v1-Remove-Config)
-    - [Remove.MultiRequest](#payload-v1-Remove-MultiRequest)
-    - [Remove.Request](#payload-v1-Remove-Request)
-    - [Search](#payload-v1-Search)
-    - [Search.Config](#payload-v1-Search-Config)
-    - [Search.IDRequest](#payload-v1-Search-IDRequest)
-    - [Search.MultiIDRequest](#payload-v1-Search-MultiIDRequest)
-    - [Search.MultiObjectRequest](#payload-v1-Search-MultiObjectRequest)
-    - [Search.MultiRequest](#payload-v1-Search-MultiRequest)
-    - [Search.ObjectRequest](#payload-v1-Search-ObjectRequest)
-    - [Search.Request](#payload-v1-Search-Request)
-    - [Search.Response](#payload-v1-Search-Response)
-    - [Search.Responses](#payload-v1-Search-Responses)
-    - [Search.StreamResponse](#payload-v1-Search-StreamResponse)
-    - [Update](#payload-v1-Update)
-    - [Update.Config](#payload-v1-Update-Config)
-    - [Update.MultiObjectRequest](#payload-v1-Update-MultiObjectRequest)
-    - [Update.MultiRequest](#payload-v1-Update-MultiRequest)
-    - [Update.ObjectRequest](#payload-v1-Update-ObjectRequest)
-    - [Update.Request](#payload-v1-Update-Request)
-    - [Upsert](#payload-v1-Upsert)
-    - [Upsert.Config](#payload-v1-Upsert-Config)
-    - [Upsert.MultiObjectRequest](#payload-v1-Upsert-MultiObjectRequest)
-    - [Upsert.MultiRequest](#payload-v1-Upsert-MultiRequest)
-    - [Upsert.ObjectRequest](#payload-v1-Upsert-ObjectRequest)
-    - [Upsert.Request](#payload-v1-Upsert-Request)
-  
+  - [Control](#payload-v1-Control)
+  - [Control.CreateIndexRequest](#payload-v1-Control-CreateIndexRequest)
+  - [Discoverer](#payload-v1-Discoverer)
+  - [Discoverer.Request](#payload-v1-Discoverer-Request)
+  - [Empty](#payload-v1-Empty)
+  - [Filter](#payload-v1-Filter)
+  - [Filter.Config](#payload-v1-Filter-Config)
+  - [Filter.DistanceRequest](#payload-v1-Filter-DistanceRequest)
+  - [Filter.DistanceResponse](#payload-v1-Filter-DistanceResponse)
+  - [Filter.Query](#payload-v1-Filter-Query)
+  - [Filter.Target](#payload-v1-Filter-Target)
+  - [Filter.VectorRequest](#payload-v1-Filter-VectorRequest)
+  - [Filter.VectorResponse](#payload-v1-Filter-VectorResponse)
+  - [Info](#payload-v1-Info)
+  - [Info.CPU](#payload-v1-Info-CPU)
+  - [Info.IPs](#payload-v1-Info-IPs)
+  - [Info.Index](#payload-v1-Info-Index)
+  - [Info.Index.Count](#payload-v1-Info-Index-Count)
+  - [Info.Index.UUID](#payload-v1-Info-Index-UUID)
+  - [Info.Index.UUID.Committed](#payload-v1-Info-Index-UUID-Committed)
+  - [Info.Index.UUID.Uncommitted](#payload-v1-Info-Index-UUID-Uncommitted)
+  - [Info.Memory](#payload-v1-Info-Memory)
+  - [Info.Node](#payload-v1-Info-Node)
+  - [Info.Nodes](#payload-v1-Info-Nodes)
+  - [Info.Pod](#payload-v1-Info-Pod)
+  - [Info.Pods](#payload-v1-Info-Pods)
+  - [Insert](#payload-v1-Insert)
+  - [Insert.Config](#payload-v1-Insert-Config)
+  - [Insert.MultiObjectRequest](#payload-v1-Insert-MultiObjectRequest)
+  - [Insert.MultiRequest](#payload-v1-Insert-MultiRequest)
+  - [Insert.ObjectRequest](#payload-v1-Insert-ObjectRequest)
+  - [Insert.Request](#payload-v1-Insert-Request)
+  - [Object](#payload-v1-Object)
+  - [Object.Blob](#payload-v1-Object-Blob)
+  - [Object.Distance](#payload-v1-Object-Distance)
+  - [Object.ID](#payload-v1-Object-ID)
+  - [Object.IDs](#payload-v1-Object-IDs)
+  - [Object.Location](#payload-v1-Object-Location)
+  - [Object.Locations](#payload-v1-Object-Locations)
+  - [Object.ReshapeVector](#payload-v1-Object-ReshapeVector)
+  - [Object.StreamBlob](#payload-v1-Object-StreamBlob)
+  - [Object.StreamDistance](#payload-v1-Object-StreamDistance)
+  - [Object.StreamLocation](#payload-v1-Object-StreamLocation)
+  - [Object.StreamVector](#payload-v1-Object-StreamVector)
+  - [Object.Vector](#payload-v1-Object-Vector)
+  - [Object.VectorRequest](#payload-v1-Object-VectorRequest)
+  - [Object.Vectors](#payload-v1-Object-Vectors)
+  - [Remove](#payload-v1-Remove)
+  - [Remove.Config](#payload-v1-Remove-Config)
+  - [Remove.MultiRequest](#payload-v1-Remove-MultiRequest)
+  - [Remove.Request](#payload-v1-Remove-Request)
+  - [Search](#payload-v1-Search)
+  - [Search.Config](#payload-v1-Search-Config)
+  - [Search.IDRequest](#payload-v1-Search-IDRequest)
+  - [Search.MultiIDRequest](#payload-v1-Search-MultiIDRequest)
+  - [Search.MultiObjectRequest](#payload-v1-Search-MultiObjectRequest)
+  - [Search.MultiRequest](#payload-v1-Search-MultiRequest)
+  - [Search.ObjectRequest](#payload-v1-Search-ObjectRequest)
+  - [Search.Request](#payload-v1-Search-Request)
+  - [Search.Response](#payload-v1-Search-Response)
+  - [Search.Responses](#payload-v1-Search-Responses)
+  - [Search.StreamResponse](#payload-v1-Search-StreamResponse)
+  - [Update](#payload-v1-Update)
+  - [Update.Config](#payload-v1-Update-Config)
+  - [Update.MultiObjectRequest](#payload-v1-Update-MultiObjectRequest)
+  - [Update.MultiRequest](#payload-v1-Update-MultiRequest)
+  - [Update.ObjectRequest](#payload-v1-Update-ObjectRequest)
+  - [Update.Request](#payload-v1-Update-Request)
+  - [Upsert](#payload-v1-Upsert)
+  - [Upsert.Config](#payload-v1-Upsert-Config)
+  - [Upsert.MultiObjectRequest](#payload-v1-Upsert-MultiObjectRequest)
+  - [Upsert.MultiRequest](#payload-v1-Upsert-MultiRequest)
+  - [Upsert.ObjectRequest](#payload-v1-Upsert-ObjectRequest)
+  - [Upsert.Request](#payload-v1-Upsert-Request)
 - [apis/proto/v1/vald/filter.proto](#apis_proto_v1_vald_filter-proto)
-    - [Filter](#vald-v1-Filter)
-  
+  - [Filter](#vald-v1-Filter)
 - [apis/proto/v1/vald/insert.proto](#apis_proto_v1_vald_insert-proto)
-    - [Insert](#vald-v1-Insert)
-  
+  - [Insert](#vald-v1-Insert)
 - [apis/proto/v1/vald/object.proto](#apis_proto_v1_vald_object-proto)
-    - [Object](#vald-v1-Object)
-  
+  - [Object](#vald-v1-Object)
 - [apis/proto/v1/vald/remove.proto](#apis_proto_v1_vald_remove-proto)
-    - [Remove](#vald-v1-Remove)
-  
+  - [Remove](#vald-v1-Remove)
 - [apis/proto/v1/vald/search.proto](#apis_proto_v1_vald_search-proto)
-    - [Search](#vald-v1-Search)
-  
+  - [Search](#vald-v1-Search)
 - [apis/proto/v1/vald/update.proto](#apis_proto_v1_vald_update-proto)
-    - [Update](#vald-v1-Update)
-  
+  - [Update](#vald-v1-Update)
 - [apis/proto/v1/vald/upsert.proto](#apis_proto_v1_vald_upsert-proto)
-    - [Upsert](#vald-v1-Upsert)
-  
+  - [Upsert](#vald-v1-Upsert)
 - [Scalar Value Types](#scalar-value-types)
 
 <a name="apis_proto_v1_agent_core_agent-proto"></a>
@@ -181,19 +167,13 @@ Represent the discoverer service.
 <a name="filter-egress-v1-Filter"></a>
 
 ### Filter
+
 Represent the egress filter service.
 
-| Method Name | Request Type | Response Type | Description |
-| ----------- | ------------ | ------------- | ------------|
+| Method Name    | Request Type                                                             | Response Type                                                              | Description                               |
+| -------------- | ------------------------------------------------------------------------ | -------------------------------------------------------------------------- | ----------------------------------------- |
 | FilterDistance | [.payload.v1.Filter.DistanceRequest](#payload-v1-Filter-DistanceRequest) | [.payload.v1.Filter.DistanceResponse](#payload-v1-Filter-DistanceResponse) | Represent the RPC to filter the distance. |
-| FilterVector | [.payload.v1.Filter.VectorRequest](#payload-v1-Filter-VectorRequest) | [.payload.v1.Filter.VectorResponse](#payload-v1-Filter-VectorResponse) | Represent the RPC to filter the vector. |
-
-Represent the egress filter service.
-
-| Method Name    | Request Type                                               | Response Type                                              | Description                               |
-| -------------- | ---------------------------------------------------------- | ---------------------------------------------------------- | ----------------------------------------- |
-| FilterDistance | [.payload.v1.Object.Distance](#payload.v1.Object.Distance) | [.payload.v1.Object.Distance](#payload.v1.Object.Distance) | Represent the RPC to filter the distance. |
-| FilterVector   | [.payload.v1.Object.Vector](#payload.v1.Object.Vector)     | [.payload.v1.Object.Vector](#payload.v1.Object.Vector)     | Represent the RPC to filter the vector.   |
+| FilterVector   | [.payload.v1.Filter.VectorRequest](#payload-v1-Filter-VectorRequest)     | [.payload.v1.Filter.VectorResponse](#payload-v1-Filter-VectorResponse)     | Represent the RPC to filter the vector.   |
 
 <a name="apis_proto_v1_filter_ingress_ingress_filter-proto"></a>
 
@@ -286,11 +266,43 @@ Filter related messages.
 
 Represent filter configuration.
 
-| Field   | Type                                       | Label    | Description                                |
-| ------- | ------------------------------------------ | -------- | ------------------------------------------ |
-| targets | [Filter.Target](#payload.v1.Filter.Target) | repeated | Represent the filter target configuration. |
+| Field  | Type                                       | Label | Description                                |
+| ------ | ------------------------------------------ | ----- | ------------------------------------------ |
+| target | [Filter.Target](#payload-v1-Filter-Target) |       | Represent the filter target configuration. |
+| query  | [Filter.Query](#payload-v1-Filter-Query)   |       | The target query.                          |
 
-<a name="payload.v1.Filter.Target"></a>
+<a name="payload-v1-Filter-DistanceRequest"></a>
+
+### Filter.DistanceRequest
+
+Represent the ID and distance pair.
+
+| Field    | Type                                           | Label    | Description |
+| -------- | ---------------------------------------------- | -------- | ----------- |
+| distance | [Object.Distance](#payload-v1-Object-Distance) | repeated | Distance    |
+| query    | [Filter.Query](#payload-v1-Filter-Query)       |          | Query       |
+
+<a name="payload-v1-Filter-DistanceResponse"></a>
+
+### Filter.DistanceResponse
+
+Represent the ID and distance pair.
+
+| Field    | Type                                           | Label    | Description |
+| -------- | ---------------------------------------------- | -------- | ----------- |
+| distance | [Object.Distance](#payload-v1-Object-Distance) | repeated | Distance    |
+
+<a name="payload-v1-Filter-Query"></a>
+
+### Filter.Query
+
+Represent the filter query.
+
+| Field | Type              | Label | Description           |
+| ----- | ----------------- | ----- | --------------------- |
+| query | [string](#string) |       | The raw query string. |
+
+<a name="payload-v1-Filter-Target"></a>
 
 ### Filter.Target
 
@@ -301,7 +313,28 @@ Represent the target filter server.
 | host  | [string](#string) |       | The target hostname. |
 | port  | [uint32](#uint32) |       | The target port.     |
 
-<a name="payload.v1.Info"></a>
+<a name="payload-v1-Filter-VectorRequest"></a>
+
+### Filter.VectorRequest
+
+Represent the ID and vector pair.
+
+| Field  | Type                                       | Label    | Description |
+| ------ | ------------------------------------------ | -------- | ----------- |
+| vector | [Object.Vector](#payload-v1-Object-Vector) | repeated | Vector      |
+| query  | [Filter.Query](#payload-v1-Filter-Query)   |          | Query       |
+
+<a name="payload-v1-Filter-VectorResponse"></a>
+
+### Filter.VectorResponse
+
+Represent the ID and vector pair.
+
+| Field  | Type                                       | Label    | Description |
+| ------ | ------------------------------------------ | -------- | ----------- |
+| vector | [Object.Vector](#payload-v1-Object-Vector) | repeated | Distance    |
+
+<a name="payload-v1-Info"></a>
 
 ### Info
 
@@ -356,56 +389,7 @@ Represent the UUID message.
 
 <a name="payload-v1-Info-Index-UUID-Committed"></a>
 
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| target | [Filter.Target](#payload-v1-Filter-Target) |  | Represent the filter target configuration. |
-| query | [Filter.Query](#payload-v1-Filter-Query) |  | The target query. |
-
-
-
-
-
-
-<a name="payload-v1-Filter-DistanceRequest"></a>
-
-### Filter.DistanceRequest
-Represent the ID and distance pair.
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| distance | [Object.Distance](#payload-v1-Object-Distance) | repeated | Distance |
-| query | [Filter.Query](#payload-v1-Filter-Query) |  | Query |
-
-
-
-
-
-
-<a name="payload-v1-Filter-DistanceResponse"></a>
-
-### Filter.DistanceResponse
-Represent the ID and distance pair.
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| distance | [Object.Distance](#payload-v1-Object-Distance) | repeated | Distance |
-
-
-
-
-
-
-<a name="payload-v1-Filter-Query"></a>
-
-### Filter.Query
-Represent the filter query.
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| query | [string](#string) |  | The raw query string. |
+### Info.Index.UUID.Committed
 
 The committed UUID.
 
@@ -451,38 +435,6 @@ Represent the node information message.
 | Pods          | [Info.Pods](#payload-v1-Info-Pods)     |       | The pod information of the node.     |
 
 <a name="payload-v1-Info-Nodes"></a>
-<a name="payload-v1-Filter-VectorRequest"></a>
-
-### Filter.VectorRequest
-Represent the ID and vector pair.
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| vector | [Object.Vector](#payload-v1-Object-Vector) | repeated | Vector |
-| query | [Filter.Query](#payload-v1-Filter-Query) |  | Query |
-
-
-
-
-
-
-<a name="payload-v1-Filter-VectorResponse"></a>
-
-### Filter.VectorResponse
-Represent the ID and vector pair.
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| vector | [Object.Vector](#payload-v1-Object-Vector) | repeated | Distance |
-
-
-
-
-
-
-<a name="payload-v1-Info"></a>
 
 ### Info.Nodes
 
@@ -530,11 +482,11 @@ Insert related messages.
 
 Represent insert configurations.
 
-| Field                   | Type                                       | Label | Description                                         |
-| ----------------------- | ------------------------------------------ | ----- | --------------------------------------------------- |
-| skip_strict_exist_check | [bool](#bool)                              |       | A flag to skip exist check during insert operation. |
-| filters                 | [Filter.Config](#payload.v1.Filter.Config) |       | Filter configurations.                              |
-| timestamp               | [int64](#int64)                            |       | Insert timestamp.                                   |
+| Field                   | Type                                       | Label    | Description                                         |
+| ----------------------- | ------------------------------------------ | -------- | --------------------------------------------------- |
+| skip_strict_exist_check | [bool](#bool)                              |          | A flag to skip exist check during insert operation. |
+| filters                 | [Filter.Config](#payload-v1-Filter-Config) | repeated | Filter configurations.                              |
+| timestamp               | [int64](#int64)                            |          | Insert timestamp.                                   |
 
 <a name="payload-v1-Insert-MultiObjectRequest"></a>
 
@@ -721,10 +673,10 @@ Represent a vector.
 
 Represent a request to fetch raw vector.
 
-| Field   | Type                                       | Label | Description                  |
-| ------- | ------------------------------------------ | ----- | ---------------------------- |
-| id      | [Object.ID](#payload.v1.Object.ID)         |       | The vector ID to be fetched. |
-| filters | [Filter.Config](#payload.v1.Filter.Config) |       | Filter configurations.       |
+| Field   | Type                                       | Label    | Description                  |
+| ------- | ------------------------------------------ | -------- | ---------------------------- |
+| id      | [Object.ID](#payload-v1-Object-ID)         |          | The vector ID to be fetched. |
+| filters | [Filter.Config](#payload-v1-Filter-Config) | repeated | Filter configurations.       |
 
 <a name="payload-v1-Object-Vectors"></a>
 
@@ -786,16 +738,16 @@ Search related messages.
 
 Represent search configuration.
 
-| Field           | Type                                       | Label | Description                              |
-| --------------- | ------------------------------------------ | ----- | ---------------------------------------- |
-| request_id      | [string](#string)                          |       | Unique request ID.                       |
-| num             | [uint32](#uint32)                          |       | Maximum number of result to be returned. |
-| radius          | [float](#float)                            |       | Search radius.                           |
-| epsilon         | [float](#float)                            |       | Search coefficient.                      |
-| timeout         | [int64](#int64)                            |       | Search timeout in nanoseconds.           |
-| ingress_filters | [Filter.Config](#payload.v1.Filter.Config) |       | Ingress filter configurations.           |
-| egress_filters  | [Filter.Config](#payload.v1.Filter.Config) |       | Egress filter configurations.            |
-| min_num         | [uint32](#uint32)                          |       | Minimum number of result to be returned. |
+| Field           | Type                                       | Label    | Description                              |
+| --------------- | ------------------------------------------ | -------- | ---------------------------------------- |
+| request_id      | [string](#string)                          |          | Unique request ID.                       |
+| num             | [uint32](#uint32)                          |          | Maximum number of result to be returned. |
+| radius          | [float](#float)                            |          | Search radius.                           |
+| epsilon         | [float](#float)                            |          | Search coefficient.                      |
+| timeout         | [int64](#int64)                            |          | Search timeout in nanoseconds.           |
+| ingress_filters | [Filter.Config](#payload-v1-Filter-Config) | repeated | Ingress filter configurations.           |
+| egress_filters  | [Filter.Config](#payload-v1-Filter-Config) | repeated | Egress filter configurations.            |
+| min_num         | [uint32](#uint32)                          |          | Minimum number of result to be returned. |
 
 <a name="payload-v1-Search-IDRequest"></a>
 
@@ -810,11 +762,7 @@ Represent a search by ID request.
 
 <a name="payload-v1-Search-MultiIDRequest"></a>
 
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| skip_strict_exist_check | [bool](#bool) |  | A flag to skip exist check during insert operation. |
-| filters | [Filter.Config](#payload-v1-Filter-Config) | repeated | Filter configurations. |
-| timestamp | [int64](#int64) |  | Insert timestamp. |
+### Search.MultiIDRequest
 
 Represent the multiple search by ID request.
 
@@ -909,11 +857,12 @@ Update related messages
 
 Represent the update configuration.
 
-| Field                   | Type                                       | Label | Description                                         |
-| ----------------------- | ------------------------------------------ | ----- | --------------------------------------------------- |
-| skip_strict_exist_check | [bool](#bool)                              |       | A flag to skip exist check during update operation. |
-| filters                 | [Filter.Config](#payload.v1.Filter.Config) |       | Filter configuration.                               |
-| timestamp               | [int64](#int64)                            |       | Update timestamp.                                   |
+| Field                   | Type                                       | Label    | Description                                                                                      |
+| ----------------------- | ------------------------------------------ | -------- | ------------------------------------------------------------------------------------------------ |
+| skip_strict_exist_check | [bool](#bool)                              |          | A flag to skip exist check during update operation.                                              |
+| filters                 | [Filter.Config](#payload-v1-Filter-Config) | repeated | Filter configuration.                                                                            |
+| timestamp               | [int64](#int64)                            |          | Update timestamp.                                                                                |
+| disable_balanced_update | [bool](#bool)                              |          | A flag to disable balanced update (split remove -&gt; insert operation) during update operation. |
 
 <a name="payload-v1-Update-MultiObjectRequest"></a>
 
@@ -970,11 +919,12 @@ Upsert related messages.
 
 Represent the upsert configuration.
 
-| Field                   | Type                                       | Label | Description                                         |
-| ----------------------- | ------------------------------------------ | ----- | --------------------------------------------------- |
-| skip_strict_exist_check | [bool](#bool)                              |       | A flag to skip exist check during upsert operation. |
-| filters                 | [Filter.Config](#payload.v1.Filter.Config) |       | Filter configuration.                               |
-| timestamp               | [int64](#int64)                            |       | Upsert timestamp.                                   |
+| Field                   | Type                                       | Label    | Description                                                                                      |
+| ----------------------- | ------------------------------------------ | -------- | ------------------------------------------------------------------------------------------------ |
+| skip_strict_exist_check | [bool](#bool)                              |          | A flag to skip exist check during upsert operation.                                              |
+| filters                 | [Filter.Config](#payload-v1-Filter-Config) | repeated | Filter configuration.                                                                            |
+| timestamp               | [int64](#int64)                            |          | Upsert timestamp.                                                                                |
+| disable_balanced_update | [bool](#bool)                              |          | A flag to disable balanced update (split remove -&gt; insert operation) during update operation. |
 
 <a name="payload-v1-Upsert-MultiObjectRequest"></a>
 
@@ -1021,595 +971,6 @@ Represent the upsert request.
 
 <a name="apis_proto_v1_vald_filter-proto"></a>
 
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| ids | [string](#string) | repeated |  |
-
-
-
-
-
-
-<a name="payload-v1-Object-Location"></a>
-
-### Object.Location
-Represent the vector location.
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| name | [string](#string) |  | The name of the location. |
-| uuid | [string](#string) |  | The UUID of the vector. |
-| ips | [string](#string) | repeated | The IP list. |
-
-
-
-
-
-
-<a name="payload-v1-Object-Locations"></a>
-
-### Object.Locations
-Represent multiple vector locations.
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| locations | [Object.Location](#payload-v1-Object-Location) | repeated |  |
-
-
-
-
-
-
-<a name="payload-v1-Object-ReshapeVector"></a>
-
-### Object.ReshapeVector
-Represent reshape vector.
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| object | [bytes](#bytes) |  | The binary object. |
-| shape | [int32](#int32) | repeated | The new shape. |
-
-
-
-
-
-
-<a name="payload-v1-Object-StreamBlob"></a>
-
-### Object.StreamBlob
-Represent stream response of binary objects.
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| blob | [Object.Blob](#payload-v1-Object-Blob) |  | The binary object. |
-| status | [google.rpc.Status](#google-rpc-Status) |  | The RPC error status. |
-
-
-
-
-
-
-<a name="payload-v1-Object-StreamDistance"></a>
-
-### Object.StreamDistance
-Represent stream response of distances.
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| distance | [Object.Distance](#payload-v1-Object-Distance) |  | The distance. |
-| status | [google.rpc.Status](#google-rpc-Status) |  | The RPC error status. |
-
-
-
-
-
-
-<a name="payload-v1-Object-StreamLocation"></a>
-
-### Object.StreamLocation
-Represent the stream response of the vector location.
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| location | [Object.Location](#payload-v1-Object-Location) |  | The vector location. |
-| status | [google.rpc.Status](#google-rpc-Status) |  | The RPC error status. |
-
-
-
-
-
-
-<a name="payload-v1-Object-StreamVector"></a>
-
-### Object.StreamVector
-Represent stream response of the vector.
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| vector | [Object.Vector](#payload-v1-Object-Vector) |  | The vector. |
-| status | [google.rpc.Status](#google-rpc-Status) |  | The RPC error status. |
-
-
-
-
-
-
-<a name="payload-v1-Object-Vector"></a>
-
-### Object.Vector
-Represent a vector.
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| id | [string](#string) |  | The vector ID. |
-| vector | [float](#float) | repeated | The vector. |
-
-
-
-
-
-
-<a name="payload-v1-Object-VectorRequest"></a>
-
-### Object.VectorRequest
-Represent a request to fetch raw vector.
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| id | [Object.ID](#payload-v1-Object-ID) |  | The vector ID to be fetch. |
-| filters | [Filter.Config](#payload-v1-Filter-Config) | repeated | Filter configurations. |
-
-
-
-
-
-
-<a name="payload-v1-Object-Vectors"></a>
-
-### Object.Vectors
-Represent multiple vectors.
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| vectors | [Object.Vector](#payload-v1-Object-Vector) | repeated |  |
-
-
-
-
-
-
-<a name="payload-v1-Remove"></a>
-
-### Remove
-Remove related messages.
-
-
-
-
-
-
-<a name="payload-v1-Remove-Config"></a>
-
-### Remove.Config
-Represent the remove configuration.
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| skip_strict_exist_check | [bool](#bool) |  | A flag to skip exist check during upsert operation. |
-| timestamp | [int64](#int64) |  | Remove timestamp. |
-
-
-
-
-
-
-<a name="payload-v1-Remove-MultiRequest"></a>
-
-### Remove.MultiRequest
-Represent the multiple remove request.
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| requests | [Remove.Request](#payload-v1-Remove-Request) | repeated | Represent the multiple remove request content. |
-
-
-
-
-
-
-<a name="payload-v1-Remove-Request"></a>
-
-### Remove.Request
-Represent the remove request.
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| id | [Object.ID](#payload-v1-Object-ID) |  | The object ID to be removed. |
-| config | [Remove.Config](#payload-v1-Remove-Config) |  | The configuration of the remove request. |
-
-
-
-
-
-
-<a name="payload-v1-Search"></a>
-
-### Search
-Search related messages.
-
-
-
-
-
-
-<a name="payload-v1-Search-Config"></a>
-
-### Search.Config
-Represent search configuration.
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| request_id | [string](#string) |  | Unique request ID. |
-| num | [uint32](#uint32) |  | Maximum number of result to be returned. |
-| radius | [float](#float) |  | Search radius. |
-| epsilon | [float](#float) |  | Search coefficient. |
-| timeout | [int64](#int64) |  | Search timeout in nanoseconds. |
-| ingress_filters | [Filter.Config](#payload-v1-Filter-Config) | repeated | Ingress filter configurations. |
-| egress_filters | [Filter.Config](#payload-v1-Filter-Config) | repeated | Egress filter configurations. |
-| min_num | [uint32](#uint32) |  | Minimum number of result to be returned. |
-
-
-
-
-
-
-<a name="payload-v1-Search-IDRequest"></a>
-
-### Search.IDRequest
-Represent a search by ID request.
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| id | [string](#string) |  | The vector ID to be searched. |
-| config | [Search.Config](#payload-v1-Search-Config) |  | The configuration of the search request. |
-
-
-
-
-
-
-<a name="payload-v1-Search-MultiIDRequest"></a>
-
-### Search.MultiIDRequest
-Represent the multiple search by ID request.
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| requests | [Search.IDRequest](#payload-v1-Search-IDRequest) | repeated | Represent the multiple search by ID request content. |
-
-
-
-
-
-
-<a name="payload-v1-Search-MultiObjectRequest"></a>
-
-### Search.MultiObjectRequest
-Represent the multiple search by binary object request.
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| requests | [Search.ObjectRequest](#payload-v1-Search-ObjectRequest) | repeated | Represent the multiple search by binary object request content. |
-
-
-
-
-
-
-<a name="payload-v1-Search-MultiRequest"></a>
-
-### Search.MultiRequest
-Represent the multiple search request.
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| requests | [Search.Request](#payload-v1-Search-Request) | repeated | Represent the multiple search request content. |
-
-
-
-
-
-
-<a name="payload-v1-Search-ObjectRequest"></a>
-
-### Search.ObjectRequest
-Represent a search by binary object request.
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| object | [bytes](#bytes) |  | The binary object to be searched. |
-| config | [Search.Config](#payload-v1-Search-Config) |  | The configuration of the search request. |
-| vectorizer | [Filter.Target](#payload-v1-Filter-Target) |  | Filter configuration. |
-
-
-
-
-
-
-<a name="payload-v1-Search-Request"></a>
-
-### Search.Request
-Represent a search request.
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| vector | [float](#float) | repeated | The vector to be searched. |
-| config | [Search.Config](#payload-v1-Search-Config) |  | The configuration of the search request. |
-
-
-
-
-
-
-<a name="payload-v1-Search-Response"></a>
-
-### Search.Response
-Represent a search response.
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| request_id | [string](#string) |  | The unique request ID. |
-| results | [Object.Distance](#payload-v1-Object-Distance) | repeated | Search results. |
-
-
-
-
-
-
-<a name="payload-v1-Search-Responses"></a>
-
-### Search.Responses
-Represent multiple search responses.
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| responses | [Search.Response](#payload-v1-Search-Response) | repeated | Represent the multiple search response content. |
-
-
-
-
-
-
-<a name="payload-v1-Search-StreamResponse"></a>
-
-### Search.StreamResponse
-Represent stream search response.
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| response | [Search.Response](#payload-v1-Search-Response) |  | Represent the search response. |
-| status | [google.rpc.Status](#google-rpc-Status) |  | The RPC error status. |
-
-
-
-
-
-
-<a name="payload-v1-Update"></a>
-
-### Update
-Update related messages
-
-
-
-
-
-
-<a name="payload-v1-Update-Config"></a>
-
-### Update.Config
-Represent the update configuration.
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| skip_strict_exist_check | [bool](#bool) |  | A flag to skip exist check during update operation. |
-| filters | [Filter.Config](#payload-v1-Filter-Config) | repeated | Filter configuration. |
-| timestamp | [int64](#int64) |  | Update timestamp. |
-
-
-
-
-
-
-<a name="payload-v1-Update-MultiObjectRequest"></a>
-
-### Update.MultiObjectRequest
-Represent the multiple update binary object request.
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| requests | [Update.ObjectRequest](#payload-v1-Update-ObjectRequest) | repeated | Represent the multiple update object request content. |
-
-
-
-
-
-
-<a name="payload-v1-Update-MultiRequest"></a>
-
-### Update.MultiRequest
-Represent the multiple update request.
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| requests | [Update.Request](#payload-v1-Update-Request) | repeated | Represent the multiple update request content. |
-
-
-
-
-
-
-<a name="payload-v1-Update-ObjectRequest"></a>
-
-### Update.ObjectRequest
-Represent the update binary object request.
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| object | [Object.Blob](#payload-v1-Object-Blob) |  | The binary object to be updated. |
-| config | [Update.Config](#payload-v1-Update-Config) |  | The configuration of the update request. |
-| vectorizer | [Filter.Target](#payload-v1-Filter-Target) |  | Filter target. |
-
-
-
-
-
-
-<a name="payload-v1-Update-Request"></a>
-
-### Update.Request
-Represent the update request.
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| vector | [Object.Vector](#payload-v1-Object-Vector) |  | The vector to be updated. |
-| config | [Update.Config](#payload-v1-Update-Config) |  | The configuration of the update request. |
-
-
-
-
-
-
-<a name="payload-v1-Upsert"></a>
-
-### Upsert
-Upsert related messages.
-
-
-
-
-
-
-<a name="payload-v1-Upsert-Config"></a>
-
-### Upsert.Config
-Represent the upsert configuration.
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| skip_strict_exist_check | [bool](#bool) |  | A flag to skip exist check during upsert operation. |
-| filters | [Filter.Config](#payload-v1-Filter-Config) | repeated | Filter configuration. |
-| timestamp | [int64](#int64) |  | Upsert timestamp. |
-
-
-
-
-
-
-<a name="payload-v1-Upsert-MultiObjectRequest"></a>
-
-### Upsert.MultiObjectRequest
-Represent the multiple upsert binary object request.
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| requests | [Upsert.ObjectRequest](#payload-v1-Upsert-ObjectRequest) | repeated | Represent the multiple upsert object request content. |
-
-
-
-
-
-
-<a name="payload-v1-Upsert-MultiRequest"></a>
-
-### Upsert.MultiRequest
-Represent mthe ultiple upsert request.
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| requests | [Upsert.Request](#payload-v1-Upsert-Request) | repeated | Represent the multiple upsert request content. |
-
-
-
-
-
-
-<a name="payload-v1-Upsert-ObjectRequest"></a>
-
-### Upsert.ObjectRequest
-Represent the upsert binary object request.
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| object | [Object.Blob](#payload-v1-Object-Blob) |  | The binary object to be upserted. |
-| config | [Upsert.Config](#payload-v1-Upsert-Config) |  | The configuration of the upsert request. |
-| vectorizer | [Filter.Target](#payload-v1-Filter-Target) |  | Filter target. |
-
-
-
-
-
-
-<a name="payload-v1-Upsert-Request"></a>
-
-### Upsert.Request
-Represent the upsert request.
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| vector | [Object.Vector](#payload-v1-Object-Vector) |  | The vector to be upserted. |
-| config | [Upsert.Config](#payload-v1-Upsert-Config) |  | The configuration of the upsert request. |
-
-
-
-
-
- 
-
- 
-
- 
-
- 
-
-
-
-<a name="apis_proto_v1_vald_filter-proto"></a>
 <p align="right"><a href="#top">Top</a></p>
 
 ## apis/proto/v1/vald/filter.proto

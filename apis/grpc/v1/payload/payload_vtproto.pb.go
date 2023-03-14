@@ -4487,6 +4487,9 @@ func (m *Update_Config) SizeVT() (n int) {
 	if m.Timestamp != 0 {
 		n += 1 + sov(uint64(m.Timestamp))
 	}
+	if m.DisableBalancedUpdate {
+		n += 2
+	}
 	if m.unknownFields != nil {
 		n += len(m.unknownFields)
 	}
@@ -4602,6 +4605,9 @@ func (m *Upsert_Config) SizeVT() (n int) {
 	}
 	if m.Timestamp != 0 {
 		n += 1 + sov(uint64(m.Timestamp))
+	}
+	if m.DisableBalancedUpdate {
+		n += 2
 	}
 	if m.unknownFields != nil {
 		n += len(m.unknownFields)
