@@ -154,6 +154,15 @@
         "bug",
         "code"
       ]
+    },
+    {
+      "login": "junsei-ando",
+      "name": "junsei-ando",
+      "avatar_url": "https://avatars.githubusercontent.com/u/1892077?v=4",
+      "profile": "https://github.com/junsei-ando",
+      "contributions": [
+        "doc"
+      ]
     }
   ],
   "contributorsPerLine": 7,
