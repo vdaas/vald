@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,11 +20,11 @@ import (
 	"image/color"
 	"io/fs"
 	"os"
-	"sort"
 
 	"github.com/lucasb-eyer/go-colorful"
 	"github.com/vdaas/vald/hack/benchmark/metrics"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/slices"
 	"gonum.org/v1/plot"
 	"gonum.org/v1/plot/plotter"
 	"gonum.org/v1/plot/vg"
@@ -87,8 +87,8 @@ func run() error {
 		step = 1 / float64(len(ms)-1)
 	}
 	for i, m := range ms {
-		sort.Slice(m.Search, func(i, j int) bool {
-			return m.Search[i].Recall < m.Search[j].Recall
+		slices.SortFunc(m.Search, func(left, right *metrics.SearchMetrics) bool {
+			return left.Recall < right.Recall
 		})
 		xys := make(plotter.XYs, len(m.Search))
 		for i, s := range m.Search {

@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import (
 	"syscall"
 
 	"github.com/vdaas/vald/internal/config"
+	"github.com/vdaas/vald/internal/conv"
 	"github.com/vdaas/vald/internal/encoding/json"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
@@ -75,7 +76,7 @@ func Do(ctx context.Context, opts ...Option) error {
 	if p.ShowVersion() {
 		log.Init(log.WithLevel(level.INFO.String()))
 		defer log.Close()
-		log.Info(info.String())
+		log.Info(info.Get())
 		return nil
 	}
 
@@ -102,13 +103,13 @@ func Do(ctx context.Context, opts ...Option) error {
 			if err != nil {
 				return "failed to serialize build information"
 			}
-			return string(b)
+			return conv.Btoa(b)
 		}(), func() string {
 			b, err := json.Marshal(cfg)
 			if err != nil {
 				return "failed to serialize configuration"
 			}
-			return string(b)
+			return conv.Btoa(b)
 		}())
 
 	// set location temporary for initialization logging

@@ -57,11 +57,12 @@ Upsert RPC is the method to update a single vector and add a new single vector.
 
   - Upsert.Config
 
-    |          field          | type          | label | required | desc.                                                                                                |
-    | :---------------------: | :------------ | :---- | :------: | :--------------------------------------------------------------------------------------------------- |
-    | skip_strict_exist_check | bool          |       |          | check the same vector is already inserted or not.<br>the ID should be unique if the value is `true`. |
-    |        timestamp        | int64         |       |          | the timestamp of the vector updated/inserted.<br>if it is N/A, the current time will be used.        |
-    |         filters         | Filter.Config |       |          | configuration for filter                                                                             |
+    |          field           | type          | label | required | desc.                                                                                                |
+    | :----------------------: | :------------ | :---- | :------: | :--------------------------------------------------------------------------------------------------- |
+    | skip_strict_exist_check  | bool          |       |          | check the same vector is already inserted or not.<br>the ID should be unique if the value is `true`. |
+    |        timestamp         | int64         |       |          | the timestamp of the vector updated/inserted.<br>if it is N/A, the current time will be used.        |
+    |         filters          | Filter.Config |       |          | configuration for filter                                                                             |
+    | disabled_balanced_update | bool          |       |          | A flag to disable balanced update (split remove -&gt; insert operation) during update operation.     |
 
   - Object.Vector
 
@@ -94,12 +95,14 @@ Upsert RPC is the method to update a single vector and add a new single vector.
 
 ### Status Code
 
-| code | desc.            |
-| :--: | :--------------- |
-|  0   | OK               |
-|  3   | INVALID_ARGUMENT |
-|  6   | ALREADY_EXISTS   |
-|  13  | INTERNAL         |
+| code | desc.             |
+| :--: | :---------------- |
+|  0   | OK                |
+|  1   | CANCELLED         |
+|  3   | INVALID_ARGUMENT  |
+|  4   | DEADLINE_EXCEEDED |
+|  6   | ALREADY_EXISTS    |
+|  13  | INTERNAL          |
 
 ## StreamUpsert RPC
 
@@ -142,11 +145,12 @@ It’s the recommended method to upsert a large number of vectors.
 
   - Upsert.Config
 
-    |          field          | type          | label | required | desc.                                                                                                |
-    | :---------------------: | :------------ | :---- | :------: | :--------------------------------------------------------------------------------------------------- |
-    | skip_strict_exist_check | bool          |       |          | check the same vector is already inserted or not.<br>the ID should be unique if the value is `true`. |
-    |        timestamp        | int64         |       |          | the timestamp of the vector updated/inserted.<br>if it is N/A, the current time will be used.        |
-    |         filters         | Filter.Config |       |          | configuration for filter                                                                             |
+    |          field           | type          | label | required | desc.                                                                                                |
+    | :----------------------: | :------------ | :---- | :------: | :--------------------------------------------------------------------------------------------------- |
+    | skip_strict_exist_check  | bool          |       |          | check the same vector is already inserted or not.<br>the ID should be unique if the value is `true`. |
+    |        timestamp         | int64         |       |          | the timestamp of the vector updated/inserted.<br>if it is N/A, the current time will be used.        |
+    |         filters          | Filter.Config |       |          | configuration for filter                                                                             |
+    | disabled_balanced_update | bool          |       |          | A flag to disable balanced update (split remove -&gt; insert operation) during update operation.     |
 
   - Object.Vector
 
@@ -201,12 +205,14 @@ It’s the recommended method to upsert a large number of vectors.
 
 ### Status Code
 
-| code | desc.            |
-| :--: | :--------------- |
-|  0   | OK               |
-|  3   | INVALID_ARGUMENT |
-|  6   | ALREADY_EXISTS   |
-|  13  | INTERNAL         |
+| code | desc.             |
+| :--: | :---------------- |
+|  0   | OK                |
+|  1   | CANCELLED         |
+|  3   | INVALID_ARGUMENT  |
+|  4   | DEADLINE_EXCEEDED |
+|  6   | ALREADY_EXISTS    |
+|  13  | INTERNAL          |
 
 ## MultiUpsert RPC
 
@@ -260,11 +266,12 @@ Please be careful that the size of the request exceeds the limit.
 
   - Upsert.Config
 
-    |          field          | type          | label | required | desc.                                                                                                        |
-    | :---------------------: | :------------ | :---- | :------: | :----------------------------------------------------------------------------------------------------------- |
-    | skip_strict_exist_check | bool          |       |          | check the same vector is already updated/inserted or not.<br>the ID should be unique if the value is `true`. |
-    |        timestamp        | int64         |       |          | the timestamp of the vector updated/inserted.<br>if it is N/A, the current time will be used.                |
-    |         filters         | Filter.Config |       |          | configuration for filter                                                                                     |
+    |          field           | type          | label | required | desc.                                                                                                        |
+    | :----------------------: | :------------ | :---- | :------: | :----------------------------------------------------------------------------------------------------------- |
+    | skip_strict_exist_check  | bool          |       |          | check the same vector is already updated/inserted or not.<br>the ID should be unique if the value is `true`. |
+    |        timestamp         | int64         |       |          | the timestamp of the vector updated/inserted.<br>if it is N/A, the current time will be used.                |
+    |         filters          | Filter.Config |       |          | configuration for filter                                                                                     |
+    | disabled_balanced_update | bool          |       |          | A flag to disable balanced update (split remove -&gt; insert operation) during update operation.             |
 
   - Object.Vector
 
@@ -305,9 +312,11 @@ Please be careful that the size of the request exceeds the limit.
 
 ### Status Code
 
-| code | desc.            |
-| :--: | :--------------- |
-|  0   | OK               |
-|  3   | INVALID_ARGUMENT |
-|  6   | ALREADY_EXISTS   |
-|  13  | INTERNAL         |
+| code | desc.             |
+| :--: | :---------------- |
+|  0   | OK                |
+|  1   | CANCELLED         |
+|  3   | INVALID_ARGUMENT  |
+|  4   | DEADLINE_EXCEEDED |
+|  6   | ALREADY_EXISTS    |
+|  13  | INTERNAL          |

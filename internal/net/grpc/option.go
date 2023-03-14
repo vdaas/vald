@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -326,7 +326,7 @@ func WithDialer(der net.Dialer) Option {
 			g.dopts = append(g.dopts,
 				grpc.WithContextDialer(func(ctx context.Context, addr string) (net.Conn, error) {
 					// TODO we need change network type dynamically
-					log.Debugf("grpc Context Dialer addr is %s", addr)
+					log.Debugf("gRPC context Dialer addr is %s", addr)
 					return der.GetDialer()(ctx, net.TCP.String(), addr)
 				}),
 			)

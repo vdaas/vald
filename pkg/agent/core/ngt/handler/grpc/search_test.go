@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,12 +16,10 @@ package grpc
 import (
 	"context"
 	"math"
-	"reflect"
 	"testing"
 	"time"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
-	"github.com/vdaas/vald/apis/grpc/v1/vald"
 	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/conv"
 	"github.com/vdaas/vald/internal/core/algorithm/ngt"
@@ -31,7 +29,6 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/test/data/request"
 	"github.com/vdaas/vald/internal/test/data/vector"
-	"github.com/vdaas/vald/pkg/agent/core/ngt/model"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/service"
 )
 
@@ -60,7 +57,7 @@ func Test_server_Search(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, *payload.Search_Response, error) error
-		beforeFunc func(context.Context, fields, args) (Server, error)
+		beforeFunc func(*testing.T, context.Context, fields, args) (Server, error)
 		afterFunc  func(args)
 	}
 
@@ -71,8 +68,18 @@ func Test_server_Search(t *testing.T) {
 	defaultInsertConfig := &payload.Insert_Config{
 		SkipStrictExistCheck: true,
 	}
-	defaultBeforeFunc := func(ctx context.Context, f fields, a args) (Server, error) {
-		return buildIndex(ctx, f.objectType, f.distribution, a.insertNum, defaultInsertConfig, f.ngtCfg, f.ngtOpts, nil, f.overwriteVec)
+	defaultBeforeFunc := func(t *testing.T, ctx context.Context, f fields, a args) (Server, error) {
+		t.Helper()
+		eg, ctx := errgroup.New(ctx)
+		ngt, err := newIndexedNGTService(ctx, eg, f.objectType, f.distribution, a.insertNum, defaultInsertConfig, f.ngtCfg, f.ngtOpts, nil, f.overwriteVec)
+		if err != nil {
+			return nil, err
+		}
+		s, err := New(WithErrGroup(eg), WithNGT(ngt))
+		if err != nil {
+			return nil, err
+		}
+		return s, nil
 	}
 	defaultCheckFunc := func(w want, gotRes *payload.Search_Response, err error) error {
 		if err != nil {
@@ -766,7 +773,7 @@ func Test_server_Search(t *testing.T) {
 			if test.beforeFunc == nil {
 				test.beforeFunc = defaultBeforeFunc
 			}
-			s, err := test.beforeFunc(ctx, test.fields, test.args)
+			s, err := test.beforeFunc(tt, ctx, test.fields, test.args)
 			if err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -789,11 +796,7 @@ func Test_server_Search(t *testing.T) {
 func Test_server_SearchByID(t *testing.T) {
 	t.Parallel()
 
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
 	type args struct {
-		ctx      context.Context
 		indexID  string
 		searchID string
 	}
@@ -806,7 +809,7 @@ func Test_server_SearchByID(t *testing.T) {
 		args       args
 		want       want
 		checkFunc  func(want, *payload.Search_Response, error) error
-		beforeFunc func(args) (Server, error)
+		beforeFunc func(*testing.T, context.Context, args) (Server, error)
 		afterFunc  func(args)
 	}
 	defaultCheckFunc := func(w want, gotRes *payload.Search_Response, err error) error {
@@ -838,7 +841,6 @@ func Test_server_SearchByID(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-
 	defaultNgtConfig := &config.NGT{
 		Dimension:        128,
 		DistanceType:     ngt.L2.String(),
@@ -852,12 +854,23 @@ func Test_server_SearchByID(t *testing.T) {
 			InsertBufferPoolSize: 1000,
 			DeleteBufferPoolSize: 1000,
 		},
+		EnableInMemoryMode: true,
 	}
 	defaultInsertConfig := &payload.Insert_Config{
 		SkipStrictExistCheck: true,
 	}
-	defaultBeforeFunc := func(a args) (Server, error) {
-		return buildIndex(a.ctx, request.Float, vector.Gaussian, insertNum, defaultInsertConfig, defaultNgtConfig, nil, []string{a.indexID}, nil)
+	defaultBeforeFunc := func(t *testing.T, ctx context.Context, a args) (Server, error) {
+		t.Helper()
+		eg, ctx := errgroup.New(ctx)
+		ngt, err := newIndexedNGTService(ctx, eg, request.Float, vector.Gaussian, insertNum, defaultInsertConfig, defaultNgtConfig, nil, []string{a.indexID}, nil)
+		if err != nil {
+			return nil, err
+		}
+		s, err := New(WithErrGroup(eg), WithNGT(ngt))
+		if err != nil {
+			return nil, err
+		}
+		return s, nil
 	}
 	defaultSearch_Config := &payload.Search_Config{
 		Num:     10,
@@ -896,7 +909,6 @@ func Test_server_SearchByID(t *testing.T) {
 		{
 			name: "Equivalence Class Testing case 1.1: success search vector",
 			args: args{
-				ctx:      ctx,
 				indexID:  "test",
 				searchID: "test",
 			},
@@ -907,7 +919,6 @@ func Test_server_SearchByID(t *testing.T) {
 		{
 			name: "Equivalence Class Testing case 2.1: fail search with non-existent ID",
 			args: args{
-				ctx:      ctx,
 				indexID:  "test",
 				searchID: "non-existent",
 			},
@@ -919,7 +930,6 @@ func Test_server_SearchByID(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 1.1: fail search with \"\"",
 			args: args{
-				ctx:      ctx,
 				indexID:  "test",
 				searchID: "",
 			},
@@ -931,7 +941,6 @@ func Test_server_SearchByID(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 2.1: success search with ^@",
 			args: args{
-				ctx:      ctx,
 				indexID:  string([]byte{0}),
 				searchID: string([]byte{0}),
 			},
@@ -942,7 +951,6 @@ func Test_server_SearchByID(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 2.2: success search with ^I",
 			args: args{
-				ctx:      ctx,
 				indexID:  "\t",
 				searchID: "\t",
 			},
@@ -953,7 +961,6 @@ func Test_server_SearchByID(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 2.3: success search with ^J",
 			args: args{
-				ctx:      ctx,
 				indexID:  "\n",
 				searchID: "\n",
 			},
@@ -964,7 +971,6 @@ func Test_server_SearchByID(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 2.4: success search with ^M",
 			args: args{
-				ctx:      ctx,
 				indexID:  "\r",
 				searchID: "\r",
 			},
@@ -975,7 +981,6 @@ func Test_server_SearchByID(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 2.5: success search with ^[",
 			args: args{
-				ctx:      ctx,
 				indexID:  string([]byte{27}),
 				searchID: string([]byte{27}),
 			},
@@ -986,7 +991,6 @@ func Test_server_SearchByID(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 2.6: success search with ^?",
 			args: args{
-				ctx:      ctx,
 				indexID:  string([]byte{127}),
 				searchID: string([]byte{127}),
 			},
@@ -997,7 +1001,6 @@ func Test_server_SearchByID(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 3.1: success search with utf-8 ID from utf-8 index",
 			args: args{
-				ctx:      ctx,
 				indexID:  utf8Str,
 				searchID: utf8Str,
 			},
@@ -1008,7 +1011,6 @@ func Test_server_SearchByID(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 3.2: fail search with utf-8 ID from s-jis index",
 			args: args{
-				ctx:      ctx,
 				indexID:  sjisStr,
 				searchID: utf8Str,
 			},
@@ -1020,7 +1022,6 @@ func Test_server_SearchByID(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 3.3: fail search with utf-8 ID from euc-jp index",
 			args: args{
-				ctx:      ctx,
 				indexID:  eucjpStr,
 				searchID: utf8Str,
 			},
@@ -1032,7 +1033,6 @@ func Test_server_SearchByID(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 3.4: fail search with s-jis ID from utf-8 index",
 			args: args{
-				ctx:      ctx,
 				indexID:  utf8Str,
 				searchID: sjisStr,
 			},
@@ -1044,7 +1044,6 @@ func Test_server_SearchByID(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 3.5: success search with s-jis ID from s-jis index",
 			args: args{
-				ctx:      ctx,
 				indexID:  sjisStr,
 				searchID: sjisStr,
 			},
@@ -1055,7 +1054,6 @@ func Test_server_SearchByID(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 3.6: fail search with s-jis ID from euc-jp index",
 			args: args{
-				ctx:      ctx,
 				indexID:  eucjpStr,
 				searchID: sjisStr,
 			},
@@ -1067,7 +1065,6 @@ func Test_server_SearchByID(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 3.7: fail search with euc-jp ID from utf-8 index",
 			args: args{
-				ctx:      ctx,
 				indexID:  utf8Str,
 				searchID: eucjpStr,
 			},
@@ -1079,7 +1076,6 @@ func Test_server_SearchByID(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 3.8: fail search with euc-jp ID from s-jis index",
 			args: args{
-				ctx:      ctx,
 				indexID:  sjisStr,
 				searchID: eucjpStr,
 			},
@@ -1091,7 +1087,6 @@ func Test_server_SearchByID(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 3.9: success search with euc-jp ID from euc-jp index",
 			args: args{
-				ctx:      ctx,
 				indexID:  eucjpStr,
 				searchID: eucjpStr,
 			},
@@ -1102,7 +1097,6 @@ func Test_server_SearchByID(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 4.1: success search with 😀",
 			args: args{
-				ctx:      ctx,
 				indexID:  "😀",
 				searchID: "😀",
 			},
@@ -1116,10 +1110,13 @@ func Test_server_SearchByID(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
+			ctx, cancel := context.WithCancel(context.Background())
+			defer cancel()
+
 			if test.beforeFunc == nil {
 				test.beforeFunc = defaultBeforeFunc
 			}
-			s, err := test.beforeFunc(test.args)
+			s, err := test.beforeFunc(tt, ctx, test.args)
 			if err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -1135,509 +1132,7 @@ func Test_server_SearchByID(t *testing.T) {
 				Id:     test.args.searchID,
 				Config: defaultSearch_Config,
 			}
-			gotRes, err := s.SearchByID(test.args.ctx, req)
-			if err := checkFunc(test.want, gotRes, err); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
-
-func Test_toSearchResponse(t *testing.T) {
-	t.Parallel()
-	type args struct {
-		dists []model.Distance
-		err   error
-	}
-	type want struct {
-		wantRes *payload.Search_Response
-		err     error
-	}
-	type test struct {
-		name       string
-		args       args
-		want       want
-		checkFunc  func(want, *payload.Search_Response, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-	defaultCheckFunc := func(w want, gotRes *payload.Search_Response, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-		}
-		if !reflect.DeepEqual(gotRes, w.wantRes) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           dists: nil,
-		           err: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           dists: nil,
-		           err: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-			checkFunc := test.checkFunc
-			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
-			}
-
-			gotRes, err := toSearchResponse(test.args.dists, test.args.err)
-			if err := checkFunc(test.want, gotRes, err); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
-
-func Test_server_StreamSearch(t *testing.T) {
-	t.Parallel()
-	type args struct {
-		stream vald.Search_StreamSearchServer
-	}
-	type fields struct {
-		name              string
-		ip                string
-		ngt               service.NGT
-		eg                errgroup.Group
-		streamConcurrency int
-	}
-	type want struct {
-		err error
-	}
-	type test struct {
-		name       string
-		args       args
-		fields     fields
-		want       want
-		checkFunc  func(want, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-	defaultCheckFunc := func(w want, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           stream: nil,
-		       },
-		       fields: fields {
-		           name: "",
-		           ip: "",
-		           ngt: nil,
-		           eg: nil,
-		           streamConcurrency: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           stream: nil,
-		           },
-		           fields: fields {
-		           name: "",
-		           ip: "",
-		           ngt: nil,
-		           eg: nil,
-		           streamConcurrency: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-			checkFunc := test.checkFunc
-			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
-			}
-			s := &server{
-				name:              test.fields.name,
-				ip:                test.fields.ip,
-				ngt:               test.fields.ngt,
-				eg:                test.fields.eg,
-				streamConcurrency: test.fields.streamConcurrency,
-			}
-
-			err := s.StreamSearch(test.args.stream)
-			if err := checkFunc(test.want, err); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
-
-func Test_server_StreamSearchByID(t *testing.T) {
-	t.Parallel()
-	type args struct {
-		stream vald.Search_StreamSearchByIDServer
-	}
-	type fields struct {
-		name              string
-		ip                string
-		ngt               service.NGT
-		eg                errgroup.Group
-		streamConcurrency int
-	}
-	type want struct {
-		err error
-	}
-	type test struct {
-		name       string
-		args       args
-		fields     fields
-		want       want
-		checkFunc  func(want, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-	defaultCheckFunc := func(w want, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           stream: nil,
-		       },
-		       fields: fields {
-		           name: "",
-		           ip: "",
-		           ngt: nil,
-		           eg: nil,
-		           streamConcurrency: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           stream: nil,
-		           },
-		           fields: fields {
-		           name: "",
-		           ip: "",
-		           ngt: nil,
-		           eg: nil,
-		           streamConcurrency: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-			checkFunc := test.checkFunc
-			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
-			}
-			s := &server{
-				name:              test.fields.name,
-				ip:                test.fields.ip,
-				ngt:               test.fields.ngt,
-				eg:                test.fields.eg,
-				streamConcurrency: test.fields.streamConcurrency,
-			}
-
-			err := s.StreamSearchByID(test.args.stream)
-			if err := checkFunc(test.want, err); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
-
-func Test_server_MultiSearch(t *testing.T) {
-	t.Parallel()
-	type args struct {
-		ctx  context.Context
-		reqs *payload.Search_MultiRequest
-	}
-	type fields struct {
-		name              string
-		ip                string
-		ngt               service.NGT
-		eg                errgroup.Group
-		streamConcurrency int
-	}
-	type want struct {
-		wantRes *payload.Search_Responses
-		err     error
-	}
-	type test struct {
-		name       string
-		args       args
-		fields     fields
-		want       want
-		checkFunc  func(want, *payload.Search_Responses, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-	defaultCheckFunc := func(w want, gotRes *payload.Search_Responses, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-		}
-		if !reflect.DeepEqual(gotRes, w.wantRes) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx: nil,
-		           reqs: nil,
-		       },
-		       fields: fields {
-		           name: "",
-		           ip: "",
-		           ngt: nil,
-		           eg: nil,
-		           streamConcurrency: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ctx: nil,
-		           reqs: nil,
-		           },
-		           fields: fields {
-		           name: "",
-		           ip: "",
-		           ngt: nil,
-		           eg: nil,
-		           streamConcurrency: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-			checkFunc := test.checkFunc
-			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
-			}
-			s := &server{
-				name:              test.fields.name,
-				ip:                test.fields.ip,
-				ngt:               test.fields.ngt,
-				eg:                test.fields.eg,
-				streamConcurrency: test.fields.streamConcurrency,
-			}
-
-			gotRes, err := s.MultiSearch(test.args.ctx, test.args.reqs)
-			if err := checkFunc(test.want, gotRes, err); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
-
-func Test_server_MultiSearchByID(t *testing.T) {
-	t.Parallel()
-	type args struct {
-		ctx  context.Context
-		reqs *payload.Search_MultiIDRequest
-	}
-	type fields struct {
-		name              string
-		ip                string
-		ngt               service.NGT
-		eg                errgroup.Group
-		streamConcurrency int
-	}
-	type want struct {
-		wantRes *payload.Search_Responses
-		err     error
-	}
-	type test struct {
-		name       string
-		args       args
-		fields     fields
-		want       want
-		checkFunc  func(want, *payload.Search_Responses, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-	defaultCheckFunc := func(w want, gotRes *payload.Search_Responses, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-		}
-		if !reflect.DeepEqual(gotRes, w.wantRes) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx: nil,
-		           reqs: nil,
-		       },
-		       fields: fields {
-		           name: "",
-		           ip: "",
-		           ngt: nil,
-		           eg: nil,
-		           streamConcurrency: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ctx: nil,
-		           reqs: nil,
-		           },
-		           fields: fields {
-		           name: "",
-		           ip: "",
-		           ngt: nil,
-		           eg: nil,
-		           streamConcurrency: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-			checkFunc := test.checkFunc
-			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
-			}
-			s := &server{
-				name:              test.fields.name,
-				ip:                test.fields.ip,
-				ngt:               test.fields.ngt,
-				eg:                test.fields.eg,
-				streamConcurrency: test.fields.streamConcurrency,
-			}
-
-			gotRes, err := s.MultiSearchByID(test.args.ctx, test.args.reqs)
+			gotRes, err := s.SearchByID(ctx, req)
 			if err := checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}

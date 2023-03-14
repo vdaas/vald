@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,6 +18,11 @@
 ## run e2e
 e2e:
 	$(call run-e2e-crud-test,-run TestE2EStandardCRUD)
+
+.PHONY: e2e/multi
+## run e2e multiple apis
+e2e/multi:
+	$(call run-e2e-multi-crud-test,-run TestE2EMultiAPIs)
 
 .PHONY: e2e/insert
 ## run insert e2e

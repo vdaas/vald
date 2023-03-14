@@ -53,11 +53,12 @@ Update RPC is the method to update a single vector.
 
   - Update.Config
 
-    |          field          | type          | label | required | desc.                                                                                                |
-    | :---------------------: | :------------ | :---- | :------: | :--------------------------------------------------------------------------------------------------- |
-    | skip_strict_exist_check | bool          |       |          | check the same vector is already inserted or not.<br>the ID should be unique if the value is `true`. |
-    |        timestamp        | int64         |       |          | the timestamp of the vector updated.<br>if it is N/A, the current time will be used.                 |
-    |         filters         | Filter.Config |       |          | configuration for filter                                                                             |
+    |          field           | type          | label | required | desc.                                                                                                |
+    | :----------------------: | :------------ | :---- | :------: | :--------------------------------------------------------------------------------------------------- |
+    | skip_strict_exist_check  | bool          |       |          | check the same vector is already inserted or not.<br>the ID should be unique if the value is `true`. |
+    |        timestamp         | int64         |       |          | the timestamp of the vector updated.<br>if it is N/A, the current time will be used.                 |
+    |         filters          | Filter.Config |       |          | configuration for filter                                                                             |
+    | disabled_balanced_update | bool          |       |          | A flag to disable balanced update (split remove -&gt; insert operation) during update operation.     |
 
   - Object.Vector
 
@@ -90,13 +91,15 @@ Update RPC is the method to update a single vector.
 
 ### Status Code
 
-| code | desc.            |
-| :--: | :--------------- |
-|  0   | OK               |
-|  3   | INVALID_ARGUMENT |
-|  5   | NOT_FOUND        |
-|  6   | ALREADY_EXISTS   |
-|  13  | INTERNAL         |
+| code | desc.             |
+| :--: | :---------------- |
+|  0   | OK                |
+|  1   | CANCELLED         |
+|  3   | INVALID_ARGUMENT  |
+|  4   | DEADLINE_EXCEEDED |
+|  5   | NOT_FOUND         |
+|  6   | ALREADY_EXISTS    |
+|  13  | INTERNAL          |
 
 ## StreamUpdate RPC
 
@@ -139,11 +142,12 @@ It's the recommended method to update the large amount of vectors.
 
   - Update.Config
 
-    |          field          | type          | label | required | desc.                                                                                                |
-    | :---------------------: | :------------ | :---- | :------: | :--------------------------------------------------------------------------------------------------- |
-    | skip_strict_exist_check | bool          |       |          | check the same vector is already inserted or not.<br>the ID should be unique if the value is `true`. |
-    |        timestamp        | int64         |       |          | the timestamp of the vector updated.<br>if it is N/A, the current time will be used.                 |
-    |         filters         | Filter.Config |       |          | configuration for filter                                                                             |
+    |          field           | type          | label | required | desc.                                                                                                |
+    | :----------------------: | :------------ | :---- | :------: | :--------------------------------------------------------------------------------------------------- |
+    | skip_strict_exist_check  | bool          |       |          | check the same vector is already inserted or not.<br>the ID should be unique if the value is `true`. |
+    |        timestamp         | int64         |       |          | the timestamp of the vector updated.<br>if it is N/A, the current time will be used.                 |
+    |         filters          | Filter.Config |       |          | configuration for filter                                                                             |
+    | disabled_balanced_update | bool          |       |          | A flag to disable balanced update (split remove -&gt; insert operation) during update operation.     |
 
   - Object.Vector
 
@@ -198,13 +202,15 @@ It's the recommended method to update the large amount of vectors.
 
 ### Status Code
 
-| code | desc.            |
-| :--: | :--------------- |
-|  0   | OK               |
-|  3   | INVALID_ARGUMENT |
-|  5   | NOT_FOUND        |
-|  6   | ALREADY_EXISTS   |
-|  13  | INTERNAL         |
+| code | desc.             |
+| :--: | :---------------- |
+|  0   | OK                |
+|  1   | CANCELLED         |
+|  3   | INVALID_ARGUMENT  |
+|  4   | DEADLINE_EXCEEDED |
+|  5   | NOT_FOUND         |
+|  6   | ALREADY_EXISTS    |
+|  13  | INTERNAL          |
 
 ## MultiUpdate RPC
 
@@ -258,11 +264,12 @@ Please be careful that the size of the request exceed the limit.
 
   - Update.Config
 
-    |          field          | type          | label | required | desc.                                                                                                |
-    | :---------------------: | :------------ | :---- | :------: | :--------------------------------------------------------------------------------------------------- |
-    | skip_strict_exist_check | bool          |       |          | check the same vector is already inserted or not.<br>the ID should be unique if the value is `true`. |
-    |        timestamp        | int64         |       |          | the timestamp of the vector updated.<br>if it is N/A, the current time will be used.                 |
-    |         filters         | Filter.Config |       |          | configuration for filter                                                                             |
+    |          field           | type          | label | required | desc.                                                                                                |
+    | :----------------------: | :------------ | :---- | :------: | :--------------------------------------------------------------------------------------------------- |
+    | skip_strict_exist_check  | bool          |       |          | check the same vector is already inserted or not.<br>the ID should be unique if the value is `true`. |
+    |        timestamp         | int64         |       |          | the timestamp of the vector updated.<br>if it is N/A, the current time will be used.                 |
+    |         filters          | Filter.Config |       |          | configuration for filter                                                                             |
+    | disabled_balanced_update | bool          |       |          | A flag to disable balanced update (split remove -&gt; insert operation) during update operation.     |
 
   - Object.Vector
 
@@ -303,10 +310,12 @@ Please be careful that the size of the request exceed the limit.
 
 ### Status Code
 
-| code | desc.            |
-| :--: | :--------------- |
-|  0   | OK               |
-|  3   | INVALID_ARGUMENT |
-|  5   | NOT_FOUND        |
-|  6   | ALREADY_EXISTS   |
-|  13  | INTERNAL         |
+| code | desc.             |
+| :--: | :---------------- |
+|  0   | OK                |
+|  1   | CANCELLED         |
+|  3   | INVALID_ARGUMENT  |
+|  4   | DEADLINE_EXCEEDED |
+|  5   | NOT_FOUND         |
+|  6   | ALREADY_EXISTS    |
+|  13  | INTERNAL          |

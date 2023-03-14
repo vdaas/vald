@@ -1,6 +1,6 @@
 ---
 #
-# Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,10 +20,10 @@ metadata:
   name: vald-discoverer
   labels:
     app.kubernetes.io/name: vald
-    helm.sh/chart: vald-v1.6.3
+    helm.sh/chart: vald-v1.7.3
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: release-name
-    app.kubernetes.io/version: v1.6.3
+    app.kubernetes.io/version: v1.7.3
     app.kubernetes.io/component: discoverer
 spec:
   ports:

@@ -1,5 +1,396 @@
 # CHANGELOG
 
+## v1.7.3
+
+### Docker images
+
+<table>
+  <tr>
+    <th>component</th>
+    <th>Docker pull</th>
+  </tr>
+  <tr>
+    <td>Agent NGT</td>
+    <td>
+      <code>docker pull vdaas/vald-agent-ngt:v1.7.3</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-agent-ngt:v1.7.3</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Agent sidecar</td>
+    <td>
+      <code>docker pull vdaas/vald-agent-sidecar:v1.7.3</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-agent-sidecar:v1.7.3</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Discoverers</td>
+    <td>
+      <code>docker pull vdaas/vald-discoverer-k8s:v1.7.3</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-discoverer-k8s:v1.7.3</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Gateways</td>
+    <td>
+      <code>docker pull vdaas/vald-lb-gateway:v1.7.3</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-lb-gateway:v1.7.3</code><br/>
+      <code>docker pull vdaas/vald-filter-gateway:v1.7.3</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-filter-gateway:v1.7.3</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Index Manager</td>
+    <td>
+      <code>docker pull vdaas/vald-manager-index:v1.7.3</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-manager-index:v1.7.3</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Helm Operator</td>
+    <td>
+      <code>docker pull vdaas/vald-helm-operator:v1.7.3</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-helm-operator:v1.7.3</code>
+    </td>
+  </tr>
+</table>
+
+### Documents
+
+- [GoDoc](https://pkg.go.dev/github.com/vdaas/vald@v1.7.3)
+- [Helm Chart Reference](https://github.com/vdaas/vald/blob/v1.7.3/charts/vald/README.md)
+- [Helm Operator Chart Reference](https://github.com/vdaas/vald/blob/v1.7.3/charts/vald-helm-operator/README.md)
+
+### Changes
+
+:sparkles: New feature
+
+- Add disable balanced update features & use generic type for BidirectionalStream [#1964](https://github.com/vdaas/vald/pull/1964)
+
+:bug: Bug fix
+
+- Fix grafana dashboard query for backoff retry count [#1961](https://github.com/vdaas/vald/pull/1961)
+
+:recycle: Refactor
+
+- Refactor conv.go [#1968](https://github.com/vdaas/vald/pull/1968)
+
+:memo: Document
+
+- Add new API parameter and update observability docs [#1966](https://github.com/vdaas/vald/pull/1966)
+
+:arrow_up: Dependency update
+
+- Update deps [#1969](https://github.com/vdaas/vald/pull/1969)
+
+## v1.7.2
+
+### Docker images
+
+<table>
+  <tr>
+    <th>component</th>
+    <th>Docker pull</th>
+  </tr>
+  <tr>
+    <td>Agent NGT</td>
+    <td>
+      <code>docker pull vdaas/vald-agent-ngt:v1.7.2</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-agent-ngt:v1.7.2</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Agent sidecar</td>
+    <td>
+      <code>docker pull vdaas/vald-agent-sidecar:v1.7.2</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-agent-sidecar:v1.7.2</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Discoverers</td>
+    <td>
+      <code>docker pull vdaas/vald-discoverer-k8s:v1.7.2</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-discoverer-k8s:v1.7.2</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Gateways</td>
+    <td>
+      <code>docker pull vdaas/vald-lb-gateway:v1.7.2</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-lb-gateway:v1.7.2</code><br/>
+      <code>docker pull vdaas/vald-filter-gateway:v1.7.2</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-filter-gateway:v1.7.2</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Index Manager</td>
+    <td>
+      <code>docker pull vdaas/vald-manager-index:v1.7.2</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-manager-index:v1.7.2</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Helm Operator</td>
+    <td>
+      <code>docker pull vdaas/vald-helm-operator:v1.7.2</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-helm-operator:v1.7.2</code>
+    </td>
+  </tr>
+</table>
+
+### Documents
+
+- [GoDoc](https://pkg.go.dev/github.com/vdaas/vald@v1.7.2)
+- [Helm Chart Reference](https://github.com/vdaas/vald/blob/v1.7.2/charts/vald/README.md)
+- [Helm Operator Chart Reference](https://github.com/vdaas/vald/blob/v1.7.2/charts/vald-helm-operator/README.md)
+
+### Changes
+
+:bug: Bug fix
+
+- Vald gRPC Client and Pool logic makes huge backoff [#1953](https://github.com/vdaas/vald/pull/1953)
+- Missing backoff metrics [#1958](https://github.com/vdaas/vald/pull/1958)
+
+:recycle: Refactor
+
+- Update test template to exclude deepsource warning [#1954](https://github.com/vdaas/vald/pull/1954)
+
+:white_check_mark: Test
+
+- Remove non-implemented test [#1952](https://github.com/vdaas/vald/pull/1952)
+
+## v1.7.1
+
+### Docker images
+
+<table>
+  <tr>
+    <th>component</th>
+    <th>Docker pull</th>
+  </tr>
+  <tr>
+    <td>Agent NGT</td>
+    <td>
+      <code>docker pull vdaas/vald-agent-ngt:v1.7.1</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-agent-ngt:v1.7.1</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Agent sidecar</td>
+    <td>
+      <code>docker pull vdaas/vald-agent-sidecar:v1.7.1</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-agent-sidecar:v1.7.1</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Discoverers</td>
+    <td>
+      <code>docker pull vdaas/vald-discoverer-k8s:v1.7.1</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-discoverer-k8s:v1.7.1</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Gateways</td>
+    <td>
+      <code>docker pull vdaas/vald-lb-gateway:v1.7.1</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-lb-gateway:v1.7.1</code><br/>
+      <code>docker pull vdaas/vald-filter-gateway:v1.7.1</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-filter-gateway:v1.7.1</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Index Manager</td>
+    <td>
+      <code>docker pull vdaas/vald-manager-index:v1.7.1</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-manager-index:v1.7.1</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Helm Operator</td>
+    <td>
+      <code>docker pull vdaas/vald-helm-operator:v1.7.1</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-helm-operator:v1.7.1</code>
+    </td>
+  </tr>
+</table>
+
+### Documents
+
+- [GoDoc](https://pkg.go.dev/github.com/vdaas/vald@v1.7.1)
+- [Helm Chart Reference](https://github.com/vdaas/vald/blob/v1.7.1/charts/vald/README.md)
+- [Helm Operator Chart Reference](https://github.com/vdaas/vald/blob/v1.7.1/charts/vald-helm-operator/README.md)
+
+### Changes
+
+#### 🐛 Bugfix
+
+- [bugfix] add target length validation for each gRPC client exection method [#1939](https://github.com/vdaas/vald/pull/1939)
+
+#### ♻️ Refactor
+
+- update gRPC status code for API docs [#1943](https://github.com/vdaas/vald/pull/1943)
+- Refactor: Add t.Helper() on test helper function [#1935](https://github.com/vdaas/vald/pull/1935)
+- Fix syntax error on dump context workflow [#1936](https://github.com/vdaas/vald/pull/1936)
+- format codes [#1934](https://github.com/vdaas/vald/pull/1934)
+
+## v1.7.0
+
+### Docker images
+
+<table>
+  <tr>
+    <th>component</th>
+    <th>Docker pull</th>
+  </tr>
+  <tr>
+    <td>Agent NGT</td>
+    <td>
+      <code>docker pull vdaas/vald-agent-ngt:v1.7.0</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-agent-ngt:v1.7.0</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Agent sidecar</td>
+    <td>
+      <code>docker pull vdaas/vald-agent-sidecar:v1.7.0</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-agent-sidecar:v1.7.0</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Discoverers</td>
+    <td>
+      <code>docker pull vdaas/vald-discoverer-k8s:v1.7.0</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-discoverer-k8s:v1.7.0</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Gateways</td>
+    <td>
+      <code>docker pull vdaas/vald-lb-gateway:v1.7.0</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-lb-gateway:v1.7.0</code><br/>
+      <code>docker pull vdaas/vald-filter-gateway:v1.7.0</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-filter-gateway:v1.7.0</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Index Manager</td>
+    <td>
+      <code>docker pull vdaas/vald-manager-index:v1.7.0</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-manager-index:v1.7.0</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Helm Operator</td>
+    <td>
+      <code>docker pull vdaas/vald-helm-operator:v1.7.0</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-helm-operator:v1.7.0</code>
+    </td>
+  </tr>
+</table>
+
+### Documents
+
+- [GoDoc](https://pkg.go.dev/github.com/vdaas/vald@v1.7.0)
+- [Helm Chart Reference](https://github.com/vdaas/vald/blob/v1.7.0/charts/vald/README.md)
+- [Helm Operator Chart Reference](https://github.com/vdaas/vald/blob/v1.7.0/charts/vald-helm-operator/README.md)
+
+### Changes
+
+:sparkles: New Feature
+
+- Introduce OTLP for metrics and trace [#1824](https://github.com/vdaas/vald/pull/1824)
+- Add manifest to deploy opentelemetry-operator [#1819](https://github.com/vdaas/vald/pull/1819)
+
+:arrow_up: Dependencies update
+
+- Update go modules and go version [#1922](https://github.com/vdaas/vald/pull/1922)
+- Update go modules [#1904](https://github.com/vdaas/vald/pull/1904)
+
+:bug: Bug fix
+
+- Divide agent errors for QBG and Faiss implementation [#1924](https://github.com/vdaas/vald/pull/1924)
+- Bugfix status handling for idle connection [#1921](https://github.com/vdaas/vald/pull/1921)
+- Fix invalid character error [#1914](https://github.com/vdaas/vald/pull/1914)
+- Fixed duplicate counts of working_memory_set_bytes [#1911](https://github.com/vdaas/vald/pull/1911)
+- Bug fix using undefined a variable at maxDimensionTest [#1856](https://github.com/vdaas/vald/pull/1856)
+- Bug fix prometheus export return value [#1817](https://github.com/vdaas/vald/pull/1817)
+
+:recycle: Refactor
+
+- Happy New Year 2023 [#1918](https://github.com/vdaas/vald/pull/1918)
+- Add auto-update libs & deps make command [#1917](https://github.com/vdaas/vald/pull/1917)
+- Add canceled status for CreateIndex API [#1892](https://github.com/vdaas/vald/pull/1892)
+- Update concurrent cancellation group name [#1912](https://github.com/vdaas/vald/pull/1912)
+- Remove blank when all parameters are not used and Add ErrJobFuncNotFound [#1879](https://github.com/vdaas/vald/pull/1879)
+- Rename doXXX() [#1878](https://github.com/vdaas/vald/pull/1878)
+- Remove deprecated functional option (internal/net/grpc) [#1877](https://github.com/vdaas/vald/pull/1877)
+- Fix deepsource: RVV-B0001 Confusing naming of struct fields or methods [#1875](https://github.com/vdaas/vald/pull/1875)
+- Fix deepsource: VET-V0008 lock erroneously passed by value internal/net test [#1874](https://github.com/vdaas/vald/pull/1874)
+- Fix deepsource: RVV-B0001 confusing naming of struct fields or methods [#1844](https://github.com/vdaas/vald/pull/1844)
+- Fix deepsource: SCC-U1000 Unused code [#1873](https://github.com/vdaas/vald/pull/1873)
+- Fix deepsource: RVV-B0006 Method modifies receiver [#1872](https://github.com/vdaas/vald/pull/1872)
+- Fix deepsource: SCC-SA4006 Value assigned to a variable is never read before being overwritten [#1871](https://github.com/vdaas/vald/pull/1871)
+- Fix deepsource: VET-V0008 Lock erroneously passed by value (pkg/agent) [#1868](https://github.com/vdaas/vald/pull/1868)
+- Fix deepsource: VET-V0008 lock erroneously passed by value internal/info test [#1869](https://github.com/vdaas/vald/pull/1869)
+- Fix deepsource: DOK-W1001 found consecutive run command [#1870](https://github.com/vdaas/vald/pull/1870)
+- Fix deepsource: VET-V0008 lock erroneously passed by value (internal/net) [#1867](https://github.com/vdaas/vald/pull/1867)
+- Fix deepsource: CRT-D0001 append possibly assigns to a wrong variable [#1866](https://github.com/vdaas/vald/pull/1866)
+- Fix deepsource: VET-V0008 Lock erroneously passed by value (pkg/manager) [#1861](https://github.com/vdaas/vald/pull/1861)
+- Fix deepsource: VET-V0008 lock erroneously passed by value pkg/discoverer [#1857](https://github.com/vdaas/vald/pull/1857)
+- Fix deepsource: RVV-B0006 Method modifies receiver [#1865](https://github.com/vdaas/vald/pull/1865)
+- Fix deepsource: VET-V0008 Lock erroneously passed by value (internal/test, singleflight, observability) [#1863](https://github.com/vdaas/vald/pull/1863)
+- Fix deepsource: VET-V0008 lock erroneously passed by value info [#1864](https://github.com/vdaas/vald/pull/1864)
+- Fix deepsource: VET-V0008 Lock erroneously passed by value internal/client [#1862](https://github.com/vdaas/vald/pull/1862)
+- Fix deepsource: VET-V0008 lock erroneously passed by value internal/info,iocopy,errgroup [#1860](https://github.com/vdaas/vald/pull/1860)
+- Fix deepsource: VET-V0008 Lock erroneously passed by value internal/db, backoff, circuitbreaker [#1859](https://github.com/vdaas/vald/pull/1859)
+- Fix deepsource: RVV-B0009 Redefinition of builtin [#1858](https://github.com/vdaas/vald/pull/1858)
+- Fix deepsource: CRT-A0014 switch single case can be rewritten as if or if-else [#1855](https://github.com/vdaas/vald/pull/1855)
+- Fix deepsource: RVV-A0003 Exit inside non-main function ./hack [#1854](https://github.com/vdaas/vald/pull/1854)
+- Fix deepsource: SCC-S1003 replace call to strings.Index with strings.Contains [#1853](https://github.com/vdaas/vald/pull/1853)
+- Fix deepsource: RVV-B0013 Unused method receiver [#1852](https://github.com/vdaas/vald/pull/1852)
+- Fix deepsource: CRT-D0007 Duplicate cases found in switch statement [#1851](https://github.com/vdaas/vald/pull/1851)
+- Fix deepsource: GO-W1009 using a deprecated function, variable, constant or field [#1846](https://github.com/vdaas/vald/pull/1846)
+- Fix deepsource: RVV-B0011 exported function returning value of unexported type [#1848](https://github.com/vdaas/vald/pull/1848)
+- Fix deepsource: GSC-G103 Function call made to an unsafe package [#1850](https://github.com/vdaas/vald/pull/1850)
+- Fix deepsource: RVV-B0012 Unused parameter in the function
+- Fix deepsource: DOK-SC2002, DOK-W1001 Useless cat and Multiple consecutive RUN [#1847](https://github.com/vdaas/vald/pull/1847)
+- Fix deepsource: dockerfile warning [#1835](https://github.com/vdaas/vald/pull/1835)
+- Fix deepsource RVV-B0013 [#1832](https://github.com/vdaas/vald/pull/1832)
+- Fix deepsource VET-V0007 unkeyed composite literals [#1837](https://github.com/vdaas/vald/pull/1837)
+- Fix deepsource: Audit required: Insecure gRPC server [#1833](https://github.com/vdaas/vald/pull/1833)
+- Fix deepsource: Potential slowloris attack [#1834](https://github.com/vdaas/vald/pull/1834)
+- Fix deepsource: Unsafe defer of os.Close [#1836](https://github.com/vdaas/vald/pull/1836)
+- Fix deepsource: RVV-A0003 exit inside non-main function [#1838](https://github.com/vdaas/vald/pull/1838)
+- Fix deepsource: GSC-G404 Audit the random number generation source (rand) [#1839](https://github.com/vdaas/vald/pull/1839)
+- Fix makefile [#1828](https://github.com/vdaas/vald/pull/1828)
+- Refactor circuitbreaker [#1816](https://github.com/vdaas/vald/pull/1816)
+
+:white_check_mark: Test
+
+- Refactor Insert Upsert Testing [#1919](https://github.com/vdaas/vald/pull/1919)
+
+:green_heart: CI
+
+- Ci/GitHub action docker/update docker login action [#1903](https://github.com/vdaas/vald/pull/1903)
+- Add actions workflow validation [#1902](https://github.com/vdaas/vald/pull/1902)
+- Change docker build permission [#1901](https://github.com/vdaas/vald/pull/1901)
+- Update docker login action [#1900](https://github.com/vdaas/vald/pull/1900)
+- Format code with prettier and gofumpt [#1886](https://github.com/vdaas/vald/pull/1886)
+- Update deepsource configuration [#1881](https://github.com/vdaas/vald/pull/1881)
+- Update gotestfmt org [#1880](https://github.com/vdaas/vald/pull/1880)
+- Add escape for e2e workflow [#1845](https://github.com/vdaas/vald/pull/1845)
+- Resolve GitHub Actions warning [#1818](https://github.com/vdaas/vald/pull/1818)
+
+:memo: Document
+
+- Create observability configuration document [#1882](https://github.com/vdaas/vald/pull/1882)
+- Add takuyaymd as a contributor for bug, and code [#1913](https://github.com/vdaas/vald/pull/1913)
+- Update PULL_REQUEST_TEMPLATE and ISSUE_TEMPLATE [#1885](https://github.com/vdaas/vald/pull/1885)
+- Fix typo comment [#1831](https://github.com/vdaas/vald/pull/1831)
+- Add filter gateway api doc [#1821](https://github.com/vdaas/vald/pull/1821)
+- Fix dead link [#1823](https://github.com/vdaas/vald/pull/1823)
+- Update pull request template [#1820](https://github.com/vdaas/vald/pull/1820)
+
 ## v1.6.3
 
 ### Docker images
@@ -2047,7 +2438,7 @@
 - :robot: Update license headers / Format Go codes and YAML files ([#1255](https://github.com/vdaas/vald/pull/1255))
 - :fire: Remove invalid initialization option ([#1252](https://github.com/vdaas/vald/pull/1252))
 - add single connection client for agent & vald ([#1254](https://github.com/vdaas/vald/pull/1254))
-- bugfix remove unneccessary error return & add grpc status code handling for backoff ([#1253](https://github.com/vdaas/vald/pull/1253))
+- bugfix remove unneccessary error return & add gRPC status code handling for backoff ([#1253](https://github.com/vdaas/vald/pull/1253))
 - bugfix agent vqueue & refactor tools/deps ([#1250](https://github.com/vdaas/vald/pull/1250))
 - Add test for pkg/agent/core/ngt/service/vqueue/option ([#1233](https://github.com/vdaas/vald/pull/1233))
 - Add config agent core ngt service kvs test ([#1223](https://github.com/vdaas/vald/pull/1223))
@@ -2149,7 +2540,7 @@
 
 #### Feature
 
-- add correct grpc status and error handling (#1224)
+- add correct gRPC status and error handling (#1224)
 - Add Cloud Storage mode of Agent Sidecar. (#519)
 - Add general info metrics package / Add NGT info metrics (#1195)
 - improve internal/info implementation (#1177)
@@ -2795,7 +3186,7 @@
 - change grpc bidi-stream error handling and change grpc API interface ([#928](https://github.com/vdaas/vald/pull/928))
 - fix unclosed string literal in Dockerfile's ARG MAINTAINER ([#923](https://github.com/vdaas/vald/pull/923))
 - Revise building workflow of ci and dev containers ([#922](https://github.com/vdaas/vald/pull/922))
-- bugfix add nil check for grpc connection pool objects in grpc/client.go ([#921](https://github.com/vdaas/vald/pull/921))
+- bugfix add nil check for gRPC connection pool objects in grpc/client.go ([#921](https://github.com/vdaas/vald/pull/921))
 - remove unneccessary pr-tag definition from chart ([#920](https://github.com/vdaas/vald/pull/920))
 - :pencil: Fix typo in gateway-vald configmap template ([#919](https://github.com/vdaas/vald/pull/919))
 - change docker base image PRIMARY_TAG name from nightly to latest ([#917](https://github.com/vdaas/vald/pull/917))
@@ -4571,7 +4962,7 @@
 ### Changes
 
 - async compressor
-- optimized gRPC pool connection
+- optimized gRPC connection pool
 - update helm chart API version
 - internal gRPC client for Vald
 - Cassandra NewConvictionPolicy

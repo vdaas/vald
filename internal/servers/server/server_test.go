@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -62,11 +62,12 @@ func TestServerMode_String(t *testing.T) {
 		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got := tt.m.String()
-			if tt.want != got {
-				t.Errorf("String is wrong. want: %v, got: %v", tt.want, got)
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			got := test.m.String()
+			if test.want != got {
+				t.Errorf("String is wrong. want: %v, got: %v", test.want, got)
 			}
 		})
 	}
@@ -392,7 +393,7 @@ func Test_server_ListenAndServe(t *testing.T) {
 		name      string
 		args      args
 		field     field
-		afterFunc func()
+		afterFunc func(*testing.T)
 		want      error
 	}
 
@@ -447,7 +448,8 @@ func Test_server_ListenAndServe(t *testing.T) {
 					},
 					running: false,
 				},
-				afterFunc: func() {
+				afterFunc: func(t *testing.T) {
+					t.Helper()
 					srv.Shutdown(ctx)
 					cancel()
 					eg.Wait()
@@ -476,7 +478,8 @@ func Test_server_ListenAndServe(t *testing.T) {
 					},
 					running: false,
 				},
-				afterFunc: func() {
+				afterFunc: func(t *testing.T) {
+					t.Helper()
 					cancel()
 					eg.Wait()
 				},
@@ -486,23 +489,24 @@ func Test_server_ListenAndServe(t *testing.T) {
 	}
 
 	log.Init(log.WithLoggerType(logger.NOP.String()))
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
 			defer func() {
-				if tt.afterFunc != nil {
-					defer tt.afterFunc()
+				if test.afterFunc != nil {
+					defer test.afterFunc(tt)
 				}
 			}()
 
 			s := &server{
-				mode: tt.field.mode,
-				eg:   tt.field.eg,
+				mode: test.field.mode,
+				eg:   test.field.eg,
 				http: struct {
 					srv     *http.Server
 					h       http.Handler
 					starter func(net.Listener) error
 				}{
-					starter: tt.field.httpSrvStarter,
+					starter: test.field.httpSrvStarter,
 				},
 				grpc: struct {
 					srv       *grpc.Server
@@ -510,17 +514,17 @@ func Test_server_ListenAndServe(t *testing.T) {
 					opts      []grpc.ServerOption
 					regs      []func(*grpc.Server)
 				}{
-					srv: tt.field.grpcSrv,
+					srv: test.field.grpcSrv,
 				},
-				lc:           tt.field.lc,
-				pwt:          tt.field.pwt,
-				sddur:        tt.field.sddur,
-				running:      tt.field.running,
-				preStartFunc: tt.field.preStartFunc,
+				lc:           test.field.lc,
+				pwt:          test.field.pwt,
+				sddur:        test.field.sddur,
+				running:      test.field.running,
+				preStartFunc: test.field.preStartFunc,
 			}
 
-			got := s.ListenAndServe(tt.args.ctx, tt.args.errCh)
-			if !errors.Is(got, tt.want) {
+			got := s.ListenAndServe(test.args.ctx, test.args.errCh)
+			if !errors.Is(got, test.want) {
 				t.Errorf("ListenAndServe returns error: %v", got)
 			}
 		})
@@ -547,7 +551,7 @@ func Test_server_Shutdown(t *testing.T) {
 		name      string
 		args      args
 		field     field
-		afterFunc func()
+		afterFunc func(*testing.T)
 		checkFunc func(s *server, got, want error) error
 		want      error
 	}
@@ -599,7 +603,8 @@ func Test_server_Shutdown(t *testing.T) {
 						return nil
 					},
 				},
-				afterFunc: func() {
+				afterFunc: func(t *testing.T) {
+					t.Helper()
 					testSrv.Close()
 					cancel()
 					eg.Wait()
@@ -629,7 +634,8 @@ func Test_server_Shutdown(t *testing.T) {
 						return nil
 					},
 				},
-				afterFunc: func() {
+				afterFunc: func(t *testing.T) {
+					t.Helper()
 					cancel()
 					eg.Wait()
 				},
@@ -639,26 +645,27 @@ func Test_server_Shutdown(t *testing.T) {
 	}
 
 	log.Init(log.WithLoggerType(logger.NOP.String()))
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
 			defer func() {
-				if tt.afterFunc != nil {
-					defer tt.afterFunc()
+				if test.afterFunc != nil {
+					defer test.afterFunc(tt)
 				}
 			}()
-			if tt.checkFunc == nil {
-				tt.checkFunc = defaultCheckFunc
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
 			}
 
 			s := &server{
-				mode: tt.field.mode,
-				eg:   tt.field.eg,
+				mode: test.field.mode,
+				eg:   test.field.eg,
 				http: struct {
 					srv     *http.Server
 					h       http.Handler
 					starter func(net.Listener) error
 				}{
-					srv: tt.field.httpSrv,
+					srv: test.field.httpSrv,
 				},
 				grpc: struct {
 					srv       *grpc.Server
@@ -666,16 +673,16 @@ func Test_server_Shutdown(t *testing.T) {
 					opts      []grpc.ServerOption
 					regs      []func(*grpc.Server)
 				}{
-					srv: tt.field.grpcSrv,
+					srv: test.field.grpcSrv,
 				},
-				pwt:         tt.field.pwt,
-				sddur:       tt.field.sddur,
-				running:     tt.field.running,
-				preStopFunc: tt.field.preStopFunc,
+				pwt:         test.field.pwt,
+				sddur:       test.field.sddur,
+				running:     test.field.running,
+				preStopFunc: test.field.preStopFunc,
 			}
 
-			got := s.Shutdown(tt.args.ctx)
-			if err := tt.checkFunc(s, got, tt.want); err != nil {
+			got := s.Shutdown(test.args.ctx)
+			if err := test.checkFunc(s, got, test.want); err != nil {
 				t.Error(err)
 			}
 		})

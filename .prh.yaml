@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -37,6 +37,8 @@ version: 1
 # index: ngtd
 # index: node.js
 # index: onnx
+# index: opentelemetry
+# index: otlp
 # index: pyroscope
 # index: python
 # index: qbg
@@ -184,6 +186,18 @@ rules:
       - onnx
       - ONNX
     expected: ONNX
+    options:
+      wordBoundary: true
+  - pattern:
+      - opentelemetry
+      - OpenTelemetry
+    expected: OpenTelemetry
+    options:
+      wordBoundary: true
+  - pattern:
+      - OTLP
+      - otlp
+    expected: OTLP
     options:
       wordBoundary: true
   - pattern: pyroscope

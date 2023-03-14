@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -107,7 +107,7 @@ func NewClientConfig(opts ...Option) (*Config, error) {
 // The CertPool will read the certificate from the path, and append the content to the system certificate pool, and return.
 func NewX509CertPool(path string) (pool *x509.CertPool, err error) {
 	c, err := file.ReadFile(path)
-	if err != nil {
+	if err != nil || c == nil {
 		return nil, err
 	}
 	if err == nil && c != nil {

@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import (
 	"os"
 	"strconv"
 
+	"github.com/vdaas/vald/internal/conv"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/strings"
@@ -154,7 +155,7 @@ func genSchema(path string, nindent int) error {
 		return errors.Errorf("error: %s", err)
 	}
 
-	fmt.Println(indent(string(yaml), nindent))
+	fmt.Println(indent(conv.Btoa(yaml), nindent))
 
 	return nil
 }

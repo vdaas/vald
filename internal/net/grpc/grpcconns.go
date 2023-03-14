@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -22,12 +22,13 @@ import (
 	"sync/atomic"
 	"unsafe"
 
+	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc/pool"
 )
 
 type grpcConns struct {
 	mu     sync.Mutex
-	read   atomic.Value
+	read   atomic.Pointer[readOnlyGrpcConns]
 	dirty  map[string]*entryGrpcConns
 	misses int
 }
@@ -49,12 +50,26 @@ func newEntryGrpcConns(i pool.Conn) *entryGrpcConns {
 	return &entryGrpcConns{p: unsafe.Pointer(&i)}
 }
 
+func (m *grpcConns) load() (read readOnlyGrpcConns) {
+	r := m.read.Load()
+	if r != nil {
+		return *r
+	}
+	read = readOnlyGrpcConns{}
+	old := m.read.Swap(&read)
+	if old != nil {
+		m.read.Store(old)
+		return *old
+	}
+	return read
+}
+
 func (m *grpcConns) Load(key string) (value pool.Conn, ok bool) {
-	read, _ := m.read.Load().(readOnlyGrpcConns)
+	read := m.load()
 	e, ok := read.m[key]
 	if !ok && read.amended {
 		m.mu.Lock()
-		read, _ = m.read.Load().(readOnlyGrpcConns)
+		read = m.load()
 		e, ok = read.m[key]
 		if !ok && read.amended {
 			e, ok = m.dirty[key]
@@ -77,13 +92,13 @@ func (e *entryGrpcConns) load() (value pool.Conn, ok bool) {
 }
 
 func (m *grpcConns) Store(key string, value pool.Conn) {
-	read, _ := m.read.Load().(readOnlyGrpcConns)
+	read := m.load()
 	if e, ok := read.m[key]; ok && e.tryStore(&value) {
 		return
 	}
 
 	m.mu.Lock()
-	read, _ = m.read.Load().(readOnlyGrpcConns)
+	read = m.load()
 	if e, ok := read.m[key]; ok {
 		if e.unexpungeLocked() {
 			m.dirty[key] = e
@@ -94,7 +109,7 @@ func (m *grpcConns) Store(key string, value pool.Conn) {
 	} else {
 		if !read.amended {
 			m.dirtyLocked()
-			m.read.Store(readOnlyGrpcConns{m: read.m, amended: true})
+			m.read.Store(&readOnlyGrpcConns{m: read.m, amended: true})
 		}
 		m.dirty[key] = newEntryGrpcConns(value)
 	}
@@ -124,11 +139,11 @@ func (e *entryGrpcConns) storeLocked(i *pool.Conn) {
 }
 
 func (m *grpcConns) Delete(key string) {
-	read, _ := m.read.Load().(readOnlyGrpcConns)
+	read := m.load()
 	e, ok := read.m[key]
 	if !ok && read.amended {
 		m.mu.Lock()
-		read, _ = m.read.Load().(readOnlyGrpcConns)
+		read = m.load()
 		e, ok = read.m[key]
 		if !ok && read.amended {
 			delete(m.dirty, key)
@@ -152,29 +167,52 @@ func (e *entryGrpcConns) delete() (hadValue bool) {
 	}
 }
 
-func (m *grpcConns) Range(f func(key string, value pool.Conn) bool) {
-	read, _ := m.read.Load().(readOnlyGrpcConns)
+func (m *grpcConns) Range(f func(key string, value pool.Conn) bool) (err error) {
+	read := m.load()
 	if read.amended {
 		m.mu.Lock()
-		read, _ = m.read.Load().(readOnlyGrpcConns)
+		read = m.load()
 		if read.amended {
 			read = readOnlyGrpcConns{m: m.dirty}
-			m.read.Store(read)
+			m.read.Store(&read)
 			m.dirty = nil
 			m.misses = 0
 		}
 		m.mu.Unlock()
 	}
 
+	var cnt int
 	for k, e := range read.m {
 		v, ok := e.load()
 		if !ok {
 			continue
 		}
+		cnt++
 		if !f(k, v) {
-			break
+			return nil
 		}
 	}
+	if cnt == 0 {
+		return errors.ErrGRPCClientConnNotFound("*")
+	}
+	return nil
+}
+
+func (m *grpcConns) Len() int {
+	read := m.load()
+	if read.amended {
+		m.mu.Lock()
+		read = m.load()
+		if read.amended {
+			read = readOnlyGrpcConns{m: m.dirty}
+			m.read.Store(&read)
+			m.dirty = nil
+			m.misses = 0
+		}
+		m.mu.Unlock()
+	}
+
+	return len(read.m)
 }
 
 func (m *grpcConns) missLocked() {
@@ -182,7 +220,7 @@ func (m *grpcConns) missLocked() {
 	if m.misses < len(m.dirty) {
 		return
 	}
-	m.read.Store(readOnlyGrpcConns{m: m.dirty})
+	m.read.Store(&readOnlyGrpcConns{m: m.dirty})
 	m.dirty = nil
 	m.misses = 0
 }
@@ -192,7 +230,7 @@ func (m *grpcConns) dirtyLocked() {
 		return
 	}
 
-	read, _ := m.read.Load().(readOnlyGrpcConns)
+	read := m.load()
 	m.dirty = make(map[string]*entryGrpcConns, len(read.m))
 	for k, e := range read.m {
 		if !e.tryExpungeLocked() {

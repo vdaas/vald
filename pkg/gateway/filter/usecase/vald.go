@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -33,6 +33,7 @@ import (
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/servers/server"
 	"github.com/vdaas/vald/internal/servers/starter"
+	"github.com/vdaas/vald/internal/slices"
 	"github.com/vdaas/vald/pkg/gateway/filter/config"
 	handler "github.com/vdaas/vald/pkg/gateway/filter/handler/grpc"
 	"github.com/vdaas/vald/pkg/gateway/filter/handler/rest"
@@ -74,24 +75,72 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	if err != nil {
 		return nil, err
 	}
+	var iaddrs []string
+	if cfg.IngressFilters != nil {
+		as := make([]string, 0, 10)
+		if cfg.IngressFilters.Client != nil && cfg.IngressFilters.Client.Addrs != nil {
+			as = append(as, cfg.IngressFilters.Client.Addrs...)
+		}
+		if cfg.IngressFilters.Vectorizer != "" {
+			as = append(as, cfg.IngressFilters.Vectorizer)
+		}
+		if cfg.IngressFilters.SearchFilters != nil {
+			as = append(as, cfg.IngressFilters.SearchFilters...)
+		}
+		if cfg.IngressFilters.InsertFilters != nil {
+			as = append(as, cfg.IngressFilters.InsertFilters...)
+		}
+		if cfg.IngressFilters.UpdateFilters != nil {
+			as = append(as, cfg.IngressFilters.UpdateFilters...)
+		}
+		if cfg.IngressFilters.UpsertFilters != nil {
+			as = append(as, cfg.IngressFilters.UpsertFilters...)
+		}
+		if len(as) != 0 {
+			slices.Sort(as)
+			dup := make(map[string]bool, len(as))
+			iaddrs = make([]string, 0, len(as))
+			for _, addr := range as {
+				if !dup[addr] {
+					dup[addr] = true
+					iaddrs = append(iaddrs, addr)
+				}
+			}
+		}
+	}
 	ic, err := ingress.New(
-		ingress.WithAddrs(append(append(append(append(append(
-			cfg.IngressFilters.Client.Addrs,
-			cfg.IngressFilters.Vectorizer),
-			cfg.IngressFilters.SearchFilters...),
-			cfg.IngressFilters.InsertFilters...),
-			cfg.IngressFilters.UpdateFilters...),
-			cfg.IngressFilters.UpsertFilters...)...),
+		ingress.WithAddrs(iaddrs...),
 		ingress.WithClient(grpc.New(icopts...)),
 	)
 	if err != nil {
 		return nil, err
 	}
+	var eaddrs []string
+	if cfg.EgressFilters != nil {
+		as := make([]string, 0, 10)
+		if cfg.EgressFilters.Client != nil && cfg.EgressFilters.Client.Addrs != nil {
+			as = append(as, cfg.EgressFilters.Client.Addrs...)
+		}
+		if cfg.EgressFilters.DistanceFilters != nil {
+			as = append(as, cfg.EgressFilters.DistanceFilters...)
+		}
+		if cfg.EgressFilters.ObjectFilters != nil {
+			as = append(as, cfg.EgressFilters.ObjectFilters...)
+		}
+		if len(as) != 0 {
+			slices.Sort(as)
+			dup := make(map[string]bool, len(as))
+			eaddrs = make([]string, 0, len(as))
+			for _, addr := range as {
+				if !dup[addr] {
+					dup[addr] = true
+					eaddrs = append(eaddrs, addr)
+				}
+			}
+		}
+	}
 	ec, err := egress.New(
-		egress.WithAddrs(append(append(
-			cfg.EgressFilters.Client.Addrs,
-			cfg.EgressFilters.DistanceFilters...),
-			cfg.EgressFilters.ObjectFilters...)...),
+		egress.WithAddrs(eaddrs...),
 		egress.WithClient(grpc.New(ecopts...)),
 	)
 	if err != nil {

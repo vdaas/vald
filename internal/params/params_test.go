@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -173,8 +173,8 @@ func Test_parser_Parse(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, Data, bool, error) error
-		beforeFunc func()
-		afterFunc  func()
+		beforeFunc func(*testing.T)
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want, got Data, got1 bool, err error) error {
 		if !errors.Is(err, w.err) {
@@ -215,12 +215,16 @@ func Test_parser_Parse(t *testing.T) {
 					description: "show version",
 				},
 			},
-			beforeFunc: func() {
+			beforeFunc: func(t *testing.T) {
+				t.Helper()
 				os.Args = []string{
 					"test", "--path=./params.go", "--version=false",
 				}
 			},
-			afterFunc: func() { os.Args = nil },
+			afterFunc: func(t *testing.T) {
+				t.Helper()
+				os.Args = nil
+			},
 			want: want{
 				want: &data{
 					configFilePath: "./params.go",
@@ -231,12 +235,16 @@ func Test_parser_Parse(t *testing.T) {
 
 		{
 			name: "returns (nil, true, nil) When parse fails but the help option is set",
-			beforeFunc: func() {
+			beforeFunc: func(t *testing.T) {
+				t.Helper()
 				os.Args = []string{
 					"test", "--help",
 				}
 			},
-			afterFunc: func() { os.Args = nil },
+			afterFunc: func(t *testing.T) {
+				t.Helper()
+				os.Args = nil
+			},
 			want: want{
 				want1: true,
 			},
@@ -244,12 +252,16 @@ func Test_parser_Parse(t *testing.T) {
 
 		{
 			name: "returns (nil, true, nil) When parse fails but the help option is not set",
-			beforeFunc: func() {
+			beforeFunc: func(t *testing.T) {
+				t.Helper()
 				os.Args = []string{
 					"test", "--name",
 				}
 			},
-			afterFunc: func() { os.Args = nil },
+			afterFunc: func(t *testing.T) {
+				t.Helper()
+				os.Args = nil
+			},
 			want: want{
 				want1: false,
 				err:   errors.ErrArgumentParseFailed(errors.New("flag provided but not defined: -name")),
@@ -270,12 +282,16 @@ func Test_parser_Parse(t *testing.T) {
 					description: "sets file path",
 				},
 			},
-			beforeFunc: func() {
+			beforeFunc: func(t *testing.T) {
+				t.Helper()
 				os.Args = []string{
 					"test", "--path=config.yml",
 				}
 			},
-			afterFunc: func() { os.Args = nil },
+			afterFunc: func(t *testing.T) {
+				t.Helper()
+				os.Args = nil
+			},
 			want: want{
 				want1: true,
 				err: &os.PathError{
@@ -292,10 +308,10 @@ func Test_parser_Parse(t *testing.T) {
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -326,8 +342,8 @@ func Test_data_ConfigFilePath(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, string) error
-		beforeFunc func()
-		afterFunc  func()
+		beforeFunc func(*testing.T)
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want, got string) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -352,10 +368,10 @@ func Test_data_ConfigFilePath(t *testing.T) {
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -385,8 +401,8 @@ func Test_data_ShowVersion(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, bool) error
-		beforeFunc func()
-		afterFunc  func()
+		beforeFunc func(*testing.T)
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want, got bool) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -411,10 +427,10 @@ func Test_data_ShowVersion(t *testing.T) {
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {

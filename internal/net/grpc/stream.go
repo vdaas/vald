@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -42,10 +42,9 @@ type (
 )
 
 // BidirectionalStream represents gRPC bidirectional stream server handler.
-func BidirectionalStream(ctx context.Context, stream ServerStream,
+func BidirectionalStream[Q any, R any](ctx context.Context, stream ServerStream,
 	concurrency int,
-	newData func() interface{},
-	f func(context.Context, interface{}) (interface{}, error),
+	f func(context.Context, *Q) (*R, error),
 ) (err error) {
 	ctx, span := trace.StartSpan(stream.Context(), apiName+"/BidirectionalStream")
 	defer func() {
@@ -95,7 +94,7 @@ func BidirectionalStream(ctx context.Context, stream ServerStream,
 		case <-ctx.Done():
 			return finalize()
 		default:
-			data := newData()
+			data := new(Q)
 			err = stream.RecvMsg(data)
 			if err != nil {
 				if err != io.EOF && !errors.Is(err, io.EOF) {
@@ -114,7 +113,7 @@ func BidirectionalStream(ctx context.Context, stream ServerStream,
 							sspan.End()
 						}
 					}()
-					var res interface{}
+					var res *R
 					res, err = f(ctx, data)
 					if err != nil {
 						runtime.Gosched()
@@ -125,7 +124,14 @@ func BidirectionalStream(ctx context.Context, stream ServerStream,
 							sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
 							sspan.SetStatus(trace.StatusError, msg)
 						}
-						if err != nil {
+						code := st.Code()
+						if err != nil && st != nil &&
+							code != codes.Canceled &&
+							code != codes.DeadlineExceeded &&
+							code != codes.InvalidArgument &&
+							code != codes.NotFound &&
+							code != codes.OK &&
+							code != codes.Unimplemented {
 							log.Error(err)
 						}
 					}

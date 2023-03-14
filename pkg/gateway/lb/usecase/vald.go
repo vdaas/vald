@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -95,6 +95,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		handler.WithErrGroup(eg),
 		handler.WithReplicationCount(cfg.Gateway.IndexReplica),
 		handler.WithStreamConcurrency(cfg.Server.GetGRPCStreamConcurrency()),
+		handler.WithMultiConcurrency(cfg.Gateway.MultiOperationConcurrency),
 	)
 
 	grpcServerOptions := []server.Option{

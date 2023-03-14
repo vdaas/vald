@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -49,7 +49,7 @@ type client struct {
 	dns          string
 	opts         []grpc.Option
 	port         int
-	addrs        atomic.Value
+	addrs        atomic.Pointer[[]string]
 	dscClient    grpc.Client
 	dscDur       time.Duration
 	eg           errgroup.Group
@@ -80,7 +80,7 @@ func (c *client) Start(ctx context.Context) (<-chan error, error) {
 		close(ech)
 		return nil, err
 	}
-	c.addrs.Store(addrs)
+	c.addrs.Store(&addrs)
 
 	var aech <-chan error
 	if c.autoconn {
@@ -152,9 +152,8 @@ func (c *client) Start(ctx context.Context) (<-chan error, error) {
 }
 
 func (c *client) GetAddrs(ctx context.Context) (addrs []string) {
-	var ok bool
-	addrs, ok = c.addrs.Load().([]string)
-	if !ok {
+	a := c.addrs.Load()
+	if a == nil {
 		ips, err := net.DefaultResolver.LookupIPAddr(ctx, c.dns)
 		if err != nil {
 			return nil
@@ -163,6 +162,8 @@ func (c *client) GetAddrs(ctx context.Context) (addrs []string) {
 		for _, ip := range ips {
 			addrs = append(addrs, ip.String())
 		}
+	} else {
+		addrs = *a
 	}
 	return addrs
 }
@@ -199,12 +200,15 @@ func (c *client) dnsDiscovery(ctx context.Context, ech chan<- error) (addrs []st
 	if err != nil || len(ips) == 0 {
 		return nil, errors.ErrAddrCouldNotDiscover(err, c.dns)
 	}
+	log.Debugf("dns discovery succeeded for dns = %s", c.dns)
 	addrs = make([]string, 0, len(ips))
 	for _, ip := range ips {
 		addr := net.JoinHostPort(ip.String(), uint16(c.port))
 		if err = c.connect(ctx, addr); err != nil {
+			log.Debugf("dns discovery connect for addr = %s from dns = %s failed %v", addr, c.dns, err)
 			ech <- err
 		} else {
+			log.Debugf("dns discovery connect for addr = %s from dns = %s succeeded", addr, c.dns)
 			addrs = append(addrs, addr)
 		}
 	}
@@ -227,7 +231,11 @@ func (c *client) discover(ctx context.Context, ech chan<- error) (err error) {
 		_, err = bo.Do(ctx, func(ctx context.Context) (interface{}, bool, error) {
 			connected, err = c.updateDiscoveryInfo(ctx, ech)
 			if err != nil {
-				return nil, true, err
+				if !errors.Is(err, errors.ErrGRPCClientNotFound) &&
+					!errors.Is(err, errors.ErrGRPCClientConnNotFound("*")) {
+					return nil, true, err
+				}
+				return nil, false, err
 			}
 			return nil, false, nil
 		})
@@ -235,7 +243,7 @@ func (c *client) discover(ctx context.Context, ech chan<- error) (err error) {
 		connected, err = c.updateDiscoveryInfo(ctx, ech)
 	}
 	if err != nil {
-		log.Warn("failed to discover addrs from discoverer API, trying to discover from dns...\t" + err.Error())
+		log.Warnf("failed to discover addrs from discoverer API, error: %v,\ttrying to dns discovery from %s...", err, c.dns)
 		connected, err = c.dnsDiscovery(ctx, ech)
 		if err != nil {
 			return err
@@ -243,26 +251,32 @@ func (c *client) discover(ctx context.Context, ech chan<- error) (err error) {
 	}
 
 	oldAddrs := c.GetAddrs(ctx)
-	c.addrs.Store(connected)
+	c.addrs.Store(&connected)
 	return c.disconnectOldAddrs(ctx, oldAddrs, connected, ech)
 }
 
 func (c *client) updateDiscoveryInfo(ctx context.Context, ech chan<- error) (connected []string, err error) {
 	nodes, err := c.discoverNodes(ctx)
 	if err != nil {
+		log.Warnf("error detected when discovering nodes,\terrors: %v", err)
 		return nil, err
+	}
+	if nodes == nil {
+		log.Warn("no nodes found")
+		return nil, errors.ErrNodeNotFound("all")
 	}
 	connected, err = c.discoverAddrs(ctx, nodes, ech)
 	if err != nil {
 		return nil, err
 	}
 	if len(connected) == 0 {
-		log.Warn("connected addr is zero")
+		log.Warnf("connected addr is zero,\tnodes: %s", nodes.String())
 		return nil, errors.ErrAddrCouldNotDiscover(err, c.dns)
 	}
 	if c.onDiscover != nil {
 		err = c.onDiscover(ctx, c, connected)
 		if err != nil {
+			log.Warnf("error detected when onDiscover execution,\tnodes: %s,\tconnected: %v,\terrors: %v", nodes.String(), connected, err)
 			return nil, err
 		}
 	}

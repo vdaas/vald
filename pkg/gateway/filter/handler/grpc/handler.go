@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -39,6 +39,7 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc/errdetails"
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/observability/trace"
+	"github.com/vdaas/vald/internal/safety"
 )
 
 type server struct {
@@ -222,7 +223,7 @@ func (s *server) MultiSearchObject(ctx context.Context, reqs *payload.Search_Mul
 	for i, req := range reqs.Requests {
 		idx, query := i, req
 		wg.Add(1)
-		s.eg.Go(func() error {
+		s.eg.Go(safety.RecoverFunc(func() error {
 			defer wg.Done()
 			ctx, sspan := trace.StartSpan(ctx, fmt.Sprintf("%s.%s/errgroup.Go/id-%d", apiName, vald.MultiSearchObjectRPCName, idx))
 			defer func() {
@@ -271,7 +272,7 @@ func (s *server) MultiSearchObject(ctx context.Context, reqs *payload.Search_Mul
 			}
 			res.Responses[idx] = r
 			return nil
-		})
+		}))
 	}
 	wg.Wait()
 	return res, errs
@@ -285,9 +286,7 @@ func (s *server) StreamSearchObject(stream vald.Filter_StreamSearchObjectServer)
 		}
 	}()
 	return grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
-		func() interface{} { return new(payload.Search_ObjectRequest) },
-		func(ctx context.Context, data interface{}) (interface{}, error) {
-			req := data.(*payload.Search_ObjectRequest)
+		func(ctx context.Context, req *payload.Search_ObjectRequest) (*payload.Search_StreamResponse, error) {
 			ctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.StreamSearchObjectRPCName+"/requestID-"+req.GetConfig().GetRequestId())
 			defer func() {
 				if sspan != nil {
@@ -473,7 +472,7 @@ func (s *server) MultiLinearSearchObject(ctx context.Context, reqs *payload.Sear
 	for i, req := range reqs.Requests {
 		idx, query := i, req
 		wg.Add(1)
-		s.eg.Go(func() error {
+		s.eg.Go(safety.RecoverFunc(func() error {
 			defer wg.Done()
 			ctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.MultiLinearSearchObjectRPCName+"/requestID-"+query.GetConfig().GetRequestId())
 			defer func() {
@@ -516,7 +515,7 @@ func (s *server) MultiLinearSearchObject(ctx context.Context, reqs *payload.Sear
 			}
 			res.Responses[idx] = r
 			return nil
-		})
+		}))
 	}
 	wg.Wait()
 	return res, errs
@@ -533,9 +532,7 @@ func (s *server) StreamLinearSearchObject(stream vald.Filter_StreamSearchObjectS
 		}
 	}()
 	err := grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
-		func() interface{} { return new(payload.Search_ObjectRequest) },
-		func(ctx context.Context, data interface{}) (interface{}, error) {
-			req := data.(*payload.Search_ObjectRequest)
+		func(ctx context.Context, req *payload.Search_ObjectRequest) (*payload.Search_StreamResponse, error) {
 			ctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.StreamLinearSearchObjectRPCName+"/requestID-"+req.GetConfig().GetRequestId())
 			defer func() {
 				if sspan != nil {
@@ -724,9 +721,7 @@ func (s *server) StreamInsertObject(stream vald.Filter_StreamInsertObjectServer)
 		}
 	}()
 	err := grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
-		func() interface{} { return new(payload.Insert_ObjectRequest) },
-		func(ctx context.Context, data interface{}) (interface{}, error) {
-			req := data.(*payload.Insert_ObjectRequest)
+		func(ctx context.Context, req *payload.Insert_ObjectRequest) (*payload.Object_StreamLocation, error) {
 			ctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.StreamInsertObjectRPCName+"/requestID-"+req.GetObject().GetId())
 			defer func() {
 				if sspan != nil {
@@ -791,7 +786,7 @@ func (s *server) MultiInsertObject(ctx context.Context, reqs *payload.Insert_Mul
 	for i, req := range reqs.Requests {
 		idx, query := i, req
 		wg.Add(1)
-		s.eg.Go(func() error {
+		s.eg.Go(safety.RecoverFunc(func() error {
 			defer wg.Done()
 			ctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.MultiInsertObjectRPCName+"/errgroup.Go/id-"+strconv.Itoa(idx))
 			defer func() {
@@ -833,7 +828,7 @@ func (s *server) MultiInsertObject(ctx context.Context, reqs *payload.Insert_Mul
 			}
 			locs.Locations[idx] = loc
 			return nil
-		})
+		}))
 	}
 	wg.Wait()
 	return locs, errs
@@ -980,16 +975,14 @@ func (s *server) StreamUpdateObject(stream vald.Filter_StreamUpdateObjectServer)
 		}
 	}()
 	err := grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
-		func() interface{} { return new(payload.Update_ObjectRequest) },
-		func(ctx context.Context, data interface{}) (interface{}, error) {
-			req := data.(*payload.Update_ObjectRequest)
+		func(ctx context.Context, req *payload.Update_ObjectRequest) (*payload.Object_StreamLocation, error) {
 			ctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.StreamUpdateObjectRPCName+"/id-"+req.GetObject().GetId())
 			defer func() {
 				if sspan != nil {
 					sspan.End()
 				}
 			}()
-			loc, err := s.UpdateObject(ctx, data.(*payload.Update_ObjectRequest))
+			loc, err := s.UpdateObject(ctx, req)
 			if err != nil {
 				st, msg, err := status.ParseError(err, codes.Internal, "failed to parse "+vald.UpdateObjectRPCName+" gRPC error response",
 					&errdetails.RequestInfo{
@@ -1046,7 +1039,7 @@ func (s *server) MultiUpdateObject(ctx context.Context, reqs *payload.Update_Mul
 	for i, req := range reqs.Requests {
 		idx, query := i, req
 		wg.Add(1)
-		s.eg.Go(func() error {
+		s.eg.Go(safety.RecoverFunc(func() error {
 			defer wg.Done()
 			ctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.MultiUpdateObjectRPCName+"/errgroup.Go/id-"+strconv.Itoa(idx))
 			defer func() {
@@ -1088,7 +1081,7 @@ func (s *server) MultiUpdateObject(ctx context.Context, reqs *payload.Update_Mul
 			}
 			locs.Locations[idx] = loc
 			return nil
-		})
+		}))
 	}
 	wg.Wait()
 	return locs, errs
@@ -1242,9 +1235,7 @@ func (s *server) StreamUpsertObject(stream vald.Filter_StreamUpsertObjectServer)
 		}
 	}()
 	err := grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
-		func() interface{} { return new(payload.Upsert_ObjectRequest) },
-		func(ctx context.Context, data interface{}) (interface{}, error) {
-			req := data.(*payload.Upsert_ObjectRequest)
+		func(ctx context.Context, req *payload.Upsert_ObjectRequest) (*payload.Object_StreamLocation, error) {
 			ctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.StreamUpdateObjectRPCName+"/id-"+req.GetObject().GetId())
 			defer func() {
 				if sspan != nil {
@@ -1252,7 +1243,7 @@ func (s *server) StreamUpsertObject(stream vald.Filter_StreamUpsertObjectServer)
 				}
 			}()
 
-			loc, err := s.UpsertObject(ctx, data.(*payload.Upsert_ObjectRequest))
+			loc, err := s.UpsertObject(ctx, req)
 			if err != nil {
 				st, msg, err := status.ParseError(err, codes.Internal, "failed to parse "+vald.UpsertObjectRPCName+" gRPC error response",
 					&errdetails.RequestInfo{
@@ -1309,7 +1300,7 @@ func (s *server) MultiUpsertObject(ctx context.Context, reqs *payload.Upsert_Mul
 	for i, req := range reqs.Requests {
 		idx, query := i, req
 		wg.Add(1)
-		s.eg.Go(func() error {
+		s.eg.Go(safety.RecoverFunc(func() error {
 			defer wg.Done()
 			ctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.MultiUpsertObjectRPCName+"/errgroup.Go/id-"+strconv.Itoa(idx))
 			defer func() {
@@ -1350,7 +1341,7 @@ func (s *server) MultiUpsertObject(ctx context.Context, reqs *payload.Upsert_Mul
 			}
 			locs.Locations[idx] = loc
 			return nil
-		})
+		}))
 	}
 	wg.Wait()
 	return locs, errs
@@ -1595,9 +1586,7 @@ func (s *server) StreamSearch(stream vald.Search_StreamSearchServer) (err error)
 		}
 	}()
 	err = grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
-		func() interface{} { return new(payload.Search_Request) },
-		func(ctx context.Context, data interface{}) (interface{}, error) {
-			req := data.(*payload.Search_Request)
+		func(ctx context.Context, req *payload.Search_Request) (*payload.Search_StreamResponse, error) {
 			ctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.StreamSearchRPCName+"/id-"+req.GetConfig().GetRequestId())
 			defer func() {
 				if sspan != nil {
@@ -1654,9 +1643,7 @@ func (s *server) StreamSearchByID(stream vald.Search_StreamSearchByIDServer) (er
 		}
 	}()
 	err = grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
-		func() interface{} { return new(payload.Search_IDRequest) },
-		func(ctx context.Context, data interface{}) (interface{}, error) {
-			req := data.(*payload.Search_IDRequest)
+		func(ctx context.Context, req *payload.Search_IDRequest) (*payload.Search_StreamResponse, error) {
 			ctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.StreamSearchByIDRPCName+"/id-"+req.GetId())
 			defer func() {
 				if sspan != nil {
@@ -1727,7 +1714,7 @@ func (s *server) MultiSearch(ctx context.Context, reqs *payload.Search_MultiRequ
 	for i, req := range reqs.Requests {
 		idx, query := i, req
 		wg.Add(1)
-		s.eg.Go(func() error {
+		s.eg.Go(safety.RecoverFunc(func() error {
 			defer wg.Done()
 			ctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.MultiSearchRPCName+"/errgroup.Go/id-"+strconv.Itoa(idx))
 			defer func() {
@@ -1776,7 +1763,7 @@ func (s *server) MultiSearch(ctx context.Context, reqs *payload.Search_MultiRequ
 			}
 			res.Responses[idx] = r
 			return nil
-		})
+		}))
 	}
 	wg.Wait()
 	return res, errs
@@ -1797,7 +1784,7 @@ func (s *server) MultiSearchByID(ctx context.Context, reqs *payload.Search_Multi
 	for i, req := range reqs.Requests {
 		idx, query := i, req
 		wg.Add(1)
-		s.eg.Go(func() error {
+		s.eg.Go(safety.RecoverFunc(func() error {
 			defer wg.Done()
 			ctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.MultiSearchByIDRPCName+"/errgroup.Go/id-"+strconv.Itoa(idx))
 			defer func() {
@@ -1846,7 +1833,7 @@ func (s *server) MultiSearchByID(ctx context.Context, reqs *payload.Search_Multi
 			}
 			res.Responses[idx] = r
 			return nil
-		})
+		}))
 	}
 	wg.Wait()
 	return res, errs
@@ -2071,16 +2058,14 @@ func (s *server) StreamLinearSearch(stream vald.Search_StreamLinearSearchServer)
 		}
 	}()
 	err = grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
-		func() interface{} { return new(payload.Search_Request) },
-		func(ctx context.Context, data interface{}) (interface{}, error) {
-			req := data.(*payload.Search_Request)
+		func(ctx context.Context, req *payload.Search_Request) (*payload.Search_StreamResponse, error) {
 			ctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.StreamLinearSearchRPCName+"/id-"+req.Config.RequestId)
 			defer func() {
 				if sspan != nil {
 					sspan.End()
 				}
 			}()
-			res, err := s.LinearSearch(ctx, data.(*payload.Search_Request))
+			res, err := s.LinearSearch(ctx, req)
 			if err != nil {
 				st, msg, err := status.ParseError(err, codes.Internal, "failed to parse "+vald.LinearSearchRPCName+" gRPC error response",
 					&errdetails.RequestInfo{
@@ -2141,9 +2126,7 @@ func (s *server) StreamLinearSearchByID(stream vald.Search_StreamLinearSearchByI
 		}
 	}()
 	err = grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
-		func() interface{} { return new(payload.Search_IDRequest) },
-		func(ctx context.Context, data interface{}) (interface{}, error) {
-			req := data.(*payload.Search_IDRequest)
+		func(ctx context.Context, req *payload.Search_IDRequest) (*payload.Search_StreamResponse, error) {
 			ctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.StreamLinearSearchByIDRPCName+"/id-"+req.GetId())
 			defer func() {
 				if sspan != nil {
@@ -2208,7 +2191,7 @@ func (s *server) MultiLinearSearch(ctx context.Context, reqs *payload.Search_Mul
 	for i, req := range reqs.Requests {
 		idx, query := i, req
 		wg.Add(1)
-		s.eg.Go(func() error {
+		s.eg.Go(safety.RecoverFunc(func() error {
 			defer wg.Done()
 			ctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.MultiLinearSearchRPCName+"/errgroup.Go/id-"+strconv.Itoa(idx))
 			defer func() {
@@ -2249,7 +2232,7 @@ func (s *server) MultiLinearSearch(ctx context.Context, reqs *payload.Search_Mul
 			}
 			res.Responses[idx] = r
 			return nil
-		})
+		}))
 	}
 	wg.Wait()
 	return res, errs
@@ -2270,7 +2253,7 @@ func (s *server) MultiLinearSearchByID(ctx context.Context, reqs *payload.Search
 	for i, req := range reqs.Requests {
 		idx, query := i, req
 		wg.Add(1)
-		s.eg.Go(func() error {
+		s.eg.Go(safety.RecoverFunc(func() error {
 			defer wg.Done()
 			ctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.MultiLinearSearchByIDRPCName+"/errgroup.Go/id-"+strconv.Itoa(idx))
 			defer func() {
@@ -2311,7 +2294,7 @@ func (s *server) MultiLinearSearchByID(ctx context.Context, reqs *payload.Search
 			}
 			res.Responses[idx] = r
 			return nil
-		})
+		}))
 	}
 	wg.Wait()
 	return res, errs
@@ -2463,9 +2446,7 @@ func (s *server) StreamInsert(stream vald.Insert_StreamInsertServer) (err error)
 		}
 	}()
 	err = grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
-		func() interface{} { return new(payload.Insert_Request) },
-		func(ctx context.Context, data interface{}) (interface{}, error) {
-			req := data.(*payload.Insert_Request)
+		func(ctx context.Context, req *payload.Insert_Request) (*payload.Object_StreamLocation, error) {
 			ctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.StreamInsertRPCName+"/id-"+req.GetVector().GetId())
 			defer func() {
 				if sspan != nil {
@@ -2538,7 +2519,7 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 	for i, req := range reqs.Requests {
 		idx, query := i, req
 		wg.Add(1)
-		s.eg.Go(func() error {
+		s.eg.Go(safety.RecoverFunc(func() error {
 			defer wg.Done()
 			ctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.MultiInsertRPCName+"/errgroup.Go/id-"+strconv.Itoa(idx))
 			defer func() {
@@ -2587,7 +2568,7 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 			}
 			locs.Locations[idx] = r
 			return nil
-		})
+		}))
 	}
 	wg.Wait()
 	return locs, errs
@@ -2733,9 +2714,7 @@ func (s *server) StreamUpdate(stream vald.Update_StreamUpdateServer) (err error)
 		}
 	}()
 	err = grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
-		func() interface{} { return new(payload.Update_Request) },
-		func(ctx context.Context, data interface{}) (interface{}, error) {
-			req := data.(*payload.Update_Request)
+		func(ctx context.Context, req *payload.Update_Request) (*payload.Object_StreamLocation, error) {
 			ctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.StreamUpdateRPCName+"/id-"+req.GetVector().GetId())
 			defer func() {
 				if sspan != nil {
@@ -2793,7 +2772,7 @@ func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequ
 	for i, req := range reqs.Requests {
 		idx, query := i, req
 		wg.Add(1)
-		s.eg.Go(func() error {
+		s.eg.Go(safety.RecoverFunc(func() error {
 			defer wg.Done()
 			ctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.MultiUpdateRPCName+"/errgroup.Go/id-"+strconv.Itoa(idx))
 			defer func() {
@@ -2842,7 +2821,7 @@ func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequ
 			}
 			locs.Locations[idx] = r
 			return nil
-		})
+		}))
 	}
 	wg.Wait()
 	return locs, errs
@@ -2989,9 +2968,7 @@ func (s *server) StreamUpsert(stream vald.Upsert_StreamUpsertServer) (err error)
 		}
 	}()
 	err = grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
-		func() interface{} { return new(payload.Upsert_Request) },
-		func(ctx context.Context, data interface{}) (interface{}, error) {
-			req := data.(*payload.Upsert_Request)
+		func(ctx context.Context, req *payload.Upsert_Request) (*payload.Object_StreamLocation, error) {
 			ctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.StreamUpsertRPCName+"/id-"+req.GetVector().GetId())
 			defer func() {
 				if sspan != nil {
@@ -3056,7 +3033,7 @@ func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequ
 	for i, req := range reqs.Requests {
 		idx, query := i, req
 		wg.Add(1)
-		s.eg.Go(func() error {
+		s.eg.Go(safety.RecoverFunc(func() error {
 			defer wg.Done()
 			ctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.MultiUpsertRPCName+"/errgroup.Go/id-"+strconv.Itoa(idx))
 			defer func() {
@@ -3098,7 +3075,7 @@ func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequ
 			}
 			locs.Locations[idx] = r
 			return nil
-		})
+		}))
 	}
 	wg.Wait()
 	return locs, errs
@@ -3122,9 +3099,7 @@ func (s *server) StreamRemove(stream vald.Remove_StreamRemoveServer) (err error)
 		}
 	}()
 	err = grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
-		func() interface{} { return new(payload.Remove_Request) },
-		func(ctx context.Context, data interface{}) (interface{}, error) {
-			req := data.(*payload.Remove_Request)
+		func(ctx context.Context, req *payload.Remove_Request) (*payload.Object_StreamLocation, error) {
 			ctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.StreamRemoveRPCName+"/id-"+req.GetId().GetId())
 			defer func() {
 				if sspan != nil {
@@ -3189,7 +3164,7 @@ func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequ
 	for i, req := range reqs.Requests {
 		idx, query := i, req
 		wg.Add(1)
-		s.eg.Go(func() error {
+		s.eg.Go(safety.RecoverFunc(func() error {
 			defer wg.Done()
 			ctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.MultiRemoveRPCName+"/errgroup.Go/id-"+strconv.Itoa(idx))
 			defer func() {
@@ -3231,7 +3206,7 @@ func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequ
 			}
 			locs.Locations[idx] = r
 			return nil
-		})
+		}))
 	}
 	wg.Wait()
 	return locs, errs
@@ -3332,9 +3307,7 @@ func (s *server) StreamGetObject(stream vald.Object_StreamGetObjectServer) (err 
 		}
 	}()
 	err = grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
-		func() interface{} { return new(payload.Object_VectorRequest) },
-		func(ctx context.Context, data interface{}) (interface{}, error) {
-			req := data.(*payload.Object_VectorRequest)
+		func(ctx context.Context, req *payload.Object_VectorRequest) (*payload.Object_StreamVector, error) {
 			ctx, sspan := trace.StartSpan(ctx, apiName+".StreamGetObject/id-"+req.GetId().GetId())
 			defer func() {
 				if sspan != nil {

@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -99,7 +99,7 @@ func GetActualValue(val string) (res string) {
 	res = os.ExpandEnv(val)
 	if strings.HasPrefix(res, fileValuePrefix) {
 		body, err := file.ReadFile(strings.TrimPrefix(res, fileValuePrefix))
-		if err != nil {
+		if err != nil || body == nil {
 			return
 		}
 		res = conv.Btoa(body)

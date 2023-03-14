@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -39,7 +39,7 @@ type group struct {
 	wg sync.WaitGroup
 
 	limitation       chan struct{}
-	enableLimitation atomic.Value
+	enableLimitation atomic.Bool
 	cancelOnce       sync.Once
 	mu               sync.RWMutex
 	emap             map[string]struct{}
@@ -114,9 +114,8 @@ func (g *group) Go(f func() error) {
 		g.wg.Add(1)
 		go func() {
 			defer g.wg.Done()
-			limited := g.enableLimitation.Load().(bool)
 			var err error
-			if limited {
+			if g.enableLimitation.Load() {
 				select {
 				case <-g.egctx.Done():
 					return

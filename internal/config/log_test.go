@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -38,7 +38,7 @@ func TestLogging_Bind(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, *Logging) error
-		beforeFunc func()
+		beforeFunc func(*testing.T)
 		afterFunc  func()
 	}
 	defaultCheckFunc := func(w want, got *Logging) error {
@@ -70,7 +70,8 @@ func TestLogging_Bind(t *testing.T) {
 				Level:  "_LOGGING_BIND_LEVEL_",
 				Format: "_LOGGING_BIND_FORMAT_",
 			},
-			beforeFunc: func() {
+			beforeFunc: func(t *testing.T) {
+				t.Helper()
 				t.Setenv("LOGGING_BIND_LOGGER", "glg")
 				t.Setenv("LOGGING_BIND_LEVEL", "info")
 				t.Setenv("LOGGING_BIND_FORMAT", "json")
@@ -95,7 +96,7 @@ func TestLogging_Bind(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
 				defer test.afterFunc()

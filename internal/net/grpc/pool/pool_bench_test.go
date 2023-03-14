@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-// Package pool provides grpc client connection pool
+// Package pool provides gRPC client connection pool
 package pool
 
 import (
@@ -116,7 +116,7 @@ func Benchmark_ConnPool(b *testing.B) {
 	b.ReportAllocs()
 	b.StartTimer()
 	for i := 0; i < b.N; i++ {
-		conn, ok := pool.Get()
+		conn, ok := pool.Get(ctx)
 		if ok {
 			do(b, conn)
 		}
@@ -172,7 +172,7 @@ func BenchmarkParallel_ConnPool(b *testing.B) {
 	b.StartTimer()
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
-			conn, ok := pool.Get()
+			conn, ok := pool.Get(ctx)
 			if ok {
 				do(b, conn)
 			}

@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
-	"sort"
 	"strconv"
 	"time"
 
@@ -31,6 +30,8 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/io"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/safety"
+	"github.com/vdaas/vald/internal/slices"
 	"github.com/vdaas/vald/internal/strings"
 )
 
@@ -194,10 +195,10 @@ func CopyDir(ctx context.Context, src, dst string) (err error) {
 			}
 			return nil
 		}
-		eg.Go(func() (err error) {
+		eg.Go(safety.RecoverFunc(func() (err error) {
 			_, err = CopyFileWithPerm(ctx, childPath, dstPath, info.Type())
 			return err
-		})
+		}))
 		return nil
 	})
 	if err != nil {
@@ -337,7 +338,7 @@ func ReadDir(path string) (dirs []fs.DirEntry, err error) {
 	}()
 
 	dirs, err = f.ReadDir(-1)
-	sort.Slice(dirs, func(i, j int) bool { return dirs[i].Name() < dirs[j].Name() })
+	slices.SortFunc(dirs, func(a, b fs.DirEntry) bool { return a.Name() < b.Name() })
 	return dirs, err
 }
 

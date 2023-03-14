@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -53,7 +53,7 @@ func TestNew(t *testing.T) {
 		want       want
 		checkFunc  func(want, MySQL, error) error
 		beforeFunc func(args)
-		afterFunc  func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, got MySQL, err error) error {
 		if !errors.Is(err, w.err) {
@@ -122,7 +122,7 @@ func TestNew(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -174,7 +174,7 @@ func Test_mySQLClient_Open(t *testing.T) {
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
-		afterFunc  func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -234,7 +234,8 @@ func Test_mySQLClient_Open(t *testing.T) {
 						},
 					},
 				},
-				afterFunc: func(args) {
+				afterFunc: func(t *testing.T, _ args) {
+					t.Helper()
 					cancel()
 				},
 				want: want{},
@@ -294,7 +295,8 @@ func Test_mySQLClient_Open(t *testing.T) {
 						},
 					},
 				},
-				afterFunc: func(args) {
+				afterFunc: func(t *testing.T, _ args) {
+					t.Helper()
 					cancel()
 				},
 				want: want{},
@@ -333,7 +335,8 @@ func Test_mySQLClient_Open(t *testing.T) {
 						},
 					},
 				},
-				afterFunc: func(args) {
+				afterFunc: func(t *testing.T, _ args) {
+					t.Helper()
 					cancel()
 				},
 				want: want{
@@ -393,7 +396,8 @@ func Test_mySQLClient_Open(t *testing.T) {
 						},
 					},
 				},
-				afterFunc: func(args) {
+				afterFunc: func(t *testing.T, _ args) {
+					t.Helper()
 					cancel()
 				},
 				want: want{
@@ -411,7 +415,7 @@ func Test_mySQLClient_Open(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -467,7 +471,7 @@ func Test_mySQLClient_Ping(t *testing.T) {
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
-		afterFunc  func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -502,7 +506,8 @@ func Test_mySQLClient_Ping(t *testing.T) {
 					},
 				},
 				want: want{},
-				afterFunc: func(args) {
+				afterFunc: func(t *testing.T, _ args) {
+					t.Helper()
 					cancel()
 				},
 			}
@@ -521,7 +526,8 @@ func Test_mySQLClient_Ping(t *testing.T) {
 				want: want{
 					err: errors.ErrMySQLSessionNil,
 				},
-				afterFunc: func(args) {
+				afterFunc: func(t *testing.T, _ args) {
+					t.Helper()
 					cancel()
 				},
 			}
@@ -546,7 +552,8 @@ func Test_mySQLClient_Ping(t *testing.T) {
 				want: want{
 					err: errors.Wrap(errors.Wrap(errors.ErrMySQLConnectionPingFailed, err.Error()), context.DeadlineExceeded.Error()),
 				},
-				afterFunc: func(args) {
+				afterFunc: func(t *testing.T, _ args) {
+					t.Helper()
 					cancel()
 				},
 			}
@@ -570,7 +577,8 @@ func Test_mySQLClient_Ping(t *testing.T) {
 				want: want{
 					err: errors.ErrMySQLConnectionPingFailed,
 				},
-				afterFunc: func(args) {
+				afterFunc: func(t *testing.T, _ args) {
+					t.Helper()
 					cancel()
 				},
 			}
@@ -585,7 +593,7 @@ func Test_mySQLClient_Ping(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -623,7 +631,7 @@ func Test_mySQLClient_Close(t *testing.T) {
 		want       want
 		checkFunc  func(want, error, *mySQLClient) error
 		beforeFunc func(args)
-		afterFunc  func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, err error, m *mySQLClient) error {
 		if !errors.Is(err, w.err) {
@@ -692,7 +700,7 @@ func Test_mySQLClient_Close(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -732,7 +740,7 @@ func Test_mySQLClient_GetVector(t *testing.T) {
 		want       want
 		checkFunc  func(want, Vector, error) error
 		beforeFunc func(args)
-		afterFunc  func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, got Vector, err error) error {
 		if !errors.Is(err, w.err) {
@@ -1000,7 +1008,7 @@ func Test_mySQLClient_GetVector(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -1041,7 +1049,7 @@ func Test_mySQLClient_GetIPs(t *testing.T) {
 		want       want
 		checkFunc  func(want, []string, error) error
 		beforeFunc func(args)
-		afterFunc  func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, got []string, err error) error {
 		if !errors.Is(err, w.err) {
@@ -1323,7 +1331,7 @@ func Test_mySQLClient_GetIPs(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -1356,7 +1364,7 @@ func Test_validateVector(t *testing.T) {
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
-		afterFunc  func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -1398,7 +1406,7 @@ func Test_validateVector(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -1433,7 +1441,7 @@ func Test_mySQLClient_SetVector(t *testing.T) {
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
-		afterFunc  func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -2075,7 +2083,7 @@ func Test_mySQLClient_SetVector(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -2115,7 +2123,7 @@ func Test_mySQLClient_SetVectors(t *testing.T) {
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
-		afterFunc  func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -2773,7 +2781,7 @@ func Test_mySQLClient_SetVectors(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -2813,7 +2821,7 @@ func Test_mySQLClient_DeleteVector(t *testing.T) {
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
-		afterFunc  func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -3352,7 +3360,7 @@ func Test_mySQLClient_DeleteVector(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -3392,7 +3400,7 @@ func Test_mySQLClient_DeleteVectors(t *testing.T) {
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
-		afterFunc  func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -3542,7 +3550,7 @@ func Test_mySQLClient_DeleteVectors(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -3583,7 +3591,7 @@ func Test_mySQLClient_SetIPs(t *testing.T) {
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
-		afterFunc  func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -3936,7 +3944,7 @@ func Test_mySQLClient_SetIPs(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -3976,7 +3984,7 @@ func Test_mySQLClient_RemoveIPs(t *testing.T) {
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
-		afterFunc  func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -4156,7 +4164,7 @@ func Test_mySQLClient_RemoveIPs(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -4170,172 +4178,6 @@ func Test_mySQLClient_RemoveIPs(t *testing.T) {
 
 			err := m.RemoveIPs(test.args.ctx, test.args.ips...)
 			if err := checkFunc(test.want, err); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
-
-func Test_mySQLClient_errorLog(t *testing.T) {
-	t.Parallel()
-	type args struct {
-		err error
-	}
-	type fields struct {
-		db                   string
-		network              string
-		socketPath           string
-		host                 string
-		port                 uint16
-		user                 string
-		pass                 string
-		name                 string
-		charset              string
-		timezone             string
-		initialPingTimeLimit time.Duration
-		initialPingDuration  time.Duration
-		connMaxLifeTime      time.Duration
-		dialer               net.Dialer
-		dialerFunc           func(ctx context.Context, network, addr string) (net.Conn, error)
-		tlsConfig            *tls.Config
-		maxOpenConns         int
-		maxIdleConns         int
-		session              dbr.Session
-		connected            atomic.Value
-		eventReceiver        EventReceiver
-		dbr                  dbr.DBR
-	}
-	type want struct{}
-	type test struct {
-		name       string
-		args       args
-		fields     fields
-		want       want
-		checkFunc  func(want) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-	defaultCheckFunc := func(w want) error {
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           err: nil,
-		       },
-		       fields: fields {
-		           db: "",
-		           network: "",
-		           socketPath: "",
-		           host: "",
-		           port: 0,
-		           user: "",
-		           pass: "",
-		           name: "",
-		           charset: "",
-		           timezone: "",
-		           initialPingTimeLimit: nil,
-		           initialPingDuration: nil,
-		           connMaxLifeTime: nil,
-		           dialer: nil,
-		           dialerFunc: nil,
-		           tlsConfig: nil,
-		           maxOpenConns: 0,
-		           maxIdleConns: 0,
-		           session: nil,
-		           connected: nil,
-		           eventReceiver: nil,
-		           dbr: nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           err: nil,
-		           },
-		           fields: fields {
-		           db: "",
-		           network: "",
-		           socketPath: "",
-		           host: "",
-		           port: 0,
-		           user: "",
-		           pass: "",
-		           name: "",
-		           charset: "",
-		           timezone: "",
-		           initialPingTimeLimit: nil,
-		           initialPingDuration: nil,
-		           connMaxLifeTime: nil,
-		           dialer: nil,
-		           dialerFunc: nil,
-		           tlsConfig: nil,
-		           maxOpenConns: 0,
-		           maxIdleConns: 0,
-		           session: nil,
-		           connected: nil,
-		           eventReceiver: nil,
-		           dbr: nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-			checkFunc := test.checkFunc
-			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
-			}
-			m := &mySQLClient{
-				db:                   test.fields.db,
-				network:              test.fields.network,
-				socketPath:           test.fields.socketPath,
-				host:                 test.fields.host,
-				port:                 test.fields.port,
-				user:                 test.fields.user,
-				pass:                 test.fields.pass,
-				name:                 test.fields.name,
-				charset:              test.fields.charset,
-				timezone:             test.fields.timezone,
-				initialPingTimeLimit: test.fields.initialPingTimeLimit,
-				initialPingDuration:  test.fields.initialPingDuration,
-				connMaxLifeTime:      test.fields.connMaxLifeTime,
-				dialer:               test.fields.dialer,
-				dialerFunc:           test.fields.dialerFunc,
-				tlsConfig:            test.fields.tlsConfig,
-				maxOpenConns:         test.fields.maxOpenConns,
-				maxIdleConns:         test.fields.maxIdleConns,
-				session:              test.fields.session,
-				connected:            test.fields.connected,
-				eventReceiver:        test.fields.eventReceiver,
-				dbr:                  test.fields.dbr,
-			}
-
-			m.errorLog(test.args.err)
-			if err := checkFunc(test.want); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

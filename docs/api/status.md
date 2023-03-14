@@ -10,6 +10,7 @@ The sections below describe the meaning of each code and why API returns.
 | code | name                                      |
 | :--: | :---------------------------------------- |
 |  0   | [OK](#OK)                                 |
+|  1   | [CANCELLED](#CANCELLED)                   |
 |  3   | [INVALID_ARGUMENT](#INVALID_ARGUMENT)     |
 |  4   | [DEADLINE_EXCEEDED](#DEADLINE_EXCEEDED)   |
 |  5   | [NOT_FOUND](#NOT_FOUND)                   |
@@ -21,6 +22,12 @@ The sections below describe the meaning of each code and why API returns.
 ## OK
 
 `OK` means complete process with success.
+
+Services that return this code are all services.
+
+## CANCELLED
+
+`CANCELLED` means the operation was cancelled.
 
 Services that return this code are all services.
 

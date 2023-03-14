@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,16 +20,15 @@ package vqueue
 import (
 	"context"
 	"reflect"
-	"sort"
-	"sync"
+	"sync/atomic"
 	"time"
 
-	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/slices"
 )
 
-// Queue
+// Queue represents vector queue cache interface
 type Queue interface {
 	PushInsert(uuid string, vector []float32, date int64) error
 	PushDelete(uuid string, date int64) error
@@ -43,28 +42,14 @@ type Queue interface {
 }
 
 type vqueue struct {
-	uii  []index      // uii is un inserted index
-	imu  sync.RWMutex // insert mutex
-	uiim uiim         // uiim is un inserted index map (this value is used for GetVector operation to return queued vector cache data)
-	udk  []key        // udk is un deleted key
-	dmu  sync.RWMutex // delete mutex
-	udim udim         // udim is un deleted index map (this value is used for Exists operation to return cache data existence)
-	eg   errgroup.Group
-
-	// buffer config
-	iBufSize int
-	dBufSize int
+	il, dl indexMap
+	ic, dc uint64
 }
 
 type index struct {
 	date   int64
 	vector []float32
 	uuid   string
-}
-
-type key struct {
-	date int64
-	uuid string
 }
 
 func New(opts ...Option) (Queue, error) {
@@ -81,8 +66,6 @@ func New(opts ...Option) (Queue, error) {
 			log.Warn(werr)
 		}
 	}
-	vq.uii = make([]index, 0, vq.iBufSize)
-	vq.udk = make([]key, 0, vq.dBufSize)
 	return vq, nil
 }
 
@@ -90,8 +73,8 @@ func (v *vqueue) PushInsert(uuid string, vector []float32, date int64) error {
 	if date == 0 {
 		date = time.Now().UnixNano()
 	}
-	ddate, ok := v.udim.Load(uuid)
-	if ok && ddate > date {
+	didx, ok := v.dl.Load(uuid)
+	if ok && didx.date > date {
 		return nil
 	}
 	idx := index{
@@ -99,14 +82,14 @@ func (v *vqueue) PushInsert(uuid string, vector []float32, date int64) error {
 		vector: vector,
 		date:   date,
 	}
-	oidx, loaded := v.uiim.LoadOrStore(uuid, idx)
+	oidx, loaded := v.il.LoadOrStore(uuid, idx)
 	if loaded {
-		if oidx.date > idx.date {
-			return nil
+		if date > oidx.date { // if data already exists and existing index is older than new one
+			v.il.Store(uuid, idx)
 		}
-		v.uiim.Store(uuid, idx)
+	} else {
+		_ = atomic.AddUint64(&v.ic, 1)
 	}
-	v.addInsert(idx)
 	return nil
 }
 
@@ -114,17 +97,18 @@ func (v *vqueue) PushDelete(uuid string, date int64) error {
 	if date == 0 {
 		date = time.Now().UnixNano()
 	}
-	odate, loaded := v.udim.LoadOrStore(uuid, date)
-	if loaded {
-		if odate > date {
-			return nil
-		}
-		v.udim.Store(uuid, date)
-	}
-	v.addDelete(key{
+	idx := index{
 		uuid: uuid,
 		date: date,
-	})
+	}
+	oidx, loaded := v.dl.LoadOrStore(uuid, idx)
+	if loaded {
+		if date > oidx.date { // if data already exists and existing index is older than new one
+			v.dl.Store(uuid, idx)
+		}
+	} else {
+		_ = atomic.AddUint64(&v.dc, 1)
+	}
 	return nil
 }
 
@@ -132,19 +116,19 @@ func (v *vqueue) PushDelete(uuid string, date int64) error {
 // If the same UUID exists in the insert queue and the delete queue, the timestamp is compared.
 // And the vector is returned if the timestamp in the insert queue is newer than the delete queue.
 func (v *vqueue) GetVector(uuid string) ([]float32, bool) {
-	vec, ok := v.uiim.Load(uuid)
+	idx, ok := v.il.Load(uuid)
 	if !ok {
 		// data not in the insert queue then return not exists(false)
 		return nil, false
 	}
-	di, ok := v.udim.Load(uuid)
+	didx, ok := v.dl.Load(uuid)
 	if !ok {
 		// data not in the delete queue but exists in insert queue then return exists(true)
-		return vec.vector, true
+		return idx.vector, true
 	}
 	// data exists both queue, compare data timestamp if insert queue timestamp is newer than delete one, this function returns exists(true)
-	if di <= vec.date {
-		return vec.vector, true
+	if didx.date <= idx.date {
+		return idx.vector, true
 	}
 	return nil, false
 }
@@ -153,181 +137,123 @@ func (v *vqueue) GetVector(uuid string) ([]float32, bool) {
 // If the same UUID exists in the insert queue and the delete queue, the timestamp is compared.
 // And the true is returned if the timestamp in the insert queue is newer than the delete queue.
 func (v *vqueue) IVExists(uuid string) bool {
-	vec, ok := v.uiim.Load(uuid)
+	idx, ok := v.il.Load(uuid)
 	if !ok {
 		// data not in the insert queue then return not exists(false)
 		return false
 	}
-	di, ok := v.udim.Load(uuid)
+	didx, ok := v.dl.Load(uuid)
 	if !ok {
 		// data not in the delete queue but exists in insert queue then return exists(true)
 		return true
 	}
 	// data exists both queue, compare data timestamp if insert queue timestamp is newer than delete one, this function returns exists(true)
 	// However, if insert and delete are sent by the update instruction, the timestamp will be the same
-	return di <= vec.date
+	return didx.date <= idx.date
 }
 
 // DVExists returns true if there is the UUID in the delete queue.
 // If the same UUID exists in the insert queue and the delete queue, the timestamp is compared.
 // And the true is returned if the timestamp in the delete queue is newer than the insert queue.
 func (v *vqueue) DVExists(uuid string) bool {
-	di, ok := v.udim.Load(uuid)
+	didx, ok := v.dl.Load(uuid)
 	if !ok {
 		return false
 	}
-	vec, ok := v.uiim.Load(uuid)
+	idx, ok := v.il.Load(uuid)
 	if !ok {
 		// data not in the insert queue then return not exists(false)
 		return true
 	}
 
 	// data exists both queue, compare data timestamp if insert queue timestamp is newer than delete one, this function returns exists(true)
-	return di > vec.date
+	return didx.date > idx.date
 }
 
-func (v *vqueue) addInsert(i index) {
-	date, ok := v.udim.Load(i.uuid)
-	if ok && i.date < date {
-		return
-	}
-	idx, ok := v.uiim.Load(i.uuid)
-	if ok && i.date < idx.date {
-		return
-	}
-	v.imu.Lock()
-	v.uii = append(v.uii, i)
-	v.imu.Unlock()
-}
-
-func (v *vqueue) addDelete(d key) {
-	date, ok := v.udim.Load(d.uuid)
-	if ok && d.date < date {
-		return
-	}
-	v.dmu.Lock()
-	v.udk = append(v.udk, d)
-	v.dmu.Unlock()
-}
-
-func (v *vqueue) RangePopInsert(_ context.Context, now int64, f func(uuid string, vector []float32) bool) {
-	v.imu.Lock()
-	uii := make([]index, len(v.uii))
-	copy(uii, v.uii)
-	v.uii = v.uii[:0]
-	v.imu.Unlock()
-	sort.Slice(uii, func(i, j int) bool {
+func (v *vqueue) RangePopInsert(ctx context.Context, now int64, f func(uuid string, vector []float32) bool) {
+	uii := make([]index, 0, atomic.LoadUint64(&v.ic))
+	v.il.Range(func(uuid string, idx index) bool {
+		if idx.date > now {
+			return true
+		}
+		didx, ok := v.dl.Load(uuid)
+		if ok {
+			if idx.date < didx.date {
+				v.il.Delete(idx.uuid)
+				atomic.AddUint64(&v.ic, ^uint64(0))
+			}
+			return true
+		}
+		uii = append(uii, idx)
+		select {
+		case <-ctx.Done():
+			return false
+		default:
+		}
+		return true
+	})
+	slices.SortFunc(uii, func(left, right index) bool {
 		// sort by latest unix time order
-		return uii[i].date > uii[j].date
+		return left.date > right.date
 	})
-	dup := make(map[string]bool, len(uii)/2)
-	for i, idx := range uii {
-		if idx.date > now {
-			v.imu.Lock()
-			v.uii = append(v.uii, idx)
-			v.imu.Unlock()
-			continue
+	for _, idx := range uii {
+		if !f(idx.uuid, idx.vector) {
+			return
 		}
-
-		// if the same uuid is detected in the delete map during insert phase, which means the data is not processed in the delete phase.
-		// we need to add it back to insert map to process it in next create index process.
-		if _, ok := v.udim.Load(idx.uuid); ok {
-			v.imu.Lock()
-			v.uii = append(v.uii, idx)
-			v.imu.Unlock()
-			continue
-		}
-
-		// if duplicated data exists current loop's data is old due to the uii's sort order
-		if !dup[idx.uuid] {
-			dup[idx.uuid] = true
-			if !f(idx.uuid, idx.vector) {
-				v.imu.Lock()
-				v.uii = append(uii[i:], v.uii...)
-				v.imu.Unlock()
-				return
-			}
-			v.uiim.Delete(idx.uuid)
+		v.il.Delete(idx.uuid)
+		atomic.AddUint64(&v.ic, ^uint64(0))
+		select {
+		case <-ctx.Done():
+			return
+		default:
 		}
 	}
 }
 
-func (v *vqueue) RangePopDelete(_ context.Context, now int64, f func(uuid string) bool) {
-	v.dmu.Lock()
-	udk := make([]key, len(v.udk))
-	copy(udk, v.udk)
-	v.udk = v.udk[:0]
-	v.dmu.Unlock()
-	sort.Slice(udk, func(i, j int) bool {
-		return udk[i].date > udk[j].date
+func (v *vqueue) RangePopDelete(ctx context.Context, now int64, f func(uuid string) bool) {
+	udi := make([]index, 0, atomic.LoadUint64(&v.dc))
+	v.dl.Range(func(uuid string, idx index) bool {
+		if idx.date > now {
+			return true
+		}
+		udi = append(udi, idx)
+		select {
+		case <-ctx.Done():
+			return false
+		default:
+		}
+		return true
 	})
-	dup := make(map[string]bool, len(udk)/2)
-	udm := make(map[string]int64, len(udk))
-	for i, idx := range udk {
-		if idx.date > now {
-			v.dmu.Lock()
-			v.udk = append(v.udk, idx)
-			v.dmu.Unlock()
-			continue
+	slices.SortFunc(udi, func(left, right index) bool {
+		// sort by latest unix time order
+		return left.date > right.date
+	})
+	for _, idx := range udi {
+		if !f(idx.uuid) {
+			return
 		}
-		if !dup[idx.uuid] {
-			dup[idx.uuid] = true
-			if !f(idx.uuid) {
-				v.dmu.Lock()
-				v.udk = append(udk[i:], v.udk...)
-				v.dmu.Unlock()
-				return
-			}
-			v.udim.Delete(idx.uuid)
-			udm[idx.uuid] = idx.date
+		v.dl.Delete(idx.uuid)
+		atomic.AddUint64(&v.dc, ^uint64(0))
+		iidx, ok := v.il.Load(idx.uuid)
+		if ok && idx.date > iidx.date {
+			v.il.Delete(idx.uuid)
+			atomic.AddUint64(&v.ic, ^uint64(0))
 		}
-	}
+		select {
+		case <-ctx.Done():
+			return
+		default:
+		}
 
-	dl := make([]int, 0, len(udk)/2)
-
-	// In the CreateIndex operation of the NGT Service, the Delete Queue is processed first, and then the Insert Queue is processed,
-	// so the Insert Queue still contains the old Insert Operation older than the Delete Queue,
-	// and it is possible that data that was intended to be deleted is registered again.
-	// For this reason, the data is deleted from the Insert Queue only when retrieving data from the Delete Queue.
-	// we should check insert vqueue if insert vqueue exists and delete operation date is newer than insert operation date then we should remove insert vqueue's data.
-	v.imu.RLock()
-	for i, idx := range v.uii {
-		if idx.date > now {
-			continue
-		}
-		// check same uuid & operation date
-		// if date is equal, it may update operation we shouldn't remove at that time
-		date, exists := udm[idx.uuid]
-		if exists && date <= now && date > idx.date {
-			dl = append(dl, i)
-		}
-	}
-	v.imu.RUnlock()
-	sort.Sort(sort.Reverse(sort.IntSlice(dl)))
-	for _, i := range dl {
-		v.imu.Lock()
-		// load removal target uuid
-		uuid := v.uii[i].uuid
-		// remove unnecessary insert vector queue data
-		v.uii = append(v.uii[:i], v.uii[i+1:]...)
-		v.imu.Unlock()
-		// remove from existing map
-		v.uiim.Delete(uuid)
 	}
 }
 
 // IVQLen returns the number of uninserted indexes stored in the insert queue.
 func (v *vqueue) IVQLen() (l int) {
-	v.imu.RLock()
-	l = len(v.uii)
-	v.imu.RUnlock()
-	return l
+	return int(atomic.LoadUint64(&v.ic))
 }
 
 // DVQLen returns the number of undeleted keys stored in the delete queue.
 func (v *vqueue) DVQLen() (l int) {
-	v.dmu.RLock()
-	l = len(v.udk)
-	v.dmu.RUnlock()
-	return l
+	return int(atomic.LoadUint64(&v.dc))
 }

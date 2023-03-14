@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -39,6 +39,9 @@ type LB struct {
 
 	// Discoverer represent agent discoverer service configuration
 	Discoverer *DiscovererClient `json:"discoverer" yaml:"discoverer"`
+
+	// MultiOperationConcurrency
+	MultiOperationConcurrency int `json:"multi_operation_concurrency" yaml:"multi_operation_concurrency"`
 }
 
 // Bind binds the actual data from the LB receiver fields.

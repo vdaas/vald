@@ -1,6 +1,6 @@
 ---
 #
-# Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -51,7 +51,7 @@ data:
         type: prometheus
         access: proxy
         orgId: 1
-        uid: vald_prometheus
+        uid: prometheus
         url: http://prometheus-kube-prometheus-prometheus:9090
         isDefault: true
         editable: false
@@ -59,7 +59,7 @@ data:
         type: jaeger
         access: proxy
         orgId: 1
-        uid: vald_jaeger
+        uid: jaeger
         url: http://jaeger-query:80
         isDefault: false
         editable: false
@@ -67,18 +67,18 @@ data:
         type: loki
         access: proxy
         orgId: 1
-        uid: vald_loki
+        uid: loki
         url: http://loki:3100
         isDefault: false
         editable: false
         jsonData:
           derivedFields:
-            - datasourceUid: vald_jaeger
+            - datasourceUid: jaeger
               matcherRegex: '"(?:traceID|trace_id)\":"(\w+)"'
               name: TraceID
               url: $${__value.raw}
               internalLink: true
-            - datasourceUid: vald_tempo
+            - datasourceUid: tempo
               matcherRegex: '"(?:traceID|trace_id)\":"(\w+)"'
               name: TraceID
               url: $${__value.raw}
@@ -87,7 +87,7 @@ data:
         type: tempo
         access: browser
         orgId: 1
-        uid: vald_tempo
+        uid: tempo
         url: http://tempo:16686
         isDefault: false
         editable: false
