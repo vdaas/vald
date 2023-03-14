@@ -47,6 +47,7 @@ GOCACHE := $(eval GOCACHE := $(shell go env GOCACHE))$(GOCACHE)
 GOOS := $(eval GOOS := $(shell go env GOOS))$(GOOS)
 GOPATH := $(eval GOPATH := $(shell go env GOPATH))$(GOPATH)
 GOTEST_TIMEOUT = 30m
+TEST_NOT_IMPL_PLACEHOLDER = NOT IMPLEMENTED BELOW
 
 TEMP_DIR := $(eval TEMP_DIR := $(shell mktemp -d))$(TEMP_DIR)
 
