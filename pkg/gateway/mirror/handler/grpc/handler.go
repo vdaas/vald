@@ -2836,6 +2836,9 @@ func (s *server) getObject(ctx context.Context, client vald.ObjectClient, req *p
 			log.Debugf("code: %#v, msg: %s, err: %s", st, msg, err.Error())
 			attrs = trace.FromGRPCStatus(st.Code(), msg)
 			code = st.Code()
+
+			// TODO: delete this code later.
+			err = status.Error(codes.NotFound, "[funapy-log]: "+err.Error())
 		}
 		log.Warnf("%s\tcode: %s", err.Error(), code)
 		if span != nil {
