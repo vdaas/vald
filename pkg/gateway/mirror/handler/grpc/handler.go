@@ -2703,6 +2703,8 @@ func (s *server) getObjects(ctx context.Context, req *payload.Object_VectorReque
 			}
 		}()
 
+		log.Warnf("[funapy]: target: %s", target)
+
 		vec, err := s.getObject(ctx, vald.NewObjectClient(conn), req, copts...)
 		if err != nil {
 			log.Debugf("%#v", err)
