@@ -129,3 +129,17 @@ define run-e2e-multi-crud-test
 	    -portforward-pod-port=$(E2E_TARGET_PORT) \
 	    -namespace=$(E2E_TARGET_NAMESPACE)
 endef
+
+define gen-go-test-sources
+	@for f in $(GO_SOURCES); do \
+		echo "Generating go test file: $$f"; \
+		gotests -w -template_dir $(ROOTDIR)/assets/test/templates/common -all $(patsubst %_test.go,%.go,$$f); \
+	done
+endef
+
+define gen-go-option-test-sources
+	@for f in $(GO_OPTION_SOURCES); do \
+		echo "Generating go test file: $$f"; \
+		gotests -w -template_dir $(ROOTDIR)/assets/test/templates/common -all $(patsubst %_test.go,%.go,$$f); \
+	done
+endef

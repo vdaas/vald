@@ -216,16 +216,14 @@ coverage:
 .PHONY: gotests/gen
 ## generate missing go test files
 gotests/gen: \
-	gotests/patch-placeholder \
-	$(GO_TEST_SOURCES) \
-	$(GO_OPTION_TEST_SOURCES) \
+	gotests/patch-placeholder
+	$(call gen-go-test-sources)
+	$(call gen-go-option-test-sources)
 	gotests/patch
 
 .PHONY: gotests/patch
 ## apply patches to generated go test files
 gotests/patch: \
-	$(GO_TEST_SOURCES) \
-	$(GO_OPTION_TEST_SOURCES)
 	@$(call green, "apply patches to go test files...")
 	find $(ROOTDIR)/internal/k8s/* -name '*_test.go' | xargs sed -i -E "s%k8s.io/apimachinery/pkg/api/errors%github.com/vdaas/vald/internal/errors%g"
 	find $(ROOTDIR)/* -name '*_test.go' | xargs sed -i -E "s%cockroachdb/errors%vdaas/vald/internal/errors%g"
@@ -245,15 +243,3 @@ gotests/patch-placeholder:
 	find $(ROOTDIR)/* -name '*_test.go' -exec sh -c ' \
 		for arg in "$$@"; do echo "// $(TEST_NOT_IMPL_PLACEHOLDER)" >>"$$arg"; done \
 	' _ {} +
-
-$(GO_TEST_SOURCES): \
-	$(ROOTDIR)/assets/test/templates/common \
-	$(GO_SOURCES)
-	@$(call green, $(patsubst %,"generating go test file: %",$@))
-	gotests -w -template_dir $(ROOTDIR)/assets/test/templates/common -all $(patsubst %_test.go,%.go,$@)
-
-$(GO_OPTION_TEST_SOURCES): \
-	$(ROOTDIR)/assets/test/templates/option \
-	$(GO_OPTION_SOURCES)
-	@$(call green, $(patsubst %,"generating go test file: %",$@))
-	gotests -w -template_dir $(ROOTDIR)/assets/test/templates/option -all $(patsubst %_test.go,%.go,$@)
