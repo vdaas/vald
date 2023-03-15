@@ -70,18 +70,27 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/vdaas/vald/vald-ci-container:nightly
+    defaults:
+      run:
+        working-directory: src/github.com/vdaas/vald
     steps:
       - name: Check out code.
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
+          path: src/github.com/vdaas/vald
       - name: set git config
         run: |
-          git config --global --add safe.directory ${GITHUB_WORKSPACE}
+          git config --global --add safe.directory ${GITHUB_WORKSPACE}/src/github.com/vdaas/vald
+        working-directory: src/github.com/vdaas/vald
       - name: dependencies
         run: |
-          make proto/deps
+          GOPATH=${GITHUB_WORKSPACE} make proto/deps
+        working-directory: src/github.com/vdaas/vald
       - name: Run tests for hack packages / gotestfmt
         run: |
-          TEST_RESULT_DIR=${GITHUB_WORKSPACE} make test/hack/gotestfmt
+          GOPATH=${GITHUB_WORKSPACE} TEST_RESULT_DIR=${GITHUB_WORKSPACE}/src/github.com/vdaas/vald make test/hack/gotestfmt
+        working-directory: src/github.com/vdaas/vald
       - name: print tparse result
         run: |
-          tparse -notests -smallscreen -sort cover -format markdown -file ${GITHUB_WORKSPACE}/test-hack-gotestfmt-result.json
+          tparse -notests -smallscreen -sort cover -format markdown -file ${GITHUB_WORKSPACE}/src/github.com/vdaas/vald/test-hack-gotestfmt-result.json
