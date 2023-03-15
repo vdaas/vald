@@ -2840,13 +2840,10 @@ func (s *server) getObject(ctx context.Context, client vald.ObjectClient, req *p
 				st  *status.Status
 				msg string
 			)
-			log.Debugf("%s", err.Error())
 			st, msg, err = status.ParseError(err, codes.Internal,
 				"failed to parse "+vald.GetObjectRPCName+" gRPC error response", reqInfo, resInfo,
 			)
-			log.Debugf("code: %#v, msg: %s, err: %s", st, msg, err.Error())
 			attrs = trace.FromGRPCStatus(st.Code(), msg)
-			code = st.Code()
 		}
 		log.Warnf("%s\tcode: %s", err.Error(), code)
 		if span != nil {
