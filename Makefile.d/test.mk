@@ -223,8 +223,8 @@ gotests/gen: \
 .PHONY: gotests/gen-test
 ## generate test implementation
 gotests/gen-test:
-    $(call gen-go-test-sources)
-    $(call gen-go-option-test-sources)
+	$(call gen-go-test-sources)
+	$(call gen-go-option-test-sources)
 
 .PHONY: gotests/patch
 ## apply patches to generated go test files
