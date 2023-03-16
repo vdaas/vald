@@ -90,13 +90,15 @@ test/hack/tparse: \
         tparse/install
 	set -euo pipefail
 	rm -rf "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json"
-	go test -short -shuffle=on -race -mod=readonly -json -cover \
+	go mod vendor -o $(ROOTDIR)/vendor
+	go test -short -shuffle=on -race -mod=vendor -json -cover \
 		$(ROOTDIR)/hack/gorules/... \
 		$(ROOTDIR)/hack/helm/... \
 		$(ROOTDIR)/hack/license/... \
 		$(ROOTDIR)/hack/tools/... \
 	| tee "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json" \
 	| tparse -pass -notests
+	rm -rf $(ROOTDIR)/vendor
 
 .PHONY: test/all/tparse
 ## run tests for all Go codes and show table
@@ -154,13 +156,15 @@ test/hack/gotestfmt: \
         gotestfmt/install
 	set -euo pipefail
 	rm -rf "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json"
-	go test -short -shuffle=on -race -mod=readonly -json -cover \
+	go mod vendor -o $(ROOTDIR)/vendor
+	go test -short -shuffle=on -race -mod=vendor -json -cover \
 		$(ROOTDIR)/hack/gorules/... \
 		$(ROOTDIR)/hack/helm/... \
 		$(ROOTDIR)/hack/license/... \
 		$(ROOTDIR)/hack/tools/... \
 	| tee "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json" \
 	| gotestfmt -showteststatus
+	rm -rf $(ROOTDIR)/vendor
 
 .PHONY: test/all/gotestfmt
 ## run tests for all Go codes and show table
@@ -190,11 +194,13 @@ test/cmd:
 .PHONY: test/hack
 ## run tests for hack
 test/hack:
-	go test -short -shuffle=on -race -mod=readonly -cover \
+	go mod vendor -o $(ROOTDIR)/vendor
+	go test -short -shuffle=on -race -mod=vendor -cover \
 		$(ROOTDIR)/hack/gorules... \
 		$(ROOTDIR)/hack/helm/... \
 		$(ROOTDIR)/hack/license/...\
 		$(ROOTDIR)/hack/tools/...
+	rm -rf $(ROOTDIR)/vendor
 
 .PHONY: test/all
 ## run tests for all Go codes
