@@ -218,7 +218,7 @@ coverage:
 gotests/gen: \
 	gotests/patch-placeholder \
 	gotests/gen-test \
-	gotests/patch \
+	gotests/patch
 
 .PHONY: gotests/gen-test
 ## generate test implementation
@@ -228,7 +228,8 @@ gotests/gen-test:
 
 .PHONY: gotests/patch
 ## apply patches to generated go test files
-gotests/patch: 
+gotests/patch:
+	@$(call green, "apply patches to go test files...")
 	find $(ROOTDIR)/internal/k8s/* -name '*_test.go' | xargs sed -i -E "s%k8s.io/apimachinery/pkg/api/errors%github.com/vdaas/vald/internal/errors%g"
 	find $(ROOTDIR)/* -name '*_test.go' | xargs sed -i -E "s%cockroachdb/errors%vdaas/vald/internal/errors%g"
 	find $(ROOTDIR)/* -name '*_test.go' | xargs sed -i -E "s%golang.org/x/sync/errgroup%github.com/vdaas/vald/internal/errgroup%g"
