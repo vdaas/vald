@@ -223,6 +223,7 @@ gotests/gen: \
 .PHONY: gotests/gen-test
 ## generate test implementation
 gotests/gen-test:
+	@$(call green, "generate go test files...")
 	$(call gen-go-test-sources)
 	$(call gen-go-option-test-sources)
 
@@ -244,6 +245,7 @@ gotests/patch:
 .PHONY: gotests/patch-placeholder
 ## apply patches to the placeholder of the generated go test files
 gotests/patch-placeholder:
+	@$(call green, "apply placeholder patches to go test files...")
 	find $(ROOTDIR)/* -name '*_test.go' | xargs sed -i -e '/\/\/ $(TEST_NOT_IMPL_PLACEHOLDER)/,$$d'
 	find $(ROOTDIR)/* -name '*_test.go' -exec sh -c ' \
 		for f in "$$@"; do \
