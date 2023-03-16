@@ -216,10 +216,15 @@ coverage:
 .PHONY: gotests/gen
 ## generate missing go test files
 gotests/gen: \
-	gotests/patch-placeholder
-	$(call gen-go-test-sources)
-	$(call gen-go-option-test-sources)
-	gotests/patch
+	gotests/patch-placeholder \
+	gotests/gen-test \
+	gotests/patch \
+
+.PHONY: gotests/gen-test
+## generate test implementation
+gotests/gen-test:
+    $(call gen-go-test-sources)
+    $(call gen-go-option-test-sources)
 
 .PHONY: gotests/patch
 ## apply patches to generated go test files
@@ -241,5 +246,8 @@ gotests/patch: \
 gotests/patch-placeholder:
 	find $(ROOTDIR)/* -name '*_test.go' | xargs sed -i -e '/\/\/ $(TEST_NOT_IMPL_PLACEHOLDER)/,$$d'
 	find $(ROOTDIR)/* -name '*_test.go' -exec sh -c ' \
-		for arg in "$$@"; do echo "// $(TEST_NOT_IMPL_PLACEHOLDER)" >>"$$arg"; done \
+		for f in "$$@"; do \
+			if [ "$$(tail -c 1 $$f)" != "" ]; then echo "" >> "$$f"; fi; \
+			echo "// $(TEST_NOT_IMPL_PLACEHOLDER)" >>"$$f"; \
+		done \
 	' _ {} +
