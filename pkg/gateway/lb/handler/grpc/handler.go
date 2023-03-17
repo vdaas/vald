@@ -434,43 +434,37 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 			}
 			return nil, err
 		}
-		var serr error
-		res, serr = s.doSearch(ctx, scfg, func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error) {
+		res, err = s.doSearch(ctx, scfg, func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error) {
 			return vc.SearchByID(ctx, req, copts...)
 		})
-		if serr == nil {
+		if err == nil {
 			return res, nil
 		}
-		err = errors.Wrap(err, serr.Error())
-		st, msg, serr = status.ParseError(err, codes.Internal, vald.SearchByIDRPCName+" API failed to process search request", reqInfo, resInfo)
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
-		return nil, errors.Wrap(err, serr.Error())
-	}
-	res, err = s.Search(ctx, &payload.Search_Request{
-		Vector: vec.GetVector(),
-		Config: scfg,
-	})
-	if err != nil {
-		_, _, err := status.ParseError(err, codes.Internal, vald.SearchByIDRPCName+" API failed to process search request", reqInfo, resInfo, info.Get())
-		var serr error
-		res, serr = s.doSearch(ctx, scfg, func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error) {
-			return vc.SearchByID(ctx, req, copts...)
-		})
-		if serr == nil {
-			return res, nil
-		}
-		st, msg, serr := status.ParseError(serr, codes.Internal, vald.SearchByIDRPCName+" API failed to process search request", reqInfo, resInfo)
-		err = errors.Wrap(err, serr.Error())
+		st, msg, err = status.ParseError(err, codes.Internal, vald.SearchByIDRPCName+" API failed to process search request", reqInfo, resInfo)
 		if span != nil {
 			span.RecordError(err)
 			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
 			span.SetStatus(trace.StatusError, err.Error())
 		}
 		return nil, err
+	}
+	res, err = s.Search(ctx, &payload.Search_Request{
+		Vector: vec.GetVector(),
+		Config: scfg,
+	})
+	if err != nil {
+		res, err = s.doSearch(ctx, scfg, func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error) {
+			return vc.SearchByID(ctx, req, copts...)
+		})
+		if err != nil {
+			st, msg, err := status.ParseError(err, codes.Internal, vald.SearchByIDRPCName+" API failed to process search request", reqInfo, resInfo)
+			if span != nil {
+				span.RecordError(err)
+				span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+				span.SetStatus(trace.StatusError, err.Error())
+			}
+			return nil, err
+		}
 	}
 	return res, nil
 }
@@ -925,10 +919,10 @@ func (s *server) MultiSearch(ctx context.Context, reqs *payload.Search_MultiRequ
 					sspan.SetStatus(trace.StatusError, err.Error())
 				}
 				emu.Lock()
-				if errs == nil {
-					errs = err
+				if errs != nil {
+					errs = errors.Join(errs, err)
 				} else {
-					errs = errors.Wrap(errs, err.Error())
+					errs = err
 				}
 				emu.Unlock()
 				return nil
@@ -1000,10 +994,10 @@ func (s *server) MultiSearchByID(ctx context.Context, reqs *payload.Search_Multi
 					sspan.SetStatus(trace.StatusError, err.Error())
 				}
 				emu.Lock()
-				if errs == nil {
-					errs = err
+				if errs != nil {
+					errs = errors.Join(errs, err)
 				} else {
-					errs = errors.Wrap(errs, err.Error())
+					errs = err
 				}
 				emu.Unlock()
 				return nil
@@ -1199,21 +1193,19 @@ func (s *server) LinearSearchByID(ctx context.Context, req *payload.Search_IDReq
 			}
 			return nil, err
 		}
-		var serr error
-		res, serr = s.doSearch(ctx, scfg, func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error) {
+		res, err = s.doSearch(ctx, scfg, func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error) {
 			return vc.LinearSearchByID(ctx, req, copts...)
 		})
-		if serr == nil {
+		if err == nil {
 			return res, nil
 		}
-		err = errors.Wrap(err, serr.Error())
-		st, msg, serr = status.ParseError(err, codes.Internal, vald.LinearSearchByIDRPCName+" API failed to process search request", reqInfo, resInfo)
+		st, msg, err = status.ParseError(err, codes.Internal, vald.LinearSearchByIDRPCName+" API failed to process search request", reqInfo, resInfo)
 		if span != nil {
 			span.RecordError(err)
 			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
 			span.SetStatus(trace.StatusError, err.Error())
 		}
-		return nil, errors.Wrap(err, serr.Error())
+		return nil, err
 	}
 
 	res, err = s.LinearSearch(ctx, &payload.Search_Request{
@@ -1221,16 +1213,13 @@ func (s *server) LinearSearchByID(ctx context.Context, req *payload.Search_IDReq
 		Config: scfg,
 	})
 	if err != nil {
-		_, _, err := status.ParseError(err, codes.Internal, vald.LinearSearchByIDRPCName+" API failed to process search request", reqInfo, resInfo, info.Get())
-		var serr error
-		res, serr = s.doSearch(ctx, scfg, func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error) {
+		res, err = s.doSearch(ctx, scfg, func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error) {
 			return vc.LinearSearchByID(ctx, req, copts...)
 		})
-		if serr == nil {
+		if err == nil {
 			return res, nil
 		}
-		st, msg, serr := status.ParseError(serr, codes.Internal, vald.LinearSearchByIDRPCName+" API failed to process search request", reqInfo, resInfo)
-		err = errors.Wrap(err, serr.Error())
+		st, msg, err := status.ParseError(err, codes.Internal, vald.LinearSearchByIDRPCName+" API failed to process search request", reqInfo, resInfo)
 		if span != nil {
 			span.RecordError(err)
 			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
@@ -1381,10 +1370,10 @@ func (s *server) MultiLinearSearch(ctx context.Context, reqs *payload.Search_Mul
 					sspan.SetStatus(trace.StatusError, err.Error())
 				}
 				emu.Lock()
-				if errs == nil {
-					errs = err
+				if errs != nil {
+					errs = errors.Join(errs, err)
 				} else {
-					errs = errors.Wrap(errs, err.Error())
+					errs = err
 				}
 				emu.Unlock()
 				return nil
@@ -1456,10 +1445,10 @@ func (s *server) MultiLinearSearchByID(ctx context.Context, reqs *payload.Search
 					sspan.SetStatus(trace.StatusError, err.Error())
 				}
 				emu.Lock()
-				if errs == nil {
-					errs = err
+				if errs != nil {
+					errs = errors.Join(errs, err)
 				} else {
-					errs = errors.Wrap(errs, err.Error())
+					errs = err
 				}
 				emu.Unlock()
 				return nil
@@ -1649,10 +1638,10 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 			}
 			if err != nil && st.Code() != codes.AlreadyExists {
 				emu.Lock()
-				if errs == nil {
-					errs = err
+				if errs != nil {
+					errs = errors.Join(errs, err)
 				} else {
-					errs = errors.Wrap(errs, err.Error())
+					errs = err
 				}
 				emu.Unlock()
 				return err
@@ -1686,7 +1675,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 		if errs == nil {
 			errs = err
 		} else {
-			errs = errors.Wrap(errs, err.Error())
+			errs = errors.Join(errs, err)
 		}
 	}
 	if errs != nil {
@@ -1799,7 +1788,7 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 					if errs == nil {
 						errs = err
 					} else {
-						errs = errors.Wrap(errs, err.Error())
+						errs = errors.Join(errs, err)
 					}
 					emu.Unlock()
 				} else if res != nil && res.GetUuid() == req.GetVector().GetId() && res.GetIps() != nil {
@@ -1843,7 +1832,7 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 			if errs == nil {
 				errs = err
 			} else {
-				errs = errors.Wrap(errs, err.Error())
+				errs = errors.Join(errs, err)
 			}
 			emu.Unlock()
 
@@ -1855,7 +1844,7 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 		if errs == nil {
 			errs = err
 		} else {
-			errs = errors.Wrap(errs, err.Error())
+			errs = errors.Join(errs, err)
 		}
 		emu.Unlock()
 	}
@@ -2264,7 +2253,7 @@ func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequ
 					if errs == nil {
 						errs = err
 					} else {
-						errs = errors.Wrap(errs, err.Error())
+						errs = errors.Join(errs, err)
 					}
 					emu.Unlock()
 				} else if res != nil && res.GetUuid() == req.GetVector().GetId() && res.GetIps() != nil {
@@ -2308,7 +2297,7 @@ func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequ
 			if errs == nil {
 				errs = err
 			} else {
-				errs = errors.Wrap(errs, err.Error())
+				errs = errors.Join(errs, err)
 			}
 			emu.Unlock()
 
@@ -2320,7 +2309,7 @@ func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequ
 		if errs == nil {
 			errs = err
 		} else {
-			errs = errors.Wrap(errs, err.Error())
+			errs = errors.Join(errs, err)
 		}
 		emu.Unlock()
 	}
@@ -2613,7 +2602,7 @@ func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequ
 					if errs == nil {
 						errs = err
 					} else {
-						errs = errors.Wrap(errs, err.Error())
+						errs = errors.Join(errs, err)
 					}
 					emu.Unlock()
 				} else if res != nil && res.GetUuid() == req.GetVector().GetId() && res.GetIps() != nil {
@@ -2657,7 +2646,7 @@ func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequ
 			if errs == nil {
 				errs = err
 			} else {
-				errs = errors.Wrap(errs, err.Error())
+				errs = errors.Join(errs, err)
 			}
 			emu.Unlock()
 
@@ -2669,7 +2658,7 @@ func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequ
 		if errs == nil {
 			errs = err
 		} else {
-			errs = errors.Wrap(errs, err.Error())
+			errs = errors.Join(errs, err)
 		}
 		emu.Unlock()
 	}
@@ -2917,7 +2906,7 @@ func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequ
 					if errs == nil {
 						errs = err
 					} else {
-						errs = errors.Wrap(errs, err.Error())
+						errs = errors.Join(errs, err)
 					}
 					emu.Unlock()
 				} else if res != nil && res.GetUuid() == req.GetId().GetId() && res.GetIps() != nil {
@@ -2950,7 +2939,7 @@ func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequ
 			if errs == nil {
 				errs = err
 			} else {
-				errs = errors.Wrap(errs, err.Error())
+				errs = errors.Join(errs, err)
 			}
 			emu.Unlock()
 
@@ -2962,7 +2951,7 @@ func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequ
 		if errs == nil {
 			errs = err
 		} else {
-			errs = errors.Wrap(errs, err.Error())
+			errs = errors.Join(errs, err)
 		}
 		emu.Unlock()
 	}
