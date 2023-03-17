@@ -149,7 +149,8 @@ func (g *gateway) BroadCast(ctx context.Context,
 }
 
 func (g *gateway) Do(ctx context.Context, target string,
-	f func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (interface{}, error)) (res interface{}, err error) {
+	f func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (interface{}, error),
+) (res interface{}, err error) {
 	ctx, span := trace.StartSpan(ctx, "vald/gateway/mirror/service/Gateway.Do")
 	defer func() {
 		if span != nil {
