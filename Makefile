@@ -398,6 +398,18 @@ format/go: \
 	find ./ -type d -name .git -prune -o -type f -regex '.*[^\.pb]\.go' -print | xargs $(GOPATH)/bin/strictgoimports -w
 	find ./ -type d -name .git -prune -o -type f -regex '.*\.go' -print | xargs $(GOPATH)/bin/goimports -w
 
+.PHONY: format/test
+## run golines, gofumpt, goimports for go test files
+format/test: \
+	golines/install \
+	gofumpt/install \
+	strictgoimports/install \
+	goimports/install
+	find $(ROOTDIR)/* -name '*_test.go' | xargs $(GOPATH)/bin/golines -w -m $(GOLINES_MAX_WIDTH)
+	find $(ROOTDIR)/* -name '*_test.go' | xargs $(GOPATH)/bin/gofumpt -w
+	find $(ROOTDIR)/* -name '*_test.go' | xargs $(GOPATH)/bin/strictgoimports -w
+	find $(ROOTDIR)/* -name '*_test.go' | xargs $(GOPATH)/bin/goimports -w
+
 .PHONY: format/yaml
 format/yaml: \
 	prettier/install

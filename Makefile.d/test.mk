@@ -218,7 +218,8 @@ coverage:
 gotests/gen: \
 	gotests/patch-placeholder \
 	gotests/gen-test \
-	gotests/patch
+	gotests/patch \
+	format/test
 
 .PHONY: gotests/gen-test
 ## generate test implementation
