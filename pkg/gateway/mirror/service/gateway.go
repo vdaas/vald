@@ -22,6 +22,7 @@ import (
 	"reflect"
 	"time"
 
+	"github.com/vdaas/vald/apis/grpc/v1/vald"
 	mclient "github.com/vdaas/vald/internal/client/v1/client/mirror"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
@@ -39,8 +40,10 @@ type Gateway interface {
 	Start(ctx context.Context) (<-chan error, error)
 	ForwardedContext(ctx context.Context, podName string) context.Context
 	FromForwardedContext(ctx context.Context) string
+	Do(ctx context.Context, target string,
+		f func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (interface{}, error)) (interface{}, error)
 	BroadCast(ctx context.Context,
-		f func(ctx context.Context, target string, conn *grpc.ClientConn, copts ...grpc.CallOption) error) error
+		f func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error) error
 }
 
 type gateway struct {
@@ -121,7 +124,7 @@ func (g *gateway) FromForwardedContext(ctx context.Context) string {
 }
 
 func (g *gateway) BroadCast(ctx context.Context,
-	f func(ctx context.Context, target string, conn *grpc.ClientConn, copts ...grpc.CallOption) error,
+	f func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error,
 ) (err error) {
 	fctx, span := trace.StartSpan(ctx, "vald/gateway/mirror/service/Gateway.BroadCast")
 	defer func() {
@@ -129,7 +132,6 @@ func (g *gateway) BroadCast(ctx context.Context,
 			span.End()
 		}
 	}()
-
 	return g.client.GRPCClient().RangeConcurrent(g.ForwardedContext(fctx, g.podName), -1, func(ictx context.Context,
 		addr string, conn *grpc.ClientConn, copts ...grpc.CallOption,
 	) (err error) {
@@ -137,7 +139,7 @@ func (g *gateway) BroadCast(ctx context.Context,
 		case <-ictx.Done():
 			return nil
 		default:
-			err = f(ictx, addr, conn, copts...)
+			err = f(ictx, addr, vald.NewValdClient(conn), copts...)
 			if err != nil {
 				return err
 			}
@@ -145,3 +147,50 @@ func (g *gateway) BroadCast(ctx context.Context,
 		return nil
 	})
 }
+
+func (g *gateway) Do(ctx context.Context, target string,
+	f func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (interface{}, error)) (res interface{}, err error) {
+	ctx, span := trace.StartSpan(ctx, "vald/gateway/mirror/service/Gateway.Do")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	if len(target) == 0 {
+		return nil, errors.ErrTargetNotFound
+	}
+	return g.client.GRPCClient().Do(g.ForwardedContext(ctx, g.podName), target,
+		func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
+			return f(ctx, vald.NewValdClient(conn), copts...)
+		},
+	)
+}
+
+// func (g *gateway) Do(ctx context.Context, targets []string,
+// 	f func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error) error {
+// 	fctx, span := trace.StartSpan(ctx, "vald/gateway/mirror/service/Gateway.Do")
+// 	defer func() {
+// 		if span != nil {
+// 			span.End()
+// 		}
+// 	}()
+// 	if len(targets) == 0 {
+// 		return errors.ErrTargetNotFound
+// 	}
+// 	do := func(ctx context.Context, addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) (err error) {
+// 		select {
+// 		case <-ctx.Done():
+// 			return nil
+// 		default:
+// 			err = f(ctx, addr, vald.NewValdClient(conn), copts...)
+// 			if err != nil {
+// 				return err
+// 			}
+// 		}
+// 		return nil
+// 	}
+// 	if len(targets) < 2 {
+// 		return g.client.GRPCClient().OrderedRange(g.ForwardedContext(fctx, g.podName), targets, do)
+// 	}
+// 	return g.client.GRPCClient().OrderedRangeConcurrent(g.ForwardedContext(fctx, g.podName), targets, len(targets), do)
+// }
