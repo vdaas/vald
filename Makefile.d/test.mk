@@ -179,11 +179,22 @@ test/all/gotestfmt: \
 .PHONY: test/create-empty
 ## create empty test file if not exists
 test/create-empty:
+	@$(call green, "create empty test file if not exists...")
 	for f in $(GO_TEST_SOURCES) ; do \
 		if [ ! -f "$$f" ]; then \
 			package="$$(dirname $$f)" ; \
 			package="$$(basename $$package)" ; \
 			echo "package $$package" >> "$$f"; \
+		fi; \
+	done
+
+.PHONY: test/remove-empty
+## remove empty test files
+test/remove-empty:
+	@$(call green, "remove empty test files...")
+	for f in $(GO_TEST_SOURCES) ; do \
+		if ! grep -q "func Test" "$$f"; then \
+			rm "$$f"; \
 		fi; \
 	done
 
@@ -230,6 +241,7 @@ gotests/gen: \
 	test/create-empty \
 	gotests/patch-placeholder \
 	gotests/gen-test \
+	test/remove-empty \
 	gotests/patch \
 	format/go/test
 
