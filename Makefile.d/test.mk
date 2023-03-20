@@ -180,7 +180,7 @@ test/all/gotestfmt: \
 ## create empty test file if not exists
 test/create-empty:
 	@$(call green, "create empty test file if not exists...")
-	for f in $(GO_TEST_SOURCES) ; do \
+	for f in $(GO_ALL_TEST_SOURCES) ; do \
 		if [ ! -f "$$f" ]; then \
 			package="$$(dirname $$f)" ; \
 			package="$$(basename $$package)" ; \
@@ -192,7 +192,7 @@ test/create-empty:
 ## remove empty test files
 test/remove-empty:
 	@$(call green, "remove empty test files...")
-	for f in $(GO_TEST_SOURCES) ; do \
+	for f in $(GO_ALL_TEST_SOURCES) ; do \
 		if ! grep -q "func Test" "$$f"; then \
 			rm "$$f"; \
 		fi; \
@@ -271,7 +271,7 @@ gotests/patch:
 ## apply patches to the placeholder of the generated go test files
 gotests/patch-placeholder:
 	@$(call green, "apply placeholder patches to go test files...")
-	for f in $(GO_TEST_SOURCES) ; do \
+	for f in $(GO_ALL_TEST_SOURCES) ; do \
 		if [ ! -f "$$f" ] ; then continue; fi; \
 		sed -i -e '/\/\/ $(TEST_NOT_IMPL_PLACEHOLDER)/,$$d' $$f; \
 		if [ "$$(tail -1 $$f)" != "" ]; then echo "" >> "$$f"; fi; \
