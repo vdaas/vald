@@ -176,6 +176,17 @@ test/all/gotestfmt: \
 	| tee "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json" \
 	| gotestfmt -showteststatus
 
+.PHONY: test/create-empty
+## create empty test file if not exists
+test/create-empty:
+	for f in $(GO_TEST_SOURCES) ; do \
+		if [ ! -f "$$f" ]; then \
+			package="$$(dirname $$f)" ; \
+			package="$$(basename $$package)" ; \
+			echo "package $$package" >> "$$f"; \
+		fi; \
+	done
+
 .PHONY: test/pkg
 ## run tests for pkg
 test/pkg:
@@ -216,10 +227,11 @@ coverage:
 .PHONY: gotests/gen
 ## generate missing go test files
 gotests/gen: \
+	test/create-empty \
 	gotests/patch-placeholder \
 	gotests/gen-test \
 	gotests/patch \
-	format/test
+	format/go/test
 
 .PHONY: gotests/gen-test
 ## generate test implementation

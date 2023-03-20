@@ -398,9 +398,9 @@ format/go: \
 	find ./ -type d -name .git -prune -o -type f -regex '.*[^\.pb]\.go' -print | xargs $(GOPATH)/bin/strictgoimports -w
 	find ./ -type d -name .git -prune -o -type f -regex '.*\.go' -print | xargs $(GOPATH)/bin/goimports -w
 
-.PHONY: format/test
+.PHONY: format/go/test
 ## run golines, gofumpt, goimports for go test files
-format/test: \
+format/go/test: \
 	golines/install \
 	gofumpt/install \
 	strictgoimports/install \
