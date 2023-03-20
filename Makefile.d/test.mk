@@ -271,10 +271,9 @@ gotests/patch:
 ## apply patches to the placeholder of the generated go test files
 gotests/patch-placeholder:
 	@$(call green, "apply placeholder patches to go test files...")
-	find $(ROOTDIR)/* -name '*_test.go' | xargs sed -i -e '/\/\/ $(TEST_NOT_IMPL_PLACEHOLDER)/,$$d'
-	find $(ROOTDIR)/* -name '*_test.go' -exec sh -c ' \
-		for f in "$$@"; do \
-			if [ "$$(tail -1 $$f)" != "" ]; then echo "" >> "$$f"; fi; \
-			echo "// $(TEST_NOT_IMPL_PLACEHOLDER)" >>"$$f"; \
-		done \
-	' _ {} +
+	for f in $(GO_TEST_SOURCES) ; do \
+		if [ ! -f "$$f" ] ; then continue; fi; \
+		sed -i -e '/\/\/ $(TEST_NOT_IMPL_PLACEHOLDER)/,$$d' $$f; \
+		if [ "$$(tail -1 $$f)" != "" ]; then echo "" >> "$$f"; fi; \
+		echo "// $(TEST_NOT_IMPL_PLACEHOLDER)" >>"$$f"; \
+	done
