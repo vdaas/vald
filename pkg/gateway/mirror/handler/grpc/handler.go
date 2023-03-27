@@ -195,7 +195,7 @@ func (s *server) Exists(ctx context.Context, meta *payload.Object_ID) (id *paylo
 		}
 		resInfo := &errdetails.ResourceInfo{
 			ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.ExistsRPCName,
-			ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+			ResourceName: fmt.Sprintf("%s: %s(%s) to %s", apiName, s.name, s.ip, s.vAddr),
 		}
 		var attrs trace.Attributes
 
@@ -267,7 +267,7 @@ func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *
 		}
 		resInfo := &errdetails.ResourceInfo{
 			ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.SearchRPCName,
-			ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+			ResourceName: fmt.Sprintf("%s: %s(%s) to %s", apiName, s.name, s.ip, s.vAddr),
 		}
 		var attrs trace.Attributes
 
@@ -341,7 +341,7 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 		}
 		resInfo := &errdetails.ResourceInfo{
 			ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.SearchByIDRPCName,
-			ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+			ResourceName: fmt.Sprintf("%s: %s(%s) to %s", apiName, s.name, s.ip, s.vAddr),
 		}
 		var attrs trace.Attributes
 
@@ -510,7 +510,7 @@ func (s *server) MultiSearch(ctx context.Context, req *payload.Search_MultiReque
 		}
 		resInfo := &errdetails.ResourceInfo{
 			ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.MultiSearchRPCName,
-			ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+			ResourceName: fmt.Sprintf("%s: %s(%s) to %s", apiName, s.name, s.ip, s.vAddr),
 		}
 		var attrs trace.Attributes
 
@@ -581,7 +581,7 @@ func (s *server) MultiSearchByID(ctx context.Context, req *payload.Search_MultiI
 		}
 		resInfo := &errdetails.ResourceInfo{
 			ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.MultiSearchByIDRPCName,
-			ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+			ResourceName: fmt.Sprintf("%s: %s(%s) to %s", apiName, s.name, s.ip, s.vAddr),
 		}
 		var attrs trace.Attributes
 
@@ -653,7 +653,7 @@ func (s *server) LinearSearch(ctx context.Context, req *payload.Search_Request) 
 		}
 		resInfo := &errdetails.ResourceInfo{
 			ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.LinearSearchRPCName,
-			ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+			ResourceName: fmt.Sprintf("%s: %s(%s) to %s", apiName, s.name, s.ip, s.vAddr),
 		}
 		var attrs trace.Attributes
 
@@ -727,7 +727,7 @@ func (s *server) LinearSearchByID(ctx context.Context, req *payload.Search_IDReq
 		}
 		resInfo := &errdetails.ResourceInfo{
 			ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.LinearSearchByIDRPCName,
-			ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+			ResourceName: fmt.Sprintf("%s: %s(%s) to %s", apiName, s.name, s.ip, s.vAddr),
 		}
 		var attrs trace.Attributes
 
@@ -896,7 +896,7 @@ func (s *server) MultiLinearSearch(ctx context.Context, req *payload.Search_Mult
 		}
 		resInfo := &errdetails.ResourceInfo{
 			ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.MultiLinearSearchRPCName,
-			ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+			ResourceName: fmt.Sprintf("%s: %s(%s) to %s", apiName, s.name, s.ip, s.vAddr),
 		}
 		var attrs trace.Attributes
 
@@ -967,7 +967,7 @@ func (s *server) MultiLinearSearchByID(ctx context.Context, req *payload.Search_
 		}
 		resInfo := &errdetails.ResourceInfo{
 			ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.MultiLinearSearchByIDRPCName,
-			ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+			ResourceName: fmt.Sprintf("%s: %s(%s) to %s", apiName, s.name, s.ip, s.vAddr),
 		}
 		var attrs trace.Attributes
 
@@ -1044,7 +1044,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 			}
 			resInfo := &errdetails.ResourceInfo{
 				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.InsertRPCName,
-				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+				ResourceName: fmt.Sprintf("%s: %s(%s) to %s", apiName, s.name, s.ip, s.vAddr),
 			}
 			var attrs trace.Attributes
 
@@ -1511,7 +1511,7 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (loc *
 			}
 			resInfo := &errdetails.ResourceInfo{
 				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.UpdateRPCName,
-				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+				ResourceName: fmt.Sprintf("%s: %s(%s) to %s", apiName, s.name, s.ip, s.vAddr),
 			}
 			var attrs trace.Attributes
 
@@ -1601,7 +1601,7 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (loc *
 						ResourceName: fmt.Sprintf("%s: %s(%s) to %s", apiName, s.name, s.ip, target),
 					},
 				)
-				if st.Code() == codes.NotFound || st.Code() == codes.AlreadyExists {
+				if st.Code() == codes.AlreadyExists {
 					// NOTE: If it is strictly necessary to check, fix this logic.
 					return nil
 				}
@@ -1714,7 +1714,6 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (loc *
 
 			req := &payload.Update_Request{
 				Vector: oldVec.(*payload.Object_Vector),
-				// TODO: check skip check.
 				Config: &payload.Update_Config{
 					SkipStrictExistCheck: true,
 				},
@@ -1732,7 +1731,7 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (loc *
 						ResourceName: fmt.Sprintf("%s: %s(%s) to %s", apiName, s.name, s.ip, target),
 					},
 				)
-				if st.Code() == codes.NotFound || st.Code() == codes.AlreadyExists {
+				if st.Code() == codes.AlreadyExists {
 					return nil
 				}
 				emu.Lock()
@@ -2023,7 +2022,7 @@ func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *
 			}
 			resInfo := &errdetails.ResourceInfo{
 				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.UpsertRPCName,
-				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+				ResourceName: fmt.Sprintf("%s: %s(%s) to %s", apiName, s.name, s.ip, s.vAddr),
 			}
 			var attrs trace.Attributes
 
@@ -2111,8 +2110,7 @@ func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *
 					ResourceName: fmt.Sprintf("%s: %s(%s) to %s", apiName, s.name, s.ip, target),
 				},
 			)
-			if st.Code() == codes.AlreadyExists ||
-				st.Code() == codes.NotFound { // TODO: check
+			if st.Code() == codes.AlreadyExists {
 				// NOTE: If it is strictly necessary to check, fix this logic.
 				return nil
 			}
@@ -2223,7 +2221,6 @@ func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *
 
 			req := &payload.Update_Request{
 				Vector: oldVec.(*payload.Object_Vector),
-				// TODO: check skip check.
 				Config: &payload.Update_Config{
 					SkipStrictExistCheck: true,
 				},
@@ -2241,7 +2238,7 @@ func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *
 						ResourceName: fmt.Sprintf("%s: %s(%s) to %s", apiName, s.name, s.ip, target),
 					},
 				)
-				if st.Code() == codes.NotFound || st.Code() == codes.AlreadyExists {
+				if st.Code() == codes.AlreadyExists {
 					return nil
 				}
 				emu.Lock()
@@ -2532,7 +2529,7 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (loc *
 			}
 			resInfo := &errdetails.ResourceInfo{
 				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.RemoveRPCName,
-				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+				ResourceName: fmt.Sprintf("%s: %s(%s) to %s", apiName, s.name, s.ip, s.vAddr),
 			}
 			var attrs trace.Attributes
 
@@ -3009,7 +3006,7 @@ func (s *server) GetObject(ctx context.Context, req *payload.Object_VectorReques
 		}
 		resInfo := &errdetails.ResourceInfo{
 			ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.GetObjectRPCName,
-			ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+			ResourceName: fmt.Sprintf("%s: %s(%s) to %s", apiName, s.name, s.ip, s.vAddr),
 		}
 		var attrs trace.Attributes
 
