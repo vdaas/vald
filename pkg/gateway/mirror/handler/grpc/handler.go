@@ -1697,6 +1697,9 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (loc *
 	}()
 
 	reqSrcPodName := s.gateway.FromForwardedContext(ctx)
+
+	// When this condition is matched, the request is proxied to another Mirror gateway.
+	// So this component sends requests only to the Vald gateway (LB gateway) of its own cluster.
 	if len(reqSrcPodName) != 0 {
 		_, err = s.gateway.Do(ctx, "", func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (interface{}, error) {
 			loc, err = s.update(ctx, vc, req, copts...)
@@ -3987,20 +3990,19 @@ func (s *server) getObjects(ctx context.Context, req *payload.Object_VectorReque
 				span.SetAttributes(attrs...)
 				span.SetStatus(trace.StatusError, err.Error())
 			}
-			if code != codes.NotFound {
-				emu.Lock()
-				if errs == nil {
-					errs = err
-				} else {
-					err = errors.Join(errs, err)
-				}
-				emu.Unlock()
-				return err
+			if code == codes.NotFound {
+				return nil
 			}
+			emu.Lock()
+			if errs == nil {
+				errs = err
+			} else {
+				errs = errors.Join(errs, err)
+			}
+			emu.Unlock()
+			return err
 		}
-		if vec != nil {
-			vecs.Store(target, vec)
-		}
+		vecs.Store(target, vec)
 		return nil
 	})
 	if err != nil {
