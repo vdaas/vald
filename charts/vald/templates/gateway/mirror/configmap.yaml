@@ -46,27 +46,12 @@ data:
       advertise_interval: {{ $gateway.gateway_config.advertise_interval }}
       client:
         {{- $client := $gateway.gateway_config.client }}
-        {{- if $lb.enabled -}}
-        {{- $defaultHost := printf "%s.%s.svc.cluster.local" $lb.name .Release.Namespace }}
-        {{- $serverPort := $lb.server_config.servers.grpc.port }}
-        {{- $defaultPort := default .Values.defaults.server_config.servers.grpc.port $serverPort }}
-        {{- $defaultAddr := (list (printf "%s:%d" $defaultHost (int64 $defaultPort))) }}
-        {{- $addrs := dict "Values" $client.addrs "default" $defaultAddr }}
-        {{- include "vald.grpc.client.addrs" $addrs | nindent 8 }}
-        {{- end -}}
-        {{- $GRPCClient := dict "Values" $client "default" .Values.defaults.grpc.client }}
-        {{- include "vald.grpc.client" $GRPCClient | nindent 8 }}
-      mirror_client:
-        {{- $client := $gateway.gateway_config.mirror_client }}
         {{- $addrs  := default list $client.addrs }}
         {{- if $lb.enabled -}}
-        {{- $client := $gateway.gateway_config.client }}
         {{- $defaultHost := printf "%s.%s.svc.cluster.local" $lb.name .Release.Namespace }}
-        {{- $serverPort := $lb.server_config.servers.grpc.port }}
-        {{- $defaultPort := default .Values.defaults.server_config.servers.grpc.port $serverPort }}
+        {{- $defaultPort := default .Values.defaults.server_config.servers.grpc.port $lb.server_config.servers.grpc.port }}
         {{- $defaultAddr := (list (printf "%s:%d" $defaultHost (int64 $defaultPort))) }}
-        {{- $lbAddrs := default $defaultAddr $client.addrs }}
-        {{- $addrs = default $lbAddrs (concat $addrs $lbAddrs) }}
+        {{- $addrs = (concat $addrs $defaultAddr) }}
         {{- end -}}
         {{- if $addrs }}
         addrs:
@@ -76,29 +61,20 @@ data:
         {{- end -}}
         {{- $GRPCClient := dict "Values" $client "default" .Values.defaults.grpc.client }}
         {{- include "vald.grpc.client" $GRPCClient | nindent 8 }}
-      self_mirror_addrs:
+      self_mirror_addr:
         {{- if $gateway.ingress.enabled -}}
-        {{- $defaultSelfMirrorHost := $gateway.ingress.host }}
-        {{- $selfMirrorServerPort := $gateway.server_config.servers.grpc.port }}
-        {{- $defaultSelfMirrorPort := default .Values.defaults.server_config.servers.grpc.port $selfMirrorServerPort }}
-        {{- $defaultSelfMirrorAddr := (list (printf "%s:%d" $defaultSelfMirrorHost (int64 $defaultSelfMirrorPort))) }}
-        {{- $selfMirrorAddrs := dict "Values" $gateway.gateway_config.self_mirror_addrs "default" $defaultSelfMirrorAddr }}
-          {{- if $selfMirrorAddrs.Values -}}
-            {{- toYaml $selfMirrorAddrs.Values | nindent 8 }}
-          {{- else if $selfMirrorAddrs.default -}}
-            {{- toYaml $selfMirrorAddrs.default | nindent 8 }}
-          {{- end -}}
-        {{- include "vald.grpc.client.addrs" $selfMirrorAddrs | nindent 8 }}
+        {{- $defaultHost := $gateway.ingress.host }}
+        {{- $defaultPort := default .Values.defaults.server_config.servers.grpc.port $gateway.server_config.servers.grpc.port }}
+        {{- printf "%s:%d" $defaultHost (int64 $defaultPort) | indent 1 }}
         {{- else -}}
-        {{- $defaultSelfMirrorHost := printf "%s.%s.svc.cluster.local" $gateway.name .Release.Namespace }}
-        {{- $selfMirrorServerPort := $gateway.server_config.servers.grpc.port }}
-        {{- $defaultSelfMirrorPort := default .Values.defaults.server_config.servers.grpc.port $selfMirrorServerPort }}
-        {{- $defaultSelfMirrorAddr := (list (printf "%s:%d" $defaultSelfMirrorHost (int64 $defaultSelfMirrorPort))) }}
-        {{- $selfMirrorAddrs := dict "Values" $gateway.gateway_config.self_mirror_addrs "default" $defaultSelfMirrorAddr }}
-          {{- if $selfMirrorAddrs.Values -}}
-            {{- toYaml $selfMirrorAddrs.Values | nindent 8 }}
-          {{- else if $selfMirrorAddrs.default -}}
-            {{- toYaml $selfMirrorAddrs.default | nindent 8 }}
-          {{- end -}}
-        {{- end -}}
+        {{- $defaultHost := printf "%s.%s.svc.cluster.local" $gateway.name .Release.Namespace }}
+        {{- $defaultPort := default .Values.defaults.server_config.servers.grpc.port $gateway.server_config.servers.grpc.port }}
+        {{- printf "%s:%d" $defaultHost (int64 $defaultPort) | indent 1 }}
+        {{- end }}
+      gateway_addr:
+        {{- if $lb.enabled -}}
+        {{- $defaultHost := printf "%s.%s.svc.cluster.local" $lb.name .Release.Namespace }}
+        {{- $defaultPort := default .Values.defaults.server_config.servers.grpc.port $lb.server_config.servers.grpc.port }}
+        {{- printf "%s:%d" $defaultHost (int64 $defaultPort) | indent 1 }}
+        {{- end }}
 {{- end }}

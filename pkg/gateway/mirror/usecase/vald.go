@@ -22,7 +22,6 @@ import (
 
 	"github.com/vdaas/vald/apis/grpc/v1/mirror"
 	mclient "github.com/vdaas/vald/internal/client/v1/client/mirror"
-	vclient "github.com/vdaas/vald/internal/client/v1/client/vald"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/observability"
@@ -43,8 +42,7 @@ type run struct {
 	eg            errgroup.Group
 	cfg           *config.Data
 	server        starter.Server
-	c             vclient.Client
-	mc            mclient.Client
+	c             mclient.Client
 	gw            service.Gateway
 	mgw           service.Mirror
 	observability observability.Observability
@@ -53,29 +51,15 @@ type run struct {
 func New(cfg *config.Data) (r runner.Runner, err error) {
 	eg := errgroup.Get()
 
-	mcOpts, err := cfg.Mirror.MirrorClient.Opts()
-	if err != nil {
-		return nil, err
-	}
-	mcOpts = append(mcOpts, grpc.WithErrGroup(eg))
-
-	mc, err := mclient.New(
-		mclient.WithAddrs(cfg.Mirror.MirrorClient.Addrs...),
-		mclient.WithClient(grpc.New(mcOpts...)),
-	)
-	if err != nil {
-		return nil, err
-	}
-
 	cOpts, err := cfg.Mirror.Client.Opts()
 	if err != nil {
 		return nil, err
 	}
 	cOpts = append(cOpts, grpc.WithErrGroup(eg))
 
-	c, err := vclient.New(
-		vclient.WithAddrs(cfg.Mirror.Client.Addrs...),
-		vclient.WithClient(grpc.New(cOpts...)),
+	c, err := mclient.New(
+		mclient.WithAddrs(cfg.Mirror.Client.Addrs...),
+		mclient.WithClient(grpc.New(cOpts...)),
 	)
 	if err != nil {
 		return nil, err
@@ -83,7 +67,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 
 	gw, err := service.NewGateway(
 		service.WithErrGroup(eg),
-		service.WithMirrorClient(mc),
+		service.WithMirrorClient(c),
 		service.WithPodName(cfg.Mirror.PodName),
 	)
 	if err != nil {
@@ -92,21 +76,24 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	mgw, err := service.NewMirror(
 		service.WithErrorGroup(eg),
 		service.WithAdvertiseInterval(cfg.Mirror.AdvertiseInterval),
-		service.WithValdAddrs(cfg.Mirror.Client.Addrs...),
-		service.WithSelfMirrorAddrs(cfg.Mirror.SelfMirrorAddrs...),
-		service.WithMirror(mc),
+		service.WithValdAddrs(cfg.Mirror.GatewayAddr),
+		service.WithSelfMirrorAddrs(cfg.Mirror.SelfMirrorAddr),
+		service.WithMirror(c),
 	)
 	if err != nil {
 		return nil, err
 	}
 
-	v := handler.New(
-		handler.WithValdClient(c),
+	v, err := handler.New(
+		handler.WithValdAddr(cfg.Mirror.GatewayAddr),
 		handler.WithErrGroup(eg),
 		handler.WithGateway(gw),
 		handler.WithMirror(mgw),
 		handler.WithStreamConcurrency(cfg.Server.GetGRPCStreamConcurrency()),
 	)
+	if err != nil {
+		return nil, err
+	}
 
 	grpcServerOptions := []server.Option{
 		server.WithGRPCRegistFunc(func(srv *grpc.Server) {
@@ -157,7 +144,6 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		cfg:           cfg,
 		server:        srv,
 		c:             c,
-		mc:            mc,
 		gw:            gw,
 		mgw:           mgw,
 		observability: obs,
@@ -173,7 +159,7 @@ func (r *run) PreStart(ctx context.Context) error {
 
 func (r *run) Start(ctx context.Context) (<-chan error, error) {
 	ech := make(chan error, 6)
-	var gech, mech, mcech, cech, sech, oech <-chan error
+	var gech, mech, cech, sech, oech <-chan error
 	var err error
 
 	sech = r.server.ListenAndServe(ctx)
@@ -186,13 +172,6 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 	}
 	if r.mgw != nil {
 		mech, err = r.mgw.Start(ctx)
-		if err != nil {
-			close(ech)
-			return nil, err
-		}
-	}
-	if r.mc != nil {
-		mcech, err = r.mc.Start(ctx)
 		if err != nil {
 			close(ech)
 			return nil, err
@@ -217,7 +196,6 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 				return ctx.Err()
 			case err = <-gech:
 			case err = <-mech:
-			case err = <-mcech:
 			case err = <-cech:
 			case err = <-sech:
 			case err = <-oech:

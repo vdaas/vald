@@ -1,7 +1,7 @@
 gateway:
   mirror:
     gateway_config:
-      mirror_client:
+      client:
         addrs:
           - vald-mirror-gateway.vald-01.svc.cluster.local:8081
           - vald-mirror-gateway.vald-02.svc.cluster.local:8081

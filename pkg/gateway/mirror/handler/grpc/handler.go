@@ -20,13 +20,12 @@ package grpc
 import (
 	"context"
 	"fmt"
+	"reflect"
 	"sync"
-	"time"
 
 	"github.com/vdaas/vald/apis/grpc/v1/mirror"
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
-	vclient "github.com/vdaas/vald/internal/client/v1/client/vald"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
@@ -43,9 +42,7 @@ type server struct {
 	eg                errgroup.Group
 	gateway           service.Gateway // Mirror Gateway client service.
 	mirror            service.Mirror
-	vc                vclient.Client // Vald gateway client (LB gateway) for the same cluster.
-	timeout           time.Duration
-	replica           int
+	vAddr             string // Vald Gateway address (lb-gateway).
 	streamConcurrency int
 	name              string
 	ip                string
@@ -54,13 +51,20 @@ type server struct {
 
 const apiName = "vald/gateway/mirror"
 
-func New(opts ...Option) mirror.Server {
+func New(opts ...Option) (mirror.Server, error) {
 	s := new(server)
-
 	for _, opt := range append(defaultOptions, opts...) {
-		opt(s)
+		if err := opt(s); err != nil {
+			oerr := errors.ErrOptionFailed(err, reflect.ValueOf(opt))
+			e := &errors.ErrCriticalOption{}
+			if errors.As(err, &e) {
+				log.Error(oerr)
+				return nil, oerr
+			}
+			log.Warn(oerr)
+		}
 	}
-	return s
+	return s, nil
 }
 
 func (s *server) Register(ctx context.Context, req *payload.Mirror_Targets) (*payload.Mirror_Targets, error) {
@@ -178,8 +182,8 @@ func (s *server) Exists(ctx context.Context, meta *payload.Object_ID) (id *paylo
 		}
 	}()
 
-	_, err = s.gateway.Do(ctx, "TODO: lb addr", func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (interface{}, error) {
-		id, err = s.vc.Exists(ctx, meta, s.vc.GRPCClient().GetCallOption()...)
+	_, err = s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (interface{}, error) {
+		id, err = vc.Exists(ctx, meta, copts...)
 		if err != nil {
 			return nil, err
 		}
@@ -249,8 +253,8 @@ func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *
 		}
 	}()
 
-	_, err = s.gateway.Do(ctx, "TODO: lb addr", func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (interface{}, error) {
-		res, err = s.vc.Search(ctx, req)
+	_, err = s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (interface{}, error) {
+		res, err = vc.Search(ctx, req, copts...)
 		if err != nil {
 			return nil, err
 		}
@@ -323,8 +327,8 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 		}
 	}()
 
-	_, err = s.gateway.Do(ctx, "TODO: lb addr", func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (interface{}, error) {
-		res, err = s.vc.SearchByID(ctx, req)
+	_, err = s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (interface{}, error) {
+		res, err = vc.SearchByID(ctx, req, copts...)
 		if err != nil {
 			return nil, err
 		}
@@ -493,8 +497,8 @@ func (s *server) MultiSearch(ctx context.Context, req *payload.Search_MultiReque
 		}
 	}()
 
-	_, err = s.gateway.Do(ctx, "TODO: lb addr", func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (interface{}, error) {
-		res, err = s.vc.MultiSearch(ctx, req)
+	_, err = s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (interface{}, error) {
+		res, err = vc.MultiSearch(ctx, req, copts...)
 		if err != nil {
 			return nil, err
 		}
@@ -564,8 +568,8 @@ func (s *server) MultiSearchByID(ctx context.Context, req *payload.Search_MultiI
 		}
 	}()
 
-	_, err = s.gateway.Do(ctx, "TODO: lb addr", func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (interface{}, error) {
-		res, err = s.vc.MultiSearchByID(ctx, req)
+	_, err = s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (interface{}, error) {
+		res, err = vc.MultiSearchByID(ctx, req, copts...)
 		if err != nil {
 			return nil, err
 		}
@@ -635,8 +639,8 @@ func (s *server) LinearSearch(ctx context.Context, req *payload.Search_Request) 
 		}
 	}()
 
-	_, err = s.gateway.Do(ctx, "TODO: lb addr", func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (interface{}, error) {
-		res, err = s.vc.LinearSearch(ctx, req)
+	_, err = s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (interface{}, error) {
+		res, err = vc.LinearSearch(ctx, req, copts...)
 		if err != nil {
 			return nil, err
 		}
@@ -709,8 +713,8 @@ func (s *server) LinearSearchByID(ctx context.Context, req *payload.Search_IDReq
 		}
 	}()
 
-	_, err = s.gateway.Do(ctx, "TODO: lb addr", func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (interface{}, error) {
-		res, err = s.vc.LinearSearchByID(ctx, req)
+	_, err = s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (interface{}, error) {
+		res, err = vc.LinearSearchByID(ctx, req, copts...)
 		if err != nil {
 			return nil, err
 		}
@@ -879,8 +883,8 @@ func (s *server) MultiLinearSearch(ctx context.Context, req *payload.Search_Mult
 		}
 	}()
 
-	_, err = s.gateway.Do(ctx, "TODO: lb addr", func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (interface{}, error) {
-		res, err = s.vc.MultiLinearSearch(ctx, req)
+	_, err = s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (interface{}, error) {
+		res, err = vc.MultiLinearSearch(ctx, req, copts...)
 		if err != nil {
 			return nil, err
 		}
@@ -950,8 +954,8 @@ func (s *server) MultiLinearSearchByID(ctx context.Context, req *payload.Search_
 		}
 	}()
 
-	_, err = s.gateway.Do(ctx, "TODO: lb addr", func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (interface{}, error) {
-		res, err = s.vc.MultiLinearSearchByID(ctx, req)
+	_, err = s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (interface{}, error) {
+		res, err = vc.MultiLinearSearchByID(ctx, req, copts...)
 		if err != nil {
 			return nil, err
 		}
@@ -1026,7 +1030,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 	// When this condition is matched, the request is proxied to another Mirror gateway.
 	// So this component sends requests only to the Vald gateway (LB gateway) of its own cluster.
 	if len(reqSrcPodName) != 0 {
-		_, err = s.gateway.Do(ctx, "", func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (interface{}, error) {
+		_, err = s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (interface{}, error) {
 			ce, err = vc.Insert(ctx, req, copts...)
 			if err != nil {
 				return nil, err
@@ -1701,7 +1705,7 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (loc *
 	// When this condition is matched, the request is proxied to another Mirror gateway.
 	// So this component sends requests only to the Vald gateway (LB gateway) of its own cluster.
 	if len(reqSrcPodName) != 0 {
-		_, err = s.gateway.Do(ctx, "", func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (interface{}, error) {
+		_, err = s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (interface{}, error) {
 			loc, err = s.update(ctx, vc, req, copts...)
 			if err != nil {
 				return nil, err
@@ -2440,7 +2444,7 @@ func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *
 	// When this condition is matched, the request is proxied to another Mirror gateway.
 	// So this component sends requests only to the Vald gateway (LB gateway) of its own cluster.
 	if len(reqSrcPodName) != 0 {
-		_, err = s.gateway.Do(ctx, "", func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (interface{}, error) {
+		_, err = s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (interface{}, error) {
 			loc, err = vc.Upsert(ctx, req, copts...)
 			if err != nil {
 				return nil, err
@@ -3176,7 +3180,7 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (loc *
 	// When this condition is matched, the request is proxied to another Mirror gateway.
 	// So this component sends the request only to the Vald gateway (LB gateway) of own cluster.
 	if len(reqSrcPodName) != 0 {
-		_, err = s.gateway.Do(ctx, "", func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (interface{}, error) {
+		_, err = s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (interface{}, error) {
 			loc, err = vc.Remove(ctx, req, copts...)
 			if err != nil {
 				return nil, err
@@ -3848,8 +3852,8 @@ func (s *server) GetObject(ctx context.Context, req *payload.Object_VectorReques
 		}
 	}()
 
-	_, err = s.gateway.Do(ctx, "TODO: lb addr", func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (interface{}, error) {
-		vec, err = s.vc.GetObject(ctx, req, copts...)
+	_, err = s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (interface{}, error) {
+		vec, err = vc.GetObject(ctx, req, copts...)
 		if err != nil {
 			return nil, err
 		}

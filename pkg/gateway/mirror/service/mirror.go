@@ -66,7 +66,6 @@ func NewMirror(opts ...MirrorOption) (Mirror, error) {
 				return nil, oerr
 			}
 			log.Warn(oerr)
-			return nil, oerr
 		}
 	}
 	for _, addr := range m.selfMirrAddrs {
