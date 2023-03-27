@@ -1498,7 +1498,7 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (loc *
 	// So this component sends requests only to the Vald gateway (LB gateway) of its own cluster.
 	if len(reqSrcPodName) != 0 {
 		_, err = s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (interface{}, error) {
-			loc, err = s.update(ctx, vc, req, copts...)
+			loc, err = vc.Update(ctx, req, copts...)
 			if err != nil {
 				return nil, err
 			}
