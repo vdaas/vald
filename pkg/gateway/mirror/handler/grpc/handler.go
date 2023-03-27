@@ -3939,6 +3939,7 @@ func (s *server) getObjects(ctx context.Context, req *payload.Object_VectorReque
 				ResourceName: fmt.Sprintf("%s: %s(%s) to %s", apiName, s.name, s.ip, target),
 			}
 			var attrs trace.Attributes
+			var code codes.Code
 
 			switch {
 			case errors.Is(err, context.Canceled):
@@ -3948,6 +3949,7 @@ func (s *server) getObjects(ctx context.Context, req *payload.Object_VectorReque
 				attrs = trace.StatusCodeCancelled(
 					errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.GetObjectRPCName,
 				)
+				code = codes.Canceled
 			case errors.Is(err, context.DeadlineExceeded):
 				err = status.WrapWithDeadlineExceeded(
 					vald.GetObjectRPCName+" API deadline exceeded", err, reqInfo, resInfo,
@@ -3955,16 +3957,19 @@ func (s *server) getObjects(ctx context.Context, req *payload.Object_VectorReque
 				attrs = trace.StatusCodeDeadlineExceeded(
 					errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.GetObjectRPCName,
 				)
+				code = codes.DeadlineExceeded
 			case errors.Is(err, errors.ErrTargetNotFound):
 				err = status.WrapWithInternal(
 					vald.GetObjectRPCName+" API target not found", err, reqInfo, resInfo,
 				)
 				attrs = trace.StatusCodeInternal(err.Error())
+				code = codes.Internal
 			case errors.Is(err, errors.ErrGRPCClientConnNotFound("*")):
 				err = status.WrapWithInternal(
 					vald.GetObjectRPCName+" API connection not found", err, reqInfo, resInfo,
 				)
 				attrs = trace.StatusCodeInternal(err.Error())
+				code = codes.Internal
 			default:
 				var (
 					st  *status.Status
@@ -3974,6 +3979,7 @@ func (s *server) getObjects(ctx context.Context, req *payload.Object_VectorReque
 					"failed to parse "+vald.GetObjectRPCName+" gRPC error response", reqInfo, resInfo,
 				)
 				attrs = trace.FromGRPCStatus(st.Code(), msg)
+				code = st.Code()
 			}
 			log.Warn(err)
 			if span != nil {
@@ -3981,14 +3987,16 @@ func (s *server) getObjects(ctx context.Context, req *payload.Object_VectorReque
 				span.SetAttributes(attrs...)
 				span.SetStatus(trace.StatusError, err.Error())
 			}
-			emu.Lock()
-			if errs == nil {
-				errs = err
-			} else {
-				err = errors.Join(errs, err)
+			if code != codes.NotFound {
+				emu.Lock()
+				if errs == nil {
+					errs = err
+				} else {
+					err = errors.Join(errs, err)
+				}
+				emu.Unlock()
+				return err
 			}
-			emu.Unlock()
-			return err
 		}
 		if vec != nil {
 			vecs.Store(target, vec)
