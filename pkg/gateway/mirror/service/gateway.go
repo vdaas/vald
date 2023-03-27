@@ -171,7 +171,8 @@ func (g *gateway) Do(ctx context.Context, target string,
 }
 
 func (g *gateway) DoMulti(ctx context.Context, targets []string,
-	f func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error) error {
+	f func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error,
+) error {
 	ctx, span := trace.StartSpan(ctx, "vald/gateway/mirror/service/Gateway.DoMulti")
 	defer func() {
 		if span != nil {
