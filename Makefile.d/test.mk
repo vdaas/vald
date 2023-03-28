@@ -176,6 +176,28 @@ test/all/gotestfmt: \
 	| tee "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json" \
 	| gotestfmt -showteststatus
 
+.PHONY: test/create-empty
+## create empty test file if not exists
+test/create-empty:
+	@$(call green, "create empty test file if not exists...")
+	for f in $(GO_ALL_TEST_SOURCES) ; do \
+		if [ ! -f "$$f" ]; then \
+			package="$$(dirname $$f)" ; \
+			package="$$(basename $$package)" ; \
+			echo "package $$package" >> "$$f"; \
+		fi; \
+	done
+
+.PHONY: test/remove-empty
+## remove empty test files
+test/remove-empty:
+	@$(call green, "remove empty test files...")
+	for f in $(GO_ALL_TEST_SOURCES) ; do \
+		if ! grep -q "func Test" "$$f"; then \
+			rm "$$f"; \
+		fi; \
+	done
+
 .PHONY: test/pkg
 ## run tests for pkg
 test/pkg:
@@ -216,15 +238,23 @@ coverage:
 .PHONY: gotests/gen
 ## generate missing go test files
 gotests/gen: \
-	$(GO_TEST_SOURCES) \
-	$(GO_OPTION_TEST_SOURCES) \
-	gotests/patch
+	test/create-empty \
+	gotests/patch-placeholder \
+	gotests/gen-test \
+	test/remove-empty \
+	gotests/patch \
+	format/go/test
+
+.PHONY: gotests/gen-test
+## generate test implementation
+gotests/gen-test:
+	@$(call green, "generate go test files...")
+	$(call gen-go-test-sources)
+	$(call gen-go-option-test-sources)
 
 .PHONY: gotests/patch
 ## apply patches to generated go test files
-gotests/patch: \
-	$(GO_TEST_SOURCES) \
-	$(GO_OPTION_TEST_SOURCES)
+gotests/patch:
 	@$(call green, "apply patches to go test files...")
 	find $(ROOTDIR)/internal/k8s/* -name '*_test.go' | xargs sed -i -E "s%k8s.io/apimachinery/pkg/api/errors%github.com/vdaas/vald/internal/errors%g"
 	find $(ROOTDIR)/* -name '*_test.go' | xargs sed -i -E "s%cockroachdb/errors%vdaas/vald/internal/errors%g"
@@ -237,14 +267,13 @@ gotests/patch: \
 	find $(ROOTDIR)/internal/test/goleak -name '*_test.go' | xargs sed -i -E "s%\"github.com/vdaas/vald/internal/test/goleak\"%%g"
 	find $(ROOTDIR)/internal/test/goleak -name '*_test.go' | xargs sed -i -E "s/goleak\.//g"
 
-$(GO_TEST_SOURCES): \
-	$(ROOTDIR)/assets/test/templates/common \
-	$(GO_SOURCES)
-	@$(call green, $(patsubst %,"generating go test file: %",$@))
-	gotests -w -template_dir $(ROOTDIR)/assets/test/templates/common -all $(patsubst %_test.go,%.go,$@)
-
-$(GO_OPTION_TEST_SOURCES): \
-	$(ROOTDIR)/assets/test/templates/option \
-	$(GO_OPTION_SOURCES)
-	@$(call green, $(patsubst %,"generating go test file: %",$@))
-	gotests -w -template_dir $(ROOTDIR)/assets/test/templates/option -all $(patsubst %_test.go,%.go,$@)
+.PHONY: gotests/patch-placeholder
+## apply patches to the placeholder of the generated go test files
+gotests/patch-placeholder:
+	@$(call green, "apply placeholder patches to go test files...")
+	for f in $(GO_ALL_TEST_SOURCES) ; do \
+		if [ ! -f "$$f" ] ; then continue; fi; \
+		sed -i -e '/\/\/ $(TEST_NOT_IMPL_PLACEHOLDER)/,$$d' $$f; \
+		if [ "$$(tail -1 $$f)" != "" ]; then echo "" >> "$$f"; fi; \
+		echo "// $(TEST_NOT_IMPL_PLACEHOLDER)" >>"$$f"; \
+	done

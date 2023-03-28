@@ -47,6 +47,7 @@ GOCACHE := $(eval GOCACHE := $(shell go env GOCACHE))$(GOCACHE)
 GOOS := $(eval GOOS := $(shell go env GOOS))$(GOOS)
 GOPATH := $(eval GOPATH := $(shell go env GOPATH))$(GOPATH)
 GOTEST_TIMEOUT = 30m
+TEST_NOT_IMPL_PLACEHOLDER = NOT IMPLEMENTED BELOW
 
 TEMP_DIR := $(eval TEMP_DIR := $(shell mktemp -d))$(TEMP_DIR)
 
@@ -250,6 +251,8 @@ GO_SOURCES_INTERNAL = $(eval GO_SOURCES_INTERNAL := $(shell find \
 GO_TEST_SOURCES = $(GO_SOURCES:%.go=%_test.go)
 GO_OPTION_TEST_SOURCES = $(GO_OPTION_SOURCES:%.go=%_test.go)
 
+GO_ALL_TEST_SOURCES = $(GO_TEST_SOURCES) $(GO_OPTION_TEST_SOURCES)
+
 DOCKER           ?= docker
 DOCKER_OPTS      ?=
 
@@ -396,6 +399,18 @@ format/go: \
 	find ./ -type d -name .git -prune -o -type f -regex '.*[^\.pb]\.go' -print | xargs $(GOPATH)/bin/gofumpt -w
 	find ./ -type d -name .git -prune -o -type f -regex '.*[^\.pb]\.go' -print | xargs $(GOPATH)/bin/strictgoimports -w
 	find ./ -type d -name .git -prune -o -type f -regex '.*\.go' -print | xargs $(GOPATH)/bin/goimports -w
+
+.PHONY: format/go/test
+## run golines, gofumpt, goimports for go test files
+format/go/test: \
+	golines/install \
+	gofumpt/install \
+	strictgoimports/install \
+	goimports/install
+	find $(ROOTDIR)/* -name '*_test.go' | xargs $(GOPATH)/bin/golines -w -m $(GOLINES_MAX_WIDTH)
+	find $(ROOTDIR)/* -name '*_test.go' | xargs $(GOPATH)/bin/gofumpt -w
+	find $(ROOTDIR)/* -name '*_test.go' | xargs $(GOPATH)/bin/strictgoimports -w
+	find $(ROOTDIR)/* -name '*_test.go' | xargs $(GOPATH)/bin/goimports -w
 
 .PHONY: format/yaml
 format/yaml: \
