@@ -13,7 +13,10 @@
 // limitations under the License.
 package grpc
 
-import "context"
+import (
+	"context"
+	"strings"
+)
 
 type contextKey string
 
@@ -24,6 +27,9 @@ func WrapGRPCMethod(ctx context.Context, method string) context.Context {
 	m := FromGRPCMethod(ctx)
 	if m == "" {
 		return context.WithValue(ctx, grpcMethodContextKey, method)
+	}
+	if strings.HasSuffix(m, method) {
+		return ctx
 	}
 	return context.WithValue(ctx, grpcMethodContextKey, m+"/"+method)
 }

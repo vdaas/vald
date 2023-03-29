@@ -400,7 +400,7 @@ func (g *gRPCClient) RangeConcurrent(ctx context.Context,
 			span.End()
 		}
 	}()
-	if concurrency < 2 {
+	if concurrency == 0 || concurrency == 1 {
 		return g.Range(ctx, f)
 	}
 	eg, egctx := errgroup.New(sctx)
