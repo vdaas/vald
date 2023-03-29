@@ -62,11 +62,12 @@
 - [Helm Operator Chart Reference](https://github.com/vdaas/vald/blob/v1.7.4/charts/vald-helm-operator/README.md)
 
 ### Changes
+
 :bug: Bug fix
 
 - Fix range concurrency branch rule [#1986](https://github.com/vdaas/vald/pull/1986)
 - Update makefile for "not implemented" placeholder [#1967](https://github.com/vdaas/vald/pull/1977)
-- Non-gRPC  style error parse result returns Unknown status, it should be re-parse to find inside status [#1981](https://github.com/vdaas/vald/pull/1981)
+- Non-gRPC style error parse result returns Unknown status, it should be re-parse to find inside status [#1981](https://github.com/vdaas/vald/pull/1981)
 - Enable gorules [#1980](https://github.com/vdaas/vald/pull/1980)
 - Format code with prettier and gofumpt [#1971](https://github.com/vdaas/vald/pull/1971)
 
@@ -77,7 +78,6 @@
 :handshake: Contributor
 
 - docs: add junsei-ando as a contributor for doc [#1979](https://github.com/vdaas/vald/pull/1979)
-
 
 ## v1.7.3
 
