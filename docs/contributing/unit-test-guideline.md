@@ -184,7 +184,6 @@ One of the features is that Go will convert a single value to a slice value when
 
 And we apply the table-driven test for running unit tests.
 For example, when we create the unit test of `func getMeta(...[]int)`, the test code will be more complex than other functions' tests which don't use variadic argument as the input, if we create the test for all input patterns.
-
 So, we define the basic unit case slightly different from [the basic test case](#Basic).
 
 This change is very clear and you can apply it easily.
@@ -192,7 +191,7 @@ Our basic test case depends on the type of two variadic arguments.
 
 1. When input is `...interface{}`
    - We have to write all test cases which satisfy `...interface{}` as same as a [basic test case](#Basic). For example, `val = 1`, `val = "input"`, `val = []float64{2020.12}` and so on.
-2. When input is not `...interface{}` but `...[]int`, `...[]string` or etc.
+1. When input is not `...interface{}` but `...[]int`, `...[]string` or etc.
    - We have to create only slice pattern test cases, which is the same as not creating test cases with a single value.
    - We should test with boundary cases, for example, we should test with `val = []int{math.MaxInt64()}` when the input value is `...[]int`.
 
