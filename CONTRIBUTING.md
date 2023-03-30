@@ -6,7 +6,6 @@ We appreciate your help!
 
 ## Table of Contents
 
-- [Table of Contents](#table-of-contents)
 - [Contributing Issue](#contributing-issue)
   - [Bug Report](#bug-report)
   - [Proposal](#proposal)
