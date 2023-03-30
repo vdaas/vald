@@ -334,6 +334,7 @@ jobs:
           git checkout ${HEAD_BRANCH}
 
           make gotests/install
+          PATH=$PATH:$GOPATH/bin
           make -j 4 gotests/gen
 
           git add cmd hack internal pkg
