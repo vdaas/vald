@@ -318,6 +318,14 @@ jobs:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           git_user_signingkey: true
           git_commit_gpgsign: true
+      - name: Fetch golang version
+        run: |
+          GO_VERSION=`make version/go`
+          echo "version=${GO_VERSION}" >> $GITHUB_OUTPUT
+        id: golang_version
+      - uses: actions/setup-go@v3
+        with:
+          go-version: ${{ steps.golang_version.outputs.version }}
       - name: Generate tests and push
         if: steps.check_comments_gen_test.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         run: |
@@ -332,9 +340,6 @@ jobs:
           echo "Head branch for PR #${PR_NUM} is ${HEAD_BRANCH}"
 
           git checkout ${HEAD_BRANCH}
-
-          export GOBIN=$GOPATH/bin
-          export PATH=$PATH:$GOBIN
 
           make gotests/install
           make -j 4 gotests/gen
