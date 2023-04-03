@@ -333,8 +333,10 @@ jobs:
 
           git checkout ${HEAD_BRANCH}
 
+          export GOBIN=$GOPATH/bin
+          export PATH=$PATH:$GOBIN
+
           make gotests/install
-          export PATH=$PATH:$GOPATH/bin
           make -j 4 gotests/gen
 
           git add cmd hack internal pkg
