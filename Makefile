@@ -366,7 +366,6 @@ tools/install: \
 	helm/install \
 	kind/install \
 	valdcli/install \
-	telepresence/install \
 	textlint/install
 
 .PHONY: update
