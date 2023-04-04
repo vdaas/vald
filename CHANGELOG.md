@@ -1,5 +1,84 @@
 # CHANGELOG
 
+## v1.7.4
+
+### Docker images
+
+<table>
+  <tr>
+    <th>component</th>
+    <th>Docker pull</th>
+  </tr>
+  <tr>
+    <td>Agent NGT</td>
+    <td>
+      <code>docker pull vdaas/vald-agent-ngt:v1.7.4</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-agent-ngt:v1.7.4</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Agent sidecar</td>
+    <td>
+      <code>docker pull vdaas/vald-agent-sidecar:v1.7.4</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-agent-sidecar:v1.7.4</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Discoverers</td>
+    <td>
+      <code>docker pull vdaas/vald-discoverer-k8s:v1.7.4</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-discoverer-k8s:v1.7.4</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Gateways</td>
+    <td>
+      <code>docker pull vdaas/vald-lb-gateway:v1.7.4</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-lb-gateway:v1.7.4</code><br/>
+      <code>docker pull vdaas/vald-filter-gateway:v1.7.4</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-filter-gateway:v1.7.4</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Index Manager</td>
+    <td>
+      <code>docker pull vdaas/vald-manager-index:v1.7.4</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-manager-index:v1.7.4</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Helm Operator</td>
+    <td>
+      <code>docker pull vdaas/vald-helm-operator:v1.7.4</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-helm-operator:v1.7.4</code>
+    </td>
+  </tr>
+</table>
+
+### Documents
+
+- [GoDoc](https://pkg.go.dev/github.com/vdaas/vald@v1.7.4)
+- [Helm Chart Reference](https://github.com/vdaas/vald/blob/v1.7.4/charts/vald/README.md)
+- [Helm Operator Chart Reference](https://github.com/vdaas/vald/blob/v1.7.4/charts/vald-helm-operator/README.md)
+
+### Changes
+
+:bug: Bug fix
+
+- Fix range concurrency branch rule [#1986](https://github.com/vdaas/vald/pull/1986)
+- Update makefile for "not implemented" placeholder [#1967](https://github.com/vdaas/vald/pull/1977)
+- Non-gRPC style error parse result returns Unknown status, it should be re-parse to find inside status [#1981](https://github.com/vdaas/vald/pull/1981)
+- Enable gorules [#1980](https://github.com/vdaas/vald/pull/1980)
+- Format code with prettier and gofumpt [#1971](https://github.com/vdaas/vald/pull/1971)
+
+:memo: Document
+
+- Fix documentation typo disable_balanced_update [#1978](https://github.com/vdaas/vald/pull/1978)
+
+:handshake: Contributor
+
+- docs: add junsei-ando as a contributor for doc [#1979](https://github.com/vdaas/vald/pull/1979)
+
 ## v1.7.3
 
 ### Docker images

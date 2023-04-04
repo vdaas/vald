@@ -20,10 +20,10 @@ metadata:
   name: vald-agent-ngt
   labels:
     app.kubernetes.io/name: vald
-    helm.sh/chart: vald-v1.7.3
+    helm.sh/chart: vald-v1.7.4
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: release-name
-    app.kubernetes.io/version: v1.7.3
+    app.kubernetes.io/version: v1.7.4
     app.kubernetes.io/component: agent
 spec:
   maxUnavailable: 1

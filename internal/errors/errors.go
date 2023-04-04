@@ -114,17 +114,17 @@ var (
 		return Errorf(format, args...)
 	}
 
+	// Join represents a function to generate multiple error when the input errors is not nil.
+	Join = errors.Join
+
 	// Cause represents a function to generate an error when the input error is not nil.
 	// When the input is nil, it will return nil.
 	Cause = func(err error) error {
 		if err != nil {
-			return errors.Unwrap(err)
+			return Unwrap(err)
 		}
 		return nil
 	}
-
-	// Unwrap represents errors.Unwrap.
-	Unwrap = errors.Unwrap
 
 	// Errorf represents a function to generate an error based on format and args.
 	// When format and args do not satisfy the condition, it will return nil.
@@ -145,33 +145,6 @@ var (
 		return New(format)
 	}
 
-	// Is represents a function to check whether err and the target is the same or not.
-	Is = func(err, target error) bool {
-		if target == nil || err == nil {
-			return err == target
-		}
-		isComparable := reflect.TypeOf(target).Comparable()
-		for {
-			if isComparable && (err == target ||
-				err.Error() == target.Error() ||
-				strings.EqualFold(err.Error(), target.Error())) {
-				return true
-			}
-			if x, ok := err.(interface {
-				Is(error) bool
-			}); ok && x.Is(target) {
-				return true
-			}
-			if uerr := Unwrap(err); uerr == nil {
-				return (err == target ||
-					err.Error() == target.Error() ||
-					strings.EqualFold(err.Error(), target.Error()))
-			} else {
-				err = uerr
-			}
-		}
-	}
-
 	// As represents errors.As.
 	As = errors.As
 
@@ -180,3 +153,69 @@ var (
 		return Errorf("expected err is nil: %s", n)
 	}
 )
+
+// Is represents a function to check whether err and the target is the same or not.
+func Is(err, target error) bool {
+	if target == nil || err == nil {
+		return err == target
+	}
+	isComparable := reflect.TypeOf(target).Comparable()
+	for {
+		if isComparable && (err == target ||
+			err.Error() == target.Error() ||
+			strings.EqualFold(err.Error(), target.Error())) {
+			return true
+		}
+
+		if x, ok := err.(interface {
+			Is(error) bool
+		}); ok && x.Is(target) {
+			return true
+		}
+		switch x := err.(type) {
+		case interface{ Unwrap() error }:
+			err = x.Unwrap()
+			if err == nil {
+				return isComparable && err == target ||
+					err.Error() == target.Error() ||
+					strings.EqualFold(err.Error(), target.Error())
+			}
+		case interface{ Unwrap() []error }:
+			for _, err = range x.Unwrap() {
+				if Is(err, target) {
+					return true
+				}
+			}
+			return isComparable && err == target ||
+				err.Error() == target.Error() ||
+				strings.EqualFold(err.Error(), target.Error())
+		default:
+			return isComparable && err == target ||
+				err.Error() == target.Error() ||
+				strings.EqualFold(err.Error(), target.Error())
+		}
+	}
+}
+
+// Unwrap represents errors.Unwrap.
+func Unwrap(err error) error {
+	if err == nil {
+		return nil
+	}
+	switch x := err.(type) {
+	case interface{ Unwrap() error }:
+		return x.Unwrap()
+	case interface{ Unwrap() []error }:
+		errs := x.Unwrap()
+		switch l := len(errs); l {
+		case 0:
+			return nil
+		case 1, 2:
+			return errs[0]
+		default:
+			return Join(errs[:l-1]...)
+		}
+	default:
+		return nil
+	}
+}
