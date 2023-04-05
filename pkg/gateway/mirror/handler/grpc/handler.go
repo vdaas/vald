@@ -1178,7 +1178,11 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 			targets = append(targets, target.(string))
 		} else {
 			if err, ok := err.(error); ok && err != nil {
-				errs = errors.Join(errs, err)
+				if errs != nil {
+					errs = errors.Join(errs, err)
+				} else {
+					errs = err
+				}
 			}
 		}
 		return true
@@ -1222,7 +1226,11 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 					return nil
 				}
 				emu.Lock()
-				rerrs = errors.Join(rerrs, err)
+				if rerrs != nil {
+					rerrs = errors.Join(rerrs, err)
+				} else {
+					rerrs = err
+				}
 				emu.Unlock()
 				return err
 			}
@@ -1658,7 +1666,11 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (loc *
 			targets = append(targets, target.(string))
 		} else {
 			if err, ok := err.(error); ok && err != nil {
-				errs = errors.Join(errs, err)
+				if errs != nil {
+					errs = errors.Join(errs, err)
+				} else {
+					errs = err
+				}
 			}
 		}
 		return true
@@ -1705,7 +1717,11 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (loc *
 						return nil
 					}
 					emu.Lock()
-					errs = errors.Join(errs, err)
+					if rerrs != nil {
+						rerrs = errors.Join(rerrs, err)
+					} else {
+						rerrs = err
+					}
 					emu.Unlock()
 					return err
 				}
@@ -1735,7 +1751,11 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (loc *
 					return nil
 				}
 				emu.Lock()
-				errs = errors.Join(errs, err)
+				if rerrs != nil {
+					rerrs = errors.Join(rerrs, err)
+				} else {
+					rerrs = err
+				}
 				emu.Unlock()
 				return err
 			}
@@ -2166,7 +2186,11 @@ func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *
 			targets = append(targets, target.(string))
 		} else {
 			if err, ok := err.(error); ok && err != nil {
-				errs = errors.Join(errs, err)
+				if errs != nil {
+					errs = errors.Join(errs, err)
+				} else {
+					errs = err
+				}
 			}
 		}
 		return true
@@ -2212,7 +2236,11 @@ func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *
 						return nil
 					}
 					emu.Lock()
-					errs = errors.Join(errs, err)
+					if rerrs != nil {
+						rerrs = errors.Join(rerrs, err)
+					} else {
+						rerrs = err
+					}
 					emu.Unlock()
 					return err
 				}
@@ -2242,7 +2270,11 @@ func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *
 					return nil
 				}
 				emu.Lock()
-				errs = errors.Join(errs, err)
+				if rerrs != nil {
+					rerrs = errors.Join(rerrs, err)
+				} else {
+					rerrs = err
+				}
 				emu.Unlock()
 				return err
 			}
@@ -2674,7 +2706,11 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (loc *
 			targets = append(targets, target.(string))
 		} else {
 			if err, ok := err.(error); ok && err != nil {
-				errs = errors.Join(errs, err)
+				if errs != nil {
+					errs = errors.Join(errs, err)
+				} else {
+					errs = err
+				}
 			}
 		}
 		return true
@@ -2724,7 +2760,11 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (loc *
 					return nil
 				}
 				emu.Lock()
-				rerrs = errors.Join(rerrs, err)
+				if rerrs != nil {
+					rerrs = errors.Join(rerrs, err)
+				} else {
+					rerrs = err
+				}
 				emu.Unlock()
 				return err
 			}
