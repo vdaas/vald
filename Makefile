@@ -162,12 +162,12 @@ PROTO_PATHS = \
 	$(PWD) \
 	$(GOPATH)/src \
 	$(GOPATH)/src/$(GOPKG) \
-	$(GOPATH)/src/$(GOPKG)/apis/proto/v1 \
 	$(GOPATH)/src/github.com/envoyproxy/protoc-gen-validate \
 	$(GOPATH)/src/github.com/googleapis/googleapis \
 	$(GOPATH)/src/github.com/planetscale/vtprotobuf \
 	$(GOPATH)/src/github.com/protocolbuffers/protobuf \
-	$(GOPATH)/src/google.golang.org/genproto
+	$(GOPATH)/src/google.golang.org/genproto \
+	$(ROOTDIR)/apis/proto/v1
 
 # [Warning]
 # The below packages have no original implementation.
