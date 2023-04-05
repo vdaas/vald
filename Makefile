@@ -161,12 +161,12 @@ BODY = ""
 PROTO_PATHS = \
 	$(PWD) \
 	$(GOPATH)/src \
-	$(GOPATH)/src/$(GOPKG) \
 	$(GOPATH)/src/github.com/envoyproxy/protoc-gen-validate \
 	$(GOPATH)/src/github.com/googleapis/googleapis \
 	$(GOPATH)/src/github.com/planetscale/vtprotobuf \
 	$(GOPATH)/src/github.com/protocolbuffers/protobuf \
 	$(GOPATH)/src/google.golang.org/genproto \
+	$(ROOTDIR) \
 	$(ROOTDIR)/apis/proto/v1
 
 # [Warning]
