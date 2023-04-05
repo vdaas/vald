@@ -1017,7 +1017,7 @@ func (s *server) MultiLinearSearchByID(ctx context.Context, req *payload.Search_
 	return res, nil
 }
 
-func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *payload.Object_Location, err error) {
+func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (loc *payload.Object_Location, err error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.InsertRPCServiceName+"/"+vald.InsertRPCName), apiName+"/"+vald.InsertRPCName)
 	defer func() {
 		if span != nil {
@@ -1031,11 +1031,11 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 	// So this component sends requests only to the Vald gateway (LB gateway) of its own cluster.
 	if len(reqSrcPodName) != 0 {
 		_, err = s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (interface{}, error) {
-			ce, err = vc.Insert(ctx, req, copts...)
+			loc, err = vc.Insert(ctx, req, copts...)
 			if err != nil {
 				return nil, err
 			}
-			return ce, nil
+			return loc, nil
 		})
 		if err != nil {
 			reqInfo := &errdetails.RequestInfo{
@@ -1091,13 +1091,13 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 			}
 			return nil, err
 		}
-		log.Debugf("Insert API succeeded to %#v", ce)
-		return ce, nil
+		log.Debugf("Insert API succeeded to %#v", loc)
+		return loc, nil
 	}
 
 	var mu sync.Mutex
 	var result sync.Map
-	ce = &payload.Object_Location{
+	loc = &payload.Object_Location{
 		Uuid: req.GetVector().GetId(),
 		Ips:  make([]string, 0),
 	}
@@ -1109,7 +1109,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 			}
 		}()
 
-		loc, err := s.insert(ctx, vc, req, copts...)
+		ce, err := s.insert(ctx, vc, req, copts...)
 		if err != nil {
 			st, _, _ := status.ParseError(err, codes.Internal,
 				"failed to parse "+vald.InsertRPCName+" gRPC error response",
@@ -1127,10 +1127,10 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 				return nil
 			}
 		}
-		if loc != nil {
+		if err == nil && ce != nil {
 			mu.Lock()
-			ce.Name = loc.GetName()
-			ce.Ips = append(ce.Ips, loc.GetIps()...)
+			loc.Name = ce.GetName()
+			loc.Ips = append(loc.Ips, ce.GetIps()...)
 			mu.Unlock()
 		}
 		result.Store(target, err)
@@ -1188,8 +1188,8 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 		return true
 	})
 	if errs == nil {
-		log.Debugf("Insert API mirror request succeeded to %#v", ce)
-		return ce, nil
+		log.Debugf("Insert API mirror request succeeded to %#v", loc)
+		return loc, nil
 	}
 	log.Error("failed to Insert API mirror request: %v, so starts the rollback request", errs)
 
@@ -1582,7 +1582,7 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (loc *
 
 	var mu sync.Mutex
 	var result sync.Map
-	ce := &payload.Object_Location{
+	loc = &payload.Object_Location{
 		Uuid: req.GetVector().GetId(),
 		Ips:  make([]string, 0),
 	}
@@ -1596,7 +1596,7 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (loc *
 				}
 			}()
 
-			loc, err := s.update(ctx, vc, req, copts...)
+			ce, err := s.update(ctx, vc, req, copts...)
 			if err != nil {
 				st, _, _ := status.ParseError(err, codes.Internal,
 					"failed to parse "+vald.UpdateRPCName+" API error response for "+target,
@@ -1614,10 +1614,10 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (loc *
 					return nil
 				}
 			}
-			if loc != nil {
+			if err == nil && ce != nil {
 				mu.Lock()
-				ce.Name = loc.GetName()
-				ce.Ips = append(ce.Ips, loc.GetIps()...)
+				loc.Name = ce.GetName()
+				loc.Ips = append(loc.Ips, ce.GetIps()...)
 				mu.Unlock()
 			}
 			result.Store(target, err)
@@ -1676,8 +1676,8 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (loc *
 		return true
 	})
 	if errs == nil {
-		log.Debugf("Update API mirror request succeeded to %#v", ce)
-		return ce, nil
+		log.Debugf("Update API mirror request succeeded to %#v", loc)
+		return loc, nil
 	}
 	log.Error("failed to Update API mirror request: %v, so starts the rollback request", errs)
 
@@ -2135,7 +2135,7 @@ func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *
 				return nil
 			}
 		}
-		if ce != nil {
+		if err == nil && ce != nil {
 			mu.Lock()
 			loc.Name = ce.GetName()
 			loc.Ips = append(loc.Ips, ce.GetIps()...)
@@ -2624,7 +2624,7 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (loc *
 
 	var mu sync.Mutex
 	var result sync.Map
-	ce := &payload.Object_Location{
+	loc = &payload.Object_Location{
 		Uuid: req.GetId().GetId(),
 		Ips:  make([]string, 0),
 	}
@@ -2637,7 +2637,7 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (loc *
 			}
 		}()
 
-		loc, err := s.remove(ctx, vc, req, copts...)
+		ce, err := s.remove(ctx, vc, req, copts...)
 		if err != nil {
 			st, _, _ := status.ParseError(err, codes.Internal,
 				"failed to parse "+vald.RemoveRPCName+" gRPC error response for "+target,
@@ -2655,10 +2655,10 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (loc *
 				return nil
 			}
 		}
-		if loc != nil {
+		if err == nil && ce != nil {
 			mu.Lock()
-			ce.Name = loc.GetName()
-			ce.Ips = append(ce.Ips, loc.GetIps()...)
+			loc.Name = ce.GetName()
+			loc.Ips = append(loc.Ips, ce.GetIps()...)
 			mu.Unlock()
 		}
 		result.Store(target, err)
@@ -2716,8 +2716,8 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (loc *
 		return true
 	})
 	if errs == nil {
-		log.Debugf("Remove API mirror request succeeded to %#v", ce)
-		return ce, nil
+		log.Debugf("Remove API mirror request succeeded to %#v", loc)
+		return loc, nil
 	}
 	log.Error("failed to Remove API mirror request: %v, so starts the rollback request", errs)
 
