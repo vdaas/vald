@@ -179,17 +179,20 @@ func (m *mockGateway) FromForwardedContext(ctx context.Context) string {
 }
 
 func (m *mockGateway) BroadCast(ctx context.Context,
-	f func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error) error {
+	f func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error,
+) error {
 	return m.BroadCastFunc(ctx, f)
 }
 
 func (m *mockGateway) Do(ctx context.Context, target string,
-	f func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (interface{}, error)) (interface{}, error) {
+	f func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (interface{}, error),
+) (interface{}, error) {
 	return m.DoFunc(ctx, target, f)
 }
 
 func (m *mockGateway) DoMulti(ctx context.Context, targets []string,
-	f func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error) error {
+	f func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error,
+) error {
 	return m.DoMultiFunc(ctx, targets, f)
 }
 
