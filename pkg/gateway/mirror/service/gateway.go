@@ -23,7 +23,7 @@ import (
 	"time"
 
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
-	mclient "github.com/vdaas/vald/internal/client/v1/client/mirror"
+	client "github.com/vdaas/vald/internal/client/v1/client/mirror"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
@@ -49,7 +49,7 @@ type Gateway interface {
 }
 
 type gateway struct {
-	client       mclient.Client // Mirror Gateway client for other clusters and to the Vald gateway (LB gateway) client for own cluster.
+	client       client.Client // Mirror Gateway client for other clusters and to the Vald gateway (LB gateway) client for own cluster.
 	eg           errgroup.Group
 	advertiseDur time.Duration
 	podName      string
@@ -128,13 +128,13 @@ func (g *gateway) FromForwardedContext(ctx context.Context) string {
 func (g *gateway) BroadCast(ctx context.Context,
 	f func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error,
 ) (err error) {
-	fctx, span := trace.StartSpan(ctx, "vald/gateway/mirror/service/Gateway.BroadCast")
+	ctx, span := trace.StartSpan(ctx, "vald/gateway/mirror/service/Gateway.BroadCast")
 	defer func() {
 		if span != nil {
 			span.End()
 		}
 	}()
-	return g.client.GRPCClient().RangeConcurrent(g.ForwardedContext(fctx, g.podName), -1, func(ictx context.Context,
+	return g.client.GRPCClient().RangeConcurrent(g.ForwardedContext(ctx, g.podName), -1, func(ictx context.Context,
 		addr string, conn *grpc.ClientConn, copts ...grpc.CallOption,
 	) (err error) {
 		select {
@@ -164,8 +164,8 @@ func (g *gateway) Do(ctx context.Context, target string,
 		return nil, errors.ErrTargetNotFound
 	}
 	return g.client.GRPCClient().Do(g.ForwardedContext(ctx, g.podName), target,
-		func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
-			return f(ctx, vald.NewValdClient(conn), copts...)
+		func(ictx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
+			return f(ictx, vald.NewValdClient(conn), copts...)
 		},
 	)
 }
@@ -184,12 +184,12 @@ func (g *gateway) DoMulti(ctx context.Context, targets []string,
 		return errors.ErrTargetNotFound
 	}
 	return g.client.GRPCClient().OrderedRangeConcurrent(g.ForwardedContext(ctx, g.podName), targets, -1,
-		func(ctx context.Context, addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) (err error) {
+		func(ictx context.Context, addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) (err error) {
 			select {
-			case <-ctx.Done():
+			case <-ictx.Done():
 				return nil
 			default:
-				err = f(ctx, addr, vald.NewValdClient(conn), copts...)
+				err = f(ictx, addr, vald.NewValdClient(conn), copts...)
 				if err != nil {
 					return err
 				}
