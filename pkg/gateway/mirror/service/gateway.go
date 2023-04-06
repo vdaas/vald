@@ -37,7 +37,6 @@ const (
 )
 
 type Gateway interface {
-	Start(ctx context.Context) (<-chan error, error)
 	ForwardedContext(ctx context.Context, podName string) context.Context
 	FromForwardedContext(ctx context.Context) string
 	BroadCast(ctx context.Context,
@@ -70,36 +69,6 @@ func NewGateway(opts ...Option) (Gateway, error) {
 		}
 	}
 	return g, nil
-}
-
-func (g *gateway) Start(ctx context.Context) (<-chan error, error) {
-	ech := make(chan error, 100)
-
-	cech, err := g.client.Start(ctx)
-	if err != nil {
-		close(ech)
-		return nil, err
-	}
-
-	g.eg.Go(func() (err error) {
-		defer close(ech)
-		for {
-			select {
-			case <-ctx.Done():
-				return ctx.Err()
-			case err = <-cech:
-			}
-			if err != nil {
-				select {
-				case <-ctx.Done():
-					return ctx.Err()
-				case ech <- err:
-				}
-				err = nil
-			}
-		}
-	})
-	return ech, nil
 }
 
 func (g *gateway) ForwardedContext(ctx context.Context, podName string) context.Context {

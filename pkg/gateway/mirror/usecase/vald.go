@@ -159,12 +159,12 @@ func (r *run) PreStart(ctx context.Context) error {
 
 func (r *run) Start(ctx context.Context) (<-chan error, error) {
 	ech := make(chan error, 6)
-	var gech, mech, cech, sech, oech <-chan error
+	var mech, cech, sech, oech <-chan error
 	var err error
 
 	sech = r.server.ListenAndServe(ctx)
-	if r.gw != nil {
-		gech, err = r.gw.Start(ctx)
+	if r.c != nil {
+		cech, err = r.c.Start(ctx)
 		if err != nil {
 			close(ech)
 			return nil, err
@@ -172,13 +172,6 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 	}
 	if r.mgw != nil {
 		mech, err = r.mgw.Start(ctx)
-		if err != nil {
-			close(ech)
-			return nil, err
-		}
-	}
-	if r.c != nil {
-		cech, err = r.c.Start(ctx)
 		if err != nil {
 			close(ech)
 			return nil, err
@@ -194,7 +187,6 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 			select {
 			case <-ctx.Done():
 				return ctx.Err()
-			case err = <-gech:
 			case err = <-mech:
 			case err = <-cech:
 			case err = <-sech:

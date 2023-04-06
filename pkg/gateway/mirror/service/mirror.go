@@ -117,7 +117,7 @@ func (m *mirr) startAdvertise(ctx context.Context) (<-chan error, error) {
 	}()
 	ech := make(chan error, 100)
 
-	tgts, err := m.mirrorAddrsToTargets(m.selfMirrAddrs...)
+	tgts, err := m.addrsToMirrorTargets(m.selfMirrAddrs...)
 	if err != nil {
 		close(ech)
 		return nil, err
@@ -171,7 +171,7 @@ func (m *mirr) startAdvertise(ctx context.Context) (<-chan error, error) {
 			case <-ctx.Done():
 				return err
 			case <-tic.C:
-				tgts, err := m.mirrorAddrsToTargets(append(m.selfMirrAddrs, m.client.GRPCClient().ConnectedAddrs()...)...)
+				tgts, err := m.addrsToMirrorTargets(append(m.selfMirrAddrs, m.client.GRPCClient().ConnectedAddrs()...)...)
 				if err != nil || len(tgts.GetTargets()) == 0 {
 					if err == nil {
 						err = errors.ErrTargetNotFound
@@ -438,7 +438,7 @@ func (m *mirr) isGatewayAddr(addr string) bool {
 	return false
 }
 
-func (m *mirr) mirrorAddrsToTargets(addrs ...string) (*payload.Mirror_Targets, error) {
+func (m *mirr) addrsToMirrorTargets(addrs ...string) (*payload.Mirror_Targets, error) {
 	tgts := make([]*payload.Mirror_Target, 0, len(addrs))
 	for _, addr := range addrs {
 		if ok := m.isGatewayAddr(addr); !ok {
